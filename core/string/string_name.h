@@ -117,6 +117,15 @@ public:
 	_FORCE_INLINE_ bool operator<(const StringName &p_name) const {
 		return _data < p_name._data;
 	}
+	_FORCE_INLINE_ bool operator<=(const StringName &p_name) const {
+		return _data <= p_name._data;
+	}
+	_FORCE_INLINE_ bool operator>(const StringName &p_name) const {
+		return _data > p_name._data;
+	}
+	_FORCE_INLINE_ bool operator>=(const StringName &p_name) const {
+		return _data >= p_name._data;
+	}
 	_FORCE_INLINE_ bool operator==(const StringName &p_name) const {
 		// the real magic of all this mess happens here.
 		// this is why path comparisons are very fast

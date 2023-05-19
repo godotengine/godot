@@ -54,6 +54,7 @@ class FileAccessWindows : public FileAccess {
 	static HashSet<String> invalid_files;
 
 public:
+	virtual String fix_path(const String &p_path) const override;
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open
 

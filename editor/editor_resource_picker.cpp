@@ -1145,7 +1145,7 @@ void EditorAudioStreamPicker::_preview_draw() {
 
 	Rect2 rect(Point2(), size);
 
-	if (audio_stream->get_length() > 0) {
+	if (audio_stream->get_length() > 0 && size.width > 0) {
 		rect.size.height *= 0.5;
 
 		stream_preview_rect->draw_rect(rect, Color(0, 0, 0, 1));
@@ -1153,8 +1153,8 @@ void EditorAudioStreamPicker::_preview_draw() {
 		Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(audio_stream);
 		float preview_len = preview->get_length();
 
-		Vector<Vector2> lines;
-		lines.resize(size.width * 2);
+		Vector<Vector2> points;
+		points.resize(size.width * 2);
 
 		for (int i = 0; i < size.width; i++) {
 			float ofs = i * preview_len / size.width;
@@ -1163,14 +1163,13 @@ void EditorAudioStreamPicker::_preview_draw() {
 			float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 			int idx = i;
-			lines.write[idx * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
-			lines.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
+			points.write[idx * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
+			points.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
 		}
 
-		Vector<Color> color;
-		color.push_back(get_theme_color(SNAME("contrast_color_2"), SNAME("Editor")));
+		Vector<Color> colors = { get_theme_color(SNAME("contrast_color_2"), SNAME("Editor")) };
 
-		RS::get_singleton()->canvas_item_add_multiline(stream_preview_rect->get_canvas_item(), lines, color);
+		RS::get_singleton()->canvas_item_add_multiline(stream_preview_rect->get_canvas_item(), points, colors);
 
 		if (tagged_frame_offset_count) {
 			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));

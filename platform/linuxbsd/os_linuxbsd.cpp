@@ -30,6 +30,7 @@
 
 #include "os_linuxbsd.h"
 
+#include "core/io/certs_compressed.gen.h"
 #include "core/io/dir_access.h"
 #include "main/main.h"
 #include "servers/display_server.h"
@@ -193,6 +194,10 @@ void OS_LinuxBSD::delete_main_loop() {
 
 void OS_LinuxBSD::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
+}
+
+String OS_LinuxBSD::get_identifier() const {
+	return "linuxbsd";
 }
 
 String OS_LinuxBSD::get_name() const {
@@ -487,6 +492,11 @@ bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
 	}
 #endif
 	if (p_feature == "pc") {
+		return true;
+	}
+
+	// Match against the specific OS (linux, freebsd, etc).
+	if (p_feature == get_name().to_lower()) {
 		return true;
 	}
 
@@ -1074,6 +1084,40 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 		}
 	}
 	return OK;
+}
+
+String OS_LinuxBSD::get_system_ca_certificates() {
+	String certfile;
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+
+	// Compile time preferred certificates path.
+	if (!String(_SYSTEM_CERTS_PATH).is_empty() && da->file_exists(_SYSTEM_CERTS_PATH)) {
+		certfile = _SYSTEM_CERTS_PATH;
+	} else if (da->file_exists("/etc/ssl/certs/ca-certificates.crt")) {
+		// Debian/Ubuntu
+		certfile = "/etc/ssl/certs/ca-certificates.crt";
+	} else if (da->file_exists("/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem")) {
+		// Fedora
+		certfile = "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem";
+	} else if (da->file_exists("/etc/ca-certificates/extracted/tls-ca-bundle.pem")) {
+		// Arch Linux
+		certfile = "/etc/ca-certificates/extracted/tls-ca-bundle.pem";
+	} else if (da->file_exists("/var/lib/ca-certificates/ca-bundle.pem")) {
+		// openSUSE
+		certfile = "/var/lib/ca-certificates/ca-bundle.pem";
+	} else if (da->file_exists("/etc/ssl/cert.pem")) {
+		// FreeBSD/OpenBSD
+		certfile = "/etc/ssl/cert.pem";
+	}
+
+	if (certfile.is_empty()) {
+		return "";
+	}
+
+	Ref<FileAccess> f = FileAccess::open(certfile, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), "", vformat("Failed to open system CA certificates file: '%s'", certfile));
+
+	return f->get_as_text();
 }
 
 OS_LinuxBSD::OS_LinuxBSD() {

@@ -48,6 +48,9 @@ protected:
 public:
 	NavigationUtilities::PathSegmentType get_type() const { return type; }
 
+	virtual void set_use_edge_connections(bool p_enabled) {}
+	virtual bool get_use_edge_connections() const { return false; }
+
 	void set_navigation_layers(uint32_t p_navigation_layers) { navigation_layers = p_navigation_layers; }
 	uint32_t get_navigation_layers() const { return navigation_layers; }
 
@@ -59,6 +62,8 @@ public:
 
 	void set_owner_id(ObjectID p_owner_id) { owner_id = p_owner_id; }
 	ObjectID get_owner_id() const { return owner_id; }
+
+	virtual ~NavBase(){};
 };
 
 #endif // NAV_BASE_H

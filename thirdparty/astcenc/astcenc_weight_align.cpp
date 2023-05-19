@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2022 Arm Limited
+// Copyright 2011-2023 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -353,7 +353,7 @@ void compute_angular_endpoints_1plane(
 	for (unsigned int i = 0; i < max_decimation_modes; i++)
 	{
 		const decimation_mode& dm = bsd.decimation_modes[i];
-		if (!dm.is_ref_1_plane(static_cast<quant_method>(max_weight_quant)))
+		if (!dm.is_ref_1plane(static_cast<quant_method>(max_weight_quant)))
 		{
 			continue;
 		}
@@ -422,7 +422,7 @@ void compute_angular_endpoints_2planes(
 	for (unsigned int i = 0; i < bsd.decimation_mode_count_selected; i++)
 	{
 		const decimation_mode& dm = bsd.decimation_modes[i];
-		if (!dm.is_ref_2_plane(static_cast<quant_method>(max_weight_quant)))
+		if (!dm.is_ref_2plane(static_cast<quant_method>(max_weight_quant)))
 		{
 			continue;
 		}

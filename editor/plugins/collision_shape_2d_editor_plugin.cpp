@@ -33,6 +33,7 @@
 #include "canvas_item_editor_plugin.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/resources/capsule_shape_2d.h"
 #include "scene/resources/circle_shape_2d.h"
@@ -43,6 +44,10 @@
 #include "scene/resources/separation_ray_shape_2d.h"
 #include "scene/resources/world_boundary_shape_2d.h"
 #include "scene/scene_string_names.h"
+
+CollisionShape2DEditor::CollisionShape2DEditor() {
+	grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+}
 
 void CollisionShape2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -307,7 +312,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				for (int i = 0; i < handles.size(); i++) {
-					if (xform.xform(handles[i]).distance_to(gpoint) < 8) {
+					if (xform.xform(handles[i]).distance_to(gpoint) < grab_threshold) {
 						edit_handle = i;
 
 						break;
@@ -436,7 +441,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 
 	switch (shape_type) {
 		case CAPSULE_SHAPE: {
-			Ref<CapsuleShape2D> shape = node->get_shape();
+			Ref<CapsuleShape2D> shape = current_shape;
 
 			handles.resize(2);
 			float radius = shape->get_radius();
@@ -451,7 +456,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case CIRCLE_SHAPE: {
-			Ref<CircleShape2D> shape = node->get_shape();
+			Ref<CircleShape2D> shape = current_shape;
 
 			handles.resize(1);
 			handles.write[0] = Point2(shape->get_radius(), 0);
@@ -467,7 +472,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case WORLD_BOUNDARY_SHAPE: {
-			Ref<WorldBoundaryShape2D> shape = node->get_shape();
+			Ref<WorldBoundaryShape2D> shape = current_shape;
 
 			handles.resize(2);
 			handles.write[0] = shape->get_normal() * shape->get_distance();
@@ -479,7 +484,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case SEPARATION_RAY_SHAPE: {
-			Ref<SeparationRayShape2D> shape = node->get_shape();
+			Ref<SeparationRayShape2D> shape = current_shape;
 
 			handles.resize(1);
 			handles.write[0] = Point2(0, shape->get_length());
@@ -489,7 +494,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case RECTANGLE_SHAPE: {
-			Ref<RectangleShape2D> shape = node->get_shape();
+			Ref<RectangleShape2D> shape = current_shape;
 
 			handles.resize(8);
 			Vector2 ext = shape->get_size() / 2;
@@ -501,7 +506,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		} break;
 
 		case SEGMENT_SHAPE: {
-			Ref<SegmentShape2D> shape = node->get_shape();
+			Ref<SegmentShape2D> shape = current_shape;
 
 			handles.resize(2);
 			handles.write[0] = shape->get_a();
@@ -527,6 +532,12 @@ void CollisionShape2DEditor::_notification(int p_what) {
 		case NOTIFICATION_PROCESS: {
 			if (node && node->get_shape() != current_shape) {
 				_shape_changed();
+			}
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/polygon_editor/point_grab_radius")) {
+				grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 			}
 		} break;
 	}

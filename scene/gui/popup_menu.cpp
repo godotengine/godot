@@ -635,6 +635,8 @@ void PopupMenu::_draw_items() {
 
 		Color icon_color(1, 1, 1, items[i].disabled && !items[i].separator ? 0.5 : 1);
 
+		icon_color *= items[i].icon_modulate;
+
 		// For non-separator items, add some padding for the content.
 		item_ofs.x += theme_cache.item_start_padding;
 
@@ -1249,6 +1251,20 @@ void PopupMenu::set_item_icon_max_width(int p_idx, int p_width) {
 	_menu_changed();
 }
 
+void PopupMenu::set_item_icon_modulate(int p_idx, const Color &p_modulate) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	if (items[p_idx].icon_modulate == p_modulate) {
+		return;
+	}
+
+	items.write[p_idx].icon_modulate = p_modulate;
+	control->queue_redraw();
+}
+
 void PopupMenu::set_item_checked(int p_idx, bool p_checked) {
 	if (p_idx < 0) {
 		p_idx += get_item_count();
@@ -1390,6 +1406,11 @@ Ref<Texture2D> PopupMenu::get_item_icon(int p_idx) const {
 int PopupMenu::get_item_icon_max_width(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), 0);
 	return items[p_idx].icon_max_width;
+}
+
+Color PopupMenu::get_item_icon_modulate(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Color());
+	return items[p_idx].icon_modulate;
 }
 
 Key PopupMenu::get_item_accelerator(int p_idx) const {
@@ -2102,6 +2123,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_language", "index", "language"), &PopupMenu::set_item_language);
 	ClassDB::bind_method(D_METHOD("set_item_icon", "index", "icon"), &PopupMenu::set_item_icon);
 	ClassDB::bind_method(D_METHOD("set_item_icon_max_width", "index", "width"), &PopupMenu::set_item_icon_max_width);
+	ClassDB::bind_method(D_METHOD("set_item_icon_modulate", "index", "modulate"), &PopupMenu::set_item_icon_modulate);
 	ClassDB::bind_method(D_METHOD("set_item_checked", "index", "checked"), &PopupMenu::set_item_checked);
 	ClassDB::bind_method(D_METHOD("set_item_id", "index", "id"), &PopupMenu::set_item_id);
 	ClassDB::bind_method(D_METHOD("set_item_accelerator", "index", "accel"), &PopupMenu::set_item_accelerator);
@@ -2125,6 +2147,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_language", "index"), &PopupMenu::get_item_language);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "index"), &PopupMenu::get_item_icon);
 	ClassDB::bind_method(D_METHOD("get_item_icon_max_width", "index"), &PopupMenu::get_item_icon_max_width);
+	ClassDB::bind_method(D_METHOD("get_item_icon_modulate", "index"), &PopupMenu::get_item_icon_modulate);
 	ClassDB::bind_method(D_METHOD("is_item_checked", "index"), &PopupMenu::is_item_checked);
 	ClassDB::bind_method(D_METHOD("get_item_id", "index"), &PopupMenu::get_item_id);
 	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &PopupMenu::get_item_index);

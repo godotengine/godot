@@ -3865,8 +3865,8 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 				}
 				prev_font = gl.font_rid;
 
-				double scale = _font_get_scale(gl.font_rid, gl.font_size);
 				if (gl.font_rid.is_valid()) {
+					double scale = _font_get_scale(gl.font_rid, gl.font_size);
 					bool subpos = (scale != 1.0) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_ONE_HALF) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_ONE_QUARTER) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_AUTO && gl.font_size <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE);
 					if (sd->text[j - sd->start] != 0 && !is_linebreak(sd->text[j - sd->start])) {
 						if (sd->orientation == ORIENTATION_HORIZONTAL) {

@@ -42,7 +42,7 @@ void TouchScreenButton::set_texture_normal(const Ref<Texture2D> &p_texture) {
 	}
 	texture_normal = p_texture;
 	if (texture_normal.is_valid()) {
-		texture_normal->connect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		texture_normal->connect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw), CONNECT_REFERENCE_COUNTED);
 	}
 	queue_redraw();
 }
@@ -60,7 +60,7 @@ void TouchScreenButton::set_texture_pressed(const Ref<Texture2D> &p_texture_pres
 	}
 	texture_pressed = p_texture_pressed;
 	if (texture_pressed.is_valid()) {
-		texture_pressed->connect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		texture_pressed->connect(SceneStringNames::get_singleton()->changed, callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw), CONNECT_REFERENCE_COUNTED);
 	}
 	queue_redraw();
 }

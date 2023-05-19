@@ -182,6 +182,20 @@
 				[b]Note:[/b] For performance reasons, the order of node groups is [i]not[/i] guaranteed. The order of node groups should not be relied upon as it can vary across project runs.
 			</description>
 		</method>
+		<method name="call_deferred_thread_group" qualifiers="vararg">
+			<return type="Variant" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+				This function is similar to [method Object.call_deferred] except that the call will take place when the node thread group is processed. If the node thread group processes in sub-threads, then the call will be done on that thread, right before [constant NOTIFICATION_PROCESS] or [constant NOTIFICATION_PHYSICS_PROCESS], the [method _process] or [method _physics_process] or their internal versions are called.
+			</description>
+		</method>
+		<method name="call_thread_safe" qualifiers="vararg">
+			<return type="Variant" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+				This function ensures that the calling of this function will succeed, no matter whether it's being done from a thread or not. If called from a thread that is not allowed to call the function, the call will become deferred. Otherwise, the call will go through directly.
+			</description>
+		</method>
 		<method name="can_process" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -312,6 +326,12 @@
 			<description>
 				Returns the node's order in the scene tree branch. For example, if called on the first child node the position is [code]0[/code].
 				If [param include_internal] is [code]false[/code], the index won't take internal children into account, i.e. first non-internal child will have index of 0 (see [code]internal[/code] parameter in [method add_child]).
+			</description>
+		</method>
+		<method name="get_last_exclusive_window" qualifiers="const">
+			<return type="Window" />
+			<description>
+				Returns the [Window] that contains this node, or the last exclusive child in a chain of windows starting with the one that contains this node.
 			</description>
 		</method>
 		<method name="get_multiplayer_authority" qualifiers="const">
@@ -500,6 +520,13 @@
 				Returns [code]true[/code] if the local system is the multiplayer authority of this node.
 			</description>
 		</method>
+		<method name="is_node_ready" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the node is ready, i.e. it's inside scene tree and all its children are initialized.
+				[method request_ready] resets it back to [code]false[/code].
+			</description>
+		</method>
 		<method name="is_physics_processing" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -555,6 +582,20 @@
 			<description>
 				Moves a child node to a different index (order) among the other children. Since calls, signals, etc. are performed by tree order, changing the order of children nodes may be useful. If [param to_index] is negative, the index will be counted from the end.
 				[b]Note:[/b] Internal children can only be moved within their expected "internal range" (see [code]internal[/code] parameter in [method add_child]).
+			</description>
+		</method>
+		<method name="notify_deferred_thread_group">
+			<return type="void" />
+			<param index="0" name="what" type="int" />
+			<description>
+				Similar to [method call_deferred_thread_group], but for notifications.
+			</description>
+		</method>
+		<method name="notify_thread_safe">
+			<return type="void" />
+			<param index="0" name="what" type="int" />
+			<description>
+				Similar to [method call_thread_safe], but for notifications.
 			</description>
 		</method>
 		<method name="print_orphan_nodes" qualifiers="static">
@@ -690,6 +731,14 @@
 				Sends a [method rpc] to a specific peer identified by [param peer_id] (see [method MultiplayerPeer.set_target_peer]). Returns [code]null[/code].
 			</description>
 		</method>
+		<method name="set_deferred_thread_group">
+			<return type="void" />
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Similar to [method call_deferred_thread_group], but for setting properties.
+			</description>
+		</method>
 		<method name="set_display_folded">
 			<return type="void" />
 			<param index="0" name="fold" type="bool" />
@@ -778,6 +827,14 @@
 				Sets whether this is an instance load placeholder. See [InstancePlaceholder].
 			</description>
 		</method>
+		<method name="set_thread_safe">
+			<return type="void" />
+			<param index="0" name="property" type="StringName" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Similar to [method call_thread_safe], but for setting properties.
+			</description>
+		</method>
 		<method name="update_configuration_warnings">
 			<return type="void" />
 			<description>
@@ -804,8 +861,23 @@
 		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="Node.ProcessMode" default="0">
 			Can be used to pause or unpause the node, or make the node paused based on the [SceneTree], or make it inherit the process mode from its parent (default).
 		</member>
+		<member name="process_physics_priority" type="int" setter="set_physics_process_priority" getter="get_physics_process_priority" default="0">
+			Similar to [member process_priority] but for [constant NOTIFICATION_PHYSICS_PROCESS], [method _physics_process] or the internal version.
+		</member>
 		<member name="process_priority" type="int" setter="set_process_priority" getter="get_process_priority" default="0">
 			The node's priority in the execution order of the enabled processing callbacks (i.e. [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS] and their internal counterparts). Nodes whose process priority value is [i]lower[/i] will have their processing callbacks executed first.
+		</member>
+		<member name="process_thread_group" type="int" setter="set_process_thread_group" getter="get_process_thread_group" enum="Node.ProcessThreadGroup" default="0">
+			Set the process thread group for this node (basically, whether it receives [constant NOTIFICATION_PROCESS], [constant NOTIFICATION_PHYSICS_PROCESS], [method _process] or [method _physics_process] (and the internal versions) on the main thread or in a sub-thread. 
+			By default, the thread group is [constant PROCESS_THREAD_GROUP_INHERIT], which means that this node belongs to the same thread group as the parent node. The thread groups means that nodes in a specific thread group will process together, separate to other thread groups (depending on [member process_thread_group_order]). If the value is set is [constant PROCESS_THREAD_GROUP_SUB_THREAD], this thread group will occur on a sub thread (not the main thread), otherwise if set to [constant PROCESS_THREAD_GROUP_MAIN_THREAD] it will process on the main thread. If there is not a parent or grandparent node set to something other than inherit, the node will belong to the [i]default thread group[/i]. This default group will process on the main thread and its group order is 0.
+			During processing in a sub-thread, accessing most functions in nodes outside the thread group is forbidden (and it will result in an error in debug mode). Use [method Object.call_deferred], [method call_thread_safe], [method call_deferred_thread_group] and the likes in order to communicate from the thread groups to the main thread (or to other thread groups).			 
+			To better understand process thread groups, the idea is that any node set to any other value than [constant PROCESS_THREAD_GROUP_INHERIT] will include any children (and grandchildren) nodes set to inherit into its process thread group. this means that the processing of all the nodes in the group will happen together, at the same time as the node including them.
+		</member>
+		<member name="process_thread_group_order" type="int" setter="set_process_thread_group_order" getter="get_process_thread_group_order">
+			Change the process thread group order. Groups with a lesser order will process before groups with a greater order. This is useful when a large amount of nodes process in sub thread and, afterwards, another group wants to collect their result in the main thread, as an example.
+		</member>
+		<member name="process_thread_messages" type="int" setter="set_process_thread_messages" getter="get_process_thread_messages" enum="Node.ProcessThreadMessages">
+			Set whether the current thread group will process messages (calls to [method call_deferred_thread_group] on threads, and whether it wants to receive them during regular process or physics process callbacks.
 		</member>
 		<member name="scene_file_path" type="String" setter="set_scene_file_path" getter="get_scene_file_path">
 			If a scene is instantiated from a file, its topmost node contains the absolute file path from which it was loaded in [member scene_file_path] (e.g. [code]res://levels/1.tscn[/code]). Otherwise, [member scene_file_path] is set to an empty string.
@@ -1025,6 +1097,21 @@
 		</constant>
 		<constant name="PROCESS_MODE_DISABLED" value="4" enum="ProcessMode">
 			Never process. Completely disables processing, ignoring the [SceneTree]'s paused property. This is the inverse of [constant PROCESS_MODE_ALWAYS].
+		</constant>
+		<constant name="PROCESS_THREAD_GROUP_INHERIT" value="0" enum="ProcessThreadGroup">
+			If the [member process_thread_group] property is sent to this, the node will belong to any parent (or grandparent) node that has a thread group mode that is not inherit. See [member process_thread_group] for more information.
+		</constant>
+		<constant name="PROCESS_THREAD_GROUP_MAIN_THREAD" value="1" enum="ProcessThreadGroup">
+			Process this node (and children nodes set to inherit) on the main thread. See [member process_thread_group] for more information.
+		</constant>
+		<constant name="PROCESS_THREAD_GROUP_SUB_THREAD" value="2" enum="ProcessThreadGroup">
+			Process this node (and children nodes set to inherit) on a sub-thread. See [member process_thread_group] for more information.
+		</constant>
+		<constant name="FLAG_PROCESS_THREAD_MESSAGES" value="1" enum="ProcessThreadMessages">
+		</constant>
+		<constant name="FLAG_PROCESS_THREAD_MESSAGES_PHYSICS" value="2" enum="ProcessThreadMessages">
+		</constant>
+		<constant name="FLAG_PROCESS_THREAD_MESSAGES_ALL" value="3" enum="ProcessThreadMessages">
 		</constant>
 		<constant name="DUPLICATE_SIGNALS" value="1" enum="DuplicateFlags">
 			Duplicate the node's signals.

@@ -35,14 +35,35 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 
-void CallQueue::_add_page() {
-	if (pages_used == page_messages.size()) {
-		pages.push_back(allocator->alloc());
-		page_messages.push_back(0);
+#ifdef DEV_ENABLED
+// Includes sanity checks to ensure that a queue set as a thread singleton override
+// is only ever called from the thread it was set for.
+#define LOCK_MUTEX                                     \
+	if (this != MessageQueue::thread_singleton) {      \
+		DEV_ASSERT(!this->is_current_thread_override); \
+		mutex.lock();                                  \
+	} else {                                           \
+		DEV_ASSERT(this->is_current_thread_override);  \
 	}
-	page_messages[pages_used] = 0;
+#else
+#define LOCK_MUTEX                                \
+	if (this != MessageQueue::thread_singleton) { \
+		mutex.lock();                             \
+	}
+#endif
+
+#define UNLOCK_MUTEX                              \
+	if (this != MessageQueue::thread_singleton) { \
+		mutex.unlock();                           \
+	}
+
+void CallQueue::_add_page() {
+	if (pages_used == page_bytes.size()) {
+		pages.push_back(allocator->alloc());
+		page_bytes.push_back(0);
+	}
+	page_bytes[pages_used] = 0;
 	pages_used++;
-	page_offset = 0;
 }
 
 Error CallQueue::push_callp(ObjectID p_id, const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
@@ -62,18 +83,19 @@ Error CallQueue::push_set(Object *p_object, const StringName &p_prop, const Vari
 }
 
 Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error) {
-	mutex.lock();
 	uint32_t room_needed = sizeof(Message) + sizeof(Variant) * p_argcount;
 
 	ERR_FAIL_COND_V_MSG(room_needed > uint32_t(PAGE_SIZE_BYTES), ERR_INVALID_PARAMETER, "Message is too large to fit on a page (" + itos(PAGE_SIZE_BYTES) + " bytes), consider passing less arguments.");
 
+	LOCK_MUTEX;
+
 	_ensure_first_page();
 
-	if ((page_offset + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
-		if (room_needed > uint32_t(PAGE_SIZE_BYTES) || pages_used == max_pages) {
+	if ((page_bytes[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
+		if (pages_used == max_pages) {
 			ERR_PRINT("Failed method: " + p_callable + ". Message queue out of memory. " + error_text);
 			statistics();
-			mutex.unlock();
+			UNLOCK_MUTEX;
 			return ERR_OUT_OF_MEMORY;
 		}
 		_add_page();
@@ -81,7 +103,7 @@ Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_ar
 
 	Page *page = pages[pages_used - 1];
 
-	uint8_t *buffer_end = &page->data[page_offset];
+	uint8_t *buffer_end = &page->data[page_bytes[pages_used - 1]];
 
 	Message *msg = memnew_placement(buffer_end, Message);
 	msg->args = p_argcount;
@@ -103,21 +125,20 @@ Error CallQueue::push_callablep(const Callable &p_callable, const Variant **p_ar
 		*v = *p_args[i];
 	}
 
-	page_messages[pages_used - 1]++;
-	page_offset += room_needed;
+	page_bytes[pages_used - 1] += room_needed;
 
-	mutex.unlock();
+	UNLOCK_MUTEX;
 
 	return OK;
 }
 
 Error CallQueue::push_set(ObjectID p_id, const StringName &p_prop, const Variant &p_value) {
-	mutex.lock();
+	LOCK_MUTEX;
 	uint32_t room_needed = sizeof(Message) + sizeof(Variant);
 
 	_ensure_first_page();
 
-	if ((page_offset + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
+	if ((page_bytes[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
 		if (pages_used == max_pages) {
 			String type;
 			if (ObjectDB::get_instance(p_id)) {
@@ -126,14 +147,14 @@ Error CallQueue::push_set(ObjectID p_id, const StringName &p_prop, const Variant
 			ERR_PRINT("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id) + ". Message queue out of memory. " + error_text);
 			statistics();
 
-			mutex.unlock();
+			UNLOCK_MUTEX;
 			return ERR_OUT_OF_MEMORY;
 		}
 		_add_page();
 	}
 
 	Page *page = pages[pages_used - 1];
-	uint8_t *buffer_end = &page->data[page_offset];
+	uint8_t *buffer_end = &page->data[page_bytes[pages_used - 1]];
 
 	Message *msg = memnew_placement(buffer_end, Message);
 	msg->args = 1;
@@ -145,32 +166,31 @@ Error CallQueue::push_set(ObjectID p_id, const StringName &p_prop, const Variant
 	Variant *v = memnew_placement(buffer_end, Variant);
 	*v = p_value;
 
-	page_messages[pages_used - 1]++;
-	page_offset += room_needed;
-	mutex.unlock();
+	page_bytes[pages_used - 1] += room_needed;
+	UNLOCK_MUTEX;
 
 	return OK;
 }
 
 Error CallQueue::push_notification(ObjectID p_id, int p_notification) {
 	ERR_FAIL_COND_V(p_notification < 0, ERR_INVALID_PARAMETER);
-	mutex.lock();
+	LOCK_MUTEX;
 	uint32_t room_needed = sizeof(Message);
 
 	_ensure_first_page();
 
-	if ((page_offset + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
+	if ((page_bytes[pages_used - 1] + room_needed) > uint32_t(PAGE_SIZE_BYTES)) {
 		if (pages_used == max_pages) {
 			ERR_PRINT("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id) + ". Message queue out of memory. " + error_text);
 			statistics();
-			mutex.unlock();
+			UNLOCK_MUTEX;
 			return ERR_OUT_OF_MEMORY;
 		}
 		_add_page();
 	}
 
 	Page *page = pages[pages_used - 1];
-	uint8_t *buffer_end = &page->data[page_offset];
+	uint8_t *buffer_end = &page->data[page_bytes[pages_used - 1]];
 
 	Message *msg = memnew_placement(buffer_end, Message);
 
@@ -179,9 +199,8 @@ Error CallQueue::push_notification(ObjectID p_id, int p_notification) {
 	//msg->target;
 	msg->notification = p_notification;
 
-	page_messages[pages_used - 1]++;
-	page_offset += room_needed;
-	mutex.unlock();
+	page_bytes[pages_used - 1] += room_needed;
+	UNLOCK_MUTEX;
 
 	return OK;
 }
@@ -204,26 +223,78 @@ void CallQueue::_call_function(const Callable &p_callable, const Variant *p_args
 }
 
 Error CallQueue::flush() {
-	mutex.lock();
+	LOCK_MUTEX;
+
+	// Thread overrides are not meant to be flushed, but appended to the main one.
+	if (this == MessageQueue::thread_singleton) {
+		if (pages.size() == 0) {
+			return OK;
+		}
+
+		CallQueue *mq = MessageQueue::main_singleton;
+		DEV_ASSERT(!mq->allocator_is_custom && !allocator_is_custom); // Transferring pages is only safe if using the same alloator parameters.
+
+		mq->mutex.lock();
+
+		// Here we're transferring the data from this queue to the main one.
+		// However, it's very unlikely big amounts of messages will be queued here,
+		// so PagedArray/Pool would be overkill. Also, in most cases the data will fit
+		// an already existing page of the main queue.
+
+		// Let's see if our first (likely only) page fits the current target queue page.
+		uint32_t src_page = 0;
+		{
+			if (mq->pages_used) {
+				uint32_t dst_page = mq->pages_used - 1;
+				uint32_t dst_offset = mq->page_bytes[dst_page];
+				if (dst_offset + page_bytes[0] < uint32_t(PAGE_SIZE_BYTES)) {
+					memcpy(mq->pages[dst_page]->data + dst_offset, pages[0]->data, page_bytes[0]);
+					mq->page_bytes[dst_page] += page_bytes[0];
+					src_page++;
+				}
+			}
+		}
+
+		// Any other possibly existing source page needs to be added.
+
+		if (mq->pages_used + (pages_used - src_page) > mq->max_pages) {
+			ERR_PRINT("Failed appending thread queue. Message queue out of memory. " + mq->error_text);
+			mq->statistics();
+			mq->mutex.unlock();
+			return ERR_OUT_OF_MEMORY;
+		}
+
+		for (; src_page < pages_used; src_page++) {
+			mq->_add_page();
+			memcpy(mq->pages[mq->pages_used - 1]->data, pages[src_page]->data, page_bytes[src_page]);
+			mq->page_bytes[mq->pages_used - 1] = page_bytes[src_page];
+		}
+
+		mq->mutex.unlock();
+
+		page_bytes[0] = 0;
+		pages_used = 1;
+
+		return OK;
+	}
 
 	if (pages.size() == 0) {
 		// Never allocated
-		mutex.unlock();
+		UNLOCK_MUTEX;
 		return OK; // Do nothing.
 	}
 
 	if (flushing) {
-		mutex.unlock();
+		UNLOCK_MUTEX;
 		return ERR_BUSY;
 	}
 
 	flushing = true;
 
 	uint32_t i = 0;
-	uint32_t j = 0;
 	uint32_t offset = 0;
 
-	while (i < pages_used && j < page_messages[i]) {
+	while (i < pages_used && offset < page_bytes[i]) {
 		Page *page = pages[i];
 
 		//lock on each iteration, so a call can re-add itself to the message queue
@@ -240,7 +311,7 @@ Error CallQueue::flush() {
 
 		Object *target = message->callable.get_object();
 
-		mutex.unlock();
+		UNLOCK_MUTEX;
 
 		switch (message->type & FLAG_MASK) {
 			case TYPE_CALL: {
@@ -271,35 +342,32 @@ Error CallQueue::flush() {
 
 		message->~Message();
 
-		mutex.lock();
-		j++;
-		if (j == page_messages[i]) {
-			j = 0;
+		LOCK_MUTEX;
+		if (offset == page_bytes[i]) {
 			i++;
 			offset = 0;
 		}
 	}
 
-	page_messages[0] = 0;
-	page_offset = 0;
+	page_bytes[0] = 0;
 	pages_used = 1;
 
 	flushing = false;
-	mutex.unlock();
+	UNLOCK_MUTEX;
 	return OK;
 }
 
 void CallQueue::clear() {
-	mutex.lock();
+	LOCK_MUTEX;
 
 	if (pages.size() == 0) {
-		mutex.unlock();
+		UNLOCK_MUTEX;
 		return; // Nothing to clear.
 	}
 
 	for (uint32_t i = 0; i < pages_used; i++) {
 		uint32_t offset = 0;
-		for (uint32_t j = 0; j < page_messages[i]; j++) {
+		while (offset < page_bytes[i]) {
 			Page *page = pages[i];
 
 			//lock on each iteration, so a call can re-add itself to the message queue
@@ -311,7 +379,6 @@ void CallQueue::clear() {
 				advance += sizeof(Variant) * message->args;
 			}
 
-			//pre-advance so this function is reentrant
 			offset += advance;
 
 			if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
@@ -326,14 +393,13 @@ void CallQueue::clear() {
 	}
 
 	pages_used = 1;
-	page_offset = 0;
-	page_messages[0] = 0;
+	page_bytes[0] = 0;
 
-	mutex.unlock();
+	UNLOCK_MUTEX;
 }
 
 void CallQueue::statistics() {
-	mutex.lock();
+	LOCK_MUTEX;
 	HashMap<StringName, int> set_count;
 	HashMap<int, int> notify_count;
 	HashMap<Callable, int> call_count;
@@ -341,7 +407,7 @@ void CallQueue::statistics() {
 
 	for (uint32_t i = 0; i < pages_used; i++) {
 		uint32_t offset = 0;
-		for (uint32_t j = 0; j < page_messages[i]; j++) {
+		while (offset < page_bytes[i]) {
 			Page *page = pages[i];
 
 			//lock on each iteration, so a call can re-add itself to the message queue
@@ -396,7 +462,6 @@ void CallQueue::statistics() {
 				null_count++;
 			}
 
-			//pre-advance so this function is reentrant
 			offset += advance;
 
 			if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
@@ -425,11 +490,22 @@ void CallQueue::statistics() {
 		print_line("NOTIFY " + itos(E.key) + ": " + itos(E.value));
 	}
 
-	mutex.unlock();
+	UNLOCK_MUTEX;
 }
 
 bool CallQueue::is_flushing() const {
 	return flushing;
+}
+
+bool CallQueue::has_messages() const {
+	if (pages_used == 0) {
+		return false;
+	}
+	if (pages_used == 1 && page_bytes[0] == 0) {
+		return false;
+	}
+
+	return true;
 }
 
 int CallQueue::get_max_buffer_usage() const {
@@ -457,20 +533,40 @@ CallQueue::~CallQueue() {
 	if (!allocator_is_custom) {
 		memdelete(allocator);
 	}
+	// This is done here to avoid a circular dependency between the sanity checks and the thread singleton pointer.
+	if (this == MessageQueue::thread_singleton) {
+		MessageQueue::thread_singleton = nullptr;
+	}
 }
 
 //////////////////////
 
-MessageQueue *MessageQueue::singleton = nullptr;
+CallQueue *MessageQueue::main_singleton = nullptr;
+thread_local CallQueue *MessageQueue::thread_singleton = nullptr;
+
+void MessageQueue::set_thread_singleton_override(CallQueue *p_thread_singleton) {
+	DEV_ASSERT(p_thread_singleton); // To unset the thread singleton, don't call this with nullptr, but just memfree() it.
+#ifdef DEV_ENABLED
+	if (thread_singleton) {
+		thread_singleton->is_current_thread_override = false;
+	}
+#endif
+	thread_singleton = p_thread_singleton;
+#ifdef DEV_ENABLED
+	if (thread_singleton) {
+		thread_singleton->is_current_thread_override = true;
+	}
+#endif
+}
 
 MessageQueue::MessageQueue() :
 		CallQueue(nullptr,
 				int(GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "memory/limits/message_queue/max_size_mb", PROPERTY_HINT_RANGE, "1,512,1,or_greater"), 32)) * 1024 * 1024 / PAGE_SIZE_BYTES,
 				"Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_mb' in project settings.") {
-	ERR_FAIL_COND_MSG(singleton != nullptr, "A MessageQueue singleton already exists.");
-	singleton = this;
+	ERR_FAIL_COND_MSG(main_singleton != nullptr, "A MessageQueue singleton already exists.");
+	main_singleton = this;
 }
 
 MessageQueue::~MessageQueue() {
-	singleton = nullptr;
+	main_singleton = nullptr;
 }

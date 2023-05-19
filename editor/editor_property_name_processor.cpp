@@ -36,6 +36,9 @@
 EditorPropertyNameProcessor *EditorPropertyNameProcessor::singleton = nullptr;
 
 EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_default_inspector_style() {
+	if (!EditorSettings::get_singleton()) {
+		return STYLE_CAPITALIZED;
+	}
 	const Style style = (Style)EDITOR_GET("interface/inspector/default_property_name_style").operator int();
 	if (style == STYLE_LOCALIZED && !is_localization_available()) {
 		return STYLE_CAPITALIZED;
@@ -44,6 +47,9 @@ EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_default_insp
 }
 
 EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_settings_style() {
+	if (!EditorSettings::get_singleton()) {
+		return STYLE_LOCALIZED;
+	}
 	const bool translate = EDITOR_GET("interface/editor/localize_settings");
 	return translate ? STYLE_LOCALIZED : STYLE_CAPITALIZED;
 }
@@ -53,6 +59,9 @@ EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_tooltip_styl
 }
 
 bool EditorPropertyNameProcessor::is_localization_available() {
+	if (!EditorSettings::get_singleton()) {
+		return false;
+	}
 	const Vector<String> forbidden = String("en").split(",");
 	return forbidden.find(EDITOR_GET("interface/editor/editor_language")) == -1;
 }

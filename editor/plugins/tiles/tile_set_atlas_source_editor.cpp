@@ -34,7 +34,6 @@
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
-#include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -2415,14 +2414,6 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 				}
 			}
 		} break;
-
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
-				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_singleton()->get_settings_style();
-				atlas_source_inspector->set_property_name_style(style);
-				tile_inspector->set_property_name_style(style);
-			}
-		} break;
 	}
 }
 
@@ -2492,7 +2483,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_inspector->edit(tile_proxy_object);
 	tile_inspector->set_use_folding(true);
 	tile_inspector->connect("property_selected", callable_mp(this, &TileSetAtlasSourceEditor::_inspector_property_selected));
-	tile_inspector->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	middle_vbox_container->add_child(tile_inspector);
 
 	tile_inspector_no_tile_selected_label = memnew(Label);
@@ -2544,7 +2534,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	atlas_source_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	atlas_source_inspector->set_show_categories(true);
 	atlas_source_inspector->edit(atlas_source_proxy_object);
-	atlas_source_inspector->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	middle_vbox_container->add_child(atlas_source_inspector);
 
 	// -- Right side --

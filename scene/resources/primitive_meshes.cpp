@@ -2967,8 +2967,24 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		}
 
 		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			for (int i = 0; i < lines_rid.size() - 1; i++) {
-				TS->shaped_text_fit_to_width(lines_rid[i], (width > 0) ? width : max_line_w, TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA);
+			int jst_to_line = lines_rid.size();
+			if (lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
+				jst_to_line = lines_rid.size();
+			} else {
+				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
+					jst_to_line = lines_rid.size() - 1;
+				}
+				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
+					for (int i = lines_rid.size() - 1; i >= 0; i--) {
+						if (TS->shaped_text_has_visible_chars(lines_rid[i])) {
+							jst_to_line = i;
+							break;
+						}
+					}
+				}
+			}
+			for (int i = 0; i < jst_to_line; i++) {
+				TS->shaped_text_fit_to_width(lines_rid[i], (width > 0) ? width : max_line_w, jst_flags);
 			}
 		}
 		dirty_lines = false;
@@ -3293,6 +3309,9 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &TextMesh::set_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &TextMesh::get_autowrap_mode);
 
+	ClassDB::bind_method(D_METHOD("set_justification_flags", "justification_flags"), &TextMesh::set_justification_flags);
+	ClassDB::bind_method(D_METHOD("get_justification_flags"), &TextMesh::get_justification_flags);
+
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &TextMesh::set_depth);
 	ClassDB::bind_method(D_METHOD("get_depth"), &TextMesh::get_depth);
 
@@ -3335,6 +3354,7 @@ void TextMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Justify Only After Last Tab:8,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
 
 	ADD_GROUP("Mesh", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
@@ -3510,6 +3530,18 @@ void TextMesh::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 
 TextServer::AutowrapMode TextMesh::get_autowrap_mode() const {
 	return autowrap_mode;
+}
+
+void TextMesh::set_justification_flags(BitField<TextServer::JustificationFlag> p_flags) {
+	if (jst_flags != p_flags) {
+		jst_flags = p_flags;
+		dirty_lines = true;
+		_request_update();
+	}
+}
+
+BitField<TextServer::JustificationFlag> TextMesh::get_justification_flags() const {
+	return jst_flags;
 }
 
 void TextMesh::set_depth(real_t p_depth) {

@@ -15,13 +15,15 @@
 # Kanda Ninthfish <akkhaporn@gmail.com>, 2022.
 # Absurdnoobman <jakkalin91@gmail.com>, 2022.
 # Nuttapong Nut <nuttapong.510123@gmail.com>, 2023.
+# LadsForTea <jajasamag@gmail.com>, 2023.
+# Satakun Utama <galaxytomostore@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-06 00:25+0000\n"
-"Last-Translator: SysError_ <ictsanook@hotmail.com>\n"
+"PO-Revision-Date: 2023-05-14 11:52+0000\n"
+"Last-Translator: Satakun Utama <galaxytomostore@gmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -29,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "ยกเลิกการตั้งค่า"
@@ -476,7 +478,7 @@ msgid "Show Built-in Actions"
 msgstr "แสดง Action ที่ติดตัวมา"
 
 msgid "Action"
-msgstr "Action"
+msgstr "การกระทำ"
 
 msgid "Deadzone"
 msgstr "Deadzone"
@@ -804,6 +806,15 @@ msgstr "ที่อยู่แทร็กผิดพลาด ไม่ส�
 msgid "Add Method Track Key"
 msgstr "เพิ่มคีย์แทร็กเมธอด"
 
+msgid "Method not found in object:"
+msgstr "ไม่พบเมธอดในวัตถุ:"
+
+msgid "Rotation"
+msgstr "ช่วงองศา"
+
+msgid "Scale"
+msgstr "ขนาด"
+
 msgid "Methods"
 msgstr "วิธีการ"
 
@@ -1083,6 +1094,9 @@ msgstr "พบ:"
 
 msgid "Description:"
 msgstr "รายละเอียด:"
+
+msgid "Remote %s:"
+msgstr "ควบคุม %s:"
 
 msgid "Debugger"
 msgstr "ตัวดีบัก"
@@ -1567,6 +1581,9 @@ msgstr "ชื่อโนด:"
 msgid "Navigation"
 msgstr "ตัวนำทาง"
 
+msgid "Vulkan"
+msgstr "Vulkan"
+
 msgid "File '%s' format is invalid, import aborted."
 msgstr "นามสกุลของไฟล์ '%s' ผิดพลาด ยกเลิกการนำเข้า"
 
@@ -1874,11 +1891,20 @@ msgstr "คุณสมบัติ"
 msgid "default:"
 msgstr "ค่าเริ่มต้น:"
 
+msgid "Constructors"
+msgstr "ตัวสร้าง"
+
+msgid "Operators"
+msgstr "ตัวดำเนินการ"
+
 msgid "Theme Properties"
 msgstr "คุณสมบัติธีม"
 
 msgid "Constants"
 msgstr "ค่าคงที่"
+
+msgid "Fonts"
+msgstr "ฟอนต์"
 
 msgid "Enumerations"
 msgstr "ค่าคงที่แบบมีความหมาย"
@@ -1894,8 +1920,14 @@ msgid ""
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr "คุณสมบัตินี้ยังไม่มีคำอธิบาย โปรดช่วย[color=$color][url=$url]แก้ไข[/url][/color]!"
 
+msgid "Constructor Descriptions"
+msgstr "รายละเอียดของตัวสร้าง"
+
 msgid "Method Descriptions"
 msgstr "รายละเอียดเมท็อด"
+
+msgid "Operator Descriptions"
+msgstr "รายละเอียดของตัวนำเนินการ"
 
 msgid "%d match."
 msgstr "จับคู่ %d"
@@ -1968,6 +2000,9 @@ msgstr "เลื่อนลง"
 
 msgid "Resize Array"
 msgstr "ปรับขนาดอาร์เรย์"
+
+msgid "New Size:"
+msgstr "ขนาดใหม่:"
 
 msgid "Set %s"
 msgstr "ตั้ง %s"
@@ -2138,6 +2173,9 @@ msgstr "บันทึกฉากเป็น..."
 
 msgid "Current scene not saved. Open anyway?"
 msgstr "ฉากปัจจุบันยังไม่ได้บันทึก จะเปิดไฟล์หรือไม่?"
+
+msgid "Remote Undo: %s"
+msgstr "เลิกทำระยะไกล: %s"
 
 msgid "Can't reload a scene that was never saved."
 msgstr "ฉากยังไม่ได้บันทึก ไม่สามารถโหลดใหม่ได้"
@@ -2417,7 +2455,7 @@ msgid "Node"
 msgstr "โนด"
 
 msgid "Expand Bottom Panel"
-msgstr "ขยายแผงล่าง"
+msgstr "ขยายแผงด้านล่าง"
 
 msgid "Output"
 msgstr "ข้อความ"
@@ -2562,6 +2600,9 @@ msgstr "เลือกวิวพอร์ต"
 msgid "Selected node is not a Viewport!"
 msgstr "โหนดที่เลือกไม่ใช่วิวพอร์ต!"
 
+msgid "Size:"
+msgstr "ขนาด:"
+
 msgid "Remove Item"
 msgstr "ลบไอเทม"
 
@@ -2591,6 +2632,9 @@ msgstr "สคริปต์ใหม่"
 msgid "Extend Script"
 msgstr "สคริปต์เสริม"
 
+msgid "Remote Debug"
+msgstr "ดีบักระยะไกล"
+
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
@@ -2604,6 +2648,9 @@ msgstr "เขียนโปรแกรมในเมท็อด _run()"
 
 msgid "There is an edited scene already."
 msgstr "มีฉากที่แก้ไขอยู่แล้ว"
+
+msgid "Common"
+msgstr "ทั่วไป"
 
 msgid "Editor Settings"
 msgstr "การตั้งค่าตัวแก้ไข"
@@ -2620,6 +2667,13 @@ msgstr "ทางลัด"
 msgid "Binding"
 msgstr "ปุ่มลัด"
 
+msgid ""
+"Hold %s to round to integers.\n"
+"Hold Shift for more precise changes."
+msgstr ""
+"กด %s ค้างเพื่อปัดเศษเป็นจำนวนเต็ม\n"
+"กด Shift ค้างเพื่อเพิ่มความแม่นยำของการเปลี่ยนแปลง"
+
 msgid "All Devices"
 msgstr "อุปกรณ์ทั้งหมด"
 
@@ -2631,6 +2685,9 @@ msgstr "เก็บไฟล์:"
 
 msgid "No export template found at the expected path:"
 msgstr "ไม่พบเทมเพลตส่งออกที่ที่อยู่ที่คาดไว้:"
+
+msgid "Could not open file to read from path \"%s\"."
+msgstr "ไม่สามารถเปิดไฟล์ที่จะอ่านจากตำแหน่ง \"%s\" ได้"
 
 msgid "Packing"
 msgstr "กำลังรวบรวม"
@@ -2725,6 +2782,9 @@ msgstr "เทมเพลตการส่งออก Godot"
 msgid "Runnable"
 msgstr "สามารถรันได้"
 
+msgid "Resources to export:"
+msgstr "รีซอร์สที่จะส่งออก:"
+
 msgid "Delete preset '%s'?"
 msgstr "ลบพรีเซ็ต '%s'?"
 
@@ -2770,9 +2830,6 @@ msgstr "ส่งออกรีซอร์สที่เลือก (รว�
 
 msgid "Export Mode:"
 msgstr "วิธีการส่งออก:"
-
-msgid "Resources to export:"
-msgstr "รีซอร์สที่จะส่งออก:"
 
 msgid "Keep"
 msgstr "เก็บ"
@@ -3020,6 +3077,12 @@ msgstr "ผิดพลาดขณะรันสคริปต์หลัง
 msgid "Saving..."
 msgstr "กำลังบันทึก..."
 
+msgid "2D"
+msgstr "2 มิติ"
+
+msgid "3D"
+msgstr "3 มิติ"
+
 msgid "Select Importer"
 msgstr "เลือกตัวนำเข้า"
 
@@ -3113,6 +3176,9 @@ msgstr "แทนที่ตามภูมิภาค:"
 
 msgid "Locale"
 msgstr "ภูมิภาค"
+
+msgid "Set %s on %d nodes"
+msgstr "ตั้ง %s บน %d โหนด"
 
 msgid "Select a single node to edit its signals and groups."
 msgstr "เลือกโหนดเพื่อแก้ไขสัญญาณและกลุ่ม"
@@ -3498,6 +3564,9 @@ msgstr "เชื่อมต่อโหนด"
 msgid "Remove selected node or transition."
 msgstr "ลบโหนดหรือทรานสิชันที่เลือก"
 
+msgid "Transition:"
+msgstr "การเปลี่ยนผ่าน (ทรานสิชั่น):"
+
 msgid "Play Mode:"
 msgstr "โหมดการเล่น:"
 
@@ -3728,6 +3797,9 @@ msgstr "เลื่อน %d CanvasItem"
 
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "เลื่อน CanvasItem \"%s\" ไปยัง (%d, %d)"
+
+msgid "Scaling:"
+msgstr "ขนาด:"
 
 msgid "Lock Selected"
 msgstr "ล็อกที่เลือก"
@@ -3974,7 +4046,7 @@ msgid "Generated Point Count:"
 msgstr "จำนวนจุดที่สร้างขึ้น:"
 
 msgid "Emission Mask"
-msgstr "Mask การปะทุ"
+msgstr "มาส์กการปะทุ"
 
 msgid "Solid Pixels"
 msgstr "พิกเซลรวม"
@@ -4124,6 +4196,9 @@ msgstr ""
 "เมื่อเปิดใช้งานตัวเลือกนี้ สคริปต์ที่บันทึกจะถูกโหลดในโปรเจ็กต์ที่กำลังทำงานอยู่\n"
 "เมื่อใช้รีโมตกับอุปกรณ์ จะมีประสิทธิภาพมากขึ้นเมื่อเปิดใช้งานตัวเลือกระบบไฟล์เครือข่าย"
 
+msgid " - Variation"
+msgstr " - ชนิด"
+
 msgid "Convert to CPUParticles2D"
 msgstr "แปลงเป็น CPUParticles2D"
 
@@ -4162,6 +4237,9 @@ msgstr "จุดพื้นผิว+เส้นบอกทิศ"
 
 msgid "Volume"
 msgstr "ระดับเสียง"
+
+msgid "Emission Source:"
+msgstr "แหล่งปะทุ:"
 
 msgid "Generate Visibility AABB"
 msgstr "สร้างการมองเห็น AABB"
@@ -4437,6 +4515,9 @@ msgstr "ยกเลิกการสร้างคีย์ (ไม่ได�
 msgid "Animation Key Inserted."
 msgstr "แทรกคีย์แอนิเมชัน"
 
+msgid "Objects: %d\n"
+msgstr "วัตถุ: %d\n"
+
 msgid "Top View."
 msgstr "มุมบน"
 
@@ -4464,6 +4545,9 @@ msgstr "จัดการหมุนให้เข้ากับวิว"
 msgid "None"
 msgstr "ไม่มี"
 
+msgid "Translating:"
+msgstr "การเลื่อนตำแหน่ง:"
+
 msgid "Rotating %s degrees."
 msgstr "หมุน %s องศา"
 
@@ -4484,6 +4568,9 @@ msgstr "แสดงการวาดทับซ้อน"
 
 msgid "Display Unshaded"
 msgstr "แสดงแบบไร้เงา"
+
+msgid "Normal Buffer"
+msgstr "บัฟเฟอร์ปกติ:"
 
 msgid "View Environment"
 msgstr "แสดงสภาพแวดล้อม"
@@ -5291,6 +5378,15 @@ msgstr "เรขาคณิตผิดพลาด ไม่สามาร�
 msgid "Create LightOccluder2D Sibling"
 msgstr "สร้างญาติ LightOccluder2D"
 
+msgid "Simplification:"
+msgstr "การทำให้เข้าใจง่าย:"
+
+msgid "Shrink (Pixels):"
+msgstr "การลดขนาด (พิกเซล):"
+
+msgid "Grow (Pixels):"
+msgstr "ขยาย (พิกเซล):"
+
 msgid "Update Preview"
 msgstr "อัพเดทการดูตัวอย่าง"
 
@@ -5335,6 +5431,9 @@ msgstr "(ว่างเปล่า)"
 
 msgid "Animations:"
 msgstr "แอนิเมชัน:"
+
+msgid "Delete Animation"
+msgstr "ลบแอนิเมชัน"
 
 msgid "Animation Frames:"
 msgstr "เฟรมแอนิเมชัน:"
@@ -5383,6 +5482,9 @@ msgstr "แบ่งอัตโนมัติ"
 
 msgid "Step:"
 msgstr "ขนาด:"
+
+msgid "Updating the editor"
+msgstr "อัพเดทตัวแก้ไข"
 
 msgid "Remove Class Items"
 msgstr "ลบไอเทมคลาส"
@@ -5462,6 +5564,15 @@ msgstr "พลิกแนวนอน"
 msgid "Flip Vertically"
 msgstr "พลิกแนวตั้ง"
 
+msgid "Scattering:"
+msgstr "การกระจาย:"
+
+msgid "Rendering"
+msgstr "การเรนเดอร์"
+
+msgid "Physics"
+msgstr "ฟิสิกส์"
+
 msgid "Yes"
 msgstr "ใช่"
 
@@ -5474,11 +5585,23 @@ msgstr "ผิดพลาด"
 msgid "Commit"
 msgstr "Commit"
 
+msgid "Discard changes"
+msgstr "ยกเลิกการแก้ไข"
+
 msgid "Detect new changes"
 msgstr "พบการแก้ไขใหม่"
 
+msgid "Discard all changes"
+msgstr "ยกเลิกการแก้ไขทั้งหมด"
+
 msgid "Commit Changes"
 msgstr "การเปลี่ยนแปลง commit"
+
+msgid "Remote Name"
+msgstr "ชื่อรีโมท"
+
+msgid "Remote URL"
+msgstr "URL รีโมท"
 
 msgid "Modified"
 msgstr "แก้ไขแล้ว"
@@ -6006,6 +6129,9 @@ msgstr ""
 msgid "Visual Shader Mode Changed"
 msgstr "เปลี่ยนโหมดเวอร์ชวลเชดเดอร์แล้ว"
 
+msgid "Bake VoxelGI"
+msgstr "คำณวณ VoxelGI"
+
 msgid "The path specified doesn't exist."
 msgstr "ไม่พบที่อยู่ที่ระบุเอาไว้"
 
@@ -6101,6 +6227,27 @@ msgid "Can't open project at '%s'."
 msgstr "ไม่สามารถเปิดโปรเจกต์ที่ '%s'"
 
 msgid ""
+"The selected project \"%s\" does not specify its supported Godot version in "
+"its configuration file (\"project.godot\").\n"
+"\n"
+"Project path: %s\n"
+"\n"
+"If you proceed with opening it, it will be converted to Godot's current "
+"configuration file format.\n"
+"\n"
+"Warning: You won't be able to open the project with previous versions of the "
+"engine anymore."
+msgstr ""
+"โปรเจกต์ที่เลือก \"%s\" ไม่ได้ระบุเวอร์ชั่น Godot ที่ซัพพอร์ตเอาไว้ในไฟล์การตั้งค่า (\"project."
+"godot\")\n"
+"\n"
+"ตำแหน่งโปรเจกต์: %s\n"
+"\n"
+"หากคุณเลือกที่จะเปิดโปรเจกต์นี้ต่อไป มันจะถูกแปลงเป็นไฟล์การแก้ใขฟอร์แมทของเวอร์ชั่นปัจจุบัน\n"
+"\n"
+"คำเตือน: คุณจะไม่สามารถเปิดโปรเจกต์ด้วยเวอร์ชั่นเก่ากว่าเวอร์ชั่นปัจจุบันของโปรแกรมได้อีกต่อไป"
+
+msgid ""
 "Can't run project: no main scene defined.\n"
 "Please edit the project and set the main scene in the Project Settings under "
 "the \"Application\" category."
@@ -6117,6 +6264,12 @@ msgstr ""
 
 msgid "Are you sure to run %d projects at once?"
 msgstr "ยืนยันการรันโปรเจกต์ %d โปรเจกต์ทีเดียว?"
+
+msgid "Remove %d projects from the list?"
+msgstr "ลบ %d โปรเจกต์จากรายการหรือไม่"
+
+msgid "Remove this project from the list?"
+msgstr "ลบโปรเจกต์นี้จากรายการหรือไม่"
 
 msgid ""
 "Remove all missing projects from the list?\n"
@@ -6297,6 +6450,9 @@ msgstr "ฉาก 3D"
 
 msgid "User Interface"
 msgstr "อินเตอร์เฟส"
+
+msgid "Root Name:"
+msgstr "ชื่อราก:"
 
 msgid "Error loading scene from %s"
 msgstr "ผิดพลาดขณะโหลดฉากจาก %s"
@@ -6746,8 +6902,17 @@ msgstr "RPC กำลังมา"
 msgid "Outgoing RPC"
 msgstr "RPC ขาออก"
 
+msgid "Config"
+msgstr "ตั้งค่า"
+
+msgid "Size"
+msgstr "ขนาด"
+
 msgid "Network Profiler"
 msgstr "โปรไฟล์เน็ตเวิร์ก"
+
+msgid "Delete Property?"
+msgstr "ลบคุณสมบัติ?"
 
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr "ต้องมี NavigationMesh เพื่อให้โหนดนี้ทำงานได้"
@@ -6864,6 +7029,16 @@ msgstr "การขยาย APK เข้ากันไม่ได้กั�
 
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "ชื่อไฟล์ผิดพลาด! แอนดรอยด์ APK จำเป็นต้องมีนามสกุล *.apk"
+
+msgid ""
+"Android build version mismatch: Template installed: %s, Godot version: %s. "
+"Please reinstall Android build template from 'Project' menu."
+msgstr ""
+"เวอร์ชันบิวด์ Android ไม่ตรงกัน: เทมเพลตที่ติดตั้งอยู่: %s, เวอร์ชั่น Godot: %s "
+"โปรดติดตั้งเทมเพลตการสร้างสำหรับแอนดรอยด์ใหม่จากเมนู \"โปรเจกต์\""
+
+msgid "Could not export project files to gradle project."
+msgstr "ไม่สามารถส่งออกไฟล์โปรเจคไปยังโปรเจค gradle ได้"
 
 msgid "Building Android Project (gradle)"
 msgstr "กำลังสร้างโปรเจคแอนดรอยด์ (gradle)"
@@ -7043,6 +7218,9 @@ msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr "ไม่มีการแสดงผลเนื่องจากไม่ได้กำหนด mesh ใน draw pass"
 
+msgid "Generating Probe Volumes"
+msgstr "สร้างพื้นที่โพรบ"
+
 msgid "This body will be ignored until you set a mesh."
 msgstr "วัตถุนี้จะถูกละเว้นจนกว่าจะตั้ง mesh"
 
@@ -7159,3 +7337,18 @@ msgstr "การกำหนดให้กับยูนิฟอร์ม"
 
 msgid "Constants cannot be modified."
 msgstr "ค่าคงที่ไม่สามารถแก้ไขได้"
+
+msgid "Invalid argument name."
+msgstr "ชื่อตัวแปรอาร์กูเมนท์ไม่ถูกต้อง"
+
+msgid "Shader include file does not exist: "
+msgstr "ไม่พบไฟล์เชดเดอร์ที่นำเข้า: "
+
+msgid "Invalid macro argument list."
+msgstr "รายการอาร์กูเมนท์มาโครไม่ถูกต้อง"
+
+msgid "Invalid macro argument."
+msgstr "อาร์กูเมนท์มาโครไม่ถูกต้อง"
+
+msgid "Invalid macro argument count."
+msgstr "จำนวนอาร์กูเมนท์มาโครไม่ถูกต้อง"

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Skeleton2D" inherits="Node2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Skeleton for 2D characters and animated objects.
+		The parent of a hierarchy of [Bone2D]s, used to create a 2D skeletal animation.
 	</brief_description>
 	<description>
-		Skeleton2D parents a hierarchy of [Bone2D] objects. It is a requirement of [Bone2D]. Skeleton2D holds a reference to the rest pose of its children and acts as a single point of access to its bones.
-		To setup different types of inverse kinematics for the given Skeleton2D, a [SkeletonModificationStack2D] should be created. They can be applied by creating the desired number of modifications, which can be done by increasing [member SkeletonModificationStack2D.modification_count].
+		[Skeleton2D] parents a hierarchy of [Bone2D] nodes. It holds a reference to each [Bone2D]'s rest pose and acts as a single point of access to its bones.
+		To set up different types of inverse kinematics for the given Skeleton2D, a [SkeletonModificationStack2D] should be created. The inverse kinematics be applied by increasing [member SkeletonModificationStack2D.modification_count] and creating the desired number of modifications.
 	</description>
 	<tutorials>
 		<link title="2D skeletons">$DOCS_URL/tutorials/animation/2d_skeletons.html</link>

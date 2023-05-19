@@ -126,6 +126,15 @@
 				Inserts the selected entry into the text. If [param replace] is true, any existing text is replaced rather then merged.
 			</description>
 		</method>
+		<method name="convert_indent">
+			<return type="void" />
+			<param index="0" name="from_line" type="int" default="-1" />
+			<param index="1" name="to_line" type="int" default="-1" />
+			<description>
+				Converts the indents of lines between [param from_line] and [param to_line] to tabs or spaces as set by [member indent_use_spaces].
+				Values of [code]-1[/code] convert the entire text.
+			</description>
+		</method>
 		<method name="do_indent">
 			<return type="void" />
 			<description>
@@ -537,7 +546,7 @@
 			Marks the option as a member.
 		</constant>
 		<constant name="KIND_ENUM" value="5" enum="CodeCompletionKind">
-			Marks the option as a enum entry.
+			Marks the option as an enum entry.
 		</constant>
 		<constant name="KIND_CONSTANT" value="6" enum="CodeCompletionKind">
 			Marks the option as a constant.

@@ -44,7 +44,9 @@ NoiseTexture3D::~NoiseTexture3D() {
 	if (texture.is_valid()) {
 		RS::get_singleton()->free(texture);
 	}
-	noise_thread.wait_to_finish();
+	if (noise_thread.is_started()) {
+		noise_thread.wait_to_finish();
+	}
 }
 
 void NoiseTexture3D::_bind_methods() {
@@ -147,18 +149,9 @@ TypedArray<Image> NoiseTexture3D::_generate_texture() {
 	Vector<Ref<Image>> images;
 
 	if (seamless) {
-		images = _get_seamless(width, height, depth, invert, seamless_blend_skirt);
+		images = ref_noise->_get_seamless_image(width, height, depth, invert, true, seamless_blend_skirt, normalize);
 	} else {
-		images.resize(depth);
-
-		for (int i = 0; i < images.size(); i++) {
-			images.write[i] = ref_noise->get_image(width, height, i, invert, true, false);
-		}
-	}
-
-	// Normalize on whole texture at once rather than on each image individually as it would result in visible artifacts on z (depth) axis.
-	if (normalize) {
-		images = _normalize(images);
+		images = ref_noise->_get_image(width, height, depth, invert, true, normalize);
 	}
 
 	if (color_ramp.is_valid()) {
@@ -175,116 +168,6 @@ TypedArray<Image> NoiseTexture3D::_generate_texture() {
 	}
 
 	return new_data;
-}
-
-Vector<Ref<Image>> NoiseTexture3D::_get_seamless(int p_width, int p_height, int p_depth, bool p_invert, real_t p_blend_skirt) {
-	// Prevent memdelete due to unref() on other thread.
-	Ref<Noise> ref_noise = noise;
-
-	if (ref_noise.is_null()) {
-		return Vector<Ref<Image>>();
-	}
-
-	int skirt_depth = MAX(1, p_depth * p_blend_skirt);
-	int src_depth = p_depth + skirt_depth;
-
-	Vector<Ref<Image>> images;
-	images.resize(src_depth);
-
-	for (int i = 0; i < src_depth; i++) {
-		images.write[i] = ref_noise->get_seamless_image(p_width, p_height, i, p_invert, true, p_blend_skirt, false);
-	}
-
-	int half_depth = p_depth * 0.5;
-	int skirt_edge_z = half_depth + skirt_depth;
-
-	// swap halves on depth.
-	for (int i = 0; i < half_depth; i++) {
-		Ref<Image> img = images[i];
-		images.write[i] = images[i + half_depth];
-		images.write[i + half_depth] = img;
-	}
-
-	Vector<Ref<Image>> new_images = images;
-	new_images.resize(p_depth);
-
-	// scale seamless generation to third dimension.
-	for (int z = half_depth; z < skirt_edge_z; z++) {
-		int alpha = 255 * (1 - Math::smoothstep(0.1f, 0.9f, float(z - half_depth) / float(skirt_depth)));
-
-		Vector<uint8_t> img = images[z % p_depth]->get_data();
-		Vector<uint8_t> skirt = images[(z - half_depth) + p_depth]->get_data();
-
-		Vector<uint8_t> dest;
-		dest.resize(images[0]->get_width() * images[0]->get_height() * Image::get_format_pixel_size(images[0]->get_format()));
-
-		for (int i = 0; i < img.size(); i++) {
-			uint8_t fg, bg, out;
-
-			fg = skirt[i];
-			bg = img[i];
-
-			uint16_t a;
-			uint16_t inv_a;
-
-			a = alpha + 1;
-			inv_a = 256 - alpha;
-
-			out = (uint8_t)((a * fg + inv_a * bg) >> 8);
-
-			dest.write[i] = out;
-		}
-
-		Ref<Image> new_image = memnew(Image(images[0]->get_width(), images[0]->get_height(), false, images[0]->get_format(), dest));
-		new_images.write[z % p_depth] = new_image;
-	}
-
-	return new_images;
-}
-
-Vector<Ref<Image>> NoiseTexture3D::_normalize(Vector<Ref<Image>> p_images) {
-	real_t min_val = FLT_MAX;
-	real_t max_val = -FLT_MAX;
-
-	int w = p_images[0]->get_width();
-	int h = p_images[0]->get_height();
-
-	for (int i = 0; i < p_images.size(); i++) {
-		Vector<uint8_t> data = p_images[i]->get_data();
-
-		for (int j = 0; j < data.size(); j++) {
-			if (data[j] > max_val) {
-				max_val = data[j];
-			}
-			if (data[j] < min_val) {
-				min_val = data[j];
-			}
-		}
-	}
-
-	Vector<Ref<Image>> new_images;
-	new_images.resize(p_images.size());
-
-	for (int i = 0; i < p_images.size(); i++) {
-		Vector<uint8_t> data = p_images[i]->get_data();
-
-		for (int j = 0; j < data.size(); j++) {
-			uint8_t value;
-
-			if (max_val == min_val) {
-				value = 0;
-			} else {
-				value = static_cast<uint8_t>(CLAMP((data[j] - min_val) / (max_val - min_val) * 255.f, 0, 255));
-			}
-
-			data.write[j] = value;
-		}
-
-		Ref<Image> new_image = memnew(Image(w, h, false, Image::FORMAT_L8, data));
-		new_images.write[i] = new_image;
-	}
-
-	return new_images;
 }
 
 Ref<Image> NoiseTexture3D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient) {

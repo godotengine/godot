@@ -186,6 +186,7 @@ bool DisplayServerX11::_refresh_device_info() {
 	xi.absolute_devices.clear();
 	xi.touch_devices.clear();
 	xi.pen_inverted_devices.clear();
+	xi.last_relative_time = 0;
 
 	int dev_count;
 	XIDeviceInfo *info = XIQueryDevice(x11_display, XIAllDevices, &dev_count);
@@ -302,37 +303,37 @@ void DisplayServerX11::_flush_mouse_motion() {
 #ifdef SPEECHD_ENABLED
 
 bool DisplayServerX11::tts_is_speaking() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->is_speaking();
 }
 
 bool DisplayServerX11::tts_is_paused() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->is_paused();
 }
 
 TypedArray<Dictionary> DisplayServerX11::tts_get_voices() const {
-	ERR_FAIL_COND_V(!tts, TypedArray<Dictionary>());
+	ERR_FAIL_COND_V_MSG(!tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->get_voices();
 }
 
 void DisplayServerX11::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
 }
 
 void DisplayServerX11::tts_pause() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->pause();
 }
 
 void DisplayServerX11::tts_resume() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->resume();
 }
 
 void DisplayServerX11::tts_stop() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->stop();
 }
 
@@ -1203,6 +1204,105 @@ Color DisplayServerX11::screen_get_pixel(const Point2i &p_position) const {
 	}
 
 	return Color();
+}
+
+Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
+
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
+	}
+
+	ERR_FAIL_COND_V(p_screen < 0, Ref<Image>());
+
+	XImage *image = nullptr;
+
+	int event_base, error_base;
+	if (XineramaQueryExtension(x11_display, &event_base, &error_base)) {
+		int xin_count;
+		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &xin_count);
+		if (p_screen < xin_count) {
+			int x_count = XScreenCount(x11_display);
+			for (int i = 0; i < x_count; i++) {
+				Window root = XRootWindow(x11_display, i);
+				XWindowAttributes root_attrs;
+				XGetWindowAttributes(x11_display, root, &root_attrs);
+				if ((xsi[p_screen].x_org >= root_attrs.x) && (xsi[p_screen].x_org <= root_attrs.x + root_attrs.width) && (xsi[p_screen].y_org >= root_attrs.y) && (xsi[p_screen].y_org <= root_attrs.y + root_attrs.height)) {
+					image = XGetImage(x11_display, root, xsi[p_screen].x_org, xsi[p_screen].y_org, xsi[p_screen].width, xsi[p_screen].height, AllPlanes, ZPixmap);
+					break;
+				}
+			}
+		} else {
+			ERR_FAIL_V_MSG(Ref<Image>(), "Invalid screen index: " + itos(p_screen) + "(count: " + itos(xin_count) + ").");
+		}
+	} else {
+		int x_count = XScreenCount(x11_display);
+		if (p_screen < x_count) {
+			Window root = XRootWindow(x11_display, p_screen);
+
+			XWindowAttributes root_attrs;
+			XGetWindowAttributes(x11_display, root, &root_attrs);
+
+			image = XGetImage(x11_display, root, root_attrs.x, root_attrs.y, root_attrs.width, root_attrs.height, AllPlanes, ZPixmap);
+		} else {
+			ERR_FAIL_V_MSG(Ref<Image>(), "Invalid screen index: " + itos(p_screen) + "(count: " + itos(x_count) + ").");
+		}
+	}
+
+	Ref<Image> img;
+	if (image) {
+		int width = image->width;
+		int height = image->height;
+
+		Vector<uint8_t> img_data;
+		img_data.resize(height * width * 4);
+
+		uint8_t *sr = (uint8_t *)image->data;
+		uint8_t *wr = (uint8_t *)img_data.ptrw();
+
+		if (image->bits_per_pixel == 24 && image->red_mask == 0xff0000 && image->green_mask == 0x00ff00 && image->blue_mask == 0x0000ff) {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					wr[(y * width + x) * 4 + 0] = sr[(y * width + x) * 3 + 2];
+					wr[(y * width + x) * 4 + 1] = sr[(y * width + x) * 3 + 1];
+					wr[(y * width + x) * 4 + 2] = sr[(y * width + x) * 3 + 0];
+					wr[(y * width + x) * 4 + 3] = 255;
+				}
+			}
+		} else if (image->bits_per_pixel == 24 && image->red_mask == 0x0000ff && image->green_mask == 0x00ff00 && image->blue_mask == 0xff0000) {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					wr[(y * width + x) * 4 + 0] = sr[(y * width + x) * 3 + 2];
+					wr[(y * width + x) * 4 + 1] = sr[(y * width + x) * 3 + 1];
+					wr[(y * width + x) * 4 + 2] = sr[(y * width + x) * 3 + 0];
+					wr[(y * width + x) * 4 + 3] = 255;
+				}
+			}
+		} else if (image->bits_per_pixel == 32 && image->red_mask == 0xff0000 && image->green_mask == 0x00ff00 && image->blue_mask == 0x0000ff) {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					wr[(y * width + x) * 4 + 0] = sr[(y * width + x) * 4 + 2];
+					wr[(y * width + x) * 4 + 1] = sr[(y * width + x) * 4 + 1];
+					wr[(y * width + x) * 4 + 2] = sr[(y * width + x) * 4 + 0];
+					wr[(y * width + x) * 4 + 3] = 255;
+				}
+			}
+		} else {
+			XFree(image);
+			ERR_FAIL_V_MSG(Ref<Image>(), vformat("XImage with RGB mask %x %x %x and depth %d is not supported.", image->red_mask, image->green_mask, image->blue_mask, image->bits_per_pixel));
+		}
+		img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+		XFree(image);
+	}
+
+	return img;
 }
 
 float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
@@ -2724,8 +2824,8 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 		XcursorImageDestroy(cursor_image);
 	} else {
 		// Reset to default system cursor
-		if (img[p_shape]) {
-			cursors[p_shape] = XcursorImageLoadCursor(x11_display, img[p_shape]);
+		if (cursor_img[p_shape]) {
+			cursors[p_shape] = XcursorImageLoadCursor(x11_display, cursor_img[p_shape]);
 		}
 
 		CursorShape c = current_cursor;
@@ -3497,8 +3597,8 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 
 	// Query display server about a possible new window state.
 	wd.fullscreen = _window_fullscreen_check(window_id);
-	wd.minimized = _window_minimize_check(window_id);
-	wd.maximized = _window_maximize_check(window_id, "_NET_WM_STATE");
+	wd.maximized = _window_maximize_check(window_id, "_NET_WM_STATE") && !wd.fullscreen;
+	wd.minimized = _window_minimize_check(window_id) && !wd.fullscreen && !wd.maximized;
 
 	// Readjusting the window position if the window is being reparented by the window manager for decoration
 	Window root, parent, *children;
@@ -5359,7 +5459,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	for (int i = 0; i < CURSOR_MAX; i++) {
 		cursors[i] = None;
-		img[i] = nullptr;
+		cursor_img[i] = nullptr;
 	}
 
 	XInitThreads(); //always use threads
@@ -5552,7 +5652,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 #ifdef SPEECHD_ENABLED
 	// Init TTS
-	tts = memnew(TTS_Linux);
+	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
+	if (tts_enabled) {
+		tts = memnew(TTS_Linux);
+	}
 #endif
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -5716,8 +5819,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			"question_arrow"
 		};
 
-		img[i] = XcursorLibraryLoadImage(cursor_file[i], cursor_theme, cursor_size);
-		if (!img[i]) {
+		cursor_img[i] = XcursorLibraryLoadImage(cursor_file[i], cursor_theme, cursor_size);
+		if (!cursor_img[i]) {
 			const char *fallback = nullptr;
 
 			switch (i) {
@@ -5755,7 +5858,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 					fallback = "bd_double_arrow";
 					break;
 				case CURSOR_MOVE:
-					img[i] = img[CURSOR_DRAG];
+					cursor_img[i] = cursor_img[CURSOR_DRAG];
 					break;
 				case CURSOR_VSPLIT:
 					fallback = "sb_v_double_arrow";
@@ -5768,11 +5871,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 					break;
 			}
 			if (fallback != nullptr) {
-				img[i] = XcursorLibraryLoadImage(fallback, cursor_theme, cursor_size);
+				cursor_img[i] = XcursorLibraryLoadImage(fallback, cursor_theme, cursor_size);
 			}
 		}
-		if (img[i]) {
-			cursors[i] = XcursorImageLoadCursor(x11_display, img[i]);
+		if (cursor_img[i]) {
+			cursors[i] = XcursorImageLoadCursor(x11_display, cursor_img[i]);
 		} else {
 			print_verbose("Failed loading custom cursor: " + String(cursor_file[i]));
 		}
@@ -5911,8 +6014,8 @@ DisplayServerX11::~DisplayServerX11() {
 		if (cursors[i] != None) {
 			XFreeCursor(x11_display, cursors[i]);
 		}
-		if (img[i] != nullptr) {
-			XcursorImageDestroy(img[i]);
+		if (cursor_img[i] != nullptr) {
+			XcursorImageDestroy(cursor_img[i]);
 		}
 	}
 
@@ -5926,7 +6029,9 @@ DisplayServerX11::~DisplayServerX11() {
 	}
 
 #ifdef SPEECHD_ENABLED
-	memdelete(tts);
+	if (tts) {
+		memdelete(tts);
+	}
 #endif
 
 #ifdef DBUS_ENABLED

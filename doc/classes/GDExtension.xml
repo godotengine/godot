@@ -32,6 +32,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="entry_symbol" type="String" />
+			<param index="2" name="use_legacy_interface" type="bool" />
 			<description>
 			</description>
 		</method>

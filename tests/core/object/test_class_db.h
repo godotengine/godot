@@ -487,13 +487,13 @@ void add_exposed_classes(Context &r_context) {
 		}
 
 		if (!ClassDB::is_class_exposed(class_name)) {
-			MESSAGE(vformat("Ignoring class '%s' because it's not exposed.", class_name));
+			INFO(vformat("Ignoring class '%s' because it's not exposed.", class_name));
 			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_enabled(class_name)) {
-			MESSAGE(vformat("Ignoring class '%s' because it's not enabled.", class_name));
+			INFO(vformat("Ignoring class '%s' because it's not enabled.", class_name));
 			class_list.pop_front();
 			continue;
 		}
@@ -717,15 +717,10 @@ void add_exposed_classes(Context &r_context) {
 
 			bool method_conflict = exposed_class.find_property_by_name(signal.name);
 
-			// TODO:
-			// ClassDB allows signal names that conflict with method or property names.
-			// However registering a signal with a conflicting name is still considered wrong.
-			// Unfortunately there are some existing cases that are yet to be fixed.
-			// Until those are fixed we will print a warning instead of failing the test.
 			String warn_msg = vformat(
 					"Signal name conflicts with %s: '%s.%s.",
 					method_conflict ? "method" : "property", class_name, signal.name);
-			TEST_FAIL_COND_WARN((method_conflict || exposed_class.find_method_by_name(signal.name)),
+			TEST_FAIL_COND((method_conflict || exposed_class.find_method_by_name(signal.name)),
 					warn_msg.utf8().get_data());
 
 			exposed_class.signals_.push_back(signal);

@@ -59,6 +59,7 @@ RID World2D::get_navigation_map() const {
 		navigation_map = NavigationServer2D::get_singleton()->map_create();
 		NavigationServer2D::get_singleton()->map_set_active(navigation_map, true);
 		NavigationServer2D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_GET("navigation/2d/default_cell_size"));
+		NavigationServer2D::get_singleton()->map_set_use_edge_connections(navigation_map, GLOBAL_GET("navigation/2d/use_edge_connections"));
 		NavigationServer2D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_GET("navigation/2d/default_edge_connection_margin"));
 		NavigationServer2D::get_singleton()->map_set_link_connection_radius(navigation_map, GLOBAL_GET("navigation/2d/default_link_connection_radius"));
 	}
@@ -80,6 +81,14 @@ void World2D::_bind_methods() {
 
 PhysicsDirectSpaceState2D *World2D::get_direct_space_state() {
 	return PhysicsServer2D::get_singleton()->space_get_direct_state(get_space());
+}
+
+void World2D::register_viewport(Viewport *p_viewport) {
+	viewports.insert(p_viewport);
+}
+
+void World2D::remove_viewport(Viewport *p_viewport) {
+	viewports.erase(p_viewport);
 }
 
 World2D::World2D() {

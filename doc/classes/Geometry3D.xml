@@ -88,7 +88,7 @@
 			<return type="PackedVector3Array" />
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="to" type="Vector3" />
-			<param index="2" name="planes" type="Array" />
+			<param index="2" name="planes" type="Plane[]" />
 			<description>
 				Given a convex hull defined though the [Plane]s in the array [param planes], tests if the segment ([param from], [param to]) intersects with that hull. If an intersection is found, returns a [PackedVector3Array] containing the point the intersection and the hull's normal. Otherwise, returns an empty array.
 			</description>

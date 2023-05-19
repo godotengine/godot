@@ -239,6 +239,7 @@ void GDScriptDocGen::generate_docs(GDScript *p_script, const GDP::ClassNode *p_c
 					DocData::ConstantDoc const_doc;
 					const_doc.name = val.identifier->name;
 					const_doc.value = String(Variant(val.value));
+					const_doc.is_value_valid = true;
 					const_doc.description = val.doc_description;
 					const_doc.enumeration = name;
 

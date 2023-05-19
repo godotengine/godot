@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		3D Agent that is used in navigation to reach a position while avoiding static and dynamic obstacles. The dynamic obstacles are avoided using RVO collision avoidance. The agent needs navigation data to work correctly. [NavigationAgent3D] is physics safe.
-		[b]Note:[/b] After setting [member target_position] it is required to use the [method get_next_path_position] function once every physics frame to update the internal path logic of the NavigationAgent. The returned vector position from this function should be used as the next movement position for the agent's parent Node.
+		[b]Note:[/b] After [member target_position] is set, the [method get_next_path_position] function must be used once every physics frame to update the internal path logic of the NavigationAgent. The returned position from this function should be used as the next movement position for the agent's parent node.
 	</description>
 	<tutorials>
 		<link title="Using NavigationAgents">$DOCS_URL/tutorials/navigation/navigation_using_navigationagents.html</link>
@@ -15,6 +15,20 @@
 			<return type="float" />
 			<description>
 				Returns the distance to the target position, using the agent's global position. The user must set [member target_position] in order for this to be accurate.
+			</description>
+		</method>
+		<method name="get_avoidance_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member avoidance_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_avoidance_mask_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="mask_number" type="int" />
+			<description>
+				Returns whether or not the specified mask of the [member avoidance_mask] bitmask is enabled, given a [param mask_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_current_navigation_path" qualifiers="const">
@@ -38,7 +52,7 @@
 		<method name="get_final_position">
 			<return type="Vector3" />
 			<description>
-				Returns the reachable final position in global coordinates. This can change if the navigation path is altered in any way. Because of this, it would be best to check this each frame.
+				Returns the reachable final position of the current navigation path in global coordinates. This position can change if the navigation path is altered in any way. Because of this, it would be best to check this each frame.
 			</description>
 		</method>
 		<method name="get_navigation_layer_value" qualifiers="const">
@@ -75,13 +89,29 @@
 		<method name="is_target_reachable">
 			<return type="bool" />
 			<description>
-				Returns true if [member target_position] is reachable.
+				Returns true if [member target_position] is reachable. The target position is set using [member target_position].
 			</description>
 		</method>
 		<method name="is_target_reached" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns true if [member target_position] is reached. It may not always be possible to reach the target position. It should always be possible to reach the final position though. See [method get_final_position].
+			</description>
+		</method>
+		<method name="set_avoidance_layer_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member avoidance_layers] bitmask, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_avoidance_mask_value">
+			<return type="void" />
+			<param index="0" name="mask_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified mask in the [member avoidance_mask] bitmask, given a [param mask_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_navigation_layer_value">
@@ -99,20 +129,26 @@
 				Sets the [RID] of the navigation map this NavigationAgent node should use and also updates the [code]agent[/code] on the NavigationServer.
 			</description>
 		</method>
-		<method name="set_velocity">
+		<method name="set_velocity_forced">
 			<return type="void" />
 			<param index="0" name="velocity" type="Vector3" />
 			<description>
-				Sends the passed in velocity to the collision avoidance algorithm. It will adjust the velocity to avoid collisions. Once the adjustment to the velocity is complete, it will emit the [signal velocity_computed] signal.
+				Replaces the internal velocity in the collision avoidance simulation with [param velocity]. When an agent is teleported to a new position this function should be used in the same frame. If called frequently this function can get agents stuck.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="agent_height_offset" type="float" setter="set_agent_height_offset" getter="get_agent_height_offset" default="0.0">
-			The NavigationAgent height offset is subtracted from the y-axis value of any vector path position for this NavigationAgent. The NavigationAgent height offset does not change or influence the navigation mesh or pathfinding query result. Additional navigation maps that use regions with navigation meshes that the developer baked with appropriate agent radius or height values are required to support different-sized agents.
-		</member>
 		<member name="avoidance_enabled" type="bool" setter="set_avoidance_enabled" getter="get_avoidance_enabled" default="false">
-			If [code]true[/code] the agent is registered for an RVO avoidance callback on the [NavigationServer3D]. When [method set_velocity] is used and the processing is completed a [code]safe_velocity[/code] Vector3 is received with a signal connection to [signal velocity_computed]. Avoidance processing with many registered agents has a significant performance cost and should only be enabled on agents that currently require it.
+			If [code]true[/code] the agent is registered for an RVO avoidance callback on the [NavigationServer3D]. When [member velocity] is set and the processing is completed a [code]safe_velocity[/code] Vector3 is received with a signal connection to [signal velocity_computed]. Avoidance processing with many registered agents has a significant performance cost and should only be enabled on agents that currently require it.
+		</member>
+		<member name="avoidance_layers" type="int" setter="set_avoidance_layers" getter="get_avoidance_layers" default="1">
+			A bitfield determining the avoidance layers for this NavigationAgent. Other agent's with a matching bit on the [member avoidance_mask] will avoid this agent.
+		</member>
+		<member name="avoidance_mask" type="int" setter="set_avoidance_mask" getter="get_avoidance_mask" default="1">
+			A bitfield determining what other avoidance agent's and obstacles this NavigationAgent will avoid when a bit matches at least one of their [member avoidance_layers].
+		</member>
+		<member name="avoidance_priority" type="float" setter="set_avoidance_priority" getter="get_avoidance_priority" default="1.0">
+			The agent does not adjust the velocity for other agents that would match the [member avoidance_mask] but have a lower [member avoidance_priority]. This in turn makes the other agents with lower priority adjust their velocities even more to avoid collision with this agent.
 		</member>
 		<member name="debug_enabled" type="bool" setter="set_debug_enabled" getter="get_debug_enabled" default="false">
 			If [code]true[/code] shows debug visuals for this agent.
@@ -126,8 +162,8 @@
 		<member name="debug_use_custom" type="bool" setter="set_debug_use_custom" getter="get_debug_use_custom" default="false">
 			If [code]true[/code] uses the defined [member debug_path_custom_color] for this agent instead of global color.
 		</member>
-		<member name="ignore_y" type="bool" setter="set_ignore_y" getter="get_ignore_y" default="true">
-			Ignores collisions on the Y axis. Must be true to move on a horizontal plane.
+		<member name="height" type="float" setter="set_height" getter="get_height" default="1.0">
+			The height of the avoidance agent. Agent's will ignore other agents or obstacles that are above or below their current position + height in 2D avoidance. Does nothing in 3D avoidance which uses radius spheres alone.
 		</member>
 		<member name="max_neighbors" type="int" setter="set_max_neighbors" getter="get_max_neighbors" default="10">
 			The maximum number of neighbors for the agent to consider.
@@ -143,6 +179,9 @@
 		</member>
 		<member name="path_desired_distance" type="float" setter="set_path_desired_distance" getter="get_path_desired_distance" default="1.0">
 			The distance threshold before a path point is considered to be reached. This will allow an agent to not have to hit a path point on the path exactly, but in the area. If this value is set to high the NavigationAgent will skip points on the path which can lead to leaving the navigation mesh. If this value is set to low the NavigationAgent will be stuck in a repath loop cause it will constantly overshoot or undershoot the distance to the next point on each physics frame update.
+		</member>
+		<member name="path_height_offset" type="float" setter="set_path_height_offset" getter="get_path_height_offset" default="0.0">
+			The height offset is subtracted from the y-axis value of any vector path position for this NavigationAgent. The NavigationAgent height offset does not change or influence the navigation mesh or pathfinding query result. Additional navigation maps that use regions with navigation meshes that the developer baked with appropriate agent radius or height values are required to support different-sized agents.
 		</member>
 		<member name="path_max_distance" type="float" setter="set_path_max_distance" getter="get_path_max_distance" default="5.0">
 			The maximum distance the agent is allowed away from the ideal path to the final position. This can happen due to trying to avoid collisions. When the maximum distance is exceeded, it recalculates the ideal path.
@@ -164,10 +203,20 @@
 			The distance threshold before the final target point is considered to be reached. This will allow an agent to not have to hit the point of the final target exactly, but only the area. If this value is set to low the NavigationAgent will be stuck in a repath loop cause it will constantly overshoot or undershoot the distance to the final target point on each physics frame update.
 		</member>
 		<member name="target_position" type="Vector3" setter="set_target_position" getter="get_target_position" default="Vector3(0, 0, 0)">
-			The user-defined target position. Setting this property will clear the current navigation path.
+			If set a new navigation path from the current agent position to the [member target_position] is requested from the NavigationServer.
 		</member>
-		<member name="time_horizon" type="float" setter="set_time_horizon" getter="get_time_horizon" default="1.0">
-			The minimal amount of time for which this agent's velocities, that are computed with the collision avoidance algorithm, are safe with respect to other agents. The larger the number, the sooner the agent will respond to other agents, but less freedom in choosing its velocities. Must be positive.
+		<member name="time_horizon_agents" type="float" setter="set_time_horizon_agents" getter="get_time_horizon_agents" default="1.0">
+			The minimal amount of time for which this agent's velocities, that are computed with the collision avoidance algorithm, are safe with respect to other agents. The larger the number, the sooner the agent will respond to other agents, but less freedom in choosing its velocities. A too high value will slow down agents movement considerably. Must be positive.
+		</member>
+		<member name="time_horizon_obstacles" type="float" setter="set_time_horizon_obstacles" getter="get_time_horizon_obstacles" default="0.0">
+			The minimal amount of time for which this agent's velocities, that are computed with the collision avoidance algorithm, are safe with respect to static avoidance obstacles. The larger the number, the sooner the agent will respond to static avoidance obstacles, but less freedom in choosing its velocities. A too high value will slow down agents movement considerably. Must be positive.
+		</member>
+		<member name="use_3d_avoidance" type="bool" setter="set_use_3d_avoidance" getter="get_use_3d_avoidance" default="false">
+			If [code]true[/code] the agent calculates avoidance velocities in 3D for the xyz-axis, e.g. for games that take place in air, unterwater or space. The 3D using agent only avoids other 3D avoidance using agent's. The 3D using agent only reacts to radius based avoidance obstacles. The 3D using agent ignores any vertices based obstacles. The 3D using agent only avoids other 3D using agent's.
+			If [code]false[/code] the agent calculates avoidance velocities in 2D along the xz-axis ignoring the y-axis. The 2D using agent only avoids other 2D avoidance using agent's. The 2D using agent reacts to radius avoidance obstacles. The 2D using agent reacts to vertices based avoidance obstacles. The 2D using agent only avoids other 2D using agent's. 2D using agents will ignore other 2D using agents or obstacles that are below their current position or above their current position including [member height] in 2D avoidance.
+		</member>
+		<member name="velocity" type="Vector3" setter="set_velocity" getter="get_velocity" default="Vector3(0, 0, 0)">
+			Sets the new wanted velocity for the agent. The avoidance simulation will try to fulfil this velocity if possible but will modify it to avoid collision with other agent's and obstacles. When an agent is teleported to a new position use [method set_velocity_forced] as well to reset the internal simulation velocity.
 		</member>
 	</members>
 	<signals>
@@ -202,7 +251,7 @@
 		<signal name="velocity_computed">
 			<param index="0" name="safe_velocity" type="Vector3" />
 			<description>
-				Notifies when the collision avoidance velocity is calculated. Emitted at the end of the physics frame in which [method set_velocity] is called. Only emitted when [member avoidance_enabled] is true.
+				Notifies when the collision avoidance velocity is calculated. Emitted when [member velocity] is set. Only emitted when [member avoidance_enabled] is true.
 			</description>
 		</signal>
 		<signal name="waypoint_reached">

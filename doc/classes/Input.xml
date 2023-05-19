@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A singleton that deals with inputs. This includes key presses, mouse buttons and movement, joypads, and input actions. Actions and their events can be set in the [b]Input Map[/b] tab in the [b]Project &gt; Project Settings[/b], or with the [InputMap] class.
+		[b]Note:[/b] The methods here reflect the global input state and are not affected by [method Control.accept_event] or [method Viewport.set_input_as_handled], which only deal with the way input is propagated in the [SceneTree].
 	</description>
 	<tutorials>
 		<link title="Inputs documentation index">$DOCS_URL/tutorials/inputs/index.html</link>

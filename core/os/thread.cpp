@@ -66,11 +66,12 @@ void Thread::callback(ID p_caller_id, const Settings &p_settings, Callback p_cal
 	}
 }
 
-void Thread::start(Thread::Callback p_callback, void *p_user, const Settings &p_settings) {
-	ERR_FAIL_COND_MSG(id != UNASSIGNED_ID, "A Thread object has been re-started without wait_to_finish() having been called on it.");
+Thread::ID Thread::start(Thread::Callback p_callback, void *p_user, const Settings &p_settings) {
+	ERR_FAIL_COND_V_MSG(id != UNASSIGNED_ID, UNASSIGNED_ID, "A Thread object has been re-started without wait_to_finish() having been called on it.");
 	id = id_counter.increment();
 	std::thread new_thread(&Thread::callback, id, p_settings, p_callback, p_user);
 	thread.swap(new_thread);
+	return id;
 }
 
 bool Thread::is_started() const {
@@ -100,7 +101,9 @@ Thread::Thread() {
 Thread::~Thread() {
 	if (id != UNASSIGNED_ID) {
 #ifdef DEBUG_ENABLED
-		WARN_PRINT("A Thread object has been destroyed without wait_to_finish() having been called on it. Please do so to ensure correct cleanup of the thread.");
+		WARN_PRINT(
+				"A Thread object is being destroyed without its completion having been realized.\n"
+				"Please call wait_to_finish() on it to ensure correct cleanup.");
 #endif
 		thread.detach();
 	}

@@ -1536,6 +1536,11 @@ void EditorInspectorSection::fold() {
 	queue_redraw();
 }
 
+void EditorInspectorSection::set_bg_color(const Color &p_bg_color) {
+	bg_color = p_bg_color;
+	queue_redraw();
+}
+
 bool EditorInspectorSection::has_revertable_properties() const {
 	return !revertable_properties.is_empty();
 }
@@ -3441,6 +3446,16 @@ void EditorInspector::set_property_name_style(EditorPropertyNameProcessor::Style
 	update_tree();
 }
 
+void EditorInspector::set_use_settings_name_style(bool p_enable) {
+	if (use_settings_name_style == p_enable) {
+		return;
+	}
+	use_settings_name_style = p_enable;
+	if (use_settings_name_style) {
+		set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
+	}
+}
+
 void EditorInspector::set_autoclear(bool p_enable) {
 	autoclear = p_enable;
 }
@@ -3908,6 +3923,12 @@ void EditorInspector::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_THEME_CHANGED: {
+			if (add_meta_error_panel) {
+				add_meta_error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			}
+		} break;
+
 		case NOTIFICATION_PREDELETE: {
 			edit(nullptr); //just in case
 		} break;
@@ -3973,7 +3994,20 @@ void EditorInspector::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_inspector_bg();
 
+			bool needs_update = false;
+
+			if (use_settings_name_style && EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
+				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_settings_style();
+				if (property_name_style != style) {
+					property_name_style = style;
+					needs_update = true;
+				}
+			}
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
+				needs_update = true;
+			}
+
+			if (needs_update) {
 				update_tree();
 			}
 		} break;
@@ -4075,13 +4109,16 @@ void EditorInspector::_show_add_meta_dialog() {
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		add_meta_dialog->add_child(vbc);
+
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		vbc->add_child(hbc);
 		hbc->add_child(memnew(Label(TTR("Name:"))));
+
 		add_meta_name = memnew(LineEdit);
 		add_meta_name->set_custom_minimum_size(Size2(200 * EDSCALE, 1));
 		hbc->add_child(add_meta_name);
 		hbc->add_child(memnew(Label(TTR("Type:"))));
+
 		add_meta_type = memnew(OptionButton);
 		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 			if (i == Variant::NIL || i == Variant::RID || i == Variant::CALLABLE || i == Variant::SIGNAL) {
@@ -4092,12 +4129,24 @@ void EditorInspector::_show_add_meta_dialog() {
 			add_meta_type->add_icon_item(get_theme_icon(type, "EditorIcons"), type, i);
 		}
 		hbc->add_child(add_meta_type);
+
+		Control *spacing = memnew(Control);
+		vbc->add_child(spacing);
+		spacing->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
+
 		add_meta_dialog->set_ok_button_text(TTR("Add"));
 		add_child(add_meta_dialog);
 		add_meta_dialog->register_text_enter(add_meta_name);
 		add_meta_dialog->connect("confirmed", callable_mp(this, &EditorInspector::_add_meta_confirm));
+
+		add_meta_error_panel = memnew(PanelContainer);
+		vbc->add_child(add_meta_error_panel);
+		if (is_inside_tree()) {
+			add_meta_error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+		}
+
 		add_meta_error = memnew(Label);
-		vbc->add_child(add_meta_error);
+		add_meta_error_panel->add_child(add_meta_error);
 
 		add_meta_name->connect("text_changed", callable_mp(this, &EditorInspector::_check_meta_name));
 	}
@@ -4158,4 +4207,7 @@ EditorInspector::EditorInspector() {
 	ED_SHORTCUT("property_editor/copy_value", TTR("Copy Value"), KeyModifierMask::CMD_OR_CTRL | Key::C);
 	ED_SHORTCUT("property_editor/paste_value", TTR("Paste Value"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("property_editor/copy_property_path", TTR("Copy Property Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
+
+	// `use_settings_name_style` is true by default, set the name style accordingly.
+	set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 }

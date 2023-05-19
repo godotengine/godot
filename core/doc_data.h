@@ -137,7 +137,7 @@ public:
 					return arguments[0] < p_method.arguments[0];
 				}
 			}
-			return name < p_method.name;
+			return name.naturalcasecmp_to(p_method.name) < 0;
 		}
 		static MethodDoc from_dict(const Dictionary &p_dict) {
 			MethodDoc doc;
@@ -327,7 +327,7 @@ public:
 		bool is_deprecated = false;
 		bool is_experimental = false;
 		bool operator<(const PropertyDoc &p_prop) const {
-			return name < p_prop.name;
+			return name.naturalcasecmp_to(p_prop.name) < 0;
 		}
 		static PropertyDoc from_dict(const Dictionary &p_dict) {
 			PropertyDoc doc;
@@ -432,7 +432,7 @@ public:
 		bool operator<(const ThemeItemDoc &p_theme_item) const {
 			// First sort by the data type, then by name.
 			if (data_type == p_theme_item.data_type) {
-				return name < p_theme_item.name;
+				return name.naturalcasecmp_to(p_theme_item.name) < 0;
 			}
 			return data_type < p_theme_item.data_type;
 		}

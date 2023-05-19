@@ -96,6 +96,7 @@ protected:
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
 
 public:
+	virtual String get_identifier() const override;
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
@@ -131,6 +132,8 @@ public:
 	virtual bool is_disable_crash_handler() const override;
 
 	virtual Error move_to_trash(const String &p_path) override;
+
+	virtual String get_system_ca_certificates() override;
 
 	OS_LinuxBSD();
 	~OS_LinuxBSD();

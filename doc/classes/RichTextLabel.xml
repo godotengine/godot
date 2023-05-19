@@ -357,7 +357,7 @@
 		<method name="push_italics">
 			<return type="void" />
 			<description>
-				Adds a [code][font][/code] tag with a italics font to the tag stack. This is the same as adding a [code][i][/code] tag if not currently in a [code][b][/code] tag.
+				Adds a [code][font][/code] tag with an italics font to the tag stack. This is the same as adding an [code][i][/code] tag if not currently in a [code][b][/code] tag.
 			</description>
 		</method>
 		<method name="push_list">
@@ -409,6 +409,7 @@
 			<param index="1" name="base_direction" type="int" enum="Control.TextDirection" default="0" />
 			<param index="2" name="language" type="String" default="&quot;&quot;" />
 			<param index="3" name="st_parser" type="int" enum="TextServer.StructuredTextParser" default="0" />
+			<param index="4" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="163" />
 			<description>
 				Adds a [code][p][/code] tag to the tag stack.
 			</description>

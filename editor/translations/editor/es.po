@@ -103,13 +103,14 @@
 # Federico Sebastián Florentin <federicoflorentin6@gmail.com>, 2023.
 # Joinner Medina <devjoi2018@gmail.com>, 2023.
 # Pedro Torcatt <pedrotorcattsoto@gmail.com>, 2023.
+# Pedro Zebenzui Ortega Diaz <pipo.tf@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-17 17:39+0000\n"
-"Last-Translator: Luis Ortiz <luisortiz66@hotmail.com>\n"
+"PO-Revision-Date: 2023-05-17 00:52+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -117,7 +118,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Desactivar"
@@ -3973,7 +3974,7 @@ msgid "No Named Layers"
 msgstr "Capas Sin Nombre"
 
 msgid "Edit Layer Names"
-msgstr "Editar Nombres de Capas"
+msgstr "Editar Nombres de Capa"
 
 msgid "<empty>"
 msgstr "<vacío>"
@@ -4560,6 +4561,12 @@ msgstr ""
 "Todos los presets deben tener una ruta de exportación definida para que "
 "Exportar Todo funcione."
 
+msgid "Resources to exclude:"
+msgstr "Recursos a excluir:"
+
+msgid "Resources to export:"
+msgstr "Recursos a exportar:"
+
 msgid "Delete preset '%s'?"
 msgstr "¿Eliminar preajuste '%s'?"
 
@@ -4616,9 +4623,6 @@ msgstr "Exportar como servidor dedicado"
 
 msgid "Export Mode:"
 msgstr "Modo de Exportación:"
-
-msgid "Resources to export:"
-msgstr "Recursos a exportar:"
 
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"
@@ -5947,7 +5951,7 @@ msgstr "Cambiar Filtro"
 
 msgid "No animation player set, so unable to retrieve track names."
 msgstr ""
-"No se asigno ningún reproductor de animación, así que no se pudieron obtener "
+"No se asignó ningún reproductor de animación, así que no se pudieron obtener "
 "los nombres de las pistas."
 
 msgid "Player path set is invalid, so unable to retrieve track names."
@@ -6071,7 +6075,7 @@ msgid "Invalid AnimationLibrary file."
 msgstr "Archivo AnimationLibrary inválido."
 
 msgid "This library is already added to the player."
-msgstr "Esta librería ya se ha agregado al reproductor."
+msgstr "Esta librería ya está agregada al reproductor."
 
 msgid "Invalid Animation file."
 msgstr "Archivo Animation inválido."
@@ -6238,7 +6242,7 @@ msgid "Edit Transitions..."
 msgstr "Editar Transiciones..."
 
 msgid "Display list of animations in player."
-msgstr "Mostrar la lista de animaciones en el reproductor."
+msgstr "Mostrar lista de animaciones en el reproductor."
 
 msgid "Autoplay on Load"
 msgstr "Reproducción Automática al Cargar"
@@ -7507,6 +7511,15 @@ msgstr "Tamaño de RAM de video: %s MB (%s)"
 msgid "Bake SDF"
 msgstr "Bakear SDF"
 
+msgid ""
+"No faces detected during GPUParticlesCollisionSDF3D bake.\n"
+"Check whether there are visible meshes matching the bake mask within its "
+"extents."
+msgstr ""
+"No se han detectado caras durante el bakeado de GPUParticlesCollisionSDF3D.\n"
+"Comprueba si hay mallas visibles que coincidan con la máscara de bakeo "
+"dentro de sus extensiones."
+
 msgid "Select path for SDF Texture"
 msgstr "Seleccione la ruta para la textura SDF"
 
@@ -8070,8 +8083,14 @@ msgstr "Alinear la Transformación con la Vista"
 msgid "Align Rotation with View"
 msgstr "Alinear la Rotación con la Vista"
 
+msgid "Set Surface %d Override Material"
+msgstr "Establecer Reemplazo de Material de Superficie %d"
+
 msgid "Set Material Override"
 msgstr "Establecer Anulación de Material"
+
+msgid "Cannot drag and drop into multiple selected nodes."
+msgstr "No se puede arrastrar y soltar en varios nodos seleccionados."
 
 msgid "None"
 msgstr "Ninguno"
@@ -8133,6 +8152,9 @@ msgstr "Albedo de VoxelGI"
 msgid "VoxelGI Emission"
 msgstr "Emisión de VoxelGI"
 
+msgid "SDFGI Cascades"
+msgstr "Cascadas SDFGI"
+
 msgid "SDFGI Probes"
 msgstr "Sondas SDFGI"
 
@@ -8142,11 +8164,26 @@ msgstr "Iluminación de Escena"
 msgid "SSAO"
 msgstr "SSAO"
 
+msgid "SSIL"
+msgstr "SSIL"
+
+msgid "VoxelGI/SDFGI Buffer"
+msgstr "Búfer de VoxelGI/SDFGI"
+
 msgid "Disable Mesh LOD"
 msgstr "Desactivar LOD de Mesh"
 
+msgid "OmniLight3D Cluster"
+msgstr "Grupo de OmniLight3D"
+
+msgid "SpotLight3D Cluster"
+msgstr "Grupo de SpotLight3D"
+
+msgid "Decal Cluster"
+msgstr "Grupo de Calcomanías"
+
 msgid "ReflectionProbe Cluster"
-msgstr "Clúster ReflectionProbe"
+msgstr "Grupo de ReflectionProbe"
 
 msgid "Occlusion Culling Buffer"
 msgstr "Búfer de Occlusion Culling"
@@ -8207,6 +8244,21 @@ msgstr "Modificador de Velocidad de Vista Libre"
 
 msgid "Freelook Slow Modifier"
 msgstr "Modificador de Velocidad de Vista Libre"
+
+msgid "Lock Transformation to X axis"
+msgstr "Bloquear Transformación al eje X"
+
+msgid "Lock Transformation to Y axis"
+msgstr "Bloquear Transformación al eje Y"
+
+msgid "Lock Transformation to Z axis"
+msgstr "Bloquear Transformación al eje Z"
+
+msgid "Lock Transformation to YZ plane"
+msgstr "Bloquear Transformación al plano YZ"
+
+msgid "Lock Transformation to XZ plane"
+msgstr "Bloquear Transformación al plano XZ"
 
 msgid "Lock Transformation to XY plane"
 msgstr "Bloquear Transformación al plano XY"
@@ -8287,11 +8339,23 @@ msgstr ""
 msgid "Preview disabled."
 msgstr "Vista previa desactivada."
 
+msgid ""
+"Scene contains\n"
+"WorldEnvironment.\n"
+"Preview disabled."
+msgstr ""
+"Contenidos de la Escena.\n"
+"Entorno Mundial.\n"
+"Vista Previa Desactivada."
+
 msgid "Use Local Space"
 msgstr "Usar Espacio Local"
 
 msgid "Use Snap"
 msgstr "Usar Snap"
+
+msgid "Edit Sun and Environment settings."
+msgstr "Editar Sol y Configuraciones del Entorno."
 
 msgid "Bottom View"
 msgstr "Vista Inferior"
@@ -8494,6 +8558,16 @@ msgid ""
 msgstr ""
 "No se puede determinar una ruta de guardado para el ocluder.\n"
 "Guarda tu escena y vuelve a intentarlo."
+
+msgid ""
+"No meshes to bake.\n"
+"Make sure there is at least one MeshInstance3D node in the scene whose "
+"visual layers are part of the OccluderInstance3D's Bake Mask property."
+msgstr ""
+"No hay mallas para bakear.\n"
+"Asegúrate de que haya al menos un nodo MeshInstance3D en la escena cuyas "
+"capas visuales formen parte de la propiedad Máscara de Bakeo de "
+"OccluderInstance3D."
 
 msgid "Could not save the new occluder at the specified path:"
 msgstr "No se ha podido guardar el nuevo oclusor en la ruta especificada:"
@@ -9434,6 +9508,11 @@ msgstr[1] "{num} constantes"
 msgid "No constants found."
 msgstr "No se encontraron constants."
 
+msgid "1 font"
+msgid_plural "{num} fonts"
+msgstr[0] "1 Fuente"
+msgstr[1] "{num} Fuentes"
+
 msgid "No fonts found."
 msgstr "No se han encontrado fonts."
 
@@ -9444,6 +9523,11 @@ msgstr[1] "{num} tamaño de fuentes"
 
 msgid "No font sizes found."
 msgstr "No se han encontrado tamaños de fuente."
+
+msgid "1 icon"
+msgid_plural "{num} icons"
+msgstr[0] "1 icono"
+msgstr[1] "{num} iconos"
 
 msgid "No icons found."
 msgstr "No se han encontrado icons."
@@ -9798,8 +9882,14 @@ msgstr "Establecer Elemento de Color en el Theme"
 msgid "Set Constant Item in Theme"
 msgstr "Establecer Elemento Constante en el Theme"
 
+msgid "Set Font Size Item in Theme"
+msgstr "Establecer Tamaño de la Fuente en el Objeto del Tema"
+
 msgid "Set Font Item in Theme"
 msgstr "Establecer Elemento de Fuente en el Theme"
+
+msgid "Set Icon Item in Theme"
+msgstr "Establecer Icono en el Tema"
 
 msgid "Set Stylebox Item in Theme"
 msgstr "Establecer Elemento Stylebox en el Theme"
@@ -9952,6 +10042,12 @@ msgstr "Archivo inválido, no es un recurso PackedScene."
 msgid "Reload the scene to reflect its most actual state."
 msgstr "Recargar la escena para reflejar su estado actual."
 
+msgid "Merge TileSetAtlasSource"
+msgstr "Combinar TileSetAtlasSource"
+
+msgid "%s (ID: %d)"
+msgstr "%s (ID: %d)"
+
 msgid "Atlas Merging"
 msgstr "Combinar Atlas"
 
@@ -9993,6 +10089,9 @@ msgstr "Editar Polígonos"
 
 msgid "Add polygon tool"
 msgstr "Añadir herramienta de polígonos"
+
+msgid "Edit points tool"
+msgstr "Herramienta de edición de puntos"
 
 msgid "Delete points tool"
 msgstr "Herramienta de eliminación de puntos"
@@ -10110,14 +10209,42 @@ msgstr "Fuente seleccionada inválida."
 msgid "Patterns"
 msgstr "Patrones"
 
+msgid "Drag and drop or paste a TileMap selection here to store a pattern."
+msgstr ""
+"Arrastra y suelta o pega una selección de TileMap aquí para almacenar un "
+"patrón."
+
 msgid "Paint terrain"
 msgstr "Pintar terreno"
+
+msgid "Matches Corners and Sides"
+msgstr "Coincide con Esquinas y Lados"
 
 msgid "Matches Corners Only"
 msgstr "Coincide Solo con las Esquinas"
 
 msgid "Matches Sides Only"
 msgstr "Coincide Solo con los Lados"
+
+msgid "Terrain Set %d (%s)"
+msgstr "Conjunto de Terrenos %d (%s)"
+
+msgid ""
+"Connect mode: paints a terrain, then connects it with the surrounding tiles "
+"with the same terrain."
+msgstr ""
+"Modo conectar: pinta un terreno y luego lo conecta con los tiles "
+"circundantes con el mismo terreno."
+
+msgid ""
+"Path mode: paints a terrain, thens connects it to the previous tile painted "
+"within the same stroke."
+msgstr ""
+"Modo ruta: pinta un terreno, luego lo conecta con el tile anterior pintado "
+"dentro del mismo trazo."
+
+msgid "Terrains"
+msgstr "Terrenos"
 
 msgid "Replace Tiles with Proxies"
 msgstr "Reemplazar Tiles con Proxies"
@@ -10134,6 +10261,9 @@ msgstr "Seleccionar Anterior Capa del Mapa de Tiles"
 msgid "TileMap Layers"
 msgstr "Capas del TileMap"
 
+msgid "Highlight Selected TileMap Layer"
+msgstr "Resaltar la Capa Seleccionada del TileMap"
+
 msgid "Toggle grid visibility."
 msgstr "Cambiar visibilidad de la cuadrícula."
 
@@ -10146,8 +10276,35 @@ msgstr "El nodo TileMap editado no tiene un recurso TileSet."
 msgid "Remove Tile Proxies"
 msgstr "Eliminar Proxies de Tiles"
 
+msgid "Create Alternative-level Tile Proxy"
+msgstr "Crear Proxy de Nivel Alternativo para el TileMap"
+
+msgid "Create Coords-level Tile Proxy"
+msgstr "Crear Proxy de Nivel de Coordenadas para el TileMap"
+
+msgid "Create source-level Tile Proxy"
+msgstr "Crear Proxy de nivel de Origen para el TileMap"
+
+msgid "Delete All Invalid Tile Proxies"
+msgstr "Eliminar Todos los Proxies de Tiles Inválidos"
+
 msgid "Delete All Tile Proxies"
 msgstr "Eliminar Todos los Proxies de Tiles"
+
+msgid "Tile Proxies Management"
+msgstr "Gestión de Proxies de Tiles"
+
+msgid "Source-level proxies"
+msgstr "Proxies a nivel de origen"
+
+msgid "Coords-level proxies"
+msgstr "Proxies a nivel de coordenadas"
+
+msgid "Alternative-level proxies"
+msgstr "Proxies a nivel alternativo"
+
+msgid "Add a new tile proxy:"
+msgstr "Añadir nuevo proxy de tiles:"
 
 msgid "From Source"
 msgstr "Desde la Fuente"
@@ -10159,13 +10316,13 @@ msgid "From Alternative"
 msgstr "Desde Alternativo"
 
 msgid "To Source"
-msgstr "A la Fuente"
+msgstr "Al Origen"
 
 msgid "To Coords"
 msgstr "A las Coordenadas"
 
 msgid "To Alternative"
-msgstr "A Alternativa"
+msgstr "A Alternativo"
 
 msgid "Global actions:"
 msgstr "Acciones Globales:"
@@ -13174,16 +13331,42 @@ msgid "Not possible to add a new property to synchronize without a root."
 msgstr ""
 "No es posible añadir una nueva propiedad para sincronizar sin una raíz."
 
+msgid "Add from path"
+msgstr "Añadir desde ruta"
+
+msgid "Please select a MultiplayerSynchronizer first."
+msgstr "Por favor, selecciona primero un MultiplayerSynchronizer."
+
+msgid "Set spawn property"
+msgstr "Establecer propiedad de spawn"
+
+msgid "Set sync property"
+msgstr "Establecer propiedad de sincronización"
+
 msgid "Delete Property?"
 msgstr "¿Eliminar Propiedad?"
 
 msgid "Remove Property"
 msgstr "Eliminar Propiedad"
 
+msgid ""
+"A valid NodePath must be set in the \"Spawn Path\" property in order for "
+"MultiplayerSpawner to be able to spawn Nodes."
+msgstr ""
+"Se debe establecer una ruta de nodo válida en la propiedad \"Spawn Path\" "
+"para que MultiplayerSpawner pueda generar nodos."
+
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
 "Se debe crear o establecer un recurso NavigationMesh para que este nodo "
 "funcione."
+
+msgid ""
+"Cannot generate navigation mesh because it does not belong to the edited "
+"scene. Make it unique first."
+msgstr ""
+"No se puede generar una malla de navegación porque no pertenece a la escena "
+"editada. Hazla única primero."
 
 msgid "Bake NavMesh"
 msgstr "Bakear NavMesh"
@@ -13230,14 +13413,92 @@ msgstr "Analizando geometría..."
 msgid "Done!"
 msgstr "¡Hecho!"
 
+msgid "Rename Action"
+msgstr "Renombrar Acción"
+
+msgid "Rename Actions Localized name"
+msgstr "Renombrar nombre Localizado de las Acciones"
+
+msgid "Change Action Type"
+msgstr "Cambiar Tipo de Acción"
+
+msgid "Remove action"
+msgstr "Eliminar acción"
+
+msgid "Add action set"
+msgstr "Añadir conjunto de acciones"
+
+msgid "Remove action set"
+msgstr "Eliminar conjunto de acciones"
+
+msgid "Add interaction profile"
+msgstr "Añadir perfil de interacción"
+
+msgid "Error saving file %s: %s"
+msgstr "Error al guardar el archivo %s: %s"
+
 msgid "Error loading %s: %s."
 msgstr "Error al cargar %s: %s."
+
+msgid "OpenXR Action map:"
+msgstr "Mapa de acción de OpenXR:"
+
+msgid "Remove interaction profile"
+msgstr "Eliminar perfil de interacción"
+
+msgid "Action Map"
+msgstr "Mapa de Acción"
+
+msgid "Add Action Set"
+msgstr "Añadir Conjunto de Acciones"
 
 msgid "Add an action set."
 msgstr "Añadir un conjunto de acciones."
 
+msgid "Add profile"
+msgstr "Añadir perfil"
+
+msgid "Add an interaction profile."
+msgstr "Añadir un perfil de interacción."
+
+msgid "Action Sets"
+msgstr "Conjunto de Acciones"
+
+msgid "Rename Action Set"
+msgstr "Renombrar Conjunto de Acciones"
+
+msgid "Change Action Sets priority"
+msgstr "Cambiar prioridad de los Conjuntos de Acciones"
+
+msgid "Add action"
+msgstr "Añadir acción"
+
+msgid "Delete action"
+msgstr "Eliminar acción"
+
+msgid "OpenXR Action Map"
+msgstr "Mapa de Acción OpenXR"
+
+msgid "Remove action from interaction profile"
+msgstr "Eliminar acción del perfil de interacción"
+
+msgid "Add binding"
+msgstr "Añadir enlace"
+
+msgid "Remove binding"
+msgstr "Eliminar enlace"
+
 msgid "Pose"
 msgstr "Pose"
+
+msgid "Haptic"
+msgstr "Háptico"
+
+msgid "Unknown"
+msgstr "Desconocido"
+
+msgid "Select an action"
+msgstr "Selecciona una acción"
 
 msgid "Package name is missing."
 msgstr "Falta el nombre del paquete."
@@ -14105,6 +14366,16 @@ msgstr ""
 "No hay nada visible porque no se han asignado mallas para los pases de "
 "dibujo."
 
+msgid ""
+"The Bake Mask has no bits enabled, which means baking will not produce any "
+"collision for this GPUParticlesCollisionSDF3D.\n"
+"To resolve this, enable at least one bit in the Bake Mask property."
+msgstr ""
+"La Máscara de Bakeo no tiene bits habilitados, lo que significa que el "
+"bakeado no producirá ninguna colisión para este GPUParticlesCollisionSDF3D.\n"
+"Para resolver esto, habilita al menos un bit en la propiedad Máscara de "
+"Bakeo."
+
 msgid "Finding meshes, lights and probes"
 msgstr "Encontrar mallas, luces y sondas"
 
@@ -14113,6 +14384,17 @@ msgstr "Crear sondas"
 
 msgid "Generating Probe Volumes"
 msgstr "Generando Volúmenes de Sonda"
+
+msgid ""
+"The Bake Mask has no bits enabled, which means baking will not produce any "
+"occluder meshes for this OccluderInstance3D.\n"
+"To resolve this, enable at least one bit in the Bake Mask property."
+msgstr ""
+"La Máscara de Bakeo no tiene bits habilitados, lo que significa que el "
+"bakeado no producirá ninguna malla de oclusión para este "
+"OccluderInstance3D.\n"
+"Para resolver esto, habilita al menos un bit en la propiedad Máscara de "
+"Bakeo."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Este cuerpo será ignorado hasta que se establezca una malla."

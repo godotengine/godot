@@ -162,7 +162,7 @@ namespace basist
 				next_code[i + 1] = (total = ((total + syms_using_codesize[i]) << 1));
 			}
 
-			if (((1U << basisu::cHuffmanMaxSupportedInternalCodeSize) != total) && (used_syms > 1U))
+			if (((1U << basisu::cHuffmanMaxSupportedInternalCodeSize) != total) && (used_syms != 1U))
 				return false;
 
 			for (int tree_next = -1, sym_index = 0; sym_index < (int)total_syms; ++sym_index)

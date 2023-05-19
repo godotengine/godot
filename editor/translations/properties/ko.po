@@ -42,13 +42,14 @@
 # Godoto <aicompose@gmail.com>, 2022.
 # gaenyang <gaenyang@outlook.com>, 2022.
 # 오지훈 <jule1130@naver.com>, 2023.
+# coolkid <newtype20050831@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-01 13:00+0000\n"
-"Last-Translator: Rocream <kbg4660@gmail.com>\n"
+"PO-Revision-Date: 2023-05-11 05:49+0000\n"
+"Last-Translator: coolkid <newtype20050831@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ko/>\n"
 "Language: ko\n"
@@ -56,7 +57,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Application"
 msgstr "어플리케이션"
@@ -126,6 +127,9 @@ msgstr "초기 위치 타입"
 
 msgid "Initial Position"
 msgstr "초기 위치"
+
+msgid "Initial Screen"
+msgstr "초기 화면"
 
 msgid "Resizable"
 msgstr "크기 조절 가능한"
@@ -208,11 +212,23 @@ msgstr "설정"
 msgid "Profiler"
 msgstr "프로파일러"
 
+msgid "Max Functions"
+msgstr "최대 함수"
+
 msgid "Compression"
 msgstr "압축"
 
 msgid "Formats"
 msgstr "형식"
+
+msgid "Long Distance Matching"
+msgstr "원거리 매칭"
+
+msgid "Compression Level"
+msgstr "압축률"
+
+msgid "Zlib"
+msgstr "Zlib"
 
 msgid "Crash Handler"
 msgstr "충돌 처리기"
@@ -231,6 +247,9 @@ msgstr "메모리"
 
 msgid "Limits"
 msgstr "제한"
+
+msgid "Multithreaded Server"
+msgstr "다중 스레드 서버"
 
 msgid "Internationalization"
 msgstr "국제화"
@@ -2299,6 +2318,9 @@ msgstr "푸시 알림"
 msgid "Location"
 msgstr "위치"
 
+msgid "Product GUID"
+msgstr "제품 GUID"
+
 msgid "Algorithm"
 msgstr "알고리즘"
 
@@ -2458,26 +2480,65 @@ msgstr "품질"
 msgid "Use Denoiser"
 msgstr "노이즈 감소 사용"
 
+msgid "Enable Shadows"
+msgstr "그림자 켜기"
+
 msgid "Bones"
 msgstr "본"
 
 msgid "Target"
 msgstr "Target(대상)"
 
+msgid "Use Magnet"
+msgstr "자석 사용"
+
+msgid "Magnet"
+msgstr "자석"
+
+msgid "Spring Length"
+msgstr "스프링 길이"
+
 msgid "Travel"
 msgstr "진행"
+
+msgid "Max Force"
+msgstr "최대 힘"
 
 msgid "Material Override"
 msgstr "머티리얼 오버라이드"
 
+msgid "Custom AABB"
+msgstr "커스텀 AABB"
+
 msgid "End"
 msgstr "끝"
+
+msgid "Tracker"
+msgstr "트래커"
+
+msgid "Pose"
+msgstr "자세"
 
 msgid "World Scale"
 msgstr "세계 크기"
 
 msgid "Sync"
 msgstr "동기화"
+
+msgid "Auto Restart"
+msgstr "자동 재시작"
+
+msgid "Autorestart"
+msgstr "자동 재시작"
+
+msgid "Delay"
+msgstr "지연"
+
+msgid "Random Delay"
+msgstr "무작위 지연"
+
+msgid "Request"
+msgstr "요청"
 
 msgid "Reset"
 msgstr "되돌리기"

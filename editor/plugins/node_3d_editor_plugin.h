@@ -125,25 +125,28 @@ class Node3DEditorViewport : public Control {
 		VIEW_GIZMOS,
 		VIEW_INFORMATION,
 		VIEW_FRAME_TIME,
+
+		// < Keep in sync with menu.
 		VIEW_DISPLAY_NORMAL,
 		VIEW_DISPLAY_WIREFRAME,
 		VIEW_DISPLAY_OVERDRAW,
-		VIEW_DISPLAY_SHADELESS,
 		VIEW_DISPLAY_LIGHTING,
+		VIEW_DISPLAY_UNSHADED,
 		VIEW_DISPLAY_ADVANCED,
+		// Advanced menu:
+		VIEW_DISPLAY_DEBUG_PSSM_SPLITS,
 		VIEW_DISPLAY_NORMAL_BUFFER,
 		VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
 		VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
+		VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING,
 		VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION,
+		VIEW_DISPLAY_DEBUG_SDFGI,
+		VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
 		VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE,
 		VIEW_DISPLAY_DEBUG_SSAO,
 		VIEW_DISPLAY_DEBUG_SSIL,
-		VIEW_DISPLAY_DEBUG_PSSM_SPLITS,
-		VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
-		VIEW_DISPLAY_DEBUG_SDFGI,
-		VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
 		VIEW_DISPLAY_DEBUG_GI_BUFFER,
 		VIEW_DISPLAY_DEBUG_DISABLE_LOD,
 		VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
@@ -152,6 +155,8 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
 		VIEW_DISPLAY_DEBUG_OCCLUDERS,
 		VIEW_DISPLAY_MOTION_VECTORS,
+		VIEW_DISPLAY_MAX,
+		// > Keep in sync with menu.
 
 		VIEW_LOCK_ROTATION,
 		VIEW_CINEMATIC_PREVIEW,
@@ -403,8 +408,8 @@ private:
 	Camera3D *previewing = nullptr;
 	Camera3D *preview = nullptr;
 
-	bool previewing_camera;
-	bool previewing_cinema;
+	bool previewing_camera = false;
+	bool previewing_cinema = false;
 	bool _is_node_locked(const Node *p_node);
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
@@ -581,8 +586,8 @@ private:
 	bool origin_enabled = false;
 	RID grid[3];
 	RID grid_instance[3];
-	bool grid_visible[3]; //currently visible
-	bool grid_enable[3]; //should be always visible if true
+	bool grid_visible[3] = { false, false, false }; //currently visible
+	bool grid_enable[3] = { false, false, false }; //should be always visible if true
 	bool grid_enabled = false;
 	bool grid_init_draw = false;
 	Camera3D::ProjectionType grid_camera_last_update_perspective = Camera3D::PROJECTION_PERSPECTIVE;

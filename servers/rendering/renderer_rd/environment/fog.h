@@ -303,21 +303,10 @@ public:
 		RID fog_uniform_set;
 
 		struct {
-			bool valid = false;
 			RID copy_uniform_set;
 			RID process_uniform_set_density;
 			RID process_uniform_set;
 			RID process_uniform_set2;
-
-#ifdef DEV_ENABLED
-			void assert_actual_validity() {
-				// It's all-or-nothing, or something else has changed that requires dev attention.
-				DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(copy_uniform_set));
-				DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(process_uniform_set_density));
-				DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(process_uniform_set));
-				DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(process_uniform_set2));
-			}
-#endif
 		} gi_dependent_sets;
 
 		RID sdfgi_uniform_set;
@@ -327,6 +316,8 @@ public:
 
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
 		virtual void free_data() override{};
+
+		bool sync_gi_dependent_sets_validity(bool p_ensure_freed = false);
 
 		void init(const Vector3i &fog_size, RID p_sky_shader);
 		~VolumetricFog();

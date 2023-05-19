@@ -32,6 +32,7 @@
 
 #include "core/object/message_queue.h"
 #include "core/os/os.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "main/main.h"
@@ -155,17 +156,7 @@ void ProgressDialog::_popup() {
 	main->set_offset(SIDE_TOP, style->get_margin(SIDE_TOP));
 	main->set_offset(SIDE_BOTTOM, -style->get_margin(SIDE_BOTTOM));
 
-	EditorNode *ed = EditorNode::get_singleton();
-	if (ed && !is_inside_tree()) {
-		Window *w = ed->get_window();
-		while (w && w->get_exclusive_child()) {
-			w = w->get_exclusive_child();
-		}
-		if (w && w != this) {
-			w->add_child(this);
-			popup_centered(ms);
-		}
-	}
+	EditorInterface::get_singleton()->popup_dialog_centered(this, ms);
 }
 
 void ProgressDialog::add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {

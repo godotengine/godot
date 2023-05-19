@@ -1704,6 +1704,14 @@ void ScriptEditorDebugger::remove_debugger_tab(Control *p_control) {
 	p_control->queue_free();
 }
 
+int ScriptEditorDebugger::get_current_debugger_tab() const {
+	return tabs->get_current_tab();
+}
+
+void ScriptEditorDebugger::switch_to_debugger(int p_debugger_tab_idx) {
+	tabs->set_current_tab(p_debugger_tab_idx);
+}
+
 void ScriptEditorDebugger::send_message(const String &p_message, const Array &p_args) {
 	_put_msg(p_message, p_args);
 }
@@ -1724,7 +1732,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 
 	{ //debugger
 		VBoxContainer *vbc = memnew(VBoxContainer);
-		vbc->set_name(TTR("Debugger"));
+		vbc->set_name(TTR("Stack Trace"));
 		Control *dbg = vbc;
 
 		HBoxContainer *hbc = memnew(HBoxContainer);

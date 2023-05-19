@@ -880,6 +880,15 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 						d2["is_virtual"] = false;
 						d2["hash"] = method->get_hash();
 
+						Vector<uint32_t> compat_hashes = ClassDB::get_method_compatibility_hashes(class_name, method_name);
+						if (compat_hashes.size()) {
+							Array compatibility;
+							for (int i = 0; i < compat_hashes.size(); i++) {
+								compatibility.push_back(compat_hashes[i]);
+							}
+							d2["hash_compatibility"] = compatibility;
+						}
+
 						Vector<Variant> default_args = method->get_default_arguments();
 
 						Array arguments;
@@ -1054,6 +1063,277 @@ void GDExtensionAPIDump::generate_extension_json_file(const String &p_path) {
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(fa.is_null(), vformat("Cannot open file '%s' for writing.", p_path));
 	fa->store_string(text);
+}
+
+static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_new_api, const String &p_base_array, const String &p_name_field, const Vector<String> &p_fields_to_compare, bool p_compare_hashes, const String &p_outer_class = String(), bool p_compare_operators = false) {
+	String base_array = p_outer_class + p_base_array;
+	if (!p_old_api.has(p_base_array)) {
+		return true; // May just not have this array and its still good. Probably added recently.
+	}
+	bool failed = false;
+	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_base_array), false, "New API lacks base array: " + p_base_array);
+	Array new_api = p_new_api[p_base_array];
+	HashMap<String, Dictionary> new_api_assoc;
+
+	for (int i = 0; i < new_api.size(); i++) {
+		Dictionary elem = new_api[i];
+		ERR_FAIL_COND_V_MSG(!elem.has(p_name_field), false, "Validate extension JSON: Element of base_array '" + base_array + "' is missing field '" + p_name_field + "'. This is a bug.");
+		String name = elem[p_name_field];
+		if (p_compare_operators && elem.has("right_type")) {
+			name += " " + String(elem["right_type"]);
+		}
+		new_api_assoc.insert(name, elem);
+	}
+
+	Array old_api = p_old_api[p_base_array];
+	for (int i = 0; i < old_api.size(); i++) {
+		Dictionary old_elem = old_api[i];
+		if (!old_elem.has(p_name_field)) {
+			failed = true;
+			print_error("Validate extension JSON: JSON file: element of base array '" + base_array + "' is missing the field: '" + p_name_field + "'.");
+			continue;
+		}
+		String name = old_elem[p_name_field];
+		if (p_compare_operators && old_elem.has("right_type")) {
+			name += " " + String(old_elem["right_type"]);
+		}
+		if (!new_api_assoc.has(name)) {
+			failed = true;
+			print_error("Validate extension JSON: API was removed: " + base_array + "/" + name);
+			continue;
+		}
+
+		Dictionary new_elem = new_api_assoc[name];
+
+		for (int j = 0; j < p_fields_to_compare.size(); j++) {
+			String field = p_fields_to_compare[j];
+			bool optional = field.begins_with("*");
+			if (optional) {
+				// This is an optional field, but if exists it has to exist in both.
+				field = field.substr(1, field.length());
+			}
+
+			bool added = field.begins_with("+");
+			if (added) {
+				// Meaning this field must either exist or contents may not exist.
+				field = field.substr(1, field.length());
+			}
+
+			Variant old_value;
+
+			if (!old_elem.has(field)) {
+				if (optional) {
+					if (new_elem.has(field)) {
+						failed = true;
+						print_error("Validate extension JSON: JSON file: Field was added in a way that breaks compatibility '" + base_array + "/" + name + "': " + field);
+					}
+				} else if (added && new_elem.has(field)) {
+					// Should be ok, field now exists, should not be verified in prior versions where it does not.
+				} else {
+					failed = true;
+					print_error("Validate extension JSON: JSON file: Missing filed in '" + base_array + "/" + name + "': " + field);
+				}
+				continue;
+			} else {
+				old_value = old_elem[field];
+			}
+
+			if (!new_elem.has(field)) {
+				failed = true;
+				ERR_PRINT("Validate extension JSON: Missing filed in current API '" + base_array + "/" + name + "': " + field + ". This is a bug.");
+				continue;
+			}
+
+			Variant new_value = new_elem[field];
+
+			bool equal = Variant::evaluate(Variant::OP_EQUAL, old_value, new_value);
+			if (!equal) {
+				failed = true;
+				print_error("Validate extension JSON: Error: Field '" + base_array + "/" + name + "': " + field + " changed value in new API, from " + old_value.get_construct_string() + " to " + new_value.get_construct_string() + ".");
+				continue;
+			}
+		}
+
+		if (p_compare_hashes) {
+			if (!old_elem.has("hash")) {
+				if (old_elem.has("is_virtual") && bool(old_elem["is_virtual"]) && !new_elem.has("hash")) {
+					continue; // No hash for virtual methods, go on.
+				}
+
+				failed = true;
+				print_error("Validate extension JSON: JSON file: element of base array '" + base_array + "' is missing the field: 'hash'.");
+				continue;
+			}
+
+			uint64_t old_hash = old_elem["hash"];
+
+			if (!new_elem.has("hash")) {
+				failed = true;
+				print_error("Validate extension JSON: Error: Field '" + base_array + "' is missing the field: 'hash'.");
+				continue;
+			}
+
+			uint64_t new_hash = new_elem["hash"];
+			bool hash_found = false;
+			if (old_hash == new_hash) {
+				hash_found = true;
+			} else if (new_elem.has("hash_compatibility")) {
+				Array compatibility = new_elem["hash_compatibility"];
+				for (int j = 0; j < compatibility.size(); j++) {
+					new_hash = compatibility[j];
+					if (new_hash == old_hash) {
+						hash_found = true;
+						break;
+					}
+				}
+			}
+
+			if (!hash_found) {
+				failed = true;
+				print_error("Validate extension JSON: Error: Hash mismatch for '" + base_array + "/" + name + "'. This means that the function has changed and no compatibility function was provided.");
+				continue;
+			}
+		}
+	}
+
+	return !failed;
+}
+
+static bool compare_sub_dict_array(HashSet<String> &r_removed_classes_registered, const String &p_outer, const String &p_outer_name, const Dictionary &p_old_api, const Dictionary &p_new_api, const String &p_base_array, const String &p_name_field, const Vector<String> &p_fields_to_compare, bool p_compare_hashes, bool p_compare_operators = false) {
+	if (!p_old_api.has(p_outer)) {
+		return true; // May just not have this array and its still good. Probably added recently or optional.
+	}
+	bool failed = false;
+	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_outer), false, "New API lacks base array: " + p_outer);
+	Array new_api = p_new_api[p_outer];
+	HashMap<String, Dictionary> new_api_assoc;
+
+	for (int i = 0; i < new_api.size(); i++) {
+		Dictionary elem = new_api[i];
+		ERR_FAIL_COND_V_MSG(!elem.has(p_outer_name), false, "Validate extension JSON: Element of base_array '" + p_outer + "' is missing field '" + p_outer_name + "'. This is a bug.");
+		new_api_assoc.insert(elem[p_outer_name], elem);
+	}
+
+	Array old_api = p_old_api[p_outer];
+
+	for (int i = 0; i < old_api.size(); i++) {
+		Dictionary old_elem = old_api[i];
+		if (!old_elem.has(p_outer_name)) {
+			failed = true;
+			print_error("Validate extension JSON: JSON file: element of base array '" + p_outer + "' is missing the field: '" + p_outer_name + "'.");
+			continue;
+		}
+		String name = old_elem[p_outer_name];
+		if (!new_api_assoc.has(name)) {
+			failed = true;
+			if (!r_removed_classes_registered.has(name)) {
+				print_error("Validate extension JSON: API was removed: " + p_outer + "/" + name);
+				r_removed_classes_registered.insert(name);
+			}
+			continue;
+		}
+
+		Dictionary new_elem = new_api_assoc[name];
+
+		if (!compare_dict_array(old_elem, new_elem, p_base_array, p_name_field, p_fields_to_compare, p_compare_hashes, p_outer + "/" + name + "/", p_compare_operators)) {
+			failed = true;
+		}
+	}
+
+	return !failed;
+}
+
+Error GDExtensionAPIDump::validate_extension_json_file(const String &p_path) {
+	Error error;
+	String text = FileAccess::get_file_as_string(p_path, &error);
+	if (error != OK) {
+		ERR_PRINT("Validate extension JSON: Could not open file '" + p_path + "'.");
+		return error;
+	}
+
+	Ref<JSON> json;
+	json.instantiate();
+	error = json->parse(text);
+	if (error != OK) {
+		ERR_PRINT("Validate extension JSON: Error parsing '" + p_path + "' at line " + itos(json->get_error_line()) + ": " + json->get_error_message());
+		return error;
+	}
+
+	Dictionary old_api = json->get_data();
+	Dictionary new_api = generate_extension_api();
+
+	{ // Validate header:
+		Dictionary header = old_api["header"];
+		ERR_FAIL_COND_V(!header.has("version_major"), ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(!header.has("version_minor"), ERR_INVALID_DATA);
+		int major = header["version_major"];
+		int minor = header["version_minor"];
+
+		ERR_FAIL_COND_V_MSG(major != VERSION_MAJOR, ERR_INVALID_DATA, "JSON API dump is for a different engine version (" + itos(major) + ") than this one (" + itos(major) + ")");
+		ERR_FAIL_COND_V_MSG(minor > VERSION_MINOR, ERR_INVALID_DATA, "JSON API dump is for a newer version of the engine: " + itos(major) + "." + itos(minor));
+	}
+
+	bool failed = false;
+
+	HashSet<String> removed_classes_registered;
+
+	if (!compare_dict_array(old_api, new_api, "constants", "name", Vector<String>({ "value", "is_bitfield" }), false)) {
+		failed = true;
+	}
+
+	if (!compare_dict_array(old_api, new_api, "utility_functions", "name", Vector<String>({ "category" }), true)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "builtin_classes", "name", old_api, new_api, "members", "name", { "type" }, false)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "builtin_classes", "name", old_api, new_api, "constants", "name", { "type", "value" }, false)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "builtin_classes", "name", old_api, new_api, "operators", "name", { "return_type" }, false, true)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "builtin_classes", "name", old_api, new_api, "methods", "name", {}, true)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "builtin_classes", "name", old_api, new_api, "constructors", "index", { "*arguments" }, false)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "classes", "name", old_api, new_api, "constants", "name", { "value" }, false)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "classes", "name", old_api, new_api, "methods", "name", { "is_virtual", "is_vararg", "is_static" }, true)) { // is_const sometimes can change because they are added if someone forgot, but should not be a problem for the extensions.
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "classes", "name", old_api, new_api, "signals", "name", { "*arguments" }, false)) {
+		failed = true;
+	}
+
+	if (!compare_sub_dict_array(removed_classes_registered, "classes", "name", old_api, new_api, "properties", "name", { "type", "*setter", "*getter", "*index" }, false)) {
+		failed = true;
+	}
+
+	if (!compare_dict_array(old_api, new_api, "singletons", "name", Vector<String>({ "type" }), false)) {
+		failed = true;
+	}
+
+	if (!compare_dict_array(old_api, new_api, "native_structures", "name", Vector<String>({ "format" }), false)) {
+		failed = true;
+	}
+
+	if (failed) {
+		return ERR_INVALID_DATA;
+	} else {
+		return OK;
+	}
 }
 
 #endif // TOOLS_ENABLED

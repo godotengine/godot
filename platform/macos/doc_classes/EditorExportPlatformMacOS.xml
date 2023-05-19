@@ -50,9 +50,11 @@
 		</member>
 		<member name="codesign/certificate_file" type="String" setter="" getter="">
 			PKCS #12 certificate file used to sign [code].app[/code] bundle.
+			Can be overridden with the environment variable [code]GODOT_MACOS_CODESIGN_CERTIFICATE_FILE[/code].
 		</member>
 		<member name="codesign/certificate_password" type="String" setter="" getter="">
 			Password for the certificate file used to sign [code].app[/code] bundle.
+			Can be overridden with the environment variable [code]GODOT_MACOS_CODESIGN_CERTIFICATE_PASSWORD[/code].
 		</member>
 		<member name="codesign/codesign" type="int" setter="" getter="">
 			Tool to use for code signing.
@@ -138,6 +140,7 @@
 		</member>
 		<member name="codesign/provisioning_profile" type="String" setter="" getter="">
 			Provisioning profile file downloaded from Apple developer account dashboard. See [url=https://developer.apple.com/help/account/manage-profiles/edit-download-or-delete-profiles]Edit, download, or delete provisioning profiles[/url].
+			Can be overridden with the environment variable [code]GODOT_MACOS_CODESIGN_PROVISIONING_PROFILE[/code].
 		</member>
 		<member name="custom_template/debug" type="String" setter="" getter="">
 			Path to the custom export template. If left empty, default template is used.
@@ -156,18 +159,23 @@
 		</member>
 		<member name="notarization/api_key" type="String" setter="" getter="">
 			Apple App Store Connect API issuer key file.
+			Can be overridden with the environment variable [code]GODOT_MACOS_NOTARIZATION_API_KEY[/code].
 		</member>
 		<member name="notarization/api_key_id" type="String" setter="" getter="">
 			Apple App Store Connect API issuer key ID.
+			Can be overridden with the environment variable [code]GODOT_MACOS_NOTARIZATION_API_KEY_ID[/code].
 		</member>
 		<member name="notarization/api_uuid" type="String" setter="" getter="">
 			Apple App Store Connect API issuer UUID.
+			Can be overridden with the environment variable [code]GODOT_MACOS_NOTARIZATION_API_UUID[/code].
 		</member>
 		<member name="notarization/apple_id_name" type="String" setter="" getter="">
 			Apple ID account name (email address).
+			Can be overridden with the environment variable [code]GODOT_MACOS_NOTARIZATION_APPLE_ID_NAME[/code].
 		</member>
 		<member name="notarization/apple_id_password" type="String" setter="" getter="">
 			Apple ID app-specific password.
+			Can be overridden with the environment variable [code]GODOT_MACOS_NOTARIZATION_APPLE_ID_PASSWORD[/code].
 		</member>
 		<member name="notarization/notarization" type="int" setter="" getter="">
 			Tool to use for notarization.

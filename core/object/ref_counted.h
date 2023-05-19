@@ -97,26 +97,15 @@ public:
 		return reference != p_r.reference;
 	}
 
-	_FORCE_INLINE_ T *operator->() {
+	_FORCE_INLINE_ T *operator*() const {
 		return reference;
 	}
 
-	_FORCE_INLINE_ T *operator*() {
+	_FORCE_INLINE_ T *operator->() const {
 		return reference;
 	}
 
-	_FORCE_INLINE_ const T *operator->() const {
-		return reference;
-	}
-
-	_FORCE_INLINE_ const T *ptr() const {
-		return reference;
-	}
-	_FORCE_INLINE_ T *ptr() {
-		return reference;
-	}
-
-	_FORCE_INLINE_ const T *operator*() const {
+	_FORCE_INLINE_ T *ptr() const {
 		return reference;
 	}
 
@@ -293,6 +282,18 @@ struct GetTypeInfo<const Ref<T> &> {
 	static inline PropertyInfo get_class_info() {
 		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
 	}
+};
+
+template <class T>
+struct VariantInternalAccessor<Ref<T>> {
+	static _FORCE_INLINE_ Ref<T> get(const Variant *v) { return Ref<T>(*VariantInternal::get_object(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::refcounted_object_assign(v, p_ref.ptr()); }
+};
+
+template <class T>
+struct VariantInternalAccessor<const Ref<T> &> {
+	static _FORCE_INLINE_ Ref<T> get(const Variant *v) { return Ref<T>(*VariantInternal::get_object(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::refcounted_object_assign(v, p_ref.ptr()); }
 };
 
 #endif // REF_COUNTED_H

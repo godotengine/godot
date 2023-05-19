@@ -302,4 +302,15 @@ String EditorExportPreset::get_script_encryption_key() const {
 	return script_key;
 }
 
+Variant EditorExportPreset::get_or_env(const StringName &p_name, const String &p_env_var, bool *r_valid) const {
+	const String from_env = OS::get_singleton()->get_environment(p_env_var);
+	if (!from_env.is_empty()) {
+		if (r_valid) {
+			*r_valid = true;
+		}
+		return from_env;
+	}
+	return get(p_name, r_valid);
+}
+
 EditorExportPreset::EditorExportPreset() {}

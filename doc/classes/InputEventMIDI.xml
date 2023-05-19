@@ -81,7 +81,8 @@
 			Returns a value indicating the type of message for this MIDI signal. This is a member of the [enum MIDIMessage] enum.
 			For MIDI messages between 0x80 and 0xEF, only the left half of the bits are returned as this value, as the other part is the channel (ex: 0x94 becomes 0x9). For MIDI messages from 0xF0 to 0xFF, the value is returned as-is.
 			Notes will return [constant MIDI_MESSAGE_NOTE_ON] when activated, but they might not always return [constant MIDI_MESSAGE_NOTE_OFF] when deactivated, therefore your code should treat the input as stopped if some period of time has passed.
-			For more information, see the MIDI message status byte list chart linked above.
+			Some MIDI devices may send [constant MIDI_MESSAGE_NOTE_ON] with zero velocity instead of [constant MIDI_MESSAGE_NOTE_OFF].
+			For more information, see the note in [member velocity] and the MIDI message status byte list chart linked above.
 		</member>
 		<member name="pitch" type="int" setter="set_pitch" getter="get_pitch" default="0">
 			The pitch index number of this MIDI signal. This value ranges from 0 to 127. On a piano, middle C is 60, and A440 is 69, see the "MIDI note" column of the piano key frequency chart on Wikipedia for more information.
@@ -90,7 +91,8 @@
 			The pressure of the MIDI signal. This value ranges from 0 to 127. For many devices, this value is always zero.
 		</member>
 		<member name="velocity" type="int" setter="set_velocity" getter="get_velocity" default="0">
-			The velocity of the MIDI signal. This value ranges from 0 to 127. For a piano, this corresponds to how quickly the key was pressed, and is rarely above about 110 in practice. Note that some MIDI devices may send a [constant MIDI_MESSAGE_NOTE_ON] message with zero velocity and expect this to be treated the same as a [constant MIDI_MESSAGE_NOTE_OFF] message, but device implementations vary so Godot reports event data exactly as received.
+			The velocity of the MIDI signal. This value ranges from 0 to 127. For a piano, this corresponds to how quickly the key was pressed, and is rarely above about 110 in practice.
+			[b]Note:[/b] Some MIDI devices may send a [constant MIDI_MESSAGE_NOTE_ON] message with zero velocity and expect this to be treated the same as a [constant MIDI_MESSAGE_NOTE_OFF] message, but device implementations vary so Godot reports event data exactly as received. Depending on the hardware and the needs of the game/app, this MIDI quirk can be handled robustly with a couple lines of script (check for [constant MIDI_MESSAGE_NOTE_ON] with velocity zero).
 		</member>
 	</members>
 </class>

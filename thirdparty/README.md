@@ -20,7 +20,7 @@ Files extracted from upstream source:
 ## astcenc
 
 - Upstream: https://github.com/ARM-software/astc-encoder
-- Version: 4.3.0 (ec83dda79fcefe07f69cdae7ed980d169bf2c4d4, 2023)
+- Version: 4.4.0 (5a5b5a1ef60dd47c27c28c66c118d22c40e3197e, 2023)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -32,13 +32,16 @@ Files extracted from upstream source:
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: git (a91e94c8495d7f470d3df326a364d49324cfd4a3, 2022)
+- Version: 1.16.4 (900e40fb5d2502927360fe2f31762bdbb624455f, 2023)
 - License: Apache 2.0
 
 Files extracted from upstream source:
 
 - `encoder/` and `transcoder/` folders
 - `LICENSE`
+
+Applied upstream PR https://github.com/BinomialLLC/basis_universal/pull/344 to
+fix build with our own copy of zstd (patch in `patches`).
 
 
 ## brotli
@@ -56,7 +59,7 @@ Files extracted from upstream source:
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
-- Version: git (b2f7415648411b6fd7c298c6c92d6552f0165f60, 2022)
+- Version: git (8bcd1092d29849d9fe0a3261ab3bb875eb410694, 2023)
 - License: MPL 2.0
 
 
@@ -79,7 +82,7 @@ in the `patches/` folder when syncing on newer upstream commits.
 ## doctest
 
 - Upstream: https://github.com/onqtam/doctest
-- Version: 2.4.9 (b7c21ec5ceeadb4951b00396fc1e4642dd347e5f, 2022)
+- Version: 2.4.11 (ae7a13539fb71f270b87eb2e874fbac80bc8dda2, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -361,6 +364,8 @@ Files extracted from upstream source:
 - `src/` and `sharpyuv/` except from: `.am`, `.rc` and `.in` files
 - `AUTHORS`, `COPYING`, `PATENTS`
 
+Patch `godot-node-debug-fix.patch` workarounds shadowing of godot's Node class in the MSVC debugger.
+
 
 ## mbedtls
 
@@ -378,6 +383,7 @@ File extracted from upstream release tarball:
   Applied the patch in `patches/windows-arm64-hardclock.diff`
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
+- Added the file `godot_module_mbedtls_config.h` to customize the build configuration when bundling the full library.
 
 
 ## meshoptimizer
@@ -622,18 +628,27 @@ Files extracted from upstream source:
 
 ## rvo2
 
+For 2D in `rvo2_2d` folder
+
+- Upstream: https://github.com/snape/RVO2
+- Version: git (f7c5380235f6c9ac8d19cbf71fc94e2d4758b0a3, 2021)
+- License: Apache 2.0
+
+For 3D in `rvo2_3d` folder
+
 - Upstream: https://github.com/snape/RVO2-3D
 - Version: git (bfc048670a4e85066e86a1f923d8ea92e3add3b2, 2021)
 - License: Apache 2.0
 
 Files extracted from upstream source:
 
-- All .cpp and .h files in the `src/` folder except for Export.h, RVO.h, RVOSimulator.cpp and RVOSimulator.h
+- All .cpp and .h files in the `src/` folder except for Export.h and RVO.h
 - LICENSE
 
-Important: Some files have Godot-made changes; so to enrich the features
-originally proposed by this library and better integrate this library with
-Godot. See the patch in the `patches` folder for details.
+Important: Nearly all files have Godot-made changes and renames
+to make the 2D and 3D rvo libraries compatible with each other
+and solve conflicts and also enrich the feature set originally
+proposed by these libraries and better integrate them with Godot.
 
 
 ## spirv-reflect
@@ -687,8 +702,8 @@ instead of `miniz.h` as an external dependency.
 
 ## thorvg
 
-- Upstream: https://github.com/Samsung/thorvg
-- Version: 0.8.4 (b0b7f207c6235691d694fc3f76e0b96e4858e606, 2023)
+- Upstream: https://github.com/thorvg/thorvg
+- Version: 0.9.0 (a744006aa1edb918bacf0a415d0a57ca058e25f4, 2023)
 - License: MIT
 
 Files extracted from upstream source:

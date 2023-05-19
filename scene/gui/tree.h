@@ -217,8 +217,8 @@ private:
 	void _propagate_check_through_children(int p_column, bool p_checked, bool p_emit_signal);
 	void _propagate_check_through_parents(int p_column, bool p_emit_signal);
 
-	TreeItem *_get_prev_visible(bool p_wrap = false);
-	TreeItem *_get_next_visible(bool p_wrap = false);
+	TreeItem *_get_prev_in_tree(bool p_wrap = false, bool p_include_invisible = false);
+	TreeItem *_get_next_in_tree(bool p_wrap = false, bool p_include_invisible = false);
 
 public:
 	void set_text(int p_column, String p_text);
@@ -343,6 +343,9 @@ public:
 	TreeItem *get_next() const;
 	TreeItem *get_parent() const;
 	TreeItem *get_first_child() const;
+
+	TreeItem *get_prev_in_tree(bool p_wrap = false);
+	TreeItem *get_next_in_tree(bool p_wrap = false);
 
 	TreeItem *get_prev_visible(bool p_wrap = false);
 	TreeItem *get_next_visible(bool p_wrap = false);
@@ -476,8 +479,8 @@ private:
 	void update_item_cell(TreeItem *p_item, int p_col);
 	void update_item_cache(TreeItem *p_item);
 	//void draw_item_text(String p_text,const Ref<Texture2D>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
-	void draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Point2 &p_draw_ofs, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color);
-	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item);
+	void draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color);
+	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int *r_self_height = nullptr);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
 	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int x_limit, bool p_double_click, TreeItem *p_item, MouseButton p_button, const Ref<InputEventWithModifiers> &p_mod);
 	void _line_editor_submit(String p_text);
@@ -724,13 +727,15 @@ public:
 
 	int get_item_offset(TreeItem *p_item) const;
 	Rect2 get_item_rect(TreeItem *p_item, int p_column = -1, int p_button = -1) const;
-	bool edit_selected();
+	bool edit_selected(bool p_force_edit = false);
 	bool is_editing();
+	void set_editor_selection(int p_from_line, int p_to_line, int p_from_column = -1, int p_to_column = -1, int p_caret = 0);
 
 	// First item that starts with the text, from the current focused item down and wraps around.
 	TreeItem *search_item_text(const String &p_find, int *r_col = nullptr, bool p_selectable = false);
 	// First item that matches the whole text, from the first item down.
 	TreeItem *get_item_with_text(const String &p_find) const;
+	TreeItem *get_item_with_metadata(const Variant &p_find, int p_column = -1) const;
 
 	Point2 get_scroll() const;
 	void scroll_to_item(TreeItem *p_item, bool p_center_on_item = false);

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeBlendTree" inherits="AnimationRootNode" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		[AnimationTree] node resource that contains many blend type nodes.
+		A sub-tree of blend type [AnimationNode]s used for complex animations. Used by [AnimationTree].
 	</brief_description>
 	<description>
-		This node may contain a sub-tree of any other blend type nodes, such as [AnimationNodeTransition], [AnimationNodeBlend2], [AnimationNodeBlend3], [AnimationNodeOneShot], etc. This is one of the most commonly used roots.
+		This node may contain a sub-tree of any other blend type nodes, such as [AnimationNodeTransition], [AnimationNodeBlend2], [AnimationNodeBlend3], [AnimationNodeOneShot], etc. This is one of the most commonly used animation node roots.
 		An [AnimationNodeOutput] node named [code]output[/code] is created by default.
 	</description>
 	<tutorials>
-		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_node">

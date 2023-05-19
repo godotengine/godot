@@ -35,9 +35,11 @@
 		</member>
 		<member name="application/provisioning_profile_uuid_debug" type="String" setter="" getter="">
 			UUID of the provisioning profile. If left empty, Xcode will download or create a provisioning profile automatically. See [url=https://developer.apple.com/help/account/manage-profiles/edit-download-or-delete-profiles]Edit, download, or delete provisioning profiles[/url].
+			Can be overridden with the environment variable [code]GODOT_IOS_PROVISIONING_PROFILE_UUID_DEBUG[/code].
 		</member>
 		<member name="application/provisioning_profile_uuid_release" type="String" setter="" getter="">
 			UUID of the provisioning profile. If left empty, Xcode will download or create a provisioning profile automatically. See [url=https://developer.apple.com/help/account/manage-profiles/edit-download-or-delete-profiles]Edit, download, or delete provisioning profiles[/url].
+			Can be overridden with the environment variable [code]GODOT_IOS_PROVISIONING_PROFILE_UUID_RELEASE[/code].
 		</member>
 		<member name="application/short_version" type="String" setter="" getter="">
 			Application version visible to the user, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
@@ -69,14 +71,14 @@
 		<member name="icons/app_store_1024x1024" type="String" setter="" getter="">
 			App Store application icon file. If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
+		<member name="icons/ipad_76x76" type="String" setter="" getter="">
+			Home screen application icon file on iPad (1x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+		</member>
 		<member name="icons/ipad_152x152" type="String" setter="" getter="">
 			Home screen application icon file on iPad (2x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/ipad_167x167" type="String" setter="" getter="">
 			Home screen application icon file on iPad (3x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
-		</member>
-		<member name="icons/ipad_76x76" type="String" setter="" getter="">
-			Home screen application icon file on iPad (1x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/iphone_120x120" type="String" setter="" getter="">
 			Home screen application icon file on iPhone (2x DPI). If left empty, project icon is used instead. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -114,25 +116,25 @@
 		<member name="landscape_launch_screens/iphone_2436x1125" type="String" setter="" getter="">
 			Application launch screen image file, if left empty project splash screen is used instead.
 		</member>
+		<member name="portrait_launch_screens/ipad_768x1024" type="String" setter="" getter="">
+			Application launch screen image file, if left empty project splash screen is used instead.
+		</member>
 		<member name="portrait_launch_screens/ipad_1536x2048" type="String" setter="" getter="">
 			Application launch screen image file, if left empty project splash screen is used instead.
 		</member>
-		<member name="portrait_launch_screens/ipad_768x1024" type="String" setter="" getter="">
+		<member name="portrait_launch_screens/iphone_640x960" type="String" setter="" getter="">
+			Application launch screen image file, if left empty project splash screen is used instead.
+		</member>
+		<member name="portrait_launch_screens/iphone_640x1136" type="String" setter="" getter="">
+			Application launch screen image file, if left empty project splash screen is used instead.
+		</member>
+		<member name="portrait_launch_screens/iphone_750x1334" type="String" setter="" getter="">
 			Application launch screen image file, if left empty project splash screen is used instead.
 		</member>
 		<member name="portrait_launch_screens/iphone_1125x2436" type="String" setter="" getter="">
 			Application launch screen image file, if left empty project splash screen is used instead.
 		</member>
 		<member name="portrait_launch_screens/iphone_1242x2208" type="String" setter="" getter="">
-			Application launch screen image file, if left empty project splash screen is used instead.
-		</member>
-		<member name="portrait_launch_screens/iphone_640x1136" type="String" setter="" getter="">
-			Application launch screen image file, if left empty project splash screen is used instead.
-		</member>
-		<member name="portrait_launch_screens/iphone_640x960" type="String" setter="" getter="">
-			Application launch screen image file, if left empty project splash screen is used instead.
-		</member>
-		<member name="portrait_launch_screens/iphone_750x1334" type="String" setter="" getter="">
 			Application launch screen image file, if left empty project splash screen is used instead.
 		</member>
 		<member name="privacy/camera_usage_description" type="String" setter="" getter="">

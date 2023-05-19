@@ -55,6 +55,7 @@
 #include <regstr.h>
 #include <shlobj.h>
 #include <wbemcli.h>
+#include <wincrypt.h>
 
 #ifdef DEBUG_ENABLED
 #pragma pack(push, before_imagehlp, 8)
@@ -435,8 +436,6 @@ String OS_Windows::get_distribution_name() const {
 }
 
 String OS_Windows::get_version() const {
-	typedef LONG NTSTATUS;
-	typedef NTSTATUS(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
 	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
 	if (version_ptr != nullptr) {
 		RTL_OSVERSIONINFOW fow;
@@ -554,9 +553,9 @@ OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
 
 	//Get DST information from Windows, but only if p_utc is false.
 	TIME_ZONE_INFORMATION info;
-	bool daylight = false;
+	bool is_daylight = false;
 	if (!p_utc && GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
-		daylight = true;
+		is_daylight = true;
 	}
 
 	DateTime dt;
@@ -567,20 +566,20 @@ OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
 	dt.hour = systemtime.wHour;
 	dt.minute = systemtime.wMinute;
 	dt.second = systemtime.wSecond;
-	dt.dst = daylight;
+	dt.dst = is_daylight;
 	return dt;
 }
 
 OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 	TIME_ZONE_INFORMATION info;
-	bool daylight = false;
+	bool is_daylight = false;
 	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
-		daylight = true;
+		is_daylight = true;
 	}
 
 	// Daylight Bias needs to be added to the bias if DST is in effect, or else it will not properly update.
 	TimeZoneInfo ret;
-	if (daylight) {
+	if (is_daylight) {
 		ret.name = info.DaylightName;
 		ret.bias = info.Bias + info.DaylightBias;
 	} else {
@@ -706,16 +705,16 @@ Dictionary OS_Windows::get_memory_info() const {
 	}
 
 	if (pref_info.PhysicalTotal * pref_info.PageSize != 0) {
-		meminfo["physical"] = pref_info.PhysicalTotal * pref_info.PageSize;
+		meminfo["physical"] = static_cast<int64_t>(pref_info.PhysicalTotal * pref_info.PageSize);
 	}
 	if (pref_info.PhysicalAvailable * pref_info.PageSize != 0) {
-		meminfo["free"] = pref_info.PhysicalAvailable * pref_info.PageSize;
+		meminfo["free"] = static_cast<int64_t>(pref_info.PhysicalAvailable * pref_info.PageSize);
 	}
 	if (pref_info.CommitLimit * pref_info.PageSize != 0) {
-		meminfo["available"] = pref_info.CommitLimit * pref_info.PageSize;
+		meminfo["available"] = static_cast<int64_t>(pref_info.CommitLimit * pref_info.PageSize);
 	}
 	if (HighLimit - LowLimit != 0) {
-		meminfo["stack"] = HighLimit - LowLimit;
+		meminfo["stack"] = static_cast<int64_t>(HighLimit - LowLimit);
 	}
 
 	return meminfo;
@@ -1675,6 +1674,36 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	}
 
 	return OK;
+}
+
+String OS_Windows::get_system_ca_certificates() {
+	HCERTSTORE cert_store = CertOpenSystemStoreA(0, "ROOT");
+	ERR_FAIL_COND_V_MSG(!cert_store, "", "Failed to read the root certificate store.");
+
+	FILETIME curr_time;
+	GetSystemTimeAsFileTime(&curr_time);
+
+	String certs;
+	PCCERT_CONTEXT curr = CertEnumCertificatesInStore(cert_store, nullptr);
+	while (curr) {
+		FILETIME ft;
+		DWORD size = sizeof(ft);
+		// Check if the certificate is disallowed.
+		if (CertGetCertificateContextProperty(curr, CERT_DISALLOWED_FILETIME_PROP_ID, &ft, &size) && CompareFileTime(&curr_time, &ft) != -1) {
+			curr = CertEnumCertificatesInStore(cert_store, curr);
+			continue;
+		}
+		// Encode and add to certificate list.
+		bool success = CryptBinaryToStringA(curr->pbCertEncoded, curr->cbCertEncoded, CRYPT_STRING_BASE64HEADER | CRYPT_STRING_NOCR, nullptr, &size);
+		ERR_CONTINUE(!success);
+		PackedByteArray pba;
+		pba.resize(size);
+		CryptBinaryToStringA(curr->pbCertEncoded, curr->cbCertEncoded, CRYPT_STRING_BASE64HEADER | CRYPT_STRING_NOCR, (char *)pba.ptrw(), &size);
+		certs += String((char *)pba.ptr(), size);
+		curr = CertEnumCertificatesInStore(cert_store, curr);
+	}
+	CertCloseStore(cert_store, 0);
+	return certs;
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {

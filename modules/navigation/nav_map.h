@@ -38,11 +38,16 @@
 #include "core/templates/rb_map.h"
 #include "nav_utils.h"
 
-#include <KdTree.h>
+#include <KdTree2d.h>
+#include <RVOSimulator2d.h>
+
+#include <KdTree3d.h>
+#include <RVOSimulator3d.h>
 
 class NavLink;
 class NavRegion;
 class NavAgent;
+class NavObstacle;
 
 class NavMap : public NavRid {
 	/// Map Up
@@ -52,6 +57,7 @@ class NavMap : public NavRid {
 	/// each cell has the following cell_size.
 	real_t cell_size = 0.25;
 
+	bool use_edge_connections = true;
 	/// This value is used to detect the near edges to connect.
 	real_t edge_connection_margin = 0.25;
 
@@ -71,23 +77,35 @@ class NavMap : public NavRid {
 	/// Map polygons
 	LocalVector<gd::Polygon> polygons;
 
-	/// Rvo world
-	RVO::KdTree rvo;
+	/// RVO avoidance worlds
+	RVO2D::RVOSimulator2D rvo_simulation_2d;
+	RVO3D::RVOSimulator3D rvo_simulation_3d;
 
-	/// Is agent array modified?
-	bool agents_dirty = false;
+	/// avoidance controlled agents
+	LocalVector<NavAgent *> active_2d_avoidance_agents;
+	LocalVector<NavAgent *> active_3d_avoidance_agents;
+
+	/// dirty flag when one of the agent's arrays are modified
+	bool agents_dirty = true;
 
 	/// All the Agents (even the controlled one)
 	LocalVector<NavAgent *> agents;
 
-	/// Controlled agents
-	LocalVector<NavAgent *> controlled_agents;
+	/// All the avoidance obstacles (both static and dynamic)
+	LocalVector<NavObstacle *> obstacles;
+
+	/// Are rvo obstacles modified?
+	bool obstacles_dirty = true;
 
 	/// Physics delta time
 	real_t deltatime = 0.0;
 
 	/// Change the id each time the map is updated.
 	uint32_t map_update_id = 0;
+
+	bool use_threads = true;
+	bool avoidance_use_multiple_threads = true;
+	bool avoidance_use_high_priority_threads = true;
 
 	// Performance Monitor
 	int pm_region_count = 0;
@@ -111,6 +129,11 @@ public:
 	void set_cell_size(real_t p_cell_size);
 	real_t get_cell_size() const {
 		return cell_size;
+	}
+
+	void set_use_edge_connections(bool p_enabled);
+	bool get_use_edge_connections() const {
+		return use_edge_connections;
 	}
 
 	void set_edge_connection_margin(real_t p_edge_connection_margin);
@@ -154,6 +177,13 @@ public:
 	void set_agent_as_controlled(NavAgent *agent);
 	void remove_agent_as_controlled(NavAgent *agent);
 
+	bool has_obstacle(NavObstacle *obstacle) const;
+	void add_obstacle(NavObstacle *obstacle);
+	void remove_obstacle(NavObstacle *obstacle);
+	const LocalVector<NavObstacle *> &get_obstacles() const {
+		return obstacles;
+	}
+
 	uint32_t get_map_update_id() const {
 		return map_update_id;
 	}
@@ -174,7 +204,15 @@ public:
 
 private:
 	void compute_single_step(uint32_t index, NavAgent **agent);
+
+	void compute_single_avoidance_step_2d(uint32_t index, NavAgent **agent);
+	void compute_single_avoidance_step_3d(uint32_t index, NavAgent **agent);
+
 	void clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const;
+	void _update_rvo_simulation();
+	void _update_rvo_obstacles_tree_2d();
+	void _update_rvo_agents_tree_2d();
+	void _update_rvo_agents_tree_3d();
 };
 
 #endif // NAV_MAP_H

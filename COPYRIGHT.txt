@@ -169,7 +169,7 @@ License: Expat
 
 Files: ./thirdparty/doctest/
 Comment: doctest
-Copyright: 2016-2021, Viktor Kirilov
+Copyright: 2016-2023, Viktor Kirilov
 License: Expat
 
 Files: ./thirdparty/embree/

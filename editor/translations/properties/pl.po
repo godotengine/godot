@@ -76,7 +76,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-20 03:46+0000\n"
+"PO-Revision-Date: 2023-04-30 10:49+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pl/>\n"
@@ -196,17 +196,35 @@ msgstr "Zachowaj włączony ekran"
 msgid "Audio"
 msgstr "Audio"
 
+msgid "Buses"
+msgstr "Magistrale"
+
 msgid "Default Bus Layout"
 msgstr "Domyślny układ magistrali"
 
+msgid "General"
+msgstr "Ogólne"
+
+msgid "2D Panning Strength"
+msgstr "Siła przesuwania 2D"
+
 msgid "3D Panning Strength"
-msgstr "Siła panoramy 3D"
+msgstr "Siła przesuwania 3D"
 
 msgid "Editor"
 msgstr "Edytor"
 
+msgid "Script"
+msgstr "Skrypt"
+
 msgid "Search in File Extensions"
-msgstr "Szukaj wśród rozszerzeń plików"
+msgstr "Rozszerzenia szukania w plikach"
+
+msgid "Subwindows"
+msgstr "Okna podrzędne"
+
+msgid "Embed Subwindows"
+msgstr "Osadź okna podrzędne"
 
 msgid "Physics"
 msgstr "Fizyka"
@@ -238,8 +256,32 @@ msgstr "Ustawienia"
 msgid "Profiler"
 msgstr "Profiler"
 
+msgid "Max Functions"
+msgstr "Maksymalna liczba funkcji"
+
 msgid "Compression"
 msgstr "Kompresja"
+
+msgid "Formats"
+msgstr "Formaty"
+
+msgid "Zstd"
+msgstr "Zstd"
+
+msgid "Compression Level"
+msgstr "Poziom kompresji"
+
+msgid "Window Log Size"
+msgstr "Rozmiar dziennika okna"
+
+msgid "Zlib"
+msgstr "Zlib"
+
+msgid "Gzip"
+msgstr "Gzip"
+
+msgid "Crash Handler"
+msgstr "Obsługa awarii"
 
 msgid "Message"
 msgstr "Wiadomość"
@@ -288,6 +330,18 @@ msgstr "Vulkan"
 
 msgid "Max Descriptors per Pool"
 msgstr "Maks. liczba deskryptorów na pulę"
+
+msgid "Textures"
+msgstr "Tekstury"
+
+msgid "Canvas Textures"
+msgstr "Tekstury płótna"
+
+msgid "Default Texture Filter"
+msgstr "Domyślny filtr tekstur"
+
+msgid "Default Texture Repeat"
+msgstr "Domyślne zapętlenie tekstur"
 
 msgid "Low Processor Usage Mode"
 msgstr "Tryb niskiego wykorzystania procesora"
@@ -756,6 +810,9 @@ msgstr "Wytyczne dotyczące długości linii miękkiej kolumny"
 
 msgid "Line Length Guideline Hard Column"
 msgstr "Wytyczne dotyczące długości linii twardej kolumny"
+
+msgid "Gutters"
+msgstr "Rynny"
 
 msgid "Show Line Numbers"
 msgstr "Pokaż numery linii"
@@ -1288,6 +1345,9 @@ msgstr "Język"
 msgid "Outline Size"
 msgstr "Rozmiar konturu"
 
+msgid "Variation"
+msgstr "Odmiana"
+
 msgid "Transform"
 msgstr "Przekształcanie"
 
@@ -1375,11 +1435,20 @@ msgstr "Wysokość"
 msgid "Radius"
 msgstr "Promień"
 
+msgid "Save to File"
+msgstr "Zapisz do pliku"
+
 msgid "Enabled"
 msgstr "Włączony"
 
+msgid "LODs"
+msgstr "LODy"
+
 msgid "Normal Merge Angle"
 msgstr "Kąt scalania normalnych"
+
+msgid "Use External"
+msgstr "Użyj zewnętrznych"
 
 msgid "Loop Mode"
 msgstr "Tryb zapętlenia"
@@ -1390,8 +1459,17 @@ msgstr "Zachowaj własne ścieżki"
 msgid "Optimizer"
 msgstr "Optymalizator"
 
+msgid "Max Velocity Error"
+msgstr "Maks. błąd prędkości"
+
 msgid "Max Angular Error"
 msgstr "Maks. błąd kątowy"
+
+msgid "Max Precision Error"
+msgstr "Maks. błąd precyzji"
+
+msgid "Import Tracks"
+msgstr "Importuj ścieżki"
 
 msgid "Bone Map"
 msgstr "Mapa kości"
@@ -1561,8 +1639,14 @@ msgstr "Ostrzeżenia"
 msgid "ID"
 msgstr "ID"
 
+msgid "Texture"
+msgstr "Tekstura"
+
 msgid "Separation"
 msgstr "Separacja"
+
+msgid "Texture Region Size"
+msgstr "Rozmiar obszaru tekstury"
 
 msgid "Speed"
 msgstr "Prędkość"
@@ -1936,6 +2020,9 @@ msgstr "Kafelki"
 msgid "Variant"
 msgstr "Wariant"
 
+msgid "VRAM Texture Compression"
+msgstr "Kompresja VRAM tekstur"
+
 msgid "File Version"
 msgstr "Wersja pliku"
 
@@ -1962,6 +2049,9 @@ msgstr "Prawo"
 
 msgid "Input"
 msgstr "Wejście"
+
+msgid "Disabled"
+msgstr "Wyłączony"
 
 msgid "Time"
 msgstr "Czas"
@@ -1996,11 +2086,17 @@ msgstr "Przyspiesz maks"
 msgid "Visibility Rect"
 msgstr "Prostokąt widoczności"
 
+msgid "Texture Scale"
+msgstr "Skala tekstury"
+
 msgid "Default Color"
 msgstr "Kolor domyślny"
 
 msgid "Fill"
 msgstr "Wypełnienie"
+
+msgid "Texture Mode"
+msgstr "Tryb tekstury"
 
 msgid "Navigation Layers"
 msgstr "Warstwy nawigacji"
@@ -2026,6 +2122,12 @@ msgstr "Ustawienia edytora"
 msgid "Region"
 msgstr "Obszar"
 
+msgid "Texture Normal"
+msgstr "Normalna tekstury"
+
+msgid "Texture Pressed"
+msgstr "Tekstura wciśniętego"
+
 msgid "Bitmask"
 msgstr "Maska bitowa"
 
@@ -2041,6 +2143,9 @@ msgstr "Moduluj"
 msgid "Flags"
 msgstr "Flagi"
 
+msgid "Texture Filter"
+msgstr "Filtr tekstury"
+
 msgid "Text"
 msgstr "Tekst"
 
@@ -2050,8 +2155,14 @@ msgstr "Wielkie litery"
 msgid "Blur"
 msgstr "Rozmazanie"
 
+msgid "Light Texture"
+msgstr "Tekstura światła"
+
 msgid "Quality"
 msgstr "Jakość"
+
+msgid "Max Texture Size"
+msgstr "Maksymalny rozmiar tekstury"
 
 msgid "Bones"
 msgstr "Kości"
@@ -2145,6 +2256,9 @@ msgstr "Przeciągnij, aby zmienić kolejność włączone"
 
 msgid "Syntax Highlighter"
 msgstr "Podświetlacz składni"
+
+msgid "Ignore Texture Size"
+msgstr "Ignoruj rozmiar tekstury"
 
 msgid "Fill Degrees"
 msgstr "Stopnie wypełnienia"
@@ -2257,6 +2371,9 @@ msgstr "Mgła"
 msgid "Color Correction"
 msgstr "Korekcja koloru"
 
+msgid "Density Texture"
+msgstr "Tekstura gęstości"
+
 msgid "Features"
 msgstr "Funkcje"
 
@@ -2266,8 +2383,17 @@ msgstr "Sposób interpolacji"
 msgid "Shader"
 msgstr "Shader"
 
+msgid "Texture MSDF"
+msgstr "MSDF tekstury"
+
+msgid "Texture Channel"
+msgstr "Kanał tekstury"
+
 msgid "Operator"
 msgstr "Operator"
+
+msgid "Flip Texture"
+msgstr "Odbij teksturę"
 
 msgid "Subsurface Scattering"
 msgstr "Rozpraszanie podpowierzchniowe"
@@ -2293,14 +2419,23 @@ msgstr "Format transformacji"
 msgid "Parsed Geometry Type"
 msgstr "Parsowany typ geometrii"
 
+msgid "Point Texture"
+msgstr "Tekstura punktowa"
+
 msgid "Normal Texture"
 msgstr "Tekstura normalnych"
+
+msgid "Color Texture"
+msgstr "Tekstura koloru"
 
 msgid "B"
 msgstr "B"
 
 msgid "Ground Color"
 msgstr "Kolor podłoża"
+
+msgid "Texture Margins"
+msgstr "Marginesy tekstury"
 
 msgid "Blend"
 msgstr "Mieszanie"
@@ -2319,6 +2454,9 @@ msgstr "Lewy dolny róg"
 
 msgid "Atlas"
 msgstr "Atlas"
+
+msgid "Base Texture"
+msgstr "Bazowa tekstura"
 
 msgid "Image Size"
 msgstr "Rozmiar obrazu"
@@ -2347,8 +2485,20 @@ msgstr "Prawdopodobieństwo"
 msgid "Constant"
 msgstr "Stała"
 
+msgid "Texture Type"
+msgstr "Typ tekstury"
+
+msgid "Texture Array"
+msgstr "Tablica tekstur"
+
 msgid "Function"
 msgstr "Funkcja"
+
+msgid "Texture Repeat"
+msgstr "Zapętlenie tekstury"
+
+msgid "Texture Source"
+msgstr "Źródło tekstury"
 
 msgid "Use All Surfaces"
 msgstr "Użyj wszystkich powierzchni"

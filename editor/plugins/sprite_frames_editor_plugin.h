@@ -127,6 +127,9 @@ class SpriteFramesEditor : public HSplitContainer {
 	LineEdit *anim_search_box = nullptr;
 	Tree *animations = nullptr;
 
+	Label *missing_anim_label = nullptr;
+	VBoxContainer *anim_frames_vb = nullptr;
+
 	EditorFileDialog *file = nullptr;
 
 	AcceptDialog *dialog = nullptr;

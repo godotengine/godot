@@ -1002,7 +1002,7 @@
 			<return type="float" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="width" type="float" />
-			<param index="2" name="jst_flags" type="int" enum="TextServer.JustificationFlag" />
+			<param index="2" name="justification_flags" type="int" enum="TextServer.JustificationFlag" />
 			<description>
 			</description>
 		</method>

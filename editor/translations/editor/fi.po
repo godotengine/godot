@@ -2700,6 +2700,9 @@ msgstr ""
 msgid "Runnable"
 msgstr "Suoritettava"
 
+msgid "Resources to export:"
+msgstr "Vietävät resurssit:"
+
 msgid "Delete preset '%s'?"
 msgstr "Poista esiasetus '%s'?"
 
@@ -2745,9 +2748,6 @@ msgstr "Vie valitut resurssit (ja riippuvuudet)"
 
 msgid "Export Mode:"
 msgstr "Vientitila:"
-
-msgid "Resources to export:"
-msgstr "Vietävät resurssit:"
 
 msgid "Keep"
 msgstr "Pidä"

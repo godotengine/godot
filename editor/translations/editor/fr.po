@@ -125,13 +125,15 @@
 # Hugo cartier <hugo.toticartier@gmail.com>, 2023.
 # Rémy Lapointe <remy-lapointe@hotmail.ca>, 2023.
 # "Dimitri A." <dimitripilot3@gmail.com>, 2023.
+# Donovan Cartier <donovan.cartier0@gmail.com>, 2023.
+# Rémi Verschelde <remi@godotengine.org>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-10 22:42+0000\n"
-"Last-Translator: \"Dimitri A.\" <dimitripilot3@gmail.com>\n"
+"PO-Revision-Date: 2023-05-19 06:49+0000\n"
+"Last-Translator: Rémi Verschelde <remi@godotengine.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -139,7 +141,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Non défini"
@@ -1371,7 +1373,8 @@ msgid "Edit Connection: '%s'"
 msgstr "Modifier la connexion : '%s'"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr "Voulez-vous vraiment supprimer toutes les connexions de ce signal ?"
+msgstr ""
+"Voulez-vous vraiment supprimer toutes les connexions du signal \"%s\" ?"
 
 msgid "Signals"
 msgstr "Signaux"
@@ -3012,7 +3015,7 @@ msgid "Copy Property Path"
 msgstr "Copier le chemin de la propriété"
 
 msgid "Select existing layout:"
-msgstr "Sélectionner la disposition existante"
+msgstr "Sélectionner la disposition existante :"
 
 msgid "Or enter new layout name"
 msgstr "Ou entrer un nouveau nom de disposition"
@@ -4600,6 +4603,12 @@ msgstr ""
 "Tous les préréglages doivent avoir un chemin d'exportation défini pour "
 "pouvoir tous les exportés."
 
+msgid "Resources to exclude:"
+msgstr "Ressources à exclure :"
+
+msgid "Resources to export:"
+msgstr "Ressources à exporter :"
+
 msgid "Delete preset '%s'?"
 msgstr "Supprimer le préréglage « %s » ?"
 
@@ -4607,7 +4616,7 @@ msgid "%s Export"
 msgstr "Export %s"
 
 msgid "Release"
-msgstr "Publication (release)"
+msgstr "Publication"
 
 msgid "Exporting All"
 msgstr "Tout exporter"
@@ -4656,9 +4665,6 @@ msgstr "Exporter en tant que serveur dédié"
 
 msgid "Export Mode:"
 msgstr "Mode d'exportation :"
-
-msgid "Resources to export:"
-msgstr "Ressources à exporter :"
 
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"
@@ -9166,11 +9172,6 @@ msgstr "Seules les ressources du système de fichiers peuvent être abaissées."
 msgid "Can't drop nodes without an open scene."
 msgstr "Impossible de déposer les nœuds sans scène ouverte."
 
-msgid "Can't drop nodes because script '%s' is not used in this scene."
-msgstr ""
-"Impossible de supprimer les nœuds car le script '% s' n'est pas utilisé dans "
-"cette scène."
-
 msgid "Lookup Symbol"
 msgstr "Rechercher un symbole"
 
@@ -9340,14 +9341,71 @@ msgstr "Définir transformation de l'os"
 msgid "Set Bone Rest"
 msgstr "Définir pose au repos de l'os"
 
+msgid "Cannot create a physical skeleton for a Skeleton3D node with no bones."
+msgstr ""
+"Impossible de créer un squelette physique pour un nœud Skeleton3D sans os."
+
 msgid "Create physical bones"
 msgstr "Créer des os physiques"
+
+msgid "Cannot export a SkeletonProfile for a Skeleton3D node with no bones."
+msgstr ""
+"Impossible d'exporter un SkeletonProfile pour un nœud Skeleton3D sans os."
 
 msgid "Export Skeleton Profile As..."
 msgstr "Exporter le profil de squelette en tant que..."
 
+msgid "Set Bone Parentage"
+msgstr "Paramétrer la parenté de l'os"
+
+msgid "Skeleton3D"
+msgstr "Squelette 3D"
+
+msgid "Reset All Bone Poses"
+msgstr "Réinitialiser toutes les poses de l'os"
+
+msgid "Reset Selected Poses"
+msgstr "Réinitialiser les poses sélectionnées"
+
+msgid "Apply All Poses to Rests"
+msgstr "Appliquer toutes les poses au repos"
+
+msgid "Apply Selected Poses to Rests"
+msgstr "Appliquer les poses sélectionnées au repos"
+
+msgid "Create Physical Skeleton"
+msgstr "Créer un squelette physique"
+
+msgid "Export Skeleton Profile"
+msgstr "Exporter le profil du squelette"
+
+msgid ""
+"Edit Mode\n"
+"Show buttons on joints."
+msgstr ""
+"Mode Édition\n"
+"Montre les boutons sur les jointures."
+
+msgid "Insert key of bone poses already exist track."
+msgstr "Insérer la clé d'une pose d'os qui existe déjà dans la piste."
+
+msgid "Insert key of all bone poses."
+msgstr "Insérer la clé de toutes les poses d'os."
+
+msgid "Insert Key (All Bones)"
+msgstr "Insérer une clé (Tous les os)"
+
+msgid "Bone Transform"
+msgstr "Transformation d'Os"
+
 msgid "Play IK"
 msgstr "Jouer IK"
+
+msgid "Create MeshInstance2D"
+msgstr "Créer un MeshInstance2D"
+
+msgid "MeshInstance2D Preview"
+msgstr "Prévisualisation du MeshInstance2D"
 
 msgid "Create Polygon2D"
 msgstr "Créer un Polygon2D"
@@ -9369,6 +9427,9 @@ msgstr "Prévisualisation du LightOccluder2D"
 
 msgid "Can't convert a Sprite2D from a foreign scene."
 msgstr "Impossible de convertir un Sprite2D à partir d'une scène étrangère."
+
+msgid "Sprite2D is empty!"
+msgstr "Le Sprite2D est vide !"
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr ""
@@ -9398,6 +9459,9 @@ msgstr "Géométrie invalide, impossible de créer l'occulteur de lumière."
 
 msgid "Create LightOccluder2D Sibling"
 msgstr "Créer un LightOccluder2D frère"
+
+msgid "Sprite2D"
+msgstr "Sprite2D"
 
 msgid "Simplification:"
 msgstr "Simplification :"
@@ -9447,11 +9511,20 @@ msgstr "Supprimer l'animation ?"
 msgid "Change Animation FPS"
 msgstr "Modifier le nombre d'images par seconde de l'animation"
 
+msgid "Set Frame Duration"
+msgstr "Définir la durée de la Trame"
+
 msgid "(empty)"
 msgstr "(vide)"
 
 msgid "Animations:"
 msgstr "Animations :"
+
+msgid "Animation Speed"
+msgstr "Vitesse de l'animation"
+
+msgid "Filter Animations"
+msgstr "Filtrer les animations"
 
 msgid "Delete Animation"
 msgstr "Supprimer l'animation"
@@ -9459,8 +9532,35 @@ msgstr "Supprimer l'animation"
 msgid "Animation Frames:"
 msgstr "Trames d'animation :"
 
+msgid "Frame Duration:"
+msgstr "Durée de la Trame :"
+
 msgid "Zoom Reset"
 msgstr "Réinitialiser le zoom"
+
+msgid "Add frame from file"
+msgstr "Ajouter une image à partir d'un fichier"
+
+msgid "Add frames from sprite sheet"
+msgstr "Ajouter des images depuis une feuille de sprite"
+
+msgid "Delete Frame"
+msgstr "Supprimer l'image"
+
+msgid "Copy Frame"
+msgstr "Copier l'image"
+
+msgid "Insert Empty (Before Selected)"
+msgstr "Insérer du vide (Avant la sélection)"
+
+msgid "Insert Empty (After Selected)"
+msgstr "Insérer du vide (Après la sélection)"
+
+msgid "Move Frame Left"
+msgstr "Déplacer l'image à gauche"
+
+msgid "Move Frame Right"
+msgstr "Déplacer l'image à droite"
 
 msgid "Select Frames"
 msgstr "Sélectionner des Trames"
@@ -9482,6 +9582,25 @@ msgstr "Créer des trames depuis une feuille de Sprite"
 
 msgid "SpriteFrames"
 msgstr "SpriteFrames"
+
+msgid "Warnings should be fixed to prevent errors."
+msgstr "Les avertissements doivent être corrigés pour éviter les erreurs."
+
+msgid ""
+"This shader has been modified on disk.\n"
+"What action should be taken?"
+msgstr ""
+"Ce shader a été modifié sur le disque.\n"
+"Quelles sont les mesures à prendre ?"
+
+msgid "%s Mipmaps"
+msgstr "%s Mipmaps"
+
+msgid "Memory: %s"
+msgstr "Mémoire : %s"
+
+msgid "No Mipmaps"
+msgstr "Pas de Mipmaps"
 
 msgid "Set Region Rect"
 msgstr "Définir région rectangulaire"
@@ -9523,6 +9642,11 @@ msgstr[1] "{num} constantes"
 msgid "No constants found."
 msgstr "Pas de constantes trouvées."
 
+msgid "1 font"
+msgid_plural "{num} fonts"
+msgstr[0] "1 police"
+msgstr[1] "{num} polices"
+
 msgid "No fonts found."
 msgstr "Pas de polices trouvées."
 
@@ -9530,6 +9654,14 @@ msgid "1 font size"
 msgid_plural "{num} font sizes"
 msgstr[0] "1 taille de police"
 msgstr[1] "{num} tailles de police"
+
+msgid "No font sizes found."
+msgstr "Pas de tailles de police trouvées."
+
+msgid "1 icon"
+msgid_plural "{num} icons"
+msgstr[0] "1 icône"
+msgstr[1] "{num} icônes"
 
 msgid "No icons found."
 msgstr "Pas d'icônes trouvées."
@@ -9979,6 +10111,42 @@ msgstr "Fichier invalide, pas une ressource PackedScene."
 msgid "Reload the scene to reflect its most actual state."
 msgstr "Recharge la scène pour refléter son état le plus actuel."
 
+msgid "No atlas source with a valid texture selected."
+msgstr "Aucune source d'atlas avec une texture valide n'a été sélectionnée."
+
+msgid "Base Tiles"
+msgstr "Tuiles de base"
+
+msgid "Alternative Tiles"
+msgstr "Tuiles alternatives"
+
+msgid "Reset Polygons"
+msgstr "Réinitialiser les polygones"
+
+msgid "Clear Polygons"
+msgstr "Néttoyer les polygones"
+
+msgid "Rotate Polygons Right"
+msgstr "Tourner les polygones vers la droite"
+
+msgid "Rotate Polygons Left"
+msgstr "Tourner les polygones vers la gauche"
+
+msgid "Flip Polygons Horizontally"
+msgstr "Retourner les polygones horizontalement"
+
+msgid "Flip Polygons Vertically"
+msgstr "Retourner les polygones verticalement"
+
+msgid "Edit Polygons"
+msgstr "Modifier les polygones"
+
+msgid "Add polygon tool"
+msgstr "Ajouter l'outil des polygones"
+
+msgid "Edit points tool"
+msgstr "Outil de modification des points"
+
 msgid "Rotate Right"
 msgstr "Rotation vers la droite"
 
@@ -9991,14 +10159,33 @@ msgstr "Retourner horizontalement"
 msgid "Flip Vertically"
 msgstr "Retourner verticalement"
 
+msgid "No terrains"
+msgstr "Aucun terrains"
+
+msgid "No terrain"
+msgstr "Aucun terrain"
+
+msgid "Unknown Type Source (ID: %d)"
+msgstr "Source de type inconnu (ID : %d)"
+
 msgid "Shift+Ctrl: Draw rectangle."
 msgstr "Maj + Ctrl : Dessiner un rectangle."
+
+msgid "Bucket"
+msgstr "Seau de remplissage"
 
 msgid "Eraser"
 msgstr "Effaceur"
 
 msgid "Tiles"
 msgstr "Tuiles"
+
+msgid ""
+"This TileMap's TileSet has no source configured. Edit the TileSet resource "
+"to add one."
+msgstr ""
+"La TileSet de cette TileMap n'a pas de source configurée. Modifier la "
+"ressource TileSet pour en ajouter une."
 
 msgid "Drag and drop or paste a TileMap selection here to store a pattern."
 msgstr ""
@@ -10787,6 +10974,13 @@ msgstr "Veuillez choisir un fichier \"project.godot\" ou \".zip\"."
 msgid "This directory already contains a Godot project."
 msgstr "Ce répertoire contient déjà un projet Godot."
 
+msgid ""
+"The selected path is not empty. Choosing an empty folder is highly "
+"recommended."
+msgstr ""
+"Le chemin sélectionné n'est pas vide. Il est fortement recommandé de choisir "
+"un répertoire vide."
+
 msgid "New Game Project"
 msgstr "Nouveau projet de jeu"
 
@@ -10816,6 +11010,9 @@ msgstr ""
 
 msgid "Couldn't save project at '%s' (error %d)."
 msgstr "Impossible d'enregistrer le projet à \"%s\" (erreur %d)."
+
+msgid "Warning: This folder is not empty"
+msgstr "Avertissement : Ce répertoire n'est pas vide"
 
 msgid ""
 "You are about to create a Godot project in a non-empty folder.\n"
@@ -11149,6 +11346,10 @@ msgstr "Paramètres du projet (project.godot)"
 
 msgid "Select a Setting or Type its Name"
 msgstr "Sélectionnez un paramètre ou tapez son nom"
+
+msgid "Changed settings will be applied to the editor after restarting."
+msgstr ""
+"Les paramètres modifiés seront appliqués après le redémarrage de l'éditeur."
 
 msgid "Input Map"
 msgstr "Contrôles"
@@ -11734,6 +11935,9 @@ msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr ""
 "Instance invalide pour le format de dictionnaire (sous-classes invalides)"
 
+msgid "Export Scene to glTF 2.0 File"
+msgstr "Exporter la scène vers un fichier glTF 2.0"
+
 msgid "Path to Blender installation is valid."
 msgstr "Le chemin d'accès vers l'installation de Blender est valide."
 
@@ -11956,6 +12160,12 @@ msgstr "Ajouter un ensemble d'actions."
 
 msgid "Pose"
 msgstr "Pose"
+
+msgid "Haptic"
+msgstr "Haptique"
+
+msgid "Unknown"
+msgstr "Inconnu"
 
 msgid "Package name is missing."
 msgstr "Nom du paquet manquant."
@@ -12968,6 +13178,13 @@ msgid "The AnimationPlayer root node is not a valid node."
 msgstr "La racine AnimationPlayer n'est pas un nœud valide."
 
 msgid ""
+"ButtonGroup is intended to be used only with buttons that have toggle_mode "
+"set to true."
+msgstr ""
+"Le ButtonGroup est destiné à être utilisé seulement avec des boutons ayant "
+"la valeur de toggle_mode définie sur true."
+
+msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
 "RMB: Remove preset"
@@ -13019,6 +13236,9 @@ msgstr "Alerte !"
 msgid "Please Confirm..."
 msgstr "Veuillez confirmer…"
 
+msgid "You don't have permission to access contents of this folder."
+msgstr "Vous n'avez pas l'autorisation d'accéder au contenu de ce dossier."
+
 msgid "Enable grid minimap."
 msgstr "Activer l'alignement."
 
@@ -13048,6 +13268,22 @@ msgstr ""
 "Impossible de déclarer le nom de nœud '%s' comme unique dans la scène pour "
 "'%s', car ce nom est déjà attribué à '%s'.\n"
 "'%s' n'est plus considéré comme ayant un nom unique."
+
+msgid ""
+"This node is marked as deprecated and will be removed in future versions.\n"
+"Please check the Godot documentation for information about migration."
+msgstr ""
+"Ce nœud est marqué comme déprécié et sera supprimé dans les versions "
+"futures.\n"
+"Veuillez consulter la documentation de Godot pour des informations sur la "
+"migration."
+
+msgid ""
+"This node is marked as experimental and may be subject to removal or major "
+"changes in future versions."
+msgstr ""
+"Ce nœud est marqué comme expérimental et pourrait faire l'objet d'une "
+"suppression ou de changements majeurs dans les versions futures."
 
 msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "

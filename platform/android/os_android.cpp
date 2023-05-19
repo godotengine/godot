@@ -311,7 +311,11 @@ String OS_Android::get_resource_dir() const {
 #ifdef TOOLS_ENABLED
 	return OS_Unix::get_resource_dir();
 #else
-	return "/"; //android has its own filesystem for resources inside the APK
+	if (remote_fs_dir.is_empty()) {
+		return "/"; // Android has its own filesystem for resources inside the APK
+	} else {
+		return remote_fs_dir;
+	}
 #endif
 }
 
@@ -751,6 +755,20 @@ Error OS_Android::kill(const ProcessID &p_pid) {
 		return OK;
 	}
 	return OS_Unix::kill(p_pid);
+}
+
+String OS_Android::get_system_ca_certificates() {
+	return godot_java->get_ca_certificates();
+}
+
+Error OS_Android::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
+	r_project_path = get_user_data_dir();
+	Error err = OS_Unix::setup_remote_filesystem(p_server_host, p_port, p_password, r_project_path);
+	if (err == OK) {
+		remote_fs_dir = r_project_path;
+		FileAccess::make_default<FileAccessFilesystemJAndroid>(FileAccess::ACCESS_RESOURCES);
+	}
+	return err;
 }
 
 OS_Android::~OS_Android() {

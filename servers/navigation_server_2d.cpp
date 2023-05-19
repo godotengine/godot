@@ -115,6 +115,15 @@ static Vector2 v3_to_v2(const Vector3 &d) {
 	return Vector2(d.x, d.z);
 }
 
+static Vector<Vector3> vector_v2_to_v3(const Vector<Vector2> &d) {
+	Vector<Vector3> nd;
+	nd.resize(d.size());
+	for (int i(0); i < nd.size(); i++) {
+		nd.write[i] = v2_to_v3(d[i]);
+	}
+	return nd;
+}
+
 static Vector<Vector2> vector_v3_to_v2(const Vector<Vector3> &d) {
 	Vector<Vector2> nd;
 	nd.resize(d.size());
@@ -161,6 +170,22 @@ bool NavigationServer2D::get_debug_enabled() const {
 }
 
 #ifdef DEBUG_ENABLED
+void NavigationServer2D::set_debug_navigation_enabled(bool p_enabled) {
+	NavigationServer3D::get_singleton()->set_debug_navigation_enabled(p_enabled);
+}
+
+bool NavigationServer2D::get_debug_navigation_enabled() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_enabled();
+}
+
+void NavigationServer2D::set_debug_avoidance_enabled(bool p_enabled) {
+	NavigationServer3D::get_singleton()->set_debug_avoidance_enabled(p_enabled);
+}
+
+bool NavigationServer2D::get_debug_avoidance_enabled() const {
+	return NavigationServer3D::get_singleton()->get_debug_avoidance_enabled();
+}
+
 void NavigationServer2D::set_debug_navigation_edge_connection_color(const Color &p_color) {
 	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(p_color);
 }
@@ -264,6 +289,78 @@ void NavigationServer2D::set_debug_navigation_agent_path_point_size(real_t p_poi
 real_t NavigationServer2D::get_debug_navigation_agent_path_point_size() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_agent_path_point_size();
 }
+
+void NavigationServer2D::set_debug_navigation_avoidance_enable_agents_radius(const bool p_value) {
+	NavigationServer3D::get_singleton()->set_debug_navigation_avoidance_enable_agents_radius(p_value);
+}
+
+bool NavigationServer2D::get_debug_navigation_avoidance_enable_agents_radius() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_enable_agents_radius();
+}
+
+void NavigationServer2D::set_debug_navigation_avoidance_enable_obstacles_radius(const bool p_value) {
+	NavigationServer3D::get_singleton()->set_debug_navigation_avoidance_enable_obstacles_radius(p_value);
+}
+
+bool NavigationServer2D::get_debug_navigation_avoidance_enable_obstacles_radius() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_radius();
+}
+
+void NavigationServer2D::set_debug_navigation_avoidance_agents_radius_color(const Color &p_color) {
+	NavigationServer3D::get_singleton()->set_debug_navigation_avoidance_agents_radius_color(p_color);
+}
+
+Color NavigationServer2D::get_debug_navigation_avoidance_agents_radius_color() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_agents_radius_color();
+}
+
+void NavigationServer2D::set_debug_navigation_avoidance_obstacles_radius_color(const Color &p_color) {
+	NavigationServer3D::get_singleton()->set_debug_navigation_avoidance_obstacles_radius_color(p_color);
+}
+
+Color NavigationServer2D::get_debug_navigation_avoidance_obstacles_radius_color() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_obstacles_radius_color();
+}
+
+void NavigationServer2D::set_debug_navigation_avoidance_static_obstacle_pushin_face_color(const Color &p_color) {
+	NavigationServer3D::get_singleton()->set_debug_navigation_avoidance_static_obstacle_pushin_face_color(p_color);
+}
+
+Color NavigationServer2D::get_debug_navigation_avoidance_static_obstacle_pushin_face_color() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushin_face_color();
+}
+
+void NavigationServer2D::set_debug_navigation_avoidance_static_obstacle_pushout_face_color(const Color &p_color) {
+	NavigationServer3D::get_singleton()->set_debug_navigation_avoidance_static_obstacle_pushout_face_color(p_color);
+}
+
+Color NavigationServer2D::get_debug_navigation_avoidance_static_obstacle_pushout_face_color() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushout_face_color();
+}
+
+void NavigationServer2D::set_debug_navigation_avoidance_static_obstacle_pushin_edge_color(const Color &p_color) {
+	NavigationServer3D::get_singleton()->set_debug_navigation_avoidance_static_obstacle_pushin_edge_color(p_color);
+}
+
+Color NavigationServer2D::get_debug_navigation_avoidance_static_obstacle_pushin_edge_color() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushin_edge_color();
+}
+
+void NavigationServer2D::set_debug_navigation_avoidance_static_obstacle_pushout_edge_color(const Color &p_color) {
+	NavigationServer3D::get_singleton()->set_debug_navigation_avoidance_static_obstacle_pushout_edge_color(p_color);
+}
+
+Color NavigationServer2D::get_debug_navigation_avoidance_static_obstacle_pushout_edge_color() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushout_edge_color();
+}
+
+void NavigationServer2D::set_debug_navigation_avoidance_enable_obstacles_static(const bool p_value) {
+	NavigationServer3D::get_singleton()->set_debug_navigation_avoidance_enable_obstacles_static(p_value);
+}
+
+bool NavigationServer2D::get_debug_navigation_avoidance_enable_obstacles_static() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_static();
+}
 #endif // DEBUG_ENABLED
 
 void NavigationServer2D::_bind_methods() {
@@ -274,6 +371,8 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_is_active", "map"), &NavigationServer2D::map_is_active);
 	ClassDB::bind_method(D_METHOD("map_set_cell_size", "map", "cell_size"), &NavigationServer2D::map_set_cell_size);
 	ClassDB::bind_method(D_METHOD("map_get_cell_size", "map"), &NavigationServer2D::map_get_cell_size);
+	ClassDB::bind_method(D_METHOD("map_set_use_edge_connections", "map", "enabled"), &NavigationServer2D::map_set_use_edge_connections);
+	ClassDB::bind_method(D_METHOD("map_get_use_edge_connections", "map"), &NavigationServer2D::map_get_use_edge_connections);
 	ClassDB::bind_method(D_METHOD("map_set_edge_connection_margin", "map", "margin"), &NavigationServer2D::map_set_edge_connection_margin);
 	ClassDB::bind_method(D_METHOD("map_get_edge_connection_margin", "map"), &NavigationServer2D::map_get_edge_connection_margin);
 	ClassDB::bind_method(D_METHOD("map_set_link_connection_radius", "map", "radius"), &NavigationServer2D::map_set_link_connection_radius);
@@ -285,12 +384,15 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_get_links", "map"), &NavigationServer2D::map_get_links);
 	ClassDB::bind_method(D_METHOD("map_get_regions", "map"), &NavigationServer2D::map_get_regions);
 	ClassDB::bind_method(D_METHOD("map_get_agents", "map"), &NavigationServer2D::map_get_agents);
+	ClassDB::bind_method(D_METHOD("map_get_obstacles", "map"), &NavigationServer2D::map_get_obstacles);
 
 	ClassDB::bind_method(D_METHOD("map_force_update", "map"), &NavigationServer2D::map_force_update);
 
 	ClassDB::bind_method(D_METHOD("query_path", "parameters", "result"), &NavigationServer2D::query_path);
 
 	ClassDB::bind_method(D_METHOD("region_create"), &NavigationServer2D::region_create);
+	ClassDB::bind_method(D_METHOD("region_set_use_edge_connections", "region", "enabled"), &NavigationServer2D::region_set_use_edge_connections);
+	ClassDB::bind_method(D_METHOD("region_get_use_edge_connections", "region"), &NavigationServer2D::region_get_use_edge_connections);
 	ClassDB::bind_method(D_METHOD("region_set_enter_cost", "region", "enter_cost"), &NavigationServer2D::region_set_enter_cost);
 	ClassDB::bind_method(D_METHOD("region_get_enter_cost", "region"), &NavigationServer2D::region_get_enter_cost);
 	ClassDB::bind_method(D_METHOD("region_set_travel_cost", "region", "travel_cost"), &NavigationServer2D::region_set_travel_cost);
@@ -327,18 +429,31 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("link_get_owner_id", "link"), &NavigationServer2D::link_get_owner_id);
 
 	ClassDB::bind_method(D_METHOD("agent_create"), &NavigationServer2D::agent_create);
+	ClassDB::bind_method(D_METHOD("agent_set_avoidance_enabled", "agent", "enabled"), &NavigationServer2D::agent_set_avoidance_enabled);
+	ClassDB::bind_method(D_METHOD("agent_get_avoidance_enabled", "agent"), &NavigationServer2D::agent_get_avoidance_enabled);
 	ClassDB::bind_method(D_METHOD("agent_set_map", "agent", "map"), &NavigationServer2D::agent_set_map);
 	ClassDB::bind_method(D_METHOD("agent_get_map", "agent"), &NavigationServer2D::agent_get_map);
 	ClassDB::bind_method(D_METHOD("agent_set_neighbor_distance", "agent", "distance"), &NavigationServer2D::agent_set_neighbor_distance);
 	ClassDB::bind_method(D_METHOD("agent_set_max_neighbors", "agent", "count"), &NavigationServer2D::agent_set_max_neighbors);
-	ClassDB::bind_method(D_METHOD("agent_set_time_horizon", "agent", "time"), &NavigationServer2D::agent_set_time_horizon);
+	ClassDB::bind_method(D_METHOD("agent_set_time_horizon_agents", "agent", "time_horizon"), &NavigationServer2D::agent_set_time_horizon_agents);
+	ClassDB::bind_method(D_METHOD("agent_set_time_horizon_obstacles", "agent", "time_horizon"), &NavigationServer2D::agent_set_time_horizon_obstacles);
 	ClassDB::bind_method(D_METHOD("agent_set_radius", "agent", "radius"), &NavigationServer2D::agent_set_radius);
 	ClassDB::bind_method(D_METHOD("agent_set_max_speed", "agent", "max_speed"), &NavigationServer2D::agent_set_max_speed);
+	ClassDB::bind_method(D_METHOD("agent_set_velocity_forced", "agent", "velocity"), &NavigationServer2D::agent_set_velocity_forced);
 	ClassDB::bind_method(D_METHOD("agent_set_velocity", "agent", "velocity"), &NavigationServer2D::agent_set_velocity);
-	ClassDB::bind_method(D_METHOD("agent_set_target_velocity", "agent", "target_velocity"), &NavigationServer2D::agent_set_target_velocity);
 	ClassDB::bind_method(D_METHOD("agent_set_position", "agent", "position"), &NavigationServer2D::agent_set_position);
 	ClassDB::bind_method(D_METHOD("agent_is_map_changed", "agent"), &NavigationServer2D::agent_is_map_changed);
-	ClassDB::bind_method(D_METHOD("agent_set_callback", "agent", "callback"), &NavigationServer2D::agent_set_callback);
+	ClassDB::bind_method(D_METHOD("agent_set_avoidance_callback", "agent", "callback"), &NavigationServer2D::agent_set_avoidance_callback);
+	ClassDB::bind_method(D_METHOD("agent_set_avoidance_layers", "agent", "layers"), &NavigationServer2D::agent_set_avoidance_layers);
+	ClassDB::bind_method(D_METHOD("agent_set_avoidance_mask", "agent", "mask"), &NavigationServer2D::agent_set_avoidance_mask);
+	ClassDB::bind_method(D_METHOD("agent_set_avoidance_priority", "agent", "priority"), &NavigationServer2D::agent_set_avoidance_priority);
+
+	ClassDB::bind_method(D_METHOD("obstacle_create"), &NavigationServer2D::obstacle_create);
+	ClassDB::bind_method(D_METHOD("obstacle_set_map", "obstacle", "map"), &NavigationServer2D::obstacle_set_map);
+	ClassDB::bind_method(D_METHOD("obstacle_get_map", "obstacle"), &NavigationServer2D::obstacle_get_map);
+	ClassDB::bind_method(D_METHOD("obstacle_set_position", "obstacle", "position"), &NavigationServer2D::obstacle_set_position);
+	ClassDB::bind_method(D_METHOD("obstacle_set_vertices", "obstacle", "vertices"), &NavigationServer2D::obstacle_set_vertices);
+	ClassDB::bind_method(D_METHOD("obstacle_set_avoidance_layers", "obstacle", "layers"), &NavigationServer2D::obstacle_set_avoidance_layers);
 
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &NavigationServer2D::free);
 
@@ -378,6 +493,8 @@ TypedArray<RID> FORWARD_1_C(map_get_regions, RID, p_map, rid_to_rid);
 
 TypedArray<RID> FORWARD_1_C(map_get_agents, RID, p_map, rid_to_rid);
 
+TypedArray<RID> FORWARD_1_C(map_get_obstacles, RID, p_map, rid_to_rid);
+
 RID FORWARD_1_C(region_get_map, RID, p_region, rid_to_rid);
 
 RID FORWARD_1_C(agent_get_map, RID, p_agent, rid_to_rid);
@@ -395,6 +512,9 @@ void NavigationServer2D::map_force_update(RID p_map) {
 void FORWARD_2(map_set_cell_size, RID, p_map, real_t, p_cell_size, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(map_get_cell_size, RID, p_map, rid_to_rid);
 
+void FORWARD_2(map_set_use_edge_connections, RID, p_map, bool, p_enabled, rid_to_rid, bool_to_bool);
+bool FORWARD_1_C(map_get_use_edge_connections, RID, p_map, rid_to_rid);
+
 void FORWARD_2(map_set_edge_connection_margin, RID, p_map, real_t, p_connection_margin, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(map_get_edge_connection_margin, RID, p_map, rid_to_rid);
 
@@ -407,6 +527,9 @@ Vector2 FORWARD_2_R_C(v3_to_v2, map_get_closest_point, RID, p_map, const Vector2
 RID FORWARD_2_C(map_get_closest_point_owner, RID, p_map, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
 
 RID FORWARD_0(region_create);
+
+void FORWARD_2(region_set_use_edge_connections, RID, p_region, bool, p_enabled, rid_to_rid, bool_to_bool);
+bool FORWARD_1_C(region_get_use_edge_connections, RID, p_region, rid_to_rid);
 
 void FORWARD_2(region_set_enter_cost, RID, p_region, real_t, p_enter_cost, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(region_get_enter_cost, RID, p_region, rid_to_rid);
@@ -450,24 +573,43 @@ ObjectID FORWARD_1_C(link_get_owner_id, RID, p_link, rid_to_rid);
 
 RID NavigationServer2D::agent_create() {
 	RID agent = NavigationServer3D::get_singleton()->agent_create();
-	NavigationServer3D::get_singleton()->agent_set_ignore_y(agent, true);
 	return agent;
 }
 
+void FORWARD_2(agent_set_avoidance_enabled, RID, p_agent, bool, p_enabled, rid_to_rid, bool_to_bool);
+bool FORWARD_1_C(agent_get_avoidance_enabled, RID, p_agent, rid_to_rid);
 void FORWARD_2(agent_set_map, RID, p_agent, RID, p_map, rid_to_rid, rid_to_rid);
 void FORWARD_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_dist, rid_to_rid, real_to_real);
 void FORWARD_2(agent_set_max_neighbors, RID, p_agent, int, p_count, rid_to_rid, int_to_int);
-void FORWARD_2(agent_set_time_horizon, RID, p_agent, real_t, p_time, rid_to_rid, real_to_real);
+void FORWARD_2(agent_set_time_horizon_agents, RID, p_agent, real_t, p_time_horizon, rid_to_rid, real_to_real);
+void FORWARD_2(agent_set_time_horizon_obstacles, RID, p_agent, real_t, p_time_horizon, rid_to_rid, real_to_real);
 void FORWARD_2(agent_set_radius, RID, p_agent, real_t, p_radius, rid_to_rid, real_to_real);
 void FORWARD_2(agent_set_max_speed, RID, p_agent, real_t, p_max_speed, rid_to_rid, real_to_real);
+void FORWARD_2(agent_set_velocity_forced, RID, p_agent, Vector2, p_velocity, rid_to_rid, v2_to_v3);
 void FORWARD_2(agent_set_velocity, RID, p_agent, Vector2, p_velocity, rid_to_rid, v2_to_v3);
-void FORWARD_2(agent_set_target_velocity, RID, p_agent, Vector2, p_velocity, rid_to_rid, v2_to_v3);
 void FORWARD_2(agent_set_position, RID, p_agent, Vector2, p_position, rid_to_rid, v2_to_v3);
-void FORWARD_2(agent_set_ignore_y, RID, p_agent, bool, p_ignore, rid_to_rid, bool_to_bool);
+
 bool FORWARD_1_C(agent_is_map_changed, RID, p_agent, rid_to_rid);
-void FORWARD_2(agent_set_callback, RID, p_agent, Callable, p_callback, rid_to_rid, callable_to_callable);
 
 void FORWARD_1(free, RID, p_object, rid_to_rid);
+void FORWARD_2(agent_set_avoidance_callback, RID, p_agent, Callable, p_callback, rid_to_rid, callable_to_callable);
+
+void FORWARD_2(agent_set_avoidance_layers, RID, p_agent, uint32_t, p_layers, rid_to_rid, uint32_to_uint32);
+void FORWARD_2(agent_set_avoidance_mask, RID, p_agent, uint32_t, p_mask, rid_to_rid, uint32_to_uint32);
+void FORWARD_2(agent_set_avoidance_priority, RID, p_agent, real_t, p_priority, rid_to_rid, real_to_real);
+
+RID NavigationServer2D::obstacle_create() {
+	RID obstacle = NavigationServer3D::get_singleton()->obstacle_create();
+	return obstacle;
+}
+void FORWARD_2(obstacle_set_map, RID, p_obstacle, RID, p_map, rid_to_rid, rid_to_rid);
+RID FORWARD_1_C(obstacle_get_map, RID, p_obstacle, rid_to_rid);
+void FORWARD_2(obstacle_set_position, RID, p_obstacle, Vector2, p_position, rid_to_rid, v2_to_v3);
+void FORWARD_2(obstacle_set_avoidance_layers, RID, p_obstacle, uint32_t, p_layers, rid_to_rid, uint32_to_uint32);
+
+void NavigationServer2D::obstacle_set_vertices(RID p_obstacle, const Vector<Vector2> &p_vertices) {
+	NavigationServer3D::get_singleton()->obstacle_set_vertices(p_obstacle, vector_v2_to_v3(p_vertices));
+}
 
 void NavigationServer2D::query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const {
 	ERR_FAIL_COND(!p_query_parameters.is_valid());

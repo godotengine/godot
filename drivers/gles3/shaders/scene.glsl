@@ -771,7 +771,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 	alpha = min(alpha, clamp(1.0 - attenuation, 0.0, 1.0));
 #endif
 
-#endif // LIGHT_CODE_USED
+#endif // USE_LIGHT_SHADER_CODE
 }
 
 float get_omni_spot_attenuation(float distance, float inv_range, float decay) {

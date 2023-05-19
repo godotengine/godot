@@ -565,7 +565,6 @@ void ImportDock::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			imported->add_theme_style_override("normal", get_theme_stylebox(SNAME("normal"), SNAME("LineEdit")));
-			import_opts->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -643,7 +642,6 @@ ImportDock::ImportDock() {
 	import_opts = memnew(EditorInspector);
 	content->add_child(import_opts);
 	import_opts->set_v_size_flags(SIZE_EXPAND_FILL);
-	import_opts->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 	import_opts->connect("property_edited", callable_mp(this, &ImportDock::_property_edited));
 	import_opts->connect("property_toggled", callable_mp(this, &ImportDock::_property_toggled));
 

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationTree" inherits="Node" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A node to be used for advanced animation transitions in an [AnimationPlayer].
+		A node used for advanced animation transitions in an [AnimationPlayer].
 	</brief_description>
 	<description>
-		A node to be used for advanced animation transitions in an [AnimationPlayer].
+		A node used for advanced animation transitions in an [AnimationPlayer].
 		[b]Note:[/b] When linked with an [AnimationPlayer], several properties and methods of the corresponding [AnimationPlayer] will not function as expected. Playback and transitions should be handled using only the [AnimationTree] and its constituent [AnimationNode](s). The [AnimationPlayer] node should be used solely for adding, deleting, and editing animations.
 	</description>
 	<tutorials>

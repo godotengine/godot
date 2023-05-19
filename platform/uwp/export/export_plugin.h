@@ -85,6 +85,11 @@ static const char *uwp_device_capabilities[] = {
 	nullptr
 };
 
+// Optional environment variables for defining confidential information. If any
+// of these is set, they will override the values set in the credentials file.
+const String ENV_UWP_SIGNING_CERT = "GODOT_UWP_SIGNING_CERTIFICATE";
+const String ENV_UWP_SIGNING_PASS = "GODOT_UWP_SIGNING_PASSWORD";
+
 class EditorExportPlatformUWP : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformUWP, EditorExportPlatform);
 

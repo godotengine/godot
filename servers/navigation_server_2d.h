@@ -70,6 +70,9 @@ public:
 	/// Returns the map cell size.
 	virtual real_t map_get_cell_size(RID p_map) const;
 
+	virtual void map_set_use_edge_connections(RID p_map, bool p_enabled);
+	virtual bool map_get_use_edge_connections(RID p_map) const;
+
 	/// Set the map edge connection margin used to weld the compatible region edges.
 	virtual void map_set_edge_connection_margin(RID p_map, real_t p_connection_margin);
 
@@ -91,11 +94,15 @@ public:
 	virtual TypedArray<RID> map_get_links(RID p_map) const;
 	virtual TypedArray<RID> map_get_regions(RID p_map) const;
 	virtual TypedArray<RID> map_get_agents(RID p_map) const;
+	virtual TypedArray<RID> map_get_obstacles(RID p_map) const;
 
 	virtual void map_force_update(RID p_map);
 
 	/// Creates a new region.
 	virtual RID region_create();
+
+	virtual void region_set_use_edge_connections(RID p_region, bool p_enabled);
+	virtual bool region_get_use_edge_connections(RID p_region) const;
 
 	/// Set the enter_cost of a region
 	virtual void region_set_enter_cost(RID p_region, real_t p_enter_cost);
@@ -171,6 +178,8 @@ public:
 	/// Put the agent in the map.
 	virtual void agent_set_map(RID p_agent, RID p_map);
 	virtual RID agent_get_map(RID p_agent) const;
+	virtual void agent_set_avoidance_enabled(RID p_agent, bool p_enabled);
+	virtual bool agent_get_avoidance_enabled(RID p_agent) const;
 
 	/// The maximum distance (center point to
 	/// center point) to other agents this agent
@@ -197,7 +206,9 @@ public:
 	/// other agents, but the less freedom this
 	/// agent has in choosing its velocities.
 	/// Must be positive.
-	virtual void agent_set_time_horizon(RID p_agent, real_t p_time);
+
+	virtual void agent_set_time_horizon_agents(RID p_agent, real_t p_time_horizon);
+	virtual void agent_set_time_horizon_obstacles(RID p_agent, real_t p_time_horizon);
 
 	/// The radius of this agent.
 	/// Must be non-negative.
@@ -207,23 +218,33 @@ public:
 	/// Must be non-negative.
 	virtual void agent_set_max_speed(RID p_agent, real_t p_max_speed);
 
-	/// Current velocity of the agent
-	virtual void agent_set_velocity(RID p_agent, Vector2 p_velocity);
+	/// forces and agent velocity change in the avoidance simulation, adds simulation instability if done recklessly
+	virtual void agent_set_velocity_forced(RID p_agent, Vector2 p_velocity);
 
-	/// The new target velocity.
-	virtual void agent_set_target_velocity(RID p_agent, Vector2 p_velocity);
+	/// The wanted velocity for the agent as a "suggestion" to the avoidance simulation.
+	/// The simulation will try to fulfil this velocity wish if possible but may change the velocity depending on other agent's and obstacles'.
+	virtual void agent_set_velocity(RID p_agent, Vector2 p_velocity);
 
 	/// Position of the agent in world space.
 	virtual void agent_set_position(RID p_agent, Vector2 p_position);
-
-	/// Agent ignore the Y axis and avoid collisions by moving only on the horizontal plane
-	virtual void agent_set_ignore_y(RID p_agent, bool p_ignore);
 
 	/// Returns true if the map got changed the previous frame.
 	virtual bool agent_is_map_changed(RID p_agent) const;
 
 	/// Callback called at the end of the RVO process
-	virtual void agent_set_callback(RID p_agent, Callable p_callback);
+	virtual void agent_set_avoidance_callback(RID p_agent, Callable p_callback);
+
+	virtual void agent_set_avoidance_layers(RID p_agent, uint32_t p_layers);
+	virtual void agent_set_avoidance_mask(RID p_agent, uint32_t p_mask);
+	virtual void agent_set_avoidance_priority(RID p_agent, real_t p_priority);
+
+	/// Creates the obstacle.
+	virtual RID obstacle_create();
+	virtual void obstacle_set_map(RID p_obstacle, RID p_map);
+	virtual RID obstacle_get_map(RID p_obstacle) const;
+	virtual void obstacle_set_position(RID p_obstacle, Vector2 p_position);
+	virtual void obstacle_set_vertices(RID p_obstacle, const Vector<Vector2> &p_vertices);
+	virtual void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers);
 
 	/// Returns a customized navigation path using a query parameters object
 	virtual void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const;
@@ -238,6 +259,12 @@ public:
 	bool get_debug_enabled() const;
 
 #ifdef DEBUG_ENABLED
+	void set_debug_navigation_enabled(bool p_enabled);
+	bool get_debug_navigation_enabled() const;
+
+	void set_debug_avoidance_enabled(bool p_enabled);
+	bool get_debug_avoidance_enabled() const;
+
 	void set_debug_navigation_edge_connection_color(const Color &p_color);
 	Color get_debug_navigation_edge_connection_color() const;
 
@@ -276,6 +303,33 @@ public:
 
 	void set_debug_navigation_agent_path_point_size(real_t p_point_size);
 	real_t get_debug_navigation_agent_path_point_size() const;
+
+	void set_debug_navigation_avoidance_enable_agents_radius(const bool p_value);
+	bool get_debug_navigation_avoidance_enable_agents_radius() const;
+
+	void set_debug_navigation_avoidance_enable_obstacles_radius(const bool p_value);
+	bool get_debug_navigation_avoidance_enable_obstacles_radius() const;
+
+	void set_debug_navigation_avoidance_agents_radius_color(const Color &p_color);
+	Color get_debug_navigation_avoidance_agents_radius_color() const;
+
+	void set_debug_navigation_avoidance_obstacles_radius_color(const Color &p_color);
+	Color get_debug_navigation_avoidance_obstacles_radius_color() const;
+
+	void set_debug_navigation_avoidance_static_obstacle_pushin_face_color(const Color &p_color);
+	Color get_debug_navigation_avoidance_static_obstacle_pushin_face_color() const;
+
+	void set_debug_navigation_avoidance_static_obstacle_pushout_face_color(const Color &p_color);
+	Color get_debug_navigation_avoidance_static_obstacle_pushout_face_color() const;
+
+	void set_debug_navigation_avoidance_static_obstacle_pushin_edge_color(const Color &p_color);
+	Color get_debug_navigation_avoidance_static_obstacle_pushin_edge_color() const;
+
+	void set_debug_navigation_avoidance_static_obstacle_pushout_edge_color(const Color &p_color);
+	Color get_debug_navigation_avoidance_static_obstacle_pushout_edge_color() const;
+
+	void set_debug_navigation_avoidance_enable_obstacles_static(const bool p_value);
+	bool get_debug_navigation_avoidance_enable_obstacles_static() const;
 #endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED

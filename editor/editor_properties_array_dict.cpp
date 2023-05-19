@@ -255,7 +255,7 @@ void EditorPropertyArray::update_property() {
 	String array_type_name = Variant::get_type_name(array_type);
 	if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
 		String type_name;
-		if (subtype == Variant::OBJECT && subtype_hint == PROPERTY_HINT_RESOURCE_TYPE) {
+		if (subtype == Variant::OBJECT && (subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
 			type_name = subtype_hint_string;
 		} else {
 			type_name = Variant::get_type_name(subtype);

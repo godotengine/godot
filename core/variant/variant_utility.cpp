@@ -804,6 +804,8 @@ struct VariantUtilityFunctions {
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
+#undef print_verbose
+
 	static inline void print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			String s;

@@ -1741,37 +1741,37 @@ void DisplayServerMacOS::global_menu_clear(const String &p_menu_root) {
 }
 
 bool DisplayServerMacOS::tts_is_speaking() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts isSpeaking];
 }
 
 bool DisplayServerMacOS::tts_is_paused() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts isPaused];
 }
 
 TypedArray<Dictionary> DisplayServerMacOS::tts_get_voices() const {
-	ERR_FAIL_COND_V(!tts, Array());
+	ERR_FAIL_COND_V_MSG(!tts, Array(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts getVoices];
 }
 
 void DisplayServerMacOS::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
 }
 
 void DisplayServerMacOS::tts_pause() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts pauseSpeaking];
 }
 
 void DisplayServerMacOS::tts_resume() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts resumeSpeaking];
 }
 
 void DisplayServerMacOS::tts_stop() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts stopSpeaking];
 }
 
@@ -1840,9 +1840,9 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 	if (!p_callback.is_null()) {
 		Variant button = button_pressed;
 		Variant *buttonp = &button;
-		Variant ret;
+		Variant fun_ret;
 		Callable::CallError ce;
-		p_callback.callp((const Variant **)&buttonp, 1, ret, ce);
+		p_callback.callp((const Variant **)&buttonp, 1, fun_ret, ce);
 	}
 
 	return OK;
@@ -1872,9 +1872,9 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	if (!p_callback.is_null()) {
 		Variant text = ret;
 		Variant *textp = &text;
-		Variant ret;
+		Variant fun_ret;
 		Callable::CallError ce;
-		p_callback.callp((const Variant **)&textp, 1, ret, ce);
+		p_callback.callp((const Variant **)&textp, 1, fun_ret, ce);
 	}
 
 	return OK;
@@ -1897,7 +1897,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
 
 	if (show_cursor && !previously_shown) {
-		WindowID window_id = get_window_at_screen_position(mouse_get_position());
+		window_id = get_window_at_screen_position(mouse_get_position());
 		if (window_id != INVALID_WINDOW_ID) {
 			send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
 		}
@@ -2232,6 +2232,49 @@ Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 		}
 	}
 	return Color();
+}
+
+Ref<Image> DisplayServerMacOS::screen_get_image(int p_screen) const {
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
+
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
+	}
+
+	Ref<Image> img;
+	NSArray *screenArray = [NSScreen screens];
+	if ((NSUInteger)p_screen < [screenArray count]) {
+		NSRect nsrect = [[screenArray objectAtIndex:p_screen] frame];
+		NSDictionary *screenDescription = [[screenArray objectAtIndex:p_screen] deviceDescription];
+		CGDirectDisplayID display_id = [[screenDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
+		CGImageRef image = CGDisplayCreateImageForRect(display_id, CGRectMake(0, 0, nsrect.size.width, nsrect.size.height));
+		if (image) {
+			CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+			if (color_space) {
+				NSUInteger width = CGImageGetWidth(image);
+				NSUInteger height = CGImageGetHeight(image);
+
+				Vector<uint8_t> img_data;
+				img_data.resize(height * width * 4);
+				CGContextRef context = CGBitmapContextCreate(img_data.ptrw(), width, height, 8, 4 * width, color_space, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+				if (context) {
+					CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
+					img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+					CGContextRelease(context);
+				}
+				CGColorSpaceRelease(color_space);
+			}
+			CGImageRelease(image);
+		}
+	}
+	return img;
 }
 
 float DisplayServerMacOS::screen_get_refresh_rate(int p_screen) const {
@@ -3802,7 +3845,10 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	CGDisplayRegisterReconfigurationCallback(_displays_arrangement_changed, nullptr);
 
 	// Init TTS
-	tts = [[TTS_MacOS alloc] init];
+	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
+	if (tts_enabled) {
+		tts = [[TTS_MacOS alloc] init];
+	}
 
 	NSMenuItem *menu_item;
 	NSString *title;

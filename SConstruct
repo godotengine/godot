@@ -217,7 +217,11 @@ opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and be
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", True))
-opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
+opts.Add(
+    "system_certs_path",
+    "Use this path as TLS certificates default for editor and Linux/BSD export templates (for package maintainers)",
+    "",
+)
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 
 # Thirdparty libraries
@@ -241,7 +245,8 @@ opts.Add(BoolVariable("builtin_miniupnpc", "Use the built-in miniupnpc library",
 opts.Add(BoolVariable("builtin_pcre2", "Use the built-in PCRE2 library", True))
 opts.Add(BoolVariable("builtin_pcre2_with_jit", "Use JIT compiler for the built-in PCRE2 library", True))
 opts.Add(BoolVariable("builtin_recastnavigation", "Use the built-in Recast navigation library", True))
-opts.Add(BoolVariable("builtin_rvo2", "Use the built-in RVO2 library", True))
+opts.Add(BoolVariable("builtin_rvo2_2d", "Use the built-in RVO2 2D library", True))
+opts.Add(BoolVariable("builtin_rvo2_3d", "Use the built-in RVO2 3D library", True))
 opts.Add(BoolVariable("builtin_squish", "Use the built-in squish library", True))
 opts.Add(BoolVariable("builtin_xatlas", "Use the built-in xatlas library", True))
 opts.Add(BoolVariable("builtin_zlib", "Use the built-in zlib library", True))
@@ -697,7 +702,8 @@ if selected_platform in platform_list:
             if env["warnings"] == "extra":
                 env.Append(CCFLAGS=["/W4"])
             elif env["warnings"] == "all":
-                env.Append(CCFLAGS=["/W3"])
+                # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
+                env.Append(CCFLAGS=["/W3", "/w34458"])
             elif env["warnings"] == "moderate":
                 env.Append(CCFLAGS=["/W2"])
             # Disable warnings which we don't plan to fix.
@@ -726,7 +732,7 @@ if selected_platform in platform_list:
         common_warnings = []
 
         if methods.using_gcc(env):
-            common_warnings += ["-Wshadow-local", "-Wno-misleading-indentation"]
+            common_warnings += ["-Wshadow", "-Wno-misleading-indentation"]
             if cc_version_major == 7:  # Bogus warning fixed in 8+.
                 common_warnings += ["-Wno-strict-overflow"]
             if cc_version_major < 11:
@@ -736,6 +742,7 @@ if selected_platform in platform_list:
             if cc_version_major >= 12:  # False positives in our error macros, see GH-58747.
                 common_warnings += ["-Wno-return-type"]
         elif methods.using_clang(env) or methods.using_emcc(env):
+            common_warnings += ["-Wshadow-field-in-constructor", "-Wshadow-uncaptured-local"]
             # We often implement `operator<` for structs of pointers as a requirement
             # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
             common_warnings += ["-Wno-ordered-compare-function-pointers"]

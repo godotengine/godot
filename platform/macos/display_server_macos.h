@@ -56,7 +56,7 @@
 #undef CursorShape
 
 class DisplayServerMacOS : public DisplayServer {
-	GDCLASS(DisplayServerMacOS, DisplayServer)
+	// No need to register with GDCLASS, it's platform-specific and nothing is added.
 
 	_THREAD_SAFE_CLASS_
 
@@ -336,6 +336,7 @@ public:
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Color screen_get_pixel(const Point2i &p_position) const override;
+	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
 

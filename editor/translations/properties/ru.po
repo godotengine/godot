@@ -132,13 +132,18 @@
 # Noky Socket <lollysimbart@gmail.com>, 2023.
 # Melairz1237 <mr.artem.snegov@mail.ru>, 2023.
 # Aleksey Smirnov <debugger94@gmail.com>, 2023.
+# Animaliss <Zernon001@mail.ru>, 2023.
+# Pyotr <pitmysterio@mail.ru>, 2023.
+# Aleksey Shilovskiy <alekseyshilovskiy@yandex.ru>, 2023.
+# Eugene One <elevencupoftea@gmail.com>, 2023.
+# Lost Net <pc.mirkn@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-20 03:46+0000\n"
-"Last-Translator: Aleksey Smirnov <debugger94@gmail.com>\n"
+"PO-Revision-Date: 2023-05-19 06:49+0000\n"
+"Last-Translator: Lost Net <pc.mirkn@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -230,6 +235,9 @@ msgstr "Всегда сверху"
 msgid "Transparent"
 msgstr "Прозрачный"
 
+msgid "Extend to Title"
+msgstr "Расширить до названия"
+
 msgid "No Focus"
 msgstr "Не фокусировать"
 
@@ -290,6 +298,12 @@ msgstr "Отладка"
 msgid "Settings"
 msgstr "Настройки"
 
+msgid "Profiler"
+msgstr "Профилировщик"
+
+msgid "Max Functions"
+msgstr "Лимит функций"
+
 msgid "Compression"
 msgstr "Сжатие"
 
@@ -343,6 +357,9 @@ msgstr "Задержка в режиме низкой нагрузки проц�
 
 msgid "Print Error Messages"
 msgstr "Печатать сообщения об ошибках"
+
+msgid "Physics Ticks per Second"
+msgstr "Частота обновления физических кадров"
 
 msgid "Time Scale"
 msgstr "Масштаб времени"
@@ -1419,7 +1436,7 @@ msgid "Root Scale"
 msgstr "Расширение ветки"
 
 msgid "Meshes"
-msgstr "Сетка"
+msgstr "Меши"
 
 msgid "Ensure Tangents"
 msgstr "Проверить соприкосновение"
@@ -1503,7 +1520,7 @@ msgid "Loop End"
 msgstr "Конец цикла"
 
 msgid "Asset Library"
-msgstr "Библиотека ресурсов"
+msgstr "Библиотека ассетов"
 
 msgid "Use Threads"
 msgstr "Использовать потоки"
@@ -1513,6 +1530,9 @@ msgstr "Доступные URL"
 
 msgid "Unset"
 msgstr "Не задано"
+
+msgid "Set"
+msgstr "Задать, установить, настроить, набор, комплект"
 
 msgid "Error"
 msgstr "Ошибка"
@@ -2381,6 +2401,9 @@ msgstr "Файлы фильмов"
 msgid "Custom Options"
 msgstr "Пользовательские параметры"
 
+msgid "Notarization"
+msgstr "Заверение"
+
 msgid "Apple ID Password"
 msgstr "Пароль Apple ID"
 
@@ -2821,6 +2844,9 @@ msgstr "Г смещение"
 
 msgid "V Offset"
 msgstr "В смещение"
+
+msgid "Physics Material Override"
+msgstr "Переопределение физического материала"
 
 msgid "Constant Linear Velocity"
 msgstr "Постоянная линейная скорость"
@@ -4244,6 +4270,9 @@ msgstr "Атлас теней"
 msgid "Reflections"
 msgstr "Отражения"
 
+msgid "GI"
+msgstr "GI"
+
 msgid "Overrides"
 msgstr "Переопределить"
 
@@ -4278,4 +4307,4 @@ msgid "Primary Interface"
 msgstr "Основной интерфейс"
 
 msgid "Property"
-msgstr "Параметр"
+msgstr "Свойство"

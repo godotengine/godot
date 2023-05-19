@@ -34,6 +34,7 @@
 #include "core/config/engine.h"
 #include "core/io/image.h"
 #include "core/io/logger.h"
+#include "core/io/remote_filesystem_client.h"
 #include "core/os/time_enums.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
@@ -51,6 +52,7 @@ class OS {
 	bool _keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
 	bool low_processor_usage_mode = false;
 	int low_processor_usage_mode_sleep_usec = 10000;
+	bool _delta_smoothing_enabled = false;
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
 	String _local_clipboard;
@@ -71,6 +73,8 @@ class OS {
 	int _display_driver_id = -1;
 	String _current_rendering_driver_name;
 	String _current_rendering_method;
+
+	RemoteFilesystemClient default_rfs;
 
 protected:
 	void _set_logger(CompositeLogger *p_logger);
@@ -134,6 +138,7 @@ public:
 	virtual String get_stdin_string() = 0;
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) = 0; // Should return cryptographically-safe random bytes.
+	virtual String get_system_ca_certificates() { return ""; } // Concatenated certificates in PEM format.
 
 	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
@@ -149,6 +154,9 @@ public:
 	virtual bool is_in_low_processor_usage_mode() const;
 	virtual void set_low_processor_usage_mode_sleep_usec(int p_usec);
 	virtual int get_low_processor_usage_mode_sleep_usec() const;
+
+	void set_delta_smoothing(bool p_enabled);
+	bool is_delta_smoothing_enabled() const;
 
 	virtual Vector<String> get_system_fonts() const { return Vector<String>(); };
 	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return String(); };
@@ -172,6 +180,7 @@ public:
 	virtual void unset_environment(const String &p_var) const = 0;
 
 	virtual String get_name() const = 0;
+	virtual String get_identifier() const;
 	virtual String get_distribution_name() const = 0;
 	virtual String get_version() const = 0;
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
@@ -291,6 +300,8 @@ public:
 	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
 
 	virtual void process_and_drop_events() {}
+
+	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path);
 
 	enum PreferredTextureFormat {
 		PREFERRED_TEXTURE_FORMAT_S3TC_BPTC,

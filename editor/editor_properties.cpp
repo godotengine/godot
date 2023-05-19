@@ -1155,6 +1155,12 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 			layer_group_size = 4;
 			layer_count = 32;
 		} break;
+
+		case LAYER_AVOIDANCE: {
+			basename = "layer_names/avoidance";
+			layer_group_size = 4;
+			layer_count = 32;
+		} break;
 	}
 
 	Vector<String> names;
@@ -3704,6 +3710,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->set_flat(true);
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
+	assign->set_auto_translate(false);
 	assign->connect("pressed", callable_mp(this, &EditorPropertyNodePath::_node_assign));
 	SET_DRAG_FORWARDING_CD(assign, EditorPropertyNodePath);
 	hbc->add_child(assign);
@@ -4001,7 +4008,6 @@ void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
 	Ref<ViewportTexture> vt;
 	vt.instantiate();
 	vt->set_viewport_path_in_scene(get_tree()->get_edited_scene_root()->get_path_to(to_node));
-	vt->setup_local_to_scene();
 
 	emit_changed(get_edited_property(), vt);
 	update_property();
@@ -4284,7 +4290,8 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 					p_hint == PROPERTY_HINT_LAYERS_2D_NAVIGATION ||
 					p_hint == PROPERTY_HINT_LAYERS_3D_PHYSICS ||
 					p_hint == PROPERTY_HINT_LAYERS_3D_RENDER ||
-					p_hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION) {
+					p_hint == PROPERTY_HINT_LAYERS_3D_NAVIGATION ||
+					p_hint == PROPERTY_HINT_LAYERS_AVOIDANCE) {
 				EditorPropertyLayers::LayerType lt = EditorPropertyLayers::LAYER_RENDER_2D;
 				switch (p_hint) {
 					case PROPERTY_HINT_LAYERS_2D_RENDER:
@@ -4304,6 +4311,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 						break;
 					case PROPERTY_HINT_LAYERS_3D_NAVIGATION:
 						lt = EditorPropertyLayers::LAYER_NAVIGATION_3D;
+						break;
+					case PROPERTY_HINT_LAYERS_AVOIDANCE:
+						lt = EditorPropertyLayers::LAYER_AVOIDANCE;
 						break;
 					default: {
 					} //compiler could be smarter here and realize this can't happen

@@ -354,6 +354,8 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 
 	bool do_process = false;
 
+	const Vector3 &offset_A = A->get_transform().get_origin();
+
 	const Basis &basis_A = A->get_transform().basis;
 	const Basis &basis_B = B->get_transform().basis;
 
@@ -382,7 +384,6 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 
 #ifdef DEBUG_ENABLED
 		if (space->is_debugging_contacts()) {
-			const Vector3 &offset_A = A->get_transform().get_origin();
 			space->add_debug_contact(global_A + offset_A);
 			space->add_debug_contact(global_B + offset_A);
 		}
@@ -410,14 +411,13 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 		if (A->can_report_contacts() || B->can_report_contacts()) {
 			Vector3 crB = B->get_angular_velocity().cross(c.rB) + B->get_linear_velocity();
 			Vector3 crA = A->get_angular_velocity().cross(c.rA) + A->get_linear_velocity();
-			Vector3 wlB = global_B - offset_B;
 
 			if (A->can_report_contacts()) {
-				A->add_contact(global_A, -c.normal, depth, shape_A, crA, wlB, shape_B, B->get_instance_id(), B->get_self(), crB, c.acc_impulse);
+				A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, crA, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB, c.acc_impulse);
 			}
 
 			if (B->can_report_contacts()) {
-				B->add_contact(wlB, c.normal, depth, shape_B, crB, global_A, shape_A, A->get_instance_id(), A->get_self(), crA, -c.acc_impulse);
+				B->add_contact(global_B + offset_A, c.normal, depth, shape_B, crB, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA, -c.acc_impulse);
 			}
 		}
 

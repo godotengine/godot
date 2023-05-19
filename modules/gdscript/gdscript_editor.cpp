@@ -3098,12 +3098,7 @@ String GDScriptLanguage::_get_indentation() const {
 
 		if (use_space_indentation) {
 			int indent_size = EDITOR_GET("text_editor/behavior/indent/size");
-
-			String space_indent = "";
-			for (int i = 0; i < indent_size; i++) {
-				space_indent += " ";
-			}
-			return space_indent;
+			return String(" ").repeat(indent_size);
 		}
 	}
 #endif
@@ -3150,12 +3145,7 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 		}
 
 		if (i >= p_from_line) {
-			l = "";
-			for (int j = 0; j < indent_stack.size(); j++) {
-				l += indent;
-			}
-			l += st;
-
+			l = indent.repeat(indent_stack.size()) + st;
 		} else if (i > p_to_line) {
 			break;
 		}

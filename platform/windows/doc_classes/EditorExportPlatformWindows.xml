@@ -64,12 +64,15 @@
 		</member>
 		<member name="codesign/identity" type="String" setter="" getter="">
 			PKCS #12 certificate file used to sign executable or certificate SHA-1 hash (if [member codesign/identity_type] is set to "Use certificate store"). See [url=https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe]Sign Tool[/url].
+			Can be overridden with the environment variable [code]GODOT_WINDOWS_CODESIGN_IDENTITY[/code].
 		</member>
 		<member name="codesign/identity_type" type="int" setter="" getter="">
 			Type of identity to use. See [url=https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe]Sign Tool[/url].
+			Can be overridden with the environment variable [code]GODOT_WINDOWS_CODESIGN_IDENTITY_TYPE[/code].
 		</member>
 		<member name="codesign/password" type="String" setter="" getter="">
 			Password for the certificate file used to sign executable. See [url=https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe]Sign Tool[/url].
+			Can be overridden with the environment variable [code]GODOT_WINDOWS_CODESIGN_PASSWORD[/code].
 		</member>
 		<member name="codesign/timestamp" type="bool" setter="" getter="">
 			If [code]true[/code], time-stamp is added to the signature. See [url=https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe]Sign Tool[/url].

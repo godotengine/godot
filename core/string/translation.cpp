@@ -941,18 +941,11 @@ String TranslationServer::wrap_with_fakebidi_characters(String &p_message) const
 }
 
 String TranslationServer::add_padding(const String &p_message, int p_length) const {
-	String res;
-	String prefix = pseudolocalization_prefix;
-	String suffix;
-	for (int i = 0; i < p_length * expansion_ratio / 2; i++) {
-		prefix += "_";
-		suffix += "_";
-	}
-	suffix += pseudolocalization_suffix;
-	res += prefix;
-	res += p_message;
-	res += suffix;
-	return res;
+	String underscores = String("_").repeat(p_length * expansion_ratio / 2);
+	String prefix = pseudolocalization_prefix + underscores;
+	String suffix = underscores + pseudolocalization_suffix;
+
+	return prefix + p_message + suffix;
 }
 
 const char32_t *TranslationServer::get_accented_version(char32_t p_character) const {

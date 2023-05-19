@@ -187,6 +187,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["UV"] = constt(ShaderLanguage::TYPE_VEC2);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["UV2"] = constt(ShaderLanguage::TYPE_VEC2);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["VIEW"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["SPECULAR_AMOUNT"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["LIGHT"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["LIGHT_COLOR"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].built_ins["LIGHT_IS_DIRECTIONAL"] = constt(ShaderLanguage::TYPE_BOOL);
@@ -225,6 +226,7 @@ ShaderTypes::ShaderTypes() {
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("particle_trails") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("alpha_to_coverage") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("alpha_to_coverage_and_one") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("debug_shadow_splits") });
 	}
 
 	/************ CANVAS ITEM **************************/

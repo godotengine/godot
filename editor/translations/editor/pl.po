@@ -82,7 +82,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-19 00:15+0000\n"
+"PO-Revision-Date: 2023-05-15 13:55+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -3483,7 +3483,7 @@ msgid "Dock Position"
 msgstr "Pozycja doku"
 
 msgid "Make Floating"
-msgstr "Zrób ruchomy"
+msgstr "Zrób pływający"
 
 msgid "Add a new scene."
 msgstr "Dodaj nową scenę."
@@ -4482,6 +4482,12 @@ msgstr ""
 "Wszystkie ustawienia wstępne muszą mieć zdefiniowaną ścieżkę eksportu, aby "
 "fukcja Eksportuj wszystko działała."
 
+msgid "Resources to exclude:"
+msgstr "Zasoby do wykluczenia:"
+
+msgid "Resources to export:"
+msgstr "Zasoby do eksportu:"
+
 msgid "Delete preset '%s'?"
 msgstr "Usunąć profil \"%s\"?"
 
@@ -4537,9 +4543,6 @@ msgstr "Eksportuj jako serwer dedykowany"
 
 msgid "Export Mode:"
 msgstr "Tryb eksportu:"
-
-msgid "Resources to export:"
-msgstr "Zasoby do eksportu:"
 
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"
@@ -10146,6 +10149,9 @@ msgstr "Kafelek z nieprawidłową sceną"
 msgid "Delete tiles"
 msgstr "Usuń kafelki"
 
+msgid "Drawing Rect:"
+msgstr "Rysowanie prostokąta:"
+
 msgid "Change selection"
 msgstr "Zmień zaznaczenie"
 
@@ -10395,10 +10401,10 @@ msgid "Physics"
 msgstr "Fizyka"
 
 msgid "Physics Layer %d"
-msgstr "Warstwa fizyki %"
+msgstr "Warstwa fizyki %d"
 
 msgid "Navigation Layer %d"
-msgstr "Warstwa nawigacji %"
+msgstr "Warstwa nawigacji %d"
 
 msgid "Custom Data"
 msgstr "Własne dane"
@@ -15534,6 +15540,12 @@ msgstr ""
 "ButtonGroup jest przeznaczone do użycia tylko z przyciskami, które mają "
 "toggle_mode ustawione na true."
 
+msgid "Copy this constructor in a script."
+msgstr "Skopiuj ten konstruktor w skrypcie."
+
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr "Wprowadź kod szesnastkowy (\"#ff0000\") lub nazwany kolor (\"red\")."
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -15561,6 +15573,9 @@ msgstr "Wybierz tryb próbnika."
 
 msgid "Switch between hexadecimal and code values."
 msgstr "Przełącz między szesnastkowymi i kodowymi wartościami."
+
+msgid "Hex code or named color"
+msgstr "Kod szesnastkowy lub nazwany kolor"
 
 msgid "Add current color as a preset."
 msgstr "Dodaj bieżący kolor do zapisanych."

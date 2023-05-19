@@ -12,7 +12,7 @@
 		- Bitmap font importer: AngelCode BMFont (.fnt, .font), text and binary (version 3) format variants.
 		- Monospace image font importer: All supported image formats.
 		[b]Note:[/b] A character is a symbol that represents an item (letter, digit etc.) in an abstract way.
-		[b]Note:[/b] A glyph is a bitmap or shape used to draw a one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.
+		[b]Note:[/b] A glyph is a bitmap or shape used to draw one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.
 		[b]Note:[/b] If a none of the font data sources contain glyphs for a character used in a string, the character in question will be replaced with a box displaying its hexadecimal code.
 		[codeblocks]
 		[gdscript]

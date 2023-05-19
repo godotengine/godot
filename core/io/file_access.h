@@ -81,7 +81,7 @@ protected:
 	static void _bind_methods();
 
 	AccessType get_access_type() const;
-	String fix_path(const String &p_path) const;
+	virtual String fix_path(const String &p_path) const;
 	virtual Error open_internal(const String &p_path, int p_mode_flags) = 0; ///< open a file
 	virtual uint64_t _get_modified_time(const String &p_file) = 0;
 	virtual void _set_access_type(AccessType p_access);

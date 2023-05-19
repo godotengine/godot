@@ -2169,6 +2169,9 @@ msgstr "Избор на шаблонен файл"
 msgid "Godot Export Templates"
 msgstr "Шаблони за изнасяне на Godot"
 
+msgid "Resources to export:"
+msgstr "Ресурси за изнасяне:"
+
 msgid "Exporting All"
 msgstr "Изнасяне на всичко"
 
@@ -2192,9 +2195,6 @@ msgstr "Изнасяне на избраните ресурси (включит�
 
 msgid "Export Mode:"
 msgstr "Режим на изнасяне:"
-
-msgid "Resources to export:"
-msgstr "Ресурси за изнасяне:"
 
 msgid "Keep"
 msgstr "Запазване"

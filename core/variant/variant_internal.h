@@ -35,6 +35,9 @@
 
 // For use when you want to access the internal pointer of a Variant directly.
 // Use with caution. You need to be sure that the type is correct.
+
+class RefCounted;
+
 class VariantInternal {
 	friend class Variant;
 
@@ -320,6 +323,7 @@ public:
 	}
 
 	static void object_assign(Variant *v, const Object *o); // Needs RefCounted, so it's implemented elsewhere.
+	static void refcounted_object_assign(Variant *v, const RefCounted *rc);
 
 	_FORCE_INLINE_ static void object_assign(Variant *v, const Variant *o) {
 		object_assign(v, o->_get_obj().obj);
@@ -820,28 +824,28 @@ VARIANT_ACCESSOR_NUMBER(int64_t)
 VARIANT_ACCESSOR_NUMBER(uint64_t)
 VARIANT_ACCESSOR_NUMBER(char32_t)
 
-// Bind enums to allow using them as return types.
-VARIANT_ACCESSOR_NUMBER(Error)
-VARIANT_ACCESSOR_NUMBER(Side)
-VARIANT_ACCESSOR_NUMBER(Vector2::Axis)
-VARIANT_ACCESSOR_NUMBER(Vector2i::Axis)
-VARIANT_ACCESSOR_NUMBER(Vector3::Axis)
-VARIANT_ACCESSOR_NUMBER(Vector3i::Axis)
-VARIANT_ACCESSOR_NUMBER(Vector4::Axis)
-VARIANT_ACCESSOR_NUMBER(Vector4i::Axis)
-
-VARIANT_ACCESSOR_NUMBER(Projection::Planes)
-
-template <>
-struct VariantInternalAccessor<EulerOrder> {
-	static _FORCE_INLINE_ EulerOrder get(const Variant *v) { return EulerOrder(*VariantInternal::get_int(v)); }
-	static _FORCE_INLINE_ void set(Variant *v, EulerOrder p_value) { *VariantInternal::get_int(v) = (int64_t)p_value; }
-};
-
 template <>
 struct VariantInternalAccessor<ObjectID> {
 	static _FORCE_INLINE_ ObjectID get(const Variant *v) { return ObjectID(*VariantInternal::get_int(v)); }
 	static _FORCE_INLINE_ void set(Variant *v, ObjectID p_value) { *VariantInternal::get_int(v) = p_value; }
+};
+
+template <class T>
+struct VariantInternalAccessor<T *> {
+	static _FORCE_INLINE_ T *get(const Variant *v) { return const_cast<T *>(static_cast<const T *>(*VariantInternal::get_object(v))); }
+	static _FORCE_INLINE_ void set(Variant *v, const T *p_value) { VariantInternal::object_assign(v, p_value); }
+};
+
+template <class T>
+struct VariantInternalAccessor<const T *> {
+	static _FORCE_INLINE_ const T *get(const Variant *v) { return static_cast<const T *>(*VariantInternal::get_object(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, const T *p_value) { VariantInternal::object_assign(v, p_value); }
+};
+
+template <>
+struct VariantInternalAccessor<IPAddress> {
+	static _FORCE_INLINE_ IPAddress get(const Variant *v) { return IPAddress(*VariantInternal::get_string(v)); }
+	static _FORCE_INLINE_ void set(Variant *v, IPAddress p_value) { *VariantInternal::get_string(v) = p_value; }
 };
 
 template <>
@@ -1530,14 +1534,14 @@ struct VariantTypeAdjust<Object *> {
 
 template <class T>
 struct VariantTypeConstructor {
-	_FORCE_INLINE_ static void variant_from_type(void *p_variant, void *p_value) {
-		Variant *variant = reinterpret_cast<Variant *>(p_variant);
-		VariantInitializer<T>::init(variant);
-		VariantInternalAccessor<T>::set(variant, *((T *)p_value));
+	_FORCE_INLINE_ static void variant_from_type(void *r_variant, void *p_value) {
+		// r_variant is provided by caller as uninitialized memory
+		memnew_placement(r_variant, Variant(*((T *)p_value)));
 	}
 
-	_FORCE_INLINE_ static void type_from_variant(void *p_value, void *p_variant) {
-		*((T *)p_value) = VariantInternalAccessor<T>::get(reinterpret_cast<Variant *>(p_variant));
+	_FORCE_INLINE_ static void type_from_variant(void *r_value, void *p_variant) {
+		// r_value is provided by caller as uninitialized memory
+		memnew_placement(r_value, T(VariantInternalAccessor<T>::get(reinterpret_cast<Variant *>(p_variant))));
 	}
 };
 

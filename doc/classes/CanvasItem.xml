@@ -171,7 +171,7 @@
 			<param index="1" name="color" type="Color" />
 			<param index="2" name="width" type="float" default="-1.0" />
 			<description>
-				Draws multiple disconnected lines with a uniform [param color]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
+				Draws multiple disconnected lines with a uniform [param width] and [param color]. Each line is defined by two consecutive points from [param points] array, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
@@ -181,7 +181,7 @@
 			<param index="1" name="colors" type="PackedColorArray" />
 			<param index="2" name="width" type="float" default="-1.0" />
 			<description>
-				Draws multiple disconnected lines with a uniform [param width] and segment-by-segment coloring. Colors assigned to line segments match by index between [param points] and [param colors]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
+				Draws multiple disconnected lines with a uniform [param width] and segment-by-segment coloring. Each segment is defined by two consecutive points from [param points] array and a corresponding color from [param colors] array, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints and has [code]colors[i][/code] color. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
@@ -196,7 +196,7 @@
 			<param index="6" name="max_lines" type="int" default="-1" />
 			<param index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="8" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
-			<param index="9" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="9" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<param index="10" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -215,7 +215,7 @@
 			<param index="7" name="size" type="int" default="1" />
 			<param index="8" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="9" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
-			<param index="10" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="10" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<param index="11" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="12" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -237,7 +237,7 @@
 			<param index="2" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="3" name="texture" type="Texture2D" default="null" />
 			<description>
-				Draws a solid polygon of any number of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. See also [method draw_polyline] and [method draw_polyline_colors].
+				Draws a solid polygon of any number of points, convex or concave. Unlike [method draw_colored_polygon], each point's color can be changed individually. See also [method draw_polyline] and [method draw_polyline_colors]. If you need more flexibility (such as being able to use bones), use [method RenderingServer.canvas_item_add_triangle_array] instead.
 			</description>
 		</method>
 		<method name="draw_polyline">
@@ -258,7 +258,7 @@
 			<param index="2" name="width" type="float" default="-1.0" />
 			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws interconnected line segments with a uniform [param width] and segment-by-segment coloring, and optional antialiasing (supported only for positive [param width]). Colors assigned to line segments match by index between [param points] and [param colors]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
+				Draws interconnected line segments with a uniform [param width], point-by-point coloring, and optional antialiasing (supported only for positive [param width]). Colors assigned to line points match by index between [param points] and [param colors], i.e. each line segment is filled with a gradient between the colors of the endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
 				If [param width] is negative, then the polyline is drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the polyline will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
@@ -279,7 +279,7 @@
 			<param index="2" name="filled" type="bool" default="true" />
 			<param index="3" name="width" type="float" default="-1.0" />
 			<description>
-				Draws a rectangle. If [param filled] is [code]true[/code], the rectangle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the rectangle will be drawn as a stroke with the [param color] and [param width] specified.
+				Draws a rectangle. If [param filled] is [code]true[/code], the rectangle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the rectangle will be drawn as a stroke with the [param color] and [param width] specified. See also [method draw_texture_rect].
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				[b]Note:[/b] [param width] is only effective if [param filled] is [code]false[/code].
 				[b]Note:[/b] Unfilled rectangles drawn with a negative [param width] may not display perfectly. For example, corners may be missing or brighter due to overlapping lines (for a translucent [param color]).
@@ -311,7 +311,7 @@
 			<param index="4" name="width" type="float" default="-1" />
 			<param index="5" name="font_size" type="int" default="16" />
 			<param index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="7" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="7" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<param index="8" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -348,7 +348,7 @@
 			<param index="5" name="font_size" type="int" default="16" />
 			<param index="6" name="size" type="int" default="1" />
 			<param index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="8" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="8" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<param index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -380,7 +380,7 @@
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="transpose" type="bool" default="false" />
 			<description>
-				Draws a textured rectangle at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped.
+				Draws a textured rectangle at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_rect] and [method draw_texture_rect_region].
 			</description>
 		</method>
 		<method name="draw_texture_rect_region">
@@ -392,7 +392,7 @@
 			<param index="4" name="transpose" type="bool" default="false" />
 			<param index="5" name="clip_uv" type="bool" default="true" />
 			<description>
-				Draws a textured rectangle region at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped.
+				Draws a textured rectangle from a texture's region (specified by [param src_rect]) at a given position, optionally modulated by a color. If [param transpose] is [code]true[/code], the texture will have its X and Y coordinates swapped. See also [method draw_texture_rect].
 			</description>
 		</method>
 		<method name="force_update_transform">
@@ -423,6 +423,7 @@
 			<return type="Vector2" />
 			<description>
 				Returns the mouse's position in the [CanvasLayer] that this [CanvasItem] is in using the coordinate system of the [CanvasLayer].
+				[b]Note:[/b] For screen-space coordinates (e.g. when using a non-embedded [Popup]), you can use [method DisplayServer.mouse_get_position].
 			</description>
 		</method>
 		<method name="get_global_transform" qualifiers="const">
@@ -502,7 +503,7 @@
 		<method name="is_visible_in_tree" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its antecedents are also visible. If any antecedent is hidden, this node will not be visible in the scene tree, and is consequently not drawn (see [method _draw]).
+				Returns [code]true[/code] if the node is present in the [SceneTree], its [member visible] property is [code]true[/code] and all its ancestors are also visible. If any ancestor is hidden, this node will not be visible in the scene tree, and is consequently not drawn (see [method _draw]).
 			</description>
 		</method>
 		<method name="make_canvas_position_local" qualifiers="const">
@@ -597,7 +598,7 @@
 			The rendering layer in which this [CanvasItem] is rendered by [Viewport] nodes. A [Viewport] will render a [CanvasItem] if it and all its parents share a layer with the [Viewport]'s canvas cull mask.
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
-			If [code]true[/code], this [CanvasItem] is drawn. The node is only visible if all of its antecedents are visible as well (in other words, [method is_visible_in_tree] must return [code]true[/code]).
+			If [code]true[/code], this [CanvasItem] is drawn. The node is only visible if all of its ancestors are visible as well (in other words, [method is_visible_in_tree] must return [code]true[/code]).
 			[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 		</member>
 		<member name="y_sort_enabled" type="bool" setter="set_y_sort_enabled" getter="is_y_sort_enabled" default="false">
@@ -653,6 +654,9 @@
 		</constant>
 		<constant name="NOTIFICATION_EXIT_CANVAS" value="33">
 			The [CanvasItem] has exited the canvas.
+		</constant>
+		<constant name="NOTIFICATION_WORLD_2D_CHANGED" value="36">
+			The [CanvasItem]'s active [World2D] changed.
 		</constant>
 		<constant name="TEXTURE_FILTER_PARENT_NODE" value="0" enum="TextureFilter">
 			The [CanvasItem] will inherit the filter from its parent.

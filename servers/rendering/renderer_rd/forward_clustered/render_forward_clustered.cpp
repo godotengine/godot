@@ -334,6 +334,9 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 			} else if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW)) {
 				material_uniform_set = scene_shader.overdraw_material_uniform_set;
 				shader = scene_shader.overdraw_material_shader_ptr;
+			} else if (unlikely(get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS)) {
+				material_uniform_set = scene_shader.debug_shadow_splits_material_uniform_set;
+				shader = scene_shader.debug_shadow_splits_material_shader_ptr;
 			} else {
 #endif
 				material_uniform_set = surf->material_uniform_set;

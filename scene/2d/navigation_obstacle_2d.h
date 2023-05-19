@@ -32,55 +32,71 @@
 #define NAVIGATION_OBSTACLE_2D_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/main/node.h"
 
-class NavigationObstacle2D : public Node {
-	GDCLASS(NavigationObstacle2D, Node);
+class NavigationObstacle2D : public Node2D {
+	GDCLASS(NavigationObstacle2D, Node2D);
 
-	Node2D *parent_node2d = nullptr;
-
-	RID agent;
+	RID obstacle;
 	RID map_before_pause;
 	RID map_override;
+	RID map_current;
 
-	bool estimate_radius = true;
-	real_t radius = 1.0;
+	real_t radius = 0.0;
+
+	Vector<Vector2> vertices;
+
+	RID fake_agent;
+	uint32_t avoidance_layers = 1;
+
+	Transform2D previous_transform;
+
+	Vector2 velocity;
+	Vector2 previous_velocity;
+	bool velocity_submitted = false;
+
+#ifdef DEBUG_ENABLED
+private:
+	void _update_fake_agent_radius_debug();
+	void _update_static_obstacle_debug();
+#endif // DEBUG_ENABLED
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 
 public:
 	NavigationObstacle2D();
 	virtual ~NavigationObstacle2D();
 
-	RID get_rid() const {
-		return agent;
-	}
-
-	void set_agent_parent(Node *p_agent_parent);
+	RID get_obstacle_rid() const { return obstacle; }
+	RID get_agent_rid() const { return fake_agent; }
 
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;
 
-	void set_estimate_radius(bool p_estimate_radius);
-	bool is_radius_estimated() const {
-		return estimate_radius;
-	}
 	void set_radius(real_t p_radius);
-	real_t get_radius() const {
-		return radius;
-	}
+	real_t get_radius() const { return radius; }
 
-	PackedStringArray get_configuration_warnings() const override;
+	void set_vertices(const Vector<Vector2> &p_vertices);
+	const Vector<Vector2> &get_vertices() const { return vertices; };
+
+	void set_avoidance_layers(uint32_t p_layers);
+	uint32_t get_avoidance_layers() const;
+
+	void set_avoidance_mask(uint32_t p_mask);
+	uint32_t get_avoidance_mask() const;
+
+	void set_avoidance_layer_value(int p_layer_number, bool p_value);
+	bool get_avoidance_layer_value(int p_layer_number) const;
+
+	void set_velocity(const Vector2 p_velocity);
+	Vector2 get_velocity() const { return velocity; };
 
 	void _avoidance_done(Vector3 p_new_velocity); // Dummy
 
 private:
-	void initialize_agent();
-	void reevaluate_agent_radius();
-	real_t estimate_agent_radius() const;
+	void _update_map(RID p_map);
+	void _update_position(const Vector2 p_position);
 };
 
 #endif // NAVIGATION_OBSTACLE_2D_H

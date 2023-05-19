@@ -466,8 +466,8 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 			}
 
 			bool found = false;
-			for (const String &path : mdfind_paths) {
-				found = _autodetect_path(path.path_join("Contents/MacOS"));
+			for (const String &found_path : mdfind_paths) {
+				found = _autodetect_path(found_path.path_join("Contents/MacOS"));
 				if (found) {
 					break;
 				}

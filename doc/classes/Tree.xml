@@ -60,8 +60,11 @@
 		</method>
 		<method name="edit_selected">
 			<return type="bool" />
+			<param index="0" name="force_edit" type="bool" default="false" />
 			<description>
-				Edits the selected tree item as if it was clicked. The item must be set editable with [method TreeItem.set_editable]. Returns [code]true[/code] if the item could be edited. Fails if no item is selected.
+				Edits the selected tree item as if it was clicked.
+				Either the item must be set editable with [method TreeItem.set_editable] or [param force_edit] must be [code]true[/code].
+				Returns [code]true[/code] if the item could be edited. Fails if no item is selected.
 			</description>
 		</method>
 		<method name="ensure_cursor_is_visible">

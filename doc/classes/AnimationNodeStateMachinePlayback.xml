@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeStateMachinePlayback" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Playback control for [AnimationNodeStateMachine].
+		Provides playback control for an [AnimationNodeStateMachine].
 	</brief_description>
 	<description>
 		Allows control of [AnimationTree] state machines created with [AnimationNodeStateMachine]. Retrieve with [code]$AnimationTree.get("parameters/playback")[/code].
@@ -18,7 +18,7 @@
 		[/codeblocks]
 	</description>
 	<tutorials>
-		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_current_length" qualifiers="const">
@@ -48,7 +48,7 @@
 			</description>
 		</method>
 		<method name="get_travel_path" qualifiers="const">
-			<return type="PackedStringArray" />
+			<return type="StringName[]" />
 			<description>
 				Returns the current travel path as computed internally by the A* algorithm.
 			</description>

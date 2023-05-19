@@ -1913,34 +1913,23 @@ void ColorPickerButton::_modal_closed() {
 void ColorPickerButton::pressed() {
 	_update_picker();
 
-	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
+	Size2 minsize = popup->get_contents_minimum_size();
+	float viewport_height = get_viewport_rect().size.y;
 
 	popup->reset_size();
 	picker->_update_presets();
 	picker->_update_recent_presets();
 
-	Rect2i usable_rect = popup->get_usable_parent_rect();
-	//let's try different positions to see which one we can use
-
-	Rect2i cp_rect(Point2i(), popup->get_size());
-	for (int i = 0; i < 4; i++) {
-		if (i > 1) {
-			cp_rect.position.y = get_screen_position().y - cp_rect.size.y;
-		} else {
-			cp_rect.position.y = get_screen_position().y + size.height;
-		}
-
-		if (i & 1) {
-			cp_rect.position.x = get_screen_position().x;
-		} else {
-			cp_rect.position.x = get_screen_position().x - MAX(0, (cp_rect.size.x - size.x));
-		}
-
-		if (usable_rect.encloses(cp_rect)) {
-			break;
-		}
+	// Determine in which direction to show the popup. By default popup horizontally centered below the button.
+	// But if the popup doesn't fit below and the button is in the bottom half of the viewport, show above.
+	bool show_above = false;
+	if (get_global_position().y + get_size().y + minsize.y > viewport_height && get_global_position().y * 2 + get_size().y > viewport_height) {
+		show_above = true;
 	}
-	popup->set_position(cp_rect.position);
+
+	float h_offset = (get_size().x - minsize.x) / 2;
+	float v_offset = show_above ? -minsize.y : get_size().y;
+	popup->set_position(get_screen_position() + Vector2(h_offset, v_offset));
 	popup->popup();
 	picker->set_focus_on_line_edit();
 }

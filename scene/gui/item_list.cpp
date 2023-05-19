@@ -294,6 +294,18 @@ Color ItemList::get_item_custom_fg_color(int p_idx) const {
 	return items[p_idx].custom_fg;
 }
 
+Rect2 ItemList::get_item_rect(int p_idx, bool p_expand) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Rect2());
+
+	Rect2 ret = items[p_idx].rect_cache;
+	ret.position += theme_cache.panel_style->get_offset();
+
+	if (p_expand && p_idx % current_columns == current_columns - 1) {
+		ret.size.width = get_size().width - ret.position.x;
+	}
+	return ret;
+}
+
 void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon) {
 	if (p_idx < 0) {
 		p_idx += get_item_count();
@@ -597,6 +609,7 @@ void ItemList::set_fixed_icon_size(const Size2i &p_size) {
 
 	fixed_icon_size = p_size;
 	queue_redraw();
+	shape_changed = true;
 }
 
 Size2i ItemList::get_fixed_icon_size() const {
@@ -656,13 +669,6 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid() && mb->is_pressed()) {
 		search_string = ""; //any mousepress cancels
-		Vector2 pos = mb->get_position();
-		pos -= theme_cache.panel_style->get_offset();
-		pos.y += scroll_bar->get_value();
-
-		if (is_layout_rtl()) {
-			pos.x = get_size().width - pos.x;
-		}
 
 		int closest = get_item_at_position(mb->get_position(), true);
 
@@ -1783,6 +1789,8 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_item_custom_fg_color", "idx", "custom_fg_color"), &ItemList::set_item_custom_fg_color);
 	ClassDB::bind_method(D_METHOD("get_item_custom_fg_color", "idx"), &ItemList::get_item_custom_fg_color);
+
+	ClassDB::bind_method(D_METHOD("get_item_rect", "idx", "expand"), &ItemList::get_item_rect, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("set_item_tooltip_enabled", "idx", "enable"), &ItemList::set_item_tooltip_enabled);
 	ClassDB::bind_method(D_METHOD("is_item_tooltip_enabled", "idx"), &ItemList::is_item_tooltip_enabled);

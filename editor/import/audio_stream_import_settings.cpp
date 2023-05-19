@@ -85,13 +85,13 @@ void AudioStreamImportSettings::_draw_preview() {
 
 	Ref<Font> beat_font = get_theme_font(SNAME("main"), SNAME("EditorFonts"));
 	int main_size = get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts"));
-	Vector<Vector2> lines;
-	lines.resize(rect_size.width * 2);
+	Vector<Vector2> points;
+	points.resize((int)rect_size.width * 2);
 	Color color_active = get_theme_color(SNAME("contrast_color_2"), SNAME("Editor"));
 	Color color_inactive = color_active;
 	color_inactive.a *= 0.5;
-	Vector<Color> color;
-	color.resize(lines.size());
+	Vector<Color> colors;
+	colors.resize((int)rect_size.width);
 
 	float inactive_from = 1e20;
 	float beat_size = 0;
@@ -115,16 +115,15 @@ void AudioStreamImportSettings::_draw_preview() {
 		float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 		int idx = i;
-		lines.write[idx * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
-		lines.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
+		points.write[idx * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
+		points.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
 
-		Color c = ofs > inactive_from ? color_inactive : color_active;
-
-		color.write[idx * 2 + 0] = c;
-		color.write[idx * 2 + 1] = c;
+		colors.write[idx] = ofs > inactive_from ? color_inactive : color_active;
 	}
 
-	RS::get_singleton()->canvas_item_add_multiline(_preview->get_canvas_item(), lines, color);
+	if (!points.is_empty()) {
+		RS::get_singleton()->canvas_item_add_multiline(_preview->get_canvas_item(), points, colors);
+	}
 
 	if (beat_size) {
 		Color beat_color = Color(1, 1, 1, 1);

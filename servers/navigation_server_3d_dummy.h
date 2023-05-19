@@ -45,6 +45,8 @@ public:
 	Vector3 map_get_up(RID p_map) const override { return Vector3(); }
 	void map_set_cell_size(RID p_map, real_t p_cell_size) override {}
 	real_t map_get_cell_size(RID p_map) const override { return 0; }
+	void map_set_use_edge_connections(RID p_map, bool p_enabled) override {}
+	bool map_get_use_edge_connections(RID p_map) const override { return false; }
 	void map_set_edge_connection_margin(RID p_map, real_t p_connection_margin) override {}
 	real_t map_get_edge_connection_margin(RID p_map) const override { return 0; }
 	void map_set_link_connection_radius(RID p_map, real_t p_connection_radius) override {}
@@ -57,8 +59,11 @@ public:
 	TypedArray<RID> map_get_links(RID p_map) const override { return TypedArray<RID>(); }
 	TypedArray<RID> map_get_regions(RID p_map) const override { return TypedArray<RID>(); }
 	TypedArray<RID> map_get_agents(RID p_map) const override { return TypedArray<RID>(); }
+	TypedArray<RID> map_get_obstacles(RID p_map) const override { return TypedArray<RID>(); }
 	void map_force_update(RID p_map) override {}
 	RID region_create() override { return RID(); }
+	void region_set_use_edge_connections(RID p_region, bool p_enabled) override {}
+	bool region_get_use_edge_connections(RID p_region) const override { return false; }
 	void region_set_enter_cost(RID p_region, real_t p_enter_cost) override {}
 	real_t region_get_enter_cost(RID p_region) const override { return 0; }
 	void region_set_travel_cost(RID p_region, real_t p_travel_cost) override {}
@@ -96,17 +101,32 @@ public:
 	RID agent_create() override { return RID(); }
 	void agent_set_map(RID p_agent, RID p_map) override {}
 	RID agent_get_map(RID p_agent) const override { return RID(); }
+	void agent_set_avoidance_enabled(RID p_agent, bool p_enabled) override {}
+	bool agent_get_avoidance_enabled(RID p_agent) const override { return false; }
+	void agent_set_use_3d_avoidance(RID p_agent, bool p_enabled) override {}
+	bool agent_get_use_3d_avoidance(RID p_agent) const override { return false; }
 	void agent_set_neighbor_distance(RID p_agent, real_t p_distance) override {}
 	void agent_set_max_neighbors(RID p_agent, int p_count) override {}
-	void agent_set_time_horizon(RID p_agent, real_t p_time) override {}
+	void agent_set_time_horizon_agents(RID p_agent, real_t p_time_horizon) override {}
+	void agent_set_time_horizon_obstacles(RID p_agent, real_t p_time_horizon) override {}
 	void agent_set_radius(RID p_agent, real_t p_radius) override {}
+	void agent_set_height(RID p_agent, real_t p_height) override {}
 	void agent_set_max_speed(RID p_agent, real_t p_max_speed) override {}
+	void agent_set_velocity_forced(RID p_agent, Vector3 p_velocity) override {}
 	void agent_set_velocity(RID p_agent, Vector3 p_velocity) override {}
-	void agent_set_target_velocity(RID p_agent, Vector3 p_velocity) override {}
 	void agent_set_position(RID p_agent, Vector3 p_position) override {}
-	void agent_set_ignore_y(RID p_agent, bool p_ignore) override {}
 	bool agent_is_map_changed(RID p_agent) const override { return false; }
-	void agent_set_callback(RID p_agent, Callable p_callback) override {}
+	void agent_set_avoidance_callback(RID p_agent, Callable p_callback) override {}
+	void agent_set_avoidance_layers(RID p_agent, uint32_t p_layers) override {}
+	void agent_set_avoidance_mask(RID p_agent, uint32_t p_mask) override {}
+	void agent_set_avoidance_priority(RID p_agent, real_t p_priority) override {}
+	RID obstacle_create() override { return RID(); }
+	void obstacle_set_map(RID p_obstacle, RID p_map) override {}
+	RID obstacle_get_map(RID p_obstacle) const override { return RID(); }
+	void obstacle_set_height(RID p_obstacle, real_t p_height) override {}
+	void obstacle_set_position(RID p_obstacle, Vector3 p_position) override {}
+	void obstacle_set_vertices(RID p_obstacle, const Vector<Vector3> &p_vertices) override {}
+	void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) override {}
 	void free(RID p_object) override {}
 	void set_active(bool p_active) override {}
 	void process(real_t delta_time) override {}

@@ -37,6 +37,8 @@
 #include <emscripten/html5.h>
 
 class DisplayServerWeb : public DisplayServer {
+	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+
 private:
 	struct JSTouchEvent {
 		uint32_t identifier[32] = { 0 };
@@ -79,6 +81,7 @@ private:
 	MouseButton last_click_button_index = MouseButton::NONE;
 
 	bool swap_cancel_ok = false;
+	bool tts = false;
 
 	// utilities
 	static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod, Key p_keycode);

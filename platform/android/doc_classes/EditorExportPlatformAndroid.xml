@@ -58,21 +58,27 @@
 		</member>
 		<member name="keystore/debug" type="String" setter="" getter="">
 			Path of the debug keystore file.
+			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_DEBUG_PATH[/code].
 		</member>
 		<member name="keystore/debug_password" type="String" setter="" getter="">
 			Password for the debug keystore file.
+			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD[/code].
 		</member>
 		<member name="keystore/debug_user" type="String" setter="" getter="">
 			User name for the debug keystore file.
+			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_DEBUG_USER[/code].
 		</member>
 		<member name="keystore/release" type="String" setter="" getter="">
 			Path of the release keystore file.
+			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_RELEASE_PATH[/code].
 		</member>
 		<member name="keystore/release_password" type="String" setter="" getter="">
 			Password for the release keystore file.
+			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD[/code].
 		</member>
 		<member name="keystore/release_user" type="String" setter="" getter="">
 			User name for the release keystore file.
+			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_RELEASE_USER[/code].
 		</member>
 		<member name="launcher_icons/adaptive_background_432x432" type="String" setter="" getter="">
 			Background layer of the application adaptive icon file.
@@ -153,7 +159,7 @@
 			Must be required by a HostApduService or OffHostApduService to ensure that only the system can bind to it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_NFC_SERVICE]BIND_NFC_SERVICE[/url].
 		</member>
 		<member name="permissions/bind_notification_listener_service" type="bool" setter="" getter="">
-			Must be required by an NotificationListenerService, to ensure that only the system can bind to it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_NOTIFICATION_LISTENER_SERVICE]BIND_NOTIFICATION_LISTENER_SERVICE[/url].
+			Must be required by a NotificationListenerService, to ensure that only the system can bind to it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_NOTIFICATION_LISTENER_SERVICE]BIND_NOTIFICATION_LISTENER_SERVICE[/url].
 		</member>
 		<member name="permissions/bind_print_service" type="bool" setter="" getter="">
 			Must be required by a PrintService, to ensure that only the system can bind to it. See [url=https://developer.android.com/reference/android/Manifest.permission#BIND_PRINT_SERVICE]BIND_PRINT_SERVICE[/url].
@@ -417,7 +423,7 @@
 			Allows an application to record audio. See [url=https://developer.android.com/reference/android/Manifest.permission#RECORD_AUDIO]RECORD_AUDIO[/url].
 		</member>
 		<member name="permissions/reorder_tasks" type="bool" setter="" getter="">
-			Allows an application to change the Z-order of tasks. See [url= https://developer.android.com/reference/android/Manifest.permission#REORDER_TASKS]REORDER_TASKS[/url].
+			Allows an application to change the Z-order of tasks. See [url=https://developer.android.com/reference/android/Manifest.permission#REORDER_TASKS]REORDER_TASKS[/url].
 		</member>
 		<member name="permissions/restart_packages" type="bool" setter="" getter="">
 			Deprecated in API level 15.

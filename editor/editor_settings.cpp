@@ -477,12 +477,19 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set_restart_if_changed("interface/touchscreen/enable_long_press_as_right_click", true);
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/touchscreen/enable_pan_and_scale_gestures", has_touchscreen_ui, "")
 	set_restart_if_changed("interface/touchscreen/enable_pan_and_scale_gestures", true);
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/touchscreen/scale_gizmo_handles", has_touchscreen_ui ? 3 : 1, "1,5,1")
 
 	// Scene tabs
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/scene_tabs/display_close_button", 1, "Never,If Tab Active,Always"); // TabBar::CloseButtonDisplayPolicy
 	_initial_set("interface/scene_tabs/show_thumbnail_on_hover", true);
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "interface/scene_tabs/maximum_width", 350, "0,9999,1", PROPERTY_USAGE_DEFAULT)
 	_initial_set("interface/scene_tabs/show_script_button", false);
+
+	// Multi Window
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/multi_window/enable", true, "");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/multi_window/restore_windows_on_load", true, "");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/multi_window/maximize_window", false, "");
+	set_restart_if_changed("interface/multi_window/enable", true);
 
 	/* Filesystem */
 
@@ -696,7 +703,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/tiles_editor/grid_color", Color(1.0, 0.5, 0.2, 0.5));
 
 	// Polygon editor
-	_initial_set("editors/polygon_editor/point_grab_radius", 8);
+	_initial_set("editors/polygon_editor/point_grab_radius", has_touchscreen_ui ? 32 : 8);
 	_initial_set("editors/polygon_editor/show_previous_outline", true);
 
 	// Animation
@@ -706,6 +713,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/animation/default_create_reset_tracks", true);
 	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
 	_initial_set("editors/animation/onion_layers_future_color", Color(0, 1, 0));
+
+	// Shader editor
+	_initial_set("editors/shader_editor/behavior/files/restore_shaders_on_load", true);
 
 	// Visual editors
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/visual_editors/minimap_opacity", 0.85, "0.0,1.0,0.01")

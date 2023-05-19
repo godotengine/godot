@@ -314,6 +314,8 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	Ref<AnimationNodeStateMachineTransition> _get_group_start_transition() const;
 	Ref<AnimationNodeStateMachineTransition> _get_group_end_transition() const;
 
+	TypedArray<StringName> _get_travel_path() const;
+
 protected:
 	static void _bind_methods();
 

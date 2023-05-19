@@ -378,12 +378,8 @@ void ScriptTextEditor::insert_final_newline() {
 	code_editor->insert_final_newline();
 }
 
-void ScriptTextEditor::convert_indent_to_spaces() {
-	code_editor->convert_indent_to_spaces();
-}
-
-void ScriptTextEditor::convert_indent_to_tabs() {
-	code_editor->convert_indent_to_tabs();
+void ScriptTextEditor::convert_indent() {
+	code_editor->get_text_editor()->convert_indent();
 }
 
 void ScriptTextEditor::tag_saved_version() {
@@ -1282,10 +1278,12 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			trim_trailing_whitespace();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_SPACES: {
-			convert_indent_to_spaces();
+			tx->set_indent_using_spaces(true);
+			convert_indent();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_TABS: {
-			convert_indent_to_tabs();
+			tx->set_indent_using_spaces(false);
+			convert_indent();
 		} break;
 		case EDIT_PICK_COLOR: {
 			color_panel->popup();
@@ -1805,20 +1803,26 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		int col = pos.x;
 
 		tx->set_move_caret_on_right_click_enabled(EDITOR_GET("text_editor/behavior/navigation/move_caret_on_right_click"));
+		int caret_clicked = -1;
 		if (tx->is_move_caret_on_right_click_enabled()) {
-			tx->remove_secondary_carets();
 			if (tx->has_selection()) {
-				int from_line = tx->get_selection_from_line();
-				int to_line = tx->get_selection_to_line();
-				int from_column = tx->get_selection_from_column();
-				int to_column = tx->get_selection_to_column();
+				for (int i = 0; i < tx->get_caret_count(); i++) {
+					int from_line = tx->get_selection_from_line(i);
+					int to_line = tx->get_selection_to_line(i);
+					int from_column = tx->get_selection_from_column(i);
+					int to_column = tx->get_selection_to_column(i);
 
-				if (row < from_line || row > to_line || (row == from_line && col < from_column) || (row == to_line && col > to_column)) {
-					// Right click is outside the selected text
-					tx->deselect();
+					if (row >= from_line && row <= to_line && (row != from_line || col >= from_column) && (row != to_line || col <= to_column)) {
+						// Right click in one of the selected text
+						caret_clicked = i;
+						break;
+					}
 				}
 			}
-			if (!tx->has_selection()) {
+			if (caret_clicked < 0) {
+				tx->deselect();
+				tx->remove_secondary_carets();
+				caret_clicked = 0;
 				tx->set_caret_line(row, false, false);
 				tx->set_caret_column(col);
 			}
@@ -1826,10 +1830,10 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 		String word_at_pos = tx->get_word_at_pos(local_pos);
 		if (word_at_pos.is_empty()) {
-			word_at_pos = tx->get_word_under_caret(0);
+			word_at_pos = tx->get_word_under_caret(caret_clicked);
 		}
 		if (word_at_pos.is_empty()) {
-			word_at_pos = tx->get_selected_text(0);
+			word_at_pos = tx->get_selected_text(caret_clicked);
 		}
 
 		bool has_color = (word_at_pos == "Color");

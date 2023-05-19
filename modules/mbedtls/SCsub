@@ -100,10 +100,14 @@ if env["builtin_mbedtls"]:
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     env_mbed_tls.Prepend(CPPPATH=["#thirdparty/mbedtls/include/"])
+    env_mbed_tls.Append(
+        CPPDEFINES=[("MBEDTLS_CONFIG_FILE", '\\"thirdparty/mbedtls/include/godot_module_mbedtls_config.h\\"')]
+    )
 
     env_thirdparty = env_mbed_tls.Clone()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+    env_thirdparty.Depends(thirdparty_obj, "#thirdparty/mbedtls/include/godot_module_mbedtls_config.h")
     env.modules_sources += thirdparty_obj
 
 
