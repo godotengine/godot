@@ -371,6 +371,10 @@
 			The base strength of the panning effect for all [AudioStreamPlayer3D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
 			The default value of [code]0.5[/code] is tuned for headphones. When using speakers, you may find lower values to sound better as speakers have a lower stereo separation compared to headphones.
 		</member>
+		<member name="audio/general/text_to_speech" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], text-to-speech support is enabled, see [method DisplayServer.tts_get_voices] and [method DisplayServer.tts_speak].
+			[b]Note:[/b] Enabling TTS can cause addition idle CPU usage and interfere with the sleep mode, so consider disabling it if TTS is not used.
+		</member>
 		<member name="audio/video/video_delay_compensation_ms" type="int" setter="" getter="" default="0">
 			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
 		</member>

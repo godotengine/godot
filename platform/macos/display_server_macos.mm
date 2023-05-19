@@ -1741,37 +1741,37 @@ void DisplayServerMacOS::global_menu_clear(const String &p_menu_root) {
 }
 
 bool DisplayServerMacOS::tts_is_speaking() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts isSpeaking];
 }
 
 bool DisplayServerMacOS::tts_is_paused() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts isPaused];
 }
 
 TypedArray<Dictionary> DisplayServerMacOS::tts_get_voices() const {
-	ERR_FAIL_COND_V(!tts, Array());
+	ERR_FAIL_COND_V_MSG(!tts, Array(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts getVoices];
 }
 
 void DisplayServerMacOS::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
 }
 
 void DisplayServerMacOS::tts_pause() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts pauseSpeaking];
 }
 
 void DisplayServerMacOS::tts_resume() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts resumeSpeaking];
 }
 
 void DisplayServerMacOS::tts_stop() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts stopSpeaking];
 }
 
@@ -3845,7 +3845,10 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	CGDisplayRegisterReconfigurationCallback(_displays_arrangement_changed, nullptr);
 
 	// Init TTS
-	tts = [[TTS_MacOS alloc] init];
+	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
+	if (tts_enabled) {
+		tts = [[TTS_MacOS alloc] init];
+	}
 
 	NSMenuItem *menu_item;
 	NSString *title;

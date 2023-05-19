@@ -30,6 +30,7 @@
 
 #include "display_server_web.h"
 
+#include "core/config/project_settings.h"
 #ifdef GLES3_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
@@ -298,10 +299,12 @@ const char *DisplayServerWeb::godot2dom_cursor(DisplayServer::CursorShape p_shap
 }
 
 bool DisplayServerWeb::tts_is_speaking() const {
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return godot_js_tts_is_speaking();
 }
 
 bool DisplayServerWeb::tts_is_paused() const {
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return godot_js_tts_is_paused();
 }
 
@@ -320,11 +323,13 @@ void DisplayServerWeb::update_voices_callback(int p_size, const char **p_voice) 
 }
 
 TypedArray<Dictionary> DisplayServerWeb::tts_get_voices() const {
+	ERR_FAIL_COND_V_MSG(!tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_get_voices(update_voices_callback);
 	return voices;
 }
 
 void DisplayServerWeb::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	if (p_interrupt) {
 		tts_stop();
 	}
@@ -341,14 +346,17 @@ void DisplayServerWeb::tts_speak(const String &p_text, const String &p_voice, in
 }
 
 void DisplayServerWeb::tts_pause() {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_pause();
 }
 
 void DisplayServerWeb::tts_resume() {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_resume();
 }
 
 void DisplayServerWeb::tts_stop() {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	for (const KeyValue<int, CharString> &E : utterance_ids) {
 		tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E.key);
 	}
@@ -771,6 +779,8 @@ DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, W
 DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Error &r_error) {
 	r_error = OK; // Always succeeds for now.
 
+	tts = GLOBAL_GET("audio/general/text_to_speech");
+
 	// Ensure the canvas ID.
 	godot_js_config_canvas_id_get(canvas_id, 256);
 
@@ -866,7 +876,7 @@ bool DisplayServerWeb::has_feature(Feature p_feature) const {
 		case FEATURE_VIRTUAL_KEYBOARD:
 			return godot_js_display_vk_available() != 0;
 		case FEATURE_TEXT_TO_SPEECH:
-			return godot_js_display_tts_available() != 0;
+			return tts && (godot_js_display_tts_available() != 0);
 		default:
 			return false;
 	}
