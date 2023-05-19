@@ -2020,7 +2020,7 @@ bool Control::has_focus() const {
 }
 
 bool Control::grab_focus(bool p_auto_set_viewport_active_focus_layer) {
-	ERR_MAIN_THREAD_GUARD;
+	ERR_READ_THREAD_GUARD_V(false);
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	if (data.focus_mode == FOCUS_NONE) {
