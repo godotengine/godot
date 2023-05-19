@@ -757,6 +757,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_RST("application/run/flush_stdout_on_print", false);
 	GLOBAL_DEF_RST("application/run/flush_stdout_on_print.debug", true);
 
+	GLOBAL_DEF_RST("application/run/print_timestamps_in_stdout", false);
+
 	MAIN_PRINT("Main: Parse CMDLine");
 
 	/* argument parsing and main creation */
@@ -1575,6 +1577,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("debug/file_logging/enable_file_logging.pc", true);
 	GLOBAL_DEF("debug/file_logging/log_path", "user://logs/godot.log");
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/file_logging/max_log_files", PROPERTY_HINT_RANGE, "0,20,1,or_greater"), 5);
+	GLOBAL_DEF("debug/file_logging/log_timestamps", true);
 
 	if (!project_manager && !editor && FileAccess::get_create_func(FileAccess::ACCESS_USERDATA) &&
 			GLOBAL_GET("debug/file_logging/enable_file_logging")) {
@@ -1618,6 +1621,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	Logger::set_flush_stdout_on_print(GLOBAL_GET("application/run/flush_stdout_on_print"));
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		StdLogger::set_print_timestamps(GLOBAL_GET("application/run/print_timestamps_in_stdout"));
+	}
+	RotatedFileLogger::set_log_timestamps(GLOBAL_GET("debug/file_logging/log_timestamps"));
 
 	OS::get_singleton()->set_cmdline(execpath, main_args, user_args);
 

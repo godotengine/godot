@@ -32,6 +32,7 @@
 
 #include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
+#include "core/os/time.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -124,11 +125,19 @@ void EditorLog::_update_theme() {
 	theme_cache.message_color = get_theme_color(SNAME("font_color"), SNAME("Editor")) * Color(1, 1, 1, 0.6);
 }
 
+void EditorLog::_update_settings() {
+	show_timestamps = EDITOR_GET("run/output/show_timestamps");
+}
+
 void EditorLog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_theme();
 			_load_state();
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_update_settings();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -301,6 +310,10 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 		log->remove_paragraph(log->get_paragraph_count() - 2);
 	}
 
+	if (show_timestamps) {
+		log->append_text("[color=#808080]" + Time::get_singleton()->get_datetime_string_from_system() + Time::get_singleton()->get_offset_string_from_offset_minutes(Time::get_singleton()->get_time_zone_from_system()["bias"]) + " |[/color] ");
+	}
+
 	switch (p_message.type) {
 		case MSG_TYPE_STD: {
 		} break;
@@ -381,6 +394,8 @@ EditorLog::EditorLog() {
 	save_state_timer->set_one_shot(true);
 	save_state_timer->connect("timeout", callable_mp(this, &EditorLog::_save_state));
 	add_child(save_state_timer);
+
+	_update_settings();
 
 	HBoxContainer *hb = this;
 
