@@ -64,6 +64,10 @@ void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_er
 	else
 		wprintf(L"%ls", wbuf);
 
+#ifdef DEBUG_ENABLED
+	OutputDebugStringW(wbuf);
+#endif
+
 	memfree(wbuf);
 
 #ifdef DEBUG_ENABLED
