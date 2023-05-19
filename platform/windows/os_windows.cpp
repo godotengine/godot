@@ -3960,6 +3960,10 @@ OS_Windows::~OS_Windows() {
 		wintab_WTClose(wtctx);
 		wtctx = 0;
 	}
+#ifdef WASAPI_ENABLED
+	driver_wasapi.finish();
+#endif
+
 #ifdef STDOUT_FILE
 	fclose(stdo);
 #endif
