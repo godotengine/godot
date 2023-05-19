@@ -80,6 +80,13 @@
 				Returns how many animation frames has the tile at coordinates [param atlas_coords].
 			</description>
 		</method>
+		<method name="get_tile_animation_sync" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns if each animation start at first, or random frame.
+			</description>
+		</method>
 		<method name="get_tile_animation_separation" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="atlas_coords" type="Vector2i" />
@@ -213,6 +220,14 @@
 			<param index="1" name="frames_count" type="int" />
 			<description>
 				Sets how many animation frames the tile at coordinates [param atlas_coords] has.
+			</description>
+		</method>
+		<method name="set_tile_animation_sync">
+			<return type="void" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="sync" type="bool" />
+			<description>
+				Sets if each animation start at first, or random frame.
 			</description>
 		</method>
 		<method name="set_tile_animation_separation">
