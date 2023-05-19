@@ -1148,12 +1148,23 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					const SL::VariableNode *vnode = static_cast<const SL::VariableNode *>(onode->arguments[0]);
 					const SL::FunctionNode *func = nullptr;
 					const bool is_internal_func = internal_functions.has(vnode->name);
+					bool is_global_func = false;
 
 					if (!is_internal_func) {
-						for (int i = 0; i < shader->functions.size(); i++) {
-							if (shader->functions[i].name == vnode->name) {
-								func = shader->functions[i].function;
-								break;
+						if (p_default_actions.global_functions.has(vnode->name)) {
+							is_global_func = true;
+
+							// Declare the global function.
+							if (!used_name_defines.has(vnode->name)) {
+								r_gen_code.defines.push_back(p_default_actions.global_functions[vnode->name]);
+								used_name_defines.insert(vnode->name);
+							}
+						} else {
+							for (int i = 0; i < shader->functions.size(); i++) {
+								if (shader->functions[i].name == vnode->name) {
+									func = shader->functions[i].function;
+									break;
+								}
 							}
 						}
 					}
@@ -1173,7 +1184,9 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							used_flag_pointers.insert(vnode->name);
 						}
 
-						if (is_internal_func) {
+						if (is_global_func) {
+							code += vnode->name;
+						} else if (is_internal_func) {
 							code += vnode->name;
 							is_texture_func = texture_functions.has(vnode->name);
 							texture_func_no_uv = (vnode->name == "textureSize" || vnode->name == "textureQueryLevels");
@@ -1583,6 +1596,19 @@ void ShaderCompiler::initialize(DefaultIdentifierActions p_actions) {
 	texture_functions.insert("textureQueryLod");
 	texture_functions.insert("textureQueryLevels");
 	texture_functions.insert("texelFetch");
+
+	// Global functions.
+
+	actions.global_functions["is_equal_approx"] = R"(
+bool is_equal_approx(float a, float b) {
+	return abs(a - b) < 0.00001;
+}
+)";
+	actions.global_functions["is_zero_approx"] = R"(
+bool is_zero_approx(float x) {
+	return abs(x) < 0.00001;
+}
+)";
 }
 
 ShaderCompiler::ShaderCompiler() {

@@ -90,6 +90,7 @@ public:
 		HashMap<StringName, String> renames;
 		HashMap<StringName, String> render_mode_defines;
 		HashMap<StringName, String> usage_defines;
+		HashMap<StringName, String> global_functions;
 		HashMap<StringName, String> custom_samplers;
 		ShaderLanguage::TextureFilter default_filter;
 		ShaderLanguage::TextureRepeat default_repeat;

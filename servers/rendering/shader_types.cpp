@@ -31,6 +31,10 @@
 #include "shader_types.h"
 #include "core/math/math_defs.h"
 
+const HashMap<StringName, ShaderLanguage::StageFunctionInfo> &ShaderTypes::get_functions() const {
+	return global_functions;
+}
+
 const HashMap<StringName, ShaderLanguage::FunctionInfo> &ShaderTypes::get_functions(RS::ShaderMode p_mode) const {
 	return shader_modes[p_mode].functions;
 }
@@ -55,6 +59,19 @@ static ShaderLanguage::BuiltInInfo constt(ShaderLanguage::DataType p_type) {
 
 ShaderTypes::ShaderTypes() {
 	singleton = this;
+
+	/*************** GLOBAL FUNCTIONS ***********************/
+
+	ShaderLanguage::StageFunctionInfo is_equal_approx_func;
+	is_equal_approx_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("a", ShaderLanguage::TYPE_FLOAT));
+	is_equal_approx_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("b", ShaderLanguage::TYPE_FLOAT));
+	is_equal_approx_func.return_type = ShaderLanguage::TYPE_BOOL;
+	global_functions["is_equal_approx"] = is_equal_approx_func;
+
+	ShaderLanguage::StageFunctionInfo is_zero_approx_func;
+	is_zero_approx_func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("x", ShaderLanguage::TYPE_FLOAT));
+	is_zero_approx_func.return_type = ShaderLanguage::TYPE_BOOL;
+	global_functions["is_zero_approx"] = is_zero_approx_func;
 
 	/*************** SPATIAL ***********************/
 

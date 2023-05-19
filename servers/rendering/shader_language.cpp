@@ -1278,6 +1278,21 @@ void ShaderLanguage::_parse_used_identifier(const StringName &p_identifier, Iden
 #endif // DEBUG_ENABLED
 
 bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_reassign, const FunctionInfo &p_function_info, const StringName &p_identifier, DataType *r_data_type, IdentifierType *r_type, bool *r_is_const, int *r_array_size, StringName *r_struct_name, ConstantNode::Value *r_constant_value) {
+	for (const KeyValue<StringName, StageFunctionInfo> &E : ShaderTypes::get_singleton()->get_functions()) {
+		if (E.key == p_identifier) {
+			if (r_data_type) {
+				*r_data_type = E.value.return_type;
+			}
+			if (r_is_const) {
+				*r_is_const = true;
+			}
+			if (r_type) {
+				*r_type = IDENTIFIER_FUNCTION;
+			}
+			return true;
+		}
+	}
+
 	if (is_shader_inc) {
 		for (int i = 0; i < RenderingServer::SHADER_MAX; i++) {
 			for (const KeyValue<StringName, FunctionInfo> &E : ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(i))) {
@@ -3082,9 +3097,19 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 
 	int argcount = args.size();
 
-	if (p_function_info.stage_functions.has(name)) {
+	HashMap<StringName, StageFunctionInfo> stage_functions;
+
+	for (const KeyValue<StringName, StageFunctionInfo> &E : ShaderTypes::get_singleton()->get_functions()) {
+		stage_functions[E.key] = E.value;
+	}
+	for (const KeyValue<StringName, StageFunctionInfo> &E : p_function_info.stage_functions) {
+		stage_functions[E.key] = E.value;
+	}
+
+	if (stage_functions.has(name)) {
 		//stage based function
-		const StageFunctionInfo &sf = p_function_info.stage_functions[name];
+		const StageFunctionInfo &sf = stage_functions[name];
+
 		if (argcount != sf.arguments.size()) {
 			_set_error(vformat(RTR("Invalid number of arguments when calling stage function '%s', which expects %d arguments."), String(name), sf.arguments.size()));
 			return false;
@@ -10235,6 +10260,10 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					}
 				}
 
+				for (const KeyValue<StringName, StageFunctionInfo> &E : ShaderTypes::get_singleton()->get_functions()) {
+					matches.insert(String(E.key), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+				}
+
 				for (int i = 0; i < shader->functions.size(); i++) {
 					if (!shader->functions[i].callable || shader->functions[i].name == skip_function) {
 						continue;
@@ -10370,7 +10399,16 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 			bool low_end = RenderingServer::get_singleton()->is_low_end();
 
 			if (stages && stages->has(block_function)) {
+				HashMap<StringName, StageFunctionInfo> stage_functions;
+
+				for (const KeyValue<StringName, StageFunctionInfo> &E : ShaderTypes::get_singleton()->get_functions()) {
+					stage_functions[E.key] = E.value;
+				}
 				for (const KeyValue<StringName, StageFunctionInfo> &E : (*stages)[block_function].stage_functions) {
+					stage_functions[E.key] = E.value;
+				}
+
+				for (const KeyValue<StringName, StageFunctionInfo> &E : stage_functions) {
 					if (completion_function == E.key) {
 						calltip += get_datatype_name(E.value.return_type);
 						calltip += " ";

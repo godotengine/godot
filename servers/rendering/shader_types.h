@@ -42,6 +42,7 @@ class ShaderTypes {
 	};
 
 	HashMap<RS::ShaderMode, Type> shader_modes;
+	HashMap<StringName, ShaderLanguage::StageFunctionInfo> global_functions;
 
 	static ShaderTypes *singleton;
 
@@ -51,6 +52,7 @@ class ShaderTypes {
 public:
 	static ShaderTypes *get_singleton() { return singleton; }
 
+	const HashMap<StringName, ShaderLanguage::StageFunctionInfo> &get_functions() const;
 	const HashMap<StringName, ShaderLanguage::FunctionInfo> &get_functions(RS::ShaderMode p_mode) const;
 	const Vector<ShaderLanguage::ModeInfo> &get_modes(RS::ShaderMode p_mode) const;
 	const HashSet<String> &get_types() const;
