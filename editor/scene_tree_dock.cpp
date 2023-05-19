@@ -3604,6 +3604,11 @@ void SceneTreeDock::_gather_resources(Node *p_node, List<Pair<Ref<Resource>, Nod
 			continue;
 		}
 
+		if (!res->is_built_in() || res->get_path().get_slice("::", 0) != edited_scene->get_scene_file_path()) {
+			// Ignore external and foreign resources.
+			continue;
+		}
+
 		const Pair<Ref<Resource>, Node *> pair(res, p_node);
 		r_resources.push_back(pair);
 	}
