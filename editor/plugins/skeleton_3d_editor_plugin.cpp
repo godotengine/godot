@@ -695,9 +695,6 @@ void Skeleton3DEditor::update_joint_tree() {
 	}
 }
 
-void Skeleton3DEditor::update_editors() {
-}
-
 void Skeleton3DEditor::create_editors() {
 	set_h_size_flags(SIZE_EXPAND_FILL);
 	set_focus_mode(FOCUS_ALL);
@@ -797,10 +794,8 @@ void Skeleton3DEditor::create_editors() {
 	animation_hb->add_child(key_insert_all_button);
 
 	// Bone tree.
-	const Color section_color = get_theme_color(SNAME("prop_subsection"), SNAME("Editor"));
-
-	EditorInspectorSection *bones_section = memnew(EditorInspectorSection);
-	bones_section->setup("bones", "Bones", skeleton, section_color, true);
+	bones_section = memnew(EditorInspectorSection);
+	bones_section->setup("bones", "Bones", skeleton, Color(0.0f, 0.0, 0.0f), true);
 	add_child(bones_section);
 	bones_section->unfold();
 
@@ -831,7 +826,6 @@ void Skeleton3DEditor::create_editors() {
 void Skeleton3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			create_editors();
 			update_joint_tree();
 
 			joint_tree->connect("item_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_selection_changed));
@@ -857,6 +851,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 			key_scale_button->set_icon(get_theme_icon(SNAME("KeyScale"), SNAME("EditorIcons")));
 			key_insert_button->set_icon(get_theme_icon(SNAME("Key"), SNAME("EditorIcons")));
 			key_insert_all_button->set_icon(get_theme_icon(SNAME("NewKey"), SNAME("EditorIcons")));
+			bones_section->set_bg_color(get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
 
 			update_joint_tree();
 		} break;
@@ -945,6 +940,8 @@ void fragment() {
 	handles_mesh_instance->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
 	handles_mesh.instantiate();
 	handles_mesh_instance->set_mesh(handles_mesh);
+
+	create_editors();
 }
 
 void Skeleton3DEditor::update_bone_original() {

@@ -841,14 +841,15 @@ void EditorHelp::_update_doc() {
 	// Properties overview
 	HashSet<String> skip_methods;
 
-	bool has_properties = cd.properties.size() != 0;
-	if (cd.is_script_doc) {
-		has_properties = false;
-		for (int i = 0; i < cd.properties.size(); i++) {
-			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.strip_edges().is_empty()) {
-				continue;
-			}
-			has_properties = true;
+	bool has_properties = false;
+	bool has_property_descriptions = false;
+	for (const DocData::PropertyDoc &prop : cd.properties) {
+		if (cd.is_script_doc && prop.name.begins_with("_") && prop.description.strip_edges().is_empty()) {
+			continue;
+		}
+		has_properties = true;
+		if (!prop.overridden) {
+			has_property_descriptions = true;
 			break;
 		}
 	}
@@ -1527,7 +1528,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Property descriptions
-	if (has_properties) {
+	if (has_property_descriptions) {
 		section_line.push_back(Pair<String, int>(TTR("Property Descriptions"), class_desc->get_paragraph_count() - 2));
 		_push_title_font();
 		class_desc->add_text(TTR("Property Descriptions"));
