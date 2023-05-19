@@ -309,6 +309,9 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	// --
 
 	Ref<Resource> res = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
+	if (mq_override) {
+		mq_override->flush();
+	}
 
 	thread_load_mutex.lock();
 
@@ -354,7 +357,6 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 	if (load_nesting == 0 && mq_override) {
 		memdelete(mq_override);
-		MessageQueue::set_thread_singleton_override(nullptr);
 	}
 }
 
