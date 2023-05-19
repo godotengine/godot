@@ -84,7 +84,7 @@
 			<return type="bool" />
 			<param index="0" name="atlas_coords" type="Vector2i" />
 			<description>
-				Returns if each animation start at first, or random frame.
+				Returns [code]true[/code] if animations are synchronized across all tiles for the tile at [param atlas_coords], [code]false[/code] otherwise. See also [method set_tile_animation_sync].
 			</description>
 		</method>
 		<method name="get_tile_animation_separation" qualifiers="const">
@@ -227,7 +227,7 @@
 			<param index="0" name="atlas_coords" type="Vector2i" />
 			<param index="1" name="sync" type="bool" />
 			<description>
-				Sets if each animation start at first, or random frame.
+				Sets whether the tile at [param atlas_coords] should have its animation synchronized with other tiles. If set to [code]true[/code], all tiles will start at the same frame, making their animations look identical. If set to [code]false[/code], the animation's start point will be randomized, which makes animations look different for each tile. Setting this to [code]false[/code] can help break up repetitive patterns with animated tiles. By default, this is set to [code]true[/code]. See also [method get_tile_animation_sync].
 			</description>
 		</method>
 		<method name="set_tile_animation_separation">
