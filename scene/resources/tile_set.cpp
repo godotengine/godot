@@ -3917,6 +3917,9 @@ bool TileSetAtlasSource::_set(const StringName &p_name, const Variant &p_value) 
 			} else if (components[1] == "animation_columns") {
 				set_tile_animation_columns(coords, p_value);
 				return true;
+			} else if (components[1] == "animation_sync") {
+				set_tile_animation_sync(coords, p_value);
+				return true;
 			} else if (components[1] == "animation_separation") {
 				set_tile_animation_separation(coords, p_value);
 				return true;
@@ -3984,6 +3987,9 @@ bool TileSetAtlasSource::_get(const StringName &p_name, Variant &r_ret) const {
 				} else if (components[1] == "animation_columns") {
 					r_ret = get_tile_animation_columns(coords);
 					return true;
+				} else if (components[1] == "animation_sync") {
+					r_ret = get_tile_animation_sync(coords);
+					return true;
 				} else if (components[1] == "animation_separation") {
 					r_ret = get_tile_animation_separation(coords);
 					return true;
@@ -4047,6 +4053,13 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 		// animation_columns.
 		property_info = PropertyInfo(Variant::INT, "animation_columns", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR);
 		if (E_tile.value.animation_columns == 0) {
+			property_info.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+		tile_property_list.push_back(property_info);
+
+		// animation_sync.
+		property_info = PropertyInfo(Variant::BOOL, "animation_sync", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR);
+		if (E_tile.value.animation_sync) {
 			property_info.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 		tile_property_list.push_back(property_info);
@@ -4188,6 +4201,20 @@ void TileSetAtlasSource::set_tile_animation_columns(const Vector2i p_atlas_coord
 int TileSetAtlasSource::get_tile_animation_columns(const Vector2i p_atlas_coords) const {
 	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
 	return tiles[p_atlas_coords].animation_columns;
+}
+
+void TileSetAtlasSource::set_tile_animation_sync(const Vector2i p_atlas_coords, bool p_sync) {
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+
+	tiles[p_atlas_coords].animation_sync = p_sync;
+
+	emit_signal(SNAME("changed"));
+}
+
+bool TileSetAtlasSource::get_tile_animation_sync(const Vector2i p_atlas_coords) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), bool(), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+
+	return tiles[p_atlas_coords].animation_sync;
 }
 
 void TileSetAtlasSource::set_tile_animation_separation(const Vector2i p_atlas_coords, const Vector2i p_separation) {
@@ -4548,6 +4575,8 @@ void TileSetAtlasSource::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_tile_animation_columns", "atlas_coords", "frame_columns"), &TileSetAtlasSource::set_tile_animation_columns);
 	ClassDB::bind_method(D_METHOD("get_tile_animation_columns", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_columns);
+	ClassDB::bind_method(D_METHOD("set_tile_animation_sync", "atlas_coords", "sync"), &TileSetAtlasSource::set_tile_animation_sync);
+	ClassDB::bind_method(D_METHOD("get_tile_animation_sync", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_sync);
 	ClassDB::bind_method(D_METHOD("set_tile_animation_separation", "atlas_coords", "separation"), &TileSetAtlasSource::set_tile_animation_separation);
 	ClassDB::bind_method(D_METHOD("get_tile_animation_separation", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_separation);
 	ClassDB::bind_method(D_METHOD("set_tile_animation_speed", "atlas_coords", "speed"), &TileSetAtlasSource::set_tile_animation_speed);

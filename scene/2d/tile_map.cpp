@@ -1501,12 +1501,16 @@ void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<
 		} else {
 			real_t speed = atlas_source->get_tile_animation_speed(p_atlas_coords);
 			real_t animation_duration = atlas_source->get_tile_animation_total_duration(p_atlas_coords) / speed;
+			bool sync = atlas_source->get_tile_animation_sync(p_atlas_coords);
+			int frames_count = atlas_source->get_tile_animation_frames_count(p_atlas_coords);
+			int start_frame = sync ? 0 : rand() % frames_count;
 			real_t time = 0.0;
-			for (int frame = 0; frame < atlas_source->get_tile_animation_frames_count(p_atlas_coords); frame++) {
-				real_t frame_duration = atlas_source->get_tile_animation_frame_duration(p_atlas_coords, frame) / speed;
+			for (int frame = 0; frame < frames_count; frame++) {
+				int current_frame = (frame + start_frame) % frames_count;
+				real_t frame_duration = atlas_source->get_tile_animation_frame_duration(p_atlas_coords, current_frame) / speed;
 				RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, animation_duration, time, time + frame_duration, 0.0);
 
-				Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, frame);
+				Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, current_frame);
 				tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
 
 				time += frame_duration;

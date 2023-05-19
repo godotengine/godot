@@ -597,6 +597,7 @@ private:
 
 		// Animation
 		int animation_columns = 0;
+		bool animation_sync = true;
 		Vector2i animation_separation;
 		real_t animation_speed = 1.0;
 		LocalVector<real_t> animation_frames_durations;
@@ -695,6 +696,8 @@ public:
 	// Animation.
 	void set_tile_animation_columns(const Vector2i p_atlas_coords, int p_frame_columns);
 	int get_tile_animation_columns(const Vector2i p_atlas_coords) const;
+	void set_tile_animation_sync(const Vector2i p_atlas_coords, const bool p_sync);
+	bool get_tile_animation_sync(const Vector2i p_atlas_coords) const;
 	void set_tile_animation_separation(const Vector2i p_atlas_coords, const Vector2i p_separation);
 	Vector2i get_tile_animation_separation(const Vector2i p_atlas_coords) const;
 	void set_tile_animation_speed(const Vector2i p_atlas_coords, real_t p_speed);

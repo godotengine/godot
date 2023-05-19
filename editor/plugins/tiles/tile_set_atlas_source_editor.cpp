@@ -229,6 +229,12 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 			}
 			emit_signal(SNAME("changed"), "animation_columns");
 			return true;
+		} else if (p_name == "animation_sync") {
+			for (TileSelection tile : tiles) {
+				tile_set_atlas_source->set_tile_animation_sync(tile.tile, p_value);
+			}
+			emit_signal(SNAME("changed"), "animation_sync");
+			return true;
 		} else if (p_name == "animation_separation") {
 			for (TileSelection tile : tiles) {
 				bool has_room_for_tile = tile_set_atlas_source->has_room_for_tile(tile.tile, tile_set_atlas_source->get_tile_size_in_atlas(tile.tile), tile_set_atlas_source->get_tile_animation_columns(tile.tile), p_value, tile_set_atlas_source->get_tile_animation_frames_count(tile.tile), tile.tile);
@@ -343,6 +349,9 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_na
 		if (p_name == "animation_columns") {
 			r_ret = tile_set_atlas_source->get_tile_animation_columns(coords);
 			return true;
+		} else if (p_name == "animation_sync") {
+			r_ret = tile_set_atlas_source->get_tile_animation_sync(coords);
+			return true;
 		} else if (p_name == "animation_separation") {
 			r_ret = tile_set_atlas_source->get_tile_animation_separation(coords);
 			return true;
@@ -415,6 +424,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 	if (all_alternatve_id_zero) {
 		p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Animation", "animation_"), PROPERTY_HINT_NONE, "animation_", PROPERTY_USAGE_GROUP));
 		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_columns")));
+		p_list->push_back(PropertyInfo(Variant::BOOL, PNAME("animation_sync")));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("animation_separation")));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("animation_speed")));
 		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_frames_count"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, "Frames,animation_frame_"));
