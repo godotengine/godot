@@ -6,6 +6,7 @@
 	<description>
 		Control for a single item inside a [Tree]. May have child [TreeItem]s and be styled as well as contain buttons.
 		You can remove a [TreeItem] by using [method Object.free].
+		[b]Note:[/b] The ID values used for buttons are limited to 32 bits, not full 64 bits of [int]. This has a range of [code]-2^32[/code] to [code]2^32 - 1[/code], i.e. [code]-2147483648[/code] to [code]2147483647[/code].
 	</description>
 	<tutorials>
 	</tutorials>
