@@ -1596,14 +1596,7 @@ void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
 		return;
 	}
 
-	const CSharpScript *top = script.ptr();
-	while (top != nullptr) {
-		for (const CSharpScript::CSharpMethodInfo &E : top->methods) {
-			p_list->push_back(E.method_info);
-		}
-
-		top = top->base_script.ptr();
-	}
+	script->get_script_method_list(p_list);
 }
 
 bool CSharpInstance::has_method(const StringName &p_method) const {
