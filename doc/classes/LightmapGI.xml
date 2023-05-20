@@ -61,6 +61,10 @@
 			If [code]true[/code], uses a CPU-based denoising algorithm on the generated lightmap. This eliminates most noise within the generated lightmap at the cost of longer bake times. File sizes are generally not impacted significantly by the use of a denoiser, although lossless compression may do a better job at compressing a denoised image.
 			[b]Note:[/b] The built-in denoiser (OpenImageDenoise) may crash when denoising lightmaps in large scenes. If you encounter a crash at the end of lightmap baking, try disabling [member use_denoiser].
 		</member>
+		<member name="use_shadowmask" type="bool" setter="set_use_shadowmask" getter="is_using_shadowmask" default="true">
+			If [code]true[/code], bakes the [DirectionalLight3D]s' direct light shadows into a [i]shadowmask[/i] which is stored in the lightmap textures' alpha channel. This shadowmask is used to keep static shadows visible past the DirectionalLights' [member DirectionalLight3D.directional_shadow_max_distance] by blending the last shadow split with the shadowmask. This in turn allows you to use a lower [member DirectionalLight3D.directional_shadow_max_distance] for dynamic objects. Lower real-time shadow distances improve shadow detail and performance while making shadow acne less visible.
+			[b]Note:[/b] If you have multiple [DirectionalLight3D]s that have their [member Light3D.light_bake_mode] set to [constant Light3D.BAKE_DYNAMIC], then the shadowmask will only be present in areas where their shadows overlap.
+		</member>
 	</members>
 	<constants>
 		<constant name="BAKE_QUALITY_LOW" value="0" enum="BakeQuality">

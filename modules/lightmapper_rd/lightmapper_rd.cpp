@@ -662,7 +662,7 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 	return BAKE_OK;
 }
 
-LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, float p_exposure_normalization) {
+LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, int p_max_texture_size, bool p_use_shadowmask, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, float p_exposure_normalization) {
 	if (p_step_function) {
 		p_step_function(0.0, RTR("Begin Bake"), p_bake_userdata, true);
 	}
@@ -680,6 +680,23 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	BakeError bake_error = _blit_meshes_into_atlas(p_max_texture_size, albedo_images, emission_images, bounds, atlas_size, atlas_slices, p_step_function, p_bake_userdata);
 	if (bake_error != BAKE_OK) {
 		return bake_error;
+	}
+
+	// If there are no valid directional lights for shadowmasking, the entire
+	// scene would be shadowed and this saves baking time.
+	if (p_use_shadowmask) {
+		bool vaild_shadowmask_light = false;
+		for (int i = 0; i < lights.size(); i++) {
+			if (lights[i].type == LIGHT_TYPE_DIRECTIONAL && !lights[i].static_bake) {
+				vaild_shadowmask_light = true;
+				break;
+			}
+		}
+
+		if (!vaild_shadowmask_light) {
+			p_use_shadowmask = false;
+			WARN_PRINT("Shadowmask disabled: no directional light with their bake mode set to dynamic exists.");
+		}
 	}
 
 #ifdef DEBUG_TEXTURES
@@ -702,6 +719,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RID light_accum_tex2;
 	RID light_primary_dynamic_tex;
 	RID light_environment_tex;
+	RID shadowmask_tex;
 
 #define FREE_TEXTURES                    \
 	rd->free(albedo_array_tex);          \
@@ -713,7 +731,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	rd->free(light_accum_tex2);          \
 	rd->free(light_accum_tex);           \
 	rd->free(light_primary_dynamic_tex); \
-	rd->free(light_environment_tex);
+	rd->free(light_environment_tex);     \
+	rd->free(shadowmask_tex);
 
 	{ // create all textures
 
@@ -745,8 +764,17 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		position_tex = rd->texture_create(tf, RD::TextureView());
 		unocclude_tex = rd->texture_create(tf, RD::TextureView());
 
-		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		tf.format = RD::DATA_FORMAT_R16_SFLOAT;
+
+		// We use the alpha channel of the lightmap during baking, so we
+		// need to bake the shadowmask into a separate texture first and
+		// then copy it into the lightmap's alpha channel once it's done
+		// being used.
+		shadowmask_tex = rd->texture_create(tf, RD::TextureView());
+		rd->texture_clear(shadowmask_tex, Color(0, 0, 0, 0), 0, 1, 0, atlas_slices);
+
+		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 
 		light_source_tex = rd->texture_create(tf, RD::TextureView());
 		rd->texture_clear(light_source_tex, Color(0, 0, 0, 0), 0, 1, 0, atlas_slices);
@@ -963,7 +991,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	Ref<RDShaderFile> compute_shader;
 	compute_shader.instantiate();
-	err = compute_shader->parse_versions_from_text(lm_compute_shader_glsl, p_bake_sh ? "\n#define USE_SH_LIGHTMAPS\n" : "");
+	err = compute_shader->parse_versions_from_text(lm_compute_shader_glsl, vformat("%s\n%s", p_bake_sh ? "\n#define USE_SH_LIGHTMAPS\n" : "", p_use_shadowmask ? "\n#define USE_SHADOWMASK\n" : ""));
 	if (err != OK) {
 		FREE_TEXTURES
 		FREE_BUFFERS
@@ -1127,6 +1155,13 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 5;
 				u.append_id(light_primary_dynamic_tex);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 6;
+				u.append_id(shadowmask_tex);
 				uniforms.push_back(u);
 			}
 		}
@@ -1630,8 +1665,21 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
 		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
+		if (p_use_shadowmask) { // copy shadowmask into alpha
+			Vector<uint8_t> sms = rd->texture_get_data(shadowmask_tex, i);
+			uint32_t count = sms.size() / 2; //uint16s
+			const uint16_t *src = (const uint16_t *)sms.ptr();
+			uint16_t *dst = (uint16_t *)s.ptrw();
+			for (uint32_t j = 0; j < count; j++) {
+				dst[j * 4 + 3] = src[j];
+			}
+		}
+
 		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
-		img->convert(Image::FORMAT_RGBH); //remove alpha
+		if (!p_use_shadowmask) {
+			img->convert(Image::FORMAT_RGBH); //remove alpha
+		}
+
 		bake_textures.push_back(img);
 	}
 

@@ -148,6 +148,7 @@ private:
 	float bias = 0.0005;
 	int max_texture_size = 16384;
 	bool interior = false;
+	bool use_shadowmask = true;
 	EnvironmentMode environment_mode = ENVIRONMENT_MODE_SCENE;
 	Ref<Sky> environment_custom_sky;
 	Color environment_custom_color = Color(1, 1, 1);
@@ -243,6 +244,9 @@ public:
 
 	void set_interior(bool p_interior);
 	bool is_interior() const;
+
+	void set_use_shadowmask(bool p_enable);
+	bool is_using_shadowmask() const;
 
 	void set_environment_mode(EnvironmentMode p_mode);
 	EnvironmentMode get_environment_mode() const;

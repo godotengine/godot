@@ -63,6 +63,9 @@ layout(set = 1, binding = 6) uniform texture2D environment;
 #endif
 #ifdef MODE_DIRECT_LIGHT
 layout(rgba32f, set = 1, binding = 5) uniform restrict writeonly image2DArray primary_dynamic;
+#ifdef USE_SHADOWMASK
+layout(r16, set = 1, binding = 6) uniform restrict writeonly image2DArray shadowmask;
+#endif
 #endif
 
 #ifdef MODE_DILATE
@@ -306,6 +309,10 @@ void main() {
 	vec3 static_light = vec3(0.0);
 	vec3 dynamic_light = vec3(0.0);
 
+#ifdef USE_SHADOWMASK
+	float sm = 0.0;
+#endif
+
 #ifdef USE_SH_LIGHTMAPS
 	vec4 sh_accum[4] = vec4[](
 			vec4(0.0, 0.0, 0.0, 1.0),
@@ -421,6 +428,11 @@ void main() {
 
 		} else {
 			dynamic_light += light;
+#ifdef USE_SHADOWMASK
+			if (lights.data[i].type == LIGHT_TYPE_DIRECTIONAL) {
+				sm = clamp(sm + attenuation * penumbra, 0.0, 1.0);
+			}
+#endif
 		}
 	}
 
@@ -447,6 +459,10 @@ void main() {
 #else
 	static_light *= params.env_transform[2][3]; // exposure_normalization
 	imageStore(accum_light, ivec3(atlas_pos, params.atlas_slice), vec4(static_light, 1.0));
+#endif
+
+#ifdef USE_SHADOWMASK
+	imageStore(shadowmask, ivec3(atlas_pos, params.atlas_slice), vec4(sm));
 #endif
 
 #endif
