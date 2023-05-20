@@ -7,6 +7,7 @@
 		3D area that detects [CollisionObject] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping) and route audio to a custom audio bus.
 		To give the area its shape, add a [CollisionShape] or a [CollisionPolygon] node as a [i]direct[/i] child (or add multiple such nodes as direct children) of the area.
 		[b]Warning:[/b] See [ConcavePolygonShape] (also called "trimesh") for a warning about possibly unexpected behavior when using that shape for an area.
+		[b]Warning:[/b] With a non-uniform scale this node will probably not function as expected. Please make sure to keep its scale uniform (i.e. the same on all axes), and change the size(s) of its collision shape(s) instead.
 	</description>
 	<tutorials>
 		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
