@@ -3576,7 +3576,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			}
 		}
 
-		Variant var_constant = ClassDB::get_integer_constant(native, name, &valid);
+		Variant var_constant = ClassDB::get_variant_constant(native, name, &valid);
 		if (valid) {
 			p_identifier->is_constant = true;
 			p_identifier->reduced_value = var_constant;
