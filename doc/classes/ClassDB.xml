@@ -106,6 +106,22 @@
 				Returns an array with all the signals of [param class] or its ancestry if [param no_inheritance] is [code]false[/code]. Every element of the array is a [Dictionary] as described in [method class_get_signal].
 			</description>
 		</method>
+		<method name="class_get_variant_constant" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="name" type="StringName" />
+			<description>
+				Returns the value of the variant constant [param name] of [param class] or its ancestry. Always returns [code]null[/code] when the constant could not be found.
+			</description>
+		</method>
+		<method name="class_get_variant_constant_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="no_inheritance" type="bool" default="false" />
+			<description>
+				Returns an array with the names all the variant constants of [param class] or its ancestry.
+			</description>
+		</method>
 		<method name="class_has_enum" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="class" type="StringName" />
@@ -138,6 +154,14 @@
 			<param index="1" name="signal" type="StringName" />
 			<description>
 				Returns whether [param class] or its ancestry has a signal called [param signal] or not.
+			</description>
+		</method>
+		<method name="class_has_variant_constant" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="name" type="StringName" />
+			<description>
+				Returns whether [param class] or its ancestry has an variant constant called [param name] or not.
 			</description>
 		</method>
 		<method name="class_set_property" qualifiers="const">
