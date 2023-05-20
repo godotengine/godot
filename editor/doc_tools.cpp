@@ -613,7 +613,7 @@ void DocTools::generate(bool p_basic_types) {
 			for (const String &E : variant_constant_list) {
 				DocData::ConstantDoc constant;
 				constant.name = E;
-				constant.value = ClassDB::get_variant_constant(name, E).stringify();
+				constant.value = ClassDB::get_variant_constant(name, E).get_construct_string();
 				constant.is_value_valid = true;
 				c.constants.push_back(constant);
 			}
