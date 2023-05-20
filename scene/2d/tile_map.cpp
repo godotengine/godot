@@ -1317,8 +1317,21 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 						ci = prev_ci;
 					}
 
+					Vector2 p_position = E_cell.key - tile_position;
+					Vector2 p_atlas_coords = c.get_atlas_coords();
+
+					// Random animation offset.
+					real_t p_random_animation_offset = 0.0;
+					if (atlas_source->get_tile_animation_mode(p_atlas_coords) != TileSetAtlasSource::TILE_ANIMATION_MODE_DEFAULT) {
+						Array to_hash;
+						to_hash.push_back(p_position);
+						to_hash.push_back(q.layer);
+						to_hash.push_back(Variant(this));
+						p_random_animation_offset = RandomPCG(to_hash.hash()).randf();
+					}
+
 					// Drawing the tile in the canvas item.
-					draw_tile(ci, E_cell.key - tile_position, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, -1, get_self_modulate(), tile_data);
+					draw_tile(ci, p_position, tile_set, c.source_id, p_atlas_coords, c.alternative_tile, -1, get_self_modulate(), tile_data, p_random_animation_offset);
 
 					// --- Occluders ---
 					for (int i = 0; i < tile_set->get_occlusion_layers_count(); i++) {
@@ -1436,7 +1449,7 @@ void TileMap::_rendering_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 	}
 }
 
-void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation, const TileData *p_tile_data_override) {
+void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame, Color p_modulation, const TileData *p_tile_data_override, real_t p_animation_offset) {
 	ERR_FAIL_COND(!p_tile_set.is_valid());
 	ERR_FAIL_COND(!p_tile_set->has_source(p_atlas_source_id));
 	ERR_FAIL_COND(!p_tile_set->get_source(p_atlas_source_id)->has_tile(p_atlas_coords));
@@ -1504,7 +1517,7 @@ void TileMap::draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<
 			real_t time = 0.0;
 			for (int frame = 0; frame < atlas_source->get_tile_animation_frames_count(p_atlas_coords); frame++) {
 				real_t frame_duration = atlas_source->get_tile_animation_frame_duration(p_atlas_coords, frame) / speed;
-				RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, animation_duration, time, time + frame_duration, 0.0);
+				RenderingServer::get_singleton()->canvas_item_add_animation_slice(p_canvas_item, animation_duration, time, time + frame_duration, p_animation_offset);
 
 				Rect2i source_rect = atlas_source->get_runtime_tile_texture_region(p_atlas_coords, frame);
 				tex->draw_rect_region(p_canvas_item, dest_rect, source_rect, modulate, transpose, p_tile_set->is_uv_clipping());
