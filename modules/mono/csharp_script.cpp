@@ -1652,18 +1652,7 @@ bool CSharpInstance::property_get_revert(const StringName &p_name, Variant &r_re
 }
 
 void CSharpInstance::get_method_list(List<MethodInfo> *p_list) const {
-	if (!script->is_valid() || !script->valid) {
-		return;
-	}
-
-	const CSharpScript *top = script.ptr();
-	while (top != nullptr) {
-		for (const CSharpScript::CSharpMethodInfo &E : top->methods) {
-			p_list->push_back(E.method_info);
-		}
-
-		top = top->base_script.ptr();
-	}
+	script->get_script_method_list(p_list);
 }
 
 bool CSharpInstance::has_method(const StringName &p_method) const {
