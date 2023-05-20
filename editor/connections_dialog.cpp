@@ -873,14 +873,14 @@ void ConnectionsDock::_make_or_edit_connection() {
 	if (!scr.is_null() && !ClassDB::has_method(target->get_class(), cd.method)) {
 		// There is a chance that the method is inherited from another script.
 		bool found_member_function = false;
-		Ref<Script> top_scr = scr;
-		while (!top_scr.is_null()) {
-			if (top_scr->has_method(cd.method)) {
+		Ref<Script> inherited_scr = scr;
+		while (!inherited_scr.is_null()) {
+			if (inherited_scr->has_method(cd.method)) {
 				found_member_function = true;
 				break;
 			}
 
-			top_scr = top_scr->get_base_script();
+			inherited_scr = inherited_scr->get_base_script();
 		}
 
 		add_script_function = !found_member_function;
