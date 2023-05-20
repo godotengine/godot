@@ -615,7 +615,7 @@ namespace Godot.Bridge
                 Type? top = scriptType;
                 Type native = GodotObject.InternalGetClassNativeBase(top);
 
-                while (top != null && top != native)
+                if (top != null && top != native)
                 {
                     var methodList = GetMethodListForType(top);
 
@@ -647,8 +647,6 @@ namespace Godot.Bridge
                             methods.Add(methodInfo);
                         }
                     }
-
-                    top = top.BaseType;
                 }
 
                 *outMethodsDest = NativeFuncs.godotsharp_array_new_copy(
