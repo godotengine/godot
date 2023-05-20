@@ -194,6 +194,12 @@
 				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
+		<method name="get_window_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the ID of the window.
+			</description>
+		</method>
 		<method name="grab_focus">
 			<return type="void" />
 			<description>
