@@ -913,7 +913,7 @@ Variant ClassDB::get_variant_constant(const StringName &p_class, const StringNam
 		*p_success = false;
 	}
 
-	return 0;
+	return Variant();
 }
 
 bool ClassDB::has_variant_constant(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
