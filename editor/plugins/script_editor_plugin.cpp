@@ -179,7 +179,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 			}
 
 			List<String> vclist;
-			ClassDB::get_variant_constant_list(instance_base, &clist);
+			ClassDB::get_variant_constant_list(instance_base, &vclist);
 			for (const String &E : vclist) {
 				highlighter->add_member_keyword_color(E, member_variable_color);
 			}
