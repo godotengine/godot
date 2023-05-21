@@ -61,6 +61,12 @@ public:
 		ROTATION_EDIT_MODE_BASIS,
 	};
 
+	enum ConditionalVisibilityMode {
+		CONDITIONAL_VISIBILITY_EDITOR_AND_RUNNER,
+		CONDITIONAL_VISIBILITY_EDITOR_ONLY,
+		CONDITIONAL_VISIBILITY_RUNNER_ONLY,
+	};
+
 private:
 	// For the sake of ease of use, Node3D can operate with Transforms (Basis+Origin), Quaternion/Scale and Euler Rotation/Scale.
 	// Transform and Quaternion are stored in data.local_transform Basis (so quaternion is not really stored, but converted back/forth from 3x3 matrix on demand).
@@ -116,6 +122,7 @@ private:
 		bool notify_transform = false;
 
 		bool visible = true;
+		ConditionalVisibilityMode visibility_condition = CONDITIONAL_VISIBILITY_EDITOR_AND_RUNNER;
 		bool disable_scale = false;
 
 #ifdef TOOLS_ENABLED
@@ -144,6 +151,8 @@ private:
 	void _propagate_visibility_parent();
 	void _update_visibility_parent(bool p_update_root);
 	void _propagate_transform_changed_deferred();
+
+	bool _is_visibility_condition_met() const;
 
 protected:
 	_FORCE_INLINE_ void set_ignore_transform_notification(bool p_ignore) { data.ignore_notification = p_ignore; }
@@ -266,9 +275,11 @@ public:
 	void set_identity();
 
 	void set_visible(bool p_visible);
+	void set_visibility_condition(ConditionalVisibilityMode p_visibility_condition);
 	void show();
 	void hide();
 	bool is_visible() const;
+	ConditionalVisibilityMode get_visibility_condition() const;
 	bool is_visible_in_tree() const;
 
 	void force_update_transform();
@@ -280,5 +291,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(Node3D::RotationEditMode)
+VARIANT_ENUM_CAST(Node3D::ConditionalVisibilityMode);
 
 #endif // NODE_3D_H

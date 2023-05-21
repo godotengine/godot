@@ -73,6 +73,12 @@ public:
 		CLIP_CHILDREN_MAX,
 	};
 
+	enum ConditionalVisibilityMode {
+		CONDITIONAL_VISIBILITY_EDITOR_AND_RUNNER,
+		CONDITIONAL_VISIBILITY_EDITOR_ONLY,
+		CONDITIONAL_VISIBILITY_RUNNER_ONLY,
+	};
+
 private:
 	mutable SelfList<Node>
 			xform_change;
@@ -97,6 +103,7 @@ private:
 
 	Window *window = nullptr;
 	bool visible = true;
+	ConditionalVisibilityMode visibility_condition = CONDITIONAL_VISIBILITY_EDITOR_AND_RUNNER;
 	bool parent_visible_in_tree = false;
 	bool pending_update = false;
 	bool top_level = false;
@@ -126,7 +133,9 @@ private:
 	void _top_level_raise_self();
 
 	void _propagate_visibility_changed(bool p_parent_visible_in_tree);
-	void _handle_visibility_change(bool p_visible);
+	void _handle_visibility_change();
+
+	bool _is_visibility_condition_met() const;
 
 	virtual void _top_level_changed();
 	virtual void _top_level_changed_on_parent();
@@ -223,7 +232,9 @@ public:
 	/* VISIBILITY */
 
 	void set_visible(bool p_visible);
+	void set_visibility_condition(ConditionalVisibilityMode p_visibility_condition);
 	bool is_visible() const;
+	ConditionalVisibilityMode get_visibility_condition() const;
 	bool is_visible_in_tree() const;
 	void show();
 	void hide();
@@ -375,6 +386,7 @@ public:
 VARIANT_ENUM_CAST(CanvasItem::TextureFilter)
 VARIANT_ENUM_CAST(CanvasItem::TextureRepeat)
 VARIANT_ENUM_CAST(CanvasItem::ClipChildrenMode)
+VARIANT_ENUM_CAST(CanvasItem::ConditionalVisibilityMode);
 
 class CanvasTexture : public Texture2D {
 	GDCLASS(CanvasTexture, Texture2D);
