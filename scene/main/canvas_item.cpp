@@ -57,7 +57,7 @@ Transform2D CanvasItem::_edit_get_transform() const {
 
 bool CanvasItem::is_visible_in_tree() const {
 	ERR_READ_THREAD_GUARD_V(false);
-	return visible && parent_visible_in_tree;
+	return visible && parent_visible_in_tree && _is_visibility_condition_met();
 }
 
 void CanvasItem::_propagate_visibility_changed(bool p_parent_visible_in_tree) {
@@ -66,7 +66,7 @@ void CanvasItem::_propagate_visibility_changed(bool p_parent_visible_in_tree) {
 		return;
 	}
 
-	_handle_visibility_change(p_parent_visible_in_tree);
+	_handle_visibility_change();
 }
 
 void CanvasItem::set_visible(bool p_visible) {
@@ -82,14 +82,34 @@ void CanvasItem::set_visible(bool p_visible) {
 		return;
 	}
 
-	_handle_visibility_change(p_visible);
+	_handle_visibility_change();
 }
 
-void CanvasItem::_handle_visibility_change(bool p_visible) {
-	RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, p_visible);
+void CanvasItem::set_visibility_condition(ConditionalVisibilityMode p_visibility_condition) {
+	ERR_MAIN_THREAD_GUARD;
+	if (visibility_condition == p_visibility_condition) {
+		return;
+	}
+
+	visibility_condition = p_visibility_condition;
+
+	if (!parent_visible_in_tree) {
+		notification(NOTIFICATION_VISIBILITY_CHANGED);
+		return;
+	}
+
+	// visibility hasn't changed, but give opportunity to respond to visibility_condition.
+	_handle_visibility_change();
+}
+
+void CanvasItem::_handle_visibility_change() {
+	// cache call because this is potentially in the hot path.
+	const bool is_actually_visible = is_visible_in_tree();
+
+	RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_actually_visible);
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 
-	if (p_visible) {
+	if (is_actually_visible) {
 		queue_redraw();
 	} else {
 		emit_signal(SceneStringNames::get_singleton()->hidden);
@@ -100,10 +120,23 @@ void CanvasItem::_handle_visibility_change(bool p_visible) {
 		CanvasItem *c = Object::cast_to<CanvasItem>(get_child(i));
 
 		if (c) { // Should the top_levels stop propagation? I think so, but...
-			c->_propagate_visibility_changed(p_visible);
+			c->_propagate_visibility_changed(is_actually_visible);
 		}
 	}
 	_unblock();
+}
+
+bool CanvasItem::_is_visibility_condition_met() const {
+	switch (get_visibility_condition()) {
+		case CONDITIONAL_VISIBILITY_EDITOR_AND_RUNNER:
+			return true;
+		case CONDITIONAL_VISIBILITY_EDITOR_ONLY:
+			return Engine::get_singleton()->is_editor_hint();
+		case CONDITIONAL_VISIBILITY_RUNNER_ONLY:
+			return !Engine::get_singleton()->is_editor_hint();
+		default:
+			return true;
+	}
 }
 
 void CanvasItem::show() {
@@ -119,6 +152,11 @@ void CanvasItem::hide() {
 bool CanvasItem::is_visible() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return visible;
+}
+
+CanvasItem::ConditionalVisibilityMode CanvasItem::get_visibility_condition() const {
+	ERR_READ_THREAD_GUARD_V(CONDITIONAL_VISIBILITY_EDITOR_AND_RUNNER);
+	return visibility_condition;
 }
 
 CanvasItem *CanvasItem::current_item_drawn = nullptr;
@@ -1092,6 +1130,8 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_visible_in_tree"), &CanvasItem::is_visible_in_tree);
 	ClassDB::bind_method(D_METHOD("show"), &CanvasItem::show);
 	ClassDB::bind_method(D_METHOD("hide"), &CanvasItem::hide);
+	ClassDB::bind_method(D_METHOD("get_visibility_condition"), &CanvasItem::get_visibility_condition);
+	ClassDB::bind_method(D_METHOD("set_visibility_condition"), &CanvasItem::set_visibility_condition);
 
 	ClassDB::bind_method(D_METHOD("queue_redraw"), &CanvasItem::queue_redraw);
 	ClassDB::bind_method(D_METHOD("move_to_front"), &CanvasItem::move_to_front);
@@ -1198,6 +1238,7 @@ void CanvasItem::_bind_methods() {
 
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_condition", PROPERTY_HINT_ENUM, "Editor and Runner,Editor Only,Runner Only"), "set_visibility_condition", "get_visibility_condition");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "self_modulate"), "set_self_modulate", "get_self_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_behind_parent"), "set_draw_behind_parent", "is_draw_behind_parent_enabled");

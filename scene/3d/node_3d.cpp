@@ -104,6 +104,19 @@ void Node3D::_propagate_transform_changed_deferred() {
 	}
 }
 
+bool Node3D::_is_visibility_condition_met() const {
+	switch (get_visibility_condition()) {
+		case CONDITIONAL_VISIBILITY_EDITOR_AND_RUNNER:
+			return true;
+		case CONDITIONAL_VISIBILITY_EDITOR_ONLY:
+			return Engine::get_singleton()->is_editor_hint();
+		case CONDITIONAL_VISIBILITY_RUNNER_ONLY:
+			return !Engine::get_singleton()->is_editor_hint();
+		default:
+			return true;
+	}
+}
+
 void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 	if (!is_inside_tree()) {
 		return;
@@ -791,9 +804,28 @@ void Node3D::set_visible(bool p_visible) {
 	_propagate_visibility_changed();
 }
 
+void Node3D::set_visibility_condition(ConditionalVisibilityMode p_visibility_condition) {
+	ERR_MAIN_THREAD_GUARD;
+	if (data.visibility_condition == p_visibility_condition) {
+		return;
+	}
+
+	data.visibility_condition = p_visibility_condition;
+
+	if (!is_inside_tree()) {
+		return;
+	}
+	_propagate_visibility_changed();
+}
+
 bool Node3D::is_visible() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return data.visible;
+}
+
+Node3D::ConditionalVisibilityMode Node3D::get_visibility_condition() const {
+	ERR_READ_THREAD_GUARD_V(CONDITIONAL_VISIBILITY_EDITOR_AND_RUNNER);
+	return data.visibility_condition;
 }
 
 bool Node3D::is_visible_in_tree() const {
@@ -801,7 +833,7 @@ bool Node3D::is_visible_in_tree() const {
 	const Node3D *s = this;
 
 	while (s) {
-		if (!s->data.visible) {
+		if (!s->data.visible || !s->_is_visibility_condition_met()) {
 			return false;
 		}
 		s = s->data.parent;
@@ -1145,6 +1177,8 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_visible_in_tree"), &Node3D::is_visible_in_tree);
 	ClassDB::bind_method(D_METHOD("show"), &Node3D::show);
 	ClassDB::bind_method(D_METHOD("hide"), &Node3D::hide);
+	ClassDB::bind_method(D_METHOD("get_visibility_condition"), &Node3D::get_visibility_condition);
+	ClassDB::bind_method(D_METHOD("set_visibility_condition"), &Node3D::set_visibility_condition);
 
 	ClassDB::bind_method(D_METHOD("set_notify_local_transform", "enable"), &Node3D::set_notify_local_transform);
 	ClassDB::bind_method(D_METHOD("is_local_transform_notification_enabled"), &Node3D::is_local_transform_notification_enabled);
@@ -1200,6 +1234,7 @@ void Node3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "global_rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_rotation_degrees", "get_global_rotation_degrees");
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_condition", PROPERTY_HINT_ENUM, "Editor and Runner,Editor Only,Runner Only"), "set_visibility_condition", "get_visibility_condition");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "visibility_parent", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "GeometryInstance3D"), "set_visibility_parent", "get_visibility_parent");
 
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
