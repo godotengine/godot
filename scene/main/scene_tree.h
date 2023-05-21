@@ -130,6 +130,7 @@ private:
 
 #ifdef DEBUG_ENABLED
 	bool debug_collisions_hint = false;
+	bool debug_editor_only_nodes_hint = false;
 	bool debug_paths_hint = false;
 	bool debug_navigation_hint = false;
 	bool debug_avoidance_hint = false;
@@ -345,6 +346,9 @@ public:
 #ifdef DEBUG_ENABLED
 	void set_debug_collisions_hint(bool p_enabled);
 	bool is_debugging_collisions_hint() const;
+
+	void set_debug_editor_only_nodes_hint(bool p_enabled);
+	bool is_debug_editor_only_nodes_hint() const;
 
 	void set_debug_paths_hint(bool p_enabled);
 	bool is_debugging_paths_hint() const;

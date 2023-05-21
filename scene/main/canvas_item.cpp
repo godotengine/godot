@@ -127,11 +127,13 @@ void CanvasItem::_handle_visibility_change() {
 }
 
 bool CanvasItem::_is_visibility_condition_met() const {
+	const bool override_editor_only = get_tree() && get_tree()->is_debug_editor_only_nodes_hint();
+
 	switch (get_visibility_condition()) {
 		case CONDITIONAL_VISIBILITY_EDITOR_AND_RUNNER:
 			return true;
 		case CONDITIONAL_VISIBILITY_EDITOR_ONLY:
-			return Engine::get_singleton()->is_editor_hint();
+			return Engine::get_singleton()->is_editor_hint() || override_editor_only;
 		case CONDITIONAL_VISIBILITY_RUNNER_ONLY:
 			return !Engine::get_singleton()->is_editor_hint();
 		default:

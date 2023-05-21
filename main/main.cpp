@@ -208,6 +208,7 @@ static Vector2 init_custom_pos;
 static bool use_debug_profiler = false;
 #ifdef DEBUG_ENABLED
 static bool debug_collisions = false;
+static bool debug_editor_only_nodes = false;
 static bool debug_paths = false;
 static bool debug_navigation = false;
 static bool debug_avoidance = false;
@@ -1357,6 +1358,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #if defined(DEBUG_ENABLED)
 		} else if (I->get() == "--debug-collisions") {
 			debug_collisions = true;
+		} else if (I->get() == "--debug-editor-only-nodes") {
+			debug_editor_only_nodes = true;
 		} else if (I->get() == "--debug-paths") {
 			debug_paths = true;
 		} else if (I->get() == "--debug-navigation") {
@@ -2919,6 +2922,9 @@ bool Main::start() {
 #ifdef DEBUG_ENABLED
 		if (debug_collisions) {
 			sml->set_debug_collisions_hint(true);
+		}
+		if (debug_editor_only_nodes) {
+			sml->set_debug_editor_only_nodes_hint(true);
 		}
 		if (debug_paths) {
 			sml->set_debug_paths_hint(true);
