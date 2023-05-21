@@ -68,12 +68,15 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 				Vector2i tile_id = atlas_source->get_tile_id(tile_index);
 				atlas_size = atlas_size.max(tile_id + atlas_source->get_tile_size_in_atlas(tile_id));
 
-				Rect2i new_tile_rect_in_altas = Rect2i(atlas_offset + tile_id, atlas_source->get_tile_size_in_atlas(tile_id));
+				Rect2i new_tile_rect_in_atlas = Rect2i(atlas_offset + tile_id, atlas_source->get_tile_size_in_atlas(tile_id));
 
 				// Copy the texture.
+				int animation_columns = atlas_source->get_tile_animation_columns(tile_id);
+				Vector2i animation_separation = atlas_source->get_tile_animation_separation(tile_id);
 				for (int frame = 0; frame < atlas_source->get_tile_animation_frames_count(tile_id); frame++) {
 					Rect2i src_rect = atlas_source->get_tile_texture_region(tile_id, frame);
-					Rect2 dst_rect_wide = Rect2i(new_tile_rect_in_altas.position * new_texture_region_size, new_tile_rect_in_altas.size * new_texture_region_size);
+					Vector2i frame_coords = tile_id + (src_rect.size + animation_separation) * ((animation_columns > 0) ? Vector2i(frame % animation_columns, frame / animation_columns) : Vector2i(frame, 0));
+					Rect2 dst_rect_wide = Rect2i(new_tile_rect_in_atlas.position * new_texture_region_size + (frame > 0 ? frame_coords : Vector2i(0, 0)), new_tile_rect_in_atlas.size * new_texture_region_size);
 					if (dst_rect_wide.get_end().x > output_image->get_width() || dst_rect_wide.get_end().y > output_image->get_height()) {
 						output_image->crop(MAX(dst_rect_wide.get_end().x, output_image->get_width()), MAX(dst_rect_wide.get_end().y, output_image->get_height()));
 					}
@@ -81,7 +84,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 				}
 
 				// Add to the mapping.
-				merged_mapping[source_index][tile_id] = new_tile_rect_in_altas.position;
+				merged_mapping[source_index][tile_id] = new_tile_rect_in_atlas.position;
 			}
 
 			// Compute the atlas offset.
