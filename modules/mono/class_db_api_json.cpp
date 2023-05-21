@@ -145,6 +145,33 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 			}
 		}
 
+		{ //variant constants
+
+			List<StringName> snames;
+
+			for (const KeyValue<StringName, Variant> &F : t->variant_constant_map) {
+				snames.push_back(F.key);
+			}
+
+			snames.sort_custom<StringName::AlphCompare>();
+
+			Array constants;
+
+			for (const StringName &F : snames) {
+				Dictionary constant_dict;
+				constants.push_back(constant_dict);
+
+				constant_dict["name"] = F;
+				constant_dict["value"] = t->variant_constant_map[F];
+			}
+
+			if (class_dict.has("constants")) {
+				class_dict["constants"].append_array(constants);
+			} else if (!constants.is_empty()) {
+				class_dict["constants"] = constants;
+			}
+		}
+
 		{ //signals
 
 			List<StringName> snames;

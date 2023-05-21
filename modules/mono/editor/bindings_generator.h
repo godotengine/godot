@@ -57,6 +57,21 @@ class BindingsGenerator {
 		}
 	};
 
+	struct VariantConstantInterface {
+		String name;
+		String proxy_name;
+		Variant value;
+		const DocData::ConstantDoc *const_doc;
+
+		VariantConstantInterface() {}
+
+		VariantConstantInterface(const String &p_name, const String &p_proxy_name, const Variant &p_value) {
+			name = p_name;
+			proxy_name = p_proxy_name;
+			value = p_value;
+		}
+	};
+
 	struct EnumInterface {
 		StringName cname;
 		List<ConstantInterface> constants;
@@ -404,6 +419,7 @@ class BindingsGenerator {
 		const DocData::ClassDoc *class_doc = nullptr;
 
 		List<ConstantInterface> constants;
+		List<VariantConstantInterface> variant_constants;
 		List<EnumInterface> enums;
 		List<PropertyInterface> properties;
 		List<MethodInterface> methods;
@@ -699,6 +715,16 @@ class BindingsGenerator {
 
 	const ConstantInterface *find_constant_by_name(const String &p_name, const List<ConstantInterface> &p_constants) const {
 		for (const ConstantInterface &E : p_constants) {
+			if (E.name == p_name) {
+				return &E;
+			}
+		}
+
+		return nullptr;
+	}
+
+	const VariantConstantInterface *find_variant_constant_by_name(const String &p_name, const List<VariantConstantInterface> &p_variant_constants) const {
+		for (const VariantConstantInterface &E : p_variant_constants) {
 			if (E.name == p_name) {
 				return &E;
 			}

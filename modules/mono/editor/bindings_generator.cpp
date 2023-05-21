@@ -3263,6 +3263,36 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			itype.constants.push_back(iconstant);
 		}
 
+		List<String> variant_constants;
+		ClassDB::get_variant_constant_list(type_cname, &variant_constants, true);
+
+		for (const String &constant_name : variant_constants) {
+			Variant *value = class_info->variant_constant_map.getptr(StringName(constant_name));
+			ERR_FAIL_NULL_V(value, false);
+
+			String constant_proxy_name = snake_to_pascal_case(constant_name, true);
+
+			if (itype.find_property_by_proxy_name(constant_proxy_name) || itype.find_method_by_proxy_name(constant_proxy_name) || itype.find_signal_by_proxy_name(constant_proxy_name)) {
+				// In case the constant name conflicts with other PascalCase members,
+				// we append 'Constant' to the constant name in those cases.
+				constant_proxy_name += "Constant";
+			}
+
+			VariantConstantInterface iconstant(constant_name, constant_proxy_name, *value);
+
+			iconstant.const_doc = nullptr;
+			for (int i = 0; i < itype.class_doc->variant_constants.size(); i++) {
+				const DocData::ConstantDoc &const_doc = itype.class_doc->constants[i];
+
+				if (const_doc.name == iconstant.name) {
+					iconstant.const_doc = &const_doc;
+					break;
+				}
+			}
+
+			itype.variant_constants.push_back(iconstant);
+		}
+
 		obj_types.insert(itype.cname, itype);
 
 		class_list.pop_front();
