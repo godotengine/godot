@@ -70,12 +70,17 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 				Vector2i tile_id = atlas_source->get_tile_id(tile_index);
 				atlas_size = atlas_size.max(tile_id + atlas_source->get_tile_size_in_atlas(tile_id));
 
-				Rect2i new_tile_rect_in_altas = Rect2i(atlas_offset + tile_id, atlas_source->get_tile_size_in_atlas(tile_id));
+				Rect2i new_tile_rect_in_atlas = Rect2i(atlas_offset + tile_id, atlas_source->get_tile_size_in_atlas(tile_id));
 
 				// Copy the texture.
 				for (int frame = 0; frame < atlas_source->get_tile_animation_frames_count(tile_id); frame++) {
 					Rect2i src_rect = atlas_source->get_tile_texture_region(tile_id, frame);
-					Rect2 dst_rect_wide = Rect2i(new_tile_rect_in_altas.position * new_texture_region_size, new_tile_rect_in_altas.size * new_texture_region_size);
+					Vector2i new_position = new_tile_rect_in_atlas.position * new_texture_region_size;
+					if (frame > 0) {
+						new_position += src_rect.size * Vector2i(frame, 0);
+						atlas_size.x = MAX(frame + 1, atlas_size.x);
+					}
+					Rect2 dst_rect_wide = Rect2i(new_position, new_tile_rect_in_atlas.size * new_texture_region_size);
 					if (dst_rect_wide.get_end().x > output_image->get_width() || dst_rect_wide.get_end().y > output_image->get_height()) {
 						output_image->crop(MAX(dst_rect_wide.get_end().x, output_image->get_width()), MAX(dst_rect_wide.get_end().y, output_image->get_height()));
 					}
@@ -83,7 +88,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 				}
 
 				// Add to the mapping.
-				merged_mapping[source_index][tile_id] = new_tile_rect_in_altas.position;
+				merged_mapping[source_index][tile_id] = new_tile_rect_in_atlas.position;
 			}
 
 			// Compute the atlas offset.
@@ -110,6 +115,13 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 					int changed_id = -1;
 					if (alternative_id == 0) {
 						merged->create_tile(tile_mapping.value, atlas_source->get_tile_size_in_atlas(tile_mapping.key));
+						int count = atlas_source->get_tile_animation_frames_count(tile_mapping.key);
+						merged->set_tile_animation_frames_count(tile_mapping.value, count);
+						for (int i = 0; i < count; i++) {
+							merged->set_tile_animation_frame_duration(tile_mapping.value, i, atlas_source->get_tile_animation_frame_duration(tile_mapping.key, i));
+						}
+						merged->set_tile_animation_speed(tile_mapping.value, atlas_source->get_tile_animation_speed(tile_mapping.key));
+						merged->set_tile_animation_mode(tile_mapping.value, atlas_source->get_tile_animation_mode(tile_mapping.key));
 					} else {
 						changed_id = merged->create_alternative_tile(tile_mapping.value, alternative_index);
 					}
