@@ -473,10 +473,42 @@ int TileMap::get_effective_quadrant_size(int p_layer) const {
 	// When using YSort, the quadrant size is reduced to 1 to have one CanvasItem per quadrant
 	if (is_y_sort_enabled() && layers[p_layer].y_sort_enabled) {
 		return 1;
-	} else {
+	} else if (is_auto_quadrant_resize_enabled()) {
+		return get_auto_resized_quadrant();
+	}
+	return quadrant_size;
+}
+
+int TileMap::get_auto_resized_quadrant() const {
+	tile_changes_counter++;
+	if (tile_changes_counter < auto_quadrant_threshold) {
 		return quadrant_size;
 	}
+	tile_changes_counter = 0;
+	int to_calc = 0;
+	int layer_count = get_layers_count();
+	for (int layer_id = 0; layer_id < layer_count; layer_id++) {
+		to_calc += get_used_cells(layer_id).size();
+	}
+
+	// get the minimum divisor unless it's a prime,
+	// if it is, return itself.
+
+	// Fermat test, for now (but with the sqrt as a limitation and/or assumption).
+	int sqr_to_calc = round(sqrt(to_calc));
+	for (int a = 2; a < sqr_to_calc; a++) {
+		int fermat = pow(a, to_calc) - a;
+		if (fermat % to_calc != 0) { // not a prime, which is probably.
+			for (int minimum_divisor = 2; minimum_divisor < sqr_to_calc; minimum_divisor++) { // the minimum before itself.
+				if (to_calc % minimum_divisor == 0) {
+					return to_calc / minimum_divisor;
+				}
+			}
+		}
+	}
+	return to_calc; // it's probably a prime.
 }
+
 
 void TileMap::set_selected_layer(int p_layer_id) {
 	ERR_FAIL_COND(p_layer_id < -1 || p_layer_id >= (int)layers.size());
@@ -553,6 +585,25 @@ void TileMap::set_quadrant_size(int p_size) {
 
 int TileMap::get_quadrant_size() const {
 	return quadrant_size;
+}
+
+void TileMap::set_auto_quadrant_resize_enabled(bool p_enabled) {
+	if (auto_quadrant_resize == p_enabled) {
+		return;
+	}
+	auto_quadrant_resize = p_enabled;
+}
+
+void TileMap::set_auto_quadrant_threshold(int p_threshold) {
+	ERR_FAIL_COND_MSG(!is_auto_quadrant_resize_enabled(), "automatic quadrant resizing is disabled. It won't matter.");
+	if (auto_quadrant_threshold == p_threshold) {
+		return;
+	}
+	auto_quadrant_threshold = p_threshold;
+}
+
+int TileMap::get_auto_quadrant_threshold() const {
+	return auto_quadrant_threshold;
 }
 
 int TileMap::get_layers_count() const {
@@ -818,6 +869,10 @@ Vector2i TileMap::_coords_to_quadrant_coords(int p_layer, const Vector2i &p_coor
 	return Vector2i(
 			p_coords.x > 0 ? p_coords.x / quad_size : (p_coords.x - (quad_size - 1)) / quad_size,
 			p_coords.y > 0 ? p_coords.y / quad_size : (p_coords.y - (quad_size - 1)) / quad_size);
+}
+
+bool TileMap::is_auto_quadrant_resize_enabled() const {
+	return auto_quadrant_resize;
 }
 
 HashMap<Vector2i, TileMapQuadrant>::Iterator TileMap::_create_quadrant(int p_layer, const Vector2i &p_qk) {
@@ -4126,6 +4181,11 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_quadrant_size", "size"), &TileMap::set_quadrant_size);
 	ClassDB::bind_method(D_METHOD("get_quadrant_size"), &TileMap::get_quadrant_size);
 
+	ClassDB::bind_method(D_METHOD("set_auto_quadrant_resize_enabled", "enabled"), &TileMap::set_auto_quadrant_resize_enabled);
+	ClassDB::bind_method(D_METHOD("is_auto_quadrant_resize_enabled"), &TileMap::is_auto_quadrant_resize_enabled);
+	ClassDB::bind_method(D_METHOD("set_auto_quadrant_threshold", "threshold"), &TileMap::set_auto_quadrant_threshold);
+	ClassDB::bind_method(D_METHOD("get_auto_quadrant_threshold"), &TileMap::get_auto_quadrant_threshold);
+
 	ClassDB::bind_method(D_METHOD("get_layers_count"), &TileMap::get_layers_count);
 	ClassDB::bind_method(D_METHOD("add_layer", "to_position"), &TileMap::add_layer);
 	ClassDB::bind_method(D_METHOD("move_layer", "layer", "to_position"), &TileMap::move_layer);
@@ -4196,6 +4256,8 @@ void TileMap::_bind_methods() {
 	GDVIRTUAL_BIND(_tile_data_runtime_update, "layer", "coords", "tile_data");
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tile_set", PROPERTY_HINT_RESOURCE_TYPE, "TileSet"), "set_tileset", "get_tileset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_quadrant_resize"), "set_auto_quadrant_resize_enabled", "is_auto_quadrant_resize_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "auto_quadrant_threshold", PROPERTY_HINT_RANGE, "0,128,1"), "set_auto_quadrant_threshold", "get_auto_quadrant_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_quadrant_size", PROPERTY_HINT_RANGE, "1,128,1"), "set_quadrant_size", "get_quadrant_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_animatable"), "set_collision_animatable", "is_collision_animatable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");

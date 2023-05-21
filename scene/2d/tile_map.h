@@ -190,6 +190,11 @@ private:
 	VisibilityMode collision_visibility_mode = VISIBILITY_MODE_DEFAULT;
 	VisibilityMode navigation_visibility_mode = VISIBILITY_MODE_DEFAULT;
 
+	// auto quadrant resizing.
+	bool auto_quadrant_resize = true; // So the user should handle it only if needed.
+	int auto_quadrant_threshold = 16;
+	mutable int tile_changes_counter = 0;
+
 	// Updates.
 	bool pending_update = false;
 
@@ -313,6 +318,12 @@ public:
 	void set_quadrant_size(int p_size);
 	int get_quadrant_size() const;
 
+	void set_auto_quadrant_resize_enabled(bool p_enabled);
+	bool is_auto_quadrant_resize_enabled() const;
+
+	void set_auto_quadrant_threshold(int p_threshold);
+	int get_auto_quadrant_threshold() const;
+																						 //
 	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr);
 
 	// Layers management.
@@ -375,6 +386,7 @@ public:
 	TileMapCell get_cell(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	HashMap<Vector2i, TileMapQuadrant> *get_quadrant_map(int p_layer);
 	int get_effective_quadrant_size(int p_layer) const;
+	int get_auto_resized_quadrant() const;
 	//---
 
 	virtual void set_y_sort_enabled(bool p_enable) override;
