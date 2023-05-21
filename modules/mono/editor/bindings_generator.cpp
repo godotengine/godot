@@ -3281,7 +3281,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			VariantConstantInterface iconstant(constant_name, constant_proxy_name, *value);
 
 			iconstant.const_doc = nullptr;
-			for (int i = 0; i < itype.class_doc->variant_constants.size(); i++) {
+			for (int i = 0; i < itype.class_doc->constants.size(); i++) {
 				const DocData::ConstantDoc &const_doc = itype.class_doc->constants[i];
 
 				if (const_doc.name == iconstant.name) {
