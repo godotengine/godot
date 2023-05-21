@@ -247,6 +247,22 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			}
 		}
 
+		{ //variant constants
+
+			List<StringName> snames;
+
+			for (const KeyValue<StringName, Variant> &F : t->variant_constant_map) {
+				snames.push_back(F.key);
+			}
+
+			snames.sort_custom<StringName::AlphCompare>();
+
+			for (const StringName &F : snames) {
+				hash = hash_murmur3_one_64(F.hash(), hash);
+				hash = hash_murmur3_one_64(t->variant_constant_map[F], hash);
+			}
+		}
+
 		{ //signals
 
 			List<StringName> snames;
