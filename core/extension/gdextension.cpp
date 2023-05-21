@@ -361,6 +361,16 @@ void GDExtension::_register_extension_class_integer_constant(GDExtensionClassLib
 
 	ClassDB::bind_integer_constant(class_name, enum_name, constant_name, p_constant_value, p_is_bitfield);
 }
+void GDExtension::_register_extension_class_variant_constant(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_constant_name, GDExtensionConstVariantPtr p_constant_value) {
+	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
+
+	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
+	StringName constant_name = *reinterpret_cast<const StringName *>(p_constant_name);
+	ERR_FAIL_COND_MSG(!self->extension_classes.has(class_name), "Attempt to register extension constant '" + constant_name + "' for unexisting class '" + class_name + "'.");
+
+	Variant constant_value = *reinterpret_cast<const Variant *>(p_constant_value);
+	ClassDB::bind_variant_constant(class_name, constant_name, constant_value);
+}
 
 void GDExtension::_register_extension_class_property(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionPropertyInfo *p_info, GDExtensionConstStringNamePtr p_setter, GDExtensionConstStringNamePtr p_getter) {
 	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
@@ -553,6 +563,7 @@ void GDExtension::initialize_gdextensions() {
 	register_interface_function("classdb_register_extension_class", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class);
 	register_interface_function("classdb_register_extension_class_method", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_method);
 	register_interface_function("classdb_register_extension_class_integer_constant", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_integer_constant);
+	register_interface_function("classdb_register_extension_class_variant_constant", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_variant_constant);
 	register_interface_function("classdb_register_extension_class_property", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_property);
 	register_interface_function("classdb_register_extension_class_property_group", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_property_group);
 	register_interface_function("classdb_register_extension_class_property_subgroup", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_property_subgroup);
