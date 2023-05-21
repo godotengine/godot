@@ -362,7 +362,7 @@ public:
 	void set_debug_collisions_hint(bool p_enabled) {}
 	bool is_debugging_collisions_hint() const { return false; }
 
-	void set_debug_editor_only_nodes_hint(bool p_enabled) {};
+	void set_debug_editor_only_nodes_hint(bool p_enabled){};
 	bool is_debug_editor_only_nodes_hint() const { return false; };
 
 	void set_debug_paths_hint(bool p_enabled) {}
