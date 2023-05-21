@@ -879,7 +879,7 @@ void ClassDB::get_variant_constant_list(const StringName &p_class, List<String> 
 		}
 #else
 
-		for (const KeyValue<StringName, int64_t> &E : type->variant_constant_map) {
+		for (const KeyValue<StringName, Variant> &E : type->variant_constant_map) {
 			p_constants->push_back(E.key);
 		}
 
