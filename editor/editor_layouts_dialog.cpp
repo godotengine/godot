@@ -42,25 +42,15 @@ void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
-		if (!k->is_pressed()) {
-			return;
-		}
-
-		switch (k->get_keycode()) {
-			case Key::KP_ENTER:
-			case Key::ENTER: {
-				if (get_hide_on_ok()) {
-					hide();
-				}
-				ok_pressed();
-				set_input_as_handled();
-			} break;
-			case Key::ESCAPE: {
+		if (k->is_action_pressed(SNAME("ui_accept"), false, true)) {
+			if (get_hide_on_ok()) {
 				hide();
-				set_input_as_handled();
-			} break;
-			default:
-				break;
+			}
+			ok_pressed();
+			set_input_as_handled();
+		} else if (k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+			hide();
+			set_input_as_handled();
 		}
 	}
 }
