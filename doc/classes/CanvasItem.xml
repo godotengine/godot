@@ -594,6 +594,9 @@
 		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material" default="false">
 			If [code]true[/code], the parent [CanvasItem]'s [member material] property is used as this one's material.
 		</member>
+		<member name="visibility_condition" type="int" setter="set_visibility_condition" getter="get_visibility_condition" enum="CanvasItem.ConditionalVisibilityMode" default="0">
+			Overrides this [CanvasItem]'s visibility based upon if the project is running or in editor.
+		</member>
 		<member name="visibility_layer" type="int" setter="set_visibility_layer" getter="get_visibility_layer" default="1">
 			The rendering layer in which this [CanvasItem] is rendered by [Viewport] nodes. A [Viewport] will render a [CanvasItem] if it and all its parents share a layer with the [Viewport]'s canvas cull mask.
 		</member>
@@ -657,6 +660,15 @@
 		</constant>
 		<constant name="NOTIFICATION_WORLD_2D_CHANGED" value="36">
 			The [CanvasItem]'s active [World2D] changed.
+		</constant>
+		<constant name="CONDITIONAL_VISIBILITY_EDITOR_AND_RUNNER" value="0" enum="ConditionalVisibilityMode">
+			The [CanvasItem] will be shown both in editor and in the running project.
+		</constant>
+		<constant name="CONDITIONAL_VISIBILITY_EDITOR_ONLY" value="1" enum="ConditionalVisibilityMode">
+			The [CanvasItem] will only be shown in editor.
+		</constant>
+		<constant name="CONDITIONAL_VISIBILITY_RUNNER_ONLY" value="2" enum="ConditionalVisibilityMode">
+			The [CanvasItem] will only be shown in the running project.
 		</constant>
 		<constant name="TEXTURE_FILTER_PARENT_NODE" value="0" enum="TextureFilter">
 			The [CanvasItem] will inherit the filter from its parent.

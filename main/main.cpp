@@ -206,6 +206,7 @@ static Vector2 init_custom_pos;
 static bool use_debug_profiler = false;
 #ifdef DEBUG_ENABLED
 static bool debug_collisions = false;
+static bool debug_editor_only_nodes = false;
 static bool debug_paths = false;
 static bool debug_navigation = false;
 static bool debug_avoidance = false;
@@ -457,6 +458,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --single-threaded-scene           Scene tree runs in single-threaded mode. Sub-thread groups are disabled and run on the main thread.\n");
 #if defined(DEBUG_ENABLED)
 	OS::get_singleton()->print("  --debug-collisions                Show collision shapes when running the scene.\n");
+	OS::get_singleton()->print("  --debug-editor-only-nodes         Show editor only Nodes when running the scene.\n");
 	OS::get_singleton()->print("  --debug-paths                     Show path lines when running the scene.\n");
 	OS::get_singleton()->print("  --debug-navigation                Show navigation polygons when running the scene.\n");
 	OS::get_singleton()->print("  --debug-avoidance                 Show navigation avoidance debug visuals when running the scene.\n");
@@ -1360,6 +1362,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #if defined(DEBUG_ENABLED)
 		} else if (I->get() == "--debug-collisions") {
 			debug_collisions = true;
+		} else if (I->get() == "--debug-editor-only-nodes") {
+			debug_editor_only_nodes = true;
 		} else if (I->get() == "--debug-paths") {
 			debug_paths = true;
 		} else if (I->get() == "--debug-navigation") {
@@ -2927,6 +2931,9 @@ bool Main::start() {
 #ifdef DEBUG_ENABLED
 		if (debug_collisions) {
 			sml->set_debug_collisions_hint(true);
+		}
+		if (debug_editor_only_nodes) {
+			sml->set_debug_editor_only_nodes_hint(true);
 		}
 		if (debug_paths) {
 			sml->set_debug_paths_hint(true);

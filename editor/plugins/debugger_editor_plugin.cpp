@@ -71,6 +71,9 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTR("Visible Collision Shapes")), RUN_DEBUG_COLLISIONS);
 	debug_menu->set_item_tooltip(-1,
 			TTR("When this option is enabled, collision shapes and raycast nodes (for 2D and 3D) will be visible in the running project."));
+	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_editor_only_nodes", TTR("Visible Editor Only Nodes")), RUN_DEBUG_EDITOR_ONLY_NODES);
+	debug_menu->set_item_tooltip(-1,
+			TTR("When this option is enabled, Nodes with visibility_condition set to Editor Only will be shown in the running project."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_paths", TTR("Visible Paths")), RUN_DEBUG_PATHS);
 	debug_menu->set_item_tooltip(-1,
 			TTR("When this option is enabled, curve resources used by path nodes will be visible in the running project."));
@@ -157,6 +160,12 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_COLLISIONS), !ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisions", !ischecked);
+
+		} break;
+		case RUN_DEBUG_EDITOR_ONLY_NODES: {
+			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_EDITOR_ONLY_NODES));
+			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_EDITOR_ONLY_NODES), !ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_editor_only_nodes", !ischecked);
 
 		} break;
 		case RUN_DEBUG_PATHS: {

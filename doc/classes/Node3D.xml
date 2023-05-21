@@ -315,6 +315,9 @@
 		<member name="transform" type="Transform3D" setter="set_transform" getter="get_transform" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			Local space [Transform3D] of this node, with respect to the parent node.
 		</member>
+		<member name="visibility_condition" type="int" setter="set_visibility_condition" getter="get_visibility_condition" enum="Node3D.ConditionalVisibilityMode" default="0">
+			Overrides this [Node3D]'s visibility based upon if the project is running or in editor.
+		</member>
 		<member name="visibility_parent" type="NodePath" setter="set_visibility_parent" getter="get_visibility_parent" default="NodePath(&quot;&quot;)">
 			Defines the visibility range parent for this node and its subtree. The visibility parent must be a GeometryInstance3D. Any visual instance will only be visible if the visibility parent (and all of its visibility ancestors) is hidden by being closer to the camera than its own [member GeometryInstance3D.visibility_range_begin]. Nodes hidden via the [member Node3D.visible] property are essentially removed from the visibility dependency tree, so dependent instances will not take the hidden node or its ancestors into account.
 		</member>
@@ -355,6 +358,15 @@
 		</constant>
 		<constant name="ROTATION_EDIT_MODE_BASIS" value="2" enum="RotationEditMode">
 			The rotation is edited using a [Basis]. In this mode, [member scale] can't be edited separately.
+		</constant>
+		<constant name="CONDITIONAL_VISIBILITY_EDITOR_AND_RUNNER" value="0" enum="ConditionalVisibilityMode">
+			The [Node3D] will be shown both in editor and in the running project.
+		</constant>
+		<constant name="CONDITIONAL_VISIBILITY_EDITOR_ONLY" value="1" enum="ConditionalVisibilityMode">
+			The [Node3D] will only be shown in editor.
+		</constant>
+		<constant name="CONDITIONAL_VISIBILITY_RUNNER_ONLY" value="2" enum="ConditionalVisibilityMode">
+			The [Node3D] will only be shown in the running project.
 		</constant>
 	</constants>
 </class>
