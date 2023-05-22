@@ -192,8 +192,8 @@ private:
 
 	// auto quadrant resizing.
 	bool auto_quadrant_resize = true; // So the user should handle it only if needed.
-	int auto_quadrant_threshold = 16;
-	mutable int tile_changes_counter = 0;
+	/* int auto_quadrant_threshold = 16; */
+	/* mutable int tile_changes_counter = 0; */
 
 	// Updates.
 	bool pending_update = false;
@@ -386,7 +386,7 @@ public:
 	TileMapCell get_cell(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 	HashMap<Vector2i, TileMapQuadrant> *get_quadrant_map(int p_layer);
 	int get_effective_quadrant_size(int p_layer) const;
-	int get_auto_resized_quadrant() const;
+	int get_auto_resized_quadrant(int p_layer) const;
 	//---
 
 	virtual void set_y_sort_enabled(bool p_enable) override;
