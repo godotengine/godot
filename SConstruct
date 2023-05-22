@@ -323,14 +323,13 @@ if env_base["build_custom_tests"]:
 		env_base.Append(LIBPATH=["C:\\Program Files (x86)\\catch2\\lib"])
 		env_base.Append(
 		    LIBS=[File("C:\\Program Files (x86)\\catch2\\lib\\Catch2.lib")])
-    elif sys.platform == "linux":
-        env_base.Append(CPPPATH=["/usr/local/include"])
-        env_base.Append(LIBPATH=["/usr/local/lib64"])
-        env_base.Append(LIBS=["libCatch2.a"])
 	else:
 		env_base.Append(CPPPATH=["/usr/local/include"])
-		env_base.Append(LIBPATH=["/usr/local/lib"])
-		env_base.Append(LIBS=["libCatch2.a"])
+        if exists("/usr/local/lib64/libCatch2.a"):
+            env_base.Append(LIBPATH=["/usr/local/lib64"])
+        else:
+            env_base.Append(LIBPATH=["/usr/local/lib"])
+        env_base.Append(LIBS=["libCatch2.a"])
 
 # configure ENV for platform
 env_base.platform_exporters = platform_exporters
