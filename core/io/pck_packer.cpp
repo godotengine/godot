@@ -115,7 +115,9 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encr
 	}
 
 	File pf;
-	pf.path = p_file;
+	// Simplify path here and on every 'files' access so that paths that have extra '/'
+	// symbols in them still match to the MD5 hash for the saved path.
+	pf.path = p_file.simplify_path();
 	pf.src_path = p_src;
 	pf.ofs = ofs;
 	pf.size = f->get_length();

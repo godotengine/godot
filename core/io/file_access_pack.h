@@ -184,7 +184,8 @@ public:
 };
 
 Ref<FileAccess> PackedData::try_open_path(const String &p_path) {
-	PathMD5 pmd5(p_path.md5_buffer());
+	String simplified_path = p_path.simplify_path();
+	PathMD5 pmd5(simplified_path.md5_buffer());
 	HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.find(pmd5);
 	if (!E) {
 		return nullptr; //not found
@@ -197,7 +198,7 @@ Ref<FileAccess> PackedData::try_open_path(const String &p_path) {
 }
 
 bool PackedData::has_path(const String &p_path) {
-	return files.has(PathMD5(p_path.md5_buffer()));
+	return files.has(PathMD5(p_path.simplify_path().md5_buffer()));
 }
 
 bool PackedData::has_directory(const String &p_path) {
