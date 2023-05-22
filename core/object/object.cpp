@@ -1739,7 +1739,7 @@ void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindi
 			break;
 		}
 	}
-	if (unlikely(!binding)) {
+	if (unlikely(!binding && p_callbacks)) {
 		uint32_t current_size = next_power_of_2(_instance_binding_count);
 		uint32_t new_size = next_power_of_2(_instance_binding_count + 1);
 

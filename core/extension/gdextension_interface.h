@@ -1902,6 +1902,19 @@ typedef void (*GDExtensionInterfaceObjectSetInstanceBinding)(GDExtensionObjectPt
 typedef void (*GDExtensionInterfaceObjectSetInstance)(GDExtensionObjectPtr p_o, GDExtensionConstStringNamePtr p_classname, GDExtensionClassInstancePtr p_instance); /* p_classname should be a registered extension class and should extend the p_o object's class. */
 
 /**
+ * @name object_get_class_name
+ *
+ * Gets the class name of an Object.
+ *
+ * @param p_object A pointer to the Object.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param r_class_name A pointer to a String to receive the class name.
+ *
+ * @return true if successful in getting the class name; otherwise false.
+ */
+typedef GDExtensionBool (*GDExtensionInterfaceObjectGetClassName)(GDExtensionConstObjectPtr p_object, GDExtensionClassLibraryPtr p_library, GDExtensionUninitializedStringNamePtr r_class_name);
+
+/**
  * @name object_cast_to
  *
  * Casts an Object to a different type.

@@ -314,6 +314,7 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 		parent_extension->gdextension.children.push_back(&extension->gdextension);
 	}
 
+	extension->gdextension.library = self;
 	extension->gdextension.parent_class_name = parent_class_name;
 	extension->gdextension.class_name = class_name;
 	extension->gdextension.editor_class = self->level_initialized == INITIALIZATION_LEVEL_EDITOR;
