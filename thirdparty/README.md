@@ -762,7 +762,7 @@ Patches in the `patches` directory should be re-applied after updates.
 ## wslay
 
 - Upstream: https://github.com/tatsuhiro-t/wslay
-- Version: 1.1.1+git (45d22583b488f79d5a4e598cc7675c191c5ab53f, 2021)
+- Version: 1.1.1+git (0e7d106ff89ad6638090fd811a9b2e4c5dda8d40, 2022)
 - License: MIT
 
 File extracted from upstream release tarball:
@@ -779,7 +779,7 @@ File extracted from upstream release tarball:
 ## xatlas
 
 - Upstream: https://github.com/jpcy/xatlas
-- Version: git (16ace528acd2cf1f16a7c0dde99c42c486488dbe, 2022)
+- Version: git (f700c7790aaa030e794b52ba7791a05c085faf0c, 2022)
 - License: MIT
 
 Files extracted from upstream source:
