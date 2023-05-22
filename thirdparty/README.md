@@ -494,7 +494,7 @@ Files extracted from upstream source:
 ## recastnavigation
 
 - Upstream: https://github.com/recastnavigation/recastnavigation
-- Version: git (4fef0446609b23d6ac180ed822817571525528a1, 2022)
+- Version: 1.6.0 (6dc1667f580357e8a2154c28b7867bea7e8ad3a7, 2023)
 - License: zlib
 
 Files extracted from upstream source:
