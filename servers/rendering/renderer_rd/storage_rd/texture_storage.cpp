@@ -1153,8 +1153,8 @@ void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &
 				image = image->duplicate();
 				image->convert(tex->validated_format);
 			}
-			all_data_size += images[i]->get_data().size();
-			images.push_back(image);
+			all_data_size += image->get_data().size();
+			images.write[i] = image;
 		}
 
 		all_data.resize(all_data_size); //consolidate all data here
