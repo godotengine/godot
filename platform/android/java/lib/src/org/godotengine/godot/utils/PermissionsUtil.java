@@ -32,6 +32,7 @@ package org.godotengine.godot.utils;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -52,7 +53,6 @@ import java.util.Set;
 /**
  * This class includes utility functions for Android permissions related operations.
  */
-
 public final class PermissionsUtil {
 	private static final String TAG = PermissionsUtil.class.getSimpleName();
 
@@ -193,13 +193,13 @@ public final class PermissionsUtil {
 
 	/**
 	 * With this function you can get the list of dangerous permissions that have been granted to the Android application.
-	 * @param activity the caller activity for this method.
+	 * @param context the caller context for this method.
 	 * @return granted permissions list
 	 */
-	public static String[] getGrantedPermissions(Activity activity) {
+	public static String[] getGrantedPermissions(Context context) {
 		String[] manifestPermissions;
 		try {
-			manifestPermissions = getManifestPermissions(activity);
+			manifestPermissions = getManifestPermissions(context);
 		} catch (PackageManager.NameNotFoundException e) {
 			e.printStackTrace();
 			return new String[0];
@@ -215,9 +215,9 @@ public final class PermissionsUtil {
 						grantedPermissions.add(manifestPermission);
 					}
 				} else {
-					PermissionInfo permissionInfo = getPermissionInfo(activity, manifestPermission);
+					PermissionInfo permissionInfo = getPermissionInfo(context, manifestPermission);
 					int protectionLevel = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? permissionInfo.getProtection() : permissionInfo.protectionLevel;
-					if (protectionLevel == PermissionInfo.PROTECTION_DANGEROUS && ContextCompat.checkSelfPermission(activity, manifestPermission) == PackageManager.PERMISSION_GRANTED) {
+					if (protectionLevel == PermissionInfo.PROTECTION_DANGEROUS && ContextCompat.checkSelfPermission(context, manifestPermission) == PackageManager.PERMISSION_GRANTED) {
 						grantedPermissions.add(manifestPermission);
 					}
 				}
@@ -232,13 +232,13 @@ public final class PermissionsUtil {
 
 	/**
 	 * Check if the given permission is in the AndroidManifest.xml file.
-	 * @param activity the caller activity for this method.
+	 * @param context the caller context for this method.
 	 * @param permission the permession to look for in the manifest file.
 	 * @return "true" if the permission is in the manifest file of the activity, "false" otherwise.
 	 */
-	public static boolean hasManifestPermission(Activity activity, String permission) {
+	public static boolean hasManifestPermission(Context context, String permission) {
 		try {
-			for (String p : getManifestPermissions(activity)) {
+			for (String p : getManifestPermissions(context)) {
 				if (permission.equals(p))
 					return true;
 			}
@@ -250,13 +250,13 @@ public final class PermissionsUtil {
 
 	/**
 	 * Returns the permissions defined in the AndroidManifest.xml file.
-	 * @param activity the caller activity for this method.
+	 * @param context the caller context for this method.
 	 * @return manifest permissions list
 	 * @throws PackageManager.NameNotFoundException the exception is thrown when a given package, application, or component name cannot be found.
 	 */
-	private static String[] getManifestPermissions(Activity activity) throws PackageManager.NameNotFoundException {
-		PackageManager packageManager = activity.getPackageManager();
-		PackageInfo packageInfo = packageManager.getPackageInfo(activity.getPackageName(), PackageManager.GET_PERMISSIONS);
+	private static String[] getManifestPermissions(Context context) throws PackageManager.NameNotFoundException {
+		PackageManager packageManager = context.getPackageManager();
+		PackageInfo packageInfo = packageManager.getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS);
 		if (packageInfo.requestedPermissions == null)
 			return new String[0];
 		return packageInfo.requestedPermissions;
@@ -264,13 +264,13 @@ public final class PermissionsUtil {
 
 	/**
 	 * Returns the information of the desired permission.
-	 * @param activity the caller activity for this method.
+	 * @param context the caller context for this method.
 	 * @param permission the name of the permission.
 	 * @return permission info object
 	 * @throws PackageManager.NameNotFoundException the exception is thrown when a given package, application, or component name cannot be found.
 	 */
-	private static PermissionInfo getPermissionInfo(Activity activity, String permission) throws PackageManager.NameNotFoundException {
-		PackageManager packageManager = activity.getPackageManager();
+	private static PermissionInfo getPermissionInfo(Context context, String permission) throws PackageManager.NameNotFoundException {
+		PackageManager packageManager = context.getPackageManager();
 		return packageManager.getPermissionInfo(permission, 0);
 	}
 }
