@@ -803,7 +803,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.5.2 (e47e674cd09583ff0503f0f6defd6d23d8b718d3, 2022)
+- Version: 1.5.5 (63779c798237346c2b245c546c40b72a5a5913fe, 2023)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
