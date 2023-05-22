@@ -306,6 +306,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 
 	VBoxContainer *atlas_merging_right_panel = memnew(VBoxContainer);
 	atlas_merging_right_panel->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	atlas_merging_right_panel->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	atlas_merging_h_split_container->add_child(atlas_merging_right_panel);
 
 	// Settings.
