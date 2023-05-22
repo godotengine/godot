@@ -1260,11 +1260,12 @@ void ItemList::_notification(int p_what) {
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
-						if (rtl) {
-							text_ofs.x = size.width - text_ofs.x - max_len;
-						}
+						float text_w = width - text_ofs.x;
+						items.write[i].text_buf->set_width(text_w);
 
-						items.write[i].text_buf->set_width(width - text_ofs.x);
+						if (rtl) {
+							text_ofs.x = size.width - width;
+						}
 
 						if (rtl) {
 							items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
