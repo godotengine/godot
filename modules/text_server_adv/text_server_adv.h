@@ -714,6 +714,7 @@ public:
 
 	MODBIND2(font_set_name, const RID &, const String &);
 	MODBIND1RC(String, font_get_name, const RID &);
+	MODBIND1RC(Dictionary, font_get_ot_name_strings, const RID &);
 
 	MODBIND2(font_set_antialiasing, const RID &, TextServer::FontAntialiasing);
 	MODBIND1RC(TextServer::FontAntialiasing, font_get_antialiasing, const RID &);

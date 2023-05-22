@@ -62,6 +62,7 @@ void Font::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_font_name"), &Font::get_font_name);
 	ClassDB::bind_method(D_METHOD("get_font_style_name"), &Font::get_font_style_name);
+	ClassDB::bind_method(D_METHOD("get_ot_name_strings"), &Font::get_ot_name_strings);
 	ClassDB::bind_method(D_METHOD("get_font_style"), &Font::get_font_style);
 	ClassDB::bind_method(D_METHOD("get_font_weight"), &Font::get_font_weight);
 	ClassDB::bind_method(D_METHOD("get_font_stretch"), &Font::get_font_stretch);
@@ -241,6 +242,10 @@ real_t Font::get_underline_thickness(int p_font_size) const {
 
 String Font::get_font_name() const {
 	return TS->font_get_name(_get_rid());
+}
+
+Dictionary Font::get_ot_name_strings() const {
+	return TS->font_get_ot_name_strings(_get_rid());
 }
 
 String Font::get_font_style_name() const {
