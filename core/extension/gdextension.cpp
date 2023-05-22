@@ -524,7 +524,7 @@ void GDExtension::deinitialize_library(InitializationLevel p_level) {
 }
 
 void GDExtension::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("open_library", "path", "entry_symbol", "use_legacy_interface"), &GDExtension::open_library);
+	ClassDB::bind_method(D_METHOD("open_library", "path", "entry_symbol", "use_legacy_interface"), &GDExtension::open_library, DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("open_library", "path", "entry_symbol"), &GDExtension::open_library_compat_76406);
 	ClassDB::bind_method(D_METHOD("close_library"), &GDExtension::close_library);
 	ClassDB::bind_method(D_METHOD("is_library_open"), &GDExtension::is_library_open);
