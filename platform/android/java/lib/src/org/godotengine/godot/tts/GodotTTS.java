@@ -62,8 +62,9 @@ public class GodotTTS extends UtteranceProgressListener {
 	final private static int EVENT_CANCEL = 2;
 	final private static int EVENT_BOUNDARY = 3;
 
-	final private TextToSpeech synth;
-	final private LinkedList<GodotUtterance> queue;
+	final private Activity activity;
+	private TextToSpeech synth;
+	private LinkedList<GodotUtterance> queue;
 	final private Object lock = new Object();
 	private GodotUtterance lastUtterance;
 
@@ -71,10 +72,7 @@ public class GodotTTS extends UtteranceProgressListener {
 	private boolean paused;
 
 	public GodotTTS(Activity p_activity) {
-		synth = new TextToSpeech(p_activity, null);
-		queue = new LinkedList<GodotUtterance>();
-
-		synth.setOnUtteranceProgressListener(this);
+		activity = p_activity;
 	}
 
 	private void updateTTS() {
@@ -184,6 +182,16 @@ public class GodotTTS extends UtteranceProgressListener {
 				updateTTS();
 			}
 		}
+	}
+
+	/**
+	 * Initialize synth and query.
+	 */
+	public void init() {
+		synth = new TextToSpeech(activity, null);
+		queue = new LinkedList<GodotUtterance>();
+
+		synth.setOnUtteranceProgressListener(this);
 	}
 
 	/**

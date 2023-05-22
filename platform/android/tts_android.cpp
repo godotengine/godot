@@ -35,9 +35,11 @@
 #include "string_android.h"
 #include "thread_jandroid.h"
 
+bool TTS_Android::initialized = false;
 jobject TTS_Android::tts = 0;
 jclass TTS_Android::cls = 0;
 
+jmethodID TTS_Android::_init = 0;
 jmethodID TTS_Android::_is_speaking = 0;
 jmethodID TTS_Android::_is_paused = 0;
 jmethodID TTS_Android::_get_voices = 0;
@@ -99,23 +101,33 @@ Vector<char16_t> TTS_Android::str_to_utf16(const String &p_string) {
 }
 
 void TTS_Android::setup(jobject p_tts) {
-	JNIEnv *env = get_jni_env();
+	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
+	if (tts_enabled) {
+		JNIEnv *env = get_jni_env();
 
-	tts = env->NewGlobalRef(p_tts);
+		tts = env->NewGlobalRef(p_tts);
 
-	jclass c = env->GetObjectClass(tts);
-	cls = (jclass)env->NewGlobalRef(c);
+		jclass c = env->GetObjectClass(tts);
+		cls = (jclass)env->NewGlobalRef(c);
 
-	_is_speaking = env->GetMethodID(cls, "isSpeaking", "()Z");
-	_is_paused = env->GetMethodID(cls, "isPaused", "()Z");
-	_get_voices = env->GetMethodID(cls, "getVoices", "()[Ljava/lang/String;");
-	_speak = env->GetMethodID(cls, "speak", "(Ljava/lang/String;Ljava/lang/String;IFFIZ)V");
-	_pause_speaking = env->GetMethodID(cls, "pauseSpeaking", "()V");
-	_resume_speaking = env->GetMethodID(cls, "resumeSpeaking", "()V");
-	_stop_speaking = env->GetMethodID(cls, "stopSpeaking", "()V");
+		_init = env->GetMethodID(cls, "init", "()V");
+		_is_speaking = env->GetMethodID(cls, "isSpeaking", "()Z");
+		_is_paused = env->GetMethodID(cls, "isPaused", "()Z");
+		_get_voices = env->GetMethodID(cls, "getVoices", "()[Ljava/lang/String;");
+		_speak = env->GetMethodID(cls, "speak", "(Ljava/lang/String;Ljava/lang/String;IFFIZ)V");
+		_pause_speaking = env->GetMethodID(cls, "pauseSpeaking", "()V");
+		_resume_speaking = env->GetMethodID(cls, "resumeSpeaking", "()V");
+		_stop_speaking = env->GetMethodID(cls, "stopSpeaking", "()V");
+
+		if (_init) {
+			env->CallVoidMethod(tts, _init);
+			initialized = true;
+		}
+	}
 }
 
 void TTS_Android::_java_utterance_callback(int p_event, int p_id, int p_pos) {
+	ERR_FAIL_COND_MSG(!initialized, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	if (ids.has(p_id)) {
 		int pos = 0;
 		if ((OS::TTSUtteranceEvent)p_event == OS::TTS_UTTERANCE_BOUNDARY) {
@@ -136,6 +148,7 @@ void TTS_Android::_java_utterance_callback(int p_event, int p_id, int p_pos) {
 }
 
 bool TTS_Android::is_speaking() {
+	ERR_FAIL_COND_V_MSG(!initialized, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	if (_is_speaking) {
 		JNIEnv *env = get_jni_env();
 
@@ -147,6 +160,7 @@ bool TTS_Android::is_speaking() {
 }
 
 bool TTS_Android::is_paused() {
+	ERR_FAIL_COND_V_MSG(!initialized, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	if (_is_paused) {
 		JNIEnv *env = get_jni_env();
 
@@ -158,6 +172,7 @@ bool TTS_Android::is_paused() {
 }
 
 Array TTS_Android::get_voices() {
+	ERR_FAIL_COND_V_MSG(!initialized, Array(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	Array list;
 	if (_get_voices) {
 		JNIEnv *env = get_jni_env();
@@ -185,6 +200,7 @@ Array TTS_Android::get_voices() {
 }
 
 void TTS_Android::speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	ERR_FAIL_COND_MSG(!initialized, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	if (p_interrupt) {
 		stop();
 	}
@@ -207,6 +223,7 @@ void TTS_Android::speak(const String &p_text, const String &p_voice, int p_volum
 }
 
 void TTS_Android::pause() {
+	ERR_FAIL_COND_MSG(!initialized, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	if (_pause_speaking) {
 		JNIEnv *env = get_jni_env();
 
@@ -216,6 +233,7 @@ void TTS_Android::pause() {
 }
 
 void TTS_Android::resume() {
+	ERR_FAIL_COND_MSG(!initialized, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	if (_resume_speaking) {
 		JNIEnv *env = get_jni_env();
 
@@ -225,6 +243,7 @@ void TTS_Android::resume() {
 }
 
 void TTS_Android::stop() {
+	ERR_FAIL_COND_MSG(!initialized, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	const int *k = NULL;
 	while ((k = ids.next(k))) {
 		OS::get_singleton()->tts_post_utterance_event(OS::TTS_UTTERANCE_CANCELED, *k);
