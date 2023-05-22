@@ -52,13 +52,17 @@ protected:
 	// During group processing, these are thread-safe.
 	// Outside group processing, these avoid the cost of sync by working as plain primitive types.
 	union MTFlag {
-		SafeFlag mt{};
+		SafeFlag mt;
 		bool st;
+		MTFlag() :
+				mt{} {}
 	};
 	template <class T>
 	union MTNumeric {
-		SafeNumeric<T> mt{};
+		SafeNumeric<T> mt;
 		T st;
+		MTNumeric() :
+				mt{} {}
 	};
 
 public:
