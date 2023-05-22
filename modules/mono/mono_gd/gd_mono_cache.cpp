@@ -52,6 +52,7 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(SignalAwaiter, SignalCallback);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, InvokeWithVariantArgs);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, DelegateEquals);
+	CHECK_CALLBACK_NOT_NULL(DelegateUtils, DelegateHash);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, TrySerializeDelegateWithGCHandle);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, TryDeserializeDelegateWithGCHandle);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, FrameCallback);
