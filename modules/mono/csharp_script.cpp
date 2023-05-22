@@ -1303,6 +1303,15 @@ void CSharpLanguage::_instance_binding_free_callback(void *, void *, void *p_bin
 GDExtensionBool CSharpLanguage::_instance_binding_reference_callback(void *p_token, void *p_binding, GDExtensionBool p_reference) {
 	CRASH_COND(!p_binding);
 
+	if (GDMono::get_singleton() == nullptr) {
+#ifdef DEBUG_ENABLED
+		CSharpLanguage *csharp_lang = CSharpLanguage::get_singleton();
+		CRASH_COND(csharp_lang && !csharp_lang->script_bindings.is_empty());
+#endif
+		// Mono runtime finalized, all the gchandle bindings were already released
+		return true;
+	}
+
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)p_binding)->get();
 
 	RefCounted *rc_owner = Object::cast_to<RefCounted>(script_binding.owner);
