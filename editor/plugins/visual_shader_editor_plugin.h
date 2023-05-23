@@ -382,6 +382,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _delete_node_request(int p_type, int p_node);
 	void _delete_nodes_request(const TypedArray<StringName> &p_nodes);
 
+	void _select_all_nodes();
+
 	void _node_changed(int p_id);
 
 	void _edit_port_default_input(Object *p_button, int p_node, int p_port);
@@ -520,6 +522,8 @@ class VisualShaderEditor : public VBoxContainer {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void add_plugin(const Ref<VisualShaderNodePlugin> &p_plugin);
