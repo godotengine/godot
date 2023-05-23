@@ -229,10 +229,12 @@ public:
 		m_min[0] = BT_MIN3(V1[0], V2[0], V3[0]);
 		m_min[1] = BT_MIN3(V1[1], V2[1], V3[1]);
 		m_min[2] = BT_MIN3(V1[2], V2[2], V3[2]);
+		m_min[3] = 0.f;
 
 		m_max[0] = BT_MAX3(V1[0], V2[0], V3[0]);
 		m_max[1] = BT_MAX3(V1[1], V2[1], V3[1]);
 		m_max[2] = BT_MAX3(V1[2], V2[2], V3[2]);
+		m_max[3] = 0.f;
 	}
 
 	btAABB(const btVector3 &V1,
@@ -243,10 +245,12 @@ public:
 		m_min[0] = BT_MIN3(V1[0], V2[0], V3[0]);
 		m_min[1] = BT_MIN3(V1[1], V2[1], V3[1]);
 		m_min[2] = BT_MIN3(V1[2], V2[2], V3[2]);
+		m_min[3] = 0.f;
 
 		m_max[0] = BT_MAX3(V1[0], V2[0], V3[0]);
 		m_max[1] = BT_MAX3(V1[1], V2[1], V3[1]);
 		m_max[2] = BT_MAX3(V1[2], V2[2], V3[2]);
+		m_max[3] = 0.f;
 
 		m_min[0] -= margin;
 		m_min[1] -= margin;
@@ -275,9 +279,11 @@ public:
 		m_min[0] = SIMD_INFINITY;
 		m_min[1] = SIMD_INFINITY;
 		m_min[2] = SIMD_INFINITY;
+		m_min[3] = 0.f;
 		m_max[0] = -SIMD_INFINITY;
 		m_max[1] = -SIMD_INFINITY;
 		m_max[2] = -SIMD_INFINITY;
+		m_max[3] = 0.f;
 	}
 
 	SIMD_FORCE_INLINE void increment_margin(btScalar margin)
@@ -295,10 +301,12 @@ public:
 		m_min[0] = other.m_min[0] - margin;
 		m_min[1] = other.m_min[1] - margin;
 		m_min[2] = other.m_min[2] - margin;
+		m_min[3] = 0.f;
 
 		m_max[0] = other.m_max[0] + margin;
 		m_max[1] = other.m_max[1] + margin;
 		m_max[2] = other.m_max[2] + margin;
+		m_max[3] = 0.f;
 	}
 
 	template <typename CLASS_POINT>
@@ -310,10 +318,12 @@ public:
 		m_min[0] = BT_MIN3(V1[0], V2[0], V3[0]);
 		m_min[1] = BT_MIN3(V1[1], V2[1], V3[1]);
 		m_min[2] = BT_MIN3(V1[2], V2[2], V3[2]);
+		m_min[3] = 0.f;
 
 		m_max[0] = BT_MAX3(V1[0], V2[0], V3[0]);
 		m_max[1] = BT_MAX3(V1[1], V2[1], V3[1]);
 		m_max[2] = BT_MAX3(V1[2], V2[2], V3[2]);
+		m_max[3] = 0.f;
 	}
 
 	template <typename CLASS_POINT>
@@ -325,10 +335,12 @@ public:
 		m_min[0] = BT_MIN3(V1[0], V2[0], V3[0]);
 		m_min[1] = BT_MIN3(V1[1], V2[1], V3[1]);
 		m_min[2] = BT_MIN3(V1[2], V2[2], V3[2]);
+		m_min[3] = 0.f;
 
 		m_max[0] = BT_MAX3(V1[0], V2[0], V3[0]);
 		m_max[1] = BT_MAX3(V1[1], V2[1], V3[1]);
 		m_max[2] = BT_MAX3(V1[2], V2[2], V3[2]);
+		m_max[3] = 0.f;
 
 		m_min[0] -= margin;
 		m_min[1] -= margin;

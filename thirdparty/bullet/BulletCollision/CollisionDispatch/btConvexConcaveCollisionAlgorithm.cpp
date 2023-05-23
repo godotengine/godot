@@ -103,7 +103,8 @@ void btConvexTriangleCallback::processTriangle(btVector3* triangle, int partId, 
 
 	if (m_convexBodyWrap->getCollisionShape()->isConvex())
 	{
-#ifndef BT_DISABLE_CONVEX_CONCAVE_EARLY_OUT		
+#ifdef BT_ENABLE_CONVEX_CONCAVE_EARLY_OUT
+    //todo: check this issue https://github.com/bulletphysics/bullet3/issues/4263
 		//an early out optimisation if the object is separated from the triangle
 		//projected on the triangle normal)
 		{
@@ -139,7 +140,7 @@ void btConvexTriangleCallback::processTriangle(btVector3* triangle, int partId, 
 			if (dist > contact_threshold)
 				return;
         }
-#endif //BT_DISABLE_CONVEX_CONCAVE_EARLY_OUT
+#endif //BT_ENABLE_CONVEX_CONCAVE_EARLY_OUT
 
 		btTriangleShape tm(triangle[0], triangle[1], triangle[2]);
 		tm.setMargin(m_collisionMarginTriangle);

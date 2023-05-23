@@ -678,7 +678,9 @@ HullError HullLibrary::CreateConvexHull(const HullDesc &desc,  // describes the 
 	if (vcount < 8) vcount = 8;
 
 	btAlignedObjectArray<btVector3> vertexSource;
-	vertexSource.resize(static_cast<int>(vcount));
+	btVector3 zero;
+	zero.setZero();
+	vertexSource.resize(static_cast<int>(vcount), zero);
 
 	btVector3 scale;
 

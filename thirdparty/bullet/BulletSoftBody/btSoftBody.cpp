@@ -2807,7 +2807,7 @@ bool btSoftBody::checkDeformableContact(const btCollisionObjectWrapper* colObjWr
 //
 // Compute barycentric coordinates (u, v, w) for
 // point p with respect to triangle (a, b, c)
-static void getBarycentric(const btVector3& p, btVector3& a, btVector3& b, btVector3& c, btVector3& bary)
+static void getBarycentric(const btVector3& p, const btVector3& a, const btVector3& b, const btVector3& c, btVector3& bary)
 {
 	btVector3 v0 = b - a, v1 = c - a, v2 = p - a;
 	btScalar d00 = v0.dot(v0);
@@ -2816,8 +2816,17 @@ static void getBarycentric(const btVector3& p, btVector3& a, btVector3& b, btVec
 	btScalar d20 = v2.dot(v0);
 	btScalar d21 = v2.dot(v1);
 	btScalar denom = d00 * d11 - d01 * d01;
-	bary.setY((d11 * d20 - d01 * d21) / denom);
-	bary.setZ((d00 * d21 - d01 * d20) / denom);
+	// In the case of a degenerate triangle, pick a vertex.
+	if (btFabs(denom) < SIMD_EPSILON) 
+	{
+		bary.setY(btScalar(0.0));
+		bary.setZ(btScalar(0.0));
+	} 
+	else 
+	{
+		bary.setY((d11 * d20 - d01 * d21) / denom);
+		bary.setZ((d00 * d21 - d01 * d20) / denom);
+  	}
 	bary.setX(btScalar(1) - bary.getY() - bary.getZ());
 }
 

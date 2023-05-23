@@ -71,8 +71,8 @@ public:
 					const btVector3& normal,
 					btScalar distance) : m_localPointA(pointA),
 										 m_localPointB(pointB),
-                     m_positionWorldOnB(0,0,0),
-                     m_positionWorldOnA(0,0,0),
+										 m_positionWorldOnB(0,0,0),
+										 m_positionWorldOnA(0,0,0),
 										 m_normalWorldOnB(normal),
 										 m_distance1(distance),
 										 m_combinedFriction(btScalar(0.)),
@@ -95,8 +95,8 @@ public:
 										 m_contactERP(0.f),
 										 m_frictionCFM(0.f),
 										 m_lifeTime(0),
-            m_lateralFrictionDir1(0,0,0),
-            m_lateralFrictionDir2(0,0,0)
+										 m_lateralFrictionDir1(0,0,0),
+										 m_lateralFrictionDir2(0,0,0)
 	{
 	}
 

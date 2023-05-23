@@ -20,7 +20,7 @@ Files extracted from upstream source:
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: 3.24 (7dee3436e747958e7088dfdcea0e4ae031ce619e, 2022)
+- Version: 3.25 (2c204c49e56ed15ec5fcfa71d199ab6d6570b3f5, 2022)
 - License: zlib
 
 Files extracted from upstream source:
@@ -28,8 +28,6 @@ Files extracted from upstream source:
 - `src/*` minus `Bullet3*`, `BulletInverseDynamics` and `clew` folders,
   and CMakeLists.txt and premake4.lua files
 - `LICENSE.txt`, and `VERSION` as `VERSION.txt`
-
-Includes some patches in the `patches` folder which have been sent upstream.
 
 
 ## certs
