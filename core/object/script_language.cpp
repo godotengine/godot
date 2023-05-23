@@ -146,6 +146,7 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_property_default_value", "property"), &Script::_get_property_default_value);
 
 	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
+	ClassDB::bind_method(D_METHOD("is_abstract"), &Script::is_abstract);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
 }

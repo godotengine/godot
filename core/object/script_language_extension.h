@@ -110,6 +110,12 @@ public:
 	EXBIND0RC(bool, is_tool)
 	EXBIND0RC(bool, is_valid)
 
+	virtual bool is_abstract() const override {
+		bool abst;
+		return GDVIRTUAL_CALL(_is_abstract, abst) && abst;
+	}
+	GDVIRTUAL0RC(bool, _is_abstract)
+
 	EXBIND0RC(ScriptLanguage *, get_language)
 	EXBIND1RC(bool, has_script_signal, const StringName &)
 

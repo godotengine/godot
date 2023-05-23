@@ -63,6 +63,7 @@ class CSharpScript : public Script {
 
 	bool tool = false;
 	bool global_class = false;
+	bool abstract_class = false;
 	bool valid = false;
 	bool reload_invalidated = false;
 
@@ -187,6 +188,9 @@ public:
 	}
 	bool is_valid() const override {
 		return valid;
+	}
+	bool is_abstract() const override {
+		return abstract_class;
 	}
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
