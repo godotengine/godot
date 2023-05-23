@@ -105,10 +105,11 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 				// Create tiles and alternatives, then copy their properties.
 				for (int alternative_index = 0; alternative_index < atlas_source->get_alternative_tiles_count(tile_mapping.key); alternative_index++) {
 					int alternative_id = atlas_source->get_alternative_tile_id(tile_mapping.key, alternative_index);
+					int changed_id = -1;
 					if (alternative_id == 0) {
 						merged->create_tile(tile_mapping.value, atlas_source->get_tile_size_in_atlas(tile_mapping.key));
 					} else {
-						merged->create_alternative_tile(tile_mapping.value, alternative_index);
+						changed_id = merged->create_alternative_tile(tile_mapping.value, alternative_index);
 					}
 
 					// Copy the properties.
@@ -116,7 +117,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 					List<PropertyInfo> properties;
 					src_tile_data->get_property_list(&properties);
 
-					TileData *dst_tile_data = merged->get_tile_data(tile_mapping.value, alternative_id);
+					TileData *dst_tile_data = merged->get_tile_data(tile_mapping.value, changed_id == -1 ? alternative_id : changed_id);
 					for (PropertyInfo property : properties) {
 						if (!(property.usage & PROPERTY_USAGE_STORAGE)) {
 							continue;
