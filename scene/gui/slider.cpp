@@ -241,6 +241,10 @@ void Slider::set_ticks_on_borders(bool _tob) {
 }
 
 void Slider::set_editable(bool p_editable) {
+	if (editable != p_editable) {
+		grab.active = false;
+	}
+
 	editable = p_editable;
 	update();
 }
