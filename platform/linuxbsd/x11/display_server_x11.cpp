@@ -1296,7 +1296,7 @@ Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
 			}
 		} else {
 			XFree(image);
-			ERR_FAIL_V_MSG(Ref<Image>(), vformat("XImage with RGB mask %x %x %x and depth %d is not supported.", image->red_mask, image->green_mask, image->blue_mask, image->bits_per_pixel));
+			ERR_FAIL_V_MSG(Ref<Image>(), vformat("XImage with RGB mask %x %x %x and depth %d is not supported.", (uint64_t)image->red_mask, (uint64_t)image->green_mask, (uint64_t)image->blue_mask, (int64_t)image->bits_per_pixel));
 		}
 		img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
 		XFree(image);
