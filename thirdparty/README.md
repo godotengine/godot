@@ -198,7 +198,7 @@ commits.
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad
-- Version: 2.0.2 (f237a2bfcec0d9b82b90ec9af4af265c40de7183, 2022)
+- Version: 2.0.4 (d08b1aa01f8fe57498f04d47b5fa8c48725be877, 2023)
 - License: CC0 1.0 and Apache 2.0
 
 Files extracted from upstream source:
@@ -210,6 +210,9 @@ Files generated from [upstream web instance](https://gen.glad.sh/):
 - `glad/gl.h`
 - `glx.c`
 - `glad/glx.h`
+
+See the permalinks in `glad/gl.h` and `glad/glx.h` to regenrate the files with
+a new version of the web instance.
 
 
 ## glslang
