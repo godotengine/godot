@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  navigation_mesh_generator.h                                           */
+/*  navigation_mesh_source_geometry_data_3d.h                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_MESH_GENERATOR_H
-#define NAVIGATION_MESH_GENERATOR_H
+#ifndef NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_3D_H
+#define NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_3D_H
 
-#ifndef _3D_DISABLED
+#include "scene/3d/visual_instance_3d.h"
 
-#include "scene/3d/navigation_region_3d.h"
-#include "scene/resources/navigation_mesh.h"
+class NavigationMeshSourceGeometryData3D : public Resource {
+	GDCLASS(NavigationMeshSourceGeometryData3D, Resource);
 
-#include <Recast.h>
-
-class NavigationMeshSourceGeometryData3D;
-
-class NavigationMeshGenerator : public Object {
-	GDCLASS(NavigationMeshGenerator, Object);
-	Mutex generator_mutex;
-
-	static NavigationMeshGenerator *singleton;
-
-	HashSet<Ref<NavigationMesh>> baking_navmeshes;
+	Vector<float> vertices;
+	Vector<int> indices;
 
 protected:
 	static void _bind_methods();
 
-	static void _add_vertex(const Vector3 &p_vec3, Vector<float> &p_vertices);
-	static void _add_mesh(const Ref<Mesh> &p_mesh, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices);
-	static void _add_mesh_array(const Array &p_array, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices);
-	static void _add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices);
-	static void _parse_geometry(const Transform3D &p_navmesh_transform, Node *p_node, Vector<float> &p_vertices, Vector<int> &p_indices, NavigationMesh::ParsedGeometryType p_generate_from, uint32_t p_collision_mask, bool p_recurse_children);
+private:
+	void _add_vertex(const Vector3 &p_vec3);
+	void _add_mesh(const Ref<Mesh> &p_mesh, const Transform3D &p_xform);
+	void _add_mesh_array(const Array &p_array, const Transform3D &p_xform);
+	void _add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform);
 
 public:
-	static NavigationMeshGenerator *get_singleton();
+	// kept root node transform here on the geometry data
+	// if we add this transform to all exposed functions we need to break comp on all functions later
+	// when navmesh changes from global transform to relative to navregion
+	// but if it stays here we can just remove it and change the internal functions only
+	Transform3D root_node_transform;
 
-	NavigationMeshGenerator();
-	~NavigationMeshGenerator();
+	void set_vertices(const Vector<float> &p_vertices);
+	const Vector<float> &get_vertices() const { return vertices; }
 
-	void bake(const Ref<NavigationMesh> &p_navigation_mesh, Node *p_root_node);
-	void clear(Ref<NavigationMesh> p_navigation_mesh);
+	void set_indices(const Vector<int> &p_indices);
+	const Vector<int> &get_indices() const { return indices; }
 
-	void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable());
-	void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable());
+	bool has_data() { return vertices.size() && indices.size(); };
+	void clear();
+
+	void add_mesh(const Ref<Mesh> &p_mesh, const Transform3D &p_xform);
+	void add_mesh_array(const Array &p_mesh_array, const Transform3D &p_xform);
+	void add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform);
+
+	NavigationMeshSourceGeometryData3D();
+	~NavigationMeshSourceGeometryData3D();
 };
 
-#endif
-
-#endif // NAVIGATION_MESH_GENERATOR_H
+#endif // NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_3D_H

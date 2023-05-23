@@ -31,6 +31,7 @@
 #include "navigation_region_3d.h"
 
 #include "mesh_instance_3d.h"
+#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationRegion3D::set_enabled(bool p_enabled) {
@@ -263,6 +264,7 @@ Ref<NavigationMesh> NavigationRegion3D::get_navigation_mesh() const {
 
 struct BakeThreadsArgs {
 	NavigationRegion3D *nav_region = nullptr;
+	Ref<NavigationMeshSourceGeometryData3D> source_geometry_data;
 };
 
 void _bake_navigation_mesh(void *p_user_data) {
@@ -270,8 +272,9 @@ void _bake_navigation_mesh(void *p_user_data) {
 
 	if (args->nav_region->get_navigation_mesh().is_valid()) {
 		Ref<NavigationMesh> nav_mesh = args->nav_region->get_navigation_mesh()->duplicate();
+		Ref<NavigationMeshSourceGeometryData3D> source_geometry_data = args->source_geometry_data;
 
-		NavigationServer3D::get_singleton()->region_bake_navigation_mesh(nav_mesh, args->nav_region);
+		NavigationServer3D::get_singleton()->bake_from_source_geometry_data(nav_mesh, source_geometry_data);
 		args->nav_region->call_deferred(SNAME("_bake_finished"), nav_mesh);
 		memdelete(args);
 	} else {
@@ -282,10 +285,18 @@ void _bake_navigation_mesh(void *p_user_data) {
 }
 
 void NavigationRegion3D::bake_navigation_mesh(bool p_on_thread) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "The SceneTree can only be parsed on the main thread. Call this function from the main thread or use call_deferred().");
+	ERR_FAIL_COND_MSG(!navigation_mesh.is_valid(), "Baking the navigation mesh requires a valid `NavigationMesh` resource.");
 	ERR_FAIL_COND_MSG(bake_thread.is_started(), "Unable to start another bake request. The navigation mesh bake thread is already baking a navigation mesh.");
+
+	Ref<NavigationMeshSourceGeometryData3D> source_geometry_data;
+	source_geometry_data.instantiate();
+
+	NavigationServer3D::get_singleton()->parse_source_geometry_data(navigation_mesh, source_geometry_data, this);
 
 	BakeThreadsArgs *args = memnew(BakeThreadsArgs);
 	args->nav_region = this;
+	args->source_geometry_data = source_geometry_data;
 
 	if (p_on_thread) {
 		bake_thread.start(_bake_navigation_mesh, args);

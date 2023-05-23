@@ -41,6 +41,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
+#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 
 void NavigationMeshEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -98,7 +99,10 @@ void NavigationMeshEditor::_bake_pressed() {
 	}
 
 	NavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
-	NavigationMeshGenerator::get_singleton()->bake(node->get_navigation_mesh(), node);
+	Ref<NavigationMeshSourceGeometryData3D> source_geometry_data;
+	source_geometry_data.instantiate();
+	NavigationMeshGenerator::get_singleton()->parse_source_geometry_data(node->get_navigation_mesh(), source_geometry_data, node);
+	NavigationMeshGenerator::get_singleton()->bake_from_source_geometry_data(node->get_navigation_mesh(), source_geometry_data);
 
 	node->update_gizmos();
 }
