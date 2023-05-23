@@ -65,7 +65,7 @@ void GLTFSkin::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skeleton"), "set_skeleton", "get_skeleton"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "joint_i_to_bone_i", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "set_joint_i_to_bone_i", "get_joint_i_to_bone_i"); // RBMap<int,
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "joint_i_to_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "set_joint_i_to_name", "get_joint_i_to_name"); // RBMap<int,
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "godot_skin"), "set_godot_skin", "get_godot_skin"); // Ref<Skin>
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "godot_skin", PROPERTY_HINT_RESOURCE_TYPE, "Skin"), "set_godot_skin", "get_godot_skin"); // Ref<Skin>
 }
 
 GLTFNodeIndex GLTFSkin::get_skin_root() {
