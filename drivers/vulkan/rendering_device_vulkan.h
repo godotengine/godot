@@ -32,7 +32,7 @@
 #define RENDERING_DEVICE_VULKAN_H
 
 #include "core/os/thread_safe.h"
-#include "core/os/thread.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/rid_owner.h"
@@ -791,11 +791,14 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE; // Not owned, needed for push constants.
 		VkPipeline pipeline = VK_NULL_HANDLE;
 		VkPipeline optimized_pipeline = VK_NULL_HANDLE;
+		Vector<VkPipeline> library_deps;
 		uint32_t push_constant_size = 0;
 		uint32_t push_constant_stages_mask = 0;
 	};
 
 	RID_Owner<RenderPipeline, true> render_pipeline_owner;
+
+	Vector<RID> optimize_pipeline_queue;
 
 	struct ComputePipeline {
 		RID shader;
@@ -810,9 +813,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	RID_Owner<ComputePipeline, true> compute_pipeline_owner;
 
 	struct OptimizedPipelineInfo{
-		VkDevice* device = nullptr;
-		RenderPipeline* render_pipeline = nullptr;
-		VkGraphicsPipelineCreateInfo* create_info = nullptr;
+		VkDevice device;
+		RID_Owner<RenderPipeline, true> *render_pipeline_owner;
+		Vector<RID> *optimize_pipeline_queue;
 	};
 
 	struct PipelineLibraryKey{
@@ -1420,8 +1423,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 #endif
 
 	VkSampleCountFlagBits _ensure_supported_sample_count(TextureSamples p_requested_sample_count) const;
-	Thread optimized_pipeline_thread;
-	static void create_optimized_render_pipeline(void* p_pipelinedata);
+	static void create_optimized_render_pipeline(void *p_arg, uint32_t p_thread);
 
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());

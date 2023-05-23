@@ -6104,10 +6104,36 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer, uint32_t p_
 /**** RENDER PIPELINE ****/
 /*************************/
 
-void RenderingDeviceVulkan::create_optimized_render_pipeline(void* p_pipelinedata){
-	OptimizedPipelineInfo *info = (OptimizedPipelineInfo *)p_pipelinedata;
-	info->create_info->flags = VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT;
-	vkCreateGraphicsPipelines(*info->device, VK_NULL_HANDLE, 1, info->create_info, nullptr, &info->render_pipeline->optimized_pipeline);
+void RenderingDeviceVulkan::create_optimized_render_pipeline(void *p_arg, uint32_t p_thread){
+	OptimizedPipelineInfo *info = (OptimizedPipelineInfo *)p_arg;
+	RID id = info->optimize_pipeline_queue->get(p_thread % info->optimize_pipeline_queue->size());
+	print_line("thread: %d RID:%d", p_thread,id);
+	RenderPipeline *pipeline = info->render_pipeline_owner->get_or_null(id);
+	if(pipeline == nullptr){
+		return;
+	}
+	if(pipeline->optimized_pipeline != VK_NULL_HANDLE) {
+		info->optimize_pipeline_queue->erase(id);
+		return;
+	}
+	VkPipelineLibraryCreateInfoKHR pipeline_library_create_info = {};
+	pipeline_library_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR;
+	pipeline_library_create_info.libraryCount = pipeline->library_deps.size();
+	pipeline_library_create_info.pLibraries = pipeline->library_deps.ptr();
+
+	//TODO: re-enable VRS
+	VkGraphicsPipelineCreateInfo graphics_pipeline_create_info = {};
+	graphics_pipeline_create_info.pNext = &pipeline_library_create_info;
+	graphics_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	graphics_pipeline_create_info.flags = VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT;
+	graphics_pipeline_create_info.pNext = &pipeline_library_create_info;
+	graphics_pipeline_create_info.layout = pipeline->pipeline_layout;
+	graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
+	graphics_pipeline_create_info.basePipelineIndex = 0;
+
+	vkCreateGraphicsPipelines(info->device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &pipeline->optimized_pipeline);
+	info->optimize_pipeline_queue->erase(id);
+	//ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + optimize_pipeline_queue.write[i].shader.get_id() + "'.");
 }
 
 RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, BitField<PipelineDynamicStateFlags> p_dynamic_state_flags, uint32_t p_for_render_pass, const Vector<PipelineSpecializationConstant> &p_specialization_constants) {
@@ -6505,8 +6531,6 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	}
 
 	Vector<VkPipeline> libraries;
-	VkPipelineLibraryCreateInfoKHR pipeline_library_create_info = {};
-	pipeline_library_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR;
 
 	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/graphics_pipeline_library/use_graphics_pipeline_library")){
 		Vector<VkPipelineShaderStageCreateInfo> pre_raster_stages;
@@ -6646,11 +6670,13 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		}
 
 		// Link the library parts into a graphics pipeline
+		VkPipelineLibraryCreateInfoKHR pipeline_library_create_info = {};
+		pipeline_library_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR;
 		pipeline_library_create_info.libraryCount = libraries.size();
 		pipeline_library_create_info.pLibraries = libraries.ptr();
 
 		//TODO: re-enable VRS
-		graphics_pipeline_create_info.flags = VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT;
+		graphics_pipeline_create_info.flags = 0;
 		graphics_pipeline_create_info.pNext = &pipeline_library_create_info;
 		graphics_pipeline_create_info.layout = shader->pipeline_layout;
 		graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
@@ -6681,6 +6707,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	}
 
 	RenderPipeline pipeline;
+	pipeline.library_deps = libraries;
 	VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &pipeline.pipeline);
 	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
 
@@ -6716,21 +6743,15 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	};
 	pipeline.validation.primitive_minimum = primitive_minimum[p_render_primitive];
 #endif
-	// if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/graphics_pipeline_library/use_graphics_pipeline_library")){
-	// 	OptimizedPipelineInfo optimized_pipeline_info = {};
-	// 	optimized_pipeline_info.device = &device;
-	// 	optimized_pipeline_info.render_pipeline = &pipeline;
-	// 	optimized_pipeline_info.create_info = &graphics_pipeline_create_info;
-	// 	optimized_pipeline_thread.start(create_optimized_render_pipeline, &optimized_pipeline_info);
-	// 	optimized_pipeline_thread.wait_to_finish();
-	// }
-	// Create ID to associate with this pipeline.
 	RID id = render_pipeline_owner.make_rid(pipeline);
 #ifdef DEV_ENABLED
 	set_resource_name(id, "RID:" + itos(id.get_id()));
 #endif
 	// Now add all the dependencies.
 	_add_dependency(id, p_shader);
+	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/graphics_pipeline_library/use_graphics_pipeline_library")) {
+		optimize_pipeline_queue.append(id);
+	}
 	return id;
 }
 
@@ -8875,6 +8896,23 @@ VkSampleCountFlagBits RenderingDeviceVulkan::_ensure_supported_sample_count(Text
 
 void RenderingDeviceVulkan::swap_buffers() {
 	ERR_FAIL_COND_MSG(local_device.is_valid(), "Local devices can't swap buffers.");
+	OptimizedPipelineInfo pipeline_info = {};
+	pipeline_info.device = device;
+	pipeline_info.optimize_pipeline_queue = &optimize_pipeline_queue;
+	pipeline_info.render_pipeline_owner = &render_pipeline_owner;
+	for (int i=0; i < optimize_pipeline_queue.size(); i++) {
+		RenderPipeline *pipeline = render_pipeline_owner.get_or_null(optimize_pipeline_queue[i]);
+		if(pipeline == nullptr){
+			continue;
+		}
+		if(pipeline->optimized_pipeline != VK_NULL_HANDLE) {
+			optimize_pipeline_queue.erase(optimize_pipeline_queue[i]);
+		}
+	}
+	if(!optimize_pipeline_queue.is_empty()) {
+		WorkerThreadPool::GroupID groupID = WorkerThreadPool::get_singleton()->add_native_group_task(create_optimized_render_pipeline, &pipeline_info, WorkerThreadPool::get_singleton()->get_thread_count(), -1, true);
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(groupID);
+	}
 	_THREAD_SAFE_METHOD_
 
 	_finalize_command_bufers();
