@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		CollisionObject is the base class for physics objects. It can hold any number of collision [Shape]s. Each shape must be assigned to a [i]shape owner[/i]. The CollisionObject can have any number of shape owners. Shape owners are not nodes and do not appear in the editor, but are accessible through code using the [code]shape_owner_*[/code] methods.
+		[b]Warning:[/b] With a non-uniform scale this node will probably not function as expected. Please make sure to keep its scale uniform (i.e. the same on all axes), and change the size(s) of its collision shape(s) instead.
 	</description>
 	<tutorials>
 	</tutorials>

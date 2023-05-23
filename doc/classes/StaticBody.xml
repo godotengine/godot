@@ -7,8 +7,9 @@
 		Static body for 3D physics.
 		A static body is a simple body that doesn't move under physics simulation, i.e. it can't be moved by external forces or contacts but its transformation can still be updated manually by the user. It is ideal for implementing objects in the environment, such as walls or platforms. In contrast to [RigidBody], it doesn't consume any CPU resources as long as they don't move.
 		They have extra functionalities to move and affect other bodies:
-		[b]Static transform change:[/b] Static bodies can be moved by animation or script. In this case, they are just teleported and don't affect other bodies on their path.
-		[b]Constant velocity:[/b] When [member constant_linear_velocity] or [member constant_angular_velocity] is set, static bodies don't move themselves but affect touching bodies as if they were moving. This is useful for simulating conveyor belts or conveyor wheels.
+		[i]Static transform change:[/i] Static bodies can be moved by animation or script. In this case, they are just teleported and don't affect other bodies on their path.
+		[i]Constant velocity:[/i] When [member constant_linear_velocity] or [member constant_angular_velocity] is set, static bodies don't move themselves but affect touching bodies as if they were moving. This is useful for simulating conveyor belts or conveyor wheels.
+		[b]Warning:[/b] With a non-uniform scale this node will probably not function as expected. Please make sure to keep its scale uniform (i.e. the same on all axes), and change the size(s) of its collision shape(s) instead.
 	</description>
 	<tutorials>
 		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>

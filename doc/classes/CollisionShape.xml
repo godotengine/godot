@@ -6,6 +6,7 @@
 	<description>
 		Editor facility for creating and editing collision shapes in 3D space. Set the [member shape] property to configure the shape. [b]IMPORTANT[/b]: this is an Editor-only helper to create shapes, use [method CollisionObject.shape_owner_get_shape] to get the actual shape.
 		You can use this node to represent all sorts of collision shapes, for example, add this to an [Area] to give it a detection shape, or add it to a [PhysicsBody] to create a solid object.
+		[b]Warning:[/b] A non-uniformly scaled CollisionShape3D node will probably not function as expected. Please make sure to keep its scale uniform (i.e. the same on all axes), and change the size of its [member shape] resource instead.
 	</description>
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
