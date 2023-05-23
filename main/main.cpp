@@ -512,6 +512,7 @@ void Main::print_help(const char *p_binary) {
 // are initialized here. This also combines `Main::setup2()` initialization.
 Error Main::test_setup() {
 	Thread::make_main_thread();
+	set_current_thread_safe_for_nodes(true);
 
 	OS::get_singleton()->initialize();
 
@@ -723,6 +724,7 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
 
 Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_phase) {
 	Thread::make_main_thread();
+	set_current_thread_safe_for_nodes(true);
 
 	OS::get_singleton()->initialize();
 
@@ -1990,6 +1992,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	engine->startup_benchmark_end_measure(); // core
 
 	Thread::release_main_thread(); // If setup2() is called from another thread, that one will become main thread, so preventively release this one.
+	set_current_thread_safe_for_nodes(false);
 
 	if (p_second_phase) {
 		return setup2();
@@ -2055,6 +2058,7 @@ error:
 
 Error Main::setup2() {
 	Thread::make_main_thread(); // Make whatever thread call this the main thread.
+	set_current_thread_safe_for_nodes(true);
 
 	// Print engine name and version
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
