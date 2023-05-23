@@ -144,7 +144,7 @@ void PropertySelector::_update_search() {
 			search_options->get_theme_icon(SNAME("AABB"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Basis"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Variant"), SNAME("EditorIcons")), // Projection, needs icon.
+			search_options->get_theme_icon(SNAME("Projection"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("StringName"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("NodePath"), SNAME("EditorIcons")),
