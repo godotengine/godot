@@ -383,15 +383,12 @@ uint64_t Skeleton3D::get_version() const {
 }
 
 void Skeleton3D::add_bone(const String &p_name) {
-	ERR_FAIL_COND(p_name.is_empty() || p_name.contains(":") || p_name.contains("/"));
-
-	for (int i = 0; i < bones.size(); i++) {
-		ERR_FAIL_COND(bones[i].name == p_name);
-	}
+	ERR_FAIL_COND(p_name.is_empty() || p_name.contains(":") || p_name.contains("/") || name_to_bone_index.has(p_name));
 
 	Bone b;
 	b.name = p_name;
 	bones.push_back(b);
+	name_to_bone_index.insert(p_name, bones.size() - 1);
 	process_order_dirty = true;
 	version++;
 	rest_dirty = true;
@@ -400,13 +397,8 @@ void Skeleton3D::add_bone(const String &p_name) {
 }
 
 int Skeleton3D::find_bone(const String &p_name) const {
-	for (int i = 0; i < bones.size(); i++) {
-		if (bones[i].name == p_name) {
-			return i;
-		}
-	}
-
-	return -1;
+	const int *bone_index_ptr = name_to_bone_index.getptr(p_name);
+	return bone_index_ptr != nullptr ? *bone_index_ptr : -1;
 }
 
 String Skeleton3D::get_bone_name(int p_bone) const {
@@ -414,17 +406,21 @@ String Skeleton3D::get_bone_name(int p_bone) const {
 	ERR_FAIL_INDEX_V(p_bone, bone_size, "");
 	return bones[p_bone].name;
 }
+
 void Skeleton3D::set_bone_name(int p_bone, const String &p_name) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
 
-	for (int i = 0; i < bone_size; i++) {
-		if (i != p_bone) {
-			ERR_FAIL_COND_MSG(bones[i].name == p_name, "Skeleton3D: '" + get_name() + "', bone name:  '" + p_name + "' is already exist.");
-		}
+	const int *bone_index_ptr = name_to_bone_index.getptr(p_name);
+	if (bone_index_ptr != nullptr) {
+		ERR_FAIL_COND_MSG(*bone_index_ptr != p_bone, "Skeleton3D: '" + get_name() + "', bone name:  '" + p_name + "' already exists.");
+		return; // No need to rename, the bone already has the given name.
 	}
 
+	name_to_bone_index.erase(bones[p_bone].name);
 	bones.write[p_bone].name = p_name;
+	name_to_bone_index.insert(p_name, p_bone);
+
 	version++;
 }
 
