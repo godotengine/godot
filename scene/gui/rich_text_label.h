@@ -408,6 +408,7 @@ private:
 
 	bool use_bbcode;
 	String bbcode;
+	String cached_text;
 
 	int fixed_width;
 
