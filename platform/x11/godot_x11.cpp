@@ -34,7 +34,7 @@
 #include <unistd.h>
 
 #include "main/main.h"
-#include "main/tests/catch_testing.h"
+#include "testing/run_catch.h"
 #include "os_x11.h"
 
 int main(int argc, char *argv[]) {
