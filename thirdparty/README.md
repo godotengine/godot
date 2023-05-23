@@ -178,7 +178,7 @@ Files extracted from upstream source:
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.12.1 (e8ebfe988b5f57bfb9a3ecb13c70d9791bce9ecf, 2022)
+- Version: 2.13.0 (de8b92dd7ec634e9e2b25ef534c54a3537555c11, 2023)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -188,11 +188,6 @@ Files extracted from upstream source:
   * In `src/gzip/`, remove zlib files (everything but `ftgzip.c` and `ftzconf.h`)
 - `include/` folder, minus the `dlg` subfolder
 - `LICENSE.TXT` and `docs/FTL.TXT`
-
-Some changes have been made in order to prevent LTO from removing code.
-They are marked with `// -- GODOT start --` and `// -- GODOT end --`
-comments. Apply the patches in the `patches/` folder when syncing on newer upstream
-commits.
 
 
 ## glad
@@ -255,7 +250,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 7.1.0 (60841e26187576bff477c1a09ee2ffe544844abc, 2023)
+- Version: 7.3.0 (4584bcdc326564829d3cee3572386c90e4fd1974, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -269,7 +264,7 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 72.1 (ff3514f257ea10afe7e710e9f946f68d256704b1, 2022)
+- Version: 73.1 (5861e1fd52f1d7673eee38bc3c965aa18b336062, 2023)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -281,14 +276,14 @@ Files extracted from upstream source:
 
 Files generated from upstream source:
 
-- the `icudt72l.dat` built with the provided `godot_data.json` config file (see
+- the `icudt73l.dat` built with the provided `godot_data.json` config file (see
   https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
   for instructions).
 
 - Step 1: Build ICU with default options - `./runConfigureICU {PLATFORM} && make`.
 - Step 2: Reconfigure ICU with custom data config - `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`.
 - Step 3: Delete `data/out` folder and rebuild data - `cd data && rm -rf ./out && make`.
-- Step 4: Copy `source/data/out/icudt72l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt72l.dat`.
+- Step 4: Copy `source/data/out/icudt73l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt73l.dat`.
 
 
 ## jpeg-compressor
