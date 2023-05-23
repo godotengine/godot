@@ -315,6 +315,9 @@
 		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select" default="false">
 			If [code]true[/code], right mouse button click can select items.
 		</member>
+		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="true">
+			If [code]true[/code], allows navigating the [ItemList] with letter keys through incremental search.
+		</member>
 		<member name="auto_height" type="bool" setter="set_auto_height" getter="has_auto_height" default="false">
 			If [code]true[/code], the control will automatically resize the height to fit its content.
 		</member>

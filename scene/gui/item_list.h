@@ -79,6 +79,7 @@ private:
 
 	bool ensure_selected_visible;
 	bool same_column_width;
+	bool allow_search;
 
 	bool auto_height;
 	float auto_height_value;
@@ -208,6 +209,9 @@ public:
 
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
+
+	void set_allow_search(bool p_allow);
+	bool get_allow_search() const;
 
 	void ensure_current_is_visible();
 
