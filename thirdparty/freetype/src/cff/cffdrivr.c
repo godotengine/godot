@@ -4,8 +4,8 @@
  *
  *   OpenType font driver implementation (body).
  *
- * Copyright (C) 1996-2022 by
- * David Turner, Robert Wilhelm, and Werner Lemberg.
+ * Copyright (C) 1996-2023 by
+ * David Turner, Robert Wilhelm, Werner Lemberg, and Dominik Röttsches.
  *
  * This file is part of the FreeType project, and may only be used,
  * modified, and distributed under the terms of the FreeType project
@@ -936,22 +936,103 @@
   }
 
 
+  static FT_Error
+  cff_load_item_variation_store( CFF_Face         face,
+                                 FT_ULong         offset,
+                                 GX_ItemVarStore  itemStore )
+  {
+    FT_Service_MultiMasters  mm = (FT_Service_MultiMasters)face->mm;
+
+
+    return mm->load_item_var_store( FT_FACE(face), offset, itemStore );
+  }
+
+
+  static FT_Error
+  cff_load_delta_set_index_mapping( CFF_Face           face,
+                                    FT_ULong           offset,
+                                    GX_DeltaSetIdxMap  map,
+                                    GX_ItemVarStore    itemStore,
+                                    FT_ULong           table_len )
+  {
+    FT_Service_MultiMasters  mm = (FT_Service_MultiMasters)face->mm;
+
+
+    return mm->load_delta_set_idx_map( FT_FACE( face ), offset, map,
+                                       itemStore, table_len );
+  }
+
+
+  static FT_Int
+  cff_get_item_delta( CFF_Face         face,
+                      GX_ItemVarStore  itemStore,
+                      FT_UInt          outerIndex,
+                      FT_UInt          innerIndex )
+  {
+    FT_Service_MultiMasters  mm = (FT_Service_MultiMasters)face->mm;
+
+
+    return mm->get_item_delta( FT_FACE( face ), itemStore,
+                               outerIndex, innerIndex );
+  }
+
+
+  static void
+  cff_done_item_variation_store( CFF_Face          face,
+                                 GX_ItemVarStore  itemStore )
+  {
+    FT_Service_MultiMasters  mm = (FT_Service_MultiMasters)face->mm;
+
+
+    mm->done_item_var_store( FT_FACE( face ), itemStore );
+  }
+
+
+  static void
+  cff_done_delta_set_index_map( CFF_Face           face,
+                                GX_DeltaSetIdxMap  deltaSetIdxMap )
+  {
+    FT_Service_MultiMasters  mm = (FT_Service_MultiMasters)face->mm;
+
+
+    mm->done_delta_set_idx_map( FT_FACE ( face ), deltaSetIdxMap );
+  }
+
+
+
   FT_DEFINE_SERVICE_MULTIMASTERSREC(
     cff_service_multi_masters,
 
-    (FT_Get_MM_Func)             NULL,                    /* get_mm              */
-    (FT_Set_MM_Design_Func)      NULL,                    /* set_mm_design       */
-    (FT_Set_MM_Blend_Func)       cff_set_mm_blend,        /* set_mm_blend        */
-    (FT_Get_MM_Blend_Func)       cff_get_mm_blend,        /* get_mm_blend        */
-    (FT_Get_MM_Var_Func)         cff_get_mm_var,          /* get_mm_var          */
-    (FT_Set_Var_Design_Func)     cff_set_var_design,      /* set_var_design      */
-    (FT_Get_Var_Design_Func)     cff_get_var_design,      /* get_var_design      */
-    (FT_Set_Instance_Func)       cff_set_instance,        /* set_instance        */
-    (FT_Set_MM_WeightVector_Func)cff_set_mm_weightvector, /* set_mm_weightvector */
-    (FT_Get_MM_WeightVector_Func)cff_get_mm_weightvector, /* get_mm_weightvector */
-
-    (FT_Get_Var_Blend_Func)      cff_get_var_blend,       /* get_var_blend       */
-    (FT_Done_Blend_Func)         cff_done_blend           /* done_blend          */
+    (FT_Get_MM_Func)        NULL,               /* get_mm                    */
+    (FT_Set_MM_Design_Func) NULL,               /* set_mm_design             */
+    (FT_Set_MM_Blend_Func)  cff_set_mm_blend,   /* set_mm_blend              */
+    (FT_Get_MM_Blend_Func)  cff_get_mm_blend,   /* get_mm_blend              */
+    (FT_Get_MM_Var_Func)    cff_get_mm_var,     /* get_mm_var                */
+    (FT_Set_Var_Design_Func)cff_set_var_design, /* set_var_design            */
+    (FT_Get_Var_Design_Func)cff_get_var_design, /* get_var_design            */
+    (FT_Set_Instance_Func)  cff_set_instance,   /* set_instance              */
+    (FT_Set_MM_WeightVector_Func)
+                            cff_set_mm_weightvector,
+                                                /* set_mm_weightvector       */
+    (FT_Get_MM_WeightVector_Func)
+                            cff_get_mm_weightvector,
+                                                /* get_mm_weightvector       */
+    (FT_Var_Load_Delta_Set_Idx_Map_Func)
+                            cff_load_delta_set_index_mapping,
+                                                /* load_delta_set_idx_map    */
+    (FT_Var_Load_Item_Var_Store_Func)
+                            cff_load_item_variation_store,
+                                                /* load_item_variation_store */
+    (FT_Var_Get_Item_Delta_Func)
+                            cff_get_item_delta, /* get_item_delta            */
+    (FT_Var_Done_Item_Var_Store_Func)
+                            cff_done_item_variation_store,
+                                                /* done_item_variation_store */
+    (FT_Var_Done_Delta_Set_Idx_Map_Func)
+                            cff_done_delta_set_index_map,
+                                                /* done_delta_set_index_map  */
+    (FT_Get_Var_Blend_Func) cff_get_var_blend,  /* get_var_blend             */
+    (FT_Done_Blend_Func)    cff_done_blend      /* done_blend                */
   )
 
 
@@ -1027,8 +1108,7 @@
   /*************************************************************************/
   /*************************************************************************/
 
-#if !defined FT_CONFIG_OPTION_NO_GLYPH_NAMES && \
-     defined TT_CONFIG_OPTION_GX_VAR_SUPPORT
+#if defined TT_CONFIG_OPTION_GX_VAR_SUPPORT
   FT_DEFINE_SERVICEDESCREC10(
     cff_services,
 
@@ -1043,7 +1123,7 @@
     FT_SERVICE_ID_PROPERTIES,           &cff_service_properties,
     FT_SERVICE_ID_CFF_LOAD,             &cff_service_cff_load
   )
-#elif !defined FT_CONFIG_OPTION_NO_GLYPH_NAMES
+#else
   FT_DEFINE_SERVICEDESCREC8(
     cff_services,
 
@@ -1051,32 +1131,6 @@
     FT_SERVICE_ID_POSTSCRIPT_INFO,      &cff_service_ps_info,
     FT_SERVICE_ID_POSTSCRIPT_FONT_NAME, &cff_service_ps_name,
     FT_SERVICE_ID_GLYPH_DICT,           &cff_service_glyph_dict,
-    FT_SERVICE_ID_TT_CMAP,              &cff_service_get_cmap_info,
-    FT_SERVICE_ID_CID,                  &cff_service_cid_info,
-    FT_SERVICE_ID_PROPERTIES,           &cff_service_properties,
-    FT_SERVICE_ID_CFF_LOAD,             &cff_service_cff_load
-  )
-#elif defined TT_CONFIG_OPTION_GX_VAR_SUPPORT
-  FT_DEFINE_SERVICEDESCREC9(
-    cff_services,
-
-    FT_SERVICE_ID_FONT_FORMAT,          FT_FONT_FORMAT_CFF,
-    FT_SERVICE_ID_MULTI_MASTERS,        &cff_service_multi_masters,
-    FT_SERVICE_ID_METRICS_VARIATIONS,   &cff_service_metrics_var,
-    FT_SERVICE_ID_POSTSCRIPT_INFO,      &cff_service_ps_info,
-    FT_SERVICE_ID_POSTSCRIPT_FONT_NAME, &cff_service_ps_name,
-    FT_SERVICE_ID_TT_CMAP,              &cff_service_get_cmap_info,
-    FT_SERVICE_ID_CID,                  &cff_service_cid_info,
-    FT_SERVICE_ID_PROPERTIES,           &cff_service_properties,
-    FT_SERVICE_ID_CFF_LOAD,             &cff_service_cff_load
-  )
-#else
-  FT_DEFINE_SERVICEDESCREC7(
-    cff_services,
-
-    FT_SERVICE_ID_FONT_FORMAT,          FT_FONT_FORMAT_CFF,
-    FT_SERVICE_ID_POSTSCRIPT_INFO,      &cff_service_ps_info,
-    FT_SERVICE_ID_POSTSCRIPT_FONT_NAME, &cff_service_ps_name,
     FT_SERVICE_ID_TT_CMAP,              &cff_service_get_cmap_info,
     FT_SERVICE_ID_CID,                  &cff_service_cid_info,
     FT_SERVICE_ID_PROPERTIES,           &cff_service_properties,

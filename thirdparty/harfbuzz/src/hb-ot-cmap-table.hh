@@ -404,7 +404,7 @@ struct CmapSubtableFormat4
 		 unsigned distance) const
 	{
 	  if (k > last) return +1;
-	  if (k < (&last)[distance]) return -1;
+	  if (k < (&last)[distance]/*first*/) return -1;
 	  return 0;
 	}
 	HBUINT16 last;
@@ -413,7 +413,7 @@ struct CmapSubtableFormat4
       const HBUINT16 *found = hb_bsearch (codepoint,
 					  this->endCount,
 					  this->segCount,
-					  2,
+					  sizeof (CustomRange),
 					  _hb_cmp_method<hb_codepoint_t, CustomRange, unsigned>,
 					  this->segCount + 1);
       if (unlikely (!found))

@@ -315,53 +315,76 @@ void ParticleProcessMaterial::_update_shader() {
 
 		//functions for 3D noise / turbulence
 		code += "\n\n";
-		code += "// 3D Noise with friendly permission by Inigo Quilez\n";
-		code += "vec3 hash_noise( vec3 p ) {\n";
-		code += "	p *= mat3(vec3(127.1, 311.7, -53.7), vec3(269.5, 183.3, 77.1), vec3(-301.7, 27.3, 215.3));\n";
-		code += "	return 2.0 * fract(fract(p)*4375.55) -1.;\n";
+		code += "vec4 grad(vec4 p) {\n";
+		code += "	p = fract(vec4(\n";
+		code += "		dot(p, vec4(0.143081, 0.001724, 0.280166, 0.262771)),\n";
+		code += "		dot(p, vec4(0.645401, -0.047791, -0.146698, 0.595016)),\n";
+		code += "		dot(p, vec4(-0.499665, -0.095734, 0.425674, -0.207367)),\n";
+		code += "		dot(p, vec4(-0.013596, -0.848588, 0.423736, 0.17044))));\n";
+		code += "	return fract((p.xyzw * p.yzwx) * 2365.952041) * 2.0 - 1.0;\n";
 		code += "}\n";
-		code += "\n";
-		code += "float noise( vec3 p) {\n";
-		code += "	vec3 i = floor(p);;\n";
-		code += "	vec3 f = fract(p);\n ";
-		code += "	vec3 u = f * f * (3.0 - 2.0 * f);\n";
-		code += "\n";
-		code += "	return 2.0*mix( mix( mix( dot( hash_noise( i + vec3(0.0,0.0,0.0) ), f - vec3(0.0,0.0,0.0) ), dot( hash_noise( i + vec3(1.0,0.0,0.0) ), f - vec3(1.0,0.0,0.0) ), u.x),\n";
-		code += "			mix( dot( hash_noise( i + vec3(0.0,1.0,0.0) ), f - vec3(0.0,1.0,0.0) ), dot( hash_noise( i + vec3(1.0,1.0,0.0) ), f - vec3(1.0,1.0,0.0) ), u.x), u.y),\n";
-		code += "		mix( mix( dot( hash_noise( i + vec3(0.0,0.0,1.0) ), f - vec3(0.0,0.0,1.0) ), dot( hash_noise( i + vec3(1.0,0.0,1.0) ), f - vec3(1.0,0.0,1.0) ), u.x),\n";
-		code += "			mix( dot( hash_noise( i + vec3(0.0,1.0,1.0) ), f - vec3(0.0,1.0,1.0) ), dot( hash_noise( i + vec3(1.0,1.0,1.0) ), f - vec3(1.0,1.0,1.0) ), u.x), u.y), u.z);\n";
+		code += "float noise(vec4 coord) {\n";
+		code += "	// Domain rotation to improve the look of XYZ slices + animation patterns.\n";
+		code += "	coord = vec4(\n";
+		code += "		coord.xyz + dot(coord, vec4(vec3(-0.1666667), -0.5)),\n";
+		code += "		dot(coord, vec4(0.5)));\n\n";
+		code += "	vec4 base = floor(coord), delta = coord - base;\n\n";
+		code += "	vec4 grad_0000 = grad(base + vec4(0.0, 0.0, 0.0, 0.0)), grad_1000 = grad(base + vec4(1.0, 0.0, 0.0, 0.0));\n";
+		code += "	vec4 grad_0100 = grad(base + vec4(0.0, 1.0, 0.0, 0.0)), grad_1100 = grad(base + vec4(1.0, 1.0, 0.0, 0.0));\n";
+		code += "	vec4 grad_0010 = grad(base + vec4(0.0, 0.0, 1.0, 0.0)), grad_1010 = grad(base + vec4(1.0, 0.0, 1.0, 0.0));\n";
+		code += "	vec4 grad_0110 = grad(base + vec4(0.0, 1.0, 1.0, 0.0)), grad_1110 = grad(base + vec4(1.0, 1.0, 1.0, 0.0));\n";
+		code += "	vec4 grad_0001 = grad(base + vec4(0.0, 0.0, 0.0, 1.0)), grad_1001 = grad(base + vec4(1.0, 0.0, 0.0, 1.0));\n";
+		code += "	vec4 grad_0101 = grad(base + vec4(0.0, 1.0, 0.0, 1.0)), grad_1101 = grad(base + vec4(1.0, 1.0, 0.0, 1.0));\n";
+		code += "	vec4 grad_0011 = grad(base + vec4(0.0, 0.0, 1.0, 1.0)), grad_1011 = grad(base + vec4(1.0, 0.0, 1.0, 1.0));\n";
+		code += "	vec4 grad_0111 = grad(base + vec4(0.0, 1.0, 1.0, 1.0)), grad_1111 = grad(base + vec4(1.0, 1.0, 1.0, 1.0));\n\n";
+		code += "	vec4 result_0123 = vec4(\n";
+		code += "		dot(delta - vec4(0.0, 0.0, 0.0, 0.0), grad_0000), dot(delta - vec4(1.0, 0.0, 0.0, 0.0), grad_1000),\n";
+		code += "		dot(delta - vec4(0.0, 1.0, 0.0, 0.0), grad_0100), dot(delta - vec4(1.0, 1.0, 0.0, 0.0), grad_1100));\n";
+		code += "	vec4 result_4567 = vec4(\n";
+		code += "		dot(delta - vec4(0.0, 0.0, 1.0, 0.0), grad_0010), dot(delta - vec4(1.0, 0.0, 1.0, 0.0), grad_1010),\n";
+		code += "		dot(delta - vec4(0.0, 1.0, 1.0, 0.0), grad_0110), dot(delta - vec4(1.0, 1.0, 1.0, 0.0), grad_1110));\n";
+		code += "	vec4 result_89AB = vec4(\n";
+		code += "		dot(delta - vec4(0.0, 0.0, 0.0, 1.0), grad_0001), dot(delta - vec4(1.0, 0.0, 0.0, 1.0), grad_1001),\n";
+		code += "		dot(delta - vec4(0.0, 1.0, 0.0, 1.0), grad_0101), dot(delta - vec4(1.0, 1.0, 0.0, 1.0), grad_1101));\n";
+		code += "	vec4 result_CDEF = vec4(\n";
+		code += "		dot(delta - vec4(0.0, 0.0, 1.0, 1.0), grad_0011), dot(delta - vec4(1.0, 0.0, 1.0, 1.0), grad_1011),\n";
+		code += "		dot(delta - vec4(0.0, 1.0, 1.0, 1.0), grad_0111), dot(delta - vec4(1.0, 1.0, 1.0, 1.0), grad_1111));\n\n";
+		code += "	vec4 fade = delta * delta * delta * (10.0 + delta * (-15.0 + delta * 6.0));\n";
+		code += "	vec4 result_W0 = mix(result_0123, result_89AB, fade.w), result_W1 = mix(result_4567, result_CDEF, fade.w);\n";
+		code += "	vec4 result_WZ = mix(result_W0, result_W1, fade.z);\n";
+		code += "	vec2 result_WZY = mix(result_WZ.xy, result_WZ.zw, fade.y);\n";
+		code += "	return mix(result_WZY.x, result_WZY.y, fade.x);\n";
 		code += "}\n\n";
-		code += "// Curl 3D and noise_3d function with friendly permission by Isaac Cohen\n";
-		code += "vec3 noise_3d(vec3 p) {\n";
+		code += "// Curl 3D and three-noise function with friendly permission by Isaac Cohen.\n";
+		code += "// Modified to accept 4D noise.\n";
+		code += "vec3 noise_3x(vec4 p) {\n";
 		code += "	float s = noise(p);\n";
-		code += "	float s1 = noise(vec3(p.y - 19.1, p.z + 33.4, p.x + 47.2));\n";
-		code += "   float s2 = noise(vec3(p.z + 74.2, p.x - 124.5, p.y + 99.4));\n";
+		code += "	float s1 = noise(p + vec4(vec3(0.0), 1.7320508 * 2048.333333));\n";
+		code += "	float s2 = noise(p - vec4(vec3(0.0), 1.7320508 * 2048.333333));\n";
 		code += "	vec3 c = vec3(s, s1, s2);\n";
 		code += "	return c;\n";
-		code += "}\n\n";
-		code += "vec3 curl_3d(vec3 p, float c) {\n";
-		code += "	float epsilon = 0.001 + c;\n";
-		code += "	vec3 dx = vec3(epsilon, 0.0, 0.0);\n";
-		code += "	vec3 dy = vec3(0.0, epsilon, 0.0);\n";
-		code += "	vec3 dz = vec3(0.0, 0.0, epsilon);\n";
-		code += "	vec3 x0 = noise_3d(p - dx).xyz;\n";
-		code += "	vec3 x1 = noise_3d(p + dx).xyz;\n";
-		code += "	vec3 y0 = noise_3d(p - dy).xyz;\n";
-		code += "	vec3 y1 = noise_3d(p + dy).xyz;\n";
-		code += "	vec3 z0 = noise_3d(p - dz).xyz;\n";
-		code += "	vec3 z1 = noise_3d(p + dz).xyz;\n";
-		code += "	float x = y1.z - y0.z - z1.y + z0.y;\n";
-		code += "	float y = z1.x - z0.x - x1.z + x0.z;\n";
-		code += "	float z = x1.y - x0.y - y1.x + y0.x;\n";
-		code += "	float divisor = 1.0 / (2.0 * epsilon);\n";
-		code += "	return vec3(normalize(vec3(x, y, z) * divisor));\n";
 		code += "}\n";
-		code += "vec3 get_noise_direction(vec3 pos, vec3 emission_pos, vec3 time_noise) {\n";
+		code += "vec3 curl_3d(vec4 p, float c) {\n";
+		code += "	float epsilon = 0.001 + c;\n";
+		code += "	vec4 dx = vec4(epsilon, 0.0, 0.0, 0.0);\n";
+		code += "	vec4 dy = vec4(0.0, epsilon, 0.0, 0.0);\n";
+		code += "	vec4 dz = vec4(0.0, 0.0, epsilon, 0.0);\n";
+		code += "	vec3 x0 = noise_3x(p - dx).xyz;\n";
+		code += "	vec3 x1 = noise_3x(p + dx).xyz;\n";
+		code += "	vec3 y0 = noise_3x(p - dy).xyz;\n";
+		code += "	vec3 y1 = noise_3x(p + dy).xyz;\n";
+		code += "	vec3 z0 = noise_3x(p - dz).xyz;\n";
+		code += "	vec3 z1 = noise_3x(p + dz).xyz;\n";
+		code += "	float x = (y1.z - y0.z) - (z1.y - z0.y);\n";
+		code += "	float y = (z1.x - z0.x) - (x1.z - x0.z);\n";
+		code += "	float z = (x1.y - x0.y) - (y1.x - y0.x);\n";
+		code += "	return normalize(vec3(x, y, z));\n";
+		code += "}\n";
+		code += "vec3 get_noise_direction(vec3 pos) {\n";
 		code += "	float adj_contrast = max((turbulence_noise_strength - 1.0), 0.0) * 70.0;\n";
-		code += "	vec3 noise_time = (vec3(TIME) * turbulence_noise_speed) + time_noise;\n";
-		code += "	vec3 noise_pos = (pos * turbulence_noise_scale) - emission_pos;\n";
-		code += "	vec3 diff = pos - emission_pos;\n";
-		code += "	vec3 noise_direction = curl_3d(noise_pos + noise_time - diff, adj_contrast);\n";
+		code += "	vec4 noise_time = TIME * vec4(turbulence_noise_speed, turbulence_noise_speed_random);\n";
+		code += "	vec4 noise_pos = vec4(pos * turbulence_noise_scale, 0.0);\n";
+		code += "	vec3 noise_direction = curl_3d(noise_pos + noise_time, adj_contrast);\n";
 		code += "	noise_direction = mix(0.9 * noise_direction, noise_direction, turbulence_noise_strength - 9.0);\n";
 		code += "	return noise_direction;\n";
 		code += "}\n";
@@ -551,12 +574,7 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	if (RESTART_VELOCITY) VELOCITY = (EMISSION_TRANSFORM * vec4(VELOCITY, 0.0)).xyz;\n";
 	// Apply noise/turbulence: initial displacement.
 	if (turbulence_enabled) {
-		if (get_turbulence_noise_speed_random() >= 0.0) {
-			code += "	vec3 time_noise = noise_3d( vec3(TIME) * turbulence_noise_speed_random ) * -turbulence_noise_speed;\n";
-		} else {
-			code += "	const vec3 time_noise = vec3(0.0);\n";
-		}
-		code += "	vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz, EMISSION_TRANSFORM[3].xyz, time_noise);\n";
+		code += "	vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz);\n";
 		code += "	float turb_init_displacement = mix(turbulence_initial_displacement_min, turbulence_initial_displacement_max, rand_from_seed(alt_seed));";
 		code += "	TRANSFORM[3].xyz += noise_direction * turb_init_displacement;\n";
 	}
@@ -692,12 +710,7 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "	const float turbulence_influence = 1.0;\n";
 		}
 		code += "	\n";
-		if (get_turbulence_noise_speed_random() >= 0.0) {
-			code += "	vec3 time_noise = noise_3d( vec3(TIME) * turbulence_noise_speed_random ) * -turbulence_noise_speed;\n";
-		} else {
-			code += "	const vec3 time_noise = vec3(0.0);\n";
-		}
-		code += "	vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz, EMISSION_TRANSFORM[3].xyz, time_noise);\n";
+		code += "	vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz);\n";
 		// If collision happened, turbulence is no longer applied.
 		// We don't need this check when the collision mode is "hide on contact",
 		// as the particle will be hidden anyway.
@@ -1745,7 +1758,7 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_strength", PROPERTY_HINT_RANGE, "0,20,0.01"), "set_turbulence_noise_strength", "get_turbulence_noise_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_scale", PROPERTY_HINT_RANGE, "0,10,0.01"), "set_turbulence_noise_scale", "get_turbulence_noise_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "turbulence_noise_speed"), "set_turbulence_noise_speed", "get_turbulence_noise_speed");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_speed_random", PROPERTY_HINT_RANGE, "0,10,0.01"), "set_turbulence_noise_speed_random", "get_turbulence_noise_speed_random");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_speed_random", PROPERTY_HINT_RANGE, "0,4,0.01"), "set_turbulence_noise_speed_random", "get_turbulence_noise_speed_random");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "turbulence_influence_min", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_min", "get_param_min", PARAM_TURB_VEL_INFLUENCE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "turbulence_influence_max", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_max", "get_param_max", PARAM_TURB_VEL_INFLUENCE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "turbulence_initial_displacement_min", PROPERTY_HINT_RANGE, "-100,100,0.1"), "set_param_min", "get_param_min", PARAM_TURB_INIT_DISPLACEMENT);
@@ -1857,10 +1870,10 @@ ParticleProcessMaterial::ParticleProcessMaterial() :
 	set_emission_ring_inner_radius(0);
 
 	set_turbulence_enabled(false);
-	set_turbulence_noise_speed(Vector3(0.5, 0.5, 0.5));
+	set_turbulence_noise_speed(Vector3(0.0, 0.0, 0.0));
 	set_turbulence_noise_strength(1);
 	set_turbulence_noise_scale(9);
-	set_turbulence_noise_speed_random(0);
+	set_turbulence_noise_speed_random(0.2);
 	set_param_min(PARAM_TURB_VEL_INFLUENCE, 0.1);
 	set_param_max(PARAM_TURB_VEL_INFLUENCE, 0.1);
 	set_param_min(PARAM_TURB_INIT_DISPLACEMENT, 0.0);

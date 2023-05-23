@@ -14,7 +14,7 @@
 # Mattias Münster <mattiasmun@gmail.com>, 2019.
 # Anonymous <noreply@weblate.org>, 2020.
 # Joakim Lundberg <joakim@joakimlundberg.com>, 2020.
-# Kristoffer Grundström <swedishsailfishosuser@tutanota.com>, 2020, 2021, 2022.
+# Kristoffer Grundström <swedishsailfishosuser@tutanota.com>, 2020, 2021, 2022, 2023.
 # Jonas Robertsson <jonas.robertsson@posteo.net>, 2020, 2021.
 # André Andersson <andre.eric.andersson@gmail.com>, 2020.
 # Andreas Westrell <andreas.westrell@gmail.com>, 2020.
@@ -34,8 +34,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-15 01:17+0000\n"
-"Last-Translator: Daniel Ljung <weblate@bazonic.mozmail.com>\n"
+"PO-Revision-Date: 2023-05-17 00:52+0000\n"
+"Last-Translator: Kristoffer Grundström <swedishsailfishosuser@tutanota.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -43,7 +43,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Nollställ"
@@ -183,6 +183,9 @@ msgstr "Xbox Paddelknapp 4"
 msgid "PS4/5 Touchpad"
 msgstr "PS4/5 Pekplatta"
 
+msgid "Pressure:"
+msgstr "Tryck:"
+
 msgid "touched"
 msgstr "berörd"
 
@@ -209,11 +212,20 @@ msgstr "MIDI Inmatning på Kanel=%s Meddelande=%s"
 msgid "Input Event with Shortcut=%s"
 msgstr "Inmatningshändelse med Genväg=%s"
 
+msgid "Accept"
+msgstr "Acceptera"
+
 msgid "Select"
 msgstr "Välj"
 
 msgid "Cancel"
 msgstr "Avbryt"
+
+msgid "Left"
+msgstr "Vänster"
+
+msgid "Right"
+msgstr "Höger"
 
 msgid "Up"
 msgstr "Upp"
@@ -247,6 +259,9 @@ msgstr "Ångra"
 
 msgid "Redo"
 msgstr "Återställ"
+
+msgid "Completion Query"
+msgstr "Frågeställning att slutföra"
 
 msgid "New Line"
 msgstr "Ny Rad"
@@ -335,6 +350,9 @@ msgstr "Lägg till Val för Nästa Förekomst"
 msgid "Toggle Insert Mode"
 msgstr "Växla Läge Infoga"
 
+msgid "Submit Text"
+msgstr "Skicka in text"
+
 msgid "Duplicate Nodes"
 msgstr "Dubblerade Noder"
 
@@ -373,6 +391,12 @@ msgstr "Ogiltiga argument för att bygga '%s'"
 
 msgid "On call to '%s':"
 msgstr "I anrop till '%s':"
+
+msgid "Built-in script"
+msgstr "Inbyggt skript"
+
+msgid "Built-in"
+msgstr "Inbyggt"
 
 msgid "B"
 msgstr "B"

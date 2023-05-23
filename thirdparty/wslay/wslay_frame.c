@@ -109,7 +109,7 @@ ssize_t wslay_frame_send(wslay_frame_context_ptr ctx,
     int flags = 0;
     if (iocb->data_length > 0) {
       flags |= WSLAY_MSG_MORE;
-    };
+    }
     r = ctx->callbacks.send_callback(ctx->oheadermark, (size_t)len, flags,
                                      ctx->user_data);
     if (r > 0) {

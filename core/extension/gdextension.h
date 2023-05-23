@@ -72,7 +72,8 @@ public:
 	static String get_extension_list_config_file();
 	static String find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags = nullptr);
 
-	Error open_library(const String &p_path, const String &p_entry_symbol);
+	Error open_library(const String &p_path, const String &p_entry_symbol, bool p_use_legacy_interface = false);
+	Error open_library_compat_76406(const String &p_path, const String &p_entry_symbol);
 	void close_library();
 
 	enum InitializationLevel {
@@ -88,7 +89,10 @@ public:
 	void initialize_library(InitializationLevel p_level);
 	void deinitialize_library(InitializationLevel p_level);
 
+	static void register_interface_function(StringName p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer);
+	static GDExtensionInterfaceFunctionPtr get_interface_function(StringName p_function_name);
 	static void initialize_gdextensions();
+
 	GDExtension();
 	~GDExtension();
 };

@@ -3215,6 +3215,9 @@ msgstr "Koşturulabilir"
 msgid "Export the project for all the presets defined."
 msgstr "Tanımlanan tüm ön ayarlar için projeyi dışa aktarın."
 
+msgid "Resources to export:"
+msgstr "Dışa aktarılacak kaynaklar:"
+
 msgid "Delete preset '%s'?"
 msgstr "'%s' önayarı silinsin mi?"
 
@@ -3261,9 +3264,6 @@ msgstr "Seçilen kaynakları dışa aktar (bağımlılıklar dahil)"
 
 msgid "Export Mode:"
 msgstr "Dışa Aktarma Biçimi:"
-
-msgid "Resources to export:"
-msgstr "Dışa aktarılacak kaynaklar:"
 
 msgid "Keep"
 msgstr "Tut"

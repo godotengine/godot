@@ -277,7 +277,10 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 	l.offset.x = _find_margin(l.from, p_base_font, p_base_font_size);
 	l.text_buf->set_width(p_width - l.offset.x);
 
-	if (tab_size > 0) { // Align inline tabs.
+	PackedFloat32Array tab_stops = _find_tab_stops(l.from);
+	if (!tab_stops.is_empty()) {
+		l.text_buf->tab_align(tab_stops);
+	} else if (tab_size > 0) { // Align inline tabs.
 		Vector<float> tabs;
 		tabs.push_back(tab_size * p_base_font->get_char_size(' ', p_base_font_size).width);
 		l.text_buf->tab_align(tabs);
@@ -471,7 +474,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	// Clear cache.
 	l.text_buf->clear();
 	l.text_buf->set_break_flags(autowrap_flags);
-	l.text_buf->set_justification_flags(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_TRIM_EDGE_SPACES);
+	l.text_buf->set_justification_flags(_find_jst_flags(l.from));
 	l.char_offset = *r_char_offset;
 	l.char_count = 0;
 
@@ -481,7 +484,10 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	l.text_buf->set_alignment(_find_alignment(l.from));
 	l.text_buf->set_direction(_find_direction(l.from));
 
-	if (tab_size > 0) { // Align inline tabs.
+	PackedFloat32Array tab_stops = _find_tab_stops(l.from);
+	if (!tab_stops.is_empty()) {
+		l.text_buf->tab_align(tab_stops);
+	} else if (tab_size > 0) { // Align inline tabs.
 		Vector<float> tabs;
 		tabs.push_back(tab_size * p_base_font->get_char_size(' ', p_base_font_size).width);
 		l.text_buf->tab_align(tabs);
@@ -2453,6 +2459,36 @@ int RichTextLabel::_find_margin(Item *p_item, const Ref<Font> &p_base_font, int 
 	return margin;
 }
 
+BitField<TextServer::JustificationFlag> RichTextLabel::_find_jst_flags(Item *p_item) {
+	Item *item = p_item;
+
+	while (item) {
+		if (item->type == ITEM_PARAGRAPH) {
+			ItemParagraph *p = static_cast<ItemParagraph *>(item);
+			return p->jst_flags;
+		}
+
+		item = item->parent;
+	}
+
+	return default_jst_flags;
+}
+
+PackedFloat32Array RichTextLabel::_find_tab_stops(Item *p_item) {
+	Item *item = p_item;
+
+	while (item) {
+		if (item->type == ITEM_PARAGRAPH) {
+			ItemParagraph *p = static_cast<ItemParagraph *>(item);
+			return p->tab_stops;
+		}
+
+		item = item->parent;
+	}
+
+	return PackedFloat32Array();
+}
+
 HorizontalAlignment RichTextLabel::_find_alignment(Item *p_item) {
 	Item *item = p_item;
 
@@ -3297,7 +3333,7 @@ void RichTextLabel::push_strikethrough() {
 	_add_item(item, true);
 }
 
-void RichTextLabel::push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, TextServer::StructuredTextParser p_st_parser) {
+void RichTextLabel::push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, TextServer::StructuredTextParser p_st_parser, BitField<TextServer::JustificationFlag> p_jst_flags, const PackedFloat32Array &p_tab_stops) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -3308,6 +3344,8 @@ void RichTextLabel::push_paragraph(HorizontalAlignment p_alignment, Control::Tex
 	item->direction = p_direction;
 	item->language = p_language;
 	item->st_parser = p_st_parser;
+	item->jst_flags = p_jst_flags;
+	item->tab_stops = p_tab_stops;
 	_add_item(item, true, true);
 }
 
@@ -4078,11 +4116,37 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 			Control::TextDirection dir = Control::TEXT_DIRECTION_INHERITED;
 			String lang;
+			PackedFloat32Array tab_stops;
 			TextServer::StructuredTextParser st_parser_type = TextServer::STRUCTURED_TEXT_DEFAULT;
+			BitField<TextServer::JustificationFlag> jst_flags = default_jst_flags;
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
 				if (subtag_a.size() == 2) {
-					if (subtag_a[0] == "align") {
+					if (subtag_a[0] == "justification_flags" || subtag_a[0] == "jst") {
+						Vector<String> subtag_b = subtag_a[1].split(",");
+						for (const String &E : subtag_b) {
+							if (E == "kashida" || E == "k") {
+								jst_flags.set_flag(TextServer::JUSTIFICATION_KASHIDA);
+							} else if (E == "word" || E == "w") {
+								jst_flags.set_flag(TextServer::JUSTIFICATION_WORD_BOUND);
+							} else if (E == "trim" || E == "tr") {
+								jst_flags.set_flag(TextServer::JUSTIFICATION_TRIM_EDGE_SPACES);
+							} else if (E == "after_last_tab" || E == "lt") {
+								jst_flags.set_flag(TextServer::JUSTIFICATION_AFTER_LAST_TAB);
+							} else if (E == "skip_last" || E == "sl") {
+								jst_flags.set_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE);
+							} else if (E == "skip_last_with_chars" || E == "sv") {
+								jst_flags.set_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS);
+							} else if (E == "do_not_skip_singe" || E == "ns") {
+								jst_flags.set_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE);
+							}
+						}
+					} else if (subtag_a[0] == "tab_stops") {
+						Vector<String> splitters;
+						splitters.push_back(",");
+						splitters.push_back(";");
+						tab_stops = subtag_a[1].split_floats_mk(splitters);
+					} else if (subtag_a[0] == "align") {
 						if (subtag_a[1] == "l" || subtag_a[1] == "left") {
 							alignment = HORIZONTAL_ALIGNMENT_LEFT;
 						} else if (subtag_a[1] == "c" || subtag_a[1] == "center") {
@@ -4121,7 +4185,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					}
 				}
 			}
-			push_paragraph(alignment, dir, lang, st_parser_type);
+			push_paragraph(alignment, dir, lang, st_parser_type, jst_flags, tab_stops);
 			pos = brk_end + 1;
 			tag_stack.push_front("p");
 		} else if (tag == "url") {
@@ -5370,7 +5434,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_color", "color"), &RichTextLabel::push_color);
 	ClassDB::bind_method(D_METHOD("push_outline_size", "outline_size"), &RichTextLabel::push_outline_size);
 	ClassDB::bind_method(D_METHOD("push_outline_color", "color"), &RichTextLabel::push_outline_color);
-	ClassDB::bind_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser"), &RichTextLabel::push_paragraph, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(TextServer::STRUCTURED_TEXT_DEFAULT));
+	ClassDB::bind_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser", "justification_flags", "tab_stops"), &RichTextLabel::push_paragraph, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(TextServer::STRUCTURED_TEXT_DEFAULT), DEFVAL(TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE), DEFVAL(PackedFloat32Array()));
 	ClassDB::bind_method(D_METHOD("push_indent", "level"), &RichTextLabel::push_indent);
 	ClassDB::bind_method(D_METHOD("push_list", "level", "type", "capitalize", "bullet"), &RichTextLabel::push_list, DEFVAL(String::utf8("•")));
 	ClassDB::bind_method(D_METHOD("push_meta", "data"), &RichTextLabel::push_meta);

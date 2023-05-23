@@ -55,6 +55,20 @@ TextServer::AutowrapMode Label::get_autowrap_mode() const {
 	return autowrap_mode;
 }
 
+void Label::set_justification_flags(BitField<TextServer::JustificationFlag> p_flags) {
+	if (jst_flags == p_flags) {
+		return;
+	}
+
+	jst_flags = p_flags;
+	lines_dirty = true;
+	queue_redraw();
+}
+
+BitField<TextServer::JustificationFlag> Label::get_justification_flags() const {
+	return jst_flags;
+}
+
 void Label::set_uppercase(bool p_uppercase) {
 	if (uppercase == p_uppercase) {
 		return;
@@ -198,11 +212,27 @@ void Label::_shape() {
 				overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
 			}
 			if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+				int jst_to_line = visible_lines;
+				if (lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
+					jst_to_line = lines_rid.size();
+				} else {
+					if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
+						jst_to_line = visible_lines - 1;
+					}
+					if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
+						for (int i = visible_lines - 1; i >= 0; i--) {
+							if (TS->shaped_text_has_visible_chars(lines_rid[i])) {
+								jst_to_line = i;
+								break;
+							}
+						}
+					}
+				}
 				for (int i = 0; i < lines_rid.size(); i++) {
-					if (i < visible_lines - 1 || lines_rid.size() == 1) {
-						TS->shaped_text_fit_to_width(lines_rid[i], width);
+					if (i < jst_to_line) {
+						TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags);
 					} else if (i == (visible_lines - 1)) {
-						TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], width, overrun_flags);
+						TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
 					}
 				}
 			} else if (lines_hidden) {
@@ -210,12 +240,28 @@ void Label::_shape() {
 			}
 		} else {
 			// Autowrap disabled.
+			int jst_to_line = lines_rid.size();
+			if (lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
+				jst_to_line = lines_rid.size();
+			} else {
+				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
+					jst_to_line = lines_rid.size() - 1;
+				}
+				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
+					for (int i = lines_rid.size() - 1; i >= 0; i--) {
+						if (TS->shaped_text_has_visible_chars(lines_rid[i])) {
+							jst_to_line = i;
+							break;
+						}
+					}
+				}
+			}
 			for (int i = 0; i < lines_rid.size(); i++) {
-				if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-					TS->shaped_text_fit_to_width(lines_rid[i], width);
+				if (i < jst_to_line && horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+					TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags);
 					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
-					TS->shaped_text_fit_to_width(lines_rid[i], width, TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+					TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 				} else {
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
 				}
@@ -936,6 +982,8 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_language"), &Label::get_language);
 	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &Label::set_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &Label::get_autowrap_mode);
+	ClassDB::bind_method(D_METHOD("set_justification_flags", "justification_flags"), &Label::set_justification_flags);
+	ClassDB::bind_method(D_METHOD("get_justification_flags"), &Label::get_justification_flags);
 	ClassDB::bind_method(D_METHOD("set_clip_text", "enable"), &Label::set_clip_text);
 	ClassDB::bind_method(D_METHOD("is_clipping_text"), &Label::is_clipping_text);
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &Label::set_text_overrun_behavior);
@@ -966,6 +1014,8 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Justify Only After Last Tab:8,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");

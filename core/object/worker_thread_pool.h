@@ -81,10 +81,11 @@ private:
 		bool completed = false;
 		Group *group = nullptr;
 		SelfList<Task> task_elem;
-		bool waiting = false; // Waiting for completion
+		uint32_t waiting = 0;
 		bool low_priority = false;
 		BaseTemplateUserdata *template_userdata = nullptr;
 		Thread *low_priority_thread = nullptr;
+		int pool_thread_index = -1;
 
 		void free_template_userdata();
 		Task() :
@@ -104,6 +105,7 @@ private:
 	struct ThreadData {
 		uint32_t index;
 		Thread thread;
+		Task *current_low_prio_task = nullptr;
 	};
 
 	TightLocalVector<ThreadData> threads;
@@ -116,6 +118,8 @@ private:
 	bool use_native_low_priority_threads = false;
 	uint32_t max_low_priority_threads = 0;
 	uint32_t low_priority_threads_used = 0;
+	uint32_t low_priority_tasks_running = 0;
+	uint32_t low_priority_tasks_awaiting_others = 0;
 
 	uint64_t last_task = 1;
 
@@ -126,6 +130,9 @@ private:
 	void _process_task(Task *task);
 
 	void _post_task(Task *p_task, bool p_high_priority);
+
+	bool _try_promote_low_priority_task();
+	void _prevent_low_prio_saturation_deadlock();
 
 	static WorkerThreadPool *singleton;
 
@@ -169,7 +176,7 @@ public:
 	TaskID add_task(const Callable &p_action, bool p_high_priority = false, const String &p_description = String());
 
 	bool is_task_completed(TaskID p_task_id) const;
-	void wait_for_task_completion(TaskID p_task_id);
+	Error wait_for_task_completion(TaskID p_task_id);
 
 	template <class C, class M, class U>
 	GroupID add_template_group_task(C *p_instance, M p_method, U p_userdata, int p_elements, int p_tasks = -1, bool p_high_priority = false, const String &p_description = String()) {

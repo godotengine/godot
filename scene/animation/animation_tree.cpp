@@ -116,7 +116,7 @@ void AnimationNode::blend_animation(const StringName &p_animation, double p_time
 
 	AnimationState anim_state;
 	anim_state.blend = p_blend;
-	anim_state.track_blends = &blends;
+	anim_state.track_blends = blends;
 	anim_state.delta = p_delta;
 	anim_state.time = p_time;
 	anim_state.animation = animation;
@@ -1124,7 +1124,7 @@ void AnimationTree::_process_graph(double p_delta) {
 				ERR_CONTINUE(!state.track_map.has(path));
 				int blend_idx = state.track_map[path];
 				ERR_CONTINUE(blend_idx < 0 || blend_idx >= state.track_count);
-				real_t blend = (*as.track_blends)[blend_idx] * weight;
+				real_t blend = (as.track_blends)[blend_idx] * weight;
 
 				Animation::TrackType ttype = a->track_get_type(i);
 				if (ttype != Animation::TYPE_POSITION_3D && ttype != Animation::TYPE_ROTATION_3D && ttype != Animation::TYPE_SCALE_3D && track->type != ttype) {

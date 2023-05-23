@@ -4,7 +4,7 @@
  *
  *   OpenType and CFF data/program tables loader (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1288,7 +1288,7 @@
   /* Blended values are written to a different buffer,     */
   /* using reserved operator 255.                          */
   /*                                                       */
-  /* Blend calculation is done in 16.16 fixed point.       */
+  /* Blend calculation is done in 16.16 fixed-point.       */
   FT_LOCAL_DEF( FT_Error )
   cff_blend_doBlend( CFF_SubFont  subFont,
                      CFF_Parser   parser,
@@ -1364,7 +1364,7 @@
       FT_UInt32        sum;
 
 
-      /* convert inputs to 16.16 fixed point */
+      /* convert inputs to 16.16 fixed-point */
       sum = cff_parse_num( parser, &parser->stack[i + base] ) * 0x10000;
 
       for ( j = 1; j < blend->lenBV; j++ )
@@ -1373,7 +1373,7 @@
       /* point parser stack to new value on blend_stack */
       parser->stack[i + base] = subFont->blend_top;
 
-      /* Push blended result as Type 2 5-byte fixed point number.  This */
+      /* Push blended result as Type 2 5-byte fixed-point number.  This */
       /* will not conflict with actual DICTs because 255 is a reserved  */
       /* opcode in both CFF and CFF2 DICTs.  See `cff_parse_num' for    */
       /* decode of this, which rounds to an integer.                    */

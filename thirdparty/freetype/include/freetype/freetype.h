@@ -4,7 +4,7 @@
  *
  *   FreeType high-level API and common types (specification only).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -215,7 +215,6 @@ FT_BEGIN_HEADER
    *   FT_Get_Char_Index
    *   FT_Get_First_Char
    *   FT_Get_Next_Char
-   *   FT_Get_Name_Index
    *   FT_Load_Char
    *
    *   FT_OPEN_MEMORY
@@ -254,14 +253,15 @@ FT_BEGIN_HEADER
    *   FT_Get_Kerning
    *   FT_Kerning_Mode
    *   FT_Get_Track_Kerning
-   *   FT_Get_Glyph_Name
-   *   FT_Get_Postscript_Name
    *
    *   FT_CharMapRec
    *   FT_Select_Charmap
    *   FT_Set_Charmap
    *   FT_Get_Charmap_Index
    *
+   *   FT_Get_Name_Index
+   *   FT_Get_Glyph_Name
+   *   FT_Get_Postscript_Name
    *   FT_Get_FSType_Flags
    *   FT_Get_SubGlyph_Info
    *
@@ -646,7 +646,7 @@ FT_BEGIN_HEADER
    *
    * @note:
    *   Despite the name, this enumeration lists specific character
-   *   repertories (i.e., charsets), and not text encoding methods (e.g.,
+   *   repertoires (i.e., charsets), and not text encoding methods (e.g.,
    *   UTF-8, UTF-16, etc.).
    *
    *   Other encodings might be defined in the future.
@@ -779,7 +779,7 @@ FT_BEGIN_HEADER
    *   `encoding_id`.  If, for example, `encoding_id` is `TT_MAC_ID_ROMAN`
    *   and the language ID (minus~1) is `TT_MAC_LANGID_GREEK`, it is the
    *   Greek encoding, not Roman.  `TT_MAC_ID_ARABIC` with
-   *   `TT_MAC_LANGID_FARSI` means the Farsi variant the Arabic encoding.
+   *   `TT_MAC_LANGID_FARSI` means the Farsi variant of the Arabic encoding.
    */
   typedef enum  FT_Encoding_
   {
@@ -1167,9 +1167,9 @@ FT_BEGIN_HEADER
    *   FT_FACE_FLAG_KERNING ::
    *     The face contains kerning information.  If set, the kerning distance
    *     can be retrieved using the function @FT_Get_Kerning.  Otherwise the
-   *     function always return the vector (0,0).  Note that FreeType doesn't
-   *     handle kerning data from the SFNT 'GPOS' table (as present in many
-   *     OpenType fonts).
+   *     function always returns the vector (0,0).  Note that FreeType
+   *     doesn't handle kerning data from the SFNT 'GPOS' table (as present
+   *     in many OpenType fonts).
    *
    *   FT_FACE_FLAG_FAST_GLYPHS ::
    *     THIS FLAG IS DEPRECATED.  DO NOT USE OR TEST IT.
@@ -1892,13 +1892,13 @@ FT_BEGIN_HEADER
    *     The advance width of the unhinted glyph.  Its value is expressed in
    *     16.16 fractional pixels, unless @FT_LOAD_LINEAR_DESIGN is set when
    *     loading the glyph.  This field can be important to perform correct
-   *     WYSIWYG layout.  Only relevant for outline glyphs.
+   *     WYSIWYG layout.  Only relevant for scalable glyphs.
    *
    *   linearVertAdvance ::
    *     The advance height of the unhinted glyph.  Its value is expressed in
    *     16.16 fractional pixels, unless @FT_LOAD_LINEAR_DESIGN is set when
    *     loading the glyph.  This field can be important to perform correct
-   *     WYSIWYG layout.  Only relevant for outline glyphs.
+   *     WYSIWYG layout.  Only relevant for scalable glyphs.
    *
    *   advance ::
    *     This shorthand is, depending on @FT_LOAD_IGNORE_TRANSFORM, the
@@ -2593,8 +2593,8 @@ FT_BEGIN_HEADER
    *   stream attachments.
    */
   FT_EXPORT( FT_Error )
-  FT_Attach_Stream( FT_Face        face,
-                    FT_Open_Args*  parameters );
+  FT_Attach_Stream( FT_Face              face,
+                    const FT_Open_Args*  parameters );
 
 
   /**************************************************************************
@@ -3077,7 +3077,7 @@ FT_BEGIN_HEADER
    *
    *   FT_LOAD_NO_HINTING ::
    *     Disable hinting.  This generally generates 'blurrier' bitmap glyphs
-   *     when the glyph are rendered in any of the anti-aliased modes.  See
+   *     when the glyphs are rendered in any of the anti-aliased modes.  See
    *     also the note below.
    *
    *     This flag is implied by @FT_LOAD_NO_SCALE.
@@ -3434,7 +3434,7 @@ FT_BEGIN_HEADER
    *     are not interested in the value.
    *
    *   delta ::
-   *     A pointer a translation vector.  Set this to NULL if you are not
+   *     A pointer to a translation vector.  Set this to NULL if you are not
    *     interested in the value.
    *
    * @since:
@@ -3559,9 +3559,10 @@ FT_BEGIN_HEADER
    *
    *   2. The `sdf` rasterizer has limited support for handling intersecting
    *      contours and *cannot* handle self-intersecting contours whatsoever.
-   *      Self-intersection happens when a single connected contour intersect
-   *      itself at some point; having these in your font definitely pose a
-   *      problem to the rasterizer and cause artifacts, too.
+   *      Self-intersection happens when a single connected contour
+   *      intersects itself at some point; having these in your font
+   *      definitely poses a problem to the rasterizer and cause artifacts,
+   *      too.
    *
    *   3. Generating SDF for really small glyphs may result in undesirable
    *      output; the pixel grid (which stores distance information) becomes
@@ -3838,89 +3839,6 @@ FT_BEGIN_HEADER
                         FT_Fixed   point_size,
                         FT_Int     degree,
                         FT_Fixed*  akerning );
-
-
-  /**************************************************************************
-   *
-   * @function:
-   *   FT_Get_Glyph_Name
-   *
-   * @description:
-   *   Retrieve the ASCII name of a given glyph in a face.  This only works
-   *   for those faces where @FT_HAS_GLYPH_NAMES(face) returns~1.
-   *
-   * @input:
-   *   face ::
-   *     A handle to a source face object.
-   *
-   *   glyph_index ::
-   *     The glyph index.
-   *
-   *   buffer_max ::
-   *     The maximum number of bytes available in the buffer.
-   *
-   * @output:
-   *   buffer ::
-   *     A pointer to a target buffer where the name is copied to.
-   *
-   * @return:
-   *   FreeType error code.  0~means success.
-   *
-   * @note:
-   *   An error is returned if the face doesn't provide glyph names or if the
-   *   glyph index is invalid.  In all cases of failure, the first byte of
-   *   `buffer` is set to~0 to indicate an empty name.
-   *
-   *   The glyph name is truncated to fit within the buffer if it is too
-   *   long.  The returned string is always zero-terminated.
-   *
-   *   Be aware that FreeType reorders glyph indices internally so that glyph
-   *   index~0 always corresponds to the 'missing glyph' (called '.notdef').
-   *
-   *   This function always returns an error if the config macro
-   *   `FT_CONFIG_OPTION_NO_GLYPH_NAMES` is not defined in `ftoption.h`.
-   */
-  FT_EXPORT( FT_Error )
-  FT_Get_Glyph_Name( FT_Face     face,
-                     FT_UInt     glyph_index,
-                     FT_Pointer  buffer,
-                     FT_UInt     buffer_max );
-
-
-  /**************************************************************************
-   *
-   * @function:
-   *   FT_Get_Postscript_Name
-   *
-   * @description:
-   *   Retrieve the ASCII PostScript name of a given face, if available.
-   *   This only works with PostScript, TrueType, and OpenType fonts.
-   *
-   * @input:
-   *   face ::
-   *     A handle to the source face object.
-   *
-   * @return:
-   *   A pointer to the face's PostScript name.  `NULL` if unavailable.
-   *
-   * @note:
-   *   The returned pointer is owned by the face and is destroyed with it.
-   *
-   *   For variation fonts, this string changes if you select a different
-   *   instance, and you have to call `FT_Get_PostScript_Name` again to
-   *   retrieve it.  FreeType follows Adobe TechNote #5902, 'Generating
-   *   PostScript Names for Fonts Using OpenType Font Variations'.
-   *
-   *     https://download.macromedia.com/pub/developer/opentype/tech-notes/5902.AdobePSNameGeneration.html
-   *
-   *   [Since 2.9] Special PostScript names for named instances are only
-   *   returned if the named instance is set with @FT_Set_Named_Instance (and
-   *   the font has corresponding entries in its 'fvar' table).  If
-   *   @FT_IS_VARIATION returns true, the algorithmically derived PostScript
-   *   name is provided, not looking up special entries for named instances.
-   */
-  FT_EXPORT( const char* )
-  FT_Get_Postscript_Name( FT_Face  face );
 
 
   /**************************************************************************
@@ -4243,7 +4161,8 @@ FT_BEGIN_HEADER
    *   FT_Get_Name_Index
    *
    * @description:
-   *   Return the glyph index of a given glyph name.
+   *   Return the glyph index of a given glyph name.  This only works
+   *   for those faces where @FT_HAS_GLYPH_NAMES returns true.
    *
    * @input:
    *   face ::
@@ -4254,10 +4173,105 @@ FT_BEGIN_HEADER
    *
    * @return:
    *   The glyph index.  0~means 'undefined character code'.
+   *
+   * @note:
+   *   Acceptable glyph names might come from the [Adobe Glyph
+   *   List](https://github.com/adobe-type-tools/agl-aglfn).  See
+   *   @FT_Get_Glyph_Name for the inverse functionality.
+   *
+   *   This function has limited capabilities if the config macro
+   *   `FT_CONFIG_OPTION_POSTSCRIPT_NAMES` is not defined in `ftoption.h`:
+   *   It then works only for fonts that actually embed glyph names (which
+   *   many recent OpenType fonts do not).
    */
   FT_EXPORT( FT_UInt )
   FT_Get_Name_Index( FT_Face           face,
                      const FT_String*  glyph_name );
+
+
+  /**************************************************************************
+   *
+   * @function:
+   *   FT_Get_Glyph_Name
+   *
+   * @description:
+   *   Retrieve the ASCII name of a given glyph in a face.  This only works
+   *   for those faces where @FT_HAS_GLYPH_NAMES returns true.
+   *
+   * @input:
+   *   face ::
+   *     A handle to a source face object.
+   *
+   *   glyph_index ::
+   *     The glyph index.
+   *
+   *   buffer_max ::
+   *     The maximum number of bytes available in the buffer.
+   *
+   * @output:
+   *   buffer ::
+   *     A pointer to a target buffer where the name is copied to.
+   *
+   * @return:
+   *   FreeType error code.  0~means success.
+   *
+   * @note:
+   *   An error is returned if the face doesn't provide glyph names or if the
+   *   glyph index is invalid.  In all cases of failure, the first byte of
+   *   `buffer` is set to~0 to indicate an empty name.
+   *
+   *   The glyph name is truncated to fit within the buffer if it is too
+   *   long.  The returned string is always zero-terminated.
+   *
+   *   Be aware that FreeType reorders glyph indices internally so that glyph
+   *   index~0 always corresponds to the 'missing glyph' (called '.notdef').
+   *
+   *   This function has limited capabilities if the config macro
+   *   `FT_CONFIG_OPTION_POSTSCRIPT_NAMES` is not defined in `ftoption.h`:
+   *   It then works only for fonts that actually embed glyph names (which
+   *   many recent OpenType fonts do not).
+   */
+  FT_EXPORT( FT_Error )
+  FT_Get_Glyph_Name( FT_Face     face,
+                     FT_UInt     glyph_index,
+                     FT_Pointer  buffer,
+                     FT_UInt     buffer_max );
+
+
+  /**************************************************************************
+   *
+   * @function:
+   *   FT_Get_Postscript_Name
+   *
+   * @description:
+   *   Retrieve the ASCII PostScript name of a given face, if available.
+   *   This only works with PostScript, TrueType, and OpenType fonts.
+   *
+   * @input:
+   *   face ::
+   *     A handle to the source face object.
+   *
+   * @return:
+   *   A pointer to the face's PostScript name.  `NULL` if unavailable.
+   *
+   * @note:
+   *   The returned pointer is owned by the face and is destroyed with it.
+   *
+   *   For variation fonts, this string changes if you select a different
+   *   instance, and you have to call `FT_Get_PostScript_Name` again to
+   *   retrieve it.  FreeType follows Adobe TechNote #5902, 'Generating
+   *   PostScript Names for Fonts Using OpenType Font Variations'.
+   *
+   *     https://download.macromedia.com/pub/developer/opentype/tech-notes/5902.AdobePSNameGeneration.html
+   *
+   *   [Since 2.9] Special PostScript names for named instances are only
+   *   returned if the named instance is set with @FT_Set_Named_Instance (and
+   *   the font has corresponding entries in its 'fvar' table).  If
+   *   @FT_IS_VARIATION returns true, the algorithmically derived PostScript
+   *   name is provided, not looking up special entries for named instances.
+   */
+  FT_EXPORT( const char* )
+  FT_Get_Postscript_Name( FT_Face  face );
 
 
   /**************************************************************************
@@ -4345,13 +4359,6 @@ FT_BEGIN_HEADER
                         FT_Int       *p_arg2,
                         FT_Matrix    *p_transform );
 
-
-  /**************************************************************************
-   *
-   * @section:
-   *   base_interface
-   *
-   */
 
   /**************************************************************************
    *
@@ -4688,7 +4695,8 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   This section contains various functions used to perform computations
-   *   on 16.16 fixed-float numbers or 2d vectors.
+   *   on 16.16 fixed-point numbers or 2D vectors.  FreeType does not use
+   *   floating-point data types.
    *
    *   **Attention**: Most arithmetic functions take `FT_Long` as arguments.
    *   For historical reasons, FreeType was designed under the assumption
@@ -4941,8 +4949,8 @@ FT_BEGIN_HEADER
    *
    */
 #define FREETYPE_MAJOR  2
-#define FREETYPE_MINOR  12
-#define FREETYPE_PATCH  1
+#define FREETYPE_MINOR  13
+#define FREETYPE_PATCH  0
 
 
   /**************************************************************************

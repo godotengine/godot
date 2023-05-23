@@ -50,6 +50,7 @@ class Node;
 class ScriptEditor;
 class Texture2D;
 class VBoxContainer;
+class Window;
 
 class EditorInterface : public Object {
 	GDCLASS(EditorInterface, Object);
@@ -93,6 +94,11 @@ public:
 	bool is_distraction_free_mode_enabled() const;
 
 	float get_editor_scale() const;
+
+	void popup_dialog(Window *p_dialog, const Rect2i &p_screen_rect = Rect2i());
+	void popup_dialog_centered(Window *p_dialog, const Size2i &p_minsize = Size2i());
+	void popup_dialog_centered_ratio(Window *p_dialog, float p_ratio = 0.8);
+	void popup_dialog_centered_clamped(Window *p_dialog, const Size2i &p_size = Size2i(), float p_fallback_ratio = 0.75);
 
 	// Editor docks.
 

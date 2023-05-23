@@ -609,6 +609,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.render_mode_defines["ambient_light_disabled"] = "#define AMBIENT_LIGHT_DISABLED\n";
 		actions.render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
+		actions.render_mode_defines["debug_shadow_splits"] = "#define DEBUG_DRAW_PSSM_SPLITS\n";
 
 		actions.sampler_array_name = "material_samplers";
 		actions.base_texture_binding_index = 1;
@@ -683,6 +684,30 @@ void fragment() {
 	}
 
 	{
+		debug_shadow_splits_material_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(debug_shadow_splits_material_shader);
+		// Use relatively low opacity so that more "layers" of overlapping objects can be distinguished.
+		material_storage->shader_set_code(debug_shadow_splits_material_shader, R"(
+// 3D debug shadow splits mode shader(mobile).
+
+shader_type spatial;
+
+render_mode debug_shadow_splits;
+
+void fragment() {
+	ALBEDO = vec3(1.0, 1.0, 1.0);
+}
+)");
+		debug_shadow_splits_material = material_storage->material_allocate();
+		material_storage->material_initialize(debug_shadow_splits_material);
+		material_storage->material_set_shader(debug_shadow_splits_material, debug_shadow_splits_material_shader);
+
+		MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(debug_shadow_splits_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
+		debug_shadow_splits_material_shader_ptr = md->shader_data;
+		debug_shadow_splits_material_uniform_set = md->uniform_set;
+	}
+
+	{
 		default_vec4_xform_buffer = RD::get_singleton()->storage_buffer_create(256);
 		Vector<RD::Uniform> uniforms;
 		RD::Uniform u;
@@ -724,7 +749,9 @@ SceneShaderForwardMobile::~SceneShaderForwardMobile() {
 
 	material_storage->shader_free(overdraw_material_shader);
 	material_storage->shader_free(default_shader);
+	material_storage->shader_free(debug_shadow_splits_material_shader);
 
 	material_storage->material_free(overdraw_material);
 	material_storage->material_free(default_material);
+	material_storage->material_free(debug_shadow_splits_material);
 }

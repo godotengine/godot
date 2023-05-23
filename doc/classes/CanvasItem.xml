@@ -171,7 +171,7 @@
 			<param index="1" name="color" type="Color" />
 			<param index="2" name="width" type="float" default="-1.0" />
 			<description>
-				Draws multiple disconnected lines with a uniform [param color]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
+				Draws multiple disconnected lines with a uniform [param width] and [param color]. Each line is defined by two consecutive points from [param points] array, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
@@ -181,7 +181,7 @@
 			<param index="1" name="colors" type="PackedColorArray" />
 			<param index="2" name="width" type="float" default="-1.0" />
 			<description>
-				Draws multiple disconnected lines with a uniform [param width] and segment-by-segment coloring. Colors assigned to line segments match by index between [param points] and [param colors]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
+				Draws multiple disconnected lines with a uniform [param width] and segment-by-segment coloring. Each segment is defined by two consecutive points from [param points] array and a corresponding color from [param colors] array, i.e. i-th segment consists of [code]points[2 * i][/code], [code]points[2 * i + 1][/code] endpoints and has [code]colors[i][/code] color. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
 				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
@@ -196,7 +196,7 @@
 			<param index="6" name="max_lines" type="int" default="-1" />
 			<param index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="8" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
-			<param index="9" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="9" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<param index="10" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -215,7 +215,7 @@
 			<param index="7" name="size" type="int" default="1" />
 			<param index="8" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="9" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
-			<param index="10" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="10" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<param index="11" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="12" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -258,7 +258,7 @@
 			<param index="2" name="width" type="float" default="-1.0" />
 			<param index="3" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws interconnected line segments with a uniform [param width] and segment-by-segment coloring, and optional antialiasing (supported only for positive [param width]). Colors assigned to line segments match by index between [param points] and [param colors]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
+				Draws interconnected line segments with a uniform [param width], point-by-point coloring, and optional antialiasing (supported only for positive [param width]). Colors assigned to line points match by index between [param points] and [param colors], i.e. each line segment is filled with a gradient between the colors of the endpoints. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw disconnected lines, use [method draw_multiline_colors] instead. See also [method draw_polygon].
 				If [param width] is negative, then the polyline is drawn using [constant RenderingServer.PRIMITIVE_LINE_STRIP]. This means that when the CanvasItem is scaled, the polyline will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
@@ -311,7 +311,7 @@
 			<param index="4" name="width" type="float" default="-1" />
 			<param index="5" name="font_size" type="int" default="16" />
 			<param index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="7" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="7" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<param index="8" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -348,7 +348,7 @@
 			<param index="5" name="font_size" type="int" default="16" />
 			<param index="6" name="size" type="int" default="1" />
 			<param index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="8" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="8" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<param index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>

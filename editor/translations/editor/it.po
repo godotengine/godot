@@ -82,13 +82,16 @@
 # gianmarco malandra <giamminho12@gmail.com>, 2023.
 # Francesco Franchina <cescus92@gmail.com>, 2023.
 # "Matteo A." <psyduck.boh@gmail.com>, 2023.
+# Davide Mora <mora.davide07@gmail.com>, 2023.
+# Francesco Falcone <francesco01.falcone@gmail.com>, 2023.
+# GumaD3v <matteo.gugliuzza08@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-11 13:46+0000\n"
-"Last-Translator: Riteo Siuga <riteo@posteo.net>\n"
+"PO-Revision-Date: 2023-05-17 00:52+0000\n"
+"Last-Translator: GumaD3v <matteo.gugliuzza08@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -96,7 +99,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Non impostato"
@@ -265,6 +268,12 @@ msgstr "Gesto d'ingrandimento in (%s) con un fattore di %s"
 msgid "Pan Gesture at (%s) with delta (%s)"
 msgstr "Gesto panoramico in (%s) con un delta di (%s)"
 
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "Input MIDI sul Canale=%s Message=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Evento Input con Scorciatoia=%s"
+
 msgid "Accept"
 msgstr "Accetta"
 
@@ -417,6 +426,9 @@ msgstr "Reimposta i cursori e la selezione"
 
 msgid "Toggle Insert Mode"
 msgstr "Commuta la modalità d'inserimento"
+
+msgid "Submit Text"
+msgstr "Invia il Testo"
 
 msgid "Duplicate Nodes"
 msgstr "Duplica Nodi"
@@ -601,6 +613,9 @@ msgstr "Seleziona tutte le chiavi"
 msgid "Deselect All Keys"
 msgstr "Deseleziona tutte le chiavi"
 
+msgid "Animation Change Transition"
+msgstr "Transizione al cambio dell'Animazione"
+
 msgid "Animation Change Keyframe Value"
 msgstr "Cambia il valore del fotogramma chiave di un'animazione"
 
@@ -685,6 +700,9 @@ msgstr "Cambia Percorso Traccia"
 
 msgid "Toggle this track on/off."
 msgstr "Abilita/Disabilita questa traccia."
+
+msgid "Use Blend"
+msgstr "Usa Blend"
 
 msgid "Update Mode (How this property is set)"
 msgstr "Modalità di aggiornamento (come viene impostata questa proprietà)"
@@ -2325,6 +2343,12 @@ msgstr "Apri"
 
 msgid "Select Current Folder"
 msgstr "Seleziona la cartella attuale"
+
+msgid "Cannot save file with an empty filename."
+msgstr "Impossibile salvare un file con il nome vuoto"
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "Impossibile salvare un file il cui nome inizia con un punto"
 
 msgid "Select This Folder"
 msgstr "Seleziona questa cartella"
@@ -3975,7 +3999,7 @@ msgid "Left Stick Left, Joystick 0 Left"
 msgstr "Levetta sinistra verso sinistra, joystick 0 verso sinistra"
 
 msgid "Left Stick Right, Joystick 0 Right"
-msgstr "Levetta sinistra verso detra, joystick 0 verso destra"
+msgstr "Levetta sinistra verso destra, joystick 0 verso destra"
 
 msgid "Left Stick Up, Joystick 0 Up"
 msgstr "Levetta sinistra verso su, joystick 0 verso su"
@@ -4349,6 +4373,9 @@ msgstr ""
 "Tutti i preset devono avere un percorso di esportazione definito affinché "
 "\"Esporta tutto\" funzioni."
 
+msgid "Resources to export:"
+msgstr "Risorse da esportare:"
+
 msgid "Delete preset '%s'?"
 msgstr "Eliminare preset \"%s\"?"
 
@@ -4405,9 +4432,6 @@ msgstr "Esporta come server dedicato"
 
 msgid "Export Mode:"
 msgstr "Modalità d'Esportazione:"
-
-msgid "Resources to export:"
-msgstr "Risorse da esportare:"
 
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"
@@ -14309,5 +14333,17 @@ msgstr "Previsto un identificatore o una \"[\"."
 msgid "Empty structs are not allowed."
 msgstr "Gli struct vuoti sono vietati."
 
+msgid "The const '%s' is declared but never used."
+msgstr "La costante '%s' è dichiarata ma mai utilizzata."
+
 msgid "The function '%s' is declared but never used."
 msgstr "La funzione '%s' è dichiarata ma mai utilizzata."
+
+msgid "The struct '%s' is declared but never used."
+msgstr "Lo struct '%s' viene dichiarata ma mai utilizzata."
+
+msgid "The uniform '%s' is declared but never used."
+msgstr "Lo uniform '%s' è dichiarato ma mai usato."
+
+msgid "The local variable '%s' is declared but never used."
+msgstr "La variabile locale '%s' è dichiarata ma mai usata."

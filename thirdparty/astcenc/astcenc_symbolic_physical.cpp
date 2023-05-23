@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2021 Arm Limited
+// Copyright 2011-2023 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -22,6 +22,50 @@
 #include "astcenc_internal.h"
 
 #include <cassert>
+
+/**
+ * @brief Reverse bits in a byte.
+ *
+ * @param p   The value to reverse.
+  *
+ * @return The reversed result.
+ */
+static inline int bitrev8(int p)
+{
+	p = ((p & 0x0F) << 4) | ((p >> 4) & 0x0F);
+	p = ((p & 0x33) << 2) | ((p >> 2) & 0x33);
+	p = ((p & 0x55) << 1) | ((p >> 1) & 0x55);
+	return p;
+}
+
+
+/**
+ * @brief Read up to 8 bits at an arbitrary bit offset.
+ *
+ * The stored value is at most 8 bits, but can be stored at an offset of between 0 and 7 bits so may
+ * span two separate bytes in memory.
+ *
+ * @param         bitcount    The number of bits to read.
+ * @param         bitoffset   The bit offset to read from, between 0 and 7.
+ * @param[in,out] ptr         The data pointer to read from.
+ *
+ * @return The read value.
+ */
+static inline int read_bits(
+	int bitcount,
+	int bitoffset,
+	const uint8_t* ptr
+) {
+	int mask = (1 << bitcount) - 1;
+	ptr += bitoffset >> 3;
+	bitoffset &= 7;
+	int value = ptr[0] | (ptr[1] << 8);
+	value >>= bitoffset;
+	value &= mask;
+	return value;
+}
+
+#if !defined(ASTCENC_DECOMPRESS_ONLY)
 
 /**
  * @brief Write up to 8 bits at an arbitrary bit offset.
@@ -52,47 +96,6 @@ static inline void write_bits(
 	ptr[0] |= value;
 	ptr[1] &= mask >> 8;
 	ptr[1] |= value >> 8;
-}
-
-/**
- * @brief Read up to 8 bits at an arbitrary bit offset.
- *
- * The stored value is at most 8 bits, but can be stored at an offset of between 0 and 7 bits so may
- * span two separate bytes in memory.
- *
- * @param         bitcount    The number of bits to read.
- * @param         bitoffset   The bit offset to read from, between 0 and 7.
- * @param[in,out] ptr         The data pointer to read from.
- *
- * @return The read value.
- */
-static inline int read_bits(
-	int bitcount,
-	int bitoffset,
-	const uint8_t* ptr
-) {
-	int mask = (1 << bitcount) - 1;
-	ptr += bitoffset >> 3;
-	bitoffset &= 7;
-	int value = ptr[0] | (ptr[1] << 8);
-	value >>= bitoffset;
-	value &= mask;
-	return value;
-}
-
-/**
- * @brief Reverse bits in a byte.
- *
- * @param p   The value to reverse.
-  *
- * @return The reversed result.
- */
-static inline int bitrev8(int p)
-{
-	p = ((p & 0x0F) << 4) | ((p >> 4) & 0x0F);
-	p = ((p & 0x33) << 2) | ((p >> 2) & 0x33);
-	p = ((p & 0x55) << 1) | ((p >> 1) & 0x55);
-	return p;
 }
 
 /* See header for documentation. */
@@ -281,6 +284,8 @@ void symbolic_to_physical(
 	encode_ise(scb.get_color_quant_mode(), valuecount_to_encode, values_to_encode, pcb.data,
 	           scb.partition_count == 1 ? 17 : 19 + PARTITION_INDEX_BITS);
 }
+
+#endif
 
 /* See header for documentation. */
 void physical_to_symbolic(

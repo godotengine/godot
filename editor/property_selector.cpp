@@ -138,13 +138,13 @@ void PropertySelector::_update_search() {
 			search_options->get_theme_icon(SNAME("Vector3i"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Transform2D"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")), // Vector4i, needs icon.
+			search_options->get_theme_icon(SNAME("Vector4i"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Plane"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Quaternion"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("AABB"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Basis"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
-			search_options->get_theme_icon(SNAME("Variant"), SNAME("EditorIcons")), // Projection, needs icon.
+			search_options->get_theme_icon(SNAME("Projection"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("StringName"), SNAME("EditorIcons")),
 			search_options->get_theme_icon(SNAME("NodePath"), SNAME("EditorIcons")),

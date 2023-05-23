@@ -118,7 +118,10 @@ private:
 	Ref<Material> material;
 
 	mutable Transform2D global_transform;
-	mutable bool global_invalid = true;
+	mutable MTFlag global_invalid;
+
+	_FORCE_INLINE_ bool _is_global_invalid() const { return is_group_processing() ? global_invalid.mt.is_set() : global_invalid.st; }
+	void _set_global_invalid(bool p_invalid) const;
 
 	void _top_level_raise_self();
 
@@ -144,6 +147,8 @@ private:
 	void _update_texture_repeat_changed(bool p_propagate);
 	void _refresh_texture_filter_cache();
 	void _update_texture_filter_changed(bool p_propagate);
+
+	void _notify_transform_deferred();
 
 protected:
 	_FORCE_INLINE_ void _notify_transform() {

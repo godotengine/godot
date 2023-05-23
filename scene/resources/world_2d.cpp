@@ -83,6 +83,14 @@ PhysicsDirectSpaceState2D *World2D::get_direct_space_state() {
 	return PhysicsServer2D::get_singleton()->space_get_direct_state(get_space());
 }
 
+void World2D::register_viewport(Viewport *p_viewport) {
+	viewports.insert(p_viewport);
+}
+
+void World2D::remove_viewport(Viewport *p_viewport) {
+	viewports.erase(p_viewport);
+}
+
 World2D::World2D() {
 	canvas = RenderingServer::get_singleton()->canvas_create();
 }

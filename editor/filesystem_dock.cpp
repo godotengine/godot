@@ -47,6 +47,7 @@
 #include "editor/gui/editor_dir_dialog.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/import_dock.h"
+#include "editor/plugins/editor_resource_tooltip_plugins.h"
 #include "editor/scene_create_dialog.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/shader_create_dialog.h"
@@ -54,9 +55,26 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/progress_bar.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
+
+Control *FileSystemTree::make_custom_tooltip(const String &p_text) const {
+	TreeItem *item = get_item_at_position(get_local_mouse_position());
+	if (!item) {
+		return nullptr;
+	}
+	return FileSystemDock::get_singleton()->create_tooltip_for_path(item->get_metadata(0));
+}
+
+Control *FileSystemList::make_custom_tooltip(const String &p_text) const {
+	int idx = get_item_at_position(get_local_mouse_position());
+	if (idx == -1) {
+		return nullptr;
+	}
+	return FileSystemDock::get_singleton()->create_tooltip_for_path(get_item_metadata(idx));
+}
 
 FileSystemDock *FileSystemDock::singleton = nullptr;
 
@@ -442,6 +460,8 @@ void FileSystemDock::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			overwrite_dialog_scroll->add_theme_style_override("panel", get_theme_stylebox("panel", "Tree"));
+
 			if (is_visible_in_tree()) {
 				_update_display_mode(true);
 			}
@@ -1707,11 +1727,12 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		Vector<String> conflicting_items = _check_existing();
 		if (!conflicting_items.is_empty()) {
 			// Ask to do something.
-			overwrite_dialog->set_text(vformat(
-					p_copy ? TTR("The following files or folders conflict with items in the target location '%s':\n\n%s\n\nDo you wish to overwrite them or rename the copied files?")
-						   : TTR("The following files or folders conflict with items in the target location '%s':\n\n%s\n\nDo you wish to overwrite them or rename the moved files?"),
-					to_move_path,
-					String("\n").join(conflicting_items)));
+			overwrite_dialog_header->set_text(vformat(
+					TTR("The following files or folders conflict with items in the target location '%s':"), to_move_path));
+			overwrite_dialog_file_list->set_text(String("\n").join(conflicting_items));
+			overwrite_dialog_footer->set_text(
+					p_copy ? TTR("Do you wish to overwrite them or rename the copied files?")
+						   : TTR("Do you wish to overwrite them or rename the moved files?"));
 			overwrite_dialog->popup_centered();
 			return;
 		}
@@ -2247,6 +2268,41 @@ void FileSystemDock::set_file_list_display_mode(FileListDisplayMode p_mode) {
 	}
 
 	_toggle_file_display();
+}
+
+void FileSystemDock::add_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin) {
+	tooltip_plugins.push_back(p_plugin);
+}
+
+void FileSystemDock::remove_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin) {
+	int index = tooltip_plugins.find(p_plugin);
+	ERR_FAIL_COND_MSG(index == -1, "Can't remove plugin that wasn't registered.");
+	tooltip_plugins.remove_at(index);
+}
+
+Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {
+	if (DirAccess::exists(p_path)) {
+		// No tooltip for directory.
+		return nullptr;
+	}
+
+	const String type = ResourceLoader::get_resource_type(p_path);
+	Control *tooltip = nullptr;
+
+	for (const Ref<EditorResourceTooltipPlugin> &plugin : tooltip_plugins) {
+		if (plugin->handles(type)) {
+			tooltip = plugin->make_tooltip_for_path(p_path, EditorResourcePreview::get_singleton()->get_preview_metadata(p_path));
+		}
+
+		if (tooltip) {
+			break;
+		}
+	}
+
+	if (!tooltip) {
+		tooltip = EditorResourceTooltipPlugin::make_default_tooltip(p_path);
+	}
+	return tooltip;
 }
 
 Variant FileSystemDock::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
@@ -3130,6 +3186,9 @@ void FileSystemDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update_import_dock"), &FileSystemDock::_update_import_dock);
 
+	ClassDB::bind_method(D_METHOD("add_resource_tooltip_plugin", "plugin"), &FileSystemDock::add_resource_tooltip_plugin);
+	ClassDB::bind_method(D_METHOD("remove_resource_tooltip_plugin", "plugin"), &FileSystemDock::remove_resource_tooltip_plugin);
+
 	ADD_SIGNAL(MethodInfo("inherit", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("instantiate", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 
@@ -3227,7 +3286,7 @@ FileSystemDock::FileSystemDock() {
 	split_box->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(split_box);
 
-	tree = memnew(Tree);
+	tree = memnew(FileSystemTree);
 
 	tree->set_hide_root(true);
 	SET_DRAG_FORWARDING_GCD(tree, FileSystemDock);
@@ -3266,7 +3325,7 @@ FileSystemDock::FileSystemDock() {
 	button_file_list_display_mode->set_flat(true);
 	path_hb->add_child(button_file_list_display_mode);
 
-	files = memnew(ItemList);
+	files = memnew(FileSystemList);
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	SET_DRAG_FORWARDING_GCD(files, FileSystemDock);
@@ -3312,6 +3371,22 @@ FileSystemDock::FileSystemDock() {
 	overwrite_dialog->add_button(TTR("Keep Both"), true)->connect("pressed", callable_mp(this, &FileSystemDock::_overwrite_dialog_action).bind(false));
 	overwrite_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_overwrite_dialog_action).bind(true));
 
+	VBoxContainer *overwrite_dialog_vb = memnew(VBoxContainer);
+	overwrite_dialog->add_child(overwrite_dialog_vb);
+
+	overwrite_dialog_header = memnew(Label);
+	overwrite_dialog_vb->add_child(overwrite_dialog_header);
+
+	overwrite_dialog_scroll = memnew(ScrollContainer);
+	overwrite_dialog_vb->add_child(overwrite_dialog_scroll);
+	overwrite_dialog_scroll->set_custom_minimum_size(Vector2(400, 600) * EDSCALE);
+
+	overwrite_dialog_file_list = memnew(Label);
+	overwrite_dialog_scroll->add_child(overwrite_dialog_file_list);
+
+	overwrite_dialog_footer = memnew(Label);
+	overwrite_dialog_vb->add_child(overwrite_dialog_footer);
+
 	duplicate_dialog = memnew(ConfirmationDialog);
 	VBoxContainer *duplicate_dialog_vb = memnew(VBoxContainer);
 	duplicate_dialog->add_child(duplicate_dialog_vb);
@@ -3355,6 +3430,8 @@ FileSystemDock::FileSystemDock() {
 	display_mode = DISPLAY_MODE_TREE_ONLY;
 	old_display_mode = DISPLAY_MODE_TREE_ONLY;
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
+
+	add_resource_tooltip_plugin(memnew(EditorTextureTooltipPlugin));
 }
 
 FileSystemDock::~FileSystemDock() {

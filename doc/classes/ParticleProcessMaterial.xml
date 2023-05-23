@@ -308,15 +308,16 @@
 			This value controls the overall scale/frequency of the turbulence noise pattern.
 			A small scale will result in smaller features with more detail while a high scale will result in smoother noise with larger features.
 		</member>
-		<member name="turbulence_noise_speed" type="Vector3" setter="set_turbulence_noise_speed" getter="get_turbulence_noise_speed" default="Vector3(0.5, 0.5, 0.5)">
-			The movement speed of the turbulence pattern. This changes how quickly the noise changes over time.
-			A value of [code]Vector3(0.0, 0.0, 0.0)[/code] will freeze the turbulence pattern in place.
+		<member name="turbulence_noise_speed" type="Vector3" setter="set_turbulence_noise_speed" getter="get_turbulence_noise_speed" default="Vector3(0, 0, 0)">
+			A scrolling velocity for the turbulence field. This sets a directional trend for the pattern to move in over time.
+			The default value of [code]Vector3(0, 0, 0)[/code] turns off the scrolling.
 		</member>
-		<member name="turbulence_noise_speed_random" type="float" setter="set_turbulence_noise_speed_random" getter="get_turbulence_noise_speed_random" default="0.0">
-			Use to influence the noise speed in a random pattern. This helps break up visible movement patterns.
+		<member name="turbulence_noise_speed_random" type="float" setter="set_turbulence_noise_speed_random" getter="get_turbulence_noise_speed_random" default="0.2">
+			The in-place rate of change of the turbulence field. This defines how quickly the noise pattern varies over time.
+			A value of 0.0 will result in a fixed pattern.
 		</member>
 		<member name="turbulence_noise_strength" type="float" setter="set_turbulence_noise_strength" getter="get_turbulence_noise_strength" default="1.0">
-			The turbulence noise strength. Increasing this will result in a stronger, more contrasting noise pattern.
+			The turbulence noise strength. Increasing this will result in a stronger, more contrasting, flow pattern.
 		</member>
 	</members>
 	<constants>

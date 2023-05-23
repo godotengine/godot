@@ -32,13 +32,14 @@
 # Thuany <thutymsoares@gmail.com>, 2022.
 # Isaque Mendes <isaquemendes405@gmail.com>, 2022.
 # Alex Bruno Boiniak <aboiniak@gmail.com>, 2022.
+# Deolindo <deolindojvn@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-02 22:43+0000\n"
-"Last-Translator: ssantos <ssantos@web.de>\n"
+"PO-Revision-Date: 2023-04-20 17:02+0000\n"
+"Last-Translator: Deolindo <deolindojvn@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pt/>\n"
 "Language: pt\n"
@@ -46,7 +47,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -93,6 +94,9 @@ msgstr "Tipo de Loop Principal"
 msgid "Auto Accept Quit"
 msgstr "Auto Aceitar Sair"
 
+msgid "Quit on Go Back"
+msgstr "Sair ao Voltar"
+
 msgid "Display"
 msgstr "Exibição"
 
@@ -125,6 +129,9 @@ msgstr "Redimensionável"
 
 msgid "Borderless"
 msgstr "Sem bordas"
+
+msgid "Always on Top"
+msgstr "Sempre no topo"
 
 msgid "Transparent"
 msgstr "Transparente"

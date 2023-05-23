@@ -82,7 +82,7 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_justification_flags", "flags"), &TextParagraph::set_justification_flags);
 	ClassDB::bind_method(D_METHOD("get_justification_flags"), &TextParagraph::get_justification_flags);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification,Word Justification,Trim Edge Spaces After Justification,Justify Only After Last Tab,Constrain Ellipsis"), "set_justification_flags", "get_justification_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Trim Edge Spaces After Justification:4,Justify Only After Last Tab:8,Constrain Ellipsis:16,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
 
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &TextParagraph::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &TextParagraph::get_text_overrun_behavior);
@@ -232,9 +232,25 @@ void TextParagraph::_shape_lines() {
 				overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
 			}
 			if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
+				int jst_to_line = visible_lines;
+				if (lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
+					jst_to_line = lines_rid.size();
+				} else {
+					if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
+						jst_to_line = visible_lines - 1;
+					}
+					if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
+						for (int i = visible_lines - 1; i >= 0; i--) {
+							if (TS->shaped_text_has_visible_chars(lines_rid[i])) {
+								jst_to_line = i;
+								break;
+							}
+						}
+					}
+				}
 				for (int i = 0; i < (int)lines_rid.size(); i++) {
 					float line_w = (i <= dropcap_lines) ? (width - h_offset) : width;
-					if (i < visible_lines - 1 || (int)lines_rid.size() == 1) {
+					if (i < jst_to_line) {
 						TS->shaped_text_fit_to_width(lines_rid[i], line_w, jst_flags);
 					} else if (i == (visible_lines - 1)) {
 						TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], line_w, overrun_flags);
@@ -245,9 +261,25 @@ void TextParagraph::_shape_lines() {
 			}
 		} else {
 			// Autowrap disabled.
+			int jst_to_line = lines_rid.size();
+			if (lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
+				jst_to_line = lines_rid.size();
+			} else {
+				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
+					jst_to_line = lines_rid.size() - 1;
+				}
+				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
+					for (int i = lines_rid.size() - 1; i >= 0; i--) {
+						if (TS->shaped_text_has_visible_chars(lines_rid[i])) {
+							jst_to_line = i;
+							break;
+						}
+					}
+				}
+			}
 			for (int i = 0; i < (int)lines_rid.size(); i++) {
 				float line_w = (i <= dropcap_lines) ? (width - h_offset) : width;
-				if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
+				if (i < jst_to_line && alignment == HORIZONTAL_ALIGNMENT_FILL) {
 					TS->shaped_text_fit_to_width(lines_rid[i], line_w, jst_flags);
 					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], line_w, overrun_flags);

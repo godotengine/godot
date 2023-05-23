@@ -328,6 +328,12 @@
 				If [param include_internal] is [code]false[/code], the index won't take internal children into account, i.e. first non-internal child will have index of 0 (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
+		<method name="get_last_exclusive_window" qualifiers="const">
+			<return type="Window" />
+			<description>
+				Returns the [Window] that contains this node, or the last exclusive child in a chain of windows starting with the one that contains this node.
+			</description>
+		</method>
 		<method name="get_multiplayer_authority" qualifiers="const">
 			<return type="int" />
 			<description>

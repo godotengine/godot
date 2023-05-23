@@ -24,13 +24,16 @@
 # MInhTriet <luckyblockblack@gmail.com>, 2022.
 # Nhật Huy <nhat.huy.7996@gmail.com>, 2022.
 # Trần Trọng Hiếu <anhdaden50@gmail.com>, 2023.
+# Trần Văn Luyện <lightlyn203@gmail.com>, 2023.
+# Bế Trọng Nghĩa <benghia1st@gmail.com>, 2023.
+# Ky Bui Van <ky.buivan.dev@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-03 02:52+0000\n"
-"Last-Translator: Trần Trọng Hiếu <anhdaden50@gmail.com>\n"
+"PO-Revision-Date: 2023-05-19 06:49+0000\n"
+"Last-Translator: Ky Bui Van <ky.buivan.dev@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -38,10 +41,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
+
+msgid "Unset"
+msgstr "Hủy bỏ"
 
 msgid "Physical"
-msgstr "Vật Lí"
+msgstr "Vật lý"
 
 msgid "Left Mouse Button"
 msgstr "Nút Chuột Trái"
@@ -52,6 +58,15 @@ msgstr "Nút Chuột Phải"
 msgid "Middle Mouse Button"
 msgstr "Nút Chuột Giữa"
 
+msgid "Mouse Wheel Up"
+msgstr "Lăn Lên"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Nút lật trang ngón cái 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Nút lật trang ngón cái 2"
+
 msgid "Button"
 msgstr "Button (nút, phím)"
 
@@ -61,17 +76,38 @@ msgstr "Nháy Đúp"
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Chuyển động chuột tại vị trị (%s) với vận tốc (%s)"
 
+msgid "Accept"
+msgstr "Xác nhận"
+
 msgid "Select"
 msgstr "Chọn"
 
 msgid "Cancel"
 msgstr "Huỷ bỏ"
 
+msgid "Focus Next"
+msgstr "Tập trung vào tiếp theo"
+
+msgid "Focus Prev"
+msgstr "Tập trung vào trước đó"
+
+msgid "Left"
+msgstr "Trái"
+
+msgid "Right"
+msgstr "Phải"
+
 msgid "Up"
 msgstr "Lên"
 
 msgid "Down"
 msgstr "Xuống"
+
+msgid "Page Up"
+msgstr "Lên trang"
+
+msgid "Page Down"
+msgstr "Xuống trang"
 
 msgid "End"
 msgstr "Cuối"
@@ -90,6 +126,18 @@ msgstr "Hoàn tác"
 
 msgid "Redo"
 msgstr "Làm lại"
+
+msgid "Completion Query"
+msgstr "Truy vấn hoàn thành"
+
+msgid "New Line"
+msgstr "Dòng mới"
+
+msgid "New Blank Line"
+msgstr "Dòng trống mới"
+
+msgid "New Line Above"
+msgstr "Dòng mới ở trên"
 
 msgid "Indent"
 msgstr "Thụt lề"
@@ -358,6 +406,9 @@ msgstr "Vị trí"
 
 msgid "Scale"
 msgstr "Tỷ lệ"
+
+msgid "BlendShape"
+msgstr "Làm mịn các dạng hình"
 
 msgid "Methods"
 msgstr "Phương thức"
@@ -1104,6 +1155,9 @@ msgstr "Biến toàn cục"
 msgid "Navigation"
 msgstr "Điều hướng"
 
+msgid "Vulkan"
+msgstr "Vulkan"
+
 msgid "Nodes and Classes:"
 msgstr "Các nút và lớp:"
 
@@ -1392,6 +1446,9 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "Nhập lại tài nguyên"
 
+msgid "Experimental"
+msgstr "Tính thử nghiệm"
+
 msgid "Top"
 msgstr "Trên đầu"
 
@@ -1422,6 +1479,12 @@ msgstr "ghi đè %s:"
 msgid "default:"
 msgstr "mặc định:"
 
+msgid "Constructors"
+msgstr "Hàm tạo"
+
+msgid "Operators"
+msgstr "Các toán tử"
+
 msgid "Theme Properties"
 msgstr "Thuộc tính Chủ đề"
 
@@ -1429,7 +1492,7 @@ msgid "Colors"
 msgstr "Màu"
 
 msgid "Constants"
-msgstr "Hằng"
+msgstr "Các hằng số"
 
 msgid "Fonts"
 msgstr "Phông chữ"
@@ -1444,10 +1507,10 @@ msgid "Styles"
 msgstr "Kiểu dáng"
 
 msgid "Enumerations"
-msgstr "Liệt kê"
+msgstr "Tập hợp hằng số"
 
 msgid "Property Descriptions"
-msgstr "Mô tả huộc tính"
+msgstr "Các mô tả thuộc tính"
 
 msgid "(value)"
 msgstr "(giá trị)"
@@ -1459,8 +1522,14 @@ msgstr ""
 "Hiện thuộc tính này chưa được mô tả. Các bạn [color=$color][url=$url]đóng "
 "góp[/url][/color] giúp chúng mình nha!"
 
+msgid "Constructor Descriptions"
+msgstr "Các mô tả hàm tạo"
+
 msgid "Method Descriptions"
-msgstr "Mô tả phương thức"
+msgstr "Các mô tả phương thức"
+
+msgid "Operator Descriptions"
+msgstr "Các mô tả toán tử"
 
 msgid "%d match."
 msgstr "%d khớp."
@@ -1930,7 +1999,7 @@ msgid "Save Scene"
 msgstr "Lưu Cảnh"
 
 msgid "MeshLibrary..."
-msgstr "MeshLibrary..."
+msgstr "Thư viện hình lưới..."
 
 msgid "Close Scene"
 msgstr "Đóng Cảnh"
@@ -2030,7 +2099,7 @@ msgid "Update Continuously"
 msgstr "Cập nhật Liên tục"
 
 msgid "Hide Update Spinner"
-msgstr "Ẩn cái xoay xoay cập nhật"
+msgstr "Ẩn cập nhật spinner"
 
 msgid "FileSystem"
 msgstr "Hệ thống tệp tin"
@@ -2408,6 +2477,9 @@ msgstr ""
 msgid "Runnable"
 msgstr "Chạy được"
 
+msgid "Resources to export:"
+msgstr "Tài nguyên để xuất:"
+
 msgid "Release"
 msgstr "Phát hành"
 
@@ -2440,9 +2512,6 @@ msgstr "Xuất tài nguyên đã chọn (cùng các phần phụ thuộc)"
 
 msgid "Export Mode:"
 msgstr "Chế độ xuất:"
-
-msgid "Resources to export:"
-msgstr "Tài nguyên để xuất:"
 
 msgid "Keep"
 msgstr "Giữ"
@@ -2698,6 +2767,9 @@ msgstr "Lỗi khi chạy tập lệnh sau nhập:"
 
 msgid "Saving..."
 msgstr "Đang lưu ..."
+
+msgid "2D"
+msgstr "2D"
 
 msgid "3D"
 msgstr "3D"
@@ -3573,6 +3645,9 @@ msgstr "Pixel ở Viền cạnh Có hướng"
 msgid "Create Emission Points From Node"
 msgstr "Tạo điểm phát xạ từ nút"
 
+msgid "Flat 1"
+msgstr "Flat 1"
+
 msgid "Ease Out"
 msgstr "Trườn ra"
 
@@ -3665,6 +3740,9 @@ msgstr ""
 
 msgid "Synchronize Script Changes"
 msgstr "Đồng bộ hóa thay đổi trong tập lệnh"
+
+msgid " - Variation"
+msgstr " - Biến"
 
 msgid "Convert to CPUParticles2D"
 msgstr "Chuyển thành CPUParticles2D"
@@ -3829,8 +3907,17 @@ msgstr "Biến đổi theo trục Z."
 msgid "View Plane Transform."
 msgstr "Xem Transform của Plane."
 
+msgid "Keying is disabled (no key inserted)."
+msgstr "Phím đã bị tắt (không có phím nào được chèn)."
+
 msgid "Animation Key Inserted."
 msgstr "Đã chèn khóa hoạt ảnh."
+
+msgid "Size: %s (%.1fMP)\n"
+msgstr "Kích thước: %s (%.1fMP)\n"
+
+msgid "Objects: %d\n"
+msgstr "Các đối tượng: %d\n"
 
 msgid "None"
 msgstr "Không có"
@@ -4388,7 +4475,7 @@ msgid "Create Rest Pose from Bones"
 msgstr "Tạo tư thế nghỉ từ Xương"
 
 msgid "Skeleton2D"
-msgstr "Skeleton2D"
+msgstr "Khung xương 2D"
 
 msgid "Create physical bones"
 msgstr "Tạo xương vật lý"
@@ -4502,7 +4589,7 @@ msgid "Create Frames from Sprite Sheet"
 msgstr "Tạo Khung hình từ Sprite Sheet"
 
 msgid "SpriteFrames"
-msgstr "SpriteFrames"
+msgstr "Khung hình sprite"
 
 msgid "Set Margin"
 msgstr "Đặt Lề"
@@ -4580,7 +4667,7 @@ msgid "Yes"
 msgstr "Có"
 
 msgid "TileSet"
-msgstr "TileSet"
+msgstr "Tập gạch"
 
 msgid "Error"
 msgstr "Lỗi"
@@ -4697,10 +4784,10 @@ msgid "Create Shader Node"
 msgstr "Tạo nút Shader"
 
 msgid "Color function."
-msgstr "hàm màu"
+msgstr "Hàm Màu."
 
 msgid "Grayscale function."
-msgstr "hàm đen trắng"
+msgstr "Hàm đen trắng."
 
 msgid "Converts HSV vector to RGB equivalent."
 msgstr "Chuyển véc tơ màu HSV sang RGB tương ứng."
@@ -4946,6 +5033,9 @@ msgstr ""
 msgid "Returns the vector that points in the direction of refraction."
 msgstr "Trả về véc tơ chỉ theo hướng khúc xạ."
 
+msgid "Bake VoxelGI"
+msgstr "Tính toán và lưu trữ kết quả ánh sáng và bóng đổ trên khối Voxel"
+
 msgid "The path specified doesn't exist."
 msgstr "Đường dẫn đã cho không tồn tại."
 
@@ -5126,6 +5216,9 @@ msgstr "Ánh xạ đầu vào"
 
 msgid "Localization"
 msgstr "Bản địa hoá"
+
+msgid "Autoload"
+msgstr "Tự động tải"
 
 msgid "Plugins"
 msgstr "Tiện ích"
@@ -5650,6 +5743,13 @@ msgstr "Tên tệp không hợp lệ! Android App Bundle cần đuôi *.aab ở 
 
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "Tên tệp không hợp lệ! Android APK cần đuôi *.apk ở cuối."
+
+msgid ""
+"Android build version mismatch: Template installed: %s, Godot version: %s. "
+"Please reinstall Android build template from 'Project' menu."
+msgstr ""
+"Phiên bản dựng Android không khớp: Bản mẫu được cài đặt: %s, Phiên bản "
+"Godot: %s. Vui lòng cài đặt lại bản mẫu Android từ bảng chọn 'Dự Án'."
 
 msgid "Building Android Project (gradle)"
 msgstr "Đang dựng dự án Android (gradle)"

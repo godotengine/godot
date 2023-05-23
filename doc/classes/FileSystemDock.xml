@@ -10,11 +10,25 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_resource_tooltip_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorResourceTooltipPlugin" />
+			<description>
+				Registers a new [EditorResourceTooltipPlugin].
+			</description>
+		</method>
 		<method name="navigate_to_path">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
 				Sets the given [param path] as currently selected, ensuring that the selected file/directory is visible.
+			</description>
+		</method>
+		<method name="remove_resource_tooltip_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorResourceTooltipPlugin" />
+			<description>
+				Removes an [EditorResourceTooltipPlugin]. Fails if the plugin wasn't previously added.
 			</description>
 		</method>
 	</methods>

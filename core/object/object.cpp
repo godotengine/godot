@@ -1350,7 +1350,7 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	}
 	ERR_FAIL_COND_V_MSG(!s, false, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
 
-	ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false, "Disconnecting nonexistent signal '" + p_signal + "', callable: " + p_callable + ".");
+	ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
 
 	SignalData::Slot *slot = &s->slot_map[*p_callable.get_base_comparator()];
 
@@ -1739,7 +1739,7 @@ void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindi
 			break;
 		}
 	}
-	if (unlikely(!binding)) {
+	if (unlikely(!binding && p_callbacks)) {
 		uint32_t current_size = next_power_of_2(_instance_binding_count);
 		uint32_t new_size = next_power_of_2(_instance_binding_count + 1);
 

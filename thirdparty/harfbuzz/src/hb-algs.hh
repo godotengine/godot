@@ -626,8 +626,10 @@ hb_popcount (T v)
 
   if (sizeof (T) == 8)
   {
-    unsigned int shift = 32;
-    return hb_popcount<uint32_t> ((uint32_t) v) + hb_popcount ((uint32_t) (v >> shift));
+    uint64_t y = (uint64_t) v;
+    y -= ((y >> 1) & 0x5555555555555555ull);
+    y = (y & 0x3333333333333333ull) + (y >> 2 & 0x3333333333333333ull);
+    return ((y + (y >> 4)) & 0xf0f0f0f0f0f0f0full) * 0x101010101010101ull >> 56;
   }
 
   if (sizeof (T) == 16)

@@ -255,7 +255,7 @@ void EditorPropertyArray::update_property() {
 	String array_type_name = Variant::get_type_name(array_type);
 	if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
 		String type_name;
-		if (subtype == Variant::OBJECT && subtype_hint == PROPERTY_HINT_RESOURCE_TYPE) {
+		if (subtype == Variant::OBJECT && (subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
 			type_name = subtype_hint_string;
 		} else {
 			type_name = Variant::get_type_name(subtype);
@@ -311,7 +311,7 @@ void EditorPropertyArray::update_property() {
 
 			size_slider = memnew(EditorSpinSlider);
 			size_slider->set_step(1);
-			size_slider->set_max(1000000);
+			size_slider->set_max(INT32_MAX);
 			size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
 			size_slider->set_read_only(is_read_only());
 			size_slider->connect("value_changed", callable_mp(this, &EditorPropertyArray::_length_changed));

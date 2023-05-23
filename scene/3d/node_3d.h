@@ -88,6 +88,7 @@ private:
 	mutable SelfList<Node> xform_change;
 
 	// This Data struct is to avoid namespace pollution in derived classes.
+
 	struct Data {
 		mutable Transform3D global_transform;
 		mutable Transform3D local_transform;
@@ -96,7 +97,7 @@ private:
 		mutable Vector3 scale = Vector3(1, 1, 1);
 		mutable RotationEditMode rotation_edit_mode = ROTATION_EDIT_MODE_EULER;
 
-		mutable int dirty = DIRTY_NONE;
+		mutable MTNumeric<uint32_t> dirty;
 
 		Viewport *viewport = nullptr;
 
@@ -106,7 +107,6 @@ private:
 
 		RID visibility_parent;
 
-		int children_lock = 0;
 		Node3D *parent = nullptr;
 		List<Node3D *> children;
 		List<Node3D *>::Element *C = nullptr;
@@ -129,6 +129,12 @@ private:
 
 	NodePath visibility_parent_path;
 
+	_FORCE_INLINE_ uint32_t _read_dirty_mask() const { return is_group_processing() ? data.dirty.mt.get() : data.dirty.st; }
+	_FORCE_INLINE_ bool _test_dirty_bits(uint32_t p_bits) const { return is_group_processing() ? data.dirty.mt.bit_and(p_bits) : (data.dirty.st & p_bits); }
+	void _replace_dirty_mask(uint32_t p_mask) const;
+	void _set_dirty_bits(uint32_t p_bits) const;
+	void _clear_dirty_bits(uint32_t p_bits) const;
+
 	void _update_gizmos();
 	void _notify_dirty();
 	void _propagate_transform_changed(Node3D *p_origin);
@@ -137,6 +143,7 @@ private:
 
 	void _propagate_visibility_parent();
 	void _update_visibility_parent(bool p_update_root);
+	void _propagate_transform_changed_deferred();
 
 protected:
 	_FORCE_INLINE_ void set_ignore_transform_notification(bool p_ignore) { data.ignore_notification = p_ignore; }

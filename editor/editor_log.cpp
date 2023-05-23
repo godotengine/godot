@@ -43,9 +43,6 @@
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
 	EditorLog *self = static_cast<EditorLog *>(p_self);
-	if (self->current != Thread::get_caller_id()) {
-		return;
-	}
 
 	String err_str;
 	if (p_errorexp && p_errorexp[0]) {
@@ -58,10 +55,12 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 		err_str += " (User)";
 	}
 
-	if (p_type == ERR_HANDLER_WARNING) {
-		self->add_message(err_str, MSG_TYPE_WARNING);
+	MessageType message_type = p_type == ERR_HANDLER_WARNING ? MSG_TYPE_WARNING : MSG_TYPE_ERROR;
+
+	if (self->current != Thread::get_caller_id()) {
+		callable_mp(self, &EditorLog::add_message).bind(err_str, message_type).call_deferred();
 	} else {
-		self->add_message(err_str, MSG_TYPE_ERROR);
+		self->add_message(err_str, message_type);
 	}
 }
 
@@ -90,6 +89,11 @@ void EditorLog::_update_theme() {
 	if (mono_font.is_valid()) {
 		log->add_theme_font_override("mono_font", mono_font);
 	}
+
+	// Disable padding for highlighted background/foreground to prevent highlights from overlapping on close lines.
+	// This also better matches terminal output, which does not use any form of padding.
+	log->add_theme_constant_override("text_highlight_h_padding", 0);
+	log->add_theme_constant_override("text_highlight_v_padding", 0);
 
 	const int font_size = get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts"));
 	log->add_theme_font_size_override("normal_font_size", font_size);

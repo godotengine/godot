@@ -451,7 +451,8 @@ void ProjectSettingsEditor::_action_reordered(const String &p_action_name, const
 
 	for (const PropertyInfo &prop : props) {
 		// Skip builtins and non-inputs
-		if (ProjectSettings::get_singleton()->is_builtin_setting(prop.name) || !prop.name.begins_with("input/")) {
+		// Order matters here, checking for "input/" filters out properties that aren't settings and produce errors in is_builtin_setting().
+		if (!prop.name.begins_with("input/") || ProjectSettings::get_singleton()->is_builtin_setting(prop.name)) {
 			continue;
 		}
 
