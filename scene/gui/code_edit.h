@@ -37,8 +37,8 @@ class CodeEdit : public TextEdit {
 	GDCLASS(CodeEdit, TextEdit)
 
 public:
-	/* Keep enum in sync with:                                           */
-	/* /core/object/script_language.h - ScriptLanguage::CodeCompletionKind */
+	// Keep enums in sync with:
+	// core/object/script_language.h - ScriptLanguage::CodeCompletionKind
 	enum CodeCompletionKind {
 		KIND_CLASS,
 		KIND_FUNCTION,
@@ -50,6 +50,14 @@ public:
 		KIND_NODE_PATH,
 		KIND_FILE_PATH,
 		KIND_PLAIN_TEXT,
+	};
+
+	// core/object/script_language.h - ScriptLanguage::CodeCompletionLocation
+	enum CodeCompletionLocation {
+		LOCATION_LOCAL = 0,
+		LOCATION_PARENT_MASK = 1 << 8,
+		LOCATION_OTHER_USER_CODE = 1 << 9,
+		LOCATION_OTHER = 1 << 10,
 	};
 
 private:
@@ -427,7 +435,7 @@ public:
 
 	void request_code_completion(bool p_force = false);
 
-	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL);
+	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL, int p_location = LOCATION_OTHER);
 	void update_code_completion_options(bool p_forced = false);
 
 	TypedArray<Dictionary> get_code_completion_options() const;
@@ -456,5 +464,11 @@ public:
 };
 
 VARIANT_ENUM_CAST(CodeEdit::CodeCompletionKind);
+VARIANT_ENUM_CAST(CodeEdit::CodeCompletionLocation);
+
+// The custom comparer which will sort completion options.
+struct CodeCompletionOptionCompare {
+	_FORCE_INLINE_ bool operator()(const ScriptLanguage::CodeCompletionOption &l, const ScriptLanguage::CodeCompletionOption &r) const;
+};
 
 #endif // CODE_EDIT_H

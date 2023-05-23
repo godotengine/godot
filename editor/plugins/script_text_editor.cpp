@@ -753,8 +753,6 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	String hint;
 	Error err = script->get_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
 
-	r_options->sort_custom_inplace<CodeCompletionOptionCompare>();
-
 	if (err == OK) {
 		code_editor->get_text_editor()->set_code_hint(hint);
 	}
