@@ -27,7 +27,22 @@
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Manually advance the animations by the specified time (in seconds).
+			</description>
+		</method>
+		<method name="clear_records">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="discard_latest_records">
+			<return type="void" />
+			<param index="0" name="length" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="get_record_buffer_size" qualifiers="const">
+			<return type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="get_root_motion_position" qualifiers="const">
@@ -170,6 +185,23 @@
 				However, if the animation loops, an unintended discrete change may occur, so this is only useful for some simple use cases.
 			</description>
 		</method>
+		<method name="load_record">
+			<return type="bool" />
+			<param index="0" name="record_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="resize_record_buffer">
+			<return type="void" />
+			<param index="0" name="resize" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="save_record">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="active" type="bool" setter="set_active" getter="is_active" default="false">
@@ -187,6 +219,12 @@
 		</member>
 		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="AnimationTree.AnimationProcessCallback" default="1">
 			The process mode of this [AnimationTree]. See [enum AnimationProcessCallback] for available modes.
+		</member>
+		<member name="record_buffer_max_size" type="int" setter="set_record_buffer_max_size" getter="get_record_buffer_max_size" default="1024">
+		</member>
+		<member name="recording_enabled" type="bool" setter="set_recording_enabled" getter="is_recording_enabled" default="false">
+		</member>
+		<member name="recording_rate" type="float" setter="set_recording_rate" getter="get_recording_rate" default="0.1">
 		</member>
 		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track" default="NodePath(&quot;&quot;)">
 			The path to the Animation track used for root motion. Paths must be valid scene-tree paths to a node, and must be specified starting from the parent node of the node that will reproduce the animation. To specify a track that controls properties or bones, append its name after the path, separated by [code]":"[/code]. For example, [code]"character/skeleton:ankle"[/code] or [code]"character/mesh:transform/local"[/code].
