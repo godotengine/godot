@@ -3657,6 +3657,7 @@ func _ready():
 func _ready():
 	if true:
 		pass
+
 #	comment
 	pass
 )");
@@ -3958,6 +3959,20 @@ func _ready():
 	var some_node
 	# This bug only happens when the comment on the previous line exceeds 80 chars.
 	some_node.visible = 5 > 3
+)");
+		const String pre_formatted = code;
+
+		CHECK_FORMAT(code, pre_formatted);
+	}
+
+	TEST_CASE("Comments after an indented block should not be forcefully moved over") {
+		const String code = GDSCRIPT(R"(
+func _ready():
+	if true:
+		pass
+
+	# Description of A
+	var a
 )");
 		const String pre_formatted = code;
 

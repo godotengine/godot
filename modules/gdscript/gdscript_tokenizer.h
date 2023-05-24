@@ -202,6 +202,49 @@ public:
 #endif // TOOLS_ENABLED
 
 private:
+	struct State {
+		String source;
+		const char32_t *_source = nullptr;
+		const char32_t *_current = nullptr;
+		int line = -1;
+		int column = -1;
+		int cursor_line = -1;
+		int cursor_column = -1;
+		int tab_size = 4;
+
+		// Multichar tokens
+		const char32_t *_start = nullptr;
+		int start_line = 0;
+		int start_column = 0;
+		int leftmost_column = 0;
+		int rightmost_column = 0;
+
+		// Info cache
+		bool line_continuation = false; // Whether this line is a continuation of the previous, like when using '\'.
+		bool multiline_mode = false;
+		List<Token> error_stack;
+		bool pending_newline = false;
+		Token last_newline;
+		int pending_indents = 0;
+		List<int> indent_stack;
+		List<List<int>> indent_stack_stack; // For lambdas, which require manipulating the indentation point.
+		List<char32_t> paren_stack;
+		char32_t indent_char = '\0';
+		int position = 0;
+		int length = 0;
+
+#ifdef DEBUG_ENABLED
+		Vector<String> keyword_list;
+#endif // DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
+		HashMap<int, CommentData> comments;
+#endif // TOOLS_ENABLED
+
+		State() {}
+	};
+	List<State> states;
+
 	String source;
 	const char32_t *_source = nullptr;
 	const char32_t *_current = nullptr;
@@ -267,8 +310,12 @@ private:
 	Token string();
 	Token annotation();
 
+	void push_state();
+	void pop_state();
+
 public:
 	Token scan();
+	Token peek(int p_offset = 0);
 
 	void set_source_code(const String &p_source_code);
 

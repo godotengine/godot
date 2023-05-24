@@ -2285,7 +2285,25 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 		current_suite->has_continue = true;
 	}
 
-	Vector<String> next_header_block = check_for_comment_block();
+	bool check_comments = false;
+	if (previous.type == GDScriptTokenizer::Token::Type::DEDENT) {
+		GDScriptTokenizer::Token current_token;
+		for (int i = 1; true; i++) {
+			current_token = tokenizer.peek(i);
+			if (current_token.type == GDScriptTokenizer::Token::Type::COMMENT || current_token.type == GDScriptTokenizer::Token::Type::NEWLINE) {
+				continue;
+			} else if (current_token.type == GDScriptTokenizer::Token::Type::ELIF || current_token.type == GDScriptTokenizer::Token::Type::ELSE) {
+				check_comments = true;
+			}
+
+			break;
+		}
+	}
+
+	Vector<String> next_header_block;
+	if (check_comments) {
+		next_header_block = check_for_comment_block();
+	}
 
 	if (match(GDScriptTokenizer::Token::ELIF)) {
 		SuiteNode *else_block = alloc_node<SuiteNode>();

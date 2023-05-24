@@ -30,8 +30,10 @@
 
 #include "gdscript_tokenizer.h"
 
+#include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/string/char_utils.h"
+#include "core/templates/list.h"
 
 #ifdef DEBUG_ENABLED
 #include "servers/text_server.h"
@@ -1592,6 +1594,109 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 				return make_error(vformat(R"(Invalid character "%c" (U+%04X).)", c, static_cast<int32_t>(c)));
 			}
 	}
+}
+
+GDScriptTokenizer::Token GDScriptTokenizer::peek(int p_offset) {
+	if (p_offset < 0) {
+		return GDScriptTokenizer::Token();
+	}
+
+	push_state();
+
+	GDScriptTokenizer::Token peek_token;
+	for (int i = 0; i < p_offset + 1; i++) {
+		peek_token = scan();
+		if (peek_token.type == GDScriptTokenizer::Token::Type::EMPTY) {
+			break;
+		}
+	}
+
+	pop_state();
+
+	return peek_token;
+}
+
+void GDScriptTokenizer::push_state() {
+	GDScriptTokenizer::State state;
+
+	state.source = source;
+	state._source = _source;
+	state._current = _current;
+	state.line = line;
+	state.column = column;
+	state.cursor_line = cursor_line;
+	state.cursor_column = cursor_column;
+	state.tab_size = tab_size;
+
+	state._start = _start;
+	state.start_line = start_line;
+	state.start_column = start_column;
+	state.leftmost_column = leftmost_column;
+	state.rightmost_column = rightmost_column;
+
+	state.line_continuation = line_continuation;
+	state.multiline_mode = multiline_mode;
+	state.error_stack = error_stack;
+	state.pending_newline = pending_newline;
+	state.last_newline = last_newline;
+	state.pending_indents = pending_indents;
+	state.indent_stack = indent_stack;
+	state.indent_stack_stack = indent_stack_stack;
+	state.paren_stack = paren_stack;
+	state.indent_char = indent_char;
+	state.position = position;
+	state.length = length;
+
+#ifdef DEBUG_ENABLED
+	state.keyword_list = keyword_list;
+#endif // DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
+	state.comments = comments;
+#endif // TOOLS_ENABLED
+
+	states.push_back(state);
+}
+
+void GDScriptTokenizer::pop_state() {
+	State state = states.back()->get();
+	states.pop_back();
+
+	source = state.source;
+	_source = state._source;
+	_current = state._current;
+	line = state.line;
+	column = state.column;
+	cursor_line = state.cursor_line;
+	cursor_column = state.cursor_column;
+	tab_size = state.tab_size;
+
+	_start = state._start;
+	start_line = state.start_line;
+	start_column = state.start_column;
+	leftmost_column = state.leftmost_column;
+	rightmost_column = state.rightmost_column;
+
+	line_continuation = state.line_continuation;
+	multiline_mode = state.multiline_mode;
+	error_stack = state.error_stack;
+	pending_newline = state.pending_newline;
+	last_newline = state.last_newline;
+	pending_indents = state.pending_indents;
+	indent_stack = state.indent_stack;
+	indent_stack_stack = state.indent_stack_stack;
+	paren_stack = state.paren_stack;
+	indent_char = state.indent_char;
+	position = state.position;
+	length = state.length;
+
+#ifdef DEBUG_ENABLED
+	keyword_list = state.keyword_list;
+#endif // DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
+	comments = state.comments;
+#endif // TOOLS_ENABLED
 }
 
 GDScriptTokenizer::GDScriptTokenizer() {
