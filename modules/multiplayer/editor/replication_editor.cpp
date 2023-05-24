@@ -195,6 +195,51 @@ ReplicationEditor::ReplicationEditor() {
 
 	prop_selector = memnew(PropertySelector);
 	add_child(prop_selector);
+	// Filter out properties that cannot be synchronized.
+	// * RIDs do not match across network.
+	// * Objects are too large for replication.
+	Vector<Variant::Type> types = {
+		Variant::BOOL,
+		Variant::INT,
+		Variant::FLOAT,
+		Variant::STRING,
+
+		Variant::VECTOR2,
+		Variant::VECTOR2I,
+		Variant::RECT2,
+		Variant::RECT2I,
+		Variant::VECTOR3,
+		Variant::VECTOR3I,
+		Variant::TRANSFORM2D,
+		Variant::VECTOR4,
+		Variant::VECTOR4I,
+		Variant::PLANE,
+		Variant::QUATERNION,
+		Variant::AABB,
+		Variant::BASIS,
+		Variant::TRANSFORM3D,
+		Variant::PROJECTION,
+
+		Variant::COLOR,
+		Variant::STRING_NAME,
+		Variant::NODE_PATH,
+		// Variant::RID,
+		// Variant::OBJECT,
+		Variant::SIGNAL,
+		Variant::DICTIONARY,
+		Variant::ARRAY,
+
+		Variant::PACKED_BYTE_ARRAY,
+		Variant::PACKED_INT32_ARRAY,
+		Variant::PACKED_INT64_ARRAY,
+		Variant::PACKED_FLOAT32_ARRAY,
+		Variant::PACKED_FLOAT64_ARRAY,
+		Variant::PACKED_STRING_ARRAY,
+		Variant::PACKED_VECTOR2_ARRAY,
+		Variant::PACKED_VECTOR3_ARRAY,
+		Variant::PACKED_COLOR_ARRAY
+	};
+	prop_selector->set_type_filter(types);
 	prop_selector->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_property_selected));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -478,6 +523,24 @@ Ref<Texture2D> ReplicationEditor::_get_class_icon(const Node *p_node) {
 	return get_theme_icon(p_node->get_class(), "EditorIcons");
 }
 
+static bool can_sync(const Variant &p_var) {
+	switch (p_var.get_type()) {
+		case Variant::RID:
+		case Variant::OBJECT:
+			return false;
+		case Variant::ARRAY: {
+			const Array &arr = p_var;
+			if (arr.is_typed()) {
+				const uint32_t type = arr.get_typed_builtin();
+				return (type != Variant::RID) && (type != Variant::OBJECT);
+			}
+			return true;
+		}
+		default:
+			return true;
+	}
+}
+
 void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, bool p_sync, bool p_watch) {
 	String prop = String(p_property);
 	TreeItem *item = tree->create_item();
@@ -499,6 +562,12 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 		}
 		item->set_text(0, String(node->get_name()) + ":" + subpath);
 		icon = _get_class_icon(node);
+		bool valid = false;
+		Variant value = node->get(subpath, &valid);
+		if (valid && !can_sync(value)) {
+			item->set_icon(3, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+			item->set_tooltip_text(3, TTR("Property of this type not supported."));
+		}
 	}
 	item->set_icon(0, icon);
 	item->add_button(4, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
