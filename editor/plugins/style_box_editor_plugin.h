@@ -33,28 +33,24 @@
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/resources/style_box.h"
 
-class TextureButton;
+class Button;
+class StyleBox;
 
-class StyleBoxPreview : public VBoxContainer {
-	GDCLASS(StyleBoxPreview, VBoxContainer);
+class StyleBoxPreview : public TextureRect {
+	GDCLASS(StyleBoxPreview, TextureRect);
 
-	TextureRect *checkerboard = nullptr;
-	TextureButton *grid_preview = nullptr;
-	Control *preview = nullptr;
+	Button *grid_preview = nullptr;
 	Ref<StyleBox> stylebox;
 
 	void _sb_changed();
 	void _redraw();
-	void _notification(int p_what);
 	static bool grid_preview_enabled;
 	void _grid_preview_toggled(bool p_active);
 
 protected:
-	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
 	void edit(const Ref<StyleBox> &p_stylebox);
