@@ -177,12 +177,20 @@
 				Saves the configuration to a custom file. The file extension must be [code].godot[/code] (to save in text-based [ConfigFile] format) or [code].binary[/code] (to save in binary format). You can also save [code]override.cfg[/code] file, which is also text, but can be used in exported projects unlike other formats.
 			</description>
 		</method>
+		<method name="set_as_basic">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="basic" type="bool" />
+			<description>
+				Defines if the specified setting is considered basic or advanced. Basic settings will always be shown in the project settings. Advanced settings will only be shown if the user enables the "Advanced Settings" option.
+			</description>
+		</method>
 		<method name="set_initial_value">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Sets the specified property's initial value. This is the value the property reverts to.
+				Sets the specified setting's initial value. This is the value the setting reverts to.
 			</description>
 		</method>
 		<method name="set_order">
