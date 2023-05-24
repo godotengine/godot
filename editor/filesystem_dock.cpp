@@ -2281,6 +2281,10 @@ void FileSystemDock::remove_resource_tooltip_plugin(const Ref<EditorResourceTool
 }
 
 Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {
+	if (p_path == "Favorites") {
+		// No tooltip for the "Favorites" group.
+		return nullptr;
+	}
 	if (DirAccess::exists(p_path)) {
 		// No tooltip for directory.
 		return nullptr;
