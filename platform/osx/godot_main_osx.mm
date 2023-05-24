@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "main/main.h"
-#include "main/tests/catch_testing.h"
+#include "testing/run_catch.h"
 
 #include "os_osx.h"
 
