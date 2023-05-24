@@ -96,7 +96,8 @@ Error ResourceImporterTextureAtlas::import(const String &p_source_file, const St
 	return OK;
 }
 
-static void _plot_triangle(Vector2 *vertices, const Vector2 &p_offset, bool p_transposed, Ref<Image> p_image, const Ref<Image> &p_src_image) {
+// FIXME: Rasterization has issues, see https://github.com/godotengine/godot/issues/68350#issuecomment-1305610290
+static void _plot_triangle(Vector2 *p_vertices, const Vector2 &p_offset, bool p_transposed, Ref<Image> p_image, const Ref<Image> &p_src_image) {
 	int width = p_image->get_width();
 	int height = p_image->get_height();
 	int src_width = p_src_image->get_width();
@@ -106,8 +107,8 @@ static void _plot_triangle(Vector2 *vertices, const Vector2 &p_offset, bool p_tr
 	int y[3];
 
 	for (int j = 0; j < 3; j++) {
-		x[j] = vertices[j].x;
-		y[j] = vertices[j].y;
+		x[j] = p_vertices[j].x;
+		y[j] = p_vertices[j].y;
 	}
 
 	// sort the points vertically
@@ -129,7 +130,7 @@ static void _plot_triangle(Vector2 *vertices, const Vector2 &p_offset, bool p_tr
 	double dx_low = double(x[2] - x[1]) / (y[2] - y[1] + 1);
 	double xf = x[0];
 	double xt = x[0] + dx_upper; // if y[0] == y[1], special case
-	int max_y = MIN(y[2], height - p_offset.y - 1);
+	int max_y = MIN(y[2], p_transposed ? (width - p_offset.x - 1) : (height - p_offset.y - 1));
 	for (int yi = y[0]; yi < max_y; yi++) {
 		if (yi >= 0) {
 			for (int xi = (xf > 0 ? int(xf) : 0); xi < (xt <= src_width ? xt : src_width); xi++) {
@@ -246,7 +247,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			Ref<BitMap> bit_map;
 			bit_map.instance();
 			bit_map->create_from_image_alpha(image);
-			Vector<Vector<Vector2>> polygons = bit_map->clip_opaque_to_polygons(Rect2(0, 0, image->get_width(), image->get_height()));
+			Vector<Vector<Vector2>> polygons = bit_map->clip_opaque_to_polygons(Rect2(Vector2(), image->get_size()));
 
 			for (int j = 0; j < polygons.size(); j++) {
 				EditorAtlasPacker::Chart chart;
