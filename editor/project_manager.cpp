@@ -1963,6 +1963,9 @@ Ref<Texture2D> ProjectManager::_file_dialog_get_thumbnail(const String &p_path) 
 }
 
 void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
+	if (p_theme.is_null()) {
+		return;
+	}
 	List<StringName> tl;
 	p_theme->get_icon_list(SNAME("EditorIcons"), &tl);
 	for (List<StringName>::Element *E = tl.front(); E; E = E->next()) {

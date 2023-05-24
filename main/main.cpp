@@ -183,8 +183,6 @@ static int converter_max_line_length = 100000;
 HashMap<Main::CLIScope, Vector<String>> forwardable_cli_arguments;
 #endif
 static bool single_threaded_scene = false;
-bool use_startup_benchmark = false;
-String startup_benchmark_file;
 
 // Display
 
@@ -498,8 +496,8 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --dump-gdextension-interface      Generate GDExtension header file 'gdextension_interface.h' in the current folder. This file is the base file required to implement a GDExtension.\n");
 	OS::get_singleton()->print("  --dump-extension-api              Generate JSON dump of the Godot API for GDExtension bindings named 'extension_api.json' in the current folder.\n");
 	OS::get_singleton()->print("  --validate-extension-api <path>   Validate an extension API file dumped (with the option above) from a previous version of the engine to ensure API compatibility. If incompatibilities or errors are detected, the return code will be non zero.\n");
-	OS::get_singleton()->print("  --startup-benchmark               Benchmark the startup time and print it to console.\n");
-	OS::get_singleton()->print("  --startup-benchmark-file <path>   Benchmark the startup time and save it to a given file in JSON format.\n");
+	OS::get_singleton()->print("  --benchmark                       Benchmark the run time and print it to console.\n");
+	OS::get_singleton()->print("  --benchmark-file <path>           Benchmark the run time and save it to a given file in JSON format. The path should be absolute.\n");
 #ifdef TESTS_ENABLED
 	OS::get_singleton()->print("  --test [--help]                   Run unit tests. Use --test --help for more information.\n");
 #endif
@@ -728,11 +726,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->initialize();
 
+	// Benchmark tracking must be done after `OS::get_singleton()->initialize()` as on some
+	// platforms, it's used to set up the time utilities.
+	OS::get_singleton()->benchmark_begin_measure("startup_begin");
+
 	engine = memnew(Engine);
 
 	MAIN_PRINT("Main: Initialize CORE");
-	engine->startup_begin();
-	engine->startup_benchmark_begin_measure("core");
+	OS::get_singleton()->benchmark_begin_measure("core");
 
 	register_core_types();
 	register_core_driver_types();
@@ -1440,15 +1441,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 
-		} else if (I->get() == "--startup-benchmark") {
-			use_startup_benchmark = true;
-		} else if (I->get() == "--startup-benchmark-file") {
+		} else if (I->get() == "--benchmark") {
+			OS::get_singleton()->set_use_benchmark(true);
+		} else if (I->get() == "--benchmark-file") {
 			if (I->next()) {
-				use_startup_benchmark = true;
-				startup_benchmark_file = I->next()->get();
+				OS::get_singleton()->set_use_benchmark(true);
+				String benchmark_file = I->next()->get();
+				OS::get_singleton()->set_benchmark_file(benchmark_file);
 				N = I->next()->next();
 			} else {
-				OS::get_singleton()->print("Missing <path> argument for --startup-benchmark-file <path>.\n");
+				OS::get_singleton()->print("Missing <path> argument for --benchmark-file <path>.\n");
 				goto error;
 			}
 
@@ -1989,8 +1991,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	message_queue = memnew(MessageQueue);
 
-	engine->startup_benchmark_end_measure(); // core
-
 	Thread::release_main_thread(); // If setup2() is called from another thread, that one will become main thread, so preventively release this one.
 	set_current_thread_safe_for_nodes(false);
 
@@ -1998,6 +1998,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		return setup2();
 	}
 
+	OS::get_singleton()->benchmark_end_measure("core");
 	return OK;
 
 error:
@@ -2050,6 +2051,9 @@ error:
 	if (message_queue) {
 		memdelete(message_queue);
 	}
+
+	OS::get_singleton()->benchmark_end_measure("core");
+
 	OS::get_singleton()->finalize_core();
 	locale = String();
 
@@ -2063,7 +2067,7 @@ Error Main::setup2() {
 	// Print engine name and version
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 
-	engine->startup_benchmark_begin_measure("servers");
+	OS::get_singleton()->benchmark_begin_measure("servers");
 
 	tsman = memnew(TextServerManager);
 
@@ -2454,11 +2458,11 @@ Error Main::setup2() {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
 	}
 
-	engine->startup_benchmark_end_measure(); // servers
+	OS::get_singleton()->benchmark_end_measure("servers");
 
 	MAIN_PRINT("Main: Load Scene Types");
 
-	engine->startup_benchmark_begin_measure("scene");
+	OS::get_singleton()->benchmark_begin_measure("scene");
 
 	register_scene_types();
 	register_driver_types();
@@ -2543,7 +2547,7 @@ Error Main::setup2() {
 	print_verbose("EDITOR API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
 	MAIN_PRINT("Main: Done");
 
-	engine->startup_benchmark_end_measure(); // scene
+	OS::get_singleton()->benchmark_end_measure("scene");
 
 	return OK;
 }
@@ -2961,7 +2965,7 @@ bool Main::start() {
 		if (!project_manager && !editor) { // game
 			if (!game_path.is_empty() || !script.is_empty()) {
 				//autoload
-				Engine::get_singleton()->startup_benchmark_begin_measure("load_autoloads");
+				OS::get_singleton()->benchmark_begin_measure("load_autoloads");
 				HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
 
 				//first pass, add the constants so they exist before any script is loaded
@@ -3027,14 +3031,14 @@ bool Main::start() {
 				for (Node *E : to_add) {
 					sml->get_root()->add_child(E);
 				}
-				Engine::get_singleton()->startup_benchmark_end_measure(); // load autoloads
+				OS::get_singleton()->benchmark_end_measure("load_autoloads");
 			}
 		}
 
 #ifdef TOOLS_ENABLED
 		EditorNode *editor_node = nullptr;
 		if (editor) {
-			Engine::get_singleton()->startup_benchmark_begin_measure("editor");
+			OS::get_singleton()->benchmark_begin_measure("editor");
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
 
@@ -3043,12 +3047,7 @@ bool Main::start() {
 				game_path = ""; // Do not load anything.
 			}
 
-			Engine::get_singleton()->startup_benchmark_end_measure();
-
-			editor_node->set_use_startup_benchmark(use_startup_benchmark, startup_benchmark_file);
-			// Editor takes over
-			use_startup_benchmark = false;
-			startup_benchmark_file = String();
+			OS::get_singleton()->benchmark_end_measure("editor");
 		}
 #endif
 		sml->set_auto_accept_quit(GLOBAL_GET("application/config/auto_accept_quit"));
@@ -3177,7 +3176,7 @@ bool Main::start() {
 
 		if (!project_manager && !editor) { // game
 
-			Engine::get_singleton()->startup_benchmark_begin_measure("game_load");
+			OS::get_singleton()->benchmark_begin_measure("game_load");
 
 			// Load SSL Certificates from Project Settings (or builtin).
 			Crypto::load_default_certificates(GLOBAL_GET("network/tls/certificate_bundle_override"));
@@ -3219,19 +3218,19 @@ bool Main::start() {
 				}
 			}
 
-			Engine::get_singleton()->startup_benchmark_end_measure(); // game_load
+			OS::get_singleton()->benchmark_end_measure("game_load");
 		}
 
 #ifdef TOOLS_ENABLED
 		if (project_manager) {
-			Engine::get_singleton()->startup_benchmark_begin_measure("project_manager");
+			OS::get_singleton()->benchmark_begin_measure("project_manager");
 			Engine::get_singleton()->set_editor_hint(true);
 			ProjectManager *pmanager = memnew(ProjectManager);
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
 			sml->get_root()->add_child(pmanager);
 			DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_PROJECTMAN);
-			Engine::get_singleton()->startup_benchmark_end_measure();
+			OS::get_singleton()->benchmark_end_measure("project_manager");
 		}
 
 		if (project_manager || editor) {
@@ -3261,10 +3260,8 @@ bool Main::start() {
 		}
 	}
 
-	if (use_startup_benchmark) {
-		Engine::get_singleton()->startup_dump(startup_benchmark_file);
-		startup_benchmark_file = String();
-	}
+	OS::get_singleton()->benchmark_end_measure("startup_begin");
+	OS::get_singleton()->benchmark_dump();
 
 	return true;
 }
@@ -3509,6 +3506,7 @@ void Main::force_redraw() {
  * The order matters as some of those steps are linked with each other.
  */
 void Main::cleanup(bool p_force) {
+	OS::get_singleton()->benchmark_begin_measure("Main::cleanup");
 	if (!p_force) {
 		ERR_FAIL_COND(!_start_success);
 	}
@@ -3648,6 +3646,9 @@ void Main::cleanup(bool p_force) {
 	unregister_core_extensions();
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	unregister_core_types();
+
+	OS::get_singleton()->benchmark_end_measure("Main::cleanup");
+	OS::get_singleton()->benchmark_dump();
 
 	OS::get_singleton()->finalize_core();
 }

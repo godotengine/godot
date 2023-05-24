@@ -113,6 +113,9 @@ open class GodotEditor : FullScreenGodotApp() {
 		if (args != null && args.isNotEmpty()) {
 			commandLineParams.addAll(listOf(*args))
 		}
+		if (BuildConfig.BUILD_TYPE == "dev") {
+			commandLineParams.add("--benchmark")
+		}
 	}
 
 	override fun getCommandLine() = commandLineParams
