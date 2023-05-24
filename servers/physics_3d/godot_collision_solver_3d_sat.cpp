@@ -1845,10 +1845,34 @@ static void _collision_cylinder_cylinder(const GodotShape3D *p_a, const Transfor
 
 	SeparatorAxisTest<GodotCylinderShape3D, GodotCylinderShape3D, withMargin> separator(cylinder_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
+	if (!separator.test_previous_axis()) {
+		return;
+	}
+
 	Vector3 cylinder_A_axis = p_transform_a.basis.get_column(1);
 	Vector3 cylinder_B_axis = p_transform_b.basis.get_column(1);
 
-	if (!separator.test_previous_axis()) {
+	// Fast pre-test using segment-segment distance.
+	Vector3 segment_A[2] = { p_transform_a.origin - cylinder_A_axis * cylinder_A->get_height() * 0.5, p_transform_a.origin + cylinder_A_axis * cylinder_A->get_height() * 0.5 };
+	Vector3 segment_B[2] = { p_transform_b.origin - cylinder_B_axis * cylinder_B->get_height() * 0.5, p_transform_b.origin + cylinder_B_axis * cylinder_B->get_height() * 0.5 };
+	Vector3 closest_A;
+	Vector3 closest_B;
+	Geometry3D::get_closest_points_between_segments(segment_A[0], segment_A[1], segment_B[0], segment_B[1], closest_A, closest_B);
+
+	real_t sum_of_radii = cylinder_A->get_radius() + cylinder_B->get_radius();
+	if (withMargin) {
+		sum_of_radii += p_margin_a + p_margin_b;
+	}
+	real_t segment_distance = (closest_B - closest_A).length();
+	Vector3 best_axis = (closest_B - closest_A).normalized();
+
+	// TODO: change get_closest_points_between_segments to return boolean, whether line parameters are in interior?
+	if (!(closest_A - segment_A[0]).is_zero_approx() && !(closest_A - segment_A[1]).is_zero_approx() && !(closest_B - segment_B[0]).is_zero_approx() && !(closest_B - segment_B[1]).is_zero_approx()) {
+		if (segment_distance > sum_of_radii) {
+			return;
+		}
+		separator.test_axis(best_axis);
+		separator.generate_contacts();
 		return;
 	}
 
@@ -1874,12 +1898,72 @@ static void _collision_cylinder_cylinder(const GodotShape3D *p_a, const Transfor
 		return;
 	}
 
-	real_t proj = cylinder_A_axis.cross(cylinder_B_axis).cross(cylinder_B_axis).dot(cylinder_A_axis);
-	if (Math::is_zero_approx(proj)) {
-		// Parallel cylinders, handle with specific axes only.
-		// Note: GJKEPA with no margin can lead to degenerate cases in this situation.
-		separator.generate_contacts();
-		return;
+	// Get axes from closest points between cylinder A axis and cylinder B end caps.
+	Vector3 closest_points[2];
+	size_t num_closest_pairs = 0;
+	Transform3D cylinder_B_circle1_transform = p_transform_b.translated(cylinder_B_axis * cylinder_B->get_height() * 0.5);
+	Geometry3D::get_closest_points_between_line_and_circle(p_transform_a.origin, cylinder_A_axis, cylinder_B_circle1_transform, cylinder_B->get_radius(), closest_points, num_closest_pairs);
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		Vector3 axis = (closest_points[2 * i] - closest_points[2 * i + 1]).normalized();
+		if (!separator.test_axis(axis)) {
+			return;
+		}
+	}
+	Transform3D cylinder_B_circle2_transform = p_transform_b.translated(-cylinder_B_axis * cylinder_B->get_height() * 0.5);
+	Geometry3D::get_closest_points_between_line_and_circle(p_transform_a.origin, cylinder_A_axis, cylinder_B_circle2_transform, cylinder_B->get_radius(), closest_points, num_closest_pairs);
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		Vector3 axis = (closest_points[2 * i] - closest_points[2 * i + 1]).normalized();
+		if (!separator.test_axis(axis)) {
+			return;
+		}
+	}
+
+	// Get axes from closest points between cylinder B axis and cylinder A end caps.
+	Transform3D cylinder_A_circle1_transform = p_transform_a.translated(cylinder_A_axis * cylinder_A->get_height() * 0.5);
+	Geometry3D::get_closest_points_between_line_and_circle(p_transform_b.origin, cylinder_B_axis, cylinder_A_circle1_transform, cylinder_A->get_radius(), closest_points, num_closest_pairs);
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		Vector3 axis = (closest_points[2 * i] - closest_points[2 * i + 1]).normalized();
+		if (!separator.test_axis(axis)) {
+			return;
+		}
+	}
+	Transform3D cylinder_A_circle2_transform = p_transform_a.translated(-cylinder_A_axis * cylinder_A->get_height() * 0.5);
+	Geometry3D::get_closest_points_between_line_and_circle(p_transform_b.origin, cylinder_B_axis, cylinder_A_circle2_transform, cylinder_A->get_radius(), closest_points, num_closest_pairs);
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		Vector3 axis = (closest_points[2 * i] - closest_points[2 * i + 1]).normalized();
+		if (!separator.test_axis(axis)) {
+			return;
+		}
+	}
+
+	// Get axes from closest points between cylinder A end caps and cylinder B end caps.
+	Geometry3D::get_closest_points_between_circle_and_circle(cylinder_A_circle1_transform, cylinder_A->get_radius(), cylinder_B_circle1_transform, cylinder_B->get_radius(), closest_points, num_closest_pairs);
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		Vector3 axis = (closest_points[2 * i] - closest_points[2 * i + 1]).normalized();
+		if (!separator.test_axis(axis)) {
+			return;
+		}
+	}
+	Geometry3D::get_closest_points_between_circle_and_circle(cylinder_A_circle2_transform, cylinder_A->get_radius(), cylinder_B_circle1_transform, cylinder_B->get_radius(), closest_points, num_closest_pairs);
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		Vector3 axis = (closest_points[2 * i] - closest_points[2 * i + 1]).normalized();
+		if (!separator.test_axis(axis)) {
+			return;
+		}
+	}
+	Geometry3D::get_closest_points_between_circle_and_circle(cylinder_A_circle1_transform, cylinder_A->get_radius(), cylinder_B_circle2_transform, cylinder_B->get_radius(), closest_points, num_closest_pairs);
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		Vector3 axis = (closest_points[2 * i] - closest_points[2 * i + 1]).normalized();
+		if (!separator.test_axis(axis)) {
+			return;
+		}
+	}
+	Geometry3D::get_closest_points_between_circle_and_circle(cylinder_A_circle2_transform, cylinder_A->get_radius(), cylinder_B_circle2_transform, cylinder_B->get_radius(), closest_points, num_closest_pairs);
+	for (size_t i = 0; i < num_closest_pairs; i++) {
+		Vector3 axis = (closest_points[2 * i] - closest_points[2 * i + 1]).normalized();
+		if (!separator.test_axis(axis)) {
+			return;
+		}
 	}
 
 	GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<GodotCylinderShape3D, GodotCylinderShape3D, withMargin>::test_contact_points;

@@ -63,6 +63,26 @@
 				Returns the 3D point on the 3D line defined by ([param s1], [param s2]) that is closest to [param point]. The returned point can be inside the segment ([param s1], [param s2]) or outside of it, i.e. somewhere on the line extending from the segment.
 			</description>
 		</method>
+		<method name="get_closest_points_between_circle_and_circle">
+			<return type="PackedVector3Array" />
+			<param index="0" name="circle0_transform" type="Transform3D" />
+			<param index="1" name="circle0_radius" type="float" />
+			<param index="2" name="circle1_transform" type="Transform3D" />
+			<param index="3" name="circle1_radius" type="float" />
+			<description>
+				Given two circles, finds pairs of points of minimal distance. Returns a [PackedVector3Array] that contains pairs of points such that in each pair the first point lies on the first circle and the second point lies on the second circle.
+			</description>
+		</method>
+		<method name="get_closest_points_between_line_and_circle">
+			<return type="PackedVector3Array" />
+			<param index="0" name="line_origin" type="Vector3" />
+			<param index="1" name="line_direction" type="Vector3" />
+			<param index="2" name="circle_transform" type="Transform3D" />
+			<param index="3" name="circle_radius" type="float" />
+			<description>
+				Given a line and a circle, finds pairs of points of minimal distance. Returns a [PackedVector3Array] that contains pairs of points such that in each pair the first point lies on the line and the second point lies on the circle. The [param line_direction] should be normalized.
+			</description>
+		</method>
 		<method name="get_closest_points_between_segments">
 			<return type="PackedVector3Array" />
 			<param index="0" name="p1" type="Vector3" />
