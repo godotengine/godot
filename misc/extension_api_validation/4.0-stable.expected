@@ -195,3 +195,25 @@ GH-77143
 Validate extension JSON: Error: Hash mismatch for 'classes/WorkerThreadPool/methods/wait_for_task_completion'. This means that the function has changed and no compatibility function was provided.
 
 Changed the return value from `void` to `Error`. No adjustments should be necessary.
+
+
+GH-72842
+--------
+Validate extension JSON: API was removed: classes/PathFollow2D/methods/get_lookahead
+Validate extension JSON: API was removed: classes/PathFollow2D/methods/set_lookahead
+Validate extension JSON: API was removed: classes/PathFollow2D/properties/lookahead
+
+
+GH-77413
+--------
+Validate extension JSON: Error: Field 'classes/GLTFSkin/properties/godot_skin': type changed value in new API, from "Object" to "Skin".
+
+
+GH-76082
+--------
+Validate extension JSON: Error: Hash mismatch for 'builtin_classes/Basis/methods/looking_at'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'builtin_classes/Transform3D/methods/looking_at'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Node3D/methods/look_at'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Node3D/methods/look_at_from_position'. This means that the function has changed and no compatibility function was provided.
+
+Added an optional parameter with a default value. No adjustments should be necessary.
