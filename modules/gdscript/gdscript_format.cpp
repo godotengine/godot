@@ -2055,7 +2055,7 @@ String GDScriptFormat::parse_dictionary(const GDP::DictionaryNode *p_node, const
 		dictionary_string += "# ";
 		dictionary_string += p_node->footer_comments[i];
 	}
-	if (p_break_type == WRAP || !p_node->footer_comments.is_empty()) {
+	if (children_have_comments(p_node) || !p_node->footer_comments.is_empty()) {
 		dictionary_string += indent(p_indent_level);
 	}
 	dictionary_string += "}";

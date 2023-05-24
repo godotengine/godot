@@ -3233,10 +3233,15 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 			if (check(GDScriptTokenizer::Token::COMMENT)) {
 				if (previous.start_line != current.start_line || dictionary->elements.is_empty()) {
 					comment_header_block = check_for_comment_block();
+					match(GDScriptTokenizer::Token::NEWLINE);
 				} else {
 					dictionary->elements[dictionary->elements.size() - 1].value->inline_comment = check_for_comment();
+					match(GDScriptTokenizer::Token::NEWLINE);
+					if (check(GDScriptTokenizer::Token::COMMENT)) {
+						comment_header_block = check_for_comment_block();
+						match(GDScriptTokenizer::Token::NEWLINE);
+					}
 				}
-				match(GDScriptTokenizer::Token::NEWLINE);
 			}
 
 			if (check(GDScriptTokenizer::Token::BRACE_CLOSE)) {
