@@ -45,6 +45,7 @@ private:
 		NodePath name;
 		bool spawn = true;
 		bool sync = true;
+		bool watch = false;
 
 		bool operator==(const ReplicationProperty &p_to) {
 			return name == p_to.name;
@@ -60,6 +61,7 @@ private:
 	List<ReplicationProperty> properties;
 	List<NodePath> spawn_props;
 	List<NodePath> sync_props;
+	List<NodePath> watch_props;
 
 protected:
 	static void _bind_methods();
@@ -82,8 +84,12 @@ public:
 	bool property_get_sync(const NodePath &p_path);
 	void property_set_sync(const NodePath &p_path, bool p_enabled);
 
+	bool property_get_watch(const NodePath &p_path);
+	void property_set_watch(const NodePath &p_path, bool p_enabled);
+
 	const List<NodePath> &get_spawn_properties() { return spawn_props; }
 	const List<NodePath> &get_sync_properties() { return sync_props; }
+	const List<NodePath> &get_watch_properties() { return watch_props; }
 
 	SceneReplicationConfig() {}
 };

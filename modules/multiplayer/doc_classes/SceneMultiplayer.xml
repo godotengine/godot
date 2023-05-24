@@ -70,6 +70,12 @@
 		<member name="auth_timeout" type="float" setter="set_auth_timeout" getter="get_auth_timeout" default="3.0">
 			If set to a value greater than [code]0.0[/code], the maximum amount of time peers can stay in the authenticating state, after which the authentication will automatically fail. See the [signal peer_authenticating] and [signal peer_authentication_failed] signals.
 		</member>
+		<member name="max_delta_packet_size" type="int" setter="set_max_delta_packet_size" getter="get_max_delta_packet_size" default="65535">
+			Maximum size of each delta packet. Higher values increase the chance of receiving full updates in a single frame, but also the chance of causing networking congestion (higher latency, disconnections). See [MultiplayerSynchronizer].
+		</member>
+		<member name="max_sync_packet_size" type="int" setter="set_max_sync_packet_size" getter="get_max_sync_packet_size" default="1350">
+			Maximum size of each synchronization packet. Higher values increase the chance of receiving full updates in a single frame, but also the chance of packet loss. See [MultiplayerSynchronizer].
+		</member>
 		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" default="false">
 			If [code]true[/code], the MultiplayerAPI's [member MultiplayerAPI.multiplayer_peer] refuses new incoming connections.
 		</member>
