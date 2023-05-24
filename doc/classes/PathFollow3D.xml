@@ -43,6 +43,9 @@
 		<member name="tilt_enabled" type="bool" setter="set_tilt_enabled" getter="is_tilt_enabled" default="true">
 			If [code]true[/code], the tilt property of [Curve3D] takes effect.
 		</member>
+		<member name="use_model_front" type="bool" setter="set_use_model_front" getter="is_using_model_front" default="false">
+			If [code]true[/code], the node moves on the travel path with orienting the +Z axis as forward. See also [constant Vector3.FORWARD] and [constant Vector3.MODEL_FRONT].
+		</member>
 		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset" default="0.0">
 			The node's offset perpendicular to the curve.
 		</member>

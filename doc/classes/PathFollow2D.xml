@@ -18,9 +18,6 @@
 		<member name="h_offset" type="float" setter="set_h_offset" getter="get_h_offset" default="0.0">
 			The node's offset along the curve.
 		</member>
-		<member name="lookahead" type="float" setter="set_lookahead" getter="get_lookahead" default="4.0">
-			How far to look ahead of the curve to calculate the tangent if the node is rotating. E.g. shorter lookaheads will lead to faster rotations.
-		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="true">
 			If [code]true[/code], any offset outside the path's length will wrap around, instead of stopping at the ends. Use it for cyclic paths.
 		</member>
