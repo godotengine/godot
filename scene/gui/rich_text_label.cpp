@@ -2624,6 +2624,12 @@ void RichTextLabel::_fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack
 	}
 }
 
+void RichTextLabel::_normalize_subtags(Vector<String> &subtags) {
+	for (String &subtag : subtags) {
+		subtag = subtag.unquote();
+	}
+}
+
 bool RichTextLabel::_find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item) {
 	Item *item = p_item;
 
@@ -3777,7 +3783,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				const String &expr = split_tag_block[i];
 				int value_pos = expr.find("=");
 				if (value_pos > -1) {
-					bbcode_options[expr.substr(0, value_pos)] = expr.substr(value_pos + 1);
+					bbcode_options[expr.substr(0, value_pos)] = expr.substr(value_pos + 1).unquote();
 				}
 			}
 		} else {
@@ -3886,6 +3892,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front(tag);
 		} else if (tag.begins_with("table=")) {
 			Vector<String> subtag = tag.substr(6, tag.length()).split(",");
+			_normalize_subtags(subtag);
+
 			int columns = subtag[0].to_int();
 			if (columns < 1) {
 				columns = 1;
@@ -3945,9 +3953,12 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("cell");
 		} else if (tag.begins_with("cell ")) {
 			Vector<String> subtag = tag.substr(5, tag.length()).split(" ");
+			_normalize_subtags(subtag);
 
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
+				_normalize_subtags(subtag_a);
+
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "expand") {
 						int ratio = subtag_a[1].to_int();
@@ -3962,12 +3973,16 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			const Color fallback_color = Color(0, 0, 0, 0);
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
+				_normalize_subtags(subtag_a);
+
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "border") {
 						Color color = Color::from_string(subtag_a[1], fallback_color);
 						set_cell_border_color(color);
 					} else if (subtag_a[0] == "bg") {
 						Vector<String> subtag_b = subtag_a[1].split(",");
+						_normalize_subtags(subtag_b);
+
 						if (subtag_b.size() == 2) {
 							Color color1 = Color::from_string(subtag_b[0], fallback_color);
 							Color color2 = Color::from_string(subtag_b[1], fallback_color);
@@ -3979,6 +3994,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						}
 					} else if (subtag_a[0] == "padding") {
 						Vector<String> subtag_b = subtag_a[1].split(",");
+						_normalize_subtags(subtag_b);
+
 						if (subtag_b.size() == 4) {
 							set_cell_padding(Rect2(subtag_b[0].to_float(), subtag_b[1].to_float(), subtag_b[2].to_float(), subtag_b[3].to_float()));
 						}
@@ -4115,6 +4132,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("p");
 		} else if (tag.begins_with("p ")) {
 			Vector<String> subtag = tag.substr(2, tag.length()).split(" ");
+			_normalize_subtags(subtag);
+
 			HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 			Control::TextDirection dir = Control::TEXT_DIRECTION_INHERITED;
 			String lang;
@@ -4123,6 +4142,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			BitField<TextServer::JustificationFlag> jst_flags = default_jst_flags;
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
+				_normalize_subtags(subtag_a);
+
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "justification_flags" || subtag_a[0] == "jst") {
 						Vector<String> subtag_b = subtag_a[1].split(",");
@@ -4195,24 +4216,26 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			if (end == -1) {
 				end = p_bbcode.length();
 			}
-			String url = p_bbcode.substr(brk_end + 1, end - brk_end - 1);
+			String url = p_bbcode.substr(brk_end + 1, end - brk_end - 1).unquote();
 			push_meta(url);
 
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 
 		} else if (tag.begins_with("url=")) {
-			String url = tag.substr(4, tag.length());
+			String url = tag.substr(4, tag.length()).unquote();
 			push_meta(url);
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
 		} else if (tag.begins_with("hint=")) {
-			String description = tag.substr(5, tag.length());
+			String description = tag.substr(5, tag.length()).unquote();
 			push_hint(description);
 			pos = brk_end + 1;
 			tag_stack.push_front("hint");
 		} else if (tag.begins_with("dropcap")) {
 			Vector<String> subtag = tag.substr(5, tag.length()).split(" ");
+			_normalize_subtags(subtag);
+
 			int fs = theme_cache.normal_font_size * 3;
 			Ref<Font> f = theme_cache.normal_font;
 			Color color = theme_cache.default_color;
@@ -4222,6 +4245,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
+				_normalize_subtags(subtag_a);
+
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "font" || subtag_a[0] == "f") {
 						String fnt = subtag_a[1];
@@ -4233,6 +4258,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						fs = subtag_a[1].to_int();
 					} else if (subtag_a[0] == "margins") {
 						Vector<String> subtag_b = subtag_a[1].split(",");
+						_normalize_subtags(subtag_b);
+
 						if (subtag_b.size() == 4) {
 							dropcap_margins.position.x = subtag_b[0].to_float();
 							dropcap_margins.position.y = subtag_b[1].to_float();
@@ -4263,6 +4290,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			int alignment = INLINE_ALIGNMENT_CENTER;
 			if (tag.begins_with("img=")) {
 				Vector<String> subtag = tag.substr(4, tag.length()).split(",");
+				_normalize_subtags(subtag);
+
 				if (subtag.size() > 1) {
 					if (subtag[0] == "top" || subtag[0] == "t") {
 						alignment = INLINE_ALIGNMENT_TOP_TO;
@@ -4346,14 +4375,14 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = end;
 			tag_stack.push_front(bbcode_name);
 		} else if (tag.begins_with("color=")) {
-			String color_str = tag.substr(6, tag.length());
+			String color_str = tag.substr(6, tag.length()).unquote();
 			Color color = Color::from_string(color_str, theme_cache.default_color);
 			push_color(color);
 			pos = brk_end + 1;
 			tag_stack.push_front("color");
 
 		} else if (tag.begins_with("outline_color=")) {
-			String color_str = tag.substr(14, tag.length());
+			String color_str = tag.substr(14, tag.length()).unquote();
 			Color color = Color::from_string(color_str, theme_cache.default_color);
 			push_outline_color(color);
 			pos = brk_end + 1;
@@ -4369,6 +4398,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			int value_pos = tag.find("=");
 			String fnt_ftr = tag.substr(value_pos + 1);
 			Vector<String> subtag = fnt_ftr.split(",");
+			_normalize_subtags(subtag);
+
 			if (subtag.size() > 0) {
 				Ref<Font> font = theme_cache.normal_font;
 				DefaultFont def_font = NORMAL_FONT;
@@ -4383,6 +4414,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				Dictionary features;
 				for (int i = 0; i < subtag.size(); i++) {
 					Vector<String> subtag_a = subtag[i].split("=");
+					_normalize_subtags(subtag_a);
+
 					if (subtag_a.size() == 2) {
 						features[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();
 					} else if (subtag_a.size() == 1) {
@@ -4406,7 +4439,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front(tag.substr(0, value_pos));
 
 		} else if (tag.begins_with("font=")) {
-			String fnt = tag.substr(5, tag.length());
+			String fnt = tag.substr(5, tag.length()).unquote();
 
 			Ref<Font> fc = ResourceLoader::load(fnt, "Font");
 			if (fc.is_valid()) {
@@ -4418,6 +4451,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 		} else if (tag.begins_with("font ")) {
 			Vector<String> subtag = tag.substr(2, tag.length()).split(" ");
+			_normalize_subtags(subtag);
 
 			Ref<Font> font = theme_cache.normal_font;
 			DefaultFont def_font = NORMAL_FONT;
@@ -4436,6 +4470,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			int fnt_size = -1;
 			for (int i = 1; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=", true, 2);
+				_normalize_subtags(subtag_a);
+
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "name" || subtag_a[0] == "n") {
 						String fnt = subtag_a[1];
@@ -4473,6 +4509,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 							Vector<String> variation_tags = subtag_a[1].split(",");
 							for (int j = 0; j < variation_tags.size(); j++) {
 								Vector<String> subtag_b = variation_tags[j].split("=");
+								_normalize_subtags(subtag_b);
+
 								if (subtag_b.size() == 2) {
 									variations[TS->name_to_tag(subtag_b[0])] = subtag_b[1].to_float();
 								}
@@ -4485,6 +4523,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 							Vector<String> feature_tags = subtag_a[1].split(",");
 							for (int j = 0; j < feature_tags.size(); j++) {
 								Vector<String> subtag_b = feature_tags[j].split("=");
+								_normalize_subtags(subtag_b);
+
 								if (subtag_b.size() == 2) {
 									features[TS->name_to_tag(subtag_b[0])] = subtag_b[1].to_float();
 								} else if (subtag_b.size() == 1) {
@@ -4625,7 +4665,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			set_process_internal(true);
 
 		} else if (tag.begins_with("bgcolor=")) {
-			String color_str = tag.substr(8, tag.length());
+			String color_str = tag.substr(8, tag.length()).unquote();
 			Color color = Color::from_string(color_str, theme_cache.default_color);
 
 			push_bgcolor(color);
@@ -4633,7 +4673,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("bgcolor");
 
 		} else if (tag.begins_with("fgcolor=")) {
-			String color_str = tag.substr(8, tag.length());
+			String color_str = tag.substr(8, tag.length()).unquote();
 			Color color = Color::from_string(color_str, theme_cache.default_color);
 
 			push_fgcolor(color);

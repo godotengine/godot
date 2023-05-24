@@ -510,6 +510,7 @@ private:
 	Color _find_fgcolor(Item *p_item);
 	bool _find_layout_subitem(Item *from, Item *to);
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
+	void _normalize_subtags(Vector<String> &subtags);
 
 	void _update_fx(ItemFrame *p_frame, double p_delta_time);
 	void _scroll_changed(double);
