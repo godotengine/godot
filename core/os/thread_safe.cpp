@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  thread_safe.h                                                         */
+/*  thread_safe.cpp                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,17 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef THREAD_SAFE_H
-#define THREAD_SAFE_H
+#ifndef THREAD_SAFE_CPP
+#define THREAD_SAFE_CPP
 
-#include "core/os/mutex.h"
+#include "thread_safe.h"
 
-#define _THREAD_SAFE_CLASS_ mutable Mutex _thread_safe_;
-#define _THREAD_SAFE_METHOD_ MutexLock _thread_safe_method_(_thread_safe_);
-#define _THREAD_SAFE_LOCK_ _thread_safe_.lock();
-#define _THREAD_SAFE_UNLOCK_ _thread_safe_.unlock();
+static thread_local bool current_thread_safe_for_nodes = false;
 
-bool is_current_thread_safe_for_nodes();
-void set_current_thread_safe_for_nodes(bool p_safe);
+bool is_current_thread_safe_for_nodes() {
+	return current_thread_safe_for_nodes;
+}
 
-#endif // THREAD_SAFE_H
+void set_current_thread_safe_for_nodes(bool p_safe) {
+	current_thread_safe_for_nodes = p_safe;
+}
+
+#endif // THREAD_SAFE_CPP

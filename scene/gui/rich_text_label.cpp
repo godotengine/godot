@@ -2712,9 +2712,11 @@ bool RichTextLabel::_find_layout_subitem(Item *from, Item *to) {
 }
 
 void RichTextLabel::_thread_function(void *p_userdata) {
+	set_current_thread_safe_for_nodes(true);
 	_process_line_caches();
 	updating.store(false);
 	call_deferred(SNAME("thread_end"));
+	set_current_thread_safe_for_nodes(false);
 }
 
 void RichTextLabel::_thread_end() {
