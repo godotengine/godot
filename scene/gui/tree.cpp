@@ -3190,15 +3190,6 @@ void Tree::_go_up() {
 		selected_col = 0;
 	} else {
 		prev = selected_item->get_prev_visible();
-		if (last_keypress != 0) {
-			//incr search next
-			int col;
-			prev = _search_item_text(prev, incr_search, &col, true, true);
-			if (!prev) {
-				accept_event();
-				return;
-			}
-		}
 	}
 
 	if (select_mode == SELECT_MULTI) {
@@ -3231,16 +3222,6 @@ void Tree::_go_down() {
 		}
 	} else {
 		next = selected_item->get_next_visible();
-
-		if (last_keypress != 0) {
-			//incr search next
-			int col;
-			next = _search_item_text(next, incr_search, &col, true);
-			if (!next) {
-				accept_event();
-				return;
-			}
-		}
 	}
 
 	if (select_mode == SELECT_MULTI) {
