@@ -1777,7 +1777,7 @@ Size2 LineEdit::get_minimum_size() const {
 
 	if (expand_to_text_length) {
 		// Add a space because some fonts are too exact, and because caret needs a bit more when at the end.
-		min_size.width = MAX(min_size.width, full_width + em_space_size);
+		min_size.width = MAX(min_size.width, full_width + theme_cache.caret_width);
 	}
 
 	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y, font->get_height(font_size));
