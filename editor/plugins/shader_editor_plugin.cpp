@@ -265,13 +265,20 @@ void ShaderEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 	for (int i = 0; i < shader_tabs->get_tab_count(); i++) {
 		EditedShader edited_shader = edited_shaders[i];
 		if (edited_shader.shader_editor || edited_shader.visual_shader_editor) {
-			shaders.push_back(edited_shader.shader->get_path());
+			String shader_path;
+			if (edited_shader.shader.is_valid()) {
+				shader_path = edited_shader.shader->get_path();
+			} else {
+				DEV_ASSERT(edited_shader.shader_inc.is_valid());
+				shader_path = edited_shader.shader_inc->get_path();
+			}
+			shaders.push_back(shader_path);
 
 			TextShaderEditor *shader_editor = Object::cast_to<TextShaderEditor>(shader_tabs->get_current_tab_control());
 			VisualShaderEditor *visual_shader_editor = Object::cast_to<VisualShaderEditor>(shader_tabs->get_current_tab_control());
 
 			if ((shader_editor && edited_shader.shader_editor == shader_editor) || (visual_shader_editor && edited_shader.visual_shader_editor == visual_shader_editor)) {
-				selected_shader = edited_shader.shader->get_path();
+				selected_shader = shader_path;
 			}
 		}
 	}
