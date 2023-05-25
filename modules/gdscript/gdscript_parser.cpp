@@ -2661,7 +2661,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 	advance(); // Only consume the token if there's a valid rule.
 
 	Vector<String> header_comment_block;
-	if (check(GDScriptTokenizer::Token::COMMENT) && (previous.start_line != current.start_line || previous.type == GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+	bool check_is_comment = check(GDScriptTokenizer::Token::COMMENT);
+	bool new_line_or_previous_is_parenthesis = (previous.start_line != current.start_line || previous.type == GDScriptTokenizer::Token::PARENTHESIS_OPEN);
+	bool previous_is_not_open_bracket_brace = !(previous.type == GDScriptTokenizer::Token::BRACKET_OPEN || previous.type == GDScriptTokenizer::Token::BRACE_OPEN);
+	if (check_is_comment && new_line_or_previous_is_parenthesis && previous_is_not_open_bracket_brace) {
 		header_comment_block = check_for_comment_block();
 
 		if (current.type == GDScriptTokenizer::Token::BRACKET_CLOSE || current.type == GDScriptTokenizer::Token::PARENTHESIS_CLOSE || current.type == GDScriptTokenizer::Token::BRACE_CLOSE) {

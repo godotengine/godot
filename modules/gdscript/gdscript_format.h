@@ -51,7 +51,7 @@ private:
 
 private:
 	static bool node_has_comments(const GDP::Node *p_node);
-	static bool children_have_comments(const GDP::Node *p_parent);
+	static bool children_have_comments(const GDP::Node *p_parent, bool p_recursive = true);
 
 	static int get_operation_priority(const GDP::BinaryOpNode::OpType p_op_type) {
 		switch (p_op_type) {

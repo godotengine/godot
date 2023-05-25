@@ -115,7 +115,7 @@ bool GDScriptFormat::node_has_comments(const GDP::Node *p_node) {
 	return p_node != nullptr && (!p_node->header_comment.is_empty() || !p_node->inline_comment.is_empty());
 }
 
-bool GDScriptFormat::children_have_comments(const GDP::Node *p_parent) {
+bool GDScriptFormat::children_have_comments(const GDP::Node *p_parent, bool p_recursive) {
 	if (p_parent == nullptr) {
 		return false;
 	}
@@ -126,22 +126,22 @@ bool GDScriptFormat::children_have_comments(const GDP::Node *p_parent) {
 				bool children = false;
 				switch (member.type) {
 					case GDP::ClassNode::Member::Type::ENUM:
-						children = node_has_comments(member.m_enum) || children_have_comments(member.m_enum);
+						children = node_has_comments(member.m_enum) || (p_recursive && children_have_comments(member.m_enum));
 						break;
 					case GDP::ClassNode::Member::Type::CONSTANT:
-						children = node_has_comments(member.constant) || children_have_comments(member.constant);
+						children = node_has_comments(member.constant) || (p_recursive && children_have_comments(member.constant));
 						break;
 					case GDP::ClassNode::Member::Type::SIGNAL:
-						children = node_has_comments(member.signal) || children_have_comments(member.signal);
+						children = node_has_comments(member.signal) || (p_recursive && children_have_comments(member.signal));
 						break;
 					case GDP::ClassNode::Member::Type::FUNCTION:
-						children = node_has_comments(member.function) || children_have_comments(member.function);
+						children = node_has_comments(member.function) || (p_recursive && children_have_comments(member.function));
 						break;
 					case GDP::ClassNode::Member::Type::ENUM_VALUE:
-						children = node_has_comments(member.enum_value.parent_enum) || children_have_comments(member.enum_value.parent_enum);
+						children = node_has_comments(member.enum_value.parent_enum) || (p_recursive && children_have_comments(member.enum_value.parent_enum));
 						break;
 					case GDP::ClassNode::Member::Type::VARIABLE:
-						children = node_has_comments(member.variable) || children_have_comments(member.variable);
+						children = node_has_comments(member.variable) || (p_recursive && children_have_comments(member.variable));
 						break;
 					case GDP::ClassNode::Member::Type::UNDEFINED:
 						children = false;
@@ -167,17 +167,17 @@ bool GDScriptFormat::children_have_comments(const GDP::Node *p_parent) {
 		}
 		case GDP::Node::Type::CONSTANT: {
 			const GDP::ConstantNode *constant = dynamic_cast<const GDP::ConstantNode *>(p_parent);
-			return node_has_comments(constant->initializer) || children_have_comments(constant->initializer);
+			return node_has_comments(constant->initializer) || (p_recursive && children_have_comments(constant->initializer));
 		}
 
 		case GDP::Node::Type::VARIABLE: {
 			const GDP::VariableNode *variable = dynamic_cast<const GDP::VariableNode *>(p_parent);
-			return node_has_comments(variable->initializer) || children_have_comments(variable->initializer);
+			return node_has_comments(variable->initializer) || (p_recursive && children_have_comments(variable->initializer));
 		}
 		case GDP::Node::Type::ARRAY: {
 			const GDP::ArrayNode *m_array = dynamic_cast<const GDP::ArrayNode *>(p_parent);
 			for (const GDScriptParser::ExpressionNode *element : m_array->elements) {
-				if (node_has_comments(element) || children_have_comments(element)) {
+				if (node_has_comments(element) || (p_recursive && children_have_comments(element))) {
 					return true;
 				}
 			}
@@ -185,20 +185,20 @@ bool GDScriptFormat::children_have_comments(const GDP::Node *p_parent) {
 		}
 		case GDP::Node::Type::ASSERT: {
 			const GDP::AssertNode *assert = dynamic_cast<const GDP::AssertNode *>(p_parent);
-			return node_has_comments(assert->condition) || children_have_comments(assert->condition);
+			return node_has_comments(assert->condition) || (p_recursive && children_have_comments(assert->condition));
 		}
 		case GDP::Node::Type::ASSIGNMENT: {
 			const GDP::AssignmentNode *assignment = dynamic_cast<const GDP::AssignmentNode *>(p_parent);
-			return node_has_comments(assignment->assigned_value) || children_have_comments(assignment->assigned_value);
+			return node_has_comments(assignment->assigned_value) || (p_recursive && children_have_comments(assignment->assigned_value));
 		}
 		case GDP::Node::Type::BINARY_OPERATOR: {
 			const GDP::BinaryOpNode *binary_op_node = dynamic_cast<const GDP::BinaryOpNode *>(p_parent);
-			return node_has_comments(binary_op_node->left_operand) || node_has_comments(binary_op_node->right_operand) || children_have_comments(binary_op_node->left_operand) || children_have_comments(binary_op_node->right_operand);
+			return node_has_comments(binary_op_node->left_operand) || node_has_comments(binary_op_node->right_operand) || (p_recursive && (children_have_comments(binary_op_node->left_operand) || children_have_comments(binary_op_node->right_operand)));
 		}
 		case GDP::Node::Type::CALL: {
 			const GDP::CallNode *call_node = dynamic_cast<const GDP::CallNode *>(p_parent);
 			for (const GDScriptParser::ExpressionNode *argument : call_node->arguments) {
-				if (node_has_comments(argument) || children_have_comments(argument)) {
+				if (node_has_comments(argument) || (p_recursive && children_have_comments(argument))) {
 					return true;
 				}
 			}
@@ -207,7 +207,7 @@ bool GDScriptFormat::children_have_comments(const GDP::Node *p_parent) {
 		case GDP::Node::Type::DICTIONARY: {
 			const GDP::DictionaryNode *dictionary_node = dynamic_cast<const GDP::DictionaryNode *>(p_parent);
 			for (const GDScriptParser::DictionaryNode::Pair element : dictionary_node->elements) {
-				if (node_has_comments(element.key) || node_has_comments(element.value) || children_have_comments(element.key) || children_have_comments(element.value)) {
+				if (node_has_comments(element.key) || node_has_comments(element.value) || (p_recursive && (children_have_comments(element.key) || children_have_comments(element.value)))) {
 					return true;
 				}
 			}
@@ -215,12 +215,12 @@ bool GDScriptFormat::children_have_comments(const GDP::Node *p_parent) {
 		}
 		case GDP::Node::Type::FOR: {
 			const GDP::ForNode *for_node = dynamic_cast<const GDP::ForNode *>(p_parent);
-			return node_has_comments(for_node->list) || children_have_comments(for_node->list);
+			return node_has_comments(for_node->list) || (p_recursive && children_have_comments(for_node->list));
 		}
 		case GDP::Node::Type::FUNCTION: {
 			const GDP::FunctionNode *function_node = dynamic_cast<const GDP::FunctionNode *>(p_parent);
 			for (const GDScriptParser::ParameterNode *parameter : function_node->parameters) {
-				if (node_has_comments(parameter) || children_have_comments(parameter)) {
+				if (node_has_comments(parameter) || (p_recursive && children_have_comments(parameter))) {
 					return true;
 				}
 			}
@@ -228,7 +228,7 @@ bool GDScriptFormat::children_have_comments(const GDP::Node *p_parent) {
 		}
 		case GDP::Node::Type::IF: {
 			const GDP::IfNode *if_node = dynamic_cast<const GDP::IfNode *>(p_parent);
-			return node_has_comments(if_node->condition) || children_have_comments(if_node->condition);
+			return node_has_comments(if_node->condition) || (p_recursive && children_have_comments(if_node->condition));
 		}
 		case GDP::Node::Type::LAMBDA: {
 			const GDP::LambdaNode *lambda_node = dynamic_cast<const GDP::LambdaNode *>(p_parent);
@@ -236,12 +236,12 @@ bool GDScriptFormat::children_have_comments(const GDP::Node *p_parent) {
 		}
 		case GDP::Node::Type::MATCH: {
 			const GDP::MatchNode *match_node = dynamic_cast<const GDP::MatchNode *>(p_parent);
-			return node_has_comments(match_node->test) || children_have_comments(match_node->test);
+			return node_has_comments(match_node->test) || (p_recursive && children_have_comments(match_node->test));
 		}
 		case GDP::Node::Type::MATCH_BRANCH: {
 			const GDP::MatchBranchNode *match_branch_node = dynamic_cast<const GDP::MatchBranchNode *>(p_parent);
 			for (const GDScriptParser::PatternNode *pattern : match_branch_node->patterns) {
-				if (node_has_comments(pattern) || children_have_comments(pattern)) {
+				if (node_has_comments(pattern) || (p_recursive && children_have_comments(pattern))) {
 					return true;
 				}
 			}
@@ -249,16 +249,16 @@ bool GDScriptFormat::children_have_comments(const GDP::Node *p_parent) {
 		}
 		case GDP::Node::Type::SUBSCRIPT: {
 			const GDP::SubscriptNode *subscript_node = dynamic_cast<const GDP::SubscriptNode *>(p_parent);
-			return node_has_comments(subscript_node->index) || children_have_comments(subscript_node->index);
+			return node_has_comments(subscript_node->index) || (p_recursive && children_have_comments(subscript_node->index));
 		}
 		case GDP::Node::Type::TERNARY_OPERATOR: {
 			const GDP::TernaryOpNode *ternary_op_node = dynamic_cast<const GDP::TernaryOpNode *>(p_parent);
-			return node_has_comments(ternary_op_node->condition) || node_has_comments(ternary_op_node->false_expr) || children_have_comments(ternary_op_node->condition) || children_have_comments(ternary_op_node->false_expr);
+			return node_has_comments(ternary_op_node->condition) || node_has_comments(ternary_op_node->false_expr) || (p_recursive && (children_have_comments(ternary_op_node->condition) || children_have_comments(ternary_op_node->false_expr)));
 		}
 		case GDP::Node::Type::SIGNAL: {
 			const GDP::SignalNode *signal_node = dynamic_cast<const GDP::SignalNode *>(p_parent);
 			for (const GDScriptParser::ParameterNode *parameter : signal_node->parameters) {
-				if (node_has_comments(parameter) || children_have_comments(parameter)) {
+				if (node_has_comments(parameter) || (p_recursive && children_have_comments(parameter))) {
 					return true;
 				}
 			}
@@ -1716,43 +1716,43 @@ String GDScriptFormat::parse_binary_operator(const GDP::BinaryOpNode *p_node, co
 		break_string = true;
 
 		if (p_node->left_operand->type == GDP::Node::Type::BINARY_OPERATOR) {
-			left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0), FORCE_SPLIT);
+			left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0) + 1, FORCE_SPLIT);
 		} else {
-			left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level, WRAP);
+			left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level + 1, WRAP);
 		}
 		String left_operand_string = left_operand.as_string();
 		left_operand = StringBuilder();
-		left_operand += print_comment(p_node->left_operand, true, p_indent_level);
+		left_operand += print_comment(p_node->left_operand, true, p_indent_level + 1);
 		left_operand += left_operand_string;
-		left_operand += print_comment(p_node->left_operand, false);
+		left_operand += print_comment(p_node->left_operand, false, p_indent_level + 1);
 
 		if (p_node->right_operand->type == GDP::Node::Type::BINARY_OPERATOR) {
-			right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0), FORCE_SPLIT);
+			right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0) + 1, FORCE_SPLIT);
 		} else {
-			right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level, WRAP);
+			right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level + 1, WRAP);
 		}
 		String right_operand_string = right_operand.as_string();
 		right_operand = StringBuilder();
-		right_operand += print_comment(p_node->right_operand, true, p_indent_level);
+		right_operand += print_comment(p_node->right_operand, true, p_indent_level + 1);
 		right_operand += right_operand_string;
-		right_operand += print_comment(p_node->right_operand, false);
+		right_operand += print_comment(p_node->right_operand, false, p_indent_level + 1);
 	} else {
-		left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level);
-		right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level);
+		left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level + 1);
+		right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level + 1);
 		if (p_break_type != NONE && get_length_without_comments(left_operand) + get_length_without_comments(right_operand) + get_length_without_comments(operator_string) + 1 > line_length_maximum) {
 			break_string = true;
 			left_operand = StringBuilder();
 			right_operand = StringBuilder();
 
 			if (p_node->left_operand->type == GDP::Node::Type::BINARY_OPERATOR) {
-				left_operand += parse_expression(p_node->left_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0), FORCE_SPLIT);
+				left_operand += parse_expression(p_node->left_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0) + 1, FORCE_SPLIT);
 			} else {
 				left_operand += parse_binary_operator_element(p_node->left_operand, p_indent_level, WRAP);
 			}
 			if (p_node->right_operand->type == GDP::Node::Type::BINARY_OPERATOR) {
-				right_operand += parse_expression(p_node->right_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0), FORCE_SPLIT);
+				right_operand += parse_expression(p_node->right_operand, p_indent_level + (p_indent_level == 0 ? indent_in_multiline_block : 0) + 1, FORCE_SPLIT);
 			} else {
-				right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level, WRAP);
+				right_operand += parse_binary_operator_element(p_node->right_operand, p_indent_level + 1, WRAP);
 			}
 		} else {
 			String right_operand_string = right_operand.as_string();
@@ -1913,7 +1913,8 @@ String GDScriptFormat::parse_array_elements(const GDP::ArrayNode *p_node, const 
 
 		String element;
 		if (children_have_comments(p_node)) {
-			element = print_comment(p_node->elements[i], true, p_indent_level) + parse_array_element(p_node->elements[i], p_indent_level, p_break_type);
+			String array_element = parse_array_element(p_node->elements[i], p_indent_level, WRAP);
+			element = print_comment(p_node->elements[i], true, p_indent_level) + array_element;
 		} else {
 			element = parse_array_element(p_node->elements[i], p_indent_level);
 			if (p_break_type != NONE && element.length() > line_length_maximum) {
@@ -1944,7 +1945,15 @@ String GDScriptFormat::parse_array(const GDP::ArrayNode *p_node, const int p_ind
 	}
 
 	String elements;
-	if (children_have_comments(p_node) || !p_node->footer_comments.is_empty()) {
+	if (!children_have_comments(p_node, false)) {
+		if (p_break_type == NONE && !p_node->elements.is_empty()) {
+			array_string += indent(p_indent_level + 1);
+		}
+		elements = parse_array_elements(p_node, p_indent_level + 1, NONE);
+		if (elements.length() > line_length_maximum) {
+			elements = parse_array_elements(p_node, p_indent_level + 1, WRAP);
+		}
+	} else if (children_have_comments(p_node) || !p_node->footer_comments.is_empty()) {
 		if (p_break_type == NONE && !p_node->elements.is_empty()) {
 			array_string += indent(p_indent_level + 1);
 		}

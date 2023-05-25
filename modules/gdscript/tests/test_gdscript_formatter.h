@@ -2812,34 +2812,24 @@ var my_variable := [
 	TEST_CASE("Should output a variable with a comment next to an element in a double nested array") {
 		const String code =
 				GDSCRIPT(R"(
-var my_variable := [0,1,2,[0,1,[
-	0,1, # The comment can go here
-	2
-],3],4,5,6,7,8,9]
+func _ready():
+	var my_variable := [0,1,2,[0,1,[
+		0,1, # The comment can go here
+		2
+	],3],4,5,6,7,8,9]
 )");
 		const String pre_formatted =
 				GDSCRIPT(R"(
-var my_variable := [
-	0,
-	1,
-	2,
-	[
-		0,
-		1,
-		[
-			0,
-			1, # The comment can go here
-			2,
-		],
-		3,
-	],
-	4,
-	5,
-	6,
-	7,
-	8,
-	9,
-]
+func _ready():
+	var my_variable := [
+		0, 1, 2, [
+			0, 1, [
+				0,
+				1, # The comment can go here
+				2,
+			], 3
+		], 4, 5, 6, 7, 8, 9
+	]
 )");
 
 		CHECK_FORMAT(code, pre_formatted);
@@ -3977,6 +3967,49 @@ func _ready():
 		const String pre_formatted = code;
 
 		CHECK_FORMAT(code, pre_formatted);
+	}
+
+	TEST_CASE("Header comments of the first element of an array should be formatted as that") {
+		const String code = GDSCRIPT(R"(
+static func generate_guid() -> String:
+	var b = []
+	return "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x" % [
+			# low
+			b[0], b[1], b[2], b[3],
+			# mid
+			b[4], b[5],
+			# hi
+			b[6], b[7],
+			# clock
+			b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]
+	]
+)");
+		const String pre_formatted = GDSCRIPT(R"(
+static func generate_guid() -> String:
+	var b = []
+	return (
+			"%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x"
+			% [
+				b[0],
+				b[1],
+				b[2],
+				b[3],
+				b[4],
+				b[5],
+				b[6],
+				b[7],
+				b[8],
+				b[9],
+				b[10],
+				b[11],
+				b[12],
+				b[13],
+				b[14],
+				b[15],
+				b[16],
+			]
+	)
+)");
 	}
 } // TEST_SUITE("[Modules][GDScript][GDScriptFormatter][Comments]")
 
