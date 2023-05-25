@@ -132,9 +132,6 @@ android {
     }
 
     packagingOptions {
-        // 'doNotStrip' is enabled for development within Android Studio
-        if (shouldNotStrip()) {
-            doNotStrip '**/*.so'
-        }
+        doNotStrip '**/*.so'
     }
 }
