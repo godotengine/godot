@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### 2D
 
+- Add option in VisibilityEnabler2D to hide the parent for better performance ([GH-63193](https://github.com/godotengine/godot/pull/63193)).
 - Add Gradient resource preview generator ([GH-68990](https://github.com/godotengine/godot/pull/68990)).
 
 #### 3D
@@ -33,6 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add ability to pick random value from array ([GH-67444](https://github.com/godotengine/godot/pull/67444)).
 - Expose `OS.read_string_from_stdin()` to the scripting API ([GH-70378](https://github.com/godotengine/godot/pull/70378)).
 - Add Color + alpha constructor for Color ([GH-74973](https://github.com/godotengine/godot/pull/74973)).
+- Expose `determinant` in Transform2D ([GH-76323](https://github.com/godotengine/godot/pull/76323)).
 
 #### Editor
 
@@ -42,6 +44,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Mark Script button if it's tool in Scene Tree Editor ([GH-65088](https://github.com/godotengine/godot/pull/65088)).
 - Add navigation controls to the spatial editor viewport for mobile (Android editor) ([GH-67681](https://github.com/godotengine/godot/pull/67681)).
 - Add built-in action toggle in Input Map settings ([GH-69331](https://github.com/godotengine/godot/pull/69331)).
+- Make create folder popup support nested folders ([GH-76424](https://github.com/godotengine/godot/pull/76424)).
+
+#### GDNative
+
+- Add Core API 1.4, move `Transform2D::determinant` there ([GH-77387](https://github.com/godotengine/godot/pull/77387)).
+
+#### GDScript
+
+- Suggest `class_name` in autocompletion ([GH-76346](https://github.com/godotengine/godot/pull/76346)).
 
 #### GUI
 
@@ -49,12 +60,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add dumb theme item cache to `Control` ([GH-64314](https://github.com/godotengine/godot/pull/64314)).
 - Support AtlasTexture in radial modes of TextureProgress ([GH-68246](https://github.com/godotengine/godot/pull/68246)).
 - Add alignment options to flow container ([GH-68556](https://github.com/godotengine/godot/pull/68556)).
+- Add `allow_search` property to ItemList and Tree ([GH-76753](https://github.com/godotengine/godot/pull/76753)).
 
 #### Import
 
 - Add 16-bits TGA support ([GH-65717](https://github.com/godotengine/godot/pull/65717)).
 - glTF imports & exports material texture filters ([GH-66856](https://github.com/godotengine/godot/pull/66856)).
 - Backport the GLTFDocumentExtension system ([GH-70411](https://github.com/godotengine/godot/pull/70411)).
+- Expose more compression formats in Image ([GH-76016](https://github.com/godotengine/godot/pull/76016)).
+- Implement physics support in the GLTF module ([GH-76453](https://github.com/godotengine/godot/pull/76453)).
+- Add vertex color support to OBJ importer ([GH-76671](https://github.com/godotengine/godot/pull/76671)).
 
 #### Input
 
@@ -62,6 +77,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add `MOUSE_MODE_CONFINED_HIDDEN` to MouseMode enum ([GH-63643](https://github.com/godotengine/godot/pull/63643)).
 - Add `double_tap` attribute to `InputEventScreenTouch` ([GH-67607](https://github.com/godotengine/godot/pull/67607)).
 - Add support for pointer capture ([GH-68441](https://github.com/godotengine/godot/pull/68441)).
+- Augment the `InputEvent` class with a `CANCELED` state ([GH-76715](https://github.com/godotengine/godot/pull/76715)).
 
 #### Mono (C#)
 
@@ -84,14 +100,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### Porting
 
+- Add benchmark logic ([GH-71875](https://github.com/godotengine/godot/pull/71875)).
 - Android: Add cursor shape support ([GH-66945](https://github.com/godotengine/godot/pull/66945)).
 - Android: Implement file provider capabilities ([GH-72496](https://github.com/godotengine/godot/pull/72496)).
+- Android: Enable granular control of touchscreen related settings ([GH-73692](https://github.com/godotengine/godot/pull/73692)).
+- Android: Update the gradle build tasks to generate play store builds ([GH-74583](https://github.com/godotengine/godot/pull/74583)).
 - iOS: Swift runtime support for iOS Plugins ([GH-49828](https://github.com/godotengine/godot/pull/49828)).
 - iOS: Add iOS UI Options ([GH-68189](https://github.com/godotengine/godot/pull/68189)).
 - iOS: Add ProMotion/High Refresh Rate support ([GH-68190](https://github.com/godotengine/godot/pull/68190)).
 - macOS: Simplify code signing options, add support for rcodesign tool for signing and notarization ([GH-66093](https://github.com/godotengine/godot/pull/66093)).
 - Web: Expose API to force file system sync ([GH-71132](https://github.com/godotengine/godot/pull/71132)).
 - Windows: Enable ANSI escape code processing on Windows 10 and later ([GH-66216](https://github.com/godotengine/godot/pull/66216)).
+
+#### Rendering
+
+- Batching: Add MultiRect command ([GH-68960](https://github.com/godotengine/godot/pull/68960)).
 
 #### Shaders
 
@@ -106,6 +129,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### 3D
 
+- SurfaceTool: Efficiency improvements ([GH-69723](https://github.com/godotengine/godot/pull/69723)).
 - Make CollisionShape selection box use shape AABB ([GH-71320](https://github.com/godotengine/godot/pull/71320)).
 
 #### Animation
@@ -159,6 +183,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### Thirdparty
 
+- bullet updated to 3.25.
 - Embree updated to version 3.13.5.
 - libpng updated to version 1.6.39.
 - libwebp updated to version 1.2.4.
@@ -185,6 +210,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Mark node groups as dirty for every children if parent is moved ([GH-61578](https://github.com/godotengine/godot/pull/61578)).
 - Fix nested resources being cached if no-cache argument used ([GH-62408](https://github.com/godotengine/godot/pull/62408)).
+- Backport some multi-threading goodies ([GH-72251](https://github.com/godotengine/godot/pull/72251)).
+- MessageQueue: Fix max usage performance statistic ([GH-76533](https://github.com/godotengine/godot/pull/76533)).
+- Fix size error in `BitMap.opaque_to_polygons` ([GH-76544](https://github.com/godotengine/godot/pull/76544)).
+- Fix rendering tiles using nested AtlasTextures ([GH-76703](https://github.com/godotengine/godot/pull/76703)).
+- Make acos and asin safe ([GH-76902](https://github.com/godotengine/godot/pull/76902)).
 
 #### GDScript
 
@@ -203,6 +233,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix Range doesn't take into account the min value when setting the value ([GH-65101](https://github.com/godotengine/godot/pull/65101)).
 - PopupMenu rework and enhancements ([GH-66711](https://github.com/godotengine/godot/pull/66711)).
 - Improve font glyph cache packing and texture update ([GH-67626](https://github.com/godotengine/godot/pull/67626)).
+- Fix `GridContainer` max row/column calculations not skipping hidden children ([GH-76833](https://github.com/godotengine/godot/pull/76833)).
+- Stop dragging when Slider changes editability ([GH-77245](https://github.com/godotengine/godot/pull/77245)).
 
 #### Import
 
@@ -224,7 +256,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Android: Fix wrong key mapping ([GH-68287](https://github.com/godotengine/godot/pull/68287)).
 - Android: Update the logic to calculate the screen scale ([GH-71838](https://github.com/godotengine/godot/pull/71838)).
 - Android: Fix directory access when the running app has the `All files access` permission ([GH-75147](https://github.com/godotengine/godot/pull/75147)).
+- Android: Fix UI responsiveness to touch taps ([GH-75699](https://github.com/godotengine/godot/pull/75699)).
+- Android: Fix null in Android text entry system ([GH-75992](https://github.com/godotengine/godot/pull/75992)).
+- Android: Downgrade Android gradle plugin to version 7.2.1 ([GH-76329](https://github.com/godotengine/godot/pull/76329)).
+- Android: Allow concurrent buffering and dispatch of input events ([GH-76400](https://github.com/godotengine/godot/pull/76400)).
+- Android: Fix input ANR in the Godot Android editor ([GH-76981](https://github.com/godotengine/godot/pull/76981)).
 - Linux: Fix MIDI input with ALSA ([GH-54309](https://github.com/godotengine/godot/pull/54309)).
+- Linux: Don't use udev for joypad hotloading when running in a sandbox ([GH-76961](https://github.com/godotengine/godot/pull/76961)).
+
+#### Physics
+
+- Fix RigidDynamicBody gaining momentum with bounce ([GH-76216](https://github.com/godotengine/godot/pull/76216)).
 
 #### Rendering
 
@@ -233,14 +275,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix Viewport size change not updating textures ([GH-64735](https://github.com/godotengine/godot/pull/64735)).
 - Take FXAA samples from half-pixel coordinates to improve quality ([GH-66466](https://github.com/godotengine/godot/pull/66466)).
 - Fix GLES 2 SpotLight bug with shadow filter mode ([GH-69826](https://github.com/godotengine/godot/pull/69826)).
+- Consistent render ordering for CanvasLayers ([GH-69952](https://github.com/godotengine/godot/pull/69952)).
 - Eliminate collision checks between geometry in rendering BVH ([GH-72511](https://github.com/godotengine/godot/pull/72511)).
 - Fix Line2D UVs when using BOX end cap mode ([GH-73070](https://github.com/godotengine/godot/pull/73070)).
 - Fix shadows when using 2 directional lights ([GH-74539](https://github.com/godotengine/godot/pull/74539)).
 - Fixed whitescreen issue in GLES2 glow setting ([GH-74953](https://github.com/godotengine/godot/pull/74953)).
+- Fix Polygon2D skinned bounds (for culling) ([GH-75612](https://github.com/godotengine/godot/pull/75612)).
 
 #### XR
 
 - Correctly apply `world_scale` in WebXR ([GH-71880](https://github.com/godotengine/godot/pull/71880)).
+- Disable blending before blitting to framebuffer from WebXR ([GH-76072](https://github.com/godotengine/godot/pull/76072)).
 
 
 ## [3.5] - 2022-08-05
