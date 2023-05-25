@@ -3452,6 +3452,10 @@ void SceneShaderData::set_code(const String &p_code) {
 		blend_mode = BLEND_MODE_ALPHA_TO_COVERAGE;
 	}
 
+	if (blend_mode == BLEND_MODE_ADD || blend_mode == BLEND_MODE_SUB || blend_mode == BLEND_MODE_MUL) {
+		uses_blend_alpha = true; // Force alpha used because of blend.
+	}
+
 	valid = true;
 }
 

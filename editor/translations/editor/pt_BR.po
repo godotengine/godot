@@ -4597,6 +4597,9 @@ msgstr ""
 "Todas as predefinições devem ter um caminho de exportação definido para que "
 "Exportar Tudo funcione."
 
+msgid "Resources to export:"
+msgstr "Recursos para exportar:"
+
 msgid "Delete preset '%s'?"
 msgstr "Apagar predefinição '%s'?"
 
@@ -4653,9 +4656,6 @@ msgstr "Exportar como servidor dedicado"
 
 msgid "Export Mode:"
 msgstr "Modo de Exportação:"
-
-msgid "Resources to export:"
-msgstr "Recursos para exportar:"
 
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"

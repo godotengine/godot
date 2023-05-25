@@ -297,6 +297,7 @@ if env["builtin_icu4c"]:
         "common/lsr.cpp",
         "common/lstmbe.cpp",
         "common/messagepattern.cpp",
+        "common/mlbe.cpp",
         "common/normalizer2.cpp",
         "common/normalizer2impl.cpp",
         "common/normlzr.cpp",
@@ -457,7 +458,7 @@ if env["builtin_icu4c"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    icu_data_name = "icudt72l.dat"
+    icu_data_name = "icudt73l.dat"
 
     if env.editor_build:
         env_icu.Depends("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name)

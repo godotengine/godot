@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines for CJK writing system (body).
  *
- * Copyright (C) 2006-2022 by
+ * Copyright (C) 2006-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -650,7 +650,7 @@
       af_cjk_metrics_check_digits( metrics, face );
     }
 
-    FT_Set_Charmap( face, oldmap );
+    face->charmap = oldmap;
     return FT_Err_Ok;
   }
 
@@ -741,9 +741,11 @@
                     ( dim == AF_DIMENSION_HORZ ) ? 'H' : 'V',
                     nn, blue->ref.org, blue->shoot.org ));
         FT_TRACE5(( "     ref:   cur=%.2f fit=%.2f\n",
-                    blue->ref.cur / 64.0, blue->ref.fit / 64.0 ));
+                    (double)blue->ref.cur / 64,
+                    (double)blue->ref.fit / 64 ));
         FT_TRACE5(( "     shoot: cur=%.2f fit=%.2f\n",
-                    blue->shoot.cur / 64.0, blue->shoot.fit / 64.0 ));
+                    (double)blue->shoot.cur / 64,
+                    (double)blue->shoot.fit / 64 ));
 
         blue->flags |= AF_CJK_BLUE_ACTIVE;
       }
@@ -1044,7 +1046,7 @@
     {
       AF_Edge  found = NULL;
       FT_Pos   best  = 0xFFFFU;
-      FT_Int   ee;
+      FT_UInt  ee;
 
 
       /* look for an edge corresponding to the segment */
@@ -1629,8 +1631,10 @@
     FT_TRACE5(( "  CJKLINK: edge %ld @%d (opos=%.2f) linked to %.2f,"
                 " dist was %.2f, now %.2f\n",
                 stem_edge - hints->axis[dim].edges, stem_edge->fpos,
-                stem_edge->opos / 64.0, stem_edge->pos / 64.0,
-                dist / 64.0, fitted_width / 64.0 ));
+                (double)stem_edge->opos / 64,
+                (double)stem_edge->pos / 64,
+                (double)dist / 64,
+                (double)fitted_width / 64 ));
   }
 
 
@@ -1850,8 +1854,8 @@
 #ifdef FT_DEBUG_LEVEL_TRACE
         FT_TRACE5(( "  CJKBLUE: edge %ld @%d (opos=%.2f) snapped to %.2f,"
                     " was %.2f\n",
-                    edge1 - edges, edge1->fpos, edge1->opos / 64.0,
-                    blue->fit / 64.0, edge1->pos / 64.0 ));
+                    edge1 - edges, edge1->fpos, (double)edge1->opos / 64,
+                    (double)blue->fit / 64, (double)edge1->pos / 64 ));
 
         num_actions++;
 #endif
@@ -2024,8 +2028,8 @@
 #if 0
       printf( "stem (%d,%d) adjusted (%.1f,%.1f)\n",
                edge - edges, edge2 - edges,
-               ( edge->pos - edge->opos ) / 64.0,
-               ( edge2->pos - edge2->opos ) / 64.0 );
+               (double)( edge->pos - edge->opos ) / 64,
+               (double)( edge2->pos - edge2->opos ) / 64 );
 #endif
 
       anchor = edge;

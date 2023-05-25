@@ -1963,6 +1963,9 @@ Ref<Texture2D> ProjectManager::_file_dialog_get_thumbnail(const String &p_path) 
 }
 
 void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
+	if (p_theme.is_null()) {
+		return;
+	}
 	List<StringName> tl;
 	p_theme->get_icon_list(SNAME("EditorIcons"), &tl);
 	for (List<StringName>::Element *E = tl.front(); E; E = E->next()) {
@@ -2272,14 +2275,6 @@ void ProjectManager::_perform_full_project_conversion() {
 	const String &path = selected_list[0].path;
 
 	print_line("Converting project: " + path);
-
-	Ref<ConfigFile> cf;
-	cf.instantiate();
-	cf->load(path.path_join("project.godot"));
-	cf->set_value("", "config_version", GODOT4_CONFIG_VERSION);
-	cf->save(path.path_join("project.godot"));
-	_project_list->set_project_version(path, GODOT4_CONFIG_VERSION);
-
 	List<String> args;
 	args.push_back("--path");
 	args.push_back(path);
@@ -2287,6 +2282,8 @@ void ProjectManager::_perform_full_project_conversion() {
 
 	Error err = OS::get_singleton()->create_instance(args);
 	ERR_FAIL_COND(err);
+
+	_project_list->set_project_version(path, GODOT4_CONFIG_VERSION);
 }
 
 void ProjectManager::_run_project_confirm() {

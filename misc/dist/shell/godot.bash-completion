@@ -91,8 +91,8 @@ _complete_godot_options() {
 --build-solutions
 --dump-gdextension-interface
 --dump-extension-api
---startup-benchmark
---startup-benchmark-file
+--benchmark
+--benchmark-file
 --test
 " -- "$1"))
 }

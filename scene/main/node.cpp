@@ -202,6 +202,10 @@ void Node::_notification(int p_notification) {
 				return;
 			}
 
+			if (data.owner) {
+				_clean_up_owner();
+			}
+
 			if (data.parent) {
 				data.parent->remove_child(this);
 			}
@@ -301,11 +305,7 @@ void Node::_propagate_after_exit_tree() {
 		}
 
 		if (!found) {
-			if (data.unique_name_in_owner) {
-				_release_unique_name_in_owner();
-			}
-			data.owner->data.owned.erase(data.OW);
-			data.owner = nullptr;
+			_clean_up_owner();
 		}
 	}
 
@@ -1735,6 +1735,15 @@ Window *Node::get_window() const {
 	return nullptr;
 }
 
+Window *Node::get_last_exclusive_window() const {
+	Window *w = get_window();
+	while (w && w->get_exclusive_child()) {
+		w = w->get_exclusive_child();
+	}
+
+	return w;
+}
+
 bool Node::is_ancestor_of(const Node *p_node) const {
 	ERR_FAIL_NULL_V(p_node, false);
 	Node *p = p_node->data.parent;
@@ -1876,12 +1885,7 @@ bool Node::is_unique_name_in_owner() const {
 void Node::set_owner(Node *p_owner) {
 	ERR_MAIN_THREAD_GUARD
 	if (data.owner) {
-		if (data.unique_name_in_owner) {
-			_release_unique_name_in_owner();
-		}
-		data.owner->data.owned.erase(data.OW);
-		data.OW = nullptr;
-		data.owner = nullptr;
+		_clean_up_owner();
 	}
 
 	ERR_FAIL_COND(p_owner == this);
@@ -1913,6 +1917,17 @@ void Node::set_owner(Node *p_owner) {
 
 Node *Node::get_owner() const {
 	return data.owner;
+}
+
+void Node::_clean_up_owner() {
+	ERR_FAIL_NULL(data.owner); // Sanity check.
+
+	if (data.unique_name_in_owner) {
+		_release_unique_name_in_owner();
+	}
+	data.owner->data.owned.erase(data.OW);
+	data.owner = nullptr;
+	data.OW = nullptr;
 }
 
 Node *Node::find_common_parent_with(const Node *p_node) const {
@@ -2747,6 +2762,8 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		for (int i = 0; i < get_child_count(); i++) {
 			find_owned_by(data.owner, get_child(i), &owned_by_owner);
 		}
+
+		_clean_up_owner();
 	}
 
 	Node *parent = data.parent;
@@ -3289,6 +3306,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_physics_processing_internal"), &Node::is_physics_processing_internal);
 
 	ClassDB::bind_method(D_METHOD("get_window"), &Node::get_window);
+	ClassDB::bind_method(D_METHOD("get_last_exclusive_window"), &Node::get_last_exclusive_window);
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
 	ClassDB::bind_method(D_METHOD("create_tween"), &Node::create_tween);
 
@@ -3505,3 +3523,93 @@ Node::~Node() {
 }
 
 ////////////////////////////////
+// Multithreaded locked version of Object functions.
+
+#ifdef DEBUG_ENABLED
+
+void Node::set_script(const Variant &p_script) {
+	ERR_THREAD_GUARD;
+	Object::set_script(p_script);
+}
+
+Variant Node::get_script() const {
+	ERR_THREAD_GUARD_V(Variant());
+	return Object::get_script();
+}
+
+bool Node::has_meta(const StringName &p_name) const {
+	ERR_THREAD_GUARD_V(false);
+	return Object::has_meta(p_name);
+}
+
+void Node::set_meta(const StringName &p_name, const Variant &p_value) {
+	ERR_THREAD_GUARD;
+	Object::set_meta(p_name, p_value);
+}
+
+void Node::remove_meta(const StringName &p_name) {
+	ERR_THREAD_GUARD;
+	Object::remove_meta(p_name);
+}
+
+Variant Node::get_meta(const StringName &p_name, const Variant &p_default) const {
+	ERR_THREAD_GUARD_V(Variant());
+	return Object::get_meta(p_name, p_default);
+}
+
+void Node::get_meta_list(List<StringName> *p_list) const {
+	ERR_THREAD_GUARD;
+	Object::get_meta_list(p_list);
+}
+
+Error Node::emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount) {
+	ERR_THREAD_GUARD_V(ERR_INVALID_PARAMETER);
+	return Object::emit_signalp(p_name, p_args, p_argcount);
+}
+
+bool Node::has_signal(const StringName &p_name) const {
+	ERR_THREAD_GUARD_V(false);
+	return Object::has_signal(p_name);
+}
+
+void Node::get_signal_list(List<MethodInfo> *p_signals) const {
+	ERR_THREAD_GUARD;
+	Object::get_signal_list(p_signals);
+}
+
+void Node::get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const {
+	ERR_THREAD_GUARD;
+	Object::get_signal_connection_list(p_signal, p_connections);
+}
+
+void Node::get_all_signal_connections(List<Connection> *p_connections) const {
+	ERR_THREAD_GUARD;
+	Object::get_all_signal_connections(p_connections);
+}
+
+int Node::get_persistent_signal_connection_count() const {
+	ERR_THREAD_GUARD_V(0);
+	return Object::get_persistent_signal_connection_count();
+}
+
+void Node::get_signals_connected_to_this(List<Connection> *p_connections) const {
+	ERR_THREAD_GUARD;
+	Object::get_signals_connected_to_this(p_connections);
+}
+
+Error Node::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
+	ERR_THREAD_GUARD_V(ERR_INVALID_PARAMETER);
+	return Object::connect(p_signal, p_callable, p_flags);
+}
+
+void Node::disconnect(const StringName &p_signal, const Callable &p_callable) {
+	ERR_THREAD_GUARD;
+	Object::disconnect(p_signal, p_callable);
+}
+
+bool Node::is_connected(const StringName &p_signal, const Callable &p_callable) const {
+	ERR_THREAD_GUARD_V(false);
+	return Object::is_connected(p_signal, p_callable);
+}
+
+#endif

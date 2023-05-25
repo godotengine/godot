@@ -30,6 +30,21 @@ namespace Godot
         }
 
         [UnmanagedCallersOnly]
+        internal static int DelegateHash(IntPtr delegateGCHandle)
+        {
+            try
+            {
+                var @delegate = (Delegate?)GCHandle.FromIntPtr(delegateGCHandle).Target;
+                return @delegate?.GetHashCode() ?? 0;
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                return 0;
+            }
+        }
+
+        [UnmanagedCallersOnly]
         internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, void* trampoline,
             godot_variant** args, int argc, godot_variant* outRet)
         {

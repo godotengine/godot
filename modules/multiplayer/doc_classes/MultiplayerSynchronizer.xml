@@ -8,6 +8,7 @@
 		Visibility can be handled directly with [method set_visibility_for] or as-needed with [method add_visibility_filter] and [method update_visibility].
 		[MultiplayerSpawner]s will handle nodes according to visibility of synchronizers as long as the node at [member root_path] was spawned by one.
 		Internally, [MultiplayerSynchronizer] uses [method MultiplayerAPI.object_configuration_add] to notify synchronization start passing the [Node] at [member root_path] as the [code]object[/code] and itself as the [code]configuration[/code], and uses [method MultiplayerAPI.object_configuration_remove] to notify synchronization end in a similar way.
+		[b]Note:[/b] Synchronization is not supported for [Object] type properties, like [Resource]. Properties that are unique to each peer, like the instance IDs of [Object]s (see [method Object.get_instance_id]) or [RID]s, will also not work in synchronization.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -51,6 +52,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="delta_interval" type="float" setter="set_delta_interval" getter="get_delta_interval" default="0.0">
+			Time interval between delta synchronizations. When set to [code]0.0[/code] (the default), delta synchronizations happen every network process frame.
+		</member>
 		<member name="public_visibility" type="bool" setter="set_visibility_public" getter="is_visibility_public" default="true">
 			Whether synchronization should be visible to all peers by default. See [method set_visibility_for] and [method add_visibility_filter] for ways of configuring fine-grained visibility options.
 		</member>
@@ -58,7 +62,7 @@
 			Resource containing which properties to synchronize.
 		</member>
 		<member name="replication_interval" type="float" setter="set_replication_interval" getter="get_replication_interval" default="0.0">
-			Time interval between synchronizes. When set to [code]0.0[/code] (the default), synchronizes happen every network process frame.
+			Time interval between synchronizations. When set to [code]0.0[/code] (the default), synchronizations happen every network process frame.
 		</member>
 		<member name="root_path" type="NodePath" setter="set_root_path" getter="get_root_path" default="NodePath(&quot;..&quot;)">
 			Node path that replicated properties are relative to.
@@ -69,9 +73,14 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="delta_synchronized">
+			<description>
+				Emitted when a new delta synchronization state is received by this synchronizer after the properties have been updated.
+			</description>
+		</signal>
 		<signal name="synchronized">
 			<description>
-				Emitted when a new synchronization state is received by this synchronizer after the variables have been updated.
+				Emitted when a new synchronization state is received by this synchronizer after the properties have been updated.
 			</description>
 		</signal>
 		<signal name="visibility_changed">

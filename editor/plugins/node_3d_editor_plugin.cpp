@@ -296,10 +296,10 @@ void ViewportRotationControl::_notification(int p_what) {
 			axis_menu_options.clear();
 			axis_menu_options.push_back(Node3DEditorViewport::VIEW_RIGHT);
 			axis_menu_options.push_back(Node3DEditorViewport::VIEW_TOP);
-			axis_menu_options.push_back(Node3DEditorViewport::VIEW_REAR);
+			axis_menu_options.push_back(Node3DEditorViewport::VIEW_FRONT);
 			axis_menu_options.push_back(Node3DEditorViewport::VIEW_LEFT);
 			axis_menu_options.push_back(Node3DEditorViewport::VIEW_BOTTOM);
-			axis_menu_options.push_back(Node3DEditorViewport::VIEW_FRONT);
+			axis_menu_options.push_back(Node3DEditorViewport::VIEW_REAR);
 
 			axis_colors.clear();
 			axis_colors.push_back(get_theme_color(SNAME("axis_x_color"), SNAME("Editor")));
@@ -370,7 +370,7 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 		Vector3 axis_3d = camera_basis.get_column(i);
 		Vector2i axis_vector = Vector2(axis_3d.x, -axis_3d.y) * radius;
 
-		if (Math::abs(axis_3d.z) < 1.0) {
+		if (Math::abs(axis_3d.z) <= 1.0) {
 			Axis2D pos_axis;
 			pos_axis.axis = i;
 			pos_axis.screen_point = center + axis_vector;
@@ -385,7 +385,7 @@ void ViewportRotationControl::_get_sorted_axis(Vector<Axis2D> &r_axis) {
 		} else {
 			// Special case when the camera is aligned with one axis
 			Axis2D axis;
-			axis.axis = i + (axis_3d.z < 0 ? 0 : 3);
+			axis.axis = i + (axis_3d.z <= 0 ? 0 : 3);
 			axis.screen_point = center;
 			axis.z_axis = 1.0;
 			r_axis.push_back(axis);
@@ -3176,7 +3176,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_FRONT: {
 			cursor.x_rot = 0;
-			cursor.y_rot = Math_PI;
+			cursor.y_rot = 0;
 			set_message(TTR("Front View."), 2);
 			view_type = VIEW_TYPE_FRONT;
 			_set_auto_orthogonal();
@@ -3185,7 +3185,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		} break;
 		case VIEW_REAR: {
 			cursor.x_rot = 0;
-			cursor.y_rot = 0;
+			cursor.y_rot = Math_PI;
 			set_message(TTR("Rear View."), 2);
 			view_type = VIEW_TYPE_REAR;
 			_set_auto_orthogonal();

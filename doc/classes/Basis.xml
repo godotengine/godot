@@ -123,9 +123,11 @@
 			<return type="Basis" />
 			<param index="0" name="target" type="Vector3" />
 			<param index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
+			<param index="2" name="use_model_front" type="bool" default="false" />
 			<description>
 				Creates a Basis with a rotation such that the forward axis (-Z) points towards the [param target] position.
 				The up axis (+Y) points as close to the [param up] vector as possible while staying perpendicular to the forward axis. The resulting Basis is orthonormalized. The [param target] and [param up] vectors cannot be zero, and cannot be parallel to each other.
+				If [param use_model_front] is [code]true[/code], the +Z axis (asset front) is treated as forward (implies +X is left) and points toward the [param target] position. By default, the -Z axis (camera forward) is treated as forward (implies +X is right).
 			</description>
 		</method>
 		<method name="orthonormalized" qualifiers="const">

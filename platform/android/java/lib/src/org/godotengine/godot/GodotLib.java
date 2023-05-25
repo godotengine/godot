@@ -61,8 +61,7 @@ public class GodotLib {
 			GodotNetUtils netUtils,
 			DirectoryAccessHandler directoryAccessHandler,
 			FileAccessHandler fileAccessHandler,
-			boolean use_apk_expansion,
-			GodotTTS tts);
+			boolean use_apk_expansion);
 
 	/**
 	 * Invoked on the main thread to clean up Godot native layer.
@@ -74,7 +73,7 @@ public class GodotLib {
 	 * Invoked on the GL thread to complete setup for the Godot native layer logic.
 	 * @param p_cmdline Command line arguments used to configure Godot native layer components.
 	 */
-	public static native boolean setup(String[] p_cmdline);
+	public static native boolean setup(String[] p_cmdline, GodotTTS tts);
 
 	/**
 	 * Invoked on the GL thread when the underlying Android surface has changed size.

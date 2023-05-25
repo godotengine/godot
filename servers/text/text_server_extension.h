@@ -101,8 +101,10 @@ public:
 
 	virtual void font_set_name(const RID &p_font_rid, const String &p_name) override;
 	virtual String font_get_name(const RID &p_font_rid) const override;
+	virtual Dictionary font_get_ot_name_strings(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_name, RID, const String &);
 	GDVIRTUAL1RC(String, _font_get_name, RID);
+	GDVIRTUAL1RC(Dictionary, _font_get_ot_name_strings, RID);
 
 	virtual void font_set_style_name(const RID &p_font_rid, const String &p_name) override;
 	virtual String font_get_style_name(const RID &p_font_rid) const override;

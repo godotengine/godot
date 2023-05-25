@@ -43,10 +43,10 @@ bool ManagedCallable::compare_equal(const CallableCustom *p_a, const CallableCus
 	const ManagedCallable *a = static_cast<const ManagedCallable *>(p_a);
 	const ManagedCallable *b = static_cast<const ManagedCallable *>(p_b);
 
+	if (a->delegate_handle.value == b->delegate_handle.value) {
+		return true;
+	}
 	if (!a->delegate_handle.value || !b->delegate_handle.value) {
-		if (!a->delegate_handle.value && !b->delegate_handle.value) {
-			return true;
-		}
 		return false;
 	}
 
@@ -63,7 +63,7 @@ bool ManagedCallable::compare_less(const CallableCustom *p_a, const CallableCust
 }
 
 uint32_t ManagedCallable::hash() const {
-	return hash_murmur3_one_64((uint64_t)delegate_handle.value);
+	return GDMonoCache::managed_callbacks.DelegateUtils_DelegateHash(delegate_handle);
 }
 
 String ManagedCallable::get_as_text() const {

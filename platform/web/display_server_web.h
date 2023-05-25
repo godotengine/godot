@@ -81,6 +81,7 @@ private:
 	MouseButton last_click_button_index = MouseButton::NONE;
 
 	bool swap_cancel_ok = false;
+	bool tts = false;
 
 	// utilities
 	static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod, Key p_keycode);

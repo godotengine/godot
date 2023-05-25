@@ -1,0 +1,219 @@
+This file contains the expected output of --validate-extension-api when run against the extension_api.json of the
+4.0-stable tag (the basename of this file).
+
+Only lines that start with "Validate extension JSON:" matter, everything else is considered a comment and ignored. They
+should instead be used to justify these changes and describe how users should work around these changes.
+
+========================================================================================================================
+
+GH-74736
+--------
+Validate extension JSON: Error: Field 'classes/MenuBar/properties/start_index': type changed value in new API, from "bool" to "int".
+
+The previous type was simply wrong and the getter and setter already used int.
+
+
+GH-74671
+--------
+Validate extension JSON: Error: Field 'native_structures/PhysicsServer3DExtensionMotionCollision': format changed value in new API, from "Vector3 position;Vector3 normal;Vector3 collider_velocity;real_t depth;int local_shape;ObjectID collider_id;RID collider;int collider_shape" to "Vector3 position;Vector3 normal;Vector3 collider_velocity;Vector3 collider_angular_velocity;real_t depth;int local_shape;ObjectID collider_id;RID collider;int collider_shape".
+Validate extension JSON: Error: Field 'native_structures/PhysicsServer3DExtensionMotionResult': format changed value in new API, from "Vector3 travel;Vector3 remainder;real_t collision_safe_fraction;real_t collision_unsafe_fraction;PhysicsServer3DExtensionMotionCollision collisions[32];int collision_count" to "Vector3 travel;Vector3 remainder;real_t collision_depth;real_t collision_safe_fraction;real_t collision_unsafe_fraction;PhysicsServer3DExtensionMotionCollision collisions[32];int collision_count".
+
+The previous type was simply wrong and didn't match the actual C++ definition. Code targeting previous versions should use the updated definition as well.
+
+
+GH-74600
+--------
+Validate extension JSON: Error: Hash mismatch for 'classes/AnimatedSprite2D/methods/play'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/AnimatedSprite3D/methods/play'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Animation/methods/compress'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/AnimationPlayer/methods/play'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/AudioStreamPlayer/methods/play'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/AudioStreamPlayer2D/methods/play'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/AudioStreamPlayer3D/methods/play'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/CanvasItem/methods/draw_set_transform'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Curve2D/methods/sample_baked'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Curve2D/methods/sample_baked_with_rotation'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Curve2D/methods/tessellate_even_length'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Curve3D/methods/sample_baked'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Curve3D/methods/sample_baked_with_rotation'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Curve3D/methods/tessellate_even_length'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/DisplayServer/methods/tts_speak'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Font/methods/find_variation'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/GridMap/methods/make_baked_meshes'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Image/methods/save_jpg_to_buffer'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Image/methods/save_webp_to_buffer'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Image/methods/bump_map_to_normal_map'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/PhysicsBody2D/methods/move_and_collide'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/PhysicsBody3D/methods/move_and_collide'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/PhysicsBody3D/methods/test_move'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/RandomNumberGenerator/methods/randfn'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/RenderingServer/methods/environment_set_ambient_light'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/RenderingServer/methods/canvas_item_set_canvas_group_mode'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/RenderingServer/methods/force_draw'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Window/methods/popup_centered_ratio'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Window/methods/popup_centered_clamped'. This means that the function has changed and no compatibility function was provided.
+
+None of these methods were actually changed, the hash changes only affects GDExtensions, no compatibility workaround exists currently.
+
+
+GH-76413
+--------
+Validate extension JSON: API was removed: classes/AnimationTrackEditPlugin
+
+This class does nothing and is not useful in any way.
+
+
+GH-69988
+--------
+Validate extension JSON: API was removed: classes/NavigationAgent2D/methods/get_time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent2D/methods/set_time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent2D/properties/time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/get_agent_height_offset
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/get_ignore_y
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/get_time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/set_agent_height_offset
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/set_ignore_y
+Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/set_time_horizon
+Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/agent_height_offset
+Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/ignore_y
+Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/time_horizon
+Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/get_rid
+Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/is_radius_estimated
+Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/set_estimate_radius
+Validate extension JSON: API was removed: classes/NavigationObstacle2D/properties/estimate_radius
+Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/get_rid
+Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/is_radius_estimated
+Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/set_estimate_radius
+Validate extension JSON: API was removed: classes/NavigationObstacle3D/properties/estimate_radius
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/agent_set_callback
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/agent_set_target_velocity
+Validate extension JSON: API was removed: classes/NavigationServer2D/methods/agent_set_time_horizon
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/agent_set_callback
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/agent_set_target_velocity
+Validate extension JSON: API was removed: classes/NavigationServer3D/methods/agent_set_time_horizon
+
+Navigation avoidance was reworked entirely.
+Migration: TODO
+
+
+GH-?????
+--------
+Validate extension JSON: API was removed: classes/FramebufferCacheRD
+Validate extension JSON: API was removed: classes/UniformSetCacheRD
+
+Unsure where these come from; when dumping the interface, these do actually still exist
+
+GH-76176
+--------
+Validate extension JSON: Error: Hash mismatch for 'classes/EditorInterface/methods/get_base_control'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/EditorInterface/methods/get_edited_scene_root'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/EditorInterface/methods/get_editor_main_screen'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/EditorInterface/methods/get_editor_paths'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/EditorInterface/methods/get_editor_settings'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/EditorInterface/methods/get_file_system_dock'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/EditorInterface/methods/get_resource_filesystem'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/EditorInterface/methods/get_resource_previewer'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/EditorInterface/methods/get_script_editor'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/EditorInterface/methods/get_selection'. This means that the function has changed and no compatibility function was provided.
+
+Functions were made `const`. No adjustments should be necessary.
+
+
+GH-76026
+--------
+Validate extension JSON: Error: Hash mismatch for 'classes/EditorScript/methods/get_editor_interface'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/EditorScript/methods/get_scene'. This means that the function has changed and no compatibility function was provided.
+
+Functions were made `const`. No adjustments should be necessary.
+
+
+GH-76418
+--------
+Validate extension JSON: Error: Hash mismatch for 'classes/Object/methods/get_meta_list'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/AnimationNodeStateMachinePlayback/methods/get_travel_path'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/RDShaderFile/methods/get_version_list'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/RenderingServer/methods/global_shader_parameter_get_list'. This means that the function has changed and no compatibility function was provided.
+
+Return types change, fixed some internal type issues and unnecessarily changed the public type in the process.
+
+
+GH-72749
+--------
+Validate extension JSON: Error: Hash mismatch for 'classes/Area2D/methods/get_priority'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Area2D/methods/set_priority'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Area3D/methods/get_priority'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Area3D/methods/set_priority'. This means that the function has changed and no compatibility function was provided.
+
+Type changed from `float` to `int`. Previously the `float` values were internally converted to `int`s anyways and the type ways inconsistent with the type of the priority property, which already was `int`.
+
+
+GH-72152
+--------
+Validate extension JSON: Error: Hash mismatch for 'classes/MeshInstance3D/methods/create_multiple_convex_collisions'. This means that the function has changed and no compatibility function was provided.
+
+Added an optional parameter with a default value. No adjustments should be necessary.
+
+
+GH-75759
+--------
+Validate extension JSON: Error: Hash mismatch for 'classes/AnimationNode/methods/blend_input'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/AnimationNode/methods/blend_node'. This means that the function has changed and no compatibility function was provided.
+
+Added an optional parameter with a default value. No adjustments should be necessary.
+
+
+GH-75017
+--------
+Validate extension JSON: Error: Hash mismatch for 'classes/RichTextLabel/methods/push_list'. This means that the function has changed and no compatibility function was provided.
+
+Added an optional parameter with a default value. No adjustments should be necessary.
+
+
+GH-76794
+--------
+Validate extension JSON: Error: Hash mismatch for 'classes/Tree/methods/edit_selected'. This means that the function has changed and no compatibility function was provided.
+
+Added an optional parameter with a default value. No adjustments should be necessary.
+
+
+GH-75777
+--------
+Validate extension JSON: Error: Hash mismatch for 'classes/SyntaxHighlighter/methods/get_text_edit'. This means that the function has changed and no compatibility function was provided.
+
+Function was made `const`. No adjustments should be necessary.
+
+
+GH-75250
+--------
+Validate extension JSON: Error: Hash mismatch for 'classes/RichTextLabel/methods/push_paragraph'. This means that the function has changed and no compatibility function was provided.
+
+Added an optional parameter with a default value. No adjustments should be necessary.
+
+
+GH-77143
+--------
+Validate extension JSON: Error: Hash mismatch for 'classes/WorkerThreadPool/methods/wait_for_task_completion'. This means that the function has changed and no compatibility function was provided.
+
+Changed the return value from `void` to `Error`. No adjustments should be necessary.
+
+
+GH-72842
+--------
+Validate extension JSON: API was removed: classes/PathFollow2D/methods/get_lookahead
+Validate extension JSON: API was removed: classes/PathFollow2D/methods/set_lookahead
+Validate extension JSON: API was removed: classes/PathFollow2D/properties/lookahead
+
+
+GH-77413
+--------
+Validate extension JSON: Error: Field 'classes/GLTFSkin/properties/godot_skin': type changed value in new API, from "Object" to "Skin".
+
+
+GH-76082
+--------
+Validate extension JSON: Error: Hash mismatch for 'builtin_classes/Basis/methods/looking_at'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'builtin_classes/Transform3D/methods/looking_at'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Node3D/methods/look_at'. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash mismatch for 'classes/Node3D/methods/look_at_from_position'. This means that the function has changed and no compatibility function was provided.
+
+Added an optional parameter with a default value. No adjustments should be necessary.

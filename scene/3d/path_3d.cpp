@@ -192,6 +192,9 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		t.origin = pos;
 	} else {
 		t = c->sample_baked_with_rotation(progress, cubic, false);
+		if (use_model_front) {
+			t.basis *= Basis::from_scale(Vector3(-1.0, 1.0, -1.0));
+		}
 		Vector3 forward = t.basis.get_column(2); // Retain tangent for applying tilt
 		t = PathFollow3D::correct_posture(t, rotation_mode);
 
@@ -230,11 +233,11 @@ void PathFollow3D::_notification(int p_what) {
 	}
 }
 
-void PathFollow3D::set_cubic_interpolation(bool p_enable) {
-	cubic = p_enable;
+void PathFollow3D::set_cubic_interpolation_enabled(bool p_enabled) {
+	cubic = p_enabled;
 }
 
-bool PathFollow3D::get_cubic_interpolation() const {
+bool PathFollow3D::is_cubic_interpolation_enabled() const {
 	return cubic;
 }
 
@@ -314,8 +317,11 @@ void PathFollow3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rotation_mode", "rotation_mode"), &PathFollow3D::set_rotation_mode);
 	ClassDB::bind_method(D_METHOD("get_rotation_mode"), &PathFollow3D::get_rotation_mode);
 
-	ClassDB::bind_method(D_METHOD("set_cubic_interpolation", "enable"), &PathFollow3D::set_cubic_interpolation);
-	ClassDB::bind_method(D_METHOD("get_cubic_interpolation"), &PathFollow3D::get_cubic_interpolation);
+	ClassDB::bind_method(D_METHOD("set_cubic_interpolation", "enabled"), &PathFollow3D::set_cubic_interpolation_enabled);
+	ClassDB::bind_method(D_METHOD("get_cubic_interpolation"), &PathFollow3D::is_cubic_interpolation_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_use_model_front", "enabled"), &PathFollow3D::set_use_model_front);
+	ClassDB::bind_method(D_METHOD("is_using_model_front"), &PathFollow3D::is_using_model_front);
 
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow3D::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow3D::has_loop);
@@ -330,6 +336,7 @@ void PathFollow3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_mode", PROPERTY_HINT_ENUM, "None,Y,XY,XYZ,Oriented"), "set_rotation_mode", "get_rotation_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_model_front"), "set_use_model_front", "is_using_model_front");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tilt_enabled"), "set_tilt_enabled", "is_tilt_enabled");
@@ -412,6 +419,14 @@ PathFollow3D::RotationMode PathFollow3D::get_rotation_mode() const {
 	return rotation_mode;
 }
 
+void PathFollow3D::set_use_model_front(bool p_use_model_front) {
+	use_model_front = p_use_model_front;
+}
+
+bool PathFollow3D::is_using_model_front() const {
+	return use_model_front;
+}
+
 void PathFollow3D::set_loop(bool p_loop) {
 	loop = p_loop;
 }
@@ -420,8 +435,8 @@ bool PathFollow3D::has_loop() const {
 	return loop;
 }
 
-void PathFollow3D::set_tilt_enabled(bool p_enable) {
-	tilt_enabled = p_enable;
+void PathFollow3D::set_tilt_enabled(bool p_enabled) {
+	tilt_enabled = p_enabled;
 }
 
 bool PathFollow3D::is_tilt_enabled() const {

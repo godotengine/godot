@@ -48,13 +48,15 @@
 # 설동훈 <tjfehdgns@gmail.com>, 2023.
 # Rocream <kbg4660@gmail.com>, 2023.
 # Seania Twix <admin@ez.is>, 2023.
+# coolkid <newtype20050831@gmail.com>, 2023.
+# asdfer-1234 <sh__lv@naver.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-06 16:01+0000\n"
-"Last-Translator: Seania Twix <admin@ez.is>\n"
+"PO-Revision-Date: 2023-05-17 00:52+0000\n"
+"Last-Translator: asdfer-1234 <sh__lv@naver.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -62,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "설정 해제"
@@ -317,6 +319,9 @@ msgstr "삭제"
 
 msgid "Delete Word"
 msgstr "단어 삭제"
+
+msgid "Caret Right"
+msgstr "^ 오른쪽"
 
 msgid "Caret Add Above"
 msgstr "위에 캐럿 추가"
@@ -3547,6 +3552,9 @@ msgstr ""
 "모든 사전 설정에는 모두 내보내기가 작동하도록 정의된 내보내기 경로가 있어야 "
 "합니다."
 
+msgid "Resources to export:"
+msgstr "내보내는 리소스:"
+
 msgid "Delete preset '%s'?"
 msgstr "'%s' 프리셋을 삭제하시겠습니까?"
 
@@ -3595,9 +3603,6 @@ msgstr "전용 서버로 내보내기"
 
 msgid "Export Mode:"
 msgstr "내보내기 모드:"
-
-msgid "Resources to export:"
-msgstr "내보내는 리소스:"
 
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"
@@ -9062,6 +9067,9 @@ msgstr "지오메트리 분석 중..."
 
 msgid "Done!"
 msgstr "완료!"
+
+msgid "Pose"
+msgstr "자세"
 
 msgid "Package name is missing."
 msgstr "패키지 이름이 누락되어 있습니다."

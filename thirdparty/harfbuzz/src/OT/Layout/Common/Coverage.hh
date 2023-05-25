@@ -113,22 +113,33 @@ struct Coverage
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (this))) return_trace (false);
 
-    unsigned count = 0;
+    unsigned count = hb_len (glyphs);
     unsigned num_ranges = 0;
     hb_codepoint_t last = (hb_codepoint_t) -2;
+    hb_codepoint_t max = 0;
+    bool unsorted = false;
     for (auto g: glyphs)
     {
+      if (last != (hb_codepoint_t) -2 && g < last)
+	unsorted = true;
       if (last + 1 != g)
-        num_ranges++;
+	num_ranges++;
       last = g;
-      count++;
+      if (g > max) max = g;
     }
-    u.format = count <= num_ranges * 3 ? 1 : 2;
+    u.format = !unsorted && count <= num_ranges * 3 ? 1 : 2;
 
 #ifndef HB_NO_BEYOND_64K
-    if (count && last > 0xFFFFu)
+    if (max > 0xFFFFu)
       u.format += 2;
+    if (unlikely (max > 0xFFFFFFu))
+#else
+    if (unlikely (max > 0xFFFFu))
 #endif
+    {
+      c->check_success (false, HB_SERIALIZE_ERROR_INT_OVERFLOW);
+      return_trace (false);
+    }
 
     switch (u.format)
     {
@@ -148,8 +159,8 @@ struct Coverage
     auto it =
     + iter ()
     | hb_take (c->plan->source->get_num_glyphs ())
-    | hb_filter (c->plan->glyph_map_gsub)
     | hb_map_retains_sorting (c->plan->glyph_map_gsub)
+    | hb_filter ([] (hb_codepoint_t glyph) { return glyph != HB_MAP_VALUE_INVALID; })
     ;
 
     // Cache the iterator result as it will be iterated multiple times

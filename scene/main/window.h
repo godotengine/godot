@@ -121,6 +121,7 @@ private:
 	bool updating_child_controls = false;
 	bool updating_embedded_window = false;
 	bool clamp_to_embedder = false;
+	bool unparent_when_invisible = false;
 
 	LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
 
@@ -137,6 +138,8 @@ private:
 	void _make_window();
 	void _clear_window();
 	void _update_from_window();
+
+	bool _try_parent_dialog(Node *p_from_node);
 
 	Size2i max_size_used;
 
@@ -272,6 +275,8 @@ public:
 	void set_clamp_to_embedder(bool p_enable);
 	bool is_clamped_to_embedder() const;
 
+	void set_unparent_when_invisible(bool p_unparent);
+
 	bool is_in_edited_scene_root() const;
 
 	bool can_draw() const;
@@ -307,11 +312,18 @@ public:
 	Window *get_exclusive_child() const { return exclusive_child; };
 	Window *get_parent_visible_window() const;
 	Viewport *get_parent_viewport() const;
-	void popup(const Rect2i &p_rect = Rect2i());
+
+	void popup(const Rect2i &p_screen_rect = Rect2i());
 	void popup_on_parent(const Rect2i &p_parent_rect);
-	void popup_centered_ratio(float p_ratio = 0.8);
 	void popup_centered(const Size2i &p_minsize = Size2i());
+	void popup_centered_ratio(float p_ratio = 0.8);
 	void popup_centered_clamped(const Size2i &p_size = Size2i(), float p_fallback_ratio = 0.75);
+
+	void popup_exclusive(Node *p_from_node, const Rect2i &p_screen_rect = Rect2i());
+	void popup_exclusive_on_parent(Node *p_from_node, const Rect2i &p_parent_rect);
+	void popup_exclusive_centered(Node *p_from_node, const Size2i &p_minsize = Size2i());
+	void popup_exclusive_centered_ratio(Node *p_from_node, float p_ratio = 0.8);
+	void popup_exclusive_centered_clamped(Node *p_from_node, const Size2i &p_size = Size2i(), float p_fallback_ratio = 0.75);
 
 	Rect2i fit_rect_in_parent(Rect2i p_rect, const Rect2i &p_parent_rect) const;
 	Size2 get_contents_minimum_size() const;

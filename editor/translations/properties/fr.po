@@ -117,7 +117,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-12 11:49+0000\n"
+"PO-Revision-Date: 2023-05-03 11:49+0000\n"
 "Last-Translator: \"Dimitri A.\" <dimitripilot3@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fr/>\n"
@@ -126,7 +126,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Application"
 msgstr "Application"
@@ -155,20 +155,26 @@ msgstr "Désactiver stdout"
 msgid "Disable stderr"
 msgstr "Désactiver stderr"
 
+msgid "Use Hidden Project Data Directory"
+msgstr "Utiliser un répertoire caché pour les données du projet"
+
 msgid "Use Custom User Dir"
 msgstr "Utiliser un répertoire utilisateur personnalisé"
 
 msgid "Custom User Dir Name"
 msgstr "Nom du répertoire utilisateur personnalisé"
 
+msgid "Project Settings Override"
+msgstr "Redéfinition des paramètres du projet"
+
 msgid "Main Loop Type"
-msgstr "Type de boucle principale"
+msgstr "Type de la boucle principale"
 
 msgid "Auto Accept Quit"
 msgstr "Accepter automatiquement la fermeture"
 
 msgid "Quit on Go Back"
-msgstr "Quitter avec la touche Retour"
+msgstr "Fermer avec la touche Retour"
 
 msgid "Display"
 msgstr "Affichage"
@@ -209,6 +215,9 @@ msgstr "Toujours au-dessus"
 msgid "Transparent"
 msgstr "Transparent"
 
+msgid "Extend to Title"
+msgstr "Étendu à la barre de titre"
+
 msgid "No Focus"
 msgstr "Sans focus"
 
@@ -237,10 +246,10 @@ msgid "General"
 msgstr "Général"
 
 msgid "2D Panning Strength"
-msgstr "Intensité du panoramique audio 2D"
+msgstr "Intensité du panoramique audio en 2D"
 
 msgid "3D Panning Strength"
-msgstr "Intensité du panoramique audio 3D"
+msgstr "Intensité du panoramique audio en 3D"
 
 msgid "Editor"
 msgstr "Éditeur"
@@ -249,7 +258,7 @@ msgid "Script"
 msgstr "Script"
 
 msgid "Search in File Extensions"
-msgstr "Rechercher dans les extensions de fichier"
+msgstr "Recherche dans les fichiers : extensions"
 
 msgid "Subwindows"
 msgstr "Sous-fenêtres"
@@ -340,6 +349,9 @@ msgstr "GUI"
 
 msgid "Timers"
 msgstr "Chronomètres"
+
+msgid "Incremental Search Max Interval Msec"
+msgstr "Délai max. de la recherche incrémentale (ms)"
 
 msgid "Common"
 msgstr "Commun"
@@ -792,7 +804,7 @@ msgid "Update Continuously"
 msgstr "Mise à jour continue"
 
 msgid "Localize Settings"
-msgstr "Traduction des paramètres"
+msgstr "Traduire les paramètres"
 
 msgid "Scene Tabs"
 msgstr "Onglets de scène"
@@ -1620,10 +1632,10 @@ msgid "Zoom"
 msgstr "Zoomer"
 
 msgid "Custom Template"
-msgstr "Modèle Personnalisé"
+msgstr "Modèle personnalisé"
 
 msgid "Release"
-msgstr "Publication (release)"
+msgstr "Publication"
 
 msgid "Binary Format"
 msgstr "Format Binaire"
@@ -2280,19 +2292,22 @@ msgid "SSH Private Key Path"
 msgstr "Chemin de la clé privée SSH"
 
 msgid "Main Run Args"
-msgstr "Paramètres d'exécution du programme principal"
+msgstr "Arguments de démarrage du programme principal"
+
+msgid "Templates Search Path"
+msgstr "Chemin de recherche des modèles"
 
 msgid "Naming"
 msgstr "Nommage"
 
 msgid "Default Signal Callback Name"
-msgstr "Nom de rappel de signal par défaut"
+msgstr "Nom par défaut d'un rappel de signal"
 
 msgid "Default Signal Callback to Self Name"
-msgstr "Nom de rappel de signal à soi-même par défaut"
+msgstr "Nom par défaut d'un rappel de signal à soi-même (self)"
 
 msgid "Scene Name Casing"
-msgstr "Notation du nom de la scène"
+msgstr "Notation (casse) d'un nom de scène"
 
 msgid "Reimport Missing Imported Files"
 msgstr "Réimporter les fichiers importés manquants"
@@ -3207,91 +3222,106 @@ msgid "Icons"
 msgstr "Icônes"
 
 msgid "iPhone 120 X 120"
-msgstr "iPhone 120 X 120"
+msgstr "iPhone (120 x 120)"
 
 msgid "iPhone 180 X 180"
-msgstr "iPhone 180 X 180"
+msgstr "iPhone (180 x 180)"
 
 msgid "iPad 76 X 76"
-msgstr "iPad 76 X 76"
+msgstr "iPad (76 x 76)"
 
 msgid "iPad 152 X 152"
-msgstr "iPad 152 X 152"
+msgstr "iPad (152 x 152)"
 
 msgid "iPad 167 X 167"
-msgstr "iPad 167 X 167"
+msgstr "iPad (167 x 167)"
 
 msgid "App Store 1024 X 1024"
-msgstr "App Store 1024 X 1024"
+msgstr "App Store (1024 x 1024)"
 
 msgid "Spotlight 40 X 40"
-msgstr "Projecteur 40 X 40"
+msgstr "Spotlight (40 x 40)"
 
 msgid "Spotlight 80 X 80"
-msgstr "Projecteur 80 X 80"
+msgstr "Spotlight (80 x 80)"
+
+msgid "Settings 58 X 58"
+msgstr "Réglages (58 x 58)"
+
+msgid "Settings 87 X 87"
+msgstr "Réglages (87 x 87)"
+
+msgid "Notification 40 X 40"
+msgstr "Notification (40 x 40)"
+
+msgid "Notification 60 X 60"
+msgstr "Notification (60 x 60)"
 
 msgid "Landscape Launch Screens"
 msgstr "Écrans de lancement en mode paysage"
 
 msgid "iPhone 2436 X 1125"
-msgstr "iPhone 2436 X 1125"
+msgstr "iPhone (2436 x 1125)"
 
 msgid "iPhone 2208 X 1242"
-msgstr "iPhone 2208 X 1242"
+msgstr "iPhone (2208 x 1242)"
 
 msgid "iPad 1024 X 768"
-msgstr "iPad 1024 X 768"
+msgstr "iPad (1024 x 768)"
 
 msgid "iPad 2048 X 1536"
-msgstr "iPad 2048 X 1536"
+msgstr "iPad (2048 x 1536)"
 
 msgid "Portrait Launch Screens"
 msgstr "Écrans de lancement en mode portrait"
 
 msgid "iPhone 640 X 960"
-msgstr "iPhone 640 X 960"
+msgstr "iPhone (640 x 960)"
 
 msgid "iPhone 640 X 1136"
-msgstr "iPhone 640 X 1136"
+msgstr "iPhone (640 x 1136)"
 
 msgid "iPhone 750 X 1334"
-msgstr "iPhone 750 X 1334"
+msgstr "iPhone (750 x 1334)"
 
 msgid "iPhone 1125 X 2436"
-msgstr "iPhone 1125 X 2436"
+msgstr "iPhone (1125 x 2436)"
 
 msgid "iPad 768 X 1024"
-msgstr "iPad 768 X 1024"
+msgstr "iPad (768 x 1024)"
 
 msgid "iPad 1536 X 2048"
-msgstr "iPad 1536 X 2048"
+msgstr "iPad (1536 x 2048)"
 
 msgid "iPhone 1242 X 2208"
-msgstr "iPhone 1242 X 2208"
+msgstr "iPhone (1242 x 2208)"
 
 msgid "App Store Team ID"
-msgstr "ID de groupe de l'App Store"
+msgstr "ID d'organisation (Team ID) dans l'App Store"
 
 msgid "Provisioning Profile UUID Debug"
-msgstr "UUID de provisionnement de profils en débogage"
+msgstr "Débogage : UUID du profil de provisionnement"
 
 msgid "Code Sign Identity Debug"
-msgstr "Identité de signature de code en débogage"
+msgstr "Débogage : Identité de signature du code"
 
 msgid "Export Method Debug"
-msgstr "Méthode d'exportation en débogage"
+msgstr "Débogage : Méthode d'exportation"
 
 msgid "Provisioning Profile UUID Release"
-msgstr "UUID de provisionnement de profils en publication"
+msgstr "Publication : UUID du profil de provisionnement"
 
 msgid "Code Sign Identity Release"
-msgstr "Identité de signature de code en publication"
+msgstr "Publication : Identité de signature du code"
 
 msgid "Export Method Release"
-msgstr "Méthode d'exportation en publication"
+msgstr "Publication : Méthode d'exportation"
 
 msgid "Targeted Device Family"
-msgstr "Famille de système ciblée"
+msgstr "Famille(s) d'appareils cibles"
+
+msgid "Bundle Identifier"
+msgstr "Identifiant du bundle"
 
 msgid "Signature"
 msgstr "Signature"
@@ -3299,44 +3329,59 @@ msgstr "Signature"
 msgid "Short Version"
 msgstr "Version courte"
 
+msgid "Icon Interpolation"
+msgstr "Interpolation des icônes"
+
+msgid "Launch Screens Interpolation"
+msgstr "Interpolation des écrans de lancement"
+
 msgid "Capabilities"
-msgstr "Capacités"
+msgstr "Fonctionnalités"
 
 msgid "Access Wi-Fi"
 msgstr "Accès Wi-Fi"
 
 msgid "Push Notifications"
-msgstr "Notifications Push"
+msgstr "Notifications push (poussées)"
 
 msgid "User Data"
-msgstr "Données Utilisateur"
+msgstr "Données utilisateur"
 
 msgid "Accessible From Files App"
-msgstr "Accessible depuis l'application Files"
+msgstr "Accessibles via l'application Fichiers"
 
 msgid "Accessible From iTunes Sharing"
-msgstr "Accessible depuis le partage iTunes"
+msgstr "Accessibles via le partage iTunes"
 
 msgid "Privacy"
 msgstr "Confidentialité"
 
 msgid "Camera Usage Description"
-msgstr "Description d'utilisation de la caméra"
+msgstr "Description de l'accès de la caméra"
+
+msgid "Camera Usage Description Localized"
+msgstr "Description (localisée) de l'accès à la caméra"
 
 msgid "Microphone Usage Description"
-msgstr "Description d'utilisation du microphone"
+msgstr "Description de l'accès au microphone"
+
+msgid "Microphone Usage Description Localized"
+msgstr "Description (localisée) de l'accès au microphone"
 
 msgid "Photolibrary Usage Description"
-msgstr "Description d'utilisation de la bibliothèque d'image"
+msgstr "Description de l'accès à la photothèque"
+
+msgid "Photolibrary Usage Description Localized"
+msgstr "Description (localisée) de l'accès à la photothèque"
 
 msgid "Storyboard"
-msgstr "Story-board"
+msgstr "Storyboard"
 
 msgid "Use Launch Screen Storyboard"
-msgstr "Utiliser le storyboard de l'écran de lancement"
+msgstr "Utiliser un storyboard pour l'écran de lancement"
 
 msgid "Image Scale Mode"
-msgstr "Mode de mise à l'échelle d'image"
+msgstr "Mode de mise à l'échelle des images"
 
 msgid "Custom Image @2x"
 msgstr "Image personnalisée @2x"
@@ -5393,6 +5438,12 @@ msgstr "Mode de Transfert"
 msgid "Transfer Channel"
 msgstr "Canal de transfert"
 
+msgid "Node Name Num Separator"
+msgstr "Séparateur entre nom de nœud et numéro"
+
+msgid "Node Name Casing"
+msgstr "Notation (casse) d'un nom de nœud"
+
 msgid "Editor Description"
 msgstr "Description de l'Editeur"
 
@@ -5532,7 +5583,7 @@ msgid "Format"
 msgstr "Format"
 
 msgid "Mix Rate"
-msgstr "Taux de mélange"
+msgstr "Taux d'échantillonnage du mixage"
 
 msgid "Stereo"
 msgstr "Stéréo"
@@ -6611,17 +6662,35 @@ msgstr "Temps de retrait (ms)"
 msgid "Surround"
 msgstr "Surround"
 
+msgid "Enable Input"
+msgstr "Activer l'entrée audio"
+
 msgid "Output Latency"
 msgstr "Latence de sortie"
 
 msgid "Channel Disable Threshold dB"
-msgstr "Désactiver le seuil de dB du canal"
+msgstr "Seuil (dB) de désactivation d'un canal"
+
+msgid "Channel Disable Time"
+msgstr "Délai avant désactivation d'un canal"
+
+msgid "Video"
+msgstr "Vidéo"
 
 msgid "Video Delay Compensation (ms)"
 msgstr "Compensation de retard vidéo (ms)"
 
 msgid "Bus Count"
-msgstr "Nombre de ports"
+msgstr "Nombre de bus"
+
+msgid "Output Device"
+msgstr "Périphérique de sortie"
+
+msgid "Input Device"
+msgstr "Périphérique d'entrée"
+
+msgid "Playback Speed Scale"
+msgstr "Vitesse de lecture (multiplicateur)"
 
 msgid "Feed"
 msgstr "Flux"

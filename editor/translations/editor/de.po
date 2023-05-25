@@ -104,8 +104,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-13 17:34+0000\n"
-"Last-Translator: Janosch Lion <janorico@posteo.de>\n"
+"PO-Revision-Date: 2023-05-14 11:51+0000\n"
+"Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -113,7 +113,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Nicht gesetzt"
@@ -4566,6 +4566,12 @@ msgstr ""
 "Alle Exportvorlagen müssen einen Export-Pfad festlegen damit „Alle "
 "exportieren“ funktioniert."
 
+msgid "Resources to exclude:"
+msgstr "Auszuschließende Ressourcen:"
+
+msgid "Resources to export:"
+msgstr "Zu exportierende Ressourcen:"
+
 msgid "Delete preset '%s'?"
 msgstr "Vorlage ‚%s‘ löschen?"
 
@@ -4621,9 +4627,6 @@ msgstr "Als dedizierten Server exportieren"
 
 msgid "Export Mode:"
 msgstr "Export-Modus:"
-
-msgid "Resources to export:"
-msgstr "Zu exportierende Ressourcen:"
 
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"
@@ -12159,9 +12162,9 @@ msgid ""
 "\n"
 "Are you sure you wish to continue?"
 msgstr ""
-"Es wurde ausgewählt ein neues Godot-Projekt in einem nicht-leeren Ordner zu "
-"erstellen.\n"
-"Demnach werden alle Inhalte des Ordners als Projekt-Ressourcen importiert!\n"
+"Die aktuelle Konfiguration legt ein neues Godot-Projekt in einem nicht-"
+"leeren Ordner an.\n"
+"Dabei werden alle Inhalte des Ordners als Projekt-Ressourcen importiert!\n"
 "\n"
 "Soll entsprechend fortgefahren werden?"
 
@@ -15730,6 +15733,12 @@ msgstr ""
 "ButtonGroup sollte nur mit Knöpfen verwendet werden deren toggle_mode als "
 "wahr festgelegt wurde."
 
+msgid "Copy this constructor in a script."
+msgstr "Diesen Konstruktor in ein Skript kopieren."
+
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr "Einen Hex-Code (\"#ff0000\") oder einen Farbnamen (\"red\") eingeben."
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -15757,6 +15766,9 @@ msgstr "Auswahlmodus wählen."
 
 msgid "Switch between hexadecimal and code values."
 msgstr "Wechselt zwischen Hexadezimal- und Zahlenwerten."
+
+msgid "Hex code or named color"
+msgstr "Hex-Code oder Farbname"
 
 msgid "Add current color as a preset."
 msgstr "Aktuelle Farbe als Vorlage hinzufügen."

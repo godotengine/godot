@@ -298,6 +298,7 @@ public:
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
+	void set_bg_color(const Color &p_bg_color);
 
 	bool has_revertable_properties() const;
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);
@@ -539,6 +540,7 @@ class EditorInspector : public ScrollContainer {
 	ConfirmationDialog *add_meta_dialog = nullptr;
 	LineEdit *add_meta_name = nullptr;
 	OptionButton *add_meta_type = nullptr;
+	PanelContainer *add_meta_error_panel = nullptr;
 	Label *add_meta_error = nullptr;
 
 	void _add_meta_confirm();

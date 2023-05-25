@@ -413,6 +413,7 @@ def configure_msvc(env, vcvars_msvc_config):
         "dxguid",
         "imm32",
         "bcrypt",
+        "Crypt32",
         "Avrt",
         "dwmapi",
         "dwrite",
@@ -469,6 +470,7 @@ def configure_msvc(env, vcvars_msvc_config):
     env["BUILDERS"]["ProgramOriginal"] = env["BUILDERS"]["Program"]
     env["BUILDERS"]["Program"] = methods.precious_program
 
+    env.Append(LINKFLAGS=["/NATVIS:platform\windows\godot.natvis"])
     env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
 
 
@@ -592,6 +594,7 @@ def configure_mingw(env):
             "ksuser",
             "imm32",
             "bcrypt",
+            "crypt32",
             "avrt",
             "uuid",
             "dwmapi",

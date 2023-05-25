@@ -295,7 +295,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 	atlas_merging_atlases_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	atlas_merging_atlases_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	atlas_merging_atlases_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	atlas_merging_atlases_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+	atlas_merging_atlases_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	atlas_merging_atlases_list->set_custom_minimum_size(Size2(100, 200));
 	atlas_merging_atlases_list->set_select_mode(ItemList::SELECT_MULTI);
 	atlas_merging_atlases_list->connect("multi_selected", callable_mp(this, &AtlasMergingDialog::_update_texture).unbind(2));
@@ -303,6 +303,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 
 	VBoxContainer *atlas_merging_right_panel = memnew(VBoxContainer);
 	atlas_merging_right_panel->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	atlas_merging_right_panel->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	atlas_merging_h_split_container->add_child(atlas_merging_right_panel);
 
 	// Settings.

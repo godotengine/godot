@@ -302,6 +302,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		if (!Thread::is_main_thread()) {
 			mq_override = memnew(CallQueue);
 			MessageQueue::set_thread_singleton_override(mq_override);
+			set_current_thread_safe_for_nodes(true);
 		}
 	} else {
 		DEV_ASSERT(load_task.dependent_path.is_empty());
@@ -309,6 +310,9 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	// --
 
 	Ref<Resource> res = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
+	if (mq_override) {
+		mq_override->flush();
+	}
 
 	thread_load_mutex.lock();
 
@@ -354,7 +358,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 	if (load_nesting == 0 && mq_override) {
 		memdelete(mq_override);
-		MessageQueue::set_thread_singleton_override(nullptr);
+		set_current_thread_safe_for_nodes(false);
 	}
 }
 
@@ -476,9 +480,6 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 
 		if (run_on_current_thread) {
 			load_task_ptr->thread_id = Thread::get_caller_id();
-			if (must_not_register) {
-				load_token->res_if_unregistered = load_task_ptr->resource;
-			}
 		} else {
 			load_task_ptr->task_id = WorkerThreadPool::get_singleton()->add_native_task(&ResourceLoader::_thread_load_function, load_task_ptr);
 		}
@@ -486,6 +487,9 @@ Ref<ResourceLoader::LoadToken> ResourceLoader::_load_start(const String &p_path,
 
 	if (run_on_current_thread) {
 		_thread_load_function(load_task_ptr);
+		if (must_not_register) {
+			load_token->res_if_unregistered = load_task_ptr->resource;
+		}
 	}
 
 	return load_token;
@@ -613,14 +617,33 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 				return Ref<Resource>();
 			}
 
-			if (load_task.task_id != 0 && !load_task.awaited) {
-				// Loading thread is in the worker pool and still not awaited.
+			if (load_task.task_id != 0) {
+				// Loading thread is in the worker pool.
 				load_task.awaited = true;
 				thread_load_mutex.unlock();
-				WorkerThreadPool::get_singleton()->wait_for_task_completion(load_task.task_id);
-				thread_load_mutex.lock();
+				Error err = WorkerThreadPool::get_singleton()->wait_for_task_completion(load_task.task_id);
+				if (err == ERR_BUSY) {
+					// The WorkerThreadPool has scheduled tasks in a way that the current load depends on
+					// another one in a lower stack frame. Restart such load here. When the stack is eventually
+					// unrolled, the original load will have been notified to go on.
+#ifdef DEV_ENABLED
+					print_verbose("ResourceLoader: Load task happened to wait on another one deep in the call stack. Attempting to avoid deadlock by re-issuing the load now.");
+#endif
+					// CACHE_MODE_IGNORE is needed because, otherwise, the new request would just see there's
+					// an ongoing load for that resource and wait for it again. This value forces a new load.
+					Ref<ResourceLoader::LoadToken> token = _load_start(load_task.local_path, load_task.type_hint, LOAD_THREAD_DISTRIBUTE, ResourceFormatLoader::CACHE_MODE_IGNORE);
+					Ref<Resource> resource = _load_complete(*token.ptr(), &err);
+					if (r_error) {
+						*r_error = err;
+					}
+					thread_load_mutex.lock();
+					return resource;
+				} else {
+					DEV_ASSERT(err == OK);
+					thread_load_mutex.lock();
+				}
 			} else {
-				// Loading thread is main or user thread, or in the worker pool, but already awaited by some other thread.
+				// Loading thread is main or user thread.
 				if (!load_task.cond_var) {
 					load_task.cond_var = memnew(ConditionVariable);
 				}
@@ -1136,10 +1159,7 @@ void ResourceLoader::initialize() {}
 void ResourceLoader::finalize() {}
 
 ResourceLoadErrorNotify ResourceLoader::err_notify = nullptr;
-void *ResourceLoader::err_notify_ud = nullptr;
-
 DependencyErrorNotify ResourceLoader::dep_err_notify = nullptr;
-void *ResourceLoader::dep_err_notify_ud = nullptr;
 
 bool ResourceLoader::create_missing_resources_if_class_unavailable = false;
 bool ResourceLoader::abort_on_missing_resource = true;

@@ -4,7 +4,7 @@
  *
  *   High-level SFNT driver interface (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -378,61 +378,61 @@
       {
       case 15:
         k4 ^= (FT_UInt32)tail[14] << 16;
-        /* fall through */
+        FALL_THROUGH;
       case 14:
         k4 ^= (FT_UInt32)tail[13] << 8;
-        /* fall through */
+        FALL_THROUGH;
       case 13:
         k4 ^= (FT_UInt32)tail[12];
         k4 *= c4;
         k4  = ROTL32( k4, 18 );
         k4 *= c1;
         h4 ^= k4;
-        /* fall through */
+        FALL_THROUGH;
 
       case 12:
         k3 ^= (FT_UInt32)tail[11] << 24;
-        /* fall through */
+        FALL_THROUGH;
       case 11:
         k3 ^= (FT_UInt32)tail[10] << 16;
-        /* fall through */
+        FALL_THROUGH;
       case 10:
         k3 ^= (FT_UInt32)tail[9] << 8;
-        /* fall through */
+        FALL_THROUGH;
       case 9:
         k3 ^= (FT_UInt32)tail[8];
         k3 *= c3;
         k3  = ROTL32( k3, 17 );
         k3 *= c4;
         h3 ^= k3;
-        /* fall through */
+        FALL_THROUGH;
 
       case 8:
         k2 ^= (FT_UInt32)tail[7] << 24;
-        /* fall through */
+        FALL_THROUGH;
       case 7:
         k2 ^= (FT_UInt32)tail[6] << 16;
-        /* fall through */
+        FALL_THROUGH;
       case 6:
         k2 ^= (FT_UInt32)tail[5] << 8;
-        /* fall through */
+        FALL_THROUGH;
       case 5:
         k2 ^= (FT_UInt32)tail[4];
         k2 *= c2;
         k2  = ROTL32( k2, 16 );
         k2 *= c3;
         h2 ^= k2;
-        /* fall through */
+        FALL_THROUGH;
 
       case 4:
         k1 ^= (FT_UInt32)tail[3] << 24;
-        /* fall through */
+        FALL_THROUGH;
       case 3:
         k1 ^= (FT_UInt32)tail[2] << 16;
-        /* fall through */
+        FALL_THROUGH;
       case 2:
         k1 ^= (FT_UInt32)tail[1] << 8;
-        /* fall through */
+        FALL_THROUGH;
       case 1:
         k1 ^= (FT_UInt32)tail[0];
         k1 *= c1;
@@ -657,7 +657,7 @@
 
 
   /*
-   * Find the shortest decimal representation of a 16.16 fixed point
+   * Find the shortest decimal representation of a 16.16 fixed-point
    * number.  The function fills `buf' with the result, returning a pointer
    * to the position after the representation's last byte.
    */
@@ -733,7 +733,7 @@
         an equivalent representation of `fixed'.
 
         The above FOR loop always finds the larger of the two values; I
-        verified this by iterating over all possible fixed point numbers.
+        verified this by iterating over all possible fixed-point numbers.
 
         If the remainder is 17232*10, both values are equally good, and we
         take the next even number (following IEEE 754's `round to nearest,
@@ -741,7 +741,7 @@
 
         If the remainder is smaller than 17232*10, the lower of the two
         numbers is nearer to the exact result (values 17232 and 34480 were
-        also found by testing all possible fixed point values).
+        also found by testing all possible fixed-point values).
 
         We use this to find a shorter decimal representation.  If not ending
         with digit zero, we take the representation with less error.

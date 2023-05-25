@@ -24,9 +24,9 @@
 # VladimirBlazek <vblazek042@gmail.com>, 2020.
 # kubajz22 <til.jakubesko@seznam.cz>, 2020.
 # Václav Blažej <vaclavblazej@seznam.cz>, 2020, 2021.
-# ProfJack <profjackcz@gmail.com>, 2021.
+# ProfJack <profjackcz@gmail.com>, 2021, 2023.
 # swifterik <blaha.j502@gmail.com>, 2021.
-# Daniel <dan@ger.cz>, 2021.
+# Daniel <dan@ger.cz>, 2021, 2023.
 # Jakub Janšta <jansta.ja@gmail.com>, 2021, 2023.
 # Petr Voparil <voparil.petr96@gmail.com>, 2022.
 # JoeMoos <josephmoose13@gmail.com>, 2022.
@@ -43,8 +43,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-17 06:03+0000\n"
-"Last-Translator: Erik Mičulek <erikmiculek@gmail.com>\n"
+"PO-Revision-Date: 2023-05-11 05:49+0000\n"
+"Last-Translator: ProfJack <profjackcz@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -52,7 +52,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Nenastaveno"
@@ -129,6 +129,9 @@ msgstr "Joystick 4 Osa Y"
 msgid "Unknown Joypad Axis"
 msgstr "Neznámá Osa Gamepadu"
 
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Pohyb Joypadu na ose %d (%s) s hodnotou %.2f"
+
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
 msgstr "Spodní Akce, Sony Kříž, Xbox A, Nintendo B"
 
@@ -191,6 +194,28 @@ msgstr "Xbox Pádlo 4"
 
 msgid "PS4/5 Touchpad"
 msgstr "PS4/5 Dotykový panel"
+
+msgid "touched"
+msgstr "stisknutý"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Obrazovka %s v (%s) s %s dotykovými body"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr "Obrazovka tažená %s dotykovými body na pozici (%s) rychlostí (%s)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Gesto přiblížení na (%s) s faktorem %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Gesto přesouvání na (%s) se změnou (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "Vstup MIDI na Kanále=%s Zpráva=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Vstupní událost se zkratkou=%s"
 
 msgid "Accept"
 msgstr "Potvrdit"
@@ -285,14 +310,29 @@ msgstr "Caret Slovo vlevo"
 msgid "Caret Right"
 msgstr "Caret vpravo"
 
+msgid "Caret Page Down"
+msgstr "Kurzor o stránku níž"
+
+msgid "Caret Add Above"
+msgstr "Přidat kurzor výš"
+
 msgid "Select All"
 msgstr "Vybrat vše"
+
+msgid "Select Word Under Caret"
+msgstr "Označit slovo pod kurzorem"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "Přidat další výskyt do označení"
 
 msgid "Duplicate Nodes"
 msgstr "Duplikovat uzly"
 
 msgid "Delete Nodes"
 msgstr "Smazat uzly"
+
+msgid "Go Up One Level"
+msgstr "Přejít o úroveň výš"
 
 msgid "Refresh"
 msgstr "Obnovit"
@@ -342,6 +382,15 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
+msgid "Example: %s"
+msgstr "Příklad: %s"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d položka"
+msgstr[1] "%d položky"
+msgstr[2] "%d položek"
+
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
@@ -351,6 +400,9 @@ msgstr ""
 
 msgid "An action with the name '%s' already exists."
 msgstr "Akce s názvem \"%s\" již existuje."
+
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Není možný návrat - akce je shodná s původní"
 
 msgid "Add Event"
 msgstr "Přidat událost"
@@ -369,6 +421,9 @@ msgstr "Odstranit událost"
 
 msgid "Add"
 msgstr "Přidat"
+
+msgid "Show Built-in Actions"
+msgstr "Zobrazit vestavěné akce"
 
 msgid "Action"
 msgstr "Akce"
@@ -391,6 +446,21 @@ msgstr "Duplikovat vybrané klíč(e)"
 msgid "Delete Selected Key(s)"
 msgstr "Smazat vybrané klíč(e)"
 
+msgid "Make Handles Linear"
+msgstr "Udělat úchyty lineárními"
+
+msgid "Make Handles Balanced"
+msgstr "Udělat úchyty vyvážené"
+
+msgid "Make Handles Mirrored"
+msgstr "Udělat úchyty zrcadlené"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Udělat úchyty vyvážené (automatická tečna)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Udělat úchyty zrcadlené (automatická tečna)"
+
 msgid "Add Bezier Point"
 msgstr "Přidat bod Bézierovy křivky"
 
@@ -403,8 +473,17 @@ msgstr "Změnit délku animace"
 msgid "Change Animation Loop"
 msgstr "Změnit smyčku animace"
 
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr "Nelze změnit režim smyčky na instanci animace z importované scény."
+
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr "Nelze změnit režim smyčky na animaci vložené do jiné scény."
+
 msgid "Property Track"
 msgstr "Stopa vlastnosti"
+
+msgid "Blend Shape Track"
+msgstr "Stopa prolínání tvarů"
 
 msgid "Call Method Track"
 msgstr "Stopa volání metody"
@@ -466,6 +545,21 @@ msgstr "Zvětšení:"
 msgid "Type:"
 msgstr "Typ:"
 
+msgid "Handle mode: Free\n"
+msgstr "Režim úchytu: Volný\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "Režim úchytu: Lineární\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "Režim úchytu: Vyvážený\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "Režim úchytu: Zrcadlený\n"
+
+msgid "Don't Use Blend"
+msgstr "Nepoužívat prolínání"
+
 msgid "Continuous"
 msgstr "Spojité"
 
@@ -507,6 +601,13 @@ msgstr "Změnit režim interpolace animace"
 
 msgid "Change Animation Loop Mode"
 msgstr "Změnit mód smyčky animace"
+
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"Komprimované stopy nelze upravit ani odstranit. Pro úpravu přeimportuj "
+"animaci bez povolené komprese."
 
 msgid "Remove Anim Track"
 msgstr "Odstranit stopu animace"
@@ -582,6 +683,9 @@ msgstr "Měřítko"
 msgid "Methods"
 msgstr "Metody"
 
+msgid "Bezier"
+msgstr "Bézier"
+
 msgid "Audio"
 msgstr "Zvuk"
 
@@ -590,6 +694,9 @@ msgstr "Schránka je prázdná!"
 
 msgid "Paste Tracks"
 msgstr "Vložit stopy"
+
+msgid "Make Easing Keys"
+msgstr "Vytvoř klíče pro dynamiku"
 
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
@@ -603,6 +710,9 @@ msgstr "Upozornění: Upravuje se importovaná animace"
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
 "Pro přidání a úpravu animací vyberte ze stromu scény uzel AnimationPlayer."
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "Přepnout mezi editorem bézierovy křivky a editorem stopy."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Zobrazit pouze stopy vybraných uzlů."
@@ -681,6 +791,9 @@ msgstr "Pročistit"
 
 msgid "Scale Ratio:"
 msgstr "Poměr zvětšení:"
+
+msgid "Select Transition and Easing"
+msgstr "Vybrat přechod a dynamiku"
 
 msgid "Select Tracks to Copy"
 msgstr "Vybrat stopy ke kopírování"
@@ -781,6 +894,9 @@ msgstr "Scéna neobsahuje žádný skript."
 
 msgid "Select Method"
 msgstr "Vybrat metodu"
+
+msgid "No method found matching given filters."
+msgstr "Daným filtrům neodpovídá žádná metoda."
 
 msgid "Remove"
 msgstr "Odebrat"
@@ -3002,6 +3118,9 @@ msgstr ""
 msgid "Runnable"
 msgstr "Spustitelný"
 
+msgid "Resources to export:"
+msgstr "Zdroje k exportu:"
+
 msgid "Delete preset '%s'?"
 msgstr "Odstranit předvolbu '%s'?"
 
@@ -3047,9 +3166,6 @@ msgstr "Exportovat vybrané zdroje (a závislosti)"
 
 msgid "Export Mode:"
 msgstr "Expertní režim:"
-
-msgid "Resources to export:"
-msgstr "Zdroje k exportu:"
 
 msgid "Keep"
 msgstr "Zachovat"
@@ -4551,7 +4667,7 @@ msgstr ""
 "Nemusíte ji povolovat abyste mohli použít lokální ladění GDScriptu."
 
 msgid "Small Deploy with Network Filesystem"
-msgstr "Tenké nasazení pomocí síťového souborového sistému"
+msgstr "Tenké nasazení pomocí síťového souborového systému"
 
 msgid ""
 "When this option is enabled, using one-click deploy for Android will only "

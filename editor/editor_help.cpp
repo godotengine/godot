@@ -320,7 +320,8 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	if (can_ref) {
 		if (link_t.ends_with("[]")) {
 			add_array = true;
-			link_t = link_t.replace("[]", "");
+			link_t = link_t.trim_suffix("[]");
+			display_t = display_t.trim_suffix("[]");
 
 			class_desc->push_meta("#Array"); // class
 			class_desc->add_text("Array");
@@ -915,14 +916,15 @@ void EditorHelp::_update_doc() {
 	// Properties overview
 	HashSet<String> skip_methods;
 
-	bool has_properties = cd.properties.size() != 0;
-	if (cd.is_script_doc) {
-		has_properties = false;
-		for (int i = 0; i < cd.properties.size(); i++) {
-			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.strip_edges().is_empty()) {
-				continue;
-			}
-			has_properties = true;
+	bool has_properties = false;
+	bool has_property_descriptions = false;
+	for (const DocData::PropertyDoc &prop : cd.properties) {
+		if (cd.is_script_doc && prop.name.begins_with("_") && prop.description.strip_edges().is_empty()) {
+			continue;
+		}
+		has_properties = true;
+		if (!prop.overridden) {
+			has_property_descriptions = true;
 			break;
 		}
 	}
@@ -1601,7 +1603,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Property descriptions
-	if (has_properties) {
+	if (has_property_descriptions) {
 		section_line.push_back(Pair<String, int>(TTR("Property Descriptions"), class_desc->get_paragraph_count() - 2));
 		_push_title_font();
 		class_desc->add_text(TTR("Property Descriptions"));
@@ -2295,6 +2297,7 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 static bool doc_gen_use_threads = true;
 
 void EditorHelp::generate_doc(bool p_use_cache) {
+	OS::get_singleton()->benchmark_begin_measure("EditorHelp::generate_doc");
 	if (doc_gen_use_threads) {
 		// In case not the first attempt.
 		_wait_for_thread();
@@ -2325,6 +2328,7 @@ void EditorHelp::generate_doc(bool p_use_cache) {
 			_gen_doc_thread(nullptr);
 		}
 	}
+	OS::get_singleton()->benchmark_end_measure("EditorHelp::generate_doc");
 }
 
 void EditorHelp::_toggle_scripts_pressed() {
@@ -2696,22 +2700,10 @@ void FindBar::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid()) {
-		if (k->is_pressed() && (rich_text_label->has_focus() || is_ancestor_of(get_viewport()->gui_get_focus_owner()))) {
-			bool accepted = true;
-
-			switch (k->get_keycode()) {
-				case Key::ESCAPE: {
-					_hide_bar();
-				} break;
-				default: {
-					accepted = false;
-				} break;
-			}
-
-			if (accepted) {
-				accept_event();
-			}
+	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+		if (rich_text_label->has_focus() || is_ancestor_of(get_viewport()->gui_get_focus_owner())) {
+			_hide_bar();
+			accept_event();
 		}
 	}
 }

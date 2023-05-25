@@ -564,6 +564,13 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 			specialization.id = glCreateProgram();
 			glProgramBinary(specialization.id, variant_format, variant_bytes.ptr(), variant_bytes.size());
 
+			GLint link_status = 0;
+			glGetProgramiv(specialization.id, GL_LINK_STATUS, &link_status);
+			if (link_status != GL_TRUE) {
+				WARN_PRINT_ONCE("Failed to load cached shader, recompiling.");
+				return false;
+			}
+
 			_get_uniform_locations(specialization, p_version);
 
 			specialization.ok = true;

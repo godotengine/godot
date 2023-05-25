@@ -3655,7 +3655,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 					} else {
 						description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-						description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // Don't care what is there.
+						description.finalLayout = VK_IMAGE_LAYOUT_UNDEFINED; // Don't care what is there.
 						// TODO: What does this mean about the next usage (and thus appropriate dependency masks.
 					}
 				} break;
@@ -5939,10 +5939,10 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer, uint32_t p_
 		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Buffer is either invalid or this type of buffer can't be retrieved. Only Index and Vertex buffers allow retrieving.");
 	}
 
-	// Make sure no one is using the buffer -- the "false" gets us to the same command buffer as below.
-	_buffer_memory_barrier(buffer->buffer, 0, buffer->size, src_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, src_access_mask, VK_ACCESS_TRANSFER_READ_BIT, false);
+	// Make sure no one is using the buffer -- the "true" gets us to the same command buffer as below.
+	_buffer_memory_barrier(buffer->buffer, 0, buffer->size, src_stage_mask, VK_PIPELINE_STAGE_TRANSFER_BIT, src_access_mask, VK_ACCESS_TRANSFER_READ_BIT, true);
 
-	VkCommandBuffer command_buffer = frames[frame].setup_command_buffer;
+	VkCommandBuffer command_buffer = frames[frame].draw_command_buffer;
 
 	// Size of buffer to retrieve.
 	if (!p_size) {

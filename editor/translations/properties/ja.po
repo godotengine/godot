@@ -53,7 +53,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-17 17:40+0000\n"
+"PO-Revision-Date: 2023-04-26 20:01+0000\n"
 "Last-Translator: Usamiki <amarantus0499@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
@@ -62,7 +62,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.17\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Application"
 msgstr "アプリケーション"
@@ -1173,6 +1173,9 @@ msgstr "ミニマップの不透明度"
 
 msgid "Window Placement"
 msgstr "ウィンドウの配置"
+
+msgid "Rect"
+msgstr "四角形"
 
 msgid "Rect Custom Position"
 msgstr "矩形のカスタム位置"
@@ -3052,11 +3055,17 @@ msgstr "HDRを使用"
 msgid "Frames"
 msgstr "フレーム"
 
+msgid "Terrains"
+msgstr "地形"
+
 msgid "Custom Data"
 msgstr "カスタムデータ"
 
 msgid "Transpose"
 msgstr "行列(縦横)入れ替え"
+
+msgid "Texture Origin"
+msgstr "テクスチャの原点"
 
 msgid "Probability"
 msgstr "確率"

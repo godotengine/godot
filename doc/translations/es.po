@@ -49,12 +49,13 @@
 # Joinner Medina <devjoi2018@gmail.com>, 2023.
 # Denis Anfruns <daanfruns@gmail.com>, 2023.
 # Luis Ortiz <luisortiz66@hotmail.com>, 2023.
+# Biel Serrano Sanchez <bielsesa@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2023-04-12 08:56+0000\n"
-"Last-Translator: Luis Ortiz <luisortiz66@hotmail.com>\n"
+"PO-Revision-Date: 2023-04-26 21:48+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/es/>\n"
 "Language: es\n"
@@ -62,7 +63,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Description"
 msgstr "Descripción"
@@ -1201,16 +1202,6 @@ msgid ""
 msgstr ""
 "La propiedad es un script variable que debe ser serializado y guardado en el "
 "archivo de la escena."
-
-msgid "Default usage (storage, editor and network)."
-msgstr "Uso por defecto (almacenamiento, editor y red)."
-
-msgid ""
-"Default usage but without showing the property in the editor (storage, "
-"network)."
-msgstr ""
-"Uso por defecto pero sin mostrar la propiedad en el editor (almacenamiento, "
-"red)."
 
 msgid "Flag for a normal method."
 msgstr "Flag para un método normal."
@@ -2446,24 +2437,6 @@ msgstr ""
 
 msgid "Returns [code]true[/code] if the array is empty."
 msgstr "Devuelve [code]true[/code] si el array es vacio."
-
-msgid ""
-"Returns the maximum value contained in the array if all elements are of "
-"comparable types. If the elements can't be compared, [code]null[/code] is "
-"returned."
-msgstr ""
-"Devuelve el maximo valor contenido en el array si todos los elementos son de "
-"tipos comparables. Si los elementos no pueden ser comparados, [code]null[/"
-"code] es devuelto."
-
-msgid ""
-"Returns the minimum value contained in the array if all elements are of "
-"comparable types. If the elements can't be compared, [code]null[/code] is "
-"returned."
-msgstr ""
-"Devuelve el minimo valor contenido en el array si todos los elementos son de "
-"tipos comparables. Si los elementos no pueden ser comparados, [code]null[/"
-"code] es devuelto."
 
 msgid ""
 "Resizes the array to contain a different number of elements. If the array "
@@ -3935,16 +3908,6 @@ msgstr ""
 "para superponer sombras en una cámara de alimentación en AR."
 
 msgid ""
-"If [code]true[/code], subsurface scattering is enabled. Emulates light that "
-"penetrates an object's surface, is scattered, and then emerges."
-msgstr ""
-"Si [code]true[/code], se activa la dispersión subterránea. Emula la luz que "
-"penetra en la superficie de un objeto, se dispersa y luego emerge."
-
-msgid "The strength of the subsurface scattering effect."
-msgstr "La fuerza del efecto de dispersión del subsuelo."
-
-msgid ""
 "Texture used to control the subsurface scattering strength. Stored in the "
 "red texture channel. Multiplied by [member subsurf_scatter_strength]."
 msgstr ""
@@ -4876,21 +4839,6 @@ msgid ""
 msgstr ""
 "Si [code]true[/code], la propiedad del [member material] de [CanvasItem] se "
 "utiliza como el material para este elemento."
-
-msgid ""
-"If [code]true[/code], this [CanvasItem] is drawn. The node is only visible "
-"if all of its antecedents are visible as well (in other words, [method "
-"is_visible_in_tree] must return [code]true[/code]).\n"
-"[b]Note:[/b] For controls that inherit [Popup], the correct way to make them "
-"visible is to call one of the multiple [code]popup*()[/code] functions "
-"instead."
-msgstr ""
-"Si [code]true[/code], se dibuja este [CanvasItem]. El nodo sólo es visible "
-"si todos sus antecedentes también lo son (en otras palabras, [method "
-"is_visible_in_tree] debe devolver [code]true[/code]).\n"
-"[b]Nota:[/b] Para los controles que heredan [Popup], la forma correcta de "
-"hacerlos visibles es llamar a una de las múltiples funciones [code]popup*()[/"
-"code] en su lugar."
 
 msgid ""
 "If [code]true[/code], the node's Z index is relative to its parent's Z "
@@ -6074,15 +6022,6 @@ msgstr ""
 "inmediatamente."
 
 msgid ""
-"Marks an input event as handled. Once you accept an input event, it stops "
-"propagating, even to nodes listening to [method Node._unhandled_input] or "
-"[method Node._unhandled_key_input]."
-msgstr ""
-"Marca un evento de entrada como manejado. Una vez que aceptas un evento de "
-"entrada, deja de propagarse, incluso a los nodos que escuchan [method Node."
-"_unhandled_input] o [method Node._unhandled_key_input]."
-
-msgid ""
 "Returns the mouse cursor shape the control displays on mouse hover. See "
 "[enum CursorShape]."
 msgstr ""
@@ -6889,16 +6828,6 @@ msgstr ""
 "La operación que se realiza en esta forma. Esto se ignora para el primer "
 "nodo hijo de CSG ya que la operación es entre este nodo y el hijo previo a "
 "este nodo padre."
-
-msgid ""
-"Snap makes the mesh snap to a given distance so that the faces of two meshes "
-"can be perfectly aligned. A lower value results in greater precision but may "
-"be harder to adjust."
-msgstr ""
-"El recorte hace que la malla se ajuste a una distancia determinada para que "
-"las caras de dos mallas puedan estar perfectamente alineadas. Un valor más "
-"bajo da como resultado una mayor precisión pero puede ser más difícil de "
-"ajustar."
 
 msgid ""
 "Geometry of both primitives is merged, intersecting geometry is removed."
@@ -8290,18 +8219,6 @@ msgstr ""
 "fase de física del bucle de juego."
 
 msgid ""
-"Controls how fast or slow the in-game clock ticks versus the real life one. "
-"It defaults to 1.0. A value of 2.0 means the game moves twice as fast as "
-"real life, whilst a value of 0.5 means the game moves at half the regular "
-"speed."
-msgstr ""
-"Controla la velocidad o la lentitud del reloj del juego en comparación con "
-"el de la vida real. El valor por defecto es 1.0. Un valor de 2.0 significa "
-"que el juego se mueve el doble de rápido que en la vida real, mientras que "
-"un valor de 0.5 significa que el juego se mueve a la mitad de la velocidad "
-"normal."
-
-msgid ""
 "Resource for environment nodes (like [WorldEnvironment]) that define "
 "multiple rendering options."
 msgstr ""
@@ -9368,9 +9285,6 @@ msgid ""
 msgstr ""
 "Un recurso interpolador de color que puede ser usado para generar colores "
 "entre puntos de color definidos por el usuario."
-
-msgid "Returns the interpolated color specified by [code]offset[/code]."
-msgstr "Devuelve el color interpolado especificado por [code]offset[/code]."
 
 msgid "Cubic interpolation."
 msgstr "Interpolación cúbica."
@@ -11290,18 +11204,6 @@ msgstr ""
 
 msgid "A singleton that deals with inputs."
 msgstr "Un singleton que se ocupa de las entradas."
-
-msgid ""
-"A singleton that deals with inputs. This includes key presses, mouse buttons "
-"and movement, joypads, and input actions. Actions and their events can be "
-"set in the [b]Input Map[/b] tab in the [b]Project > Project Settings[/b], or "
-"with the [InputMap] class."
-msgstr ""
-"Un singleton que se ocupa de las entradas. Esto incluye pulsaciones de "
-"teclas, botones del ratón y movimiento, joypads y acciones de entrada. Las "
-"acciones y sus eventos se pueden configurar en la pestaña [b]Mapa de "
-"entradas[/b] en el [b]Proyecto > Configuración del proyecto[/b], o con la "
-"clase [InputMap]."
 
 msgid ""
 "This will simulate pressing the specified action.\n"
@@ -13995,17 +13897,6 @@ msgstr ""
 "escala de transformación local."
 
 msgid ""
-"Returns [code]true[/code] if the node is present in the [SceneTree], its "
-"[member visible] property is [code]true[/code] and all its antecedents are "
-"also visible. If any antecedent is hidden, this node will not be visible in "
-"the scene tree."
-msgstr ""
-"Devuelve [code]true[/code] si el nodo está presente en el [SceneTree], su "
-"propiedad [member visible] es [code]true[/code] y todos sus antecedentes "
-"también son visibles. Si algún antecedente está oculto, este nodo no será "
-"visible en el árbol de la escena."
-
-msgid ""
 "Rotates the local transformation around axis, a unit [Vector3], by specified "
 "angle in radians."
 msgstr ""
@@ -14067,15 +13958,6 @@ msgid ""
 msgstr ""
 "Cambia la posición del nodo por el desplazamiento dado [Vector3] en el "
 "espacio local."
-
-msgid ""
-"If [code]true[/code], this node is drawn. The node is only visible if all of "
-"its antecedents are visible as well (in other words, [method "
-"is_visible_in_tree] must return [code]true[/code])."
-msgstr ""
-"Si [code]true[/code], este nodo se dibuja. El nodo sólo es visible si todos "
-"sus antecedentes también lo son (en otras palabras, [method "
-"is_visible_in_tree] debe devolver [code]true[/code])."
 
 msgid "Emitted when node visibility changes."
 msgstr "Emitido cuando cambia la visibilidad del nodo."
@@ -14191,6 +14073,9 @@ msgstr ""
 
 msgid "Add an action set."
 msgstr "Añadir un conjunto de acciones."
+
+msgid "Add an interaction profile."
+msgstr "Añadir un perfil de interacción."
 
 msgid "Optimized translation."
 msgstr "Traducción optimizada."
@@ -16823,9 +16708,6 @@ msgstr ""
 "Si [code]true[/code], utiliza un modelo de iluminación de material Lambert "
 "más rápido pero de menor calidad en lugar del Burley."
 
-msgid "Quaternion."
-msgstr "Cuaternario."
-
 msgid ""
 "Constructs a quaternion that will rotate around the given axis by the "
 "specified angle. The axis must be a normalized vector."
@@ -17294,9 +17176,6 @@ msgstr "Establece el [CanvasItem] para copiar un rectángulo al backbuffer."
 msgid "Sets the index for the [CanvasItem]."
 msgstr "Establece el índice para el [CanvasItem]."
 
-msgid "Sets a new material to the [CanvasItem]."
-msgstr "Establece un nuevo material para el [CanvasItem]."
-
 msgid "Sets if the [CanvasItem] uses its parent's material."
 msgstr "Establece si el [CanvasItem] utiliza el material de su padre."
 
@@ -17409,40 +17288,12 @@ msgstr ""
 msgid "Modulates all colors in the given canvas."
 msgstr "Modula todos los colores en el canvas dado."
 
-msgid ""
-"Sets the values to be used with the \"Adjustment\" post-process effect. See "
-"[Environment] for more details."
-msgstr ""
-"Establece los valores que se utilizarán con el efecto de post-proceso de "
-"\"Ajuste\". Ver [Environment] para más detalles."
-
-msgid ""
-"Sets the [i]BGMode[/i] of the environment. Equivalent to [member Environment."
-"background_mode]."
-msgstr ""
-"Establece el [i]BGMode[/i] del medio ambiente. Equivalente a [member "
-"Environment.background_mode]."
-
-msgid ""
-"Color displayed for clear areas of the scene (if using Custom color or "
-"Color+Sky background modes)."
-msgstr ""
-"Color mostrado para áreas claras de la escena (si se utilizan los modos de "
-"fondo Color personalizado o Color+Sky)."
-
 msgid "Sets the intensity of the background color."
 msgstr "Establece la intensidad del color de fondo."
 
 msgid "Sets the maximum layer to use if using Canvas background mode."
 msgstr ""
 "Establece la capa máxima a usar si se utiliza el modo de fondo de canvas."
-
-msgid ""
-"Sets the variables to be used with the \"screen space reflections\" post-"
-"process effect. See [Environment] for more details."
-msgstr ""
-"Establece las variables que se utilizarán con el efecto de post-proceso "
-"\"reflejos del espacio de la pantalla\". Ver [Environment] para más detalles."
 
 msgid ""
 "Sets the variables to be used with the \"tonemap\" post-process effect. See "
@@ -17512,9 +17363,6 @@ msgid ""
 msgstr ""
 "Establece el escenario en el que se encuentra la instancia. El escenario es "
 "el mundo tridimensional en el que se mostrarán los objetos."
-
-msgid "Not implemented in Godot 3.x."
-msgstr "No se implementó en Godot 3.x."
 
 msgid "Returns the value of a certain material's parameter."
 msgstr "Devuelve el valor del parámetro de un determinado material."
@@ -17716,9 +17564,6 @@ msgstr ""
 "una vez o cada fotograma. Ver [enum ReflectionProbeUpdateMode] para las "
 "opciones."
 
-msgid "Sets the environment that will be used with this scenario."
-msgstr "Establece el entorno que se utilizará con este escenario."
-
 msgid ""
 "Sets the fallback environment to be used by this scenario. The fallback "
 "environment is used if no environment is set. Internally, this is used by "
@@ -17728,23 +17573,6 @@ msgstr ""
 "entorno de reserva se utiliza si no se establece ningún entorno. "
 "Internamente, es usado por el editor para proporcionar un entorno por "
 "defecto."
-
-msgid ""
-"If [code]true[/code], the engine will generate wireframes for use with the "
-"wireframe debug mode."
-msgstr ""
-"Si [code]true[/code], el motor generará mallas de alambre para su uso con el "
-"modo de depuración de mallas de alambre."
-
-msgid ""
-"Sets the default clear color which is used when a specific clear color has "
-"not been selected."
-msgstr ""
-"Establece el color claro predeterminado que se utiliza cuando no se ha "
-"seleccionado un color claro específico."
-
-msgid "Returns a shader's code."
-msgstr "Devuelve un código de shader."
 
 msgid "Returns the [Transform2D] set for a specific bone of this skeleton."
 msgstr ""
@@ -17789,20 +17617,8 @@ msgstr ""
 "Establece el modo de dibujo de depuración de un viewport. Ver [enum "
 "ViewportDebugDraw] para las opciones."
 
-msgid "If [code]true[/code], the viewport's canvas is not rendered."
-msgstr "Si [code]true[/code], el canvas del viewport no se renderiza."
-
 msgid "Sets the viewport's global transformation matrix."
 msgstr "Establece la matriz de transformación global del Viewport."
-
-msgid "Sets the viewport's parent to another viewport."
-msgstr "Establece el padre del viewport a otra viewport."
-
-msgid "Sets the shadow atlas quadrant's subdivision."
-msgstr "Establece la subdivisión del cuadrante del atlas de las sombras."
-
-msgid "Sets the viewport's width and height."
-msgstr "Establece el ancho y la altura del viewport."
 
 msgid ""
 "If [code]true[/code], the viewport renders its background as transparent."
@@ -17836,23 +17652,11 @@ msgstr "La capa Z mínima para los objetos del canvas."
 msgid "The maximum Z-layer for canvas items."
 msgstr "La máxima capa Z para los objetos del canvas."
 
-msgid ""
-"Max number of glow levels that can be used with glow post-process effect."
-msgstr ""
-"Número máximo de niveles de brillo que se pueden utilizar con el efecto de "
-"post-procesado de brillo."
-
-msgid "Unused enum in Godot 3.x."
-msgstr "La lista no utilizada en Godot 3.x."
-
 msgid "Shader is a 3D shader."
 msgstr "Shader es un shader 3D."
 
 msgid "Shader is a 2D shader."
 msgstr "Shader es un shader 2D."
-
-msgid "Shader is a particle shader."
-msgstr "Shader es un shader de partículas."
 
 msgid "Represents the size of the [enum ShaderMode] enum."
 msgstr "Representa el tamaño del enum [enum ShaderMode]."
@@ -17863,24 +17667,14 @@ msgstr "La prioridad mínima de renderizado de todos los materiales."
 msgid "The maximum renderpriority of all materials."
 msgstr "La máxima prioridad de renderización de todos los materiales."
 
-msgid "Array is a vertex array."
-msgstr "El array es un array de vértices."
-
 msgid "Array is a normal array."
 msgstr "El array es un array normales."
 
 msgid "Array is a tangent array."
 msgstr "El Array es una array de tangentes."
 
-msgid "Array is a color array."
-msgstr "El Array es un array de colores."
-
 msgid "Array is an UV coordinates array."
 msgstr "El Array es un array de coordenadas UV."
-
-msgid "Array is an UV coordinates array for the second UV coordinates."
-msgstr ""
-"El Array es un array de coordenadas UV para las segundas coordenadas UV."
 
 msgid "Array contains bone information."
 msgstr "El Array contiene información sobre los huesos."
@@ -17888,20 +17682,11 @@ msgstr "El Array contiene información sobre los huesos."
 msgid "Array is weight information."
 msgstr "El Array contiene la información de pesos."
 
-msgid "Array is index array."
-msgstr "El Array es un array de índices."
-
-msgid "Flag used to mark a vertex array."
-msgstr "Bandera usada para marcar un array de vértices."
-
 msgid "Flag used to mark a normal array."
 msgstr "Bandera usada para marcar una array de normales."
 
 msgid "Flag used to mark a tangent array."
 msgstr "Bandera usada para marcar un array de tangentes."
-
-msgid "Flag used to mark a color array."
-msgstr "Bandera usada para marcar un array de colores."
 
 msgid "Flag used to mark an UV coordinates array."
 msgstr "Bandera usada para marcar un conjunto de coordenadas UV."
@@ -17947,15 +17732,6 @@ msgstr "Representa el tamaño del enum [enum PrimitiveType]."
 msgid "Use [Transform2D] to store MultiMesh transform."
 msgstr "Use [Transform2D] para almacenar la transformada de MultiMalla."
 
-msgid "Is a directional (sun) light."
-msgstr "Es una luz direccional (sol)."
-
-msgid "Is an omni light."
-msgstr "Es una luz omnipresente."
-
-msgid "Is a spot light."
-msgstr "Es un foco de luz."
-
 msgid "The light's influence on specularity."
 msgstr "La influencia de la luz en la especularidad."
 
@@ -17970,9 +17746,6 @@ msgstr "El ángulo del foco."
 
 msgid "The spotlight's attenuation."
 msgstr "La atenuación del foco."
-
-msgid "Max distance that shadows will be rendered."
-msgstr "La distancia máxima a la que las sombras se renderizarán."
 
 msgid "Proportion of shadow atlas occupied by the first split."
 msgstr "Proporción de atlas de sombras ocupados por la primera división."
@@ -18045,31 +17818,6 @@ msgstr "Clasificar las partículas en función de su vida útil."
 
 msgid "Sort particles based on their distance to the camera."
 msgstr "Clasifica las partículas según su distancia a la cámara."
-
-msgid "Do not update the viewport."
-msgstr "No actualice el viewport."
-
-msgid "Update the viewport once then set to disabled."
-msgstr "Actualiza el viewport una vez y luego ponlo en desactivado."
-
-msgid "Update the viewport whenever it is visible."
-msgstr "Actualice el viewport siempre que sea visible."
-
-msgid "Always update the viewport."
-msgstr "Siempre actualiza el viewport."
-
-msgid "The viewport is always cleared before drawing."
-msgstr "El viewport siempre se limpia antes de dibujar."
-
-msgid "The viewport is never cleared before drawing."
-msgstr "El viewport nunca se limpia antes de dibujar."
-
-msgid ""
-"The viewport is cleared once, then the clear mode is set to [constant "
-"VIEWPORT_CLEAR_NEVER]."
-msgstr ""
-"El viewport se borra una vez, luego el modo de borrado se establece en "
-"[constant VIEWPORT_CLEAR_NEVER]."
 
 msgid "Number of objects drawn in a single frame."
 msgstr "Número de objetos dibujados en un solo fotograma."
@@ -18423,15 +18171,6 @@ msgid ""
 msgstr ""
 "Añade una etiqueta [code]font[/code] a la pila de etiquetas. Anula las "
 "fuentes predeterminadas para su duración."
-
-msgid ""
-"Adds a [code][font][/code] tag with a italics font to the tag stack. This is "
-"the same as adding a [code][i][/code] tag if not currently in a [code][b][/"
-"code] tag."
-msgstr ""
-"Añade una etiqueta [code]font[/code] con una fuente en cursiva a la pila de "
-"etiquetas. Esto es lo mismo que añadir una etiqueta [code]i[/code] si no "
-"está actualmente en una etiqueta [code]b[/code]."
 
 msgid "Adds a [code][font][/code] tag with a monospace font to the tag stack."
 msgstr ""
@@ -18963,12 +18702,6 @@ msgstr ""
 "Si [code]true[/code], el ScrollContainer se desplazará automáticamente a los "
 "hijos enfocados (incluyendo los niños indirectos) para asegurarse de que son "
 "completamente visibles."
-
-msgid "The current horizontal scroll value."
-msgstr "El valor actual de desplazamiento horizontal."
-
-msgid "The current vertical scroll value."
-msgstr "El valor actual de scroll vertical."
 
 msgid "Emitted when scrolling stops."
 msgstr "Emitido cuando el scroll se detiene."
@@ -19658,13 +19391,6 @@ msgstr ""
 
 msgid "Returns the smallest border width out of all four borders."
 msgstr "Devuelve el menor ancho de borde de los cuatro bordes."
-
-msgid ""
-"This changes the size of the faded ring. Higher values can be used to "
-"achieve a \"blurry\" effect."
-msgstr ""
-"Esto cambia el tamaño del anillo descolorido. Se pueden usar valores más "
-"altos para lograr un efecto \"borroso\"."
 
 msgid "The background color of the stylebox."
 msgstr "El color de fondo de la caja de estilo."
@@ -22202,9 +21928,6 @@ msgstr "[VideoStream] recurso para los videos de Ogg Theora."
 msgid "Returns the visible rectangle in global screen coordinates."
 msgstr "Devuelve el RID del viewport del [VisualServer]."
 
-msgid "Stops the input from propagating further down the [SceneTree]."
-msgstr "Evita que la entrada se propague más abajo en el [SceneTree]."
-
 msgid ""
 "Sets the number of subdivisions to use in the specified quadrant. A higher "
 "number of subdivisions allows you to have more shadows in the scene at once, "
@@ -22327,13 +22050,6 @@ msgstr "Los objetos se muestran en el estilo wireframe."
 
 msgid "Texture which displays the content of a [Viewport]."
 msgstr "Textura que muestra el contenido de un [Viewport]."
-
-msgid ""
-"The path to the [Viewport] node to display. This is relative to the scene "
-"root, not to the node which uses the texture."
-msgstr ""
-"La ruta al nodo [Viewport] para visualizar. Es relativa a la raíz de la "
-"escena, no al nodo que usa la textura."
 
 msgid "Enables certain nodes only when approximately visible."
 msgstr "Habilita ciertos nodos sólo cuando son aproximadamente visibles."

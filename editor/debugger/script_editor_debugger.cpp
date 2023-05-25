@@ -1732,7 +1732,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 
 	{ //debugger
 		VBoxContainer *vbc = memnew(VBoxContainer);
-		vbc->set_name(TTR("Debugger"));
+		vbc->set_name(TTR("Stack Trace"));
 		Control *dbg = vbc;
 
 		HBoxContainer *hbc = memnew(HBoxContainer);

@@ -194,7 +194,7 @@ void ViewportTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_viewport_path_in_scene", "path"), &ViewportTexture::set_viewport_path_in_scene);
 	ClassDB::bind_method(D_METHOD("get_viewport_path_in_scene"), &ViewportTexture::get_viewport_path_in_scene);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "viewport_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "SubViewport", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT), "set_viewport_path_in_scene", "get_viewport_path_in_scene");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "viewport_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Viewport", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT), "set_viewport_path_in_scene", "get_viewport_path_in_scene");
 }
 
 ViewportTexture::ViewportTexture() {
@@ -468,6 +468,8 @@ void Viewport::_update_viewport_path() {
 }
 
 void Viewport::_notification(int p_what) {
+	ERR_MAIN_THREAD_GUARD;
+
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_viewport_path();
@@ -922,10 +924,12 @@ void Viewport::_process_picking() {
 }
 
 RID Viewport::get_viewport_rid() const {
+	ERR_READ_THREAD_GUARD_V(RID());
 	return viewport;
 }
 
 void Viewport::update_canvas_items() {
+	ERR_MAIN_THREAD_GUARD;
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -1013,6 +1017,7 @@ bool Viewport::_is_size_allocated() const {
 }
 
 Rect2 Viewport::get_visible_rect() const {
+	ERR_READ_THREAD_GUARD_V(Rect2());
 	Rect2 r;
 
 	if (size == Size2()) {
@@ -1029,6 +1034,7 @@ Rect2 Viewport::get_visible_rect() const {
 }
 
 void Viewport::canvas_parent_mark_dirty(Node *p_node) {
+	ERR_MAIN_THREAD_GUARD;
 	bool request_update = gui.canvas_parents_with_dirty_order.is_empty();
 	gui.canvas_parents_with_dirty_order.insert(p_node->get_instance_id());
 	if (request_update) {
@@ -1043,6 +1049,7 @@ void Viewport::_update_audio_listener_2d() {
 }
 
 void Viewport::set_as_audio_listener_2d(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
 	if (p_enable == is_audio_listener_2d_enabled) {
 		return;
 	}
@@ -1052,14 +1059,17 @@ void Viewport::set_as_audio_listener_2d(bool p_enable) {
 }
 
 bool Viewport::is_audio_listener_2d() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return is_audio_listener_2d_enabled;
 }
 
 AudioListener2D *Viewport::get_audio_listener_2d() const {
+	ERR_READ_THREAD_GUARD_V(nullptr);
 	return audio_listener_2d;
 }
 
 void Viewport::enable_canvas_transform_override(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
 	if (override_canvas_transform == p_enable) {
 		return;
 	}
@@ -1073,10 +1083,12 @@ void Viewport::enable_canvas_transform_override(bool p_enable) {
 }
 
 bool Viewport::is_canvas_transform_override_enbled() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return override_canvas_transform;
 }
 
 void Viewport::set_canvas_transform_override(const Transform2D &p_transform) {
+	ERR_MAIN_THREAD_GUARD;
 	if (canvas_transform_override == p_transform) {
 		return;
 	}
@@ -1088,10 +1100,12 @@ void Viewport::set_canvas_transform_override(const Transform2D &p_transform) {
 }
 
 Transform2D Viewport::get_canvas_transform_override() const {
+	ERR_READ_THREAD_GUARD_V(Transform2D());
 	return canvas_transform_override;
 }
 
 void Viewport::set_canvas_transform(const Transform2D &p_transform) {
+	ERR_MAIN_THREAD_GUARD;
 	canvas_transform = p_transform;
 
 	if (!override_canvas_transform) {
@@ -1100,6 +1114,7 @@ void Viewport::set_canvas_transform(const Transform2D &p_transform) {
 }
 
 Transform2D Viewport::get_canvas_transform() const {
+	ERR_READ_THREAD_GUARD_V(Transform2D());
 	return canvas_transform;
 }
 
@@ -1110,12 +1125,14 @@ void Viewport::_update_global_transform() {
 }
 
 void Viewport::set_global_canvas_transform(const Transform2D &p_transform) {
+	ERR_MAIN_THREAD_GUARD;
 	global_canvas_transform = p_transform;
 
 	_update_global_transform();
 }
 
 Transform2D Viewport::get_global_canvas_transform() const {
+	ERR_READ_THREAD_GUARD_V(Transform2D());
 	return global_canvas_transform;
 }
 
@@ -1147,21 +1164,28 @@ void Viewport::_canvas_layer_remove(CanvasLayer *p_canvas_layer) {
 }
 
 void Viewport::set_transparent_background(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
 	transparent_bg = p_enable;
 	RS::get_singleton()->viewport_set_transparent_background(viewport, p_enable);
 }
 
 bool Viewport::has_transparent_background() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return transparent_bg;
 }
 
 void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
+	ERR_MAIN_THREAD_GUARD;
 	if (world_2d == p_world_2d) {
 		return;
 	}
 
 	if (is_inside_tree()) {
 		RenderingServer::get_singleton()->viewport_remove_canvas(viewport, current_canvas);
+	}
+
+	if (world_2d.is_valid()) {
+		world_2d->remove_viewport(this);
 	}
 
 	if (p_world_2d.is_valid()) {
@@ -1175,6 +1199,7 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 		world_2d = Ref<World2D>(memnew(World2D));
 	}
 
+	world_2d->register_viewport(this);
 	_update_audio_listener_2d();
 
 	if (is_inside_tree()) {
@@ -1184,6 +1209,7 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 }
 
 Ref<World2D> Viewport::find_world_2d() const {
+	ERR_READ_THREAD_GUARD_V(Ref<World2D>());
 	if (world_2d.is_valid()) {
 		return world_2d;
 	} else if (parent) {
@@ -1205,18 +1231,22 @@ void Viewport::_propagate_viewport_notification(Node *p_node, int p_what) {
 }
 
 Ref<World2D> Viewport::get_world_2d() const {
+	ERR_READ_THREAD_GUARD_V(Ref<World2D>());
 	return world_2d;
 }
 
 Camera2D *Viewport::get_camera_2d() const {
+	ERR_READ_THREAD_GUARD_V(nullptr);
 	return camera_2d;
 }
 
 Transform2D Viewport::get_final_transform() const {
+	ERR_READ_THREAD_GUARD_V(Transform2D());
 	return stretch_transform * global_canvas_transform;
 }
 
 void Viewport::assign_next_enabled_camera_2d(const StringName &p_camera_group) {
+	ERR_MAIN_THREAD_GUARD;
 	List<Node *> camera_list;
 	get_tree()->get_nodes_in_group(p_camera_group, &camera_list);
 
@@ -1260,19 +1290,23 @@ void Viewport::_update_canvas_items(Node *p_node) {
 }
 
 Ref<ViewportTexture> Viewport::get_texture() const {
+	ERR_READ_THREAD_GUARD_V(Ref<ViewportTexture>());
 	return default_texture;
 }
 
 void Viewport::set_positional_shadow_atlas_size(int p_size) {
+	ERR_MAIN_THREAD_GUARD;
 	positional_shadow_atlas_size = p_size;
 	RS::get_singleton()->viewport_set_positional_shadow_atlas_size(viewport, p_size, positional_shadow_atlas_16_bits);
 }
 
 int Viewport::get_positional_shadow_atlas_size() const {
+	ERR_READ_THREAD_GUARD_V(0);
 	return positional_shadow_atlas_size;
 }
 
 void Viewport::set_positional_shadow_atlas_16_bits(bool p_16_bits) {
+	ERR_MAIN_THREAD_GUARD;
 	if (positional_shadow_atlas_16_bits == p_16_bits) {
 		return;
 	}
@@ -1282,9 +1316,11 @@ void Viewport::set_positional_shadow_atlas_16_bits(bool p_16_bits) {
 }
 
 bool Viewport::get_positional_shadow_atlas_16_bits() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return positional_shadow_atlas_16_bits;
 }
 void Viewport::set_positional_shadow_atlas_quadrant_subdiv(int p_quadrant, PositionalShadowAtlasQuadrantSubdiv p_subdiv) {
+	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_quadrant, 4);
 	ERR_FAIL_INDEX(p_subdiv, SHADOW_ATLAS_QUADRANT_SUBDIV_MAX);
 
@@ -1299,6 +1335,7 @@ void Viewport::set_positional_shadow_atlas_quadrant_subdiv(int p_quadrant, Posit
 }
 
 Viewport::PositionalShadowAtlasQuadrantSubdiv Viewport::get_positional_shadow_atlas_quadrant_subdiv(int p_quadrant) const {
+	ERR_READ_THREAD_GUARD_V(SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
 	ERR_FAIL_INDEX_V(p_quadrant, 4, SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
 	return positional_shadow_atlas_quadrant_subdiv[p_quadrant];
 }
@@ -1313,6 +1350,7 @@ Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
 }
 
 Vector2 Viewport::get_mouse_position() const {
+	ERR_READ_THREAD_GUARD_V(Vector2());
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_MOUSE)) {
 		return get_screen_transform_internal(true).affine_inverse().xform(DisplayServer::get_singleton()->mouse_get_position());
 	} else {
@@ -1322,6 +1360,7 @@ Vector2 Viewport::get_mouse_position() const {
 }
 
 void Viewport::warp_mouse(const Vector2 &p_position) {
+	ERR_MAIN_THREAD_GUARD;
 	Transform2D xform = get_screen_transform_internal();
 	Vector2 gpos = xform.xform(p_position);
 	Input::get_singleton()->warp_mouse(gpos);
@@ -1565,6 +1604,7 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 }
 
 Control *Viewport::gui_find_control(const Point2 &p_global) {
+	ERR_MAIN_THREAD_GUARD_V(nullptr);
 	// Handle subwindows.
 	_gui_sort_roots();
 
@@ -2274,6 +2314,7 @@ List<Control *>::Element *Viewport::_gui_add_root_control(Control *p_control) {
 }
 
 void Viewport::gui_set_root_order_dirty() {
+	ERR_MAIN_THREAD_GUARD;
 	gui.roots_order_dirty = true;
 }
 
@@ -2374,6 +2415,7 @@ void Viewport::_gui_remove_control(Control *p_control) {
 }
 
 Window *Viewport::get_base_window() const {
+	ERR_READ_THREAD_GUARD_V(nullptr);
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 
 	Viewport *v = const_cast<Viewport *>(this);
@@ -2576,6 +2618,7 @@ void Viewport::_post_gui_grab_click_focus() {
 ///////////////////////////////
 
 void Viewport::push_text_input(const String &p_text) {
+	ERR_MAIN_THREAD_GUARD;
 	if (gui.subwindow_focused) {
 		gui.subwindow_focused->push_text_input(p_text);
 		return;
@@ -2903,7 +2946,9 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 }
 
 void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
+	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND(p_event.is_null());
 
 	if (disable_input) {
 		return;
@@ -2955,6 +3000,7 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 }
 
 void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
+	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(p_event.is_null());
 	ERR_FAIL_COND(!is_inside_tree());
 	local_input_handled = false;
@@ -3004,6 +3050,7 @@ void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local
 }
 
 void Viewport::set_physics_object_picking(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
 	physics_object_picking = p_enable;
 	if (physics_object_picking) {
 		add_to_group("_picking_viewports");
@@ -3016,27 +3063,33 @@ void Viewport::set_physics_object_picking(bool p_enable) {
 }
 
 bool Viewport::get_physics_object_picking() {
+	ERR_READ_THREAD_GUARD_V(false);
 	return physics_object_picking;
 }
 
 void Viewport::set_physics_object_picking_sort(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
 	physics_object_picking_sort = p_enable;
 }
 
 bool Viewport::get_physics_object_picking_sort() {
+	ERR_READ_THREAD_GUARD_V(false);
 	return physics_object_picking_sort;
 }
 
 Vector2 Viewport::get_camera_coords(const Vector2 &p_viewport_coords) const {
+	ERR_READ_THREAD_GUARD_V(Vector2());
 	Transform2D xf = stretch_transform * global_canvas_transform;
 	return xf.xform(p_viewport_coords);
 }
 
 Vector2 Viewport::get_camera_rect_size() const {
+	ERR_READ_THREAD_GUARD_V(Vector2());
 	return size;
 }
 
 void Viewport::set_disable_input(bool p_disable) {
+	ERR_MAIN_THREAD_GUARD;
 	if (p_disable == disable_input) {
 		return;
 	}
@@ -3049,14 +3102,17 @@ void Viewport::set_disable_input(bool p_disable) {
 }
 
 bool Viewport::is_input_disabled() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return disable_input;
 }
 
 Variant Viewport::gui_get_drag_data() const {
+	ERR_READ_THREAD_GUARD_V(Variant());
 	return gui.drag_data;
 }
 
 PackedStringArray Viewport::get_configuration_warnings() const {
+	ERR_MAIN_THREAD_GUARD_V(PackedStringArray());
 	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (size.x <= 1 || size.y <= 1) {
@@ -3066,14 +3122,17 @@ PackedStringArray Viewport::get_configuration_warnings() const {
 }
 
 void Viewport::gui_reset_canvas_sort_index() {
+	ERR_MAIN_THREAD_GUARD;
 	gui.canvas_sort_index = 0;
 }
 
 int Viewport::gui_get_canvas_sort_index() {
+	ERR_MAIN_THREAD_GUARD_V(0);
 	return gui.canvas_sort_index++;
 }
 
 void Viewport::gui_release_focus() {
+	ERR_MAIN_THREAD_GUARD;
 	if (gui.key_focus) {
 		Control *f = gui.key_focus;
 		gui.key_focus = nullptr;
@@ -3083,10 +3142,12 @@ void Viewport::gui_release_focus() {
 }
 
 Control *Viewport::gui_get_focus_owner() {
+	ERR_READ_THREAD_GUARD_V(nullptr);
 	return gui.key_focus;
 }
 
 void Viewport::set_msaa_2d(MSAA p_msaa) {
+	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_msaa, MSAA_MAX);
 	if (msaa_2d == p_msaa) {
 		return;
@@ -3096,10 +3157,12 @@ void Viewport::set_msaa_2d(MSAA p_msaa) {
 }
 
 Viewport::MSAA Viewport::get_msaa_2d() const {
+	ERR_READ_THREAD_GUARD_V(MSAA_DISABLED);
 	return msaa_2d;
 }
 
 void Viewport::set_msaa_3d(MSAA p_msaa) {
+	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_msaa, MSAA_MAX);
 	if (msaa_3d == p_msaa) {
 		return;
@@ -3109,10 +3172,12 @@ void Viewport::set_msaa_3d(MSAA p_msaa) {
 }
 
 Viewport::MSAA Viewport::get_msaa_3d() const {
+	ERR_READ_THREAD_GUARD_V(MSAA_DISABLED);
 	return msaa_3d;
 }
 
 void Viewport::set_screen_space_aa(ScreenSpaceAA p_screen_space_aa) {
+	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_screen_space_aa, SCREEN_SPACE_AA_MAX);
 	if (screen_space_aa == p_screen_space_aa) {
 		return;
@@ -3122,10 +3187,12 @@ void Viewport::set_screen_space_aa(ScreenSpaceAA p_screen_space_aa) {
 }
 
 Viewport::ScreenSpaceAA Viewport::get_screen_space_aa() const {
+	ERR_READ_THREAD_GUARD_V(SCREEN_SPACE_AA_DISABLED);
 	return screen_space_aa;
 }
 
 void Viewport::set_use_taa(bool p_use_taa) {
+	ERR_MAIN_THREAD_GUARD;
 	if (use_taa == p_use_taa) {
 		return;
 	}
@@ -3134,10 +3201,12 @@ void Viewport::set_use_taa(bool p_use_taa) {
 }
 
 bool Viewport::is_using_taa() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return use_taa;
 }
 
 void Viewport::set_use_debanding(bool p_use_debanding) {
+	ERR_MAIN_THREAD_GUARD;
 	if (use_debanding == p_use_debanding) {
 		return;
 	}
@@ -3146,19 +3215,23 @@ void Viewport::set_use_debanding(bool p_use_debanding) {
 }
 
 bool Viewport::is_using_debanding() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return use_debanding;
 }
 
 void Viewport::set_mesh_lod_threshold(float p_pixels) {
+	ERR_MAIN_THREAD_GUARD;
 	mesh_lod_threshold = p_pixels;
 	RS::get_singleton()->viewport_set_mesh_lod_threshold(viewport, mesh_lod_threshold);
 }
 
 float Viewport::get_mesh_lod_threshold() const {
+	ERR_READ_THREAD_GUARD_V(0);
 	return mesh_lod_threshold;
 }
 
 void Viewport::set_use_occlusion_culling(bool p_use_occlusion_culling) {
+	ERR_MAIN_THREAD_GUARD;
 	if (use_occlusion_culling == p_use_occlusion_culling) {
 		return;
 	}
@@ -3170,57 +3243,70 @@ void Viewport::set_use_occlusion_culling(bool p_use_occlusion_culling) {
 }
 
 bool Viewport::is_using_occlusion_culling() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return use_occlusion_culling;
 }
 
 void Viewport::set_debug_draw(DebugDraw p_debug_draw) {
+	ERR_MAIN_THREAD_GUARD;
 	debug_draw = p_debug_draw;
 	RS::get_singleton()->viewport_set_debug_draw(viewport, RS::ViewportDebugDraw(p_debug_draw));
 }
 
 Viewport::DebugDraw Viewport::get_debug_draw() const {
+	ERR_READ_THREAD_GUARD_V(DEBUG_DRAW_DISABLED);
 	return debug_draw;
 }
 
 int Viewport::get_render_info(RenderInfoType p_type, RenderInfo p_info) {
+	ERR_READ_THREAD_GUARD_V(0);
 	return RS::get_singleton()->viewport_get_render_info(viewport, RS::ViewportRenderInfoType(p_type), RS::ViewportRenderInfo(p_info));
 }
 
 void Viewport::set_snap_controls_to_pixels(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
 	snap_controls_to_pixels = p_enable;
 }
 
 bool Viewport::is_snap_controls_to_pixels_enabled() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return snap_controls_to_pixels;
 }
 
 void Viewport::set_snap_2d_transforms_to_pixel(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
 	snap_2d_transforms_to_pixel = p_enable;
 	RS::get_singleton()->viewport_set_snap_2d_transforms_to_pixel(viewport, snap_2d_transforms_to_pixel);
 }
 
 bool Viewport::is_snap_2d_transforms_to_pixel_enabled() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return snap_2d_transforms_to_pixel;
 }
 
 void Viewport::set_snap_2d_vertices_to_pixel(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
 	snap_2d_vertices_to_pixel = p_enable;
 	RS::get_singleton()->viewport_set_snap_2d_vertices_to_pixel(viewport, snap_2d_vertices_to_pixel);
 }
 
 bool Viewport::is_snap_2d_vertices_to_pixel_enabled() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return snap_2d_vertices_to_pixel;
 }
 
 bool Viewport::gui_is_dragging() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return gui.dragging;
 }
 
 bool Viewport::gui_is_drag_successful() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return gui.drag_successful;
 }
 
 void Viewport::set_input_as_handled() {
+	ERR_MAIN_THREAD_GUARD;
 	if (!handle_input_locally) {
 		ERR_FAIL_COND(!is_inside_tree());
 		Viewport *vp = this;
@@ -3243,6 +3329,7 @@ void Viewport::set_input_as_handled() {
 }
 
 bool Viewport::is_input_handled() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	if (!handle_input_locally) {
 		ERR_FAIL_COND_V(!is_inside_tree(), false);
 		const Viewport *vp = this;
@@ -3263,14 +3350,17 @@ bool Viewport::is_input_handled() const {
 }
 
 void Viewport::set_handle_input_locally(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
 	handle_input_locally = p_enable;
 }
 
 bool Viewport::is_handling_input_locally() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return handle_input_locally;
 }
 
 void Viewport::set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFilter p_filter) {
+	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_filter, DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX);
 
 	if (default_canvas_item_texture_filter == p_filter) {
@@ -3296,10 +3386,12 @@ void Viewport::set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFi
 }
 
 Viewport::DefaultCanvasItemTextureFilter Viewport::get_default_canvas_item_texture_filter() const {
+	ERR_READ_THREAD_GUARD_V(DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 	return default_canvas_item_texture_filter;
 }
 
 void Viewport::set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRepeat p_repeat) {
+	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_repeat, DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX);
 
 	if (default_canvas_item_texture_repeat == p_repeat) {
@@ -3324,10 +3416,12 @@ void Viewport::set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRe
 }
 
 Viewport::DefaultCanvasItemTextureRepeat Viewport::get_default_canvas_item_texture_repeat() const {
+	ERR_READ_THREAD_GUARD_V(DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 	return default_canvas_item_texture_repeat;
 }
 
 void Viewport::set_vrs_mode(Viewport::VRSMode p_vrs_mode) {
+	ERR_MAIN_THREAD_GUARD;
 	// Note, set this even if not supported on this hardware, it will only be used if it is but we want to save the value as set by the user.
 	vrs_mode = p_vrs_mode;
 
@@ -3347,10 +3441,12 @@ void Viewport::set_vrs_mode(Viewport::VRSMode p_vrs_mode) {
 }
 
 Viewport::VRSMode Viewport::get_vrs_mode() const {
+	ERR_READ_THREAD_GUARD_V(VRS_DISABLED);
 	return vrs_mode;
 }
 
 void Viewport::set_vrs_texture(Ref<Texture2D> p_texture) {
+	ERR_MAIN_THREAD_GUARD;
 	vrs_texture = p_texture;
 
 	// TODO need to add something here in case the RID changes
@@ -3359,14 +3455,17 @@ void Viewport::set_vrs_texture(Ref<Texture2D> p_texture) {
 }
 
 Ref<Texture2D> Viewport::get_vrs_texture() const {
+	ERR_READ_THREAD_GUARD_V(Ref<Texture2D>());
 	return vrs_texture;
 }
 
 DisplayServer::WindowID Viewport::get_window_id() const {
+	ERR_READ_THREAD_GUARD_V(DisplayServer::INVALID_WINDOW_ID);
 	return DisplayServer::MAIN_WINDOW_ID;
 }
 
 Viewport *Viewport::get_parent_viewport() const {
+	ERR_READ_THREAD_GUARD_V(nullptr);
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 	if (!get_parent()) {
 		return nullptr; //root viewport
@@ -3376,14 +3475,17 @@ Viewport *Viewport::get_parent_viewport() const {
 }
 
 void Viewport::set_embedding_subwindows(bool p_embed) {
+	ERR_THREAD_GUARD;
 	gui.embed_subwindows_hint = p_embed;
 }
 
 bool Viewport::is_embedding_subwindows() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return gui.embed_subwindows_hint;
 }
 
 void Viewport::pass_mouse_focus_to(Viewport *p_viewport, Control *p_control) {
+	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_NULL(p_viewport);
 	ERR_FAIL_NULL(p_control);
 
@@ -3400,43 +3502,52 @@ void Viewport::pass_mouse_focus_to(Viewport *p_viewport, Control *p_control) {
 }
 
 void Viewport::set_sdf_oversize(SDFOversize p_sdf_oversize) {
+	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_sdf_oversize, SDF_OVERSIZE_MAX);
 	sdf_oversize = p_sdf_oversize;
 	RS::get_singleton()->viewport_set_sdf_oversize_and_scale(viewport, RS::ViewportSDFOversize(sdf_oversize), RS::ViewportSDFScale(sdf_scale));
 }
 
 Viewport::SDFOversize Viewport::get_sdf_oversize() const {
+	ERR_READ_THREAD_GUARD_V(SDF_OVERSIZE_100_PERCENT);
 	return sdf_oversize;
 }
 
 void Viewport::set_sdf_scale(SDFScale p_sdf_scale) {
+	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_INDEX(p_sdf_scale, SDF_SCALE_MAX);
 	sdf_scale = p_sdf_scale;
 	RS::get_singleton()->viewport_set_sdf_oversize_and_scale(viewport, RS::ViewportSDFOversize(sdf_oversize), RS::ViewportSDFScale(sdf_scale));
 }
 
 Viewport::SDFScale Viewport::get_sdf_scale() const {
+	ERR_READ_THREAD_GUARD_V(SDF_SCALE_100_PERCENT);
 	return sdf_scale;
 }
 
 Transform2D Viewport::get_screen_transform() const {
+	ERR_READ_THREAD_GUARD_V(Transform2D());
 	return get_screen_transform_internal();
 }
 
 Transform2D Viewport::get_screen_transform_internal(bool p_absolute_position) const {
+	ERR_READ_THREAD_GUARD_V(Transform2D());
 	return get_final_transform();
 }
 
 void Viewport::set_canvas_cull_mask(uint32_t p_canvas_cull_mask) {
+	ERR_MAIN_THREAD_GUARD;
 	canvas_cull_mask = p_canvas_cull_mask;
 	RenderingServer::get_singleton()->viewport_set_canvas_cull_mask(viewport, canvas_cull_mask);
 }
 
 uint32_t Viewport::get_canvas_cull_mask() const {
+	ERR_READ_THREAD_GUARD_V(0);
 	return canvas_cull_mask;
 }
 
 void Viewport::set_canvas_cull_mask_bit(uint32_t p_layer, bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_UNSIGNED_INDEX(p_layer, 32);
 	if (p_enable) {
 		set_canvas_cull_mask(canvas_cull_mask | (1 << p_layer));
@@ -3446,16 +3557,19 @@ void Viewport::set_canvas_cull_mask_bit(uint32_t p_layer, bool p_enable) {
 }
 
 bool Viewport::get_canvas_cull_mask_bit(uint32_t p_layer) const {
+	ERR_READ_THREAD_GUARD_V(false);
 	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, 32, false);
 	return (canvas_cull_mask & (1 << p_layer));
 }
 
 #ifndef _3D_DISABLED
 AudioListener3D *Viewport::get_audio_listener_3d() const {
+	ERR_READ_THREAD_GUARD_V(nullptr);
 	return audio_listener_3d;
 }
 
 void Viewport::set_as_audio_listener_3d(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
 	if (p_enable == is_audio_listener_3d_enabled) {
 		return;
 	}
@@ -3465,6 +3579,7 @@ void Viewport::set_as_audio_listener_3d(bool p_enable) {
 }
 
 bool Viewport::is_audio_listener_3d() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return is_audio_listener_3d_enabled;
 }
 
@@ -3543,6 +3658,7 @@ void Viewport::_collision_object_3d_input_event(CollisionObject3D *p_object, Cam
 }
 
 Camera3D *Viewport::get_camera_3d() const {
+	ERR_READ_THREAD_GUARD_V(nullptr);
 	return camera_3d;
 }
 
@@ -3606,6 +3722,7 @@ void Viewport::_camera_3d_make_next_current(Camera3D *p_exclude) {
 }
 
 void Viewport::enable_camera_3d_override(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
 	if (p_enable == camera_3d_override) {
 		return;
 	}
@@ -3627,6 +3744,7 @@ void Viewport::enable_camera_3d_override(bool p_enable) {
 }
 
 void Viewport::set_camera_3d_override_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far) {
+	ERR_MAIN_THREAD_GUARD;
 	if (camera_3d_override) {
 		if (camera_3d_override.fov == p_fovy_degrees && camera_3d_override.z_near == p_z_near &&
 				camera_3d_override.z_far == p_z_far && camera_3d_override.projection == Camera3DOverrideData::PROJECTION_PERSPECTIVE) {
@@ -3643,6 +3761,7 @@ void Viewport::set_camera_3d_override_perspective(real_t p_fovy_degrees, real_t 
 }
 
 void Viewport::set_camera_3d_override_orthogonal(real_t p_size, real_t p_z_near, real_t p_z_far) {
+	ERR_MAIN_THREAD_GUARD;
 	if (camera_3d_override) {
 		if (camera_3d_override.size == p_size && camera_3d_override.z_near == p_z_near &&
 				camera_3d_override.z_far == p_z_far && camera_3d_override.projection == Camera3DOverrideData::PROJECTION_ORTHOGONAL) {
@@ -3659,19 +3778,23 @@ void Viewport::set_camera_3d_override_orthogonal(real_t p_size, real_t p_z_near,
 }
 
 void Viewport::set_disable_3d(bool p_disable) {
+	ERR_MAIN_THREAD_GUARD;
 	disable_3d = p_disable;
 	RenderingServer::get_singleton()->viewport_set_disable_3d(viewport, disable_3d);
 }
 
 bool Viewport::is_3d_disabled() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return disable_3d;
 }
 
 bool Viewport::is_camera_3d_override_enabled() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return camera_3d_override;
 }
 
 void Viewport::set_camera_3d_override_transform(const Transform3D &p_transform) {
+	ERR_MAIN_THREAD_GUARD;
 	if (camera_3d_override) {
 		camera_3d_override.transform = p_transform;
 		RenderingServer::get_singleton()->camera_set_transform(camera_3d_override.rid, p_transform);
@@ -3679,6 +3802,7 @@ void Viewport::set_camera_3d_override_transform(const Transform3D &p_transform) 
 }
 
 Transform3D Viewport::get_camera_3d_override_transform() const {
+	ERR_READ_THREAD_GUARD_V(Transform3D());
 	if (camera_3d_override) {
 		return camera_3d_override.transform;
 	}
@@ -3687,10 +3811,12 @@ Transform3D Viewport::get_camera_3d_override_transform() const {
 }
 
 Ref<World3D> Viewport::get_world_3d() const {
+	ERR_READ_THREAD_GUARD_V(Ref<World3D>());
 	return world_3d;
 }
 
 Ref<World3D> Viewport::find_world_3d() const {
+	ERR_READ_THREAD_GUARD_V(Ref<World3D>());
 	if (own_world_3d.is_valid()) {
 		return own_world_3d;
 	} else if (world_3d.is_valid()) {
@@ -3703,6 +3829,7 @@ Ref<World3D> Viewport::find_world_3d() const {
 }
 
 void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
+	ERR_MAIN_THREAD_GUARD;
 	if (world_3d == p_world_3d) {
 		return;
 	}
@@ -3759,6 +3886,7 @@ void Viewport::_own_world_3d_changed() {
 }
 
 void Viewport::set_use_own_world_3d(bool p_use_own_world_3d) {
+	ERR_MAIN_THREAD_GUARD;
 	if (p_use_own_world_3d == own_world_3d.is_valid()) {
 		return;
 	}
@@ -3793,6 +3921,7 @@ void Viewport::set_use_own_world_3d(bool p_use_own_world_3d) {
 }
 
 bool Viewport::is_using_own_world_3d() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return own_world_3d.is_valid();
 }
 
@@ -3843,6 +3972,7 @@ void Viewport::_propagate_exit_world_3d(Node *p_node) {
 }
 
 void Viewport::set_use_xr(bool p_use_xr) {
+	ERR_MAIN_THREAD_GUARD;
 	if (use_xr != p_use_xr) {
 		use_xr = p_use_xr;
 
@@ -3860,10 +3990,12 @@ void Viewport::set_use_xr(bool p_use_xr) {
 }
 
 bool Viewport::is_using_xr() {
+	ERR_READ_THREAD_GUARD_V(false);
 	return use_xr;
 }
 
 void Viewport::set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode) {
+	ERR_MAIN_THREAD_GUARD;
 	if (scaling_3d_mode == p_scaling_3d_mode) {
 		return;
 	}
@@ -3873,10 +4005,12 @@ void Viewport::set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode) {
 }
 
 Viewport::Scaling3DMode Viewport::get_scaling_3d_mode() const {
+	ERR_READ_THREAD_GUARD_V(SCALING_3D_MODE_BILINEAR);
 	return scaling_3d_mode;
 }
 
 void Viewport::set_scaling_3d_scale(float p_scaling_3d_scale) {
+	ERR_MAIN_THREAD_GUARD;
 	// Clamp to reasonable values that are actually useful.
 	// Values above 2.0 don't serve a practical purpose since the viewport
 	// isn't displayed with mipmaps.
@@ -3886,10 +4020,12 @@ void Viewport::set_scaling_3d_scale(float p_scaling_3d_scale) {
 }
 
 float Viewport::get_scaling_3d_scale() const {
+	ERR_READ_THREAD_GUARD_V(0);
 	return scaling_3d_scale;
 }
 
 void Viewport::set_fsr_sharpness(float p_fsr_sharpness) {
+	ERR_MAIN_THREAD_GUARD;
 	if (fsr_sharpness == p_fsr_sharpness) {
 		return;
 	}
@@ -3903,10 +4039,12 @@ void Viewport::set_fsr_sharpness(float p_fsr_sharpness) {
 }
 
 float Viewport::get_fsr_sharpness() const {
+	ERR_READ_THREAD_GUARD_V(0);
 	return fsr_sharpness;
 }
 
 void Viewport::set_texture_mipmap_bias(float p_texture_mipmap_bias) {
+	ERR_MAIN_THREAD_GUARD;
 	if (texture_mipmap_bias == p_texture_mipmap_bias) {
 		return;
 	}
@@ -3916,6 +4054,7 @@ void Viewport::set_texture_mipmap_bias(float p_texture_mipmap_bias) {
 }
 
 float Viewport::get_texture_mipmap_bias() const {
+	ERR_READ_THREAD_GUARD_V(0);
 	return texture_mipmap_bias;
 }
 
@@ -4254,6 +4393,7 @@ void Viewport::_validate_property(PropertyInfo &p_property) const {
 
 Viewport::Viewport() {
 	world_2d = Ref<World2D>(memnew(World2D));
+	world_2d->register_viewport(this);
 
 	viewport = RenderingServer::get_singleton()->viewport_create();
 	texture_rid = RenderingServer::get_singleton()->viewport_get_texture(viewport);
@@ -4309,10 +4449,12 @@ Viewport::~Viewport() {
 /////////////////////////////////
 
 void SubViewport::set_size(const Size2i &p_size) {
+	ERR_MAIN_THREAD_GUARD;
 	_internal_set_size(p_size);
 }
 
 void SubViewport::set_size_force(const Size2i &p_size) {
+	ERR_MAIN_THREAD_GUARD;
 	// Use only for setting the size from the parent SubViewportContainer with enabled stretch mode.
 	// Don't expose function to scripting.
 	_internal_set_size(p_size, true);
@@ -4335,18 +4477,22 @@ void SubViewport::_internal_set_size(const Size2i &p_size, bool p_force) {
 }
 
 Size2i SubViewport::get_size() const {
+	ERR_READ_THREAD_GUARD_V(Size2());
 	return _get_size();
 }
 
 void SubViewport::set_size_2d_override(const Size2i &p_size) {
+	ERR_MAIN_THREAD_GUARD;
 	_set_size(_get_size(), p_size, true);
 }
 
 Size2i SubViewport::get_size_2d_override() const {
+	ERR_READ_THREAD_GUARD_V(Size2i());
 	return _get_size_2d_override();
 }
 
 void SubViewport::set_size_2d_override_stretch(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
 	if (p_enable == size_2d_override_stretch) {
 		return;
 	}
@@ -4356,32 +4502,39 @@ void SubViewport::set_size_2d_override_stretch(bool p_enable) {
 }
 
 bool SubViewport::is_size_2d_override_stretch_enabled() const {
+	ERR_READ_THREAD_GUARD_V(false);
 	return size_2d_override_stretch;
 }
 
 void SubViewport::set_update_mode(UpdateMode p_mode) {
+	ERR_MAIN_THREAD_GUARD;
 	update_mode = p_mode;
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::ViewportUpdateMode(p_mode));
 }
 
 SubViewport::UpdateMode SubViewport::get_update_mode() const {
+	ERR_READ_THREAD_GUARD_V(UPDATE_DISABLED);
 	return update_mode;
 }
 
 void SubViewport::set_clear_mode(ClearMode p_mode) {
+	ERR_MAIN_THREAD_GUARD;
 	clear_mode = p_mode;
 	RS::get_singleton()->viewport_set_clear_mode(get_viewport_rid(), RS::ViewportClearMode(p_mode));
 }
 
 SubViewport::ClearMode SubViewport::get_clear_mode() const {
+	ERR_READ_THREAD_GUARD_V(CLEAR_MODE_ALWAYS);
 	return clear_mode;
 }
 
 DisplayServer::WindowID SubViewport::get_window_id() const {
+	ERR_READ_THREAD_GUARD_V(DisplayServer::INVALID_WINDOW_ID);
 	return DisplayServer::INVALID_WINDOW_ID;
 }
 
 Transform2D SubViewport::get_screen_transform_internal(bool p_absolute_position) const {
+	ERR_READ_THREAD_GUARD_V(Transform2D());
 	Transform2D container_transform;
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
 	if (c) {
@@ -4396,6 +4549,7 @@ Transform2D SubViewport::get_screen_transform_internal(bool p_absolute_position)
 }
 
 Transform2D SubViewport::get_popup_base_transform() const {
+	ERR_READ_THREAD_GUARD_V(Transform2D());
 	if (is_embedding_subwindows()) {
 		return Transform2D();
 	}
@@ -4411,6 +4565,7 @@ Transform2D SubViewport::get_popup_base_transform() const {
 }
 
 void SubViewport::_notification(int p_what) {
+	ERR_MAIN_THREAD_GUARD;
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);

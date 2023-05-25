@@ -334,6 +334,13 @@
 				Returns font OpenType feature set override.
 			</description>
 		</method>
+		<method name="font_get_ot_name_strings" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [Dictionary] with OpenType font name strings (localized font names, version, description, license information, sample text, etc.).
+			</description>
+		</method>
 		<method name="font_get_oversampling" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
@@ -1161,7 +1168,7 @@
 			<return type="float" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="width" type="float" />
-			<param index="2" name="jst_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="2" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
 			<description>
 				Adjusts text width to fit to specified width, returns new text width.
 			</description>
@@ -1393,6 +1400,13 @@
 			<param index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" default="264" />
 			<description>
 				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking (see [enum GraphemeFlag]).
+			</description>
+		</method>
+		<method name="shaped_text_has_visible_chars" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returns [code]true[/code], if text buffer contents any visible characters.
 			</description>
 		</method>
 		<method name="shaped_text_hit_test_grapheme" qualifiers="const">
@@ -1670,6 +1684,15 @@
 		</constant>
 		<constant name="JUSTIFICATION_CONSTRAIN_ELLIPSIS" value="16" enum="JustificationFlag" is_bitfield="true">
 			Apply justification to the trimmed line with ellipsis.
+		</constant>
+		<constant name="JUSTIFICATION_SKIP_LAST_LINE" value="32" enum="JustificationFlag" is_bitfield="true">
+			Do not apply justification to the last line of the paragraph.
+		</constant>
+		<constant name="JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS" value="64" enum="JustificationFlag" is_bitfield="true">
+			Do not apply justification to the last line of the paragraph with visible characters (takes precedence over [constant JUSTIFICATION_SKIP_LAST_LINE]).
+		</constant>
+		<constant name="JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE" value="128" enum="JustificationFlag" is_bitfield="true">
+			Always apply justification to the paragraphs with a single line ([constant JUSTIFICATION_SKIP_LAST_LINE] and [constant JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS] are ignored).
 		</constant>
 		<constant name="AUTOWRAP_OFF" value="0" enum="AutowrapMode">
 			Autowrap is disabled.

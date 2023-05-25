@@ -47,6 +47,12 @@
  * More precisely, a font face represents a single face in a binary font file.
  * Font faces are typically built from a binary blob and a face index.
  * Font faces are used to create fonts.
+ *
+ * A font face can be created from a binary blob using hb_face_create().
+ * The face index is used to select a face from a binary blob that contains
+ * multiple faces.  For example, a binary blob that contains both a regular
+ * and a bold face can be used to create two font faces, one for each face
+ * index.
  **/
 
 
@@ -197,7 +203,7 @@ _hb_face_for_data_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void
  * a face index into that blob.
  *
  * The face index is used for blobs of file formats such as TTC and
- * and DFont that can contain more than one face.  Face indices within
+ * DFont that can contain more than one face.  Face indices within
  * such collections are zero-based.
  *
  * <note>Note: If the blob font format is not a collection, @index

@@ -81,6 +81,9 @@ public:
 		JUSTIFICATION_TRIM_EDGE_SPACES = 1 << 2,
 		JUSTIFICATION_AFTER_LAST_TAB = 1 << 3,
 		JUSTIFICATION_CONSTRAIN_ELLIPSIS = 1 << 4,
+		JUSTIFICATION_SKIP_LAST_LINE = 1 << 5,
+		JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS = 1 << 6,
+		JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE = 1 << 7,
 	};
 
 	enum VisibleCharactersBehavior {
@@ -248,6 +251,7 @@ public:
 
 	virtual void font_set_name(const RID &p_font_rid, const String &p_name) = 0;
 	virtual String font_get_name(const RID &p_font_rid) const = 0;
+	virtual Dictionary font_get_ot_name_strings(const RID &p_font_rid) const { return Dictionary(); }
 
 	virtual void font_set_style_name(const RID &p_font_rid, const String &p_name) = 0;
 	virtual String font_get_style_name(const RID &p_font_rid) const = 0;
@@ -441,6 +445,7 @@ public:
 	virtual bool shaped_text_update_justification_ops(const RID &p_shaped) = 0;
 
 	virtual bool shaped_text_is_ready(const RID &p_shaped) const = 0;
+	bool shaped_text_has_visible_chars(const RID &p_shaped) const;
 
 	virtual const Glyph *shaped_text_get_glyphs(const RID &p_shaped) const = 0;
 	TypedArray<Dictionary> _shaped_text_get_glyphs_wrapper(const RID &p_shaped) const;

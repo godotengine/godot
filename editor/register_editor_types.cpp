@@ -65,6 +65,7 @@
 #include "editor/plugins/cpu_particles_3d_editor_plugin.h"
 #include "editor/plugins/curve_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
+#include "editor/plugins/editor_resource_tooltip_plugins.h"
 #include "editor/plugins/font_config_plugin.h"
 #include "editor/plugins/gpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/gpu_particles_3d_editor_plugin.h"
@@ -115,6 +116,8 @@
 #include "editor/register_exporters.h"
 
 void register_editor_types() {
+	OS::get_singleton()->benchmark_begin_measure("register_editor_types");
+
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
 
@@ -129,6 +132,7 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorNode3DGizmo);
 	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorResourcePreview);
+	GDREGISTER_ABSTRACT_CLASS(EditorResourceTooltipPlugin);
 	GDREGISTER_CLASS(EditorResourcePreviewGenerator);
 	GDREGISTER_ABSTRACT_CLASS(EditorFileSystem);
 	GDREGISTER_CLASS(EditorFileSystemDirectory);
@@ -243,13 +247,19 @@ void register_editor_types() {
 	GLOBAL_DEF("editor/version_control/autoload_on_startup", false);
 
 	EditorInterface::create();
+
+	OS::get_singleton()->benchmark_end_measure("register_editor_types");
 }
 
 void unregister_editor_types() {
+	OS::get_singleton()->benchmark_begin_measure("unregister_editor_types");
+
 	EditorNode::cleanup();
 	EditorInterface::free();
 
 	if (EditorPaths::get_singleton()) {
 		EditorPaths::free();
 	}
+
+	OS::get_singleton()->benchmark_end_measure("unregister_editor_types");
 }

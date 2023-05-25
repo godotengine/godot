@@ -63,13 +63,14 @@
 # Jasper <jasper@dj-dj.be>, 2023.
 # Kevin Nijmeijer <Kevinchrisnij@gmail.com>, 2023.
 # Mike Rombout <mike.rombout1@gmail.com>, 2023.
+# Robbe Vanslambrouck <robbevsb.dev@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-03 23:47+0000\n"
-"Last-Translator: Mike Rombout <mike.rombout1@gmail.com>\n"
+"PO-Revision-Date: 2023-04-22 20:51+0000\n"
+"Last-Translator: Robbe Vanslambrouck <robbevsb.dev@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -77,7 +78,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Niet ingesteld"
@@ -110,7 +111,7 @@ msgid "Mouse Thumb Button 1"
 msgstr "Muis Duim Knop 1"
 
 msgid "Mouse Thumb Button 2"
-msgstr "Muis Duim Knop 2"
+msgstr "Muisduimknop 2"
 
 msgid "Button"
 msgstr "Button (Knop)"
@@ -204,6 +205,18 @@ msgstr "D-pad Rechts"
 
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
 msgstr "Xbox Delen, PS5 Microfoon, Nintendo Opname"
+
+msgid "Xbox Paddle 1"
+msgstr "Xbox Paddle 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox Paddle 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox Paddle 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox Paddle 4"
 
 msgid "Joypad Button %d"
 msgstr "Controllerknop %d"
@@ -2988,6 +3001,9 @@ msgstr ""
 msgid "Runnable"
 msgstr "Uitvoerbaar"
 
+msgid "Resources to export:"
+msgstr "Bronnen om te exporteren:"
+
 msgid "Delete preset '%s'?"
 msgstr "Verwijder voorinstelling '%s'?"
 
@@ -3033,9 +3049,6 @@ msgstr "Exporteer geselecteerde bronnen (en afhankelijkheden)"
 
 msgid "Export Mode:"
 msgstr "Exporteermodus:"
-
-msgid "Resources to export:"
-msgstr "Bronnen om te exporteren:"
 
 msgid "Keep"
 msgstr "Houd"

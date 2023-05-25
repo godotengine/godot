@@ -670,6 +670,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="delta_smoothing" type="bool" setter="set_delta_smoothing" getter="is_delta_smoothing_enabled" default="true">
+			If [code]true[/code], the engine filters the time delta measured between each frame, and attempts to compensate for random variation. This will only operate on systems where V-Sync is active.
+		</member>
 		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode" default="false">
 			If [code]true[/code], the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
 		</member>

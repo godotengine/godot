@@ -277,7 +277,10 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 	l.offset.x = _find_margin(l.from, p_base_font, p_base_font_size);
 	l.text_buf->set_width(p_width - l.offset.x);
 
-	if (tab_size > 0) { // Align inline tabs.
+	PackedFloat32Array tab_stops = _find_tab_stops(l.from);
+	if (!tab_stops.is_empty()) {
+		l.text_buf->tab_align(tab_stops);
+	} else if (tab_size > 0) { // Align inline tabs.
 		Vector<float> tabs;
 		tabs.push_back(tab_size * p_base_font->get_char_size(' ', p_base_font_size).width);
 		l.text_buf->tab_align(tabs);
@@ -471,7 +474,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	// Clear cache.
 	l.text_buf->clear();
 	l.text_buf->set_break_flags(autowrap_flags);
-	l.text_buf->set_justification_flags(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_TRIM_EDGE_SPACES);
+	l.text_buf->set_justification_flags(_find_jst_flags(l.from));
 	l.char_offset = *r_char_offset;
 	l.char_count = 0;
 
@@ -481,7 +484,10 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	l.text_buf->set_alignment(_find_alignment(l.from));
 	l.text_buf->set_direction(_find_direction(l.from));
 
-	if (tab_size > 0) { // Align inline tabs.
+	PackedFloat32Array tab_stops = _find_tab_stops(l.from);
+	if (!tab_stops.is_empty()) {
+		l.text_buf->tab_align(tab_stops);
+	} else if (tab_size > 0) { // Align inline tabs.
 		Vector<float> tabs;
 		tabs.push_back(tab_size * p_base_font->get_char_size(' ', p_base_font_size).width);
 		l.text_buf->tab_align(tabs);
@@ -2453,6 +2459,36 @@ int RichTextLabel::_find_margin(Item *p_item, const Ref<Font> &p_base_font, int 
 	return margin;
 }
 
+BitField<TextServer::JustificationFlag> RichTextLabel::_find_jst_flags(Item *p_item) {
+	Item *item = p_item;
+
+	while (item) {
+		if (item->type == ITEM_PARAGRAPH) {
+			ItemParagraph *p = static_cast<ItemParagraph *>(item);
+			return p->jst_flags;
+		}
+
+		item = item->parent;
+	}
+
+	return default_jst_flags;
+}
+
+PackedFloat32Array RichTextLabel::_find_tab_stops(Item *p_item) {
+	Item *item = p_item;
+
+	while (item) {
+		if (item->type == ITEM_PARAGRAPH) {
+			ItemParagraph *p = static_cast<ItemParagraph *>(item);
+			return p->tab_stops;
+		}
+
+		item = item->parent;
+	}
+
+	return PackedFloat32Array();
+}
+
 HorizontalAlignment RichTextLabel::_find_alignment(Item *p_item) {
 	Item *item = p_item;
 
@@ -2588,6 +2624,12 @@ void RichTextLabel::_fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack
 	}
 }
 
+void RichTextLabel::_normalize_subtags(Vector<String> &subtags) {
+	for (String &subtag : subtags) {
+		subtag = subtag.unquote();
+	}
+}
+
 bool RichTextLabel::_find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item) {
 	Item *item = p_item;
 
@@ -2676,9 +2718,11 @@ bool RichTextLabel::_find_layout_subitem(Item *from, Item *to) {
 }
 
 void RichTextLabel::_thread_function(void *p_userdata) {
+	set_current_thread_safe_for_nodes(true);
 	_process_line_caches();
 	updating.store(false);
 	call_deferred(SNAME("thread_end"));
+	set_current_thread_safe_for_nodes(false);
 }
 
 void RichTextLabel::_thread_end() {
@@ -3297,7 +3341,7 @@ void RichTextLabel::push_strikethrough() {
 	_add_item(item, true);
 }
 
-void RichTextLabel::push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, TextServer::StructuredTextParser p_st_parser) {
+void RichTextLabel::push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, TextServer::StructuredTextParser p_st_parser, BitField<TextServer::JustificationFlag> p_jst_flags, const PackedFloat32Array &p_tab_stops) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -3308,6 +3352,8 @@ void RichTextLabel::push_paragraph(HorizontalAlignment p_alignment, Control::Tex
 	item->direction = p_direction;
 	item->language = p_language;
 	item->st_parser = p_st_parser;
+	item->jst_flags = p_jst_flags;
+	item->tab_stops = p_tab_stops;
 	_add_item(item, true, true);
 }
 
@@ -3737,7 +3783,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				const String &expr = split_tag_block[i];
 				int value_pos = expr.find("=");
 				if (value_pos > -1) {
-					bbcode_options[expr.substr(0, value_pos)] = expr.substr(value_pos + 1);
+					bbcode_options[expr.substr(0, value_pos)] = expr.substr(value_pos + 1).unquote();
 				}
 			}
 		} else {
@@ -3846,6 +3892,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front(tag);
 		} else if (tag.begins_with("table=")) {
 			Vector<String> subtag = tag.substr(6, tag.length()).split(",");
+			_normalize_subtags(subtag);
+
 			int columns = subtag[0].to_int();
 			if (columns < 1) {
 				columns = 1;
@@ -3905,9 +3953,12 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("cell");
 		} else if (tag.begins_with("cell ")) {
 			Vector<String> subtag = tag.substr(5, tag.length()).split(" ");
+			_normalize_subtags(subtag);
 
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
+				_normalize_subtags(subtag_a);
+
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "expand") {
 						int ratio = subtag_a[1].to_int();
@@ -3922,12 +3973,16 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			const Color fallback_color = Color(0, 0, 0, 0);
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
+				_normalize_subtags(subtag_a);
+
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "border") {
 						Color color = Color::from_string(subtag_a[1], fallback_color);
 						set_cell_border_color(color);
 					} else if (subtag_a[0] == "bg") {
 						Vector<String> subtag_b = subtag_a[1].split(",");
+						_normalize_subtags(subtag_b);
+
 						if (subtag_b.size() == 2) {
 							Color color1 = Color::from_string(subtag_b[0], fallback_color);
 							Color color2 = Color::from_string(subtag_b[1], fallback_color);
@@ -3939,6 +3994,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						}
 					} else if (subtag_a[0] == "padding") {
 						Vector<String> subtag_b = subtag_a[1].split(",");
+						_normalize_subtags(subtag_b);
+
 						if (subtag_b.size() == 4) {
 							set_cell_padding(Rect2(subtag_b[0].to_float(), subtag_b[1].to_float(), subtag_b[2].to_float(), subtag_b[3].to_float()));
 						}
@@ -4075,14 +4132,44 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("p");
 		} else if (tag.begins_with("p ")) {
 			Vector<String> subtag = tag.substr(2, tag.length()).split(" ");
+			_normalize_subtags(subtag);
+
 			HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 			Control::TextDirection dir = Control::TEXT_DIRECTION_INHERITED;
 			String lang;
+			PackedFloat32Array tab_stops;
 			TextServer::StructuredTextParser st_parser_type = TextServer::STRUCTURED_TEXT_DEFAULT;
+			BitField<TextServer::JustificationFlag> jst_flags = default_jst_flags;
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
+				_normalize_subtags(subtag_a);
+
 				if (subtag_a.size() == 2) {
-					if (subtag_a[0] == "align") {
+					if (subtag_a[0] == "justification_flags" || subtag_a[0] == "jst") {
+						Vector<String> subtag_b = subtag_a[1].split(",");
+						for (const String &E : subtag_b) {
+							if (E == "kashida" || E == "k") {
+								jst_flags.set_flag(TextServer::JUSTIFICATION_KASHIDA);
+							} else if (E == "word" || E == "w") {
+								jst_flags.set_flag(TextServer::JUSTIFICATION_WORD_BOUND);
+							} else if (E == "trim" || E == "tr") {
+								jst_flags.set_flag(TextServer::JUSTIFICATION_TRIM_EDGE_SPACES);
+							} else if (E == "after_last_tab" || E == "lt") {
+								jst_flags.set_flag(TextServer::JUSTIFICATION_AFTER_LAST_TAB);
+							} else if (E == "skip_last" || E == "sl") {
+								jst_flags.set_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE);
+							} else if (E == "skip_last_with_chars" || E == "sv") {
+								jst_flags.set_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS);
+							} else if (E == "do_not_skip_singe" || E == "ns") {
+								jst_flags.set_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE);
+							}
+						}
+					} else if (subtag_a[0] == "tab_stops") {
+						Vector<String> splitters;
+						splitters.push_back(",");
+						splitters.push_back(";");
+						tab_stops = subtag_a[1].split_floats_mk(splitters);
+					} else if (subtag_a[0] == "align") {
 						if (subtag_a[1] == "l" || subtag_a[1] == "left") {
 							alignment = HORIZONTAL_ALIGNMENT_LEFT;
 						} else if (subtag_a[1] == "c" || subtag_a[1] == "center") {
@@ -4121,7 +4208,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					}
 				}
 			}
-			push_paragraph(alignment, dir, lang, st_parser_type);
+			push_paragraph(alignment, dir, lang, st_parser_type, jst_flags, tab_stops);
 			pos = brk_end + 1;
 			tag_stack.push_front("p");
 		} else if (tag == "url") {
@@ -4129,24 +4216,26 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			if (end == -1) {
 				end = p_bbcode.length();
 			}
-			String url = p_bbcode.substr(brk_end + 1, end - brk_end - 1);
+			String url = p_bbcode.substr(brk_end + 1, end - brk_end - 1).unquote();
 			push_meta(url);
 
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 
 		} else if (tag.begins_with("url=")) {
-			String url = tag.substr(4, tag.length());
+			String url = tag.substr(4, tag.length()).unquote();
 			push_meta(url);
 			pos = brk_end + 1;
 			tag_stack.push_front("url");
 		} else if (tag.begins_with("hint=")) {
-			String description = tag.substr(5, tag.length());
+			String description = tag.substr(5, tag.length()).unquote();
 			push_hint(description);
 			pos = brk_end + 1;
 			tag_stack.push_front("hint");
 		} else if (tag.begins_with("dropcap")) {
 			Vector<String> subtag = tag.substr(5, tag.length()).split(" ");
+			_normalize_subtags(subtag);
+
 			int fs = theme_cache.normal_font_size * 3;
 			Ref<Font> f = theme_cache.normal_font;
 			Color color = theme_cache.default_color;
@@ -4156,6 +4245,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
+				_normalize_subtags(subtag_a);
+
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "font" || subtag_a[0] == "f") {
 						String fnt = subtag_a[1];
@@ -4167,6 +4258,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						fs = subtag_a[1].to_int();
 					} else if (subtag_a[0] == "margins") {
 						Vector<String> subtag_b = subtag_a[1].split(",");
+						_normalize_subtags(subtag_b);
+
 						if (subtag_b.size() == 4) {
 							dropcap_margins.position.x = subtag_b[0].to_float();
 							dropcap_margins.position.y = subtag_b[1].to_float();
@@ -4197,6 +4290,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			int alignment = INLINE_ALIGNMENT_CENTER;
 			if (tag.begins_with("img=")) {
 				Vector<String> subtag = tag.substr(4, tag.length()).split(",");
+				_normalize_subtags(subtag);
+
 				if (subtag.size() > 1) {
 					if (subtag[0] == "top" || subtag[0] == "t") {
 						alignment = INLINE_ALIGNMENT_TOP_TO;
@@ -4280,14 +4375,14 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = end;
 			tag_stack.push_front(bbcode_name);
 		} else if (tag.begins_with("color=")) {
-			String color_str = tag.substr(6, tag.length());
+			String color_str = tag.substr(6, tag.length()).unquote();
 			Color color = Color::from_string(color_str, theme_cache.default_color);
 			push_color(color);
 			pos = brk_end + 1;
 			tag_stack.push_front("color");
 
 		} else if (tag.begins_with("outline_color=")) {
-			String color_str = tag.substr(14, tag.length());
+			String color_str = tag.substr(14, tag.length()).unquote();
 			Color color = Color::from_string(color_str, theme_cache.default_color);
 			push_outline_color(color);
 			pos = brk_end + 1;
@@ -4303,6 +4398,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			int value_pos = tag.find("=");
 			String fnt_ftr = tag.substr(value_pos + 1);
 			Vector<String> subtag = fnt_ftr.split(",");
+			_normalize_subtags(subtag);
+
 			if (subtag.size() > 0) {
 				Ref<Font> font = theme_cache.normal_font;
 				DefaultFont def_font = NORMAL_FONT;
@@ -4317,6 +4414,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				Dictionary features;
 				for (int i = 0; i < subtag.size(); i++) {
 					Vector<String> subtag_a = subtag[i].split("=");
+					_normalize_subtags(subtag_a);
+
 					if (subtag_a.size() == 2) {
 						features[TS->name_to_tag(subtag_a[0])] = subtag_a[1].to_int();
 					} else if (subtag_a.size() == 1) {
@@ -4340,7 +4439,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front(tag.substr(0, value_pos));
 
 		} else if (tag.begins_with("font=")) {
-			String fnt = tag.substr(5, tag.length());
+			String fnt = tag.substr(5, tag.length()).unquote();
 
 			Ref<Font> fc = ResourceLoader::load(fnt, "Font");
 			if (fc.is_valid()) {
@@ -4352,6 +4451,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 		} else if (tag.begins_with("font ")) {
 			Vector<String> subtag = tag.substr(2, tag.length()).split(" ");
+			_normalize_subtags(subtag);
 
 			Ref<Font> font = theme_cache.normal_font;
 			DefaultFont def_font = NORMAL_FONT;
@@ -4370,6 +4470,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			int fnt_size = -1;
 			for (int i = 1; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=", true, 2);
+				_normalize_subtags(subtag_a);
+
 				if (subtag_a.size() == 2) {
 					if (subtag_a[0] == "name" || subtag_a[0] == "n") {
 						String fnt = subtag_a[1];
@@ -4407,6 +4509,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 							Vector<String> variation_tags = subtag_a[1].split(",");
 							for (int j = 0; j < variation_tags.size(); j++) {
 								Vector<String> subtag_b = variation_tags[j].split("=");
+								_normalize_subtags(subtag_b);
+
 								if (subtag_b.size() == 2) {
 									variations[TS->name_to_tag(subtag_b[0])] = subtag_b[1].to_float();
 								}
@@ -4419,6 +4523,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 							Vector<String> feature_tags = subtag_a[1].split(",");
 							for (int j = 0; j < feature_tags.size(); j++) {
 								Vector<String> subtag_b = feature_tags[j].split("=");
+								_normalize_subtags(subtag_b);
+
 								if (subtag_b.size() == 2) {
 									features[TS->name_to_tag(subtag_b[0])] = subtag_b[1].to_float();
 								} else if (subtag_b.size() == 1) {
@@ -4559,7 +4665,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			set_process_internal(true);
 
 		} else if (tag.begins_with("bgcolor=")) {
-			String color_str = tag.substr(8, tag.length());
+			String color_str = tag.substr(8, tag.length()).unquote();
 			Color color = Color::from_string(color_str, theme_cache.default_color);
 
 			push_bgcolor(color);
@@ -4567,7 +4673,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front("bgcolor");
 
 		} else if (tag.begins_with("fgcolor=")) {
-			String color_str = tag.substr(8, tag.length());
+			String color_str = tag.substr(8, tag.length()).unquote();
 			Color color = Color::from_string(color_str, theme_cache.default_color);
 
 			push_fgcolor(color);
@@ -5370,7 +5476,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_color", "color"), &RichTextLabel::push_color);
 	ClassDB::bind_method(D_METHOD("push_outline_size", "outline_size"), &RichTextLabel::push_outline_size);
 	ClassDB::bind_method(D_METHOD("push_outline_color", "color"), &RichTextLabel::push_outline_color);
-	ClassDB::bind_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser"), &RichTextLabel::push_paragraph, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(TextServer::STRUCTURED_TEXT_DEFAULT));
+	ClassDB::bind_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser", "justification_flags", "tab_stops"), &RichTextLabel::push_paragraph, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(TextServer::STRUCTURED_TEXT_DEFAULT), DEFVAL(TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE), DEFVAL(PackedFloat32Array()));
 	ClassDB::bind_method(D_METHOD("push_indent", "level"), &RichTextLabel::push_indent);
 	ClassDB::bind_method(D_METHOD("push_list", "level", "type", "capitalize", "bullet"), &RichTextLabel::push_list, DEFVAL(String::utf8("•")));
 	ClassDB::bind_method(D_METHOD("push_meta", "data"), &RichTextLabel::push_meta);

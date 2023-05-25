@@ -3010,6 +3010,9 @@ void TextEdit::_update_theme_item_cache() {
 	theme_cache.outline_color = get_theme_color(SNAME("font_outline_color"));
 
 	theme_cache.line_spacing = get_theme_constant(SNAME("line_spacing"));
+	if (text.get_line_height() + theme_cache.line_spacing < 1) {
+		WARN_PRINT("Line height is too small, please increase font_size and/or line_spacing");
+	}
 
 	theme_cache.background_color = get_theme_color(SNAME("background_color"));
 	theme_cache.current_line_color = get_theme_color(SNAME("current_line_color"));
@@ -3481,7 +3484,7 @@ int TextEdit::get_line_width(int p_line, int p_wrap_index) const {
 }
 
 int TextEdit::get_line_height() const {
-	return text.get_line_height() + theme_cache.line_spacing;
+	return MAX(text.get_line_height() + theme_cache.line_spacing, 1);
 }
 
 int TextEdit::get_indent_level(int p_line) const {

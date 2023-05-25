@@ -226,6 +226,7 @@ ShaderTypes::ShaderTypes() {
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("particle_trails") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("alpha_to_coverage") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("alpha_to_coverage_and_one") });
+		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("debug_shadow_splits") });
 	}
 
 	/************ CANVAS ITEM **************************/

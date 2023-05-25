@@ -156,7 +156,7 @@ GPOS::position_finish_offsets (hb_font_t *font, hb_buffer_t *buffer)
   {
     for (unsigned i = 0; i < len; i++)
       if (unlikely (pos[i].y_offset))
-        pos[i].x_offset += _hb_roundf (font->slant_xy * pos[i].y_offset);
+        pos[i].x_offset += roundf (font->slant_xy * pos[i].y_offset);
   }
 }
 

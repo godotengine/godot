@@ -96,8 +96,8 @@ static hb_tag_t known_tables[] {
   HB_OT_TAG_BASE,
   HB_OT_TAG_CBDT,
   HB_OT_TAG_CBLC,
-  HB_OT_TAG_cff1,
-  HB_OT_TAG_cff2,
+  HB_OT_TAG_CFF1,
+  HB_OT_TAG_CFF2,
   HB_OT_TAG_cmap,
   HB_OT_TAG_COLR,
   HB_OT_TAG_CPAL,
@@ -457,8 +457,8 @@ _subset_table (hb_subset_plan_t *plan,
   case HB_OT_TAG_MATH: return _subset<const OT::MATH> (plan, buf);
 
 #ifndef HB_NO_SUBSET_CFF
-  case HB_OT_TAG_cff1: return _subset<const OT::cff1> (plan, buf);
-  case HB_OT_TAG_cff2: return _subset<const OT::cff2> (plan, buf);
+  case HB_OT_TAG_CFF1: return _subset<const OT::cff1> (plan, buf);
+  case HB_OT_TAG_CFF2: return _subset<const OT::cff2> (plan, buf);
   case HB_OT_TAG_VORG: return _subset<const OT::VORG> (plan, buf);
 #endif
 
@@ -637,8 +637,3 @@ hb_subset_plan_execute_or_fail (hb_subset_plan_t *plan)
 end:
   return success ? hb_face_reference (plan->dest) : nullptr;
 }
-
-#ifndef HB_NO_VISIBILITY
-/* If NO_VISIBILITY, libharfbuzz has this. */
-#include "hb-ot-name-language-static.hh"
-#endif
