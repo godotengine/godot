@@ -37,6 +37,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/plugins/skeleton_3d_editor_plugin.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/importer_mesh.h"
@@ -406,6 +407,12 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 			contents_aabb.merge_with(aabb);
 		}
 	}
+
+	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_node);
+	if (skeleton) {
+		Ref<ArrayMesh> m = Skeleton3DGizmoPlugin::get_bones_mesh(skeleton, -1, true);
+		bones_preview_mesh_instance->set_mesh(m);
+	}
 }
 
 void SceneImportSettings::_update_scene() {
@@ -693,6 +700,7 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 	if (p_type == "Node") {
 		node_selected->hide(); //always hide just in case
 		mesh_preview->hide();
+		bones_preview_mesh_instance->hide();
 		if (Object::cast_to<Node3D>(scene)) {
 			Object::cast_to<Node3D>(scene)->show();
 		}
@@ -728,6 +736,7 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE;
 			} else if (Object::cast_to<Skeleton3D>(nd.node)) {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE;
+				bones_preview_mesh_instance->show();
 			} else {
 				scene_import_settings_data->category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE;
 				scene_import_settings_data->hide_options = editing_animation;
@@ -1356,6 +1365,12 @@ SceneImportSettings::SceneImportSettings() {
 	light->set_transform(Transform3D().looking_at(Vector3(-1, -2, -0.6), Vector3(0, 1, 0)));
 	base_viewport->add_child(light);
 	light->set_shadow(true);
+
+	bones_preview_mesh_instance = memnew(MeshInstance3D);
+	bones_preview_mesh_instance->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
+	bones_preview_mesh_instance->set_skeleton_path(NodePath(""));
+	bones_preview_mesh_instance->translate(Vector3(0.0, 0.0, 0.035));
+	base_viewport->add_child(bones_preview_mesh_instance);
 
 	{
 		Ref<StandardMaterial3D> selection_mat;

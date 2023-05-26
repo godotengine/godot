@@ -450,8 +450,7 @@ String OS_UWP::get_distribution_name() const {
 
 String OS_UWP::get_version() const {
 	winrt::hstring df_version = VersionInfo().DeviceFamilyVersion();
-	static String version = String(winrt::to_string(df_version).c_str());
-	return version;
+	return String(winrt::to_string(df_version).c_str());
 }
 
 OS::DateTime OS_UWP::get_datetime(bool p_utc) const {

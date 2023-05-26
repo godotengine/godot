@@ -118,7 +118,7 @@
 			<return type="Transform3D" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the pose transform of the specified bone. Pose is applied on top of the custom pose, which is applied on top the rest pose.
+				Returns the pose transform of the specified bone.
 			</description>
 		</method>
 		<method name="get_bone_pose_position" qualifiers="const">

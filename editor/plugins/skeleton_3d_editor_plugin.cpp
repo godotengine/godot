@@ -1190,15 +1190,17 @@ int Skeleton3DEditor::get_selected_bone() const {
 	return selected_bone;
 }
 
-Skeleton3DGizmoPlugin::Skeleton3DGizmoPlugin() {
-	unselected_mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-	unselected_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	unselected_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	unselected_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	unselected_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+Skeleton3DGizmoPlugin::SelectionMaterials Skeleton3DGizmoPlugin::selection_materials;
 
-	selected_mat = Ref<ShaderMaterial>(memnew(ShaderMaterial));
-	selected_sh = Ref<Shader>(memnew(Shader));
+Skeleton3DGizmoPlugin::Skeleton3DGizmoPlugin() {
+	selection_materials.unselected_mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	selection_materials.unselected_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	selection_materials.unselected_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	selection_materials.unselected_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	selection_materials.unselected_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+
+	selection_materials.selected_mat = Ref<ShaderMaterial>(memnew(ShaderMaterial));
+	Ref<Shader> selected_sh = Ref<Shader>(memnew(Shader));
 	selected_sh->set_code(R"(
 // Skeleton 3D gizmo bones shader.
 
@@ -1217,7 +1219,7 @@ void fragment() {
 	ALPHA = COLOR.a;
 }
 )");
-	selected_mat->set_shader(selected_sh);
+	selection_materials.selected_mat->set_shader(selected_sh);
 
 	// Register properties in editor settings.
 	EDITOR_DEF("editors/3d_gizmos/gizmo_colors/skeleton", Color(1, 0.8, 0.4));
@@ -1225,6 +1227,12 @@ void fragment() {
 	EDITOR_DEF("editors/3d_gizmos/gizmo_settings/bone_axis_length", (float)0.1);
 	EDITOR_DEF("editors/3d_gizmos/gizmo_settings/bone_shape", 1);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/3d_gizmos/gizmo_settings/bone_shape", PROPERTY_HINT_ENUM, "Wire,Octahedron"));
+}
+
+Skeleton3DGizmoPlugin::~Skeleton3DGizmoPlugin() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	selection_materials.unselected_mat = Ref<StandardMaterial3D>();
+	selection_materials.selected_mat = Ref<ShaderMaterial>();
 }
 
 bool Skeleton3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -1363,6 +1371,11 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		selected = se->get_selected_bone();
 	}
 
+	Ref<ArrayMesh> m = get_bones_mesh(skeleton, selected, p_gizmo->is_selected());
+	p_gizmo->add_mesh(m, Ref<Material>(), Transform3D(), skeleton->register_skin(skeleton->create_skin_from_rest_transforms()));
+}
+
+Ref<ArrayMesh> Skeleton3DGizmoPlugin::get_bones_mesh(Skeleton3D *skeleton, int selected, bool is_selected) {
 	Color bone_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/skeleton");
 	Color selected_bone_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/selected_bone");
 	real_t bone_axis_length = EDITOR_GET("editors/3d_gizmos/gizmo_settings/bone_axis_length");
@@ -1376,11 +1389,11 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<SurfaceTool> surface_tool(memnew(SurfaceTool));
 	surface_tool->begin(Mesh::PRIMITIVE_LINES);
 
-	if (p_gizmo->is_selected()) {
-		surface_tool->set_material(selected_mat);
+	if (is_selected) {
+		surface_tool->set_material(selection_materials.selected_mat);
 	} else {
-		unselected_mat->set_albedo(bone_color);
-		surface_tool->set_material(unselected_mat);
+		selection_materials.unselected_mat->set_albedo(bone_color);
+		surface_tool->set_material(selection_materials.unselected_mat);
 	}
 
 	LocalVector<int> bones;
@@ -1535,6 +1548,5 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 	}
 
-	Ref<ArrayMesh> m = surface_tool->commit();
-	p_gizmo->add_mesh(m, Ref<Material>(), Transform3D(), skeleton->register_skin(skeleton->create_skin_from_rest_transforms()));
+	return surface_tool->commit();
 }

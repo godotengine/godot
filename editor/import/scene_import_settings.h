@@ -85,6 +85,8 @@ class SceneImportSettings : public ConfirmationDialog {
 	MeshInstance3D *mesh_preview = nullptr;
 	Ref<SphereMesh> material_preview;
 
+	MeshInstance3D *bones_preview_mesh_instance = nullptr;
+
 	Ref<StandardMaterial3D> collider_mat;
 
 	float cam_rot_x = 0.0f;
