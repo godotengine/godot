@@ -97,98 +97,102 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		}
 	}
 
-	int screen = EDITOR_GET("run/window_placement/screen");
-	if (screen == -5) {
-		// Same as editor
-		screen = DisplayServer::get_singleton()->window_get_current_screen();
-	} else if (screen == -4) {
-		// Previous monitor (wrap to the other end if needed)
-		screen = Math::wrapi(
-				DisplayServer::get_singleton()->window_get_current_screen() - 1,
-				0,
-				DisplayServer::get_singleton()->get_screen_count());
-	} else if (screen == -3) {
-		// Next monitor (wrap to the other end if needed)
-		screen = Math::wrapi(
-				DisplayServer::get_singleton()->window_get_current_screen() + 1,
-				0,
-				DisplayServer::get_singleton()->get_screen_count());
-	}
-
-	Rect2 screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen);
-
-	int window_placement = EDITOR_GET("run/window_placement/rect");
-	if (screen_rect != Rect2()) {
-		Size2 window_size;
-		window_size.x = GLOBAL_GET("display/window/size/viewport_width");
-		window_size.y = GLOBAL_GET("display/window/size/viewport_height");
-
-		Size2 desired_size;
-		desired_size.x = GLOBAL_GET("display/window/size/window_width_override");
-		desired_size.y = GLOBAL_GET("display/window/size/window_height_override");
-		if (desired_size.x > 0 && desired_size.y > 0) {
-			window_size = desired_size;
+	int settings_to_use = EDITOR_GET("run/window_placement/settings_to_use");
+	if (settings_to_use == 0) {
+		// Editor "Window Placement" Settings
+		int screen = EDITOR_GET("run/window_placement/screen");
+		if (screen == -5) {
+			// Same as editor
+			screen = DisplayServer::get_singleton()->window_get_current_screen();
+		} else if (screen == -4) {
+			// Previous monitor (wrap to the other end if needed)
+			screen = Math::wrapi(
+					DisplayServer::get_singleton()->window_get_current_screen() - 1,
+					0,
+					DisplayServer::get_singleton()->get_screen_count());
+		} else if (screen == -3) {
+			// Next monitor (wrap to the other end if needed)
+			screen = Math::wrapi(
+					DisplayServer::get_singleton()->window_get_current_screen() + 1,
+					0,
+					DisplayServer::get_singleton()->get_screen_count());
 		}
 
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HIDPI)) {
-			bool hidpi_proj = GLOBAL_GET("display/window/dpi/allow_hidpi");
-			int display_scale = 1;
+		Rect2 screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen);
 
-			if (OS::get_singleton()->is_hidpi_allowed()) {
-				if (hidpi_proj) {
-					display_scale = 1; // Both editor and project runs in hiDPI mode, do not scale.
-				} else {
-					display_scale = DisplayServer::get_singleton()->screen_get_max_scale(); // Editor is in hiDPI mode, project is not, scale down.
-				}
-			} else {
-				if (hidpi_proj) {
-					display_scale = (1.f / DisplayServer::get_singleton()->screen_get_max_scale()); // Editor is not in hiDPI mode, project is, scale up.
-				} else {
-					display_scale = 1; // Both editor and project runs in lowDPI mode, do not scale.
-				}
+		int window_placement = EDITOR_GET("run/window_placement/rect");
+		if (screen_rect != Rect2()) {
+			Size2 window_size;
+			window_size.x = GLOBAL_GET("display/window/size/viewport_width");
+			window_size.y = GLOBAL_GET("display/window/size/viewport_height");
+
+			Size2 desired_size;
+			desired_size.x = GLOBAL_GET("display/window/size/window_width_override");
+			desired_size.y = GLOBAL_GET("display/window/size/window_height_override");
+			if (desired_size.x > 0 && desired_size.y > 0) {
+				window_size = desired_size;
 			}
-			screen_rect.position /= display_scale;
-			screen_rect.size /= display_scale;
-		}
 
-		switch (window_placement) {
-			case 0: { // top left
-				args.push_back("--position");
-				args.push_back(itos(screen_rect.position.x) + "," + itos(screen_rect.position.y));
-			} break;
-			case 1: { // centered
-				Vector2 pos = (screen_rect.position) + ((screen_rect.size - window_size) / 2).floor();
-				args.push_back("--position");
-				args.push_back(itos(pos.x) + "," + itos(pos.y));
-			} break;
-			case 2: { // custom pos
-				Vector2 pos = EDITOR_GET("run/window_placement/rect_custom_position");
-				pos += screen_rect.position;
-				args.push_back("--position");
-				args.push_back(itos(pos.x) + "," + itos(pos.y));
-			} break;
-			case 3: { // force maximized
-				Vector2 pos = screen_rect.position + screen_rect.size / 2;
-				args.push_back("--position");
-				args.push_back(itos(pos.x) + "," + itos(pos.y));
-				args.push_back("--maximized");
-			} break;
-			case 4: { // force fullscreen
-				Vector2 pos = screen_rect.position + screen_rect.size / 2;
-				args.push_back("--position");
-				args.push_back(itos(pos.x) + "," + itos(pos.y));
-				args.push_back("--fullscreen");
-			} break;
-		}
-	} else {
-		// Unable to get screen info, skip setting position.
-		switch (window_placement) {
-			case 3: { // force maximized
-				args.push_back("--maximized");
-			} break;
-			case 4: { // force fullscreen
-				args.push_back("--fullscreen");
-			} break;
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HIDPI)) {
+				bool hidpi_proj = GLOBAL_GET("display/window/dpi/allow_hidpi");
+				int display_scale = 1;
+
+				if (OS::get_singleton()->is_hidpi_allowed()) {
+					if (hidpi_proj) {
+						display_scale = 1; // Both editor and project runs in hiDPI mode, do not scale.
+					} else {
+						display_scale = DisplayServer::get_singleton()->screen_get_max_scale(); // Editor is in hiDPI mode, project is not, scale down.
+					}
+				} else {
+					if (hidpi_proj) {
+						display_scale = (1.f / DisplayServer::get_singleton()->screen_get_max_scale()); // Editor is not in hiDPI mode, project is, scale up.
+					} else {
+						display_scale = 1; // Both editor and project runs in lowDPI mode, do not scale.
+					}
+				}
+				screen_rect.position /= display_scale;
+				screen_rect.size /= display_scale;
+			}
+
+			switch (window_placement) {
+				case 0: { // top left
+					args.push_back("--position");
+					args.push_back(itos(screen_rect.position.x) + "," + itos(screen_rect.position.y));
+				} break;
+				case 1: { // centered
+					Vector2 pos = (screen_rect.position) + ((screen_rect.size - window_size) / 2).floor();
+					args.push_back("--position");
+					args.push_back(itos(pos.x) + "," + itos(pos.y));
+				} break;
+				case 2: { // custom pos
+					Vector2 pos = EDITOR_GET("run/window_placement/rect_custom_position");
+					pos += screen_rect.position;
+					args.push_back("--position");
+					args.push_back(itos(pos.x) + "," + itos(pos.y));
+				} break;
+				case 3: { // force maximized
+					Vector2 pos = screen_rect.position + screen_rect.size / 2;
+					args.push_back("--position");
+					args.push_back(itos(pos.x) + "," + itos(pos.y));
+					args.push_back("--maximized");
+				} break;
+				case 4: { // force fullscreen
+					Vector2 pos = screen_rect.position + screen_rect.size / 2;
+					args.push_back("--position");
+					args.push_back(itos(pos.x) + "," + itos(pos.y));
+					args.push_back("--fullscreen");
+				} break;
+			}
+		} else {
+			// Unable to get screen info, skip setting position.
+			switch (window_placement) {
+				case 3: { // force maximized
+					args.push_back("--maximized");
+				} break;
+				case 4: { // force fullscreen
+					args.push_back("--fullscreen");
+				} break;
+			}
 		}
 	}
 

@@ -709,6 +709,17 @@
 		<member name="run/window_placement/screen" type="int" setter="" getter="">
 			The monitor to display the project on when starting the project from the editor.
 		</member>
+		<member name="run/window_placement/settings_to_use" type="int" setter="" getter="">
+			Which window placement settings will be used when running from the editor:
+			- [b]Editor Settings:[/b] Uses the [EditorSettings] window placement settings:
+			[member run/window_placement/rect]
+			[member run/window_placement/rect_custom_position]
+			[member run/window_placement/screen]
+			- [b]Project Settings:[/b] Uses the [ProjectSettings] window placement settings:
+			[member ProjectSettings.display/window/size/initial_position_type]
+			[member ProjectSettings.display/window/size/initial_position]
+			[member ProjectSettings.display/window/size/initial_screen]
+		</member>
 		<member name="text_editor/appearance/caret/caret_blink" type="bool" setter="" getter="">
 			If [code]true[/code], makes the caret blink according to [member text_editor/appearance/caret/caret_blink_interval]. Disabling this setting can improve battery life on laptops if you spend long amounts of time in the script editor, since it will reduce the frequency at which the editor needs to be redrawn.
 		</member>
