@@ -440,7 +440,9 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 		final String[] current_command_line = command_line;
 		mView.queueEvent(() -> {
-			if (!GodotLib.setup(current_command_line)) {
+			tts = new GodotTTS(activity);
+
+			if (!GodotLib.setup(current_command_line, tts)) {
 				godot_initialized = false;
 				Log.e(TAG, "Unable to setup the Godot engine! Aborting...");
 				alert(R.string.error_engine_setup_message, R.string.text_error_title, this::forceQuit);
@@ -663,7 +665,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		final Activity activity = getActivity();
 		io = new GodotIO(activity);
 		netUtils = new GodotNetUtils(activity);
-		tts = new GodotTTS(activity);
 		Context context = getContext();
 		directoryAccessHandler = new DirectoryAccessHandler(context);
 		fileAccessHandler = new FileAccessHandler(context);
@@ -673,7 +674,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 		mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
-		GodotLib.initialize(activity, this, activity.getAssets(), io, netUtils, directoryAccessHandler, fileAccessHandler, use_apk_expansion, tts);
+		GodotLib.initialize(activity, this, activity.getAssets(), io, netUtils, directoryAccessHandler, fileAccessHandler, use_apk_expansion);
 
 		result_callback = null;
 

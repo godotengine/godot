@@ -53,7 +53,7 @@ public class GodotLib {
 	/**
 	 * Invoked on the main thread to initialize Godot native layer.
 	 */
-	public static native void initialize(Activity activity, Godot p_instance, AssetManager p_asset_manager, GodotIO godotIO, GodotNetUtils netUtils, DirectoryAccessHandler directoryAccessHandler, FileAccessHandler fileAccessHandler, boolean use_apk_expansion, GodotTTS tts);
+	public static native void initialize(Activity activity, Godot p_instance, AssetManager p_asset_manager, GodotIO godotIO, GodotNetUtils netUtils, DirectoryAccessHandler directoryAccessHandler, FileAccessHandler fileAccessHandler, boolean use_apk_expansion);
 
 	/**
 	 * Invoked on the main thread to clean up Godot native layer.
@@ -65,7 +65,7 @@ public class GodotLib {
 	 * Invoked on the GL thread to complete setup for the Godot native layer logic.
 	 * @param p_cmdline Command line arguments used to configure Godot native layer components.
 	 */
-	public static native boolean setup(String[] p_cmdline);
+	public static native boolean setup(String[] p_cmdline, GodotTTS tts);
 
 	/**
 	 * Invoked on the GL thread when the underlying Android surface has changed size.

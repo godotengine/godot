@@ -284,6 +284,10 @@
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
 			[b]Note:[/b] If the operating system blocks access to audio input devices (due to the user's privacy settings), audio capture will only return silence. On Windows 10 and later, make sure that apps are allowed to access the microphone in the OS' privacy settings.
 		</member>
+		<member name="audio/general/text_to_speech" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], text-to-speech support is enabled, see [method OS.tts_get_voices] and [method OS.tts_speak].
+			[b]Note:[/b] Enabling TTS can cause addition idle CPU usage and interfere with the sleep mode, so consider disabling it if TTS is not used.
+		</member>
 		<member name="audio/mix_rate" type="int" setter="" getter="" default="44100">
 			The mixing rate used for audio (in Hz). In general, it's better to not touch this and leave it to the host operating system.
 		</member>

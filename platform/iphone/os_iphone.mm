@@ -90,36 +90,43 @@ OSIPhone *OSIPhone::get_singleton() {
 };
 
 bool OSIPhone::tts_is_speaking() const {
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	ERR_FAIL_COND_V(!tts, false);
 	return [tts isSpeaking];
 }
 
 bool OSIPhone::tts_is_paused() const {
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	ERR_FAIL_COND_V(!tts, false);
 	return [tts isPaused];
 }
 
 Array OSIPhone::tts_get_voices() const {
+	ERR_FAIL_COND_V_MSG(!tts, Array(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	ERR_FAIL_COND_V(!tts, Array());
 	return [tts getVoices];
 }
 
 void OSIPhone::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	ERR_FAIL_COND(!tts);
 	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
 }
 
 void OSIPhone::tts_pause() {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	ERR_FAIL_COND(!tts);
 	[tts pauseSpeaking];
 }
 
 void OSIPhone::tts_resume() {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	ERR_FAIL_COND(!tts);
 	[tts resumeSpeaking];
 }
 
 void OSIPhone::tts_stop() {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	ERR_FAIL_COND(!tts);
 	[tts stopSpeaking];
 }
@@ -201,7 +208,10 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	}
 
 	// Init TTS
-	tts = [[TTS_IOS alloc] init];
+	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
+	if (tts_enabled) {
+		tts = [[TTS_IOS alloc] init];
+	}
 
 	visual_server->init();
 	//visual_server->cursor_set_visible(false, 0);

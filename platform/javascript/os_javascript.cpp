@@ -31,6 +31,7 @@
 #include "os_javascript.h"
 
 #include "core/io/json.h"
+#include "core/project_settings.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/dir_access_unix.h"
@@ -65,10 +66,12 @@ void OS_JavaScript::request_quit_callback() {
 }
 
 bool OS_JavaScript::tts_is_speaking() const {
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return godot_js_tts_is_speaking();
 }
 
 bool OS_JavaScript::tts_is_paused() const {
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return godot_js_tts_is_paused();
 }
 
@@ -87,11 +90,13 @@ void OS_JavaScript::update_voices_callback(int p_size, const char **p_voice) {
 }
 
 Array OS_JavaScript::tts_get_voices() const {
+	ERR_FAIL_COND_V_MSG(!tts, Array(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_get_voices(update_voices_callback);
 	return voices;
 }
 
 void OS_JavaScript::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	if (p_interrupt) {
 		tts_stop();
 	}
@@ -108,14 +113,17 @@ void OS_JavaScript::tts_speak(const String &p_text, const String &p_voice, int p
 }
 
 void OS_JavaScript::tts_pause() {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_pause();
 }
 
 void OS_JavaScript::tts_resume() {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_resume();
 }
 
 void OS_JavaScript::tts_stop() {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	for (Map<int, CharString>::Element *E = utterance_ids.front(); E; E = E->next()) {
 		tts_post_utterance_event(OS::TTS_UTTERANCE_CANCELED, E->key());
 	}
@@ -1167,6 +1175,8 @@ OS_JavaScript *OS_JavaScript::get_singleton() {
 }
 
 OS_JavaScript::OS_JavaScript() {
+	tts = GLOBAL_GET("audio/general/text_to_speech");
+
 	// Expose method for requesting quit.
 	godot_js_os_request_quit_cb(&request_quit_callback);
 	// Set canvas ID

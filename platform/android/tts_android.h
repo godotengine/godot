@@ -33,14 +33,17 @@
 
 #include "core/array.h"
 #include "core/os/os.h"
+#include "core/project_settings.h"
 #include "core/ustring.h"
 
 #include <jni.h>
 
 class TTS_Android {
+	static bool initialized;
 	static jobject tts;
 	static jclass cls;
 
+	static jmethodID _init;
 	static jmethodID _is_speaking;
 	static jmethodID _is_paused;
 	static jmethodID _get_voices;

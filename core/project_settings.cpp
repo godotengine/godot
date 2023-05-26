@@ -1093,6 +1093,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_RST("audio/3d_panning_strength", 1.0f);
 	custom_prop_info["audio/3d_panning_strength"] = PropertyInfo(Variant::REAL, "audio/3d_panning_strength", PROPERTY_HINT_RANGE, "0,4,0.01");
 
+	GLOBAL_DEF_RST("audio/general/text_to_speech", false);
+
 	PoolStringArray extensions = PoolStringArray();
 	extensions.push_back("gd");
 	if (Engine::get_singleton()->has_singleton("GodotSharp")) {
