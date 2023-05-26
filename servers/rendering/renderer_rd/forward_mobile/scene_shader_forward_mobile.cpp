@@ -218,8 +218,8 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 		} break;
 		case BLEND_MODE_SUB: {
 			blend_attachment.enable_blend = true;
-			blend_attachment.alpha_blend_op = RD::BLEND_OP_SUBTRACT;
-			blend_attachment.color_blend_op = RD::BLEND_OP_SUBTRACT;
+			blend_attachment.alpha_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
+			blend_attachment.color_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
 			blend_attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
 			blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
 			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
