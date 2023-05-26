@@ -106,6 +106,8 @@ struct _NO_DISCARD_ Projection {
 	real_t get_fov() const;
 	bool is_orthogonal() const;
 
+	bool is_finite() const;
+
 	Vector<Plane> get_projection_planes(const Transform3D &p_transform) const;
 
 	bool get_endpoints(const Transform3D &p_transform, Vector3 *p_8points) const;
@@ -133,6 +135,7 @@ struct _NO_DISCARD_ Projection {
 
 	void flip_y();
 
+	bool is_equal_approx(const Projection &p_projection) const;
 	bool operator==(const Projection &p_cam) const {
 		for (uint32_t i = 0; i < 4; i++) {
 			for (uint32_t j = 0; j < 4; j++) {

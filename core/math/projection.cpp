@@ -783,6 +783,13 @@ void Projection::set_light_atlas_rect(const Rect2 &p_rect) {
 	m[15] = 1.0;
 }
 
+bool Projection::is_equal_approx(const Projection &p_projection) const {
+	return columns[0].is_equal_approx(p_projection.columns[0]) &&
+			columns[1].is_equal_approx(p_projection.columns[1]) &&
+			columns[2].is_equal_approx(p_projection.columns[2]) &&
+			columns[3].is_equal_approx(p_projection.columns[3]);
+}
+
 Projection::operator String() const {
 	String str;
 	for (int i = 0; i < 4; i++) {
@@ -807,6 +814,13 @@ int Projection::get_pixels_per_meter(int p_for_pixel_width) const {
 
 bool Projection::is_orthogonal() const {
 	return columns[3][3] == 1.0;
+}
+
+bool Projection::is_finite() const {
+	return columns[0].is_finite() &&
+			columns[1].is_finite() &&
+			columns[2].is_finite() &&
+			columns[3].is_finite();
 }
 
 real_t Projection::get_fov() const {

@@ -61,11 +61,7 @@ TEST_CASE("[Projection] create_depth_correction") {
 				Vector4(-2.16, 70.96, -59.63, 23.87))
 									.create_depth_correction(true);
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 
 	SUBCASE("Without vertical flip") {
@@ -77,11 +73,7 @@ TEST_CASE("[Projection] create_depth_correction") {
 				Vector4(-2.16, 70.96, -59.63, 23.87))
 									.create_depth_correction(false);
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 }
 
@@ -94,11 +86,7 @@ TEST_CASE("[Projection] create_fit_aabb") {
 			Vector4(-2.0, -2.0, -2.0, 1.0));
 	Projection actual = Projection().create_fit_aabb(aabb);
 
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-		}
-	}
+	CHECK(expected.is_equal_approx(actual));
 }
 
 TEST_CASE("[Projection] create_for_hmd") {
@@ -110,11 +98,7 @@ TEST_CASE("[Projection] create_for_hmd") {
 				Vector4(0.0, 0.0, -4.0, 0.0));
 		Projection actual = Projection().create_for_hmd(1, 1.0, 6.0, 14.5, 4.0, 1.5, 1.0, 2.0);
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 
 	SUBCASE("Projection for eye 2") {
@@ -125,11 +109,7 @@ TEST_CASE("[Projection] create_for_hmd") {
 				Vector4(0.0, 0.0, -4.0, 0.0));
 		Projection actual = Projection().create_for_hmd(2, 1.0, 6.0, 14.5, 4.0, 1.5, 1.0, 2.0);
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 }
 
@@ -166,11 +146,7 @@ TEST_CASE("[Projection] create_frustum") {
 				Vector4(0.0, 0.0, -4.0, 0.0));
 		Projection actual = Projection().create_frustum(-5.098039, 5.098039, -2.666666, 2.666666, 1.0, 2.0);
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 }
 
@@ -183,11 +159,7 @@ TEST_CASE("[Projection] create_frustum_aspect") {
 				Vector4(0, 0, -4, 0));
 		Projection actual = Projection().create_frustum_aspect(1.0, 0.5, Vector2(1.0, 1.0), 1.0, 2.0);
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 }
 
@@ -201,10 +173,43 @@ TEST_CASE("[Projection] create_light_atlas_rect") {
 			Vector2(10.0, 10.0));
 	Projection actual = Projection().create_light_atlas_rect(rect);
 
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-		}
+	CHECK(expected.is_equal_approx(actual));
+}
+
+TEST_CASE("[Projection] is_equal_approx") {
+	SUBCASE("A projection is equal to itself") {
+		Projection projection(
+				Vector4(10.0, 0, 0, 0),
+				Vector4(0, 10.0, 0, 0),
+				Vector4(0, 0, 1.0, 0),
+				Vector4(0, 0, 0, 1.0));
+
+		CHECK(projection.is_equal_approx(projection));
+	}
+
+	SUBCASE("Two different projections are not equal") {
+		Projection projection(
+				Vector4(10.0, 0, 0, 0),
+				Vector4(0, 10.0, 0, 0),
+				Vector4(0, 0, 1.0, 0),
+				Vector4(0, 0, 0, 1.0));
+
+		Projection different_projection(projection);
+		different_projection[0][0] = 0.0;
+		CHECK_FALSE(projection.is_equal_approx(different_projection));
+	}
+
+	SUBCASE("Two different projections are equal if they are close enough") {
+		Projection projection(
+				Vector4(10.0, 0, 0, 0),
+				Vector4(0, 10.0, 0, 0),
+				Vector4(0, 0, 1.0, 0),
+				Vector4(0, 0, 0, 1.0));
+
+		Projection different_projection(projection);
+		different_projection[0][0] = 10.000009;
+
+		CHECK(projection.is_equal_approx(different_projection));
 	}
 }
 
@@ -216,11 +221,7 @@ TEST_CASE("[Projection] create_orthogonal") {
 			Vector4(-3, -3, -3, 1));
 	Projection actual = Projection().create_orthogonal(10, 20, 10, 20, 1.0, 2.0);
 
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-		}
-	}
+	CHECK(expected.is_equal_approx(actual));
 }
 
 TEST_CASE("[Projection] create_orthogonal_aspect") {
@@ -232,11 +233,7 @@ TEST_CASE("[Projection] create_orthogonal_aspect") {
 				Vector4(0, 0, -3, 1));
 		Projection actual = Projection().create_orthogonal_aspect(10, 1.3, 1.0, 2.0, true);
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 
 	SUBCASE("Not flipped y") {
@@ -247,11 +244,7 @@ TEST_CASE("[Projection] create_orthogonal_aspect") {
 				Vector4(0, 0, -3, 1));
 		Projection actual = Projection().create_orthogonal_aspect(10, 1.3, 1.0, 2.0, false);
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 }
 
@@ -264,11 +257,7 @@ TEST_CASE("[Projection] create_perspective") {
 				Vector4(0, 0, -4, 0));
 		Projection actual = Projection().create_perspective(1.5, 1.3, 1.0, 2.0, true);
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 
 	SUBCASE("Not flipped y") {
@@ -279,11 +268,7 @@ TEST_CASE("[Projection] create_perspective") {
 				Vector4(0, 0, -4, 0));
 		Projection actual = Projection().create_perspective(1.5, 1.3, 1.0, 2.0, false);
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 }
 
@@ -296,11 +281,7 @@ TEST_CASE("[Projection] create_perspective_hmd") {
 				Vector4(416.412, 0, -4, 0));
 		Projection actual = Projection().create_perspective_hmd(1.5, 1.33, 1.0, 2.0, false, 1, 14.5, 10.0);
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 
 	SUBCASE("No y flipping, eye 2") {
@@ -311,11 +292,7 @@ TEST_CASE("[Projection] create_perspective_hmd") {
 				Vector4(-416.412, 0, -4, 0));
 		Projection actual = Projection().create_perspective_hmd(1.5, 1.33, 1.0, 2.0, false, 2, 14.5, 10.0);
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 
 	SUBCASE("Y flipping, eye 1") {
@@ -326,11 +303,7 @@ TEST_CASE("[Projection] create_perspective_hmd") {
 				Vector4(553.827, 0, -4, 0));
 		Projection actual = Projection().create_perspective_hmd(1.5, 1.33, 1.0, 2.0, true, 1, 14.5, 10.0);
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 
 	SUBCASE("Y flipping, eye 2") {
@@ -341,11 +314,138 @@ TEST_CASE("[Projection] create_perspective_hmd") {
 				Vector4(-553.827, 0, -4, 0));
 		Projection actual = Projection().create_perspective_hmd(1.5, 1.33, 1.0, 2.0, true, 2, 14.5, 10.0);
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
+	}
+}
+
+TEST_CASE("[Projection] create_frustum_aspect") {
+	SUBCASE("Valid parameters") {
+		Projection expected(
+				Vector4(4, 0, 0, 0),
+				Vector4(0, 2, 0, 0),
+				Vector4(4, 2, -3, -1),
+				Vector4(0, 0, -4, 0));
+		Projection actual = Projection().create_frustum_aspect(1.0, 0.5, Vector2(1.0, 1.0), 1.0, 2.0);
+
+		CHECK(expected.is_equal_approx(actual));
+	}
+}
+
+TEST_CASE("[Projection] create_light_atlas_rect") {
+	Projection expected(
+			Vector4(10.0, 0, 0, 0),
+			Vector4(0, 10.0, 0, 0),
+			Vector4(0, 0, 1.0, 0),
+			Vector4(0, 0, 0, 1.0));
+	Rect2 rect = Rect2(Vector2(0.0, 0.0),
+			Vector2(10.0, 10.0));
+	Projection actual = Projection().create_light_atlas_rect(rect);
+
+	CHECK(expected.is_equal_approx(actual));
+}
+
+TEST_CASE("[Projection] create_orthogonal") {
+	Projection expected(
+			Vector4(0.2, 0, 0, 0),
+			Vector4(0, 0.2, 0, 0),
+			Vector4(0, 0, -2, 0),
+			Vector4(-3, -3, -3, 1));
+	Projection actual = Projection().create_orthogonal(10, 20, 10, 20, 1.0, 2.0);
+
+	CHECK(expected.is_equal_approx(actual));
+}
+
+TEST_CASE("[Projection] create_orthogonal_aspect") {
+	SUBCASE("Flipped y") {
+		Projection expected(
+				Vector4(0.2, 0, 0, 0),
+				Vector4(0, 0.26, 0, 0),
+				Vector4(0, 0, -2, 0),
+				Vector4(0, 0, -3, 1));
+		Projection actual = Projection().create_orthogonal_aspect(10, 1.3, 1.0, 2.0, true);
+
+		CHECK(expected.is_equal_approx(actual));
+	}
+
+	SUBCASE("Not flipped y") {
+		Projection expected(
+				Vector4(0.153846, 0, 0, 0),
+				Vector4(0, 0.2, 0, 0),
+				Vector4(0, 0, -2, 0),
+				Vector4(0, 0, -3, 1));
+		Projection actual = Projection().create_orthogonal_aspect(10, 1.3, 1.0, 2.0, false);
+
+		CHECK(expected.is_equal_approx(actual));
+	}
+}
+
+TEST_CASE("[Projection] create_perspective") {
+	SUBCASE("Flipped y") {
+		Projection expected(
+				Vector4(76.39, 0, 0, 0),
+				Vector4(0, 99.307, 0, 0),
+				Vector4(0, 0, -3, -1),
+				Vector4(0, 0, -4, 0));
+		Projection actual = Projection().create_perspective(1.5, 1.3, 1.0, 2.0, true);
+
+		CHECK(expected.is_equal_approx(actual));
+	}
+
+	SUBCASE("Not flipped y") {
+		Projection expected(
+				Vector4(58.7615, 0, 0, 0),
+				Vector4(0, 76.39, 0, 0),
+				Vector4(0, 0, -3, -1),
+				Vector4(0, 0, -4, 0));
+		Projection actual = Projection().create_perspective(1.5, 1.3, 1.0, 2.0, false);
+
+		CHECK(expected.is_equal_approx(actual));
+	}
+}
+
+TEST_CASE("[Projection] create_perspective_hmd") {
+	SUBCASE("No y flipping, eye 1") {
+		Projection expected(
+				Vector4(57.4362, 0, 0, 0),
+				Vector4(0, 76.39, 0, 0),
+				Vector4(41.6412, 0, -3, -1),
+				Vector4(416.412, 0, -4, 0));
+		Projection actual = Projection().create_perspective_hmd(1.5, 1.33, 1.0, 2.0, false, 1, 14.5, 10.0);
+
+		CHECK(expected.is_equal_approx(actual));
+	}
+
+	SUBCASE("No y flipping, eye 2") {
+		Projection expected(
+				Vector4(57.4362, 0, 0, 0),
+				Vector4(0, 76.39, 0, 0),
+				Vector4(-41.6412, 0, -3, -1),
+				Vector4(-416.412, 0, -4, 0));
+		Projection actual = Projection().create_perspective_hmd(1.5, 1.33, 1.0, 2.0, false, 2, 14.5, 10.0);
+
+		CHECK(expected.is_equal_approx(actual));
+	}
+
+	SUBCASE("Y flipping, eye 1") {
+		Projection expected(
+				Vector4(76.3899, 0, 0, 0),
+				Vector4(0, 101.599, 0, 0),
+				Vector4(55.3827, 0, -3, -1),
+				Vector4(553.827, 0, -4, 0));
+		Projection actual = Projection().create_perspective_hmd(1.5, 1.33, 1.0, 2.0, true, 1, 14.5, 10.0);
+
+		CHECK(expected.is_equal_approx(actual));
+	}
+
+	SUBCASE("Y flipping, eye 2") {
+		Projection expected(
+				Vector4(76.3899, 0, 0, 0),
+				Vector4(0, 101.599, 0, 0),
+				Vector4(-55.3827, 0, -3, -1),
+				Vector4(-553.827, 0, -4, 0));
+		Projection actual = Projection().create_perspective_hmd(1.5, 1.33, 1.0, 2.0, true, 2, 14.5, 10.0);
+
+		CHECK(expected.is_equal_approx(actual));
 	}
 }
 
@@ -383,11 +483,60 @@ TEST_CASE("[Projection] flipped_y") {
 			Vector4(-2.16, 70.96, -59.63, 23.87))
 								.flipped_y();
 
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-		}
-	}
+	CHECK(expected.is_equal_approx(actual));
+}
+
+TEST_CASE("[Projection] get_aspect") {
+	real_t expected = 0.218863;
+	real_t actual = Projection(
+			Vector4(-29.32, 43.39, -94.85, -89.95),
+			Vector4(55.01, -55.50, 87.92, 36.67),
+			Vector4(48.63, 19.80, 75.48, 44.12),
+			Vector4(-2.16, 70.96, -59.63, 23.87))
+							.get_aspect();
+
+	CHECK(expected == doctest::Approx(actual));
+}
+
+TEST_CASE("[Projection] get_far_plane_half_extents") {
+	Vector2 expected = Vector2(0.200337, 0.158066);
+	Vector2 actual = Projection(
+			Vector4(-29.32, 43.39, -94.85, -89.95),
+			Vector4(55.01, -55.50, 87.92, 36.67),
+			Vector4(48.63, 19.80, 75.48, 44.12),
+			Vector4(-2.16, 70.96, -59.63, 23.87))
+							 .get_far_plane_half_extents();
+
+	CHECK(expected.x == doctest::Approx(actual.x));
+	CHECK(expected.y == doctest::Approx(actual.y));
+}
+
+TEST_CASE("[Projection] get_fov") {
+	real_t expected = 64.8575;
+	real_t actual = Projection(
+			Vector4(-29.32, 43.39, -94.85, -89.95),
+			Vector4(55.01, -55.50, 87.92, 36.67),
+			Vector4(48.63, 19.80, 75.48, 44.12),
+			Vector4(-2.16, 70.96, -59.63, 23.87))
+							.get_fov();
+
+	CHECK(expected == doctest::Approx(actual));
+}
+
+TEST_CASE("[Projection] flipped_y") {
+	Projection expected(
+			Vector4(-29.32, 43.39, -94.85, -89.95),
+			Vector4(55.01, -55.50, 87.92, 36.67),
+			Vector4(48.63, 19.80, 75.48, 44.12),
+			Vector4(-2.16, 70.96, -59.63, 23.87));
+	Projection actual = Projection(
+			Vector4(-29.32, 43.39, -94.85, -89.95),
+			Vector4(-55.01, 55.50, -87.92, -36.67),
+			Vector4(48.63, 19.80, 75.48, 44.12),
+			Vector4(-2.16, 70.96, -59.63, 23.87))
+								.flipped_y();
+
+	CHECK(expected.is_equal_approx(actual));
 }
 
 TEST_CASE("[Projection] get_aspect") {
@@ -543,11 +692,7 @@ TEST_CASE("[Projection] inverse") {
 		Projection expected;
 		Projection actual = Projection().inverse();
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 
 	SUBCASE("Calculate the inverse of a matrix") {
@@ -563,11 +708,7 @@ TEST_CASE("[Projection] inverse") {
 				Vector4(-2.16, 70.96, -59.63, 23.87))
 									.inverse();
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-			}
-		}
+		CHECK(expected.is_equal_approx(actual));
 	}
 }
 
@@ -598,6 +739,43 @@ TEST_CASE("[Projection] is_orthogonal ") {
 	}
 }
 
+TEST_CASE("[Projection] is_finite") {
+	SUBCASE("The identity matrix is finite") {
+		Projection identity;
+		CHECK(identity.is_finite());
+	}
+
+	SUBCASE("A finite matrix should return true") {
+		Projection finite_matrix(
+				Vector4(0.6, -0.8, 0, 0),
+				Vector4(0.8, 0.6, 0, 0),
+				Vector4(0, 0, 1, 0),
+				Vector4(0, 0, 0, 1));
+
+		CHECK(finite_matrix.is_finite());
+	}
+
+	SUBCASE("A matrix with NaN should return false") {
+		Projection nan_matrix(
+				Vector4(1, 2, 3, 4),
+				Vector4(5, 6, 7, 8),
+				Vector4(9, 10, 11, 12),
+				Vector4(13, 14, 15, NAN));
+
+		CHECK_FALSE(nan_matrix.is_finite());
+	}
+
+	SUBCASE("A matrix with Inf should return false") {
+		Projection inf_matrix(
+				Vector4(1, 2, 3, 4),
+				Vector4(5, 6, 7, 8),
+				Vector4(9, 10, 11, 12),
+				Vector4(13, 14, 15, INFINITY));
+
+		CHECK_FALSE(inf_matrix.is_finite());
+	}
+}
+
 TEST_CASE("[Projection] jitter_offseted") {
 	Projection expected(
 			Vector4(1, 0, 0, 0),
@@ -606,11 +784,7 @@ TEST_CASE("[Projection] jitter_offseted") {
 			Vector4(1, 1, 0, 1));
 	Projection actual = Projection().jitter_offseted(Vector2(1, 1));
 
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-		}
-	}
+	CHECK(expected.is_equal_approx(actual));
 }
 
 TEST_CASE("[Projection] perspective_znear_adjusted") {
@@ -626,11 +800,7 @@ TEST_CASE("[Projection] perspective_znear_adjusted") {
 			Vector4(-2.16, 70.96, -59.63, 23.87))
 								.perspective_znear_adjusted(1);
 
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			CHECK(expected[i][j] == doctest::Approx(actual[i][j]));
-		}
-	}
+	CHECK(expected.is_equal_approx(actual));
 }
 } //namespace TestProjection
 
