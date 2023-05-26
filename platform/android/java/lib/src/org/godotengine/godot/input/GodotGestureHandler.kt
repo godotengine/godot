@@ -227,16 +227,14 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 				)
 				dragInProgress = false
 			}
-			return true
 		}
-
-		dragInProgress = true
 
 		val x = terminusEvent.x
 		val y = terminusEvent.y
 		if (terminusEvent.pointerCount >= 2 && panningAndScalingEnabled && !pointerCaptureInProgress) {
 			GodotLib.pan(x, y, distanceX / 5f, distanceY / 5f)
-		} else {
+		} else if (!scaleInProgress){
+			dragInProgress = true
 			GodotInputHandler.handleMotionEvent(terminusEvent)
 		}
 		return true
@@ -246,11 +244,14 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 		if (!panningAndScalingEnabled || pointerCaptureInProgress) {
 			return false
 		}
-		GodotLib.magnify(
-			detector.focusX,
-			detector.focusY,
-			detector.scaleFactor
-		)
+
+		if (detector.scaleFactor >= 0.8f && detector.scaleFactor != 1f && detector.scaleFactor <= 1.2f) {
+			GodotLib.magnify(
+					detector.focusX,
+					detector.focusY,
+					detector.scaleFactor
+			)
+		}
 		return true
 	}
 
