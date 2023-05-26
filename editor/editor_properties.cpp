@@ -108,6 +108,13 @@ void EditorPropertyText::update_property() {
 
 void EditorPropertyText::set_string_name(bool p_enabled) {
 	string_name = p_enabled;
+	if (p_enabled) {
+		Label *prefix = memnew(Label("&"));
+		prefix->set_tooltip_text("StringName");
+		prefix->set_mouse_filter(MOUSE_FILTER_STOP);
+		text->get_parent()->add_child(prefix);
+		text->get_parent()->move_child(prefix, 0);
+	}
 }
 
 void EditorPropertyText::set_secret(bool p_enabled) {
@@ -122,9 +129,13 @@ void EditorPropertyText::_bind_methods() {
 }
 
 EditorPropertyText::EditorPropertyText() {
+	HBoxContainer *hb = memnew(HBoxContainer);
+	add_child(hb);
+
 	text = memnew(LineEdit);
-	add_child(text);
+	hb->add_child(text);
 	add_focusable(text);
+	text->set_h_size_flags(SIZE_EXPAND_FILL);
 	text->connect("text_changed", callable_mp(this, &EditorPropertyText::_text_changed));
 	text->connect("text_submitted", callable_mp(this, &EditorPropertyText::_text_submitted));
 }
