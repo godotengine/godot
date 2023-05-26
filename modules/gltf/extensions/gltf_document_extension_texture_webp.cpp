@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_texture.h                                                        */
+/*  gltf_document_extension_texture_webp.cpp                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,27 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_TEXTURE_H
-#define GLTF_TEXTURE_H
+#include "gltf_document_extension_texture_webp.h"
 
-#include "../gltf_defines.h"
-#include "core/io/resource.h"
+#include "scene/3d/area_3d.h"
 
-class GLTFTexture : public Resource {
-	GDCLASS(GLTFTexture, Resource);
+// Import process.
+Error GLTFDocumentExtensionTextureWebP::import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) {
+	if (!p_extensions.has("EXT_texture_webp")) {
+		return ERR_SKIP;
+	}
+	return OK;
+}
 
-private:
-	GLTFImageIndex src_image = -1;
-	GLTFTextureSamplerIndex sampler = -1;
+Vector<String> GLTFDocumentExtensionTextureWebP::get_supported_extensions() {
+	Vector<String> ret;
+	ret.push_back("EXT_texture_webp");
+	return ret;
+}
 
-protected:
-	static void _bind_methods();
+Error GLTFDocumentExtensionTextureWebP::parse_image_data(Ref<GLTFState> p_state, const PackedByteArray &p_image_data, const String &p_mime_type, Ref<Image> r_image) {
+	if (p_mime_type == "image/webp") {
+		return r_image->load_webp_from_buffer(p_image_data);
+	}
+	return OK;
+}
 
-public:
-	GLTFImageIndex get_src_image() const;
-	void set_src_image(GLTFImageIndex val);
-	GLTFTextureSamplerIndex get_sampler() const;
-	void set_sampler(GLTFTextureSamplerIndex val);
-};
-
-#endif // GLTF_TEXTURE_H
+Error GLTFDocumentExtensionTextureWebP::parse_texture_json(Ref<GLTFState> p_state, const Dictionary &p_texture_json, Ref<GLTFTexture> r_gltf_texture) {
+	if (!p_texture_json.has("extensions")) {
+		return OK;
+	}
+	const Dictionary &extensions = p_texture_json["extensions"];
+	if (!extensions.has("EXT_texture_webp")) {
+		return OK;
+	}
+	const Dictionary &texture_webp = extensions["EXT_texture_webp"];
+	ERR_FAIL_COND_V(!texture_webp.has("source"), ERR_PARSE_ERROR);
+	r_gltf_texture->set_src_image(texture_webp["source"]);
+	return OK;
+}
