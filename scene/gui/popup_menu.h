@@ -103,11 +103,11 @@ class PopupMenu : public Popup {
 	int _get_mouse_over(const Point2 &p_over) const;
 	virtual Size2 _get_contents_minimum_size() const override;
 
-	int _get_item_height(int p_item) const;
+	int _get_item_height(int p_idx) const;
 	int _get_items_total_height() const;
-	Size2 _get_item_icon_size(int p_item) const;
+	Size2 _get_item_icon_size(int p_idx) const;
 
-	void _shape_item(int p_item);
+	void _shape_item(int p_idx);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event);
 	void _activate_submenu(int p_over, bool p_by_keyboard = false);
@@ -277,10 +277,10 @@ public:
 	void set_item_count(int p_count);
 	int get_item_count() const;
 
-	void scroll_to_item(int p_item);
+	void scroll_to_item(int p_idx);
 
 	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);
-	void activate_item(int p_item);
+	void activate_item(int p_idx);
 
 	void remove_item(int p_idx);
 
