@@ -2039,14 +2039,16 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 				// Edit node in Tree.
 				tree->grab_focus();
-				tree->edit_selected(true);
+				if (to_rename.path != "res://") {
+					tree->edit_selected(true);
 
-				if (to_rename.is_file) {
-					String name = to_rename.path.get_file();
-					tree->set_editor_selection(0, name.rfind("."));
-				} else {
-					String name = to_rename.path.left(-1).get_file(); // Removes the "/" suffix for folders.
-					tree->set_editor_selection(0, name.length());
+					if (to_rename.is_file) {
+						String name = to_rename.path.get_file();
+						tree->set_editor_selection(0, name.rfind("."));
+					} else {
+						String name = to_rename.path.left(-1).get_file(); // Removes the "/" suffix for folders.
+						tree->set_editor_selection(0, name.length());
+					}
 				}
 			}
 		} break;
