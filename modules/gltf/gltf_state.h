@@ -204,7 +204,7 @@ public:
 	void set_animations(TypedArray<GLTFAnimation> p_animations);
 
 	Node *get_scene_node(GLTFNodeIndex idx);
-	ImporterMeshInstance3D *get_scene_mesh_instance(GLTFNodeIndex idx);
+	GLTFNodeIndex get_node_index(Node *p_node);
 
 	int get_animation_players_count(int idx);
 
