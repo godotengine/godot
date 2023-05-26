@@ -1766,7 +1766,7 @@ void AnimationPlayer::set_current_animation(const String &p_anim) {
 	} else if (!is_playing()) {
 		play(p_anim);
 	} else if (playback.assigned != p_anim) {
-		float speed = get_playing_speed();
+		float speed = playback.current.speed_scale;
 		play(p_anim, -1.0, speed, signbit(speed));
 	} else {
 		// Same animation, do not replay from start
@@ -1779,7 +1779,7 @@ String AnimationPlayer::get_current_animation() const {
 
 void AnimationPlayer::set_assigned_animation(const String &p_anim) {
 	if (is_playing()) {
-		float speed = get_playing_speed();
+		float speed = playback.current.speed_scale;
 		play(p_anim, -1.0, speed, signbit(speed));
 	} else {
 		ERR_FAIL_COND_MSG(!animation_set.has(p_anim), vformat("Animation not found: %s.", p_anim));
