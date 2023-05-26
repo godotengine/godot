@@ -786,9 +786,6 @@ def generate_vs_project(env, num_jobs):
                 if env["custom_modules"]:
                     common_build_postfix.append("custom_modules=%s" % env["custom_modules"])
                 
-                if env["build_custom_tests"]:
-                    common_build_postfix.append("build_custom_tests=%s" % env["build_custom_tests"])
-                
                 result = " ^& ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
                 return result
 
