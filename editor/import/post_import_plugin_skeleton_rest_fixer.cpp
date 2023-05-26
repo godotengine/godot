@@ -610,7 +610,6 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			// Fix skin.
 			{
 				TypedArray<Node> nodes = p_base_scene->find_children("*", "ImporterMeshInstance3D");
-				int skin_idx = 0;
 				while (nodes.size()) {
 					ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(nodes.pop_back());
 					ERR_CONTINUE(!mi);
@@ -638,8 +637,6 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 							skin->set_bind_pose(i, adjust_transform * skin->get_bind_pose(i));
 						}
 					}
-
-					skin_idx++;
 				}
 				nodes = src_skeleton->get_children();
 				while (nodes.size()) {
