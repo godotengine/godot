@@ -2141,6 +2141,26 @@ typedef void (*GDExtensionInterfaceClassdbUnregisterExtensionClass)(GDExtensionC
  */
 typedef void (*GDExtensionInterfaceGetLibraryPath)(GDExtensionClassLibraryPtr p_library, GDExtensionUninitializedStringPtr r_path);
 
+/**
+ * @name editor_add_plugin
+ *
+ * Adds an editor plugin.
+ *
+ * It's safe to call during initialization.
+ *
+ * @param p_class_name A pointer to a StringName with the name of a class (descending from EditorPlugin) which is already registered with ClassDB.
+ */
+typedef void (*GDExtensionInterfaceEditorAddPlugin)(GDExtensionConstStringNamePtr p_class_name);
+
+/**
+ * @name editor_remove_plugin
+ *
+ * Removes an editor plugin.
+ *
+ * @param p_class_name A pointer to a StringName with the name of a class that was previously added as an editor plugin.
+ */
+typedef void (*GDExtensionInterfaceEditorRemovePlugin)(GDExtensionConstStringNamePtr p_class_name);
+
 #ifdef __cplusplus
 }
 #endif

@@ -3239,6 +3239,30 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_chan
 	}
 }
 
+void EditorNode::add_extension_editor_plugin(const StringName &p_class_name) {
+	ERR_FAIL_COND_MSG(!ClassDB::class_exists(p_class_name), vformat("No such editor plugin registered: %s", p_class_name));
+	ERR_FAIL_COND_MSG(!ClassDB::is_parent_class(p_class_name, SNAME("EditorPlugin")), vformat("Class is not an editor plugin: %s", p_class_name));
+	ERR_FAIL_COND_MSG(singleton->editor_data.has_extension_editor_plugin(p_class_name), vformat("Editor plugin already added for class: %s", p_class_name));
+
+	EditorPlugin *plugin = Object::cast_to<EditorPlugin>(ClassDB::instantiate(p_class_name));
+	singleton->editor_data.add_extension_editor_plugin(p_class_name, plugin);
+	add_editor_plugin(plugin);
+}
+
+void EditorNode::remove_extension_editor_plugin(const StringName &p_class_name) {
+	// If we're exiting, the editor plugins will get cleaned up anyway, so don't do anything.
+	if (singleton->exiting) {
+		return;
+	}
+
+	ERR_FAIL_COND_MSG(!singleton->editor_data.has_extension_editor_plugin(p_class_name), vformat("No editor plugin added for class: %s", p_class_name));
+
+	EditorPlugin *plugin = singleton->editor_data.get_extension_editor_plugin(p_class_name);
+	remove_editor_plugin(plugin);
+	memfree(plugin);
+	singleton->editor_data.remove_extension_editor_plugin(p_class_name);
+}
+
 void EditorNode::_update_addon_config() {
 	if (_initializing_plugins) {
 		return;
@@ -7767,6 +7791,12 @@ EditorNode::EditorNode() {
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i));
 	}
+
+	for (const StringName &extension_class_name : GDExtensionEditorPlugins::get_extension_classes()) {
+		add_extension_editor_plugin(extension_class_name);
+	}
+	GDExtensionEditorPlugins::editor_node_add_plugin = &EditorNode::add_extension_editor_plugin;
+	GDExtensionEditorPlugins::editor_node_remove_plugin = &EditorNode::remove_extension_editor_plugin;
 
 	for (int i = 0; i < plugin_init_callback_count; i++) {
 		plugin_init_callbacks[i]();

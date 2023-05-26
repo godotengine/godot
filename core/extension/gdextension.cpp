@@ -678,3 +678,25 @@ String GDExtensionResourceLoader::get_resource_type(const String &p_path) const 
 	}
 	return "";
 }
+
+#ifdef TOOLS_ENABLED
+Vector<StringName> GDExtensionEditorPlugins::extension_classes;
+GDExtensionEditorPlugins::EditorPluginRegisterFunc GDExtensionEditorPlugins::editor_node_add_plugin = nullptr;
+GDExtensionEditorPlugins::EditorPluginRegisterFunc GDExtensionEditorPlugins::editor_node_remove_plugin = nullptr;
+
+void GDExtensionEditorPlugins::add_extension_class(const StringName &p_class_name) {
+	if (editor_node_add_plugin) {
+		editor_node_add_plugin(p_class_name);
+	} else {
+		extension_classes.push_back(p_class_name);
+	}
+}
+
+void GDExtensionEditorPlugins::remove_extension_class(const StringName &p_class_name) {
+	if (editor_node_remove_plugin) {
+		editor_node_remove_plugin(p_class_name);
+	} else {
+		extension_classes.erase(p_class_name);
+	}
+}
+#endif // TOOLS_ENABLED
