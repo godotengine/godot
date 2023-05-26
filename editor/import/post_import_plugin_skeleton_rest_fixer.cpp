@@ -106,6 +106,42 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			global_transform.origin = Vector3(); // Translation by a Node is not a bone animation, so the retargeted model should be at the origin.
 		}
 
+		// Calc IBM difference.
+		LocalVector<Vector<Transform3D>> ibm_diffs;
+		{
+			TypedArray<Node> nodes = p_base_scene->find_children("*", "ImporterMeshInstance3D");
+			while (nodes.size()) {
+				ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(nodes.pop_back());
+				ERR_CONTINUE(!mi);
+
+				Ref<Skin> skin = mi->get_skin();
+				ERR_CONTINUE(!skin.is_valid());
+
+				Node *node = mi->get_node(mi->get_skeleton_path());
+				ERR_CONTINUE(!node);
+
+				Skeleton3D *mesh_skeleton = Object::cast_to<Skeleton3D>(node);
+				if (!mesh_skeleton || mesh_skeleton != src_skeleton) {
+					continue;
+				}
+
+				Vector<Transform3D> ibm_diff;
+				ibm_diff.resize(src_skeleton->get_bone_count());
+				Transform3D *ibm_diff_w = ibm_diff.ptrw();
+
+				int skin_len = skin->get_bind_count();
+				for (int i = 0; i < skin_len; i++) {
+					StringName bn = skin->get_bind_name(i);
+					int bone_idx = src_skeleton->find_bone(bn);
+					if (bone_idx >= 0) {
+						ibm_diff_w[bone_idx] = global_transform * src_skeleton->get_bone_global_rest(bone_idx) * skin->get_bind_pose(i);
+					}
+				}
+
+				ibm_diffs.push_back(ibm_diff);
+			}
+		}
+
 		// Apply node transforms.
 		if (bool(p_options["retarget/rest_fixer/apply_node_transforms"])) {
 			Vector3 scl = global_transform.basis.get_scale_local();
@@ -628,14 +664,14 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 						continue;
 					}
 
+					Vector<Transform3D> ibm_diff = ibm_diffs[skin_idx];
 					int skin_len = skin->get_bind_count();
 					for (int i = 0; i < skin_len; i++) {
 						StringName bn = skin->get_bind_name(i);
 						int bone_idx = src_skeleton->find_bone(bn);
 						if (bone_idx >= 0) {
-							Transform3D adjust_transform = src_skeleton->get_bone_global_rest(bone_idx).affine_inverse() * silhouette_diff[bone_idx].affine_inverse() * pre_silhouette_skeleton_global_rest[bone_idx];
-							adjust_transform.scale(global_transform.basis.get_scale_local());
-							skin->set_bind_pose(i, adjust_transform * skin->get_bind_pose(i));
+							Transform3D new_rest = silhouette_diff[bone_idx] * src_skeleton->get_bone_global_rest(bone_idx);
+							skin->set_bind_pose(i, new_rest.inverse() * ibm_diff[bone_idx]);
 						}
 					}
 
