@@ -237,7 +237,7 @@ vec2 screen_uv_to_sdf(vec2 p_uv) {
 
 float texture_sdf(vec2 p_sdf) {
 	vec2 uv = p_sdf * canvas_data.sdf_to_tex.xy + canvas_data.sdf_to_tex.zw;
-	float d = texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv).r;
+	float d = texture(sampler2D(sdf_texture, SAMPLER_LINEAR_CLAMP), uv).r;
 	d *= SDF_MAX_LENGTH;
 	return d * canvas_data.tex_to_sdf;
 }
@@ -247,8 +247,8 @@ vec2 texture_sdf_normal(vec2 p_sdf) {
 
 	const float EPSILON = 0.001;
 	return normalize(vec2(
-			texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv + vec2(EPSILON, 0.0)).r - texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv - vec2(EPSILON, 0.0)).r,
-			texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv + vec2(0.0, EPSILON)).r - texture(sampler2D(sdf_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), uv - vec2(0.0, EPSILON)).r));
+			texture(sampler2D(sdf_texture, SAMPLER_LINEAR_CLAMP), uv + vec2(EPSILON, 0.0)).r - texture(sampler2D(sdf_texture, SAMPLER_LINEAR_CLAMP), uv - vec2(EPSILON, 0.0)).r,
+			texture(sampler2D(sdf_texture, SAMPLER_LINEAR_CLAMP), uv + vec2(0.0, EPSILON)).r - texture(sampler2D(sdf_texture, SAMPLER_LINEAR_CLAMP), uv - vec2(0.0, EPSILON)).r));
 }
 
 vec2 sdf_to_screen_uv(vec2 p_sdf) {

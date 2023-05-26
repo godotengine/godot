@@ -167,24 +167,24 @@ void main() {
 
 #ifdef USE_CUBEMAP_PASS
 #ifdef USES_HALF_RES_COLOR
-	half_res_color = texture(samplerCube(half_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_normal);
+	half_res_color = texture(samplerCube(half_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_normal);
 #endif
 #ifdef USES_QUARTER_RES_COLOR
-	quarter_res_color = texture(samplerCube(quarter_res, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), cube_normal);
+	quarter_res_color = texture(samplerCube(quarter_res, SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), cube_normal);
 #endif
 #else
 #ifdef USES_HALF_RES_COLOR
 #ifdef USE_MULTIVIEW
-	half_res_color = textureLod(sampler2DArray(half_res, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(uv, ViewIndex), 0.0);
+	half_res_color = textureLod(sampler2DArray(half_res, SAMPLER_LINEAR_CLAMP), vec3(uv, ViewIndex), 0.0);
 #else
-	half_res_color = textureLod(sampler2D(half_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0);
+	half_res_color = textureLod(sampler2D(half_res, SAMPLER_LINEAR_CLAMP), uv, 0.0);
 #endif
 #endif
 #ifdef USES_QUARTER_RES_COLOR
 #ifdef USE_MULTIVIEW
-	quarter_res_color = textureLod(sampler2DArray(quarter_res, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(uv, ViewIndex), 0.0);
+	quarter_res_color = textureLod(sampler2DArray(quarter_res, SAMPLER_LINEAR_CLAMP), vec3(uv, ViewIndex), 0.0);
 #else
-	quarter_res_color = textureLod(sampler2D(quarter_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0);
+	quarter_res_color = textureLod(sampler2D(quarter_res, SAMPLER_LINEAR_CLAMP), uv, 0.0);
 #endif
 #endif
 #endif

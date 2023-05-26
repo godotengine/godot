@@ -53,8 +53,9 @@ public:
 		SKY_SET_MATERIAL,
 		SKY_SET_TEXTURES,
 		SKY_SET_FOG,
-		SKY_SET_MAX
 	};
+
+	const int SAMPLERS_BINDING_FIRST_INDEX = 4;
 
 	// Skys need less info from Directional Lights than the normal shaders
 	struct SkyDirectionalLightData {
