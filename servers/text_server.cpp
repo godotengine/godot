@@ -714,6 +714,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 
 	real_t width = 0.f;
 	int line_start = MAX(p_start, range.x);
+	int last_end = line_start;
 	int prev_safe_break = 0;
 	int last_safe_break = -1;
 	int word_count = 0;
@@ -739,12 +740,18 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 					while ((start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 						end_pos -= l_gl[end_pos].count;
 					}
-					lines.push_back(l_gl[start_pos].start);
-					lines.push_back(l_gl[end_pos].end);
+					if (last_end <= l_gl[start_pos].start) {
+						lines.push_back(l_gl[start_pos].start);
+						lines.push_back(l_gl[end_pos].end);
+						last_end = l_gl[end_pos].end;
+					}
 					trim_next = true;
 				} else {
-					lines.push_back(line_start);
-					lines.push_back(l_gl[last_safe_break].end);
+					if (last_end <= line_start) {
+						lines.push_back(line_start);
+						lines.push_back(l_gl[last_safe_break].end);
+						last_end = l_gl[last_safe_break].end;
+					}
 				}
 				line_start = l_gl[last_safe_break].end;
 				prev_safe_break = last_safe_break + 1;
@@ -772,12 +779,18 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 						while ((start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 							end_pos -= l_gl[end_pos].count;
 						}
-						lines.push_back(l_gl[start_pos].start);
-						lines.push_back(l_gl[end_pos].end);
+						if (last_end <= l_gl[start_pos].start) {
+							lines.push_back(l_gl[start_pos].start);
+							lines.push_back(l_gl[end_pos].end);
+							last_end = l_gl[end_pos].end;
+						}
 						trim_next = false;
 					} else {
-						lines.push_back(line_start);
-						lines.push_back(l_gl[i].end);
+						if (last_end <= line_start) {
+							lines.push_back(line_start);
+							lines.push_back(l_gl[i].end);
+							last_end = l_gl[i].end;
+						}
 					}
 					line_start = l_gl[i].end;
 					prev_safe_break = i + 1;
@@ -833,6 +846,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 
 	double width = 0.f;
 	int line_start = MAX(p_start, range.x);
+	int last_end = line_start;
 	int prev_safe_break = 0;
 	int last_safe_break = -1;
 	int word_count = 0;
@@ -857,12 +871,18 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 					while ((start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 						end_pos -= l_gl[end_pos].count;
 					}
-					lines.push_back(l_gl[start_pos].start);
-					lines.push_back(l_gl[end_pos].end);
+					if (last_end <= l_gl[start_pos].start) {
+						lines.push_back(l_gl[start_pos].start);
+						lines.push_back(l_gl[end_pos].end);
+						last_end = l_gl[end_pos].end;
+					}
 					trim_next = true;
 				} else {
-					lines.push_back(line_start);
-					lines.push_back(l_gl[last_safe_break].end);
+					if (last_end <= line_start) {
+						lines.push_back(line_start);
+						lines.push_back(l_gl[last_safe_break].end);
+						last_end = l_gl[last_safe_break].end;
+					}
 				}
 				line_start = l_gl[last_safe_break].end;
 				prev_safe_break = last_safe_break + 1;
@@ -884,11 +904,17 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 							end_pos -= l_gl[end_pos].count;
 						}
 						trim_next = false;
-						lines.push_back(l_gl[start_pos].start);
-						lines.push_back(l_gl[end_pos].end);
+						if (last_end <= l_gl[start_pos].start) {
+							lines.push_back(l_gl[start_pos].start);
+							lines.push_back(l_gl[end_pos].end);
+							last_end = l_gl[end_pos].end;
+						}
 					} else {
-						lines.push_back(line_start);
-						lines.push_back(l_gl[i].end);
+						if (last_end <= line_start) {
+							lines.push_back(line_start);
+							lines.push_back(l_gl[i].end);
+							last_end = l_gl[i].end;
+						}
 					}
 					line_start = l_gl[i].end;
 					prev_safe_break = i + 1;
