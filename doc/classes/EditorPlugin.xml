@@ -529,6 +529,13 @@
 				The callback should have 4 arguments: [Object] [code]undo_redo[/code], [Object] [code]modified_object[/code], [String] [code]property[/code] and [Variant] [code]new_value[/code]. They are, respectively, the [UndoRedo] object used by the inspector, the currently modified object, the name of the modified property and the new value the property is about to take.
 			</description>
 		</method>
+		<method name="get_canvas_item_editor_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<description>
+				Returns the transform of the 2D editor.
+				This can be used to position graphics drawn in [method _forward_canvas_draw_over_viewport] so that they move as the user scrolls the 2D editor.
+			</description>
+		</method>
 		<method name="get_editor_interface">
 			<return type="EditorInterface" />
 			<description>

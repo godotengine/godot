@@ -160,6 +160,7 @@ public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay);
 	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay);
+	Transform2D get_canvas_item_editor_transform() const;
 
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
 	virtual void forward_3d_draw_over_viewport(Control *p_overlay);

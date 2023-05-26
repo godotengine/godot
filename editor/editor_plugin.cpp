@@ -254,6 +254,10 @@ void EditorPlugin::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
 	GDVIRTUAL_CALL(_forward_canvas_force_draw_over_viewport, p_overlay);
 }
 
+Transform2D EditorPlugin::get_canvas_item_editor_transform() const {
+	return CanvasItemEditor::get_singleton()->get_canvas_transform();
+}
+
 // Updates the overlays of the 2D viewport or, if in 3D mode, of every 3D viewport.
 int EditorPlugin::update_overlays() const {
 	if (Node3DEditor::get_singleton()->is_visible()) {
@@ -539,6 +543,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_autoload_singleton", "name"), &EditorPlugin::remove_autoload_singleton);
 
 	ClassDB::bind_method(D_METHOD("update_overlays"), &EditorPlugin::update_overlays);
+	ClassDB::bind_method(D_METHOD("get_canvas_item_editor_transform"), &EditorPlugin::get_canvas_item_editor_transform);
 
 	ClassDB::bind_method(D_METHOD("make_bottom_panel_item_visible", "item"), &EditorPlugin::make_bottom_panel_item_visible);
 	ClassDB::bind_method(D_METHOD("hide_bottom_panel"), &EditorPlugin::hide_bottom_panel);
