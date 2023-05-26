@@ -4842,8 +4842,13 @@ void EditorNode::_load_editor_layout() {
 	Ref<ConfigFile> config;
 	config.instantiate();
 	Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
-	if (err != OK) {
-		// No config.
+	if (err != OK) { // No config.
+		// If config is not found, expand the res:// folder by default.
+		TreeItem *root = FileSystemDock::get_singleton()->get_tree_control()->get_item_with_metadata("res://", 0);
+		if (root) {
+			root->set_collapsed(false);
+		}
+
 		if (overridden_default_layout >= 0) {
 			_layout_menu_option(overridden_default_layout);
 		}
@@ -5110,8 +5115,14 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 	}
 
 	// Restore collapsed state of FileSystemDock.
+	PackedStringArray uncollapsed_tis;
 	if (p_layout->has_section_key(p_section, "dock_filesystem_uncollapsed_paths")) {
-		PackedStringArray uncollapsed_tis = p_layout->get_value(p_section, "dock_filesystem_uncollapsed_paths");
+		uncollapsed_tis = p_layout->get_value(p_section, "dock_filesystem_uncollapsed_paths");
+	} else {
+		uncollapsed_tis = { "res://" };
+	}
+
+	if (!uncollapsed_tis.is_empty()) {
 		for (int i = 0; i < uncollapsed_tis.size(); i++) {
 			TreeItem *uncollapsed_ti = FileSystemDock::get_singleton()->get_tree_control()->get_item_with_metadata(uncollapsed_tis[i], 0);
 			if (uncollapsed_ti) {
