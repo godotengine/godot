@@ -153,6 +153,11 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	void look_at_compat_76082(const Vector3 &p_target, const Vector3 &p_up);
+	void look_at_from_position_compat_76082(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up);
+#endif
 
 	void _validate_property(PropertyInfo &p_property) const;
 

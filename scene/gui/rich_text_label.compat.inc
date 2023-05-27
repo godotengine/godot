@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_script.cpp                                                     */
+/*  rich_text_label.compat.inc                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,49 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_script.h"
-#include "editor_script.compat.inc"
+#ifndef DISABLE_DEPRECATED
 
-#include "editor/editor_interface.h"
-#include "editor/editor_node.h"
+#include "rich_text_label.h"
 
-void EditorScript::add_root_node(Node *p_node) {
-	if (!EditorNode::get_singleton()) {
-		EditorNode::add_io_error("EditorScript::add_root_node: " + TTR("Write your logic in the _run() method."));
-		return;
-	}
-
-	if (EditorNode::get_singleton()->get_edited_scene()) {
-		EditorNode::add_io_error("EditorScript::add_root_node: " + TTR("There is an edited scene already."));
-		return;
-	}
-
-	//editor->set_edited_scene(p_node);
+void RichTextLabel::push_list_compat_75017(int p_level, ListType p_list, bool p_capitalize) {
+	push_list(p_level, p_list, p_capitalize);
 }
 
-Node *EditorScript::get_scene() const {
-	if (!EditorNode::get_singleton()) {
-		EditorNode::add_io_error("EditorScript::get_scene: " + TTR("Write your logic in the _run() method."));
-		return nullptr;
-	}
-
-	return EditorNode::get_singleton()->get_edited_scene();
+void RichTextLabel::push_paragraph_compat_75250(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, TextServer::StructuredTextParser p_st_parser) {
+	push_paragraph(p_alignment, p_direction, p_language, p_st_parser);
+}
+void RichTextLabel::push_paragraph_compat_76401(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, TextServer::StructuredTextParser p_st_parser, BitField<TextServer::JustificationFlag> p_jst_flags) {
+	push_paragraph(p_alignment, p_direction, p_language, p_st_parser, p_jst_flags);
 }
 
-EditorInterface *EditorScript::get_editor_interface() const {
-	return EditorInterface::get_singleton();
+void RichTextLabel::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("push_list", "level", "type", "capitalize"), &RichTextLabel::push_list_compat_75017);
+	ClassDB::bind_compatibility_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser"), &RichTextLabel::push_paragraph_compat_75250, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(TextServer::STRUCTURED_TEXT_DEFAULT));
+	ClassDB::bind_compatibility_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser", "justification_flags"), &RichTextLabel::push_paragraph_compat_76401, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(TextServer::STRUCTURED_TEXT_DEFAULT), DEFVAL(TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE));
 }
 
-void EditorScript::run() {
-	if (!GDVIRTUAL_CALL(_run)) {
-		EditorNode::add_io_error(TTR("Couldn't run editor script, did you forget to override the '_run' method?"));
-	}
-}
-
-void EditorScript::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_root_node", "node"), &EditorScript::add_root_node);
-	ClassDB::bind_method(D_METHOD("get_scene"), &EditorScript::get_scene);
-	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorScript::get_editor_interface);
-
-	GDVIRTUAL_BIND(_run);
-}
+#endif

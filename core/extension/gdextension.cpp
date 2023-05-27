@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "gdextension.h"
+#include "gdextension.compat.inc"
+
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/object/class_db.h"
@@ -486,10 +488,6 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 	}
 }
 
-Error GDExtension::open_library_compat_76406(const String &p_path, const String &p_entry_symbol) {
-	return open_library(p_path, p_entry_symbol, true);
-}
-
 void GDExtension::close_library() {
 	ERR_FAIL_COND(library == nullptr);
 	OS::get_singleton()->close_dynamic_library(library);
@@ -526,7 +524,6 @@ void GDExtension::deinitialize_library(InitializationLevel p_level) {
 
 void GDExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open_library", "path", "entry_symbol", "use_legacy_interface"), &GDExtension::open_library, DEFVAL(false));
-	ClassDB::bind_compatibility_method(D_METHOD("open_library", "path", "entry_symbol"), &GDExtension::open_library_compat_76406);
 	ClassDB::bind_method(D_METHOD("close_library"), &GDExtension::close_library);
 	ClassDB::bind_method(D_METHOD("is_library_open"), &GDExtension::is_library_open);
 

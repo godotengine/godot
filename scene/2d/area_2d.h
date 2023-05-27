@@ -135,6 +135,11 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	void set_priority_compat_72749(float p_priority);
+	float get_priority_compat_72749() const;
+#endif
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:

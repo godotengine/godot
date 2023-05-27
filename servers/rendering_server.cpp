@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "rendering_server.h"
+#include "rendering_server.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/object/worker_thread_pool.h"

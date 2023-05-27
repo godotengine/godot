@@ -43,6 +43,11 @@ class EditorScript : public RefCounted {
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	Node *get_scene_compat_76026();
+	EditorInterface *get_editor_interface_compat_76026();
+#endif
 
 	GDVIRTUAL0(_run)
 

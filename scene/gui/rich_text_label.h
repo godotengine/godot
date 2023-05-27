@@ -97,6 +97,12 @@ protected:
 	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	void push_list_compat_75017(int p_level, ListType p_list, bool p_capitalize);
+	void push_paragraph_compat_75250(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, TextServer::StructuredTextParser p_st_parser);
+	void push_paragraph_compat_76401(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, TextServer::StructuredTextParser p_st_parser, BitField<TextServer::JustificationFlag> p_jst_flags);
+#endif
 
 private:
 	struct Item;

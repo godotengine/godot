@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "animation_node_state_machine.h"
+#include "animation_node_state_machine.compat.inc"
+
 #include "scene/main/window.h"
 
 /////////////////////////////////////////////////

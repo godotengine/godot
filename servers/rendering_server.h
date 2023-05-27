@@ -70,6 +70,10 @@ protected:
 
 	static RenderingServer *(*create_func)();
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	Vector<String> _global_shader_parameter_get_list_compat_76418() const;
+#endif
 
 public:
 	static RenderingServer *get_singleton();

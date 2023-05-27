@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "rich_text_label.h"
+#include "rich_text_label.compat.inc"
 
 #include "core/input/input_map.h"
 #include "core/math/math_defs.h"

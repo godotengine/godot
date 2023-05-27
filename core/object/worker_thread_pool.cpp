@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "worker_thread_pool.h"
+#include "worker_thread_pool.compat.inc"
 
 #include "core/os/os.h"
 

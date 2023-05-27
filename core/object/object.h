@@ -430,6 +430,9 @@ protected:                                                                      
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {                                                                                        \
 		return &m_class::_bind_methods;                                                                                                          \
 	}                                                                                                                                            \
+	_FORCE_INLINE_ static void (*_get_bind_compatibility_methods())() {                                                                          \
+		return &m_class::_bind_compatibility_methods;                                                                                            \
+	}                                                                                                                                            \
                                                                                                                                                  \
 public:                                                                                                                                          \
 	static void initialize_class() {                                                                                                             \
@@ -441,6 +444,9 @@ public:                                                                         
 		::ClassDB::_add_class<m_class>();                                                                                                        \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) {                                                                   \
 			_bind_methods();                                                                                                                     \
+		}                                                                                                                                        \
+		if (m_class::_get_bind_compatibility_methods() != m_inherits::_get_bind_compatibility_methods()) {                                       \
+			_bind_compatibility_methods();                                                                                                       \
 		}                                                                                                                                        \
 		initialized = true;                                                                                                                      \
 	}                                                                                                                                            \
@@ -674,6 +680,11 @@ protected:
 	virtual void _notificationv(int p_notification, bool p_reversed) {}
 
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+#else
+	static void _bind_compatibility_methods() {}
+#endif
 	bool _set(const StringName &p_name, const Variant &p_property) { return false; };
 	bool _get(const StringName &p_name, Variant &r_property) const { return false; };
 	void _get_property_list(List<PropertyInfo> *p_list) const {};
@@ -684,6 +695,9 @@ protected:
 
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {
 		return &Object::_bind_methods;
+	}
+	_FORCE_INLINE_ static void (*_get_bind_compatibility_methods())() {
+		return &Object::_bind_compatibility_methods;
 	}
 	_FORCE_INLINE_ bool (Object::*_get_get() const)(const StringName &p_name, Variant &r_ret) const {
 		return &Object::_get;
@@ -721,6 +735,9 @@ protected:
 	}
 
 	TypedArray<StringName> _get_meta_list_bind() const;
+#ifndef DISABLE_DEPRECATED
+	Vector<String> _get_meta_list_bind_compat_76418() const;
+#endif
 	TypedArray<Dictionary> _get_property_list_bind() const;
 	TypedArray<Dictionary> _get_method_list_bind() const;
 

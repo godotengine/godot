@@ -659,6 +659,10 @@ protected:
 	virtual void _update_theme_item_cache() override;
 
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	bool edit_selected_compat_76794();
+#endif
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;

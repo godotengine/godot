@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "tree.h"
+#include "tree.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"

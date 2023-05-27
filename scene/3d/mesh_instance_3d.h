@@ -61,6 +61,11 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	void create_multiple_convex_collisions_compat_72152();
+
+#endif
 
 public:
 	void set_mesh(const Ref<Mesh> &p_mesh);

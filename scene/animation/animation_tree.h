@@ -118,6 +118,11 @@ protected:
 	AnimationTree *get_animation_tree() const;
 
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	double blend_input_compat_75759(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync);
+	double blend_node_compat_75759(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync);
+#endif
 
 	void _validate_property(PropertyInfo &p_property) const;
 

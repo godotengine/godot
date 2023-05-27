@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "viewport.h"
+#include "viewport.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/core_string_names.h"

@@ -64,6 +64,19 @@ class EditorInterface : public Object {
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	EditorFileSystem *get_resource_file_system_compat_76176();
+	EditorPaths *get_editor_paths_compat_76176();
+	EditorResourcePreview *get_resource_previewer_compat_76176();
+	EditorSelection *get_selection_compat_76176();
+	Ref<EditorSettings> get_editor_settings_compat_76176();
+	Control *get_base_control_compat_76176();
+	VBoxContainer *get_editor_main_screen_compat_76176();
+	ScriptEditor *get_script_editor_compat_76176();
+	FileSystemDock *get_file_system_dock_compat_76176();
+	Node *get_edited_scene_root_compat_76176();
+#endif
 
 public:
 	static EditorInterface *get_singleton() { return singleton; }

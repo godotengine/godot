@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "animation_tree.h"
+#include "animation_tree.compat.inc"
 
 #include "animation_blend_tree.h"
 #include "core/config/engine.h"

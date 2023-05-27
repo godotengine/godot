@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_script.cpp                                                     */
+/*  animation_tree.compat.inc                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,49 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_script.h"
-#include "editor_script.compat.inc"
+#ifndef DISABLE_DEPRECATED
 
-#include "editor/editor_interface.h"
-#include "editor/editor_node.h"
+#include "animation_tree.h"
 
-void EditorScript::add_root_node(Node *p_node) {
-	if (!EditorNode::get_singleton()) {
-		EditorNode::add_io_error("EditorScript::add_root_node: " + TTR("Write your logic in the _run() method."));
-		return;
-	}
-
-	if (EditorNode::get_singleton()->get_edited_scene()) {
-		EditorNode::add_io_error("EditorScript::add_root_node: " + TTR("There is an edited scene already."));
-		return;
-	}
-
-	//editor->set_edited_scene(p_node);
+double AnimationNode::blend_input_compat_75759(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync) {
+	return blend_input(p_input, p_time, p_seek, p_is_external_seeking, p_blend, p_filter, p_sync, false);
 }
 
-Node *EditorScript::get_scene() const {
-	if (!EditorNode::get_singleton()) {
-		EditorNode::add_io_error("EditorScript::get_scene: " + TTR("Write your logic in the _run() method."));
-		return nullptr;
-	}
-
-	return EditorNode::get_singleton()->get_edited_scene();
+double AnimationNode::blend_node_compat_75759(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync) {
+	return blend_node(p_sub_path, p_node, p_time, p_seek, p_is_external_seeking, p_blend, p_filter, p_sync, false);
 }
 
-EditorInterface *EditorScript::get_editor_interface() const {
-	return EditorInterface::get_singleton();
+void AnimationNode::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("blend_node", "name", "node", "time", "seek", "is_external_seeking", "blend", "filter", "sync"), &AnimationNode::blend_node_compat_75759, DEFVAL(FILTER_IGNORE), DEFVAL(true));
+	ClassDB::bind_compatibility_method(D_METHOD("blend_input", "input_index", "time", "seek", "is_external_seeking", "blend", "filter", "sync"), &AnimationNode::blend_input_compat_75759, DEFVAL(FILTER_IGNORE), DEFVAL(true));
 }
 
-void EditorScript::run() {
-	if (!GDVIRTUAL_CALL(_run)) {
-		EditorNode::add_io_error(TTR("Couldn't run editor script, did you forget to override the '_run' method?"));
-	}
-}
-
-void EditorScript::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_root_node", "node"), &EditorScript::add_root_node);
-	ClassDB::bind_method(D_METHOD("get_scene"), &EditorScript::get_scene);
-	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorScript::get_editor_interface);
-
-	GDVIRTUAL_BIND(_run);
-}
+#endif

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "syntax_highlighter.h"
+#include "syntax_highlighter.compat.inc"
 
 #include "core/object/script_language.h"
 #include "scene/gui/text_edit.h"

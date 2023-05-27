@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_script.cpp                                                     */
+/*  mesh_instance_3d.compat.inc                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,49 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor_script.h"
-#include "editor_script.compat.inc"
+#ifndef DISABLE_DEPRECATED
 
-#include "editor/editor_interface.h"
-#include "editor/editor_node.h"
+#include "mesh_instance_3d.h"
 
-void EditorScript::add_root_node(Node *p_node) {
-	if (!EditorNode::get_singleton()) {
-		EditorNode::add_io_error("EditorScript::add_root_node: " + TTR("Write your logic in the _run() method."));
-		return;
-	}
-
-	if (EditorNode::get_singleton()->get_edited_scene()) {
-		EditorNode::add_io_error("EditorScript::add_root_node: " + TTR("There is an edited scene already."));
-		return;
-	}
-
-	//editor->set_edited_scene(p_node);
+void MeshInstance3D::create_multiple_convex_collisions_compat_72152() {
+	create_multiple_convex_collisions();
 }
 
-Node *EditorScript::get_scene() const {
-	if (!EditorNode::get_singleton()) {
-		EditorNode::add_io_error("EditorScript::get_scene: " + TTR("Write your logic in the _run() method."));
-		return nullptr;
-	}
-
-	return EditorNode::get_singleton()->get_edited_scene();
+void MeshInstance3D::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("create_multiple_convex_collisions"), &MeshInstance3D::create_multiple_convex_collisions_compat_72152);
 }
 
-EditorInterface *EditorScript::get_editor_interface() const {
-	return EditorInterface::get_singleton();
-}
-
-void EditorScript::run() {
-	if (!GDVIRTUAL_CALL(_run)) {
-		EditorNode::add_io_error(TTR("Couldn't run editor script, did you forget to override the '_run' method?"));
-	}
-}
-
-void EditorScript::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_root_node", "node"), &EditorScript::add_root_node);
-	ClassDB::bind_method(D_METHOD("get_scene"), &EditorScript::get_scene);
-	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorScript::get_editor_interface);
-
-	GDVIRTUAL_BIND(_run);
-}
+#endif

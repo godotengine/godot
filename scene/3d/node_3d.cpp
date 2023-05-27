@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "node_3d.h"
+#include "node_3d.compat.inc"
 
 #include "core/object/message_queue.h"
 #include "scene/3d/visual_instance_3d.h"

@@ -488,6 +488,10 @@ protected:
 	void _notification(int p_what);
 	void _process_picking();
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	Control *gui_get_focus_owner_compat_77757();
+#endif
 
 public:
 	void canvas_parent_mark_dirty(Node *p_node);

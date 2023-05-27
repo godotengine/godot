@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "mesh_instance_3d.h"
+#include "mesh_instance_3d.compat.inc"
 
 #include "collision_shape_3d.h"
 #include "core/core_string_names.h"

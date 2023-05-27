@@ -318,6 +318,10 @@ class AnimationNodeStateMachinePlayback : public Resource {
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	Vector<String> _get_travel_path_compat_76418() const;
+#endif
 
 public:
 	void travel(const StringName &p_state, bool p_reset_on_teleport = true);

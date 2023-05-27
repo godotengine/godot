@@ -161,6 +161,10 @@ private:
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	void wait_for_task_completion_compat_77143(TaskID p_task_id);
+#endif
 
 public:
 	template <class C, class M, class U>

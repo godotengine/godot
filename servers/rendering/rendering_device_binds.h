@@ -435,6 +435,15 @@ protected:
 		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_versions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_versions", "_get_versions");
 		ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_error"), "set_base_error", "get_base_error");
 	}
+
+#ifndef DISABLE_DEPRECATED
+	Vector<String> get_version_list_compat_76418() const {
+		return Variant(get_version_list()).operator Vector<String>();
+	}
+	static void _bind_compatibility_methods() {
+		ClassDB::bind_compatibility_method(D_METHOD("get_version_list"), &RDShaderFile::get_version_list_compat_76418);
+	}
+#endif
 };
 
 class RDUniform : public RefCounted {

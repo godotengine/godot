@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "area_3d.h"
+#include "area_3d.compat.inc"
 
 #include "scene/scene_string_names.h"
 #include "servers/audio_server.h"

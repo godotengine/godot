@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "object.h"
+#include "object.compat.inc"
 
 #include "core/core_string_names.h"
 #include "core/io/resource.h"
@@ -1395,6 +1396,9 @@ void Object::initialize_class() {
 	}
 	ClassDB::_add_class<Object>();
 	_bind_methods();
+#ifndef DISABLE_DEPRECATED
+	_bind_compatibility_methods();
+#endif
 	initialized = true;
 }
 

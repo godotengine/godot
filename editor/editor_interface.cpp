@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "editor_interface.h"
+#include "editor_interface.compat.inc"
 
 #include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
