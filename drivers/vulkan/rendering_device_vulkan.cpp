@@ -6104,36 +6104,41 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer, uint32_t p_
 /**** RENDER PIPELINE ****/
 /*************************/
 
-void RenderingDeviceVulkan::create_optimized_render_pipeline(void *p_arg, uint32_t p_thread){
-	OptimizedPipelineInfo *info = (OptimizedPipelineInfo *)p_arg;
-	RID id = info->optimize_pipeline_queue->get(p_thread % info->optimize_pipeline_queue->size());
-	print_line("thread: %d RID:%d", p_thread,id);
-	RenderPipeline *pipeline = info->render_pipeline_owner->get_or_null(id);
-	if(pipeline == nullptr){
-		return;
+void RenderingDeviceVulkan::create_optimized_render_pipeline(uint32_t p_thread, Vector<RID> *pipeline_queue){
+	int array_chunk = round(pipeline_queue->size()/WorkerThreadPool::get_singleton()->get_thread_count());
+	int start_index = p_thread * array_chunk;
+	int end_index = (p_thread+1) * array_chunk;
+	if((int)p_thread == WorkerThreadPool::get_singleton()->get_thread_count()-1) {
+		end_index = pipeline_queue->size();
 	}
-	if(pipeline->optimized_pipeline != VK_NULL_HANDLE) {
-		info->optimize_pipeline_queue->erase(id);
-		return;
+	for (int i=start_index; i < end_index; i++) {
+		RID id = pipeline_queue->get(i);
+		print_line("thread:",p_thread,"index:",i, "RID:",id);
+		RenderPipeline *pipeline = render_pipeline_owner.get_or_null(id);
+		if(pipeline == nullptr){
+			return;
+		}
+		if(pipeline->optimized_pipeline != VK_NULL_HANDLE) {
+			return;
+		}
+		VkPipelineLibraryCreateInfoKHR pipeline_library_create_info = {};
+		pipeline_library_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR;
+		pipeline_library_create_info.libraryCount = pipeline->library_deps.size();
+		pipeline_library_create_info.pLibraries = pipeline->library_deps.ptr();
+
+		//TODO: re-enable VRS
+		VkGraphicsPipelineCreateInfo graphics_pipeline_create_info = {};
+		graphics_pipeline_create_info.pNext = &pipeline_library_create_info;
+		graphics_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		graphics_pipeline_create_info.flags = VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT;
+		graphics_pipeline_create_info.pNext = &pipeline_library_create_info;
+		graphics_pipeline_create_info.layout = pipeline->pipeline_layout;
+		graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
+		graphics_pipeline_create_info.basePipelineIndex = 0;
+
+		vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &pipeline->optimized_pipeline);
+		//ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + optimize_pipeline_queue.write[i].shader.get_id() + "'.");
 	}
-	VkPipelineLibraryCreateInfoKHR pipeline_library_create_info = {};
-	pipeline_library_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR;
-	pipeline_library_create_info.libraryCount = pipeline->library_deps.size();
-	pipeline_library_create_info.pLibraries = pipeline->library_deps.ptr();
-
-	//TODO: re-enable VRS
-	VkGraphicsPipelineCreateInfo graphics_pipeline_create_info = {};
-	graphics_pipeline_create_info.pNext = &pipeline_library_create_info;
-	graphics_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	graphics_pipeline_create_info.flags = VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT;
-	graphics_pipeline_create_info.pNext = &pipeline_library_create_info;
-	graphics_pipeline_create_info.layout = pipeline->pipeline_layout;
-	graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
-	graphics_pipeline_create_info.basePipelineIndex = 0;
-
-	vkCreateGraphicsPipelines(info->device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &pipeline->optimized_pipeline);
-	info->optimize_pipeline_queue->erase(id);
-	//ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + optimize_pipeline_queue.write[i].shader.get_id() + "'.");
 }
 
 RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, BitField<PipelineDynamicStateFlags> p_dynamic_state_flags, uint32_t p_for_render_pass, const Vector<PipelineSpecializationConstant> &p_specialization_constants) {
@@ -7448,6 +7453,20 @@ void RenderingDeviceVulkan::draw_list_bind_render_pipeline(DrawListID p_list, RI
 		vkCmdBindPipeline(dl->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
 	}else{
 		vkCmdBindPipeline(dl->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->optimized_pipeline);
+	}
+
+	if(!optimize_pipeline_queue.is_empty()) {
+		WorkerThreadPool::GroupID groupID = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderingDeviceVulkan::create_optimized_render_pipeline, &optimize_pipeline_queue, WorkerThreadPool::get_singleton()->get_thread_count(), -1, true);
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(groupID);
+		for(int i=0; i < optimize_pipeline_queue.size(); i++) {
+			RenderPipeline *queue_pipeline =  render_pipeline_owner.get_or_null(optimize_pipeline_queue[i]);
+			if (queue_pipeline != nullptr) {
+				if (queue_pipeline->optimized_pipeline != VK_NULL_HANDLE) {
+					optimize_pipeline_queue.erase(optimize_pipeline_queue[i]);
+				}
+			}
+		}
+		print_line("pipelines left to compile: ", optimize_pipeline_queue.size());
 	}
 
 	if (dl->state.pipeline_shader != pipeline->shader) {
@@ -8896,25 +8915,7 @@ VkSampleCountFlagBits RenderingDeviceVulkan::_ensure_supported_sample_count(Text
 
 void RenderingDeviceVulkan::swap_buffers() {
 	ERR_FAIL_COND_MSG(local_device.is_valid(), "Local devices can't swap buffers.");
-	OptimizedPipelineInfo pipeline_info = {};
-	pipeline_info.device = device;
-	pipeline_info.optimize_pipeline_queue = &optimize_pipeline_queue;
-	pipeline_info.render_pipeline_owner = &render_pipeline_owner;
-	for (int i=0; i < optimize_pipeline_queue.size(); i++) {
-		RenderPipeline *pipeline = render_pipeline_owner.get_or_null(optimize_pipeline_queue[i]);
-		if(pipeline == nullptr){
-			continue;
-		}
-		if(pipeline->optimized_pipeline != VK_NULL_HANDLE) {
-			optimize_pipeline_queue.erase(optimize_pipeline_queue[i]);
-		}
-	}
-	if(!optimize_pipeline_queue.is_empty()) {
-		WorkerThreadPool::GroupID groupID = WorkerThreadPool::get_singleton()->add_native_group_task(create_optimized_render_pipeline, &pipeline_info, WorkerThreadPool::get_singleton()->get_thread_count(), -1, true);
-		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(groupID);
-	}
 	_THREAD_SAFE_METHOD_
-
 	_finalize_command_bufers();
 
 	screen_prepared = false;
