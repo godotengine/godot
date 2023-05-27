@@ -1341,11 +1341,7 @@ void EditorInspectorSection::_notification(int p_what) {
 					Color light_font_color = get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"));
 
 					// Can we fit the long version of the revertable count text?
-					if (revertable_properties.size() == 1) {
-						num_revertable_str = "(1 change)";
-					} else {
-						num_revertable_str = vformat("(%d changes)", revertable_properties.size());
-					}
+					num_revertable_str = vformat(TTRN("(%d change)", "(%d changes)", revertable_properties.size()), revertable_properties.size());
 					num_revertable_width = light_font->get_string_size(num_revertable_str, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, TextServer::JUSTIFICATION_NONE).x;
 					if (label_width + separation + num_revertable_width > available) {
 						// We'll have to use the short version.
