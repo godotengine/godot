@@ -453,14 +453,19 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 		return Vector<String>();
 	}
 
+	static Vector<String> info;
+	if (!info.is_empty()) {
+		return info;
+	}
+
 	REFCLSID clsid = CLSID_WbemLocator; // Unmarshaler CLSID
 	REFIID uuid = IID_IWbemLocator; // Interface UUID
 	IWbemLocator *wbemLocator = NULL; // to get the services
 	IWbemServices *wbemServices = NULL; // to get the class
 	IEnumWbemClassObject *iter = NULL;
 	IWbemClassObject *pnpSDriverObject[1]; // contains driver name, version, etc.
-	static String driver_name;
-	static String driver_version;
+	String driver_name;
+	String driver_version;
 
 	const String device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name();
 	if (device_name.is_empty()) {
@@ -536,7 +541,6 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	SAFE_RELEASE(wbemServices)
 	SAFE_RELEASE(iter)
 
-	Vector<String> info;
 	info.push_back(driver_name);
 	info.push_back(driver_version);
 
