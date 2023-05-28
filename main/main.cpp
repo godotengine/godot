@@ -813,8 +813,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		packed_data = memnew(PackedData);
 	}
 
-
-
 #ifdef MINIZIP_ENABLED
 
 	//XXX: always get_singleton() == 0x0
