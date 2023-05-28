@@ -894,6 +894,11 @@ public:
 
 	FUNC2(canvas_item_set_material, RID, RID)
 
+	FUNC3(instance_item_set_shader_parameter, RID, const StringName &, const Variant &)
+	FUNC2RC(Variant, instance_item_get_shader_parameter, RID, const StringName &)
+	FUNC2RC(Variant, instance_item_get_shader_parameter_default_value, RID, const StringName &)
+	FUNC2C(instance_item_get_shader_parameter_list, RID, List<PropertyInfo> *)
+
 	FUNC2(canvas_item_set_use_parent_material, RID, bool)
 
 	FUNC5(canvas_item_set_visibility_notifier, RID, bool, const Rect2 &, const Callable &, const Callable &)
