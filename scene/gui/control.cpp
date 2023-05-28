@@ -1585,7 +1585,10 @@ void Control::_update_minimum_size() {
 	Size2 minsize = get_combined_minimum_size();
 	data.updating_last_minimum_size = false;
 
-	if (minsize != data.last_minimum_size) {
+	// If data.minimum_size_valid is still false after calling get_combined_minimum_size().
+	// This is usually because the child control's minimum size is determined automatically.
+	// Now it is an intermediate state and still needs to be negotiated.
+	if (minsize != data.last_minimum_size || !data.minimum_size_valid) {
 		data.last_minimum_size = minsize;
 		_size_changed();
 		emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
@@ -1666,17 +1669,14 @@ void Control::_update_minimum_size_cache() {
 	minsize.x = MAX(minsize.x, data.custom_minimum_size.x);
 	minsize.y = MAX(minsize.y, data.custom_minimum_size.y);
 
-	bool size_changed = false;
-	if (data.minimum_size_cache != minsize) {
-		size_changed = true;
-	}
+	data.minimum_size_valid = true; // Reset to true anyway.
 
+	if (data.minimum_size_cache == minsize) {
+		return;
+	}
 	data.minimum_size_cache = minsize;
-	data.minimum_size_valid = true;
 
-	if (size_changed) {
-		update_minimum_size();
-	}
+	update_minimum_size();
 }
 
 Size2 Control::get_combined_minimum_size() const {
