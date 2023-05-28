@@ -1601,7 +1601,9 @@ void FileSystemDock::_rename_operation_confirm() {
 		EditorNode::get_singleton()->show_warning(TTR("This filename begins with a dot rendering the file invisible to the editor.\nIf you want to rename it anyway, use your operating system's file manager."));
 		rename_error = true;
 	} else if (to_rename.is_file && to_rename.path.get_extension() != new_name.get_extension()) {
-		if (!EditorFileSystem::get_singleton()->get_valid_extensions().find(new_name.get_extension())) {
+		if(new_name.get_extension()==""){// no extention provided
+			new_name = new_name + to_rename.path.get_extension();
+		}else if (!EditorFileSystem::get_singleton()->get_valid_extensions().find(new_name.get_extension())) {
 			EditorNode::get_singleton()->show_warning(TTR("This file extension is not recognized by the editor.\nIf you want to rename it anyway, use your operating system's file manager.\nAfter renaming to an unknown extension, the file won't be shown in the editor anymore."));
 			rename_error = true;
 		}
