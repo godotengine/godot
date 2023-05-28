@@ -5405,7 +5405,7 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 					} break;
 					case VIEW_USE_3_VIEWPORTS: {
 						if ((hovering_v && hovering_h && !dragging_v && !dragging_h) || (dragging_v && dragging_h)) {
-							draw_texture(hdiag_grabber, Vector2(mid_w - hdiag_grabber->get_width() / 2, mid_h - v_grabber->get_height() / 4));
+							draw_texture(hdiag_grabber, Vector2(mid_w - hdiag_grabber->get_width() / 2, mid_h - hdiag_grabber->get_height() / 2));
 							set_default_cursor_shape(CURSOR_DRAG);
 						} else if ((hovering_v && !dragging_h) || dragging_v) {
 							draw_texture(v_grabber, Vector2((size.width - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
@@ -5418,7 +5418,7 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 					} break;
 					case VIEW_USE_3_VIEWPORTS_ALT: {
 						if ((hovering_v && hovering_h && !dragging_v && !dragging_h) || (dragging_v && dragging_h)) {
-							draw_texture(vdiag_grabber, Vector2(mid_w - vdiag_grabber->get_width() + v_grabber->get_height() / 4, mid_h - vdiag_grabber->get_height() / 2));
+							draw_texture(vdiag_grabber, Vector2(mid_w - vdiag_grabber->get_width() / 2, mid_h - vdiag_grabber->get_height() / 2));
 							set_default_cursor_shape(CURSOR_DRAG);
 						} else if ((hovering_v && !dragging_h) || dragging_v) {
 							draw_texture(v_grabber, Vector2((size_left - v_grabber->get_width()) / 2, mid_h - v_grabber->get_height() / 2));
