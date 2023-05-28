@@ -241,7 +241,7 @@
 			<return type="PackedStringArray" />
 			<description>
 				With this function, you can get the list of dangerous permissions that have been granted to the Android application.
-				[b]Note:[/b] This method is implemented on Android.
+				[b]Note:[/b] This method is implemented only on Android.
 			</description>
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
@@ -599,7 +599,7 @@
 			<return type="bool" />
 			<description>
 				With this function, you can request dangerous permissions since normal permissions are automatically granted at install time in Android applications.
-				[b]Note:[/b] This method is implemented on Android.
+				[b]Note:[/b] This method is implemented only on Android.
 			</description>
 		</method>
 		<method name="set_environment" qualifiers="const">
