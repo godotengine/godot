@@ -227,7 +227,7 @@ public:
 			};
 		};
 		uint32_t flags;
-		uint32_t specular_shininess;
+		uint32_t instance_uniforms_ofs;
 		uint32_t lights[4];
 	};
 
@@ -279,6 +279,9 @@ public:
 		uint32_t primitive_points = 0;
 
 		uint32_t flags = 0;
+		uint32_t specular_shininess = 0.0;
+
+		bool lights_disabled = false;
 	};
 
 	// DataBuffer contains our per-frame data. I.e. the resources that are updated each frame.

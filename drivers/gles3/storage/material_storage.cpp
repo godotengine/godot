@@ -1193,6 +1193,7 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["world_vertex_coords"] = "#define USE_WORLD_VERTEX_COORDS\n";
 
 		actions.global_buffer_array_variable = "global_shader_uniforms";
+		actions.instance_uniform_index_variable = "read_draw_data_instance_offset";
 
 		shaders.compiler_canvas.initialize(actions);
 	}
