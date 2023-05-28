@@ -654,7 +654,10 @@ void Label::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESIZED: {
-			lines_dirty = true;
+			if (autowrap_mode != TextServer::AUTOWRAP_OFF || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
+				lines_dirty = true;
+				update_minimum_size();
+			}
 		} break;
 	}
 }
