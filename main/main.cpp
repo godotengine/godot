@@ -93,6 +93,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_translation.h"
+#include "editor/pot_generator.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_manager.h"
 #include "editor/register_editor_types.h"
@@ -171,6 +172,7 @@ static String locale;
 static bool show_help = false;
 static uint64_t quit_after = 0;
 static OS::ProcessID editor_pid = 0;
+static String generate_pot_path;
 #ifdef TOOLS_ENABLED
 static bool found_project = false;
 static bool auto_build_solutions = false;
@@ -498,6 +500,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --validate-extension-api <path>   Validate an extension API file dumped (with the option above) from a previous version of the engine to ensure API compatibility. If incompatibilities or errors are detected, the return code will be non zero.\n");
 	OS::get_singleton()->print("  --benchmark                       Benchmark the run time and print it to console.\n");
 	OS::get_singleton()->print("  --benchmark-file <path>           Benchmark the run time and save it to a given file in JSON format. The path should be absolute.\n");
+	OS::get_singleton()->print("  --generate-pot <path>             Generate a POT template file for translation to the given <path>.\n");
 #ifdef TESTS_ENABLED
 	OS::get_singleton()->print("  --test [--help]                   Run unit tests. Use --test --help for more information.\n");
 #endif
@@ -808,6 +811,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (!packed_data) {
 		packed_data = memnew(PackedData);
 	}
+
+
 
 #ifdef MINIZIP_ENABLED
 
@@ -1271,6 +1276,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			audio_driver = NULL_AUDIO_DRIVER;
 			display_driver = NULL_DISPLAY_DRIVER;
 			main_args.push_back(I->get());
+		} else if (I->get() == "--generate-pot") {
+			cmdline_tool = true;
+
+			if (I->next()) {
+				generate_pot_path = I->next()->get();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing path to generate POT file, aborting.\n");
+				goto error;
+			}
 #endif // TOOLS_ENABLED
 		} else if (I->get() == "--path") { // set path of project to start or edit
 
@@ -2840,6 +2855,10 @@ bool Main::start() {
 		// fine-tune further.
 		OS::get_singleton()->alert("Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
 		ERR_FAIL_V_MSG(false, "Couldn't detect whether to run the editor, the project manager or a specific project. Aborting.");
+	}
+
+	if (!generate_pot_path.is_empty()) {
+		POTGenerator::get_singleton()->generate_pot(generate_pot_path);
 	}
 #endif
 
