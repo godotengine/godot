@@ -1666,7 +1666,7 @@
 			I-beam cursor shape. This is used by default when hovering a control that accepts text input, such as [LineEdit] or [TextEdit].
 		</constant>
 		<constant name="CURSOR_POINTING_HAND" value="2" enum="CursorShape">
-			Pointing hand cursor shape. This is used by default when hovering a [LinkButton] or an URL tag in a [RichTextLabel].
+			Pointing hand cursor shape. This is used by default when hovering a [LinkButton] or a URL tag in a [RichTextLabel].
 		</constant>
 		<constant name="CURSOR_CROSS" value="3" enum="CursorShape">
 			Crosshair cursor. This is intended to be displayed when the user needs precise aim over an element, such as a rectangle selection tool or a color picker.
