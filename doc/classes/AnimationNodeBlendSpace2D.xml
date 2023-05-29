@@ -136,7 +136,7 @@
 			The interpolation between animations is linear.
 		</constant>
 		<constant name="BLEND_MODE_DISCRETE" value="1" enum="BlendMode">
-			The blend space plays the animation of the node the blending position is closest to. Useful for frame-by-frame 2D animations.
+			The blend space plays the animation of the animation node which blending position is closest to. Useful for frame-by-frame 2D animations.
 		</constant>
 		<constant name="BLEND_MODE_DISCRETE_CARRY" value="2" enum="BlendMode">
 			Similar to [constant BLEND_MODE_DISCRETE], but starts the new animation at the last animation's playback position.

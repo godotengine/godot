@@ -527,7 +527,7 @@ AnimationNodeOneShot::AnimationNodeOneShot() {
 ////////////////////////////////////////////////
 
 void AnimationNodeAdd2::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "0,1,0.01"));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "0,1,0.01,or_less,or_greater"));
 }
 
 Variant AnimationNodeAdd2::get_parameter_default_value(const StringName &p_parameter) const {
@@ -561,7 +561,7 @@ AnimationNodeAdd2::AnimationNodeAdd2() {
 ////////////////////////////////////////////////
 
 void AnimationNodeAdd3::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "-1,1,0.01"));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "-1,1,0.01,or_less,or_greater"));
 }
 
 Variant AnimationNodeAdd3::get_parameter_default_value(const StringName &p_parameter) const {
@@ -597,7 +597,7 @@ AnimationNodeAdd3::AnimationNodeAdd3() {
 /////////////////////////////////////////////
 
 void AnimationNodeBlend2::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "0,1,0.01"));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "0,1,0.01,or_less,or_greater"));
 }
 
 Variant AnimationNodeBlend2::get_parameter_default_value(const StringName &p_parameter) const {
@@ -632,7 +632,7 @@ AnimationNodeBlend2::AnimationNodeBlend2() {
 //////////////////////////////////////
 
 void AnimationNodeBlend3::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "-1,1,0.01"));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "-1,1,0.01,or_less,or_greater"));
 }
 
 Variant AnimationNodeBlend3::get_parameter_default_value(const StringName &p_parameter) const {
@@ -659,6 +659,39 @@ AnimationNodeBlend3::AnimationNodeBlend3() {
 	add_input("-blend");
 	add_input("in");
 	add_input("+blend");
+}
+
+////////////////////////////////////////////////
+
+void AnimationNodeSub2::get_parameter_list(List<PropertyInfo> *r_list) const {
+	r_list->push_back(PropertyInfo(Variant::FLOAT, sub_amount, PROPERTY_HINT_RANGE, "0,1,0.01,or_less,or_greater"));
+}
+
+Variant AnimationNodeSub2::get_parameter_default_value(const StringName &p_parameter) const {
+	return 0;
+}
+
+String AnimationNodeSub2::get_caption() const {
+	return "Sub2";
+}
+
+bool AnimationNodeSub2::has_filter() const {
+	return true;
+}
+
+double AnimationNodeSub2::_process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
+	double amount = get_parameter(sub_amount);
+	// Out = Sub.Transform3D^(-1) * In.Transform3D
+	blend_input(1, p_time, p_seek, p_is_external_seeking, -amount, FILTER_PASS, sync, p_test_only);
+	return blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, sync, p_test_only);
+}
+
+void AnimationNodeSub2::_bind_methods() {
+}
+
+AnimationNodeSub2::AnimationNodeSub2() {
+	add_input("in");
+	add_input("sub");
 }
 
 /////////////////////////////////
