@@ -4030,10 +4030,10 @@
 			Array is a vertex color array.
 		</constant>
 		<constant name="ARRAY_TEX_UV" value="4" enum="ArrayType">
-			Array is an UV coordinates array.
+			Array is a UV coordinates array.
 		</constant>
 		<constant name="ARRAY_TEX_UV2" value="5" enum="ArrayType">
-			Array is an UV coordinates array for the second set of UV coordinates.
+			Array is a UV coordinates array for the second set of UV coordinates.
 		</constant>
 		<constant name="ARRAY_CUSTOM0" value="6" enum="ArrayType">
 			Array is a custom data array for the first set of custom data.
@@ -4102,10 +4102,10 @@
 			Flag used to mark a vertex color array.
 		</constant>
 		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat" is_bitfield="true">
-			Flag used to mark an UV coordinates array.
+			Flag used to mark a UV coordinates array.
 		</constant>
 		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat" is_bitfield="true">
-			Flag used to mark an UV coordinates array for the second UV coordinates.
+			Flag used to mark a UV coordinates array for the second UV coordinates.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM0" value="64" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark an array of custom per-vertex data for the first set of custom data.
