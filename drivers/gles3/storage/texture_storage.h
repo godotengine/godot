@@ -451,6 +451,8 @@ private:
 	void _render_target_clear_sdf(RenderTarget *rt);
 	Rect2i _render_target_get_sdf_rect(const RenderTarget *rt) const;
 
+	void _texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer, bool initialize);
+
 	struct RenderTargetSDF {
 		CanvasSdfShaderGLES3 shader;
 		RID shader_version;
