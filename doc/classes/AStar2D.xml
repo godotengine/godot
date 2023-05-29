@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AStar2D" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		AStar class representation that uses 2D vectors as edges.
+		An implementation of A* for finding the shortest path between two vertices on a connected graph in 2D space.
 	</brief_description>
 	<description>
-		This is a wrapper for the [AStar3D] class which uses 2D vectors instead of 3D vectors.
+		An implementation of the A* algorithm, used to find the shortest path between two vertices on a connected graph in 2D space.
+		See [AStar3D] for a more thorough explanation on how to use this class. [AStar2D] is a wrapper for [AStar3D] that enforces 2D coordinates.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,7 +16,7 @@
 			<param index="1" name="to_id" type="int" />
 			<description>
 				Called when computing the cost between two connected points.
-				Note that this function is hidden in the default [code]AStar2D[/code] class.
+				Note that this function is hidden in the default [AStar2D] class.
 			</description>
 		</method>
 		<method name="_estimate_cost" qualifiers="virtual const">
@@ -24,7 +25,7 @@
 			<param index="1" name="to_id" type="int" />
 			<description>
 				Called when estimating the cost between a point and the path's ending point.
-				Note that this function is hidden in the default [code]AStar2D[/code] class.
+				Note that this function is hidden in the default [AStar2D] class.
 			</description>
 		</method>
 		<method name="add_point">

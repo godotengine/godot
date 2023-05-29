@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PinJoint3D" inherits="Joint3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Pin joint for 3D PhysicsBodies.
+		A physics joint that attaches two 3D physics bodies at a single point, allowing them to freely rotate.
 	</brief_description>
 	<description>
-		Pin joint for 3D rigid bodies. It pins 2 bodies (dynamic or static) together. See also [Generic6DOFJoint3D].
+		A physics joint that attaches two 2D physics bodies at a single point, allowing them to freely rotate. For example, a [RigidBody3D] can be attached to a [StaticBody3D] to create a pendulum or a seesaw.
 	</description>
 	<tutorials>
 	</tutorials>

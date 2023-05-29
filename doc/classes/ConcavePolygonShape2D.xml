@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ConcavePolygonShape2D" inherits="Shape2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Concave polygon shape resource for 2D physics.
+		A 2D polyline shape used for physics collision.
 	</brief_description>
 	<description>
-		2D concave polygon shape to be added as a [i]direct[/i] child of a [PhysicsBody2D] or [Area2D] using a [CollisionShape2D] node.
-		The shape consists of a collection of line segments, and as such it does not include any "inside" that the segments might be enclosing. If the segments do enclose anything, then the shape is [i]hollow[/i], as opposed to a [ConvexPolygonShape2D] which is solid. See also [CollisionPolygon2D].
-		Being made out of line segments, this shape is the most freely configurable single 2D shape. It can be used to form (hollow) polygons of any nature, convex or concave.
-		[b]Note:[/b] When used for collision, [b]ConcavePolygonShape2D[/b] is intended to work with static [PhysicsBody2D] nodes like [StaticBody2D] and is not recommended to use with [RigidBody2D] nodes in a mode other than Static. A [CollisionPolygon2D] in convex decomposition mode (solids) or several convex objects are advised for that instead. Otherwise, a concave polygon 2D shape is better suited for static bodies.
-		[b]Warning:[/b] The nature of this shape makes it extra prone to being tunneled through by (small) fast physics bodies. For example, consider a (small) rigid body [i]Ball[/i] traveling toward a static body [i]Box[/i] at high speed. If the box uses a [b]ConcavePolygonShape2D[/b] consisting of four segments, then the ball might end up inside the box or tunnel all the way through the box, if it goes fast enough. This is (partly) because the ball can only collide against the individual segments of the hollow box. In interactions with rigid bodies tunneling can be avoided by enabling continuous collision detection on the rigid body.
-		[b]Warning:[/b] Using this shape for an [Area2D] (via a [CollisionShape2D] node) may give unexpected results: the area will only detect collisions with the segments in the [ConcavePolygonShape2D] (and not with any "inside" of the shape, for example).
-		[b]Performance:[/b] Due to its complexity, [ConcavePolygonShape2D] is the slowest collision shape to check collisions against. Its use should generally be limited to level geometry. For convex geometry, using [ConvexPolygonShape2D] will perform better. For dynamic physics bodies that need concave collision, several [ConvexPolygonShape2D]s can be used to represent its collision by using convex decomposition; see [ConvexPolygonShape2D]'s documentation for instructions. However, consider using primitive collision shapes such as [CircleShape2D] or [RectangleShape2D] first.
+		A 2D polyline shape, intended for use in physics. Used internally in [CollisionPolygon2D] when it's in [code]BUILD_SEGMENTS[/code] mode.
+		Being just a collection of interconnected line segments, [ConcavePolygonShape2D] is the most freely configurable single 2D shape. It can be used to form polygons of any nature, or even shapes that don't enclose an area. However, [ConvexPolygonShape2D] is [i]hollow[/i] even if the interconnected line segments do enclose an area, which often makes it unsuitable for physics or detection.
+		[b]Note:[/b] When used for collision, [ConcavePolygonShape2D] is intended to work with static [CollisionShape2D] nodes like [StaticBody2D] and will likely not behave well for [CharacterBody2D]s or [RigidBody2D]s in a mode other than Static.
+		[b]Warning:[/b] Physics bodies that are small have a chance to clip through this shape when moving fast. This happens because on one frame, the physics body may be on the "outside" of the shape, and on the next frame it may be "inside" it. [ConcavePolygonShape2D] is hollow, so it won't detect a collision.
+		[b]Performance:[/b] Due to its complexity, [ConcavePolygonShape2D] is the slowest 2D collision shape to check collisions against. Its use should generally be limited to level geometry. If the polyline is closed, [CollisionPolygon2D]'s [code]BUILD_SOLIDS[/code] mode can be used, which decomposes the polygon into convex ones; see [ConvexPolygonShape2D]'s documentation for instructions.
 	</description>
 	<tutorials>
 	</tutorials>

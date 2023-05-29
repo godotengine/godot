@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Area2D" inherits="CollisionObject2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		2D area for detection, as well as physics and audio influence.
+		A region of 2D space that detects other [CollisionObject2D]s entering or exiting it.
 	</brief_description>
 	<description>
-		2D area that detects [CollisionObject2D] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping) and route audio to custom audio buses.
-		To give the area its shape, add a [CollisionShape2D] or a [CollisionPolygon2D] node as a [i]direct[/i] child (or add multiple such nodes as direct children) of the area.
-		[b]Warning:[/b] See [ConcavePolygonShape2D] for a warning about possibly unexpected behavior when using that shape for an area.
+		[Area2D] is a region of 2D space defined by one or multiple [CollisionShape2D] or [CollisionPolygon2D] child nodes. It detects when other [CollisionObject2D]s enter or exit it, and it also keeps track of which collision objects haven't exited it yet (i.e. which one are overlapping it).
+		This node can also locally alter or override physics parameters (gravity, damping) and route audio to custom audio buses.
 	</description>
 	<tutorials>
 		<link title="Using Area2D">$DOCS_URL/tutorials/physics/using_area_2d.html</link>
