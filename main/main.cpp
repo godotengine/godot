@@ -93,11 +93,12 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_translation.h"
-#include "editor/pot_generator.h"
 #include "editor/plugins/packed_scene_translation_parser_plugin.h"
+#include "editor/pot_generator.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_manager.h"
 #include "editor/register_editor_types.h"
+#include "modules/gdscript/editor/gdscript_translation_parser_plugin.h"
 
 #ifndef NO_EDITOR_SPLASH
 #include "main/splash_editor.gen.h"
@@ -2824,11 +2825,15 @@ bool Main::start() {
 	}
 
 	if (!generate_pot_path.is_empty()) {
+		Ref<GDScriptEditorTranslationParserPlugin> gdscript_translation_parser_plugin;
 		Ref<PackedSceneEditorTranslationParserPlugin> packed_scene_translation_parser_plugin;
+		gdscript_translation_parser_plugin.instantiate();
 		packed_scene_translation_parser_plugin.instantiate();
+		EditorTranslationParser::get_singleton()->add_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
 		EditorTranslationParser::get_singleton()->add_parser(packed_scene_translation_parser_plugin, EditorTranslationParser::STANDARD);
 		POTGenerator::get_singleton()->generate_pot(generate_pot_path);
 		EditorTranslationParser::get_singleton()->remove_parser(packed_scene_translation_parser_plugin, EditorTranslationParser::STANDARD);
+		EditorTranslationParser::get_singleton()->remove_parser(gdscript_translation_parser_plugin, EditorTranslationParser::STANDARD);
 		OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
 		return false;
 	}
