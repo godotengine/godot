@@ -32,6 +32,7 @@
 #define STYLE_BOX_H
 
 #include "core/io/resource.h"
+#include "core/typedefs.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering_server.h"
 
@@ -147,9 +148,49 @@ VARIANT_ENUM_CAST(StyleBoxTexture::AxisStretchMode)
 class StyleBoxFlat : public StyleBox {
 	GDCLASS(StyleBoxFlat, StyleBox);
 
+public:
+	enum BorderColorJoinStyle {
+		BORDER_COLOR_JOIN_STYLE_GRADIENT,
+		BORDER_COLOR_JOIN_STYLE_SHARP,
+	};
+	enum BorderSideColoringStyle {
+		BORDER_SIDE_COLORING_STYLE_SOLID,
+		BORDER_SIDE_COLORING_STYLE_SIMPLE_GRADIENT,
+	};
+	enum BorderColoringStyle {
+		BORDER_COLORING_STYLE_SOLID,
+		BORDER_COLORING_STYLE_SIMPLE_GRADIENT,
+		BORDER_COLORING_STYLE_SIMPLE_2D_GRADIENT,
+		BORDER_COLORING_STYLE_OUTSET,
+		BORDER_COLORING_STYLE_INSET,
+	};
+	enum FillStyle {
+		FILL_STYLE_SOLID,
+		FILL_STYLE_SIMPLE_GRADIENT,
+	};
+	enum SimpleGradientOrientation {
+		SIMPLE_GRADIENT_ORIENTATION_LEFT_TO_RIGHT,
+		SIMPLE_GRADIENT_ORIENTATION_TOP_TO_BOTTOM,
+		SIMPLE_GRADIENT_ORIENTATION_RIGHT_TO_LEFT,
+		SIMPLE_GRADIENT_ORIENTATION_BOTTOM_TO_TOP,
+	};
+	enum SimpleGradientColoringAlgorithm {
+		GRADIENT_ALGO_INTERPOLATE_CORNER_LIMITS,
+		GRADIENT_ALGO_FULL_CORNER_LIMITS,
+	};
+
+private:
 	Color bg_color = Color(0.6, 0.6, 0.6);
+	Color bg_secondary_color = Color(0.4, 0.4, 0.4);
 	Color shadow_color = Color(0, 0, 0, 0.6);
 	Color border_color = Color(0.8, 0.8, 0.8);
+	Color border_secondary_color = Color(0.7, 0.7, 0.7);
+	Color border_third_color = Color(0.6, 0.6, 0.6);
+	Color border_fourth_color = Color(0.5, 0.5, 0.5);
+	Color border_bevel_light_color = Color(1, 1, 1);
+	Color border_bevel_dark_color = Color(0, 0, 0);
+	Color border_side_colors[4] = { Color(1, 1, 1), Color(1, 1, 1), Color(1, 1, 1), Color(1, 1, 1) };
+	Color border_side_secondary_colors[4] = { Color(1, 1, 1), Color(1, 1, 1), Color(1, 1, 1), Color(1, 1, 1) };
 
 	real_t border_width[4] = {};
 	real_t expand_margin[4] = {};
@@ -157,6 +198,22 @@ class StyleBoxFlat : public StyleBox {
 
 	bool draw_center = true;
 	bool blend_border = false;
+	BorderColorJoinStyle color_join_style = BORDER_COLOR_JOIN_STYLE_GRADIENT;
+	BorderColoringStyle border_coloring_style = BORDER_COLORING_STYLE_SOLID;
+	SimpleGradientOrientation border_gradient_orientation = SIMPLE_GRADIENT_ORIENTATION_LEFT_TO_RIGHT;
+	SimpleGradientColoringAlgorithm border_gradient_algo = GRADIENT_ALGO_INTERPOLATE_CORNER_LIMITS;
+	bool border_side_colors_defined[4] = { false, false, false, false };
+	BorderSideColoringStyle border_side_coloring_styles[4] = { BORDER_SIDE_COLORING_STYLE_SOLID, BORDER_SIDE_COLORING_STYLE_SOLID, BORDER_SIDE_COLORING_STYLE_SOLID, BORDER_SIDE_COLORING_STYLE_SOLID };
+
+	FillStyle center_fill_style = FILL_STYLE_SOLID;
+	SimpleGradientOrientation center_gradient_orientation = SIMPLE_GRADIENT_ORIENTATION_LEFT_TO_RIGHT;
+
+	real_t bevel_lighting_intensity = 0.3;
+	real_t bevel_darkening_intensity = 0.3;
+	real_t bevel_lighting_angle = 135.0;
+	real_t bevel_max_intensity_angle_ratio = 0.5;
+	real_t corner_color_join_angles[4] = { 0.5, 0.5, 0.5, 0.5 };
+
 	Vector2 skew;
 	bool anti_aliased = true;
 
@@ -174,8 +231,66 @@ public:
 	void set_bg_color(const Color &p_color);
 	Color get_bg_color() const;
 
+	void set_bg_secondary_color(const Color &p_color);
+	Color get_bg_secondary_color() const;
+
+	void set_bg_simple_gradient_orientation(SimpleGradientOrientation p_orientation);
+	SimpleGradientOrientation get_bg_simple_gradient_orientation() const;
+
 	void set_border_color(const Color &p_color);
 	Color get_border_color() const;
+
+	void set_border_secondary_color(const Color &p_color);
+	Color get_border_secondary_color() const;
+
+	void set_border_third_color(const Color &p_color);
+	Color get_border_third_color() const;
+
+	void set_border_fourth_color(const Color &p_color);
+	Color get_border_fourth_color() const;
+
+	void set_border_simple_gradient_orientation(SimpleGradientOrientation p_orientation);
+	SimpleGradientOrientation get_border_simple_gradient_orientation() const;
+
+	void set_border_simple_gradient_algorithm(SimpleGradientColoringAlgorithm p_algo);
+	SimpleGradientColoringAlgorithm get_border_simple_gradient_algorithm() const;
+
+	void set_border_bevel_lighting_color(const Color &p_color);
+	Color get_border_bevel_lighting_color() const;
+
+	void set_border_bevel_darkening_color(const Color &p_color);
+	Color get_border_bevel_darkening_color() const;
+
+	void set_border_bevel_lighting_intensity(float p_intensity);
+	float get_border_bevel_lighting_intensity() const;
+
+	void set_border_bevel_darkening_intensity(float p_intensity);
+	float get_border_bevel_darkening_intensity() const;
+
+	void set_border_bevel_lighting_angle(float p_angle);
+	float get_border_bevel_lighting_angle() const;
+
+	void set_border_bevel_max_intensity_angle_ratio(float p_ratio);
+	float get_border_bevel_max_intensity_angle_ratio() const;
+
+	void set_border_side_color(Side p_expand_side, const Color &p_color);
+	void set_border_side_color_all(const Color &p_color);
+	void set_border_side_color_individual(const Color &p_left, const Color &p_top, const Color &p_right, const Color &p_bottom);
+	Color get_border_side_color(Side p_expand_side) const;
+
+	void set_border_side_secondary_color(Side p_expand_side, const Color &p_color);
+	void set_border_side_secondary_color_all(const Color &p_color);
+	void set_border_side_secondary_color_individual(const Color &p_left, const Color &p_top, const Color &p_right, const Color &p_bottom);
+	Color get_border_side_secondary_color(Side p_expand_side) const;
+
+	void set_border_side_color_defined(Side p_side, bool p_defined);
+	bool get_border_side_color_defined(Side p_side) const;
+
+	void set_border_side_coloring_style(Side p_side, BorderSideColoringStyle p_coloring_style);
+	BorderSideColoringStyle get_border_side_coloring_style(Side p_side) const;
+
+	void set_corner_color_join_angle(Corner p_corner, float p_angle);
+	float get_corner_color_join_angle(Corner p_corner) const;
 
 	void set_border_width_all(int p_size);
 	int get_border_width_min() const;
@@ -186,6 +301,12 @@ public:
 	void set_border_blend(bool p_blend);
 	bool get_border_blend() const;
 
+	void set_border_coloring_style(BorderColoringStyle p_coloring_style);
+	BorderColoringStyle get_border_coloring_style() const;
+
+	void set_border_color_join_style(BorderColorJoinStyle p_join_style);
+	BorderColorJoinStyle get_border_color_join_style() const;
+
 	void set_corner_radius_all(int radius);
 	void set_corner_radius_individual(const int radius_top_left, const int radius_top_right, const int radius_bottom_right, const int radius_bottom_left);
 
@@ -194,6 +315,9 @@ public:
 
 	void set_corner_detail(const int &p_corner_detail);
 	int get_corner_detail() const;
+
+	void set_center_fill_style(FillStyle p_fill_style);
+	FillStyle get_center_fill_style() const;
 
 	void set_expand_margin(Side p_expand_side, float p_size);
 	void set_expand_margin_all(float p_expand_margin_size);
@@ -226,6 +350,13 @@ public:
 	StyleBoxFlat();
 	~StyleBoxFlat();
 };
+
+VARIANT_ENUM_CAST(StyleBoxFlat::BorderColorJoinStyle)
+VARIANT_ENUM_CAST(StyleBoxFlat::BorderSideColoringStyle)
+VARIANT_ENUM_CAST(StyleBoxFlat::BorderColoringStyle)
+VARIANT_ENUM_CAST(StyleBoxFlat::FillStyle)
+VARIANT_ENUM_CAST(StyleBoxFlat::SimpleGradientOrientation)
+VARIANT_ENUM_CAST(StyleBoxFlat::SimpleGradientColoringAlgorithm)
 
 // Just used to draw lines.
 class StyleBoxLine : public StyleBox {
