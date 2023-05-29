@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="MissingResource" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		This is an internal editor class intended for keeping data of resources of unknown type.
+		An internal editor class intended for keeping the data of unrecognized resources.
 	</brief_description>
 	<description>
 		This is an internal editor class intended for keeping data of resources of unknown type (most likely this type was supplied by an extension that is no longer loaded). It can't be manually instantiated or placed in the scene. Ignore it if you don't know what it is.
@@ -10,6 +10,7 @@
 	</tutorials>
 	<members>
 		<member name="original_class" type="String" setter="set_original_class" getter="get_original_class">
+			Returns the name of the class this resource was originally.
 		</member>
 		<member name="recording_properties" type="bool" setter="set_recording_properties" getter="is_recording_properties">
 		</member>

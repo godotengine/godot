@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ResourceUID" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Singleton for managing a cache of resource UIDs within a project.
+		A singleton that manages the unique identifiers of all resources within a project.
 	</brief_description>
 	<description>
-		Resources can not only be referenced using their resource paths [code]res://[/code], but alternatively through a unique identifier specified via [code]uid://[/code].
-		Using UIDs allows for the engine to keep references between resources intact, even if the files get renamed or moved.
-		This singleton is responsible for keeping track of all registered resource UIDs of a project, generating new UIDs and converting between the string and integer representation.
+		Resource UIDs (Unique IDentifiers) allow the engine to keep references between resources intact, even if files can renamed or moved. They can be accessed with [code]uid://[/code].
+		[ResourceUID] keeps track of all registered resource UIDs in a project, generates new UIDs, and converts between their string and integer representations.
 	</description>
 	<tutorials>
 	</tutorials>

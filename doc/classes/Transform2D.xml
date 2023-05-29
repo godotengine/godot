@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Transform2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		2D transformation (2×3 matrix).
+		A 2×3 matrix representing a 2D transformation.
 	</brief_description>
 	<description>
-		2×3 matrix (2 rows, 3 columns) used for 2D linear transformations. It can represent transformations such as translation, rotation, or scaling. It consists of three [Vector2] values: [member x], [member y], and the [member origin].
+		A 2×3 matrix (2 rows, 3 columns) used for 2D linear transformations. It can represent transformations such as translation, rotation, and scaling. It consists of three [Vector2] values: [member x], [member y], and the [member origin].
 		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>

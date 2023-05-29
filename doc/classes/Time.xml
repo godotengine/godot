@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Time" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Time singleton for working with time.
+		A singleton for working with time data.
 	</brief_description>
 	<description>
 		The Time singleton allows converting time between various formats and also getting time information from the system.

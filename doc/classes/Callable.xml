@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Callable" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Built-in type representing a method in an object instance or a standalone function.
+		A built-in type representing a method or a standalone function.
 	</brief_description>
 	<description>
 		[Callable] is a built-in [Variant] type that represents a function. It can either be a method within an [Object] instance, or a standalone function not related to any object, like a lambda function. Like all [Variant] types, it can be stored in variables and passed to other functions. It is most commonly used for signal callbacks.

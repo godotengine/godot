@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NodePath" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Pre-parsed scene tree path.
+		A pre-parsed scene tree path.
 	</brief_description>
 	<description>
 		A pre-parsed relative or absolute path in a scene tree, for use with [method Node.get_node] and similar functions. It can reference a node, a resource within a node, or a property of a node or resource. For example, [code]"Path2D/PathFollow2D/Sprite2D:texture:size"[/code] would refer to the [code]size[/code] property of the [code]texture[/code] resource on the node named [code]"Sprite2D"[/code] which is a child of the other named nodes in the path.
@@ -22,6 +22,7 @@
 		[/codeblock]
 		See also [StringName], which is a similar concept for general-purpose string interning.
 		[b]Note:[/b] In the editor, [NodePath] properties are automatically updated when moving, renaming or deleting a node in the scene tree, but they are never updated at runtime.
+		[b]Note:[/b] In a boolean context, a [NodePath] will evaluate to [code]false[/code] if it is empty ([code]NodePath("")[/code]). Otherwise, a [NodePath] will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
