@@ -68,7 +68,7 @@
 			<param index="0" name="allow_draw_overlap" type="bool" default="false" />
 			<description>
 				Starts a list of compute commands created with the [code]compute_*[/code] methods. The returned value should be passed to other [code]compute_list_*[/code] functions.
-				If [code]allow_draw_overlap[/code] is true, you may have one draw list running at the same time as one compute list. Multiple compute lists cannot be created at the same time; you must finish the previous compute list first using [method compute_list_end].
+				If [param allow_draw_overlap] is [code]true[/code], you may have one draw list running at the same time as one compute list. Multiple compute lists cannot be created at the same time; you must finish the previous compute list first using [method compute_list_end].
 				A simple compute operation might look like this (code is not a complete example):
 				[codeblock]
 				var rd = RenderingDevice.new()
@@ -368,7 +368,7 @@
 			<param index="1" name="view_count" type="int" default="1" />
 			<description>
 				Creates a new framebuffer format with the specified [param attachments] and [param view_count]. Returns the new framebuffer's unique framebuffer format ID.
-				If [code]view_count[/code] is greater than or equal to [code]2[/code], enables multiview which is used for VR rendering. This requires support for the Vulkan multiview extension.
+				If [param view_count] is greater than or equal to [code]2[/code], enables multiview which is used for VR rendering. This requires support for the Vulkan multiview extension.
 			</description>
 		</method>
 		<method name="framebuffer_format_create_empty">
@@ -384,7 +384,7 @@
 			<param index="1" name="passes" type="RDFramebufferPass[]" />
 			<param index="2" name="view_count" type="int" default="1" />
 			<description>
-				Creates a multipass framebuffer format with the specified [param attachments], [param passes] and [param view_count] and returns its ID. If [code]view_count[/code] is greater than or equal to [code]2[/code], enables multiview which is used for VR rendering. This requires support for the Vulkan multiview extension.
+				Creates a multipass framebuffer format with the specified [param attachments], [param passes] and [param view_count] and returns its ID. If [param view_count] is greater than or equal to [code]2[/code], enables multiview which is used for VR rendering. This requires support for the Vulkan multiview extension.
 			</description>
 		</method>
 		<method name="framebuffer_format_get_texture_samples">

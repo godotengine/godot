@@ -163,7 +163,7 @@
 			<param index="0" name="position" type="int" />
 			<param index="1" name="chars" type="int" default="1" />
 			<description>
-				Returns a string with [param chars] characters erased starting from [param position]. If [param chars] goes beyond the string's length given the specified [param position], fewer characters will be erased from the returned string. Returns an empty string if either [code]position[/code] or [code]chars[/code] is negative. Returns the original string unmodified if [param chars] is [code]0[/code].
+				Returns a string with [param chars] characters erased starting from [param position]. If [param chars] goes beyond the string's length given the specified [param position], fewer characters will be erased from the returned string. Returns an empty string if either [param position] or [param chars] is negative. Returns the original string unmodified if [param chars] is [code]0[/code].
 			</description>
 		</method>
 		<method name="find" qualifiers="const">
