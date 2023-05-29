@@ -2809,18 +2809,22 @@ void EditorInspector::update_tree() {
 			category->label = label;
 
 			if (use_doc_hints) {
+				String descr = "";
 				// Sets the category tooltip to show documentation.
 				if (!class_descr_cache.has(doc_name)) {
-					String descr;
 					DocTools *dd = EditorHelp::get_doc_data();
 					HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(doc_name);
 					if (E) {
 						descr = DTR(E->value.brief_description);
 					}
-					class_descr_cache[doc_name] = descr;
+					if (ClassDB::class_exists(doc_name)) {
+						class_descr_cache[doc_name] = descr; // Do not cache the class description of scripts.
+					}
+				} else {
+					descr = class_descr_cache[doc_name];
 				}
 
-				category->set_tooltip_text(p.name + "::" + (class_descr_cache[doc_name].is_empty() ? "" : class_descr_cache[doc_name]));
+				category->set_tooltip_text(p.name + "::" + descr);
 			}
 
 			// Add editors at the start of a category.
@@ -3213,7 +3217,9 @@ void EditorInspector::update_tree() {
 					}
 				}
 
-				doc_info_cache[classname][propname] = doc_info;
+				if (ClassDB::class_exists(classname)) {
+					doc_info_cache[classname][propname] = doc_info; // Do not cache the doc information of scripts.
+				}
 			}
 		}
 
