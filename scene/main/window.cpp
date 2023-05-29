@@ -524,8 +524,6 @@ void Window::set_ime_position(const Point2i &p_pos) {
 
 bool Window::is_embedded() const {
 	ERR_READ_THREAD_GUARD_V(false);
-	ERR_FAIL_COND_V(!is_inside_tree(), false);
-
 	return get_embedder() != nullptr;
 }
 

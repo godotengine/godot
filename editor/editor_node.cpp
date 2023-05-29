@@ -6981,6 +6981,7 @@ EditorNode::EditorNode() {
 	resource_preview = memnew(EditorResourcePreview);
 	add_child(resource_preview);
 	progress_dialog = memnew(ProgressDialog);
+	progress_dialog->set_unparent_when_invisible(true);
 
 	// Take up all screen.
 	gui_base->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
