@@ -739,11 +739,8 @@
 		<member name="text_editor/appearance/gutters/line_numbers_zero_padded" type="bool" setter="" getter="">
 			If [code]true[/code], displays line numbers with zero padding (e.g. [code]007[/code] instead of [code]7[/code]).
 		</member>
-		<member name="text_editor/appearance/gutters/show_bookmark_gutter" type="bool" setter="" getter="">
-			If [code]true[/code], displays icons for bookmarks in a gutter at the left. Bookmarks remain functional when this setting is disabled.
-		</member>
 		<member name="text_editor/appearance/gutters/show_info_gutter" type="bool" setter="" getter="">
-			If [code]true[/code], displays a gutter at the left containing icons for methods with signal connections.
+			If [code]true[/code], displays a gutter at the left containing icons for methods with signal connections and for overridden methods.
 		</member>
 		<member name="text_editor/appearance/gutters/show_line_numbers" type="bool" setter="" getter="">
 			If [code]true[/code], displays line numbers in a gutter at the left.
