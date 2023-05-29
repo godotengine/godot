@@ -159,6 +159,8 @@ void register_core_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(ScriptExtension);
 	GDREGISTER_VIRTUAL_CLASS(ScriptLanguageExtension);
+	
+	GDREGISTER_CLASS(GDScriptNativeClass); //allow the tiny dev to make their security objects
 
 	GDREGISTER_CLASS(RefCounted);
 	GDREGISTER_CLASS(WeakRef);
