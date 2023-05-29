@@ -105,7 +105,7 @@ void CurveEdit::set_snap_count(int p_snap_count) {
 }
 
 Size2 CurveEdit::get_minimum_size() const {
-	return Vector2(64, 135) * EDSCALE;
+	return Vector2(64, MAX(135, get_size().x * ASPECT_RATIO)) * EDSCALE;
 }
 
 void CurveEdit::_notification(int p_what) {
@@ -986,6 +986,9 @@ void CurveEditor::_notification(int p_what) {
 				snap_count_edit->set_value(curve->get_meta("_snap_count", DEFAULT_SNAP));
 			}
 		} break;
+		case NOTIFICATION_RESIZED:
+			curve_editor_rect->update_minimum_size();
+			break;
 	}
 }
 
