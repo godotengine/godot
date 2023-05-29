@@ -1356,7 +1356,11 @@ float ParticleProcessMaterial::get_turbulence_noise_strength() const {
 
 void ParticleProcessMaterial::set_turbulence_noise_scale(float p_turbulence_noise_scale) {
 	turbulence_noise_scale = p_turbulence_noise_scale;
-	float shader_turbulence_noise_scale = (pow(p_turbulence_noise_scale, 0.25) * 5.6234 / 10.0) * 4.0 - 3.0;
+	const float noise_frequency_when_slider_is_zero = 4.0;
+	const float max_slider_value = 10.0;
+	const float curve_exponent = 0.25;
+	const float curve_rescale = noise_frequency_when_slider_is_zero / pow(max_slider_value, curve_exponent);
+	float shader_turbulence_noise_scale = pow(p_turbulence_noise_scale, curve_exponent) * curve_rescale - noise_frequency_when_slider_is_zero;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_noise_scale, shader_turbulence_noise_scale);
 }
 
