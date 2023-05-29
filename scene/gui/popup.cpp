@@ -96,6 +96,7 @@ void Popup::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_UNPARENTED:
 		case NOTIFICATION_EXIT_TREE: {
 			if (!is_in_edited_scene_root()) {
 				_deinitialize_visible_parents();
