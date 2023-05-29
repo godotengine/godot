@@ -498,6 +498,7 @@ public:
 	static double snapped(double p_value, double p_step);
 
 	static uint32_t larger_prime(uint32_t p_val);
+	static bool is_prime(uint64_t p_val);
 
 	static void seed(uint64_t x);
 	static void randomize();

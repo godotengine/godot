@@ -370,6 +370,10 @@ struct VariantUtilityFunctions {
 		return Math::snapped(x, step);
 	}
 
+	static inline bool is_prime(const int64_t x) {
+		return Math::is_prime(absi(x));
+	}
+
 	static inline Variant lerp(const Variant &from, const Variant &to, double weight, Callable::CallError &r_error) {
 		r_error.error = Callable::CallError::CALL_OK;
 		if (from.get_type() != to.get_type()) {
@@ -1533,6 +1537,8 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDVR2(snapped, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(snappedf, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(snappedi, sarray("x", "step"), Variant::UTILITY_FUNC_TYPE_MATH);
+
+	FUNCBINDR(is_prime, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(pow, sarray("base", "exp"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(log, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);

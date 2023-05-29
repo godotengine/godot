@@ -168,6 +168,48 @@ uint32_t Math::larger_prime(uint32_t p_val) {
 	}
 }
 
+bool Math::is_prime(uint64_t p_val) {
+	if (p_val < 4 && p_val > 0) {
+		return true;
+	}
+	float sqrt_val = sqrt(float(p_val));
+	int64_t rnd_sqrt_val = round(sqrt(float(p_val)));
+	if ((!(p_val & 1)) || sqrt_val == rnd_sqrt_val) {
+		return false;
+	}
+	int64_t factor = 3;
+
+	while (factor) { // falsy breaks from the loop.
+		if (p_val % factor == 0) {
+			return false;
+		}
+
+		// Lazy approach.
+		int64_t compare_factor = factor;
+		for (int64_t i = factor + 1; i < rnd_sqrt_val + 1; i++) {
+			float sqrt_i = sqrt(float(i));
+			bool prime_factor = true;
+			if ((i != 2 && !(i & 1)) || sqrt_i == round(sqrt_i)) {
+				continue; // they're not prime, so they can't be prime factors.
+			}
+			for (int64_t j = i; i < rnd_sqrt_val; j++) {
+				if (i % j == 0) {
+					prime_factor = false;
+					break;
+				}
+			}
+			if (prime_factor) {
+				factor = i;
+				break;
+			}
+		}
+		if (factor == compare_factor) { // breaks from the loop.
+			factor = 0;
+		}
+	}
+	return true;
+}
+
 double Math::random(double from, double to) {
 	return default_rand.random(from, to);
 }
