@@ -112,6 +112,9 @@ Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_node(const CollisionObject3D *p_body_
 		physics_body->linear_velocity = body->get_linear_velocity();
 		physics_body->angular_velocity = body->get_angular_velocity();
 		physics_body->inertia = body->get_inertia();
+		if (body->get_center_of_mass() != Vector3()) {
+			WARN_PRINT("GLTFPhysicsBody: This rigid body has a center of mass offset from the origin, which will be ignored when exporting to GLTF.");
+		}
 		if (cast_to<VehicleBody3D>(p_body_node)) {
 			physics_body->body_type = "vehicle";
 		} else {
@@ -140,6 +143,7 @@ CollisionObject3D *GLTFPhysicsBody::to_node() const {
 		body->set_linear_velocity(linear_velocity);
 		body->set_angular_velocity(angular_velocity);
 		body->set_inertia(inertia);
+		body->set_center_of_mass_mode(RigidBody3D::CENTER_OF_MASS_MODE_CUSTOM);
 		return body;
 	}
 	if (body_type == "rigid") {
@@ -148,6 +152,7 @@ CollisionObject3D *GLTFPhysicsBody::to_node() const {
 		body->set_linear_velocity(linear_velocity);
 		body->set_angular_velocity(angular_velocity);
 		body->set_inertia(inertia);
+		body->set_center_of_mass_mode(RigidBody3D::CENTER_OF_MASS_MODE_CUSTOM);
 		return body;
 	}
 	if (body_type == "static") {
