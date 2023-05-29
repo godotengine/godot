@@ -9,6 +9,7 @@ namespace Godot
         private bool _completed;
         private Variant[] _result;
         private Action _continuation;
+        private TaskCompletionSource<Variant[]> _taskCompletionSource = new();
 
         public SignalAwaiter(GodotObject source, StringName signal, GodotObject target)
         {
@@ -20,6 +21,8 @@ namespace Godot
         }
 
         public bool IsCompleted => _completed;
+
+        public Task<Variant[]> Task => _taskCompletionSource.Task;
 
         public void OnCompleted(Action continuation)
         {
@@ -54,6 +57,8 @@ namespace Godot
                     signalArgs[i] = Variant.CreateCopyingBorrowed(*args[i]);
 
                 awaiter._result = signalArgs;
+
+                awaiter._taskCompletionSource.SetResult(signalArgs);
 
                 awaiter._continuation?.Invoke();
             }
