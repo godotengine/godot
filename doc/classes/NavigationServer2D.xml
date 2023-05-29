@@ -383,7 +383,7 @@
 			<return type="RID[]" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns all navigation obstacle [RID]s that are currently assigned to the requested navigation [code]map[/code].
+				Returns all navigation obstacle [RID]s that are currently assigned to the requested navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_path" qualifiers="const">
