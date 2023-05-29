@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Label3D" inherits="GeometryInstance3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Displays plain text in a 3D world.
+		A node for displaying plain text in 3D space.
 	</brief_description>
 	<description>
-		Label3D displays plain text in a 3D world. It gives you control over the horizontal and vertical alignment.
+		A node for displaying plain text in 3D space. By adjusting various properties of this node, you can configure things such as the text's appearance and whether it always faces the camera.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TextServerExtension" inherits="TextServer" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for TextServer custom implementations (plugins).
+		Base class for custom [TextServer] implementations (plugins).
 	</brief_description>
 	<description>
-		External TextServer implementations should inherit from this class.
+		External [TextServer] implementations should inherit from this class.
 	</description>
 	<tutorials>
 	</tutorials>

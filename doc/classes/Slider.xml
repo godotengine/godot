@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Slider" inherits="Range" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for GUI sliders.
+		Abstract base class for sliders.
 	</brief_description>
 	<description>
-		Base class for GUI sliders.
-		[b]Note:[/b] The [signal Range.changed] and [signal Range.value_changed] signals are part of the [Range] class which this class inherits from.
+		Abstract base class for sliders, used to adjust a value by moving a grabber along a horizontal or vertical axis. Sliders are [Range]-based controls.
 	</description>
 	<tutorials>
 	</tutorials>

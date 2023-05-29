@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Theme" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Theme resource for styling/skinning [Control]s and [Window]s.
+		A resource used for styling/skinning [Control]s and [Window]s.
 	</brief_description>
 	<description>
-		A theme resource is used for styling/skinning [Control] and [Window] nodes. While individual controls can be styled using their local theme overrides (see [method Control.add_theme_color_override]), theme resources allow you to store and apply the same settings between all controls sharing the same type (e.g. style all [Button]s the same). One theme resource can be used for the entire project, but you can also set a separate theme resource to a branch of control nodes. A theme resources assigned to a control node applies to the control itself, as well as all of its direct and indirect children (as long as a chain of controls is uninterrupted).
+		A resource used for styling/skinning [Control] and [Window] nodes. While individual controls can be styled using their local theme overrides (see [method Control.add_theme_color_override]), theme resources allow you to store and apply the same settings across all controls sharing the same type (e.g. style all [Button]s the same). One theme resource can be used for the entire project, but you can also set a separate theme resource to a branch of control nodes. A theme resource assigned to a control applies to the control itself, as well as all of its direct and indirect children (as long as a chain of controls is uninterrupted).
 		Use [member ProjectSettings.gui/theme/custom] to set up a project-scope theme that will be available to every control in your project.
 		Use [member Control.theme] of any control node to set up a theme that will be available to that control and all of its direct and indirect children.
 	</description>

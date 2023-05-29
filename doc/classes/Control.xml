@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Control" inherits="CanvasItem" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		All user interface nodes inherit from Control. A control's anchors and offsets adapt its position and size relative to its parent.
+		Base class for all GUI controls. Adapts its position and size based on its parent control.
 	</brief_description>
 	<description>
 		Base class for all UI-related nodes. [Control] features a bounding rectangle that defines its extents, an anchor position relative to its parent control or the current viewport, and offsets relative to the anchor. The offsets update automatically when the node, any of its parents, or the screen size change.

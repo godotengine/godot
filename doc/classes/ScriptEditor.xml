@@ -4,6 +4,7 @@
 		Godot editor's script editor.
 	</brief_description>
 	<description>
+		Godot editor's script editor.
 		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_script_editor].
 	</description>
 	<tutorials>

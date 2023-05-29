@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VScrollBar" inherits="ScrollBar" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Vertical scroll bar.
+		A vertical scrollbar that goes from top (min) to bottom (max).
 	</brief_description>
 	<description>
-		Vertical version of [ScrollBar], which goes from top (min) to bottom (max).
+		A vertical scrollbar, typically used to navigate through content that extends beyond the visible height of a control. It is a [Range]-based control and goes from top (min) to bottom (max). Note that this direction is the opposite of [VSlider]'s.
 	</description>
 	<tutorials>
 	</tutorials>

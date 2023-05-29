@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="FlowContainer" inherits="Container" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for flow containers.
+		A container that arranges its child controls horizontally or vertically and wraps them around at the borders.
 	</brief_description>
 	<description>
-		Arranges child [Control] nodes vertically or horizontally in a left-to-right or top-to-bottom flow.
-		A line is filled with [Control] nodes until no more fit on the same line, similar to text in an autowrapped label.
+		A container that arranges its child controls horizontally or vertically and wraps them around at the borders. This is similar to how text in a book wraps around when no more words can fit on a line.
 	</description>
 	<tutorials>
+		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_line_count" qualifiers="const">
