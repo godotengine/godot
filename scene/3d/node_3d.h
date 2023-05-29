@@ -101,7 +101,6 @@ private:
 
 		Viewport *viewport = nullptr;
 
-		bool top_level_active = false;
 		bool top_level = false;
 		bool inside_world = false;
 
