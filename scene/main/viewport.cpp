@@ -2837,7 +2837,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 				title_bar.position.y -= title_height;
 				title_bar.size.y = title_height;
 
-				if (title_bar.has_point(mb->get_position())) {
+				if (title_bar.size.y > 0 && title_bar.has_point(mb->get_position())) {
 					click_on_window = true;
 
 					int close_h_ofs = sw.window->get_theme_constant(SNAME("close_h_offset"));
