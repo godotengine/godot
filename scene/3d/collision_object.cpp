@@ -34,6 +34,7 @@
 #include "mesh_instance.h"
 #include "scene/scene_string_names.h"
 #include "servers/physics_server.h"
+#include "servers/rid_reference.h"
 
 void CollisionObject::_notification(int p_what) {
 	switch (p_what) {
@@ -587,5 +588,6 @@ CollisionObject::CollisionObject() {
 }
 
 CollisionObject::~CollisionObject() {
+	RIDReferences::notify_free_RID(RIDReferences::SERVER_PHYSICS, rid);
 	PhysicsServer::get_singleton()->free(rid);
 }
