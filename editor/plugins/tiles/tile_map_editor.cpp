@@ -2358,7 +2358,7 @@ Vector<TileMapEditorPlugin::TabData> TileMapEditorTerrainsPlugin::get_tabs() con
 	return tabs;
 }
 
-HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrain_path_or_connect(const Vector<Vector2i> &p_to_paint, int p_terrain_set, int p_terrain, bool p_connect) const {
+HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrain_path_or_connect(const Vector<Vector2i> &p_to_paint, int p_terrain_set, int p_terrain, TileMapEditorTerrainsPlugin::DrawTerrainMode p_mode) const {
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return HashMap<Vector2i, TileMapCell>();
@@ -2370,10 +2370,11 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_terrain_path_o
 	}
 
 	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_output;
-	if (p_connect) {
-		terrain_fill_output = tile_map->terrain_fill_connect(tile_map_layer, p_to_paint, p_terrain_set, p_terrain, false);
-	} else {
+	if (p_mode == DRAW_TERRAIN_MODE_PATH) {
 		terrain_fill_output = tile_map->terrain_fill_path(tile_map_layer, p_to_paint, p_terrain_set, p_terrain, false);
+	} else {
+		bool connect_corners = p_mode == DRAW_TERRAIN_MODE_CONNECT_WITH_CORNERS;
+		terrain_fill_output = tile_map->terrain_fill_connect(tile_map_layer, p_to_paint, p_terrain_set, p_terrain, connect_corners, false);
 	}
 
 	// Make the painted path a set for faster lookups
@@ -2472,9 +2473,11 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_line(Vector2i 
 		return _draw_terrain_pattern(TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell), selected_terrain_set, TileSet::TerrainsPattern(*tile_set, selected_terrain_set));
 	} else {
 		if (selected_type == SELECTED_TYPE_CONNECT) {
-			return _draw_terrain_path_or_connect(TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell), selected_terrain_set, selected_terrain, true);
+			return _draw_terrain_path_or_connect(TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell), selected_terrain_set, selected_terrain, DRAW_TERRAIN_MODE_CONNECT);
+		} else if (selected_type == SELECTED_TYPE_CONNECT_WITH_CORNERS) {
+			return _draw_terrain_path_or_connect(TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell), selected_terrain_set, selected_terrain, DRAW_TERRAIN_MODE_CONNECT_WITH_CORNERS);
 		} else if (selected_type == SELECTED_TYPE_PATH) {
-			return _draw_terrain_path_or_connect(TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell), selected_terrain_set, selected_terrain, false);
+			return _draw_terrain_path_or_connect(TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell), selected_terrain_set, selected_terrain, DRAW_TERRAIN_MODE_PATH);
 		} else { // SELECTED_TYPE_PATTERN
 			return _draw_terrain_pattern(TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell), selected_terrain_set, selected_terrains_pattern);
 		}
@@ -2508,7 +2511,9 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_rect(Vector2i 
 		return _draw_terrain_pattern(to_draw, selected_terrain_set, TileSet::TerrainsPattern(*tile_set, selected_terrain_set));
 	} else {
 		if (selected_type == SELECTED_TYPE_CONNECT || selected_type == SELECTED_TYPE_PATH) {
-			return _draw_terrain_path_or_connect(to_draw, selected_terrain_set, selected_terrain, true);
+			return _draw_terrain_path_or_connect(to_draw, selected_terrain_set, selected_terrain, DRAW_TERRAIN_MODE_CONNECT);
+		} else if (selected_type == SELECTED_TYPE_CONNECT_WITH_CORNERS) {
+			return _draw_terrain_path_or_connect(to_draw, selected_terrain_set, selected_terrain, DRAW_TERRAIN_MODE_CONNECT_WITH_CORNERS);
 		} else { // SELECTED_TYPE_PATTERN
 			return _draw_terrain_pattern(to_draw, selected_terrain_set, selected_terrains_pattern);
 		}
@@ -2647,7 +2652,9 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_bucket_fill(Ve
 		return _draw_terrain_pattern(cells_to_draw_as_vector, selected_terrain_set, TileSet::TerrainsPattern(*tile_set, selected_terrain_set));
 	} else {
 		if (selected_type == SELECTED_TYPE_CONNECT || selected_type == SELECTED_TYPE_PATH) {
-			return _draw_terrain_path_or_connect(cells_to_draw_as_vector, selected_terrain_set, selected_terrain, true);
+			return _draw_terrain_path_or_connect(cells_to_draw_as_vector, selected_terrain_set, selected_terrain, DRAW_TERRAIN_MODE_CONNECT);
+		} else if (selected_type == SELECTED_TYPE_CONNECT_WITH_CORNERS) {
+			return _draw_terrain_path_or_connect(cells_to_draw_as_vector, selected_terrain_set, selected_terrain, DRAW_TERRAIN_MODE_CONNECT_WITH_CORNERS);
 		} else { // SELECTED_TYPE_PATTERN
 			return _draw_terrain_pattern(cells_to_draw_as_vector, selected_terrain_set, selected_terrains_pattern);
 		}
@@ -2818,6 +2825,8 @@ void TileMapEditorTerrainsPlugin::_update_selection() {
 			metadata_dict = terrains_tile_list->get_item_metadata(terrains_tile_list->get_selected_items()[0]);
 			if (int(metadata_dict["type"]) == SELECTED_TYPE_CONNECT) {
 				selected_type = SELECTED_TYPE_CONNECT;
+			} else if (int(metadata_dict["type"]) == SELECTED_TYPE_CONNECT_WITH_CORNERS) {
+				selected_type = SELECTED_TYPE_CONNECT_WITH_CORNERS;
 			} else if (int(metadata_dict["type"]) == SELECTED_TYPE_PATH) {
 				selected_type = SELECTED_TYPE_PATH;
 			} else if (int(metadata_dict["type"]) == SELECTED_TYPE_PATTERN) {
@@ -3238,9 +3247,15 @@ void TileMapEditorTerrainsPlugin::_update_tiles_list() {
 
 		// Add the two first generic modes
 		int item_index = terrains_tile_list->add_icon_item(main_vbox_container->get_theme_icon(SNAME("TerrainConnect"), SNAME("EditorIcons")));
-		terrains_tile_list->set_item_tooltip(item_index, TTR("Connect mode: paints a terrain, then connects it with the surrounding tiles with the same terrain."));
+		terrains_tile_list->set_item_tooltip(item_index, TTR("Connect mode: paints a terrain, then connects it with the surrounding (excluding corners) tiles with the same terrain."));
 		Dictionary list_metadata_dict;
 		list_metadata_dict["type"] = SELECTED_TYPE_CONNECT;
+		terrains_tile_list->set_item_metadata(item_index, list_metadata_dict);
+
+		item_index = terrains_tile_list->add_icon_item(main_vbox_container->get_theme_icon(SNAME("TerrainConnectWithCorners"), SNAME("EditorIcons")));
+		terrains_tile_list->set_item_tooltip(item_index, TTR("Connect with corners mode: paints a terrain, then connects it with the surrounding (including corners) tiles with the same terrain."));
+		list_metadata_dict = Dictionary();
+		list_metadata_dict["type"] = SELECTED_TYPE_CONNECT_WITH_CORNERS;
 		terrains_tile_list->set_item_metadata(item_index, list_metadata_dict);
 
 		item_index = terrains_tile_list->add_icon_item(main_vbox_container->get_theme_icon(SNAME("TerrainPath"), SNAME("EditorIcons")));

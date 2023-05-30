@@ -309,8 +309,23 @@
 			<param index="4" name="ignore_empty_terrains" type="bool" default="true" />
 			<description>
 				Update all the cells in the [param cells] coordinates array so that they use the given [param terrain] for the given [param terrain_set]. If an updated cell has the same terrain as one of its neighboring cells, this function tries to join the two. This function might update neighboring tiles if needed to create correct terrain transitions.
+				This function connects to all surrounding neighbors, even those in the cell's corner. If you do not need to connect diagonally, use [method set_cells_terrain_connect_no_corners] instead.
 				If [param ignore_empty_terrains] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
 				[b]Note:[/b] To work correctly, this method requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
+			</description>
+		</method>
+		<method name="set_cells_terrain_connect_no_corners">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="cells" type="Vector2i[]" />
+			<param index="2" name="terrain_set" type="int" />
+			<param index="3" name="terrain" type="int" />
+			<param index="4" name="ignore_empty_terrains" type="bool" default="true" />
+			<description>
+				Update all the cells in the [param cells] coordinates array so that they use the given [param terrain] for the given [param terrain_set]. If an updated cell has the same terrain as one of its neighboring cells, this function tries to join the two. This function might update neighboring tiles if needed to create correct terrain transitions.
+				This function connects to neighboring cells that share a side with the painted cells. If you need to connect terrains diagonally, use [method set_cells_terrain_connect] instead.
+				If [param ignore_empty_terrains] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
+				[b]Note:[/b] To work correctly, [code]set_cells_terrain_connect_no_corners[/code] requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
 			</description>
 		</method>
 		<method name="set_cells_terrain_path">
