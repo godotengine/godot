@@ -62,7 +62,7 @@ void Shader::set_include_path(const String &p_path) {
 }
 
 void Shader::set_code(const String &p_code) {
-	for (Ref<ShaderInclude> E : include_dependencies) {
+	for (const Ref<ShaderInclude> &E : include_dependencies) {
 		E->disconnect(SNAME("changed"), callable_mp(this, &Shader::_dependency_changed));
 	}
 
@@ -83,8 +83,6 @@ void Shader::set_code(const String &p_code) {
 	code = p_code;
 	String pp_code = p_code;
 
-	HashSet<Ref<ShaderInclude>> new_include_dependencies;
-
 	{
 		String path = get_path();
 		if (path.is_empty()) {
@@ -93,14 +91,16 @@ void Shader::set_code(const String &p_code) {
 		// Preprocessor must run here and not in the server because:
 		// 1) Need to keep track of include dependencies at resource level
 		// 2) Server does not do interaction with Resource filetypes, this is a scene level feature.
+		HashSet<Ref<ShaderInclude>> new_include_dependencies;
 		ShaderPreprocessor preprocessor;
-		preprocessor.preprocess(p_code, path, pp_code, nullptr, nullptr, nullptr, &new_include_dependencies);
+		Error result = preprocessor.preprocess(p_code, path, pp_code, nullptr, nullptr, nullptr, &new_include_dependencies);
+		if (result == OK) {
+			// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
+			include_dependencies = new_include_dependencies;
+		}
 	}
 
-	// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
-	include_dependencies = new_include_dependencies;
-
-	for (Ref<ShaderInclude> E : include_dependencies) {
+	for (const Ref<ShaderInclude> &E : include_dependencies) {
 		E->connect(SNAME("changed"), callable_mp(this, &Shader::_dependency_changed));
 	}
 
