@@ -365,21 +365,28 @@ void unregister_core_extensions() {
 void unregister_core_types() {
 	OS::get_singleton()->benchmark_begin_measure("unregister_core_types");
 
+	// Destroy singletons in reverse order to ensure dependencies are not broken.
+
+	memdelete(worker_thread_pool);
+
+	memdelete(_engine_debugger);
+	memdelete(_marshalls);
+	memdelete(_classdb);
+	memdelete(_engine);
+	memdelete(_os);
+	memdelete(_resource_saver);
+	memdelete(_resource_loader);
+
+	memdelete(_geometry_3d);
+	memdelete(_geometry_2d);
+
 	memdelete(gdextension_manager);
 
 	memdelete(resource_uid);
-	memdelete(_resource_loader);
-	memdelete(_resource_saver);
-	memdelete(_os);
-	memdelete(_engine);
-	memdelete(_classdb);
-	memdelete(_marshalls);
-	memdelete(_engine_debugger);
 
-	memdelete(_geometry_2d);
-	memdelete(_geometry_3d);
-
-	memdelete(worker_thread_pool);
+	if (ip) {
+		memdelete(ip);
+	}
 
 	ResourceLoader::remove_resource_format_loader(resource_format_image);
 	resource_format_image.unref();
@@ -409,10 +416,6 @@ void unregister_core_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_json);
 	resource_loader_json.unref();
-
-	if (ip) {
-		memdelete(ip);
-	}
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_gdextension);
 	resource_loader_gdextension.unref();
