@@ -76,14 +76,18 @@ void AudioStreamEditor::_notification(int p_what) {
 void AudioStreamEditor::_draw_preview() {
 	Rect2 rect = _preview->get_rect();
 	Size2 size = get_size();
+	int width = size.width;
+	if (width <= 0) {
+		return; // No points to draw.
+	}
 
 	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
 	float preview_len = preview->get_length();
 
 	Vector<Vector2> lines;
-	lines.resize(size.width * 2);
+	lines.resize(width * 2);
 
-	for (int i = 0; i < size.width; i++) {
+	for (int i = 0; i < width; i++) {
 		float ofs = i * preview_len / size.width;
 		float ofs_n = (i + 1) * preview_len / size.width;
 		float max = preview->get_max(ofs, ofs_n) * 0.5 + 0.5;
