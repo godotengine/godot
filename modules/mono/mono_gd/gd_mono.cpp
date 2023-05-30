@@ -260,7 +260,7 @@ using godot_plugins_initialize_fn = bool (*)(void *, GDMonoCache::ManagedCallbac
 #endif
 
 #ifdef TOOLS_ENABLED
-godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
+godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized, bool &r_missing_runtime_config) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
 	HostFxrCharString godot_plugins_path = str_to_hostfxr(
@@ -269,12 +269,19 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 	HostFxrCharString config_path = str_to_hostfxr(
 			GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.runtimeconfig.json"));
 
+	String config_path_str = GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.runtimeconfig.json");
+
+	if (!FileAccess::exists(config_path_str)) {
+		// If the runtimeconfig is missing, we can't determine which .NET runtime version to use.
+		r_missing_runtime_config = true;
+		ERR_FAIL_V_MSG(nullptr, ".NET: Cannot initialize because runtimeconfig is missing");
+	}
+
 	load_assembly_and_get_function_pointer_fn load_assembly_and_get_function_pointer =
 			initialize_hostfxr_for_config(get_data(config_path));
 
 	if (load_assembly_and_get_function_pointer == nullptr) {
 		// Show a message box to the user to make the problem explicit (and explain a potential crash).
-		OS::get_singleton()->alert(TTR("Unable to load .NET runtime, no compatible version was found.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-us/download and restart Godot."), TTR("Failed to load .NET runtime"));
 		ERR_FAIL_V_MSG(nullptr, ".NET: Failed to load compatible .NET runtime");
 	}
 
@@ -303,7 +310,7 @@ static String get_assembly_name() {
 	return assembly_name;
 }
 
-godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
+godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized, bool &r_missing_runtime_config) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
 	String assembly_name = get_assembly_name();
@@ -330,18 +337,21 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 	return godot_plugins_initialize;
 }
 
-godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle) {
-	String assembly_name = get_assembly_name();
-
+String get_native_aot_so_path(const String &p_assembly_name) {
 #if defined(WINDOWS_ENABLED)
-	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dll");
+	return GodotSharpDirs::get_api_assemblies_dir().path_join(p_assembly_name + ".dll");
 #elif defined(MACOS_ENABLED)
-	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dylib");
+	return GodotSharpDirs::get_api_assemblies_dir().path_join(p_assembly_name + ".dylib");
 #elif defined(UNIX_ENABLED)
-	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".so");
+	return GodotSharpDirs::get_api_assemblies_dir().path_join(p_assembly_name + ".so");
 #else
 #error "Platform not supported (yet?)"
 #endif
+}
+
+godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle) {
+	String assembly_name = get_assembly_name();
+	String native_aot_so_path = get_native_aot_so_path(assembly_name);
 
 	if (FileAccess::exists(native_aot_so_path)) {
 		Error err = OS::get_singleton()->open_dynamic_library(native_aot_so_path, r_aot_dll_handle);
@@ -364,6 +374,40 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 #endif
 
 } // namespace
+
+bool GDMono::should_initialize() {
+#ifdef TOOLS_ENABLED
+	String project_assembly_name = (String)ProjectSettings::get_singleton()->get_setting("dotnet/project/assembly_name");
+	if (project_assembly_name.is_empty()) {
+		String appname = GLOBAL_GET("application/config/name");
+		String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
+		if (appname_safe.is_empty()) {
+			appname_safe = "UnnamedProject";
+		}
+		project_assembly_name = appname_safe;
+	}
+
+	String project_csproj_path = path::join("res://", project_assembly_name + ".csproj");
+
+	return FileAccess::exists(project_csproj_path);
+#else
+	String assembly_name = get_assembly_name();
+
+	String native_aot_so_path = get_native_aot_so_path(assembly_name);
+
+	if (FileAccess::exists(native_aot_so_path)) {
+		return true;
+	}
+
+	String assembly_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dll");
+
+	if (FileAccess::exists(assembly_path)) {
+		return true;
+	}
+
+	return false;
+#endif
+}
 
 static bool _on_core_api_assembly_loaded() {
 	if (!GDMonoCache::godot_api_cache_updated) {
@@ -401,13 +445,18 @@ void GDMono::initialize() {
 #else
 
 		// Show a message box to the user to make the problem explicit (and explain a potential crash).
-		OS::get_singleton()->alert(TTR("Unable to load .NET runtime, specifically hostfxr.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-us/download and restart Godot."), TTR("Failed to load .NET runtime"));
 		ERR_FAIL_MSG(".NET: Failed to load hostfxr");
+		failed_to_initialize_hostfxr = true;
 #endif
 	}
 
 	if (!is_native_aot) {
-		godot_plugins_initialize = initialize_hostfxr_and_godot_plugins(runtime_initialized);
+		godot_plugins_initialize = initialize_hostfxr_and_godot_plugins(runtime_initialized, missing_runtime_config);
+#ifdef TOOLS_ENABLED
+		if (!godot_plugins_initialize && !runtime_initialized) {
+			failed_to_initialize_hostfxr = true;
+		}
+#endif
 		ERR_FAIL_NULL(godot_plugins_initialize);
 	}
 
@@ -443,10 +492,14 @@ void GDMono::initialize() {
 	print_verbose(".NET: GodotPlugins initialized");
 
 	_on_core_api_assembly_loaded();
+
+#ifdef TOOLS_ENABLED
+	_try_load_project_assembly();
+#endif
 }
 
 #ifdef TOOLS_ENABLED
-void GDMono::initialize_load_assemblies() {
+void GDMono::_try_load_project_assembly() {
 	if (Engine::get_singleton()->is_project_manager_hint()) {
 		return;
 	}
