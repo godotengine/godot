@@ -271,10 +271,10 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 				} else {
 					if (components[1] == "duration") {
 						tile_set_atlas_source->set_tile_animation_frame_duration(tile.tile, frame, p_value);
-						return true;
 					}
 				}
 			}
+			return true;
 		}
 	}
 
