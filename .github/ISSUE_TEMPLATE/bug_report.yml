@@ -15,9 +15,9 @@ body:
   attributes:
     label: Godot version
     description: >
-      Specify the Godot version, including the Git commit hash if using a development or non-official build.
+      Specify the Godot version, including the Git commit hash if using a development or non-official build. The exact Godot version (including the commit hash) can be copied by clicking the version shown in the editor (bottom bar) or in the project manager (top bar).
       If you use a custom build, please test if your issue is reproducible in official builds too.
-    placeholder: 3.5.stable, 4.0.dev (3041becc6)
+    placeholder: 3.5.stable, 4.0.dev [3041becc6]
   validations:
     required: true
 
