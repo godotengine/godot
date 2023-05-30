@@ -216,6 +216,14 @@ void Node::_notification(int p_notification) {
 				memdelete(child);
 			}
 		} break;
+
+		case NOTIFICATION_CHILD_ORDER_CHANGED: {
+			// The order, in which canvas items are drawn gets rearranged.
+			// This makes it necessary to update mouse cursor and send according mouse_enter/mouse_exit signals for Control nodes.
+			if (get_viewport()) {
+				get_viewport()->update_mouse_cursor_state();
+			}
+		} break;
 	}
 }
 

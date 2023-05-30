@@ -2299,7 +2299,8 @@ void Viewport::_perform_drop(Control *p_control, Point2 p_pos) {
 	gui.dragging = false;
 	gui.drag_mouse_over = nullptr;
 	_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
-	get_base_window()->update_mouse_cursor_shape();
+	// Display the new cursor shape instantly.
+	update_mouse_cursor_state();
 }
 
 void Viewport::_gui_cleanup_internal_state(Ref<InputEvent> p_event) {
@@ -3541,6 +3542,14 @@ Transform2D Viewport::get_screen_transform_internal(bool p_absolute_position) co
 	return get_final_transform();
 }
 
+void Viewport::update_mouse_cursor_state() {
+	// Updates need to happen in Window, because SubViewportContainers might be hidden behind other Controls.
+	Window *base_window = get_base_window();
+	if (base_window) {
+		base_window->update_mouse_cursor_state();
+	}
+}
+
 void Viewport::set_canvas_cull_mask(uint32_t p_canvas_cull_mask) {
 	ERR_MAIN_THREAD_GUARD;
 	canvas_cull_mask = p_canvas_cull_mask;
@@ -4143,6 +4152,7 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_mouse_position"), &Viewport::get_mouse_position);
 	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Viewport::warp_mouse);
+	ClassDB::bind_method(D_METHOD("update_mouse_cursor_state"), &Viewport::update_mouse_cursor_state);
 
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
 	ClassDB::bind_method(D_METHOD("gui_is_dragging"), &Viewport::gui_is_dragging);
