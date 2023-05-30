@@ -1564,6 +1564,11 @@ bool Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 			}
 		}
 
+		if (is_input_handled()) {
+			// Break after Physics Picking in SubViewport.
+			break;
+		}
+
 		if (ci->is_set_as_top_level()) {
 			break;
 		}
@@ -3045,6 +3050,7 @@ void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local
 
 						)) {
 			physics_picking_events.push_back(ev);
+			set_input_as_handled();
 		}
 	}
 }
