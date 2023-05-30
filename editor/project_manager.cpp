@@ -51,6 +51,8 @@
 #include "main/main.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/color_rect.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
@@ -979,8 +981,7 @@ void ProjectListItemControl::_notification(int p_what) {
 			project_title->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("title_size"), SNAME("EditorFonts")));
 			project_title->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Tree")));
 			project_path->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Tree")));
-			project_unsupported_features->add_theme_font_override("font", get_theme_font(SNAME("title"), SNAME("EditorFonts")));
-			project_unsupported_features->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			project_unsupported_features->set_texture(get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
 
 			favorite_button->set_texture_normal(get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
 			if (project_is_missing) {
@@ -1021,6 +1022,14 @@ void ProjectListItemControl::set_project_path(const String &p_path) {
 	project_path->set_text(p_path);
 }
 
+void ProjectListItemControl::set_tags(const PackedStringArray &p_tags, ProjectList *p_parent_list) {
+	for (const String &tag : p_tags) {
+		ProjectTag *tag_control = memnew(ProjectTag(tag));
+		tag_container->add_child(tag_control);
+		tag_control->connect_button_to(callable_mp(p_parent_list, &ProjectList::add_search_tag).bind(tag));
+	}
+}
+
 void ProjectListItemControl::set_project_icon(const Ref<Texture2D> &p_icon) {
 	icon_needs_reload = false;
 
@@ -1036,8 +1045,7 @@ void ProjectListItemControl::set_project_icon(const Ref<Texture2D> &p_icon) {
 void ProjectListItemControl::set_unsupported_features(const PackedStringArray &p_features) {
 	if (p_features.size() > 0) {
 		String unsupported_features_str = String(", ").join(p_features);
-		project_unsupported_features->set_text(unsupported_features_str);
-		project_unsupported_features->set_custom_minimum_size(Size2(unsupported_features_str.length() * 15, 10) * EDSCALE);
+		project_unsupported_features->set_tooltip_text(TTR("The project uses features unsupported by the current build:") + "\n" + unsupported_features_str);
 		project_unsupported_features->show();
 	} else {
 		project_unsupported_features->hide();
@@ -1133,7 +1141,7 @@ ProjectListItemControl::ProjectListItemControl() {
 	ec->set_mouse_filter(MOUSE_FILTER_PASS);
 	main_vbox->add_child(ec);
 
-	// Top half, title and unsupported features labels.
+	// Top half, title, tags and unsupported features labels.
 	{
 		HBoxContainer *title_hb = memnew(HBoxContainer);
 		main_vbox->add_child(title_hb);
@@ -1144,12 +1152,8 @@ ProjectListItemControl::ProjectListItemControl() {
 		project_title->set_clip_text(true);
 		title_hb->add_child(project_title);
 
-		project_unsupported_features = memnew(Label);
-		project_unsupported_features->set_name("ProjectUnsupportedFeatures");
-		project_unsupported_features->set_clip_text(true);
-		project_unsupported_features->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-		title_hb->add_child(project_unsupported_features);
-		project_unsupported_features->hide();
+		tag_container = memnew(HBoxContainer);
+		title_hb->add_child(tag_container);
 
 		Control *spacer = memnew(Control);
 		spacer->set_custom_minimum_size(Size2(10, 10));
@@ -1175,6 +1179,16 @@ ProjectListItemControl::ProjectListItemControl() {
 		project_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		project_path->set_modulate(Color(1, 1, 1, 0.5));
 		path_hb->add_child(project_path);
+
+		project_unsupported_features = memnew(TextureRect);
+		project_unsupported_features->set_name("ProjectUnsupportedFeatures");
+		project_unsupported_features->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+		path_hb->add_child(project_unsupported_features);
+		project_unsupported_features->hide();
+
+		Control *spacer = memnew(Control);
+		spacer->set_custom_minimum_size(Size2(10, 10));
+		path_hb->add_child(spacer);
 	}
 }
 
@@ -1194,6 +1208,8 @@ struct ProjectListComparator {
 				return a.path < b.path;
 			case ProjectList::EDIT_DATE:
 				return a.last_edited > b.last_edited;
+			case ProjectList::TAGS:
+				return a.tag_sort_string < b.tag_sort_string;
 			default:
 				return a.project_name < b.project_name;
 		}
@@ -1260,7 +1276,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	int config_version = 0;
 	String project_name = TTR("Unnamed Project");
 	if (cf_err == OK) {
-		String cf_project_name = static_cast<String>(cf->get_value("application", "config/name", ""));
+		String cf_project_name = cf->get_value("application", "config/name", "");
 		if (!cf_project_name.is_empty()) {
 			project_name = cf_project_name.xml_unescape();
 		}
@@ -1273,6 +1289,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	}
 
 	const String description = cf->get_value("application", "config/description", "");
+	const PackedStringArray tags = cf->get_value("application", "config/tags", PackedStringArray());
 	const String icon = cf->get_value("application", "config/icon", "");
 	const String main_scene = cf->get_value("application", "run/main_scene", "");
 
@@ -1299,7 +1316,11 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 		print_line("Project is missing: " + conf);
 	}
 
-	return Item(project_name, description, p_path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, config_version);
+	for (const String &tag : tags) {
+		ProjectManager::get_singleton()->add_new_tag(tag);
+	}
+
+	return Item(project_name, description, tags, p_path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, config_version);
 }
 
 void ProjectList::migrate_config() {
@@ -1427,6 +1448,7 @@ void ProjectList::_create_project_item_control(int p_index) {
 	hb->set_project_title(!item.missing ? item.project_name : TTR("Missing Project"));
 	hb->set_project_path(item.path);
 	hb->set_tooltip_text(item.description);
+	hb->set_tags(item.tags, this);
 	hb->set_unsupported_features(item.unsupported_features);
 
 	hb->set_is_favorite(item.favorite);
@@ -1462,13 +1484,33 @@ void ProjectList::sort_projects() {
 	sorter.compare.order_option = _order_option;
 	sorter.sort(_projects.ptrw(), _projects.size());
 
+	String search_term;
+	PackedStringArray tags;
+
+	if (!_search_term.is_empty()) {
+		PackedStringArray search_parts = _search_term.split(" ");
+		if (search_parts.size() > 1 || search_parts[0].begins_with("tag:")) {
+			PackedStringArray remaining;
+			for (const String &part : search_parts) {
+				if (part.begins_with("tag:")) {
+					tags.push_back(part.get_slice(":", 1));
+				} else {
+					remaining.append(part);
+				}
+			}
+			search_term = String(" ").join(remaining); // Search term without tags.
+		} else {
+			search_term = _search_term;
+		}
+	}
+
 	for (int i = 0; i < _projects.size(); ++i) {
 		Item &item = _projects.write[i];
 
 		bool item_visible = true;
 		if (!_search_term.is_empty()) {
 			String search_path;
-			if (_search_term.contains("/")) {
+			if (search_term.contains("/")) {
 				// Search path will match the whole path
 				search_path = item.path;
 			} else {
@@ -1476,8 +1518,16 @@ void ProjectList::sort_projects() {
 				search_path = item.path.get_file();
 			}
 
-			// When searching, display projects whose name or path contain the search term
-			item_visible = item.project_name.findn(_search_term) != -1 || search_path.findn(_search_term) != -1;
+			bool missing_tags = false;
+			for (const String &tag : tags) {
+				if (!item.tags.has(tag)) {
+					missing_tags = true;
+					break;
+				}
+			}
+
+			// When searching, display projects whose name or path contain the search term and whose tags match the searched tags.
+			item_visible = !missing_tags && (search_term.is_empty() || item.project_name.findn(search_term) != -1 || search_path.findn(search_term) != -1);
 		}
 
 		item.control->set_visible(item_visible);
@@ -1877,8 +1927,13 @@ void ProjectManager::_notification(int p_what) {
 			open_btn->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 			run_btn->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 			rename_btn->set_icon(get_theme_icon(SNAME("Rename"), SNAME("EditorIcons")));
+			manage_tags_btn->set_icon(get_theme_icon("Script", "EditorIcons"));
 			erase_btn->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			erase_missing_btn->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
+			create_tag_btn->set_icon(get_theme_icon("Add", "EditorIcons"));
+
+			tag_error->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
+			tag_edit_error->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
 
 			create_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			import_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
@@ -1886,6 +1941,7 @@ void ProjectManager::_notification(int p_what) {
 			open_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			run_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			rename_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
+			manage_tags_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			erase_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 			erase_missing_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 
@@ -1999,6 +2055,7 @@ void ProjectManager::_update_project_buttons() {
 	erase_btn->set_disabled(empty_selection);
 	open_btn->set_disabled(empty_selection || is_missing_project_selected);
 	rename_btn->set_disabled(empty_selection || is_missing_project_selected);
+	manage_tags_btn->set_disabled(empty_selection || is_missing_project_selected || selected_projects.size() > 1);
 	run_btn->set_disabled(empty_selection || is_missing_project_selected);
 
 	erase_missing_btn->set_disabled(!_project_list->is_any_project_missing());
@@ -2389,6 +2446,115 @@ void ProjectManager::_rename_project() {
 	}
 }
 
+void ProjectManager::_manage_project_tags() {
+	for (int i = 0; i < project_tags->get_child_count(); i++) {
+		project_tags->get_child(i)->queue_free();
+	}
+
+	const ProjectList::Item item = _project_list->get_selected_projects()[0];
+	current_project_tags = item.tags;
+	for (const String &tag : current_project_tags) {
+		ProjectTag *tag_control = memnew(ProjectTag(tag, true));
+		project_tags->add_child(tag_control);
+		tag_control->connect_button_to(callable_mp(this, &ProjectManager::_delete_project_tag).bind(tag));
+	}
+
+	tag_edit_error->hide();
+	tag_manage_dialog->popup_centered(Vector2i(500, 0) * EDSCALE);
+}
+
+void ProjectManager::_add_project_tag(const String &p_tag) {
+	if (current_project_tags.has(p_tag)) {
+		return;
+	}
+	current_project_tags.append(p_tag);
+
+	ProjectTag *tag_control = memnew(ProjectTag(p_tag, true));
+	project_tags->add_child(tag_control);
+	tag_control->connect_button_to(callable_mp(this, &ProjectManager::_delete_project_tag).bind(p_tag));
+}
+
+void ProjectManager::_delete_project_tag(const String &p_tag) {
+	current_project_tags.erase(p_tag);
+	for (int i = 0; i < project_tags->get_child_count(); i++) {
+		ProjectTag *tag_control = Object::cast_to<ProjectTag>(project_tags->get_child(i));
+		if (tag_control && tag_control->get_tag() == p_tag) {
+			memdelete(tag_control);
+			break;
+		}
+	}
+}
+
+void ProjectManager::_apply_project_tags() {
+	ProjectList::Item &item = _project_list->get_selected_projects().write[0];
+
+	PackedStringArray tags;
+	for (int i = 0; i < project_tags->get_child_count(); i++) {
+		ProjectTag *tag_control = Object::cast_to<ProjectTag>(project_tags->get_child(i));
+		if (tag_control) {
+			tags.append(tag_control->get_tag());
+		}
+	}
+
+	ConfigFile cfg;
+	String project_godot = item.path.path_join("project.godot");
+	Error err = cfg.load(project_godot);
+	if (err != OK) {
+		tag_edit_error->set_text(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err));
+		tag_edit_error->show();
+		callable_mp((Window *)tag_manage_dialog, &Window::show).call_deferred(); // Make sure the dialog does not disappear.
+		return;
+	} else {
+		cfg.set_value("application", "config/tags", tags);
+		err = cfg.save(project_godot);
+		if (err != OK) {
+			tag_edit_error->set_text(vformat(TTR("Couldn't save project at '%s' (error %d)."), project_godot, err));
+			tag_edit_error->show();
+			callable_mp((Window *)tag_manage_dialog, &Window::show).call_deferred();
+			return;
+		}
+	}
+
+	_on_projects_updated();
+}
+
+void ProjectManager::_set_new_tag_name(const String p_name) {
+	create_tag_dialog->get_ok_button()->set_disabled(true);
+	if (p_name.is_empty()) {
+		tag_error->set_text(TTR("Tag name can't be empty."));
+		return;
+	}
+
+	if (p_name.contains(" ")) {
+		tag_error->set_text(TTR("Tag name can't contain spaces."));
+		return;
+	}
+
+	for (const String &c : forbidden_tag_characters) {
+		if (p_name.contains(c)) {
+			tag_error->set_text(vformat(TTR("These characters are not allowed in tags: %s."), String(" ").join(forbidden_tag_characters)));
+			return;
+		}
+	}
+
+	if (p_name.to_lower() != p_name) {
+		tag_error->set_text(TTR("Tag name must be lowercase."));
+		return;
+	}
+
+	tag_error->set_text("");
+	create_tag_dialog->get_ok_button()->set_disabled(false);
+}
+
+void ProjectManager::_create_new_tag() {
+	if (!tag_error->get_text().is_empty()) {
+		return;
+	}
+	create_tag_dialog->hide(); // When using text_submitted, need to hide manually.
+	add_new_tag(new_tag_name->get_text());
+	_add_project_tag(new_tag_name->get_text());
+}
+
 void ProjectManager::_erase_project_confirm() {
 	_project_list->erase_selected_projects(false);
 	_update_project_buttons();
@@ -2546,6 +2712,36 @@ void ProjectManager::_version_button_pressed() {
 	DisplayServer::get_singleton()->clipboard_set(version_btn->get_text());
 }
 
+LineEdit *ProjectManager::get_search_box() {
+	return search_box;
+}
+
+void ProjectManager::add_new_tag(const String &p_tag) {
+	if (!tag_set.has(p_tag)) {
+		tag_set.insert(p_tag);
+		ProjectTag *tag_control = memnew(ProjectTag(p_tag));
+		all_tags->add_child(tag_control);
+		all_tags->move_child(tag_control, -2);
+		tag_control->connect_button_to(callable_mp(this, &ProjectManager::_add_project_tag).bind(p_tag));
+	}
+}
+
+void ProjectList::add_search_tag(const String &p_tag) {
+	const String tag_string = "tag:" + p_tag;
+
+	int exists = _search_term.find(tag_string);
+	if (exists > -1) {
+		_search_term = _search_term.erase(exists, tag_string.length() + 1);
+	} else if (_search_term.is_empty() || _search_term.ends_with(" ")) {
+		_search_term += tag_string;
+	} else {
+		_search_term += " " + tag_string;
+	}
+	ProjectManager::get_singleton()->get_search_box()->set_text(_search_term);
+
+	sort_projects();
+}
+
 ProjectManager::ProjectManager() {
 	singleton = this;
 
@@ -2673,6 +2869,7 @@ ProjectManager::ProjectManager() {
 		sort_filter_titles.push_back(TTR("Last Edited"));
 		sort_filter_titles.push_back(TTR("Name"));
 		sort_filter_titles.push_back(TTR("Path"));
+		sort_filter_titles.push_back(TTR("Tags"));
 
 		for (int i = 0; i < sort_filter_titles.size(); i++) {
 			filter_option->add_item(sort_filter_titles[i]);
@@ -2733,6 +2930,10 @@ ProjectManager::ProjectManager() {
 		rename_btn->set_shortcut(ED_SHORTCUT("project_manager/rename_project", TTR("Rename Project"), Key::F2));
 		rename_btn->connect("pressed", callable_mp(this, &ProjectManager::_rename_project));
 		tree_vb->add_child(rename_btn);
+
+		manage_tags_btn = memnew(Button);
+		manage_tags_btn->set_text(TTR("Manage Tags"));
+		tree_vb->add_child(manage_tags_btn);
 
 		erase_btn = memnew(Button);
 		erase_btn->set_text(TTR("Remove"));
@@ -2925,6 +3126,75 @@ ProjectManager::ProjectManager() {
 		_build_icon_type_cache(get_theme());
 	}
 
+	{
+		// Tag management.
+		tag_manage_dialog = memnew(ConfirmationDialog);
+		add_child(tag_manage_dialog);
+		tag_manage_dialog->set_title(TTR("Manage Project Tags"));
+		tag_manage_dialog->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_apply_project_tags));
+		manage_tags_btn->connect("pressed", callable_mp(this, &ProjectManager::_manage_project_tags));
+
+		VBoxContainer *tag_vb = memnew(VBoxContainer);
+		tag_manage_dialog->add_child(tag_vb);
+
+		Label *label = memnew(Label(TTR("Project Tags")));
+		tag_vb->add_child(label);
+		label->set_theme_type_variation("HeaderMedium");
+		label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+
+		label = memnew(Label(TTR("Click tag to remove it from the project.")));
+		tag_vb->add_child(label);
+		label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+
+		project_tags = memnew(HFlowContainer);
+		tag_vb->add_child(project_tags);
+		project_tags->set_custom_minimum_size(Vector2(0, 100) * EDSCALE);
+
+		tag_vb->add_child(memnew(HSeparator));
+
+		label = memnew(Label(TTR("All Tags")));
+		tag_vb->add_child(label);
+		label->set_theme_type_variation("HeaderMedium");
+		label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+
+		label = memnew(Label(TTR("Click tag to add it to the project.")));
+		tag_vb->add_child(label);
+		label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+
+		all_tags = memnew(HFlowContainer);
+		tag_vb->add_child(all_tags);
+		all_tags->set_custom_minimum_size(Vector2(0, 100) * EDSCALE);
+
+		tag_edit_error = memnew(Label);
+		tag_vb->add_child(tag_edit_error);
+		tag_edit_error->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
+
+		create_tag_dialog = memnew(ConfirmationDialog);
+		tag_manage_dialog->add_child(create_tag_dialog);
+		create_tag_dialog->set_title(TTR("Create New Tag"));
+		create_tag_dialog->get_ok_button()->connect("pressed", callable_mp(this, &ProjectManager::_create_new_tag));
+
+		tag_vb = memnew(VBoxContainer);
+		create_tag_dialog->add_child(tag_vb);
+
+		Label *info = memnew(Label(TTR("Tags are capitalized automatically when displayed.")));
+		tag_vb->add_child(info);
+
+		new_tag_name = memnew(LineEdit);
+		tag_vb->add_child(new_tag_name);
+		new_tag_name->connect("text_changed", callable_mp(this, &ProjectManager::_set_new_tag_name));
+		new_tag_name->connect("text_submitted", callable_mp(this, &ProjectManager::_create_new_tag).unbind(1));
+		create_tag_dialog->connect("about_to_popup", callable_mp(new_tag_name, &LineEdit::clear));
+		create_tag_dialog->connect("about_to_popup", callable_mp((Control *)new_tag_name, &Control::grab_focus), CONNECT_DEFERRED);
+
+		tag_error = memnew(Label);
+		tag_vb->add_child(tag_error);
+
+		create_tag_btn = memnew(Button);
+		all_tags->add_child(create_tag_btn);
+		create_tag_btn->connect("pressed", callable_mp((Window *)create_tag_dialog, &Window::popup_centered).bind(Vector2i(500, 0) * EDSCALE));
+	}
+
 	_project_list->migrate_config();
 	_load_recent_projects();
 
@@ -2983,4 +3253,42 @@ ProjectManager::~ProjectManager() {
 	if (EditorSettings::get_singleton()) {
 		EditorSettings::destroy();
 	}
+}
+
+void ProjectTag::_notification(int p_what) {
+	if (display_close && p_what == NOTIFICATION_THEME_CHANGED) {
+		button->set_icon(get_theme_icon(SNAME("close"), SNAME("TabBar")));
+	}
+}
+
+ProjectTag::ProjectTag(const String &p_text, bool p_display_close) {
+	add_theme_constant_override(SNAME("separation"), 0);
+	set_v_size_flags(SIZE_SHRINK_CENTER);
+	tag_string = p_text;
+	display_close = p_display_close;
+
+	Color tag_color = Color(1, 0, 0);
+	tag_color.set_ok_hsl_s(0.8);
+	tag_color.set_ok_hsl_h(float(p_text.hash() * 10001 % UINT32_MAX) / float(UINT32_MAX));
+	set_self_modulate(tag_color);
+
+	ColorRect *cr = memnew(ColorRect);
+	add_child(cr);
+	cr->set_custom_minimum_size(Vector2(4, 0) * EDSCALE);
+	cr->set_color(tag_color);
+
+	button = memnew(Button);
+	add_child(button);
+	button->set_text(p_text.capitalize());
+	button->set_focus_mode(FOCUS_NONE);
+	button->set_icon_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	button->set_theme_type_variation(SNAME("ProjectTag"));
+}
+
+void ProjectTag::connect_button_to(const Callable &p_callable) {
+	button->connect(SNAME("pressed"), p_callable, CONNECT_DEFERRED);
+}
+
+const String ProjectTag::get_tag() const {
+	return tag_string;
 }
