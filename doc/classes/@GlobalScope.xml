@@ -200,7 +200,7 @@
 				var f = clamp(Vector3i(-7, -8, -9), Vector3i(-1, 2, 3), Vector3i(-4, -5, -6))
 				# f is (-4, -5, -6)
 				[/codeblock]
-				[b]Note:[/b] For better type safety, use [method clampf], [method clampi], [method Vector2.clamp], [method Vector2i.clamp], [method Vector3.clamp], [method Vector3i.clamp], [method Vector4.clamp], or [method Vector4i.clamp].
+				[b]Note:[/b] For better type safety, use [method clampf], [method clampi], [method Vector2.clamp], [method Vector2i.clamp], [method Vector3.clamp], [method Vector3i.clamp], [method Vector4.clamp], or [method Vector4i.clamp]. For swapped [param min] and [param max] values result is predictable but incorrect.
 			</description>
 		</method>
 		<method name="clampf">
