@@ -37,6 +37,8 @@ namespace Godot.NativeInterop
 
         // Custom functions
 
+        internal static partial godot_bool godotsharp_dotnet_module_is_initialized();
+
         public static partial IntPtr godotsharp_method_bind_get_method(in godot_string_name p_classname,
             in godot_string_name p_methodname);
 
@@ -51,6 +53,8 @@ namespace Godot.NativeInterop
 
         internal static partial void godotsharp_stack_info_vector_destroy(
             ref DebuggingUtils.godot_stack_info_vector p_stack_info_vector);
+
+        internal static partial void godotsharp_internal_editor_file_system_update_file(in godot_string p_script_path);
 
         internal static partial void godotsharp_internal_script_debugger_send_error(in godot_string p_func,
             in godot_string p_file, int p_line, in godot_string p_err, in godot_string p_descr,
