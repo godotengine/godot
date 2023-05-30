@@ -2723,6 +2723,7 @@ bool Main::start() {
 		// so that we don't lose their descriptions and default values in DocTools.
 		// Default values should be synced with mono_gd/gd_mono.cpp.
 		GLOBAL_DEF("dotnet/project/assembly_name", "");
+		GLOBAL_DEF("dotnet/project/solution_name", "");
 		GLOBAL_DEF("dotnet/project/solution_directory", "");
 #endif
 

@@ -111,6 +111,7 @@ void CSharpLanguage::init() {
 
 	GLOBAL_DEF("dotnet/project/assembly_name", "");
 #ifdef TOOLS_ENABLED
+	GLOBAL_DEF("dotnet/project/solution_name", "");
 	GLOBAL_DEF("dotnet/project/solution_directory", "");
 #endif
 

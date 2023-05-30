@@ -808,11 +808,14 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the V-Sync mode at runtime, call [method DisplayServer.window_set_vsync_mode] instead.
 		</member>
 		<member name="dotnet/project/assembly_name" type="String" setter="" getter="" default="&quot;&quot;">
-			Name of the .NET assembly. This name is used as the name of the [code].csproj[/code] and [code].sln[/code] files. By default, it's set to the name of the project ([member application/config/name]) allowing to change it in the future without affecting the .NET assembly.
+			Name of the .NET assembly. This name is used as the name of the [code].csproj[/code] file. By default, it's set to the name of the project ([member application/config/name]) allowing to change it in the future without affecting the .NET assembly.
 		</member>
 		<member name="dotnet/project/solution_directory" type="String" setter="" getter="" default="&quot;&quot;">
 			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.
 			Changing this value allows setting up a multi-project scenario where there are multiple [code].csproj[/code]. Keep in mind that the Godot project is considered one of the C# projects in the workspace and it's root directory should contain the [code]project.godot[/code] and [code].csproj[/code] next to each other.
+		</member>
+		<member name="dotnet/project/solution_name" type="String" setter="" getter="" default="&quot;&quot;">
+			Name of the .NET solution. This name is used as the name of the [code].sln[/code] file. By default, it's set to the assembly name ([member dotnet/project/assembly_name]).
 		</member>
 		<member name="editor/export/convert_text_resources_to_binary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], text resources are converted to a binary format on export. This decreases file sizes and speeds up loading slightly.

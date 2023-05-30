@@ -66,6 +66,13 @@ namespace GodotTools.Internals
                 ProjectSettings.SetSetting("dotnet/project/assembly_name", _projectAssemblyName);
             }
 
+            _projectSolutionName = (string)ProjectSettings.GetSetting("dotnet/project/solution_name");
+            if (string.IsNullOrEmpty(_projectSolutionName))
+            {
+                _projectSolutionName = _projectAssemblyName;
+                ProjectSettings.SetSetting("dotnet/project/solution_name", _projectSolutionName);
+            }
+
             string slnParentDir = (string)ProjectSettings.GetSetting("dotnet/project/solution_directory");
             if (string.IsNullOrEmpty(slnParentDir))
                 slnParentDir = "res://";
@@ -76,13 +83,14 @@ namespace GodotTools.Internals
             string csprojParentDir = "res://";
 
             _projectSlnPath = Path.Combine(ProjectSettings.GlobalizePath(slnParentDir),
-                string.Concat(_projectAssemblyName, ".sln"));
+                string.Concat(_projectSolutionName, ".sln"));
 
             _projectCsProjPath = Path.Combine(ProjectSettings.GlobalizePath(csprojParentDir),
                 string.Concat(_projectAssemblyName, ".csproj"));
         }
 
         private static string _projectAssemblyName;
+        private static string _projectSolutionName;
         private static string _projectSlnPath;
         private static string _projectCsProjPath;
 
@@ -93,6 +101,16 @@ namespace GodotTools.Internals
                 if (_projectAssemblyName == null)
                     DetermineProjectLocation();
                 return _projectAssemblyName;
+            }
+        }
+
+        public static string ProjectSolutionName
+        {
+            get
+            {
+                if (_projectSolutionName == null)
+                    DetermineProjectLocation();
+                return _projectSolutionName;
             }
         }
 
