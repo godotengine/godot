@@ -24,12 +24,13 @@
 				Clears the array of polygons, but it doesn't clear the array of vertices.
 			</description>
 		</method>
-		<method name="create_from_mesh">
+		<method name="create_from_mesh" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="mesh" type="Mesh" />
 			<description>
 				Initializes the navigation mesh by setting the vertices and indices according to a [Mesh].
 				[b]Note:[/b] The given [param mesh] must be of type [constant Mesh.PRIMITIVE_TRIANGLES] and have an index array.
+				[b]Deprecated:[/b] "This function is deprecated. The vast majority of visual meshes have inherently invalid data for navigation mesh use. For baking a valid navigation mesh from visual meshes either use a NavigationRegion or the NavigationMeshGenerator. For procedural navigation meshes use the dedicated functions to add vertices and polygons to a NavigationMesh."
 			</description>
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">

@@ -34,7 +34,9 @@
 #include "servers/navigation_server_3d.h"
 #endif // DEBUG_ENABLED
 
+#ifndef DISABLE_DEPRECATED
 void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
+	WARN_PRINT_ONCE("NavigationMesh::create_from_mesh() function is deprecated. The vast majority of visual meshes have inherently invalid data for navigation mesh use. For baking a valid navigation mesh from visual meshes either use a NavigationRegion or the NavigationMeshGenerator. For procedural navigation meshes use the dedicated functions to add vertices and polygons to a NavigationMesh.");
 	ERR_FAIL_COND(p_mesh.is_null());
 
 	vertices = Vector<Vector3>();
@@ -71,6 +73,7 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 		}
 	}
 }
+#endif // DISABLE_DEPRECATED
 
 void NavigationMesh::set_sample_partition_type(SamplePartitionType p_value) {
 	ERR_FAIL_INDEX(p_value, SAMPLE_PARTITION_MAX);
@@ -513,7 +516,9 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_polygon", "idx"), &NavigationMesh::get_polygon);
 	ClassDB::bind_method(D_METHOD("clear_polygons"), &NavigationMesh::clear_polygons);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("create_from_mesh", "mesh"), &NavigationMesh::create_from_mesh);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("_set_polygons", "polygons"), &NavigationMesh::_set_polygons);
 	ClassDB::bind_method(D_METHOD("_get_polygons"), &NavigationMesh::_get_polygons);

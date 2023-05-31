@@ -192,7 +192,9 @@ public:
 	void set_filter_baking_aabb_offset(const Vector3 &p_aabb_offset);
 	Vector3 get_filter_baking_aabb_offset() const;
 
+#ifndef DISABLE_DEPRECATED
 	void create_from_mesh(const Ref<Mesh> &p_mesh);
+#endif // DISABLE_DEPRECATED
 
 	void set_vertices(const Vector<Vector3> &p_vertices);
 	Vector<Vector3> get_vertices() const;

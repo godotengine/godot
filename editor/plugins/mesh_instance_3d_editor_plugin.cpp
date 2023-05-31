@@ -252,7 +252,10 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 		} break;
 
+#ifndef DISABLE_DEPRECATED
 		case MENU_OPTION_CREATE_NAVMESH: {
+			WARN_PRINT_ONCE("MeshInstance3DEditorPlugin 'Create Navigation Mesh' function is deprecated. The vast majority of visual meshes have inherently invalid data for navigation mesh use. For baking a valid navigation mesh from visual meshes either use a NavigationRegion or the NavigationMeshGenerator. For procedural navigation meshes use the dedicated functions to add vertices and polygons to a NavigationMesh.");
+
 			Ref<NavigationMesh> nmesh = memnew(NavigationMesh);
 
 			if (nmesh.is_null()) {
@@ -276,6 +279,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->add_undo_method(node, "remove_child", nmi);
 			ur->commit_action();
 		} break;
+#endif // DISABLE_DEPRECATED
 
 		case MENU_OPTION_CREATE_OUTLINE_MESH: {
 			outline_dialog->popup_centered(Vector2(200, 90));
@@ -534,8 +538,10 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->get_popup()->set_item_tooltip(-1, TTR("Creates a simplified convex collision shape.\nThis is similar to single collision shape, but can result in a simpler geometry in some cases, at the cost of accuracy."));
 	options->get_popup()->add_item(TTR("Create Multiple Convex Collision Siblings"), MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES);
 	options->get_popup()->set_item_tooltip(-1, TTR("Creates a polygon-based collision shape.\nThis is a performance middle-ground between a single convex collision and a polygon-based collision."));
+#ifndef DISABLE_DEPRECATED
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Create Navigation Mesh"), MENU_OPTION_CREATE_NAVMESH);
+	options->get_popup()->add_item(TTR("Create Navigation Mesh (Deprecated)"), MENU_OPTION_CREATE_NAVMESH);
+#endif // DISABLE_DEPRECATED
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Outline Mesh..."), MENU_OPTION_CREATE_OUTLINE_MESH);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a static outline mesh. The outline mesh will have its normals flipped automatically.\nThis can be used instead of the StandardMaterial Grow property when using that property isn't possible."));
