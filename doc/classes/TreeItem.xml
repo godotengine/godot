@@ -22,6 +22,13 @@
 				Adds a button with [Texture2D] [param button] at column [param column]. The [param id] is used to identify the button in the according [signal Tree.button_clicked] signal and can be different from the buttons index. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately before this method. Optionally, the button can be [param disabled] and have a [param tooltip_text].
 			</description>
 		</method>
+		<method name="add_child">
+			<return type="void" />
+			<param index="0" name="child" type="TreeItem" />
+			<description>
+				Adds a previously unparented [TreeItem] as a direct child of this one. The [param child] item must not be a part of any [Tree] or parented to any [TreeItem]. See also [method remove_child].
+			</description>
+		</method>
 		<method name="call_recursive" qualifiers="vararg">
 			<return type="void" />
 			<param index="0" name="method" type="StringName" />
@@ -430,7 +437,8 @@
 			<return type="void" />
 			<param index="0" name="child" type="TreeItem" />
 			<description>
-				Removes the given child [TreeItem] and all its children from the [Tree]. Note that it doesn't free the item from memory, so it can be reused later. To completely remove a [TreeItem] use [method Object.free].
+				Removes the given child [TreeItem] and all its children from the [Tree]. Note that it doesn't free the item from memory, so it can be reused later (see [method add_child]). To completely remove a [TreeItem] use [method Object.free].
+				[b]Note:[/b] If you want to move a child from one [Tree] to another, then instead of removing and adding it manually you can use [method move_before] or [method move_after].
 			</description>
 		</method>
 		<method name="select">
