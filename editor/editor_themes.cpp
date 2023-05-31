@@ -63,7 +63,7 @@ void EditorColorMap::create() {
 
 	add_conversion_color_pair("#ffffff", "#414141"); // Pure white
 	add_conversion_color_pair("#000000", "#bfbfbf"); // Pure black
-	// Keep pure RGB colors as is, but list them for explicitly.
+	// Keep pure RGB colors as is, but list them for explicitness.
 	add_conversion_color_pair("#ff0000", "#ff0000"); // Pure red
 	add_conversion_color_pair("#00ff00", "#00ff00"); // Pure green
 	add_conversion_color_pair("#0000ff", "#0000ff"); // Pure blue
@@ -107,10 +107,11 @@ void EditorColorMap::create() {
 	add_conversion_color_pair("#dbee15", "#b7d10a"); // Color track yellow
 	add_conversion_color_pair("#288027", "#218309"); // Color track green
 
-	// Resource groups
+	// Other objects
 	add_conversion_color_pair("#ffca5f", "#fea900"); // Mesh resource (orange)
 	add_conversion_color_pair("#2998ff", "#68b6ff"); // Shape resource (blue)
 	add_conversion_color_pair("#a2d2ff", "#4998e3"); // Shape resource (light blue)
+	add_conversion_color_pair("#69c4d4", "#29a3cc"); // Input event highlight (light blue)
 
 	// Animation editor tracks
 	// The property track icon color is set by the common icon color.
@@ -937,6 +938,33 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	editor_log_button_pressed->set_border_width(SIDE_BOTTOM, 2 * EDSCALE);
 	editor_log_button_pressed->set_border_color(accent_color);
 	theme->set_stylebox("pressed", "EditorLogFilterButton", editor_log_button_pressed);
+
+	// ProjectTag
+	{
+		theme->set_type_variation("ProjectTag", "Button");
+
+		Ref<StyleBoxFlat> tag = style_widget->duplicate();
+		tag->set_bg_color(dark_theme ? tag->get_bg_color().lightened(0.2) : tag->get_bg_color().darkened(0.2));
+		tag->set_corner_radius(CORNER_TOP_LEFT, 0);
+		tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+		tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
+		tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+		theme->set_stylebox("normal", "ProjectTag", tag);
+
+		tag = style_widget_hover->duplicate();
+		tag->set_corner_radius(CORNER_TOP_LEFT, 0);
+		tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+		tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
+		tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+		theme->set_stylebox("hover", "ProjectTag", tag);
+
+		tag = style_widget_pressed->duplicate();
+		tag->set_corner_radius(CORNER_TOP_LEFT, 0);
+		tag->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+		tag->set_corner_radius(CORNER_TOP_RIGHT, 4);
+		tag->set_corner_radius(CORNER_BOTTOM_RIGHT, 4);
+		theme->set_stylebox("pressed", "ProjectTag", tag);
+	}
 
 	// MenuBar
 	theme->set_stylebox("normal", "MenuBar", style_widget);

@@ -95,7 +95,7 @@ void EditorPropertyText::_text_changed(const String &p_string) {
 }
 
 void EditorPropertyText::update_property() {
-	String s = get_edited_object()->get(get_edited_property());
+	String s = get_edited_property_value();
 	updating = true;
 	if (text->get_text() != s) {
 		int caret = text->get_caret_column();
@@ -108,6 +108,13 @@ void EditorPropertyText::update_property() {
 
 void EditorPropertyText::set_string_name(bool p_enabled) {
 	string_name = p_enabled;
+	if (p_enabled) {
+		Label *prefix = memnew(Label("&"));
+		prefix->set_tooltip_text("StringName");
+		prefix->set_mouse_filter(MOUSE_FILTER_STOP);
+		text->get_parent()->add_child(prefix);
+		text->get_parent()->move_child(prefix, 0);
+	}
 }
 
 void EditorPropertyText::set_secret(bool p_enabled) {
@@ -122,9 +129,13 @@ void EditorPropertyText::_bind_methods() {
 }
 
 EditorPropertyText::EditorPropertyText() {
+	HBoxContainer *hb = memnew(HBoxContainer);
+	add_child(hb);
+
 	text = memnew(LineEdit);
-	add_child(text);
+	hb->add_child(text);
 	add_focusable(text);
+	text->set_h_size_flags(SIZE_EXPAND_FILL);
 	text->connect("text_changed", callable_mp(this, &EditorPropertyText::_text_changed));
 	text->connect("text_submitted", callable_mp(this, &EditorPropertyText::_text_submitted));
 }
@@ -167,7 +178,7 @@ void EditorPropertyMultilineText::_open_big_text() {
 }
 
 void EditorPropertyMultilineText::update_property() {
-	String t = get_edited_object()->get(get_edited_property());
+	String t = get_edited_property_value();
 	if (text->get_text() != t) {
 		text->set_text(t);
 		if (big_text && big_text->is_visible_in_tree()) {
@@ -270,14 +281,14 @@ void EditorPropertyTextEnum::_custom_value_accepted() {
 }
 
 void EditorPropertyTextEnum::_custom_value_canceled() {
-	custom_value_edit->set_text(get_edited_object()->get(get_edited_property()));
+	custom_value_edit->set_text(get_edited_property_value());
 
 	edit_custom_layout->hide();
 	default_layout->show();
 }
 
 void EditorPropertyTextEnum::update_property() {
-	String current_value = get_edited_object()->get(get_edited_property());
+	String current_value = get_edited_property_value();
 	int default_option = options.find(current_value);
 
 	// The list can change in the loose mode.
@@ -405,13 +416,13 @@ void EditorPropertyLocale::_locale_pressed() {
 		add_child(dialog);
 	}
 
-	String locale_code = get_edited_object()->get(get_edited_property());
+	String locale_code = get_edited_property_value();
 	dialog->set_locale(locale_code);
 	dialog->popup_locale_dialog();
 }
 
 void EditorPropertyLocale::update_property() {
-	String locale_code = get_edited_object()->get(get_edited_property());
+	String locale_code = get_edited_property_value();
 	locale->set_text(locale_code);
 	locale->set_tooltip_text(locale_code);
 }
@@ -472,7 +483,7 @@ void EditorPropertyPath::_path_pressed() {
 		add_child(dialog);
 	}
 
-	String full_path = get_edited_object()->get(get_edited_property());
+	String full_path = get_edited_property_value();
 
 	dialog->clear_filters();
 
@@ -500,7 +511,7 @@ void EditorPropertyPath::_path_pressed() {
 }
 
 void EditorPropertyPath::update_property() {
-	String full_path = get_edited_object()->get(get_edited_property());
+	String full_path = get_edited_property_value();
 	path->set_text(full_path);
 	path->set_tooltip_text(full_path);
 }
@@ -603,7 +614,7 @@ void EditorPropertyClassName::setup(const String &p_base_type, const String &p_s
 }
 
 void EditorPropertyClassName::update_property() {
-	String s = get_edited_object()->get(get_edited_property());
+	String s = get_edited_property_value();
 	property->set_text(s);
 	selected_type = s;
 }
@@ -645,7 +656,7 @@ void EditorPropertyCheck::_checkbox_pressed() {
 }
 
 void EditorPropertyCheck::update_property() {
-	bool c = get_edited_object()->get(get_edited_property());
+	bool c = get_edited_property_value();
 	checkbox->set_pressed(c);
 	checkbox->set_disabled(is_read_only());
 }
@@ -673,7 +684,7 @@ void EditorPropertyEnum::_option_selected(int p_which) {
 }
 
 void EditorPropertyEnum::update_property() {
-	Variant current = get_edited_object()->get(get_edited_property());
+	Variant current = get_edited_property_value();
 	if (current.get_type() == Variant::NIL) {
 		options->select(-1);
 		return;
@@ -728,7 +739,7 @@ void EditorPropertyFlags::_set_read_only(bool p_read_only) {
 }
 
 void EditorPropertyFlags::_flag_toggled(int p_index) {
-	uint32_t value = get_edited_object()->get(get_edited_property());
+	uint32_t value = get_edited_property_value();
 	if (flags[p_index]->is_pressed()) {
 		value |= flag_values[p_index];
 	} else {
@@ -739,7 +750,7 @@ void EditorPropertyFlags::_flag_toggled(int p_index) {
 }
 
 void EditorPropertyFlags::update_property() {
-	uint32_t value = get_edited_object()->get(get_edited_property());
+	uint32_t value = get_edited_property_value();
 
 	for (int i = 0; i < flags.size(); i++) {
 		flags[i]->set_pressed((value & flag_values[i]) == flag_values[i]);
@@ -1110,7 +1121,7 @@ void EditorPropertyLayers::_grid_changed(uint32_t p_grid) {
 }
 
 void EditorPropertyLayers::update_property() {
-	uint32_t value = get_edited_object()->get(get_edited_property());
+	uint32_t value = get_edited_property_value();
 
 	grid->set_flag(value);
 }
@@ -1292,7 +1303,7 @@ void EditorPropertyInteger::_value_changed(int64_t val) {
 }
 
 void EditorPropertyInteger::update_property() {
-	int64_t val = get_edited_object()->get(get_edited_property());
+	int64_t val = get_edited_property_value();
 	setting = true;
 	spin->set_value(val);
 	setting = false;
@@ -1332,7 +1343,7 @@ void EditorPropertyObjectID::_set_read_only(bool p_read_only) {
 }
 
 void EditorPropertyObjectID::_edit_pressed() {
-	emit_signal(SNAME("object_id_selected"), get_edited_property(), get_edited_object()->get(get_edited_property()));
+	emit_signal(SNAME("object_id_selected"), get_edited_property(), get_edited_property_value());
 }
 
 void EditorPropertyObjectID::update_property() {
@@ -1341,7 +1352,7 @@ void EditorPropertyObjectID::update_property() {
 		type = "Object";
 	}
 
-	ObjectID id = get_edited_object()->get(get_edited_property());
+	ObjectID id = get_edited_property_value();
 	if (id.is_valid()) {
 		edit->set_text(type + " ID: " + uitos(id));
 		edit->set_tooltip_text(type + " ID: " + uitos(id));
@@ -1373,14 +1384,14 @@ EditorPropertyObjectID::EditorPropertyObjectID() {
 ///////////////////// SIGNAL /////////////////////////
 
 void EditorPropertySignal::_edit_pressed() {
-	Signal signal = get_edited_object()->get(get_edited_property());
+	Signal signal = get_edited_property_value();
 	emit_signal(SNAME("object_id_selected"), get_edited_property(), signal.get_object_id());
 }
 
 void EditorPropertySignal::update_property() {
 	String type = base_type;
 
-	Signal signal = get_edited_object()->get(get_edited_property());
+	Signal signal = get_edited_property_value();
 
 	edit->set_text("Signal: " + signal.get_name());
 	edit->set_disabled(false);
@@ -1402,7 +1413,7 @@ EditorPropertySignal::EditorPropertySignal() {
 void EditorPropertyCallable::update_property() {
 	String type = base_type;
 
-	Callable callable = get_edited_object()->get(get_edited_property());
+	Callable callable = get_edited_property_value();
 
 	edit->set_text("Callable");
 	edit->set_disabled(true);
@@ -1436,7 +1447,7 @@ void EditorPropertyFloat::_value_changed(double val) {
 }
 
 void EditorPropertyFloat::update_property() {
-	double val = get_edited_object()->get(get_edited_property());
+	double val = get_edited_property_value();
 	if (angle_in_radians) {
 		val = Math::rad_to_deg(val);
 	}
@@ -1513,7 +1524,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 			rel = -rel;
 		}
 
-		float val = get_edited_object()->get(get_edited_property());
+		float val = get_edited_property_value();
 		bool sg = val < 0;
 		val = Math::absf(val);
 
@@ -1548,7 +1559,7 @@ void EditorPropertyEasing::_draw_easing() {
 
 	const int point_count = 48;
 
-	const float exp = get_edited_object()->get(get_edited_property());
+	const float exp = get_edited_property_value();
 
 	const Ref<Font> f = get_theme_font(SNAME("font"), SNAME("Label"));
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
@@ -1602,7 +1613,7 @@ void EditorPropertyEasing::_set_preset(int p_preset) {
 void EditorPropertyEasing::_setup_spin() {
 	setting = true;
 	spin->setup_and_show();
-	spin->get_line_edit()->set_text(TS->format_number(rtos(get_edited_object()->get(get_edited_property()))));
+	spin->get_line_edit()->set_text(TS->format_number(rtos(get_edited_property_value())));
 	setting = false;
 	spin->show();
 }
@@ -1721,7 +1732,7 @@ void EditorPropertyVector2::_value_changed(double val, const String &p_name) {
 }
 
 void EditorPropertyVector2::update_property() {
-	Vector2 val = get_edited_object()->get(get_edited_property());
+	Vector2 val = get_edited_property_value();
 	setting = true;
 	spin[0]->set_value(val.x);
 	spin[1]->set_value(val.y);
@@ -1842,7 +1853,7 @@ void EditorPropertyRect2::_value_changed(double val, const String &p_name) {
 }
 
 void EditorPropertyRect2::update_property() {
-	Rect2 val = get_edited_object()->get(get_edited_property());
+	Rect2 val = get_edited_property_value();
 	setting = true;
 	spin[0]->set_value(val.position.x);
 	spin[1]->set_value(val.position.y);
@@ -1968,7 +1979,7 @@ void EditorPropertyVector3::_value_changed(double val, const String &p_name) {
 }
 
 void EditorPropertyVector3::update_property() {
-	update_using_vector(get_edited_object()->get(get_edited_property()));
+	update_using_vector(get_edited_property_value());
 	_update_ratio();
 }
 
@@ -2134,7 +2145,7 @@ void EditorPropertyVector2i::_value_changed(double val, const String &p_name) {
 }
 
 void EditorPropertyVector2i::update_property() {
-	Vector2i val = get_edited_object()->get(get_edited_property());
+	Vector2i val = get_edited_property_value();
 	setting = true;
 	spin[0]->set_value(val.x);
 	spin[1]->set_value(val.y);
@@ -2254,7 +2265,7 @@ void EditorPropertyRect2i::_value_changed(double val, const String &p_name) {
 }
 
 void EditorPropertyRect2i::update_property() {
-	Rect2i val = get_edited_object()->get(get_edited_property());
+	Rect2i val = get_edited_property_value();
 	setting = true;
 	spin[0]->set_value(val.position.x);
 	spin[1]->set_value(val.position.y);
@@ -2374,7 +2385,7 @@ void EditorPropertyVector3i::_value_changed(double val, const String &p_name) {
 }
 
 void EditorPropertyVector3i::update_property() {
-	Vector3i val = get_edited_object()->get(get_edited_property());
+	Vector3i val = get_edited_property_value();
 	setting = true;
 	spin[0]->set_value(val.x);
 	spin[1]->set_value(val.y);
@@ -2506,7 +2517,7 @@ void EditorPropertyPlane::_value_changed(double val, const String &p_name) {
 }
 
 void EditorPropertyPlane::update_property() {
-	Plane val = get_edited_object()->get(get_edited_property());
+	Plane val = get_edited_property_value();
 	setting = true;
 	spin[0]->set_value(val.normal.x);
 	spin[1]->set_value(val.normal.y);
@@ -2647,7 +2658,7 @@ bool EditorPropertyQuaternion::is_grabbing_euler() {
 }
 
 void EditorPropertyQuaternion::update_property() {
-	Quaternion val = get_edited_object()->get(get_edited_property());
+	Quaternion val = get_edited_property_value();
 	setting = true;
 	spin[0]->set_value(val.x);
 	spin[1]->set_value(val.y);
@@ -2815,7 +2826,7 @@ void EditorPropertyVector4::_value_changed(double val, const String &p_name) {
 }
 
 void EditorPropertyVector4::update_property() {
-	Vector4 val = get_edited_object()->get(get_edited_property());
+	Vector4 val = get_edited_property_value();
 	setting = true;
 	spin[0]->set_value(val.x);
 	spin[1]->set_value(val.y);
@@ -2905,7 +2916,7 @@ void EditorPropertyVector4i::_value_changed(double val, const String &p_name) {
 }
 
 void EditorPropertyVector4i::update_property() {
-	Vector4i val = get_edited_object()->get(get_edited_property());
+	Vector4i val = get_edited_property_value();
 	setting = true;
 	spin[0]->set_value(val.x);
 	spin[1]->set_value(val.y);
@@ -2997,7 +3008,7 @@ void EditorPropertyAABB::_value_changed(double val, const String &p_name) {
 }
 
 void EditorPropertyAABB::update_property() {
-	AABB val = get_edited_object()->get(get_edited_property());
+	AABB val = get_edited_property_value();
 	setting = true;
 	spin[0]->set_value(val.position.x);
 	spin[1]->set_value(val.position.y);
@@ -3080,7 +3091,7 @@ void EditorPropertyTransform2D::_value_changed(double val, const String &p_name)
 }
 
 void EditorPropertyTransform2D::update_property() {
-	Transform2D val = get_edited_object()->get(get_edited_property());
+	Transform2D val = get_edited_property_value();
 	setting = true;
 	spin[0]->set_value(val[0][0]);
 	spin[1]->set_value(val[1][0]);
@@ -3174,7 +3185,7 @@ void EditorPropertyBasis::_value_changed(double val, const String &p_name) {
 }
 
 void EditorPropertyBasis::update_property() {
-	Basis val = get_edited_object()->get(get_edited_property());
+	Basis val = get_edited_property_value();
 	setting = true;
 	spin[0]->set_value(val[0][0]);
 	spin[1]->set_value(val[0][1]);
@@ -3267,7 +3278,7 @@ void EditorPropertyTransform3D::_value_changed(double val, const String &p_name)
 }
 
 void EditorPropertyTransform3D::update_property() {
-	update_using_transform(get_edited_object()->get(get_edited_property()));
+	update_using_transform(get_edited_property_value());
 }
 
 void EditorPropertyTransform3D::update_using_transform(Transform3D p_transform) {
@@ -3369,7 +3380,7 @@ void EditorPropertyProjection::_value_changed(double val, const String &p_name) 
 }
 
 void EditorPropertyProjection::update_property() {
-	update_using_transform(get_edited_object()->get(get_edited_property()));
+	update_using_transform(get_edited_property_value());
 }
 
 void EditorPropertyProjection::update_using_transform(Projection p_transform) {
@@ -3447,7 +3458,7 @@ void EditorPropertyColor::_set_read_only(bool p_read_only) {
 
 void EditorPropertyColor::_color_changed(const Color &p_color) {
 	// Cancel the color change if the current color is identical to the new one.
-	if (get_edited_object()->get(get_edited_property()) == p_color) {
+	if (get_edited_property_value() == p_color) {
 		return;
 	}
 
@@ -3474,7 +3485,7 @@ void EditorPropertyColor::_notification(int p_what) {
 }
 
 void EditorPropertyColor::update_property() {
-	picker->set_pick_color(get_edited_object()->get(get_edited_property()));
+	picker->set_pick_color(get_edited_property_value());
 	const Color color = picker->get_pick_color();
 
 	// Add a tooltip to display each channel's values without having to click the ColorPickerButton
@@ -3642,7 +3653,7 @@ void EditorPropertyNodePath::update_property() {
 	if (pointer_mode) {
 		p = get_edited_object()->get(_get_meta_pointer_property());
 	} else {
-		p = get_edited_object()->get(get_edited_property());
+		p = get_edited_property_value();
 	}
 
 	assign->set_tooltip_text(p);
@@ -3726,7 +3737,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 ///////////////////// RID /////////////////////////
 
 void EditorPropertyRID::update_property() {
-	RID rid = get_edited_object()->get(get_edited_property());
+	RID rid = get_edited_property_value();
 	if (rid.is_valid()) {
 		uint64_t id = rid.get_id();
 		label->set_text("RID: " + uitos(id));
@@ -3927,7 +3938,7 @@ void EditorPropertyResource::_sub_inspector_object_id_selected(int p_id) {
 }
 
 void EditorPropertyResource::_open_editor_pressed() {
-	Ref<Resource> res = get_edited_object()->get(get_edited_property());
+	Ref<Resource> res = get_edited_property_value();
 	if (res.is_valid()) {
 		// May clear the editor so do it deferred.
 		callable_mp(EditorNode::get_singleton(), &EditorNode::edit_item).bind(res.ptr(), this).call_deferred();
@@ -4052,7 +4063,7 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 }
 
 void EditorPropertyResource::update_property() {
-	Ref<Resource> res = get_edited_object()->get(get_edited_property());
+	Ref<Resource> res = get_edited_property_value();
 
 	if (use_sub_inspector) {
 		if (res.is_valid() != resource_picker->is_toggle_mode()) {

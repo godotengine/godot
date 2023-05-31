@@ -2950,6 +2950,18 @@ void MaterialStorage::material_update_dependency(RID p_material, DependencyTrack
 	}
 }
 
+LocalVector<ShaderGLES3::TextureUniformData> get_texture_uniform_data(const Vector<ShaderCompiler::GeneratedCode::Texture> &texture_uniforms) {
+	LocalVector<ShaderGLES3::TextureUniformData> texture_uniform_data;
+	for (int i = 0; i < texture_uniforms.size(); i++) {
+		int num_textures = texture_uniforms[i].array_size;
+		if (num_textures == 0) {
+			num_textures = 1;
+		}
+		texture_uniform_data.push_back({ texture_uniforms[i].name, num_textures });
+	}
+	return texture_uniform_data;
+}
+
 /* Canvas Shader Data */
 
 void CanvasShaderData::set_code(const String &p_code) {
@@ -3017,12 +3029,9 @@ void CanvasShaderData::set_code(const String &p_code) {
 	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
 #endif
 
-	Vector<StringName> texture_uniform_names;
-	for (int i = 0; i < gen_code.texture_uniforms.size(); i++) {
-		texture_uniform_names.push_back(gen_code.texture_uniforms[i].name);
-	}
+	LocalVector<ShaderGLES3::TextureUniformData> texture_uniform_data = get_texture_uniform_data(gen_code.texture_uniforms);
 
-	MaterialStorage::get_singleton()->shaders.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_names);
+	MaterialStorage::get_singleton()->shaders.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_data);
 	ERR_FAIL_COND(!MaterialStorage::get_singleton()->shaders.canvas_shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
@@ -3065,23 +3074,38 @@ void CanvasMaterialData::update_parameters(const HashMap<StringName, Variant> &p
 	update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size);
 }
 
+static void bind_uniforms_generic(const Vector<RID> &p_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, int texture_offset = 0, const RS::CanvasItemTextureFilter *filter_mapping = filter_from_uniform, const RS::CanvasItemTextureRepeat *repeat_mapping = repeat_from_uniform) {
+	const RID *textures = p_textures.ptr();
+	const ShaderCompiler::GeneratedCode::Texture *texture_uniforms = p_texture_uniforms.ptr();
+	int texture_uniform_index = 0;
+	int texture_uniform_count = 0;
+	for (int ti = 0; ti < p_textures.size(); ti++) {
+		ERR_FAIL_COND_MSG(texture_uniform_index >= p_texture_uniforms.size(), "texture_uniform_index out of bounds");
+		GLES3::Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
+		const ShaderCompiler::GeneratedCode::Texture &texture_uniform = texture_uniforms[texture_uniform_index];
+		if (texture) {
+			glActiveTexture(GL_TEXTURE0 + texture_offset + ti);
+			glBindTexture(target_from_type[texture_uniform.type], texture->tex_id);
+			if (texture->render_target) {
+				texture->render_target->used_in_frame = true;
+			}
+
+			texture->gl_set_filter(filter_mapping[int(texture_uniform.filter)]);
+			texture->gl_set_repeat(repeat_mapping[int(texture_uniform.repeat)]);
+		}
+		texture_uniform_count++;
+		if (texture_uniform_count >= texture_uniform.array_size) {
+			texture_uniform_index++;
+			texture_uniform_count = 0;
+		}
+	}
+}
+
 void CanvasMaterialData::bind_uniforms() {
 	// Bind Material Uniforms
 	glBindBufferBase(GL_UNIFORM_BUFFER, RasterizerCanvasGLES3::MATERIAL_UNIFORM_LOCATION, uniform_buffer);
 
-	RID *textures = texture_cache.ptrw();
-	ShaderCompiler::GeneratedCode::Texture *texture_uniforms = shader_data->texture_uniforms.ptrw();
-	for (int ti = 0; ti < texture_cache.size(); ti++) {
-		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
-		glActiveTexture(GL_TEXTURE1 + ti); // Start at GL_TEXTURE1 because texture slot 0 is used by the base texture
-		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
-		if (texture->render_target) {
-			texture->render_target->used_in_frame = true;
-		}
-
-		texture->gl_set_filter(filter_from_uniform_canvas[int(texture_uniforms[ti].filter)]);
-		texture->gl_set_repeat(repeat_from_uniform_canvas[int(texture_uniforms[ti].repeat)]);
-	}
+	bind_uniforms_generic(texture_cache, shader_data->texture_uniforms, 1, filter_from_uniform_canvas, repeat_from_uniform_canvas); // Start at GL_TEXTURE1 because texture slot 0 is used by the base texture
 }
 
 CanvasMaterialData::~CanvasMaterialData() {
@@ -3172,12 +3196,9 @@ void SkyShaderData::set_code(const String &p_code) {
 	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
 #endif
 
-	Vector<StringName> texture_uniform_names;
-	for (int i = 0; i < gen_code.texture_uniforms.size(); i++) {
-		texture_uniform_names.push_back(gen_code.texture_uniforms[i].name);
-	}
+	LocalVector<ShaderGLES3::TextureUniformData> texture_uniform_data = get_texture_uniform_data(gen_code.texture_uniforms);
 
-	MaterialStorage::get_singleton()->shaders.sky_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_names);
+	MaterialStorage::get_singleton()->shaders.sky_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_data);
 	ERR_FAIL_COND(!MaterialStorage::get_singleton()->shaders.sky_shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
@@ -3235,19 +3256,7 @@ void SkyMaterialData::bind_uniforms() {
 	// Bind Material Uniforms
 	glBindBufferBase(GL_UNIFORM_BUFFER, SKY_MATERIAL_UNIFORM_LOCATION, uniform_buffer);
 
-	RID *textures = texture_cache.ptrw();
-	ShaderCompiler::GeneratedCode::Texture *texture_uniforms = shader_data->texture_uniforms.ptrw();
-	for (int ti = 0; ti < texture_cache.size(); ti++) {
-		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
-		glActiveTexture(GL_TEXTURE0 + ti);
-		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
-		if (texture->render_target) {
-			texture->render_target->used_in_frame = true;
-		}
-
-		texture->gl_set_filter(filter_from_uniform[int(texture_uniforms[ti].filter)]);
-		texture->gl_set_repeat(repeat_from_uniform[int(texture_uniforms[ti].repeat)]);
-	}
+	bind_uniforms_generic(texture_cache, shader_data->texture_uniforms);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3435,12 +3444,9 @@ void SceneShaderData::set_code(const String &p_code) {
 	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
 #endif
 
-	Vector<StringName> texture_uniform_names;
-	for (int i = 0; i < gen_code.texture_uniforms.size(); i++) {
-		texture_uniform_names.push_back(gen_code.texture_uniforms[i].name);
-	}
+	LocalVector<ShaderGLES3::TextureUniformData> texture_uniform_data = get_texture_uniform_data(gen_code.texture_uniforms);
 
-	MaterialStorage::get_singleton()->shaders.scene_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_names);
+	MaterialStorage::get_singleton()->shaders.scene_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_data);
 	ERR_FAIL_COND(!MaterialStorage::get_singleton()->shaders.scene_shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
@@ -3517,19 +3523,7 @@ void SceneMaterialData::bind_uniforms() {
 	// Bind Material Uniforms
 	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_MATERIAL_UNIFORM_LOCATION, uniform_buffer);
 
-	RID *textures = texture_cache.ptrw();
-	ShaderCompiler::GeneratedCode::Texture *texture_uniforms = shader_data->texture_uniforms.ptrw();
-	for (int ti = 0; ti < texture_cache.size(); ti++) {
-		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
-		glActiveTexture(GL_TEXTURE0 + ti);
-		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
-		if (texture->render_target) {
-			texture->render_target->used_in_frame = true;
-		}
-
-		texture->gl_set_filter(filter_from_uniform[int(texture_uniforms[ti].filter)]);
-		texture->gl_set_repeat(repeat_from_uniform[int(texture_uniforms[ti].repeat)]);
-	}
+	bind_uniforms_generic(texture_cache, shader_data->texture_uniforms);
 }
 
 /* Particles SHADER */
@@ -3575,12 +3569,9 @@ void ParticlesShaderData::set_code(const String &p_code) {
 		}
 	}
 
-	Vector<StringName> texture_uniform_names;
-	for (int i = 0; i < gen_code.texture_uniforms.size(); i++) {
-		texture_uniform_names.push_back(gen_code.texture_uniforms[i].name);
-	}
+	LocalVector<ShaderGLES3::TextureUniformData> texture_uniform_data = get_texture_uniform_data(gen_code.texture_uniforms);
 
-	MaterialStorage::get_singleton()->shaders.particles_process_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_names);
+	MaterialStorage::get_singleton()->shaders.particles_process_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_data);
 	ERR_FAIL_COND(!MaterialStorage::get_singleton()->shaders.particles_process_shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
@@ -3631,19 +3622,7 @@ void ParticleProcessMaterialData::bind_uniforms() {
 	// Bind Material Uniforms
 	glBindBufferBase(GL_UNIFORM_BUFFER, GLES3::PARTICLES_MATERIAL_UNIFORM_LOCATION, uniform_buffer);
 
-	RID *textures = texture_cache.ptrw();
-	ShaderCompiler::GeneratedCode::Texture *texture_uniforms = shader_data->texture_uniforms.ptrw();
-	for (int ti = 0; ti < texture_cache.size(); ti++) {
-		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
-		glActiveTexture(GL_TEXTURE1 + ti); // Start at GL_TEXTURE1 because texture slot 0 is reserved for the heightmap texture.
-		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
-		if (texture->render_target) {
-			texture->render_target->used_in_frame = true;
-		}
-
-		texture->gl_set_filter(filter_from_uniform[int(texture_uniforms[ti].filter)]);
-		texture->gl_set_repeat(repeat_from_uniform[int(texture_uniforms[ti].repeat)]);
-	}
+	bind_uniforms_generic(texture_cache, shader_data->texture_uniforms, 1); // Start at GL_TEXTURE1 because texture slot 0 is reserved for the heightmap texture.
 }
 
 #endif // !GLES3_ENABLED

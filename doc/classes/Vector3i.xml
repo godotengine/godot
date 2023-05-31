@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector3i" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Vector used for 3D math using integer coordinates.
+		A 3D vector using integer coordinates.
 	</brief_description>
 	<description>
-		3-element structure that can be used to represent positions in 3D space or any other triplet of numeric values.
+		A 3-element structure that can be used to represent 3D grid coordinates or any other triplet of integers.
 		It uses integer coordinates and is therefore preferable to [Vector3] when exact precision is required. Note that the values are limited to 32 bits, and unlike [Vector3] this cannot be configured with an engine build option. Use [int] or [PackedInt64Array] if 64-bit values are needed.
 		[b]Note:[/b] In a boolean context, a Vector3i will evaluate to [code]false[/code] if it's equal to [code]Vector3i(0, 0, 0)[/code]. Otherwise, a Vector3i will always evaluate to [code]true[/code].
 	</description>

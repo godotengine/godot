@@ -281,7 +281,7 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 	if (r_max) {
 		*r_max = 0;
 		for (int i = 0; i < blend_count; i++) {
-			*r_max = MAX(*r_max, blendw[i]);
+			*r_max = MAX(*r_max, Math::abs(blendw[i]));
 		}
 	}
 

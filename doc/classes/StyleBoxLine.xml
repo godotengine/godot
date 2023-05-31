@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="StyleBoxLine" inherits="StyleBox" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		[StyleBox] that displays a single line.
+		A [StyleBox] that displays a single line of a given color and thickness.
 	</brief_description>
 	<description>
-		[StyleBox] that displays a single line of a given color and thickness. It can be used to draw things like separators.
+		A [StyleBox] that displays a single line of a given color and thickness. The line can be either horizontal or vertical. Useful for separators.
 	</description>
 	<tutorials>
 	</tutorials>

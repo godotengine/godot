@@ -227,7 +227,7 @@ void EditorPropertyFontMetaOverride::_object_id_selected(const StringName &p_pro
 }
 
 void EditorPropertyFontMetaOverride::update_property() {
-	Variant updated_val = get_edited_object()->get(get_edited_property());
+	Variant updated_val = get_edited_property_value();
 
 	Dictionary dict = updated_val;
 
@@ -330,7 +330,7 @@ void EditorPropertyFontMetaOverride::update_property() {
 }
 
 void EditorPropertyFontMetaOverride::_edit_pressed() {
-	Variant prop_val = get_edited_object()->get(get_edited_property());
+	Variant prop_val = get_edited_property_value();
 	if (prop_val.get_type() == Variant::NIL) {
 		Callable::CallError ce;
 		Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
@@ -415,7 +415,7 @@ void EditorPropertyOTVariation::_object_id_selected(const StringName &p_property
 }
 
 void EditorPropertyOTVariation::update_property() {
-	Variant updated_val = get_edited_object()->get(get_edited_property());
+	Variant updated_val = get_edited_property_value();
 
 	Dictionary dict = updated_val;
 
@@ -511,7 +511,7 @@ void EditorPropertyOTVariation::update_property() {
 }
 
 void EditorPropertyOTVariation::_edit_pressed() {
-	Variant prop_val = get_edited_object()->get(get_edited_property());
+	Variant prop_val = get_edited_property_value();
 	if (prop_val.get_type() == Variant::NIL) {
 		Callable::CallError ce;
 		Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);
@@ -607,7 +607,7 @@ void EditorPropertyOTFeatures::_object_id_selected(const StringName &p_property,
 }
 
 void EditorPropertyOTFeatures::update_property() {
-	Variant updated_val = get_edited_object()->get(get_edited_property());
+	Variant updated_val = get_edited_property_value();
 
 	Dictionary dict = updated_val;
 
@@ -814,7 +814,7 @@ void EditorPropertyOTFeatures::update_property() {
 }
 
 void EditorPropertyOTFeatures::_edit_pressed() {
-	Variant prop_val = get_edited_object()->get(get_edited_property());
+	Variant prop_val = get_edited_property_value();
 	if (prop_val.get_type() == Variant::NIL) {
 		Callable::CallError ce;
 		Variant::construct(Variant::DICTIONARY, prop_val, nullptr, 0, ce);

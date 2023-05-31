@@ -4,7 +4,7 @@
 		A state machine with multiple [AnimationRootNode]s, used by [AnimationTree].
 	</brief_description>
 	<description>
-		Contains multiple [AnimationRootNode]s representing animation states, connected in a graph. Node transitions can be configured to happen automatically or via code, using a shortest-path algorithm. Retrieve the [AnimationNodeStateMachinePlayback] object from the [AnimationTree] node to control it programmatically.
+		Contains multiple [AnimationRootNode]s representing animation states, connected in a graph. State transitions can be configured to happen automatically or via code, using a shortest-path algorithm. Retrieve the [AnimationNodeStateMachinePlayback] object from the [AnimationTree] node to control it programmatically.
 		[b]Example:[/b]
 		[codeblocks]
 		[gdscript]
@@ -27,7 +27,7 @@
 			<param index="1" name="node" type="AnimationNode" />
 			<param index="2" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Adds a new node to the graph. The [param position] is used for display in the editor.
+				Adds a new animation node to the graph. The [param position] is used for display in the editor.
 			</description>
 		</method>
 		<method name="add_transition">
@@ -36,7 +36,7 @@
 			<param index="1" name="to" type="StringName" />
 			<param index="2" name="transition" type="AnimationNodeStateMachineTransition" />
 			<description>
-				Adds a transition between the given nodes.
+				Adds a transition between the given animation nodes.
 			</description>
 		</method>
 		<method name="get_graph_offset" qualifiers="const">
@@ -63,7 +63,7 @@
 			<return type="Vector2" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns the given node's coordinates. Used for display in the editor.
+				Returns the given animation node's coordinates. Used for display in the editor.
 			</description>
 		</method>
 		<method name="get_transition" qualifiers="const">
@@ -97,7 +97,7 @@
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the graph contains the given node.
+				Returns [code]true[/code] if the graph contains the given animation node.
 			</description>
 		</method>
 		<method name="has_transition" qualifiers="const">
@@ -105,14 +105,14 @@
 			<param index="0" name="from" type="StringName" />
 			<param index="1" name="to" type="StringName" />
 			<description>
-				Returns [code]true[/code] if there is a transition between the given nodes.
+				Returns [code]true[/code] if there is a transition between the given animation nodes.
 			</description>
 		</method>
 		<method name="remove_node">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Deletes the given node from the graph.
+				Deletes the given animation node from the graph.
 			</description>
 		</method>
 		<method name="remove_transition">
@@ -120,7 +120,7 @@
 			<param index="0" name="from" type="StringName" />
 			<param index="1" name="to" type="StringName" />
 			<description>
-				Deletes the transition between the two specified nodes.
+				Deletes the transition between the two specified animation nodes.
 			</description>
 		</method>
 		<method name="remove_transition_by_index">
@@ -135,7 +135,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="new_name" type="StringName" />
 			<description>
-				Renames the given node.
+				Renames the given animation node.
 			</description>
 		</method>
 		<method name="replace_node">
@@ -157,7 +157,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="position" type="Vector2" />
 			<description>
-				Sets the node's coordinates. Used for display in the editor.
+				Sets the animation node's coordinates. Used for display in the editor.
 			</description>
 		</method>
 	</methods>

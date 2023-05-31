@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VSlider" inherits="Slider" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Vertical slider.
+		A vertical slider that goes from bottom (min) to top (max).
 	</brief_description>
 	<description>
-		Vertical slider. See [Slider]. This one goes from bottom (min) to top (max).
-		[b]Note:[/b] The [signal Range.changed] and [signal Range.value_changed] signals are part of the [Range] class which this class inherits from.
+		A vertical slider, used to adjust a value by moving a grabber along a vertical axis. It is a [Range]-based control and goes from bottom (min) to top (max). Note that this direction is the opposite of [VScrollBar]'s.
 	</description>
 	<tutorials>
 	</tutorials>

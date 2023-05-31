@@ -271,10 +271,10 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 				} else {
 					if (components[1] == "duration") {
 						tile_set_atlas_source->set_tile_animation_frame_duration(tile.tile, frame, p_value);
-						return true;
 					}
 				}
 			}
+			return true;
 		}
 	}
 
@@ -2719,14 +2719,14 @@ void EditorPropertyTilePolygon::update_property() {
 	if (String(count_property).is_empty()) {
 		if (base_type == "OccluderPolygon2D") {
 			// Single OccluderPolygon2D.
-			Ref<OccluderPolygon2D> occluder = get_edited_object()->get(get_edited_property());
+			Ref<OccluderPolygon2D> occluder = get_edited_property_value();
 			generic_tile_polygon_editor->clear_polygons();
 			if (occluder.is_valid()) {
 				generic_tile_polygon_editor->add_polygon(occluder->get_polygon());
 			}
 		} else if (base_type == "NavigationPolygon") {
 			// Single OccluderPolygon2D.
-			Ref<NavigationPolygon> navigation_polygon = get_edited_object()->get(get_edited_property());
+			Ref<NavigationPolygon> navigation_polygon = get_edited_property_value();
 			generic_tile_polygon_editor->clear_polygons();
 			if (navigation_polygon.is_valid()) {
 				for (int i = 0; i < navigation_polygon->get_outline_count(); i++) {

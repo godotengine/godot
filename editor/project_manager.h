@@ -40,7 +40,9 @@
 class CheckBox;
 class EditorAssetLibrary;
 class EditorFileDialog;
+class HFlowContainer;
 class PanelContainer;
+class ProjectList;
 
 class ProjectDialog : public ConfirmationDialog {
 	GDCLASS(ProjectDialog, ConfirmationDialog);
@@ -144,7 +146,8 @@ class ProjectListItemControl : public HBoxContainer {
 	TextureRect *project_icon = nullptr;
 	Label *project_title = nullptr;
 	Label *project_path = nullptr;
-	Label *project_unsupported_features = nullptr;
+	TextureRect *project_unsupported_features = nullptr;
+	HBoxContainer *tag_container = nullptr;
 
 	bool project_is_missing = false;
 	bool icon_needs_reload = true;
@@ -161,6 +164,7 @@ protected:
 public:
 	void set_project_title(const String &p_title);
 	void set_project_path(const String &p_path);
+	void set_tags(const PackedStringArray &p_tags, ProjectList *p_parent_list);
 	void set_project_icon(const Ref<Texture2D> &p_icon);
 	void set_unsupported_features(const PackedStringArray &p_features);
 
@@ -184,12 +188,15 @@ public:
 		EDIT_DATE,
 		NAME,
 		PATH,
+		TAGS,
 	};
 
 	// Can often be passed by copy
 	struct Item {
 		String project_name;
 		String description;
+		PackedStringArray tags;
+		String tag_sort_string;
 		String path;
 		String icon;
 		String main_scene;
@@ -206,6 +213,7 @@ public:
 
 		Item(const String &p_name,
 				const String &p_description,
+				const PackedStringArray &p_tags,
 				const String &p_path,
 				const String &p_icon,
 				const String &p_main_scene,
@@ -217,6 +225,7 @@ public:
 				int p_version) {
 			project_name = p_name;
 			description = p_description;
+			tags = p_tags;
 			path = p_path;
 			icon = p_icon;
 			main_scene = p_main_scene;
@@ -227,6 +236,10 @@ public:
 			missing = p_missing;
 			version = p_version;
 			control = nullptr;
+
+			PackedStringArray sorted_tags = tags;
+			sorted_tags.sort();
+			tag_sort_string = String().join(sorted_tags);
 		}
 
 		_FORCE_INLINE_ bool operator==(const Item &l) const {
@@ -298,6 +311,7 @@ public:
 	void erase_missing_projects();
 
 	void set_search_term(String p_search_term);
+	void add_search_tag(const String &p_tag);
 	void set_order_option(int p_option);
 
 	void update_dock_menu();
@@ -330,12 +344,15 @@ class ProjectManager : public Control {
 	Button *open_btn = nullptr;
 	Button *run_btn = nullptr;
 	Button *rename_btn = nullptr;
+	Button *manage_tags_btn = nullptr;
 	Button *erase_btn = nullptr;
 	Button *erase_missing_btn = nullptr;
 	Button *about_btn = nullptr;
 
 	HBoxContainer *local_projects_hb = nullptr;
 	EditorAssetLibrary *asset_library = nullptr;
+
+	Ref<StyleBox> tag_stylebox;
 
 	EditorFileDialog *scan_dir = nullptr;
 	ConfirmationDialog *language_restart_ask = nullptr;
@@ -365,6 +382,18 @@ class ProjectManager : public Control {
 	OptionButton *language_btn = nullptr;
 	LinkButton *version_btn = nullptr;
 
+	HashSet<String> tag_set;
+	PackedStringArray current_project_tags;
+	PackedStringArray forbidden_tag_characters{ "/", "\\", "-" };
+	ConfirmationDialog *tag_manage_dialog = nullptr;
+	HFlowContainer *project_tags = nullptr;
+	HFlowContainer *all_tags = nullptr;
+	Label *tag_edit_error = nullptr;
+	Button *create_tag_btn = nullptr;
+	ConfirmationDialog *create_tag_dialog = nullptr;
+	LineEdit *new_tag_name = nullptr;
+	Label *tag_error = nullptr;
+
 	void _open_asset_library();
 	void _scan_projects();
 	void _run_project();
@@ -385,6 +414,13 @@ class ProjectManager : public Control {
 	void _language_selected(int p_id);
 	void _restart_confirm();
 	void _confirm_update_settings();
+
+	void _manage_project_tags();
+	void _add_project_tag(const String &p_tag);
+	void _delete_project_tag(const String &p_tag);
+	void _apply_project_tags();
+	void _set_new_tag_name(const String p_name);
+	void _create_new_tag();
 
 	void _load_recent_projects();
 	void _on_project_created(const String &dir);
@@ -414,8 +450,28 @@ protected:
 public:
 	static ProjectManager *get_singleton() { return singleton; }
 
+	LineEdit *get_search_box();
+	void add_new_tag(const String &p_tag);
+
 	ProjectManager();
 	~ProjectManager();
+};
+
+class ProjectTag : public HBoxContainer {
+	GDCLASS(ProjectTag, HBoxContainer);
+
+	String tag_string;
+	Button *button = nullptr;
+	bool display_close = false;
+
+protected:
+	void _notification(int p_what);
+
+public:
+	ProjectTag(const String &p_text, bool p_display_close = false);
+
+	void connect_button_to(const Callable &p_callable);
+	const String get_tag() const;
 };
 
 #endif // PROJECT_MANAGER_H

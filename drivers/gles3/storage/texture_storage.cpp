@@ -751,7 +751,53 @@ void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_im
 }
 
 void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) {
-	texture_owner.initialize_rid(p_texture, Texture());
+	ERR_FAIL_COND(p_layers.is_empty());
+
+	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP && p_layers.size() != 6);
+	ERR_FAIL_COND_MSG(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP_ARRAY, "Cubemap Arrays are not supported in the GL Compatibility backend.");
+
+	Ref<Image> image = p_layers[0];
+	{
+		int valid_width = 0;
+		int valid_height = 0;
+		bool valid_mipmaps = false;
+		Image::Format valid_format = Image::FORMAT_MAX;
+
+		for (int i = 0; i < p_layers.size(); i++) {
+			ERR_FAIL_COND(p_layers[i]->is_empty());
+
+			if (i == 0) {
+				valid_width = p_layers[i]->get_width();
+				valid_height = p_layers[i]->get_height();
+				valid_format = p_layers[i]->get_format();
+				valid_mipmaps = p_layers[i]->has_mipmaps();
+			} else {
+				ERR_FAIL_COND(p_layers[i]->get_width() != valid_width);
+				ERR_FAIL_COND(p_layers[i]->get_height() != valid_height);
+				ERR_FAIL_COND(p_layers[i]->get_format() != valid_format);
+				ERR_FAIL_COND(p_layers[i]->has_mipmaps() != valid_mipmaps);
+			}
+		}
+	}
+
+	Texture texture;
+	texture.width = image->get_width();
+	texture.height = image->get_height();
+	texture.alloc_width = texture.width;
+	texture.alloc_height = texture.height;
+	texture.mipmaps = image->get_mipmap_count() + 1;
+	texture.format = image->get_format();
+	texture.type = Texture::TYPE_LAYERED;
+	texture.layered_type = p_layered_type;
+	texture.target = GL_TEXTURE_2D_ARRAY;
+	texture.layers = p_layers.size();
+	_get_gl_image_and_format(Ref<Image>(), texture.format, texture.real_format, texture.gl_format_cache, texture.gl_internal_format_cache, texture.gl_type_cache, texture.compressed, false);
+	texture.active = true;
+	glGenTextures(1, &texture.tex_id);
+	texture_owner.initialize_rid(p_texture, texture);
+	for (int i = 0; i < p_layers.size(); i++) {
+		_texture_set_data(p_texture, p_layers[i], 1, i == 0);
+	}
 }
 
 void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data) {
@@ -1148,6 +1194,10 @@ uint64_t TextureStorage::texture_get_native_handle(RID p_texture, bool p_srgb) c
 }
 
 void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer) {
+	_texture_set_data(p_texture, p_image, p_layer, false);
+}
+
+void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer, bool initialize) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 
 	ERR_FAIL_COND(!texture);
@@ -1257,6 +1307,9 @@ void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, 
 		} else {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			if (texture->target == GL_TEXTURE_2D_ARRAY) {
+				if (initialize) {
+					glTexImage3D(GL_TEXTURE_2D_ARRAY, i, internal_format, w, h, texture->layers, 0, format, type, nullptr);
+				}
 				glTexSubImage3D(GL_TEXTURE_2D_ARRAY, i, 0, 0, p_layer, w, h, 0, format, type, &read[ofs]);
 			} else {
 				glTexImage2D(blit_target, i, internal_format, w, h, 0, format, type, &read[ofs]);

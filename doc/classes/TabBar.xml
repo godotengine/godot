@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TabBar" inherits="Control" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Tab bar control.
+		A control that provides a horizontal bar with tabs.
 	</brief_description>
 	<description>
-		Simple tabs control, similar to [TabContainer] but is only in charge of drawing tabs, not interacting with children.
+		A control that provides a horizontal bar with tabs. Similar to [TabContainer] but is only in charge of drawing tabs, not interacting with children.
 	</description>
 	<tutorials>
 	</tutorials>

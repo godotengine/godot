@@ -44,6 +44,7 @@ private:
 
 	jobject _godot_view;
 
+	jmethodID _can_capture_pointer = 0;
 	jmethodID _request_pointer_capture = 0;
 	jmethodID _release_pointer_capture = 0;
 

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Basis" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		3×3 matrix datatype.
+		A 3×3 matrix for representing 3D rotation and scale.
 	</brief_description>
 	<description>
-		3×3 matrix used for 3D rotation and scale. Almost always used as an orthogonal basis for a [Transform3D].
+		A 3×3 matrix used for representing 3D rotation and scale. Usually used as an orthogonal basis for a [Transform3D].
 		Contains 3 vector fields X, Y and Z as its columns, which are typically interpreted as the local basis vectors of a transformation. For such use, it is composed of a scaling and a rotation matrix, in that order (M = R.S).
-		Can also be accessed as array of 3D vectors. These vectors are normally orthogonal to each other, but are not necessarily normalized (due to scaling).
+		Basis can also be accessed as an array of 3D vectors. These vectors are usually orthogonal to each other, but are not necessarily normalized (due to scaling).
 		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>
@@ -110,13 +110,13 @@
 			<return type="bool" />
 			<param index="0" name="b" type="Basis" />
 			<description>
-				Returns [code]true[/code] if this basis and [param b] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+				Returns [code]true[/code] if this basis and [param b] are approximately equal, by calling [method @GlobalScope.is_equal_approx] on all vector components.
 			</description>
 		</method>
 		<method name="is_finite" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this basis is finite, by calling [method @GlobalScope.is_finite] on each component.
+				Returns [code]true[/code] if this basis is finite, by calling [method @GlobalScope.is_finite] on all vector components.
 			</description>
 		</method>
 		<method name="looking_at" qualifiers="static">

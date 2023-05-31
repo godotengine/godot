@@ -41,6 +41,7 @@ class EditorCommandPalette;
 class EditorFileSystem;
 class EditorInspector;
 class EditorPaths;
+class EditorPlugin;
 class EditorResourcePreview;
 class EditorSelection;
 class EditorSettings;
@@ -82,6 +83,9 @@ public:
 
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
+
+	void add_editor_plugin(EditorPlugin *p_plugin);
+	void remove_editor_plugin(EditorPlugin *p_plugin);
 
 	// Editor GUI.
 

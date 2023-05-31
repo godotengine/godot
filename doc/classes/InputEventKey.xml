@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEventKey" inherits="InputEventWithModifiers" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Input event type for keyboard events.
+		Represents a key on a keyboard being pressed or released.
 	</brief_description>
 	<description>
-		Stores key presses on the keyboard. Supports key presses, key releases and [member echo] events.
+		An input event for keys on a keyboard. Supports key presses, key releases and [member echo] events. It can also be received in [method Node._unhandled_key_input].
 		[b]Note:[/b] Events received from the keyboard usually have all properties set. Event mappings should have only one of the [member keycode], [member physical_keycode] or [member unicode] set.
-		When events are compared, properties are checked in the following priority - [member keycode], [member physical_keycode] and [member unicode], events with the first matching value will be considered equal.
+		When events are compared, properties are checked in the following priority - [member keycode], [member physical_keycode] and [member unicode]. Events with the first matching value will be considered equal.
 	</description>
 	<tutorials>
-		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<methods>
 		<method name="as_text_key_label" qualifiers="const">

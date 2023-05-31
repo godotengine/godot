@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GrooveJoint2D" inherits="Joint2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Groove constraint for 2D physics.
+		A physics joint that restricts the movement of two 2D physics bodies to a fixed axis.
 	</brief_description>
 	<description>
-		Groove constraint for 2D physics. This is useful for making a body "slide" through a segment placed in another.
+		A physics joint that restricts the movement of two 2D physics bodies to a fixed axis. For example, a [StaticBody2D] representing a piston base can be attached to a [RigidBody2D] representing the piston head, moving up and down.
 	</description>
 	<tutorials>
 	</tutorials>

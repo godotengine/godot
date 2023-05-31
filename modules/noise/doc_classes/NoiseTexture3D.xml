@@ -20,10 +20,10 @@
 			A [Gradient] which is used to map the luminance of each pixel to a color value.
 		</member>
 		<member name="depth" type="int" setter="set_depth" getter="get_depth" default="64">
-			Depth of the generated texture.
+			Depth of the generated texture (in pixels).
 		</member>
 		<member name="height" type="int" setter="set_height" getter="get_height" default="64">
-			Height of the generated texture.
+			Height of the generated texture (in pixels).
 		</member>
 		<member name="invert" type="bool" setter="set_invert" getter="get_invert" default="false">
 			If [code]true[/code], inverts the noise texture. White becomes black, black becomes white.
@@ -38,12 +38,14 @@
 		<member name="seamless" type="bool" setter="set_seamless" getter="get_seamless" default="false">
 			If [code]true[/code], a seamless texture is requested from the [Noise] resource.
 			[b]Note:[/b] Seamless noise textures may take longer to generate and/or can have a lower contrast compared to non-seamless noise depending on the used [Noise] resource. This is because some implementations use higher dimensions for generating seamless noise.
+			[b]Note:[/b] The default [FastNoiseLite] implementation uses the fallback path for seamless generation. If using a [member width], [member height] or [member depth] lower than the default, you may need to increase [member seamless_blend_skirt] to make seamless blending more effective.
 		</member>
 		<member name="seamless_blend_skirt" type="float" setter="set_seamless_blend_skirt" getter="get_seamless_blend_skirt" default="0.1">
 			Used for the default/fallback implementation of the seamless texture generation. It determines the distance over which the seams are blended. High values may result in less details and contrast. See [Noise] for further details.
+			[b]Note:[/b] If using a [member width], [member height] or [member depth] lower than the default, you may need to increase [member seamless_blend_skirt] to make seamless blending more effective.
 		</member>
 		<member name="width" type="int" setter="set_width" getter="get_width" default="64">
-			Width of the generated texture.
+			Width of the generated texture (in pixels).
 		</member>
 	</members>
 </class>

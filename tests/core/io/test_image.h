@@ -303,6 +303,27 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 	CHECK_MESSAGE(
 			image3->get_pixel(1, 0).is_equal_approx(Color(0, 0, 0, 0)),
 			"flip_y() should not leave old pixels behind.");
+
+	// Pre-multiply Alpha then Convert from RGBA to L8, checking alpha
+	{
+		Ref<Image> gray_image = memnew(Image(3, 3, false, Image::FORMAT_RGBA8));
+		CHECK_NOTHROW_MESSAGE(gray_image->fill_rect(Rect2i(0, 0, 3, 3), Color(1, 1, 1, 0)), "fill_rect() shouldn't throw for any rect.");
+		gray_image->set_pixel(1, 1, Color(1, 1, 1, 1));
+		gray_image->set_pixel(1, 2, Color(0.5, 0.5, 0.5, 0.5));
+		gray_image->set_pixel(2, 1, Color(0.25, 0.05, 0.5, 1.0));
+		gray_image->set_pixel(2, 2, Color(0.5, 0.25, 0.95, 0.75));
+		gray_image->premultiply_alpha();
+		gray_image->convert(Image::FORMAT_L8);
+		CHECK_MESSAGE(gray_image->get_pixel(0, 0).is_equal_approx(Color(0, 0, 0, 1)), "convert() RGBA to L8 should be black.");
+		CHECK_MESSAGE(gray_image->get_pixel(0, 1).is_equal_approx(Color(0, 0, 0, 1)), "convert() RGBA to L8 should be black.");
+		CHECK_MESSAGE(gray_image->get_pixel(0, 2).is_equal_approx(Color(0, 0, 0, 1)), "convert() RGBA to L8 should be black.");
+		CHECK_MESSAGE(gray_image->get_pixel(1, 0).is_equal_approx(Color(0, 0, 0, 1)), "convert() RGBA to L8 should be black.");
+		CHECK_MESSAGE(gray_image->get_pixel(1, 1).is_equal_approx(Color(1, 1, 1, 1)), "convert() RGBA to L8 should be white.");
+		CHECK_MESSAGE(gray_image->get_pixel(1, 2).is_equal_approx(Color(0.250980407, 0.250980407, 0.250980407, 1)), "convert() RGBA to L8 should be around 0.250980407 (64).");
+		CHECK_MESSAGE(gray_image->get_pixel(2, 0).is_equal_approx(Color(0, 0, 0, 1)), "convert() RGBA to L8 should be black.");
+		CHECK_MESSAGE(gray_image->get_pixel(2, 1).is_equal_approx(Color(0.121568628, 0.121568628, 0.121568628, 1)), "convert() RGBA to L8 should be around 0.121568628 (31).");
+		CHECK_MESSAGE(gray_image->get_pixel(2, 2).is_equal_approx(Color(0.266666681, 0.266666681, 0.266666681, 1)), "convert() RGBA to L8 should be around 0.266666681 (68).");
+	}
 }
 } // namespace TestImage
 

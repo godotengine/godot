@@ -175,7 +175,7 @@
 				        print("Goodbye!")
 				[/gdscript]
 				[csharp]
-				public override void _Notification(long what)
+				public override void _Notification(int what)
 				{
 				    if (what == NotificationPredelete)
 				    {
@@ -599,7 +599,8 @@
 			<param index="1" name="default" type="Variant" default="null" />
 			<description>
 				Returns the object's metadata value for the given entry [param name]. If the entry does not exist, returns [param default]. If [param default] is [code]null[/code], an error is also generated.
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector dock and should not be edited.
+				[b]Note:[/b] A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.
+				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
@@ -661,6 +662,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a metadata entry is found with the given [param name]. See also [method get_meta], [method set_meta] and [method remove_meta].
+				[b]Note:[/b] A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.
 				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
@@ -788,7 +790,8 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Removes the given entry [param name] from the object's metadata. See also [method has_meta], [method get_meta] and [method set_meta].
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited.
+				[b]Note:[/b] A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.
+				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
 		<method name="set">
@@ -887,7 +890,8 @@
 			<description>
 				Adds or changes the entry [param name] inside the object's metadata. The metadata [param value] can be any [Variant], although some types cannot be serialized correctly.
 				If [param value] is [code]null[/code], the entry is removed. This is the equivalent of using [method remove_meta]. See also [method has_meta] and [method get_meta].
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector dock and should not be edited.
+				[b]Note:[/b] A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.
+				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
 		<method name="set_script">

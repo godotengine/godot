@@ -553,7 +553,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/appearance/gutters/show_line_numbers", true);
 	_initial_set("text_editor/appearance/gutters/line_numbers_zero_padded", false);
 	_initial_set("text_editor/appearance/gutters/highlight_type_safe_lines", true);
-	_initial_set("text_editor/appearance/gutters/show_bookmark_gutter", true);
 	_initial_set("text_editor/appearance/gutters/show_info_gutter", true);
 
 	// Appearance: Minimap

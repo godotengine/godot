@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationRegion3D" inherits="Node3D" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A region of the navigation map.
+		A traversable 3D region that [NavigationAgent3D]s can use for pathfinding.
 	</brief_description>
 	<description>
-		A region of the navigation map. It tells the [NavigationServer3D] what can be navigated and what cannot, based on its [NavigationMesh] resource.
+		A traversable 3D region based on a [NavigationMesh] that [NavigationAgent3D]s can use for pathfinding.
 		Two regions can be connected to each other if they share a similar edge. You can set the minimum distance between two vertices required to connect two edges by using [method NavigationServer3D.map_set_edge_connection_margin].
 		[b]Note:[/b] Overlapping two regions' navigation meshes is not enough for connecting two regions. They must share a similar edge.
 		The cost of entering this region from another region can be controlled with the [member enter_cost] value.

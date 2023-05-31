@@ -389,6 +389,7 @@ EditorLog::EditorLog() {
 
 	// Log - Rich Text Label.
 	log = memnew(RichTextLabel);
+	log->set_threaded(true);
 	log->set_use_bbcode(true);
 	log->set_scroll_follow(true);
 	log->set_selection_enabled(true);

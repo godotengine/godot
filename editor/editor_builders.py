@@ -37,6 +37,7 @@ def make_doc_header(target, source, env):
     g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     g.write("#ifndef _DOC_DATA_RAW_H\n")
     g.write("#define _DOC_DATA_RAW_H\n")
+    g.write('static const char *_doc_data_hash = "' + str(hash(buf)) + '";\n')
     g.write("static const int _doc_data_compressed_size = " + str(len(buf)) + ";\n")
     g.write("static const int _doc_data_uncompressed_size = " + str(decomp_size) + ";\n")
     g.write("static const unsigned char _doc_data_compressed[] = {\n")

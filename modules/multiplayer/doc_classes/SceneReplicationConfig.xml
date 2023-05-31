@@ -55,7 +55,7 @@
 			<return type="bool" />
 			<param index="0" name="path" type="NodePath" />
 			<description>
-				Returns whether the property identified by the given [code]path[/code] is configured to be reliably synchronized when changes are detected on process.
+				Returns whether the property identified by the given [param path] is configured to be reliably synchronized when changes are detected on process.
 			</description>
 		</method>
 		<method name="property_set_spawn">
@@ -79,7 +79,7 @@
 			<param index="0" name="path" type="NodePath" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				Sets whether the property identified by the given [code]path[/code] is configured to be reliably synchronized when changes are detected on process.
+				Sets whether the property identified by the given [param path] is configured to be reliably synchronized when changes are detected on process.
 			</description>
 		</method>
 		<method name="remove_property">

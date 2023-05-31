@@ -1341,11 +1341,7 @@ void EditorInspectorSection::_notification(int p_what) {
 					Color light_font_color = get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"));
 
 					// Can we fit the long version of the revertable count text?
-					if (revertable_properties.size() == 1) {
-						num_revertable_str = "(1 change)";
-					} else {
-						num_revertable_str = vformat("(%d changes)", revertable_properties.size());
-					}
+					num_revertable_str = vformat(TTRN("(%d change)", "(%d changes)", revertable_properties.size()), revertable_properties.size());
 					num_revertable_width = light_font->get_string_size(num_revertable_str, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, TextServer::JUSTIFICATION_NONE).x;
 					if (label_width + separation + num_revertable_width > available) {
 						// We'll have to use the short version.
@@ -2813,18 +2809,22 @@ void EditorInspector::update_tree() {
 			category->label = label;
 
 			if (use_doc_hints) {
+				String descr = "";
 				// Sets the category tooltip to show documentation.
 				if (!class_descr_cache.has(doc_name)) {
-					String descr;
 					DocTools *dd = EditorHelp::get_doc_data();
 					HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(doc_name);
 					if (E) {
 						descr = DTR(E->value.brief_description);
 					}
-					class_descr_cache[doc_name] = descr;
+					if (ClassDB::class_exists(doc_name)) {
+						class_descr_cache[doc_name] = descr; // Do not cache the class description of scripts.
+					}
+				} else {
+					descr = class_descr_cache[doc_name];
 				}
 
-				category->set_tooltip_text(p.name + "::" + (class_descr_cache[doc_name].is_empty() ? "" : class_descr_cache[doc_name]));
+				category->set_tooltip_text(p.name + "::" + descr);
 			}
 
 			// Add editors at the start of a category.
@@ -3217,7 +3217,9 @@ void EditorInspector::update_tree() {
 					}
 				}
 
-				doc_info_cache[classname][propname] = doc_info;
+				if (ClassDB::class_exists(classname)) {
+					doc_info_cache[classname][propname] = doc_info; // Do not cache the doc information of scripts.
+				}
 			}
 		}
 

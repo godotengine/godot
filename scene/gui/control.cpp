@@ -2400,7 +2400,8 @@ void Control::set_default_cursor_shape(CursorShape p_shape) {
 		return;
 	}
 
-	get_viewport()->get_base_window()->update_mouse_cursor_shape();
+	// Display the new cursor shape instantly.
+	get_viewport()->update_mouse_cursor_state();
 }
 
 Control::CursorShape Control::get_default_cursor_shape() const {

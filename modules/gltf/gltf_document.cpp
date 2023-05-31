@@ -678,11 +678,11 @@ void GLTFDocument::_compute_node_heights(Ref<GLTFState> p_state) {
 	}
 }
 
-static Vector<uint8_t> _parse_base64_uri(const String &uri) {
-	int start = uri.find(",");
+static Vector<uint8_t> _parse_base64_uri(const String &p_uri) {
+	int start = p_uri.find(",");
 	ERR_FAIL_COND_V(start == -1, Vector<uint8_t>());
 
-	CharString substr = uri.substr(start + 1).ascii();
+	CharString substr = p_uri.substr(start + 1).ascii();
 
 	int strlen = substr.length();
 
@@ -696,6 +696,7 @@ static Vector<uint8_t> _parse_base64_uri(const String &uri) {
 
 	return buf;
 }
+
 Error GLTFDocument::_encode_buffer_glb(Ref<GLTFState> p_state, const String &p_path) {
 	print_verbose("glTF: Total buffers: " + itos(p_state->buffers.size()));
 
@@ -3066,6 +3067,129 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state, const String &p_pa
 	return OK;
 }
 
+Ref<Image> GLTFDocument::_parse_image_bytes_into_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_mime_type, int p_index) {
+	Ref<Image> r_image;
+	r_image.instantiate();
+	// Check if any GLTFDocumentExtensions want to import this data as an image.
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		Error err = ext->parse_image_data(p_state, p_bytes, p_mime_type, r_image);
+		ERR_CONTINUE_MSG(err != OK, "GLTF: Encountered error " + itos(err) + " when parsing image " + itos(p_index) + " in file " + p_state->filename + ". Continuing.");
+		if (!r_image->is_empty()) {
+			return r_image;
+		}
+	}
+	// If no extension wanted to import this data as an image, try to load a PNG or JPEG.
+	// First we honor the mime types if they were defined.
+	if (p_mime_type == "image/png") { // Load buffer as PNG.
+		r_image->load_png_from_buffer(p_bytes);
+	} else if (p_mime_type == "image/jpeg") { // Loader buffer as JPEG.
+		r_image->load_jpg_from_buffer(p_bytes);
+	}
+	// If we didn't pass the above tests, we attempt loading as PNG and then JPEG directly.
+	// This covers URIs with base64-encoded data with application/* type but
+	// no optional mimeType property, or bufferViews with a bogus mimeType
+	// (e.g. `image/jpeg` but the data is actually PNG).
+	// That's not *exactly* what the spec mandates but this lets us be
+	// lenient with bogus glb files which do exist in production.
+	if (r_image->is_empty()) { // Try PNG first.
+		r_image->load_png_from_buffer(p_bytes);
+	}
+	if (r_image->is_empty()) { // And then JPEG.
+		r_image->load_jpg_from_buffer(p_bytes);
+	}
+	// If it still can't be loaded, give up and insert an empty image as placeholder.
+	if (r_image->is_empty()) {
+		ERR_PRINT(vformat("glTF: Couldn't load image index '%d' with its given mimetype: %s.", p_index, p_mime_type));
+	}
+	return r_image;
+}
+
+void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const String &p_mime_type, int p_index, Ref<Image> p_image) {
+	GLTFState::GLTFHandleBinary handling = GLTFState::GLTFHandleBinary(p_state->handle_binary_image);
+	if (p_image->is_empty() || handling == GLTFState::GLTFHandleBinary::HANDLE_BINARY_DISCARD_TEXTURES) {
+		p_state->images.push_back(Ref<Texture2D>());
+		p_state->source_images.push_back(Ref<Image>());
+		return;
+	}
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint() && handling == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EXTRACT_TEXTURES) {
+		if (p_state->base_path.is_empty()) {
+			p_state->images.push_back(Ref<Texture2D>());
+			p_state->source_images.push_back(Ref<Image>());
+		} else if (p_image->get_name().is_empty()) {
+			WARN_PRINT(vformat("glTF: Image index '%d' couldn't be named. Skipping it.", p_index));
+			p_state->images.push_back(Ref<Texture2D>());
+			p_state->source_images.push_back(Ref<Image>());
+		} else {
+			Error err = OK;
+			bool must_import = true;
+			Vector<uint8_t> img_data = p_image->get_data();
+			Dictionary generator_parameters;
+			String file_path = p_state->get_base_path() + "/" + p_state->filename.get_basename() + "_" + p_image->get_name() + ".png";
+			if (FileAccess::exists(file_path + ".import")) {
+				Ref<ConfigFile> config;
+				config.instantiate();
+				config->load(file_path + ".import");
+				if (config->has_section_key("remap", "generator_parameters")) {
+					generator_parameters = (Dictionary)config->get_value("remap", "generator_parameters");
+				}
+				if (!generator_parameters.has("md5")) {
+					must_import = false; // Didn't come from a gltf document; don't overwrite.
+				}
+				String existing_md5 = generator_parameters["md5"];
+				unsigned char md5_hash[16];
+				CryptoCore::md5(img_data.ptr(), img_data.size(), md5_hash);
+				String new_md5 = String::hex_encode_buffer(md5_hash, 16);
+				generator_parameters["md5"] = new_md5;
+				if (new_md5 == existing_md5) {
+					must_import = false;
+				}
+			}
+			if (must_import) {
+				err = p_image->save_png(file_path);
+				ERR_FAIL_COND(err != OK);
+				// ResourceLoader::import will crash if not is_editor_hint(), so this case is protected above and will fall through to uncompressed.
+				HashMap<StringName, Variant> custom_options;
+				custom_options[SNAME("mipmaps/generate")] = true;
+				// Will only use project settings defaults if custom_importer is empty.
+				EditorFileSystem::get_singleton()->update_file(file_path);
+				EditorFileSystem::get_singleton()->reimport_append(file_path, custom_options, String(), generator_parameters);
+			}
+			Ref<Texture2D> saved_image = ResourceLoader::load(file_path, "Texture2D");
+			if (saved_image.is_valid()) {
+				p_state->images.push_back(saved_image);
+				p_state->source_images.push_back(saved_image->get_image());
+			} else {
+				WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded with the name: %s. Skipping it.", p_index, p_image->get_name()));
+				// Placeholder to keep count.
+				p_state->images.push_back(Ref<Texture2D>());
+				p_state->source_images.push_back(Ref<Image>());
+			}
+		}
+		return;
+	}
+#endif // TOOLS_ENABLED
+	if (handling == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_BASISU) {
+		Ref<PortableCompressedTexture2D> tex;
+		tex.instantiate();
+		tex->set_name(p_image->get_name());
+		tex->set_keep_compressed_buffer(true);
+		tex->create_from_image(p_image, PortableCompressedTexture2D::COMPRESSION_MODE_BASIS_UNIVERSAL);
+		p_state->images.push_back(tex);
+		p_state->source_images.push_back(p_image);
+		return;
+	}
+	// This handles the case of HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, and it also serves
+	// as a fallback for HANDLE_BINARY_EXTRACT_TEXTURES when this is not the editor.
+	Ref<ImageTexture> tex;
+	tex.instantiate();
+	tex->set_name(p_image->get_name());
+	tex->set_image(p_image);
+	p_state->images.push_back(tex);
+	p_state->source_images.push_back(p_image);
+}
+
 Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_path) {
 	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
 	if (!p_state->json.has("images")) {
@@ -3077,7 +3201,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 	const Array &images = p_state->json["images"];
 	HashSet<String> used_names;
 	for (int i = 0; i < images.size(); i++) {
-		const Dictionary &d = images[i];
+		const Dictionary &dict = images[i];
 
 		// glTF 2.0 supports PNG and JPEG types, which can be specified as (from spec):
 		// "- a URI to an external file in one of the supported images formats, or
@@ -3088,23 +3212,19 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 
 		// We'll assume that we use either URI or bufferView, so let's warn the user
 		// if their image somehow uses both. And fail if it has neither.
-		ERR_CONTINUE_MSG(!d.has("uri") && !d.has("bufferView"), "Invalid image definition in glTF file, it should specify an 'uri' or 'bufferView'.");
-		if (d.has("uri") && d.has("bufferView")) {
+		ERR_CONTINUE_MSG(!dict.has("uri") && !dict.has("bufferView"), "Invalid image definition in glTF file, it should specify an 'uri' or 'bufferView'.");
+		if (dict.has("uri") && dict.has("bufferView")) {
 			WARN_PRINT("Invalid image definition in glTF file using both 'uri' and 'bufferView'. 'uri' will take precedence.");
 		}
 
-		String mimetype;
-		if (d.has("mimeType")) { // Should be "image/png" or "image/jpeg".
-			mimetype = d["mimeType"];
+		String mime_type;
+		if (dict.has("mimeType")) { // Should be "image/png", "image/jpeg", or something handled by an extension.
+			mime_type = dict["mimeType"];
 		}
 
-		Vector<uint8_t> data;
-		const uint8_t *data_ptr = nullptr;
-		int data_size = 0;
-
 		String image_name;
-		if (d.has("name")) {
-			image_name = d["name"];
+		if (dict.has("name")) {
+			image_name = dict["name"];
 			image_name = image_name.get_file().get_basename().validate_filename();
 		}
 		if (image_name.is_empty()) {
@@ -3114,31 +3234,17 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 			image_name += "_" + itos(i);
 		}
 		used_names.insert(image_name);
-
-		if (d.has("uri")) {
+		// Load the image data. If we get a byte array, store here for later.
+		Vector<uint8_t> data;
+		if (dict.has("uri")) {
 			// Handles the first two bullet points from the spec (embedded data, or external file).
-			String uri = d["uri"];
-
+			String uri = dict["uri"];
 			if (uri.begins_with("data:")) { // Embedded data using base64.
-				// Validate data MIME types and throw a warning if it's one we don't know/support.
-				if (!uri.begins_with("data:application/octet-stream;base64") &&
-						!uri.begins_with("data:application/gltf-buffer;base64") &&
-						!uri.begins_with("data:image/png;base64") &&
-						!uri.begins_with("data:image/jpeg;base64")) {
-					WARN_PRINT(vformat("glTF: Image index '%d' uses an unsupported URI data type: %s. Skipping it.", i, uri));
-					p_state->images.push_back(Ref<Texture2D>()); // Placeholder to keep count.
-					continue;
-				}
 				data = _parse_base64_uri(uri);
-				data_ptr = data.ptr();
-				data_size = data.size();
 				// mimeType is optional, but if we have it defined in the URI, let's use it.
-				if (mimetype.is_empty()) {
-					if (uri.begins_with("data:image/png;base64")) {
-						mimetype = "image/png";
-					} else if (uri.begins_with("data:image/jpeg;base64")) {
-						mimetype = "image/jpeg";
-					}
+				if (mime_type.is_empty() && uri.contains(";")) {
+					// Trim "data:" prefix which is 5 characters long, and end at ";base64".
+					mime_type = uri.substr(5, uri.find(";base64") - 5);
 				}
 			} else { // Relative path to an external image file.
 				ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
@@ -3148,161 +3254,53 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				// The spec says that if mimeType is defined, it should take precedence (e.g.
 				// there could be a `.png` image which is actually JPEG), but there's no easy
 				// API for that in Godot, so we'd have to load as a buffer (i.e. embedded in
-				// the material), so we do this only as fallback.
+				// the material), so we only do that only as fallback.
 				Ref<Texture2D> texture = ResourceLoader::load(uri);
-				String extension = uri.get_extension().to_lower();
 				if (texture.is_valid()) {
 					p_state->images.push_back(texture);
 					p_state->source_images.push_back(texture->get_image());
 					continue;
-				} else if (mimetype == "image/png" || mimetype == "image/jpeg" || extension == "png" || extension == "jpg" || extension == "jpeg") {
-					// Fallback to loading as byte array.
-					// This enables us to support the spec's requirement that we honor mimetype
-					// regardless of file URI.
-					data = FileAccess::get_file_as_bytes(uri);
-					if (data.size() == 0) {
-						WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded as a buffer of MIME type '%s' from URI: %s. Skipping it.", i, mimetype, uri));
-						p_state->images.push_back(Ref<Texture2D>()); // Placeholder to keep count.
-						continue;
-					}
-					data_ptr = data.ptr();
-					data_size = data.size();
-				} else {
-					WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded from URI: %s. Skipping it.", i, uri));
+				}
+				// mimeType is optional, but if we have it in the file extension, let's use it.
+				// If the mimeType does not match with the file extension, either it should be
+				// specified in the file, or the GLTFDocumentExtension should handle it.
+				if (mime_type.is_empty()) {
+					mime_type = "image/" + uri.get_extension();
+				}
+				// Fallback to loading as byte array. This enables us to support the
+				// spec's requirement that we honor mimetype regardless of file URI.
+				data = FileAccess::get_file_as_bytes(uri);
+				if (data.size() == 0) {
+					WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded as a buffer of MIME type '%s' from URI: %s because there was no data to load. Skipping it.", i, mime_type, uri));
 					p_state->images.push_back(Ref<Texture2D>()); // Placeholder to keep count.
+					p_state->source_images.push_back(Ref<Image>());
 					continue;
 				}
 			}
-		} else if (d.has("bufferView")) {
+		} else if (dict.has("bufferView")) {
 			// Handles the third bullet point from the spec (bufferView).
-			ERR_FAIL_COND_V_MSG(mimetype.is_empty(), ERR_FILE_CORRUPT,
-					vformat("glTF: Image index '%d' specifies 'bufferView' but no 'mimeType', which is invalid.", i));
-
-			const GLTFBufferViewIndex bvi = d["bufferView"];
-
+			ERR_FAIL_COND_V_MSG(mime_type.is_empty(), ERR_FILE_CORRUPT, vformat("glTF: Image index '%d' specifies 'bufferView' but no 'mimeType', which is invalid.", i));
+			const GLTFBufferViewIndex bvi = dict["bufferView"];
 			ERR_FAIL_INDEX_V(bvi, p_state->buffer_views.size(), ERR_PARAMETER_RANGE_ERROR);
-
 			Ref<GLTFBufferView> bv = p_state->buffer_views[bvi];
-
 			const GLTFBufferIndex bi = bv->buffer;
 			ERR_FAIL_INDEX_V(bi, p_state->buffers.size(), ERR_PARAMETER_RANGE_ERROR);
-
 			ERR_FAIL_COND_V(bv->byte_offset + bv->byte_length > p_state->buffers[bi].size(), ERR_FILE_CORRUPT);
-
-			data_ptr = &p_state->buffers[bi][bv->byte_offset];
-			data_size = bv->byte_length;
+			const PackedByteArray &buffer = p_state->buffers[bi];
+			data = buffer.slice(bv->byte_offset, bv->byte_offset + bv->byte_length);
 		}
-
-		Ref<Image> img;
-
-		// First we honor the mime types if they were defined.
-		if (mimetype == "image/png") { // Load buffer as PNG.
-			ERR_FAIL_COND_V(Image::_png_mem_loader_func == nullptr, ERR_UNAVAILABLE);
-			img = Image::_png_mem_loader_func(data_ptr, data_size);
-		} else if (mimetype == "image/jpeg") { // Loader buffer as JPEG.
-			ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == nullptr, ERR_UNAVAILABLE);
-			img = Image::_jpg_mem_loader_func(data_ptr, data_size);
-		}
-
-		// If we didn't pass the above tests, we attempt loading as PNG and then
-		// JPEG directly.
-		// This covers URIs with base64-encoded data with application/* type but
-		// no optional mimeType property, or bufferViews with a bogus mimeType
-		// (e.g. `image/jpeg` but the data is actually PNG).
-		// That's not *exactly* what the spec mandates but this lets us be
-		// lenient with bogus glb files which do exist in production.
-		if (img.is_null()) { // Try PNG first.
-			ERR_FAIL_COND_V(Image::_png_mem_loader_func == nullptr, ERR_UNAVAILABLE);
-			img = Image::_png_mem_loader_func(data_ptr, data_size);
-		}
-		if (img.is_null()) { // And then JPEG.
-			ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == nullptr, ERR_UNAVAILABLE);
-			img = Image::_jpg_mem_loader_func(data_ptr, data_size);
-		}
-		// Now we've done our best, fix your scenes.
-		if (img.is_null()) {
-			ERR_PRINT(vformat("glTF: Couldn't load image index '%d' with its given mimetype: %s.", i, mimetype));
-			p_state->images.push_back(Ref<Texture2D>());
+		// Done loading the image data bytes. Check that we actually got data to parse.
+		// Note: There are paths above that return early, so this point might not be reached.
+		if (data.is_empty()) {
+			WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded, no data found. Skipping it.", i));
+			p_state->images.push_back(Ref<Texture2D>()); // Placeholder to keep count.
 			p_state->source_images.push_back(Ref<Image>());
 			continue;
 		}
+		// Parse the image data from bytes into an Image resource and save if needed.
+		Ref<Image> img = _parse_image_bytes_into_image(p_state, data, mime_type, i);
 		img->set_name(image_name);
-		if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_DISCARD_TEXTURES) {
-			p_state->images.push_back(Ref<Texture2D>());
-			p_state->source_images.push_back(Ref<Image>());
-#ifdef TOOLS_ENABLED
-		} else if (Engine::get_singleton()->is_editor_hint() && GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EXTRACT_TEXTURES) {
-			if (p_state->base_path.is_empty()) {
-				p_state->images.push_back(Ref<Texture2D>());
-				p_state->source_images.push_back(Ref<Image>());
-			} else if (img->get_name().is_empty()) {
-				WARN_PRINT(vformat("glTF: Image index '%d' couldn't be named. Skipping it.", i));
-				p_state->images.push_back(Ref<Texture2D>());
-				p_state->source_images.push_back(Ref<Image>());
-			} else {
-				Error err = OK;
-				bool must_import = true;
-				Vector<uint8_t> img_data = img->get_data();
-				Dictionary generator_parameters;
-				String file_path = p_state->get_base_path() + "/" + p_state->filename.get_basename() + "_" + img->get_name() + ".png";
-				if (FileAccess::exists(file_path + ".import")) {
-					Ref<ConfigFile> config;
-					config.instantiate();
-					config->load(file_path + ".import");
-					if (config->has_section_key("remap", "generator_parameters")) {
-						generator_parameters = (Dictionary)config->get_value("remap", "generator_parameters");
-					}
-					if (!generator_parameters.has("md5")) {
-						must_import = false; // Didn't come form a gltf document; don't overwrite.
-					}
-					String existing_md5 = generator_parameters["md5"];
-					unsigned char md5_hash[16];
-					CryptoCore::md5(img_data.ptr(), img_data.size(), md5_hash);
-					String new_md5 = String::hex_encode_buffer(md5_hash, 16);
-					generator_parameters["md5"] = new_md5;
-					if (new_md5 == existing_md5) {
-						must_import = false;
-					}
-				}
-				if (must_import) {
-					err = img->save_png(file_path);
-					ERR_FAIL_COND_V(err != OK, err);
-					// ResourceLoader::import will crash if not is_editor_hint(), so this case is protected above and will fall through to uncompressed.
-					HashMap<StringName, Variant> custom_options;
-					custom_options[SNAME("mipmaps/generate")] = true;
-					// Will only use project settings defaults if custom_importer is empty.
-					EditorFileSystem::get_singleton()->update_file(file_path);
-					EditorFileSystem::get_singleton()->reimport_append(file_path, custom_options, String(), generator_parameters);
-				}
-				Ref<Texture2D> saved_image = ResourceLoader::load(file_path, "Texture2D");
-				if (saved_image.is_valid()) {
-					p_state->images.push_back(saved_image);
-					p_state->source_images.push_back(img);
-				} else {
-					WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded with the name: %s. Skipping it.", i, img->get_name()));
-					// Placeholder to keep count.
-					p_state->images.push_back(Ref<Texture2D>());
-					p_state->source_images.push_back(Ref<Image>());
-				}
-			}
-#endif
-		} else if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_BASISU) {
-			Ref<PortableCompressedTexture2D> tex;
-			tex.instantiate();
-			tex->set_name(img->get_name());
-			tex->set_keep_compressed_buffer(true);
-			tex->create_from_image(img, PortableCompressedTexture2D::COMPRESSION_MODE_BASIS_UNIVERSAL);
-			p_state->images.push_back(tex);
-			p_state->source_images.push_back(img);
-		} else {
-			// This handles two cases: if editor hint and HANDLE_BINARY_EXTRACT_TEXTURES; or if HANDLE_BINARY_EMBED_AS_UNCOMPRESSED
-			Ref<ImageTexture> tex;
-			tex.instantiate();
-			tex->set_name(img->get_name());
-			tex->set_image(img);
-			p_state->images.push_back(tex);
-			p_state->source_images.push_back(img);
-		}
+		_parse_image_save_image(p_state, mime_type, i, img);
 	}
 
 	print_verbose("glTF: Total images: " + itos(p_state->images.size()));
@@ -3340,19 +3338,28 @@ Error GLTFDocument::_parse_textures(Ref<GLTFState> p_state) {
 
 	const Array &textures = p_state->json["textures"];
 	for (GLTFTextureIndex i = 0; i < textures.size(); i++) {
-		const Dictionary &d = textures[i];
-
-		ERR_FAIL_COND_V(!d.has("source"), ERR_PARSE_ERROR);
-
-		Ref<GLTFTexture> t;
-		t.instantiate();
-		t->set_src_image(d["source"]);
-		if (d.has("sampler")) {
-			t->set_sampler(d["sampler"]);
-		} else {
-			t->set_sampler(-1);
+		const Dictionary &dict = textures[i];
+		Ref<GLTFTexture> texture;
+		texture.instantiate();
+		// Check if any GLTFDocumentExtensions want to handle this texture JSON.
+		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+			ERR_CONTINUE(ext.is_null());
+			Error err = ext->parse_texture_json(p_state, dict, texture);
+			ERR_CONTINUE_MSG(err != OK, "GLTF: Encountered error " + itos(err) + " when parsing texture JSON " + String(Variant(dict)) + " in file " + p_state->filename + ". Continuing.");
+			if (texture->get_src_image() != -1) {
+				break;
+			}
 		}
-		p_state->textures.push_back(t);
+		if (texture->get_src_image() == -1) {
+			// No extensions handled it, so use the base GLTF source.
+			// This may be the fallback, or the only option anyway.
+			ERR_FAIL_COND_V(!dict.has("source"), ERR_PARSE_ERROR);
+			texture->set_src_image(dict["source"]);
+		}
+		if (texture->get_sampler() == -1 && dict.has("sampler")) {
+			texture->set_sampler(dict["sampler"]);
+		}
+		p_state->textures.push_back(texture);
 	}
 
 	return OK;
@@ -3365,6 +3372,7 @@ GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> p_state, Ref<Texture2
 	ERR_FAIL_COND_V(p_texture->get_image().is_null(), -1);
 	GLTFImageIndex gltf_src_image_i = p_state->images.size();
 	p_state->images.push_back(p_texture);
+	p_state->source_images.push_back(p_texture->get_image());
 	gltf_texture->set_src_image(gltf_src_image_i);
 	gltf_texture->set_sampler(_set_sampler_for_mode(p_state, p_filter_mode, p_repeats));
 	GLTFTextureIndex gltf_texture_i = p_state->textures.size();
@@ -3389,6 +3397,7 @@ Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFText
 			portable_texture->create_from_image(new_img, PortableCompressedTexture2D::COMPRESSION_MODE_BASIS_UNIVERSAL, false);
 		}
 		p_state->images.write[image] = portable_texture;
+		p_state->source_images.write[image] = new_img;
 	}
 	return p_state->images[image];
 }

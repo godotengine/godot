@@ -42,6 +42,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_internal_calls.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -533,6 +534,48 @@ String CSharpLanguage::_get_indentation() const {
 	}
 #endif
 	return "\t";
+}
+
+bool CSharpLanguage::handles_global_class_type(const String &p_type) const {
+	return p_type == get_type();
+}
+
+String CSharpLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+	Ref<CSharpScript> scr = ResourceLoader::load(p_path, get_type());
+	if (!scr.is_valid() || !scr->valid || !scr->global_class) {
+		// Invalid script or the script is not a global class.
+		return String();
+	}
+
+	String name = scr->class_name;
+	if (unlikely(name.is_empty())) {
+		return String();
+	}
+
+	if (r_icon_path) {
+		if (scr->icon_path.is_empty() || scr->icon_path.is_absolute_path()) {
+			*r_icon_path = scr->icon_path.simplify_path();
+		} else if (scr->icon_path.is_relative_path()) {
+			*r_icon_path = p_path.get_base_dir().path_join(scr->icon_path).simplify_path();
+		}
+	}
+	if (r_base_type) {
+		bool found_global_base_script = false;
+		const CSharpScript *top = scr->base_script.ptr();
+		while (top != nullptr) {
+			if (top->global_class) {
+				*r_base_type = top->class_name;
+				found_global_base_script = true;
+				break;
+			}
+
+			top = top->base_script.ptr();
+		}
+		if (!found_global_base_script) {
+			*r_base_type = scr->get_instance_base_type();
+		}
+	}
+	return name;
 }
 
 String CSharpLanguage::debug_get_error() const {
@@ -2203,11 +2246,21 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 	update_script_class_info(p_script);
 
 	p_script->_update_exports();
+
+#if TOOLS_ENABLED
+	// If the EditorFileSystem singleton is available, update the file;
+	// otherwise, the file will be updated when the singleton becomes available.
+	EditorFileSystem *efs = EditorFileSystem::get_singleton();
+	if (efs) {
+		efs->update_file(p_script->get_path());
+	}
+#endif
 }
 
 // Extract information about the script using the mono class.
 void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	bool tool = false;
+	bool global_class = false;
 
 	// TODO: Use GDExtension godot_dictionary
 	Array methods_array;
@@ -2217,11 +2270,17 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	Dictionary signals_dict;
 	signals_dict.~Dictionary();
 
+	String class_name;
+	String icon_path;
 	Ref<CSharpScript> base_script;
 	GDMonoCache::managed_callbacks.ScriptManagerBridge_UpdateScriptClassInfo(
-			p_script.ptr(), &tool, &methods_array, &rpc_functions_dict, &signals_dict, &base_script);
+			p_script.ptr(), &class_name, &tool, &global_class, &icon_path,
+			&methods_array, &rpc_functions_dict, &signals_dict, &base_script);
 
+	p_script->class_name = class_name;
 	p_script->tool = tool;
+	p_script->global_class = global_class;
+	p_script->icon_path = icon_path;
 
 	p_script->rpc_config.clear();
 	p_script->rpc_config = rpc_functions_dict;
@@ -2519,6 +2578,15 @@ Error CSharpScript::reload(bool p_keep_state) {
 		update_script_class_info(this);
 
 		_update_exports();
+
+#if TOOLS_ENABLED
+		// If the EditorFileSystem singleton is available, update the file;
+		// otherwise, the file will be updated when the singleton becomes available.
+		EditorFileSystem *efs = EditorFileSystem::get_singleton();
+		if (efs) {
+			efs->update_file(script_path);
+		}
+#endif
 	}
 
 	return OK;
@@ -2605,11 +2673,11 @@ bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {
 }
 
 Ref<Script> CSharpScript::get_base_script() const {
-	return base_script;
+	return base_script.is_valid() && !base_script->get_path().is_empty() ? base_script : nullptr;
 }
 
 StringName CSharpScript::get_global_name() const {
-	return StringName();
+	return global_class ? StringName(class_name) : StringName();
 }
 
 void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {

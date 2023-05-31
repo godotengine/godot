@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SoftBody3D" inherits="MeshInstance3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A soft mesh physics body.
+		A deformable 3D physics mesh.
 	</brief_description>
 	<description>
-		A deformable physics body. Used to create elastic or deformable objects such as cloth, rubber, or other flexible materials.
-		[b]Note:[/b] There are many known bugs in [SoftBody3D]. Therefore, it's not recommended to use them for things that can affect gameplay (such as a player character made entirely out of soft bodies).
+		A deformable 3D physics mesh. Used to create elastic or deformable objects such as cloth, rubber, or other flexible materials.
+		[b]Note:[/b] There are many known bugs in [SoftBody3D]. Therefore, it's not recommended to use them for things that can affect gameplay (such as trampolines).
 	</description>
 	<tutorials>
 		<link title="SoftBody">$DOCS_URL/tutorials/physics/soft_body.html</link>

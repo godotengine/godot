@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Mutex" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A synchronization mutex (mutual exclusion).
+		A binary [Semaphore] for synchronization of multiple [Thread]s.
 	</brief_description>
 	<description>
-		A synchronization mutex (mutual exclusion). This is used to synchronize multiple [Thread]s, and is equivalent to a binary [Semaphore]. It guarantees that only one thread can ever acquire the lock at a time. A mutex can be used to protect a critical section; however, be careful to avoid deadlocks.
-		It's of the recursive kind, so it can be locked multiple times by one thread, provided it also unlocks it as many times.
-		[b]Warning:[/b]
-		To guarantee that the operating system is able to perform proper cleanup (no crashes, no deadlocks), these conditions must be met:
-		- By the time a [Mutex]'s reference count reaches zero and therefore it is destroyed, no threads (including the one on which the destruction will happen) must have it locked.
-		- By the time a [Thread]'s reference count reaches zero and therefore it is destroyed, it must not have any mutex locked.
+		A synchronization mutex (mutual exclusion). This is used to synchronize multiple [Thread]s, and is equivalent to a binary [Semaphore]. It guarantees that only one thread can access a critical section at a time.
+		This is a reentrant mutex, meaning that it can be locked multiple times by one thread, provided it also unlocks it as many times.
+		[b]Warning:[/b] Mutexes must be used carefully to avoid deadlocks.
+		[b]Warning:[/b] To ensure proper cleanup without crashes or deadlocks, the following conditions must be met:
+		- When a [Mutex]'s reference count reaches zero and it is therefore destroyed, no threads (including the one on which the destruction will happen) must have it locked.
+		- When a [Thread]'s reference count reaches zero and it is therefore destroyed, it must not have any mutex locked.
 	</description>
 	<tutorials>
 		<link title="Using multiple threads">$DOCS_URL/tutorials/performance/using_multiple_threads.html</link>
+		<link title="Thread-safe APIs">$DOCS_URL/tutorials/performance/thread_safe_apis.html</link>
 	</tutorials>
 	<methods>
 		<method name="lock">

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CapsuleShape2D" inherits="Shape2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Capsule shape resource for 2D physics.
+		A 2D capsule shape used for physics collision.
 	</brief_description>
 	<description>
-		2D capsule shape to be added as a [i]direct[/i] child of a [PhysicsBody2D] or [Area2D] using a [CollisionShape2D] node. In 2D, a capsule is a rectangle shape with half-circles at both ends.
-		[b]Performance:[/b] Being a primitive collision shape, [CapsuleShape2D] is fast to check collisions against (though not as fast as [CircleShape2D]).
+		A 2D capsule shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape2D].
+		[b]Performance:[/b] [CapsuleShape2D] is fast to check collisions against, but it is slower than [RectangleShape2D] and [CircleShape2D].
 	</description>
 	<tutorials>
 	</tutorials>

@@ -103,6 +103,17 @@
 				The return value is used to determine if this [GLTFDocumentExtension] instance should be used for importing a given GLTF file. If [constant OK], the import will use this [GLTFDocumentExtension] instance. If not overridden, [constant OK] is returned.
 			</description>
 		</method>
+		<method name="_parse_image_data" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="image_data" type="PackedByteArray" />
+			<param index="2" name="mime_type" type="String" />
+			<param index="3" name="ret_image" type="Image" />
+			<description>
+				Part of the import process. This method is run after [method _parse_node_extensions] and before [method _parse_texture_json].
+				Runs when parsing image data from a GLTF file. The data could be sourced from a separate file, a URI, or a buffer, and then is passed as a byte array.
+			</description>
+		</method>
 		<method name="_parse_node_extensions" qualifiers="virtual">
 			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
@@ -111,6 +122,16 @@
 			<description>
 				Part of the import process. This method is run after [method _get_supported_extensions] and before [method _generate_scene_node].
 				Runs when parsing the node extensions of a GLTFNode. This method can be used to process the extension JSON data into a format that can be used by [method _generate_scene_node]. The return value should be a member of the [enum Error] enum.
+			</description>
+		</method>
+		<method name="_parse_texture_json" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="state" type="GLTFState" />
+			<param index="1" name="texture_json" type="Dictionary" />
+			<param index="2" name="ret_gltf_texture" type="GLTFTexture" />
+			<description>
+				Part of the import process. This method is run after [method _parse_image_data] and before [method _generate_scene_node].
+				Runs when parsing the texture JSON from the GLTF textures array. This can be used to set the source image index to use as the texture.
 			</description>
 		</method>
 	</methods>

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="WorldBoundaryShape3D" inherits="Shape3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		World boundary (infinite plane) shape resource for 3D physics.
+		A 3D world boundary (half-space) shape used for physics collision.
 	</brief_description>
 	<description>
-		3D world boundary shape to be added as a [i]direct[/i] child of a [PhysicsBody3D] or [Area3D] using a [CollisionShape3D] node. [WorldBoundaryShape3D] works like an infinite plane and will not allow any physics body to go to the negative side. Note that the [Plane]'s normal matters; anything "below" the plane will collide with it. If the [WorldBoundaryShape3D] is used in a [PhysicsBody3D], it will cause colliding objects placed "below" it to teleport "above" the plane.
-		[b]Performance:[/b] Being a primitive collision shape, [WorldBoundaryShape3D] is fast to check collisions against.
+		A 3D world boundary shape, intended for use in physics. [WorldBoundaryShape3D] works like an infinite plane that forces all physics bodies to stay above it. The [member plane]'s normal determines which direction is considered as "above" and in the editor, the line over the plane represents this direction. It can for example be used for endless flat floors.
 	</description>
 	<tutorials>
 	</tutorials>
