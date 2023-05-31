@@ -37,4 +37,8 @@ package org.godotengine.editor
  * Upon selection of a project, this activity (via its parent logic) starts the
  * [GodotEditor] activity.
  */
-class GodotProjectManager : GodotEditor()
+class GodotProjectManager : GodotEditor() {
+	override fun checkForProjectPermissionsToEnable() {
+		// Nothing to do here.. we have yet to select a project to load.
+	}
+}
