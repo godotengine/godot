@@ -185,6 +185,14 @@
 				Defines if the specified setting is considered basic or advanced. Basic settings will always be shown in the project settings. Advanced settings will only be shown if the user enables the "Advanced Settings" option.
 			</description>
 		</method>
+		<method name="set_as_internal">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="internal" type="bool" />
+			<description>
+				Defines if the specified setting is considered internal. An internal setting won't show up in the Project Settings dialog. This is mostly useful for addons that need to store their own internal settings without exposing them directly to the user.
+			</description>
+		</method>
 		<method name="set_initial_value">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
