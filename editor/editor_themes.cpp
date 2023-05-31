@@ -626,6 +626,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("dark_theme", "Editor", dark_theme);
 	theme->set_constant("color_picker_button_height", "Editor", 28 * EDSCALE);
 	theme->set_constant("gizmo_handle_scale", "Editor", gizmo_handle_scale);
+	theme->set_constant("window_border_margin", "Editor", 8);
+	theme->set_constant("top_bar_separation", "Editor", 8 * EDSCALE);
 
 	// Register editor icons.
 	// If the settings are comparable to the old theme, then just copy them over.
