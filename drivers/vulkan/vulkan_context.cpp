@@ -503,6 +503,8 @@ Error VulkanContext::_initialize_device_extensions() {
 	register_requested_device_extension(VK_KHR_16BIT_STORAGE_EXTENSION_NAME, false);
 	register_requested_device_extension(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME, false);
 	register_requested_device_extension(VK_KHR_MAINTENANCE_2_EXTENSION_NAME, false);
+	register_requested_device_extension(VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME, false);
+	register_requested_device_extension(VK_EXT_GRAPHICS_PIPELINE_LIBRARY_EXTENSION_NAME, false);
 
 	// TODO consider the following extensions:
 	// - VK_KHR_spirv_1_4
@@ -743,6 +745,9 @@ Error VulkanContext::_check_capabilities() {
 	storage_buffer_capabilities.uniform_and_storage_buffer_16_bit_access_is_supported = false;
 	storage_buffer_capabilities.storage_push_constant_16_is_supported = false;
 	storage_buffer_capabilities.storage_input_output_16 = false;
+	graphics_pipeline_library_capabilities.graphics_pipeline_library_supported = false;
+	graphics_pipeline_library_capabilities.fast_link = false;
+	graphics_pipeline_library_capabilities.independent_interpolation_decoration = false;
 
 	if (is_instance_extension_enabled(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
 		// Check for extended features.
@@ -764,6 +769,7 @@ Error VulkanContext::_check_capabilities() {
 			VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features = {};
 			VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {};
 			VkPhysicalDeviceMultiviewFeatures multiview_features = {};
+			VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT graphicspipeline_library_features = {};
 
 			if (device_api_version >= VK_API_VERSION_1_2) {
 				device_features_vk12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
@@ -815,6 +821,15 @@ Error VulkanContext::_check_capabilities() {
 				next = &multiview_features;
 			}
 
+			if (is_device_extension_enabled(VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME)) {
+				graphicspipeline_library_features = {
+					/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT,
+					/*pNext*/ next,
+					/*graphicsPipelineLibrary*/ false,
+				};
+				next = &graphicspipeline_library_features;
+			}
+
 			VkPhysicalDeviceFeatures2 device_features;
 			device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 			device_features.pNext = next;
@@ -855,6 +870,10 @@ Error VulkanContext::_check_capabilities() {
 				storage_buffer_capabilities.storage_push_constant_16_is_supported = storage_feature.storagePushConstant16;
 				storage_buffer_capabilities.storage_input_output_16 = storage_feature.storageInputOutput16;
 			}
+
+			if(is_device_extension_enabled(VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME)){
+				graphics_pipeline_library_capabilities.graphics_pipeline_library_supported = graphicspipeline_library_features.graphicsPipelineLibrary;
+			}
 		}
 
 		// Check extended properties.
@@ -864,6 +883,7 @@ Error VulkanContext::_check_capabilities() {
 			device_properties_func = (PFN_vkGetPhysicalDeviceProperties2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceProperties2KHR");
 		}
 		if (device_properties_func != nullptr) {
+			VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT gplProperties{};
 			VkPhysicalDeviceFragmentShadingRatePropertiesKHR vrsProperties{};
 			VkPhysicalDeviceMultiviewProperties multiviewProperties{};
 			VkPhysicalDeviceSubgroupProperties subgroupProperties{};
@@ -889,6 +909,13 @@ Error VulkanContext::_check_capabilities() {
 				vrsProperties.pNext = nextptr;
 
 				nextptr = &vrsProperties;
+			}
+
+			if(graphics_pipeline_library_capabilities.graphics_pipeline_library_supported){
+				gplProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_PROPERTIES_EXT;
+				gplProperties.pNext = nextptr;
+
+				nextptr = &gplProperties;
 			}
 
 			physicalDeviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
@@ -939,6 +966,13 @@ Error VulkanContext::_check_capabilities() {
 				print_verbose("  max instances: " + itos(multiview_capabilities.max_instance_count));
 			} else {
 				print_verbose("- Vulkan multiview not supported");
+			}
+
+			if(graphics_pipeline_library_capabilities.graphics_pipeline_library_supported){
+				graphics_pipeline_library_capabilities.fast_link = gplProperties.graphicsPipelineLibraryFastLinking && GLOBAL_GET("rendering/rendering_device/vulkan/graphics_pipeline_library/fast_link");
+				graphics_pipeline_library_capabilities.independent_interpolation_decoration = gplProperties.graphicsPipelineLibraryIndependentInterpolationDecoration;
+			} else {
+				print_verbose("- Vulkan graphics pipeline library not supported");
 			}
 
 			print_verbose("- Vulkan subgroup:");
@@ -1400,6 +1434,14 @@ Error VulkanContext::_create_device() {
 	VkPhysicalDeviceVulkan11Features vulkan11features = {};
 	VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {};
 	VkPhysicalDeviceMultiviewFeatures multiview_features = {};
+	VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT graphicspipeline_library_features = {};
+
+	if (graphics_pipeline_library_capabilities.graphics_pipeline_library_supported){
+		graphicspipeline_library_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT;
+		graphicspipeline_library_features.graphicsPipelineLibrary = VK_TRUE;
+		nextptr = &graphicspipeline_library_features;
+	}
+
 	if (device_api_version >= VK_API_VERSION_1_2) {
 		// In Vulkan 1.2 and newer we use a newer struct to enable various features.
 

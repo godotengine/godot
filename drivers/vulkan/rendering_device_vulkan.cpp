@@ -4844,9 +4844,13 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	}
 
 	Vector<Vector<VkDescriptorSetLayoutBinding>> set_bindings;
+	Vector<Vector<VkDescriptorSetLayoutBinding>> pre_raster_bindings;
+	Vector<Vector<VkDescriptorSetLayoutBinding>> fragment_bindings;
 	Vector<Vector<UniformInfo>> uniform_info;
 
 	set_bindings.resize(binary_data.set_count);
+	pre_raster_bindings.resize(binary_data.set_count);
+	fragment_bindings.resize(binary_data.set_count);
 	uniform_info.resize(binary_data.set_count);
 
 	for (uint32_t i = 0; i < binary_data.set_count; i++) {
@@ -4870,6 +4874,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 			layout_binding.binding = set_ptr[j].binding;
 			layout_binding.descriptorCount = 1;
 			layout_binding.stageFlags = 0;
+
 			for (uint32_t k = 0; k < SHADER_STAGE_MAX; k++) {
 				if (set_ptr[j].stages & (1 << k)) {
 					layout_binding.stageFlags |= shader_stage_masks[k];
@@ -4911,6 +4916,27 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 				} break;
 				default: {
 					ERR_FAIL_V(RID());
+				}
+			}
+			if(context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/graphics_pipeline_library/use_graphics_pipeline_library")){
+				VkDescriptorSetLayoutBinding pre_raster_binding = layout_binding;
+				VkDescriptorSetLayoutBinding fragment_binding = layout_binding;
+				pre_raster_binding.stageFlags = 0;
+				fragment_binding.stageFlags = 0;
+				for (uint32_t k = 0; k < SHADER_STAGE_MAX; k++) {
+					if (set_ptr[j].stages & (1 << k)) {
+						if(shader_stage_masks[k] == VK_SHADER_STAGE_FRAGMENT_BIT){
+							fragment_binding.stageFlags = shader_stage_masks[k];
+						}else{
+							pre_raster_binding.stageFlags |= shader_stage_masks[k];
+						}
+					}
+				}
+				if(pre_raster_binding.stageFlags != 0){
+					pre_raster_bindings.write[i].push_back(pre_raster_binding);
+				}
+				if(fragment_binding.stageFlags != 0){
+					fragment_bindings.write[i].push_back(fragment_binding);
 				}
 			}
 
@@ -5035,6 +5061,42 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	// Proceed to create descriptor sets.
 
 	if (success) {
+		if(context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/graphics_pipeline_library/use_graphics_pipeline_library")){
+			for (int i = 0; i < pre_raster_bindings.size(); i++) {
+				VkDescriptorSetLayoutCreateInfo layout_create_info;
+				layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+				layout_create_info.pNext = nullptr;
+				layout_create_info.flags = 0;
+				layout_create_info.bindingCount = pre_raster_bindings[i].size();
+				layout_create_info.pBindings = pre_raster_bindings[i].ptr();
+
+				VkDescriptorSetLayout layout;
+				VkResult res = vkCreateDescriptorSetLayout(device, &layout_create_info, nullptr, &layout);
+				if (res) {
+					error_text = "Error (" + itos(res) + ") creating pre-raster descriptor set layout for set " + itos(i);
+					success = false;
+					break;
+				}
+				shader.pre_raster_layouts.push_back(layout);
+			}
+			for (int i = 0; i < fragment_bindings.size(); i++) {
+				VkDescriptorSetLayoutCreateInfo layout_create_info;
+				layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+				layout_create_info.pNext = nullptr;
+				layout_create_info.flags = 0;
+				layout_create_info.bindingCount = fragment_bindings[i].size();
+				layout_create_info.pBindings = fragment_bindings[i].ptr();
+
+				VkDescriptorSetLayout layout;
+				VkResult res = vkCreateDescriptorSetLayout(device, &layout_create_info, nullptr, &layout);
+				if (res) {
+					error_text = "Error (" + itos(res) + ") creating pre-raster descriptor set layout for set " + itos(i);
+					success = false;
+					break;
+				}
+				shader.fragment_layouts.push_back(layout);
+			}
+		}
 		for (int i = 0; i < set_bindings.size(); i++) {
 			// Empty ones are fine if they were not used according to spec (binding count will be 0).
 			VkDescriptorSetLayoutCreateInfo layout_create_info;
@@ -5079,6 +5141,64 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	}
 
 	if (success) {
+
+		if(context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/graphics_pipeline_library/use_graphics_pipeline_library")){
+			{
+				VkPipelineLayoutCreateInfo pipeline_layout_create_info;
+				pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+				pipeline_layout_create_info.pNext = nullptr;
+				pipeline_layout_create_info.flags = VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT;
+				pipeline_layout_create_info.setLayoutCount = shader.pre_raster_layouts.size();
+				pipeline_layout_create_info.pSetLayouts = shader.pre_raster_layouts.ptr();
+				VkPushConstantRange push_constant_range;
+				if (push_constant.size) {
+					push_constant_range.stageFlags = push_constant.vk_stages_mask;
+					push_constant_range.offset = 0;
+					push_constant_range.size = push_constant.size;
+
+					pipeline_layout_create_info.pushConstantRangeCount = 1;
+					pipeline_layout_create_info.pPushConstantRanges = &push_constant_range;
+				} else {
+					pipeline_layout_create_info.pushConstantRangeCount = 0;
+					pipeline_layout_create_info.pPushConstantRanges = nullptr;
+				}
+				VkPipelineLayout layout = VK_NULL_HANDLE;
+				VkResult err = vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &layout);
+				shader.library_pipeline_layouts.push_back(layout);
+				if (err) {
+					error_text = "Error (" + itos(err) + ") creating pre-raster pipeline layout.";
+					success = false;
+				}
+			}
+			{
+				VkPipelineLayoutCreateInfo pipeline_layout_create_info;
+				pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+				pipeline_layout_create_info.pNext = nullptr;
+				pipeline_layout_create_info.flags = VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT;
+				pipeline_layout_create_info.setLayoutCount = shader.fragment_layouts.size();
+				pipeline_layout_create_info.pSetLayouts = shader.fragment_layouts.ptr();
+				VkPushConstantRange push_constant_range;
+				if (push_constant.size) {
+					push_constant_range.stageFlags = push_constant.vk_stages_mask;
+					push_constant_range.offset = 0;
+					push_constant_range.size = push_constant.size;
+
+					pipeline_layout_create_info.pushConstantRangeCount = 1;
+					pipeline_layout_create_info.pPushConstantRanges = &push_constant_range;
+				} else {
+					pipeline_layout_create_info.pushConstantRangeCount = 0;
+					pipeline_layout_create_info.pPushConstantRanges = nullptr;
+				}
+				VkPipelineLayout layout = VK_NULL_HANDLE;
+				VkResult err = vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &layout);
+				shader.library_pipeline_layouts.push_back(layout);
+				if (err) {
+					error_text = "Error (" + itos(err) + ") creating fragment pipeline layout.";
+					success = false;
+				}
+			}
+		}
+
 		// Create pipeline layout.
 		VkPipelineLayoutCreateInfo pipeline_layout_create_info;
 		pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -5984,6 +6104,43 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer, uint32_t p_
 /**** RENDER PIPELINE ****/
 /*************************/
 
+void RenderingDeviceVulkan::create_optimized_render_pipeline(uint32_t p_thread, Vector<RID> *pipeline_queue){
+	int array_chunk = round(pipeline_queue->size()/WorkerThreadPool::get_singleton()->get_thread_count());
+	int start_index = p_thread * array_chunk;
+	int end_index = (p_thread+1) * array_chunk;
+	if((int)p_thread == WorkerThreadPool::get_singleton()->get_thread_count()-1) {
+		end_index = pipeline_queue->size();
+	}
+	for (int i=start_index; i < end_index; i++) {
+		RID id = pipeline_queue->get(i);
+		print_line("thread:",p_thread,"index:",i, "RID:",id);
+		RenderPipeline *pipeline = render_pipeline_owner.get_or_null(id);
+		if(pipeline == nullptr){
+			return;
+		}
+		if(pipeline->optimized_pipeline != VK_NULL_HANDLE) {
+			return;
+		}
+		VkPipelineLibraryCreateInfoKHR pipeline_library_create_info = {};
+		pipeline_library_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR;
+		pipeline_library_create_info.libraryCount = pipeline->library_deps.size();
+		pipeline_library_create_info.pLibraries = pipeline->library_deps.ptr();
+
+		//TODO: re-enable VRS
+		VkGraphicsPipelineCreateInfo graphics_pipeline_create_info = {};
+		graphics_pipeline_create_info.pNext = &pipeline_library_create_info;
+		graphics_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		graphics_pipeline_create_info.flags = VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT;
+		graphics_pipeline_create_info.pNext = &pipeline_library_create_info;
+		graphics_pipeline_create_info.layout = pipeline->pipeline_layout;
+		graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
+		graphics_pipeline_create_info.basePipelineIndex = 0;
+
+		vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &pipeline->optimized_pipeline);
+		//ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + optimize_pipeline_queue.write[i].shader.get_id() + "'.");
+	}
+}
+
 RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, BitField<PipelineDynamicStateFlags> p_dynamic_state_flags, uint32_t p_for_render_pass, const Vector<PipelineSpecializationConstant> &p_specialization_constants) {
 	_THREAD_SAFE_METHOD_
 
@@ -6015,7 +6172,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 				"Mismatch fragment shader output mask (" + itos(shader->fragment_output_mask) + ") and framebuffer color output mask (" + itos(output_mask) + ") when binding both in render pipeline.");
 	}
 	// Vertex.
-	VkPipelineVertexInputStateCreateInfo pipeline_vertex_input_state_create_info;
+	VkPipelineVertexInputStateCreateInfo pipeline_vertex_input_state_create_info = {};
 
 	if (p_vertex_format != INVALID_ID) {
 		// Uses vertices, else it does not.
@@ -6319,10 +6476,10 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	}
 
 	// Finally, pipeline create info.
-	VkGraphicsPipelineCreateInfo graphics_pipeline_create_info;
+	VkGraphicsPipelineCreateInfo graphics_pipeline_create_info = {};
 
 	graphics_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	graphics_pipeline_create_info.pNext = graphics_pipeline_nextptr;
+	graphics_pipeline_create_info.pNext = nullptr;
 	graphics_pipeline_create_info.flags = 0;
 
 	Vector<VkPipelineShaderStageCreateInfo> pipeline_stages = shader->pipeline_stages;
@@ -6378,26 +6535,184 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		}
 	}
 
-	graphics_pipeline_create_info.stageCount = pipeline_stages.size();
-	graphics_pipeline_create_info.pStages = pipeline_stages.ptr();
+	Vector<VkPipeline> libraries;
 
-	graphics_pipeline_create_info.pVertexInputState = &pipeline_vertex_input_state_create_info;
-	graphics_pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
-	graphics_pipeline_create_info.pTessellationState = &tessellation_create_info;
-	graphics_pipeline_create_info.pViewportState = &viewport_state_create_info;
-	graphics_pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
-	graphics_pipeline_create_info.pMultisampleState = &multisample_state_create_info;
-	graphics_pipeline_create_info.pDepthStencilState = &depth_stencil_state_create_info;
-	graphics_pipeline_create_info.pColorBlendState = &color_blend_state_create_info;
-	graphics_pipeline_create_info.pDynamicState = &dynamic_state_create_info;
-	graphics_pipeline_create_info.layout = shader->pipeline_layout;
-	graphics_pipeline_create_info.renderPass = fb_format.render_pass;
+	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/graphics_pipeline_library/use_graphics_pipeline_library")){
+		Vector<VkPipelineShaderStageCreateInfo> pre_raster_stages;
+		VkPipelineShaderStageCreateInfo fragment_stage = {};
 
-	graphics_pipeline_create_info.subpass = p_for_render_pass;
-	graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
-	graphics_pipeline_create_info.basePipelineIndex = 0;
+		for(int i = 0; i < pipeline_stages.size(); i++) {
+			if(pipeline_stages[i].stage != VK_SHADER_STAGE_FRAGMENT_BIT){
+				pre_raster_stages.push_back(pipeline_stages[i]);
+			}else {
+				fragment_stage = pipeline_stages[i];
+			}
+		}
+
+		VkGraphicsPipelineLibraryCreateInfoEXT library_info = {};
+		library_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT;
+		library_info.flags = VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT;
+
+		//vertex input stage
+		VkGraphicsPipelineCreateInfo vertex_input_pipeline_create_info = {};
+		vertex_input_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		vertex_input_pipeline_create_info.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
+		vertex_input_pipeline_create_info.pNext = &library_info;
+		vertex_input_pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
+		vertex_input_pipeline_create_info.pVertexInputState = &pipeline_vertex_input_state_create_info;
+
+		{
+			PipelineLibraryKey key = {};
+			PipelineLibraryCache cache = {};
+			key.shader = p_shader;
+			key.flags = library_info.flags;
+			key.stage_info = vertex_input_pipeline_create_info;
+			HashMap<PipelineLibraryKey, PipelineLibraryCache, PipelineLibraryHash>::Iterator E = pipeline_library_cache.find(key);
+			if(E){
+				libraries.push_back(E->value.pipeline);
+			}else {
+				VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &key.stage_info, nullptr, &cache.pipeline);
+				ERR_FAIL_COND_V_MSG(err, RID(), "vertex input stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
+				pipeline_library_cache[key] = cache;
+				libraries.push_back(cache.pipeline);
+			}
+		}
+
+		//pre-rasterization stage / vertex, geometry & tesselation shaders
+		library_info.flags = VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT;
+		VkGraphicsPipelineCreateInfo pre_rasterization_pipeline_create_info = {};
+		pre_rasterization_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pre_rasterization_pipeline_create_info.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
+		pre_rasterization_pipeline_create_info.pNext = &library_info;
+		pre_rasterization_pipeline_create_info.layout = shader->pipeline_layout;
+		if(shader->library_pipeline_layouts.size() > 0){
+			pre_rasterization_pipeline_create_info.layout = shader->library_pipeline_layouts[0];
+		}
+		pre_rasterization_pipeline_create_info.renderPass = fb_format.render_pass;
+		pre_rasterization_pipeline_create_info.subpass = p_for_render_pass;
+		pre_rasterization_pipeline_create_info.stageCount = pre_raster_stages.size();
+		pre_rasterization_pipeline_create_info.pStages = pre_raster_stages.ptr();
+		pre_rasterization_pipeline_create_info.pDynamicState = &dynamic_state_create_info;
+		pre_rasterization_pipeline_create_info.pViewportState = &viewport_state_create_info;
+		pre_rasterization_pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
+		pre_rasterization_pipeline_create_info.pTessellationState = &tessellation_create_info;
+		{
+			PipelineLibraryKey key = {};
+			PipelineLibraryCache cache = {};
+			key.shader = p_shader;
+			key.flags = library_info.flags;
+			key.stage_info = pre_rasterization_pipeline_create_info;
+
+			HashMap<PipelineLibraryKey, PipelineLibraryCache, PipelineLibraryHash>::Iterator E = pipeline_library_cache.find(key);
+			if(E){
+				libraries.push_back(E->value.pipeline);
+			}else {
+				VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &key.stage_info, nullptr, &cache.pipeline);
+				ERR_FAIL_COND_V_MSG(err, RID(), "pre-rasterization stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
+				pipeline_library_cache[key] = cache;
+				libraries.push_back(cache.pipeline);
+			}
+		}
+
+		//fragment shader stage
+		library_info.flags = VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT;
+		VkGraphicsPipelineCreateInfo fragment_shader_pipeline_create_info = {};
+		fragment_shader_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		fragment_shader_pipeline_create_info.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
+		fragment_shader_pipeline_create_info.pNext = &library_info;
+		fragment_shader_pipeline_create_info.layout = shader->pipeline_layout;
+		if(shader->library_pipeline_layouts.size() > 0){
+			fragment_shader_pipeline_create_info.layout = shader->library_pipeline_layouts[1];
+		}
+		fragment_shader_pipeline_create_info.renderPass = fb_format.render_pass;
+		fragment_shader_pipeline_create_info.subpass = p_for_render_pass;
+		fragment_shader_pipeline_create_info.stageCount = 1;
+		fragment_shader_pipeline_create_info.pStages = &fragment_stage;
+		fragment_shader_pipeline_create_info.pDepthStencilState = &depth_stencil_state_create_info;
+		fragment_shader_pipeline_create_info.pMultisampleState = &multisample_state_create_info;
+		{
+			PipelineLibraryKey key = {};
+			PipelineLibraryCache cache = {};
+			key.shader = p_shader;
+			key.flags = library_info.flags;
+			key.stage_info = fragment_shader_pipeline_create_info;
+			HashMap<PipelineLibraryKey, PipelineLibraryCache, PipelineLibraryHash>::Iterator E = pipeline_library_cache.find(key);
+			if(E){
+				libraries.push_back(E->value.pipeline);
+			}else {
+				VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &key.stage_info, nullptr, &cache.pipeline);
+				ERR_FAIL_COND_V_MSG(err, RID(), "fragment shader stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
+				pipeline_library_cache[key] = cache;
+				libraries.push_back(cache.pipeline);
+			}
+		}
+
+		//fragment output stage
+		library_info.flags = VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_OUTPUT_INTERFACE_BIT_EXT;
+		VkGraphicsPipelineCreateInfo fragment_output_pipeline_create_info = {};
+		fragment_output_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		fragment_output_pipeline_create_info.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
+		fragment_output_pipeline_create_info.pNext = &library_info;
+		fragment_output_pipeline_create_info.renderPass = fb_format.render_pass;
+		fragment_output_pipeline_create_info.subpass = p_for_render_pass;
+		fragment_output_pipeline_create_info.pColorBlendState = &color_blend_state_create_info;
+		fragment_output_pipeline_create_info.pMultisampleState = &multisample_state_create_info;
+		{
+			PipelineLibraryKey key = {};
+			PipelineLibraryCache cache = {};
+			key.shader = p_shader;
+			key.flags = library_info.flags;
+			key.stage_info = fragment_output_pipeline_create_info;
+			HashMap<PipelineLibraryKey, PipelineLibraryCache, PipelineLibraryHash>::Iterator E = pipeline_library_cache.find(key);
+			if(E){
+				libraries.push_back(E->value.pipeline);
+			}else {
+				VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &key.stage_info, nullptr, &cache.pipeline);
+				ERR_FAIL_COND_V_MSG(err, RID(), "fragment output stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
+				pipeline_library_cache[key] = cache;
+				libraries.push_back(cache.pipeline);
+			}
+		}
+
+		// Link the library parts into a graphics pipeline
+		VkPipelineLibraryCreateInfoKHR pipeline_library_create_info = {};
+		pipeline_library_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR;
+		pipeline_library_create_info.libraryCount = libraries.size();
+		pipeline_library_create_info.pLibraries = libraries.ptr();
+
+		//TODO: re-enable VRS
+		graphics_pipeline_create_info.flags = 0;
+		graphics_pipeline_create_info.pNext = &pipeline_library_create_info;
+		graphics_pipeline_create_info.layout = shader->pipeline_layout;
+		graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
+		graphics_pipeline_create_info.basePipelineIndex = 0;
+
+
+
+	}else {
+
+		graphics_pipeline_create_info.stageCount = pipeline_stages.size();
+		graphics_pipeline_create_info.pStages = pipeline_stages.ptr();
+		graphics_pipeline_create_info.pNext = graphics_pipeline_nextptr;
+		graphics_pipeline_create_info.pVertexInputState = &pipeline_vertex_input_state_create_info;
+		graphics_pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
+		graphics_pipeline_create_info.pTessellationState = &tessellation_create_info;
+		graphics_pipeline_create_info.pViewportState = &viewport_state_create_info;
+		graphics_pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
+		graphics_pipeline_create_info.pMultisampleState = &multisample_state_create_info;
+		graphics_pipeline_create_info.pDepthStencilState = &depth_stencil_state_create_info;
+		graphics_pipeline_create_info.pColorBlendState = &color_blend_state_create_info;
+		graphics_pipeline_create_info.pDynamicState = &dynamic_state_create_info;
+		graphics_pipeline_create_info.layout = shader->pipeline_layout;
+		graphics_pipeline_create_info.renderPass = fb_format.render_pass;
+
+		graphics_pipeline_create_info.subpass = p_for_render_pass;
+		graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
+		graphics_pipeline_create_info.basePipelineIndex = 0;
+	}
 
 	RenderPipeline pipeline;
+	pipeline.library_deps = libraries;
 	VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &pipeline.pipeline);
 	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
 
@@ -6433,13 +6748,15 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	};
 	pipeline.validation.primitive_minimum = primitive_minimum[p_render_primitive];
 #endif
-	// Create ID to associate with this pipeline.
 	RID id = render_pipeline_owner.make_rid(pipeline);
 #ifdef DEV_ENABLED
 	set_resource_name(id, "RID:" + itos(id.get_id()));
 #endif
 	// Now add all the dependencies.
 	_add_dependency(id, p_shader);
+	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/graphics_pipeline_library/use_graphics_pipeline_library")) {
+		optimize_pipeline_queue.append(id);
+	}
 	return id;
 }
 
@@ -7132,8 +7449,25 @@ void RenderingDeviceVulkan::draw_list_bind_render_pipeline(DrawListID p_list, RI
 
 	dl->state.pipeline = p_render_pipeline;
 	dl->state.pipeline_layout = pipeline->pipeline_layout;
+	if(pipeline->optimized_pipeline == VK_NULL_HANDLE){
+		vkCmdBindPipeline(dl->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
+	}else{
+		vkCmdBindPipeline(dl->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->optimized_pipeline);
+	}
 
-	vkCmdBindPipeline(dl->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
+	if(!optimize_pipeline_queue.is_empty()) {
+		WorkerThreadPool::GroupID groupID = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RenderingDeviceVulkan::create_optimized_render_pipeline, &optimize_pipeline_queue, WorkerThreadPool::get_singleton()->get_thread_count(), -1, true);
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(groupID);
+		for(int i=0; i < optimize_pipeline_queue.size(); i++) {
+			RenderPipeline *queue_pipeline =  render_pipeline_owner.get_or_null(optimize_pipeline_queue[i]);
+			if (queue_pipeline != nullptr) {
+				if (queue_pipeline->optimized_pipeline != VK_NULL_HANDLE) {
+					optimize_pipeline_queue.erase(optimize_pipeline_queue[i]);
+				}
+			}
+		}
+		print_line("pipelines left to compile: ", optimize_pipeline_queue.size());
+	}
 
 	if (dl->state.pipeline_shader != pipeline->shader) {
 		// Shader changed, so descriptor sets may become incompatible.
@@ -8582,7 +8916,6 @@ VkSampleCountFlagBits RenderingDeviceVulkan::_ensure_supported_sample_count(Text
 void RenderingDeviceVulkan::swap_buffers() {
 	ERR_FAIL_COND_MSG(local_device.is_valid(), "Local devices can't swap buffers.");
 	_THREAD_SAFE_METHOD_
-
 	_finalize_command_bufers();
 
 	screen_prepared = false;
@@ -8645,6 +8978,7 @@ void RenderingDeviceVulkan::_free_pending_resources(int p_frame) {
 		RenderPipeline *pipeline = &frames[p_frame].render_pipelines_to_dispose_of.front()->get();
 
 		vkDestroyPipeline(device, pipeline->pipeline, nullptr);
+		vkDestroyPipeline(device, pipeline->optimized_pipeline, nullptr);
 
 		frames[p_frame].render_pipelines_to_dispose_of.pop_front();
 	}
@@ -8684,7 +9018,16 @@ void RenderingDeviceVulkan::_free_pending_resources(int p_frame) {
 		for (int i = 0; i < shader->sets.size(); i++) {
 			vkDestroyDescriptorSetLayout(device, shader->sets[i].descriptor_set_layout, nullptr);
 		}
+		for (int i = 0; i < shader->pre_raster_layouts.size(); i++){
+			vkDestroyDescriptorSetLayout(device, shader->pre_raster_layouts[i], nullptr);
+		}
+		for (int i = 0; i < shader->fragment_layouts.size(); i++){
+			vkDestroyDescriptorSetLayout(device, shader->fragment_layouts[i], nullptr);
+		}
 
+		for (int i = 0; i < shader->library_pipeline_layouts.size(); i++){
+			vkDestroyPipelineLayout(device, shader->library_pipeline_layouts[i], nullptr);
+		}
 		// Pipeline layout.
 		vkDestroyPipelineLayout(device, shader->pipeline_layout, nullptr);
 
@@ -9332,6 +9675,11 @@ void RenderingDeviceVulkan::finalize() {
 			}
 		}
 	}
+	//Free pipeline libraries only after all executing pipelines are destroyed
+	for(KeyValue<PipelineLibraryKey, PipelineLibraryCache> &E : pipeline_library_cache) {
+		vkDestroyPipeline(device, E.value.pipeline, nullptr);
+	}
+	pipeline_library_cache.clear();
 
 	// Free everything pending.
 	for (int i = 0; i < frame_count; i++) {

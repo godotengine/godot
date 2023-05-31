@@ -1346,6 +1346,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("rendering/rendering_device/staging_buffer/block_size_kb", 256);
 	GLOBAL_DEF("rendering/rendering_device/staging_buffer/max_size_mb", 128);
 	GLOBAL_DEF("rendering/rendering_device/staging_buffer/texture_upload_region_size_px", 64);
+	GLOBAL_DEF("rendering/rendering_device/vulkan/graphics_pipeline_library/use_graphics_pipeline_library", false);
+	GLOBAL_DEF_RST("rendering/rendering_device/vulkan/graphics_pipeline_library/fast_link", false);
 	GLOBAL_DEF("rendering/rendering_device/vulkan/max_descriptors_per_pool", 64);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
