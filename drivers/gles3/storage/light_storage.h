@@ -419,6 +419,7 @@ public:
 
 	/* SHADOW ATLAS API */
 
+	virtual bool shadow_atlas_get_split_shadows() const override { return false; }
 	virtual RID shadow_atlas_create() override;
 	virtual void shadow_atlas_free(RID p_atlas) override;
 	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) override;

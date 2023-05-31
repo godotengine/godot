@@ -48,6 +48,7 @@ LightStorage::LightStorage() {
 
 	directional_shadow.size = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/size");
 	directional_shadow.use_16_bits = GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/16_bits");
+	split_static_and_dynamic_shadows = GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/split_static_and_dynamic_shadows");
 
 	using_lightmap_array = true; // high end
 	if (using_lightmap_array) {
@@ -1956,17 +1957,33 @@ void LightStorage::shadow_atlas_free(RID p_atlas) {
 }
 
 void LightStorage::_update_shadow_atlas(ShadowAtlas *shadow_atlas) {
-	if (shadow_atlas->size > 0 && shadow_atlas->depth.is_null()) {
+	if (shadow_atlas->size > 0 && shadow_atlas->dynamic_depth.is_null()) {
 		RD::TextureFormat tf;
 		tf.format = shadow_atlas->use_16_bits ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_D32_SFLOAT;
 		tf.width = shadow_atlas->size;
 		tf.height = shadow_atlas->size;
-		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-		shadow_atlas->depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
-		Vector<RID> fb_tex;
-		fb_tex.push_back(shadow_atlas->depth);
-		shadow_atlas->fb = RD::get_singleton()->framebuffer_create(fb_tex);
+		if (split_static_and_dynamic_shadows) {
+			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+			shadow_atlas->static_depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			RD::get_singleton()->set_resource_name(shadow_atlas->static_depth, "Positional static shadow map");
+
+			{
+				Vector<RID> fb_tex;
+				fb_tex.push_back(shadow_atlas->static_depth);
+				shadow_atlas->static_fb = RD::get_singleton()->framebuffer_create(fb_tex);
+			}
+		}
+
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+		shadow_atlas->dynamic_depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		RD::get_singleton()->set_resource_name(shadow_atlas->dynamic_depth, "Positional dynamic shadow map");
+
+		{
+			Vector<RID> fb_tex;
+			fb_tex.push_back(shadow_atlas->dynamic_depth);
+			shadow_atlas->dynamic_fb = RD::get_singleton()->framebuffer_create(fb_tex);
+		}
 	}
 }
 
@@ -1981,10 +1998,17 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 	}
 
 	// erasing atlas
-	if (shadow_atlas->depth.is_valid()) {
-		RD::get_singleton()->free(shadow_atlas->depth);
-		shadow_atlas->depth = RID();
+	if (shadow_atlas->static_depth.is_valid()) {
+		RD::get_singleton()->free(shadow_atlas->static_depth);
+		shadow_atlas->static_depth = RID();
+		shadow_atlas->static_fb = RID();
 	}
+	if (shadow_atlas->dynamic_depth.is_valid()) {
+		RD::get_singleton()->free(shadow_atlas->dynamic_depth);
+		shadow_atlas->dynamic_depth = RID();
+		shadow_atlas->dynamic_fb = RID();
+	}
+
 	for (int i = 0; i < 4; i++) {
 		//clear subdivisions
 		shadow_atlas->quadrants[i].shadows.clear();

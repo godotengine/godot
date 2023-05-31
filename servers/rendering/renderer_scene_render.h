@@ -244,7 +244,9 @@ public:
 	struct RenderShadowData {
 		RID light;
 		int pass = 0;
-		PagedArray<RenderGeometryInstance *> instances;
+		bool redraw_staticmap = false;
+		PagedArray<RenderGeometryInstance *> static_instances;
+		PagedArray<RenderGeometryInstance *> dynamic_instances;
 	};
 
 	struct RenderSDFGIData {

@@ -209,6 +209,12 @@ private:
 
 	// Copy to DP
 
+	enum CopyToDPMode {
+		COPY_TO_DP_STATIC,
+		COPY_TO_DP_DYNAMIC,
+		COPY_TO_DP_MAX
+	};
+
 	struct CopyToDPPushConstant {
 		float z_far;
 		float z_near;
@@ -219,7 +225,7 @@ private:
 	struct CopyToDP {
 		CubeToDpShaderRD shader;
 		RID shader_version;
-		PipelineCacheRD pipeline;
+		PipelineCacheRD pipelines[COPY_TO_DP_MAX];
 	} cube_to_dp;
 
 	// Cubemap effects
@@ -341,7 +347,7 @@ public:
 	void set_color(RID p_dest_texture, const Color &p_color, const Rect2i &p_region, bool p_8bit_dst = false);
 	void set_color_raster(RID p_dest_texture, const Color &p_color, const Rect2i &p_region);
 
-	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, float p_z_near, float p_z_far, bool p_dp_flip, BitField<RD::BarrierMask> p_post_barrier = RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_TRANSFER);
+	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, float p_z_near, float p_z_far, bool p_dp_flip, bool p_is_static, BitField<RD::BarrierMask> p_post_barrier = RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_TRANSFER);
 	void cubemap_downsample(RID p_source_cubemap, RID p_dest_cubemap, const Size2i &p_size);
 	void cubemap_downsample_raster(RID p_source_cubemap, RID p_dest_framebuffer, uint32_t p_face_id, const Size2i &p_size);
 	void cubemap_filter(RID p_source_cubemap, Vector<RID> p_dest_cubemap, bool p_use_array);

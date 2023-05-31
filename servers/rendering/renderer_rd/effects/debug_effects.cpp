@@ -51,6 +51,17 @@ DebugEffects::DebugEffects() {
 		raster_state.wireframe = true;
 		shadow_frustum.pipelines[SFP_WIREFRAME].setup(shadow_frustum.shader.version_get_shader(shadow_frustum.shader_version, 0), RD::RENDER_PRIMITIVE_LINES, raster_state, RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
 	}
+
+	{
+		// Combined shadow map debug shader
+
+		Vector<String> modes;
+		modes.push_back("");
+
+		combined_shadow_map.shader.initialize(modes);
+		combined_shadow_map.shader_version = combined_shadow_map.shader.version_create();
+		combined_shadow_map.pipeline.setup(combined_shadow_map.shader.version_get_shader(combined_shadow_map.shader_version, 0), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_blend(), 0);
+	}
 }
 
 void DebugEffects::_create_frustum_arrays() {
@@ -148,6 +159,7 @@ void DebugEffects::_create_frustum_arrays() {
 
 DebugEffects::~DebugEffects() {
 	shadow_frustum.shader.version_free(shadow_frustum.shader_version);
+	combined_shadow_map.shader.version_free(combined_shadow_map.shader_version);
 
 	// Destroy vertex buffer and array.
 	if (frustum.vertex_buffer.is_valid()) {
@@ -325,4 +337,28 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 			RD::get_singleton()->draw_list_end();
 		}
 	}
+}
+
+void DebugEffects::draw_combined_shadow_map(RID p_static_texture, RID p_dynamic_texture, RID p_dest_fb, const Rect2 p_rect) {
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	// setup our uniforms
+	RID default_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+
+	RD::Uniform u_static_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_static_texture }));
+	RD::Uniform u_dynamic_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_dynamic_texture }));
+
+	RID shader = combined_shadow_map.shader.version_get_shader(combined_shadow_map.shader_version, 0);
+	ERR_FAIL_COND(shader.is_null());
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_fb, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, p_rect);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, combined_shadow_map.pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_fb)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_static_texture), 0);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 1, u_dynamic_texture), 1);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
 }

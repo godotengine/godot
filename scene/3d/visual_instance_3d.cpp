@@ -331,6 +331,26 @@ GeometryInstance3D::ShadowCastingSetting GeometryInstance3D::get_cast_shadows_se
 	return shadow_casting_setting;
 }
 
+void GeometryInstance3D::set_shadow_render_setting(ShadowRenderSetting p_shadow_render_setting) {
+	shadow_render_setting = p_shadow_render_setting;
+
+	switch (p_shadow_render_setting) {
+		case SHADOW_RENDER_STATIC_MAP: {
+			RS::get_singleton()->instance_geometry_set_shadow_mode(get_instance(), RS::SHADOW_MODE_STATIC);
+		} break;
+		case SHADOW_RENDER_DYNAMIC_MAP: {
+			RS::get_singleton()->instance_geometry_set_shadow_mode(get_instance(), RS::SHADOW_MODE_DYNAMIC);
+		} break;
+		default: {
+			RS::get_singleton()->instance_geometry_set_shadow_mode(get_instance(), RS::SHADOW_MODE_AUTO);
+		} break;
+	}
+}
+
+GeometryInstance3D::ShadowRenderSetting GeometryInstance3D::get_shadow_render_setting() const {
+	return shadow_render_setting;
+}
+
 void GeometryInstance3D::set_extra_cull_margin(float p_margin) {
 	ERR_FAIL_COND(p_margin < 0);
 	extra_cull_margin = p_margin;
@@ -459,6 +479,9 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cast_shadows_setting", "shadow_casting_setting"), &GeometryInstance3D::set_cast_shadows_setting);
 	ClassDB::bind_method(D_METHOD("get_cast_shadows_setting"), &GeometryInstance3D::get_cast_shadows_setting);
 
+	ClassDB::bind_method(D_METHOD("set_shadow_render_setting", "shadow_render_setting"), &GeometryInstance3D::set_shadow_render_setting);
+	ClassDB::bind_method(D_METHOD("get_shadow_render_setting"), &GeometryInstance3D::get_shadow_render_setting);
+
 	ClassDB::bind_method(D_METHOD("set_lod_bias", "bias"), &GeometryInstance3D::set_lod_bias);
 	ClassDB::bind_method(D_METHOD("get_lod_bias"), &GeometryInstance3D::get_lod_bias);
 
@@ -505,6 +528,7 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_overlay", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE), "set_material_overlay", "get_material_overlay");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "transparency", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_transparency", "get_transparency");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_shadow", PROPERTY_HINT_ENUM, "Auto,Static,Dynamic"), "set_shadow_render_setting", "get_shadow_render_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01,suffix:m"), "set_extra_cull_margin", "get_extra_cull_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_bias", PROPERTY_HINT_RANGE, "0.001,128,0.001"), "set_lod_bias", "get_lod_bias");
@@ -525,6 +549,10 @@ void GeometryInstance3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_ON);
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_DOUBLE_SIDED);
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_SHADOWS_ONLY);
+
+	BIND_ENUM_CONSTANT(SHADOW_RENDER_AUTO);
+	BIND_ENUM_CONSTANT(SHADOW_RENDER_STATIC_MAP);
+	BIND_ENUM_CONSTANT(SHADOW_RENDER_DYNAMIC_MAP);
 
 	BIND_ENUM_CONSTANT(GI_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(GI_MODE_STATIC);
