@@ -44,7 +44,7 @@
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
 
-	if (!name.begins_with("indices") && !name.begins_with(PackedScene::META_POINTER_PROPERTY_BASE + "indices")) {
+	if (!name.begins_with("indices")) {
 		return false;
 	}
 
@@ -62,7 +62,7 @@ bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_
 bool EditorPropertyArrayObject::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
 
-	if (!name.begins_with("indices") && !name.begins_with(PackedScene::META_POINTER_PROPERTY_BASE + "indices")) {
+	if (!name.begins_with("indices")) {
 		return false;
 	}
 
@@ -193,7 +193,7 @@ void EditorPropertyArray::initialize_array(Variant &p_array) {
 }
 
 void EditorPropertyArray::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
-	if (!p_property.begins_with("indices") && !p_property.begins_with(PackedScene::META_POINTER_PROPERTY_BASE + "indices")) {
+	if (!p_property.begins_with("indices")) {
 		return;
 	}
 
@@ -204,18 +204,7 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 		index = p_property.get_slice("/", 1).to_int();
 	}
 
-	Variant array;
-	const Variant &original_array = object->get_array();
-
-	if (original_array.get_type() == Variant::ARRAY) {
-		// Needed to preserve type of TypedArrays in meta pointer properties.
-		Array temp;
-		temp.assign(original_array.duplicate());
-		array = temp;
-	} else {
-		array = original_array.duplicate();
-	}
-
+	Variant array = object->get_array().duplicate();
 	array.set(index, p_value);
 	object->set_array(array);
 	emit_changed(get_edited_property(), array, "", true);

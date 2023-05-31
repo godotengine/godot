@@ -2759,48 +2759,17 @@ void EditorPropertyNodePath::_set_read_only(bool p_read_only) {
 	clear->set_disabled(p_read_only);
 };
 
-String EditorPropertyNodePath::_get_meta_pointer_property() const {
-	ERR_FAIL_COND_V(!pointer_mode, String());
-	return SceneState::get_meta_pointer_property(get_edited_property());
-}
-
 Variant EditorPropertyNodePath::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
 	if (p_prop == get_edited_property()) {
 		r_valid = true;
-		return const_cast<EditorPropertyNodePath *>(this)->get_edited_object()->get(pointer_mode ? StringName(_get_meta_pointer_property()) : get_edited_property(), &r_valid);
+		return const_cast<EditorPropertyNodePath *>(this)->get_edited_object()->get(get_edited_property(), &r_valid);
 	}
 	return Variant();
 }
 
-StringName EditorPropertyNodePath::_get_revert_property() const {
-	if (pointer_mode) {
-		return _get_meta_pointer_property();
-	} else {
-		return get_edited_property();
-	}
-}
-
 void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 	NodePath path = p_path;
-	Node *base_node = nullptr;
-
-	if (!use_path_from_scene_root) {
-		base_node = Object::cast_to<Node>(get_edited_object());
-
-		if (!base_node) {
-			//try a base node within history
-			if (EditorNode::get_singleton()->get_editor_selection_history()->get_path_size() > 0) {
-				Object *base = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_selection_history()->get_path_object(0));
-				if (base) {
-					base_node = Object::cast_to<Node>(base);
-				}
-			}
-		}
-	}
-
-	if (!base_node && get_edited_object()->has_method("get_root_path")) {
-		base_node = Object::cast_to<Node>(get_edited_object()->call("get_root_path"));
-	}
+	Node *base_node = get_base_node();
 
 	if (!base_node && Object::cast_to<RefCounted>(get_edited_object())) {
 		Node *to_node = get_node(p_path);
@@ -2811,8 +2780,13 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 	if (base_node) { // for AnimationTrackKeyEdit
 		path = base_node->get_path().rel_path_to(p_path);
 	}
-	if (pointer_mode && base_node) {
-		emit_changed(_get_meta_pointer_property(), path);
+
+	if (editing_node) {
+		if (!base_node) {
+			emit_changed(get_edited_property(), get_tree()->get_edited_scene_root()->get_node(path));
+		} else {
+			emit_changed(get_edited_property(), base_node->get_node(path));
+		}
 	} else {
 		emit_changed(get_edited_property(), path);
 	}
@@ -2831,11 +2805,7 @@ void EditorPropertyNodePath::_node_assign() {
 }
 
 void EditorPropertyNodePath::_node_clear() {
-	if (pointer_mode) {
-		emit_changed(_get_meta_pointer_property(), NodePath());
-	} else {
-		emit_changed(get_edited_property(), NodePath());
-	}
+	emit_changed(get_edited_property(), NodePath());
 	update_property();
 }
 
@@ -2882,9 +2852,20 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 }
 
 void EditorPropertyNodePath::update_property() {
+	Node *base_node = get_base_node();
+
 	NodePath p;
-	if (pointer_mode) {
-		p = get_edited_object()->get(_get_meta_pointer_property());
+	Variant val = get_edited_object()->get(get_edited_property());
+	Node *n = Object::cast_to<Node>(val);
+	if (n) {
+		if (!n->is_inside_tree()) {
+			return;
+		}
+		if (base_node) {
+			p = base_node->get_path_to(n);
+		} else {
+			p = get_tree()->get_edited_scene_root()->get_path_to(n);
+		}
 	} else {
 		p = get_edited_property_value();
 	}
@@ -2897,15 +2878,6 @@ void EditorPropertyNodePath::update_property() {
 		return;
 	}
 	assign->set_flat(true);
-
-	Node *base_node = nullptr;
-	if (base_hint != NodePath()) {
-		if (get_tree()->get_root()->has_node(base_hint)) {
-			base_node = get_tree()->get_root()->get_node(base_hint);
-		}
-	} else {
-		base_node = Object::cast_to<Node>(get_edited_object());
-	}
 
 	if (!base_node || !base_node->has_node(p)) {
 		assign->set_icon(Ref<Texture2D>());
@@ -2926,10 +2898,10 @@ void EditorPropertyNodePath::update_property() {
 	assign->set_icon(EditorNode::get_singleton()->get_object_icon(target_node, "Node"));
 }
 
-void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types, bool p_use_path_from_scene_root, bool p_pointer_mode) {
-	pointer_mode = p_pointer_mode;
+void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types, bool p_use_path_from_scene_root, bool p_editing_node) {
 	base_hint = p_base_hint;
 	valid_types = p_valid_types;
+	editing_node = p_editing_node;
 	use_path_from_scene_root = p_use_path_from_scene_root;
 }
 
@@ -2944,6 +2916,35 @@ void EditorPropertyNodePath::_notification(int p_what) {
 }
 
 void EditorPropertyNodePath::_bind_methods() {
+}
+Node *EditorPropertyNodePath::get_base_node() {
+	if (!base_hint.is_empty() && get_tree()->get_root()->has_node(base_hint)) {
+		return get_tree()->get_root()->get_node(base_hint);
+	}
+
+	Node *base_node = Object::cast_to<Node>(get_edited_object());
+
+	if (!base_node) {
+		base_node = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
+	}
+	if (!base_node) {
+		// Try a base node within history.
+		if (EditorNode::get_singleton()->get_editor_selection_history()->get_path_size() > 0) {
+			Object *base = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_selection_history()->get_path_object(0));
+			if (base) {
+				base_node = Object::cast_to<Node>(base);
+			}
+		}
+	}
+	if (use_path_from_scene_root) {
+		if (get_edited_object()->has_method("get_root_path")) {
+			base_node = Object::cast_to<Node>(get_edited_object()->call("get_root_path"));
+		} else {
+			base_node = get_tree()->get_edited_scene_root();
+		}
+	}
+
+	return base_node;
 }
 
 EditorPropertyNodePath::EditorPropertyNodePath() {
