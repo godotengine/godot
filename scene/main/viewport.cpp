@@ -2999,16 +2999,19 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	}
 
 	if (!is_input_handled()) {
-		push_unhandled_input(ev, true);
+		_push_unhandled_input_internal(ev);
 	}
 
 	event_count++;
 }
 
+#ifndef DISABLE_DEPRECATED
 void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(p_event.is_null());
 	ERR_FAIL_COND(!is_inside_tree());
+	WARN_DEPRECATED_MSG(R"(The "push_unhandled_input" method is deprecated, use "push_input" instead.)");
+
 	local_input_handled = false;
 
 	if (disable_input || !_can_consume_input_events()) {
@@ -3026,31 +3029,36 @@ void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local
 		ev = p_event;
 	}
 
+	_push_unhandled_input_internal(ev);
+}
+#endif // DISABLE_DEPRECATED
+
+void Viewport::_push_unhandled_input_internal(const Ref<InputEvent> &p_event) {
 	// Shortcut Input.
-	if (Object::cast_to<InputEventKey>(*ev) != nullptr || Object::cast_to<InputEventShortcut>(*ev) != nullptr || Object::cast_to<InputEventJoypadButton>(*ev) != nullptr) {
-		get_tree()->_call_input_pause(shortcut_input_group, SceneTree::CALL_INPUT_TYPE_SHORTCUT_INPUT, ev, this);
+	if (Object::cast_to<InputEventKey>(*p_event) != nullptr || Object::cast_to<InputEventShortcut>(*p_event) != nullptr || Object::cast_to<InputEventJoypadButton>(*p_event) != nullptr) {
+		get_tree()->_call_input_pause(shortcut_input_group, SceneTree::CALL_INPUT_TYPE_SHORTCUT_INPUT, p_event, this);
 	}
 
 	// Unhandled Input.
 	if (!is_input_handled()) {
-		get_tree()->_call_input_pause(unhandled_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_INPUT, ev, this);
+		get_tree()->_call_input_pause(unhandled_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_INPUT, p_event, this);
 	}
 
 	// Unhandled key Input - Used for performance reasons - This is called a lot less than _unhandled_input since it ignores MouseMotion, and to handle Unicode input with Alt / Ctrl modifiers after handling shortcuts.
-	if (!is_input_handled() && (Object::cast_to<InputEventKey>(*ev) != nullptr)) {
-		get_tree()->_call_input_pause(unhandled_key_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT, ev, this);
+	if (!is_input_handled() && (Object::cast_to<InputEventKey>(*p_event) != nullptr)) {
+		get_tree()->_call_input_pause(unhandled_key_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT, p_event, this);
 	}
 
 	if (physics_object_picking && !is_input_handled()) {
 		if (Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED &&
-				(Object::cast_to<InputEventMouseButton>(*ev) ||
-						Object::cast_to<InputEventMouseMotion>(*ev) ||
-						Object::cast_to<InputEventScreenDrag>(*ev) ||
-						Object::cast_to<InputEventScreenTouch>(*ev) ||
-						Object::cast_to<InputEventKey>(*ev) // To remember state.
+				(Object::cast_to<InputEventMouseButton>(*p_event) ||
+						Object::cast_to<InputEventMouseMotion>(*p_event) ||
+						Object::cast_to<InputEventScreenDrag>(*p_event) ||
+						Object::cast_to<InputEventScreenTouch>(*p_event) ||
+						Object::cast_to<InputEventKey>(*p_event) // To remember state.
 
 						)) {
-			physics_picking_events.push_back(ev);
+			physics_picking_events.push_back(p_event);
 			set_input_as_handled();
 		}
 	}
@@ -4144,7 +4152,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_viewport_rid"), &Viewport::get_viewport_rid);
 	ClassDB::bind_method(D_METHOD("push_text_input", "text"), &Viewport::push_text_input);
 	ClassDB::bind_method(D_METHOD("push_input", "event", "in_local_coords"), &Viewport::push_input, DEFVAL(false));
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("push_unhandled_input", "event", "in_local_coords"), &Viewport::push_unhandled_input, DEFVAL(false));
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("get_camera_2d"), &Viewport::get_camera_2d);
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener_2d", "enable"), &Viewport::set_as_audio_listener_2d);

@@ -414,6 +414,8 @@ private:
 	void _perform_drop(Control *p_control = nullptr, Point2 p_pos = Point2());
 	void _gui_cleanup_internal_state(Ref<InputEvent> p_event);
 
+	void _push_unhandled_input_internal(const Ref<InputEvent> &p_event);
+
 	Ref<InputEvent> _make_input_local(const Ref<InputEvent> &ev);
 
 	friend class Control;
@@ -575,7 +577,9 @@ public:
 
 	void push_text_input(const String &p_text);
 	void push_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
+#ifndef DISABLE_DEPRECATED
 	void push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
+#endif // DISABLE_DEPRECATED
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
