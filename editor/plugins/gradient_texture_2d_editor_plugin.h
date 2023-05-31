@@ -66,8 +66,6 @@ class GradientTexture2DEdit : public Control {
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
-	void _on_mouse_exited();
-
 	void _draw();
 
 protected:
