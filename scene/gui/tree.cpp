@@ -677,23 +677,26 @@ TreeItem *TreeItem::create_child(int p_index) {
 		tree->queue_redraw();
 	}
 
-	TreeItem *l_prev = nullptr;
-	TreeItem *c = first_child;
-	int idx = 0;
+	TreeItem *item_prev = nullptr;
+	TreeItem *item_next = first_child;
 
-	while (c) {
-		if (idx++ == p_index) {
-			c->prev = ti;
-			ti->next = c;
+	int idx = 0;
+	while (item_next) {
+		if (idx == p_index) {
+			item_next->prev = ti;
+			ti->next = item_next;
 			break;
 		}
-		l_prev = c;
-		c = c->next;
+
+		item_prev = item_next;
+		item_next = item_next->next;
+		idx++;
 	}
 
-	if (l_prev) {
-		l_prev->next = ti;
-		ti->prev = l_prev;
+	if (item_prev) {
+		item_prev->next = ti;
+		ti->prev = item_prev;
+
 		if (!children_cache.is_empty()) {
 			if (ti->next) {
 				children_cache.insert(p_index, ti);
@@ -711,6 +714,46 @@ TreeItem *TreeItem::create_child(int p_index) {
 	ti->parent = this;
 
 	return ti;
+}
+
+void TreeItem::add_child(TreeItem *p_item) {
+	ERR_FAIL_NULL(p_item);
+	ERR_FAIL_COND(p_item->tree);
+	ERR_FAIL_COND(p_item->parent);
+
+	p_item->_change_tree(tree);
+	p_item->parent = this;
+
+	TreeItem *item_prev = first_child;
+	while (item_prev && item_prev->next) {
+		item_prev = item_prev->next;
+	}
+
+	if (item_prev) {
+		item_prev->next = p_item;
+		p_item->prev = item_prev;
+	} else {
+		first_child = p_item;
+	}
+
+	if (!children_cache.is_empty()) {
+		children_cache.append(p_item);
+	}
+
+	validate_cache();
+}
+
+void TreeItem::remove_child(TreeItem *p_item) {
+	ERR_FAIL_NULL(p_item);
+	ERR_FAIL_COND(p_item->parent != this);
+
+	p_item->_unlink_from_tree();
+	p_item->_change_tree(nullptr);
+	p_item->prev = nullptr;
+	p_item->next = nullptr;
+	p_item->parent = nullptr;
+
+	validate_cache();
 }
 
 Tree *TreeItem::get_tree() const {
@@ -888,6 +931,18 @@ TypedArray<TreeItem> TreeItem::get_children() {
 	return arr;
 }
 
+void TreeItem::clear_children() {
+	TreeItem *c = first_child;
+	while (c) {
+		TreeItem *aux = c;
+		c = c->get_next();
+		aux->parent = nullptr; // So it won't try to recursively auto-remove from me in here.
+		memdelete(aux);
+	}
+
+	first_child = nullptr;
+};
+
 int TreeItem::get_index() {
 	int idx = 0;
 	TreeItem *c = this;
@@ -943,7 +998,7 @@ void TreeItem::move_before(TreeItem *p_item) {
 	} else {
 		parent->first_child = this;
 		// If the cache is empty, it has not been built but there
-		// are items in the tree (note p_item != nullptr,) so we cannot update it.
+		// are items in the tree (note p_item != nullptr) so we cannot update it.
 		if (!parent->children_cache.is_empty()) {
 			parent->children_cache.insert(0, this);
 		}
@@ -998,21 +1053,6 @@ void TreeItem::move_after(TreeItem *p_item) {
 	}
 
 	if (tree && old_tree == tree) {
-		tree->queue_redraw();
-	}
-	validate_cache();
-}
-
-void TreeItem::remove_child(TreeItem *p_item) {
-	ERR_FAIL_NULL(p_item);
-	ERR_FAIL_COND(p_item->parent != this);
-
-	p_item->_unlink_from_tree();
-	p_item->prev = nullptr;
-	p_item->next = nullptr;
-	p_item->parent = nullptr;
-
-	if (tree) {
 		tree->queue_redraw();
 	}
 	validate_cache();
@@ -1542,6 +1582,9 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_folding_disabled"), &TreeItem::is_folding_disabled);
 
 	ClassDB::bind_method(D_METHOD("create_child", "index"), &TreeItem::create_child, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("add_child", "child"), &TreeItem::add_child);
+	ClassDB::bind_method(D_METHOD("remove_child", "child"), &TreeItem::remove_child);
+
 	ClassDB::bind_method(D_METHOD("get_tree"), &TreeItem::get_tree);
 
 	ClassDB::bind_method(D_METHOD("get_next"), &TreeItem::get_next);
@@ -1563,8 +1606,6 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_before", "item"), &TreeItem::move_before);
 	ClassDB::bind_method(D_METHOD("move_after", "item"), &TreeItem::move_after);
 
-	ClassDB::bind_method(D_METHOD("remove_child", "child"), &TreeItem::remove_child);
-
 	{
 		MethodInfo mi;
 		mi.name = "call_recursive";
@@ -1585,28 +1626,17 @@ void TreeItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(CELL_MODE_CUSTOM);
 }
 
-void TreeItem::clear_children() {
-	TreeItem *c = first_child;
-	while (c) {
-		TreeItem *aux = c;
-		c = c->get_next();
-		aux->parent = nullptr; // so it won't try to recursively autoremove from me in here
-		memdelete(aux);
-	}
-
-	first_child = nullptr;
-};
-
 TreeItem::TreeItem(Tree *p_tree) {
 	tree = p_tree;
 }
 
 TreeItem::~TreeItem() {
 	_unlink_from_tree();
+	_change_tree(nullptr);
+
 	validate_cache();
 	prev = nullptr;
 	clear_children();
-	_change_tree(nullptr);
 }
 
 /**********************************************/
@@ -4484,6 +4514,7 @@ bool Tree::is_column_expanding(int p_column) const {
 
 	return columns[p_column].expand;
 }
+
 int Tree::get_column_expand_ratio(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, columns.size(), 1);
 
