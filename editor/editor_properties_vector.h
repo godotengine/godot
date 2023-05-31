@@ -47,11 +47,13 @@ class EditorPropertyVectorN : public EditorProperty {
 	Vector<EditorSpinSlider *> spin_sliders;
 	TextureButton *linked = nullptr;
 	Vector<double> ratio;
+	bool is_grabbed = false;
 
 	bool angle_in_radians = false;
 
 	void _update_ratio();
 	void _store_link(bool p_linked);
+	void _grab_changed(bool p_grab);
 	void _value_changed(double p_val, const String &p_name);
 
 protected:
