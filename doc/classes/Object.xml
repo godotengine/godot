@@ -315,7 +315,9 @@
 			<return type="Variant" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Calls the [param method] on the object during idle time. This method supports a variable number of arguments, so parameters can be passed as a comma separated list.
+				Calls the [param method] on the object during idle time. Always returns null, [b]not[/b] the method's result.
+				Idle time happens mainly at the end of process and physics frames. In it, deferred calls will be run until there are none left, which means you can defer calls from other deferred calls and they'll still be run in the current idle time cycle. If not done carefully, this can result in infinite recursion without causing a stack overflow, which will hang the game similarly to an infinite loop.
+				This method supports a variable number of arguments, so parameters can be passed as a comma separated list.
 				[codeblocks]
 				[gdscript]
 				var node = Node3D.new()
@@ -326,7 +328,17 @@
 				node.CallDeferred(Node3D.MethodName.Rotate, new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
+				See also [method Callable.call_deferred].
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
+				[b]Note:[/b] If you're looking to delay the function call by a frame, refer to the [signal SceneTree.process_frame] and [signal SceneTree.physics_frame] signals.
+				[codeblock]
+				var node = Node3D.new()
+				# Make a Callable and bind the arguments to the node's rotate() call.
+				var callable = node.rotate.bind(Vector3(1.0, 0.0, 0.0), 1.571)
+				# Connect the callable to the process_frame signal, so it gets called in the next process frame.
+				# CONNECT_ONE_SHOT makes sure it only gets called once instead of every frame.
+				get_tree().process_frame.connect(callable, CONNECT_ONE_SHOT)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="callv">
@@ -827,7 +839,7 @@
 			<param index="0" name="property" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Assigns [param value] to the given [param property], after the current frame's physics step. This is equivalent to calling [method set] through [method call_deferred].
+				Assigns [param value] to the given [param property], at the end of the current frame. This is equivalent to calling [method set] through [method call_deferred].
 				[codeblocks]
 				[gdscript]
 				var node = Node2D.new()
@@ -954,7 +966,7 @@
 			Notification received when the object is about to be deleted. Can act as the deconstructor of some programming languages.
 		</constant>
 		<constant name="CONNECT_DEFERRED" value="1" enum="ConnectFlags">
-			Deferred connections trigger their [Callable]s on idle time, rather than instantly.
+			Deferred connections trigger their [Callable]s on idle time (at the end of the frame), rather than instantly.
 		</constant>
 		<constant name="CONNECT_PERSIST" value="2" enum="ConnectFlags">
 			Persisting connections are stored when the object is serialized (such as when using [method PackedScene.pack]). In the editor, connections created through the Node dock are always persisting.
