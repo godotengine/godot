@@ -88,9 +88,13 @@ void Material::_mark_initialized(const Callable &p_queue_shader_change_callable)
 	if (ResourceLoader::is_within_load() && Thread::get_caller_id() != Thread::get_main_id()) {
 		DEV_ASSERT(init_state != INIT_STATE_READY);
 		if (init_state == INIT_STATE_UNINITIALIZED) { // Prevent queueing twice.
-			// Queue an individual update of this material (the ResourceLoader knows how to handle deferred calls safely).
-			p_queue_shader_change_callable.call_deferred();
+			// Let's mark this material as being initialized.
 			init_state = INIT_STATE_INITIALIZING;
+			// Knowing that the ResourceLoader will eventually feed deferred calls into the main message queue, let's do these:
+			// 1. Queue setting the init state to INIT_STATE_READY finally.
+			callable_mp(this, &Material::_mark_initialized).bind(p_queue_shader_change_callable).call_deferred();
+			// 2. Queue an individual update of this material.
+			p_queue_shader_change_callable.call_deferred();
 		}
 	} else {
 		// Straightforward conditions.
