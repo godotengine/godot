@@ -34,6 +34,7 @@
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
+#include <scene/gui/control.h>
 
 class Control;
 class Texture2D;
@@ -49,14 +50,14 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL1RC(bool, _handles, String)
-	GDVIRTUAL2RC(Object *, _make_tooltip_for_path, String, Dictionary)
+	GDVIRTUAL3RC(Control *, _make_tooltip_for_path, String, Dictionary, Control *)
 
 public:
 	static VBoxContainer *make_default_tooltip(const String &p_resource_path);
 	void request_thumbnail(const String &p_path, TextureRect *p_for_control) const;
 
 	virtual bool handles(const String &p_resource_type) const;
-	virtual Control *make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata) const;
+	virtual Control *make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata, Control *p_base) const;
 };
 
 class EditorTextureTooltipPlugin : public EditorResourceTooltipPlugin {
@@ -64,7 +65,7 @@ class EditorTextureTooltipPlugin : public EditorResourceTooltipPlugin {
 
 public:
 	virtual bool handles(const String &p_resource_type) const override;
-	virtual Control *make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata) const override;
+	virtual Control *make_tooltip_for_path(const String &p_resource_path, const Dictionary &p_metadata, Control *p_base) const override;
 };
 
 #endif // EDITOR_RESOURCE_TOOLTIP_PLUGINS_H
