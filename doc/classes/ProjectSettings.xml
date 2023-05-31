@@ -2529,6 +2529,9 @@
 		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="" default="&quot;vulkan&quot;">
 			Windows override for [member rendering/rendering_device/driver].
 		</member>
+		<member name="rendering/rendering_device/pipeline_cache/save_chunk_size_mb" type="float" setter="" getter="" default="3.0">
+			Determines at which interval pipeline cache is saved to disk. The lower the value, the more often it is saved.
+		</member>
 		<member name="rendering/rendering_device/staging_buffer/block_size_kb" type="int" setter="" getter="" default="256">
 		</member>
 		<member name="rendering/rendering_device/staging_buffer/max_size_mb" type="int" setter="" getter="" default="128">

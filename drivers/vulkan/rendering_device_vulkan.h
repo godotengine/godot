@@ -31,6 +31,7 @@
 #ifndef RENDERING_DEVICE_VULKAN_H
 #define RENDERING_DEVICE_VULKAN_H
 
+#include "core/object/worker_thread_pool.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
@@ -791,6 +792,31 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	};
 
 	RID_Owner<RenderPipeline, true> render_pipeline_owner;
+
+	struct PipelineCacheHeader {
+		uint32_t magic;
+		uint32_t data_size;
+		uint64_t data_hash;
+		uint32_t vendor_id;
+		uint32_t device_id;
+		uint32_t driver_version;
+		uint8_t uuid[VK_UUID_SIZE];
+		uint8_t driver_abi;
+	};
+
+	struct PipelineCache {
+		size_t current_size = 0;
+		Vector<uint8_t> buffer;
+		VkPipelineCache cache_object = VK_NULL_HANDLE;
+	};
+
+	PipelineCache pipelines_cache;
+
+	WorkerThreadPool::TaskID pipelines_cache_save_task = WorkerThreadPool::INVALID_TASK_ID;
+
+	void _load_pipeline_cache();
+	void _update_pipeline_cache(bool p_closing = false);
+	void _save_pipeline_cache_threaded(size_t pso_blob_size);
 
 	struct ComputePipeline {
 		RID shader;
