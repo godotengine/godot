@@ -742,7 +742,7 @@ void NavMap::sync() {
 					connections[ek].push_back(new_connection);
 				} else {
 					// The edge is already connected with another edge, skip.
-					ERR_PRINT_ONCE("Attempted to merge a navigation mesh triangle edge with another already-merged edge. This happens when the current `cell_size` is different from the one used to generate the navigation mesh. This will cause navigation problems.");
+					ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to merge a navigation mesh polygon edge with another already-merged edge. This is usually caused by crossing edges, overlapping polygons, or a mismatch of the NavigationMesh / NavigationPolygon baked 'cell_size' and navigation map 'cell_size'.");
 				}
 			}
 		}
