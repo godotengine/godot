@@ -143,6 +143,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			//scene inheritance on root node
 			Ref<PackedScene> sdata = props[base_scene_idx];
 			ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
+			if (over_script) {
+				sdata->get_state()->set_stop_script(true);
+			}
 			node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE); //only main gets main edit state
 			ERR_FAIL_COND_V(!node, nullptr);
 			if (p_edit_state != GEN_EDIT_STATE_DISABLED) {
@@ -289,7 +292,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							node->get_script_instance()->get_property_state(old_state);
 						}
 
-						node->set(snames[nprops[j].name], props[nprops[j].value], &valid);
+						node->set(snames[nprops[j].name], stop_script ? Variant() : props[nprops[j].value], &valid);
 
 						//restore old state for new script, if exists
 						for (const Pair<StringName, Variant> &E : old_state) {
@@ -1767,6 +1770,14 @@ void SceneState::add_node_group(int p_node, int p_group) {
 void SceneState::set_base_scene(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, variants.size());
 	base_scene_idx = p_idx;
+}
+
+void SceneState::set_over_script(bool p_over_script) {
+	over_script = p_over_script;
+}
+
+void SceneState::set_stop_script(bool p_stop_script) {
+	stop_script = p_stop_script;
 }
 
 void SceneState::add_connection(int p_from, int p_to, int p_signal, int p_method, int p_flags, int p_unbinds, const Vector<int> &p_binds) {

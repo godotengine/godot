@@ -234,6 +234,10 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 				}
 			}
 
+			if (next_tag.fields.has("over_script")) {
+				packed_scene->get_state()->set_over_script(true);
+			}
+
 			if (next_tag.fields.has("instance_placeholder")) {
 				String path = next_tag.fields["instance_placeholder"];
 
@@ -2247,6 +2251,13 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 				f->store_string(" instance=");
 				VariantWriter::write_to_string(instance, vars, _write_resources, this);
 				f->store_string(vars);
+				for (int j = 0; j < state->get_node_property_count(i); j++) {
+					if (String(state->get_node_property_name(i, j)).property_name_encode() == "script") {
+						String vars;
+						f->store_string(" over_script=\"1\"");
+						break;
+					}
+				}
 			}
 
 			f->store_line("]");
