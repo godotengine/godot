@@ -216,6 +216,8 @@ public:
 
 	virtual bool can_any_window_draw() const override;
 
+	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
+
 	// events
 	virtual void process_events() override;
 

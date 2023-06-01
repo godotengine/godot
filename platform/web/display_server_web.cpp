@@ -1080,6 +1080,10 @@ bool DisplayServerWeb::can_any_window_draw() const {
 	return true;
 }
 
+DisplayServer::VSyncMode DisplayServerWeb::window_get_vsync_mode(WindowID p_vsync_mode) const {
+	return DisplayServer::VSYNC_ENABLED;
+}
+
 void DisplayServerWeb::process_events() {
 	Input::get_singleton()->flush_buffered_events();
 	if (godot_js_input_gamepad_sample() == OK) {
