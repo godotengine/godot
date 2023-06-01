@@ -93,7 +93,7 @@
 		            new Godot.Collections.Dictionary
 		            {
 		                { "name", "myOption" },
-		                { "defaultValue", false },
+		                { "default_value", false },
 		            }
 		        };
 		    }
@@ -157,12 +157,12 @@
 				    return true
 				[/gdscript]
 				[csharp]
-				public void GetOptionVisibility(string option, Godot.Collections.Dictionary options)
+				public void _GetOptionVisibility(string option, Godot.Collections.Dictionary options)
 				{
 				    // Only show the lossy quality setting if the compression mode is set to "Lossy".
-				    if (option == "compress/lossyQuality" &amp;&amp; options.Contains("compress/mode"))
+				    if (option == "compress/lossy_quality" &amp;&amp; options.ContainsKey("compress/mode"))
 				    {
-				        return (int)options["compress/mode"] == COMPRESS_LOSSY; // This is a constant you set
+				        return (int)options["compress/mode"] == CompressLossy; // This is a constant you set
 				    }
 
 				    return true;
