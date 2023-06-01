@@ -143,6 +143,15 @@ private:
 		bool physics_process : 1;
 		bool idle_process : 1;
 
+		//## BEGIN_ENGINE_EDIT
+		bool pre_update_process : 1;
+		bool post_update_process : 1;
+
+		bool manual_process : 1;
+		bool manual_pre_update : 1;
+		bool manual_post_update : 1;
+		//## END_ENGINE_EDIT
+
 		bool physics_process_internal : 1;
 		bool idle_process_internal : 1;
 
@@ -280,6 +289,14 @@ public:
 		NOTIFICATION_INTERNAL_PHYSICS_PROCESS = 26,
 		NOTIFICATION_POST_ENTER_TREE = 27,
 		NOTIFICATION_RESET_PHYSICS_INTERPOLATION = 28,
+
+		//## BEGIN_ENGINE_EDIT
+		NOTIFICATION_PRE_UPDATE_INTERNAL_PROCESS = 29,
+		NOTIFICATION_PRE_UPDATE_PROCESS = 30,
+		NOTIFICATION_POST_UPDATE_INTERNAL_PROCESS = 31,
+		NOTIFICATION_POST_UPDATE_PROCESS = 32,
+		//## END_ENGINE_EDIT
+
 		//keep these linked to node
 		NOTIFICATION_WM_MOUSE_ENTER = MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
 		NOTIFICATION_WM_MOUSE_EXIT = MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
@@ -392,6 +409,14 @@ public:
 	void set_physics_process(bool p_process);
 	float get_physics_process_delta_time() const;
 	bool is_physics_processing() const;
+
+	//## BEGIN_ENGINE_EDIT
+	void Node::set_pre_process(bool p_pre_process);
+	void Node::set_post_process(bool p_pre_process);
+	void Node::set_manual_process(bool manual);
+	void Node::set_manual_pre_process(bool manual);
+	void Node::set_manual_post_process(bool manual);
+	//## END_ENGINE_EDIT
 
 	void set_process(bool p_idle_process);
 	float get_process_delta_time() const;

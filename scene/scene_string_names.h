@@ -111,6 +111,10 @@ public:
 
 	StringName _physics_process;
 	StringName _process;
+	//## BEGIN_ENGINE_UPDATE
+	StringName _pre_update;
+	StringName _post_update;
+	//## END_ENGINE_UPDATE
 	StringName _enter_world;
 	StringName _exit_world;
 	StringName _enter_tree;

@@ -2258,6 +2258,13 @@ bool Main::iteration() {
 
 	last_ticks = ticks;
 
+	//## BEGIN_ENGINE_EDIT
+	{
+		ZoneScopedN("Main::iteration::PreUpdateProcess");
+		OS::get_singleton()->get_main_loop()->pre_update(step * time_scale);
+	}
+	//## END_ENGINE_EDIT
+
 	static const int max_physics_steps = 8;
 	if (fixed_fps == -1 && advance.physics_steps > max_physics_steps) {
 		step -= (advance.physics_steps - max_physics_steps) * frame_slice;
@@ -2333,6 +2340,13 @@ bool Main::iteration() {
 		visual_server_callbacks->flush();
 		message_queue->flush();
 	}
+
+	//## BEGIN_ENGINE_EDIT
+	{
+		ZoneScopedN("Main::iteration::PostUpdateProcess");
+		OS::get_singleton()->get_main_loop()->post_update(step * time_scale);
+	}
+	//## END_ENGINE_EDIT
 
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 

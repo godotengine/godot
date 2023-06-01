@@ -51,8 +51,24 @@ int Node::orphan_node_count = 0;
 
 void Node::_notification(int p_notification) {
 	switch (p_notification) {
+		//## BEGIN_ENGINE_EDIT
+		case NOTIFICATION_PRE_UPDATE_PROCESS: {
+			if (get_script_instance() && !data.manual_pre_update) {
+				Variant time = get_process_delta_time();
+				const Variant *ptr[1] = { &time };
+				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_pre_update, ptr, 1);
+			}
+		} break;
+		case NOTIFICATION_POST_UPDATE_PROCESS: {
+			if (get_script_instance() && !data.manual_post_update) {
+				Variant time = get_process_delta_time();
+				const Variant *ptr[1] = { &time };
+				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_post_update, ptr, 1);
+			}
+		} break;
 		case NOTIFICATION_PROCESS: {
-			if (get_script_instance()) {
+			if (get_script_instance() && !data.manual_process) {
+		//## END_ENGINE_EDIT
 				Variant time = get_process_delta_time();
 				const Variant *ptr[1] = { &time };
 				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_process, ptr, 1);
@@ -808,6 +824,12 @@ bool Node::can_process_notification(int p_what) const {
 			return data.idle_process_internal;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
 			return data.physics_process_internal;
+		//## BEGIN_ENGINE_EDIT
+		case NOTIFICATION_PRE_UPDATE_PROCESS:
+			return data.pre_update_process;
+		case NOTIFICATION_POST_UPDATE_PROCESS:
+			return data.post_update_process;
+		//## END_ENGINE_EDIT
 	}
 
 	return true;
@@ -910,6 +932,44 @@ void Node::set_process(bool p_idle_process) {
 
 	_change_notify("idle_process");
 }
+
+//## BEGIN_ENGINE_EDIT
+void Node::set_pre_process(bool p_pre_process) {
+	if (data.pre_update_process == p_pre_process) {
+		return;
+	}
+	data.pre_update_process = p_pre_process;
+
+	if (data.pre_update_process) {
+		add_to_group("pre_update_process", false);
+	} else {
+		remove_from_group("pre_update_process");
+	}
+	_change_notify("pre_update_process");
+}
+void Node::set_post_process(bool p_post_process) {
+	if (data.post_update_process == p_post_process) {
+		return;
+	}
+	data.post_update_process = p_post_process;
+
+	if (data.post_update_process) {
+		add_to_group("post_update_process", false);
+	} else {
+		remove_from_group("post_update_process");
+	}
+	_change_notify("post_update_process");
+}
+void Node::set_manual_process(bool manual) {
+	data.manual_process = manual;
+}
+void Node::set_manual_pre_process(bool manual) {
+	data.manual_pre_update = manual;
+}
+void Node::set_manual_post_process(bool manual) {
+	data.manual_post_update = manual;
+}
+//## END_ENGINE_EDIT
 
 bool Node::is_processing() const {
 	return data.idle_process;
@@ -3217,6 +3277,16 @@ Node::Node() {
 	data.tree = nullptr;
 	data.physics_process = false;
 	data.idle_process = false;
+
+	//## BEGIN_ENGINE_EDIT
+	data.pre_update_process = false;
+	data.post_update_process = false;
+
+	data.manual_process = false;
+	data.manual_pre_update = false;
+	data.manual_post_update = false;
+	//## END_ENGINE_EDIT
+
 	data.process_priority = 0;
 	data.physics_process_internal = false;
 	data.idle_process_internal = false;

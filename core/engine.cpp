@@ -232,6 +232,10 @@ Engine::Engine() {
 	_physics_frames = 0;
 	_idle_frames = 0;
 	_in_physics = false;
+	//## START_ENGINE_EDIT
+	_in_pre_update = false;
+	_in_post_update = false;
+	//## END_ENGINE_EDIT
 	_frame_ticks = 0;
 	_frame_step = 0;
 	editor_hint = false;

@@ -71,6 +71,10 @@ public:
 	virtual void iteration_end() {}
 	virtual void poll_net() {}
 	virtual bool idle(float p_time);
+	//## BEGIN_ENGINE_EDIT
+	virtual void pre_update(float p_time);
+	virtual void post_update(float p_time);
+	//## END_ENGINE_EDIT
 	virtual void finish();
 
 	virtual void drop_files(const Vector<String> &p_files, int p_from_screen = 0);

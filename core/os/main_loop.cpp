@@ -45,6 +45,10 @@ void MainLoop::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_initialize"));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_iteration", PropertyInfo(Variant::REAL, "delta")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "_idle", PropertyInfo(Variant::REAL, "delta")));
+	//## BEGIN_ENGINE_EDIT
+	BIND_VMETHOD(MethodInfo("_pre_update", PropertyInfo(Variant::REAL, "delta")));
+	BIND_VMETHOD(MethodInfo("_post_update", PropertyInfo(Variant::REAL, "delta")));
+	//## END_ENGINE_EDIT
 	BIND_VMETHOD(MethodInfo("_drop_files", PropertyInfo(Variant::POOL_STRING_ARRAY, "files"), PropertyInfo(Variant::INT, "from_screen")));
 	BIND_VMETHOD(MethodInfo("_finalize"));
 
@@ -113,6 +117,18 @@ bool MainLoop::idle(float p_time) {
 
 	return false;
 }
+//## BEGIN_ENGINE_UPDATE
+void MainLoop::pre_update(float p_time) {
+	if (get_script_instance()) {
+		get_script_instance()->call("_pre_update", p_time);
+	}
+}
+void MainLoop::post_update(float p_time) {
+	if (get_script_instance()) {
+		get_script_instance()->call("_post_update", p_time);
+	}
+}
+//## END_ENGINE_UPDATE
 
 void MainLoop::drop_files(const Vector<String> &p_files, int p_from_screen) {
 	if (get_script_instance()) {
