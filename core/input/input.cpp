@@ -1354,8 +1354,9 @@ void Input::parse_mapping(String p_mapping) {
 
 		String output = entry[idx].get_slice(":", 0).replace(" ", "");
 		String input = entry[idx].get_slice(":", 1).replace(" ", "");
-		ERR_CONTINUE_MSG(output.length() < 1 || input.length() < 2,
-				vformat("Invalid device mapping entry \"%s\" in mapping:\n%s", entry[idx], p_mapping));
+		if (output.length() < 1 || input.length() < 2) {
+			continue;
+		}
 
 		if (output == "platform" || output == "hint") {
 			continue;
