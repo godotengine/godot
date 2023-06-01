@@ -78,6 +78,7 @@ void AudioStreamImportSettings::_notification(int p_what) {
 void AudioStreamImportSettings::_draw_preview() {
 	Rect2 rect = _preview->get_rect();
 	Size2 rect_size = rect.size;
+	int width = rect_size.width;
 
 	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
 	float preview_offset = zoom_bar->get_value();
@@ -86,12 +87,12 @@ void AudioStreamImportSettings::_draw_preview() {
 	Ref<Font> beat_font = get_theme_font(SNAME("main"), SNAME("EditorFonts"));
 	int main_size = get_theme_font_size(SNAME("main_size"), SNAME("EditorFonts"));
 	Vector<Vector2> points;
-	points.resize((int)rect_size.width * 2);
+	points.resize(width * 2);
 	Color color_active = get_theme_color(SNAME("contrast_color_2"), SNAME("Editor"));
 	Color color_inactive = color_active;
 	color_inactive.a *= 0.5;
 	Vector<Color> colors;
-	colors.resize((int)rect_size.width);
+	colors.resize(width);
 
 	float inactive_from = 1e20;
 	float beat_size = 0;
@@ -108,7 +109,7 @@ void AudioStreamImportSettings::_draw_preview() {
 		}
 	}
 
-	for (int i = 0; i < rect_size.width; i++) {
+	for (int i = 0; i < width; i++) {
 		float ofs = preview_offset + i * preview_len / rect_size.width;
 		float ofs_n = preview_offset + (i + 1) * preview_len / rect_size.width;
 		float max = preview->get_max(ofs, ofs_n) * 0.5 + 0.5;
@@ -139,7 +140,7 @@ void AudioStreamImportSettings::_draw_preview() {
 		int bar_beats = stream->get_bar_beats();
 
 		int last_text_end_x = 0;
-		for (int i = 0; i < rect_size.width; i++) {
+		for (int i = 0; i < width; i++) {
 			float ofs = preview_offset + i * preview_len / rect_size.width;
 			int beat = int(ofs / beat_size);
 			if (beat != prev_beat) {
