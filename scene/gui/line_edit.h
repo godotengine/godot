@@ -103,6 +103,7 @@ private:
 
 	RID text_rid;
 	float full_width = 0.0;
+	float last_text_height = 0.0;
 
 	bool selecting_enabled = true;
 	bool deselect_on_focus_loss_enabled = true;
@@ -216,6 +217,7 @@ private:
 	void _fit_to_width();
 	void _text_changed();
 	void _emit_text_change();
+	float _get_text_height() const;
 
 	void shift_selection_check_pre(bool);
 	void shift_selection_check_post(bool);

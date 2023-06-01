@@ -138,7 +138,7 @@ _FORCE_INLINE_ const String &TextEdit::Text::operator[](int p_line) const {
 }
 
 void TextEdit::Text::_calculate_line_height() {
-	int height = 0;
+	int height = line_height == 0 ? font_height : line_height;
 	for (const Line &l : text) {
 		// Found another line with the same height...nothing to update.
 		if (l.height == line_height) {
@@ -216,20 +216,22 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_chan
 	}
 
 	// Update height.
-	const int old_height = text.write[p_line].height;
 	const int wrap_amount = get_line_wrap_amount(p_line);
-	int height = font_height;
+	line_height = 0;
 	for (int i = 0; i <= wrap_amount; i++) {
-		height = MAX(height, text[p_line].data_buf->get_line_size(i).y);
+		line_height = MAX(line_height, text[p_line].data_buf->get_line_size(i).y);
 	}
-	text.write[p_line].height = height;
 
-	// If this line has shrunk, this may no longer the the tallest line.
-	if (old_height == line_height && height < line_height) {
-		_calculate_line_height();
-	} else {
-		line_height = MAX(height, line_height);
+	if (line_height == 0) {
+		// Calculate line_height with a dummy string.
+		text.write[p_line].data_buf->clear();
+		text.write[p_line].data_buf->add_string(".", font, font_size, language);
+		line_height = text[p_line].data_buf->get_line_size(0).y;
+		text.write[p_line].data_buf->clear();
+		text.write[p_line].data_buf->add_string("", font, font_size, language);
 	}
+
+	text.write[p_line].height = line_height;
 
 	// Update width.
 	const int old_width = text.write[p_line].width;
@@ -1331,7 +1333,7 @@ void TextEdit::_notification(int p_what) {
 									ts_caret = TS->shaped_text_get_carets(rid, ime_text.is_empty() ? get_caret_column(c) : get_caret_column(c) + ime_selection.x);
 								} else {
 									// No carets, add one at the start.
-									int h = theme_cache.font->get_height(theme_cache.font_size);
+									int h = text.get_line_height();
 									if (rtl) {
 										ts_caret.l_dir = TextServer::DIRECTION_RTL;
 										ts_caret.l_caret = Rect2(Vector2(xmargin_end - char_margin + ofs_x, -h / 2), Size2(caret_width * 4, h));
@@ -1352,7 +1354,7 @@ void TextEdit::_notification(int p_what) {
 									if (draw_caret || drag_caret_force_displayed) {
 										if (caret_type == CaretType::CARET_TYPE_BLOCK || overtype_mode) {
 											//Block or underline caret, draw trailing carets at full height.
-											int h = theme_cache.font->get_height(theme_cache.font_size);
+											int h = text.get_line_height();
 
 											if (ts_caret.t_caret != Rect2()) {
 												if (overtype_mode) {
@@ -2952,7 +2954,7 @@ void TextEdit::_update_placeholder() {
 
 	// Update height.
 	const int wrap_amount = placeholder_data_buf->get_line_count() - 1;
-	placeholder_line_height = theme_cache.font->get_height(theme_cache.font_size);
+	placeholder_line_height = text.get_line_height();
 	for (int i = 0; i <= wrap_amount; i++) {
 		placeholder_line_height = MAX(placeholder_line_height, placeholder_data_buf->get_line_size(i).y);
 	}

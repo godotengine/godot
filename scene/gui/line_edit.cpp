@@ -750,6 +750,14 @@ void LineEdit::_update_theme_item_cache() {
 	theme_cache.base_scale = get_theme_default_base_scale();
 }
 
+float LineEdit::_get_text_height() const {
+	if (text.is_empty() && placeholder.is_empty() && ime_text.is_empty()) {
+		return last_text_height == 0.0 ? theme_cache.font->get_height(theme_cache.font_size) : last_text_height;
+	}
+
+	return TS->shaped_text_get_size(text_rid).y;
+}
+
 void LineEdit::_notification(int p_what) {
 	switch (p_what) {
 #ifdef TOOLS_ENABLED
@@ -833,7 +841,7 @@ void LineEdit::_notification(int p_what) {
 			int x_ofs = 0;
 			bool using_placeholder = text.is_empty() && ime_text.is_empty();
 			float text_width = TS->shaped_text_get_size(text_rid).x;
-			float text_height = TS->shaped_text_get_size(text_rid).y;
+			float text_height = _get_text_height();
 
 			switch (alignment) {
 				case HORIZONTAL_ALIGNMENT_FILL:
@@ -974,7 +982,7 @@ void LineEdit::_notification(int p_what) {
 					CaretInfo caret = TS->shaped_text_get_carets(text_rid, ime_text.is_empty() ? caret_column : caret_column + ime_selection.x);
 					if (using_placeholder || (caret.l_caret == Rect2() && caret.t_caret == Rect2())) {
 						// No carets, add one at the start.
-						int h = theme_cache.font->get_height(theme_cache.font_size);
+						int h = text_height;
 						int y = style->get_offset().y + (y_area - h) / 2;
 						caret.l_dir = (rtl) ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR;
 						switch (alignment) {
@@ -1780,7 +1788,7 @@ Size2 LineEdit::get_minimum_size() const {
 		min_size.width = MAX(min_size.width, full_width + theme_cache.caret_width);
 	}
 
-	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y, font->get_height(font_size));
+	min_size.height = _get_text_height();
 
 	// Take icons into account.
 	int icon_max_width = 0;
@@ -2293,7 +2301,24 @@ void LineEdit::_shape() {
 	full_width = TS->shaped_text_get_size(text_rid).x;
 	_fit_to_width();
 
+	if (last_text_height == 0.0 && text.is_empty() && placeholder.is_empty() && ime_text.is_empty()) {
+		// Use dummy text to find the correct last_text_height when it hasn't been set yet.
+		text = String(".");
+		_shape();
+		text = String();
+
+		if (last_text_height == 0.0) {
+			// Prevent infinite recursion by using font height instead.
+			print_error("Shaped '.' has a height of zero, defaulting to font height.");
+			last_text_height = _get_text_height();
+			ERR_FAIL_COND_MSG(last_text_height == 0.0, "Unable to get a non-zero font height too.");
+		}
+		_shape();
+	}
+
 	Size2 size = TS->shaped_text_get_size(text_rid);
+	size.y = _get_text_height();
+	last_text_height = size.y;
 
 	if ((expand_to_text_length && old_size.x != size.x) || (old_size.y != size.y)) {
 		update_minimum_size();

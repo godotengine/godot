@@ -667,10 +667,13 @@ Size2 Label::get_minimum_size() const {
 
 	Size2 min_size = minsize;
 
-	const Ref<Font> &font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
-	int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
-
-	min_size.height = MAX(min_size.height, font->get_height(font_size) + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM));
+	if (lines_rid.is_empty()) {
+		const Ref<Font> &font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
+		int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
+		min_size.height = MAX(min_size.height, font->get_height(font_size) + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM));
+	} else {
+		min_size.height = MAX(min_size.height, TS->shaped_text_get_size(lines_rid[0]).y);
+	}
 
 	Size2 min_style = theme_cache.normal_style->get_minimum_size();
 	if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
