@@ -143,10 +143,10 @@
 			If [code]true[/code] the agent is registered for an RVO avoidance callback on the [NavigationServer2D]. When [member velocity] is used and the processing is completed a [code]safe_velocity[/code] Vector2 is received with a signal connection to [signal velocity_computed]. Avoidance processing with many registered agents has a significant performance cost and should only be enabled on agents that currently require it.
 		</member>
 		<member name="avoidance_layers" type="int" setter="set_avoidance_layers" getter="get_avoidance_layers" default="1">
-			A bitfield determining the avoidance layers for this NavigationAgent. Other agent's with a matching bit on the [member avoidance_mask] will avoid this agent.
+			A bitfield determining the avoidance layers for this NavigationAgent. Other agents with a matching bit on the [member avoidance_mask] will avoid this agent.
 		</member>
 		<member name="avoidance_mask" type="int" setter="set_avoidance_mask" getter="get_avoidance_mask" default="1">
-			A bitfield determining what other avoidance agent's and obstacles this NavigationAgent will avoid when a bit matches at least one of their [member avoidance_layers].
+			A bitfield determining what other avoidance agents and obstacles this NavigationAgent will avoid when a bit matches at least one of their [member avoidance_layers].
 		</member>
 		<member name="avoidance_priority" type="float" setter="set_avoidance_priority" getter="get_avoidance_priority" default="1.0">
 			The agent does not adjust the velocity for other agents that would match the [member avoidance_mask] but have a lower [member avoidance_priority]. This in turn makes the other agents with lower priority adjust their velocities even more to avoid collision with this agent.
@@ -173,13 +173,13 @@
 			The maximum speed that an agent can move.
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
-			A bitfield determining what navigation layers of navigation regions this agent will use to calculate path. Changing it runtime will clear current navigation path and generate new one, according to new navigation layers.
+			A bitfield determining which navigation layers of navigation regions this agent will use to calculate a path. Changing it during runtime will clear the current navigation path and generate a new one, according to the new navigation layers.
 		</member>
 		<member name="neighbor_distance" type="float" setter="set_neighbor_distance" getter="get_neighbor_distance" default="500.0">
 			The distance to search for other agents.
 		</member>
 		<member name="path_desired_distance" type="float" setter="set_path_desired_distance" getter="get_path_desired_distance" default="20.0">
-			The distance threshold before a path point is considered to be reached. This will allow an agent to not have to hit a path point on the path exactly, but in the area. If this value is set to high the NavigationAgent will skip points on the path which can lead to leaving the navigation mesh. If this value is set to low the NavigationAgent will be stuck in a repath loop cause it will constantly overshoot or undershoot the distance to the next point on each physics frame update.
+			The distance threshold before a path point is considered to be reached. This allows agents to not have to hit a path point on the path exactly, but only to reach its general area. If this value is set too high, the NavigationAgent will skip points on the path, which can lead too leaving the navigation mesh. If this value is set too low, the NavigationAgent will be stuck in a repath loop because it will constantly overshoot or undershoot the distance to the next point on each physics frame update.
 		</member>
 		<member name="path_max_distance" type="float" setter="set_path_max_distance" getter="get_path_max_distance" default="100.0">
 			The maximum distance the agent is allowed away from the ideal path to the final position. This can happen due to trying to avoid collisions. When the maximum distance is exceeded, it recalculates the ideal path.
@@ -198,7 +198,7 @@
 			Does not affect normal pathfinding. To change an actor's pathfinding radius bake [NavigationMesh] resources with a different [member NavigationMesh.agent_radius] property and use different navigation maps for each actor size.
 		</member>
 		<member name="target_desired_distance" type="float" setter="set_target_desired_distance" getter="get_target_desired_distance" default="10.0">
-			The distance threshold before the final target point is considered to be reached. This will allow an agent to not have to hit the point of the final target exactly, but only the area. If this value is set to low the NavigationAgent will be stuck in a repath loop cause it will constantly overshoot or undershoot the distance to the final target point on each physics frame update.
+			The distance threshold before the final target point is considered to be reached. This allows agents to not have to hit the point of the final target exactly, but only to reach its general area. If this value is set too low, the NavigationAgent will be stuck in a repath loop because it will constantly overshoot or undershoot the distance to the final target point on each physics frame update.
 		</member>
 		<member name="target_position" type="Vector2" setter="set_target_position" getter="get_target_position" default="Vector2(0, 0)">
 			If set a new navigation path from the current agent position to the [member target_position] is requested from the NavigationServer.
@@ -210,7 +210,7 @@
 			The minimal amount of time for which this agent's velocities, that are computed with the collision avoidance algorithm, are safe with respect to static avoidance obstacles. The larger the number, the sooner the agent will respond to static avoidance obstacles, but less freedom in choosing its velocities. A too high value will slow down agents movement considerably. Must be positive.
 		</member>
 		<member name="velocity" type="Vector2" setter="set_velocity" getter="get_velocity" default="Vector2(0, 0)">
-			Sets the new wanted velocity for the agent. The avoidance simulation will try to fulfil this velocity if possible but will modify it to avoid collision with other agent's and obstacles. When an agent is teleported to a new position use [method set_velocity_forced] as well to reset the internal simulation velocity.
+			Sets the new wanted velocity for the agent. The avoidance simulation will try to fulfill this velocity if possible but will modify it to avoid collision with other agents and obstacles. When an agent is teleported to a new position, use [method set_velocity_forced] as well to reset the internal simulation velocity.
 		</member>
 	</members>
 	<signals>
