@@ -541,19 +541,22 @@ public:
 	}
 	_FORCE_INLINE_ bool is_accessible_from_caller_thread() const {
 		if (current_process_thread_group == nullptr) {
-			// Not thread processing. Only accessible if node is outside the scene tree,
-			// if accessing from the main thread or being loaded.
+			// No thread processing.
+			// Only accessible if node is outside the scene tree
+			// or access will happen from a node-safe thread.
 			return !data.inside_tree || is_current_thread_safe_for_nodes();
 		} else {
-			// Thread processing
+			// Thread processing.
 			return current_process_thread_group == data.process_thread_group_owner;
 		}
 	}
 
 	_FORCE_INLINE_ bool is_readable_from_caller_thread() const {
 		if (current_process_thread_group == nullptr) {
-			return Thread::is_main_thread() || is_current_thread_safe_for_nodes();
+			// No thread processing.
+			return is_current_thread_safe_for_nodes();
 		} else {
+			// Thread processing.
 			return true;
 		}
 	}
