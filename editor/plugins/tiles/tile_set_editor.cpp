@@ -59,14 +59,15 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		Dictionary d = p_data;
 		Vector<String> files = d["files"];
 		for (int i = 0; i < files.size(); i++) {
-			Ref<Texture2D> resource = ResourceLoader::load(files[i]);
-			if (resource.is_valid()) {
+			Ref<Resource> resource = ResourceLoader::load(files[i]);
+			Ref<Texture2D> texture = resource;
+			if (texture.is_valid()) {
 				// Retrieve the id for the next created source.
 				source_id = tile_set->get_next_source_id();
 
 				// Actually create the new source.
 				Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
-				atlas_source->set_texture(resource);
+				atlas_source->set_texture(texture);
 				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				undo_redo->create_action(TTR("Add a new atlas source"));
 				undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
@@ -74,6 +75,19 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
 				undo_redo->commit_action();
 				added += 1;
+			} else {
+				Ref<TileSetAtlasSource> atlas_source = resource;
+				if (atlas_source.is_valid()) {
+					// Retrieve the id for the next created source.
+					source_id = tile_set->get_next_source_id();
+
+					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+					undo_redo->create_action(TTR("Add an external atlas source"));
+					undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
+					undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
+					undo_redo->commit_action();
+					added += 1;
+				}
 			}
 		}
 
@@ -100,7 +114,7 @@ bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 			return false;
 		}
 
-		// Check if we have a Texture2D.
+		// Check if we have only Texture2D's and TileSetAtlasSource's.
 		if (String(d["type"]) == "files") {
 			Vector<String> files = d["files"];
 
@@ -112,7 +126,7 @@ bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 				String file = files[i];
 				String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
 
-				if (!ClassDB::is_parent_class(ftype, "Texture2D")) {
+				if (!(ClassDB::is_parent_class(ftype, "Texture2D") || ClassDB::is_parent_class(ftype, "TileSetAtlasSource"))) {
 					return false;
 				}
 			}
