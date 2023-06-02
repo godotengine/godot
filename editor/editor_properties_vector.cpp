@@ -37,15 +37,6 @@
 
 const String EditorPropertyVectorN::COMPONENT_LABELS[4] = { "x", "y", "z", "w" };
 
-int EditorPropertyVectorN::_get_ratio_component(int p_idx, int p_component) const {
-	int i = p_idx / (component_count - 1);
-	if (p_component == 1) {
-		return i;
-	} else {
-		return (i + p_idx % (component_count - 1) + 1) % component_count;
-	}
-}
-
 void EditorPropertyVectorN::_set_read_only(bool p_read_only) {
 	for (EditorSpinSlider *spin : spin_sliders) {
 		spin->set_read_only(p_read_only);
@@ -54,20 +45,19 @@ void EditorPropertyVectorN::_set_read_only(bool p_read_only) {
 
 void EditorPropertyVectorN::_value_changed(double val, const String &p_name) {
 	if (linked->is_pressed()) {
-		// TODO: The logic here can be simplified. _get_ratio_component() only exists,
-		// because the exact code was difficult to figure out.
+		int changed_component = -1;
 		for (int i = 0; i < component_count; i++) {
 			if (p_name == COMPONENT_LABELS[i]) {
-				for (int j = 0; j < ratio.size(); j++) {
-					if (_get_ratio_component(j, 1) == i) {
-						for (int k = 0; k < component_count - 1; k++) {
-							spin_sliders[_get_ratio_component(j + k, 0)]->set_value_no_signal(spin_sliders[_get_ratio_component(j + k, 1)]->get_value() * ratio[j + k]);
-						}
-						break;
-					}
-				}
+				changed_component = i;
 				break;
 			}
+		}
+		DEV_ASSERT(changed_component >= 0);
+
+		for (int i = 0; i < component_count - 1; i++) {
+			int slider_idx = (changed_component + 1 + i) % component_count;
+			int ratio_idx = changed_component * (component_count - 1) + i;
+			spin_sliders[slider_idx]->set_value_no_signal(spin_sliders[changed_component]->get_value() * ratio[ratio_idx]);
 		}
 	}
 
@@ -110,8 +100,10 @@ void EditorPropertyVectorN::_update_ratio() {
 
 	double *ratio_write = ratio.ptrw();
 	for (int i = 0; i < ratio.size(); i++) {
+		int base_slider_idx = i / (component_count - 1);
+		int secondary_slider_idx = ((base_slider_idx + 1) + i % (component_count - 1)) % component_count;
 		if (non_zero) {
-			ratio_write[i] = spin_sliders[_get_ratio_component(i, 0)]->get_value() / spin_sliders[_get_ratio_component(i, 1)]->get_value();
+			ratio_write[i] = spin_sliders[secondary_slider_idx]->get_value() / spin_sliders[base_slider_idx]->get_value();
 		} else {
 			ratio_write[i] = 1.0;
 		}
