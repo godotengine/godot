@@ -197,7 +197,9 @@ class DisplayServerWayland : public DisplayServer {
 	struct WindowData {
 		// For use in event sending and whatnot.
 		WindowID id;
-		WaylandState *wls;
+		WaylandState *wls = nullptr;
+
+		struct wl_output *wl_output = nullptr;
 
 		struct wl_surface *wl_surface = nullptr;
 		struct xdg_surface *xdg_surface = nullptr;
@@ -216,6 +218,8 @@ class DisplayServerWayland : public DisplayServer {
 		struct wl_egl_window *wl_egl_window = nullptr;
 #endif
 
+		float scale = 1;
+
 		// These are true by default as it isn't guaranteed that we'll find an
 		// xdg-shell implementation with wm_capabilities available. If and once we
 		// receive a wm_capabilities event these will get reset and updated with
@@ -229,7 +233,8 @@ class DisplayServerWayland : public DisplayServer {
 		WindowMode mode;
 		uint32_t flags;
 		VSyncMode vsync_mode;
-		Rect2i rect;
+		Rect2i logical_rect;
+		Rect2i actual_rect;
 		Rect2i safe_rect;
 		Size2i max_size;
 		Size2i min_size;
@@ -261,6 +266,8 @@ class DisplayServerWayland : public DisplayServer {
 
 		float refresh_rate = 0;
 		int scale = 0;
+
+		WaylandState *wls;
 	};
 
 	struct PointerData {

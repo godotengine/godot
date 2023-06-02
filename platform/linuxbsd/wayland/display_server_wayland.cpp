@@ -345,8 +345,8 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 				lp = zwp_pointer_constraints_v1_lock_pointer(pc, wd.wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
 
 				// Center the cursor on unlock.
-				wl_fixed_t unlock_x = wl_fixed_from_int(wd.rect.size.width / 2);
-				wl_fixed_t unlock_y = wl_fixed_from_int(wd.rect.size.height / 2);
+				wl_fixed_t unlock_x = wl_fixed_from_int(wd.logical_rect.size.width / 2);
+				wl_fixed_t unlock_y = wl_fixed_from_int(wd.logical_rect.size.height / 2);
 
 				zwp_locked_pointer_v1_set_cursor_position_hint(lp, unlock_x, unlock_y);
 			}
@@ -522,6 +522,7 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		ScreenData *sd = &wls->screens.push_back({})->get();
 		sd->wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, 2);
 		sd->wl_output_name = name;
+		sd->wls = wls;
 
 		wl_output_add_listener(sd->wl_output, &wl_output_listener, sd);
 		return;
@@ -803,6 +804,18 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 }
 
 void DisplayServerWayland::_wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
+	WindowData *wd = (WindowData *)data;
+	ERR_FAIL_NULL(wd);
+
+	// FIXME: Kinda bruteforce? Don't think so.
+	for (ScreenData &screen : wd->wls->screens) {
+		if (screen.wl_output == wl_output) {
+			DEBUG_LOG_WAYLAND(vformat("Setting window scale to %2f.", screen.scale));
+			wd->scale = screen.scale;
+			wl_surface_set_buffer_scale(wd->wl_surface, wd->scale);
+			wl_surface_commit(wl_surface);
+		}
+	}
 }
 
 void DisplayServerWayland::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
@@ -839,6 +852,16 @@ void DisplayServerWayland::_wl_output_on_done(void *data, struct wl_output *wl_o
 void DisplayServerWayland::_wl_output_on_scale(void *data, struct wl_output *wl_output, int32_t factor) {
 	ScreenData *sd = (ScreenData *)data;
 	ERR_FAIL_NULL(sd);
+
+	WaylandState *wls = sd->wls;
+	ERR_FAIL_NULL(wls);
+
+	// TODO: Generic window scale update method?
+	if (wls->main_window.wl_output == wl_output) {
+		wls->main_window.scale = factor;
+		wl_surface_set_buffer_scale(wls->main_window.wl_surface, factor);
+		wl_surface_commit(wls->main_window.wl_surface);
+	}
 
 	sd->scale = factor;
 }
@@ -974,8 +997,8 @@ void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *
 
 	PointerData &pd = ss->pointer_data_buffer;
 
-	pd.position.x = wl_fixed_to_int(surface_x);
-	pd.position.y = wl_fixed_to_int(surface_y);
+	pd.position.x = wl_fixed_to_int(surface_x) * wls->main_window.scale;
+	pd.position.y = wl_fixed_to_int(surface_y) * wls->main_window.scale;
 
 	pd.motion_time = time;
 }
@@ -1564,14 +1587,14 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 	WaylandState *wls = (WaylandState *)wd->wls;
 	ERR_FAIL_NULL(wls);
 
-	xdg_surface_set_window_geometry(wd->xdg_surface, 0, 0, wd->rect.size.width, wd->rect.size.height);
+	xdg_surface_set_window_geometry(wd->xdg_surface, 0, 0, wd->logical_rect.size.width * wd->scale, wd->logical_rect.size.height * wd->scale);
 
 	Ref<WaylandWindowRectMessage> msg;
 	msg.instantiate();
-	msg->rect = wd->rect;
+	msg->rect = wd->logical_rect;
 	wls->message_queue.push_back(msg);
 
-	DEBUG_LOG_WAYLAND(vformat("xdg surface on configure rect %s", wd->rect));
+	DEBUG_LOG_WAYLAND(vformat("xdg surface on configure rect %s", wd->logical_rect));
 }
 
 void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
@@ -1581,8 +1604,8 @@ void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_top
 	WaylandState *wls = wd->wls;
 
 	if (width != 0 && height != 0) {
-		wd->rect.size.width = width;
-		wd->rect.size.height = height;
+		wd->logical_rect.size.width = width;
+		wd->logical_rect.size.height = height;
 	}
 
 	if (wls->current_seat && wls->current_seat->wp_locked_pointer) {
@@ -1756,7 +1779,7 @@ void DisplayServerWayland::_wp_pointer_gesture_pinch_on_update(void *data, struc
 		pg->set_alt_pressed(ss->alt_pressed);
 		pg->set_meta_pressed(ss->meta_pressed);
 
-		pg->set_position(pd.position);
+		pg->set_position(pd.position * wls->main_window.scale);
 		pg->set_delta(Vector2(wl_fixed_to_double(dx), wl_fixed_to_double(dy)));
 
 		Ref<WaylandInputEventMessage> pan_msg;
@@ -1985,8 +2008,8 @@ void DisplayServerWayland::_wp_tablet_tool_on_motion(void *data, struct zwp_tabl
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	ss->tablet_tool_data_buffer.position.x = wl_fixed_to_double(x);
-	ss->tablet_tool_data_buffer.position.y = wl_fixed_to_double(y);
+	ss->tablet_tool_data_buffer.position.x = wl_fixed_to_double(x) * ss->wls->main_window.scale;
+	ss->tablet_tool_data_buffer.position.y = wl_fixed_to_double(y) * ss->wls->main_window.scale;
 }
 
 void DisplayServerWayland::_wp_tablet_tool_on_pressure(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t pressure) {
@@ -2181,12 +2204,12 @@ void DisplayServerWayland::libdecor_frame_on_configure(struct libdecor_frame *fr
 
 	if (!libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
 		// The configuration doesn't have a size. We'll use the one already set in the window.
-		width = wd->rect.size.width;
-		height = wd->rect.size.height;
+		width = wd->logical_rect.size.width;
+		height = wd->logical_rect.size.height;
 	} else {
 		// The configuration has a size, let's update the window rect.
-		wd->rect.size.width = width;
-		wd->rect.size.height = height;
+		wd->logical_rect.size.width = width;
+		wd->logical_rect.size.height = height;
 	}
 
 	libdecor_window_state window_state = LIBDECOR_WINDOW_STATE_NONE;
@@ -2214,7 +2237,7 @@ void DisplayServerWayland::libdecor_frame_on_configure(struct libdecor_frame *fr
 	Ref<WaylandWindowRectMessage> winrect_msg;
 	winrect_msg.instantiate();
 
-	winrect_msg->rect = wd->rect;
+	winrect_msg->rect = wd->logical_rect;
 
 	wls->message_queue.push_back(winrect_msg);
 
@@ -2681,16 +2704,16 @@ void DisplayServerWayland::_show_window() {
 		// graphics context window creation logic here.
 #ifdef VULKAN_ENABLED
 		if (context_vulkan) {
-			Error err = context_vulkan->window_create(MAIN_WINDOW_ID, wd.vsync_mode, wls.wl_display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+			Error err = context_vulkan->window_create(MAIN_WINDOW_ID, wd.vsync_mode, wls.wl_display, wd.wl_surface, wd.actual_rect.size.width, wd.actual_rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a Vulkan window.");
 		}
 #endif
 
 #ifdef GLES3_ENABLED
 		if (egl_manager) {
-			wd.wl_egl_window = wl_egl_window_create(wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+			wd.wl_egl_window = wl_egl_window_create(wd.wl_surface, wd.actual_rect.size.width, wd.actual_rect.size.height);
 
-			Error err = egl_manager->window_create(MAIN_WINDOW_ID, wls.wl_display, wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height);
+			Error err = egl_manager->window_create(MAIN_WINDOW_ID, wls.wl_display, wd.wl_egl_window, wd.actual_rect.size.width, wd.actual_rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a GLES3 window.");
 
 			window_set_vsync_mode(wd.vsync_mode, MAIN_WINDOW_ID);
@@ -2909,15 +2932,16 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 
 	WindowData &wd = wls.main_window;
 
-	wd.rect.size = p_size;
+	wd.logical_rect.size = p_size / wd.scale;
+	wd.actual_rect.size = p_size;
 
 	if (wd.xdg_surface) {
-		xdg_surface_set_window_geometry(wd.xdg_surface, 0, 0, wd.rect.size.width, wd.rect.size.height);
+		xdg_surface_set_window_geometry(wd.xdg_surface, 0, 0, wd.actual_rect.size.width, wd.actual_rect.size.height);
 	}
 
 #ifdef LIBDECOR_ENABLED
 	if (wd.libdecor_frame) {
-		struct libdecor_state *state = libdecor_state_new(wd.rect.size.width, wd.rect.size.height);
+		struct libdecor_state *state = libdecor_state_new(wd.actual_rect.size.width, wd.actual_rect.size.height);
 		// I'm not sure whether we can just pass null here.
 		libdecor_frame_commit(wd.libdecor_frame, state, nullptr);
 		libdecor_state_free(state);
@@ -2926,18 +2950,18 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 
 #ifdef VULKAN_ENABLED
 	if (wd.visible && context_vulkan) {
-		context_vulkan->window_resize(MAIN_WINDOW_ID, wd.rect.size.width, wd.rect.size.height);
+		context_vulkan->window_resize(MAIN_WINDOW_ID, wd.actual_rect.size.width, wd.actual_rect.size.height);
 	}
 #endif
 
 #ifdef GLES3_ENABLED
 	if (wd.visible && egl_manager) {
-		wl_egl_window_resize(wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height, 0, 0);
+		wl_egl_window_resize(wd.wl_egl_window, wd.actual_rect.size.width, wd.actual_rect.size.height, 0, 0);
 	}
 #endif
 
 	if (wd.rect_changed_callback.is_valid()) {
-		Variant var_rect = Variant(wd.rect);
+		Variant var_rect = Variant(wd.actual_rect);
 		Variant *arg = &var_rect;
 
 		Variant ret;
@@ -2950,7 +2974,7 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 Size2i DisplayServerWayland::window_get_size(DisplayServer::WindowID p_window) const {
 	MutexLock mutex_lock(wls.mutex);
 
-	return wls.main_window.rect.size;
+	return wls.main_window.actual_rect.size;
 }
 
 Size2i DisplayServerWayland::window_get_size_with_decorations(DisplayServer::WindowID p_window) const {
@@ -2959,7 +2983,7 @@ Size2i DisplayServerWayland::window_get_size_with_decorations(DisplayServer::Win
 	// I don't think there's a way of actually knowing the size of the window
 	// decoration in Wayland, at least in the case of SSDs, nor that it would be
 	// that useful in this case. We'll just return the main window's size.
-	return wls.main_window.rect.size;
+	return wls.main_window.actual_rect.size;
 }
 
 void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::WindowID p_window) {
@@ -3475,7 +3499,7 @@ void DisplayServerWayland::process_events() {
 
 		if (winrect_msg.is_valid()) {
 			Rect2i rect = winrect_msg->rect;
-			window_set_size(rect.size);
+			window_set_size(rect.size * wls.main_window.scale);
 		}
 
 		Ref<WaylandWindowEventMessage> winev_msg = msg;
@@ -3841,7 +3865,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	wd.mode = p_mode;
 	wd.flags = p_flags;
 	wd.vsync_mode = p_vsync_mode;
-	wd.rect.size = p_resolution;
+	wd.logical_rect.size = p_resolution;
+	wd.actual_rect.size = p_resolution;
 	wd.title = "Godot";
 
 	_show_window();
