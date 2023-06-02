@@ -217,9 +217,9 @@
 				    { 210, default },
 				};
 
-				GD.Print(myDict.Contains("Godot")); // Prints true
-				GD.Print(myDict.Contains(210));     // Prints true
-				GD.Print(myDict.Contains(4));       // Prints false
+				GD.Print(myDict.ContainsKey("Godot")); // Prints true
+				GD.Print(myDict.ContainsKey(210));     // Prints true
+				GD.Print(myDict.ContainsKey(4));       // Prints false
 				[/csharp]
 				[/codeblocks]
 				In GDScript, this is equivalent to the [code]in[/code] operator:
