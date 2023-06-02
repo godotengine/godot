@@ -3105,6 +3105,9 @@ void Control::_notification(int p_notification) {
 	ERR_MAIN_THREAD_GUARD;
 	switch (p_notification) {
 		case NOTIFICATION_POSTINITIALIZE: {
+			if (!is_readable_from_caller_thread()) {
+				break;
+			}
 			data.initialized = true;
 
 			_invalidate_theme_cache();
