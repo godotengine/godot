@@ -1582,22 +1582,6 @@ void Control::_update_minimum_size() {
 		return;
 	}
 
-	Size2 minsize = get_combined_minimum_size();
-	data.updating_last_minimum_size = false;
-
-	if (minsize != data.last_minimum_size) {
-		data.last_minimum_size = minsize;
-		_size_changed();
-		emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
-	}
-}
-
-void Control::update_minimum_size() {
-	ERR_MAIN_THREAD_GUARD;
-	if (!is_inside_tree() || data.block_minimum_size_adjust) {
-		return;
-	}
-
 	Control *invalidate = this;
 
 	// Invalidate cache upwards.
@@ -1617,6 +1601,21 @@ void Control::update_minimum_size() {
 	}
 
 	if (!is_visible_in_tree()) {
+		return;
+	}
+
+	Size2 minsize = get_combined_minimum_size();
+	data.updating_last_minimum_size = false;
+	if (minsize != data.last_minimum_size) {
+		data.last_minimum_size = minsize;
+		_size_changed();
+		emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
+	}
+}
+
+void Control::update_minimum_size() {
+	ERR_MAIN_THREAD_GUARD;
+	if (!is_inside_tree() || data.block_minimum_size_adjust) {
 		return;
 	}
 
@@ -3140,7 +3139,6 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_POST_ENTER_TREE: {
-			data.minimum_size_valid = false;
 			data.is_rtl_dirty = true;
 			_size_changed();
 		} break;
@@ -3269,9 +3267,7 @@ void Control::_notification(int p_notification) {
 					get_viewport()->_gui_hide_control(this);
 				}
 			} else {
-				data.minimum_size_valid = false;
 				_update_minimum_size();
-				_size_changed();
 			}
 		} break;
 
