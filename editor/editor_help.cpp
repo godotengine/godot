@@ -65,7 +65,7 @@ protected:
 		ClassDB::bind_method(D_METHOD("get_classes"), &DocCache::get_classes);
 
 		ADD_PROPERTY(PropertyInfo(Variant::STRING, "version_hash"), "set_version_hash", "get_version_hash");
-		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "classes"), "set_classes", "get_classes");
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "classes"), "set_classes", "get_classes");
 	}
 
 public:
