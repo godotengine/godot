@@ -115,7 +115,7 @@
 				Returns the drag data from the GUI, that was previously returned by [method Control._get_drag_data].
 			</description>
 		</method>
-		<method name="gui_get_focus_owner">
+		<method name="gui_get_focus_owner" qualifiers="const">
 			<return type="Control" />
 			<description>
 				Returns the [Control] having the focus within this viewport. If no [Control] has the focus, returns null.

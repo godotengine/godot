@@ -599,7 +599,7 @@ public:
 	int gui_get_canvas_sort_index();
 
 	void gui_release_focus();
-	Control *gui_get_focus_owner();
+	Control *gui_get_focus_owner() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 

@@ -3156,7 +3156,7 @@ void Viewport::gui_release_focus() {
 	}
 }
 
-Control *Viewport::gui_get_focus_owner() {
+Control *Viewport::gui_get_focus_owner() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
 	return gui.key_focus;
 }
