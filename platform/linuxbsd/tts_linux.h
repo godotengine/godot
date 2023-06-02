@@ -55,6 +55,13 @@ class TTS_Linux : public Object {
 	int last_msg_id = -1;
 	HashMap<int, int> ids;
 
+	struct VoiceInfo {
+		String language;
+		String variant;
+	};
+	bool voices_loaded = false;
+	HashMap<String, VoiceInfo> voices;
+
 	Thread init_thread;
 
 	static void speech_init_thread_func(void *p_userdata);
@@ -64,6 +71,7 @@ class TTS_Linux : public Object {
 	static TTS_Linux *singleton;
 
 protected:
+	void _load_voices();
 	void _speech_event(size_t p_msg_id, size_t p_client_id, int p_type);
 	void _speech_index_mark(size_t p_msg_id, size_t p_client_id, int p_type, const String &p_index_mark);
 
