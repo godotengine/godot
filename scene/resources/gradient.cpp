@@ -114,6 +114,10 @@ Vector<Color> Gradient::get_colors() const {
 }
 
 void Gradient::set_interpolation_mode(Gradient::InterpolationMode p_interp_mode) {
+	if (p_interp_mode == interpolation_mode) {
+		return;
+	}
+
 	interpolation_mode = p_interp_mode;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 	notify_property_list_changed();
@@ -124,6 +128,10 @@ Gradient::InterpolationMode Gradient::get_interpolation_mode() {
 }
 
 void Gradient::set_interpolation_color_space(Gradient::ColorSpace p_color_space) {
+	if (p_color_space == interpolation_color_space) {
+		return;
+	}
+
 	interpolation_color_space = p_color_space;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
