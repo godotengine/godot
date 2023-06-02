@@ -125,6 +125,7 @@ void AcceptDialog::_ok_pressed() {
 	}
 	ok_pressed();
 	emit_signal(SNAME("confirmed"));
+	set_input_as_handled();
 }
 
 void AcceptDialog::_cancel_pressed() {
@@ -143,6 +144,7 @@ void AcceptDialog::_cancel_pressed() {
 	if (parent_window) {
 		//parent_window->grab_focus();
 	}
+	set_input_as_handled();
 }
 
 String AcceptDialog::get_text() const {
