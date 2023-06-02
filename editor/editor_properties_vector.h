@@ -51,7 +51,6 @@ class EditorPropertyVectorN : public EditorProperty {
 	bool angle_in_radians = false;
 
 	void _update_ratio();
-	int _get_ratio_component(int p_idx, int p_component) const;
 	void _store_link(bool p_linked);
 	void _value_changed(double p_val, const String &p_name);
 
