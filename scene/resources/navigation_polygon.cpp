@@ -30,7 +30,6 @@
 
 #include "navigation_polygon.h"
 
-#include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
 
@@ -320,7 +319,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 		polygons.push_back(p);
 	}
 
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_changed();
 }
 
 void NavigationPolygon::_bind_methods() {
