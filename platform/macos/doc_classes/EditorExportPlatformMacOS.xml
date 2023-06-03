@@ -23,7 +23,7 @@
 			Copyright notice for the bundle visible to the user (localized).
 		</member>
 		<member name="application/icon" type="String" setter="" getter="">
-			Application icon file. If left empty, project icon is used instead.
+			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/macos_native_icon], and  then to [member ProjectSettings.application/config/icon].
 		</member>
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.

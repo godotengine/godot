@@ -399,7 +399,16 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	}
 #endif
 
-	String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/icon"));
+	String icon_path;
+	if (p_preset->get("application/icon") != "") {
+		icon_path = p_preset->get("application/icon");
+	} else if (GLOBAL_GET("application/config/windows_native_icon") != "") {
+		icon_path = GLOBAL_GET("application/config/windows_native_icon");
+	} else {
+		icon_path = GLOBAL_GET("application/config/icon");
+	}
+	icon_path = ProjectSettings::get_singleton()->globalize_path(icon_path);
+
 	if (p_console_icon) {
 		String console_icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/console_wrapper_icon"));
 		if (!console_icon_path.is_empty() && FileAccess::exists(console_icon_path)) {
