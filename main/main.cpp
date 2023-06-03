@@ -678,7 +678,8 @@ void Main::test_cleanup() {
 
 int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
 #ifdef TESTS_ENABLED
-	for (int x = 0; x < argc; x++) {
+	int x;
+	for (x = 0; x < argc; ++x) {
 		if ((strncmp(argv[x], "--test", 6) == 0) && (strlen(argv[x]) == 6)) {
 			tests_need_run = true;
 			// TODO: need to come up with different test contexts.
@@ -766,7 +767,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	List<String> platform_args = OS::get_singleton()->get_cmdline_platform_args();
 
 	// Add command line arguments.
-	for (int i = 0; i < argc; i++) {
+	int i;
+	for (i = 0; i < argc; ++i) {
 		args.push_back(String::utf8(argv[i]));
 	}
 
@@ -884,7 +886,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				audio_driver = I->next()->get();
 
 				bool found = false;
-				for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
+				int ADM_get_driver_count = AudioDriverManager::get_driver_count();
+				for (i = 0; i < ADM_get_driver_count; i++) {
 					if (audio_driver == AudioDriverManager::get_driver(i)->get_name()) {
 						found = true;
 					}
@@ -894,8 +897,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					OS::get_singleton()->print("Unknown audio driver '%s', aborting.\nValid options are ",
 							audio_driver.utf8().get_data());
 
-					for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
-						if (i == AudioDriverManager::get_driver_count() - 1) {
+					for (i = 0; i < ADM_get_driver_count; i++) {
+						if (i == ADM_get_driver_count - 1) {
 							OS::get_singleton()->print(" and ");
 						} else if (i != 0) {
 							OS::get_singleton()->print(", ");
@@ -929,7 +932,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				display_driver = I->next()->get();
 
 				bool found = false;
-				for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+				int DS_get_create_function_count = DisplayServer::get_create_function_count();
+				for (i = 0; i < DS_get_create_function_count; ++i) {
 					if (display_driver == DisplayServer::get_create_function_name(i)) {
 						found = true;
 					}
@@ -939,8 +943,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					OS::get_singleton()->print("Unknown display driver '%s', aborting.\nValid options are ",
 							display_driver.utf8().get_data());
 
-					for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
-						if (i == DisplayServer::get_create_function_count() - 1) {
+					for (i = 0; i < DS_get_create_function_count; ++i) {
+						if (i == DS_get_create_function_count - 1) {
 							OS::get_singleton()->print(" and ");
 						} else if (i != 0) {
 							OS::get_singleton()->print(", ");
@@ -1690,10 +1694,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		// the options in all the display drivers for a match.
 
 		bool found = false;
-		for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+		int DS_get_create_function_count = DisplayServer::get_create_function_count();
+		for (i = 0; i < DS_get_create_function_count; ++i) {
 			Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
 
-			for (int d = 0; d < r_drivers.size(); d++) {
+			int d;
+			int r_drivers_size = r_drivers.size();
+			for (d = 0; d < r_drivers_size; ++d) {
 				if (rendering_driver == r_drivers[d]) {
 					found = true;
 					break;
@@ -1705,7 +1712,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->print("Unknown rendering driver '%s', aborting.\nValid options are ",
 					rendering_driver.utf8().get_data());
 
-			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+			for (i = 0; i < DisplayServer::get_create_function_count(); i++) {
 				Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
 
 				for (int d = 0; d < r_drivers.size(); d++) {
@@ -1745,7 +1752,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			goto error;
 		}
 
-		for (int i = 0; i < available_drivers.size(); i++) {
+		for (i = 0; i < available_drivers.size(); i++) {
 			if (rendering_driver == available_drivers[i]) {
 				valid_combination = true;
 				break;
@@ -1885,7 +1892,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Display driver, e.g. X11, Wayland.
 	// Make sure that headless is the last one, which it is assumed to be by design.
 	DEV_ASSERT(NULL_DISPLAY_DRIVER == DisplayServer::get_create_function_name(DisplayServer::get_create_function_count() - 1));
-	for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
+	for (i = 0; i < DisplayServer::get_create_function_count(); i++) {
 		String name = DisplayServer::get_create_function_name(i);
 		if (display_driver == name) {
 			display_driver_idx = i;
@@ -1910,7 +1917,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Make sure that dummy is the last one, which it is assumed to be by design.
 	DEV_ASSERT(NULL_AUDIO_DRIVER == AudioDriverManager::get_driver(AudioDriverManager::get_driver_count() - 1)->get_name());
-	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {
+	for (i = 0; i < AudioDriverManager::get_driver_count(); i++) {
 		if (audio_driver == AudioDriverManager::get_driver(i)->get_name()) {
 			audio_driver_idx = i;
 			break;
@@ -2169,7 +2176,9 @@ Error Main::setup2() {
 			// We can't use this display server, try other ones as fallback.
 			// Skip headless (always last registered) because that's not what users
 			// would expect if they didn't request it explicitly.
-			for (int i = 0; i < DisplayServer::get_create_function_count() - 1; i++) {
+			int i;
+			int DS_get_create_function_count = DisplayServer::get_create_function_count();
+			for (i = 0; i < DS_get_create_function_count - 1; ++i) {
 				if (i == display_driver_idx) {
 					continue; // Don't try the same twice.
 				}
@@ -2222,7 +2231,9 @@ Error Main::setup2() {
 		}
 	}
 
-	for (int i = 0; i < DisplayServer::get_singleton()->tablet_get_driver_count(); i++) {
+	int DS_get_singleton_tablet_get_driver_count = DisplayServer::get_singleton()->tablet_get_driver_count();
+	int i;
+	for (i = 0; i < DS_get_singleton_tablet_get_driver_count; ++i) {
 		if (tablet_driver == DisplayServer::get_singleton()->tablet_get_driver_name(i)) {
 			DisplayServer::get_singleton()->tablet_set_current_driver(DisplayServer::get_singleton()->tablet_get_driver_name(i));
 			break;
@@ -2403,7 +2414,8 @@ Error Main::setup2() {
 	/* Enum text drivers */
 	GLOBAL_DEF_RST("internationalization/rendering/text_driver", "");
 	String text_driver_options;
-	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+	int TSM_get_singleton_get_interface_count = TextServerManager::get_singleton()->get_interface_count();
+	for (i = 0; i < TSM_get_singleton_get_interface_count; ++i) {
 		const String driver_name = TextServerManager::get_singleton()->get_interface(i)->get_name();
 		if (driver_name == "Dummy") {
 			// Dummy text driver cannot draw any text, making the editor unusable if selected.
@@ -2424,7 +2436,7 @@ Error Main::setup2() {
 
 	if (!text_driver.is_empty()) {
 		/* Load user selected text server. */
-		for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+		for (i = 0; i < TSM_get_singleton_get_interface_count; ++i) {
 			if (TextServerManager::get_singleton()->get_interface(i)->get_name() == text_driver) {
 				text_driver_idx = i;
 				break;
@@ -2435,7 +2447,7 @@ Error Main::setup2() {
 	if (text_driver_idx < 0) {
 		/* If not selected, use one with the most features available. */
 		int max_features = 0;
-		for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+		for (i = 0; i < TSM_get_singleton_get_interface_count; ++i) {
 			uint32_t features = TextServerManager::get_singleton()->get_interface(i)->get_features();
 			int feature_number = 0;
 			while (features) {
@@ -2586,7 +2598,9 @@ bool Main::start() {
 	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
 	List<String> args = OS::get_singleton()->get_cmdline_args();
 
-	for (int i = 0; i < args.size(); i++) {
+	int args_size = args.size();
+	int i;
+	for (i = 0; i < args_size; ++i) {
 		// First check parameters that do not have an argument to the right.
 
 		// Doctest Unit Testing Handler
@@ -2658,7 +2672,7 @@ bool Main::start() {
 				parsed_pair = false;
 			}
 			if (parsed_pair) {
-				i++;
+				++i;
 			}
 		}
 #ifdef TOOLS_ENABLED
@@ -2735,7 +2749,7 @@ bool Main::start() {
 		HashSet<String> checked_paths;
 		print_line("Loading docs...");
 
-		for (int i = 0; i < _doc_data_class_path_count; i++) {
+		for (i = 0; i < _doc_data_class_path_count; ++i) {
 			// Custom modules are always located by absolute path.
 			String path = _doc_data_class_paths[i].path;
 			if (path.is_relative_path()) {
@@ -2973,7 +2987,8 @@ bool Main::start() {
 					const ProjectSettings::AutoloadInfo &info = E.value;
 
 					if (info.is_singleton) {
-						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+						int SS_get_language_count = ScriptServer::get_language_count();
+						for (i = 0; i < SS_get_language_count; ++i) {
 							ScriptServer::get_language(i)->add_global_constant(info.name, Variant());
 						}
 					}
@@ -3022,7 +3037,8 @@ bool Main::start() {
 					to_add.push_back(n);
 
 					if (info.is_singleton) {
-						for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+						int SS_get_language_count = ScriptServer::get_language_count();
+						for (i = 0; i < SS_get_language_count; ++i) {
 							ScriptServer::get_language(i)->add_global_constant(info.name, n);
 						}
 					}
@@ -3297,7 +3313,7 @@ bool Main::iteration() {
 	//for now do not error on this
 	//ERR_FAIL_COND_V(iterating, false);
 
-	iterating++;
+	++iterating;
 
 	const uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 	Engine::get_singleton()->_frame_ticks = ticks;
@@ -3337,7 +3353,9 @@ bool Main::iteration() {
 	// process all our active interfaces
 	XRServer::get_singleton()->_process();
 
-	for (int iters = 0; iters < advance.physics_steps; ++iters) {
+	int iters;
+	int advance_physics_steps = advance.physics_steps;
+	for (iters = 0; iters < advance_physics_steps; ++iters) {
 		if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
 			Input::get_singleton()->flush_buffered_events();
 		}
@@ -3415,7 +3433,9 @@ bool Main::iteration() {
 	process_max = MAX(process_ticks, process_max);
 	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
 
-	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+	int i;
+	int SS_get_language_count = ScriptServer::get_language_count();
+	for (i = 0; i < SS_get_language_count; ++i) {
 		ScriptServer::get_language(i)->frame();
 	}
 
