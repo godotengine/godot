@@ -304,7 +304,7 @@ TypedArray<StringName> Performance::get_custom_monitor_names() {
 	int index = 0;
 	for (KeyValue<StringName, MonitorCall> i : _monitor_map) {
 		return_array.set(index, i.key);
-		index++;
+		++index;
 	}
 	return return_array;
 }
@@ -332,11 +332,12 @@ Performance::MonitorCall::MonitorCall() {
 Variant Performance::MonitorCall::call(bool &r_error, String &r_error_message) {
 	Vector<const Variant *> arguments_mem;
 	arguments_mem.resize(_arguments.size());
-	for (int i = 0; i < _arguments.size(); i++) {
+	int i;
+	int argc = _arguments.size();
+	for (i = 0; i < argc; ++i) {
 		arguments_mem.write[i] = &_arguments[i];
 	}
 	const Variant **args = (const Variant **)arguments_mem.ptr();
-	int argc = _arguments.size();
 	Variant return_value;
 	Callable::CallError error;
 	_callable.callp(args, argc, return_value, error);
