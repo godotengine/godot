@@ -1081,7 +1081,7 @@ void fragment_shader(in SceneData scene_data) {
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
-	if (scene_data.use_reflection_cubemap) {
+	if (scene_data.use_reflection_cubemap || scene_data.use_reflection_color) {
 #ifdef LIGHT_ANISOTROPY_USED
 		// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
 		vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
@@ -1096,19 +1096,24 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
-		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
+
+		if (scene_data.use_reflection_cubemap) {
+			ref_vec = scene_data.radiance_inverse_xform * ref_vec;
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
-		float lod, blend;
+			float lod, blend;
 
-		blend = modf(sqrt(roughness) * MAX_ROUGHNESS_LOD, lod);
-		specular_light = texture(samplerCubeArray(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(ref_vec, lod)).rgb;
-		specular_light = mix(specular_light, texture(samplerCubeArray(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(ref_vec, lod + 1)).rgb, blend);
+			blend = modf(sqrt(roughness) * MAX_ROUGHNESS_LOD, lod);
+			specular_light = texture(samplerCubeArray(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(ref_vec, lod)).rgb;
+			specular_light = mix(specular_light, texture(samplerCubeArray(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(ref_vec, lod + 1)).rgb, blend);
 
 #else
-		specular_light = textureLod(samplerCube(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ref_vec, sqrt(roughness) * MAX_ROUGHNESS_LOD).rgb;
-
+			specular_light = textureLod(samplerCube(radiance_cubemap, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ref_vec, sqrt(roughness) * MAX_ROUGHNESS_LOD).rgb;
 #endif //USE_RADIANCE_CUBEMAP_ARRAY
+		} else if (scene_data.use_reflection_color) {
+			specular_light = scene_data.reflection_color.rgb;
+		}
+
 		specular_light *= scene_data.IBL_exposure_normalization;
 		specular_light *= horizon * horizon;
 		specular_light *= scene_data.ambient_light_color_energy.a;

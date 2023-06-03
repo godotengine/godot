@@ -26,10 +26,12 @@ struct SceneData {
 	mediump mat3 radiance_inverse_xform;
 
 	mediump vec4 ambient_light_color_energy;
+	mediump vec3 reflection_color;
 
 	mediump float ambient_color_sky_mix;
 	bool use_ambient_light;
 	bool use_ambient_cubemap;
+	bool use_reflection_color;
 	bool use_reflection_cubemap;
 
 	highp vec2 shadow_atlas_pixel_size;

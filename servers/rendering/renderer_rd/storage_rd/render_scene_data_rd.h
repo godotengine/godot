@@ -105,10 +105,12 @@ private:
 		float radiance_inverse_xform[12];
 
 		float ambient_light_color_energy[4];
+		float reflection_color[3];
 
 		float ambient_color_sky_mix;
 		uint32_t use_ambient_light;
 		uint32_t use_ambient_cubemap;
+		uint32_t use_reflection_color;
 		uint32_t use_reflection_cubemap;
 
 		float shadow_atlas_pixel_size[2];

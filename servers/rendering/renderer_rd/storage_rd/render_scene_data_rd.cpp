@@ -111,6 +111,7 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 	ubo.material_uv2_mode = material_uv2_mode;
 
 	ubo.fog_enabled = false;
+	ubo.use_reflection_color = false;
 
 	if (p_debug_mode == RS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
 		ubo.use_ambient_light = true;
@@ -162,6 +163,18 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 			ubo.use_reflection_cubemap = true;
 		} else {
 			ubo.use_reflection_cubemap = false;
+
+			if ((ref_src == RS::ENV_REFLECTION_SOURCE_BG && env_bg == RS::ENV_BG_COLOR) ||
+					(ref_src == RS::ENV_REFLECTION_SOURCE_BG && env_bg == RS::ENV_BG_CLEAR_COLOR)) {
+				ubo.use_reflection_color = true;
+
+				Color color = env_bg == RS::ENV_BG_CLEAR_COLOR ? p_default_bg_color : render_scene_render->environment_get_bg_color(p_env);
+				color = color.srgb_to_linear();
+
+				ubo.reflection_color[0] = color.r;
+				ubo.reflection_color[1] = color.g;
+				ubo.reflection_color[2] = color.b;
+			}
 		}
 
 		ubo.fog_enabled = render_scene_render->environment_get_fog_enabled(p_env);
