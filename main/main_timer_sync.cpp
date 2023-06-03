@@ -57,7 +57,7 @@ void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int64_t p_delta
 
 	// First average the delta over NUM_READINGS
 	_estimator_total_delta += p_delta;
-	_estimator_delta_readings++;
+	++_estimator_delta_readings;
 
 	const int NUM_READINGS = 60;
 
@@ -96,7 +96,7 @@ void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int64_t p_delta
 	// increase our confidence in the estimate.
 	if (fps == _estimated_fps) {
 		// note that each hit is an average of NUM_READINGS frames
-		_hits_at_estimated++;
+		++_hits_at_estimated;
 
 		if (_estimate_complete && _hits_at_estimated == 20) {
 			_estimate_locked = true;
@@ -139,16 +139,16 @@ void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int64_t p_delta
 	if (fps < _estimated_fps) {
 		// micro changes
 		if (fps == (_estimated_fps - 1)) {
-			_hits_one_below_estimated++;
+			++_hits_one_below_estimated;
 
 			if ((_hits_one_below_estimated > _hits_at_estimated) && (_hits_one_below_estimated > SIGNIFICANCE_DOWN)) {
-				_estimated_fps--;
+				--_estimated_fps;
 				made_new_estimate();
 			}
 
 			return;
 		} else {
-			_hits_below_estimated++;
+			++_hits_below_estimated;
 
 			// don't allow large lowering if we are established at a refresh rate, as it will probably be dropped frames
 			bool established = _estimate_complete && (_hits_at_estimated > 10);
@@ -159,7 +159,7 @@ void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int64_t p_delta
 			if (!established) {
 				if (((_hits_below_estimated / 8) > _hits_at_estimated) && (_hits_below_estimated > SIGNIFICANCE_DOWN)) {
 					// decrease the estimate
-					_estimated_fps--;
+					--_estimated_fps;
 					made_new_estimate();
 				}
 			}
@@ -171,15 +171,15 @@ void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int64_t p_delta
 	// Changes increasing the estimate.
 	// micro changes
 	if (fps == (_estimated_fps + 1)) {
-		_hits_one_above_estimated++;
+		++_hits_one_above_estimated;
 
 		if ((_hits_one_above_estimated > _hits_at_estimated) && (_hits_one_above_estimated > SIGNIFICANCE_UP)) {
-			_estimated_fps++;
+			++_estimated_fps;
 			made_new_estimate();
 		}
 		return;
 	} else {
-		_hits_above_estimated++;
+		++_hits_above_estimated;
 
 		// macro changes
 		if ((_hits_above_estimated > _hits_at_estimated) && (_hits_above_estimated > SIGNIFICANCE_UP)) {
@@ -197,7 +197,7 @@ void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int64_t p_delta
 
 bool MainTimerSync::DeltaSmoother::fps_allows_smoothing(int64_t p_delta) {
 	_measurement_time += p_delta;
-	_measurement_frame_count++;
+	++_measurement_frame_count;
 
 	if (_measurement_frame_count == _measurement_end_frame) {
 		// only switch on or off if the estimate is complete
@@ -307,18 +307,21 @@ double MainTimerSync::get_physics_jitter_fix() {
 int MainTimerSync::get_average_physics_steps(double &p_min, double &p_max) {
 	p_min = typical_physics_steps[0];
 	p_max = p_min + 1;
+	int i;
+	int iplus1;
 
-	for (int i = 1; i < CONTROL_STEPS; ++i) {
-		const double typical_lower = typical_physics_steps[i];
-		const double current_min = typical_lower / (i + 1);
+	for (i = CONTROL_STEPS; --i; ) {
+		iplus1 = i + 1;
+		const double typical_lower = typical_physics_steps[iplus1];
+		const double current_min = typical_lower / (iplus1 + 1);
 		if (current_min > p_max) {
-			return i; // bail out if further restrictions would void the interval
+			return iplus1; // bail out if further restrictions would void the interval
 		} else if (current_min > p_min) {
 			p_min = current_min;
 		}
-		const double current_max = (typical_lower + 1) / (i + 1);
+		const double current_max = (typical_lower + 1) / (iplus1 + 1);
 		if (current_max < p_min) {
-			return i;
+			return iplus1;
 		} else if (current_max < p_max) {
 			p_max = current_max;
 		}
@@ -343,9 +346,13 @@ MainFrameTime MainTimerSync::advance_core(double p_physics_step, int p_physics_t
 	// given the past recorded steps and typical steps to match, calculate bounds for this
 	// step to be typical
 	bool update_typical = false;
+	int i;
+	int ichange;
+	int steps_left_to_match_typical;
 
-	for (int i = 0; i < CONTROL_STEPS - 1; ++i) {
-		int steps_left_to_match_typical = typical_physics_steps[i + 1] - accumulated_physics_steps[i];
+	for (i = CONTROL_STEPS - 1; --i; ) {
+		ichange = CONTROL_STEPS - 1 - i;
+		steps_left_to_match_typical = typical_physics_steps[ichange + 1] - accumulated_physics_steps[ichange];
 		if (steps_left_to_match_typical > max_typical_steps ||
 				steps_left_to_match_typical + 1 < min_typical_steps) {
 			update_typical = true;
@@ -392,17 +399,19 @@ MainFrameTime MainTimerSync::advance_core(double p_physics_step, int p_physics_t
 	time_accum -= ret.physics_steps * p_physics_step;
 
 	// keep track of accumulated step counts
-	for (int i = CONTROL_STEPS - 2; i >= 0; --i) {
-		accumulated_physics_steps[i + 1] = accumulated_physics_steps[i] + ret.physics_steps;
+	for (i = CONTROL_STEPS - 1; --i; ) {
+		accumulated_physics_steps[i] = accumulated_physics_steps[i - 1] + ret.physics_steps;
 	}
 	accumulated_physics_steps[0] = ret.physics_steps;
 
 	if (update_typical) {
-		for (int i = CONTROL_STEPS - 1; i >= 0; --i) {
-			if (typical_physics_steps[i] > accumulated_physics_steps[i]) {
-				typical_physics_steps[i] = accumulated_physics_steps[i];
-			} else if (typical_physics_steps[i] < accumulated_physics_steps[i] - 1) {
-				typical_physics_steps[i] = accumulated_physics_steps[i] - 1;
+		int iminus1;
+		for (i = CONTROL_STEPS; --i; ) {
+			iminus1 = i - 1;
+			if (typical_physics_steps[iminus1] > accumulated_physics_steps[iminus1]) {
+				typical_physics_steps[iminus1] = accumulated_physics_steps[iminus1];
+			} else if (typical_physics_steps[iminus1] < accumulated_physics_steps[iminus1] - 1) {
+				typical_physics_steps[iminus1] = accumulated_physics_steps[iminus1] - 1;
 			}
 		}
 	}
@@ -497,9 +506,12 @@ double MainTimerSync::get_cpu_process_step() {
 }
 
 MainTimerSync::MainTimerSync() {
-	for (int i = CONTROL_STEPS - 1; i >= 0; --i) {
-		typical_physics_steps[i] = i;
-		accumulated_physics_steps[i] = i;
+	int i;
+	int iminus1;
+	for (i = CONTROL_STEPS; --i; ) {
+		iminus1 = i - 1;
+		typical_physics_steps[iminus1] = iminus1;
+		accumulated_physics_steps[iminus1] = iminus1;
 	}
 }
 
