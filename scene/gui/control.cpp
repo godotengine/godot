@@ -3128,6 +3128,8 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+			data.is_rtl_dirty = true;
+			_size_changed();
 #ifdef TOOLS_ENABLED
 			if (is_part_of_edited_scene()) {
 				// Don't translate Controls on scene when inside editor.
@@ -3136,11 +3138,6 @@ void Control::_notification(int p_notification) {
 			}
 #endif
 			notification(NOTIFICATION_THEME_CHANGED);
-		} break;
-
-		case NOTIFICATION_POST_ENTER_TREE: {
-			data.is_rtl_dirty = true;
-			_size_changed();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
