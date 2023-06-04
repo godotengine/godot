@@ -388,6 +388,7 @@ private:
 		bool embed_subwindows_hint = false;
 
 		Window *subwindow_focused = nullptr;
+		Window *currently_dragged_subwindow = nullptr;
 		SubWindowDrag subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 		Vector2 subwindow_drag_from;
 		Vector2 subwindow_drag_pos;
