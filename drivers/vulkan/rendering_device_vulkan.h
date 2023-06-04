@@ -799,6 +799,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	RID_Owner<RenderPipeline, true> render_pipeline_owner;
 
 	Vector<RID> optimize_pipeline_queue;
+	WorkerThreadPool::TaskID optimized_pipeline_task_id = WorkerThreadPool::INVALID_TASK_ID;
 
 	struct ComputePipeline {
 		RID shader;
@@ -1417,7 +1418,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 #endif
 
 	VkSampleCountFlagBits _ensure_supported_sample_count(TextureSamples p_requested_sample_count) const;
-	void create_optimized_render_pipeline(uint32_t p_thread, Vector<RID> *pipeline_queue);
+	void create_optimized_render_pipeline(Vector<RID> *pipeline_queue);
 
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());
