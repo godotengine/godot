@@ -172,9 +172,11 @@ void Area3D::_initialize_wind() {
 
 	// Overwrite with area-specified info if available
 	if (!wind_source_path.is_empty()) {
-		Node3D *p_wind_source = Object::cast_to<Node3D>(get_node(wind_source_path));
-		ERR_FAIL_NULL(p_wind_source);
-		Transform3D global_transform = p_wind_source->get_transform();
+		Node *wind_source_node = get_node_or_null(wind_source_path);
+		ERR_FAIL_NULL_MSG(wind_source_node, "Path to wind source is invalid: '" + wind_source_path + "'.");
+		Node3D *wind_source_node3d = Object::cast_to<Node3D>(wind_source_node);
+		ERR_FAIL_NULL_MSG(wind_source_node3d, "Path to wind source does not point to a Node3D: '" + wind_source_path + "'.");
+		Transform3D global_transform = wind_source_node3d->get_transform();
 		wind_direction = -global_transform.basis.get_column(Vector3::AXIS_Z).normalized();
 		wind_source = global_transform.origin;
 		temp_magnitude = wind_force_magnitude;

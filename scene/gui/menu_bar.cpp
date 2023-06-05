@@ -209,10 +209,10 @@ void MenuBar::_update_submenu(const String &p_menu_name, PopupMenu *p_child) {
 		if (p_child->is_item_separator(i)) {
 			DisplayServer::get_singleton()->global_menu_add_separator(p_menu_name);
 		} else if (!p_child->get_item_submenu(i).is_empty()) {
-			Node *n = p_child->get_node(p_child->get_item_submenu(i));
-			ERR_FAIL_COND_MSG(!n, "Item subnode does not exist: " + p_child->get_item_submenu(i) + ".");
+			Node *n = p_child->get_node_or_null(p_child->get_item_submenu(i));
+			ERR_FAIL_NULL_MSG(n, "Item subnode does not exist: '" + p_child->get_item_submenu(i) + "'.");
 			PopupMenu *pm = Object::cast_to<PopupMenu>(n);
-			ERR_FAIL_COND_MSG(!pm, "Item subnode is not a PopupMenu: " + p_child->get_item_submenu(i) + ".");
+			ERR_FAIL_NULL_MSG(pm, "Item subnode is not a PopupMenu: '" + p_child->get_item_submenu(i) + "'.");
 
 			DisplayServer::get_singleton()->global_menu_add_submenu_item(p_menu_name, atr(p_child->get_item_text(i)), p_menu_name + "/" + itos(i));
 			_update_submenu(p_menu_name + "/" + itos(i), pm);

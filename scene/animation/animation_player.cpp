@@ -271,7 +271,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 		return;
 	}
 
-	Node *parent = p_root_override ? p_root_override : get_node(root);
+	Node *parent = p_root_override ? p_root_override : get_node_or_null(root);
 
 	ERR_FAIL_NULL(parent);
 

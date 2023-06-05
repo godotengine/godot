@@ -170,12 +170,10 @@ Ref<Image> ViewportTexture::get_image() const {
 }
 
 void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
-	Node *vpn = p_loc_scene->get_node(path);
-	ERR_FAIL_COND_MSG(!vpn, "ViewportTexture: Path to node is invalid.");
-
+	Node *vpn = p_loc_scene->get_node_or_null(path);
+	ERR_FAIL_NULL_MSG(vpn, "Path to node is invalid: '" + path + "'.");
 	vp = Object::cast_to<Viewport>(vpn);
-
-	ERR_FAIL_COND_MSG(!vp, "ViewportTexture: Path to node does not point to a viewport.");
+	ERR_FAIL_NULL_MSG(vp, "Path to node does not point to a viewport: '" + path + "'.");
 
 	vp->viewport_textures.insert(this);
 

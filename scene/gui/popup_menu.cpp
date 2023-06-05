@@ -185,10 +185,10 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 }
 
 void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
-	Node *n = get_node(items[p_over].submenu);
-	ERR_FAIL_COND_MSG(!n, "Item subnode does not exist: " + items[p_over].submenu + ".");
+	Node *n = get_node_or_null(items[p_over].submenu);
+	ERR_FAIL_NULL_MSG(n, "Item subnode does not exist: '" + items[p_over].submenu + "'.");
 	Popup *submenu_popup = Object::cast_to<Popup>(n);
-	ERR_FAIL_COND_MSG(!submenu_popup, "Item subnode is not a Popup: " + items[p_over].submenu + ".");
+	ERR_FAIL_NULL_MSG(submenu_popup, "Item subnode is not a Popup: '" + items[p_over].submenu + "'.");
 	if (submenu_popup->is_visible()) {
 		return; // Already visible.
 	}
