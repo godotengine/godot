@@ -75,15 +75,24 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Separator *sep = nullptr;
 	Button *curve_create = nullptr;
 	Button *curve_edit = nullptr;
+	Button *curve_edit_curve = nullptr;
 	Button *curve_del = nullptr;
 	Button *curve_close = nullptr;
 	MenuButton *handle_menu = nullptr;
+
+	enum Mode {
+		MODE_CREATE,
+		MODE_EDIT,
+		MODE_EDIT_CURVE,
+		MODE_DELETE,
+		ACTION_CLOSE
+	};
 
 	Path3D *path = nullptr;
 
 	void _update_theme();
 
-	void _mode_changed(int p_idx);
+	void _mode_changed(int p_mode);
 	void _close_curve();
 	void _handle_option_pressed(int p_option);
 	bool handle_clicked = false;
