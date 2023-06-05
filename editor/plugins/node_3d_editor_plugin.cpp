@@ -2096,7 +2096,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 		switch (nav_mode) {
 			case NAVIGATION_PAN: {
-				_nav_pan(pan_gesture, pan_gesture->get_delta());
+				_nav_pan(pan_gesture, -pan_gesture->get_delta());
 
 			} break;
 
@@ -2106,7 +2106,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			} break;
 
 			case NAVIGATION_ORBIT: {
-				_nav_orbit(pan_gesture, pan_gesture->get_delta());
+				_nav_orbit(pan_gesture, -pan_gesture->get_delta());
 
 			} break;
 
