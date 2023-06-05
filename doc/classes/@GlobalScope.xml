@@ -908,7 +908,7 @@
 		</method>
 		<method name="push_error" qualifiers="vararg">
 			<description>
-				Pushes an error message to Godot's built-in debugger and to the OS terminal.
+				Pushes an error message to Godot's built-in debugger and to the OS terminal. When used in an [EditorPlugin] or [code]@tool[/code] script, this also displays an error toast in the editor.
 				[codeblocks]
 				[gdscript]
 				push_error("test error") # Prints "test error" to debugger and terminal as error call
@@ -922,7 +922,7 @@
 		</method>
 		<method name="push_warning" qualifiers="vararg">
 			<description>
-				Pushes a warning message to Godot's built-in debugger and to the OS terminal.
+				Pushes a warning message to Godot's built-in debugger and to the OS terminal. When used in an [EditorPlugin] or [code]@tool[/code] script, this also displays a warning toast in the editor.
 				[codeblocks]
 				[gdscript]
 				push_warning("test warning") # Prints "test warning" to debugger and terminal as warning call

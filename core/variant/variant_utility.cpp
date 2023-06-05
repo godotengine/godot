@@ -902,7 +902,8 @@ struct VariantUtilityFunctions {
 			}
 		}
 
-		ERR_PRINT(s);
+		// Display a toast for editor plugins or `@tool` scripts.
+		ERR_PRINT_ED(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
@@ -922,7 +923,8 @@ struct VariantUtilityFunctions {
 			}
 		}
 
-		WARN_PRINT(s);
+		// Display a toast for editor plugins or `@tool` scripts.
+		WARN_PRINT_ED(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
 
