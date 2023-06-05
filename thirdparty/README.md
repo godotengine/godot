@@ -688,7 +688,7 @@ comments and a patch is provided in the squish/ folder.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 1.0.2 (02310c77e5156c36fedf6cf810c4071e3f83906f, 2023)
+- Version: 1.0.4 (7c92b8cd86a378ba5cb7b6d39a336457728dfb82, 2023)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
