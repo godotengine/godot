@@ -268,7 +268,7 @@
 			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
 		</member>
 		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
-			Icon used for the project, set when project loads. Exporters will also use this icon when possible.
+			Icon used for the project, set when project loads. Exporters will also use this icon as a fallback if necessary.
 		</member>
 		<member name="application/config/macos_native_icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon set in [code].icns[/code] format used on macOS to set the game's icon. This is done automatically on start by calling [method DisplayServer.set_native_icon].

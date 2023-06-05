@@ -1677,6 +1677,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			String icon_path;
 			if (p_preset->get("application/icon") != "") {
 				icon_path = p_preset->get("application/icon");
+			} else if (GLOBAL_GET("application/config/macos_native_icon") != "") {
+				icon_path = GLOBAL_GET("application/config/macos_native_icon");
 			} else {
 				icon_path = GLOBAL_GET("application/config/icon");
 			}
