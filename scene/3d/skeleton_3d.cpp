@@ -548,6 +548,7 @@ bool Skeleton3D::is_show_rest_only() const {
 
 void Skeleton3D::clear_bones() {
 	bones.clear();
+	name_to_bone_index.clear();
 	process_order_dirty = true;
 	version++;
 	_make_dirty();
