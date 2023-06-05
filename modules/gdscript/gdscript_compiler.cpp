@@ -2073,6 +2073,10 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 					codegen.generator->write_construct(dst_address, field_type.builtin_type, Vector<GDScriptCodeGenerator::Address>());
 				}
 				// The `else` branch is for objects, in such case we leave it as `null`.
+			} else if (field->initializer == nullptr && field->exported) {
+				// Change default value (if there is no initializer) for untyped exported variables. See GH-74188.
+				// There are currently no annotations that allow you to export typed arrays. In the future, we need to check hint and/or usage flags.
+				codegen.generator->write_construct(dst_address, field->export_info.type, Vector<GDScriptCodeGenerator::Address>());
 			}
 		}
 	}
