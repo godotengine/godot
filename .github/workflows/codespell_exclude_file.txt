@@ -1,0 +1,4 @@
+		param.parm.capture.capability = V4L2_CAP_TIMEPERFRAME;
+		param.parm.capture.timeperframe.numerator = feed_format.frame_numerator;
+		param.parm.capture.timeperframe.denominator = feed_format.frame_denominator;
+
