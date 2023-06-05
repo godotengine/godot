@@ -91,6 +91,7 @@
 #include "tests/scene/test_audio_stream_wav.h"
 #include "tests/scene/test_bit_map.h"
 #include "tests/scene/test_code_edit.h"
+#include "tests/scene/test_color_picker.h"
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_curve_2d.h"
 #include "tests/scene/test_curve_3d.h"
