@@ -5582,11 +5582,8 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			if (mb->get_button_index() == MouseButton::MIDDLE && mb->is_pressed()) {
 				_scene_tab_closed(scene_tabs->get_hovered_tab());
 			}
-		} else {
-			if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
-				_menu_option_confirm(FILE_NEW_SCENE, true);
-			}
 		}
+
 		if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 			// Context menu.
 			scene_tabs_context_menu->clear();
