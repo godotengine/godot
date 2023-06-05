@@ -1728,7 +1728,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						root_motion_scale_accumulator = t->scale;
 					} else if (t->skeleton && t->bone_idx >= 0) {
 						if (t->loc_used) {
-							t->skeleton->set_bone_pose_position(t->bone_idx, t->loc);
+							t->skeleton->set_bone_pose_position(t->bone_idx, t->loc * position_scale);
 						}
 						if (t->rot_used) {
 							t->skeleton->set_bone_pose_rotation(t->bone_idx, t->rot);
@@ -1739,7 +1739,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 					} else if (!t->skeleton) {
 						if (t->loc_used) {
-							t->node_3d->set_position(t->loc);
+							t->node_3d->set_position(t->loc * position_scale);
 						}
 						if (t->rot_used) {
 							t->node_3d->set_rotation(t->rot.get_euler());
@@ -1954,6 +1954,14 @@ void AnimationTree::set_animation_player(const NodePath &p_player) {
 
 NodePath AnimationTree::get_animation_player() const {
 	return animation_player;
+}
+
+void AnimationTree::set_position_scale(real_t p_position_scale) {
+	position_scale = p_position_scale;
+}
+
+real_t AnimationTree::get_position_scale() const {
+	return position_scale;
 }
 
 void AnimationTree::set_advance_expression_base_node(const NodePath &p_advance_expression_base_node) {
@@ -2216,6 +2224,9 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation_player", "root"), &AnimationTree::set_animation_player);
 	ClassDB::bind_method(D_METHOD("get_animation_player"), &AnimationTree::get_animation_player);
 
+	ClassDB::bind_method(D_METHOD("set_position_scale", "position_scale"), &AnimationTree::set_position_scale);
+	ClassDB::bind_method(D_METHOD("get_position_scale"), &AnimationTree::get_position_scale);
+
 	ClassDB::bind_method(D_METHOD("set_advance_expression_base_node", "node"), &AnimationTree::set_advance_expression_base_node);
 	ClassDB::bind_method(D_METHOD("get_advance_expression_base_node"), &AnimationTree::get_advance_expression_base_node);
 
@@ -2242,6 +2253,7 @@ void AnimationTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
 
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_scale"), "set_position_scale", "get_position_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_process_callback", "get_process_callback");
 	ADD_GROUP("Audio", "audio_");

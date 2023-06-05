@@ -318,6 +318,7 @@ private:
 	AnimationProcessCallback process_callback = ANIMATION_PROCESS_IDLE;
 	bool active = false;
 	NodePath animation_player;
+	real_t position_scale = 1.0;
 	int audio_max_polyphony = 32;
 
 	AnimationNode::State state;
@@ -392,6 +393,9 @@ public:
 
 	void set_animation_player(const NodePath &p_player);
 	NodePath get_animation_player() const;
+
+	void set_position_scale(real_t p_position_scale);
+	real_t get_position_scale() const;
 
 	void set_advance_expression_base_node(const NodePath &p_advance_expression_base_node);
 	NodePath get_advance_expression_base_node() const;
