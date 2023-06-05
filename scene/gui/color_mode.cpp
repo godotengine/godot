@@ -117,8 +117,13 @@ float ColorModeHSV::get_slider_max(int idx) const {
 
 float ColorModeHSV::get_slider_value(int idx) const {
 	switch (idx) {
-		case 0:
-			return color_picker->get_pick_color().get_h() * 360.0;
+		case 0: {
+			if (color_picker->get_pick_color().get_s() > 0) {
+				return color_picker->get_pick_color().get_h() * 360.0;
+			} else {
+				return color_picker->get_cached_hue();
+			}
+		}
 		case 1:
 			return color_picker->get_pick_color().get_s() * 100.0;
 		case 2:
@@ -165,7 +170,9 @@ void ColorModeHSV::slider_draw(int p_which) {
 		Color v_col;
 		s_col.set_hsv(color.get_h(), 0, color.get_v());
 		left_color = (p_which == 1) ? s_col : Color(0, 0, 0);
-		s_col.set_hsv(color.get_h(), 1, color.get_v());
+
+		float s_col_hue = (color.get_s() == 0.0) ? color_picker->get_cached_hue() / 360.0 : color.get_h();
+		s_col.set_hsv(s_col_hue, 1, color.get_v());
 		v_col.set_hsv(color.get_h(), color.get_s(), 1);
 		right_color = (p_which == 1) ? s_col : v_col;
 	}
