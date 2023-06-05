@@ -1167,6 +1167,20 @@ void Node::set_name(const String &p_name) {
 	}
 }
 
+// Returns a clear description of this node depending on what is available. Useful for error messages.
+String Node::get_description() const {
+	String description;
+	if (is_inside_tree()) {
+		description = get_path();
+	} else {
+		description = get_name();
+		if (description.is_empty()) {
+			description = get_class();
+		}
+	}
+	return description;
+}
+
 static SafeRefCount node_hrcr_count;
 
 void Node::init_node_hrcr() {
@@ -1596,17 +1610,7 @@ Node *Node::get_node(const NodePath &p_path) const {
 	Node *node = get_node_or_null(p_path);
 
 	if (unlikely(!node)) {
-		// Try to get a clear description of this node in the error message.
-		String desc;
-		if (is_inside_tree()) {
-			desc = get_path();
-		} else {
-			desc = get_name();
-			if (desc.is_empty()) {
-				desc = get_class();
-			}
-		}
-
+		const String desc = get_description();
 		if (p_path.is_absolute()) {
 			ERR_FAIL_V_MSG(nullptr,
 					vformat(R"(Node not found: "%s" (absolute path attempted from "%s").)", p_path, desc));
