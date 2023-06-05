@@ -1109,6 +1109,15 @@ String InputEventJoypadMotion::to_string() {
 	return vformat("InputEventJoypadMotion: axis=%d, axis_value=%.2f", axis, axis_value);
 }
 
+Ref<InputEventJoypadMotion> InputEventJoypadMotion::create_reference(JoyAxis p_axis, float p_value) {
+	Ref<InputEventJoypadMotion> ie;
+	ie.instantiate();
+	ie->set_axis(p_axis);
+	ie->set_axis_value(p_value);
+
+	return ie;
+}
+
 void InputEventJoypadMotion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_axis", "axis"), &InputEventJoypadMotion::set_axis);
 	ClassDB::bind_method(D_METHOD("get_axis"), &InputEventJoypadMotion::get_axis);

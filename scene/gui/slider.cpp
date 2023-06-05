@@ -112,10 +112,21 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
+	Input *input = Input::get_singleton();
+	Ref<InputEventJoypadMotion> joypadmotion_event = p_event;
+	Ref<InputEventJoypadButton> joypadbutton_event = p_event;
+	bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
+
 	if (!mm.is_valid() && !mb.is_valid()) {
 		if (p_event->is_action_pressed("ui_left", true)) {
 			if (orientation != HORIZONTAL) {
 				return;
+			}
+			if (is_joypad_event) {
+				if (!input->is_action_just_pressed("ui_left", true)) {
+					return;
+				}
+				set_process_internal(true);
 			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
@@ -123,18 +134,35 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			if (orientation != HORIZONTAL) {
 				return;
 			}
+			if (is_joypad_event) {
+				if (!input->is_action_just_pressed("ui_right", true)) {
+					return;
+				}
+				set_process_internal(true);
+			}
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_up", true)) {
 			if (orientation != VERTICAL) {
 				return;
 			}
-
+			if (is_joypad_event) {
+				if (!input->is_action_just_pressed("ui_up", true)) {
+					return;
+				}
+				set_process_internal(true);
+			}
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_down", true)) {
 			if (orientation != VERTICAL) {
 				return;
+			}
+			if (is_joypad_event) {
+				if (!input->is_action_just_pressed("ui_down", true)) {
+					return;
+				}
+				set_process_internal(true);
 			}
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
@@ -166,6 +194,39 @@ void Slider::_update_theme_item_cache() {
 
 void Slider::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			Input *input = Input::get_singleton();
+
+			if (input->is_action_just_released("ui_left") || input->is_action_just_released("ui_right") || input->is_action_just_released("ui_up") || input->is_action_just_released("ui_down")) {
+				gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
+				set_process_internal(false);
+				return;
+			}
+
+			gamepad_event_delay_ms -= get_process_delta_time();
+			if (gamepad_event_delay_ms <= 0) {
+				gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
+				if (orientation == HORIZONTAL) {
+					if (input->is_action_pressed("ui_left")) {
+						set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+					}
+
+					if (input->is_action_pressed("ui_right")) {
+						set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+					}
+				} else if (orientation == VERTICAL) {
+					if (input->is_action_pressed("ui_down")) {
+						set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+					}
+
+					if (input->is_action_pressed("ui_up")) {
+						set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+					}
+				}
+			}
+
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
 			queue_redraw();
