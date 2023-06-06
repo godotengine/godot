@@ -224,6 +224,7 @@ struct InstanceData {
 	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)
 	uint layer_mask;
 	vec4 lightmap_uv_scale;
+	vec2 lightmap_texture_size; // Used for bicubic filtering in the scene shader.
 };
 
 layout(set = 1, binding = 2, std430) buffer restrict readonly InstanceDataBuffer {

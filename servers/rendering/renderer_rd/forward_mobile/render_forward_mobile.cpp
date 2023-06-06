@@ -2264,9 +2264,10 @@ RenderGeometryInstance *RenderForwardMobile::geometry_instance_create(RID p_base
 	return ginstance;
 }
 
-void RenderForwardMobile::GeometryInstanceForwardMobile::set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) {
+void RenderForwardMobile::GeometryInstanceForwardMobile::set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index, const Vector2 &p_lightmap_texture_size) {
 	lightmap_instance = p_lightmap_instance;
 	lightmap_uv_scale = p_lightmap_uv_scale;
+	lightmap_texture_size = p_lightmap_texture_size;
 	lightmap_slice_index = p_lightmap_slice_index;
 
 	_mark_dirty();

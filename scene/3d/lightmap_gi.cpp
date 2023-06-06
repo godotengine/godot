@@ -39,12 +39,13 @@
 #include "scene/resources/environment.h"
 #include "scene/resources/sky.h"
 
-void LightmapGIData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance) {
+void LightmapGIData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance, const Vector2 &p_texture_size) {
 	User user;
 	user.path = p_path;
 	user.uv_scale = p_uv_scale;
 	user.slice_index = p_slice_index;
 	user.sub_instance = p_sub_instance;
+	user.texture_size = p_texture_size;
 	users.push_back(user);
 }
 
@@ -72,6 +73,11 @@ int LightmapGIData::get_user_lightmap_slice_index(int p_user) const {
 	return users[p_user].slice_index;
 }
 
+Vector2 LightmapGIData::get_user_lightmap_texture_size(int p_user) const {
+	ERR_FAIL_INDEX_V(p_user, users.size(), Vector2());
+	return users[p_user].texture_size;
+}
+
 void LightmapGIData::clear_users() {
 	users.clear();
 }
@@ -92,6 +98,7 @@ Array LightmapGIData::_get_user_data() const {
 		ret.push_back(users[i].uv_scale);
 		ret.push_back(users[i].slice_index);
 		ret.push_back(users[i].sub_instance);
+		ret.push_back(users[i].texture_size);
 	}
 	return ret;
 }
@@ -1294,12 +1301,12 @@ void LightmapGI::_assign_lightmaps() {
 		if (instance_idx >= 0) {
 			RID instance_id = node->call("get_bake_mesh_instance", instance_idx);
 			if (instance_id.is_valid()) {
-				RS::get_singleton()->instance_geometry_set_lightmap(instance_id, get_instance(), light_data->get_user_lightmap_uv_scale(i), light_data->get_user_lightmap_slice_index(i));
+				RS::get_singleton()->instance_geometry_set_lightmap(instance_id, get_instance(), light_data->get_user_lightmap_uv_scale(i), light_data->get_user_lightmap_slice_index(i), light_data->get_user_lightmap_texture_size(i));
 			}
 		} else {
 			VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(node);
 			ERR_CONTINUE(!vi);
-			RS::get_singleton()->instance_geometry_set_lightmap(vi->get_instance(), get_instance(), light_data->get_user_lightmap_uv_scale(i), light_data->get_user_lightmap_slice_index(i));
+			RS::get_singleton()->instance_geometry_set_lightmap(vi->get_instance(), get_instance(), light_data->get_user_lightmap_uv_scale(i), light_data->get_user_lightmap_slice_index(i), light_data->get_user_lightmap_texture_size(i));
 		}
 	}
 }
@@ -1312,12 +1319,12 @@ void LightmapGI::_clear_lightmaps() {
 		if (instance_idx >= 0) {
 			RID instance_id = node->call("get_bake_mesh_instance", instance_idx);
 			if (instance_id.is_valid()) {
-				RS::get_singleton()->instance_geometry_set_lightmap(instance_id, RID(), Rect2(), 0);
+				RS::get_singleton()->instance_geometry_set_lightmap(instance_id, RID(), Rect2(), 0, Vector2());
 			}
 		} else {
 			VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(node);
 			ERR_CONTINUE(!vi);
-			RS::get_singleton()->instance_geometry_set_lightmap(vi->get_instance(), RID(), Rect2(), 0);
+			RS::get_singleton()->instance_geometry_set_lightmap(vi->get_instance(), RID(), Rect2(), 0, Vector2());
 		}
 	}
 }

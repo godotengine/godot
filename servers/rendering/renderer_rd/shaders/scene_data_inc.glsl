@@ -64,6 +64,4 @@ struct SceneData {
 
 	bool pancake_shadows;
 	uint camera_visible_layers;
-	uint pad2;
-	uint pad3;
 };

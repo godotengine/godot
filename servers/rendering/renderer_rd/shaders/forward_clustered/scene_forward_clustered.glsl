@@ -545,6 +545,68 @@ layout(location = 9) in float dp_clip;
 
 layout(location = 10) in flat uint instance_index_interp;
 
+// #ifdef USE_LIGHTMAP_FILTER_BICUBIC
+
+// w0, w1, w2, and w3 are the four cubic B-spline basis functions
+float w0(float a) {
+	return (1.0 / 6.0) * (a * (a * (-a + 3.0) - 3.0) + 1.0);
+}
+
+float w1(float a) {
+	return (1.0 / 6.0) * (a * a * (3.0 * a - 6.0) + 4.0);
+}
+
+float w2(float a) {
+	return (1.0 / 6.0) * (a * (a * (-3.0 * a + 3.0) + 3.0) + 1.0);
+}
+
+float w3(float a) {
+	return (1.0 / 6.0) * (a * a * a);
+}
+
+// g0 and g1 are the two amplitude functions
+float g0(float a) {
+	return w0(a) + w1(a);
+}
+
+float g1(float a) {
+	return w2(a) + w3(a);
+}
+
+// h0 and h1 are the two offset functions
+float h0(float a) {
+	return -1.0 + w1(a) / (w0(a) + w1(a));
+}
+
+float h1(float a) {
+	return 1.0 + w3(a) / (w2(a) + w3(a));
+}
+
+vec4 textureArray_bicubic(texture2DArray tex, vec3 uv, vec2 texture_size) {
+	// FIXME: Don't hardcode lightmap texture size and pass it via an uniform instead.
+	vec2 texel_size = vec2(1.0) / texture_size;
+
+	uv.xy = uv.xy * texture_size + vec2(0.5);
+
+	vec2 iuv = floor(uv.xy);
+	vec2 fuv = fract(uv.xy);
+
+	float g0x = g0(fuv.x);
+	float g1x = g1(fuv.x);
+	float h0x = h0(fuv.x);
+	float h1x = h1(fuv.x);
+	float h0y = h0(fuv.y);
+	float h1y = h1(fuv.y);
+
+	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5)) * texel_size;
+	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5)) * texel_size;
+	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5)) * texel_size;
+	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5)) * texel_size;
+
+	return (g0(fuv.y) * (g0x * texture(sampler2DArray(tex, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(p0, uv.z)) + g1x * texture(sampler2DArray(tex, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(p1, uv.z)))) +
+		   (g1(fuv.y) * (g0x * texture(sampler2DArray(tex, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(p2, uv.z)) + g1x * texture(sampler2DArray(tex, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(p3, uv.z))));
+}
+
 #ifdef USE_MULTIVIEW
 #ifdef has_VK_KHR_multiview
 #define ViewIndex gl_ViewIndex
@@ -1209,10 +1271,10 @@ void fragment_shader(in SceneData scene_data) {
 
 		if (uses_sh) {
 			uvw.z *= 4.0; //SH textures use 4 times more data
-			vec3 lm_light_l0 = textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw + vec3(0.0, 0.0, 0.0), 0.0).rgb;
-			vec3 lm_light_l1n1 = textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw + vec3(0.0, 0.0, 1.0), 0.0).rgb;
-			vec3 lm_light_l1_0 = textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw + vec3(0.0, 0.0, 2.0), 0.0).rgb;
-			vec3 lm_light_l1p1 = textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb;
+			vec3 lm_light_l0 = textureArray_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 0.0), instances.data[instance_index].lightmap_texture_size).rgb;
+			vec3 lm_light_l1n1 = textureArray_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 1.0), instances.data[instance_index].lightmap_texture_size).rgb;
+			vec3 lm_light_l1_0 = textureArray_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 2.0), instances.data[instance_index].lightmap_texture_size).rgb;
+			vec3 lm_light_l1p1 = textureArray_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 3.0), instances.data[instance_index].lightmap_texture_size).rgb;
 
 			uint idx = instances.data[instance_index].gi_offset >> 20;
 			vec3 n = normalize(lightmaps.data[idx].normal_xform * normal);
@@ -1231,7 +1293,7 @@ void fragment_shader(in SceneData scene_data) {
 
 		} else {
 			uint idx = instances.data[instance_index].gi_offset >> 20;
-			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw, 0.0).rgb * lightmaps.data[idx].exposure_normalization;
+			ambient_light += textureArray_bicubic(lightmap_textures[ofs], uvw, instances.data[instance_index].lightmap_texture_size).rgb * lightmaps.data[idx].exposure_normalization;
 		}
 	}
 #else
