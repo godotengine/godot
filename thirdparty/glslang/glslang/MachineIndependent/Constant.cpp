@@ -212,9 +212,9 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
 
             case EbtInt64:
                 if (rightUnionArray[i] == 0ll)
-                    newConstArray[i].setI64Const(0x7FFFFFFFFFFFFFFFll);
-                else if (rightUnionArray[i].getI64Const() == -1 && leftUnionArray[i].getI64Const() == (long long)-0x8000000000000000ll)
-                    newConstArray[i].setI64Const((long long)-0x8000000000000000ll);
+                    newConstArray[i].setI64Const(LLONG_MAX);
+                else if (rightUnionArray[i].getI64Const() == -1 && leftUnionArray[i].getI64Const() == LLONG_MIN)
+                    newConstArray[i].setI64Const(LLONG_MIN);
                 else
                     newConstArray[i].setI64Const(leftUnionArray[i].getI64Const() / rightUnionArray[i].getI64Const());
                 break;
@@ -226,7 +226,7 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
                     newConstArray[i].setU64Const(leftUnionArray[i].getU64Const() / rightUnionArray[i].getU64Const());
                 break;
             default:
-                return 0;
+                return nullptr;
 #endif
             }
         }
@@ -354,7 +354,7 @@ TIntermTyped* TIntermConstantUnion::fold(TOperator op, const TIntermTyped* right
         break;
 
     default:
-        return 0;
+        return nullptr;
     }
 
     TIntermConstantUnion *newNode = new TIntermConstantUnion(newConstArray, returnType);
@@ -1345,7 +1345,7 @@ TIntermTyped* TIntermediate::foldDereference(TIntermTyped* node, int index, cons
 {
     TType dereferencedType(node->getType(), index);
     dereferencedType.getQualifier().storage = EvqConst;
-    TIntermTyped* result = 0;
+    TIntermTyped* result = nullptr;
     int size = dereferencedType.computeNumComponents();
 
     // arrays, vectors, matrices, all use simple multiplicative math
@@ -1365,7 +1365,7 @@ TIntermTyped* TIntermediate::foldDereference(TIntermTyped* node, int index, cons
 
     result = addConstantUnion(TConstUnionArray(node->getAsConstantUnion()->getConstArray(), start, size), node->getType(), loc);
 
-    if (result == 0)
+    if (result == nullptr)
         result = node;
     else
         result->setType(dereferencedType);
@@ -1387,7 +1387,7 @@ TIntermTyped* TIntermediate::foldSwizzle(TIntermTyped* node, TSwizzleSelectors<T
 
     TIntermTyped* result = addConstantUnion(constArray, node->getType(), loc);
 
-    if (result == 0)
+    if (result == nullptr)
         result = node;
     else
         result->setType(TType(node->getBasicType(), EvqConst, selectors.size()));

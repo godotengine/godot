@@ -33,7 +33,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
+#if !defined(GLSLANG_WEB)
 
 #include "../Include/Common.h"
 #include "reflection.h"
@@ -682,7 +682,7 @@ public:
     }
 
     // For a binary operation indexing into an aggregate, chase down the base of the aggregate.
-    // Return 0 if the topology does not fit this situation.
+    // Return nullptr if the topology does not fit this situation.
     TIntermSymbol* findBase(const TIntermBinary* node)
     {
         TIntermSymbol *base = node->getLeft()->getAsSymbolNode();
@@ -1271,4 +1271,4 @@ void TReflection::dump()
 
 } // end namespace glslang
 
-#endif // !GLSLANG_WEB && !GLSLANG_ANGLE
+#endif // !GLSLANG_WEB

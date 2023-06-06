@@ -113,7 +113,7 @@ HANDLE GlobalLock;
 
 void InitGlobalLock()
 {
-    GlobalLock = CreateMutex(0, false, 0);
+    GlobalLock = CreateMutex(nullptr, false, nullptr);
 }
 
 void GetGlobalLock()
@@ -128,7 +128,7 @@ void ReleaseGlobalLock()
 
 unsigned int __stdcall EnterGenericThread (void* entry)
 {
-    return ((TThreadEntrypoint)entry)(0);
+    return ((TThreadEntrypoint)entry)(nullptr);
 }
 
 //#define DUMP_COUNTERS
