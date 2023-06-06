@@ -56,6 +56,9 @@ void TexturePreview::_notification(int p_what) {
 
 			checkerboard->set_texture(get_theme_icon(SNAME("Checkerboard"), SNAME("EditorIcons")));
 		} break;
+		case NOTIFICATION_PROCESS: {
+			queue_redraw();
+		} break;
 	}
 }
 
@@ -148,6 +151,11 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		metadata_label->set_v_size_flags(Control::SIZE_SHRINK_END);
 
 		add_child(metadata_label);
+	}
+
+	Ref<AnimatedTexture> at = texture_display->get_texture();
+	if (!at.is_null()) {
+		set_process(true);
 	}
 }
 
