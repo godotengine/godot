@@ -106,7 +106,7 @@ void Camera3D::_notification(int p_what) {
 			// and Spatial will handle it first, including clearing its reference to the Viewport,
 			// therefore making it impossible to subclasses to access it
 			viewport = get_viewport();
-			ERR_FAIL_COND(!viewport);
+			ERR_FAIL_NULL(viewport);
 
 			bool first_camera = viewport->_camera_3d_add(this);
 			if (current || first_camera) {
@@ -454,7 +454,7 @@ Ref<CameraAttributes> Camera3D::get_attributes() const {
 
 void Camera3D::_attributes_changed() {
 	CameraAttributesPhysical *physical_attributes = Object::cast_to<CameraAttributesPhysical>(attributes.ptr());
-	ERR_FAIL_COND(!physical_attributes);
+	ERR_FAIL_NULL(physical_attributes);
 
 	fov = physical_attributes->get_fov();
 	near = physical_attributes->get_near();

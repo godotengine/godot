@@ -3180,7 +3180,7 @@ void Control::_notification(int p_notification) {
 			} else {
 				// Is a regular root control or top_level.
 				Viewport *viewport = get_viewport();
-				ERR_FAIL_COND(!viewport);
+				ERR_FAIL_NULL(viewport);
 				data.RI = viewport->_gui_add_root_control(this);
 
 				get_parent()->connect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty), CONNECT_REFERENCE_COUNTED);
@@ -3193,7 +3193,7 @@ void Control::_notification(int p_notification) {
 			} else {
 				// Connect viewport.
 				Viewport *viewport = get_viewport();
-				ERR_FAIL_COND(!viewport);
+				ERR_FAIL_NULL(viewport);
 				viewport->connect("size_changed", callable_mp(this, &Control::_size_changed));
 			}
 		} break;
@@ -3205,7 +3205,7 @@ void Control::_notification(int p_notification) {
 			} else {
 				// Disconnect viewport.
 				Viewport *viewport = get_viewport();
-				ERR_FAIL_COND(!viewport);
+				ERR_FAIL_NULL(viewport);
 				viewport->disconnect("size_changed", callable_mp(this, &Control::_size_changed));
 			}
 

@@ -443,7 +443,7 @@ void SceneTree::set_group(const StringName &p_group, const String &p_name, const
 }
 
 void SceneTree::initialize() {
-	ERR_FAIL_COND(!root);
+	ERR_FAIL_NULL(root);
 	initialized = true;
 	root->_set_tree(this);
 	MainLoop::initialize();
@@ -1095,7 +1095,7 @@ bool SceneTree::ProcessGroupSort::operator()(const ProcessGroup *p_left, const P
 void SceneTree::_remove_process_group(Node *p_node) {
 	_THREAD_SAFE_METHOD_
 	ProcessGroup *pg = (ProcessGroup *)p_node->data.process_group;
-	ERR_FAIL_COND(!pg);
+	ERR_FAIL_NULL(pg);
 	ERR_FAIL_COND(pg->removed);
 	pg->removed = true;
 	pg->owner = nullptr;
@@ -1105,7 +1105,7 @@ void SceneTree::_remove_process_group(Node *p_node) {
 
 void SceneTree::_add_process_group(Node *p_node) {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND(!p_node);
+	ERR_FAIL_NULL(p_node);
 
 	ProcessGroup *pg = memnew(ProcessGroup);
 
@@ -1419,7 +1419,7 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	ERR_FAIL_COND_V_MSG(p_scene.is_null(), ERR_INVALID_PARAMETER, "Can't change to a null scene. Use unload_current_scene() if you wish to unload it.");
 
 	Node *new_scene = p_scene->instantiate();
-	ERR_FAIL_COND_V(!new_scene, ERR_CANT_CREATE);
+	ERR_FAIL_NULL_V(new_scene, ERR_CANT_CREATE);
 
 	call_deferred(SNAME("_change_scene"), new_scene);
 	return OK;
@@ -1427,7 +1427,7 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 
 Error SceneTree::reload_current_scene() {
 	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), ERR_INVALID_PARAMETER, "Reloading scene can only be done from the main thread.");
-	ERR_FAIL_COND_V(!current_scene, ERR_UNCONFIGURED);
+	ERR_FAIL_NULL_V(current_scene, ERR_UNCONFIGURED);
 	String fname = current_scene->get_scene_file_path();
 	return change_scene_to_file(fname);
 }

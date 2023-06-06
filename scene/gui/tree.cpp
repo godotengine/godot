@@ -992,7 +992,7 @@ void TreeItem::validate_cache() const {
 void TreeItem::move_before(TreeItem *p_item) {
 	ERR_FAIL_NULL(p_item);
 	ERR_FAIL_COND(is_root);
-	ERR_FAIL_COND(!p_item->parent);
+	ERR_FAIL_NULL(p_item->parent);
 
 	if (p_item == this) {
 		return;
@@ -1037,7 +1037,7 @@ void TreeItem::move_before(TreeItem *p_item) {
 void TreeItem::move_after(TreeItem *p_item) {
 	ERR_FAIL_NULL(p_item);
 	ERR_FAIL_COND(is_root);
-	ERR_FAIL_COND(!p_item->parent);
+	ERR_FAIL_NULL(p_item->parent);
 
 	if (p_item == this) {
 		return;
@@ -1400,7 +1400,7 @@ bool TreeItem::is_folding_disabled() const {
 Size2 TreeItem::get_minimum_size(int p_column) {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), Size2());
 	Tree *parent_tree = get_tree();
-	ERR_FAIL_COND_V(!parent_tree, Size2());
+	ERR_FAIL_NULL_V(parent_tree, Size2());
 
 	const TreeItem::Cell &cell = cells[p_column];
 
@@ -3916,7 +3916,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 bool Tree::edit_selected(bool p_force_edit) {
 	TreeItem *s = get_selected();
-	ERR_FAIL_COND_V_MSG(!s, false, "No item selected.");
+	ERR_FAIL_NULL_V_MSG(s, false, "No item selected.");
 	ensure_cursor_is_visible();
 	int col = get_selected_column();
 	ERR_FAIL_INDEX_V_MSG(col, columns.size(), false, "No item column selected.");
@@ -4338,7 +4338,7 @@ TreeItem *Tree::create_item(TreeItem *p_parent, int p_index) {
 		if (!root) {
 			// No root exists, make the given item the new root.
 			ti = memnew(TreeItem(this));
-			ERR_FAIL_COND_V(!ti, nullptr);
+			ERR_FAIL_NULL_V(ti, nullptr);
 			ti->cells.resize(columns.size());
 			ti->is_root = true;
 			root = ti;
@@ -4572,7 +4572,7 @@ TreeItem *Tree::get_selected() const {
 
 void Tree::set_selected(TreeItem *p_item, int p_column) {
 	ERR_FAIL_INDEX(p_column, columns.size());
-	ERR_FAIL_COND(!p_item);
+	ERR_FAIL_NULL(p_item);
 	select_single_item(p_item, get_root(), p_column);
 }
 

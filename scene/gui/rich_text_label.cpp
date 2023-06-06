@@ -3599,7 +3599,7 @@ void RichTextLabel::pop() {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
-	ERR_FAIL_COND(!current->parent);
+	ERR_FAIL_NULL(current->parent);
 
 	if (current->type == ITEM_FRAME) {
 		current_frame = static_cast<ItemFrame *>(current)->parent_frame;

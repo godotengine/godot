@@ -162,14 +162,14 @@ TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {
 void PhysicsBody2D::add_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
-	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two nodes that inherit from PhysicsBody2D.");
+	ERR_FAIL_NULL_MSG(physics_body, "Collision exception only works between two nodes that inherit from PhysicsBody2D.");
 	PhysicsServer2D::get_singleton()->body_add_collision_exception(get_rid(), physics_body->get_rid());
 }
 
 void PhysicsBody2D::remove_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
-	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two nodes that inherit from PhysicsBody2D.");
+	ERR_FAIL_NULL_MSG(physics_body, "Collision exception only works between two nodes that inherit from PhysicsBody2D.");
 	PhysicsServer2D::get_singleton()->body_remove_collision_exception(get_rid(), physics_body->get_rid());
 }
 
@@ -323,9 +323,8 @@ AnimatableBody2D::AnimatableBody2D() :
 void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
-	ERR_FAIL_COND(!node);
-
-	ERR_FAIL_COND(!contact_monitor);
+	ERR_FAIL_NULL(node);
+	ERR_FAIL_NULL(contact_monitor);
 	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(E->value.in_scene);
@@ -345,8 +344,8 @@ void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 void RigidBody2D::_body_exit_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
-	ERR_FAIL_COND(!node);
-	ERR_FAIL_COND(!contact_monitor);
+	ERR_FAIL_NULL(node);
+	ERR_FAIL_NULL(contact_monitor);
 	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(!E->value.in_scene);
@@ -370,7 +369,7 @@ void RigidBody2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 	Object *obj = ObjectDB::get_instance(objid);
 	Node *node = Object::cast_to<Node>(obj);
 
-	ERR_FAIL_COND(!contact_monitor);
+	ERR_FAIL_NULL(contact_monitor);
 	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(objid);
 
 	ERR_FAIL_COND(!body_in && !E);
@@ -849,7 +848,7 @@ RigidBody2D::CCDMode RigidBody2D::get_continuous_collision_detection_mode() cons
 }
 
 TypedArray<Node2D> RigidBody2D::get_colliding_bodies() const {
-	ERR_FAIL_COND_V(!contact_monitor, TypedArray<Node2D>());
+	ERR_FAIL_NULL_V(contact_monitor, TypedArray<Node2D>());
 
 	TypedArray<Node2D> ret;
 	ret.resize(contact_monitor->body_map.size());

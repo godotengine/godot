@@ -66,7 +66,7 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const 
 
 double AnimationNodeAnimation::_process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only) {
 	AnimationPlayer *ap = state->player;
-	ERR_FAIL_COND_V(!ap, 0);
+	ERR_FAIL_NULL_V(ap, 0);
 
 	double cur_time = get_parameter(time);
 
