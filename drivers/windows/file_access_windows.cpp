@@ -91,16 +91,23 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 	path_src = p_path;
 	path = fix_path(p_path);
 
-	const WCHAR *mode_string;
+	String mode_string = U"";
 
-	if (p_mode_flags == READ) {
-		mode_string = L"rb";
-	} else if (p_mode_flags == WRITE) {
-		mode_string = L"wb";
-	} else if (p_mode_flags == READ_WRITE) {
-		mode_string = L"rb+";
-	} else if (p_mode_flags == WRITE_READ) {
-		mode_string = L"wb+";
+	if (p_mode_flags & ModeBitFields::TEMPORARY_FIELD) {
+		mode_string += U"D";
+	}
+	if (p_mode_flags & ModeBitFields::READ_FIELD) {
+		mode_string += U"rb";
+		if (p_mode_flags & ModeBitFields::APPEND_FIELD) {
+			mode_string += U"+";
+		}
+	} else if (p_mode_flags & ModeBitFields::WRITE_FIELD) {
+		mode_string += U"wb";
+		if (p_mode_flags & ModeBitFields::APPEND_FIELD) {
+			mode_string += U"+";
+		}
+	} else if (p_mode_flags & ModeBitFields::APPEND_FIELD) {
+		mode_string += U"ab+";
 	} else {
 		return ERR_INVALID_PARAMETER;
 	}
@@ -147,7 +154,7 @@ Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 		path = tmpFileName;
 	}
 
-	f = _wfsopen((LPCWSTR)(path.utf16().get_data()), mode_string, is_backup_save_enabled() ? _SH_SECURE : _SH_DENYNO);
+	f = _wfsopen((LPCWSTR)(path.utf16().get_data()), (const wchar_t *)mode_string.utf16().get_data(), is_backup_save_enabled() ? _SH_SECURE : _SH_DENYNO);
 
 	if (f == nullptr) {
 		switch (errno) {

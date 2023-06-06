@@ -82,6 +82,7 @@ void OS_MacOS::initialize_core() {
 	DirAccess::make_default<DirAccessMacOS>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessMacOS>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessMacOS>(DirAccess::ACCESS_FILESYSTEM);
+	DirAccess::make_default<DirAccessMacOS>(DirAccess::ACCESS_TEMPORARY);
 }
 
 void OS_MacOS::finalize() {
@@ -247,6 +248,10 @@ String OS_MacOS::get_bundle_icon_path() const {
 // Get properly capitalized engine name for system paths
 String OS_MacOS::get_godot_dir_name() const {
 	return String(VERSION_SHORT_NAME).capitalize();
+}
+
+String OS_MacOS::get_temporary_dir() const {
+	return String::utf8([NSTemporaryDirectory() UTF8String]);
 }
 
 String OS_MacOS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {

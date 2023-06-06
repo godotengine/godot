@@ -50,14 +50,34 @@ public:
 		ACCESS_RESOURCES,
 		ACCESS_USERDATA,
 		ACCESS_FILESYSTEM,
+		ACCESS_TEMPORARY,
 		ACCESS_MAX
 	};
 
+	enum ModeBitFields {
+		READ_FIELD = 1, // r
+		WRITE_FIELD = 2, // w
+		APPEND_FIELD = 4, // a
+		TEMPORARY_FIELD = 8, // D
+		//TEXT_FIELD = 16 // t/b
+	};
 	enum ModeFlags {
-		READ = 1,
-		WRITE = 2,
-		READ_WRITE = 3,
-		WRITE_READ = 7,
+		//Dawr - Temporary Append Write Read MSB->LSB
+		READ = ModeBitFields::READ_FIELD, // 0001(1) rb
+		WRITE = ModeBitFields::WRITE_FIELD, // 0010(2) wb
+		//READ_WRITE = ModeBitFields::READ_FIELD | ModeBitFields::WRITE_FIELD, // 0011(3) rwb(invalid)
+		APPEND = ModeBitFields::APPEND_FIELD, // 0100(4) ab+
+		READ_WRITE = ModeBitFields::READ_FIELD | ModeBitFields::APPEND_FIELD, // 0101(5) rb+
+		WRITE_READ = ModeBitFields::WRITE_FIELD | ModeBitFields::APPEND_FIELD, // 0110(6) wb+
+		//APPEND_WRITE_READ = ModeBitFields::APPEND_FIELD | ModeBitFields::WRITE_FIELD | ModeBitFields::READ_FIELD, // 0111(7) rwb+(invalid)
+		//TEMPORARY = ModeBitFields::TEMPORARY_FIELD, // 1000(8) D(invalid)
+		TEMPORARY_READ = ModeBitFields::TEMPORARY_FIELD | READ, // 1001(9) Drb
+		TEMPORARY_WRITE = ModeBitFields::TEMPORARY_FIELD | WRITE, // 1010(A) Dwb
+		//TEMPORARY_READ_WRITE = ModeBitFields::TEMPORARY_FIELD | READ | WRITE, // 1011(B) Drwb(invalid)
+		TEMPORARY_APPEND = ModeBitFields::TEMPORARY_FIELD | ModeBitFields::APPEND_FIELD, // 1100(C) Dab+
+		TEMPORARY_READ_WRITE = ModeBitFields::TEMPORARY_FIELD | READ_WRITE, // 1101(D) Drb+
+		TEMPORARY_WRITE_READ = ModeBitFields::TEMPORARY_FIELD | WRITE_READ, // 1110(E) Dwb+
+		//TEMPORARY_APPEND_WRITE_READ = ModeBitFields::TEMPORARY_FIELD | WRITE_READ | READ, // 1111(F) Drwb+(invalid)
 	};
 
 	enum CompressionMode {
@@ -180,6 +200,7 @@ public:
 	static Ref<FileAccess> open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
 	static Ref<FileAccess> open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, const String &p_pass);
 	static Ref<FileAccess> open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode = COMPRESSION_FASTLZ);
+	static Ref<FileAccess> open_temporary(const String &p_path, ModeFlags p_mode_flags);
 	static Error get_open_error();
 
 	static CreateFunc get_create_func(AccessType p_access);

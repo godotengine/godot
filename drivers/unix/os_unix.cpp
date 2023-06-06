@@ -726,6 +726,26 @@ String OS_Unix::get_user_data_dir() const {
 	return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join("[unnamed project]");
 }
 
+String OS_Unix::get_temporary_dir() const {
+	const char *env_paths[] = { "TMPDIR", "TMP", "TEMP", "TEMPDIR" };
+	const char *ret = nullptr;
+	String r = "";
+	for (const char *ep : env_paths) {
+		if ((ret = getenv(ep))) {
+			break;
+		}
+	}
+	if (ret == nullptr) {
+#if defined(__ANDROID_API__)
+		ret = "/data/local/tmp";
+#else
+		ret = "/tmp";
+#endif
+	}
+	r.parse_utf8(ret);
+	return r;
+}
+
 String OS_Unix::get_executable_path() const {
 #ifdef __linux__
 	//fix for running from a symlink

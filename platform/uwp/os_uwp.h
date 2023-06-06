@@ -218,6 +218,7 @@ public:
 
 	virtual void move_window_to_foreground();
 	virtual String get_user_data_dir() const;
+	virtual String get_temporary_dir() const override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 

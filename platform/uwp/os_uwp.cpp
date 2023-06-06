@@ -131,9 +131,11 @@ void OS_UWP::initialize_core() {
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_FILESYSTEM);
+	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_TEMPORARY);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
+	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_TEMPORARY);
 
 	NetSocketPosix::make_default();
 
@@ -807,6 +809,12 @@ String OS_UWP::get_user_data_dir() const {
 	Windows::Storage::StorageFolder ^ data_folder = Windows::Storage::ApplicationData::Current->LocalFolder;
 
 	return String(data_folder->Path->Data()).replace("\\", "/");
+}
+
+String OS_UWP::get_temporary_dir const {
+	Windows::Storage::StorageFolder ^ temp_folder = Windows::Storage::ApplicationData::Current->TemporaryFolder;
+
+	return String(temp_folder->Path->Data()).replace("\\", "/");
 }
 
 bool OS_UWP::_check_internal_feature_support(const String &p_feature) {

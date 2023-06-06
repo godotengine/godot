@@ -92,6 +92,7 @@ public:
 
 	virtual String get_executable_path() const override;
 	virtual String get_user_data_dir() const override;
+	virtual String get_temporary_dir() const override;
 };
 
 class UnixTerminalLogger : public StdLogger {

@@ -265,6 +265,7 @@ public:
 
 	virtual String get_user_data_dir() const;
 	virtual String get_resource_dir() const;
+	virtual String get_temporary_dir() const;
 
 	enum SystemDir {
 		SYSTEM_DIR_DESKTOP,

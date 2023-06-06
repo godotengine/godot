@@ -177,9 +177,11 @@ void OS_Windows::initialize() {
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_FILESYSTEM);
+	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_TEMPORARY);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
+	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_TEMPORARY);
 
 	NetSocketPosix::make_default();
 
@@ -1625,6 +1627,23 @@ String OS_Windows::get_user_data_dir() const {
 	}
 
 	return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join("[unnamed project]");
+}
+
+String OS_Windows::get_temporary_dir() const {
+	DWORD tmp_length;
+	DWORD buffer_length;
+	wchar_t *buffer = nullptr;
+	String tmp_dir = "";
+
+	buffer_length = GetTempPathW(0, buffer);
+	ERR_FAIL_COND_V_MSG(buffer_length <= 0, OS::get_temporary_dir(), "Failed to get valid buffer size for temporary path via GetTempPathW().");
+	buffer = (wchar_t *)(malloc((buffer_length + 1) * sizeof(buffer[0])));
+	ERR_FAIL_COND_V_MSG(!buffer, OS::get_temporary_dir(), "Failed to allocate enough memory in buffer for temporary path via GetTempPathW().");
+	tmp_length = GetTempPathW(buffer_length, buffer);
+	ERR_FAIL_COND_V_MSG((tmp_length + 1) != buffer_length, OS::get_temporary_dir(), "Failed to read temporary path via GetTempPathW().");
+	tmp_dir = String(buffer, buffer_length).replace("\\", "/");
+	free(buffer);
+	return tmp_dir;
 }
 
 String OS_Windows::get_unique_id() const {

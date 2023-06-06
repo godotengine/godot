@@ -464,11 +464,26 @@
 		<constant name="WRITE" value="2" enum="ModeFlags">
 			Opens the file for write operations. The file is created if it does not exist, and truncated if it does.
 		</constant>
-		<constant name="READ_WRITE" value="3" enum="ModeFlags">
+		<constant name="APPEND" value="4" enum="ModeFlags">
+			Opens the file for append operations. The file is created if it does not exist, does not truncate the file. All write operations occur at the end of the file. Reading operations are allowed(+).
+		</constant>
+		<constant name="READ_WRITE" value="5" enum="ModeFlags">
 			Opens the file for read and write operations. Does not truncate the file. The cursor is positioned at the beginning of the file.
 		</constant>
-		<constant name="WRITE_READ" value="7" enum="ModeFlags">
+		<constant name="WRITE_READ" value="6" enum="ModeFlags">
 			Opens the file for read and write operations. The file is created if it does not exist, and truncated if it does. The cursor is positioned at the beginning of the file.
+		</constant>
+		<constant name="TEMPORARY_READ" value="9" enum="ModeFlags">
+			Opens the file for read operations. The cursor is positioned at the beginning of the file. File is deleted after all handles are closed.
+		</constant>
+		<constant name="TEMPORARY_WRITE" value="10" enum="ModeFlags">
+			Opens the file for write operations. The file is created if it does not exist, and truncated if it does. File is deleted after all handles are closed.
+		</constant>
+		<constant name="TEMPORARY_READ_WRITE" value="13" enum="ModeFlags">
+			Opens the file for read and write operations. Does not truncate the file. The cursor is positioned at the beginning of the file. File is deleted after all handles are closed.
+		</constant>
+		<constant name="TEMPORARY_WRITE_READ" value="14" enum="ModeFlags">
+			Opens the file for read and write operations. The file is created if it does not exist, and truncated if it does. The cursor is positioned at the beginning of the file. File is deleted after all handles are closed.
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">
 			Uses the [url=https://fastlz.org/]FastLZ[/url] compression method.

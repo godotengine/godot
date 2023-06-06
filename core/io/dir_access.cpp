@@ -44,6 +44,8 @@ String DirAccess::_get_root_path() const {
 			return ProjectSettings::get_singleton()->get_resource_path();
 		case ACCESS_USERDATA:
 			return OS::get_singleton()->get_user_data_dir();
+		case ACCESS_TEMPORARY:
+			return OS::get_singleton()->get_temporary_dir();
 		default:
 			return "";
 	}
@@ -55,6 +57,8 @@ String DirAccess::_get_root_string() const {
 			return "res://";
 		case ACCESS_USERDATA:
 			return "user://";
+		case ACCESS_TEMPORARY:
+			return "tmp://";
 		default:
 			return "";
 	}
@@ -154,6 +158,8 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 		base = "res://";
 	} else if (full_dir.begins_with("user://")) {
 		base = "user://";
+	} else if (full_dir.begins_with("tmp://")) {
+		base = "tmp://";
 	} else if (full_dir.is_network_share_path()) {
 		int pos = full_dir.find("/", 2);
 		ERR_FAIL_COND_V(pos < 0, ERR_INVALID_PARAMETER);
@@ -212,6 +218,16 @@ String DirAccess::fix_path(String p_path) const {
 			}
 
 		} break;
+		case ACCESS_TEMPORARY: {
+			if (p_path.begins_with("tmp://")) {
+				String data_dir = OS::get_singleton()->get_temporary_dir();
+				if (!data_dir.is_empty()) {
+					return p_path.replace_first("tmp://", data_dir);
+				}
+				return p_path.replace_first("tmp://", "");
+			}
+
+		} break;
 		case ACCESS_FILESYSTEM: {
 			return p_path;
 		} break;
@@ -230,6 +246,8 @@ Ref<DirAccess> DirAccess::create_for_path(const String &p_path) {
 		da = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		da = create(ACCESS_USERDATA);
+	} else if (p_path.begins_with("tmp://")) {
+		da = create(ACCESS_TEMPORARY);
 	} else {
 		da = create(ACCESS_FILESYSTEM);
 	}
@@ -317,6 +335,8 @@ Ref<DirAccess> DirAccess::create(AccessType p_access) {
 			da->change_dir("res://");
 		} else if (p_access == ACCESS_USERDATA) {
 			da->change_dir("user://");
+		} else if (p_access == ACCESS_TEMPORARY) {
+			da->change_dir("tmp://");
 		}
 	}
 

@@ -75,7 +75,8 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 		ret = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		ret = create(ACCESS_USERDATA);
-
+	} else if (p_path.begins_with("tmp://")) {
+		ret = create(ACCESS_TEMPORARY);
 	} else {
 		ret = create(ACCESS_FILESYSTEM);
 	}
@@ -169,6 +170,11 @@ Ref<FileAccess> FileAccess::open_compressed(const String &p_path, ModeFlags p_mo
 	return fac;
 }
 
+Ref<FileAccess> FileAccess::open_temporary(const String &p_path, ModeFlags p_mode_flags) {
+	ModeFlags mode_flags = (ModeFlags)(p_mode_flags | ModeBitFields::TEMPORARY_FIELD);
+	return _open(p_path, mode_flags);
+}
+
 Error FileAccess::get_open_error() {
 	return last_file_open_error;
 }
@@ -208,6 +214,15 @@ String FileAccess::fix_path(const String &p_path) const {
 				return r_path.replace("user://", "");
 			}
 
+		} break;
+		case ACCESS_TEMPORARY: {
+			if (r_path.begins_with("tmp://")) {
+				String tmp_dir = OS::get_singleton()->get_temporary_dir();
+				if (!tmp_dir.is_empty()) {
+					return r_path.replace("tmp://", tmp_dir);
+				}
+				return r_path.replace("tmp://", "");
+			}
 		} break;
 		case ACCESS_FILESYSTEM: {
 			return r_path;
@@ -864,8 +879,13 @@ void FileAccess::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(READ);
 	BIND_ENUM_CONSTANT(WRITE);
+	BIND_ENUM_CONSTANT(APPEND);
 	BIND_ENUM_CONSTANT(READ_WRITE);
 	BIND_ENUM_CONSTANT(WRITE_READ);
+	BIND_ENUM_CONSTANT(TEMPORARY_READ);
+	BIND_ENUM_CONSTANT(TEMPORARY_WRITE);
+	BIND_ENUM_CONSTANT(TEMPORARY_READ_WRITE);
+	BIND_ENUM_CONSTANT(TEMPORARY_WRITE_READ);
 
 	BIND_ENUM_CONSTANT(COMPRESSION_FASTLZ);
 	BIND_ENUM_CONSTANT(COMPRESSION_DEFLATE);

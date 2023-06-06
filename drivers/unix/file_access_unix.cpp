@@ -68,16 +68,20 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 	//printf("opening %s, %i\n", path.utf8().get_data(), Memory::get_static_mem_usage());
 
 	ERR_FAIL_COND_V_MSG(f, ERR_ALREADY_IN_USE, "File is already in use.");
-	const char *mode_string;
+	String mode_string = "";
 
-	if (p_mode_flags == READ) {
-		mode_string = "rb";
-	} else if (p_mode_flags == WRITE) {
-		mode_string = "wb";
-	} else if (p_mode_flags == READ_WRITE) {
-		mode_string = "rb+";
-	} else if (p_mode_flags == WRITE_READ) {
-		mode_string = "wb+";
+	if (p_mode_flags & ModeBitFields::READ_FIELD) {
+		mode_string += "rb";
+		if (p_mode_flags & ModeBitFields::APPEND_FIELD) {
+			mode_string += "+";
+		}
+	} else if (p_mode_flags & ModeBitFields::WRITE_FIELD) {
+		mode_string += "wb";
+		if (p_mode_flags & ModeBitFields::APPEND_FIELD) {
+			mode_string += "+";
+		}
+	} else if (p_mode_flags & ModeBitFields::APPEND_FIELD) {
+		mode_string += "ab+";
 	} else {
 		return ERR_INVALID_PARAMETER;
 	}
@@ -110,7 +114,7 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 		}
 		path = String::utf8(cs.ptr());
 
-		f = fdopen(fd, mode_string);
+		f = fdopen(fd, mode_string.utf8().get_data());
 		if (f == nullptr) {
 			// Delete temp file and close descriptor if open failed.
 			::unlink(cs.ptr());
@@ -119,7 +123,15 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 			return last_error;
 		}
 	} else {
-		f = fopen(path.utf8().get_data(), mode_string);
+		f = fopen(path.utf8().get_data(), mode_string.utf8().get_data());
+		if (p_mode_flags & ModeBitFields::TEMPORARY_FIELD) {
+			if (::unlink(path.utf8().ptr()) == -1) {
+				ERR_PRINT("Failed to mark opened file as temporary via unlink().");
+				last_error = ERR_FILE_CANT_OPEN;
+				_close();
+				return last_error;
+			}
+		}
 	}
 
 	if (f == nullptr) {
