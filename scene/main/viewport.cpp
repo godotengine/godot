@@ -1351,7 +1351,11 @@ Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
 
 Vector2 Viewport::get_mouse_position() const {
 	ERR_READ_THREAD_GUARD_V(Vector2());
-	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_MOUSE)) {
+	if (!is_directly_attached_to_screen()) {
+		// Rely on the most recent mouse coordinate from an InputEventMouse in push_input.
+		// In this case get_screen_transform is not applicable, because it is ambiguous.
+		return gui.last_mouse_pos;
+	} else if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_MOUSE)) {
 		return get_screen_transform_internal(true).affine_inverse().xform(DisplayServer::get_singleton()->mouse_get_position());
 	} else {
 		// Fallback to Input for getting mouse position in case of emulated mouse.
@@ -4593,6 +4597,11 @@ Transform2D SubViewport::get_popup_base_transform() const {
 		container_transform.scale(Vector2(c->get_stretch_shrink(), c->get_stretch_shrink()));
 	}
 	return c->get_screen_transform() * container_transform * get_final_transform();
+}
+
+bool SubViewport::is_directly_attached_to_screen() const {
+	// SubViewports, that are used as Textures are not considered to be directly attached to screen.
+	return Object::cast_to<SubViewportContainer>(get_parent()) && get_parent()->get_viewport() && get_parent()->get_viewport()->is_directly_attached_to_screen();
 }
 
 void SubViewport::_notification(int p_what) {

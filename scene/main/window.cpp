@@ -2475,6 +2475,14 @@ Transform2D Window::get_popup_base_transform() const {
 	return popup_base_transform;
 }
 
+bool Window::is_directly_attached_to_screen() const {
+	if (get_embedder()) {
+		return get_embedder()->is_directly_attached_to_screen();
+	}
+	// Distinguish between the case that this is a native Window and not inside the tree.
+	return is_inside_tree();
+}
+
 void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
