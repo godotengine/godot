@@ -31,6 +31,7 @@
 #include "post_import_plugin_skeleton_rest_fixer.h"
 
 #include "editor/import/scene_import_settings.h"
+#include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
@@ -103,42 +104,6 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				pr = pr->get_parent();
 			}
 			global_transform.origin = Vector3(); // Translation by a Node is not a bone animation, so the retargeted model should be at the origin.
-		}
-
-		// Calc IBM difference.
-		LocalVector<Vector<Transform3D>> ibm_diffs;
-		{
-			TypedArray<Node> nodes = p_base_scene->find_children("*", "ImporterMeshInstance3D");
-			while (nodes.size()) {
-				ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(nodes.pop_back());
-				ERR_CONTINUE(!mi);
-
-				Ref<Skin> skin = mi->get_skin();
-				ERR_CONTINUE(!skin.is_valid());
-
-				Node *node = mi->get_node(mi->get_skeleton_path());
-				ERR_CONTINUE(!node);
-
-				Skeleton3D *mesh_skeleton = Object::cast_to<Skeleton3D>(node);
-				if (!mesh_skeleton || mesh_skeleton != src_skeleton) {
-					continue;
-				}
-
-				Vector<Transform3D> ibm_diff;
-				ibm_diff.resize(src_skeleton->get_bone_count());
-				Transform3D *ibm_diff_w = ibm_diff.ptrw();
-
-				int skin_len = skin->get_bind_count();
-				for (int i = 0; i < skin_len; i++) {
-					StringName bn = skin->get_bind_name(i);
-					int bone_idx = src_skeleton->find_bone(bn);
-					if (bone_idx >= 0) {
-						ibm_diff_w[bone_idx] = global_transform * src_skeleton->get_bone_global_rest(bone_idx) * skin->get_bind_pose(i);
-					}
-				}
-
-				ibm_diffs.push_back(ibm_diff);
-			}
 		}
 
 		// Apply node transforms.
@@ -288,12 +253,11 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 		Vector<Transform3D> silhouette_diff; // Transform values to be ignored when overwrite axis.
 		silhouette_diff.resize(src_skeleton->get_bone_count());
 		Transform3D *silhouette_diff_w = silhouette_diff.ptrw();
+		LocalVector<Transform3D> pre_silhouette_skeleton_global_rest;
+		for (int i = 0; i < src_skeleton->get_bone_count(); i++) {
+			pre_silhouette_skeleton_global_rest.push_back(src_skeleton->get_bone_global_rest(i));
+		}
 		if (bool(p_options["retarget/rest_fixer/fix_silhouette/enable"])) {
-			LocalVector<Transform3D> old_skeleton_global_rest;
-			for (int i = 0; i < src_skeleton->get_bone_count(); i++) {
-				old_skeleton_global_rest.push_back(src_skeleton->get_bone_global_rest(i));
-			}
-
 			Vector<int> bones_to_process = prof_skeleton->get_parentless_bones();
 			while (bones_to_process.size() > 0) {
 				int prof_idx = bones_to_process[0];
@@ -450,7 +414,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 
 			// For skin modification in overwrite rest.
 			for (int i = 0; i < src_skeleton->get_bone_count(); i++) {
-				silhouette_diff_w[i] = old_skeleton_global_rest[i] * src_skeleton->get_bone_global_rest(i).inverse();
+				silhouette_diff_w[i] = pre_silhouette_skeleton_global_rest[i] * src_skeleton->get_bone_global_rest(i).affine_inverse();
 			}
 
 			is_rest_changed = true;
@@ -645,14 +609,20 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 		if (is_rest_changed) {
 			// Fix skin.
 			{
+				HashSet<Ref<Skin>> mutated_skins;
 				TypedArray<Node> nodes = p_base_scene->find_children("*", "ImporterMeshInstance3D");
-				int skin_idx = 0;
 				while (nodes.size()) {
 					ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(nodes.pop_back());
 					ERR_CONTINUE(!mi);
 
 					Ref<Skin> skin = mi->get_skin();
-					ERR_CONTINUE(!skin.is_valid());
+					if (skin.is_null()) {
+						continue;
+					}
+					if (mutated_skins.has(skin)) {
+						continue;
+					}
+					mutated_skins.insert(skin);
 
 					Node *node = mi->get_node(mi->get_skeleton_path());
 					ERR_CONTINUE(!node);
@@ -662,19 +632,39 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 						continue;
 					}
 
-					Vector<Transform3D> ibm_diff = ibm_diffs[skin_idx];
-
 					int skin_len = skin->get_bind_count();
 					for (int i = 0; i < skin_len; i++) {
 						StringName bn = skin->get_bind_name(i);
 						int bone_idx = src_skeleton->find_bone(bn);
 						if (bone_idx >= 0) {
-							Transform3D new_rest = silhouette_diff[bone_idx] * src_skeleton->get_bone_global_rest(bone_idx);
-							skin->set_bind_pose(i, new_rest.inverse() * ibm_diff[bone_idx]);
+							Transform3D adjust_transform = src_skeleton->get_bone_global_rest(bone_idx).affine_inverse() * silhouette_diff[bone_idx].affine_inverse() * pre_silhouette_skeleton_global_rest[bone_idx];
+							adjust_transform.scale(global_transform.basis.get_scale_local());
+							skin->set_bind_pose(i, adjust_transform * skin->get_bind_pose(i));
 						}
 					}
+				}
+				nodes = src_skeleton->get_children();
+				while (nodes.size()) {
+					BoneAttachment3D *attachment = Object::cast_to<BoneAttachment3D>(nodes.pop_back());
+					if (attachment == nullptr) {
+						continue;
+					}
+					int bone_idx = attachment->get_bone_idx();
+					if (bone_idx == -1) {
+						bone_idx = src_skeleton->find_bone(attachment->get_bone_name());
+					}
+					ERR_CONTINUE(bone_idx < 0 || bone_idx >= src_skeleton->get_bone_count());
+					Transform3D adjust_transform = src_skeleton->get_bone_global_rest(bone_idx).affine_inverse() * silhouette_diff[bone_idx].affine_inverse() * pre_silhouette_skeleton_global_rest[bone_idx];
+					adjust_transform.scale(global_transform.basis.get_scale_local());
 
-					skin_idx++;
+					TypedArray<Node> child_nodes = attachment->get_children();
+					while (child_nodes.size()) {
+						Node3D *child = Object::cast_to<Node3D>(child_nodes.pop_back());
+						if (child == nullptr) {
+							continue;
+						}
+						child->set_transform(adjust_transform * child->get_transform());
+					}
 				}
 			}
 

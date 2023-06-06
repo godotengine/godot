@@ -855,12 +855,30 @@ Size2i DisplayServerX11::screen_get_size(int p_screen) const {
 	return _screen_get_rect(p_screen).size;
 }
 
+// A Handler to avoid crashing on non-fatal X errors by default.
+//
+// The original X11 error formatter `_XPrintDefaultError` is defined here:
+// https://gitlab.freedesktop.org/xorg/lib/libx11/-/blob/e45ca7b41dcd3ace7681d6897505f85d374640f2/src/XlibInt.c#L1322
+// It is not exposed through the API, accesses X11 internals,
+// and is much more complex, so this is a less complete simplified error X11 printer.
+int default_window_error_handler(Display *display, XErrorEvent *error) {
+	static char message[1024];
+	XGetErrorText(display, error->error_code, message, sizeof(message));
+
+	ERR_PRINT(vformat("Unhandled XServer error: %s"
+					  "\n   Major opcode of failed request: %d"
+					  "\n   Serial number of failed request: %d"
+					  "\n   Current serial number in output stream: %d",
+			String::utf8(message), error->request_code, error->minor_code, error->serial));
+	return 0;
+}
+
 bool g_bad_window = false;
 int bad_window_error_handler(Display *display, XErrorEvent *error) {
 	if (error->error_code == BadWindow) {
 		g_bad_window = true;
 	} else {
-		ERR_PRINT("Unhandled XServer error code: " + itos(error->error_code));
+		return default_window_error_handler(display, error);
 	}
 	return 0;
 }
@@ -1296,7 +1314,7 @@ Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
 			}
 		} else {
 			XFree(image);
-			ERR_FAIL_V_MSG(Ref<Image>(), vformat("XImage with RGB mask %x %x %x and depth %d is not supported.", image->red_mask, image->green_mask, image->blue_mask, image->bits_per_pixel));
+			ERR_FAIL_V_MSG(Ref<Image>(), vformat("XImage with RGB mask %x %x %x and depth %d is not supported.", (uint64_t)image->red_mask, (uint64_t)image->green_mask, (uint64_t)image->blue_mask, (int64_t)image->bits_per_pixel));
 		}
 		img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
 		XFree(image);
@@ -5930,6 +5948,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	portal_desktop = memnew(FreeDesktopPortalDesktop);
 #endif
+	XSetErrorHandler(&default_window_error_handler);
 
 	r_error = OK;
 }

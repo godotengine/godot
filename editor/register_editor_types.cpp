@@ -116,6 +116,8 @@
 #include "editor/register_exporters.h"
 
 void register_editor_types() {
+	OS::get_singleton()->benchmark_begin_measure("register_editor_types");
+
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
 
@@ -130,8 +132,8 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorNode3DGizmo);
 	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorResourcePreview);
-	GDREGISTER_ABSTRACT_CLASS(EditorResourceTooltipPlugin);
 	GDREGISTER_CLASS(EditorResourcePreviewGenerator);
+	GDREGISTER_CLASS(EditorResourceTooltipPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorFileSystem);
 	GDREGISTER_CLASS(EditorFileSystemDirectory);
 	GDREGISTER_CLASS(EditorVCSInterface);
@@ -245,13 +247,19 @@ void register_editor_types() {
 	GLOBAL_DEF("editor/version_control/autoload_on_startup", false);
 
 	EditorInterface::create();
+
+	OS::get_singleton()->benchmark_end_measure("register_editor_types");
 }
 
 void unregister_editor_types() {
+	OS::get_singleton()->benchmark_begin_measure("unregister_editor_types");
+
 	EditorNode::cleanup();
 	EditorInterface::free();
 
 	if (EditorPaths::get_singleton()) {
 		EditorPaths::free();
 	}
+
+	OS::get_singleton()->benchmark_end_measure("unregister_editor_types");
 }

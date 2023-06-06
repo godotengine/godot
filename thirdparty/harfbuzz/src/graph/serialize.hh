@@ -116,10 +116,10 @@ will_overflow (graph_t& graph,
   for (int parent_idx = vertices.length - 1; parent_idx >= 0; parent_idx--)
   {
     // Don't need to check virtual links for overflow
-    for (const auto& link : vertices[parent_idx].obj.real_links)
+    for (const auto& link : vertices.arrayZ[parent_idx].obj.real_links)
     {
       int64_t offset = compute_offset (graph, parent_idx, link);
-      if (is_valid_offset (offset, link))
+      if (likely (is_valid_offset (offset, link)))
         continue;
 
       if (!overflows) return true;

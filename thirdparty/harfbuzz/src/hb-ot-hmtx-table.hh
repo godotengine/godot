@@ -50,6 +50,9 @@ _glyf_get_leading_bearing_with_var_unscaled (hb_font_t *font, hb_codepoint_t gly
 HB_INTERNAL unsigned
 _glyf_get_advance_with_var_unscaled (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical);
 
+HB_INTERNAL bool
+_glyf_get_leading_bearing_without_var_unscaled (hb_face_t *face, hb_codepoint_t gid, bool is_vertical, int *lsb);
+
 
 namespace OT {
 
@@ -92,7 +95,7 @@ struct hmtxvmtx
 
     unsigned int length;
     H *table = (H *) hb_blob_get_data (dest_blob, &length);
-    table->numberOfLongMetrics = num_hmetrics;
+    c->serializer->check_assign (table->numberOfLongMetrics, num_hmetrics, HB_SERIALIZE_ERROR_INT_OVERFLOW);
 
 #ifndef HB_NO_VAR
     if (c->plan->normalized_coords)
@@ -165,11 +168,18 @@ struct hmtxvmtx
 	lm.sb = _.second;
 	if (unlikely (!c->embed<LongMetric> (&lm))) return;
       }
-      else
+      else if (idx < 0x10000u)
       {
 	FWORD *sb = c->allocate_size<FWORD> (FWORD::static_size);
 	if (unlikely (!sb)) return;
 	*sb = _.second;
+      }
+      else
+      {
+        // TODO: This does not do tail optimization.
+	UFWORD *adv = c->allocate_size<UFWORD> (UFWORD::static_size);
+	if (unlikely (!adv)) return;
+	*adv = _.first;
       }
       idx++;
     }
@@ -189,7 +199,7 @@ struct hmtxvmtx
       /* Determine num_long_metrics to encode. */
       auto& plan = c->plan;
 
-      num_long_metrics = plan->num_output_glyphs ();
+      num_long_metrics = hb_min (plan->num_output_glyphs (), 0xFFFFu);
       unsigned int last_advance = get_new_gid_advance_unscaled (plan, mtx_map, num_long_metrics - 1, _mtx);
       while (num_long_metrics > 1 &&
 	     last_advance == get_new_gid_advance_unscaled (plan, mtx_map, num_long_metrics - 2, _mtx))
@@ -208,7 +218,8 @@ struct hmtxvmtx
 		  if (!c->plan->old_gid_for_new_gid (_, &old_gid))
 		    return hb_pair (0u, 0);
 		  int lsb = 0;
-		  (void) _mtx.get_leading_bearing_without_var_unscaled (old_gid, &lsb);
+		  if (!_mtx.get_leading_bearing_without_var_unscaled (old_gid, &lsb))
+		    (void) _glyf_get_leading_bearing_without_var_unscaled (c->plan->source, old_gid, !T::is_horizontal, &lsb);
 		  return hb_pair (_mtx.get_advance_without_var_unscaled (old_gid), +lsb);
 		}
 		return mtx_map->get (_);

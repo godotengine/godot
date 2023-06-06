@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationPathQueryResult3D" inherits="RefCounted" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Result from a [NavigationPathQueryParameters3D] navigation path query.
+		Represents the result of a 3D pathfinding query.
 	</brief_description>
 	<description>
-		This class contains the result of a navigation path query from [method NavigationServer3D.query_path].
+		This class stores the result of a 3D navigation path query from the [NavigationServer3D].
 	</description>
 	<tutorials>
 		<link title="Using NavigationPathQueryObjects">$DOCS_URL/tutorials/navigation/navigation_using_navigationpathqueryobjects.html</link>

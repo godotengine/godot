@@ -88,9 +88,13 @@ void Material::_mark_initialized(const Callable &p_queue_shader_change_callable)
 	if (ResourceLoader::is_within_load() && Thread::get_caller_id() != Thread::get_main_id()) {
 		DEV_ASSERT(init_state != INIT_STATE_READY);
 		if (init_state == INIT_STATE_UNINITIALIZED) { // Prevent queueing twice.
-			// Queue an individual update of this material (the ResourceLoader knows how to handle deferred calls safely).
-			p_queue_shader_change_callable.call_deferred();
+			// Let's mark this material as being initialized.
 			init_state = INIT_STATE_INITIALIZING;
+			// Knowing that the ResourceLoader will eventually feed deferred calls into the main message queue, let's do these:
+			// 1. Queue setting the init state to INIT_STATE_READY finally.
+			callable_mp(this, &Material::_mark_initialized).bind(p_queue_shader_change_callable).call_deferred();
+			// 2. Queue an individual update of this material.
+			p_queue_shader_change_callable.call_deferred();
 		}
 	} else {
 		// Straightforward conditions.
@@ -475,13 +479,11 @@ ShaderMaterial::~ShaderMaterial() {
 /////////////////////////////////
 
 Mutex BaseMaterial3D::material_mutex;
-SelfList<BaseMaterial3D>::List *BaseMaterial3D::dirty_materials = nullptr;
+SelfList<BaseMaterial3D>::List BaseMaterial3D::dirty_materials;
 HashMap<BaseMaterial3D::MaterialKey, BaseMaterial3D::ShaderData, BaseMaterial3D::MaterialKey> BaseMaterial3D::shader_map;
 BaseMaterial3D::ShaderNames *BaseMaterial3D::shader_names = nullptr;
 
 void BaseMaterial3D::init_shaders() {
-	dirty_materials = memnew(SelfList<BaseMaterial3D>::List);
-
 	shader_names = memnew(ShaderNames);
 
 	shader_names->albedo = "albedo";
@@ -568,14 +570,14 @@ HashMap<uint64_t, Ref<StandardMaterial3D>> BaseMaterial3D::materials_for_2d;
 void BaseMaterial3D::finish_shaders() {
 	materials_for_2d.clear();
 
-	memdelete(dirty_materials);
-	dirty_materials = nullptr;
+	dirty_materials.clear();
 
 	memdelete(shader_names);
+	shader_names = nullptr;
 }
 
 void BaseMaterial3D::_update_shader() {
-	dirty_materials->remove(&element);
+	dirty_materials.remove(&element);
 
 	MaterialKey mk = _compute_key();
 	if (mk == current_key) {
@@ -1494,8 +1496,8 @@ void BaseMaterial3D::_update_shader() {
 void BaseMaterial3D::flush_changes() {
 	MutexLock lock(material_mutex);
 
-	while (dirty_materials->first()) {
-		dirty_materials->first()->self()->_update_shader();
+	while (dirty_materials.first()) {
+		dirty_materials.first()->self()->_update_shader();
 	}
 }
 
@@ -1503,7 +1505,7 @@ void BaseMaterial3D::_queue_shader_change() {
 	MutexLock lock(material_mutex);
 
 	if (_is_initialized() && !element.in_list()) {
-		dirty_materials->add(&element);
+		dirty_materials.add(&element);
 	}
 }
 

@@ -1674,16 +1674,18 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 		if (file == "Contents/Resources/icon.icns") {
 			// See if there is an icon.
-			String iconpath;
+			String icon_path;
 			if (p_preset->get("application/icon") != "") {
-				iconpath = p_preset->get("application/icon");
+				icon_path = p_preset->get("application/icon");
+			} else if (GLOBAL_GET("application/config/macos_native_icon") != "") {
+				icon_path = GLOBAL_GET("application/config/macos_native_icon");
 			} else {
-				iconpath = GLOBAL_GET("application/config/icon");
+				icon_path = GLOBAL_GET("application/config/icon");
 			}
 
-			if (!iconpath.is_empty()) {
-				if (iconpath.get_extension() == "icns") {
-					Ref<FileAccess> icon = FileAccess::open(iconpath, FileAccess::READ);
+			if (!icon_path.is_empty()) {
+				if (icon_path.get_extension() == "icns") {
+					Ref<FileAccess> icon = FileAccess::open(icon_path, FileAccess::READ);
 					if (icon.is_valid()) {
 						data.resize(icon->get_length());
 						icon->get_buffer(&data.write[0], icon->get_length());
@@ -1691,7 +1693,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				} else {
 					Ref<Image> icon;
 					icon.instantiate();
-					err = ImageLoader::load_image(iconpath, icon);
+					err = ImageLoader::load_image(icon_path, icon);
 					if (err == OK && !icon->is_empty()) {
 						_make_icon(p_preset, icon, data);
 					}

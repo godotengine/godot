@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Font" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for fonts and font variations.
+		Abstract base class for fonts and font variations.
 	</brief_description>
 	<description>
-		Font is the abstract base class for font, so it shouldn't be used directly. Other types of fonts inherit from it.
+		Abstract base class for different font types. It has methods for drawing text and font character introspection.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -213,6 +213,12 @@
 			<return type="Dictionary" />
 			<description>
 				Returns a set of OpenType feature tags. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].
+			</description>
+		</method>
+		<method name="get_ot_name_strings" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns [Dictionary] with OpenType font name strings (localized font names, version, description, license information, sample text, etc.).
 			</description>
 		</method>
 		<method name="get_rids" qualifiers="const">

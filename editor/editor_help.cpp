@@ -65,7 +65,7 @@ protected:
 		ClassDB::bind_method(D_METHOD("get_classes"), &DocCache::get_classes);
 
 		ADD_PROPERTY(PropertyInfo(Variant::STRING, "version_hash"), "set_version_hash", "get_version_hash");
-		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "classes"), "set_classes", "get_classes");
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "classes"), "set_classes", "get_classes");
 	}
 
 public:
@@ -2258,7 +2258,7 @@ String EditorHelp::get_cache_full_path() {
 static bool first_attempt = true;
 
 static String _compute_doc_version_hash() {
-	return uitos(ClassDB::get_api_hash(ClassDB::API_CORE)) + "-" + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR));
+	return vformat("%d/%d/%s", ClassDB::get_api_hash(ClassDB::API_CORE), ClassDB::get_api_hash(ClassDB::API_EDITOR), _doc_data_hash);
 }
 
 void EditorHelp::_load_doc_thread(void *p_udata) {
@@ -2297,6 +2297,7 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 static bool doc_gen_use_threads = true;
 
 void EditorHelp::generate_doc(bool p_use_cache) {
+	OS::get_singleton()->benchmark_begin_measure("EditorHelp::generate_doc");
 	if (doc_gen_use_threads) {
 		// In case not the first attempt.
 		_wait_for_thread();
@@ -2327,6 +2328,7 @@ void EditorHelp::generate_doc(bool p_use_cache) {
 			_gen_doc_thread(nullptr);
 		}
 	}
+	OS::get_singleton()->benchmark_end_measure("EditorHelp::generate_doc");
 }
 
 void EditorHelp::_toggle_scripts_pressed() {
@@ -2698,22 +2700,10 @@ void FindBar::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid()) {
-		if (k->is_pressed() && (rich_text_label->has_focus() || is_ancestor_of(get_viewport()->gui_get_focus_owner()))) {
-			bool accepted = true;
-
-			switch (k->get_keycode()) {
-				case Key::ESCAPE: {
-					_hide_bar();
-				} break;
-				default: {
-					accepted = false;
-				} break;
-			}
-
-			if (accepted) {
-				accept_event();
-			}
+	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+		if (rich_text_label->has_focus() || is_ancestor_of(get_viewport()->gui_get_focus_owner())) {
+			_hide_bar();
+			accept_event();
 		}
 	}
 }

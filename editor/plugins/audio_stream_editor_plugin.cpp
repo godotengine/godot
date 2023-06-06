@@ -75,7 +75,8 @@ void AudioStreamEditor::_notification(int p_what) {
 
 void AudioStreamEditor::_draw_preview() {
 	Size2 size = get_size();
-	if ((int)size.width <= 0) {
+	int width = size.width;
+	if (width <= 0) {
 		return; // No points to draw.
 	}
 
@@ -85,9 +86,9 @@ void AudioStreamEditor::_draw_preview() {
 	float preview_len = preview->get_length();
 
 	Vector<Vector2> points;
-	points.resize((int)size.width * 2);
+	points.resize(width * 2);
 
-	for (int i = 0; i < size.width; i++) {
+	for (int i = 0; i < width; i++) {
 		float ofs = i * preview_len / size.width;
 		float ofs_n = (i + 1) * preview_len / size.width;
 		float max = preview->get_max(ofs, ofs_n) * 0.5 + 0.5;

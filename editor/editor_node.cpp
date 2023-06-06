@@ -736,6 +736,8 @@ void EditorNode::_notification(int p_what) {
 				get_window()->set_theme(theme);
 
 				gui_base->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Background"), SNAME("EditorStyles")));
+				main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, gui_base->get_theme_constant(SNAME("window_border_margin"), SNAME("Editor")));
+				main_vbox->add_theme_constant_override("separation", gui_base->get_theme_constant(SNAME("top_bar_separation"), SNAME("Editor")));
 				scene_root_parent->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Content"), SNAME("EditorStyles")));
 				bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), SNAME("EditorStyles")));
 				tabbar_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
@@ -789,6 +791,7 @@ void EditorNode::_notification(int p_what) {
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_DOCS), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_QA), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_REPORT_A_BUG), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
+			help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), gui_base->get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_SUGGEST_A_FEATURE), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_SEND_DOCS_FEEDBACK), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_COMMUNITY), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
@@ -1041,7 +1044,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 	if (waiting_for_first_scan) {
 		waiting_for_first_scan = false;
 
-		Engine::get_singleton()->startup_benchmark_end_measure(); // editor_scan_and_reimport
+		OS::get_singleton()->benchmark_end_measure("editor_scan_and_import");
 
 		// Reload the global shader variables, but this time
 		// loading textures, as they are now properly imported.
@@ -1055,16 +1058,12 @@ void EditorNode::_sources_changed(bool p_exist) {
 		_load_editor_layout();
 
 		if (!defer_load_scene.is_empty()) {
-			Engine::get_singleton()->startup_benchmark_begin_measure("editor_load_scene");
+			OS::get_singleton()->benchmark_begin_measure("editor_load_scene");
 			load_scene(defer_load_scene);
 			defer_load_scene = "";
-			Engine::get_singleton()->startup_benchmark_end_measure();
+			OS::get_singleton()->benchmark_end_measure("editor_load_scene");
 
-			if (use_startup_benchmark) {
-				Engine::get_singleton()->startup_dump(startup_benchmark_file);
-				startup_benchmark_file = String();
-				use_startup_benchmark = false;
-			}
+			OS::get_singleton()->benchmark_dump();
 		}
 	}
 }
@@ -2899,6 +2898,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case HELP_REPORT_A_BUG: {
 			OS::get_singleton()->shell_open("https://github.com/godotengine/godot/issues");
 		} break;
+		case HELP_COPY_SYSTEM_INFO: {
+			String info = _get_system_info();
+			DisplayServer::get_singleton()->clipboard_set(info);
+		} break;
 		case HELP_SUGGEST_A_FEATURE: {
 			OS::get_singleton()->shell_open("https://github.com/godotengine/godot-proposals#readme");
 		} break;
@@ -3241,6 +3244,30 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_chan
 	for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : singleton->active_plugins) {
 		kv.value.erase(p_editor);
 	}
+}
+
+void EditorNode::add_extension_editor_plugin(const StringName &p_class_name) {
+	ERR_FAIL_COND_MSG(!ClassDB::class_exists(p_class_name), vformat("No such editor plugin registered: %s", p_class_name));
+	ERR_FAIL_COND_MSG(!ClassDB::is_parent_class(p_class_name, SNAME("EditorPlugin")), vformat("Class is not an editor plugin: %s", p_class_name));
+	ERR_FAIL_COND_MSG(singleton->editor_data.has_extension_editor_plugin(p_class_name), vformat("Editor plugin already added for class: %s", p_class_name));
+
+	EditorPlugin *plugin = Object::cast_to<EditorPlugin>(ClassDB::instantiate(p_class_name));
+	singleton->editor_data.add_extension_editor_plugin(p_class_name, plugin);
+	add_editor_plugin(plugin);
+}
+
+void EditorNode::remove_extension_editor_plugin(const StringName &p_class_name) {
+	// If we're exiting, the editor plugins will get cleaned up anyway, so don't do anything.
+	if (singleton->exiting) {
+		return;
+	}
+
+	ERR_FAIL_COND_MSG(!singleton->editor_data.has_extension_editor_plugin(p_class_name), vformat("No editor plugin added for class: %s", p_class_name));
+
+	EditorPlugin *plugin = singleton->editor_data.get_extension_editor_plugin(p_class_name);
+	remove_editor_plugin(plugin);
+	memfree(plugin);
+	singleton->editor_data.remove_extension_editor_plugin(p_class_name);
 }
 
 void EditorNode::_update_addon_config() {
@@ -4335,6 +4362,98 @@ void EditorNode::progress_end_task_bg(const String &p_task) {
 	singleton->progress_hb->end_task(p_task);
 }
 
+String EditorNode::_get_system_info() const {
+	String distribution_name = OS::get_singleton()->get_distribution_name();
+	if (distribution_name.is_empty()) {
+		distribution_name = OS::get_singleton()->get_name();
+	}
+	if (distribution_name.is_empty()) {
+		distribution_name = "Other";
+	}
+	const String distribution_version = OS::get_singleton()->get_version();
+
+	String godot_version = "Godot v" + String(VERSION_FULL_CONFIG);
+	if (String(VERSION_BUILD) != "official") {
+		String hash = String(VERSION_HASH);
+		hash = hash.is_empty() ? String("unknown") : vformat("(%s)", hash.left(9));
+		godot_version += " " + hash;
+	}
+
+	String driver_name = GLOBAL_GET("rendering/rendering_device/driver");
+	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
+
+	const String rendering_device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name();
+
+	RenderingDevice::DeviceType device_type = RenderingServer::get_singleton()->get_video_adapter_type();
+	String device_type_string;
+	switch (device_type) {
+		case RenderingDevice::DeviceType::DEVICE_TYPE_INTEGRATED_GPU:
+			device_type_string = "integrated";
+			break;
+		case RenderingDevice::DeviceType::DEVICE_TYPE_DISCRETE_GPU:
+			device_type_string = "dedicated";
+			break;
+		case RenderingDevice::DeviceType::DEVICE_TYPE_VIRTUAL_GPU:
+			device_type_string = "virtual";
+			break;
+		case RenderingDevice::DeviceType::DEVICE_TYPE_CPU:
+			device_type_string = "(software emulation on CPU)";
+			break;
+		case RenderingDevice::DeviceType::DEVICE_TYPE_OTHER:
+		case RenderingDevice::DeviceType::DEVICE_TYPE_MAX:
+			break; // Can't happen, but silences warning for DEVICE_TYPE_MAX
+	}
+
+	const Vector<String> video_adapter_driver_info = OS::get_singleton()->get_video_adapter_driver_info();
+
+	const String processor_name = OS::get_singleton()->get_processor_name();
+	const int processor_count = OS::get_singleton()->get_processor_count();
+
+	// Prettify
+	if (driver_name == "vulkan") {
+		driver_name = "Vulkan";
+	} else if (driver_name == "opengl3") {
+		driver_name = "GLES3";
+	}
+	if (rendering_method == "forward_plus") {
+		rendering_method = "Forward+";
+	} else if (rendering_method == "mobile") {
+		rendering_method = "Mobile";
+	} else if (rendering_method == "gl_compatibility") {
+		rendering_method = "Compatibility";
+	}
+
+	// Join info.
+	Vector<String> info;
+	info.push_back(godot_version);
+	if (!distribution_version.is_empty()) {
+		info.push_back(distribution_name + " " + distribution_version);
+	} else {
+		info.push_back(distribution_name);
+	}
+	info.push_back(vformat("%s (%s)", driver_name, rendering_method));
+
+	String graphics;
+	if (!device_type_string.is_empty()) {
+		graphics = device_type_string + " ";
+	}
+	graphics += rendering_device_name;
+	if (video_adapter_driver_info.size() == 2) { // This vector is always either of length 0 or 2.
+		String vad_name = video_adapter_driver_info[0];
+		String vad_version = video_adapter_driver_info[1]; // Version could be potentially empty on Linux/BSD.
+		if (!vad_version.is_empty()) {
+			graphics += vformat(" (%s; %s)", vad_name, vad_version);
+		} else {
+			graphics += vformat(" (%s)", vad_name);
+		}
+	}
+	info.push_back(graphics);
+
+	info.push_back(vformat("%s (%d Threads)", processor_name, processor_count));
+
+	return String(" - ").join(info);
+}
+
 Ref<Texture2D> EditorNode::_file_dialog_get_icon(const String &p_path) {
 	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->get_filesystem_path(p_path.get_base_dir());
 	if (efsd) {
@@ -4392,12 +4511,8 @@ void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog) {
 Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
 
 void EditorNode::_begin_first_scan() {
-	Engine::get_singleton()->startup_benchmark_begin_measure("editor_scan_and_import");
+	OS::get_singleton()->benchmark_begin_measure("editor_scan_and_import");
 	EditorFileSystem::get_singleton()->scan();
-}
-void EditorNode::set_use_startup_benchmark(bool p_use_startup_benchmark, const String &p_startup_benchmark_file) {
-	use_startup_benchmark = p_use_startup_benchmark;
-	startup_benchmark_file = p_startup_benchmark_file;
 }
 
 Error EditorNode::export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only) {
@@ -4826,8 +4941,13 @@ void EditorNode::_load_editor_layout() {
 	Ref<ConfigFile> config;
 	config.instantiate();
 	Error err = config->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_layout.cfg"));
-	if (err != OK) {
-		// No config.
+	if (err != OK) { // No config.
+		// If config is not found, expand the res:// folder by default.
+		TreeItem *root = FileSystemDock::get_singleton()->get_tree_control()->get_item_with_metadata("res://", 0);
+		if (root) {
+			root->set_collapsed(false);
+		}
+
 		if (overridden_default_layout >= 0) {
 			_layout_menu_option(overridden_default_layout);
 		}
@@ -5094,8 +5214,14 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 	}
 
 	// Restore collapsed state of FileSystemDock.
+	PackedStringArray uncollapsed_tis;
 	if (p_layout->has_section_key(p_section, "dock_filesystem_uncollapsed_paths")) {
-		PackedStringArray uncollapsed_tis = p_layout->get_value(p_section, "dock_filesystem_uncollapsed_paths");
+		uncollapsed_tis = p_layout->get_value(p_section, "dock_filesystem_uncollapsed_paths");
+	} else {
+		uncollapsed_tis = { "res://" };
+	}
+
+	if (!uncollapsed_tis.is_empty()) {
 		for (int i = 0; i < uncollapsed_tis.size(); i++) {
 			TreeItem *uncollapsed_ti = FileSystemDock::get_singleton()->get_tree_control()->get_item_with_metadata(uncollapsed_tis[i], 0);
 			if (uncollapsed_ti) {
@@ -5492,16 +5618,6 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			scene_tabs_context_menu->set_position(scene_tabs->get_screen_position() + mb->get_position());
 			scene_tabs_context_menu->reset_size();
 			scene_tabs_context_menu->popup();
-		}
-		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_pressed()) {
-			int previous_tab = editor_data.get_edited_scene() - 1;
-			previous_tab = previous_tab >= 0 ? previous_tab : editor_data.get_edited_scene_count() - 1;
-			_scene_tab_changed(previous_tab);
-		}
-		if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_pressed()) {
-			int next_tab = editor_data.get_edited_scene() + 1;
-			next_tab %= editor_data.get_edited_scene_count();
-			_scene_tab_changed(next_tab);
 		}
 	}
 }
@@ -5901,6 +6017,10 @@ void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, Str
 }
 
 void EditorNode::_file_access_close_error_notify(const String &p_str) {
+	callable_mp_static(&EditorNode::_file_access_close_error_notify_impl).bind(p_str).call_deferred();
+}
+
+void EditorNode::_file_access_close_error_notify_impl(const String &p_str) {
 	add_io_error(vformat(TTR("Unable to write to file '%s', file in use, locked or lacking permissions."), p_str));
 }
 
@@ -6502,13 +6622,16 @@ static Node *_resource_get_edited_scene() {
 }
 
 void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich) {
-	EditorNode *en = static_cast<EditorNode *>(p_this);
+	callable_mp_static(&EditorNode::_print_handler_impl).bind(p_string, p_error, p_rich).call_deferred();
+}
+
+void EditorNode::_print_handler_impl(const String &p_string, bool p_error, bool p_rich) {
 	if (p_error) {
-		en->log->add_message(p_string, EditorLog::MSG_TYPE_ERROR);
+		singleton->log->add_message(p_string, EditorLog::MSG_TYPE_ERROR);
 	} else if (p_rich) {
-		en->log->add_message(p_string, EditorLog::MSG_TYPE_STD_RICH);
+		singleton->log->add_message(p_string, EditorLog::MSG_TYPE_STD_RICH);
 	} else {
-		en->log->add_message(p_string, EditorLog::MSG_TYPE_STD);
+		singleton->log->add_message(p_string, EditorLog::MSG_TYPE_STD);
 	}
 }
 
@@ -6861,6 +6984,7 @@ EditorNode::EditorNode() {
 	resource_preview = memnew(EditorResourcePreview);
 	add_child(resource_preview);
 	progress_dialog = memnew(ProgressDialog);
+	progress_dialog->set_unparent_when_invisible(true);
 
 	// Take up all screen.
 	gui_base->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
@@ -6869,8 +6993,8 @@ EditorNode::EditorNode() {
 
 	main_vbox = memnew(VBoxContainer);
 	gui_base->add_child(main_vbox);
-	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 8);
-	main_vbox->add_theme_constant_override("separation", 8 * EDSCALE);
+	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, gui_base->get_theme_constant(SNAME("window_border_margin"), SNAME("Editor")));
+	main_vbox->add_theme_constant_override("separation", gui_base->get_theme_constant(SNAME("top_bar_separation"), SNAME("Editor")));
 
 	title_bar = memnew(EditorTitleBar);
 	main_vbox->add_child(title_bar);
@@ -7257,14 +7381,8 @@ EditorNode::EditorNode() {
 	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/project_settings", TTR("Project Settings..."), Key::NONE, TTR("Project Settings")), RUN_SETTINGS);
 	project_menu->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
 
-	vcs_actions_menu = VersionControlEditorPlugin::get_singleton()->get_version_control_actions_panel();
-	vcs_actions_menu->set_name("Version Control");
-	vcs_actions_menu->connect("index_pressed", callable_mp(this, &EditorNode::_version_control_menu_option));
 	project_menu->add_separator();
-	project_menu->add_child(vcs_actions_menu);
-	project_menu->add_submenu_item(TTR("Version Control"), "Version Control");
-	vcs_actions_menu->add_item(TTR("Create Version Control Metadata"), RUN_VCS_METADATA);
-	vcs_actions_menu->add_item(TTR("Version Control Settings"), RUN_VCS_SETTINGS);
+	project_menu->add_item(TTR("Version Control"), VCS_MENU);
 
 	project_menu->add_separator();
 	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/export", TTR("Export..."), Key::NONE, TTR("Export")), FILE_EXPORT_PROJECT);
@@ -7384,6 +7502,8 @@ EditorNode::EditorNode() {
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/online_docs", TTR("Online Documentation")), HELP_DOCS);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/q&a", TTR("Questions & Answers")), HELP_QA);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/report_a_bug", TTR("Report a Bug")), HELP_REPORT_A_BUG);
+	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/copy_system_info", TTR("Copy System Info")), HELP_COPY_SYSTEM_INFO);
+	help_menu->set_item_tooltip(-1, TTR("Copies the system info as a single-line text into the clipboard."));
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/suggest_a_feature", TTR("Suggest a Feature")), HELP_SUGGEST_A_FEATURE);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/send_docs_feedback", TTR("Send Docs Feedback")), HELP_SEND_DOCS_FEEDBACK);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/community", TTR("Community")), HELP_COMMUNITY);
@@ -7763,11 +7883,26 @@ EditorNode::EditorNode() {
 	raise_bottom_panel_item(AnimationPlayerEditor::get_singleton());
 
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
+
+	vcs_actions_menu = VersionControlEditorPlugin::get_singleton()->get_version_control_actions_panel();
+	vcs_actions_menu->set_name("Version Control");
+	vcs_actions_menu->connect("index_pressed", callable_mp(this, &EditorNode::_version_control_menu_option));
+	vcs_actions_menu->add_item(TTR("Create Version Control Metadata"), RUN_VCS_METADATA);
+	vcs_actions_menu->add_item(TTR("Version Control Settings"), RUN_VCS_SETTINGS);
+	project_menu->add_child(vcs_actions_menu);
+	project_menu->set_item_submenu(project_menu->get_item_index(VCS_MENU), "Version Control");
+
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {
 		add_editor_plugin(EditorPlugins::create(i));
 	}
+
+	for (const StringName &extension_class_name : GDExtensionEditorPlugins::get_extension_classes()) {
+		add_extension_editor_plugin(extension_class_name);
+	}
+	GDExtensionEditorPlugins::editor_node_add_plugin = &EditorNode::add_extension_editor_plugin;
+	GDExtensionEditorPlugins::editor_node_remove_plugin = &EditorNode::remove_extension_editor_plugin;
 
 	for (int i = 0; i < plugin_init_callback_count; i++) {
 		plugin_init_callbacks[i]();

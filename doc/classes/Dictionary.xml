@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Dictionary" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Dictionary type.
+		A built-in data structure that holds key-value pairs.
 	</brief_description>
 	<description>
-		Dictionary type. Associative container, which contains values referenced by unique keys. Dictionaries are composed of pairs of keys (which must be unique) and values. Dictionaries will preserve the insertion order when adding new entries. In other programming languages, this data structure is sometimes referred to as a hash map or associative array.
-		You can define a dictionary by placing a comma-separated list of [code]key: value[/code] pairs in curly braces [code]{}[/code].
-		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
+		Dictionaries are associative containers that contain values referenced by unique keys. Dictionaries will preserve the insertion order when adding new entries. In other programming languages, this data structure is often referred to as a hash map or an associative array.
+		You can define a dictionary by placing a comma-separated list of [code]key: value[/code] pairs inside curly braces [code]{}[/code].
 		Creating a dictionary:
 		[codeblocks]
 		[gdscript]
@@ -134,6 +133,7 @@
 		}
 		[/csharp]
 		[/codeblocks]
+		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
 		[b]Note:[/b] Erasing elements while iterating over dictionaries is [b]not[/b] supported and will result in unpredictable behavior.
 	</description>
 	<tutorials>
@@ -217,9 +217,9 @@
 				    { 210, default },
 				};
 
-				GD.Print(myDict.Contains("Godot")); // Prints true
-				GD.Print(myDict.Contains(210));     // Prints true
-				GD.Print(myDict.Contains(4));       // Prints false
+				GD.Print(myDict.ContainsKey("Godot")); // Prints true
+				GD.Print(myDict.ContainsKey(210));     // Prints true
+				GD.Print(myDict.ContainsKey(4));       // Prints false
 				[/csharp]
 				[/codeblocks]
 				In GDScript, this is equivalent to the [code]in[/code] operator:

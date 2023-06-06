@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TextServer" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Interface for the fonts and complex text layouts.
+		A server interface for font management and text rendering.
 	</brief_description>
 	<description>
-		[TextServer] is the API backend for managing fonts, and rendering complex text.
+		[TextServer] is the API backend for managing fonts and rendering text.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,7 +12,7 @@
 		<method name="create_font">
 			<return type="RID" />
 			<description>
-				Creates new, empty font cache entry resource. To free the resulting resource, use [method free_rid] method.
+				Creates a new, empty font cache entry resource. To free the resulting resource, use the [method free_rid] method.
 			</description>
 		</method>
 		<method name="create_shaped_text">
@@ -332,6 +332,13 @@
 			<param index="0" name="font_rid" type="RID" />
 			<description>
 				Returns font OpenType feature set override.
+			</description>
+		</method>
+		<method name="font_get_ot_name_strings" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [Dictionary] with OpenType font name strings (localized font names, version, description, license information, sample text, etc.).
 			</description>
 		</method>
 		<method name="font_get_oversampling" qualifiers="const">

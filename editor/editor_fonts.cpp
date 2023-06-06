@@ -107,6 +107,7 @@ Ref<FontVariation> make_bold_font(const Ref<Font> &p_font, double p_embolden, Ty
 }
 
 void editor_register_fonts(Ref<Theme> p_theme) {
+	OS::get_singleton()->benchmark_begin_measure("editor_register_fonts");
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	TextServer::FontAntialiasing font_antialiasing = (TextServer::FontAntialiasing)(int)EDITOR_GET("interface/editor/font_antialiasing");
@@ -443,4 +444,6 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	p_theme->set_font_size("status_source_size", "EditorFonts", default_font_size);
 	p_theme->set_font("status_source", "EditorFonts", mono_other_fc);
+
+	OS::get_singleton()->benchmark_end_measure("editor_register_fonts");
 }

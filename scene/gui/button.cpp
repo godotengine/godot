@@ -30,6 +30,7 @@
 
 #include "button.h"
 
+#include "core/core_string_names.h"
 #include "core/string/translation.h"
 #include "servers/rendering_server.h"
 
@@ -533,8 +534,26 @@ String Button::get_language() const {
 }
 
 void Button::set_icon(const Ref<Texture2D> &p_icon) {
-	if (icon != p_icon) {
-		icon = p_icon;
+	if (icon == p_icon) {
+		return;
+	}
+
+	if (icon.is_valid()) {
+		icon->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Button::_texture_changed));
+	}
+
+	icon = p_icon;
+
+	if (icon.is_valid()) {
+		icon->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Button::_texture_changed));
+	}
+
+	queue_redraw();
+	update_minimum_size();
+}
+
+void Button::_texture_changed() {
+	if (icon.is_valid()) {
 		queue_redraw();
 		update_minimum_size();
 	}

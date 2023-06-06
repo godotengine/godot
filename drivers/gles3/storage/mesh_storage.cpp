@@ -534,7 +534,7 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 			if (skeleton->use_2d) {
 				for (int j = 0; j < bs; j++) {
-					if (skbones[0].size == Vector3()) {
+					if (skbones[j].size == Vector3(-1, -1, -1)) {
 						continue; //bone is unused
 					}
 
@@ -561,7 +561,7 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 				}
 			} else {
 				for (int j = 0; j < bs; j++) {
-					if (skbones[0].size == Vector3()) {
+					if (skbones[j].size == Vector3(-1, -1, -1)) {
 						continue; //bone is unused
 					}
 

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector3" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Vector used for 3D math using floating point coordinates.
+		A 3D vector using floating point coordinates.
 	</brief_description>
 	<description>
-		3-element structure that can be used to represent positions in 3D space or any other triplet of numeric values.
+		A 3-element structure that can be used to represent 3D coordinates or any other triplet of numeric values.
 		It uses floating-point coordinates. By default, these floating-point values use 32-bit precision, unlike [float] which is always 64-bit. If double precision is needed, compile the engine with the option [code]precision=double[/code].
 		See [Vector3i] for its integer counterpart.
 		[b]Note:[/b] In a boolean context, a Vector3 will evaluate to [code]false[/code] if it's equal to [code]Vector3(0, 0, 0)[/code]. Otherwise, a Vector3 will always evaluate to [code]true[/code].
@@ -404,10 +404,28 @@
 			Down unit vector.
 		</constant>
 		<constant name="FORWARD" value="Vector3(0, 0, -1)">
-			Forward unit vector. Represents the local direction of forward, and the global direction of north.
+			Forward unit vector. Represents the local direction of forward, and the global direction of north. Keep in mind that the forward direction for lights, cameras, etc is different from 3D assets like characters, which face towards the camera by convention. Use [constant Vector3.MODEL_FRONT] and similar constants when working in 3D asset space.
 		</constant>
 		<constant name="BACK" value="Vector3(0, 0, 1)">
 			Back unit vector. Represents the local direction of back, and the global direction of south.
+		</constant>
+		<constant name="MODEL_LEFT" value="Vector3(1, 0, 0)">
+			Unit vector pointing towards the left side of imported 3D assets.
+		</constant>
+		<constant name="MODEL_RIGHT" value="Vector3(-1, 0, 0)">
+			Unit vector pointing towards the right side of imported 3D assets.
+		</constant>
+		<constant name="MODEL_TOP" value="Vector3(0, 1, 0)">
+			Unit vector pointing towards the top side (up) of imported 3D assets.
+		</constant>
+		<constant name="MODEL_BOTTOM" value="Vector3(0, -1, 0)">
+			Unit vector pointing towards the bottom side (down) of imported 3D assets.
+		</constant>
+		<constant name="MODEL_FRONT" value="Vector3(0, 0, 1)">
+			Unit vector pointing towards the front side (facing forward) of imported 3D assets.
+		</constant>
+		<constant name="MODEL_REAR" value="Vector3(0, 0, -1)">
+			Unit vector pointing towards the rear side (back) of imported 3D assets.
 		</constant>
 	</constants>
 	<operators>
@@ -417,6 +435,7 @@
 			<description>
 				Returns [code]true[/code] if the vectors are not equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -513,6 +532,7 @@
 			<param index="0" name="right" type="Vector3" />
 			<description>
 				Compares two [Vector3] vectors by first checking if the X value of the left vector is less than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
@@ -520,6 +540,7 @@
 			<param index="0" name="right" type="Vector3" />
 			<description>
 				Compares two [Vector3] vectors by first checking if the X value of the left vector is less than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -528,6 +549,7 @@
 			<description>
 				Returns [code]true[/code] if the vectors are exactly equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator &gt;">
@@ -535,6 +557,7 @@
 			<param index="0" name="right" type="Vector3" />
 			<description>
 				Compares two [Vector3] vectors by first checking if the X value of the left vector is greater than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
@@ -542,6 +565,7 @@
 			<param index="0" name="right" type="Vector3" />
 			<description>
 				Compares two [Vector3] vectors by first checking if the X value of the left vector is greater than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
 			</description>
 		</operator>
 		<operator name="operator []">

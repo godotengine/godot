@@ -992,6 +992,19 @@ static GDExtensionObjectPtr gdextension_object_get_instance_from_id(GDObjectInst
 	return (GDExtensionObjectPtr)ObjectDB::get_instance(ObjectID(p_instance_id));
 }
 
+static GDExtensionBool gdextension_object_get_class_name(GDExtensionConstObjectPtr p_object, GDExtensionClassLibraryPtr p_library, GDExtensionUninitializedStringNamePtr r_class_name) {
+	if (!p_object) {
+		return false;
+	}
+	const Object *o = (const Object *)p_object;
+
+	memnew_placement(r_class_name, StringName);
+	StringName *class_name = reinterpret_cast<StringName *>(r_class_name);
+	*class_name = o->get_class_name_for_extension((GDExtension *)p_library);
+
+	return true;
+}
+
 static GDExtensionObjectPtr gdextension_object_cast_to(GDExtensionConstObjectPtr p_object, void *p_class_tag) {
 	if (!p_object) {
 		return nullptr;
@@ -1056,6 +1069,20 @@ static void *gdextension_classdb_get_class_tag(GDExtensionConstStringNamePtr p_c
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(classname);
 	return class_info ? class_info->class_ptr : nullptr;
+}
+
+static void gdextension_editor_add_plugin(GDExtensionConstStringNamePtr p_classname) {
+#ifdef TOOLS_ENABLED
+	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
+	GDExtensionEditorPlugins::add_extension_class(classname);
+#endif
+}
+
+static void gdextension_editor_remove_plugin(GDExtensionConstStringNamePtr p_classname) {
+#ifdef TOOLS_ENABLED
+	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
+	GDExtensionEditorPlugins::remove_extension_class(classname);
+#endif
 }
 
 #define REGISTER_INTERFACE_FUNC(m_name) GDExtension::register_interface_function(#m_name, (GDExtensionInterfaceFunctionPtr)&gdextension_##m_name)
@@ -1176,6 +1203,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(object_get_instance_binding);
 	REGISTER_INTERFACE_FUNC(object_set_instance_binding);
 	REGISTER_INTERFACE_FUNC(object_set_instance);
+	REGISTER_INTERFACE_FUNC(object_get_class_name);
 	REGISTER_INTERFACE_FUNC(object_cast_to);
 	REGISTER_INTERFACE_FUNC(object_get_instance_from_id);
 	REGISTER_INTERFACE_FUNC(object_get_instance_id);
@@ -1185,6 +1213,8 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(classdb_construct_object);
 	REGISTER_INTERFACE_FUNC(classdb_get_method_bind);
 	REGISTER_INTERFACE_FUNC(classdb_get_class_tag);
+	REGISTER_INTERFACE_FUNC(editor_add_plugin);
+	REGISTER_INTERFACE_FUNC(editor_remove_plugin);
 }
 
 #undef REGISTER_INTERFACE_FUNCTION

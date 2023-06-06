@@ -336,6 +336,8 @@ public:
 	/* Item manipulation */
 
 	TreeItem *create_child(int p_index = -1);
+	void add_child(TreeItem *p_item);
+	void remove_child(TreeItem *p_item);
 
 	Tree *get_tree() const;
 
@@ -354,6 +356,7 @@ public:
 	int get_visible_child_count();
 	int get_child_count();
 	TypedArray<TreeItem> get_children();
+	void clear_children();
 	int get_index();
 
 #ifdef DEV_ENABLED
@@ -366,11 +369,7 @@ public:
 	void move_before(TreeItem *p_item);
 	void move_after(TreeItem *p_item);
 
-	void remove_child(TreeItem *p_item);
-
 	void call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-
-	void clear_children();
 
 	~TreeItem();
 };

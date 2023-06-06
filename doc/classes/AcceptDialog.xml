@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AcceptDialog" inherits="Window" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base dialog for user notification.
+		A base dialog used for user notification.
 	</brief_description>
 	<description>
-		This dialog is useful for small notifications to the user about an event. It can only be accepted or closed, with the same result.
+		The default use of [AcceptDialog] is to allow it to only be accepted or closed, with the same result. However, the [signal confirmed] and [signal canceled] signals allow to make the two actions different, and the [method add_button] method allows to add custom buttons and actions.
 	</description>
 	<tutorials>
 	</tutorials>

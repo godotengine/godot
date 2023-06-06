@@ -90,6 +90,11 @@ void EditorLog::_update_theme() {
 		log->add_theme_font_override("mono_font", mono_font);
 	}
 
+	// Disable padding for highlighted background/foreground to prevent highlights from overlapping on close lines.
+	// This also better matches terminal output, which does not use any form of padding.
+	log->add_theme_constant_override("text_highlight_h_padding", 0);
+	log->add_theme_constant_override("text_highlight_v_padding", 0);
+
 	const int font_size = get_theme_font_size(SNAME("output_source_size"), SNAME("EditorFonts"));
 	log->add_theme_font_size_override("normal_font_size", font_size);
 	log->add_theme_font_size_override("bold_font_size", font_size);
@@ -384,6 +389,7 @@ EditorLog::EditorLog() {
 
 	// Log - Rich Text Label.
 	log = memnew(RichTextLabel);
+	log->set_threaded(true);
 	log->set_use_bbcode(true);
 	log->set_scroll_follow(true);
 	log->set_selection_enabled(true);

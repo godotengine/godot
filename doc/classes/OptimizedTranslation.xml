@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="OptimizedTranslation" inherits="Translation" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Optimized translation.
+		An optimized translation, used by default for CSV Translations.
 	</brief_description>
 	<description>
-		Optimized translation. Uses real-time compressed translations, which results in very small dictionaries.
+		An optimized translation, used by default for CSV Translations. Uses real-time compressed translations, which results in very small dictionaries.
 	</description>
 	<tutorials>
 	</tutorials>

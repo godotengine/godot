@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SeparationRayShape3D" inherits="Shape3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Separation ray shape resource for 3D physics.
+		A 3D ray shape used for physics collision that tries to separate itself from any collider.
 	</brief_description>
 	<description>
-		3D separation ray shape to be added as a [i]direct[/i] child of a [PhysicsBody3D] or [Area3D] using a [CollisionShape3D] node. A ray is not really a collision body; instead, it tries to separate itself from whatever is touching its far endpoint. It's often useful for characters.
-		[b]Performance:[/b] Being a primitive collision shape, [SeparationRayShape3D] is fast to check collisions against.
+		A 3D ray shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape2D]. When a [SeparationRayShape3D] collides with an object, it tries to separate itself from it by moving its endpoint to the collision point. It can for example be used for spears falling from the sky.
 	</description>
 	<tutorials>
 	</tutorials>

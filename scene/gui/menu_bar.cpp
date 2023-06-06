@@ -399,13 +399,18 @@ void MenuBar::_notification(int p_what) {
 int MenuBar::_get_index_at_point(const Point2 &p_point) const {
 	Ref<StyleBox> style = theme_cache.normal;
 	int offset = 0;
+	Point2 point = p_point;
+	if (is_layout_rtl()) {
+		point.x = get_size().x - point.x;
+	}
+
 	for (int i = 0; i < menu_cache.size(); i++) {
 		if (menu_cache[i].hidden) {
 			continue;
 		}
 		Size2 size = menu_cache[i].text_buf->get_size() + style->get_minimum_size();
-		if (p_point.x > offset && p_point.x < offset + size.x) {
-			if (p_point.y > 0 && p_point.y < size.y) {
+		if (point.x > offset && point.x < offset + size.x) {
+			if (point.y > 0 && point.y < size.y) {
 				return i;
 			}
 		}
@@ -428,7 +433,12 @@ Rect2 MenuBar::_get_menu_item_rect(int p_index) const {
 		offset += size.x + theme_cache.h_separation;
 	}
 
-	return Rect2(Point2(offset, 0), menu_cache[p_index].text_buf->get_size() + style->get_minimum_size());
+	Size2 size = menu_cache[p_index].text_buf->get_size() + style->get_minimum_size();
+	if (is_layout_rtl()) {
+		return Rect2(Point2(get_size().x - offset - size.x, 0), size);
+	} else {
+		return Rect2(Point2(offset, 0), size);
+	}
 }
 
 void MenuBar::_draw_menu_item(int p_index) {

@@ -32,6 +32,7 @@ jobs:
             build-mono: true
             proj-conv: true
             artifact: true
+            compat: true
 
           - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
             cache-name: linux-editor-double-sanitizers
@@ -201,6 +202,11 @@ jobs:
           cd godot-cpp/test
           scons target=template_debug dev_build=yes
           cd ../..
+
+      - name: Check for GDExtension compatibility
+        if: ${{ matrix.compat }}
+        run: |
+          ./misc/scripts/validate_extension_api.sh "${{ matrix.bin }}" || true # don't fail the CI for now
 
       - name: Prepare artifact
         if: ${{ matrix.artifact }}

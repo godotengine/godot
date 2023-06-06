@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Joint2D" inherits="Node2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base node for all joint constraints in 2D physics.
+		Abstract base class for all 2D physics joints.
 	</brief_description>
 	<description>
-		Base node for all joint constraints in 2D physics. Joints take 2 bodies and apply a custom constraint.
+		Abstract base class for all joints in 2D physics. 2D joints bind together two physics bodies and apply a constraint.
 	</description>
 	<tutorials>
 	</tutorials>

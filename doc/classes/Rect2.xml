@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Rect2" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		2D axis-aligned bounding box using floating point coordinates.
+		A 2D axis-aligned bounding box using floating-point coordinates.
 	</brief_description>
 	<description>
 		[Rect2] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.

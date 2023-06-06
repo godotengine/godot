@@ -36,35 +36,32 @@
 #include "editor/editor_resource_preview.h"
 #include "scene/resources/curve.h"
 
+class EditorSpinSlider;
+class MenuButton;
 class PopupMenu;
 
-// Edits a y(x) curve
-class CurveEditor : public Control {
-	GDCLASS(CurveEditor, Control);
+class CurveEdit : public Control {
+	GDCLASS(CurveEdit, Control);
 
 public:
-	CurveEditor();
+	CurveEdit();
+
+	void set_snap_enabled(bool p_enabled);
+	void set_snap_count(int p_snap_count);
+	void use_preset(int p_preset_id);
+
+	void set_curve(Ref<Curve> p_curve);
+	Ref<Curve> get_curve();
 
 	Size2 get_minimum_size() const override;
 
-	void set_curve(Ref<Curve> curve);
-
 	enum PresetID {
-		PRESET_FLAT0 = 0,
-		PRESET_FLAT1,
+		PRESET_CONSTANT = 0,
 		PRESET_LINEAR,
 		PRESET_EASE_IN,
 		PRESET_EASE_OUT,
 		PRESET_SMOOTHSTEP,
 		PRESET_COUNT
-	};
-
-	enum ContextAction {
-		CONTEXT_ADD_POINT = 0,
-		CONTEXT_REMOVE_POINT,
-		CONTEXT_LINEAR,
-		CONTEXT_LEFT_LINEAR,
-		CONTEXT_RIGHT_LINEAR
 	};
 
 	enum TangentIndex {
@@ -75,49 +72,101 @@ public:
 
 protected:
 	void _notification(int p_what);
+	static void _bind_methods();
 
 private:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	void on_preset_item_selected(int preset_id);
 	void _curve_changed();
-	void on_context_menu_item_selected(int action_id);
 
-	void open_context_menu(Vector2 pos);
-	int get_point_at(Vector2 pos) const;
-	TangentIndex get_tangent_at(Vector2 pos) const;
-	void add_point(Vector2 pos);
-	void remove_point(int index);
-	void toggle_linear(TangentIndex tangent = TANGENT_NONE);
-	void set_selected_point(int index);
-	void set_hover_point_index(int index);
+	int get_point_at(Vector2 p_pos) const;
+	TangentIndex get_tangent_at(Vector2 p_pos) const;
+
+	float get_offset_without_collision(int p_current_index, float p_offset, bool p_prioritize_right = true);
+
+	void add_point(Vector2 p_pos);
+	void remove_point(int p_index);
+	void set_point_position(int p_index, Vector2 p_pos);
+
+	void set_point_tangents(int p_index, float p_left, float p_right);
+	void set_point_left_tangent(int p_index, float p_tangent);
+	void set_point_right_tangent(int p_index, float p_tangent);
+	void toggle_linear(int p_index, TangentIndex p_tangent = TANGENT_NONE);
+
 	void update_view_transform();
 
-	Vector2 get_tangent_view_pos(int i, TangentIndex tangent) const;
-	Vector2 get_view_pos(Vector2 world_pos) const;
-	Vector2 get_world_pos(Vector2 view_pos) const;
+	void set_selected_index(int p_index);
+	void set_selected_tangent_index(TangentIndex p_tangent);
 
-	void _draw();
+	Vector2 get_tangent_view_pos(int p_index, TangentIndex p_tangent) const;
+	Vector2 get_view_pos(Vector2 p_world_pos) const;
+	Vector2 get_world_pos(Vector2 p_view_pos) const;
+
+	void _redraw();
 
 private:
 	Transform2D _world_to_view;
 
-	Ref<Curve> _curve_ref;
-	PopupMenu *_context_menu = nullptr;
+	Ref<Curve> curve;
 	PopupMenu *_presets_menu = nullptr;
 
-	Array _undo_data;
-	bool _has_undo_data;
+	int selected_index = -1;
+	int hovered_index = -1;
+	TangentIndex selected_tangent_index = TANGENT_NONE;
+	TangentIndex hovered_tangent_index = TANGENT_NONE;
 
-	Vector2 _context_click_pos;
-	int _selected_point;
-	int _hover_point;
-	TangentIndex _selected_tangent;
-	bool _dragging;
+	// Make sure to use the scaled values below.
+	const int BASE_POINT_RADIUS = 4;
+	const int BASE_HOVER_RADIUS = 10;
+	const int BASE_TANGENT_RADIUS = 3;
+	const int BASE_TANGENT_HOVER_RADIUS = 8;
+	const int BASE_TANGENT_LENGTH = 36;
 
-	// Constant
-	float _hover_radius;
-	float _tangents_length;
-	float _gizmo_handle_scale = 1.0;
+	int point_radius = BASE_POINT_RADIUS;
+	int hover_radius = BASE_HOVER_RADIUS;
+	int tangent_radius = BASE_TANGENT_RADIUS;
+	int tangent_hover_radius = BASE_TANGENT_HOVER_RADIUS;
+	int tangent_length = BASE_TANGENT_LENGTH;
+
+	enum GrabMode {
+		GRAB_NONE,
+		GRAB_ADD,
+		GRAB_MOVE
+	};
+	GrabMode grabbing = GRAB_NONE;
+	Vector2 initial_grab_pos;
+	int initial_grab_index;
+	float initial_grab_left_tangent;
+	float initial_grab_right_tangent;
+
+	bool snap_enabled = false;
+	int snap_count = 10;
+};
+
+// CurveEdit + toolbar
+class CurveEditor : public VBoxContainer {
+	GDCLASS(CurveEditor, VBoxContainer);
+
+	// Make sure to use the scaled values below.
+	const int BASE_SPACING = 4;
+	int spacing = BASE_SPACING;
+
+	Button *snap_button = nullptr;
+	EditorSpinSlider *snap_count_edit = nullptr;
+	MenuButton *presets_button = nullptr;
+	CurveEdit *curve_editor_rect = nullptr;
+
+	void _set_snap_enabled(bool p_enabled);
+	void _set_snap_count(int p_snap_count);
+	void _on_preset_item_selected(int p_preset_id);
+
+protected:
+	void _notification(int p_what);
+
+public:
+	static const int DEFAULT_SNAP;
+	void set_curve(const Ref<Curve> &p_curve);
+
+	CurveEditor();
 };
 
 class EditorInspectorPluginCurve : public EditorInspectorPlugin {

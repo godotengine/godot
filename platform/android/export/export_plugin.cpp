@@ -2542,7 +2542,6 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 		if (ep.step(vformat(TTR("Signing debug %s..."), export_label), 104)) {
 			return ERR_SKIP;
 		}
-
 	} else {
 		keystore = release_keystore;
 		password = release_password;

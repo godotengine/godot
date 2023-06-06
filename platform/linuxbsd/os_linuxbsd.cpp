@@ -215,44 +215,50 @@ String OS_LinuxBSD::get_name() const {
 }
 
 String OS_LinuxBSD::get_systemd_os_release_info_value(const String &key) const {
-	static String info;
-	if (info.is_empty()) {
-		Ref<FileAccess> f = FileAccess::open("/etc/os-release", FileAccess::READ);
-		if (f.is_valid()) {
-			while (!f->eof_reached()) {
-				const String line = f->get_line();
-				if (line.find(key) != -1) {
-					return line.split("=")[1].strip_edges();
-				}
+	Ref<FileAccess> f = FileAccess::open("/etc/os-release", FileAccess::READ);
+	if (f.is_valid()) {
+		while (!f->eof_reached()) {
+			const String line = f->get_line();
+			if (line.find(key) != -1) {
+				String value = line.split("=")[1].strip_edges();
+				value = value.trim_prefix("\"");
+				return value.trim_suffix("\"");
 			}
 		}
 	}
-	return info;
+	return "";
 }
 
 String OS_LinuxBSD::get_distribution_name() const {
-	static String systemd_name = get_systemd_os_release_info_value("NAME"); // returns a value for systemd users, otherwise an empty string.
-	if (!systemd_name.is_empty()) {
-		return systemd_name;
+	static String distribution_name = get_systemd_os_release_info_value("NAME"); // returns a value for systemd users, otherwise an empty string.
+	if (!distribution_name.is_empty()) {
+		return distribution_name;
 	}
 	struct utsname uts; // returns a decent value for BSD family.
 	uname(&uts);
-	return uts.sysname;
+	distribution_name = uts.sysname;
+	return distribution_name;
 }
 
 String OS_LinuxBSD::get_version() const {
-	static String systemd_version = get_systemd_os_release_info_value("VERSION"); // returns a value for systemd users, otherwise an empty string.
-	if (!systemd_version.is_empty()) {
-		return systemd_version;
+	static String release_version = get_systemd_os_release_info_value("VERSION"); // returns a value for systemd users, otherwise an empty string.
+	if (!release_version.is_empty()) {
+		return release_version;
 	}
 	struct utsname uts; // returns a decent value for BSD family.
 	uname(&uts);
-	return uts.version;
+	release_version = uts.version;
+	return release_version;
 }
 
 Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
 		return Vector<String>();
+	}
+
+	static Vector<String> info;
+	if (!info.is_empty()) {
+		return info;
 	}
 
 	const String rendering_device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name(); // e.g. `NVIDIA GeForce GTX 970`
@@ -320,8 +326,8 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 	Vector<String> class_display_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_display_device_candidates, kernel_lit, dummys);
 	Vector<String> class_3d_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_3d_device_candidates, kernel_lit, dummys);
 
-	static String driver_name;
-	static String driver_version;
+	String driver_name;
+	String driver_version;
 
 	// Use first valid value:
 	for (const String &driver : class_3d_device_drivers) {
@@ -341,7 +347,6 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 		}
 	}
 
-	Vector<String> info;
 	info.push_back(driver_name);
 
 	String modinfo;

@@ -202,7 +202,8 @@ void SpinBox::_line_edit_focus_enter() {
 
 void SpinBox::_line_edit_focus_exit() {
 	// Discontinue because the focus_exit was caused by left-clicking the arrows.
-	if (get_viewport()->gui_get_focus_owner() == get_line_edit()) {
+	const Viewport *viewport = get_viewport();
+	if (!viewport || viewport->gui_get_focus_owner() == get_line_edit()) {
 		return;
 	}
 	// Discontinue because the focus_exit was caused by right-click context menu.

@@ -314,6 +314,7 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 		parent_extension->gdextension.children.push_back(&extension->gdextension);
 	}
 
+	extension->gdextension.library = self;
 	extension->gdextension.parent_class_name = parent_class_name;
 	extension->gdextension.class_name = class_name;
 	extension->gdextension.editor_class = self->level_initialized == INITIALIZATION_LEVEL_EDITOR;
@@ -524,7 +525,7 @@ void GDExtension::deinitialize_library(InitializationLevel p_level) {
 }
 
 void GDExtension::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("open_library", "path", "entry_symbol", "use_legacy_interface"), &GDExtension::open_library);
+	ClassDB::bind_method(D_METHOD("open_library", "path", "entry_symbol", "use_legacy_interface"), &GDExtension::open_library, DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("open_library", "path", "entry_symbol"), &GDExtension::open_library_compat_76406);
 	ClassDB::bind_method(D_METHOD("close_library"), &GDExtension::close_library);
 	ClassDB::bind_method(D_METHOD("is_library_open"), &GDExtension::is_library_open);
@@ -677,3 +678,25 @@ String GDExtensionResourceLoader::get_resource_type(const String &p_path) const 
 	}
 	return "";
 }
+
+#ifdef TOOLS_ENABLED
+Vector<StringName> GDExtensionEditorPlugins::extension_classes;
+GDExtensionEditorPlugins::EditorPluginRegisterFunc GDExtensionEditorPlugins::editor_node_add_plugin = nullptr;
+GDExtensionEditorPlugins::EditorPluginRegisterFunc GDExtensionEditorPlugins::editor_node_remove_plugin = nullptr;
+
+void GDExtensionEditorPlugins::add_extension_class(const StringName &p_class_name) {
+	if (editor_node_add_plugin) {
+		editor_node_add_plugin(p_class_name);
+	} else {
+		extension_classes.push_back(p_class_name);
+	}
+}
+
+void GDExtensionEditorPlugins::remove_extension_class(const StringName &p_class_name) {
+	if (editor_node_remove_plugin) {
+		editor_node_remove_plugin(p_class_name);
+	} else {
+		extension_classes.erase(p_class_name);
+	}
+}
+#endif // TOOLS_ENABLED

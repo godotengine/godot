@@ -168,7 +168,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 			} else {
 #ifdef TOOLS_ENABLED
 				//remember ID for saving
-				res->set_id_for_path(path, id);
+				res->set_id_for_path(local_path, id);
 #endif
 				r_res = res;
 			}

@@ -125,7 +125,7 @@ _solve (Triple tent, Triple axisLimit, bool negative = false)
       return result_t{};  // No overlap
 
   /* case 2: Only the peak and outermost bound fall outside the new limit;
-   * we keep the deltaset, update peak and outermost bound and and scale deltas
+   * we keep the deltaset, update peak and outermost bound and scale deltas
    * by the scalar value for the restricted axis at the new limit, and solve
    * recursively.
    *

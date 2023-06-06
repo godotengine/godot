@@ -1902,6 +1902,19 @@ typedef void (*GDExtensionInterfaceObjectSetInstanceBinding)(GDExtensionObjectPt
 typedef void (*GDExtensionInterfaceObjectSetInstance)(GDExtensionObjectPtr p_o, GDExtensionConstStringNamePtr p_classname, GDExtensionClassInstancePtr p_instance); /* p_classname should be a registered extension class and should extend the p_o object's class. */
 
 /**
+ * @name object_get_class_name
+ *
+ * Gets the class name of an Object.
+ *
+ * @param p_object A pointer to the Object.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param r_class_name A pointer to a String to receive the class name.
+ *
+ * @return true if successful in getting the class name; otherwise false.
+ */
+typedef GDExtensionBool (*GDExtensionInterfaceObjectGetClassName)(GDExtensionConstObjectPtr p_object, GDExtensionClassLibraryPtr p_library, GDExtensionUninitializedStringNamePtr r_class_name);
+
+/**
  * @name object_cast_to
  *
  * Casts an Object to a different type.
@@ -2127,6 +2140,26 @@ typedef void (*GDExtensionInterfaceClassdbUnregisterExtensionClass)(GDExtensionC
  * @param r_path A pointer to a String which will receive the path.
  */
 typedef void (*GDExtensionInterfaceGetLibraryPath)(GDExtensionClassLibraryPtr p_library, GDExtensionUninitializedStringPtr r_path);
+
+/**
+ * @name editor_add_plugin
+ *
+ * Adds an editor plugin.
+ *
+ * It's safe to call during initialization.
+ *
+ * @param p_class_name A pointer to a StringName with the name of a class (descending from EditorPlugin) which is already registered with ClassDB.
+ */
+typedef void (*GDExtensionInterfaceEditorAddPlugin)(GDExtensionConstStringNamePtr p_class_name);
+
+/**
+ * @name editor_remove_plugin
+ *
+ * Removes an editor plugin.
+ *
+ * @param p_class_name A pointer to a StringName with the name of a class that was previously added as an editor plugin.
+ */
+typedef void (*GDExtensionInterfaceEditorRemovePlugin)(GDExtensionConstStringNamePtr p_class_name);
 
 #ifdef __cplusplus
 }

@@ -52,6 +52,7 @@
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this method may not be accurate if NaNs are included.
 			</description>
 		</method>
 		<method name="clear">
@@ -65,6 +66,7 @@
 			<param index="0" name="value" type="Vector3" />
 			<description>
 				Returns the number of times an element is in the array.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this method may not be accurate if NaNs are included.
 			</description>
 		</method>
 		<method name="duplicate">
@@ -86,6 +88,7 @@
 			<param index="1" name="from" type="int" default="0" />
 			<description>
 				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this method may not be accurate if NaNs are included.
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
@@ -93,6 +96,7 @@
 			<param index="0" name="value" type="Vector3" />
 			<description>
 				Returns [code]true[/code] if the array contains [param value].
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this method may not be accurate if NaNs are included.
 			</description>
 		</method>
 		<method name="insert">
@@ -142,6 +146,7 @@
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this method may not be accurate if NaNs are included.
 			</description>
 		</method>
 		<method name="set">
@@ -172,6 +177,7 @@
 			<return type="void" />
 			<description>
 				Sorts the elements of the array in ascending order.
+				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this method may not be accurate if NaNs are included.
 			</description>
 		</method>
 		<method name="to_byte_array" qualifiers="const">

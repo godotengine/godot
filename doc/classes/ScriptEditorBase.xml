@@ -4,7 +4,7 @@
 		Base editor for editing scripts in the [ScriptEditor].
 	</brief_description>
 	<description>
-		Base editor for editing scripts in the [ScriptEditor], this does not include documentation items.
+		Base editor for editing scripts in the [ScriptEditor]. This does not include documentation items.
 	</description>
 	<tutorials>
 	</tutorials>

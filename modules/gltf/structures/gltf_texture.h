@@ -38,7 +38,7 @@ class GLTFTexture : public Resource {
 	GDCLASS(GLTFTexture, Resource);
 
 private:
-	GLTFImageIndex src_image = 0;
+	GLTFImageIndex src_image = -1;
 	GLTFTextureSamplerIndex sampler = -1;
 
 protected:

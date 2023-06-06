@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="BaseButton" inherits="Control" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for different kinds of buttons.
+		Abstract base class for GUI buttons.
 	</brief_description>
 	<description>
-		BaseButton is the abstract base class for buttons, so it shouldn't be used directly (it doesn't display anything). Other types of buttons inherit from it.
+		[BaseButton] is an abstract base class for GUI buttons. It doesn't display anything by itself.
 	</description>
 	<tutorials>
 	</tutorials>

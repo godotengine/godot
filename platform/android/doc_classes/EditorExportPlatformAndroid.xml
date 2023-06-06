@@ -59,14 +59,17 @@
 		<member name="keystore/debug" type="String" setter="" getter="">
 			Path of the debug keystore file.
 			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_DEBUG_PATH[/code].
+			Fallbacks to [code]EditorSettings.export/android/debug_keystore[/code] if empty.
 		</member>
 		<member name="keystore/debug_password" type="String" setter="" getter="">
 			Password for the debug keystore file.
 			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD[/code].
+			Fallbacks to [code]EditorSettings.export/android/debug_keystore_pass[/code] if both it and [member keystore/debug] are empty.
 		</member>
 		<member name="keystore/debug_user" type="String" setter="" getter="">
 			User name for the debug keystore file.
 			Can be overridden with the environment variable [code]GODOT_ANDROID_KEYSTORE_DEBUG_USER[/code].
+			Fallbacks to [code]EditorSettings.export/android/debug_keystore_user[/code] if both it and [member keystore/debug] are empty.
 		</member>
 		<member name="keystore/release" type="String" setter="" getter="">
 			Path of the release keystore file.
@@ -87,7 +90,7 @@
 			Foreground layer of the application adaptive icon file.
 		</member>
 		<member name="launcher_icons/main_192x192" type="String" setter="" getter="">
-			Application icon file. If left empty, project icon is used instead.
+			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/icon].
 		</member>
 		<member name="package/app_category" type="int" setter="" getter="">
 			Application category for the Play Store.

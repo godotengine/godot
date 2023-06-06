@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="OS" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Operating System functions.
+		Provides access to common operating system functionalities.
 	</brief_description>
 	<description>
-		Operating System functions. [OS] wraps the most common functionality to communicate with the host operating system, such as the video driver, delays, environment variables, execution of binaries, command line, etc.
+		This class wraps the most common functionalities for communicating with the host operating system, such as the video driver, delays, environment variables, execution of binaries, command line, etc.
 		[b]Note:[/b] In Godot 4, [OS] functions related to window management were moved to the [DisplayServer] singleton.
 	</description>
 	<tutorials>
@@ -241,7 +241,7 @@
 			<return type="PackedStringArray" />
 			<description>
 				With this function, you can get the list of dangerous permissions that have been granted to the Android application.
-				[b]Note:[/b] This method is implemented on Android.
+				[b]Note:[/b] This method is implemented only on Android.
 			</description>
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
@@ -599,7 +599,7 @@
 			<return type="bool" />
 			<description>
 				With this function, you can request dangerous permissions since normal permissions are automatically granted at install time in Android applications.
-				[b]Note:[/b] This method is implemented on Android.
+				[b]Note:[/b] This method is implemented only on Android.
 			</description>
 		</method>
 		<method name="set_environment" qualifiers="const">

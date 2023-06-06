@@ -109,6 +109,13 @@ void ColorPicker::_notification(int p_what) {
 				picker_window->hide();
 			}
 		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (!is_picking_color) {
+				return;
+			}
+			set_pick_color(DisplayServer::get_singleton()->screen_get_pixel(DisplayServer::get_singleton()->mouse_get_position()));
+		}
 	}
 }
 
@@ -608,13 +615,14 @@ void ColorPicker::_update_presets() {
 
 #ifdef TOOLS_ENABLED
 	if (editor_settings) {
-		// Only load preset buttons when the only child is the add-preset button.
-		if (preset_container->get_child_count() == 1) {
-			for (int i = 0; i < preset_cache.size(); i++) {
-				_add_preset_button(preset_size, preset_cache[i]);
-			}
-			_notification(NOTIFICATION_VISIBILITY_CHANGED);
+		// Rebuild swatch color buttons, keeping the add-preset button in the first position.
+		for (int i = 1; i < preset_container->get_child_count(); i++) {
+			preset_container->get_child(i)->queue_free();
 		}
+		for (int i = 0; i < preset_cache.size(); i++) {
+			_add_preset_button(preset_size, preset_cache[i]);
+		}
+		_notification(NOTIFICATION_VISIBILITY_CHANGED);
 	}
 #endif
 }
@@ -1421,30 +1429,6 @@ void ColorPicker::_recent_preset_pressed(const bool p_pressed, ColorPresetButton
 	emit_signal(SNAME("color_changed"), p_preset->get_preset_color());
 }
 
-void ColorPicker::_picker_texture_input(const Ref<InputEvent> &p_event) {
-	if (!is_inside_tree()) {
-		return;
-	}
-
-	Ref<InputEventMouseButton> bev = p_event;
-	if (bev.is_valid() && bev->get_button_index() == MouseButton::LEFT && !bev->is_pressed()) {
-		set_pick_color(picker_color);
-		emit_signal(SNAME("color_changed"), color);
-		picker_window->hide();
-	}
-
-	Ref<InputEventMouseMotion> mev = p_event;
-	if (mev.is_valid()) {
-		Ref<Image> img = picker_texture_rect->get_texture()->get_image();
-		if (img.is_valid() && !img->is_empty()) {
-			Vector2 ofs = mev->get_position();
-			picker_color = img->get_pixel(ofs.x, ofs.y);
-			picker_preview_style_box->set_bg_color(picker_color);
-			picker_preview_label->set_self_modulate(picker_color.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
-		}
-	}
-}
-
 void ColorPicker::_text_changed(const String &) {
 	text_changed = true;
 }
@@ -1455,6 +1439,34 @@ void ColorPicker::_add_preset_pressed() {
 }
 
 void ColorPicker::_pick_button_pressed() {
+	is_picking_color = true;
+	set_process_internal(true);
+
+	if (!picker_window) {
+		picker_window = memnew(Popup);
+		picker_window->set_size(Vector2i(1, 1));
+		picker_window->connect("visibility_changed", callable_mp(this, &ColorPicker::_pick_finished));
+		add_child(picker_window);
+	}
+	picker_window->popup();
+}
+
+void ColorPicker::_pick_finished() {
+	if (picker_window->is_visible()) {
+		return;
+	}
+
+	if (Input::get_singleton()->is_key_pressed(Key::ESCAPE)) {
+		set_pick_color(old_color);
+	} else {
+		emit_signal(SNAME("color_changed"), color);
+	}
+	is_picking_color = false;
+	set_process_internal(false);
+	picker_window->hide();
+}
+
+void ColorPicker::_pick_button_pressed_legacy() {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -1469,7 +1481,7 @@ void ColorPicker::_pick_button_pressed() {
 		picker_texture_rect->set_anchors_preset(Control::PRESET_FULL_RECT);
 		picker_window->add_child(picker_texture_rect);
 		picker_texture_rect->set_default_cursor_shape(CURSOR_POINTING_HAND);
-		picker_texture_rect->connect(SNAME("gui_input"), callable_mp(this, &ColorPicker::_picker_texture_input));
+		picker_texture_rect->connect("gui_input", callable_mp(this, &ColorPicker::_picker_texture_input));
 
 		picker_preview = memnew(Panel);
 		picker_preview->set_anchors_preset(Control::PRESET_CENTER_TOP);
@@ -1527,6 +1539,30 @@ void ColorPicker::_pick_button_pressed() {
 	picker_window->set_size(screen_rect.size);
 	picker_preview->set_size(screen_rect.size / 10.0); // 10% of size in each axis.
 	picker_window->popup();
+}
+
+void ColorPicker::_picker_texture_input(const Ref<InputEvent> &p_event) {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	Ref<InputEventMouseButton> bev = p_event;
+	if (bev.is_valid() && bev->get_button_index() == MouseButton::LEFT && !bev->is_pressed()) {
+		set_pick_color(picker_color);
+		emit_signal(SNAME("color_changed"), color);
+		picker_window->hide();
+	}
+
+	Ref<InputEventMouseMotion> mev = p_event;
+	if (mev.is_valid()) {
+		Ref<Image> img = picker_texture_rect->get_texture()->get_image();
+		if (img.is_valid() && !img->is_empty()) {
+			Vector2 ofs = mev->get_position();
+			picker_color = img->get_pixel(ofs.x, ofs.y);
+			picker_preview_style_box->set_bg_color(picker_color);
+			picker_preview_label->set_self_modulate(picker_color.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
+		}
+	}
 }
 
 void ColorPicker::_html_focus_exit() {
@@ -1692,8 +1728,14 @@ ColorPicker::ColorPicker() {
 
 	btn_pick = memnew(Button);
 	sample_hbc->add_child(btn_pick);
-	btn_pick->set_tooltip_text(RTR("Pick a color from the application window."));
-	btn_pick->connect(SNAME("pressed"), callable_mp(this, &ColorPicker::_pick_button_pressed));
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SCREEN_CAPTURE)) {
+		btn_pick->set_tooltip_text(RTR("Pick a color from the screen."));
+		btn_pick->connect(SNAME("pressed"), callable_mp(this, &ColorPicker::_pick_button_pressed));
+	} else {
+		// On unsupported platforms, use a legacy method for color picking.
+		btn_pick->set_tooltip_text(RTR("Pick a color from the application window."));
+		btn_pick->connect(SNAME("pressed"), callable_mp(this, &ColorPicker::_pick_button_pressed_legacy));
+	}
 
 	sample = memnew(TextureRect);
 	sample_hbc->add_child(sample);

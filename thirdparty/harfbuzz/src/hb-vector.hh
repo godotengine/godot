@@ -290,13 +290,11 @@ struct hb_vector_t
   copy_vector (const hb_vector_t &other)
   {
     length = other.length;
-#ifndef HB_OPTIMIZE_SIZE
-    if (sizeof (T) >= sizeof (long long))
+    if (!HB_OPTIMIZE_SIZE_VAL && sizeof (T) >= sizeof (long long))
       /* This runs faster because of alignment. */
       for (unsigned i = 0; i < length; i++)
 	arrayZ[i] = other.arrayZ[i];
     else
-#endif
        hb_memcpy ((void *) arrayZ, (const void *) other.arrayZ, length * item_size);
   }
   template <typename T = Type,

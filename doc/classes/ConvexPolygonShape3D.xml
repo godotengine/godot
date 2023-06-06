@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ConvexPolygonShape3D" inherits="Shape3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Convex polygon shape resource for 3D physics.
+		A 3D convex polyhedron shape used for physics collision.
 	</brief_description>
 	<description>
-		3D convex polygon shape resource to be added as a [i]direct[/i] child of a [PhysicsBody3D] or [Area3D] using a [CollisionShape3D] node.
-		The shape is a [i]solid[/i] that includes all the points that it encloses, as opposed to [ConcavePolygonShape3D] which is hollow if it encloses anything. See also [CollisionPolygon3D].
-		The solid nature of the shape makes it well-suited for both detection and physics; in physics body interactions this allows depenetrating even those shapes which end up (e.g. due to high speed) fully inside the convex shape (similarly to primitive shapes, but unlike [ConcavePolygonShape3D] and [HeightMapShape3D]). The convexity restricts the possible geometric shape of a single [ConvexPolygonShape3D]: it cannot be concave.
-		[b]Convex decomposition:[/b] Concave objects' collisions can be represented accurately using [i]several[/i] convex shapes. This allows dynamic physics bodies to have complex concave collisions (at a performance cost). It can be achieved by using several [ConvexPolygonShape3D] nodes or by using the [CollisionPolygon3D] node. To generate a collision polygon from a mesh, select the [MeshInstance3D] node, go to the [b]Mesh[/b] menu that appears above the viewport and choose [b]Create Multiple Convex Collision Siblings[/b]. Alternatively, [method MeshInstance3D.create_multiple_convex_collisions] can be called in a script to perform this decomposition at run-time.
-		[b]Performance:[/b] [ConvexPolygonShape3D] is faster to check collisions against compared to [ConcavePolygonShape3D], but it is slower than primitive collision shapes such as [SphereShape3D] or [BoxShape3D]. Its use should generally be limited to medium-sized objects that cannot have their collision accurately represented by primitive shapes.
+		A 3D convex polyhedron shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D].
+		[ConvexPolygonShape3D] is [i]solid[/i], which means it detects collisions from objects that are fully inside it, unlike [ConcavePolygonShape3D] which is hollow. This makes it more suitable for both detection and physics.
+		[b]Convex decomposition:[/b] A concave polyhedron can be split up into several convex polyhedra. This allows dynamic physics bodies to have complex concave collisions (at a performance cost) and can be achieved by using several [ConvexPolygonShape3D] nodes. To generate a convex decomposition from a mesh, select the [MeshInstance3D] node, go to the [b]Mesh[/b] menu that appears above the viewport, and choose [b]Create Multiple Convex Collision Siblings[/b]. Alternatively, [method MeshInstance3D.create_multiple_convex_collisions] can be called in a script to perform this decomposition at run-time.
+		[b]Performance:[/b] [ConvexPolygonShape3D] is faster to check collisions against compared to [ConcavePolygonShape3D], but it is slower than primitive collision shapes such as [SphereShape3D] and [BoxShape3D]. Its use should generally be limited to medium-sized objects that cannot have their collision accurately represented by primitive shapes.
 	</description>
 	<tutorials>
 		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>

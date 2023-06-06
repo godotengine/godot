@@ -76,6 +76,94 @@ Control *FileSystemList::make_custom_tooltip(const String &p_text) const {
 	return FileSystemDock::get_singleton()->create_tooltip_for_path(get_item_metadata(idx));
 }
 
+void FileSystemList::_line_editor_submit(String p_text) {
+	popup_editor->hide();
+
+	emit_signal(SNAME("item_edited"));
+	queue_redraw();
+}
+
+bool FileSystemList::edit_selected() {
+	ERR_FAIL_COND_V_MSG(!is_anything_selected(), false, "No item selected.");
+	int s = get_current();
+	ensure_current_is_visible();
+
+	Rect2 rect;
+	Rect2 popup_rect;
+	Vector2 ofs;
+
+	Vector2 icon_size = get_item_icon(s)->get_size();
+
+	// Handles the different icon modes (TOP/LEFT).
+	switch (get_icon_mode()) {
+		case ItemList::ICON_MODE_LEFT:
+			rect = get_item_rect(s, true);
+			ofs = Vector2(0, Math::floor((MAX(line_editor->get_minimum_size().height, rect.size.height) - rect.size.height) / 2));
+			popup_rect.position = get_screen_position() + rect.position - ofs;
+			popup_rect.size = rect.size;
+
+			// Adjust for icon position and size.
+			popup_rect.size.x -= icon_size.x;
+			popup_rect.position.x += icon_size.x;
+			break;
+		case ItemList::ICON_MODE_TOP:
+			rect = get_item_rect(s, false);
+			popup_rect.position = get_screen_position() + rect.position;
+			popup_rect.size = rect.size;
+
+			// Adjust for icon position and size.
+			popup_rect.size.y -= icon_size.y;
+			popup_rect.position.y += icon_size.y;
+			break;
+	}
+
+	popup_editor->set_position(popup_rect.position);
+	popup_editor->set_size(popup_rect.size);
+
+	String name = get_item_text(s);
+	line_editor->set_text(name);
+	line_editor->select(0, name.rfind("."));
+
+	popup_editor->popup();
+	popup_editor->child_controls_changed();
+	line_editor->grab_focus();
+	return true;
+}
+
+String FileSystemList::get_edit_text() {
+	return line_editor->get_text();
+}
+
+void FileSystemList::_text_editor_popup_modal_close() {
+	if (Input::get_singleton()->is_key_pressed(Key::ESCAPE) ||
+			Input::get_singleton()->is_key_pressed(Key::KP_ENTER) ||
+			Input::get_singleton()->is_key_pressed(Key::ENTER)) {
+		return;
+	}
+
+	_line_editor_submit(line_editor->get_text());
+}
+
+void FileSystemList::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("item_edited"));
+}
+
+FileSystemList::FileSystemList() {
+	popup_editor = memnew(Popup);
+	add_child(popup_editor);
+
+	popup_editor_vb = memnew(VBoxContainer);
+	popup_editor_vb->add_theme_constant_override("separation", 0);
+	popup_editor_vb->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	popup_editor->add_child(popup_editor_vb);
+
+	line_editor = memnew(LineEdit);
+	line_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	popup_editor_vb->add_child(line_editor);
+	line_editor->connect("text_submitted", callable_mp(this, &FileSystemList::_line_editor_submit));
+	popup_editor->connect("popup_hide", callable_mp(this, &FileSystemList::_text_editor_popup_modal_close));
+}
+
 FileSystemDock *FileSystemDock::singleton = nullptr;
 
 Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, String p_file_type) {
@@ -460,6 +548,8 @@ void FileSystemDock::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			overwrite_dialog_scroll->add_theme_style_override("panel", get_theme_stylebox("panel", "Tree"));
+
 			if (is_visible_in_tree()) {
 				_update_display_mode(true);
 			}
@@ -1579,13 +1669,15 @@ void FileSystemDock::_folder_removed(String p_folder) {
 }
 
 void FileSystemDock::_rename_operation_confirm() {
-	if (!tree->is_anything_selected()) {
-		return;
-	}
+	String new_name;
 	TreeItem *s = tree->get_selected();
 	int col_index = tree->get_selected_column();
-	String new_name = s->get_text(col_index);
-	new_name = new_name.strip_edges();
+
+	if (tree->has_focus()) {
+		new_name = s->get_text(col_index).strip_edges();
+	} else if (files->has_focus()) {
+		new_name = files->get_edit_text().strip_edges();
+	}
 	String old_name = to_rename.is_file ? to_rename.path.get_file() : to_rename.path.left(-1).get_file();
 
 	bool rename_error = false;
@@ -1605,9 +1697,11 @@ void FileSystemDock::_rename_operation_confirm() {
 		}
 	}
 
-	// Restores Tree to restore original names.
-	if (rename_error) {
+	// Restore original name.
+	if (rename_error && tree->has_focus()) {
 		s->set_text(col_index, old_name);
+		return;
+	} else if (rename_error && files->has_focus()) {
 		return;
 	}
 
@@ -1725,11 +1819,12 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		Vector<String> conflicting_items = _check_existing();
 		if (!conflicting_items.is_empty()) {
 			// Ask to do something.
-			overwrite_dialog->set_text(vformat(
-					p_copy ? TTR("The following files or folders conflict with items in the target location '%s':\n\n%s\n\nDo you wish to overwrite them or rename the copied files?")
-						   : TTR("The following files or folders conflict with items in the target location '%s':\n\n%s\n\nDo you wish to overwrite them or rename the moved files?"),
-					to_move_path,
-					String("\n").join(conflicting_items)));
+			overwrite_dialog_header->set_text(vformat(
+					TTR("The following files or folders conflict with items in the target location '%s':"), to_move_path));
+			overwrite_dialog_file_list->set_text(String("\n").join(conflicting_items));
+			overwrite_dialog_footer->set_text(
+					p_copy ? TTR("Do you wish to overwrite them or rename the copied files?")
+						   : TTR("Do you wish to overwrite them or rename the moved files?"));
 			overwrite_dialog->popup_centered();
 			return;
 		}
@@ -2029,21 +2124,27 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_RENAME: {
-			if (tree->is_anything_selected() && !p_selected.is_empty()) {
+			if (!p_selected.is_empty()) {
 				// Set to_rename variable for callback execution.
 				to_rename.path = p_selected[0];
 				to_rename.is_file = !to_rename.path.ends_with("/");
+				if (to_rename.path == "res://") {
+					break;
+				}
 
-				// Edit node in Tree.
-				tree->grab_focus();
-				tree->edit_selected(true);
+				if (tree->has_focus()) {
+					// Edit node in Tree.
+					tree->edit_selected(true);
 
-				if (to_rename.is_file) {
-					String name = to_rename.path.get_file();
-					tree->set_editor_selection(0, name.rfind("."));
-				} else {
-					String name = to_rename.path.left(-1).get_file(); // Removes the "/" suffix for folders.
-					tree->set_editor_selection(0, name.length());
+					if (to_rename.is_file) {
+						String name = to_rename.path.get_file();
+						tree->set_editor_selection(0, name.rfind("."));
+					} else {
+						String name = to_rename.path.left(-1).get_file(); // Removes the "/" suffix for folders.
+						tree->set_editor_selection(0, name.length());
+					}
+				} else if (files->has_focus()) {
+					files->edit_selected();
 				}
 			}
 		} break;
@@ -2278,26 +2379,22 @@ void FileSystemDock::remove_resource_tooltip_plugin(const Ref<EditorResourceTool
 }
 
 Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {
+	if (p_path == "Favorites") {
+		// No tooltip for the "Favorites" group.
+		return nullptr;
+	}
 	if (DirAccess::exists(p_path)) {
 		// No tooltip for directory.
 		return nullptr;
 	}
 
 	const String type = ResourceLoader::get_resource_type(p_path);
-	Control *tooltip = nullptr;
+	Control *tooltip = EditorResourceTooltipPlugin::make_default_tooltip(p_path);
 
 	for (const Ref<EditorResourceTooltipPlugin> &plugin : tooltip_plugins) {
 		if (plugin->handles(type)) {
-			tooltip = plugin->make_tooltip_for_path(p_path, EditorResourcePreview::get_singleton()->get_preview_metadata(p_path));
+			tooltip = plugin->make_tooltip_for_path(p_path, EditorResourcePreview::get_singleton()->get_preview_metadata(p_path), tooltip);
 		}
-
-		if (tooltip) {
-			break;
-		}
-	}
-
-	if (!tooltip) {
-		tooltip = EditorResourceTooltipPlugin::make_default_tooltip(p_path);
 	}
 	return tooltip;
 }
@@ -3330,6 +3427,7 @@ FileSystemDock::FileSystemDock() {
 	files->connect("gui_input", callable_mp(this, &FileSystemDock::_file_list_gui_input));
 	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
 	files->connect("empty_clicked", callable_mp(this, &FileSystemDock::_file_list_empty_clicked));
+	files->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
 	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
 	files->set_allow_rmb_select(true);
 	file_list_vb->add_child(files);
@@ -3367,6 +3465,22 @@ FileSystemDock::FileSystemDock() {
 	overwrite_dialog->set_ok_button_text(TTR("Overwrite"));
 	overwrite_dialog->add_button(TTR("Keep Both"), true)->connect("pressed", callable_mp(this, &FileSystemDock::_overwrite_dialog_action).bind(false));
 	overwrite_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_overwrite_dialog_action).bind(true));
+
+	VBoxContainer *overwrite_dialog_vb = memnew(VBoxContainer);
+	overwrite_dialog->add_child(overwrite_dialog_vb);
+
+	overwrite_dialog_header = memnew(Label);
+	overwrite_dialog_vb->add_child(overwrite_dialog_header);
+
+	overwrite_dialog_scroll = memnew(ScrollContainer);
+	overwrite_dialog_vb->add_child(overwrite_dialog_scroll);
+	overwrite_dialog_scroll->set_custom_minimum_size(Vector2(400, 600) * EDSCALE);
+
+	overwrite_dialog_file_list = memnew(Label);
+	overwrite_dialog_scroll->add_child(overwrite_dialog_file_list);
+
+	overwrite_dialog_footer = memnew(Label);
+	overwrite_dialog_vb->add_child(overwrite_dialog_footer);
 
 	duplicate_dialog = memnew(ConfirmationDialog);
 	VBoxContainer *duplicate_dialog_vb = memnew(VBoxContainer);

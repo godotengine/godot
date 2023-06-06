@@ -452,7 +452,7 @@ private:
 	};
 
 	static Mutex material_mutex;
-	static SelfList<BaseMaterial3D>::List *dirty_materials;
+	static SelfList<BaseMaterial3D>::List dirty_materials;
 	static ShaderNames *shader_names;
 
 	SelfList<BaseMaterial3D> element;

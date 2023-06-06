@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Joint3D" inherits="Node3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for all 3D joints.
+		Abstract base class for all 3D physics joints.
 	</brief_description>
 	<description>
-		Joints are used to bind together two physics bodies. They have a solver priority and can define if the bodies of the two attached nodes should be able to collide with each other. See also [Generic6DOFJoint3D].
+		Abstract base class for all joints in 3D physics. 3D joints bind together two physics bodies and apply a constraint.
 	</description>
 	<tutorials>
 		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>

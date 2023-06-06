@@ -829,6 +829,7 @@ public:
 	enum Fill {
 		FILL_LINEAR,
 		FILL_RADIAL,
+		FILL_SQUARE,
 	};
 	enum Repeat {
 		REPEAT_NONE,

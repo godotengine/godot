@@ -319,6 +319,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	static Ref<InputEventJoypadMotion> create_reference(JoyAxis p_axis, float p_value);
+
 	InputEventJoypadMotion() {}
 };
 

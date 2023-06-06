@@ -221,8 +221,6 @@ protected:
 	virtual void reset_state() override;
 
 public:
-	static const String META_POINTER_PROPERTY_BASE;
-
 	enum GenEditState {
 		GEN_EDIT_STATE_DISABLED,
 		GEN_EDIT_STATE_INSTANCE,

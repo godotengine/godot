@@ -51,4 +51,8 @@ public interface GodotRenderView {
 	void configurePointerIcon(int pointerType, String imagePath, float hotSpotX, float hotSpotY);
 
 	void setPointerIcon(int pointerType);
+
+	default boolean canCapturePointer() {
+		return getInputHandler().canCapturePointer();
+	}
 }

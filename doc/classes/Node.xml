@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Node" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for all [i]scene[/i] objects.
+		Base class for all scene objects.
 	</brief_description>
 	<description>
 		Nodes are Godot's building blocks. They can be assigned as the child of another node, resulting in a tree arrangement. A given node can contain any number of nodes as children with the requirement that all siblings (direct children of a node) should have unique names.
@@ -654,7 +654,8 @@
 		<method name="queue_free">
 			<return type="void" />
 			<description>
-				Queues a node for deletion at the end of the current frame. When deleted, all of its child nodes will be deleted as well. This method ensures it's safe to delete the node, contrary to [method Object.free]. Use [method Object.is_queued_for_deletion] to check whether a node will be deleted at the end of the frame.
+				Queues a node for deletion at the end of the current frame. When deleted, all of its child nodes will be deleted as well, and all references to the node and its children will become invalid, see [method Object.free].
+				It is safe to call [method queue_free] multiple times per frame on a node, and to [method Object.free] a node that is currently queued for deletion. Use [method Object.is_queued_for_deletion] to check whether a node will be deleted at the end of the frame.
 			</description>
 		</method>
 		<method name="remove_child">

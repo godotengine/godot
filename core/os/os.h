@@ -76,6 +76,12 @@ class OS {
 
 	RemoteFilesystemClient default_rfs;
 
+	// For tracking benchmark data
+	bool use_benchmark = false;
+	String benchmark_file;
+	HashMap<String, uint64_t> start_benchmark_from;
+	Dictionary startup_benchmark_json;
+
 protected:
 	void _set_logger(CompositeLogger *p_logger);
 
@@ -298,6 +304,15 @@ public:
 	virtual bool request_permission(const String &p_name) { return true; }
 	virtual bool request_permissions() { return true; }
 	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
+
+	// For recording / measuring benchmark data. Only enabled with tools
+	void set_use_benchmark(bool p_use_benchmark);
+	bool is_use_benchmark_set();
+	void set_benchmark_file(const String &p_benchmark_file);
+	String get_benchmark_file();
+	virtual void benchmark_begin_measure(const String &p_what);
+	virtual void benchmark_end_measure(const String &p_what);
+	virtual void benchmark_dump();
 
 	virtual void process_and_drop_events() {}
 

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Transform3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		3D transformation (3×4 matrix).
+		A 3×4 matrix representing a 3D transformation.
 	</brief_description>
 	<description>
-		3×4 matrix (3 rows, 4 columns) used for 3D linear transformations. It can represent transformations such as translation, rotation, or scaling. It consists of a [member basis] (first 3 columns) and a [Vector3] for the [member origin] (last column).
+		A 3×4 matrix (3 rows, 4 columns) used for 3D linear transformations. It can represent transformations such as translation, rotation, and scaling. It consists of a [member basis] (first 3 columns) and a [Vector3] for the [member origin] (last column).
 		For more information, read the "Matrices and transforms" documentation article.
 	</description>
 	<tutorials>
@@ -93,9 +93,11 @@
 			<return type="Transform3D" />
 			<param index="0" name="target" type="Vector3" />
 			<param index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
+			<param index="2" name="use_model_front" type="bool" default="false" />
 			<description>
 				Returns a copy of the transform rotated such that the forward axis (-Z) points towards the [param target] position.
 				The up axis (+Y) points as close to the [param up] vector as possible while staying perpendicular to the forward axis. The resulting transform is orthonormalized. The existing rotation, scale, and skew information from the original transform is discarded. The [param target] and [param up] vectors cannot be zero, cannot be parallel to each other, and are defined in global/parent space.
+				If [param use_model_front] is [code]true[/code], the +Z axis (asset front) is treated as forward (implies +X is left) and points toward the [param target] position. By default, the -Z axis (camera forward) is treated as forward (implies +X is right).
 			</description>
 		</method>
 		<method name="orthonormalized" qualifiers="const">

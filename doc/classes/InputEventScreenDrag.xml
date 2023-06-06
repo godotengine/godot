@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEventScreenDrag" inherits="InputEventFromWindow" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Input event type for screen drag events. Only available on mobile devices.
+		Represents a screen drag event.
 	</brief_description>
 	<description>
-		Contains screen drag information. See [method Node._input].
+		Stores information about screen drag events. See [method Node._input].
 	</description>
 	<tutorials>
-		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<members>
 		<member name="index" type="int" setter="set_index" getter="get_index" default="0">

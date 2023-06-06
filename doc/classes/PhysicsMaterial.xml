@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PhysicsMaterial" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A material for physics properties.
+		Holds physics-related properties of a surface, namely its roughness and bounciness.
 	</brief_description>
 	<description>
-		Provides a means of modifying the collision properties of a [PhysicsBody3D].
+		Holds physics-related properties of a surface, namely its roughness and bounciness. This class is used to apply these properties to a physics body.
 	</description>
 	<tutorials>
 	</tutorials>

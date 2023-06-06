@@ -97,111 +97,29 @@ struct hb_subset_plan_t
   bool attach_accelerator_data = false;
   bool force_long_loca = false;
 
-  // For each cp that we'd like to retain maps to the corresponding gid.
-  hb_set_t unicodes;
-  hb_sorted_vector_t<hb_pair_t<hb_codepoint_t, hb_codepoint_t>> unicode_to_new_gid_list;
-
-  // name_ids we would like to retain
-  hb_set_t name_ids;
-
-  // name_languages we would like to retain
-  hb_set_t name_languages;
-
-  //layout features which will be preserved
-  hb_set_t layout_features;
-
-  // layout scripts which will be preserved.
-  hb_set_t layout_scripts;
-
-  //glyph ids requested to retain
-  hb_set_t glyphs_requested;
-
-  // Tables which should not be processed, just pass them through.
-  hb_set_t no_subset_tables;
-
-  // Tables which should be dropped.
-  hb_set_t drop_tables;
-
   // The glyph subset
   hb_map_t *codepoint_to_glyph; // Needs to be heap-allocated
 
   // Old -> New glyph id mapping
   hb_map_t *glyph_map; // Needs to be heap-allocated
   hb_map_t *reverse_glyph_map; // Needs to be heap-allocated
-  hb_map_t glyph_map_gsub;
 
   // Plan is only good for a specific source/dest so keep them with it
   hb_face_t *source;
   hb_face_t *dest;
 
   unsigned int _num_output_glyphs;
-  hb_set_t _glyphset;
-  hb_set_t _glyphset_gsub;
-  hb_set_t _glyphset_mathed;
-  hb_set_t _glyphset_colred;
 
-  //active lookups we'd like to retain
-  hb_map_t gsub_lookups;
-  hb_map_t gpos_lookups;
-
-  //active langsys we'd like to retain
-  hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> gsub_langsys;
-  hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> gpos_langsys;
-
-  //active features after removing redundant langsys and prune_features
-  hb_map_t gsub_features;
-  hb_map_t gpos_features;
-
-  //active feature variation records/condition index with variations
-  hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> gsub_feature_record_cond_idx_map;
-  hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> gpos_feature_record_cond_idx_map;
-
-  //feature index-> address of substituation feature table mapping with
-  //variations
-  hb_hashmap_t<unsigned, const OT::Feature*> gsub_feature_substitutes_map;
-  hb_hashmap_t<unsigned, const OT::Feature*> gpos_feature_substitutes_map;
-
-  //active layers/palettes we'd like to retain
-  hb_map_t colrv1_layers;
-  hb_map_t colr_palettes;
-
-  //Old layout item variation index -> (New varidx, delta) mapping
-  hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> layout_variation_idx_delta_map;
-
-  //gdef varstore retained varidx mapping
-  hb_vector_t<hb_inc_bimap_t> gdef_varstore_inner_maps;
-
-  hb_hashmap_t<hb_tag_t, hb::unique_ptr<hb_blob_t>> sanitized_table_cache;
-  //normalized axes location map
-  hb_hashmap_t<hb_tag_t, int> axes_location;
-  hb_vector_t<int> normalized_coords;
-  //user specified axes location map
-  hb_hashmap_t<hb_tag_t, float> user_axes_location;
-  //retained old axis index -> new axis index mapping in fvar axis array
-  hb_map_t axes_index_map;
-  //axis_index->axis_tag mapping in fvar axis array
-  hb_map_t axes_old_index_tag_map;
   bool all_axes_pinned;
   bool pinned_at_default;
   bool has_seac;
 
-  //hmtx metrics map: new gid->(advance, lsb)
-  mutable hb_hashmap_t<hb_codepoint_t, hb_pair_t<unsigned, int>> hmtx_map;
-  //vmtx metrics map: new gid->(advance, lsb)
-  mutable hb_hashmap_t<hb_codepoint_t, hb_pair_t<unsigned, int>> vmtx_map;
-  //boundsWidth map: new gid->boundsWidth, boundWidth=xMax - xMin
-  mutable hb_map_t bounds_width_map;
-  //boundsHeight map: new gid->boundsHeight, boundsHeight=yMax - yMin
-  mutable hb_map_t bounds_height_map;
+#define HB_SUBSET_PLAN_MEMBER(Type, Name) Type Name;
+#include "hb-subset-plan-member-list.hh"
+#undef HB_SUBSET_PLAN_MEMBER
 
   //recalculated head/maxp table info after instancing
   mutable head_maxp_info_t head_maxp_info;
-
-#ifdef HB_EXPERIMENTAL_API
-  // name table overrides map: hb_ot_name_record_ids_t-> name string new value or
-  // None to indicate should remove
-  hb_hashmap_t<hb_ot_name_record_ids_t, hb_bytes_t> name_table_overrides;
-#endif
 
   const hb_subset_accelerator_t* accelerator;
   hb_subset_accelerator_t* inprogress_accelerator;
@@ -211,7 +129,7 @@ struct hb_subset_plan_t
   template<typename T>
   hb_blob_ptr_t<T> source_table()
   {
-    hb_lock_t (accelerator ? &accelerator->sanitized_table_cache_lock : nullptr);
+    hb_lock_t lock (accelerator ? &accelerator->sanitized_table_cache_lock : nullptr);
 
     auto *cache = accelerator ? &accelerator->sanitized_table_cache : &sanitized_table_cache;
     if (cache

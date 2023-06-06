@@ -107,4 +107,28 @@ public:
 	virtual String get_resource_type(const String &p_path) const;
 };
 
+#ifdef TOOLS_ENABLED
+class GDExtensionEditorPlugins {
+private:
+	static Vector<StringName> extension_classes;
+
+protected:
+	friend class EditorNode;
+
+	// Since this in core, we can't directly reference EditorNode, so it will
+	// set these function pointers in its constructor.
+	typedef void (*EditorPluginRegisterFunc)(const StringName &p_class_name);
+	static EditorPluginRegisterFunc editor_node_add_plugin;
+	static EditorPluginRegisterFunc editor_node_remove_plugin;
+
+public:
+	static void add_extension_class(const StringName &p_class_name);
+	static void remove_extension_class(const StringName &p_class_name);
+
+	static const Vector<StringName> &get_extension_classes() {
+		return extension_classes;
+	}
+};
+#endif // TOOLS_ENABLED
+
 #endif // GDEXTENSION_H

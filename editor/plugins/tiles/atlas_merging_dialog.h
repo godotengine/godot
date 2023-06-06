@@ -38,6 +38,7 @@
 #include "scene/resources/tile_set.h"
 
 class EditorFileDialog;
+class EditorPropertyVector2i;
 
 class AtlasMergingDialog : public ConfirmationDialog {
 	GDCLASS(AtlasMergingDialog, ConfirmationDialog);

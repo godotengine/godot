@@ -4,7 +4,7 @@
  *
  *   FreeType low-level system interface definition (specification).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -229,7 +229,8 @@ FT_BEGIN_HEADER
    *     A handle to the source stream.
    *
    *   offset ::
-   *     The offset of read in stream (always from start).
+   *     The offset from the start of the stream to seek to if this is a seek
+   *     operation (see note).
    *
    *   buffer ::
    *     The address of the read buffer.
@@ -241,8 +242,13 @@ FT_BEGIN_HEADER
    *   The number of bytes effectively read by the stream.
    *
    * @note:
-   *   This function might be called to perform a seek or skip operation with
-   *   a `count` of~0.  A non-zero return value then indicates an error.
+   *   This function performs a seek *or* a read operation depending on the
+   *   argument values.  If `count` is zero, the operation is a seek to
+   *   `offset` bytes.  If `count` is >~0, the operation is a read of `count`
+   *   bytes from the current position in the stream, and the `offset` value
+   *   should be ignored.
+   *
+   *   For seek operations, a non-zero return value indicates an error.
    *
    */
   typedef unsigned long

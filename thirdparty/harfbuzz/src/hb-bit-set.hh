@@ -194,7 +194,7 @@ struct hb_bit_set_t
       unsigned int end = major_start (m + 1);
       do
       {
-        if (v || page) /* The v check is to optimize out the page check if v is true. */
+        if (g != INVALID && (v || page)) /* The v check is to optimize out the page check if v is true. */
 	  page->set (g, v);
 
 	array = &StructAtOffsetUnaligned<T> (array, stride);
@@ -238,7 +238,7 @@ struct hb_bit_set_t
 	if (g < last_g) return false;
 	last_g = g;
 
-        if (v || page) /* The v check is to optimize out the page check if v is true. */
+        if (g != INVALID && (v || page)) /* The v check is to optimize out the page check if v is true. */
 	  page->add (g);
 
 	array = &StructAtOffsetUnaligned<T> (array, stride);
@@ -402,7 +402,6 @@ struct hb_bit_set_t
       uint32_t spm = page_map[spi].major;
       uint32_t lpm = larger_set.page_map[lpi].major;
       auto sp = page_at (spi);
-      auto lp = larger_set.page_at (lpi);
 
       if (spm < lpm && !sp.is_empty ())
         return false;
@@ -410,6 +409,7 @@ struct hb_bit_set_t
       if (lpm < spm)
         continue;
 
+      auto lp = larger_set.page_at (lpi);
       if (!sp.is_subset (lp))
         return false;
 
@@ -623,6 +623,7 @@ struct hb_bit_set_t
         *codepoint = INVALID;
         return false;
       }
+      last_page_lookup = i;
     }
 
     const auto* pages_array = pages.arrayZ;
@@ -632,7 +633,6 @@ struct hb_bit_set_t
       if (pages_array[current.index].next (codepoint))
       {
         *codepoint += current.major * page_t::PAGE_BITS;
-        last_page_lookup = i;
         return true;
       }
       i++;
@@ -649,7 +649,6 @@ struct hb_bit_set_t
 	return true;
       }
     }
-    last_page_lookup = 0;
     *codepoint = INVALID;
     return false;
   }
@@ -921,7 +920,7 @@ struct hb_bit_set_t
       memmove (page_map.arrayZ + i + 1,
 	       page_map.arrayZ + i,
 	       (page_map.length - 1 - i) * page_map.item_size);
-      page_map[i] = map;
+      page_map.arrayZ[i] = map;
     }
 
     last_page_lookup = i;

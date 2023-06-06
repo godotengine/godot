@@ -81,7 +81,9 @@ open class GodotEditor : FullScreenGodotApp() {
 	private val commandLineParams = ArrayList<String>()
 
 	override fun onCreate(savedInstanceState: Bundle?) {
-		PermissionsUtil.requestManifestPermissions(this)
+		// We exclude certain permissions from the set we request at startup, as they'll be
+		// requested on demand based on use-cases.
+		PermissionsUtil.requestManifestPermissions(this, setOf(Manifest.permission.RECORD_AUDIO))
 
 		val params = intent.getStringArrayExtra(COMMAND_LINE_PARAMS)
 		updateCommandLineParams(params)
@@ -98,6 +100,8 @@ open class GodotEditor : FullScreenGodotApp() {
 		val longPressEnabled = enableLongPressGestures()
 		val panScaleEnabled = enablePanAndScaleGestures()
 
+		checkForProjectPermissionsToEnable()
+
 		runOnUiThread {
 			// Enable long press, panning and scaling gestures
 			godotFragment?.renderView?.inputHandler?.apply {
@@ -107,11 +111,25 @@ open class GodotEditor : FullScreenGodotApp() {
 		}
 	}
 
+	/**
+	 * Check for project permissions to enable
+	 */
+	protected open fun checkForProjectPermissionsToEnable() {
+		// Check for RECORD_AUDIO permission
+		val audioInputEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("audio/driver/enable_input"));
+		if (audioInputEnabled) {
+			PermissionsUtil.requestPermission(Manifest.permission.RECORD_AUDIO, this)
+		}
+	}
+
 	private fun updateCommandLineParams(args: Array<String>?) {
 		// Update the list of command line params with the new args
 		commandLineParams.clear()
 		if (args != null && args.isNotEmpty()) {
 			commandLineParams.addAll(listOf(*args))
+		}
+		if (BuildConfig.BUILD_TYPE == "dev") {
+			commandLineParams.add("--benchmark")
 		}
 	}
 

@@ -228,9 +228,6 @@
 		<member name="editors/2d/bone_width" type="int" setter="" getter="">
 			The bone width in the 2D skeleton editor (in pixels). See also [member editors/2d/bone_outline_size].
 		</member>
-		<member name="editors/2d/constrain_editor_view" type="bool" setter="" getter="">
-			If [code]true[/code], prevents the 2D editor viewport from leaving the scene. Limits are calculated dynamically based on nodes present in the current scene. If [code]false[/code], the 2D editor viewport will be able to move freely, but you risk getting lost when zooming out too far. You can refocus on the scene by selecting a node then pressing [kbd]F[/kbd].
-		</member>
 		<member name="editors/2d/grid_color" type="Color" setter="" getter="">
 			The grid color to use in the 2D editor.
 		</member>
@@ -739,11 +736,8 @@
 		<member name="text_editor/appearance/gutters/line_numbers_zero_padded" type="bool" setter="" getter="">
 			If [code]true[/code], displays line numbers with zero padding (e.g. [code]007[/code] instead of [code]7[/code]).
 		</member>
-		<member name="text_editor/appearance/gutters/show_bookmark_gutter" type="bool" setter="" getter="">
-			If [code]true[/code], displays icons for bookmarks in a gutter at the left. Bookmarks remain functional when this setting is disabled.
-		</member>
 		<member name="text_editor/appearance/gutters/show_info_gutter" type="bool" setter="" getter="">
-			If [code]true[/code], displays a gutter at the left containing icons for methods with signal connections.
+			If [code]true[/code], displays a gutter at the left containing icons for methods with signal connections and for overridden methods.
 		</member>
 		<member name="text_editor/appearance/gutters/show_line_numbers" type="bool" setter="" getter="">
 			If [code]true[/code], displays line numbers in a gutter at the left.

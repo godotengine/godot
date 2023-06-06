@@ -114,6 +114,13 @@ int Curve::add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_t
 	return ret;
 }
 
+// TODO: Needed to make the curve editor function properly until https://github.com/godotengine/godot/issues/76985 is fixed.
+int Curve::add_point_no_update(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode) {
+	int ret = _add_point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode);
+
+	return ret;
+}
+
 int Curve::get_index(real_t p_offset) const {
 	// Lower-bound float binary search
 
@@ -452,7 +459,7 @@ void Curve::bake() {
 	_baked_cache.resize(_bake_resolution);
 
 	for (int i = 1; i < _bake_resolution - 1; ++i) {
-		real_t x = i / static_cast<real_t>(_bake_resolution);
+		real_t x = i / static_cast<real_t>(_bake_resolution - 1);
 		real_t y = sample(x);
 		_baked_cache.write[i] = y;
 	}
@@ -489,7 +496,7 @@ real_t Curve::sample_baked(real_t p_offset) const {
 	}
 
 	// Get interpolation index
-	real_t fi = p_offset * _baked_cache.size();
+	real_t fi = p_offset * (_baked_cache.size() - 1);
 	int i = Math::floor(fi);
 	if (i < 0) {
 		i = 0;
@@ -1648,9 +1655,9 @@ void Curve3D::_bake() const {
 			Vector3 forward = forward_ptr[0];
 
 			if (abs(forward.dot(Vector3(0, 1, 0))) > 1.0 - UNIT_EPSILON) {
-				frame_prev = Basis::looking_at(-forward, Vector3(1, 0, 0));
+				frame_prev = Basis::looking_at(forward, Vector3(1, 0, 0));
 			} else {
-				frame_prev = Basis::looking_at(-forward, Vector3(0, 1, 0));
+				frame_prev = Basis::looking_at(forward, Vector3(0, 1, 0));
 			}
 
 			up_write[0] = frame_prev.get_column(1);
@@ -1809,8 +1816,8 @@ Basis Curve3D::_sample_posture(Interval p_interval, bool p_apply_tilt) const {
 	}
 
 	// Build frames at both ends of the interval, then interpolate.
-	const Basis frame_begin = Basis::looking_at(-forward_begin, up_begin);
-	const Basis frame_end = Basis::looking_at(-forward_end, up_end);
+	const Basis frame_begin = Basis::looking_at(forward_begin, up_begin);
+	const Basis frame_end = Basis::looking_at(forward_end, up_end);
 	const Basis frame = frame_begin.slerp(frame_end, frac).orthonormalized();
 
 	if (!p_apply_tilt) {

@@ -15,9 +15,9 @@ body:
   attributes:
     label: Godot version
     description: >
-      Specify the Git commit hash if using a development or non-official build.
+      Specify the Godot version, including the Git commit hash if using a development or non-official build. The exact Godot version (including the commit hash) can be copied by clicking the version shown in the editor (bottom bar) or in the project manager (top bar).
       If you use a custom build, please test if your issue is reproducible in official builds too.
-    placeholder: 3.3.stable, 4.0.dev (3041becc6)
+    placeholder: 3.5.stable, 4.0.dev [3041becc6]
   validations:
     required: true
 
@@ -29,7 +29,8 @@ body:
       - For issues that are likely OS-specific and/or graphics-related, please specify the CPU model and architecture.
       - For graphics-related issues, specify the GPU model, driver version, and the rendering backend (GLES2, GLES3, Vulkan).
       - **Bug reports not including the required information may be closed at the maintainers' discretion.** If in doubt, always include all the requested information; it's better to include too much information than not enough information.
-    placeholder: Windows 10, Intel Core i5-7200U, GLES3, Intel HD Graphics 620 (27.20.100.9616)
+      - **Starting from Godot 4.1, you can copy this information to your clipboard by using *Help > Copy System Info* at the top of the editor window.**
+    placeholder: Windows 10 - Godot v4.0.3.stable - Vulkan (Forward+) - dedicated NVIDIA GeForce GTX 970 (nvidia, 510.85.02) - Intel Core i7-10700KF CPU @ 3.80GHz (16 Threads)
   validations:
     required: true
 

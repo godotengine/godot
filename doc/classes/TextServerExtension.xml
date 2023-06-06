@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TextServerExtension" inherits="TextServer" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for TextServer custom implementations (plugins).
+		Base class for custom [TextServer] implementations (plugins).
 	</brief_description>
 	<description>
-		External TextServer implementations should inherit from this class.
+		External [TextServer] implementations should inherit from this class.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -282,6 +282,12 @@
 			</description>
 		</method>
 		<method name="_font_get_opentype_feature_overrides" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_ot_name_strings" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>

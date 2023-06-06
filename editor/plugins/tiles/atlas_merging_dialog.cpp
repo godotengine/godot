@@ -30,6 +30,7 @@
 
 #include "atlas_merging_dialog.h"
 
+#include "editor/editor_properties_vector.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -105,10 +106,11 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 				// Create tiles and alternatives, then copy their properties.
 				for (int alternative_index = 0; alternative_index < atlas_source->get_alternative_tiles_count(tile_mapping.key); alternative_index++) {
 					int alternative_id = atlas_source->get_alternative_tile_id(tile_mapping.key, alternative_index);
+					int changed_id = -1;
 					if (alternative_id == 0) {
 						merged->create_tile(tile_mapping.value, atlas_source->get_tile_size_in_atlas(tile_mapping.key));
 					} else {
-						merged->create_alternative_tile(tile_mapping.value, alternative_index);
+						changed_id = merged->create_alternative_tile(tile_mapping.value, alternative_index);
 					}
 
 					// Copy the properties.
@@ -116,7 +118,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 					List<PropertyInfo> properties;
 					src_tile_data->get_property_list(&properties);
 
-					TileData *dst_tile_data = merged->get_tile_data(tile_mapping.value, alternative_id);
+					TileData *dst_tile_data = merged->get_tile_data(tile_mapping.value, changed_id == -1 ? alternative_id : changed_id);
 					for (PropertyInfo property : properties) {
 						if (!(property.usage & PROPERTY_USAGE_STORAGE)) {
 							continue;
@@ -295,7 +297,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 	atlas_merging_atlases_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	atlas_merging_atlases_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	atlas_merging_atlases_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	atlas_merging_atlases_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+	atlas_merging_atlases_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	atlas_merging_atlases_list->set_custom_minimum_size(Size2(100, 200));
 	atlas_merging_atlases_list->set_select_mode(ItemList::SELECT_MULTI);
 	atlas_merging_atlases_list->connect("multi_selected", callable_mp(this, &AtlasMergingDialog::_update_texture).unbind(2));
@@ -303,6 +305,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 
 	VBoxContainer *atlas_merging_right_panel = memnew(VBoxContainer);
 	atlas_merging_right_panel->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	atlas_merging_right_panel->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
 	atlas_merging_h_split_container->add_child(atlas_merging_right_panel);
 
 	// Settings.

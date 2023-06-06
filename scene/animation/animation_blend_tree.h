@@ -246,6 +246,26 @@ public:
 	AnimationNodeBlend3();
 };
 
+class AnimationNodeSub2 : public AnimationNodeSync {
+	GDCLASS(AnimationNodeSub2, AnimationNodeSync);
+
+	StringName sub_amount = PNAME("sub_amount");
+
+protected:
+	static void _bind_methods();
+
+public:
+	void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
+
+	virtual String get_caption() const override;
+
+	virtual bool has_filter() const override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
+
+	AnimationNodeSub2();
+};
+
 class AnimationNodeTimeScale : public AnimationNode {
 	GDCLASS(AnimationNodeTimeScale, AnimationNode);
 

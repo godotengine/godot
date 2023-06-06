@@ -4,7 +4,7 @@
  *
  *   The FreeType internal cache interface (body).
  *
- * Copyright (C) 2000-2022 by
+ * Copyright (C) 2000-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -307,7 +307,7 @@
 #if 0
     /* check, just in case of general corruption :-) */
     if ( manager->num_nodes == 0 )
-      FT_TRACE0(( "ftc_node_destroy: invalid cache node count (%d)\n",
+      FT_TRACE0(( "ftc_node_destroy: invalid cache node count (%u)\n",
                   manager->num_nodes ));
 #endif
   }

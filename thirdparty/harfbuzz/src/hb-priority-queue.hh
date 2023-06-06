@@ -35,6 +35,12 @@
  *
  * Priority queue implemented as a binary heap. Supports extract minimum
  * and insert operations.
+ *
+ * The priority queue is implemented as a binary heap, which is a complete
+ * binary tree. The root of the tree is the minimum element. The heap
+ * property is that the priority of a node is less than or equal to the
+ * priority of its children. The heap is stored in an array, with the
+ * children of node i stored at indices 2i + 1 and 2i + 2.
  */
 struct hb_priority_queue_t
 {

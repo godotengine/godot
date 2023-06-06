@@ -40,6 +40,11 @@
  * Buffers serve a dual role in HarfBuzz; before shaping, they hold
  * the input characters that are passed to hb_shape(), and after
  * shaping they hold the output glyphs.
+ *
+ * The input buffer is a sequence of Unicode codepoints, with
+ * associated attributes such as direction and script.  The output
+ * buffer is a sequence of glyphs, with associated attributes such
+ * as position and cluster.
  **/
 
 
@@ -263,7 +268,7 @@ hb_buffer_t::similar (const hb_buffer_t &src)
   unicode = hb_unicode_funcs_reference (src.unicode);
   flags = src.flags;
   cluster_level = src.cluster_level;
-  replacement = src.invisible;
+  replacement = src.replacement;
   invisible = src.invisible;
   not_found = src.not_found;
 }

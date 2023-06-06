@@ -52,13 +52,17 @@ protected:
 	// During group processing, these are thread-safe.
 	// Outside group processing, these avoid the cost of sync by working as plain primitive types.
 	union MTFlag {
-		SafeFlag mt{};
+		SafeFlag mt;
 		bool st;
+		MTFlag() :
+				mt{} {}
 	};
 	template <class T>
 	union MTNumeric {
-		SafeNumeric<T> mt{};
+		SafeNumeric<T> mt;
 		T st;
+		MTNumeric() :
+				mt{} {}
 	};
 
 public:
@@ -537,19 +541,22 @@ public:
 	}
 	_FORCE_INLINE_ bool is_accessible_from_caller_thread() const {
 		if (current_process_thread_group == nullptr) {
-			// Not thread processing. Only accessible if node is outside the scene tree,
-			// if accessing from the main thread or being loaded.
-			return !data.inside_tree || Thread::is_main_thread() || ResourceLoader::is_within_load();
+			// No thread processing.
+			// Only accessible if node is outside the scene tree
+			// or access will happen from a node-safe thread.
+			return !data.inside_tree || is_current_thread_safe_for_nodes();
 		} else {
-			// Thread processing
+			// Thread processing.
 			return current_process_thread_group == data.process_thread_group_owner;
 		}
 	}
 
 	_FORCE_INLINE_ bool is_readable_from_caller_thread() const {
 		if (current_process_thread_group == nullptr) {
-			return Thread::is_main_thread() || ResourceLoader::is_within_load();
+			// No thread processing.
+			return is_current_thread_safe_for_nodes();
 		} else {
+			// Thread processing.
 			return true;
 		}
 	}
@@ -727,8 +734,8 @@ Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args)
 #ifdef DEBUG_ENABLED
 #define ERR_THREAD_GUARD ERR_FAIL_COND_MSG(!is_accessible_from_caller_thread(), "Caller thread can't call this function in this node. Use call_deferred() or call_thread_group() instead.");
 #define ERR_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_accessible_from_caller_thread(), (m_ret), "Caller thread can't call this function in this node. Use call_deferred() or call_thread_group() instead.")
-#define ERR_MAIN_THREAD_GUARD ERR_FAIL_COND_MSG(is_inside_tree() && !Thread::is_main_thread(), "This function in this node can only be accessed from the main thread. Use call_deferred() instead.");
-#define ERR_MAIN_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(is_inside_tree() && !Thread::is_main_thread(), (m_ret), "This function in this node can only be accessed from the main thread. Use call_deferred() instead.")
+#define ERR_MAIN_THREAD_GUARD ERR_FAIL_COND_MSG(is_inside_tree() && !is_current_thread_safe_for_nodes(), "This function in this node can only be accessed from the main thread. Use call_deferred() instead.");
+#define ERR_MAIN_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(is_inside_tree() && !is_current_thread_safe_for_nodes(), (m_ret), "This function in this node can only be accessed from the main thread. Use call_deferred() instead.")
 #define ERR_READ_THREAD_GUARD ERR_FAIL_COND_MSG(!is_readable_from_caller_thread(), "This function in this node can only be accessed from either the main thread or a thread group. Use call_deferred() instead.")
 #define ERR_READ_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_readable_from_caller_thread(), (m_ret), "This function in this node can only be accessed from either the main thread or a thread group. Use call_deferred() instead.")
 #else

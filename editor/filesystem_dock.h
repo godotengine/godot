@@ -57,7 +57,24 @@ class FileSystemTree : public Tree {
 };
 
 class FileSystemList : public ItemList {
-	virtual Control *make_custom_tooltip(const String &p_text) const;
+	GDCLASS(FileSystemList, ItemList);
+
+	VBoxContainer *popup_editor_vb = nullptr;
+	Popup *popup_editor = nullptr;
+	LineEdit *line_editor = nullptr;
+
+	virtual Control *make_custom_tooltip(const String &p_text) const override;
+	void _line_editor_submit(String p_text);
+	void _text_editor_popup_modal_close();
+
+protected:
+	static void _bind_methods();
+
+public:
+	bool edit_selected();
+	String get_edit_text();
+
+	FileSystemList();
 };
 
 class FileSystemDock : public VBoxContainer {
@@ -164,7 +181,13 @@ private:
 	ConfirmationDialog *duplicate_dialog = nullptr;
 	LineEdit *duplicate_dialog_text = nullptr;
 	DirectoryCreateDialog *make_dir_dialog = nullptr;
+
 	ConfirmationDialog *overwrite_dialog = nullptr;
+	ScrollContainer *overwrite_dialog_scroll = nullptr;
+	Label *overwrite_dialog_header = nullptr;
+	Label *overwrite_dialog_footer = nullptr;
+	Label *overwrite_dialog_file_list = nullptr;
+
 	SceneCreateDialog *make_scene_dialog = nullptr;
 	ScriptCreateDialog *make_script_dialog = nullptr;
 	ShaderCreateDialog *make_shader_dialog = nullptr;

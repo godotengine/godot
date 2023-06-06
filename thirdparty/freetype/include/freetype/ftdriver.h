@@ -4,7 +4,7 @@
  *
  *   FreeType API for controlling driver modules (specification only).
  *
- * Copyright (C) 2017-2022 by
+ * Copyright (C) 2017-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -819,7 +819,6 @@ FT_BEGIN_HEADER
    * @since:
    *   2.5
    */
-
 
   /**************************************************************************
    *

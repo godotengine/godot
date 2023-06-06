@@ -2017,6 +2017,119 @@ String TextServerAdvanced::_font_get_name(const RID &p_font_rid) const {
 	return fd->font_name;
 }
 
+Dictionary TextServerAdvanced::_font_get_ot_name_strings(const RID &p_font_rid) const {
+	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Dictionary());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Dictionary());
+
+	hb_face_t *hb_face = hb_font_get_face(fd->cache[size]->hb_handle);
+
+	unsigned int num_entries = 0;
+	const hb_ot_name_entry_t *names = hb_ot_name_list_names(hb_face, &num_entries);
+	HashMap<String, Dictionary> names_for_lang;
+	for (unsigned int i = 0; i < num_entries; i++) {
+		String name;
+		switch (names[i].name_id) {
+			case HB_OT_NAME_ID_COPYRIGHT: {
+				name = "copyright";
+			} break;
+			case HB_OT_NAME_ID_FONT_FAMILY: {
+				name = "family_name";
+			} break;
+			case HB_OT_NAME_ID_FONT_SUBFAMILY: {
+				name = "subfamily_name";
+			} break;
+			case HB_OT_NAME_ID_UNIQUE_ID: {
+				name = "unique_identifier";
+			} break;
+			case HB_OT_NAME_ID_FULL_NAME: {
+				name = "full_name";
+			} break;
+			case HB_OT_NAME_ID_VERSION_STRING: {
+				name = "version";
+			} break;
+			case HB_OT_NAME_ID_POSTSCRIPT_NAME: {
+				name = "postscript_name";
+			} break;
+			case HB_OT_NAME_ID_TRADEMARK: {
+				name = "trademark";
+			} break;
+			case HB_OT_NAME_ID_MANUFACTURER: {
+				name = "manufacturer";
+			} break;
+			case HB_OT_NAME_ID_DESIGNER: {
+				name = "designer";
+			} break;
+			case HB_OT_NAME_ID_DESCRIPTION: {
+				name = "description";
+			} break;
+			case HB_OT_NAME_ID_VENDOR_URL: {
+				name = "vendor_url";
+			} break;
+			case HB_OT_NAME_ID_DESIGNER_URL: {
+				name = "designer_url";
+			} break;
+			case HB_OT_NAME_ID_LICENSE: {
+				name = "license";
+			} break;
+			case HB_OT_NAME_ID_LICENSE_URL: {
+				name = "license_url";
+			} break;
+			case HB_OT_NAME_ID_TYPOGRAPHIC_FAMILY: {
+				name = "typographic_family_name";
+			} break;
+			case HB_OT_NAME_ID_TYPOGRAPHIC_SUBFAMILY: {
+				name = "typographic_subfamily_name";
+			} break;
+			case HB_OT_NAME_ID_MAC_FULL_NAME: {
+				name = "full_name_macos";
+			} break;
+			case HB_OT_NAME_ID_SAMPLE_TEXT: {
+				name = "sample_text";
+			} break;
+			case HB_OT_NAME_ID_CID_FINDFONT_NAME: {
+				name = "cid_findfont_name";
+			} break;
+			case HB_OT_NAME_ID_WWS_FAMILY: {
+				name = "weight_width_slope_family_name";
+			} break;
+			case HB_OT_NAME_ID_WWS_SUBFAMILY: {
+				name = "weight_width_slope_subfamily_name";
+			} break;
+			case HB_OT_NAME_ID_LIGHT_BACKGROUND: {
+				name = "light_background_palette";
+			} break;
+			case HB_OT_NAME_ID_DARK_BACKGROUND: {
+				name = "dark_background_palette";
+			} break;
+			case HB_OT_NAME_ID_VARIATIONS_PS_PREFIX: {
+				name = "postscript_name_prefix";
+			} break;
+			default: {
+				name = vformat("unknown_%d", names[i].name_id);
+			} break;
+		}
+		String text;
+		unsigned int text_size = hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, nullptr, nullptr) + 1;
+		text.resize(text_size);
+		hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, &text_size, (uint32_t *)text.ptrw());
+		if (!text.is_empty()) {
+			Dictionary &id_string = names_for_lang[String(hb_language_to_string(names[i].language))];
+			id_string[name] = text;
+		}
+	}
+
+	Dictionary out;
+	for (const KeyValue<String, Dictionary> &E : names_for_lang) {
+		out[E.key] = E.value;
+	}
+
+	return out;
+}
+
 void TextServerAdvanced::_font_set_antialiasing(const RID &p_font_rid, TextServer::FontAntialiasing p_antialiasing) {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND(!fd);
