@@ -478,9 +478,9 @@ void DisplayServerWayland::_wl_output_on_scale(void *data, struct wl_output *wl_
 	ScreenData *sd = (ScreenData *)data;
 	ERR_FAIL_NULL(sd);
 
-	DEBUG_LOG_WAYLAND(vformat("Output %x scale %d", (size_t)wl_output, factor));
-
 	sd->scale = factor;
+
+	DEBUG_LOG_WAYLAND(vformat("Output %x scale %d", (size_t)wl_output, factor));
 }
 
 void DisplayServerWayland::_wl_output_on_name(void *data, struct wl_output *wl_output, const char *name) {
@@ -491,6 +491,7 @@ void DisplayServerWayland::_wl_output_on_description(void *data, struct wl_outpu
 
 void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities) {
 	SeatState *ss = (SeatState *)data;
+
 	ERR_FAIL_NULL(ss);
 
 	WaylandState *wls = ss->wls;
@@ -576,15 +577,16 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 
 	ss->pointer_enter_serial = serial;
 
-	DEBUG_LOG_WAYLAND("Pointing window.");
-
 	ss->window_pointed = true;
+	ss->pointed_surface = surface;
 
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_MOUSE_ENTER;
 
-	wls->wayland_messages.push_back(msg);
+	wls->messages.push_back(msg);
+
+	DEBUG_LOG_WAYLAND("Pointing window.");
 }
 
 void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
@@ -595,12 +597,13 @@ void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *w
 	ERR_FAIL_NULL(wls);
 
 	ss->window_pointed = false;
+	ss->pointed_surface = nullptr;
 
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_MOUSE_EXIT;
 
-	wls->wayland_messages.push_back(msg);
+	wls->messages.push_back(msg);
 
 	DEBUG_LOG_WAYLAND("Left window.");
 }
@@ -609,13 +612,15 @@ void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
+	WindowData *wd = WaylandThread::wl_surface_get_window_data(ss->pointed_surface);
+	ERR_FAIL_NULL(wd);
+
+	int scale = WaylandThread::window_data_calculate_scale(wd);
 
 	PointerData &pd = ss->pointer_data_buffer;
 
-	pd.position.x = wl_fixed_to_int(surface_x) * wls->main_window.scale;
-	pd.position.y = wl_fixed_to_int(surface_y) * wls->main_window.scale;
+	pd.position.x = wl_fixed_to_int(surface_x) * scale;
+	pd.position.y = wl_fixed_to_int(surface_y) * scale;
 
 	pd.motion_time = time;
 }
@@ -673,9 +678,6 @@ void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *
 void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
-
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
 
 	PointerData &pd = ss->pointer_data_buffer;
 
@@ -738,7 +740,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 		msg->event = mm;
 
-		wls->wayland_messages.push_back(msg);
+		wls->messages.push_back(msg);
 	}
 
 	if (pd.discrete_scroll_vector - old_pd.discrete_scroll_vector != Vector2i()) {
@@ -776,7 +778,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 			msg->event = pg;
 
-			wls->wayland_messages.push_back(msg);
+			wls->messages.push_back(msg);
 		}
 	}
 
@@ -845,7 +847,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 				msg->event = mb;
 
-				wls->wayland_messages.push_back(msg);
+				wls->messages.push_back(msg);
 
 				// Send an event resetting immediately the wheel key.
 				// Wayland specification defines axis_stop events as optional and says to
@@ -871,7 +873,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 					Ref<WaylandInputEventMessage> msg_up;
 					msg_up.instantiate();
 					msg_up->event = wh_up;
-					wls->wayland_messages.push_back(msg_up);
+					wls->messages.push_back(msg_up);
 				}
 			}
 		}
@@ -960,7 +962,7 @@ void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard 
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_FOCUS_IN;
-	wls->wayland_messages.push_back(msg);
+	wls->messages.push_back(msg);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
@@ -970,14 +972,12 @@ void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard 
 	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
+	ss->repeating_keycode = XKB_KEYCODE_INVALID;
+
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
-
 	msg->event = WINDOW_EVENT_FOCUS_OUT;
-
-	wls->wayland_messages.push_back(msg);
-
-	ss->repeating_keycode = XKB_KEYCODE_INVALID;
+	wls->messages.push_back(msg);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
@@ -1015,15 +1015,12 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 	Ref<WaylandInputEventMessage> msg;
 	msg.instantiate();
 	msg->event = k;
-	wls->wayland_messages.push_back(msg);
+	wls->messages.push_back(msg);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
-
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
 
 	_seat_state_set_current(*ss);
 
@@ -1098,7 +1095,7 @@ void DisplayServerWayland::_wl_data_device_on_drop(void *data, struct wl_data_de
 			msg->files.write[i] = msg->files[i].replace("file://", "").uri_decode();
 		}
 
-		ss->wls->wayland_messages.push_back(msg);
+		ss->wls->messages.push_back(msg);
 	}
 
 	wl_data_offer_finish(ss->wl_data_offer_dnd);
@@ -1200,18 +1197,25 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 
 	WindowData *wd = (WindowData *)data;
 	ERR_FAIL_NULL(wd);
+	ERR_FAIL_NULL(wd->wls);
 
-	WaylandState *wls = (WaylandState *)wd->wls;
-	ERR_FAIL_NULL(wls);
+	int scale = WaylandThread::window_data_calculate_scale(wd);
+
+	Rect2i scaled_rect = wd->logical_rect;
+	scaled_rect.size *= scale;
+
+	if (wd->wl_surface) {
+		wl_surface_set_buffer_scale(wd->wl_surface, scale);
+	}
 
 	if (wd->xdg_surface) {
-		xdg_surface_set_window_geometry(wd->xdg_surface, 0, 0, wd->logical_rect.size.width * wd->scale, wd->logical_rect.size.height * wd->scale);
+		xdg_surface_set_window_geometry(wd->xdg_surface, 0, 0, scaled_rect.size.width, scaled_rect.size.height);
 	}
 
 	Ref<WaylandWindowRectMessage> msg;
 	msg.instantiate();
-	msg->rect = wd->logical_rect;
-	wls->wayland_messages.push_back(msg);
+	msg->rect = scaled_rect;
+	wd->wls->messages.push_back(msg);
 
 	DEBUG_LOG_WAYLAND(vformat("xdg surface on configure rect %s", wd->logical_rect));
 }
@@ -1271,7 +1275,7 @@ void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_topleve
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_CLOSE_REQUEST;
-	wls->wayland_messages.push_back(msg);
+	wls->messages.push_back(msg);
 }
 
 void DisplayServerWayland::_xdg_toplevel_on_configure_bounds(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height) {
@@ -1325,15 +1329,12 @@ void DisplayServerWayland::_xdg_activation_token_on_done(void *data, struct xdg_
 
 	xdg_activation_token_v1_destroy(xdg_activation_token);
 
-	DEBUG_LOG_WAYLAND(vformat("Received activation token and requested window activation"));
+	DEBUG_LOG_WAYLAND(vformat("Received activation token and requested window activation."));
 }
 
 void DisplayServerWayland::_wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
-
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
 
 	PointerData &pd = ss->pointer_data_buffer;
 
@@ -1398,15 +1399,15 @@ void DisplayServerWayland::_wp_pointer_gesture_pinch_on_update(void *data, struc
 		pg->set_alt_pressed(ss->alt_pressed);
 		pg->set_meta_pressed(ss->meta_pressed);
 
-		pg->set_position(pd.position * wls->main_window.scale);
+		pg->set_position(pd.position);
 		pg->set_delta(Vector2(wl_fixed_to_double(dx), wl_fixed_to_double(dy)));
 
 		Ref<WaylandInputEventMessage> pan_msg;
 		pan_msg.instantiate();
 		pan_msg->event = pg;
 
-		wls->wayland_messages.push_back(magnify_msg);
-		wls->wayland_messages.push_back(pan_msg);
+		wls->messages.push_back(magnify_msg);
+		wls->messages.push_back(pan_msg);
 
 		ss->old_pinch_scale = scale;
 	}
@@ -1564,7 +1565,7 @@ void DisplayServerWayland::_wp_tablet_tool_on_proximity_in(void *data, struct zw
 		msg.instantiate();
 		msg->event = WINDOW_EVENT_MOUSE_ENTER;
 
-		wls->wayland_messages.push_back(msg);
+		wls->messages.push_back(msg);
 	}
 
 	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on proximity in serial %d tablet %x surface %x", (size_t)zwp_tablet_tool_v2, serial, (size_t)tablet, (size_t)surface));
@@ -1586,7 +1587,7 @@ void DisplayServerWayland::_wp_tablet_tool_on_proximity_out(void *data, struct z
 		msg.instantiate();
 		msg->event = WINDOW_EVENT_MOUSE_EXIT;
 
-		wls->wayland_messages.push_back(msg);
+		wls->messages.push_back(msg);
 	}
 	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on proximity out", (size_t)zwp_tablet_tool_v2));
 }
@@ -1627,8 +1628,13 @@ void DisplayServerWayland::_wp_tablet_tool_on_motion(void *data, struct zwp_tabl
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	ss->tablet_tool_data_buffer.position.x = wl_fixed_to_double(x) * ss->wls->main_window.scale;
-	ss->tablet_tool_data_buffer.position.y = wl_fixed_to_double(y) * ss->wls->main_window.scale;
+	WindowData *wd = WaylandThread::wl_surface_get_window_data(ss->pointed_surface);
+	ERR_FAIL_NULL(wd);
+
+	int scale = WaylandThread::window_data_calculate_scale(wd);
+
+	ss->tablet_tool_data_buffer.position.x = wl_fixed_to_double(x) * scale;
+	ss->tablet_tool_data_buffer.position.y = wl_fixed_to_double(y) * scale;
 }
 
 void DisplayServerWayland::_wp_tablet_tool_on_pressure(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t pressure) {
@@ -1751,7 +1757,7 @@ void DisplayServerWayland::_wp_tablet_tool_on_frame(void *data, struct zwp_table
 
 		inputev_msg->event = mm;
 
-		wls->wayland_messages.push_back(inputev_msg);
+		wls->messages.push_back(inputev_msg);
 	}
 
 	if (old_td.pressed_button_mask != td.pressed_button_mask) {
@@ -1795,7 +1801,7 @@ void DisplayServerWayland::_wp_tablet_tool_on_frame(void *data, struct zwp_table
 
 				msg->event = mb;
 
-				wls->wayland_messages.push_back(msg);
+				wls->messages.push_back(msg);
 			}
 		}
 	}
@@ -1814,9 +1820,7 @@ void DisplayServerWayland::libdecor_on_error(struct libdecor *context, enum libd
 void DisplayServerWayland::libdecor_frame_on_configure(struct libdecor_frame *frame, struct libdecor_configuration *configuration, void *user_data) {
 	WindowData *wd = (WindowData *)user_data;
 	ERR_FAIL_NULL(wd);
-
-	WaylandState *wls = wd->wls;
-	ERR_FAIL_NULL(wls);
+	ERR_FAIL_NULL(wd->wls);
 
 	int width = 0;
 	int height = 0;
@@ -1853,17 +1857,26 @@ void DisplayServerWayland::libdecor_frame_on_configure(struct libdecor_frame *fr
 		}
 	}
 
+	int scale = WaylandThread::window_data_calculate_scale(wd);
+
+	Rect2i scaled_rect = wd->logical_rect;
+	scaled_rect.size *= scale;
+
+	if (wd->wl_surface) {
+		wl_surface_set_buffer_scale(wd->wl_surface, scale);
+		wl_surface_commit(wd->wl_surface);
+	}
+
 	if (wd->libdecor_frame) {
-		struct libdecor_state *state = libdecor_state_new(wd->logical_rect.size.width * wd->scale, wd->logical_rect.size.height * wd->scale);
-		// I'm not sure whether we can just pass null here.
+		struct libdecor_state *state = libdecor_state_new(scaled_rect.size.width, scaled_rect.size.height);
 		libdecor_frame_commit(wd->libdecor_frame, state, configuration);
 		libdecor_state_free(state);
 	}
 
 	Ref<WaylandWindowRectMessage> winrect_msg;
 	winrect_msg.instantiate();
-	winrect_msg->rect = wd->logical_rect;
-	wls->wayland_messages.push_back(winrect_msg);
+	winrect_msg->rect = scaled_rect;
+	wd->wls->messages.push_back(winrect_msg);
 
 	DEBUG_LOG_WAYLAND("libdecor frame on configure");
 }
@@ -1880,7 +1893,7 @@ void DisplayServerWayland::libdecor_frame_on_close(struct libdecor_frame *frame,
 
 	winevent_msg->event = WINDOW_EVENT_CLOSE_REQUEST;
 
-	wls->wayland_messages.push_back(winevent_msg);
+	wls->messages.push_back(winevent_msg);
 
 	DEBUG_LOG_WAYLAND("libdecor frame on close");
 }
@@ -2268,7 +2281,8 @@ void DisplayServerWayland::_show_window() {
 		// reports. We'll save the mode beforehand so that we can reapply it later.
 		WindowMode setup_mode = wd.mode;
 
-		wayland_thread.window_create(context);
+		wayland_thread.window_create();
+		wayland_thread.window_set_app_id(_get_app_id_from_context(context));
 		wayland_thread.window_set_borderless(window_get_flag(WINDOW_FLAG_BORDERLESS));
 
 		// NOTE: The XDG shell protocol is built in a way that causes the window to
@@ -2970,21 +2984,14 @@ void DisplayServerWayland::process_events() {
 		}
 	}
 
-	while (wls.wayland_messages.front()) {
-		Ref<WaylandMessage> msg = wls.wayland_messages.front()->get();
+	while (wls.messages.front()) {
+		Ref<WaylandMessage> msg = wls.messages.front()->get();
 
 		Ref<WaylandWindowRectMessage> winrect_msg = msg;
 
 		if (winrect_msg.is_valid()) {
 			Rect2i rect = winrect_msg->rect;
-
-			WindowData &wd = wls.main_window;
-
-			wd.logical_rect = rect;
-
-			Rect2i scaled_rect = Rect2i(rect.position, rect.size * wd.scale);
-
-			_resize_window(scaled_rect.size);
+			_resize_window(rect.size);
 		}
 
 		Ref<WaylandWindowEventMessage> winev_msg = msg;
@@ -3025,7 +3032,7 @@ void DisplayServerWayland::process_events() {
 			}
 		}
 
-		wls.wayland_messages.pop_front();
+		wls.messages.pop_front();
 	}
 
 	if (!wls.current_seat) {
@@ -3034,6 +3041,8 @@ void DisplayServerWayland::process_events() {
 
 	SeatState &seat = *wls.current_seat;
 
+	// TODO: Comment and document out properly this block of code.
+	// In short, this implements key repeating.
 	if (seat.repeat_key_delay_msec && seat.repeating_keycode != XKB_KEYCODE_INVALID) {
 		uint64_t current_ticks = OS::get_singleton()->get_ticks_msec();
 		uint64_t delayed_start_ticks = seat.last_repeat_start_msec + seat.repeat_start_delay_msec;
@@ -3094,25 +3103,12 @@ void DisplayServerWayland::swap_buffers() {
 void DisplayServerWayland::set_context(Context p_context) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	DEBUG_LOG_WAYLAND(vformat("Setting context %d", p_context));
+	DEBUG_LOG_WAYLAND(vformat("Setting context %d.", p_context));
 
 	context = p_context;
 
-	WindowData &wd = wls.main_window;
-
-#ifdef LIBDECOR_ENABLED
-	if (wd.libdecor_frame) {
-		String app_id = _get_app_id_from_context(p_context);
-		libdecor_frame_set_app_id(wd.libdecor_frame, app_id.utf8().ptrw());
-		return;
-	}
-#endif
-
-	if (wd.xdg_toplevel) {
-		String app_id = _get_app_id_from_context(p_context);
-		xdg_toplevel_set_app_id(wd.xdg_toplevel, app_id.utf8().ptrw());
-		return;
-	}
+	String app_id = _get_app_id_from_context(p_context);
+	wayland_thread.window_set_app_id(app_id);
 }
 
 Vector<String> DisplayServerWayland::get_rendering_drivers_func() {

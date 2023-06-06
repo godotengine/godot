@@ -131,6 +131,8 @@ class DisplayServerWayland : public DisplayServer {
 	// WaylandMessage data for window rect changes.
 	class WaylandWindowRectMessage : public WaylandMessage {
 	public:
+		// NOTE: This is in "scaled" terms. For example, if there's a 1920x1080 rect
+		// with a scale factor of 2, the actual value of `rect` will be 3840x2160.
 		Rect2i rect;
 	};
 
@@ -217,8 +219,6 @@ class DisplayServerWayland : public DisplayServer {
 #ifdef GLES3_ENABLED
 		struct wl_egl_window *wl_egl_window = nullptr;
 #endif
-
-		float scale = 1;
 
 		// These are true by default as it isn't guaranteed that we'll find an
 		// xdg-shell implementation with wm_capabilities available. If and once we
@@ -334,6 +334,7 @@ class DisplayServerWayland : public DisplayServer {
 		uint32_t pointer_enter_serial;
 
 		bool window_pointed = false;
+		struct wl_surface *pointed_surface = nullptr;
 
 		struct zwp_relative_pointer_v1 *wp_relative_pointer = nullptr;
 		struct zwp_locked_pointer_v1 *wp_locked_pointer = nullptr;
@@ -446,7 +447,7 @@ class DisplayServerWayland : public DisplayServer {
 		List<ScreenData> screens;
 		List<SeatState> seats;
 
-		List<Ref<WaylandMessage>> wayland_messages;
+		List<Ref<WaylandMessage>> messages;
 
 		struct zwp_idle_inhibitor_v1 *wp_idle_inhibitor = nullptr;
 
@@ -475,18 +476,17 @@ public:
 		Thread events_thread;
 		ThreadData thread_data;
 
-		static bool _wl_proxy_is_godot(struct wl_proxy *p_proxy);
-
+		// Main polling method.
 		static void _poll_events_thread(void *p_data);
 
-		// Event handlers.
+		// Core Wayland event handlers.
 		static void _wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version);
 		static void _wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name);
 
 		static void _wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output);
 		static void _wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output);
 
-		// Event listeners.
+		// Core Wayland event listeners.
 		static constexpr struct wl_registry_listener wl_registry_listener = {
 			.global = _wl_registry_on_global,
 			.global_remove = _wl_registry_on_global_remove,
@@ -500,13 +500,26 @@ public:
 	public:
 		Mutex &mutex = thread_data.mutex;
 
-		void window_create(DisplayServer::Context);
+		// Core Wayland utilities for integrating with our own data structures.
+		static bool wl_proxy_is_godot(struct wl_proxy *p_proxy);
+		static void wl_proxy_tag_godot(struct wl_proxy *p_proxy);
+
+		static WindowData *wl_surface_get_window_data(struct wl_surface *p_surface);
+		static ScreenData *wl_output_get_screen_data(struct wl_output *p_output);
+
+		static int window_data_calculate_scale(WindowData *p_wd);
+
+		void window_create();
+
 		void window_resize(Size2i p_size);
 		void window_set_max_size(Size2i p_size);
 		void window_set_min_size(Size2i p_size);
 
 		void window_set_borderless(bool p_borderless);
 		void window_set_title(String p_title);
+		void window_set_app_id(String p_app_id);
+
+		// Implemented by xdg_activiation_v1
 		void window_request_attention();
 
 		void init(WaylandState &p_wls);

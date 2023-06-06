@@ -39,16 +39,6 @@
 // separate from `DisplayServerWayland`.
 using WaylandThread = DisplayServerWayland::WaylandThread;
 
-// NOTE: Stuff like libdecor can (and will) register foreign proxies which
-// aren't formatted as we like. This method is needed to detect whether a proxy
-// has our tag. Also, be careful! The proxy has to be manually tagged or it
-// won't be recognized.
-bool WaylandThread::_wl_proxy_is_godot(struct wl_proxy *p_proxy) {
-	ERR_FAIL_NULL_V(p_proxy, false);
-
-	return wl_proxy_get_tag(p_proxy) == &proxy_tag;
-}
-
 void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
 	WaylandState *wls = (WaylandState *)data;
 	ERR_FAIL_NULL(wls);
@@ -109,7 +99,8 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		sd->wl_output_name = name;
 		sd->wls = wls;
 
-		wl_proxy_set_tag((struct wl_proxy *)sd->wl_output, &proxy_tag);
+		wl_proxy_tag_godot((struct wl_proxy *)sd->wl_output);
+
 		wl_output_add_listener(sd->wl_output, &wl_output_listener, sd);
 		return;
 	}
@@ -393,16 +384,14 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
 	WindowData *wd = (WindowData *)data;
+	ERR_FAIL_NULL(wd);
+
 	ScreenData *sd = (ScreenData *)wl_output_get_user_data(wl_output);
+	ERR_FAIL_NULL(sd);
 
-	if (!_wl_proxy_is_godot((struct wl_proxy *)wl_output)) {
-		return;
-	}
+	// TODO: Handle multiple outputs?
 
-	wd->scale = sd->scale;
-
-	wl_surface_set_buffer_scale(wl_surface, wd->scale);
-	wl_surface_commit(wl_surface);
+	wd->wl_output = wl_output;
 }
 
 void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {}
@@ -454,17 +443,68 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 	}
 }
 
+// NOTE: Stuff like libdecor can (and will) register foreign proxies which
+// aren't formatted as we like. This method is needed to detect whether a proxy
+// has our tag. Also, be careful! The proxy has to be manually tagged or it
+// won't be recognized.
+bool WaylandThread::wl_proxy_is_godot(struct wl_proxy *p_proxy) {
+	ERR_FAIL_NULL_V(p_proxy, false);
+
+	return wl_proxy_get_tag(p_proxy) == &proxy_tag;
+}
+
+void WaylandThread::wl_proxy_tag_godot(struct wl_proxy *p_proxy) {
+	ERR_FAIL_NULL(p_proxy);
+
+	wl_proxy_set_tag(p_proxy, &proxy_tag);
+}
+
+// Returns the wl_surface's `WindowData`, otherwise `nullptr`.
+// NOTE: This will fail if the surface isn't tagged as ours.
+// TODO: Remove `DisplayServerWayland::`.
+DisplayServerWayland::WindowData *WaylandThread::wl_surface_get_window_data(struct wl_surface *p_surface) {
+	if (p_surface && wl_proxy_is_godot((wl_proxy *)p_surface)) {
+		return (WindowData *)wl_surface_get_user_data(p_surface);
+	}
+
+	return nullptr;
+}
+
+// Returns the wl_outputs's `ScreenData`, otherwise `nullptr`.
+DisplayServerWayland::ScreenData *WaylandThread::wl_output_get_screen_data(struct wl_output *p_output) {
+	if (p_output && wl_proxy_is_godot((wl_proxy *)p_output)) {
+		return (ScreenData *)wl_output_get_user_data(p_output);
+	}
+
+	return nullptr;
+}
+
+// NOTE: This method is the simplest way of accounting for dynamic output scale
+// changes.
+int WaylandThread::window_data_calculate_scale(WindowData *p_wd) {
+	// TODO: Handle multiple screens (eg. two screens: one scale 2, one scale 1).
+
+	// TODO: Cache value?
+	ScreenData *sd = wl_output_get_screen_data(p_wd->wl_output);
+
+	if (sd) {
+		return sd->scale;
+	}
+
+	return 1;
+}
+
 // TODO: Finish splitting.
-void WaylandThread::window_create(DisplayServer::Context p_context) {
+void WaylandThread::window_create() {
+	// TODO: Implement multi-window support.
 	WindowData &wd = wls->main_window;
 
 	wd.wl_surface = wl_compositor_create_surface(wls->globals.wl_compositor);
+
+	wl_proxy_tag_godot((struct wl_proxy *)wd.wl_surface);
 	wl_surface_add_listener(wd.wl_surface, &wl_surface_listener, &wd);
 
 	bool decorated = false;
-
-	// TODO: Put into `DisplayServerWayland` somehow.
-	String app_id = _get_app_id_from_context(p_context);
 
 #ifdef LIBDECOR_ENABLED
 	if (!decorated && wls->libdecor_context) {
@@ -472,7 +512,6 @@ void WaylandThread::window_create(DisplayServer::Context p_context) {
 
 		libdecor_frame_set_max_content_size(wd.libdecor_frame, wd.max_size.width, wd.max_size.height);
 		libdecor_frame_set_min_content_size(wd.libdecor_frame, wd.min_size.width, wd.max_size.height);
-		libdecor_frame_set_app_id(wd.libdecor_frame, app_id.utf8().ptrw());
 
 		libdecor_frame_map(wd.libdecor_frame);
 
@@ -492,7 +531,6 @@ void WaylandThread::window_create(DisplayServer::Context p_context) {
 
 		xdg_toplevel_set_max_size(wd.xdg_toplevel, wd.max_size.width, wd.max_size.height);
 		xdg_toplevel_set_min_size(wd.xdg_toplevel, wd.min_size.width, wd.min_size.height);
-		xdg_toplevel_set_app_id(wd.xdg_toplevel, app_id.utf8().ptrw());
 
 		wd.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(wls->globals.xdg_decoration_manager, wd.xdg_toplevel);
 		zxdg_toplevel_decoration_v1_add_listener(wd.xdg_toplevel_decoration, &xdg_toplevel_decoration_listener, &wd);
@@ -510,10 +548,20 @@ void WaylandThread::window_resize(Size2i p_size) {
 	// TODO: Use window IDs for multiwindow support.
 	WindowData &wd = wls->main_window;
 
-	wd.logical_rect.size = p_size / wd.scale;
+	ScreenData *sd = wl_output_get_screen_data(wd.wl_output);
+	ERR_FAIL_NULL(sd);
 
-	if (wd.wl_surface && wd.xdg_surface) {
-		xdg_surface_set_window_geometry(wd.xdg_surface, 0, 0, p_size.width, p_size.height);
+	int scale = window_data_calculate_scale(&wd);
+
+	wd.logical_rect.size = p_size / scale;
+
+	if (wd.wl_surface) {
+		wl_surface_set_buffer_scale(wd.wl_surface, scale);
+
+		if (wd.xdg_surface) {
+			xdg_surface_set_window_geometry(wd.xdg_surface, 0, 0, p_size.width, p_size.height);
+		}
+
 		wl_surface_commit(wd.wl_surface);
 	}
 
@@ -531,7 +579,7 @@ void WaylandThread::window_set_max_size(Size2i p_size) {
 	// TODO: Use window IDs for multiwindow support.
 	WindowData &wd = wls->main_window;
 
-	Size2i logical_max_size = p_size / wd.scale;
+	Size2i logical_max_size = p_size / window_data_calculate_scale(&wd);
 
 	if (wd.wl_surface && wd.xdg_toplevel) {
 		xdg_toplevel_set_max_size(wd.xdg_toplevel, logical_max_size.width, logical_max_size.height);
@@ -551,7 +599,7 @@ void WaylandThread::window_set_min_size(Size2i p_size) {
 	// TODO: Use window IDs for multiwindow support.
 	WindowData &wd = wls->main_window;
 
-	Size2i logical_min_size = p_size / wd.scale;
+	Size2i logical_min_size = p_size / window_data_calculate_scale(&wd);
 
 	if (wd.wl_surface && wd.xdg_toplevel) {
 		xdg_toplevel_set_min_size(wd.xdg_toplevel, logical_min_size.width, logical_min_size.height);
@@ -600,6 +648,23 @@ void WaylandThread::window_set_title(String p_title) {
 
 	if (wd.xdg_toplevel && p_title.utf8().ptr()) {
 		xdg_toplevel_set_title(wd.xdg_toplevel, wd.title.utf8().ptr());
+	}
+}
+
+void WaylandThread::window_set_app_id(String p_app_id) {
+	// TODO: Use window IDs for multiwindow support.
+	WindowData &wd = wls->main_window;
+
+#ifdef LIBDECOR_ENABLED
+	if (wd.libdecor_frame) {
+		libdecor_frame_set_app_id(wd.libdecor_frame, p_app_id.utf8().ptrw());
+		return;
+	}
+#endif
+
+	if (wd.xdg_toplevel) {
+		xdg_toplevel_set_app_id(wd.xdg_toplevel, p_app_id.utf8().ptrw());
+		return;
 	}
 }
 
