@@ -131,31 +131,16 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 	ERR_FAIL_COND_MSG(loaded_resource.is_null(), "Cannot load resource from path '" + p_path + "'.");
 
 	if (!base_type.is_empty()) {
-		bool any_type_matches = false;
+		HashSet<StringName> allowed_types;
+		_get_allowed_types(false, &allowed_types);
 
-		String res_type = loaded_resource->get_class();
-		Ref<Script> res_script = loaded_resource->get_script();
-		bool is_global_class = false;
-		if (res_script.is_valid()) {
-			String script_type = EditorNode::get_editor_data().script_class_get_name(res_script->get_path());
-			if (!script_type.is_empty()) {
-				is_global_class = true;
-				res_type = script_type;
+		if (!_is_resource_valid(loaded_resource, allowed_types)) {
+			StringName custom_class;
+			if (loaded_resource->get_script()) {
+				custom_class = EditorNode::get_singleton()->get_object_custom_type_name(loaded_resource->get_script());
 			}
-		}
-
-		for (int i = 0; i < base_type.get_slice_count(","); i++) {
-			String base = base_type.get_slice(",", i);
-
-			any_type_matches = is_global_class ? EditorNode::get_editor_data().script_class_is_parent(res_type, base) : loaded_resource->is_class(base);
-
-			if (any_type_matches) {
-				break;
-			}
-		}
-
-		if (!any_type_matches) {
-			EditorNode::get_singleton()->show_warning(vformat(TTR("The selected resource (%s) does not match any type expected for this property (%s)."), res_type, base_type));
+			String class_str = (custom_class == StringName() ? loaded_resource->get_class() : vformat("%s (%s)", custom_class, loaded_resource->get_class()));
+			EditorNode::get_singleton()->show_warning(vformat(TTR("The selected resource (%s) does not match any type expected for this property (%s)."), class_str, base_type));
 			return;
 		}
 	}
@@ -431,8 +416,16 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			if (ScriptServer::is_global_class(intype)) {
 				obj = EditorNode::get_editor_data().script_class_instance(intype);
-			} else {
+			} else if (ClassDB::class_exists(intype)) {
 				obj = ClassDB::instantiate(intype);
+			} else {
+				Ref<Script> scr = ResourceLoader::load(intype, "Script");
+				if (scr.is_valid()) {
+					obj = ClassDB::instantiate(scr->get_instance_base_type());
+					if (obj) {
+						obj.operator Object *()->set_script(scr);
+					}
+				}
 			}
 
 			if (!obj) {
@@ -475,15 +468,28 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 
 			bool is_custom_resource = false;
 			Ref<Texture2D> icon;
+			String resource_name = t;
 			if (!custom_resources.is_empty()) {
 				for (int j = 0; j < custom_resources.size(); j++) {
-					if (custom_resources[j].name == t) {
+					if (custom_resources[j].name == t || custom_resources[j].script->get_path() == t) {
 						is_custom_resource = true;
+						resource_name = custom_resources[j].name;
 						if (custom_resources[j].icon.is_valid()) {
 							icon = custom_resources[j].icon;
 						}
 						break;
 					}
+				}
+			}
+
+			if (!is_custom_resource && !ScriptServer::is_global_class(t) && !ClassDB::class_exists(t)) {
+				Ref<Script> scr = ResourceLoader::load(t, "Script");
+				if (scr.is_valid()) {
+					is_custom_resource = true;
+					resource_name = t.get_file();
+					resource_name = resource_name.substr(0, resource_name.length() - resource_name.get_extension().length() - 1);
+					resource_name = resource_name.to_pascal_case();
+					icon = get_theme_icon(SNAME("Script"), SNAME("EditorIcons"));
 				}
 			}
 
@@ -498,7 +504,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 			}
 
 			int id = TYPE_BASE_ID + idx;
-			edit_menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
+			edit_menu->add_icon_item(icon, vformat(TTR("New %s"), resource_name), id);
 
 			idx++;
 		}
@@ -582,10 +588,44 @@ static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_v
 		p_vector->insert(p_type);
 	}
 
-	List<StringName> inheriters;
-	ScriptServer::get_inheriters_list(p_type, &inheriters);
-	for (const StringName &S : inheriters) {
-		_add_allowed_type(S, p_vector);
+	if (ScriptServer::is_global_class(p_type) || ClassDB::class_exists(p_type)) {
+		List<StringName> inheriters;
+		ScriptServer::get_inheriters_list(p_type, &inheriters);
+		for (const StringName &S : inheriters) {
+			_add_allowed_type(S, p_vector);
+		}
+	} else {
+		// The type is a path.
+		Vector<EditorData::CustomType> custom_resources;
+		if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
+			custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
+		}
+		if (!custom_resources.is_empty()) {
+			for (int i = 0; i < custom_resources.size(); i++) {
+				Ref<Script> scr = custom_resources[i].script;
+				while (scr.is_valid()) {
+					if (scr->get_path() == p_type) {
+						_add_allowed_type(custom_resources[i].script->get_path(), p_vector);
+						break;
+					}
+					scr = scr->get_base_script();
+				}
+			}
+		}
+		List<StringName> global_classes;
+		ScriptServer::get_global_class_list(&global_classes);
+		for (StringName &E : global_classes) {
+			if (ScriptServer::get_global_class_native_base(E) == SNAME("Resource")) {
+				Ref<Script> scr = ResourceLoader::load(ScriptServer::get_global_class_path(E), "Script");
+				while (scr.is_valid()) {
+					if (scr->get_path() == p_type) {
+						_add_allowed_type(E, p_vector);
+						break;
+					}
+					scr = scr->get_base_script();
+				}
+			}
+		}
 	}
 }
 
@@ -638,19 +678,46 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 	HashSet<StringName> allowed_types;
 	_get_allowed_types(true, &allowed_types);
 
-	if (res.is_valid()) {
-		String res_type = _get_resource_type(res);
-
-		if (_is_type_valid(res_type, allowed_types)) {
-			return true;
-		}
-
-		StringName custom_class = EditorNode::get_singleton()->get_object_custom_type_name(res.ptr());
-		if (_is_type_valid(custom_class, allowed_types)) {
-			return true;
-		}
+	if (res.is_valid() && _is_resource_valid(res, allowed_types)) {
+		return true;
 	}
 
+	return false;
+}
+
+bool EditorResourcePicker::_is_resource_valid(const Ref<Resource> p_resource, HashSet<StringName> p_allowed_types) const {
+	if (!base_type.is_empty()) {
+		HashSet<StringName> allowed_types;
+		_get_allowed_types(true, &allowed_types);
+
+		StringName custom_class;
+		bool is_custom = false;
+		if (p_resource->get_script()) {
+			custom_class = EditorNode::get_singleton()->get_object_custom_type_name(p_resource->get_script());
+			is_custom = _is_type_valid(custom_class, allowed_types);
+		}
+
+		if (!is_custom && p_resource->get_script()) {
+			is_custom = _is_script_valid(Object::cast_to<Script>(p_resource->get_script()), allowed_types);
+		}
+
+		return is_custom || _is_type_valid(p_resource->get_class(), allowed_types);
+	}
+	return true;
+}
+
+bool EditorResourcePicker::_is_script_valid(const Ref<Script> p_script, HashSet<StringName> p_allowed_types) const {
+	for (const StringName &E : p_allowed_types) {
+		String at = E;
+		Ref<Script> scr = p_script;
+
+		while (scr.is_valid()) {
+			if (scr->get_path() == at || (ScriptServer::is_global_class(at) && scr->get_path() == ScriptServer::get_global_class_path(at))) {
+				return true;
+			}
+			scr = scr->get_base_script();
+		}
+	}
 	return false;
 }
 
@@ -817,14 +884,11 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 		HashSet<StringName> allowed_types;
 		_get_allowed_types(true, &allowed_types);
 
-		StringName custom_class;
-		bool is_custom = false;
-		if (edited_resource->get_script()) {
-			custom_class = EditorNode::get_singleton()->get_object_custom_type_name(edited_resource->get_script());
-			is_custom = _is_type_valid(custom_class, allowed_types);
-		}
-
-		if (!is_custom && !_is_type_valid(edited_resource->get_class(), allowed_types)) {
+		if (!_is_resource_valid(edited_resource, allowed_types)) {
+			StringName custom_class;
+			if (edited_resource->get_script()) {
+				custom_class = EditorNode::get_singleton()->get_object_custom_type_name(edited_resource->get_script());
+			}
 			String class_str = (custom_class == StringName() ? edited_resource->get_class() : vformat("%s (%s)", custom_class, edited_resource->get_class()));
 			WARN_PRINT(vformat("Value mismatch between the new base type of this EditorResourcePicker, '%s', and the type of the value it already has, '%s'.", base_type, class_str));
 		}
@@ -863,14 +927,11 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 		HashSet<StringName> allowed_types;
 		_get_allowed_types(true, &allowed_types);
 
-		StringName custom_class;
-		bool is_custom = false;
-		if (p_resource->get_script()) {
-			custom_class = EditorNode::get_singleton()->get_object_custom_type_name(p_resource->get_script());
-			is_custom = _is_type_valid(custom_class, allowed_types);
-		}
-
-		if (!is_custom && !_is_type_valid(p_resource->get_class(), allowed_types)) {
+		if (!_is_resource_valid(p_resource, allowed_types)) {
+			StringName custom_class;
+			if (p_resource->get_script()) {
+				custom_class = EditorNode::get_singleton()->get_object_custom_type_name(p_resource->get_script());
+			}
 			String class_str = (custom_class == StringName() ? p_resource->get_class() : vformat("%s (%s)", custom_class, p_resource->get_class()));
 			ERR_FAIL_MSG(vformat("Failed to set a resource of the type '%s' because this EditorResourcePicker only accepts '%s' and its derivatives.", class_str, base_type));
 		}
