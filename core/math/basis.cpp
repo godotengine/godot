@@ -397,7 +397,7 @@ void Basis::rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction) 
 		real_t dot = p_start_direction.dot(p_end_direction);
 		dot = CLAMP(dot, -1.0f, 1.0f);
 		const real_t angle_rads = Math::acos(dot);
-		set_axis_angle(axis, angle_rads);
+		*this = Basis(axis, angle_rads) * (*this);
 	}
 }
 
