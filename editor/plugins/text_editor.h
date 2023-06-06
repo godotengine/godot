@@ -38,6 +38,8 @@
 class TextEditor : public ScriptEditorBase {
 	GDCLASS(TextEditor, ScriptEditorBase);
 
+	static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource);
+
 private:
 	CodeTextEditor *code_editor = nullptr;
 

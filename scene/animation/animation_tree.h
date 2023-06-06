@@ -194,6 +194,8 @@ class AnimationNodeEndState : public AnimationRootNode {
 class AnimationTree : public Node {
 	GDCLASS(AnimationTree, Node);
 
+	void _call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred);
+
 public:
 	enum AnimationProcessCallback {
 		ANIMATION_PROCESS_PHYSICS,

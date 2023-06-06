@@ -481,7 +481,7 @@ void TextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 	code_editor->convert_case(p_case);
 }
 
-static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource) {
+ScriptEditorBase *TextEditor::create_editor(const Ref<Resource> &p_resource) {
 	if (Object::cast_to<TextFile>(*p_resource) || Object::cast_to<JSON>(*p_resource)) {
 		return memnew(TextEditor);
 	}
