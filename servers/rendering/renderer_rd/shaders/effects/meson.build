@@ -10,5 +10,6 @@ foreach glsl_file : effect_shaders
         build_by_default: true
     )
 
+    SHADER_HEADERS += [shad_target]
     SOURCES += [shad_target]
 endforeach

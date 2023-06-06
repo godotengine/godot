@@ -2,9 +2,9 @@ module_tsa_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('
 
 subdir('icu_data')
 
-_module_tsa_compile_args = ['-DMODULE_FREETYPE_ENABLED']
+tsa_args = []
 if get_option('tools')
-    _module_tsa_compile_args += '-DICU_STATIC_DATA'
+    tsa_args += '-DICU_STATIC_DATA'
 endif
 
 lib_module_tsa = library('module_text_server_adv', module_tsa_srcs,
@@ -15,7 +15,7 @@ lib_module_tsa = library('module_text_server_adv', module_tsa_srcs,
                    DEP_FREETYPE,
                    DEP_GRAPHITE,
                    DEP_MSDF],
-    cpp_args: _module_tsa_compile_args
+    cpp_args: tsa_args
 )
 
 DEP_MODULE_TEXT_SERVER_ADV = declare_dependency(link_with: lib_module_tsa)
