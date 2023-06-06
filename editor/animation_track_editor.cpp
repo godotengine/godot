@@ -6720,6 +6720,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	transition_selection->add_item(TTR("Circ", "Transition Type"), Tween::TRANS_CIRC);
 	transition_selection->add_item(TTR("Bounce", "Transition Type"), Tween::TRANS_BOUNCE);
 	transition_selection->add_item(TTR("Back", "Transition Type"), Tween::TRANS_BACK);
+	transition_selection->add_item(TTR("Spring", "Transition Type"), Tween::TRANS_SPRING);
 	transition_selection->select(Tween::TRANS_LINEAR); // Default
 	transition_selection->set_auto_translate(false); // Translation context is needed.
 	ease_selection = memnew(OptionButton);
