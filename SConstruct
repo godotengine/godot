@@ -550,6 +550,26 @@ if selected_platform in platform_list:
         # LTO "auto" means we handle the preferred option in each platform detect.py.
         env["lto"] = ARGUMENTS.get("lto", "auto")
 
+    disabled_classes = []
+
+    if env["build_feature_profile"] != "":
+        print("Using build feature profile: " + env["build_feature_profile"])
+        import json
+
+        try:
+            ft = json.load(open(env["build_feature_profile"]))
+            if "disabled_classes" in ft:
+                disabled_classes = ft["disabled_classes"]
+            if "disabled_build_options" in ft:
+                dbo = ft["disabled_build_options"]
+                for c in dbo:
+                    env[c] = dbo[c]
+        except:
+            print("Error opening feature build profile: " + env["build_feature_profile"])
+            Exit(255)
+
+    methods.write_disabled_classes(disabled_classes)
+
     # Must happen after the flags' definition, as configure is when most flags
     # are actually handled to change compile options, etc.
     detect.configure(env)
