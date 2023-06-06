@@ -1576,7 +1576,10 @@ CSharpInstance *CSharpInstance::create_for_managed_type(Object *p_owner, CSharpS
 		instance->_reference_owner_unsafe();
 	}
 
-	p_script->instances.insert(p_owner);
+	{
+		MutexLock lock(CSharpLanguage::get_singleton()->get_script_instances_mutex());
+		p_script->instances.insert(p_owner);
+	}
 
 	return instance;
 }
