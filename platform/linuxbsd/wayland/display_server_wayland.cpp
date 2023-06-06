@@ -402,52 +402,6 @@ void DisplayServerWayland::_send_window_event(WindowEvent p_event) {
 	}
 }
 
-void DisplayServerWayland::_poll_events_thread(void *p_wls) {
-	WaylandState *wls = (WaylandState *)p_wls;
-
-	struct pollfd poll_fd;
-	poll_fd.fd = wl_display_get_fd(wls->wl_display);
-	poll_fd.events = POLLIN | POLLHUP;
-
-	while (true) {
-		// Empty the event queue while it's full.
-		while (wl_display_prepare_read(wls->wl_display) != 0) {
-			// We aren't using wl_display_dispatch(), instead "manually" handling events
-			// through wl_display_dispatch_pending so that we can use a global wmutex and
-			// be sure that this and the main thread won't race over stuff, as long as
-			// the main thread locks it too.
-			//
-			// Note that the main thread can still call wl_display_roundtrip as it
-			// directly handles all events, effectively bypassing this polling loop and
-			// thus the mutex locking, avoiding a deadlock.
-			MutexLock mutex_lock(wls->mutex);
-
-			wl_display_dispatch_pending(wls->wl_display);
-		}
-
-		if (wl_display_flush(wls->wl_display) == -1) {
-			if (errno != EAGAIN) {
-				print_error(vformat("Error %d while flushing the Wayland display.", errno));
-				wls->events_thread_done.set();
-			}
-		}
-
-		// Wait for the event file descriptor to have new data.
-		poll(&poll_fd, 1, -1);
-
-		if (wls->events_thread_done.is_set()) {
-			wl_display_cancel_read(wls->wl_display);
-			break;
-		}
-
-		if (poll_fd.revents | POLLIN) {
-			wl_display_read_events(wls->wl_display);
-		} else {
-			wl_display_cancel_read(wls->wl_display);
-		}
-	}
-}
-
 void DisplayServerWayland::dispatch_input_events(const Ref<InputEvent> &p_event) {
 	((DisplayServerWayland *)(get_singleton()))->_dispatch_input_event(p_event);
 }
@@ -464,361 +418,32 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 	}
 }
 
-void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
-	WaylandState *wls = (WaylandState *)data;
-	ERR_FAIL_NULL(wls);
+void DisplayServerWayland::_resize_window(Size2i size) {
+	WindowData &wd = wls.main_window;
 
-	WaylandGlobals &globals = wls->globals;
+	wd.actual_rect.size = size;
 
-	if (strcmp(interface, wl_shm_interface.name) == 0) {
-		globals.wl_shm = (struct wl_shm *)wl_registry_bind(wl_registry, name, &wl_shm_interface, 1);
-		globals.wl_shm_name = name;
-		return;
+#ifdef VULKAN_ENABLED
+	if (wd.visible && context_vulkan) {
+		context_vulkan->window_resize(MAIN_WINDOW_ID, wd.actual_rect.size.width, wd.actual_rect.size.height);
 	}
+#endif
 
-	if (strcmp(interface, wl_compositor_interface.name) == 0) {
-		globals.wl_compositor = (struct wl_compositor *)wl_registry_bind(wl_registry, name, &wl_compositor_interface, 4);
-		globals.wl_compositor_name = name;
-		return;
+#ifdef GLES3_ENABLED
+	if (wd.visible && egl_manager) {
+		wl_egl_window_resize(wd.wl_egl_window, wd.actual_rect.size.width, wd.actual_rect.size.height, 0, 0);
 	}
+#endif
 
-	if (strcmp(interface, wl_subcompositor_interface.name) == 0) {
-		globals.wl_subcompositor = (struct wl_subcompositor *)wl_registry_bind(wl_registry, name, &wl_subcompositor_interface, 1);
-		globals.wl_subcompositor_name = name;
-		return;
+	if (wd.rect_changed_callback.is_valid()) {
+		Variant var_rect = Variant(wd.actual_rect);
+		Variant *arg = &var_rect;
+
+		Variant ret;
+		Callable::CallError ce;
+
+		wd.rect_changed_callback.callp((const Variant **)&arg, 1, ret, ce);
 	}
-
-	if (strcmp(interface, wl_data_device_manager_interface.name) == 0) {
-		globals.wl_data_device_manager = (struct wl_data_device_manager *)wl_registry_bind(wl_registry, name, &wl_data_device_manager_interface, 3);
-		globals.wl_data_device_manager_name = name;
-
-		for (SeatState &ss : wls->seats) {
-			// Initialize the data device for all current seats.
-			if (ss.wl_seat && !ss.wl_data_device && globals.wl_data_device_manager) {
-				ss.wl_data_device = wl_data_device_manager_get_data_device(wls->globals.wl_data_device_manager, ss.wl_seat);
-				wl_data_device_add_listener(ss.wl_data_device, &wl_data_device_listener, &ss);
-			}
-		}
-		return;
-	}
-
-	if (strcmp(interface, zwp_primary_selection_device_manager_v1_interface.name) == 0) {
-		globals.wp_primary_selection_device_manager = (struct zwp_primary_selection_device_manager_v1 *)wl_registry_bind(wl_registry, name, &zwp_primary_selection_device_manager_v1_interface, 1);
-
-		for (SeatState &ss : wls->seats) {
-			if (!ss.wp_primary_selection_device && globals.wp_primary_selection_device_manager) {
-				// Initialize the primary selection device for all current seats.
-				ss.wp_primary_selection_device = zwp_primary_selection_device_manager_v1_get_device(wls->globals.wp_primary_selection_device_manager, ss.wl_seat);
-				zwp_primary_selection_device_v1_add_listener(ss.wp_primary_selection_device, &wp_primary_selection_device_listener, &ss);
-			}
-		}
-	}
-
-	if (strcmp(interface, wl_output_interface.name) == 0) {
-		// The screen listener requires a pointer for its state data. For this
-		// reason, to get one that points to a variable that can live outside of this
-		// scope, we push a default `ScreenData` in `wls->screens` and get the
-		// address of this new element.
-		ScreenData *sd = &wls->screens.push_back({})->get();
-		sd->wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, 2);
-		sd->wl_output_name = name;
-		sd->wls = wls;
-
-		wl_output_add_listener(sd->wl_output, &wl_output_listener, sd);
-		return;
-	}
-
-	if (strcmp(interface, wl_seat_interface.name) == 0) {
-		// The seat listener requires a pointer for its state data. For this reason,
-		// to get one that points to a variable that can live outside of this scope,
-		// we push a default `SeatState` in `wls->seats` and get the address of this
-		// new element.
-		SeatState *ss = &wls->seats.push_back({})->get();
-		ss->wls = wls;
-		ss->wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, 5);
-		ss->wl_seat_name = name;
-
-		if (!ss->wl_data_device && globals.wl_data_device_manager) {
-			// Initialize the data device for this new seat.
-			ss->wl_data_device = wl_data_device_manager_get_data_device(globals.wl_data_device_manager, ss->wl_seat);
-			wl_data_device_add_listener(ss->wl_data_device, &wl_data_device_listener, ss);
-		}
-
-		if (!ss->wp_primary_selection_device && globals.wp_primary_selection_device_manager) {
-			// Initialize the primary selection device for this new seat.
-			ss->wp_primary_selection_device = zwp_primary_selection_device_manager_v1_get_device(wls->globals.wp_primary_selection_device_manager, ss->wl_seat);
-			zwp_primary_selection_device_v1_add_listener(ss->wp_primary_selection_device, &wp_primary_selection_device_listener, ss);
-		}
-
-		if (!ss->wp_tablet_seat && globals.wp_tablet_manager) {
-			// Get this own seat's tablet handle.
-			ss->wp_tablet_seat = zwp_tablet_manager_v2_get_tablet_seat(globals.wp_tablet_manager, ss->wl_seat);
-			zwp_tablet_seat_v2_add_listener(ss->wp_tablet_seat, &wp_tablet_seat_listener, ss);
-		}
-
-		wl_seat_add_listener(ss->wl_seat, &wl_seat_listener, ss);
-		return;
-	}
-
-	if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-		globals.xdg_wm_base = (struct xdg_wm_base *)wl_registry_bind(wl_registry, name, &xdg_wm_base_interface, MAX(2, MIN(5, (int)version)));
-		globals.xdg_wm_base_name = name;
-		return;
-	}
-
-	if (strcmp(interface, zxdg_decoration_manager_v1_interface.name) == 0) {
-		globals.xdg_decoration_manager = (struct zxdg_decoration_manager_v1 *)wl_registry_bind(wl_registry, name, &zxdg_decoration_manager_v1_interface, 1);
-		globals.xdg_decoration_manager_name = name;
-		return;
-	}
-
-	if (strcmp(interface, xdg_activation_v1_interface.name) == 0) {
-		globals.xdg_activation = (struct xdg_activation_v1 *)wl_registry_bind(wl_registry, name, &xdg_activation_v1_interface, 1);
-		globals.xdg_activation_name = name;
-		return;
-	}
-
-	if (strcmp(interface, zwp_pointer_constraints_v1_interface.name) == 0) {
-		globals.wp_pointer_constraints = (struct zwp_pointer_constraints_v1 *)wl_registry_bind(wl_registry, name, &zwp_pointer_constraints_v1_interface, 1);
-		globals.wp_pointer_constraints_name = name;
-		return;
-	}
-
-	if (strcmp(interface, zwp_pointer_gestures_v1_interface.name) == 0) {
-		globals.wp_pointer_gestures = (struct zwp_pointer_gestures_v1 *)wl_registry_bind(wl_registry, name, &zwp_pointer_gestures_v1_interface, 1);
-		globals.wp_pointer_gestures_name = name;
-		return;
-	}
-
-	if (strcmp(interface, zwp_relative_pointer_manager_v1_interface.name) == 0) {
-		globals.wp_relative_pointer_manager = (struct zwp_relative_pointer_manager_v1 *)wl_registry_bind(wl_registry, name, &zwp_relative_pointer_manager_v1_interface, 1);
-		globals.wp_relative_pointer_manager_name = name;
-		return;
-	}
-
-	if (strcmp(interface, zwp_idle_inhibit_manager_v1_interface.name) == 0) {
-		globals.wp_idle_inhibit_manager = (struct zwp_idle_inhibit_manager_v1 *)wl_registry_bind(wl_registry, name, &zwp_idle_inhibit_manager_v1_interface, 1);
-		globals.wp_idle_inhibit_manager_name = name;
-		return;
-	}
-
-	if (strcmp(interface, zwp_tablet_manager_v2_interface.name) == 0) {
-		globals.wp_tablet_manager = (struct zwp_tablet_manager_v2 *)wl_registry_bind(wl_registry, name, &zwp_tablet_manager_v2_interface, 1);
-		globals.wp_tablet_manager_name = name;
-
-		for (SeatState &ss : wls->seats) {
-			if (ss.wl_seat) {
-				ss.wp_tablet_seat = zwp_tablet_manager_v2_get_tablet_seat(globals.wp_tablet_manager, ss.wl_seat);
-				zwp_tablet_seat_v2_add_listener(ss.wp_tablet_seat, &wp_tablet_seat_listener, &ss);
-			}
-		}
-
-		return;
-	}
-}
-
-void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
-	WaylandState *wls = (WaylandState *)data;
-	ERR_FAIL_NULL(wls);
-
-	WaylandGlobals &globals = wls->globals;
-
-	if (name == globals.wl_shm_name) {
-		if (globals.wl_shm) {
-			wl_shm_destroy(globals.wl_shm);
-		}
-		globals.wl_shm = nullptr;
-		globals.wl_shm_name = 0;
-		return;
-	}
-
-	if (name == globals.wl_compositor_name) {
-		if (globals.wl_compositor) {
-			wl_compositor_destroy(globals.wl_compositor);
-		}
-		globals.wl_compositor = nullptr;
-		globals.wl_compositor_name = 0;
-		return;
-	}
-
-	if (name == globals.wl_subcompositor_name) {
-		if (globals.wl_subcompositor) {
-			wl_subcompositor_destroy(globals.wl_subcompositor);
-		}
-		globals.wl_subcompositor = nullptr;
-		globals.wl_subcompositor_name = 0;
-		return;
-	}
-	if (name == globals.wl_data_device_manager_name) {
-		if (globals.wl_data_device_manager) {
-			wl_data_device_manager_destroy(globals.wl_data_device_manager);
-		}
-		globals.wl_data_device_manager = nullptr;
-		globals.wl_data_device_manager_name = 0;
-
-		// Destroy any seat data device that's there.
-		for (SeatState &ss : wls->seats) {
-			if (ss.wl_data_device) {
-				wl_data_device_destroy(ss.wl_data_device);
-			}
-			ss.wl_data_device = nullptr;
-		}
-	}
-
-	if (name == globals.xdg_wm_base_name) {
-		if (globals.xdg_wm_base) {
-			xdg_wm_base_destroy(globals.xdg_wm_base);
-		}
-		globals.xdg_wm_base = nullptr;
-		globals.xdg_wm_base_name = 0;
-		return;
-	}
-
-	if (name == globals.xdg_decoration_manager_name) {
-		if (globals.xdg_decoration_manager) {
-			zxdg_decoration_manager_v1_destroy(globals.xdg_decoration_manager);
-		}
-		globals.xdg_decoration_manager = nullptr;
-		globals.xdg_decoration_manager_name = 0;
-		return;
-	}
-
-	if (name == globals.xdg_activation_name) {
-		if (globals.xdg_activation) {
-			xdg_activation_v1_destroy(globals.xdg_activation);
-		}
-		globals.xdg_activation = nullptr;
-		globals.xdg_activation_name = 0;
-		return;
-	}
-
-	if (name == globals.wp_pointer_constraints_name) {
-		if (globals.wp_pointer_constraints) {
-			zwp_pointer_constraints_v1_destroy(globals.wp_pointer_constraints);
-		}
-		globals.wp_pointer_constraints = nullptr;
-		globals.wp_pointer_constraints_name = 0;
-		return;
-	}
-
-	if (name == globals.wp_pointer_gestures_name) {
-		if (globals.wp_pointer_gestures) {
-			zwp_pointer_gestures_v1_destroy(globals.wp_pointer_gestures);
-		}
-		globals.wp_pointer_gestures = nullptr;
-		globals.wp_pointer_gestures_name = 0;
-		return;
-	}
-
-	if (name == globals.wp_relative_pointer_manager_name) {
-		if (globals.wp_relative_pointer_manager) {
-			zwp_relative_pointer_manager_v1_destroy(globals.wp_relative_pointer_manager);
-		}
-		globals.wp_relative_pointer_manager = nullptr;
-		globals.wp_relative_pointer_manager_name = 0;
-		return;
-	}
-
-	if (name == globals.wp_idle_inhibit_manager_name) {
-		if (globals.wp_idle_inhibit_manager) {
-			zwp_idle_inhibit_manager_v1_destroy(globals.wp_idle_inhibit_manager);
-		}
-		globals.wp_idle_inhibit_manager = nullptr;
-		globals.wp_idle_inhibit_manager_name = 0;
-		return;
-	}
-
-	if (name == globals.wp_tablet_manager_name) {
-		zwp_tablet_manager_v2_destroy(globals.wp_tablet_manager);
-
-		for (SeatState &ss : wls->seats) {
-			{
-				// Let's destroy all tablet tools.
-				List<struct zwp_tablet_tool_v2 *>::Element *it = ss.tablet_tools.front();
-
-				while (it) {
-					zwp_tablet_tool_v2_destroy(it->get());
-					it = it->next();
-				}
-			}
-		}
-	}
-
-	{
-		// FIXME: This is a very bruteforce approach.
-		List<ScreenData>::Element *it = wls->screens.front();
-		while (it) {
-			// Iterate through all of the screens to find if any got removed.
-			ScreenData &sd = it->get();
-
-			if (sd.wl_output_name == name) {
-				if (sd.wl_output) {
-					wl_output_destroy(sd.wl_output);
-				}
-				wls->screens.erase(it);
-				return;
-			}
-
-			it = it->next();
-		}
-	}
-
-	{
-		// FIXME: This is a very bruteforce approach.
-		List<SeatState>::Element *it = wls->seats.front();
-		while (it) {
-			// Iterate through all of the seats to find if any got removed.
-			SeatState &ss = it->get();
-
-			if (ss.wl_seat_name == name) {
-				if (ss.wl_data_device) {
-					wl_data_device_destroy(ss.wl_data_device);
-				}
-
-				if (ss.wl_seat) {
-					wl_seat_destroy(ss.wl_seat);
-				}
-
-				if (ss.wp_tablet_seat) {
-					zwp_tablet_seat_v2_destroy(ss.wp_tablet_seat);
-
-					for (struct zwp_tablet_tool_v2 *tool : ss.tablet_tools) {
-						zwp_tablet_tool_v2_destroy(tool);
-					}
-				}
-
-				{
-					// Let's destroy all tools.
-					for (struct zwp_tablet_tool_v2 *tool : ss.tablet_tools) {
-						zwp_tablet_tool_v2_destroy(tool);
-					}
-				}
-
-				wls->seats.erase(it);
-				return;
-			}
-
-			it = it->next();
-		}
-	}
-}
-
-void DisplayServerWayland::_wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
-	WindowData *wd = (WindowData *)data;
-	ERR_FAIL_NULL(wd);
-
-	// FIXME: Kinda bruteforce? Don't think so.
-	for (ScreenData &screen : wd->wls->screens) {
-		if (screen.wl_output == wl_output) {
-			DEBUG_LOG_WAYLAND(vformat("Setting window scale to %2f.", screen.scale));
-			wd->scale = screen.scale;
-			wl_surface_set_buffer_scale(wd->wl_surface, wd->scale);
-			wl_surface_commit(wl_surface);
-		}
-	}
-}
-
-void DisplayServerWayland::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
 }
 
 void DisplayServerWayland::_wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {
@@ -853,15 +478,7 @@ void DisplayServerWayland::_wl_output_on_scale(void *data, struct wl_output *wl_
 	ScreenData *sd = (ScreenData *)data;
 	ERR_FAIL_NULL(sd);
 
-	WaylandState *wls = sd->wls;
-	ERR_FAIL_NULL(wls);
-
-	// TODO: Generic window scale update method?
-	if (wls->main_window.wl_output == wl_output) {
-		wls->main_window.scale = factor;
-		wl_surface_set_buffer_scale(wls->main_window.wl_surface, factor);
-		wl_surface_commit(wls->main_window.wl_surface);
-	}
+	DEBUG_LOG_WAYLAND(vformat("Output %x scale %d", (size_t)wl_output, factor));
 
 	sd->scale = factor;
 }
@@ -967,7 +584,7 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_MOUSE_ENTER;
 
-	wls->message_queue.push_back(msg);
+	wls->wayland_messages.push_back(msg);
 }
 
 void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
@@ -983,7 +600,7 @@ void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *w
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_MOUSE_EXIT;
 
-	wls->message_queue.push_back(msg);
+	wls->wayland_messages.push_back(msg);
 
 	DEBUG_LOG_WAYLAND("Left window.");
 }
@@ -1121,7 +738,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 		msg->event = mm;
 
-		wls->message_queue.push_back(msg);
+		wls->wayland_messages.push_back(msg);
 	}
 
 	if (pd.discrete_scroll_vector - old_pd.discrete_scroll_vector != Vector2i()) {
@@ -1159,7 +776,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 			msg->event = pg;
 
-			wls->message_queue.push_back(msg);
+			wls->wayland_messages.push_back(msg);
 		}
 	}
 
@@ -1228,7 +845,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 				msg->event = mb;
 
-				wls->message_queue.push_back(msg);
+				wls->wayland_messages.push_back(msg);
 
 				// Send an event resetting immediately the wheel key.
 				// Wayland specification defines axis_stop events as optional and says to
@@ -1254,7 +871,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 					Ref<WaylandInputEventMessage> msg_up;
 					msg_up.instantiate();
 					msg_up->event = wh_up;
-					wls->message_queue.push_back(msg_up);
+					wls->wayland_messages.push_back(msg_up);
 				}
 			}
 		}
@@ -1343,7 +960,7 @@ void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard 
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_FOCUS_IN;
-	wls->message_queue.push_back(msg);
+	wls->wayland_messages.push_back(msg);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
@@ -1358,7 +975,7 @@ void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard 
 
 	msg->event = WINDOW_EVENT_FOCUS_OUT;
 
-	wls->message_queue.push_back(msg);
+	wls->wayland_messages.push_back(msg);
 
 	ss->repeating_keycode = XKB_KEYCODE_INVALID;
 }
@@ -1398,7 +1015,7 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 	Ref<WaylandInputEventMessage> msg;
 	msg.instantiate();
 	msg->event = k;
-	wls->message_queue.push_back(msg);
+	wls->wayland_messages.push_back(msg);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
@@ -1481,7 +1098,7 @@ void DisplayServerWayland::_wl_data_device_on_drop(void *data, struct wl_data_de
 			msg->files.write[i] = msg->files[i].replace("file://", "").uri_decode();
 		}
 
-		ss->wls->message_queue.push_back(msg);
+		ss->wls->wayland_messages.push_back(msg);
 	}
 
 	wl_data_offer_finish(ss->wl_data_offer_dnd);
@@ -1587,12 +1204,14 @@ void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surf
 	WaylandState *wls = (WaylandState *)wd->wls;
 	ERR_FAIL_NULL(wls);
 
-	xdg_surface_set_window_geometry(wd->xdg_surface, 0, 0, wd->logical_rect.size.width * wd->scale, wd->logical_rect.size.height * wd->scale);
+	if (wd->xdg_surface) {
+		xdg_surface_set_window_geometry(wd->xdg_surface, 0, 0, wd->logical_rect.size.width * wd->scale, wd->logical_rect.size.height * wd->scale);
+	}
 
 	Ref<WaylandWindowRectMessage> msg;
 	msg.instantiate();
 	msg->rect = wd->logical_rect;
-	wls->message_queue.push_back(msg);
+	wls->wayland_messages.push_back(msg);
 
 	DEBUG_LOG_WAYLAND(vformat("xdg surface on configure rect %s", wd->logical_rect));
 }
@@ -1652,7 +1271,7 @@ void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_topleve
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_CLOSE_REQUEST;
-	wls->message_queue.push_back(msg);
+	wls->wayland_messages.push_back(msg);
 }
 
 void DisplayServerWayland::_xdg_toplevel_on_configure_bounds(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height) {
@@ -1786,8 +1405,8 @@ void DisplayServerWayland::_wp_pointer_gesture_pinch_on_update(void *data, struc
 		pan_msg.instantiate();
 		pan_msg->event = pg;
 
-		wls->message_queue.push_back(magnify_msg);
-		wls->message_queue.push_back(pan_msg);
+		wls->wayland_messages.push_back(magnify_msg);
+		wls->wayland_messages.push_back(pan_msg);
 
 		ss->old_pinch_scale = scale;
 	}
@@ -1925,7 +1544,7 @@ void DisplayServerWayland::_wp_tablet_tool_on_removed(void *data, struct zwp_tab
 		}
 	}
 
-	print_verbose(vformat("wp tablet tool %x on removed", (size_t)zwp_tablet_tool_v2));
+	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on removed", (size_t)zwp_tablet_tool_v2));
 }
 
 void DisplayServerWayland::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial, struct zwp_tablet_v2 *tablet, struct wl_surface *surface) {
@@ -1945,10 +1564,10 @@ void DisplayServerWayland::_wp_tablet_tool_on_proximity_in(void *data, struct zw
 		msg.instantiate();
 		msg->event = WINDOW_EVENT_MOUSE_ENTER;
 
-		wls->message_queue.push_back(msg);
+		wls->wayland_messages.push_back(msg);
 	}
 
-	print_verbose(vformat("wp tablet tool %x on proximity in serial %d tablet %x surface %x", (size_t)zwp_tablet_tool_v2, serial, (size_t)tablet, (size_t)surface));
+	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on proximity in serial %d tablet %x surface %x", (size_t)zwp_tablet_tool_v2, serial, (size_t)tablet, (size_t)surface));
 }
 
 void DisplayServerWayland::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
@@ -1967,9 +1586,9 @@ void DisplayServerWayland::_wp_tablet_tool_on_proximity_out(void *data, struct z
 		msg.instantiate();
 		msg->event = WINDOW_EVENT_MOUSE_EXIT;
 
-		wls->message_queue.push_back(msg);
+		wls->wayland_messages.push_back(msg);
 	}
-	print_verbose(vformat("wp tablet tool %x on proximity out", (size_t)zwp_tablet_tool_v2));
+	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on proximity out", (size_t)zwp_tablet_tool_v2));
 }
 
 void DisplayServerWayland::_wp_tablet_tool_on_down(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial) {
@@ -1987,7 +1606,7 @@ void DisplayServerWayland::_wp_tablet_tool_on_down(void *data, struct zwp_tablet
 	// double clicking work.
 	td.button_time = OS::get_singleton()->get_ticks_msec();
 
-	print_verbose(vformat("wp tablet tool %x on down serial %x", (size_t)zwp_tablet_tool_v2, serial));
+	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on down serial %x", (size_t)zwp_tablet_tool_v2, serial));
 }
 
 void DisplayServerWayland::_wp_tablet_tool_on_up(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
@@ -2001,7 +1620,7 @@ void DisplayServerWayland::_wp_tablet_tool_on_up(void *data, struct zwp_tablet_t
 	// double clicking work.
 	ss->tablet_tool_data_buffer.button_time = OS::get_singleton()->get_ticks_msec();
 
-	print_verbose(vformat("wp tablet tool %x on up", (size_t)zwp_tablet_tool_v2));
+	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on up", (size_t)zwp_tablet_tool_v2));
 }
 
 void DisplayServerWayland::_wp_tablet_tool_on_motion(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t x, wl_fixed_t y) {
@@ -2132,7 +1751,7 @@ void DisplayServerWayland::_wp_tablet_tool_on_frame(void *data, struct zwp_table
 
 		inputev_msg->event = mm;
 
-		wls->message_queue.push_back(inputev_msg);
+		wls->wayland_messages.push_back(inputev_msg);
 	}
 
 	if (old_td.pressed_button_mask != td.pressed_button_mask) {
@@ -2176,7 +1795,7 @@ void DisplayServerWayland::_wp_tablet_tool_on_frame(void *data, struct zwp_table
 
 				msg->event = mb;
 
-				wls->message_queue.push_back(msg);
+				wls->wayland_messages.push_back(msg);
 			}
 		}
 	}
@@ -2234,16 +1853,17 @@ void DisplayServerWayland::libdecor_frame_on_configure(struct libdecor_frame *fr
 		}
 	}
 
+	if (wd->libdecor_frame) {
+		struct libdecor_state *state = libdecor_state_new(wd->logical_rect.size.width * wd->scale, wd->logical_rect.size.height * wd->scale);
+		// I'm not sure whether we can just pass null here.
+		libdecor_frame_commit(wd->libdecor_frame, state, configuration);
+		libdecor_state_free(state);
+	}
+
 	Ref<WaylandWindowRectMessage> winrect_msg;
 	winrect_msg.instantiate();
-
 	winrect_msg->rect = wd->logical_rect;
-
-	wls->message_queue.push_back(winrect_msg);
-
-	struct libdecor_state *new_state = libdecor_state_new(width, height);
-	libdecor_frame_commit(frame, new_state, configuration);
-	libdecor_state_free(new_state);
+	wls->wayland_messages.push_back(winrect_msg);
 
 	DEBUG_LOG_WAYLAND("libdecor frame on configure");
 }
@@ -2260,7 +1880,7 @@ void DisplayServerWayland::libdecor_frame_on_close(struct libdecor_frame *frame,
 
 	winevent_msg->event = WINDOW_EVENT_CLOSE_REQUEST;
 
-	wls->message_queue.push_back(winevent_msg);
+	wls->wayland_messages.push_back(winevent_msg);
 
 	DEBUG_LOG_WAYLAND("libdecor frame on close");
 }
@@ -2368,7 +1988,7 @@ void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 		return;
 	}
 
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
 	bool previously_shown = (wls.mouse_mode == MOUSE_MODE_VISIBLE || wls.mouse_mode == MOUSE_MODE_CONFINED);
@@ -2393,7 +2013,7 @@ void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 	// protocol doesn't implement pointer warping (not even in the window). This
 	// isn't efficient *at all* and perhaps there could be better behaviours in
 	// the pointer capturing logic in general, but this will do for now.
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (wls.current_seat) {
 		MouseMode old_mouse_mode = wls.mouse_mode;
@@ -2410,7 +2030,7 @@ void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 }
 
 Point2i DisplayServerWayland::mouse_get_position() const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (wls.current_seat) {
 		return wls.current_seat->pointer_data.position;
@@ -2420,7 +2040,7 @@ Point2i DisplayServerWayland::mouse_get_position() const {
 }
 
 BitField<MouseButtonMask> DisplayServerWayland::mouse_get_button_state() const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (!wls.current_seat) {
 		return BitField<MouseButtonMask>();
@@ -2440,7 +2060,7 @@ BitField<MouseButtonMask> DisplayServerWayland::mouse_get_button_state() const {
 // "recent enough" input event.
 // TODO: Add this limitation to the documentation.
 void DisplayServerWayland::clipboard_set(const String &p_text) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (!wls.current_seat) {
 		return;
@@ -2465,7 +2085,7 @@ void DisplayServerWayland::clipboard_set(const String &p_text) {
 }
 
 String DisplayServerWayland::clipboard_get() const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (!wls.current_seat) {
 		return String();
@@ -2475,7 +2095,7 @@ String DisplayServerWayland::clipboard_get() const {
 }
 
 void DisplayServerWayland::clipboard_set_primary(const String &p_text) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (!wls.current_seat) {
 		return;
@@ -2500,7 +2120,7 @@ void DisplayServerWayland::clipboard_set_primary(const String &p_text) {
 }
 
 String DisplayServerWayland::clipboard_get_primary() const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (!wls.current_seat) {
 		return String();
@@ -2510,7 +2130,7 @@ String DisplayServerWayland::clipboard_get_primary() const {
 }
 
 int DisplayServerWayland::get_screen_count() const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 	return wls.screens.size();
 }
 
@@ -2521,7 +2141,7 @@ int DisplayServerWayland::get_primary_screen() const {
 }
 
 Point2i DisplayServerWayland::screen_get_position(int p_screen) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
 		p_screen = window_get_current_screen();
@@ -2533,7 +2153,7 @@ Point2i DisplayServerWayland::screen_get_position(int p_screen) const {
 }
 
 Size2i DisplayServerWayland::screen_get_size(int p_screen) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
 		p_screen = window_get_current_screen();
@@ -2550,7 +2170,7 @@ Rect2i DisplayServerWayland::screen_get_usable_rect(int p_screen) const {
 }
 
 int DisplayServerWayland::screen_get_dpi(int p_screen) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
 		p_screen = window_get_current_screen();
@@ -2576,7 +2196,7 @@ int DisplayServerWayland::screen_get_dpi(int p_screen) const {
 }
 
 float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
 		p_screen = window_get_current_screen();
@@ -2588,7 +2208,7 @@ float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
 }
 
 void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (screen_is_kept_on() == p_enable) {
 		return;
@@ -2628,7 +2248,7 @@ bool DisplayServerWayland::screen_is_kept_on() const {
 }
 
 Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	Vector<int> ret;
 	ret.push_back(MAIN_WINDOW_ID);
@@ -2637,68 +2257,21 @@ Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
 }
 
 void DisplayServerWayland::_show_window() {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	WindowData &wd = wls.main_window;
 
 	if (!wd.visible) {
-		DEBUG_LOG_WAYLAND("Showing window");
+		DEBUG_LOG_WAYLAND("Showing window.");
 
 		// Showing this window will reset its mode with whatever the compositor
 		// reports. We'll save the mode beforehand so that we can reapply it later.
 		WindowMode setup_mode = wd.mode;
 
-		wd.wl_surface = wl_compositor_create_surface(wls.globals.wl_compositor);
-		wl_surface_add_listener(wd.wl_surface, &wl_surface_listener, &wd);
+		wayland_thread.window_create(context);
+		wayland_thread.window_set_borderless(window_get_flag(WINDOW_FLAG_BORDERLESS));
 
-		bool decorated = false;
-
-		String app_id = _get_app_id_from_context(context);
-
-#ifdef LIBDECOR_ENABLED
-		if (!decorated && wls.libdecor_context) {
-			wd.libdecor_frame = libdecor_decorate(wls.libdecor_context, wd.wl_surface, (struct libdecor_frame_interface *)&libdecor_frame_interface, &wd);
-
-			libdecor_frame_set_max_content_size(wd.libdecor_frame, wd.max_size.width, wd.max_size.height);
-			libdecor_frame_set_min_content_size(wd.libdecor_frame, wd.min_size.width, wd.max_size.height);
-			libdecor_frame_set_app_id(wd.libdecor_frame, app_id.utf8().ptrw());
-
-			libdecor_frame_map(wd.libdecor_frame);
-
-			decorated = true;
-		}
-#endif
-
-		if (!decorated) {
-			// libdecor has failed loading or is disabled, we shall handle xdg_toplevel
-			// creation and decoration ourselves (and by decorating for now I just mean
-			// asking for SSDs and hoping for the best).
-			wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, wd.wl_surface);
-			xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
-
-			wd.xdg_toplevel = xdg_surface_get_toplevel(wd.xdg_surface);
-			xdg_toplevel_add_listener(wd.xdg_toplevel, &xdg_toplevel_listener, &wd);
-
-			xdg_toplevel_set_max_size(wd.xdg_toplevel, wd.max_size.width, wd.max_size.height);
-			xdg_toplevel_set_min_size(wd.xdg_toplevel, wd.min_size.width, wd.min_size.height);
-			xdg_toplevel_set_app_id(wd.xdg_toplevel, app_id.utf8().ptrw());
-
-			if (!window_get_flag(WINDOW_FLAG_BORDERLESS) && wls.globals.xdg_decoration_manager) {
-				wd.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(wls.globals.xdg_decoration_manager, wd.xdg_toplevel);
-				zxdg_toplevel_decoration_v1_add_listener(wd.xdg_toplevel_decoration, &xdg_toplevel_decoration_listener, &wd);
-
-				zxdg_toplevel_decoration_v1_set_mode(wd.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
-
-				decorated = true;
-			}
-		}
-
-		wl_surface_commit(wd.wl_surface);
-
-		// Wait for the surface to be configured before continuing.
-		wl_display_roundtrip(wls.wl_display);
-
-		// NOTE: The XDG Shell protocol is built in a way that causes the window to
+		// NOTE: The XDG shell protocol is built in a way that causes the window to
 		// be immediately shown as soon as a valid buffer is assigned to it. Hence,
 		// the only acceptable way of implementing window showing is to move the
 		// graphics context window creation logic here.
@@ -2720,25 +2293,13 @@ void DisplayServerWayland::_show_window() {
 		}
 #endif
 		// NOTE: The public window-handling methods might depend on this flag being
-		// set. Ensure to make any of these calls not before this assignment.
+		// set. Ensure to not make any of these calls before this assignment.
 		wd.visible = true;
 
 		// Actually try to apply the window's mode now that it's visible.
 		window_set_mode(setup_mode);
 
-#ifdef LIBDECOR_ENABLED
-		if (wd.libdecor_frame) {
-			libdecor_frame_set_visibility(wd.libdecor_frame, !window_get_flag(WINDOW_FLAG_BORDERLESS));
-
-			if (wd.title.utf8().ptr()) {
-				libdecor_frame_set_title(wd.libdecor_frame, wd.title.utf8().ptr());
-			}
-		}
-#endif // LIBDECOR_ENABLE
-
-		if (wd.xdg_toplevel && wd.title.utf8().ptr()) {
-			xdg_toplevel_set_title(wd.xdg_toplevel, wd.title.utf8().ptr());
-		}
+		wayland_thread.window_set_title(wd.title);
 	}
 }
 
@@ -2748,33 +2309,25 @@ DisplayServer::WindowID DisplayServerWayland::get_window_at_screen_position(cons
 }
 
 void DisplayServerWayland::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	wls.main_window.instance_id = p_instance;
 }
 
 ObjectID DisplayServerWayland::window_get_attached_instance_id(WindowID p_window) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	return wls.main_window.instance_id;
 }
 
 void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer::WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	WindowData &wd = wls.main_window;
 
 	wd.title = p_title;
 
-	if (wd.xdg_toplevel) {
-		xdg_toplevel_set_title(wd.xdg_toplevel, p_title.utf8().get_data());
-	}
-
-#ifdef LIBDECOR_ENABLED
-	if (wd.libdecor_frame) {
-		libdecor_frame_set_title(wd.libdecor_frame, p_title.utf8().get_data());
-	}
-#endif //LIBDECOR_ENABLED
+	wayland_thread.window_set_title(wd.title);
 }
 
 void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServer::WindowID p_window) {
@@ -2783,31 +2336,31 @@ void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p
 }
 
 void DisplayServerWayland::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	wls.main_window.rect_changed_callback = p_callable;
 }
 
 void DisplayServerWayland::window_set_window_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	wls.main_window.window_event_callback = p_callable;
 }
 
 void DisplayServerWayland::window_set_input_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	wls.main_window.input_event_callback = p_callable;
 }
 
 void DisplayServerWayland::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	wls.main_window.input_text_callback = p_callable;
 }
 
 void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	wls.main_window.drop_files_callback = p_callable;
 }
@@ -2822,14 +2375,14 @@ void DisplayServerWayland::window_set_current_screen(int p_screen, DisplayServer
 }
 
 Point2i DisplayServerWayland::window_get_position(DisplayServer::WindowID p_window) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	// We can't know the position of toplevels with the standard protocol.
 	return Point2i();
 }
 
 Point2i DisplayServerWayland::window_get_position_with_decorations(DisplayServer::WindowID p_window) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	// We can't know the position of toplevels with the standard protocol, nor can
 	// we get information about the decorations, at least with SSDs.
@@ -2841,7 +2394,7 @@ void DisplayServerWayland::window_set_position(const Point2i &p_position, Displa
 }
 
 void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServer::WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	DEBUG_LOG_WAYLAND(vformat("window max size set to %s", p_size));
 
@@ -2850,6 +2403,8 @@ void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServe
 	}
 
 	WindowData &wd = wls.main_window;
+
+	// FIXME: Is `p_size.x < wd.min_size.x || p_size.y < wd.min_size.y` == `p_size < wd.min_size`?
 	if ((p_size != Size2i()) && ((p_size.x < wd.min_size.x) || (p_size.y < wd.min_size.y))) {
 		ERR_PRINT("Maximum window size can't be smaller than minimum window size!");
 		return;
@@ -2857,23 +2412,11 @@ void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServe
 
 	wd.max_size = p_size;
 
-	if (wd.wl_surface) {
-		if (wd.xdg_toplevel) {
-			xdg_toplevel_set_max_size(wd.xdg_toplevel, wd.max_size.width, wd.max_size.height);
-		}
-
-#ifdef LIBDECOR_ENABLED
-		if (wd.libdecor_frame) {
-			libdecor_frame_set_max_content_size(wd.libdecor_frame, wd.max_size.width, wd.max_size.height);
-		}
-#endif // LIBDECOR_ENABLED
-
-		wl_surface_commit(wd.wl_surface);
-	}
+	wayland_thread.window_set_max_size(p_size);
 }
 
 Size2i DisplayServerWayland::window_get_max_size(DisplayServer::WindowID p_window) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	return wls.main_window.max_size;
 }
@@ -2891,7 +2434,7 @@ void DisplayServerWayland::window_set_transient(WindowID p_window, WindowID p_pa
 }
 
 void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServer::WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	DEBUG_LOG_WAYLAND(vformat("window minsize set to %s", p_size));
 
@@ -2901,6 +2444,7 @@ void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServe
 		ERR_FAIL_MSG("Minimum window size can't be negative!");
 	}
 
+	// FIXME: Is `p_size.x > wd.max_size.x || p_size.y > wd.max_size.y` == `p_size > wd.max_size`?
 	if ((p_size != Size2i()) && (wd.max_size != Size2i()) && ((p_size.x > wd.max_size.x) || (p_size.y > wd.max_size.y))) {
 		ERR_PRINT("Minimum window size can't be larger than maximum window size!");
 		return;
@@ -2908,77 +2452,30 @@ void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServe
 
 	wd.min_size = p_size;
 
-#ifdef LIBDECOR_ENABLED
-	if (wd.libdecor_frame) {
-		libdecor_frame_set_min_content_size(wd.libdecor_frame, wd.min_size.width, wd.min_size.height);
-	}
-#endif
-
-	if (wd.wl_surface && wd.xdg_toplevel) {
-		xdg_toplevel_set_min_size(wd.xdg_toplevel, wd.min_size.width, wd.min_size.height);
-	}
-
-	wl_surface_commit(wd.wl_surface);
+	wayland_thread.window_set_min_size(p_size);
 }
 
 Size2i DisplayServerWayland::window_get_min_size(DisplayServer::WindowID p_window) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	return wls.main_window.min_size;
 }
 
 void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
-	WindowData &wd = wls.main_window;
-
-	wd.logical_rect.size = p_size / wd.scale;
-	wd.actual_rect.size = p_size;
-
-	if (wd.xdg_surface) {
-		xdg_surface_set_window_geometry(wd.xdg_surface, 0, 0, wd.actual_rect.size.width, wd.actual_rect.size.height);
-	}
-
-#ifdef LIBDECOR_ENABLED
-	if (wd.libdecor_frame) {
-		struct libdecor_state *state = libdecor_state_new(wd.actual_rect.size.width, wd.actual_rect.size.height);
-		// I'm not sure whether we can just pass null here.
-		libdecor_frame_commit(wd.libdecor_frame, state, nullptr);
-		libdecor_state_free(state);
-	}
-#endif
-
-#ifdef VULKAN_ENABLED
-	if (wd.visible && context_vulkan) {
-		context_vulkan->window_resize(MAIN_WINDOW_ID, wd.actual_rect.size.width, wd.actual_rect.size.height);
-	}
-#endif
-
-#ifdef GLES3_ENABLED
-	if (wd.visible && egl_manager) {
-		wl_egl_window_resize(wd.wl_egl_window, wd.actual_rect.size.width, wd.actual_rect.size.height, 0, 0);
-	}
-#endif
-
-	if (wd.rect_changed_callback.is_valid()) {
-		Variant var_rect = Variant(wd.actual_rect);
-		Variant *arg = &var_rect;
-
-		Variant ret;
-		Callable::CallError ce;
-
-		wd.rect_changed_callback.callp((const Variant **)&arg, 1, ret, ce);
-	}
+	wayland_thread.window_resize(p_size);
+	_resize_window(p_size);
 }
 
 Size2i DisplayServerWayland::window_get_size(DisplayServer::WindowID p_window) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	return wls.main_window.actual_rect.size;
 }
 
 Size2i DisplayServerWayland::window_get_size_with_decorations(DisplayServer::WindowID p_window) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	// I don't think there's a way of actually knowing the size of the window
 	// decoration in Wayland, at least in the case of SSDs, nor that it would be
@@ -2987,7 +2484,7 @@ Size2i DisplayServerWayland::window_get_size_with_decorations(DisplayServer::Win
 }
 
 void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	WindowData &wd = wls.main_window;
 
@@ -3136,19 +2633,19 @@ void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::Win
 }
 
 DisplayServer::WindowMode DisplayServerWayland::window_get_mode(DisplayServer::WindowID p_window) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	return wls.main_window.mode;
 }
 
 bool DisplayServerWayland::window_is_maximize_allowed(DisplayServer::WindowID p_window) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	return wls.main_window.can_maximize;
 }
 
 void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, DisplayServer::WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	WindowData &wd = wls.main_window;
 
@@ -3156,21 +2653,7 @@ void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, D
 
 	switch (p_flag) {
 		case WINDOW_FLAG_BORDERLESS: {
-			if (wls.globals.xdg_decoration_manager && wd.xdg_toplevel_decoration) {
-				if (p_enabled) {
-					// We implement borderless windows by simply asking the compositor to let
-					// us handle decorations (we don't).
-					zxdg_toplevel_decoration_v1_set_mode(wd.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE);
-				} else {
-					zxdg_toplevel_decoration_v1_set_mode(wd.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
-				}
-			}
-
-#ifdef LIBDECOR_ENABLED
-			if (wd.libdecor_frame) {
-				libdecor_frame_set_visibility(wd.libdecor_frame, !p_enabled);
-			}
-#endif
+			wayland_thread.window_set_borderless(p_enabled);
 		} break;
 
 		default: {
@@ -3185,22 +2668,17 @@ void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, D
 }
 
 bool DisplayServerWayland::window_get_flag(WindowFlags p_flag, DisplayServer::WindowID p_window) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	return wls.main_window.flags & (1 << p_flag);
 }
 
 void DisplayServerWayland::window_request_attention(DisplayServer::WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (wls.globals.xdg_activation) {
-		// Window attention requests are done through the XDG activation protocol.
-		xdg_activation_token_v1 *xdg_activation_token = xdg_activation_v1_get_activation_token(wls.globals.xdg_activation);
-		xdg_activation_token_v1_add_listener(xdg_activation_token, &xdg_activation_token_listener, &wls.main_window);
-		xdg_activation_token_v1_commit(xdg_activation_token);
+	DEBUG_LOG_WAYLAND("Requested attention.");
 
-		DEBUG_LOG_WAYLAND("Requested activation token.");
-	}
+	wayland_thread.window_request_attention();
 }
 
 void DisplayServerWayland::window_move_to_foreground(DisplayServer::WindowID p_window) {
@@ -3208,12 +2686,12 @@ void DisplayServerWayland::window_move_to_foreground(DisplayServer::WindowID p_w
 }
 
 bool DisplayServerWayland::window_can_draw(DisplayServer::WindowID p_window) const {
-	// TODO: Implement this. For now a simple return true will work tough
+	// TODO: Implement this. For now a simple return true will work though.
 	return true;
 }
 
 bool DisplayServerWayland::can_any_window_draw() const {
-	// TODO: Implement this. For now a simple return true will work tough
+	// TODO: Implement this. For now a simple return true will work though.
 	return true;
 }
 
@@ -3232,7 +2710,7 @@ void DisplayServerWayland::window_set_ime_position(const Point2i &p_pos, Display
 // handled by drivers such as Vulkan. We can then just ask to disable v-sync and
 // hope for the best. See: https://gitlab.freedesktop.org/wayland/wayland-protocols/-/commit/6394f0b4f3be151076f10a845a2fb131eeb56706
 void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, DisplayServer::WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 #ifdef VULKAN_ENABLED
 	if (context_vulkan) {
@@ -3252,20 +2730,20 @@ DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServ
 	if (context_vulkan) {
 		return context_vulkan->get_vsync_mode(p_window);
 	}
-#endif //VULKAN_ENABLED
+#endif // VULKAN_ENABLED
 
 #ifdef GLES3_ENABLED
 	if (egl_manager) {
 		return egl_manager->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
 	}
-#endif //GLES3_ENABLED
+#endif // GLES3_ENABLED
 	return DisplayServer::VSYNC_ENABLED;
 }
 
 void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (p_shape == wls.cursor_shape) {
 		return;
@@ -3277,13 +2755,13 @@ void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
 }
 
 DisplayServerWayland::CursorShape DisplayServerWayland::cursor_get_shape() const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	return wls.cursor_shape;
 }
 
 void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (p_cursor.is_valid()) {
 		HashMap<CursorShape, CustomWaylandCursor>::Iterator cursor_c = wls.custom_cursors.find(p_shape);
@@ -3399,7 +2877,7 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 }
 
 int DisplayServerWayland::keyboard_get_layout_count() const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (wls.current_seat && wls.current_seat->xkb_keymap) {
 		return xkb_keymap_num_layouts(wls.current_seat->xkb_keymap);
@@ -3409,7 +2887,7 @@ int DisplayServerWayland::keyboard_get_layout_count() const {
 }
 
 int DisplayServerWayland::keyboard_get_current_layout() const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (wls.current_seat) {
 		return wls.current_seat->current_layout_index;
@@ -3419,7 +2897,7 @@ int DisplayServerWayland::keyboard_get_current_layout() const {
 }
 
 void DisplayServerWayland::keyboard_set_current_layout(int p_index) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (wls.current_seat) {
 		wls.current_seat->current_layout_index = p_index;
@@ -3433,7 +2911,7 @@ String DisplayServerWayland::keyboard_get_layout_language(int p_index) const {
 }
 
 String DisplayServerWayland::keyboard_get_layout_name(int p_index) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	String ret;
 
@@ -3445,7 +2923,7 @@ String DisplayServerWayland::keyboard_get_layout_name(int p_index) const {
 }
 
 Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) const {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	xkb_keycode_t xkb_keycode = KeyMappingXKB::get_xkb_keycode(p_keycode);
 
@@ -3476,7 +2954,7 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 }
 
 void DisplayServerWayland::process_events() {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	int werror = wl_display_get_error(wls.wl_display);
 
@@ -3492,14 +2970,21 @@ void DisplayServerWayland::process_events() {
 		}
 	}
 
-	while (wls.message_queue.front()) {
-		Ref<WaylandMessage> msg = wls.message_queue.front()->get();
+	while (wls.wayland_messages.front()) {
+		Ref<WaylandMessage> msg = wls.wayland_messages.front()->get();
 
 		Ref<WaylandWindowRectMessage> winrect_msg = msg;
 
 		if (winrect_msg.is_valid()) {
 			Rect2i rect = winrect_msg->rect;
-			window_set_size(rect.size * wls.main_window.scale);
+
+			WindowData &wd = wls.main_window;
+
+			wd.logical_rect = rect;
+
+			Rect2i scaled_rect = Rect2i(rect.position, rect.size * wd.scale);
+
+			_resize_window(scaled_rect.size);
 		}
 
 		Ref<WaylandWindowEventMessage> winev_msg = msg;
@@ -3540,7 +3025,7 @@ void DisplayServerWayland::process_events() {
 			}
 		}
 
-		wls.message_queue.pop_front();
+		wls.wayland_messages.pop_front();
 	}
 
 	if (!wls.current_seat) {
@@ -3607,7 +3092,7 @@ void DisplayServerWayland::swap_buffers() {
 }
 
 void DisplayServerWayland::set_context(Context p_context) {
-	MutexLock mutex_lock(wls.mutex);
+	MutexLock mutex_lock(wayland_thread.mutex);
 
 	DEBUG_LOG_WAYLAND(vformat("Setting context %d", p_context));
 
@@ -3656,97 +3141,20 @@ DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_drive
 }
 
 DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	r_error = ERR_UNAVAILABLE;
-
 #ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
 #else
 	int dylibloader_verbose = 0;
 #endif // DEBUG_ENABLED
-
-	if (initialize_wayland_client(dylibloader_verbose) != 0) {
-		WARN_PRINT("Can't load the Wayland client library.");
-		return;
-	}
-
-	if (initialize_wayland_cursor(dylibloader_verbose) != 0) {
-		WARN_PRINT("Can't load the Wayland cursor library.");
-		return;
-	}
-
-	if (initialize_xkbcommon(dylibloader_verbose) != 0) {
-		WARN_PRINT("Can't load the XKBcommon library.");
-		return;
-	}
 #endif // SOWRAP_ENABLED
 
-	KeyMappingXKB::initialize();
+	r_error = ERR_UNAVAILABLE;
 
-	wls.wl_display = wl_display_connect(nullptr);
-
-	ERR_FAIL_COND_MSG(!wls.wl_display, "Can't connect to a Wayland display.");
-
-	events_thread.start(_poll_events_thread, &wls);
-
-	wls.wl_registry = wl_display_get_registry(wls.wl_display);
-
-	ERR_FAIL_COND_MSG(!wls.wl_registry, "Can't obtain the Wayland registry global.");
-
-	wl_registry_add_listener(wls.wl_registry, &wl_registry_listener, &wls);
-
-	// Wait for globals to get notified from the compositor.
-	wl_display_roundtrip(wls.wl_display);
-
-	ERR_FAIL_COND_MSG(!wls.globals.wl_shm, "Can't obtain the Wayland shared memory global.");
-	ERR_FAIL_COND_MSG(!wls.globals.wl_compositor, "Can't obtain the Wayland compositor global.");
-	ERR_FAIL_COND_MSG(!wls.globals.wl_subcompositor, "Can't obtain the Wayland subcompositor global.");
-	ERR_FAIL_COND_MSG(!wls.globals.wl_data_device_manager, "Can't obtain the Wayland data device manager global.");
-	ERR_FAIL_COND_MSG(!wls.globals.wp_pointer_constraints, "Can't obtain the Wayland pointer constraints global.");
-	ERR_FAIL_COND_MSG(!wls.globals.xdg_wm_base, "Can't obtain the Wayland XDG shell global.");
-
-	if (!wls.globals.xdg_decoration_manager) {
-#ifdef LIBDECOR_ENABLED
-		WARN_PRINT("Can't obtain the XDG decoration manager. Libdecor will be used for drawing CSDs, if available.");
-#else
-		WARN_PRINT("Can't obtain the XDG decoration manager. Decorations won't show up.");
-#endif // LIBDECOR_ENABLED
-	}
-
-	if (!wls.globals.xdg_activation) {
-		WARN_PRINT("Can't obtain the XDG activation global. Attention requesting won't work!");
-	}
-
-#ifndef DBUS_ENABLED
-	if (!wls.globals.wp_idle_inhibit_manager) {
-		WARN_PRINT("Can't obtain the idle inhibition manager. The screen might turn off even after calling screen_set_keep_on()!");
-	}
-#endif // DBUS_ENABLED
-
-#ifdef LIBDECOR_ENABLED
-	bool libdecor_found = true;
-
-#ifdef SOWRAP_ENABLED
-	if (initialize_libdecor(dylibloader_verbose) != 0) {
-		libdecor_found = false;
-	}
-#endif // SOWRAP_ENABLED
-
-	if (libdecor_found) {
-		wls.libdecor_context = libdecor_new(wls.wl_display, (struct libdecor_interface *)&libdecor_interface);
-	} else {
-		print_verbose("libdecor not found. Client-side decorations disabled.");
-	}
-
-#endif // LIBDECOR_ENABLED
+	wayland_thread.init(wls);
 
 	// Input.
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);
-
-	// Wait for seat capabilities.
-	wl_display_roundtrip(wls.wl_display);
-
-	xdg_wm_base_add_listener(wls.globals.xdg_wm_base, &xdg_wm_base_listener, nullptr);
 
 #ifdef SPEECHD_ENABLED
 	// Init TTS
@@ -3891,15 +3299,6 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 }
 
 DisplayServerWayland::~DisplayServerWayland() {
-	if (wls.wl_display && events_thread.is_started()) {
-		wls.events_thread_done.set();
-
-		// Wait for any Wayland event to be handled and unblock the polling thread.
-		wl_display_roundtrip(wls.wl_display);
-
-		events_thread.wait_to_finish();
-	}
-
 	if (wls.main_window.visible) {
 #ifdef VULKAN_ENABLED
 		if (context_vulkan) {
@@ -3914,127 +3313,7 @@ DisplayServerWayland::~DisplayServerWayland() {
 #endif
 	}
 
-	if (wls.main_window.xdg_toplevel) {
-		xdg_toplevel_destroy(wls.main_window.xdg_toplevel);
-	}
-
-	if (wls.main_window.xdg_surface) {
-		xdg_surface_destroy(wls.main_window.xdg_surface);
-	}
-
-	if (wls.main_window.wl_egl_window) {
-		wl_egl_window_destroy(wls.main_window.wl_egl_window);
-	}
-
-	if (wls.main_window.wl_surface) {
-		wl_surface_destroy(wls.main_window.wl_surface);
-	}
-
-	for (SeatState &seat : wls.seats) {
-		wl_seat_destroy(seat.wl_seat);
-
-		xkb_context_unref(seat.xkb_context);
-		xkb_state_unref(seat.xkb_state);
-		xkb_keymap_unref(seat.xkb_keymap);
-
-		if (seat.wl_keyboard) {
-			wl_keyboard_destroy(seat.wl_keyboard);
-		}
-
-		if (seat.keymap_buffer) {
-			munmap((void *)seat.keymap_buffer, seat.keymap_buffer_size);
-		}
-
-		if (seat.wl_pointer) {
-			wl_pointer_destroy(seat.wl_pointer);
-		}
-
-		if (seat.cursor_surface) {
-			wl_surface_destroy(seat.cursor_surface);
-		}
-
-		if (seat.wl_data_device) {
-			wl_data_device_destroy(seat.wl_data_device);
-		}
-
-		if (seat.wp_relative_pointer) {
-			zwp_relative_pointer_v1_destroy(seat.wp_relative_pointer);
-		}
-
-		if (seat.wp_locked_pointer) {
-			zwp_locked_pointer_v1_destroy(seat.wp_locked_pointer);
-		}
-
-		if (seat.wp_confined_pointer) {
-			zwp_confined_pointer_v1_destroy(seat.wp_confined_pointer);
-		}
-
-		if (seat.wp_tablet_seat) {
-			zwp_tablet_seat_v2_destroy(seat.wp_tablet_seat);
-		}
-
-		for (struct zwp_tablet_tool_v2 *tool : seat.tablet_tools) {
-			zwp_tablet_tool_v2_destroy(tool);
-		}
-	}
-
-	for (ScreenData &screen : wls.screens) {
-		if (screen.wl_output) {
-			wl_output_destroy(screen.wl_output);
-		}
-	}
-
-	if (wls.wl_cursor_theme) {
-		wl_cursor_theme_destroy(wls.wl_cursor_theme);
-	}
-
-	if (wls.globals.wp_idle_inhibit_manager) {
-		zwp_idle_inhibit_manager_v1_destroy(wls.globals.wp_idle_inhibit_manager);
-	}
-
-	if (wls.globals.wp_pointer_constraints) {
-		zwp_pointer_constraints_v1_destroy(wls.globals.wp_pointer_constraints);
-	}
-
-	if (wls.globals.wp_pointer_gestures) {
-		zwp_pointer_gestures_v1_destroy(wls.globals.wp_pointer_gestures);
-	}
-
-	if (wls.globals.wp_relative_pointer_manager) {
-		zwp_relative_pointer_manager_v1_destroy(wls.globals.wp_relative_pointer_manager);
-	}
-
-	if (wls.globals.xdg_activation) {
-		xdg_activation_v1_destroy(wls.globals.xdg_activation);
-	}
-
-	if (wls.globals.xdg_decoration_manager) {
-		zxdg_decoration_manager_v1_destroy(wls.globals.xdg_decoration_manager);
-	}
-
-	if (wls.globals.xdg_wm_base) {
-		xdg_wm_base_destroy(wls.globals.xdg_wm_base);
-	}
-
-	if (wls.globals.wl_shm) {
-		wl_shm_destroy(wls.globals.wl_shm);
-	}
-
-	if (wls.globals.wl_subcompositor) {
-		wl_subcompositor_destroy(wls.globals.wl_subcompositor);
-	}
-
-	if (wls.globals.wl_compositor) {
-		wl_compositor_destroy(wls.globals.wl_compositor);
-	}
-
-	if (wls.wl_registry) {
-		wl_registry_destroy(wls.wl_registry);
-	}
-
-	if (wls.wl_display) {
-		wl_display_disconnect(wls.wl_display);
-	}
+	wayland_thread.destroy();
 
 	// Destroy all drivers.
 #ifdef VULKAN_ENABLED

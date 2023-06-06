@@ -121,7 +121,7 @@ class DisplayServerWayland : public DisplayServer {
 
 	// Wayland stuff.
 
-	// Messages used for sending stuff to the main thread to be dispatched there.
+	// Messages used for exchanging information between Godot's and Wayland's thread.
 	class WaylandMessage : public RefCounted {
 	public:
 		WaylandMessage() {}
@@ -209,8 +209,8 @@ class DisplayServerWayland : public DisplayServer {
 
 #ifdef LIBDECOR_ENABLED
 		// If this is null the xdg_* variables must be set and vice-versa. This way we
-		// can handle this mess gracely enough to hopefully being able of getting rid
-		// of this cleanly once we have our own CSDs.
+		// can handle this mess gracefully enough to hopefully being able of getting
+		// rid of this cleanly once we have our own CSDs.
 		struct libdecor_frame *libdecor_frame = nullptr;
 #endif
 
@@ -265,9 +265,9 @@ class DisplayServerWayland : public DisplayServer {
 		Size2i physical_size;
 
 		float refresh_rate = 0;
-		int scale = 0;
+		int scale = 1;
 
-		WaylandState *wls;
+		WaylandState *wls = nullptr;
 	};
 
 	struct PointerData {
@@ -425,8 +425,6 @@ class DisplayServerWayland : public DisplayServer {
 	};
 
 	struct WaylandState {
-		Mutex mutex;
-
 		struct wl_display *wl_display = nullptr;
 		struct wl_registry *wl_registry = nullptr;
 
@@ -448,9 +446,7 @@ class DisplayServerWayland : public DisplayServer {
 		List<ScreenData> screens;
 		List<SeatState> seats;
 
-		SafeFlag events_thread_done;
-
-		List<Ref<WaylandMessage>> message_queue;
+		List<Ref<WaylandMessage>> wayland_messages;
 
 		struct zwp_idle_inhibitor_v1 *wp_idle_inhibitor = nullptr;
 
@@ -459,9 +455,68 @@ class DisplayServerWayland : public DisplayServer {
 #endif // LIBDECOR_ENABLED
 	};
 
+	// TODO: Move implementation in wayland_thread.cpp
+public:
+	class WaylandThread {
+	private:
+		struct ThreadData {
+			SafeFlag thread_done;
+			Mutex mutex;
+
+			struct wl_display *wl_display;
+		};
+
+		// FIXME: Is this the right thing to do?
+		inline static const char *proxy_tag;
+
+		// TODO: Move the whole Wayland state over here.
+		WaylandState *wls;
+
+		Thread events_thread;
+		ThreadData thread_data;
+
+		static bool _wl_proxy_is_godot(struct wl_proxy *p_proxy);
+
+		static void _poll_events_thread(void *p_data);
+
+		// Event handlers.
+		static void _wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version);
+		static void _wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name);
+
+		static void _wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output);
+		static void _wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output);
+
+		// Event listeners.
+		static constexpr struct wl_registry_listener wl_registry_listener = {
+			.global = _wl_registry_on_global,
+			.global_remove = _wl_registry_on_global_remove,
+		};
+
+		static constexpr struct wl_surface_listener wl_surface_listener = {
+			.enter = _wl_surface_on_enter,
+			.leave = _wl_surface_on_leave,
+		};
+
+	public:
+		Mutex &mutex = thread_data.mutex;
+
+		void window_create(DisplayServer::Context);
+		void window_resize(Size2i p_size);
+		void window_set_max_size(Size2i p_size);
+		void window_set_min_size(Size2i p_size);
+
+		void window_set_borderless(bool p_borderless);
+		void window_set_title(String p_title);
+		void window_request_attention();
+
+		void init(WaylandState &p_wls);
+		void destroy();
+	};
+
+private:
 	WaylandState wls;
 
-	Thread events_thread;
+	WaylandThread wayland_thread;
 
 	Context context;
 
@@ -500,18 +555,12 @@ class DisplayServerWayland : public DisplayServer {
 
 	void _send_window_event(WindowEvent p_event);
 
-	static void _poll_events_thread(void *p_wls);
-
 	static void dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
+	void _resize_window(Size2i size);
+
 	// Wayland event handlers.
-	static void _wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version);
-	static void _wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name);
-
-	static void _wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output);
-	static void _wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output);
-
 	static void _wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform);
 	static void _wl_output_on_mode(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh);
 	static void _wl_output_on_done(void *data, struct wl_output *wl_output);
@@ -609,16 +658,6 @@ class DisplayServerWayland : public DisplayServer {
 	static void _wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t time);
 
 	// Wayland event listeners.
-	static constexpr struct wl_registry_listener wl_registry_listener = {
-		.global = _wl_registry_on_global,
-		.global_remove = _wl_registry_on_global_remove,
-	};
-
-	static constexpr struct wl_surface_listener wl_surface_listener = {
-		.enter = _wl_surface_on_enter,
-		.leave = _wl_surface_on_leave,
-	};
-
 	static constexpr struct wl_output_listener wl_output_listener = {
 		.geometry = _wl_output_on_geometry,
 		.mode = _wl_output_on_mode,
