@@ -281,6 +281,9 @@ void VideoStreamPlayer::play() {
 	set_process_internal(true);
 	last_audio_time = 0;
 
+	// We update the playback to render the first frame immediately.
+	playback->update(0);
+
 	if (!can_process()) {
 		_notification(NOTIFICATION_PAUSED);
 	}
