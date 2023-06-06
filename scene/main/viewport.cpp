@@ -3008,9 +3008,9 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 #ifndef DISABLE_DEPRECATED
 void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(p_event.is_null());
+	WARN_DEPRECATED_MSG(R"*(The "push_unhandled_input()" method is deprecated, use "push_input()" instead.)*");
 	ERR_FAIL_COND(!is_inside_tree());
-	WARN_DEPRECATED_MSG(R"(The "push_unhandled_input" method is deprecated, use "push_input" instead.)");
+	ERR_FAIL_COND(p_event.is_null());
 
 	local_input_handled = false;
 

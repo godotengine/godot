@@ -1304,6 +1304,8 @@ AABB SurfaceTool::get_aabb() const {
 	return aabb;
 }
 Vector<int> SurfaceTool::generate_lod(float p_threshold, int p_target_index_count) {
+	WARN_DEPRECATED_MSG(R"*(The "SurfaceTool.generate_lod()" method is deprecated. Consider using "ImporterMesh.generate_lods()" instead.)*");
+
 	Vector<int> lod;
 
 	ERR_FAIL_COND_V(simplify_func == nullptr, lod);

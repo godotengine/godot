@@ -3304,14 +3304,14 @@
 				Returns a texture [RID] that can be used with [RenderingDevice].
 			</description>
 		</method>
-		<method name="texture_proxy_create">
+		<method name="texture_proxy_create" is_deprecated="true">
 			<return type="RID" />
 			<param index="0" name="base" type="RID" />
 			<description>
-				[i]Deprecated.[/i] As ProxyTexture was removed in Godot 4, this method does nothing when called and always returns a null [RID].
+				[i]Deprecated.[/i] ProxyTexture was removed in Godot 4, so this method does nothing when called and always returns a null [RID].
 			</description>
 		</method>
-		<method name="texture_proxy_update">
+		<method name="texture_proxy_update" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="proxy_to" type="RID" />
@@ -3960,8 +3960,8 @@
 		<constant name="MAX_GLOW_LEVELS" value="7">
 			The maximum number of glow levels that can be used with the glow post-processing effect.
 		</constant>
-		<constant name="MAX_CURSORS" value="8">
-			[i]Deprecated.[/i] This constant is unused.
+		<constant name="MAX_CURSORS" value="8" is_deprecated="true">
+			[i]Deprecated.[/i] This constant is unused internally.
 		</constant>
 		<constant name="MAX_2D_DIRECTIONAL_LIGHTS" value="8">
 			The maximum number of directional lights that can be rendered at a given time in 2D.
