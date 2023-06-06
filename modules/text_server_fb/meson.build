@@ -2,7 +2,6 @@ _module_tsf_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split(
 
 lib_module_tsf = library('module_text_server_fb',
     _module_tsf_srcs,
-    cpp_args: ['-DMODULE_FREETYPE_ENABLED'],
     dependencies: [godotcore_dep,
                    thorvg_dep,
                    DEP_FREETYPE,

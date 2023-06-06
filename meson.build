@@ -328,6 +328,9 @@ if get_option('tests')
     subdir('tests')
 endif
 
+SHADER_HEADERS = []
+subdir('servers')
+
 # build up our module list
 MODULE_DEPENDENCIES = []
 # generate the module include files
@@ -336,7 +339,6 @@ subdir('modules')
 # get all of godot except main
 subdir('scene')
 subdir('drivers')
-subdir('servers')
 subdir('editor')
 
 _godot_all = library('godot_all',
