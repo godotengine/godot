@@ -61,6 +61,9 @@
 		<member name="expand" type="bool" setter="set_expand" getter="has_expand" default="true">
 			If [code]true[/code], the video scales to the control size. Otherwise, the control minimum size will be automatically adjusted to match the video stream's dimensions.
 		</member>
+		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
+			If [code]true[/code], the video restarts when it reaches its end.
+		</member>
 		<member name="paused" type="bool" setter="set_paused" getter="is_paused" default="false">
 			If [code]true[/code], the video is paused.
 		</member>
