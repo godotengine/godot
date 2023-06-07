@@ -297,6 +297,15 @@
 				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
+		<method name="open_temporary" qualifiers="static">
+			<return type="FileAccess" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="mode_flags" type="int" enum="FileAccess.ModeFlags" />
+			<description>
+				Creates a new [FileAccess] object and opens a temporary file in write or read mode.
+				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
+			</description>
+		</method>
 		<method name="seek">
 			<return type="void" />
 			<param index="0" name="position" type="int" />
