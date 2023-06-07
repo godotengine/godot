@@ -106,19 +106,6 @@ void TTS_Linux::speech_event_callback(size_t p_msg_id, size_t p_client_id, SPDNo
 
 			// Inject index mark after each word.
 			String text;
-			String language;
-			SPDVoice **voices = spd_list_synthesis_voices(tts->synth);
-			if (voices != nullptr) {
-				SPDVoice **voices_ptr = voices;
-				while (*voices_ptr != nullptr) {
-					if (String::utf8((*voices_ptr)->name) == message.voice) {
-						language = String::utf8((*voices_ptr)->language);
-						break;
-					}
-					voices_ptr++;
-				}
-				free_spd_voices(voices);
-			}
 			PoolIntArray breaks;
 			for (int i = 0; i < message.text.size(); i++) {
 				if (_is_whitespace(message.text[i])) {
