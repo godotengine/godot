@@ -869,7 +869,7 @@ int default_window_error_handler(Display *display, XErrorEvent *error) {
 					  "\n   Major opcode of failed request: %d"
 					  "\n   Serial number of failed request: %d"
 					  "\n   Current serial number in output stream: %d",
-			String::utf8(message), error->request_code, error->minor_code, error->serial));
+			String::utf8(message), (uint64_t)error->request_code, (uint64_t)error->minor_code, (uint64_t)error->serial));
 	return 0;
 }
 
