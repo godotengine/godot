@@ -79,7 +79,7 @@ def _find_scu_section_name(subdir):
 
 
 def add_source_files_scu(self, sources, files, allow_gen=False):
-    if self["use_scu"] and isinstance(files, str):
+    if self["scu_build"] and isinstance(files, str):
         if "*." not in files:
             return False
 
