@@ -69,45 +69,45 @@ void CollisionShape3D::make_convex_from_siblings() {
 }
 
 void CollisionShape3D::_update_in_shape_owner(bool p_xform_only) {
-	parent->shape_owner_set_transform(owner_id, get_transform());
+	collision_object->shape_owner_set_transform(owner_id, get_transform());
 	if (p_xform_only) {
 		return;
 	}
-	parent->shape_owner_set_disabled(owner_id, disabled);
+	collision_object->shape_owner_set_disabled(owner_id, disabled);
 }
 
 void CollisionShape3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PARENTED: {
-			parent = Object::cast_to<CollisionObject3D>(get_parent());
-			if (parent) {
-				owner_id = parent->create_shape_owner(this);
+			collision_object = Object::cast_to<CollisionObject3D>(get_parent());
+			if (collision_object) {
+				owner_id = collision_object->create_shape_owner(this);
 				if (shape.is_valid()) {
-					parent->shape_owner_add_shape(owner_id, shape);
+					collision_object->shape_owner_add_shape(owner_id, shape);
 				}
 				_update_in_shape_owner();
 			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			if (parent) {
+			if (collision_object) {
 				_update_in_shape_owner();
 			}
 		} break;
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			if (parent) {
+			if (collision_object) {
 				_update_in_shape_owner(true);
 			}
 			update_configuration_warnings();
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
-			if (parent) {
-				parent->remove_shape_owner(owner_id);
+			if (collision_object) {
+				collision_object->remove_shape_owner(owner_id);
 			}
 			owner_id = 0;
-			parent = nullptr;
+			collision_object = nullptr;
 		} break;
 	}
 }
@@ -119,7 +119,8 @@ void CollisionShape3D::resource_changed(Ref<Resource> res) {
 PackedStringArray CollisionShape3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
 
-	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
+	CollisionObject3D *col_object = Object::cast_to<CollisionObject3D>(get_parent());
+	if (col_object == nullptr) {
 		warnings.push_back(RTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node.\nPlease only use it as a child of Area3D, StaticBody3D, RigidBody3D, CharacterBody3D, etc. to give them a shape."));
 	}
 
@@ -127,7 +128,7 @@ PackedStringArray CollisionShape3D::get_configuration_warnings() const {
 		warnings.push_back(RTR("A shape must be provided for CollisionShape3D to function. Please create a shape resource for it."));
 	}
 
-	if (shape.is_valid() && Object::cast_to<RigidBody3D>(get_parent())) {
+	if (shape.is_valid() && Object::cast_to<RigidBody3D>(col_object)) {
 		if (Object::cast_to<ConcavePolygonShape3D>(*shape)) {
 			warnings.push_back(RTR("ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static."));
 		} else if (Object::cast_to<WorldBoundaryShape3D>(*shape)) {
@@ -169,14 +170,14 @@ void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
 		shape->register_owner(this);
 	}
 	update_gizmos();
-	if (parent) {
-		parent->shape_owner_clear_shapes(owner_id);
+	if (collision_object) {
+		collision_object->shape_owner_clear_shapes(owner_id);
 		if (shape.is_valid()) {
-			parent->shape_owner_add_shape(owner_id, shape);
+			collision_object->shape_owner_add_shape(owner_id, shape);
 		}
 	}
 
-	if (is_inside_tree() && parent) {
+	if (is_inside_tree() && collision_object) {
 		// If this is a heightfield shape our center may have changed
 		_update_in_shape_owner(true);
 	}
@@ -190,8 +191,8 @@ Ref<Shape3D> CollisionShape3D::get_shape() const {
 void CollisionShape3D::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
 	update_gizmos();
-	if (parent) {
-		parent->shape_owner_set_disabled(owner_id, p_disabled);
+	if (collision_object) {
+		collision_object->shape_owner_set_disabled(owner_id, p_disabled);
 	}
 }
 
