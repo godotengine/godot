@@ -143,6 +143,7 @@ public:
 	virtual String get_data_path() const override;
 	virtual String get_cache_path() const override;
 	virtual String get_resource_dir() const override;
+	virtual String get_temporary_dir() const override;
 	virtual String get_locale() const override;
 	virtual String get_model_name() const override;
 

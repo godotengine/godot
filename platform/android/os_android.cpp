@@ -319,6 +319,10 @@ String OS_Android::get_resource_dir() const {
 #endif
 }
 
+String OS_Android::get_temporary_dir() const {
+	return get_cache_path();
+}
+
 String OS_Android::get_locale() const {
 	String locale = godot_io_java->get_locale();
 	if (!locale.is_empty()) {
