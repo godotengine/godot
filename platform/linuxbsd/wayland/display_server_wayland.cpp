@@ -40,13 +40,6 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
-#define DISPLAY_SERVER_WAYLAND_DEBUG_LOGS_ENABLED
-#ifdef DISPLAY_SERVER_WAYLAND_DEBUG_LOGS_ENABLED
-#define DEBUG_LOG_WAYLAND(...) print_verbose(__VA_ARGS__)
-#else
-#define DEBUG_LOG_WAYLAND(...)
-#endif
-
 // Implementation specific methods.
 
 // Read the content pointed by fd into a string.
@@ -444,49 +437,6 @@ void DisplayServerWayland::_resize_window(Size2i size) {
 
 		wd.rect_changed_callback.callp((const Variant **)&arg, 1, ret, ce);
 	}
-}
-
-void DisplayServerWayland::_wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {
-	ScreenData *sd = (ScreenData *)data;
-	ERR_FAIL_NULL(sd);
-
-	sd->position.x = x;
-	sd->position.y = y;
-
-	sd->physical_size.width = physical_width;
-	sd->physical_size.height = physical_height;
-
-	sd->make.parse_utf8(make);
-	sd->model.parse_utf8(model);
-}
-
-void DisplayServerWayland::_wl_output_on_mode(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
-	ScreenData *sd = (ScreenData *)data;
-	ERR_FAIL_NULL(sd);
-
-	sd->size.width = width;
-	sd->size.height = height;
-
-	sd->refresh_rate = refresh ? refresh / 1000.0f : -1;
-}
-
-void DisplayServerWayland::_wl_output_on_done(void *data, struct wl_output *wl_output) {
-	// TODO: "Atomic" output property change handling?
-}
-
-void DisplayServerWayland::_wl_output_on_scale(void *data, struct wl_output *wl_output, int32_t factor) {
-	ScreenData *sd = (ScreenData *)data;
-	ERR_FAIL_NULL(sd);
-
-	sd->scale = factor;
-
-	DEBUG_LOG_WAYLAND(vformat("Output %x scale %d", (size_t)wl_output, factor));
-}
-
-void DisplayServerWayland::_wl_output_on_name(void *data, struct wl_output *wl_output, const char *name) {
-}
-
-void DisplayServerWayland::_wl_output_on_description(void *data, struct wl_output *wl_output, const char *description) {
 }
 
 void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities) {
@@ -2988,14 +2938,11 @@ void DisplayServerWayland::process_events() {
 		Ref<WaylandMessage> msg = wls.messages.front()->get();
 
 		Ref<WaylandWindowRectMessage> winrect_msg = msg;
-
 		if (winrect_msg.is_valid()) {
-			Rect2i rect = winrect_msg->rect;
-			_resize_window(rect.size);
+			_resize_window(winrect_msg->rect.size);
 		}
 
 		Ref<WaylandWindowEventMessage> winev_msg = msg;
-
 		if (winev_msg.is_valid()) {
 			_send_window_event(winev_msg->event);
 
@@ -3011,13 +2958,11 @@ void DisplayServerWayland::process_events() {
 		}
 
 		Ref<WaylandInputEventMessage> inputev_msg = msg;
-
 		if (inputev_msg.is_valid()) {
 			Input::get_singleton()->parse_input_event(inputev_msg->event);
 		}
 
 		Ref<WaylandDropFilesEventMessage> dropfiles_msg = msg;
-
 		if (dropfiles_msg.is_valid()) {
 			WindowData wd = wls.main_window;
 

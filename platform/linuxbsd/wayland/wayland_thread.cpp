@@ -394,8 +394,51 @@ void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surfa
 	wd->wl_output = wl_output;
 }
 
-void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {}
+void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
+}
 
+void DisplayServerWayland::_wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {
+	ScreenData *sd = (ScreenData *)data;
+	ERR_FAIL_NULL(sd);
+
+	sd->position.x = x;
+	sd->position.y = y;
+
+	sd->physical_size.width = physical_width;
+	sd->physical_size.height = physical_height;
+
+	sd->make.parse_utf8(make);
+	sd->model.parse_utf8(model);
+}
+
+void DisplayServerWayland::_wl_output_on_mode(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
+	ScreenData *sd = (ScreenData *)data;
+	ERR_FAIL_NULL(sd);
+
+	sd->size.width = width;
+	sd->size.height = height;
+
+	sd->refresh_rate = refresh ? refresh / 1000.0f : -1;
+}
+
+void DisplayServerWayland::_wl_output_on_done(void *data, struct wl_output *wl_output) {
+	// TODO: "Atomic" output property change handling?
+}
+
+void DisplayServerWayland::_wl_output_on_scale(void *data, struct wl_output *wl_output, int32_t factor) {
+	ScreenData *sd = (ScreenData *)data;
+	ERR_FAIL_NULL(sd);
+
+	sd->scale = factor;
+
+	DEBUG_LOG_WAYLAND(vformat("Output %x scale %d", (size_t)wl_output, factor));
+}
+
+void DisplayServerWayland::_wl_output_on_name(void *data, struct wl_output *wl_output, const char *name) {
+}
+
+void DisplayServerWayland::_wl_output_on_description(void *data, struct wl_output *wl_output, const char *description) {
+}
 // NOTE: This must be started after a valid wl_display is loaded.
 void WaylandThread::_poll_events_thread(void *p_data) {
 	ThreadData *data = (ThreadData *)p_data;
