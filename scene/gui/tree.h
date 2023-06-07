@@ -69,6 +69,7 @@ private:
 		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 		Array st_args;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
+		TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
 		bool dirty = true;
 		double min = 0.0;
 		double max = 100.0;
@@ -226,6 +227,9 @@ public:
 
 	void set_text_direction(int p_column, Control::TextDirection p_text_direction);
 	Control::TextDirection get_text_direction(int p_column) const;
+
+	void set_autowrap_mode(int p_column, TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode(int p_column) const;
 
 	void set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override(int p_column) const;

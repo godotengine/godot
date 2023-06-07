@@ -332,6 +332,25 @@ Control::TextDirection TreeItem::get_text_direction(int p_column) const {
 	return cells[p_column].text_direction;
 }
 
+void TreeItem::set_autowrap_mode(int p_column, TextServer::AutowrapMode p_mode) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+	ERR_FAIL_COND(p_mode < TextServer::AUTOWRAP_OFF || p_mode > TextServer::AUTOWRAP_WORD_SMART);
+
+	if (cells[p_column].autowrap_mode == p_mode) {
+		return;
+	}
+
+	cells.write[p_column].autowrap_mode = p_mode;
+	cells.write[p_column].dirty = true;
+	_changed_notify(p_column);
+	cells.write[p_column].cached_minimum_size_dirty = true;
+}
+
+TextServer::AutowrapMode TreeItem::get_autowrap_mode(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), TextServer::AUTOWRAP_OFF);
+	return cells[p_column].autowrap_mode;
+}
+
 void TreeItem::set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
@@ -1483,6 +1502,9 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text_direction", "column", "direction"), &TreeItem::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction", "column"), &TreeItem::get_text_direction);
 
+	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "column", "autowrap_mode"), &TreeItem::set_autowrap_mode);
+	ClassDB::bind_method(D_METHOD("get_autowrap_mode", "column"), &TreeItem::get_autowrap_mode);
+
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "column", "parser"), &TreeItem::set_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override", "column"), &TreeItem::get_structured_text_bidi_override);
 
@@ -1948,7 +1970,24 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 		font_size = theme_cache.font_size;
 	}
 	p_item->cells.write[p_col].text_buf->add_string(valtext, font, font_size, p_item->cells[p_col].language);
-	p_item->cells.write[p_col].text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE);
+
+	BitField<TextServer::LineBreakFlag> break_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_EDGE_SPACES;
+	switch (p_item->cells.write[p_col].autowrap_mode) {
+		case TextServer::AUTOWRAP_OFF:
+			break;
+		case TextServer::AUTOWRAP_ARBITRARY:
+			break_flags.set_flag(TextServer::BREAK_GRAPHEME_BOUND);
+			break;
+		case TextServer::AUTOWRAP_WORD:
+			break_flags.set_flag(TextServer::BREAK_WORD_BOUND);
+			break;
+		case TextServer::AUTOWRAP_WORD_SMART:
+			break_flags.set_flag(TextServer::BREAK_WORD_BOUND);
+			break_flags.set_flag(TextServer::BREAK_ADAPTIVE);
+			break;
+	}
+	p_item->cells.write[p_col].text_buf->set_break_flags(break_flags);
+
 	TS->shaped_text_set_bidi_override(p_item->cells[p_col].text_buf->get_rid(), structured_text_parser(p_item->cells[p_col].st_parser, p_item->cells[p_col].st_args, valtext));
 	p_item->cells.write[p_col].dirty = false;
 }
