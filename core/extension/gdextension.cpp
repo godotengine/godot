@@ -37,7 +37,6 @@
 #include "core/version.h"
 
 extern void gdextension_setup_interface();
-extern void *gdextension_get_legacy_interface();
 extern GDExtensionInterfaceFunctionPtr gdextension_get_proc_address(const char *p_name);
 
 typedef GDExtensionBool (*GDExtensionLegacyInitializationFunction)(void *p_interface, GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization);
@@ -450,7 +449,7 @@ GDExtensionInterfaceFunctionPtr GDExtension::get_interface_function(StringName p
 	return *function;
 }
 
-Error GDExtension::open_library(const String &p_path, const String &p_entry_symbol, bool p_use_legacy_interface) {
+Error GDExtension::open_library(const String &p_path, const String &p_entry_symbol) {
 	Error err = OS::get_singleton()->open_dynamic_library(p_path, library, true, &library_path);
 	if (err != OK) {
 		ERR_PRINT("GDExtension dynamic library not found: " + p_path);
@@ -467,15 +466,8 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 		return err;
 	}
 
-	GDExtensionBool ret = 0;
-	if (p_use_legacy_interface) {
-		GDExtensionLegacyInitializationFunction initialization_function = (GDExtensionLegacyInitializationFunction)entry_funcptr;
-		ret = initialization_function(gdextension_get_legacy_interface(), this, &initialization);
-
-	} else {
-		GDExtensionInitializationFunction initialization_function = (GDExtensionInitializationFunction)entry_funcptr;
-		ret = initialization_function(&gdextension_get_proc_address, this, &initialization);
-	}
+	GDExtensionInitializationFunction initialization_function = (GDExtensionInitializationFunction)entry_funcptr;
+	GDExtensionBool ret = initialization_function(&gdextension_get_proc_address, this, &initialization);
 
 	if (ret) {
 		level_initialized = -1;
@@ -484,10 +476,6 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 		ERR_PRINT("GDExtension initialization function '" + p_entry_symbol + "' returned an error.");
 		return FAILED;
 	}
-}
-
-Error GDExtension::open_library_compat_76406(const String &p_path, const String &p_entry_symbol) {
-	return open_library(p_path, p_entry_symbol, true);
 }
 
 void GDExtension::close_library() {
@@ -525,8 +513,7 @@ void GDExtension::deinitialize_library(InitializationLevel p_level) {
 }
 
 void GDExtension::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("open_library", "path", "entry_symbol", "use_legacy_interface"), &GDExtension::open_library, DEFVAL(false));
-	ClassDB::bind_compatibility_method(D_METHOD("open_library", "path", "entry_symbol"), &GDExtension::open_library_compat_76406);
+	ClassDB::bind_method(D_METHOD("open_library", "path", "entry_symbol"), &GDExtension::open_library);
 	ClassDB::bind_method(D_METHOD("close_library"), &GDExtension::close_library);
 	ClassDB::bind_method(D_METHOD("is_library_open"), &GDExtension::is_library_open);
 
@@ -599,9 +586,20 @@ Ref<Resource> GDExtensionResourceLoader::load(const String &p_path, const String
 				compatibility_minimum[i] = parts[i];
 			}
 		}
+	} else {
+		if (r_error) {
+			*r_error = ERR_INVALID_DATA;
+		}
+		ERR_PRINT("GDExtension configuration file must contain a \"configuration/compatibility_minimum\" key: " + p_path);
+		return Ref<Resource>();
 	}
-	if (compatibility_minimum[0] < 4) {
-		compatibility_minimum[0] = 4;
+
+	if (compatibility_minimum[0] < 4 || (compatibility_minimum[0] == 4 && compatibility_minimum[1] == 0)) {
+		if (r_error) {
+			*r_error = ERR_INVALID_DATA;
+		}
+		ERR_PRINT(vformat("GDExtension's compatibility_minimum (%d.%d.%d) must be at least 4.1.0: %s", compatibility_minimum[0], compatibility_minimum[1], compatibility_minimum[2], p_path));
+		return Ref<Resource>();
 	}
 
 	bool compatible = true;
@@ -635,12 +633,10 @@ Ref<Resource> GDExtensionResourceLoader::load(const String &p_path, const String
 		library_path = p_path.get_base_dir().path_join(library_path);
 	}
 
-	bool use_legacy_interface = compatibility_minimum[0] == 4 && compatibility_minimum[1] == 0;
-
 	Ref<GDExtension> lib;
 	lib.instantiate();
 	String abs_path = ProjectSettings::get_singleton()->globalize_path(library_path);
-	err = lib->open_library(abs_path, entry_symbol, use_legacy_interface);
+	err = lib->open_library(abs_path, entry_symbol);
 
 	if (r_error) {
 		*r_error = err;
