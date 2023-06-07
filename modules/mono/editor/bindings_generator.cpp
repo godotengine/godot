@@ -2889,7 +2889,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		itype.cs_out = "%5return (%2)%0(%1);";
 
-		itype.c_arg_in = "(void*)%s";
+		itype.c_arg_in = "&%s";
 		itype.c_type = "IntPtr";
 		itype.c_type_in = itype.c_type;
 		itype.c_type_out = "GodotObject";
