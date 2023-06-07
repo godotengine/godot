@@ -390,7 +390,7 @@ License: BSD-2-clause
 
 Files: ./thirdparty/msdfgen/
 Comment: Multi-channel signed distance field generator
-Copyright: 2016, Viktor Chlumsky
+Copyright: 2016-2022, Viktor Chlumsky
 License: MIT
 
 Files: ./thirdparty/oidn/
