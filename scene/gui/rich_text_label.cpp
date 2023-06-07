@@ -2741,7 +2741,16 @@ void RichTextLabel::_stop_thread() {
 	}
 }
 
+int RichTextLabel::get_pending_paragraphs() const {
+	int to_line = main->first_invalid_line.load();
+	int lines = main->lines.size();
+
+	return lines - to_line;
+}
+
 bool RichTextLabel::is_ready() const {
+	const_cast<RichTextLabel *>(this)->_validate_line_caches();
+
 	if (updating.load()) {
 		return false;
 	}
@@ -3177,7 +3186,8 @@ bool RichTextLabel::remove_paragraph(const int p_paragraph) {
 		main->lines[0].from = main;
 	}
 
-	main->first_invalid_line.store(0);
+	int to_line = main->first_invalid_line.load();
+	main->first_invalid_line.store(MIN(to_line, p_paragraph));
 	queue_redraw();
 
 	return true;
