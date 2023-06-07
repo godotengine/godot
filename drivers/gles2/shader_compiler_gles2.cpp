@@ -1161,7 +1161,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].renames["NODE_POSITION_WORLD"] = "world_transform[3].xyz";
 	actions[VS::SHADER_SPATIAL].renames["CAMERA_POSITION_WORLD"] = "camera_matrix[3].xyz";
 	actions[VS::SHADER_SPATIAL].renames["CAMERA_DIRECTION_WORLD"] = "camera_inverse_matrix[3].xyz";
-	actions[VS::SHADER_SPATIAL].renames["NODE_POSITION_VIEW"] = "(world_transform * camera_inverse_matrix)[3].xyz";
+	actions[VS::SHADER_SPATIAL].renames["NODE_POSITION_VIEW"] = "(camera_inverse_matrix * world_transform)[3].xyz";
 
 	//for light
 	actions[VS::SHADER_SPATIAL].renames["VIEW"] = "view";
