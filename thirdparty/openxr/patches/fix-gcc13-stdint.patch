@@ -1,0 +1,12 @@
+diff --git a/thirdparty/openxr/src/common/platform_utils.hpp b/thirdparty/openxr/src/common/platform_utils.hpp
+index 85d5cdab10..2d870cfea7 100644
+--- a/thirdparty/openxr/src/common/platform_utils.hpp
++++ b/thirdparty/openxr/src/common/platform_utils.hpp
+@@ -11,6 +11,7 @@
+ 
+ #include "xr_dependencies.h"
+ #include <string>
++#include <stdint.h>
+ #include <stdlib.h>
+ 
+ // OpenXR paths and registry key locations
