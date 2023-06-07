@@ -1187,7 +1187,11 @@ void Thread::_start_func(void *ud) {
 		ERR_FAIL_MSG(vformat("Could not call function '%s' on previously freed instance to start thread %s.", t->target_callable.get_method(), t->get_id()));
 	}
 
+	// Finding out a suitable name for the thread can involve querying a node, if the target is one.
+	// We know this is safe (unless the user is causing life cycle race conditions, which would be a bug on their part).
+	set_current_thread_safe_for_nodes(true);
 	String func_name = t->target_callable.is_custom() ? t->target_callable.get_custom()->get_as_text() : String(t->target_callable.get_method());
+	set_current_thread_safe_for_nodes(false);
 	::Thread::set_name(func_name);
 
 	// To avoid a circular reference between the thread and the script which can possibly contain a reference
