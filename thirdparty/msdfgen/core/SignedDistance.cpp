@@ -2,12 +2,11 @@
 #include "SignedDistance.h"
 
 #include <cmath>
+#include <cfloat>
 
 namespace msdfgen {
 
-const SignedDistance SignedDistance::INFINITE(-1e240, 1);
-
-SignedDistance::SignedDistance() : distance(-1e240), dot(1) { }
+SignedDistance::SignedDistance() : distance(-DBL_MAX), dot(1) { }
 
 SignedDistance::SignedDistance(double dist, double d) : distance(dist), dot(d) { }
 
