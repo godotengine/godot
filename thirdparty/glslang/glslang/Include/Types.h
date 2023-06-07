@@ -72,6 +72,7 @@ enum TSamplerDim {
     EsdRect,
     EsdBuffer,
     EsdSubpass,  // goes only with non-sampled image (image is true)
+    EsdAttachmentEXT,
     EsdNumDims
 };
 
@@ -90,6 +91,7 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
     bool isBuffer()      const { return false; }
     bool isRect()        const { return false; }
     bool isSubpass()     const { return false; }
+    bool isAttachmentEXT()  const { return false; }
     bool isCombined()    const { return true; }
     bool isImage()       const { return false; }
     bool isImageClass()  const { return false; }
@@ -122,8 +124,9 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
     bool isBuffer()      const { return dim == EsdBuffer; }
     bool isRect()        const { return dim == EsdRect; }
     bool isSubpass()     const { return dim == EsdSubpass; }
+    bool isAttachmentEXT()  const { return dim == EsdAttachmentEXT; }
     bool isCombined()    const { return combined; }
-    bool isImage()       const { return image && !isSubpass(); }
+    bool isImage()       const { return image && !isSubpass() && !isAttachmentEXT();}
     bool isImageClass()  const { return image; }
     bool isMultiSample() const { return ms; }
     bool isExternal()    const { return external; }
@@ -214,6 +217,15 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
         dim = EsdSubpass;
         ms = m;
     }
+
+    // make an AttachmentEXT
+    void setAttachmentEXT(TBasicType t)
+    {
+        clear();
+        type = t;
+        image = true;
+        dim = EsdAttachmentEXT;
+    }
 #endif
 
     bool operator==(const TSampler& right) const
@@ -264,7 +276,9 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
         default:  break;
         }
         if (isImageClass()) {
-            if (isSubpass())
+            if (isAttachmentEXT())
+                s.append("attachmentEXT");
+            else if (isSubpass())
                 s.append("subpass");
             else
                 s.append("image");
@@ -285,10 +299,11 @@ struct TSampler {   // misnomer now; includes images, textures without sampler, 
         case Esd3D:      s.append("3D");      break;
         case EsdCube:    s.append("Cube");    break;
 #ifndef GLSLANG_WEB
-        case Esd1D:      s.append("1D");      break;
-        case EsdRect:    s.append("2DRect");  break;
-        case EsdBuffer:  s.append("Buffer");  break;
-        case EsdSubpass: s.append("Input"); break;
+        case Esd1D:         s.append("1D");      break;
+        case EsdRect:       s.append("2DRect");  break;
+        case EsdBuffer:     s.append("Buffer");  break;
+        case EsdSubpass:    s.append("Input"); break;
+        case EsdAttachmentEXT: s.append(""); break;
 #endif
         default:  break;  // some compilers want this
         }
@@ -429,6 +444,12 @@ enum TLayoutFormat {
     ElfR16ui,
     ElfR8ui,
     ElfR64ui,
+    ElfExtSizeGuard,   // to help with comparisons
+    ElfSize1x8,
+    ElfSize1x16,
+    ElfSize1x32,
+    ElfSize2x32,
+    ElfSize4x32,
 
     ElfCount
 };
@@ -863,6 +884,9 @@ public:
     bool isAnyCallable() const {
         return storage == EvqCallableData || storage == EvqCallableDataIn;
     }
+    bool isHitObjectAttrNV() const {
+        return storage == EvqHitObjectAttrNV;
+    }
 
     // True if this type of IO is supposed to be arrayed with extra level for per-vertex data
     bool isArrayedIo(EShLanguage language) const
@@ -898,6 +922,9 @@ public:
         // -2048 as the default value indicating layoutSecondaryViewportRelative is not set
         layoutSecondaryViewportRelativeOffset = -2048;
         layoutShaderRecord = false;
+        layoutHitObjectShaderRecordNV = false;
+        layoutBindlessSampler = false;
+        layoutBindlessImage = false;
         layoutBufferReferenceAlign = layoutBufferReferenceAlignEnd;
         layoutFormat = ElfNone;
 #endif
@@ -997,10 +1024,14 @@ public:
     bool layoutViewportRelative;
     int layoutSecondaryViewportRelativeOffset;
     bool layoutShaderRecord;
+    bool layoutHitObjectShaderRecordNV;
 
     // GL_EXT_spirv_intrinsics
     int spirvStorageClass;
     TSpirvDecorate* spirvDecorate;
+
+    bool layoutBindlessSampler;
+    bool layoutBindlessImage;
 #endif
 
     bool hasUniformLayout() const
@@ -1123,6 +1154,7 @@ public:
     TLayoutFormat getFormat() const { return layoutFormat; }
     bool isPushConstant() const { return layoutPushConstant; }
     bool isShaderRecord() const { return layoutShaderRecord; }
+    bool hasHitObjectShaderRecordNV() const { return layoutHitObjectShaderRecordNV; }
     bool hasBufferReference() const { return layoutBufferReference; }
     bool hasBufferReferenceAlign() const
     {
@@ -1131,6 +1163,14 @@ public:
     bool isNonUniform() const
     {
         return nonUniform;
+    }
+    bool isBindlessSampler() const
+    {
+        return layoutBindlessSampler;
+    }
+    bool isBindlessImage() const
+    {
+        return layoutBindlessImage;
     }
 
     // GL_EXT_spirv_intrinsics
@@ -1241,6 +1281,11 @@ public:
         case ElfR8ui:         return "r8ui";
         case ElfR64ui:        return "r64ui";
         case ElfR64i:         return "r64i";
+        case ElfSize1x8:      return "size1x8";
+        case ElfSize1x16:     return "size1x16";
+        case ElfSize1x32:     return "size1x32";
+        case ElfSize2x32:     return "size2x32";
+        case ElfSize4x32:     return "size4x32";
         default:              return "none";
         }
     }
@@ -1364,6 +1409,9 @@ struct TShaderQualifiers {
     bool earlyFragmentTests;  // fragment input
     bool postDepthCoverage;   // fragment input
     bool earlyAndLateFragmentTestsAMD; //fragment input
+    bool nonCoherentColorAttachmentReadEXT;    // fragment input
+    bool nonCoherentDepthAttachmentReadEXT;    // fragment input
+    bool nonCoherentStencilAttachmentReadEXT;  // fragment input
     TLayoutDepth layoutDepth;
     TLayoutStencil layoutStencil;
     bool blendEquation;       // true if any blend equation was specified
@@ -1403,6 +1451,9 @@ struct TShaderQualifiers {
         earlyFragmentTests = false;
         earlyAndLateFragmentTestsAMD = false;
         postDepthCoverage = false;
+        nonCoherentColorAttachmentReadEXT = false;
+        nonCoherentDepthAttachmentReadEXT = false;
+        nonCoherentStencilAttachmentReadEXT = false;
         layoutDepth = EldNone;
         layoutStencil = ElsNone;
         blendEquation = false;
@@ -1460,6 +1511,12 @@ struct TShaderQualifiers {
             earlyAndLateFragmentTestsAMD = true;
         if (src.postDepthCoverage)
             postDepthCoverage = true;
+        if (src.nonCoherentColorAttachmentReadEXT)
+            nonCoherentColorAttachmentReadEXT = true;
+        if (src.nonCoherentDepthAttachmentReadEXT)
+            nonCoherentDepthAttachmentReadEXT = true;
+        if (src.nonCoherentStencilAttachmentReadEXT)
+            nonCoherentStencilAttachmentReadEXT = true;
         if (src.layoutDepth)
             layoutDepth = src.layoutDepth;
         if (src.layoutStencil)
@@ -1573,8 +1630,9 @@ public:
 #endif
 
     // "Image" is a superset of "Subpass"
-    bool isImage()   const { return basicType == EbtSampler && sampler.isImage(); }
-    bool isSubpass() const { return basicType == EbtSampler && sampler.isSubpass(); }
+    bool isImage()      const { return basicType == EbtSampler && sampler.isImage(); }
+    bool isSubpass()    const { return basicType == EbtSampler && sampler.isSubpass(); }
+    bool isAttachmentEXT() const { return basicType == EbtSampler && sampler.isAttachmentEXT(); }
 };
 
 //
@@ -1864,9 +1922,11 @@ public:
     virtual bool isArray()  const { return arraySizes != nullptr; }
     virtual bool isSizedArray() const { return isArray() && arraySizes->isSized(); }
     virtual bool isUnsizedArray() const { return isArray() && !arraySizes->isSized(); }
+    virtual bool isImplicitlySizedArray() const { return isArray() && arraySizes->isImplicitlySized(); }
     virtual bool isArrayVariablyIndexed() const { assert(isArray()); return arraySizes->isVariablyIndexed(); }
     virtual void setArrayVariablyIndexed() { assert(isArray()); arraySizes->setVariablyIndexed(); }
     virtual void updateImplicitArraySize(int size) { assert(isArray()); arraySizes->updateImplicitSize(size); }
+    virtual void setImplicitlySized(bool isImplicitSized) { arraySizes->setImplicitlySized(isImplicitSized); }
     virtual bool isStruct() const { return basicType == EbtStruct || basicType == EbtBlock; }
     virtual bool isFloatingDomain() const { return basicType == EbtFloat || basicType == EbtDouble || basicType == EbtFloat16; }
     virtual bool isIntegerDomain() const
@@ -1889,15 +1949,18 @@ public:
     }
     virtual bool isOpaque() const { return basicType == EbtSampler
 #ifndef GLSLANG_WEB
-            || basicType == EbtAtomicUint || basicType == EbtAccStruct || basicType == EbtRayQuery
+            || basicType == EbtAtomicUint || basicType == EbtAccStruct || basicType == EbtRayQuery 
+            || basicType == EbtHitObjectNV
 #endif
         ; }
     virtual bool isBuiltIn() const { return getQualifier().builtIn != EbvNone; }
 
-    // "Image" is a superset of "Subpass"
-    virtual bool isImage()   const { return basicType == EbtSampler && getSampler().isImage(); }
+    virtual bool isAttachmentEXT() const { return basicType == EbtSampler && getSampler().isAttachmentEXT(); }
+    virtual bool isImage() const { return basicType == EbtSampler && getSampler().isImage(); }
     virtual bool isSubpass() const { return basicType == EbtSampler && getSampler().isSubpass(); }
     virtual bool isTexture() const { return basicType == EbtSampler && getSampler().isTexture(); }
+    virtual bool isBindlessImage() const { return isImage() && qualifier.layoutBindlessImage; }
+    virtual bool isBindlessTexture() const { return isTexture() && qualifier.layoutBindlessSampler; }
     // Check the block-name convention of creating a block without populating it's members:
     virtual bool isUnusableName() const { return isStruct() && structure == nullptr; }
     virtual bool isParameterized()  const { return typeParameters != nullptr; }
@@ -1952,6 +2015,11 @@ public:
     virtual bool containsOpaque() const
     {
         return contains([](const TType* t) { return t->isOpaque(); } );
+    }
+
+    virtual bool containsSampler() const
+    {
+        return contains([](const TType* t) { return t->isTexture() || t->isImage(); });
     }
 
     // Recursively checks if the type contains a built-in variable
@@ -2087,8 +2155,12 @@ public:
     // an explicit array.
     void adoptImplicitArraySizes(bool skipNonvariablyIndexed)
     {
-        if (isUnsizedArray() && !(skipNonvariablyIndexed || isArrayVariablyIndexed()))
+        if (isUnsizedArray() &&
+            (qualifier.builtIn == EbvSampleMask ||
+                !(skipNonvariablyIndexed || isArrayVariablyIndexed()))) {
             changeOuterArraySize(getImplicitArraySize());
+            setImplicitlySized(true);
+        }
         // For multi-dim per-view arrays, set unsized inner dimension size to 1
         if (qualifier.isPerView() && arraySizes && arraySizes->isInnerUnsized())
             arraySizes->clearInnerUnsized();
@@ -2283,8 +2355,16 @@ public:
                 appendStr(" layoutSecondaryViewportRelativeOffset=");
                 appendInt(qualifier.layoutSecondaryViewportRelativeOffset);
               }
+              
               if (qualifier.layoutShaderRecord)
                 appendStr(" shaderRecordNV");
+              if (qualifier.layoutHitObjectShaderRecordNV)
+                appendStr(" hitobjectshaderrecordnv");
+
+              if (qualifier.layoutBindlessSampler)
+                  appendStr(" layoutBindlessSampler");
+              if (qualifier.layoutBindlessImage)
+                  appendStr(" layoutBindlessImage");
 
               appendStr(")");
             }
@@ -2544,6 +2624,7 @@ public:
     void setStruct(TTypeList* s) { assert(isStruct()); structure = s; }
     TTypeList* getWritableStruct() const { assert(isStruct()); return structure; }  // This should only be used when known to not be sharing with other threads
     void setBasicType(const TBasicType& t) { basicType = t; }
+    void setVectorSize(int s) { vectorSize = s; }
 
     int computeNumComponents() const
     {
@@ -2711,7 +2792,10 @@ public:
     bool sameArrayness(const TType& right) const
     {
         return ((arraySizes == nullptr && right.arraySizes == nullptr) ||
-                (arraySizes != nullptr && right.arraySizes != nullptr && *arraySizes == *right.arraySizes));
+                (arraySizes != nullptr && right.arraySizes != nullptr &&
+                 (*arraySizes == *right.arraySizes ||
+                  (arraySizes->isImplicitlySized() && right.arraySizes->isDefaultImplicitlySized()) ||
+                  (right.arraySizes->isImplicitlySized() && arraySizes->isDefaultImplicitlySized()))));
     }
 
     // See if two type's arrayness match in everything except their outer dimension

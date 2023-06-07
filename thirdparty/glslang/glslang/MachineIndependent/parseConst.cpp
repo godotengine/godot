@@ -198,7 +198,7 @@ void TConstTraverser::visitConstantUnion(TIntermConstantUnion* node)
 
 bool TIntermediate::parseConstTree(TIntermNode* root, TConstUnionArray unionArray, TOperator constructorType, const TType& t, bool singleConstantParam)
 {
-    if (root == 0)
+    if (root == nullptr)
         return false;
 
     TConstTraverser it(unionArray, singleConstantParam, constructorType, t);

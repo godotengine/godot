@@ -2,9 +2,9 @@
 // File: vk_icd.h
 //
 /*
- * Copyright (c) 2015-2016 The Khronos Group Inc.
- * Copyright (c) 2015-2016 Valve Corporation
- * Copyright (c) 2015-2016 LunarG, Inc.
+ * Copyright (c) 2015-2023 LunarG, Inc.
+ * Copyright (c) 2015-2023 The Khronos Group Inc.
+ * Copyright (c) 2015-2023 Valve Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,7 @@
  * limitations under the License.
  *
  */
-
-#ifndef VKICD_H
-#define VKICD_H
+#pragma once
 
 #include "vulkan.h"
 #include <stdbool.h>
@@ -42,7 +40,17 @@
 //               call for any API version > 1.0.  Otherwise, the loader will
 //               manually determine if it can support the expected version.
 //   Version 6 - Add support for vk_icdEnumerateAdapterPhysicalDevices.
-#define CURRENT_LOADER_ICD_INTERFACE_VERSION 6
+//   Version 7 - If an ICD supports any of the following functions, they must be
+//               queryable with vk_icdGetInstanceProcAddr:
+//                   vk_icdNegotiateLoaderICDInterfaceVersion
+//                   vk_icdGetPhysicalDeviceProcAddr
+//                   vk_icdEnumerateAdapterPhysicalDevices (Windows only)
+//               In addition, these functions no longer need to be exported directly.
+//               This version allows drivers provided through the extension
+//               VK_LUNARG_direct_driver_loading be able to support the entire
+//               Driver-Loader interface.
+
+#define CURRENT_LOADER_ICD_INTERFACE_VERSION 7
 #define MIN_SUPPORTED_LOADER_ICD_INTERFACE_VERSION 0
 #define MIN_PHYS_DEV_EXTENSION_ICD_INTERFACE_VERSION 4
 
@@ -70,7 +78,7 @@ extern "C" {
 #endif
     VKAPI_ATTR VkResult VKAPI_CALL vk_icdNegotiateLoaderICDInterfaceVersion(uint32_t* pVersion);
     VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vk_icdGetInstanceProcAddr(VkInstance instance, const char* pName);
-    VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vk_icdGetPhysicalDeviceProcAddr(VkInstance isntance, const char* pName);
+    VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vk_icdGetPhysicalDeviceProcAddr(VkInstance instance, const char* pName);
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
     VKAPI_ATTR VkResult VKAPI_CALL vk_icdEnumerateAdapterPhysicalDevices(VkInstance instance, LUID adapterLUID,
         uint32_t* pPhysicalDeviceCount, VkPhysicalDevice* pPhysicalDevices);
@@ -123,6 +131,7 @@ typedef enum {
     VK_ICD_WSI_PLATFORM_VI,
     VK_ICD_WSI_PLATFORM_GGP,
     VK_ICD_WSI_PLATFORM_SCREEN,
+    VK_ICD_WSI_PLATFORM_FUCHSIA,
 } VkIcdWsiPlatform;
 
 typedef struct {
@@ -242,4 +251,8 @@ typedef struct {
 } VkIcdSurfaceScreen;
 #endif  // VK_USE_PLATFORM_SCREEN_QNX
 
-#endif  // VKICD_H
+#ifdef VK_USE_PLATFORM_FUCHSIA
+typedef struct {
+  VkIcdSurfaceBase base;
+} VkIcdSurfaceImagePipe;
+#endif // VK_USE_PLATFORM_FUCHSIA

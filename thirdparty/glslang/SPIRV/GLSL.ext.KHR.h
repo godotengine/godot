@@ -54,5 +54,6 @@ static const char* const E_SPV_KHR_workgroup_memory_explicit_layout = "SPV_KHR_w
 static const char* const E_SPV_KHR_subgroup_uniform_control_flow = "SPV_KHR_subgroup_uniform_control_flow";
 static const char* const E_SPV_KHR_fragment_shader_barycentric = "SPV_KHR_fragment_shader_barycentric";
 static const char* const E_SPV_AMD_shader_early_and_late_fragment_tests = "SPV_AMD_shader_early_and_late_fragment_tests";
+static const char* const E_SPV_KHR_ray_tracing_position_fetch   = "SPV_KHR_ray_tracing_position_fetch";
 
 #endif  // #ifndef GLSLextKHR_H

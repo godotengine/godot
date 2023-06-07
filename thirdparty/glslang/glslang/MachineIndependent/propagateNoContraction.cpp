@@ -423,7 +423,7 @@ getSymbolToDefinitionMappingAndPreciseSymbolIDs(const glslang::TIntermediate& in
                                         ReturnBranchNodeSet());
 
     TIntermNode* root = intermediate.getTreeRoot();
-    if (root == 0)
+    if (root == nullptr)
         return result_tuple;
 
     NodeMapping& symbol_definition_mapping = std::get<0>(result_tuple);
