@@ -137,6 +137,28 @@ public:
 	EditorMarkdownSyntaxHighlighter() { highlighter.instantiate(); }
 };
 
+class EditorConfigFileSyntaxHighlighter : public EditorSyntaxHighlighter {
+	GDCLASS(EditorConfigFileSyntaxHighlighter, EditorSyntaxHighlighter)
+
+private:
+	Ref<CodeHighlighter> highlighter;
+
+public:
+	virtual void _update_cache() override;
+	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override { return highlighter->get_line_syntax_highlighting(p_line); }
+
+	// While not explicitly designed for those formats, this highlighter happens
+	// to handle TSCN, TRES, `project.godot` well. We can expose it in case the
+	// user opens one of these using the script editor (which can be done using
+	// the All Files filter).
+	virtual PackedStringArray _get_supported_languages() const override { return PackedStringArray{ "ini", "cfg", "tscn", "tres", "godot" }; }
+	virtual String _get_name() const override { return TTR("ConfigFile"); }
+
+	virtual Ref<EditorSyntaxHighlighter> _create() const override;
+
+	EditorConfigFileSyntaxHighlighter() { highlighter.instantiate(); }
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
