@@ -3028,6 +3028,46 @@ bool Main::start() {
 					}
 				}
 
+#ifdef DEBUG_ENABLED
+				String debug_hook_script;
+
+				struct {
+					String project_setting, function_stub;
+				} debug_hooks[] = {
+					{ "debug/hooks/ready", "func _ready():" },
+					{ "debug/hooks/process", R"(
+var time := 0.0
+func _process(delta):
+	time += delta
+)" },
+					{}, // Null terminator struct
+				};
+				for (int i = 0; !debug_hooks[i].project_setting.is_empty(); i++) {
+					String debug_hook_func = GLOBAL_GET(debug_hooks[i].project_setting);
+					if (debug_hook_func.is_empty()) {
+						continue;
+					}
+					debug_hook_func = "\n\t" + debug_hook_func.replace("\n", "\n\t");
+					debug_hook_script += debug_hooks[i].function_stub + debug_hook_func;
+				}
+
+				if (!debug_hook_script.is_empty()) {
+					debug_hook_script = "extends Node\n" + debug_hook_script;
+					Ref<GDScript> gdscript = memnew(GDScript);
+					gdscript->set_source_code(debug_hook_script);
+					print_line(debug_hook_script);
+
+					if (gdscript->reload() == OK) {
+						Node *n = memnew(Node);
+						n->set_script(gdscript);
+						n->set_name("Debugger autoload");
+						to_add.push_back(n);
+
+						print_line("Debug hooks successfully registered as autoload");
+					}
+				}
+#endif
+
 				for (Node *E : to_add) {
 					sml->get_root()->add_child(E);
 				}

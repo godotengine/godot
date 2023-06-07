@@ -1329,6 +1329,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "compression/formats/zlib/compression_level", PROPERTY_HINT_RANGE, "-1,9,1"), Compression::zlib_level);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1"), Compression::gzip_level);
 
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "debug/hooks/ready", PROPERTY_HINT_MULTILINE_TEXT), "");
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "debug/hooks/process", PROPERTY_HINT_MULTILINE_TEXT), "");
+
 	GLOBAL_DEF("debug/settings/crash_handler/message",
 			String("Please include this when reporting the bug to the project developer."));
 	GLOBAL_DEF("debug/settings/crash_handler/message.editor",
