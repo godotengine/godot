@@ -796,7 +796,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 	glGenTextures(1, &texture.tex_id);
 	texture_owner.initialize_rid(p_texture, texture);
 	for (int i = 0; i < p_layers.size(); i++) {
-		_texture_set_data(p_texture, p_layers[i], 1, i == 0);
+		_texture_set_data(p_texture, p_layers[i], i, i == 0);
 	}
 }
 
@@ -1310,7 +1310,7 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 				if (initialize) {
 					glTexImage3D(GL_TEXTURE_2D_ARRAY, i, internal_format, w, h, texture->layers, 0, format, type, nullptr);
 				}
-				glTexSubImage3D(GL_TEXTURE_2D_ARRAY, i, 0, 0, p_layer, w, h, 0, format, type, &read[ofs]);
+				glTexSubImage3D(GL_TEXTURE_2D_ARRAY, i, 0, 0, p_layer, w, h, 1, format, type, &read[ofs]);
 			} else {
 				glTexImage2D(blit_target, i, internal_format, w, h, 0, format, type, &read[ofs]);
 			}
