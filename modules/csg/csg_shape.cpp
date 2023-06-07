@@ -1281,7 +1281,7 @@ void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGBox3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGBox3D::get_material);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_LINK, "suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 

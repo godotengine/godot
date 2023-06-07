@@ -540,7 +540,7 @@ String ResourceImporterOBJ::get_preset_name(int p_idx) const {
 
 void ResourceImporterOBJ::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate_tangents"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "scale_mesh"), Vector3(1, 1, 1)));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "scale_mesh", PROPERTY_HINT_LINK), Vector3(1, 1, 1)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "offset_mesh"), Vector3(0, 0, 0)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimize_mesh"), true));
 }

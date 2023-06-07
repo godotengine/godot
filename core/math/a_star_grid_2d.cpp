@@ -616,7 +616,7 @@ void AStarGrid2D::_bind_methods() {
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
 
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2I, "region"), "set_region", "get_region");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_LINK), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "cell_size"), "set_cell_size", "get_cell_size");
 
