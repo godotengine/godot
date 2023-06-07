@@ -132,22 +132,44 @@ CollisionObject3D *_generate_collision_with_body(Ref<GLTFState> p_state, Ref<GLT
 	return body;
 }
 
+CollisionObject3D *_get_ancestor_collision_object(Node *p_scene_parent) {
+	while (p_scene_parent) {
+		Node3D *parent_3d = Object::cast_to<Node3D>(p_scene_parent);
+		if (unlikely(!parent_3d)) {
+			return nullptr;
+		}
+		CollisionObject3D *co = Object::cast_to<CollisionObject3D>(p_scene_parent);
+		if (likely(co)) {
+			return co;
+		}
+		p_scene_parent = p_scene_parent->get_parent();
+	}
+	return nullptr;
+}
+
 Node3D *GLTFDocumentExtensionPhysics::generate_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_parent) {
 	Ref<GLTFPhysicsBody> physics_body = p_gltf_node->get_additional_data(StringName("GLTFPhysicsBody"));
 	Ref<GLTFPhysicsShape> collider = p_gltf_node->get_additional_data(StringName("GLTFPhysicsShape"));
 	if (collider.is_valid()) {
 		_setup_collider_mesh_resource_from_index_if_needed(p_state, collider);
-		// If the collider has the correct type of parent, we just return one node.
+		// If there is both a body and a shape on the same glTF node, generate both.
+		if (physics_body.is_valid()) {
+			return _generate_collision_with_body(p_state, p_gltf_node, collider, physics_body);
+		}
+		// If we already have the correct type of body, we just return one node for the collider.
+		CollisionObject3D *ancestor_collision_object = _get_ancestor_collision_object(p_scene_parent);
 		if (collider->get_is_trigger()) {
-			if (Object::cast_to<Area3D>(p_scene_parent)) {
+			if (Object::cast_to<Area3D>(ancestor_collision_object)) {
 				return collider->to_node(true);
 			}
 		} else {
-			if (Object::cast_to<PhysicsBody3D>(p_scene_parent)) {
+			if (Object::cast_to<PhysicsBody3D>(ancestor_collision_object)) {
 				return collider->to_node(true);
 			}
 		}
-		return _generate_collision_with_body(p_state, p_gltf_node, collider, physics_body);
+		// In this case, we need a new body, but one implicitly determined
+		// by the collider (either StaticBody3D or Area3D).
+		return _generate_collision_with_body(p_state, p_gltf_node, collider, nullptr);
 	}
 	if (physics_body.is_valid()) {
 		return physics_body->to_node();
