@@ -36,6 +36,7 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/inspector_dock.h"
@@ -332,6 +333,10 @@ void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) 
 	EditorNode::get_singleton()->save_scene_to_path(p_scene, p_with_preview);
 }
 
+void EditorInterface::mark_scene_as_unsaved() {
+	EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(EditorNode::get_editor_data().get_current_edited_scene_history_id());
+}
+
 // Scene playback.
 
 void EditorInterface::play_main_scene() {
@@ -429,6 +434,8 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
+
+	ClassDB::bind_method(D_METHOD("mark_scene_as_unsaved"), &EditorInterface::mark_scene_as_unsaved);
 
 	// Scene playback.
 
