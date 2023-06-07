@@ -655,6 +655,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 	current_clip = nullptr;
 
 	GLES3::CanvasShaderData::BlendMode last_blend_mode = GLES3::CanvasShaderData::BLEND_MODE_MIX;
+	Color last_blend_color;
 
 	state.current_tex = RID();
 
@@ -691,8 +692,9 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 		}
 
 		GLES3::CanvasShaderData::BlendMode blend_mode = state.canvas_instance_batches[i].blend_mode;
+		Color blend_color = state.canvas_instance_batches[i].blend_color;
 
-		if (last_blend_mode != blend_mode) {
+		if (last_blend_mode != blend_mode || last_blend_color != blend_color) {
 			if (last_blend_mode == GLES3::CanvasShaderData::BLEND_MODE_DISABLED) {
 				// re-enable it
 				glEnable(GL_BLEND);
@@ -712,7 +714,6 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 					} else {
 						glBlendFuncSeparate(GL_CONSTANT_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_ZERO, GL_ONE);
 					}
-					Color blend_color = state.canvas_instance_batches[state.current_batch_index].blend_color;
 					glBlendColor(blend_color.r, blend_color.g, blend_color.b, blend_color.a);
 
 				} break;
@@ -762,6 +763,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 				} break;
 			}
 			last_blend_mode = blend_mode;
+			last_blend_color = blend_color;
 		}
 
 		_render_batch(p_lights, i);
