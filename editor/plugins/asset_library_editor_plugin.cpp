@@ -38,6 +38,11 @@
 #include "editor/editor_settings.h"
 #include "editor/project_settings_editor.h"
 
+#include "modules/modules_enabled.gen.h" // For svg.
+#ifdef MODULE_SVG_ENABLED
+#include "modules/svg/image_loader_svg.h"
+#endif
+
 static inline void setup_http_request(HTTPRequest *request) {
 	request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
 
@@ -744,13 +749,29 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 		uint8_t png_signature[8] = { 137, 80, 78, 71, 13, 10, 26, 10 };
 		uint8_t jpg_signature[3] = { 255, 216, 255 };
+		uint8_t webp_signature[4] = { 82, 73, 70, 70 };
+		uint8_t bmp_signature[2] = { 66, 77 };
 
 		if (r.ptr()) {
 			if ((memcmp(&r[0], &png_signature[0], 8) == 0) && Image::_png_mem_loader_func) {
 				image->copy_internals_from(Image::_png_mem_loader_func(r.ptr(), len));
 			} else if ((memcmp(&r[0], &jpg_signature[0], 3) == 0) && Image::_jpg_mem_loader_func) {
 				image->copy_internals_from(Image::_jpg_mem_loader_func(r.ptr(), len));
+			} else if ((memcmp(&r[0], &webp_signature[0], 4) == 0) && Image::_webp_mem_loader_func) {
+				image->copy_internals_from(Image::_webp_mem_loader_func(r.ptr(), len));
+			} else if ((memcmp(&r[0], &bmp_signature[0], 2) == 0) && Image::_bmp_mem_loader_func) {
+				image->copy_internals_from(Image::_bmp_mem_loader_func(r.ptr(), len));
 			}
+#ifdef MODULE_SVG_ENABLED
+			else {
+				ImageLoaderSVG svg_loader;
+				Ref<Image> img = Ref<Image>(memnew(Image));
+				Error err = svg_loader.create_image(img, &image_data, 1.0, false, false);
+				if (err == OK) {
+					image->copy_internals_from(img);
+				}
+			}
+#endif
 		}
 
 		if (!image->empty()) {

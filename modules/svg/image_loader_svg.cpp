@@ -90,7 +90,7 @@ void ImageLoaderSVG::set_convert_colors(Dictionary *p_replace_color) {
 	}
 }
 
-Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t> *p_data, float p_scale, bool upsample, bool convert_colors) {
+Error ImageLoaderSVG::create_image(Ref<Image> p_image, const PoolVector<uint8_t> *p_data, float p_scale, bool upsample, bool convert_colors) {
 	NSVGimage *svg_image;
 	PoolVector<uint8_t>::Read src_r = p_data->read();
 	svg_image = nsvgParse((char *)src_r.ptr(), "px", 96);
@@ -135,8 +135,7 @@ Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, const char *p
 	src_data.resize(str_len + 1);
 	PoolVector<uint8_t>::Write src_w = src_data.write();
 	memcpy(src_w.ptr(), p_svg_str, str_len + 1);
-
-	return _create_image(p_image, &src_data, p_scale, upsample, convert_colors);
+	return create_image(p_image, &src_data, p_scale, upsample, convert_colors);
 }
 
 Error ImageLoaderSVG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
@@ -147,7 +146,7 @@ Error ImageLoaderSVG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	f->get_buffer(src_w.ptr(), size);
 	src_w.ptr()[size] = '\0';
 
-	return _create_image(p_image, &src_image, p_scale, 1.0);
+	return create_image(p_image, &src_image, p_scale, 1.0);
 }
 
 void ImageLoaderSVG::get_recognized_extensions(List<String> *p_extensions) const {
