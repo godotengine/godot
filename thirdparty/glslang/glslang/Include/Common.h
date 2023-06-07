@@ -45,6 +45,7 @@
 #include <cmath>
 #endif
 #include <cstdio>
+#include <cstdint>
 #include <cstdlib>
 #include <list>
 #include <map>
