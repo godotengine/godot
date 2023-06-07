@@ -247,6 +247,22 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			}
 		}
 
+		{ //variant constants
+
+			List<StringName> snames;
+
+			for (const KeyValue<StringName, Variant> &F : t->variant_constant_map) {
+				snames.push_back(F.key);
+			}
+
+			snames.sort_custom<StringName::AlphCompare>();
+
+			for (const StringName &F : snames) {
+				hash = hash_murmur3_one_64(F.hash(), hash);
+				hash = hash_murmur3_one_64(t->variant_constant_map[F], hash);
+			}
+		}
+
 		{ //signals
 
 			List<StringName> snames;
@@ -837,6 +853,92 @@ bool ClassDB::is_enum_bitfield(const StringName &p_class, const StringName &p_na
 
 	while (type) {
 		if (type->enum_map.has(p_name) && type->enum_map[p_name].is_bitfield) {
+			return true;
+		}
+		if (p_no_inheritance) {
+			return false;
+		}
+
+		type = type->inherits_ptr;
+	}
+
+	return false;
+}
+
+void ClassDB::bind_variant_constant(const StringName &p_class, const StringName &p_name, const Variant &p_constant) {
+	OBJTYPE_WLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	ERR_FAIL_COND(!type);
+
+	if (type->variant_constant_map.has(p_name)) {
+		ERR_FAIL();
+	}
+
+	type->variant_constant_map[p_name] = p_constant;
+
+#ifdef DEBUG_METHODS_ENABLED
+	type->variant_constant_order.push_back(p_name);
+#endif
+}
+
+void ClassDB::get_variant_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+#ifdef DEBUG_METHODS_ENABLED
+		for (const StringName &E : type->variant_constant_order) {
+			p_constants->push_back(E);
+		}
+#else
+
+		for (const KeyValue<StringName, Variant> &E : type->variant_constant_map) {
+			p_constants->push_back(E.key);
+		}
+
+#endif
+		if (p_no_inheritance) {
+			break;
+		}
+
+		type = type->inherits_ptr;
+	}
+}
+
+Variant ClassDB::get_variant_constant(const StringName &p_class, const StringName &p_name, bool *p_success) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		Variant *constant = type->variant_constant_map.getptr(p_name);
+		if (constant) {
+			if (p_success) {
+				*p_success = true;
+			}
+			return *constant;
+		}
+
+		type = type->inherits_ptr;
+	}
+
+	if (p_success) {
+		*p_success = false;
+	}
+
+	return Variant();
+}
+
+bool ClassDB::has_variant_constant(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		if (type->variant_constant_map.has(p_name)) {
 			return true;
 		}
 		if (p_no_inheritance) {

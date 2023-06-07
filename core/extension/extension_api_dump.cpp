@@ -768,6 +768,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 			{
 				//constants
 				Array constants;
+
 				List<String> constant_list;
 				ClassDB::get_integer_constant_list(class_name, &constant_list, true);
 				for (const String &F : constant_list) {
@@ -779,6 +780,16 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 					Dictionary d2;
 					d2["name"] = String(F);
 					d2["value"] = ClassDB::get_integer_constant(class_name, F);
+
+					constants.push_back(d2);
+				}
+
+				List<String> variant_constant_list;
+				ClassDB::get_variant_constant_list(class_name, &variant_constant_list, true);
+				for (const String &F : variant_constant_list) {
+					Dictionary d2;
+					d2["name"] = String(F);
+					d2["value"] = ClassDB::get_variant_constant(class_name, F);
 
 					constants.push_back(d2);
 				}

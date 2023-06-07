@@ -1467,6 +1467,33 @@ StringName ClassDB::class_get_integer_constant_enum(const StringName &p_class, c
 	return ::ClassDB::get_integer_constant_enum(p_class, p_name, p_no_inheritance);
 }
 
+PackedStringArray ClassDB::class_get_variant_constant_list(const StringName &p_class, bool p_no_inheritance) const {
+	List<String> constants;
+	::ClassDB::get_variant_constant_list(p_class, &constants, p_no_inheritance);
+
+	PackedStringArray ret;
+	ret.resize(constants.size());
+	int idx = 0;
+	for (const String &E : constants) {
+		ret.set(idx++, E);
+	}
+
+	return ret;
+}
+
+bool ClassDB::class_has_variant_constant(const StringName &p_class, const StringName &p_name) const {
+	bool success;
+	::ClassDB::get_variant_constant(p_class, p_name, &success);
+	return success;
+}
+
+Variant ClassDB::class_get_variant_constant(const StringName &p_class, const StringName &p_name) const {
+	bool found;
+	Variant c = ::ClassDB::get_variant_constant(p_class, p_name, &found);
+	ERR_FAIL_COND_V(!found, 0);
+	return c;
+}
+
 bool ClassDB::is_class_enabled(StringName p_class) const {
 	return ::ClassDB::is_class_enabled(p_class);
 }
@@ -1501,6 +1528,11 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_get_enum_list", "class", "no_inheritance"), &ClassDB::class_get_enum_list, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_enum_constants", "class", "enum", "no_inheritance"), &ClassDB::class_get_enum_constants, DEFVAL(false));
 	::ClassDB::bind_method(D_METHOD("class_get_integer_constant_enum", "class", "name", "no_inheritance"), &ClassDB::class_get_integer_constant_enum, DEFVAL(false));
+
+	::ClassDB::bind_method(D_METHOD("class_get_variant_constant_list", "class", "no_inheritance"), &ClassDB::class_get_variant_constant_list, DEFVAL(false));
+
+	::ClassDB::bind_method(D_METHOD("class_has_variant_constant", "class", "name"), &ClassDB::class_has_variant_constant);
+	::ClassDB::bind_method(D_METHOD("class_get_variant_constant", "class", "name"), &ClassDB::class_get_variant_constant);
 
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
 }

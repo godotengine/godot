@@ -49,6 +49,11 @@ struct ConstantData {
 	int64_t value = 0;
 };
 
+struct VariantConstantData {
+	String name;
+	Variant value;
+};
+
 struct EnumData {
 	StringName name;
 	List<ConstantData> constants;
@@ -98,6 +103,7 @@ struct ExposedClass {
 	ClassDB::APIType api_type;
 
 	List<ConstantData> constants;
+	List<VariantConstantData> variant_constants;
 	List<EnumData> enums;
 	List<PropertyData> properties;
 	List<MethodData> methods;
@@ -772,6 +778,26 @@ void add_exposed_classes(Context &r_context) {
 			constant.value = *value;
 
 			exposed_class.constants.push_back(constant);
+		}
+
+		// Add variant constants
+
+		List<String> variant_constants;
+		ClassDB::get_variant_constant_list(class_name, &variant_constants, true);
+
+		for (const String &E : variant_constants) {
+			const String &constant_name = E;
+			TEST_FAIL_COND(constant_name.find("::") != -1,
+					"Constant contains '::', check bindings to remove the scope: '",
+					String(class_name), ".", constant_name, "'.");
+			Variant *value = class_info->variant_constant_map.getptr(StringName(E));
+			TEST_FAIL_COND(!value, "Missing constant value: '", String(class_name), ".", String(constant_name), "'.");
+
+			VariantConstantData constant;
+			constant.name = constant_name;
+			constant.value = *value;
+
+			exposed_class.variant_constants.push_back(constant);
 		}
 
 		r_context.exposed_classes.insert(class_name, exposed_class);

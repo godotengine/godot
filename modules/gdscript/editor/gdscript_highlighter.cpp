@@ -691,6 +691,12 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 			for (const String &E : clist) {
 				member_keywords[E] = member_variable_color;
 			}
+
+			List<String> vclist;
+			ClassDB::get_variant_constant_list(instance_base, &vclist);
+			for (const String &E : vclist) {
+				member_keywords[E] = member_variable_color;
+			}
 		}
 	}
 

@@ -2068,6 +2068,18 @@ typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClassMethod)(GDExtens
 typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClassIntegerConstant)(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_enum_name, GDExtensionConstStringNamePtr p_constant_name, GDExtensionInt p_constant_value, GDExtensionBool p_is_bitfield);
 
 /**
+ * @name classdb_register_extension_class_variant_constant
+ *
+ * Registers a variant constant on an extension class in the ClassDB.
+ *
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_class_name A pointer to a StringName with the class name.
+ * @param p_constant_name A pointer to a StringName with the constant name.
+ * @param p_constant_value The constant value.
+ */
+typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClassVariantConstant)(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_constant_name, GDExtensionConstVariantPtr p_constant_value);
+
+/**
  * @name classdb_register_extension_class_property
  *
  * Registers a property on an extension class in the ClassDB.
