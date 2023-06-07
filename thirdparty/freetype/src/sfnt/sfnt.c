@@ -19,6 +19,7 @@
 #define FT_MAKE_OPTION_SINGLE_OBJECT
 
 #include "pngshim.c"
+#include "emj1shim.c"
 #include "sfdriver.c"
 #include "sfobjs.c"
 #include "sfwoff.c"
