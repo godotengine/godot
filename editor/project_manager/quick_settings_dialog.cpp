@@ -286,7 +286,8 @@ QuickSettingsDialog::QuickSettingsDialog() {
 
 			for (int i = 0; i < editor_languages.size(); i++) {
 				const String &lang_value = editor_languages[i];
-				String lang_name = TranslationServer::get_singleton()->get_locale_name(lang_value);
+				// Use native locale names, as the user may not understand language names in English.
+				String lang_name = TranslationServer::get_singleton()->get_native_locale_name(lang_value);
 				language_option_button->add_item(vformat("[%s] %s", lang_value, lang_name), i);
 				language_option_button->set_item_metadata(i, lang_value);
 			}
