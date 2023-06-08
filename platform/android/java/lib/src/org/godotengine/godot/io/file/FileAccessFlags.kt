@@ -34,19 +34,12 @@ package org.godotengine.godot.io.file
  * Android representation of Godot native access flag bit fields.
  * Reference: core/io/file_access.h
  */
-internal enum class ModeBitFields {
+internal enum class ModeBitFields(val nativeValue: Int) {
     READ_FIELD(1), // r
     WRITE_FIELD(2), // w
     APPEND_FIELD(4), // a
     TEMPORARY_FIELD(8); // D
     //TEXT_FIELD(16); // t/b
-    private final Int field = 0;
-    public ModeBitFields(Int value) {
-        this.field = value;
-    }
-    public Int integer() {
-        return this.field;
-    }
 }
 /**
  * Android representation of Godot native access flags.
@@ -56,64 +49,64 @@ internal enum class FileAccessFlags(val nativeValue: Int) {
      * Opens the file for read operations.
      * The cursor is positioned at the beginning of the file.
      */
-    READ(ModeBitFields.READ_FIELD.integer()),
+    READ(ModeBitFields.READ_FIELD.nativeValue),
 
     /**
      * Opens the file for write operations.
      * The file is created if it does not exist, and truncated if it does.
      */
-    WRITE(ModeBitFields.WRITE_FIELD.integer()),
+    WRITE(ModeBitFields.WRITE_FIELD.nativeValue),
 
     /**
      * Opens the file for write operations.
      * Does not truncate the file. The cursor is positioned at the end of the file.
      */
-    APPEND(ModeBitFields.APPEND_FIELD.integer()),
+    APPEND(ModeBitFields.APPEND_FIELD.nativeValue),
 
     /**
      * Opens the file for read and write operations.
      * Does not truncate the file. The cursor is positioned at the beginning of the file.
      */
-    READ_WRITE(ModeBitFields.READ_FIELD.integer() or ModeBitFields.APPEND_FIELD.integer()),
+    READ_WRITE(ModeBitFields.READ_FIELD.nativeValue or ModeBitFields.APPEND_FIELD.nativeValue),
 
     /**
      * Opens the file for read and write operations.
      * The file is created if it does not exist, and truncated if it does.
      * The cursor is positioned at the beginning of the file.
      */
-    WRITE_READ(ModeBitFields.WRITE_FIELD.integer() or ModeBitFields.APPEND_FIELD.integer()),
+    WRITE_READ(ModeBitFields.WRITE_FIELD.nativeValue or ModeBitFields.APPEND_FIELD.nativeValue),
 
     /**
      * Opens the file for read operations. File is flagged for removal.
      * Does not truncate the file. The cursor is positioned at the beginning of the file.
      */
-    TEMPORARY_READ(ModeBitFields.TEMPORARY_FIELD.integer() or ModeBitFields.READ_FIELD.integer()),
+    TEMPORARY_READ(ModeBitFields.TEMPORARY_FIELD.nativeValue or ModeBitFields.READ_FIELD.nativeValue),
 
     /**
      * Opens the file for write operations. File is flagged for removal.
      * The file is created if it does not exist, and truncated if it does.
 	 * The cursor is positioned at the beginning of the file.
      */
-    TEMPORARY_WRITE(ModeBitFields.TEMPORARY_FIELD.integer() or ModeBitFields.WRITE_FIELD.integer()),
+    TEMPORARY_WRITE(ModeBitFields.TEMPORARY_FIELD.nativeValue or ModeBitFields.WRITE_FIELD.nativeValue),
 
     /**
      * Opens the file for write operations. File is flagged for removal.
      * Does not truncate the file. The cursor is positioned at the end of the file.
      */
-    TEMPORARY_APPEND(ModeBitFields.TEMPORARY_FIELD.integer() or ModeBitFields.APPEND_FIELD.integer()),
+    TEMPORARY_APPEND(ModeBitFields.TEMPORARY_FIELD.nativeValue or ModeBitFields.APPEND_FIELD.nativeValue),
 
     /**
      * Opens the file for read and write operations. File is flagged for removal.
      * Does not truncate the file. The cursor is positioned at the beginning of the file.
      */
-    TEMPORARY_READ_WRITE(ModeBitFields.TEMPORARY_FIELD.integer() or ModeBitFields.READ_FIELD.integer() or ModeBitFields.APPEND_FIELD.integer()),
+    TEMPORARY_READ_WRITE(ModeBitFields.TEMPORARY_FIELD.nativeValue or ModeBitFields.READ_FIELD.nativeValue or ModeBitFields.APPEND_FIELD.nativeValue),
 
     /**
      * Opens the file for read and write operations. File is flagged for removal.
      * The file is created if it does not exist, and truncated if it does.
      * The cursor is positioned at the beginning of the file.
      */
-    TEMPORARY_WRITE_READ(ModeBitFields.TEMPORARY_FIELD.integer() or ModeBitFields.WRITE_FIELD.integer() or ModeBitFields.APPEND_FIELD.integer());
+    TEMPORARY_WRITE_READ(ModeBitFields.TEMPORARY_FIELD.nativeValue or ModeBitFields.WRITE_FIELD.nativeValue or ModeBitFields.APPEND_FIELD.nativeValue);
 
     fun getMode(): String {
         return when (this) {
