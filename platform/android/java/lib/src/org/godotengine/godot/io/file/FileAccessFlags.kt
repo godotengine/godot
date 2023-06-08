@@ -49,64 +49,64 @@ internal enum class FileAccessFlags(val nativeValue: Int) {
      * Opens the file for read operations.
      * The cursor is positioned at the beginning of the file.
      */
-    READ(ModeBitFields::READ_FIELD),
+    READ(ModeBitFields.READ_FIELD),
 
     /**
      * Opens the file for write operations.
      * The file is created if it does not exist, and truncated if it does.
      */
-    WRITE(ModeBitFields::WRITE_FIELD),
+    WRITE(ModeBitFields.WRITE_FIELD),
 
     /**
      * Opens the file for write operations.
      * Does not truncate the file. The cursor is positioned at the end of the file.
      */
-    APPEND(ModeBitFields::APPEND_FIELD),
+    APPEND(ModeBitFields.APPEND_FIELD),
 
     /**
      * Opens the file for read and write operations.
      * Does not truncate the file. The cursor is positioned at the beginning of the file.
      */
-    READ_WRITE(ModeBitFields::READ_FIELD or ModeBitFields::APPEND_FIELD),
+    READ_WRITE(ModeBitFields.READ_FIELD or ModeBitFields.APPEND_FIELD),
 
     /**
      * Opens the file for read and write operations.
      * The file is created if it does not exist, and truncated if it does.
      * The cursor is positioned at the beginning of the file.
      */
-    WRITE_READ(ModeBitFields::WRITE_FIELD or ModeBitFields::APPEND_FIELD),
+    WRITE_READ(ModeBitFields.WRITE_FIELD or ModeBitFields.APPEND_FIELD),
 
     /**
      * Opens the file for read operations. File is flagged for removal.
      * Does not truncate the file. The cursor is positioned at the beginning of the file.
      */
-    TEMPORARY_READ(ModeBitFields::TEMPORARY_FIELD or READ),
+    TEMPORARY_READ(ModeBitFields.TEMPORARY_FIELD or READ),
 
     /**
      * Opens the file for write operations. File is flagged for removal.
      * The file is created if it does not exist, and truncated if it does.
 	 * The cursor is positioned at the beginning of the file.
      */
-    TEMPORARY_WRITE(ModeBitFields::TEMPORARY_FIELD or WRITE),
+    TEMPORARY_WRITE(ModeBitFields.TEMPORARY_FIELD or WRITE),
 
     /**
      * Opens the file for write operations. File is flagged for removal.
      * Does not truncate the file. The cursor is positioned at the end of the file.
      */
-    TEMPORARY_APPEND(ModeBitFields::TEMPORARY_FIELD or ModeBitFields::APPEND_FIELD),
+    TEMPORARY_APPEND(ModeBitFields.TEMPORARY_FIELD or ModeBitFields.APPEND_FIELD),
 
     /**
      * Opens the file for read and write operations. File is flagged for removal.
      * Does not truncate the file. The cursor is positioned at the beginning of the file.
      */
-    TEMPORARY_READ_WRITE(ModeBitFields::TEMPORARY_FIELD or READ_WRITE),
+    TEMPORARY_READ_WRITE(ModeBitFields.TEMPORARY_FIELD or READ_WRITE),
 
     /**
      * Opens the file for read and write operations. File is flagged for removal.
      * The file is created if it does not exist, and truncated if it does.
      * The cursor is positioned at the beginning of the file.
      */
-    TEMPORARY_WRITE_READ(ModeBitFields::TEMPORARY_FIELD or WRITE_READ);
+    TEMPORARY_WRITE_READ(ModeBitFields.TEMPORARY_FIELD or WRITE_READ);
 
     fun getMode(): String {
         return when (this) {
