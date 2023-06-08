@@ -40,13 +40,13 @@ void CollisionShape2D::_shape_changed() {
 }
 
 void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
-	parent->shape_owner_set_transform(owner_id, get_transform());
+	collision_object->shape_owner_set_transform(owner_id, get_transform());
 	if (p_xform_only) {
 		return;
 	}
-	parent->shape_owner_set_disabled(owner_id, disabled);
-	parent->shape_owner_set_one_way_collision(owner_id, one_way_collision);
-	parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
+	collision_object->shape_owner_set_disabled(owner_id, disabled);
+	collision_object->shape_owner_set_one_way_collision(owner_id, one_way_collision);
+	collision_object->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
 }
 
 Color CollisionShape2D::_get_default_debug_color() const {
@@ -57,34 +57,34 @@ Color CollisionShape2D::_get_default_debug_color() const {
 void CollisionShape2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PARENTED: {
-			parent = Object::cast_to<CollisionObject2D>(get_parent());
-			if (parent) {
-				owner_id = parent->create_shape_owner(this);
+			collision_object = Object::cast_to<CollisionObject2D>(get_parent());
+			if (collision_object) {
+				owner_id = collision_object->create_shape_owner(this);
 				if (shape.is_valid()) {
-					parent->shape_owner_add_shape(owner_id, shape);
+					collision_object->shape_owner_add_shape(owner_id, shape);
 				}
 				_update_in_shape_owner();
 			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			if (parent) {
+			if (collision_object) {
 				_update_in_shape_owner();
 			}
 		} break;
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			if (parent) {
+			if (collision_object) {
 				_update_in_shape_owner(true);
 			}
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
-			if (parent) {
-				parent->remove_shape_owner(owner_id);
+			if (collision_object) {
+				collision_object->remove_shape_owner(owner_id);
 			}
 			owner_id = 0;
-			parent = nullptr;
+			collision_object = nullptr;
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -146,10 +146,10 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 	}
 	shape = p_shape;
 	queue_redraw();
-	if (parent) {
-		parent->shape_owner_clear_shapes(owner_id);
+	if (collision_object) {
+		collision_object->shape_owner_clear_shapes(owner_id);
 		if (shape.is_valid()) {
-			parent->shape_owner_add_shape(owner_id, shape);
+			collision_object->shape_owner_add_shape(owner_id, shape);
 		}
 		_update_in_shape_owner();
 	}
@@ -176,14 +176,15 @@ bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 PackedStringArray CollisionShape2D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
 
-	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
+	CollisionObject2D *col_object = Object::cast_to<CollisionObject2D>(get_parent());
+	if (col_object == nullptr) {
 		warnings.push_back(RTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."));
 	}
 	if (!shape.is_valid()) {
 		warnings.push_back(RTR("A shape must be provided for CollisionShape2D to function. Please create a shape resource for it!"));
 	}
-	if (one_way_collision && Object::cast_to<Area2D>(get_parent())) {
-		warnings.push_back(RTR("The One Way Collision property will be ignored when the parent is an Area2D."));
+	if (one_way_collision && Object::cast_to<Area2D>(col_object)) {
+		warnings.push_back(RTR("The One Way Collision property will be ignored when the collision object is an Area2D."));
 	}
 
 	Ref<ConvexPolygonShape2D> convex = shape;
@@ -198,8 +199,8 @@ PackedStringArray CollisionShape2D::get_configuration_warnings() const {
 void CollisionShape2D::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
 	queue_redraw();
-	if (parent) {
-		parent->shape_owner_set_disabled(owner_id, p_disabled);
+	if (collision_object) {
+		collision_object->shape_owner_set_disabled(owner_id, p_disabled);
 	}
 }
 
@@ -210,8 +211,8 @@ bool CollisionShape2D::is_disabled() const {
 void CollisionShape2D::set_one_way_collision(bool p_enable) {
 	one_way_collision = p_enable;
 	queue_redraw();
-	if (parent) {
-		parent->shape_owner_set_one_way_collision(owner_id, p_enable);
+	if (collision_object) {
+		collision_object->shape_owner_set_one_way_collision(owner_id, p_enable);
 	}
 	update_configuration_warnings();
 }
@@ -222,8 +223,8 @@ bool CollisionShape2D::is_one_way_collision_enabled() const {
 
 void CollisionShape2D::set_one_way_collision_margin(real_t p_margin) {
 	one_way_collision_margin = p_margin;
-	if (parent) {
-		parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
+	if (collision_object) {
+		collision_object->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
 	}
 }
 
