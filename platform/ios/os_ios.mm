@@ -28,20 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#import "os_ios.h"
+
 #ifdef IOS_ENABLED
 
-#include "os_ios.h"
-
 #import "app_delegate.h"
+#import "display_server_ios.h"
+#import "godot_view.h"
+#import "view_controller.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
-#include "display_server_ios.h"
 #include "drivers/unix/syslog_logger.h"
-#import "godot_view.h"
 #include "main/main.h"
-#import "view_controller.h"
 
 #import <AudioToolbox/AudioServices.h>
 #import <CoreText/CoreText.h>
@@ -51,6 +52,7 @@
 
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+
 #import <QuartzCore/CAMetalLayer.h>
 #ifdef USE_VOLK
 #include <volk.h>

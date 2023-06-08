@@ -30,36 +30,35 @@
 
 #include "java_godot_lib_jni.h"
 
-#include "java_godot_io_wrapper.h"
-#include "java_godot_wrapper.h"
-
-#include "android/asset_manager_jni.h"
 #include "android_input_handler.h"
 #include "api/java_class_wrapper.h"
 #include "api/jni_singleton.h"
-#include "core/config/engine.h"
-#include "core/config/project_settings.h"
-#include "core/input/input.h"
 #include "dir_access_jandroid.h"
 #include "display_server_android.h"
 #include "file_access_android.h"
 #include "file_access_filesystem_jandroid.h"
+#include "java_godot_io_wrapper.h"
+#include "java_godot_wrapper.h"
 #include "jni_utils.h"
-#include "main/main.h"
 #include "net_socket_android.h"
 #include "os_android.h"
 #include "string_android.h"
 #include "thread_jandroid.h"
 #include "tts_android.h"
 
-#include <android/input.h>
-#include <unistd.h>
-
-#include <android/native_window_jni.h>
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/input/input.h"
+#include "main/main.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
+
+#include <android/asset_manager_jni.h>
+#include <android/input.h>
+#include <android/native_window_jni.h>
+#include <unistd.h>
 
 static JavaClassWrapper *java_class_wrapper = nullptr;
 static OS_Android *os_android = nullptr;

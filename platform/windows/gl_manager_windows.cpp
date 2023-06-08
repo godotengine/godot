@@ -30,13 +30,11 @@
 
 #include "gl_manager_windows.h"
 
-#ifdef WINDOWS_ENABLED
-#ifdef GLES3_ENABLED
-
-#include <stdio.h>
-#include <stdlib.h>
+#if defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
 
 #include <dwmapi.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define WGL_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define WGL_CONTEXT_MINOR_VERSION_ARB 0x2092
@@ -345,5 +343,4 @@ GLManager_Windows::~GLManager_Windows() {
 	release_current();
 }
 
-#endif // GLES3_ENABLED
-#endif // WINDOWS
+#endif // WINDOWS_ENABLED && GLES3_ENABLED

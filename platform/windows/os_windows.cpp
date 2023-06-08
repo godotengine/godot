@@ -30,6 +30,11 @@
 
 #include "os_windows.h"
 
+#include "display_server_windows.h"
+#include "joypad_windows.h"
+#include "lang_table.h"
+#include "windows_terminal_logger.h"
+
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
@@ -37,14 +42,10 @@
 #include "drivers/unix/net_socket_posix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
-#include "joypad_windows.h"
-#include "lang_table.h"
 #include "main/main.h"
-#include "platform/windows/display_server_windows.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text_server.h"
-#include "windows_terminal_logger.h"
 
 #include <avrt.h>
 #include <bcrypt.h>

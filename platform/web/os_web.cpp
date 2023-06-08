@@ -30,21 +30,21 @@
 
 #include "os_web.h"
 
+#include "api/javascript_bridge_singleton.h"
+#include "display_server_web.h"
+#include "godot_js.h"
+
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
-#include "platform/web/display_server_web.h"
 
 #include "modules/modules_enabled.gen.h" // For websocket.
 
 #include <dlfcn.h>
 #include <emscripten.h>
 #include <stdlib.h>
-
-#include "api/javascript_bridge_singleton.h"
-#include "godot_js.h"
 
 void OS_Web::alert(const String &p_alert, const String &p_title) {
 	godot_js_display_alert(p_alert.utf8().get_data());

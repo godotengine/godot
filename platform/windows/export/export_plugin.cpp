@@ -30,14 +30,15 @@
 
 #include "export_plugin.h"
 
+#include "../logo_svg.gen.h"
+#include "../run_icon_svg.gen.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/image_loader.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/export/editor_export.h"
-#include "platform/windows/logo_svg.gen.h"
-#include "platform/windows/run_icon_svg.gen.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED

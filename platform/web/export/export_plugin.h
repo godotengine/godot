@@ -31,6 +31,8 @@
 #ifndef WEB_EXPORT_PLUGIN_H
 #define WEB_EXPORT_PLUGIN_H
 
+#include "editor_http_server.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/image_loader.h"
 #include "core/io/stream_peer_tls.h"
@@ -38,7 +40,6 @@
 #include "core/io/zip_io.h"
 #include "editor/editor_node.h"
 #include "editor/export/editor_export_platform.h"
-#include "editor_http_server.h"
 #include "main/splash.gen.h"
 
 class EditorExportPlatformWeb : public EditorExportPlatform {

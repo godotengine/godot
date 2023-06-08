@@ -30,21 +30,21 @@
 
 #include "display_server_windows.h"
 
-#include "core/io/marshalls.h"
-#include "core/math/geometry_2d.h"
-#include "main/main.h"
 #include "os_windows.h"
+
+#include "core/io/marshalls.h"
+#include "main/main.h"
 #include "scene/resources/texture.h"
+
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
 
 #include <avrt.h>
 #include <dwmapi.h>
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
-#endif
-
-#if defined(GLES3_ENABLED)
-#include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
 #if defined(__GNUC__)

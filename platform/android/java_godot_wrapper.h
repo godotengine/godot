@@ -31,12 +31,13 @@
 #ifndef JAVA_GODOT_WRAPPER_H
 #define JAVA_GODOT_WRAPPER_H
 
-#include <android/log.h>
-#include <jni.h>
-
-#include "core/templates/list.h"
 #include "java_godot_view_wrapper.h"
 #include "string_android.h"
+
+#include "core/templates/list.h"
+
+#include <android/log.h>
+#include <jni.h>
 
 // Class that makes functions in java/src/org/godotengine/godot/Godot.java callable from C++
 class GodotJavaWrapper {

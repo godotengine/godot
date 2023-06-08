@@ -30,9 +30,10 @@
 
 #include "export_plugin.h"
 
+#include "../logo_svg.gen.h"
+
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "platform/uwp/logo_svg.gen.h"
 
 #include "modules/modules_enabled.gen.h" // For svg and regex.
 #ifdef MODULE_SVG_ENABLED

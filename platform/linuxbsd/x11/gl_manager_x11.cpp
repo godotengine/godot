@@ -30,14 +30,13 @@
 
 #include "gl_manager_x11.h"
 
-#ifdef X11_ENABLED
-#if defined(GLES3_ENABLED)
+#if defined(X11_ENABLED) && defined(GLES3_ENABLED)
+
+#include "thirdparty/glad/glad/glx.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-#include "thirdparty/glad/glad/glx.h"
 
 #define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
@@ -403,5 +402,4 @@ GLManager_X11::~GLManager_X11() {
 	release_current();
 }
 
-#endif
-#endif
+#endif // X11_ENABLED && GLES3_ENABLED

@@ -31,8 +31,6 @@
 #ifndef DISPLAY_SERVER_MACOS_H
 #define DISPLAY_SERVER_MACOS_H
 
-#define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
-
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
@@ -41,9 +39,12 @@
 #endif // GLES3_ENABLED
 
 #if defined(VULKAN_ENABLED)
+#include "vulkan_context_macos.h"
+
 #include "drivers/vulkan/rendering_device_vulkan.h"
-#include "platform/macos/vulkan_context_macos.h"
 #endif // VULKAN_ENABLED
+
+#define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
 
 #import <AppKit/AppKit.h>
 #import <AppKit/NSCursor.h>
