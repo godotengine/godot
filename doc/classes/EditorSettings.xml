@@ -697,6 +697,10 @@
 		<member name="run/output/font_size" type="int" setter="" getter="">
 			The size of the font in the [b]Output[/b] panel at the bottom of the editor. This setting does not impact the font size of the script editor (see [member interface/editor/code_font_size]).
 		</member>
+		<member name="run/window_placement/android_window" type="int" setter="" getter="">
+			The Android window to display the project on when starting the project from the editor.
+			[b]Note:[/b] Only available in the Android editor.
+		</member>
 		<member name="run/window_placement/rect" type="int" setter="" getter="">
 			The window mode to use to display the project when starting the project from the editor.
 		</member>
