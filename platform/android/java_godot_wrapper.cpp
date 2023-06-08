@@ -82,6 +82,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_end_benchmark_measure = p_env->GetMethodID(godot_class, "nativeEndBenchmarkMeasure", "(Ljava/lang/String;)V");
 	_dump_benchmark = p_env->GetMethodID(godot_class, "nativeDumpBenchmark", "(Ljava/lang/String;)V");
 	_get_gdextension_list_config_file = p_env->GetMethodID(godot_class, "getGDExtensionConfigFiles", "()[Ljava/lang/String;");
+	_has_feature = p_env->GetMethodID(godot_class, "hasFeature", "(Ljava/lang/String;)Z");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -371,5 +372,17 @@ void GodotJavaWrapper::dump_benchmark(const String &benchmark_file) {
 		ERR_FAIL_NULL(env);
 		jstring j_benchmark_file = env->NewStringUTF(benchmark_file.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _dump_benchmark, j_benchmark_file);
+	}
+}
+
+bool GodotJavaWrapper::has_feature(const String &p_feature) const {
+	if (_has_feature) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+
+		jstring j_feature = env->NewStringUTF(p_feature.utf8().get_data());
+		return env->CallBooleanMethod(godot_instance, _has_feature, j_feature);
+	} else {
+		return false;
 	}
 }
