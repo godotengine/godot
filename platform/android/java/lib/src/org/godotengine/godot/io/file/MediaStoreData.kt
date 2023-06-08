@@ -283,9 +283,9 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 		}
 		if (accessFlag.shouldRemove()) {
 			//!TODO Verify.
-			// I found a call to the File.deleteOnExit() would suffice for ensuring file deletion even on exit due to exception.
-			// However, I'm not sure this is the best way to get a file instance from the dataItem
-			// I didn't find a way to get a File class instance from the already opened parcelFileDescriptor, so hopefully this works as intended.
+			// I found that a call to the File.deleteOnExit() would suffice for ensuring file deletion, even on exit due to an exception.
+			// However, I'm not sure this is the best way to get a java file instance from the dataItem struct.
+			// I didn't find a way to get a java File class instance from the already opened Andrid ParcelFileDescriptor, so hopefully this works as intended.
 			val j_uri:URI = URI(uri.toString())
 			val file:File = File(j_uri)
 			file.deleteOnExit()
