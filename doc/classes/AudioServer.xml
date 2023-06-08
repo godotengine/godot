@@ -132,7 +132,8 @@
 		<method name="get_output_latency" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the audio driver's output latency. This can be expensive, it is not recommended to call this every frame.
+				Returns the audio driver's effective output latency. This is based on [member ProjectSettings.audio/driver/output_latency], but the exact returned value will differ depending on the operating system and audio driver.
+				[b]Note:[/b] This can be expensive; it is not recommended to call [method get_output_latency] every frame.
 			</description>
 		</method>
 		<method name="get_speaker_mode" qualifiers="const">

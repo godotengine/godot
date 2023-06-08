@@ -212,6 +212,7 @@ static bool debug_avoidance = false;
 #endif
 static int max_fps = -1;
 static int frame_delay = 0;
+static int audio_output_latency = 0;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
 static MovieWriter *movie_writer = nullptr;
@@ -424,6 +425,8 @@ void Main::print_help(const char *p_binary) {
 		OS::get_singleton()->print(")");
 	}
 	OS::get_singleton()->print("].\n");
+	OS::get_singleton()->print("  --audio-output-latency <ms>       Override audio output latency in milliseconds (default is 15 ms).\n");
+	OS::get_singleton()->print("                                    Lower values make sound playback more reactive but increase CPU usage, and may result in audio cracking if the CPU can't keep up.\n");
 
 	OS::get_singleton()->print("  --rendering-method <renderer>     Renderer name. Requires driver support.\n");
 	OS::get_singleton()->print("  --rendering-driver <driver>       Rendering driver (depends on display driver).\n");
@@ -934,6 +937,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				N = I->next()->next();
 			} else {
 				OS::get_singleton()->print("Missing audio driver argument, aborting.\n");
+				goto error;
+			}
+		} else if (I->get() == "--audio-output-latency") {
+			if (I->next()) {
+				audio_output_latency = I->next()->get().to_int();
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing audio output latency argument, aborting.\n");
 				goto error;
 			}
 		} else if (I->get() == "--text-driver") {
@@ -1986,6 +1997,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Engine::get_singleton()->set_max_physics_steps_per_frame(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/max_physics_steps_per_frame", PROPERTY_HINT_RANGE, "1,100,1"), 8));
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
 	Engine::get_singleton()->set_max_fps(GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/max_fps", PROPERTY_HINT_RANGE, "0,1000,1"), 0));
+	Engine::get_singleton()->set_audio_output_latency(GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/output_latency", PROPERTY_HINT_RANGE, "1,100,1"), 15));
+	// Use a safer default output_latency for web to avoid audio cracking on low-end devices, especially mobile.
+	GLOBAL_DEF_RST("audio/driver/output_latency.web", 50);
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
 	GLOBAL_DEF("debug/settings/stdout/print_gpu_profile", false);
@@ -2005,6 +2019,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	if (frame_delay == 0) {
 		frame_delay = GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/frame_delay_msec", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), 0);
+	}
+
+	if (audio_output_latency >= 1) {
+		Engine::get_singleton()->set_audio_output_latency(audio_output_latency);
 	}
 
 	OS::get_singleton()->set_low_processor_usage_mode(GLOBAL_DEF("application/run/low_processor_mode", false));

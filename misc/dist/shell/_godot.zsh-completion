@@ -43,6 +43,7 @@ _arguments \
   '--remote-fs[use a remote filesystem]:remote filesystem address' \
   '--remote-fs-password[password for remote filesystem]:remote filesystem password' \
   '--audio-driver[set the audio driver]:audio driver name' \
+  '--audio-output-latency[override audio output latency in milliseconds (default is 15 ms)]:number of milliseconds' \
   '--display-driver[set the display driver]:display driver name' \
   "--rendering-method[set the renderer]:renderer name:((forward_plus\:'Desktop renderer' mobile\:'Desktop and mobile renderer' gl_compatibility\:'Desktop, mobile and web renderer'))" \
   "--rendering-driver[set the rendering driver]:rendering driver name:((vulkan\:'Vulkan renderer' opengl3\:'OpenGL ES 3.0 renderer' dummy\:'Dummy renderer'))" \

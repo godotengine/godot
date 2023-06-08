@@ -58,6 +58,9 @@ Password for remote filesystem.
 \fB\-\-audio\-driver\fR <driver>
 Audio driver ('PulseAudio', 'ALSA', 'Dummy').
 .TP
+\fB\-\-audio\-output\-latency\fR <ms>
+Override audio output latency in milliseconds (default is 15 ms). Lower values make sound playback more reactive but increase CPU usage, and may result in audio cracking if the CPU can't keep up.
+.TP
 \fB\-\-video\-driver\fR <driver>
 Video driver ('Vulkan', 'GLES2').
 .SS "Display options:"
