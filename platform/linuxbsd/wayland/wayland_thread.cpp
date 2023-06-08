@@ -90,18 +90,15 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 	}
 
 	if (strcmp(interface, wl_output_interface.name) == 0) {
-		// The screen listener requires a pointer for its state data. For this
-		// reason, to get one that points to a variable that can live outside of this
-		// scope, we push a default `ScreenData` in `wls->screens` and get the
-		// address of this new element.
-		ScreenData *sd = &wls->screens.push_back({})->get();
-		sd->wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, 2);
-		sd->wl_output_name = name;
-		sd->wls = wls;
+		struct wl_output *wl_output = (struct wl_output *)wl_registry_bind(wl_registry, name, &wl_output_interface, 2);
 
-		wl_proxy_tag_godot((struct wl_proxy *)sd->wl_output);
+		globals.wl_outputs.push_back(wl_output);
 
-		wl_output_add_listener(sd->wl_output, &wl_output_listener, sd);
+		ScreenState *ss = memnew(ScreenState);
+		ss->wl_output_name = name;
+
+		wl_proxy_tag_godot((struct wl_proxy *)wl_output);
+		wl_output_add_listener(wl_output, &wl_output_listener, ss);
 		return;
 	}
 
@@ -228,6 +225,7 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 		globals.wl_subcompositor_name = 0;
 		return;
 	}
+
 	if (name == globals.wl_data_device_manager_name) {
 		if (globals.wl_data_device_manager) {
 			wl_data_device_manager_destroy(globals.wl_data_device_manager);
@@ -325,16 +323,20 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 
 	{
 		// FIXME: This is a very bruteforce approach.
-		List<ScreenData>::Element *it = wls->screens.front();
+		List<struct wl_output *>::Element *it = globals.wl_outputs.front();
 		while (it) {
 			// Iterate through all of the screens to find if any got removed.
-			ScreenData &sd = it->get();
+			struct wl_output *wl_output = it->get();
+			ERR_FAIL_NULL(wl_output);
 
-			if (sd.wl_output_name == name) {
-				if (sd.wl_output) {
-					wl_output_destroy(sd.wl_output);
-				}
-				wls->screens.erase(it);
+			ScreenState *ss = wl_output_get_screen_state(wl_output);
+
+			if (ss->wl_output_name == name) {
+				globals.wl_outputs.erase(it);
+
+				memdelete(ss);
+				wl_output_destroy(wl_output);
+
 				return;
 			}
 
@@ -386,9 +388,6 @@ void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surfa
 	WindowData *wd = (WindowData *)data;
 	ERR_FAIL_NULL(wd);
 
-	ScreenData *sd = (ScreenData *)wl_output_get_user_data(wl_output);
-	ERR_FAIL_NULL(sd);
-
 	// TODO: Handle multiple outputs?
 
 	wd->wl_output = wl_output;
@@ -398,38 +397,45 @@ void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surfa
 }
 
 void DisplayServerWayland::_wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {
-	ScreenData *sd = (ScreenData *)data;
-	ERR_FAIL_NULL(sd);
+	ScreenState *ss = (ScreenState *)data;
+	ERR_FAIL_NULL(ss);
 
-	sd->position.x = x;
-	sd->position.y = y;
+	ss->pending_data.position.x = x;
 
-	sd->physical_size.width = physical_width;
-	sd->physical_size.height = physical_height;
+	ss->pending_data.position.x = x;
+	ss->pending_data.position.y = y;
 
-	sd->make.parse_utf8(make);
-	sd->model.parse_utf8(model);
+	ss->pending_data.physical_size.width = physical_width;
+	ss->pending_data.physical_size.height = physical_height;
+
+	ss->pending_data.make.parse_utf8(make);
+	ss->pending_data.model.parse_utf8(model);
 }
 
 void DisplayServerWayland::_wl_output_on_mode(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
-	ScreenData *sd = (ScreenData *)data;
-	ERR_FAIL_NULL(sd);
+	ScreenState *ss = (ScreenState *)data;
+	ERR_FAIL_NULL(ss);
 
-	sd->size.width = width;
-	sd->size.height = height;
+	ss->pending_data.size.width = width;
+	ss->pending_data.size.height = height;
 
-	sd->refresh_rate = refresh ? refresh / 1000.0f : -1;
+	ss->pending_data.refresh_rate = refresh ? refresh / 1000.0f : -1;
 }
 
 void DisplayServerWayland::_wl_output_on_done(void *data, struct wl_output *wl_output) {
-	// TODO: "Atomic" output property change handling?
+	ScreenState *ss = (ScreenState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->data = ss->pending_data;
+
+	DEBUG_LOG_WAYLAND(vformat("Output %x done.", (size_t)wl_output));
 }
 
 void DisplayServerWayland::_wl_output_on_scale(void *data, struct wl_output *wl_output, int32_t factor) {
-	ScreenData *sd = (ScreenData *)data;
-	ERR_FAIL_NULL(sd);
+	ScreenState *ss = (ScreenState *)data;
+	ERR_FAIL_NULL(ss);
 
-	sd->scale = factor;
+	ss->pending_data.scale = factor;
 
 	DEBUG_LOG_WAYLAND(vformat("Output %x scale %d", (size_t)wl_output, factor));
 }
@@ -513,10 +519,10 @@ DisplayServerWayland::WindowData *WaylandThread::wl_surface_get_window_data(stru
 	return nullptr;
 }
 
-// Returns the wl_outputs's `ScreenData`, otherwise `nullptr`.
-DisplayServerWayland::ScreenData *WaylandThread::wl_output_get_screen_data(struct wl_output *p_output) {
+// Returns the wl_outputs's `ScreenState`, otherwise `nullptr`.
+DisplayServerWayland::ScreenState *WaylandThread::wl_output_get_screen_state(struct wl_output *p_output) {
 	if (p_output && wl_proxy_is_godot((wl_proxy *)p_output)) {
-		return (ScreenData *)wl_output_get_user_data(p_output);
+		return (ScreenState *)wl_output_get_user_data(p_output);
 	}
 
 	return nullptr;
@@ -528,10 +534,16 @@ int WaylandThread::window_data_calculate_scale(WindowData *p_wd) {
 	// TODO: Handle multiple screens (eg. two screens: one scale 2, one scale 1).
 
 	// TODO: Cache value?
-	ScreenData *sd = wl_output_get_screen_data(p_wd->wl_output);
+	ScreenState *ss = wl_output_get_screen_state(p_wd->wl_output);
 
-	if (sd) {
-		return sd->scale;
+	if (ss) {
+		// NOTE: For some mystical reason, wl_output.done is emitted _after_ windows
+		// get resized but the scale event gets sent _before_ that. I'm still leaning
+		// towards the idea that rescaling when a window gets a resolution change is a
+		// pretty good approach, but this means that we'll have to use the screen data
+		// before it's "committed".
+		// FIXME: Use the commited data.
+		return ss->pending_data.scale;
 	}
 
 	return 1;
@@ -591,8 +603,8 @@ void WaylandThread::window_resize(Size2i p_size) {
 	// TODO: Use window IDs for multiwindow support.
 	WindowData &wd = wls->main_window;
 
-	ScreenData *sd = wl_output_get_screen_data(wd.wl_output);
-	ERR_FAIL_NULL(sd);
+	ScreenState *ss = wl_output_get_screen_state(wd.wl_output);
+	ERR_FAIL_NULL(ss);
 
 	int scale = window_data_calculate_scale(&wd);
 
@@ -721,6 +733,16 @@ void WaylandThread::window_request_attention() {
 		xdg_activation_token_v1_add_listener(xdg_activation_token, &xdg_activation_token_listener, &wd);
 		xdg_activation_token_v1_commit(xdg_activation_token);
 	}
+}
+
+DisplayServerWayland::ScreenData WaylandThread::screen_get_data(int p_screen) const {
+	ERR_FAIL_INDEX_V(p_screen, wls->globals.wl_outputs.size(), ScreenData());
+
+	return wl_output_get_screen_state(wls->globals.wl_outputs[p_screen])->data;
+}
+
+int WaylandThread::get_screen_count() const {
+	return wls->globals.wl_outputs.size();
 }
 
 void WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
@@ -893,10 +915,11 @@ void WaylandThread::destroy() {
 		}
 	}
 
-	for (ScreenData &screen : wls->screens) {
-		if (screen.wl_output) {
-			wl_output_destroy(screen.wl_output);
-		}
+	for (struct wl_output *wl_output : wls->globals.wl_outputs) {
+		ERR_FAIL_NULL(wl_output);
+
+		memdelete(wl_output_get_screen_state(wl_output));
+		wl_output_destroy(wl_output);
 	}
 
 	if (wls->wl_cursor_theme) {

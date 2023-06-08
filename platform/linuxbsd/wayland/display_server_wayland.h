@@ -171,6 +171,8 @@ class DisplayServerWayland : public DisplayServer {
 		struct wl_data_device_manager *wl_data_device_manager = nullptr;
 		uint32_t wl_data_device_manager_name = 0;
 
+		List<struct wl_output *> wl_outputs;
+
 		struct xdg_wm_base *xdg_wm_base = nullptr;
 		uint32_t xdg_wm_base_name = 0;
 
@@ -259,9 +261,6 @@ class DisplayServerWayland : public DisplayServer {
 	};
 
 	struct ScreenData {
-		struct wl_output *wl_output = nullptr;
-		uint32_t wl_output_name = 0;
-
 		// Geometry data.
 		Point2i position;
 
@@ -271,10 +270,15 @@ class DisplayServerWayland : public DisplayServer {
 		Size2i size;
 		Size2i physical_size;
 
-		float refresh_rate = 0;
+		float refresh_rate = -1;
 		int scale = 1;
+	};
 
-		WaylandState *wls = nullptr;
+	struct ScreenState {
+		uint32_t wl_output_name = 0;
+
+		ScreenData pending_data;
+		ScreenData data;
 	};
 
 	struct PointerData {
@@ -451,7 +455,6 @@ class DisplayServerWayland : public DisplayServer {
 		CursorShape cursor_shape = CURSOR_ARROW;
 		MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
 
-		List<ScreenData> screens;
 		List<SeatState> seats;
 
 		List<Ref<WaylandMessage>> messages;
@@ -514,7 +517,7 @@ public:
 		static void wl_proxy_tag_godot(struct wl_proxy *p_proxy);
 
 		static WindowData *wl_surface_get_window_data(struct wl_surface *p_surface);
-		static ScreenData *wl_output_get_screen_data(struct wl_output *p_output);
+		static ScreenState *wl_output_get_screen_state(struct wl_output *p_output);
 
 		static int window_data_calculate_scale(WindowData *p_wd);
 
@@ -530,6 +533,9 @@ public:
 
 		// Implemented by xdg_activiation_v1
 		void window_request_attention();
+
+		ScreenData screen_get_data(int p_screen) const;
+		int get_screen_count() const;
 
 		void init(WaylandState &p_wls);
 		void destroy();

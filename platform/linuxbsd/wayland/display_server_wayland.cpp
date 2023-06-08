@@ -2094,7 +2094,7 @@ String DisplayServerWayland::clipboard_get_primary() const {
 
 int DisplayServerWayland::get_screen_count() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
-	return wls.screens.size();
+	return wayland_thread.get_screen_count();
 }
 
 int DisplayServerWayland::get_primary_screen() const {
@@ -2110,9 +2110,7 @@ Point2i DisplayServerWayland::screen_get_position(int p_screen) const {
 		p_screen = window_get_current_screen();
 	}
 
-	ERR_FAIL_INDEX_V(p_screen, (int)wls.screens.size(), Point2i());
-
-	return wls.screens[p_screen].position;
+	return wayland_thread.screen_get_data(p_screen).position;
 }
 
 Size2i DisplayServerWayland::screen_get_size(int p_screen) const {
@@ -2122,9 +2120,7 @@ Size2i DisplayServerWayland::screen_get_size(int p_screen) const {
 		p_screen = window_get_current_screen();
 	}
 
-	ERR_FAIL_INDEX_V(p_screen, (int)wls.screens.size(), Size2i());
-
-	return wls.screens[p_screen].size;
+	return wayland_thread.screen_get_data(p_screen).size;
 }
 
 Rect2i DisplayServerWayland::screen_get_usable_rect(int p_screen) const {
@@ -2139,16 +2135,13 @@ int DisplayServerWayland::screen_get_dpi(int p_screen) const {
 		p_screen = window_get_current_screen();
 	}
 
-	// Invalid screen?
-	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);
+	const ScreenData &data = wayland_thread.screen_get_data(p_screen);
 
-	const ScreenData &sd = wls.screens[p_screen];
+	int width_mm = data.physical_size.width;
+	int height_mm = data.physical_size.height;
 
-	int width_mm = sd.physical_size.width;
-	int height_mm = sd.physical_size.height;
-
-	double xdpi = (width_mm ? sd.size.width / (double)width_mm * 25.4 : 0);
-	double ydpi = (height_mm ? sd.size.height / (double)height_mm * 25.4 : 0);
+	double xdpi = (width_mm ? data.size.width / (double)width_mm * 25.4 : 0);
+	double ydpi = (height_mm ? data.size.height / (double)height_mm * 25.4 : 0);
 
 	if (xdpi || ydpi) {
 		return (xdpi + ydpi) / (xdpi && ydpi ? 2 : 1);
@@ -2165,9 +2158,7 @@ float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
 		p_screen = window_get_current_screen();
 	}
 
-	ERR_FAIL_INDEX_V(p_screen, (int)wls.screens.size(), -1);
-
-	return wls.screens[p_screen].refresh_rate;
+	return wayland_thread.screen_get_data(p_screen).refresh_rate;
 }
 
 void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
