@@ -151,6 +151,12 @@ jobs:
         with:
           name: ${{ matrix.cache-name }}
 
+      - name: Check artifact sizes
+        uses: ./.github/actions/check-artifact-sizes
+        if: ${{ matrix.artifact }}
+        with:
+          name: ${{ matrix.cache-name }}
+
       - name: Dump Godot API
         uses: ./.github/actions/godot-api-dump
         if: ${{ matrix.api-dump }}

@@ -60,3 +60,8 @@ jobs:
 
       - name: Upload artifact
         uses: ./.github/actions/upload-artifact
+
+      - name: Check artifact sizes
+        uses: ./.github/actions/check-artifact-sizes
+        with:
+          name: ${{ matrix.cache-name }}

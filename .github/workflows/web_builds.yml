@@ -74,3 +74,8 @@ jobs:
         if: ${{ matrix.artifact }}
         with:
           name: ${{ matrix.cache-name }}
+
+      - name: Check artifact sizes
+        uses: ./.github/actions/check-artifact-sizes
+        with:
+          name: ${{ matrix.cache-name }}

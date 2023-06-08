@@ -78,6 +78,11 @@ jobs:
         with:
           name: ${{ matrix.cache-name }}
 
+      - name: Check artifact sizes
+        uses: ./.github/actions/check-artifact-sizes
+        with:
+          name: ${{ matrix.cache-name }}
+
       # Execute unit tests for the editor
       - name: Unit tests
         if: ${{ matrix.tests }}
