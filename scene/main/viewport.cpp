@@ -682,32 +682,31 @@ void Viewport::_process_picking() {
 
 	PhysicsDirectSpaceState2D *ss2d = PhysicsServer2D::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
 
-	if (physics_has_last_mousepos) {
+	bool has_mouse_event = false;
+	for (const Ref<InputEvent> &e : physics_picking_events) {
+		Ref<InputEventMouse> m = e;
+		if (m.is_valid()) {
+			has_mouse_event = true;
+			break;
+		}
+	}
+
+	if (!has_mouse_event) {
 		// If no mouse event exists, create a motion one. This is necessary because objects or camera may have moved.
 		// While this extra event is sent, it is checked if both camera and last object and last ID did not move.
 		// If nothing changed, the event is discarded to avoid flooding with unnecessary motion events every frame.
-		bool has_mouse_event = false;
-		for (const Ref<InputEvent> &m : physics_picking_events) {
-			if (m.is_valid()) {
-				has_mouse_event = true;
-				break;
-			}
-		}
+		Ref<InputEventMouseMotion> mm;
+		mm.instantiate();
 
-		if (!has_mouse_event) {
-			Ref<InputEventMouseMotion> mm;
-			mm.instantiate();
-
-			mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
-			mm->set_global_position(physics_last_mousepos);
-			mm->set_position(physics_last_mousepos);
-			mm->set_alt_pressed(physics_last_mouse_state.alt);
-			mm->set_shift_pressed(physics_last_mouse_state.shift);
-			mm->set_ctrl_pressed(physics_last_mouse_state.control);
-			mm->set_meta_pressed(physics_last_mouse_state.meta);
-			mm->set_button_mask(physics_last_mouse_state.mouse_mask);
-			physics_picking_events.push_back(mm);
-		}
+		mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
+		mm->set_position(get_mouse_position());
+		mm->set_global_position(mm->get_position());
+		mm->set_alt_pressed(Input::get_singleton()->is_key_pressed(Key::ALT));
+		mm->set_shift_pressed(Input::get_singleton()->is_key_pressed(Key::SHIFT));
+		mm->set_ctrl_pressed(Input::get_singleton()->is_key_pressed(Key::CTRL));
+		mm->set_meta_pressed(Input::get_singleton()->is_key_pressed(Key::META));
+		mm->set_button_mask(Input::get_singleton()->get_mouse_button_mask());
+		physics_picking_events.push_back(mm);
 	}
 
 	while (physics_picking_events.size()) {
@@ -722,14 +721,6 @@ void Viewport::_process_picking() {
 		if (mm.is_valid()) {
 			pos = mm->get_position();
 			is_mouse = true;
-
-			physics_has_last_mousepos = true;
-			physics_last_mousepos = pos;
-			physics_last_mouse_state.alt = mm->is_alt_pressed();
-			physics_last_mouse_state.shift = mm->is_shift_pressed();
-			physics_last_mouse_state.control = mm->is_ctrl_pressed();
-			physics_last_mouse_state.meta = mm->is_meta_pressed();
-			physics_last_mouse_state.mouse_mask = mm->get_button_mask();
 		}
 
 		Ref<InputEventMouseButton> mb = ev;
@@ -737,34 +728,6 @@ void Viewport::_process_picking() {
 		if (mb.is_valid()) {
 			pos = mb->get_position();
 			is_mouse = true;
-
-			physics_has_last_mousepos = true;
-			physics_last_mousepos = pos;
-			physics_last_mouse_state.alt = mb->is_alt_pressed();
-			physics_last_mouse_state.shift = mb->is_shift_pressed();
-			physics_last_mouse_state.control = mb->is_ctrl_pressed();
-			physics_last_mouse_state.meta = mb->is_meta_pressed();
-
-			if (mb->is_pressed()) {
-				physics_last_mouse_state.mouse_mask.set_flag(mouse_button_to_mask(mb->get_button_index()));
-			} else {
-				physics_last_mouse_state.mouse_mask.clear_flag(mouse_button_to_mask(mb->get_button_index()));
-
-				// If touch mouse raised, assume we don't know last mouse pos until new events come
-				if (mb->get_device() == InputEvent::DEVICE_ID_EMULATION) {
-					physics_has_last_mousepos = false;
-				}
-			}
-		}
-
-		Ref<InputEventKey> k = ev;
-		if (k.is_valid()) {
-			// Only for mask.
-			physics_last_mouse_state.alt = k->is_alt_pressed();
-			physics_last_mouse_state.shift = k->is_shift_pressed();
-			physics_last_mouse_state.control = k->is_ctrl_pressed();
-			physics_last_mouse_state.meta = k->is_meta_pressed();
-			continue;
 		}
 
 		Ref<InputEventScreenDrag> sd = ev;
@@ -2509,8 +2472,6 @@ void Viewport::_drop_mouse_focus() {
 }
 
 void Viewport::_drop_physics_mouseover(bool p_paused_only) {
-	physics_has_last_mousepos = false;
-
 	_cleanup_mouseover_colliders(true, p_paused_only);
 
 #ifndef _3D_DISABLED
@@ -3077,13 +3038,11 @@ void Viewport::_push_unhandled_input_internal(const Ref<InputEvent> &p_event) {
 
 	if (physics_object_picking && !is_input_handled()) {
 		if (Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED &&
-				(Object::cast_to<InputEventMouseButton>(*p_event) ||
-						Object::cast_to<InputEventMouseMotion>(*p_event) ||
+				(Object::cast_to<InputEventMouse>(*p_event) ||
 						Object::cast_to<InputEventScreenDrag>(*p_event) ||
-						Object::cast_to<InputEventScreenTouch>(*p_event) ||
-						Object::cast_to<InputEventKey>(*p_event) // To remember state.
+						Object::cast_to<InputEventScreenTouch>(*p_event)
 
-						)) {
+								)) {
 			physics_picking_events.push_back(p_event);
 			set_input_as_handled();
 		}

@@ -256,16 +256,6 @@ private:
 	Transform3D physics_last_object_transform;
 	Transform3D physics_last_camera_transform;
 	ObjectID physics_last_id;
-	bool physics_has_last_mousepos = false;
-	Vector2 physics_last_mousepos = Vector2(INFINITY, INFINITY);
-	struct {
-		bool alt = false;
-		bool control = false;
-		bool shift = false;
-		bool meta = false;
-		BitField<MouseButtonMask> mouse_mask;
-
-	} physics_last_mouse_state;
 
 	bool handle_input_locally = true;
 	bool local_input_handled = false;
