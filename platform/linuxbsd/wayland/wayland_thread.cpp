@@ -584,7 +584,7 @@ void WaylandThread::window_create() {
 	wl_surface_commit(wd.wl_surface);
 
 	// Wait for the surface to be configured before continuing.
-	wl_display_roundtrip(wls->wl_display);
+	wl_display_roundtrip(wl_display);
 }
 
 void WaylandThread::window_resize(Size2i p_size) {
@@ -749,24 +749,27 @@ void WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
 
 	KeyMappingXKB::initialize();
 
+	wl_display = wl_display_connect(nullptr);
+	ERR_FAIL_COND_MSG(!wl_display, "Can't connect to a Wayland display.");
+
+	thread_data.wl_display = wl_display;
+
 	// FIXME: Get rid of this.
-	wls = &p_wls;
-
-	wls->wl_display = wl_display_connect(nullptr);
-	thread_data.wl_display = wls->wl_display;
-
-	ERR_FAIL_COND_MSG(!wls->wl_display, "Can't connect to a Wayland display.");
+	{
+		wls = &p_wls;
+		wls->wl_display = wl_display;
+	}
 
 	events_thread.start(_poll_events_thread, &thread_data);
 
-	wls->wl_registry = wl_display_get_registry(wls->wl_display);
+	wls->wl_registry = wl_display_get_registry(wl_display);
 
 	ERR_FAIL_COND_MSG(!wls->wl_registry, "Can't obtain the Wayland registry global.");
 
 	wl_registry_add_listener(wls->wl_registry, &wl_registry_listener, wls);
 
 	// Wait for globals to get notified from the compositor.
-	wl_display_roundtrip(wls->wl_display);
+	wl_display_roundtrip(wl_display);
 
 	WaylandGlobals &globals = wls->globals;
 
@@ -796,7 +799,7 @@ void WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
 #endif // DBUS_ENABLED
 
 	// Wait for seat capabilities.
-	wl_display_roundtrip(wls->wl_display);
+	wl_display_roundtrip(wl_display);
 
 #ifdef LIBDECOR_ENABLED
 	bool libdecor_found = true;
@@ -808,7 +811,7 @@ void WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
 #endif // SOWRAP_ENABLED
 
 	if (libdecor_found) {
-		wls->libdecor_context = libdecor_new(wls->wl_display, (struct libdecor_interface *)&libdecor_interface);
+		wls->libdecor_context = libdecor_new(wl_display, (struct libdecor_interface *)&libdecor_interface);
 	} else {
 		print_verbose("libdecor not found. Client-side decorations disabled.");
 	}
@@ -816,12 +819,12 @@ void WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
 }
 
 void WaylandThread::destroy() {
-	if (wls->wl_display && events_thread.is_started()) {
+	if (wl_display && events_thread.is_started()) {
 		thread_data.thread_done.set();
 
 		// By sending a roundtrip message we're unblocking the polling thread so that
 		// it can realize that it's done and also handle every event that's left.
-		wl_display_roundtrip(wls->wl_display);
+		wl_display_roundtrip(wl_display);
 
 		events_thread.wait_to_finish();
 	}
@@ -944,8 +947,8 @@ void WaylandThread::destroy() {
 		wl_registry_destroy(wls->wl_registry);
 	}
 
-	if (wls->wl_display) {
-		wl_display_disconnect(wls->wl_display);
+	if (wl_display) {
+		wl_display_disconnect(wl_display);
 	}
 }
 

@@ -471,7 +471,7 @@ public:
 			SafeFlag thread_done;
 			Mutex mutex;
 
-			struct wl_display *wl_display;
+			struct wl_display *wl_display = nullptr;
 		};
 
 		// FIXME: Is this the right thing to do?
@@ -482,6 +482,8 @@ public:
 
 		Thread events_thread;
 		ThreadData thread_data;
+
+		struct wl_display *wl_display = nullptr;
 
 		// Main polling method.
 		static void _poll_events_thread(void *p_data);
