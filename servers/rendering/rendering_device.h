@@ -1138,19 +1138,19 @@ public:
 	/********************/
 
 	enum InitialAction {
-		INITIAL_ACTION_CLEAR, //start rendering and clear the whole framebuffer (region or not) (supply params)
-		INITIAL_ACTION_CLEAR_REGION, //start rendering and clear the framebuffer in the specified region (supply params)
-		INITIAL_ACTION_CLEAR_REGION_CONTINUE, //continue rendering and clear the framebuffer in the specified region (supply params)
-		INITIAL_ACTION_KEEP, //start rendering, but keep attached color texture contents (depth will be cleared)
-		INITIAL_ACTION_DROP, //start rendering, ignore what is there, just write above it
-		INITIAL_ACTION_CONTINUE, //continue rendering (framebuffer must have been left in "continue" state as final action previously)
+		INITIAL_ACTION_CLEAR, // Start rendering and clear the whole framebuffer.
+		INITIAL_ACTION_CLEAR_REGION, // Start rendering and clear the framebuffer in the specified region.
+		INITIAL_ACTION_CLEAR_REGION_CONTINUE, // Continue rendering and clear the framebuffer in the specified region. Framebuffer must have been left in `FINAL_ACTION_CONTINUE` state as the final action previously.
+		INITIAL_ACTION_KEEP, // Start rendering, but keep attached color texture contents. If the framebuffer was previously used to read in a shader, this will automatically insert a layout transition.
+		INITIAL_ACTION_DROP, // Start rendering, ignore what is there; write above it. In general, this is the fastest option when you will be writing every single pixel and you don't need a clear color.
+		INITIAL_ACTION_CONTINUE, // Continue rendering. Framebuffer must have been left in `FINAL_ACTION_CONTINUE` state as the final action previously.
 		INITIAL_ACTION_MAX
 	};
 
 	enum FinalAction {
-		FINAL_ACTION_READ, //will no longer render to it, allows attached textures to be read again, but depth buffer contents will be dropped (Can't be read from)
-		FINAL_ACTION_DISCARD, // discard contents after rendering
-		FINAL_ACTION_CONTINUE, //will continue rendering later, attached textures can't be read until re-bound with "finish"
+		FINAL_ACTION_READ, // Store the texture for reading and make it read-only if it has the `TEXTURE_USAGE_SAMPLING_BIT` bit (only applies to color, depth and stencil attachments).
+		FINAL_ACTION_DISCARD, // Discard the texture data and make it read-only if it has the `TEXTURE_USAGE_SAMPLING_BIT` bit (only applies to color, depth and stencil attachments).
+		FINAL_ACTION_CONTINUE, // Store the texture and continue for further processing. Similar to `FINAL_ACTION_READ`, but does not make the texture read-only if it has the `TEXTURE_USAGE_SAMPLING_BIT` bit.
 		FINAL_ACTION_MAX
 	};
 
