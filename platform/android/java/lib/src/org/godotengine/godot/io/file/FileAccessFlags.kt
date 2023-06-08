@@ -31,6 +31,17 @@
 package org.godotengine.godot.io.file
 
 /**
+ * Android representation of Godot native access flag bit fields.
+ * Reference: core/io/file_access.h
+ */
+internal enum class ModeBitFields(val nativeValue: Int) {
+    READ_FIELD(1), // r
+    WRITE_FIELD(2), // w
+    APPEND_FIELD(4), // a
+    TEMPORARY_FIELD(8), // D
+    //TEXT_FIELD(16) // t/b
+}
+/**
  * Android representation of Godot native access flags.
  */
 internal enum class FileAccessFlags(val nativeValue: Int) {
@@ -38,39 +49,85 @@ internal enum class FileAccessFlags(val nativeValue: Int) {
      * Opens the file for read operations.
      * The cursor is positioned at the beginning of the file.
      */
-    READ(1),
+    READ(ModeBitFields::READ_FIELD),
 
     /**
      * Opens the file for write operations.
      * The file is created if it does not exist, and truncated if it does.
      */
-    WRITE(2),
+    WRITE(ModeBitFields::WRITE_FIELD),
+
+    /**
+     * Opens the file for write operations.
+     * Does not truncate the file. The cursor is positioned at the end of the file.
+     */
+    APPEND(ModeBitFields::APPEND_FIELD),
 
     /**
      * Opens the file for read and write operations.
      * Does not truncate the file. The cursor is positioned at the beginning of the file.
      */
-    READ_WRITE(3),
+    READ_WRITE(ModeBitFields::READ_FIELD or ModeBitFields::APPEND_FIELD),
 
     /**
      * Opens the file for read and write operations.
      * The file is created if it does not exist, and truncated if it does.
      * The cursor is positioned at the beginning of the file.
      */
-    WRITE_READ(7);
+    WRITE_READ(ModeBitFields::WRITE_FIELD or ModeBitFields::APPEND_FIELD),
+
+    /**
+     * Opens the file for read operations. File is flagged for removal.
+     * Does not truncate the file. The cursor is positioned at the beginning of the file.
+     */
+    TEMPORARY_READ(ModeBitFields::TEMPORARY_FIELD or READ),
+
+    /**
+     * Opens the file for write operations. File is flagged for removal.
+     * The file is created if it does not exist, and truncated if it does.
+	 * The cursor is positioned at the beginning of the file.
+     */
+    TEMPORARY_WRITE = ModeBitFields::TEMPORARY_FIELD or WRITE,
+
+    /**
+     * Opens the file for write operations. File is flagged for removal.
+     * Does not truncate the file. The cursor is positioned at the end of the file.
+     */
+    TEMPORARY_APPEND = ModeBitFields::TEMPORARY_FIELD or ModeBitFields::APPEND_FIELD,
+
+    /**
+     * Opens the file for read and write operations. File is flagged for removal.
+     * Does not truncate the file. The cursor is positioned at the beginning of the file.
+     */
+    TEMPORARY_READ_WRITE = ModeBitFields::TEMPORARY_FIELD or READ_WRITE,
+
+    /**
+     * Opens the file for read and write operations. File is flagged for removal.
+     * The file is created if it does not exist, and truncated if it does.
+     * The cursor is positioned at the beginning of the file.
+     */
+    TEMPORARY_WRITE_READ = ModeBitFields::TEMPORARY_FIELD or WRITE_READ;
 
     fun getMode(): String {
         return when (this) {
-            READ -> "r"
-            WRITE -> "w"
-            READ_WRITE, WRITE_READ -> "rw"
+            READ, TEMPORARY_READ -> "r"
+            WRITE, TEMPORARY_WRITE -> "w"
+            APPEND, TEMPORARY_APPEND -> "a"
+            READ_WRITE, WRITE_READ, TEMPORARY_READ_WRITE, TEMPORARY_WRITE_READ -> "rw"
         }
     }
 
     fun shouldTruncate(): Boolean {
         return when (this) {
-            READ, READ_WRITE -> false
-            WRITE, WRITE_READ -> true
+            READ, READ_WRITE, APPEND, TEMPORARY_READ, TEMPORARY_READ_WRITE, TEMPORARY_APPEND -> false
+            WRITE, WRITE_READ, TEMPORARY_WRITE, TEMPORARY_WRITE_READ -> true
+        }
+    }
+
+    fun shouldRemove(): Boolean {
+        return when (this) {
+            READ, READ_WRITE, APPEND, WRITE, WRITE_READ -> false
+            TEMPORARY_READ, TEMPORARY_READ_WRITE, TEMPORARY_APPEND, TEMPORARY_WRITE, TEMPORARY_WRITE_READ -> true
         }
     }
 
