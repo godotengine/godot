@@ -775,6 +775,14 @@
 				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
 			</description>
 		</method>
+		<method name="keyboard_get_label_from_physical" qualifiers="const">
+			<return type="int" enum="Key" />
+			<param index="0" name="keycode" type="int" enum="Key" />
+			<description>
+				Converts a physical (US QWERTY) [param keycode] to localized label printed on the key in the active keyboard layout.
+				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
+			</description>
+		</method>
 		<method name="keyboard_get_layout_count" qualifiers="const">
 			<return type="int" />
 			<description>
