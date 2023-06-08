@@ -31,8 +31,9 @@
 #ifndef ANDROID_KEYS_UTILS_H
 #define ANDROID_KEYS_UTILS_H
 
+#include "core/os/keyboard.h"
+
 #include <android/input.h>
-#include <core/os/keyboard.h>
 
 #define AKEYCODE_MAX 0xFFFF
 

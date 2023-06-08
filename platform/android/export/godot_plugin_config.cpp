@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "godot_plugin_config.h"
+
 /*
  * Set of prebuilt plugins.
  * Currently unused, this is just for future reference:

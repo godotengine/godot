@@ -30,7 +30,7 @@
 
 #include "context_egl_uwp.h"
 
-#include "EGL/eglext.h"
+#include <EGL/eglext.h>
 
 using Platform::Exception;
 

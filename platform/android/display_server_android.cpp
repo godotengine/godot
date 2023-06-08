@@ -30,19 +30,23 @@
 
 #include "display_server_android.h"
 
-#include "core/config/project_settings.h"
 #include "java_godot_io_wrapper.h"
 #include "java_godot_wrapper.h"
 #include "os_android.h"
 #include "tts_android.h"
 
+#include "core/config/project_settings.h"
+
 #if defined(VULKAN_ENABLED)
+#include "vulkan_context_android.h"
+
 #include "drivers/vulkan/rendering_device_vulkan.h"
-#include "platform/android/vulkan/vulkan_context_android.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
+
 #ifdef GLES3_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"
+
 #include <EGL/egl.h>
 #endif
 

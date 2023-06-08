@@ -38,7 +38,6 @@
 #include "godot_window_delegate.h"
 #include "key_mapping_macos.h"
 #include "os_macos.h"
-
 #include "tts_macos.h"
 
 #include "core/config/project_settings.h"
@@ -48,13 +47,6 @@
 #include "main/main.h"
 #include "scene/resources/texture.h"
 
-#import <Carbon/Carbon.h>
-#import <Cocoa/Cocoa.h>
-#import <IOKit/IOCFPlugIn.h>
-#import <IOKit/IOKitLib.h>
-#import <IOKit/hid/IOHIDKeys.h>
-#import <IOKit/hid/IOHIDLib.h>
-
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
@@ -62,6 +54,13 @@
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
+
+#import <Carbon/Carbon.h>
+#import <Cocoa/Cocoa.h>
+#import <IOKit/IOCFPlugIn.h>
+#import <IOKit/IOKitLib.h>
+#import <IOKit/hid/IOHIDKeys.h>
+#import <IOKit/hid/IOHIDLib.h>
 
 const NSMenu *DisplayServerMacOS::_get_menu_root(const String &p_menu_root) const {
 	const NSMenu *menu = nullptr;

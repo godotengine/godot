@@ -30,12 +30,13 @@
 
 #import "godot_view.h"
 
+#import "display_layer.h"
+#import "display_server_ios.h"
+#import "godot_view_renderer.h"
+
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "core/string/ustring.h"
-#import "display_layer.h"
-#include "display_server_ios.h"
-#import "godot_view_renderer.h"
 
 #import <CoreMotion/CoreMotion.h>
 

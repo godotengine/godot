@@ -30,24 +30,23 @@
 
 #include "os_android.h"
 
+#include "dir_access_jandroid.h"
+#include "display_server_android.h"
+#include "file_access_android.h"
+#include "file_access_filesystem_jandroid.h"
+#include "java_godot_io_wrapper.h"
+#include "java_godot_wrapper.h"
+#include "net_socket_android.h"
+
 #include "core/config/project_settings.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
-#include "platform/android/display_server_android.h"
 #include "scene/main/scene_tree.h"
 #include "servers/rendering_server.h"
 
-#include "dir_access_jandroid.h"
-#include "file_access_android.h"
-#include "file_access_filesystem_jandroid.h"
-#include "net_socket_android.h"
-
 #include <dlfcn.h>
 #include <sys/system_properties.h>
-
-#include "java_godot_io_wrapper.h"
-#include "java_godot_wrapper.h"
 
 const char *OS_Android::ANDROID_EXEC_PATH = "apk";
 

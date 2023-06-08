@@ -31,6 +31,8 @@
 #ifndef IOS_EXPORT_PLUGIN_H
 #define IOS_EXPORT_PLUGIN_H
 
+#include "godot_plugin_config.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/image_loader.h"
@@ -43,10 +45,8 @@
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform.h"
 #include "main/splash.gen.h"
-#include "string.h"
 
-#include "godot_plugin_config.h"
-
+#include <string.h>
 #include <sys/stat.h>
 
 // Optional environment variables for defining confidential information. If any

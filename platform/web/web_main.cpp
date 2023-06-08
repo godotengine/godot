@@ -28,16 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "display_server_web.h"
+#include "godot_js.h"
+#include "os_web.h"
+
 #include "core/config/engine.h"
 #include "core/io/resource_loader.h"
 #include "main/main.h"
-#include "platform/web/display_server_web.h"
-#include "platform/web/os_web.h"
 
 #include <emscripten/emscripten.h>
 #include <stdlib.h>
-
-#include "godot_js.h"
 
 static OS_Web *os = nullptr;
 static uint64_t target_ticks = 0;

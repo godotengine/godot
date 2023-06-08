@@ -32,6 +32,7 @@
 
 #include "display_server_macos.h"
 #include "key_mapping_macos.h"
+
 #include "main/main.h"
 
 @implementation GodotContentLayerDelegate

@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef VULKAN_ENABLED
-
 #include "vulkan_context_android.h"
+
+#ifdef VULKAN_ENABLED
 
 #ifdef USE_VOLK
 #include <volk.h>

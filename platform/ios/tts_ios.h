@@ -31,17 +31,17 @@
 #ifndef TTS_IOS_H
 #define TTS_IOS_H
 
-#if __has_include(<AVFAudio/AVSpeechSynthesis.h>)
-#import <AVFAudio/AVSpeechSynthesis.h>
-#else
-#import <AVFoundation/AVFoundation.h>
-#endif
-
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/variant/array.h"
 #include "servers/display_server.h"
+
+#if __has_include(<AVFAudio/AVSpeechSynthesis.h>)
+#import <AVFAudio/AVSpeechSynthesis.h>
+#else
+#import <AVFoundation/AVFoundation.h>
+#endif
 
 @interface TTS_IOS : NSObject <AVSpeechSynthesizerDelegate> {
 	bool speaking;

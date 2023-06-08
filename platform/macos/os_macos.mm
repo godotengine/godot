@@ -30,15 +30,15 @@
 
 #include "os_macos.h"
 
-#include "core/crypto/crypto_core.h"
-#include "core/version_generated.gen.h"
-#include "main/main.h"
-
 #include "dir_access_macos.h"
 #include "display_server_macos.h"
 #include "godot_application.h"
 #include "godot_application_delegate.h"
 #include "macos_terminal_logger.h"
+
+#include "core/crypto/crypto_core.h"
+#include "core/version_generated.gen.h"
+#include "main/main.h"
 
 #include <dlfcn.h>
 #include <libproc.h>

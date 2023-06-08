@@ -31,8 +31,10 @@
 #ifndef STRING_ANDROID_H
 #define STRING_ANDROID_H
 
-#include "core/string/ustring.h"
 #include "thread_jandroid.h"
+
+#include "core/string/ustring.h"
+
 #include <jni.h>
 
 /**
