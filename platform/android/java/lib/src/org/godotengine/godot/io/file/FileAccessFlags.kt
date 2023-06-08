@@ -40,7 +40,7 @@ internal enum class ModeBitFields {
     APPEND_FIELD(4), // a
     TEMPORARY_FIELD(8); // D
     //TEXT_FIELD(16); // t/b
-    private final int field;
+    private final int field = 0;
     public ModeBitFields(int value) {
         this.field = value;
     }
