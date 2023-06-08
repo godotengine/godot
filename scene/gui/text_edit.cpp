@@ -1598,7 +1598,7 @@ void TextEdit::_notification(int p_what) {
 			if (is_drag_successful()) {
 				if (selection_drag_attempt) {
 					selection_drag_attempt = false;
-					if (is_editable() && !Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+					if (is_editable() && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 						delete_selection();
 					} else if (deselect_on_focus_loss_enabled) {
 						deselect();
@@ -2049,7 +2049,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		// Allow unicode handling if:
 		// * No modifiers are pressed (except Shift and CapsLock)
-		bool allow_unicode_handling = !(k->is_command_or_control_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
+		bool allow_unicode_handling = !(k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
 		// Check and handle all built-in shortcuts.
 
@@ -3077,13 +3077,13 @@ void TextEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 		int caret_column_tmp = pos.x;
 		if (selection_drag_attempt) {
 			selection_drag_attempt = false;
-			if (!is_mouse_over_selection(!Input::get_singleton()->is_key_pressed(Key::CTRL))) {
+			if (!is_mouse_over_selection(!Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL))) {
 				// Set caret back at selection for undo / redo.
 				set_caret_line(get_selection_to_line(), false, false);
 				set_caret_column(get_selection_to_column());
 
 				begin_complex_operation();
-				if (!Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+				if (!Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 					if (caret_row_tmp > get_selection_to_line()) {
 						caret_row_tmp = caret_row_tmp - (get_selection_to_line() - get_selection_from_line());
 					} else if (caret_row_tmp == get_selection_to_line() && caret_column_tmp >= get_selection_to_column()) {

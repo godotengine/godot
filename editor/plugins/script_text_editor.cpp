@@ -1747,7 +1747,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		Array files = d["files"];
 
 		String text_to_drop;
-		bool preload = Input::get_singleton()->is_key_pressed(Key::CTRL);
+		bool preload = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 		for (int i = 0; i < files.size(); i++) {
 			if (i > 0) {
 				text_to_drop += ", ";
@@ -1787,7 +1787,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		Array nodes = d["nodes"];
 		String text_to_drop;
 
-		if (Input::get_singleton()->is_key_pressed(Key::CTRL)) {
+		if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 			bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
 			for (int i = 0; i < nodes.size(); i++) {
 				NodePath np = nodes[i];
