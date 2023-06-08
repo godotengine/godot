@@ -87,26 +87,26 @@ internal enum class FileAccessFlags(val nativeValue: Int) {
      * The file is created if it does not exist, and truncated if it does.
 	 * The cursor is positioned at the beginning of the file.
      */
-    TEMPORARY_WRITE = ModeBitFields::TEMPORARY_FIELD or WRITE,
+    TEMPORARY_WRITE(ModeBitFields::TEMPORARY_FIELD or WRITE),
 
     /**
      * Opens the file for write operations. File is flagged for removal.
      * Does not truncate the file. The cursor is positioned at the end of the file.
      */
-    TEMPORARY_APPEND = ModeBitFields::TEMPORARY_FIELD or ModeBitFields::APPEND_FIELD,
+    TEMPORARY_APPEND(ModeBitFields::TEMPORARY_FIELD or ModeBitFields::APPEND_FIELD),
 
     /**
      * Opens the file for read and write operations. File is flagged for removal.
      * Does not truncate the file. The cursor is positioned at the beginning of the file.
      */
-    TEMPORARY_READ_WRITE = ModeBitFields::TEMPORARY_FIELD or READ_WRITE,
+    TEMPORARY_READ_WRITE(ModeBitFields::TEMPORARY_FIELD or READ_WRITE),
 
     /**
      * Opens the file for read and write operations. File is flagged for removal.
      * The file is created if it does not exist, and truncated if it does.
      * The cursor is positioned at the beginning of the file.
      */
-    TEMPORARY_WRITE_READ = ModeBitFields::TEMPORARY_FIELD or WRITE_READ;
+    TEMPORARY_WRITE_READ(ModeBitFields::TEMPORARY_FIELD or WRITE_READ);
 
     fun getMode(): String {
         return when (this) {
