@@ -315,11 +315,11 @@ void test_euler_conversion() {
 	}
 }
 
-void check_test(std::string test_case_name, bool condition) {
+void check_test(const char *test_case_name, bool condition) {
 	if (!condition) {
-		OS::get_singleton()->print("FAILED - %s\n", test_case_name.c_str());
+		OS::get_singleton()->print("FAILED - %s\n", test_case_name);
 	} else {
-		OS::get_singleton()->print("PASSED - %s\n", test_case_name.c_str());
+		OS::get_singleton()->print("PASSED - %s\n", test_case_name);
 	}
 }
 
