@@ -114,7 +114,7 @@ internal enum class FileAccessFlags(val nativeValue: Int) {
         return when (this) {
             READ, TEMPORARY_READ -> "r"
             WRITE, TEMPORARY_WRITE -> "w"
-            APPEND, TEMPORARY_APPEND -> "a"
+            APPEND, TEMPORARY_APPEND -> "wa"
             READ_WRITE, WRITE_READ, TEMPORARY_READ_WRITE, TEMPORARY_WRITE_READ -> "rw"
         }
     }
