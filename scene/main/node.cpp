@@ -1439,11 +1439,11 @@ void Node::remove_child(Node *p_child) {
 	bool success = data.children.erase(p_child->data.name);
 	ERR_FAIL_COND_MSG(!success, "Children name does not match parent name in hashtable, this is a bug.");
 
-	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
-	emit_signal(SNAME("child_order_changed"));
-
 	p_child->data.parent = nullptr;
 	p_child->data.index = -1;
+
+	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
+	emit_signal(SNAME("child_order_changed"));
 
 	if (data.inside_tree) {
 		p_child->_propagate_after_exit_tree();
