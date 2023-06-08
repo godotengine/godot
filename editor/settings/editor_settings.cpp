@@ -423,7 +423,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			}
 
 			lang_hint += ";";
-			const String lang_name = TranslationServer::get_singleton()->get_locale_name(locale);
+			const String lang_name = TranslationServer::get_singleton()->get_native_locale_name(locale);
 			lang_hint += vformat("%s/[%s] %s", locale, locale, lang_name);
 
 			int score = TranslationServer::get_singleton()->compare_locales(host_lang, locale);

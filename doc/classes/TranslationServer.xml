@@ -78,7 +78,7 @@
 			<return type="String" />
 			<param index="0" name="language" type="String" />
 			<description>
-				Returns a readable language name for the [param language] code.
+				Returns a readable language name in English for the [param language] code. For example, [code]"fr"[/code] returns [code]"French"[/code]. In English, all language names start with an uppercase character. See also [method get_native_locale_name], which should be preferred for displaying a list of languages the user can choose from.
 			</description>
 		</method>
 		<method name="get_loaded_locales" qualifiers="const">
@@ -98,7 +98,14 @@
 			<return type="String" />
 			<param index="0" name="locale" type="String" />
 			<description>
-				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
+				Returns a locale's language and its variant in English (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]). See also [method get_native_locale_name], which should be preferred for displaying a list of languages the user can choose from.
+			</description>
+		</method>
+		<method name="get_native_locale_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="locale" type="String" />
+			<description>
+				Returns a locale's language and its variant in the same language (e.g. [code]"fr_BE"[/code] would return [code]"français (Belgique)"[/code]). This is preferred when displaying a list of languages the user can choose from (as they may not understand English language names). See also [method get_locale_name].
 			</description>
 		</method>
 		<method name="get_or_add_domain">
