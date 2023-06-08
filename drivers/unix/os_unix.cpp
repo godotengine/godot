@@ -743,6 +743,9 @@ String OS_Unix::get_temporary_dir() const {
 #endif
 	}
 	r.parse_utf8(ret);
+	if (!DirAccess::exists(r)) {
+		return OS::get_temporary_dir();
+	}
 	return r;
 }
 
