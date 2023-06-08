@@ -280,5 +280,13 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 		if (accessFlag.shouldTruncate()) {
 			fileChannel.truncate(0)
 		}
+		if (accessFlag.shouldRemove()) {
+			//!TODO Verify.
+			// I found a call to the File.deleteOnExit() would suffice for ensuring file deletion even on exception.
+			// However, I'm not sure this is the best way to get a file instance from the dataItem
+			// I didn't find a way to get a File class instance from the already opened parcelFileDescriptor, so hopefully this works as intended.
+			val file:File = File(uri)
+			file.deleteOnExit()
+		}
 	}
 }
