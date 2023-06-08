@@ -40,13 +40,13 @@ internal enum class ModeBitFields {
     APPEND_FIELD(4), // a
     TEMPORARY_FIELD(8); // D
     //TEXT_FIELD(16); // t/b
-	private final Int field;
-	public ModeBitFields(Int value) {
+    private final int field;
+    public ModeBitFields(int value) {
         this.field = value;
     }
-	public Int integer() {
-		return this.field;
-	}
+    public int integer() {
+        return this.field;
+    }
 }
 /**
  * Android representation of Godot native access flags.
