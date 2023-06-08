@@ -240,8 +240,8 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 		val contentResolver = context.contentResolver
 		val dataItems = queryByPath(context, filePath)
 
-		val dataItem = when (accessFlag) {
-			FileAccessFlags.READ -> {
+		val dataItem = when (accessFlag.shouldCreate()) {
+			false -> {
 				// The file should already exist
 				if (dataItems.isEmpty()) {
 					throw FileNotFoundException("Unable to access file $filePath")
@@ -251,7 +251,7 @@ internal class MediaStoreData(context: Context, filePath: String, accessFlag: Fi
 				dataItem
 			}
 
-			FileAccessFlags.WRITE, FileAccessFlags.READ_WRITE, FileAccessFlags.WRITE_READ -> {
+			true -> {
 				// Create the file if it doesn't exist
 				val dataItem = if (dataItems.isEmpty()) {
 					addFile(context, filePath)

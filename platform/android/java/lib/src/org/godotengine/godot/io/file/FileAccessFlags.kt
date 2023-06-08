@@ -59,7 +59,8 @@ internal enum class FileAccessFlags(val nativeValue: Int) {
 
     /**
      * Opens the file for write operations.
-     * Does not truncate the file. The cursor is positioned at the end of the file.
+     * The file is created if it does not exist, but does not truncate if it does.
+     * The cursor is positioned at the end of the file.
      */
     APPEND(ModeBitFields.APPEND_FIELD.nativeValue),
 
@@ -91,7 +92,8 @@ internal enum class FileAccessFlags(val nativeValue: Int) {
 
     /**
      * Opens the file for write operations. File is flagged for removal.
-     * Does not truncate the file. The cursor is positioned at the end of the file.
+     * The file is created if it does not exist, but does not truncate if it does.
+     * The cursor is positioned at the end of the file.
      */
     TEMPORARY_APPEND(ModeBitFields.TEMPORARY_FIELD.nativeValue or ModeBitFields.APPEND_FIELD.nativeValue),
 
@@ -121,6 +123,13 @@ internal enum class FileAccessFlags(val nativeValue: Int) {
         return when (this) {
             READ, READ_WRITE, APPEND, TEMPORARY_READ, TEMPORARY_READ_WRITE, TEMPORARY_APPEND -> false
             WRITE, WRITE_READ, TEMPORARY_WRITE, TEMPORARY_WRITE_READ -> true
+        }
+    }
+
+    fun shouldCreate(): Boolean {
+        return when (this) {
+            READ, TEMPORARY_READ  -> false
+            READ_WRITE, APPEND, TEMPORARY_READ_WRITE, TEMPORARY_APPEND, WRITE, WRITE_READ, TEMPORARY_WRITE, TEMPORARY_WRITE_READ -> true
         }
     }
 
