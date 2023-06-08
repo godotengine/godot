@@ -937,7 +937,6 @@ public:
 	};
 
 	InstanceCullResult scene_cull_result;
-	LocalVector<InstanceCullResult> scene_cull_result_threads;
 
 	RendererSceneRender::RenderShadowData render_shadow_data[MAX_UPDATE_SHADOWS];
 	uint32_t max_shadows_used = 0;
@@ -1048,8 +1047,6 @@ public:
 
 		} sdfgi;
 
-		SpinLock lock;
-
 		Frustum frustum;
 	} cull;
 
@@ -1078,7 +1075,6 @@ public:
 		uint64_t visibility_viewport_mask;
 	};
 
-	void _scene_cull_threaded(uint32_t p_thread, CullData *cull_data);
 	void _scene_cull(CullData &cull_data, InstanceCullResult &cull_result, uint64_t p_from, uint64_t p_to);
 	_FORCE_INLINE_ bool _visibility_parent_check(const CullData &p_cull_data, const InstanceData &p_instance_data);
 

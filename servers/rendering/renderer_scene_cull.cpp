@@ -2686,15 +2686,6 @@ bool RendererSceneCull::_visibility_parent_check(const CullData &p_cull_data, co
 	return ((parent_flags & InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK) == InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE) || (parent_flags & InstanceData::FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN);
 }
 
-void RendererSceneCull::_scene_cull_threaded(uint32_t p_thread, CullData *cull_data) {
-	uint32_t cull_total = cull_data->scenario->instance_data.size();
-	uint32_t total_threads = WorkerThreadPool::get_singleton()->get_thread_count();
-	uint32_t cull_from = p_thread * cull_total / total_threads;
-	uint32_t cull_to = (p_thread + 1 == total_threads) ? cull_total : ((p_thread + 1) * cull_total / total_threads);
-
-	_scene_cull(*cull_data, scene_cull_result_threads[p_thread], cull_from, cull_to);
-}
-
 void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cull_result, uint64_t p_from, uint64_t p_to) {
 	uint64_t frame_number = RSG::rasterizer->get_frame_number();
 	float lightmap_probe_update_speed = RSG::light_storage->lightmap_get_probe_capture_update_speed() * RSG::rasterizer->get_frame_delta_time();
@@ -2728,7 +2719,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 	keep_instances.resize(p_to - p_from);
 	SafeNumeric<uint64_t> num_keep;
 
-	for (uint64_t i = p_from; i < p_to; i++) {
+	for_range(p_from, p_to, true, SNAME("RenderCullInstances"), [&](const int i) {
 		KeepInstance keep_instance;
 
 		InstanceData &idata = cull_data.scenario->instance_data[i];
@@ -2761,7 +2752,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 		if (keep_instance.data) {
 			keep_instances[num_keep.postincrement()] = keep_instance;
 		}
-	}
+	});
 
 	keep_instances.resize(num_keep.get());
 	//printf("%lu -> %lu\n", p_to - p_from, num_keep.get());
@@ -2795,12 +2786,11 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 						if ((idata.flags & InstanceData::FLAG_REFLECTION_PROBE_DIRTY) || RSG::light_storage->reflection_probe_instance_needs_redraw(RID::from_uint64(idata.instance_data_rid))) {
 							InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(idata.instance->base_data);
-							cull_data.cull->lock.lock();
+
 							if (!reflection_probe->update_list.in_list()) {
 								reflection_probe->render_step = 0;
 								reflection_probe_render_list.add_last(&reflection_probe->update_list);
 							}
-							cull_data.cull->lock.unlock();
 
 							idata.flags &= ~uint32_t(InstanceData::FLAG_REFLECTION_PROBE_DIRTY);
 						}
@@ -2814,11 +2804,11 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 				} else if (base_type == RS::INSTANCE_VOXEL_GI) {
 					InstanceVoxelGIData *voxel_gi = static_cast<InstanceVoxelGIData *>(idata.instance->base_data);
-					cull_data.cull->lock.lock();
+
 					if (!voxel_gi->update_element.in_list()) {
 						voxel_gi_update_list.add(&voxel_gi->update_element);
 					}
-					cull_data.cull->lock.unlock();
+
 					cull_result.voxel_gi_instances.push_back(RID::from_uint64(idata.instance_data_rid));
 
 				} else if (base_type == RS::INSTANCE_LIGHTMAP) {
@@ -2849,9 +2839,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 							//but if nothing is going on, don't do it.
 							keep = false;
 						} else {
-							cull_data.cull->lock.lock();
 							RSG::particles_storage->particles_request_process(idata.base_rid);
-							cull_data.cull->lock.unlock();
 							RSG::particles_storage->particles_set_view_axis(idata.base_rid, -cull_data.cam_transform.basis.get_column(2).normalized(), cull_data.cam_transform.basis.get_column(1).normalized());
 							//particles visible? request redraw
 							RenderingServerDefault::redraw_request();
@@ -2889,9 +2877,8 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 
 						ERR_FAIL_NULL(geom->geometry_instance);
-						cull_data.cull->lock.lock();
+
 						geom->geometry_instance->set_softshadow_projector_pairing(geom->softshadow_count > 0, geom->projector_count > 0);
-						cull_data.cull->lock.unlock();
 						idata.flags &= ~uint32_t(InstanceData::FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY);
 					}
 
@@ -2958,9 +2945,8 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 							sh[j] = sh[j].lerp(target_sh[j], MIN(1.0, lightmap_probe_update_speed));
 						}
 						ERR_FAIL_NULL(geom->geometry_instance);
-						cull_data.cull->lock.lock();
+
 						geom->geometry_instance->set_lightmap_capture(sh);
-						cull_data.cull->lock.unlock();
 						idata.instance->last_frame_pass = frame_number;
 					}
 
@@ -3147,21 +3133,11 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 #endif
 		if (cull_to > thread_cull_threshold) {
 			//multiple threads
-			for (InstanceCullResult &thread : scene_cull_result_threads) {
-				thread.clear();
-			}
 
-			WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RendererSceneCull::_scene_cull_threaded, &cull_data, scene_cull_result_threads.size(), -1, true, SNAME("RenderCullInstances"));
-			WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
-
-			for (InstanceCullResult &thread : scene_cull_result_threads) {
-				scene_cull_result.append_from(thread);
-			}
-
-		} else {
-			//single threaded
-			_scene_cull(cull_data, scene_cull_result, cull_from, cull_to);
+			//this empty block temporarily left behind to avoid merge conflicts
 		}
+
+		_scene_cull(cull_data, scene_cull_result, cull_from, cull_to);
 
 #ifdef DEBUG_CULL_TIME
 		static float time_avg = 0;
@@ -4184,10 +4160,6 @@ RendererSceneCull::RendererSceneCull() {
 	}
 
 	scene_cull_result.init(&rid_cull_page_pool, &geometry_instance_cull_page_pool, &instance_cull_page_pool);
-	scene_cull_result_threads.resize(WorkerThreadPool::get_singleton()->get_thread_count());
-	for (InstanceCullResult &thread : scene_cull_result_threads) {
-		thread.init(&rid_cull_page_pool, &geometry_instance_cull_page_pool, &instance_cull_page_pool);
-	}
 
 	indexer_update_iterations = GLOBAL_GET("rendering/limits/spatial_indexer/update_iterations_per_frame");
 	thread_cull_threshold = GLOBAL_GET("rendering/limits/spatial_indexer/threaded_cull_minimum_instances");
@@ -4214,10 +4186,6 @@ RendererSceneCull::~RendererSceneCull() {
 	}
 
 	scene_cull_result.reset();
-	for (InstanceCullResult &thread : scene_cull_result_threads) {
-		thread.reset();
-	}
-	scene_cull_result_threads.clear();
 
 	if (dummy_occlusion_culling) {
 		memdelete(dummy_occlusion_culling);
