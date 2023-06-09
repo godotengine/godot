@@ -2060,6 +2060,25 @@ error:
 	return exit_code;
 }
 
+Error _parse_resource_dummy(void *p_data, VariantParser::Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str) {
+	VariantParser::Token token;
+	VariantParser::get_token(p_stream, token, line, r_err_str);
+	if (token.type != VariantParser::TK_NUMBER && token.type != VariantParser::TK_STRING) {
+		r_err_str = "Expected number (old style sub-resource index) or String (ext-resource ID)";
+		return ERR_PARSE_ERROR;
+	}
+
+	r_res.unref();
+
+	VariantParser::get_token(p_stream, token, line, r_err_str);
+	if (token.type != VariantParser::TK_PARENTHESIS_CLOSE) {
+		r_err_str = "Expected ')'";
+		return ERR_PARSE_ERROR;
+	}
+
+	return OK;
+}
+
 Error Main::setup2() {
 	Thread::make_main_thread(); // Make whatever thread call this the main thread.
 	set_current_thread_safe_for_nodes(true);
@@ -2107,12 +2126,16 @@ Error Main::setup2() {
 					int lines = 0;
 					String error_text;
 
+					VariantParser::ResourceParser rp_new;
+					rp_new.ext_func = _parse_resource_dummy;
+					rp_new.sub_func = _parse_resource_dummy;
+
 					while (true) {
 						assign = Variant();
 						next_tag.fields.clear();
 						next_tag.name = String();
 
-						err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
+						err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp_new, true);
 						if (err == ERR_FILE_EOF) {
 							break;
 						}
