@@ -905,11 +905,16 @@ void SceneTree::_process_group(ProcessGroup *p_group, bool p_physics) {
 		return;
 	}
 
-	bool &node_order_dirty = p_physics ? p_group->physics_node_order_dirty : p_group->node_order_dirty;
-
-	if (node_order_dirty) {
-		nodes.sort_custom<Node::ComparatorWithPhysicsPriority>();
-		node_order_dirty = false;
+	if (p_physics) {
+		if (p_group->physics_node_order_dirty) {
+			nodes.sort_custom<Node::ComparatorWithPhysicsPriority>();
+			p_group->physics_node_order_dirty = false;
+		}
+	} else {
+		if (p_group->node_order_dirty) {
+			nodes.sort_custom<Node::ComparatorWithPriority>();
+			p_group->node_order_dirty = false;
+		}
 	}
 
 	// Make a copy, so if nodes are added/removed from process, this does not break
