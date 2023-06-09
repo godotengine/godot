@@ -800,17 +800,7 @@ public:
 		return *_class_name_ptr;
 	}
 
-	_FORCE_INLINE_ const StringName &get_class_name_for_extension(const GDExtension *p_library) const {
-		// Only return the class name per the extension if it matches the given p_library.
-		if (_extension && _extension->library == p_library) {
-			return _extension->class_name;
-		}
-		// Otherwise, return the name of the built-in class.
-		if (unlikely(!_class_name_ptr)) {
-			return *_get_class_namev();
-		}
-		return *_class_name_ptr;
-	}
+	StringName get_class_name_for_extension(const GDExtension *p_library) const;
 
 	/* IAPI */
 
