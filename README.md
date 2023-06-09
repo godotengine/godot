@@ -16,6 +16,7 @@ To make the best game engine for small open world games, we made tweaks that's
 ideal or good
 
 ## Tweaks
+
 These are tweaks i implemented
 
 - 100k maximum camera far distance
@@ -28,6 +29,8 @@ These are tweaks i implemented
 ## WIP
 
 It may be unfinished, broken, or not compile property
+
+![](titanium.png)
 
 # Godot Engine
 
