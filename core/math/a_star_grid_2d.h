@@ -64,6 +64,8 @@ private:
 	bool dirty = false;
 
 	bool jumping_enabled = false;
+	bool wrapping_x_enabled = false;
+	bool wrapping_y_enabled = false;
 	DiagonalMode diagonal_mode = DIAGONAL_MODE_ALWAYS;
 	Heuristic default_compute_heuristic = HEURISTIC_EUCLIDEAN;
 	Heuristic default_estimate_heuristic = HEURISTIC_EUCLIDEAN;
@@ -74,6 +76,7 @@ private:
 		bool solid = false;
 		Vector2 pos;
 		real_t weight_scale = 1.0;
+		real_t wrapping_weight_scale = 1.0;
 
 		// Used for pathfinding.
 		Point *prev_point = nullptr;
@@ -162,6 +165,12 @@ public:
 	void set_jumping_enabled(bool p_enabled);
 	bool is_jumping_enabled() const;
 
+	void set_wrapping_x_enabled(bool p_enabled);
+	bool is_wrapping_x_enabled() const;
+
+	void set_wrapping_y_enabled(bool p_enabled);
+	bool is_wrapping_y_enabled() const;
+
 	void set_diagonal_mode(DiagonalMode p_diagonal_mode);
 	DiagonalMode get_diagonal_mode() const;
 
@@ -176,6 +185,9 @@ public:
 
 	void set_point_weight_scale(const Vector2i &p_id, real_t p_weight_scale);
 	real_t get_point_weight_scale(const Vector2i &p_id) const;
+
+	void set_point_wrapping_weight_scale(const Vector2i &p_id, real_t p_wrapping_weight_scale);
+	real_t get_point_wrapping_weight_scale(const Vector2i &p_id) const;
 
 	void clear();
 

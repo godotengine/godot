@@ -34,32 +34,23 @@
 
 #define GET_POINT_UNCHECKED(m_id) points[m_id.y - region.position.y][m_id.x - region.position.x]
 
-static real_t heuristic_euclidian(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
-	return (real_t)Math::sqrt(dx * dx + dy * dy);
+static real_t heuristic_euclidian(real_t p_dx, real_t p_dy) {
+	return (real_t)Math::sqrt(p_dx * p_dx + p_dy * p_dy);
 }
 
-static real_t heuristic_manhattan(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
-	return dx + dy;
+static real_t heuristic_manhattan(real_t p_dx, real_t p_dy) {
+	return p_dx + p_dy;
 }
 
-static real_t heuristic_octile(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
-	real_t F = Math_SQRT2 - 1;
-	return (dx < dy) ? F * dx + dy : F * dy + dx;
+static real_t heuristic_octile(real_t p_dx, real_t p_dy) {
+	return (p_dx < p_dy) ? (Math_SQRT2 - 1) * p_dx + p_dy : (Math_SQRT2 - 1) * p_dy + p_dx;
 }
 
-static real_t heuristic_chebyshev(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
-	return MAX(dx, dy);
+static real_t heuristic_chebyshev(real_t p_dx, real_t p_dy) {
+	return MAX(p_dx, p_dy);
 }
 
-static real_t (*heuristics[AStarGrid2D::HEURISTIC_MAX])(const Vector2i &, const Vector2i &) = { heuristic_euclidian, heuristic_manhattan, heuristic_octile, heuristic_chebyshev };
+static real_t (*heuristics[AStarGrid2D::HEURISTIC_MAX])(real_t, real_t) = { heuristic_euclidian, heuristic_manhattan, heuristic_octile, heuristic_chebyshev };
 
 void AStarGrid2D::set_region(const Rect2i &p_region) {
 	ERR_FAIL_COND(p_region.size.x < 0 || p_region.size.y < 0);
@@ -142,6 +133,22 @@ bool AStarGrid2D::is_jumping_enabled() const {
 	return jumping_enabled;
 }
 
+void AStarGrid2D::set_wrapping_x_enabled(bool p_enabled) {
+	wrapping_x_enabled = p_enabled;
+}
+
+bool AStarGrid2D::is_wrapping_x_enabled() const {
+	return wrapping_x_enabled;
+}
+
+void AStarGrid2D::set_wrapping_y_enabled(bool p_enabled) {
+	wrapping_y_enabled = p_enabled;
+}
+
+bool AStarGrid2D::is_wrapping_y_enabled() const {
+	return wrapping_y_enabled;
+}
+
 void AStarGrid2D::set_diagonal_mode(DiagonalMode p_diagonal_mode) {
 	ERR_FAIL_INDEX((int)p_diagonal_mode, (int)DIAGONAL_MODE_MAX);
 	diagonal_mode = p_diagonal_mode;
@@ -192,6 +199,19 @@ real_t AStarGrid2D::get_point_weight_scale(const Vector2i &p_id) const {
 	ERR_FAIL_COND_V_MSG(dirty, 0, "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), 0, vformat("Can't get point's weight scale. Point %s out of bounds %s.", p_id, region));
 	return GET_POINT_UNCHECKED(p_id).weight_scale;
+}
+
+void AStarGrid2D::set_point_wrapping_weight_scale(const Vector2i &p_id, real_t p_wrapping_weight_scale) {
+	ERR_FAIL_COND_MSG(dirty, "Grid is not initialized. Call the update method.");
+	ERR_FAIL_COND_MSG(!is_in_boundsv(p_id), vformat("Can't set point's wrapping weight scale. Point %s out of bounds %s.", p_id, region));
+	ERR_FAIL_COND_MSG(p_wrapping_weight_scale < 0.0, vformat("Can't set point's wrapping weight scale less than 0.0: %f.", p_wrapping_weight_scale));
+	GET_POINT_UNCHECKED(p_id).wrapping_weight_scale = p_wrapping_weight_scale;
+}
+
+real_t AStarGrid2D::get_point_wrapping_weight_scale(const Vector2i &p_id) const {
+	ERR_FAIL_COND_V_MSG(dirty, 0, "Grid is not initialized. Call the update method.");
+	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), 0, vformat("Can't get point's wrapping weight scale. Point %s out of bounds %s.", p_id, region));
+	return GET_POINT_UNCHECKED(p_id).wrapping_weight_scale;
 }
 
 AStarGrid2D::Point *AStarGrid2D::_jump(Point *p_from, Point *p_to) {
@@ -302,30 +322,76 @@ void AStarGrid2D::_get_nbors(Point *p_point, LocalVector<Point *> &r_nbors) {
 		bool has_left = false;
 		bool has_right = false;
 
-		if (p_point->id.x - 1 >= region.position.x) {
-			left = _get_point_unchecked(p_point->id.x - 1, p_point->id.y);
+		int current_x = p_point->id.x;
+		int current_y = p_point->id.y;
+		int left_x = 0;
+		int right_x = 0;
+		int limit_x_begin = region.position.x;
+		int limit_y_begin = region.position.y;
+		int limit_x_end = region.position.x + region.size.width;
+		int limit_y_end = region.position.y + region.size.height;
+
+		if (wrapping_x_enabled) {
+			left_x = Math::wrapi(current_x - 1, limit_x_begin, limit_x_end);
+			right_x = Math::wrapi(current_x + 1, limit_x_begin, limit_x_end);
+
+			left = _get_point_unchecked(left_x, current_y);
+			right = _get_point_unchecked(right_x, current_y);
+
 			has_left = true;
-		}
-		if (p_point->id.x + 1 < region.position.x + region.size.width) {
-			right = _get_point_unchecked(p_point->id.x + 1, p_point->id.y);
 			has_right = true;
+		} else {
+			left_x = current_x - 1;
+			right_x = current_x + 1;
+
+			if (left_x >= limit_x_begin) {
+				left = _get_point_unchecked(left_x, current_y);
+				has_left = true;
+			}
+			if (right_x < limit_x_end) {
+				right = _get_point_unchecked(right_x, current_y);
+				has_right = true;
+			}
 		}
-		if (p_point->id.y - 1 >= region.position.y) {
-			top = _get_point_unchecked(p_point->id.x, p_point->id.y - 1);
+
+		if (wrapping_y_enabled) {
+			int top_y = Math::wrapi(current_y - 1, limit_y_begin, limit_y_end);
+			int bottom_y = Math::wrapi(current_y + 1, limit_y_begin, limit_y_end);
+
+			top = _get_point_unchecked(current_x, top_y);
+			bottom = _get_point_unchecked(current_x, bottom_y);
+
 			if (has_left) {
-				top_left = _get_point_unchecked(p_point->id.x - 1, p_point->id.y - 1);
+				top_left = _get_point_unchecked(left_x, top_y);
+				bottom_left = _get_point_unchecked(left_x, bottom_y);
 			}
 			if (has_right) {
-				top_right = _get_point_unchecked(p_point->id.x + 1, p_point->id.y - 1);
+				top_right = _get_point_unchecked(right_x, top_y);
+				bottom_right = _get_point_unchecked(right_x, bottom_y);
 			}
-		}
-		if (p_point->id.y + 1 < region.position.y + region.size.height) {
-			bottom = _get_point_unchecked(p_point->id.x, p_point->id.y + 1);
-			if (has_left) {
-				bottom_left = _get_point_unchecked(p_point->id.x - 1, p_point->id.y + 1);
+		} else {
+			int top_y = current_y - 1;
+			int bottom_y = current_y + 1;
+
+			if (top_y >= limit_y_begin) {
+				top = _get_point_unchecked(current_x, top_y);
+
+				if (has_left) {
+					top_left = _get_point_unchecked(left_x, top_y);
+				}
+				if (has_right) {
+					top_right = _get_point_unchecked(right_x, top_y);
+				}
 			}
-			if (has_right) {
-				bottom_right = _get_point_unchecked(p_point->id.x + 1, p_point->id.y + 1);
+			if (bottom_y < limit_y_end) {
+				bottom = _get_point_unchecked(current_x, bottom_y);
+
+				if (has_left) {
+					bottom_left = _get_point_unchecked(left_x, bottom_y);
+				}
+				if (has_right) {
+					bottom_right = _get_point_unchecked(right_x, bottom_y);
+				}
 			}
 		}
 	}
@@ -422,7 +488,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 			real_t weight_scale = 1.0;
 
 			if (jumping_enabled) {
-				// TODO: Make it works with weight_scale.
+				// TODO: Make it works with weight_scale and wrapping.
 				e = _jump(p, e);
 				if (!e || e->closed_pass == pass) {
 					continue;
@@ -465,7 +531,18 @@ real_t AStarGrid2D::_estimate_cost(const Vector2i &p_from_id, const Vector2i &p_
 	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
 		return scost;
 	}
-	return heuristics[default_estimate_heuristic](p_from_id, p_to_id);
+
+	real_t dx = (real_t)ABS(p_to_id.x - p_from_id.x);
+	real_t dy = (real_t)ABS(p_to_id.y - p_from_id.y);
+
+	if (wrapping_x_enabled) {
+		dx = MIN(dx, region.size.x - dx);
+	}
+	if (wrapping_y_enabled) {
+		dy = MIN(dy, region.size.y - dy);
+	}
+
+	return heuristics[default_estimate_heuristic](dx, dy);
 }
 
 real_t AStarGrid2D::_compute_cost(const Vector2i &p_from_id, const Vector2i &p_to_id) {
@@ -473,7 +550,29 @@ real_t AStarGrid2D::_compute_cost(const Vector2i &p_from_id, const Vector2i &p_t
 	if (GDVIRTUAL_CALL(_compute_cost, p_from_id, p_to_id, scost)) {
 		return scost;
 	}
-	return heuristics[default_compute_heuristic](p_from_id, p_to_id);
+
+	real_t dx = (real_t)ABS(p_to_id.x - p_from_id.x);
+	real_t dy = (real_t)ABS(p_to_id.y - p_from_id.y);
+	real_t wrapping_weight_scale = 1.0;
+
+	if (wrapping_x_enabled) {
+		real_t pre_dx = dx;
+		dx = MIN(dx, region.size.x - dx);
+
+		if (!Math::is_equal_approx(pre_dx, dx)) {
+			wrapping_weight_scale = GET_POINT_UNCHECKED(p_to_id).wrapping_weight_scale;
+		}
+	}
+	if (wrapping_y_enabled) {
+		real_t pre_dy = dy;
+		dy = MIN(dy, region.size.y - dy);
+
+		if (!Math::is_equal_approx(pre_dy, dy)) {
+			wrapping_weight_scale = GET_POINT_UNCHECKED(p_to_id).wrapping_weight_scale;
+		}
+	}
+
+	return heuristics[default_compute_heuristic](dx, dy) * wrapping_weight_scale;
 }
 
 void AStarGrid2D::clear() {
@@ -596,6 +695,10 @@ void AStarGrid2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update"), &AStarGrid2D::update);
 	ClassDB::bind_method(D_METHOD("set_jumping_enabled", "enabled"), &AStarGrid2D::set_jumping_enabled);
 	ClassDB::bind_method(D_METHOD("is_jumping_enabled"), &AStarGrid2D::is_jumping_enabled);
+	ClassDB::bind_method(D_METHOD("set_wrapping_x_enabled", "enabled"), &AStarGrid2D::set_wrapping_x_enabled);
+	ClassDB::bind_method(D_METHOD("is_wrapping_x_enabled"), &AStarGrid2D::is_wrapping_x_enabled);
+	ClassDB::bind_method(D_METHOD("set_wrapping_y_enabled", "enabled"), &AStarGrid2D::set_wrapping_y_enabled);
+	ClassDB::bind_method(D_METHOD("is_wrapping_y_enabled"), &AStarGrid2D::is_wrapping_y_enabled);
 	ClassDB::bind_method(D_METHOD("set_diagonal_mode", "mode"), &AStarGrid2D::set_diagonal_mode);
 	ClassDB::bind_method(D_METHOD("get_diagonal_mode"), &AStarGrid2D::get_diagonal_mode);
 	ClassDB::bind_method(D_METHOD("set_default_compute_heuristic", "heuristic"), &AStarGrid2D::set_default_compute_heuristic);
@@ -606,6 +709,8 @@ void AStarGrid2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_point_solid", "id"), &AStarGrid2D::is_point_solid);
 	ClassDB::bind_method(D_METHOD("set_point_weight_scale", "id", "weight_scale"), &AStarGrid2D::set_point_weight_scale);
 	ClassDB::bind_method(D_METHOD("get_point_weight_scale", "id"), &AStarGrid2D::get_point_weight_scale);
+	ClassDB::bind_method(D_METHOD("set_point_wrapping_weight_scale", "id", "wrapping_weight_scale"), &AStarGrid2D::set_point_wrapping_weight_scale);
+	ClassDB::bind_method(D_METHOD("get_point_wrapping_weight_scale", "id"), &AStarGrid2D::get_point_wrapping_weight_scale);
 	ClassDB::bind_method(D_METHOD("clear"), &AStarGrid2D::clear);
 
 	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStarGrid2D::get_point_position);
@@ -621,6 +726,8 @@ void AStarGrid2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "cell_size"), "set_cell_size", "get_cell_size");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "jumping_enabled"), "set_jumping_enabled", "is_jumping_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrapping_x_enabled"), "set_wrapping_x_enabled", "is_wrapping_x_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrapping_y_enabled"), "set_wrapping_y_enabled", "is_wrapping_y_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_compute_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev"), "set_default_compute_heuristic", "get_default_compute_heuristic");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_estimate_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev"), "set_default_estimate_heuristic", "get_default_estimate_heuristic");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "diagonal_mode", PROPERTY_HINT_ENUM, "Never,Always,At Least One Walkable,Only If No Obstacles"), "set_diagonal_mode", "get_diagonal_mode");
