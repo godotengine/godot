@@ -776,6 +776,9 @@ void Window::set_visible(bool p_visible) {
 	} else {
 		if (visible) {
 			embedder = embedder_vp;
+			if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
+				position = (embedder->get_visible_rect().size - size) / 2;
+			}
 			embedder->_sub_window_register(this);
 			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
 		} else {
@@ -1163,6 +1166,9 @@ void Window::_notification(int p_what) {
 			if (embedded) {
 				// Create as embedded.
 				if (embedder) {
+					if (initial_position != WINDOW_INITIAL_POSITION_ABSOLUTE) {
+						position = (embedder->get_visible_rect().size - size) / 2;
+					}
 					embedder->_sub_window_register(this);
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
 					_update_window_size();
