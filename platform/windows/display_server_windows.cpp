@@ -835,9 +835,12 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 		SetFocus(wd.hWnd); // Set keyboard focus.
 	} else if (wd.minimized) {
 		ShowWindow(wd.hWnd, SW_SHOWMINIMIZED);
-	} else if (wd.no_focus || wd.is_popup) {
+	} else if (wd.no_focus) {
 		// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
 		ShowWindow(wd.hWnd, SW_SHOWNA);
+	} else if (wd.is_popup) {
+		ShowWindow(wd.hWnd, SW_SHOWNA);
+		SetFocus(wd.hWnd); // Set keyboard focus.
 	} else {
 		ShowWindow(wd.hWnd, SW_SHOW);
 		SetForegroundWindow(wd.hWnd); // Slightly higher priority.
