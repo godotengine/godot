@@ -733,7 +733,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 					break;
 				}
 
-				if (at == "Texture2D" && Ref<Image>(dropped_resource).is_valid()) {
+				if (at == "ImageTexture" && Ref<Image>(dropped_resource).is_valid()) {
 					Ref<ImageTexture> texture = edited_resource;
 					if (!texture.is_valid()) {
 						texture.instantiate();
