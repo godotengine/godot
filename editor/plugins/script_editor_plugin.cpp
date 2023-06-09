@@ -343,6 +343,10 @@ ScriptEditorBase *ScriptEditor::_get_current_editor() const {
 	return Object::cast_to<ScriptEditorBase>(tab_container->get_child(selected));
 }
 
+Control *ScriptEditor::_get_base_editor() const {
+	return Object::cast_to<ScriptTextEditor>(_get_current_editor())->get_code_editor_text_edit();
+}
+
 void ScriptEditor::_update_history_arrows() {
 	script_back->set_disabled(history_pos <= 0);
 	script_forward->set_disabled(history_pos >= history.size() - 1);
@@ -3235,6 +3239,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_open_scripts"), &ScriptEditor::_get_open_scripts);
 	ClassDB::bind_method(D_METHOD("open_script_create_dialog", "base_name", "base_path"), &ScriptEditor::open_script_create_dialog);
 	ClassDB::bind_method(D_METHOD("reload_scripts"), &ScriptEditor::reload_scripts);
+	ClassDB::bind_method(D_METHOD("get_base_editor"), &ScriptEditor::_get_base_editor);
 
 	ADD_SIGNAL(MethodInfo("editor_script_changed", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));
 	ADD_SIGNAL(MethodInfo("script_close", PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script")));

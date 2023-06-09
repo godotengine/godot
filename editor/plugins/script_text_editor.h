@@ -236,6 +236,7 @@ public:
 	virtual void set_debugger_active(bool p_active);
 
 	Control *get_edit_menu();
+	Control *get_code_editor_text_edit();
 	virtual void clear_edit_menu();
 	static void register_editor();
 
