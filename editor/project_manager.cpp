@@ -1147,6 +1147,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		main_vbox->add_child(title_hb);
 
 		project_title = memnew(Label);
+		project_title->set_auto_translate(false);
 		project_title->set_name("ProjectName");
 		project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		project_title->set_clip_text(true);
@@ -3279,6 +3280,7 @@ ProjectTag::ProjectTag(const String &p_text, bool p_display_close) {
 
 	button = memnew(Button);
 	add_child(button);
+	button->set_auto_translate(false);
 	button->set_text(p_text.capitalize());
 	button->set_focus_mode(FOCUS_NONE);
 	button->set_icon_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
