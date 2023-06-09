@@ -308,7 +308,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum, bool p_is
 	bool can_ref = !p_type.contains("*") || is_enum_type;
 
 	String link_t = p_type; // For links in metadata
-	String display_t = link_t; // For display purposes
+	String display_t; // For display purposes.
 	if (is_enum_type) {
 		link_t = p_enum; // The link for enums is always the full enum description
 		display_t = _contextualize_class_specifier(p_enum, edited_class);

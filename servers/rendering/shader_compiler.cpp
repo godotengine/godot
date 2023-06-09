@@ -909,7 +909,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[vnode->name];
 					if (u.texture_order >= 0) {
-						StringName name = vnode->name;
+						StringName name;
 						if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
 							name = "color_buffer";
 							if (u.filter >= ShaderLanguage::FILTER_NEAREST_MIPMAP) {
