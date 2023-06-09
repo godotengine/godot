@@ -860,7 +860,7 @@ void CurveEdit::_redraw() {
 		const Color selected_point_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 
 		// Draw tangents if not dragging a point, or if holding a point without having moved it yet.
-		if (grabbing == GRAB_NONE || (grabbing != GRAB_NONE && (initial_grab_pos == point_pos || selected_tangent_index != TANGENT_NONE))) {
+		if (grabbing == GRAB_NONE || initial_grab_pos == point_pos || selected_tangent_index != TANGENT_NONE) {
 			const Color selected_tangent_color = get_theme_color(SNAME("accent_color"), SNAME("Editor")).darkened(0.25);
 			const Color tangent_color = get_theme_color(SNAME("font_color"), SNAME("Editor")).darkened(0.25);
 

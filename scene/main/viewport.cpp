@@ -370,7 +370,6 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 		SubWindow sw = gui.sub_windows[index];
 		gui.sub_windows.remove_at(index);
 		gui.sub_windows.push_back(sw);
-		index = gui.sub_windows.size() - 1;
 		_sub_window_update_order();
 		return;
 	}
@@ -1758,6 +1757,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					gui.drag_attempted = false;
 				}
 			}
+			DEV_ASSERT(gui.mouse_focus);
 
 			mb = mb->xformed_by(Transform2D()); // Make a copy of the event.
 
@@ -1765,7 +1765,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			mb->set_position(pos);
 
 #ifdef DEBUG_ENABLED
-			if (EngineDebugger::get_singleton() && gui.mouse_focus) {
+			if (EngineDebugger::get_singleton()) {
 				Array arr;
 				arr.push_back(gui.mouse_focus->get_path());
 				arr.push_back(gui.mouse_focus->get_class());
@@ -1798,10 +1798,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 			}
 
-			bool stopped = false;
-			if (gui.mouse_focus && gui.mouse_focus->can_process()) {
-				stopped = _gui_call_input(gui.mouse_focus, mb);
-			}
+			bool stopped = gui.mouse_focus->can_process() && _gui_call_input(gui.mouse_focus, mb);
 
 			if (stopped) {
 				set_input_as_handled();
@@ -1839,11 +1836,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.forced_mouse_focus = false;
 			}
 
-			bool stopped = false;
-			if (mouse_focus && mouse_focus->can_process()) {
-				stopped = _gui_call_input(mouse_focus, mb);
-			}
-
+			bool stopped = mouse_focus && mouse_focus->can_process() && _gui_call_input(mouse_focus, mb);
 			if (stopped) {
 				set_input_as_handled();
 			}
@@ -2002,11 +1995,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			ds_cursor_shape = (DisplayServer::CursorShape)cursor_shape;
 
-			bool stopped = false;
-			if (over && over->can_process()) {
-				stopped = _gui_call_input(over, mm);
-			}
-
+			bool stopped = over->can_process() && _gui_call_input(over, mm);
 			if (stopped) {
 				set_input_as_handled();
 			}
