@@ -35,13 +35,13 @@
 #include <stdio.h>
 
 // For export templates, add a section; the exporter will patch it to enclose
-// the data appended to the executable (bundled PCK)
+// the data appended to the executable (bundled TitanPack)
 #ifndef TOOLS_ENABLED
 #if defined _MSC_VER
-#pragma section("pck", read)
-__declspec(allocate("pck")) static char dummy[8] = { 0 };
+#pragma section("titanpack", read)
+__declspec(allocate("titanpack")) static char dummy[8] = { 0 };
 
-// Dummy function to prevent LTO from discarding "pck" section.
+// Dummy function to prevent LTO from discarding "titanpack" section.
 extern "C" char *__cdecl pck_section_dummy_call() {
 	return &dummy[0];
 };
@@ -52,7 +52,7 @@ extern "C" char *__cdecl pck_section_dummy_call() {
 #endif
 
 #elif defined __GNUC__
-static const char dummy[8] __attribute__((section("pck"), used)) = { 0 };
+static const char dummy[8] __attribute__((section("titanpack"), used)) = { 0 };
 #endif
 #endif
 

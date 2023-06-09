@@ -190,7 +190,7 @@ private:
 		}
 
 		if (mode == MODE_IMPORT || mode == MODE_RENAME) {
-			if (!valid_path.is_empty() && !d->file_exists("project.godot")) {
+			if (!valid_path.is_empty() && !d->file_exists("project.titan")) {
 				if (valid_path.ends_with(".zip")) {
 					Ref<FileAccess> io_fa;
 					zlib_filefunc_def io = zipio_create_io(&io_fa);
@@ -212,7 +212,7 @@ private:
 							break;
 						}
 
-						if (String::utf8(fname).ends_with("project.godot")) {
+						if (String::utf8(fname).ends_with("project.titan")) {
 							break;
 						}
 
@@ -220,7 +220,7 @@ private:
 					}
 
 					if (ret == UNZ_END_OF_LIST_OF_FILE) {
-						set_message(TTR("Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."), MESSAGE_ERROR);
+						set_message(TTR("Invalid \".zip\" project file; it doesn't contain a \"project.titan\" file."), MESSAGE_ERROR);
 						get_ok_button()->set_disabled(true);
 						unzClose(pkg);
 						return "";
@@ -252,14 +252,14 @@ private:
 					}
 
 				} else {
-					set_message(TTR("Please choose a \"project.godot\" or \".zip\" file."), MESSAGE_ERROR);
+					set_message(TTR("Please choose a \"project.titan\" or \".zip\" file."), MESSAGE_ERROR);
 					install_path_container->hide();
 					get_ok_button()->set_disabled(true);
 					return "";
 				}
 
 			} else if (valid_path.ends_with("zip")) {
-				set_message(TTR("This directory already contains a Godot project."), MESSAGE_ERROR, INSTALL_PATH);
+				set_message(TTR("This directory already contains a Titanium project."), MESSAGE_ERROR, INSTALL_PATH);
 				get_ok_button()->set_disabled(true);
 				return "";
 			}
@@ -329,7 +329,7 @@ private:
 	void _file_selected(const String &p_path) {
 		String p = p_path;
 		if (mode == MODE_IMPORT) {
-			if (p.ends_with("project.godot")) {
+			if (p.ends_with("project.titan")) {
 				p = p.get_base_dir();
 				install_path_container->hide();
 				get_ok_button()->set_disabled(false);
@@ -338,7 +338,7 @@ private:
 				install_path_container->show();
 				get_ok_button()->set_disabled(false);
 			} else {
-				set_message(TTR("Please choose a \"project.godot\" or \".zip\" file."), MESSAGE_ERROR);
+				set_message(TTR("Please choose a \"project.titan\" or \".zip\" file."), MESSAGE_ERROR);
 				get_ok_button()->set_disabled(true);
 				return;
 			}
@@ -374,7 +374,7 @@ private:
 		if (mode == MODE_IMPORT) {
 			fdialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 			fdialog->clear_filters();
-			fdialog->add_filter("project.godot", vformat("%s %s", VERSION_NAME, TTR("Project")));
+			fdialog->add_filter("project.titan", vformat("%s %s", VERSION_NAME, TTR("Project")));
 			fdialog->add_filter("*.zip", TTR("ZIP File"));
 		} else {
 			fdialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
@@ -474,9 +474,9 @@ private:
 				return;
 			}
 
-			// Load project.godot as ConfigFile to set the new name.
+			// Load project.titan as ConfigFile to set the new name.
 			ConfigFile cfg;
-			String project_godot = dir2.path_join("project.godot");
+			String project_godot = dir2.path_join("project.titan");
 			Error err = cfg.load(project_godot);
 			if (err != OK) {
 				set_message(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err), MESSAGE_ERROR);
@@ -543,8 +543,8 @@ private:
 					initial_settings["application/config/name"] = project_name->get_text().strip_edges();
 					initial_settings["application/config/icon"] = "res://icon.svg";
 
-					if (ProjectSettings::get_singleton()->save_custom(dir.path_join("project.godot"), initial_settings, Vector<String>(), false) != OK) {
-						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
+					if (ProjectSettings::get_singleton()->save_custom(dir.path_join("project.titan"), initial_settings, Vector<String>(), false) != OK) {
+						set_message(TTR("Couldn't create project.titan in project path."), MESSAGE_ERROR);
 					} else {
 						// Store default project icon in SVG format.
 						Error err;
@@ -582,8 +582,8 @@ private:
 						unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 						String name = String::utf8(fname);
-						if (name.ends_with("project.godot")) {
-							zip_root = name.substr(0, name.rfind("project.godot"));
+						if (name.ends_with("project.titan")) {
+							zip_root = name.substr(0, name.rfind("project.titan"));
 							break;
 						}
 
@@ -741,9 +741,9 @@ public:
 			default_files_container->hide();
 			get_ok_button()->set_disabled(false);
 
-			// Fetch current name from project.godot to prefill the text input.
+			// Fetch current name from project.titan to prefill the text input.
 			ConfigFile cfg;
-			String project_godot = project_path->get_text().path_join("project.godot");
+			String project_godot = project_path->get_text().path_join("project.titan");
 			Error err = cfg.load(project_godot);
 			if (err != OK) {
 				set_message(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err), MESSAGE_ERROR);
@@ -1263,7 +1263,7 @@ void ProjectList::load_project_icon(int p_index) {
 
 // Load project data from p_property_key and return it in a ProjectList::Item. p_favorite is passed directly into the Item.
 ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_favorite) {
-	String conf = p_path.path_join("project.godot");
+	String conf = p_path.path_join("project.titan");
 	bool grayed = false;
 	bool missing = false;
 
@@ -1295,7 +1295,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	uint64_t last_edited = 0;
 	if (cf_err == OK) {
 		// The modification date marks the date the project was last edited.
-		// This is because the `project.godot` file will always be modified
+		// This is because the `project.titan` file will always be modified
 		// when editing a project (but not when running it).
 		last_edited = FileAccess::get_modified_time(conf);
 
@@ -1422,7 +1422,7 @@ void ProjectList::_global_menu_open_project(const Variant &p_tag) {
 	int idx = (int)p_tag;
 
 	if (idx >= 0 && idx < _projects.size()) {
-		String conf = _projects[idx].path.path_join("project.godot");
+		String conf = _projects[idx].path.path_join("project.titan");
 		List<String> args;
 		args.push_back(conf);
 		OS::get_singleton()->create_instance(args);
@@ -2220,7 +2220,7 @@ void ProjectManager::_open_selected_projects() {
 	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();
 
 	for (const String &path : selected_list) {
-		String conf = path.path_join("project.godot");
+		String conf = path.path_join("project.titan");
 
 		if (!FileAccess::exists(conf)) {
 			dialog_error->set_text(vformat(TTR("Can't open project at '%s'."), path));
@@ -2283,7 +2283,7 @@ void ProjectManager::_open_selected_projects_ask() {
 
 	// Check if the config_version property was empty or 0.
 	if (config_version == 0) {
-		ask_update_settings->set_text(vformat(TTR("The selected project \"%s\" does not specify its supported Godot version in its configuration file (\"project.godot\").\n\nProject path: %s\n\nIf you proceed with opening it, it will be converted to Godot's current configuration file format.\n\nWarning: You won't be able to open the project with previous versions of the engine anymore."), project.project_name, project.path));
+		ask_update_settings->set_text(vformat(TTR("The selected project \"%s\" does not specify its supported Titanium/Godot version in its configuration file (\"project.titan\").\n\nProject path: %s\n\nIf you proceed with opening it, it will be converted to Titanium's current configuration file format.\n\nWarning: You won't be able to open the project with previous versions of the engine anymore."), project.project_name, project.path));
 		ask_update_settings->popup_centered(popup_min_size);
 		return;
 	}
@@ -2291,11 +2291,11 @@ void ProjectManager::_open_selected_projects_ask() {
 	if (config_version < ProjectSettings::CONFIG_VERSION) {
 		if (config_version == GODOT4_CONFIG_VERSION - 1 && ProjectSettings::CONFIG_VERSION == GODOT4_CONFIG_VERSION) { // Conversion from Godot 3 to 4.
 			full_convert_button->show();
-			ask_update_settings->set_text(vformat(TTR("The selected project \"%s\" was generated by Godot 3.x, and needs to be converted for Godot 4.x.\n\nProject path: %s\n\nYou have three options:\n- Convert only the configuration file (\"project.godot\"). Use this to open the project without attempting to convert its scenes, resources and scripts.\n- Convert the entire project including its scenes, resources and scripts (recommended if you are upgrading).\n- Do nothing and go back.\n\nWarning: If you select a conversion option, you won't be able to open the project with previous versions of the engine anymore."), project.project_name, project.path));
-			ask_update_settings->get_ok_button()->set_text(TTR("Convert project.godot Only"));
+			ask_update_settings->set_text(vformat(TTR("The selected project \"%s\" was generated by Godot 3.x, and needs to be converted for Titanium 1.x.\n\nProject path: %s\n\nYou have three options:\n- Convert only the configuration file (\"project.titan\"). Use this to open the project without attempting to convert its scenes, resources and scripts.\n- Convert the entire project including its scenes, resources and scripts (recommended if you are upgrading).\n- Do nothing and go back.\n\nWarning: If you select a conversion option, you won't be able to open the project with previous versions of the engine anymore."), project.project_name, project.path));
+			ask_update_settings->get_ok_button()->set_text(TTR("Convert project.titan Only"));
 		} else {
 			ask_update_settings->set_text(vformat(TTR("The selected project \"%s\" was generated by an older engine version, and needs to be converted for this version.\n\nProject path: %s\n\nDo you want to convert it?\n\nWarning: You won't be able to open the project with previous versions of the engine anymore."), project.project_name, project.path));
-			ask_update_settings->get_ok_button()->set_text(TTR("Convert project.godot"));
+			ask_update_settings->get_ok_button()->set_text(TTR("Convert project.titan"));
 		}
 		ask_update_settings->popup_centered(popup_min_size);
 		ask_update_settings->get_cancel_button()->grab_focus(); // To prevent accidents.
@@ -2359,9 +2359,11 @@ void ProjectManager::_perform_full_project_conversion() {
 
 	Ref<ConfigFile> cf;
 	cf.instantiate();
-	cf->load(path.path_join("project.godot"));
+	cf->load(path.path_join("project.titan"));
 	cf->set_value("", "config_version", GODOT4_CONFIG_VERSION);
-	cf->save(path.path_join("project.godot"));
+	cf->save(path.path_join("project.titan"));
+	Ref<DirAccess> file;
+	file->remove(path.path_join("project.titan"));
 	_project_list->set_project_version(path, GODOT4_CONFIG_VERSION);
 
 	List<String> args;
@@ -2433,7 +2435,7 @@ void ProjectManager::_scan_dir(const String &path) {
 	while (!n.is_empty()) {
 		if (da->current_is_dir() && !n.begins_with(".")) {
 			_scan_dir(da->get_current_dir().path_join(n));
-		} else if (n == "project.godot") {
+		} else if (n == "project.titan") {
 			_project_list->add_project(da->get_current_dir(), false);
 		}
 		n = da->get_next();
@@ -2562,7 +2564,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 				dir->list_dir_begin();
 				String file = dir->get_next();
 				while (confirm && !file.is_empty()) {
-					if (!dir->current_is_dir() && file.ends_with("project.godot")) {
+					if (!dir->current_is_dir() && file.ends_with("project.titan")) {
 						confirm = false;
 					}
 					file = dir->get_next();

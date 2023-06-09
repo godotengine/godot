@@ -2130,9 +2130,9 @@ msgstr "Șablonul personalizat de lansare nu a fost găsit."
 msgid "Template file not found: \"%s\"."
 msgstr "Fișierul șablonului nu a fost găsit: \"%s\"."
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
 msgstr ""
-"La exporturile pe 32 de biți PCK-ul încorporat nu poate fi mai mare de 4 GiB."
+"La exporturile pe 32 de biți TitanPack-ul încorporat nu poate fi mai mare de 4 GiB."
 
 msgid "Error requesting URL:"
 msgstr "Eroare la solicitarea URL:"

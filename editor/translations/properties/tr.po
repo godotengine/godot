@@ -1234,8 +1234,8 @@ msgstr "Yayınlamak"
 msgid "Binary Format"
 msgstr "Binary Biçimi"
 
-msgid "Embed PCK"
-msgstr "PCK'yi Yerleştir"
+msgid "Embed TitanPack"
+msgstr "TitanPack'yi Yerleştir"
 
 msgid "Texture Format"
 msgstr "Doku Biçimi"

@@ -2238,8 +2238,8 @@ msgstr ""
 msgid "Encryption Key (256-bits as hexadecimal):"
 msgstr "Ключ за шифроване (256 бита, в шестнадесетичен формат):"
 
-msgid "Export PCK/ZIP..."
-msgstr "Изнасяне на PCK/ZIP…"
+msgid "Export TitanPack/ZIP..."
+msgstr "Изнасяне на TitanPack/ZIP…"
 
 msgid "Export Project..."
 msgstr "Изнасяне на проекта…"
@@ -4860,15 +4860,15 @@ msgid "Error opening package file (it's not in ZIP format)."
 msgstr "Грешка при отваряне на пакета (не е във формат ZIP)."
 
 msgid ""
-"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
+"Invalid \".zip\" project file; it doesn't contain a \"project.titan\" file."
 msgstr ""
-"Неправилен проектен файл „.zip“. В него не се съдържа файл „project.godot“."
+"Неправилен проектен файл „.zip“. В него не се съдържа файл „project.titan“."
 
 msgid "Please choose an empty folder."
 msgstr "Моля, изберете празна папка."
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Моля, изберете файл от тип „project.godot“ или „.zip“."
+msgid "Please choose a \"project.titan\" or \".zip\" file."
+msgstr "Моля, изберете файл от тип „project.titan“ или „.zip“."
 
 msgid "This directory already contains a Godot project."
 msgstr "Тази папка вече съдържа проект на Godot."
@@ -5008,8 +5008,8 @@ msgstr "Изтриване на елемента"
 msgid "(All)"
 msgstr "(Всички)"
 
-msgid "Project Settings (project.godot)"
-msgstr "Настройки на проекта (project.godot)"
+msgid "Project Settings (project.titan)"
+msgstr "Настройки на проекта (project.titan)"
 
 msgid "Plugins"
 msgstr "Приставки"

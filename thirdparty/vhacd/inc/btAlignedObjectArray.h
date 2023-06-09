@@ -52,7 +52,7 @@ class btAlignedObjectArray {
     int32_t m_size;
     int32_t m_capacity;
     T* m_data;
-    //PCK: added this line
+    //TitanPack: added this line
     bool m_ownsMemory;
 
 #ifdef BT_ALLOW_ARRAY_COPY_OPERATOR
@@ -85,7 +85,7 @@ protected:
 
     SIMD_FORCE_INLINE void init()
     {
-        //PCK: added this line
+        //TitanPack: added this line
         m_ownsMemory = true;
         m_data = 0;
         m_size = 0;
@@ -109,7 +109,7 @@ protected:
     SIMD_FORCE_INLINE void deallocate()
     {
         if (m_data) {
-            //PCK: enclosed the deallocation in this block
+            //TitanPack: enclosed the deallocation in this block
             if (m_ownsMemory) {
                 m_allocator.deallocate(m_data);
             }
@@ -272,7 +272,7 @@ public:
 
             deallocate();
 
-            //PCK: added this line
+            //TitanPack: added this line
             m_ownsMemory = true;
 
             m_data = s;
@@ -431,7 +431,7 @@ public:
         }
     }
 
-    //PCK: whole function
+    //TitanPack: whole function
     void initializeFromBuffer(void* buffer, int32_t size, int32_t capacity)
     {
         clear();

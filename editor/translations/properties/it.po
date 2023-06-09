@@ -1197,8 +1197,8 @@ msgstr "Rilascio"
 msgid "Binary Format"
 msgstr "Formato Binario"
 
-msgid "Embed PCK"
-msgstr "Incorpora PCK"
+msgid "Embed TitanPack"
+msgstr "Incorpora TitanPack"
 
 msgid "Texture Format"
 msgstr "Formato Texture"

@@ -72,7 +72,7 @@ namespace GodotTools.Internals
             else if (!slnParentDir.StartsWith("res://"))
                 slnParentDir = "res://" + slnParentDir;
 
-            // The csproj should be in the same folder as project.godot.
+            // The csproj should be in the same folder as project.titan.
             string csprojParentDir = "res://";
 
             _projectSlnPath = Path.Combine(ProjectSettings.GlobalizePath(slnParentDir),

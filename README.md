@@ -1,3 +1,33 @@
+# Titanium
+
+<p align="center">
+  <a href="https://gibasstudio.github.io/titanium.html">
+    <img src="logo.svg" width="400" alt="Titanium logo">
+  </a>
+</p>
+
+## Godot Engine: Silver Edition
+
+**[Titanium](https://gibasstudio.github.io/titanium.html) is a modified Godot Engine designed for small open-world games.**
+The name is based on radioactive element No. 22
+
+To make the best game engine for small open-world games, we made tweaks that's
+ideal or good
+
+## Tweaks
+These are tweaks i implemented
+
+- 100k maximum camera far distance
+- Logarithmic Depth Buffer (OpenGL only as implementing for Vulkan is kinda hard for me)
+- TitanPack - an new file format with modified header magic, making most Godot PCK exporter/explorer impossible to load without modifying
+- An option to extract executable only in `Export Project...` dialog (Windows/Linux only)
+- New editor theme with option to revert the original
+- And much more...
+
+## WIP
+
+It may be unfinished, broken, or not compile property
+
 # Godot Engine
 
 <p align="center">

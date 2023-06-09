@@ -1653,8 +1653,8 @@ msgstr "Ekspor Skrip Konsol"
 msgid "Binary Format"
 msgstr "Format Biner"
 
-msgid "Embed PCK"
-msgstr "Tanamkan PCK"
+msgid "Embed TitanPack"
+msgstr "Tanamkan TitanPack"
 
 msgid "Texture Format"
 msgstr "Format Tekstur"

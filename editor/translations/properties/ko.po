@@ -1334,8 +1334,8 @@ msgstr "출시"
 msgid "Binary Format"
 msgstr "바이너리 포맷"
 
-msgid "Embed PCK"
-msgstr "PCK 포함"
+msgid "Embed TitanPack"
+msgstr "TitanPack 포함"
 
 msgid "Texture Format"
 msgstr "텍스처 포맷"

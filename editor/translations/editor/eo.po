@@ -2321,9 +2321,9 @@ msgstr "Pretigi ŝablonon"
 msgid "Template file not found: \"%s\"."
 msgstr "Ŝablona dosiero ne troviĝas: \"%s\"."
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
 msgstr ""
-"Sur 32-bita eksportoj la enigita PCK ne eblas esti pli granda ol 4 GiB."
+"Sur 32-bita eksportoj la enigita TitanPack ne eblas esti pli granda ol 4 GiB."
 
 msgid "Error requesting URL:"
 msgstr "Eraro dum demandi la URL:"
@@ -3977,15 +3977,15 @@ msgid "Error opening package file (it's not in ZIP format)."
 msgstr "Eraro dum malfermi pakaĵan dosieron (ne estas en ZIP-formo)."
 
 msgid ""
-"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
+"Invalid \".zip\" project file; it doesn't contain a \"project.titan\" file."
 msgstr ""
-"Nevalida projekta \".zip\" dosiero; ĝi ne enhavas dosieron \"project.godot\"."
+"Nevalida projekta \".zip\" dosiero; ĝi ne enhavas dosieron \"project.titan\"."
 
 msgid "Please choose an empty folder."
 msgstr "Bonvolu, elektu malplenan dosierujon."
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Bonvolu elekti \"project.godot\" aŭ \".zip\" dosieron."
+msgid "Please choose a \"project.titan\" or \".zip\" file."
+msgstr "Bonvolu elekti \"project.titan\" aŭ \".zip\" dosieron."
 
 msgid "This directory already contains a Godot project."
 msgstr "Tiu ĉi dosierujo jam enhavas Godot-an projekton."
@@ -4008,8 +4008,8 @@ msgstr "Nomi vian projekton estus konsilinde."
 msgid "Invalid project path (changed anything?)."
 msgstr "Nevalida dosierindiko de projekto (ŝanĝis ion ajn?)."
 
-msgid "Couldn't create project.godot in project path."
-msgstr "Ne eblas krei project.godot en projekta dosierindiko."
+msgid "Couldn't create project.titan in project path."
+msgstr "Ne eblas krei project.titan en projekta dosierindiko."
 
 msgid "Error opening package file, not in ZIP format."
 msgstr "Eraro dum malfermi la pakaĵan dosieron, ne de ZIP formato."
@@ -4109,8 +4109,8 @@ msgstr "Ŝanĝi mortzonon de faro"
 msgid "Erase Input Action"
 msgstr "Forigi enigan faron"
 
-msgid "Project Settings (project.godot)"
-msgstr "Projektaj agordoj (project.godot)"
+msgid "Project Settings (project.titan)"
+msgstr "Projektaj agordoj (project.titan)"
 
 msgid "Input Map"
 msgstr "Eniga mapo"

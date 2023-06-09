@@ -29,7 +29,7 @@ namespace GodotTools.Export
 
         private string _maybeLastExportError;
 
-        // With this method we can override how a file is exported in the PCK
+        // With this method we can override how a file is exported in the TitanPack
         public override void _ExportFile(string path, string type, string[] features)
         {
             base._ExportFile(path, type, features);

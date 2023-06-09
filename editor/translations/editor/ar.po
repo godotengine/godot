@@ -3632,8 +3632,8 @@ msgstr "ملف القالب غير موجود: \"%s\"."
 msgid "Failed to copy export template."
 msgstr "فشل نسخ قالب التصدير."
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "لا يمكن لمُصدرات 32-bit التي تتضمن PCK أن تكون أكبر من 4 GiB."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
+msgstr "لا يمكن لمُصدرات 32-bit التي تتضمن TitanPack أن تكون أكبر من 4 GiB."
 
 msgid "Open the folder containing these templates."
 msgstr "افتح المجلد الحاوي هذه القوالب."
@@ -8459,14 +8459,14 @@ msgid "Error opening package file (it's not in ZIP format)."
 msgstr "حدث خطأ عندفتح ملف الحزمة بسبب أن الملف ليس في صيغة \"ZIP\"."
 
 msgid ""
-"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
-msgstr "ملف المشروع \".zip\" غير صالح؛ لا يحوي ملف \"project.godot\"."
+"Invalid \".zip\" project file; it doesn't contain a \"project.titan\" file."
+msgstr "ملف المشروع \".zip\" غير صالح؛ لا يحوي ملف \"project.titan\"."
 
 msgid "Please choose an empty folder."
 msgstr "من فضلك اختر مُجلداً فارغاً."
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "من فضلك اختر ملف \"project.godot\" أو \".zip\"."
+msgid "Please choose a \"project.titan\" or \".zip\" file."
+msgstr "من فضلك اختر ملف \"project.titan\" أو \".zip\"."
 
 msgid "This directory already contains a Godot project."
 msgstr "الدليل المُختار يتضمن بالفعل مشروعاً لغودوت."
@@ -8510,8 +8510,8 @@ msgstr ""
 "\n"
 "هل أنت متأكد من المواصلة؟"
 
-msgid "Couldn't create project.godot in project path."
-msgstr "لا قدرة على إنشاء project.godot في مسار المشروع."
+msgid "Couldn't create project.titan in project path."
+msgstr "لا قدرة على إنشاء project.titan في مسار المشروع."
 
 msgid "Error opening package file, not in ZIP format."
 msgstr "حدث خطأ عندفتح ملف الحزمة بسبب أن الملف ليس في صيغة \"ZIP\"."
@@ -8769,8 +8769,8 @@ msgstr "إعادة تسمية إجراء الإدخال"
 msgid "Update Input Action Order"
 msgstr "تحديث ترتيب إجراء الإدخال"
 
-msgid "Project Settings (project.godot)"
-msgstr "إعدادات المشروع (project.godot)"
+msgid "Project Settings (project.titan)"
+msgstr "إعدادات المشروع (project.titan)"
 
 msgid "Advanced Settings"
 msgstr "إعدادات مُتقدمة"

@@ -259,7 +259,7 @@ bool EditorExportPlatformUWP::has_valid_project_configuration(const Ref<EditorEx
 	return valid;
 }
 
-Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_preset, bool p_exe_only, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	String src_appx;

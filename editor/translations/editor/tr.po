@@ -2973,8 +2973,8 @@ msgstr "\"%s\" yolundan okunacak dosya açılamadı."
 msgid "Packing"
 msgstr "Paketleme"
 
-msgid "Save PCK"
-msgstr "PCK Dosyasına Kaydet"
+msgid "Save TitanPack"
+msgstr "TitanPack Dosyasına Kaydet"
 
 msgid "Cannot create file \"%s\"."
 msgstr "\"%s\" dosyası oluşturulamıyor."
@@ -3006,11 +3006,11 @@ msgstr "Şablon dosyası bulunamadı: \"%s\"."
 msgid "Failed to copy export template."
 msgstr "Dışa aktarım şablonu kopyalanamadı."
 
-msgid "PCK Embedding"
-msgstr "PCK Gömme"
+msgid "TitanPack Embedding"
+msgstr "TitanPack Gömme"
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "32-bit dışa aktarımlarda gömülü PCK 4GiB'tan büyük olamaz."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
+msgstr "32-bit dışa aktarımlarda gömülü TitanPack 4GiB'tan büyük olamaz."
 
 msgid "Open the folder containing these templates."
 msgstr "Bu şablonları içeren klasörü açın."
@@ -7502,14 +7502,14 @@ msgid "Error opening package file (it's not in ZIP format)."
 msgstr "Paket dosyası açılırken hata (ZIP formatında değil)."
 
 msgid ""
-"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
-msgstr "Geçersiz \".zip\" proje dosyası; \"project.godot\" dosyası içermiyor."
+"Invalid \".zip\" project file; it doesn't contain a \"project.titan\" file."
+msgstr "Geçersiz \".zip\" proje dosyası; \"project.titan\" dosyası içermiyor."
 
 msgid "Please choose an empty folder."
 msgstr "Lütfen boş bir klasör seçin."
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Lütfen bir \"project.godot\" veya \".zip\" dosyası seçin."
+msgid "Please choose a \"project.titan\" or \".zip\" file."
+msgstr "Lütfen bir \"project.titan\" veya \".zip\" dosyası seçin."
 
 msgid "This directory already contains a Godot project."
 msgstr "Bu dizinde zaten bir Godot projesi var."
@@ -7535,7 +7535,7 @@ msgstr "Projenizi isimlendirmek iyi bir fikir olabilir."
 msgid "Invalid project path (changed anything?)."
 msgstr "Geçersiz proje yolu (bir şey değişti mi?)."
 
-msgid "Couldn't create project.godot in project path."
+msgid "Couldn't create project.titan in project path."
 msgstr "proje.godot proje yolunda oluşturulamadı."
 
 msgid "Error opening package file, not in ZIP format."
@@ -7716,7 +7716,7 @@ msgstr "Eylem Değiştir ölübölgesi"
 msgid "Erase Input Action"
 msgstr "Girdi Eylemini Sil"
 
-msgid "Project Settings (project.godot)"
+msgid "Project Settings (project.titan)"
 msgstr "Proje Ayarları (proje.godot)"
 
 msgid "Input Map"

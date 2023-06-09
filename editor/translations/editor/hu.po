@@ -2364,8 +2364,8 @@ msgstr "Az egyéni hibakeresési sablon nem található."
 msgid "Custom release template not found."
 msgstr "Az egyéni kiadási sablon nem található."
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "32-bites exportokon a beágyazott PCK nem lehet nagyobb mint 4 GiB."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
+msgstr "32-bites exportokon a beágyazott TitanPack nem lehet nagyobb mint 4 GiB."
 
 msgid "Error requesting URL:"
 msgstr "Hiba az URL kérésekor:"

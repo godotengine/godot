@@ -1681,8 +1681,8 @@ msgstr "Ingen eksportmal funnet på forventet søkesti:"
 msgid "Packing"
 msgstr "Pakking"
 
-msgid "Save PCK"
-msgstr "Lagre PCK"
+msgid "Save TitanPack"
+msgstr "Lagre TitanPack"
 
 msgid "Cannot create file \"%s\"."
 msgstr "Kunne ikke opprette filen \"%s\"."
@@ -2979,8 +2979,8 @@ msgstr "Velg en tom mappe."
 msgid "New Game Project"
 msgstr "Nytt Spill-Prosjekt"
 
-msgid "Couldn't create project.godot in project path."
-msgstr "Kunne ikke lage project.godot i prosjektstien."
+msgid "Couldn't create project.titan in project path."
+msgstr "Kunne ikke lage project.titan i prosjektstien."
 
 msgid "The following files failed extraction from package:"
 msgstr "De følgende filene feilet ekstrahering fra pakke:"

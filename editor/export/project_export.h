@@ -131,6 +131,7 @@ private:
 	EditorFileDialog *export_pck_zip = nullptr;
 	EditorFileDialog *export_project = nullptr;
 	CheckBox *export_debug = nullptr;
+	CheckBox *export_exe_only = nullptr;
 	CheckBox *export_pck_zip_debug = nullptr;
 
 	CheckButton *enc_pck = nullptr;

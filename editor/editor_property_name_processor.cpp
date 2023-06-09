@@ -218,7 +218,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["opentype"] = "OpenType";
 	capitalize_string_remaps["openxr"] = "OpenXR";
 	capitalize_string_remaps["osslsigncode"] = "osslsigncode";
-	capitalize_string_remaps["pck"] = "PCK";
+	capitalize_string_remaps["titanpack"] = "TitanPack";
 	capitalize_string_remaps["png"] = "PNG";
 	capitalize_string_remaps["po2"] = "(Power of 2)"; // Unit.
 	capitalize_string_remaps["pvrtc"] = "PVRTC";

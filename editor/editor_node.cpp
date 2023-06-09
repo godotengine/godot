@@ -1018,10 +1018,10 @@ void EditorNode::_fs_changed() {
 				err = FAILED;
 				export_error = vformat("Export preset \"%s\" doesn't have a matching platform.", preset_name);
 			} else {
-				if (export_defer.pack_only) { // Only export .pck or .zip data pack.
+				if (export_defer.pack_only) { // Only export .titanpack or .zip data pack.
 					if (export_path.ends_with(".zip")) {
 						err = platform->export_zip(export_preset, export_defer.debug, export_path);
-					} else if (export_path.ends_with(".pck")) {
+					} else if (export_path.ends_with(".titanpack")) {
 						err = platform->export_pack(export_preset, export_defer.debug, export_path);
 					}
 				} else { // Normal project export.
@@ -1032,7 +1032,7 @@ void EditorNode::_fs_changed() {
 						err = missing_templates ? ERR_FILE_NOT_FOUND : ERR_UNCONFIGURED;
 					} else {
 						platform->clear_messages();
-						err = platform->export_project(export_preset, export_defer.debug, export_path);
+						err = platform->export_project(export_preset, export_defer.exe_only, export_defer.debug, export_path);
 					}
 				}
 				if (err != OK) {
@@ -1140,10 +1140,10 @@ void EditorNode::_scan_external_changes() {
 		}
 	}
 
-	String project_settings_path = ProjectSettings::get_singleton()->get_resource_path().path_join("project.godot");
+	String project_settings_path = ProjectSettings::get_singleton()->get_resource_path().path_join("project.titan");
 	if (FileAccess::get_modified_time(project_settings_path) > ProjectSettings::get_singleton()->get_last_saved_time()) {
 		TreeItem *ti = disk_changed_list->create_item(r);
-		ti->set_text(0, "project.godot");
+		ti->set_text(0, "project.titan");
 		need_reload = true;
 	}
 

@@ -1165,7 +1165,7 @@ msgstr "發行"
 msgid "Binary Format"
 msgstr "二進位格式"
 
-msgid "Embed PCK"
+msgid "Embed TitanPack"
 msgstr "內嵌PCK"
 
 msgid "Texture Format"

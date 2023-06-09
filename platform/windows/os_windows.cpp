@@ -1336,7 +1336,7 @@ uint64_t OS_Windows::get_embedded_pck_offset() const {
 	}
 	int64_t section_table_pos = f->get_position();
 
-	// Search for the "pck" section.
+	// Search for the "titanpack" section.
 	int64_t off = 0;
 	for (int i = 0; i < num_sections; ++i) {
 		int64_t section_header_pos = section_table_pos + i * 40;
@@ -1346,7 +1346,7 @@ uint64_t OS_Windows::get_embedded_pck_offset() const {
 		f->get_buffer(section_name, 8);
 		section_name[8] = '\0';
 
-		if (strcmp((char *)section_name, "pck") == 0) {
+		if (strcmp((char *)section_name, "titanpack") == 0) {
 			f->seek(section_header_pos + 20);
 			off = f->get_32();
 			break;

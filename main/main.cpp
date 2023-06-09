@@ -332,11 +332,10 @@ void finalize_theme_db() {
 
 void Main::print_help(const char *p_binary) {
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
-	OS::get_singleton()->print("Free and open source software under the terms of the MIT license.\n");
-	OS::get_singleton()->print("(c) 2014-present Godot Engine contributors.\n");
-	OS::get_singleton()->print("(c) 2007-2014 Juan Linietsky, Ariel Manzur.\n");
+	OS::get_singleton()->print("An modified version of Godot Engine designed for sandbox games\n");
+	OS::get_singleton()->print("(c) 2023-present Kacper Gibas.");
 	OS::get_singleton()->print("\n");
-	OS::get_singleton()->print("Usage: %s [options] [path to scene or 'project.godot' file]\n", p_binary);
+	OS::get_singleton()->print("Usage: %s [options] [path to scene or 'project.titan' file]\n", p_binary);
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("General options:\n");
@@ -355,9 +354,9 @@ void Main::print_help(const char *p_binary) {
 #endif
 	OS::get_singleton()->print("  --quit                            Quit after the first iteration.\n");
 	OS::get_singleton()->print("  -l, --language <locale>           Use a specific locale (<locale> being a two-letter code).\n");
-	OS::get_singleton()->print("  --path <directory>                Path to a project (<directory> must contain a 'project.godot' file).\n");
-	OS::get_singleton()->print("  -u, --upwards                     Scan folders upwards for project.godot file.\n");
-	OS::get_singleton()->print("  --main-pack <file>                Path to a pack (.pck) file to load.\n");
+	OS::get_singleton()->print("  --path <directory>                Path to a project (<directory> must contain a 'project.titan' file).\n");
+	OS::get_singleton()->print("  -u, --upwards                     Scan folders upwards for project.titan file.\n");
+	OS::get_singleton()->print("  --main-pack <file>                Path to a pack (.titanpack) file to load.\n");
 	OS::get_singleton()->print("  --render-thread <mode>            Render thread mode ['unsafe', 'safe', 'separate'].\n");
 	OS::get_singleton()->print("  --remote-fs <address>             Remote filesystem (<host/IP>[:<port>] address).\n");
 	OS::get_singleton()->print("  --remote-fs-password <password>   Password for remote filesystem.\n");
@@ -445,7 +444,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("                                    <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe').\n");
 	OS::get_singleton()->print("                                    The target directory must exist.\n");
 	OS::get_singleton()->print("  --export-debug <preset> <path>    Export the project in debug mode using the given preset and output path. See --export-release description for other considerations.\n");
-	OS::get_singleton()->print("  --export-pack <preset> <path>     Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.\n");
+	OS::get_singleton()->print("  --export-pack <preset> <path>     Export the project data only using the given preset and output path. The <path> extension determines whether it will be in TitanPack or ZIP format.\n");
 #ifndef DISABLE_DEPRECATED
 	OS::get_singleton()->print("  --convert-3to4 [<max_file_kb>] [<max_line_size>]\n");
 	OS::get_singleton()->print("                                    Converts project from Godot 3.x to Godot 4.x.\n");
@@ -1196,7 +1195,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			upwards = true;
 		} else if (I->get() == "--quit") { // Auto quit at the end of the first main loop iteration
 			auto_quit = true;
-		} else if (I->get().ends_with("project.godot")) {
+		} else if (I->get().ends_with("project.titan")) {
 			String path;
 			String file = I->get();
 			int sep = MAX(file.rfind("/"), file.rfind("\\"));
@@ -1368,7 +1367,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 
 	// Network file system needs to be configured before globals, since globals are based on the
-	// 'project.godot' file which will only be available through the network if this is enabled
+	// 'project.titan' file which will only be available through the network if this is enabled
 	FileAccessNetwork::configure();
 	if (!remotefs.is_empty()) {
 		file_access_network_client = memnew(FileAccessNetworkClient);
@@ -1397,7 +1396,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 		editor = false;
 #else
-		const String error_msg = "Error: Couldn't load project data at path \"" + project_path + "\". Is the .pck file missing?\nIf you've renamed the executable, the associated .pck file should also be renamed to match the executable's name (without the extension).\n";
+		const String error_msg = "Error: Couldn't load project data at path \"" + project_path + "\". Is the .titanpack file missing?\nIf you've renamed the executable, the associated .titanpack file should also be renamed to match the executable's name (without the extension).\n";
 		OS::get_singleton()->print("%s", error_msg.utf8().get_data());
 		OS::get_singleton()->alert(error_msg);
 
@@ -1456,7 +1455,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// This also prevents logs from being created for the editor instance, as feature tags
 	// are disabled while in the editor (even if they should logically apply).
 	GLOBAL_DEF("debug/file_logging/enable_file_logging.pc", true);
-	GLOBAL_DEF("debug/file_logging/log_path", "user://logs/godot.log");
+	GLOBAL_DEF("debug/file_logging/log_path", "user://logs/titanium.log");
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/file_logging/max_log_files", PROPERTY_HINT_RANGE, "0,20,1,or_greater"), 5);
 
 	if (!project_manager && !editor && FileAccess::get_create_func(FileAccess::ACCESS_USERDATA) &&
@@ -1791,7 +1790,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->set_display_driver_id(display_driver_idx);
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
-	if (audio_driver.is_empty()) { // Specified in project.godot.
+	if (audio_driver.is_empty()) { // Specified in project.titan.
 		audio_driver = GLOBAL_GET("audio/driver/driver");
 	}
 
@@ -2049,7 +2048,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.windows", PROPERTY_HINT_ENUM, "wintab,winink"), "");
 	}
 
-	if (tablet_driver.is_empty()) { // specified in project.godot
+	if (tablet_driver.is_empty()) { // specified in project.titan
 		tablet_driver = GLOBAL_GET("input_devices/pen_tablet/driver");
 		if (tablet_driver.is_empty()) {
 			tablet_driver = DisplayServer::get_singleton()->tablet_get_driver_name(0);

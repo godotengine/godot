@@ -2843,8 +2843,8 @@ msgstr "Aangepast debug pakket niet gevonden."
 msgid "Custom release template not found."
 msgstr "Aangepast release pakket niet gevonden."
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "Bij 32-bit export mag de ingebouwde PCK niet groter zijn dan 4 GiB."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
+msgstr "Bij 32-bit export mag de ingebouwde TitanPack niet groter zijn dan 4 GiB."
 
 msgid "Open the folder containing these templates."
 msgstr "Open de map waarin deze templates zitten."
@@ -6547,14 +6547,14 @@ msgid "Error opening package file (it's not in ZIP format)."
 msgstr "Fout bij het openen van het pakketbestand, geen zip-formaat."
 
 msgid ""
-"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
-msgstr "Ongeldig '.zip' projectbestand, bevat geen 'project.godot' bestand."
+"Invalid \".zip\" project file; it doesn't contain a \"project.titan\" file."
+msgstr "Ongeldig '.zip' projectbestand, bevat geen 'project.titan' bestand."
 
 msgid "Please choose an empty folder."
 msgstr "Kies alstublieft een lege map."
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Kies alstublieft een \"project.godot\" of \".zip\" bestand."
+msgid "Please choose a \"project.titan\" or \".zip\" file."
+msgstr "Kies alstublieft een \"project.titan\" of \".zip\" bestand."
 
 msgid "This directory already contains a Godot project."
 msgstr "In deze map staat al een Godot project."
@@ -6577,8 +6577,8 @@ msgstr "Het zou een goed idee zijn om uw project een naam te geven."
 msgid "Invalid project path (changed anything?)."
 msgstr "Ongeldig projectpad (iets veranderd?)."
 
-msgid "Couldn't create project.godot in project path."
-msgstr "Kan project.godot niet in projectpad maken."
+msgid "Couldn't create project.titan in project path."
+msgstr "Kan project.titan niet in projectpad maken."
 
 msgid "Error opening package file, not in ZIP format."
 msgstr "Fout bij het openen van het pakketbestand, geen zip-formaat."
@@ -6726,8 +6726,8 @@ msgstr "Wijzig Action Deadzone"
 msgid "Erase Input Action"
 msgstr "Verwijder Input Actie"
 
-msgid "Project Settings (project.godot)"
-msgstr "Projectinstellingen (project.godot)"
+msgid "Project Settings (project.titan)"
+msgstr "Projectinstellingen (project.titan)"
 
 msgid "Input Map"
 msgstr "Invoertoewijzing"

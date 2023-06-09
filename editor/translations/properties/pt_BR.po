@@ -1656,8 +1656,8 @@ msgstr "Exportar Script de Console"
 msgid "Binary Format"
 msgstr "Formato Binário"
 
-msgid "Embed PCK"
-msgstr "Embutir PCK"
+msgid "Embed TitanPack"
+msgstr "Embutir TitanPack"
 
 msgid "Texture Format"
 msgstr "Formato da Textura"

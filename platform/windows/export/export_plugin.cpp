@@ -175,7 +175,7 @@ Error EditorExportPlatformWindows::modify_template(const Ref<EditorExportPreset>
 	return OK;
 }
 
-Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_exe_only, bool p_debug, const String &p_path, int p_flags) {
 	bool export_as_zip = p_path.ends_with("zip");
 	bool embedded = p_preset->get("binary_format/embed_pck");
 
@@ -210,7 +210,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	if (embedded) {
 		pck_path = pck_path.get_basename() + ".tmp";
 	}
-	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags);
+	Error err = EditorExportPlatformPC::export_project(p_preset, p_exe_only, p_debug, pck_path, p_flags);
 	if (p_preset->get("codesign/enable") && err == OK) {
 		_code_sign(p_preset, pck_path);
 		String wrapper_path = p_path.get_basename() + ".console.exe";
@@ -223,7 +223,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		Ref<DirAccess> tmp_dir = DirAccess::create_for_path(p_path.get_base_dir());
 		err = tmp_dir->rename(pck_path, p_path);
 		if (err != OK) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to rename temporary file \"%s\"."), pck_path));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("TitanPack Embedding"), vformat(TTR("Failed to rename temporary file \"%s\"."), pck_path));
 		}
 	}
 
@@ -667,16 +667,16 @@ bool EditorExportPlatformWindows::has_valid_project_configuration(const Ref<Edit
 }
 
 Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
-	// Patch the header of the "pck" section in the PE file so that it corresponds to the embedded data
+	// Patch the header of the "titanpack" section in the PE file so that it corresponds to the embedded data
 
 	if (p_embedded_size + p_embedded_start >= 0x100000000) { // Check for total executable size
-		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Windows executables cannot be >= 4 GiB."));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("TitanPack Embedding"), TTR("Windows executables cannot be >= 4 GiB."));
 		return ERR_INVALID_DATA;
 	}
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ_WRITE);
 	if (f.is_null()) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to open executable file \"%s\"."), p_path));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("TitanPack Embedding"), vformat(TTR("Failed to open executable file \"%s\"."), p_path));
 		return ERR_CANT_OPEN;
 	}
 
@@ -688,7 +688,7 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 		f->seek(pe_pos);
 		uint32_t magic = f->get_32();
 		if (magic != 0x00004550) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable file header corrupted."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("TitanPack Embedding"), TTR("Executable file header corrupted."));
 			return ERR_FILE_CORRUPT;
 		}
 	}
@@ -708,7 +708,7 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 		f->seek(f->get_position() + 2 + opt_header_size);
 	}
 
-	// Search for the "pck" section
+	// Search for the "titanpack" section
 
 	int64_t section_table_pos = f->get_position();
 
@@ -721,8 +721,8 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 		f->get_buffer(section_name, 8);
 		section_name[8] = '\0';
 
-		if (strcmp((char *)section_name, "pck") == 0) {
-			// "pck" section found, let's patch!
+		if (strcmp((char *)section_name, "titanpack") == 0) {
+			// "titanpack" section found, let's patch!
 
 			// Set virtual size to a little to avoid it taking memory (zero would give issues)
 			f->seek(section_header_pos + 8);
@@ -739,7 +739,7 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 	}
 
 	if (!found) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable \"pck\" section not found."));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("TitanPack Embedding"), TTR("Executable \"titanpack\" section not found."));
 		return ERR_FILE_CORRUPT;
 	}
 	return OK;
@@ -855,7 +855,7 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 	if (ep.step(TTR("Exporting project..."), 1)) {
 		return ERR_SKIP;
 	}
-	Error err = export_project(p_preset, true, basepath + ".zip", p_debug_flags);
+	Error err = export_project(p_preset, false, true, basepath + ".zip", p_debug_flags);
 	if (err != OK) {
 		DirAccess::remove_file_or_error(basepath + ".zip");
 		return err;

@@ -4,7 +4,7 @@
 		Contains global variables accessible from everywhere.
 	</brief_description>
 	<description>
-		Contains global variables accessible from everywhere. Use [method get_setting], [method set_setting] or [method has_setting] to access them. Variables stored in [code]project.godot[/code] are also loaded into ProjectSettings, making this object very useful for reading custom game configuration options.
+		Contains global variables accessible from everywhere. Use [method get_setting], [method set_setting] or [method has_setting] to access them. Variables stored in [code]project.titan[/code] are also loaded into ProjectSettings, making this object very useful for reading custom game configuration options.
 		When naming a Project Settings property, use the full path to the setting including the category. For example, [code]"application/config/name"[/code] for the project name. Category and property names can be viewed in the Project Settings dialog.
 		[b]Feature tags:[/b] Project settings can be overridden for specific platforms and configurations (debug, release, ...) using [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tags[/url].
 		[b]Overriding:[/b] Any project setting can be overridden by creating a file named [code]override.cfg[/code] in the project's root directory. This can also be used in exported projects by placing this file in the same directory as the project binary. Overriding will still take the base project settings' [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tags[/url] in account. Therefore, make sure to [i]also[/i] override the setting with the desired feature tags if you want them to override base project settings on all platforms and configurations.
@@ -151,9 +151,9 @@
 			<param index="1" name="replace_files" type="bool" default="true" />
 			<param index="2" name="offset" type="int" default="0" />
 			<description>
-				Loads the contents of the .pck or .zip file specified by [param pack] into the resource filesystem ([code]res://[/code]). Returns [code]true[/code] on success.
+				Loads the contents of the .titanpack or .zip file specified by [param pack] into the resource filesystem ([code]res://[/code]). Returns [code]true[/code] on success.
 				[b]Note:[/b] If a file from [param pack] shares the same path as a file already in the resource filesystem, any attempts to load that file will use the file from [param pack] unless [param replace_files] is set to [code]false[/code].
-				[b]Note:[/b] The optional [param offset] parameter can be used to specify the offset in bytes to the start of the resource pack. This is only supported for .pck files.
+				[b]Note:[/b] The optional [param offset] parameter can be used to specify the offset in bytes to the start of the resource pack. This is only supported for .titanpack files.
 			</description>
 		</method>
 		<method name="localize_path" qualifiers="const">
@@ -166,7 +166,7 @@
 		<method name="save">
 			<return type="int" enum="Error" />
 			<description>
-				Saves the configuration to the [code]project.godot[/code] file.
+				Saves the configuration to the [code]project.titan[/code] file.
 				[b]Note:[/b] This method is intended to be used by editor plugins, as modified [ProjectSettings] can't be loaded back in the running app. If you want to change project settings in exported projects, use [method save_custom] to save [code]override.cfg[/code] file.
 			</description>
 		</method>
@@ -174,7 +174,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Saves the configuration to a custom file. The file extension must be [code].godot[/code] (to save in text-based [ConfigFile] format) or [code].binary[/code] (to save in binary format). You can also save [code]override.cfg[/code] file, which is also text, but can be used in exported projects unlike other formats.
+				Saves the configuration to a custom file. The file extension must be [code].titan[/code] (to save in text-based [ConfigFile] format) or [code].binary[/code] (to save in binary format). You can also save [code]override.cfg[/code] file, which is also text, but can be used in exported projects unlike other formats.
 			</description>
 		</method>
 		<method name="set_initial_value">
@@ -727,12 +727,12 @@
 			Name of the .NET assembly. This name is used as the name of the [code].csproj[/code] and [code].sln[/code] files. By default, it's set to the name of the project ([member application/config/name]) allowing to change it in the future without affecting the .NET assembly.
 		</member>
 		<member name="dotnet/project/solution_directory" type="String" setter="" getter="" default="&quot;&quot;">
-			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.
-			Changing this value allows setting up a multi-project scenario where there are multiple [code].csproj[/code]. Keep in mind that the Godot project is considered one of the C# projects in the workspace and it's root directory should contain the [code]project.godot[/code] and [code].csproj[/code] next to each other.
+			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.titan[/code] and [code].csproj[/code] files.
+			Changing this value allows setting up a multi-project scenario where there are multiple [code].csproj[/code]. Keep in mind that the Godot project is considered one of the C# projects in the workspace and it's root directory should contain the [code]project.titan[/code] and [code].csproj[/code] next to each other.
 		</member>
 		<member name="editor/export/convert_text_resources_to_binary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], text resources are converted to a binary format on export. This decreases file sizes and speeds up loading slightly.
-			[b]Note:[/b] If [member editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to return the converted files in an exported project. Some file paths within the exported PCK will also change, such as [code]project.godot[/code] becoming [code]project.binary[/code]. If you rely on run-time loading of files present within the PCK, set [member editor/export/convert_text_resources_to_binary] to [code]false[/code].
+			[b]Note:[/b] If [member editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to return the converted files in an exported project. Some file paths within the exported TitanPack will also change, such as [code]project.titan[/code] becoming [code]project.binary[/code]. If you rely on run-time loading of files present within the TitanPack, set [member editor/export/convert_text_resources_to_binary] to [code]false[/code].
 		</member>
 		<member name="editor/import/reimport_missing_imported_files" type="bool" setter="" getter="" default="true">
 		</member>

@@ -2327,9 +2327,9 @@ msgstr "Templat nyahpepijat tersuai tidak dijumpai."
 msgid "Custom release template not found."
 msgstr "Templat pelepasan tersuai tidak dijumpai."
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
 msgstr ""
-"Pada eksport 32-bit PCK terbenam tidak boleh lebih besar daripada 4 GiB."
+"Pada eksport 32-bit TitanPack terbenam tidak boleh lebih besar daripada 4 GiB."
 
 msgid "Open the folder containing these templates."
 msgstr "Buka folder yang mengandungi templat ini."

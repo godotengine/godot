@@ -1285,8 +1285,8 @@ msgstr "Eksportuj skrypt konsoli"
 msgid "Binary Format"
 msgstr "Format binarny"
 
-msgid "Embed PCK"
-msgstr "Osadź PCK"
+msgid "Embed TitanPack"
+msgstr "Osadź TitanPack"
 
 msgid "Texture Format"
 msgstr "Format tekstury"

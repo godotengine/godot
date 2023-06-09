@@ -45,7 +45,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		executable: '',
 		/**
-		 * An alternative name for the game pck to load. The executable name is used otherwise.
+		 * An alternative name for the game titanpack to load. The executable name is used otherwise.
 		 *
 		 * @memberof EngineConfig
 		 * @default

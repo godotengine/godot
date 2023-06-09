@@ -38,10 +38,10 @@
 #include "core/templates/list.h"
 #include "core/templates/rb_map.h"
 
-// Godot's packed file magic header ("GDPC" in ASCII).
-#define PACK_HEADER_MAGIC 0x43504447
+// Titanium's packed file magic header ("FUCK" in ASCII).
+#define PACK_HEADER_MAGIC 0x4b435546
 // The current packed file format version number.
-#define PACK_FORMAT_VERSION 2
+#define PACK_FORMAT_VERSION 3
 
 enum PackFlags {
 	PACK_DIR_ENCRYPTED = 1 << 0

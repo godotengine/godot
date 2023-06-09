@@ -2918,8 +2918,8 @@ msgstr "Zadaná cesta pro export neexistuje."
 msgid "Template file not found: \"%s\"."
 msgstr "Soubor šablony nenalezen: \"%s\"."
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "Při 32-bitovým exportu vestavěné PCK nemůže být větší než 4 GiB."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
+msgstr "Při 32-bitovým exportu vestavěné TitanPack nemůže být větší než 4 GiB."
 
 msgid "Open the folder containing these templates."
 msgstr "Otevřít složku obsahující tyto šablony."
@@ -6941,15 +6941,15 @@ msgid "Error opening package file (it's not in ZIP format)."
 msgstr "Chyba při otevírání balíčku (není ve formátu ZIP)."
 
 msgid ""
-"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
+"Invalid \".zip\" project file; it doesn't contain a \"project.titan\" file."
 msgstr ""
-"Neplatný soubor projektu \".zip\"; neobsahuje soubor \"project.godot\"."
+"Neplatný soubor projektu \".zip\"; neobsahuje soubor \"project.titan\"."
 
 msgid "Please choose an empty folder."
 msgstr "Zvolte prosím prázdnou složku."
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Vyberte prosím soubor \"project.godot\" nebo \".zip\"."
+msgid "Please choose a \"project.titan\" or \".zip\" file."
+msgstr "Vyberte prosím soubor \"project.titan\" nebo \".zip\"."
 
 msgid "This directory already contains a Godot project."
 msgstr "Složka již obsahuje Godot projekt."
@@ -6975,8 +6975,8 @@ msgstr "Bylo by dobré pojmenovat váš projekt."
 msgid "Invalid project path (changed anything?)."
 msgstr "Neplatná cesta k projektu (něco se změnilo?)."
 
-msgid "Couldn't create project.godot in project path."
-msgstr "Nelze vytvořit project.godot v umístění projektu."
+msgid "Couldn't create project.titan in project path."
+msgstr "Nelze vytvořit project.titan v umístění projektu."
 
 msgid "Error opening package file, not in ZIP format."
 msgstr "Nepodařilo se otevřít balíček, není ve formátu ZIP."
@@ -7199,8 +7199,8 @@ msgstr "Změnit mrtvou zónu akce"
 msgid "Erase Input Action"
 msgstr "Vymazat vstupní akce"
 
-msgid "Project Settings (project.godot)"
-msgstr "Nastavení projektu (project.godot)"
+msgid "Project Settings (project.titan)"
+msgstr "Nastavení projektu (project.titan)"
 
 msgid "Input Map"
 msgstr "Mapování vstupů"

@@ -1266,7 +1266,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	ProjectSettings::CustomMap custom_map;
 	if (path_remaps.size()) {
-		if (true) { //new remap mode, use always as it's friendlier with multiple .pck exports
+		if (true) { //new remap mode, use always as it's friendlier with multiple .titanpack exports
 			for (int i = 0; i < path_remaps.size(); i += 2) {
 				String from = path_remaps[i];
 				String to = path_remaps[i + 1];
@@ -1284,7 +1284,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				}
 			}
 		} else {
-			//old remap mode, will still work, but it's unused because it's not multiple pck export friendly
+			//old remap mode, will still work, but it's unused because it's not multiple titanpack export friendly
 			custom_map["path_remap/remapped_paths"] = path_remaps;
 		}
 	}
@@ -1495,7 +1495,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	String tmppath = EditorPaths::get_singleton()->get_cache_dir().path_join("packtmp");
 	Ref<FileAccess> ftmp = FileAccess::open(tmppath, FileAccess::WRITE);
 	if (ftmp.is_null()) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), vformat(TTR("Cannot create file \"%s\"."), tmppath));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Save TitanPack"), vformat(TTR("Cannot create file \"%s\"."), tmppath));
 		return ERR_CANT_CREATE;
 	}
 
@@ -1512,7 +1512,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	if (err != OK) {
 		DirAccess::remove_file_or_error(tmppath);
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Failed to export project files."));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Save TitanPack"), TTR("Failed to export project files."));
 		return err;
 	}
 
@@ -1521,11 +1521,11 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	Ref<FileAccess> f;
 	int64_t embed_pos = 0;
 	if (!p_embed) {
-		// Regular output to separate PCK file
+		// Regular output to separate TitanPack file
 		f = FileAccess::open(p_path, FileAccess::WRITE);
 		if (f.is_null()) {
 			DirAccess::remove_file_or_error(tmppath);
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), vformat(TTR("Can't open file for writing at path \"%s\"."), p_path));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Save TitanPack"), vformat(TTR("Can't open file for writing at path \"%s\"."), p_path));
 			return ERR_CANT_CREATE;
 		}
 	} else {
@@ -1533,7 +1533,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		f = FileAccess::open(p_path, FileAccess::READ_WRITE);
 		if (f.is_null()) {
 			DirAccess::remove_file_or_error(tmppath);
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), vformat(TTR("Can't open file for reading-writing at path \"%s\"."), p_path));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Save TitanPack"), vformat(TTR("Can't open file for reading-writing at path \"%s\"."), p_path));
 			return ERR_FILE_CANT_OPEN;
 		}
 
@@ -1544,7 +1544,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 			*r_embedded_start = embed_pos;
 		}
 
-		// Ensure embedded PCK starts at a 64-bit multiple
+		// Ensure embedded TitanPack starts at a 64-bit multiple
 		int pad = f->get_position() % 8;
 		for (int i = 0; i < pad; i++) {
 			f->store_8(0);
@@ -1611,13 +1611,13 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		}
 		fae.instantiate();
 		if (fae.is_null()) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Can't create encrypted file."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Save TitanPack"), TTR("Can't create encrypted file."));
 			return ERR_CANT_CREATE;
 		}
 
 		err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_WRITE_AES256, false);
 		if (err != OK) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), TTR("Can't open encrypted file to write."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Save TitanPack"), TTR("Can't open encrypted file to write."));
 			return ERR_CANT_CREATE;
 		}
 
@@ -1664,7 +1664,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 	ftmp = FileAccess::open(tmppath, FileAccess::READ);
 	if (ftmp.is_null()) {
 		DirAccess::remove_file_or_error(tmppath);
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), vformat(TTR("Can't open file to read from path \"%s\"."), tmppath));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Save TitanPack"), vformat(TTR("Can't open file to read from path \"%s\"."), tmppath));
 		return ERR_CANT_CREATE;
 	}
 

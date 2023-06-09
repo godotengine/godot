@@ -1285,8 +1285,8 @@ msgstr "Релиз"
 msgid "Binary Format"
 msgstr "Бинарный формат"
 
-msgid "Embed PCK"
-msgstr "Встроенный PCK"
+msgid "Embed TitanPack"
+msgstr "Встроенный TitanPack"
 
 msgid "Texture Format"
 msgstr "Формат текстур"

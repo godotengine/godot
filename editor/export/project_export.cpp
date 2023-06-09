@@ -939,7 +939,7 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 
 	if (p_path.ends_with(".zip")) {
 		platform->export_zip(current, export_pck_zip_debug->is_pressed(), p_path);
-	} else if (p_path.ends_with(".pck")) {
+	} else if (p_path.ends_with(".titanpack")) {
 		platform->export_pack(current, export_pck_zip_debug->is_pressed(), p_path);
 	}
 }
@@ -1020,7 +1020,8 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	current->set_export_path(p_path);
 
 	platform->clear_messages();
-	Error err = platform->export_project(current, export_debug->is_pressed(), p_path, 0);
+	Error err;
+	err = platform->export_project(current, export_exe_only->is_pressed(), export_debug->is_pressed(), p_path, 0);
 	result_dialog_log->clear();
 	if (err != ERR_SKIP) {
 		if (platform->fill_log_messages(result_dialog_log, err)) {
@@ -1057,7 +1058,7 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 		ep.step(preset->get_name(), i);
 
 		platform->clear_messages();
-		Error err = platform->export_project(preset, p_debug, preset->get_export_path(), 0);
+		Error err = platform->export_project(preset, false, p_debug, preset->get_export_path(), 0);
 		if (err == ERR_SKIP) {
 			return;
 		}
@@ -1252,7 +1253,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	enc_pck = memnew(CheckButton);
 	enc_pck->connect("toggled", callable_mp(this, &ProjectExportDialog::_enc_pck_changed));
-	enc_pck->set_text(TTR("Encrypt Exported PCK"));
+	enc_pck->set_text(TTR("Encrypt Exported TitanPack"));
 	sec_vb->add_child(enc_pck);
 
 	enc_directory = memnew(CheckButton);
@@ -1312,7 +1313,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	// Export buttons, dialogs and errors.
 
 	set_cancel_button_text(TTR("Close"));
-	set_ok_button_text(TTR("Export PCK/ZIP..."));
+	set_ok_button_text(TTR("Export TitanPack/ZIP..."));
 	get_ok_button()->set_disabled(true);
 #ifdef ANDROID_ENABLED
 	export_button = memnew(Button);
@@ -1345,7 +1346,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	export_pck_zip = memnew(EditorFileDialog);
 	export_pck_zip->add_filter("*.zip", TTR("ZIP File"));
-	export_pck_zip->add_filter("*.pck", TTR("Godot Project Pack"));
+	export_pck_zip->add_filter("*.titanpack", TTR("Godot Project Pack"));
 	export_pck_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	export_pck_zip->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	add_child(export_pck_zip);
@@ -1390,6 +1391,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	add_child(export_project);
 	export_project->connect("file_selected", callable_mp(this, &ProjectExportDialog::_export_project_to_path));
 	export_project->get_line_edit()->connect("text_changed", callable_mp(this, &ProjectExportDialog::_validate_export_path));
+
+	export_exe_only = memnew(CheckBox);
+	export_exe_only->set_text(TTR("Executable only (Windows/Linux/iOS only)"));
+	export_exe_only->set_pressed(true);
+	export_exe_only->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	export_project->get_vbox()->add_child(export_exe_only);
 
 	export_debug = memnew(CheckBox);
 	export_debug->set_text(TTR("Export With Debug"));

@@ -2335,8 +2335,8 @@ msgstr "Không tìm thấy bản mẫu gỡ lỗi tuỳ chỉnh."
 msgid "Custom release template not found."
 msgstr "Không tìm thấy bản mẫu phát hành tùy chỉnh."
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "Ở các bản xuất 32-bit thì PCK được nhúng vào không thể lớn hơn 4 GiB."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
+msgstr "Ở các bản xuất 32-bit thì TitanPack được nhúng vào không thể lớn hơn 4 GiB."
 
 msgid "Open the folder containing these templates."
 msgstr "Mở thư mục chứa các bản mẫu này."
@@ -5043,15 +5043,15 @@ msgid "Error opening package file (it's not in ZIP format)."
 msgstr "Lỗi mở gói (không phải dạng ZIP)."
 
 msgid ""
-"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
+"Invalid \".zip\" project file; it doesn't contain a \"project.titan\" file."
 msgstr ""
-"Tệp dự án \".zip\" không hợp lệ; trong nó không chứa tệp \"project.godot\"."
+"Tệp dự án \".zip\" không hợp lệ; trong nó không chứa tệp \"project.titan\"."
 
 msgid "Please choose an empty folder."
 msgstr "Hãy chọn một thư mục trống."
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Chọn tệp \"project.godot\" hoặc tệp \".zip\"."
+msgid "Please choose a \"project.titan\" or \".zip\" file."
+msgstr "Chọn tệp \"project.titan\" hoặc tệp \".zip\"."
 
 msgid "This directory already contains a Godot project."
 msgstr "Thư mục này đã chứa một dự án Godot."
@@ -5074,8 +5074,8 @@ msgstr "Nó là một ý tưởng tuyệt để đặt tên cho dự án của b
 msgid "Invalid project path (changed anything?)."
 msgstr "Đường dẫn dự án không hợp lệ (bạn có thay đổi điều gì?)."
 
-msgid "Couldn't create project.godot in project path."
-msgstr "Không thể tạo 'project.godot' trong đường dẫn dự án."
+msgid "Couldn't create project.titan in project path."
+msgstr "Không thể tạo 'project.titan' trong đường dẫn dự án."
 
 msgid "Error opening package file, not in ZIP format."
 msgstr "Lỗi không thể mở gói, không phải dạng nén ZIP."
@@ -5208,8 +5208,8 @@ msgstr "Xóa Mục"
 msgid "Add Input Action"
 msgstr "Thêm hành động đầu vào"
 
-msgid "Project Settings (project.godot)"
-msgstr "Cài đặt Dự án (project.godot)"
+msgid "Project Settings (project.titan)"
+msgstr "Cài đặt Dự án (project.titan)"
 
 msgid "Input Map"
 msgstr "Ánh xạ đầu vào"

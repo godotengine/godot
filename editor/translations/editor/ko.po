@@ -3309,8 +3309,8 @@ msgstr "경로 \"%s\"에서 파일을 열지 못했습니다."
 msgid "Packing"
 msgstr "패킹 중"
 
-msgid "Save PCK"
-msgstr "PCK 저장"
+msgid "Save TitanPack"
+msgstr "TitanPack 저장"
 
 msgid "Cannot create file \"%s\"."
 msgstr "\"%s\" 파일을 생성할 수 없습니다."
@@ -3342,10 +3342,10 @@ msgstr "템플릿 파일을 찾을 수 없습니다: \"%s\"."
 msgid "Failed to copy export template."
 msgstr "내보내기 템플릿을 복사하지 못했습니다."
 
-msgid "PCK Embedding"
-msgstr "PCK 임베딩"
+msgid "TitanPack Embedding"
+msgstr "TitanPack 임베딩"
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
 msgstr "32비트 환경에서는 4 GiB보다 큰 내장 PCK를 내보낼 수 없습니다."
 
 msgid "Open the folder containing these templates."
@@ -3637,8 +3637,8 @@ msgstr "커스텀(쉼표로 구분):"
 msgid "Feature List:"
 msgstr "기능 목록:"
 
-msgid "Encrypt Exported PCK"
-msgstr "내보낸 PCK 암호화"
+msgid "Encrypt Exported TitanPack"
+msgstr "내보낸 TitanPack 암호화"
 
 msgid "Encrypt Index (File Names and Info)"
 msgstr "인덱스 암호화(파일 이름 및 정보)"
@@ -8128,16 +8128,16 @@ msgid "Error opening package file (it's not in ZIP format)."
 msgstr "패키지 파일을 여는 중 오류 (ZIP 형식이 아닙니다)."
 
 msgid ""
-"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
+"Invalid \".zip\" project file; it doesn't contain a \"project.titan\" file."
 msgstr ""
-"잘못된 \".zip\" 프로젝트 파일입니다. \"project.godot\" 파일이 들어있지 않습니"
+"잘못된 \".zip\" 프로젝트 파일입니다. \"project.titan\" 파일이 들어있지 않습니"
 "다."
 
 msgid "Please choose an empty folder."
 msgstr "비어있는 폴더를 선택해주세요."
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "\"project.godot\" 파일 또는 \".zip\" 파일을 선택해주세요."
+msgid "Please choose a \"project.titan\" or \".zip\" file."
+msgstr "\"project.titan\" 파일 또는 \".zip\" 파일을 선택해주세요."
 
 msgid "This directory already contains a Godot project."
 msgstr "디렉토리에 Godot 프로젝트가 이미 존재합니다."
@@ -8172,8 +8172,8 @@ msgstr ""
 msgid "Couldn't save project at '%s' (error %d)."
 msgstr "'%s'에서 프로젝트를 저장 할 수 없었습니다."
 
-msgid "Couldn't create project.godot in project path."
-msgstr "프로젝트 경로에서 project.godot 파일을 만들 수 없습니다."
+msgid "Couldn't create project.titan in project path."
+msgstr "프로젝트 경로에서 project.titan 파일을 만들 수 없습니다."
 
 msgid "Error opening package file, not in ZIP format."
 msgstr "패키지 파일을 여는 중 오류. ZIP 형식이 아닙니다."
@@ -8355,8 +8355,8 @@ msgstr "액션 데드존 바꾸기"
 msgid "Erase Input Action"
 msgstr "입력 액션 지우기"
 
-msgid "Project Settings (project.godot)"
-msgstr "프로젝트 설정 (project.godot)"
+msgid "Project Settings (project.titan)"
+msgstr "프로젝트 설정 (project.titan)"
 
 msgid "Select a Setting or Type its Name"
 msgstr "설정을 선택하거나 그 이름을 입력해주세요"

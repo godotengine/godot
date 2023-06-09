@@ -85,7 +85,7 @@ public:
 		mimes["html"] = "text/html";
 		mimes["js"] = "application/javascript";
 		mimes["json"] = "application/json";
-		mimes["pck"] = "application/octet-stream";
+		mimes["titanpack"] = "application/octet-stream";
 		mimes["png"] = "image/png";
 		mimes["svg"] = "image/svg";
 		mimes["wasm"] = "application/wasm";

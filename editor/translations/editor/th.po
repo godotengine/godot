@@ -2698,8 +2698,8 @@ msgstr "ไม่พบเทมเพลตการดีบักแบบก
 msgid "Custom release template not found."
 msgstr "ไม่พบเทมเพลตการเผยแพร่ที่กำหนดเอง"
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "การส่งออกแบบ 32 bit PCK แบบฝังตัวไม่สามารถใหญ่ได้เกิน 4 GiB"
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
+msgstr "การส่งออกแบบ 32 bit TitanPack แบบฝังตัวไม่สามารถใหญ่ได้เกิน 4 GiB"
 
 msgid "Error requesting URL:"
 msgstr "ผิดพลาดขณะกำลังร้องขอ URL:"
@@ -6139,14 +6139,14 @@ msgid "Error opening package file (it's not in ZIP format)."
 msgstr "ผิดพลาดขณะเปิดไฟล์แพคเกจ (ไม่ใช่ไฟล์นามสกุล zip)"
 
 msgid ""
-"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
-msgstr "ไฟล์โปรเจกต์ \".zip\" ผิดพลาด เนื่องจากไม่มีไฟล์ \"project.godot\""
+"Invalid \".zip\" project file; it doesn't contain a \"project.titan\" file."
+msgstr "ไฟล์โปรเจกต์ \".zip\" ผิดพลาด เนื่องจากไม่มีไฟล์ \"project.titan\""
 
 msgid "Please choose an empty folder."
 msgstr "กรุณาเลือกโฟลเดอร์ว่างเปล่า"
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "กรุณาเลือกไฟล์ \"project.godot\" หรือไฟล์ \".zip\""
+msgid "Please choose a \"project.titan\" or \".zip\" file."
+msgstr "กรุณาเลือกไฟล์ \"project.titan\" หรือไฟล์ \".zip\""
 
 msgid "This directory already contains a Godot project."
 msgstr "ไดเรกทอรีนี้มีโปรเจกต์ Godot อยู่แล้ว"
@@ -6169,8 +6169,8 @@ msgstr "ควรตั้งชื่อโปรเจกต์"
 msgid "Invalid project path (changed anything?)."
 msgstr "ตำแหน่งโปรเจกต์ผิดพลาด (ได้แก้ไขอะไรไปหรือไม่?)"
 
-msgid "Couldn't create project.godot in project path."
-msgstr "สร้างไฟล์ project.godot ไม่ได้"
+msgid "Couldn't create project.titan in project path."
+msgstr "สร้างไฟล์ project.titan ไม่ได้"
 
 msgid "Error opening package file, not in ZIP format."
 msgstr "ผิดพลาดขณะเปิดไฟล์แพคเกจ, ไม่ใช่รูปแบบ zip"
@@ -6228,7 +6228,7 @@ msgstr "ไม่สามารถเปิดโปรเจกต์ที่
 
 msgid ""
 "The selected project \"%s\" does not specify its supported Godot version in "
-"its configuration file (\"project.godot\").\n"
+"its configuration file (\"project.titan\").\n"
 "\n"
 "Project path: %s\n"
 "\n"
@@ -6338,8 +6338,8 @@ msgstr "เปลี่ยน Action deadzone"
 msgid "Erase Input Action"
 msgstr "ลบการกระทำ"
 
-msgid "Project Settings (project.godot)"
-msgstr "ตัวเลือกโปรเจกต์ (project.godot)"
+msgid "Project Settings (project.titan)"
+msgstr "ตัวเลือกโปรเจกต์ (project.titan)"
 
 msgid "Input Map"
 msgstr "ปุ่มกด"

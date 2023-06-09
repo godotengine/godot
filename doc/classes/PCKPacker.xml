@@ -8,18 +8,18 @@
 		[codeblocks]
 		[gdscript]
 		var packer = PCKPacker.new()
-		packer.pck_start("test.pck")
+		packer.pck_start("test.titanpack")
 		packer.add_file("res://text.txt", "text.txt")
 		packer.flush()
 		[/gdscript]
 		[csharp]
 		var packer = new PCKPacker();
-		packer.PckStart("test.pck");
+		packer.PckStart("test.titanpack");
 		packer.AddFile("res://text.txt", "text.txt");
 		packer.Flush();
 		[/csharp]
 		[/codeblocks]
-		The above [PCKPacker] creates package [code]test.pck[/code], then adds a file named [code]text.txt[/code] at the root of the package.
+		The above [PCKPacker] creates package [code]test.titanpack[/code], then adds a file named [code]text.txt[/code] at the root of the package.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -30,7 +30,7 @@
 			<param index="1" name="source_path" type="String" />
 			<param index="2" name="encrypt" type="bool" default="false" />
 			<description>
-				Adds the [param source_path] file to the current PCK package at the [param pck_path] internal path (should start with [code]res://[/code]).
+				Adds the [param source_path] file to the current TitanPack package at the [param pck_path] internal path (should start with [code]res://[/code]).
 			</description>
 		</method>
 		<method name="flush">
@@ -47,7 +47,7 @@
 			<param index="2" name="key" type="String" default="&quot;0000000000000000000000000000000000000000000000000000000000000000&quot;" />
 			<param index="3" name="encrypt_directory" type="bool" default="false" />
 			<description>
-				Creates a new PCK file with the name [param pck_name]. The [code].pck[/code] file extension isn't added automatically, so it should be part of [param pck_name] (even though it's not required).
+				Creates a new TitanPack file with the name [param pck_name]. The [code].titanpack[/code] file extension isn't added automatically, so it should be part of [param pck_name] (even though it's not required).
 			</description>
 		</method>
 	</methods>

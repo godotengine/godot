@@ -2192,8 +2192,8 @@ msgstr "Pielāgots atkļūdošanas šablons nav atrasts."
 msgid "Custom release template not found."
 msgstr "Pielāgots relīzes šablons nav atrasts."
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "Pie 32-bitu eksportēšanas, iepakotais PCK nevar būt lielāks par 4GB."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
+msgstr "Pie 32-bitu eksportēšanas, iepakotais TitanPack nevar būt lielāks par 4GB."
 
 msgid "Uninstall these templates."
 msgstr "Atinstalēt šos šablonus."
@@ -3287,8 +3287,8 @@ msgstr ""
 "Jums pašreiz nav neviena projekta.\n"
 "Vai vēlaties skatīt oficiālos paraugu projektus Līdzekļu bibliotēkā ?"
 
-msgid "Project Settings (project.godot)"
-msgstr "Projekta iestatījumi (project.godot)"
+msgid "Project Settings (project.titan)"
+msgstr "Projekta iestatījumi (project.titan)"
 
 msgid "Input Map"
 msgstr "Ievade"

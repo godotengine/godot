@@ -445,7 +445,7 @@ def configure(env: "Environment"):
         gnu_ld_version = re.search("^GNU ld [^$]*(\d+\.\d+)$", linker_version_str, re.MULTILINE)
         if not gnu_ld_version:
             print(
-                "Warning: Creating export template binaries enabled for PCK embedding is currently only supported with GNU ld, not gold, LLD or mold."
+                "Warning: Creating export template binaries enabled for TitanPack embedding is currently only supported with GNU ld, not gold, LLD or mold."
             )
         else:
             if float(gnu_ld_version.group(1)) >= 2.30:

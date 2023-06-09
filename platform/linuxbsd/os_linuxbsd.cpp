@@ -555,14 +555,14 @@ uint64_t OS_LinuxBSD::get_embedded_pck_offset() const {
 		f->get_buffer(strings, string_data_size);
 	}
 
-	// Search for the "pck" section.
+	// Search for the "titanpack" section.
 	int64_t off = 0;
 	for (int i = 0; i < num_sections; ++i) {
 		int64_t section_header_pos = section_table_pos + i * section_header_size;
 		f->seek(section_header_pos);
 
 		uint32_t name_offset = f->get_32();
-		if (strcmp((char *)strings + name_offset, "pck") == 0) {
+		if (strcmp((char *)strings + name_offset, "titanpack") == 0) {
 			if (bits == 32) {
 				f->seek(section_header_pos + 0x10);
 				off = f->get_32();

@@ -2347,7 +2347,7 @@ bool EditorFileSystem::_should_skip_directory(const String &p_path) {
 		return true;
 	}
 
-	if (FileAccess::exists(p_path.path_join("project.godot"))) {
+	if (FileAccess::exists(p_path.path_join("project.titan"))) {
 		// skip if another project inside this
 		return true;
 	}

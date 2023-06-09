@@ -26,7 +26,7 @@
 # SOFTWARE.
 
 _arguments \
-  "1::path to scene or 'project.godot' file:_files" \
+  "1::path to scene or 'project.titan' file:_files" \
   '(-h --help)'{-h,--help}'[display the full help message]' \
   '--version[display the version string]' \
   '(-v --verbose)'{-v,--verbose}'[use verbose stdout mode]' \
@@ -36,9 +36,9 @@ _arguments \
   '--debug-server[start the editor debug server]:editor debugger listen address' \
   '--quit[quit after the first iteration]' \
   '(-l --language)'{-l,--language}'[use a specific locale (<locale> being a two-letter code)]:two-letter locale code' \
-  "--path[path to a project (<directory> must contain a 'project.godot' file)]:path to directory with 'project.godot' file:_dirs" \
-  '(-u --upwards)'{-u,--upwards}'[scan folders upwards for project.godot file]' \
-  '--main-pack[path to a pack (.pck) file to load]:path to .pck file:_files' \
+  "--path[path to a project (<directory> must contain a 'project.titan' file)]:path to directory with 'project.titan' file:_dirs" \
+  '(-u --upwards)'{-u,--upwards}'[scan folders upwards for project.titan file]' \
+  '--main-pack[path to a pack (.titanpack) file to load]:path to .titanpack file:_files' \
   '--render-thread[set the render thread mode]:render thread mode:(unsafe safe separate)' \
   '--remote-fs[use a remote filesystem]:remote filesystem address' \
   '--remote-fs-password[password for remote filesystem]:remote filesystem password' \
@@ -80,7 +80,7 @@ _arguments \
   '--check-only[only parse for errors and quit (use with --script)]' \
   '--export-release[export the project in release mode using the given preset and output path]:export preset name then path' \
   '--export-debug[export the project in debug mode using the given preset and output path]:export preset name then path' \
-  '--export-pack[export the project data only as a PCK or ZIP file using the given preset and output path]:export preset name then path' \
+  '--export-pack[export the project data only as a TitanPack or ZIP file using the given preset and output path]:export preset name then path' \
   '--convert-3to4[converts project from Godot 3.x to Godot 4.x]' \
   '--validate-conversion-3to4[shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x]' \
   '--doctool[dump the engine API reference to the given path in XML format, merging if existing files are found]:path to base Godot build directory (optional):_dirs' \

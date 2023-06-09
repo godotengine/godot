@@ -5,7 +5,7 @@ on:
 # Global Settings
 env:
   # Used for the cache key. Add version suffix to force clean build.
-  GODOT_BASE_BRANCH: '4.0'
+  GODOT_BASE_BRANCH: '1.0'
   SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes
 
 concurrency:
@@ -26,7 +26,7 @@ jobs:
           distribution: temurin
           java-version: 11
 
-      - name: Setup Godot build cache
+      - name: Setup Titanium build cache
         uses: ./.github/actions/godot-cache
         continue-on-error: true
 
@@ -49,7 +49,7 @@ jobs:
           target: template_release
           tests: false
 
-      - name: Generate Godot templates
+      - name: Generate Titanium templates
         run: |
           cd platform/android/java
           ./gradlew generateGodotTemplates

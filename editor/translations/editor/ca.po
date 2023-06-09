@@ -2975,9 +2975,9 @@ msgstr "No s'ha trobat el fitxer de plantilla: \"%s\"."
 msgid "Failed to copy export template."
 msgstr "No s'ha pogut copiar la plantilla d'exportació."
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
 msgstr ""
-"En les exportacions de 32 bits, el PCK incrustat no pot ser superior a 4 GiB."
+"En les exportacions de 32 bits, el TitanPack incrustat no pot ser superior a 4 GiB."
 
 msgid "Open the folder containing these templates."
 msgstr "Obriu la carpeta que conté aquestes plantilles."
@@ -6080,8 +6080,8 @@ msgstr "Fóra bo anomenar el projecte."
 msgid "Invalid project path (changed anything?)."
 msgstr "El Camí del Projecte no és vàlid (S'ha produit algun canvi?)."
 
-msgid "Couldn't create project.godot in project path."
-msgstr "No es pot crear el fitxer 'project.godot' en el camí del projecte."
+msgid "Couldn't create project.titan in project path."
+msgstr "No es pot crear el fitxer 'project.titan' en el camí del projecte."
 
 msgid "Error opening package file, not in ZIP format."
 msgstr ""
@@ -6207,8 +6207,8 @@ msgstr "Canviar zona morta de l'acció"
 msgid "Erase Input Action"
 msgstr "Elimina l'Acció d'Entrada"
 
-msgid "Project Settings (project.godot)"
-msgstr "Configuració del Projecte (project.godot)"
+msgid "Project Settings (project.titan)"
+msgstr "Configuració del Projecte (project.titan)"
 
 msgid "Input Map"
 msgstr "Mapa d'Entrades"

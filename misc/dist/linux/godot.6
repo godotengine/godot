@@ -3,7 +3,7 @@
 godot \- multi\-platform 2D and 3D game engine with a feature\-rich editor
 .SH SYNOPSIS
 .B godot
-[\fI\,options\/\fR] [path to scene or 'project.godot' file]
+[\fI\,options\/\fR] [path to scene or 'project.titan' file]
 .SH DESCRIPTION
 Godot Engine is an advanced, feature\-packed, multi\-platform 2D and 3D game
 engine.
@@ -38,13 +38,13 @@ Quit after the first iteration.
 Use a specific locale (<locale> being a two\-letter code).
 .TP
 \fB\-\-path\fR <directory>
-Path to a project (<directory> must contain a 'project.godot' file).
+Path to a project (<directory> must contain a 'project.titan' file).
 .TP
 \fB\-u\fR, \fB\-\-upwards\fR
-Scan folders upwards for project.godot file.
+Scan folders upwards for project.titan file.
 .TP
 \fB\-\-main\-pack\fR <file>
-Path to a pack (.pck) file to load.
+Path to a pack (.titanpack) file to load.
 .TP
 \fB\-\-render\-thread\fR <mode>
 Render thread mode ('unsafe', 'safe', 'separate').
@@ -145,7 +145,7 @@ Export the project in debug mode using the given preset and output path. The pre
 The target directory must exist.
 .TP
 \fB\-\-export\-pack\fR <preset> <path>
-Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.
+Export the project data only using the given preset and output path. The <path> extension determines whether it will be in TitanPack or ZIP format.
 .TP
 \fB\-\-doctool\fR <path>
 Dump the engine API reference to the given <path> in XML format, merging if existing files are found.

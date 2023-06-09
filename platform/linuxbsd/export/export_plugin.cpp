@@ -57,7 +57,7 @@ Error EditorExportPlatformLinuxBSD::_export_debug_script(const Ref<EditorExportP
 	return OK;
 }
 
-Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset> &p_preset, bool p_exe_only, bool p_debug, const String &p_path, int p_flags) {
 	bool export_as_zip = p_path.ends_with("zip");
 
 	String pkg_name;
@@ -88,7 +88,7 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 	}
 
 	// Export project.
-	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, path, p_flags);
+	Error err = EditorExportPlatformPC::export_project(p_preset, p_exe_only, p_debug, path, p_flags);
 	if (err != OK) {
 		return err;
 	}
@@ -185,11 +185,11 @@ bool EditorExportPlatformLinuxBSD::is_executable(const String &p_path) const {
 }
 
 Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
-	// Patch the header of the "pck" section in the ELF file so that it corresponds to the embedded data
+	// Patch the header of the "titanpack" section in the ELF file so that it corresponds to the embedded data
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ_WRITE);
 	if (f.is_null()) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), vformat(TTR("Failed to open executable file \"%s\"."), p_path));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("TitanPack Embedding"), vformat(TTR("Failed to open executable file \"%s\"."), p_path));
 		return ERR_CANT_OPEN;
 	}
 
@@ -197,7 +197,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 	{
 		uint32_t magic = f->get_32();
 		if (magic != 0x464c457f) { // 0x7F + "ELF"
-			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable file header corrupted."));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("TitanPack Embedding"), TTR("Executable file header corrupted."));
 			return ERR_FILE_CORRUPT;
 		}
 	}
@@ -207,7 +207,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 	int bits = f->get_8() * 32;
 
 	if (bits == 32 && p_embedded_size >= 0x100000000) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("32-bit executables cannot have embedded data >= 4 GiB."));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("TitanPack Embedding"), TTR("32-bit executables cannot have embedded data >= 4 GiB."));
 	}
 
 	// Get info about the section header table
@@ -256,7 +256,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 		f->get_buffer(strings, string_data_size);
 	}
 
-	// Search for the "pck" section
+	// Search for the "titanpack" section
 
 	bool found = false;
 	for (int i = 0; i < num_sections; ++i) {
@@ -264,8 +264,8 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 		f->seek(section_header_pos);
 
 		uint32_t name_offset = f->get_32();
-		if (strcmp((char *)strings + name_offset, "pck") == 0) {
-			// "pck" section found, let's patch!
+		if (strcmp((char *)strings + name_offset, "titanpack") == 0) {
+			// "titanpack" section found, let's patch!
 
 			if (bits == 32) {
 				f->seek(section_header_pos + 0x10);
@@ -285,7 +285,7 @@ Error EditorExportPlatformLinuxBSD::fixup_embedded_pck(const String &p_path, int
 	memfree(strings);
 
 	if (!found) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("Executable \"pck\" section not found."));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("TitanPack Embedding"), TTR("Executable \"titanpack\" section not found."));
 		return ERR_FILE_CORRUPT;
 	}
 	return OK;
@@ -401,7 +401,7 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 	if (ep.step(TTR("Exporting project..."), 1)) {
 		return ERR_SKIP;
 	}
-	Error err = export_project(p_preset, true, basepath + ".zip", p_debug_flags);
+	Error err = export_project(p_preset, false, true, basepath + ".zip", p_debug_flags);
 	if (err != OK) {
 		DirAccess::remove_file_or_error(basepath + ".zip");
 		return err;

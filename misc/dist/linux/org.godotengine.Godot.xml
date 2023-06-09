@@ -4,7 +4,7 @@
     <comment>Godot Engine project</comment>
     <sub-class-of type="text/plain"/>
     <icon name="x-godot-project"/>
-    <glob pattern="project.godot"/>
+    <glob pattern="project.titan"/>
   </mime-type>
 
   <mime-type type="application/x-godot-resource">

@@ -44,7 +44,7 @@
 		        print("foo is a(n) %s" % foo.get_class()) # inject the class name into a formatted string.
 		        # Note also that there is not yet any way to get a script's `class_name` string easily.
 		        # To fetch that value, you can use [member ProjectSettings.get_global_class_list].
-		        # Open your project.godot file to see it up close.
+		        # Open your project.titan file to see it up close.
 		[/gdscript]
 		[csharp]
 		Variant foo = 2;

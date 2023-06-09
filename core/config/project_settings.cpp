@@ -48,7 +48,7 @@
 #include "modules/modules_enabled.gen.h" // For mono.
 #endif // TOOLS_ENABLED
 
-const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
+const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "titanium";
 
 ProjectSettings *ProjectSettings::singleton = nullptr;
 
@@ -444,7 +444,7 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 		return false;
 	}
 
-	//if data.pck is found, all directory access will be from here
+	//if data.titanpack is found, all directory access will be from here
 	DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
 	using_datapack = true;
 
@@ -468,20 +468,20 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 }
 
 /*
- * This method is responsible for loading a project.godot file and/or data file
+ * This method is responsible for loading a project.titan file and/or data file
  * using the following merit order:
  *  - If using NetworkClient, try to lookup project file or fail.
  *  - If --main-pack was passed by the user (`p_main_pack`), load it or fail.
  *  - Search for project PCKs automatically. For each step we try loading a potential
- *    PCK, and if it doesn't work, we proceed to the next step. If any step succeeds,
+ *    TitanPack, and if it doesn't work, we proceed to the next step. If any step succeeds,
  *    we try loading the project settings, and abort if it fails. Steps:
- *    o Bundled PCK in the executable.
- *    o [macOS only] PCK with same basename as the binary in the .app resource dir.
- *    o PCK with same basename as the binary in the binary's directory. We handle both
- *      changing the extension to '.pck' (e.g. 'win_game.exe' -> 'win_game.pck') and
- *      appending '.pck' to the binary name (e.g. 'linux_game' -> 'linux_game.pck').
- *    o PCK with the same basename as the binary in the current working directory.
- *      Same as above for the two possible PCK file names.
+ *    o Bundled TitanPack in the executable.
+ *    o [macOS only] TitanPack with same basename as the binary in the .app resource dir.
+ *    o TitanPack with same basename as the binary in the binary's directory. We handle both
+ *      changing the extension to '.titanpack' (e.g. 'win_game.exe' -> 'win_game.titanpack') and
+ *      appending '.titanpack' to the binary name (e.g. 'linux_game' -> 'linux_game.titanpack').
+ *    o TitanPack with the same basename as the binary in the current working directory.
+ *      Same as above for the two possible TitanPack file names.
  *  - On relevant platforms (Android/iOS), lookup project file in OS resource path.
  *    If found, load it or fail.
  *  - Lookup project file in passed `p_path` (--path passed by the user), i.e. we
@@ -505,7 +505,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	// If looking for files in a network client, use it directly
 
 	if (FileAccessNetworkClient::get_singleton()) {
-		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+		Error err = _load_settings_text_or_binary("res://project.titan", "res://project.binary");
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails
 			_load_settings_text("res://override.cfg");
@@ -519,7 +519,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		bool ok = _load_resource_pack(p_main_pack);
 		ERR_FAIL_COND_V_MSG(!ok, ERR_CANT_OPEN, "Cannot open resource pack '" + p_main_pack + "'.");
 
-		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+		Error err = _load_settings_text_or_binary("res://project.titan", "res://project.binary");
 		if (err == OK && !p_ignore_override) {
 			// Load override from location of the main pack
 			// Optional, we don't mind if it fails
@@ -531,47 +531,47 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	String exec_path = OS::get_singleton()->get_executable_path();
 
 	if (!exec_path.is_empty()) {
-		// We do several tests sequentially until one succeeds to find a PCK,
+		// We do several tests sequentially until one succeeds to find a TitanPack,
 		// and if so, we attempt loading it at the end.
 
-		// Attempt with PCK bundled into executable.
+		// Attempt with TitanPack bundled into executable.
 		bool found = _load_resource_pack(exec_path);
 
-		// Attempt with exec_name.pck.
+		// Attempt with exec_name.titanpack.
 		// (This is the usual case when distributing a Godot game.)
 		String exec_dir = exec_path.get_base_dir();
 		String exec_filename = exec_path.get_file();
 		String exec_basename = exec_filename.get_basename();
 
-		// Based on the OS, it can be the exec path + '.pck' (Linux w/o extension, macOS in .app bundle)
-		// or the exec path's basename + '.pck' (Windows).
+		// Based on the OS, it can be the exec path + '.titanpack' (Linux w/o extension, macOS in .app bundle)
+		// or the exec path's basename + '.titanpack' (Windows).
 		// We need to test both possibilities as extensions for Linux binaries are optional
-		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
+		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.titanpack').
 
 #ifdef MACOS_ENABLED
 		if (!found) {
-			// Attempt to load PCK from macOS .app bundle resources.
-			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".pck")) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".pck"));
+			// Attempt to load TitanPack from macOS .app bundle resources.
+			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".titanpack")) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".titanpack"));
 		}
 #endif
 
 		if (!found) {
 			// Try to load data pack at the location of the executable.
 			// As mentioned above, we have two potential names to attempt.
-			found = _load_resource_pack(exec_dir.path_join(exec_basename + ".pck")) || _load_resource_pack(exec_dir.path_join(exec_filename + ".pck"));
+			found = _load_resource_pack(exec_dir.path_join(exec_basename + ".titanpack")) || _load_resource_pack(exec_dir.path_join(exec_filename + ".titanpack"));
 		}
 
 		if (!found) {
 			// If we couldn't find them next to the executable, we attempt
 			// the current working directory. Same story, two tests.
-			found = _load_resource_pack(exec_basename + ".pck") || _load_resource_pack(exec_filename + ".pck");
+			found = _load_resource_pack(exec_basename + ".titanpack") || _load_resource_pack(exec_filename + ".titanpack");
 		}
 
 		// If we opened our package, try and load our project.
 		if (found) {
-			Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+			Error err = _load_settings_text_or_binary("res://project.titan", "res://project.binary");
 			if (err == OK && !p_ignore_override) {
-				// Load overrides from the PCK and the executable location.
+				// Load overrides from the TitanPack and the executable location.
 				// Optional, we don't mind if either fails.
 				_load_settings_text("res://override.cfg");
 				_load_settings_text(exec_path.get_base_dir().path_join("override.cfg"));
@@ -581,10 +581,10 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	}
 
 	// Try to use the filesystem for files, according to OS.
-	// (Only Android -when reading from pck- and iOS use this.)
+	// (Only Android -when reading from titanpack- and iOS use this.)
 
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
-		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+		Error err = _load_settings_text_or_binary("res://project.titan", "res://project.binary");
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
 			_load_settings_text("res://override.cfg");
@@ -607,7 +607,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// Set the resource path early so things can be resolved when loading.
 		resource_path = current_dir;
 		resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
-		err = _load_settings_text_or_binary(current_dir.path_join("project.godot"), current_dir.path_join("project.binary"));
+		err = _load_settings_text_or_binary(current_dir.path_join("project.titan"), current_dir.path_join("project.binary"));
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
 			_load_settings_text(current_dir.path_join("override.cfg"));
@@ -734,10 +734,10 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 
 		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
 		if (err == ERR_FILE_EOF) {
-			// If we're loading a project.godot from source code, we can operate some
+			// If we're loading a project.titan from source code, we can operate some
 			// ProjectSettings conversions if need be.
 			_convert_to_last_version(config_version);
-			last_save_time = FileAccess::get_modified_time(get_resource_path().path_join("project.godot"));
+			last_save_time = FileAccess::get_modified_time(get_resource_path().path_join("project.titan"));
 			return OK;
 		}
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
@@ -760,7 +760,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 }
 
 Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, const String &p_bin_path) {
-	// Attempt first to load the binary project.godot file.
+	// Attempt first to load the binary project.titan file.
 	Error err = _load_settings_binary(p_bin_path);
 	if (err == OK) {
 		return OK;
@@ -769,7 +769,7 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 		ERR_PRINT("Couldn't load file '" + p_bin_path + "', error code " + itos(err) + ".");
 	}
 
-	// Fallback to text-based project.godot file if binary was not found.
+	// Fallback to text-based project.titan file if binary was not found.
 	err = _load_settings_text(p_text_path);
 	if (err == OK) {
 		return OK;
@@ -816,9 +816,9 @@ void ProjectSettings::clear(const String &p_name) {
 }
 
 Error ProjectSettings::save() {
-	Error error = save_custom(get_resource_path().path_join("project.godot"));
+	Error error = save_custom(get_resource_path().path_join("project.titan"));
 	if (error == OK) {
-		last_save_time = FileAccess::get_modified_time(get_resource_path().path_join("project.godot"));
+		last_save_time = FileAccess::get_modified_time(get_resource_path().path_join("project.titan"));
 	}
 	return error;
 }
@@ -895,7 +895,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<Str
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't save project.godot - " + p_file + ".");
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't save project.titan - " + p_file + ".");
 
 	file->store_line("; Engine configuration file.");
 	file->store_line("; It's best edited using the editor UI and not directly,");
@@ -1046,7 +1046,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		save_features += f;
 	}
 
-	if (p_path.ends_with(".godot") || p_path.ends_with("override.cfg")) {
+	if (p_path.ends_with(".titan") || p_path.ends_with("override.cfg")) {
 		return _save_settings_text(p_path, save_props, p_custom, save_features);
 	} else if (p_path.ends_with(".binary")) {
 		return _save_settings_binary(p_path, save_props, p_custom, save_features);
@@ -1254,7 +1254,7 @@ void ProjectSettings::_add_builtin_input_map() {
 
 ProjectSettings::ProjectSettings() {
 	// Initialization of engine variables should be done in the setup() method,
-	// so that the values can be overridden from project.godot or project.binary.
+	// so that the values can be overridden from project.titan or project.binary.
 
 	CRASH_COND_MSG(singleton != nullptr, "Instantiating a new ProjectSettings singleton is not supported.");
 	singleton = this;

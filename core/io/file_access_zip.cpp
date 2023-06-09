@@ -147,8 +147,8 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 }
 
 bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset = 0) {
-	// load with offset feature only supported for PCK files
-	ERR_FAIL_COND_V_MSG(p_offset != 0, false, "Invalid PCK data. Note that loading files with a non-zero offset isn't supported with ZIP archives.");
+	// load with offset feature only supported for TitanPack files
+	ERR_FAIL_COND_V_MSG(p_offset != 0, false, "Invalid TitanPack data. Note that loading files with a non-zero offset isn't supported with ZIP archives.");
 
 	if (p_path.get_extension().nocasecmp_to("zip") != 0 && p_path.get_extension().nocasecmp_to("pcz") != 0) {
 		return false;

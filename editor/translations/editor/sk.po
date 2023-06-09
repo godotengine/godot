@@ -2911,8 +2911,8 @@ msgstr "Zadaná cesta na export neexistuje."
 msgid "Template file not found: \"%s\"."
 msgstr "Súbor šablóny sa nenašiel: \"%s\"."
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "Pri 32-bitovom exporte nemôže byť vložená PCK väčšia ako 4 GiB."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
+msgstr "Pri 32-bitovom exporte nemôže byť vložená TitanPack väčšia ako 4 GiB."
 
 msgid "Open the folder containing these templates."
 msgstr "Otvoriť priečinok obsahujúci tieto šablóny."
@@ -3131,8 +3131,8 @@ msgstr ""
 msgid "Custom (comma-separated):"
 msgstr "Vlastné (oddelené čiarkou):"
 
-msgid "Encrypt Exported PCK"
-msgstr "Zašifruj exportované PCK súbory"
+msgid "Encrypt Exported TitanPack"
+msgstr "Zašifruj exportované TitanPack súbory"
 
 msgid "Encrypt Index (File Names and Info)"
 msgstr "Šifrovať index (názvy súborov a informácie)"

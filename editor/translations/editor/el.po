@@ -2612,9 +2612,9 @@ msgstr "Η δεδομένη διαδρομή εξαγωγής δεν υπάρχ�
 msgid "Template file not found: \"%s\"."
 msgstr "Δεν βρέθηκε το αρχείο προτύπου: \"%s\"."
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
 msgstr ""
-"Σε εξαγωγές 32-bit, το ενσωματωμένο PCK δεν μπορεί να υπερβαίνει τα 4 GiB."
+"Σε εξαγωγές 32-bit, το ενσωματωμένο TitanPack δεν μπορεί να υπερβαίνει τα 4 GiB."
 
 msgid "Error requesting URL:"
 msgstr "Σφάλμα αίτησης URL:"
@@ -6183,14 +6183,14 @@ msgid "Error opening package file (it's not in ZIP format)."
 msgstr "Σφάλμα ανοίγματος αρχείου πακέτου (δεν είναι σε μορφή ZIP)."
 
 msgid ""
-"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
-msgstr "Άκυρο αρχείο έργου «.zip»: Δεν περιέχει αρχείο «project.godot»."
+"Invalid \".zip\" project file; it doesn't contain a \"project.titan\" file."
+msgstr "Άκυρο αρχείο έργου «.zip»: Δεν περιέχει αρχείο «project.titan»."
 
 msgid "Please choose an empty folder."
 msgstr "Παρακαλούμε επιλέξτε έναν άδειο φάκελο."
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Παρακαλούμε επιλέξτε ένα αρχείο «project.godot» ή «.zip»."
+msgid "Please choose a \"project.titan\" or \".zip\" file."
+msgstr "Παρακαλούμε επιλέξτε ένα αρχείο «project.titan» ή «.zip»."
 
 msgid "This directory already contains a Godot project."
 msgstr "Ο κατάλογος αυτός περιέχει ήδη ένα έργο της Godot."
@@ -6213,8 +6213,8 @@ msgstr "Είναι καλή ιδέα να ονομάσετε το έργο σα�
 msgid "Invalid project path (changed anything?)."
 msgstr "Μη έγκυρη διαδρομή έργου (Αλλάξατε τίποτα;)."
 
-msgid "Couldn't create project.godot in project path."
-msgstr "Δεν ήταν δυνατή η δημιουργία του project.godot στη διαδρομή έργου."
+msgid "Couldn't create project.titan in project path."
+msgstr "Δεν ήταν δυνατή η δημιουργία του project.titan στη διαδρομή έργου."
 
 msgid "Error opening package file, not in ZIP format."
 msgstr "Σφάλμα ανοίγματος αρχείου πακέτου, δεν είναι σε μορφή ZIP."
@@ -6360,8 +6360,8 @@ msgstr "Αλλαγή Νεκρής Ζώνης Ενέργειας"
 msgid "Erase Input Action"
 msgstr "Διαγραφή ενέργειας εισόδου"
 
-msgid "Project Settings (project.godot)"
-msgstr "Ρυθμίσεις έργου (project.godot)"
+msgid "Project Settings (project.titan)"
+msgstr "Ρυθμίσεις έργου (project.titan)"
 
 msgid "Input Map"
 msgstr "Χάρτης εισόδου"

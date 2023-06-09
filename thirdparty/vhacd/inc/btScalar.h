@@ -430,7 +430,7 @@ SIMD_FORCE_INLINE void btSwap(T& a, T& b)
     b = tmp;
 }
 
-//PCK: endian swapping functions
+//TitanPack: endian swapping functions
 SIMD_FORCE_INLINE unsigned btSwapEndian(unsigned val)
 {
     return (((val & 0xff000000) >> 24) | ((val & 0x00ff0000) >> 8) | ((val & 0x0000ff00) << 8) | ((val & 0x000000ff) << 24));

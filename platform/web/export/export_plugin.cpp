@@ -231,7 +231,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	// Heavy files that are cached on demand.
 	Array opt_cache_files;
 	opt_cache_files.push_back(name + ".wasm");
-	opt_cache_files.push_back(name + ".pck");
+	opt_cache_files.push_back(name + ".titanpack");
 	if (extensions) {
 		opt_cache_files.push_back(name + ".side.wasm");
 		for (int i = 0; i < p_shared_objects.size(); i++) {
@@ -415,8 +415,14 @@ List<String> EditorExportPlatformWeb::get_binary_extensions(const Ref<EditorExpo
 	return list;
 }
 
-Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_preset, bool p_exe_only, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+
+	if (p_exe_only)
+	{
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("That platform doesn't support executable-only functionality")));
+		return ERR_FILE_CANT_WRITE;
+	}
 
 	const String custom_debug = p_preset->get("custom_template/debug");
 	const String custom_release = p_preset->get("custom_template/release");
@@ -445,9 +451,9 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	// Export pck and shared objects
+	// Export titanpack and shared objects
 	Vector<SharedObject> shared_objects;
-	String pck_path = base_path + ".pck";
+	String pck_path = base_path + ".titanpack";
 	Error error = save_pack(p_preset, p_debug, pck_path, &shared_objects);
 	if (error != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), pck_path));
@@ -472,7 +478,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 		return error;
 	}
 
-	// Parse generated file sizes (pck and wasm, to help show a meaningful loading bar).
+	// Parse generated file sizes (titanpack and wasm, to help show a meaningful loading bar).
 	Dictionary file_sizes;
 	Ref<FileAccess> f = FileAccess::open(pck_path, FileAccess::READ);
 	if (f.is_valid()) {
@@ -589,7 +595,7 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 	}
 
 	const String basepath = dest.path_join("tmp_js_export");
-	Error err = export_project(p_preset, true, basepath + ".html", p_debug_flags);
+	Error err = export_project(p_preset, false, true, basepath + ".html", p_debug_flags);
 	if (err != OK) {
 		// Export generates several files, clean them up on failure.
 		DirAccess::remove_file_or_error(basepath + ".html");
@@ -598,7 +604,7 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 		DirAccess::remove_file_or_error(basepath + ".worker.js");
 		DirAccess::remove_file_or_error(basepath + ".audio.worklet.js");
 		DirAccess::remove_file_or_error(basepath + ".service.worker.js");
-		DirAccess::remove_file_or_error(basepath + ".pck");
+		DirAccess::remove_file_or_error(basepath + ".titanpack");
 		DirAccess::remove_file_or_error(basepath + ".png");
 		DirAccess::remove_file_or_error(basepath + ".side.wasm");
 		DirAccess::remove_file_or_error(basepath + ".wasm");

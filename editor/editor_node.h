@@ -259,6 +259,7 @@ private:
 	struct ExportDefer {
 		String preset;
 		String path;
+		bool exe_only = false;
 		bool debug = false;
 		bool pack_only = false;
 	} export_defer;

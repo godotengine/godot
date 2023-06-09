@@ -1394,8 +1394,8 @@ msgstr "Konsolenskript exportieren"
 msgid "Binary Format"
 msgstr "Binärformat"
 
-msgid "Embed PCK"
-msgstr "PCK einbetten"
+msgid "Embed TitanPack"
+msgstr "TitanPack einbetten"
 
 msgid "Texture Format"
 msgstr "Texturformat"

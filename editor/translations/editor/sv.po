@@ -2529,11 +2529,11 @@ msgstr "Mallfil hittades inte."
 msgid "Custom release template not found."
 msgstr "Anpassad release mall hittades inte."
 
-msgid "PCK Embedding"
-msgstr "PCK Inbäddning"
+msgid "TitanPack Embedding"
+msgstr "TitanPack Inbäddning"
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "Den inbäddade PCK får inte vara större än 4 GiB på 32 bitars exporter."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
+msgstr "Den inbäddade TitanPack får inte vara större än 4 GiB på 32 bitars exporter."
 
 msgid "Connecting to the mirror..."
 msgstr "Ansluter till spegeln..."
@@ -3343,8 +3343,8 @@ msgstr "Redigera Visuell Egenskap:"
 msgid "Please choose an empty folder."
 msgstr "Välj en tom mapp."
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Välj en \"project.godot\" eller \".zip\" fil."
+msgid "Please choose a \"project.titan\" or \".zip\" file."
+msgstr "Välj en \"project.titan\" eller \".zip\" fil."
 
 msgid "New Game Project"
 msgstr "Nytt Spelprojekt"

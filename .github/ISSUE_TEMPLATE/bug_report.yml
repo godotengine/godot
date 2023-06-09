@@ -1,18 +1,18 @@
 name: Bug report
-description: Report a bug in Godot
+description: Report a bug in Titanium
 body:
 
 - type: markdown
   attributes:
     value: |
-      - Read our [CONTRIBUTING.md guide](https://github.com/godotengine/godot/blob/master/CONTRIBUTING.md#reporting-bugs) on reporting bugs.
+      - Read our [CONTRIBUTING.md guide](https://github.com/GibasStudio/titanium/blob/master/CONTRIBUTING.md#reporting-bugs) on reporting bugs.
       - Write a descriptive issue title above.
-      - Search [open](https://github.com/godotengine/godot/issues) and [closed](https://github.com/godotengine/godot/issues?q=is%3Aissue+is%3Aclosed) issues to ensure it has not already been reported.
-      - Verify that you are using a [supported Godot version](https://docs.godotengine.org/en/stable/about/release_policy.html).
+      - Search [open](https://github.com/GibasStudio/titanium/issues) and [closed](https://github.com/GibasStudio/titanium/issues?q=is%3Aissue+is%3Aclosed) issues to ensure it has not already been reported.
+      - Verify that you are using a [supported Titanium version](https://docs.godotengine.org/en/stable/about/release_policy.html).
 
 - type: input
   attributes:
-    label: Godot version
+    label: Titanium version
     description: >
       Specify the Git commit hash if using a development or non-official build.
       If you use a custom build, please test if your issue is reproducible in official builds too.
@@ -52,7 +52,7 @@ body:
   attributes:
     label: Minimal reproduction project
     description: |
-      A small Godot project which reproduces the issue, with no unnecessary files included. Be sure to not include the `.godot` folder in the archive (but keep `project.godot`).
+      A small Titanium project which reproduces the issue, with no unnecessary files included. Be sure to not include the `.godot` folder in the archive (but keep `project.titan`).
       Required, unless the reproduction steps are trivial and don't require any project files to be followed. In this case, write "N/A" in the field.
       Drag and drop a ZIP archive to upload it. **Do not select another field until the project is done uploading.**
   validations:

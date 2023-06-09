@@ -1,5 +1,5 @@
-name: Setup Godot build cache
-description: Setup Godot build cache.
+name: Setup Titanium build cache
+description: Setup Titanium build cache.
 inputs:
   cache-name:
     description: The cache base name (job name by default).

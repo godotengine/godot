@@ -197,7 +197,7 @@ String OS::get_locale_language() const {
 	return get_locale().left(3).replace("_", "");
 }
 
-// Embedded PCK offset.
+// Embedded TitanPack offset.
 uint64_t OS::get_embedded_pck_offset() const {
 	return 0;
 }

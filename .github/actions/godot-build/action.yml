@@ -1,5 +1,5 @@
-name: Build Godot
-description: Build Godot with the provided options.
+name: Build Titanium
+description: Build Titanium with the provided options.
 inputs:
   target:
     description: Build target (editor, template_release, template_debug).

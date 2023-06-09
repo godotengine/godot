@@ -137,7 +137,7 @@ _complete_godot_bash() {
   elif [[ $prev == "--main-pack" ]]; then
     local IFS=$'\n\t'
     # shellcheck disable=SC2207
-    COMPREPLY=($(compgen -f -X "!*.@(pck|zip)" -- "$cur"))
+    COMPREPLY=($(compgen -f -X "!*.@(titanpack|zip)" -- "$cur"))
   elif [[ $prev == "-s" || $prev == "--script" ]]; then
     local IFS=$'\n\t'
     # shellcheck disable=SC2207

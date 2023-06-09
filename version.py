@@ -1,10 +1,10 @@
-short_name = "godot"
-name = "Godot Engine"
-major = 4
+short_name = "titanium"
+name = "Titanium"
+major = 1
 minor = 0
-patch = 4
-status = "rc"
+patch = 0
+status = "dev"
 module_config = ""
 year = 2023
-website = "https://godotengine.org"
+website = "https://gibasstudio.github.io/titanium.html"
 docs = "4.0"

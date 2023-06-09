@@ -1444,8 +1444,14 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 	return OK;
 }
 
-Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_exe_only, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+
+	if (p_exe_only)
+	{
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("That platform doesn't support executable-only functionality")));
+		return ERR_FILE_CANT_WRITE;
+	}
 
 	String src_pkg_name;
 	String dest_dir = p_path.get_base_dir() + "/";
@@ -1500,10 +1506,10 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		}
 	}
 
-	if (ep.step("Making .pck", 0)) {
+	if (ep.step("Making .titanpack", 0)) {
 		return ERR_SKIP;
 	}
-	String pack_path = dest_dir + binary_name + ".pck";
+	String pack_path = dest_dir + binary_name + ".titanpack";
 	Vector<SharedObject> libraries;
 	Error err = save_pack(p_preset, p_debug, pack_path, &libraries);
 	if (err) {

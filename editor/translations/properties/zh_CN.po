@@ -1696,8 +1696,8 @@ msgstr "导出命令行脚本"
 msgid "Binary Format"
 msgstr "二进制格式"
 
-msgid "Embed PCK"
-msgstr "内嵌 PCK"
+msgid "Embed TitanPack"
+msgstr "内嵌 TitanPack"
 
 msgid "Texture Format"
 msgstr "纹理格式"

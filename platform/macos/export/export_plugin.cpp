@@ -1052,8 +1052,14 @@ Error EditorExportPlatformMacOS::_export_debug_script(const Ref<EditorExportPres
 	return OK;
 }
 
-Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_exe_only, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
+
+	if (p_exe_only)
+	{
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("That platform doesn't support executable-only functionality")));
+		return ERR_FILE_CANT_WRITE;
+	}
 
 	String src_pkg_name;
 
@@ -1468,7 +1474,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			};
 		}
 
-		String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
+		String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".titanpack";
 		Vector<SharedObject> shared_objects;
 		err = save_pack(p_preset, p_debug, pack_path, &shared_objects);
 
@@ -2055,7 +2061,7 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 	if (ep.step(TTR("Exporting project..."), 1)) {
 		return ERR_SKIP;
 	}
-	Error err = export_project(p_preset, true, basepath + ".zip", p_debug_flags);
+	Error err = export_project(p_preset, false, true, basepath + ".zip", p_debug_flags);
 	if (err != OK) {
 		DirAccess::remove_file_or_error(basepath + ".zip");
 		return err;

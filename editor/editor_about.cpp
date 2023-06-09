@@ -116,7 +116,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 }
 
 EditorAbout::EditorAbout() {
-	set_title(TTR("Thanks from the Godot community!"));
+	set_title(TTR("Titanium is made possible by the Godot Engine open source project"));
 	set_hide_on_ok(true);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -153,8 +153,7 @@ EditorAbout::EditorAbout() {
 
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	about_text->set_text(String::utf8("\xc2\xa9 2014-present ") + TTR("Godot Engine contributors") + "." +
-			String::utf8("\n\xc2\xa9 2007-2014 Juan Linietsky, Ariel Manzur.\n"));
+	about_text->set_text(String::utf8("\xc2\xa9 2023-present Kacper Gibas."));
 	version_info_vbc->add_child(about_text);
 
 	hbc->add_child(version_info_vbc);

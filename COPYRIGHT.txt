@@ -37,9 +37,9 @@
 -----------------------------------------------------------------------
 
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: Godot Engine
-Upstream-Contact: Rémi Verschelde <contact@godotengine.org>
-Source: https://github.com/godotengine/godot
+Upstream-Name: Titanium
+Upstream-Contact: Kacper Gibas <kacperbogangibas@gmail.com>
+Source: https://github.com/GibasStudio/titanium
 
 Files: *
 Comment: Godot Engine

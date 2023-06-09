@@ -2944,8 +2944,8 @@ msgstr "無法打開位於「%s」的檔案進行讀取。"
 msgid "Packing"
 msgstr "正在打包"
 
-msgid "Save PCK"
-msgstr "儲存 PCK"
+msgid "Save TitanPack"
+msgstr "儲存 TitanPack"
 
 msgid "Cannot create file \"%s\"."
 msgstr "無法建立「%s」檔案。"
@@ -2980,11 +2980,11 @@ msgstr "找不到模板檔案：「%s」。"
 msgid "Failed to copy export template."
 msgstr "複製匯出模板失敗。"
 
-msgid "PCK Embedding"
-msgstr "PCK 內嵌"
+msgid "TitanPack Embedding"
+msgstr "TitanPack 內嵌"
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "匯出 32 位元檔時，內嵌 PCK 大小不得超過 4 GB。"
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
+msgstr "匯出 32 位元檔時，內嵌 TitanPack 大小不得超過 4 GB。"
 
 msgid "Open the folder containing these templates."
 msgstr "開啟包含這些樣板的資料夾。"
@@ -7417,14 +7417,14 @@ msgid "Error opening package file (it's not in ZIP format)."
 msgstr "開啟套件檔案時發生錯誤（非 ZIP 格式）。"
 
 msgid ""
-"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
-msgstr "無效的「.zip」專案檔；未包含「project.godot」檔案。"
+"Invalid \".zip\" project file; it doesn't contain a \"project.titan\" file."
+msgstr "無效的「.zip」專案檔；未包含「project.titan」檔案。"
 
 msgid "Please choose an empty folder."
 msgstr "請選擇一個空資料夾。"
 
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "請選擇一個「project.godot」或「.zip」檔案。"
+msgid "Please choose a \"project.titan\" or \".zip\" file."
+msgstr "請選擇一個「project.titan」或「.zip」檔案。"
 
 msgid "This directory already contains a Godot project."
 msgstr "該目錄已經包含了一個 Godot 專案。"
@@ -7450,8 +7450,8 @@ msgstr "最好幫你的專案起個名字。"
 msgid "Invalid project path (changed anything?)."
 msgstr "不正確的專案路徑（有修改了什麼嗎？）。"
 
-msgid "Couldn't create project.godot in project path."
-msgstr "無法在項目路徑中建立 project.godot。"
+msgid "Couldn't create project.titan in project path."
+msgstr "無法在項目路徑中建立 project.titan。"
 
 msgid "Error opening package file, not in ZIP format."
 msgstr "無法開啟套件檔案，非 ZIP 格式。"
@@ -7631,8 +7631,8 @@ msgstr "修改操作盲區"
 msgid "Erase Input Action"
 msgstr "清除輸入操作"
 
-msgid "Project Settings (project.godot)"
-msgstr "專案設定 (project.godot)"
+msgid "Project Settings (project.titan)"
+msgstr "專案設定 (project.titan)"
 
 msgid "Input Map"
 msgstr "輸入映射"

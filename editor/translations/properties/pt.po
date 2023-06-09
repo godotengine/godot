@@ -1264,8 +1264,8 @@ msgstr "Libertar"
 msgid "Binary Format"
 msgstr "Formato Binário"
 
-msgid "Embed PCK"
-msgstr "Incorporar PCK"
+msgid "Embed TitanPack"
+msgstr "Incorporar TitanPack"
 
 msgid "Texture Format"
 msgstr "Formato de Textura"

@@ -5,7 +5,7 @@ on:
 # Global Settings
 env:
   # Used for the cache key. Add version suffix to force clean build.
-  GODOT_BASE_BRANCH: '4.0'
+  GODOT_BASE_BRANCH: '1.0'
   SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no
   EM_VERSION: 3.1.18
   EM_CACHE_FOLDER: "emsdk-cache"
@@ -32,7 +32,7 @@ jobs:
         run: |
           emcc -v
 
-      - name: Setup Godot build cache
+      - name: Setup Titanium build cache
         uses: ./.github/actions/godot-cache
         continue-on-error: true
 

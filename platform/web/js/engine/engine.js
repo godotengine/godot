@@ -189,7 +189,7 @@ const Engine = (function () {
 			 *
 			 * This will initialize the instance if it is not initialized. For manual initialization, see :js:meth:`init <Engine.prototype.init>`.
 			 *
-			 * This will load the engine if it is not loaded, and preload the main pck.
+			 * This will load the engine if it is not loaded, and preload the main titanpack.
 			 *
 			 * This method expects the initial config (or the override) to have both the :js:attr:`executable` and :js:attr:`mainPack`
 			 * properties set (normally done by the editor during export).
@@ -201,7 +201,7 @@ const Engine = (function () {
 				this.config.update(override);
 				// Add main-pack argument.
 				const exe = this.config.executable;
-				const pack = this.config.mainPack || `${exe}.pck`;
+				const pack = this.config.mainPack || `${exe}.titanpack`;
 				this.config.args = ['--main-pack', pack].concat(this.config.args);
 				// Start and init with execName as loadPath if not inited.
 				const me = this;

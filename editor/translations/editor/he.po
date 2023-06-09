@@ -2220,8 +2220,8 @@ msgstr "תבנית ניפוי שגיאות מותאמת אישית לא נמצא
 msgid "Custom release template not found."
 msgstr "תבנית שחרור מותאמת-אישית לא נמצאה."
 
-msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "בייצוא ארכיטקטורת 32 ביט, ה PCK המובנה לא יכול לחרוג מעבר ל 4 GiB."
+msgid "On 32-bit exports the embedded TitanPack cannot be bigger than 4 GiB."
+msgstr "בייצוא ארכיטקטורת 32 ביט, ה TitanPack המובנה לא יכול לחרוג מעבר ל 4 GiB."
 
 msgid "Error requesting URL:"
 msgstr "שגיאה בבקשת כתובת:"

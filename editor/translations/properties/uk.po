@@ -1610,8 +1610,8 @@ msgstr "Експортувати скрипт консолі"
 msgid "Binary Format"
 msgstr "Двійковий формат"
 
-msgid "Embed PCK"
-msgstr "Вбудувати PCK"
+msgid "Embed TitanPack"
+msgstr "Вбудувати TitanPack"
 
 msgid "Texture Format"
 msgstr "Формат текстури"
