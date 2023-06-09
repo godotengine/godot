@@ -670,6 +670,7 @@ public:
 	Transform2D get_screen_transform() const;
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const;
 	virtual Transform2D get_popup_base_transform() const { return Transform2D(); }
+	virtual bool is_directly_attached_to_screen() const { return false; };
 
 #ifndef _3D_DISABLED
 	bool use_xr = false;
@@ -801,6 +802,7 @@ public:
 
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
+	virtual bool is_directly_attached_to_screen() const override;
 
 	void _validate_property(PropertyInfo &p_property) const;
 	SubViewport();
