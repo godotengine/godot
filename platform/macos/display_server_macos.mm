@@ -2338,7 +2338,7 @@ void DisplayServerMacOS::show_window(WindowID p_id) {
 	popup_open(p_id);
 	if ([wd.window_object isMiniaturized]) {
 		return;
-	} else if (wd.no_focus || wd.is_popup) {
+	} else if (wd.no_focus) {
 		[wd.window_object orderFront:nil];
 	} else {
 		[wd.window_object makeKeyAndOrderFront:nil];
@@ -2972,7 +2972,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			if ([wd.window_object isVisible]) {
 				if ([wd.window_object isMiniaturized]) {
 					return;
-				} else if (wd.no_focus || wd.is_popup) {
+				} else if (wd.no_focus) {
 					[wd.window_object orderFront:nil];
 				} else {
 					[wd.window_object makeKeyAndOrderFront:nil];
