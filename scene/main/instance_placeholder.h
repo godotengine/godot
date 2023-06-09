@@ -46,6 +46,8 @@ class InstancePlaceholder : public Node {
 
 	List<PropSet> stored_values;
 
+	List<StringName> stored_groups;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -58,6 +60,9 @@ public:
 	String get_instance_path() const;
 
 	Dictionary get_stored_values(bool p_with_order = false);
+
+	void store_group(const StringName &p_identifier);
+	Array get_stored_groups();
 
 	Node *create_instance(bool p_replace = false, const Ref<PackedScene> &p_custom_scene = Ref<PackedScene>());
 

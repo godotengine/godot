@@ -99,6 +99,10 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
 		scene->set(E.name, E.value);
 	}
 
+	for (const StringName &E : stored_groups) {
+		scene->add_to_group(E, true);
+	}
+
 	if (p_replace) {
 		queue_free();
 		base->remove_child(this);
@@ -128,8 +132,23 @@ Dictionary InstancePlaceholder::get_stored_values(bool p_with_order) {
 	return ret;
 };
 
+void InstancePlaceholder::store_group(const StringName &p_identifier) {
+	stored_groups.push_back(p_identifier);
+}
+
+Array InstancePlaceholder::get_stored_groups() {
+	Array ret;
+
+	for (const StringName &E : stored_groups) {
+		ret.push_back(E);
+	}
+
+	return ret;
+}
+
 void InstancePlaceholder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stored_values", "with_order"), &InstancePlaceholder::get_stored_values, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_stored_groups"), &InstancePlaceholder::get_stored_groups);
 	ClassDB::bind_method(D_METHOD("create_instance", "replace", "custom_scene"), &InstancePlaceholder::create_instance, DEFVAL(false), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("get_instance_path"), &InstancePlaceholder::get_instance_path);
 }

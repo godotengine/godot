@@ -156,12 +156,12 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
 					node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
 					ERR_FAIL_COND_V(!node, nullptr);
+					node->set_scene_instance_load_placeholder(true);
 				} else {
 					InstancePlaceholder *ip = memnew(InstancePlaceholder);
 					ip->set_instance_path(scene_path);
 					node = ip;
 				}
-				node->set_scene_instance_load_placeholder(true);
 			} else {
 				Ref<PackedScene> sdata = props[n.instance & FLAG_MASK];
 				ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
@@ -371,9 +371,18 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			//name
 
 			//groups
-			for (int j = 0; j < n.groups.size(); j++) {
-				ERR_FAIL_INDEX_V(n.groups[j], sname_count, nullptr);
-				node->add_to_group(snames[n.groups[j]], true);
+			if (Object::cast_to<InstancePlaceholder>(node)) {
+				InstancePlaceholder *ip = Object::cast_to<InstancePlaceholder>(node);
+				for (int j = 0; j < n.groups.size(); j++) {
+					ERR_FAIL_INDEX_V(n.groups[j], sname_count, nullptr);
+					ip->store_group(snames[n.groups[j]]);
+				}
+				node = ip;
+			} else {
+				for (int j = 0; j < n.groups.size(); j++) {
+					ERR_FAIL_INDEX_V(n.groups[j], sname_count, nullptr);
+					node->add_to_group(snames[n.groups[j]], true);
+				}
 			}
 
 			if (n.instance >= 0 || n.type != TYPE_INSTANTIATED || i == 0) {
