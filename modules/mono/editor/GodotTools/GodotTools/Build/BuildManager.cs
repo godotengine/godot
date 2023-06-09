@@ -279,11 +279,18 @@ namespace GodotTools.Build
             [DisallowNull] string configuration,
             [DisallowNull] string platform,
             [DisallowNull] string runtimeIdentifier,
-            [DisallowNull] string publishOutputDir
+            [DisallowNull] string publishOutputDir,
+            bool includeDebugSymbols = true
         )
         {
             var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, GodotSharpDirs.ProjectCsProjPath, configuration,
                 runtimeIdentifier, publishOutputDir, restore: true, rebuild: false, onlyClean: false);
+
+            if (!includeDebugSymbols)
+            {
+                buildInfo.CustomProperties.Add("DebugType=None");
+                buildInfo.CustomProperties.Add("DebugSymbols=false");
+            }
 
             buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
 
@@ -308,9 +315,10 @@ namespace GodotTools.Build
             [DisallowNull] string configuration,
             [DisallowNull] string platform,
             [DisallowNull] string runtimeIdentifier,
-            string publishOutputDir
+            string publishOutputDir,
+            bool includeDebugSymbols = true
         ) => PublishProjectBlocking(CreatePublishBuildInfo(configuration,
-            platform, runtimeIdentifier, publishOutputDir));
+            platform, runtimeIdentifier, publishOutputDir, includeDebugSymbols));
 
         public static bool EditorBuildCallback()
         {
