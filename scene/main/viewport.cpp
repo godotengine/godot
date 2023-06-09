@@ -61,6 +61,11 @@
 #include "servers/rendering/rendering_server_globals.h"
 
 void ViewportTexture::setup_local_to_scene() {
+	// For the same target viewport, setup is only allowed once to prevent multiple free or multiple creations.
+	if (!vp_changed) {
+		return;
+	}
+
 	if (vp_pending) {
 		return;
 	}
@@ -89,20 +94,17 @@ void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
 	}
 
 	path = p_path;
+	vp_changed = true;
 
 	if (vp) {
 		vp->viewport_textures.erase(this);
 		vp = nullptr;
 	}
 
-	if (proxy_ph.is_valid()) {
-		RS::get_singleton()->free(proxy_ph);
+	if (proxy.is_valid() && proxy_ph.is_null()) {
+		proxy_ph = RS::get_singleton()->texture_2d_placeholder_create();
+		RS::get_singleton()->texture_proxy_update(proxy, proxy_ph);
 	}
-	if (proxy.is_valid()) {
-		RS::get_singleton()->free(proxy);
-	}
-	proxy_ph = RID();
-	proxy = RID();
 
 	if (get_local_scene() && !path.is_empty()) {
 		setup_local_to_scene();
@@ -181,11 +183,13 @@ void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
 	if (proxy_ph.is_valid()) {
 		RS::get_singleton()->texture_proxy_update(proxy, vp->texture_rid);
 		RS::get_singleton()->free(proxy_ph);
+		proxy_ph = RID();
 	} else {
 		ERR_FAIL_COND(proxy.is_valid()); // Should be invalid.
 		proxy = RS::get_singleton()->texture_proxy_create(vp->texture_rid);
 	}
 	vp_pending = false;
+	vp_changed = false;
 
 	emit_changed();
 }
