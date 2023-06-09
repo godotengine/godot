@@ -342,7 +342,7 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-	return !wd.no_focus && !wd.is_popup;
+	return !wd.no_focus;
 }
 
 - (BOOL)acceptsFirstResponder {
