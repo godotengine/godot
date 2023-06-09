@@ -8,10 +8,11 @@
 
 ## Godot Engine: Silver Edition
 
-**[Titanium](https://gibasstudio.github.io/titanium.html) is a modified Godot Engine designed for small open-world games.**
+**[Titanium](https://gibasstudio.github.io/titanium.html) is a modified Godot Engine designed for small open world games.**
+
 The name is based on radioactive element No. 22
 
-To make the best game engine for small open-world games, we made tweaks that's
+To make the best game engine for small open world games, we made tweaks that's
 ideal or good
 
 ## Tweaks
