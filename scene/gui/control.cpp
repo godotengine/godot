@@ -1712,7 +1712,7 @@ void Control::_size_changed() {
 	}
 
 	if (is_layout_rtl()) {
-		new_pos_cache.x = parent_rect.size.x - new_pos_cache.x - new_size_cache.x;
+		new_pos_cache.x = parent_rect.size.x + 2 * parent_rect.position.x - new_pos_cache.x - new_size_cache.x;
 	}
 
 	if (minimum_size.height > new_size_cache.height) {
