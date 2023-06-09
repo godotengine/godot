@@ -2486,8 +2486,6 @@ void ProjectManager::_delete_project_tag(const String &p_tag) {
 }
 
 void ProjectManager::_apply_project_tags() {
-	ProjectList::Item &item = _project_list->get_selected_projects().write[0];
-
 	PackedStringArray tags;
 	for (int i = 0; i < project_tags->get_child_count(); i++) {
 		ProjectTag *tag_control = Object::cast_to<ProjectTag>(project_tags->get_child(i));
@@ -2497,7 +2495,7 @@ void ProjectManager::_apply_project_tags() {
 	}
 
 	ConfigFile cfg;
-	String project_godot = item.path.path_join("project.godot");
+	const String project_godot = _project_list->get_selected_projects()[0].path.path_join("project.godot");
 	Error err = cfg.load(project_godot);
 	if (err != OK) {
 		tag_edit_error->set_text(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err));
