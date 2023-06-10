@@ -745,7 +745,7 @@ int WaylandThread::get_screen_count() const {
 	return wls->globals.wl_outputs.size();
 }
 
-void WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
+Error WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
 #ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
@@ -755,17 +755,17 @@ void WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
 
 	if (initialize_wayland_client(dylibloader_verbose) != 0) {
 		WARN_PRINT("Can't load the Wayland client library.");
-		return;
+		return ERR_CANT_CREATE;
 	}
 
 	if (initialize_wayland_cursor(dylibloader_verbose) != 0) {
 		WARN_PRINT("Can't load the Wayland cursor library.");
-		return;
+		return ERR_CANT_CREATE;
 	}
 
 	if (initialize_xkbcommon(dylibloader_verbose) != 0) {
 		WARN_PRINT("Can't load the XKBcommon library.");
-		return;
+		return ERR_CANT_CREATE;
 	}
 #endif // SOWRAP_ENABLED
 
@@ -795,12 +795,12 @@ void WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
 
 	WaylandGlobals &globals = wls->globals;
 
-	ERR_FAIL_COND_MSG(!globals.wl_shm, "Can't obtain the Wayland shared memory global.");
-	ERR_FAIL_COND_MSG(!globals.wl_compositor, "Can't obtain the Wayland compositor global.");
-	ERR_FAIL_COND_MSG(!globals.wl_subcompositor, "Can't obtain the Wayland subcompositor global.");
-	ERR_FAIL_COND_MSG(!globals.wl_data_device_manager, "Can't obtain the Wayland data device manager global.");
-	ERR_FAIL_COND_MSG(!globals.wp_pointer_constraints, "Can't obtain the Wayland pointer constraints global.");
-	ERR_FAIL_COND_MSG(!globals.xdg_wm_base, "Can't obtain the Wayland XDG shell global.");
+	ERR_FAIL_COND_V_MSG(ERR_CANT_CREATE, !globals.wl_shm, "Can't obtain the Wayland shared memory global.");
+	ERR_FAIL_COND_V_MSG(ERR_CANT_CREATE, !globals.wl_compositor, "Can't obtain the Wayland compositor global.");
+	ERR_FAIL_COND_V_MSG(ERR_CANT_CREATE, !globals.wl_subcompositor, "Can't obtain the Wayland subcompositor global.");
+	ERR_FAIL_COND_V_MSG(ERR_CANT_CREATE, !globals.wl_data_device_manager, "Can't obtain the Wayland data device manager global.");
+	ERR_FAIL_COND_V_MSG(ERR_CANT_CREATE, !globals.wp_pointer_constraints, "Can't obtain the Wayland pointer constraints global.");
+	ERR_FAIL_COND_V_MSG(ERR_CANT_CREATE, !globals.xdg_wm_base, "Can't obtain the Wayland XDG shell global.");
 
 	if (!globals.xdg_decoration_manager) {
 #ifdef LIBDECOR_ENABLED
@@ -838,6 +838,8 @@ void WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
 		print_verbose("libdecor not found. Client-side decorations disabled.");
 	}
 #endif // LIBDECOR_ENABLED
+
+	return ERR_OK;
 }
 
 void WaylandThread::destroy() {

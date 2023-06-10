@@ -3083,7 +3083,11 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	r_error = ERR_UNAVAILABLE;
 
-	wayland_thread.init(wls);
+	Error thread_err = wayland_thread.init(wls)
+
+							   if (thread_err != ERR_OK) {
+		return thread_err;
+	}
 
 	// Input.
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);
