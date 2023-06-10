@@ -228,7 +228,7 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 
 		val x = terminusEvent.x
 		val y = terminusEvent.y
-		if (terminusEvent.pointerCount >= 2 && panningAndScalingEnabled && !pointerCaptureInProgress) {
+		if (terminusEvent.pointerCount >= 2 && panningAndScalingEnabled && !pointerCaptureInProgress && !dragInProgress) {
 			GodotLib.pan(x, y, distanceX / 5f, distanceY / 5f)
 		} else if (!scaleInProgress) {
 			dragInProgress = true
@@ -238,7 +238,7 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 	}
 
 	override fun onScale(detector: ScaleGestureDetector): Boolean {
-		if (!panningAndScalingEnabled || pointerCaptureInProgress) {
+		if (!panningAndScalingEnabled || pointerCaptureInProgress || dragInProgress) {
 			return false
 		}
 
@@ -253,7 +253,7 @@ internal class GodotGestureHandler : SimpleOnGestureListener(), OnScaleGestureLi
 	}
 
 	override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
-		if (!panningAndScalingEnabled || pointerCaptureInProgress) {
+		if (!panningAndScalingEnabled || pointerCaptureInProgress || dragInProgress) {
 			return false
 		}
 		scaleInProgress = true
