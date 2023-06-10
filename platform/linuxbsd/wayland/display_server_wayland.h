@@ -537,7 +537,7 @@ public:
 		ScreenData screen_get_data(int p_screen) const;
 		int get_screen_count() const;
 
-		void init(WaylandState &p_wls);
+		Error init(WaylandState &p_wls);
 		void destroy();
 	};
 

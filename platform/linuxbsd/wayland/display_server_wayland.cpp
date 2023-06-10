@@ -3083,10 +3083,11 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	r_error = ERR_UNAVAILABLE;
 
-	Error thread_err = wayland_thread.init(wls)
+	Error thread_err = wayland_thread.init(wls);
 
-							   if (thread_err != ERR_OK) {
-		return thread_err;
+	if (thread_err != OK) {
+		r_error = thread_err;
+		ERR_FAIL_MSG("Could not initialize the Wayland thread.");
 	}
 
 	// Input.

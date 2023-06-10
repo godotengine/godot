@@ -772,7 +772,7 @@ Error WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
 	KeyMappingXKB::initialize();
 
 	wl_display = wl_display_connect(nullptr);
-	ERR_FAIL_COND_MSG(!wl_display, "Can't connect to a Wayland display.");
+	ERR_FAIL_COND_V_MSG(!wl_display, ERR_CANT_CREATE, "Can't connect to a Wayland display.");
 
 	thread_data.wl_display = wl_display;
 
@@ -786,7 +786,7 @@ Error WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
 
 	wls->wl_registry = wl_display_get_registry(wl_display);
 
-	ERR_FAIL_COND_MSG(!wls->wl_registry, "Can't obtain the Wayland registry global.");
+	ERR_FAIL_COND_V_MSG(!wls->wl_registry, ERR_UNAVAILABLE, "Can't obtain the Wayland registry global.");
 
 	wl_registry_add_listener(wls->wl_registry, &wl_registry_listener, wls);
 
@@ -795,12 +795,12 @@ Error WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
 
 	WaylandGlobals &globals = wls->globals;
 
-	ERR_FAIL_COND_V_MSG(ERR_CANT_CREATE, !globals.wl_shm, "Can't obtain the Wayland shared memory global.");
-	ERR_FAIL_COND_V_MSG(ERR_CANT_CREATE, !globals.wl_compositor, "Can't obtain the Wayland compositor global.");
-	ERR_FAIL_COND_V_MSG(ERR_CANT_CREATE, !globals.wl_subcompositor, "Can't obtain the Wayland subcompositor global.");
-	ERR_FAIL_COND_V_MSG(ERR_CANT_CREATE, !globals.wl_data_device_manager, "Can't obtain the Wayland data device manager global.");
-	ERR_FAIL_COND_V_MSG(ERR_CANT_CREATE, !globals.wp_pointer_constraints, "Can't obtain the Wayland pointer constraints global.");
-	ERR_FAIL_COND_V_MSG(ERR_CANT_CREATE, !globals.xdg_wm_base, "Can't obtain the Wayland XDG shell global.");
+	ERR_FAIL_COND_V_MSG(!globals.wl_shm, ERR_UNAVAILABLE, "Can't obtain the Wayland shared memory global.");
+	ERR_FAIL_COND_V_MSG(!globals.wl_compositor, ERR_UNAVAILABLE, "Can't obtain the Wayland compositor global.");
+	ERR_FAIL_COND_V_MSG(!globals.wl_subcompositor, ERR_UNAVAILABLE, "Can't obtain the Wayland subcompositor global.");
+	ERR_FAIL_COND_V_MSG(!globals.wl_data_device_manager, ERR_UNAVAILABLE, "Can't obtain the Wayland data device manager global.");
+	ERR_FAIL_COND_V_MSG(!globals.wp_pointer_constraints, ERR_UNAVAILABLE, "Can't obtain the Wayland pointer constraints global.");
+	ERR_FAIL_COND_V_MSG(!globals.xdg_wm_base, ERR_UNAVAILABLE, "Can't obtain the Wayland XDG shell global.");
 
 	if (!globals.xdg_decoration_manager) {
 #ifdef LIBDECOR_ENABLED
@@ -839,7 +839,7 @@ Error WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
 	}
 #endif // LIBDECOR_ENABLED
 
-	return ERR_OK;
+	return OK;
 }
 
 void WaylandThread::destroy() {
