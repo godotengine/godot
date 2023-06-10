@@ -408,6 +408,8 @@ public:
 	bool is_started() const;
 	bool is_alive() const;
 	Variant wait_to_finish();
+
+	static void set_thread_safety_checks_enabled(bool p_enabled);
 };
 
 namespace special {
