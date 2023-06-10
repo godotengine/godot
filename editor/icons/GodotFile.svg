@@ -5,33 +5,10 @@
    width="64"
    version="1.1"
    id="svg8"
-   sodipodi:docname="GodotFile.svg"
-   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
   <defs
      id="defs12" />
-  <sodipodi:namedview
-     id="namedview10"
-     pagecolor="#ffffff"
-     bordercolor="#000000"
-     borderopacity="0.25"
-     inkscape:showpageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1"
-     showgrid="false"
-     inkscape:zoom="12.90625"
-     inkscape:cx="32"
-     inkscape:cy="32"
-     inkscape:window-width="1920"
-     inkscape:window-height="996"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg8" />
   <g
      fill-rule="nonzero"
      id="g6">
@@ -44,9 +21,9 @@
     <rect
        width="20"
        height="20"
-       style="fill: #555555; paint-order: stroke;"
+       style="fill:#808080;paint-order:stroke"
        x="22"
-       y="27.009"
+       y="27.009001"
        id="rect4" />
   </g>
 </svg>
