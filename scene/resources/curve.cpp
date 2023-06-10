@@ -30,7 +30,6 @@
 
 #include "curve.h"
 
-#include "core/core_string_names.h"
 #include "core/math/math_funcs.h"
 
 const char *Curve::SIGNAL_RANGE_CHANGED = "range_changed";
@@ -388,7 +387,7 @@ real_t Curve::sample_local_nocheck(int p_index, real_t p_local_offset) const {
 
 void Curve::mark_dirty() {
 	_baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_changed();
 }
 
 Array Curve::get_data() const {
@@ -775,7 +774,7 @@ Vector2 Curve2D::samplef(real_t p_findex) const {
 
 void Curve2D::mark_dirty() {
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_changed();
 }
 
 void Curve2D::_bake_segment2d(RBMap<real_t, Vector2> &r_bake, real_t p_begin, real_t p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, real_t p_tol) const {
@@ -1492,7 +1491,7 @@ Vector3 Curve3D::samplef(real_t p_findex) const {
 
 void Curve3D::mark_dirty() {
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_changed();
 }
 
 void Curve3D::_bake_segment3d(RBMap<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_tol) const {
