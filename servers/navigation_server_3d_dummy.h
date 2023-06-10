@@ -123,7 +123,13 @@ public:
 	RID obstacle_create() override { return RID(); }
 	void obstacle_set_map(RID p_obstacle, RID p_map) override {}
 	RID obstacle_get_map(RID p_obstacle) const override { return RID(); }
+	void obstacle_set_avoidance_enabled(RID p_obstacle, bool p_enabled) override {}
+	bool obstacle_get_avoidance_enabled(RID p_obstacle) const override { return false; }
+	void obstacle_set_use_3d_avoidance(RID p_obstacle, bool p_enabled) override {}
+	bool obstacle_get_use_3d_avoidance(RID p_obstacle) const override { return false; }
+	void obstacle_set_radius(RID p_obstacle, real_t p_radius) override {}
 	void obstacle_set_height(RID p_obstacle, real_t p_height) override {}
+	void obstacle_set_velocity(RID p_obstacle, Vector3 p_velocity) override {}
 	void obstacle_set_position(RID p_obstacle, Vector3 p_position) override {}
 	void obstacle_set_vertices(RID p_obstacle, const Vector<Vector3> &p_vertices) override {}
 	void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) override {}

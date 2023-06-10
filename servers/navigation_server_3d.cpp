@@ -128,9 +128,15 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("agent_set_avoidance_priority", "agent", "priority"), &NavigationServer3D::agent_set_avoidance_priority);
 
 	ClassDB::bind_method(D_METHOD("obstacle_create"), &NavigationServer3D::obstacle_create);
+	ClassDB::bind_method(D_METHOD("obstacle_set_avoidance_enabled", "obstacle", "enabled"), &NavigationServer3D::obstacle_set_avoidance_enabled);
+	ClassDB::bind_method(D_METHOD("obstacle_get_avoidance_enabled", "obstacle"), &NavigationServer3D::obstacle_get_avoidance_enabled);
+	ClassDB::bind_method(D_METHOD("obstacle_set_use_3d_avoidance", "obstacle", "enabled"), &NavigationServer3D::obstacle_set_use_3d_avoidance);
+	ClassDB::bind_method(D_METHOD("obstacle_get_use_3d_avoidance", "obstacle"), &NavigationServer3D::obstacle_get_use_3d_avoidance);
 	ClassDB::bind_method(D_METHOD("obstacle_set_map", "obstacle", "map"), &NavigationServer3D::obstacle_set_map);
 	ClassDB::bind_method(D_METHOD("obstacle_get_map", "obstacle"), &NavigationServer3D::obstacle_get_map);
+	ClassDB::bind_method(D_METHOD("obstacle_set_radius", "obstacle", "radius"), &NavigationServer3D::obstacle_set_radius);
 	ClassDB::bind_method(D_METHOD("obstacle_set_height", "obstacle", "height"), &NavigationServer3D::obstacle_set_height);
+	ClassDB::bind_method(D_METHOD("obstacle_set_velocity", "obstacle", "velocity"), &NavigationServer3D::obstacle_set_velocity);
 	ClassDB::bind_method(D_METHOD("obstacle_set_position", "obstacle", "position"), &NavigationServer3D::obstacle_set_position);
 	ClassDB::bind_method(D_METHOD("obstacle_set_vertices", "obstacle", "vertices"), &NavigationServer3D::obstacle_set_vertices);
 	ClassDB::bind_method(D_METHOD("obstacle_set_avoidance_layers", "obstacle", "layers"), &NavigationServer3D::obstacle_set_avoidance_layers);

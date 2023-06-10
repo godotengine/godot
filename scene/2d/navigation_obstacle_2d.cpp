@@ -36,8 +36,10 @@
 #include "servers/navigation_server_3d.h"
 
 void NavigationObstacle2D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_obstacle_rid"), &NavigationObstacle2D::get_obstacle_rid);
-	ClassDB::bind_method(D_METHOD("get_agent_rid"), &NavigationObstacle2D::get_agent_rid);
+	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationObstacle2D::get_rid);
+
+	ClassDB::bind_method(D_METHOD("set_avoidance_enabled", "enabled"), &NavigationObstacle2D::set_avoidance_enabled);
+	ClassDB::bind_method(D_METHOD("get_avoidance_enabled"), &NavigationObstacle2D::get_avoidance_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationObstacle2D::set_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationObstacle2D::get_navigation_map);
@@ -56,7 +58,8 @@ void NavigationObstacle2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_avoidance_layer_value", "layer_number", "value"), &NavigationObstacle2D::set_avoidance_layer_value);
 	ClassDB::bind_method(D_METHOD("get_avoidance_layer_value", "layer_number"), &NavigationObstacle2D::get_avoidance_layer_value);
 
-	ADD_GROUP("Avoidance", "avoidance_");
+	ADD_GROUP("Avoidance", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_velocity", "get_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.0,500,0.01,suffix:px"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "vertices"), "set_vertices", "get_vertices");
@@ -75,7 +78,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 			}
 			previous_transform = get_global_transform();
 			// need to trigger map controlled agent assignment somehow for the fake_agent since obstacles use no callback like regular agents
-			NavigationServer2D::get_singleton()->agent_set_avoidance_enabled(fake_agent, radius > 0);
+			NavigationServer2D::get_singleton()->obstacle_set_avoidance_enabled(obstacle, avoidance_enabled);
 			_update_position(get_global_transform().get_origin());
 			set_physics_process_internal(true);
 		} break;
@@ -113,7 +116,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 					velocity_submitted = false;
 					// only update if there is a noticeable change, else the rvo agent preferred velocity stays the same
 					if (!previous_velocity.is_equal_approx(velocity)) {
-						NavigationServer2D::get_singleton()->agent_set_velocity(fake_agent, velocity);
+						NavigationServer2D::get_singleton()->obstacle_set_velocity(obstacle, velocity);
 					}
 					previous_velocity = velocity;
 				}
@@ -142,21 +145,11 @@ void NavigationObstacle2D::_notification(int p_what) {
 
 NavigationObstacle2D::NavigationObstacle2D() {
 	obstacle = NavigationServer2D::get_singleton()->obstacle_create();
-	fake_agent = NavigationServer2D::get_singleton()->agent_create();
-
-	// change properties of the fake agent so it can act as fake obstacle with a radius
-	NavigationServer2D::get_singleton()->agent_set_neighbor_distance(fake_agent, 0.0);
-	NavigationServer2D::get_singleton()->agent_set_max_neighbors(fake_agent, 0);
-	NavigationServer2D::get_singleton()->agent_set_time_horizon_agents(fake_agent, 0.0);
-	NavigationServer2D::get_singleton()->agent_set_time_horizon_obstacles(fake_agent, 0.0);
-	NavigationServer2D::get_singleton()->agent_set_max_speed(fake_agent, 0.0);
-	NavigationServer2D::get_singleton()->agent_set_avoidance_mask(fake_agent, 0);
-	NavigationServer2D::get_singleton()->agent_set_avoidance_priority(fake_agent, 1.0);
-	NavigationServer2D::get_singleton()->agent_set_avoidance_enabled(fake_agent, radius > 0);
 
 	set_radius(radius);
 	set_vertices(vertices);
 	set_avoidance_layers(avoidance_layers);
+	set_avoidance_enabled(avoidance_enabled);
 }
 
 NavigationObstacle2D::~NavigationObstacle2D() {
@@ -164,9 +157,6 @@ NavigationObstacle2D::~NavigationObstacle2D() {
 
 	NavigationServer2D::get_singleton()->free(obstacle);
 	obstacle = RID();
-
-	NavigationServer2D::get_singleton()->free(fake_agent);
-	fake_agent = RID();
 }
 
 void NavigationObstacle2D::set_vertices(const Vector<Vector2> &p_vertices) {
@@ -202,17 +192,18 @@ void NavigationObstacle2D::set_radius(real_t p_radius) {
 
 	radius = p_radius;
 
-	NavigationServer2D::get_singleton()->agent_set_avoidance_enabled(fake_agent, radius > 0.0);
-	NavigationServer2D::get_singleton()->agent_set_radius(fake_agent, radius);
+	NavigationServer2D::get_singleton()->obstacle_set_radius(obstacle, radius);
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())) {
 		queue_redraw();
 	}
 }
 
 void NavigationObstacle2D::set_avoidance_layers(uint32_t p_layers) {
+	if (avoidance_layers == p_layers) {
+		return;
+	}
 	avoidance_layers = p_layers;
 	NavigationServer2D::get_singleton()->obstacle_set_avoidance_layers(obstacle, avoidance_layers);
-	NavigationServer2D::get_singleton()->agent_set_avoidance_layers(fake_agent, avoidance_layers);
 }
 
 uint32_t NavigationObstacle2D::get_avoidance_layers() const {
@@ -237,24 +228,31 @@ bool NavigationObstacle2D::get_avoidance_layer_value(int p_layer_number) const {
 	return get_avoidance_layers() & (1 << (p_layer_number - 1));
 }
 
+void NavigationObstacle2D::set_avoidance_enabled(bool p_enabled) {
+	if (avoidance_enabled == p_enabled) {
+		return;
+	}
+
+	avoidance_enabled = p_enabled;
+	NavigationServer2D::get_singleton()->obstacle_set_avoidance_enabled(obstacle, avoidance_enabled);
+}
+
+bool NavigationObstacle2D::get_avoidance_enabled() const {
+	return avoidance_enabled;
+}
+
 void NavigationObstacle2D::set_velocity(const Vector2 p_velocity) {
 	velocity = p_velocity;
 	velocity_submitted = true;
 }
 
 void NavigationObstacle2D::_update_map(RID p_map) {
-	NavigationServer2D::get_singleton()->obstacle_set_map(obstacle, p_map);
-	NavigationServer2D::get_singleton()->agent_set_map(fake_agent, p_map);
 	map_current = p_map;
+	NavigationServer2D::get_singleton()->obstacle_set_map(obstacle, p_map);
 }
 
 void NavigationObstacle2D::_update_position(const Vector2 p_position) {
-	if (vertices.size() > 0) {
-		NavigationServer2D::get_singleton()->obstacle_set_position(obstacle, p_position);
-	}
-	if (radius > 0.0) {
-		NavigationServer2D::get_singleton()->agent_set_position(fake_agent, p_position);
-	}
+	NavigationServer2D::get_singleton()->obstacle_set_position(obstacle, p_position);
 }
 
 #ifdef DEBUG_ENABLED

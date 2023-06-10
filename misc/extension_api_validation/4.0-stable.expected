@@ -85,11 +85,9 @@ Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/set_
 Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/agent_height_offset
 Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/ignore_y
 Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/time_horizon
-Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/get_rid
 Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/is_radius_estimated
 Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/set_estimate_radius
 Validate extension JSON: API was removed: classes/NavigationObstacle2D/properties/estimate_radius
-Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/get_rid
 Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/is_radius_estimated
 Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/set_estimate_radius
 Validate extension JSON: API was removed: classes/NavigationObstacle3D/properties/estimate_radius

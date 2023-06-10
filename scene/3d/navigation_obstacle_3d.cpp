@@ -36,8 +36,10 @@
 #include "servers/navigation_server_3d.h"
 
 void NavigationObstacle3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_obstacle_rid"), &NavigationObstacle3D::get_obstacle_rid);
-	ClassDB::bind_method(D_METHOD("get_agent_rid"), &NavigationObstacle3D::get_agent_rid);
+	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationObstacle3D::get_rid);
+
+	ClassDB::bind_method(D_METHOD("set_avoidance_enabled", "enabled"), &NavigationObstacle3D::set_avoidance_enabled);
+	ClassDB::bind_method(D_METHOD("get_avoidance_enabled"), &NavigationObstacle3D::get_avoidance_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationObstacle3D::set_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationObstacle3D::get_navigation_map);
@@ -63,7 +65,8 @@ void NavigationObstacle3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_3d_avoidance", "enabled"), &NavigationObstacle3D::set_use_3d_avoidance);
 	ClassDB::bind_method(D_METHOD("get_use_3d_avoidance"), &NavigationObstacle3D::get_use_3d_avoidance);
 
-	ADD_GROUP("Avoidance", "avoidance_");
+	ADD_GROUP("Avoidance", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_velocity", "get_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.0,100,0.01,suffix:m"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0.0,100,0.01,suffix:m"), "set_height", "get_height");
@@ -84,7 +87,7 @@ void NavigationObstacle3D::_notification(int p_what) {
 			}
 			previous_transform = get_global_transform();
 			// need to trigger map controlled agent assignment somehow for the fake_agent since obstacles use no callback like regular agents
-			NavigationServer3D::get_singleton()->agent_set_avoidance_enabled(fake_agent, radius > 0);
+			NavigationServer3D::get_singleton()->obstacle_set_avoidance_enabled(obstacle, avoidance_enabled);
 			_update_position(get_global_transform().origin);
 			set_physics_process_internal(true);
 #ifdef DEBUG_ENABLED
@@ -137,7 +140,7 @@ void NavigationObstacle3D::_notification(int p_what) {
 					velocity_submitted = false;
 					// only update if there is a noticeable change, else the rvo agent preferred velocity stays the same
 					if (!previous_velocity.is_equal_approx(velocity)) {
-						NavigationServer3D::get_singleton()->agent_set_velocity(fake_agent, velocity);
+						NavigationServer3D::get_singleton()->obstacle_set_velocity(obstacle, velocity);
 					}
 					previous_velocity = velocity;
 				}
@@ -156,22 +159,12 @@ void NavigationObstacle3D::_notification(int p_what) {
 
 NavigationObstacle3D::NavigationObstacle3D() {
 	obstacle = NavigationServer3D::get_singleton()->obstacle_create();
-	fake_agent = NavigationServer3D::get_singleton()->agent_create();
-
-	// change properties of the fake agent so it can act as fake obstacle with a radius
-	NavigationServer3D::get_singleton()->agent_set_neighbor_distance(fake_agent, 0.0);
-	NavigationServer3D::get_singleton()->agent_set_max_neighbors(fake_agent, 0);
-	NavigationServer3D::get_singleton()->agent_set_time_horizon_agents(fake_agent, 0.0);
-	NavigationServer3D::get_singleton()->agent_set_time_horizon_obstacles(fake_agent, 0.0);
-	NavigationServer3D::get_singleton()->agent_set_max_speed(fake_agent, 0.0);
-	NavigationServer3D::get_singleton()->agent_set_avoidance_mask(fake_agent, 1);
-	NavigationServer3D::get_singleton()->agent_set_avoidance_priority(fake_agent, 1.0);
-	NavigationServer3D::get_singleton()->agent_set_avoidance_enabled(fake_agent, radius > 0);
 
 	set_radius(radius);
 	set_height(height);
 	set_vertices(vertices);
 	set_avoidance_layers(avoidance_layers);
+	set_avoidance_enabled(avoidance_enabled);
 	set_use_3d_avoidance(use_3d_avoidance);
 
 #ifdef DEBUG_ENABLED
@@ -187,9 +180,6 @@ NavigationObstacle3D::~NavigationObstacle3D() {
 
 	NavigationServer3D::get_singleton()->free(obstacle);
 	obstacle = RID();
-
-	NavigationServer3D::get_singleton()->free(fake_agent);
-	fake_agent = RID();
 
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton()->disconnect("avoidance_debug_changed", callable_mp(this, &NavigationObstacle3D::_update_fake_agent_radius_debug));
@@ -242,8 +232,7 @@ void NavigationObstacle3D::set_radius(real_t p_radius) {
 	}
 
 	radius = p_radius;
-	NavigationServer3D::get_singleton()->agent_set_avoidance_enabled(fake_agent, radius > 0.0);
-	NavigationServer3D::get_singleton()->agent_set_radius(fake_agent, radius);
+	NavigationServer3D::get_singleton()->obstacle_set_radius(obstacle, radius);
 
 #ifdef DEBUG_ENABLED
 	_update_fake_agent_radius_debug();
@@ -258,7 +247,7 @@ void NavigationObstacle3D::set_height(real_t p_height) {
 
 	height = p_height;
 	NavigationServer3D::get_singleton()->obstacle_set_height(obstacle, height);
-	NavigationServer3D::get_singleton()->agent_set_height(fake_agent, height);
+
 #ifdef DEBUG_ENABLED
 	_update_static_obstacle_debug();
 #endif // DEBUG_ENABLED
@@ -267,7 +256,6 @@ void NavigationObstacle3D::set_height(real_t p_height) {
 void NavigationObstacle3D::set_avoidance_layers(uint32_t p_layers) {
 	avoidance_layers = p_layers;
 	NavigationServer3D::get_singleton()->obstacle_set_avoidance_layers(obstacle, avoidance_layers);
-	NavigationServer3D::get_singleton()->agent_set_avoidance_layers(fake_agent, avoidance_layers);
 }
 
 uint32_t NavigationObstacle3D::get_avoidance_layers() const {
@@ -292,6 +280,19 @@ bool NavigationObstacle3D::get_avoidance_layer_value(int p_layer_number) const {
 	return get_avoidance_layers() & (1 << (p_layer_number - 1));
 }
 
+void NavigationObstacle3D::set_avoidance_enabled(bool p_enabled) {
+	if (avoidance_enabled == p_enabled) {
+		return;
+	}
+
+	avoidance_enabled = p_enabled;
+	NavigationServer3D::get_singleton()->obstacle_set_avoidance_enabled(obstacle, avoidance_enabled);
+}
+
+bool NavigationObstacle3D::get_avoidance_enabled() const {
+	return avoidance_enabled;
+}
+
 void NavigationObstacle3D::set_use_3d_avoidance(bool p_use_3d_avoidance) {
 	use_3d_avoidance = p_use_3d_avoidance;
 	_update_use_3d_avoidance(use_3d_avoidance);
@@ -304,27 +305,16 @@ void NavigationObstacle3D::set_velocity(const Vector3 p_velocity) {
 }
 
 void NavigationObstacle3D::_update_map(RID p_map) {
-	// avoidance obstacles are 2D only, no point keeping them on the map while 3D is used
-	if (use_3d_avoidance) {
-		NavigationServer3D::get_singleton()->obstacle_set_map(obstacle, RID());
-	} else {
-		NavigationServer3D::get_singleton()->obstacle_set_map(obstacle, p_map);
-	}
-	NavigationServer3D::get_singleton()->agent_set_map(fake_agent, p_map);
+	NavigationServer3D::get_singleton()->obstacle_set_map(obstacle, p_map);
 	map_current = p_map;
 }
 
 void NavigationObstacle3D::_update_position(const Vector3 p_position) {
-	if (vertices.size() > 0) {
-		NavigationServer3D::get_singleton()->obstacle_set_position(obstacle, p_position);
-	}
-	if (radius > 0.0) {
-		NavigationServer3D::get_singleton()->agent_set_position(fake_agent, p_position);
-	}
+	NavigationServer3D::get_singleton()->obstacle_set_position(obstacle, p_position);
 }
 
 void NavigationObstacle3D::_update_use_3d_avoidance(bool p_use_3d_avoidance) {
-	NavigationServer3D::get_singleton()->agent_set_use_3d_avoidance(fake_agent, use_3d_avoidance);
+	NavigationServer3D::get_singleton()->obstacle_set_use_3d_avoidance(obstacle, use_3d_avoidance);
 	_update_map(map_current);
 }
 
