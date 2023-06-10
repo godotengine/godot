@@ -627,45 +627,46 @@ List<Vector2> TileSet::_autotile_get_subtile_candidates_for_bitmask(int p_id, ui
 	return coords;
 }
 
-uint32_t _count_bitmask_bits(uint32_t bitmask) {
+uint32_t TileSet::_count_bitmask_bits(uint32_t p_bitmask) {
 	uint32_t ret = 0;
 
 	for (uint32_t i = 1; i <= 256; i <<= 1) {
-		if (bitmask & i) {
+		if (p_bitmask & i) {
 			ret++;
 		}
 	}
 
 	return ret;
 }
-uint32_t _score_bitmask_difference(uint32_t bitmask, uint32_t ref_bitmask) {
-	// low = less difference, high = more difference
+uint32_t TileSet::_score_bitmask_difference(uint32_t p_bitmask, uint32_t p_ref_bitmask) {
+	// Low value means less difference, high value means more difference.
 	uint32_t ret = 0;
 
-	bitmask ^= ref_bitmask;
-	// add one to the score for each non-matching bit
+	p_bitmask ^= p_ref_bitmask;
+	// Add one to the score for each non-matching bit.
 	for (uint32_t i = 1; i <= 256; i <<= 1) {
-		if (bitmask & i) {
+		if (p_bitmask & i) {
 			ret += 1;
-			// make axial edge mismatches cost four times as much
+			// Make axial edge mismatches cost four times as much.
 			if (i & (TileSet::BIND_TOP | TileSet::BIND_LEFT | TileSet::BIND_RIGHT | TileSet::BIND_BOTTOM)) {
 				ret += 3;
 			}
 		}
 	}
-	bitmask ^= ref_bitmask;
-	// artificially reduce difference for all-filled and all-but-center-empty bitmasks
+	p_bitmask ^= p_ref_bitmask;
+	// Artificially reduce difference for all-filled and all-but-center-empty bitmasks.
 	// (511 is the non-IGNORE bitmasks all or'd together; 0x1FF)
-	if (ret > 0 && (bitmask == 511 || bitmask == TileSet::BIND_CENTER)) {
+	if (ret > 0 && (p_bitmask == 511 || p_bitmask == TileSet::BIND_CENTER)) {
 		ret -= 1;
 	}
-	// artificially increase difference for non-symmetric bitmasks if testing against all-filled or all-but-center-empty bitmask
-	// (need to cast the bit tests from int to bool before comparing)
-	if ((ref_bitmask == 511 || ref_bitmask == TileSet::BIND_CENTER) &&
-			(bool(bitmask & TileSet::BIND_LEFT) != bool(bitmask & TileSet::BIND_RIGHT) ||
-					bool(bitmask & TileSet::BIND_TOP) != bool(bitmask & TileSet::BIND_BOTTOM) ||
-					bool(bitmask & TileSet::BIND_TOPRIGHT) != bool(bitmask & TileSet::BIND_BOTTOMLEFT) ||
-					bool(bitmask & TileSet::BIND_TOPLEFT) != bool(bitmask & TileSet::BIND_BOTTOMRIGHT))) {
+	// Artificially increase difference for non-symmetric bitmasks if testing against all-filled or all-but-center-empty bitmask.
+	// This fixes some edge cases for certain common incomplete tilesheet layouts.
+	// (We only care about the truthiness of the bit tests, not their exact value, hence the bool casts.)
+	if ((p_ref_bitmask == 511 || p_ref_bitmask == TileSet::BIND_CENTER) &&
+			(bool(p_bitmask & TileSet::BIND_LEFT) != bool(p_bitmask & TileSet::BIND_RIGHT) ||
+					bool(p_bitmask & TileSet::BIND_TOP) != bool(p_bitmask & TileSet::BIND_BOTTOM) ||
+					bool(p_bitmask & TileSet::BIND_TOPRIGHT) != bool(p_bitmask & TileSet::BIND_BOTTOMLEFT) ||
+					bool(p_bitmask & TileSet::BIND_TOPLEFT) != bool(p_bitmask & TileSet::BIND_BOTTOMRIGHT))) {
 		ret += 16;
 	}
 	return ret;
@@ -685,13 +686,13 @@ Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, 
 		}
 	}
 
-	// if no forward-selected tile, look for a matching tile
+	// If we found no forward-selected tile, look for a matching tile.
 	List<Vector2> coords = _autotile_get_subtile_candidates_for_bitmask(p_id, p_bitmask);
 
-	// if we didn't find anything, and auto fallback is enagled, try falling back to a tile with a similar bitmask instead of the default tile
+	// If we didn't find anything, and auto fallback is enabled, try falling back to a tile with a similar bitmask instead of the default tile.
 	if (tile_map[p_id].autotile_data.fallback_mode == FALLBACK_AUTO && coords.size() == 0) {
-		uint32_t best_match_cost = 100000; // main point of comparison, general difference between bitmasks
-		uint32_t best_match_bitcount = 0; // bit count, as a tie breaker
+		uint32_t best_match_cost = 100000; // Main point of comparison, general difference between bitmasks.
+		uint32_t best_match_bitcount = 0; // Bit count, as a tie breaker.
 		uint16_t best_match_bitmask = 0;
 
 		for (Map<Vector2, uint32_t>::Element *E = tile_map[p_id].autotile_data.flags.front(); E; E = E->next()) {
@@ -705,15 +706,16 @@ Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, 
 			mask_low &= ~mask_ignore;
 			mask_low |= p_bitmask & mask_ignore;
 
-			// always skip bitmasks with no center bit, or that have already been matched as the best
+			// Always skip bitmasks with no center bit, or that have already been matched as the best.
 			if ((mask_low & BIND_CENTER) == 0 || mask_low == best_match_bitmask) {
 				continue;
 			}
 
 			uint32_t cost = _score_bitmask_difference(mask_low, p_bitmask);
-			uint32_t bitcount = _count_bitmask_bits(mask_low); // to break ties, pick the bitmask with more set bits
+			// To break ties, pick the bitmask with more set bits.
+			uint32_t bitcount = _count_bitmask_bits(mask_low);
 
-			// if more similar, confirm match
+			// If more similar, confirm match.
 			if (cost < best_match_cost || (cost == best_match_cost && bitcount > best_match_bitcount)) {
 				best_match_cost = cost;
 				best_match_bitcount = bitcount;

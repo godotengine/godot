@@ -153,6 +153,9 @@ protected:
 	void _decompose_convex_shape(Ref<Shape2D> p_shape);
 	List<Vector2> _autotile_get_subtile_candidates_for_bitmask(int p_id, uint16_t p_bitmask) const;
 
+	uint32_t _count_bitmask_bits(uint32_t p_bitmask);
+	uint32_t _score_bitmask_difference(uint32_t p_bitmask, uint32_t p_ref_bitmask);
+
 	static void _bind_methods();
 
 public:

@@ -587,8 +587,10 @@
 		<constant name="BITMASK_3X3" value="2" enum="BitmaskMode">
 		</constant>
 		<constant name="FALLBACK_AUTO" value="0" enum="FallbackMode">
+			Autotiles will automatically find a best match for missing tiles if they're incomplete.
 		</constant>
 		<constant name="FALLBACK_ICON" value="1" enum="FallbackMode">
+			Autotiles will use the icon tile for missing tiles if they're incomplete.
 		</constant>
 		<constant name="BIND_TOPLEFT" value="1" enum="AutotileBindings">
 		</constant>
