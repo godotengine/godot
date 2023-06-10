@@ -839,10 +839,15 @@ Error WaylandThread::init(DisplayServerWayland::WaylandState &p_wls) {
 	}
 #endif // LIBDECOR_ENABLED
 
+	initialized = true;
 	return OK;
 }
 
 void WaylandThread::destroy() {
+	if (!initialized) {
+		return;
+	}
+
 	if (wl_display && events_thread.is_started()) {
 		thread_data.thread_done.set();
 

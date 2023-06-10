@@ -486,6 +486,8 @@ public:
 		Thread events_thread;
 		ThreadData thread_data;
 
+		bool initialized = false;
+
 		struct wl_display *wl_display = nullptr;
 
 		// Main polling method.
