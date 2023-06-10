@@ -206,7 +206,7 @@ void RayCast3D::_update_raycast_state() {
 	ERR_FAIL_COND(w3d.is_null());
 
 	PhysicsDirectSpaceState3D *dss = PhysicsServer3D::get_singleton()->space_get_direct_state(w3d->get_space());
-	ERR_FAIL_COND(!dss);
+	ERR_FAIL_NULL(dss);
 
 	Transform3D gt = get_global_transform();
 

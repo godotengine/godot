@@ -1774,7 +1774,7 @@ Rect2i Window::get_usable_parent_rect() const {
 	} else {
 		const Window *w = is_visible() ? this : get_parent_visible_window();
 		//find a parent that can contain us
-		ERR_FAIL_COND_V(!w, Rect2());
+		ERR_FAIL_NULL_V(w, Rect2());
 
 		parent_rect = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen(w->get_window_id()));
 	}
@@ -2335,9 +2335,9 @@ Rect2i Window::get_parent_rect() const {
 	if (is_embedded()) {
 		//viewport
 		Node *n = get_parent();
-		ERR_FAIL_COND_V(!n, Rect2i());
+		ERR_FAIL_NULL_V(n, Rect2i());
 		Viewport *p = n->get_viewport();
-		ERR_FAIL_COND_V(!p, Rect2i());
+		ERR_FAIL_NULL_V(p, Rect2i());
 
 		return p->get_visible_rect();
 	} else {

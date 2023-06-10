@@ -403,7 +403,7 @@ Transform2D Node2D::get_relative_transform_to_parent(const Node *p_parent) const
 
 	Node2D *parent_2d = Object::cast_to<Node2D>(get_parent());
 
-	ERR_FAIL_COND_V(!parent_2d, Transform2D());
+	ERR_FAIL_NULL_V(parent_2d, Transform2D());
 	if (p_parent == parent_2d) {
 		return get_transform();
 	} else {

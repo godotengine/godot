@@ -273,7 +273,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 
 	Node *parent = p_root_override ? p_root_override : get_node(root);
 
-	ERR_FAIL_COND(!parent);
+	ERR_FAIL_NULL(parent);
 
 	Animation *a = p_anim->animation.operator->();
 
@@ -2169,7 +2169,7 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 	ERR_FAIL_COND_V(reset_anim.is_null(), Ref<AnimatedValuesBackup>());
 
 	Node *root_node = get_node_or_null(root);
-	ERR_FAIL_COND_V(!root_node, Ref<AnimatedValuesBackup>());
+	ERR_FAIL_NULL_V(root_node, Ref<AnimatedValuesBackup>());
 
 	AnimationPlayer *aux_player = memnew(AnimationPlayer);
 	EditorNode::get_singleton()->add_child(aux_player);
