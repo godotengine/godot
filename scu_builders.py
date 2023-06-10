@@ -304,6 +304,8 @@ def generate_scu_files(verbose, is_release_build):
     process_folder(["modules/gridmap"])
     process_folder(["modules/multiplayer"])
     process_folder(["modules/multiplayer/editor"])
+    process_folder(["modules/saveload"])
+    process_folder(["modules/saveload/editor"])
     process_folder(["modules/openxr"], ["register_types"])
     process_folder(["modules/openxr/action_map"])
     process_folder(["modules/openxr/editor"])

@@ -39,6 +39,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/os/keyboard.h"
+#include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 
 namespace core_bind {
@@ -1259,12 +1260,19 @@ Variant Thread::wait_to_finish() {
 	return r;
 }
 
+void Thread::set_thread_safety_checks_enabled(bool p_enabled) {
+	ERR_FAIL_COND_MSG(::Thread::is_main_thread(), "This call is forbidden on the main thread.");
+	set_current_thread_safe_for_nodes(!p_enabled);
+}
+
 void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "callable", "priority"), &Thread::start, DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
 	ClassDB::bind_method(D_METHOD("is_started"), &Thread::is_started);
 	ClassDB::bind_method(D_METHOD("is_alive"), &Thread::is_alive);
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
+
+	ClassDB::bind_static_method("Thread", D_METHOD("set_thread_safety_checks_enabled", "enabled"), &Thread::set_thread_safety_checks_enabled);
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);

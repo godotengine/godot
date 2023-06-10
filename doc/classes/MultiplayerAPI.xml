@@ -7,7 +7,7 @@
 		Base class for high-level multiplayer API implementations. See also [MultiplayerPeer].
 		By default, [SceneTree] has a reference to an implementation of this class and uses it to provide multiplayer capabilities (i.e. RPCs) across the whole scene.
 		It is possible to override the MultiplayerAPI instance used by specific tree branches by calling the [method SceneTree.set_multiplayer] method, effectively allowing to run both client and server in the same scene.
-		It is also possible to extend or replace the default implementation via scripting or native extensions. See [MultiplayerAPIExtension] for details about extensions, [SceneMultiplayer] for the details about the default implementation.
+		It is also possible to extend or replace the default implementation via scripting or native extensions. See [MultiplayerAPIExtension] for details about extensions, [SceneSaveload] for the details about the default implementation.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -21,7 +21,7 @@
 		<method name="get_default_interface" qualifiers="static">
 			<return type="StringName" />
 			<description>
-				Returns the default MultiplayerAPI implementation class name. This is usually [code]"SceneMultiplayer"[/code] when [SceneMultiplayer] is available. See [method set_default_interface].
+				Returns the default MultiplayerAPI implementation class name. This is usually [code]"SceneSaveload"[/code] when [SceneSaveload] is available. See [method set_default_interface].
 			</description>
 		</method>
 		<method name="get_peers">
@@ -60,7 +60,7 @@
 			<param index="0" name="object" type="Object" />
 			<param index="1" name="configuration" type="Variant" />
 			<description>
-				Notifies the MultiplayerAPI of a new [param configuration] for the given [param object]. This method is used internally by [SceneTree] to configure the root path for this MultiplayerAPI (passing [code]null[/code] and a valid [NodePath] as [param configuration]). This method can be further used by MultiplayerAPI implementations to provide additional features, refer to specific implementation (e.g. [SceneMultiplayer]) for details on how they use it.
+				Notifies the MultiplayerAPI of a new [param configuration] for the given [param object]. This method is used internally by [SceneTree] to configure the root path for this MultiplayerAPI (passing [code]null[/code] and a valid [NodePath] as [param configuration]). This method can be further used by MultiplayerAPI implementations to provide additional features, refer to specific implementation (e.g. [SceneSaveload]) for details on how they use it.
 				[b]Note:[/b] This method is mostly relevant when extending or overriding the MultiplayerAPI behavior via [MultiplayerAPIExtension].
 			</description>
 		</method>
@@ -69,7 +69,7 @@
 			<param index="0" name="object" type="Object" />
 			<param index="1" name="configuration" type="Variant" />
 			<description>
-				Notifies the MultiplayerAPI to remove a [param configuration] for the given [param object]. This method is used internally by [SceneTree] to configure the root path for this MultiplayerAPI (passing [code]null[/code] and an empty [NodePath] as [param configuration]). This method can be further used by MultiplayerAPI implementations to provide additional features, refer to specific implementation (e.g. [SceneMultiplayer]) for details on how they use it.
+				Notifies the MultiplayerAPI to remove a [param configuration] for the given [param object]. This method is used internally by [SceneTree] to configure the root path for this MultiplayerAPI (passing [code]null[/code] and an empty [NodePath] as [param configuration]). This method can be further used by MultiplayerAPI implementations to provide additional features, refer to specific implementation (e.g. [SceneSaveload]) for details on how they use it.
 				[b]Note:[/b] This method is mostly relevant when extending or overriding the MultiplayerAPI behavior via [MultiplayerAPIExtension].
 			</description>
 		</method>

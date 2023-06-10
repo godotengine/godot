@@ -12372,9 +12372,9 @@ msgstr "Удалить свойство?"
 
 msgid ""
 "A valid NodePath must be set in the \"Spawn Path\" property in order for "
-"MultiplayerSpawner to be able to spawn Nodes."
+"SaveloadSpawner to be able to spawn Nodes."
 msgstr ""
-"Чтобы MultiplayerSpawner мог порождать узлы, в свойстве \"Spawn Path\" "
+"Чтобы SaveloadSpawner мог порождать узлы, в свойстве \"Spawn Path\" "
 "должен быть установлен действительный NodePath."
 
 msgid "A NavigationMesh resource must be set or created for this node to work."
