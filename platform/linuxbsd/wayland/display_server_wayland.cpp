@@ -183,7 +183,7 @@ void DisplayServerWayland::_seat_state_set_current(SeatState &p_ss) {
 			wls->current_seat->wp_locked_pointer = nullptr;
 		}
 
-		// Unconfine the pointer if it's confined.
+		// Free the pointer if it's confined.
 		if (wls->current_seat->wp_confined_pointer) {
 			zwp_confined_pointer_v1_destroy(wls->current_seat->wp_confined_pointer);
 			wls->current_seat->wp_confined_pointer = nullptr;

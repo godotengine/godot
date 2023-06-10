@@ -851,6 +851,11 @@ void WaylandThread::destroy() {
 		events_thread.wait_to_finish();
 	}
 
+	// TODO: Remove this.
+	if (!wls) {
+		return;
+	}
+
 	if (wls->main_window.xdg_toplevel) {
 		xdg_toplevel_destroy(wls->main_window.xdg_toplevel);
 	}
