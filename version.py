@@ -1,8 +1,8 @@
 short_name = "titanium"
 name = "Titanium"
-major = 1
+major = 4
 minor = 0
-patch = 0
+patch = 4
 status = "dev"
 module_config = ""
 year = 2023
