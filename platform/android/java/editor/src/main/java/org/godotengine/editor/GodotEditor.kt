@@ -39,10 +39,10 @@ import android.os.*
 import android.util.Log
 import android.widget.Toast
 import androidx.window.layout.WindowMetricsCalculator
-import org.godotengine.godot.FullScreenGodotApp
-import org.godotengine.godot.GodotLib
-import org.godotengine.godot.utils.PermissionsUtil
-import org.godotengine.godot.utils.ProcessPhoenix
+import org.godotengine.titan.FullScreenGodotApp
+import org.godotengine.titan.GodotLib
+import org.godotengine.titan.utils.PermissionsUtil
+import org.godotengine.titan.utils.ProcessPhoenix
 import java.util.*
 import kotlin.math.min
 

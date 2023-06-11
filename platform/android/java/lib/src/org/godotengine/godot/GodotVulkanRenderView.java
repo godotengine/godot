@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package org.godotengine.titan;
 
-import org.godotengine.godot.input.GodotInputHandler;
-import org.godotengine.godot.vulkan.VkRenderer;
-import org.godotengine.godot.vulkan.VkSurfaceView;
+import org.godotengine.titan.input.GodotInputHandler;
+import org.godotengine.titan.vulkan.VkRenderer;
+import org.godotengine.titan.vulkan.VkSurfaceView;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -60,7 +60,7 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 	public GodotVulkanRenderView(Context context, Godot godot) {
 		super(context);
 
-		this.godot = godot;
+		this.titan = godot;
 		mInputHandler = new GodotInputHandler(this);
 		mRenderer = new VkRenderer();
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

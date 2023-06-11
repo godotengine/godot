@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.io.file
+package org.godotengine.titan.io.file
 
 import android.content.Context
 import android.util.Log
 import android.util.SparseArray
-import org.godotengine.godot.io.StorageScope
+import org.godotengine.titan.io.StorageScope
 import java.io.FileNotFoundException
 import java.nio.ByteBuffer
 

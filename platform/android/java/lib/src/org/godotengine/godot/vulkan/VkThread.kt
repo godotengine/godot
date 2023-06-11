@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 @file:JvmName("VkThread")
-package org.godotengine.godot.vulkan
+package org.godotengine.titan.vulkan
 
 import android.util.Log
 import java.util.concurrent.locks.ReentrantLock

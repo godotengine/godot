@@ -175,7 +175,7 @@ index e4b1b0f1c..36cd6aacf 100644
 -import com.android.vending.expansion.downloader.R;
 +// -- GODOT start --
 +//import com.android.vending.expansion.downloader.R;
-+import org.godotengine.godot.R;
++import org.godotengine.titan.R;
 +// -- GODOT end --
  
  import java.io.File;
@@ -250,7 +250,7 @@ index f1536e80e..4b214b22d 100644
 -import com.android.vending.expansion.downloader.R;
 +// -- GODOT start --
 +//import com.android.vending.expansion.downloader.R;
-+import org.godotengine.godot.R;
++import org.godotengine.titan.R;
 +// -- GODOT end --
 +
  import com.google.android.vending.expansion.downloader.DownloadProgressInfo;
@@ -269,7 +269,7 @@ index b2e0e7af0..c114b8a64 100644
 +            // -- GODOT start --
 +            //wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Constants.TAG);
 +            //wakeLock.acquire();
-+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "org.godot.game:wakelock");
++            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "org.titan.game:wakelock");
 +            wakeLock.acquire(20 * 60 * 1000L /*20 minutes*/);
 +            // -- GODOT end --
  

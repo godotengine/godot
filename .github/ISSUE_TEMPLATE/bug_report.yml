@@ -52,7 +52,7 @@ body:
   attributes:
     label: Minimal reproduction project
     description: |
-      A small Titanium project which reproduces the issue, with no unnecessary files included. Be sure to not include the `.godot` folder in the archive (but keep `project.titan`).
+      A small Titanium project which reproduces the issue, with no unnecessary files included. Be sure to not include the `.titan` folder in the archive (but keep `project.titan`).
       Required, unless the reproduction steps are trivial and don't require any project files to be followed. In this case, write "N/A" in the field.
       Drag and drop a ZIP archive to upload it. **Do not select another field until the project is done uploading.**
   validations:

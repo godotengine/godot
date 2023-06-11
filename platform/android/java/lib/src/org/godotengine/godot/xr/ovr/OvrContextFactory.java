@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.xr.ovr;
+package org.godotengine.titan.xr.ovr;
 
-import org.godotengine.godot.gl.GLSurfaceView;
+import org.godotengine.titan.gl.GLSurfaceView;
 
 import android.opengl.EGL14;
 

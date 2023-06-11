@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.tts;
+package org.godotengine.titan.tts;
 
-import org.godotengine.godot.GodotLib;
+import org.godotengine.titan.GodotLib;
 
 import android.app.Activity;
 import android.os.Bundle;

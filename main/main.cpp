@@ -332,7 +332,7 @@ void finalize_theme_db() {
 
 void Main::print_help(const char *p_binary) {
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
-	OS::get_singleton()->print("An modified version of Godot Engine designed for sandbox games\n");
+	OS::get_singleton()->print("An modified version of Godot Engine designed for complex games\n");
 	OS::get_singleton()->print("(c) 2023-present Kacper Gibas.");
 	OS::get_singleton()->print("\n");
 	OS::get_singleton()->print("Usage: %s [options] [path to scene or 'project.titan' file]\n", p_binary);

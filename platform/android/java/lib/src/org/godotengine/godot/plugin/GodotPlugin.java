@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.plugin;
+package org.godotengine.titan.plugin;
 
-import org.godotengine.godot.BuildConfig;
-import org.godotengine.godot.Godot;
+import org.godotengine.titan.BuildConfig;
+import org.godotengine.titan.Godot;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -86,7 +86,7 @@ public abstract class GodotPlugin {
 	private final ConcurrentHashMap<String, SignalInfo> registeredSignals = new ConcurrentHashMap<>();
 
 	public GodotPlugin(Godot godot) {
-		this.godot = godot;
+		this.titan = godot;
 	}
 
 	/**
@@ -186,7 +186,7 @@ public abstract class GodotPlugin {
 
 	/**
 	 * Invoked once during the Godot Android initialization process after creation of the
-	 * {@link org.godotengine.godot.GodotRenderView} view.
+	 * {@link org.godotengine.titan.GodotRenderView} view.
 	 * <p>
 	 * The plugin can return a non-null {@link View} layout in order to add it to the Godot view
 	 * hierarchy.

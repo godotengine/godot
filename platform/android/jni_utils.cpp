@@ -336,7 +336,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		return varr;
 	}
 
-	if (name == "java.util.HashMap" || name == "org.godotengine.godot.Dictionary") {
+	if (name == "java.util.HashMap" || name == "org.godotengine.titan.Dictionary") {
 		Dictionary ret;
 		jclass oclass = c;
 		jmethodID get_keys = env->GetMethodID(oclass, "get_keys", "()[Ljava/lang/String;");
@@ -381,7 +381,7 @@ Variant::Type get_jni_type(const String &p_type) {
 		{ "[F", Variant::PACKED_FLOAT32_ARRAY },
 		{ "[D", Variant::PACKED_FLOAT64_ARRAY },
 		{ "[Ljava.lang.String;", Variant::PACKED_STRING_ARRAY },
-		{ "org.godotengine.godot.Dictionary", Variant::DICTIONARY },
+		{ "org.godotengine.titan.Dictionary", Variant::DICTIONARY },
 		{ nullptr, Variant::NIL }
 	};
 
@@ -410,7 +410,7 @@ const char *get_jni_sig(const String &p_type) {
 		{ "float", "F" },
 		{ "double", "D" },
 		{ "java.lang.String", "Ljava/lang/String;" },
-		{ "org.godotengine.godot.Dictionary", "Lorg/godotengine/godot/Dictionary;" },
+		{ "org.godotengine.titan.Dictionary", "Lorg/godotengine/godot/Dictionary;" },
 		{ "[I", "[I" },
 		{ "[J", "[J" },
 		{ "[B", "[B" },

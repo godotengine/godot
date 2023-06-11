@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package org.godotengine.titan;
 
-import org.godotengine.godot.input.GodotEditText;
+import org.godotengine.titan.input.GodotEditText;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;

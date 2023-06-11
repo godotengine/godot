@@ -26,7 +26,7 @@ import android.util.Log;
 
 // -- GODOT start --
 //import com.android.vending.expansion.downloader.R;
-import org.godotengine.godot.R;
+import org.godotengine.titan.R;
 // -- GODOT end --
 
 import java.io.File;

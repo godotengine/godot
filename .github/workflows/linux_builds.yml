@@ -178,7 +178,7 @@ jobs:
 
       # Checkout godot-cpp
       - name: Checkout godot-cpp
-        if: ${{ matrix.godot-cpp-test }}
+        if: ${{ matrix.titan-cpp-test }}
         uses: actions/checkout@v3
         with:
           repository: godotengine/godot-cpp
@@ -188,7 +188,7 @@ jobs:
 
       # Dump GDExtension interface and API
       - name: Dump GDExtension interface and API for godot-cpp build
-        if: ${{ matrix.godot-cpp-test }}
+        if: ${{ matrix.titan-cpp-test }}
         run: |
           ${{ matrix.bin }} --headless --dump-gdextension-interface --dump-extension-api
           cp -f gdextension_interface.h godot-cpp/gdextension/
@@ -196,7 +196,7 @@ jobs:
 
       # Build godot-cpp test extension
       - name: Build godot-cpp test extension
-        if: ${{ matrix.godot-cpp-test }}
+        if: ${{ matrix.titan-cpp-test }}
         run: |
           cd godot-cpp/test
           scons target=template_debug dev_build=yes

@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package com.godot.game;
+package com.titan.game;
 
-import org.godotengine.godot.FullScreenGodotApp;
+import org.godotengine.titan.FullScreenGodotApp;
 
 import android.os.Bundle;
 

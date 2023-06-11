@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.input;
+package org.godotengine.titan.input;
 
-import org.godotengine.godot.*;
+import org.godotengine.titan.*;
 
 import android.content.Context;
 import android.os.Handler;

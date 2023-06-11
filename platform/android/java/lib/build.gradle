@@ -28,7 +28,7 @@ android {
         manifestPlaceholders = [godotLibraryVersion: getGodotLibraryVersionName()]
     }
 
-    namespace = "org.godotengine.godot"
+    namespace = "org.godotengine.titan"
 
     compileOptions {
         sourceCompatibility versions.javaVersion

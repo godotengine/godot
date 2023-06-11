@@ -283,7 +283,7 @@ String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses
 String _get_activity_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_xr) {
 	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
-			"        <activity android:name=\"com.godot.game.GodotApp\" "
+			"        <activity android:name=\"com.titan.game.GodotApp\" "
 			"tools:replace=\"android:screenOrientation,android:excludeFromRecents,android:resizeableActivity\" "
 			"tools:node=\"mergeOnlyAttributes\" "
 			"android:excludeFromRecents=\"%s\" "

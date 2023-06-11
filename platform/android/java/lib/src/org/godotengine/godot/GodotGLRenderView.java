@@ -28,18 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
-import org.godotengine.godot.gl.GLSurfaceView;
-import org.godotengine.godot.gl.GodotRenderer;
-import org.godotengine.godot.input.GodotInputHandler;
-import org.godotengine.godot.utils.GLUtils;
-import org.godotengine.godot.xr.XRMode;
-import org.godotengine.godot.xr.ovr.OvrConfigChooser;
-import org.godotengine.godot.xr.ovr.OvrContextFactory;
-import org.godotengine.godot.xr.ovr.OvrWindowSurfaceFactory;
-import org.godotengine.godot.xr.regular.RegularConfigChooser;
-import org.godotengine.godot.xr.regular.RegularContextFactory;
-import org.godotengine.godot.xr.regular.RegularFallbackConfigChooser;
+package org.godotengine.titan;
+import org.godotengine.titan.gl.GLSurfaceView;
+import org.godotengine.titan.gl.GodotRenderer;
+import org.godotengine.titan.input.GodotInputHandler;
+import org.godotengine.titan.utils.GLUtils;
+import org.godotengine.titan.xr.XRMode;
+import org.godotengine.titan.xr.ovr.OvrConfigChooser;
+import org.godotengine.titan.xr.ovr.OvrContextFactory;
+import org.godotengine.titan.xr.ovr.OvrWindowSurfaceFactory;
+import org.godotengine.titan.xr.regular.RegularConfigChooser;
+import org.godotengine.titan.xr.regular.RegularContextFactory;
+import org.godotengine.titan.xr.regular.RegularFallbackConfigChooser;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -87,7 +87,7 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 		super(context);
 		GLUtils.use_debug_opengl = p_use_debug_opengl;
 
-		this.godot = godot;
+		this.titan = godot;
 		this.inputHandler = new GodotInputHandler(this);
 		this.godotRenderer = new GodotRenderer();
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

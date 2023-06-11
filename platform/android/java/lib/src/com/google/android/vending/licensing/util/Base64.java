@@ -32,7 +32,7 @@ package com.google.android.vending.licensing.util;
  */
 
 // -- GODOT start --
-import org.godotengine.godot.BuildConfig;
+import org.godotengine.titan.BuildConfig;
 // -- GODOT end --
 
 /**

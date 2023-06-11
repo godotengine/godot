@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package org.godotengine.titan;
 
-import org.godotengine.godot.gl.GodotRenderer;
-import org.godotengine.godot.io.directory.DirectoryAccessHandler;
-import org.godotengine.godot.io.file.FileAccessHandler;
-import org.godotengine.godot.tts.GodotTTS;
-import org.godotengine.godot.utils.GodotNetUtils;
+import org.godotengine.titan.gl.GodotRenderer;
+import org.godotengine.titan.io.directory.DirectoryAccessHandler;
+import org.godotengine.titan.io.file.FileAccessHandler;
+import org.godotengine.titan.tts.GodotTTS;
+import org.godotengine.titan.utils.GodotNetUtils;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
@@ -81,7 +81,7 @@ public class GodotLib {
 	 * @param p_surface
 	 * @param p_width
 	 * @param p_height
-	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
+	 * @see org.godotengine.titan.gl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
 	 */
 	public static native void resize(Surface p_surface, int p_width, int p_height);
 
@@ -98,7 +98,7 @@ public class GodotLib {
 
 	/**
 	 * Invoked on the GL thread to draw the current frame.
-	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onDrawFrame(GL10)
+	 * @see org.godotengine.titan.gl.GLSurfaceView.Renderer#onDrawFrame(GL10)
 	 */
 	public static native boolean step();
 

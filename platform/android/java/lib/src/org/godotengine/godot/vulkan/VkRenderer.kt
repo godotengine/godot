@@ -29,14 +29,14 @@
 /**************************************************************************/
 
 @file:JvmName("VkRenderer")
-package org.godotengine.godot.vulkan
+package org.godotengine.titan.vulkan
 
 import android.view.Surface
 
-import org.godotengine.godot.Godot
-import org.godotengine.godot.GodotLib
-import org.godotengine.godot.plugin.GodotPlugin
-import org.godotengine.godot.plugin.GodotPluginRegistry
+import org.godotengine.titan.Godot
+import org.godotengine.titan.GodotLib
+import org.godotengine.titan.plugin.GodotPlugin
+import org.godotengine.titan.plugin.GodotPluginRegistry
 
 /**
  * Responsible to setting up and driving the Vulkan rendering logic.

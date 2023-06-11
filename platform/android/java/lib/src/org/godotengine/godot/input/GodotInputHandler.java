@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.input;
+package org.godotengine.titan.input;
 
-import static org.godotengine.godot.utils.GLUtils.DEBUG;
+import static org.godotengine.titan.utils.GLUtils.DEBUG;
 
-import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.GodotRenderView;
+import org.godotengine.titan.GodotLib;
+import org.godotengine.titan.GodotRenderView;
 
 import android.content.Context;
 import android.hardware.input.InputManager;

@@ -7536,7 +7536,7 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Geçersiz proje yolu (bir şey değişti mi?)."
 
 msgid "Couldn't create project.titan in project path."
-msgstr "proje.godot proje yolunda oluşturulamadı."
+msgstr "proje.titan proje yolunda oluşturulamadı."
 
 msgid "Error opening package file, not in ZIP format."
 msgstr "Paket dosyası açılırken hata oluştu, zip formatında değil."
@@ -7717,7 +7717,7 @@ msgid "Erase Input Action"
 msgstr "Girdi Eylemini Sil"
 
 msgid "Project Settings (project.titan)"
-msgstr "Proje Ayarları (proje.godot)"
+msgstr "Proje Ayarları (proje.titan)"
 
 msgid "Input Map"
 msgstr "Girdi Haritası"

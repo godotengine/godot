@@ -21,7 +21,7 @@ index a0d2779af..a8bf65f9c 100644
   */
  
 +// -- GODOT start --
-import org.godotengine.godot.BuildConfig;
+import org.godotengine.titan.BuildConfig;
 +// -- GODOT end --
 +
  /**

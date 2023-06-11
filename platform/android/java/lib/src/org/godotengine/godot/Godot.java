@@ -28,20 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package org.godotengine.titan;
 
 import static android.content.Context.MODE_PRIVATE;
 import static android.content.Context.WINDOW_SERVICE;
 
-import org.godotengine.godot.input.GodotEditText;
-import org.godotengine.godot.io.directory.DirectoryAccessHandler;
-import org.godotengine.godot.io.file.FileAccessHandler;
-import org.godotengine.godot.plugin.GodotPlugin;
-import org.godotengine.godot.plugin.GodotPluginRegistry;
-import org.godotengine.godot.tts.GodotTTS;
-import org.godotengine.godot.utils.GodotNetUtils;
-import org.godotengine.godot.utils.PermissionsUtil;
-import org.godotengine.godot.xr.XRMode;
+import org.godotengine.titan.input.GodotEditText;
+import org.godotengine.titan.io.directory.DirectoryAccessHandler;
+import org.godotengine.titan.io.file.FileAccessHandler;
+import org.godotengine.titan.plugin.GodotPlugin;
+import org.godotengine.titan.plugin.GodotPluginRegistry;
+import org.godotengine.titan.tts.GodotTTS;
+import org.godotengine.titan.utils.GodotNetUtils;
+import org.godotengine.titan.utils.PermissionsUtil;
+import org.godotengine.titan.xr.XRMode;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;

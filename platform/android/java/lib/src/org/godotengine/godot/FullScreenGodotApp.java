@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot;
+package org.godotengine.titan;
 
-import org.godotengine.godot.utils.ProcessPhoenix;
+import org.godotengine.titan.utils.ProcessPhoenix;
 
 import android.content.Intent;
 import android.os.Bundle;

@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.xr.regular;
+package org.godotengine.titan.xr.regular;
 
-import org.godotengine.godot.gl.GLSurfaceView;
-import org.godotengine.godot.utils.GLUtils;
+import org.godotengine.titan.gl.GLSurfaceView;
+import org.godotengine.titan.utils.GLUtils;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;

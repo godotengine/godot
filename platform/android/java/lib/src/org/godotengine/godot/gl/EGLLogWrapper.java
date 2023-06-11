@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.godotengine.godot.gl;
+package org.godotengine.titan.gl;
 
 import android.opengl.GLDebugHelper;
 import android.opengl.GLException;
