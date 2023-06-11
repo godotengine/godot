@@ -127,6 +127,8 @@ static String _interpstr(SL::DataInterpolation p_interp) {
 	switch (p_interp) {
 		case SL::INTERPOLATION_FLAT:
 			return "flat ";
+		case SL::INTERPOLATION_NOPERSPECTIVE:
+			return !RS::get_singleton()->is_low_end() ? "noperspective " : "";
 		case SL::INTERPOLATION_SMOOTH:
 			return "";
 		case SL::INTERPOLATION_DEFAULT:
