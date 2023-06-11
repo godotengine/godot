@@ -518,6 +518,7 @@ public:
 	virtual String _get_indentation() const;
 	/* TODO? */ void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override {}
 	/* TODO */ void add_global_constant(const StringName &p_variable, const Variant &p_value) override {}
+	virtual ScriptNameCasing preferred_file_name_casing() const override;
 
 	/* SCRIPT GLOBAL CLASS FUNCTIONS */
 	virtual bool handles_global_class_type(const String &p_type) const override;

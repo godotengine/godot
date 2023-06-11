@@ -112,6 +112,7 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_can_make_function);
 	GDVIRTUAL_BIND(_open_in_external_editor, "script", "line", "column");
 	GDVIRTUAL_BIND(_overrides_external_editor);
+	GDVIRTUAL_BIND(_preferred_file_name_casing);
 
 	GDVIRTUAL_BIND(_complete_code, "code", "path", "owner");
 	GDVIRTUAL_BIND(_lookup_code, "code", "symbol", "path", "owner");
