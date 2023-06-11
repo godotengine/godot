@@ -727,6 +727,7 @@ void SceneReplicationInterface::_send_delta(int p_peer, const HashSet<ObjectID> 
 		int i = 0;
 		for (const Variant &v : delta) {
 			vptr[i] = &v;
+			i++;
 		}
 		int size;
 		Error err = MultiplayerAPI::encode_and_compress_variants(vptr, varp.size(), nullptr, size);
