@@ -684,6 +684,7 @@ public:
 	bool is_deselect_on_focus_loss_enabled() const;
 	void deselect();
 
+	int get_pending_paragraphs() const;
 	bool is_ready() const;
 	bool is_updating() const;
 

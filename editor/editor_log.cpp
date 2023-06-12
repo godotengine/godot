@@ -346,6 +346,15 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	}
 
 	log->add_newline();
+
+	if (p_replace_previous) {
+		// Force sync last line update (skip if number of unprocessed log messages is too large to avoid editor lag).
+		if (log->get_pending_paragraphs() < 100) {
+			while (!log->is_ready()) {
+				::OS::get_singleton()->delay_usec(1);
+			}
+		}
+	}
 }
 
 void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {
