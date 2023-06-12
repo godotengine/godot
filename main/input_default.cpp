@@ -40,6 +40,135 @@
 #include "core/os/thread.h"
 #endif
 
+// Accumulating immediately rather than deferred at flush
+// is slightly more efficient (because of less allocations / transfer to the main buffer etc)
+// but is less accurate timing wise, so should only be used in frame buffering mode.
+void InputEventBuffer::accumulate_or_push_event(Ref<InputEvent> p_event, uint64_t p_timestamp) {
+	// Events can come in any time, including when we are preparing to read the incoming queue,
+	// so we must lock to prevent race condition.
+	MutexLock lock(data.incoming_mutex);
+
+	LocalVector<Event> &incoming = data.incoming[data.incoming_write];
+
+	// First, attempt to accumulate.
+	if (incoming.size()) {
+		Event &prev = incoming[incoming.size() - 1];
+		if (prev.event->accumulate(p_event)) {
+			return;
+		}
+	}
+
+	// Accumulate failed, fall back to push.
+	incoming.resize(incoming.size() + 1);
+	Event &e = incoming[incoming.size() - 1];
+	e.event = p_event;
+	e.timestamp = p_timestamp;
+}
+
+void InputEventBuffer::push_event(Ref<InputEvent> p_event, uint64_t p_timestamp) {
+	// Events can come in any time, including when we are preparing to read the incoming queue,
+	// so we must lock to prevent race condition.
+	MutexLock lock(data.incoming_mutex);
+
+	LocalVector<Event> &incoming = data.incoming[data.incoming_write];
+	incoming.resize(incoming.size() + 1);
+	Event &e = incoming[incoming.size() - 1];
+	e.event = p_event;
+	e.timestamp = p_timestamp;
+}
+
+void InputEventBuffer::_try_accumulate(uint64_t p_timestamp) {
+	// Try and accumulate events after the current front
+	// until we fail or pass the current timestamp.
+	List<Event>::Element *front = data.buffer.front();
+	Event &front_event = front->get();
+
+	while (List<Event>::Element *next = data.buffer.front()->next()) {
+		const Event &next_event = next->get();
+		if (next_event.timestamp > p_timestamp) {
+			// Don't want to accumulate events that are on the next tick..
+			// want to keep some resolution to the events.
+			break;
+		}
+		if (front_event.event->accumulate(next_event.event)) {
+			// Remove the accumulated event from the buffer.
+			data.buffer.swap(front, next);
+			data.buffer.pop_front();
+			// Check this does not invalidate front and front_event.
+			DEV_ASSERT(front == data.buffer.front());
+			DEV_ASSERT(&front_event == &front->get());
+		} else {
+			break;
+		}
+	}
+}
+
+void InputEventBuffer::flush_events(uint64_t p_current_timestamp, InputDefault &r_input_handler, bool p_accumulate) {
+	// Flushing function is not re-entrant.
+	// This is unlikely to be called multithread, but this check should be cheap.
+	MutexLock lock(data.buffer_mutex);
+
+	if (data.flushing) {
+		// only allow one flush at a time
+		return;
+	}
+	data.flushing = true;
+
+	data.incoming_mutex.lock();
+	SWAP(data.incoming_write, data.incoming_read);
+	data.incoming_mutex.unlock();
+
+	LocalVector<Event> &incoming = data.incoming[data.incoming_read];
+
+// #define GODOT_DEBUG_INPUT_EVENT_BUFFER
+#ifdef GODOT_DEBUG_INPUT_EVENT_BUFFER
+	String sz = "timestamp: " + itos(p_current_timestamp) + " incoming : " + itos(incoming.size());
+#endif
+
+	for (uint32_t n = 0; n < incoming.size(); n++) {
+		// Copy to main buffer.
+		data.buffer.push_back(incoming[n]);
+	}
+
+	// Prepare for more input next time, prevent leak.
+	incoming.clear();
+
+#ifdef GODOT_DEBUG_INPUT_EVENT_BUFFER
+	uint32_t processed = 0;
+#endif
+
+	// Now we can read through the input buffer, up to the current time, and process.
+	while (data.buffer.front()) {
+		const Event &e = data.buffer.front()->get();
+
+		// Timestamp within range?
+		if (e.timestamp > p_current_timestamp) {
+			// We are up to date, process no more input on this tick / frame.
+			break;
+		}
+
+		if (p_accumulate) {
+			_try_accumulate(p_current_timestamp);
+		}
+
+		r_input_handler._parse_input_event_impl(e.event, false, false);
+#ifdef GODOT_DEBUG_INPUT_EVENT_BUFFER
+		processed++;
+#endif
+
+		// Event processed, remove from buffer.
+		data.buffer.pop_front();
+	}
+
+#ifdef GODOT_DEBUG_INPUT_EVENT_BUFFER
+	if ((p_current_timestamp != UINT64_MAX) && processed) {
+		print_line(sz + ", processed : " + itos(processed));
+	}
+#endif
+
+	data.flushing = false;
+}
+
 void InputDefault::SpeedTrack::update(const Vector2 &p_delta_p) {
 	uint64_t tick = OS::get_singleton()->get_ticks_usec();
 	uint32_t tdiff = tick - last_tick;
@@ -314,7 +443,7 @@ Vector3 InputDefault::get_gyroscope() const {
 	return gyroscope;
 }
 
-void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated) {
+void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated, bool p_unlock) {
 	// This function does the final delivery of the input event to user land.
 	// Regardless where the event came from originally, this has to happen on the main thread.
 	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
@@ -363,9 +492,13 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 			touch_event->set_canceled(mb->is_canceled());
 			touch_event->set_position(mb->get_position());
 			touch_event->set_double_tap(mb->is_doubleclick());
-			_THREAD_SAFE_UNLOCK_
-			main_loop->input_event(touch_event);
-			_THREAD_SAFE_LOCK_
+			if (p_unlock) {
+				_THREAD_SAFE_UNLOCK_
+				main_loop->input_event(touch_event);
+				_THREAD_SAFE_LOCK_
+			} else {
+				main_loop->input_event(touch_event);
+			}
 		}
 	}
 
@@ -387,9 +520,13 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 			drag_event->set_relative(relative);
 			drag_event->set_speed(get_last_mouse_speed());
 
-			_THREAD_SAFE_UNLOCK_
-			main_loop->input_event(drag_event);
-			_THREAD_SAFE_LOCK_
+			if (p_unlock) {
+				_THREAD_SAFE_UNLOCK_
+				main_loop->input_event(drag_event);
+				_THREAD_SAFE_LOCK_
+			} else {
+				main_loop->input_event(drag_event);
+			}
 		}
 	}
 
@@ -436,7 +573,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 					button_event->set_button_mask(mouse_button_mask & ~(1 << (BUTTON_LEFT - 1)));
 				}
 
-				_parse_input_event_impl(button_event, true);
+				_parse_input_event_impl(button_event, true, p_unlock);
 			}
 		}
 	}
@@ -460,7 +597,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 			motion_event->set_button_mask(mouse_button_mask);
 			motion_event->set_pressure(1.f);
 
-			_parse_input_event_impl(motion_event, true);
+			_parse_input_event_impl(motion_event, true, p_unlock);
 		}
 	}
 
@@ -486,9 +623,13 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 
 	if (ge.is_valid()) {
 		if (main_loop) {
-			_THREAD_SAFE_UNLOCK_
-			main_loop->input_event(ge);
-			_THREAD_SAFE_LOCK_
+			if (p_unlock) {
+				_THREAD_SAFE_UNLOCK_
+				main_loop->input_event(ge);
+				_THREAD_SAFE_LOCK_
+			} else {
+				main_loop->input_event(ge);
+			}
 		}
 	}
 
@@ -511,9 +652,13 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 	}
 
 	if (main_loop) {
-		_THREAD_SAFE_UNLOCK_
-		main_loop->input_event(p_event);
-		_THREAD_SAFE_LOCK_
+		if (p_unlock) {
+			_THREAD_SAFE_UNLOCK_
+			main_loop->input_event(p_event);
+			_THREAD_SAFE_LOCK_
+		} else {
+			main_loop->input_event(p_event);
+		}
 	}
 }
 
@@ -677,7 +822,7 @@ void InputDefault::ensure_touch_mouse_raised() {
 		button_event->set_button_index(BUTTON_LEFT);
 		button_event->set_button_mask(mouse_button_mask & ~(1 << (BUTTON_LEFT - 1)));
 
-		_parse_input_event_impl(button_event, true);
+		_parse_input_event_impl(button_event, true, true);
 	}
 }
 
@@ -752,46 +897,52 @@ void InputDefault::parse_input_event(const Ref<InputEvent> &p_event) {
 	}
 #endif
 
-	if (use_accumulated_input) {
-		if (buffered_events.empty() || !buffered_events.back()->get()->accumulate(p_event)) {
-			buffered_events.push_back(p_event);
-		}
-	} else if (use_input_buffering) {
-		buffered_events.push_back(p_event);
+	if (data.buffering_mode == Input::BUFFERING_MODE_NONE) {
+		_parse_input_event_impl(p_event, false, true);
 	} else {
-		_parse_input_event_impl(p_event, false);
-	}
-}
-void InputDefault::flush_buffered_events() {
-	_THREAD_SAFE_METHOD_
-
-	while (buffered_events.front()) {
-		// The final delivery of the input event involves releasing the lock.
-		// While the lock is released, another thread may lock it and add new events to the back.
-		// Therefore, we get each event and pop it while we still have the lock,
-		// to ensure the list is in a consistent state.
-		List<Ref<InputEvent>>::Element *E = buffered_events.front();
-		Ref<InputEvent> e = E->get();
-		buffered_events.pop_front();
-
-		_parse_input_event_impl(e, false);
+		// We can accumulate immediately on input if in frame mode,
+		// but if in agile / logical mode accumulation is deferred until flushing,
+		// so we can just push directly.
+		if ((data.buffering_mode == Input::BUFFERING_MODE_FRAME) && data.use_accumulated_input) {
+			_event_buffer.accumulate_or_push_event(p_event, OS::get_singleton()->get_ticks_usec());
+		} else {
+			_event_buffer.push_event(p_event, OS::get_singleton()->get_ticks_usec());
+		}
 	}
 }
 
-bool InputDefault::is_using_input_buffering() {
-	return use_input_buffering;
+void InputDefault::flush_buffered_events_ex(uint64_t p_up_to_timestamp) {
+	_event_buffer.flush_events(p_up_to_timestamp, *this, data.use_accumulated_input);
 }
 
-void InputDefault::set_use_input_buffering(bool p_enable) {
-	use_input_buffering = p_enable;
+void InputDefault::force_flush_buffered_events() {
+	flush_buffered_events_ex(UINT64_MAX);
 }
 
-bool InputDefault::is_using_accumulated_input() {
-	return use_accumulated_input;
+void InputDefault::flush_buffered_events_iteration() {
+	// legacy did not flush here.
+	if (data.use_legacy_flushing) {
+		return;
+	}
+
+	if (data.buffering_mode == BUFFERING_MODE_FRAME) {
+		flush_buffered_events_ex(UINT64_MAX);
+	}
 }
 
-void InputDefault::set_use_accumulated_input(bool p_enable) {
-	use_accumulated_input = p_enable;
+void InputDefault::flush_buffered_events_tick(uint64_t p_tick_timestamp) {
+	if (data.buffering_mode == BUFFERING_MODE_AGILE) {
+		flush_buffered_events_ex(p_tick_timestamp);
+	}
+}
+
+void InputDefault::flush_buffered_events_frame() {
+	// If we are in legacy mode, if not NONE or FRAME,
+	// then it will be AGILE, in which case legacy had a flush
+	// here, so the new logic works as before.
+	if (data.buffering_mode == BUFFERING_MODE_AGILE) {
+		flush_buffered_events_ex(UINT64_MAX);
+	}
 }
 
 void InputDefault::release_pressed_events() {
@@ -810,8 +961,6 @@ void InputDefault::release_pressed_events() {
 }
 
 InputDefault::InputDefault() {
-	use_input_buffering = false;
-	use_accumulated_input = true;
 	mouse_button_mask = 0;
 	emulate_touch_from_mouse = false;
 	emulate_mouse_from_touch = false;

@@ -227,6 +227,7 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 	input = memnew(InputDefault);
 	input->set_use_input_buffering(true); // Needed because events will come directly from the UI thread
+	input->set_has_input_thread(true);
 	input->set_fallback_mapping(godot_java->get_input_fallback_mapping());
 
 	return OK;

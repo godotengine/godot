@@ -653,7 +653,7 @@ public:
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();
 
-	virtual void force_process_input(){};
+	virtual void force_process_input() {}
 	bool has_feature(const String &p_feature);
 
 	void set_has_server_feature_callback(HasServerFeatureCallback p_callback);

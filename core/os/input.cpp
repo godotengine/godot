@@ -44,6 +44,88 @@ Input *Input::get_singleton() {
 	return singleton;
 }
 
+void Input::flush_buffered_events_post_frame() {
+	if (data.use_legacy_flushing) {
+		// Matches old logic - if buffering, but not agile.
+		if (data.buffering_mode == BUFFERING_MODE_FRAME) {
+			force_flush_buffered_events();
+		}
+	}
+}
+
+void Input::flush_buffered_events() {
+	// This function was called in hacky fashion
+	// all over the shop on different platforms,
+	// and will interfere with agile input,
+	// so is now a NOOP, unless the user chooses
+	// legacy flushing.
+	// Using legacy flushing will muck up
+	// agile input, so is not recommended,
+	// and is only included temporarily to
+	// allow fixing bugs in beta.
+	if (data.use_legacy_flushing) {
+		force_flush_buffered_events();
+	}
+}
+
+void Input::set_use_accumulated_input(bool p_enable) {
+	data.use_accumulated_input = p_enable;
+	_update_buffering_mode();
+}
+
+bool Input::is_using_accumulated_input() const {
+	return data.use_accumulated_input;
+}
+
+void Input::set_use_input_buffering(bool p_enable) {
+	data.use_buffering = p_enable;
+	_update_buffering_mode();
+}
+
+bool Input::is_using_input_buffering() const {
+	return data.use_buffering;
+}
+
+void Input::set_use_agile_flushing(bool p_enable) {
+	data.use_agile = p_enable;
+	_update_buffering_mode();
+}
+
+bool Input::is_using_agile_flushing() const {
+	return data.use_agile;
+}
+
+void Input::set_use_legacy_flushing(bool p_enable) {
+	data.use_legacy_flushing = p_enable;
+}
+
+void Input::set_has_input_thread(bool p_has_thread) {
+	data.has_input_thread = p_has_thread;
+	_update_buffering_mode();
+}
+
+void Input::_update_buffering_mode() {
+	// Logic here may appear confusing but it is historical,
+	// and to prevent compat breaking.
+	// Accumulated input was added in such a way as to override
+	// the use_buffering setting.
+	// i.e. Buffering is used if use_buffering is false, but accumulated is true,
+	// as accumulating needs the previous event in order to work.
+
+	// Additionally for agile input, it currently only makes sense to activate when
+	// the platform has a separate input thread, otherwise the extra processing
+	// on flush on each tick just wastes CPU.
+	if (data.use_accumulated_input || data.use_buffering) {
+		if (data.use_agile && data.has_input_thread) {
+			data.buffering_mode = BUFFERING_MODE_AGILE;
+		} else {
+			data.buffering_mode = BUFFERING_MODE_FRAME;
+		}
+	} else {
+		data.buffering_mode = BUFFERING_MODE_NONE;
+	}
+}
+
 void Input::set_mouse_mode(MouseMode p_mode) {
 	ERR_FAIL_INDEX((int)p_mode, 5);
 	OS::get_singleton()->set_mouse_mode((OS::MouseMode)p_mode);
@@ -104,7 +186,10 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parse_input_event", "event"), &Input::parse_input_event);
 	ClassDB::bind_method(D_METHOD("set_use_accumulated_input", "enable"), &Input::set_use_accumulated_input);
 	ClassDB::bind_method(D_METHOD("is_using_accumulated_input"), &Input::is_using_accumulated_input);
-	ClassDB::bind_method(D_METHOD("flush_buffered_events"), &Input::flush_buffered_events);
+
+	// For backward compatibility this calls the force method.
+	// Use this at your peril as it will mess up agile input any frame it is called.
+	ClassDB::bind_method(D_METHOD("flush_buffered_events"), &Input::force_flush_buffered_events);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");

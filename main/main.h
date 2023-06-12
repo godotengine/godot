@@ -46,7 +46,6 @@ class Main {
 	static uint32_t frame;
 	static bool force_redraw_requested;
 	static int iterating;
-	static bool agile_input_event_flushing;
 
 public:
 	static bool is_project_manager();

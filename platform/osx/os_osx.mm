@@ -3425,6 +3425,7 @@ void OS_OSX::push_input(const Ref<InputEvent> &p_event) {
 void OS_OSX::force_process_input() {
 	process_events(); // get rid of pending events
 	joypad_osx->process_joypads();
+	input->force_flush_buffered_events();
 }
 
 void OS_OSX::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {

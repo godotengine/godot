@@ -518,5 +518,20 @@ void MainTimerSync::set_fixed_fps(int p_fixed_fps) {
 MainFrameTime MainTimerSync::advance(float p_frame_slice, int p_iterations_per_second) {
 	float cpu_idle_step = get_cpu_idle_step();
 
-	return advance_checked(p_frame_slice, p_iterations_per_second, cpu_idle_step);
+	MainFrameTime mft = advance_checked(p_frame_slice, p_iterations_per_second, cpu_idle_step);
+
+	// Now backcalculate the logical timing of the first physics tick.
+	// This is used for processing input.
+	// It is approximate, but should be fine for input.
+	mft.usec_per_tick = 1000000 / p_iterations_per_second;
+	uint64_t leftover_usec = mft.interpolation_fraction * mft.usec_per_tick;
+
+	// Note we are using the ACTUAL CPU time for this estimate,
+	// NOT the smoothed accumulated time.
+	// This is because the input timestamps are measured in realtime,
+	// and smoothed time / realtime can get out of sync.
+	mft.first_physics_tick_logical_time_usecs = current_cpu_ticks_usec;
+	mft.first_physics_tick_logical_time_usecs -= (mft.physics_steps * mft.usec_per_tick) + leftover_usec;
+
+	return mft;
 }

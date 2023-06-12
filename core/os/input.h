@@ -52,6 +52,33 @@ public:
 		MOUSE_MODE_CONFINED_HIDDEN,
 	};
 
+	// There are three buffering modes.
+	// * No buffering (immediately process input)
+	// * or buffering and flush the input every frame,
+	// * or agile - buffering and flush the input every physics tick and every frame.
+	// The mode is decided logically in _update_buffering_mode()
+	// depending on the settings for
+	// use_accumulated_input, use_buffering, use_agile, and has_input_thread.
+	enum BufferingMode {
+		BUFFERING_MODE_NONE,
+		BUFFERING_MODE_FRAME,
+		BUFFERING_MODE_AGILE,
+	};
+
+protected:
+	struct Data {
+		BufferingMode buffering_mode = BUFFERING_MODE_FRAME;
+		bool use_accumulated_input = true;
+		bool use_buffering = false;
+		bool use_agile = false;
+		bool use_legacy_flushing = false;
+		bool has_input_thread = false;
+	} data;
+
+	bool has_input_thread() const { return data.has_input_thread; }
+	void _update_buffering_mode();
+
+public:
 #undef CursorShape
 	enum CursorShape {
 		CURSOR_ARROW,
@@ -142,11 +169,30 @@ public:
 	virtual int get_joy_axis_index_from_string(String p_axis) = 0;
 
 	virtual void parse_input_event(const Ref<InputEvent> &p_event) = 0;
-	virtual void flush_buffered_events() = 0;
-	virtual bool is_using_input_buffering() = 0;
-	virtual void set_use_input_buffering(bool p_enable) = 0;
-	virtual bool is_using_accumulated_input() = 0;
-	virtual void set_use_accumulated_input(bool p_enable) = 0;
+
+	// DO NOT call force_flush_buffered_events() in normal course of events,
+	// as it will break agile input on any frame it is called.
+	// Instead rely on flush_buffered_events_tick() and
+	// flush_buffered_events_frame() which are called from
+	// Main::iteration().
+	virtual void force_flush_buffered_events() = 0;
+	virtual void flush_buffered_events_iteration() = 0;
+	virtual void flush_buffered_events_tick(uint64_t p_tick_timestamp) = 0;
+	virtual void flush_buffered_events_frame() = 0;
+	void flush_buffered_events();
+	void flush_buffered_events_post_frame();
+
+	void set_use_accumulated_input(bool p_enable);
+	bool is_using_accumulated_input() const;
+
+	void set_use_input_buffering(bool p_enable);
+	bool is_using_input_buffering() const;
+
+	void set_use_agile_flushing(bool p_enable);
+	bool is_using_agile_flushing() const;
+
+	void set_use_legacy_flushing(bool p_enable);
+	void set_has_input_thread(bool p_has_thread);
 
 	Input();
 };

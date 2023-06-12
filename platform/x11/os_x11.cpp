@@ -4023,6 +4023,7 @@ void OS_X11::force_process_input() {
 #ifdef JOYDEV_ENABLED
 	joypad->process_joypads();
 #endif
+	input->force_flush_buffered_events();
 }
 
 void OS_X11::run() {

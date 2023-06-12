@@ -33,9 +33,37 @@
 
 #include "core/os/input.h"
 
+class InputDefault;
+
+class InputEventBuffer {
+	struct Event {
+		uint64_t timestamp;
+		Ref<InputEvent> event;
+	};
+
+	struct Data {
+		LocalVector<Event> incoming[2];
+		uint32_t incoming_read = 0;
+		uint32_t incoming_write = 1;
+		Mutex incoming_mutex;
+
+		List<Event> buffer;
+		Mutex buffer_mutex;
+		bool flushing = false;
+	} data;
+
+	void _try_accumulate(uint64_t p_timestamp);
+
+public:
+	void accumulate_or_push_event(Ref<InputEvent> p_event, uint64_t p_timestamp);
+	void push_event(Ref<InputEvent> p_event, uint64_t p_timestamp);
+	void flush_events(uint64_t p_current_timestamp, InputDefault &r_input_handler, bool p_accumulate);
+};
+
 class InputDefault : public Input {
 	GDCLASS(InputDefault, Input);
 	_THREAD_SAFE_CLASS_
+	friend class InputEventBuffer;
 
 	int mouse_button_mask;
 
@@ -198,11 +226,9 @@ private:
 	void _button_event(int p_device, int p_index, bool p_pressed);
 	void _axis_event(int p_device, int p_axis, float p_value);
 
-	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
+	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated, bool p_unlock);
 
-	List<Ref<InputEvent>> buffered_events;
-	bool use_input_buffering;
-	bool use_accumulated_input;
+	InputEventBuffer _event_buffer;
 
 #ifdef DEBUG_ENABLED
 	Set<Ref<InputEvent>> frame_parsed_events;
@@ -303,11 +329,11 @@ public:
 	String get_joy_guid_remapped(int p_device) const;
 	void set_fallback_mapping(String p_guid);
 
-	virtual void flush_buffered_events();
-	virtual bool is_using_input_buffering();
-	virtual void set_use_input_buffering(bool p_enable);
-	virtual bool is_using_accumulated_input();
-	virtual void set_use_accumulated_input(bool p_enable);
+	void flush_buffered_events_ex(uint64_t p_up_to_timestamp);
+	virtual void force_flush_buffered_events();
+	virtual void flush_buffered_events_iteration();
+	virtual void flush_buffered_events_tick(uint64_t p_tick_timestamp);
+	virtual void flush_buffered_events_frame();
 
 	virtual void release_pressed_events();
 	InputDefault();
