@@ -2027,6 +2027,9 @@ void EditorNode::_dialog_action(String p_file) {
 			if (err) {
 				show_accept(TTR("Error saving MeshLibrary!"), TTR("OK"));
 				return;
+			} else if (ResourceCache::has(p_file)) {
+				// Make sure MeshLibrary is updated in the editor.
+				ResourceLoader::load(p_file)->reload_from_file();
 			}
 
 		} break;
