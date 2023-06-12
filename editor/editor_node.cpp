@@ -4932,7 +4932,10 @@ void EditorNode::_save_open_scenes_to_config(Ref<ConfigFile> p_layout) {
 	p_layout->set_value(EDITOR_NODE_CONFIG_SECTION, "open_scenes", scenes);
 
 	String currently_edited_scene_path = editor_data.get_scene_path(editor_data.get_edited_scene());
-	p_layout->set_value(EDITOR_NODE_CONFIG_SECTION, "current_scene", currently_edited_scene_path);
+	// Don't save a bad path to the config.
+	if (!currently_edited_scene_path.is_empty()) {
+		p_layout->set_value(EDITOR_NODE_CONFIG_SECTION, "current_scene", currently_edited_scene_path);
+	}
 }
 
 void EditorNode::save_editor_layout_delayed() {
