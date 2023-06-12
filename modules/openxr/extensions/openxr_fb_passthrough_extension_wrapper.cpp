@@ -107,10 +107,6 @@ bool OpenXRFbPassthroughExtensionWrapper::is_passthrough_enabled() {
 	return fb_passthrough_ext && passthrough_handle != XR_NULL_HANDLE && passthrough_layer != XR_NULL_HANDLE;
 }
 
-bool OpenXRFbPassthroughExtensionWrapper::is_composition_passthrough_layer_ready() {
-	return fb_passthrough_ext && passthrough_handle != XR_NULL_HANDLE && composition_passthrough_layer.layerHandle != XR_NULL_HANDLE;
-}
-
 bool OpenXRFbPassthroughExtensionWrapper::start_passthrough() {
 	if (passthrough_handle == XR_NULL_HANDLE) {
 		return false;
@@ -128,6 +124,13 @@ bool OpenXRFbPassthroughExtensionWrapper::start_passthrough() {
 	}
 
 	// Create the passthrough layer
+	XrPassthroughLayerCreateInfoFB passthrough_layer_config = {
+		XR_TYPE_PASSTHROUGH_LAYER_CREATE_INFO_FB,
+		nullptr,
+		passthrough_handle,
+		XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB,
+		XR_PASSTHROUGH_LAYER_PURPOSE_RECONSTRUCTION_FB,
+	};
 	result = xrCreatePassthroughLayerFB(OpenXRAPI::get_singleton()->get_session(), &passthrough_layer_config, &passthrough_layer);
 	if (!is_valid_passthrough_result(result, "Failed to create the passthrough layer")) {
 		stop_passthrough();
@@ -140,14 +143,18 @@ bool OpenXRFbPassthroughExtensionWrapper::start_passthrough() {
 		print_error("Main viewport doesn't have transparent background! Passthrough may not properly render.");
 	}
 
-	composition_passthrough_layer.layerHandle = passthrough_layer;
-
 	return true;
 }
 
 void OpenXRFbPassthroughExtensionWrapper::on_session_created(const XrSession session) {
 	if (fb_passthrough_ext) {
 		// Create the passthrough feature and start it.
+		XrPassthroughCreateInfoFB passthrough_create_info = {
+			XR_TYPE_PASSTHROUGH_CREATE_INFO_FB,
+			nullptr,
+			0,
+		};
+
 		XrResult result = xrCreatePassthroughFB(OpenXRAPI::get_singleton()->get_session(), &passthrough_create_info, &passthrough_handle);
 		if (!OpenXRAPI::get_singleton()->xr_result(result, "Failed to create passthrough")) {
 			passthrough_handle = XR_NULL_HANDLE;
@@ -157,7 +164,8 @@ void OpenXRFbPassthroughExtensionWrapper::on_session_created(const XrSession ses
 }
 
 XrCompositionLayerBaseHeader *OpenXRFbPassthroughExtensionWrapper::get_composition_layer() {
-	if (is_composition_passthrough_layer_ready()) {
+	if (is_passthrough_enabled()) {
+		composition_passthrough_layer.layerHandle = passthrough_layer;
 		return (XrCompositionLayerBaseHeader *)&composition_passthrough_layer;
 	} else {
 		return nullptr;
@@ -168,8 +176,6 @@ void OpenXRFbPassthroughExtensionWrapper::stop_passthrough() {
 	if (!fb_passthrough_ext) {
 		return;
 	}
-
-	composition_passthrough_layer.layerHandle = XR_NULL_HANDLE;
 
 	XrResult result;
 	if (passthrough_layer != XR_NULL_HANDLE) {
