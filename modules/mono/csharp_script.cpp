@@ -66,6 +66,10 @@
 
 #define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->get_string_names().m_var)
 
+// Types that will be skipped over (in favor of their base types) when setting up instance bindings.
+// This must be a superset of `ignored_types` in bindings_generator.cpp.
+const Vector<String> ignored_types = { "PhysicsServer2DExtension", "PhysicsServer3DExtension" };
+
 #ifdef TOOLS_ENABLED
 static bool _create_project_solution_if_needed() {
 	CRASH_COND(CSharpLanguage::get_singleton()->get_godotsharp_editor() == nullptr);
@@ -1245,11 +1249,16 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 
 	StringName type_name = p_object->get_class_name();
 
-	// ¯\_(ツ)_/¯
 	const ClassDB::ClassInfo *classinfo = ClassDB::classes.getptr(type_name);
-	while (classinfo && !classinfo->exposed) {
+
+	// This skipping of GDExtension classes, as well as whatever classes are in this list of ignored types, is a
+	// workaround to allow GDExtension classes to be used from C# so long as they're only used through base classes that
+	// are registered from the engine. This will likely need to be removed whenever proper support for GDExtension
+	// classes is added to C#. See #75955 for more details.
+	while (classinfo && (!classinfo->exposed || classinfo->gdextension || ignored_types.has(classinfo->name))) {
 		classinfo = classinfo->inherits_ptr;
 	}
+
 	ERR_FAIL_NULL_V(classinfo, false);
 	type_name = classinfo->name;
 

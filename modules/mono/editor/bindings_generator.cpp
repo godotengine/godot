@@ -115,6 +115,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define C_METHOD_MANAGED_FROM_SIGNAL C_NS_MONOMARSHAL ".ConvertSignalToManaged"
 
 // Types that will be ignored by the generator and won't be available in C#.
+// This must be kept in sync with `ignored_types` in csharp_script.cpp
 const Vector<String> ignored_types = { "PhysicsServer2DExtension", "PhysicsServer3DExtension" };
 
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
