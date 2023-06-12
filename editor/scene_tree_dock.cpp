@@ -2470,11 +2470,6 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 	}
 	n->replace_by(newnode, true);
 
-	if (n == edited_scene) {
-		edited_scene = newnode;
-		EditorNode::get_singleton()->set_edited_scene(newnode);
-	}
-
 	//small hack to make collisionshapes and other kind of nodes to work
 	for (int i = 0; i < newnode->get_child_count(); i++) {
 		Node *c = newnode->get_child(i);
