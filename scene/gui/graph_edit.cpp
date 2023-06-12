@@ -989,7 +989,7 @@ void GraphEdit::_top_layer_draw() {
 	_update_scroll();
 
 	if (connecting) {
-		Node *fromn = get_node(NodePath(connecting_from));
+		Node *fromn = get_node_or_null(NodePath(connecting_from));
 		ERR_FAIL_NULL(fromn);
 		GraphNode *from = Object::cast_to<GraphNode>(fromn);
 		ERR_FAIL_NULL(from);
