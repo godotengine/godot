@@ -1447,9 +1447,9 @@ uint64_t TextureStorage::texture_get_native_handle(RID p_texture, bool p_srgb) c
 	ERR_FAIL_COND_V(!tex, 0);
 
 	if (p_srgb && tex->rd_texture_srgb.is_valid()) {
-		return RD::get_singleton()->texture_native_handle(tex->rd_texture_srgb);
+		return RD::get_singleton()->texture_get_native_handle(tex->rd_texture_srgb);
 	} else {
-		return RD::get_singleton()->texture_native_handle(tex->rd_texture);
+		return RD::get_singleton()->texture_get_native_handle(tex->rd_texture);
 	}
 }
 

@@ -752,6 +752,14 @@
 				[b]Note:[/b] [param texture] requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved. Otherwise, an error is printed and a empty [PackedByteArray] is returned.
 			</description>
 		</method>
+		<method name="texture_get_native_handle">
+			<return type="int" />
+			<param index="0" name="texture" type="RID" />
+			<description>
+				Returns the internal graphics handle for this texture object. For use when communicating with third-party APIs mostly with GDExtension.
+				[b]Note:[/b] This function returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
+			</description>
+		</method>
 		<method name="texture_is_format_supported_for_usage" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="format" type="int" enum="RenderingDevice.DataFormat" />
