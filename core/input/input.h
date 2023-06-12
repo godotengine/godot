@@ -38,9 +38,37 @@
 #include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"
 
+class Input;
+
+class InputEventBuffer {
+	struct Event {
+		uint64_t timestamp;
+		Ref<InputEvent> event;
+	};
+
+	struct Data {
+		LocalVector<Event> incoming[2];
+		uint32_t incoming_read = 0;
+		uint32_t incoming_write = 1;
+		Mutex incoming_mutex;
+
+		List<Event> buffer;
+		Mutex buffer_mutex;
+		bool flushing = false;
+	} data;
+
+	void _try_accumulate(uint64_t p_timestamp);
+
+public:
+	void accumulate_or_push_event(const Ref<InputEvent> &p_event, uint64_t p_timestamp);
+	void push_event(const Ref<InputEvent> &p_event, uint64_t p_timestamp);
+	void flush_events(uint64_t p_current_timestamp, Input &r_input_handler, bool p_accumulate);
+};
+
 class Input : public Object {
 	GDCLASS(Input, Object);
 	_THREAD_SAFE_CLASS_
+	friend class InputEventBuffer;
 
 	static Input *singleton;
 
@@ -53,6 +81,35 @@ public:
 		MOUSE_MODE_CONFINED_HIDDEN,
 	};
 
+	// There are three buffering modes.
+	// * No buffering (immediately process input)
+	// * or buffering and flush the input every frame,
+	// * or agile - buffering and flush the input every physics tick and every frame.
+	// The mode is decided logically in _update_buffering_mode()
+	// depending on the settings for
+	// use_accumulated_input, use_buffering, use_agile, and has_input_thread.
+	enum BufferingMode {
+		BUFFERING_MODE_NONE,
+		BUFFERING_MODE_FRAME,
+		BUFFERING_MODE_AGILE,
+	};
+
+protected:
+	struct Data {
+		BufferingMode buffering_mode = BUFFERING_MODE_FRAME;
+		bool use_accumulated_input = true;
+		bool use_buffering = false;
+		bool use_agile = false;
+		bool use_legacy_flushing = false;
+		bool has_input_thread = false;
+	} data;
+
+	bool has_input_thread() const {
+		return data.has_input_thread;
+	}
+	void _update_buffering_mode();
+
+public:
 #undef CursorShape
 	enum CursorShape {
 		CURSOR_ARROW,
@@ -110,8 +167,6 @@ private:
 
 	bool emulate_touch_from_mouse = false;
 	bool emulate_mouse_from_touch = false;
-	bool use_input_buffering = false;
-	bool use_accumulated_input = true;
 
 	int mouse_from_touch_index = -1;
 
@@ -220,9 +275,11 @@ private:
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
 
-	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
+	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated, bool p_unlock);
+	void _flush_buffered_events_ex(uint64_t p_up_to_timestamp);
 
-	List<Ref<InputEvent>> buffered_events;
+	InputEventBuffer _event_buffer;
+
 #ifdef DEBUG_ENABLED
 	HashSet<Ref<InputEvent>> frame_parsed_events;
 	uint64_t last_parsed_frame = UINT64_MAX;
@@ -327,11 +384,33 @@ public:
 	String get_joy_guid(int p_device) const;
 	void set_fallback_mapping(String p_guid);
 
+	// Note calling this function will interfere with agile input,
+	// so should be avoided (for regular use)
+	// on platforms that do support agile input,
+	// by checking is_agile_flushing() is false before calling.
 	void flush_buffered_events();
-	bool is_using_input_buffering();
-	void set_use_input_buffering(bool p_enable);
+
+	// Prefer calling these versions from Main::Iteration
+	// or custom gameloop, as these support agile input.
+	void flush_buffered_events_iteration();
+	void flush_buffered_events_tick(uint64_t p_tick_timestamp);
+	void flush_buffered_events_frame();
+	void flush_buffered_events_post_frame();
+
 	void set_use_accumulated_input(bool p_enable);
-	bool is_using_accumulated_input();
+	bool is_using_accumulated_input() const { return data.use_accumulated_input; }
+
+	void set_use_input_buffering(bool p_enable);
+	bool is_using_input_buffering() const;
+
+	// Note that use_agile_flushing is a request,
+	// and doesn't guarantee that agile flushing will be
+	// active. (Depends on the platform)
+	void set_use_agile_flushing(bool p_enable);
+	bool is_agile_flushing() const;
+
+	void set_use_legacy_flushing(bool p_enable);
+	void set_has_input_thread(bool p_has_thread);
 
 	void release_pressed_events();
 

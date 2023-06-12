@@ -573,7 +573,9 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 #endif
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
+
 	Input::get_singleton()->set_use_input_buffering(true); // Needed because events will come directly from the UI thread
+	Input::get_singleton()->set_has_input_thread(true);
 
 	r_error = OK;
 }

@@ -268,7 +268,9 @@ bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
 		return false;
 	}
 	DisplayServerAndroid::get_singleton()->reset_swap_buffers_flag();
-	DisplayServerAndroid::get_singleton()->process_events();
+	if (!Input::get_singleton()->is_agile_flushing()) {
+		DisplayServerAndroid::get_singleton()->process_events();
+	}
 	uint64_t current_frames_drawn = Engine::get_singleton()->get_frames_drawn();
 	bool exit = Main::iteration();
 

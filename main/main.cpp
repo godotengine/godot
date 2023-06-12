@@ -2374,7 +2374,8 @@ Error Main::setup2() {
 
 	Input *id = Input::get_singleton();
 	if (id) {
-		agile_input_event_flushing = GLOBAL_DEF("input_devices/buffering/agile_event_flushing", false);
+		id->set_use_agile_flushing(GLOBAL_DEF("input_devices/buffering/agile_event_flushing", true));
+		id->set_use_legacy_flushing(GLOBAL_DEF("input_devices/buffering/legacy_event_flushing", false));
 
 		if (bool(GLOBAL_DEF_BASIC("input_devices/pointing/emulate_touch_from_mouse", false)) &&
 				!(editor || project_manager)) {
@@ -3282,7 +3283,6 @@ uint32_t Main::hide_print_fps_attempts = 3;
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
 int Main::iterating = 0;
-bool Main::agile_input_event_flushing = false;
 
 bool Main::is_iterating() {
 	return iterating > 0;
@@ -3332,17 +3332,20 @@ bool Main::iteration() {
 		advance.physics_steps = max_physics_steps;
 	}
 
+	// Ensure with frame input buffering, that input is flushed prior to ticks,
+	// so reasonably up to date input is available in both ticks and frame.
+	Input::get_singleton()->flush_buffered_events_iteration();
+
 	bool exit = false;
 
 	// process all our active interfaces
 	XRServer::get_singleton()->_process();
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
-		if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
-			Input::get_singleton()->flush_buffered_events();
-		}
-
 		Engine::get_singleton()->_in_physics = true;
+
+		// With agile input buffering, new input is potentially available per tick.
+		Input::get_singleton()->flush_buffered_events_tick(advance.get_logical_tick_time(iters));
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
@@ -3384,9 +3387,8 @@ bool Main::iteration() {
 		Engine::get_singleton()->_in_physics = false;
 	}
 
-	if (Input::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
-		Input::get_singleton()->flush_buffered_events();
-	}
+	// Flush any remaining buffered input that has not been flushed already.
+	Input::get_singleton()->flush_buffered_events_frame();
 
 	uint64_t process_begin = OS::get_singleton()->get_ticks_usec();
 
@@ -3456,10 +3458,9 @@ bool Main::iteration() {
 
 	iterating--;
 
-	// Needed for OSs using input buffering regardless accumulation (like Android)
-	if (Input::get_singleton()->is_using_input_buffering() && !agile_input_event_flushing) {
-		Input::get_singleton()->flush_buffered_events();
-	}
+	// This is only included for legacy compatibility.
+	// Not clear whether this is a sensible time to flush input.
+	Input::get_singleton()->flush_buffered_events_post_frame();
 
 	if (movie_writer) {
 		movie_writer->add_frame();
