@@ -961,6 +961,7 @@
 			<param index="1" name="screen" type="int" default="-1" />
 			<description>
 				Sets the [param screen]'s [param orientation]. See also [method screen_get_orientation].
+				[b]Note:[/b] On iOS, this method has no effect if [member ProjectSettings.display/window/handheld/orientation] is not set to [constant SCREEN_SENSOR].
 			</description>
 		</method>
 		<method name="set_icon">
