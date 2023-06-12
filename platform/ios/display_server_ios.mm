@@ -568,6 +568,11 @@ float DisplayServerIOS::screen_get_max_scale() const {
 
 void DisplayServerIOS::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
 	screen_orientation = p_orientation;
+	if (@available(iOS 16.0, *)) {
+		[AppDelegate.viewController setNeedsUpdateOfSupportedInterfaceOrientations];
+	} else {
+		[UIViewController attemptRotationToDeviceOrientation];
+	}
 }
 
 DisplayServer::ScreenOrientation DisplayServerIOS::screen_get_orientation(int p_screen) const {
