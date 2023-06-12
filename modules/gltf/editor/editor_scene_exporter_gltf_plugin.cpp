@@ -86,6 +86,7 @@ void SceneExporterGLTFPlugin::_gltf2_dialog_action(String p_file) {
 	if (err != OK) {
 		ERR_PRINT(vformat("glTF2 save scene error %s.", itos(err)));
 	}
+	EditorFileSystem::get_singleton()->scan_changes();
 }
 
 void SceneExporterGLTFPlugin::convert_scene_to_gltf2() {
