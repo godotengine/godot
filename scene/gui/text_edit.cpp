@@ -7161,7 +7161,9 @@ void TextEdit::_update_selection_mode_line() {
 	if (line < carets[caret_idx].selection.selecting_line) {
 		// Caret is above us.
 		set_caret_line(line - 1, false, true, 0, caret_idx);
-		carets.write[caret_idx].selection.selecting_column = text[get_selection_line(caret_idx)].length();
+		carets.write[caret_idx].selection.selecting_column = has_selection(caret_idx)
+				? text[get_selection_line(caret_idx)].length()
+				: 0;
 	} else {
 		// Caret is below us.
 		set_caret_line(line + 1, false, true, 0, caret_idx);
