@@ -30,6 +30,68 @@
 				If the specified action is already pressed, this will release it.
 			</description>
 		</method>
+		<method name="add_arbitrary_joy">
+			<return type="int" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns the device index of a newly created arbitrary joypad.
+				An arbitrary joypad allows data to be sent directly to the input system, which will then be parsed as native input data through [method set_arbitrary_joy_axis] and [method set_arbitrary_joy_button]. This can be useful if you have a means of acquiring data from a specific device that isn't natively recognized by Godot's input system.
+				[b]Note:[/b] An arbitrary joypad will not be removed automatically, you must call [method remove_arbitrary_joy] manually.
+				[b]Example:[/b]
+				[codeblocks]
+				[gdscript]
+				var _index := -1
+
+				func create_joy(name := ""):
+				    if _index == -1:
+				        _index = Input.add_arbitrary_joy(name)
+
+				func process_inputs(bytes: PackedByteArray):
+				    if _index != -1:
+				        Input.set_arbitrary_joy_axis(_index, JOY_AXIS_LEFT_X, bytes[0])
+				        Input.set_arbitrary_joy_axis(_index, JOY_AXIS_LEFT_Y, bytes[1])
+				        Input.set_arbitrary_joy_button(_index, JOY_BUTTON_A, bytes[2] &gt; 0)
+				        Input.set_arbitrary_joy_button(_index, JOY_BUTTON_B, bytes[3] &gt; 0)
+
+				func destroy_joy():
+				    if _index != -1:
+				        Input.remove_arbitrary_joy(_index)
+				        _index = -1
+				[/gdscript]
+				[csharp]
+				private int _index = -1;
+
+				public void CreateJoy(string name = "")
+				{
+				    if (_index == -1)
+				    {
+				        _index = Input.AddArbitraryJoy(name);
+				    }
+				}
+
+				public void ProcessInputs(byte[] bytes)
+				{
+				    if (_index != -1)
+				    {
+				        Input.SetArbitraryJoyAxis(_index, JoyAxis.LeftX, bytes[0]);
+				        Input.SetArbitraryJoyAxis(_index, JoyAxis.LeftY, bytes[1]);
+				        Input.SetArbitraryJoyButton(_index, JoyButton.A, bytes[2] &gt; 0);
+				        Input.SetArbitraryJoyButton(_index, JoyButton.B, bytes[3] &gt; 0);
+				    }
+				}
+
+				public void DestroyJoy()
+				{
+				    if (_index != -1)
+				    {
+				        Input.RemoveArbitraryJoy(_index);
+				        _index = -1;
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="add_joy_mapping">
 			<return type="void" />
 			<param index="0" name="mapping" type="String" />
@@ -297,6 +359,13 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="remove_arbitrary_joy">
+			<return type="void" />
+			<param index="0" name="device" type="int" />
+			<description>
+				Removes an arbitrary joypad at the specified device index.
+			</description>
+		</method>
 		<method name="remove_joy_mapping">
 			<return type="void" />
 			<param index="0" name="guid" type="String" />
@@ -310,6 +379,24 @@
 			<description>
 				Sets the acceleration value of the accelerometer sensor. Can be used for debugging on devices without a hardware sensor, for example in an editor on a PC.
 				[b]Note:[/b] This value can be immediately overwritten by the hardware sensor value on Android and iOS.
+			</description>
+		</method>
+		<method name="set_arbitrary_joy_axis">
+			<return type="void" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="axis" type="int" enum="JoyAxis" />
+			<param index="2" name="value" type="float" />
+			<description>
+				Sets the state of an axis for an arbitrary joypad at the specified device index.
+			</description>
+		</method>
+		<method name="set_arbitrary_joy_button">
+			<return type="void" />
+			<param index="0" name="device" type="int" />
+			<param index="1" name="button" type="int" enum="JoyButton" />
+			<param index="2" name="pressed" type="bool" />
+			<description>
+				Sets the state of a button for an arbitrary joypad at the specified device index.
 			</description>
 		</method>
 		<method name="set_custom_mouse_cursor">

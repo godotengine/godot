@@ -165,6 +165,7 @@ private:
 		int mapping = -1;
 		int hat_current = 0;
 		Dictionary info;
+		bool arbitrary = false;
 	};
 
 	VelocityTrack mouse_velocity_track;
@@ -293,7 +294,12 @@ public:
 	Vector2 get_joy_vibration_strength(int p_device);
 	float get_joy_vibration_duration(int p_device);
 	uint64_t get_joy_vibration_timestamp(int p_device);
-	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "", Dictionary p_joypad_info = Dictionary());
+	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "", Dictionary p_joypad_info = Dictionary(), bool p_arbitrary = false);
+
+	int add_arbitrary_joy(String p_name);
+	void remove_arbitrary_joy(int p_device);
+	void set_arbitrary_joy_button(int p_device, JoyButton p_button, bool p_pressed);
+	void set_arbitrary_joy_axis(int p_device, JoyAxis p_axis, float p_value);
 
 	Vector3 get_gravity() const;
 	Vector3 get_accelerometer() const;

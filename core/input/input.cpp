@@ -120,6 +120,10 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
 	ClassDB::bind_method(D_METHOD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
+	ClassDB::bind_method(D_METHOD("add_arbitrary_joy", "name"), &Input::add_arbitrary_joy);
+	ClassDB::bind_method(D_METHOD("remove_arbitrary_joy", "device"), &Input::remove_arbitrary_joy);
+	ClassDB::bind_method(D_METHOD("set_arbitrary_joy_button", "device", "button", "pressed"), &Input::set_arbitrary_joy_button);
+	ClassDB::bind_method(D_METHOD("set_arbitrary_joy_axis", "device", "axis", "value"), &Input::set_arbitrary_joy_axis);
 	ClassDB::bind_method(D_METHOD("vibrate_handheld", "duration_ms"), &Input::vibrate_handheld, DEFVAL(500));
 	ClassDB::bind_method(D_METHOD("get_gravity"), &Input::get_gravity);
 	ClassDB::bind_method(D_METHOD("get_accelerometer"), &Input::get_accelerometer);
@@ -443,7 +447,7 @@ static String _hex_str(uint8_t p_byte) {
 	return ret;
 }
 
-void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid, Dictionary p_joypad_info) {
+void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid, Dictionary p_joypad_info, bool p_arbitrary) {
 	_THREAD_SAFE_METHOD_
 
 	// Clear the pressed status if a Joypad gets disconnected.
@@ -480,6 +484,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, S
 			}
 		}
 		js.mapping = mapping;
+		js.arbitrary = p_arbitrary;
 	} else {
 		js.connected = false;
 		for (int i = 0; i < (int)JoyButton::MAX; i++) {
@@ -494,6 +499,28 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, S
 
 	// Ensure this signal is emitted on the main thread, as some platforms (e.g. Linux) call this from a different thread.
 	call_deferred("emit_signal", SNAME("joy_connection_changed"), p_idx, p_connected);
+}
+
+int Input::add_arbitrary_joy(String p_name) {
+	int id = get_unused_joy_id();
+	ERR_FAIL_COND_V_MSG(id == -1, -1, "Couldn't retrieve new joy ID.");
+	joy_connection_changed(id, true, p_name, "", Dictionary(), true);
+	return id;
+}
+
+void Input::remove_arbitrary_joy(int p_device) {
+	ERR_FAIL_COND_MSG(!joy_names[p_device].arbitrary, vformat("The device at index \"%s\" is not arbitrary", p_device));
+	joy_connection_changed(p_device, false, "");
+}
+
+void Input::set_arbitrary_joy_button(int p_device, JoyButton p_button, bool p_pressed) {
+	ERR_FAIL_COND_MSG(!joy_names[p_device].arbitrary, vformat("The device at index \"%s\" is not arbitrary", p_device));
+	joy_button(p_device, p_button, p_pressed);
+}
+
+void Input::set_arbitrary_joy_axis(int p_device, JoyAxis p_axis, float p_value) {
+	ERR_FAIL_COND_MSG(!joy_names[p_device].arbitrary, vformat("The device at index \"%s\" is not arbitrary", p_device));
+	joy_axis(p_device, p_axis, p_value);
 }
 
 Vector3 Input::get_gravity() const {
