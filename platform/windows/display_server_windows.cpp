@@ -1328,7 +1328,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 				r_style = WS_OVERLAPPEDWINDOW;
 			}
 		} else {
-			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
+			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 		}
 	}
 
