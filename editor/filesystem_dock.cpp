@@ -1790,17 +1790,11 @@ void FileSystemDock::_overwrite_dialog_action(bool p_overwrite) {
 
 Vector<String> FileSystemDock::_check_existing() {
 	Vector<String> conflicting_items;
-	String &p_to_path = to_move_path;
-	for (int i = 0; i < to_move.size(); i++) {
-		String ol_pth = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
-		String p_new_path = p_to_path.path_join(ol_pth.get_file());
-		FileOrFolder p_item = to_move[i];
+	for (const FileOrFolder &item : to_move) {
+		String old_path = item.path.trim_suffix("/");
+		String new_path = to_move_path.path_join(old_path.get_file());
 
-		String old_path = (p_item.is_file || p_item.path.ends_with("/")) ? p_item.path : (p_item.path + "/");
-		String new_path = (p_item.is_file || p_new_path.ends_with("/")) ? p_new_path : (p_new_path + "/");
-
-		if ((p_item.is_file && FileAccess::exists(new_path)) ||
-				(!p_item.is_file && DirAccess::exists(new_path))) {
+		if ((item.is_file && FileAccess::exists(new_path)) || (!item.is_file && DirAccess::exists(new_path))) {
 			conflicting_items.push_back(old_path);
 		}
 	}
@@ -1843,11 +1837,15 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 	if (p_copy) {
 		bool is_copied = false;
 		for (int i = 0; i < to_move.size(); i++) {
-			String old_path = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
-			const String &new_path = new_paths[i];
+			String old_path = to_move[i].path;
+			String new_path = new_paths[i];
+
+			if (!to_move[i].is_file) {
+				new_path = new_path.path_join(old_path.trim_suffix("/").get_file());
+			}
 
 			if (old_path != new_path) {
-				_try_duplicate_item(to_move[i], new_paths[i]);
+				_try_duplicate_item(to_move[i], new_path);
 				is_copied = true;
 			}
 		}
@@ -1868,8 +1866,14 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_cop
 		HashMap<String, String> folder_renames;
 
 		for (int i = 0; i < to_move.size(); i++) {
-			String old_path = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
-			const String &new_path = new_paths[i];
+			String old_path = to_move[i].path;
+			String new_path = new_paths[i];
+
+			if (!to_move[i].is_file) {
+				new_path = new_path.path_join(old_path.trim_suffix("/").get_file());
+				print_line(new_path);
+			}
+
 			if (old_path != new_path) {
 				_try_move_item(to_move[i], new_path, file_renames, folder_renames);
 				is_moved = true;
@@ -2614,7 +2618,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 			Vector<String> fnames = drag_data["files"];
 			to_move.clear();
 			for (int i = 0; i < fnames.size(); i++) {
-				if (fnames[i].get_base_dir() != to_dir) {
+				if (fnames[i].trim_suffix("/").get_base_dir() != to_dir.trim_suffix("/")) {
 					to_move.push_back(FileOrFolder(fnames[i], !fnames[i].ends_with("/")));
 				}
 			}
