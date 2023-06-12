@@ -84,6 +84,23 @@ public:
 		BIND_IGNORE_BOTTOMRIGHT = 1 << 24
 	};
 
+	enum AllowedTransform {
+		FLIP_X = 1,
+		FLIP_Y = 2,
+		FLIP_BOTH = 4,
+		TRANSPOSE = 8,
+		TRANSPOSE_FLIP_X = 16,
+		TRANSPOSE_FLIP_Y = 32,
+		TRANSPOSE_FLIP_BOTH = 64,
+		FLIP_ANY = 7,
+		ROTATE = 52,
+		ANY = 127,
+		ISOMETRIC_FLIP_X = 8,
+		ISOMETRIC_FLIP_Y = 64,
+		ISOMETRIC_FLIP_BOTH = 4,
+		ISOMETRIC_FLIP_ANY = 76
+	};
+
 	enum TileMode {
 		SINGLE_TILE,
 		AUTO_TILE,
@@ -100,6 +117,7 @@ public:
 		Map<Vector2, Ref<NavigationPolygon>> navpoly_map;
 		Map<Vector2, int> priority_map;
 		Map<Vector2, int> z_index_map;
+		Map<Vector2, uint8_t> allowed_transform_map;
 
 		// Default size to prevent invalid value
 		explicit AutotileData() :
@@ -126,6 +144,7 @@ private:
 		Color modulate;
 		AutotileData autotile_data;
 		int z_index;
+		uint8_t allowed_transforms;
 
 		// Default modulate for back-compat
 		explicit TileData() :
@@ -195,6 +214,11 @@ public:
 	Vector2 autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, const Node *p_tilemap_node = nullptr, const Vector2 &p_tile_location = Vector2());
 	Vector2 atlastile_get_subtile_by_priority(int p_id, const Node *p_tilemap_node = nullptr, const Vector2 &p_tile_location = Vector2());
 
+	uint8_t autotile_get_transform_for_subtile_and_bitmask(int p_id, const Vector2 &p_coord, uint16_t p_bitmask);
+	uint8_t autotile_get_subtile_allowed_transforms(int p_id, const Vector2 &p_coord);
+	uint32_t autotile_get_transformed_bitmask(uint8_t p_transform, uint32_t p_bitmask);
+	void autotile_set_subtile_allowed_transforms(int p_id, const Vector2 &p_coord, uint8_t p_transforms);
+
 	void tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> tile_get_shape(int p_id, int p_shape_id) const;
 
@@ -263,6 +287,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(TileSet::AutotileBindings);
+VARIANT_ENUM_CAST(TileSet::AllowedTransform);
 VARIANT_ENUM_CAST(TileSet::BitmaskMode);
 VARIANT_ENUM_CAST(TileSet::TileMode);
 

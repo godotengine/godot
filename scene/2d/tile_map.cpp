@@ -1067,6 +1067,64 @@ void TileMap::update_cell_bitmask(int p_x, int p_y) {
 			Vector2 coord = tile_set->autotile_get_subtile_for_bitmask(id, mask, this, Vector2(p_x, p_y));
 			E->get().autotile_coord_x = (int)coord.x;
 			E->get().autotile_coord_y = (int)coord.y;
+			uint8_t transform = tile_set->autotile_get_transform_for_subtile_and_bitmask(id, coord, mask);
+			if (mode == MODE_ISOMETRIC) {
+				switch (transform) {
+					case TileSet::FLIP_X:
+						transform = TileSet::TRANSPOSE_FLIP_BOTH;
+						break;
+					case TileSet::FLIP_Y:
+						transform = TileSet::TRANSPOSE;
+						break;
+					case TileSet::TRANSPOSE:
+						transform = TileSet::FLIP_X;
+						break;
+					case TileSet::TRANSPOSE_FLIP_BOTH:
+						transform = TileSet::FLIP_Y;
+				}
+			}
+			switch (transform) {
+				case 0:
+					E->get().flip_h = false;
+					E->get().flip_v = false;
+					E->get().transpose = false;
+					break;
+				case TileSet::FLIP_X:
+					E->get().flip_h = true;
+					E->get().flip_v = false;
+					E->get().transpose = false;
+					break;
+				case TileSet::FLIP_Y:
+					E->get().flip_h = false;
+					E->get().flip_v = true;
+					E->get().transpose = false;
+					break;
+				case TileSet::FLIP_BOTH:
+					E->get().flip_h = true;
+					E->get().flip_v = true;
+					E->get().transpose = false;
+					break;
+				case TileSet::TRANSPOSE:
+					E->get().flip_h = false;
+					E->get().flip_v = false;
+					E->get().transpose = true;
+					break;
+				case TileSet::TRANSPOSE_FLIP_X:
+					E->get().flip_h = true;
+					E->get().flip_v = false;
+					E->get().transpose = true;
+					break;
+				case TileSet::TRANSPOSE_FLIP_Y:
+					E->get().flip_h = false;
+					E->get().flip_v = true;
+					E->get().transpose = true;
+					break;
+				case TileSet::TRANSPOSE_FLIP_BOTH:
+					E->get().flip_h = true;
+					E->get().flip_v = true;
+					E->get().transpose = true;
+					break;
+			}
 
 			PosKey qk = p.to_quadrant(_get_quadrant_size());
 			Map<PosKey, Quadrant>::Element *Q = quadrant_map.find(qk);
