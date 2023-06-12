@@ -54,13 +54,15 @@
 # a-ori-a <ma_hiro25@outlook.jp>, 2023.
 # Usamiki <amarantus0499@gmail.com>, 2023.
 # "Takefumi \"abell\" Ota" <taketakegogo@gmail.com>, 2023.
+# Septian Kurniawan <septgsk@outlook.com>, 2023.
+# 上城肇 <hajime.kamishiro@manyversegames.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-30 10:49+0000\n"
-"Last-Translator: Usamiki <amarantus0499@gmail.com>\n"
+"PO-Revision-Date: 2023-06-11 23:11+0000\n"
+"Last-Translator: 上城肇 <hajime.kamishiro@manyversegames.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -4452,6 +4454,9 @@ msgstr ""
 "全てのプリセットはエクスポートが全て機能するために、エクスポートパスを定義す"
 "る必要があります。"
 
+msgid "Resources to exclude:"
+msgstr "除外するリソース:"
+
 msgid "Resources to export:"
 msgstr "エクスポートするリソース:"
 
@@ -5299,6 +5304,9 @@ msgid "Set paths to save animations as resource files on Reimport"
 msgstr ""
 "再インポート時にアニメーションをリソースファイルとして保存するパスを設定"
 
+msgid "Can't make material external to file, write error:"
+msgstr "マテリアルをファイルに送出できません。書き込みエラー:"
+
 msgid "Actions..."
 msgstr "操作..."
 
@@ -5429,6 +5437,9 @@ msgstr ""
 "現在のプラットフォームに応じて、'Meta' ('Command') と 'Control' の間で自動的"
 "に再マップします。"
 
+msgid "Keycode (Latin Equivalent)"
+msgstr "キーコード (Latin-1同等)"
+
 msgid "Physical Keycode (Position on US QWERTY Keyboard)"
 msgstr "物理キーコード (US QWERTYキーボード上の位置)"
 
@@ -5457,6 +5468,9 @@ msgstr "プロパティ名のスタイル"
 
 msgid "Raw"
 msgstr "Raw"
+
+msgid "Capitalized"
+msgstr "大文字"
 
 msgid "Localized"
 msgstr "ローカライズ済"
@@ -5942,6 +5956,9 @@ msgstr "アニメーションをファイルに保存: %s"
 msgid "Rename Animation Library: %s"
 msgstr "アニメーション ライブラリの名前を変更: %s"
 
+msgid "[Global]"
+msgstr "[グローバル]"
+
 msgid "Rename Animation: %s"
 msgstr "アニメーションの名前を変更: %s"
 
@@ -5962,6 +5979,9 @@ msgstr "アニメーション ライブラリを削除: %s"
 
 msgid "Remove Animation from Library: %s"
 msgstr "ライブラリからアニメーションを削除: %s"
+
+msgid "[built-in]"
+msgstr "[内蔵]"
 
 msgid "Add Animation to Library"
 msgstr "アニメーションをライブラリに追加"
@@ -6034,6 +6054,9 @@ msgstr "次の変更をブレンド"
 
 msgid "Change Blend Time"
 msgstr "ブレンド時間の変更"
+
+msgid "[Global] (create)"
+msgstr "[グローバル](作成)"
 
 msgid "Duplicated Animation Name:"
 msgstr "複製されたアニメーション名:"
@@ -6877,6 +6900,9 @@ msgstr "位置決めのヒントを展開します。"
 
 msgid "Container Default"
 msgstr "コンテナのデフォルト"
+
+msgid "Fill"
+msgstr "塗りつぶし"
 
 msgid "Custom"
 msgstr "カスタム"
@@ -7824,7 +7850,7 @@ msgid "Size: %s (%.1fMP)\n"
 msgstr "サイズ: %s (%.1fMP)\n"
 
 msgid "Objects: %d\n"
-msgstr "オブジェクトID\n"
+msgstr "オブジェクト数: %d\n"
 
 msgid "Primitive Indices: %d\n"
 msgstr "プリミティブ インデックス数: %d\n"
@@ -10662,6 +10688,9 @@ msgstr "入力デフォルトポートの設定"
 msgid "Add Node to Visual Shader"
 msgstr "ビジュアルシェーダーにノードを追加"
 
+msgid "Add Varying to Visual Shader: %s"
+msgstr "ビジュアルシェーダーにvaryingを追加: %s"
+
 msgid "Node(s) Moved"
 msgstr "ノードの移動"
 
@@ -10965,6 +10994,9 @@ msgstr "複数パラメーターの逆タンジェントを返します。"
 msgid "Returns the inverse hyperbolic tangent of the parameter."
 msgstr "パラメーターの双曲線逆タンジェントを返します。"
 
+msgid "Returns the result of bitwise NOT (~a) operation on the integer."
+msgstr "整数のビット単位NOT（~a）を計算して返します。"
+
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
 msgstr "パラメーターと等しいかより大きい、最も近い整数を求めます。"
@@ -11098,6 +11130,12 @@ msgstr "パラメーターの双曲タンジェントを返します。"
 
 msgid "Finds the truncated value of the parameter."
 msgstr "パラメーターを切り捨てた値を求めます。"
+
+msgid "Returns the result of bitwise AND (a & b) operation for two integers."
+msgstr "2つの整数パラメーター間のビット単位AND（a & b）を計算して返します。"
+
+msgid "Returns the result of bitwise OR (a | b) operation for two integers."
+msgstr "2つの整数パラメーター間のビット単位OR（a | b）を計算して返します。"
 
 msgid "Converts screen UV to a SDF."
 msgstr "スクリーンUVをSDFに変換します。"
@@ -11390,8 +11428,15 @@ msgstr "プロジェクトのインストールパス:"
 msgid "Renderer:"
 msgstr "レンダラー:"
 
+msgid "The renderer can be changed later, but scenes may need to be adjusted."
+msgstr ""
+"レンダラーは後で変更できますが、シーンの調整が必要となる場合があります。"
+
 msgid "Version Control Metadata:"
 msgstr "バージョン管理メタデータ:"
+
+msgid "Git"
+msgstr "Git"
 
 msgid "Missing Project"
 msgstr "プロジェクトがありません"
@@ -12069,6 +12114,9 @@ msgstr "スクリプトを開く / 場所を選択する"
 msgid "Open Script"
 msgstr "スクリプトを開く"
 
+msgid "Inherit %s"
+msgstr "継承元: %s"
+
 msgid "File exists, it will be reused."
 msgstr "ファイルがすでに存在します。そちらを再利用します。"
 
@@ -12360,11 +12408,17 @@ msgstr "アクション名を変更"
 msgid "Rename Actions Localized name"
 msgstr "ローカライズされるアクション名を変更"
 
+msgid "Add action set"
+msgstr "アクションセットの追加"
+
 msgid "Error loading %s: %s."
 msgstr "%s のロード中にエラーが発生しました: %s"
 
 msgid "Add an action set."
 msgstr "アクションセットを追加します。"
+
+msgid "Action Sets"
+msgstr "アクションセット"
 
 msgid "Pose"
 msgstr "ポーズ"
@@ -12468,6 +12522,10 @@ msgstr "無効なパッケージ名:"
 
 msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
 msgstr "\"パススルー\" は \"XR Mode\" が \"OpenXR\" の場合にのみ有効です。"
+
+msgid "\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."
+msgstr ""
+"\"%s\"レンダラーでは \"Min Sdk\" バージョンは %d 以上でなければなりません。"
 
 msgid "Code Signing"
 msgstr "コード署名"
@@ -12596,6 +12654,9 @@ msgstr "APKを最適化..."
 msgid "Could not unzip temporary unaligned APK."
 msgstr "temporary unaligned APKを展開できませんでした。"
 
+msgid "Export Icons"
+msgstr "エクスポートアイコン"
+
 msgid "Code signing failed, see editor log for details."
 msgstr "コード署名に失敗しました。詳細はエディターログを確認してください。"
 
@@ -12641,6 +12702,9 @@ msgstr "32bitの実行ファイルは4GiB以上の組み込みデータを持つ
 msgid "Executable \"pck\" section not found."
 msgstr "実行可能な \"pck \"セクションが見つかりません。"
 
+msgid "Could not create temp directory:"
+msgstr "一時ディレクトリの作成に失敗しました:"
+
 msgid "Failed to create \"%s\" subfolder."
 msgstr "サブフォルダー \"%s\" を作成できませんでした。"
 
@@ -12661,6 +12725,9 @@ msgstr "無効な資格情報ファイルです。"
 
 msgid "Invalid executable file."
 msgstr "無効な実行可能ファイルです。"
+
+msgid "Icon Creation"
+msgstr "アイコン作成"
 
 msgid "Could not open icon file \"%s\"."
 msgstr "アイコンファイルを開けませんでした: \"%s\"。"
@@ -12690,6 +12757,9 @@ msgstr ""
 
 msgid "Cannot sign file %s."
 msgstr "ファイル %s に署名できません。"
+
+msgid "DMG Creation"
+msgstr "DMG作成"
 
 msgid "Could not start hdiutil executable."
 msgstr "hdiutilを開始できませんでした。"
@@ -13244,6 +13314,9 @@ msgstr "繰り返し"
 msgid "Invalid comparison function for that type."
 msgstr "そのタイプの比較関数は無効です。"
 
+msgid "2D Mode"
+msgstr "2Dモード"
+
 msgid "Invalid arguments for the built-in function: \"%s(%s)\"."
 msgstr "組み込み関数 \"%s(%s)\" の引数が無効です。"
 
@@ -13279,6 +13352,9 @@ msgstr "'%s' に一致するコンストラクタが見つかりません。"
 
 msgid "No matching function found for: '%s'."
 msgstr "'%s' に一致する関数が見つかりません。"
+
+msgid "Unexpected end of expression."
+msgstr "表現が予期せず終了しました。"
 
 msgid "Invalid arguments to unary operator '%s': %s."
 msgstr "単項演算子 '%s' の引数が無効です: %s"

@@ -77,13 +77,14 @@
 # Jakub Marcowski <chubercikbattle@gmail.com>, 2023.
 # "Janusz G." <400@poczta.fm>, 2023.
 # Michał Biernat <michalbiernat@windowslive.com>, 2023.
+# stereopolex <stereopolex@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-15 13:55+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2023-06-10 02:19+0000\n"
+"Last-Translator: stereopolex <stereopolex@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -2661,7 +2662,7 @@ msgid "property:"
 msgstr "właściwość:"
 
 msgid "Constructors"
-msgstr "Konstruktory"
+msgstr "Konstruktor"
 
 msgid "Operators"
 msgstr "Operatory"
@@ -3264,7 +3265,7 @@ msgid ""
 "The current scene has no root node, but %d modified external resource(s) "
 "were saved anyway."
 msgstr ""
-"Aktualna scena nie ma korzenia, ale %s zmodyfikowane zasoby zostały zapisane "
+"Aktualna scena nie ma korzenia, ale %d zmodyfikowane zasoby zostały zapisane "
 "i tak."
 
 msgid ""
@@ -7928,7 +7929,7 @@ msgid "Objects: %d\n"
 msgstr "Obiektów: %d\n"
 
 msgid "Primitive Indices: %d\n"
-msgstr "Indeksy prymitywów: %s\n"
+msgstr "Indeksy prymitywów: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "Wywołania rysowania: %d"
@@ -11409,14 +11410,14 @@ msgstr ""
 msgid ""
 "Returns the result of bitwise right shift (a >> b) operation on the integer."
 msgstr ""
-"Zwraca wynik bitowego przesunięcia w prawo (a <<< b) na liczbie całkowitej "
+"Zwraca wynik bitowego przesunięcia w prawo (a >> b) na liczbie całkowitej "
 "(integer)."
 
 msgid ""
 "Returns the result of bitwise right shift (a >> b) operation on the unsigned "
 "integer."
 msgstr ""
-"Zwraca wynik bitowego przesunięcia w lewo (a << b) na liczbie całkowitej bez "
+"Zwraca wynik bitowego przesunięcia w lewo (a >> b) na liczbie całkowitej bez "
 "znaku (unsigned integer)."
 
 msgid "Returns the result of bitwise XOR (a ^ b) operation on the integer."
@@ -13755,7 +13756,7 @@ msgid "Remove binding"
 msgstr "Usuń wiązanie"
 
 msgid "Pose"
-msgstr "Pozycja"
+msgstr "Poza"
 
 msgid "Haptic"
 msgstr "Dotykowe"

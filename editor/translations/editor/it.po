@@ -85,13 +85,14 @@
 # Davide Mora <mora.davide07@gmail.com>, 2023.
 # Francesco Falcone <francesco01.falcone@gmail.com>, 2023.
 # GumaD3v <matteo.gugliuzza08@gmail.com>, 2023.
+# Adelina G <adelinadoncheva.georgieva@mail.polimi.it>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-17 00:52+0000\n"
-"Last-Translator: GumaD3v <matteo.gugliuzza08@gmail.com>\n"
+"PO-Revision-Date: 2023-06-11 23:11+0000\n"
+"Last-Translator: Adelina G <adelinadoncheva.georgieva@mail.polimi.it>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -616,6 +617,9 @@ msgstr "Deseleziona tutte le chiavi"
 msgid "Animation Change Transition"
 msgstr "Transizione al cambio dell'Animazione"
 
+msgid "Animation Change %s"
+msgstr "Cambia Animazione %s"
+
 msgid "Animation Change Keyframe Value"
 msgstr "Cambia il valore del fotogramma chiave di un'animazione"
 
@@ -626,7 +630,7 @@ msgid "Animation Multi Change Transition"
 msgstr "Cambio multiplo di transizione di un'animazione"
 
 msgid "Animation Multi Change %s"
-msgstr "Cambio multiplo di %s di un'animazione"
+msgstr "Cambio multiplo %s di un'animazione"
 
 msgid "Animation Multi Change Keyframe Value"
 msgstr "Cambio multiplo del valore dei fotogrammi chiave di un'animazione"
@@ -661,6 +665,9 @@ msgstr "Traccia di rotazione 3D"
 
 msgid "3D Scale Track"
 msgstr "Traccia di scalatura 3D"
+
+msgid "Blend Shape Track"
+msgstr "Traccia di plasma forme"
 
 msgid "Call Method Track"
 msgstr "Traccia di metodi"
@@ -13836,6 +13843,12 @@ msgstr ""
 msgid "Path property must point to a valid Node2D node to work."
 msgstr "La proprietà path deve puntare a un nodo Node2D valido per funzionare."
 
+msgid ""
+"This node cannot interact with other objects unless a Shape2D is assigned."
+msgstr ""
+"Questo nodo non può interagire con altri oggetti a meno che non venga "
+"assegnato un Shape2D."
+
 msgid "This Bone2D chain should end at a Skeleton2D node."
 msgstr "Questa catena di Bone2D deve terminare con un nodo Skeleton2D."
 
@@ -13849,6 +13862,17 @@ msgid ""
 msgstr ""
 "Questo osso ha bisogno di una corretta postura di RIPOSO. Vai al nodo "
 "Skeleton2D e impostane una."
+
+msgid ""
+"CollisionShape3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionShape3D serve solo a fornire una forma di collisione a un nodo "
+"derivato da CollisionObject3D.\n"
+"Si prega di usarlo solo come child di Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, ecc. per dare loro una forma."
 
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Niente è visibile perché non è stata assegnata alcuna mesh."
@@ -13877,6 +13901,13 @@ msgstr ""
 "L'animazinoe delle particelle richiede l'utilizzo di un BaseMaterial3D che "
 "abbia Billboard Mode imposttat su \"Particle Billboard\"."
 
+msgid ""
+"Using Trail meshes with a skin causes Skin to override Trail poses. Suggest "
+"removing the Skin."
+msgstr ""
+"Usando mesh di tipo Trail con skin, causa la sovrascrittura delle pose Trail "
+"con le Skin. Suggeriamo di rimuovere la Skin."
+
 msgid "Node A and Node B must be PhysicsBody3Ds"
 msgstr "Il nodo A e il nodo B devono essere PhysicsBody3D"
 
@@ -13897,6 +13928,13 @@ msgstr "La scala di una luce non altera la sua dimensione visiva."
 
 msgid "Projector texture only works with shadows active."
 msgstr "Le texture proiettate funzionano solo con le ombre attive."
+
+msgid ""
+"Projector textures are not supported when using the GL Compatibility backend "
+"yet. Support will be added in a future release."
+msgstr ""
+"Le texture Projector non sono ancora supportate quando si usa la "
+"compatibilità backend GL. Il supporto verrà aggiunto in rilasci futuri."
 
 msgid "A SpotLight3D with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
@@ -13928,6 +13966,13 @@ msgid "Generating Probe Acceleration Structures"
 msgstr "Generando le strutture di accelerazione delle sonde"
 
 msgid ""
+"LightmapGI nodes are not supported when using the GL Compatibility backend "
+"yet. Support will be added in a future release."
+msgstr ""
+"I nodi LightmapGI non sono ancora supportati quando si usa la compatibilità "
+"backend GL. Il supporto verrà aggiunto in rilasci futuri."
+
+msgid ""
 "The NavigationAgent3D can be used only under a Node3D inheriting parent node."
 msgstr ""
 "Il NavigationAgent3D può essere usato solo sotto un genitore che eredita da "
@@ -13946,6 +13991,10 @@ msgid ""
 msgstr ""
 "Il NavigationObstacle3D serve solo a fornire l'evitamento delle collisioni a "
 "un oggetto genitore che eredita da Node3D."
+
+msgid "PathFollow3D only works when set as a child of a Path3D node."
+msgstr ""
+"PathFollow3D funziona solamente se impostato come child di un nodo Path3D."
 
 msgid ""
 "The \"Remote Path\" property must point to a valid Node3D or Node3D-derived "
@@ -13987,6 +14036,9 @@ msgstr ""
 msgid "Plotting Meshes"
 msgstr "Tracciando Meshes"
 
+msgid "Finishing Plot"
+msgstr "Trama finale"
+
 msgid ""
 "XR is not enabled in rendering project settings. Stereoscopic output is not "
 "supported unless this is enabled."
@@ -13999,6 +14051,9 @@ msgstr "Sul nodo BlendTree \"%s\", animazione non trovata: \"%s\""
 
 msgid "Animation not found: '%s'"
 msgstr "Animazione non trovata: \"%s\""
+
+msgid "Animation Apply Reset"
+msgstr "Applica Reset all'animazione"
 
 msgid "In node '%s', invalid animation: '%s'."
 msgstr "Nel nodo \"%s\", animazione non valida: \"%s\"."
@@ -14040,6 +14095,9 @@ msgstr ""
 "Colore: #%s\n"
 "LMB: Imposta il colore"
 
+msgid "Pick a color from the application window."
+msgstr "Seleziona un colore dalla finestra applicativa."
+
 msgid "Switch between hexadecimal and code values."
 msgstr "Cambia tra valori esadecimali e valori di codice."
 
@@ -14065,6 +14123,9 @@ msgstr "Per Favore Conferma..."
 msgid "All Files"
 msgstr "Tutti i file"
 
+msgid "Invalid extension, or empty filename."
+msgstr "Estensione non valida o nome del file vuoto."
+
 msgid "Enable grid minimap."
 msgstr "Abilita mini-mappa griglia."
 
@@ -14079,6 +14140,12 @@ msgstr "Sinistra a destra"
 
 msgid "Right-to-Left"
 msgstr "Destra a sinistra"
+
+msgid "Left-to-Right Mark (LRM)"
+msgstr "Segna da Sinistra-a-Destra (LRM)"
+
+msgid "Left-to-Right Isolate (LRI)"
+msgstr "Isola da Sinistra-a-Destra (LRI)"
 
 msgid "Text Writing Direction"
 msgstr "Direzione di scrittura del testo"
@@ -14101,6 +14168,16 @@ msgstr ""
 "controllo.\n"
 "Usa un container come figlio (VBox, HBox, ect.), oppure un nodo Control, "
 "impostando la dimensione minima personalizzata manualmente."
+
+msgid ""
+"This node doesn't have a SubViewport as child, so it can't display its "
+"intended content.\n"
+"Consider adding a SubViewport as a child to provide something displayable."
+msgstr ""
+"Questo nodo non ha un SubViewport come child, quindi non può mostrare il suo "
+"contenuto previsto.\n"
+"Considera di aggiungere un SubViewport come child per fornire qualcosa di "
+"visualizzabile."
 
 msgid "(Other)"
 msgstr "(Altro)"
@@ -14164,6 +14241,9 @@ msgstr ""
 msgid "Cannot open font from file: %s."
 msgstr "Impossibile aprie il font dal file: %s."
 
+msgid "Version %d of BMFont is not supported (should be 3)."
+msgstr "La Versione %d di BMFont non è supportata (dovrebbe essere la 3)."
+
 msgid "Can't load font texture: %s."
 msgstr "Impossibile caricare la texture del font: %s."
 
@@ -14179,6 +14259,9 @@ msgstr "Sorgente non valida per l'anteprima."
 
 msgid "Invalid source for shader."
 msgstr "Sorgente non valida per la shader."
+
+msgid "Invalid operator for that type."
+msgstr "Operatore non valido per quel tipo."
 
 msgid "Default Color"
 msgstr "Colore predefinito"
@@ -14216,6 +14299,13 @@ msgstr "Prevista una \",\" o una \")\" dopo un argomento."
 msgid "Varying may not be assigned in the '%s' function."
 msgstr "Le variabili non possono essere assegnate nella funzione \"%s\"."
 
+msgid ""
+"Varyings which assigned in 'fragment' function may not be reassigned in "
+"'vertex' or 'light'."
+msgstr ""
+"I varyings assegnati nella funzione 'fragment' non possono essere "
+"riassegnati in 'vertex' o 'light'."
+
 msgid "Assignment to function."
 msgstr "Assegnazione alla funzione."
 
@@ -14224,6 +14314,9 @@ msgstr "Assegnazione all'uniforme."
 
 msgid "Constants cannot be modified."
 msgstr "Le constanti non possono essere modificate."
+
+msgid "Cannot convert from '%s' to '%s'."
+msgstr "Impossibile convertire da '%s' a '%s'."
 
 msgid "No matching constructor found for: '%s'."
 msgstr "Nessun costruttore corrispondente trovato per: \"%s\"."
@@ -14239,6 +14332,13 @@ msgstr "Un valore costante non può essere passato per il parametro \"%s\"."
 
 msgid "Unknown identifier in expression: '%s'."
 msgstr "Identificatore sconosciuto nell'espressione \"%s\"."
+
+msgid ""
+"Varying with integer data type must be declared with `flat` interpolation "
+"qualifier."
+msgstr ""
+"I varying con tipi di dato interi devono essere definiti usando i qualifier "
+"di interpolazione `flat`."
 
 msgid "Can't use function as identifier: '%s'."
 msgstr "Impossibile usare una funzione come identificatore: \"%s\"."
@@ -14272,6 +14372,9 @@ msgstr "Fine dell'espressione inaspettata."
 msgid "Invalid arguments to unary operator '%s': %s."
 msgstr "Argomenti non validi per l'operatore unario \"%s\": %s."
 
+msgid "Missing matching ':' for select operator."
+msgstr "Manca ':' corrispondente per l'operatore select."
+
 msgid "Expected an identifier or '[' after type."
 msgstr "Previsto un identificatore o una \"[\" dopo un tipo."
 
@@ -14293,11 +14396,17 @@ msgstr "Prevista un'espressione booleana."
 msgid "Expected an integer expression."
 msgstr "Prevista un'espressione intera."
 
+msgid "Cases must be defined before default case."
+msgstr "I case devono essere definiti prima del case default."
+
 msgid "'%s' must be placed within a '%s' block."
 msgstr "\"%s\" deve essere piazzato in un blocco \"%s\"."
 
 msgid "Expected an integer constant."
 msgstr "Prevista una costante intera."
+
+msgid "Expected '%s' at the beginning of shader. Valid types are: %s."
+msgstr "'%s' atteso all'inizio di un shader. Tipi validi sono '%s'."
 
 msgid "Expected an identifier for render mode."
 msgstr "Previsto un identificatore per la modalità di rendering."
@@ -14321,6 +14430,9 @@ msgstr "Gettone inaspettato: \"%s\"."
 msgid "Expected a struct identifier."
 msgstr "Previsto un identificatore struct."
 
+msgid "Nested structs are not allowed."
+msgstr "Strutture nestate non sono consentite."
+
 msgid "Expected data type."
 msgstr "Previsto un tipo di dati."
 
@@ -14332,6 +14444,63 @@ msgstr "Previsto un identificatore o una \"[\"."
 
 msgid "Empty structs are not allowed."
 msgstr "Gli struct vuoti sono vietati."
+
+msgid "Uniform instances are not yet implemented for '%s' shaders."
+msgstr "Istanze uniform non sono ancora implementate per '%s' shaders."
+
+msgid "Uniform instances are not supported in gl_compatibility shaders."
+msgstr "Istanze uniform non sono supportate in shaders di compatibilità gl."
+
+msgid "The '%s' data type is not allowed here."
+msgstr "Il tipo di dato \"%s\" non è qui consentito."
+
+msgid "Invalid data type for varying."
+msgstr "Tipo di dato non valido per varying."
+
+msgid "Duplicated hint: '%s'."
+msgstr "Suggerimento duplicato: '%s'."
+
+msgid "Expected ',' after integer constant."
+msgstr "Attesa la ',' dopo una costante di tipo intero."
+
+msgid "Expected an integer constant after ','."
+msgstr "Attesa costante di tipo intero dopo la ','."
+
+msgid "Can only specify '%s' once."
+msgstr "'%s' si può specificare una sola volta."
+
+msgid "The instance index can't be negative."
+msgstr "L'indice di istanza non può essere negativo."
+
+msgid "Duplicated repeat mode: '%s'."
+msgstr "Modalità ripeti duplicata: '%s'."
+
+msgid "Can't convert constant to '%s'."
+msgstr "Impossibile convertire una costante in \"%s\"."
+
+msgid "Expected an uniform group identifier."
+msgstr "Atteso identifier di gruppo uniforme."
+
+msgid "Group needs to be opened before."
+msgstr "Il gruppo deve essere aperto prima."
+
+msgid "Expected a function name after type."
+msgstr "Atteso nome di funzione dopo il tipo."
+
+msgid "Void type not allowed as argument."
+msgstr "Il tipo void non è ammesso come argomento."
+
+msgid "Expected an identifier for argument name."
+msgstr "Identifier atteso per il nome dell'argomento."
+
+msgid "Function '%s' expects no arguments."
+msgstr "La funzione '%s' non si aspetta argomenti."
+
+msgid "Unmatched elif."
+msgstr "elif spaiato."
+
+msgid "Macro expansion limit exceeded."
+msgstr "Limite espansione macro superato."
 
 msgid "The const '%s' is declared but never used."
 msgstr "La costante '%s' è dichiarata ma mai utilizzata."

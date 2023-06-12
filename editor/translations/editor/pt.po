@@ -34,13 +34,15 @@
 # Alex Bruno Boiniak <aboiniak@gmail.com>, 2022.
 # Breno Alves Sampaio <chibifoxdiscord@gmail.com>, 2023.
 # SamuelPatrickMeneses <samuelmeneses800@gmail.com>, 2023.
+# matdeluis <luisdebonoir@protonmail.com>, 2023.
+# thegamerman88 <leoluniere@outlook.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-02 22:43+0000\n"
-"Last-Translator: ssantos <ssantos@web.de>\n"
+"PO-Revision-Date: 2023-06-11 23:11+0000\n"
+"Last-Translator: thegamerman88 <leoluniere@outlook.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -48,7 +50,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Desativar"
@@ -2881,6 +2883,9 @@ msgstr "Copiar Caminho da Propriedade"
 msgid "Select existing layout:"
 msgstr "Selecione o layout existente:"
 
+msgid "Or enter new layout name"
+msgstr "Ou introduza um novo nome de modelo"
+
 msgid "Changed Locale Language Filter"
 msgstr "Filtro de Idioma de Localidade Alterado"
 
@@ -4448,6 +4453,9 @@ msgstr ""
 "Todas as predefinições devem ter um caminho de exportação definido para que "
 "Exportar Tudo funcione."
 
+msgid "Resources to exclude:"
+msgstr "Recursos a excluir:"
+
 msgid "Resources to export:"
 msgstr "Recursos a exportar:"
 
@@ -5221,8 +5229,17 @@ msgstr "Selecione a pasta onde os recursos de malha serão salvos ao importar"
 msgid "Select folder where animations will save on import"
 msgstr "Selecione a pasta onde as animações serão salvas ao importar"
 
+msgid "Warning: File exists"
+msgstr "Atenção: Ficheiro existente"
+
 msgid "Existing file with the same name will be replaced."
 msgstr "O ficheiro existente com o mesmo nome será substituído."
+
+msgid "Will create new file"
+msgstr "Vai criar um novo ficheiro"
+
+msgid "Already External"
+msgstr "Já é externo"
 
 msgid ""
 "This material already references an external file, no action will be taken.\n"
@@ -5230,6 +5247,9 @@ msgid ""
 msgstr ""
 "Esse material já referencia um ficheiro externo, nenhuma ação será feita.\n"
 "Desative a propriedade externa para que ele seja extraído novamente."
+
+msgid "No import ID"
+msgstr "Sem ID de importação"
 
 msgid ""
 "Material has no name nor any other way to identify on re-import.\n"
@@ -5244,6 +5264,9 @@ msgstr "Extrair Materiais para Ficheiros de Recurso"
 msgid "Extract"
 msgstr "Extrair"
 
+msgid "Already Saving"
+msgstr "Já está a guardar"
+
 msgid ""
 "This mesh already saves to an external resource, no action will be taken."
 msgstr ""
@@ -5251,6 +5274,9 @@ msgstr ""
 
 msgid "Existing file with the same name will be replaced on import."
 msgstr "O ficheiro existente com o mesmo nome será substituído ao importar."
+
+msgid "Will save to new file"
+msgstr "Irá guardar num novo ficheiro"
 
 msgid ""
 "Mesh has no name nor any other way to identify on re-import.\n"
@@ -10070,6 +10096,9 @@ msgstr "Tile com Cena Inválida"
 msgid "Delete tiles"
 msgstr "Apagar tiles"
 
+msgid "Drawing Rect:"
+msgstr "Desenhando Rect:"
+
 msgid "Change selection"
 msgstr "Mudar Seleção"
 
@@ -11849,6 +11878,13 @@ msgstr "Escolha um ficheiro \"project.godot\" ou \".zip\"."
 
 msgid "This directory already contains a Godot project."
 msgstr "Esta diretoria já contém um projeto Godot."
+
+msgid ""
+"You cannot save a project in the selected path. Please make a new folder or "
+"choose a new path."
+msgstr ""
+"Não pode guardar um projeto no destino selecionado. Por favor, crie uma nova "
+"pasta ou escolha um novo destino."
 
 msgid ""
 "The selected path is not empty. Choosing an empty folder is highly "
@@ -15452,6 +15488,12 @@ msgstr ""
 "ButtonGroup destina-se a ser usado apenas com botões que têm toggle_mode "
 "definido como true."
 
+msgid "Copy this constructor in a script."
+msgstr "Copiar este construtor num script."
+
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr "Introduza um código hex (\"#ff0000\") ou nome da cor (\"red\")."
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -15479,6 +15521,9 @@ msgstr "Selecione o modo do seletor."
 
 msgid "Switch between hexadecimal and code values."
 msgstr "Alternar valores entre hexadecimal e código."
+
+msgid "Hex code or named color"
+msgstr "Código hex ou nome da cor"
 
 msgid "Add current color as a preset."
 msgstr "Adicionar cor atual como predefinição."

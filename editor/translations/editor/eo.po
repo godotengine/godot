@@ -17,28 +17,59 @@
 # Kedr <lava20121991@gmail.com>, 2022.
 # Isaac Iverson <isaaciverson1024@gmail.com>, 2023.
 # Blua Punkto <bluapunkto@proton.me>, 2023.
+# Omicron <omicron666.dev@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2023-02-11 01:21+0000\n"
-"Last-Translator: Blua Punkto <bluapunkto@proton.me>\n"
+"PO-Revision-Date: 2023-05-26 01:16+0000\n"
+"Last-Translator: Omicron <omicron666.dev@gmail.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "malŝalti"
+
+msgid "Left Mouse Button"
+msgstr "Maldekstra Musbutono"
+
+msgid "Right Mouse Button"
+msgstr "Dekstra Musbutono"
+
+msgid "Middle Mouse Button"
+msgstr "Meza Musbutono"
+
+msgid "Mouse Wheel Up"
+msgstr "Musa Rado Supren"
+
+msgid "Mouse Wheel Down"
+msgstr "Musa Rado Malsupren"
+
+msgid "Mouse Wheel Left"
+msgstr "Musa Rado Maldekstre"
+
+msgid "Mouse Wheel Right"
+msgstr "Musa Rado Dekstre"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Musa Dikfingra Butono 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Musa Dikfingra Butono 2"
 
 msgid "Button"
 msgstr "Butono"
 
 msgid "Double Click"
 msgstr "Duobla alklako"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Musmovo ĉe pozicio (%s) kun rapideco (%s)"
 
 msgid "Select"
 msgstr "Elekti"

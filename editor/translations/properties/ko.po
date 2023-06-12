@@ -43,13 +43,14 @@
 # gaenyang <gaenyang@outlook.com>, 2022.
 # 오지훈 <jule1130@naver.com>, 2023.
 # coolkid <newtype20050831@gmail.com>, 2023.
+# Overdue - <kaameo12@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-11 05:49+0000\n"
-"Last-Translator: coolkid <newtype20050831@gmail.com>\n"
+"PO-Revision-Date: 2023-06-12 12:27+0000\n"
+"Last-Translator: Overdue - <kaameo12@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ko/>\n"
 "Language: ko\n"
@@ -103,6 +104,9 @@ msgstr "메인 루프 유형"
 
 msgid "Auto Accept Quit"
 msgstr "자동 수락 종료"
+
+msgid "Quit on Go Back"
+msgstr "종료하고 돌아가기"
 
 msgid "Display"
 msgstr "표시"

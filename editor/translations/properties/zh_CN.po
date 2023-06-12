@@ -87,13 +87,14 @@
 # 风青山 <idleman@yeah.net>, 2022.
 # 1104 EXSPIRAVIT_ <m18621006730@gmail.com>, 2022.
 # ChairC <974833488@qq.com>, 2022.
+# dmit-225 <c3204835842@icloud.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-04-24 06:57+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2023-06-08 10:53+0000\n"
+"Last-Translator: dmit-225 <c3204835842@icloud.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -4997,7 +4998,7 @@ msgid "Layers"
 msgstr "层"
 
 msgid "Texture Normal"
-msgstr "法线纹理"
+msgstr "正常纹理"
 
 msgid "Texture Pressed"
 msgstr "按下纹理"

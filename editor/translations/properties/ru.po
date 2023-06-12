@@ -137,13 +137,16 @@
 # Aleksey Shilovskiy <alekseyshilovskiy@yandex.ru>, 2023.
 # Eugene One <elevencupoftea@gmail.com>, 2023.
 # Lost Net <pc.mirkn@gmail.com>, 2023.
+# W Red <elyeen777greating@gmail.com>, 2023.
+# Plizik <channelofplizik@gmail.com>, 2023.
+# Nikita <svinuhov.nikita@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-19 06:49+0000\n"
-"Last-Translator: Lost Net <pc.mirkn@gmail.com>\n"
+"PO-Revision-Date: 2023-06-03 17:28+0000\n"
+"Last-Translator: Nikita <svinuhov.nikita@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -164,7 +167,7 @@ msgid "Name"
 msgstr "Название"
 
 msgid "Name Localized"
-msgstr "Name Localized"
+msgstr "Локализованное название"
 
 msgid "Description"
 msgstr "Описание"
@@ -199,6 +202,9 @@ msgstr "Тип основного цикла"
 msgid "Auto Accept Quit"
 msgstr "Автоподтверждение выхода"
 
+msgid "Quit on Go Back"
+msgstr "Выход на \"Вернуться\""
+
 msgid "Display"
 msgstr "Дисплей"
 
@@ -210,6 +216,9 @@ msgstr "Размер"
 
 msgid "Viewport Width"
 msgstr "Ширина окна предпросмотра"
+
+msgid "Viewport Height"
+msgstr "Высота окна"
 
 msgid "Mode"
 msgstr "Режим"
@@ -1315,6 +1324,12 @@ msgstr "Файловый сервер"
 msgid "Password"
 msgstr "Пароль"
 
+msgid "Multichannel Signed Distance Field"
+msgstr "Многоканальное поле расстояния со знаком"
+
+msgid "Oversampling"
+msgstr "Передискретизация"
+
 msgid "Compress"
 msgstr "Сжатие"
 
@@ -1778,7 +1793,7 @@ msgid "Collision Mask"
 msgstr "Маска столкновения"
 
 msgid "Mesh"
-msgstr "Меш"
+msgstr "Сетка"
 
 msgid "Material"
 msgstr "Материал"
@@ -4141,6 +4156,9 @@ msgstr "Камера активна"
 msgid "Default Font"
 msgstr "Шрифт по умолчанию"
 
+msgid "Terrains"
+msgstr "Местность"
+
 msgid "Transpose"
 msgstr "Транспонировать"
 
@@ -4168,6 +4186,12 @@ msgstr "Значение по умолчанию"
 msgid "Color Default"
 msgstr "Цвет по умолчанию"
 
+msgid "Use All Surfaces"
+msgstr "Использовать все поверхности"
+
+msgid "Surface Index"
+msgstr "Индекс поверхности"
+
 msgid "Plane"
 msgstr "Плоскость"
 
@@ -4194,6 +4218,9 @@ msgstr "Резонанс"
 
 msgid "Threshold dB"
 msgstr "Порог, дБ"
+
+msgid "Soft Clip Ratio"
+msgstr "Коэффициент мягкого скольжения"
 
 msgid "Range Min Hz"
 msgstr "Минимальный Диапазон Hz"

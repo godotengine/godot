@@ -48,13 +48,14 @@
 # EngageIndo <admin@engageindo.com>, 2023.
 # EngageIndo <engageindo@gmail.com>, 2023.
 # Septian Kurniawan <septgsk@outlook.com>, 2023.
+# Septian Ganendra Savero Kurniawan <septgsk@outlook.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-14 11:52+0000\n"
-"Last-Translator: EngageIndo <engageindo@gmail.com>\n"
+"PO-Revision-Date: 2023-06-08 10:53+0000\n"
+"Last-Translator: Septian Ganendra Savero Kurniawan <septgsk@outlook.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -8207,6 +8208,18 @@ msgstr ""
 "Jika node DirectionalLight3D ditambahkan ke adegan, pratinjau cahaya "
 "matahari dinonaktifkan."
 
+msgid ""
+"Toggle preview environment.\n"
+"If a WorldEnvironment node is added to the scene, preview environment is "
+"disabled."
+msgstr ""
+"Mengalihkan pratinjau lingkungan.\n"
+"Jika node WorldEnvironment ditambahkan ke adegan, pratinjau lingkungan "
+"dinonaktifkan."
+
+msgid "Edit Sun and Environment settings."
+msgstr "Sunting setelan Matahari dan Lingkungan."
+
 msgid "Bottom View"
 msgstr "Tampilan Bawah"
 
@@ -8343,10 +8356,43 @@ msgid "Transform Type"
 msgstr "Jenis Transformasi"
 
 msgid "Pre"
-msgstr "Sebelum"
+msgstr "Pra"
 
 msgid "Post"
-msgstr "Sesudah"
+msgstr "Pasca"
+
+msgid "Preview Sun"
+msgstr "Pratinjau Matahari"
+
+msgid "Sun Direction"
+msgstr "Arah Matahari"
+
+msgid "Azimuth"
+msgstr "Azimut"
+
+msgid "Sun Color"
+msgstr "Warna Matahari"
+
+msgid "Sun Energy"
+msgstr "Energi Matahari"
+
+msgid "Shadow Max Distance"
+msgstr "Jarak Maks Bayangan"
+
+msgid "Preview Environment"
+msgstr "Pratinjau Lingkungan"
+
+msgid "Sky Color"
+msgstr "Warna Langit"
+
+msgid "Ground Color"
+msgstr "Warna Daratan"
+
+msgid "Sky Energy"
+msgstr "Energi Langit"
+
+msgid "AO"
+msgstr "AO"
 
 msgid "Remove Point from Curve"
 msgstr "Hapus Titik dari Kurva"
@@ -9201,6 +9247,9 @@ msgstr "Tambah Item Ikon"
 msgid "Invalid file, same as the edited Theme resource."
 msgstr "File tidak valid, sama dengan sumber daya Tema yang diedit."
 
+msgid "Types:"
+msgstr "Tipe:"
+
 msgid "Add Item:"
 msgstr "Tambah benda:"
 
@@ -9471,11 +9520,26 @@ msgstr "Tambah Masukan"
 msgid "Add Output"
 msgstr "Tambah Keluaran"
 
+msgid "UInt"
+msgstr "UInt"
+
+msgid "Vector2"
+msgstr "Vector2"
+
+msgid "Vector3"
+msgstr "Vector3"
+
+msgid "Vector4"
+msgstr "Vector4"
+
 msgid "Boolean"
 msgstr "Boolean"
 
 msgid "Sampler"
 msgstr "Sampler"
+
+msgid "[default]"
+msgstr "[bawaan]"
 
 msgid "Add Input Port"
 msgstr "Tambah Port Masukan"
@@ -10224,6 +10288,9 @@ msgstr "Hapus Aksi Input"
 
 msgid "Project Settings (project.godot)"
 msgstr "Pengaturan Proyek (project.godot)"
+
+msgid "Advanced Settings"
+msgstr "Setelan Lanjutan"
 
 msgid "Input Map"
 msgstr "Pemetaan Input"
@@ -11506,3 +11573,6 @@ msgstr "Pemberian nilai untuk uniform."
 
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+msgid "Invalid macro argument."
+msgstr "Argumen makro tidak sah."

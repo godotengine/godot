@@ -91,13 +91,16 @@
 # Benno <bennocrafterdev@googlemail.com>, 2023.
 # Janosch Lion <janorico@posteo.de>, 2023.
 # "Dimitri A." <dimitripilot3@gmail.com>, 2023.
+# Roman Wanner <flugtauglicher@gmail.com>, 2023.
+# Ettore Atalan <atalanttore@googlemail.com>, 2023.
+# Lars Bollmann <lars.bollmann@tu-dortmund.de>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-11 05:49+0000\n"
-"Last-Translator: ‎ <artism90@googlemail.com>\n"
+"PO-Revision-Date: 2023-06-10 02:19+0000\n"
+"Last-Translator: Lars Bollmann <lars.bollmann@tu-dortmund.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/de/>\n"
 "Language: de\n"
@@ -151,6 +154,9 @@ msgstr "Typ der Hauptschleife"
 
 msgid "Auto Accept Quit"
 msgstr "Automatisches Beenden akzeptieren"
+
+msgid "Quit on Go Back"
+msgstr "Beenden beim Zurückgehen"
 
 msgid "Display"
 msgstr "Anzeige"
@@ -235,6 +241,12 @@ msgstr "Skript"
 
 msgid "Search in File Extensions"
 msgstr "In Dateierweiterungen suchen"
+
+msgid "Subwindows"
+msgstr "Unterfenster"
+
+msgid "Embed Subwindows"
+msgstr "Unterfenster einbetten"
 
 msgid "Physics"
 msgstr "Physik"
@@ -5974,6 +5986,9 @@ msgstr "Physik-Ebenen"
 
 msgid "Custom Data Layers"
 msgstr "Eigene Datenschichten"
+
+msgid "Scene"
+msgstr "Szene"
 
 msgid "Transpose"
 msgstr "Transponieren"

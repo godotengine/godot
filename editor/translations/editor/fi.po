@@ -14,13 +14,14 @@
 # Severi Vidnäs <severi.vidnas@gmail.com>, 2021.
 # Akseli Pihlajamaa <akselijuhanipihlajamaa@gmail.com>, 2022.
 # Hannu Lammi <hpl@kapsi.fi>, 2022.
+# VPJPeltonen <vpjpeltonen@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-10-27 01:11+0000\n"
-"Last-Translator: Hannu Lammi <hpl@kapsi.fi>\n"
+"PO-Revision-Date: 2023-05-20 02:55+0000\n"
+"Last-Translator: VPJPeltonen <vpjpeltonen@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -28,7 +29,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.2-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
+
+msgid "Unset"
+msgstr "Asettamaton"
+
+msgid "Left Mouse Button"
+msgstr "Hiiren Vasen Painike"
+
+msgid "Right Mouse Button"
+msgstr "Hiiren Oikea Painike"
+
+msgid "Middle Mouse Button"
+msgstr "Hiiren Keskipainike"
 
 msgid "Button"
 msgstr "Nappi"

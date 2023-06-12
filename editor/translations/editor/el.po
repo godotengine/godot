@@ -21,13 +21,15 @@
 # Ilias Vasilakis <vaselas99@gmail.com>, 2023.
 # "Overloaded @ Orama Interactive" <manoschool@yahoo.gr>, 2023.
 # Andreas Tarasidis <andytgamedev@gmail.com>, 2023.
+# Marinos Tsitsos <ikoturso@hotmail.com>, 2023.
+# kilkistanproductions <ddimitr@uth.gr>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-12 08:56+0000\n"
-"Last-Translator: Andreas Tarasidis <andytgamedev@gmail.com>\n"
+"PO-Revision-Date: 2023-05-24 19:51+0000\n"
+"Last-Translator: kilkistanproductions <ddimitr@uth.gr>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -35,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Απενεργοποίηση"
@@ -332,14 +334,38 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Υπάρχει ήδη ενέργεια με το όνομα «%s»."
 
+msgid "Revert Action"
+msgstr "Επαναφορά Ενέργειας"
+
 msgid "Add Event"
 msgstr "Προσθήκη συμβάντος"
+
+msgid "Remove Action"
+msgstr "Αφαίρεση Ενέργειας"
 
 msgid "Cannot Remove Action"
 msgstr "Αδύνατη η αφαίρεση της Ενέργειας"
 
+msgid "Edit Event"
+msgstr "Επεξεργασία Συμβάντος"
+
+msgid "Remove Event"
+msgstr "Αφαίρεση Συμβάντος"
+
+msgid "Filter by name..."
+msgstr "Φιλτράρισμα κατ'όνομα..."
+
+msgid "Clear All"
+msgstr "Εκκαθάριση όλων"
+
+msgid "Add New Action"
+msgstr "Προσθήκη Νέας Ενέργειας"
+
 msgid "Add"
 msgstr "Προσθήκη"
+
+msgid "Show Built-in Actions"
+msgstr "Κατάδειξη Ενσωματωμένων Ενεργειών"
 
 msgid "Action"
 msgstr "Ενέργεια"
@@ -1705,6 +1731,9 @@ msgstr "Ιδιότητες"
 
 msgid "default:"
 msgstr "προεπιλογή:"
+
+msgid "Constructors"
+msgstr "Κατασκευαστής"
 
 msgid "Operators"
 msgstr "Τελεστές"

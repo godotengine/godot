@@ -109,7 +109,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-17 00:52+0000\n"
+"PO-Revision-Date: 2023-05-23 01:52+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -274,7 +274,7 @@ msgid "released"
 msgstr "liberado"
 
 msgid "Screen %s at (%s) with %s touch points"
-msgstr "Pantalla %s en (%s) en (%s) con %s puntos de toque"
+msgstr "Pantalla %s en (%s) con %s puntos de toque"
 
 msgid ""
 "Screen dragged with %s touch points at position (%s) with velocity of (%s)"
@@ -2063,7 +2063,7 @@ msgid "Can't add Autoload:"
 msgstr "No se puede añadir el Autoload:"
 
 msgid "%s is an invalid path. File does not exist."
-msgstr "El archivo no existe."
+msgstr "%s es una ruta inválida. El fichero no existe."
 
 msgid "%s is an invalid path. Not in resource path (res://)."
 msgstr "%s es una ruta inválida. No está en la ruta del recurso (res://)."
@@ -3832,8 +3832,8 @@ msgstr ""
 "Luego puedes hacer modificaciones y generar tu propio APK personalizado al "
 "exportar (agregando módulos, cambiando AndroidManifest.xml, etc.).\n"
 "Ten en cuenta que para compilar con Gradle en lugar de usar APK "
-"precompilados, la opción \"Usar compilación con Gradle\" debe estar "
-"habilitada en la configuración de exportación de Android."
+"precompilados, la opción \"Use Gradle Build\" debe estar habilitada en la "
+"configuración de exportación de Android."
 
 msgid ""
 "The Android build template is already installed in this project and it won't "
@@ -13610,8 +13610,27 @@ msgstr "Clave pública inválida para la expansión de APK."
 msgid "Invalid package name:"
 msgstr "Nombre de paquete inválido:"
 
+msgid "\"Use Gradle Build\" must be enabled to use the plugins."
+msgstr "\"Use Gradle Build\" debe estar habilitado para utilizar los plugins."
+
+msgid "OpenXR requires \"Use Gradle Build\" to be enabled"
+msgstr "OpenXR requiere que \"Use Gradle Build\" esté habilitado"
+
+msgid "\"Hand Tracking\" is only valid when \"XR Mode\" is \"OpenXR\"."
+msgstr "\"Hand Tracking\" solo es válido cuando \"XR Mode\" es \"OpenXR\"."
+
 msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
 msgstr "\"Passthrough\" solo es válido cuando el \"Modo XR\" es \"OpenXR\"."
+
+msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
+msgstr ""
+"\"Exportar AAB\" solo es válido cuando \"Use Gradle Build\" está habilitado."
+
+msgid ""
+"\"Min SDK\" can only be overridden when \"Use Gradle Build\" is enabled."
+msgstr ""
+"\"Min SDK\" solo puede sobrescribirse cuando está activada la opción \"Use "
+"Gradle Build\"."
 
 msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
 msgstr ""
@@ -13623,6 +13642,12 @@ msgid ""
 msgstr ""
 "\"Min SDK\" no puede ser inferior a %d, que es la versión que necesita la "
 "librería de Godot."
+
+msgid ""
+"\"Target SDK\" can only be overridden when \"Use Gradle Build\" is enabled."
+msgstr ""
+"\"Target SDK\" solo se puede anular cuando \"Use Gradle Build\" está "
+"habilitado."
 
 msgid ""
 "\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
@@ -13640,6 +13665,9 @@ msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
 msgstr ""
 "La versión \"SDK de Destino\" debe ser mayor o igual a la versión \"Min "
 "SDK\"."
+
+msgid "\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."
+msgstr "\"Min SDK\" debe ser mayor o igual a %d para el renderizador \"%s\"."
 
 msgid "Code Signing"
 msgstr "Firma del Código"
@@ -13695,6 +13723,14 @@ msgstr "¡Nombre de archivo inválido! Android APK requiere la extensión *.apk.
 
 msgid "Unsupported export format!"
 msgstr "¡Formato de exportación no compatible!"
+
+msgid ""
+"Trying to build from a gradle built template, but no version info for it "
+"exists. Please reinstall from the 'Project' menu."
+msgstr ""
+"Intentando construir desde una plantilla construida con Gradle, pero no "
+"existe información de versión para ella. Por favor, reinstálala desde el "
+"menú 'Proyecto'."
 
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "
@@ -13777,6 +13813,9 @@ msgstr "Preparar Plantillas"
 msgid "Export template not found."
 msgstr "No se ha encontrado la plantilla de exportación."
 
+msgid "Xcode Build"
+msgstr "Compilación de Xcode"
+
 msgid "App Store Team ID not specified - cannot configure the project."
 msgstr ""
 "App Store Team ID no especificado - no se puede configurar el proyecto."
@@ -13788,10 +13827,16 @@ msgid "Identifier is missing."
 msgstr "Falta el identificador."
 
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "El carácter '% s' no está permitido en el Identificador."
+msgstr "El carácter '%s' no está permitido en el Identificador."
 
 msgid "Debug Script Export"
 msgstr "Exportación de Script de Depuración"
+
+msgid "Could not open file \"%s\"."
+msgstr "No se ha podido abrir el archivo \"%s\"."
+
+msgid "Could not create console script."
+msgstr "No se pudo crear el script de consola."
 
 msgid "Failed to open executable file \"%s\"."
 msgstr "Fallo al abrir el archivo ejecutable \"%s\"."
@@ -13805,8 +13850,29 @@ msgstr "Los ejecutables de 32 bits no pueden tener datos embebidos >= 4 GiB."
 msgid "Executable \"pck\" section not found."
 msgstr "No se encuentra la sección ejecutable \"pck\"."
 
+msgid "Stop and uninstall"
+msgstr "Detener y desinstalar"
+
+msgid "Running..."
+msgstr "Ejecutando..."
+
 msgid "Could not create temp directory:"
 msgstr "No se ha podido crear el directorio temporal:"
+
+msgid "Exporting project..."
+msgstr "Exportar proyecto..."
+
+msgid "Creating temporary directory..."
+msgstr "Creando directorio temporal..."
+
+msgid "Uploading archive..."
+msgstr "Cargando archivo..."
+
+msgid "Uploading scripts..."
+msgstr "Cargando scripts..."
+
+msgid "Starting project..."
+msgstr "Iniciar proyecto..."
 
 msgid "Can't get filesystem access."
 msgstr "No se puede obtener acceso al sistema de archivos."
@@ -13870,6 +13936,13 @@ msgstr "No se ha podido abrir el archivo de icono \"%s\"."
 
 msgid "Notarization"
 msgstr "Notarización"
+
+msgid ""
+"rcodesign path is not set. Configure rcodesign path in the Editor Settings "
+"(Export > macOS > rcodesign)."
+msgstr ""
+"La ruta de \"rcodesign\" no se ha establecido. Configura la ruta de "
+"\"rcodesign\" en la configuración del editor (Exportar > macOS > rcodesign)."
 
 msgid "Notarization request UUID: \"%s\""
 msgstr "Solicitud de notarización UUID: \"%s\""
@@ -13947,6 +14020,9 @@ msgid ""
 msgstr ""
 "Los enlaces simbólicos relativos no son compatibles con este sistema "
 "operativo, ¡el proyecto exportado podría estar dañado!"
+
+msgid "Could not created symlink \"%s\" -> \"%s\"."
+msgstr "No se pudo crear el enlace simbólico \"%s\" -> \"%s\"."
 
 msgid ""
 "Requested template binary \"%s\" not found. It might be missing from your "
@@ -14146,6 +14222,9 @@ msgstr "Ejecutar HTML exportado en el navegador predeterminado del sistema."
 
 msgid "Resources Modification"
 msgstr "Modificación de los Recursos"
+
+msgid "Icon size \"%d\" is missing."
+msgstr "Falta el tamaño del icono \"%d\"."
 
 msgid "Failed to rename temporary file \"%s\"."
 msgstr "Fallo al renombrar el archivo temporal \"%s\"."
@@ -14441,6 +14520,9 @@ msgstr ""
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "La raíz del nodo AnimationPlayer no es un nodo válido."
 
+msgid "Copy this constructor in a script."
+msgstr "Copia este constructor en un script."
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -14706,6 +14788,12 @@ msgstr ""
 "Las variaciones con tipo de datos enteros deben declararse con el "
 "calificador de interpolación `flat`."
 
+msgid "Invalid member for '%s' expression: '.%s'."
+msgstr "Miembro inválido para la expresión '%s': '.%s'."
+
+msgid "Unexpected end of expression."
+msgstr "Final de expresión inesperado."
+
 msgid "Invalid arguments to unary operator '%s': %s."
 msgstr "Argumentos inválidos para el operador unario '%s': %s."
 
@@ -14721,6 +14809,9 @@ msgstr "Tipo de variable inválido (los samplers no están permitidos)."
 msgid "Duplicated case label: %d."
 msgstr "Etiqueta duplicada: %d."
 
+msgid "Use of '%s' is not allowed here."
+msgstr "El uso de '%s' no está permitido aquí."
+
 msgid "Duplicated render mode: '%s'."
 msgstr "Modo de renderizado duplicado: '%s'."
 
@@ -14729,6 +14820,9 @@ msgstr "Tipo de datos esperado."
 
 msgid "Varyings cannot be used in '%s' shaders."
 msgstr "Las variaciones no se pueden utilizar en los shaders '%s'."
+
+msgid "The '%s' data type is not allowed here."
+msgstr "El tipo de datos '%s' no está permitido aquí."
 
 msgid "Invalid data type for varying."
 msgstr "Tipo de datos inválido para la variación."
@@ -14741,6 +14835,12 @@ msgid ""
 msgstr ""
 "'hint_normal_roughness_texture' no és compatible con los shaders de "
 "gl_compatibility."
+
+msgid "'hint_normal_roughness_texture' is not supported in '%s' shaders."
+msgstr "'hint_normal_roughness_texture' no está soportado en '%s' shaders."
+
+msgid "'hint_depth_texture' is not supported in '%s' shaders."
+msgstr "'hint_depth_texture' no está soportado en '%s' shaders."
 
 msgid "Duplicated filter mode: '%s'."
 msgstr "Modo de filtro duplicado: '%s'."
@@ -14763,6 +14863,9 @@ msgstr "Se esperaba un '%s'."
 msgid "Expected a '%s' or '%s'."
 msgstr "Se esperaba un '%s' o '%s'."
 
+msgid "Expected a '%s' after '%s'."
+msgstr "Se esperaba un '%s' después de '%s'."
+
 msgid "Redefinition of '%s'."
 msgstr "Redefinición de '%s'."
 
@@ -14775,11 +14878,78 @@ msgstr "Condición perdida."
 msgid "Condition evaluation error."
 msgstr "Error de evaluación de la condición."
 
+msgid "Unmatched else."
+msgstr "Else no correspondido."
+
+msgid "Invalid else."
+msgstr "Else inválido."
+
+msgid "Unmatched endif."
+msgstr "Endif no correspondido."
+
+msgid "Invalid endif."
+msgstr "Endif inválido."
+
+msgid "Invalid ifdef."
+msgstr "Ifdef inválido."
+
+msgid "Invalid ifndef."
+msgstr "Ifndef inválido."
+
 msgid "Shader include file does not exist: "
 msgstr "Archivo de inclusión de shader no existe: "
 
+msgid ""
+"Shader include load failed. Does the shader include exist? Is there a cyclic "
+"dependency?"
+msgstr ""
+"Error al cargar la inclusión del shader. ¿Existe la inclusión del shader? "
+"¿Hay una dependencia cíclica?"
+
+msgid "Shader include resource type is wrong."
+msgstr "El tipo de recurso de inclusión del shader es incorrecto."
+
+msgid "Cyclic include found."
+msgstr "Se encontró una inclusión cíclica."
+
+msgid "Shader max include depth exceeded."
+msgstr "Se superó la profundidad máxima de inclusión de shaders."
+
+msgid "Invalid pragma directive."
+msgstr "Directiva pragma inválida."
+
+msgid "Invalid undef."
+msgstr "Undef inválido."
+
+msgid "Macro expansion limit exceeded."
+msgstr "Se superó el límite de expansión de macros."
+
+msgid "Invalid macro argument list."
+msgstr "Lista de argumentos de macro inválida."
+
+msgid "Invalid macro argument."
+msgstr "Argumento de macro inválido."
+
 msgid "Invalid macro argument count."
 msgstr "Contador de argumentos de macro inválido."
+
+msgid "Can't find matching branch directive."
+msgstr "No se encuentra la directiva de rama correspondiente."
+
+msgid "Invalid symbols placed before directive."
+msgstr "Símbolos inválidos colocados antes de la directiva."
+
+msgid "Unmatched conditional statement."
+msgstr "Declaración condicional no coincidente."
+
+msgid ""
+"Direct floating-point comparison (this may not evaluate to `true` as you "
+"expect). Instead, use `abs(a - b) < 0.0001` for an approximate but "
+"predictable comparison."
+msgstr ""
+"Comparación directa de punto flotante (esto puede no evaluar como `true` "
+"como esperas). En su lugar, utiliza `abs(a - b) < 0.0001` para una "
+"comparación aproximada pero predecible."
 
 msgid "The const '%s' is declared but never used."
 msgstr "La const '%s' se declara pero nunca se usa."

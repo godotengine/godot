@@ -30,13 +30,14 @@
 # Ronelo <Santatv9@gmail.com>, 2023.
 # BM Lapidus <boruchmendel.lapidus@gmail.com>, 2023.
 # Eyt Lev <ecraft452@gmail.com>, 2023.
+# אורי מיכאל <000ori000@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-17 11:38+0000\n"
-"Last-Translator: Eyt Lev <ecraft452@gmail.com>\n"
+"PO-Revision-Date: 2023-06-10 02:19+0000\n"
+"Last-Translator: אורי מיכאל <000ori000@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -53,6 +54,9 @@ msgstr "ביטול הגדרה"
 msgid "Physical"
 msgstr "פיזי"
 
+msgid "Left Mouse Button"
+msgstr "לחצן עכבר שמאלי"
+
 msgid "Right Mouse Button"
 msgstr "כפתור עכבר ימני"
 
@@ -65,11 +69,32 @@ msgstr "גלגלת למעלה."
 msgid "Mouse Wheel Down"
 msgstr "גלגלת למטה."
 
+msgid "Mouse Wheel Left"
+msgstr "גלגלת העכבר שמאלה"
+
+msgid "Mouse Wheel Right"
+msgstr "גלגלת העכבר ימינה"
+
+msgid "Mouse Thumb Button 1"
+msgstr "כפתור אגודל עכבר 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "כפתור אגודל עכבר 2"
+
 msgid "Button"
 msgstr "כפתור"
 
+msgid "Double Click"
+msgstr "לחיצה כפולה"
+
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "תנועת העכבר במיקום (%s) עם מהירות (%s)"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "ג'ויסטיק 2 ציר Y, הדק ימני, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "ג'ויסטיק 3 ציר X"
 
 msgid "D-pad Left"
 msgstr "כרית כיוונית שמאל"
@@ -132,7 +157,7 @@ msgid "Invalid input %d (not passed) in expression"
 msgstr "קלט שגוי %d (לא הועבר) בתוך הביטוי"
 
 msgid "self can't be used because instance is null (not passed)"
-msgstr "'self' לא ניתן לשימוש כי המופע הינו 'null' ( לא הועבר)"
+msgstr "לא ניתן להשתמש ב-self כי המופע הוא null (לא הועבר)"
 
 msgid "Invalid operands to operator %s, %s and %s."
 msgstr "אופרנדים לא תקינים לאופרטור ⁨%s⁩, ⁨%s⁩ ו ⁨%s⁩."
@@ -712,6 +737,9 @@ msgstr "שקופית %"
 
 msgid "Physics Frame %"
 msgstr "שקופית פיזיקלית %"
+
+msgid "Inclusive"
+msgstr "כָּלוּל"
 
 msgid "Self"
 msgstr "עצמי"
@@ -2133,6 +2161,9 @@ msgstr "פתיחת עורך תלת־ממד"
 msgid "Open Script Editor"
 msgstr "פתיחת עורך סקריפטים"
 
+msgid "Open Asset Library"
+msgstr "פתיחת ספריית נכסים"
+
 msgid "Open the next Editor"
 msgstr "פתיחת העורך הבא"
 
@@ -2141,6 +2172,9 @@ msgstr "פתיחת העורך הקודם"
 
 msgid "Warning!"
 msgstr "אזהרה!"
+
+msgid "Creating Mesh Previews"
+msgstr "יצירת תצוגה מקדימה של הרשת"
 
 msgid "Thumbnail..."
 msgstr "תמונה ממוזערת…"
@@ -2391,6 +2425,12 @@ msgstr "מופעל סקריפט מותאם אישית…"
 msgid "Couldn't load post-import script:"
 msgstr "לא ניתן לטעון סקריפט שלאחר ייבוא:"
 
+msgid "Invalid/broken script for post-import (check console):"
+msgstr "סקריפט עבור לאחר-ייבוא לא חוקי/שבור (בדוק מסוף):"
+
+msgid "Error running post-import script:"
+msgstr "שגיאה בהפעלת סקריפט לאחר-ייבוא:"
+
 msgid "Saving..."
 msgstr "שמירה…"
 
@@ -2420,6 +2460,9 @@ msgstr "טעינת המשאב נכשלה."
 
 msgid "Raw"
 msgstr "Raw"
+
+msgid "Make Sub-Resources Unique"
+msgstr "הפוך משאבי משנה לייחודיים"
 
 msgid "Create a new resource in memory and edit it."
 msgstr "יצירת משאב חדש בזיכרון ועריכתו."
@@ -2454,8 +2497,14 @@ msgstr "גרסה:"
 msgid "Insert Point"
 msgstr "הוספת נקודה"
 
+msgid "Add Animation"
+msgstr "הוסף אנימציה"
+
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr "לא ניתן להשתמש בסוג מפרק זה. רק מפרקי שורש מותרים."
+
+msgid "Blend:"
+msgstr "מזג:"
 
 msgid "Triangle already exists."
 msgstr "המשולש כבר קיים."
@@ -2838,6 +2887,27 @@ msgstr "צעד סיבוב:"
 msgid "Scale Step:"
 msgstr "צעד קנה מידה:"
 
+msgid "Paste Pose"
+msgstr "הדבק תנוחה"
+
+msgid "Select Mode"
+msgstr "בחר מצב"
+
+msgid "Move Mode"
+msgstr "מצב תנועה"
+
+msgid "Rotate Mode"
+msgstr "מצב סיבוב"
+
+msgid "Click to change object's rotation pivot."
+msgstr "לחץ כדי לשנות את ציר הסיבוב של האובייקט."
+
+msgid "Pan Mode"
+msgstr "מצב פנורמה"
+
+msgid "Use Rotation Snap"
+msgstr "שימוש ברוטציה Snap"
+
 msgid "Configure Snap..."
 msgstr "הגדרת הצמדה…"
 
@@ -2942,6 +3012,9 @@ msgstr "חצי רזולוציה"
 
 msgid "Audio Listener"
 msgstr "מאזין לשמע"
+
+msgid "Use Snap"
+msgstr "השתמש ב-Snap"
 
 msgid "Bottom View"
 msgstr "מבט תחתי"
@@ -3300,6 +3373,9 @@ msgstr "מחיקת פריט"
 
 msgid "Autoload"
 msgstr "טעינה אוטומטית"
+
+msgid "Plugins"
+msgstr "תוספים"
 
 msgid "2D Scene"
 msgstr "סצנה דו ממדית"

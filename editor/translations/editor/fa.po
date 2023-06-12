@@ -37,13 +37,15 @@
 # behrooz bozorg chami <behroozbc@outlook.com>, 2023.
 # mary karaby <karabymary@gmail.com>, 2023.
 # M <bafandehmajid@gmail.com>, 2023.
+# "Shahab Baradaran Dilmaghani (bdshahab)" <bdshahab@gmail.com>, 2023.
+# محمد ایرانی <mohamadir10g01@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-14 11:52+0000\n"
-"Last-Translator: M <bafandehmajid@gmail.com>\n"
+"PO-Revision-Date: 2023-06-05 19:49+0000\n"
+"Last-Translator: محمد ایرانی <mohamadir10g01@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -73,6 +75,12 @@ msgstr "غلطاندن به بالا ماوس"
 
 msgid "Mouse Wheel Down"
 msgstr "غلطاندن به پایین ماوس"
+
+msgid "Mouse Wheel Left"
+msgstr "دکمه ی چپ ماوس"
+
+msgid "Mouse Wheel Right"
+msgstr "دکمه ی راست ماوس"
 
 msgid "Button"
 msgstr "دکمه"
@@ -1609,6 +1617,9 @@ msgstr "%s را لغو می کند:"
 msgid "default:"
 msgstr "پیش فرض:"
 
+msgid "Constructors"
+msgstr "سازنده ها"
+
 msgid "Operators"
 msgstr "عملگر ها"
 
@@ -2073,7 +2084,7 @@ msgid "Inspector"
 msgstr "Inspector"
 
 msgid "Node"
-msgstr "گره"
+msgstr "گره(Node)"
 
 msgid "Output"
 msgstr "خروجی"
@@ -2513,6 +2524,9 @@ msgstr "مش‌ها"
 
 msgid "Import As:"
 msgstr "وارد کردن به عنوان:"
+
+msgid "Preset"
+msgstr "از پیش تعیین شده (Preset)"
 
 msgid "Advanced..."
 msgstr "پیشرفته..."
@@ -3212,6 +3226,9 @@ msgstr "یک Breakpoint درج کن"
 msgid "Save File As"
 msgstr "ذخیره فایل به عنوان"
 
+msgid "ShaderFile"
+msgstr "شیدر فایل"
+
 msgid "Create Polygon2D"
 msgstr "ساخت چندضلعی دوبعدی"
 
@@ -3323,6 +3340,9 @@ msgstr "Shift+Ctrl: رسم مستطیل."
 msgid "Eraser"
 msgstr "پاک‌کن"
 
+msgid "Tiles"
+msgstr "کاشی"
+
 msgid "Patterns"
 msgstr "الگوها"
 
@@ -3337,6 +3357,9 @@ msgstr "هیچ کاشی انتخاب نشد."
 
 msgid "Yes"
 msgstr "بله"
+
+msgid "TileMap"
+msgstr "نقشه کاشی"
 
 msgid "Error"
 msgstr "خطا"

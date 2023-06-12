@@ -71,13 +71,14 @@
 # Jan Kurzak <Iqaz0oki@outlook.com>, 2022.
 # Wojciech Pluta <wojciech.pluta@oracle.com>, 2022.
 # Piotr Komorowski <mikolajk11@o2.pl>, 2023.
+# stereopolex <stereopolex@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-30 10:49+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2023-06-10 02:20+0000\n"
+"Last-Translator: stereopolex <stereopolex@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pl/>\n"
 "Language: pl\n"
@@ -1864,6 +1865,9 @@ msgstr "Unikalne nazwy animacji"
 msgid "Animations"
 msgstr "Animacje"
 
+msgid "FBX"
+msgstr "FBX"
+
 msgid "Byte Offset"
 msgstr "Przesunięcie bajtu"
 
@@ -1875,6 +1879,9 @@ msgstr "Zapętl"
 
 msgid "Perspective"
 msgstr "Perspektywa"
+
+msgid "Skin"
+msgstr "Skórka"
 
 msgid "Light"
 msgstr "Światło"
@@ -2013,6 +2020,9 @@ msgstr "Wyświetlana nazwa wydawcy"
 
 msgid "Product GUID"
 msgstr "GUID produktu"
+
+msgid "Landscape"
+msgstr "Poziomo"
 
 msgid "Tiles"
 msgstr "Kafelki"
@@ -2186,7 +2196,7 @@ msgid "End"
 msgstr "Koniec"
 
 msgid "Pose"
-msgstr "Pozycja"
+msgstr "Poza"
 
 msgid "Sync"
 msgstr "Synchronizuj"
@@ -2271,6 +2281,9 @@ msgstr "Indeks Z"
 
 msgid "Repeat"
 msgstr "Powtórz"
+
+msgid "NormalMap"
+msgstr "NormalMap"
 
 msgid "Timeout"
 msgstr "Limit czasu"
@@ -2524,6 +2537,9 @@ msgstr "Informacja zwrotna"
 msgid "Pre Gain"
 msgstr "Wstępne wzmocnienie"
 
+msgid "Drive"
+msgstr "Dysk"
+
 msgid "Resonance"
 msgstr "Rezonans"
 
@@ -2532,6 +2548,9 @@ msgstr "Sufit dB"
 
 msgid "Threshold dB"
 msgstr "Wartość progowa dB"
+
+msgid "Soft Clip dB"
+msgstr "Miękkie przesterowanie dB"
 
 msgid "Vertex"
 msgstr "Wierzchołki"
@@ -2562,6 +2581,9 @@ msgstr "Odbicie w przestrzeni ekranu"
 
 msgid "OpenGL"
 msgstr "OpenGL"
+
+msgid "Shaders"
+msgstr "Shadery"
 
 msgid "Property"
 msgstr "Właściwość"

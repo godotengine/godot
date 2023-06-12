@@ -77,13 +77,14 @@
 # Silvia Scaglione <sissisoad@gmail.com>, 2022.
 # Cosimo Davide Viggiano <cosimod089@gmail.com>, 2022.
 # Francesco Cammarata <francescocammarata.fr@gmail.com>, 2022.
+# Alessio Gasparini <alessiogasparini02@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-02 01:45+0000\n"
-"Last-Translator: \"Matteo A.\" <psyduck.boh@gmail.com>\n"
+"PO-Revision-Date: 2023-06-08 10:53+0000\n"
+"Last-Translator: Alessio Gasparini <alessiogasparini02@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -91,7 +92,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -170,6 +171,9 @@ msgstr "Senza contorno"
 
 msgid "Transparent"
 msgstr "Trasparente"
+
+msgid "No Focus"
+msgstr "Nessun Focus"
 
 msgid "Window Width Override"
 msgstr "Sovrascrivi la Larghezza della Finestra"
@@ -3074,6 +3078,9 @@ msgstr "OpenGL"
 
 msgid "Shaders"
 msgstr "Shaders"
+
+msgid "World Origin"
+msgstr "Origine Globale"
 
 msgid "Property"
 msgstr "Proprietà"

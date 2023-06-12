@@ -69,7 +69,7 @@
 # Amigos Sus <amigossus66@gmail.com>, 2022.
 # Ferhat Geçdoğan <ferhatgectao@gmail.com>, 2022.
 # Recep GUCLUER <rgucluer@gmail.com>, 2022.
-# Emir Tunahan Alim <emrtnhalim@gmail.com>, 2022.
+# Emir Tunahan Alim <emrtnhalim@gmail.com>, 2022, 2023.
 # inci <incialien@gmail.com>, 2022.
 # Ramazan Aslan <legendraslan@gmail.com>, 2022.
 # paledega <paledega@yandex.ru>, 2022.
@@ -95,8 +95,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-05 13:41+0000\n"
-"Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
+"PO-Revision-Date: 2023-06-01 11:34+0000\n"
+"Last-Translator: Emir Tunahan Alim <emrtnhalim@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
 "Language: tr\n"
@@ -104,7 +104,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -235,6 +235,9 @@ msgstr "Düzenleyici"
 msgid "Script"
 msgstr "Betik"
 
+msgid "Search in File Extensions"
+msgstr "Dosya Uzantılarında Ara"
+
 msgid "Subwindows"
 msgstr "Altpencereler"
 
@@ -319,6 +322,9 @@ msgstr "GUI"
 msgid "Timers"
 msgstr "Zamanlayıcılar"
 
+msgid "Incremental Search Max Interval Msec"
+msgstr "Artışlı Arama En Büyük Aralık Msn"
+
 msgid "Common"
 msgstr "Yaygın"
 
@@ -334,8 +340,17 @@ msgstr "Dinamik Yazıtipleri"
 msgid "Use Oversampling"
 msgstr "Sıkörnekleme Kullan"
 
+msgid "Rendering Device"
+msgstr "Oluşturma Cihazı"
+
+msgid "Max Size (MB)"
+msgstr "Maksimum Boyut (MB)"
+
 msgid "Vulkan"
 msgstr "Vulkan"
+
+msgid "Max Descriptors per Pool"
+msgstr "Havuz Başına Maksimum Tanımlayıcı"
 
 msgid "Low Processor Usage Mode"
 msgstr "İşlemci Dostu Mod"
@@ -363,6 +378,9 @@ msgstr "Aygıt"
 
 msgid "Pressed"
 msgstr "Basılmış"
+
+msgid "Keycode"
+msgstr "Anahtar kod"
 
 msgid "Unicode"
 msgstr "Evrensel Kod"
@@ -411,6 +429,9 @@ msgstr "Eksen Değeri"
 
 msgid "Index"
 msgstr "İşaret, Gösterge, Sıra"
+
+msgid "Double Tap"
+msgstr "Çift Dokunma"
 
 msgid "Action"
 msgstr "Eylem"
@@ -486,6 +507,12 @@ msgstr "Tohum"
 
 msgid "State"
 msgstr "Durum"
+
+msgid "Use System Threads for Low Priority Tasks"
+msgstr "Düşük Öncelikli Görevler için Sistem İş Parçacıklarını Kullan"
+
+msgid "Low Priority Thread Ratio"
+msgstr "Düşük Öncelikli İş Parçacığı Oranı"
 
 msgid "Locale"
 msgstr "Yerel"
@@ -648,6 +675,9 @@ msgstr "Editör Dili"
 
 msgid "Display Scale"
 msgstr "Ölçeği Görüntüle"
+
+msgid "Use Embedded Menu"
+msgstr "Gömülü Menüyü Kullan"
 
 msgid "Custom Display Scale"
 msgstr "Özel Ekran Ölçeği"

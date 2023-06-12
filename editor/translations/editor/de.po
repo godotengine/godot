@@ -99,13 +99,15 @@
 # Jan Werder <jan@werder.space>, 2023.
 # Benno <bennocrafterdev@googlemail.com>, 2023.
 # Janosch Lion <janorico@posteo.de>, 2023.
+# aligator <johannes.hoermann@t-online.de>, 2023.
+# Benedikt Wicklein <benedikt.wicklein@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-14 11:51+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2023-06-03 17:28+0000\n"
+"Last-Translator: Benedikt Wicklein <benedikt.wicklein@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -3420,7 +3422,7 @@ msgstr "Mesh-Bibliothek exportieren"
 
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
-"Erweiterung lässt sich nicht aktivieren: ‚%‘ Parsen der Konfiguration "
+"Erweiterung lässt sich nicht aktivieren: ‚%s‘ Parsen der Konfiguration "
 "fehlgeschlagen."
 
 msgid "Unable to find script field for addon plugin at: '%s'."
@@ -5860,7 +5862,7 @@ msgid "Enable snap and show grid."
 msgstr "Schnapp- und Anzeigeraster aktivieren."
 
 msgid "Sync:"
-msgstr "Sync:"
+msgstr "Synchronisieren:"
 
 msgid "Blend:"
 msgstr "Blende:"
@@ -13851,7 +13853,7 @@ msgid "Add interaction profile"
 msgstr "Interaktionsprofil hinzufügen"
 
 msgid "Error saving file %s: %s"
-msgstr "Fehler beim Speichern von Datei: %s"
+msgstr "Fehler beim Speichern von Datei %s: %s"
 
 msgid "Error loading %s: %s."
 msgstr "Fehler beim Laden von %s: %s."
@@ -16260,7 +16262,7 @@ msgid "Void value not allowed in expression."
 msgstr "Void-Wert im Ausdruck nicht zulässig."
 
 msgid "Expected '(' after the type name."
-msgstr "›(‹ nach Typnamen erwartet."
+msgstr "‚(‘ nach Typnamen erwartet."
 
 msgid "No matching constructor found for: '%s'."
 msgstr "Kein passender Konstruktor gefunden für ‚%s‘."
@@ -16302,9 +16304,9 @@ msgid ""
 "To continue with minimal code changes add 'uniform sampler2D %s : hint_%s, "
 "filter_linear_mipmap;' near the top of your shader."
 msgstr ""
-"%s wurde entfernt um hint_% mittels Uniform Vorzug zu geben.\n"
-"Um mit minimalen Code-Änderungen fortzufahren, sollte ›uniform sampler2D "
-"%s : hint_%s, filter_linear_mipmap;‹ am Anfang des Shaders hinzugefügt "
+"%s wurde entfernt um hint_%s mittels Uniform Vorzug zu geben.\n"
+"Um mit minimalen Code-Änderungen fortzufahren, sollte ‚uniform sampler2D "
+"%s : hint_%s, filter_linear_mipmap;‘ am Anfang des Shaders hinzugefügt "
 "werden."
 
 msgid ""

@@ -48,13 +48,14 @@
 # ta ko <neji.cion@gmail.com>, 2022.
 # T K <kidaaam@gmail.com>, 2022, 2023.
 # Usamiki <amarantus0499@gmail.com>, 2023.
+# Septian Kurniawan <septgsk@outlook.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-26 20:01+0000\n"
-"Last-Translator: Usamiki <amarantus0499@gmail.com>\n"
+"PO-Revision-Date: 2023-05-24 19:51+0000\n"
+"Last-Translator: Septian Kurniawan <septgsk@outlook.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
 "Language: ja\n"
@@ -157,6 +158,9 @@ msgstr "タイトルに拡張"
 msgid "No Focus"
 msgstr "フォーカスしない"
 
+msgid "Window Width Override"
+msgstr "ウィンドウ広さのオーバーライド"
+
 msgid "Window Height Override"
 msgstr "ウィンドウ高さのオーバーライド"
 
@@ -168,6 +172,9 @@ msgstr "画面を常に点灯"
 
 msgid "Audio"
 msgstr "オーディオ"
+
+msgid "Buses"
+msgstr "バス"
 
 msgid "Default Bus Layout"
 msgstr "デフォルトのバスレイアウト"
@@ -226,11 +233,17 @@ msgstr "設定"
 msgid "Profiler"
 msgstr "プロファイラ"
 
+msgid "Max Functions"
+msgstr "関数の上限"
+
 msgid "Compression"
 msgstr "圧縮"
 
 msgid "Formats"
 msgstr "フォーマット"
+
+msgid "Zstd"
+msgstr "Zstd"
 
 msgid "Long Distance Matching"
 msgstr "長距離マッチング"
@@ -240,6 +253,12 @@ msgstr "圧縮レベル"
 
 msgid "Window Log Size"
 msgstr "Windowのログサイズ"
+
+msgid "Zlib"
+msgstr "Zlib"
+
+msgid "Gzip"
+msgstr "Gzip"
 
 msgid "Crash Handler"
 msgstr "クラッシュハンドラー"
@@ -255,6 +274,9 @@ msgstr "オクルージョンカリング"
 
 msgid "BVH Build Quality"
 msgstr "BVH ビルド品質"
+
+msgid "Memory"
+msgstr "メモリー"
 
 msgid "Limits"
 msgstr "制限"
@@ -507,6 +529,9 @@ msgstr "シード値"
 
 msgid "State"
 msgstr "状態"
+
+msgid "Max Size (KB)"
+msgstr "最大サイズ (KB)"
 
 msgid "TCP"
 msgstr "TCP"
@@ -2562,6 +2587,9 @@ msgstr "カリングモード"
 
 msgid "Default Color"
 msgstr "デフォルトの色"
+
+msgid "Fill"
+msgstr "塗りつぶし"
 
 msgid "Border"
 msgstr "ボーダー"

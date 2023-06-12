@@ -11,13 +11,14 @@
 # Keviindran Ramachandran <keviinx@yahoo.com>, 2020, 2021, 2022.
 # Jacque Fresco <aidter@use.startmail.com>, 2021.
 # Lemoney <railkill@gmail.com>, 2021, 2022.
+# dens-07 <densleyn01@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-09 12:36+0000\n"
-"Last-Translator: Keviindran Ramachandran <keviinx@yahoo.com>\n"
+"PO-Revision-Date: 2023-06-03 17:28+0000\n"
+"Last-Translator: dens-07 <densleyn01@gmail.com>\n"
 "Language-Team: Malay <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ms/>\n"
 "Language: ms\n"
@@ -25,10 +26,168 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
+
+msgid "Unset"
+msgstr "Batal Set"
 
 msgid "Physical"
 msgstr "Fizikal"
+
+msgid "Left Mouse Button"
+msgstr "Butang Kiri Mouse"
+
+msgid "Right Mouse Button"
+msgstr "Butang Kanan Mouse"
+
+msgid "Middle Mouse Button"
+msgstr "Butang Tengah Mouse"
+
+msgid "Mouse Wheel Up"
+msgstr "Roda Atas Mouse"
+
+msgid "Mouse Wheel Down"
+msgstr "Roda Bawah Mouse"
+
+msgid "Mouse Wheel Left"
+msgstr "Roda Kiri Mouse"
+
+msgid "Mouse Wheel Right"
+msgstr "Roda Kanan Mouse"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Butang Ibu Jari 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Butang Ibu Jari 2"
+
+msgid "Button"
+msgstr "Butang"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Gerakan mouse di posisi (%s) dengan halaju (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Batang Kiri Paksi-X, Joystick 0 Paksi-X"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Batang Kiri Paksi-Y, Joystick 0 Paksi-Y"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Batang Kanan Paksi-X, Joystick 1 Paksi-X"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Batang Kanan Paksi-Y, Joystick 1 Paksi-Y"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Joystick 2 Paksi-X, Cetus Kiri, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Joystick 2 Paksi-Y, Cetus Kanan, Sony L2, Xbox LT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Joystick 3 Paksi-X"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Joystick 3 Paksi-Y"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Joystick 4 Paksi-X"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Joystick 4 Paksi-4"
+
+msgid "Unknown Joypad Axis"
+msgstr "Paksi Joypad Tidak Diketahui"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Gerakan Joypad pada Paksi %d(%s) dengan Nilai %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Tindakan Bawah, Sony Cross, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Tindakan Kanan, Sony Circle, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Tindakan Kiri, Sony Square, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Tindakan Atas, Sony Segi Tiga, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Kembali, Sony Pilih, Xbox Kembali, Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Panduan, Sony PS, Xbox Home"
+
+msgid "Start, Nintendo +"
+msgstr "Mula, Nintendo +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Batang Kiri, Sony L3, Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Batang Kanan, Sony R3, Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Bahu Kiri, Sony L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Bahu Kanan, Sony R1, Xbox RB"
+
+msgid "D-pad Up"
+msgstr "D-pad Atas"
+
+msgid "D-pad Down"
+msgstr "D-pad Bawah"
+
+msgid "D-pad Left"
+msgstr "D-pad Kiri"
+
+msgid "D-pad Right"
+msgstr "D-pad Kanan"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Kongsi, Mikrofon PS5, Nintendo Tangkap"
+
+msgid "PS4/5 Touchpad"
+msgstr "Pad Sentuh PS4/5"
+
+msgid "Joypad Button %d"
+msgstr "Butang Joypad %d"
+
+msgid "Pressure:"
+msgstr "Tekanan:"
+
+msgid "touched"
+msgstr "Disentuh"
+
+msgid "released"
+msgstr "Dilepas"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Skrin %s di (%s) dengan nilai sentuh %s"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr ""
+"Skrin diseret dengan %s nilai sentuh pada posisi (%s) dengan halaju (%s)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Besarkan Gerak Isyarat pada (%s) dengan faktor %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Pan Gerak Isyarat pada (%s) dengan delta (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "Pemasuk MIDI di Saluran=%s Mesej=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Peristiwa Pemasuk dengan Pintasan=%s"
+
+msgid "Accept"
+msgstr "Terima"
 
 msgid "Select"
 msgstr "Pilih"
@@ -36,14 +195,38 @@ msgstr "Pilih"
 msgid "Cancel"
 msgstr "Batal"
 
+msgid "Focus Next"
+msgstr "Fokus Seterusnya"
+
+msgid "Focus Prev"
+msgstr "Fokus Sebelumnya"
+
+msgid "Left"
+msgstr "Kiri"
+
+msgid "Right"
+msgstr "Kanan"
+
 msgid "Up"
 msgstr "Atas"
 
 msgid "Down"
 msgstr "Bawah"
 
+msgid "Page Up"
+msgstr "Muka Surat Atas"
+
+msgid "Page Down"
+msgstr "Muka Surat Bawah"
+
+msgid "Home"
+msgstr "Rumah"
+
 msgid "End"
 msgstr "Akhir"
+
+msgid "Cut"
+msgstr "Potong"
 
 msgid "Copy"
 msgstr "Salin"
@@ -57,32 +240,154 @@ msgstr "Buat Asal"
 msgid "Redo"
 msgstr "Buat Semula"
 
+msgid "Completion Query"
+msgstr "Selesai Pertanyaan"
+
+msgid "New Line"
+msgstr "Barisan Baru"
+
+msgid "New Blank Line"
+msgstr "Barisan Kosong Baru"
+
+msgid "New Line Above"
+msgstr "Barisan Atas Baru"
+
+msgid "Indent"
+msgstr "Inden"
+
+msgid "Dedent"
+msgstr "Deden"
+
+msgid "Backspace"
+msgstr "Padam"
+
+msgid "Backspace Word"
+msgstr "Padam Belakang Perkataan"
+
+msgid "Backspace all to Left"
+msgstr "Padam semua ke Kiri"
+
 msgid "Delete"
 msgstr "Padam"
 
+msgid "Delete Word"
+msgstr "Padam Perkataan"
+
+msgid "Delete all to Right"
+msgstr "Padam semua ke Kanan"
+
+msgid "Caret Left"
+msgstr "Caret Kiri"
+
+msgid "Caret Word Left"
+msgstr "Caret Perkataan Kiri"
+
+msgid "Caret Right"
+msgstr "Caret Kanan"
+
+msgid "Caret Word Right"
+msgstr "Caret Perkataan Kanan"
+
+msgid "Caret Up"
+msgstr "Caret Atas"
+
+msgid "Caret Down"
+msgstr "Caret Bawah"
+
+msgid "Caret Line Start"
+msgstr "Caret Barisan Mula"
+
+msgid "Caret Line End"
+msgstr "Caret Barisan Tamat"
+
+msgid "Caret Page Up"
+msgstr "Caret Muka Surat Atas"
+
+msgid "Caret Page Down"
+msgstr "Caret Muka Surat Bawah"
+
+msgid "Caret Document Start"
+msgstr "Caret Dokumen Mula"
+
+msgid "Caret Document End"
+msgstr "Caret Dokumen Tamat"
+
+msgid "Caret Add Below"
+msgstr "Caret Tambah Bawah"
+
+msgid "Caret Add Above"
+msgstr "Caret Tambah Atas"
+
+msgid "Scroll Up"
+msgstr "Skrol Atas"
+
+msgid "Scroll Down"
+msgstr "Skrol Bawah"
+
+msgid "Select All"
+msgstr "Pilih Semua"
+
+msgid "Select Word Under Caret"
+msgstr "Pilih Perkataan Dibawah Caret"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "Tambah Pilihan Untuk Kejadian Seterusnya"
+
+msgid "Clear Carets and Selection"
+msgstr "Kosongkan Karet dan Pemilihan"
+
+msgid "Toggle Insert Mode"
+msgstr "Togol Mod Masuk"
+
+msgid "Submit Text"
+msgstr "Serahkan Teks"
+
+msgid "Duplicate Nodes"
+msgstr "Menduplikasi Note"
+
+msgid "Delete Nodes"
+msgstr "Padam Nod"
+
+msgid "Go Up One Level"
+msgstr "Naik Satu Tingkat"
+
 msgid "Refresh"
-msgstr "Muat Semula"
+msgstr "Mengemas Kini"
+
+msgid "Show Hidden"
+msgstr "Tunjuk Tersembunyi"
+
+msgid "Swap Input Direction"
+msgstr "Tukar Arah Pemasuk"
 
 msgid "Invalid input %d (not passed) in expression"
-msgstr "Input %d tidak sah (tidak lulus) dalam ungkapan"
+msgstr "%d Pemasukan tidak sah (tidak diluluskan) dalam ungkapan"
 
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self tidak boleh digunakan kerana contol adalah null (tidak lulus)"
+msgstr ""
+"diri(self) tidak boleh digunakan kerana contoh(instance) adalah batal (tidak "
+"diluluskan)"
 
 msgid "Invalid operands to operator %s, %s and %s."
 msgstr "Operan tidak sah untuk pengendali %s, %s dan %s."
 
 msgid "Invalid index of type %s for base type %s"
-msgstr "Indeks tidak sah untuk jenis %s untuk jenis asa %s"
+msgstr "Indeks jenis %s tidak sah untuk jenis asas %s"
 
 msgid "Invalid named index '%s' for base type %s"
-msgstr "Indeks bernama tidak sah '%s' untuk jenis asa %s"
+msgstr "Indeks bernama '%s' tidak sah untuk jenis asas %s"
 
 msgid "Invalid arguments to construct '%s'"
 msgstr "Argumen tidak sah untuk binaan '%s'"
 
 msgid "On call to '%s':"
-msgstr "Atas panggilan ke '%s':"
+msgstr "Atas panggilan kepada '%s':"
+
+msgid "Built-in script"
+msgstr "Skrip Binaan-dalam"
+
+msgid "Built-in"
+msgstr "Binaan-dalam"
 
 msgid "B"
 msgstr "B"
@@ -104,6 +409,13 @@ msgstr "PiB"
 
 msgid "EiB"
 msgstr "EiB"
+
+msgid "Example: %s"
+msgstr "Contoh:%s"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "Barang %d"
 
 msgid "Add"
 msgstr "Tambah"

@@ -44,13 +44,15 @@
 # adfriz <aditiyaafrizal2@gmail.com>, 2023.
 # EngageIndo <admin@engageindo.com>, 2023.
 # EngageIndo <engageindo@gmail.com>, 2023.
+# Septian Kurniawan <septgsk@outlook.com>, 2023.
+# Septian Ganendra Savero Kurniawan <septgsk@outlook.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-15 13:56+0000\n"
-"Last-Translator: EngageIndo <engageindo@gmail.com>\n"
+"PO-Revision-Date: 2023-06-08 10:53+0000\n"
+"Last-Translator: Septian Ganendra Savero Kurniawan <septgsk@outlook.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/id/>\n"
 "Language: id\n"
@@ -7839,6 +7841,18 @@ msgstr "Ukuran Font Tebal"
 msgid "Italics Font Size"
 msgstr "Ukuran Font Miring"
 
+msgid "Bold Italics Font Size"
+msgstr "Ukuran Font Tebal Miring"
+
+msgid "Mono Font Size"
+msgstr "Ukuran Font Mono"
+
+msgid "Table H Separation"
+msgstr "Pemisah H Tabel"
+
+msgid "Table V Separation"
+msgstr "Pemisah V Tabel"
+
 msgid "Node"
 msgstr "Node"
 
@@ -7910,6 +7924,9 @@ msgstr "Warna Horizon"
 
 msgid "Rayleigh"
 msgstr "Rayleigh"
+
+msgid "Ground Color"
+msgstr "Warna Daratan"
 
 msgid "Blend"
 msgstr "Berbaur"
