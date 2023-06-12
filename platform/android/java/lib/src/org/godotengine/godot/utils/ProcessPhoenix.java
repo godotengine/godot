@@ -26,6 +26,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import java.util.ArrayList;
@@ -90,8 +91,12 @@ public final class ProcessPhoenix extends Activity {
    */
   public static void forceQuit(Activity activity, int pid) {
     Process.killProcess(pid); // Kill original main process
-    activity.finish();
-    Runtime.getRuntime().exit(0); // Kill kill kill!
+	  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+		  activity.finishAndRemoveTask();
+	  } else {
+		  activity.finish();
+	  }
+	  Runtime.getRuntime().exit(0); // Kill kill kill!
   }
 
   // -- GODOT end --
