@@ -23,8 +23,8 @@
 		<member name="custom_template/release" type="String" setter="" getter="">
 			Path to the custom export template. If left empty, default template is used.
 		</member>
-		<member name="debug/export_console_script" type="int" setter="" getter="">
-			If [code]true[/code], a console wrapper script is exported alongside the main executable, which allows running the project with enabled console output.
+		<member name="debug/export_console_wrapper" type="int" setter="" getter="">
+			If [code]true[/code], a console wrapper is exported alongside the main executable, which allows running the project with enabled console output.
 		</member>
 		<member name="ssh_remote_deploy/cleanup_script" type="String" setter="" getter="">
 			Script code to execute on the remote host when app is finished.
