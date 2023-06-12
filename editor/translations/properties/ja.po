@@ -48,13 +48,14 @@
 # ta ko <neji.cion@gmail.com>, 2022.
 # T K <kidaaam@gmail.com>, 2022, 2023.
 # Usamiki <amarantus0499@gmail.com>, 2023.
+# Septian Kurniawan <septgsk@outlook.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-26 20:01+0000\n"
-"Last-Translator: Usamiki <amarantus0499@gmail.com>\n"
+"PO-Revision-Date: 2023-05-24 19:51+0000\n"
+"Last-Translator: Septian Kurniawan <septgsk@outlook.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
 "Language: ja\n"
@@ -157,6 +158,9 @@ msgstr "タイトルに拡張"
 msgid "No Focus"
 msgstr "フォーカスしない"
 
+msgid "Window Width Override"
+msgstr "ウィンドウ広さのオーバーライド"
+
 msgid "Window Height Override"
 msgstr "ウィンドウ高さのオーバーライド"
 
@@ -168,6 +172,9 @@ msgstr "画面を常に点灯"
 
 msgid "Audio"
 msgstr "オーディオ"
+
+msgid "Buses"
+msgstr "バス"
 
 msgid "Default Bus Layout"
 msgstr "デフォルトのバスレイアウト"
@@ -226,11 +233,17 @@ msgstr "設定"
 msgid "Profiler"
 msgstr "プロファイラ"
 
+msgid "Max Functions"
+msgstr "関数の上限"
+
 msgid "Compression"
 msgstr "圧縮"
 
 msgid "Formats"
 msgstr "フォーマット"
+
+msgid "Zstd"
+msgstr "Zstd"
 
 msgid "Long Distance Matching"
 msgstr "長距離マッチング"
@@ -240,6 +253,12 @@ msgstr "圧縮レベル"
 
 msgid "Window Log Size"
 msgstr "Windowのログサイズ"
+
+msgid "Zlib"
+msgstr "Zlib"
+
+msgid "Gzip"
+msgstr "Gzip"
 
 msgid "Crash Handler"
 msgstr "クラッシュハンドラー"
@@ -255,6 +274,9 @@ msgstr "オクルージョンカリング"
 
 msgid "BVH Build Quality"
 msgstr "BVH ビルド品質"
+
+msgid "Memory"
+msgstr "メモリー"
 
 msgid "Limits"
 msgstr "制限"
@@ -354,6 +376,9 @@ msgstr "マウスモード"
 
 msgid "Use Accumulated Input"
 msgstr "蓄積された入力を使用"
+
+msgid "Input Devices"
+msgstr "入力デバイス"
 
 msgid "Device"
 msgstr "デバイス"
@@ -457,12 +482,6 @@ msgstr "コントローラー値"
 msgid "Big Endian"
 msgstr "ビッグエンディアン"
 
-msgid "Network"
-msgstr "ネットワーク"
-
-msgid "Page Size"
-msgstr "ページサイズ"
-
 msgid "Blocking Mode Enabled"
 msgstr "ブロッキングモードを有効化"
 
@@ -496,6 +515,9 @@ msgstr "データ配列"
 msgid "Max Pending Connections"
 msgstr "保留中の接続数の上限"
 
+msgid "Region"
+msgstr "領域"
+
 msgid "Offset"
 msgstr "オフセット"
 
@@ -507,6 +529,9 @@ msgstr "シード値"
 
 msgid "State"
 msgstr "状態"
+
+msgid "Network"
+msgstr "ネットワーク"
 
 msgid "TCP"
 msgstr "TCP"
@@ -580,26 +605,23 @@ msgstr "リモートシーンツリーの更新間隔"
 msgid "Remote Inspect Refresh Interval"
 msgstr "リモートインスペクトのリフレッシュ間隔"
 
+msgid "FileSystem"
+msgstr "ファイルシステム"
+
+msgid "File Server"
+msgstr "ファイルサーバー"
+
+msgid "Port"
+msgstr "ポート"
+
+msgid "Password"
+msgstr "パスワード"
+
 msgid "Profiler Frame Max Functions"
 msgstr "プロファイラーフレームの関数の上限"
 
 msgid "Default Feature Profile"
 msgstr "デフォルト機能プロファイル"
-
-msgid "Access"
-msgstr "アクセス"
-
-msgid "Display Mode"
-msgstr "表示モード"
-
-msgid "Filters"
-msgstr "フィルター"
-
-msgid "Show Hidden Files"
-msgstr "隠しファイルを表示"
-
-msgid "Disable Overwrite Warning"
-msgstr "上書きの警告を無効化"
 
 msgid "Text Editor"
 msgstr "テキストエディター"
@@ -624,6 +646,9 @@ msgstr "チェック済み"
 
 msgid "Keying"
 msgstr "キーイング"
+
+msgid "Distraction Free Mode"
+msgstr "集中モード"
 
 msgid "Interface"
 msgstr "インターフェース"
@@ -663,9 +688,6 @@ msgstr "水平ベクトルタイプ編集"
 
 msgid "Default Color Picker Mode"
 msgstr "デフォルトのカラーピッカーモード"
-
-msgid "Distraction Free Mode"
-msgstr "集中モード"
 
 msgid "Base Type"
 msgstr "基底型"
@@ -775,8 +797,8 @@ msgstr "カスタムテーマ"
 msgid "Show Script Button"
 msgstr "スクリプトボタンを表示"
 
-msgid "FileSystem"
-msgstr "ファイルシステム"
+msgid "Enable"
+msgstr "有効"
 
 msgid "Vector Image Editor"
 msgstr "ベクター画像エディタ"
@@ -798,6 +820,12 @@ msgstr "バイナリリソースの圧縮"
 
 msgid "File Dialog"
 msgstr "ファイルダイアログ"
+
+msgid "Show Hidden Files"
+msgstr "隠しファイルを表示"
+
+msgid "Display Mode"
+msgstr "表示モード"
 
 msgid "Thumbnail Size"
 msgstr "サムネイルのサイズ"
@@ -861,9 +889,6 @@ msgstr "行番号をゼロ埋め"
 
 msgid "Highlight Type Safe Lines"
 msgstr "型安全な行をハイライトする"
-
-msgid "Show Bookmark Gutter"
-msgstr "ブックマークバーを表示"
 
 msgid "Show Info Gutter"
 msgstr "情報バーを表示"
@@ -1126,9 +1151,6 @@ msgstr "ボーンのアウトラインのサイズ"
 msgid "Viewport Border Color"
 msgstr "ビューポートのボーダーの色"
 
-msgid "Constrain Editor View"
-msgstr "エディタビューを束縛する"
-
 msgid "Sub Editors Panning Scheme"
 msgstr "サブエディターのパンニングスキーム"
 
@@ -1206,9 +1228,6 @@ msgstr "HTTPプロキシ"
 
 msgid "Host"
 msgstr "ホスト"
-
-msgid "Port"
-msgstr "ポート"
 
 msgid "Project Manager"
 msgstr "プロジェクトマネージャー"
@@ -1324,15 +1343,6 @@ msgstr "検索結果の色"
 msgid "Search Result Border Color"
 msgstr "検索結果のボーダーの色"
 
-msgid "Flat"
-msgstr "フラット"
-
-msgid "Hide Slider"
-msgstr "スライダーを隠す"
-
-msgid "Zoom"
-msgstr "ズーム"
-
 msgid "Custom Template"
 msgstr "カスタムテンプレート"
 
@@ -1366,11 +1376,23 @@ msgstr "エクスポート"
 msgid "Export Path"
 msgstr "エクスポート先のパス"
 
-msgid "File Server"
-msgstr "ファイルサーバー"
+msgid "Access"
+msgstr "アクセス"
 
-msgid "Password"
-msgstr "パスワード"
+msgid "Filters"
+msgstr "フィルター"
+
+msgid "Disable Overwrite Warning"
+msgstr "上書きの警告を無効化"
+
+msgid "Flat"
+msgstr "フラット"
+
+msgid "Hide Slider"
+msgstr "スライダーを隠す"
+
+msgid "Zoom"
+msgstr "ズーム"
 
 msgid "Multichannel Signed Distance Field"
 msgstr "マルチチャンネル符号付き距離フィールド"
@@ -1404,9 +1426,6 @@ msgstr "アンビエントを使用"
 
 msgid "Make Unique"
 msgstr "ユニーク化"
-
-msgid "Enable"
-msgstr "有効"
 
 msgid "Filter"
 msgstr "フィルター"
@@ -1488,6 +1507,9 @@ msgstr "オプティマイザー(Optimizer)"
 
 msgid "Max Angular Error"
 msgstr "最大角度エラー"
+
+msgid "Page Size"
+msgstr "ページサイズ"
 
 msgid "Nodes"
 msgstr "ノード"
@@ -1606,23 +1628,23 @@ msgstr "ストリームプレイヤー3D"
 msgid "Camera"
 msgstr "カメラ"
 
-msgid "Visibility Notifier"
-msgstr "可視性通知"
+msgid "Decal"
+msgstr "デカール"
 
 msgid "Particles"
 msgstr "パーティクル"
-
-msgid "Reflection Probe"
-msgstr "リフレクションプローブ"
-
-msgid "Decal"
-msgstr "デカール"
 
 msgid "Joint Body A"
 msgstr "ジョイント ボディA"
 
 msgid "Joint Body B"
 msgstr "ジョイント ボディB"
+
+msgid "Reflection Probe"
+msgstr "リフレクションプローブ"
+
+msgid "Visibility Notifier"
+msgstr "可視性通知"
 
 msgid "External"
 msgstr "外部"
@@ -1644,9 +1666,6 @@ msgstr "実行フラグ"
 
 msgid "Skeleton"
 msgstr "スケルトン"
-
-msgid "Warnings"
-msgstr "警告"
 
 msgid "ID"
 msgstr "ID"
@@ -1749,9 +1768,6 @@ msgstr "ブートスプラッシュ"
 
 msgid "BG Color"
 msgstr "背景色"
-
-msgid "Input Devices"
-msgstr "入力デバイス"
 
 msgid "Environment"
 msgstr "環境"
@@ -1861,6 +1877,9 @@ msgstr "関数定義の色"
 msgid "Node Path Color"
 msgstr "ノードパスの色"
 
+msgid "Warnings"
+msgstr "警告"
+
 msgid "Exclude Addons"
 msgstr "アドオンを除外"
 
@@ -1884,6 +1903,9 @@ msgstr "範囲"
 
 msgid "Specular Factor"
 msgstr "鏡面反射係数"
+
+msgid "Mass"
+msgstr "質量"
 
 msgid "Json"
 msgstr "JSON"
@@ -2563,6 +2585,9 @@ msgstr "カリングモード"
 msgid "Default Color"
 msgstr "デフォルトの色"
 
+msgid "Fill"
+msgstr "塗りつぶし"
+
 msgid "Border"
 msgstr "ボーダー"
 
@@ -2580,9 +2605,6 @@ msgstr "垂直オフセット"
 
 msgid "Physics Material Override"
 msgstr "物理マテリアルのオーバーライド"
-
-msgid "Mass"
-msgstr "質量"
 
 msgid "Inertia"
 msgstr "慣性"
@@ -2619,9 +2641,6 @@ msgstr "更新"
 
 msgid "Editor Settings"
 msgstr "エディター設定"
-
-msgid "Region"
-msgstr "領域"
 
 msgid "Tile Set"
 msgstr "タイルセット"
@@ -2973,9 +2992,6 @@ msgstr "色補正"
 
 msgid "Features"
 msgstr "機能"
-
-msgid "Interpolation Mode"
-msgstr "補間モード"
 
 msgid "Raw Data"
 msgstr "生データ"

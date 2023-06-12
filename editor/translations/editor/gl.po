@@ -826,11 +826,8 @@ msgstr "Editor de Dependencias"
 msgid "Search Replacement Resource:"
 msgstr "Buscar Recurso de Substitución:"
 
-msgid "Open Scene"
-msgstr "Abrir Escena"
-
-msgid "Open Scenes"
-msgstr "Abrir Escenas"
+msgid "Open"
+msgstr "Abrir"
 
 msgid "Cannot remove:"
 msgstr "Non se pode eliminar:"
@@ -867,6 +864,12 @@ msgstr "É Dono de"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Recursos Sen Dono Explícito:"
+
+msgid "Could not create folder."
+msgstr "Non se puido crear cartafol."
+
+msgid "Create Folder"
+msgstr "Crear Cartafol"
 
 msgid "Thanks from the Godot community!"
 msgstr "Moitas grazas de parte da comunidade de Godot!"
@@ -1140,24 +1143,6 @@ msgstr "[baleiro]"
 msgid "[unsaved]"
 msgstr "[non gardado]"
 
-msgid "Please select a base directory first."
-msgstr "Por favor, seleccione primeiro un directorio base."
-
-msgid "Choose a Directory"
-msgstr "Elixir un Directorio"
-
-msgid "Create Folder"
-msgstr "Crear Cartafol"
-
-msgid "Name:"
-msgstr "Nome:"
-
-msgid "Could not create folder."
-msgstr "Non se puido crear cartafol."
-
-msgid "Choose"
-msgstr "Elixir"
-
 msgid "3D Editor"
 msgstr "Editor 3D"
 
@@ -1235,105 +1220,6 @@ msgstr "Importar Perf(il/ís)"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Administrar Perfils de Características de Godot"
-
-msgid "Open"
-msgstr "Abrir"
-
-msgid "Select Current Folder"
-msgstr "Seleccionar Cartafol Actual"
-
-msgid "Select This Folder"
-msgstr "Seleccionar Este Cartafol"
-
-msgid "Copy Path"
-msgstr "Copiar Ruta"
-
-msgid "Open in File Manager"
-msgstr "Abrir no Explorador de Arquivos"
-
-msgid "Show in File Manager"
-msgstr "Amosar no Explorador de Arquivos"
-
-msgid "New Folder..."
-msgstr "Novo Cartafol..."
-
-msgid "All Recognized"
-msgstr "Todos Recoñecidos"
-
-msgid "All Files (*)"
-msgstr "Todos os Arquivos (*)"
-
-msgid "Open a File"
-msgstr "Abrir un Arquivo"
-
-msgid "Open File(s)"
-msgstr "Abrir Arquivo(s)"
-
-msgid "Open a Directory"
-msgstr "Abrir un Directorio"
-
-msgid "Open a File or Directory"
-msgstr "Abrir un Arquivo ou Directorio"
-
-msgid "Save a File"
-msgstr "Gardar un Arquivo"
-
-msgid "Go Back"
-msgstr "Retroceder"
-
-msgid "Go Forward"
-msgstr "Avanzar"
-
-msgid "Go Up"
-msgstr "Subir"
-
-msgid "Toggle Hidden Files"
-msgstr "Amosar/Ocultar Arquivos Ocultos"
-
-msgid "Toggle Favorite"
-msgstr "Act./Desact. Favorito"
-
-msgid "Toggle Mode"
-msgstr "Act./Desact. Modo"
-
-msgid "Move Favorite Up"
-msgstr "Subir Favorito"
-
-msgid "Move Favorite Down"
-msgstr "Baixar Favorito"
-
-msgid "Go to previous folder."
-msgstr "Ir ao cartafol anterior."
-
-msgid "Go to next folder."
-msgstr "Ir ao cartafol seguinte."
-
-msgid "Go to parent folder."
-msgstr "Ir ao cartafol padre."
-
-msgid "Refresh files."
-msgstr "Actualizar Arquivos."
-
-msgid "(Un)favorite current folder."
-msgstr "Quitar cartafol actual de favoritos."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "Amosar/Ocultar arquivos ocultos."
-
-msgid "View items as a grid of thumbnails."
-msgstr "Ver elementos coma unha cuadrícula de miniaturas."
-
-msgid "View items as a list."
-msgstr "Ver elementos coma unha lista."
-
-msgid "Directories & Files:"
-msgstr "Directorios e Arquivos:"
-
-msgid "Preview:"
-msgstr "Vista Previa:"
-
-msgid "File:"
-msgstr "Arquivo:"
 
 msgid "Restart"
 msgstr "Reiniciar"
@@ -1459,6 +1345,15 @@ msgstr "Redimensionar Array"
 msgid "Set Multiple:"
 msgstr "Establecer Varios:"
 
+msgid "Name:"
+msgstr "Nome:"
+
+msgid "Creating Mesh Previews"
+msgstr "Creando Previsualización de Mallas"
+
+msgid "Thumbnail..."
+msgstr "Miniatura..."
+
 msgid "Show All Locales"
 msgstr "Amosar Tódolos Linguaxes"
 
@@ -1533,6 +1428,9 @@ msgstr ""
 "Non se puido gardar a escena. Posiblemente as dependencias (instancias ou "
 "herenzas) non puideron satisfacerse."
 
+msgid "Save scene before running..."
+msgstr "Garda a escena antes de executala..."
+
 msgid "Save All Scenes"
 msgstr "Gardar Todas as Escenas"
 
@@ -1587,18 +1485,6 @@ msgstr ""
 msgid "Changes may be lost!"
 msgstr "Os cambios poderían perderse!"
 
-msgid "There is no defined scene to run."
-msgstr "Non hai unha escena definida para executar."
-
-msgid "Save scene before running..."
-msgstr "Garda a escena antes de executala..."
-
-msgid "Play the project."
-msgstr "Reproduce o proxecto."
-
-msgid "Play the edited scene."
-msgstr "Reproduce a escena actual."
-
 msgid "Open Base Scene"
 msgstr "Abrir Escena Base"
 
@@ -1610,12 +1496,6 @@ msgstr "Apertura Rápida de Escena..."
 
 msgid "Quick Open Script..."
 msgstr "Apertura Rápida de Script..."
-
-msgid "Save & Quit"
-msgstr "Gardar e Saír"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "Gardar os cambios de '%s' antes de pechar?"
 
 msgid "Save Scene As..."
 msgstr "Gardar Escena Como..."
@@ -1637,8 +1517,8 @@ msgstr ""
 "Quere volver a cargar a escena cargada de todos os modos? Esta acción non se "
 "pode deshacer."
 
-msgid "Quick Run Scene..."
-msgstr "Execución Rápida de Escena..."
+msgid "Save & Quit"
+msgstr "Gardar e Saír"
 
 msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Gardar os cambios nas seguintes escenas antes de saír?"
@@ -1710,6 +1590,9 @@ msgstr "A escena '%s' ten dependencias rotas:"
 msgid "Clear Recent Scenes"
 msgstr "Limpar Escenas Recentes"
 
+msgid "There is no defined scene to run."
+msgstr "Non hai unha escena definida para executar."
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -1749,6 +1632,9 @@ msgstr "Por Defecto"
 
 msgid "Save & Close"
 msgstr "Gardar e Pechar"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "Gardar os cambios de '%s' antes de pechar?"
 
 msgid "Show in FileSystem"
 msgstr "Amosar no Sistema de Arquivos"
@@ -1917,6 +1803,9 @@ msgstr "Saída"
 msgid "Don't Save"
 msgstr "Non Gardar"
 
+msgid "Show in File Manager"
+msgstr "Amosar no Explorador de Arquivos"
+
 msgid "Export Library"
 msgstr "Biblioteca de Exportación"
 
@@ -1958,15 +1847,6 @@ msgstr "Abrir o anterior editor"
 
 msgid "Warning!"
 msgstr "Aviso!"
-
-msgid "No sub-resources found."
-msgstr "Non se atopou ningún sub-recurso."
-
-msgid "Creating Mesh Previews"
-msgstr "Creando Previsualización de Mallas"
-
-msgid "Thumbnail..."
-msgstr "Miniatura..."
 
 msgid "Main Script:"
 msgstr "Script Principal:"
@@ -2195,6 +2075,12 @@ msgstr "Examinar"
 msgid "Favorites"
 msgstr "Favoritos"
 
+msgid "View items as a grid of thumbnails."
+msgstr "Ver elementos coma unha cuadrícula de miniaturas."
+
+msgid "View items as a list."
+msgstr "Ver elementos coma unha lista."
+
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Estado: Fallou a importación do arquivo. Por favor, amaña o arquivo e "
@@ -2212,32 +2098,8 @@ msgstr "Erro ao duplicar:"
 msgid "Unable to update dependencies:"
 msgstr "Incapaz de actualizar dependencias:"
 
-msgid "Provided name contains invalid characters."
-msgstr "O nome proporcionado contén caracteres inválidos."
-
 msgid "A file or folder with this name already exists."
 msgstr "Xa existe un arquivo ou cartafol con este nome."
-
-msgid ""
-"The following files or folders conflict with items in the target location "
-"'%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Do you wish to overwrite them?"
-msgstr ""
-"Os seguintes arquivos ou cartafois entran en conflicto con elementos da "
-"ubicación de destino '%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Queres sobreescribilos?"
-
-msgid "Renaming file:"
-msgstr "Renomeando Arquivo:"
-
-msgid "Renaming folder:"
-msgstr "Renomeando Cartafol:"
 
 msgid "Duplicating file:"
 msgstr "Duplicando Arquivo:"
@@ -2251,11 +2113,8 @@ msgstr "Nova Escena Herdada"
 msgid "Set As Main Scene"
 msgstr "Establecer coma Escena Principal"
 
-msgid "Add to Favorites"
-msgstr "Engadir a Favoritos"
-
-msgid "Remove from Favorites"
-msgstr "Eliminar de Favoritos"
+msgid "Open Scenes"
+msgstr "Abrir Escenas"
 
 msgid "Edit Dependencies..."
 msgstr "Editar Dependencias..."
@@ -2263,8 +2122,17 @@ msgstr "Editar Dependencias..."
 msgid "View Owners..."
 msgstr "Ver Donos..."
 
-msgid "Move To..."
-msgstr "Mover a..."
+msgid "Add to Favorites"
+msgstr "Engadir a Favoritos"
+
+msgid "Remove from Favorites"
+msgstr "Eliminar de Favoritos"
+
+msgid "Open in File Manager"
+msgstr "Abrir no Explorador de Arquivos"
+
+msgid "New Folder..."
+msgstr "Novo Cartafol..."
 
 msgid "New Scene..."
 msgstr "Nova Escena..."
@@ -2274,6 +2142,9 @@ msgstr "Novo Script..."
 
 msgid "New Resource..."
 msgstr "Novo Recurso..."
+
+msgid "Copy Path"
+msgstr "Copiar Ruta"
 
 msgid "Duplicate..."
 msgstr "Duplicar..."
@@ -2293,9 +2164,6 @@ msgid ""
 msgstr ""
 "Examinando arquivos,\n"
 "Por favor, espere..."
-
-msgid "Move"
-msgstr "Mover"
 
 msgid "Overwrite"
 msgstr "Sobreescribir"
@@ -2369,6 +2237,117 @@ msgstr "Editor de Grupos"
 
 msgid "Manage Groups"
 msgstr "Administrar Grupos"
+
+msgid "Move"
+msgstr "Mover"
+
+msgid "Please select a base directory first."
+msgstr "Por favor, seleccione primeiro un directorio base."
+
+msgid "Choose a Directory"
+msgstr "Elixir un Directorio"
+
+msgid "Select Current Folder"
+msgstr "Seleccionar Cartafol Actual"
+
+msgid "Select This Folder"
+msgstr "Seleccionar Este Cartafol"
+
+msgid "All Recognized"
+msgstr "Todos Recoñecidos"
+
+msgid "All Files (*)"
+msgstr "Todos os Arquivos (*)"
+
+msgid "Open a File"
+msgstr "Abrir un Arquivo"
+
+msgid "Open File(s)"
+msgstr "Abrir Arquivo(s)"
+
+msgid "Open a Directory"
+msgstr "Abrir un Directorio"
+
+msgid "Open a File or Directory"
+msgstr "Abrir un Arquivo ou Directorio"
+
+msgid "Save a File"
+msgstr "Gardar un Arquivo"
+
+msgid "Go Back"
+msgstr "Retroceder"
+
+msgid "Go Forward"
+msgstr "Avanzar"
+
+msgid "Go Up"
+msgstr "Subir"
+
+msgid "Toggle Hidden Files"
+msgstr "Amosar/Ocultar Arquivos Ocultos"
+
+msgid "Toggle Favorite"
+msgstr "Act./Desact. Favorito"
+
+msgid "Toggle Mode"
+msgstr "Act./Desact. Modo"
+
+msgid "Move Favorite Up"
+msgstr "Subir Favorito"
+
+msgid "Move Favorite Down"
+msgstr "Baixar Favorito"
+
+msgid "Go to previous folder."
+msgstr "Ir ao cartafol anterior."
+
+msgid "Go to next folder."
+msgstr "Ir ao cartafol seguinte."
+
+msgid "Go to parent folder."
+msgstr "Ir ao cartafol padre."
+
+msgid "Refresh files."
+msgstr "Actualizar Arquivos."
+
+msgid "(Un)favorite current folder."
+msgstr "Quitar cartafol actual de favoritos."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Amosar/Ocultar arquivos ocultos."
+
+msgid "Directories & Files:"
+msgstr "Directorios e Arquivos:"
+
+msgid "Preview:"
+msgstr "Vista Previa:"
+
+msgid "File:"
+msgstr "Arquivo:"
+
+msgid "No sub-resources found."
+msgstr "Non se atopou ningún sub-recurso."
+
+msgid "Play the project."
+msgstr "Reproduce o proxecto."
+
+msgid "Play the edited scene."
+msgstr "Reproduce a escena actual."
+
+msgid "Quick Run Scene..."
+msgstr "Execución Rápida de Escena..."
+
+msgid "Unlock Node"
+msgstr "Desbloquear Nodo"
+
+msgid "Node configuration warning:"
+msgstr "Aviso sobre a configuración do nodo:"
+
+msgid "Rename Node"
+msgstr "Renomear Nodo"
+
+msgid "Select a Node"
+msgstr "Seleccione un Nodo"
 
 msgid "Reimport"
 msgstr "Reimportar"
@@ -2974,12 +2953,6 @@ msgstr "Recta Completa"
 msgid "Generated Point Count:"
 msgstr "Número de Puntos Xerados:"
 
-msgid "Add Point"
-msgstr "Engadir Punto"
-
-msgid "Remove Point"
-msgstr "Eliminar Punto"
-
 msgid "Deploy with Remote Debug"
 msgstr "Exportar con Depuración Remota"
 
@@ -3107,6 +3080,12 @@ msgstr "Cantidade:"
 
 msgid "Populate"
 msgstr "Encher"
+
+msgid "Edit Poly"
+msgstr "Editar Polígono"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Editar Polígono (Eliminar Punto)"
 
 msgid "Orthogonal"
 msgstr "Ortogonal"
@@ -3400,12 +3379,6 @@ msgstr "Amosar Cuadrícula"
 msgid "Configure Grid:"
 msgstr "Configurar Cuadrícula:"
 
-msgid "Edit Poly"
-msgstr "Editar Polígono"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Editar Polígono (Eliminar Punto)"
-
 msgid "Add Resource"
 msgstr "Engadir Recurso"
 
@@ -3646,12 +3619,6 @@ msgstr "Animacións:"
 
 msgid "Zoom Reset"
 msgstr "Restablecer Zoom"
-
-msgid "Horizontal:"
-msgstr "Horizontal:"
-
-msgid "Vertical:"
-msgstr "Vertical:"
 
 msgid "Snap Mode:"
 msgstr "Modo de Axuste:"
@@ -3899,11 +3866,11 @@ msgstr "Ruta de Instalación do Proxecto:"
 msgid "Renderer:"
 msgstr "Renderizador:"
 
-msgid "Missing Project"
-msgstr "Proxecto Faltante"
-
 msgid "Error: Project is missing on the filesystem."
 msgstr "Erro: O proxecto non se pode encontrar no sistema de arquivos."
+
+msgid "Missing Project"
+msgstr "Proxecto Faltante"
 
 msgid "Local"
 msgstr "Local"
@@ -4054,18 +4021,6 @@ msgstr "Engadir Nodo Fillo"
 msgid "Remote"
 msgstr "Remoto"
 
-msgid "Unlock Node"
-msgstr "Desbloquear Nodo"
-
-msgid "Node configuration warning:"
-msgstr "Aviso sobre a configuración do nodo:"
-
-msgid "Rename Node"
-msgstr "Renomear Nodo"
-
-msgid "Select a Node"
-msgstr "Seleccione un Nodo"
-
 msgid "Path is empty."
 msgstr "A ruta está baleira."
 
@@ -4197,10 +4152,6 @@ msgstr ""
 
 msgid "Building Android Project (gradle)"
 msgstr "Construir Proxecto Android (gradle)"
-
-msgid "App Store Team ID not specified - cannot configure the project."
-msgstr ""
-"ID de App Store Team non especificado - non se pode configurar o proxecto."
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"

@@ -71,13 +71,14 @@
 # Jan Kurzak <Iqaz0oki@outlook.com>, 2022.
 # Wojciech Pluta <wojciech.pluta@oracle.com>, 2022.
 # Piotr Komorowski <mikolajk11@o2.pl>, 2023.
+# stereopolex <stereopolex@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-30 10:49+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2023-06-10 02:20+0000\n"
+"Last-Translator: stereopolex <stereopolex@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pl/>\n"
 "Language: pl\n"
@@ -451,12 +452,6 @@ msgstr "Wartość kontrolera"
 msgid "Big Endian"
 msgstr "Big endian"
 
-msgid "Network"
-msgstr "Sieć"
-
-msgid "Page Size"
-msgstr "Rozmiar strony"
-
 msgid "Blocking Mode Enabled"
 msgstr "Tryb blokowania włączony"
 
@@ -490,6 +485,9 @@ msgstr "Tablica danych"
 msgid "Max Pending Connections"
 msgstr "Maks. liczba połączeń oczekujących"
 
+msgid "Region"
+msgstr "Obszar"
+
 msgid "Offset"
 msgstr "Przesunięcie"
 
@@ -501,6 +499,9 @@ msgstr "Ziarno"
 
 msgid "State"
 msgstr "Stan"
+
+msgid "Network"
+msgstr "Sieć"
 
 msgid "Locale"
 msgstr "Ustawienia regionalne"
@@ -559,26 +560,23 @@ msgstr "Zdalny port"
 msgid "Debugger"
 msgstr "Debugger"
 
+msgid "FileSystem"
+msgstr "System plików"
+
+msgid "File Server"
+msgstr "Serwer plików"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Password"
+msgstr "Hasło"
+
 msgid "Profiler Frame Max Functions"
 msgstr "Maksymalna ilość funkcji klatki profilera"
 
 msgid "Default Feature Profile"
 msgstr "Profil domyślnych funkcji"
-
-msgid "Access"
-msgstr "Dostęp"
-
-msgid "Display Mode"
-msgstr "Tryb wyświetlania"
-
-msgid "Filters"
-msgstr "Filtry"
-
-msgid "Show Hidden Files"
-msgstr "Pokaż ukryte pliki"
-
-msgid "Disable Overwrite Warning"
-msgstr "Wyłącz ostrzeżenie o nadpisaniu"
 
 msgid "Text Editor"
 msgstr "Edytor tekstu"
@@ -603,6 +601,9 @@ msgstr "Sprawdzone"
 
 msgid "Keying"
 msgstr "Kluczowanie"
+
+msgid "Distraction Free Mode"
+msgstr "Tryb bez rozproszeń"
 
 msgid "Interface"
 msgstr "Interfejs"
@@ -642,9 +643,6 @@ msgstr "Edycja poziomych typów wektorów"
 
 msgid "Default Color Picker Mode"
 msgstr "Domyślny tryb pobieracza kolorów"
-
-msgid "Distraction Free Mode"
-msgstr "Tryb bez rozproszeń"
 
 msgid "Base Type"
 msgstr "Typ bazowy"
@@ -733,8 +731,8 @@ msgstr "Własny motyw"
 msgid "Show Script Button"
 msgstr "Pokaż przycisk skryptu"
 
-msgid "FileSystem"
-msgstr "System plików"
+msgid "Enable"
+msgstr "Włącz"
 
 msgid "Vector Image Editor"
 msgstr "Edytor obrazów wektorowych"
@@ -756,6 +754,12 @@ msgstr "Skompresuj binarne zasoby"
 
 msgid "File Dialog"
 msgstr "Dialog plików"
+
+msgid "Show Hidden Files"
+msgstr "Pokaż ukryte pliki"
+
+msgid "Display Mode"
+msgstr "Tryb wyświetlania"
 
 msgid "Thumbnail Size"
 msgstr "Rozmiar miniaturki"
@@ -822,9 +826,6 @@ msgstr "Numery linii wyrównane zerami"
 
 msgid "Highlight Type Safe Lines"
 msgstr "Wyróżnij typy bezpiecznych linii"
-
-msgid "Show Bookmark Gutter"
-msgstr "Pokaż ciek zakładek"
 
 msgid "Show Info Gutter"
 msgstr "Pokaż ciek informacji"
@@ -1078,9 +1079,6 @@ msgstr "Rozmiar obrysu kości"
 msgid "Viewport Border Color"
 msgstr "Kolor obwódki viewportu"
 
-msgid "Constrain Editor View"
-msgstr "Ogranicz widok edytora"
-
 msgid "Simple Panning"
 msgstr "Proste przesuwanie"
 
@@ -1149,9 +1147,6 @@ msgstr "Proxy HTTP"
 
 msgid "Host"
 msgstr "Host"
-
-msgid "Port"
-msgstr "Port"
 
 msgid "Project Manager"
 msgstr "Menedżer projektów"
@@ -1267,12 +1262,6 @@ msgstr "Kolor wyniku wyszukiwania"
 msgid "Search Result Border Color"
 msgstr "Kolor obramowania wyniku wyszukiwania"
 
-msgid "Flat"
-msgstr "Płaski"
-
-msgid "Hide Slider"
-msgstr "Ukryj suwak"
-
 msgid "Custom Template"
 msgstr "Własny szablon"
 
@@ -1309,11 +1298,20 @@ msgstr "Eksportuj"
 msgid "Export Path"
 msgstr "Ścieżka eksportu"
 
-msgid "File Server"
-msgstr "Serwer plików"
+msgid "Access"
+msgstr "Dostęp"
 
-msgid "Password"
-msgstr "Hasło"
+msgid "Filters"
+msgstr "Filtry"
+
+msgid "Disable Overwrite Warning"
+msgstr "Wyłącz ostrzeżenie o nadpisaniu"
+
+msgid "Flat"
+msgstr "Płaski"
+
+msgid "Hide Slider"
+msgstr "Ukryj suwak"
 
 msgid "Multichannel Signed Distance Field"
 msgstr "Wielokanałowe Pole Odległości ze Znakiem"
@@ -1365,9 +1363,6 @@ msgstr "Unikalny węzeł"
 
 msgid "Make Unique"
 msgstr "Zrób unikalny"
-
-msgid "Enable"
-msgstr "Włącz"
 
 msgid "Filter"
 msgstr "Filtr"
@@ -1467,6 +1462,9 @@ msgstr "Maks. błąd kątowy"
 
 msgid "Max Precision Error"
 msgstr "Maks. błąd precyzji"
+
+msgid "Page Size"
+msgstr "Rozmiar strony"
 
 msgid "Import Tracks"
 msgstr "Importuj ścieżki"
@@ -1585,11 +1583,11 @@ msgstr "Wymaż"
 msgid "Error"
 msgstr "Błąd"
 
-msgid "Particles"
-msgstr "Cząsteczki"
-
 msgid "Decal"
 msgstr "Naklejka"
+
+msgid "Particles"
+msgstr "Cząsteczki"
 
 msgid "Manipulator Gizmo Size"
 msgstr "Regulacja wielkości uchwytu"
@@ -1632,9 +1630,6 @@ msgstr "Szkielet"
 
 msgid "Bone Shape"
 msgstr "Kształt kości"
-
-msgid "Warnings"
-msgstr "Ostrzeżenia"
 
 msgid "ID"
 msgstr "ID"
@@ -1834,6 +1829,9 @@ msgstr "Ścieżka dołączona"
 msgid "CSG"
 msgstr "CSG"
 
+msgid "Warnings"
+msgstr "Ostrzeżenia"
+
 msgid "Language Server"
 msgstr "Serwer języka"
 
@@ -1864,6 +1862,9 @@ msgstr "Unikalne nazwy animacji"
 msgid "Animations"
 msgstr "Animacje"
 
+msgid "FBX"
+msgstr "FBX"
+
 msgid "Byte Offset"
 msgstr "Przesunięcie bajtu"
 
@@ -1875,6 +1876,9 @@ msgstr "Zapętl"
 
 msgid "Perspective"
 msgstr "Perspektywa"
+
+msgid "Skin"
+msgstr "Skórka"
 
 msgid "Light"
 msgstr "Światło"
@@ -2014,6 +2018,9 @@ msgstr "Wyświetlana nazwa wydawcy"
 msgid "Product GUID"
 msgstr "GUID produktu"
 
+msgid "Landscape"
+msgstr "Poziomo"
+
 msgid "Tiles"
 msgstr "Kafelki"
 
@@ -2119,9 +2126,6 @@ msgstr "Odśwież"
 msgid "Editor Settings"
 msgstr "Ustawienia edytora"
 
-msgid "Region"
-msgstr "Obszar"
-
 msgid "Texture Normal"
 msgstr "Normalna tekstury"
 
@@ -2186,7 +2190,7 @@ msgid "End"
 msgstr "Koniec"
 
 msgid "Pose"
-msgstr "Pozycja"
+msgstr "Poza"
 
 msgid "Sync"
 msgstr "Synchronizuj"
@@ -2271,6 +2275,9 @@ msgstr "Indeks Z"
 
 msgid "Repeat"
 msgstr "Powtórz"
+
+msgid "NormalMap"
+msgstr "NormalMap"
 
 msgid "Timeout"
 msgstr "Limit czasu"
@@ -2376,9 +2383,6 @@ msgstr "Tekstura gęstości"
 
 msgid "Features"
 msgstr "Funkcje"
-
-msgid "Interpolation Mode"
-msgstr "Sposób interpolacji"
 
 msgid "Shader"
 msgstr "Shader"
@@ -2524,6 +2528,9 @@ msgstr "Informacja zwrotna"
 msgid "Pre Gain"
 msgstr "Wstępne wzmocnienie"
 
+msgid "Drive"
+msgstr "Dysk"
+
 msgid "Resonance"
 msgstr "Rezonans"
 
@@ -2532,6 +2539,9 @@ msgstr "Sufit dB"
 
 msgid "Threshold dB"
 msgstr "Wartość progowa dB"
+
+msgid "Soft Clip dB"
+msgstr "Miękkie przesterowanie dB"
 
 msgid "Vertex"
 msgstr "Wierzchołki"
@@ -2562,6 +2572,9 @@ msgstr "Odbicie w przestrzeni ekranu"
 
 msgid "OpenGL"
 msgstr "OpenGL"
+
+msgid "Shaders"
+msgstr "Shadery"
 
 msgid "Property"
 msgstr "Właściwość"

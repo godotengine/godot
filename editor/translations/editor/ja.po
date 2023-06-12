@@ -54,13 +54,15 @@
 # a-ori-a <ma_hiro25@outlook.jp>, 2023.
 # Usamiki <amarantus0499@gmail.com>, 2023.
 # "Takefumi \"abell\" Ota" <taketakegogo@gmail.com>, 2023.
+# Septian Kurniawan <septgsk@outlook.com>, 2023.
+# 上城肇 <hajime.kamishiro@manyversegames.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-30 10:49+0000\n"
-"Last-Translator: Usamiki <amarantus0499@gmail.com>\n"
+"PO-Revision-Date: 2023-06-11 23:11+0000\n"
+"Last-Translator: 上城肇 <hajime.kamishiro@manyversegames.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -1634,11 +1636,8 @@ msgstr "依存関係エディター"
 msgid "Search Replacement Resource:"
 msgstr "置換するリソースを検索:"
 
-msgid "Open Scene"
-msgstr "シーンを開く"
-
-msgid "Open Scenes"
-msgstr "シーンを開く"
+msgid "Open"
+msgstr "開く"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "%s のオーナー (合計: %d)"
@@ -1705,6 +1704,12 @@ msgstr "所有"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "所有権が明示的でないリソース:"
+
+msgid "Could not create folder."
+msgstr "フォルダーを作成できませんでした。"
+
+msgid "Create Folder"
+msgstr "フォルダーを作成"
 
 msgid "Thanks from the Godot community!"
 msgstr "Godot コミュニティより感謝を！"
@@ -2205,28 +2210,6 @@ msgstr "[空]"
 msgid "[unsaved]"
 msgstr "[未保存]"
 
-msgid "Please select a base directory first."
-msgstr "はじめにベースディレクトリを選択してください。"
-
-msgid "Could not create folder. File with that name already exists."
-msgstr ""
-"フォルダを作成できませんでした。その名前のファイルはすでに存在しています。"
-
-msgid "Choose a Directory"
-msgstr "ディレクトリを選択"
-
-msgid "Create Folder"
-msgstr "フォルダーを作成"
-
-msgid "Name:"
-msgstr "名前:"
-
-msgid "Could not create folder."
-msgstr "フォルダーを作成できませんでした。"
-
-msgid "Choose"
-msgstr "選択"
-
 msgid "3D Editor"
 msgstr "3Dエディター"
 
@@ -2372,138 +2355,6 @@ msgstr "プロファイルをインポート"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "エディター機能のプロファイルの管理"
-
-msgid "Network"
-msgstr "ネットワーク"
-
-msgid "Open"
-msgstr "開く"
-
-msgid "Select Current Folder"
-msgstr "現在のフォルダーを選択"
-
-msgid "Cannot save file with an empty filename."
-msgstr "空のファイル名でファイルを保存することはできません。"
-
-msgid "Cannot save file with a name starting with a dot."
-msgstr "ドットで始まる名前のファイルは保存できません。"
-
-msgid ""
-"File \"%s\" already exists.\n"
-"Do you want to overwrite it?"
-msgstr ""
-"ファイル \"%s\" はすでに存在します。\n"
-"上書きしますか？"
-
-msgid "Select This Folder"
-msgstr "このフォルダーを選択"
-
-msgid "Copy Path"
-msgstr "パスをコピー"
-
-msgid "Open in File Manager"
-msgstr "ファイルマネージャーで開く"
-
-msgid "Show in File Manager"
-msgstr "ファイルマネージャーで表示"
-
-msgid "New Folder..."
-msgstr "新規フォルダー..."
-
-msgid "All Recognized"
-msgstr "承認済みすべて"
-
-msgid "All Files (*)"
-msgstr "すべてのファイル (*)"
-
-msgid "Open a File"
-msgstr "ファイルを開く"
-
-msgid "Open File(s)"
-msgstr "ファイルを開く"
-
-msgid "Open a Directory"
-msgstr "ディレクトリを開く"
-
-msgid "Open a File or Directory"
-msgstr "ファイルまたはディレクトリを開く"
-
-msgid "Save a File"
-msgstr "ファイルを保存"
-
-msgid "Favorited folder does not exist anymore and will be removed."
-msgstr "お気に入りフォルダは存在しないため、削除されます。"
-
-msgid "Go Back"
-msgstr "戻る"
-
-msgid "Go Forward"
-msgstr "進む"
-
-msgid "Go Up"
-msgstr "上へ"
-
-msgid "Toggle Hidden Files"
-msgstr "隠しファイルをオン / オフ"
-
-msgid "Toggle Favorite"
-msgstr "お気に入りにする / しない"
-
-msgid "Toggle Mode"
-msgstr "モード切り替え"
-
-msgid "Focus Path"
-msgstr "パスにフォーカス"
-
-msgid "Move Favorite Up"
-msgstr "お気に入りを上へ"
-
-msgid "Move Favorite Down"
-msgstr "お気に入りを下へ"
-
-msgid "Go to previous folder."
-msgstr "前のフォルダーへ移動する。"
-
-msgid "Go to next folder."
-msgstr "次のフォルダーへ移動する。"
-
-msgid "Go to parent folder."
-msgstr "親フォルダーへ移動する。"
-
-msgid "Refresh files."
-msgstr "ファイルの一覧をリフレッシュする。"
-
-msgid "(Un)favorite current folder."
-msgstr "現在のフォルダーをお気に入りにする / しない。"
-
-msgid "Toggle the visibility of hidden files."
-msgstr "隠しファイルの表示 / 非表示を切り替えます。"
-
-msgid "View items as a grid of thumbnails."
-msgstr "アイテムをサムネイルでグリッド表示する。"
-
-msgid "View items as a list."
-msgstr "アイテムを一覧で表示する。"
-
-msgid "Directories & Files:"
-msgstr "ディレクトリとファイル:"
-
-msgid "Preview:"
-msgstr "プレビュー:"
-
-msgid "File:"
-msgstr "ファイル:"
-
-msgid ""
-"Remove the selected files? For safety only files and empty directories can "
-"be deleted from here. (Cannot be undone.)\n"
-"Depending on your filesystem configuration, the files will either be moved "
-"to the system trash or deleted permanently."
-msgstr ""
-"選択したファイルを削除しますか？安全のため、ここから削除できるのはファイルと"
-"空のディレクトリだけです。(元に戻すことはできません)\n"
-"ファイルシステムの設定によって、ファイルはシステムのゴミ箱に移動されるか、永"
-"久に削除されます。"
 
 msgid "Some extensions need the editor to restart to take effect."
 msgstr "一部の拡張機能は、エディタの再起動が必要です。"
@@ -2878,6 +2729,9 @@ msgstr "_ で始まる名前は、エディター専用のメタデータ用に�
 msgid "Metadata name is valid."
 msgstr "メタデータ名は有効です。"
 
+msgid "Name:"
+msgstr "名前:"
+
 msgid "Add Metadata Property for \"%s\""
 msgstr "\"%s\" のメタデータ プロパティを追加"
 
@@ -2889,6 +2743,12 @@ msgstr "値を貼り付け"
 
 msgid "Copy Property Path"
 msgstr "プロパティのパスをコピー"
+
+msgid "Creating Mesh Previews"
+msgstr "メッシュプレビューを作成中"
+
+msgid "Thumbnail..."
+msgstr "サムネイル..."
 
 msgid "Select existing layout:"
 msgstr "既存のレイアウトを選択:"
@@ -3074,6 +2934,9 @@ msgstr ""
 "シーンを保存できませんでした。 おそらく、依存関係 (インスタンスまたは継承) を"
 "満たせませんでした。"
 
+msgid "Save scene before running..."
+msgstr "実行前にシーンを保存..."
+
 msgid "Could not save one or more scenes!"
 msgstr "一つまたは複数のシーンを保存できませんでした！"
 
@@ -3155,44 +3018,6 @@ msgstr "変更が失われるかもしれません！"
 msgid "This object is read-only."
 msgstr "このオブジェクトは、読み取り専用です。"
 
-msgid ""
-"Movie Maker mode is enabled, but no movie file path has been specified.\n"
-"A default movie file path can be specified in the project settings under the "
-"Editor > Movie Writer category.\n"
-"Alternatively, for running single scenes, a `movie_file` string metadata can "
-"be added to the root node,\n"
-"specifying the path to a movie file that will be used when recording that "
-"scene."
-msgstr ""
-"ムービーメーカーモードは有効ですが、動画ファイルの保存パスが指定されていませ"
-"ん。\n"
-"デフォルトの動画ファイルの保存パスは、プロジェクト設定の「Editor > Movie "
-"Writer」カテゴリで指定することができます。\n"
-"また、単一のシーンを実行する場合は、ルートノードに `movie_file` 文字列メタ"
-"データを追加することもできます。\n"
-"そのシーンを録画するときに使用する動画ファイルの保存パスを指定します。"
-
-msgid "There is no defined scene to run."
-msgstr "実行するシーンが定義されていません。"
-
-msgid "Save scene before running..."
-msgstr "実行前にシーンを保存..."
-
-msgid "Could not start subprocess(es)!"
-msgstr "サブプロセスを開始できませんでした！"
-
-msgid "Reload the played scene."
-msgstr "再生されたシーンをリロード"
-
-msgid "Play the project."
-msgstr "プロジェクトを実行。"
-
-msgid "Play the edited scene."
-msgstr "編集したシーンを実行。"
-
-msgid "Play a custom scene."
-msgstr "カスタムシーンを実行"
-
 msgid "Open Base Scene"
 msgstr "ベースのシーンを開く"
 
@@ -3204,24 +3029,6 @@ msgstr "シーンをクイックオープン..."
 
 msgid "Quick Open Script..."
 msgstr "スクリプトをクイックオープン..."
-
-msgid "Save & Reload"
-msgstr "保存して再読み込み"
-
-msgid "Save modified resources before reloading?"
-msgstr "リロードする前に変更したリソースを保存しますか？"
-
-msgid "Save & Quit"
-msgstr "保存して終了"
-
-msgid "Save modified resources before closing?"
-msgstr "閉じる前に変更したリソースを保存しますか？"
-
-msgid "Save changes to '%s' before reloading?"
-msgstr "再読み込み前に、'%s' への変更を保存しますか？"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "閉じる前に、'%s' への変更を保存しますか？"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s は存在しなくなりました！新しい保存先を指定してください。"
@@ -3289,8 +3096,17 @@ msgstr ""
 "現在のシーンには未保存の変更があります。\n"
 "それでも保存済みシーンをリロードしますか？ この動作は取り消せません。"
 
-msgid "Quick Run Scene..."
-msgstr "シーンをクイック実行する..."
+msgid "Save & Reload"
+msgstr "保存して再読み込み"
+
+msgid "Save modified resources before reloading?"
+msgstr "リロードする前に変更したリソースを保存しますか？"
+
+msgid "Save & Quit"
+msgstr "保存して終了"
+
+msgid "Save modified resources before closing?"
+msgstr "閉じる前に変更したリソースを保存しますか？"
 
 msgid "Save changes to the following scene(s) before reloading?"
 msgstr "再読み込みする前に、以下のシーンへの変更を保存しますか？"
@@ -3368,6 +3184,9 @@ msgstr "シーン '%s' は依存関係が壊れています:"
 msgid "Clear Recent Scenes"
 msgstr "最近開いたシーンの履歴をクリア"
 
+msgid "There is no defined scene to run."
+msgstr "実行するシーンが定義されていません。"
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -3402,8 +3221,14 @@ msgstr "レイアウトを削除"
 msgid "Default"
 msgstr "デフォルト"
 
+msgid "Save changes to '%s' before reloading?"
+msgstr "再読み込み前に、'%s' への変更を保存しますか？"
+
 msgid "Save & Close"
 msgstr "保存して閉じる"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "閉じる前に、'%s' への変更を保存しますか？"
 
 msgid "Show in FileSystem"
 msgstr "ファイルシステム上で表示"
@@ -3525,12 +3350,6 @@ msgstr "プロジェクト設定"
 msgid "Version Control"
 msgstr "バージョンコントロール"
 
-msgid "Create Version Control Metadata"
-msgstr "バージョン管理用メタデータの作成"
-
-msgid "Version Control Settings"
-msgstr "バージョン管理設定"
-
 msgid "Export..."
 msgstr "エクスポート..."
 
@@ -3622,45 +3441,6 @@ msgstr "Godotについて"
 msgid "Support Godot Development"
 msgstr "Godotの開発をサポートする"
 
-msgid "Run the project's default scene."
-msgstr "プロジェクトのデフォルトシーンを実行します。"
-
-msgid "Run Project"
-msgstr "プロジェクトを実行"
-
-msgid "Pause the running project's execution for debugging."
-msgstr "実行中のプロジェクトの実行を一時停止し、デバッグを行います。"
-
-msgid "Pause Running Project"
-msgstr "実行中のプロジェクトを一時停止"
-
-msgid "Stop the currently running project."
-msgstr "現在実行中のプロジェクトを停止します。"
-
-msgid "Stop Running Project"
-msgstr "プロジェクトの実行を停止"
-
-msgid "Run the currently edited scene."
-msgstr "現在編集中のシーンを実行します。"
-
-msgid "Run Current Scene"
-msgstr "現在のシーンを実行"
-
-msgid "Run a specific scene."
-msgstr "特定のシーンを実行します。"
-
-msgid "Run Specific Scene"
-msgstr "特定のシーンを実行"
-
-msgid ""
-"Enable Movie Maker mode.\n"
-"The project will run at stable FPS and the visual and audio output will be "
-"recorded to a video file."
-msgstr ""
-"ムービーメーカーモードを有効にします。\n"
-"プロジェクトは安定したFPSで実行され、ビジュアルとオーディオ出力は動画ファイル"
-"に記録されます。"
-
 msgid "Choose a renderer."
 msgstr "レンダラーを選択。"
 
@@ -3747,6 +3527,9 @@ msgstr ""
 "この操作を再試行する前に、\"res://android/build\" ディレクトリを手動で削除し"
 "てください。"
 
+msgid "Show in File Manager"
+msgstr "ファイルマネージャーで表示"
+
 msgid "Import Templates From ZIP File"
 msgstr "ZIPファイルからテンプレートをインポート"
 
@@ -3777,6 +3560,12 @@ msgstr "再読み込み"
 
 msgid "Resave"
 msgstr "再保存"
+
+msgid "Create Version Control Metadata"
+msgstr "バージョン管理用メタデータの作成"
+
+msgid "Version Control Settings"
+msgstr "バージョン管理設定"
 
 msgid "New Inherited"
 msgstr "新規の継承"
@@ -3810,18 +3599,6 @@ msgstr "OK"
 
 msgid "Warning!"
 msgstr "警告！"
-
-msgid "No sub-resources found."
-msgstr "サブリソースが見つかりませんでした。"
-
-msgid "Open a list of sub-resources."
-msgstr "サブリソースのリストを開く。"
-
-msgid "Creating Mesh Previews"
-msgstr "メッシュプレビューを作成中"
-
-msgid "Thumbnail..."
-msgstr "サムネイル..."
 
 msgid "Main Script:"
 msgstr "メインスクリプト:"
@@ -4054,22 +3831,6 @@ msgstr "ショートカット"
 
 msgid "Binding"
 msgstr "バインド"
-
-msgid ""
-"Hold %s to round to integers.\n"
-"Hold Shift for more precise changes."
-msgstr ""
-"%s を押したままで整数値に丸める。\n"
-"Shiftを押したままで精密調整。"
-
-msgid "No notifications."
-msgstr "通知はありません。"
-
-msgid "Show notifications."
-msgstr "通知を見る"
-
-msgid "Silence the notifications."
-msgstr "通知を無効にする"
 
 msgid "Left Stick Left, Joystick 0 Left"
 msgstr "左スティック 左, ジョイスティック 0 左"
@@ -4452,6 +4213,9 @@ msgstr ""
 "全てのプリセットはエクスポートが全て機能するために、エクスポートパスを定義す"
 "る必要があります。"
 
+msgid "Resources to exclude:"
+msgstr "除外するリソース:"
+
 msgid "Resources to export:"
 msgstr "エクスポートするリソース:"
 
@@ -4673,6 +4437,12 @@ msgstr "パスの確認"
 msgid "Favorites"
 msgstr "お気に入り"
 
+msgid "View items as a grid of thumbnails."
+msgstr "アイテムをサムネイルでグリッド表示する。"
+
+msgid "View items as a list."
+msgstr "アイテムを一覧で表示する。"
+
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "ステータス: ファイルのインポートに失敗しました。ファイルを修正して手動で再イ"
@@ -4705,9 +4475,6 @@ msgstr "%s でリソースをロードできませんでした: %s"
 msgid "Unable to update dependencies:"
 msgstr "依存関係を更新できません:"
 
-msgid "Provided name contains invalid characters."
-msgstr "名前に使用できない文字が含まれています。"
-
 msgid ""
 "This file extension is not recognized by the editor.\n"
 "If you want to rename it anyway, use your operating system's file manager.\n"
@@ -4723,27 +4490,6 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "同名のファイルまたはフォルダーがあります。"
 
-msgid ""
-"The following files or folders conflict with items in the target location "
-"'%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Do you wish to overwrite them?"
-msgstr ""
-"以下のファイルまたはフォルダーは、対象の場所 '%s' にある項目と競合していま"
-"す。\n"
-"\n"
-"%s\n"
-"\n"
-"上書きしますか？"
-
-msgid "Renaming file:"
-msgstr "ファイル名を変更:"
-
-msgid "Renaming folder:"
-msgstr "フォルダー名を変更:"
-
 msgid "Duplicating file:"
 msgstr "ファイルを複製:"
 
@@ -4756,23 +4502,17 @@ msgstr "新しい継承シーン"
 msgid "Set As Main Scene"
 msgstr "メインシーンとして設定"
 
+msgid "Open Scenes"
+msgstr "シーンを開く"
+
 msgid "Instantiate"
 msgstr "インスタンス化"
-
-msgid "Add to Favorites"
-msgstr "お気に入りに追加"
-
-msgid "Remove from Favorites"
-msgstr "お気に入りから削除"
 
 msgid "Edit Dependencies..."
 msgstr "依存関係の編集..."
 
 msgid "View Owners..."
 msgstr "オーナーを見る..."
-
-msgid "Move To..."
-msgstr "移動..."
 
 msgid "Folder..."
 msgstr "フォルダー..."
@@ -4788,6 +4528,18 @@ msgstr "リソース..."
 
 msgid "TextFile..."
 msgstr "テキストファイル..."
+
+msgid "Add to Favorites"
+msgstr "お気に入りに追加"
+
+msgid "Remove from Favorites"
+msgstr "お気に入りから削除"
+
+msgid "Open in File Manager"
+msgstr "ファイルマネージャーで開く"
+
+msgid "New Folder..."
+msgstr "新規フォルダー..."
 
 msgid "New Scene..."
 msgstr "新規シーン..."
@@ -4822,6 +4574,9 @@ msgstr "更新日時が新しい順で並び替え"
 msgid "Sort by First Modified"
 msgstr "更新日時が古い順で並び替え"
 
+msgid "Copy Path"
+msgstr "パスをコピー"
+
 msgid "Copy UID"
 msgstr "UIDをコピー"
 
@@ -4855,9 +4610,6 @@ msgid ""
 msgstr ""
 "ファイルのスキャン中\n"
 "しばらくお待ちください..."
-
-msgid "Move"
-msgstr "移動"
 
 msgid "Overwrite"
 msgstr "上書き"
@@ -4945,6 +4697,302 @@ msgstr "グループエディター"
 
 msgid "Manage Groups"
 msgstr "グループの管理"
+
+msgid "Move"
+msgstr "移動"
+
+msgid "Please select a base directory first."
+msgstr "はじめにベースディレクトリを選択してください。"
+
+msgid "Could not create folder. File with that name already exists."
+msgstr ""
+"フォルダを作成できませんでした。その名前のファイルはすでに存在しています。"
+
+msgid "Choose a Directory"
+msgstr "ディレクトリを選択"
+
+msgid "Network"
+msgstr "ネットワーク"
+
+msgid "Select Current Folder"
+msgstr "現在のフォルダーを選択"
+
+msgid "Cannot save file with an empty filename."
+msgstr "空のファイル名でファイルを保存することはできません。"
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "ドットで始まる名前のファイルは保存できません。"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"ファイル \"%s\" はすでに存在します。\n"
+"上書きしますか？"
+
+msgid "Select This Folder"
+msgstr "このフォルダーを選択"
+
+msgid "All Recognized"
+msgstr "承認済みすべて"
+
+msgid "All Files (*)"
+msgstr "すべてのファイル (*)"
+
+msgid "Open a File"
+msgstr "ファイルを開く"
+
+msgid "Open File(s)"
+msgstr "ファイルを開く"
+
+msgid "Open a Directory"
+msgstr "ディレクトリを開く"
+
+msgid "Open a File or Directory"
+msgstr "ファイルまたはディレクトリを開く"
+
+msgid "Save a File"
+msgstr "ファイルを保存"
+
+msgid "Favorited folder does not exist anymore and will be removed."
+msgstr "お気に入りフォルダは存在しないため、削除されます。"
+
+msgid "Go Back"
+msgstr "戻る"
+
+msgid "Go Forward"
+msgstr "進む"
+
+msgid "Go Up"
+msgstr "上へ"
+
+msgid "Toggle Hidden Files"
+msgstr "隠しファイルをオン / オフ"
+
+msgid "Toggle Favorite"
+msgstr "お気に入りにする / しない"
+
+msgid "Toggle Mode"
+msgstr "モード切り替え"
+
+msgid "Focus Path"
+msgstr "パスにフォーカス"
+
+msgid "Move Favorite Up"
+msgstr "お気に入りを上へ"
+
+msgid "Move Favorite Down"
+msgstr "お気に入りを下へ"
+
+msgid "Go to previous folder."
+msgstr "前のフォルダーへ移動する。"
+
+msgid "Go to next folder."
+msgstr "次のフォルダーへ移動する。"
+
+msgid "Go to parent folder."
+msgstr "親フォルダーへ移動する。"
+
+msgid "Refresh files."
+msgstr "ファイルの一覧をリフレッシュする。"
+
+msgid "(Un)favorite current folder."
+msgstr "現在のフォルダーをお気に入りにする / しない。"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "隠しファイルの表示 / 非表示を切り替えます。"
+
+msgid "Directories & Files:"
+msgstr "ディレクトリとファイル:"
+
+msgid "Preview:"
+msgstr "プレビュー:"
+
+msgid "File:"
+msgstr "ファイル:"
+
+msgid ""
+"Remove the selected files? For safety only files and empty directories can "
+"be deleted from here. (Cannot be undone.)\n"
+"Depending on your filesystem configuration, the files will either be moved "
+"to the system trash or deleted permanently."
+msgstr ""
+"選択したファイルを削除しますか？安全のため、ここから削除できるのはファイルと"
+"空のディレクトリだけです。(元に戻すことはできません)\n"
+"ファイルシステムの設定によって、ファイルはシステムのゴミ箱に移動されるか、永"
+"久に削除されます。"
+
+msgid "No sub-resources found."
+msgstr "サブリソースが見つかりませんでした。"
+
+msgid "Open a list of sub-resources."
+msgstr "サブリソースのリストを開く。"
+
+msgid "Play the project."
+msgstr "プロジェクトを実行。"
+
+msgid "Play the edited scene."
+msgstr "編集したシーンを実行。"
+
+msgid "Play a custom scene."
+msgstr "カスタムシーンを実行"
+
+msgid "Reload the played scene."
+msgstr "再生されたシーンをリロード"
+
+msgid "Quick Run Scene..."
+msgstr "シーンをクイック実行する..."
+
+msgid ""
+"Movie Maker mode is enabled, but no movie file path has been specified.\n"
+"A default movie file path can be specified in the project settings under the "
+"Editor > Movie Writer category.\n"
+"Alternatively, for running single scenes, a `movie_file` string metadata can "
+"be added to the root node,\n"
+"specifying the path to a movie file that will be used when recording that "
+"scene."
+msgstr ""
+"ムービーメーカーモードは有効ですが、動画ファイルの保存パスが指定されていませ"
+"ん。\n"
+"デフォルトの動画ファイルの保存パスは、プロジェクト設定の「Editor > Movie "
+"Writer」カテゴリで指定することができます。\n"
+"また、単一のシーンを実行する場合は、ルートノードに `movie_file` 文字列メタ"
+"データを追加することもできます。\n"
+"そのシーンを録画するときに使用する動画ファイルの保存パスを指定します。"
+
+msgid "Could not start subprocess(es)!"
+msgstr "サブプロセスを開始できませんでした！"
+
+msgid "Run the project's default scene."
+msgstr "プロジェクトのデフォルトシーンを実行します。"
+
+msgid "Run Project"
+msgstr "プロジェクトを実行"
+
+msgid "Pause the running project's execution for debugging."
+msgstr "実行中のプロジェクトの実行を一時停止し、デバッグを行います。"
+
+msgid "Pause Running Project"
+msgstr "実行中のプロジェクトを一時停止"
+
+msgid "Stop the currently running project."
+msgstr "現在実行中のプロジェクトを停止します。"
+
+msgid "Stop Running Project"
+msgstr "プロジェクトの実行を停止"
+
+msgid "Run the currently edited scene."
+msgstr "現在編集中のシーンを実行します。"
+
+msgid "Run Current Scene"
+msgstr "現在のシーンを実行"
+
+msgid "Run a specific scene."
+msgstr "特定のシーンを実行します。"
+
+msgid "Run Specific Scene"
+msgstr "特定のシーンを実行"
+
+msgid ""
+"Enable Movie Maker mode.\n"
+"The project will run at stable FPS and the visual and audio output will be "
+"recorded to a video file."
+msgstr ""
+"ムービーメーカーモードを有効にします。\n"
+"プロジェクトは安定したFPSで実行され、ビジュアルとオーディオ出力は動画ファイル"
+"に記録されます。"
+
+msgid ""
+"Hold %s to round to integers.\n"
+"Hold Shift for more precise changes."
+msgstr ""
+"%s を押したままで整数値に丸める。\n"
+"Shiftを押したままで精密調整。"
+
+msgid "No notifications."
+msgstr "通知はありません。"
+
+msgid "Show notifications."
+msgstr "通知を見る"
+
+msgid "Silence the notifications."
+msgstr "通知を無効にする"
+
+msgid "Toggle Visible"
+msgstr "表示 / 非表示の切り替え"
+
+msgid "Unlock Node"
+msgstr "ノードをロック解除"
+
+msgid "Button Group"
+msgstr "ボタングループ"
+
+msgid "Disable Scene Unique Name"
+msgstr "シーン固有名を無効にする"
+
+msgid "(Connecting From)"
+msgstr "(接続元)"
+
+msgid "Node configuration warning:"
+msgstr "ノードの設定に関する警告:"
+
+msgid ""
+"This node can be accessed from within anywhere in the scene by preceding it "
+"with the '%s' prefix in a node path.\n"
+"Click to disable this."
+msgstr ""
+"このノードには、ノード パスの先頭に '%s' プレフィックスを付けることで、シーン"
+"内のどこからでもアクセスできます。\n"
+"クリックすると無効になります。"
+
+msgid "Node has one connection."
+msgid_plural "Node has {num} connections."
+msgstr[0] "ノードには {num} 個の接続があります。"
+
+msgid "Node is in this group:"
+msgid_plural "Node is in the following groups:"
+msgstr[0] "ノードは次のグループ内にあります:"
+
+msgid "Click to show signals dock."
+msgstr "クリックでシグナルのドックを表示します。"
+
+msgid "Open in Editor"
+msgstr "エディターで開く"
+
+msgid "Open Script:"
+msgstr "スクリプトを開く:"
+
+msgid ""
+"Node is locked.\n"
+"Click to unlock it."
+msgstr ""
+"ノードはロックされています。\n"
+"クリックでロックを外す。"
+
+msgid ""
+"AnimationPlayer is pinned.\n"
+"Click to unpin."
+msgstr ""
+"AnimationPlayerが固定されます。\n"
+"クリックして固定を解除します。"
+
+msgid "Invalid node name, the following characters are not allowed:"
+msgstr "無効なノード名。以下の文字は使えません:"
+
+msgid "Another node already uses this unique name in the scene."
+msgstr "既にシーン中の他のノードにこの固有名が使われています。"
+
+msgid "Rename Node"
+msgstr "ノードの名前を変更"
+
+msgid "Scene Tree (Nodes):"
+msgstr "シーンツリー(ノード):"
+
+msgid "Node Configuration Warning!"
+msgstr "ノードの設定に関する警告！"
+
+msgid "Select a Node"
+msgstr "ノードを選択"
 
 msgid "The Beginning"
 msgstr "はじまり"
@@ -5299,6 +5347,9 @@ msgid "Set paths to save animations as resource files on Reimport"
 msgstr ""
 "再インポート時にアニメーションをリソースファイルとして保存するパスを設定"
 
+msgid "Can't make material external to file, write error:"
+msgstr "マテリアルをファイルに送出できません。書き込みエラー:"
+
 msgid "Actions..."
 msgstr "操作..."
 
@@ -5429,6 +5480,9 @@ msgstr ""
 "現在のプラットフォームに応じて、'Meta' ('Command') と 'Control' の間で自動的"
 "に再マップします。"
 
+msgid "Keycode (Latin Equivalent)"
+msgstr "キーコード (Latin-1同等)"
+
 msgid "Physical Keycode (Position on US QWERTY Keyboard)"
 msgstr "物理キーコード (US QWERTYキーボード上の位置)"
 
@@ -5457,6 +5511,9 @@ msgstr "プロパティ名のスタイル"
 
 msgid "Raw"
 msgstr "Raw"
+
+msgid "Capitalized"
+msgstr "大文字"
 
 msgid "Localized"
 msgstr "ローカライズ済"
@@ -5744,9 +5801,6 @@ msgstr "BlendSpace2Dのポイントを削除する"
 msgid "Remove BlendSpace2D Triangle"
 msgstr "BlendSpace2Dの三角形を削除する"
 
-msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr "BlendSpace2Dはアニメーションツリー ノードに属しません。"
-
 msgid "No triangles exist, so no blending can take place."
 msgstr "三角形が存在しないため、ブレンドできません。"
 
@@ -5942,6 +5996,9 @@ msgstr "アニメーションをファイルに保存: %s"
 msgid "Rename Animation Library: %s"
 msgstr "アニメーション ライブラリの名前を変更: %s"
 
+msgid "[Global]"
+msgstr "[グローバル]"
+
 msgid "Rename Animation: %s"
 msgstr "アニメーションの名前を変更: %s"
 
@@ -5962,6 +6019,9 @@ msgstr "アニメーション ライブラリを削除: %s"
 
 msgid "Remove Animation from Library: %s"
 msgstr "ライブラリからアニメーションを削除: %s"
+
+msgid "[built-in]"
+msgstr "[内蔵]"
 
 msgid "Add Animation to Library"
 msgstr "アニメーションをライブラリに追加"
@@ -6034,6 +6094,9 @@ msgstr "次の変更をブレンド"
 
 msgid "Change Blend Time"
 msgstr "ブレンド時間の変更"
+
+msgid "[Global] (create)"
+msgstr "[グローバル](作成)"
 
 msgid "Duplicated Animation Name:"
 msgstr "複製されたアニメーション名:"
@@ -6155,9 +6218,6 @@ msgstr "終りに"
 msgid "Travel"
 msgstr "トラベル"
 
-msgid "Start and end nodes are needed for a sub-transition."
-msgstr "サブトランジションには、開始ノードと終了ノードが必要です。"
-
 msgid "No playback resource set at path: %s."
 msgstr "パス: %s に再生リソースが設定されていません。"
 
@@ -6183,12 +6243,6 @@ msgstr "新規ノードを作成。"
 
 msgid "Connect nodes."
 msgstr "ノードを接続。"
-
-msgid "Group Selected Node(s)"
-msgstr "選択したノードをグループ化"
-
-msgid "Ungroup Selected Node"
-msgstr "選択したノードのグループ化を解除"
 
 msgid "Remove selected node or transition."
 msgstr "選択したノードまたはトランジションを除去。"
@@ -6589,6 +6643,9 @@ msgstr "800%にズーム"
 msgid "Zoom to 1600%"
 msgstr "1600%にズーム"
 
+msgid "Center View"
+msgstr "中心ビュー"
+
 msgid "Select Mode"
 msgstr "選択モード"
 
@@ -6707,6 +6764,9 @@ msgstr "選択 Node をロック解除"
 
 msgid "Make selected node's children not selectable."
 msgstr "選択したノードの子を選択不可にします。"
+
+msgid "Group Selected Node(s)"
+msgstr "選択したノードをグループ化"
 
 msgid "Make selected node's children selectable."
 msgstr "選択したノードの子を選択可能にします。"
@@ -6878,6 +6938,9 @@ msgstr "位置決めのヒントを展開します。"
 msgid "Container Default"
 msgstr "コンテナのデフォルト"
 
+msgid "Fill"
+msgstr "塗りつぶし"
+
 msgid "Custom"
 msgstr "カスタム"
 
@@ -7011,11 +7074,17 @@ msgstr "CPUParticles3D"
 msgid "Create Emission Points From Node"
 msgstr "ノードから放出点を生成"
 
-msgid "Flat 0"
-msgstr "フラット0"
+msgid "Load Curve Preset"
+msgstr "カーブのプリセットを読み込む"
 
-msgid "Flat 1"
-msgstr "Flat 1"
+msgid "Remove Curve Point"
+msgstr "カーブポイントを除去"
+
+msgid "Modify Curve Point"
+msgstr "カーブポイントを修正"
+
+msgid "Hold Shift to edit tangents individually"
+msgstr "接線を個別に編集するにはシフトを押す"
 
 msgid "Ease In"
 msgstr "イージング(Ease In)"
@@ -7026,41 +7095,8 @@ msgstr "イージング(Ease Out)"
 msgid "Smoothstep"
 msgstr "スムーズステップ"
 
-msgid "Modify Curve Point"
-msgstr "カーブポイントを修正"
-
-msgid "Modify Curve Tangent"
-msgstr "カーブ接線を修正"
-
-msgid "Load Curve Preset"
-msgstr "カーブのプリセットを読み込む"
-
-msgid "Add Point"
-msgstr "ポイントを追加"
-
-msgid "Remove Point"
-msgstr "ポイントを削除"
-
-msgid "Left Linear"
-msgstr "左線形"
-
-msgid "Right Linear"
-msgstr "右線形"
-
-msgid "Load Preset"
-msgstr "プリセットを読み込む"
-
-msgid "Remove Curve Point"
-msgstr "カーブポイントを除去"
-
-msgid "Toggle Curve Linear Tangent"
-msgstr "直線曲線を切り替える"
-
-msgid "Hold Shift to edit tangents individually"
-msgstr "接線を個別に編集するにはシフトを押す"
-
-msgid "Right click to add point"
-msgstr "右クリックで点を追加"
+msgid "Toggle Grid Snap"
+msgstr "グリッドスナップの切り替え"
 
 msgid "Debug with External Editor"
 msgstr "外部エディターでデバッグ"
@@ -7204,6 +7240,69 @@ msgstr " - バリエーション"
 msgid "Unable to preview font"
 msgstr "フォントをプレビューできません"
 
+msgid "Change AudioStreamPlayer3D Emission Angle"
+msgstr "AudioStreamPlayer3Dの放射角度を変更する"
+
+msgid "Change Camera FOV"
+msgstr "カメラのFOVを変更"
+
+msgid "Change Camera Size"
+msgstr "カメラサイズを変更"
+
+msgid "Change Sphere Shape Radius"
+msgstr "球形の半径を変更"
+
+msgid "Change Box Shape Size"
+msgstr "ボックスシェイプのサイズを変更"
+
+msgid "Change Capsule Shape Radius"
+msgstr "カプセルシェイプの半径を変更"
+
+msgid "Change Capsule Shape Height"
+msgstr "カプセルシェイプの高さを変更"
+
+msgid "Change Cylinder Shape Radius"
+msgstr "円柱シェイプの半径を変更"
+
+msgid "Change Cylinder Shape Height"
+msgstr "円柱シェイプの高さを変更"
+
+msgid "Change Separation Ray Shape Length"
+msgstr "セパレーションレイシェイプの長さを変更"
+
+msgid "Change Decal Size"
+msgstr "デカールのサイズを変更"
+
+msgid "Change Fog Volume Size"
+msgstr "フォグのボリュームサイズを変更"
+
+msgid "Change Particles AABB"
+msgstr "パーティクルのAABBを変更"
+
+msgid "Change Radius"
+msgstr "半径を変更"
+
+msgid "Change Light Radius"
+msgstr "光源の半径を変更"
+
+msgid "Start Location"
+msgstr "開始位置"
+
+msgid "End Location"
+msgstr "終了位置"
+
+msgid "Change Start Position"
+msgstr "開始位置を変更"
+
+msgid "Change End Position"
+msgstr "終了位置を変更"
+
+msgid "Change Probe Size"
+msgstr "プローブのサイズを変更"
+
+msgid "Change Notifier AABB"
+msgstr "NotifierのAABBを変更"
+
 msgid "Convert to CPUParticles2D"
 msgstr "CPUParticles2D に変換"
 
@@ -7322,9 +7421,6 @@ msgstr "GradientTexture2D 塗りポイントを入れ替え"
 
 msgid "Swap Gradient Fill Points"
 msgstr "Gradient の塗りつぶしポイントを入れ替え"
-
-msgid "Toggle Grid Snap"
-msgstr "グリッドスナップの切り替え"
 
 msgid "Configure"
 msgstr "構成"
@@ -7667,74 +7763,17 @@ msgstr "start_positionを設定"
 msgid "Set end_position"
 msgstr "end_positionを設定"
 
+msgid "Edit Poly"
+msgstr "ポリゴンを編集"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "ポリゴンを編集(点を除去)"
+
 msgid "Create Navigation Polygon"
 msgstr "ナビゲーションポリゴンを生成"
 
 msgid "Unnamed Gizmo"
 msgstr "名無しのギズモ"
-
-msgid "Change Light Radius"
-msgstr "光源の半径を変更"
-
-msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr "AudioStreamPlayer3Dの放射角度を変更する"
-
-msgid "Change Camera FOV"
-msgstr "カメラのFOVを変更"
-
-msgid "Change Camera Size"
-msgstr "カメラサイズを変更"
-
-msgid "Change Sphere Shape Radius"
-msgstr "球形の半径を変更"
-
-msgid "Change Box Shape Size"
-msgstr "ボックスシェイプのサイズを変更"
-
-msgid "Change Notifier AABB"
-msgstr "NotifierのAABBを変更"
-
-msgid "Change Particles AABB"
-msgstr "パーティクルのAABBを変更"
-
-msgid "Change Radius"
-msgstr "半径を変更"
-
-msgid "Change Probe Size"
-msgstr "プローブのサイズを変更"
-
-msgid "Change Decal Size"
-msgstr "デカールのサイズを変更"
-
-msgid "Change Capsule Shape Radius"
-msgstr "カプセルシェイプの半径を変更"
-
-msgid "Change Capsule Shape Height"
-msgstr "カプセルシェイプの高さを変更"
-
-msgid "Change Cylinder Shape Radius"
-msgstr "円柱シェイプの半径を変更"
-
-msgid "Change Cylinder Shape Height"
-msgstr "円柱シェイプの高さを変更"
-
-msgid "Change Separation Ray Shape Length"
-msgstr "セパレーションレイシェイプの長さを変更"
-
-msgid "Start Location"
-msgstr "開始位置"
-
-msgid "End Location"
-msgstr "終了位置"
-
-msgid "Change Start Position"
-msgstr "開始位置を変更"
-
-msgid "Change End Position"
-msgstr "終了位置を変更"
-
-msgid "Change Fog Volume Size"
-msgstr "フォグのボリュームサイズを変更"
 
 msgid "Transform Aborted."
 msgstr "トランスフォームは中止されました。"
@@ -7824,7 +7863,7 @@ msgid "Size: %s (%.1fMP)\n"
 msgstr "サイズ: %s (%.1fMP)\n"
 
 msgid "Objects: %d\n"
-msgstr "オブジェクトID\n"
+msgstr "オブジェクト数: %d\n"
 
 msgid "Primitive Indices: %d\n"
 msgstr "プリミティブ インデックス数: %d\n"
@@ -8631,12 +8670,6 @@ msgstr "ボーンをポリゴンに同期させる"
 msgid "Create Polygon3D"
 msgstr "Polygon3Dを生成"
 
-msgid "Edit Poly"
-msgstr "ポリゴンを編集"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "ポリゴンを編集(点を除去)"
-
 msgid "ERROR: Couldn't load resource!"
 msgstr "エラー: リソースを読み込めませんでした！"
 
@@ -8654,9 +8687,6 @@ msgstr "リソースクリップボードが空です！"
 
 msgid "Paste Resource"
 msgstr "リソースの貼り付け"
-
-msgid "Open in Editor"
-msgstr "エディターで開く"
 
 msgid "Load Resource"
 msgstr "リソースを読み込む"
@@ -9266,17 +9296,8 @@ msgstr "フレームを右に移動"
 msgid "Select Frames"
 msgstr "フレームを選択"
 
-msgid "Horizontal:"
-msgstr "水平:"
-
-msgid "Vertical:"
-msgstr "垂直:"
-
-msgid "Separation:"
-msgstr "分離:"
-
-msgid "Select/Clear All Frames"
-msgstr "すべてのフレームを選択/消去"
+msgid "Size"
+msgstr "サイズ"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "スプライトシートからフレームを作成"
@@ -9323,6 +9344,9 @@ msgstr "自動スライス"
 
 msgid "Step:"
 msgstr "ステップ:"
+
+msgid "Separation:"
+msgstr "分離:"
 
 msgid "Region Editor"
 msgstr "領域エディタ"
@@ -9907,9 +9931,6 @@ msgstr ""
 "アトラス座標: %s\n"
 "代替: %d"
 
-msgid "Center View"
-msgstr "中心ビュー"
-
 msgid "No atlas source with a valid texture selected."
 msgstr "有効なテクスチャが選択されたアトラス ソースがありません。"
 
@@ -9957,9 +9978,6 @@ msgstr "左右反転"
 
 msgid "Flip Vertically"
 msgstr "上下反転"
-
-msgid "Snap to half-pixel"
-msgstr "ハーフピクセルにスナップ"
 
 msgid "Painting:"
 msgstr "ペイント設定:"
@@ -10662,6 +10680,9 @@ msgstr "入力デフォルトポートの設定"
 msgid "Add Node to Visual Shader"
 msgstr "ビジュアルシェーダーにノードを追加"
 
+msgid "Add Varying to Visual Shader: %s"
+msgstr "ビジュアルシェーダーにvaryingを追加: %s"
+
 msgid "Node(s) Moved"
 msgstr "ノードの移動"
 
@@ -10965,6 +10986,9 @@ msgstr "複数パラメーターの逆タンジェントを返します。"
 msgid "Returns the inverse hyperbolic tangent of the parameter."
 msgstr "パラメーターの双曲線逆タンジェントを返します。"
 
+msgid "Returns the result of bitwise NOT (~a) operation on the integer."
+msgstr "整数のビット単位NOT（~a）を計算して返します。"
+
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
 msgstr "パラメーターと等しいかより大きい、最も近い整数を求めます。"
@@ -11098,6 +11122,12 @@ msgstr "パラメーターの双曲タンジェントを返します。"
 
 msgid "Finds the truncated value of the parameter."
 msgstr "パラメーターを切り捨てた値を求めます。"
+
+msgid "Returns the result of bitwise AND (a & b) operation for two integers."
+msgstr "2つの整数パラメーター間のビット単位AND（a & b）を計算して返します。"
+
+msgid "Returns the result of bitwise OR (a | b) operation for two integers."
+msgstr "2つの整数パラメーター間のビット単位OR（a | b）を計算して返します。"
 
 msgid "Converts screen UV to a SDF."
 msgstr "スクリーンUVをSDFに変換します。"
@@ -11390,14 +11420,21 @@ msgstr "プロジェクトのインストールパス:"
 msgid "Renderer:"
 msgstr "レンダラー:"
 
+msgid "The renderer can be changed later, but scenes may need to be adjusted."
+msgstr ""
+"レンダラーは後で変更できますが、シーンの調整が必要となる場合があります。"
+
 msgid "Version Control Metadata:"
 msgstr "バージョン管理メタデータ:"
 
-msgid "Missing Project"
-msgstr "プロジェクトがありません"
+msgid "Git"
+msgstr "Git"
 
 msgid "Error: Project is missing on the filesystem."
 msgstr "エラー: ファイルシステム上にプロジェクトが見つかりません。"
+
+msgid "Missing Project"
+msgstr "プロジェクトがありません"
 
 msgid "Local"
 msgstr "ローカル"
@@ -11963,79 +12000,6 @@ msgstr ""
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "継承をクリアしますか？ (元に戻せません！)"
 
-msgid "Toggle Visible"
-msgstr "表示 / 非表示の切り替え"
-
-msgid "Unlock Node"
-msgstr "ノードをロック解除"
-
-msgid "Button Group"
-msgstr "ボタングループ"
-
-msgid "Disable Scene Unique Name"
-msgstr "シーン固有名を無効にする"
-
-msgid "(Connecting From)"
-msgstr "(接続元)"
-
-msgid "Node configuration warning:"
-msgstr "ノードの設定に関する警告:"
-
-msgid ""
-"This node can be accessed from within anywhere in the scene by preceding it "
-"with the '%s' prefix in a node path.\n"
-"Click to disable this."
-msgstr ""
-"このノードには、ノード パスの先頭に '%s' プレフィックスを付けることで、シーン"
-"内のどこからでもアクセスできます。\n"
-"クリックすると無効になります。"
-
-msgid "Node has one connection."
-msgid_plural "Node has {num} connections."
-msgstr[0] "ノードには {num} 個の接続があります。"
-
-msgid "Node is in this group:"
-msgid_plural "Node is in the following groups:"
-msgstr[0] "ノードは次のグループ内にあります:"
-
-msgid "Click to show signals dock."
-msgstr "クリックでシグナルのドックを表示します。"
-
-msgid "Open Script:"
-msgstr "スクリプトを開く:"
-
-msgid ""
-"Node is locked.\n"
-"Click to unlock it."
-msgstr ""
-"ノードはロックされています。\n"
-"クリックでロックを外す。"
-
-msgid ""
-"AnimationPlayer is pinned.\n"
-"Click to unpin."
-msgstr ""
-"AnimationPlayerが固定されます。\n"
-"クリックして固定を解除します。"
-
-msgid "Invalid node name, the following characters are not allowed:"
-msgstr "無効なノード名。以下の文字は使えません:"
-
-msgid "Another node already uses this unique name in the scene."
-msgstr "既にシーン中の他のノードにこの固有名が使われています。"
-
-msgid "Rename Node"
-msgstr "ノードの名前を変更"
-
-msgid "Scene Tree (Nodes):"
-msgstr "シーンツリー(ノード):"
-
-msgid "Node Configuration Warning!"
-msgstr "ノードの設定に関する警告！"
-
-msgid "Select a Node"
-msgstr "ノードを選択"
-
 msgid "Path is empty."
 msgstr "パスが空です。"
 
@@ -12068,6 +12032,9 @@ msgstr "スクリプトを開く / 場所を選択する"
 
 msgid "Open Script"
 msgstr "スクリプトを開く"
+
+msgid "Inherit %s"
+msgstr "継承元: %s"
 
 msgid "File exists, it will be reused."
 msgstr "ファイルがすでに存在します。そちらを再利用します。"
@@ -12292,9 +12259,6 @@ msgstr "RPC送信"
 msgid "Config"
 msgstr "構成"
 
-msgid "Size"
-msgstr "サイズ"
-
 msgid "Network Profiler"
 msgstr "ネットワークプロファイラー"
 
@@ -12360,11 +12324,17 @@ msgstr "アクション名を変更"
 msgid "Rename Actions Localized name"
 msgstr "ローカライズされるアクション名を変更"
 
+msgid "Add action set"
+msgstr "アクションセットの追加"
+
 msgid "Error loading %s: %s."
 msgstr "%s のロード中にエラーが発生しました: %s"
 
 msgid "Add an action set."
 msgstr "アクションセットを追加します。"
+
+msgid "Action Sets"
+msgstr "アクションセット"
 
 msgid "Pose"
 msgstr "ポーズ"
@@ -12386,6 +12356,15 @@ msgstr "文字 '%s' はパッケージ セグメントの先頭に使用でき�
 
 msgid "The package must have at least one '.' separator."
 msgstr "パッケージには一つ以上の区切り文字 '.' が必要です。"
+
+msgid "Invalid public key for APK expansion."
+msgstr "APK expansion の公開鍵が無効です。"
+
+msgid "Invalid package name:"
+msgstr "無効なパッケージ名:"
+
+msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
+msgstr "\"パススルー\" は \"XR Mode\" が \"OpenXR\" の場合にのみ有効です。"
 
 msgid "Select device from the list"
 msgstr "一覧からデバイスを選択"
@@ -12460,14 +12439,9 @@ msgstr "'build-tools' ディレクトリがありません！"
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Android SDK build-toolsのapksignerコマンドが見つかりません。"
 
-msgid "Invalid public key for APK expansion."
-msgstr "APK expansion の公開鍵が無効です。"
-
-msgid "Invalid package name:"
-msgstr "無効なパッケージ名:"
-
-msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
-msgstr "\"パススルー\" は \"XR Mode\" が \"OpenXR\" の場合にのみ有効です。"
+msgid "\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."
+msgstr ""
+"\"%s\"レンダラーでは \"Min Sdk\" バージョンは %d 以上でなければなりません。"
 
 msgid "Code Signing"
 msgstr "コード署名"
@@ -12596,6 +12570,12 @@ msgstr "APKを最適化..."
 msgid "Could not unzip temporary unaligned APK."
 msgstr "temporary unaligned APKを展開できませんでした。"
 
+msgid "Invalid Identifier:"
+msgstr "無効な識別子:"
+
+msgid "Export Icons"
+msgstr "エクスポートアイコン"
+
 msgid "Code signing failed, see editor log for details."
 msgstr "コード署名に失敗しました。詳細はエディターログを確認してください。"
 
@@ -12617,12 +12597,6 @@ msgid ""
 msgstr ""
 ".ipa は macOS でしかビルドできません。パッケージをビルドせずに終了します。"
 
-msgid "App Store Team ID not specified - cannot configure the project."
-msgstr "App Store チームID が未指定 - プロジェクトを構成できません。"
-
-msgid "Invalid Identifier:"
-msgstr "無効な識別子:"
-
 msgid "Identifier is missing."
 msgstr "識別子がありません。"
 
@@ -12640,6 +12614,9 @@ msgstr "32bitの実行ファイルは4GiB以上の組み込みデータを持つ
 
 msgid "Executable \"pck\" section not found."
 msgstr "実行可能な \"pck \"セクションが見つかりません。"
+
+msgid "Could not create temp directory:"
+msgstr "一時ディレクトリの作成に失敗しました:"
 
 msgid "Failed to create \"%s\" subfolder."
 msgstr "サブフォルダー \"%s\" を作成できませんでした。"
@@ -12661,6 +12638,12 @@ msgstr "無効な資格情報ファイルです。"
 
 msgid "Invalid executable file."
 msgstr "無効な実行可能ファイルです。"
+
+msgid "Invalid bundle identifier:"
+msgstr "無効なバンドルID:"
+
+msgid "Icon Creation"
+msgstr "アイコン作成"
 
 msgid "Could not open icon file \"%s\"."
 msgstr "アイコンファイルを開けませんでした: \"%s\"。"
@@ -12690,6 +12673,9 @@ msgstr ""
 
 msgid "Cannot sign file %s."
 msgstr "ファイル %s に署名できません。"
+
+msgid "DMG Creation"
+msgstr "DMG作成"
 
 msgid "Could not start hdiutil executable."
 msgstr "hdiutilを開始できませんでした。"
@@ -12732,18 +12718,6 @@ msgstr ""
 msgid "Sending archive for notarization"
 msgstr "公証をするためにアーカイブを送信中"
 
-msgid "Invalid bundle identifier:"
-msgstr "無効なバンドルID:"
-
-msgid "Notarization: Notarization with an ad-hoc signature is not supported."
-msgstr "公証: アドホック署名による公証はサポートされていません。"
-
-msgid "Notarization: Code signing is required for notarization."
-msgstr "公証: 公証にはコード署名が必要です。"
-
-msgid "Notarization: Apple ID password not specified."
-msgstr "公証: Apple ID パスワードが指定されていません。"
-
 msgid ""
 "Warning: Notarization is disabled. The exported project will be blocked by "
 "Gatekeeper if it's downloaded from an unknown source."
@@ -12764,46 +12738,6 @@ msgid ""
 msgstr ""
 "コード署名: アドホック署名を使用します。エクスポートされたプロジェクトは "
 "Gatekeeper によってブロックされます。"
-
-msgid ""
-"Privacy: Microphone access is enabled, but usage description is not "
-"specified."
-msgstr ""
-"プライバシー: マイクへのアクセスが有効になっていますが、使用方法の説明があり"
-"ません。"
-
-msgid ""
-"Privacy: Camera access is enabled, but usage description is not specified."
-msgstr ""
-"プライバシー: カメラへのアクセスが有効になっていますが、使用方法の説明があり"
-"ません。"
-
-msgid ""
-"Privacy: Location information access is enabled, but usage description is "
-"not specified."
-msgstr ""
-"プライバシー: 位置情報へのアクセスが有効になっていますが、使用方法の説明があ"
-"りません。"
-
-msgid ""
-"Privacy: Address book access is enabled, but usage description is not "
-"specified."
-msgstr ""
-"プライバシー: アドレス帳へのアクセスが有効になっていますが、使用方法の説明が"
-"ありません。"
-
-msgid ""
-"Privacy: Calendar access is enabled, but usage description is not specified."
-msgstr ""
-"プライバシー: カレンダーへのアクセスが有効になっていますが、使用方法の説明が"
-"ありません。"
-
-msgid ""
-"Privacy: Photo library access is enabled, but usage description is not "
-"specified."
-msgstr ""
-"プライバシー:フォトライブラリへのアクセスが有効になっていますが、使用方法の説"
-"明がありません。"
 
 msgid "Invalid package short name."
 msgstr "パッケージのショートネームが無効です。"
@@ -12920,15 +12854,6 @@ msgstr "サインツールは実行可能ファイルの署名に失敗しまし
 msgid "Failed to remove temporary file \"%s\"."
 msgstr "一時ファイル \"%s\" の削除に失敗しました。"
 
-msgid "Invalid icon path:"
-msgstr "無効なアイコンパス:"
-
-msgid "Invalid file version:"
-msgstr "無効なファイルバージョン:"
-
-msgid "Invalid product version:"
-msgstr "無効な製品バージョン:"
-
 msgid "Windows executables cannot be >= 4 GiB."
 msgstr "Windows の実行ファイルは、4GiBを超えることはできません。"
 
@@ -13017,13 +12942,6 @@ msgstr ""
 
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "この遮蔽用のオクルーダーポリゴンは空です。ポリゴンを描いてください。"
-
-msgid ""
-"The NavigationObstacle2D only serves to provide collision avoidance to a "
-"Node2D object."
-msgstr ""
-"NavigationObstacle2D はコリジョン回避を Node2D オブジェクトに提供するためだけ"
-"に機能します。"
 
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
@@ -13186,13 +13104,6 @@ msgid "(Other)"
 msgstr "(その他)"
 
 msgid ""
-"Default Environment as specified in Project Settings (Rendering -> "
-"Environment -> Default Environment) could not be loaded."
-msgstr ""
-"プロジェクト設定で指定されている既定の環境 (Rendering -> Environment -> "
-"Default Environment) を読み込めませんでした。"
-
-msgid ""
 "Very low timer wait times (< 0.05 seconds) may behave in significantly "
 "different ways depending on the rendered or physics frame rate.\n"
 "Consider using a script's process loop instead of relying on a Timer for "
@@ -13244,6 +13155,9 @@ msgstr "繰り返し"
 msgid "Invalid comparison function for that type."
 msgstr "そのタイプの比較関数は無効です。"
 
+msgid "2D Mode"
+msgstr "2Dモード"
+
 msgid "Invalid arguments for the built-in function: \"%s(%s)\"."
 msgstr "組み込み関数 \"%s(%s)\" の引数が無効です。"
 
@@ -13279,6 +13193,9 @@ msgstr "'%s' に一致するコンストラクタが見つかりません。"
 
 msgid "No matching function found for: '%s'."
 msgstr "'%s' に一致する関数が見つかりません。"
+
+msgid "Unexpected end of expression."
+msgstr "表現が予期せず終了しました。"
 
 msgid "Invalid arguments to unary operator '%s': %s."
 msgstr "単項演算子 '%s' の引数が無効です: %s"

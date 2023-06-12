@@ -1304,11 +1304,8 @@ msgstr "相依性編輯器"
 msgid "Search Replacement Resource:"
 msgstr "搜尋並取代資源："
 
-msgid "Open Scene"
-msgstr "開啟場景"
-
-msgid "Open Scenes"
-msgstr "開啟場景"
+msgid "Open"
+msgstr "開啟"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "%s 的所有者（總計：%d）"
@@ -1367,6 +1364,12 @@ msgstr "擁有"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "沒有明確從屬關係的資源："
+
+msgid "Could not create folder."
+msgstr "無法新增資料夾。"
+
+msgid "Create Folder"
+msgstr "建立資料夾"
 
 msgid "Thanks from the Godot community!"
 msgstr "Godot 社群感謝你！"
@@ -1702,24 +1705,6 @@ msgstr "[空]"
 msgid "[unsaved]"
 msgstr "[未儲存]"
 
-msgid "Please select a base directory first."
-msgstr "請先選擇基礎資料夾。"
-
-msgid "Choose a Directory"
-msgstr "選擇資料夾"
-
-msgid "Create Folder"
-msgstr "建立資料夾"
-
-msgid "Name:"
-msgstr "名稱："
-
-msgid "Could not create folder."
-msgstr "無法新增資料夾。"
-
-msgid "Choose"
-msgstr "選擇"
-
 msgid "3D Editor"
 msgstr "3D 編輯器"
 
@@ -1851,111 +1836,6 @@ msgstr "匯入設定檔"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "管理編輯器功能設定檔"
-
-msgid "Network"
-msgstr "網路"
-
-msgid "Open"
-msgstr "開啟"
-
-msgid "Select Current Folder"
-msgstr "選擇目前資料夾"
-
-msgid "Select This Folder"
-msgstr "選擇此資料夾"
-
-msgid "Copy Path"
-msgstr "複製路徑"
-
-msgid "Open in File Manager"
-msgstr "在檔案總管中開啟"
-
-msgid "Show in File Manager"
-msgstr "在檔案總管中顯示"
-
-msgid "New Folder..."
-msgstr "新增資料夾..."
-
-msgid "All Recognized"
-msgstr "支援的類型"
-
-msgid "All Files (*)"
-msgstr "所有類型的檔案 (*)"
-
-msgid "Open a File"
-msgstr "開啟檔案"
-
-msgid "Open File(s)"
-msgstr "開啟檔案"
-
-msgid "Open a Directory"
-msgstr "開啟資料夾"
-
-msgid "Open a File or Directory"
-msgstr "開啟檔案或資料夾"
-
-msgid "Save a File"
-msgstr "儲存檔案"
-
-msgid "Go Back"
-msgstr "上一頁"
-
-msgid "Go Forward"
-msgstr "下一頁"
-
-msgid "Go Up"
-msgstr "上一層"
-
-msgid "Toggle Hidden Files"
-msgstr "顯示／取消顯示隱藏檔案"
-
-msgid "Toggle Favorite"
-msgstr "新增／取消我的最愛"
-
-msgid "Toggle Mode"
-msgstr "切換模式"
-
-msgid "Focus Path"
-msgstr "聚焦路徑"
-
-msgid "Move Favorite Up"
-msgstr "向上移動我的最愛"
-
-msgid "Move Favorite Down"
-msgstr "向下移動我的最愛"
-
-msgid "Go to previous folder."
-msgstr "前往上一個資料夾。"
-
-msgid "Go to next folder."
-msgstr "前往下一個資料夾。"
-
-msgid "Go to parent folder."
-msgstr "前往上一層資料夾。"
-
-msgid "Refresh files."
-msgstr "重新整理檔案。"
-
-msgid "(Un)favorite current folder."
-msgstr "將目前資料夾新增或移除至我的最愛。"
-
-msgid "Toggle the visibility of hidden files."
-msgstr "顯示／取消顯示隱藏檔案。"
-
-msgid "View items as a grid of thumbnails."
-msgstr "以網格縮圖方式顯示項目。"
-
-msgid "View items as a list."
-msgstr "以清單方式顯示項目。"
-
-msgid "Directories & Files:"
-msgstr "資料夾與檔案："
-
-msgid "Preview:"
-msgstr "預覽："
-
-msgid "File:"
-msgstr "檔案："
 
 msgid "Restart"
 msgstr "重新啟動"
@@ -2128,8 +2008,17 @@ msgstr "已釘選%s"
 msgid "Unpinned %s"
 msgstr "已解除釘選%s"
 
+msgid "Name:"
+msgstr "名稱："
+
 msgid "Copy Property Path"
 msgstr "複製屬性路徑"
+
+msgid "Creating Mesh Previews"
+msgstr "建立網格預覽"
+
+msgid "Thumbnail..."
+msgstr "縮圖…"
 
 msgid "Select existing layout:"
 msgstr "選擇既存的畫面佈局:"
@@ -2231,6 +2120,9 @@ msgid ""
 "be satisfied."
 msgstr "無法儲存場景。可能是由於相依性（實體或繼承）無法滿足。"
 
+msgid "Save scene before running..."
+msgstr "執行前先儲存場景..."
+
 msgid "Could not save one or more scenes!"
 msgstr "無法儲存一或多個場景！"
 
@@ -2283,18 +2175,6 @@ msgstr "該資源自外部匯入，無法編輯。請在匯入面板中修改設
 msgid "Changes may be lost!"
 msgstr "改動可能會遺失！"
 
-msgid "There is no defined scene to run."
-msgstr "未定義欲執行之場景。"
-
-msgid "Save scene before running..."
-msgstr "執行前先儲存場景..."
-
-msgid "Play the project."
-msgstr "執行該專案。"
-
-msgid "Play the edited scene."
-msgstr "執行已編輯的場景。"
-
 msgid "Open Base Scene"
 msgstr "開啟基本場景"
 
@@ -2306,18 +2186,6 @@ msgstr "快速開啟場景…"
 
 msgid "Quick Open Script..."
 msgstr "快速開啟腳本…"
-
-msgid "Save & Reload"
-msgstr "儲存並重新載入"
-
-msgid "Save & Quit"
-msgstr "儲存並退出"
-
-msgid "Save changes to '%s' before reloading?"
-msgstr "是否在重新載入前儲存對「%s」的變更？"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "關閉前是否儲存對「%s」的更改？"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s不存在！請指定新的儲存位置。"
@@ -2369,8 +2237,11 @@ msgstr ""
 "目前場景有未儲存的改動。\n"
 "仍要重新載入場景嗎？此操作將無法復原。"
 
-msgid "Quick Run Scene..."
-msgstr "快速執行場景…"
+msgid "Save & Reload"
+msgstr "儲存並重新載入"
+
+msgid "Save & Quit"
+msgstr "儲存並退出"
 
 msgid "Save changes to the following scene(s) before reloading?"
 msgstr "重新載入前要儲存下列場景的變更嗎？"
@@ -2439,6 +2310,9 @@ msgstr "場景「%s」的相依性損壞："
 msgid "Clear Recent Scenes"
 msgstr "清除最近開啟的場景"
 
+msgid "There is no defined scene to run."
+msgstr "未定義欲執行之場景。"
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -2472,8 +2346,14 @@ msgstr "刪除配置"
 msgid "Default"
 msgstr "預設"
 
+msgid "Save changes to '%s' before reloading?"
+msgstr "是否在重新載入前儲存對「%s」的變更？"
+
 msgid "Save & Close"
 msgstr "儲存並關閉"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "關閉前是否儲存對「%s」的更改？"
 
 msgid "Show in FileSystem"
 msgstr "在檔案系統中顯示"
@@ -2653,9 +2533,6 @@ msgstr "關於Godot"
 msgid "Support Godot Development"
 msgstr "支援 Godot 開發"
 
-msgid "Run Project"
-msgstr "執行專案"
-
 msgid "Update Continuously"
 msgstr "持續更新"
 
@@ -2697,6 +2574,9 @@ msgid ""
 msgstr ""
 "該專案中已安裝 Android 建置樣板，將不會覆蓋。\n"
 "若要再次執行此操作，請先手動移除「res://android/build」目錄。"
+
+msgid "Show in File Manager"
+msgstr "在檔案總管中顯示"
 
 msgid "Import Templates From ZIP File"
 msgstr "自 ZIP 檔匯入樣板"
@@ -2758,18 +2638,6 @@ msgstr "開啟上一個編輯器"
 
 msgid "Warning!"
 msgstr "警告！"
-
-msgid "No sub-resources found."
-msgstr "未找到子資源。"
-
-msgid "Open a list of sub-resources."
-msgstr "開啟子資源列表。"
-
-msgid "Creating Mesh Previews"
-msgstr "建立網格預覽"
-
-msgid "Thumbnail..."
-msgstr "縮圖…"
 
 msgid "Main Script:"
 msgstr "主腳本："
@@ -3308,6 +3176,12 @@ msgstr "瀏覽"
 msgid "Favorites"
 msgstr "我的最愛"
 
+msgid "View items as a grid of thumbnails."
+msgstr "以網格縮圖方式顯示項目。"
+
+msgid "View items as a list."
+msgstr "以清單方式顯示項目。"
+
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr "狀態：檔案匯入失敗。請修正檔案並手動重新匯入。"
 
@@ -3330,9 +3204,6 @@ msgstr "複製時發生錯誤："
 msgid "Unable to update dependencies:"
 msgstr "無法更新相依性："
 
-msgid "Provided name contains invalid characters."
-msgstr "提供的名稱包含無效字元。"
-
 msgid ""
 "This file extension is not recognized by the editor.\n"
 "If you want to rename it anyway, use your operating system's file manager.\n"
@@ -3346,26 +3217,6 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "已有相同名稱的檔案或資料夾存在。"
 
-msgid ""
-"The following files or folders conflict with items in the target location "
-"'%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Do you wish to overwrite them?"
-msgstr ""
-"以下檔案或資料夾與目標路徑「%s」中的項目衝突：\n"
-"\n"
-"%s\n"
-"\n"
-"要覆蓋這些檔案或資料夾嗎？"
-
-msgid "Renaming file:"
-msgstr "重新命名檔案："
-
-msgid "Renaming folder:"
-msgstr "重新命名資料夾："
-
 msgid "Duplicating file:"
 msgstr "複製檔案："
 
@@ -3378,11 +3229,8 @@ msgstr "新增繼承場景"
 msgid "Set As Main Scene"
 msgstr "設為主場景"
 
-msgid "Add to Favorites"
-msgstr "新增到我的最愛"
-
-msgid "Remove from Favorites"
-msgstr "自我的最愛中移除"
+msgid "Open Scenes"
+msgstr "開啟場景"
 
 msgid "Edit Dependencies..."
 msgstr "編輯相依性..."
@@ -3390,8 +3238,17 @@ msgstr "編輯相依性..."
 msgid "View Owners..."
 msgstr "檢視擁有者..."
 
-msgid "Move To..."
-msgstr "移動至..."
+msgid "Add to Favorites"
+msgstr "新增到我的最愛"
+
+msgid "Remove from Favorites"
+msgstr "自我的最愛中移除"
+
+msgid "Open in File Manager"
+msgstr "在檔案總管中開啟"
+
+msgid "New Folder..."
+msgstr "新增資料夾..."
 
 msgid "New Scene..."
 msgstr "新增場景..."
@@ -3420,6 +3277,9 @@ msgstr "按最後修改時間排序"
 msgid "Sort by First Modified"
 msgstr "按最早修改時間排序"
 
+msgid "Copy Path"
+msgstr "複製路徑"
+
 msgid "Duplicate..."
 msgstr "重複..."
 
@@ -3438,9 +3298,6 @@ msgid ""
 msgstr ""
 "正在掃描檔案，\n"
 "請稍後..."
-
-msgid "Move"
-msgstr "移動"
 
 msgid "Overwrite"
 msgstr "複寫"
@@ -3515,6 +3372,181 @@ msgstr "群組編輯器"
 
 msgid "Manage Groups"
 msgstr "管理群組"
+
+msgid "Move"
+msgstr "移動"
+
+msgid "Please select a base directory first."
+msgstr "請先選擇基礎資料夾。"
+
+msgid "Choose a Directory"
+msgstr "選擇資料夾"
+
+msgid "Network"
+msgstr "網路"
+
+msgid "Select Current Folder"
+msgstr "選擇目前資料夾"
+
+msgid "Select This Folder"
+msgstr "選擇此資料夾"
+
+msgid "All Recognized"
+msgstr "支援的類型"
+
+msgid "All Files (*)"
+msgstr "所有類型的檔案 (*)"
+
+msgid "Open a File"
+msgstr "開啟檔案"
+
+msgid "Open File(s)"
+msgstr "開啟檔案"
+
+msgid "Open a Directory"
+msgstr "開啟資料夾"
+
+msgid "Open a File or Directory"
+msgstr "開啟檔案或資料夾"
+
+msgid "Save a File"
+msgstr "儲存檔案"
+
+msgid "Go Back"
+msgstr "上一頁"
+
+msgid "Go Forward"
+msgstr "下一頁"
+
+msgid "Go Up"
+msgstr "上一層"
+
+msgid "Toggle Hidden Files"
+msgstr "顯示／取消顯示隱藏檔案"
+
+msgid "Toggle Favorite"
+msgstr "新增／取消我的最愛"
+
+msgid "Toggle Mode"
+msgstr "切換模式"
+
+msgid "Focus Path"
+msgstr "聚焦路徑"
+
+msgid "Move Favorite Up"
+msgstr "向上移動我的最愛"
+
+msgid "Move Favorite Down"
+msgstr "向下移動我的最愛"
+
+msgid "Go to previous folder."
+msgstr "前往上一個資料夾。"
+
+msgid "Go to next folder."
+msgstr "前往下一個資料夾。"
+
+msgid "Go to parent folder."
+msgstr "前往上一層資料夾。"
+
+msgid "Refresh files."
+msgstr "重新整理檔案。"
+
+msgid "(Un)favorite current folder."
+msgstr "將目前資料夾新增或移除至我的最愛。"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "顯示／取消顯示隱藏檔案。"
+
+msgid "Directories & Files:"
+msgstr "資料夾與檔案："
+
+msgid "Preview:"
+msgstr "預覽："
+
+msgid "File:"
+msgstr "檔案："
+
+msgid "No sub-resources found."
+msgstr "未找到子資源。"
+
+msgid "Open a list of sub-resources."
+msgstr "開啟子資源列表。"
+
+msgid "Play the project."
+msgstr "執行該專案。"
+
+msgid "Play the edited scene."
+msgstr "執行已編輯的場景。"
+
+msgid "Quick Run Scene..."
+msgstr "快速執行場景…"
+
+msgid "Run Project"
+msgstr "執行專案"
+
+msgid "Toggle Visible"
+msgstr "切換可見／隱藏"
+
+msgid "Unlock Node"
+msgstr "解鎖節點"
+
+msgid "Button Group"
+msgstr "按鍵分組"
+
+msgid "Disable Scene Unique Name"
+msgstr "停用場景獨立名稱"
+
+msgid "(Connecting From)"
+msgstr "（連接自）"
+
+msgid "Node configuration warning:"
+msgstr "節點組態設定警告："
+
+msgid ""
+"This node can be accessed from within anywhere in the scene by preceding it "
+"with the '%s' prefix in a node path.\n"
+"Click to disable this."
+msgstr ""
+"該節點可在此場景中的任何地方通過在節點路徑前方加上「%s」前置詞來存取。\n"
+"點擊以禁用。"
+
+msgid "Open in Editor"
+msgstr "在編輯器中開啟"
+
+msgid "Open Script:"
+msgstr "開啟腳本："
+
+msgid ""
+"Node is locked.\n"
+"Click to unlock it."
+msgstr ""
+"節點已鎖定。\n"
+"點擊以解鎖。"
+
+msgid ""
+"AnimationPlayer is pinned.\n"
+"Click to unpin."
+msgstr ""
+"已固定 AnimationPlayer。\n"
+"點擊以取消固定。"
+
+msgid "Invalid node name, the following characters are not allowed:"
+msgstr "無效的節點名稱，名稱不可包含下列字元："
+
+msgid "Another node already uses this unique name in the scene."
+msgstr "另一個節點已在該場景中使用了這個不可重複的名稱。"
+
+msgid "Rename Node"
+msgstr "重新命名節點"
+
+msgid "Scene Tree (Nodes):"
+msgstr "場景樹（節點）："
+
+msgid "Node Configuration Warning!"
+msgstr "節點組態設定警告！"
+
+msgid "Select a Node"
+msgstr "選擇一個節點"
 
 msgid "Reimport"
 msgstr "重新匯入"
@@ -3894,9 +3926,6 @@ msgstr "移除 BlendSpace2D 頂點"
 msgid "Remove BlendSpace2D Triangle"
 msgstr "移除 BlendSpace2D 三角形"
 
-msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr "BlendSpace2D 不屬於任何 AnimationTree 節點。"
-
 msgid "No triangles exist, so no blending can take place."
 msgstr "無三角形，將不會進行混合。"
 
@@ -4130,9 +4159,6 @@ msgstr "在結尾"
 msgid "Travel"
 msgstr "行程"
 
-msgid "Start and end nodes are needed for a sub-transition."
-msgstr "子轉場必須要有開始與結束節點。"
-
 msgid "No playback resource set at path: %s."
 msgstr "路徑 %s 中沒有可播放的資源。"
 
@@ -4147,9 +4173,6 @@ msgstr "建立新節點。"
 
 msgid "Connect nodes."
 msgstr "連接節點。"
-
-msgid "Group Selected Node(s)"
-msgstr "為所選的節點建立群組"
 
 msgid "Remove selected node or transition."
 msgstr "移除所選的節點或轉場。"
@@ -4584,6 +4607,9 @@ msgstr "鎖定所選的節點"
 msgid "Unlock Selected Node(s)"
 msgstr "取消鎖定所選的節點"
 
+msgid "Group Selected Node(s)"
+msgstr "為所選的節點建立群組"
+
 msgid "Ungroup Selected Node(s)"
 msgstr "取消所選節點的群組"
 
@@ -4771,11 +4797,17 @@ msgstr "發射色彩"
 msgid "Create Emission Points From Node"
 msgstr "自節點建立發射點"
 
-msgid "Flat 0"
-msgstr "平面0"
+msgid "Load Curve Preset"
+msgstr "加載曲線預設設定"
 
-msgid "Flat 1"
-msgstr "平面 1"
+msgid "Remove Curve Point"
+msgstr "移除曲線控制點"
+
+msgid "Modify Curve Point"
+msgstr "修改曲線控制點"
+
+msgid "Hold Shift to edit tangents individually"
+msgstr "按住 Shift 鍵以單獨編輯切線"
 
 msgid "Ease In"
 msgstr "緩慢移入"
@@ -4786,41 +4818,8 @@ msgstr "緩慢移出"
 msgid "Smoothstep"
 msgstr "平滑插值"
 
-msgid "Modify Curve Point"
-msgstr "修改曲線控制點"
-
-msgid "Modify Curve Tangent"
-msgstr "修改曲線切線"
-
-msgid "Load Curve Preset"
-msgstr "加載曲線預設設定"
-
-msgid "Add Point"
-msgstr "新增控制點"
-
-msgid "Remove Point"
-msgstr "移除控制點"
-
-msgid "Left Linear"
-msgstr "左線性"
-
-msgid "Right Linear"
-msgstr "右線性"
-
-msgid "Load Preset"
-msgstr "載入預設設定"
-
-msgid "Remove Curve Point"
-msgstr "移除曲線控制點"
-
-msgid "Toggle Curve Linear Tangent"
-msgstr "開啟／關閉曲線線性切線"
-
-msgid "Hold Shift to edit tangents individually"
-msgstr "按住 Shift 鍵以單獨編輯切線"
-
-msgid "Right click to add point"
-msgstr "右鍵點擊以新增控制點"
+msgid "Toggle Grid Snap"
+msgstr "切換網格吸附"
 
 msgid "Debug with External Editor"
 msgstr "使用外部編輯器進行除錯"
@@ -4897,6 +4896,39 @@ msgstr ""
 "開啟該選項後，儲存腳本時會於執行中的遊戲內重新載入腳本。\n"
 "若在遠端裝置上使用，可使用網路檔案系統 NFS 以獲得最佳效能。"
 
+msgid "Change AudioStreamPlayer3D Emission Angle"
+msgstr "更改 AudioStreamPlayer3D 發射角"
+
+msgid "Change Camera FOV"
+msgstr "更改相機視角"
+
+msgid "Change Camera Size"
+msgstr "更改相機尺寸"
+
+msgid "Change Sphere Shape Radius"
+msgstr "更改球形半徑"
+
+msgid "Change Capsule Shape Radius"
+msgstr "更改楕圓形半徑"
+
+msgid "Change Capsule Shape Height"
+msgstr "更改楕圓形高度"
+
+msgid "Change Cylinder Shape Radius"
+msgstr "更改圓柱形半徑"
+
+msgid "Change Cylinder Shape Height"
+msgstr "更改圓柱形高度"
+
+msgid "Change Particles AABB"
+msgstr "更改粒子 AABB"
+
+msgid "Change Light Radius"
+msgstr "更改光照半徑"
+
+msgid "Change Notifier AABB"
+msgstr "更改通知器 AABB"
+
 msgid "Convert to CPUParticles2D"
 msgstr "轉換為 CPUParticles2D"
 
@@ -4950,9 +4982,6 @@ msgstr "交換 GradientTexture2D 的填充點"
 
 msgid "Swap Gradient Fill Points"
 msgstr "交換 Gradient 填充點"
-
-msgid "Toggle Grid Snap"
-msgstr "切換網格吸附"
 
 msgid "Create Occluder Polygon"
 msgstr "建立遮光多邊形"
@@ -5202,44 +5231,17 @@ msgstr "數量："
 msgid "Populate"
 msgstr "填充"
 
+msgid "Edit Poly"
+msgstr "編輯多邊形"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "編輯多邊形（移除頂點）"
+
 msgid "Create Navigation Polygon"
 msgstr "建立導航多邊形"
 
 msgid "Unnamed Gizmo"
 msgstr "未命名裝置"
-
-msgid "Change Light Radius"
-msgstr "更改光照半徑"
-
-msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr "更改 AudioStreamPlayer3D 發射角"
-
-msgid "Change Camera FOV"
-msgstr "更改相機視角"
-
-msgid "Change Camera Size"
-msgstr "更改相機尺寸"
-
-msgid "Change Sphere Shape Radius"
-msgstr "更改球形半徑"
-
-msgid "Change Notifier AABB"
-msgstr "更改通知器 AABB"
-
-msgid "Change Particles AABB"
-msgstr "更改粒子 AABB"
-
-msgid "Change Capsule Shape Radius"
-msgstr "更改楕圓形半徑"
-
-msgid "Change Capsule Shape Height"
-msgstr "更改楕圓形高度"
-
-msgid "Change Cylinder Shape Radius"
-msgstr "更改圓柱形半徑"
-
-msgid "Change Cylinder Shape Height"
-msgstr "更改圓柱形高度"
 
 msgid "Transform Aborted."
 msgstr "已中止變換。"
@@ -5825,12 +5827,6 @@ msgstr "同步骨骼到多邊形"
 msgid "Create Polygon3D"
 msgstr "建立 Polygon3D"
 
-msgid "Edit Poly"
-msgstr "編輯多邊形"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "編輯多邊形（移除頂點）"
-
 msgid "ERROR: Couldn't load resource!"
 msgstr "錯誤：無法載入資源！"
 
@@ -5848,9 +5844,6 @@ msgstr "資源剪貼板為空！"
 
 msgid "Paste Resource"
 msgstr "貼上資源"
-
-msgid "Open in Editor"
-msgstr "在編輯器中開啟"
 
 msgid "Load Resource"
 msgstr "載入資源"
@@ -6278,17 +6271,8 @@ msgstr "重設縮放"
 msgid "Select Frames"
 msgstr "選擇影格"
 
-msgid "Horizontal:"
-msgstr "水平："
-
-msgid "Vertical:"
-msgstr "垂直："
-
-msgid "Separation:"
-msgstr "分隔："
-
-msgid "Select/Clear All Frames"
-msgstr "選擇／清除所有影格"
+msgid "Size"
+msgstr "大小"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "自 Sprite 表建立幀"
@@ -6316,6 +6300,9 @@ msgstr "自動剪裁"
 
 msgid "Step:"
 msgstr "步驟："
+
+msgid "Separation:"
+msgstr "分隔："
 
 msgid "Styleboxes"
 msgstr "樣式盒"
@@ -7495,11 +7482,11 @@ msgstr "專案安裝路徑："
 msgid "Renderer:"
 msgstr "算繪引擎："
 
-msgid "Missing Project"
-msgstr "遺失專案"
-
 msgid "Error: Project is missing on the filesystem."
 msgstr "錯誤：專案在檔案系統上遺失。"
+
+msgid "Missing Project"
+msgstr "遺失專案"
 
 msgid "Local"
 msgstr "本機"
@@ -7945,67 +7932,6 @@ msgstr ""
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "確定要清除繼承嗎？（無法復原！）"
 
-msgid "Toggle Visible"
-msgstr "切換可見／隱藏"
-
-msgid "Unlock Node"
-msgstr "解鎖節點"
-
-msgid "Button Group"
-msgstr "按鍵分組"
-
-msgid "Disable Scene Unique Name"
-msgstr "停用場景獨立名稱"
-
-msgid "(Connecting From)"
-msgstr "（連接自）"
-
-msgid "Node configuration warning:"
-msgstr "節點組態設定警告："
-
-msgid ""
-"This node can be accessed from within anywhere in the scene by preceding it "
-"with the '%s' prefix in a node path.\n"
-"Click to disable this."
-msgstr ""
-"該節點可在此場景中的任何地方通過在節點路徑前方加上「%s」前置詞來存取。\n"
-"點擊以禁用。"
-
-msgid "Open Script:"
-msgstr "開啟腳本："
-
-msgid ""
-"Node is locked.\n"
-"Click to unlock it."
-msgstr ""
-"節點已鎖定。\n"
-"點擊以解鎖。"
-
-msgid ""
-"AnimationPlayer is pinned.\n"
-"Click to unpin."
-msgstr ""
-"已固定 AnimationPlayer。\n"
-"點擊以取消固定。"
-
-msgid "Invalid node name, the following characters are not allowed:"
-msgstr "無效的節點名稱，名稱不可包含下列字元："
-
-msgid "Another node already uses this unique name in the scene."
-msgstr "另一個節點已在該場景中使用了這個不可重複的名稱。"
-
-msgid "Rename Node"
-msgstr "重新命名節點"
-
-msgid "Scene Tree (Nodes):"
-msgstr "場景樹（節點）："
-
-msgid "Node Configuration Warning!"
-msgstr "節點組態設定警告！"
-
-msgid "Select a Node"
-msgstr "選擇一個節點"
-
 msgid "Path is empty."
 msgstr "路徑為空。"
 
@@ -8250,9 +8176,6 @@ msgstr "設置"
 msgid "Count"
 msgstr "數量"
 
-msgid "Size"
-msgstr "大小"
-
 msgid "Network Profiler"
 msgstr "網路分析工具"
 
@@ -8322,6 +8245,20 @@ msgstr "套件片段 (Segment) 的第一個字元不可為「%s」。"
 msgid "The package must have at least one '.' separator."
 msgstr "套件必須至少有一個「.」分隔字元。"
 
+msgid "Invalid public key for APK expansion."
+msgstr "無效的 APK Expansion 公鑰。"
+
+msgid "Invalid package name:"
+msgstr "無效的套件名稱："
+
+msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr "「最小 SDK」應為有效整數，但目前值為無效的「%s」。"
+
+msgid ""
+"\"Min SDK\" cannot be lower than %d, which is the version needed by the "
+"Godot library."
+msgstr "「最小 SDK」不可低於 %d，因 Godot 函式庫需要該最小版本。"
+
 msgid "Select device from the list"
 msgstr "自清單中選擇裝置"
 
@@ -8388,20 +8325,6 @@ msgstr "缺少「build-tools」資料夾！"
 
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "找不到 Android SDK build-tools 的 apksigner 指令。"
-
-msgid "Invalid public key for APK expansion."
-msgstr "無效的 APK Expansion 公鑰。"
-
-msgid "Invalid package name:"
-msgstr "無效的套件名稱："
-
-msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
-msgstr "「最小 SDK」應為有效整數，但目前值為無效的「%s」。"
-
-msgid ""
-"\"Min SDK\" cannot be lower than %d, which is the version needed by the "
-"Godot library."
-msgstr "「最小 SDK」不可低於 %d，因 Godot 函式庫需要該最小版本。"
 
 msgid "Code Signing"
 msgstr "程式碼簽章"
@@ -8513,14 +8436,11 @@ msgstr "正在對齊 APK…"
 msgid "Could not unzip temporary unaligned APK."
 msgstr "無法解壓縮暫時非對齊APK。"
 
-msgid "Export Icons"
-msgstr "匯出圖示"
-
-msgid "App Store Team ID not specified - cannot configure the project."
-msgstr "尚未設定 App Store Team ID - 無法設定專案。"
-
 msgid "Invalid Identifier:"
 msgstr "無效的識別符："
+
+msgid "Export Icons"
+msgstr "匯出圖示"
 
 msgid "Identifier is missing."
 msgstr "缺少識別符。"
@@ -8530,6 +8450,9 @@ msgstr "字元「%s」不可用於識別符中。"
 
 msgid "Invalid executable file."
 msgstr "無效的執行檔。"
+
+msgid "Invalid bundle identifier:"
+msgstr "無效的捆綁識別符："
 
 msgid "Could not open icon file \"%s\"."
 msgstr "無法開啟符號檔 「%s」。"
@@ -8551,12 +8474,6 @@ msgstr "找不到 app 模板以匯出：「%s」。"
 
 msgid "Invalid export format."
 msgstr "無效的匯出格式。"
-
-msgid "Invalid bundle identifier:"
-msgstr "無效的捆綁識別符："
-
-msgid "Notarization: Apple ID password not specified."
-msgstr "公證：未指定Apple ID密碼。"
 
 msgid "Invalid package short name."
 msgstr "無效的套件段名稱。"
@@ -8638,15 +8555,6 @@ msgstr "身份類型無效。"
 
 msgid "Failed to remove temporary file \"%s\"."
 msgstr "無法移除模板檔案 「%s」。"
-
-msgid "Invalid icon path:"
-msgstr "無效符號路徑："
-
-msgid "Invalid file version:"
-msgstr "無效的檔案版本："
-
-msgid "Invalid product version:"
-msgstr "無效的產品版本："
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
@@ -8840,13 +8748,6 @@ msgid "(Other)"
 msgstr "（其它）"
 
 msgid ""
-"Default Environment as specified in Project Settings (Rendering -> "
-"Environment -> Default Environment) could not be loaded."
-msgstr ""
-"無法載入專案設定中指定的預設環境 (Rendering -> Environment -> Default "
-"Environment)。"
-
-msgid ""
 "Very low timer wait times (< 0.05 seconds) may behave in significantly "
 "different ways depending on the rendered or physics frame rate.\n"
 "Consider using a script's process loop instead of relying on a Timer for "
@@ -8995,9 +8896,6 @@ msgstr "著色器的標頭檔讀取失敗。請檢查該標頭檔是否存在，
 
 msgid "Shader include resource type is wrong."
 msgstr "著色器標頭檔的資源型別不正確。"
-
-msgid "Cyclic include found."
-msgstr "發現了循環 include。"
 
 msgid "Shader max include depth exceeded."
 msgstr "超出著色器的最大包含深度。"

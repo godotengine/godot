@@ -1071,11 +1071,8 @@ msgstr "Editor Závislostí"
 msgid "Search Replacement Resource:"
 msgstr "Hľadať Náhradný Zdroj:"
 
-msgid "Open Scene"
-msgstr "Otvoriť Scénu"
-
-msgid "Open Scenes"
-msgstr "Otvoriť Scény"
+msgid "Open"
+msgstr "Otvoriť"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "Vlastnené: %s (Celkovo z: %d)"
@@ -1115,6 +1112,12 @@ msgstr "Vlastní"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Zdroje Bez Výslovného Vlastníctva:"
+
+msgid "Could not create folder."
+msgstr "Priečinok sa nepodarilo vytvoriť."
+
+msgid "Create Folder"
+msgstr "Vytvoriť adresár"
 
 msgid "Thanks from the Godot community!"
 msgstr "Vďaka z Godot komunity!"
@@ -1475,24 +1478,6 @@ msgstr "[Prázdne]"
 msgid "[unsaved]"
 msgstr "[Neuložené]"
 
-msgid "Please select a base directory first."
-msgstr "Najprv vyberte základný adresár."
-
-msgid "Choose a Directory"
-msgstr "Vyberte adresár"
-
-msgid "Create Folder"
-msgstr "Vytvoriť adresár"
-
-msgid "Name:"
-msgstr "Meno:"
-
-msgid "Could not create folder."
-msgstr "Priečinok sa nepodarilo vytvoriť."
-
-msgid "Choose"
-msgstr "Vyberte"
-
 msgid "3D Editor"
 msgstr "3D Editor"
 
@@ -1574,127 +1559,6 @@ msgstr "Importovať Profil(y)"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Spravovať Feature Profily Editora"
-
-msgid "Network"
-msgstr "Sieť"
-
-msgid "Open"
-msgstr "Otvoriť"
-
-msgid "Select Current Folder"
-msgstr "Vybrať Aktuálny Priečinok"
-
-msgid "Cannot save file with an empty filename."
-msgstr "Nemožno uložiť súbor s prázdnym názvom."
-
-msgid "Cannot save file with a name starting with a dot."
-msgstr "Nie je možné uložiť súbor začínajúci bodkou."
-
-msgid ""
-"File \"%s\" already exists.\n"
-"Do you want to overwrite it?"
-msgstr ""
-"Súbor \"%s\" už existuje.\n"
-"Želáte si ho prepísať?"
-
-msgid "Select This Folder"
-msgstr "Vybrať Tento Priečinok"
-
-msgid "Copy Path"
-msgstr "Skopírovať Cestu"
-
-msgid "Open in File Manager"
-msgstr "Otvoriť v File Manažérovy"
-
-msgid "Show in File Manager"
-msgstr "Ukázať v File Manažérovy"
-
-msgid "New Folder..."
-msgstr "Nový Priečinok..."
-
-msgid "All Recognized"
-msgstr "Všetko rozpoznané"
-
-msgid "All Files (*)"
-msgstr "Všetky Súbory (*)"
-
-msgid "Open a File"
-msgstr "Otvoriť súbor"
-
-msgid "Open File(s)"
-msgstr "Otvoriť súbor(y)"
-
-msgid "Open a Directory"
-msgstr "Otvorit priečinok"
-
-msgid "Open a File or Directory"
-msgstr "Otvoriť súbor / priečinok"
-
-msgid "Save a File"
-msgstr "Uložiť súbor"
-
-msgid "Favorited folder does not exist anymore and will be removed."
-msgstr "Obľúbený priečinok už neexistuje a bude odstránený."
-
-msgid "Go Back"
-msgstr "Ísť späť"
-
-msgid "Go Forward"
-msgstr "Ísť Dopredu"
-
-msgid "Go Up"
-msgstr "Ísť Hore"
-
-msgid "Toggle Hidden Files"
-msgstr "Prepnúť Skryté Súbory"
-
-msgid "Toggle Favorite"
-msgstr "Prepnúť Obľúbené"
-
-msgid "Toggle Mode"
-msgstr "Prepnúť Mode"
-
-msgid "Focus Path"
-msgstr "Zamerať Cestu"
-
-msgid "Move Favorite Up"
-msgstr "Posunúť obľúbené Vyššie"
-
-msgid "Move Favorite Down"
-msgstr "Posunúť Obľúbené Nižšie"
-
-msgid "Go to previous folder."
-msgstr "Ísť do predchádzajúceho priečinka."
-
-msgid "Go to next folder."
-msgstr "Ísť do ďalšieho priečinka."
-
-msgid "Go to parent folder."
-msgstr "Ísť do parent folder."
-
-msgid "Refresh files."
-msgstr "Obnoviť súbory."
-
-msgid "(Un)favorite current folder."
-msgstr "(Od)obľúbiť aktuálny priečinok."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "Prepnúť viditeľnosť skrytých súborov."
-
-msgid "View items as a grid of thumbnails."
-msgstr "Zobraziť veci ako mriežku náhľadov."
-
-msgid "View items as a list."
-msgstr "Zobraziť veci ako list."
-
-msgid "Directories & Files:"
-msgstr "Priečinky a Súbory:"
-
-msgid "Preview:"
-msgstr "Predzobraziť:"
-
-msgid "File:"
-msgstr "Súbor:"
 
 msgid "Restart"
 msgstr "Reštartovať"
@@ -1952,8 +1816,17 @@ msgstr "Názvy začínajúce s _ sú rezervované len pre metadata editora."
 msgid "Metadata name is valid."
 msgstr "Názov pre metadata je platný."
 
+msgid "Name:"
+msgstr "Meno:"
+
 msgid "Add Metadata Property for \"%s\""
 msgstr "Pridaj vlastnosť metadát pre \"%s\""
+
+msgid "Creating Mesh Previews"
+msgstr "Vytváranie Predzobrazenia Mesh-u"
+
+msgid "Thumbnail..."
+msgstr "\"Thumbnail\"..."
 
 msgid "Show All Locales"
 msgstr "Zobraziť všetky jazyky"
@@ -2048,6 +1921,9 @@ msgstr ""
 "Nedá sa uložiť scéna. Pravdepodobne (inštancie alebo dedičstvo) nemôžu byť "
 "spokojné."
 
+msgid "Save scene before running..."
+msgstr "Uložiť scénu pred spustením..."
+
 msgid "Save All Scenes"
 msgstr "Uložiť Všetky Scény"
 
@@ -2109,42 +1985,6 @@ msgstr "Zmeny môžu byť stratené!"
 msgid "This object is read-only."
 msgstr "Tento objekt je iba na čítanie."
 
-msgid ""
-"Movie Maker mode is enabled, but no movie file path has been specified.\n"
-"A default movie file path can be specified in the project settings under the "
-"Editor > Movie Writer category.\n"
-"Alternatively, for running single scenes, a `movie_file` string metadata can "
-"be added to the root node,\n"
-"specifying the path to a movie file that will be used when recording that "
-"scene."
-msgstr ""
-"Mód tvorenia filmov je zapnutý, ale žiadna cesta ku filmovému súboru nebola "
-"špecifikovaná.\n"
-"Predvolenú cestu ku filmovému súboru je možné špecifikovať v projektových "
-"nastaveniach pod záložkou Editor > záložka Movie Writer.\n"
-"Alternatívne, pre spustené samostatné sceny, textové metadata "
-"`movie_file`môžu byť pridané do koreňového uzla,\n"
-"špecifikujúc cestu ku filmovému súboru, ktorý bude použitý pri nahrávaní "
-"scény."
-
-msgid "There is no defined scene to run."
-msgstr "Nieje definovaná žiadna scéna na spustenie."
-
-msgid "Save scene before running..."
-msgstr "Uložiť scénu pred spustením..."
-
-msgid "Reload the played scene."
-msgstr "Znovu načítať hranú scénu."
-
-msgid "Play the project."
-msgstr "Spustiť projekt."
-
-msgid "Play the edited scene."
-msgstr "Spustiť editovanú scénu."
-
-msgid "Play a custom scene."
-msgstr "Spustiť vlastnú scénu."
-
 msgid "Open Base Scene"
 msgstr "Otvoriť Base Scene"
 
@@ -2156,12 +1996,6 @@ msgstr "Rýchle Otvorenie Scény..."
 
 msgid "Quick Open Script..."
 msgstr "Rýchle Otvorenie Scriptu..."
-
-msgid "Save & Quit"
-msgstr "Uložiť & Ukončiť"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "Chcete uložiť zmeny do '%s' pred zatvorením?"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s už neexistuje! Špecifikujte prosím nové miesto na uloženie."
@@ -2204,8 +2038,8 @@ msgstr ""
 "Táto scéna má neuložené zmeny.\n"
 "Aj tak chcete scény reloadnuť? Táto akcia nomôže byť nedokončená."
 
-msgid "Quick Run Scene..."
-msgstr "Rýchle Spustenie Scény..."
+msgid "Save & Quit"
+msgstr "Uložiť & Ukončiť"
 
 msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Uložiť zmeny do nasledujúcich scén pred ukončením?"
@@ -2277,6 +2111,9 @@ msgstr "Scéna '%s' má zničené závislosti:"
 msgid "Clear Recent Scenes"
 msgstr "Vyčistiť Posledné Scény"
 
+msgid "There is no defined scene to run."
+msgstr "Nieje definovaná žiadna scéna na spustenie."
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -2315,6 +2152,9 @@ msgstr "Predvolené"
 
 msgid "Save & Close"
 msgstr "Uložiť & Zatvoriť"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "Chcete uložiť zmeny do '%s' pred zatvorením?"
 
 msgid "Show in FileSystem"
 msgstr "Ukázať v FileSystéme"
@@ -2493,24 +2333,6 @@ msgstr "Komunita"
 msgid "Support Godot Development"
 msgstr "Podporte vývoj Godot"
 
-msgid "Run the project's default scene."
-msgstr "Spustiť predvolenú scénu projektu."
-
-msgid "Run a specific scene."
-msgstr "Spustiť konkrétnu scénu."
-
-msgid "Run Specific Scene"
-msgstr "Spustiť konkrétnu scénu"
-
-msgid ""
-"Enable Movie Maker mode.\n"
-"The project will run at stable FPS and the visual and audio output will be "
-"recorded to a video file."
-msgstr ""
-"Zapnúť mód Tvorby filmov.\n"
-"Projekt bude spustený pri stabilných FPS a výstup vizuálov a zvuku bude "
-"nahraný do video súboru."
-
 msgid "Choose a renderer."
 msgstr "Zvoliť renderer."
 
@@ -2563,6 +2385,9 @@ msgstr ""
 "prepísaný.\n"
 "Manuálne odstránte \"res://android/build\" predtým ako sa znova pokúsite o "
 "túto operáciu."
+
+msgid "Show in File Manager"
+msgstr "Ukázať v File Manažérovy"
 
 msgid "Import Templates From ZIP File"
 msgstr "Importovať Šablóny Zo ZIP File-u"
@@ -2621,15 +2446,6 @@ msgstr "Ok"
 
 msgid "Warning!"
 msgstr "Upozornenie!"
-
-msgid "No sub-resources found."
-msgstr "Nenašli sa žiadne \"sub-resources\"."
-
-msgid "Creating Mesh Previews"
-msgstr "Vytváranie Predzobrazenia Mesh-u"
-
-msgid "Thumbnail..."
-msgstr "\"Thumbnail\"..."
 
 msgid "Main Script:"
 msgstr "Hlavný Script:"
@@ -2778,15 +2594,6 @@ msgstr "Pre prejavenie zmien je nutné reštartovať editor."
 
 msgid "Shortcuts"
 msgstr "Skratky"
-
-msgid "No notifications."
-msgstr "Žiadné notifikácie."
-
-msgid "Show notifications."
-msgstr "Zobraziť notifikácie."
-
-msgid "Silence the notifications."
-msgstr "Stíšiť notifikácie."
 
 msgid "Left Stick Left, Joystick 0 Left"
 msgstr "Ľavá páčka vľavo, Joystick 0 vľavo"
@@ -3218,6 +3025,12 @@ msgstr "Vyhladať"
 msgid "Favorites"
 msgstr "Obľúbené"
 
+msgid "View items as a grid of thumbnails."
+msgstr "Zobraziť veci ako mriežku náhľadov."
+
+msgid "View items as a list."
+msgstr "Zobraziť veci ako list."
+
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Status:Import súboru zlihal. Prosím opravte súbor a manuálne reimportujte."
@@ -3249,9 +3062,6 @@ msgstr "Nepodarilo sa načítať zdrojový súbor na %s: %s"
 msgid "Unable to update dependencies:"
 msgstr "Nepodarilo sa update-nuť závislosti:"
 
-msgid "Provided name contains invalid characters."
-msgstr "Toto meno obsahuje nepodporované písmená."
-
 msgid ""
 "This file extension is not recognized by the editor.\n"
 "If you want to rename it anyway, use your operating system's file manager.\n"
@@ -3265,27 +3075,6 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "Súbor alebo priečinok s tímto menom už existuje."
 
-msgid ""
-"The following files or folders conflict with items in the target location "
-"'%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Do you wish to overwrite them?"
-msgstr ""
-"Nasledujúce súbory alebo zložky sú v konflikte s položkami v cieľovom "
-"umiestnení '%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Prajete si ich prepísať?"
-
-msgid "Renaming file:"
-msgstr "Zostávajúce súbory:"
-
-msgid "Renaming folder:"
-msgstr "Zostávajúce priečinky:"
-
 msgid "Duplicating file:"
 msgstr "Duplikovanie súborov:"
 
@@ -3298,11 +3087,8 @@ msgstr "Nová Zdedená Scéna"
 msgid "Set As Main Scene"
 msgstr "Nastaviť ako Hlavnú Scénu"
 
-msgid "Add to Favorites"
-msgstr "Pridať do Obľúbených"
-
-msgid "Remove from Favorites"
-msgstr "Odstrániť z Obľúbených"
+msgid "Open Scenes"
+msgstr "Otvoriť Scény"
 
 msgid "Edit Dependencies..."
 msgstr "Editovať Závislosti..."
@@ -3310,11 +3096,20 @@ msgstr "Editovať Závislosti..."
 msgid "View Owners..."
 msgstr "Zobraziť Majiteľov..."
 
-msgid "Move To..."
-msgstr "Presunúť Do..."
-
 msgid "TextFile..."
 msgstr "Textový súbor..."
+
+msgid "Add to Favorites"
+msgstr "Pridať do Obľúbených"
+
+msgid "Remove from Favorites"
+msgstr "Odstrániť z Obľúbených"
+
+msgid "Open in File Manager"
+msgstr "Otvoriť v File Manažérovy"
+
+msgid "New Folder..."
+msgstr "Nový Priečinok..."
 
 msgid "New Scene..."
 msgstr "Nová Scéna..."
@@ -3346,6 +3141,9 @@ msgstr "Zoradiť podľa poslednej zmeny"
 msgid "Sort by First Modified"
 msgstr "Zoradiť podľa prvej zmeny"
 
+msgid "Copy Path"
+msgstr "Skopírovať Cestu"
+
 msgid "Duplicate..."
 msgstr "Duplikovať..."
 
@@ -3364,9 +3162,6 @@ msgid ""
 msgstr ""
 "Skenujem Súbory,\n"
 "Počkajte Prosím..."
-
-msgid "Move"
-msgstr "Presunúť"
 
 msgid "Overwrite"
 msgstr "Prepísať"
@@ -3449,6 +3244,181 @@ msgstr "Editor Skupín"
 
 msgid "Manage Groups"
 msgstr "Spravovať Skupiny"
+
+msgid "Move"
+msgstr "Presunúť"
+
+msgid "Please select a base directory first."
+msgstr "Najprv vyberte základný adresár."
+
+msgid "Choose a Directory"
+msgstr "Vyberte adresár"
+
+msgid "Network"
+msgstr "Sieť"
+
+msgid "Select Current Folder"
+msgstr "Vybrať Aktuálny Priečinok"
+
+msgid "Cannot save file with an empty filename."
+msgstr "Nemožno uložiť súbor s prázdnym názvom."
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "Nie je možné uložiť súbor začínajúci bodkou."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Súbor \"%s\" už existuje.\n"
+"Želáte si ho prepísať?"
+
+msgid "Select This Folder"
+msgstr "Vybrať Tento Priečinok"
+
+msgid "All Recognized"
+msgstr "Všetko rozpoznané"
+
+msgid "All Files (*)"
+msgstr "Všetky Súbory (*)"
+
+msgid "Open a File"
+msgstr "Otvoriť súbor"
+
+msgid "Open File(s)"
+msgstr "Otvoriť súbor(y)"
+
+msgid "Open a Directory"
+msgstr "Otvorit priečinok"
+
+msgid "Open a File or Directory"
+msgstr "Otvoriť súbor / priečinok"
+
+msgid "Save a File"
+msgstr "Uložiť súbor"
+
+msgid "Favorited folder does not exist anymore and will be removed."
+msgstr "Obľúbený priečinok už neexistuje a bude odstránený."
+
+msgid "Go Back"
+msgstr "Ísť späť"
+
+msgid "Go Forward"
+msgstr "Ísť Dopredu"
+
+msgid "Go Up"
+msgstr "Ísť Hore"
+
+msgid "Toggle Hidden Files"
+msgstr "Prepnúť Skryté Súbory"
+
+msgid "Toggle Favorite"
+msgstr "Prepnúť Obľúbené"
+
+msgid "Toggle Mode"
+msgstr "Prepnúť Mode"
+
+msgid "Focus Path"
+msgstr "Zamerať Cestu"
+
+msgid "Move Favorite Up"
+msgstr "Posunúť obľúbené Vyššie"
+
+msgid "Move Favorite Down"
+msgstr "Posunúť Obľúbené Nižšie"
+
+msgid "Go to previous folder."
+msgstr "Ísť do predchádzajúceho priečinka."
+
+msgid "Go to next folder."
+msgstr "Ísť do ďalšieho priečinka."
+
+msgid "Go to parent folder."
+msgstr "Ísť do parent folder."
+
+msgid "Refresh files."
+msgstr "Obnoviť súbory."
+
+msgid "(Un)favorite current folder."
+msgstr "(Od)obľúbiť aktuálny priečinok."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Prepnúť viditeľnosť skrytých súborov."
+
+msgid "Directories & Files:"
+msgstr "Priečinky a Súbory:"
+
+msgid "Preview:"
+msgstr "Predzobraziť:"
+
+msgid "File:"
+msgstr "Súbor:"
+
+msgid "No sub-resources found."
+msgstr "Nenašli sa žiadne \"sub-resources\"."
+
+msgid "Play the project."
+msgstr "Spustiť projekt."
+
+msgid "Play the edited scene."
+msgstr "Spustiť editovanú scénu."
+
+msgid "Play a custom scene."
+msgstr "Spustiť vlastnú scénu."
+
+msgid "Reload the played scene."
+msgstr "Znovu načítať hranú scénu."
+
+msgid "Quick Run Scene..."
+msgstr "Rýchle Spustenie Scény..."
+
+msgid ""
+"Movie Maker mode is enabled, but no movie file path has been specified.\n"
+"A default movie file path can be specified in the project settings under the "
+"Editor > Movie Writer category.\n"
+"Alternatively, for running single scenes, a `movie_file` string metadata can "
+"be added to the root node,\n"
+"specifying the path to a movie file that will be used when recording that "
+"scene."
+msgstr ""
+"Mód tvorenia filmov je zapnutý, ale žiadna cesta ku filmovému súboru nebola "
+"špecifikovaná.\n"
+"Predvolenú cestu ku filmovému súboru je možné špecifikovať v projektových "
+"nastaveniach pod záložkou Editor > záložka Movie Writer.\n"
+"Alternatívne, pre spustené samostatné sceny, textové metadata "
+"`movie_file`môžu byť pridané do koreňového uzla,\n"
+"špecifikujúc cestu ku filmovému súboru, ktorý bude použitý pri nahrávaní "
+"scény."
+
+msgid "Run the project's default scene."
+msgstr "Spustiť predvolenú scénu projektu."
+
+msgid "Run a specific scene."
+msgstr "Spustiť konkrétnu scénu."
+
+msgid "Run Specific Scene"
+msgstr "Spustiť konkrétnu scénu"
+
+msgid ""
+"Enable Movie Maker mode.\n"
+"The project will run at stable FPS and the visual and audio output will be "
+"recorded to a video file."
+msgstr ""
+"Zapnúť mód Tvorby filmov.\n"
+"Projekt bude spustený pri stabilných FPS a výstup vizuálov a zvuku bude "
+"nahraný do video súboru."
+
+msgid "No notifications."
+msgstr "Žiadné notifikácie."
+
+msgid "Show notifications."
+msgstr "Zobraziť notifikácie."
+
+msgid "Silence the notifications."
+msgstr "Stíšiť notifikácie."
+
+msgid "(Connecting From)"
+msgstr "(Pripájanie z)"
 
 msgid "Reimport"
 msgstr "Reimportovať"
@@ -3699,9 +3669,6 @@ msgstr "Vymazať BlendSpace2D Bod"
 msgid "Remove BlendSpace2D Triangle"
 msgstr "Vymazať BlendSpace2D Trojuholník"
 
-msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr "BlendSpace2D nepatrí ku AnimationTree node."
-
 msgid "No triangles exist, so no blending can take place."
 msgstr ""
 "Neexistujú žiadne trojuholníky, takže si nemôže zabrať miesto žiadny "
@@ -3948,9 +3915,6 @@ msgstr "Na Konci"
 
 msgid "Travel"
 msgstr "Cestovať"
-
-msgid "Start and end nodes are needed for a sub-transition."
-msgstr "Pre sub-prechod je potrebné začať a skončiť node-y."
 
 msgid "No playback resource set at path: %s."
 msgstr "Nieje nastavený žiadny zdrojový playback ako cesta: %s."
@@ -4438,11 +4402,17 @@ msgstr "Emisné Farby"
 msgid "Create Emission Points From Node"
 msgstr "Vytvoriť Emisné Body z Node-u"
 
-msgid "Flat 0"
-msgstr "Plochý 0"
+msgid "Load Curve Preset"
+msgstr "Načítať Predvoľbu Krivky"
 
-msgid "Flat 1"
-msgstr "Plochý 1"
+msgid "Remove Curve Point"
+msgstr "Vymazať Bod Krivky"
+
+msgid "Modify Curve Point"
+msgstr "Modifikovať Bod Krivky"
+
+msgid "Hold Shift to edit tangents individually"
+msgstr "Podržte Shift aby ste upravili tangetu individuálne"
 
 msgid "Ease In"
 msgstr "Zvyšovanie"
@@ -4452,42 +4422,6 @@ msgstr "Znižovanie"
 
 msgid "Smoothstep"
 msgstr "Hladkýkrok"
-
-msgid "Modify Curve Point"
-msgstr "Modifikovať Bod Krivky"
-
-msgid "Modify Curve Tangent"
-msgstr "Modifikovať Tangetu Krivky"
-
-msgid "Load Curve Preset"
-msgstr "Načítať Predvoľbu Krivky"
-
-msgid "Add Point"
-msgstr "Pridať Bod"
-
-msgid "Remove Point"
-msgstr "Vymazať Bod"
-
-msgid "Left Linear"
-msgstr "Lineárne Vľavo"
-
-msgid "Right Linear"
-msgstr "Lineárne Vpravo"
-
-msgid "Load Preset"
-msgstr "Načítať Predvoľbu"
-
-msgid "Remove Curve Point"
-msgstr "Vymazať Bod Krivky"
-
-msgid "Toggle Curve Linear Tangent"
-msgstr "Prepnúť Lineárnu Tangetu Krivky"
-
-msgid "Hold Shift to edit tangents individually"
-msgstr "Podržte Shift aby ste upravili tangetu individuálne"
-
-msgid "Right click to add point"
-msgstr "Pravým kliknutím pridáťe Bod"
 
 msgid "Deploy with Remote Debug"
 msgstr "Deploy-ovanie z Remote Debug-om"
@@ -4686,6 +4620,12 @@ msgstr "Nie je možné vytvoriť žiadne kolízne tvary."
 msgid "Amount:"
 msgstr "Množstvo:"
 
+msgid "Edit Poly"
+msgstr "Upraviť Poly"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Upraviť Poly (Odstrániť Bod)"
+
 msgid "Orthogonal"
 msgstr "Ortogonálny"
 
@@ -4746,12 +4686,6 @@ msgstr "Povoliť Prichytávanie"
 msgid "Create Polygon3D"
 msgstr "Vytvoriť Polygon3D"
 
-msgid "Edit Poly"
-msgstr "Upraviť Poly"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Upraviť Poly (Odstrániť Bod)"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "Nedá sa otvoriť '%s'. Súbor mohol byť presunutý alebo vymazaný."
 
@@ -4802,6 +4736,9 @@ msgstr "Vymazať animáciu"
 
 msgid "Zoom Reset"
 msgstr "Resetovať Priblíženie"
+
+msgid "Size"
+msgstr "Veľkosť"
 
 msgid "Snap Mode:"
 msgstr "Režim Prichytenia:"
@@ -4981,9 +4918,6 @@ msgstr "Zmazať %d node-y?"
 msgid "Delete node \"%s\"?"
 msgstr "Zmazať node \"%s\"?"
 
-msgid "(Connecting From)"
-msgstr "(Pripájanie z)"
-
 msgid "File does not exist."
 msgstr "Súbor neexistuje."
 
@@ -5004,9 +4938,6 @@ msgstr "Prichádzajúce RPC"
 
 msgid "Outgoing RPC"
 msgstr "Vychádzajúce RPC"
-
-msgid "Size"
-msgstr "Veľkosť"
 
 msgid "Delete Property?"
 msgstr "Vymazať vlastnosť?"
@@ -5038,6 +4969,3 @@ msgstr "Neplatná funkcia porovnania pre tento typ."
 
 msgid "Invalid data type for the array."
 msgstr "Neplatné dáta pre Array."
-
-msgid "Shader include file does not exist: "
-msgstr "Shader-include súbor neexistuje: "

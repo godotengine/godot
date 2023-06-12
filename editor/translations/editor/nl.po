@@ -1214,11 +1214,8 @@ msgstr "Afhankelijkhedeneditor"
 msgid "Search Replacement Resource:"
 msgstr "Bronvervanging zoeken:"
 
-msgid "Open Scene"
-msgstr "Scène openen"
-
-msgid "Open Scenes"
-msgstr "Scènes openen"
+msgid "Open"
+msgstr "Openen"
 
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
@@ -1278,6 +1275,12 @@ msgstr "In bezit"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Bronnen zonder expliciet bezit:"
+
+msgid "Could not create folder."
+msgstr "Map kon niet gemaakt worden."
+
+msgid "Create Folder"
+msgstr "Map maken"
 
 msgid "Thanks from the Godot community!"
 msgstr "Bedankt van de Godot gemeenschap!"
@@ -1601,24 +1604,6 @@ msgstr "[leeg]"
 msgid "[unsaved]"
 msgstr "[niet opgeslagen]"
 
-msgid "Please select a base directory first."
-msgstr "Kies eerst een basismap."
-
-msgid "Choose a Directory"
-msgstr "Kies een map"
-
-msgid "Create Folder"
-msgstr "Map maken"
-
-msgid "Name:"
-msgstr "Naam:"
-
-msgid "Could not create folder."
-msgstr "Map kon niet gemaakt worden."
-
-msgid "Choose"
-msgstr "Kies"
-
 msgid "3D Editor"
 msgstr "3D Editor"
 
@@ -1763,111 +1748,6 @@ msgstr "Profiel(en) importeren"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Editor Profielen beheren"
-
-msgid "Network"
-msgstr "Netwerk"
-
-msgid "Open"
-msgstr "Openen"
-
-msgid "Select Current Folder"
-msgstr "Huidige Map Selecteren"
-
-msgid "Select This Folder"
-msgstr "Deze map selecteren"
-
-msgid "Copy Path"
-msgstr "Kopieer Pad"
-
-msgid "Open in File Manager"
-msgstr "Openen in Bestandsbeheer"
-
-msgid "Show in File Manager"
-msgstr "Weergeven in Bestandsbeheer"
-
-msgid "New Folder..."
-msgstr "Nieuwe map..."
-
-msgid "All Recognized"
-msgstr "Alles Herkend"
-
-msgid "All Files (*)"
-msgstr "Alle Bestanden (*)"
-
-msgid "Open a File"
-msgstr "Open een Bestand"
-
-msgid "Open File(s)"
-msgstr "Open Bestand(en)"
-
-msgid "Open a Directory"
-msgstr "Map openen"
-
-msgid "Open a File or Directory"
-msgstr "Bestand of map openen"
-
-msgid "Save a File"
-msgstr "Sla een Bestand Op"
-
-msgid "Go Back"
-msgstr "Ga Terug"
-
-msgid "Go Forward"
-msgstr "Ga Verder"
-
-msgid "Go Up"
-msgstr "Ga Omhoog"
-
-msgid "Toggle Hidden Files"
-msgstr "Verborgen Bestanden Omschakelen"
-
-msgid "Toggle Favorite"
-msgstr "Favoriet Omschakelen"
-
-msgid "Toggle Mode"
-msgstr "Modus wisselen"
-
-msgid "Focus Path"
-msgstr "Focus Pad"
-
-msgid "Move Favorite Up"
-msgstr "Verplaats Favoriet Naar Boven"
-
-msgid "Move Favorite Down"
-msgstr "Verplaats Favoriet Naar Beneden"
-
-msgid "Go to previous folder."
-msgstr "Ga naar vorige map."
-
-msgid "Go to next folder."
-msgstr "Ga naar de volgende map."
-
-msgid "Go to parent folder."
-msgstr "Ga naar de bovenliggende map."
-
-msgid "Refresh files."
-msgstr "Ververs bestandslijst."
-
-msgid "(Un)favorite current folder."
-msgstr "(On)favoriet huidige map."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "Maak verborgen bestanden (on)zichtbaar."
-
-msgid "View items as a grid of thumbnails."
-msgstr "Toon items in een miniatuurraster."
-
-msgid "View items as a list."
-msgstr "Bekijk items als een lijst."
-
-msgid "Directories & Files:"
-msgstr "Mappen & Bestanden:"
-
-msgid "Preview:"
-msgstr "Voorbeeld:"
-
-msgid "File:"
-msgstr "Bestand:"
 
 msgid "Restart"
 msgstr "Herstart"
@@ -2057,8 +1937,17 @@ msgstr "Vastgezet %s"
 msgid "Unpinned %s"
 msgstr "Losgemaakt %s"
 
+msgid "Name:"
+msgstr "Naam:"
+
 msgid "Copy Property Path"
 msgstr "Kopieer Eigenschap Pad"
+
+msgid "Creating Mesh Previews"
+msgstr "Creëren van Mesh Previews"
+
+msgid "Thumbnail..."
+msgstr "Voorbeeld..."
 
 msgid "Changed Locale Filter Mode"
 msgstr "Taalfiltermodus gewijzigd"
@@ -2146,6 +2035,9 @@ msgstr ""
 "Kon de scène niet opslaan. Waarschijnlijk konden afhankelijkheden "
 "(instanties of erfelijkheden) niet voldaan worden."
 
+msgid "Save scene before running..."
+msgstr "Scène opslaan voor het afspelen..."
+
 msgid "Could not save one or more scenes!"
 msgstr "Kon één of meerdere scènes niet opslaan!"
 
@@ -2202,18 +2094,6 @@ msgstr ""
 msgid "Changes may be lost!"
 msgstr "Wijzigingen kunnen verloren gaan!"
 
-msgid "There is no defined scene to run."
-msgstr "Er is geen startscène ingesteld."
-
-msgid "Save scene before running..."
-msgstr "Scène opslaan voor het afspelen..."
-
-msgid "Play the project."
-msgstr "Speel het project."
-
-msgid "Play the edited scene."
-msgstr "Speel de bewerkte scène af."
-
 msgid "Open Base Scene"
 msgstr "Basisscène openen"
 
@@ -2225,12 +2105,6 @@ msgstr "Scène snel openen..."
 
 msgid "Quick Open Script..."
 msgstr "Script snel openen..."
-
-msgid "Save & Quit"
-msgstr "Opslaan & Afsluiten"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "Sla wijzigen aan '%s' op voor het afsluiten?"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s bestaat niet meer! Geef een nieuwe opslaglocatie op."
@@ -2276,8 +2150,8 @@ msgstr ""
 "De huidige scène bevat niet opgeslagen veranderingen.\n"
 "Scène desondanks herladen? Dit kan niet ongedaan gemaakt worden."
 
-msgid "Quick Run Scene..."
-msgstr "Scène snel starten..."
+msgid "Save & Quit"
+msgstr "Opslaan & Afsluiten"
 
 msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Wijzigen aan de volgende scène(s) opslaan voor het afsluiten?"
@@ -2353,6 +2227,9 @@ msgstr "De scène '%s' heeft verbroken afhankelijkheden:"
 msgid "Clear Recent Scenes"
 msgstr "Recente scènes wissen"
 
+msgid "There is no defined scene to run."
+msgstr "Er is geen startscène ingesteld."
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -2388,6 +2265,9 @@ msgstr "Standaard"
 
 msgid "Save & Close"
 msgstr "Opslaan & Sluiten"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "Sla wijzigen aan '%s' op voor het afsluiten?"
 
 msgid "Show in FileSystem"
 msgstr "Weergeven in Bestandssysteem"
@@ -2609,6 +2489,9 @@ msgstr ""
 "Verwijder de map \"res://android/build\" handmatig voordat je deze bewerking "
 "opnieuw probeert."
 
+msgid "Show in File Manager"
+msgstr "Weergeven in Bestandsbeheer"
+
 msgid "Import Templates From ZIP File"
 msgstr "Sjablonen importeren Vanuit ZIP-Bestand"
 
@@ -2666,15 +2549,6 @@ msgstr "Open de vorige Editor"
 
 msgid "Warning!"
 msgstr "Waarschuwing!"
-
-msgid "No sub-resources found."
-msgstr "Geen deel-hulpbronnen gevonden."
-
-msgid "Creating Mesh Previews"
-msgstr "Creëren van Mesh Previews"
-
-msgid "Thumbnail..."
-msgstr "Voorbeeld..."
 
 msgid "Main Script:"
 msgstr "Hoofdscript:"
@@ -2814,13 +2688,6 @@ msgstr "Sneltoetsen"
 
 msgid "Binding"
 msgstr "Binding"
-
-msgid ""
-"Hold %s to round to integers.\n"
-"Hold Shift for more precise changes."
-msgstr ""
-"Houdt %s ingedrukt om op gehele getallen af te ronden.\n"
-"Houdt Shift ingedrukt voor preciezere veranderingen."
 
 msgid "All Devices"
 msgstr "Alle Apparaten"
@@ -3097,6 +2964,12 @@ msgstr "Bladeren"
 msgid "Favorites"
 msgstr "Favorieten"
 
+msgid "View items as a grid of thumbnails."
+msgstr "Toon items in een miniatuurraster."
+
+msgid "View items as a list."
+msgstr "Bekijk items als een lijst."
+
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Status: Bestandsimport mislukt. Repareer het bestand en importeer opnieuw "
@@ -3123,32 +2996,8 @@ msgstr "Fout bij het dupliceren:"
 msgid "Unable to update dependencies:"
 msgstr "Kon afhankelijkheden niet updaten:"
 
-msgid "Provided name contains invalid characters."
-msgstr "De opgegeven naam bevat ongeldige tekens."
-
 msgid "A file or folder with this name already exists."
 msgstr "Er bestaat al een bestand of map met deze naam."
-
-msgid ""
-"The following files or folders conflict with items in the target location "
-"'%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Do you wish to overwrite them?"
-msgstr ""
-"De volgende bestanden of folders conflicteren met de bestanden in de locatie "
-"'%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Wilt u deze bestanden overschrijven?"
-
-msgid "Renaming file:"
-msgstr "Bestand hernoemen:"
-
-msgid "Renaming folder:"
-msgstr "Mapnaam wijzigen:"
 
 msgid "Duplicating file:"
 msgstr "Bestand dupliceren:"
@@ -3162,11 +3011,8 @@ msgstr "Nieuwe geërfde scène"
 msgid "Set As Main Scene"
 msgstr "Instellen als startscène"
 
-msgid "Add to Favorites"
-msgstr "Aan favorieten toevoegen"
-
-msgid "Remove from Favorites"
-msgstr "Uit favorieten verwijderen"
+msgid "Open Scenes"
+msgstr "Scènes openen"
 
 msgid "Edit Dependencies..."
 msgstr "Afhankelijkheden aanpassen..."
@@ -3174,8 +3020,17 @@ msgstr "Afhankelijkheden aanpassen..."
 msgid "View Owners..."
 msgstr "Bekijk eigenaren..."
 
-msgid "Move To..."
-msgstr "Verplaats Naar..."
+msgid "Add to Favorites"
+msgstr "Aan favorieten toevoegen"
+
+msgid "Remove from Favorites"
+msgstr "Uit favorieten verwijderen"
+
+msgid "Open in File Manager"
+msgstr "Openen in Bestandsbeheer"
+
+msgid "New Folder..."
+msgstr "Nieuwe map..."
 
 msgid "New Scene..."
 msgstr "Nieuwe scène..."
@@ -3204,6 +3059,9 @@ msgstr "Sorteren op Laatst bewerkt"
 msgid "Sort by First Modified"
 msgstr "Sorteren op Laatst bewerkt"
 
+msgid "Copy Path"
+msgstr "Kopieer Pad"
+
 msgid "Duplicate..."
 msgstr "Dupliceren..."
 
@@ -3222,9 +3080,6 @@ msgid ""
 msgstr ""
 "Bestanden aan het doornemen,\n"
 "Wacht alstublieft..."
-
-msgid "Move"
-msgstr "Verplaatsen"
 
 msgid "Overwrite"
 msgstr "Overschrijven"
@@ -3298,6 +3153,178 @@ msgstr "Groep Bewerker"
 
 msgid "Manage Groups"
 msgstr "Groepen beheren"
+
+msgid "Move"
+msgstr "Verplaatsen"
+
+msgid "Please select a base directory first."
+msgstr "Kies eerst een basismap."
+
+msgid "Choose a Directory"
+msgstr "Kies een map"
+
+msgid "Network"
+msgstr "Netwerk"
+
+msgid "Select Current Folder"
+msgstr "Huidige Map Selecteren"
+
+msgid "Select This Folder"
+msgstr "Deze map selecteren"
+
+msgid "All Recognized"
+msgstr "Alles Herkend"
+
+msgid "All Files (*)"
+msgstr "Alle Bestanden (*)"
+
+msgid "Open a File"
+msgstr "Open een Bestand"
+
+msgid "Open File(s)"
+msgstr "Open Bestand(en)"
+
+msgid "Open a Directory"
+msgstr "Map openen"
+
+msgid "Open a File or Directory"
+msgstr "Bestand of map openen"
+
+msgid "Save a File"
+msgstr "Sla een Bestand Op"
+
+msgid "Go Back"
+msgstr "Ga Terug"
+
+msgid "Go Forward"
+msgstr "Ga Verder"
+
+msgid "Go Up"
+msgstr "Ga Omhoog"
+
+msgid "Toggle Hidden Files"
+msgstr "Verborgen Bestanden Omschakelen"
+
+msgid "Toggle Favorite"
+msgstr "Favoriet Omschakelen"
+
+msgid "Toggle Mode"
+msgstr "Modus wisselen"
+
+msgid "Focus Path"
+msgstr "Focus Pad"
+
+msgid "Move Favorite Up"
+msgstr "Verplaats Favoriet Naar Boven"
+
+msgid "Move Favorite Down"
+msgstr "Verplaats Favoriet Naar Beneden"
+
+msgid "Go to previous folder."
+msgstr "Ga naar vorige map."
+
+msgid "Go to next folder."
+msgstr "Ga naar de volgende map."
+
+msgid "Go to parent folder."
+msgstr "Ga naar de bovenliggende map."
+
+msgid "Refresh files."
+msgstr "Ververs bestandslijst."
+
+msgid "(Un)favorite current folder."
+msgstr "(On)favoriet huidige map."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Maak verborgen bestanden (on)zichtbaar."
+
+msgid "Directories & Files:"
+msgstr "Mappen & Bestanden:"
+
+msgid "Preview:"
+msgstr "Voorbeeld:"
+
+msgid "File:"
+msgstr "Bestand:"
+
+msgid "No sub-resources found."
+msgstr "Geen deel-hulpbronnen gevonden."
+
+msgid "Play the project."
+msgstr "Speel het project."
+
+msgid "Play the edited scene."
+msgstr "Speel de bewerkte scène af."
+
+msgid "Quick Run Scene..."
+msgstr "Scène snel starten..."
+
+msgid ""
+"Hold %s to round to integers.\n"
+"Hold Shift for more precise changes."
+msgstr ""
+"Houdt %s ingedrukt om op gehele getallen af te ronden.\n"
+"Houdt Shift ingedrukt voor preciezere veranderingen."
+
+msgid "Toggle Visible"
+msgstr "Toggle Zichtbaarheid"
+
+msgid "Unlock Node"
+msgstr "Knoop ontgrendelen"
+
+msgid "Button Group"
+msgstr "Knoppen Groep"
+
+msgid "(Connecting From)"
+msgstr "(Verbonden vanaf)"
+
+msgid "Node configuration warning:"
+msgstr "Waarschuwing over knoopconfiguratie:"
+
+msgid "Node has one connection."
+msgid_plural "Node has {num} connections."
+msgstr[0] "Node heeft een connectie."
+msgstr[1] "Node heeft {num} connecties."
+
+msgid "Node is in this group:"
+msgid_plural "Node is in the following groups:"
+msgstr[0] "Node is in deze groep:"
+msgstr[1] "Node is in de volgende groepen:"
+
+msgid "Open in Editor"
+msgstr "Openen in Editor"
+
+msgid "Open Script:"
+msgstr "Open Script:"
+
+msgid ""
+"Node is locked.\n"
+"Click to unlock it."
+msgstr ""
+"Knoop is vergrendeld.\n"
+"Klik om te ontgrendelen."
+
+msgid ""
+"AnimationPlayer is pinned.\n"
+"Click to unpin."
+msgstr ""
+"AnimationPlayer is vastgezet.\n"
+"Klik om los te maken."
+
+msgid "Invalid node name, the following characters are not allowed:"
+msgstr "Ongeldige knoopnaam, deze karakters zijn niet toegestaan:"
+
+msgid "Rename Node"
+msgstr "Knoop hernoemen"
+
+msgid "Scene Tree (Nodes):"
+msgstr "Scèneboom (knopen):"
+
+msgid "Node Configuration Warning!"
+msgstr "Knoop configuratie waarschuwing!"
+
+msgid "Select a Node"
+msgstr "Knoop uitkiezen"
 
 msgid "Reimport"
 msgstr "Opnieuw importeren"
@@ -3571,9 +3598,6 @@ msgstr "Verwijder BlendSpace2D Punt"
 msgid "Remove BlendSpace2D Triangle"
 msgstr "Verwijder BlendSpace2D Driehoek"
 
-msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr "BlendSpace2D hoort niet bij een AnimationTree knoop."
-
 msgid "No triangles exist, so no blending can take place."
 msgstr "Er bestaan geen driehoeken, dus mengen kan niet plaatsvinden."
 
@@ -3807,9 +3831,6 @@ msgstr "Aan het einde"
 
 msgid "Travel"
 msgstr "Verplaats"
-
-msgid "Start and end nodes are needed for a sub-transition."
-msgstr "Start- en eindknopen zijn nodig voor een sub-overgang."
 
 msgid "No playback resource set at path: %s."
 msgstr "Geen afspeelbron ingesteld op pad: %s."
@@ -4353,11 +4374,17 @@ msgstr "Emissiekleuren"
 msgid "Create Emission Points From Node"
 msgstr "Produceer emissiepunt vanuit knoop"
 
-msgid "Flat 0"
-msgstr "Plat 0"
+msgid "Load Curve Preset"
+msgstr "Curvevoorinstelling laden"
 
-msgid "Flat 1"
-msgstr "Vlak 1"
+msgid "Remove Curve Point"
+msgstr "Verwijder Curve Punt"
+
+msgid "Modify Curve Point"
+msgstr "Wijzig Curve Punt"
+
+msgid "Hold Shift to edit tangents individually"
+msgstr "Houd Shift ingedrukt om de raaklijnen individueel te bewerken"
 
 msgid "Ease In"
 msgstr "Invloei"
@@ -4367,42 +4394,6 @@ msgstr "Uitvloei"
 
 msgid "Smoothstep"
 msgstr "Gelijke stap"
-
-msgid "Modify Curve Point"
-msgstr "Wijzig Curve Punt"
-
-msgid "Modify Curve Tangent"
-msgstr "Wijzig Curve Raaklijn"
-
-msgid "Load Curve Preset"
-msgstr "Curvevoorinstelling laden"
-
-msgid "Add Point"
-msgstr "Punt toevoegen"
-
-msgid "Remove Point"
-msgstr "Punt verwijderen"
-
-msgid "Left Linear"
-msgstr "Links Lineair"
-
-msgid "Right Linear"
-msgstr "Rechts Lineair"
-
-msgid "Load Preset"
-msgstr "Laad voorinstelling"
-
-msgid "Remove Curve Point"
-msgstr "Verwijder Curve Punt"
-
-msgid "Toggle Curve Linear Tangent"
-msgstr "Schakel Curve Lineaire Raaklijn"
-
-msgid "Hold Shift to edit tangents individually"
-msgstr "Houd Shift ingedrukt om de raaklijnen individueel te bewerken"
-
-msgid "Right click to add point"
-msgstr "Klik rechts om Punt toe te voegen"
 
 msgid "Debug with External Editor"
 msgstr "Debug met Externe Editor"
@@ -4497,6 +4488,39 @@ msgstr[1] "Run %d Instanties"
 
 msgid " - Variation"
 msgstr " - Variatie"
+
+msgid "Change AudioStreamPlayer3D Emission Angle"
+msgstr "Uitvoerhoek AudioStreamPlayer3D veranderen"
+
+msgid "Change Camera FOV"
+msgstr "Wijzig Camera FOV"
+
+msgid "Change Camera Size"
+msgstr "Verander Camera grootte"
+
+msgid "Change Sphere Shape Radius"
+msgstr "Wijzig Sphere Vorm Straal"
+
+msgid "Change Capsule Shape Radius"
+msgstr "Wijzig Capsule Vorm Straal"
+
+msgid "Change Capsule Shape Height"
+msgstr "Wijzig Capsule Vorm Hoogte"
+
+msgid "Change Cylinder Shape Radius"
+msgstr "Wijzig Cylinder Vorm Radius"
+
+msgid "Change Cylinder Shape Height"
+msgstr "Wijzig Cylinder Vorm Hoogte"
+
+msgid "Change Particles AABB"
+msgstr "Verander Particles AABB"
+
+msgid "Change Light Radius"
+msgstr "Verander Licht radius"
+
+msgid "Change Notifier AABB"
+msgstr "Verander Notifier AABB"
 
 msgid "Convert to CPUParticles2D"
 msgstr "Omzetten naar CPUParticles2D"
@@ -4759,41 +4783,14 @@ msgstr "Hoeveelheid:"
 msgid "Populate"
 msgstr "Bevolken"
 
+msgid "Edit Poly"
+msgstr "Bewerk Poly"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Bewerk Poly (Verwijder punt)"
+
 msgid "Create Navigation Polygon"
 msgstr "Creëer Navigatie Polygoon"
-
-msgid "Change Light Radius"
-msgstr "Verander Licht radius"
-
-msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr "Uitvoerhoek AudioStreamPlayer3D veranderen"
-
-msgid "Change Camera FOV"
-msgstr "Wijzig Camera FOV"
-
-msgid "Change Camera Size"
-msgstr "Verander Camera grootte"
-
-msgid "Change Sphere Shape Radius"
-msgstr "Wijzig Sphere Vorm Straal"
-
-msgid "Change Notifier AABB"
-msgstr "Verander Notifier AABB"
-
-msgid "Change Particles AABB"
-msgstr "Verander Particles AABB"
-
-msgid "Change Capsule Shape Radius"
-msgstr "Wijzig Capsule Vorm Straal"
-
-msgid "Change Capsule Shape Height"
-msgstr "Wijzig Capsule Vorm Hoogte"
-
-msgid "Change Cylinder Shape Radius"
-msgstr "Wijzig Cylinder Vorm Radius"
-
-msgid "Change Cylinder Shape Height"
-msgstr "Wijzig Cylinder Vorm Hoogte"
 
 msgid "Transform Aborted."
 msgstr "Transformatie Afgebroken."
@@ -5320,12 +5317,6 @@ msgstr "Synchroniseer Botten aan Polygoon"
 msgid "Create Polygon3D"
 msgstr "Creëer Polygon3D"
 
-msgid "Edit Poly"
-msgstr "Bewerk Poly"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Bewerk Poly (Verwijder punt)"
-
 msgid "ERROR: Couldn't load resource!"
 msgstr "FOUT: Laden van bron mislukt!"
 
@@ -5343,9 +5334,6 @@ msgstr "Bronklembord is leeg!"
 
 msgid "Paste Resource"
 msgstr "Bron plakken"
-
-msgid "Open in Editor"
-msgstr "Openen in Editor"
 
 msgid "Load Resource"
 msgstr "Bron laden"
@@ -5767,17 +5755,8 @@ msgstr "Zoom terugzetten"
 msgid "Select Frames"
 msgstr "Frames selecteren"
 
-msgid "Horizontal:"
-msgstr "Horizontaal:"
-
-msgid "Vertical:"
-msgstr "Verticaal:"
-
-msgid "Separation:"
-msgstr "Afzondering:"
-
-msgid "Select/Clear All Frames"
-msgstr "Alle frames selecteren/wissen"
+msgid "Size"
+msgstr "Grootte"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "Frames toevoegen uit spritesheet"
@@ -5805,6 +5784,9 @@ msgstr "Automatisch Snijden"
 
 msgid "Step:"
 msgstr "Stap:"
+
+msgid "Separation:"
+msgstr "Afzondering:"
 
 msgid "1 color"
 msgid_plural "{num} colors"
@@ -6622,11 +6604,11 @@ msgstr "Project Installatie Path:"
 msgid "Renderer:"
 msgstr "Renderer:"
 
-msgid "Missing Project"
-msgstr "Bestanden ontbreken"
-
 msgid "Error: Project is missing on the filesystem."
 msgstr "Error: Project ontbreekt in het bestandssysteem."
+
+msgid "Missing Project"
+msgstr "Bestanden ontbreken"
 
 msgid "Local"
 msgstr "Lokaal"
@@ -7014,63 +6996,6 @@ msgstr "Remote"
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Erfenis wissen? (Kan niet ongedaan worden gemaakt!)"
 
-msgid "Toggle Visible"
-msgstr "Toggle Zichtbaarheid"
-
-msgid "Unlock Node"
-msgstr "Knoop ontgrendelen"
-
-msgid "Button Group"
-msgstr "Knoppen Groep"
-
-msgid "(Connecting From)"
-msgstr "(Verbonden vanaf)"
-
-msgid "Node configuration warning:"
-msgstr "Waarschuwing over knoopconfiguratie:"
-
-msgid "Node has one connection."
-msgid_plural "Node has {num} connections."
-msgstr[0] "Node heeft een connectie."
-msgstr[1] "Node heeft {num} connecties."
-
-msgid "Node is in this group:"
-msgid_plural "Node is in the following groups:"
-msgstr[0] "Node is in deze groep:"
-msgstr[1] "Node is in de volgende groepen:"
-
-msgid "Open Script:"
-msgstr "Open Script:"
-
-msgid ""
-"Node is locked.\n"
-"Click to unlock it."
-msgstr ""
-"Knoop is vergrendeld.\n"
-"Klik om te ontgrendelen."
-
-msgid ""
-"AnimationPlayer is pinned.\n"
-"Click to unpin."
-msgstr ""
-"AnimationPlayer is vastgezet.\n"
-"Klik om los te maken."
-
-msgid "Invalid node name, the following characters are not allowed:"
-msgstr "Ongeldige knoopnaam, deze karakters zijn niet toegestaan:"
-
-msgid "Rename Node"
-msgstr "Knoop hernoemen"
-
-msgid "Scene Tree (Nodes):"
-msgstr "Scèneboom (knopen):"
-
-msgid "Node Configuration Warning!"
-msgstr "Knoop configuratie waarschuwing!"
-
-msgid "Select a Node"
-msgstr "Knoop uitkiezen"
-
 msgid "Path is empty."
 msgstr "Pad is leeg."
 
@@ -7304,9 +7229,6 @@ msgstr "Uitgaande RPC"
 msgid "Config"
 msgstr "Configuratie"
 
-msgid "Size"
-msgstr "Grootte"
-
 msgid "Network Profiler"
 msgstr "Netwerk Profiler"
 
@@ -7381,6 +7303,12 @@ msgstr ""
 msgid "The package must have at least one '.' separator."
 msgstr "De pakketnaam moet ten minste een '.' bevatten."
 
+msgid "Invalid public key for APK expansion."
+msgstr "Ongeldige publieke sleutel voor APK -uitbreiding."
+
+msgid "Invalid package name:"
+msgstr "Ongeldige pakketnaam:"
+
 msgid "Select device from the list"
 msgstr "Selecteer apparaat uit de lijst"
 
@@ -7413,12 +7341,6 @@ msgstr "Controleer de opgegeven Android SDK map in de Editor instellingen."
 msgid "Missing 'build-tools' directory!"
 msgstr "'build tools' map ontbreekt!"
 
-msgid "Invalid public key for APK expansion."
-msgstr "Ongeldige publieke sleutel voor APK -uitbreiding."
-
-msgid "Invalid package name:"
-msgstr "Ongeldige pakketnaam:"
-
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr ""
 "Bestandsnaam niet toegestaan! Android App Bundle vereist een *.aab extensie."
@@ -7449,10 +7371,6 @@ msgid ""
 msgstr ""
 "Niet in staat om het export bestand te kopiëren en hernoemen. Controleer de "
 "gradle project folder voor outputs."
-
-msgid "App Store Team ID not specified - cannot configure the project."
-msgstr ""
-"App Store Team ID niet gespecificeerd - kan het project niet configureren."
 
 msgid "Invalid Identifier:"
 msgstr "Ongeldige identifier:"
@@ -7724,13 +7642,6 @@ msgstr ""
 
 msgid "(Other)"
 msgstr "(Andere)"
-
-msgid ""
-"Default Environment as specified in Project Settings (Rendering -> "
-"Environment -> Default Environment) could not be loaded."
-msgstr ""
-"De standaard Environment zoals aangegeven in Projectinstellingen "
-"(Rendering→Environment→Default Environment) kon niet worden geladen."
 
 msgid "Invalid source for preview."
 msgstr "Ongeldige bron voor voorvertoning."

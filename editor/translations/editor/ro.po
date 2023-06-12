@@ -807,11 +807,8 @@ msgstr "Editor de Dependență"
 msgid "Search Replacement Resource:"
 msgstr "Cautați Înlocuitor Resursă:"
 
-msgid "Open Scene"
-msgstr "Deschide o scenă"
-
-msgid "Open Scenes"
-msgstr "Deschide Scene"
+msgid "Open"
+msgstr "Deschide"
 
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
@@ -857,6 +854,12 @@ msgstr "Deține"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Resurse Fără Deținere Explicită:"
+
+msgid "Could not create folder."
+msgstr "Directorul nu a putut fi creat."
+
+msgid "Create Folder"
+msgstr "Creare folder"
 
 msgid "Thanks from the Godot community!"
 msgstr "Mulțumesc din partea comunităţii Godot!"
@@ -1176,24 +1179,6 @@ msgstr "[gol]"
 msgid "[unsaved]"
 msgstr "[nesalvat]"
 
-msgid "Please select a base directory first."
-msgstr "Vă rugăm să selectaţi mai întâi un director de bază."
-
-msgid "Choose a Directory"
-msgstr "Alegeţi un Director"
-
-msgid "Create Folder"
-msgstr "Creare folder"
-
-msgid "Name:"
-msgstr "Nume:"
-
-msgid "Could not create folder."
-msgstr "Directorul nu a putut fi creat."
-
-msgid "Choose"
-msgstr "Alegeți"
-
 msgid "3D Editor"
 msgstr "Editor 3D"
 
@@ -1302,111 +1287,6 @@ msgstr "Încarcă Profil(e)"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Administrează Profilele Ferestrei de Editare"
-
-msgid "Network"
-msgstr "Rețea"
-
-msgid "Open"
-msgstr "Deschide"
-
-msgid "Select Current Folder"
-msgstr "Selectaţi directorul curent"
-
-msgid "Select This Folder"
-msgstr "Selectaţi directorul curent"
-
-msgid "Copy Path"
-msgstr "Copiere cale"
-
-msgid "Open in File Manager"
-msgstr "Deschideți în Administratorul de Fișiere"
-
-msgid "Show in File Manager"
-msgstr "Arătați în Administratorul de Fișiere"
-
-msgid "New Folder..."
-msgstr "Director Nou..."
-
-msgid "All Recognized"
-msgstr "Toate Recunoscute"
-
-msgid "All Files (*)"
-msgstr "Toate Fişierele (*)"
-
-msgid "Open a File"
-msgstr "Deschideți un Fișier"
-
-msgid "Open File(s)"
-msgstr "Deschideți Fișier(e)"
-
-msgid "Open a Directory"
-msgstr "Deschideţi un Director"
-
-msgid "Open a File or Directory"
-msgstr "Deschideți un Fişier sau Director"
-
-msgid "Save a File"
-msgstr "Salvați un Fișier"
-
-msgid "Go Back"
-msgstr "Înapoi"
-
-msgid "Go Forward"
-msgstr "Înainte"
-
-msgid "Go Up"
-msgstr "Sus"
-
-msgid "Toggle Hidden Files"
-msgstr "Comutați Fișiere Ascunse"
-
-msgid "Toggle Favorite"
-msgstr "Comutați Favorite"
-
-msgid "Toggle Mode"
-msgstr "Comutare mod"
-
-msgid "Focus Path"
-msgstr "Cale focalizare"
-
-msgid "Move Favorite Up"
-msgstr "Mutare favorită în sus"
-
-msgid "Move Favorite Down"
-msgstr "Mutare favorită în jos"
-
-msgid "Go to previous folder."
-msgstr "Accesați Directorul Precedent."
-
-msgid "Go to next folder."
-msgstr "Mergi la următorul director."
-
-msgid "Go to parent folder."
-msgstr "Mergi la Directorul Părinte."
-
-msgid "Refresh files."
-msgstr "Reîmprospătează filele."
-
-msgid "(Un)favorite current folder."
-msgstr "(Șterge)Adaugă directorul curent la favorite."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "Comutați Vizibilitatea Fișierelor Ascunse."
-
-msgid "View items as a grid of thumbnails."
-msgstr "Vizualizează articolele ca o grilă de miniaturi."
-
-msgid "View items as a list."
-msgstr "Vizualizează articolele sub forma unei liste."
-
-msgid "Directories & Files:"
-msgstr "Directoare și Fişiere:"
-
-msgid "Preview:"
-msgstr "Previzualizați:"
-
-msgid "File:"
-msgstr "Fișier:"
 
 msgid "Restart"
 msgstr "Restart"
@@ -1561,6 +1441,15 @@ msgstr "Redimensionați Array-ul"
 msgid "Set Multiple:"
 msgstr "Seteaza Multiple:"
 
+msgid "Name:"
+msgstr "Nume:"
+
+msgid "Creating Mesh Previews"
+msgstr "Se creează Previzualizările Mesh-ului"
+
+msgid "Thumbnail..."
+msgstr "Miniatură..."
+
 msgid "Edit Filters"
 msgstr "Editează Filtrele"
 
@@ -1623,6 +1512,9 @@ msgstr ""
 "Nu am putut salva scena. Probabil dependenţe (instanţe sau moşteniri) nu au "
 "putut fi satisfăcute."
 
+msgid "Save scene before running..."
+msgstr "Salvați scena înainte de a rula..."
+
 msgid "Could not save one or more scenes!"
 msgstr "Nu s-au putut salva una sau mai multe scene!"
 
@@ -1661,18 +1553,6 @@ msgstr ""
 msgid "Changes may be lost!"
 msgstr "Modificările pot fi pierdute!"
 
-msgid "There is no defined scene to run."
-msgstr "Nu există nici o scenă definită pentru a execuție."
-
-msgid "Save scene before running..."
-msgstr "Salvați scena înainte de a rula..."
-
-msgid "Play the project."
-msgstr "Rulează proiectul."
-
-msgid "Play the edited scene."
-msgstr "Rulează scena editată."
-
 msgid "Open Base Scene"
 msgstr "Deschide o scenă de bază"
 
@@ -1684,12 +1564,6 @@ msgstr "Deschide o scenă rapid..."
 
 msgid "Quick Open Script..."
 msgstr "Deschide un script rapid..."
-
-msgid "Save & Quit"
-msgstr "Salvează și Închide"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "Salvează schimbările la ’%s’ înainte de ieșire?"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s nu mai există! Vă rugăm să specificați o nouă locație de salvare."
@@ -1713,8 +1587,8 @@ msgstr ""
 "Scena actuală are modificări nesalvate.\n"
 "Reîncărcați scena salvată? Această acțiune nu poate fi anulată."
 
-msgid "Quick Run Scene..."
-msgstr "Rulează Rapid Scena..."
+msgid "Save & Quit"
+msgstr "Salvează și Închide"
 
 msgid "Save changes to the following scene(s) before quitting?"
 msgstr ""
@@ -1789,6 +1663,9 @@ msgstr "Scena '%s' are dependințe nefuncționale:"
 msgid "Clear Recent Scenes"
 msgstr "Curăță Scenele Recente"
 
+msgid "There is no defined scene to run."
+msgstr "Nu există nici o scenă definită pentru a execuție."
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -1824,6 +1701,9 @@ msgstr "Implicit"
 
 msgid "Save & Close"
 msgstr "Salvează și închide"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "Salvează schimbările la ’%s’ înainte de ieșire?"
 
 msgid "Show in FileSystem"
 msgstr "Afișare în FileSystem"
@@ -2003,6 +1883,9 @@ msgstr ""
 msgid "Manage Templates"
 msgstr "Gestionați șabloanele"
 
+msgid "Show in File Manager"
+msgstr "Arătați în Administratorul de Fișiere"
+
 msgid "Import Templates From ZIP File"
 msgstr "Importă Șabloane Dintr-o Arhivă ZIP"
 
@@ -2048,15 +1931,6 @@ msgstr "Deschide Editorul următor"
 
 msgid "Open the previous Editor"
 msgstr "Deschide Editorul anterior"
-
-msgid "No sub-resources found."
-msgstr "Nu s-a găsit nici o sub-resursă."
-
-msgid "Creating Mesh Previews"
-msgstr "Se creează Previzualizările Mesh-ului"
-
-msgid "Thumbnail..."
-msgstr "Miniatură..."
 
 msgid "Main Script:"
 msgstr "Script principal:"
@@ -2219,6 +2093,12 @@ msgstr "Administrează Șabloanele de Export"
 msgid "Favorites"
 msgstr "Favorite"
 
+msgid "View items as a grid of thumbnails."
+msgstr "Vizualizează articolele ca o grilă de miniaturi."
+
+msgid "View items as a list."
+msgstr "Vizualizează articolele sub forma unei liste."
+
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Stare: Importarea fișierului eșuată. Te rog repară fișierul și reimportă "
@@ -2239,17 +2119,8 @@ msgstr "Eroare duplicând:"
 msgid "Unable to update dependencies:"
 msgstr "Imposibil de actualizat dependințele:"
 
-msgid "Provided name contains invalid characters."
-msgstr "Numele furnizat conține caractere nevalide."
-
 msgid "A file or folder with this name already exists."
 msgstr "Un fișier sau un director cu acest nume există deja."
-
-msgid "Renaming file:"
-msgstr "Redenumind fișierul:"
-
-msgid "Renaming folder:"
-msgstr "Redenumind directorul:"
 
 msgid "Duplicating file:"
 msgstr "Duplicând fișierul:"
@@ -2263,11 +2134,8 @@ msgstr "Nouă scenă moștenită"
 msgid "Set As Main Scene"
 msgstr "Setează ca scenă principală"
 
-msgid "Add to Favorites"
-msgstr "Adauga la Favorite"
-
-msgid "Remove from Favorites"
-msgstr "Eliminare din Preferințe"
+msgid "Open Scenes"
+msgstr "Deschide Scene"
 
 msgid "Edit Dependencies..."
 msgstr "Editează Dependințele..."
@@ -2275,8 +2143,17 @@ msgstr "Editează Dependințele..."
 msgid "View Owners..."
 msgstr "Vizualizează Proprietarii..."
 
-msgid "Move To..."
-msgstr "Mută În..."
+msgid "Add to Favorites"
+msgstr "Adauga la Favorite"
+
+msgid "Remove from Favorites"
+msgstr "Eliminare din Preferințe"
+
+msgid "Open in File Manager"
+msgstr "Deschideți în Administratorul de Fișiere"
+
+msgid "New Folder..."
+msgstr "Director Nou..."
 
 msgid "New Scene..."
 msgstr "Scenă nouă..."
@@ -2286,6 +2163,9 @@ msgstr "Script nou ..."
 
 msgid "New Resource..."
 msgstr "Resursă nouă ..."
+
+msgid "Copy Path"
+msgstr "Copiere cale"
 
 msgid "Duplicate..."
 msgstr "Duplicați..."
@@ -2305,9 +2185,6 @@ msgid ""
 msgstr ""
 "Se Scanează Fișierele,\n"
 "Te Rog Așteaptă..."
-
-msgid "Move"
-msgstr "Mută"
 
 msgid "Find in Files"
 msgstr "Caută în fișiere"
@@ -2356,6 +2233,117 @@ msgstr "Editor Grup"
 
 msgid "Manage Groups"
 msgstr "Gestionați grupuri"
+
+msgid "Move"
+msgstr "Mută"
+
+msgid "Please select a base directory first."
+msgstr "Vă rugăm să selectaţi mai întâi un director de bază."
+
+msgid "Choose a Directory"
+msgstr "Alegeţi un Director"
+
+msgid "Network"
+msgstr "Rețea"
+
+msgid "Select Current Folder"
+msgstr "Selectaţi directorul curent"
+
+msgid "Select This Folder"
+msgstr "Selectaţi directorul curent"
+
+msgid "All Recognized"
+msgstr "Toate Recunoscute"
+
+msgid "All Files (*)"
+msgstr "Toate Fişierele (*)"
+
+msgid "Open a File"
+msgstr "Deschideți un Fișier"
+
+msgid "Open File(s)"
+msgstr "Deschideți Fișier(e)"
+
+msgid "Open a Directory"
+msgstr "Deschideţi un Director"
+
+msgid "Open a File or Directory"
+msgstr "Deschideți un Fişier sau Director"
+
+msgid "Save a File"
+msgstr "Salvați un Fișier"
+
+msgid "Go Back"
+msgstr "Înapoi"
+
+msgid "Go Forward"
+msgstr "Înainte"
+
+msgid "Go Up"
+msgstr "Sus"
+
+msgid "Toggle Hidden Files"
+msgstr "Comutați Fișiere Ascunse"
+
+msgid "Toggle Favorite"
+msgstr "Comutați Favorite"
+
+msgid "Toggle Mode"
+msgstr "Comutare mod"
+
+msgid "Focus Path"
+msgstr "Cale focalizare"
+
+msgid "Move Favorite Up"
+msgstr "Mutare favorită în sus"
+
+msgid "Move Favorite Down"
+msgstr "Mutare favorită în jos"
+
+msgid "Go to previous folder."
+msgstr "Accesați Directorul Precedent."
+
+msgid "Go to next folder."
+msgstr "Mergi la următorul director."
+
+msgid "Go to parent folder."
+msgstr "Mergi la Directorul Părinte."
+
+msgid "Refresh files."
+msgstr "Reîmprospătează filele."
+
+msgid "(Un)favorite current folder."
+msgstr "(Șterge)Adaugă directorul curent la favorite."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Comutați Vizibilitatea Fișierelor Ascunse."
+
+msgid "Directories & Files:"
+msgstr "Directoare și Fişiere:"
+
+msgid "Preview:"
+msgstr "Previzualizați:"
+
+msgid "File:"
+msgstr "Fișier:"
+
+msgid "No sub-resources found."
+msgstr "Nu s-a găsit nici o sub-resursă."
+
+msgid "Play the project."
+msgstr "Rulează proiectul."
+
+msgid "Play the edited scene."
+msgstr "Rulează scena editată."
+
+msgid "Quick Run Scene..."
+msgstr "Rulează Rapid Scena..."
+
+msgid "Open in Editor"
+msgstr "Deschidere în Editor"
+
+msgid "Open Script:"
+msgstr "Deschide scriptul:"
 
 msgid "Reimport"
 msgstr "Reimportă"
@@ -2650,9 +2638,6 @@ msgstr "Creați noduri noi."
 
 msgid "Connect nodes."
 msgstr "Conectați nodurile."
-
-msgid "Group Selected Node(s)"
-msgstr "Grupează Nodurile Selectate"
 
 msgid "Transition:"
 msgstr "Tranziție:"
@@ -2964,6 +2949,9 @@ msgstr "Blochează Nodurile Selectate"
 msgid "Unlock Selected Node(s)"
 msgstr "Deblochează Nodurile Selectate"
 
+msgid "Group Selected Node(s)"
+msgstr "Grupează Nodurile Selectate"
+
 msgid "Ungroup Selected Node(s)"
 msgstr "Degrupează Nodurile Selectate"
 
@@ -3102,47 +3090,20 @@ msgstr "Culori de Emisie"
 msgid "Create Emission Points From Node"
 msgstr "Creare Puncte de Emisie din Nod"
 
-msgid "Flat 1"
-msgstr "Neted 1"
-
-msgid "Smoothstep"
-msgstr "PasOmogen"
-
-msgid "Modify Curve Point"
-msgstr "Modifică Punctul Curbei"
-
-msgid "Modify Curve Tangent"
-msgstr "Modifică Tangenta Curbei"
-
 msgid "Load Curve Preset"
 msgstr "Încarcă Presetare a Curbei"
-
-msgid "Add Point"
-msgstr "Adaugă Punct"
-
-msgid "Remove Point"
-msgstr "Elimină Punct"
-
-msgid "Left Linear"
-msgstr "Stânga Liniară"
-
-msgid "Right Linear"
-msgstr "Dreapta Liniară"
-
-msgid "Load Preset"
-msgstr "Încarcă Presetare"
 
 msgid "Remove Curve Point"
 msgstr "Elimină Punctul Curbei"
 
-msgid "Toggle Curve Linear Tangent"
-msgstr "Comută Tangenta Liniară a Curbei"
+msgid "Modify Curve Point"
+msgstr "Modifică Punctul Curbei"
 
 msgid "Hold Shift to edit tangents individually"
 msgstr "Ține apăsat Shift pentru a edita individual tangentele"
 
-msgid "Right click to add point"
-msgstr "Click dreapta pentru adăugare punct"
+msgid "Smoothstep"
+msgstr "PasOmogen"
 
 msgid "Deploy with Remote Debug"
 msgstr "Lansează cu Depanare la Distanță"
@@ -3345,6 +3306,12 @@ msgstr "Cantitate:"
 msgid "Populate"
 msgstr "Populare"
 
+msgid "Edit Poly"
+msgstr "Editează Poligon"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Editează Poligon (Elimină Punct)"
+
 msgid "Create Navigation Polygon"
 msgstr "Creare Poligon de Navigare"
 
@@ -3495,12 +3462,6 @@ msgstr "Configurare grilă:"
 msgid "Create Polygon3D"
 msgstr "Crează Poligon3D"
 
-msgid "Edit Poly"
-msgstr "Editează Poligon"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Editează Poligon (Elimină Punct)"
-
 msgid "ERROR: Couldn't load resource!"
 msgstr "EROARE: Resursă imposibil de încărcat !"
 
@@ -3518,9 +3479,6 @@ msgstr "Clip-board de resurse gol !"
 
 msgid "Paste Resource"
 msgstr "Lipiți Resursa"
-
-msgid "Open in Editor"
-msgstr "Deschidere în Editor"
 
 msgid "Path to AnimationPlayer is invalid"
 msgstr "Calea către AnimationPlayer nu este validă"
@@ -3596,6 +3554,9 @@ msgstr "Animaţii:"
 
 msgid "Zoom Reset"
 msgstr "Resetare zoom"
+
+msgid "Size"
+msgstr "Mărimea"
 
 msgid "Snap Mode:"
 msgstr "Mod Snap:"
@@ -3716,9 +3677,6 @@ msgstr "Adaugă/Creează un Nod nou."
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Curăță Derivarea? (Fără Întoarcere)"
 
-msgid "Open Script:"
-msgstr "Deschide scriptul:"
-
 msgid "Path is empty."
 msgstr "Calea este goală."
 
@@ -3770,9 +3728,6 @@ msgstr "Ieșire RPC"
 msgid "Config"
 msgstr "Configurare"
 
-msgid "Size"
-msgstr "Mărimea"
-
 msgid "Network Profiler"
 msgstr "Analizator Network"
 
@@ -3818,11 +3773,11 @@ msgstr "Analiza geometriei..."
 msgid "Done!"
 msgstr "Efectuat!"
 
-msgid "Select device from the list"
-msgstr "Selectează un dispozitiv din listă"
-
 msgid "Invalid package name:"
 msgstr "Nume pachet nevalid:"
+
+msgid "Select device from the list"
+msgstr "Selectează un dispozitiv din listă"
 
 msgid "Signing release %s..."
 msgstr "Se semnează release-ul %s..."

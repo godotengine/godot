@@ -103,7 +103,7 @@
 # cwulveryck <cwulveryck@online.fr>, 2022.
 # Helix Sir <vincentbarkmann@gmail.com>, 2022, 2023.
 # SCHUTZ Lucas <lucas.schutz0954@gmail.com>, 2022.
-# EGuillemot <Elouen.Guillemot@gmail.com>, 2022.
+# EGuillemot <Elouen.Guillemot@gmail.com>, 2022, 2023.
 # Entiz <maxime.salido@gmail.com>, 2022.
 # Callim Ethee <callimethee@gmail.com>, 2022, 2023.
 # Hugo Berthet-Rambaud <hugoberthetrambaud@outlook.com>, 2023.
@@ -127,13 +127,14 @@
 # "Dimitri A." <dimitripilot3@gmail.com>, 2023.
 # Donovan Cartier <donovan.cartier0@gmail.com>, 2023.
 # Rémi Verschelde <remi@godotengine.org>, 2023.
+# Nifou <nifou@mailfence.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-19 06:49+0000\n"
-"Last-Translator: Rémi Verschelde <remi@godotengine.org>\n"
+"PO-Revision-Date: 2023-06-11 23:11+0000\n"
+"Last-Translator: Nifou <nifou@mailfence.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -1728,11 +1729,8 @@ msgstr "Éditeur de dépendances"
 msgid "Search Replacement Resource:"
 msgstr "Recherche ressource de remplacement :"
 
-msgid "Open Scene"
-msgstr "Ouvrir une scène"
-
-msgid "Open Scenes"
-msgstr "Ouvrir des scènes"
+msgid "Open"
+msgstr "Ouvrir"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "Possesseur de : %s (Total : %d)"
@@ -1800,6 +1798,12 @@ msgstr "Possède"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Ressources sans propriété explicite :"
+
+msgid "Could not create folder."
+msgstr "Impossible de créer le dossier."
+
+msgid "Create Folder"
+msgstr "Créer un dossier"
 
 msgid "Thanks from the Godot community!"
 msgstr "La communauté Godot vous dit merci !"
@@ -2315,27 +2319,6 @@ msgstr "[vide]"
 msgid "[unsaved]"
 msgstr "[non enregistré]"
 
-msgid "Please select a base directory first."
-msgstr "Veuillez sélectionner un répertoire de base en premier."
-
-msgid "Could not create folder. File with that name already exists."
-msgstr "Impossible de créer un dossier. Un fichier avec ce nom existe déjà."
-
-msgid "Choose a Directory"
-msgstr "Choisir un répertoire"
-
-msgid "Create Folder"
-msgstr "Créer un dossier"
-
-msgid "Name:"
-msgstr "Nom :"
-
-msgid "Could not create folder."
-msgstr "Impossible de créer le dossier."
-
-msgid "Choose"
-msgstr "Choisir"
-
 msgid "3D Editor"
 msgstr "Éditeur 3D"
 
@@ -2488,140 +2471,6 @@ msgstr "Profil(s) d'importation"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Gérer les profils de fonctionnalités de l'éditeur"
-
-msgid "Network"
-msgstr "Réseau"
-
-msgid "Open"
-msgstr "Ouvrir"
-
-msgid "Select Current Folder"
-msgstr "Sélectionner le dossier courant"
-
-msgid "Cannot save file with an empty filename."
-msgstr "Impossible d'enregistrer un fichier sans nom."
-
-msgid "Cannot save file with a name starting with a dot."
-msgstr ""
-"Impossible d'enregistrer un fichier avec un nom commençant par un point."
-
-msgid ""
-"File \"%s\" already exists.\n"
-"Do you want to overwrite it?"
-msgstr ""
-"Le fichier \"%s\" existe déjà.\n"
-"Voulez-vous l'écraser ?"
-
-msgid "Select This Folder"
-msgstr "Sélectionner ce dossier"
-
-msgid "Copy Path"
-msgstr "Copier le chemin"
-
-msgid "Open in File Manager"
-msgstr "Ouvrir dans le gestionnaire de fichiers"
-
-msgid "Show in File Manager"
-msgstr "Montrer dans le gestionnaire de fichiers"
-
-msgid "New Folder..."
-msgstr "Nouveau dossier..."
-
-msgid "All Recognized"
-msgstr "Tous les types de fichiers reconnus"
-
-msgid "All Files (*)"
-msgstr "Tous les fichiers (*)"
-
-msgid "Open a File"
-msgstr "Ouvrir un fichier"
-
-msgid "Open File(s)"
-msgstr "Ouvrir un ou plusieurs fichiers"
-
-msgid "Open a Directory"
-msgstr "Ouvrir un répertoire"
-
-msgid "Open a File or Directory"
-msgstr "Ouvrir un fichier ou un répertoire"
-
-msgid "Save a File"
-msgstr "Enregistrer un fichier"
-
-msgid "Favorited folder does not exist anymore and will be removed."
-msgstr "Ce dossier ajouté aux favoris n'existe plus et va être supprimé."
-
-msgid "Go Back"
-msgstr "Retourner"
-
-msgid "Go Forward"
-msgstr "Avancer"
-
-msgid "Go Up"
-msgstr "Monter"
-
-msgid "Toggle Hidden Files"
-msgstr "Basculer les fichiers cachés"
-
-msgid "Toggle Favorite"
-msgstr "Basculer l'état favori"
-
-msgid "Toggle Mode"
-msgstr "Basculer le mode"
-
-msgid "Focus Path"
-msgstr "Focaliser le chemin"
-
-msgid "Move Favorite Up"
-msgstr "Déplacer le favori vers le haut"
-
-msgid "Move Favorite Down"
-msgstr "Déplacer le favori vers le bas"
-
-msgid "Go to previous folder."
-msgstr "Aller au dossier précédent."
-
-msgid "Go to next folder."
-msgstr "Aller au dossier suivant."
-
-msgid "Go to parent folder."
-msgstr "Aller au dossier parent."
-
-msgid "Refresh files."
-msgstr "Rafraîchir les fichiers."
-
-msgid "(Un)favorite current folder."
-msgstr "Ajouter ou supprimer aux favoris le dossier courant."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "Activer / désactiver la visibilité des fichiers cachés."
-
-msgid "View items as a grid of thumbnails."
-msgstr "Afficher les éléments sous forme de grille de vignettes."
-
-msgid "View items as a list."
-msgstr "Afficher les éléments sous forme de liste."
-
-msgid "Directories & Files:"
-msgstr "Répertoires et fichiers :"
-
-msgid "Preview:"
-msgstr "Aperçu :"
-
-msgid "File:"
-msgstr "Fichier :"
-
-msgid ""
-"Remove the selected files? For safety only files and empty directories can "
-"be deleted from here. (Cannot be undone.)\n"
-"Depending on your filesystem configuration, the files will either be moved "
-"to the system trash or deleted permanently."
-msgstr ""
-"Supprimer les fichiers sélectionnés ? Par sécurité seuls les fichiers et les "
-"répertoires vides peuvent être supprimé à partir d'ici. (Annulation "
-"impossible.)\n"
-"En fonction de la configuration de votre système, les fichiers seront soient "
-"déplacés vers la corbeille du système, soit supprimés définitivement."
 
 msgid "Some extensions need the editor to restart to take effect."
 msgstr ""
@@ -3002,6 +2851,9 @@ msgstr ""
 msgid "Metadata name is valid."
 msgstr "Le nom de la métadonnée est valide."
 
+msgid "Name:"
+msgstr "Nom :"
+
 msgid "Add Metadata Property for \"%s\""
 msgstr "Ajouter une Propriété Métadonnée pour \"%s\""
 
@@ -3013,6 +2865,12 @@ msgstr "Coller la valeur"
 
 msgid "Copy Property Path"
 msgstr "Copier le chemin de la propriété"
+
+msgid "Creating Mesh Previews"
+msgstr "Création des prévisualisations des maillages"
+
+msgid "Thumbnail..."
+msgstr "Vignette…"
 
 msgid "Select existing layout:"
 msgstr "Sélectionner la disposition existante :"
@@ -3198,6 +3056,9 @@ msgstr ""
 "Impossible d'enregistrer la scène. Les dépendances (instances ou héritage) "
 "n'ont sans doute pas pu être satisfaites."
 
+msgid "Save scene before running..."
+msgstr "Enregistrer la scène avant de l'exécuter..."
+
 msgid "Could not save one or more scenes!"
 msgstr "Impossible d'enregistrer la ou les scènes !"
 
@@ -3284,45 +3145,6 @@ msgstr "Les modifications risquent d'être perdues !"
 msgid "This object is read-only."
 msgstr "Cet objet est en lecture-seule."
 
-msgid ""
-"Movie Maker mode is enabled, but no movie file path has been specified.\n"
-"A default movie file path can be specified in the project settings under the "
-"Editor > Movie Writer category.\n"
-"Alternatively, for running single scenes, a `movie_file` string metadata can "
-"be added to the root node,\n"
-"specifying the path to a movie file that will be used when recording that "
-"scene."
-msgstr ""
-"Le mode Movie Maker est activé, mais aucun chemin d'accès vers un fichier de "
-"cinématique n'a été spécifié.\n"
-"Un chemin d'accès par défaut peut-être spécifié dans les paramètres du "
-"projet sous la catégorie Éditeur > Movie Writer.\n"
-"Autrement, pour exécuter des scènes seules, une chaine de caractères "
-"métadonnée `movie_file` peut être ajoutée au nœud racine,\n"
-"spécifiant le chemin d'accès au fichier de cinématique qui sera utilisé lors "
-"de l'enregistrement de la scène."
-
-msgid "There is no defined scene to run."
-msgstr "Il n'y a pas de scène définie pour être lancée."
-
-msgid "Save scene before running..."
-msgstr "Enregistrer la scène avant de l'exécuter..."
-
-msgid "Could not start subprocess(es)!"
-msgstr "Impossible de démarrer le(s) sous-processus !"
-
-msgid "Reload the played scene."
-msgstr "Recharger la scène jouée."
-
-msgid "Play the project."
-msgstr "Lancer le projet."
-
-msgid "Play the edited scene."
-msgstr "Lancer la scène actuellement en cours d'édition."
-
-msgid "Play a custom scene."
-msgstr "Lancer une scène personnalisée."
-
 msgid "Open Base Scene"
 msgstr "Ouvrir scène de base"
 
@@ -3334,24 +3156,6 @@ msgstr "Ouvrir une scène rapidement…"
 
 msgid "Quick Open Script..."
 msgstr "Ouvrir un script rapidement…"
-
-msgid "Save & Reload"
-msgstr "Sauvegarder & Recharger"
-
-msgid "Save modified resources before reloading?"
-msgstr "Sauvegarder les modifications modifiées avant de les recharger ?"
-
-msgid "Save & Quit"
-msgstr "Sauvegarder & fermer"
-
-msgid "Save modified resources before closing?"
-msgstr "Sauvegarder les ressources modifiées avant de fermer ?"
-
-msgid "Save changes to '%s' before reloading?"
-msgstr "Sauvegarder les modifications dans '%s' avant de recharger ?"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "Sauvegarder les modifications effectuées à « %s » avant de quitter ?"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s n'existe plus ! Veuillez spécifier un nouvel endroit de sauvegarde."
@@ -3419,8 +3223,17 @@ msgstr ""
 "La scène actuelle contient des changements non sauvegardés.\n"
 "Recharger la scène quand même ? Cette action ne peut pas être annulée."
 
-msgid "Quick Run Scene..."
-msgstr "Lancer une scène rapidement…"
+msgid "Save & Reload"
+msgstr "Sauvegarder & Recharger"
+
+msgid "Save modified resources before reloading?"
+msgstr "Sauvegarder les modifications modifiées avant de les recharger ?"
+
+msgid "Save & Quit"
+msgstr "Sauvegarder & fermer"
+
+msgid "Save modified resources before closing?"
+msgstr "Sauvegarder les ressources modifiées avant de fermer ?"
 
 msgid "Save changes to the following scene(s) before reloading?"
 msgstr ""
@@ -3507,6 +3320,9 @@ msgstr "La scène « %s » a des dépendences cassées :"
 msgid "Clear Recent Scenes"
 msgstr "Effacer la liste des scènes récentes"
 
+msgid "There is no defined scene to run."
+msgstr "Il n'y a pas de scène définie pour être lancée."
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -3544,8 +3360,14 @@ msgstr "Supprimer la disposition"
 msgid "Default"
 msgstr "Défaut"
 
+msgid "Save changes to '%s' before reloading?"
+msgstr "Sauvegarder les modifications dans '%s' avant de recharger ?"
+
 msgid "Save & Close"
 msgstr "Enregistrer & fermer"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "Sauvegarder les modifications effectuées à « %s » avant de quitter ?"
 
 msgid "Show in FileSystem"
 msgstr "Montrer dans le système de fichiers"
@@ -3667,12 +3489,6 @@ msgstr "Paramètres du projet"
 msgid "Version Control"
 msgstr "Contrôle de version"
 
-msgid "Create Version Control Metadata"
-msgstr "Créer des métadonnées de contrôle de version"
-
-msgid "Version Control Settings"
-msgstr "Paramètres de contrôle de version"
-
 msgid "Export..."
 msgstr "Exporter..."
 
@@ -3764,45 +3580,6 @@ msgstr "À propos de Godot"
 msgid "Support Godot Development"
 msgstr "Soutenir le développement de Godot"
 
-msgid "Run the project's default scene."
-msgstr "Exécuter la scène par défaut du projet."
-
-msgid "Run Project"
-msgstr "Lancer le projet"
-
-msgid "Pause the running project's execution for debugging."
-msgstr "Mettre en pause l'exécution du projet en cours pour le débogage."
-
-msgid "Pause Running Project"
-msgstr "Suspendre le projet en cours d’exécution"
-
-msgid "Stop the currently running project."
-msgstr "Arrêter le projet en cours."
-
-msgid "Stop Running Project"
-msgstr "Arrêter l'exécution du projet"
-
-msgid "Run the currently edited scene."
-msgstr "Exécuter la scène en cours d'édition."
-
-msgid "Run Current Scene"
-msgstr "Exécuter la scène actuelle"
-
-msgid "Run a specific scene."
-msgstr "Exécuter une scène spécifique."
-
-msgid "Run Specific Scene"
-msgstr "Exécuter scène spécifique"
-
-msgid ""
-"Enable Movie Maker mode.\n"
-"The project will run at stable FPS and the visual and audio output will be "
-"recorded to a video file."
-msgstr ""
-"Activer le mode Movie Maker.\n"
-"Le projet s'exécutera à IPS stable et les sorties vidéo et audio seront "
-"enregistrées dans un fichier vidéo."
-
 msgid "Choose a renderer."
 msgstr "Choisir un moteur de rendu."
 
@@ -3890,6 +3667,9 @@ msgstr ""
 "Supprimez le répertoire « res://android/build » manuellement avant de "
 "retenter cette opération."
 
+msgid "Show in File Manager"
+msgstr "Montrer dans le gestionnaire de fichiers"
+
 msgid "Import Templates From ZIP File"
 msgstr "Importer des modèles depuis un fichier ZIP"
 
@@ -3920,6 +3700,12 @@ msgstr "Recharger"
 
 msgid "Resave"
 msgstr "Ré-enregistrer"
+
+msgid "Create Version Control Metadata"
+msgstr "Créer des métadonnées de contrôle de version"
+
+msgid "Version Control Settings"
+msgstr "Paramètres de contrôle de version"
 
 msgid "New Inherited"
 msgstr "Nouvelle scène héritée"
@@ -3953,18 +3739,6 @@ msgstr "Ok"
 
 msgid "Warning!"
 msgstr "Avertissement !"
-
-msgid "No sub-resources found."
-msgstr "Aucune sous-ressource n'a été trouvée."
-
-msgid "Open a list of sub-resources."
-msgstr "Ouvrir une liste de sous-ressources."
-
-msgid "Creating Mesh Previews"
-msgstr "Création des prévisualisations des maillages"
-
-msgid "Thumbnail..."
-msgstr "Vignette…"
 
 msgid "Main Script:"
 msgstr "Script principal :"
@@ -4198,22 +3972,6 @@ msgstr "Raccourcis"
 
 msgid "Binding"
 msgstr "Liaison"
-
-msgid ""
-"Hold %s to round to integers.\n"
-"Hold Shift for more precise changes."
-msgstr ""
-"Maintenir %s pour arrondir à l'entier près.\n"
-"Maintenir Maj. pour des changements plus précis."
-
-msgid "No notifications."
-msgstr "Aucune notifications."
-
-msgid "Show notifications."
-msgstr "Afficher les notifications."
-
-msgid "Silence the notifications."
-msgstr "Passer sous silence les notifications."
 
 msgid "Left Stick Left, Joystick 0 Left"
 msgstr "Stick gauche direction gauche, Joystick 0 direction gauche"
@@ -4826,6 +4584,12 @@ msgstr "Confirmer le chemin"
 msgid "Favorites"
 msgstr "Favoris"
 
+msgid "View items as a grid of thumbnails."
+msgstr "Afficher les éléments sous forme de grille de vignettes."
+
+msgid "View items as a list."
+msgstr "Afficher les éléments sous forme de liste."
+
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Statut : L'importation du fichier a échoué. Veuillez corriger le fichier et "
@@ -4858,9 +4622,6 @@ msgstr "Impossible de charger la ressource à %s : %s"
 msgid "Unable to update dependencies:"
 msgstr "Impossible de mettre à jour les dépendences :"
 
-msgid "Provided name contains invalid characters."
-msgstr "Le nom renseigné contient des caractères invalides."
-
 msgid ""
 "This file extension is not recognized by the editor.\n"
 "If you want to rename it anyway, use your operating system's file manager.\n"
@@ -4876,27 +4637,6 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "Un fichier ou un dossier avec ce nom existe déjà."
 
-msgid ""
-"The following files or folders conflict with items in the target location "
-"'%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Do you wish to overwrite them?"
-msgstr ""
-"Les fichiers ou dossiers suivants entrent en conflit avec des éléments de la "
-"destination '%s' :\n"
-"\n"
-"%s\n"
-"\n"
-"Souhaitez-vous les écraser ?"
-
-msgid "Renaming file:"
-msgstr "Renommer le fichier :"
-
-msgid "Renaming folder:"
-msgstr "Renommer le dossier :"
-
 msgid "Duplicating file:"
 msgstr "Duplication du fichier :"
 
@@ -4909,23 +4649,17 @@ msgstr "Nouvelle scène héritée"
 msgid "Set As Main Scene"
 msgstr "Définir comme scène principale"
 
+msgid "Open Scenes"
+msgstr "Ouvrir des scènes"
+
 msgid "Instantiate"
 msgstr "Instancier"
-
-msgid "Add to Favorites"
-msgstr "Ajouter aux favoris"
-
-msgid "Remove from Favorites"
-msgstr "Supprimer des favoris"
 
 msgid "Edit Dependencies..."
 msgstr "Modifier les dépendances…"
 
 msgid "View Owners..."
 msgstr "Voir les propriétaires…"
-
-msgid "Move To..."
-msgstr "Déplacer vers…"
 
 msgid "Folder..."
 msgstr "Dossier..."
@@ -4941,6 +4675,18 @@ msgstr "Ressource…"
 
 msgid "TextFile..."
 msgstr "Fichier texte..."
+
+msgid "Add to Favorites"
+msgstr "Ajouter aux favoris"
+
+msgid "Remove from Favorites"
+msgstr "Supprimer des favoris"
+
+msgid "Open in File Manager"
+msgstr "Ouvrir dans le gestionnaire de fichiers"
+
+msgid "New Folder..."
+msgstr "Nouveau dossier..."
 
 msgid "New Scene..."
 msgstr "Nouvelle scène..."
@@ -4975,6 +4721,9 @@ msgstr "Trier par date de modification (plus récent au moins récent)"
 msgid "Sort by First Modified"
 msgstr "Trier par date de modification (moins récent au plus récent)"
 
+msgid "Copy Path"
+msgstr "Copier le chemin"
+
 msgid "Copy UID"
 msgstr "Copier identifiant unique"
 
@@ -5008,9 +4757,6 @@ msgid ""
 msgstr ""
 "Analyse des fichiers en cours,\n"
 "Veuillez patienter..."
-
-msgid "Move"
-msgstr "Déplacer"
 
 msgid "Overwrite"
 msgstr "Écraser"
@@ -5099,6 +4845,306 @@ msgstr "Editeur de groupe"
 
 msgid "Manage Groups"
 msgstr "Gérer les groupes"
+
+msgid "Move"
+msgstr "Déplacer"
+
+msgid "Please select a base directory first."
+msgstr "Veuillez sélectionner un répertoire de base en premier."
+
+msgid "Could not create folder. File with that name already exists."
+msgstr "Impossible de créer un dossier. Un fichier avec ce nom existe déjà."
+
+msgid "Choose a Directory"
+msgstr "Choisir un répertoire"
+
+msgid "Network"
+msgstr "Réseau"
+
+msgid "Select Current Folder"
+msgstr "Sélectionner le dossier courant"
+
+msgid "Cannot save file with an empty filename."
+msgstr "Impossible d'enregistrer un fichier sans nom."
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr ""
+"Impossible d'enregistrer un fichier avec un nom commençant par un point."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Le fichier \"%s\" existe déjà.\n"
+"Voulez-vous l'écraser ?"
+
+msgid "Select This Folder"
+msgstr "Sélectionner ce dossier"
+
+msgid "All Recognized"
+msgstr "Tous les types de fichiers reconnus"
+
+msgid "All Files (*)"
+msgstr "Tous les fichiers (*)"
+
+msgid "Open a File"
+msgstr "Ouvrir un fichier"
+
+msgid "Open File(s)"
+msgstr "Ouvrir un ou plusieurs fichiers"
+
+msgid "Open a Directory"
+msgstr "Ouvrir un répertoire"
+
+msgid "Open a File or Directory"
+msgstr "Ouvrir un fichier ou un répertoire"
+
+msgid "Save a File"
+msgstr "Enregistrer un fichier"
+
+msgid "Favorited folder does not exist anymore and will be removed."
+msgstr "Ce dossier ajouté aux favoris n'existe plus et va être supprimé."
+
+msgid "Go Back"
+msgstr "Retourner"
+
+msgid "Go Forward"
+msgstr "Avancer"
+
+msgid "Go Up"
+msgstr "Monter"
+
+msgid "Toggle Hidden Files"
+msgstr "Basculer les fichiers cachés"
+
+msgid "Toggle Favorite"
+msgstr "Basculer l'état favori"
+
+msgid "Toggle Mode"
+msgstr "Basculer le mode"
+
+msgid "Focus Path"
+msgstr "Focaliser le chemin"
+
+msgid "Move Favorite Up"
+msgstr "Déplacer le favori vers le haut"
+
+msgid "Move Favorite Down"
+msgstr "Déplacer le favori vers le bas"
+
+msgid "Go to previous folder."
+msgstr "Aller au dossier précédent."
+
+msgid "Go to next folder."
+msgstr "Aller au dossier suivant."
+
+msgid "Go to parent folder."
+msgstr "Aller au dossier parent."
+
+msgid "Refresh files."
+msgstr "Rafraîchir les fichiers."
+
+msgid "(Un)favorite current folder."
+msgstr "Ajouter ou supprimer aux favoris le dossier courant."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Activer / désactiver la visibilité des fichiers cachés."
+
+msgid "Directories & Files:"
+msgstr "Répertoires et fichiers :"
+
+msgid "Preview:"
+msgstr "Aperçu :"
+
+msgid "File:"
+msgstr "Fichier :"
+
+msgid ""
+"Remove the selected files? For safety only files and empty directories can "
+"be deleted from here. (Cannot be undone.)\n"
+"Depending on your filesystem configuration, the files will either be moved "
+"to the system trash or deleted permanently."
+msgstr ""
+"Supprimer les fichiers sélectionnés ? Par sécurité seuls les fichiers et les "
+"répertoires vides peuvent être supprimé à partir d'ici. (Annulation "
+"impossible.)\n"
+"En fonction de la configuration de votre système, les fichiers seront soient "
+"déplacés vers la corbeille du système, soit supprimés définitivement."
+
+msgid "No sub-resources found."
+msgstr "Aucune sous-ressource n'a été trouvée."
+
+msgid "Open a list of sub-resources."
+msgstr "Ouvrir une liste de sous-ressources."
+
+msgid "Play the project."
+msgstr "Lancer le projet."
+
+msgid "Play the edited scene."
+msgstr "Lancer la scène actuellement en cours d'édition."
+
+msgid "Play a custom scene."
+msgstr "Lancer une scène personnalisée."
+
+msgid "Reload the played scene."
+msgstr "Recharger la scène jouée."
+
+msgid "Quick Run Scene..."
+msgstr "Lancer une scène rapidement…"
+
+msgid ""
+"Movie Maker mode is enabled, but no movie file path has been specified.\n"
+"A default movie file path can be specified in the project settings under the "
+"Editor > Movie Writer category.\n"
+"Alternatively, for running single scenes, a `movie_file` string metadata can "
+"be added to the root node,\n"
+"specifying the path to a movie file that will be used when recording that "
+"scene."
+msgstr ""
+"Le mode Movie Maker est activé, mais aucun chemin d'accès vers un fichier de "
+"cinématique n'a été spécifié.\n"
+"Un chemin d'accès par défaut peut-être spécifié dans les paramètres du "
+"projet sous la catégorie Éditeur > Movie Writer.\n"
+"Autrement, pour exécuter des scènes seules, une chaine de caractères "
+"métadonnée `movie_file` peut être ajoutée au nœud racine,\n"
+"spécifiant le chemin d'accès au fichier de cinématique qui sera utilisé lors "
+"de l'enregistrement de la scène."
+
+msgid "Could not start subprocess(es)!"
+msgstr "Impossible de démarrer le(s) sous-processus !"
+
+msgid "Run the project's default scene."
+msgstr "Exécuter la scène par défaut du projet."
+
+msgid "Run Project"
+msgstr "Lancer le projet"
+
+msgid "Pause the running project's execution for debugging."
+msgstr "Mettre en pause l'exécution du projet en cours pour le débogage."
+
+msgid "Pause Running Project"
+msgstr "Suspendre le projet en cours d’exécution"
+
+msgid "Stop the currently running project."
+msgstr "Arrêter le projet en cours."
+
+msgid "Stop Running Project"
+msgstr "Arrêter l'exécution du projet"
+
+msgid "Run the currently edited scene."
+msgstr "Exécuter la scène en cours d'édition."
+
+msgid "Run Current Scene"
+msgstr "Exécuter la scène actuelle"
+
+msgid "Run a specific scene."
+msgstr "Exécuter une scène spécifique."
+
+msgid "Run Specific Scene"
+msgstr "Exécuter scène spécifique"
+
+msgid ""
+"Enable Movie Maker mode.\n"
+"The project will run at stable FPS and the visual and audio output will be "
+"recorded to a video file."
+msgstr ""
+"Activer le mode Movie Maker.\n"
+"Le projet s'exécutera à IPS stable et les sorties vidéo et audio seront "
+"enregistrées dans un fichier vidéo."
+
+msgid ""
+"Hold %s to round to integers.\n"
+"Hold Shift for more precise changes."
+msgstr ""
+"Maintenir %s pour arrondir à l'entier près.\n"
+"Maintenir Maj. pour des changements plus précis."
+
+msgid "No notifications."
+msgstr "Aucune notifications."
+
+msgid "Show notifications."
+msgstr "Afficher les notifications."
+
+msgid "Silence the notifications."
+msgstr "Passer sous silence les notifications."
+
+msgid "Toggle Visible"
+msgstr "Rendre visible"
+
+msgid "Unlock Node"
+msgstr "Déverrouiller le nœud"
+
+msgid "Button Group"
+msgstr "Bouton de groupe"
+
+msgid "Disable Scene Unique Name"
+msgstr "Désactiver le nom unique de la scène"
+
+msgid "(Connecting From)"
+msgstr "(Connexion à partir de)"
+
+msgid "Node configuration warning:"
+msgstr "Avertissement de configuration de nœud :"
+
+msgid ""
+"This node can be accessed from within anywhere in the scene by preceding it "
+"with the '%s' prefix in a node path.\n"
+"Click to disable this."
+msgstr ""
+"Ce Nœud est accessible de n'importe où dans la scène en le préfixant de '%s' "
+"dans un chemin de Nœud.\n"
+"Cliquer pour désactiver cela."
+
+msgid "Node has one connection."
+msgid_plural "Node has {num} connections."
+msgstr[0] "Le nœud a une connexion."
+msgstr[1] "Le nœud a {num} connexions."
+
+msgid "Node is in this group:"
+msgid_plural "Node is in the following groups:"
+msgstr[0] "Le nœud fait partie du groupe :"
+msgstr[1] "Le nœud fait partie des groupes :"
+
+msgid "Click to show signals dock."
+msgstr "Cliquez pour afficher le dock des signaux."
+
+msgid "Open in Editor"
+msgstr "Ouvrir dans l'éditeur"
+
+msgid "Open Script:"
+msgstr "Ouvrir le script :"
+
+msgid ""
+"Node is locked.\n"
+"Click to unlock it."
+msgstr ""
+"Le nœud est verrouillé.\n"
+"Cliquer pour le déverrouiller."
+
+msgid ""
+"AnimationPlayer is pinned.\n"
+"Click to unpin."
+msgstr ""
+"AnimationPlayer est épinglé.\n"
+"Cliquez pour détacher."
+
+msgid "Invalid node name, the following characters are not allowed:"
+msgstr "Nom de nœud invalide, les caractères suivants ne sont pas autorisés :"
+
+msgid "Another node already uses this unique name in the scene."
+msgstr "Un autre Nœud utilise ce nom unique dans la scène."
+
+msgid "Rename Node"
+msgstr "Renommer le nœud"
+
+msgid "Scene Tree (Nodes):"
+msgstr "Arbre de scène (nœuds) :"
+
+msgid "Node Configuration Warning!"
+msgstr "Avertissement de configuration de nœud !"
+
+msgid "Select a Node"
+msgstr "Sélectionner un nœud"
 
 msgid "The Beginning"
 msgstr "Le commencement"
@@ -5940,9 +5986,6 @@ msgstr "Supprimer le point BlendSpace2D"
 msgid "Remove BlendSpace2D Triangle"
 msgstr "Supprimer le triangle BlendSpace2D"
 
-msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr "BlendSpace2D n'appartient pas à un nœud AnimationTree."
-
 msgid "No triangles exist, so no blending can take place."
 msgstr "Il n'existe pas de triangles, donc aucun mélange ne peut avoir lieu."
 
@@ -6357,9 +6400,6 @@ msgstr "Déplacer le nœud"
 msgid "Transition exists!"
 msgstr "La transition existe !"
 
-msgid "To"
-msgstr "À"
-
 msgid "Add Node and Transition"
 msgstr "Ajouter un nœud et une transition"
 
@@ -6377,10 +6417,6 @@ msgstr "À la fin"
 
 msgid "Travel"
 msgstr "Se déplacer"
-
-msgid "Start and end nodes are needed for a sub-transition."
-msgstr ""
-"Les nœuds de départ et de fin sont nécessaire pour une sous-transition."
 
 msgid "No playback resource set at path: %s."
 msgstr "Aucune ressource de lecture définie sur le chemin : %s."
@@ -6407,12 +6443,6 @@ msgstr "Créer de nouveaux nœuds."
 
 msgid "Connect nodes."
 msgstr "Connecter des nœuds."
-
-msgid "Group Selected Node(s)"
-msgstr "Grouper le(s) nœud(s) sélectionné(s)"
-
-msgid "Ungroup Selected Node"
-msgstr "Dégrouper le nœud sélectionné"
 
 msgid "Remove selected node or transition."
 msgstr "Supprimer le nœud sélectionné ou la transition."
@@ -6935,6 +6965,9 @@ msgstr "Déverrouiller le(s) nœud(s) sélectionné(s)"
 msgid "Make selected node's children not selectable."
 msgstr "Rendre non-sélectionnable les enfants du nœud sélectionné."
 
+msgid "Group Selected Node(s)"
+msgstr "Grouper le(s) nœud(s) sélectionné(s)"
+
 msgid "Make selected node's children selectable."
 msgstr "Rendre sélectionnable les enfants du nœud sélectionné."
 
@@ -7268,11 +7301,17 @@ msgstr "CPUParticles3D"
 msgid "Create Emission Points From Node"
 msgstr "Créer des points d'émission depuis le nœud"
 
-msgid "Flat 0"
-msgstr "Plat 0"
+msgid "Load Curve Preset"
+msgstr "Charger un préréglage de courbe"
 
-msgid "Flat 1"
-msgstr "Plat 1"
+msgid "Remove Curve Point"
+msgstr "Supprimer point de courbe"
+
+msgid "Modify Curve Point"
+msgstr "Modifier le point de courbe"
+
+msgid "Hold Shift to edit tangents individually"
+msgstr "Maintenez Maj. appuyée pour modifier les tangentes individuellement"
 
 msgid "Ease In"
 msgstr "Ease in"
@@ -7283,41 +7322,8 @@ msgstr "Ease out"
 msgid "Smoothstep"
 msgstr "Progression douce"
 
-msgid "Modify Curve Point"
-msgstr "Modifier le point de courbe"
-
-msgid "Modify Curve Tangent"
-msgstr "Modifier la tangente de courbes"
-
-msgid "Load Curve Preset"
-msgstr "Charger un préréglage de courbe"
-
-msgid "Add Point"
-msgstr "Ajouter un point"
-
-msgid "Remove Point"
-msgstr "Supprimer un point"
-
-msgid "Left Linear"
-msgstr "Linéaire gauche"
-
-msgid "Right Linear"
-msgstr "Linéaire droite"
-
-msgid "Load Preset"
-msgstr "Charger un préréglage"
-
-msgid "Remove Curve Point"
-msgstr "Supprimer point de courbe"
-
-msgid "Toggle Curve Linear Tangent"
-msgstr "Basculer vers tangente linéaire de courbe"
-
-msgid "Hold Shift to edit tangents individually"
-msgstr "Maintenez Maj. appuyée pour modifier les tangentes individuellement"
-
-msgid "Right click to add point"
-msgstr "Clic droit pour ajouter un point"
+msgid "Toggle Grid Snap"
+msgstr "Activer/Désactiver le magnétisme de la grille"
 
 msgid "Debug with External Editor"
 msgstr "Déboguer avec un éditeur externe"
@@ -7465,6 +7471,69 @@ msgstr " - Variation"
 msgid "Unable to preview font"
 msgstr "Impossible de prévisualiser la police"
 
+msgid "Change AudioStreamPlayer3D Emission Angle"
+msgstr "Changer l'angle d'émission AudioStreamPlayer3D"
+
+msgid "Change Camera FOV"
+msgstr "Changer le champ de vision d'une caméra"
+
+msgid "Change Camera Size"
+msgstr "Changer la taille d'une caméra"
+
+msgid "Change Sphere Shape Radius"
+msgstr "Changer le rayon d'une forme en sphère"
+
+msgid "Change Box Shape Size"
+msgstr "Changer l'étendue de la forme rectangulaire"
+
+msgid "Change Capsule Shape Radius"
+msgstr "Changer le rayon de la forme capsule"
+
+msgid "Change Capsule Shape Height"
+msgstr "Changer la hauteur de la forme capsule"
+
+msgid "Change Cylinder Shape Radius"
+msgstr "Changer le rayon de la forme du cylindre"
+
+msgid "Change Cylinder Shape Height"
+msgstr "Changer la hauteur de la forme du cylindre"
+
+msgid "Change Separation Ray Shape Length"
+msgstr "Changer la longueur de la forme du rayon de séparation"
+
+msgid "Change Decal Size"
+msgstr "Changer la taille du décalque"
+
+msgid "Change Fog Volume Size"
+msgstr "Changer la taille du volume de brouillard"
+
+msgid "Change Particles AABB"
+msgstr "Changer particules AABB"
+
+msgid "Change Radius"
+msgstr "Changer le rayon"
+
+msgid "Change Light Radius"
+msgstr "Changer le rayon d'une lumière"
+
+msgid "Start Location"
+msgstr "Emplacement de départ"
+
+msgid "End Location"
+msgstr "Emplacement d'arrivée"
+
+msgid "Change Start Position"
+msgstr "Modifier la position de départ"
+
+msgid "Change End Position"
+msgstr "Modifier la position d'arrivée"
+
+msgid "Change Probe Size"
+msgstr "Changer la taille de la sonde"
+
+msgid "Change Notifier AABB"
+msgstr "Changer le notificateur AABB"
+
 msgid "Convert to CPUParticles2D"
 msgstr "Convertir en CPUParticles2D"
 
@@ -7588,9 +7657,6 @@ msgstr "Échanger les points de remplissage du GradientTexture2D"
 
 msgid "Swap Gradient Fill Points"
 msgstr "Échanger les points de remplissage du dégradé"
-
-msgid "Toggle Grid Snap"
-msgstr "Activer/Désactiver le magnétisme de la grille"
 
 msgid "Configure"
 msgstr "Configurer"
@@ -7944,74 +8010,17 @@ msgstr "Définir la position de départ"
 msgid "Set end_position"
 msgstr "Définir la position d'arrivée"
 
+msgid "Edit Poly"
+msgstr "Modifier le polygone"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Modifier le polygone (supprimer un point)"
+
 msgid "Create Navigation Polygon"
 msgstr "Créer Polygone de Navigation"
 
 msgid "Unnamed Gizmo"
 msgstr "Gizmo sans nom"
-
-msgid "Change Light Radius"
-msgstr "Changer le rayon d'une lumière"
-
-msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr "Changer l'angle d'émission AudioStreamPlayer3D"
-
-msgid "Change Camera FOV"
-msgstr "Changer le champ de vision d'une caméra"
-
-msgid "Change Camera Size"
-msgstr "Changer la taille d'une caméra"
-
-msgid "Change Sphere Shape Radius"
-msgstr "Changer le rayon d'une forme en sphère"
-
-msgid "Change Box Shape Size"
-msgstr "Changer l'étendue de la forme rectangulaire"
-
-msgid "Change Notifier AABB"
-msgstr "Changer le notificateur AABB"
-
-msgid "Change Particles AABB"
-msgstr "Changer particules AABB"
-
-msgid "Change Radius"
-msgstr "Changer le rayon"
-
-msgid "Change Probe Size"
-msgstr "Changer la taille de la sonde"
-
-msgid "Change Decal Size"
-msgstr "Changer la taille du décalque"
-
-msgid "Change Capsule Shape Radius"
-msgstr "Changer le rayon de la forme capsule"
-
-msgid "Change Capsule Shape Height"
-msgstr "Changer la hauteur de la forme capsule"
-
-msgid "Change Cylinder Shape Radius"
-msgstr "Changer le rayon de la forme du cylindre"
-
-msgid "Change Cylinder Shape Height"
-msgstr "Changer la hauteur de la forme du cylindre"
-
-msgid "Change Separation Ray Shape Length"
-msgstr "Changer la longueur de la forme du rayon de séparation"
-
-msgid "Start Location"
-msgstr "Emplacement de départ"
-
-msgid "End Location"
-msgstr "Emplacement d'arrivée"
-
-msgid "Change Start Position"
-msgstr "Modifier la position de départ"
-
-msgid "Change End Position"
-msgstr "Modifier la position d'arrivée"
-
-msgid "Change Fog Volume Size"
-msgstr "Changer la taille du volume de brouillard"
 
 msgid "Transform Aborted."
 msgstr "Transformation annulée."
@@ -8916,12 +8925,6 @@ msgstr "Synchroniser les os avec le polygone"
 msgid "Create Polygon3D"
 msgstr "Créer un Polygon3D"
 
-msgid "Edit Poly"
-msgstr "Modifier le polygone"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Modifier le polygone (supprimer un point)"
-
 msgid "ERROR: Couldn't load resource!"
 msgstr "ERREUR : Impossible de charger la ressource !"
 
@@ -8939,9 +8942,6 @@ msgstr "Le presse-papiers des ressources est vide !"
 
 msgid "Paste Resource"
 msgstr "Coller la ressource"
-
-msgid "Open in Editor"
-msgstr "Ouvrir dans l'éditeur"
 
 msgid "Load Resource"
 msgstr "Charger une ressource"
@@ -9171,6 +9171,11 @@ msgstr "Seules les ressources du système de fichiers peuvent être abaissées."
 
 msgid "Can't drop nodes without an open scene."
 msgstr "Impossible de déposer les nœuds sans scène ouverte."
+
+msgid "Can't drop nodes because script '%s' is not used in this scene."
+msgstr ""
+"Impossible de supprimer les nœuds car le script '%s' n'est pas utilisé dans "
+"cette scène."
 
 msgid "Lookup Symbol"
 msgstr "Rechercher un symbole"
@@ -9565,17 +9570,8 @@ msgstr "Déplacer l'image à droite"
 msgid "Select Frames"
 msgstr "Sélectionner des Trames"
 
-msgid "Horizontal:"
-msgstr "Horizontal :"
-
-msgid "Vertical:"
-msgstr "Vertical :"
-
-msgid "Separation:"
-msgstr "Séparation :"
-
-msgid "Select/Clear All Frames"
-msgstr "Sélectionner/Effacer toutes les trames"
+msgid "Size"
+msgstr "Taille"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "Créer des trames depuis une feuille de Sprite"
@@ -9622,6 +9618,9 @@ msgstr "Coupe automatique"
 
 msgid "Step:"
 msgstr "Pas (s) :"
+
+msgid "Separation:"
+msgstr "Séparation :"
 
 msgid "Styleboxes"
 msgstr "Styleboxes"
@@ -11071,11 +11070,11 @@ msgstr "Chemin d'installation du projet :"
 msgid "Renderer:"
 msgstr "Moteur de rendu :"
 
-msgid "Missing Project"
-msgstr "Projet manquant"
-
 msgid "Error: Project is missing on the filesystem."
 msgstr "Erreur : Le projet n'existe pas dans le système de fichier."
+
+msgid "Missing Project"
+msgstr "Projet manquant"
 
 msgid "Local"
 msgstr "Local"
@@ -11718,81 +11717,6 @@ msgstr ""
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Effacer l'héritage ? (Pas de retour en arrière !)"
 
-msgid "Toggle Visible"
-msgstr "Rendre visible"
-
-msgid "Unlock Node"
-msgstr "Déverrouiller le nœud"
-
-msgid "Button Group"
-msgstr "Bouton de groupe"
-
-msgid "Disable Scene Unique Name"
-msgstr "Désactiver le nom unique de la scène"
-
-msgid "(Connecting From)"
-msgstr "(Connexion à partir de)"
-
-msgid "Node configuration warning:"
-msgstr "Avertissement de configuration de nœud :"
-
-msgid ""
-"This node can be accessed from within anywhere in the scene by preceding it "
-"with the '%s' prefix in a node path.\n"
-"Click to disable this."
-msgstr ""
-"Ce Nœud est accessible de n'importe où dans la scène en le préfixant de '%s' "
-"dans un chemin de Nœud.\n"
-"Cliquer pour désactiver cela."
-
-msgid "Node has one connection."
-msgid_plural "Node has {num} connections."
-msgstr[0] "Le nœud a une connexion."
-msgstr[1] "Le nœud a {num} connexions."
-
-msgid "Node is in this group:"
-msgid_plural "Node is in the following groups:"
-msgstr[0] "Le nœud fait partie du groupe :"
-msgstr[1] "Le nœud fait partie des groupes :"
-
-msgid "Click to show signals dock."
-msgstr "Cliquez pour afficher le dock des signaux."
-
-msgid "Open Script:"
-msgstr "Ouvrir le script :"
-
-msgid ""
-"Node is locked.\n"
-"Click to unlock it."
-msgstr ""
-"Le nœud est verrouillé.\n"
-"Cliquer pour le déverrouiller."
-
-msgid ""
-"AnimationPlayer is pinned.\n"
-"Click to unpin."
-msgstr ""
-"AnimationPlayer est épinglé.\n"
-"Cliquez pour détacher."
-
-msgid "Invalid node name, the following characters are not allowed:"
-msgstr "Nom de nœud invalide, les caractères suivants ne sont pas autorisés :"
-
-msgid "Another node already uses this unique name in the scene."
-msgstr "Un autre Nœud utilise ce nom unique dans la scène."
-
-msgid "Rename Node"
-msgstr "Renommer le nœud"
-
-msgid "Scene Tree (Nodes):"
-msgstr "Arbre de scène (nœuds) :"
-
-msgid "Node Configuration Warning!"
-msgstr "Avertissement de configuration de nœud !"
-
-msgid "Select a Node"
-msgstr "Sélectionner un nœud"
-
 msgid "Path is empty."
 msgstr "Le chemin est vide."
 
@@ -12089,9 +12013,6 @@ msgstr "Configuration"
 msgid "Count"
 msgstr "Compte"
 
-msgid "Size"
-msgstr "Taille"
-
 msgid "Network Profiler"
 msgstr "Profileur réseau"
 
@@ -12190,6 +12111,39 @@ msgstr ""
 msgid "The package must have at least one '.' separator."
 msgstr "Le paquet doit comporter au moins un séparateur « . »."
 
+msgid "Invalid public key for APK expansion."
+msgstr "Clé publique invalide pour l'expansion APK."
+
+msgid "Invalid package name:"
+msgstr "Nom de paquet invalide :"
+
+msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
+msgstr ""
+"« Passthrough » est valide uniquement lorsque le « Mode XR » est « OpenXR »."
+
+msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+"\"Min SDK\" devrait être un nombre entier valide, mais \"%s\" n'est pas "
+"valide."
+
+msgid ""
+"\"Min SDK\" cannot be lower than %d, which is the version needed by the "
+"Godot library."
+msgstr ""
+"« Min SDK » ne peut être inférieur à %d, la version requise par la libraire "
+"de Godot."
+
+msgid ""
+"\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+"« SDK Cible » devrait être un nombre entier valide, mais « %s » n'en est pas "
+"un."
+
+msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
+msgstr ""
+"La version « Target SDK » doit être supérieure ou égale à la version « Min "
+"SDK »."
+
 msgid "Select device from the list"
 msgstr "Sélectionner appareil depuis la liste"
 
@@ -12272,45 +12226,12 @@ msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr ""
 "Impossible de trouver la commande apksigner du SDK Android build-tools."
 
-msgid "Invalid public key for APK expansion."
-msgstr "Clé publique invalide pour l'expansion APK."
-
-msgid "Invalid package name:"
-msgstr "Nom de paquet invalide :"
-
-msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
-msgstr ""
-"« Passthrough » est valide uniquement lorsque le « Mode XR » est « OpenXR »."
-
-msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
-msgstr ""
-"\"Min SDK\" devrait être un nombre entier valide, mais \"%s\" n'est pas "
-"valide."
-
-msgid ""
-"\"Min SDK\" cannot be lower than %d, which is the version needed by the "
-"Godot library."
-msgstr ""
-"« Min SDK » ne peut être inférieur à %d, la version requise par la libraire "
-"de Godot."
-
-msgid ""
-"\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
-msgstr ""
-"« SDK Cible » devrait être un nombre entier valide, mais « %s » n'en est pas "
-"un."
-
 msgid ""
 "\"Target SDK\" %d is higher than the default version %d. This may work, but "
 "wasn't tested and may be unstable."
 msgstr ""
 "« SDK Cible » %d est plus grande que la version par défaut %d. Cela pourrait "
 "fonctionner, mais ça n'a pas été testé. Le résultat pourrait être instable."
-
-msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
-msgstr ""
-"La version « Target SDK » doit être supérieure ou égale à la version « Min "
-"SDK »."
 
 msgid "Code Signing"
 msgstr "Signature du code"
@@ -12420,10 +12341,7 @@ msgid "Creating APK..."
 msgstr "Création de l'APK..."
 
 msgid "Could not find template APK to export: \"%s\"."
-msgstr ""
-"La construction du projet Android a échoué, vérifiez la sortie pour "
-"l'erreur. Sinon, visitez docs.godotengine.org pour la documentation de "
-"construction Android."
+msgstr "Impossible de trouver un modèle d'APK pour exporter : \"%s\"."
 
 msgid ""
 "Missing libraries in the export template for the selected architectures: %s. "
@@ -12447,6 +12365,9 @@ msgstr "Alignement de l'APK…"
 msgid "Could not unzip temporary unaligned APK."
 msgstr "Impossible de décompresser l'APK temporaire non aligné."
 
+msgid "Invalid Identifier:"
+msgstr "Identifiant invalide :"
+
 msgid "Export Icons"
 msgstr "Exporter les icônes"
 
@@ -12455,12 +12376,6 @@ msgstr "Préparer les modèles"
 
 msgid "Export template not found."
 msgstr "Modèle d'exportation introuvable."
-
-msgid "App Store Team ID not specified - cannot configure the project."
-msgstr "App Store Team ID non spécifié - ne peut pas configurer le projet."
-
-msgid "Invalid Identifier:"
-msgstr "Identifiant invalide :"
 
 msgid "Identifier is missing."
 msgstr "L'identifiant est manquant."
@@ -12537,6 +12452,9 @@ msgstr "Type de paquet inconnu."
 
 msgid "Unknown object type."
 msgstr "Type d'objet inconnu."
+
+msgid "Invalid bundle identifier:"
+msgstr "Identificateur de bundle non valide :"
 
 msgid "Icon Creation"
 msgstr "Création de l'icône"
@@ -12663,21 +12581,6 @@ msgstr ""
 msgid "Sending archive for notarization"
 msgstr "Envoi de l'archive pour la certification"
 
-msgid "Invalid bundle identifier:"
-msgstr "Identificateur de bundle non valide :"
-
-msgid "Notarization: Notarization with an ad-hoc signature is not supported."
-msgstr ""
-"Certification : La certification avec une signature ad-hoc n'est pas "
-"supporté."
-
-msgid "Notarization: Code signing is required for notarization."
-msgstr ""
-"Notarisation : La signature du code est nécessaire pour la notarisation."
-
-msgid "Notarization: Apple ID password not specified."
-msgstr "Notarisation : Mot de passe Apple ID non spécifié."
-
 msgid ""
 "Warning: Notarization is disabled. The exported project will be blocked by "
 "Gatekeeper if it's downloaded from an unknown source."
@@ -12699,46 +12602,6 @@ msgid ""
 msgstr ""
 "Signature du code : utilise une signature ad-hoc. Le projet exporté sera "
 "bloqué par Gatekeeper"
-
-msgid ""
-"Privacy: Microphone access is enabled, but usage description is not "
-"specified."
-msgstr ""
-"Confidentialité : L'accès au microphone est activé, mais son usage n'a pas "
-"été spécifié."
-
-msgid ""
-"Privacy: Camera access is enabled, but usage description is not specified."
-msgstr ""
-"Confidentialité : L'accès à la caméra est actif, mais son usage n'a pas été "
-"spécifié."
-
-msgid ""
-"Privacy: Location information access is enabled, but usage description is "
-"not specified."
-msgstr ""
-"Confidentialité : L'accès au informations de positionnement est actif, mais "
-"son usage n'a pas été spécifié."
-
-msgid ""
-"Privacy: Address book access is enabled, but usage description is not "
-"specified."
-msgstr ""
-"Confidentialité : L'accès au carnet d'adresses est actif, mais son usage n'a "
-"pas été spécifié."
-
-msgid ""
-"Privacy: Calendar access is enabled, but usage description is not specified."
-msgstr ""
-"Confidentialité : L'accès au calendrier est actif, mais son usage n'a pas "
-"été spécifié."
-
-msgid ""
-"Privacy: Photo library access is enabled, but usage description is not "
-"specified."
-msgstr ""
-"Confidentialité : L'accès à la bibliothèque de photos est actif, mais son "
-"usage n'a pas été spécifié."
 
 msgid "Invalid package short name."
 msgstr "Nom abrégé du paquet invalide."
@@ -12869,15 +12732,6 @@ msgstr ""
 "(Exporter > Windows > rcedit) pour modifier l'icône ou les informations de "
 "l'application."
 
-msgid "Invalid icon path:"
-msgstr "Chemin d'icône invalide :"
-
-msgid "Invalid file version:"
-msgstr "Version de fichier invalide :"
-
-msgid "Invalid product version:"
-msgstr "Version du produit invalide :"
-
 msgid "Windows executables cannot be >= 4 GiB."
 msgstr "Les exécutables Windows ne peuvent pas peser >= 4Gio."
 
@@ -12984,13 +12838,6 @@ msgid ""
 msgstr ""
 "Le NavigationAgent2D ne peut être utilisé que sous un nœud dont le parent "
 "hérite de Node2D."
-
-msgid ""
-"The NavigationObstacle2D only serves to provide collision avoidance to a "
-"Node2D object."
-msgstr ""
-"Un NavigationObstacle2D ne peut éviter les collisions qu'avec les nœuds "
-"Node2D."
 
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
@@ -13286,13 +13133,6 @@ msgstr ""
 "suppression ou de changements majeurs dans les versions futures."
 
 msgid ""
-"Default Environment as specified in Project Settings (Rendering -> "
-"Environment -> Default Environment) could not be loaded."
-msgstr ""
-"L'environnement par défaut spécifié dans les réglages du projet (Rendu -> "
-"Environnement -> Environnement par défaut) ne peut pas être chargé."
-
-msgid ""
 "Very low timer wait times (< 0.05 seconds) may behave in significantly "
 "different ways depending on the rendered or physics frame rate.\n"
 "Consider using a script's process loop instead of relying on a Timer for "
@@ -13433,6 +13273,9 @@ msgstr "Redéfinition de '%s'."
 msgid "Unknown directive."
 msgstr "Instruction inconnue."
 
+msgid "Macro redefinition."
+msgstr "Redéfinition des macros."
+
 msgid "Invalid argument name."
 msgstr "Nom d'argument invalide."
 
@@ -13453,9 +13296,6 @@ msgstr "Ifdef invalide."
 
 msgid "Invalid ifndef."
 msgstr "Ifndef invalide."
-
-msgid "Shader include file does not exist: "
-msgstr "Le fichier appelé par \"include\" dans le shader n'existe pas : "
 
 msgid "Invalid undef."
 msgstr "Undef invalide."

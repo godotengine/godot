@@ -866,11 +866,8 @@ msgstr "Trình chỉnh sửa Phụ thuộc"
 msgid "Search Replacement Resource:"
 msgstr "Tìm kiếm tài nguyên thay thế:"
 
-msgid "Open Scene"
-msgstr "Mở Cảnh"
-
-msgid "Open Scenes"
-msgstr "Mở cảnh"
+msgid "Open"
+msgstr "Mở"
 
 msgid "Cannot remove:"
 msgstr "Không thể gỡ bỏ:"
@@ -907,6 +904,12 @@ msgstr "Sở hữu"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Tài nguyên không có quyền sở hữu rõ ràng:"
+
+msgid "Could not create folder."
+msgstr "Không thể tạo folder."
+
+msgid "Create Folder"
+msgstr "Tạo thư mục"
 
 msgid "Thanks from the Godot community!"
 msgstr "Cảm ơn từ cộng đồng Godot!"
@@ -1197,24 +1200,6 @@ msgstr "[rỗng]"
 msgid "[unsaved]"
 msgstr "[chưa lưu]"
 
-msgid "Please select a base directory first."
-msgstr "Chọn thư mục cơ sở đầu tiên."
-
-msgid "Choose a Directory"
-msgstr "Chọn một Thư mục"
-
-msgid "Create Folder"
-msgstr "Tạo thư mục"
-
-msgid "Name:"
-msgstr "Tên:"
-
-msgid "Could not create folder."
-msgstr "Không thể tạo folder."
-
-msgid "Choose"
-msgstr "Chọn"
-
 msgid "3D Editor"
 msgstr "Trình chỉnh sửa 3D"
 
@@ -1321,111 +1306,6 @@ msgstr "Nhập vào hồ sơ"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Quản lý trình tính năng"
-
-msgid "Network"
-msgstr "Mạng"
-
-msgid "Open"
-msgstr "Mở"
-
-msgid "Select Current Folder"
-msgstr "Chọn thư mục hiện tại"
-
-msgid "Select This Folder"
-msgstr "Chọn thư mục này"
-
-msgid "Copy Path"
-msgstr "Sao chép đường dẫn"
-
-msgid "Open in File Manager"
-msgstr "Mở trong trình quản lý tệp tin"
-
-msgid "Show in File Manager"
-msgstr "Xem trong trình quản lý tệp"
-
-msgid "New Folder..."
-msgstr "Thư mục mới ..."
-
-msgid "All Recognized"
-msgstr "Đã nhận diện hết"
-
-msgid "All Files (*)"
-msgstr "Tất cả tệp tin (*)"
-
-msgid "Open a File"
-msgstr "Mở một Tệp tin"
-
-msgid "Open File(s)"
-msgstr "Mở Tệp tin"
-
-msgid "Open a Directory"
-msgstr "Mở một thư mục"
-
-msgid "Open a File or Directory"
-msgstr "Mở một tệp tin hoặc thư mục"
-
-msgid "Save a File"
-msgstr "Lưu thành tệp tin"
-
-msgid "Go Back"
-msgstr "Trở lại"
-
-msgid "Go Forward"
-msgstr "Tiến tới"
-
-msgid "Go Up"
-msgstr "Đi Lên"
-
-msgid "Toggle Hidden Files"
-msgstr "Bật tắt File ẩn"
-
-msgid "Toggle Favorite"
-msgstr "Bật tắt Ưa thích"
-
-msgid "Toggle Mode"
-msgstr "Bật tắt Chức năng"
-
-msgid "Focus Path"
-msgstr "Đường dẫn Tập trung"
-
-msgid "Move Favorite Up"
-msgstr "Di chuyển mục Ưa thích lên"
-
-msgid "Move Favorite Down"
-msgstr "Di chuyển mục Ưa thích xuống"
-
-msgid "Go to previous folder."
-msgstr "Quay lại thư mục trước."
-
-msgid "Go to next folder."
-msgstr "Đến thư mục tiếp theo."
-
-msgid "Go to parent folder."
-msgstr "Đến thư mục mẹ."
-
-msgid "Refresh files."
-msgstr "Làm mới các tệp."
-
-msgid "(Un)favorite current folder."
-msgstr "Bỏ yêu thích thư mục hiện tại."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "Hiện/ẩn tệp ẩn."
-
-msgid "View items as a grid of thumbnails."
-msgstr "Xem các mục dạng lưới các hình thu nhỏ."
-
-msgid "View items as a list."
-msgstr "Xem mục dạng danh sách."
-
-msgid "Directories & Files:"
-msgstr "Các Thư mục và Tệp tin:"
-
-msgid "Preview:"
-msgstr "Xem thử:"
-
-msgid "File:"
-msgstr "Tệp tin:"
 
 msgid "Restart"
 msgstr "Khởi động lại"
@@ -1619,8 +1499,17 @@ msgstr "Đã ghim %s"
 msgid "Unpinned %s"
 msgstr "Đã bỏ ghim %s"
 
+msgid "Name:"
+msgstr "Tên:"
+
 msgid "Copy Property Path"
 msgstr "Sao chép đường dẫn thuộc tính"
+
+msgid "Creating Mesh Previews"
+msgstr "Tạo bản xem trước lưới"
+
+msgid "Thumbnail..."
+msgstr "Ảnh thu nhỏ..."
 
 msgid "Edit Filters"
 msgstr "Chỉnh sửa Lọc"
@@ -1690,6 +1579,9 @@ msgstr ""
 "Không thể lưu cảnh. Các phần phụ thuộc (trường hợp hoặc kế thừa) không thoả "
 "mãn."
 
+msgid "Save scene before running..."
+msgstr "Lưu cảnh trước khi chạy..."
+
 msgid "Could not save one or more scenes!"
 msgstr "Không thể lưu thêm một hay nhiều cảnh nữa!"
 
@@ -1745,18 +1637,6 @@ msgstr ""
 msgid "Changes may be lost!"
 msgstr "Các thay đổi có thể mất!"
 
-msgid "There is no defined scene to run."
-msgstr "Không có cảnh được xác định để chạy."
-
-msgid "Save scene before running..."
-msgstr "Lưu cảnh trước khi chạy..."
-
-msgid "Play the project."
-msgstr "Chạy dự án."
-
-msgid "Play the edited scene."
-msgstr "Chạy cảnh đã chỉnh sửa."
-
 msgid "Open Base Scene"
 msgstr "Mở Cảnh cơ sở"
 
@@ -1768,18 +1648,6 @@ msgstr "Mở Nhanh Cảnh..."
 
 msgid "Quick Open Script..."
 msgstr "Mở Nhanh Tập lệnh..."
-
-msgid "Save & Reload"
-msgstr "Lưu & tải lại"
-
-msgid "Save & Quit"
-msgstr "Lưu & Thoát"
-
-msgid "Save changes to '%s' before reloading?"
-msgstr "Lưu thay đổi vào '%s' trước khi tải lại không?"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "Lưu thay đổi vào '%s' trước khi đóng?"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s không còn tồn tại nữa! Hãy chỉ rõ vị trí lưu mới."
@@ -1809,8 +1677,11 @@ msgstr ""
 "Cảnh hiện tại có thay đổi chưa được lưu.\n"
 "Vẫn tải lại à? Không hoàn tác được đâu."
 
-msgid "Quick Run Scene..."
-msgstr "Chạy nhanh Cảnh..."
+msgid "Save & Reload"
+msgstr "Lưu & tải lại"
+
+msgid "Save & Quit"
+msgstr "Lưu & Thoát"
 
 msgid "Save changes to the following scene(s) before reloading?"
 msgstr "Lưu thay đổi trong các cảnh sau trước khi thoát không?"
@@ -1887,6 +1758,9 @@ msgstr "Cảnh '%s' bị hỏng các phụ thuộc:"
 msgid "Clear Recent Scenes"
 msgstr "Dọn các cảnh gần đây"
 
+msgid "There is no defined scene to run."
+msgstr "Không có cảnh được xác định để chạy."
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -1920,8 +1794,14 @@ msgstr "Xoá bố cục"
 msgid "Default"
 msgstr "Mặc định"
 
+msgid "Save changes to '%s' before reloading?"
+msgstr "Lưu thay đổi vào '%s' trước khi tải lại không?"
+
 msgid "Save & Close"
 msgstr "Lưu & Đóng"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "Lưu thay đổi vào '%s' trước khi đóng?"
 
 msgid "Show in FileSystem"
 msgstr "Hiện trong Hệ thống tệp tin"
@@ -2138,6 +2018,9 @@ msgstr ""
 "đè.\n"
 "Xóa thủ công thư mục \"res://android/build\" trước khi thử lại thao tác này."
 
+msgid "Show in File Manager"
+msgstr "Xem trong trình quản lý tệp"
+
 msgid "Import Templates From ZIP File"
 msgstr "Nhập bản mẫu từ tệp ZIP"
 
@@ -2192,18 +2075,6 @@ msgstr "Mở trình chỉnh sửa trước đó"
 
 msgid "Warning!"
 msgstr "Cảnh báo!"
-
-msgid "No sub-resources found."
-msgstr "Không tìm thấy tài nguyên phụ."
-
-msgid "Open a list of sub-resources."
-msgstr "Mở danh sách các tài nguyên con."
-
-msgid "Creating Mesh Previews"
-msgstr "Tạo bản xem trước lưới"
-
-msgid "Thumbnail..."
-msgstr "Ảnh thu nhỏ..."
 
 msgid "Main Script:"
 msgstr "Tập lệnhchính:"
@@ -2560,6 +2431,12 @@ msgstr "Duyệt"
 msgid "Favorites"
 msgstr "Ưa thích"
 
+msgid "View items as a grid of thumbnails."
+msgstr "Xem các mục dạng lưới các hình thu nhỏ."
+
+msgid "View items as a list."
+msgstr "Xem mục dạng danh sách."
+
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Trạng thái: Nhập tệp thất bại. Hãy sửa tệp rồi nhập lại theo cách thủ công."
@@ -2584,31 +2461,8 @@ msgstr "Lỗi nhân bản:"
 msgid "Unable to update dependencies:"
 msgstr "Không thể cập nhật các phần phụ thuộc:"
 
-msgid "Provided name contains invalid characters."
-msgstr "Tên có chứa ký tự không hợp lệ."
-
 msgid "A file or folder with this name already exists."
 msgstr "Đã có một têp tin hoặc thư mục trùng tên."
-
-msgid ""
-"The following files or folders conflict with items in the target location "
-"'%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Do you wish to overwrite them?"
-msgstr ""
-"Các tệp hoặc thư mục sau xung đột với các mục ở vị trí đích '%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Bạn có muốn ghi đè không?"
-
-msgid "Renaming file:"
-msgstr "Đổi tên tệp tin:"
-
-msgid "Renaming folder:"
-msgstr "Đổi tên thư mục:"
 
 msgid "Duplicating file:"
 msgstr "Tạo bản sao tệp tin:"
@@ -2622,11 +2476,8 @@ msgstr "Tạo Cảnh kế thừa mới"
 msgid "Set As Main Scene"
 msgstr "Chọn làm Scene chính"
 
-msgid "Add to Favorites"
-msgstr "Thêm vào Ưa thích"
-
-msgid "Remove from Favorites"
-msgstr "Xóa Ưa thích"
+msgid "Open Scenes"
+msgstr "Mở cảnh"
 
 msgid "Edit Dependencies..."
 msgstr "Chỉnh sửa các phần phụ thuộc..."
@@ -2634,8 +2485,17 @@ msgstr "Chỉnh sửa các phần phụ thuộc..."
 msgid "View Owners..."
 msgstr "Xem các scene sở hữu..."
 
-msgid "Move To..."
-msgstr "Di chuyển đến..."
+msgid "Add to Favorites"
+msgstr "Thêm vào Ưa thích"
+
+msgid "Remove from Favorites"
+msgstr "Xóa Ưa thích"
+
+msgid "Open in File Manager"
+msgstr "Mở trong trình quản lý tệp tin"
+
+msgid "New Folder..."
+msgstr "Thư mục mới ..."
 
 msgid "New Scene..."
 msgstr "Tạo Cảnh Mới..."
@@ -2645,6 +2505,9 @@ msgstr "Tập lệnh mới..."
 
 msgid "New Resource..."
 msgstr "Tài nguyên mới ..."
+
+msgid "Copy Path"
+msgstr "Sao chép đường dẫn"
 
 msgid "Duplicate..."
 msgstr "Nhân đôi..."
@@ -2664,9 +2527,6 @@ msgid ""
 msgstr ""
 "Đang quét các tệp tin,\n"
 "Chờ một chút ..."
-
-msgid "Move"
-msgstr "Di chuyển"
 
 msgid "Overwrite"
 msgstr "Ghi đè"
@@ -2740,6 +2600,155 @@ msgstr "Trình chỉnh sửa Nhóm"
 
 msgid "Manage Groups"
 msgstr "Quản lý Nhóm"
+
+msgid "Move"
+msgstr "Di chuyển"
+
+msgid "Please select a base directory first."
+msgstr "Chọn thư mục cơ sở đầu tiên."
+
+msgid "Choose a Directory"
+msgstr "Chọn một Thư mục"
+
+msgid "Network"
+msgstr "Mạng"
+
+msgid "Select Current Folder"
+msgstr "Chọn thư mục hiện tại"
+
+msgid "Select This Folder"
+msgstr "Chọn thư mục này"
+
+msgid "All Recognized"
+msgstr "Đã nhận diện hết"
+
+msgid "All Files (*)"
+msgstr "Tất cả tệp tin (*)"
+
+msgid "Open a File"
+msgstr "Mở một Tệp tin"
+
+msgid "Open File(s)"
+msgstr "Mở Tệp tin"
+
+msgid "Open a Directory"
+msgstr "Mở một thư mục"
+
+msgid "Open a File or Directory"
+msgstr "Mở một tệp tin hoặc thư mục"
+
+msgid "Save a File"
+msgstr "Lưu thành tệp tin"
+
+msgid "Go Back"
+msgstr "Trở lại"
+
+msgid "Go Forward"
+msgstr "Tiến tới"
+
+msgid "Go Up"
+msgstr "Đi Lên"
+
+msgid "Toggle Hidden Files"
+msgstr "Bật tắt File ẩn"
+
+msgid "Toggle Favorite"
+msgstr "Bật tắt Ưa thích"
+
+msgid "Toggle Mode"
+msgstr "Bật tắt Chức năng"
+
+msgid "Focus Path"
+msgstr "Đường dẫn Tập trung"
+
+msgid "Move Favorite Up"
+msgstr "Di chuyển mục Ưa thích lên"
+
+msgid "Move Favorite Down"
+msgstr "Di chuyển mục Ưa thích xuống"
+
+msgid "Go to previous folder."
+msgstr "Quay lại thư mục trước."
+
+msgid "Go to next folder."
+msgstr "Đến thư mục tiếp theo."
+
+msgid "Go to parent folder."
+msgstr "Đến thư mục mẹ."
+
+msgid "Refresh files."
+msgstr "Làm mới các tệp."
+
+msgid "(Un)favorite current folder."
+msgstr "Bỏ yêu thích thư mục hiện tại."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Hiện/ẩn tệp ẩn."
+
+msgid "Directories & Files:"
+msgstr "Các Thư mục và Tệp tin:"
+
+msgid "Preview:"
+msgstr "Xem thử:"
+
+msgid "File:"
+msgstr "Tệp tin:"
+
+msgid "No sub-resources found."
+msgstr "Không tìm thấy tài nguyên phụ."
+
+msgid "Open a list of sub-resources."
+msgstr "Mở danh sách các tài nguyên con."
+
+msgid "Play the project."
+msgstr "Chạy dự án."
+
+msgid "Play the edited scene."
+msgstr "Chạy cảnh đã chỉnh sửa."
+
+msgid "Quick Run Scene..."
+msgstr "Chạy nhanh Cảnh..."
+
+msgid "Unlock Node"
+msgstr "Mở khoá nút"
+
+msgid "Node configuration warning:"
+msgstr "Cảnh báo cấu hình nút:"
+
+msgid "Open in Editor"
+msgstr "Mở trong Trình biên soạn"
+
+msgid "Open Script:"
+msgstr "Mở Tệp lệnh:"
+
+msgid ""
+"Node is locked.\n"
+"Click to unlock it."
+msgstr ""
+"Nút hiện khoá.\n"
+"Nhấp để mở khoá nó."
+
+msgid ""
+"AnimationPlayer is pinned.\n"
+"Click to unpin."
+msgstr ""
+"AnimationPlayer đã được ghim.\n"
+"Bấm để bỏ ghim."
+
+msgid "Invalid node name, the following characters are not allowed:"
+msgstr "Tên nút không hợp lệ, các ký tự sau bị cấm:"
+
+msgid "Rename Node"
+msgstr "Đổi tên nút"
+
+msgid "Scene Tree (Nodes):"
+msgstr "Cây (nút):"
+
+msgid "Node Configuration Warning!"
+msgstr "Cảnh báo cấu hình nút!"
+
+msgid "Select a Node"
+msgstr "Chọn một Nút"
 
 msgid "Reimport"
 msgstr "Nhập vào lại"
@@ -2975,9 +2984,6 @@ msgstr "Xóa điểm BlendSpace2D"
 msgid "Remove BlendSpace2D Triangle"
 msgstr "Bỏ các tam giác BlendSpace2D"
 
-msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr "BlendSpace2D không thuộc nút AnimationTree."
-
 msgid "No triangles exist, so no blending can take place."
 msgstr "Không có tam giác nào nên không trộn được."
 
@@ -3188,9 +3194,6 @@ msgstr "Ở cuối"
 
 msgid "Travel"
 msgstr "Di chuyển"
-
-msgid "Start and end nodes are needed for a sub-transition."
-msgstr "Các nút bắt đầu và kết thúc là cần thiết cho một sub-transition."
 
 msgid "Node Removed"
 msgstr "Nút đã được gỡ"
@@ -3645,41 +3648,17 @@ msgstr "Pixel ở Viền cạnh Có hướng"
 msgid "Create Emission Points From Node"
 msgstr "Tạo điểm phát xạ từ nút"
 
-msgid "Flat 1"
-msgstr "Flat 1"
-
-msgid "Ease Out"
-msgstr "Trườn ra"
+msgid "Remove Curve Point"
+msgstr "Xóa điểm uốn"
 
 msgid "Modify Curve Point"
 msgstr "Sửa điểm uốn"
 
-msgid "Modify Curve Tangent"
-msgstr "Sửa tiếp tuyến điểm uốn"
-
-msgid "Add Point"
-msgstr "Thêm điểm"
-
-msgid "Remove Point"
-msgstr "Xoá điểm"
-
-msgid "Left Linear"
-msgstr "Tịnh tuyến trái"
-
-msgid "Right Linear"
-msgstr "Tịnh tuyến phải"
-
-msgid "Load Preset"
-msgstr "Nạp cài đặt trước"
-
-msgid "Remove Curve Point"
-msgstr "Xóa điểm uốn"
-
 msgid "Hold Shift to edit tangents individually"
 msgstr "Giữ Shift để sửa từng tiếp tuyến một"
 
-msgid "Right click to add point"
-msgstr "Nhấp chuột phải để thêm điểm"
+msgid "Ease Out"
+msgstr "Trườn ra"
 
 msgid "Debug with External Editor"
 msgstr "Gỡ lỗi bằng Trình chỉnh sửa bên ngoài"
@@ -3743,6 +3722,24 @@ msgstr "Đồng bộ hóa thay đổi trong tập lệnh"
 
 msgid " - Variation"
 msgstr " - Biến"
+
+msgid "Change Sphere Shape Radius"
+msgstr "Thay Đổi Bán Kính Hình Cầu"
+
+msgid "Change Capsule Shape Radius"
+msgstr "Chỉnh bán kính hình nhộng"
+
+msgid "Change Capsule Shape Height"
+msgstr "Chỉnh chiều cao hình nhộng"
+
+msgid "Change Cylinder Shape Radius"
+msgstr "Chỉnh bán kính hình trụ"
+
+msgid "Change Cylinder Shape Height"
+msgstr "Chỉnh chiều cao hình trụ"
+
+msgid "Change Light Radius"
+msgstr "Thay đổi bán kính ánh sáng"
 
 msgid "Convert to CPUParticles2D"
 msgstr "Chuyển thành CPUParticles2D"
@@ -3868,23 +3865,11 @@ msgstr "Số lượng:"
 msgid "Populate"
 msgstr "Điền"
 
-msgid "Change Light Radius"
-msgstr "Thay đổi bán kính ánh sáng"
+msgid "Edit Poly"
+msgstr "Sửa Poly"
 
-msgid "Change Sphere Shape Radius"
-msgstr "Thay Đổi Bán Kính Hình Cầu"
-
-msgid "Change Capsule Shape Radius"
-msgstr "Chỉnh bán kính hình nhộng"
-
-msgid "Change Capsule Shape Height"
-msgstr "Chỉnh chiều cao hình nhộng"
-
-msgid "Change Cylinder Shape Radius"
-msgstr "Chỉnh bán kính hình trụ"
-
-msgid "Change Cylinder Shape Height"
-msgstr "Chỉnh chiều cao hình trụ"
+msgid "Edit Poly (Remove Point)"
+msgstr "Sửa Poly (Xoá điểm)"
 
 msgid "Transform Aborted."
 msgstr "Hủy Biến đổi."
@@ -4180,12 +4165,6 @@ msgstr "Đồng bộ Xương với Đa giác"
 msgid "Create Polygon3D"
 msgstr "Tạo Polygon3D"
 
-msgid "Edit Poly"
-msgstr "Sửa Poly"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Sửa Poly (Xoá điểm)"
-
 msgid "ERROR: Couldn't load resource!"
 msgstr "LỖI: Không thể nạp tài nguyên!"
 
@@ -4203,9 +4182,6 @@ msgstr "Khay nhớ tạm Tài nguyên trống!"
 
 msgid "Paste Resource"
 msgstr "Dán tài nguyên"
-
-msgid "Open in Editor"
-msgstr "Mở trong Trình biên soạn"
 
 msgid "Load Resource"
 msgstr "Nạp tài nguyên"
@@ -4576,14 +4552,8 @@ msgstr "Đặt lại Thu phóng"
 msgid "Select Frames"
 msgstr "Chọn Khung hình"
 
-msgid "Horizontal:"
-msgstr "Ngang:"
-
-msgid "Vertical:"
-msgstr "Dọc:"
-
-msgid "Select/Clear All Frames"
-msgstr "Chọn/Xóa Tất cả Khung hình"
+msgid "Size"
+msgstr "Kích thước"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "Tạo Khung hình từ Sprite Sheet"
@@ -5119,11 +5089,11 @@ msgstr "Đường dẫn cài đặt Dự án:"
 msgid "Renderer:"
 msgstr "Trình kết xuất hình ảnh:"
 
-msgid "Missing Project"
-msgstr "Dự án bị lỗi"
-
 msgid "Error: Project is missing on the filesystem."
 msgstr "Lỗi: Dự án bị thiếu trên hệ thống tệp tin."
+
+msgid "Missing Project"
+msgstr "Dự án bị lỗi"
 
 msgid "Local"
 msgstr "Cục bộ"
@@ -5453,44 +5423,6 @@ msgstr "Từ xa"
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Xóa Kế thừa? (Mất tăm luôn đấy!)"
 
-msgid "Unlock Node"
-msgstr "Mở khoá nút"
-
-msgid "Node configuration warning:"
-msgstr "Cảnh báo cấu hình nút:"
-
-msgid "Open Script:"
-msgstr "Mở Tệp lệnh:"
-
-msgid ""
-"Node is locked.\n"
-"Click to unlock it."
-msgstr ""
-"Nút hiện khoá.\n"
-"Nhấp để mở khoá nó."
-
-msgid ""
-"AnimationPlayer is pinned.\n"
-"Click to unpin."
-msgstr ""
-"AnimationPlayer đã được ghim.\n"
-"Bấm để bỏ ghim."
-
-msgid "Invalid node name, the following characters are not allowed:"
-msgstr "Tên nút không hợp lệ, các ký tự sau bị cấm:"
-
-msgid "Rename Node"
-msgstr "Đổi tên nút"
-
-msgid "Scene Tree (Nodes):"
-msgstr "Cây (nút):"
-
-msgid "Node Configuration Warning!"
-msgstr "Cảnh báo cấu hình nút!"
-
-msgid "Select a Node"
-msgstr "Chọn một Nút"
-
 msgid "Path is empty."
 msgstr "Đường dẫn trống."
 
@@ -5637,9 +5569,6 @@ msgstr "RPC đi"
 msgid "Config"
 msgstr "Cấu hình"
 
-msgid "Size"
-msgstr "Kích thước"
-
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr "Phải tạo hoặc đặt một NavigationMesh cho nút này thì nó mới hoạt động."
 
@@ -5688,6 +5617,12 @@ msgstr "Kí tự '%s' không thể ở đầu trong một phân đoạn của g�
 msgid "The package must have at least one '.' separator."
 msgstr "Kí tự phân cách '.' phải xuất hiện ít nhất một lần trong tên gói."
 
+msgid "Invalid public key for APK expansion."
+msgstr "Khóa công khai của bộ APK mở rộng không hợp lệ."
+
+msgid "Invalid package name:"
+msgstr "Tên gói không hợp lệ:"
+
 msgid "Select device from the list"
 msgstr "Chọn thiết bị trong danh sách"
 
@@ -5729,12 +5664,6 @@ msgstr "Thiếu thư mục 'build-tools'!"
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Không tìm thấy lệnh apksigner của bộ Android SDK build-tools."
 
-msgid "Invalid public key for APK expansion."
-msgstr "Khóa công khai của bộ APK mở rộng không hợp lệ."
-
-msgid "Invalid package name:"
-msgstr "Tên gói không hợp lệ:"
-
 msgid "Exporting for Android"
 msgstr "Đang xuất sang Android"
 
@@ -5760,9 +5689,6 @@ msgid ""
 msgstr ""
 "Không thể sao chép và đổi tên tệp xuất, hãy kiểm tra thư mục Gradle của dự "
 "án để xem kết quả."
-
-msgid "App Store Team ID not specified - cannot configure the project."
-msgstr "App Store Team ID không được chỉ định - không thể cấu hình dự án."
 
 msgid "Invalid Identifier:"
 msgstr "Định danh không hợp lệ:"
@@ -5928,13 +5854,6 @@ msgstr "Xin hãy xác nhận..."
 
 msgid "(Other)"
 msgstr "(Khác)"
-
-msgid ""
-"Default Environment as specified in Project Settings (Rendering -> "
-"Environment -> Default Environment) could not be loaded."
-msgstr ""
-"Environment mặc định được chỉ định trong Cài đặt Dự án (Rendering -> "
-"Environment -> Default Environment) không thể nạp được."
 
 msgid "Invalid source for preview."
 msgstr "Nguồn vô hiệu cho xem trước."

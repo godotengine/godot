@@ -357,6 +357,9 @@ msgstr "Режим миші"
 msgid "Use Accumulated Input"
 msgstr "Використати накопичувальне введення"
 
+msgid "Input Devices"
+msgstr "Пристрої вводу"
+
 msgid "Device"
 msgstr "Пристрій"
 
@@ -471,15 +474,6 @@ msgstr "Включити приховане"
 msgid "Big Endian"
 msgstr "Зворотний"
 
-msgid "Network"
-msgstr "Мережа"
-
-msgid "Remote FS"
-msgstr "Віддалений FS"
-
-msgid "Page Size"
-msgstr "Розмір сторінки"
-
 msgid "Blocking Mode Enabled"
 msgstr "Увімкнено режим блокування"
 
@@ -513,6 +507,9 @@ msgstr "Масив даних"
 msgid "Max Pending Connections"
 msgstr "Макс. к-ть з'єднань у черзі"
 
+msgid "Region"
+msgstr "Область"
+
 msgid "Offset"
 msgstr "Зміщення"
 
@@ -540,8 +537,8 @@ msgstr "Стан"
 msgid "Message Queue"
 msgstr "Черга повідомлень"
 
-msgid "Max Size (KB)"
-msgstr "Максимальний розмір (Кб)"
+msgid "Network"
+msgstr "Мережа"
 
 msgid "TCP"
 msgstr "TCP"
@@ -669,29 +666,23 @@ msgstr "Інтервал оновлення ієрархії віддалено�
 msgid "Remote Inspect Refresh Interval"
 msgstr "Інтервал оновлення віддаленого інспектування"
 
+msgid "FileSystem"
+msgstr "Файлова система"
+
+msgid "File Server"
+msgstr "Файловий сервер"
+
+msgid "Port"
+msgstr "Порт"
+
+msgid "Password"
+msgstr "Пароль"
+
 msgid "Profiler Frame Max Functions"
 msgstr "Перейменувати функцію"
 
 msgid "Default Feature Profile"
 msgstr "Типовий профіль можливостей"
-
-msgid "Access"
-msgstr "Доступ"
-
-msgid "Display Mode"
-msgstr "Режим показу"
-
-msgid "File Mode"
-msgstr "Режим файлу"
-
-msgid "Filters"
-msgstr "Фільтри"
-
-msgid "Show Hidden Files"
-msgstr "Показувати приховані файли"
-
-msgid "Disable Overwrite Warning"
-msgstr "Вимкнути попередження про перезапис"
 
 msgid "Text Editor"
 msgstr "Текстовий редактор"
@@ -722,6 +713,9 @@ msgstr "Набір"
 
 msgid "Deletable"
 msgstr "Видалити"
+
+msgid "Distraction Free Mode"
+msgstr "Режим без відволікання"
 
 msgid "Interface"
 msgstr "Інтерфейс"
@@ -776,9 +770,6 @@ msgstr "Типовий режим піпетки кольорів"
 
 msgid "Default Color Picker Shape"
 msgstr "Палітра кольорів за замовчуванням"
-
-msgid "Distraction Free Mode"
-msgstr "Режим без відволікання"
 
 msgid "Base Type"
 msgstr "Базовий тип"
@@ -938,8 +929,8 @@ msgstr "Максимальна ширина"
 msgid "Show Script Button"
 msgstr "Показувати кнопку скрипту"
 
-msgid "FileSystem"
-msgstr "Файлова система"
+msgid "Enable"
+msgstr "Увімкнути"
 
 msgid "External Programs"
 msgstr "Зовнішні програми"
@@ -977,6 +968,12 @@ msgstr "Безпечне зберігання при резервному коп
 msgid "File Dialog"
 msgstr "Діалогове вікно файлів"
 
+msgid "Show Hidden Files"
+msgstr "Показувати приховані файли"
+
+msgid "Display Mode"
+msgstr "Режим показу"
+
 msgid "Thumbnail Size"
 msgstr "Розмір мініатюр"
 
@@ -994,9 +991,6 @@ msgstr "Автоматичне розширення до вибраного"
 
 msgid "Always Show Folders"
 msgstr "Завжди показувати теки"
-
-msgid "Textfile Extensions"
-msgstr "Розширення текстових файлів"
 
 msgid "Property Editor"
 msgstr "Редактор властивостей"
@@ -1051,9 +1045,6 @@ msgstr "Номери рядків із нульовою фаскою"
 
 msgid "Highlight Type Safe Lines"
 msgstr "Підсвічувати рядки із безпечними типами"
-
-msgid "Show Bookmark Gutter"
-msgstr "Показувати збоку закладки"
 
 msgid "Show Info Gutter"
 msgstr "Показувати збоку інформацію"
@@ -1349,9 +1340,6 @@ msgstr "Розмір контуру кісток"
 msgid "Viewport Border Color"
 msgstr "Колір рамки панелі перегляду"
 
-msgid "Constrain Editor View"
-msgstr "Панель редактора обмежень"
-
 msgid "Panning"
 msgstr "Панорамування"
 
@@ -1465,9 +1453,6 @@ msgstr "HTTP-проксі"
 
 msgid "Host"
 msgstr "Вузол"
-
-msgid "Port"
-msgstr "Порт"
 
 msgid "Project Manager"
 msgstr "Керування проєктами"
@@ -1589,15 +1574,6 @@ msgstr "Колір результатів пошуку"
 msgid "Search Result Border Color"
 msgstr "Колір рамки результатів пошуку"
 
-msgid "Flat"
-msgstr "Плоска"
-
-msgid "Hide Slider"
-msgstr "Приховати повзунок"
-
-msgid "Zoom"
-msgstr "Масштаб"
-
 msgid "Custom Template"
 msgstr "Нетиповий шаблон"
 
@@ -1634,11 +1610,26 @@ msgstr "Експортування"
 msgid "Export Path"
 msgstr "Шлях експорту"
 
-msgid "File Server"
-msgstr "Файловий сервер"
+msgid "Access"
+msgstr "Доступ"
 
-msgid "Password"
-msgstr "Пароль"
+msgid "File Mode"
+msgstr "Режим файлу"
+
+msgid "Filters"
+msgstr "Фільтри"
+
+msgid "Disable Overwrite Warning"
+msgstr "Вимкнути попередження про перезапис"
+
+msgid "Flat"
+msgstr "Плоска"
+
+msgid "Hide Slider"
+msgstr "Приховати повзунок"
+
+msgid "Zoom"
+msgstr "Масштаб"
 
 msgid "Antialiasing"
 msgstr "Згладжування"
@@ -1714,9 +1705,6 @@ msgstr "Нормалізація доріжок позиції"
 
 msgid "Overwrite Axis"
 msgstr "Перезаписати вісь"
-
-msgid "Enable"
-msgstr "Увімкнути"
 
 msgid "Filter"
 msgstr "Фільтр"
@@ -1883,6 +1871,9 @@ msgstr "Макс. кутова похибка"
 msgid "Max Precision Error"
 msgstr "Максимальна похибка точності"
 
+msgid "Page Size"
+msgstr "Розмір сторінки"
+
 msgid "Import Tracks"
 msgstr "Імпорт доріжок"
 
@@ -2033,20 +2024,20 @@ msgstr "Потокове мовлення просторового програ�
 msgid "Camera"
 msgstr "Фотоапарат"
 
-msgid "Visibility Notifier"
-msgstr "Сповіщувач щодо видимості"
-
 msgid "Particles"
 msgstr "Частинки"
-
-msgid "Reflection Probe"
-msgstr "Вибір властивості"
 
 msgid "Joint Body A"
 msgstr "З'єднання тіл A"
 
 msgid "Joint Body B"
 msgstr "З'єднання тіл B"
+
+msgid "Reflection Probe"
+msgstr "Вибір властивості"
+
+msgid "Visibility Notifier"
+msgstr "Сповіщувач щодо видимості"
 
 msgid "Manipulator Gizmo Size"
 msgstr "Розмір гаджета маніпулятора"
@@ -2086,9 +2077,6 @@ msgstr "Виконувані прапорці"
 
 msgid "Skeleton"
 msgstr "Каркас"
-
-msgid "Warnings"
-msgstr "Попередження"
 
 msgid "ID"
 msgstr "Ідентифікатор"
@@ -2212,9 +2200,6 @@ msgstr "Вітання системи"
 
 msgid "BG Color"
 msgstr "Колір тла"
-
-msgid "Input Devices"
-msgstr "Пристрої вводу"
 
 msgid "Environment"
 msgstr "Середовище"
@@ -2375,6 +2360,9 @@ msgstr "Колір визначення функції"
 msgid "Node Path Color"
 msgstr "Копіювати вузол шляху"
 
+msgid "Warnings"
+msgstr "Попередження"
+
 msgid "Exclude Addons"
 msgstr "Виключити додатки"
 
@@ -2413,6 +2401,15 @@ msgstr "Коефіцієнт дзеркальності"
 
 msgid "Spec Gloss Img"
 msgstr "Дзеркальне глянцеве зображення"
+
+msgid "Mass"
+msgstr "Маса"
+
+msgid "Linear Velocity"
+msgstr "Лінійна швидкість"
+
+msgid "Angular Velocity"
+msgstr "Кутова швидкість"
 
 msgid "Json"
 msgstr "Json"
@@ -3407,9 +3404,6 @@ msgstr "Розсіювання"
 msgid "Initial Velocity"
 msgstr "Ініціалізувати"
 
-msgid "Angular Velocity"
-msgstr "Кутова швидкість"
-
 msgid "Velocity Curve"
 msgstr "Крива швидкості"
 
@@ -3578,14 +3572,8 @@ msgstr "Помножити на %s"
 msgid "Path Max Distance"
 msgstr "Макс. відстань контуру"
 
-msgid "Time Horizon"
-msgstr "Віддзеркалити горизонтально"
-
 msgid "Max Speed"
 msgstr "Макс. швидкість"
-
-msgid "Estimate Radius"
-msgstr "Оцінка радіуса"
 
 msgid "Scroll"
 msgstr "Гортання"
@@ -3626,17 +3614,11 @@ msgstr "Верт. зміщення"
 msgid "Cubic Interp"
 msgstr "Кубічна інтерп"
 
-msgid "Lookahead"
-msgstr "Випередження"
-
 msgid "Constant Linear Velocity"
 msgstr "Стала лінійна швидкість"
 
 msgid "Constant Angular Velocity"
 msgstr "Стала кутова швидкість"
-
-msgid "Mass"
-msgstr "Маса"
 
 msgid "Inertia"
 msgstr "Інерція"
@@ -3724,9 +3706,6 @@ msgstr "Відпочинок"
 
 msgid "Frame Coords"
 msgstr "Координати кадру"
-
-msgid "Region"
-msgstr "Область"
 
 msgid "Tile Set"
 msgstr "Набір плитки"
@@ -4034,9 +4013,6 @@ msgstr "Підподіл"
 msgid "Light Data"
 msgstr "З даними"
 
-msgid "Ignore Y"
-msgstr "Ігнорувати Y"
-
 msgid "Visibility"
 msgstr "Видимість"
 
@@ -4075,9 +4051,6 @@ msgstr "Функція"
 
 msgid "Bounce"
 msgstr "Відскакування"
-
-msgid "Linear Velocity"
-msgstr "Лінійна швидкість"
 
 msgid "Debug Shape"
 msgstr "Зневаджувач"
@@ -4403,6 +4376,9 @@ msgstr "Дозволити повторне позначення"
 msgid "Allow RMB Select"
 msgstr "Дозволити позначення правою кнопкою"
 
+msgid "Allow Search"
+msgstr "Дозволити пошук"
+
 msgid "Max Text Lines"
 msgstr "Макс. к-то рядків тексту"
 
@@ -4489,9 +4465,6 @@ msgstr "Розтягування вісі"
 
 msgid "Submenu Popup Delay"
 msgstr "Затримка показу контекстного підменю"
-
-msgid "Allow Search"
-msgstr "Дозволити пошук"
 
 msgid "Fill Mode"
 msgstr "Режим заповнення"
@@ -5242,9 +5215,6 @@ msgstr "Можливості"
 
 msgid "Extra Spacing"
 msgstr "Додатковий інтервал"
-
-msgid "Interpolation Mode"
-msgstr "Режим інтерполяції"
 
 msgid "Raw Data"
 msgstr "Необроблені дані"

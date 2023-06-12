@@ -37,13 +37,15 @@
 # behrooz bozorg chami <behroozbc@outlook.com>, 2023.
 # mary karaby <karabymary@gmail.com>, 2023.
 # M <bafandehmajid@gmail.com>, 2023.
+# "Shahab Baradaran Dilmaghani (bdshahab)" <bdshahab@gmail.com>, 2023.
+# محمد ایرانی <mohamadir10g01@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-14 11:52+0000\n"
-"Last-Translator: M <bafandehmajid@gmail.com>\n"
+"PO-Revision-Date: 2023-06-05 19:49+0000\n"
+"Last-Translator: محمد ایرانی <mohamadir10g01@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -73,6 +75,12 @@ msgstr "غلطاندن به بالا ماوس"
 
 msgid "Mouse Wheel Down"
 msgstr "غلطاندن به پایین ماوس"
+
+msgid "Mouse Wheel Left"
+msgstr "دکمه ی چپ ماوس"
+
+msgid "Mouse Wheel Right"
+msgstr "دکمه ی راست ماوس"
 
 msgid "Button"
 msgstr "دکمه"
@@ -912,11 +920,8 @@ msgstr "ویرایشگر بستگی"
 msgid "Search Replacement Resource:"
 msgstr "منبع جایگزینی را جستجو کن:"
 
-msgid "Open Scene"
-msgstr "باز کردن صحنه"
-
-msgid "Open Scenes"
-msgstr "باز کردن صحنه‌ها"
+msgid "Open"
+msgstr "باز کن"
 
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
@@ -974,6 +979,12 @@ msgstr "اموال"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "منابع بدون مالکیت صریح:"
+
+msgid "Could not create folder."
+msgstr "ناتوان در ساختن پوشه."
+
+msgid "Create Folder"
+msgstr "ایجاد پوشه"
 
 msgid "Thanks from the Godot community!"
 msgstr "با تشکر از سوی جامعه‌ی Godot!"
@@ -1297,24 +1308,6 @@ msgstr "[پوچ]"
 msgid "[unsaved]"
 msgstr "[ذخیره نشده]"
 
-msgid "Please select a base directory first."
-msgstr "لطفاً ابتدا دایرکتوری پایه را انتخاب کنید."
-
-msgid "Choose a Directory"
-msgstr "یک فهرست انتخاب کنید"
-
-msgid "Create Folder"
-msgstr "ایجاد پوشه"
-
-msgid "Name:"
-msgstr "نام:"
-
-msgid "Could not create folder."
-msgstr "ناتوان در ساختن پوشه."
-
-msgid "Choose"
-msgstr "انتخاب کنید"
-
 msgid "3D Editor"
 msgstr "ویرایشگر ۳بعدی"
 
@@ -1449,111 +1442,6 @@ msgstr "وارد کردن نمایه(ها)"
 msgid "Manage Editor Feature Profiles"
 msgstr "مدیریت ویژگی نمایه‌های ویرایشگر"
 
-msgid "Network"
-msgstr "شبکه"
-
-msgid "Open"
-msgstr "باز کن"
-
-msgid "Select Current Folder"
-msgstr "برگزیدن پوشه موجود"
-
-msgid "Select This Folder"
-msgstr "برگزیدن این پوشه"
-
-msgid "Copy Path"
-msgstr "کپی کردن مسیر"
-
-msgid "Open in File Manager"
-msgstr "گشودن در مدیر پرونده"
-
-msgid "Show in File Manager"
-msgstr "نمایش فایل داخلی مرجع"
-
-msgid "New Folder..."
-msgstr "ساختن پوشه..."
-
-msgid "All Recognized"
-msgstr "همه ی موارد شناخته شده اند"
-
-msgid "All Files (*)"
-msgstr "همهٔ پرونده‌ها (*)"
-
-msgid "Open a File"
-msgstr "یک پرونده را باز کن"
-
-msgid "Open File(s)"
-msgstr "پرونده(ها) را باز کن"
-
-msgid "Open a Directory"
-msgstr "یک دیکشنری را باز کن"
-
-msgid "Open a File or Directory"
-msgstr "یک پرونده یا پوشه را باز کن"
-
-msgid "Save a File"
-msgstr "یک پرونده را ذخیره کن"
-
-msgid "Go Back"
-msgstr "به عقب بازگردید"
-
-msgid "Go Forward"
-msgstr "جلو بروید"
-
-msgid "Go Up"
-msgstr "بالا بروید"
-
-msgid "Toggle Hidden Files"
-msgstr "تغییر فایل‌های پنهان"
-
-msgid "Toggle Favorite"
-msgstr "تغییر موارد دلخواه"
-
-msgid "Toggle Mode"
-msgstr "تغییر حالت"
-
-msgid "Focus Path"
-msgstr "مسیر تمرکز"
-
-msgid "Move Favorite Up"
-msgstr "انتقال موارد دلخواه به بالا"
-
-msgid "Move Favorite Down"
-msgstr "انتقال موارد دلخواه به پایین"
-
-msgid "Go to previous folder."
-msgstr "برو به پوشه پیشین."
-
-msgid "Go to next folder."
-msgstr "برو به پوشه بعد."
-
-msgid "Go to parent folder."
-msgstr "برو به پوشه والد."
-
-msgid "Refresh files."
-msgstr "نوسازی پرونده‌ها."
-
-msgid "(Un)favorite current folder."
-msgstr "پوشه موجود (غیر)محبوب."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "تغییر پدیدار بودن فایل‌های مخفی شده."
-
-msgid "View items as a grid of thumbnails."
-msgstr "دیدن موارد به صورت جدولی از پیش‌نمایش‌ها."
-
-msgid "View items as a list."
-msgstr "مشاهده موارد به عنوان فهرست‌."
-
-msgid "Directories & Files:"
-msgstr "پوشه‌ها و پرونده‌ها:"
-
-msgid "Preview:"
-msgstr "پیش‌نمایش:"
-
-msgid "File:"
-msgstr "پرونده:"
-
 msgid "Restart"
 msgstr "راه‌اندازی مجدد"
 
@@ -1608,6 +1496,9 @@ msgstr "%s را لغو می کند:"
 
 msgid "default:"
 msgstr "پیش فرض:"
+
+msgid "Constructors"
+msgstr "سازنده ها"
 
 msgid "Operators"
 msgstr "عملگر ها"
@@ -1741,8 +1632,14 @@ msgstr "سنجاق %s برداشته شد"
 msgid "Metadata name is valid."
 msgstr "نام فراداده(متادیتا) معتبر است."
 
+msgid "Name:"
+msgstr "نام:"
+
 msgid "Copy Property Path"
 msgstr "کپی کردن مسیر دارایی"
+
+msgid "Thumbnail..."
+msgstr "تصویر کوچک..."
 
 msgid "Changed Locale Filter Mode"
 msgstr "حالت صافی بومی‌سازی تغییر کرد"
@@ -1858,21 +1755,6 @@ msgstr ""
 "این منبع وارد شده است، بنابراین قابل ویرایش نیست. تنظیمات آن را در پنل وارد "
 "کردن تغییر دهید و سپس دوباره وارد کنید."
 
-msgid "There is no defined scene to run."
-msgstr "هیچ صحنه تعریف شده‌ای برای اجرا وجود ندارد."
-
-msgid "Reload the played scene."
-msgstr "صحنه پخش‌شده را دوباره بارگذاری کن."
-
-msgid "Play the project."
-msgstr "اجرای پروژه."
-
-msgid "Play the edited scene."
-msgstr "صحنه ویرایش‌شده را اجرا کن."
-
-msgid "Play a custom scene."
-msgstr "یک صحنه سفارشی پخش کن."
-
 msgid "Open Base Scene"
 msgstr "گشودن صحنه اصلی"
 
@@ -1884,9 +1766,6 @@ msgstr "گشودن فوری صحنه..."
 
 msgid "Quick Open Script..."
 msgstr "گشودن سریع اسکریپت..."
-
-msgid "Save & Quit"
-msgstr "ذخیره و خروج"
 
 msgid "Save Scene As..."
 msgstr "ذخیره صحنه در ..."
@@ -1900,8 +1779,8 @@ msgstr "صحنه‌ای که ذخیره نشده است قابل بارگذار�
 msgid "Reload Saved Scene"
 msgstr "بازیابی صحنه ذخیره شده"
 
-msgid "Quick Run Scene..."
-msgstr "اجرا فوری صحنه…"
+msgid "Save & Quit"
+msgstr "ذخیره و خروج"
 
 msgid "Pick a Main Scene"
 msgstr "یک صحنه اصلی انتخاب کنید"
@@ -1921,6 +1800,9 @@ msgid ""
 msgstr ""
 "خطای بارگذاری صحنه، صحنه باید در مسیر پروژه قرار گرفته باشد. از 'import' "
 "برای باز کردن صحنه استفاده کنید، سپس آن را در مسیر پروژه ذخیره کنید."
+
+msgid "There is no defined scene to run."
+msgstr "هیچ صحنه تعریف شده‌ای برای اجرا وجود ندارد."
 
 msgid ""
 "Selected scene '%s' does not exist, select a valid one?\n"
@@ -2073,7 +1955,7 @@ msgid "Inspector"
 msgstr "Inspector"
 
 msgid "Node"
-msgstr "گره"
+msgstr "گره(Node)"
 
 msgid "Output"
 msgstr "خروجی"
@@ -2083,6 +1965,9 @@ msgstr "ذخیره نکن"
 
 msgid "Manage Templates"
 msgstr "مدیریت قالب‌ها"
+
+msgid "Show in File Manager"
+msgstr "نمایش فایل داخلی مرجع"
 
 msgid "Import Templates From ZIP File"
 msgstr "واردکردن قالب ها از درون یک فایل ZIP"
@@ -2128,9 +2013,6 @@ msgstr "باشه"
 
 msgid "Warning!"
 msgstr "هشدار!"
-
-msgid "Thumbnail..."
-msgstr "تصویر کوچک..."
 
 msgid "Edit Plugin"
 msgstr "ویرایش افزونه"
@@ -2179,15 +2061,6 @@ msgstr "باید ویرایشگر از نو شروع شود تا تغییرات 
 
 msgid "Shortcuts"
 msgstr "میانبر‌ها"
-
-msgid "No notifications."
-msgstr "بدون اعلان."
-
-msgid "Show notifications."
-msgstr "نمایش اعلان‌ها."
-
-msgid "Silence the notifications."
-msgstr "اعلان‌ها را بی‌صدا کن."
 
 msgid "All Devices"
 msgstr "تمام دستگاه‌ها"
@@ -2364,17 +2237,23 @@ msgstr "مرور کردن"
 msgid "Favorites"
 msgstr "برگزیده‌ها"
 
-msgid "Provided name contains invalid characters."
-msgstr "نام ارائه شده شامل کاراکترهای نامعتبر است."
+msgid "View items as a grid of thumbnails."
+msgstr "دیدن موارد به صورت جدولی از پیش‌نمایش‌ها."
 
-msgid "Renaming file:"
-msgstr "تغییر نام فایل:"
-
-msgid "Renaming folder:"
-msgstr "تغییر نام پوشه:"
+msgid "View items as a list."
+msgstr "مشاهده موارد به عنوان فهرست‌."
 
 msgid "Duplicating file:"
 msgstr "فایل تکراری:"
+
+msgid "Open Scenes"
+msgstr "باز کردن صحنه‌ها"
+
+msgid "Scene..."
+msgstr "صحنه..."
+
+msgid "Script..."
+msgstr "اسکریپت..."
 
 msgid "Add to Favorites"
 msgstr "اضافه به علاقمندی‌ها"
@@ -2382,14 +2261,11 @@ msgstr "اضافه به علاقمندی‌ها"
 msgid "Remove from Favorites"
 msgstr "حذف از علاقمندی‌ها"
 
-msgid "Move To..."
-msgstr "انتقال به..."
+msgid "Open in File Manager"
+msgstr "گشودن در مدیر پرونده"
 
-msgid "Scene..."
-msgstr "صحنه..."
-
-msgid "Script..."
-msgstr "اسکریپت..."
+msgid "New Folder..."
+msgstr "ساختن پوشه..."
 
 msgid "New Scene..."
 msgstr "صحنه جدید..."
@@ -2400,6 +2276,9 @@ msgstr "اسکریپت جدید..."
 msgid "New Resource..."
 msgstr "منبع جدید..."
 
+msgid "Copy Path"
+msgstr "کپی کردن مسیر"
+
 msgid "Duplicate..."
 msgstr "تکرار..."
 
@@ -2408,9 +2287,6 @@ msgstr "تغییر نام..."
 
 msgid "Re-Scan Filesystem"
 msgstr "پویش دوباره سامانه پرونده"
-
-msgid "Move"
-msgstr "حرکت"
 
 msgid "Overwrite"
 msgstr "بازنویسی"
@@ -2475,6 +2351,138 @@ msgstr "ویرایشگر گروه"
 msgid "Manage Groups"
 msgstr "مدیریت گروه‌ها"
 
+msgid "Move"
+msgstr "حرکت"
+
+msgid "Please select a base directory first."
+msgstr "لطفاً ابتدا دایرکتوری پایه را انتخاب کنید."
+
+msgid "Choose a Directory"
+msgstr "یک فهرست انتخاب کنید"
+
+msgid "Network"
+msgstr "شبکه"
+
+msgid "Select Current Folder"
+msgstr "برگزیدن پوشه موجود"
+
+msgid "Select This Folder"
+msgstr "برگزیدن این پوشه"
+
+msgid "All Recognized"
+msgstr "همه ی موارد شناخته شده اند"
+
+msgid "All Files (*)"
+msgstr "همهٔ پرونده‌ها (*)"
+
+msgid "Open a File"
+msgstr "یک پرونده را باز کن"
+
+msgid "Open File(s)"
+msgstr "پرونده(ها) را باز کن"
+
+msgid "Open a Directory"
+msgstr "یک دیکشنری را باز کن"
+
+msgid "Open a File or Directory"
+msgstr "یک پرونده یا پوشه را باز کن"
+
+msgid "Save a File"
+msgstr "یک پرونده را ذخیره کن"
+
+msgid "Go Back"
+msgstr "به عقب بازگردید"
+
+msgid "Go Forward"
+msgstr "جلو بروید"
+
+msgid "Go Up"
+msgstr "بالا بروید"
+
+msgid "Toggle Hidden Files"
+msgstr "تغییر فایل‌های پنهان"
+
+msgid "Toggle Favorite"
+msgstr "تغییر موارد دلخواه"
+
+msgid "Toggle Mode"
+msgstr "تغییر حالت"
+
+msgid "Focus Path"
+msgstr "مسیر تمرکز"
+
+msgid "Move Favorite Up"
+msgstr "انتقال موارد دلخواه به بالا"
+
+msgid "Move Favorite Down"
+msgstr "انتقال موارد دلخواه به پایین"
+
+msgid "Go to previous folder."
+msgstr "برو به پوشه پیشین."
+
+msgid "Go to next folder."
+msgstr "برو به پوشه بعد."
+
+msgid "Go to parent folder."
+msgstr "برو به پوشه والد."
+
+msgid "Refresh files."
+msgstr "نوسازی پرونده‌ها."
+
+msgid "(Un)favorite current folder."
+msgstr "پوشه موجود (غیر)محبوب."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "تغییر پدیدار بودن فایل‌های مخفی شده."
+
+msgid "Directories & Files:"
+msgstr "پوشه‌ها و پرونده‌ها:"
+
+msgid "Preview:"
+msgstr "پیش‌نمایش:"
+
+msgid "File:"
+msgstr "پرونده:"
+
+msgid "Play the project."
+msgstr "اجرای پروژه."
+
+msgid "Play the edited scene."
+msgstr "صحنه ویرایش‌شده را اجرا کن."
+
+msgid "Play a custom scene."
+msgstr "یک صحنه سفارشی پخش کن."
+
+msgid "Reload the played scene."
+msgstr "صحنه پخش‌شده را دوباره بارگذاری کن."
+
+msgid "Quick Run Scene..."
+msgstr "اجرا فوری صحنه…"
+
+msgid "No notifications."
+msgstr "بدون اعلان."
+
+msgid "Show notifications."
+msgstr "نمایش اعلان‌ها."
+
+msgid "Silence the notifications."
+msgstr "اعلان‌ها را بی‌صدا کن."
+
+msgid "Unlock Node"
+msgstr "بازکردن قفل گره"
+
+msgid "Open in Editor"
+msgstr "گشودن در ویرایشگر"
+
+msgid "Open Script:"
+msgstr "باز کردن اسکریپت:"
+
+msgid "Rename Node"
+msgstr "تغییر نام گره"
+
+msgid "Select a Node"
+msgstr "انتخاب یک گره"
+
 msgid "Reimport"
 msgstr "وارد کردن دوباره"
 
@@ -2513,6 +2521,9 @@ msgstr "مش‌ها"
 
 msgid "Import As:"
 msgstr "وارد کردن به عنوان:"
+
+msgid "Preset"
+msgstr "از پیش تعیین شده (Preset)"
 
 msgid "Advanced..."
 msgstr "پیشرفته..."
@@ -2903,29 +2914,29 @@ msgstr "گسترش دادن"
 msgid "Center"
 msgstr "مرکز"
 
-msgid "Flat 1"
-msgstr "تخت ۱"
+msgid "Load Curve Preset"
+msgstr "بارگیری منحنی ذخیره‌شده"
 
-msgid "Smoothstep"
-msgstr "گام نرم"
+msgid "Remove Curve Point"
+msgstr "حذف نقطهٔ منحنی"
 
 msgid "Modify Curve Point"
 msgstr "ویرایش نقطهٔ منحنی"
 
-msgid "Modify Curve Tangent"
-msgstr "ویرایش مماس منحنی"
+msgid "Smoothstep"
+msgstr "گام نرم"
 
-msgid "Load Curve Preset"
-msgstr "بارگیری منحنی ذخیره‌شده"
+msgid "Change Camera Size"
+msgstr "تغییر اندازه دوربین"
 
-msgid "Add Point"
-msgstr "افزودن نقطه"
+msgid "Change Sphere Shape Radius"
+msgstr "تغییر شعاع شکل کره"
 
-msgid "Remove Point"
-msgstr "برداشتن نقطه"
+msgid "Change Capsule Shape Radius"
+msgstr "تغییر شعاع شکل کپسول"
 
-msgid "Remove Curve Point"
-msgstr "حذف نقطهٔ منحنی"
+msgid "Change Capsule Shape Height"
+msgstr "تغییر ارتفاع شکل کپسول"
 
 msgid "Volume"
 msgstr "حجم"
@@ -2962,18 +2973,6 @@ msgstr "محور Z"
 
 msgid "Amount:"
 msgstr "مقدار:"
-
-msgid "Change Camera Size"
-msgstr "تغییر اندازه دوربین"
-
-msgid "Change Sphere Shape Radius"
-msgstr "تغییر شعاع شکل کره"
-
-msgid "Change Capsule Shape Radius"
-msgstr "تغییر شعاع شکل کپسول"
-
-msgid "Change Capsule Shape Height"
-msgstr "تغییر ارتفاع شکل کپسول"
 
 msgid "Orthogonal"
 msgstr "قائم"
@@ -3064,9 +3063,6 @@ msgstr "حذف منبع"
 
 msgid "Paste Resource"
 msgstr "چسباندن منبع"
-
-msgid "Open in Editor"
-msgstr "گشودن در ویرایشگر"
 
 msgid "Load Resource"
 msgstr "بارگذاری منبع"
@@ -3212,6 +3208,9 @@ msgstr "یک Breakpoint درج کن"
 msgid "Save File As"
 msgstr "ذخیره فایل به عنوان"
 
+msgid "ShaderFile"
+msgstr "شیدر فایل"
+
 msgid "Create Polygon2D"
 msgstr "ساخت چندضلعی دوبعدی"
 
@@ -3248,14 +3247,8 @@ msgstr "‪‮تنظیم مجدد بزرگنمایی"
 msgid "Select Frames"
 msgstr "انتخاب فریم‌ها"
 
-msgid "Horizontal:"
-msgstr "افقی:"
-
-msgid "Vertical:"
-msgstr "عمودی:"
-
-msgid "Select/Clear All Frames"
-msgstr "انتخاب/حذف همه فریم‌ها"
+msgid "Size"
+msgstr "اندازه"
 
 msgid "SpriteFrames"
 msgstr "فریم های اسپرایت"
@@ -3323,6 +3316,9 @@ msgstr "Shift+Ctrl: رسم مستطیل."
 msgid "Eraser"
 msgstr "پاک‌کن"
 
+msgid "Tiles"
+msgstr "کاشی"
+
 msgid "Patterns"
 msgstr "الگوها"
 
@@ -3337,6 +3333,9 @@ msgstr "هیچ کاشی انتخاب نشد."
 
 msgid "Yes"
 msgstr "بله"
+
+msgid "TileMap"
+msgstr "نقشه کاشی"
 
 msgid "Error"
 msgstr "خطا"
@@ -3488,11 +3487,11 @@ msgstr "مسیر پروژه:"
 msgid "Git"
 msgstr "گیت"
 
-msgid "Missing Project"
-msgstr "پروژهٔ از دست رفته"
-
 msgid "Error: Project is missing on the filesystem."
 msgstr "خطا: پروژه در فایل‌های سیستمی وجود ندارد."
+
+msgid "Missing Project"
+msgstr "پروژهٔ از دست رفته"
 
 msgid "Local"
 msgstr "محلی"
@@ -3825,18 +3824,6 @@ msgstr "از راه دور"
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "وراثت حذف شود؟ (بدون بازگشت!)"
 
-msgid "Unlock Node"
-msgstr "بازکردن قفل گره"
-
-msgid "Open Script:"
-msgstr "باز کردن اسکریپت:"
-
-msgid "Rename Node"
-msgstr "تغییر نام گره"
-
-msgid "Select a Node"
-msgstr "انتخاب یک گره"
-
 msgid "Path is empty."
 msgstr "مسیر خالی است."
 
@@ -3919,9 +3906,6 @@ msgstr "خروجی RPC"
 msgid "Config"
 msgstr "پیکربندی"
 
-msgid "Size"
-msgstr "اندازه"
-
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr "یک منبع NavigationMesh باید برای یک گره تنظیم یا ایجاد شود تا کار کند."
 
@@ -3930,6 +3914,9 @@ msgstr "انجام شد!"
 
 msgid "Unknown"
 msgstr "ناشناخته"
+
+msgid "Invalid package name:"
+msgstr "نام پکیج نامعتبر:"
 
 msgid "Exporting APK..."
 msgstr "صدور APK..."
@@ -3942,9 +3929,6 @@ msgstr "در حال نصب در دستگاه، لطفا صبر کنید..."
 
 msgid "Could not install to device: %s"
 msgstr "در دستگاه نصب نشد: %s"
-
-msgid "Invalid package name:"
-msgstr "نام پکیج نامعتبر:"
 
 msgid "Verifying %s..."
 msgstr "در حال تایید %s..."
@@ -3972,15 +3956,6 @@ msgstr "ساخت ZIP"
 
 msgid "Error starting HTTP server: %d."
 msgstr "خطا در راه‌اندازی سرور ‭"
-
-msgid "Invalid icon path:"
-msgstr "مسیر آیکون نامعتبر است:"
-
-msgid "Invalid file version:"
-msgstr "نسخه فایل نامعتبر است:"
-
-msgid "Invalid product version:"
-msgstr "نسخه پروژه نامعتبر است:"
 
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "یک CollisionPolygon2D خالی جلوه بر برخورد ندارد."

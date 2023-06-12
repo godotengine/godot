@@ -680,7 +680,7 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 	}
 
 	if (!ResourceLoader::exists(path)) {
-		set_error(RTR("Shader include file does not exist: ") + path, line);
+		set_error(RTR("Shader include file does not exist:") + " " + path, line);
 		return;
 	}
 

@@ -43,13 +43,14 @@
 # gaenyang <gaenyang@outlook.com>, 2022.
 # 오지훈 <jule1130@naver.com>, 2023.
 # coolkid <newtype20050831@gmail.com>, 2023.
+# Overdue - <kaameo12@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-11 05:49+0000\n"
-"Last-Translator: coolkid <newtype20050831@gmail.com>\n"
+"PO-Revision-Date: 2023-06-12 12:27+0000\n"
+"Last-Translator: Overdue - <kaameo12@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ko/>\n"
 "Language: ko\n"
@@ -103,6 +104,9 @@ msgstr "메인 루프 유형"
 
 msgid "Auto Accept Quit"
 msgstr "자동 수락 종료"
+
+msgid "Quit on Go Back"
+msgstr "종료하고 돌아가기"
 
 msgid "Display"
 msgstr "표시"
@@ -305,6 +309,9 @@ msgstr "마우스 모드"
 msgid "Use Accumulated Input"
 msgstr "누적 입력 사용"
 
+msgid "Input Devices"
+msgstr "입력 장치"
+
 msgid "Device"
 msgstr "기기"
 
@@ -410,12 +417,6 @@ msgstr "숨김 파일 보이기"
 msgid "Big Endian"
 msgstr "빅 엔디안"
 
-msgid "Network"
-msgstr "네트워크"
-
-msgid "Page Size"
-msgstr "페이지 크기"
-
 msgid "Blocking Mode Enabled"
 msgstr "Blocking 모드 활성화"
 
@@ -452,6 +453,9 @@ msgstr "데이터 배열"
 msgid "Max Pending Connections"
 msgstr "최대 대기 중인 연결 수"
 
+msgid "Region"
+msgstr "영역"
+
 msgid "Offset"
 msgstr "오프셋"
 
@@ -467,8 +471,8 @@ msgstr "상태"
 msgid "Message Queue"
 msgstr "메시지 큐"
 
-msgid "Max Size (KB)"
-msgstr "최대 크기 (KB)"
+msgid "Network"
+msgstr "네트워크"
 
 msgid "TCP"
 msgstr "TCP"
@@ -545,26 +549,23 @@ msgstr "원격 장면 트리 새로 고침 간격"
 msgid "Remote Inspect Refresh Interval"
 msgstr "원격 검사 새로 고침 간격"
 
+msgid "FileSystem"
+msgstr "파일시스템"
+
+msgid "File Server"
+msgstr "파일 서버"
+
+msgid "Port"
+msgstr "포트"
+
+msgid "Password"
+msgstr "비밀번호"
+
 msgid "Profiler Frame Max Functions"
 msgstr "프로파일러 프레임 최대 함수 개수"
 
 msgid "Default Feature Profile"
 msgstr "기본 기능 프로필"
-
-msgid "Access"
-msgstr "액세스"
-
-msgid "Display Mode"
-msgstr "표시 모드"
-
-msgid "Filters"
-msgstr "필터"
-
-msgid "Show Hidden Files"
-msgstr "숨김 파일 표시"
-
-msgid "Disable Overwrite Warning"
-msgstr "덮어쓰기 경고 비활성화"
 
 msgid "Text Editor"
 msgstr "텍스트 에디터"
@@ -592,6 +593,9 @@ msgstr "키 값 생성"
 
 msgid "Deletable"
 msgstr "삭제 가능"
+
+msgid "Distraction Free Mode"
+msgstr "집중 모드"
 
 msgid "Interface"
 msgstr "인터페이스"
@@ -631,9 +635,6 @@ msgstr "수평 벡터 타입 변경"
 
 msgid "Default Color Picker Mode"
 msgstr "기본 색 고르기 모드"
-
-msgid "Distraction Free Mode"
-msgstr "집중 모드"
 
 msgid "Base Type"
 msgstr "기본 타입"
@@ -725,8 +726,8 @@ msgstr "최대 너비"
 msgid "Show Script Button"
 msgstr "스크립트 버튼 보이기"
 
-msgid "FileSystem"
-msgstr "파일시스템"
+msgid "Enable"
+msgstr "활성화"
 
 msgid "External Programs"
 msgstr "외부 프로그램"
@@ -763,6 +764,12 @@ msgstr "백업으로 안전 저장 후 이름 바꾸기"
 
 msgid "File Dialog"
 msgstr "파일 대화 상자"
+
+msgid "Show Hidden Files"
+msgstr "숨김 파일 표시"
+
+msgid "Display Mode"
+msgstr "표시 모드"
 
 msgid "Thumbnail Size"
 msgstr "썸네일 크기"
@@ -823,9 +830,6 @@ msgstr "0 채워진 줄 번호"
 
 msgid "Highlight Type Safe Lines"
 msgstr "타입 안전 줄 강조"
-
-msgid "Show Bookmark Gutter"
-msgstr "북마크 여백 보이기"
 
 msgid "Show Info Gutter"
 msgstr "정보 여백 보이기"
@@ -1106,9 +1110,6 @@ msgstr "뼈 윤곽선 크기"
 msgid "Viewport Border Color"
 msgstr "표시 영역 테두리 색상"
 
-msgid "Constrain Editor View"
-msgstr "제약 편집기 보기"
-
 msgid "Panning"
 msgstr "패닝"
 
@@ -1195,9 +1196,6 @@ msgstr "HTTP 프록시"
 
 msgid "Host"
 msgstr "호스트"
-
-msgid "Port"
-msgstr "포트"
 
 msgid "Project Manager"
 msgstr "프로젝트 매니저"
@@ -1316,15 +1314,6 @@ msgstr "검색 결과 색상"
 msgid "Search Result Border Color"
 msgstr "검색 결과 테두리 색상"
 
-msgid "Flat"
-msgstr "평면"
-
-msgid "Hide Slider"
-msgstr "슬라이더 숨기기"
-
-msgid "Zoom"
-msgstr "줌"
-
 msgid "Custom Template"
 msgstr "커스텀 템플릿"
 
@@ -1364,11 +1353,23 @@ msgstr "SCP"
 msgid "Export Path"
 msgstr "경로 내보내기"
 
-msgid "File Server"
-msgstr "파일 서버"
+msgid "Access"
+msgstr "액세스"
 
-msgid "Password"
-msgstr "비밀번호"
+msgid "Filters"
+msgstr "필터"
+
+msgid "Disable Overwrite Warning"
+msgstr "덮어쓰기 경고 비활성화"
+
+msgid "Flat"
+msgstr "평면"
+
+msgid "Hide Slider"
+msgstr "슬라이더 숨기기"
+
+msgid "Zoom"
+msgstr "줌"
 
 msgid "Hinting"
 msgstr "힌팅"
@@ -1393,9 +1394,6 @@ msgstr "주변광 사용"
 
 msgid "Make Unique"
 msgstr "유일하게 만들기"
-
-msgid "Enable"
-msgstr "활성화"
 
 msgid "Filter"
 msgstr "필터"
@@ -1471,6 +1469,9 @@ msgstr "최적화 도구"
 
 msgid "Max Angular Error"
 msgstr "최대 각도 오류"
+
+msgid "Page Size"
+msgstr "페이지 크기"
 
 msgid "Nodes"
 msgstr "노드"
@@ -1589,23 +1590,23 @@ msgstr "스트림 플레이어 3D"
 msgid "Camera"
 msgstr "카메라"
 
-msgid "Visibility Notifier"
-msgstr "가시성 알리미"
+msgid "Decal"
+msgstr "데칼"
 
 msgid "Particles"
 msgstr "파티클"
-
-msgid "Reflection Probe"
-msgstr "반사 프로브"
-
-msgid "Decal"
-msgstr "데칼"
 
 msgid "Joint Body A"
 msgstr "조인트 바디 A"
 
 msgid "Joint Body B"
 msgstr "조인트 바디 B"
+
+msgid "Reflection Probe"
+msgstr "반사 프로브"
+
+msgid "Visibility Notifier"
+msgstr "가시성 알리미"
 
 msgid "Manipulator Gizmo Size"
 msgstr "조작기 기즈모 크기"
@@ -1645,12 +1646,6 @@ msgstr "실행 플래그"
 
 msgid "Skeleton"
 msgstr "스켈레톤"
-
-msgid "Shader Language"
-msgstr "셰이더 언어"
-
-msgid "Warnings"
-msgstr "경고"
 
 msgid "ID"
 msgstr "ID"
@@ -1753,9 +1748,6 @@ msgstr "부트 스플래쉬"
 
 msgid "BG Color"
 msgstr "배경색"
-
-msgid "Input Devices"
-msgstr "입력 장치"
 
 msgid "Environment"
 msgstr "환경"
@@ -1916,6 +1908,9 @@ msgstr "함수 정의 색상"
 msgid "Node Path Color"
 msgstr "노드 경로 색상"
 
+msgid "Warnings"
+msgstr "경고"
+
 msgid "Exclude Addons"
 msgstr "애드온 제외"
 
@@ -1957,6 +1952,9 @@ msgstr "반사 인자"
 
 msgid "Spec Gloss Img"
 msgstr "반사광 이미지"
+
+msgid "Angular Velocity"
+msgstr "각속도"
 
 msgid "Json"
 msgstr "Json"
@@ -2384,9 +2382,6 @@ msgstr "점"
 msgid "Colors"
 msgstr "색상"
 
-msgid "Angular Velocity"
-msgstr "각속도"
-
 msgid "Accel Min"
 msgstr "최소 가속도"
 
@@ -2443,9 +2438,6 @@ msgstr "업데이트"
 
 msgid "Editor Settings"
 msgstr "에디터 설정"
-
-msgid "Region"
-msgstr "영역"
 
 msgid "Bitmask"
 msgstr "비트 마스크"
@@ -2657,9 +2649,6 @@ msgstr "블룸"
 msgid "Features"
 msgstr "기능"
 
-msgid "Interpolation Mode"
-msgstr "보간 모드"
-
 msgid "Shader"
 msgstr "셰이더"
 
@@ -2737,6 +2726,9 @@ msgstr "전역 셰이더 변수"
 
 msgid "Shaders"
 msgstr "셰이더"
+
+msgid "Shader Language"
+msgstr "셰이더 언어"
 
 msgid "Property"
 msgstr "속성"

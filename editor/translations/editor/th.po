@@ -1292,11 +1292,8 @@ msgstr "แก้ไขการอ้างอิง"
 msgid "Search Replacement Resource:"
 msgstr "ค้นหาทรัพยากรมาแทนที่:"
 
-msgid "Open Scene"
-msgstr "เปิดฉาก"
-
-msgid "Open Scenes"
-msgstr "เปิดฉาก"
+msgid "Open"
+msgstr "เปิด"
 
 msgid "Cannot remove:"
 msgstr "ไม่สามารถลบ:"
@@ -1333,6 +1330,12 @@ msgstr "เป็นเจ้าของ"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "รีซอร์สที่ไม่มีเจ้าของที่ชัดเจน:"
+
+msgid "Could not create folder."
+msgstr "ไม่สามารถสร้างโฟลเดอร์"
+
+msgid "Create Folder"
+msgstr "สร้างโฟลเดอร์"
 
 msgid "Thanks from the Godot community!"
 msgstr "ขอขอบคุณจากชุมชนผู้ใช้ Godot!"
@@ -1620,24 +1623,6 @@ msgstr "[ว่างเปล่า]"
 msgid "[unsaved]"
 msgstr "[ไฟล์ใหม่]"
 
-msgid "Please select a base directory first."
-msgstr "กรุณาเลือกโฟลเดอร์เริ่มต้นก่อน"
-
-msgid "Choose a Directory"
-msgstr "เลือกโฟลเดอร์"
-
-msgid "Create Folder"
-msgstr "สร้างโฟลเดอร์"
-
-msgid "Name:"
-msgstr "ชื่อ:"
-
-msgid "Could not create folder."
-msgstr "ไม่สามารถสร้างโฟลเดอร์"
-
-msgid "Choose"
-msgstr "เลือก"
-
 msgid "3D Editor"
 msgstr "ตัวแก้ไข 3D"
 
@@ -1747,108 +1732,6 @@ msgstr "นำเข้าโปรไฟล์"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "จัดการรายละเอียดคุณสมบัติตัวแก้ไข"
-
-msgid "Open"
-msgstr "เปิด"
-
-msgid "Select Current Folder"
-msgstr "เลือกโฟลเดอร์ปัจจุบัน"
-
-msgid "Select This Folder"
-msgstr "เลือกโฟลเดอร์นี้"
-
-msgid "Copy Path"
-msgstr "คัดลอกตำแหน่ง"
-
-msgid "Open in File Manager"
-msgstr "เปิดโฟลเดอร์"
-
-msgid "Show in File Manager"
-msgstr "แสดงในตัวจัดการไฟล์"
-
-msgid "New Folder..."
-msgstr "สร้างโฟลเดอร์..."
-
-msgid "All Recognized"
-msgstr "ทุกนามสุกลที่รู้จัก"
-
-msgid "All Files (*)"
-msgstr "ทุกไฟล์ (*)"
-
-msgid "Open a File"
-msgstr "เปิดไฟล์"
-
-msgid "Open File(s)"
-msgstr "เปิดไฟล์"
-
-msgid "Open a Directory"
-msgstr "เปิดโฟลเดอร์"
-
-msgid "Open a File or Directory"
-msgstr "เปิดไฟล์หรือโฟลเดอร์"
-
-msgid "Save a File"
-msgstr "บันทึกไฟล์"
-
-msgid "Go Back"
-msgstr "ย้อนกลับ"
-
-msgid "Go Forward"
-msgstr "ไปหน้า"
-
-msgid "Go Up"
-msgstr "ขึ้นบน"
-
-msgid "Toggle Hidden Files"
-msgstr "เปิด/ปิดไฟล์ที่ซ่อน"
-
-msgid "Toggle Favorite"
-msgstr "เพิ่ม/ลบที่ชอบ"
-
-msgid "Toggle Mode"
-msgstr "สลับโหมด"
-
-msgid "Focus Path"
-msgstr "ตำแหน่งที่สนใจ"
-
-msgid "Move Favorite Up"
-msgstr "เลื่อนโฟลเดอร์ที่ชอบขึ้น"
-
-msgid "Move Favorite Down"
-msgstr "เลื่อนโฟลเดอร์ที่ชอบลง"
-
-msgid "Go to previous folder."
-msgstr "ไปยังโฟลเดอร์ก่อนหน้า"
-
-msgid "Go to next folder."
-msgstr "ไปยังโฟลเดอร์ถัดไป"
-
-msgid "Go to parent folder."
-msgstr "ไปยังโฟลเดอร์หลัก"
-
-msgid "Refresh files."
-msgstr "รีเฟรชไฟล์"
-
-msgid "(Un)favorite current folder."
-msgstr "เพิ่ม/ลบโฟลเดอร์ปัจจุบันไปยังที่ชื่นชอบ"
-
-msgid "Toggle the visibility of hidden files."
-msgstr "เปิด/ปิดการแสดงไฟล์ที่ซ่อน"
-
-msgid "View items as a grid of thumbnails."
-msgstr "แสดงไอเทมในรูปแบบตาราง"
-
-msgid "View items as a list."
-msgstr "แสดงไอเทมในรูปแบบลิสต์รายชื่อ"
-
-msgid "Directories & Files:"
-msgstr "ไฟล์และโฟลเดอร์:"
-
-msgid "Preview:"
-msgstr "ตัวอย่าง:"
-
-msgid "File:"
-msgstr "ไฟล์:"
 
 msgid "Restart"
 msgstr "เริ่มใหม่"
@@ -2010,6 +1893,15 @@ msgstr "ตั้ง %s"
 msgid "Set Multiple:"
 msgstr "กำหนด หลายอย่าง:"
 
+msgid "Name:"
+msgstr "ชื่อ:"
+
+msgid "Creating Mesh Previews"
+msgstr "กำลังสร้างภาพตัวอย่าง Mesh"
+
+msgid "Thumbnail..."
+msgstr "รูปตัวอย่าง..."
+
 msgid "Changed Locale Filter Mode"
 msgstr "แก้ไขโหมดการกรองภูมิภาค"
 
@@ -2083,6 +1975,9 @@ msgid ""
 "be satisfied."
 msgstr "บันทึกฉากไม่ได้ อาจจะมีการอ้างอิงไม่สมบูรณ์ (อินสแตนซ์หรือการสืบทอด)"
 
+msgid "Save scene before running..."
+msgstr "บันทึกฉากก่อนที่จะรัน..."
+
 msgid "Save All Scenes"
 msgstr "บันทึกฉากทั้งหมด"
 
@@ -2133,18 +2028,6 @@ msgstr "รีซอร์สนี้ถูกนำเข้าจึงไม
 msgid "Changes may be lost!"
 msgstr "การแก้ไขจะไม่ถูกบันทึก!"
 
-msgid "There is no defined scene to run."
-msgstr "ยังไม่ได้เลือกฉากที่จะเล่น"
-
-msgid "Save scene before running..."
-msgstr "บันทึกฉากก่อนที่จะรัน..."
-
-msgid "Play the project."
-msgstr "เล่นโปรเจกต์"
-
-msgid "Play the edited scene."
-msgstr "เล่นฉากปัจจุบัน"
-
 msgid "Open Base Scene"
 msgstr "เปิดไฟล์ฉากที่ใช้สืบทอด"
 
@@ -2156,12 +2039,6 @@ msgstr "เปิดฉากด่วน..."
 
 msgid "Quick Open Script..."
 msgstr "เปิดสคริปต์ด่วน..."
-
-msgid "Save & Quit"
-msgstr "บันทึกและปิด"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "บันทึก '%s' ก่อนปิดโปรแกรมหรือไม่?"
 
 msgid ""
 "A root node is required to save the scene. You can add a root node using the "
@@ -2190,8 +2067,8 @@ msgstr ""
 "ฉากนี้ยังมีการแก้ไขที่ไม่ได้บันทึก\n"
 "โหลดฉากที่บันทึกไว้ซ้ำใช่ไหม? การดำเนินการนี้ไม่สามารถยกเลิกได้"
 
-msgid "Quick Run Scene..."
-msgstr "เริ่มฉากด่วน..."
+msgid "Save & Quit"
+msgstr "บันทึกและปิด"
 
 msgid "Save changes to the following scene(s) before quitting?"
 msgstr "บันทึกฉากต่อไปนี้ก่อนปิดโปรแกรมหรือไม่?"
@@ -2250,6 +2127,9 @@ msgstr "ฉาก '%s' มีการอ้างอิงสูญหาย:"
 msgid "Clear Recent Scenes"
 msgstr "ล้างรายการฉากล่าสุด"
 
+msgid "There is no defined scene to run."
+msgstr "ยังไม่ได้เลือกฉากที่จะเล่น"
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -2285,6 +2165,9 @@ msgstr "ค่าเริ่มต้น"
 
 msgid "Save & Close"
 msgstr "บันทึกและปิด"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "บันทึก '%s' ก่อนปิดโปรแกรมหรือไม่?"
 
 msgid "Show in FileSystem"
 msgstr "แสดงในรูปแบบไฟล์"
@@ -2478,6 +2361,9 @@ msgstr ""
 "เทมเพลตการสร้างบนแอนดรอยด์ถูกติดตั้งในโปรเจคต์นี้เรียบร้อยแล้ว และจะไม่ถูกเขียนทับ\n"
 "กรุณาลบไดเรคทอรี \"res://android/build\" ก่อนที่จะดำเนินการอีกครั้ง"
 
+msgid "Show in File Manager"
+msgstr "แสดงในตัวจัดการไฟล์"
+
 msgid "Import Templates From ZIP File"
 msgstr "นำเข้าเทมเพลตจากไฟล์ ZIP"
 
@@ -2532,15 +2418,6 @@ msgstr "เปิดตัวแก้ไขก่อนหน้า"
 
 msgid "Warning!"
 msgstr "คำเตือน!"
-
-msgid "No sub-resources found."
-msgstr "ไม่พบทรัพยากรย่อย"
-
-msgid "Creating Mesh Previews"
-msgstr "กำลังสร้างภาพตัวอย่าง Mesh"
-
-msgid "Thumbnail..."
-msgstr "รูปตัวอย่าง..."
 
 msgid "Main Script:"
 msgstr "สคริปต์หลัก:"
@@ -2666,13 +2543,6 @@ msgstr "ทางลัด"
 
 msgid "Binding"
 msgstr "ปุ่มลัด"
-
-msgid ""
-"Hold %s to round to integers.\n"
-"Hold Shift for more precise changes."
-msgstr ""
-"กด %s ค้างเพื่อปัดเศษเป็นจำนวนเต็ม\n"
-"กด Shift ค้างเพื่อเพิ่มความแม่นยำของการเปลี่ยนแปลง"
 
 msgid "All Devices"
 msgstr "อุปกรณ์ทั้งหมด"
@@ -2878,6 +2748,12 @@ msgstr "ค้นหา"
 msgid "Favorites"
 msgstr "ที่ชื่นชอบ"
 
+msgid "View items as a grid of thumbnails."
+msgstr "แสดงไอเทมในรูปแบบตาราง"
+
+msgid "View items as a list."
+msgstr "แสดงไอเทมในรูปแบบลิสต์รายชื่อ"
+
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr "สถานะ: นำเข้าไฟล์ล้มเหลว กรุณาแก้ไขไฟล์และนำเข้าใหม่"
 
@@ -2900,31 +2776,8 @@ msgstr "ผิดพลาดขณะทำซ้ำ:"
 msgid "Unable to update dependencies:"
 msgstr "ไม่สามารถอัพเดทการอ้างอิง:"
 
-msgid "Provided name contains invalid characters."
-msgstr "ชื่อที่ระบุประกอบไปด้วยตัวอักษรที่ไม่ถูกต้อง"
-
 msgid "A file or folder with this name already exists."
 msgstr "มีชื่อกลุ่มนี้อยู่แล้ว"
-
-msgid ""
-"The following files or folders conflict with items in the target location "
-"'%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Do you wish to overwrite them?"
-msgstr ""
-"ไฟล์หรือโฟลเดอร์ต่อไปนี้นั้นขัดแย้งกันกับรายการในตำแหน่งที่เลือกไว้ '%s':\n"
-"\n"
-"%s\n"
-"\n"
-"คุณต้องการที่จะเขียนทับหรือไม่?"
-
-msgid "Renaming file:"
-msgstr "เปลี่ยนชื่อไฟล์:"
-
-msgid "Renaming folder:"
-msgstr "เปลี่ยนชื่อโฟลเดอร์:"
 
 msgid "Duplicating file:"
 msgstr "ทำซ้ำไฟล์:"
@@ -2938,11 +2791,8 @@ msgstr "ฉากสืบทอดใหม่"
 msgid "Set As Main Scene"
 msgstr "ตั้งเป็นฉากหลัก"
 
-msgid "Add to Favorites"
-msgstr "เพิ่มไปยังที่ชื่นชอบ"
-
-msgid "Remove from Favorites"
-msgstr "ลบจากที่่ชื่นชอบ"
+msgid "Open Scenes"
+msgstr "เปิดฉาก"
 
 msgid "Edit Dependencies..."
 msgstr "แก้ไขการอ้างอิง..."
@@ -2950,8 +2800,17 @@ msgstr "แก้ไขการอ้างอิง..."
 msgid "View Owners..."
 msgstr "ดูเจ้าของ..."
 
-msgid "Move To..."
-msgstr "ย้ายไป..."
+msgid "Add to Favorites"
+msgstr "เพิ่มไปยังที่ชื่นชอบ"
+
+msgid "Remove from Favorites"
+msgstr "ลบจากที่่ชื่นชอบ"
+
+msgid "Open in File Manager"
+msgstr "เปิดโฟลเดอร์"
+
+msgid "New Folder..."
+msgstr "สร้างโฟลเดอร์..."
 
 msgid "New Scene..."
 msgstr "ฉากใหม่..."
@@ -2961,6 +2820,9 @@ msgstr "สคริปต์ใหม่..."
 
 msgid "New Resource..."
 msgstr "ทรัพยากรใหม่..."
+
+msgid "Copy Path"
+msgstr "คัดลอกตำแหน่ง"
 
 msgid "Duplicate..."
 msgstr "ทำซ้ำ..."
@@ -2980,9 +2842,6 @@ msgid ""
 msgstr ""
 "กำลังสแกนไฟล์,\n"
 "กรุณารอ..."
-
-msgid "Move"
-msgstr "ย้าย"
 
 msgid "Overwrite"
 msgstr "เขียนทับ"
@@ -3049,6 +2908,165 @@ msgstr "ตัวแก้ไขกลุ่ม"
 
 msgid "Manage Groups"
 msgstr "จัดการกลุ่ม"
+
+msgid "Move"
+msgstr "ย้าย"
+
+msgid "Please select a base directory first."
+msgstr "กรุณาเลือกโฟลเดอร์เริ่มต้นก่อน"
+
+msgid "Choose a Directory"
+msgstr "เลือกโฟลเดอร์"
+
+msgid "Select Current Folder"
+msgstr "เลือกโฟลเดอร์ปัจจุบัน"
+
+msgid "Select This Folder"
+msgstr "เลือกโฟลเดอร์นี้"
+
+msgid "All Recognized"
+msgstr "ทุกนามสุกลที่รู้จัก"
+
+msgid "All Files (*)"
+msgstr "ทุกไฟล์ (*)"
+
+msgid "Open a File"
+msgstr "เปิดไฟล์"
+
+msgid "Open File(s)"
+msgstr "เปิดไฟล์"
+
+msgid "Open a Directory"
+msgstr "เปิดโฟลเดอร์"
+
+msgid "Open a File or Directory"
+msgstr "เปิดไฟล์หรือโฟลเดอร์"
+
+msgid "Save a File"
+msgstr "บันทึกไฟล์"
+
+msgid "Go Back"
+msgstr "ย้อนกลับ"
+
+msgid "Go Forward"
+msgstr "ไปหน้า"
+
+msgid "Go Up"
+msgstr "ขึ้นบน"
+
+msgid "Toggle Hidden Files"
+msgstr "เปิด/ปิดไฟล์ที่ซ่อน"
+
+msgid "Toggle Favorite"
+msgstr "เพิ่ม/ลบที่ชอบ"
+
+msgid "Toggle Mode"
+msgstr "สลับโหมด"
+
+msgid "Focus Path"
+msgstr "ตำแหน่งที่สนใจ"
+
+msgid "Move Favorite Up"
+msgstr "เลื่อนโฟลเดอร์ที่ชอบขึ้น"
+
+msgid "Move Favorite Down"
+msgstr "เลื่อนโฟลเดอร์ที่ชอบลง"
+
+msgid "Go to previous folder."
+msgstr "ไปยังโฟลเดอร์ก่อนหน้า"
+
+msgid "Go to next folder."
+msgstr "ไปยังโฟลเดอร์ถัดไป"
+
+msgid "Go to parent folder."
+msgstr "ไปยังโฟลเดอร์หลัก"
+
+msgid "Refresh files."
+msgstr "รีเฟรชไฟล์"
+
+msgid "(Un)favorite current folder."
+msgstr "เพิ่ม/ลบโฟลเดอร์ปัจจุบันไปยังที่ชื่นชอบ"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "เปิด/ปิดการแสดงไฟล์ที่ซ่อน"
+
+msgid "Directories & Files:"
+msgstr "ไฟล์และโฟลเดอร์:"
+
+msgid "Preview:"
+msgstr "ตัวอย่าง:"
+
+msgid "File:"
+msgstr "ไฟล์:"
+
+msgid "No sub-resources found."
+msgstr "ไม่พบทรัพยากรย่อย"
+
+msgid "Play the project."
+msgstr "เล่นโปรเจกต์"
+
+msgid "Play the edited scene."
+msgstr "เล่นฉากปัจจุบัน"
+
+msgid "Quick Run Scene..."
+msgstr "เริ่มฉากด่วน..."
+
+msgid ""
+"Hold %s to round to integers.\n"
+"Hold Shift for more precise changes."
+msgstr ""
+"กด %s ค้างเพื่อปัดเศษเป็นจำนวนเต็ม\n"
+"กด Shift ค้างเพื่อเพิ่มความแม่นยำของการเปลี่ยนแปลง"
+
+msgid "Toggle Visible"
+msgstr "ซ่อน/แสดง"
+
+msgid "Unlock Node"
+msgstr "ปลดล็อคโหนด"
+
+msgid "Button Group"
+msgstr "ชุดของปุ่ม"
+
+msgid "(Connecting From)"
+msgstr "(เชื่อมต่อจาก)"
+
+msgid "Node configuration warning:"
+msgstr "คำเตือนการตั้งค่าโหนด:"
+
+msgid "Open in Editor"
+msgstr "เปิดในโปรแกรมแก้ไข"
+
+msgid "Open Script:"
+msgstr "เปิดสคริปต์:"
+
+msgid ""
+"Node is locked.\n"
+"Click to unlock it."
+msgstr ""
+"โหนดถูกล็อค\n"
+"คลิกเพื่อปลดล็อค"
+
+msgid ""
+"AnimationPlayer is pinned.\n"
+"Click to unpin."
+msgstr ""
+"ปักหมุด AnimationPlayer แล้ว\n"
+"คลิกเพื่อเลิกปักหมุด"
+
+msgid "Invalid node name, the following characters are not allowed:"
+msgstr "ชื่อโหนดไม่ถูกต้อง ใช้ตัวอักษรต่อไปนี้ไม่ได้:"
+
+msgid "Rename Node"
+msgstr "เปลี่ยนชื่อโหนด"
+
+msgid "Scene Tree (Nodes):"
+msgstr "ผังฉาก (โหนด):"
+
+msgid "Node Configuration Warning!"
+msgstr "คำเตือนการตั้งค่าโหนด!"
+
+msgid "Select a Node"
+msgstr "เลือกโหนด"
 
 msgid "Reimport"
 msgstr "นำเข้าใหม่"
@@ -3313,9 +3331,6 @@ msgstr "ลบจุด BlendSpace2D"
 msgid "Remove BlendSpace2D Triangle"
 msgstr "ลบสามเหลี่ยม BlendSpace2D"
 
-msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr "BlendSpace2D ไม่ได้อยู่ในโหนด AnimationTree"
-
 msgid "No triangles exist, so no blending can take place."
 msgstr "ไม่มีสามเหลี่ยม จึงไม่สามารถใช้ blending ได้"
 
@@ -3542,9 +3557,6 @@ msgstr "ในตอนท้าย"
 
 msgid "Travel"
 msgstr "การเคลื่อนที่"
-
-msgid "Start and end nodes are needed for a sub-transition."
-msgstr "โหนดเริ่มต้นและสิ้นสุดจำเป็นสำหรับทรานสิชันย่อย"
 
 msgid "No playback resource set at path: %s."
 msgstr "ไม่ได้ตั้งทรัพยากรการเล่นไว้ที่ที่อยู่: % s"
@@ -4066,11 +4078,17 @@ msgstr "สีการปะทุ"
 msgid "Create Emission Points From Node"
 msgstr "สร้างจุดปะทุจากโหนด"
 
-msgid "Flat 0"
-msgstr "Flat 0"
+msgid "Load Curve Preset"
+msgstr "โหลดพรีเซ็ตเส้นโค้ง"
 
-msgid "Flat 1"
-msgstr "Flat 1"
+msgid "Remove Curve Point"
+msgstr "ลบจุดบนเส้นโค้ง"
+
+msgid "Modify Curve Point"
+msgstr "แก้ไขจุดบนเส้นโค้ง"
+
+msgid "Hold Shift to edit tangents individually"
+msgstr "กด Shift ค้างเพื่อปรับเส้นสัมผัสแยกกัน"
 
 msgid "Ease In"
 msgstr "เข้านุ่มนวล"
@@ -4080,42 +4098,6 @@ msgstr "ออกนุ่มนวล"
 
 msgid "Smoothstep"
 msgstr "นุ่มนวล"
-
-msgid "Modify Curve Point"
-msgstr "แก้ไขจุดบนเส้นโค้ง"
-
-msgid "Modify Curve Tangent"
-msgstr "แก้ไขเส้นสัมผัสเส้นโค้ง"
-
-msgid "Load Curve Preset"
-msgstr "โหลดพรีเซ็ตเส้นโค้ง"
-
-msgid "Add Point"
-msgstr "เพิ่มจุด"
-
-msgid "Remove Point"
-msgstr "ลบจุด"
-
-msgid "Left Linear"
-msgstr "เส้นตรงซ้าย"
-
-msgid "Right Linear"
-msgstr "เส้นตรงขวา"
-
-msgid "Load Preset"
-msgstr "โหลดพรีเซ็ต"
-
-msgid "Remove Curve Point"
-msgstr "ลบจุดบนเส้นโค้ง"
-
-msgid "Toggle Curve Linear Tangent"
-msgstr "เปิด/ปิดเส้นสัมผัสแนวโค้ง"
-
-msgid "Hold Shift to edit tangents individually"
-msgstr "กด Shift ค้างเพื่อปรับเส้นสัมผัสแยกกัน"
-
-msgid "Right click to add point"
-msgstr "คลิกขวาเพื่อเพิ่มจุด"
 
 msgid "Debug with External Editor"
 msgstr "ดีบั๊กด้วยโปรแกรมภายนอก"
@@ -4198,6 +4180,39 @@ msgstr ""
 
 msgid " - Variation"
 msgstr " - ชนิด"
+
+msgid "Change AudioStreamPlayer3D Emission Angle"
+msgstr "แก้ไของศาการเปล่งเสียงของ AudioStreamPlayer3D"
+
+msgid "Change Camera FOV"
+msgstr "ปรับกล้อง FOV"
+
+msgid "Change Camera Size"
+msgstr "เปลี่ยนขนาดกล้อง"
+
+msgid "Change Sphere Shape Radius"
+msgstr "ปรับรัศมีทรงกลม"
+
+msgid "Change Capsule Shape Radius"
+msgstr "ปรับรัศมีทรงแคปซูล"
+
+msgid "Change Capsule Shape Height"
+msgstr "ปรับความสูงทรงแคปซูล"
+
+msgid "Change Cylinder Shape Radius"
+msgstr "ปรับรัศมีทรงแคปซูล"
+
+msgid "Change Cylinder Shape Height"
+msgstr "ปรับความสูงทรงแคปซูล"
+
+msgid "Change Particles AABB"
+msgstr "แก้ไข Particles AABB"
+
+msgid "Change Light Radius"
+msgstr "ปรับรัศมีแสง"
+
+msgid "Change Notifier AABB"
+msgstr "แก้ไข Notifier AABB"
 
 msgid "Convert to CPUParticles2D"
 msgstr "แปลงเป็น CPUParticles2D"
@@ -4452,41 +4467,14 @@ msgstr "จำนวน:"
 msgid "Populate"
 msgstr "สร้าง"
 
+msgid "Edit Poly"
+msgstr "แก้ไขรูปหลายเหลี่ยม"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "แก้ไขรูปหลายเหลี่ยม (ลบจุด)"
+
 msgid "Create Navigation Polygon"
 msgstr "สร้างรูปทรงนำทาง"
-
-msgid "Change Light Radius"
-msgstr "ปรับรัศมีแสง"
-
-msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr "แก้ไของศาการเปล่งเสียงของ AudioStreamPlayer3D"
-
-msgid "Change Camera FOV"
-msgstr "ปรับกล้อง FOV"
-
-msgid "Change Camera Size"
-msgstr "เปลี่ยนขนาดกล้อง"
-
-msgid "Change Sphere Shape Radius"
-msgstr "ปรับรัศมีทรงกลม"
-
-msgid "Change Notifier AABB"
-msgstr "แก้ไข Notifier AABB"
-
-msgid "Change Particles AABB"
-msgstr "แก้ไข Particles AABB"
-
-msgid "Change Capsule Shape Radius"
-msgstr "ปรับรัศมีทรงแคปซูล"
-
-msgid "Change Capsule Shape Height"
-msgstr "ปรับความสูงทรงแคปซูล"
-
-msgid "Change Cylinder Shape Radius"
-msgstr "ปรับรัศมีทรงแคปซูล"
-
-msgid "Change Cylinder Shape Height"
-msgstr "ปรับความสูงทรงแคปซูล"
 
 msgid "Transform Aborted."
 msgstr "ยกเลิกการเคลื่อนย้าย"
@@ -5002,12 +4990,6 @@ msgstr "ซิงค์โครงกับโพลีกอน"
 msgid "Create Polygon3D"
 msgstr "สร้าง Polygon3D"
 
-msgid "Edit Poly"
-msgstr "แก้ไขรูปหลายเหลี่ยม"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "แก้ไขรูปหลายเหลี่ยม (ลบจุด)"
-
 msgid "ERROR: Couldn't load resource!"
 msgstr "ผิดพลาด: โหลดรีซอร์สไม่ได้!"
 
@@ -5025,9 +5007,6 @@ msgstr "คลิปบอร์ดไม่มีรีซอร์ส!"
 
 msgid "Paste Resource"
 msgstr "วางรีซอร์ส"
-
-msgid "Open in Editor"
-msgstr "เปิดในโปรแกรมแก้ไข"
 
 msgid "Load Resource"
 msgstr "โหลดรีซอร์ส"
@@ -5444,17 +5423,8 @@ msgstr "รีเซ็ตการซูม"
 msgid "Select Frames"
 msgstr "เลือกเฟรม"
 
-msgid "Horizontal:"
-msgstr "แนวนอน:"
-
-msgid "Vertical:"
-msgstr "แนวตั้ง:"
-
-msgid "Separation:"
-msgstr "เว้น:"
-
-msgid "Select/Clear All Frames"
-msgstr "เลือก/เคลียร์เฟรมทั้งหมด"
+msgid "Size"
+msgstr "ขนาด"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "สร้างเฟรมจากสไปรต์ชีต"
@@ -5482,6 +5452,9 @@ msgstr "แบ่งอัตโนมัติ"
 
 msgid "Step:"
 msgstr "ขนาด:"
+
+msgid "Separation:"
+msgstr "เว้น:"
 
 msgid "Updating the editor"
 msgstr "อัพเดทตัวแก้ไข"
@@ -6214,11 +6187,11 @@ msgstr "ที่อยู่ที่ใช้ติดตั้งโปรเ
 msgid "Renderer:"
 msgstr "ตัวเรนเดอร์:"
 
-msgid "Missing Project"
-msgstr "โปรเจกต์หายไป"
-
 msgid "Error: Project is missing on the filesystem."
 msgstr "Error:โปรเจกต์หายไปจากระบบไฟล์"
+
+msgid "Missing Project"
+msgstr "โปรเจกต์หายไป"
 
 msgid "Local"
 msgstr "ระยะใกล้"
@@ -6628,53 +6601,6 @@ msgstr ""
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "ลบการสืบทอด? (ย้อนกลับไม่ได้!)"
 
-msgid "Toggle Visible"
-msgstr "ซ่อน/แสดง"
-
-msgid "Unlock Node"
-msgstr "ปลดล็อคโหนด"
-
-msgid "Button Group"
-msgstr "ชุดของปุ่ม"
-
-msgid "(Connecting From)"
-msgstr "(เชื่อมต่อจาก)"
-
-msgid "Node configuration warning:"
-msgstr "คำเตือนการตั้งค่าโหนด:"
-
-msgid "Open Script:"
-msgstr "เปิดสคริปต์:"
-
-msgid ""
-"Node is locked.\n"
-"Click to unlock it."
-msgstr ""
-"โหนดถูกล็อค\n"
-"คลิกเพื่อปลดล็อค"
-
-msgid ""
-"AnimationPlayer is pinned.\n"
-"Click to unpin."
-msgstr ""
-"ปักหมุด AnimationPlayer แล้ว\n"
-"คลิกเพื่อเลิกปักหมุด"
-
-msgid "Invalid node name, the following characters are not allowed:"
-msgstr "ชื่อโหนดไม่ถูกต้อง ใช้ตัวอักษรต่อไปนี้ไม่ได้:"
-
-msgid "Rename Node"
-msgstr "เปลี่ยนชื่อโหนด"
-
-msgid "Scene Tree (Nodes):"
-msgstr "ผังฉาก (โหนด):"
-
-msgid "Node Configuration Warning!"
-msgstr "คำเตือนการตั้งค่าโหนด!"
-
-msgid "Select a Node"
-msgstr "เลือกโหนด"
-
 msgid "Path is empty."
 msgstr "ที่อยู่ว่างเปล่า"
 
@@ -6905,9 +6831,6 @@ msgstr "RPC ขาออก"
 msgid "Config"
 msgstr "ตั้งค่า"
 
-msgid "Size"
-msgstr "ขนาด"
-
 msgid "Network Profiler"
 msgstr "โปรไฟล์เน็ตเวิร์ก"
 
@@ -6980,6 +6903,12 @@ msgstr "ตัวอักษร '%s' ไม่สามารถเป็นต
 msgid "The package must have at least one '.' separator."
 msgstr "แพ็คเกจจำเป็นต้องมี '.' อย่างน้อยหนึ่งตัว"
 
+msgid "Invalid public key for APK expansion."
+msgstr "public key ผิดพลาดสำหรับ APK expansion"
+
+msgid "Invalid package name:"
+msgstr "ชื่อแพ็คเกจผิดพลาด:"
+
 msgid "Select device from the list"
 msgstr "เลือกอุปกรณ์จากรายชื่อ"
 
@@ -7015,12 +6944,6 @@ msgstr "ไดเร็กทอรี 'build-tools' หายไป!"
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "ไม่พบคำสั่ง apksigner ของ Android SDK build-tools"
 
-msgid "Invalid public key for APK expansion."
-msgstr "public key ผิดพลาดสำหรับ APK expansion"
-
-msgid "Invalid package name:"
-msgstr "ชื่อแพ็คเกจผิดพลาด:"
-
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr "ชื่อไฟล์ผิดพลาด! แอนดรอยด์แอปบันเดิลจำเป็นต้องมีนามสกุล *.aab"
 
@@ -7054,9 +6977,6 @@ msgstr ""
 
 msgid "Aligning APK..."
 msgstr "จัดเรียง APK..."
-
-msgid "App Store Team ID not specified - cannot configure the project."
-msgstr "App Store Team ID ยังไม่ได้ระบุ - ไม่สามารถกำหนดค่าให้โปรเจกต์ได้"
 
 msgid "Invalid Identifier:"
 msgstr "ระบุไม่ถูกต้อง:"
@@ -7309,13 +7229,6 @@ msgid "(Other)"
 msgstr "(อื่น)"
 
 msgid ""
-"Default Environment as specified in Project Settings (Rendering -> "
-"Environment -> Default Environment) could not be loaded."
-msgstr ""
-"ไม่สามารถโหลด Environment ปริยายที่กำหนดในตัวเลือกโปรเจกต์ได้ (Rendering -> "
-"Environment -> Default Environment)"
-
-msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
 msgstr "พอร์ตตัวอย่างเชื่อมต่ออยู่แต่ไม่ได้ใช้ ควรที่จะเปลี่ยนเป็น \"SamplerPort\""
@@ -7340,9 +7253,6 @@ msgstr "ค่าคงที่ไม่สามารถแก้ไขได
 
 msgid "Invalid argument name."
 msgstr "ชื่อตัวแปรอาร์กูเมนท์ไม่ถูกต้อง"
-
-msgid "Shader include file does not exist: "
-msgstr "ไม่พบไฟล์เชดเดอร์ที่นำเข้า: "
 
 msgid "Invalid macro argument list."
 msgstr "รายการอาร์กูเมนท์มาโครไม่ถูกต้อง"
