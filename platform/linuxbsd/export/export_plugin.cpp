@@ -30,13 +30,14 @@
 
 #include "export_plugin.h"
 
+#include "../logo_svg.gen.h"
+#include "../run_icon_svg.gen.h"
+
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/export/editor_export.h"
-#include "platform/linuxbsd/logo_svg.gen.h"
-#include "platform/linuxbsd/run_icon_svg.gen.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED

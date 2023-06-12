@@ -372,7 +372,7 @@ void GraphEdit::_update_scroll() {
 
 void GraphEdit::_graph_node_raised(Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 	if (gn->is_comment()) {
 		move_child(gn, 0);
 	} else {
@@ -382,21 +382,21 @@ void GraphEdit::_graph_node_raised(Node *p_gn) {
 
 void GraphEdit::_graph_node_selected(Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 
 	emit_signal(SNAME("node_selected"), gn);
 }
 
 void GraphEdit::_graph_node_deselected(Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 
 	emit_signal(SNAME("node_deselected"), gn);
 }
 
 void GraphEdit::_graph_node_moved(Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 	top_layer->queue_redraw();
 	minimap->queue_redraw();
 	queue_redraw();
@@ -405,7 +405,7 @@ void GraphEdit::_graph_node_moved(Node *p_gn) {
 
 void GraphEdit::_graph_node_slot_updated(int p_index, Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 	top_layer->queue_redraw();
 	minimap->queue_redraw();
 	queue_redraw();
@@ -989,10 +989,10 @@ void GraphEdit::_top_layer_draw() {
 	_update_scroll();
 
 	if (connecting) {
-		Node *fromn = get_node(NodePath(connecting_from));
-		ERR_FAIL_COND(!fromn);
+		Node *fromn = get_node_or_null(NodePath(connecting_from));
+		ERR_FAIL_NULL(fromn);
 		GraphNode *from = Object::cast_to<GraphNode>(fromn);
-		ERR_FAIL_COND(!from);
+		ERR_FAIL_NULL(from);
 		Vector2 pos;
 		if (connecting_out) {
 			pos = from->get_connection_output_position(connecting_index);

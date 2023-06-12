@@ -66,8 +66,8 @@ void Node::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			ERR_FAIL_COND(!get_viewport());
-			ERR_FAIL_COND(!get_tree());
+			ERR_FAIL_NULL(get_viewport());
+			ERR_FAIL_NULL(get_tree());
 
 			// Update process mode.
 			if (data.process_mode == PROCESS_MODE_INHERIT) {
@@ -121,8 +121,8 @@ void Node::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			ERR_FAIL_COND(!get_viewport());
-			ERR_FAIL_COND(!get_tree());
+			ERR_FAIL_NULL(get_viewport());
+			ERR_FAIL_NULL(get_tree());
 
 			get_tree()->nodes_in_tree_count--;
 			orphan_node_count++;
@@ -1167,6 +1167,20 @@ void Node::set_name(const String &p_name) {
 	}
 }
 
+// Returns a clear description of this node depending on what is available. Useful for error messages.
+String Node::get_description() const {
+	String description;
+	if (is_inside_tree()) {
+		description = get_path();
+	} else {
+		description = get_name();
+		if (description.is_empty()) {
+			description = get_class();
+		}
+	}
+	return description;
+}
+
 static SafeRefCount node_hrcr_count;
 
 void Node::init_node_hrcr() {
@@ -1425,11 +1439,11 @@ void Node::remove_child(Node *p_child) {
 	bool success = data.children.erase(p_child->data.name);
 	ERR_FAIL_COND_MSG(!success, "Children name does not match parent name in hashtable, this is a bug.");
 
-	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
-	emit_signal(SNAME("child_order_changed"));
-
 	p_child->data.parent = nullptr;
 	p_child->data.index = -1;
+
+	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
+	emit_signal(SNAME("child_order_changed"));
 
 	if (data.inside_tree) {
 		p_child->_propagate_after_exit_tree();
@@ -1596,17 +1610,7 @@ Node *Node::get_node(const NodePath &p_path) const {
 	Node *node = get_node_or_null(p_path);
 
 	if (unlikely(!node)) {
-		// Try to get a clear description of this node in the error message.
-		String desc;
-		if (is_inside_tree()) {
-			desc = get_path();
-		} else {
-			desc = get_name();
-			if (desc.is_empty()) {
-				desc = get_class();
-			}
-		}
-
+		const String desc = get_description();
 		if (p_path.is_absolute()) {
 			ERR_FAIL_V_MSG(nullptr,
 					vformat(R"(Node not found: "%s" (absolute path attempted from "%s").)", p_path, desc));
@@ -1985,7 +1989,7 @@ NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
 		common_parent = common_parent->data.parent;
 	}
 
-	ERR_FAIL_COND_V(!common_parent, NodePath()); //nodes not in the same tree
+	ERR_FAIL_NULL_V(common_parent, NodePath()); //nodes not in the same tree
 
 	visited.clear();
 
@@ -2248,7 +2252,7 @@ void Node::_propagate_replace_owner(Node *p_owner, Node *p_by_owner) {
 
 Ref<Tween> Node::create_tween() {
 	ERR_THREAD_GUARD_V(Ref<Tween>());
-	ERR_FAIL_COND_V_MSG(!data.tree, nullptr, "Can't create Tween when not inside scene tree.");
+	ERR_FAIL_NULL_V_MSG(data.tree, nullptr, "Can't create Tween when not inside scene tree.");
 	Ref<Tween> tween = get_tree()->create_tween();
 	tween->bind_node(this);
 	return tween;
@@ -2433,19 +2437,19 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		}
 #endif
 		node = res->instantiate(edit_state);
-		ERR_FAIL_COND_V(!node, nullptr);
+		ERR_FAIL_NULL_V(node, nullptr);
 		node->set_scene_instance_load_placeholder(get_scene_instance_load_placeholder());
 
 		instantiated = true;
 
 	} else {
 		Object *obj = ClassDB::instantiate(get_class());
-		ERR_FAIL_COND_V(!obj, nullptr);
+		ERR_FAIL_NULL_V(obj, nullptr);
 		node = Object::cast_to<Node>(obj);
 		if (!node) {
 			memdelete(obj);
 		}
-		ERR_FAIL_COND_V(!node, nullptr);
+		ERR_FAIL_NULL_V(node, nullptr);
 	}
 
 	if (!get_scene_file_path().is_empty()) { //an instance

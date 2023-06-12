@@ -371,6 +371,9 @@ msgstr "Modo de Mouse"
 msgid "Use Accumulated Input"
 msgstr "Usar entrada acumulada"
 
+msgid "Input Devices"
+msgstr "Dispositivos de Entrada"
+
 msgid "Device"
 msgstr "Dispositivo"
 
@@ -455,12 +458,6 @@ msgstr "Atajo"
 msgid "Big Endian"
 msgstr "Big Endian"
 
-msgid "Network"
-msgstr "Red"
-
-msgid "Page Size"
-msgstr "Tamaño de Página"
-
 msgid "Blocking Mode Enabled"
 msgstr "Modo de Bloqueo Activado"
 
@@ -494,6 +491,9 @@ msgstr "Array de Datos"
 msgid "Max Pending Connections"
 msgstr "Máximo de Conexiones Pendientes"
 
+msgid "Region"
+msgstr "Región"
+
 msgid "Offset"
 msgstr "Offset"
 
@@ -505,6 +505,9 @@ msgstr "Semilla"
 
 msgid "State"
 msgstr "Estado"
+
+msgid "Network"
+msgstr "Red"
 
 msgid "Use System Threads for Low Priority Tasks"
 msgstr "Usar Hilos del Sistema Para Tareas de Baja Prioridad"
@@ -578,26 +581,23 @@ msgstr "Intervalo de Refresco del Árbol de Escenas Remoto"
 msgid "Remote Inspect Refresh Interval"
 msgstr "Intervalo de Refresco de la Inspección Remota"
 
+msgid "FileSystem"
+msgstr "Sistema de Archivos"
+
+msgid "File Server"
+msgstr "Servidor de Archivos"
+
+msgid "Port"
+msgstr "Puerto"
+
+msgid "Password"
+msgstr "Contraseña"
+
 msgid "Profiler Frame Max Functions"
 msgstr "Máximo de Funciones del Cuadro del Profiler"
 
 msgid "Default Feature Profile"
 msgstr "Perfil de Características Predeterminado"
-
-msgid "Access"
-msgstr "Acceso"
-
-msgid "Display Mode"
-msgstr "Modo de Visualización"
-
-msgid "Filters"
-msgstr "Filtros"
-
-msgid "Show Hidden Files"
-msgstr "Mostrar Archivos Ocultos"
-
-msgid "Disable Overwrite Warning"
-msgstr "Deshabilitar La Advertencia De Sobrescritura"
 
 msgid "Text Editor"
 msgstr "Editor de Textos"
@@ -622,6 +622,9 @@ msgstr "Chequeado"
 
 msgid "Keying"
 msgstr "Teclear"
+
+msgid "Distraction Free Mode"
+msgstr "Modo Sin Distracciones"
 
 msgid "Interface"
 msgstr "Interfaz"
@@ -661,9 +664,6 @@ msgstr "Edición de Tipos de Vectores Horizontales"
 
 msgid "Default Color Picker Mode"
 msgstr "Modo de Selección de Color Predeterminado"
-
-msgid "Distraction Free Mode"
-msgstr "Modo Sin Distracciones"
 
 msgid "Base Type"
 msgstr "Tipo Base"
@@ -752,8 +752,8 @@ msgstr "Tema Personalizado"
 msgid "Show Script Button"
 msgstr "Mostrar Botón de Script"
 
-msgid "FileSystem"
-msgstr "Sistema de Archivos"
+msgid "Enable"
+msgstr "Activar"
 
 msgid "Directories"
 msgstr "Directorios"
@@ -772,6 +772,12 @@ msgstr "Comprimir Recursos Binarios"
 
 msgid "File Dialog"
 msgstr "Diálogo de Archivo"
+
+msgid "Show Hidden Files"
+msgstr "Mostrar Archivos Ocultos"
+
+msgid "Display Mode"
+msgstr "Modo de Visualización"
 
 msgid "Thumbnail Size"
 msgstr "Tamaño de las Miniaturas"
@@ -835,9 +841,6 @@ msgstr "Números de Línea con Cero Relleno"
 
 msgid "Highlight Type Safe Lines"
 msgstr "Resaltar Líneas con Tipado Seguro"
-
-msgid "Show Bookmark Gutter"
-msgstr "Mostrar Margen de Marcador"
 
 msgid "Show Info Gutter"
 msgstr "Mostrar Margen de Información"
@@ -1097,9 +1100,6 @@ msgstr "Tamaño de Contorno de Hueso"
 msgid "Viewport Border Color"
 msgstr "Color del Borde del Viewport"
 
-msgid "Constrain Editor View"
-msgstr "Vista del Editor de Restricciones"
-
 msgid "Simple Panning"
 msgstr "Paneo Simple"
 
@@ -1171,9 +1171,6 @@ msgstr "Proxy HTTP"
 
 msgid "Host"
 msgstr "Host"
-
-msgid "Port"
-msgstr "Puerto"
 
 msgid "Project Manager"
 msgstr "Administrador de Proyectos"
@@ -1289,15 +1286,6 @@ msgstr "Color del Resultado de Búsqueda"
 msgid "Search Result Border Color"
 msgstr "Color de los Bordes del Resultado de Búsqueda"
 
-msgid "Flat"
-msgstr "Plano"
-
-msgid "Hide Slider"
-msgstr "Ocultar Deslizador"
-
-msgid "Zoom"
-msgstr "Zoom"
-
 msgid "Custom Template"
 msgstr "Plantilla Personalizada"
 
@@ -1331,11 +1319,23 @@ msgstr "Exportar"
 msgid "Export Path"
 msgstr "Ruta de Exportación"
 
-msgid "File Server"
-msgstr "Servidor de Archivos"
+msgid "Access"
+msgstr "Acceso"
 
-msgid "Password"
-msgstr "Contraseña"
+msgid "Filters"
+msgstr "Filtros"
+
+msgid "Disable Overwrite Warning"
+msgstr "Deshabilitar La Advertencia De Sobrescritura"
+
+msgid "Flat"
+msgstr "Plano"
+
+msgid "Hide Slider"
+msgstr "Ocultar Deslizador"
+
+msgid "Zoom"
+msgstr "Zoom"
 
 msgid "Hinting"
 msgstr "Hinting"
@@ -1366,9 +1366,6 @@ msgstr "Usar Ambiente"
 
 msgid "Make Unique"
 msgstr "Hacer Único"
-
-msgid "Enable"
-msgstr "Activar"
 
 msgid "Filter"
 msgstr "Filtro"
@@ -1462,6 +1459,9 @@ msgstr "Optimizador"
 
 msgid "Max Angular Error"
 msgstr "Error Angular Máximo"
+
+msgid "Page Size"
+msgstr "Tamaño de Página"
 
 msgid "Nodes"
 msgstr "Nodos"
@@ -1586,23 +1586,23 @@ msgstr "Stream Player 3D"
 msgid "Camera"
 msgstr "Cámara"
 
-msgid "Visibility Notifier"
-msgstr "Notificador de Visibilidad"
+msgid "Decal"
+msgstr "Decal"
 
 msgid "Particles"
 msgstr "Partículas"
-
-msgid "Reflection Probe"
-msgstr "Sonda de Reflexión"
-
-msgid "Decal"
-msgstr "Decal"
 
 msgid "Joint Body A"
 msgstr "Unir cuerpo A"
 
 msgid "Joint Body B"
 msgstr "Unir cuerpo B"
+
+msgid "Reflection Probe"
+msgstr "Sonda de Reflexión"
+
+msgid "Visibility Notifier"
+msgstr "Notificador de Visibilidad"
 
 msgid "Manipulator Gizmo Size"
 msgstr "Tamaño del Gizmo Manipulador"
@@ -1642,9 +1642,6 @@ msgstr "Indicadores de Ejecución"
 
 msgid "Skeleton"
 msgstr "Esqueleto"
-
-msgid "Warnings"
-msgstr "Advertencias"
 
 msgid "ID"
 msgstr "ID"
@@ -1774,9 +1771,6 @@ msgstr "Pantalla de Splash"
 
 msgid "BG Color"
 msgstr "Color de Fondo"
-
-msgid "Input Devices"
-msgstr "Dispositivos de Entrada"
 
 msgid "Environment"
 msgstr "Entorno"
@@ -1943,6 +1937,9 @@ msgstr "Función Definición de Color"
 msgid "Node Path Color"
 msgstr "Color de la Ruta del Nodo"
 
+msgid "Warnings"
+msgstr "Advertencias"
+
 msgid "Exclude Addons"
 msgstr "Excluir Addons"
 
@@ -1984,6 +1981,15 @@ msgstr "Factor Specular"
 
 msgid "Spec Gloss Img"
 msgstr "Espec. Brillo Img"
+
+msgid "Mass"
+msgstr "Masa"
+
+msgid "Linear Velocity"
+msgstr "Velocidad Lineal"
+
+msgid "Angular Velocity"
+msgstr "Velocidad angular"
 
 msgid "Json"
 msgstr "Json"
@@ -2648,6 +2654,9 @@ msgstr "Alta Resolución"
 msgid "Codesign"
 msgstr "Codesign"
 
+msgid "Apple Team ID"
+msgstr "ID del Equipo Apple"
+
 msgid "Identity"
 msgstr "Identidad"
 
@@ -2728,9 +2737,6 @@ msgstr "Nombre del ID de Apple"
 
 msgid "Apple ID Password"
 msgstr "Contraseña del ID de Apple"
-
-msgid "Apple Team ID"
-msgstr "ID del Equipo Apple"
 
 msgid "Location Usage Description"
 msgstr "Ubicación de la Descripción de Uso"
@@ -3140,9 +3146,6 @@ msgstr "Propagación"
 msgid "Initial Velocity"
 msgstr "Velocidad Inicial"
 
-msgid "Angular Velocity"
-msgstr "Velocidad angular"
-
 msgid "Velocity Curve"
 msgstr "Curva de Velocidad"
 
@@ -3338,9 +3341,6 @@ msgstr "Evasión Activada"
 msgid "Max Neighbors"
 msgstr "Máximo de Vecinos"
 
-msgid "Time Horizon"
-msgstr "Horizonte del Tiempo"
-
 msgid "Max Speed"
 msgstr "Velocidad Máxima"
 
@@ -3349,9 +3349,6 @@ msgstr "Introduce Costo"
 
 msgid "Travel Cost"
 msgstr "Costo del Viaje"
-
-msgid "Estimate Radius"
-msgstr "Estimación del Radio"
 
 msgid "Skew"
 msgstr "Sesgo"
@@ -3395,9 +3392,6 @@ msgstr "Offset V"
 msgid "Cubic Interp"
 msgstr "Interp. Cúbica"
 
-msgid "Lookahead"
-msgstr "Preveer"
-
 msgid "Physics Material Override"
 msgstr "Reemplazar el material de físicas"
 
@@ -3406,9 +3400,6 @@ msgstr "Velocidad Lineal Constante"
 
 msgid "Constant Angular Velocity"
 msgstr "Velocidad Angular Constante"
-
-msgid "Mass"
-msgstr "Masa"
 
 msgid "Inertia"
 msgstr "Inercia"
@@ -3505,9 +3496,6 @@ msgstr "Fotogramas V"
 
 msgid "Frame Coords"
 msgstr "Coordenadas del Marco"
-
-msgid "Region"
-msgstr "Región"
 
 msgid "Tile Set"
 msgstr "Tile Set"
@@ -3872,12 +3860,6 @@ msgstr "Subdividir"
 msgid "Light Data"
 msgstr "Datos de Iluminación"
 
-msgid "Agent Height Offset"
-msgstr "Offset de Altura del Agente"
-
-msgid "Ignore Y"
-msgstr "Ignorar Y"
-
 msgid "Visibility"
 msgstr "Visibilidad"
 
@@ -3997,9 +3979,6 @@ msgstr "Fricción"
 
 msgid "Bounce"
 msgstr "Rebotar"
-
-msgid "Linear Velocity"
-msgstr "Velocidad Lineal"
 
 msgid "Debug Shape"
 msgstr "Depurar Shape"
@@ -4385,6 +4364,9 @@ msgstr "Permitir Reselección"
 msgid "Allow RMB Select"
 msgstr "Permitir Selección Con Botón Derecho Del Mouse"
 
+msgid "Allow Search"
+msgstr "Permitir Búsqueda"
+
 msgid "Max Text Lines"
 msgstr "Líneas de Texto Máximas"
 
@@ -4471,9 +4453,6 @@ msgstr "Estiramiento de Eje"
 
 msgid "Submenu Popup Delay"
 msgstr "Retraso en la Aparición del Submenú"
-
-msgid "Allow Search"
-msgstr "Permitir Búsqueda"
 
 msgid "Fill Mode"
 msgstr "Modo de Relleno"
@@ -5380,9 +5359,6 @@ msgstr "Características"
 
 msgid "Extra Spacing"
 msgstr "Espaciado Adicional"
-
-msgid "Interpolation Mode"
-msgstr "Modo de Interpolación"
 
 msgid "Raw Data"
 msgstr "Datos en Crudo"

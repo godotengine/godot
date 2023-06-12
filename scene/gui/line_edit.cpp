@@ -1527,6 +1527,22 @@ void LineEdit::set_text(String p_text) {
 	scroll_offset = 0.0;
 }
 
+void LineEdit::set_text_with_selection(const String &p_text) {
+	Selection selection_copy = selection;
+
+	clear_internal();
+	insert_text_at_caret(p_text);
+	_create_undo_state();
+
+	int tlen = text.length();
+	selection = selection_copy;
+	selection.begin = MIN(selection.begin, tlen);
+	selection.end = MIN(selection.end, tlen);
+	selection.start_column = MIN(selection.start_column, tlen);
+
+	queue_redraw();
+}
+
 void LineEdit::set_text_direction(Control::TextDirection p_text_direction) {
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
 	if (text_direction != p_text_direction) {

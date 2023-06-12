@@ -132,6 +132,9 @@ void Label::_shape() {
 			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
 		}
 		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, txt));
+		if (!tab_stops.is_empty()) {
+			TS->shaped_text_tab_align(text_rid, tab_stops);
+		}
 		dirty = false;
 		font_dirty = false;
 		lines_dirty = true;
@@ -162,6 +165,9 @@ void Label::_shape() {
 		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
 		for (int i = 0; i < line_breaks.size(); i = i + 2) {
 			RID line = TS->shaped_text_substr(text_rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
+			if (!tab_stops.is_empty()) {
+				TS->shaped_text_tab_align(line, tab_stops);
+			}
 			lines_rid.push_back(line);
 		}
 	}
@@ -205,6 +211,10 @@ void Label::_shape() {
 
 		// Fill after min_size calculation.
 
+		BitField<TextServer::JustificationFlag> line_jst_flags = jst_flags;
+		if (!tab_stops.is_empty()) {
+			line_jst_flags.set_flag(TextServer::JUSTIFICATION_AFTER_LAST_TAB);
+		}
 		if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
 			int visible_lines = get_visible_line_count();
 			bool lines_hidden = visible_lines > 0 && visible_lines < lines_rid.size();
@@ -213,13 +223,13 @@ void Label::_shape() {
 			}
 			if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 				int jst_to_line = visible_lines;
-				if (lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
+				if (lines_rid.size() == 1 && line_jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
 					jst_to_line = lines_rid.size();
 				} else {
-					if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
+					if (line_jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
 						jst_to_line = visible_lines - 1;
 					}
-					if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
+					if (line_jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
 						for (int i = visible_lines - 1; i >= 0; i--) {
 							if (TS->shaped_text_has_visible_chars(lines_rid[i])) {
 								jst_to_line = i;
@@ -230,7 +240,7 @@ void Label::_shape() {
 				}
 				for (int i = 0; i < lines_rid.size(); i++) {
 					if (i < jst_to_line) {
-						TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags);
+						TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags);
 					} else if (i == (visible_lines - 1)) {
 						TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
 					}
@@ -241,13 +251,13 @@ void Label::_shape() {
 		} else {
 			// Autowrap disabled.
 			int jst_to_line = lines_rid.size();
-			if (lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
+			if (lines_rid.size() == 1 && line_jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
 				jst_to_line = lines_rid.size();
 			} else {
-				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
+				if (line_jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
 					jst_to_line = lines_rid.size() - 1;
 				}
-				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
+				if (line_jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
 					for (int i = lines_rid.size() - 1; i >= 0; i--) {
 						if (TS->shaped_text_has_visible_chars(lines_rid[i])) {
 							jst_to_line = i;
@@ -258,10 +268,10 @@ void Label::_shape() {
 			}
 			for (int i = 0; i < lines_rid.size(); i++) {
 				if (i < jst_to_line && horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-					TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags);
+					TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags);
 					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
-					TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+					TS->shaped_text_fit_to_width(lines_rid[i], width, line_jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 				} else {
 					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
 				}
@@ -853,6 +863,18 @@ bool Label::is_clipping_text() const {
 	return clip;
 }
 
+void Label::set_tab_stops(const PackedFloat32Array &p_tab_stops) {
+	if (tab_stops != p_tab_stops) {
+		tab_stops = p_tab_stops;
+		dirty = true;
+		queue_redraw();
+	}
+}
+
+PackedFloat32Array Label::get_tab_stops() const {
+	return tab_stops;
+}
+
 void Label::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 	if (overrun_behavior == p_behavior) {
 		return;
@@ -986,6 +1008,8 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_justification_flags"), &Label::get_justification_flags);
 	ClassDB::bind_method(D_METHOD("set_clip_text", "enable"), &Label::set_clip_text);
 	ClassDB::bind_method(D_METHOD("is_clipping_text"), &Label::is_clipping_text);
+	ClassDB::bind_method(D_METHOD("set_tab_stops", "tab_stops"), &Label::set_tab_stops);
+	ClassDB::bind_method(D_METHOD("get_tab_stops"), &Label::get_tab_stops);
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &Label::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &Label::get_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &Label::set_uppercase);
@@ -1019,6 +1043,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "tab_stops"), "set_tab_stops", "get_tab_stops");
 
 	ADD_GROUP("Displayed Text", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE, "0,999,1"), "set_lines_skipped", "get_lines_skipped");

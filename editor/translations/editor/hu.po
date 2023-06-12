@@ -999,11 +999,8 @@ msgstr "Függőség Szerkesztő"
 msgid "Search Replacement Resource:"
 msgstr "Csere Forrás Keresése:"
 
-msgid "Open Scene"
-msgstr "Jelenet megnyitása"
-
-msgid "Open Scenes"
-msgstr "Jelenetek megnyitása"
+msgid "Open"
+msgstr "Megnyitás"
 
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
@@ -1061,6 +1058,12 @@ msgstr "Birtokol"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Források Explicit Tulajdonos Nélkül:"
+
+msgid "Could not create folder."
+msgstr "Nem sikerült létrehozni a mappát."
+
+msgid "Create Folder"
+msgstr "Mappa Létrehozása"
 
 msgid "Thanks from the Godot community!"
 msgstr "Köszönet a Godot közösségétől!"
@@ -1376,24 +1379,6 @@ msgstr "[üres]"
 msgid "[unsaved]"
 msgstr "[nincs mentve]"
 
-msgid "Please select a base directory first."
-msgstr "Először válassza ki az alapkönyvtárat."
-
-msgid "Choose a Directory"
-msgstr "Válasszon egy Könyvtárat"
-
-msgid "Create Folder"
-msgstr "Mappa Létrehozása"
-
-msgid "Name:"
-msgstr "Név:"
-
-msgid "Could not create folder."
-msgstr "Nem sikerült létrehozni a mappát."
-
-msgid "Choose"
-msgstr "Kiválaszt"
-
 msgid "3D Editor"
 msgstr "3D szerkesztő"
 
@@ -1484,108 +1469,6 @@ msgstr "Profil(ok) importálása"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "A szerkesztő funkcióprofiljainak kezelése"
-
-msgid "Open"
-msgstr "Megnyitás"
-
-msgid "Select Current Folder"
-msgstr "Aktuális Mappa Kiválasztása"
-
-msgid "Select This Folder"
-msgstr "Válassza ezt a mappát"
-
-msgid "Copy Path"
-msgstr "Útvonal Másolása"
-
-msgid "Open in File Manager"
-msgstr "Megnyitás a Fájlkezelőben"
-
-msgid "Show in File Manager"
-msgstr "Megjelenítés a Fájlkezelőben"
-
-msgid "New Folder..."
-msgstr "Új Mappa..."
-
-msgid "All Recognized"
-msgstr "Minden Felismert"
-
-msgid "All Files (*)"
-msgstr "Minden Fájl (*)"
-
-msgid "Open a File"
-msgstr "Fálj Megnyitása"
-
-msgid "Open File(s)"
-msgstr "Fájl(ok) Megnyitása"
-
-msgid "Open a Directory"
-msgstr "Könyvtár Megnyitása"
-
-msgid "Open a File or Directory"
-msgstr "Fájl vagy Könyvtár Megnyitása"
-
-msgid "Save a File"
-msgstr "Fájl Mentése"
-
-msgid "Go Back"
-msgstr "Ugrás Vissza"
-
-msgid "Go Forward"
-msgstr "Ugrás Előre"
-
-msgid "Go Up"
-msgstr "Ugrás Fel"
-
-msgid "Toggle Hidden Files"
-msgstr "Rejtett fálok megjelenítése/elrejtése"
-
-msgid "Toggle Favorite"
-msgstr "Kedvencek Mutatása/Elrejtése"
-
-msgid "Toggle Mode"
-msgstr "Mód váltása"
-
-msgid "Focus Path"
-msgstr "Elérési Út Fókuszálása"
-
-msgid "Move Favorite Up"
-msgstr "Kedvenc fentebb helyezése"
-
-msgid "Move Favorite Down"
-msgstr "Kedvenc lentebb helyezése"
-
-msgid "Go to previous folder."
-msgstr "Ugrás az előző mappára."
-
-msgid "Go to next folder."
-msgstr "Ugrás a következő mappára."
-
-msgid "Go to parent folder."
-msgstr "Lépjen a szülőmappába."
-
-msgid "Refresh files."
-msgstr "Fájlok frissítése."
-
-msgid "(Un)favorite current folder."
-msgstr "Jelenlegi mappa kedvenccé tétele/eltávolítása a kedvencek közül."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "A rejtett fájlok láthatóságának ki- és bekapcsolása."
-
-msgid "View items as a grid of thumbnails."
-msgstr "Az elemek megtekintése bélyegkép-rácsként."
-
-msgid "View items as a list."
-msgstr "Elemek megtekintése listaként."
-
-msgid "Directories & Files:"
-msgstr "Könyvtárak és Fájlok:"
-
-msgid "Preview:"
-msgstr "Előnézet:"
-
-msgid "File:"
-msgstr "Fájl:"
 
 msgid "Restart"
 msgstr "Újraindítás"
@@ -1729,6 +1612,15 @@ msgstr "Tömb átméretezése"
 msgid "Set Multiple:"
 msgstr "Többszörös beállítása:"
 
+msgid "Name:"
+msgstr "Név:"
+
+msgid "Creating Mesh Previews"
+msgstr "Háló Előnézetek Létrehozása"
+
+msgid "Thumbnail..."
+msgstr "Indexkép..."
+
 msgid "Edit Filters"
 msgstr "Szűrők Szerkesztése"
 
@@ -1797,6 +1689,9 @@ msgstr ""
 "Nem sikerült a Scene mentése. Valószínű, hogy a függőségei (példányok vagy "
 "öröklések) nem voltak megfelelőek."
 
+msgid "Save scene before running..."
+msgstr "Futtatás előtt mentse a jelenetet..."
+
 msgid "Save All Scenes"
 msgstr "Az összes jelenet mentése"
 
@@ -1854,18 +1749,6 @@ msgstr ""
 msgid "Changes may be lost!"
 msgstr "Néhány változtatás elveszhet!"
 
-msgid "There is no defined scene to run."
-msgstr "Nincs meghatározva Scene a futtatáshoz."
-
-msgid "Save scene before running..."
-msgstr "Futtatás előtt mentse a jelenetet..."
-
-msgid "Play the project."
-msgstr "Projekt futtatása."
-
-msgid "Play the edited scene."
-msgstr "Szerkesztett Scene futtatása."
-
 msgid "Open Base Scene"
 msgstr "Alap Jelenet Megnyitása"
 
@@ -1877,12 +1760,6 @@ msgstr "Jelenet Gyors Megnyitása..."
 
 msgid "Quick Open Script..."
 msgstr "Szkript Gyors Megnyitás..."
-
-msgid "Save & Quit"
-msgstr "Mentés és kilépés"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "Bezárás előtt menti a '%s'-n végzett módosításokat?"
 
 msgid "Save Scene As..."
 msgstr "Scene Mentése Másként..."
@@ -1903,8 +1780,8 @@ msgstr ""
 "Az aktuális jelenet nem mentett módosításokat tartalmaz.\n"
 "A mentett jelenetet mindenképp újratölti? Ez a művelet nem visszavonható."
 
-msgid "Quick Run Scene..."
-msgstr "Scene gyors futtatás..."
+msgid "Save & Quit"
+msgstr "Mentés és kilépés"
 
 msgid "Save changes to the following scene(s) before quitting?"
 msgstr ""
@@ -1976,6 +1853,9 @@ msgstr "A(z) '%s' jelenetnek tört függőségei vannak:"
 msgid "Clear Recent Scenes"
 msgstr "Legutóbbi Jelenetek Törlése"
 
+msgid "There is no defined scene to run."
+msgstr "Nincs meghatározva Scene a futtatáshoz."
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -2015,6 +1895,9 @@ msgstr "Alapértelmezett"
 
 msgid "Save & Close"
 msgstr "Mentés és Bezárás"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "Bezárás előtt menti a '%s'-n végzett módosításokat?"
 
 msgid "Show in FileSystem"
 msgstr "Megjelenítés a fájlrendszerben"
@@ -2205,6 +2088,9 @@ msgstr ""
 "Távolítsa el a(z) \"res://android/build\" könyvtárat manuálisan, mivelőtt "
 "újra megkísérelné a műveletet."
 
+msgid "Show in File Manager"
+msgstr "Megjelenítés a Fájlkezelőben"
+
 msgid "Import Templates From ZIP File"
 msgstr "Sablonok Importálása ZIP Fájlból"
 
@@ -2259,15 +2145,6 @@ msgstr "Előző Szerkesztő Megnyitása"
 
 msgid "Warning!"
 msgstr "Figyelmeztetés!"
-
-msgid "No sub-resources found."
-msgstr "Nem található alerőforrás."
-
-msgid "Creating Mesh Previews"
-msgstr "Háló Előnézetek Létrehozása"
-
-msgid "Thumbnail..."
-msgstr "Indexkép..."
 
 msgid "Main Script:"
 msgstr "Fő szkript:"
@@ -2468,6 +2345,12 @@ msgstr "Tallózás"
 msgid "Favorites"
 msgstr "Kedvencek"
 
+msgid "View items as a grid of thumbnails."
+msgstr "Az elemek megtekintése bélyegkép-rácsként."
+
+msgid "View items as a list."
+msgstr "Elemek megtekintése listaként."
+
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Állapot: Fájl importálása sikertelen. Javítsa a fájlt majd importálja be "
@@ -2488,17 +2371,8 @@ msgstr "Hiba másoláskor:"
 msgid "Unable to update dependencies:"
 msgstr "Nem sikerült a függőségek frissítése:"
 
-msgid "Provided name contains invalid characters."
-msgstr "A megadott név érvénytelen karaktereket tartalmaz."
-
 msgid "A file or folder with this name already exists."
 msgstr "Egy fájl vagy mappa már létezik a megadott névvel."
-
-msgid "Renaming file:"
-msgstr "Fájl átnevezése:"
-
-msgid "Renaming folder:"
-msgstr "Mappa átnevezése:"
 
 msgid "Duplicating file:"
 msgstr "Fájl másolása:"
@@ -2512,11 +2386,8 @@ msgstr "Új örökölt Jelenet"
 msgid "Set As Main Scene"
 msgstr "Beállítás fő jelenetként"
 
-msgid "Add to Favorites"
-msgstr "Hozzáadás kedvencekhez"
-
-msgid "Remove from Favorites"
-msgstr "Eltávolítás a kedvencek közül"
+msgid "Open Scenes"
+msgstr "Jelenetek megnyitása"
 
 msgid "Edit Dependencies..."
 msgstr "Függőségek Szerkesztése..."
@@ -2524,8 +2395,17 @@ msgstr "Függőségek Szerkesztése..."
 msgid "View Owners..."
 msgstr "Tulajdonosok Megtekintése..."
 
-msgid "Move To..."
-msgstr "Áthelyezés..."
+msgid "Add to Favorites"
+msgstr "Hozzáadás kedvencekhez"
+
+msgid "Remove from Favorites"
+msgstr "Eltávolítás a kedvencek közül"
+
+msgid "Open in File Manager"
+msgstr "Megnyitás a Fájlkezelőben"
+
+msgid "New Folder..."
+msgstr "Új Mappa..."
 
 msgid "New Scene..."
 msgstr "Új jelenet..."
@@ -2535,6 +2415,9 @@ msgstr "Új szkript..."
 
 msgid "New Resource..."
 msgstr "Új erőforrás..."
+
+msgid "Copy Path"
+msgstr "Útvonal Másolása"
 
 msgid "Duplicate..."
 msgstr "Megkettőzés..."
@@ -2554,9 +2437,6 @@ msgid ""
 msgstr ""
 "Fájlok vizsgálata,\n"
 "kérjük várjon..."
-
-msgid "Move"
-msgstr "Áthelyezés"
 
 msgid "Overwrite"
 msgstr "Felülírás"
@@ -2623,6 +2503,123 @@ msgstr "Csoportszerkesztő"
 
 msgid "Manage Groups"
 msgstr "Csoportok kezelése"
+
+msgid "Move"
+msgstr "Áthelyezés"
+
+msgid "Please select a base directory first."
+msgstr "Először válassza ki az alapkönyvtárat."
+
+msgid "Choose a Directory"
+msgstr "Válasszon egy Könyvtárat"
+
+msgid "Select Current Folder"
+msgstr "Aktuális Mappa Kiválasztása"
+
+msgid "Select This Folder"
+msgstr "Válassza ezt a mappát"
+
+msgid "All Recognized"
+msgstr "Minden Felismert"
+
+msgid "All Files (*)"
+msgstr "Minden Fájl (*)"
+
+msgid "Open a File"
+msgstr "Fálj Megnyitása"
+
+msgid "Open File(s)"
+msgstr "Fájl(ok) Megnyitása"
+
+msgid "Open a Directory"
+msgstr "Könyvtár Megnyitása"
+
+msgid "Open a File or Directory"
+msgstr "Fájl vagy Könyvtár Megnyitása"
+
+msgid "Save a File"
+msgstr "Fájl Mentése"
+
+msgid "Go Back"
+msgstr "Ugrás Vissza"
+
+msgid "Go Forward"
+msgstr "Ugrás Előre"
+
+msgid "Go Up"
+msgstr "Ugrás Fel"
+
+msgid "Toggle Hidden Files"
+msgstr "Rejtett fálok megjelenítése/elrejtése"
+
+msgid "Toggle Favorite"
+msgstr "Kedvencek Mutatása/Elrejtése"
+
+msgid "Toggle Mode"
+msgstr "Mód váltása"
+
+msgid "Focus Path"
+msgstr "Elérési Út Fókuszálása"
+
+msgid "Move Favorite Up"
+msgstr "Kedvenc fentebb helyezése"
+
+msgid "Move Favorite Down"
+msgstr "Kedvenc lentebb helyezése"
+
+msgid "Go to previous folder."
+msgstr "Ugrás az előző mappára."
+
+msgid "Go to next folder."
+msgstr "Ugrás a következő mappára."
+
+msgid "Go to parent folder."
+msgstr "Lépjen a szülőmappába."
+
+msgid "Refresh files."
+msgstr "Fájlok frissítése."
+
+msgid "(Un)favorite current folder."
+msgstr "Jelenlegi mappa kedvenccé tétele/eltávolítása a kedvencek közül."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "A rejtett fájlok láthatóságának ki- és bekapcsolása."
+
+msgid "Directories & Files:"
+msgstr "Könyvtárak és Fájlok:"
+
+msgid "Preview:"
+msgstr "Előnézet:"
+
+msgid "File:"
+msgstr "Fájl:"
+
+msgid "No sub-resources found."
+msgstr "Nem található alerőforrás."
+
+msgid "Play the project."
+msgstr "Projekt futtatása."
+
+msgid "Play the edited scene."
+msgstr "Szerkesztett Scene futtatása."
+
+msgid "Quick Run Scene..."
+msgstr "Scene gyors futtatás..."
+
+msgid "Unlock Node"
+msgstr "Node feloldása"
+
+msgid "Button Group"
+msgstr "Gombcsoport"
+
+msgid "(Connecting From)"
+msgstr "(Csatlakozás Innen)"
+
+msgid "Open in Editor"
+msgstr "Megnyitás Szerkesztőben"
+
+msgid "Open Script:"
+msgstr "Szkript megnyitása:"
 
 msgid "Reimport"
 msgstr "Újraimportálás"
@@ -3412,50 +3409,20 @@ msgstr "Kibocsátási színek"
 msgid "Create Emission Points From Node"
 msgstr "Kibocsátási pontok létrehozása a Node alapján"
 
-msgid "Flat 0"
-msgstr "Lapos 0"
-
-msgid "Flat 1"
-msgstr "Lapos 1"
-
-msgid "Smoothstep"
-msgstr "Simított Lépés"
-
-msgid "Modify Curve Point"
-msgstr "Görbe Pontjának Módosítása"
-
-msgid "Modify Curve Tangent"
-msgstr "Görbe Érintőjének Módosítása"
-
 msgid "Load Curve Preset"
 msgstr "Előre Beállított Görbe Betöltése"
-
-msgid "Add Point"
-msgstr "Pont hozzáadása"
-
-msgid "Remove Point"
-msgstr "Pont eltávolítása"
-
-msgid "Left Linear"
-msgstr "Bal lineáris"
-
-msgid "Right Linear"
-msgstr "Jobb lineáris"
-
-msgid "Load Preset"
-msgstr "Beállítás Betöltése"
 
 msgid "Remove Curve Point"
 msgstr "Görbe Pontjának Eltávolítása"
 
-msgid "Toggle Curve Linear Tangent"
-msgstr "Görbe Lineáris Érintőjének Kapcsolása"
+msgid "Modify Curve Point"
+msgstr "Görbe Pontjának Módosítása"
 
 msgid "Hold Shift to edit tangents individually"
 msgstr "Tartsa lenyomva a Shift gombot az érintők egyenkénti szerkesztéséhez"
 
-msgid "Right click to add point"
-msgstr "Kattintson a jobb gombbal a pont hozzáadásához"
+msgid "Smoothstep"
+msgstr "Simított Lépés"
 
 msgid "Debug with External Editor"
 msgstr "Hibakeresés külső szerkesztővel"
@@ -3737,6 +3704,12 @@ msgstr "Mennyiség:"
 msgid "Populate"
 msgstr "Kitöltés"
 
+msgid "Edit Poly"
+msgstr "Sokszög Szerkesztése"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Sokszög Szerkesztése (Pont Eltávolítása)"
+
 msgid "Create Navigation Polygon"
 msgstr "Navigációs Sokszög Létrehozása"
 
@@ -3944,12 +3917,6 @@ msgstr "Rács Y eltolása:"
 msgid "Sync Bones to Polygon"
 msgstr "Csontok Szinkronizálása Sokszögre"
 
-msgid "Edit Poly"
-msgstr "Sokszög Szerkesztése"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Sokszög Szerkesztése (Pont Eltávolítása)"
-
 msgid "ERROR: Couldn't load resource!"
 msgstr "HIBA: Nem sikerült betölteni az erőforrást!"
 
@@ -3967,9 +3934,6 @@ msgstr "Az erőforrás vágólap üres!"
 
 msgid "Paste Resource"
 msgstr "Erőforrás Beillesztése"
-
-msgid "Open in Editor"
-msgstr "Megnyitás Szerkesztőben"
 
 msgid "Load Resource"
 msgstr "Erőforrás Betöltése"
@@ -4483,18 +4447,6 @@ msgstr "Gyökér node nem illeszthető be azonos jelenetbe."
 msgid "Paste Node(s)"
 msgstr "Node(ok) beillesztése"
 
-msgid "Unlock Node"
-msgstr "Node feloldása"
-
-msgid "Button Group"
-msgstr "Gombcsoport"
-
-msgid "(Connecting From)"
-msgstr "(Csatlakozás Innen)"
-
-msgid "Open Script:"
-msgstr "Szkript megnyitása:"
-
 msgid "Path is empty."
 msgstr "Az útvonal üres."
 
@@ -4639,11 +4591,11 @@ msgstr "Geometria Elemzése…"
 msgid "Done!"
 msgstr "Kész!"
 
-msgid "Select device from the list"
-msgstr "Válasszon készüléket a listából"
-
 msgid "Invalid package name:"
 msgstr "Érvénytelen csomagnév:"
+
+msgid "Select device from the list"
+msgstr "Válasszon készüléket a listából"
 
 msgid "Invalid Identifier:"
 msgstr "Érvénytelen azonosító:"

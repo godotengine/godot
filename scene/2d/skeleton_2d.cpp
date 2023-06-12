@@ -406,7 +406,7 @@ void Bone2D::apply_rest() {
 }
 
 int Bone2D::get_index_in_skeleton() const {
-	ERR_FAIL_COND_V(!skeleton, -1);
+	ERR_FAIL_NULL_V(skeleton, -1);
 	skeleton->_update_bone_setup();
 	return skeleton_index;
 }

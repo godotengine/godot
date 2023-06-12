@@ -358,7 +358,6 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 	if (load_nesting == 0 && mq_override) {
 		memdelete(mq_override);
-		set_current_thread_safe_for_nodes(false);
 	}
 }
 

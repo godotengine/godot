@@ -87,13 +87,14 @@
 # 风青山 <idleman@yeah.net>, 2022.
 # 1104 EXSPIRAVIT_ <m18621006730@gmail.com>, 2022.
 # ChairC <974833488@qq.com>, 2022.
+# dmit-225 <c3204835842@icloud.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-04-24 06:57+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2023-06-08 10:53+0000\n"
+"Last-Translator: dmit-225 <c3204835842@icloud.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -421,6 +422,9 @@ msgstr "鼠标模式"
 msgid "Use Accumulated Input"
 msgstr "使用累积输入"
 
+msgid "Input Devices"
+msgstr "输入设备"
+
 msgid "Device"
 msgstr "设备"
 
@@ -544,18 +548,6 @@ msgstr "包含隐藏文件"
 msgid "Big Endian"
 msgstr "大端序"
 
-msgid "Network"
-msgstr "网络"
-
-msgid "Remote FS"
-msgstr "远程文件系统"
-
-msgid "Page Size"
-msgstr "页大小"
-
-msgid "Page Read Ahead"
-msgstr "预读页数"
-
 msgid "Blocking Mode Enabled"
 msgstr "启用阻塞模式"
 
@@ -592,6 +584,9 @@ msgstr "数据数组"
 msgid "Max Pending Connections"
 msgstr "最大挂起连接数"
 
+msgid "Region"
+msgstr "区域"
+
 msgid "Offset"
 msgstr "偏移"
 
@@ -619,8 +614,8 @@ msgstr "状态"
 msgid "Message Queue"
 msgstr "消息队列"
 
-msgid "Max Size (KB)"
-msgstr "最大大小（KB）"
+msgid "Network"
+msgstr "网络"
 
 msgid "TCP"
 msgstr "TCP"
@@ -757,29 +752,23 @@ msgstr "远程场景树刷新间隔"
 msgid "Remote Inspect Refresh Interval"
 msgstr "远程检查器刷新间隔"
 
+msgid "FileSystem"
+msgstr "文件系统"
+
+msgid "File Server"
+msgstr "文件服务器"
+
+msgid "Port"
+msgstr "端口"
+
+msgid "Password"
+msgstr "密码"
+
 msgid "Profiler Frame Max Functions"
 msgstr "性能分析器帧最大函数数"
 
 msgid "Default Feature Profile"
 msgstr "默认功能配置"
-
-msgid "Access"
-msgstr "访问"
-
-msgid "Display Mode"
-msgstr "显示模式"
-
-msgid "File Mode"
-msgstr "文件模式"
-
-msgid "Filters"
-msgstr "过滤"
-
-msgid "Show Hidden Files"
-msgstr "显示隐藏文件"
-
-msgid "Disable Overwrite Warning"
-msgstr "禁用覆盖警告"
 
 msgid "Text Editor"
 msgstr "文本编辑器"
@@ -810,6 +799,9 @@ msgstr "制作关键帧"
 
 msgid "Deletable"
 msgstr "可删除"
+
+msgid "Distraction Free Mode"
+msgstr "专注模式"
 
 msgid "Interface"
 msgstr "界面"
@@ -864,9 +856,6 @@ msgstr "默认取色器模式"
 
 msgid "Default Color Picker Shape"
 msgstr "默认取色器形状"
-
-msgid "Distraction Free Mode"
-msgstr "专注模式"
 
 msgid "Base Type"
 msgstr "基础类型"
@@ -1024,8 +1013,8 @@ msgstr "最大宽度"
 msgid "Show Script Button"
 msgstr "显示脚本按钮"
 
-msgid "FileSystem"
-msgstr "文件系统"
+msgid "Enable"
+msgstr "启用"
 
 msgid "External Programs"
 msgstr "外部程序"
@@ -1063,6 +1052,12 @@ msgstr "安全保存备份后重命名"
 msgid "File Dialog"
 msgstr "文件对话框"
 
+msgid "Show Hidden Files"
+msgstr "显示隐藏文件"
+
+msgid "Display Mode"
+msgstr "显示模式"
+
 msgid "Thumbnail Size"
 msgstr "缩略图大小"
 
@@ -1080,9 +1075,6 @@ msgstr "自动展开至选定项"
 
 msgid "Always Show Folders"
 msgstr "总是显示文件夹"
-
-msgid "Textfile Extensions"
-msgstr "文本文件扩展名"
 
 msgid "Property Editor"
 msgstr "属性编辑器"
@@ -1137,9 +1129,6 @@ msgstr "行号补零"
 
 msgid "Highlight Type Safe Lines"
 msgstr "高亮类型安全的行"
-
-msgid "Show Bookmark Gutter"
-msgstr "显示书签栏"
 
 msgid "Show Info Gutter"
 msgstr "显示信息栏"
@@ -1435,9 +1424,6 @@ msgstr "骨骼轮廓大小"
 msgid "Viewport Border Color"
 msgstr "视口边框颜色"
 
-msgid "Constrain Editor View"
-msgstr "限制编辑器视图"
-
 msgid "Panning"
 msgstr "平移"
 
@@ -1551,9 +1537,6 @@ msgstr "HTTP 代理"
 
 msgid "Host"
 msgstr "主机"
-
-msgid "Port"
-msgstr "端口"
 
 msgid "Project Manager"
 msgstr "项目管理器"
@@ -1675,15 +1658,6 @@ msgstr "搜索结果颜色"
 msgid "Search Result Border Color"
 msgstr "搜索结果边框颜色"
 
-msgid "Flat"
-msgstr "扁平"
-
-msgid "Hide Slider"
-msgstr "隐藏滑动条"
-
-msgid "Zoom"
-msgstr "缩放"
-
 msgid "Custom Template"
 msgstr "自定义模板"
 
@@ -1726,11 +1700,26 @@ msgstr "SCP"
 msgid "Export Path"
 msgstr "导出路径"
 
-msgid "File Server"
-msgstr "文件服务器"
+msgid "Access"
+msgstr "访问"
 
-msgid "Password"
-msgstr "密码"
+msgid "File Mode"
+msgstr "文件模式"
+
+msgid "Filters"
+msgstr "过滤"
+
+msgid "Disable Overwrite Warning"
+msgstr "禁用覆盖警告"
+
+msgid "Flat"
+msgstr "扁平"
+
+msgid "Hide Slider"
+msgstr "隐藏滑动条"
+
+msgid "Zoom"
+msgstr "缩放"
 
 msgid "Antialiasing"
 msgstr "抗锯齿"
@@ -1839,9 +1828,6 @@ msgstr "覆盖轴"
 
 msgid "Fix Silhouette"
 msgstr "修复剪影"
-
-msgid "Enable"
-msgstr "启用"
 
 msgid "Filter"
 msgstr "过滤"
@@ -2056,6 +2042,9 @@ msgstr "最大角度误差"
 msgid "Max Precision Error"
 msgstr "最大精度误差"
 
+msgid "Page Size"
+msgstr "页大小"
+
 msgid "Import Tracks"
 msgstr "导入轨道"
 
@@ -2239,8 +2228,11 @@ msgstr "StreamPlayer3D"
 msgid "Camera"
 msgstr "相机"
 
-msgid "Visibility Notifier"
-msgstr "VisibilityNotifier"
+msgid "Decal"
+msgstr "贴花"
+
+msgid "Fog Volume"
+msgstr "雾体积"
 
 msgid "Particles"
 msgstr "粒子"
@@ -2251,14 +2243,11 @@ msgstr "粒子吸引器"
 msgid "Particle Collision"
 msgstr "粒子碰撞"
 
-msgid "Reflection Probe"
-msgstr "反射探针"
+msgid "Joint Body A"
+msgstr "关节实体 A"
 
-msgid "Decal"
-msgstr "贴花"
-
-msgid "Voxel GI"
-msgstr "体素 GI"
+msgid "Joint Body B"
+msgstr "关节实体 B"
 
 msgid "Lightmap Lines"
 msgstr "光照贴图线"
@@ -2266,14 +2255,14 @@ msgstr "光照贴图线"
 msgid "Lightprobe Lines"
 msgstr "光照探针线"
 
-msgid "Joint Body A"
-msgstr "关节实体 A"
+msgid "Reflection Probe"
+msgstr "反射探针"
 
-msgid "Joint Body B"
-msgstr "关节实体 B"
+msgid "Visibility Notifier"
+msgstr "VisibilityNotifier"
 
-msgid "Fog Volume"
-msgstr "雾体积"
+msgid "Voxel GI"
+msgstr "体素 GI"
 
 msgid "Manipulator Gizmo Size"
 msgstr "操作小工具大小"
@@ -2334,15 +2323,6 @@ msgstr "骨骼轴长度"
 
 msgid "Bone Shape"
 msgstr "骨骼形状"
-
-msgid "Shader Language"
-msgstr "着色器语言"
-
-msgid "Warnings"
-msgstr "警告"
-
-msgid "Treat Warnings as Errors"
-msgstr "将警告当作错误"
 
 msgid "ID"
 msgstr "ID"
@@ -2572,9 +2552,6 @@ msgstr "启动画面"
 msgid "BG Color"
 msgstr "背景色"
 
-msgid "Input Devices"
-msgstr "输入设备"
-
 msgid "Pen Tablet"
 msgstr "数位板"
 
@@ -2776,6 +2753,9 @@ msgstr "StringName 颜色"
 msgid "Max Call Stack"
 msgstr "最大调用堆栈"
 
+msgid "Warnings"
+msgstr "警告"
+
 msgid "Exclude Addons"
 msgstr "排除插件"
 
@@ -2829,6 +2809,15 @@ msgstr "镜面反射系数"
 
 msgid "Spec Gloss Img"
 msgstr "高光光泽图像"
+
+msgid "Mass"
+msgstr "质量"
+
+msgid "Linear Velocity"
+msgstr "线性速度"
+
+msgid "Angular Velocity"
+msgstr "角速度"
 
 msgid "Json"
 msgstr "JSON"
@@ -3763,6 +3752,9 @@ msgstr "高分辨率"
 msgid "Codesign"
 msgstr "代码签名"
 
+msgid "Apple Team ID"
+msgstr "Apple 团队 ID"
+
 msgid "Identity"
 msgstr "身份"
 
@@ -3852,9 +3844,6 @@ msgstr "Apple ID 名称"
 
 msgid "Apple ID Password"
 msgstr "Apple ID 密码"
-
-msgid "Apple Team ID"
-msgstr "Apple 团队 ID"
 
 msgid "API UUID"
 msgstr "API UUID"
@@ -4399,9 +4388,6 @@ msgstr "最小速度"
 msgid "Velocity Max"
 msgstr "最大速度"
 
-msgid "Angular Velocity"
-msgstr "角速度"
-
 msgid "Velocity Curve"
 msgstr "速度曲线"
 
@@ -4678,9 +4664,6 @@ msgstr "邻接距离"
 msgid "Max Neighbors"
 msgstr "最大相邻数"
 
-msgid "Time Horizon"
-msgstr "时间下限"
-
 msgid "Max Speed"
 msgstr "最大速度"
 
@@ -4710,9 +4693,6 @@ msgstr "进入消耗"
 
 msgid "Travel Cost"
 msgstr "移动消耗"
-
-msgid "Estimate Radius"
-msgstr "估算半径"
 
 msgid "Navigation Polygon"
 msgstr "导航多边形"
@@ -4765,9 +4745,6 @@ msgstr "旋转"
 msgid "Cubic Interp"
 msgstr "三次插值"
 
-msgid "Lookahead"
-msgstr "提前量"
-
 msgid "Bone 2D Nodepath"
 msgstr "骨骼 2D 节点路径"
 
@@ -4794,9 +4771,6 @@ msgstr "常角速度"
 
 msgid "Sync to Physics"
 msgstr "同步到物理"
-
-msgid "Mass"
-msgstr "质量"
 
 msgid "Inertia"
 msgstr "惯性"
@@ -4972,9 +4946,6 @@ msgstr "垂直帧数"
 msgid "Frame Coords"
 msgstr "帧坐标"
 
-msgid "Region"
-msgstr "区域"
-
 msgid "Filter Clip Enabled"
 msgstr "启用过滤裁剪"
 
@@ -4997,7 +4968,7 @@ msgid "Layers"
 msgstr "层"
 
 msgid "Texture Normal"
-msgstr "法线纹理"
+msgstr "正常纹理"
 
 msgid "Texture Pressed"
 msgstr "按下纹理"
@@ -5377,6 +5348,9 @@ msgstr "大写"
 msgid "Autowrap Mode"
 msgstr "自动换行模式"
 
+msgid "Justification Flags"
+msgstr "调整标志"
+
 msgid "BiDi"
 msgstr "BiDi"
 
@@ -5514,12 +5488,6 @@ msgstr "光照数据"
 
 msgid "Surface Material Override"
 msgstr "表面材质覆盖"
-
-msgid "Agent Height Offset"
-msgstr "代理高度偏移"
-
-msgid "Ignore Y"
-msgstr "忽略 Y"
 
 msgid "Navigation Mesh"
 msgstr "导航网格"
@@ -5673,9 +5641,6 @@ msgstr "线性阻尼模式"
 
 msgid "Angular Damp Mode"
 msgstr "角度阻尼模式"
-
-msgid "Linear Velocity"
-msgstr "线性速度"
 
 msgid "Debug Shape"
 msgstr "调试形状"
@@ -6361,6 +6326,9 @@ msgstr "允许重选"
 msgid "Allow RMB Select"
 msgstr "允许右键选择"
 
+msgid "Allow Search"
+msgstr "允许搜索"
+
 msgid "Max Text Lines"
 msgstr "最大文本行数"
 
@@ -6513,9 +6481,6 @@ msgstr "选择状态项目时隐藏"
 
 msgid "Submenu Popup Delay"
 msgstr "子菜单弹出延迟"
-
-msgid "Allow Search"
-msgstr "允许搜索"
 
 msgid "Fill Mode"
 msgstr "填充模式"
@@ -8200,9 +8165,6 @@ msgstr "字重"
 msgid "Font Stretch"
 msgstr "字体拉伸"
 
-msgid "Interpolation Mode"
-msgstr "插值模式"
-
 msgid "Raw Data"
 msgstr "原始数据"
 
@@ -8799,9 +8761,6 @@ msgstr "自定义标点"
 
 msgid "Break Flags"
 msgstr "断行标志"
-
-msgid "Justification Flags"
-msgstr "调整标志"
 
 msgid "Size Override"
 msgstr "尺寸覆盖"
@@ -9747,6 +9706,12 @@ msgstr "单对象最大光源数"
 
 msgid "Shaders"
 msgstr "着色器"
+
+msgid "Shader Language"
+msgstr "着色器语言"
+
+msgid "Treat Warnings as Errors"
+msgstr "将警告当作错误"
 
 msgid "Is Primary"
 msgstr "是否主要"

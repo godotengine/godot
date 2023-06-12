@@ -64,7 +64,7 @@ void AnimationNode::set_parameter(const StringName &p_name, const Variant &p_val
 	if (is_testing) {
 		return;
 	}
-	ERR_FAIL_COND(!state);
+	ERR_FAIL_NULL(state);
 	ERR_FAIL_COND(!state->tree->property_parent_map.has(base_path));
 	ERR_FAIL_COND(!state->tree->property_parent_map[base_path].has(p_name));
 	StringName path = state->tree->property_parent_map[base_path][p_name];
@@ -73,7 +73,7 @@ void AnimationNode::set_parameter(const StringName &p_name, const Variant &p_val
 }
 
 Variant AnimationNode::get_parameter(const StringName &p_name) const {
-	ERR_FAIL_COND_V(!state, Variant());
+	ERR_FAIL_NULL_V(state, Variant());
 	ERR_FAIL_COND_V(!state->tree->property_parent_map.has(base_path), Variant());
 	ERR_FAIL_COND_V(!state->tree->property_parent_map[base_path].has(p_name), Variant());
 
@@ -96,7 +96,7 @@ void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 }
 
 void AnimationNode::blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag) {
-	ERR_FAIL_COND(!state);
+	ERR_FAIL_NULL(state);
 	ERR_FAIL_COND(!state->player->has_animation(p_animation));
 
 	Ref<Animation> animation = state->player->get_animation(p_animation);
@@ -144,12 +144,12 @@ double AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode 
 }
 
 AnimationTree *AnimationNode::get_animation_tree() const {
-	ERR_FAIL_COND_V(!state, nullptr);
+	ERR_FAIL_NULL_V(state, nullptr);
 	return state->tree;
 }
 
 void AnimationNode::make_invalid(const String &p_reason) {
-	ERR_FAIL_COND(!state);
+	ERR_FAIL_NULL(state);
 	state->valid = false;
 	if (!state->invalid_reasons.is_empty()) {
 		state->invalid_reasons += "\n";
@@ -159,10 +159,10 @@ void AnimationNode::make_invalid(const String &p_reason) {
 
 double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync, bool p_test_only) {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), 0);
-	ERR_FAIL_COND_V(!state, 0);
+	ERR_FAIL_NULL_V(state, 0);
 
 	AnimationNodeBlendTree *blend_tree = Object::cast_to<AnimationNodeBlendTree>(parent);
-	ERR_FAIL_COND_V(!blend_tree, 0);
+	ERR_FAIL_NULL_V(blend_tree, 0);
 
 	StringName node_name = connections[p_input];
 
@@ -193,7 +193,7 @@ double AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode
 
 double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter, bool p_sync, real_t *r_max, bool p_test_only) {
 	ERR_FAIL_COND_V(!p_node.is_valid(), 0);
-	ERR_FAIL_COND_V(!state, 0);
+	ERR_FAIL_NULL_V(state, 0);
 
 	int blend_count = blends.size();
 
@@ -293,7 +293,7 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 		new_parent = p_new_parent;
 		new_path = String(base_path) + String(p_subpath) + "/";
 	} else {
-		ERR_FAIL_COND_V(!parent, 0);
+		ERR_FAIL_NULL_V(parent, 0);
 		new_parent = parent;
 		new_path = String(parent->base_path) + String(p_subpath) + "/";
 	}
@@ -941,7 +941,7 @@ void AnimationTree::_clear_playing_caches() {
 	playing_caches.clear();
 }
 
-static void _call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred) {
+void AnimationTree::_call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred) {
 	// Separate function to use alloca() more efficiently
 	const Variant **argptrs = (const Variant **)alloca(sizeof(const Variant **) * p_params.size());
 	const Variant *args = p_params.ptr();

@@ -297,10 +297,13 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 		return false;
 	}
 
+	// Backward compatibility for legacy behavior, only return true if currently pressed.
+	bool pressed_requirement = legacy_just_pressed_behavior ? E->value.pressed : true;
+
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return E->value.pressed && E->value.physics_frame == Engine::get_singleton()->get_physics_frames();
+		return pressed_requirement && E->value.pressed_physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return E->value.pressed && E->value.process_frame == Engine::get_singleton()->get_process_frames();
+		return pressed_requirement && E->value.pressed_process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
@@ -315,10 +318,13 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 		return false;
 	}
 
+	// Backward compatibility for legacy behavior, only return true if currently released.
+	bool released_requirement = legacy_just_pressed_behavior ? !E->value.pressed : true;
+
 	if (Engine::get_singleton()->is_in_physics_frame()) {
-		return !E->value.pressed && E->value.physics_frame == Engine::get_singleton()->get_physics_frames();
+		return released_requirement && E->value.released_physics_frame == Engine::get_singleton()->get_physics_frames();
 	} else {
-		return !E->value.pressed && E->value.process_frame == Engine::get_singleton()->get_process_frames();
+		return released_requirement && E->value.released_process_frame == Engine::get_singleton()->get_process_frames();
 	}
 }
 
@@ -686,19 +692,24 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 	for (const KeyValue<StringName, InputMap::Action> &E : InputMap::get_singleton()->get_action_map()) {
 		if (InputMap::get_singleton()->event_is_action(p_event, E.key)) {
+			Action &action = action_state[E.key];
 			// If not echo and action pressed state has changed
 			if (!p_event->is_echo() && is_action_pressed(E.key, false) != p_event->is_action_pressed(E.key)) {
-				Action action;
-				action.physics_frame = Engine::get_singleton()->get_physics_frames();
-				action.process_frame = Engine::get_singleton()->get_process_frames();
-				action.pressed = p_event->is_action_pressed(E.key);
+				if (p_event->is_action_pressed(E.key)) {
+					action.pressed = true;
+					action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
+					action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
+				} else {
+					action.pressed = false;
+					action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
+					action.released_process_frame = Engine::get_singleton()->get_process_frames();
+				}
 				action.strength = 0.0f;
 				action.raw_strength = 0.0f;
 				action.exact = InputMap::get_singleton()->event_is_action(p_event, E.key, true);
-				action_state[E.key] = action;
 			}
-			action_state[E.key].strength = p_event->get_action_strength(E.key);
-			action_state[E.key].raw_strength = p_event->get_action_raw_strength(E.key);
+			action.strength = p_event->get_action_strength(E.key);
+			action.raw_strength = p_event->get_action_raw_strength(E.key);
 		}
 	}
 
@@ -813,29 +824,27 @@ Point2i Input::warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, con
 }
 
 void Input::action_press(const StringName &p_action, float p_strength) {
-	Action action;
+	// Create or retrieve existing action.
+	Action &action = action_state[p_action];
 
-	action.physics_frame = Engine::get_singleton()->get_physics_frames();
-	action.process_frame = Engine::get_singleton()->get_process_frames();
+	action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
+	action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
 	action.pressed = true;
 	action.strength = p_strength;
 	action.raw_strength = p_strength;
 	action.exact = true;
-
-	action_state[p_action] = action;
 }
 
 void Input::action_release(const StringName &p_action) {
-	Action action;
+	// Create or retrieve existing action.
+	Action &action = action_state[p_action];
 
-	action.physics_frame = Engine::get_singleton()->get_physics_frames();
-	action.process_frame = Engine::get_singleton()->get_process_frames();
+	action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
+	action.released_process_frame = Engine::get_singleton()->get_process_frames();
 	action.pressed = false;
-	action.strength = 0.f;
-	action.raw_strength = 0.f;
+	action.strength = 0.0f;
+	action.raw_strength = 0.0f;
 	action.exact = true;
-
-	action_state[p_action] = action;
 }
 
 void Input::set_emulate_touch_from_mouse(bool p_emulate) {
@@ -1356,8 +1365,9 @@ void Input::parse_mapping(String p_mapping) {
 
 		String output = entry[idx].get_slice(":", 0).replace(" ", "");
 		String input = entry[idx].get_slice(":", 1).replace(" ", "");
-		ERR_CONTINUE_MSG(output.length() < 1 || input.length() < 2,
-				vformat("Invalid device mapping entry \"%s\" in mapping:\n%s", entry[idx], p_mapping));
+		if (output.length() < 1 || input.length() < 2) {
+			continue;
+		}
 
 		if (output == "platform" || output == "hint") {
 			continue;
@@ -1530,6 +1540,12 @@ Input::Input() {
 			}
 			parse_mapping(entries[i]);
 		}
+	}
+
+	legacy_just_pressed_behavior = GLOBAL_DEF("input_devices/compatibility/legacy_just_pressed_behavior", false);
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// Always use standard behaviour in the editor.
+		legacy_just_pressed_behavior = false;
 	}
 }
 

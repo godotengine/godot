@@ -2722,7 +2722,6 @@ void RichTextLabel::_thread_function(void *p_userdata) {
 	_process_line_caches();
 	updating.store(false);
 	call_deferred(SNAME("thread_end"));
-	set_current_thread_safe_for_nodes(false);
 }
 
 void RichTextLabel::_thread_end() {
@@ -3599,7 +3598,7 @@ void RichTextLabel::pop() {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
-	ERR_FAIL_COND(!current->parent);
+	ERR_FAIL_NULL(current->parent);
 
 	if (current->type == ITEM_FRAME) {
 		current_frame = static_cast<ItemFrame *>(current)->parent_frame;

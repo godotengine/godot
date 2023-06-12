@@ -57,6 +57,11 @@ void EditorPropertyVectorN::_value_changed(double val, const String &p_name) {
 		for (int i = 0; i < component_count - 1; i++) {
 			int slider_idx = (changed_component + 1 + i) % component_count;
 			int ratio_idx = changed_component * (component_count - 1) + i;
+
+			if (ratio[ratio_idx] == 0) {
+				continue;
+			}
+
 			spin_sliders[slider_idx]->set_value_no_signal(spin_sliders[changed_component]->get_value() * ratio[ratio_idx]);
 		}
 	}
@@ -84,28 +89,24 @@ void EditorPropertyVectorN::update_property() {
 			spin_sliders[i]->set_value_no_signal(val.get(i));
 		}
 	}
-	_update_ratio();
+
+	if (!is_grabbed) {
+		_update_ratio();
+	}
 }
 
 void EditorPropertyVectorN::_update_ratio() {
 	linked->set_modulate(Color(1, 1, 1, linked->is_pressed() ? 1.0 : 0.5));
 
-	bool non_zero = true;
-	for (int i = 0; i < component_count; i++) {
-		if (spin_sliders[i]->get_value() == 0) {
-			non_zero = false;
-			break;
-		}
-	}
-
 	double *ratio_write = ratio.ptrw();
 	for (int i = 0; i < ratio.size(); i++) {
 		int base_slider_idx = i / (component_count - 1);
 		int secondary_slider_idx = ((base_slider_idx + 1) + i % (component_count - 1)) % component_count;
-		if (non_zero) {
+
+		if (spin_sliders[base_slider_idx]->get_value() != 0) {
 			ratio_write[i] = spin_sliders[secondary_slider_idx]->get_value() / spin_sliders[base_slider_idx]->get_value();
 		} else {
-			ratio_write[i] = 1.0;
+			ratio_write[i] = 0;
 		}
 	}
 }
@@ -116,6 +117,13 @@ void EditorPropertyVectorN::_store_link(bool p_linked) {
 	}
 	const String key = vformat("%s:%s", get_edited_object()->get_class(), get_edited_property());
 	EditorSettings::get_singleton()->set_project_metadata("linked_properties", key, p_linked);
+}
+
+void EditorPropertyVectorN::_grab_changed(bool p_grab) {
+	if (p_grab) {
+		_update_ratio();
+	}
+	is_grabbed = p_grab;
 }
 
 void EditorPropertyVectorN::_notification(int p_what) {
@@ -204,14 +212,16 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 
 	for (int i = 0; i < component_count; i++) {
 		spin[i] = memnew(EditorSpinSlider);
+		bc->add_child(spin[i]);
 		spin[i]->set_flat(true);
 		spin[i]->set_label(String(COMPONENT_LABELS[i]));
-		bc->add_child(spin[i]);
-		add_focusable(spin[i]);
-		spin[i]->connect("value_changed", callable_mp(this, &EditorPropertyVectorN::_value_changed).bind(String(COMPONENT_LABELS[i])));
 		if (horizontal) {
 			spin[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		}
+		spin[i]->connect(SNAME("value_changed"), callable_mp(this, &EditorPropertyVectorN::_value_changed).bind(String(COMPONENT_LABELS[i])));
+		spin[i]->connect(SNAME("grabbed"), callable_mp(this, &EditorPropertyVectorN::_grab_changed).bind(true));
+		spin[i]->connect(SNAME("ungrabbed"), callable_mp(this, &EditorPropertyVectorN::_grab_changed).bind(false));
+		add_focusable(spin[i]);
 	}
 
 	ratio.resize(component_count * (component_count - 1));

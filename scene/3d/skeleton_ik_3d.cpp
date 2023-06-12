@@ -249,26 +249,6 @@ void FabrikInverseKinematic::make_goal(Task *p_task, const Transform3D &p_invers
 	}
 }
 
-static Vector3 get_bone_axis_forward_vector(Skeleton3D *skeleton, int p_bone) {
-	// If it is a child/leaf bone...
-	if (skeleton->get_bone_parent(p_bone) > 0) {
-		return skeleton->get_bone_rest(p_bone).origin.normalized();
-	}
-	// If it has children...
-	Vector<int> child_bones = skeleton->get_bone_children(p_bone);
-	if (child_bones.size() == 0) {
-		WARN_PRINT_ONCE("Cannot calculate forward direction for bone " + itos(p_bone));
-		WARN_PRINT_ONCE("Assuming direction of (0, 1, 0) for bone");
-		return Vector3(0, 1, 0);
-	}
-	Vector3 combined_child_dir = Vector3(0, 0, 0);
-	for (int i = 0; i < child_bones.size(); i++) {
-		combined_child_dir += skeleton->get_bone_rest(child_bones[i]).origin.normalized();
-	}
-	combined_child_dir = combined_child_dir / child_bones.size();
-	return combined_child_dir.normalized();
-}
-
 void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool override_tip_basis, bool p_use_magnet, const Vector3 &p_magnet_position) {
 	if (blending_delta <= 0.01f) {
 		// Before skipping, make sure we undo the global pose overrides
@@ -307,7 +287,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 		new_bone_pose.origin = ci->current_pos;
 
 		if (!ci->children.is_empty()) {
-			Vector3 forward_vector = get_bone_axis_forward_vector(p_task->skeleton, ci->bone);
+			Vector3 forward_vector = (ci->children[0].initial_transform.origin - ci->initial_transform.origin).normalized();
 			// Rotate the bone towards the next bone in the chain:
 			new_bone_pose.basis.rotate_to_align(forward_vector, new_bone_pose.origin.direction_to(ci->children[0].current_pos));
 

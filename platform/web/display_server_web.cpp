@@ -30,18 +30,19 @@
 
 #include "display_server_web.h"
 
+#include "dom_keys.inc"
+#include "godot_js.h"
+#include "os_web.h"
+
 #include "core/config/project_settings.h"
+#include "servers/rendering/dummy/rasterizer_dummy.h"
+
 #ifdef GLES3_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
-#include "platform/web/os_web.h"
-#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #include <emscripten.h>
 #include <png.h>
-
-#include "dom_keys.inc"
-#include "godot_js.h"
 
 #define DOM_BUTTON_LEFT 0
 #define DOM_BUTTON_MIDDLE 1

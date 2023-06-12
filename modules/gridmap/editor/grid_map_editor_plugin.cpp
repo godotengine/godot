@@ -46,12 +46,6 @@
 #include "scene/gui/separator.h"
 #include "scene/main/window.h"
 
-void GridMapEditor::_node_removed(Node *p_node) {
-	if (p_node == node) {
-		node = nullptr;
-	}
-}
-
 void GridMapEditor::_configure() {
 	if (!node) {
 		return;
@@ -1030,7 +1024,6 @@ void GridMapEditor::_update_theme() {
 void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			get_tree()->connect("node_removed", callable_mp(this, &GridMapEditor::_node_removed));
 			mesh_library_palette->connect("item_selected", callable_mp(this, &GridMapEditor::_item_selected_cbk));
 			for (int i = 0; i < 3; i++) {
 				grid[i] = RS::get_singleton()->mesh_create();
@@ -1051,7 +1044,6 @@ void GridMapEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			get_tree()->disconnect("node_removed", callable_mp(this, &GridMapEditor::_node_removed));
 			_clear_clipboard_data();
 
 			for (int i = 0; i < 3; i++) {
@@ -1471,7 +1463,6 @@ void GridMapEditorPlugin::make_visible(bool p_visible) {
 	} else {
 		grid_map_editor->spatial_editor_hb->hide();
 		grid_map_editor->hide();
-		grid_map_editor->edit(nullptr);
 		grid_map_editor->set_process(false);
 	}
 }

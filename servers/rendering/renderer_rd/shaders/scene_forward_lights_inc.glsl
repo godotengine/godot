@@ -70,6 +70,21 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 
 	mat4 inv_view_matrix = scene_data_block.data.inv_view_matrix;
 
+#ifdef USING_MOBILE_RENDERER
+	mat4 read_model_matrix = draw_call.transform;
+#else
+	mat4 read_model_matrix = instances.data[instance_index_interp].transform;
+#endif
+
+	mat4 read_view_matrix = scene_data_block.data.view_matrix;
+
+#undef projection_matrix
+#define projection_matrix scene_data_block.data.projection_matrix
+#undef inv_projection_matrix
+#define inv_projection_matrix scene_data_block.data.inv_projection_matrix
+
+	vec2 read_viewport_size = scene_data_block.data.viewport_size;
+
 	vec3 normal = N;
 	vec3 light = L;
 	vec3 view = V;

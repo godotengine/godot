@@ -30,6 +30,8 @@
 
 #include "export_plugin.h"
 
+#include "../logo_svg.gen.h"
+#include "../run_icon_svg.gen.h"
 #include "gradle_export_util.h"
 
 #include "core/config/project_settings.h"
@@ -46,8 +48,6 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "main/splash.gen.h"
-#include "platform/android/logo_svg.gen.h"
-#include "platform/android/run_icon_svg.gen.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED

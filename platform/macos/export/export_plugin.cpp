@@ -30,6 +30,8 @@
 
 #include "export_plugin.h"
 
+#include "../logo_svg.gen.h"
+#include "../run_icon_svg.gen.h"
 #include "codesign.h"
 #include "lipo.h"
 #include "macho.h"
@@ -39,8 +41,6 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
-#include "platform/macos/logo_svg.gen.h"
-#include "platform/macos/run_icon_svg.gen.h"
 
 #include "modules/modules_enabled.gen.h" // For svg and regex.
 #ifdef MODULE_SVG_ENABLED

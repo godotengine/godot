@@ -119,6 +119,6 @@ public:
 	~GLManager_Windows();
 };
 
-#endif // defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
+#endif // WINDOWS_ENABLED && GLES3_ENABLED
 
 #endif // GL_MANAGER_WINDOWS_H

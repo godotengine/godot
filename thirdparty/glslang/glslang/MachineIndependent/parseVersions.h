@@ -58,14 +58,14 @@ public:
                    const SpvVersion& spvVersion, EShLanguage language, TInfoSink& infoSink,
                    bool forwardCompatible, EShMessages messages)
         :
-#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
+#if !defined(GLSLANG_WEB)
         forwardCompatible(forwardCompatible),
         profile(profile),
 #endif
         infoSink(infoSink), version(version), 
         language(language),
         spvVersion(spvVersion), 
-        intermediate(interm), messages(messages), numErrors(0), currentScanner(0) { }
+        intermediate(interm), messages(messages), numErrors(0), currentScanner(nullptr) { }
     virtual ~TParseVersions() { }
     void requireStage(const TSourceLoc&, EShLanguageMask, const char* featureDesc);
     void requireStage(const TSourceLoc&, EShLanguage, const char* featureDesc);
@@ -117,13 +117,8 @@ public:
     bool suppressWarnings() const { return true; }
     bool isForwardCompatible() const { return false; }
 #else
-#ifdef GLSLANG_ANGLE
-    const bool forwardCompatible = true;
-    const EProfile profile = ECoreProfile;
-#else
     bool forwardCompatible;      // true if errors are to be given for use of deprecated features
     EProfile profile;            // the declared profile in the shader (core by default)
-#endif
     bool isEsProfile() const { return profile == EEsProfile; }
     void requireProfile(const TSourceLoc& loc, int profileMask, const char* featureDesc);
     void profileRequires(const TSourceLoc& loc, int profileMask, int minVersion, int numExtensions,
@@ -231,6 +226,7 @@ public:
 protected:
     TMap<TString, TExtensionBehavior> extensionBehavior;    // for each extension string, what its current behavior is
     TMap<TString, unsigned int> extensionMinSpv;            // for each extension string, store minimum spirv required
+    TVector<TString> spvUnsupportedExt;                     // for extensions reserved for spv usage.
     EShMessages messages;        // errors/warnings/rule-sets
     int numErrors;               // number of compile-time errors encountered
     TInputScanner* currentScanner;

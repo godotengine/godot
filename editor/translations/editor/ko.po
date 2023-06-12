@@ -50,13 +50,14 @@
 # Seania Twix <admin@ez.is>, 2023.
 # coolkid <newtype20050831@gmail.com>, 2023.
 # asdfer-1234 <sh__lv@naver.com>, 2023.
+# Overdue - <kaameo12@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-17 00:52+0000\n"
-"Last-Translator: asdfer-1234 <sh__lv@naver.com>\n"
+"PO-Revision-Date: 2023-06-12 06:42+0000\n"
+"Last-Translator: Overdue - <kaameo12@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -293,6 +294,9 @@ msgstr "실행 취소"
 msgid "Redo"
 msgstr "다시 실행"
 
+msgid "Completion Query"
+msgstr "완성도"
+
 msgid "New Line"
 msgstr "뉴라인"
 
@@ -323,11 +327,17 @@ msgstr "단어 삭제"
 msgid "Caret Right"
 msgstr "^ 오른쪽"
 
+msgid "Caret Document End"
+msgstr "문서 종료"
+
 msgid "Caret Add Above"
 msgstr "위에 캐럿 추가"
 
 msgid "Scroll Up"
 msgstr "스크롤 업"
+
+msgid "Scroll Down"
+msgstr "스크롤 다운"
 
 msgid "Select All"
 msgstr "모두 선택"
@@ -1304,11 +1314,8 @@ msgstr "종속 관계 에디터"
 msgid "Search Replacement Resource:"
 msgstr "대체 리소스 검색:"
 
-msgid "Open Scene"
-msgstr "씬 열기"
-
-msgid "Open Scenes"
-msgstr "씬 열기"
+msgid "Open"
+msgstr "열기"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "소유자: %s(총: %d)"
@@ -1371,6 +1378,12 @@ msgstr "소유함"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "명확한 소유 관계가 없는 리소스:"
+
+msgid "Could not create folder."
+msgstr "폴더를 만들 수 없습니다."
+
+msgid "Create Folder"
+msgstr "폴더 만들기"
 
 msgid "Thanks from the Godot community!"
 msgstr "Godot 커뮤니티에서 감사드립니다!"
@@ -1797,24 +1810,6 @@ msgstr "[비었음]"
 msgid "[unsaved]"
 msgstr "[저장되지 않음]"
 
-msgid "Please select a base directory first."
-msgstr "먼저 기본 디렉토리를 선택해주세요."
-
-msgid "Choose a Directory"
-msgstr "디렉토리를 선택하세요"
-
-msgid "Create Folder"
-msgstr "폴더 만들기"
-
-msgid "Name:"
-msgstr "이름:"
-
-msgid "Could not create folder."
-msgstr "폴더를 만들 수 없습니다."
-
-msgid "Choose"
-msgstr "선택"
-
 msgid "3D Editor"
 msgstr "3D 에디터"
 
@@ -1953,127 +1948,6 @@ msgstr "프로필 가져오기"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "에디터 기능 프로필 관리"
-
-msgid "Network"
-msgstr "네트워크"
-
-msgid "Open"
-msgstr "열기"
-
-msgid "Select Current Folder"
-msgstr "현재 폴더 선택"
-
-msgid "Cannot save file with an empty filename."
-msgstr "파일 이름이 비어 있는 파일을 저장할 수 없습니다."
-
-msgid "Cannot save file with a name starting with a dot."
-msgstr "점으로 시작하는 이름의 파일을 저장할 수 없습니다."
-
-msgid ""
-"File \"%s\" already exists.\n"
-"Do you want to overwrite it?"
-msgstr ""
-"\"%s\" 파일이 이미 있습니다.\n"
-"덮어쓰시겠습니까?"
-
-msgid "Select This Folder"
-msgstr "이 폴더 선택"
-
-msgid "Copy Path"
-msgstr "경로 복사"
-
-msgid "Open in File Manager"
-msgstr "파일 매니저에서 열기"
-
-msgid "Show in File Manager"
-msgstr "파일 매니저에서 보기"
-
-msgid "New Folder..."
-msgstr "새 폴더..."
-
-msgid "All Recognized"
-msgstr "인식 가능한 모든 파일"
-
-msgid "All Files (*)"
-msgstr "모든 파일 (*)"
-
-msgid "Open a File"
-msgstr "파일 열기"
-
-msgid "Open File(s)"
-msgstr "여러 파일 열기"
-
-msgid "Open a Directory"
-msgstr "디렉토리 열기"
-
-msgid "Open a File or Directory"
-msgstr "디렉토리 또는 파일 열기"
-
-msgid "Save a File"
-msgstr "파일로 저장"
-
-msgid "Favorited folder does not exist anymore and will be removed."
-msgstr "즐겨찾기 폴더가 더 이상 존재하지 않으며 제거됩니다."
-
-msgid "Go Back"
-msgstr "뒤로"
-
-msgid "Go Forward"
-msgstr "앞으로"
-
-msgid "Go Up"
-msgstr "상위로"
-
-msgid "Toggle Hidden Files"
-msgstr "숨김 파일 토글"
-
-msgid "Toggle Favorite"
-msgstr "즐겨찾기 토글"
-
-msgid "Toggle Mode"
-msgstr "모드 토글"
-
-msgid "Focus Path"
-msgstr "경로 포커스"
-
-msgid "Move Favorite Up"
-msgstr "즐겨찾기 위로 이동"
-
-msgid "Move Favorite Down"
-msgstr "즐겨찾기 아래로 이동"
-
-msgid "Go to previous folder."
-msgstr "이전 폴더로 이동합니다."
-
-msgid "Go to next folder."
-msgstr "다음 폴더로 이동합니다."
-
-msgid "Go to parent folder."
-msgstr "부모 폴더로 이동합니다."
-
-msgid "Refresh files."
-msgstr "파일을 새로고침합니다."
-
-msgid "(Un)favorite current folder."
-msgstr "현재 폴더를 즐겨찾기 설정/즐겨찾기 해제합니다."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "숨긴 파일의 표시 여부를 토글합니다."
-
-msgid "View items as a grid of thumbnails."
-msgstr "항목을 바둑판 형식의 썸네일로 봅니다."
-
-msgid "View items as a list."
-msgstr "항목을 목록 형식으로 봅니다."
-
-msgid "Directories & Files:"
-msgstr "디렉토리 & 파일:"
-
-msgid "Preview:"
-msgstr "미리보기:"
-
-msgid "File:"
-msgstr "파일:"
 
 msgid "Restart"
 msgstr "다시 시작"
@@ -2334,8 +2208,17 @@ msgstr "메타데이터 이름은 비워둘 수 없습니다."
 msgid "Names starting with _ are reserved for editor-only metadata."
 msgstr "_로 시작하는 이름은 편집기 전용 메타데이터를 위해 예약되어 있습니다."
 
+msgid "Name:"
+msgstr "이름:"
+
 msgid "Copy Property Path"
 msgstr "속성 경로 복사"
+
+msgid "Creating Mesh Previews"
+msgstr "메시 미리보기 만드는 중"
+
+msgid "Thumbnail..."
+msgstr "썸네일..."
 
 msgid "Changed Locale Filter Mode"
 msgstr "로케일 필터 모드 변경됨"
@@ -2443,6 +2326,9 @@ msgstr ""
 "씬을 저장할 수 없습니다. (인스턴스 또는 상속과 같은) 종속 관계를 성립할 수 없"
 "는 것 같습니다."
 
+msgid "Save scene before running..."
+msgstr "씬을 실행하기 전에 저장..."
+
 msgid "Could not save one or more scenes!"
 msgstr "하나 이상의 장면을 저장할수 없습니다!"
 
@@ -2505,34 +2391,6 @@ msgstr "변경사항을 잃을 수도 있습니다!"
 msgid "This object is read-only."
 msgstr "이 개체는 읽기 전용입니다."
 
-msgid ""
-"Movie Maker mode is enabled, but no movie file path has been specified.\n"
-"A default movie file path can be specified in the project settings under the "
-"Editor > Movie Writer category.\n"
-"Alternatively, for running single scenes, a `movie_file` string metadata can "
-"be added to the root node,\n"
-"specifying the path to a movie file that will be used when recording that "
-"scene."
-msgstr ""
-"무비 메이커 모드가 활성화되었지만 무비 파일 경로가 지정되지 않았습니다.\n"
-"기본 동영상 파일 경로는 프로젝트 설정의 편집기 > 무비 메이커 카테고리에서 지"
-"정할 수 있습니다.\n"
-"또는 단일 장면을 실행하려면 루트 노드에 `movie_file` 문자열 메타데이터를 추가"
-"할 수 있습니다,\n"
-"해당 장면을 녹화할 때 사용할 동영상 파일의 경로를 지정할 수 있습니다."
-
-msgid "There is no defined scene to run."
-msgstr "실행할 씬이 정의되지 않았습니다."
-
-msgid "Save scene before running..."
-msgstr "씬을 실행하기 전에 저장..."
-
-msgid "Play the project."
-msgstr "프로젝트를 실행합니다."
-
-msgid "Play the edited scene."
-msgstr "편집하고 있던 씬을 실행합니다."
-
 msgid "Open Base Scene"
 msgstr "기본 씬 열기"
 
@@ -2544,18 +2402,6 @@ msgstr "빠른 씬 열기..."
 
 msgid "Quick Open Script..."
 msgstr "빠른 스크립트 열기..."
-
-msgid "Save & Reload"
-msgstr "저장 및 새로고침"
-
-msgid "Save & Quit"
-msgstr "저장 & 종료"
-
-msgid "Save changes to '%s' before reloading?"
-msgstr "새로고침하기 전에 '%s'에 변경사항을 저장하시겠습니까?"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "닫기 전에 '%s'에 변경사항을 저장하시겠습니까?"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s은(는) 더 이상 존재하지 않습니다! 새 저장 위치를 지정해 주세요."
@@ -2605,8 +2451,11 @@ msgstr ""
 "현재 씬에는 저장하지 않은 변경사항이 있습니다.\n"
 "무시하고 저장된 씬을 새로고침하시겠습니까? 이 동작은 되돌릴 수 없습니다."
 
-msgid "Quick Run Scene..."
-msgstr "씬 빠른 실행..."
+msgid "Save & Reload"
+msgstr "저장 및 새로고침"
+
+msgid "Save & Quit"
+msgstr "저장 & 종료"
 
 msgid "Save changes to the following scene(s) before reloading?"
 msgstr "새로고침하기 전에 해당 씬의 변경사항을 저장하시겠습니까?"
@@ -2685,6 +2534,9 @@ msgstr "씬 '%s'의 종속 항목이 망가짐:"
 msgid "Clear Recent Scenes"
 msgstr "최근 씬 지우기"
 
+msgid "There is no defined scene to run."
+msgstr "실행할 씬이 정의되지 않았습니다."
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -2718,8 +2570,14 @@ msgstr "레이아웃 삭제"
 msgid "Default"
 msgstr "기본값"
 
+msgid "Save changes to '%s' before reloading?"
+msgstr "새로고침하기 전에 '%s'에 변경사항을 저장하시겠습니까?"
+
 msgid "Save & Close"
 msgstr "저장 & 닫기"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "닫기 전에 '%s'에 변경사항을 저장하시겠습니까?"
 
 msgid "Show in FileSystem"
 msgstr "파일시스템에서 보기"
@@ -2900,27 +2758,6 @@ msgstr "Godot 정보"
 msgid "Support Godot Development"
 msgstr "Godot 개발 지원"
 
-msgid "Run the project's default scene."
-msgstr "프로젝트의 기본 씬을 실행합니다."
-
-msgid "Run Project"
-msgstr "프로젝트 실행"
-
-msgid "Run a specific scene."
-msgstr "특정 장면을 실행합니다."
-
-msgid "Run Specific Scene"
-msgstr "특정 장면 실행"
-
-msgid ""
-"Enable Movie Maker mode.\n"
-"The project will run at stable FPS and the visual and audio output will be "
-"recorded to a video file."
-msgstr ""
-"무비 메이커 모드를 활성화합니다.\n"
-"프로젝트가 안정적인 FPS로 실행되고 시각 및 오디오 출력이 비디오 파일로 녹화됩"
-"니다."
-
 msgid "Mobile"
 msgstr "모바일"
 
@@ -2969,6 +2806,9 @@ msgstr ""
 "Android 빌드 템플릿이 이미 이 프로젝트에 설치했고, 덮어 쓸 수 없습니다.\n"
 "이 명령을 다시 실행하기 전에 \"res://android/build\" 디렉토리를 직접 제거하세"
 "요."
+
+msgid "Show in File Manager"
+msgstr "파일 매니저에서 보기"
 
 msgid "Import Templates From ZIP File"
 msgstr "ZIP 파일에서 템플릿 가져오기"
@@ -3033,18 +2873,6 @@ msgstr "확인"
 
 msgid "Warning!"
 msgstr "경고!"
-
-msgid "No sub-resources found."
-msgstr "하위 리소스를 찾을 수 없습니다."
-
-msgid "Open a list of sub-resources."
-msgstr "하위 리소스의 목록을 엽니다."
-
-msgid "Creating Mesh Previews"
-msgstr "메시 미리보기 만드는 중"
-
-msgid "Thumbnail..."
-msgstr "썸네일..."
 
 msgid "Main Script:"
 msgstr "주 스크립트:"
@@ -3709,6 +3537,12 @@ msgstr "검색"
 msgid "Favorites"
 msgstr "즐겨찾기"
 
+msgid "View items as a grid of thumbnails."
+msgstr "항목을 바둑판 형식의 썸네일로 봅니다."
+
+msgid "View items as a list."
+msgstr "항목을 목록 형식으로 봅니다."
+
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "상태: 파일 가져오기에 실패했습니다. 수동으로 파일을 수정하고 다시 가져와주세"
@@ -3734,9 +3568,6 @@ msgstr "복제 중 오류:"
 msgid "Unable to update dependencies:"
 msgstr "종속 항목을 업데이트할 수 없음:"
 
-msgid "Provided name contains invalid characters."
-msgstr "제공한 이름에 잘못된 문자가 있습니다."
-
 msgid ""
 "This file extension is not recognized by the editor.\n"
 "If you want to rename it anyway, use your operating system's file manager.\n"
@@ -3750,26 +3581,6 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "이 이름은 이미 어떤 파일이나 폴더가 쓰고 있습니다."
 
-msgid ""
-"The following files or folders conflict with items in the target location "
-"'%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Do you wish to overwrite them?"
-msgstr ""
-"다음 파일이나 폴더가 대상 위치 '%s'의 항목과 충돌합니다:\n"
-"\n"
-"%s\n"
-"\n"
-"이를 덮어쓰시겠습니까?"
-
-msgid "Renaming file:"
-msgstr "파일 이름 바꾸기:"
-
-msgid "Renaming folder:"
-msgstr "폴더 이름 바꾸기:"
-
 msgid "Duplicating file:"
 msgstr "파일 복제:"
 
@@ -3782,11 +3593,8 @@ msgstr "새 상속 씬"
 msgid "Set As Main Scene"
 msgstr "메인 씬으로 설정"
 
-msgid "Add to Favorites"
-msgstr "즐겨찾기에 추가"
-
-msgid "Remove from Favorites"
-msgstr "즐겨찾기에서 제거"
+msgid "Open Scenes"
+msgstr "씬 열기"
 
 msgid "Edit Dependencies..."
 msgstr "종속 관계 편집..."
@@ -3794,8 +3602,17 @@ msgstr "종속 관계 편집..."
 msgid "View Owners..."
 msgstr "소유자 보기..."
 
-msgid "Move To..."
-msgstr "여기로 이동..."
+msgid "Add to Favorites"
+msgstr "즐겨찾기에 추가"
+
+msgid "Remove from Favorites"
+msgstr "즐겨찾기에서 제거"
+
+msgid "Open in File Manager"
+msgstr "파일 매니저에서 열기"
+
+msgid "New Folder..."
+msgstr "새 폴더..."
 
 msgid "New Scene..."
 msgstr "새 씬..."
@@ -3824,6 +3641,9 @@ msgstr "마지막으로 수정된 순서로 정렬"
 msgid "Sort by First Modified"
 msgstr "처음으로 수정된 순서로 정렬"
 
+msgid "Copy Path"
+msgstr "경로 복사"
+
 msgid "Duplicate..."
 msgstr "복제..."
 
@@ -3842,9 +3662,6 @@ msgid ""
 msgstr ""
 "파일 스캔중.\n"
 "잠시만 기다려주세요..."
-
-msgid "Move"
-msgstr "이동"
 
 msgid "Overwrite"
 msgstr "덮어 쓰기"
@@ -3921,6 +3738,240 @@ msgstr "그룹 에디터"
 
 msgid "Manage Groups"
 msgstr "그룹 관리"
+
+msgid "Move"
+msgstr "이동"
+
+msgid "Please select a base directory first."
+msgstr "먼저 기본 디렉토리를 선택해주세요."
+
+msgid "Choose a Directory"
+msgstr "디렉토리를 선택하세요"
+
+msgid "Network"
+msgstr "네트워크"
+
+msgid "Select Current Folder"
+msgstr "현재 폴더 선택"
+
+msgid "Cannot save file with an empty filename."
+msgstr "파일 이름이 비어 있는 파일을 저장할 수 없습니다."
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "점으로 시작하는 이름의 파일을 저장할 수 없습니다."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"\"%s\" 파일이 이미 있습니다.\n"
+"덮어쓰시겠습니까?"
+
+msgid "Select This Folder"
+msgstr "이 폴더 선택"
+
+msgid "All Recognized"
+msgstr "인식 가능한 모든 파일"
+
+msgid "All Files (*)"
+msgstr "모든 파일 (*)"
+
+msgid "Open a File"
+msgstr "파일 열기"
+
+msgid "Open File(s)"
+msgstr "여러 파일 열기"
+
+msgid "Open a Directory"
+msgstr "디렉토리 열기"
+
+msgid "Open a File or Directory"
+msgstr "디렉토리 또는 파일 열기"
+
+msgid "Save a File"
+msgstr "파일로 저장"
+
+msgid "Favorited folder does not exist anymore and will be removed."
+msgstr "즐겨찾기 폴더가 더 이상 존재하지 않으며 제거됩니다."
+
+msgid "Go Back"
+msgstr "뒤로"
+
+msgid "Go Forward"
+msgstr "앞으로"
+
+msgid "Go Up"
+msgstr "상위로"
+
+msgid "Toggle Hidden Files"
+msgstr "숨김 파일 토글"
+
+msgid "Toggle Favorite"
+msgstr "즐겨찾기 토글"
+
+msgid "Toggle Mode"
+msgstr "모드 토글"
+
+msgid "Focus Path"
+msgstr "경로 포커스"
+
+msgid "Move Favorite Up"
+msgstr "즐겨찾기 위로 이동"
+
+msgid "Move Favorite Down"
+msgstr "즐겨찾기 아래로 이동"
+
+msgid "Go to previous folder."
+msgstr "이전 폴더로 이동합니다."
+
+msgid "Go to next folder."
+msgstr "다음 폴더로 이동합니다."
+
+msgid "Go to parent folder."
+msgstr "부모 폴더로 이동합니다."
+
+msgid "Refresh files."
+msgstr "파일을 새로고침합니다."
+
+msgid "(Un)favorite current folder."
+msgstr "현재 폴더를 즐겨찾기 설정/즐겨찾기 해제합니다."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "숨긴 파일의 표시 여부를 토글합니다."
+
+msgid "Directories & Files:"
+msgstr "디렉토리 & 파일:"
+
+msgid "Preview:"
+msgstr "미리보기:"
+
+msgid "File:"
+msgstr "파일:"
+
+msgid "No sub-resources found."
+msgstr "하위 리소스를 찾을 수 없습니다."
+
+msgid "Open a list of sub-resources."
+msgstr "하위 리소스의 목록을 엽니다."
+
+msgid "Play the project."
+msgstr "프로젝트를 실행합니다."
+
+msgid "Play the edited scene."
+msgstr "편집하고 있던 씬을 실행합니다."
+
+msgid "Quick Run Scene..."
+msgstr "씬 빠른 실행..."
+
+msgid ""
+"Movie Maker mode is enabled, but no movie file path has been specified.\n"
+"A default movie file path can be specified in the project settings under the "
+"Editor > Movie Writer category.\n"
+"Alternatively, for running single scenes, a `movie_file` string metadata can "
+"be added to the root node,\n"
+"specifying the path to a movie file that will be used when recording that "
+"scene."
+msgstr ""
+"무비 메이커 모드가 활성화되었지만 무비 파일 경로가 지정되지 않았습니다.\n"
+"기본 동영상 파일 경로는 프로젝트 설정의 편집기 > 무비 메이커 카테고리에서 지"
+"정할 수 있습니다.\n"
+"또는 단일 장면을 실행하려면 루트 노드에 `movie_file` 문자열 메타데이터를 추가"
+"할 수 있습니다,\n"
+"해당 장면을 녹화할 때 사용할 동영상 파일의 경로를 지정할 수 있습니다."
+
+msgid "Run the project's default scene."
+msgstr "프로젝트의 기본 씬을 실행합니다."
+
+msgid "Run Project"
+msgstr "프로젝트 실행"
+
+msgid "Run a specific scene."
+msgstr "특정 장면을 실행합니다."
+
+msgid "Run Specific Scene"
+msgstr "특정 장면 실행"
+
+msgid ""
+"Enable Movie Maker mode.\n"
+"The project will run at stable FPS and the visual and audio output will be "
+"recorded to a video file."
+msgstr ""
+"무비 메이커 모드를 활성화합니다.\n"
+"프로젝트가 안정적인 FPS로 실행되고 시각 및 오디오 출력이 비디오 파일로 녹화됩"
+"니다."
+
+msgid "Toggle Visible"
+msgstr "보이기 토글"
+
+msgid "Unlock Node"
+msgstr "노드 잠금 풀기"
+
+msgid "Button Group"
+msgstr "버튼 그룹"
+
+msgid "Disable Scene Unique Name"
+msgstr "씬 고유 이름 비활성화"
+
+msgid "(Connecting From)"
+msgstr "(연결 시작 지점)"
+
+msgid "Node configuration warning:"
+msgstr "노드 설정 경고:"
+
+msgid ""
+"This node can be accessed from within anywhere in the scene by preceding it "
+"with the '%s' prefix in a node path.\n"
+"Click to disable this."
+msgstr ""
+"이 노드는 노드 경로에서 '%s' 접두사를 앞에 붙여 장면의 어느 곳에서나 액세스"
+"할 수 있습니다.\n"
+"비활성화하려면 클릭하세요."
+
+msgid "Node has one connection."
+msgid_plural "Node has {num} connections."
+msgstr[0] "노드에 연결이 {num}개 있습니다."
+
+msgid "Node is in this group:"
+msgid_plural "Node is in the following groups:"
+msgstr[0] "노드가 다음 그룹에 속해 있습니다:"
+
+msgid "Open in Editor"
+msgstr "에디터에서 열기"
+
+msgid "Open Script:"
+msgstr "스크립트 열기:"
+
+msgid ""
+"Node is locked.\n"
+"Click to unlock it."
+msgstr ""
+"노드가 잠겨있습니다.\n"
+"클릭하면 잠금을 해제합니다."
+
+msgid ""
+"AnimationPlayer is pinned.\n"
+"Click to unpin."
+msgstr ""
+"AnimationPlayer가 고정되어 있습니다.\n"
+"클릭하면 고정을 해제합니다."
+
+msgid "Invalid node name, the following characters are not allowed:"
+msgstr "잘못된 노드 이름입니다. 다음 문자는 허용하지 않습니다:"
+
+msgid "Another node already uses this unique name in the scene."
+msgstr "다른 노드가 이미 장면에서 이 고유한 이름을 사용하고 있습니다."
+
+msgid "Rename Node"
+msgstr "노드 이름 바꾸기"
+
+msgid "Scene Tree (Nodes):"
+msgstr "씬 트리 (노드):"
+
+msgid "Node Configuration Warning!"
+msgstr "노드 설정 경고!"
+
+msgid "Select a Node"
+msgstr "노드를 선택하세요"
 
 msgid "The Beginning"
 msgstr "시작"
@@ -4474,9 +4525,6 @@ msgstr "BlendSpace2D 점 제거"
 msgid "Remove BlendSpace2D Triangle"
 msgstr "BlendSpace2D 삼각형 제거"
 
-msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr "BlendSpace2D가 AnimationTree 노드에 속해있지 않습니다."
-
 msgid "No triangles exist, so no blending can take place."
 msgstr "삼각형이 없습니다. 혼합이 일어나지 않을 것입니다."
 
@@ -4736,9 +4784,6 @@ msgstr "끝에서"
 msgid "Travel"
 msgstr "진행"
 
-msgid "Start and end nodes are needed for a sub-transition."
-msgstr "하위 전환에는 시작과 끝 노드가 필요합니다."
-
 msgid "No playback resource set at path: %s."
 msgstr "이 경로에 설정한 재생 리소스가 없음: %s."
 
@@ -4753,9 +4798,6 @@ msgstr "새 노드를 만듭니다."
 
 msgid "Connect nodes."
 msgstr "노드를 연결합니다."
-
-msgid "Group Selected Node(s)"
-msgstr "선택한 노드 그룹화"
 
 msgid "Remove selected node or transition."
 msgstr "선택한 노드나 전환을 제거합니다."
@@ -5192,6 +5234,9 @@ msgstr "선택한 노드 잠금"
 msgid "Unlock Selected Node(s)"
 msgstr "선택한 노드 잠금 해제"
 
+msgid "Group Selected Node(s)"
+msgstr "선택한 노드 그룹화"
+
 msgid "Ungroup Selected Node(s)"
 msgstr "선택한 노드 그룹 해제"
 
@@ -5380,11 +5425,17 @@ msgstr "방출 색상"
 msgid "Create Emission Points From Node"
 msgstr "노드에서 방출 점 만들기"
 
-msgid "Flat 0"
-msgstr "플랫 0"
+msgid "Load Curve Preset"
+msgstr "곡선 프리셋 불러오기"
 
-msgid "Flat 1"
-msgstr "플랫 1"
+msgid "Remove Curve Point"
+msgstr "곡선 점 제거"
+
+msgid "Modify Curve Point"
+msgstr "곡선 점 수정"
+
+msgid "Hold Shift to edit tangents individually"
+msgstr "Shift키를 눌러서 탄젠트를 개별적으로 편집"
 
 msgid "Ease In"
 msgstr "감속"
@@ -5395,41 +5446,8 @@ msgstr "가속"
 msgid "Smoothstep"
 msgstr "부드러운 단계"
 
-msgid "Modify Curve Point"
-msgstr "곡선 점 수정"
-
-msgid "Modify Curve Tangent"
-msgstr "곡선 탄젠트 수정"
-
-msgid "Load Curve Preset"
-msgstr "곡선 프리셋 불러오기"
-
-msgid "Add Point"
-msgstr "점 추가"
-
-msgid "Remove Point"
-msgstr "점 제거"
-
-msgid "Left Linear"
-msgstr "왼쪽 선형"
-
-msgid "Right Linear"
-msgstr "오른쪽 선형"
-
-msgid "Load Preset"
-msgstr "프리셋 불러오기"
-
-msgid "Remove Curve Point"
-msgstr "곡선 점 제거"
-
-msgid "Toggle Curve Linear Tangent"
-msgstr "곡선 선형 탄젠트 토글"
-
-msgid "Hold Shift to edit tangents individually"
-msgstr "Shift키를 눌러서 탄젠트를 개별적으로 편집"
-
-msgid "Right click to add point"
-msgstr "점을 추가하려면 우클릭"
+msgid "Toggle Grid Snap"
+msgstr "토글 그리드 스냅"
 
 msgid "Debug with External Editor"
 msgstr "외부 에디터로 디버깅"
@@ -5523,6 +5541,39 @@ msgstr[0] "%d 인스턴스 실행"
 msgid " - Variation"
 msgstr " - 바리에이션"
 
+msgid "Change AudioStreamPlayer3D Emission Angle"
+msgstr "AudioStreamPlayer3D 방출 각도 바꾸기"
+
+msgid "Change Camera FOV"
+msgstr "카메라 시야 바꾸기"
+
+msgid "Change Camera Size"
+msgstr "카메라 크기 바꾸기"
+
+msgid "Change Sphere Shape Radius"
+msgstr "구체 모양 반경 바꾸기"
+
+msgid "Change Capsule Shape Radius"
+msgstr "캡슐 모양 반경 바꾸기"
+
+msgid "Change Capsule Shape Height"
+msgstr "캡슐 모양 높이 바꾸기"
+
+msgid "Change Cylinder Shape Radius"
+msgstr "캡슐 모양 반지름 바꾸기"
+
+msgid "Change Cylinder Shape Height"
+msgstr "캡슐 모양 높이 바꾸기"
+
+msgid "Change Particles AABB"
+msgstr "파티클 AABB 바꾸기"
+
+msgid "Change Light Radius"
+msgstr "라이트 반경 바꾸기"
+
+msgid "Change Notifier AABB"
+msgstr "알림 AABB 바꾸기"
+
 msgid "Convert to CPUParticles2D"
 msgstr "CPUParticles2D로 변환"
 
@@ -5576,9 +5627,6 @@ msgstr "그라디언트텍스처2D 채우기 포인트 교체"
 
 msgid "Swap Gradient Fill Points"
 msgstr "그라디언트 채우기 포인트 교체"
-
-msgid "Toggle Grid Snap"
-msgstr "토글 그리드 스냅"
 
 msgid "Create Occluder Polygon"
 msgstr "Occluder 폴리곤 만들기"
@@ -5844,44 +5892,17 @@ msgstr "양:"
 msgid "Populate"
 msgstr "만들기"
 
+msgid "Edit Poly"
+msgstr "폴리곤 편집"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "폴리곤 편집 (점 제거)"
+
 msgid "Create Navigation Polygon"
 msgstr "내비게이션 폴리곤 만들기"
 
 msgid "Unnamed Gizmo"
 msgstr "이름 없는 기즈모"
-
-msgid "Change Light Radius"
-msgstr "라이트 반경 바꾸기"
-
-msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr "AudioStreamPlayer3D 방출 각도 바꾸기"
-
-msgid "Change Camera FOV"
-msgstr "카메라 시야 바꾸기"
-
-msgid "Change Camera Size"
-msgstr "카메라 크기 바꾸기"
-
-msgid "Change Sphere Shape Radius"
-msgstr "구체 모양 반경 바꾸기"
-
-msgid "Change Notifier AABB"
-msgstr "알림 AABB 바꾸기"
-
-msgid "Change Particles AABB"
-msgstr "파티클 AABB 바꾸기"
-
-msgid "Change Capsule Shape Radius"
-msgstr "캡슐 모양 반경 바꾸기"
-
-msgid "Change Capsule Shape Height"
-msgstr "캡슐 모양 높이 바꾸기"
-
-msgid "Change Cylinder Shape Radius"
-msgstr "캡슐 모양 반지름 바꾸기"
-
-msgid "Change Cylinder Shape Height"
-msgstr "캡슐 모양 높이 바꾸기"
 
 msgid "Transform Aborted."
 msgstr "변형 중단됨."
@@ -6473,12 +6494,6 @@ msgstr "본을 폴리곤에 동기화"
 msgid "Create Polygon3D"
 msgstr "Polygon3D 만들기"
 
-msgid "Edit Poly"
-msgstr "폴리곤 편집"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "폴리곤 편집 (점 제거)"
-
 msgid "ERROR: Couldn't load resource!"
 msgstr "오류: 리소스를 불러올 수 없습니다!"
 
@@ -6496,9 +6511,6 @@ msgstr "리소스 클립보드가 비었습니다!"
 
 msgid "Paste Resource"
 msgstr "리소스 붙여넣기"
-
-msgid "Open in Editor"
-msgstr "에디터에서 열기"
 
 msgid "Load Resource"
 msgstr "리소스 불러오기"
@@ -6937,17 +6949,8 @@ msgstr "줌 재설정"
 msgid "Select Frames"
 msgstr "프레임 선택"
 
-msgid "Horizontal:"
-msgstr "수평:"
-
-msgid "Vertical:"
-msgstr "수직:"
-
-msgid "Separation:"
-msgstr "간격:"
-
-msgid "Select/Clear All Frames"
-msgstr "모든 프레임 선택/지우기"
+msgid "Size"
+msgstr "크기"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "스프라이트 시트에서 프레임 만들기"
@@ -6975,6 +6978,9 @@ msgstr "자동 자르기"
 
 msgid "Step:"
 msgstr "단계:"
+
+msgid "Separation:"
+msgstr "간격:"
 
 msgid "Styleboxes"
 msgstr "스타일박스"
@@ -8217,11 +8223,11 @@ msgstr "프로젝트 설치 경로:"
 msgid "Renderer:"
 msgstr "렌더러:"
 
-msgid "Missing Project"
-msgstr "누락된 프로젝트"
-
 msgid "Error: Project is missing on the filesystem."
 msgstr "오류: 프로젝트가 파일시스템에서 누락되었습니다."
+
+msgid "Missing Project"
+msgstr "누락된 프로젝트"
 
 msgid "Local"
 msgstr "로컬"
@@ -8691,76 +8697,6 @@ msgstr ""
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "상속을 지울까요? (되돌릴 수 없습니다!)"
 
-msgid "Toggle Visible"
-msgstr "보이기 토글"
-
-msgid "Unlock Node"
-msgstr "노드 잠금 풀기"
-
-msgid "Button Group"
-msgstr "버튼 그룹"
-
-msgid "Disable Scene Unique Name"
-msgstr "씬 고유 이름 비활성화"
-
-msgid "(Connecting From)"
-msgstr "(연결 시작 지점)"
-
-msgid "Node configuration warning:"
-msgstr "노드 설정 경고:"
-
-msgid ""
-"This node can be accessed from within anywhere in the scene by preceding it "
-"with the '%s' prefix in a node path.\n"
-"Click to disable this."
-msgstr ""
-"이 노드는 노드 경로에서 '%s' 접두사를 앞에 붙여 장면의 어느 곳에서나 액세스"
-"할 수 있습니다.\n"
-"비활성화하려면 클릭하세요."
-
-msgid "Node has one connection."
-msgid_plural "Node has {num} connections."
-msgstr[0] "노드에 연결이 {num}개 있습니다."
-
-msgid "Node is in this group:"
-msgid_plural "Node is in the following groups:"
-msgstr[0] "노드가 다음 그룹에 속해 있습니다:"
-
-msgid "Open Script:"
-msgstr "스크립트 열기:"
-
-msgid ""
-"Node is locked.\n"
-"Click to unlock it."
-msgstr ""
-"노드가 잠겨있습니다.\n"
-"클릭하면 잠금을 해제합니다."
-
-msgid ""
-"AnimationPlayer is pinned.\n"
-"Click to unpin."
-msgstr ""
-"AnimationPlayer가 고정되어 있습니다.\n"
-"클릭하면 고정을 해제합니다."
-
-msgid "Invalid node name, the following characters are not allowed:"
-msgstr "잘못된 노드 이름입니다. 다음 문자는 허용하지 않습니다:"
-
-msgid "Another node already uses this unique name in the scene."
-msgstr "다른 노드가 이미 장면에서 이 고유한 이름을 사용하고 있습니다."
-
-msgid "Rename Node"
-msgstr "노드 이름 바꾸기"
-
-msgid "Scene Tree (Nodes):"
-msgstr "씬 트리 (노드):"
-
-msgid "Node Configuration Warning!"
-msgstr "노드 설정 경고!"
-
-msgid "Select a Node"
-msgstr "노드를 선택하세요"
-
 msgid "Path is empty."
 msgstr "경로가 비었습니다."
 
@@ -9013,9 +8949,6 @@ msgstr "구성"
 msgid "Count"
 msgstr "양"
 
-msgid "Size"
-msgstr "크기"
-
 msgid "Network Profiler"
 msgstr "네트워크 프로파일러"
 
@@ -9089,6 +9022,12 @@ msgstr "문자 '%s'은(는) 패키지 세그먼트의 첫 문자로 쓸 수 없�
 msgid "The package must have at least one '.' separator."
 msgstr "패키지는 적어도 하나의 '.' 분리 기호가 있어야 합니다."
 
+msgid "Invalid public key for APK expansion."
+msgstr "APK 확장에 잘못된 공개 키입니다."
+
+msgid "Invalid package name:"
+msgstr "잘못된 패키지 이름:"
+
 msgid "Select device from the list"
 msgstr "목록에서 기기 선택"
 
@@ -9160,12 +9099,6 @@ msgstr "'build-tools' 디렉토리가 누락되어 있습니다!"
 
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Android SDK build-tools의 apksigner 명령을 찾을 수 없습니다."
-
-msgid "Invalid public key for APK expansion."
-msgstr "APK 확장에 잘못된 공개 키입니다."
-
-msgid "Invalid package name:"
-msgstr "잘못된 패키지 이름:"
 
 msgid ""
 "'apksigner' could not be found. Please check that the command is available "
@@ -9269,9 +9202,6 @@ msgstr "APK를 정렬 중..."
 msgid "Could not unzip temporary unaligned APK."
 msgstr "임시 정렬되지 않은 APK의 압축을 풀 수 없었습니다."
 
-msgid "App Store Team ID not specified - cannot configure the project."
-msgstr "App Store 팀 ID를 지정하지 않았습니다 - 프로젝트를 구성할 수 없습니다."
-
 msgid "Invalid Identifier:"
 msgstr "잘못된 식별자:"
 
@@ -9284,6 +9214,9 @@ msgstr "문자 '%s'은(는) 식별자에 쓸 수 없습니다."
 msgid "Stop and uninstall"
 msgstr "멈춤 및 설치 제거"
 
+msgid "Invalid bundle identifier:"
+msgstr "잘못된 bundle 식별자:"
+
 msgid "Could not open icon file \"%s\"."
 msgstr "아이콘 파일 \"%s\"를 열 수 없습니다."
 
@@ -9295,12 +9228,6 @@ msgstr "파일 %s를 서명할 수 없습니다."
 
 msgid "Could not start hdiutil executable."
 msgstr "hdiutil 실행 파일을 시작할 수 없었습니다."
-
-msgid "Invalid bundle identifier:"
-msgstr "잘못된 bundle 식별자:"
-
-msgid "Notarization: Apple ID password not specified."
-msgstr "공증: Apple ID 비밀번호가 지정되지 않았습니다."
 
 msgid "Invalid package short name."
 msgstr "잘못된 패키지 단축 이름."
@@ -9383,15 +9310,6 @@ msgstr "잘못된 식별자 타입입니다."
 msgid "Failed to remove temporary file \"%s\"."
 msgstr "임시 파일 \"%s\"를 제거하지 못했습니다."
 
-msgid "Invalid icon path:"
-msgstr "잘못된 아이콘 경로:"
-
-msgid "Invalid file version:"
-msgstr "잘못된 파일 버전:"
-
-msgid "Invalid product version:"
-msgstr "잘못된 제품 버전:"
-
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to "
@@ -9472,11 +9390,6 @@ msgstr ""
 
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "Occluder 폴리곤이 비어있습니다. 폴리곤을 그려주세요."
-
-msgid ""
-"The NavigationObstacle2D only serves to provide collision avoidance to a "
-"Node2D object."
-msgstr "NavigationObstacle2D는 Node2D 개체에 대한 충돌 방지 기능만 제공합니다."
 
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
@@ -9605,13 +9518,6 @@ msgstr ""
 
 msgid "(Other)"
 msgstr "(기타)"
-
-msgid ""
-"Default Environment as specified in Project Settings (Rendering -> "
-"Environment -> Default Environment) could not be loaded."
-msgstr ""
-"프로젝트 설정 (Rendering -> Environment -> Default Environment)에 지정한 디폴"
-"트 환경을 불러올 수 없습니다."
 
 msgid ""
 "Very low timer wait times (< 0.05 seconds) may behave in significantly "
@@ -10019,9 +9925,6 @@ msgstr ""
 
 msgid "Shader include resource type is wrong."
 msgstr "셰이더 포함 리소스 유형이 잘못되었습니다."
-
-msgid "Cyclic include found."
-msgstr "순환 포함이 발견되었습니다."
 
 msgid "Shader max include depth exceeded."
 msgstr "셰이더 최대 포함 깊이가 초과되었습니다."

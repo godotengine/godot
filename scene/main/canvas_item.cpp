@@ -381,7 +381,7 @@ void CanvasItem::update_draw_order() {
 	if (canvas_group != StringName()) {
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE | SceneTree::GROUP_CALL_DEFERRED, canvas_group, "_top_level_raise_self");
 	} else {
-		ERR_FAIL_COND_MSG(!get_parent_item(), "Moved child is in incorrect state (no canvas group, no canvas item parent).");
+		ERR_FAIL_NULL_MSG(get_parent_item(), "Moved child is in incorrect state (no canvas group, no canvas item parent).");
 		RenderingServer::get_singleton()->canvas_item_set_draw_index(canvas_item, get_index());
 	}
 }
@@ -1033,13 +1033,13 @@ Ref<InputEvent> CanvasItem::make_input_local(const Ref<InputEvent> &p_event) con
 
 Vector2 CanvasItem::get_global_mouse_position() const {
 	ERR_READ_THREAD_GUARD_V(Vector2());
-	ERR_FAIL_COND_V(!get_viewport(), Vector2());
+	ERR_FAIL_NULL_V(get_viewport(), Vector2());
 	return get_canvas_transform().affine_inverse().xform(get_viewport()->get_mouse_position());
 }
 
 Vector2 CanvasItem::get_local_mouse_position() const {
 	ERR_READ_THREAD_GUARD_V(Vector2());
-	ERR_FAIL_COND_V(!get_viewport(), Vector2());
+	ERR_FAIL_NULL_V(get_viewport(), Vector2());
 
 	return get_global_transform().affine_inverse().xform(get_global_mouse_position());
 }

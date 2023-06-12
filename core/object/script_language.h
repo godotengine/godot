@@ -35,6 +35,7 @@
 #include "core/io/resource.h"
 #include "core/templates/pair.h"
 #include "core/templates/rb_map.h"
+#include "core/variant/typed_array.h"
 
 class ScriptLanguage;
 template <typename T>
@@ -305,8 +306,8 @@ public:
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
 	virtual bool overrides_external_editor() { return false; }
 
-	/* Keep enum in Sync with:                               */
-	/* /scene/gui/code_edit.h - CodeEdit::CodeCompletionKind */
+	// Keep enums in sync with:
+	// scene/gui/code_edit.h - CodeEdit::CodeCompletionKind
 	enum CodeCompletionKind {
 		CODE_COMPLETION_KIND_CLASS,
 		CODE_COMPLETION_KIND_FUNCTION,
@@ -321,6 +322,7 @@ public:
 		CODE_COMPLETION_KIND_MAX
 	};
 
+	// scene/gui/code_edit.h - CodeEdit::CodeCompletionLocation
 	enum CodeCompletionLocation {
 		LOCATION_LOCAL = 0,
 		LOCATION_PARENT_MASK = 1 << 8,
@@ -336,6 +338,7 @@ public:
 		Ref<Resource> icon;
 		Variant default_value;
 		Vector<Pair<int, int>> matches;
+		Vector<Pair<int, int>> last_matches;
 		int location = LOCATION_OTHER;
 
 		CodeCompletionOption() {}
@@ -346,6 +349,13 @@ public:
 			kind = p_kind;
 			location = p_location;
 		}
+
+		TypedArray<int> get_option_characteristics(const String &p_base);
+		void clear_characteristics();
+		TypedArray<int> get_option_cached_characteristics() const;
+
+	private:
+		TypedArray<int> charac;
 	};
 
 	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }

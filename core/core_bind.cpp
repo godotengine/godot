@@ -39,6 +39,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/os/keyboard.h"
+#include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 
 namespace core_bind {
@@ -1187,7 +1188,11 @@ void Thread::_start_func(void *ud) {
 		ERR_FAIL_MSG(vformat("Could not call function '%s' on previously freed instance to start thread %s.", t->target_callable.get_method(), t->get_id()));
 	}
 
+	// Finding out a suitable name for the thread can involve querying a node, if the target is one.
+	// We know this is safe (unless the user is causing life cycle race conditions, which would be a bug on their part).
+	set_current_thread_safe_for_nodes(true);
 	String func_name = t->target_callable.is_custom() ? t->target_callable.get_custom()->get_as_text() : String(t->target_callable.get_method());
+	set_current_thread_safe_for_nodes(false);
 	::Thread::set_name(func_name);
 
 	// To avoid a circular reference between the thread and the script which can possibly contain a reference
@@ -1255,12 +1260,19 @@ Variant Thread::wait_to_finish() {
 	return r;
 }
 
+void Thread::set_thread_safety_checks_enabled(bool p_enabled) {
+	ERR_FAIL_COND_MSG(::Thread::is_main_thread(), "This call is forbidden on the main thread.");
+	set_current_thread_safe_for_nodes(!p_enabled);
+}
+
 void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "callable", "priority"), &Thread::start, DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
 	ClassDB::bind_method(D_METHOD("is_started"), &Thread::is_started);
 	ClassDB::bind_method(D_METHOD("is_alive"), &Thread::is_alive);
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
+
+	ClassDB::bind_static_method("Thread", D_METHOD("set_thread_safety_checks_enabled", "enabled"), &Thread::set_thread_safety_checks_enabled);
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);

@@ -2044,16 +2044,22 @@
 		<constant name="DYNAMIC_STATE_STENCIL_REFERENCE" value="64" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
 		<constant name="INITIAL_ACTION_CLEAR" value="0" enum="InitialAction">
+			Start rendering and clear the whole framebuffer.
 		</constant>
 		<constant name="INITIAL_ACTION_CLEAR_REGION" value="1" enum="InitialAction">
+			Start rendering and clear the framebuffer in the specified region.
 		</constant>
 		<constant name="INITIAL_ACTION_CLEAR_REGION_CONTINUE" value="2" enum="InitialAction">
+			Continue rendering and clear the framebuffer in the specified region. Framebuffer must have been left in [constant FINAL_ACTION_CONTINUE] state as the final action previously.
 		</constant>
 		<constant name="INITIAL_ACTION_KEEP" value="3" enum="InitialAction">
+			Start rendering, but keep attached color texture contents. If the framebuffer was previously used to read in a shader, this will automatically insert a layout transition.
 		</constant>
 		<constant name="INITIAL_ACTION_DROP" value="4" enum="InitialAction">
+			Start rendering, ignore what is there; write above it. In general, this is the fastest option when you will be writing every single pixel and you don't need a clear color.
 		</constant>
 		<constant name="INITIAL_ACTION_CONTINUE" value="5" enum="InitialAction">
+			Continue rendering. Framebuffer must have been left in [constant FINAL_ACTION_CONTINUE] state as the final action previously.
 		</constant>
 		<constant name="INITIAL_ACTION_MAX" value="6" enum="InitialAction">
 			Represents the size of the [enum InitialAction] enum.

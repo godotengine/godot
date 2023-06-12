@@ -28,19 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "display_server_ios.h"
+#import "display_server_ios.h"
 
 #import "app_delegate.h"
-#include "core/config/project_settings.h"
-#include "core/io/file_access_pack.h"
 #import "device_metrics.h"
 #import "godot_view.h"
-#include "ios.h"
+#import "ios.h"
 #import "key_mapping_ios.h"
 #import "keyboard_input_view.h"
-#include "os_ios.h"
-#include "tts_ios.h"
+#import "os_ios.h"
+#import "tts_ios.h"
 #import "view_controller.h"
+
+#include "core/config/project_settings.h"
+#include "core/io/file_access_pack.h"
 
 #import <sys/utsname.h>
 
@@ -567,6 +568,11 @@ float DisplayServerIOS::screen_get_max_scale() const {
 
 void DisplayServerIOS::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
 	screen_orientation = p_orientation;
+	if (@available(iOS 16.0, *)) {
+		[AppDelegate.viewController setNeedsUpdateOfSupportedInterfaceOrientations];
+	} else {
+		[UIViewController attemptRotationToDeviceOrientation];
+	}
 }
 
 DisplayServer::ScreenOrientation DisplayServerIOS::screen_get_orientation(int p_screen) const {

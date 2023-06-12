@@ -7546,21 +7546,24 @@ static size_t SaveEXRNPartImageToMemory(const EXRImage* exr_images,
         return 0;
       }
 #endif
-#if !TINYEXR_USE_ZFP
       if (exr_headers[i]->compression_type == TINYEXR_COMPRESSIONTYPE_ZFP) {
+#if !TINYEXR_USE_ZFP
         SetErrorMessage("ZFP compression is not supported in this build",
                         err);
         return 0;
-      }
 #else
-      for (int c = 0; c < exr_header->num_channels; ++c) {
-        if (exr_headers[i]->requested_pixel_types[c] != TINYEXR_PIXELTYPE_FLOAT) {
-          SetErrorMessage("Pixel type must be FLOAT for ZFP compression",
-                          err);
-          return 0;
+        // All channels must be fp32.
+        // No fp16 support in ZFP atm(as of 2023 June)
+        // https://github.com/LLNL/fpzip/issues/2
+        for (int c = 0; c < exr_headers[i]->num_channels; ++c) {
+          if (exr_headers[i]->requested_pixel_types[c] != TINYEXR_PIXELTYPE_FLOAT) {
+            SetErrorMessage("Pixel type must be FLOAT for ZFP compression",
+                            err);
+            return 0;
+          }
         }
-      }
 #endif
+      }
     }
   }
 
@@ -8635,7 +8638,7 @@ int ParseEXRMultipartHeaderFromMemory(EXRHeader ***exr_headers,
     if (!ConvertHeader(exr_header, infos[i], &warn, &_err)) {
 
       // Free malloc-allocated memory here.
-      for (size_t k = 0; k < infos[i].attributes.size(); i++) {
+      for (size_t k = 0; k < infos[i].attributes.size(); k++) {
         if (infos[i].attributes[k].value) {
           free(infos[i].attributes[k].value);
         }

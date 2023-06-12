@@ -142,13 +142,15 @@
 # Animaliss <Zernon001@mail.ru>, 2023.
 # Pyotr <pitmysterio@mail.ru>, 2023.
 # Кордис Ди <psevdoejik@gmail.com>, 2023.
+# W Red <elyeen777greating@gmail.com>, 2023.
+# Nikita <svinuhov.nikita@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-19 06:50+0000\n"
-"Last-Translator: Lost Net <pc.mirkn@gmail.com>\n"
+"PO-Revision-Date: 2023-06-03 17:28+0000\n"
+"Last-Translator: Nikita <svinuhov.nikita@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -804,7 +806,7 @@ msgid "(Invalid, expected type: %s)"
 msgstr "(Неверный, ожидаемый тип: %s)"
 
 msgid "Easing:"
-msgstr "Переход В-ИЗ:"
+msgstr "Смягчение:"
 
 msgid "In-Handle:"
 msgstr "Ручка В:"
@@ -1733,11 +1735,8 @@ msgstr "Редактор зависимостей"
 msgid "Search Replacement Resource:"
 msgstr "Найти заменяемый ресурс:"
 
-msgid "Open Scene"
-msgstr "Открыть сцену"
-
-msgid "Open Scenes"
-msgstr "Открыть сцены"
+msgid "Open"
+msgstr "Открыть"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "Владельцы: %s (Всего: %d)"
@@ -1804,6 +1803,12 @@ msgstr "Кол-во"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Ресурсы без явного владения:"
+
+msgid "Could not create folder."
+msgstr "Невозможно создать папку."
+
+msgid "Create Folder"
+msgstr "Создать папку"
 
 msgid "Thanks from the Godot community!"
 msgstr "Спасибо от сообщества Godot!"
@@ -2303,27 +2308,6 @@ msgstr "[пусто]"
 msgid "[unsaved]"
 msgstr "[не сохранено]"
 
-msgid "Please select a base directory first."
-msgstr "Пожалуйста, выберите базовый каталог."
-
-msgid "Could not create folder. File with that name already exists."
-msgstr "Не удалось создать папку. Файл с таким именем уже существует."
-
-msgid "Choose a Directory"
-msgstr "Выбрать каталог"
-
-msgid "Create Folder"
-msgstr "Создать папку"
-
-msgid "Name:"
-msgstr "Имя:"
-
-msgid "Could not create folder."
-msgstr "Невозможно создать папку."
-
-msgid "Choose"
-msgstr "Выбрать"
-
 msgid "3D Editor"
 msgstr "3D Редактор"
 
@@ -2471,138 +2455,6 @@ msgstr "Импортировать профиль(и)"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Управление профилями редактора"
-
-msgid "Network"
-msgstr "Сеть"
-
-msgid "Open"
-msgstr "Открыть"
-
-msgid "Select Current Folder"
-msgstr "Выбрать текущую папку"
-
-msgid "Cannot save file with an empty filename."
-msgstr "Невозможно сохранить безымянный файл."
-
-msgid "Cannot save file with a name starting with a dot."
-msgstr "Невозможно сохранить файл с именем, начинающимся с точки."
-
-msgid ""
-"File \"%s\" already exists.\n"
-"Do you want to overwrite it?"
-msgstr ""
-"Файл \"%s\" уже существует.\n"
-"Перезаписать файл?"
-
-msgid "Select This Folder"
-msgstr "Выбрать эту папку"
-
-msgid "Copy Path"
-msgstr "Копировать путь"
-
-msgid "Open in File Manager"
-msgstr "Открыть в проводнике"
-
-msgid "Show in File Manager"
-msgstr "Показать в проводнике"
-
-msgid "New Folder..."
-msgstr "Новая папка..."
-
-msgid "All Recognized"
-msgstr "Все разрешённые"
-
-msgid "All Files (*)"
-msgstr "Все файлы (*)"
-
-msgid "Open a File"
-msgstr "Открыть файл"
-
-msgid "Open File(s)"
-msgstr "Открыть файл(ы)"
-
-msgid "Open a Directory"
-msgstr "Открыть каталог"
-
-msgid "Open a File or Directory"
-msgstr "Открыть каталог или файл"
-
-msgid "Save a File"
-msgstr "Сохранить файл"
-
-msgid "Favorited folder does not exist anymore and will be removed."
-msgstr "Папка избранного больше не существует и будет удалена."
-
-msgid "Go Back"
-msgstr "Назад"
-
-msgid "Go Forward"
-msgstr "Перейти вперёд"
-
-msgid "Go Up"
-msgstr "Подняться"
-
-msgid "Toggle Hidden Files"
-msgstr "Переключение скрытых файлов"
-
-msgid "Toggle Favorite"
-msgstr "Избранное"
-
-msgid "Toggle Mode"
-msgstr "Режим отображения"
-
-msgid "Focus Path"
-msgstr "Переместить фокус на строку пути"
-
-msgid "Move Favorite Up"
-msgstr "Поднять избранное"
-
-msgid "Move Favorite Down"
-msgstr "Опустить избранное"
-
-msgid "Go to previous folder."
-msgstr "Перейти к предыдущей папке."
-
-msgid "Go to next folder."
-msgstr "Перейти к следующей папке."
-
-msgid "Go to parent folder."
-msgstr "Перейти к родительской папке."
-
-msgid "Refresh files."
-msgstr "Обновить файлы."
-
-msgid "(Un)favorite current folder."
-msgstr "Добавить/убрать текущую папку в избранное."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "Переключить видимость скрытых файлов."
-
-msgid "View items as a grid of thumbnails."
-msgstr "Просмотр элементов в виде миниатюр."
-
-msgid "View items as a list."
-msgstr "Просмотр элементов в виде списка."
-
-msgid "Directories & Files:"
-msgstr "Каталоги и файлы:"
-
-msgid "Preview:"
-msgstr "Предпросмотр:"
-
-msgid "File:"
-msgstr "Файл:"
-
-msgid ""
-"Remove the selected files? For safety only files and empty directories can "
-"be deleted from here. (Cannot be undone.)\n"
-"Depending on your filesystem configuration, the files will either be moved "
-"to the system trash or deleted permanently."
-msgstr ""
-"Удалить выбранные файлы? В целях безопасности здесь можно удалять только "
-"файлы и пустые каталоги. (Нельзя отменить.)\n"
-"В зависимости от конфигурации вашей файловой системы файлы будут перемещены "
-"в системную корзину или удалены навсегда."
 
 msgid "Some extensions need the editor to restart to take effect."
 msgstr ""
@@ -2979,6 +2831,9 @@ msgstr ""
 msgid "Metadata name is valid."
 msgstr "Имя метаданных является допустимым."
 
+msgid "Name:"
+msgstr "Имя:"
+
 msgid "Add Metadata Property for \"%s\""
 msgstr "Добавить свойство метаданных для \"%s\""
 
@@ -2990,6 +2845,12 @@ msgstr "Вставить значение"
 
 msgid "Copy Property Path"
 msgstr "Копировать путь свойства"
+
+msgid "Creating Mesh Previews"
+msgstr "Создание предпросмотра меша"
+
+msgid "Thumbnail..."
+msgstr "Миниатюра..."
 
 msgid "Select existing layout:"
 msgstr "Выберите существующий макет:"
@@ -3175,6 +3036,9 @@ msgstr ""
 "Не возможно сохранить сцену. Вероятно, зависимости (экземпляры или "
 "унаследованные) не могли быть удовлетворены."
 
+msgid "Save scene before running..."
+msgstr "Сохранение сцены перед запуском..."
+
 msgid "Could not save one or more scenes!"
 msgstr "Не удалось сохранить одну или несколько сцен!"
 
@@ -3258,44 +3122,6 @@ msgstr "Изменения могут быть потеряны!"
 msgid "This object is read-only."
 msgstr "Этот объект доступен только для чтения."
 
-msgid ""
-"Movie Maker mode is enabled, but no movie file path has been specified.\n"
-"A default movie file path can be specified in the project settings under the "
-"Editor > Movie Writer category.\n"
-"Alternatively, for running single scenes, a `movie_file` string metadata can "
-"be added to the root node,\n"
-"specifying the path to a movie file that will be used when recording that "
-"scene."
-msgstr ""
-"Режим Movie Maker включён, но путь к видеофайлу не указан.\n"
-"Путь к видеофайлу по умолчанию можно указать в настройках проекта в "
-"категории Редактор > Movie Writer.\n"
-"В качестве альтернативы, для запуска отдельных сцен в корневой узел можно "
-"добавить метаданные `movie_file` типа String,\n"
-"указывающие пути к видеофайлу, который будет использоваться при записи этой "
-"сцены."
-
-msgid "There is no defined scene to run."
-msgstr "Не определена сцена для запуска."
-
-msgid "Save scene before running..."
-msgstr "Сохранение сцены перед запуском..."
-
-msgid "Could not start subprocess(es)!"
-msgstr "Не удалось запустить подпроцесс(ы)!"
-
-msgid "Reload the played scene."
-msgstr "Перезапустить воспроизводимую сцену."
-
-msgid "Play the project."
-msgstr "Запустить проект."
-
-msgid "Play the edited scene."
-msgstr "Запустить текущую сцену."
-
-msgid "Play a custom scene."
-msgstr "Запустить произвольную сцену."
-
 msgid "Open Base Scene"
 msgstr "Открыть основную сцену"
 
@@ -3307,24 +3133,6 @@ msgstr "Быстро открыть сцену..."
 
 msgid "Quick Open Script..."
 msgstr "Быстро открыть скрипт..."
-
-msgid "Save & Reload"
-msgstr "Сохранить & Перезагрузить"
-
-msgid "Save modified resources before reloading?"
-msgstr "Сохранить изменённые ресурсы перед перезагрузкой?"
-
-msgid "Save & Quit"
-msgstr "Сохранить и выйти"
-
-msgid "Save modified resources before closing?"
-msgstr "Сохранить изменённые ресурсы перед закрытием?"
-
-msgid "Save changes to '%s' before reloading?"
-msgstr "Сохранить изменения в '%s' перед перезагрузкой?"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "Сохранить изменения в '%s' перед закрытием?"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr ""
@@ -3393,8 +3201,17 @@ msgstr ""
 "Текущая сцена имеет несохраненные изменения. \n"
 "Всё равно перезагрузить сцену? Это действие нельзя отменить."
 
-msgid "Quick Run Scene..."
-msgstr "Быстро запустить сцену..."
+msgid "Save & Reload"
+msgstr "Сохранить & Перезагрузить"
+
+msgid "Save modified resources before reloading?"
+msgstr "Сохранить изменённые ресурсы перед перезагрузкой?"
+
+msgid "Save & Quit"
+msgstr "Сохранить и выйти"
+
+msgid "Save modified resources before closing?"
+msgstr "Сохранить изменённые ресурсы перед закрытием?"
 
 msgid "Save changes to the following scene(s) before reloading?"
 msgstr "Сохранить изменения в следующей сцене(ах) перед выходом?"
@@ -3471,6 +3288,9 @@ msgstr "Сцена '%s' имеет сломанные зависимости:"
 msgid "Clear Recent Scenes"
 msgstr "Очистить недавние сцены"
 
+msgid "There is no defined scene to run."
+msgstr "Не определена сцена для запуска."
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -3505,8 +3325,14 @@ msgstr "Удалить макет"
 msgid "Default"
 msgstr "По умолчанию"
 
+msgid "Save changes to '%s' before reloading?"
+msgstr "Сохранить изменения в '%s' перед перезагрузкой?"
+
 msgid "Save & Close"
 msgstr "Сохранить и закрыть"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "Сохранить изменения в '%s' перед закрытием?"
 
 msgid "Show in FileSystem"
 msgstr "Показать в файловой системе"
@@ -3608,7 +3434,7 @@ msgid "Export As..."
 msgstr "Экспорт как..."
 
 msgid "MeshLibrary..."
-msgstr "Библиотека мешов..."
+msgstr "Библиотека мешей..."
 
 msgid "Close Scene"
 msgstr "Закрыть сцену"
@@ -3627,12 +3453,6 @@ msgstr "Настройки проекта"
 
 msgid "Version Control"
 msgstr "Контроль версий"
-
-msgid "Create Version Control Metadata"
-msgstr "Создание метаданных контроля версий"
-
-msgid "Version Control Settings"
-msgstr "Настройки контроля версий"
 
 msgid "Export..."
 msgstr "Экспорт..."
@@ -3724,45 +3544,6 @@ msgstr "О Godot"
 msgid "Support Godot Development"
 msgstr "Поддержать разработку Godot"
 
-msgid "Run the project's default scene."
-msgstr "Запустить сцену проекта по умолчанию."
-
-msgid "Run Project"
-msgstr "Запустить проект"
-
-msgid "Pause the running project's execution for debugging."
-msgstr "Приостановить выполнение запущенного проекта для отладки."
-
-msgid "Pause Running Project"
-msgstr "Приостановить запущенный проект"
-
-msgid "Stop the currently running project."
-msgstr "Остановить текущий запущенный проект."
-
-msgid "Stop Running Project"
-msgstr "Остановить запущенный проект"
-
-msgid "Run the currently edited scene."
-msgstr "Запустить текущую редактируемую сцену."
-
-msgid "Run Current Scene"
-msgstr "Запустить текущую сцену"
-
-msgid "Run a specific scene."
-msgstr "Запустить конкретную сцену."
-
-msgid "Run Specific Scene"
-msgstr "Запустить конкретную сцену"
-
-msgid ""
-"Enable Movie Maker mode.\n"
-"The project will run at stable FPS and the visual and audio output will be "
-"recorded to a video file."
-msgstr ""
-"Включить режим Movie Maker.\n"
-"Проект будет запущен со стабильным FPS, а изображение и звук будут записаны "
-"в видеофайл."
-
 msgid "Choose a renderer."
 msgstr "Выберите отрисовщик."
 
@@ -3849,6 +3630,9 @@ msgstr ""
 "Удалите директорию \"res://android/build\" вручную прежде чем выполнять эту "
 "операцию снова."
 
+msgid "Show in File Manager"
+msgstr "Показать в проводнике"
+
 msgid "Import Templates From ZIP File"
 msgstr "Импортировать шаблоны из ZIP файла"
 
@@ -3879,6 +3663,12 @@ msgstr "Перезагрузить"
 
 msgid "Resave"
 msgstr "Пересохранить"
+
+msgid "Create Version Control Metadata"
+msgstr "Создание метаданных контроля версий"
+
+msgid "Version Control Settings"
+msgstr "Настройки контроля версий"
 
 msgid "New Inherited"
 msgstr "Новая унаследованная сцена"
@@ -3912,18 +3702,6 @@ msgstr "Ok"
 
 msgid "Warning!"
 msgstr "Предупреждение!"
-
-msgid "No sub-resources found."
-msgstr "Вложенные ресурсы не найдены."
-
-msgid "Open a list of sub-resources."
-msgstr "Открыть список вложенных ресурсов."
-
-msgid "Creating Mesh Previews"
-msgstr "Создание предпросмотра меша"
-
-msgid "Thumbnail..."
-msgstr "Миниатюра..."
 
 msgid "Main Script:"
 msgstr "Основной скрипт:"
@@ -4155,22 +3933,6 @@ msgstr "Сочетания клавиш"
 
 msgid "Binding"
 msgstr "Привязка"
-
-msgid ""
-"Hold %s to round to integers.\n"
-"Hold Shift for more precise changes."
-msgstr ""
-"Зажмите %s, чтобы округлить до целых.\n"
-" Зажмите Shift для более точных изменений."
-
-msgid "No notifications."
-msgstr "Нет уведомлений."
-
-msgid "Show notifications."
-msgstr "Показать уведомления."
-
-msgid "Silence the notifications."
-msgstr "Заглушить уведомления."
 
 msgid "Left Stick Left, Joystick 0 Left"
 msgstr "Левый стик влево, Джойстик 0 влево"
@@ -4553,6 +4315,9 @@ msgstr ""
 "Для работы функции \"Экспортировать все\" у всех предустановок должен быть "
 "определен путь экспорта."
 
+msgid "Resources to exclude:"
+msgstr "Исключаемые ресурсы:"
+
 msgid "Resources to export:"
 msgstr "Ресурсы для экспорта:"
 
@@ -4769,6 +4534,12 @@ msgstr "Подтвердить путь"
 msgid "Favorites"
 msgstr "Избранное"
 
+msgid "View items as a grid of thumbnails."
+msgstr "Просмотр элементов в виде миниатюр."
+
+msgid "View items as a list."
+msgstr "Просмотр элементов в виде списка."
+
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Статус: Импорт файла не удался. Пожалуйста, исправьте файл и "
@@ -4801,9 +4572,6 @@ msgstr "Не удалось загрузить ресурс из %s: %s"
 msgid "Unable to update dependencies:"
 msgstr "Не удалось обновить зависимости:"
 
-msgid "Provided name contains invalid characters."
-msgstr "Имя содержит недопустимые символы."
-
 msgid ""
 "This file extension is not recognized by the editor.\n"
 "If you want to rename it anyway, use your operating system's file manager.\n"
@@ -4819,27 +4587,6 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "Файл или папка с таким именем уже существует."
 
-msgid ""
-"The following files or folders conflict with items in the target location "
-"'%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Do you wish to overwrite them?"
-msgstr ""
-"Обнаружен конфликт следующих файлов (или папок) с объектами находящимися в "
-"целевой директории '%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Вы хотите их перезаписать?"
-
-msgid "Renaming file:"
-msgstr "Переименование файла:"
-
-msgid "Renaming folder:"
-msgstr "Переименование папки:"
-
 msgid "Duplicating file:"
 msgstr "Дублирование файла:"
 
@@ -4852,23 +4599,17 @@ msgstr "Новая вложенная сцена"
 msgid "Set As Main Scene"
 msgstr "Сделать главной сценой"
 
+msgid "Open Scenes"
+msgstr "Открыть сцены"
+
 msgid "Instantiate"
 msgstr "Инстанцировать"
-
-msgid "Add to Favorites"
-msgstr "Добавить в избранное"
-
-msgid "Remove from Favorites"
-msgstr "Удалить из избранного"
 
 msgid "Edit Dependencies..."
 msgstr "Редактировать зависимости..."
 
 msgid "View Owners..."
 msgstr "Просмотреть владельцев..."
-
-msgid "Move To..."
-msgstr "Переместить в..."
 
 msgid "Folder..."
 msgstr "Папка..."
@@ -4884,6 +4625,18 @@ msgstr "Ресурс..."
 
 msgid "TextFile..."
 msgstr "Текстовый файл..."
+
+msgid "Add to Favorites"
+msgstr "Добавить в избранное"
+
+msgid "Remove from Favorites"
+msgstr "Удалить из избранного"
+
+msgid "Open in File Manager"
+msgstr "Открыть в проводнике"
+
+msgid "New Folder..."
+msgstr "Новая папка..."
 
 msgid "New Scene..."
 msgstr "Новая сцена..."
@@ -4918,6 +4671,9 @@ msgstr "Сортировать по последнему изменению"
 msgid "Sort by First Modified"
 msgstr "Сортировать по первому изменению"
 
+msgid "Copy Path"
+msgstr "Копировать путь"
+
 msgid "Copy UID"
 msgstr "Копировать UID"
 
@@ -4951,9 +4707,6 @@ msgid ""
 msgstr ""
 "Сканирование файлов,\n"
 "пожалуйста, ждите..."
-
-msgid "Move"
-msgstr "Переместить"
 
 msgid "Overwrite"
 msgstr "Перезаписать"
@@ -5042,6 +4795,321 @@ msgstr "Редактор групп"
 
 msgid "Manage Groups"
 msgstr "Управление группами"
+
+msgid "Move"
+msgstr "Переместить"
+
+msgid "Please select a base directory first."
+msgstr "Пожалуйста, выберите базовый каталог."
+
+msgid "Could not create folder. File with that name already exists."
+msgstr "Не удалось создать папку. Файл с таким именем уже существует."
+
+msgid "Choose a Directory"
+msgstr "Выбрать каталог"
+
+msgid "Network"
+msgstr "Сеть"
+
+msgid "Select Current Folder"
+msgstr "Выбрать текущую папку"
+
+msgid "Cannot save file with an empty filename."
+msgstr "Невозможно сохранить безымянный файл."
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "Невозможно сохранить файл с именем, начинающимся с точки."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Файл \"%s\" уже существует.\n"
+"Перезаписать файл?"
+
+msgid "Select This Folder"
+msgstr "Выбрать эту папку"
+
+msgid "All Recognized"
+msgstr "Все разрешённые"
+
+msgid "All Files (*)"
+msgstr "Все файлы (*)"
+
+msgid "Open a File"
+msgstr "Открыть файл"
+
+msgid "Open File(s)"
+msgstr "Открыть файл(ы)"
+
+msgid "Open a Directory"
+msgstr "Открыть каталог"
+
+msgid "Open a File or Directory"
+msgstr "Открыть каталог или файл"
+
+msgid "Save a File"
+msgstr "Сохранить файл"
+
+msgid "Favorited folder does not exist anymore and will be removed."
+msgstr "Папка избранного больше не существует и будет удалена."
+
+msgid "Go Back"
+msgstr "Назад"
+
+msgid "Go Forward"
+msgstr "Перейти вперёд"
+
+msgid "Go Up"
+msgstr "Подняться"
+
+msgid "Toggle Hidden Files"
+msgstr "Переключение скрытых файлов"
+
+msgid "Toggle Favorite"
+msgstr "Избранное"
+
+msgid "Toggle Mode"
+msgstr "Режим отображения"
+
+msgid "Focus Path"
+msgstr "Переместить фокус на строку пути"
+
+msgid "Move Favorite Up"
+msgstr "Поднять избранное"
+
+msgid "Move Favorite Down"
+msgstr "Опустить избранное"
+
+msgid "Go to previous folder."
+msgstr "Перейти к предыдущей папке."
+
+msgid "Go to next folder."
+msgstr "Перейти к следующей папке."
+
+msgid "Go to parent folder."
+msgstr "Перейти к родительской папке."
+
+msgid "Refresh files."
+msgstr "Обновить файлы."
+
+msgid "(Un)favorite current folder."
+msgstr "Добавить/убрать текущую папку в избранное."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Переключить видимость скрытых файлов."
+
+msgid "Directories & Files:"
+msgstr "Каталоги и файлы:"
+
+msgid "Preview:"
+msgstr "Предпросмотр:"
+
+msgid "File:"
+msgstr "Файл:"
+
+msgid ""
+"Remove the selected files? For safety only files and empty directories can "
+"be deleted from here. (Cannot be undone.)\n"
+"Depending on your filesystem configuration, the files will either be moved "
+"to the system trash or deleted permanently."
+msgstr ""
+"Удалить выбранные файлы? В целях безопасности здесь можно удалять только "
+"файлы и пустые каталоги. (Нельзя отменить.)\n"
+"В зависимости от конфигурации вашей файловой системы файлы будут перемещены "
+"в системную корзину или удалены навсегда."
+
+msgid "No sub-resources found."
+msgstr "Вложенные ресурсы не найдены."
+
+msgid "Open a list of sub-resources."
+msgstr "Открыть список вложенных ресурсов."
+
+msgid "Play the project."
+msgstr "Запустить проект."
+
+msgid "Play the edited scene."
+msgstr "Запустить текущую сцену."
+
+msgid "Play a custom scene."
+msgstr "Запустить произвольную сцену."
+
+msgid "Reload the played scene."
+msgstr "Перезапустить воспроизводимую сцену."
+
+msgid "Quick Run Scene..."
+msgstr "Быстро запустить сцену..."
+
+msgid ""
+"Movie Maker mode is enabled, but no movie file path has been specified.\n"
+"A default movie file path can be specified in the project settings under the "
+"Editor > Movie Writer category.\n"
+"Alternatively, for running single scenes, a `movie_file` string metadata can "
+"be added to the root node,\n"
+"specifying the path to a movie file that will be used when recording that "
+"scene."
+msgstr ""
+"Режим Movie Maker включён, но путь к видеофайлу не указан.\n"
+"Путь к видеофайлу по умолчанию можно указать в настройках проекта в "
+"категории Редактор > Movie Writer.\n"
+"В качестве альтернативы, для запуска отдельных сцен в корневой узел можно "
+"добавить метаданные `movie_file` типа String,\n"
+"указывающие пути к видеофайлу, который будет использоваться при записи этой "
+"сцены."
+
+msgid "Could not start subprocess(es)!"
+msgstr "Не удалось запустить подпроцесс(ы)!"
+
+msgid "Run the project's default scene."
+msgstr "Запустить сцену проекта по умолчанию."
+
+msgid "Run Project"
+msgstr "Запустить проект"
+
+msgid "Pause the running project's execution for debugging."
+msgstr "Приостановить выполнение запущенного проекта для отладки."
+
+msgid "Pause Running Project"
+msgstr "Приостановить запущенный проект"
+
+msgid "Stop the currently running project."
+msgstr "Остановить текущий запущенный проект."
+
+msgid "Stop Running Project"
+msgstr "Остановить запущенный проект"
+
+msgid "Run the currently edited scene."
+msgstr "Запустить текущую редактируемую сцену."
+
+msgid "Run Current Scene"
+msgstr "Запустить текущую сцену"
+
+msgid "Run a specific scene."
+msgstr "Запустить конкретную сцену."
+
+msgid "Run Specific Scene"
+msgstr "Запустить конкретную сцену"
+
+msgid ""
+"Enable Movie Maker mode.\n"
+"The project will run at stable FPS and the visual and audio output will be "
+"recorded to a video file."
+msgstr ""
+"Включить режим Movie Maker.\n"
+"Проект будет запущен со стабильным FPS, а изображение и звук будут записаны "
+"в видеофайл."
+
+msgid ""
+"Hold %s to round to integers.\n"
+"Hold Shift for more precise changes."
+msgstr ""
+"Зажмите %s, чтобы округлить до целых.\n"
+" Зажмите Shift для более точных изменений."
+
+msgid "No notifications."
+msgstr "Нет уведомлений."
+
+msgid "Show notifications."
+msgstr "Показать уведомления."
+
+msgid "Silence the notifications."
+msgstr "Заглушить уведомления."
+
+msgid "Toggle Visible"
+msgstr "Переключить видимость"
+
+msgid "Unlock Node"
+msgstr "Разблокировать узел"
+
+msgid "Button Group"
+msgstr "Группа кнопок"
+
+msgid "Disable Scene Unique Name"
+msgstr "Убрать уникальное имя в сцене"
+
+msgid "(Connecting From)"
+msgstr "(Источник)"
+
+msgid "Node configuration warning:"
+msgstr "Предупреждение о конфигурации узла:"
+
+msgid ""
+"This node can be accessed from within anywhere in the scene by preceding it "
+"with the '%s' prefix in a node path.\n"
+"Click to disable this."
+msgstr ""
+"Доступ к этому узлу можно получить из любого места сцены, предваряя его "
+"префиксом '%s' в пути к узлу.\n"
+"Нажмите, чтобы отключить это."
+
+msgid "Node has one connection."
+msgid_plural "Node has {num} connections."
+msgstr[0] "Узел имеет {num} соединение."
+msgstr[1] "Узел имеет {num} соединения."
+msgstr[2] "Узел имеет {num} соединений."
+
+msgid "Node is in this group:"
+msgid_plural "Node is in the following groups:"
+msgstr[0] "Узел в этой группе:"
+msgstr[1] "Узел в следующих группах:"
+msgstr[2] "Узел в следующих группах:"
+
+msgid "Click to show signals dock."
+msgstr "Нажмите, чтобы показать панель сигналов."
+
+msgid "Open in Editor"
+msgstr "Открыть в редакторе"
+
+msgid "This script is currently running in the editor."
+msgstr "В данный момент этот скрипт запущен в редакторе."
+
+msgid "This script is a custom type."
+msgstr "Данный скрипт принадлежит к пользовательскому типу."
+
+msgid "Open Script:"
+msgstr "Открыть скрипт:"
+
+msgid ""
+"Node is locked.\n"
+"Click to unlock it."
+msgstr ""
+"Узел заблокирован.\n"
+"Нажмите чтобы разблокировать."
+
+msgid ""
+"Children are not selectable.\n"
+"Click to make them selectable."
+msgstr ""
+"Дочерние объекты не выделяются.\n"
+"Нажмите, чтобы сделать их доступными для выбора."
+
+msgid ""
+"AnimationPlayer is pinned.\n"
+"Click to unpin."
+msgstr ""
+"AnimationPlayer закреплен.\n"
+"Нажмите, чтобы открепить."
+
+msgid "\"%s\" is not a known filter."
+msgstr "\"%s\" - неизвестный фильтр."
+
+msgid "Invalid node name, the following characters are not allowed:"
+msgstr "Некорректное имя узла, следующие символы недопустимы:"
+
+msgid "Another node already uses this unique name in the scene."
+msgstr "Данное уникальное имя уже использовано у другого узла в сцене."
+
+msgid "Rename Node"
+msgstr "Переименовать узел"
+
+msgid "Scene Tree (Nodes):"
+msgstr "Дерево сцены (Узлы):"
+
+msgid "Node Configuration Warning!"
+msgstr "Предупреждение о конфигурации узла!"
+
+msgid "Select a Node"
+msgstr "Выбрать узел"
 
 msgid "The Beginning"
 msgstr "Начало"
@@ -5864,9 +5932,6 @@ msgstr "Удалить точку BlendSpace2D"
 msgid "Remove BlendSpace2D Triangle"
 msgstr "Удалить треугольник BlendSpace2D"
 
-msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr "BlendSpace2D не принадлежит узлу AnimationTree."
-
 msgid "No triangles exist, so no blending can take place."
 msgstr "Невозможно смешивать, поскольку отсутствуют треугольники."
 
@@ -6275,9 +6340,6 @@ msgstr "Переместить узел"
 msgid "Transition exists!"
 msgstr "Переход существует!"
 
-msgid "To"
-msgstr "До"
-
 msgid "Add Node and Transition"
 msgstr "Добавить узел и переход"
 
@@ -6295,9 +6357,6 @@ msgstr "В конце"
 
 msgid "Travel"
 msgstr "Переместится"
-
-msgid "Start and end nodes are needed for a sub-transition."
-msgstr "Для суб-перехода необходимы начальный и конечный узлы."
 
 msgid "No playback resource set at path: %s."
 msgstr "В пути нет ресурсов воспроизведения: %s."
@@ -6324,12 +6383,6 @@ msgstr "Создать новый узел."
 
 msgid "Connect nodes."
 msgstr "Соединить узлы."
-
-msgid "Group Selected Node(s)"
-msgstr "Сгруппировать выбранный узел(узлы)"
-
-msgid "Ungroup Selected Node"
-msgstr "Разгруппировать выбранный узел"
 
 msgid "Remove selected node or transition."
 msgstr "Удалить выделенный узел или переход."
@@ -6848,6 +6901,9 @@ msgstr "Разблокировать выбранный узел(узлы)"
 msgid "Make selected node's children not selectable."
 msgstr "Сделать детей выбранного узла невыделяемыми."
 
+msgid "Group Selected Node(s)"
+msgstr "Сгруппировать выбранный узел(узлы)"
+
 msgid "Make selected node's children selectable."
 msgstr "Сделать дочерние узлы выбранного узла выделяемыми."
 
@@ -7172,11 +7228,17 @@ msgstr "CPUParticles3D"
 msgid "Create Emission Points From Node"
 msgstr "Создать излучатель из узла"
 
-msgid "Flat 0"
-msgstr "Плоский 0"
+msgid "Load Curve Preset"
+msgstr "Загрузить заготовку кривой"
 
-msgid "Flat 1"
-msgstr "Плоский 1"
+msgid "Remove Curve Point"
+msgstr "Удалить точку кривой"
+
+msgid "Modify Curve Point"
+msgstr "Изменить точку кривой"
+
+msgid "Hold Shift to edit tangents individually"
+msgstr "Удерживайте Shift, чтобы изменить касательные индивидуально"
 
 msgid "Ease In"
 msgstr "Переход В"
@@ -7187,41 +7249,8 @@ msgstr "Переход ИЗ"
 msgid "Smoothstep"
 msgstr "Сглаженный"
 
-msgid "Modify Curve Point"
-msgstr "Изменить точку кривой"
-
-msgid "Modify Curve Tangent"
-msgstr "Изменить касательную кривой"
-
-msgid "Load Curve Preset"
-msgstr "Загрузить заготовку кривой"
-
-msgid "Add Point"
-msgstr "Добавить точку"
-
-msgid "Remove Point"
-msgstr "Удалить точку"
-
-msgid "Left Linear"
-msgstr "Левый линейный"
-
-msgid "Right Linear"
-msgstr "Правый линейный"
-
-msgid "Load Preset"
-msgstr "Загрузить пресет"
-
-msgid "Remove Curve Point"
-msgstr "Удалить точку кривой"
-
-msgid "Toggle Curve Linear Tangent"
-msgstr "Переключить кривую линейный тангенс"
-
-msgid "Hold Shift to edit tangents individually"
-msgstr "Удерживайте Shift, чтобы изменить касательные индивидуально"
-
-msgid "Right click to add point"
-msgstr "ПКМ: Добавить точку"
+msgid "Toggle Grid Snap"
+msgstr "Переключить сетку привязки"
 
 msgid "Debug with External Editor"
 msgstr "Отладка с помощью внешнего редактора"
@@ -7366,6 +7395,69 @@ msgstr " - Вариация"
 msgid "Unable to preview font"
 msgstr "Не удаётся отобразить шрифт"
 
+msgid "Change AudioStreamPlayer3D Emission Angle"
+msgstr "Изменить угол AudioStreamPlayer3D"
+
+msgid "Change Camera FOV"
+msgstr "Изменить FOV камеры"
+
+msgid "Change Camera Size"
+msgstr "Изменить размер камеры"
+
+msgid "Change Sphere Shape Radius"
+msgstr "Изменить радиус сферы"
+
+msgid "Change Box Shape Size"
+msgstr "Изменить границы прямоугольника"
+
+msgid "Change Capsule Shape Radius"
+msgstr "Изменить радиус капсулы"
+
+msgid "Change Capsule Shape Height"
+msgstr "Изменить высоту капсулы"
+
+msgid "Change Cylinder Shape Radius"
+msgstr "Изменить радиус цилиндра"
+
+msgid "Change Cylinder Shape Height"
+msgstr "Изменить высоту цилиндра"
+
+msgid "Change Separation Ray Shape Length"
+msgstr "Изменить длину формы луча"
+
+msgid "Change Decal Size"
+msgstr "Задать размер камеры"
+
+msgid "Change Fog Volume Size"
+msgstr "Задать объем тумана"
+
+msgid "Change Particles AABB"
+msgstr "Изменить AABB частиц"
+
+msgid "Change Radius"
+msgstr "Задать радиус"
+
+msgid "Change Light Radius"
+msgstr "Изменить радиус света"
+
+msgid "Start Location"
+msgstr "Начальное положение"
+
+msgid "End Location"
+msgstr "Конечное положение"
+
+msgid "Change Start Position"
+msgstr "Изменить начальную позицию"
+
+msgid "Change End Position"
+msgstr "Задать конечную позицию"
+
+msgid "Change Probe Size"
+msgstr "Задать размер зонда"
+
+msgid "Change Notifier AABB"
+msgstr "Изменить уведомитель AABB"
+
 msgid "Convert to CPUParticles2D"
 msgstr "Преобразовать в CPUParticles2D"
 
@@ -7416,7 +7508,7 @@ msgid "Surface Points+Normal (Directed)"
 msgstr "Точки поверхности + Нормаль (направленная)"
 
 msgid "Volume"
-msgstr "Объём"
+msgstr "Объем"
 
 msgid "Emission Source:"
 msgstr "Источник излучения:"
@@ -7483,9 +7575,6 @@ msgstr "Поменять местами точки заливки GradientTextur
 
 msgid "Swap Gradient Fill Points"
 msgstr "Поменять местами точки градиентной заливки"
-
-msgid "Toggle Grid Snap"
-msgstr "Переключить сетку привязки"
 
 msgid "Configure"
 msgstr "Конфигурация"
@@ -7622,7 +7711,7 @@ msgid "Create Outline"
 msgstr "Создать контур"
 
 msgid "Mesh"
-msgstr "Меш"
+msgstr "Сетка"
 
 msgid "Create Trimesh Static Body"
 msgstr "Создать вогнутое статичное тело"
@@ -7723,7 +7812,7 @@ msgstr ""
 "%s"
 
 msgid "MeshLibrary"
-msgstr "Библиотека мешов"
+msgstr "Библиотека мешей"
 
 msgid "Add Item"
 msgstr "Добавить элемент"
@@ -7824,74 +7913,17 @@ msgstr "Установить start_position"
 msgid "Set end_position"
 msgstr "Задать end_position"
 
+msgid "Edit Poly"
+msgstr "Редактировать полигон"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Редактировать полигон (удалить точку)"
+
 msgid "Create Navigation Polygon"
 msgstr "Создать Navigation Polygon"
 
 msgid "Unnamed Gizmo"
 msgstr "Безымянный гизмо"
-
-msgid "Change Light Radius"
-msgstr "Изменить радиус света"
-
-msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr "Изменить угол AudioStreamPlayer3D"
-
-msgid "Change Camera FOV"
-msgstr "Изменить FOV камеры"
-
-msgid "Change Camera Size"
-msgstr "Изменить размер камеры"
-
-msgid "Change Sphere Shape Radius"
-msgstr "Изменить радиус сферы"
-
-msgid "Change Box Shape Size"
-msgstr "Изменить границы прямоугольника"
-
-msgid "Change Notifier AABB"
-msgstr "Изменить уведомитель AABB"
-
-msgid "Change Particles AABB"
-msgstr "Изменить AABB частиц"
-
-msgid "Change Radius"
-msgstr "Задать радиус"
-
-msgid "Change Probe Size"
-msgstr "Задать размер зонда"
-
-msgid "Change Decal Size"
-msgstr "Задать размер камеры"
-
-msgid "Change Capsule Shape Radius"
-msgstr "Изменить радиус капсулы"
-
-msgid "Change Capsule Shape Height"
-msgstr "Изменить высоту капсулы"
-
-msgid "Change Cylinder Shape Radius"
-msgstr "Изменить радиус цилиндра"
-
-msgid "Change Cylinder Shape Height"
-msgstr "Изменить высоту цилиндра"
-
-msgid "Change Separation Ray Shape Length"
-msgstr "Изменить длину формы луча"
-
-msgid "Start Location"
-msgstr "Начальное положение"
-
-msgid "End Location"
-msgstr "Конечное положение"
-
-msgid "Change Start Position"
-msgstr "Изменить начальную позицию"
-
-msgid "Change End Position"
-msgstr "Задать конечную позицию"
-
-msgid "Change Fog Volume Size"
-msgstr "Задать объем тумана"
 
 msgid "Transform Aborted."
 msgstr "Преобразование прервано."
@@ -8743,12 +8775,6 @@ msgstr "Синхронизация костей с полигоном"
 msgid "Create Polygon3D"
 msgstr "Создать Polygon3D"
 
-msgid "Edit Poly"
-msgstr "Редактировать полигон"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Редактировать полигон (удалить точку)"
-
 msgid "ERROR: Couldn't load resource!"
 msgstr "ОШИБКА: Невозможно загрузить ресурс!"
 
@@ -8766,9 +8792,6 @@ msgstr "Нет ресурса в буфере обмена!"
 
 msgid "Paste Resource"
 msgstr "Вставить параметры"
-
-msgid "Open in Editor"
-msgstr "Открыть в редакторе"
 
 msgid "Load Resource"
 msgstr "Загрузить ресурс"
@@ -9357,17 +9380,8 @@ msgstr "Переместить кадр вправо"
 msgid "Select Frames"
 msgstr "Выбрать кадры"
 
-msgid "Horizontal:"
-msgstr "Горизонтальные:"
-
-msgid "Vertical:"
-msgstr "Вертикальные:"
-
-msgid "Separation:"
-msgstr "Разделение:"
-
-msgid "Select/Clear All Frames"
-msgstr "Выбрать/очистить все кадры"
+msgid "Size"
+msgstr "Размер"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "Создать кадры из спрайт-листа"
@@ -9386,10 +9400,13 @@ msgstr ""
 "Какое действие должно быть предпринято?"
 
 msgid "%s Mipmaps"
-msgstr "%s Mipmaps"
+msgstr "%s MIP-текстуры"
 
 msgid "Memory: %s"
 msgstr "Память: %s"
+
+msgid "No Mipmaps"
+msgstr "Без MIP-текстур"
 
 msgid "Set Region Rect"
 msgstr "Задать регион"
@@ -9411,6 +9428,9 @@ msgstr "Автоматически"
 
 msgid "Step:"
 msgstr "Шаг:"
+
+msgid "Separation:"
+msgstr "Разделение:"
 
 msgid "Styleboxes"
 msgstr "Стили"
@@ -9471,7 +9491,7 @@ msgstr "Стили не найдены."
 
 msgid "{num} currently selected"
 msgid_plural "{num} currently selected"
-msgstr[0] "{num} выбрано в данный момент"
+msgstr[0] "{num} выбран в данный момент"
 msgstr[1] "{num} выбрано в данный момент"
 msgstr[2] "{num} выбрано в данный момент"
 
@@ -10001,7 +10021,7 @@ msgid "Paint"
 msgstr "Рисовать"
 
 msgid "Shift: Draw line."
-msgstr "Shift: Рисовать линию."
+msgstr "Shift: Нарисовать линию."
 
 msgid "Shift+Ctrl: Draw rectangle."
 msgstr "Shift+Ctrl: Рисовать прямоугольник."
@@ -10044,6 +10064,9 @@ msgstr "Соответствует углам и сторонам"
 msgid "Terrain Set %d (%s)"
 msgstr "Набор ландшафта %d (%s)"
 
+msgid "Terrains"
+msgstr "Местность"
+
 msgid "Select Previous Tile Map Layer"
 msgstr "Выбрать предыдущий слой TileMap"
 
@@ -10054,10 +10077,19 @@ msgid "Highlight Selected TileMap Layer"
 msgstr "Выделить выбранный TileMap"
 
 msgid "Toggle grid visibility."
-msgstr "Отображение сетки"
+msgstr "Отображение сетки."
 
 msgid "The edited TileMap node has no TileSet resource."
 msgstr "Редактируемый узел TileMap не имеет ресурса TileSet."
+
+msgid "Create Alternative-level Tile Proxy"
+msgstr "Создание прокси Тайл альтернативного уровня"
+
+msgid "Create Coords-level Tile Proxy"
+msgstr "Создание прокси Тайл на уровне координат"
+
+msgid "Delete All Invalid Tile Proxies"
+msgstr "Удалить все недопустимые Tile Proxies"
 
 msgid "Delete All Tile Proxies"
 msgstr "Удалить все прокси тайлов"
@@ -10399,6 +10431,9 @@ msgstr "Удалить входной порт"
 msgid "Remove Output Port"
 msgstr "Удалить выходной порт"
 
+msgid "Set Comment Node Title"
+msgstr "Задать заголовок в узле комментария"
+
 msgid "Set Parameter Name"
 msgstr "Задать имя параметра"
 
@@ -10562,7 +10597,7 @@ msgid "Boolean constant."
 msgstr "Логическая константа."
 
 msgid "Translated to '%s' in Godot Shading Language."
-msgstr "Переведено на '%s' на языке Шейдеров Godot."
+msgstr "%s переведен на языке Шейдеров Godot."
 
 msgid "'%s' input parameter for all shader modes."
 msgstr "Входной параметр '%s' для всех режимов шейдера."
@@ -10879,6 +10914,9 @@ msgstr ""
 msgid "Apply panning function on texture coordinates."
 msgstr "Применить функцию панорамирования к координатам текстуры."
 
+msgid "Apply scaling function on texture coordinates."
+msgstr "Использовать функцию масштабирования к координатам текстуры."
+
 msgid "Transform function."
 msgstr "Функция преобразования."
 
@@ -10912,6 +10950,13 @@ msgstr "Раскладывает преобразование на четыре 
 msgid "Calculates the determinant of a transform."
 msgstr "Вычисляет детерминант преобразования."
 
+msgid ""
+"Calculates how the object should face the camera to be applied on Model View "
+"Matrix output port for 3D objects."
+msgstr ""
+"Вычисляет, как объект должен быть обращен к камере, чтобы применить его к "
+"выходному порту матрицы Model View для 3D-объектов."
+
 msgid "Calculates the inverse of a transform."
 msgstr "Вычисляет обратную трансформацию."
 
@@ -10921,6 +10966,9 @@ msgstr "Вычисляет транспонирование преобразов
 msgid "Sums two transforms."
 msgstr "Суммирует два преобразования."
 
+msgid "Performs per-component multiplication of two transforms."
+msgstr "Выполняет покомпонентное умножение двух преобразований."
+
 msgid "Subtracts two transforms."
 msgstr "Вычитает два преобразования."
 
@@ -10929,6 +10977,28 @@ msgstr "Умножает вектор на преобразование."
 
 msgid "Transform constant."
 msgstr "Преобразование-константа."
+
+msgid ""
+"The distance fade effect fades out each pixel based on its distance to "
+"another object."
+msgstr ""
+"Эффект затухания от расстояния. Затухает каждый пиксель в зависимости от "
+"расстояния до другого объекта."
+
+msgid ""
+"The proximity fade effect fades out each pixel based on its distance to "
+"another object."
+msgstr ""
+"Эффект затухания сближения. Затухает каждый пиксель в зависимости от "
+"расстояния до другого объекта."
+
+msgid "Returns a random value between the minimum and maximum input values."
+msgstr ""
+"Возвращает случайное значение между минимальным и максимальным входными "
+"значениями."
+
+msgid "Remaps a given input from the input range to the output range."
+msgstr "Переназначает заданный ввод из диапазона ввода в диапазон вывода."
 
 msgid "Vector function."
 msgstr "Векторная функция."
@@ -10985,6 +11055,10 @@ msgstr "Линейная интерполяция между двумя вект
 
 msgid "Linear interpolation between two vectors using scalar."
 msgstr "Линейная интерполяция между двумя векторами используя скаляр."
+
+msgid "Performs a fused multiply-add operation (a * b + c) on vectors."
+msgstr ""
+"Выполняет совмещённую операцию умножение-сложение (a * b + c) над векторами."
 
 msgid "Calculates the normalize product of vector."
 msgstr "Вычисляет нормализованное произведение векторов."
@@ -11057,6 +11131,11 @@ msgstr ""
 "производных по 'x' и 'y'."
 
 msgid ""
+"A rectangular area with a description string for better graph organization."
+msgstr ""
+"Прямоугольная область со строкой описания для лучшей организации графика."
+
+msgid ""
 "Custom Godot Shader Language expression, with custom amount of input and "
 "output ports. This is a direct injection of code into the vertex/fragment/"
 "light function, do not use it to write the function declarations inside."
@@ -11070,6 +11149,15 @@ msgstr "Редактировать визуальное свойство:"
 
 msgid "Visual Shader Mode Changed"
 msgstr "Режим визуального шейдера был изменен"
+
+msgid "Voxel GI data is not local to the scene."
+msgstr "Данные Voxel GI не являются локальными для сцены."
+
+msgid "Voxel GI data is part of an imported resource."
+msgstr "Данные Voxel GI являются частью импортируемого ресурса."
+
+msgid "Voxel GI data is an imported resource."
+msgstr "Данные Voxel GI - импортируемого ресурса."
 
 msgid "The path specified doesn't exist."
 msgstr "Указанный путь не существует."
@@ -11090,6 +11178,13 @@ msgstr "Пожалуйста, выберите файл \"project.godot\" или
 
 msgid "This directory already contains a Godot project."
 msgstr "Этот каталог уже содержит проект Godot."
+
+msgid ""
+"You cannot save a project in the selected path. Please make a new folder or "
+"choose a new path."
+msgstr ""
+"Вы не можете сохранить проект по выбранному пути. Пожалуйста, создайте новую "
+"папку или выберите новый путь."
 
 msgid ""
 "The selected path is not empty. Choosing an empty folder is highly "
@@ -11239,11 +11334,11 @@ msgstr ""
 msgid "Version Control Metadata:"
 msgstr "Метаданные контроля версий:"
 
-msgid "Missing Project"
-msgstr "Отсутствующий проект"
-
 msgid "Error: Project is missing on the filesystem."
 msgstr "Ошибка: Проект отсутствует в файловой системе."
+
+msgid "Missing Project"
+msgstr "Отсутствующий проект"
 
 msgid "Local"
 msgstr "Локальный"
@@ -11927,6 +12022,13 @@ msgid "Filters"
 msgstr "Фильтры"
 
 msgid ""
+"Selects all Nodes belonging to the given group.\n"
+"If empty, selects any Node belonging to any group."
+msgstr ""
+"Выбирает все узлы, принадлежащие к данной группе.\n"
+"Если пусто, выбирается любой узел, принадлежащий к любой группе."
+
+msgid ""
 "Cannot attach a script: there are no languages registered.\n"
 "This is probably because this editor was built with all language modules "
 "disabled."
@@ -11981,90 +12083,6 @@ msgstr ""
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Очистить наследование? (Нельзя отменить!)"
 
-msgid "Toggle Visible"
-msgstr "Переключить видимость"
-
-msgid "Unlock Node"
-msgstr "Разблокировать узел"
-
-msgid "Button Group"
-msgstr "Группа кнопок"
-
-msgid "Disable Scene Unique Name"
-msgstr "Убрать уникальное имя в сцене"
-
-msgid "(Connecting From)"
-msgstr "(Источник)"
-
-msgid "Node configuration warning:"
-msgstr "Предупреждение о конфигурации узла:"
-
-msgid ""
-"This node can be accessed from within anywhere in the scene by preceding it "
-"with the '%s' prefix in a node path.\n"
-"Click to disable this."
-msgstr ""
-"Доступ к этому узлу можно получить из любого места сцены, предваряя его "
-"префиксом '%s' в пути к узлу.\n"
-"Нажмите, чтобы отключить это."
-
-msgid "Node has one connection."
-msgid_plural "Node has {num} connections."
-msgstr[0] "Узел имеет {num} соединение."
-msgstr[1] "Узел имеет {num} соединения."
-msgstr[2] "Узел имеет {num} соединений."
-
-msgid "Node is in this group:"
-msgid_plural "Node is in the following groups:"
-msgstr[0] "Узел в этой группе:"
-msgstr[1] "Узел в следующих группах:"
-msgstr[2] "Узел в следующих группах:"
-
-msgid "Click to show signals dock."
-msgstr "Нажмите, чтобы показать панель сигналов."
-
-msgid "Open Script:"
-msgstr "Открыть скрипт:"
-
-msgid ""
-"Node is locked.\n"
-"Click to unlock it."
-msgstr ""
-"Узел заблокирован.\n"
-"Нажмите чтобы разблокировать."
-
-msgid ""
-"Children are not selectable.\n"
-"Click to make them selectable."
-msgstr ""
-"Дочерние объекты не выделяются.\n"
-"Нажмите, чтобы сделать их доступными для выбора."
-
-msgid ""
-"AnimationPlayer is pinned.\n"
-"Click to unpin."
-msgstr ""
-"AnimationPlayer закреплен.\n"
-"Нажмите, чтобы открепить."
-
-msgid "Invalid node name, the following characters are not allowed:"
-msgstr "Некорректное имя узла, следующие символы недопустимы:"
-
-msgid "Another node already uses this unique name in the scene."
-msgstr "Данное уникальное имя уже использовано у другого узла в сцене."
-
-msgid "Rename Node"
-msgstr "Переименовать узел"
-
-msgid "Scene Tree (Nodes):"
-msgstr "Дерево сцены (Узлы):"
-
-msgid "Node Configuration Warning!"
-msgstr "Предупреждение о конфигурации узла!"
-
-msgid "Select a Node"
-msgstr "Выбрать узел"
-
 msgid "Path is empty."
 msgstr "Не указан путь."
 
@@ -12082,6 +12100,9 @@ msgstr "Файл не существует."
 
 msgid "Invalid extension."
 msgstr "Недопустимое расширение."
+
+msgid "Extension doesn't match chosen language."
+msgstr "Расширение не соответствует выбранному языку."
 
 msgid "Template:"
 msgstr "Шаблон:"
@@ -12180,6 +12201,9 @@ msgstr "Укажите допустимое имя универсального 
 msgid "Global shader parameter '%s' already exists'"
 msgstr "Глобальный параметр шейдера '%s' уже существует"
 
+msgid "Name '%s' is a reserved shader language keyword."
+msgstr "Имя '%s' является зарезервированным словом языка шейдера."
+
 msgid "Change Cylinder Radius"
 msgstr "Изменить радиус цилиндра"
 
@@ -12225,11 +12249,49 @@ msgstr "Недопустимый экземпляр словаря (неверн
 msgid "Value of type '%s' can't provide a length."
 msgstr "Значение типа '%s' не может иметь длину."
 
+msgid "Type argument is a previously freed instance."
+msgstr "Тип аргумента - это ранее освобожденный экземпляр класса."
+
+msgid "Value argument is a previously freed instance."
+msgstr "Значения аргумента - это ранее освобожденный экземпляр класса."
+
 msgid "Export Scene to glTF 2.0 File"
 msgstr "Экспорт сцены в файл glTF 2.0"
 
+msgid "Can't execute Blender binary."
+msgstr "Не удалось запустить Blender фаил."
+
+msgid "Unexpected --version output from Blender binary at: %s"
+msgstr "Неожиданный вывод --version в файле Blender: %s"
+
+msgid "Path supplied lacks a Blender binary."
+msgstr "В прлилагаемом пути отсутствует Blender фаил."
+
+msgid "This Blender installation is too old for this importer (not 3.0+)."
+msgstr "Версия установленого Blender слишком стара для импорта (нужна 3.0+)."
+
+msgid "This Blender installation is too new for this importer (not 3.x)."
+msgstr "Версия установленого Blender слишком нова для импорта (нужна 3.х)."
+
+msgid "Path to Blender installation is valid (Autodetected)."
+msgstr "Путь к установленому Blender верен (определяется автоматически)."
+
 msgid "Path to Blender installation is valid."
 msgstr "Путь к установке Blender является допустимым."
+
+msgid ""
+"Blender 3.0+ is required to import '.blend' files.\n"
+"Please provide a valid path to a Blender installation:"
+msgstr ""
+"Для импорта файлов '.blend' требуется Blender 3.0+.\n"
+"Пожалуйста, укажите правильный путь установки Blender:"
+
+msgid ""
+"Disables Blender '.blend' files import for this project. Can be re-enabled "
+"in Project Settings."
+msgstr ""
+"Отключает импорт файлов Blender '.blend' в данном проекте. Может быть "
+"повторно включен в Настройках проекта."
 
 msgid "Next Plane"
 msgstr "Следующая поскость"
@@ -12319,8 +12381,23 @@ msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
 "Предоставьте ресурс MeshLibrary этой GridMap, чтобы использовать его сетки."
 
+msgid "Determining optimal atlas size"
+msgstr "Определение оптимального размера атласа"
+
+msgid "Blitting albedo and emission"
+msgstr "Мерцающее альбедо и излучение"
+
+msgid "Plotting mesh into acceleration structure %d/%d"
+msgstr "Построение сетки в структуре ускорения %d/%d"
+
+msgid "Optimizing acceleration structure"
+msgstr "Оптимизация структуры ускорения"
+
 msgid "Begin Bake"
 msgstr "Начать запекание"
+
+msgid "Bounce %d/%d: Integrate indirect lighting %d%%"
+msgstr "Отражение %d/%d: Интеграция непрямого освещения %d%%"
 
 msgid "Integrating light probes %d%%"
 msgstr "Встраивание световых зондов %d%%"
@@ -12337,8 +12414,34 @@ msgstr "Собрать решение"
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Недостаточно байтов для декодирования байтов или неверный формат."
 
+msgid ""
+"Unable to load .NET runtime, no compatible version was found.\n"
+"Attempting to create/edit a project will lead to a crash.\n"
+"\n"
+"Please install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/"
+"en-us/download and restart Godot."
+msgstr ""
+"Невозможно загрузить среду выполнения .NET, не найдена совместимая версия.\n"
+"Попытка создания/редактирования проекта приведет к аварийному завершению.\n"
+"\n"
+"Пожалуйста, установите .NET SDK 6.0 или более позднюю версию с сайта https://"
+"dotnet.microsoft.com/en-us/download и перезапустите Godot."
+
 msgid "Failed to load .NET runtime"
 msgstr "Не удалось загрузить исполняющую среду .NET"
+
+msgid ""
+"Unable to load .NET runtime, specifically hostfxr.\n"
+"Attempting to create/edit a project will lead to a crash.\n"
+"\n"
+"Please install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/"
+"en-us/download and restart Godot."
+msgstr ""
+"Невозможно загрузить среду выполнения .NET, в частности hostfxr.\n"
+"Попытка создания/редактирования проекта приводит к сбою.\n"
+"\n"
+"Пожалуйста, установите .NET SDK 6.0 или более позднюю версию с сайта https://"
+"dotnet.microsoft.com/en-us/download и перезапустите Godot."
 
 msgid "%s/s"
 msgstr "%s/с"
@@ -12355,17 +12458,40 @@ msgstr "Конфигурация"
 msgid "Count"
 msgstr "Количество"
 
-msgid "Size"
-msgstr "Размер"
-
 msgid "Network Profiler"
 msgstr "Сетевой профайлер"
+
+msgid "Select a replicator node in order to pick a property to add to it."
+msgstr ""
+"Выберите узел репликатора, чтобы выбрать свойство для добавления к нему."
 
 msgid "Not possible to add a new property to synchronize without a root."
 msgstr "Невозможно добавить новое свойство для синхронизации без корня."
 
+msgid "Property is already being synchronized."
+msgstr "Свойство уже синхронизировано."
+
+msgid "Add property to synchronizer"
+msgstr "Добавить свойство к синхронизатору"
+
+msgid "Pick a node to synchronize:"
+msgstr "Выберите узел для синхронизации:"
+
+msgid "Add property to sync..."
+msgstr "Доб. свойство в синх..."
+
 msgid "Spawn"
 msgstr "Разместить"
+
+msgid ""
+"Add properties using the buttons above or\n"
+"drag them them from the inspector and drop them here."
+msgstr ""
+"Добавьте свойства с помощью кнопок выше или\n"
+"перетащите их сюда из инспектора."
+
+msgid "The MultiplayerSynchronizer needs a root path."
+msgstr "MultiplayerSynchronizer(у) нужен корневой путь."
 
 msgid "Delete Property?"
 msgstr "Удалить свойство?"
@@ -12377,9 +12503,30 @@ msgstr ""
 "Чтобы MultiplayerSpawner мог порождать узлы, в свойстве \"Spawn Path\" "
 "должен быть установлен действительный NodePath."
 
+msgid ""
+"A valid NodePath must be set in the \"Root Path\" property in order for "
+"MultiplayerSynchronizer to be able to synchronize properties."
+msgstr ""
+"Для того чтобы MultiplayerSynchronizer мог синхронизировать свойства, в "
+"свойстве \"Root Path\" должен быть установлен действительный путь узла."
+
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
 "Ресурс NavigationMesh должен быть установлен или создан для этого узла."
+
+msgid ""
+"Cannot generate navigation mesh because it belongs to a resource which was "
+"imported."
+msgstr ""
+"Невозможно создать навигационную сетку, поскольку она принадлежит ресурсу, "
+"который был импортирован."
+
+msgid ""
+"Cannot generate navigation mesh because the resource was imported from "
+"another type."
+msgstr ""
+"Невозможно сгенерировать навигационную сетку, поскольку ресурс был "
+"импортирован из другого типа."
 
 msgid "Bake NavMesh"
 msgstr "Запечь NavMesh"
@@ -12426,6 +12573,11 @@ msgstr "Анализ геометрии..."
 msgid "Done!"
 msgstr "Сделано!"
 
+msgid "Toggles whether the noise preview is computed in 3D space."
+msgstr ""
+"Задаёт, будет ли предварительный просмотр шума вычисляться в трехмерном "
+"пространстве."
+
 msgid "Add action set"
 msgstr "Добавить набор действий"
 
@@ -12438,11 +12590,26 @@ msgstr "Ошибка загрузки %s: %s."
 msgid "Add an action set."
 msgstr "Добавить набор действий."
 
+msgid "Save this OpenXR action map."
+msgstr "Сохранить эту карту действия OpenXR."
+
+msgid "Reset to default OpenXR action map."
+msgstr "Сброс карты действий OpenXR по умолчанию."
+
 msgid "Action Sets"
 msgstr "Набор действий"
 
+msgid "Remove action from interaction profile"
+msgstr "Удалить действие из профиля взаимодействий"
+
 msgid "Pose"
 msgstr "Поза"
+
+msgid "Haptic"
+msgstr "Тактильный"
+
+msgid "Unknown"
+msgstr "Неизвестно"
 
 msgid "Package name is missing."
 msgstr "Отсутствует имя пакета."
@@ -12461,6 +12628,71 @@ msgstr "Символ '%s' не может стоять первым в сегм�
 
 msgid "The package must have at least one '.' separator."
 msgstr "Пакет должен иметь хотя бы один разделитель '.'."
+
+msgid ""
+"The project name does not meet the requirement for the package name format. "
+"Please explicitly specify the package name."
+msgstr ""
+"Имя проекта не соответствует требованиям формата имени пакета. Пожалуйста, "
+"укажите имя пакета в явном виде."
+
+msgid "Invalid public key for APK expansion."
+msgstr "Недействительный публичный ключ для расширения APK."
+
+msgid "Invalid package name:"
+msgstr "Недопустимое имя пакета:"
+
+msgid "\"Use Gradle Build\" must be enabled to use the plugins."
+msgstr "\"Use Gradle Build\" должен быть включен для использования плагинов."
+
+msgid "OpenXR requires \"Use Gradle Build\" to be enabled"
+msgstr "OpenXR требует включения \"Использовать Gradle сборку\""
+
+msgid "\"Hand Tracking\" is only valid when \"XR Mode\" is \"OpenXR\"."
+msgstr ""
+"\"Отслеживание рук\" действует только в том случае, если \"Режим XR\" - "
+"\"OpenXR\"."
+
+msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
+msgstr ""
+"\"Passthrough\" действует только в том случае, если \"XR Mode\" - \"OpenXR\"."
+
+msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
+msgstr ""
+"\"Export AAB\" действителен только при включённой опции \"Использовать "
+"Gradle сборку\"."
+
+msgid ""
+"\"Min SDK\" can only be overridden when \"Use Gradle Build\" is enabled."
+msgstr ""
+"\"Min SDK\" можно переопределить, только если включена опция \"Использовать "
+"Gradle Build\"."
+
+msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+"\"Min SDK\" должен быть значением целого типа, но получено \"%s\", что "
+"недопустимо."
+
+msgid ""
+"\"Min SDK\" cannot be lower than %d, which is the version needed by the "
+"Godot library."
+msgstr ""
+"\"Min SDK\" не может быть меньше %d версии, требуемой библиотекой Godot."
+
+msgid ""
+"\"Target SDK\" can only be overridden when \"Use Gradle Build\" is enabled."
+msgstr ""
+"\"Target SDK\" можно переопределить, только если включена опция "
+"\"Использовать Gradle сборку\"."
+
+msgid ""
+"\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
+msgstr ""
+"\"Target SDK\" должно быть валидным целым числом, полученное \"%s\" - не "
+"валидно."
+
+msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
+msgstr "Версия \"Target SDK\" должна быть больше или равна версии \"Min SDK\"."
 
 msgid "Select device from the list"
 msgstr "Выберите устройство из списка"
@@ -12537,61 +12769,6 @@ msgstr "Директория 'build-tools' отсутствует!"
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Не удалось найти команду apksigner в Android SDK build-tools."
 
-msgid "Invalid public key for APK expansion."
-msgstr "Недействительный публичный ключ для расширения APK."
-
-msgid "Invalid package name:"
-msgstr "Недопустимое имя пакета:"
-
-msgid "\"Use Gradle Build\" must be enabled to use the plugins."
-msgstr "\"Use Gradle Build\" должен быть включен для использования плагинов."
-
-msgid "OpenXR requires \"Use Gradle Build\" to be enabled"
-msgstr "OpenXR требует включения \"Использовать Gradle сборку\""
-
-msgid "\"Hand Tracking\" is only valid when \"XR Mode\" is \"OpenXR\"."
-msgstr ""
-"\"Отслеживание рук\" действует только в том случае, если \"Режим XR\" - "
-"\"OpenXR\"."
-
-msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
-msgstr ""
-"\"Passthrough\" действует только в том случае, если \"XR Mode\" - \"OpenXR\"."
-
-msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
-msgstr ""
-"\"Export AAB\" действителен только при включённой опции \"Использовать "
-"Gradle сборку\"."
-
-msgid ""
-"\"Min SDK\" can only be overridden when \"Use Gradle Build\" is enabled."
-msgstr ""
-"\"Min SDK\" можно переопределить, только если включена опция \"Использовать "
-"Gradle Build\"."
-
-msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
-msgstr ""
-"\"Min SDK\" должен быть значением целого типа, но получено \"%s\", что "
-"недопустимо."
-
-msgid ""
-"\"Min SDK\" cannot be lower than %d, which is the version needed by the "
-"Godot library."
-msgstr ""
-"\"Min SDK\" не может быть меньше %d версии, требуемой библиотекой Godot."
-
-msgid ""
-"\"Target SDK\" can only be overridden when \"Use Gradle Build\" is enabled."
-msgstr ""
-"\"Target SDK\" можно переопределить, только если включена опция "
-"\"Использовать Gradle сборку\"."
-
-msgid ""
-"\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
-msgstr ""
-"\"Target SDK\" должно быть валидным целым числом, полученное \"%s\" - не "
-"валидно."
-
 msgid ""
 "\"Target SDK\" %d is higher than the default version %d. This may work, but "
 "wasn't tested and may be unstable."
@@ -12599,14 +12776,28 @@ msgstr ""
 "\"Target SDK\" %d выше чем версия по умолчанию %d. Это может работать, но не "
 "тестировалось и может быть нестабильным."
 
-msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
-msgstr "Версия \"Target SDK\" должна быть больше или равна версии \"Min SDK\"."
+msgid ""
+"The \"%s\" renderer is designed for Desktop devices, and is not suitable for "
+"Android devices."
+msgstr ""
+"Рендерер \"%s\" предназначен для устройств Desktop и не подходит для "
+"устройств Android."
 
 msgid "\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."
 msgstr "\"Min SDK\" должно быть больше или равно %d для рендеринга \"%s\"."
 
 msgid "Code Signing"
 msgstr "Подпись кода"
+
+msgid ""
+"All 'apksigner' tools located in Android SDK 'build-tools' directory failed "
+"to execute. Please check that you have the correct version installed for "
+"your target sdk version. The resulting %s is unsigned."
+msgstr ""
+"Не удалось выполнить все инструменты 'apksigner', расположенные в каталоге "
+"Android SDK 'build-tools'. Пожалуйста, проверьте, что у вас установлена "
+"правильная версия для вашей целевой версии sdk. Полученное значение %s "
+"является беззнаковым."
 
 msgid ""
 "'apksigner' could not be found. Please check that the command is available "
@@ -12734,6 +12925,9 @@ msgstr "Выравнивание APK..."
 msgid "Could not unzip temporary unaligned APK."
 msgstr "Не удалось распаковать временный невыровненный APK."
 
+msgid "Invalid Identifier:"
+msgstr "Неверный идентификатор:"
+
 msgid "Export Icons"
 msgstr "Экспорт иконок"
 
@@ -12743,14 +12937,22 @@ msgstr "Подготовить шаблоны"
 msgid "Export template not found."
 msgstr "Шаблон экспорта не найден."
 
+msgid "Code signing failed, see editor log for details."
+msgstr "Не удалось подписать код, подробности смотрите в журнале редактора."
+
+msgid "Xcode project build failed, see editor log for details."
+msgstr ""
+"Сборка проекта Xcode не удалась, подробности смотрите в журнале редактора."
+
 msgid ".ipa export failed, see editor log for details."
 msgstr "Экспорт .ipa не удался, подробности см. в журнале редактора."
 
-msgid "App Store Team ID not specified - cannot configure the project."
-msgstr "App Store Team ID не указан - невозможно настроить проект."
-
-msgid "Invalid Identifier:"
-msgstr "Неверный идентификатор:"
+msgid ""
+".ipa can only be built on macOS. Leaving Xcode project without building the "
+"package."
+msgstr ""
+"Пакет .ipa может быть собран только на macOS. Выход из проекта Xcode без "
+"сборки пакета."
 
 msgid "Identifier is missing."
 msgstr "Отсутствует определитель."
@@ -12773,6 +12975,12 @@ msgstr ""
 
 msgid "Executable \"pck\" section not found."
 msgstr "Исполняемый раздел \"pck\" не найден."
+
+msgid "Run on remote Linux/BSD system"
+msgstr "Запуск на удаленной системе Linux/BSD"
+
+msgid "Stop and uninstall running project from the remote system"
+msgstr "Остановить и удалить запущенный проект из удаленной системы"
 
 msgid "Run exported project on remote Linux/BSD system"
 msgstr "Запустить экспортированный проект в удаленной Linux/BSD системе"
@@ -12836,6 +13044,25 @@ msgstr "Неизвестный тип пакета."
 
 msgid "Unknown object type."
 msgstr "Неизвестный тип объекта."
+
+msgid "Invalid bundle identifier:"
+msgstr "Неверный идентификатор пакета:"
+
+msgid ""
+"Neither Apple ID name nor App Store Connect issuer ID name not specified."
+msgstr ""
+"Не указаны ни имя идентификатора Apple ID, ни имя идентификатора эмитента "
+"App Store Connect."
+
+msgid ""
+"Both Apple ID name and App Store Connect issuer ID name are specified, only "
+"one should be set at the same time."
+msgstr ""
+"Указаны оба имени Apple ID и имя ID эмитента App Store Connect, одновременно "
+"должно быть задано только одно."
+
+msgid "App Store Connect API key ID not specified."
+msgstr "Не указан идентификатор ключа API App Store Connect."
 
 msgid "Icon Creation"
 msgstr "Создание иконки"
@@ -12981,42 +13208,8 @@ msgstr ""
 msgid "Sending archive for notarization"
 msgstr "Отправка архива для заверения"
 
-msgid "Invalid bundle identifier:"
-msgstr "Неверный идентификатор пакета:"
-
-msgid "Notarization: Notarization with an ad-hoc signature is not supported."
-msgstr "Заверение: заверение ad-hoc подписью не поддерживается."
-
-msgid "Notarization: Code signing is required for notarization."
-msgstr "Заверение: для заверения требуется подпись кода."
-
 msgid "Notarization: Xcode command line tools are not installed."
 msgstr "Заверение: инструменты командной строки Xcode не установлены."
-
-msgid ""
-"Notarization: Neither Apple ID name nor App Store Connect issuer ID name not "
-"specified."
-msgstr ""
-"Заверение: не указано ни Apple ID имя, ни ID имя издателя App Store Connect."
-
-msgid ""
-"Notarization: Both Apple ID name and App Store Connect issuer ID name are "
-"specified, only one should be set at the same time."
-msgstr ""
-"Заверение: указываются как Apple ID имя, так и ID имя издателя App Store "
-"Connect, только одно должно быть установлено одновременно."
-
-msgid "Notarization: Apple ID password not specified."
-msgstr "Заверение: не указан Apple ID пароль."
-
-msgid "Notarization: App Store Connect API key ID not specified."
-msgstr "Заверение: ID ключа API App Store Connect не указан."
-
-msgid "Notarization: Apple Team ID not specified."
-msgstr "Заверение: Apple Team ID не указан."
-
-msgid "Notarization: App Store Connect issuer ID name not specified."
-msgstr "Заверение: имя издателя App Store Connect не указано."
 
 msgid ""
 "Notarization: rcodesign path is not set. Configure rcodesign path in the "
@@ -13054,45 +13247,8 @@ msgstr ""
 "Подпись кода: путь rcodesign не задан. Настройте путь rcodesign в настройках "
 "редактора (Экспорт > macOS > rcodesign)."
 
-msgid ""
-"Privacy: Microphone access is enabled, but usage description is not "
-"specified."
-msgstr ""
-"Конфиденциальность: Доступ к микрофону включён, но описание использования не "
-"указано."
-
-msgid ""
-"Privacy: Camera access is enabled, but usage description is not specified."
-msgstr ""
-"Конфиденциальность: Доступ к камере включён, но описание использования не "
-"указано."
-
-msgid ""
-"Privacy: Location information access is enabled, but usage description is "
-"not specified."
-msgstr ""
-"Конфиденциальность: Доступ к информации о местоположении включён, но "
-"описание использования не указано."
-
-msgid ""
-"Privacy: Address book access is enabled, but usage description is not "
-"specified."
-msgstr ""
-"Конфиденциальность: Доступ к адресной книге включён, но описание "
-"использования не указано."
-
-msgid ""
-"Privacy: Calendar access is enabled, but usage description is not specified."
-msgstr ""
-"Конфиденциальность: Доступ к календарю включён, но описание использования не "
-"указано."
-
-msgid ""
-"Privacy: Photo library access is enabled, but usage description is not "
-"specified."
-msgstr ""
-"Конфиденциальность: Доступ к библиотеке фотографий включён, но описание "
-"использования не указано."
+msgid "Run on remote macOS system"
+msgstr "Запуск на удаленной системе macOS"
 
 msgid "Run exported project on remote macOS system"
 msgstr "Запустить экспортированный проект в удаленной macOS системе"
@@ -13242,17 +13398,11 @@ msgstr ""
 "Инструмент rcedit должен быть задан в настройках редактора (Экспорт > "
 "Windows > rcedit), чтобы изменить значок или информацию о приложении."
 
-msgid "Invalid icon path:"
-msgstr "Недопустимый путь к иконке:"
-
-msgid "Invalid file version:"
-msgstr "Недопустимая версия файла:"
-
-msgid "Invalid product version:"
-msgstr "Недопустимая версия продукта:"
-
 msgid "Windows executables cannot be >= 4 GiB."
 msgstr "Исполняемые файлы Windows не могут иметь размер >= 4 ГБ."
+
+msgid "Run on remote Windows system"
+msgstr "Запуск на удаленной системе Windows"
 
 msgid "Run exported project on remote Windows system"
 msgstr "Запустить экспортированный проект в удаленной Windows системе"
@@ -13326,6 +13476,13 @@ msgstr ""
 "Для анимации Particles2D требуется использование CanvasItemMaterial с "
 "включенной опцией \"Particles Animation\"."
 
+msgid ""
+"Particle trails are only available when using the Forward+ or Mobile "
+"rendering backends."
+msgstr ""
+"Следы частиц доступны только при использовании бэкендов рендеринга Forward+ "
+"или Mobile."
+
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Узел А и Узел B должны быть экземплярами класса PhysicsBody2D"
 
@@ -13368,13 +13525,6 @@ msgstr ""
 "полезной."
 
 msgid ""
-"The NavigationObstacle2D only serves to provide collision avoidance to a "
-"Node2D object."
-msgstr ""
-"NavigationObstacle2D служит только для предотвращения столкновений с "
-"объектом Node2D."
-
-msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
 "Узел ParallaxLayer работает только при установке его в качестве дочернего "
@@ -13392,10 +13542,31 @@ msgstr ""
 "PhysicalBone2D работает только со Skeleton2D или другим PhysicalBone2D в "
 "качестве родительского узла!"
 
+msgid ""
+"A PhysicalBone2D needs to be assigned to a Bone2D node in order to function! "
+"Please set a Bone2D node in the inspector."
+msgstr ""
+"Для работы PhysicalBone2D необходимо назначить узел Bone2D! Пожалуйста, "
+"установите узел Bone2D в инспекторе."
+
+msgid ""
+"A PhysicalBone2D node should have a Joint2D-based child node to keep bones "
+"connected! Please add a Joint2D-based node as a child to this node!"
+msgstr ""
+"Узел PhysicalBone2D должен иметь дочерний узел на основе Joint2D, чтобы "
+"кости были соединены! Пожалуйста, добавьте узел на основе Joint2D в качестве "
+"дочернего узла к этому узлу!"
+
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
 "Для корректной работы свойство Path должно указывать на действующий узел "
 "Node2D."
+
+msgid ""
+"This node cannot interact with other objects unless a Shape2D is assigned."
+msgstr ""
+"Этот узел не может взаимодействовать с другими объектами, если не назначен "
+"Shape2D."
 
 msgid "This Bone2D chain should end at a Skeleton2D node."
 msgstr "Эта Bone2D цепь должна заканчиваться на узле Skeleton2D."
@@ -13412,11 +13583,61 @@ msgstr ""
 "Skeleton2D и установите её."
 
 msgid ""
+"A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole with tiles from Y-sorted layers."
+msgstr ""
+"Слой с Y-сортировкой имеет то же значение Z-индекса, что и слой без Y-"
+"сортировки.\n"
+"Это может привести к нежелательному поведению, так как слой, который не Y-"
+"сортирован, будет Y-сортирован в целом с тайлами из Y-сортированных слоев."
+
+msgid ""
+"A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap "
+"node itself."
+msgstr ""
+"Слой TileMap установлен как Y-сортированный, но Y-сортировка не включена на "
+"самом узле TileMap."
+
+msgid ""
 "Isometric TileSet will likely not look as intended without Y-sort enabled "
 "for the TileMap and all of its layers."
 msgstr ""
 "Изометрический TileSet, скорее всего, не будет выглядеть так, как задумано, "
 "если Y-сортировка не включена для TileMap и для всех его слоёв."
+
+msgid ""
+"External Skeleton3D node not set! Please set a path to an external "
+"Skeleton3D node."
+msgstr ""
+"Не задан внешний узел Skeleton3D! Пожалуйста, задайте путь к внешнему узлу "
+"Skeleton3D."
+
+msgid ""
+"Parent node is not a Skeleton3D node! Please use an external Skeleton3D if "
+"you intend to use the BoneAttachment3D without it being a child of a "
+"Skeleton3D node."
+msgstr ""
+"Родительский узел не является узлом Skeleton3D! Пожалуйста, используйте "
+"внешний Skeleton3D, если вы собираетесь использовать BoneAttachment3D без "
+"того, чтобы он был дочерним узлом Skeleton3D."
+
+msgid ""
+"BoneAttachment3D node is not bound to any bones! Please select a bone to "
+"attach this node."
+msgstr ""
+"Узел BoneAttachment3D не привязан ни к одной кости! Пожалуйста, выберите "
+"кость, чтобы прикрепить этот узел."
+
+msgid ""
+"With a non-uniform scale this node will probably not function as expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size in children collision shapes instead."
+msgstr ""
+"При неравномерном масштабе этот узел, вероятно, не будет работать так, как "
+"ожидается.\n"
+"Пожалуйста, сделайте его масштаб равномерным (т.е. одинаковым по всем осям), "
+"а вместо этого измените размер в дочерних формах столкновения."
 
 msgid ""
 "CollisionPolygon3D only serves to provide a collision shape to a "
@@ -13430,6 +13651,17 @@ msgstr ""
 "StaticBody3D, RigidBody3D, CharacterBody3D и др. чтобы придать им форму."
 
 msgid ""
+"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change its "
+"polygon's vertices instead."
+msgstr ""
+"Неравномерно масштабированный узел CollisionPolygon3D, вероятно, не будет "
+"работать так, как ожидается.\n"
+"Пожалуйста, сделайте его масштаб равномерным (т.е. одинаковым по всем осям), "
+"а вместо этого измените вершины его полигона."
+
+msgid ""
 "CollisionShape3D only serves to provide a collision shape to a "
 "CollisionObject3D derived node.\n"
 "Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
@@ -13440,6 +13672,17 @@ msgstr ""
 "Пожалуйста используйте его только в качестве дочернего для Area3D, "
 "StaticBody3D, RigidBody3D, CharacterBody3D и др. чтобы придать им форму."
 
+msgid ""
+"A non-uniformly scaled CollisionShape3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size of its shape resource instead."
+msgstr ""
+"Неравномерно масштабированный узел CollisionShape3D, вероятно, не будет "
+"работать так, как ожидается.\n"
+"Пожалуйста, сделайте его масштаб равномерным (т.е. одинаковым по всем осям), "
+"а вместо этого измените размер его ресурса формы."
+
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Ничто не видно, потому что не назначена сетка."
 
@@ -13449,6 +13692,32 @@ msgid ""
 msgstr ""
 "Анимация CPUParticles3D требует использования StandardMaterial3D, режим "
 "Billboard Mode которого установлен в \"Particle Billboard\"."
+
+msgid ""
+"Decals are only available when using the Forward+ or Mobile rendering "
+"backends."
+msgstr ""
+"Деколи доступны только при использовании бэкендов рендеринга Forward+ или "
+"Mobile."
+
+msgid ""
+"The decal has no textures loaded into any of its texture properties, and "
+"will therefore not be visible."
+msgstr ""
+"Декаль не имеет текстур, загруженных в свойства текстуры, и поэтому не будет "
+"видна."
+
+msgid ""
+"The decal has a Normal and/or ORM texture, but no Albedo texture is set.\n"
+"An Albedo texture with an alpha channel is required to blend the normal/ORM "
+"maps onto the underlying surface.\n"
+"If you don't want the Albedo texture to be visible, set Albedo Mix to 0."
+msgstr ""
+"Декаль имеет текстуру нормалей и/или ОРМ, но текстура альбедо не задана.\n"
+"Для наложения карт нормалей/ОРМ на базовую поверхность требуется текстура "
+"Albedo с альфа-каналом.\n"
+"Если вы не хотите, чтобы текстура Albedo была видна, установите для "
+"параметра Albedo Mix значение 0."
 
 msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
@@ -13467,6 +13736,9 @@ msgstr "Создание проб"
 
 msgid "Generating Probe Volumes"
 msgstr "Генерация объёмов проб"
+
+msgid "Generating Probe Acceleration Structures"
+msgstr "Создание ускоряющих структур зонда"
 
 msgid ""
 "NavigationLink3D start position should be different than the end position to "
@@ -13493,7 +13765,7 @@ msgid ""
 "This node cannot interact with other objects unless a Shape3D is assigned."
 msgstr ""
 "Этот узел не может взаимодействовать с другими объектами, если ему не "
-"назначен Shape3D"
+"назначен Shape3D."
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Это тело будет игнорироваться, пока вы не установите сетку."
@@ -13546,6 +13818,9 @@ msgstr "Путь, заданный для AnimationPlayer, не ведет к у
 
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "Корневой элемент AnimationPlayer недействителен."
+
+msgid "Copy this constructor in a script."
+msgstr "Скопируйте этот конструктор в скрипт."
 
 msgid ""
 "Color: #%s\n"
@@ -13625,13 +13900,6 @@ msgid "(Other)"
 msgstr "(Другие)"
 
 msgid ""
-"Default Environment as specified in Project Settings (Rendering -> "
-"Environment -> Default Environment) could not be loaded."
-msgstr ""
-"Окружение по умолчанию, указанное в Настройках проекта (Rendering -> "
-"Environment -> Default Environment) не может быть загружено."
-
-msgid ""
 "Very low timer wait times (< 0.05 seconds) may behave in significantly "
 "different ways depending on the rendered or physics frame rate.\n"
 "Consider using a script's process loop instead of relying on a Timer for "
@@ -13650,8 +13918,26 @@ msgstr ""
 "Размер области просмотра должен быть больше или равен 2 пикселям в обоих "
 "измерениях, чтобы отобразить что-либо."
 
+msgid "Cannot open font from file: %s."
+msgstr "Невозможно открыть шрифт из файла: %s."
+
+msgid "Version %d of BMFont is not supported (should be 3)."
+msgstr "Версия %d BMFont не поддерживается (должно быть 3)."
+
+msgid "Invalid BMFont info block size."
+msgstr "Неверный размер блока информации BMFont."
+
+msgid "Invalid BMFont common block size."
+msgstr "Неверный размер общего блока BMFont."
+
+msgid "Can't load font texture: %s."
+msgstr "Не удается загрузить текстуру шрифта: %s."
+
 msgid "Unsupported BMFont texture format."
 msgstr "Неподдерживаемый формат текстуры BMFont."
+
+msgid "Invalid BMFont block type."
+msgstr "Неверный тип блока BMFont."
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"
@@ -13659,6 +13945,16 @@ msgid ""
 msgstr ""
 "Ключевые слова шейдера нельзя использовать в качестве имен параметров.\n"
 "Выберите другое имя."
+
+msgid "This parameter type does not support the '%s' qualifier."
+msgstr "Этот тип параметра не поддерживает квалификатор '%s'."
+
+msgid ""
+"Global parameter '%s' does not exist.\n"
+"Create it in the Project Settings."
+msgstr ""
+"Глобальный параметр '%s' не существует.\n"
+"Создайте его в настройках проекта."
 
 msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
@@ -13673,6 +13969,16 @@ msgstr "Неверный источник для предпросмотра."
 msgid "Invalid source for shader."
 msgstr "Недействительный источник шейдера."
 
+msgid "Invalid operator for that type."
+msgstr "Недопустимый оператор для данного типа."
+
+msgid ""
+"`%s` precision mode is not available for `gl_compatibility` profile.\n"
+"Reverted to `None` precision."
+msgstr ""
+"Режим точности `%s` недоступен для профиля `gl_compatibility`.\n"
+"Возврат к точности `None`."
+
 msgid "Default Color"
 msgstr "Цвет по умолчанию"
 
@@ -13685,17 +13991,39 @@ msgstr "Повторить"
 msgid "Invalid comparison function for that type."
 msgstr "Неверная функция сравнения для этого типа."
 
+msgid "2D Mode"
+msgstr "2D режим"
+
+msgid "Use All Surfaces"
+msgstr "Использовать все поверхности"
+
+msgid "Surface Index"
+msgstr "Индекс поверхности"
+
+msgid ""
+"Invalid number of arguments when calling stage function '%s', which expects "
+"%d arguments."
+msgstr ""
+"Недопустимое количество аргументов при вызове функции стадии '%s', которая "
+"ожидает %d аргументов."
+
 msgid "Varyings cannot be passed for the '%s' parameter."
 msgstr "Для параметра '%s' не могут быть переданы вариации."
 
 msgid "Invalid arguments for the built-in function: \"%s(%s)\"."
 msgstr "Недопустимые аргументы для встроенной функции: \"%s(%s)\"."
 
+msgid "Recursion is not allowed."
+msgstr "Рекурсия запрещена."
+
 msgid "Invalid assignment of '%s' to '%s'."
 msgstr "Недопустимое присвоение '%s' в '%s'."
 
 msgid "Expected constant expression."
 msgstr "Ожидалось константное выражение."
+
+msgid "Expected ',' or ')' after argument."
+msgstr "Ожидалось ',' или ')' после аргумента."
 
 msgid "Varying may not be assigned in the '%s' function."
 msgstr "Varying не может быть задано в функции '%s'."
@@ -13715,6 +14043,18 @@ msgstr "Назначить форму."
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
 
+msgid "Expected a positive integer constant."
+msgstr "Ожидалась целая положительная константа."
+
+msgid "Invalid data type for the array."
+msgstr "Недопустимый тип данных для массива."
+
+msgid "Array size mismatch."
+msgstr "Несовпадение размера массива."
+
+msgid "Expected array initialization."
+msgstr "Ожидалась инициализация массива."
+
 msgid "Cannot convert from '%s' to '%s'."
 msgstr "Невозможно преобразовать '%s' в '%s'."
 
@@ -13724,8 +14064,14 @@ msgstr "Ожидается ')' в выражении."
 msgid "Void value not allowed in expression."
 msgstr "Void значение не разрешено в выражении."
 
+msgid "Expected '(' after the type name."
+msgstr "Ожидается '(' после имени типа."
+
 msgid "No matching constructor found for: '%s'."
 msgstr "Не найден подходящий конструктор для: '%s'."
+
+msgid "Expected a function name."
+msgstr "Ожидалось имя функции."
 
 msgid "No matching function found for: '%s'."
 msgstr "Не найдена подходящая функция для: '%s'."
@@ -13747,6 +14093,12 @@ msgstr ""
 
 msgid "Varying '%s' must be assigned in the 'fragment' function first."
 msgstr "Varying '%s' должны быть сначала назначены в 'fragment' функции."
+
+msgid "Expected expression, found: '%s'."
+msgstr "Ожидаемое выражение, найдено: '%s'."
+
+msgid "Invalid member for '%s' expression: '.%s'."
+msgstr "Недопустимый член для '%s': выражения '.%s'."
 
 msgid "Unexpected end of expression."
 msgstr "Неожиданный конец выражения."
@@ -13850,8 +14202,8 @@ msgstr "Пропущено условие."
 msgid "Condition evaluation error."
 msgstr "Ошибка вычисления условия."
 
-msgid "Shader include file does not exist: "
-msgstr "Файл включенный в шейдер не существует "
+msgid "Unmatched else."
+msgstr "Без других совпадений."
 
 msgid "Invalid macro argument count."
 msgstr "Недопустимое количество аргументов макроса."

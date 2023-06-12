@@ -386,7 +386,7 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 
 		} break;
 		case COMPRESSION_MODE_BASIS_UNIVERSAL: {
-			ERR_FAIL_COND(!Image::basis_universal_unpacker_ptr);
+			ERR_FAIL_NULL(Image::basis_universal_unpacker_ptr);
 			image = Image::basis_universal_unpacker_ptr(data, data_size);
 
 		} break;
@@ -812,21 +812,21 @@ void CompressedTexture2D::set_path(const String &p_path, bool p_take_over) {
 void CompressedTexture2D::_requested_3d(void *p_ud) {
 	CompressedTexture2D *ct = (CompressedTexture2D *)p_ud;
 	Ref<CompressedTexture2D> ctex(ct);
-	ERR_FAIL_COND(!request_3d_callback);
+	ERR_FAIL_NULL(request_3d_callback);
 	request_3d_callback(ctex);
 }
 
 void CompressedTexture2D::_requested_roughness(void *p_ud, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel) {
 	CompressedTexture2D *ct = (CompressedTexture2D *)p_ud;
 	Ref<CompressedTexture2D> ctex(ct);
-	ERR_FAIL_COND(!request_roughness_callback);
+	ERR_FAIL_NULL(request_roughness_callback);
 	request_roughness_callback(ctex, p_normal_path, p_roughness_channel);
 }
 
 void CompressedTexture2D::_requested_normal(void *p_ud) {
 	CompressedTexture2D *ct = (CompressedTexture2D *)p_ud;
 	Ref<CompressedTexture2D> ctex(ct);
-	ERR_FAIL_COND(!request_normal_callback);
+	ERR_FAIL_NULL(request_normal_callback);
 	request_normal_callback(ctex);
 }
 

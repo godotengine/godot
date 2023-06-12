@@ -73,6 +73,13 @@
 				Removes the button at index [param button_index] in column [param column].
 			</description>
 		</method>
+		<method name="get_autowrap_mode" qualifiers="const">
+			<return type="int" enum="TextServer.AutowrapMode" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the text autowrap mode in the given [param column]. By default it is [constant TextServer.AUTOWRAP_OFF].
+			</description>
+		</method>
 		<method name="get_button" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="column" type="int" />
@@ -446,6 +453,14 @@
 			<param index="0" name="column" type="int" />
 			<description>
 				Selects the given [param column].
+			</description>
+		</method>
+		<method name="set_autowrap_mode">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="autowrap_mode" type="int" enum="TextServer.AutowrapMode" />
+			<description>
+				Sets the autowrap mode in the given [param column]. If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the cell's bounding rectangle.
 			</description>
 		</method>
 		<method name="set_button">

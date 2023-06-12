@@ -35,17 +35,13 @@
 #include "main/main.h"
 #include "servers/display_server.h"
 
-#include "modules/modules_enabled.gen.h" // For regex.
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
-#endif
-
 #ifdef X11_ENABLED
 #include "x11/display_server_x11.h"
 #endif
 
-#ifdef HAVE_MNTENT
-#include <mntent.h>
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
 #endif
 
 #include <dlfcn.h>
@@ -56,6 +52,10 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+
+#ifdef HAVE_MNTENT
+#include <mntent.h>
+#endif
 
 void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
@@ -252,7 +252,7 @@ String OS_LinuxBSD::get_version() const {
 }
 
 Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
-	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
+	if (RenderingServer::get_singleton() == nullptr) {
 		return Vector<String>();
 	}
 
@@ -261,8 +261,8 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 		return info;
 	}
 
-	const String rendering_device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name(); // e.g. `NVIDIA GeForce GTX 970`
-	const String rendering_device_vendor = RenderingServer::get_singleton()->get_rendering_device()->get_device_vendor_name(); // e.g. `NVIDIA`
+	const String rendering_device_name = RenderingServer::get_singleton()->get_video_adapter_name(); // e.g. `NVIDIA GeForce GTX 970`
+	const String rendering_device_vendor = RenderingServer::get_singleton()->get_video_adapter_vendor(); // e.g. `NVIDIA`
 	const String card_name = rendering_device_name.trim_prefix(rendering_device_vendor).strip_edges(); // -> `GeForce GTX 970`
 
 	String vendor_device_id_mappings;

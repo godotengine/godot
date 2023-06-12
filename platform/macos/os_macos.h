@@ -31,12 +31,13 @@
 #ifndef OS_MACOS_H
 #define OS_MACOS_H
 
-#include "core/input/input.h"
 #include "crash_handler_macos.h"
-#include "drivers/coreaudio/audio_driver_coreaudio.h"
-#include "drivers/coremidi/midi_driver_coremidi.h"
-#include "drivers/unix/os_unix.h"
 #include "joypad_macos.h"
+
+#include "core/input/input.h"
+#import "drivers/coreaudio/audio_driver_coreaudio.h"
+#import "drivers/coremidi/midi_driver_coremidi.h"
+#include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
 
 class OS_MacOS : public OS_Unix {
@@ -120,6 +121,7 @@ public:
 	virtual Error move_to_trash(const String &p_path) override;
 
 	virtual String get_system_ca_certificates() override;
+	virtual OS::PreferredTextureFormat get_preferred_texture_format() const override;
 
 	void run();
 

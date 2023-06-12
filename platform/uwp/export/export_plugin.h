@@ -31,6 +31,8 @@
 #ifndef UWP_EXPORT_PLUGIN_H
 #define UWP_EXPORT_PLUGIN_H
 
+#include "app_packager.h"
+
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
@@ -45,8 +47,6 @@
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
-
-#include "app_packager.h"
 
 #include <zlib.h>
 

@@ -242,8 +242,11 @@ public:
 template <class T>
 struct PtrToArg<Ref<T>> {
 	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
+		if (p_ptr == nullptr) {
+			return Ref<T>();
+		}
 		// p_ptr points to a RefCounted object
-		return Ref<T>(const_cast<T *>(reinterpret_cast<const T *>(p_ptr)));
+		return Ref<T>(const_cast<T *>(*reinterpret_cast<T *const *>(p_ptr)));
 	}
 
 	typedef Ref<T> EncodeT;
@@ -259,8 +262,11 @@ struct PtrToArg<const Ref<T> &> {
 	typedef Ref<T> EncodeT;
 
 	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
+		if (p_ptr == nullptr) {
+			return Ref<T>();
+		}
 		// p_ptr points to a RefCounted object
-		return Ref<T>((T *)p_ptr);
+		return Ref<T>(*((T *const *)p_ptr));
 	}
 };
 

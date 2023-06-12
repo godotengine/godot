@@ -61,7 +61,7 @@ Validate extension JSON: Error: Hash changed for 'classes/RenderingServer/method
 Validate extension JSON: Error: Hash changed for 'classes/Window/methods/popup_centered_clamped', from DE3D691D to 9BCAB29D. This means that the function has changed and no compatibility function was provided.
 Validate extension JSON: Error: Hash changed for 'classes/Window/methods/popup_centered_ratio', from 71F7FFC1 to 3C7CD915. This means that the function has changed and no compatibility function was provided.
 
-None of these methods were actually changed, the hash changes only affects GDExtensions, no compatibility workaround exists currently.
+None of these methods were actually changed, the hash changes only affects GDExtensions binary compatibility.
 
 
 GH-76413
@@ -253,9 +253,10 @@ Validate extension JSON: Error: Field 'classes/EditorResourcePreviewGenerator/me
 Added parameters to virtual method.
 
 
-GH-76406
+GH-75746
 --------
-Validate extension JSON: Error: Field 'classes/GDExtension/methods/open_library/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/CodeEdit/methods/add_code_completion_option/arguments': size changed value in new API, from 6 to 7.
+Validate extension JSON: Error: Hash changed for 'classes/CodeEdit/methods/add_code_completion_option', from EC613224 to 611C3D20. This means that the function has changed and no compatibility function was provided.
 
 Added an optional parameter with a default value. No adjustments should be necessary.
 

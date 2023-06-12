@@ -1173,11 +1173,8 @@ msgstr "Bağımlılık Düzenleyicisi"
 msgid "Search Replacement Resource:"
 msgstr "Yerine Geçecek Kaynak Ara:"
 
-msgid "Open Scene"
-msgstr "Sahneyi Aç"
-
-msgid "Open Scenes"
-msgstr "Sahneleri Aç"
+msgid "Open"
+msgstr "Aç"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "Sahipleri: %s (Toplam: %d)"
@@ -1239,6 +1236,12 @@ msgstr "Sahipler"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Belirgin Sahipliği Olmayan Kaynaklar:"
+
+msgid "Could not create folder."
+msgstr "Klasör oluşturulamadı."
+
+msgid "Create Folder"
+msgstr "Klasör Oluştur"
 
 msgid "Thanks from the Godot community!"
 msgstr "Godot topluluğundan teşekkürler!"
@@ -1580,24 +1583,6 @@ msgstr "(boş)"
 msgid "[unsaved]"
 msgstr "[kaydedilmemiş]"
 
-msgid "Please select a base directory first."
-msgstr "Lütfen önce bir taban dizini seçin."
-
-msgid "Choose a Directory"
-msgstr "Bir Dizin Seç"
-
-msgid "Create Folder"
-msgstr "Klasör Oluştur"
-
-msgid "Name:"
-msgstr "İsim:"
-
-msgid "Could not create folder."
-msgstr "Klasör oluşturulamadı."
-
-msgid "Choose"
-msgstr "Seç"
-
 msgid "3D Editor"
 msgstr "3D Düzenleyici"
 
@@ -1738,111 +1723,6 @@ msgstr "Profil(leri) İçe Aktar"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Dışa Aktarım Şablonlarını Yönet"
-
-msgid "Network"
-msgstr "Ağ"
-
-msgid "Open"
-msgstr "Aç"
-
-msgid "Select Current Folder"
-msgstr "Geçerli Klasörü Seç"
-
-msgid "Select This Folder"
-msgstr "Bu Klasörü Seç"
-
-msgid "Copy Path"
-msgstr "Dosya Yolunu Kopyala"
-
-msgid "Open in File Manager"
-msgstr "Dosya Yöneticisinde Aç"
-
-msgid "Show in File Manager"
-msgstr "Dosya Yöneticisinde Göster"
-
-msgid "New Folder..."
-msgstr "Yeni Klasör..."
-
-msgid "All Recognized"
-msgstr "Tümü Onaylandı"
-
-msgid "All Files (*)"
-msgstr "Tüm Dosyalar (*)"
-
-msgid "Open a File"
-msgstr "Bir Dosya Aç"
-
-msgid "Open File(s)"
-msgstr "Dosya(ları) Aç"
-
-msgid "Open a Directory"
-msgstr "Bir Dizin Aç"
-
-msgid "Open a File or Directory"
-msgstr "Bir Dosya ya da Dizin Aç"
-
-msgid "Save a File"
-msgstr "Bir Dosya Kaydet"
-
-msgid "Go Back"
-msgstr "Geri dön"
-
-msgid "Go Forward"
-msgstr "İleri Git"
-
-msgid "Go Up"
-msgstr "Yukarı Git"
-
-msgid "Toggle Hidden Files"
-msgstr "Gizli Dosyalari Aç / Kapat"
-
-msgid "Toggle Favorite"
-msgstr "Beğenileni Aç / Kapat"
-
-msgid "Toggle Mode"
-msgstr "Aç / Kapat Biçimi"
-
-msgid "Focus Path"
-msgstr "Yola Odaklan"
-
-msgid "Move Favorite Up"
-msgstr "Beğenileni Yukarı Taşı"
-
-msgid "Move Favorite Down"
-msgstr "Beğenileni Aşağı Taşı"
-
-msgid "Go to previous folder."
-msgstr "Önceki klasöre git."
-
-msgid "Go to next folder."
-msgstr "Sonraki klasöre git."
-
-msgid "Go to parent folder."
-msgstr "Üst klasöre git."
-
-msgid "Refresh files."
-msgstr "Dosyaları yenile."
-
-msgid "(Un)favorite current folder."
-msgstr "Bu klasörü favorilerden çıkar/favorilere ekle."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "Gizli Dosyaları Aç / Kapat."
-
-msgid "View items as a grid of thumbnails."
-msgstr "Öğeleri küçük resim ızgarası şeklinde göster."
-
-msgid "View items as a list."
-msgstr "Öğeleri liste olarak göster."
-
-msgid "Directories & Files:"
-msgstr "Dizinler & Dosyalar:"
-
-msgid "Preview:"
-msgstr "Önizleme:"
-
-msgid "File:"
-msgstr "Dosya:"
 
 msgid "Restart"
 msgstr "Yeniden Başlat"
@@ -2031,8 +1911,17 @@ msgstr "%s sabitlendi"
 msgid "Unpinned %s"
 msgstr "%s serbest bırakıldı"
 
+msgid "Name:"
+msgstr "İsim:"
+
 msgid "Copy Property Path"
 msgstr "Özellik Yolunu Kopyala"
+
+msgid "Creating Mesh Previews"
+msgstr "Mesh Önizlemeleri Oluşturuluyor"
+
+msgid "Thumbnail..."
+msgstr "Küçük Resim..."
 
 msgid "Changed Locale Filter Mode"
 msgstr "Değiştirilmiş Yerel Süzgeç Kipi"
@@ -2123,6 +2012,9 @@ msgstr ""
 "Sahne kaydedilemedi. Anlaşılan bağımlılıklar (örnekler ve kalıtımlar) "
 "karşılanamadı."
 
+msgid "Save scene before running..."
+msgstr "Çalıştırmadan önce sahneyi kaydedin..."
+
 msgid "Could not save one or more scenes!"
 msgstr "Bir veya birden fazla sahne kaydedilemedi!"
 
@@ -2180,18 +2072,6 @@ msgstr ""
 msgid "Changes may be lost!"
 msgstr "Değişiklikler Kaybolabilir!"
 
-msgid "There is no defined scene to run."
-msgstr "Çalıştırmak için herhangi bir sahne seçilmedi."
-
-msgid "Save scene before running..."
-msgstr "Çalıştırmadan önce sahneyi kaydedin..."
-
-msgid "Play the project."
-msgstr "Projeti oynat."
-
-msgid "Play the edited scene."
-msgstr "Düzenlenmiş sahneyi oynat."
-
 msgid "Open Base Scene"
 msgstr "Ana Sahneyi Aç"
 
@@ -2203,18 +2083,6 @@ msgstr "Sahneyi Hızlı Aç..."
 
 msgid "Quick Open Script..."
 msgstr "Betiği Hızlı Aç..."
-
-msgid "Save & Reload"
-msgstr "Kaydet ve Yeniden Yükle"
-
-msgid "Save & Quit"
-msgstr "Kaydet & Çık"
-
-msgid "Save changes to '%s' before reloading?"
-msgstr "Yeniden yüklemeden önce değişiklikler '%s' dosyasına kaydedilsin mi?"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "Kapatmadan önce değişklikler buraya '%s' kaydedilsin mi?"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s artık mevcut değil! Lütfen yeni bir kaydetme konumu belirtin."
@@ -2264,8 +2132,11 @@ msgstr ""
 "Mevcut sahnede kaydedilmemiş değişiklikler var.\n"
 "Sahne yine de yeniden yüklensin mi? Bu işlem geri alınamaz."
 
-msgid "Quick Run Scene..."
-msgstr "Sahneyi Hızlı Çalıştır..."
+msgid "Save & Reload"
+msgstr "Kaydet ve Yeniden Yükle"
+
+msgid "Save & Quit"
+msgstr "Kaydet & Çık"
 
 msgid "Save changes to the following scene(s) before reloading?"
 msgstr ""
@@ -2344,6 +2215,9 @@ msgstr "Sahne '%s' kırık bağımlılıklara sahip:"
 msgid "Clear Recent Scenes"
 msgstr "En Son Sahneleri Temizle"
 
+msgid "There is no defined scene to run."
+msgstr "Çalıştırmak için herhangi bir sahne seçilmedi."
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -2380,8 +2254,14 @@ msgstr "Yerleşim Düzenini Sil"
 msgid "Default"
 msgstr "Varsayılan"
 
+msgid "Save changes to '%s' before reloading?"
+msgstr "Yeniden yüklemeden önce değişiklikler '%s' dosyasına kaydedilsin mi?"
+
 msgid "Save & Close"
 msgstr "Kaydet & Kapat"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "Kapatmadan önce değişklikler buraya '%s' kaydedilsin mi?"
 
 msgid "Show in FileSystem"
 msgstr "Dosya Sisteminde Göster"
@@ -2562,9 +2442,6 @@ msgstr "Godot Hakkında"
 msgid "Support Godot Development"
 msgstr "Godot'u Geliştirmeye Destek Olun"
 
-msgid "Run Project"
-msgstr "Projeyi Çalıştır"
-
 msgid "Forward+"
 msgstr "İleri+"
 
@@ -2613,6 +2490,9 @@ msgstr ""
 "Bu projede Android yapı şablonu zaten yüklü ve üzerine yazılmayacak.\n"
 "Bu işlemi tekrar denemeden önce \"res://android/build\" dizinini el ile "
 "kaldırın."
+
+msgid "Show in File Manager"
+msgstr "Dosya Yöneticisinde Göster"
 
 msgid "Import Templates From ZIP File"
 msgstr "Şablonları Zip Dosyasından İçeri Aktar"
@@ -2674,18 +2554,6 @@ msgstr "Önceki Düzenleyiciyi Aç"
 
 msgid "Warning!"
 msgstr "Uyarı!"
-
-msgid "No sub-resources found."
-msgstr "Alt kaynağı bulunamadı."
-
-msgid "Open a list of sub-resources."
-msgstr "Kaynağın alt dizinini liste halinde aç."
-
-msgid "Creating Mesh Previews"
-msgstr "Mesh Önizlemeleri Oluşturuluyor"
-
-msgid "Thumbnail..."
-msgstr "Küçük Resim..."
 
 msgid "Main Script:"
 msgstr "Ana Betik:"
@@ -2837,22 +2705,6 @@ msgstr "Kısayollar"
 
 msgid "Binding"
 msgstr "Bağlayıcı"
-
-msgid ""
-"Hold %s to round to integers.\n"
-"Hold Shift for more precise changes."
-msgstr ""
-"Tam sayıya yuvarlamak için %s tuşuna basılı tutun.\n"
-"Hassas değişiklikler için Shift tuşuna basılı tutun."
-
-msgid "No notifications."
-msgstr "Bildirim yok."
-
-msgid "Show notifications."
-msgstr "Bildirimleri göster."
-
-msgid "Silence the notifications."
-msgstr "Bildirimleri sessize al."
 
 msgid "Left Stick Left, Joystick 0 Left"
 msgstr "Sol Kol Sol, Oyunkolu 0 Sol"
@@ -3326,6 +3178,12 @@ msgstr "Gözat"
 msgid "Favorites"
 msgstr "Favoriler"
 
+msgid "View items as a grid of thumbnails."
+msgstr "Öğeleri küçük resim ızgarası şeklinde göster."
+
+msgid "View items as a list."
+msgstr "Öğeleri liste olarak göster."
+
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Durum: Dosya içe aktarma başarısız oldu. Lütfen dosyayı onarın ve tekrar içe "
@@ -3352,9 +3210,6 @@ msgstr "Çoğaltılırken hata:"
 msgid "Unable to update dependencies:"
 msgstr "Bağımlılıklar güncellenemedi:"
 
-msgid "Provided name contains invalid characters."
-msgstr "Sağlanan isim geçersiz karakterler içeriyor."
-
 msgid ""
 "This file extension is not recognized by the editor.\n"
 "If you want to rename it anyway, use your operating system's file manager.\n"
@@ -3370,27 +3225,6 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "Bu isimde zaten bir dosya ve ya klasör mevcut."
 
-msgid ""
-"The following files or folders conflict with items in the target location "
-"'%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Do you wish to overwrite them?"
-msgstr ""
-"Aşağıdaki dosyalar veya klasörler '%s' hedef konumundaki ögelerle "
-"çakışıyor:\n"
-"\n"
-"%s\n"
-"\n"
-"Bunların üzerine yazmak ister misiniz?"
-
-msgid "Renaming file:"
-msgstr "Dosya yeniden-adlandırma:"
-
-msgid "Renaming folder:"
-msgstr "Klasör yeniden adlandırma:"
-
 msgid "Duplicating file:"
 msgstr "Dosya çoğaltılıyor:"
 
@@ -3403,11 +3237,8 @@ msgstr "Yeni Miras Alınmış Sahne"
 msgid "Set As Main Scene"
 msgstr "Sahneyi Ana Sahne Yap"
 
-msgid "Add to Favorites"
-msgstr "Favorilere ekle"
-
-msgid "Remove from Favorites"
-msgstr "Favorilerden kaldır"
+msgid "Open Scenes"
+msgstr "Sahneleri Aç"
 
 msgid "Edit Dependencies..."
 msgstr "Bağımlılıkları Düzenle..."
@@ -3415,8 +3246,17 @@ msgstr "Bağımlılıkları Düzenle..."
 msgid "View Owners..."
 msgstr "Sahipleri Görüntüle..."
 
-msgid "Move To..."
-msgstr "Şuraya Taşı..."
+msgid "Add to Favorites"
+msgstr "Favorilere ekle"
+
+msgid "Remove from Favorites"
+msgstr "Favorilerden kaldır"
+
+msgid "Open in File Manager"
+msgstr "Dosya Yöneticisinde Aç"
+
+msgid "New Folder..."
+msgstr "Yeni Klasör..."
 
 msgid "New Scene..."
 msgstr "Yeni Sahne..."
@@ -3445,6 +3285,9 @@ msgstr "Son Değişiklik Tarihi'ne göre sırala"
 msgid "Sort by First Modified"
 msgstr "İlk Değişiklik Tarihi'ne göre sırala"
 
+msgid "Copy Path"
+msgstr "Dosya Yolunu Kopyala"
+
 msgid "Duplicate..."
 msgstr "Çoğalt..."
 
@@ -3463,9 +3306,6 @@ msgid ""
 msgstr ""
 "Dosyalar Taranıyor,\n"
 "Lütfen Bekleyiniz..."
-
-msgid "Move"
-msgstr "Taşı"
 
 msgid "Overwrite"
 msgstr "Üzerine Yaz"
@@ -3542,6 +3382,186 @@ msgstr "Grup Düzenleyici"
 
 msgid "Manage Groups"
 msgstr "Grupları Düzenle"
+
+msgid "Move"
+msgstr "Taşı"
+
+msgid "Please select a base directory first."
+msgstr "Lütfen önce bir taban dizini seçin."
+
+msgid "Choose a Directory"
+msgstr "Bir Dizin Seç"
+
+msgid "Network"
+msgstr "Ağ"
+
+msgid "Select Current Folder"
+msgstr "Geçerli Klasörü Seç"
+
+msgid "Select This Folder"
+msgstr "Bu Klasörü Seç"
+
+msgid "All Recognized"
+msgstr "Tümü Onaylandı"
+
+msgid "All Files (*)"
+msgstr "Tüm Dosyalar (*)"
+
+msgid "Open a File"
+msgstr "Bir Dosya Aç"
+
+msgid "Open File(s)"
+msgstr "Dosya(ları) Aç"
+
+msgid "Open a Directory"
+msgstr "Bir Dizin Aç"
+
+msgid "Open a File or Directory"
+msgstr "Bir Dosya ya da Dizin Aç"
+
+msgid "Save a File"
+msgstr "Bir Dosya Kaydet"
+
+msgid "Go Back"
+msgstr "Geri dön"
+
+msgid "Go Forward"
+msgstr "İleri Git"
+
+msgid "Go Up"
+msgstr "Yukarı Git"
+
+msgid "Toggle Hidden Files"
+msgstr "Gizli Dosyalari Aç / Kapat"
+
+msgid "Toggle Favorite"
+msgstr "Beğenileni Aç / Kapat"
+
+msgid "Toggle Mode"
+msgstr "Aç / Kapat Biçimi"
+
+msgid "Focus Path"
+msgstr "Yola Odaklan"
+
+msgid "Move Favorite Up"
+msgstr "Beğenileni Yukarı Taşı"
+
+msgid "Move Favorite Down"
+msgstr "Beğenileni Aşağı Taşı"
+
+msgid "Go to previous folder."
+msgstr "Önceki klasöre git."
+
+msgid "Go to next folder."
+msgstr "Sonraki klasöre git."
+
+msgid "Go to parent folder."
+msgstr "Üst klasöre git."
+
+msgid "Refresh files."
+msgstr "Dosyaları yenile."
+
+msgid "(Un)favorite current folder."
+msgstr "Bu klasörü favorilerden çıkar/favorilere ekle."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Gizli Dosyaları Aç / Kapat."
+
+msgid "Directories & Files:"
+msgstr "Dizinler & Dosyalar:"
+
+msgid "Preview:"
+msgstr "Önizleme:"
+
+msgid "File:"
+msgstr "Dosya:"
+
+msgid "No sub-resources found."
+msgstr "Alt kaynağı bulunamadı."
+
+msgid "Open a list of sub-resources."
+msgstr "Kaynağın alt dizinini liste halinde aç."
+
+msgid "Play the project."
+msgstr "Projeti oynat."
+
+msgid "Play the edited scene."
+msgstr "Düzenlenmiş sahneyi oynat."
+
+msgid "Quick Run Scene..."
+msgstr "Sahneyi Hızlı Çalıştır..."
+
+msgid "Run Project"
+msgstr "Projeyi Çalıştır"
+
+msgid ""
+"Hold %s to round to integers.\n"
+"Hold Shift for more precise changes."
+msgstr ""
+"Tam sayıya yuvarlamak için %s tuşuna basılı tutun.\n"
+"Hassas değişiklikler için Shift tuşuna basılı tutun."
+
+msgid "No notifications."
+msgstr "Bildirim yok."
+
+msgid "Show notifications."
+msgstr "Bildirimleri göster."
+
+msgid "Silence the notifications."
+msgstr "Bildirimleri sessize al."
+
+msgid "Toggle Visible"
+msgstr "Görünebilirliği Aç/Kapa"
+
+msgid "Unlock Node"
+msgstr "Düğüm Kilidi Aç"
+
+msgid "Button Group"
+msgstr "Düğme Grubu"
+
+msgid "Disable Scene Unique Name"
+msgstr "Sahne Benzersiz İsmini Etkisiz Kıl"
+
+msgid "(Connecting From)"
+msgstr "(Gelen Bağlantı)"
+
+msgid "Node configuration warning:"
+msgstr "Düğüm yapılandırma uyarısı:"
+
+msgid "Open in Editor"
+msgstr "Düzenleyicide Aç"
+
+msgid "Open Script:"
+msgstr "Betik Aç:"
+
+msgid ""
+"Node is locked.\n"
+"Click to unlock it."
+msgstr ""
+"Düğüm kilitli.\n"
+"Kiliti açmak için tıkla."
+
+msgid ""
+"AnimationPlayer is pinned.\n"
+"Click to unpin."
+msgstr ""
+"AnimasyonOynatıcı sabitlendi.\n"
+"Çözmek için tıklayın."
+
+msgid "Invalid node name, the following characters are not allowed:"
+msgstr "Geçersiz düğüm adı, aşağıdaki karakterlere izin verilmiyor:"
+
+msgid "Rename Node"
+msgstr "Düğümü Yeniden Adlandır"
+
+msgid "Scene Tree (Nodes):"
+msgstr "Sahne Ağacı (Düğümler):"
+
+msgid "Node Configuration Warning!"
+msgstr "Düğüm Yapılandırma Uyarısı!"
+
+msgid "Select a Node"
+msgstr "Bir Düğüm Seç"
 
 msgid "Global"
 msgstr "Genel"
@@ -3890,9 +3910,6 @@ msgstr "BlendSpace2D Noktasını Kaldır"
 msgid "Remove BlendSpace2D Triangle"
 msgstr "BlendSpace2D Üçgenini Kaldır"
 
-msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr "BlendSpace2D bir AnimationTree düğümüne ait değil."
-
 msgid "No triangles exist, so no blending can take place."
 msgstr "Herhangi bir üçgen bulunmuyor, burada harmanlama işlemi yapılamaz."
 
@@ -4129,9 +4146,6 @@ msgstr "Sonunda"
 msgid "Travel"
 msgstr "Seyahat"
 
-msgid "Start and end nodes are needed for a sub-transition."
-msgstr "Alt geçiş için başlangıç ve bitiş düğümleri gerekli."
-
 msgid "No playback resource set at path: %s."
 msgstr "%s: adresinde arka plan oynatma kaynağı ayarlanmadı."
 
@@ -4146,9 +4160,6 @@ msgstr "Yeni düğümler oluştur."
 
 msgid "Connect nodes."
 msgstr "Düğümleri Bağla."
-
-msgid "Group Selected Node(s)"
-msgstr "Seçilen Düğümleri Grupla"
 
 msgid "Remove selected node or transition."
 msgstr "Seçilen düğüm ya da geçişi sil."
@@ -4583,6 +4594,9 @@ msgstr "Seçilmiş Düğüm/leri Kilitle"
 msgid "Unlock Selected Node(s)"
 msgstr "Seçilmiş Düğüm/leri Aç"
 
+msgid "Group Selected Node(s)"
+msgstr "Seçilen Düğümleri Grupla"
+
 msgid "Ungroup Selected Node(s)"
 msgstr "Seçilen Düğümleri Dağıt"
 
@@ -4777,11 +4791,17 @@ msgstr "Emisyon Renkleri"
 msgid "Create Emission Points From Node"
 msgstr "Düğümden Emisyon Noktaları Oluştur"
 
-msgid "Flat 0"
-msgstr "Sade 0"
+msgid "Load Curve Preset"
+msgstr "Eğri Önayarı Yükle"
 
-msgid "Flat 1"
-msgstr "Düz 1"
+msgid "Remove Curve Point"
+msgstr "Yol Noktasını Kaldır"
+
+msgid "Modify Curve Point"
+msgstr "Eğri Noktasını Değiştir"
+
+msgid "Hold Shift to edit tangents individually"
+msgstr "Tanjantları bireysel olarak düzenlemek için Shift tuşuna basılı tutun"
 
 msgid "Ease In"
 msgstr "Açılma"
@@ -4792,41 +4812,8 @@ msgstr "Kararma"
 msgid "Smoothstep"
 msgstr "Yumuşakgeçiş"
 
-msgid "Modify Curve Point"
-msgstr "Eğri Noktasını Değiştir"
-
-msgid "Modify Curve Tangent"
-msgstr "Eğri Tanjantını Değiştir"
-
-msgid "Load Curve Preset"
-msgstr "Eğri Önayarı Yükle"
-
-msgid "Add Point"
-msgstr "Nokta Ekle"
-
-msgid "Remove Point"
-msgstr "Noktayı kaldır"
-
-msgid "Left Linear"
-msgstr "Sol Doğrusal"
-
-msgid "Right Linear"
-msgstr "Sağ Doğrusal"
-
-msgid "Load Preset"
-msgstr "Önayar yükle"
-
-msgid "Remove Curve Point"
-msgstr "Yol Noktasını Kaldır"
-
-msgid "Toggle Curve Linear Tangent"
-msgstr "Eğri Doğrusal Tanjantını Aç/Kapa"
-
-msgid "Hold Shift to edit tangents individually"
-msgstr "Tanjantları bireysel olarak düzenlemek için Shift tuşuna basılı tutun"
-
-msgid "Right click to add point"
-msgstr "Nokta eklemek için sağ tıkla"
+msgid "Toggle Grid Snap"
+msgstr "Snap Aç/Kapat"
 
 msgid "Debug with External Editor"
 msgstr "Harici düzenleyici ile hata ayıkla"
@@ -4925,6 +4912,39 @@ msgstr "Özellik Ekle"
 msgid " - Variation"
 msgstr " Varyasyon"
 
+msgid "Change AudioStreamPlayer3D Emission Angle"
+msgstr "AudioStreamPlayer3D Emisyon Açısı Değişimi"
+
+msgid "Change Camera FOV"
+msgstr "Kamera FOV'sunu Değiştir"
+
+msgid "Change Camera Size"
+msgstr "Kamera Boyutunu Değiştir"
+
+msgid "Change Sphere Shape Radius"
+msgstr "Küresel Şeklin Çapını Değiştir"
+
+msgid "Change Capsule Shape Radius"
+msgstr "Kapsülün Çapını Değiştir"
+
+msgid "Change Capsule Shape Height"
+msgstr "Kapsülün Yüksekliğini Değiştir"
+
+msgid "Change Cylinder Shape Radius"
+msgstr "Silindir Şekli Yarıçapını Değiştir"
+
+msgid "Change Cylinder Shape Height"
+msgstr "Silindir Şekli Yüksekliğini Değiştir"
+
+msgid "Change Particles AABB"
+msgstr "Parçacık AABB Değişimi"
+
+msgid "Change Light Radius"
+msgstr "Işın Çapını Değiştir"
+
+msgid "Change Notifier AABB"
+msgstr "Bildirici Değiştir AABB"
+
 msgid "Convert to CPUParticles2D"
 msgstr "2BİşlemciPartikül'e dönüştür"
 
@@ -4978,9 +4998,6 @@ msgstr "GradientTexture2D Dolgu Noktalarını Değiştir"
 
 msgid "Swap Gradient Fill Points"
 msgstr "Gradient Doldurma Noktalarını Değiştir"
-
-msgid "Toggle Grid Snap"
-msgstr "Snap Aç/Kapat"
 
 msgid "Create Occluder Polygon"
 msgstr "Engelleyici Çokgeni Oluştur"
@@ -5228,44 +5245,17 @@ msgstr "Değer:"
 msgid "Populate"
 msgstr "Doldur"
 
+msgid "Edit Poly"
+msgstr "Çokluyu Düzenleyin"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Çokluyu Düzenleyin (Noktayı Silin)"
+
 msgid "Create Navigation Polygon"
 msgstr "Yönlendirici Çokgeni Oluştur"
 
 msgid "Unnamed Gizmo"
 msgstr "Adsız Aygıt"
-
-msgid "Change Light Radius"
-msgstr "Işın Çapını Değiştir"
-
-msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr "AudioStreamPlayer3D Emisyon Açısı Değişimi"
-
-msgid "Change Camera FOV"
-msgstr "Kamera FOV'sunu Değiştir"
-
-msgid "Change Camera Size"
-msgstr "Kamera Boyutunu Değiştir"
-
-msgid "Change Sphere Shape Radius"
-msgstr "Küresel Şeklin Çapını Değiştir"
-
-msgid "Change Notifier AABB"
-msgstr "Bildirici Değiştir AABB"
-
-msgid "Change Particles AABB"
-msgstr "Parçacık AABB Değişimi"
-
-msgid "Change Capsule Shape Radius"
-msgstr "Kapsülün Çapını Değiştir"
-
-msgid "Change Capsule Shape Height"
-msgstr "Kapsülün Yüksekliğini Değiştir"
-
-msgid "Change Cylinder Shape Radius"
-msgstr "Silindir Şekli Yarıçapını Değiştir"
-
-msgid "Change Cylinder Shape Height"
-msgstr "Silindir Şekli Yüksekliğini Değiştir"
 
 msgid "Transform Aborted."
 msgstr "Dönüşüm Durduruldu."
@@ -5869,12 +5859,6 @@ msgstr "Kemikleri Çokgene Eşleştir"
 msgid "Create Polygon3D"
 msgstr "Polygon3D oluştur"
 
-msgid "Edit Poly"
-msgstr "Çokluyu Düzenleyin"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Çokluyu Düzenleyin (Noktayı Silin)"
-
 msgid "ERROR: Couldn't load resource!"
 msgstr "HATA: Kaynak yüklenemedi!"
 
@@ -5892,9 +5876,6 @@ msgstr "Kaynak panosu boş!"
 
 msgid "Paste Resource"
 msgstr "Kaynağı Yapıştır"
-
-msgid "Open in Editor"
-msgstr "Düzenleyicide Aç"
 
 msgid "Load Resource"
 msgstr "Kaynak Yükle"
@@ -6327,17 +6308,8 @@ msgstr "Yakınlaştırmayı Sıfırla"
 msgid "Select Frames"
 msgstr "Çerçeveleri Seç"
 
-msgid "Horizontal:"
-msgstr "Yatay:"
-
-msgid "Vertical:"
-msgstr "Dikey:"
-
-msgid "Separation:"
-msgstr "Ayrım:"
-
-msgid "Select/Clear All Frames"
-msgstr "Hepsini Seç / Temizle"
+msgid "Size"
+msgstr "Boyut"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "HayaliÇizimlik'ten Çerçeveler oluştur"
@@ -6365,6 +6337,9 @@ msgstr "Otomatik Dilimle"
 
 msgid "Step:"
 msgstr "Adım:"
+
+msgid "Separation:"
+msgstr "Ayrım:"
 
 msgid "Styleboxes"
 msgstr "StilKutusu"
@@ -7580,11 +7555,11 @@ msgstr "Proje Yükleme Yolu:"
 msgid "Renderer:"
 msgstr "Oluşturucu:"
 
-msgid "Missing Project"
-msgstr "Eksik Proje"
-
 msgid "Error: Project is missing on the filesystem."
 msgstr "Hata: Proje dosya sisteminde mevcut değil.."
+
+msgid "Missing Project"
+msgstr "Eksik Proje"
 
 msgid "Local"
 msgstr "Yerel"
@@ -8052,56 +8027,6 @@ msgstr ""
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Miras Silinsin mi? (Geri Alınamaz!)"
 
-msgid "Toggle Visible"
-msgstr "Görünebilirliği Aç/Kapa"
-
-msgid "Unlock Node"
-msgstr "Düğüm Kilidi Aç"
-
-msgid "Button Group"
-msgstr "Düğme Grubu"
-
-msgid "Disable Scene Unique Name"
-msgstr "Sahne Benzersiz İsmini Etkisiz Kıl"
-
-msgid "(Connecting From)"
-msgstr "(Gelen Bağlantı)"
-
-msgid "Node configuration warning:"
-msgstr "Düğüm yapılandırma uyarısı:"
-
-msgid "Open Script:"
-msgstr "Betik Aç:"
-
-msgid ""
-"Node is locked.\n"
-"Click to unlock it."
-msgstr ""
-"Düğüm kilitli.\n"
-"Kiliti açmak için tıkla."
-
-msgid ""
-"AnimationPlayer is pinned.\n"
-"Click to unpin."
-msgstr ""
-"AnimasyonOynatıcı sabitlendi.\n"
-"Çözmek için tıklayın."
-
-msgid "Invalid node name, the following characters are not allowed:"
-msgstr "Geçersiz düğüm adı, aşağıdaki karakterlere izin verilmiyor:"
-
-msgid "Rename Node"
-msgstr "Düğümü Yeniden Adlandır"
-
-msgid "Scene Tree (Nodes):"
-msgstr "Sahne Ağacı (Düğümler):"
-
-msgid "Node Configuration Warning!"
-msgstr "Düğüm Yapılandırma Uyarısı!"
-
-msgid "Select a Node"
-msgstr "Bir Düğüm Seç"
-
 msgid "Path is empty."
 msgstr "Yol boş."
 
@@ -8352,9 +8277,6 @@ msgstr "Yapılandırma"
 msgid "Count"
 msgstr "Sayma"
 
-msgid "Size"
-msgstr "Boyut"
-
 msgid "Network Profiler"
 msgstr "Ağ Profilcisi"
 
@@ -8428,6 +8350,12 @@ msgstr "'%s' karakteri bir paket segmentindeki ilk karakter olamaz."
 
 msgid "The package must have at least one '.' separator."
 msgstr "Paket en azından bir tane '.' ayıracına sahip olmalıdır."
+
+msgid "Invalid public key for APK expansion."
+msgstr "APK genişletmesi için geçersiz ortak anahtar."
+
+msgid "Invalid package name:"
+msgstr "Geçersiz paket ismi:"
 
 msgid "Select device from the list"
 msgstr "Listeden aygıt seç"
@@ -8504,12 +8432,6 @@ msgstr "Eksik 'inşa-araçları' dizini!"
 
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Android SDK platform-tools'un apksigner komutu bulunamıyor."
-
-msgid "Invalid public key for APK expansion."
-msgstr "APK genişletmesi için geçersiz ortak anahtar."
-
-msgid "Invalid package name:"
-msgstr "Geçersiz paket ismi:"
 
 msgid "Signing debug %s..."
 msgstr "%s hata ayıklaması imzalanıyor..."
@@ -8608,9 +8530,6 @@ msgstr "APK hizalanıyor ..."
 msgid "Could not unzip temporary unaligned APK."
 msgstr "Geçici olarak hizalanmamış APK'nın sıkıştırması açılamadı."
 
-msgid "App Store Team ID not specified - cannot configure the project."
-msgstr "App Store Ekip Kimliği belirtilmedi - proje yapılandırılamıyor."
-
 msgid "Invalid Identifier:"
 msgstr "Geçersiz Tanımlayıcı:"
 
@@ -8625,6 +8544,9 @@ msgstr "Dosya sistemi erişimi alınamıyor."
 
 msgid "Failed to get Info.plist hash."
 msgstr "Bilgi alınamadı.plist karması."
+
+msgid "Invalid bundle identifier:"
+msgstr "Geçersiz paket tanımlayıcısı:"
 
 msgid "Could not open icon file \"%s\"."
 msgstr "İkon dosyası \"%s\" açılamadı."
@@ -8643,12 +8565,6 @@ msgstr "Dışa aktarım için şablon uygulaması bulunamadı: \"%s\"."
 
 msgid "Invalid export format."
 msgstr "Geçersiz dışa aktarım biçimi."
-
-msgid "Invalid bundle identifier:"
-msgstr "Geçersiz paket tanımlayıcısı:"
-
-msgid "Notarization: Apple ID password not specified."
-msgstr "Noter tasdik: Apple Kimliği parolası belirtilmedi."
 
 msgid "Invalid package short name."
 msgstr "Geçersiz paket kısa ismi."
@@ -8727,15 +8643,6 @@ msgstr "Geçersiz kimlik türü."
 
 msgid "Failed to remove temporary file \"%s\"."
 msgstr "\"%s\" geçici dosyasının silinme işlemi başarısız oldu."
-
-msgid "Invalid icon path:"
-msgstr "Geçersiz ikon yolu:"
-
-msgid "Invalid file version:"
-msgstr "Geçersiz dosya sürümü:"
-
-msgid "Invalid product version:"
-msgstr "Geçersiz ürün sürümü:"
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
@@ -8821,13 +8728,6 @@ msgstr ""
 
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "Bu engelleyici için engelleyici çokgeni boş. Lütfen bir çokgen çizin."
-
-msgid ""
-"The NavigationObstacle2D only serves to provide collision avoidance to a "
-"Node2D object."
-msgstr ""
-"NavigationObstacle2D, yalnızca bir Node2D nesnesine çarpışmadan kaçınma "
-"sağlamaya hizmet eder."
 
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
@@ -8959,13 +8859,6 @@ msgid "(Other)"
 msgstr "(Diğer)"
 
 msgid ""
-"Default Environment as specified in Project Settings (Rendering -> "
-"Environment -> Default Environment) could not be loaded."
-msgstr ""
-"Proje Ayarlarında tanımlanmış Varsayılan Ortam (İşleme -> Görüntükapısı -> "
-"Varsayılan Ortam) yüklenemedi."
-
-msgid ""
 "Very low timer wait times (< 0.05 seconds) may behave in significantly "
 "different ways depending on the rendered or physics frame rate.\n"
 "Consider using a script's process loop instead of relying on a Timer for "
@@ -9016,6 +8909,3 @@ msgstr "uniform için atama."
 
 msgid "Constants cannot be modified."
 msgstr "Sabit değerler değiştirilemez."
-
-msgid "Shader include file does not exist: "
-msgstr "Gölgelendirici içerme dosyası mevcut değil: "

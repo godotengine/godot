@@ -33,7 +33,7 @@
 
 #ifdef X11_ENABLED
 
-#include "servers/display_server.h"
+#include "joypad_linux.h"
 
 #include "core/input/input.h"
 #include "core/os/mutex.h"
@@ -43,27 +43,28 @@
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "joypad_linux.h"
 #include "servers/audio_server.h"
+#include "servers/display_server.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering_server.h"
 
 #if defined(SPEECHD_ENABLED)
-#include "../tts_linux.h"
+#include "tts_linux.h"
 #endif
 
 #if defined(GLES3_ENABLED)
-#include "gl_manager_x11.h"
+#include "x11/gl_manager_x11.h"
 #endif
 
 #if defined(VULKAN_ENABLED)
+#include "x11/vulkan_context_x11.h"
+
 #include "drivers/vulkan/rendering_device_vulkan.h"
-#include "vulkan_context_x11.h"
 #endif
 
 #if defined(DBUS_ENABLED)
-#include "../freedesktop_portal_desktop.h"
-#include "../freedesktop_screensaver.h"
+#include "freedesktop_portal_desktop.h"
+#include "freedesktop_screensaver.h"
 #endif
 
 #include <X11/Xatom.h>
@@ -72,16 +73,16 @@
 #include <X11/keysym.h>
 
 #ifdef SOWRAP_ENABLED
-#include "dynwrappers/xlib-so_wrap.h"
+#include "x11/dynwrappers/xlib-so_wrap.h"
 
-#include "dynwrappers/xcursor-so_wrap.h"
-#include "dynwrappers/xext-so_wrap.h"
-#include "dynwrappers/xinerama-so_wrap.h"
-#include "dynwrappers/xinput2-so_wrap.h"
-#include "dynwrappers/xrandr-so_wrap.h"
-#include "dynwrappers/xrender-so_wrap.h"
+#include "x11/dynwrappers/xcursor-so_wrap.h"
+#include "x11/dynwrappers/xext-so_wrap.h"
+#include "x11/dynwrappers/xinerama-so_wrap.h"
+#include "x11/dynwrappers/xinput2-so_wrap.h"
+#include "x11/dynwrappers/xrandr-so_wrap.h"
+#include "x11/dynwrappers/xrender-so_wrap.h"
 
-#include "../xkbcommon-so_wrap.h"
+#include "xkbcommon-so_wrap.h"
 #else
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
@@ -521,6 +522,6 @@ public:
 	~DisplayServerX11();
 };
 
-#endif // X11 enabled
+#endif // X11_ENABLED
 
 #endif // DISPLAY_SERVER_X11_H

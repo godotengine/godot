@@ -35,17 +35,17 @@
 #include "servers/display_server.h"
 
 #if defined(VULKAN_ENABLED)
+#import "vulkan_context_ios.h"
+
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
-
-#include "vulkan_context_ios.h"
 
 #ifdef USE_VOLK
 #include <volk.h>
 #else
 #include <vulkan/vulkan.h>
 #endif
-#endif
+#endif // VULKAN_ENABLED
 
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"

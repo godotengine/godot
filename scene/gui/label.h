@@ -65,6 +65,7 @@ private:
 	float visible_ratio = 1.0;
 	int lines_skipped = 0;
 	int max_lines_visible = -1;
+	PackedFloat32Array tab_stops;
 
 	Ref<LabelSettings> settings;
 
@@ -141,6 +142,9 @@ public:
 
 	void set_clip_text(bool p_clip);
 	bool is_clipping_text() const;
+
+	void set_tab_stops(const PackedFloat32Array &p_tab_stops);
+	PackedFloat32Array get_tab_stops() const;
 
 	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
 	TextServer::OverrunBehavior get_text_overrun_behavior() const;

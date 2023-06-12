@@ -28,17 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-//
-// This file demonstrates how to initialize EGL in a Windows Store app, using ICoreWindow.
-//
-
 #include "app_uwp.h"
 
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/keyboard.h"
 #include "main/main.h"
-
 #include "platform/windows/key_mapping_windows.h"
 
 #include <collection.h>

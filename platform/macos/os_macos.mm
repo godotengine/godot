@@ -30,15 +30,15 @@
 
 #include "os_macos.h"
 
-#include "core/crypto/crypto_core.h"
-#include "core/version_generated.gen.h"
-#include "main/main.h"
-
 #include "dir_access_macos.h"
 #include "display_server_macos.h"
 #include "godot_application.h"
 #include "godot_application_delegate.h"
 #include "macos_terminal_logger.h"
+
+#include "core/crypto/crypto_core.h"
+#include "core/version_generated.gen.h"
+#include "main/main.h"
 
 #include <dlfcn.h>
 #include <libproc.h>
@@ -698,6 +698,12 @@ String OS_MacOS::get_system_ca_certificates() {
 	}
 	CFRelease(result);
 	return certs;
+}
+
+OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
+	// macOS supports both formats on ARM. Prefer S3TC/BPTC
+	// for better compatibility with x86 platforms.
+	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
 }
 
 void OS_MacOS::run() {

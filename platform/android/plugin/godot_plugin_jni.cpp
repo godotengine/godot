@@ -30,12 +30,13 @@
 
 #include "godot_plugin_jni.h"
 
-#include <core/config/engine.h>
-#include <core/config/project_settings.h>
-#include <core/error/error_macros.h>
-#include <platform/android/api/jni_singleton.h>
-#include <platform/android/jni_utils.h>
-#include <platform/android/string_android.h>
+#include "api/jni_singleton.h"
+#include "jni_utils.h"
+#include "string_android.h"
+
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 
 static HashMap<String, JNISingleton *> jni_singletons;
 

@@ -925,6 +925,7 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 	for (Node *E : es.selection) {
 		p_selection->add_node(E);
 	}
+	p_selection->cancel_update(); // Selection update results in redundant Node edit, so we cancel it.
 	set_editor_plugin_states(es.editor_states);
 
 	return es.custom_state;
@@ -1324,6 +1325,10 @@ void EditorSelection::clear() {
 
 	changed = true;
 	node_list_changed = true;
+}
+
+void EditorSelection::cancel_update() {
+	changed = false;
 }
 
 EditorSelection::EditorSelection() {

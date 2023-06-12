@@ -31,6 +31,7 @@
 #include "worker_thread_pool.h"
 
 #include "core/os/os.h"
+#include "core/os/thread_safe.h"
 
 void WorkerThreadPool::Task::free_template_userdata() {
 	ERR_FAIL_COND(!template_userdata);
@@ -178,6 +179,9 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		if (post) {
 			task_available_semaphore.post();
 		}
+
+		// Engine/user tasks can set-and-forget, so we must be sure it's back to normal by the end of the task.
+		set_current_thread_safe_for_nodes(false);
 	}
 }
 

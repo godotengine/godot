@@ -1579,12 +1579,28 @@ Vector2 Control::get_pivot_offset() const {
 
 void Control::_update_minimum_size() {
 	if (!is_inside_tree()) {
+		data.updating_last_minimum_size = false;
 		return;
 	}
 
-	Control *invalidate = this;
+	Size2 minsize = get_combined_minimum_size();
+	data.updating_last_minimum_size = false;
+
+	if (minsize != data.last_minimum_size) {
+		data.last_minimum_size = minsize;
+		_size_changed();
+		emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
+	}
+}
+
+void Control::update_minimum_size() {
+	ERR_MAIN_THREAD_GUARD;
+	if (!is_inside_tree() || data.block_minimum_size_adjust) {
+		return;
+	}
 
 	// Invalidate cache upwards.
+	Control *invalidate = this;
 	while (invalidate && invalidate->data.minimum_size_valid) {
 		invalidate->data.minimum_size_valid = false;
 		if (invalidate->is_set_as_top_level()) {
@@ -1604,28 +1620,12 @@ void Control::_update_minimum_size() {
 		return;
 	}
 
-	Size2 minsize = get_combined_minimum_size();
-	data.updating_last_minimum_size = false;
-	if (minsize != data.last_minimum_size) {
-		data.last_minimum_size = minsize;
-		_size_changed();
-		emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
-	}
-}
-
-void Control::update_minimum_size() {
-	ERR_MAIN_THREAD_GUARD;
-	if (!is_inside_tree() || data.block_minimum_size_adjust) {
-		return;
-	}
-
 	if (data.updating_last_minimum_size) {
 		return;
 	}
-
 	data.updating_last_minimum_size = true;
 
-	MessageQueue::get_singleton()->push_call(this, "_update_minimum_size");
+	MessageQueue::get_singleton()->push_callable(callable_mp(this, &Control::_update_minimum_size));
 }
 
 void Control::set_block_minimum_size_adjust(bool p_block) {
@@ -1665,17 +1665,8 @@ void Control::_update_minimum_size_cache() {
 	minsize.x = MAX(minsize.x, data.custom_minimum_size.x);
 	minsize.y = MAX(minsize.y, data.custom_minimum_size.y);
 
-	bool size_changed = false;
-	if (data.minimum_size_cache != minsize) {
-		size_changed = true;
-	}
-
 	data.minimum_size_cache = minsize;
 	data.minimum_size_valid = true;
-
-	if (size_changed) {
-		update_minimum_size();
-	}
 }
 
 Size2 Control::get_combined_minimum_size() const {
@@ -1712,7 +1703,7 @@ void Control::_size_changed() {
 	}
 
 	if (is_layout_rtl()) {
-		new_pos_cache.x = parent_rect.size.x - new_pos_cache.x - new_size_cache.x;
+		new_pos_cache.x = parent_rect.size.x + 2 * parent_rect.position.x - new_pos_cache.x - new_size_cache.x;
 	}
 
 	if (minimum_size.height > new_size_cache.height) {
@@ -2087,14 +2078,10 @@ Control *Control::find_next_valid_focus() const {
 		// If the focus property is manually overwritten, attempt to use it.
 
 		if (!data.focus_next.is_empty()) {
-			Node *n = get_node(data.focus_next);
-			Control *c;
-			if (n) {
-				c = Object::cast_to<Control>(n);
-				ERR_FAIL_COND_V_MSG(!c, nullptr, "Next focus node is not a control: " + n->get_name() + ".");
-			} else {
-				return nullptr;
-			}
+			Node *n = get_node_or_null(data.focus_next);
+			ERR_FAIL_NULL_V_MSG(n, nullptr, "Next focus node path is invalid: '" + data.focus_next + "'.");
+			Control *c = Object::cast_to<Control>(n);
+			ERR_FAIL_NULL_V_MSG(c, nullptr, "Next focus node is not a control: '" + n->get_name() + "'.");
 			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE && c->get_focus_layer() == get_focus_layer()) {
 				return c;
 			}
@@ -2178,14 +2165,10 @@ Control *Control::find_prev_valid_focus() const {
 		// If the focus property is manually overwritten, attempt to use it.
 
 		if (!data.focus_prev.is_empty()) {
-			Node *n = get_node(data.focus_prev);
-			Control *c;
-			if (n) {
-				c = Object::cast_to<Control>(n);
-				ERR_FAIL_COND_V_MSG(!c, nullptr, "Previous focus node is not a control: " + n->get_name() + ".");
-			} else {
-				return nullptr;
-			}
+			Node *n = get_node_or_null(data.focus_prev);
+			ERR_FAIL_NULL_V_MSG(n, nullptr, "Previous focus node path is invalid: '" + data.focus_prev + "'.");
+			Control *c = Object::cast_to<Control>(n);
+			ERR_FAIL_NULL_V_MSG(c, nullptr, "Previous focus node is not a control: '" + n->get_name() + "'.");
 			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE && c->get_focus_layer() == get_focus_layer()) {
 				return c;
 			}
@@ -2274,14 +2257,10 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		return nullptr;
 	}
 	if (!data.focus_neighbor[p_side].is_empty()) {
-		Control *c = nullptr;
-		Node *n = get_node(data.focus_neighbor[p_side]);
-		if (n) {
-			c = Object::cast_to<Control>(n);
-			ERR_FAIL_COND_V_MSG(!c, nullptr, "Neighbor focus node is not a control: " + n->get_name() + ".");
-		} else {
-			return nullptr;
-		}
+		Node *n = get_node_or_null(data.focus_neighbor[p_side]);
+		ERR_FAIL_NULL_V_MSG(n, nullptr, "Neighbor focus node path is invalid: '" + data.focus_neighbor[p_side] + "'.");
+		Control *c = Object::cast_to<Control>(n);
+		ERR_FAIL_NULL_V_MSG(c, nullptr, "Neighbor focus node is not a control: '" + n->get_name() + "'.");
 		bool valid = true;
 		if (!c->is_visible()) {
 			valid = false;
@@ -3167,6 +3146,7 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_POST_ENTER_TREE: {
 			data.is_rtl_dirty = true;
+			update_minimum_size();
 			_size_changed();
 		} break;
 
@@ -3207,7 +3187,7 @@ void Control::_notification(int p_notification) {
 			} else {
 				// Is a regular root control or top_level.
 				Viewport *viewport = get_viewport();
-				ERR_FAIL_COND(!viewport);
+				ERR_FAIL_NULL(viewport);
 				data.RI = viewport->_gui_add_root_control(this);
 
 				get_parent()->connect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::gui_set_root_order_dirty), CONNECT_REFERENCE_COUNTED);
@@ -3220,7 +3200,7 @@ void Control::_notification(int p_notification) {
 			} else {
 				// Connect viewport.
 				Viewport *viewport = get_viewport();
-				ERR_FAIL_COND(!viewport);
+				ERR_FAIL_NULL(viewport);
 				viewport->connect("size_changed", callable_mp(this, &Control::_size_changed));
 			}
 		} break;
@@ -3232,7 +3212,7 @@ void Control::_notification(int p_notification) {
 			} else {
 				// Disconnect viewport.
 				Viewport *viewport = get_viewport();
-				ERR_FAIL_COND(!viewport);
+				ERR_FAIL_NULL(viewport);
 				viewport->disconnect("size_changed", callable_mp(this, &Control::_size_changed));
 			}
 
@@ -3282,10 +3262,13 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			emit_signal(SceneStringNames::get_singleton()->theme_changed);
+
 			_invalidate_theme_cache();
 			_update_theme_item_cache();
-			update_minimum_size();
 			queue_redraw();
+
+			update_minimum_size();
+			_size_changed();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -3294,7 +3277,8 @@ void Control::_notification(int p_notification) {
 					get_viewport()->_gui_hide_control(this);
 				}
 			} else {
-				_update_minimum_size();
+				update_minimum_size();
+				_size_changed();
 			}
 		} break;
 
@@ -3302,8 +3286,12 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			if (is_inside_tree()) {
 				data.is_rtl_dirty = true;
+
 				_invalidate_theme_cache();
 				_update_theme_item_cache();
+				queue_redraw();
+
+				update_minimum_size();
 				_size_changed();
 			}
 		} break;
@@ -3311,8 +3299,6 @@ void Control::_notification(int p_notification) {
 }
 
 void Control::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_minimum_size"), &Control::_update_minimum_size);
-
 	ClassDB::bind_method(D_METHOD("accept_event"), &Control::accept_event);
 	ClassDB::bind_method(D_METHOD("get_minimum_size"), &Control::get_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_combined_minimum_size"), &Control::get_combined_minimum_size);

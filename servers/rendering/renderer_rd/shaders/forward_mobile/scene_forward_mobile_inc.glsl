@@ -14,6 +14,7 @@
 #endif
 #endif
 
+#define USING_MOBILE_RENDERER
 /* don't exceed 128 bytes!! */
 /* put instance data into our push content, not a array */
 layout(push_constant, std430) uniform DrawCall {

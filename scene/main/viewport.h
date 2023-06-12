@@ -60,6 +60,7 @@ class ViewportTexture : public Texture2D {
 	friend class Viewport;
 	Viewport *vp = nullptr;
 	bool vp_pending = false;
+	bool vp_changed = false;
 
 	void _setup_local_to_scene(const Node *p_loc_scene);
 
@@ -256,16 +257,6 @@ private:
 	Transform3D physics_last_object_transform;
 	Transform3D physics_last_camera_transform;
 	ObjectID physics_last_id;
-	bool physics_has_last_mousepos = false;
-	Vector2 physics_last_mousepos = Vector2(INFINITY, INFINITY);
-	struct {
-		bool alt = false;
-		bool control = false;
-		bool shift = false;
-		bool meta = false;
-		BitField<MouseButtonMask> mouse_mask;
-
-	} physics_last_mouse_state;
 
 	bool handle_input_locally = true;
 	bool local_input_handled = false;
@@ -389,6 +380,7 @@ private:
 		bool embed_subwindows_hint = false;
 
 		Window *subwindow_focused = nullptr;
+		Window *currently_dragged_subwindow = nullptr;
 		SubWindowDrag subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 		Vector2 subwindow_drag_from;
 		Vector2 subwindow_drag_pos;
@@ -676,6 +668,7 @@ public:
 	Transform2D get_screen_transform() const;
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const;
 	virtual Transform2D get_popup_base_transform() const { return Transform2D(); }
+	virtual bool is_directly_attached_to_screen() const { return false; };
 
 #ifndef _3D_DISABLED
 	bool use_xr = false;
@@ -807,6 +800,7 @@ public:
 
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
+	virtual bool is_directly_attached_to_screen() const override;
 
 	void _validate_property(PropertyInfo &p_property) const;
 	SubViewport();

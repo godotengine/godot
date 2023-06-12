@@ -394,7 +394,7 @@ License: BSD-2-clause
 
 Files: ./thirdparty/msdfgen/
 Comment: Multi-channel signed distance field generator
-Copyright: 2016, Viktor Chlumsky
+Copyright: 2016-2022, Viktor Chlumsky
 License: MIT
 
 Files: ./thirdparty/oidn/
@@ -425,7 +425,7 @@ License: Apache-2.0
 
 Files: ./thirdparty/spirv-reflect/
 Comment: SPIRV-Reflect
-Copyright: 2017-2018, Google Inc.
+Copyright: 2017-2022, Google Inc.
 License: Apache-2.0
 
 Files: ./thirdparty/squish/
@@ -452,15 +452,15 @@ License: BSD-3-clause
 
 Files: ./thirdparty/volk/
 Comment: volk
-Copyright: 2018-2019, Arseny Kapoulkine
+Copyright: 2018-2023, Arseny Kapoulkine
 License: Expat
 
 Files: ./thirdparty/vulkan/
 Comment: Vulkan Headers
-Copyright: 2014-2021, The Khronos Group Inc.
-  2014-2021, Valve Corporation
-  2014-2021, LunarG, Inc.
-  2015-2021, Google Inc.
+Copyright: 2014-2023, The Khronos Group Inc.
+  2014-2023, Valve Corporation
+  2014-2023, LunarG, Inc.
+  2015-2023, Google Inc.
 License: Apache-2.0
 
 Files: ./thirdparty/vulkan/vk_mem_alloc.h

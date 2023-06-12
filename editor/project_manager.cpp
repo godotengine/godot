@@ -1147,6 +1147,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		main_vbox->add_child(title_hb);
 
 		project_title = memnew(Label);
+		project_title->set_auto_translate(false);
 		project_title->set_name("ProjectName");
 		project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		project_title->set_clip_text(true);
@@ -2486,8 +2487,6 @@ void ProjectManager::_delete_project_tag(const String &p_tag) {
 }
 
 void ProjectManager::_apply_project_tags() {
-	ProjectList::Item &item = _project_list->get_selected_projects().write[0];
-
 	PackedStringArray tags;
 	for (int i = 0; i < project_tags->get_child_count(); i++) {
 		ProjectTag *tag_control = Object::cast_to<ProjectTag>(project_tags->get_child(i));
@@ -2497,7 +2496,7 @@ void ProjectManager::_apply_project_tags() {
 	}
 
 	ConfigFile cfg;
-	String project_godot = item.path.path_join("project.godot");
+	const String project_godot = _project_list->get_selected_projects()[0].path.path_join("project.godot");
 	Error err = cfg.load(project_godot);
 	if (err != OK) {
 		tag_edit_error->set_text(vformat(TTR("Couldn't load project at '%s' (error %d). It may be missing or corrupted."), project_godot, err));
@@ -2763,28 +2762,28 @@ ProjectManager::ProjectManager() {
 		switch (display_scale) {
 			case 0:
 				// Try applying a suitable display scale automatically.
-				editor_set_scale(EditorSettings::get_singleton()->get_auto_display_scale());
+				EditorScale::set_scale(EditorSettings::get_singleton()->get_auto_display_scale());
 				break;
 			case 1:
-				editor_set_scale(0.75);
+				EditorScale::set_scale(0.75);
 				break;
 			case 2:
-				editor_set_scale(1.0);
+				EditorScale::set_scale(1.0);
 				break;
 			case 3:
-				editor_set_scale(1.25);
+				EditorScale::set_scale(1.25);
 				break;
 			case 4:
-				editor_set_scale(1.5);
+				EditorScale::set_scale(1.5);
 				break;
 			case 5:
-				editor_set_scale(1.75);
+				EditorScale::set_scale(1.75);
 				break;
 			case 6:
-				editor_set_scale(2.0);
+				EditorScale::set_scale(2.0);
 				break;
 			default:
-				editor_set_scale(EDITOR_GET("interface/editor/custom_display_scale"));
+				EditorScale::set_scale(EDITOR_GET("interface/editor/custom_display_scale"));
 				break;
 		}
 		EditorFileDialog::get_icon_func = &ProjectManager::_file_dialog_get_icon;
@@ -3279,6 +3278,7 @@ ProjectTag::ProjectTag(const String &p_text, bool p_display_close) {
 
 	button = memnew(Button);
 	add_child(button);
+	button->set_auto_translate(false);
 	button->set_text(p_text.capitalize());
 	button->set_focus_mode(FOCUS_NONE);
 	button->set_icon_alignment(HORIZONTAL_ALIGNMENT_RIGHT);

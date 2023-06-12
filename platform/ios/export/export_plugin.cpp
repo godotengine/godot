@@ -30,11 +30,12 @@
 
 #include "export_plugin.h"
 
+#include "../logo_svg.gen.h"
+
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/export/editor_export.h"
-#include "platform/ios/logo_svg.gen.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED
