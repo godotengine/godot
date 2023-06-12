@@ -30,38 +30,121 @@
 
 #include "nav_obstacle.h"
 
+#include "nav_agent.h"
 #include "nav_map.h"
 
 NavObstacle::NavObstacle() {}
 
 NavObstacle::~NavObstacle() {}
 
+void NavObstacle::set_agent(NavAgent *p_agent) {
+	if (agent == p_agent) {
+		return;
+	}
+
+	agent = p_agent;
+
+	internal_update_agent();
+}
+
+void NavObstacle::set_avoidance_enabled(bool p_enabled) {
+	if (avoidance_enabled == p_enabled) {
+		return;
+	}
+
+	avoidance_enabled = p_enabled;
+	obstacle_dirty = true;
+
+	internal_update_agent();
+}
+
+void NavObstacle::set_use_3d_avoidance(bool p_enabled) {
+	if (use_3d_avoidance == p_enabled) {
+		return;
+	}
+
+	use_3d_avoidance = p_enabled;
+	obstacle_dirty = true;
+
+	if (agent) {
+		agent->set_use_3d_avoidance(use_3d_avoidance);
+	}
+}
+
 void NavObstacle::set_map(NavMap *p_map) {
-	if (map != p_map) {
-		map = p_map;
-		obstacle_dirty = true;
+	if (map == p_map) {
+		return;
+	}
+
+	if (map) {
+		map->remove_obstacle(this);
+		if (agent) {
+			agent->set_map(nullptr);
+		}
+	}
+
+	map = p_map;
+	obstacle_dirty = true;
+
+	if (map) {
+		map->add_obstacle(this);
+		internal_update_agent();
 	}
 }
 
 void NavObstacle::set_position(const Vector3 p_position) {
-	if (position != p_position) {
-		position = p_position;
-		obstacle_dirty = true;
+	if (position == p_position) {
+		return;
+	}
+
+	position = p_position;
+	obstacle_dirty = true;
+
+	if (agent) {
+		agent->set_position(position);
+	}
+}
+
+void NavObstacle::set_radius(real_t p_radius) {
+	if (radius == p_radius) {
+		return;
+	}
+
+	radius = p_radius;
+
+	if (agent) {
+		agent->set_radius(radius);
 	}
 }
 
 void NavObstacle::set_height(const real_t p_height) {
-	if (height != p_height) {
-		height = p_height;
-		obstacle_dirty = true;
+	if (height == p_height) {
+		return;
+	}
+
+	height = p_height;
+	obstacle_dirty = true;
+
+	if (agent) {
+		agent->set_height(height);
+	}
+}
+
+void NavObstacle::set_velocity(const Vector3 p_velocity) {
+	velocity = p_velocity;
+
+	if (agent) {
+		agent->set_velocity(velocity);
 	}
 }
 
 void NavObstacle::set_vertices(const Vector<Vector3> &p_vertices) {
-	if (vertices != p_vertices) {
-		vertices = p_vertices;
-		obstacle_dirty = true;
+	if (vertices == p_vertices) {
+		return;
 	}
+
+	vertices = p_vertices;
+	obstacle_dirty = true;
 }
 
 bool NavObstacle::is_map_changed() {
@@ -75,12 +158,39 @@ bool NavObstacle::is_map_changed() {
 }
 
 void NavObstacle::set_avoidance_layers(uint32_t p_layers) {
+	if (avoidance_layers == p_layers) {
+		return;
+	}
+
 	avoidance_layers = p_layers;
 	obstacle_dirty = true;
+
+	if (agent) {
+		agent->set_avoidance_layers(avoidance_layers);
+	}
 }
 
 bool NavObstacle::check_dirty() {
 	const bool was_dirty = obstacle_dirty;
 	obstacle_dirty = false;
 	return was_dirty;
+}
+
+void NavObstacle::internal_update_agent() {
+	if (agent) {
+		agent->set_neighbor_distance(0.0);
+		agent->set_max_neighbors(0.0);
+		agent->set_time_horizon_agents(0.0);
+		agent->set_time_horizon_obstacles(0.0);
+		agent->set_avoidance_mask(0.0);
+		agent->set_neighbor_distance(0.0);
+		agent->set_avoidance_priority(1.0);
+		agent->set_map(map);
+		agent->set_radius(radius);
+		agent->set_height(height);
+		agent->set_position(position);
+		agent->set_avoidance_layers(avoidance_layers);
+		agent->set_avoidance_enabled(avoidance_enabled);
+		agent->set_use_3d_avoidance(use_3d_avoidance);
+	}
 }

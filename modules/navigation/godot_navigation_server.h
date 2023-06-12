@@ -198,8 +198,14 @@ public:
 	COMMAND_2(agent_set_avoidance_priority, RID, p_agent, real_t, p_priority);
 
 	virtual RID obstacle_create() override;
+	COMMAND_2(obstacle_set_avoidance_enabled, RID, p_obstacle, bool, p_enabled);
+	virtual bool obstacle_get_avoidance_enabled(RID p_obstacle) const override;
+	COMMAND_2(obstacle_set_use_3d_avoidance, RID, p_obstacle, bool, p_enabled);
+	virtual bool obstacle_get_use_3d_avoidance(RID p_obstacle) const override;
 	COMMAND_2(obstacle_set_map, RID, p_obstacle, RID, p_map);
 	virtual RID obstacle_get_map(RID p_obstacle) const override;
+	COMMAND_2(obstacle_set_radius, RID, p_obstacle, real_t, p_radius);
+	COMMAND_2(obstacle_set_velocity, RID, p_obstacle, Vector3, p_velocity);
 	COMMAND_2(obstacle_set_position, RID, p_obstacle, Vector3, p_position);
 	COMMAND_2(obstacle_set_height, RID, p_obstacle, real_t, p_height);
 	virtual void obstacle_set_vertices(RID p_obstacle, const Vector<Vector3> &p_vertices) override;
@@ -215,6 +221,10 @@ public:
 	virtual NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const override;
 
 	int get_process_info(ProcessInfo p_info) const override;
+
+private:
+	void internal_free_agent(RID p_object);
+	void internal_free_obstacle(RID p_object);
 };
 
 #undef COMMAND_1

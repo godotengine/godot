@@ -529,11 +529,33 @@
 				Creates a new obstacle.
 			</description>
 		</method>
+		<method name="obstacle_get_avoidance_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns [code]true[/code] if the provided [param obstacle] has avoidance enabled.
+			</description>
+		</method>
 		<method name="obstacle_get_map" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="obstacle" type="RID" />
 			<description>
 				Returns the navigation map [RID] the requested [param obstacle] is currently assigned to.
+			</description>
+		</method>
+		<method name="obstacle_get_use_3d_avoidance" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns [code]true[/code] if the provided [param obstacle] uses avoidance in 3D space Vector3(x,y,z) instead of horizontal 2D Vector2(x,y) / Vector3(x,0.0,z).
+			</description>
+		</method>
+		<method name="obstacle_set_avoidance_enabled">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] the provided [param obstacle] affects avoidance using agents.
 			</description>
 		</method>
 		<method name="obstacle_set_avoidance_layers">
@@ -566,6 +588,30 @@
 			<param index="1" name="position" type="Vector3" />
 			<description>
 				Updates the [param position] in world space for the [param obstacle].
+			</description>
+		</method>
+		<method name="obstacle_set_radius">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="radius" type="float" />
+			<description>
+				Sets the radius of the dynamic obstacle.
+			</description>
+		</method>
+		<method name="obstacle_set_use_3d_avoidance">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Sets if the [param obstacle] uses the 2D avoidance or the 3D avoidance while avoidance is enabled.
+			</description>
+		</method>
+		<method name="obstacle_set_velocity">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="velocity" type="Vector3" />
+			<description>
+				Sets [param velocity] of the dynamic [param obstacle]. Allows other agents to better predict the movement of the dynamic obstacle. Only works in combination with the radius of the obstacle.
 			</description>
 		</method>
 		<method name="obstacle_set_vertices">

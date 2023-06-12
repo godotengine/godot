@@ -240,8 +240,12 @@ public:
 
 	/// Creates the obstacle.
 	virtual RID obstacle_create();
+	virtual void obstacle_set_avoidance_enabled(RID p_obstacle, bool p_enabled);
+	virtual bool obstacle_get_avoidance_enabled(RID p_obstacle) const;
 	virtual void obstacle_set_map(RID p_obstacle, RID p_map);
 	virtual RID obstacle_get_map(RID p_obstacle) const;
+	virtual void obstacle_set_radius(RID p_obstacle, real_t p_radius);
+	virtual void obstacle_set_velocity(RID p_obstacle, Vector2 p_velocity);
 	virtual void obstacle_set_position(RID p_obstacle, Vector2 p_position);
 	virtual void obstacle_set_vertices(RID p_obstacle, const Vector<Vector2> &p_vertices);
 	virtual void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers);
