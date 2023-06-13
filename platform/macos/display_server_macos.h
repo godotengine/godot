@@ -31,8 +31,6 @@
 #ifndef DISPLAY_SERVER_MACOS_H
 #define DISPLAY_SERVER_MACOS_H
 
-#define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
-
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
@@ -41,9 +39,12 @@
 #endif // GLES3_ENABLED
 
 #if defined(VULKAN_ENABLED)
+#include "vulkan_context_macos.h"
+
 #include "drivers/vulkan/rendering_device_vulkan.h"
-#include "platform/macos/vulkan_context_macos.h"
 #endif // VULKAN_ENABLED
+
+#define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
 
 #import <AppKit/AppKit.h>
 #import <AppKit/NSCursor.h>
@@ -56,7 +57,7 @@
 #undef CursorShape
 
 class DisplayServerMacOS : public DisplayServer {
-	GDCLASS(DisplayServerMacOS, DisplayServer)
+	// No need to register with GDCLASS, it's platform-specific and nothing is added.
 
 	_THREAD_SAFE_CLASS_
 
@@ -188,7 +189,7 @@ private:
 		Variant tag;
 		Callable callback;
 	};
-	Vector<MenuCall> deferred_menu_calls;
+	List<MenuCall> deferred_menu_calls;
 
 	const NSMenu *_get_menu_root(const String &p_menu_root) const;
 	NSMenu *_get_menu_root(const String &p_menu_root);
@@ -327,6 +328,7 @@ public:
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;
+	virtual int get_keyboard_focus_screen() const override;
 	virtual Point2i screen_get_position(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
@@ -335,6 +337,7 @@ public:
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Color screen_get_pixel(const Point2i &p_position) const override;
+	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
 

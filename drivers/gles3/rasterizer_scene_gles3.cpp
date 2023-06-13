@@ -1948,7 +1948,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	glDepthFunc(GL_LEQUAL);
 	glDepthMask(GL_TRUE);
 	scene_state.current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_ENABLED;
-	scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_OPAQUE;
+	scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_ALWAYS;
 
 	if (!fb_cleared) {
 		glClearDepth(1.0f);
@@ -1976,22 +1976,42 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	_render_list_template<PASS_MODE_COLOR>(&render_list_params, &render_data, 0, render_list[RENDER_LIST_OPAQUE].elements.size());
 
+	glDepthMask(GL_FALSE);
+	scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_DISABLED;
+
 	if (draw_sky) {
 		RENDER_TIMESTAMP("Render Sky");
-		if (scene_state.current_depth_test != GLES3::SceneShaderData::DEPTH_TEST_ENABLED) {
-			glEnable(GL_DEPTH_TEST);
-			scene_state.current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_ENABLED;
-		}
+
 		glEnable(GL_DEPTH_TEST);
-		glDepthMask(GL_FALSE);
 		glDisable(GL_BLEND);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		scene_state.current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_ENABLED;
-		scene_state.current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_DISABLED;
 		scene_state.cull_mode = GLES3::SceneShaderData::CULL_BACK;
 
 		_draw_sky(render_data.environment, render_data.cam_projection, render_data.cam_transform, sky_energy_multiplier, p_camera_data->view_count > 1, flip_y);
+	}
+
+	if (scene_state.used_screen_texture || scene_state.used_depth_texture) {
+		texture_storage->copy_scene_to_backbuffer(rt, scene_state.used_screen_texture, scene_state.used_depth_texture);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rt->backbuffer_fbo);
+		if (scene_state.used_screen_texture) {
+			glBlitFramebuffer(0, 0, rt->size.x, rt->size.y,
+					0, 0, rt->size.x, rt->size.y,
+					GL_COLOR_BUFFER_BIT, GL_NEAREST);
+			glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 5);
+			glBindTexture(GL_TEXTURE_2D, rt->backbuffer);
+		}
+		if (scene_state.used_depth_texture) {
+			glBlitFramebuffer(0, 0, rt->size.x, rt->size.y,
+					0, 0, rt->size.x, rt->size.y,
+					GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 6);
+			glBindTexture(GL_TEXTURE_2D, rt->backbuffer_depth);
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
 	}
 
 	RENDER_TIMESTAMP("Render 3D Transparent Pass");

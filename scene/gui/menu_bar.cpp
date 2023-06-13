@@ -209,10 +209,10 @@ void MenuBar::_update_submenu(const String &p_menu_name, PopupMenu *p_child) {
 		if (p_child->is_item_separator(i)) {
 			DisplayServer::get_singleton()->global_menu_add_separator(p_menu_name);
 		} else if (!p_child->get_item_submenu(i).is_empty()) {
-			Node *n = p_child->get_node(p_child->get_item_submenu(i));
-			ERR_FAIL_COND_MSG(!n, "Item subnode does not exist: " + p_child->get_item_submenu(i) + ".");
+			Node *n = p_child->get_node_or_null(p_child->get_item_submenu(i));
+			ERR_FAIL_NULL_MSG(n, "Item subnode does not exist: '" + p_child->get_item_submenu(i) + "'.");
 			PopupMenu *pm = Object::cast_to<PopupMenu>(n);
-			ERR_FAIL_COND_MSG(!pm, "Item subnode is not a PopupMenu: " + p_child->get_item_submenu(i) + ".");
+			ERR_FAIL_NULL_MSG(pm, "Item subnode is not a PopupMenu: '" + p_child->get_item_submenu(i) + "'.");
 
 			DisplayServer::get_singleton()->global_menu_add_submenu_item(p_menu_name, atr(p_child->get_item_text(i)), p_menu_name + "/" + itos(i));
 			_update_submenu(p_menu_name + "/" + itos(i), pm);
@@ -249,9 +249,11 @@ void MenuBar::_update_submenu(const String &p_menu_name, PopupMenu *p_child) {
 }
 
 bool MenuBar::is_native_menu() const {
-	if (Engine::get_singleton()->is_editor_hint() && is_inside_tree() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this)) {
+#ifdef TOOLS_ENABLED
+	if (is_part_of_edited_scene()) {
 		return false;
 	}
+#endif
 
 	return (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU) && is_native);
 }
@@ -397,13 +399,18 @@ void MenuBar::_notification(int p_what) {
 int MenuBar::_get_index_at_point(const Point2 &p_point) const {
 	Ref<StyleBox> style = theme_cache.normal;
 	int offset = 0;
+	Point2 point = p_point;
+	if (is_layout_rtl()) {
+		point.x = get_size().x - point.x;
+	}
+
 	for (int i = 0; i < menu_cache.size(); i++) {
 		if (menu_cache[i].hidden) {
 			continue;
 		}
 		Size2 size = menu_cache[i].text_buf->get_size() + style->get_minimum_size();
-		if (p_point.x > offset && p_point.x < offset + size.x) {
-			if (p_point.y > 0 && p_point.y < size.y) {
+		if (point.x > offset && point.x < offset + size.x) {
+			if (point.y > 0 && point.y < size.y) {
 				return i;
 			}
 		}
@@ -426,7 +433,12 @@ Rect2 MenuBar::_get_menu_item_rect(int p_index) const {
 		offset += size.x + theme_cache.h_separation;
 	}
 
-	return Rect2(Point2(offset, 0), menu_cache[p_index].text_buf->get_size() + style->get_minimum_size());
+	Size2 size = menu_cache[p_index].text_buf->get_size() + style->get_minimum_size();
+	if (is_layout_rtl()) {
+		return Rect2(Point2(get_size().x - offset - size.x, 0), size);
+	} else {
+		return Rect2(Point2(offset, 0), size);
+	}
 }
 
 void MenuBar::_draw_menu_item(int p_index) {

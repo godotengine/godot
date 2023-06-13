@@ -234,7 +234,9 @@ TreeItem *EditorPerformanceProfiler::_get_monitor_base(const StringName &p_base_
 	base->set_editable(0, false);
 	base->set_selectable(0, false);
 	base->set_expand_right(0, true);
-	base->set_custom_font(0, get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+	if (is_inside_tree()) {
+		base->set_custom_font(0, get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+	}
 	base_map.insert(p_base_name, base);
 	return base;
 }
@@ -366,6 +368,16 @@ List<float> *EditorPerformanceProfiler::get_monitor_data(const StringName &p_nam
 		return &monitors[p_name].history;
 	}
 	return nullptr;
+}
+
+void EditorPerformanceProfiler::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			for (KeyValue<StringName, TreeItem *> &E : base_map) {
+				E.value->set_custom_font(0, get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+			}
+		} break;
+	}
 }
 
 EditorPerformanceProfiler::EditorPerformanceProfiler() {

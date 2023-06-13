@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeStateMachineTransition" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A resource to connect each node to make a path for [AnimationNodeStateMachine].
+		A transition within an [AnimationNodeStateMachine] connecting two [AnimationRootNode]s.
 	</brief_description>
 	<description>
 		The path generated when using [method AnimationNodeStateMachinePlayback.travel] is limited to the nodes connected by [AnimationNodeStateMachineTransition].
 		You can set the timing and conditions of the transition in detail.
 	</description>
 	<tutorials>
-		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<members>
 		<member name="advance_condition" type="StringName" setter="set_advance_condition" getter="get_advance_condition" default="&amp;&quot;&quot;">

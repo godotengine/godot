@@ -39,7 +39,7 @@ HB_SHAPER_IMPLEMENT (graphite2)
 #endif
 
 #ifndef HB_NO_OT_SHAPE
-HB_SHAPER_IMPLEMENT (ot) /* <--- This is our main OpenType shaper. */
+HB_SHAPER_IMPLEMENT (ot) /* <--- This is our main shaper. */
 #endif
 
 #ifdef HAVE_UNISCRIBE

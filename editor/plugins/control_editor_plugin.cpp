@@ -164,7 +164,7 @@ void EditorPropertyAnchorsPreset::_option_selected(int p_which) {
 }
 
 void EditorPropertyAnchorsPreset::update_property() {
-	int64_t which = get_edited_object()->get(get_edited_property());
+	int64_t which = get_edited_property_value();
 
 	for (int i = 0; i < options->get_item_count(); i++) {
 		Variant val = options->get_item_metadata(i);
@@ -255,7 +255,7 @@ void EditorPropertySizeFlags::_preset_selected(int p_which) {
 }
 
 void EditorPropertySizeFlags::_expand_toggled() {
-	uint32_t value = get_edited_object()->get(get_edited_property());
+	uint32_t value = get_edited_property_value();
 
 	if (flag_expand->is_visible() && flag_expand->is_pressed()) {
 		value |= Control::SIZE_EXPAND;
@@ -288,7 +288,7 @@ void EditorPropertySizeFlags::_flag_toggled() {
 }
 
 void EditorPropertySizeFlags::update_property() {
-	uint32_t value = get_edited_object()->get(get_edited_property());
+	uint32_t value = get_edited_property_value();
 
 	for (int i = 0; i < flag_checks.size(); i++) {
 		int flag_value = flag_checks[i]->get_meta("_value");

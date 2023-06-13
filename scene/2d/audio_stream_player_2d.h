@@ -61,6 +61,7 @@ private:
 	Vector<AudioFrame> volume_vector;
 
 	uint64_t last_mix_count = -1;
+	bool force_update_panning = false;
 
 	float volume_db = 0.0;
 	float pitch_scale = 1.0;
@@ -75,7 +76,7 @@ private:
 	void _update_panning();
 	void _bus_layout_changed();
 
-	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->_update_panning(); }
+	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->force_update_panning = true; }
 
 	uint32_t area_mask = 1;
 

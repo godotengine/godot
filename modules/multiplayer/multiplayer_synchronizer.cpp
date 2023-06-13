@@ -105,7 +105,7 @@ Node *MultiplayerSynchronizer::get_root_node() {
 
 void MultiplayerSynchronizer::reset() {
 	net_id = 0;
-	last_sync_msec = 0;
+	last_sync_usec = 0;
 	last_inbound_sync = 0;
 }
 
@@ -117,16 +117,17 @@ void MultiplayerSynchronizer::set_net_id(uint32_t p_net_id) {
 	net_id = p_net_id;
 }
 
-bool MultiplayerSynchronizer::update_outbound_sync_time(uint64_t p_msec) {
-	if (last_sync_msec == p_msec) {
-		// last_sync_msec has been updated on this frame.
+bool MultiplayerSynchronizer::update_outbound_sync_time(uint64_t p_usec) {
+	if (last_sync_usec == p_usec) {
+		// last_sync_usec has been updated in this frame.
 		return true;
 	}
-	if (p_msec >= last_sync_msec + interval_msec) {
-		last_sync_msec = p_msec;
-		return true;
+	if (p_usec < last_sync_usec + sync_interval_usec) {
+		// Too soon, should skip this synchronization frame.
+		return false;
 	}
-	return false;
+	last_sync_usec = p_usec;
+	return true;
 }
 
 bool MultiplayerSynchronizer::update_inbound_sync_time(uint16_t p_network_time) {
@@ -243,6 +244,9 @@ void MultiplayerSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_replication_interval", "milliseconds"), &MultiplayerSynchronizer::set_replication_interval);
 	ClassDB::bind_method(D_METHOD("get_replication_interval"), &MultiplayerSynchronizer::get_replication_interval);
 
+	ClassDB::bind_method(D_METHOD("set_delta_interval", "milliseconds"), &MultiplayerSynchronizer::set_delta_interval);
+	ClassDB::bind_method(D_METHOD("get_delta_interval"), &MultiplayerSynchronizer::get_delta_interval);
+
 	ClassDB::bind_method(D_METHOD("set_replication_config", "config"), &MultiplayerSynchronizer::set_replication_config);
 	ClassDB::bind_method(D_METHOD("get_replication_config"), &MultiplayerSynchronizer::get_replication_config);
 
@@ -260,6 +264,7 @@ void MultiplayerSynchronizer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "replication_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_replication_interval", "get_replication_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "delta_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_delta_interval", "get_delta_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replication_config", PROPERTY_HINT_RESOURCE_TYPE, "SceneReplicationConfig", PROPERTY_USAGE_NO_EDITOR), "set_replication_config", "get_replication_config");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,None"), "set_visibility_update_mode", "get_visibility_update_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "public_visibility"), "set_visibility_public", "is_visibility_public");
@@ -269,6 +274,7 @@ void MultiplayerSynchronizer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VISIBILITY_PROCESS_NONE);
 
 	ADD_SIGNAL(MethodInfo("synchronized"));
+	ADD_SIGNAL(MethodInfo("delta_synchronized"));
 	ADD_SIGNAL(MethodInfo("visibility_changed", PropertyInfo(Variant::INT, "for_peer")));
 }
 
@@ -300,11 +306,20 @@ void MultiplayerSynchronizer::_notification(int p_what) {
 
 void MultiplayerSynchronizer::set_replication_interval(double p_interval) {
 	ERR_FAIL_COND_MSG(p_interval < 0, "Interval must be greater or equal to 0 (where 0 means default)");
-	interval_msec = uint64_t(p_interval * 1000);
+	sync_interval_usec = uint64_t(p_interval * 1000 * 1000);
 }
 
 double MultiplayerSynchronizer::get_replication_interval() const {
-	return double(interval_msec) / 1000.0;
+	return double(sync_interval_usec) / 1000.0 / 1000.0;
+}
+
+void MultiplayerSynchronizer::set_delta_interval(double p_interval) {
+	ERR_FAIL_COND_MSG(p_interval < 0, "Interval must be greater or equal to 0 (where 0 means default)");
+	delta_interval_usec = uint64_t(p_interval * 1000 * 1000);
+}
+
+double MultiplayerSynchronizer::get_delta_interval() const {
+	return double(delta_interval_usec) / 1000.0 / 1000.0;
 }
 
 void MultiplayerSynchronizer::set_replication_config(Ref<SceneReplicationConfig> p_config) {
@@ -347,6 +362,84 @@ void MultiplayerSynchronizer::set_multiplayer_authority(int p_peer_id, bool p_re
 	get_multiplayer()->object_configuration_remove(node, this);
 	Node::set_multiplayer_authority(p_peer_id, p_recursive);
 	get_multiplayer()->object_configuration_add(node, this);
+}
+
+Error MultiplayerSynchronizer::_watch_changes(uint64_t p_usec) {
+	ERR_FAIL_COND_V(replication_config.is_null(), FAILED);
+	const List<NodePath> props = replication_config->get_watch_properties();
+	if (props.size() != watchers.size()) {
+		watchers.resize(props.size());
+	}
+	if (props.size() == 0) {
+		return OK;
+	}
+	Node *node = get_root_node();
+	ERR_FAIL_COND_V(!node, FAILED);
+	int idx = -1;
+	Watcher *ptr = watchers.ptrw();
+	for (const NodePath &prop : props) {
+		idx++;
+		bool valid = false;
+		const Object *obj = _get_prop_target(node, prop);
+		ERR_CONTINUE_MSG(!obj, vformat("Node not found for property '%s'.", prop));
+		Variant v = obj->get(prop.get_concatenated_subnames(), &valid);
+		ERR_CONTINUE_MSG(!valid, vformat("Property '%s' not found.", prop));
+		Watcher &w = ptr[idx];
+		if (w.prop != prop) {
+			w.prop = prop;
+			w.value = v.duplicate(true);
+			w.last_change_usec = p_usec;
+		} else if (!w.value.hash_compare(v)) {
+			w.value = v.duplicate(true);
+			w.last_change_usec = p_usec;
+		}
+	}
+	return OK;
+}
+
+List<Variant> MultiplayerSynchronizer::get_delta_state(uint64_t p_cur_usec, uint64_t p_last_usec, uint64_t &r_indexes) {
+	r_indexes = 0;
+	List<Variant> out;
+
+	if (last_watch_usec == p_cur_usec) {
+		// We already watched for changes in this frame.
+
+	} else if (p_cur_usec < p_last_usec + delta_interval_usec) {
+		// Too soon skip delta synchronization.
+		return out;
+
+	} else {
+		// Watch for changes.
+		Error err = _watch_changes(p_cur_usec);
+		ERR_FAIL_COND_V(err != OK, out);
+		last_watch_usec = p_cur_usec;
+	}
+
+	const Watcher *ptr = watchers.size() ? watchers.ptr() : nullptr;
+	for (int i = 0; i < watchers.size(); i++) {
+		const Watcher &w = ptr[i];
+		if (w.last_change_usec <= p_last_usec) {
+			continue;
+		}
+		out.push_back(w.value);
+		r_indexes |= 1ULL << i;
+	}
+	return out;
+}
+
+List<NodePath> MultiplayerSynchronizer::get_delta_properties(uint64_t p_indexes) {
+	List<NodePath> out;
+	ERR_FAIL_COND_V(replication_config.is_null(), out);
+	const List<NodePath> watch_props = replication_config->get_watch_properties();
+	int idx = 0;
+	for (const NodePath &prop : watch_props) {
+		if ((p_indexes & (1ULL << idx)) == 0) {
+			continue;
+		}
+		out.push_back(prop);
+		idx++;
+	}
+	return out;
 }
 
 MultiplayerSynchronizer::MultiplayerSynchronizer() {

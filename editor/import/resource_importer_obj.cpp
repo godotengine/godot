@@ -245,6 +245,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	String current_group;
 	uint32_t smooth_group = 0;
 	bool smoothing = true;
+	const uint32_t no_smoothing_smooth_group = (uint32_t)-1;
 
 	while (true) {
 		String l = f->get_line().strip_edges();
@@ -266,7 +267,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			vtx.z = v[3].to_float() * scale_mesh.z + offset_mesh.z;
 			vertices.push_back(vtx);
 			//vertex color
-			if (v.size() == 7) {
+			if (v.size() >= 7) {
 				while (colors.size() < vertices.size() - 1) {
 					colors.push_back(Color(1.0, 1.0, 1.0));
 				}
@@ -349,10 +350,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 					if (!colors.is_empty()) {
 						surf_tool->set_color(colors[vtx]);
 					}
-					if (!smoothing) {
-						smooth_group++;
-					}
-					surf_tool->set_smooth_group(smooth_group);
+					surf_tool->set_smooth_group(smoothing ? smooth_group : no_smoothing_smooth_group);
 					surf_tool->add_vertex(vertex);
 				}
 
@@ -367,8 +365,10 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 				do_smooth = true;
 			}
 			if (do_smooth != smoothing) {
-				smooth_group++;
 				smoothing = do_smooth;
+				if (smoothing) {
+					smooth_group++;
+				}
 			}
 		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh
 			//groups are too annoying

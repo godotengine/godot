@@ -31,6 +31,8 @@
 #ifndef WEB_EXPORT_PLUGIN_H
 #define WEB_EXPORT_PLUGIN_H
 
+#include "editor_http_server.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/image_loader.h"
 #include "core/io/stream_peer_tls.h"
@@ -38,7 +40,6 @@
 #include "core/io/zip_io.h"
 #include "editor/editor_node.h"
 #include "editor/export/editor_export_platform.h"
-#include "editor_http_server.h"
 #include "main/splash.gen.h"
 
 class EditorExportPlatformWeb : public EditorExportPlatform {
@@ -99,7 +100,7 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
-	virtual void get_export_options(List<ExportOption> *r_options) override;
+	virtual void get_export_options(List<ExportOption> *r_options) const override;
 
 	virtual String get_name() const override;
 	virtual String get_os_name() const override;

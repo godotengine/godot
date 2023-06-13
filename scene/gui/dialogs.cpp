@@ -39,7 +39,7 @@
 
 void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
-	if (close_on_escape && key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ESCAPE) {
+	if (close_on_escape && key.is_valid() && key->is_action_pressed(SNAME("ui_cancel"), false, true)) {
 		_cancel_pressed();
 	}
 }
@@ -125,6 +125,7 @@ void AcceptDialog::_ok_pressed() {
 	}
 	ok_pressed();
 	emit_signal(SNAME("confirmed"));
+	set_input_as_handled();
 }
 
 void AcceptDialog::_cancel_pressed() {
@@ -143,6 +144,7 @@ void AcceptDialog::_cancel_pressed() {
 	if (parent_window) {
 		//parent_window->grab_focus();
 	}
+	set_input_as_handled();
 }
 
 String AcceptDialog::get_text() const {

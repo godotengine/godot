@@ -32,6 +32,7 @@
 
 #include "display_server_macos.h"
 #include "key_mapping_macos.h"
+
 #include "main/main.h"
 
 @implementation GodotContentLayerDelegate
@@ -115,13 +116,7 @@
 	self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawDuringViewResize;
 	self.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
 
-	if (@available(macOS 10.13, *)) {
-		[self registerForDraggedTypes:[NSArray arrayWithObject:NSPasteboardTypeFileURL]];
-#if !defined(__aarch64__) // Do not build deprectead 10.13 code on ARM.
-	} else {
-		[self registerForDraggedTypes:[NSArray arrayWithObject:NSFilenamesPboardType]];
-#endif
-	}
+	[self registerForDraggedTypes:[NSArray arrayWithObject:NSPasteboardTypeFileURL]];
 	marked_text = [[NSMutableAttributedString alloc] init];
 	return self;
 }
@@ -321,20 +316,11 @@
 		Vector<String> files;
 		NSPasteboard *pboard = [sender draggingPasteboard];
 
-		if (@available(macOS 10.13, *)) {
-			NSArray *items = pboard.pasteboardItems;
-			for (NSPasteboardItem *item in items) {
-				NSString *url = [item stringForType:NSPasteboardTypeFileURL];
-				NSString *file = [NSURL URLWithString:url].path;
-				files.push_back(String::utf8([file UTF8String]));
-			}
-#if !defined(__aarch64__) // Do not build deprectead 10.13 code on ARM.
-		} else {
-			NSArray *filenames = [pboard propertyListForType:NSFilenamesPboardType];
-			for (NSString *file in filenames) {
-				files.push_back(String::utf8([file UTF8String]));
-			}
-#endif
+		NSArray *items = pboard.pasteboardItems;
+		for (NSPasteboardItem *item in items) {
+			NSString *url = [item stringForType:NSPasteboardTypeFileURL];
+			NSString *file = [NSURL URLWithString:url].path;
+			files.push_back(String::utf8([file UTF8String]));
 		}
 
 		Variant v = files;
@@ -356,7 +342,7 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-	return !wd.no_focus && !wd.is_popup;
+	return !wd.no_focus;
 }
 
 - (BOOL)acceptsFirstResponder {

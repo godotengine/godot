@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlatformWeb" inherits="EditorExportPlatform" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Exporter for the Web.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+		<link title="Exporting for the Web">$DOCS_URL/tutorials/export/exporting_for_web.html</link>
+	</tutorials>
+	<members>
+		<member name="custom_template/debug" type="String" setter="" getter="">
+			Path to the custom export template. If left empty, default template is used.
+		</member>
+		<member name="custom_template/release" type="String" setter="" getter="">
+			Path to the custom export template. If left empty, default template is used.
+		</member>
+		<member name="html/canvas_resize_policy" type="int" setter="" getter="">
+			The canvas resize policy determines how the canvas should be resized by Godot.
+		</member>
+		<member name="html/custom_html_shell" type="String" setter="" getter="">
+		</member>
+		<member name="html/experimental_virtual_keyboard" type="bool" setter="" getter="">
+		</member>
+		<member name="html/export_icon" type="bool" setter="" getter="">
+		</member>
+		<member name="html/focus_canvas_on_start" type="bool" setter="" getter="">
+		</member>
+		<member name="html/head_include" type="String" setter="" getter="">
+		</member>
+		<member name="progressive_web_app/background_color" type="Color" setter="" getter="">
+		</member>
+		<member name="progressive_web_app/display" type="int" setter="" getter="">
+		</member>
+		<member name="progressive_web_app/enabled" type="bool" setter="" getter="">
+		</member>
+		<member name="progressive_web_app/icon_144x144" type="String" setter="" getter="">
+		</member>
+		<member name="progressive_web_app/icon_180x180" type="String" setter="" getter="">
+		</member>
+		<member name="progressive_web_app/icon_512x512" type="String" setter="" getter="">
+		</member>
+		<member name="progressive_web_app/offline_page" type="String" setter="" getter="">
+		</member>
+		<member name="progressive_web_app/orientation" type="int" setter="" getter="">
+		</member>
+		<member name="variant/extensions_support" type="bool" setter="" getter="">
+		</member>
+		<member name="vram_texture_compression/for_desktop" type="bool" setter="" getter="">
+		</member>
+		<member name="vram_texture_compression/for_mobile" type="bool" setter="" getter="">
+		</member>
+	</members>
+</class>

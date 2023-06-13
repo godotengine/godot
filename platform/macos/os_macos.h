@@ -31,12 +31,13 @@
 #ifndef OS_MACOS_H
 #define OS_MACOS_H
 
-#include "core/input/input.h"
 #include "crash_handler_macos.h"
-#include "drivers/coreaudio/audio_driver_coreaudio.h"
-#include "drivers/coremidi/midi_driver_coremidi.h"
-#include "drivers/unix/os_unix.h"
 #include "joypad_macos.h"
+
+#include "core/input/input.h"
+#import "drivers/coreaudio/audio_driver_coreaudio.h"
+#import "drivers/coremidi/midi_driver_coremidi.h"
+#include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
 
 class OS_MacOS : public OS_Unix {
@@ -98,6 +99,7 @@ public:
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 
 	virtual Error shell_open(String p_uri) override;
+	virtual Error shell_show_in_file_manager(String p_path, bool p_open_folder) override;
 
 	virtual String get_locale() const override;
 
@@ -117,6 +119,9 @@ public:
 	virtual bool is_disable_crash_handler() const override;
 
 	virtual Error move_to_trash(const String &p_path) override;
+
+	virtual String get_system_ca_certificates() override;
+	virtual OS::PreferredTextureFormat get_preferred_texture_format() const override;
 
 	void run();
 

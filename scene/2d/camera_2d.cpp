@@ -278,7 +278,7 @@ void Camera2D::_notification(int p_what) {
 
 			if (screen_drawing_enabled) {
 				Color area_axis_color(1, 0.4, 1, 0.63);
-				real_t area_axis_width = 1;
+				real_t area_axis_width = -1;
 				if (is_current()) {
 					area_axis_width = 3;
 				}
@@ -302,7 +302,7 @@ void Camera2D::_notification(int p_what) {
 
 			if (limit_drawing_enabled) {
 				Color limit_drawing_color(1, 1, 0.25, 0.63);
-				real_t limit_drawing_width = 1;
+				real_t limit_drawing_width = -1;
 				if (is_current()) {
 					limit_drawing_width = 3;
 				}
@@ -323,7 +323,7 @@ void Camera2D::_notification(int p_what) {
 
 			if (margin_drawing_enabled) {
 				Color margin_drawing_color(0.25, 1, 1, 0.63);
-				real_t margin_drawing_width = 1;
+				real_t margin_drawing_width = -1;
 				if (is_current()) {
 					margin_drawing_width = 3;
 				}

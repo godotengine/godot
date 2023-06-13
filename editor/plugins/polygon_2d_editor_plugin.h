@@ -37,6 +37,7 @@ class AcceptDialog;
 class ButtonGroup;
 class HScrollBar;
 class HSlider;
+class Label;
 class MenuButton;
 class Panel;
 class ScrollContainer;

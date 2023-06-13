@@ -897,6 +897,32 @@ HB_EXTERN uint8_t
 hb_color_get_blue (hb_color_t color);
 #define hb_color_get_blue(color)	(((color) >> 24) & 0xFF)
 
+/**
+ * hb_glyph_extents_t:
+ * @x_bearing: Distance from the x-origin to the left extremum of the glyph.
+ * @y_bearing: Distance from the top extremum of the glyph to the y-origin.
+ * @width: Distance from the left extremum of the glyph to the right extremum.
+ * @height: Distance from the top extremum of the glyph to the bottom extremum.
+ *
+ * Glyph extent values, measured in font units.
+ *
+ * Note that @height is negative, in coordinate systems that grow up.
+ **/
+typedef struct hb_glyph_extents_t {
+  hb_position_t x_bearing;
+  hb_position_t y_bearing;
+  hb_position_t width;
+  hb_position_t height;
+} hb_glyph_extents_t;
+
+/**
+ * hb_font_t:
+ *
+ * Data type for holding fonts.
+ *
+ */
+typedef struct hb_font_t hb_font_t;
+
 HB_END_DECLS
 
 #endif /* HB_COMMON_H */

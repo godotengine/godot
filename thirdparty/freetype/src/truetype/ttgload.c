@@ -4,7 +4,7 @@
  *
  *   TrueType Glyph Loader (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -737,19 +737,19 @@
 
         if ( subglyph->flags & WE_HAVE_A_SCALE )
           FT_TRACE7(( "      scaling: %f\n",
-                      subglyph->transform.xx / 65536.0 ));
+                      (double)subglyph->transform.xx / 65536 ));
         else if ( subglyph->flags & WE_HAVE_AN_XY_SCALE )
           FT_TRACE7(( "      scaling: x=%f, y=%f\n",
-                      subglyph->transform.xx / 65536.0,
-                      subglyph->transform.yy / 65536.0 ));
+                      (double)subglyph->transform.xx / 65536,
+                      (double)subglyph->transform.yy / 65536 ));
         else if ( subglyph->flags & WE_HAVE_A_2X2 )
         {
           FT_TRACE7(( "      scaling: xx=%f, yx=%f\n",
-                      subglyph->transform.xx / 65536.0,
-                      subglyph->transform.yx / 65536.0 ));
+                      (double)subglyph->transform.xx / 65536,
+                      (double)subglyph->transform.yx / 65536 ));
           FT_TRACE7(( "               xy=%f, yy=%f\n",
-                      subglyph->transform.xy / 65536.0,
-                      subglyph->transform.yy / 65536.0 ));
+                      (double)subglyph->transform.xy / 65536,
+                      (double)subglyph->transform.yy / 65536 ));
         }
 
         subglyph++;
@@ -801,7 +801,7 @@
                    FT_UInt       start_point,
                    FT_UInt       start_contour )
   {
-    zone->n_points    = (FT_UShort)load->outline.n_points -
+    zone->n_points    = (FT_UShort)load->outline.n_points + 4 -
                           (FT_UShort)start_point;
     zone->n_contours  = load->outline.n_contours -
                           (FT_Short)start_contour;
@@ -970,11 +970,6 @@
     outline->points[n_points + 2] = loader->pp3;
     outline->points[n_points + 3] = loader->pp4;
 
-    outline->tags[n_points    ] = 0;
-    outline->tags[n_points + 1] = 0;
-    outline->tags[n_points + 2] = 0;
-    outline->tags[n_points + 3] = 0;
-
     n_points += 4;
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
@@ -985,24 +980,9 @@
         goto Exit;
 
       /* Deltas apply to the unscaled data. */
-      error = TT_Vary_Apply_Glyph_Deltas( loader->face,
-                                          loader->glyph_index,
+      error = TT_Vary_Apply_Glyph_Deltas( loader,
                                           outline,
-                                          unrounded,
-                                          (FT_UInt)n_points );
-
-      /* recalculate linear horizontal and vertical advances */
-      /* if we don't have HVAR and VVAR, respectively        */
-
-      /* XXX: change all FreeType modules to store `linear' and `vadvance' */
-      /*      in 26.6 format before the `base' module scales them to 16.16 */
-      if ( !( loader->face->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) )
-        loader->linear = FT_PIX_ROUND( unrounded[n_points - 3].x -
-                                       unrounded[n_points - 4].x ) / 64;
-      if ( !( loader->face->variation_support & TT_FACE_FLAG_VAR_VADVANCE ) )
-        loader->vadvance = FT_PIX_ROUND( unrounded[n_points - 1].x -
-                                         unrounded[n_points - 2].x ) / 64;
-
+                                          unrounded );
       if ( error )
         goto Exit;
     }
@@ -1014,7 +994,7 @@
       tt_prepare_zone( &loader->zone, &gloader->current, 0, 0 );
 
       FT_ARRAY_COPY( loader->zone.orus, loader->zone.cur,
-                     loader->zone.n_points + 4 );
+                     loader->zone.n_points );
     }
 
     {
@@ -1156,11 +1136,7 @@
     }
 
     if ( IS_HINTED( loader->load_flags ) )
-    {
-      loader->zone.n_points += 4;
-
       error = TT_Hint_Glyph( loader, 0 );
-    }
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
   Exit:
@@ -1373,11 +1349,6 @@
     outline->points[outline->n_points + 2] = loader->pp3;
     outline->points[outline->n_points + 3] = loader->pp4;
 
-    outline->tags[outline->n_points    ] = 0;
-    outline->tags[outline->n_points + 1] = 0;
-    outline->tags[outline->n_points + 2] = 0;
-    outline->tags[outline->n_points + 3] = 0;
-
 #ifdef TT_USE_BYTECODE_INTERPRETER
 
     {
@@ -1436,10 +1407,8 @@
 
     /* Some points are likely touched during execution of  */
     /* instructions on components.  So let's untouch them. */
-    for ( i = 0; i < loader->zone.n_points; i++ )
+    for ( i = 0; i < loader->zone.n_points - 4U; i++ )
       loader->zone.tags[i] &= ~FT_CURVE_TAG_TOUCH_BOTH;
-
-    loader->zone.n_points += 4;
 
     return TT_Hint_Glyph( loader, 1 );
   }
@@ -1761,57 +1730,29 @@
         /* a small outline structure with four elements for */
         /* communication with `TT_Vary_Apply_Glyph_Deltas'  */
         FT_Vector   points[4];
-        char        tags[4]     = { 1, 1, 1, 1 };
-        short       contours[4] = { 0, 1, 2, 3 };
         FT_Outline  outline;
 
         /* unrounded values */
         FT_Vector  unrounded[4] = { {0, 0}, {0, 0}, {0, 0}, {0, 0} };
 
 
-        points[0].x = loader->pp1.x;
-        points[0].y = loader->pp1.y;
-        points[1].x = loader->pp2.x;
-        points[1].y = loader->pp2.y;
+        points[0] = loader->pp1;
+        points[1] = loader->pp2;
+        points[2] = loader->pp3;
+        points[3] = loader->pp4;
 
-        points[2].x = loader->pp3.x;
-        points[2].y = loader->pp3.y;
-        points[3].x = loader->pp4.x;
-        points[3].y = loader->pp4.y;
-
-        outline.n_points   = 4;
-        outline.n_contours = 4;
+        outline.n_points   = 0;
+        outline.n_contours = 0;
         outline.points     = points;
-        outline.tags       = tags;
-        outline.contours   = contours;
+        outline.tags       = NULL;
+        outline.contours   = NULL;
 
         /* this must be done before scaling */
-        error = TT_Vary_Apply_Glyph_Deltas( loader->face,
-                                            glyph_index,
+        error = TT_Vary_Apply_Glyph_Deltas( loader,
                                             &outline,
-                                            unrounded,
-                                            (FT_UInt)outline.n_points );
+                                            unrounded );
         if ( error )
           goto Exit;
-
-        loader->pp1.x = points[0].x;
-        loader->pp1.y = points[0].y;
-        loader->pp2.x = points[1].x;
-        loader->pp2.y = points[1].y;
-
-        loader->pp3.x = points[2].x;
-        loader->pp3.y = points[2].y;
-        loader->pp4.x = points[3].x;
-        loader->pp4.y = points[3].y;
-
-        /* recalculate linear horizontal and vertical advances */
-        /* if we don't have HVAR and VVAR, respectively        */
-        if ( !( loader->face->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) )
-          loader->linear = FT_PIX_ROUND( unrounded[1].x -
-                                         unrounded[0].x ) / 64;
-        if ( !( loader->face->variation_support & TT_FACE_FLAG_VAR_VADVANCE ) )
-          loader->vadvance = FT_PIX_ROUND( unrounded[3].x -
-                                           unrounded[2].x ) / 64;
       }
 
 #endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
@@ -1959,17 +1900,16 @@
 
         /* construct an outline structure for              */
         /* communication with `TT_Vary_Apply_Glyph_Deltas' */
-        outline.n_points   = (short)( gloader->current.num_subglyphs + 4 );
-        outline.n_contours = outline.n_points;
+        outline.n_contours = outline.n_points = limit;
 
         outline.points   = NULL;
         outline.tags     = NULL;
         outline.contours = NULL;
 
-        if ( FT_NEW_ARRAY( points, outline.n_points )    ||
-             FT_NEW_ARRAY( tags, outline.n_points )      ||
-             FT_NEW_ARRAY( contours, outline.n_points )  ||
-             FT_NEW_ARRAY( unrounded, outline.n_points ) )
+        if ( FT_NEW_ARRAY( points, limit + 4 )    ||
+             FT_NEW_ARRAY( tags, limit + 4 )      ||
+             FT_NEW_ARRAY( contours, limit + 4 )  ||
+             FT_NEW_ARRAY( unrounded, limit + 4 ) )
           goto Exit1;
 
         subglyph = gloader->current.subglyphs;
@@ -1985,28 +1925,10 @@
           contours[i] = i;
         }
 
-        points[i].x = loader->pp1.x;
-        points[i].y = loader->pp1.y;
-        tags[i]     = 1;
-        contours[i] = i;
-
-        i++;
-        points[i].x = loader->pp2.x;
-        points[i].y = loader->pp2.y;
-        tags[i]     = 1;
-        contours[i] = i;
-
-        i++;
-        points[i].x = loader->pp3.x;
-        points[i].y = loader->pp3.y;
-        tags[i]     = 1;
-        contours[i] = i;
-
-        i++;
-        points[i].x = loader->pp4.x;
-        points[i].y = loader->pp4.y;
-        tags[i]     = 1;
-        contours[i] = i;
+        points[i++] = loader->pp1;
+        points[i++] = loader->pp2;
+        points[i++] = loader->pp3;
+        points[i  ] = loader->pp4;
 
         outline.points   = points;
         outline.tags     = tags;
@@ -2014,12 +1936,9 @@
 
         /* this call provides additional offsets */
         /* for each component's translation      */
-        if ( FT_SET_ERROR( TT_Vary_Apply_Glyph_Deltas(
-                             face,
-                             glyph_index,
-                             &outline,
-                             unrounded,
-                             (FT_UInt)outline.n_points ) ) )
+        if ( FT_SET_ERROR( TT_Vary_Apply_Glyph_Deltas( loader,
+                                                       &outline,
+                                                       unrounded ) ) )
           goto Exit1;
 
         subglyph = gloader->current.subglyphs;
@@ -2032,27 +1951,6 @@
             subglyph->arg2 = (FT_Int16)points[i].y;
           }
         }
-
-        loader->pp1.x = points[i + 0].x;
-        loader->pp1.y = points[i + 0].y;
-        loader->pp2.x = points[i + 1].x;
-        loader->pp2.y = points[i + 1].y;
-
-        loader->pp3.x = points[i + 2].x;
-        loader->pp3.y = points[i + 2].y;
-        loader->pp4.x = points[i + 3].x;
-        loader->pp4.y = points[i + 3].y;
-
-        /* recalculate linear horizontal and vertical advances */
-        /* if we don't have HVAR and VVAR, respectively        */
-        if ( !( face->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) )
-          loader->linear =
-            FT_PIX_ROUND( unrounded[outline.n_points - 3].x -
-                          unrounded[outline.n_points - 4].x ) / 64;
-        if ( !( face->variation_support & TT_FACE_FLAG_VAR_VADVANCE ) )
-          loader->vadvance =
-            FT_PIX_ROUND( unrounded[outline.n_points - 1].x -
-                          unrounded[outline.n_points - 2].x ) / 64;
 
       Exit1:
         FT_FREE( outline.points );
@@ -2229,12 +2127,11 @@
   compute_glyph_metrics( TT_Loader  loader,
                          FT_UInt    glyph_index )
   {
-    TT_Face    face   = loader->face;
-
+    TT_Face       face  = loader->face;
+    TT_Size       size  = loader->size;
+    TT_GlyphSlot  glyph = loader->glyph;
     FT_BBox       bbox;
     FT_Fixed      y_scale;
-    TT_GlyphSlot  glyph = loader->glyph;
-    TT_Size       size  = loader->size;
 
 
     y_scale = 0x10000L;
@@ -2372,16 +2269,12 @@
                    FT_UInt       glyph_index,
                    FT_Int32      load_flags )
   {
-    TT_Face             face;
-    SFNT_Service        sfnt;
-    FT_Stream           stream;
+    TT_Face             face   = (TT_Face)glyph->face;
+    SFNT_Service        sfnt   = (SFNT_Service)face->sfnt;
+    FT_Stream           stream = face->root.stream;
     FT_Error            error;
     TT_SBit_MetricsRec  sbit_metrics;
 
-
-    face   = (TT_Face)glyph->face;
-    sfnt   = (SFNT_Service)face->sfnt;
-    stream = face->root.stream;
 
     error = sfnt->load_sbit_image( face,
                                    size->strike_index,
@@ -2433,21 +2326,18 @@
                   FT_Int32      load_flags,
                   FT_Bool       glyf_table_only )
   {
-    TT_Face    face;
-    FT_Stream  stream;
+    TT_Face    face   = (TT_Face)glyph->face;
+    FT_Stream  stream = face->root.stream;
 
 #ifdef TT_USE_BYTECODE_INTERPRETER
     FT_Error   error;
     FT_Bool    pedantic = FT_BOOL( load_flags & FT_LOAD_PEDANTIC );
 #if defined TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY || \
     defined TT_SUPPORT_SUBPIXEL_HINTING_MINIMAL
-    TT_Driver  driver = (TT_Driver)FT_FACE_DRIVER( (TT_Face)glyph->face );
+    TT_Driver  driver   = (TT_Driver)FT_FACE_DRIVER( glyph->face );
 #endif
 #endif
 
-
-    face   = (TT_Face)glyph->face;
-    stream = face->root.stream;
 
     FT_ZERO( loader );
 
@@ -2816,6 +2706,7 @@
                  FT_UInt       glyph_index,
                  FT_Int32      load_flags )
   {
+    TT_Face       face = (TT_Face)glyph->face;
     FT_Error      error;
     TT_LoaderRec  loader;
 
@@ -2840,8 +2731,6 @@
         /* if we have a bitmap-only font, return an empty glyph            */
         if ( !FT_IS_SCALABLE( glyph->face ) )
         {
-          TT_Face  face = (TT_Face)glyph->face;
-
           FT_Short  left_bearing = 0;
           FT_Short  top_bearing  = 0;
 
@@ -2900,9 +2789,6 @@
         if ( FT_IS_SCALABLE( glyph->face ) ||
              FT_HAS_SBIX( glyph->face )    )
         {
-          TT_Face  face = (TT_Face)glyph->face;
-
-
           /* for the bbox we need the header only */
           (void)tt_loader_init( &loader, size, glyph, load_flags, TRUE );
           (void)load_truetype_glyph( &loader, glyph_index, 0, TRUE );
@@ -2971,23 +2857,23 @@
 #ifdef FT_CONFIG_OPTION_SVG
 
     /* check for OT-SVG */
-    if ( ( load_flags & FT_LOAD_COLOR ) && ( (TT_Face)glyph->face )->svg )
+    if ( ( load_flags & FT_LOAD_COLOR ) && face->svg )
     {
-      SFNT_Service  sfnt;
-
-      FT_Short   leftBearing;
-      FT_Short   topBearing;
-      FT_UShort  advanceX;
-      FT_UShort  advanceY;
+      SFNT_Service  sfnt = (SFNT_Service)face->sfnt;
 
 
       FT_TRACE3(( "Trying to load SVG glyph\n" ));
-      sfnt = (SFNT_Service)( (TT_Face)glyph->face )->sfnt;
 
       error = sfnt->load_svg_doc( glyph, glyph_index );
       if ( !error )
       {
-        TT_Face  face = (TT_Face)glyph->face;
+        FT_Fixed  x_scale = size->root.metrics.x_scale;
+        FT_Fixed  y_scale = size->root.metrics.y_scale;
+
+        FT_Short   leftBearing;
+        FT_Short   topBearing;
+        FT_UShort  advanceX;
+        FT_UShort  advanceY;
 
 
         FT_TRACE3(( "Successfully loaded SVG glyph\n" ));
@@ -3005,15 +2891,11 @@
                            &topBearing,
                            &advanceY );
 
-        advanceX = (FT_UShort)FT_MulDiv( advanceX,
-                                         glyph->face->size->metrics.x_ppem,
-                                         glyph->face->units_per_EM );
-        advanceY = (FT_UShort)FT_MulDiv( advanceY,
-                                         glyph->face->size->metrics.y_ppem,
-                                         glyph->face->units_per_EM );
+        glyph->linearHoriAdvance = advanceX;
+        glyph->linearVertAdvance = advanceY;
 
-        glyph->metrics.horiAdvance = advanceX << 6;
-        glyph->metrics.vertAdvance = advanceY << 6;
+        glyph->metrics.horiAdvance = FT_MulFix( advanceX, x_scale );
+        glyph->metrics.vertAdvance = FT_MulFix( advanceY, y_scale );
 
         return error;
       }

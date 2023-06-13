@@ -37,6 +37,12 @@
 class GraphNode : public Container {
 	GDCLASS(GraphNode, Container);
 
+	struct _MinSizeCache {
+		int min_size;
+		bool will_stretch;
+		int final_size;
+	};
+
 public:
 	enum Overlay {
 		OVERLAY_DISABLED,
@@ -196,6 +202,8 @@ public:
 	bool is_selectable();
 
 	virtual Size2 get_minimum_size() const override;
+
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
 	virtual Vector<int> get_allowed_size_flags_vertical() const override;

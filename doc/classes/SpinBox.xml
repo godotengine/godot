@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SpinBox" inherits="Range" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Numerical input text field.
+		An input field for numbers.
 	</brief_description>
 	<description>
-		SpinBox is a numerical input text field. It allows entering integers and floats.
+		[SpinBox] is a numerical input text field. It allows entering integers and floating point numbers.
 		[b]Example:[/b]
 		[codeblocks]
 		[gdscript]

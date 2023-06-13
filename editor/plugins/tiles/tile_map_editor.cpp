@@ -321,6 +321,7 @@ void TileMapEditorTilesPlugin::_update_patterns_list() {
 	for (int i = 0; i < tile_set->get_patterns_count(); i++) {
 		int id = patterns_item_list->add_item("");
 		patterns_item_list->set_item_metadata(id, tile_set->get_pattern(i));
+		patterns_item_list->set_item_tooltip(id, vformat(TTR("Index: %d"), i));
 		TilesEditorPlugin::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(i), callable_mp(this, &TileMapEditorTilesPlugin::_pattern_preview_done));
 	}
 
@@ -938,6 +939,20 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 				}
 			}
 		}
+
+		Ref<Font> font = p_overlay->get_theme_font(SNAME("font"), SNAME("Label"));
+		int font_size = p_overlay->get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+		Point2 msgpos = Point2(20 * EDSCALE, p_overlay->get_size().y - 20 * EDSCALE);
+
+		String text = tile_map->local_to_map(tile_map->get_local_mouse_position());
+		if (drag_type == DRAG_TYPE_RECT) {
+			Vector2i size = tile_map->local_to_map(tile_map->get_local_mouse_position()) - tile_map->local_to_map(drag_start_mouse_pos);
+			text += vformat(" %s (%dx%d)", TTR("Drawing Rect:"), ABS(size.x) + 1, ABS(size.y) + 1);
+		}
+
+		p_overlay->draw_string(font, msgpos + Point2(1, 1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+		p_overlay->draw_string(font, msgpos + Point2(-1, -1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+		p_overlay->draw_string(font, msgpos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
 	}
 }
 
@@ -2172,7 +2187,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	tiles_bottom_panel->set_name(TTR("Tiles"));
 
 	missing_source_label = memnew(Label);
-	missing_source_label->set_text(TTR("This TileMap's TileSet has no source configured. Edit the TileSet resource to add one."));
+	missing_source_label->set_text(TTR("This TileMap's TileSet has no source configured. Go to the TileSet bottom tab to add one."));
 	missing_source_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	missing_source_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	missing_source_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -4054,7 +4069,7 @@ TileMapEditor::TileMapEditor() {
 	tile_map_toolbar->add_child(advanced_menu_button);
 
 	missing_tileset_label = memnew(Label);
-	missing_tileset_label->set_text(TTR("The edited TileMap node has no TileSet resource."));
+	missing_tileset_label->set_text(TTR("The edited TileMap node has no TileSet resource.\nCreate or load a TileSet resource in the Tile Set property in the inspector."));
 	missing_tileset_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	missing_tileset_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	missing_tileset_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

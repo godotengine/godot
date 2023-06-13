@@ -144,7 +144,7 @@ uint64_t FileAccessMemory::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	}
 
 	memcpy(p_dst, &data[pos], read);
-	pos += p_length;
+	pos += read;
 
 	return read;
 }
@@ -172,5 +172,5 @@ void FileAccessMemory::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	}
 
 	memcpy(&data[pos], p_src, write);
-	pos += p_length;
+	pos += write;
 }

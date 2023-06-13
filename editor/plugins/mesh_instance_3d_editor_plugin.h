@@ -33,11 +33,11 @@
 
 #include "editor/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/spin_box.h"
 
 class AcceptDialog;
 class ConfirmationDialog;
 class MenuButton;
+class SpinBox;
 
 class MeshInstance3DEditor : public Control {
 	GDCLASS(MeshInstance3DEditor, Control);

@@ -11,6 +11,7 @@ def get_doc_classes():
         "FastNoiseLite",
         "Noise",
         "NoiseTexture2D",
+        "NoiseTexture3D",
     ]
 
 

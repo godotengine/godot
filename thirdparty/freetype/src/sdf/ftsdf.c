@@ -4,7 +4,7 @@
  *
  *   Signed Distance Field support for outline fonts (body).
  *
- * Copyright (C) 2020-2022 by
+ * Copyright (C) 2020-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Anuj Verma.
@@ -871,7 +871,7 @@
       cbox.yMax = edge.control_b.y;
 
       is_set = 1;
-      /* fall through */
+      FALL_THROUGH;
 
     case SDF_EDGE_CONIC:
       if ( is_set )
@@ -899,7 +899,7 @@
 
         is_set = 1;
       }
-      /* fall through */
+      FALL_THROUGH;
 
     case SDF_EDGE_LINE:
       if ( is_set )
@@ -1293,7 +1293,7 @@
             /* Calculate the number of necessary bisections.  Each      */
             /* bisection causes a four-fold reduction of the deviation, */
             /* hence we bisect the Bezier curve until the deviation     */
-            /* becomes less than 1/8th of a pixel.  For more details    */
+            /* becomes less than 1/8 of a pixel.  For more details      */
             /* check file `ftgrays.c`.                                  */
             num_splits = 1;
             while ( dx > ONE_PIXEL / 8 )
@@ -1939,7 +1939,7 @@
     /* now factor is 16.16 */
     factor = FT_DivFix( factor, sq_line_length );
 
-    /* clamp the factor between 0.0 and 1.0 in fixed point */
+    /* clamp the factor between 0.0 and 1.0 in fixed-point */
     if ( factor > FT_INT_16D16( 1 ) )
       factor = FT_INT_16D16( 1 );
     if ( factor < 0 )
@@ -2109,7 +2109,8 @@
     FT_Error  error = FT_Err_Ok;
 
     FT_26D6_Vec  aA, bB;         /* A, B in the above comment             */
-    FT_26D6_Vec  nearest_point;  /* point on curve nearest to `point`     */
+    FT_26D6_Vec  nearest_point = { 0, 0 };
+                                 /* point on curve nearest to `point`     */
     FT_26D6_Vec  direction;      /* direction of curve at `nearest_point` */
 
     FT_26D6_Vec  p0, p1, p2;     /* control points of a conic curve       */
@@ -2405,7 +2406,8 @@
     FT_Error  error = FT_Err_Ok;
 
     FT_26D6_Vec  aA, bB, cC;     /* A, B, C in the above comment          */
-    FT_26D6_Vec  nearest_point;  /* point on curve nearest to `point`     */
+    FT_26D6_Vec  nearest_point = { 0, 0 };
+                                 /* point on curve nearest to `point`     */
     FT_26D6_Vec  direction;      /* direction of curve at `nearest_point` */
 
     FT_26D6_Vec  p0, p1, p2;     /* control points of a conic curve       */
@@ -3164,7 +3166,7 @@
         if ( min_dist.distance > sp_sq )
           min_dist.distance = sp_sq;
 
-        /* square_root the values and fit in a 6.10 fixed point */
+        /* square_root the values and fit in a 6.10 fixed-point */
         if ( USE_SQUARED_DISTANCES )
           min_dist.distance = square_root( min_dist.distance );
 
@@ -3256,7 +3258,7 @@
     /* and also determine the signs properly.             */
     SDF_Signed_Distance*  dists = NULL;
 
-    const FT_16D16  fixed_spread = FT_INT_16D16( spread );
+    const FT_16D16  fixed_spread = (FT_16D16)FT_INT_16D16( spread );
 
 
     if ( !shape || !bitmap )

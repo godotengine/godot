@@ -50,6 +50,11 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &
 			extension->initialize_library(GDExtension::InitializationLevel(i));
 		}
 	}
+
+	for (const KeyValue<String, String> &kv : extension->class_icon_paths) {
+		gdextension_class_icon_paths[kv.key] = kv.value;
+	}
+
 	gdextension_map[p_path] = extension;
 	return LOAD_STATUS_OK;
 }
@@ -74,6 +79,11 @@ GDExtensionManager::LoadStatus GDExtensionManager::unload_extension(const String
 			extension->deinitialize_library(GDExtension::InitializationLevel(i));
 		}
 	}
+
+	for (const KeyValue<String, String> &kv : extension->class_icon_paths) {
+		gdextension_class_icon_paths.erase(kv.key);
+	}
+
 	gdextension_map.erase(p_path);
 	return LOAD_STATUS_OK;
 }
@@ -93,6 +103,19 @@ Ref<GDExtension> GDExtensionManager::get_extension(const String &p_path) {
 	HashMap<String, Ref<GDExtension>>::Iterator E = gdextension_map.find(p_path);
 	ERR_FAIL_COND_V(!E, Ref<GDExtension>());
 	return E->value;
+}
+
+bool GDExtensionManager::class_has_icon_path(const String &p_class) const {
+	// TODO: Check that the icon belongs to a registered class somehow.
+	return gdextension_class_icon_paths.has(p_class);
+}
+
+String GDExtensionManager::class_get_icon_path(const String &p_class) const {
+	// TODO: Check that the icon belongs to a registered class somehow.
+	if (gdextension_class_icon_paths.has(p_class)) {
+		return gdextension_class_icon_paths[p_class];
+	}
+	return "";
 }
 
 void GDExtensionManager::initialize_extensions(GDExtension::InitializationLevel p_level) {

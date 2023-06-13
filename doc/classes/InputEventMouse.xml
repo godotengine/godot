@@ -4,10 +4,10 @@
 		Base input event type for mouse events.
 	</brief_description>
 	<description>
-		Stores general mouse events information.
+		Stores general information about mouse events.
 	</description>
 	<tutorials>
-		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<members>
 		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" enum="MouseButtonMask" default="0">

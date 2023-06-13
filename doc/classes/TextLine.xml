@@ -4,7 +4,7 @@
 		Holds a line of text.
 	</brief_description>
 	<description>
-		Abstraction over [TextServer] for handling single line of text.
+		Abstraction over [TextServer] for handling a single line of text.
 	</description>
 	<tutorials>
 	</tutorials>

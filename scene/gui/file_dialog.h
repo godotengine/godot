@@ -106,7 +106,7 @@ private:
 	static bool default_show_hidden_files;
 	bool show_hidden_files = false;
 
-	bool invalidated = true;
+	bool is_invalidating = false;
 
 	struct ThemeCache {
 		Ref<Texture2D> parent_folder;
@@ -153,6 +153,8 @@ private:
 
 	void _change_dir(const String &p_new_dir);
 	void _update_drives(bool p_select = true);
+
+	void _invalidate();
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 

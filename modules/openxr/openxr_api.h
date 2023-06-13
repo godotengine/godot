@@ -95,6 +95,10 @@ private:
 	uint32_t num_swapchain_formats = 0;
 	int64_t *supported_swapchain_formats = nullptr;
 
+	// system info
+	String runtime_name;
+	String runtime_version;
+
 	// configuration
 	XrFormFactor form_factor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
 	XrViewConfigurationType view_configuration = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
@@ -116,6 +120,7 @@ private:
 	XrSessionState session_state = XR_SESSION_STATE_UNKNOWN;
 	bool running = false;
 	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, NULL, 0, 0, false };
+	double render_target_size_multiplier = 1.0;
 
 	OpenXRGraphicsExtensionWrapper *graphics_extension = nullptr;
 	XrSystemGraphicsProperties graphics_properties;
@@ -294,6 +299,8 @@ public:
 	XrInstance get_instance() const { return instance; };
 	XrSystemId get_system_id() const { return system_id; };
 	XrSession get_session() const { return session; };
+	String get_runtime_name() const { return runtime_name; };
+	String get_runtime_version() const { return runtime_version; };
 
 	// helper method to convert an XrPosef to a Transform3D
 	Transform3D transform_from_pose(const XrPosef &p_pose);
@@ -361,6 +368,10 @@ public:
 	float get_display_refresh_rate() const;
 	void set_display_refresh_rate(float p_refresh_rate);
 	Array get_available_display_refresh_rates() const;
+
+	// Render Target size multiplier
+	double get_render_target_size_multiplier() const;
+	void set_render_target_size_multiplier(double multiplier);
 
 	// action map
 	String get_default_action_map_resource_name();

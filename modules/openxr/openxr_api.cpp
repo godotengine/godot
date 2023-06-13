@@ -385,8 +385,13 @@ bool OpenXRAPI::create_instance() {
 	if (XR_FAILED(result)) {
 		// not fatal probably
 		print_line("OpenXR: Failed to get XR instance properties [", get_error_string(result), "]");
+
+		runtime_name = "";
+		runtime_version = "";
 	} else {
-		print_line("OpenXR: Running on OpenXR runtime: ", instanceProps.runtimeName, " ", OpenXRUtil::make_xr_version_string(instanceProps.runtimeVersion));
+		runtime_name = instanceProps.runtimeName;
+		runtime_version = OpenXRUtil::make_xr_version_string(instanceProps.runtimeVersion);
+		print_line("OpenXR: Running on OpenXR runtime: ", runtime_name, " ", runtime_version);
 	}
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
@@ -1277,7 +1282,7 @@ XrResult OpenXRAPI::get_instance_proc_addr(const char *p_name, PFN_xrVoidFunctio
 
 	if (result != XR_SUCCESS) {
 		String error_message = String("Symbol ") + p_name + " not found in OpenXR instance.";
-		ERR_FAIL_COND_V_MSG(true, result, error_message.utf8().get_data());
+		ERR_FAIL_V_MSG(result, error_message.utf8().get_data());
 	}
 
 	return result;
@@ -1418,8 +1423,8 @@ Size2 OpenXRAPI::get_recommended_target_size() {
 
 	Size2 target_size;
 
-	target_size.width = view_configuration_views[0].recommendedImageRectWidth;
-	target_size.height = view_configuration_views[0].recommendedImageRectHeight;
+	target_size.width = view_configuration_views[0].recommendedImageRectWidth * render_target_size_multiplier;
+	target_size.height = view_configuration_views[0].recommendedImageRectHeight * render_target_size_multiplier;
 
 	return target_size;
 }
@@ -1957,6 +1962,14 @@ Array OpenXRAPI::get_available_display_refresh_rates() const {
 	}
 
 	return Array();
+}
+
+double OpenXRAPI::get_render_target_size_multiplier() const {
+	return render_target_size_multiplier;
+}
+
+void OpenXRAPI::set_render_target_size_multiplier(double multiplier) {
+	render_target_size_multiplier = multiplier;
 }
 
 OpenXRAPI::OpenXRAPI() {

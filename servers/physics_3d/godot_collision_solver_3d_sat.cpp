@@ -2065,7 +2065,7 @@ static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, co
 	int vertex_count_B = mesh_B.vertices.size();
 
 	// Precalculating this makes the transforms faster.
-	Basis a_xform_normal = p_transform_b.basis.inverse().transposed();
+	Basis a_xform_normal = p_transform_a.basis.inverse().transposed();
 
 	// faces of A
 	for (int i = 0; i < face_count_A; i++) {

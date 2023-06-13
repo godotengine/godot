@@ -757,76 +757,84 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	}
 
 	// Create infill (no AA).
-	if (draw_center && (!aa_on || blend_on || !draw_border)) {
+	if (draw_center && (!aa_on || blend_on)) {
 		draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
 				infill_rect, infill_rect, bg_color, bg_color, corner_detail, skew, true);
 	}
 
 	if (aa_on) {
 		real_t aa_border_width[4];
+		real_t aa_border_width_half[4];
 		real_t aa_fill_width[4];
+		real_t aa_fill_width_half[4];
 		if (draw_border) {
 			for (int i = 0; i < 4; i++) {
 				if (border_width[i] > 0) {
 					aa_border_width[i] = aa_size;
+					aa_border_width_half[i] = aa_size / 2;
 					aa_fill_width[i] = 0;
+					aa_fill_width_half[i] = 0;
 				} else {
 					aa_border_width[i] = 0;
+					aa_border_width_half[i] = 0;
 					aa_fill_width[i] = aa_size;
+					aa_fill_width_half[i] = aa_size / 2;
 				}
 			}
 		} else {
 			for (int i = 0; i < 4; i++) {
 				aa_border_width[i] = 0;
+				aa_border_width_half[i] = 0;
 				aa_fill_width[i] = aa_size;
+				aa_fill_width_half[i] = aa_size / 2;
 			}
 		}
 
-		Rect2 infill_inner_rect = infill_rect.grow_individual(-aa_border_width[SIDE_LEFT], -aa_border_width[SIDE_TOP],
-				-aa_border_width[SIDE_RIGHT], -aa_border_width[SIDE_BOTTOM]);
-
 		if (draw_center) {
-			if (!blend_on && draw_border) {
-				Rect2 infill_inner_rect_aa = infill_inner_rect.grow_individual(aa_border_width[SIDE_LEFT], aa_border_width[SIDE_TOP],
-						aa_border_width[SIDE_RIGHT], aa_border_width[SIDE_BOTTOM]);
-				// Create infill within AA border.
+			// Infill rect, transparent side of antialiasing gradient (base infill rect enlarged by AA size)
+			Rect2 infill_rect_aa_transparent = infill_rect.grow_individual(aa_fill_width_half[SIDE_LEFT], aa_fill_width_half[SIDE_TOP],
+					aa_fill_width_half[SIDE_RIGHT], aa_fill_width_half[SIDE_BOTTOM]);
+			// Infill rect, colored side of antialiasing gradient (base infill rect shrunk by AA size)
+			Rect2 infill_rect_aa_colored = infill_rect_aa_transparent.grow_individual(-aa_fill_width[SIDE_LEFT], -aa_fill_width[SIDE_TOP],
+					-aa_fill_width[SIDE_RIGHT], -aa_fill_width[SIDE_BOTTOM]);
+			if (!blend_on) {
+				// Create center fill, not antialiased yet
 				draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-						infill_inner_rect_aa, infill_inner_rect_aa, bg_color, bg_color, corner_detail, skew, true);
+						infill_rect_aa_colored, infill_rect_aa_colored, bg_color, bg_color, corner_detail, skew, true);
 			}
-
 			if (!blend_on || !draw_border) {
-				Rect2 infill_rect_aa = infill_rect.grow_individual(aa_fill_width[SIDE_LEFT], aa_fill_width[SIDE_TOP],
-						aa_fill_width[SIDE_RIGHT], aa_fill_width[SIDE_BOTTOM]);
-
 				Color alpha_bg = Color(bg_color.r, bg_color.g, bg_color.b, 0);
-
-				// Create infill fake AA gradient.
-				draw_ring(verts, indices, colors, style_rect, adapted_corner,
-						infill_rect_aa, infill_rect, bg_color, alpha_bg, corner_detail, skew);
+				// Add antialiasing on the center fill
+				draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
+						infill_rect_aa_transparent, infill_rect_aa_colored, bg_color, alpha_bg, corner_detail, skew);
 			}
 		}
 
 		if (draw_border) {
-			Rect2 infill_rect_aa = infill_rect.grow_individual(aa_border_width[SIDE_LEFT], aa_border_width[SIDE_TOP],
-					aa_border_width[SIDE_RIGHT], aa_border_width[SIDE_BOTTOM]);
-			Rect2 style_rect_aa = style_rect.grow_individual(aa_border_width[SIDE_LEFT], aa_border_width[SIDE_TOP],
-					aa_border_width[SIDE_RIGHT], aa_border_width[SIDE_BOTTOM]);
-			Rect2 border_style_rect_aa = border_style_rect.grow_individual(aa_border_width[SIDE_LEFT], aa_border_width[SIDE_TOP],
-					aa_border_width[SIDE_RIGHT], aa_border_width[SIDE_BOTTOM]);
+			// Inner border recct, fully colored side of antialiasing gradient (base inner rect enlarged by AA size)
+			Rect2 inner_rect_aa_colored = infill_rect.grow_individual(aa_border_width_half[SIDE_LEFT], aa_border_width_half[SIDE_TOP],
+					aa_border_width_half[SIDE_RIGHT], aa_border_width_half[SIDE_BOTTOM]);
+			// Inner border rect, transparent side of antialiasing gradient (base inner rect shrunk by AA size)
+			Rect2 inner_rect_aa_transparent = inner_rect_aa_colored.grow_individual(-aa_border_width[SIDE_LEFT], -aa_border_width[SIDE_TOP],
+					-aa_border_width[SIDE_RIGHT], -aa_border_width[SIDE_BOTTOM]);
+			// Outer border rect, transparent side of antialiasing gradient (base outer rect enlarged by AA size)
+			Rect2 outer_rect_aa_transparent = style_rect.grow_individual(aa_border_width_half[SIDE_LEFT], aa_border_width_half[SIDE_TOP],
+					aa_border_width_half[SIDE_RIGHT], aa_border_width_half[SIDE_BOTTOM]);
+			// Outer border rect, colored side of antialiasing gradient (base outer rect shrunk by AA size)
+			Rect2 outer_rect_aa_colored = border_style_rect.grow_individual(aa_border_width_half[SIDE_LEFT], aa_border_width_half[SIDE_TOP],
+					aa_border_width_half[SIDE_RIGHT], aa_border_width_half[SIDE_BOTTOM]);
 
-			// Create border.
+			// Create border ring, not antialiased yet
 			draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-					border_style_rect_aa, ((blend_on) ? infill_rect : infill_rect_aa), border_color_inner, border_color, corner_detail, skew);
-
+					outer_rect_aa_colored, ((blend_on) ? infill_rect : inner_rect_aa_colored), border_color_inner, border_color, corner_detail, skew);
 			if (!blend_on) {
-				// Create inner border fake AA gradient.
+				// Add antialiasing on the ring inner border
 				draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-						infill_rect_aa, infill_rect, border_color_blend, border_color, corner_detail, skew);
+						inner_rect_aa_colored, inner_rect_aa_transparent, border_color_blend, border_color, corner_detail, skew);
 			}
-
-			// Create outer border fake AA gradient.
+			// Add antialiasing on the ring outer border
 			draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-					style_rect_aa, border_style_rect_aa, border_color, border_color_alpha, corner_detail, skew);
+					outer_rect_aa_transparent, outer_rect_aa_colored, border_color, border_color_alpha, corner_detail, skew);
 		}
 	}
 

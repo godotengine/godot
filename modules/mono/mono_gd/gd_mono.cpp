@@ -443,6 +443,8 @@ void GDMono::initialize() {
 	print_verbose(".NET: GodotPlugins initialized");
 
 	_on_core_api_assembly_loaded();
+
+	initialized = true;
 }
 
 #ifdef TOOLS_ENABLED
@@ -527,14 +529,6 @@ Error GDMono::reload_project_assemblies() {
 
 GDMono::GDMono() {
 	singleton = this;
-
-	runtime_initialized = false;
-	finalizing_scripts_domain = false;
-
-	api_core_hash = 0;
-#ifdef TOOLS_ENABLED
-	api_editor_hash = 0;
-#endif
 }
 
 GDMono::~GDMono() {

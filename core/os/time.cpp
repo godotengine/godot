@@ -382,10 +382,10 @@ String Time::get_time_string_from_system(bool p_utc) const {
 
 Dictionary Time::get_time_zone_from_system() const {
 	OS::TimeZoneInfo info = OS::get_singleton()->get_time_zone_info();
-	Dictionary timezone;
-	timezone["bias"] = info.bias;
-	timezone["name"] = info.name;
-	return timezone;
+	Dictionary ret_timezone;
+	ret_timezone["bias"] = info.bias;
+	ret_timezone["name"] = info.name;
+	return ret_timezone;
 }
 
 double Time::get_unix_time_from_system() const {

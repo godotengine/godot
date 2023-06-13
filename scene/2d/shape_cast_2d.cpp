@@ -151,11 +151,18 @@ bool ShapeCast2D::is_enabled() const {
 }
 
 void ShapeCast2D::set_shape(const Ref<Shape2D> &p_shape) {
+	if (p_shape == shape) {
+		return;
+	}
+	if (shape.is_valid()) {
+		shape->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShapeCast2D::_shape_changed));
+	}
 	shape = p_shape;
-	if (p_shape.is_valid()) {
-		shape->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShapeCast2D::_redraw_shape));
+	if (shape.is_valid()) {
+		shape->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShapeCast2D::_shape_changed));
 		shape_rid = shape->get_rid();
 	}
+
 	update_configuration_warnings();
 	queue_redraw();
 }
@@ -186,7 +193,7 @@ bool ShapeCast2D::get_exclude_parent_body() const {
 	return exclude_parent_body;
 }
 
-void ShapeCast2D::_redraw_shape() {
+void ShapeCast2D::_shape_changed() {
 	queue_redraw();
 }
 
@@ -286,7 +293,7 @@ void ShapeCast2D::_update_shapecast_state() {
 	ERR_FAIL_COND(w2d.is_null());
 
 	PhysicsDirectSpaceState2D *dss = PhysicsServer2D::get_singleton()->space_get_direct_state(w2d->get_space());
-	ERR_FAIL_COND(!dss);
+	ERR_FAIL_NULL(dss);
 
 	Transform2D gt = get_global_transform();
 

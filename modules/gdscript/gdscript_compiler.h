@@ -52,6 +52,7 @@ class GDScriptCompiler {
 		HashMap<StringName, GDScriptCodeGenerator::Address> parameters;
 		HashMap<StringName, GDScriptCodeGenerator::Address> locals;
 		List<HashMap<StringName, GDScriptCodeGenerator::Address>> locals_stack;
+		bool is_static = false;
 
 		GDScriptCodeGenerator::Address add_local(const StringName &p_name, const GDScriptDataType &p_type) {
 			uint32_t addr = generator->add_local(p_name, p_type);
@@ -130,6 +131,7 @@ class GDScriptCompiler {
 	void _add_locals_in_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block);
 	Error _parse_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block, bool p_add_locals = true);
 	GDScriptFunction *_parse_function(Error &r_error, GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, bool p_for_ready = false, bool p_for_lambda = false);
+	GDScriptFunction *_make_static_initializer(Error &r_error, GDScript *p_script, const GDScriptParser::ClassNode *p_class);
 	Error _parse_setter_getter(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::VariableNode *p_variable, bool p_is_setter);
 	Error _populate_class_members(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
 	Error _compile_class(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
@@ -138,6 +140,7 @@ class GDScriptCompiler {
 	StringName source;
 	String error;
 	GDScriptParser::ExpressionNode *awaited_node = nullptr;
+	bool has_static_data = false;
 
 public:
 	static void convert_to_initializer_type(Variant &p_variant, const GDScriptParser::VariableNode *p_node);

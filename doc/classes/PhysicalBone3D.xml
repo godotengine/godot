@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PhysicalBone3D" inherits="PhysicsBody3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		A physics body used to make bones in a [Skeleton3D] react to physics.
 	</brief_description>
 	<description>
-		[b]Warning:[/b] With a non-uniform scale this node will probably not function as expected. Please make sure to keep its scale uniform (i.e. the same on all axes), and change the size(s) of its collision shape(s) instead.
+		The [PhysicalBone3D] node is a physics body that can be used to make bones in a [Skeleton3D] react to physics.
 	</description>
 	<tutorials>
 	</tutorials>

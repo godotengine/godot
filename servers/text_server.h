@@ -81,6 +81,9 @@ public:
 		JUSTIFICATION_TRIM_EDGE_SPACES = 1 << 2,
 		JUSTIFICATION_AFTER_LAST_TAB = 1 << 3,
 		JUSTIFICATION_CONSTRAIN_ELLIPSIS = 1 << 4,
+		JUSTIFICATION_SKIP_LAST_LINE = 1 << 5,
+		JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS = 1 << 6,
+		JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE = 1 << 7,
 	};
 
 	enum VisibleCharactersBehavior {
@@ -125,18 +128,19 @@ public:
 	};
 
 	enum GraphemeFlag {
-		GRAPHEME_IS_VALID = 1 << 0, // Glyph is valid.
-		GRAPHEME_IS_RTL = 1 << 1, // Glyph is right-to-left.
-		GRAPHEME_IS_VIRTUAL = 1 << 2, // Glyph is not part of source string (added by fit_to_width function, do not affect caret movement).
+		GRAPHEME_IS_VALID = 1 << 0, // Grapheme is valid.
+		GRAPHEME_IS_RTL = 1 << 1, // Grapheme is right-to-left.
+		GRAPHEME_IS_VIRTUAL = 1 << 2, // Grapheme is not part of source string (added by fit_to_width function, do not affect caret movement).
 		GRAPHEME_IS_SPACE = 1 << 3, // Is whitespace (for justification and word breaks).
 		GRAPHEME_IS_BREAK_HARD = 1 << 4, // Is line break (mandatory break, e.g. "\n").
 		GRAPHEME_IS_BREAK_SOFT = 1 << 5, // Is line break (optional break, e.g. space).
 		GRAPHEME_IS_TAB = 1 << 6, // Is tab or vertical tab.
-		GRAPHEME_IS_ELONGATION = 1 << 7, // Elongation (e.g. kashida), glyph can be duplicated or truncated to fit line to width.
+		GRAPHEME_IS_ELONGATION = 1 << 7, // Elongation (e.g. kashida), grapheme can be duplicated or truncated to fit line to width.
 		GRAPHEME_IS_PUNCTUATION = 1 << 8, // Punctuation, except underscore (can be used as word break, but not line break or justifiction).
 		GRAPHEME_IS_UNDERSCORE = 1 << 9, // Underscore (can be used as word break).
 		GRAPHEME_IS_CONNECTED = 1 << 10, // Connected to previous grapheme.
 		GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL = 1 << 11, // It is safe to insert a U+0640 before this grapheme for elongation.
+		GRAPHEME_IS_EMBEDDED_OBJECT = 1 << 12, // Grapheme is an object replacement character for the embedded object.
 	};
 
 	enum Hinting {
@@ -247,6 +251,7 @@ public:
 
 	virtual void font_set_name(const RID &p_font_rid, const String &p_name) = 0;
 	virtual String font_get_name(const RID &p_font_rid) const = 0;
+	virtual Dictionary font_get_ot_name_strings(const RID &p_font_rid) const { return Dictionary(); }
 
 	virtual void font_set_style_name(const RID &p_font_rid, const String &p_name) = 0;
 	virtual String font_get_style_name(const RID &p_font_rid) const = 0;
@@ -440,6 +445,7 @@ public:
 	virtual bool shaped_text_update_justification_ops(const RID &p_shaped) = 0;
 
 	virtual bool shaped_text_is_ready(const RID &p_shaped) const = 0;
+	bool shaped_text_has_visible_chars(const RID &p_shaped) const;
 
 	virtual const Glyph *shaped_text_get_glyphs(const RID &p_shaped) const = 0;
 	TypedArray<Dictionary> _shaped_text_get_glyphs_wrapper(const RID &p_shaped) const;

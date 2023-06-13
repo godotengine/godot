@@ -35,11 +35,11 @@
 #include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/project_settings_editor.h"
 #include "scene/gui/menu_button.h"
 

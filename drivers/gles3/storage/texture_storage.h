@@ -39,7 +39,7 @@
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/storage/texture_storage.h"
 
-#include "../shaders/canvas_sdf.glsl.gen.h"
+#include "drivers/gles3/shaders/canvas_sdf.glsl.gen.h"
 
 // This must come first to avoid windows.h mess
 #include "platform_config.h"
@@ -345,6 +345,7 @@ struct RenderTarget {
 	GLuint depth = 0;
 	GLuint backbuffer_fbo = 0;
 	GLuint backbuffer = 0;
+	GLuint backbuffer_depth = 0;
 
 	GLuint color_internal_format = GL_RGBA8;
 	GLuint color_format = GL_RGBA;
@@ -450,6 +451,8 @@ private:
 	void _render_target_clear_sdf(RenderTarget *rt);
 	Rect2i _render_target_get_sdf_rect(const RenderTarget *rt) const;
 
+	void _texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer, bool initialize);
+
 	struct RenderTargetSDF {
 		CanvasSdfShaderGLES3 shader;
 		RID shader_version;
@@ -536,6 +539,7 @@ public:
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override;
+	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override;
 
 	void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer = 0);
 	void texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, int p_layer = 0);
@@ -603,6 +607,8 @@ public:
 
 	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); };
 	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); };
+
+	void copy_scene_to_backbuffer(RenderTarget *rt, const bool uses_screen_texture, const bool uses_depth_texture);
 
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;

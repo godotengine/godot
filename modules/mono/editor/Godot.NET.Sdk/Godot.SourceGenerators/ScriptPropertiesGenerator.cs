@@ -16,7 +16,7 @@ namespace Godot.SourceGenerators
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.AreGodotSourceGeneratorsDisabled())
+            if (context.IsGodotSourceGeneratorDisabled("ScriptProperties"))
                 return;
 
             INamedTypeSymbol[] godotClasses = context
@@ -547,23 +547,30 @@ namespace Godot.SourceGenerators
             {
                 if (memberNamedType.InheritsFrom("GodotSharp", "Godot.Resource"))
                 {
-                    string nativeTypeName = memberNamedType.GetGodotScriptNativeClassName()!;
-
                     hint = PropertyHint.ResourceType;
-                    hintString = nativeTypeName;
+                    hintString = GetTypeName(memberNamedType);
 
                     return true;
                 }
 
                 if (memberNamedType.InheritsFrom("GodotSharp", "Godot.Node"))
                 {
-                    string nativeTypeName = memberNamedType.GetGodotScriptNativeClassName()!;
-
                     hint = PropertyHint.NodeType;
-                    hintString = nativeTypeName;
+                    hintString = GetTypeName(memberNamedType);
 
                     return true;
                 }
+            }
+
+            static string GetTypeName(INamedTypeSymbol memberSymbol)
+            {
+                if (memberSymbol.GetAttributes()
+                    .Any(a => a.AttributeClass?.IsGodotGlobalClassAttribute() ?? false))
+                {
+                    return memberSymbol.Name;
+                }
+
+                return memberSymbol.GetGodotScriptNativeClassName()!;
             }
 
             static bool GetStringArrayEnumHint(VariantType elementVariantType,

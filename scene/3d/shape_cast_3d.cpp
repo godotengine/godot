@@ -331,16 +331,14 @@ void ShapeCast3D::set_shape(const Ref<Shape3D> &p_shape) {
 	if (p_shape == shape) {
 		return;
 	}
-	if (!shape.is_null()) {
+	if (shape.is_valid()) {
 		shape->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShapeCast3D::_shape_changed));
 		shape->unregister_owner(this);
 	}
 	shape = p_shape;
-	if (!shape.is_null()) {
+	if (shape.is_valid()) {
 		shape->register_owner(this);
 		shape->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShapeCast3D::_shape_changed));
-	}
-	if (p_shape.is_valid()) {
 		shape_rid = shape->get_rid();
 	}
 
@@ -387,7 +385,7 @@ void ShapeCast3D::_update_shapecast_state() {
 	ERR_FAIL_COND(w3d.is_null());
 
 	PhysicsDirectSpaceState3D *dss = PhysicsServer3D::get_singleton()->space_get_direct_state(w3d->get_space());
-	ERR_FAIL_COND(!dss);
+	ERR_FAIL_NULL(dss);
 
 	Transform3D gt = get_global_transform();
 

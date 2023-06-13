@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PhysicsRayQueryParameters3D" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Parameters to be sent to a 3D ray physics query.
+		Provides parameters for [method PhysicsDirectSpaceState3D.intersect_ray].
 	</brief_description>
 	<description>
-		This class contains the ray position and other parameters to be used for [method PhysicsDirectSpaceState3D.intersect_ray].
+		By changing various properties of this object, such as the ray position, you can configure the parameters for [method PhysicsDirectSpaceState3D.intersect_ray].
 	</description>
 	<tutorials>
 	</tutorials>

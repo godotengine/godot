@@ -1,90 +1,42 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="bool" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Boolean built-in type.
+		A built-in boolean type.
 	</brief_description>
 	<description>
-		Boolean is a built-in type. There are two boolean values: [code]true[/code] and [code]false[/code]. You can think of it as a switch with on or off (1 or 0) setting. Booleans are used in programming for logic in condition statements, like [code]if[/code] statements.
-		Booleans can be directly used in [code]if[/code] statements. The code below demonstrates this on the [code]if can_shoot:[/code] line. You don't need to use [code]== true[/code], you only need [code]if can_shoot:[/code]. Similarly, use [code]if not can_shoot:[/code] rather than [code]== false[/code].
+		A [bool] is always one of two values: [code]true[/code] or [code]false[/code], similar to a switch that is either on or off. Booleans are used in programming for logic in condition statements.
+		Booleans can be directly used in [code]if[/code] and [code]elif[/code] statements. You don't need to add [code]== true[/code] or [code]== false[/code]:
 		[codeblocks]
 		[gdscript]
-		var _can_shoot = true
-
-		func shoot():
-		    if _can_shoot:
-		        pass # Perform shooting actions here.
+		if can_shoot:
+		    launch_bullet()
 		[/gdscript]
 		[csharp]
-		private bool _canShoot = true;
-
-		public void Shoot()
+		if (canShoot)
 		{
-		    if (_canShoot)
-		    {
-		        // Perform shooting actions here.
-		    }
+		    launchBullet();
 		}
 		[/csharp]
 		[/codeblocks]
-		The following code will only create a bullet if both conditions are met: action "shoot" is pressed and if [code]can_shoot[/code] is [code]true[/code].
-		[b]Note:[/b] [code]Input.is_action_pressed("shoot")[/code] is also a boolean that is [code]true[/code] when "shoot" is pressed and [code]false[/code] when "shoot" isn't pressed.
+		Many common methods and operations return [bool]s, for example, [code]shooting_cooldown &lt;= 0.0[/code] may evaluate to [code]true[/code] or [code]false[/code] depending on the number's value.
+		[bool]s are usually used with the logical operators [code]and[/code], [code]or[/code], and [code]not[/code] to create complex conditions:
 		[codeblocks]
 		[gdscript]
-		var _can_shoot = true
+		if bullets &gt; 0 and not is_reloading:
+		    launch_bullet()
 
-		func shoot():
-		    if _can_shoot and Input.is_action_pressed("shoot"):
-		        create_bullet()
+		if bullets == 0 or is_reloading:
+		    play_clack_sound()
 		[/gdscript]
 		[csharp]
-		private bool _canShoot = true;
-
-		public void Shoot()
+		if (bullets &gt; 0 &amp;&amp; !isReloading)
 		{
-		    if (_canShoot &amp;&amp; Input.IsActionPressed("shoot"))
-		    {
-		        CreateBullet();
-		    }
-		}
-		[/csharp]
-		[/codeblocks]
-		The following code will set [code]can_shoot[/code] to [code]false[/code] and start a timer. This will prevent player from shooting until the timer runs out. Next [code]can_shoot[/code] will be set to [code]true[/code] again allowing player to shoot once again.
-		[codeblocks]
-		[gdscript]
-		var _can_shoot = true
-		@onready var _cool_down = $CoolDownTimer
-
-		func shoot():
-		    if _can_shoot and Input.is_action_pressed("shoot"):
-		        create_bullet()
-		        _can_shoot = false
-		        _cool_down.start()
-
-		func _on_cool_down_timer_timeout():
-		    _can_shoot = true
-		[/gdscript]
-		[csharp]
-		private bool _canShoot = true;
-		private Timer _coolDown;
-
-		public override void _Ready()
-		{
-		    _coolDown = GetNode&lt;Timer&gt;("CoolDownTimer");
+		    launchBullet();
 		}
 
-		public void Shoot()
+		if (bullets == 0 || isReloading)
 		{
-		    if (_canShoot &amp;&amp; Input.IsActionPressed("shoot"))
-		    {
-		        CreateBullet();
-		        _canShoot = false;
-		        _coolDown.Start();
-		    }
-		}
-
-		public void OnCoolDownTimerTimeout()
-		{
-		    _canShoot = true;
+		    playClackSound();
 		}
 		[/csharp]
 		[/codeblocks]
@@ -109,14 +61,14 @@
 			<return type="bool" />
 			<param index="0" name="from" type="float" />
 			<description>
-				Cast a [float] value to a boolean value, this method will return [code]false[/code] if [code]0.0[/code] is passed in, and [code]true[/code] for all other floats.
+				Cast a [float] value to a boolean value. This method will return [code]false[/code] if [code]0.0[/code] is passed in, and [code]true[/code] for all other values.
 			</description>
 		</constructor>
 		<constructor name="bool">
 			<return type="bool" />
 			<param index="0" name="from" type="int" />
 			<description>
-				Cast an [int] value to a boolean value, this method will return [code]false[/code] if [code]0[/code] is passed in, and [code]true[/code] for all other ints.
+				Cast an [int] value to a boolean value. This method will return [code]false[/code] if [code]0[/code] is passed in, and [code]true[/code] for all other values.
 			</description>
 		</constructor>
 	</constructors>

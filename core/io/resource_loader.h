@@ -34,6 +34,7 @@
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/script_language.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 
@@ -88,8 +89,8 @@ public:
 
 VARIANT_ENUM_CAST(ResourceFormatLoader::CacheMode)
 
-typedef void (*ResourceLoadErrorNotify)(void *p_ud, const String &p_text);
-typedef void (*DependencyErrorNotify)(void *p_ud, const String &p_loading, const String &p_which, const String &p_type);
+typedef void (*ResourceLoadErrorNotify)(const String &p_text);
+typedef void (*DependencyErrorNotify)(const String &p_loading, const String &p_which, const String &p_type);
 
 typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p_path);
@@ -107,9 +108,30 @@ public:
 		THREAD_LOAD_LOADED
 	};
 
+	enum LoadThreadMode {
+		LOAD_THREAD_FROM_CURRENT,
+		LOAD_THREAD_SPAWN_SINGLE,
+		LOAD_THREAD_DISTRIBUTE,
+	};
+
+	struct LoadToken : public RefCounted {
+		String local_path;
+		String user_path;
+		Ref<Resource> res_if_unregistered;
+
+		void clear();
+
+		virtual ~LoadToken();
+	};
+
 	static const int BINARY_MUTEX_TAG = 1;
 
+	static Ref<LoadToken> _load_start(const String &p_path, const String &p_type_hint, LoadThreadMode p_thread_mode, ResourceFormatLoader::CacheMode p_cache_mode);
+	static Ref<Resource> _load_complete(LoadToken &p_load_token, Error *r_error);
+
 private:
+	static Ref<Resource> _load_complete_inner(LoadToken &p_load_token, Error *r_error, MutexLock<SafeBinaryMutex<BINARY_MUTEX_TAG>> &p_thread_load_lock);
+
 	static Ref<ResourceFormatLoader> loader[MAX_LOADERS];
 	static int loader_count;
 	static bool timestamp_on_load;
@@ -129,8 +151,7 @@ private:
 	static SelfList<Resource>::List remapped_list;
 
 	friend class ResourceFormatImporter;
-	friend class ResourceInteractiveLoader;
-	// Internal load function.
+
 	static Ref<Resource> _load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress);
 
 	static ResourceLoadedCallback _loaded_callback;
@@ -138,11 +159,14 @@ private:
 	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(String path);
 
 	struct ThreadLoadTask {
-		Thread *thread = nullptr;
-		Thread::ID loader_id = 0;
-		ConditionVariable *cond_var = nullptr;
+		WorkerThreadPool::TaskID task_id = 0; // Used if run on a worker thread from the pool.
+		Thread::ID thread_id = 0; // Used if running on an user thread (e.g., simple non-threaded load).
+		bool awaited = false; // If it's in the pool, this helps not awaiting from more than one dependent thread.
+		ConditionVariable *cond_var = nullptr; // In not in the worker pool or already awaiting, this is used as a secondary awaiting mechanism.
+		LoadToken *load_token = nullptr;
 		String local_path;
 		String remapped_path;
+		String dependent_path;
 		String type_hint;
 		float progress = 0.0;
 		ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
@@ -151,26 +175,28 @@ private:
 		Ref<Resource> resource;
 		bool xl_remapped = false;
 		bool use_sub_threads = false;
-		bool start_next = true;
-		int requests = 0;
 		HashSet<String> sub_tasks;
 	};
 
 	static void _thread_load_function(void *p_userdata);
-	static SafeBinaryMutex<BINARY_MUTEX_TAG> *thread_load_mutex;
+
+	static thread_local int load_nesting;
+	static thread_local WorkerThreadPool::TaskID caller_task_id;
+	static thread_local Vector<String> load_paths_stack;
+	static SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
 	static HashMap<String, ThreadLoadTask> thread_load_tasks;
-	static Semaphore *thread_load_semaphore;
-	static int thread_waiting_count;
-	static int thread_loading_count;
-	static int thread_suspended_count;
-	static int thread_load_max;
+	static bool cleaning_tasks;
+
+	static HashMap<String, LoadToken *> user_load_tokens;
 
 	static float _dependency_get_progress(const String &p_path);
 
 public:
-	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, const String &p_source_resource = String());
+	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE);
 	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
 	static Ref<Resource> load_threaded_get(const String &p_path, Error *r_error = nullptr);
+
+	static bool is_within_load() { return load_nesting > 0; };
 
 	static Ref<Resource> load(const String &p_path, const String &p_type_hint = "", ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
@@ -192,24 +218,24 @@ public:
 	static void set_timestamp_on_load(bool p_timestamp) { timestamp_on_load = p_timestamp; }
 	static bool get_timestamp_on_load() { return timestamp_on_load; }
 
+	// Loaders can safely use this regardless which thread they are running on.
 	static void notify_load_error(const String &p_err) {
 		if (err_notify) {
-			err_notify(err_notify_ud, p_err);
+			callable_mp_static(err_notify).bind(p_err).call_deferred();
 		}
 	}
-	static void set_error_notify_func(void *p_ud, ResourceLoadErrorNotify p_err_notify) {
+	static void set_error_notify_func(ResourceLoadErrorNotify p_err_notify) {
 		err_notify = p_err_notify;
-		err_notify_ud = p_ud;
 	}
 
+	// Loaders can safely use this regardless which thread they are running on.
 	static void notify_dependency_error(const String &p_path, const String &p_dependency, const String &p_type) {
 		if (dep_err_notify) {
-			dep_err_notify(dep_err_notify_ud, p_path, p_dependency, p_type);
+			callable_mp_static(dep_err_notify).bind(p_path, p_dependency, p_type).call_deferred();
 		}
 	}
-	static void set_dependency_error_notify_func(void *p_ud, DependencyErrorNotify p_err_notify) {
+	static void set_dependency_error_notify_func(DependencyErrorNotify p_err_notify) {
 		dep_err_notify = p_err_notify;
-		dep_err_notify_ud = p_ud;
 	}
 
 	static void set_abort_on_missing_resources(bool p_abort) { abort_on_missing_resource = p_abort; }
@@ -236,6 +262,8 @@ public:
 
 	static void set_create_missing_resources_if_class_unavailable(bool p_enable);
 	_FORCE_INLINE_ static bool is_creating_missing_resources_if_class_unavailable_enabled() { return create_missing_resources_if_class_unavailable; }
+
+	static bool is_cleaning_tasks();
 
 	static void initialize();
 	static void finalize();

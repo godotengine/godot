@@ -99,7 +99,7 @@ void SyntaxHighlighter::set_text_edit(TextEdit *p_text_edit) {
 	update_cache();
 }
 
-TextEdit *SyntaxHighlighter::get_text_edit() {
+TextEdit *SyntaxHighlighter::get_text_edit() const {
 	return text_edit;
 }
 

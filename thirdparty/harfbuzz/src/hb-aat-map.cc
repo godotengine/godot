@@ -36,27 +36,29 @@
 #include "hb-aat-layout-feat-table.hh"
 
 
-void hb_aat_map_builder_t::add_feature (hb_tag_t tag, unsigned value)
+void hb_aat_map_builder_t::add_feature (const hb_feature_t &feature)
 {
   if (!face->table.feat->has_data ()) return;
 
-  if (tag == HB_TAG ('a','a','l','t'))
+  if (feature.tag == HB_TAG ('a','a','l','t'))
   {
     if (!face->table.feat->exposes_feature (HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_ALTERNATIVES))
       return;
-    feature_info_t *info = features.push();
-    info->type = HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_ALTERNATIVES;
-    info->setting = (hb_aat_layout_feature_selector_t) value;
-    info->seq = features.length;
-    info->is_exclusive = true;
+    feature_range_t *range = features.push();
+    range->start = feature.start;
+    range->end = feature.end;
+    range->info.type = HB_AAT_LAYOUT_FEATURE_TYPE_CHARACTER_ALTERNATIVES;
+    range->info.setting = (hb_aat_layout_feature_selector_t) feature.value;
+    range->info.seq = features.length;
+    range->info.is_exclusive = true;
     return;
   }
 
-  const hb_aat_feature_mapping_t *mapping = hb_aat_layout_find_feature_mapping (tag);
+  const hb_aat_feature_mapping_t *mapping = hb_aat_layout_find_feature_mapping (feature.tag);
   if (!mapping) return;
 
-  const AAT::FeatureName* feature = &face->table.feat->get_feature (mapping->aatFeatureType);
-  if (!feature->has_data ())
+  const AAT::FeatureName* feature_name = &face->table.feat->get_feature (mapping->aatFeatureType);
+  if (!feature_name->has_data ())
   {
     /* Special case: Chain::compile_flags will fall back to the deprecated version of
      * small-caps if necessary, so we need to check for that possibility.
@@ -64,38 +66,106 @@ void hb_aat_map_builder_t::add_feature (hb_tag_t tag, unsigned value)
     if (mapping->aatFeatureType == HB_AAT_LAYOUT_FEATURE_TYPE_LOWER_CASE &&
 	mapping->selectorToEnable == HB_AAT_LAYOUT_FEATURE_SELECTOR_LOWER_CASE_SMALL_CAPS)
     {
-      feature = &face->table.feat->get_feature (HB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE);
-      if (!feature->has_data ()) return;
+      feature_name = &face->table.feat->get_feature (HB_AAT_LAYOUT_FEATURE_TYPE_LETTER_CASE);
+      if (!feature_name->has_data ()) return;
     }
     else return;
   }
 
-  feature_info_t *info = features.push();
-  info->type = mapping->aatFeatureType;
-  info->setting = value ? mapping->selectorToEnable : mapping->selectorToDisable;
-  info->seq = features.length;
-  info->is_exclusive = feature->is_exclusive ();
+  feature_range_t *range = features.push();
+  range->start = feature.start;
+  range->end = feature.end;
+  range->info.type = mapping->aatFeatureType;
+  range->info.setting = feature.value ? mapping->selectorToEnable : mapping->selectorToDisable;
+  range->info.seq = features.length;
+  range->info.is_exclusive = feature_name->is_exclusive ();
 }
 
 void
 hb_aat_map_builder_t::compile (hb_aat_map_t  &m)
 {
-  /* Sort features and merge duplicates */
-  if (features.length)
+  /* Compute active features per range, and compile each. */
+
+  /* Sort features by start/end events. */
+  hb_vector_t<feature_event_t> feature_events;
+  for (unsigned int i = 0; i < features.length; i++)
   {
-    features.qsort ();
-    unsigned int j = 0;
-    for (unsigned int i = 1; i < features.length; i++)
-      if (features[i].type != features[j].type ||
-	  /* Nonexclusive feature selectors come in even/odd pairs to turn a setting on/off
-	   * respectively, so we mask out the low-order bit when checking for "duplicates"
-	   * (selectors referring to the same feature setting) here. */
-	  (!features[i].is_exclusive && ((features[i].setting & ~1) != (features[j].setting & ~1))))
-	features[++j] = features[i];
-    features.shrink (j + 1);
+    auto &feature = features[i];
+
+    if (features[i].start == features[i].end)
+      continue;
+
+    feature_event_t *event;
+
+    event = feature_events.push ();
+    event->index = features[i].start;
+    event->start = true;
+    event->feature = feature.info;
+
+    event = feature_events.push ();
+    event->index = features[i].end;
+    event->start = false;
+    event->feature = feature.info;
+  }
+  feature_events.qsort ();
+  /* Add a strategic final event. */
+  {
+    feature_info_t feature;
+    feature.seq = features.length + 1;
+
+    feature_event_t *event = feature_events.push ();
+    event->index = -1; /* This value does magic. */
+    event->start = false;
+    event->feature = feature;
   }
 
-  hb_aat_layout_compile_map (this, &m);
+  /* Scan events and save features for each range. */
+  hb_sorted_vector_t<feature_info_t> active_features;
+  unsigned int last_index = 0;
+  for (unsigned int i = 0; i < feature_events.length; i++)
+  {
+    feature_event_t *event = &feature_events[i];
+
+    if (event->index != last_index)
+    {
+      /* Save a snapshot of active features and the range. */
+
+      /* Sort features and merge duplicates */
+      current_features = active_features;
+      range_first = last_index;
+      range_last = event->index - 1;
+      if (current_features.length)
+      {
+	current_features.qsort ();
+	unsigned int j = 0;
+	for (unsigned int i = 1; i < current_features.length; i++)
+	  if (current_features[i].type != current_features[j].type ||
+	      /* Nonexclusive feature selectors come in even/odd pairs to turn a setting on/off
+	       * respectively, so we mask out the low-order bit when checking for "duplicates"
+	       * (selectors referring to the same feature setting) here. */
+	      (!current_features[i].is_exclusive && ((current_features[i].setting & ~1) != (current_features[j].setting & ~1))))
+	    current_features[++j] = current_features[i];
+	current_features.shrink (j + 1);
+      }
+
+      hb_aat_layout_compile_map (this, &m);
+
+      last_index = event->index;
+    }
+
+    if (event->start)
+    {
+      active_features.push (event->feature);
+    } else {
+      feature_info_t *feature = active_features.lsearch (event->feature);
+      if (feature)
+	active_features.remove_ordered (feature - active_features.arrayZ);
+    }
+  }
+
+  for (auto &chain_flags : m.chain_flags)
+    // With our above setup this value is one less than desired; adjust it.
+    chain_flags.tail().cluster_last = HB_FEATURE_GLOBAL_END;
 }
 
 

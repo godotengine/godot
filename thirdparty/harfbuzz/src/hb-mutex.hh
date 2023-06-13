@@ -60,7 +60,7 @@ typedef pthread_mutex_t hb_mutex_impl_t;
 #elif !defined(HB_NO_MT) && !defined(HB_MUTEX_IMPL_STD_MUTEX) && defined(_WIN32)
 
 typedef CRITICAL_SECTION hb_mutex_impl_t;
-#if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
 #define hb_mutex_impl_init(M)	InitializeCriticalSectionEx (M, 0, 0)
 #else
 #define hb_mutex_impl_init(M)	InitializeCriticalSection (M)
@@ -96,6 +96,9 @@ struct hb_mutex_t
 {
   /* Create space for, but do not initialize m. */
   alignas(hb_mutex_impl_t) char m[sizeof (hb_mutex_impl_t)];
+
+  hb_mutex_t () { init (); }
+  ~hb_mutex_t () { fini (); }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"

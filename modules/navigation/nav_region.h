@@ -42,6 +42,8 @@ class NavRegion : public NavBase {
 	Ref<NavigationMesh> mesh;
 	Vector<gd::Edge::Connection> connections;
 
+	bool use_edge_connections = true;
+
 	bool polygons_dirty = true;
 
 	/// Cache
@@ -59,6 +61,11 @@ public:
 	void set_map(NavMap *p_map);
 	NavMap *get_map() const {
 		return map;
+	}
+
+	void set_use_edge_connections(bool p_enabled);
+	bool get_use_edge_connections() const {
+		return use_edge_connections;
 	}
 
 	void set_transform(Transform3D transform);

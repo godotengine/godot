@@ -38,11 +38,15 @@ class NavigationRegion3D : public Node3D {
 	GDCLASS(NavigationRegion3D, Node3D);
 
 	bool enabled = true;
+	bool use_edge_connections = true;
+
 	RID region;
 	uint32_t navigation_layers = 1;
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
 	Ref<NavigationMesh> navigation_mesh;
+
+	Transform3D current_global_transform;
 
 	Thread bake_thread;
 
@@ -72,6 +76,9 @@ protected:
 public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
+
+	void set_use_edge_connections(bool p_enabled);
+	bool get_use_edge_connections() const;
 
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers() const;

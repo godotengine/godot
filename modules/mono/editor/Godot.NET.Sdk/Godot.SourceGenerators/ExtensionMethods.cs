@@ -26,6 +26,12 @@ namespace Godot.SourceGenerators
                toggle != null &&
                toggle.Equals("true", StringComparison.OrdinalIgnoreCase);
 
+        public static bool IsGodotSourceGeneratorDisabled(this GeneratorExecutionContext context, string generatorName) =>
+            AreGodotSourceGeneratorsDisabled(context) ||
+            (context.TryGetGlobalAnalyzerProperty("GodotDisabledSourceGenerators", out string? disabledGenerators) &&
+            disabledGenerators != null &&
+            disabledGenerators.Split(';').Contains(generatorName));
+
         public static bool InheritsFrom(this INamedTypeSymbol? symbol, string assemblyName, string typeFullName)
         {
             while (symbol != null)
@@ -234,6 +240,9 @@ namespace Godot.SourceGenerators
 
         public static bool IsGodotClassNameAttribute(this INamedTypeSymbol symbol)
             => symbol.ToString() == GodotClasses.GodotClassNameAttr;
+
+        public static bool IsGodotGlobalClassAttribute(this INamedTypeSymbol symbol)
+            => symbol.ToString() == GodotClasses.GlobalClassAttr;
 
         public static bool IsSystemFlagsAttribute(this INamedTypeSymbol symbol)
             => symbol.ToString() == GodotClasses.SystemFlagsAttr;

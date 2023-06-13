@@ -79,6 +79,9 @@ private:
 	TreeItem *_create_monitor_item(const StringName &p_monitor_name, TreeItem *p_base);
 	void _marker_input(const Ref<InputEvent> &p_event);
 
+protected:
+	void _notification(int p_what);
+
 public:
 	void reset();
 	void update_monitors(const Vector<StringName> &p_names);

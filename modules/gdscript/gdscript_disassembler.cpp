@@ -851,7 +851,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr = 3 + captures_count;
+				incr = 4 + captures_count;
 			} break;
 			case OPCODE_CREATE_SELF_LAMBDA: {
 				int instr_var_args = _code_ptr[++ip];
@@ -871,7 +871,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr = 3 + captures_count;
+				incr = 4 + captures_count;
 			} break;
 			case OPCODE_JUMP: {
 				text += "jump ";

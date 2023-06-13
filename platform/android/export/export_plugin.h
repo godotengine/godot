@@ -49,6 +49,15 @@ const String SPLASH_CONFIG_XML_CONTENT = R"SPLASH(<?xml version="1.0" encoding="
 </layer-list>
 )SPLASH";
 
+// Optional environment variables for defining confidential information. If any
+// of these is set, they will override the values set in the credentials file.
+const String ENV_ANDROID_KEYSTORE_DEBUG_PATH = "GODOT_ANDROID_KEYSTORE_DEBUG_PATH";
+const String ENV_ANDROID_KEYSTORE_DEBUG_USER = "GODOT_ANDROID_KEYSTORE_DEBUG_USER";
+const String ENV_ANDROID_KEYSTORE_DEBUG_PASS = "GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD";
+const String ENV_ANDROID_KEYSTORE_RELEASE_PATH = "GODOT_ANDROID_KEYSTORE_RELEASE_PATH";
+const String ENV_ANDROID_KEYSTORE_RELEASE_USER = "GODOT_ANDROID_KEYSTORE_RELEASE_USER";
+const String ENV_ANDROID_KEYSTORE_RELEASE_PASS = "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD";
+
 struct LauncherIcon {
 	const char *export_path;
 	int dimensions = 0;
@@ -72,10 +81,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		EditorProgress *ep = nullptr;
 	};
 
-	Vector<PluginConfigAndroid> plugins;
+	mutable Vector<PluginConfigAndroid> plugins;
 	String last_plugin_names;
 	uint64_t last_gradle_build_time = 0;
-	SafeFlag plugins_changed;
+	mutable SafeFlag plugins_changed;
 	Mutex plugins_lock;
 	Vector<Device> devices;
 	SafeFlag devices_changed;
@@ -180,7 +189,9 @@ public:
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
-	virtual void get_export_options(List<ExportOption> *r_options) override;
+	virtual void get_export_options(List<ExportOption> *r_options) const override;
+
+	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
 
 	virtual String get_name() const override;
 

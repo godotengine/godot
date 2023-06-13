@@ -33,20 +33,21 @@
 
 #include "editor/editor_plugin.h"
 #include "editor/plugins/theme_editor_preview.h"
-#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/scroll_container.h"
-#include "scene/gui/tab_bar.h"
-#include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/theme.h"
 
+class Button;
+class CheckButton;
 class EditorFileDialog;
+class ItemList;
+class Label;
+class OptionButton;
 class PanelContainer;
+class TabBar;
 class TabContainer;
+class TextureRect;
 
 class ThemeItemImportTree : public VBoxContainer {
 	GDCLASS(ThemeItemImportTree, VBoxContainer);

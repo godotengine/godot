@@ -64,7 +64,7 @@ public:
 	virtual void _update_cache() {}
 
 	void set_text_edit(TextEdit *p_text_edit);
-	TextEdit *get_text_edit();
+	TextEdit *get_text_edit() const;
 
 	SyntaxHighlighter() {}
 	virtual ~SyntaxHighlighter() {}

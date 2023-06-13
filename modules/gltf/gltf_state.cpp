@@ -87,6 +87,7 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_animations"), &GLTFState::get_animations);
 	ClassDB::bind_method(D_METHOD("set_animations", "animations"), &GLTFState::set_animations);
 	ClassDB::bind_method(D_METHOD("get_scene_node", "idx"), &GLTFState::get_scene_node);
+	ClassDB::bind_method(D_METHOD("get_node_index", "scene_node"), &GLTFState::get_node_index);
 	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFState::get_additional_data);
 	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFState::set_additional_data);
 	ClassDB::bind_method(D_METHOD("get_handle_binary_image"), &GLTFState::get_handle_binary_image);
@@ -333,6 +334,15 @@ Node *GLTFState::get_scene_node(GLTFNodeIndex idx) {
 		return nullptr;
 	}
 	return scene_nodes[idx];
+}
+
+GLTFNodeIndex GLTFState::get_node_index(Node *p_node) {
+	for (KeyValue<GLTFNodeIndex, Node *> x : scene_nodes) {
+		if (x.value == p_node) {
+			return x.key;
+		}
+	}
+	return -1;
 }
 
 int GLTFState::get_animation_players_count(int idx) {

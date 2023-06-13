@@ -309,8 +309,8 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		Rect2 rect = Rect2(from_x, (get_size().height - fh) / 2, to_x - from_x, fh);
 		draw_rect(rect, Color(0.25, 0.25, 0.25));
 
-		Vector<Vector2> lines;
-		lines.resize((to_x - from_x + 1) * 2);
+		Vector<Vector2> points;
+		points.resize((to_x - from_x) * 2);
 		preview_len = preview->get_length();
 
 		for (int i = from_x; i < to_x; i++) {
@@ -320,14 +320,13 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 			float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 			int idx = i - from_x;
-			lines.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
-			lines.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
+			points.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
+			points.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
 		}
 
-		Vector<Color> color;
-		color.push_back(Color(0.75, 0.75, 0.75));
+		Vector<Color> colors = { Color(0.75, 0.75, 0.75) };
 
-		RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, color);
+		RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), points, colors);
 
 		if (p_selected) {
 			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
@@ -667,8 +666,8 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		bg.b = 1 - color.b;
 		draw_rect(rect, bg);
 
-		Vector<Vector2> lines;
-		Vector<Color> colorv;
+		Vector<Vector2> points;
+		Vector<Color> colors = { color };
 		{
 			Ref<Animation> ap_anim = ap->get_animation(anim);
 
@@ -685,16 +684,14 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 						continue;
 					}
 
-					lines.push_back(Point2(x, y));
-					lines.push_back(Point2(x + 1, y));
+					points.push_back(Point2(x, y));
+					points.push_back(Point2(x + 1, y));
 				}
 			}
-
-			colorv.push_back(color);
 		}
 
-		if (lines.size() > 2) {
-			RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, colorv);
+		if (points.size() > 2) {
+			RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), points, colors);
 		}
 
 		int limit = to_x - from_x - 4;
@@ -919,8 +916,8 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	Rect2 rect = Rect2(from_x, (h - fh) / 2, to_x - from_x, fh);
 	draw_rect(rect, Color(0.25, 0.25, 0.25));
 
-	Vector<Vector2> lines;
-	lines.resize((to_x - from_x + 1) * 2);
+	Vector<Vector2> points;
+	points.resize((to_x - from_x) * 2);
 	preview_len = preview->get_length();
 
 	for (int i = from_x; i < to_x; i++) {
@@ -933,14 +930,13 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 		float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 		int idx = i - from_x;
-		lines.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
-		lines.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
+		points.write[idx * 2 + 0] = Vector2(i, rect.position.y + min * rect.size.y);
+		points.write[idx * 2 + 1] = Vector2(i, rect.position.y + max * rect.size.y);
 	}
 
-	Vector<Color> color;
-	color.push_back(Color(0.75, 0.75, 0.75));
+	Vector<Color> colors = { Color(0.75, 0.75, 0.75) };
 
-	RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, color);
+	RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), points, colors);
 
 	Color cut_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
 	cut_color.a = 0.7;
@@ -1279,8 +1275,8 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		bg.b = 1 - color.b;
 		draw_rect(rect, bg);
 
-		Vector<Vector2> lines;
-		Vector<Color> colorv;
+		Vector<Vector2> points;
+		Vector<Color> colors = { color };
 		{
 			Ref<Animation> ap_anim = ap->get_animation(anim);
 
@@ -1297,16 +1293,14 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 						continue;
 					}
 
-					lines.push_back(Point2(x, y));
-					lines.push_back(Point2(x + 1, y));
+					points.push_back(Point2(x, y));
+					points.push_back(Point2(x + 1, y));
 				}
 			}
-
-			colorv.push_back(color);
 		}
 
-		if (lines.size() > 2) {
-			RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), lines, colorv);
+		if (points.size() > 2) {
+			RS::get_singleton()->canvas_item_add_multiline(get_canvas_item(), points, colors);
 		}
 
 		int limit = to_x - from_x - 4;

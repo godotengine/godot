@@ -24,7 +24,7 @@
 			<param index="1" name="packet" type="PackedByteArray" />
 			<param index="2" name="flags" type="int" />
 			<description>
-				Queues a [code]packet[/code] to be sent to all peers associated with the host over the specified [code]channel[/code]. See [ENetPacketPeer] [code]FLAG_*[/code] constants for available packet flags.
+				Queues a [param packet] to be sent to all peers associated with the host over the specified [param channel]. See [ENetPacketPeer] [code]FLAG_*[/code] constants for available packet flags.
 			</description>
 		</method>
 		<method name="channel_limit">
@@ -50,7 +50,7 @@
 			<param index="2" name="channels" type="int" default="0" />
 			<param index="3" name="data" type="int" default="0" />
 			<description>
-				Initiates a connection to a foreign [code]address[/code] using the specified [code]port[/code] and allocating the requested [code]channels[/code]. Optional [code]data[/code] can be passed during connection in the form of a 32 bit integer.
+				Initiates a connection to a foreign [param address] using the specified [param port] and allocating the requested [param channels]. Optional [param data] can be passed during connection in the form of a 32 bit integer.
 				[b]Note:[/b] You must call either [method create_host] or [method create_host_bound] before calling this method.
 			</description>
 		</method>
@@ -61,7 +61,7 @@
 			<param index="2" name="in_bandwidth" type="int" default="0" />
 			<param index="3" name="out_bandwidth" type="int" default="0" />
 			<description>
-				Create an ENetHost that will allow up to [code]max_peers[/code] connected peers, each allocating up to [code]max_channels[/code] channels, optionally limiting bandwidth to [code]in_bandwidth[/code] and [code]out_bandwidth[/code].
+				Create an ENetHost that will allow up to [param max_peers] connected peers, each allocating up to [param max_channels] channels, optionally limiting bandwidth to [param in_bandwidth] and [param out_bandwidth].
 			</description>
 		</method>
 		<method name="create_host_bound">
@@ -73,7 +73,7 @@
 			<param index="4" name="in_bandwidth" type="int" default="0" />
 			<param index="5" name="out_bandwidth" type="int" default="0" />
 			<description>
-				Create an ENetHost like [method create_host] which is also bound to the given [code]bind_address[/code] and [code]bind_port[/code].
+				Create an ENetHost like [method create_host] which is also bound to the given [param bind_address] and [param bind_port].
 			</description>
 		</method>
 		<method name="destroy">
@@ -87,7 +87,7 @@
 			<param index="0" name="hostname" type="String" />
 			<param index="1" name="client_options" type="TLSOptions" default="null" />
 			<description>
-				Configure this ENetHost to use the custom Godot extension allowing DTLS encryption for ENet clients. Call this before [method connect_to_host] to have ENet connect using DTLS validating the server certificate against [code]hostname[/code]. You can pass the optional [param client_options] parameter to customize the trusted certification authorities, or disable the common name verification. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
+				Configure this ENetHost to use the custom Godot extension allowing DTLS encryption for ENet clients. Call this before [method connect_to_host] to have ENet connect using DTLS validating the server certificate against [param hostname]. You can pass the optional [param client_options] parameter to customize the trusted certification authorities, or disable the common name verification. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
 			</description>
 		</method>
 		<method name="dtls_server_setup">

@@ -108,7 +108,7 @@ void OpenXRHTCControllerExtension::on_register_metadata() {
 	metadata->register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Trigger touch", "/user/hand/left", "/user/hand/left/input/trigger/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
 	metadata->register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Trigger", "/user/hand/right", "/user/hand/right/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
 	metadata->register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Trigger click", "/user/hand/right", "/user/hand/right/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	metadata->register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Trigger touch", "/user/hand/right", "/user/hand/right/input/trigger/touch	", "", OpenXRAction::OPENXR_ACTION_BOOL);
+	metadata->register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Trigger touch", "/user/hand/right", "/user/hand/right/input/trigger/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
 
 	metadata->register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Squeeze click", "/user/hand/left", "/user/hand/left/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
 	metadata->register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Squeeze touch", "/user/hand/left", "/user/hand/left/input/squeeze/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
@@ -122,6 +122,7 @@ void OpenXRHTCControllerExtension::on_register_metadata() {
 	metadata->register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Thumbstick click", "/user/hand/right", "/user/hand/right/input/thumbstick/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
 	metadata->register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Thumbstick touch", "/user/hand/right", "/user/hand/right/input/thumbstick/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
 
+	metadata->register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Thumbrest touch", "/user/hand/left", "/user/hand/left/input/thumbrest/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
 	metadata->register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Thumbrest touch", "/user/hand/right", "/user/hand/right/input/thumbrest/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
 
 	metadata->register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Haptic output", "/user/hand/left", "/user/hand/left/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);

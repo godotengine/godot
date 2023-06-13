@@ -919,7 +919,7 @@ void ParticlesStorage::_particles_update_instance_buffer(Particles *particles, c
 	glBeginTransformFeedback(GL_POINTS);
 
 	if (particles->draw_order == RS::PARTICLES_DRAW_ORDER_LIFETIME) {
-		uint32_t lifetime_split = MIN(particles->amount * particles->phase, particles->amount - 1);
+		uint32_t lifetime_split = (MIN(int(particles->amount * particles->phase), particles->amount - 1) + 1) % particles->amount;
 		uint32_t stride = particles->process_buffer_stride_cache;
 
 		glBindBuffer(GL_ARRAY_BUFFER, particles->back_process_buffer);
@@ -1135,14 +1135,13 @@ void ParticlesStorage::_particles_reverse_lifetime_sort(Particles *particles) {
 	glGetBufferSubData(GL_ARRAY_BUFFER, 0, buffer_size, particle_array);
 #endif
 
-	uint32_t lifetime_split = MIN(particles->amount * particles->sort_buffer_phase, particles->amount - 1);
-
+	uint32_t lifetime_split = (MIN(int(particles->amount * particles->sort_buffer_phase), particles->amount - 1) + 1) % particles->amount;
 	for (uint32_t i = 0; i < lifetime_split / 2; i++) {
-		SWAP(particle_array[i], particle_array[lifetime_split - i]);
+		SWAP(particle_array[i], particle_array[lifetime_split - i - 1]);
 	}
 
 	for (uint32_t i = 0; i < (particles->amount - lifetime_split) / 2; i++) {
-		SWAP(particle_array[lifetime_split + i + 1], particle_array[particles->amount - 1 - i]);
+		SWAP(particle_array[lifetime_split + i], particle_array[particles->amount - 1 - i]);
 	}
 
 #ifndef __EMSCRIPTEN__

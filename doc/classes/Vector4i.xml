@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector4i" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Vector used for 4D math using integer coordinates.
+		A 4D vector using integer coordinates.
 	</brief_description>
 	<description>
-		4-element structure that can be used to represent 4D grid coordinates or sets of integers.
+		A 4-element structure that can be used to represent 4D grid coordinates or any other quadruplet of integers.
 		It uses integer coordinates and is therefore preferable to [Vector4] when exact precision is required. Note that the values are limited to 32 bits, and unlike [Vector4] this cannot be configured with an engine build option. Use [int] or [PackedInt64Array] if 64-bit values are needed.
+		[b]Note:[/b] In a boolean context, a Vector4i will evaluate to [code]false[/code] if it's equal to [code]Vector4i(0, 0, 0, 0)[/code]. Otherwise, a Vector3i will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -27,7 +28,7 @@
 			<return type="Vector4i" />
 			<param index="0" name="from" type="Vector4" />
 			<description>
-				Constructs a new [Vector4i] from the given [Vector4].
+				Constructs a new [Vector4i] from the given [Vector4] by truncating components' fractional parts (rounding towards zero). For a different behavior consider passing the result of [method Vector4.ceil], [method Vector4.floor] or [method Vector4.round] to this constructor instead.
 			</description>
 		</constructor>
 		<constructor name="Vector4i">
@@ -65,7 +66,8 @@
 		<method name="length_squared" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the squared length (squared magnitude) of this vector. This method runs faster than [method length].
+				Returns the squared length (squared magnitude) of this vector.
+				This method runs faster than [method length], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
 		<method name="max_axis_index" qualifiers="const">

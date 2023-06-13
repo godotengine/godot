@@ -88,6 +88,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	Vector<StackSlot> locals;
 	Vector<StackSlot> temporaries;
 	List<int> used_temporaries;
+	List<int> temporaries_pending_clear;
 	RBMap<Variant::Type, List<int>> temporaries_pool;
 
 	List<GDScriptFunction::StackDebug> stack_debug;
@@ -365,6 +366,8 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 				return p_address.address | (GDScriptFunction::ADDR_TYPE_MEMBER << GDScriptFunction::ADDR_BITS);
 			case Address::CONSTANT:
 				return p_address.address | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
+			case Address::STATIC_VARIABLE:
+				return p_address.address | (GDScriptFunction::ADDR_TYPE_STATIC_VAR << GDScriptFunction::ADDR_BITS);
 			case Address::LOCAL_VARIABLE:
 			case Address::FUNCTION_PARAMETER:
 				return p_address.address | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
@@ -463,6 +466,7 @@ public:
 	virtual uint32_t add_or_get_name(const StringName &p_name) override;
 	virtual uint32_t add_temporary(const GDScriptDataType &p_type) override;
 	virtual void pop_temporary() override;
+	virtual void clean_temporaries() override;
 
 	virtual void start_parameters() override;
 	virtual void end_parameters() override;

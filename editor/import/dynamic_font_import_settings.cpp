@@ -31,7 +31,6 @@
 #include "dynamic_font_import_settings.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_locale_dialog.h"
@@ -39,6 +38,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_file_dialog.h"
 
 /*************************************************************************/
 /* Settings data                                                         */
@@ -858,7 +858,7 @@ bool DynamicFontImportSettings::_char_update(int32_t p_char) {
 	if (import_variation_data->selected_chars.has(p_char)) {
 		import_variation_data->selected_chars.erase(p_char);
 		return false;
-	} else if (font_main.is_valid() && font_main.is_valid() && import_variation_data->selected_glyphs.has(font_main->get_glyph_index(16, p_char))) {
+	} else if (font_main.is_valid() && import_variation_data->selected_glyphs.has(font_main->get_glyph_index(16, p_char))) {
 		import_variation_data->selected_glyphs.erase(font_main->get_glyph_index(16, p_char));
 		return false;
 	} else {
@@ -924,18 +924,9 @@ void DynamicFontImportSettings::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &DynamicFontImportSettings::_re_import));
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			add_var->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-		} break;
-
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
-				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_singleton()->get_settings_style();
-				inspector_general->set_property_name_style(style);
-				inspector_vars->set_property_name_style(style);
-				inspector_text->set_property_name_style(style);
-			}
+			label_warn->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 		} break;
 	}
 }
@@ -1092,7 +1083,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 	font_preview_label->set_text(sample);
 
 	Ref<Font> bold_font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-	if (bold_font.is_valid() && bold_font.is_valid()) {
+	if (bold_font.is_valid()) {
 		font_name_label->add_theme_font_override("bold_font", bold_font);
 	}
 	font_name_label->set_text(font_name);
@@ -1284,8 +1275,6 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "variation_face_index"), 0));
 	options_variations.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::TRANSFORM2D, "variation_transform"), Transform2D()));
 
-	Color warn_color = (EditorNode::get_singleton()) ? EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("warning_color"), SNAME("Editor")) : Color(1, 1, 0);
-
 	// Root layout
 
 	VBoxContainer *root_vb = memnew(VBoxContainer);
@@ -1302,7 +1291,6 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	label_warn->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	label_warn->set_text("");
 	root_vb->add_child(label_warn);
-	label_warn->add_theme_color_override("font_color", warn_color);
 	label_warn->hide();
 
 	// Page 1 layout: Rendering Options
@@ -1345,7 +1333,6 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	inspector_general->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector_general->set_custom_minimum_size(Size2(300 * EDSCALE, 250 * EDSCALE));
 	inspector_general->connect("property_edited", callable_mp(this, &DynamicFontImportSettings::_main_prop_changed));
-	inspector_general->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	page1_hb->add_child(inspector_general);
 
 	// Page 2 layout: Configurations
@@ -1379,7 +1366,6 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	add_var = memnew(Button);
 	page2_hb_vars->add_child(add_var);
 	add_var->set_tooltip_text(TTR("Add configuration"));
-	add_var->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 	add_var->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_variation_add));
 
 	vars_list = memnew(Tree);
@@ -1398,7 +1384,6 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	inspector_vars = memnew(EditorInspector);
 	inspector_vars->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector_vars->connect("property_edited", callable_mp(this, &DynamicFontImportSettings::_variation_changed));
-	inspector_vars->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	page2_side_vb->add_child(inspector_vars);
 
 	VBoxContainer *preload_pages_vb = memnew(VBoxContainer);
@@ -1474,7 +1459,6 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	inspector_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector_text->set_custom_minimum_size(Size2(300 * EDSCALE, 250 * EDSCALE));
 	inspector_text->connect("property_edited", callable_mp(this, &DynamicFontImportSettings::_change_text_opts));
-	inspector_text->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	page2_1_hb->add_child(inspector_text);
 
 	text_edit = memnew(TextEdit);

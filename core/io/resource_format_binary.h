@@ -60,7 +60,7 @@ class ResourceLoaderBinary {
 		String path;
 		String type;
 		ResourceUID::ID uid = ResourceUID::INVALID_ID;
-		Ref<Resource> cache;
+		Ref<ResourceLoader::LoadToken> load_token;
 	};
 
 	bool using_named_scene_ids = false;

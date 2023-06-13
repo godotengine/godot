@@ -33,10 +33,10 @@
 
 #ifdef GLES3_ENABLED
 
-#include "../shaders/skeleton.glsl.gen.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
+#include "drivers/gles3/shaders/skeleton.glsl.gen.h"
 #include "servers/rendering/storage/mesh_storage.h"
 #include "servers/rendering/storage/utilities.h"
 

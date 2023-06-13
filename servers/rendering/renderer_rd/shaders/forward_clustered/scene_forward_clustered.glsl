@@ -343,6 +343,8 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 
 	mat4 modelview = scene_data.view_matrix * model_matrix;
 	mat3 modelview_normal = mat3(scene_data.view_matrix) * model_normal_matrix;
+	mat4 read_view_matrix = scene_data.view_matrix;
+	vec2 read_viewport_size = scene_data.viewport_size;
 
 	{
 #CODE : VERTEX
@@ -360,7 +362,7 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 		vertex = mat3(matrix) * vertex;
 		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
 	}
-	vertex = mat3(model_matrix) * vertex;
+	vertex = mat3(inv_view_matrix * modelview) * vertex;
 	vec3 temp_precision; // Will be ignored.
 	vertex += double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
 	vertex = mat3(scene_data.view_matrix) * vertex;
@@ -823,7 +825,8 @@ void fragment_shader(in SceneData scene_data) {
 	inv_view_matrix[1][3] = 0.0;
 	inv_view_matrix[2][3] = 0.0;
 #endif
-
+	mat4 read_view_matrix = scene_data.view_matrix;
+	vec2 read_viewport_size = scene_data.viewport_size;
 	{
 #CODE : FRAGMENT
 	}
@@ -1817,9 +1820,30 @@ void fragment_shader(in SceneData scene_data) {
 
 			blur_shadow(shadow);
 
+#ifdef DEBUG_DRAW_PSSM_SPLITS
+			vec3 tint = vec3(1.0);
+			if (-vertex.z < directional_lights.data[i].shadow_split_offsets.x) {
+				tint = vec3(1.0, 0.0, 0.0);
+			} else if (-vertex.z < directional_lights.data[i].shadow_split_offsets.y) {
+				tint = vec3(0.0, 1.0, 0.0);
+			} else if (-vertex.z < directional_lights.data[i].shadow_split_offsets.z) {
+				tint = vec3(0.0, 0.0, 1.0);
+			} else {
+				tint = vec3(1.0, 1.0, 0.0);
+			}
+			tint = mix(tint, vec3(1.0), shadow);
+			shadow = 1.0;
+#endif
+
 			float size_A = sc_use_light_soft_shadows ? directional_lights.data[i].size : 0.0;
 
-			light_compute(normal, directional_lights.data[i].direction, normalize(view), size_A, directional_lights.data[i].color * directional_lights.data[i].energy, shadow, f0, orms, 1.0, albedo, alpha,
+			light_compute(normal, directional_lights.data[i].direction, normalize(view), size_A,
+#ifndef DEBUG_DRAW_PSSM_SPLITS
+					directional_lights.data[i].color * directional_lights.data[i].energy,
+#else
+					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
+#endif
+					true, shadow, f0, orms, 1.0, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif

@@ -39,6 +39,16 @@ def get_opts():
     ]
 
 
+def get_doc_classes():
+    return [
+        "EditorExportPlatformMacOS",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
+
+
 def get_flags():
     return [
         ("arch", detect_arch()),
@@ -108,10 +118,10 @@ def configure(env: "Environment"):
         env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
         env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
     elif env["arch"] == "x86_64":
-        print("Building for macOS 10.12+.")
-        env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
-        env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
-        env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
+        print("Building for macOS 10.13+.")
+        env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
+        env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
+        env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
 
     env.Append(CCFLAGS=["-fobjc-arc"])
 
@@ -225,6 +235,8 @@ def configure(env: "Environment"):
             "CoreMedia",
             "-framework",
             "QuartzCore",
+            "-framework",
+            "Security",
         ]
     )
     env.Append(LIBS=["pthread", "z"])

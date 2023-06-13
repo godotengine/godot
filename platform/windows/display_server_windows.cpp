@@ -30,21 +30,21 @@
 
 #include "display_server_windows.h"
 
-#include "core/io/marshalls.h"
-#include "core/math/geometry_2d.h"
-#include "main/main.h"
 #include "os_windows.h"
+
+#include "core/io/marshalls.h"
+#include "main/main.h"
 #include "scene/resources/texture.h"
+
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
 
 #include <avrt.h>
 #include <dwmapi.h>
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
-#endif
-
-#if defined(GLES3_ENABLED)
-#include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
 #if defined(__GNUC__)
@@ -179,37 +179,37 @@ void DisplayServerWindows::_register_raw_input_devices(WindowID p_target_window)
 }
 
 bool DisplayServerWindows::tts_is_speaking() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->is_speaking();
 }
 
 bool DisplayServerWindows::tts_is_paused() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->is_paused();
 }
 
 TypedArray<Dictionary> DisplayServerWindows::tts_get_voices() const {
-	ERR_FAIL_COND_V(!tts, TypedArray<Dictionary>());
+	ERR_FAIL_COND_V_MSG(!tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->get_voices();
 }
 
 void DisplayServerWindows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
 }
 
 void DisplayServerWindows::tts_pause() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->pause();
 }
 
 void DisplayServerWindows::tts_resume() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->resume();
 }
 
 void DisplayServerWindows::tts_stop() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->stop();
 }
 
@@ -388,6 +388,17 @@ int DisplayServerWindows::get_primary_screen() const {
 	return data.screen;
 }
 
+int DisplayServerWindows::get_keyboard_focus_screen() const {
+	HWND hwnd = GetForegroundWindow();
+	if (hwnd) {
+		EnumScreenData data = { 0, 0, MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST) };
+		EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcScreen, (LPARAM)&data);
+		return data.screen;
+	} else {
+		return get_primary_screen();
+	}
+}
+
 typedef struct {
 	int count;
 	int screen;
@@ -424,17 +435,7 @@ Point2i DisplayServerWindows::_get_screens_origin() const {
 Point2i DisplayServerWindows::screen_get_position(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
+	p_screen = _get_screen_index(p_screen);
 	EnumPosData data = { 0, p_screen, Point2() };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcPos, (LPARAM)&data);
 	return data.pos - _get_screens_origin();
@@ -472,17 +473,7 @@ static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPR
 Size2i DisplayServerWindows::screen_get_size(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
+	p_screen = _get_screen_index(p_screen);
 	EnumSizeData data = { 0, p_screen, Size2() };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcSize, (LPARAM)&data);
 	return data.size;
@@ -529,17 +520,7 @@ static BOOL CALLBACK _MonitorEnumProcRefreshRate(HMONITOR hMonitor, HDC hdcMonit
 Rect2i DisplayServerWindows::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
+	p_screen = _get_screen_index(p_screen);
 	EnumRectData data = { 0, p_screen, Rect2i() };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcUsableSize, (LPARAM)&data);
 	data.rect.position -= _get_screens_origin();
@@ -617,17 +598,7 @@ static BOOL CALLBACK _MonitorEnumProcDpi(HMONITOR hMonitor, HDC hdcMonitor, LPRE
 int DisplayServerWindows::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
+	p_screen = _get_screen_index(p_screen);
 	EnumDpiData data = { 0, p_screen, 72 };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcDpi, (LPARAM)&data);
 	return data.dpi;
@@ -643,17 +614,20 @@ Color DisplayServerWindows::screen_get_pixel(const Point2i &p_position) const {
 		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p);
 	}
 	HDC dc = GetDC(0);
-	COLORREF col = GetPixel(dc, p.x, p.y);
-	if (col != CLR_INVALID) {
-		return Color(float(col & 0x000000FF) / 256.0, float((col & 0x0000FF00) >> 8) / 256.0, float((col & 0x00FF0000) >> 16) / 256.0, 1.0);
+	if (dc) {
+		COLORREF col = GetPixel(dc, p.x, p.y);
+		if (col != CLR_INVALID) {
+			ReleaseDC(NULL, dc);
+			return Color(float(col & 0x000000FF) / 256.0, float((col & 0x0000FF00) >> 8) / 256.0, float((col & 0x00FF0000) >> 16) / 256.0, 1.0);
+		}
+		ReleaseDC(NULL, dc);
 	}
-	ReleaseDC(NULL, dc);
 
 	return Color();
 }
 
-float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
-	_THREAD_SAFE_METHOD_
+Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
 
 	switch (p_screen) {
 		case SCREEN_PRIMARY: {
@@ -666,6 +640,65 @@ float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
 			break;
 	}
 
+	Point2i pos = screen_get_position(p_screen) + _get_screens_origin();
+	Size2i size = screen_get_size(p_screen);
+
+	POINT p1;
+	p1.x = pos.x;
+	p1.y = pos.y;
+
+	POINT p2;
+	p2.x = pos.x + size.x;
+	p2.y = pos.y + size.y;
+	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p1);
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p2);
+	}
+
+	Ref<Image> img;
+	HDC dc = GetDC(0);
+	if (dc) {
+		HDC hdc = CreateCompatibleDC(dc);
+		int width = p2.x - p1.x;
+		int height = p2.y - p1.y;
+		if (hdc) {
+			HBITMAP hbm = CreateCompatibleBitmap(dc, width, height);
+			if (hbm) {
+				SelectObject(hdc, hbm);
+				BitBlt(hdc, 0, 0, width, height, dc, p1.x, p1.y, SRCCOPY);
+
+				BITMAPINFO bmp_info = {};
+				bmp_info.bmiHeader.biSize = sizeof(bmp_info.bmiHeader);
+				bmp_info.bmiHeader.biWidth = width;
+				bmp_info.bmiHeader.biHeight = -height;
+				bmp_info.bmiHeader.biPlanes = 1;
+				bmp_info.bmiHeader.biBitCount = 32;
+				bmp_info.bmiHeader.biCompression = BI_RGB;
+
+				Vector<uint8_t> img_data;
+				img_data.resize(width * height * 4);
+				GetDIBits(hdc, hbm, 0, height, img_data.ptrw(), &bmp_info, DIB_RGB_COLORS);
+
+				uint8_t *wr = (uint8_t *)img_data.ptrw();
+				for (int i = 0; i < width * height; i++) {
+					SWAP(wr[i * 4 + 0], wr[i * 4 + 2]);
+				}
+				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+
+				DeleteObject(hbm);
+			}
+			DeleteDC(hdc);
+		}
+		ReleaseDC(NULL, dc);
+	}
+
+	return img;
+}
+
+float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
 	EnumRefreshRateData data = { 0, p_screen, SCREEN_REFRESH_RATE_FALLBACK };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcRefreshRate, (LPARAM)&data);
 	return data.rate;
@@ -802,9 +835,12 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 		SetFocus(wd.hWnd); // Set keyboard focus.
 	} else if (wd.minimized) {
 		ShowWindow(wd.hWnd, SW_SHOWMINIMIZED);
-	} else if (wd.no_focus || wd.is_popup) {
+	} else if (wd.no_focus) {
 		// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
 		ShowWindow(wd.hWnd, SW_SHOWNA);
+	} else if (wd.is_popup) {
+		ShowWindow(wd.hWnd, SW_SHOWNA);
+		SetFocus(wd.hWnd); // Set keyboard focus.
 	} else {
 		ShowWindow(wd.hWnd, SW_SHOW);
 		SetForegroundWindow(wd.hWnd); // Slightly higher priority.
@@ -1292,7 +1328,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 				r_style = WS_OVERLAPPEDWINDOW;
 			}
 		} else {
-			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
+			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 		}
 	}
 
@@ -1755,38 +1791,37 @@ void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor
 		}
 
 		Ref<Texture2D> texture = p_cursor;
+		ERR_FAIL_COND(!texture.is_valid());
 		Ref<AtlasTexture> atlas_texture = p_cursor;
-		Ref<Image> image;
 		Size2 texture_size;
 		Rect2 atlas_rect;
 
-		if (texture.is_valid()) {
-			image = texture->get_image();
-		}
-
-		if (!image.is_valid() && atlas_texture.is_valid()) {
+		if (atlas_texture.is_valid()) {
 			texture = atlas_texture->get_atlas();
 
 			atlas_rect.size.width = texture->get_width();
 			atlas_rect.size.height = texture->get_height();
 			atlas_rect.position.x = atlas_texture->get_region().position.x;
 			atlas_rect.position.y = atlas_texture->get_region().position.y;
-
 			texture_size.width = atlas_texture->get_region().size.x;
 			texture_size.height = atlas_texture->get_region().size.y;
-		} else if (image.is_valid()) {
+		} else {
 			texture_size.width = texture->get_width();
 			texture_size.height = texture->get_height();
 		}
 
-		ERR_FAIL_COND(!texture.is_valid());
 		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
 		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
 		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
 
-		image = texture->get_image();
+		Ref<Image> image = texture->get_image();
 
 		ERR_FAIL_COND(!image.is_valid());
+		if (image->is_compressed()) {
+			image = image->duplicate(true);
+			Error err = image->decompress();
+			ERR_FAIL_COND_MSG(err != OK, "Couldn't decompress VRAM-compressed custom mouse cursor image. Switch to a lossless compression mode in the Import dock.");
+		}
 
 		UINT image_size = texture_size.width * texture_size.height;
 
@@ -4120,7 +4155,10 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	rendering_driver = p_rendering_driver;
 
 	// Init TTS
-	tts = memnew(TTS_Windows);
+	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
+	if (tts_enabled) {
+		tts = memnew(TTS_Windows);
+	}
 
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
@@ -4412,5 +4450,4 @@ DisplayServerWindows::~DisplayServerWindows() {
 	if (tts) {
 		memdelete(tts);
 	}
-	CoUninitialize();
 }

@@ -36,7 +36,6 @@
 #include "editor/editor_autoload_settings.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
-#include "editor/editor_settings.h"
 #include "editor/localization_editor.h"
 #include "editor/shader_globals_editor.h"
 #include "scene/gui/center_container.h"
@@ -82,11 +81,6 @@ protected:
 
 void ImportDefaultsEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
-		} break;
-
 		case NOTIFICATION_PREDELETE: {
 			inspector->edit(nullptr);
 		} break;

@@ -164,14 +164,14 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the transform rotated such that its
-        /// -Z axis (forward) points towards the <paramref name="target"/> position.
-        ///
-        /// The transform will first be rotated around the given <paramref name="up"/> vector,
-        /// and then fully aligned to the <paramref name="target"/> by a further rotation around
-        /// an axis perpendicular to both the <paramref name="target"/> and <paramref name="up"/> vectors.
-        ///
-        /// Operations take place in global space.
+        /// Returns a copy of the transform rotated such that the forward axis (-Z)
+        /// points towards the <paramref name="target"/> position.
+        /// The up axis (+Y) points as close to the <paramref name="up"/> vector
+        /// as possible while staying perpendicular to the forward axis.
+        /// The resulting transform is orthonormalized.
+        /// The existing rotation, scale, and skew information from the original transform is discarded.
+        /// The <paramref name="target"/> and <paramref name="up"/> vectors cannot be zero,
+        /// cannot be parallel to each other, and are defined in global/parent space.
         /// </summary>
         /// <param name="target">The object to look at.</param>
         /// <param name="up">The relative up direction.</param>
@@ -249,24 +249,7 @@ namespace Godot
 
         private void SetLookAt(Vector3 eye, Vector3 target, Vector3 up)
         {
-            // Make rotation matrix
-            // Z vector
-            Vector3 column2 = eye - target;
-
-            column2.Normalize();
-
-            Vector3 column1 = up;
-
-            Vector3 column0 = column1.Cross(column2);
-
-            // Recompute Y = Z cross X
-            column1 = column2.Cross(column0);
-
-            column0.Normalize();
-            column1.Normalize();
-
-            Basis = new Basis(column0, column1, column2);
-
+            Basis = Basis.LookingAt(target - eye, up);
             Origin = eye;
         }
 

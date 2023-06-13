@@ -14,7 +14,7 @@
 # Mattias Münster <mattiasmun@gmail.com>, 2019.
 # Anonymous <noreply@weblate.org>, 2020.
 # Joakim Lundberg <joakim@joakimlundberg.com>, 2020.
-# Kristoffer Grundström <swedishsailfishosuser@tutanota.com>, 2020, 2021, 2022.
+# Kristoffer Grundström <swedishsailfishosuser@tutanota.com>, 2020, 2021, 2022, 2023.
 # Jonas Robertsson <jonas.robertsson@posteo.net>, 2020, 2021.
 # André Andersson <andre.eric.andersson@gmail.com>, 2020.
 # Andreas Westrell <andreas.westrell@gmail.com>, 2020.
@@ -34,8 +34,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-15 01:17+0000\n"
-"Last-Translator: Daniel Ljung <weblate@bazonic.mozmail.com>\n"
+"PO-Revision-Date: 2023-05-17 00:52+0000\n"
+"Last-Translator: Kristoffer Grundström <swedishsailfishosuser@tutanota.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -43,7 +43,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Nollställ"
@@ -183,6 +183,9 @@ msgstr "Xbox Paddelknapp 4"
 msgid "PS4/5 Touchpad"
 msgstr "PS4/5 Pekplatta"
 
+msgid "Pressure:"
+msgstr "Tryck:"
+
 msgid "touched"
 msgstr "berörd"
 
@@ -209,11 +212,20 @@ msgstr "MIDI Inmatning på Kanel=%s Meddelande=%s"
 msgid "Input Event with Shortcut=%s"
 msgstr "Inmatningshändelse med Genväg=%s"
 
+msgid "Accept"
+msgstr "Acceptera"
+
 msgid "Select"
 msgstr "Välj"
 
 msgid "Cancel"
 msgstr "Avbryt"
+
+msgid "Left"
+msgstr "Vänster"
+
+msgid "Right"
+msgstr "Höger"
 
 msgid "Up"
 msgstr "Upp"
@@ -247,6 +259,9 @@ msgstr "Ångra"
 
 msgid "Redo"
 msgstr "Återställ"
+
+msgid "Completion Query"
+msgstr "Frågeställning att slutföra"
 
 msgid "New Line"
 msgstr "Ny Rad"
@@ -335,6 +350,9 @@ msgstr "Lägg till Val för Nästa Förekomst"
 msgid "Toggle Insert Mode"
 msgstr "Växla Läge Infoga"
 
+msgid "Submit Text"
+msgstr "Skicka in text"
+
 msgid "Duplicate Nodes"
 msgstr "Dubblerade Noder"
 
@@ -373,6 +391,12 @@ msgstr "Ogiltiga argument för att bygga '%s'"
 
 msgid "On call to '%s':"
 msgstr "I anrop till '%s':"
+
+msgid "Built-in script"
+msgstr "Inbyggt skript"
+
+msgid "Built-in"
+msgstr "Inbyggt"
 
 msgid "B"
 msgstr "B"
@@ -1226,8 +1250,8 @@ msgstr "Beroende-Redigerare"
 msgid "Search Replacement Resource:"
 msgstr "Sök Ersättningsresurs:"
 
-msgid "Open Scene"
-msgstr "Öppna Scen"
+msgid "Open"
+msgstr "Öppna"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "Ägare av: %s (Totalt: %d)"
@@ -1294,6 +1318,12 @@ msgstr "Äger"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Resurser Utan Explicit Ägande:"
+
+msgid "Could not create folder."
+msgstr "Kunde inte skapa mapp."
+
+msgid "Create Folder"
+msgstr "Skapa Mapp"
 
 msgid "Thanks from the Godot community!"
 msgstr "Tack från Godot-gemenskapen!"
@@ -1677,24 +1707,6 @@ msgstr "[tom]"
 msgid "[unsaved]"
 msgstr "[inte sparad]"
 
-msgid "Please select a base directory first."
-msgstr "Vänligen välj en baskatalog först."
-
-msgid "Choose a Directory"
-msgstr "Välj en Katalog"
-
-msgid "Create Folder"
-msgstr "Skapa Mapp"
-
-msgid "Name:"
-msgstr "Namn:"
-
-msgid "Could not create folder."
-msgstr "Kunde inte skapa mapp."
-
-msgid "Choose"
-msgstr "Välj"
-
 msgid "3D Editor"
 msgstr "Öppna 3D-redigeraren"
 
@@ -1788,108 +1800,6 @@ msgstr "Importera profil(er)"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Hantera Redigerarens Funktions Profiler"
-
-msgid "Network"
-msgstr "Nätverk"
-
-msgid "Open"
-msgstr "Öppna"
-
-msgid "Select Current Folder"
-msgstr "Välj Nuvarande Mapp"
-
-msgid "Select This Folder"
-msgstr "Välj Denna Mapp"
-
-msgid "Copy Path"
-msgstr "Kopiera Sökväg"
-
-msgid "Open in File Manager"
-msgstr "Öppna i filhanteraren"
-
-msgid "New Folder..."
-msgstr "Ny Mapp..."
-
-msgid "All Recognized"
-msgstr "Alla Erkända"
-
-msgid "All Files (*)"
-msgstr "Alla Filer (*)"
-
-msgid "Open a File"
-msgstr "Öppna en Fil"
-
-msgid "Open File(s)"
-msgstr "Öppna Fil(er)"
-
-msgid "Open a Directory"
-msgstr "Öppna en Katalog"
-
-msgid "Open a File or Directory"
-msgstr "Öppna en Fil eller Katalog"
-
-msgid "Save a File"
-msgstr "Spara en Fil"
-
-msgid "Go Back"
-msgstr "Gå Tillbaka"
-
-msgid "Go Forward"
-msgstr "Gå Framåt"
-
-msgid "Go Up"
-msgstr "Gå Upp"
-
-msgid "Toggle Hidden Files"
-msgstr "Växla Dolda Filer"
-
-msgid "Toggle Favorite"
-msgstr "Växla Favorit"
-
-msgid "Toggle Mode"
-msgstr "Växla Läge"
-
-msgid "Focus Path"
-msgstr "Fokusera på Sökväg"
-
-msgid "Move Favorite Up"
-msgstr "Flytta Favorit Upp"
-
-msgid "Move Favorite Down"
-msgstr "Flytta Favorit Ner"
-
-msgid "Go to previous folder."
-msgstr "Gå till föregående mapp."
-
-msgid "Go to next folder."
-msgstr "Gå till nästa mapp."
-
-msgid "Go to parent folder."
-msgstr "Gå till överordnad mapp."
-
-msgid "Refresh files."
-msgstr "Uppdatera filer."
-
-msgid "(Un)favorite current folder."
-msgstr "Ta bort nuvarande mapp från favoriter."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "Växla synligheten av dolda filer."
-
-msgid "View items as a grid of thumbnails."
-msgstr "sortera objekt som ett rutnät av bilder."
-
-msgid "View items as a list."
-msgstr "Visa objekt som lista."
-
-msgid "Directories & Files:"
-msgstr "Kataloger & Filer:"
-
-msgid "Preview:"
-msgstr "Förhandsvisning:"
-
-msgid "File:"
-msgstr "Fil:"
 
 msgid "ScanSources"
 msgstr "ScanKällor"
@@ -1992,6 +1902,9 @@ msgstr "Ändra storlek på Array"
 msgid "Set Multiple:"
 msgstr "Sätt Flera:"
 
+msgid "Name:"
+msgstr "Namn:"
+
 msgid "Edit Filters"
 msgstr "Redigera Filter"
 
@@ -2047,6 +1960,9 @@ msgstr "Skapar Miniatyr"
 msgid "This operation can't be done without a tree root."
 msgstr "Åtgärden kan inte göras utan en trädrot."
 
+msgid "Save scene before running..."
+msgstr "Spara scenen innan du kör..."
+
 msgid "Can't overwrite scene that is still open!"
 msgstr "Kan inte skriva över en scen som fortfarande är öppen!"
 
@@ -2097,26 +2013,8 @@ msgstr ""
 msgid "Changes may be lost!"
 msgstr "Ändringar kan gå förlorade!"
 
-msgid "There is no defined scene to run."
-msgstr "Det finns ingen definierad scen att köra."
-
-msgid "Save scene before running..."
-msgstr "Spara scenen innan du kör..."
-
-msgid "Play the project."
-msgstr "Spela projektet."
-
-msgid "Play the edited scene."
-msgstr "Spela den redigerade scenen."
-
 msgid "Open Base Scene"
 msgstr "Öppna Bas-Scen"
-
-msgid "Save & Quit"
-msgstr "Spara & Avsluta"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "Spara ändringar i '%s' innan stängning?"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s finns inte längre! Vänligen ange en ny lagringsplats."
@@ -2155,6 +2053,9 @@ msgid ""
 msgstr ""
 "Den aktiva scenen har osparade ändringar.\n"
 "Vill du ladda om den ändå? Detta kan inte ångras."
+
+msgid "Save & Quit"
+msgstr "Spara & Avsluta"
 
 msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Spara ändringar av följande scen(er) innan du avslutar?"
@@ -2216,6 +2117,9 @@ msgstr "Scen '%s' har trasiga beroenden:"
 msgid "Clear Recent Scenes"
 msgstr "Rensa Senaste Scener"
 
+msgid "There is no defined scene to run."
+msgstr "Det finns ingen definierad scen att köra."
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -2254,6 +2158,9 @@ msgstr "Standard"
 
 msgid "Save & Close"
 msgstr "Spara & Stäng"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "Spara ändringar i '%s' innan stängning?"
 
 msgid "Close Other Tabs"
 msgstr "Stänga Övriga Flikar"
@@ -2424,9 +2331,6 @@ msgstr "Öppna Skript-Redigerare"
 msgid "Warning!"
 msgstr "Varning!"
 
-msgid "No sub-resources found."
-msgstr "Inga underresurser hittades."
-
 msgid "Main Script:"
 msgstr "Huvud Skript:"
 
@@ -2581,20 +2485,17 @@ msgstr "Bläddra"
 msgid "Favorites"
 msgstr "Favoriter"
 
+msgid "View items as a grid of thumbnails."
+msgstr "sortera objekt som ett rutnät av bilder."
+
+msgid "View items as a list."
+msgstr "Visa objekt som lista."
+
 msgid "Cannot move a folder into itself."
 msgstr "Det går inte att flytta en mapp in i sig själv."
 
-msgid "Provided name contains invalid characters."
-msgstr "Angivet namn innehåller ogiltiga tecken."
-
 msgid "A file or folder with this name already exists."
 msgstr "En fil eller mapp med detta namn finns redan."
-
-msgid "Renaming file:"
-msgstr "Byter namn på filen:"
-
-msgid "Renaming folder:"
-msgstr "Byter namn på mappen:"
 
 msgid "Duplicating file:"
 msgstr "Duplicerar fil:"
@@ -2605,11 +2506,20 @@ msgstr "Ny Ärvd Scen"
 msgid "Add to Favorites"
 msgstr "Lägg till i Favoriter"
 
+msgid "Open in File Manager"
+msgstr "Öppna i filhanteraren"
+
+msgid "New Folder..."
+msgstr "Ny Mapp..."
+
 msgid "New Scene..."
 msgstr "Ny Scen..."
 
 msgid "New Script..."
 msgstr "Nytt Skript..."
+
+msgid "Copy Path"
+msgstr "Kopiera Sökväg"
 
 msgid "Duplicate..."
 msgstr "Duplicera..."
@@ -2623,9 +2533,6 @@ msgid ""
 msgstr ""
 "Skannar Filer,\n"
 "Snälla Vänta..."
-
-msgid "Move"
-msgstr "Flytta"
 
 msgid "Overwrite"
 msgstr "Skriv över"
@@ -2656,6 +2563,120 @@ msgstr "Grupper"
 
 msgid "Empty groups will be automatically removed."
 msgstr "Tomma grupper tas automatiskt bort."
+
+msgid "Move"
+msgstr "Flytta"
+
+msgid "Please select a base directory first."
+msgstr "Vänligen välj en baskatalog först."
+
+msgid "Choose a Directory"
+msgstr "Välj en Katalog"
+
+msgid "Network"
+msgstr "Nätverk"
+
+msgid "Select Current Folder"
+msgstr "Välj Nuvarande Mapp"
+
+msgid "Select This Folder"
+msgstr "Välj Denna Mapp"
+
+msgid "All Recognized"
+msgstr "Alla Erkända"
+
+msgid "All Files (*)"
+msgstr "Alla Filer (*)"
+
+msgid "Open a File"
+msgstr "Öppna en Fil"
+
+msgid "Open File(s)"
+msgstr "Öppna Fil(er)"
+
+msgid "Open a Directory"
+msgstr "Öppna en Katalog"
+
+msgid "Open a File or Directory"
+msgstr "Öppna en Fil eller Katalog"
+
+msgid "Save a File"
+msgstr "Spara en Fil"
+
+msgid "Go Back"
+msgstr "Gå Tillbaka"
+
+msgid "Go Forward"
+msgstr "Gå Framåt"
+
+msgid "Go Up"
+msgstr "Gå Upp"
+
+msgid "Toggle Hidden Files"
+msgstr "Växla Dolda Filer"
+
+msgid "Toggle Favorite"
+msgstr "Växla Favorit"
+
+msgid "Toggle Mode"
+msgstr "Växla Läge"
+
+msgid "Focus Path"
+msgstr "Fokusera på Sökväg"
+
+msgid "Move Favorite Up"
+msgstr "Flytta Favorit Upp"
+
+msgid "Move Favorite Down"
+msgstr "Flytta Favorit Ner"
+
+msgid "Go to previous folder."
+msgstr "Gå till föregående mapp."
+
+msgid "Go to next folder."
+msgstr "Gå till nästa mapp."
+
+msgid "Go to parent folder."
+msgstr "Gå till överordnad mapp."
+
+msgid "Refresh files."
+msgstr "Uppdatera filer."
+
+msgid "(Un)favorite current folder."
+msgstr "Ta bort nuvarande mapp från favoriter."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Växla synligheten av dolda filer."
+
+msgid "Directories & Files:"
+msgstr "Kataloger & Filer:"
+
+msgid "Preview:"
+msgstr "Förhandsvisning:"
+
+msgid "File:"
+msgstr "Fil:"
+
+msgid "No sub-resources found."
+msgstr "Inga underresurser hittades."
+
+msgid "Play the project."
+msgstr "Spela projektet."
+
+msgid "Play the edited scene."
+msgstr "Spela den redigerade scenen."
+
+msgid "Open Script:"
+msgstr "Öppna Skript:"
+
+msgid "Rename Node"
+msgstr "Byt namn på Node"
+
+msgid "Scene Tree (Nodes):"
+msgstr "Scenträd (Noder):"
+
+msgid "Select a Node"
+msgstr "Välj en Node"
 
 msgid "Reimport"
 msgstr "Importera om"
@@ -2986,9 +3007,6 @@ msgstr "Lägger till %s..."
 msgid "Create Node"
 msgstr "Skapa Node"
 
-msgid "Flat 1"
-msgstr "Platt 1"
-
 msgid "Hold Shift to edit tangents individually"
 msgstr "Håll Skift för att redigera tangenter individuellt"
 
@@ -3025,6 +3043,12 @@ msgstr "Slumpmässig Rotation:"
 
 msgid "Random Scale:"
 msgstr "Slumpmässig Skala:"
+
+msgid "Edit Poly"
+msgstr "Redigera Polygon"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Redigera Polygon (ta bort punkt)"
 
 msgid "Orthogonal"
 msgstr "Ortogonal"
@@ -3100,12 +3124,6 @@ msgstr "Skift: Flytta Alla"
 
 msgid "Shift+Ctrl: Scale"
 msgstr "Skift+Ctrl: Skala"
-
-msgid "Edit Poly"
-msgstr "Redigera Polygon"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Redigera Polygon (ta bort punkt)"
 
 msgid "Add Resource"
 msgstr "Lägg till Resurs"
@@ -3243,6 +3261,9 @@ msgstr "(tom)"
 
 msgid "Animations:"
 msgstr "Animationer:"
+
+msgid "Size"
+msgstr "Storlek"
 
 msgid "Updating the editor"
 msgstr "Uppdaterar editorn"
@@ -3475,18 +3496,6 @@ msgstr "Skapa Scenrot"
 msgid "Add/Create a New Node."
 msgstr "Lägg till/Skapa en Ny Node."
 
-msgid "Open Script:"
-msgstr "Öppna Skript:"
-
-msgid "Rename Node"
-msgstr "Byt namn på Node"
-
-msgid "Scene Tree (Nodes):"
-msgstr "Scenträd (Noder):"
-
-msgid "Select a Node"
-msgstr "Välj en Node"
-
 msgid "Path is empty."
 msgstr "Sökvägen är tom."
 
@@ -3564,9 +3573,6 @@ msgstr "Inkommande RPC"
 
 msgid "Outgoing RPC"
 msgstr "Utgående RPC"
-
-msgid "Size"
-msgstr "Storlek"
 
 msgid "Network Profiler"
 msgstr "Nätverksprofilerare"

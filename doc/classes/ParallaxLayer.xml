@@ -12,8 +12,9 @@
 	</tutorials>
 	<members>
 		<member name="motion_mirroring" type="Vector2" setter="set_mirroring" getter="get_mirroring" default="Vector2(0, 0)">
-			The ParallaxLayer's [Texture2D] mirroring. Useful for creating an infinite scrolling background. If an axis is set to [code]0[/code], the [Texture2D] will not be mirrored.
-			If the length of the viewport axis is bigger than twice the mirrored axis size, it will not repeat infinitely, as the parallax layer only draws 2 instances of the texture at any one time.
+			The ParallaxLayer's [Texture2D] repeating. Useful for creating an infinite scrolling background. If an axis is set to [code]0[/code], the [Texture2D] will not be repeated.
+			If the length of the viewport axis is bigger than twice the repeated axis size, it will not repeat infinitely, as the parallax layer only draws 2 instances of the texture at any given time.
+			[b]Note:[/b] Despite its name, the texture will not be mirrored, it will simply be repeated.
 		</member>
 		<member name="motion_offset" type="Vector2" setter="set_motion_offset" getter="get_motion_offset" default="Vector2(0, 0)">
 			The ParallaxLayer's offset relative to the parent ParallaxBackground's [member ParallaxBackground.scroll_offset].

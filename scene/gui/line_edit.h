@@ -274,6 +274,7 @@ public:
 	void selection_delete();
 	void deselect();
 	bool has_selection() const;
+	String get_selected_text();
 	int get_selection_from_column() const;
 	int get_selection_to_column() const;
 
@@ -282,6 +283,7 @@ public:
 
 	void set_text(String p_text);
 	String get_text() const;
+	void set_text_with_selection(const String &p_text); // Set text, while preserving selection.
 
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;

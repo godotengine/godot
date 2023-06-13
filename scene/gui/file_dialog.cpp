@@ -126,6 +126,8 @@ void FileDialog::_notification(int p_what) {
 			show_hidden->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
 			show_hidden->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
 			show_hidden->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
+
+			invalidate();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -863,12 +865,22 @@ void FileDialog::set_access(Access p_access) {
 }
 
 void FileDialog::invalidate() {
-	if (is_visible()) {
-		update_file_list();
-		invalidated = false;
-	} else {
-		invalidated = true;
+	if (!is_visible() || is_invalidating) {
+		return;
 	}
+
+	is_invalidating = true;
+	callable_mp(this, &FileDialog::_invalidate).call_deferred();
+}
+
+void FileDialog::_invalidate() {
+	if (!is_invalidating) {
+		return;
+	}
+
+	update_file_list();
+
+	is_invalidating = false;
 }
 
 FileDialog::Access FileDialog::get_access() const {
@@ -966,9 +978,6 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root_subfolder"), &FileDialog::get_root_subfolder);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &FileDialog::set_show_hidden_files);
 	ClassDB::bind_method(D_METHOD("is_showing_hidden_files"), &FileDialog::is_showing_hidden_files);
-	ClassDB::bind_method(D_METHOD("_update_file_name"), &FileDialog::update_file_name);
-	ClassDB::bind_method(D_METHOD("_update_dir"), &FileDialog::update_dir);
-	ClassDB::bind_method(D_METHOD("_update_file_list"), &FileDialog::update_file_list);
 	ClassDB::bind_method(D_METHOD("deselect_all"), &FileDialog::deselect_all);
 
 	ClassDB::bind_method(D_METHOD("invalidate"), &FileDialog::invalidate);

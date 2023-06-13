@@ -175,7 +175,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 				state.light_uniforms[index].color[i] = l->color[i];
 			}
 
-			state.light_uniforms[index].color[3] = l->energy; //use alpha for energy, so base color can go separate
+			state.light_uniforms[index].color[3] *= l->energy; //use alpha for energy, so base color can go separate
 
 			if (state.shadow_fb != 0) {
 				state.light_uniforms[index].shadow_pixel_size = (1.0 / state.shadow_texture_size) * (1.0 + l->shadow_smooth);
@@ -238,7 +238,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 				state.light_uniforms[index].color[i] = l->color[i];
 			}
 
-			state.light_uniforms[index].color[3] = l->energy; //use alpha for energy, so base color can go separate
+			state.light_uniforms[index].color[3] *= l->energy; //use alpha for energy, so base color can go separate
 
 			if (state.shadow_fb != 0) {
 				state.light_uniforms[index].shadow_pixel_size = (1.0 / state.shadow_texture_size) * (1.0 + l->shadow_smooth);
@@ -655,6 +655,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 	current_clip = nullptr;
 
 	GLES3::CanvasShaderData::BlendMode last_blend_mode = GLES3::CanvasShaderData::BLEND_MODE_MIX;
+	Color last_blend_color;
 
 	state.current_tex = RID();
 
@@ -691,8 +692,9 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 		}
 
 		GLES3::CanvasShaderData::BlendMode blend_mode = state.canvas_instance_batches[i].blend_mode;
+		Color blend_color = state.canvas_instance_batches[i].blend_color;
 
-		if (last_blend_mode != blend_mode) {
+		if (last_blend_mode != blend_mode || last_blend_color != blend_color) {
 			if (last_blend_mode == GLES3::CanvasShaderData::BLEND_MODE_DISABLED) {
 				// re-enable it
 				glEnable(GL_BLEND);
@@ -712,7 +714,6 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 					} else {
 						glBlendFuncSeparate(GL_CONSTANT_COLOR, GL_ONE_MINUS_SRC_COLOR, GL_ZERO, GL_ONE);
 					}
-					Color blend_color = state.canvas_instance_batches[state.current_batch_index].blend_color;
 					glBlendColor(blend_color.r, blend_color.g, blend_color.b, blend_color.a);
 
 				} break;
@@ -762,6 +763,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 				} break;
 			}
 			last_blend_mode = blend_mode;
+			last_blend_color = blend_color;
 		}
 
 		_render_batch(p_lights, i);
@@ -1310,6 +1312,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 			uint32_t instance_color_offset = 0;
 			bool instance_uses_color = false;
 			bool instance_uses_custom_data = false;
+			bool use_instancing = false;
 
 			if (state.canvas_instance_batches[p_index].command_type == Item::Command::TYPE_MESH) {
 				const Item::CommandMesh *m = static_cast<const Item::CommandMesh *>(state.canvas_instance_batches[p_index].command);
@@ -1336,6 +1339,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 				instance_color_offset = mesh_storage->multimesh_get_color_offset(multimesh);
 				instance_uses_color = mesh_storage->multimesh_uses_colors(multimesh);
 				instance_uses_custom_data = mesh_storage->multimesh_uses_custom_data(multimesh);
+				use_instancing = true;
 
 			} else if (state.canvas_instance_batches[p_index].command_type == Item::Command::TYPE_PARTICLES) {
 				const Item::CommandParticles *pt = static_cast<const Item::CommandParticles *>(state.canvas_instance_batches[p_index].command);
@@ -1362,6 +1366,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 				instance_color_offset = 8; // 8 bytes for instance transform.
 				instance_uses_color = true;
 				instance_uses_custom_data = true;
+				use_instancing = true;
 			}
 
 			ERR_FAIL_COND(mesh.is_null());
@@ -1397,7 +1402,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 					use_index_buffer = true;
 				}
 
-				if (instance_count > 1) {
+				if (use_instancing) {
 					if (instance_buffer == 0) {
 						break;
 					}
@@ -1426,7 +1431,7 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 				}
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-				if (instance_count > 1) {
+				if (use_instancing) {
 					glDisableVertexAttribArray(5);
 					glDisableVertexAttribArray(6);
 					glDisableVertexAttribArray(7);

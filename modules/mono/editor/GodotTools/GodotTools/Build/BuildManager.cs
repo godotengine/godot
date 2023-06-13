@@ -270,7 +270,7 @@ namespace GodotTools.Build
                 buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
 
             if (Internal.GodotIsRealTDouble())
-                buildInfo.CustomProperties.Add("GodotRealTIsDouble=true");
+                buildInfo.CustomProperties.Add("GodotFloat64=true");
 
             return buildInfo;
         }
@@ -279,16 +279,23 @@ namespace GodotTools.Build
             [DisallowNull] string configuration,
             [DisallowNull] string platform,
             [DisallowNull] string runtimeIdentifier,
-            [DisallowNull] string publishOutputDir
+            [DisallowNull] string publishOutputDir,
+            bool includeDebugSymbols = true
         )
         {
             var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, GodotSharpDirs.ProjectCsProjPath, configuration,
                 runtimeIdentifier, publishOutputDir, restore: true, rebuild: false, onlyClean: false);
 
+            if (!includeDebugSymbols)
+            {
+                buildInfo.CustomProperties.Add("DebugType=None");
+                buildInfo.CustomProperties.Add("DebugSymbols=false");
+            }
+
             buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
 
             if (Internal.GodotIsRealTDouble())
-                buildInfo.CustomProperties.Add("GodotRealTIsDouble=true");
+                buildInfo.CustomProperties.Add("GodotFloat64=true");
 
             return buildInfo;
         }
@@ -308,24 +315,15 @@ namespace GodotTools.Build
             [DisallowNull] string configuration,
             [DisallowNull] string platform,
             [DisallowNull] string runtimeIdentifier,
-            string publishOutputDir
+            string publishOutputDir,
+            bool includeDebugSymbols = true
         ) => PublishProjectBlocking(CreatePublishBuildInfo(configuration,
-            platform, runtimeIdentifier, publishOutputDir));
+            platform, runtimeIdentifier, publishOutputDir, includeDebugSymbols));
 
         public static bool EditorBuildCallback()
         {
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return true; // No solution to build
-
-            try
-            {
-                // Make sure our packages are added to the fallback folder
-                NuGetUtils.AddBundledPackagesToFallbackFolder(NuGetUtils.GodotFallbackFolderPath);
-            }
-            catch (Exception e)
-            {
-                GD.PushError("Failed to setup Godot NuGet Offline Packages: " + e.Message);
-            }
 
             if (GodotSharpEditor.Instance.SkipBuildBeforePlaying)
                 return true; // Requested play from an external editor/IDE which already built the project

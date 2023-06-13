@@ -102,12 +102,17 @@ public:
 	virtual String get_visibility_state() const override;
 	virtual PackedVector3Array get_play_area() const override;
 
+	virtual float get_display_refresh_rate() const override;
+	virtual void set_display_refresh_rate(float p_refresh_rate) override;
+	virtual Array get_available_display_refresh_rates() const override;
+
 	virtual StringName get_name() const override;
 	virtual uint32_t get_capabilities() const override;
 
 	virtual bool is_initialized() const override;
 	virtual bool initialize() override;
 	virtual void uninitialize() override;
+	virtual Dictionary get_system_info() override;
 
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;

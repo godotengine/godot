@@ -617,6 +617,22 @@ bool SceneMultiplayer::is_server_relay_enabled() const {
 	return server_relay;
 }
 
+void SceneMultiplayer::set_max_sync_packet_size(int p_size) {
+	replicator->set_max_sync_packet_size(p_size);
+}
+
+int SceneMultiplayer::get_max_sync_packet_size() const {
+	return replicator->get_max_sync_packet_size();
+}
+
+void SceneMultiplayer::set_max_delta_packet_size(int p_size) {
+	replicator->set_max_delta_packet_size(p_size);
+}
+
+int SceneMultiplayer::get_max_delta_packet_size() const {
+	return replicator->get_max_delta_packet_size();
+}
+
 void SceneMultiplayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_path", "path"), &SceneMultiplayer::set_root_path);
 	ClassDB::bind_method(D_METHOD("get_root_path"), &SceneMultiplayer::get_root_path);
@@ -641,12 +657,19 @@ void SceneMultiplayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_server_relay_enabled"), &SceneMultiplayer::is_server_relay_enabled);
 	ClassDB::bind_method(D_METHOD("send_bytes", "bytes", "id", "mode", "channel"), &SceneMultiplayer::send_bytes, DEFVAL(MultiplayerPeer::TARGET_PEER_BROADCAST), DEFVAL(MultiplayerPeer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
 
+	ClassDB::bind_method(D_METHOD("get_max_sync_packet_size"), &SceneMultiplayer::get_max_sync_packet_size);
+	ClassDB::bind_method(D_METHOD("set_max_sync_packet_size", "size"), &SceneMultiplayer::set_max_sync_packet_size);
+	ClassDB::bind_method(D_METHOD("get_max_delta_packet_size"), &SceneMultiplayer::get_max_delta_packet_size);
+	ClassDB::bind_method(D_METHOD("set_max_delta_packet_size", "size"), &SceneMultiplayer::set_max_delta_packet_size);
+
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
 	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "auth_callback"), "set_auth_callback", "get_auth_callback");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auth_timeout", PROPERTY_HINT_RANGE, "0,30,0.1,or_greater,suffix:s"), "set_auth_timeout", "get_auth_timeout");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "server_relay"), "set_server_relay_enabled", "is_server_relay_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_sync_packet_size"), "set_max_sync_packet_size", "get_max_sync_packet_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_delta_packet_size"), "set_max_delta_packet_size", "get_max_delta_packet_size");
 
 	ADD_PROPERTY_DEFAULT("refuse_new_connections", false);
 

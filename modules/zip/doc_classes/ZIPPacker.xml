@@ -63,10 +63,13 @@
 	</methods>
 	<constants>
 		<constant name="APPEND_CREATE" value="0" enum="ZipAppend">
+			Create a new zip archive at the given path.
 		</constant>
 		<constant name="APPEND_CREATEAFTER" value="1" enum="ZipAppend">
+			Append a new zip archive to the end of the already existing file at the given path.
 		</constant>
 		<constant name="APPEND_ADDINZIP" value="2" enum="ZipAppend">
+			Add new files to the existing zip archive at the given path.
 		</constant>
 	</constants>
 </class>

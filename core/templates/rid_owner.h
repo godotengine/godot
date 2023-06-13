@@ -186,7 +186,6 @@ public:
 					spin_lock.unlock();
 				}
 				ERR_FAIL_V_MSG(nullptr, "Attempting to initialize the wrong RID");
-				return nullptr;
 			}
 
 			validator_chunks[idx_chunk][idx_element] &= 0x7FFFFFFF; //initialized

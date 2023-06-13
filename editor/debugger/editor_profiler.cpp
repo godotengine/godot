@@ -660,15 +660,15 @@ EditorProfiler::EditorProfiler() {
 	variables->set_column_title(0, TTR("Name"));
 	variables->set_column_expand(0, true);
 	variables->set_column_clip_content(0, true);
-	variables->set_column_expand_ratio(0, 60);
+	variables->set_column_custom_minimum_width(0, 60);
 	variables->set_column_title(1, TTR("Time"));
 	variables->set_column_expand(1, false);
 	variables->set_column_clip_content(1, true);
-	variables->set_column_expand_ratio(1, 100);
+	variables->set_column_custom_minimum_width(1, 75 * EDSCALE);
 	variables->set_column_title(2, TTR("Calls"));
 	variables->set_column_expand(2, false);
 	variables->set_column_clip_content(2, true);
-	variables->set_column_expand_ratio(2, 60);
+	variables->set_column_custom_minimum_width(2, 50 * EDSCALE);
 	variables->connect("item_edited", callable_mp(this, &EditorProfiler::_item_edited));
 
 	graph = memnew(TextureRect);

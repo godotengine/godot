@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Yann Collet, Facebook, Inc.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -165,6 +165,12 @@
 #define UNLIKELY(x) (x)
 #endif
 
+#if __has_builtin(__builtin_unreachable) || (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)))
+#  define ZSTD_UNREACHABLE { assert(0), __builtin_unreachable(); }
+#else
+#  define ZSTD_UNREACHABLE { assert(0); }
+#endif
+
 /* disable warnings */
 #ifdef _MSC_VER    /* Visual Studio */
 #  include <intrin.h>                    /* For Visual 2005 */
@@ -181,6 +187,8 @@
 #    ifdef __AVX2__  //MSVC does not have a BMI2 specific flag, but every CPU that supports AVX2 also supports BMI2
 #       define STATIC_BMI2 1
 #    endif
+#  elif defined(__BMI2__) && defined(__x86_64__) && defined(__GNUC__)
+#    define STATIC_BMI2 1
 #  endif
 #endif
 
@@ -273,7 +281,18 @@
 *  Sanitizer
 *****************************************************************/
 
-#if ZSTD_MEMORY_SANITIZER
+/* Issue #3240 reports an ASAN failure on an llvm-mingw build. Out of an
+ * abundance of caution, disable our custom poisoning on mingw. */
+#ifdef __MINGW32__
+#ifndef ZSTD_ASAN_DONT_POISON_WORKSPACE
+#define ZSTD_ASAN_DONT_POISON_WORKSPACE 1
+#endif
+#ifndef ZSTD_MSAN_DONT_POISON_WORKSPACE
+#define ZSTD_MSAN_DONT_POISON_WORKSPACE 1
+#endif
+#endif
+
+#if ZSTD_MEMORY_SANITIZER && !defined(ZSTD_MSAN_DONT_POISON_WORKSPACE)
 /* Not all platforms that support msan provide sanitizers/msan_interface.h.
  * We therefore declare the functions we need ourselves, rather than trying to
  * include the header file... */
@@ -292,9 +311,13 @@ void __msan_poison(const volatile void *a, size_t size);
 /* Returns the offset of the first (at least partially) poisoned byte in the
    memory range, or -1 if the whole range is good. */
 intptr_t __msan_test_shadow(const volatile void *x, size_t size);
+
+/* Print shadow and origin for the memory range to stderr in a human-readable
+   format. */
+void __msan_print_shadow(const volatile void *x, size_t size);
 #endif
 
-#if ZSTD_ADDRESS_SANITIZER
+#if ZSTD_ADDRESS_SANITIZER && !defined(ZSTD_ASAN_DONT_POISON_WORKSPACE)
 /* Not all platforms that support asan provide sanitizers/asan_interface.h.
  * We therefore declare the functions we need ourselves, rather than trying to
  * include the header file... */

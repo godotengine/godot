@@ -62,8 +62,11 @@ private:
 
 		Ref<TextLine> text_buf;
 		Ref<Texture2D> icon;
+		int icon_max_width = 0;
+
 		bool disabled = false;
 		bool hidden = false;
+		Variant metadata;
 		int ofs_cache = 0;
 		int size_cache = 0;
 		int size_text = 0;
@@ -106,8 +109,10 @@ private:
 
 	struct ThemeCache {
 		int h_separation = 0;
+		int icon_max_width = 0;
 
 		Ref<StyleBox> tab_unselected_style;
+		Ref<StyleBox> tab_hovered_style;
 		Ref<StyleBox> tab_selected_style;
 		Ref<StyleBox> tab_disabled_style;
 
@@ -123,6 +128,7 @@ private:
 		int outline_size = 0;
 
 		Color font_selected_color;
+		Color font_hovered_color;
 		Color font_unselected_color;
 		Color font_disabled_color;
 		Color font_outline_color;
@@ -133,6 +139,7 @@ private:
 	} theme_cache;
 
 	int get_tab_width(int p_idx) const;
+	Size2 _get_tab_icon_size(int p_idx) const;
 	void _ensure_no_over_offset();
 
 	void _update_hover();
@@ -171,11 +178,17 @@ public:
 	void set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_tab_icon(int p_tab) const;
 
+	void set_tab_icon_max_width(int p_tab, int p_width);
+	int get_tab_icon_max_width(int p_tab) const;
+
 	void set_tab_disabled(int p_tab, bool p_disabled);
 	bool is_tab_disabled(int p_tab) const;
 
 	void set_tab_hidden(int p_tab, bool p_hidden);
 	bool is_tab_hidden(int p_tab) const;
+
+	void set_tab_metadata(int p_tab, const Variant &p_metadata);
+	Variant get_tab_metadata(int p_tab) const;
 
 	void set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon);
 	Ref<Texture2D> get_tab_button_icon(int p_tab) const;

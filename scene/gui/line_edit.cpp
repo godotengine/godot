@@ -284,7 +284,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		_reset_caret_blink_timer();
 		if (b->is_pressed()) {
-			accept_event(); // don't pass event further when clicked on text field
+			accept_event(); // Don't pass event further when clicked on text field.
 			if (!text.is_empty() && is_editable() && _is_over_clear_button(b->get_position())) {
 				clear_button_status.press_attempt = true;
 				clear_button_status.pressing_inside = true;
@@ -335,7 +335,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 							}
 						}
 						if (!pass && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
-							DisplayServer::get_singleton()->clipboard_set_primary(text.substr(selection.begin, selection.end - selection.begin));
+							DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 						}
 					}
 				}
@@ -355,7 +355,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		} else {
 			if (selection.enabled && !pass && b->get_button_index() == MouseButton::LEFT && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
-				DisplayServer::get_singleton()->clipboard_set_primary(text.substr(selection.begin, selection.end - selection.begin));
+				DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 			}
 			if (!text.is_empty() && is_editable() && clear_button_enabled) {
 				bool press_attempt = clear_button_status.press_attempt;
@@ -429,7 +429,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		// Alt+ Unicode input:
+		// Alt + Unicode input:
 		if (k->is_alt_pressed()) {
 			if (!alt_start) {
 				if (k->get_keycode() == Key::KP_ADD) {
@@ -470,7 +470,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE
+		// Default is ENTER and KP_ENTER. Cannot use ui_accept as default includes SPACE.
 		if (k->is_action("ui_text_submit", false)) {
 			emit_signal(SNAME("text_submitted"), text);
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
@@ -608,7 +608,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		bool allow_unicode_handling = !(k->is_command_or_control_pressed() || k->is_ctrl_pressed() || k->is_alt_pressed() || k->is_meta_pressed());
 
 		if (allow_unicode_handling && editable && k->get_unicode() >= 32) {
-			// Handle Unicode (if no modifiers active)
+			// Handle Unicode if no modifiers are active.
 			selection_delete();
 			char32_t ucodestr[2] = { (char32_t)k->get_unicode(), 0 };
 			int prev_len = text.length();
@@ -644,7 +644,7 @@ Variant LineEdit::get_drag_data(const Point2 &p_point) {
 	}
 
 	if (selection.drag_attempt && selection.enabled) {
-		String t = text.substr(selection.begin, selection.end - selection.begin);
+		String t = get_selected_text();
 		Label *l = memnew(Label);
 		l->set_text(t);
 		set_drag_preview(l);
@@ -952,7 +952,7 @@ void LineEdit::_notification(int p_what) {
 					if (ceil(ofs.x) >= x_ofs && (ofs.x + glyphs[i].advance) <= ofs_max) {
 						if (glyphs[i].font_rid != RID()) {
 							TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
-						} else if ((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+						} else if (((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
 							TS->draw_hex_code_box(ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
 						}
 					}
@@ -1116,7 +1116,7 @@ void LineEdit::_notification(int p_what) {
 			ime_text = "";
 			ime_selection = Point2();
 			_shape();
-			set_caret_column(caret_column); // Update scroll_offset
+			set_caret_column(caret_column); // Update scroll_offset.
 
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
@@ -1137,7 +1137,7 @@ void LineEdit::_notification(int p_what) {
 				}
 
 				_shape();
-				set_caret_column(caret_column); // Update scroll_offset
+				set_caret_column(caret_column); // Update scroll_offset.
 
 				queue_redraw();
 			}
@@ -1168,13 +1168,13 @@ void LineEdit::_notification(int p_what) {
 
 void LineEdit::copy_text() {
 	if (selection.enabled && !pass) {
-		DisplayServer::get_singleton()->clipboard_set(text.substr(selection.begin, selection.end - selection.begin));
+		DisplayServer::get_singleton()->clipboard_set(get_selected_text());
 	}
 }
 
 void LineEdit::cut_text() {
 	if (editable && selection.enabled && !pass) {
-		DisplayServer::get_singleton()->clipboard_set(text.substr(selection.begin, selection.end - selection.begin));
+		DisplayServer::get_singleton()->clipboard_set(get_selected_text());
 		selection_delete();
 	}
 }
@@ -1527,6 +1527,22 @@ void LineEdit::set_text(String p_text) {
 	scroll_offset = 0.0;
 }
 
+void LineEdit::set_text_with_selection(const String &p_text) {
+	Selection selection_copy = selection;
+
+	clear_internal();
+	insert_text_at_caret(p_text);
+	_create_undo_state();
+
+	int tlen = text.length();
+	selection = selection_copy;
+	selection.begin = MIN(selection.begin, tlen);
+	selection.end = MIN(selection.end, tlen);
+	selection.start_column = MIN(selection.start_column, tlen);
+
+	queue_redraw();
+}
+
 void LineEdit::set_text_direction(Control::TextDirection p_text_direction) {
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
 	if (text_direction != p_text_direction) {
@@ -1776,8 +1792,8 @@ Size2 LineEdit::get_minimum_size() const {
 	min_size.width = theme_cache.minimum_character_width * em_space_size;
 
 	if (expand_to_text_length) {
-		// Add a space because some fonts are too exact, and because caret needs a bit more when at the end.
-		min_size.width = MAX(min_size.width, full_width + em_space_size);
+		// Ensure some space for the caret when placed at the end.
+		min_size.width = MAX(min_size.width, full_width + theme_cache.caret_width);
 	}
 
 	min_size.height = MAX(TS->shaped_text_get_size(text_rid).y, font->get_height(font_size));
@@ -1809,6 +1825,14 @@ void LineEdit::deselect() {
 
 bool LineEdit::has_selection() const {
 	return selection.enabled;
+}
+
+String LineEdit::get_selected_text() {
+	if (selection.enabled) {
+		return text.substr(selection.begin, selection.end - selection.begin);
+	} else {
+		return String();
+	}
 }
 
 int LineEdit::get_selection_from_column() const {
@@ -2352,7 +2376,7 @@ Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 		return Key::NONE;
 	}
 
-	// Use physical keycode if non-zero
+	// Use physical keycode if non-zero.
 	if (event->get_physical_keycode() != Key::NONE) {
 		return event->get_physical_keycode_with_modifiers();
 	} else {
@@ -2486,6 +2510,7 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select_all"), &LineEdit::select_all);
 	ClassDB::bind_method(D_METHOD("deselect"), &LineEdit::deselect);
 	ClassDB::bind_method(D_METHOD("has_selection"), &LineEdit::has_selection);
+	ClassDB::bind_method(D_METHOD("get_selected_text"), &LineEdit::get_selected_text);
 	ClassDB::bind_method(D_METHOD("get_selection_from_column"), &LineEdit::get_selection_from_column);
 	ClassDB::bind_method(D_METHOD("get_selection_to_column"), &LineEdit::get_selection_to_column);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &LineEdit::set_text);

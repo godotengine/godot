@@ -538,6 +538,11 @@ void GPUParticles2D::_notification(int p_what) {
 			if (sub_emitter != NodePath()) {
 				_attach_sub_emitter();
 			}
+			if (can_process()) {
+				RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
+			} else {
+				RS::get_singleton()->particles_set_speed_scale(particles, 0);
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -546,10 +551,12 @@ void GPUParticles2D::_notification(int p_what) {
 
 		case NOTIFICATION_PAUSED:
 		case NOTIFICATION_UNPAUSED: {
-			if (can_process()) {
-				RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
-			} else {
-				RS::get_singleton()->particles_set_speed_scale(particles, 0);
+			if (is_inside_tree()) {
+				if (can_process()) {
+					RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
+				} else {
+					RS::get_singleton()->particles_set_speed_scale(particles, 0);
+				}
 			}
 		} break;
 

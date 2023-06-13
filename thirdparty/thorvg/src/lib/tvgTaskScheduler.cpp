@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include <deque>
 #include <thread>
 #include <vector>
@@ -99,13 +100,12 @@ struct TaskQueue {
 };
 
 
-class TaskSchedulerImpl
+struct TaskSchedulerImpl
 {
-public:
-    unsigned                       threadCnt;
+    uint32_t                       threadCnt;
     vector<thread>                 threads;
     vector<TaskQueue>              taskQueues;
-    atomic<unsigned>               idx{0};
+    atomic<uint32_t>               idx{0};
 
     TaskSchedulerImpl(unsigned threadCnt) : threadCnt(threadCnt), taskQueues(threadCnt)
     {
@@ -135,7 +135,7 @@ public:
             }
 
             if (!success && !taskQueues[i].pop(&task)) break;
-            (*task)(i);
+            (*task)(i + 1);
         }
     }
 

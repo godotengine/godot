@@ -41,14 +41,30 @@
 #include "drivers/unix/thread_posix.h"
 #include "servers/rendering_server.h"
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #include <mach-o/dyld.h>
+#include <mach/host_info.h>
+#include <mach/mach_host.h>
 #include <mach/mach_time.h>
+#include <sys/sysctl.h>
 #endif
 
 #if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
 #include <sys/param.h>
 #include <sys/sysctl.h>
+#endif
+
+#if defined(__FreeBSD__)
+#include <kvm.h>
+#endif
+
+#if defined(__OpenBSD__)
+#include <sys/swap.h>
+#include <uvm/uvmexp.h>
+#endif
+
+#if defined(__NetBSD__)
+#include <uvm/uvm_extern.h>
 #endif
 
 #include <dlfcn.h>
@@ -59,6 +75,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/resource.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <time.h>
@@ -272,6 +289,192 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	longtime -= _clock_start;
 
 	return longtime;
+}
+
+Dictionary OS_Unix::get_memory_info() const {
+	Dictionary meminfo;
+
+	meminfo["physical"] = -1;
+	meminfo["free"] = -1;
+	meminfo["available"] = -1;
+	meminfo["stack"] = -1;
+
+#if defined(__APPLE__)
+	int pagesize = 0;
+	size_t len = sizeof(pagesize);
+	if (sysctlbyname("vm.pagesize", &pagesize, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get vm.pagesize, error code: %d - %s", errno, strerror(errno)));
+	}
+
+	int64_t phy_mem = 0;
+	len = sizeof(phy_mem);
+	if (sysctlbyname("hw.memsize", &phy_mem, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get hw.memsize, error code: %d - %s", errno, strerror(errno)));
+	}
+
+	mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
+	vm_statistics64_data_t vmstat;
+	if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&vmstat, &count) != KERN_SUCCESS) {
+		ERR_PRINT(vformat("Could not get host vm statistics."));
+	}
+	struct xsw_usage swap_used;
+	len = sizeof(swap_used);
+	if (sysctlbyname("vm.swapusage", &swap_used, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get vm.swapusage, error code: %d - %s", errno, strerror(errno)));
+	}
+
+	if (phy_mem != 0) {
+		meminfo["physical"] = phy_mem;
+	}
+	if (vmstat.free_count * (int64_t)pagesize != 0) {
+		meminfo["free"] = vmstat.free_count * (int64_t)pagesize;
+	}
+	if (swap_used.xsu_avail + vmstat.free_count * (int64_t)pagesize != 0) {
+		meminfo["available"] = swap_used.xsu_avail + vmstat.free_count * (int64_t)pagesize;
+	}
+#elif defined(__FreeBSD__)
+	int pagesize = 0;
+	size_t len = sizeof(pagesize);
+	if (sysctlbyname("vm.stats.vm.v_page_size", &pagesize, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get vm.stats.vm.v_page_size, error code: %d - %s", errno, strerror(errno)));
+	}
+
+	uint64_t mtotal = 0;
+	len = sizeof(mtotal);
+	if (sysctlbyname("vm.stats.vm.v_page_count", &mtotal, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get vm.stats.vm.v_page_count, error code: %d - %s", errno, strerror(errno)));
+	}
+	uint64_t mfree = 0;
+	len = sizeof(mfree);
+	if (sysctlbyname("vm.stats.vm.v_free_count", &mfree, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get vm.stats.vm.v_free_count, error code: %d - %s", errno, strerror(errno)));
+	}
+
+	uint64_t stotal = 0;
+	uint64_t sused = 0;
+	char errmsg[_POSIX2_LINE_MAX] = {};
+	kvm_t *kd = kvm_openfiles(nullptr, "/dev/null", nullptr, 0, errmsg);
+	if (kd == nullptr) {
+		ERR_PRINT(vformat("kvm_openfiles failed, error: %s", errmsg));
+	} else {
+		struct kvm_swap swap_info[32];
+		int count = kvm_getswapinfo(kd, swap_info, 32, 0);
+		for (int i = 0; i < count; i++) {
+			stotal += swap_info[i].ksw_total;
+			sused += swap_info[i].ksw_used;
+		}
+		kvm_close(kd);
+	}
+
+	if (mtotal * pagesize != 0) {
+		meminfo["physical"] = mtotal * pagesize;
+	}
+	if (mfree * pagesize != 0) {
+		meminfo["free"] = mfree * pagesize;
+	}
+	if ((mfree + stotal - sused) * pagesize != 0) {
+		meminfo["available"] = (mfree + stotal - sused) * pagesize;
+	}
+#elif defined(__OpenBSD__)
+	int pagesize = sysconf(_SC_PAGESIZE);
+
+	const int mib[] = { CTL_VM, VM_UVMEXP };
+	uvmexp uvmexp_info;
+	size_t len = sizeof(uvmexp_info);
+	if (sysctl(mib, 2, &uvmexp_info, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get CTL_VM, VM_UVMEXP, error code: %d - %s", errno, strerror(errno)));
+	}
+
+	uint64_t stotal = 0;
+	uint64_t sused = 0;
+	int count = swapctl(SWAP_NSWAP, 0, 0);
+	if (count > 0) {
+		swapent swap_info[count];
+		count = swapctl(SWAP_STATS, swap_info, count);
+
+		for (int i = 0; i < count; i++) {
+			if (swap_info[i].se_flags & SWF_ENABLE) {
+				sused += swap_info[i].se_inuse;
+				stotal += swap_info[i].se_nblks;
+			}
+		}
+	}
+
+	if (uvmexp_info.npages * pagesize != 0) {
+		meminfo["physical"] = uvmexp_info.npages * pagesize;
+	}
+	if (uvmexp_info.free * pagesize != 0) {
+		meminfo["free"] = uvmexp_info.free * pagesize;
+	}
+	if ((uvmexp_info.free * pagesize) + (stotal - sused) * DEV_BSIZE != 0) {
+		meminfo["available"] = (uvmexp_info.free * pagesize) + (stotal - sused) * DEV_BSIZE;
+	}
+#elif defined(__NetBSD__)
+	int pagesize = sysconf(_SC_PAGESIZE);
+
+	const int mib[] = { CTL_VM, VM_UVMEXP2 };
+	uvmexp_sysctl uvmexp_info;
+	size_t len = sizeof(uvmexp_info);
+	if (sysctl(mib, 2, &uvmexp_info, &len, nullptr, 0) < 0) {
+		ERR_PRINT(vformat("Could not get CTL_VM, VM_UVMEXP2, error code: %d - %s", errno, strerror(errno)));
+	}
+
+	if (uvmexp_info.npages * pagesize != 0) {
+		meminfo["physical"] = uvmexp_info.npages * pagesize;
+	}
+	if (uvmexp_info.free * pagesize != 0) {
+		meminfo["free"] = uvmexp_info.free * pagesize;
+	}
+	if ((uvmexp_info.free + uvmexp_info.swpages - uvmexp_info.swpginuse) * pagesize != 0) {
+		meminfo["available"] = (uvmexp_info.free + uvmexp_info.swpages - uvmexp_info.swpginuse) * pagesize;
+	}
+#else
+	Error err;
+	Ref<FileAccess> f = FileAccess::open("/proc/meminfo", FileAccess::READ, &err);
+	uint64_t mtotal = 0;
+	uint64_t mfree = 0;
+	uint64_t sfree = 0;
+	while (f.is_valid() && !f->eof_reached()) {
+		String s = f->get_line().strip_edges();
+		if (s.begins_with("MemTotal:")) {
+			Vector<String> stok = s.replace("MemTotal:", "").strip_edges().split(" ");
+			if (stok.size() == 2) {
+				mtotal = stok[0].to_int() * 1024;
+			}
+		}
+		if (s.begins_with("MemFree:")) {
+			Vector<String> stok = s.replace("MemFree:", "").strip_edges().split(" ");
+			if (stok.size() == 2) {
+				mfree = stok[0].to_int() * 1024;
+			}
+		}
+		if (s.begins_with("SwapFree:")) {
+			Vector<String> stok = s.replace("SwapFree:", "").strip_edges().split(" ");
+			if (stok.size() == 2) {
+				sfree = stok[0].to_int() * 1024;
+			}
+		}
+	}
+
+	if (mtotal != 0) {
+		meminfo["physical"] = mtotal;
+	}
+	if (mfree != 0) {
+		meminfo["free"] = mfree;
+	}
+	if (mfree + sfree != 0) {
+		meminfo["available"] = mfree + sfree;
+	}
+#endif
+
+	rlimit stackinfo = {};
+	getrlimit(RLIMIT_STACK, &stackinfo);
+
+	if (stackinfo.rlim_cur != 0) {
+		meminfo["stack"] = (int64_t)stackinfo.rlim_cur;
+	}
+
+	return meminfo;
 }
 
 Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {

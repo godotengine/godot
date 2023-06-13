@@ -374,6 +374,7 @@ struct VariantUtilityFunctions {
 		r_error.error = Callable::CallError::CALL_OK;
 		if (from.get_type() != to.get_type()) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = from.get_type();
 			r_error.argument = 1;
 			return Variant();
 		}
@@ -802,6 +803,8 @@ struct VariantUtilityFunctions {
 		print_line_rich(s);
 		r_error.error = Callable::CallError::CALL_OK;
 	}
+
+#undef print_verbose
 
 	static inline void print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		if (OS::get_singleton()->is_stdout_verbose()) {

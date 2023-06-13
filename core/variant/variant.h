@@ -488,7 +488,7 @@ public:
 	Variant(const IPAddress &p_address);
 
 #define VARIANT_ENUM_CLASS_CONSTRUCTOR(m_enum) \
-	Variant(const m_enum &p_value) {           \
+	Variant(m_enum p_value) {                  \
 		type = INT;                            \
 		_data._int = (int64_t)p_value;         \
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include "tvgCanvasImpl.h"
 
 #ifdef THORVG_SW_RASTER_SUPPORT
@@ -84,7 +85,7 @@ Result SwCanvas::target(uint32_t* buffer, uint32_t stride, uint32_t w, uint32_t 
     auto renderer = static_cast<SwRenderer*>(Canvas::pImpl->renderer);
     if (!renderer) return Result::MemoryCorruption;
 
-    if (!renderer->target(buffer, stride, w, h, cs)) return Result::InvalidArguments;
+    if (!renderer->target(buffer, stride, w, h, static_cast<ColorSpace>(cs))) return Result::InvalidArguments;
 
     //Paints must be updated again with this new target.
     Canvas::pImpl->needRefresh();

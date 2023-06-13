@@ -30,6 +30,7 @@
 #include "hb-ot-cff-common.hh"
 #include "hb-subset-cff2.hh"
 #include "hb-draw.hh"
+#include "hb-paint.hh"
 
 namespace CFF {
 
@@ -37,7 +38,7 @@ namespace CFF {
  * CFF2 -- Compact Font Format (CFF) Version 2
  * https://docs.microsoft.com/en-us/typography/opentype/spec/cff2
  */
-#define HB_OT_TAG_cff2 HB_TAG('C','F','F','2')
+#define HB_OT_TAG_CFF2 HB_TAG('C','F','F','2')
 
 typedef CFFIndex<HBUINT32>  CFF2Index;
 template <typename Type> struct CFF2IndexOf : CFFIndexOf<HBUINT32, Type> {};
@@ -282,9 +283,6 @@ struct cff2_private_dict_opset_t : dict_opset_t
       case OpCode_BlueFuzz:
       case OpCode_ExpansionFactor:
       case OpCode_LanguageGroup:
-	val.single_val = env.argStack.pop_num ();
-	env.clear_args ();
-	break;
       case OpCode_BlueValues:
       case OpCode_OtherBlues:
       case OpCode_FamilyBlues:
@@ -381,7 +379,7 @@ using namespace CFF;
 
 struct cff2
 {
-  static constexpr hb_tag_t tableTag = HB_OT_TAG_cff2;
+  static constexpr hb_tag_t tableTag = HB_OT_TAG_CFF2;
 
   bool sanitize (hb_sanitize_context_t *c) const
   {
@@ -516,6 +514,7 @@ struct cff2
     HB_INTERNAL bool get_extents (hb_font_t *font,
 				  hb_codepoint_t glyph,
 				  hb_glyph_extents_t *extents) const;
+    HB_INTERNAL bool paint_glyph (hb_font_t *font, hb_codepoint_t glyph, hb_paint_funcs_t *funcs, void *data, hb_color_t foreground) const;
     HB_INTERNAL bool get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const;
   };
 

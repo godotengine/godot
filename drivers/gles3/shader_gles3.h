@@ -54,6 +54,12 @@
 #include <stdio.h>
 
 class ShaderGLES3 {
+public:
+	struct TextureUniformData {
+		StringName name;
+		int array_size;
+	};
+
 protected:
 	struct TexUnitPair {
 		const char *name;
@@ -85,7 +91,7 @@ private:
 	// Specializations use #ifdefs to toggle behavior on and off for performance, on supporting hardware, they will compile a version with everything enabled, and then compile more copies to improve performance
 	// Use specializations to enable and disabled advanced features, use variants to toggle behavior when different data may be used (e.g. using a samplerArray vs a sampler, or doing a depth prepass vs a color pass)
 	struct Version {
-		Vector<StringName> texture_uniforms;
+		LocalVector<TextureUniformData> texture_uniforms;
 		CharString uniforms;
 		CharString vertex_globals;
 		CharString fragment_globals;
@@ -98,7 +104,6 @@ private:
 			GLuint frag_id;
 			LocalVector<GLint> uniform_location;
 			LocalVector<GLint> texture_uniform_locations;
-			HashMap<StringName, GLint> custom_uniform_locations;
 			bool build_queued = false;
 			bool ok = false;
 			Specialization() {
@@ -113,6 +118,7 @@ private:
 
 	Mutex variant_set_mutex;
 
+	void _get_uniform_locations(Version::Specialization &spec, Version *p_version);
 	void _compile_specialization(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization);
 
 	void _clear_version(Version *p_version);
@@ -209,6 +215,7 @@ protected:
 				_compile_specialization(s, p_variant, version, p_specialization);
 				version->variants[p_variant].insert(p_specialization, s);
 				spec = version->variants[p_variant].lookup_ptr(p_specialization);
+				_save_to_cache(version);
 			}
 		} else if (spec->build_queued) {
 			// Still queued, wait
@@ -241,7 +248,7 @@ protected:
 public:
 	RID version_create();
 
-	void version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const Vector<StringName> &p_texture_uniforms, bool p_initialize = false);
+	void version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const LocalVector<ShaderGLES3::TextureUniformData> &p_texture_uniforms, bool p_initialize = false);
 
 	bool version_is_valid(RID p_version);
 

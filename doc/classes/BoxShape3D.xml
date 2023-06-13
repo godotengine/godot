@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="BoxShape3D" inherits="Shape3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Box shape resource for 3D collisions.
+		A 3D box shape used for physics collision.
 	</brief_description>
 	<description>
-		3D box shape to be added as a [i]direct[/i] child of a [PhysicsBody3D] or [Area3D] using a [CollisionShape3D] node.
-		[b]Performance:[/b] Being a primitive collision shape, [BoxShape3D] is fast to check collisions against (though not as fast as [SphereShape3D]).
+		A 3D box shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D].
+		[b]Performance:[/b] [BoxShape3D] is fast to check collisions against. It is faster than [CapsuleShape3D] and [CylinderShape3D], but slower than [SphereShape3D].
 	</description>
 	<tutorials>
 		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>

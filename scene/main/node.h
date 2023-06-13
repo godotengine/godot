@@ -42,8 +42,28 @@ class SceneState;
 class Tween;
 class PropertyTweener;
 
+SAFE_FLAG_TYPE_PUN_GUARANTEES
+SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
+
 class Node : public Object {
 	GDCLASS(Node, Object);
+
+protected:
+	// During group processing, these are thread-safe.
+	// Outside group processing, these avoid the cost of sync by working as plain primitive types.
+	union MTFlag {
+		SafeFlag mt;
+		bool st;
+		MTFlag() :
+				mt{} {}
+	};
+	template <class T>
+	union MTNumeric {
+		SafeNumeric<T> mt;
+		T st;
+		MTNumeric() :
+				mt{} {}
+	};
 
 public:
 	enum ProcessMode {
@@ -52,6 +72,18 @@ public:
 		PROCESS_MODE_WHEN_PAUSED, // process only if paused
 		PROCESS_MODE_ALWAYS, // process always
 		PROCESS_MODE_DISABLED, // never process
+	};
+
+	enum ProcessThreadGroup {
+		PROCESS_THREAD_GROUP_INHERIT,
+		PROCESS_THREAD_GROUP_MAIN_THREAD,
+		PROCESS_THREAD_GROUP_SUB_THREAD,
+	};
+
+	enum ProcessThreadMessages {
+		FLAG_PROCESS_THREAD_MESSAGES = 1,
+		FLAG_PROCESS_THREAD_MESSAGES_PHYSICS = 2,
+		FLAG_PROCESS_THREAD_MESSAGES_ALL = 3,
 	};
 
 	enum DuplicateFlags {
@@ -80,16 +112,34 @@ public:
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
 
-	struct ComparatorWithPriority {
-		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.process_priority == p_a->data.process_priority ? p_b->is_greater_than(p_a) : p_b->data.process_priority > p_a->data.process_priority; }
-	};
-
 	static int orphan_node_count;
+
+	void _update_process(bool p_enable, bool p_for_children);
 
 private:
 	struct GroupData {
 		bool persistent = false;
 		SceneTree::Group *group = nullptr;
+	};
+
+	struct ComparatorByIndex {
+		bool operator()(const Node *p_left, const Node *p_right) const {
+			static const uint32_t order[3] = { 1, 0, 2 };
+			uint32_t order_left = order[p_left->data.internal_mode];
+			uint32_t order_right = order[p_right->data.internal_mode];
+			if (order_left == order_right) {
+				return p_left->data.index < p_right->data.index;
+			}
+			return order_left < order_right;
+		}
+	};
+
+	struct ComparatorWithPriority {
+		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.process_priority == p_a->data.process_priority ? p_b->is_greater_than(p_a) : p_b->data.process_priority > p_a->data.process_priority; }
+	};
+
+	struct ComparatorWithPhysicsPriority {
+		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.physics_process_priority == p_a->data.physics_process_priority ? p_b->is_greater_than(p_a) : p_b->data.physics_process_priority > p_a->data.physics_process_priority; }
 	};
 
 	// This Data struct is to avoid namespace pollution in derived classes.
@@ -100,13 +150,16 @@ private:
 
 		Node *parent = nullptr;
 		Node *owner = nullptr;
-		Vector<Node *> children;
+		HashMap<StringName, Node *> children;
+		mutable bool children_cache_dirty = true;
+		mutable LocalVector<Node *> children_cache;
 		HashMap<StringName, Node *> owned_unique_nodes;
 		bool unique_name_in_owner = false;
-
-		int internal_children_front = 0;
-		int internal_children_back = 0;
-		int index = -1;
+		InternalMode internal_mode = INTERNAL_MODE_DISABLED;
+		mutable int internal_children_front_count_cache = 0;
+		mutable int internal_children_back_count_cache = 0;
+		mutable int external_children_count_cache = 0;
+		mutable int index = -1; // relative to front, normal or back.
 		int depth = -1;
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
 		StringName name;
@@ -127,6 +180,11 @@ private:
 
 		ProcessMode process_mode = PROCESS_MODE_INHERIT;
 		Node *process_owner = nullptr;
+		ProcessThreadGroup process_thread_group = PROCESS_THREAD_GROUP_INHERIT;
+		Node *process_thread_group_owner = nullptr;
+		int process_thread_group_order = 0;
+		BitField<ProcessThreadMessages> process_thread_messages;
+		void *process_group = nullptr; // to avoid cyclic dependency
 
 		int multiplayer_authority = 1; // Server by default.
 		Variant rpc_config;
@@ -136,6 +194,7 @@ private:
 		bool physics_process = false;
 		bool process = false;
 		int process_priority = 0;
+		int physics_process_priority = 0;
 
 		bool physics_process_internal = false;
 		bool process_internal = false;
@@ -181,14 +240,10 @@ private:
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
 	Node *_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap = nullptr) const;
 
-	TypedArray<Node> _get_children(bool p_include_internal = true) const;
 	TypedArray<StringName> _get_groups() const;
 
 	Error _rpc_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Error _rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-
-	_FORCE_INLINE_ bool _is_internal_front() const { return data.parent && data.index < data.parent->data.internal_children_front; }
-	_FORCE_INLINE_ bool _is_internal_back() const { return data.parent && data.index >= data.parent->data.children.size() - data.parent->data.internal_children_back; }
 
 	friend class SceneTree;
 
@@ -200,6 +255,29 @@ private:
 
 	void _release_unique_name_in_owner();
 	void _acquire_unique_name_in_owner();
+
+	void _clean_up_owner();
+
+	_FORCE_INLINE_ void _update_children_cache() const {
+		if (unlikely(data.children_cache_dirty)) {
+			_update_children_cache_impl();
+		}
+	}
+
+	void _update_children_cache_impl() const;
+
+	// Process group management
+	void _add_process_group();
+	void _remove_process_group();
+	void _add_to_process_thread_group();
+	void _remove_from_process_thread_group();
+	void _remove_tree_from_process_thread_group();
+	void _add_tree_to_process_thread_group(Node *p_owner);
+
+	static thread_local Node *current_process_thread_group;
+
+	Variant _call_deferred_thread_group_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant _call_thread_safe_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 protected:
 	void _block() { data.blocked++; }
@@ -219,7 +297,7 @@ protected:
 
 	friend class SceneState;
 
-	void _add_child_nocheck(Node *p_child, const StringName &p_name);
+	void _add_child_nocheck(Node *p_child, const StringName &p_name, InternalMode p_internal_mode = INTERNAL_MODE_DISABLED);
 	void _set_owner_nocheck(Node *p_owner);
 	void _set_name_nocheck(const StringName &p_name);
 
@@ -228,6 +306,8 @@ protected:
 	void _call_shortcut_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_input(const Ref<InputEvent> &p_event);
 	void _call_unhandled_key_input(const Ref<InputEvent> &p_event);
+
+	void _validate_property(PropertyInfo &p_property) const;
 
 protected:
 	virtual void input(const Ref<InputEvent> &p_event);
@@ -264,7 +344,7 @@ public:
 		NOTIFICATION_DRAG_BEGIN = 21,
 		NOTIFICATION_DRAG_END = 22,
 		NOTIFICATION_PATH_RENAMED = 23,
-		//NOTIFICATION_TRANSLATION_CHANGED = 24, moved below
+		NOTIFICATION_CHILD_ORDER_CHANGED = 24,
 		NOTIFICATION_INTERNAL_PROCESS = 25,
 		NOTIFICATION_INTERNAL_PHYSICS_PROCESS = 26,
 		NOTIFICATION_POST_ENTER_TREE = 27,
@@ -303,6 +383,7 @@ public:
 	/* NODE/TREE */
 
 	StringName get_name() const;
+	String get_description() const;
 	void set_name(const String &p_name);
 
 	void add_child(Node *p_child, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
@@ -311,6 +392,7 @@ public:
 
 	int get_child_count(bool p_include_internal = true) const;
 	Node *get_child(int p_index, bool p_include_internal = true) const;
+	TypedArray<Node> get_children(bool p_include_internal = true) const;
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
 	Node *get_node_or_null(const NodePath &p_path) const;
@@ -324,6 +406,7 @@ public:
 	Node *find_parent(const String &p_pattern) const;
 
 	Window *get_window() const;
+	Window *get_last_exclusive_window() const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
 		ERR_FAIL_COND_V(!data.tree, nullptr);
@@ -361,7 +444,31 @@ public:
 	void set_unique_name_in_owner(bool p_enabled);
 	bool is_unique_name_in_owner() const;
 
-	int get_index(bool p_include_internal = true) const;
+	_FORCE_INLINE_ int get_index(bool p_include_internal = true) const {
+		// p_include_internal = false doesn't make sense if the node is internal.
+		ERR_FAIL_COND_V_MSG(!p_include_internal && data.internal_mode != INTERNAL_MODE_DISABLED, -1, "Node is internal. Can't get index with 'include_internal' being false.");
+		if (!data.parent) {
+			return data.index;
+		}
+		data.parent->_update_children_cache();
+
+		if (!p_include_internal) {
+			return data.index;
+		} else {
+			switch (data.internal_mode) {
+				case INTERNAL_MODE_DISABLED: {
+					return data.parent->data.internal_children_front_count_cache + data.index;
+				} break;
+				case INTERNAL_MODE_FRONT: {
+					return data.index;
+				} break;
+				case INTERNAL_MODE_BACK: {
+					return data.parent->data.internal_children_front_count_cache + data.parent->data.external_children_count_cache + data.index;
+				} break;
+			}
+			return -1;
+		}
+	}
 
 	Ref<Tween> create_tween();
 
@@ -382,6 +489,7 @@ public:
 	void set_property_pinned(const String &p_property, bool p_pinned);
 	bool is_property_pinned(const StringName &p_property) const;
 	virtual StringName get_property_store_alias(const StringName &p_property) const;
+	bool is_part_of_edited_scene() const;
 #endif
 	void get_storable_properties(HashSet<StringName> &r_storable_properties) const;
 
@@ -411,6 +519,12 @@ public:
 	void set_process_priority(int p_priority);
 	int get_process_priority() const;
 
+	void set_process_thread_group_order(int p_order);
+	int get_process_thread_group_order() const;
+
+	void set_physics_process_priority(int p_priority);
+	int get_physics_process_priority() const;
+
 	void set_process_input(bool p_enable);
 	bool is_processing_input() const;
 
@@ -422,6 +536,36 @@ public:
 
 	void set_process_unhandled_key_input(bool p_enable);
 	bool is_processing_unhandled_key_input() const;
+
+	_FORCE_INLINE_ bool _is_any_processing() const {
+		return data.process || data.process_internal || data.physics_process || data.physics_process_internal;
+	}
+	_FORCE_INLINE_ bool is_accessible_from_caller_thread() const {
+		if (current_process_thread_group == nullptr) {
+			// No thread processing.
+			// Only accessible if node is outside the scene tree
+			// or access will happen from a node-safe thread.
+			return !data.inside_tree || is_current_thread_safe_for_nodes();
+		} else {
+			// Thread processing.
+			return current_process_thread_group == data.process_thread_group_owner;
+		}
+	}
+
+	_FORCE_INLINE_ bool is_readable_from_caller_thread() const {
+		if (current_process_thread_group == nullptr) {
+			// No thread processing.
+			return is_current_thread_safe_for_nodes();
+		} else {
+			// Thread processing.
+			return true;
+		}
+	}
+
+	_FORCE_INLINE_ static bool is_group_processing() { return current_process_thread_group; }
+
+	void set_process_thread_messages(BitField<ProcessThreadMessages> p_flags);
+	BitField<ProcessThreadMessages> get_process_thread_messages() const;
 
 	Node *duplicate(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;
 #ifdef TOOLS_ENABLED
@@ -454,8 +598,12 @@ public:
 	bool can_process() const;
 	bool can_process_notification(int p_what) const;
 	bool is_enabled() const;
+	bool is_ready() const;
 
 	void request_ready();
+
+	void set_process_thread_group(ProcessThreadGroup p_mode);
+	ProcessThreadGroup get_process_thread_group() const;
 
 	static void print_orphan_nodes();
 
@@ -508,6 +656,56 @@ public:
 
 	Ref<MultiplayerAPI> get_multiplayer() const;
 
+	void call_deferred_thread_groupp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
+	template <typename... VarArgs>
+	void call_deferred_thread_group(const StringName &p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		call_deferred_thread_groupp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+	void set_deferred_thread_group(const StringName &p_property, const Variant &p_value);
+	void notify_deferred_thread_group(int p_notification);
+
+	void call_thread_safep(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
+	template <typename... VarArgs>
+	void call_thread_safe(const StringName &p_method, VarArgs... p_args) {
+		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
+		const Variant *argptrs[sizeof...(p_args) + 1];
+		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
+			argptrs[i] = &args[i];
+		}
+		call_deferred_thread_groupp(p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
+	}
+	void set_thread_safe(const StringName &p_property, const Variant &p_value);
+	void notify_thread_safe(int p_notification);
+
+	// These inherited functions need proper multithread locking when overridden in Node.
+#ifdef DEBUG_ENABLED
+
+	virtual void set_script(const Variant &p_script) override;
+	virtual Variant get_script() const override;
+
+	virtual bool has_meta(const StringName &p_name) const override;
+	virtual void set_meta(const StringName &p_name, const Variant &p_value) override;
+	virtual void remove_meta(const StringName &p_name) override;
+	virtual Variant get_meta(const StringName &p_name, const Variant &p_default = Variant()) const override;
+	virtual void get_meta_list(List<StringName> *p_list) const override;
+
+	virtual Error emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount) override;
+	virtual bool has_signal(const StringName &p_name) const override;
+	virtual void get_signal_list(List<MethodInfo> *p_signals) const override;
+	virtual void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const override;
+	virtual void get_all_signal_connections(List<Connection> *p_connections) const override;
+	virtual int get_persistent_signal_connection_count() const override;
+	virtual void get_signals_connected_to_this(List<Connection> *p_connections) const override;
+
+	virtual Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0) override;
+	virtual void disconnect(const StringName &p_signal, const Callable &p_callable) override;
+	virtual bool is_connected(const StringName &p_signal, const Callable &p_callable) const override;
+#endif
 	Node();
 	~Node();
 };
@@ -533,6 +731,22 @@ Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args)
 	}
 	return rpcp(p_peer_id, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 }
+
+#ifdef DEBUG_ENABLED
+#define ERR_THREAD_GUARD ERR_FAIL_COND_MSG(!is_accessible_from_caller_thread(), vformat("Caller thread can't call this function in this node (%s). Use call_deferred() or call_thread_group() instead.", get_description()));
+#define ERR_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_accessible_from_caller_thread(), (m_ret), vformat("Caller thread can't call this function in this node (%s). Use call_deferred() or call_thread_group() instead.", get_description()));
+#define ERR_MAIN_THREAD_GUARD ERR_FAIL_COND_MSG(is_inside_tree() && !is_current_thread_safe_for_nodes(), vformat("This function in this node (%s) can only be accessed from the main thread. Use call_deferred() instead.", get_description()));
+#define ERR_MAIN_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(is_inside_tree() && !is_current_thread_safe_for_nodes(), (m_ret), vformat("This function in this node (%s) can only be accessed from the main thread. Use call_deferred() instead.", get_description()));
+#define ERR_READ_THREAD_GUARD ERR_FAIL_COND_MSG(!is_readable_from_caller_thread(), vformat("This function in this node (%s) can only be accessed from either the main thread or a thread group. Use call_deferred() instead.", get_description()));
+#define ERR_READ_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_readable_from_caller_thread(), (m_ret), vformat("This function in this node (%s) can only be accessed from either the main thread or a thread group. Use call_deferred() instead.", get_description()));
+#else
+#define ERR_THREAD_GUARD
+#define ERR_THREAD_GUARD_V(m_ret)
+#define ERR_MAIN_THREAD_GUARD
+#define ERR_MAIN_THREAD_GUARD_V(m_ret)
+#define ERR_READ_THREAD_GUARD
+#define ERR_READ_THREAD_GUARD_V(m_ret)
+#endif
 
 // Add these macro to your class's 'get_configuration_warnings' function to have warnings show up in the scene tree inspector.
 #define DEPRECATED_NODE_WARNING warnings.push_back(RTR("This node is marked as deprecated and will be removed in future versions.\nPlease check the Godot documentation for information about migration."));

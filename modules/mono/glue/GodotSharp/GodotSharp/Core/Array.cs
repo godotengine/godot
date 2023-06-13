@@ -554,6 +554,7 @@ namespace Godot.Collections
             // instead of growing it as we add items.
             if (collection.TryGetNonEnumeratedCount(out int count))
             {
+                int oldCount = Count;
                 Resize(Count + count);
 
                 using var enumerator = collection.GetEnumerator();
@@ -561,7 +562,7 @@ namespace Godot.Collections
                 for (int i = 0; i < count; i++)
                 {
                     enumerator.MoveNext();
-                    this[count + i] = Variant.From(enumerator.Current);
+                    this[oldCount + i] = Variant.From(enumerator.Current);
                 }
 
                 return;
@@ -1578,6 +1579,7 @@ namespace Godot.Collections
             // instead of growing it as we add items.
             if (collection.TryGetNonEnumeratedCount(out int count))
             {
+                int oldCount = Count;
                 Resize(Count + count);
 
                 using var enumerator = collection.GetEnumerator();
@@ -1585,7 +1587,7 @@ namespace Godot.Collections
                 for (int i = 0; i < count; i++)
                 {
                     enumerator.MoveNext();
-                    this[count + i] = enumerator.Current;
+                    this[oldCount + i] = enumerator.Current;
                 }
 
                 return;

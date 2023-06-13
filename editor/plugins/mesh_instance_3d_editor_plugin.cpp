@@ -33,12 +33,14 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/spin_box.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/scene_string_names.h"
@@ -214,7 +216,11 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			Mesh::ConvexDecompositionSettings settings;
+			Ref<MeshConvexDecompositionSettings> settings = Ref<MeshConvexDecompositionSettings>();
+			settings.instantiate();
+			settings->set_max_convex_hulls(32);
+			settings->set_max_concavity(0.001);
+
 			Vector<Ref<Shape3D>> shapes = mesh->convex_decompose(settings);
 
 			if (!shapes.size()) {

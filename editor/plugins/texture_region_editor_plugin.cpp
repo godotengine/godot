@@ -848,6 +848,12 @@ void TextureRegionEditor::_notification(int p_what) {
 			if (snap_mode == SNAP_AUTOSLICE && is_visible() && autoslice_is_dirty) {
 				_update_autoslice();
 			}
+
+			if (!is_visible()) {
+				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_step", snap_step);
+				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_separation", snap_separation);
+				EditorSettings::get_singleton()->set_project_metadata("texture_region_editor", "snap_mode", snap_mode);
+			}
 		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
@@ -1076,9 +1082,9 @@ TextureRegionEditor::TextureRegionEditor() {
 	preview_tex = Ref<CanvasTexture>(memnew(CanvasTexture));
 
 	// A power-of-two value works better as a default grid size.
-	snap_step = Vector2(8, 8);
-	snap_separation = Vector2(0, 0);
-	snap_mode = SNAP_NONE;
+	snap_step = EditorSettings::get_singleton()->get_project_metadata("texture_region_editor", "snap_step", Vector2(8, 8));
+	snap_separation = EditorSettings::get_singleton()->get_project_metadata("texture_region_editor", "snap_separation", Vector2());
+	snap_mode = EditorSettings::get_singleton()->get_project_metadata("texture_region_editor", "snap_mode", SNAP_NONE);
 	edited_margin = -1;
 	drag_index = -1;
 	drag = false;

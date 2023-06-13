@@ -62,6 +62,15 @@ GraphEditMinimap::GraphEditMinimap(GraphEdit *p_edit) {
 	is_resizing = false;
 }
 
+Control::CursorShape GraphEditMinimap::get_cursor_shape(const Point2 &p_pos) const {
+	Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
+	if (is_resizing || (p_pos.x < resizer->get_width() && p_pos.y < resizer->get_height())) {
+		return CURSOR_FDIAGSIZE;
+	}
+
+	return Control::get_cursor_shape(p_pos);
+}
+
 void GraphEditMinimap::update_minimap() {
 	Vector2 graph_offset = _get_graph_offset();
 	Vector2 graph_size = _get_graph_size();
@@ -188,6 +197,14 @@ void GraphEditMinimap::gui_input(const Ref<InputEvent> &p_ev) {
 void GraphEditMinimap::_adjust_graph_scroll(const Vector2 &p_offset) {
 	Vector2 graph_offset = _get_graph_offset();
 	ge->set_scroll_ofs(p_offset + graph_offset - camera_size / 2);
+}
+
+Control::CursorShape GraphEdit::get_cursor_shape(const Point2 &p_pos) const {
+	if (moving_selection) {
+		return CURSOR_MOVE;
+	}
+
+	return Control::get_cursor_shape(p_pos);
 }
 
 PackedStringArray GraphEdit::get_configuration_warnings() const {
@@ -355,7 +372,7 @@ void GraphEdit::_update_scroll() {
 
 void GraphEdit::_graph_node_raised(Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 	if (gn->is_comment()) {
 		move_child(gn, 0);
 	} else {
@@ -365,21 +382,21 @@ void GraphEdit::_graph_node_raised(Node *p_gn) {
 
 void GraphEdit::_graph_node_selected(Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 
 	emit_signal(SNAME("node_selected"), gn);
 }
 
 void GraphEdit::_graph_node_deselected(Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 
 	emit_signal(SNAME("node_deselected"), gn);
 }
 
 void GraphEdit::_graph_node_moved(Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 	top_layer->queue_redraw();
 	minimap->queue_redraw();
 	queue_redraw();
@@ -388,7 +405,7 @@ void GraphEdit::_graph_node_moved(Node *p_gn) {
 
 void GraphEdit::_graph_node_slot_updated(int p_index, Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 	top_layer->queue_redraw();
 	minimap->queue_redraw();
 	queue_redraw();
@@ -533,7 +550,6 @@ void GraphEdit::_notification(int p_what) {
 
 void GraphEdit::_update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes) {
 	Rect2 comment_node_rect = p_node->get_rect();
-	comment_node_rect.size *= zoom;
 
 	Vector<GraphNode *> enclosed_nodes;
 	for (int i = 0; i < get_child_count(); i++) {
@@ -543,7 +559,6 @@ void GraphEdit::_update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<S
 		}
 
 		Rect2 node_rect = gn->get_rect();
-		node_rect.size *= zoom;
 
 		bool included = comment_node_rect.encloses(node_rect);
 		if (included) {
@@ -806,7 +821,6 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &mpos
 	}
 
 	Rect2 control_rect = p_control->get_rect();
-	control_rect.size *= zoom;
 	control_rect.position *= zoom;
 	control_rect.position += p_offset;
 
@@ -873,7 +887,6 @@ bool GraphEdit::is_in_port_hotzone(const Vector2 &p_pos, const Vector2 &p_mouse_
 			continue;
 		}
 		Rect2 child_rect = child->get_rect();
-		child_rect.size *= zoom;
 
 		if (child_rect.has_point(p_mouse_pos * zoom)) {
 			for (int j = 0; j < child->get_child_count(); j++) {
@@ -976,10 +989,10 @@ void GraphEdit::_top_layer_draw() {
 	_update_scroll();
 
 	if (connecting) {
-		Node *fromn = get_node(NodePath(connecting_from));
-		ERR_FAIL_COND(!fromn);
+		Node *fromn = get_node_or_null(NodePath(connecting_from));
+		ERR_FAIL_NULL(fromn);
 		GraphNode *from = Object::cast_to<GraphNode>(fromn);
-		ERR_FAIL_COND(!from);
+		ERR_FAIL_NULL(from);
 		Vector2 pos;
 		if (connecting_out) {
 			pos = from->get_connection_output_position(connecting_index);
@@ -1169,7 +1182,6 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			}
 
 			Rect2 r = gn->get_rect();
-			r.size *= zoom;
 			bool in_box = r.intersects(box_selecting_rect);
 
 			if (in_box) {
@@ -1215,7 +1227,6 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 
 					if (gn) {
 						Rect2 r = gn->get_rect();
-						r.size *= zoom;
 						if (r.has_point(mb->get_position())) {
 							gn->set_selected(false);
 						}

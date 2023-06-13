@@ -37,10 +37,10 @@
 #include "editor_import_blend_runner.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "main/main.h"
 #include "scene/gui/line_edit.h"
 
@@ -466,8 +466,8 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 			}
 
 			bool found = false;
-			for (const String &path : mdfind_paths) {
-				found = _autodetect_path(path.path_join("Contents/MacOS"));
+			for (const String &found_path : mdfind_paths) {
+				found = _autodetect_path(found_path.path_join("Contents/MacOS"));
 				if (found) {
 					break;
 				}

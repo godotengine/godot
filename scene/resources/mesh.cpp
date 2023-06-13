@@ -37,6 +37,168 @@
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 
+void MeshConvexDecompositionSettings::set_max_concavity(real_t p_max_concavity) {
+	max_concavity = CLAMP(p_max_concavity, 0.001, 1.0);
+}
+
+real_t MeshConvexDecompositionSettings::get_max_concavity() const {
+	return max_concavity;
+};
+
+void MeshConvexDecompositionSettings::set_symmetry_planes_clipping_bias(real_t p_symmetry_planes_clipping_bias) {
+	symmetry_planes_clipping_bias = CLAMP(p_symmetry_planes_clipping_bias, 0.0, 1.0);
+};
+
+real_t MeshConvexDecompositionSettings::get_symmetry_planes_clipping_bias() const {
+	return symmetry_planes_clipping_bias;
+};
+
+void MeshConvexDecompositionSettings::set_revolution_axes_clipping_bias(real_t p_revolution_axes_clipping_bias) {
+	revolution_axes_clipping_bias = CLAMP(p_revolution_axes_clipping_bias, 0.0, 1.0);
+};
+
+real_t MeshConvexDecompositionSettings::get_revolution_axes_clipping_bias() const {
+	return revolution_axes_clipping_bias;
+};
+
+void MeshConvexDecompositionSettings::set_min_volume_per_convex_hull(real_t p_min_volume_per_convex_hull) {
+	min_volume_per_convex_hull = CLAMP(p_min_volume_per_convex_hull, 0.0001, 0.01);
+}
+
+real_t MeshConvexDecompositionSettings::get_min_volume_per_convex_hull() const {
+	return min_volume_per_convex_hull;
+}
+
+void MeshConvexDecompositionSettings::set_resolution(uint32_t p_resolution) {
+	resolution = p_resolution < 10'000 ? 10'000 : (p_resolution > 100'000 ? 100'000 : p_resolution);
+}
+
+uint32_t MeshConvexDecompositionSettings::get_resolution() const {
+	return resolution;
+}
+
+void MeshConvexDecompositionSettings::set_max_num_vertices_per_convex_hull(uint32_t p_max_num_vertices_per_convex_hull) {
+	max_num_vertices_per_convex_hull = p_max_num_vertices_per_convex_hull < 4 ? 4 : (p_max_num_vertices_per_convex_hull > 1024 ? 1024 : p_max_num_vertices_per_convex_hull);
+}
+
+uint32_t MeshConvexDecompositionSettings::get_max_num_vertices_per_convex_hull() const {
+	return max_num_vertices_per_convex_hull;
+}
+
+void MeshConvexDecompositionSettings::set_plane_downsampling(uint32_t p_plane_downsampling) {
+	plane_downsampling = p_plane_downsampling < 1 ? 1 : (p_plane_downsampling > 16 ? 16 : p_plane_downsampling);
+}
+
+uint32_t MeshConvexDecompositionSettings::get_plane_downsampling() const {
+	return plane_downsampling;
+}
+
+void MeshConvexDecompositionSettings::set_convex_hull_downsampling(uint32_t p_convex_hull_downsampling) {
+	convex_hull_downsampling = p_convex_hull_downsampling < 1 ? 1 : (p_convex_hull_downsampling > 16 ? 16 : p_convex_hull_downsampling);
+}
+
+uint32_t MeshConvexDecompositionSettings::get_convex_hull_downsampling() const {
+	return convex_hull_downsampling;
+}
+
+void MeshConvexDecompositionSettings::set_normalize_mesh(bool p_normalize_mesh) {
+	normalize_mesh = p_normalize_mesh;
+}
+
+bool MeshConvexDecompositionSettings::get_normalize_mesh() const {
+	return normalize_mesh;
+}
+
+void MeshConvexDecompositionSettings::set_mode(Mode p_mode) {
+	mode = p_mode;
+}
+
+MeshConvexDecompositionSettings::Mode MeshConvexDecompositionSettings::get_mode() const {
+	return mode;
+}
+
+void MeshConvexDecompositionSettings::set_convex_hull_approximation(bool p_convex_hull_approximation) {
+	convex_hull_approximation = p_convex_hull_approximation;
+}
+
+bool MeshConvexDecompositionSettings::get_convex_hull_approximation() const {
+	return convex_hull_approximation;
+}
+
+void MeshConvexDecompositionSettings::set_max_convex_hulls(uint32_t p_max_convex_hulls) {
+	max_convex_hulls = p_max_convex_hulls < 1 ? 1 : (p_max_convex_hulls > 32 ? 32 : p_max_convex_hulls);
+}
+
+uint32_t MeshConvexDecompositionSettings::get_max_convex_hulls() const {
+	return max_convex_hulls;
+}
+
+void MeshConvexDecompositionSettings::set_project_hull_vertices(bool p_project_hull_vertices) {
+	project_hull_vertices = p_project_hull_vertices;
+}
+
+bool MeshConvexDecompositionSettings::get_project_hull_vertices() const {
+	return project_hull_vertices;
+}
+
+void MeshConvexDecompositionSettings::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_max_concavity", "max_concavity"), &MeshConvexDecompositionSettings::set_max_concavity);
+	ClassDB::bind_method(D_METHOD("get_max_concavity"), &MeshConvexDecompositionSettings::get_max_concavity);
+
+	ClassDB::bind_method(D_METHOD("set_symmetry_planes_clipping_bias", "symmetry_planes_clipping_bias"), &MeshConvexDecompositionSettings::set_symmetry_planes_clipping_bias);
+	ClassDB::bind_method(D_METHOD("get_symmetry_planes_clipping_bias"), &MeshConvexDecompositionSettings::get_symmetry_planes_clipping_bias);
+
+	ClassDB::bind_method(D_METHOD("set_revolution_axes_clipping_bias", "revolution_axes_clipping_bias"), &MeshConvexDecompositionSettings::set_revolution_axes_clipping_bias);
+	ClassDB::bind_method(D_METHOD("get_revolution_axes_clipping_bias"), &MeshConvexDecompositionSettings::get_revolution_axes_clipping_bias);
+
+	ClassDB::bind_method(D_METHOD("set_min_volume_per_convex_hull", "min_volume_per_convex_hull"), &MeshConvexDecompositionSettings::set_min_volume_per_convex_hull);
+	ClassDB::bind_method(D_METHOD("get_min_volume_per_convex_hull"), &MeshConvexDecompositionSettings::get_min_volume_per_convex_hull);
+
+	ClassDB::bind_method(D_METHOD("set_resolution", "min_volume_per_convex_hull"), &MeshConvexDecompositionSettings::set_resolution);
+	ClassDB::bind_method(D_METHOD("get_resolution"), &MeshConvexDecompositionSettings::get_resolution);
+
+	ClassDB::bind_method(D_METHOD("set_max_num_vertices_per_convex_hull", "max_num_vertices_per_convex_hull"), &MeshConvexDecompositionSettings::set_max_num_vertices_per_convex_hull);
+	ClassDB::bind_method(D_METHOD("get_max_num_vertices_per_convex_hull"), &MeshConvexDecompositionSettings::get_max_num_vertices_per_convex_hull);
+
+	ClassDB::bind_method(D_METHOD("set_plane_downsampling", "plane_downsampling"), &MeshConvexDecompositionSettings::set_plane_downsampling);
+	ClassDB::bind_method(D_METHOD("get_plane_downsampling"), &MeshConvexDecompositionSettings::get_plane_downsampling);
+
+	ClassDB::bind_method(D_METHOD("set_convex_hull_downsampling", "convex_hull_downsampling"), &MeshConvexDecompositionSettings::set_convex_hull_downsampling);
+	ClassDB::bind_method(D_METHOD("get_convex_hull_downsampling"), &MeshConvexDecompositionSettings::get_convex_hull_downsampling);
+
+	ClassDB::bind_method(D_METHOD("set_normalize_mesh", "normalize_mesh"), &MeshConvexDecompositionSettings::set_normalize_mesh);
+	ClassDB::bind_method(D_METHOD("get_normalize_mesh"), &MeshConvexDecompositionSettings::get_normalize_mesh);
+
+	ClassDB::bind_method(D_METHOD("set_mode", "mode"), &MeshConvexDecompositionSettings::set_mode);
+	ClassDB::bind_method(D_METHOD("get_mode"), &MeshConvexDecompositionSettings::get_mode);
+
+	ClassDB::bind_method(D_METHOD("set_convex_hull_approximation", "convex_hull_approximation"), &MeshConvexDecompositionSettings::set_convex_hull_approximation);
+	ClassDB::bind_method(D_METHOD("get_convex_hull_approximation"), &MeshConvexDecompositionSettings::get_convex_hull_approximation);
+
+	ClassDB::bind_method(D_METHOD("set_max_convex_hulls", "max_convex_hulls"), &MeshConvexDecompositionSettings::set_max_convex_hulls);
+	ClassDB::bind_method(D_METHOD("get_max_convex_hulls"), &MeshConvexDecompositionSettings::get_max_convex_hulls);
+
+	ClassDB::bind_method(D_METHOD("set_project_hull_vertices", "project_hull_vertices"), &MeshConvexDecompositionSettings::set_project_hull_vertices);
+	ClassDB::bind_method(D_METHOD("get_project_hull_vertices"), &MeshConvexDecompositionSettings::get_project_hull_vertices);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_concavity", PROPERTY_HINT_RANGE, "0.001,1.0,0.001"), "set_max_concavity", "get_max_concavity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "symmetry_planes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_symmetry_planes_clipping_bias", "get_symmetry_planes_clipping_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "revolution_axes_clipping_bias", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_revolution_axes_clipping_bias", "get_revolution_axes_clipping_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_volume_per_convex_hull", PROPERTY_HINT_RANGE, "0.0001,0.01,0.0001"), "set_min_volume_per_convex_hull", "get_min_volume_per_convex_hull");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "resolution"), "set_resolution", "get_resolution");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_num_vertices_per_convex_hull"), "set_max_num_vertices_per_convex_hull", "get_max_num_vertices_per_convex_hull");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "plane_downsampling", PROPERTY_HINT_RANGE, "1,16,1"), "set_plane_downsampling", "get_plane_downsampling");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "convex_hull_downsampling", PROPERTY_HINT_RANGE, "1,16,1"), "set_convex_hull_downsampling", "get_convex_hull_downsampling");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "normalize_mesh"), "set_normalize_mesh", "get_normalize_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Voxel,Tetrahedron"), "set_mode", "get_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "convex_hull_approximation"), "set_convex_hull_approximation", "get_convex_hull_approximation");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_convex_hulls"), "set_max_convex_hulls", "get_max_convex_hulls");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "project_hull_vertices"), "set_project_hull_vertices", "get_project_hull_vertices");
+
+	BIND_ENUM_CONSTANT(CONVEX_DECOMPOSITION_MODE_VOXEL);
+	BIND_ENUM_CONSTANT(CONVEX_DECOMPOSITION_MODE_TETRAHEDRON);
+}
+
 Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = nullptr;
 
 int Mesh::get_surface_count() const {
@@ -337,6 +499,10 @@ void Mesh::generate_debug_mesh_indices(Vector<Vector3> &r_points) {
 	}
 }
 
+Vector<Vector3> Mesh::_get_faces() const {
+	return Variant(get_faces());
+}
+
 Vector<Face3> Mesh::get_faces() const {
 	Ref<TriangleMesh> tm = generate_triangle_mesh();
 	if (tm.is_valid()) {
@@ -355,8 +521,10 @@ Vector<Face3> Mesh::get_surface_faces(int p_surface) const {
 
 Ref<ConvexPolygonShape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
 	if (p_simplify) {
-		ConvexDecompositionSettings settings;
-		settings.max_convex_hulls = 1;
+		Ref<MeshConvexDecompositionSettings> settings = Ref<MeshConvexDecompositionSettings>();
+		settings.instantiate();
+		settings->set_max_convex_hulls(1);
+		settings->set_max_concavity(1.0);
 		Vector<Ref<Shape3D>> decomposed = convex_decompose(settings);
 		if (decomposed.size() == 1) {
 			return decomposed[0];
@@ -629,6 +797,7 @@ void Mesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &Mesh::set_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &Mesh::get_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &Mesh::get_aabb);
+	ClassDB::bind_method(D_METHOD("get_faces"), &Mesh::_get_faces);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "lightmap_size_hint"), "set_lightmap_size_hint", "get_lightmap_size_hint");
 
@@ -725,8 +894,8 @@ void Mesh::clear_cache() const {
 	debug_lines.clear();
 }
 
-Vector<Ref<Shape3D>> Mesh::convex_decompose(const ConvexDecompositionSettings &p_settings) const {
-	ERR_FAIL_COND_V(!convex_decomposition_function, Vector<Ref<Shape3D>>());
+Vector<Ref<Shape3D>> Mesh::convex_decompose(const Ref<MeshConvexDecompositionSettings> &p_settings) const {
+	ERR_FAIL_NULL_V(convex_decomposition_function, Vector<Ref<Shape3D>>());
 
 	Ref<TriangleMesh> tm = generate_triangle_mesh();
 	ERR_FAIL_COND_V(!tm.is_valid(), Vector<Ref<Shape3D>>());
@@ -1845,7 +2014,7 @@ Error ArrayMesh::lightmap_unwrap(const Transform3D &p_base_transform, float p_te
 }
 
 Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache, bool p_generate_cache) {
-	ERR_FAIL_COND_V(!array_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
+	ERR_FAIL_NULL_V(array_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(blend_shapes.size() != 0, ERR_UNAVAILABLE, "Can't unwrap mesh with blend shapes.");
 	ERR_FAIL_COND_V_MSG(p_texel_size <= 0.0f, ERR_PARAMETER_RANGE_ERROR, "Texel size must be greater than 0.");
 
@@ -2081,7 +2250,6 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::set_method_flags(get_class_static(), _scs_create("regen_normal_maps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("lightmap_unwrap", "transform", "texel_size"), &ArrayMesh::lightmap_unwrap);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("lightmap_unwrap"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
-	ClassDB::bind_method(D_METHOD("get_faces"), &ArrayMesh::get_faces);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &ArrayMesh::generate_triangle_mesh);
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &ArrayMesh::set_custom_aabb);

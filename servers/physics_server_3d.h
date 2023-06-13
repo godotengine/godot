@@ -97,6 +97,7 @@ public:
 	virtual Vector3 get_contact_local_normal(int p_contact_idx) const = 0;
 	virtual Vector3 get_contact_impulse(int p_contact_idx) const = 0;
 	virtual int get_contact_local_shape(int p_contact_idx) const = 0;
+	virtual Vector3 get_contact_local_velocity_at_position(int p_contact_idx) const = 0;
 
 	virtual RID get_contact_collider(int p_contact_idx) const = 0;
 	virtual Vector3 get_contact_collider_position(int p_contact_idx) const = 0;
@@ -125,7 +126,7 @@ private:
 	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters3D> &p_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query);
-	TypedArray<PackedVector3Array> _collide_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results = 32);
+	TypedArray<Vector3> _collide_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results = 32);
 	Dictionary _get_rest_info(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query);
 
 protected:

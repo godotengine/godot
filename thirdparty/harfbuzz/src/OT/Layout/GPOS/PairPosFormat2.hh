@@ -49,12 +49,11 @@ struct PairPosFormat2_4
 
     unsigned int len1 = valueFormat1.get_len ();
     unsigned int len2 = valueFormat2.get_len ();
-    unsigned int stride = len1 + len2;
-    unsigned int record_size = valueFormat1.get_size () + valueFormat2.get_size ();
+    unsigned int stride = HBUINT16::static_size * (len1 + len2);
     unsigned int count = (unsigned int) class1Count * (unsigned int) class2Count;
     return_trace (c->check_range ((const void *) values,
                                   count,
-                                  record_size) &&
+                                  stride) &&
                   valueFormat1.sanitize_values_stride_unsafe (c, this, &values[0], count, stride) &&
                   valueFormat2.sanitize_values_stride_unsafe (c, this, &values[len1], count, stride));
   }
@@ -131,25 +130,31 @@ struct PairPosFormat2_4
     if (likely (index == NOT_COVERED)) return_trace (false);
 
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-    skippy_iter.reset (buffer->idx, 1);
+    skippy_iter.reset_fast (buffer->idx, 1);
     unsigned unsafe_to;
-    if (!skippy_iter.next (&unsafe_to))
+    if (unlikely (!skippy_iter.next (&unsafe_to)))
     {
       buffer->unsafe_to_concat (buffer->idx, unsafe_to);
+      return_trace (false);
+    }
+
+    unsigned int klass2 = (this+classDef2).get_class (buffer->info[skippy_iter.idx].codepoint);
+    if (!klass2)
+    {
+      buffer->unsafe_to_concat (buffer->idx, skippy_iter.idx + 1);
+      return_trace (false);
+    }
+
+    unsigned int klass1 = (this+classDef1).get_class (buffer->cur().codepoint);
+    if (unlikely (klass1 >= class1Count || klass2 >= class2Count))
+    {
+      buffer->unsafe_to_concat (buffer->idx, skippy_iter.idx + 1);
       return_trace (false);
     }
 
     unsigned int len1 = valueFormat1.get_len ();
     unsigned int len2 = valueFormat2.get_len ();
     unsigned int record_len = len1 + len2;
-
-    unsigned int klass1 = (this+classDef1).get_class (buffer->cur().codepoint);
-    unsigned int klass2 = (this+classDef2).get_class (buffer->info[skippy_iter.idx].codepoint);
-    if (unlikely (klass1 >= class1Count || klass2 >= class2Count))
-    {
-      buffer->unsafe_to_concat (buffer->idx, skippy_iter.idx + 1);
-      return_trace (false);
-    }
 
     const Value *v = &values[record_len * (klass1 * class2Count + klass2)];
 
@@ -164,7 +169,7 @@ struct PairPosFormat2_4
      * https://github.com/harfbuzz/harfbuzz/pull/3235#issuecomment-1029814978
      */
 #ifndef HB_SPLIT_KERN
-    if (0)
+    if (false)
 #endif
     {
       if (!len2)
@@ -220,25 +225,25 @@ struct PairPosFormat2_4
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "try kerning glyphs at %d,%d",
+			  "try kerning glyphs at %u,%u",
 			  c->buffer->idx, skippy_iter.idx);
     }
 
-    applied_first = valueFormat1.apply_value (c, this, v, buffer->cur_pos());
-    applied_second = valueFormat2.apply_value (c, this, v + len1, buffer->pos[skippy_iter.idx]);
+    applied_first = len1 && valueFormat1.apply_value (c, this, v, buffer->cur_pos());
+    applied_second = len2 && valueFormat2.apply_value (c, this, v + len1, buffer->pos[skippy_iter.idx]);
 
     if (applied_first || applied_second)
       if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
       {
 	c->buffer->message (c->font,
-			    "kerned glyphs at %d,%d",
+			    "kerned glyphs at %u,%u",
 			    c->buffer->idx, skippy_iter.idx);
       }
 
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "tried kerning glyphs at %d,%d",
+			  "tried kerning glyphs at %u,%u",
 			  c->buffer->idx, skippy_iter.idx);
     }
 
@@ -298,8 +303,8 @@ struct PairPosFormat2_4
       for (unsigned class2_idx : + hb_range ((unsigned) class2Count) | hb_filter (klass2_map))
       {
         unsigned idx = (class1_idx * (unsigned) class2Count + class2_idx) * (len1 + len2);
-        valueFormat1.copy_values (c->serializer, out->valueFormat1, this, &values[idx], c->plan->layout_variation_idx_delta_map);
-        valueFormat2.copy_values (c->serializer, out->valueFormat2, this, &values[idx + len1], c->plan->layout_variation_idx_delta_map);
+        valueFormat1.copy_values (c->serializer, out->valueFormat1, this, &values[idx], &c->plan->layout_variation_idx_delta_map);
+        valueFormat2.copy_values (c->serializer, out->valueFormat2, this, &values[idx + len1], &c->plan->layout_variation_idx_delta_map);
       }
     }
 

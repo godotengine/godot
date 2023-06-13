@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "packet_peer_mbed_dtls.h"
-#include "mbedtls/platform_util.h"
 
 #include "core/io/file_access.h"
 #include "core/io/stream_peer_tls.h"

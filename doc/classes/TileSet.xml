@@ -8,7 +8,7 @@
 		Tiles can either be from a [TileSetAtlasSource], that render tiles out of a texture with support for physics, navigation, etc... or from a [TileSetScenesCollectionSource] which exposes scene-based tiles.
 		Tiles are referenced by using three IDs: their source ID, their atlas coordinates ID and their alternative tile ID.
 		A TileSet can be configured so that its tiles expose more or less properties. To do so, the TileSet resources uses property layers, that you can add or remove depending on your needs.
-		For example, adding a physics layer allows giving collision shapes to your tiles. Each layer having dedicated properties (physics layer an mask), you may add several TileSet physics layers for each type of collision you need.
+		For example, adding a physics layer allows giving collision shapes to your tiles. Each layer having dedicated properties (physics layer and mask), you may add several TileSet physics layers for each type of collision you need.
 		See the functions to add new layers for more information.
 	</description>
 	<tutorials>
@@ -67,7 +67,7 @@
 			<param index="1" name="atlas_source_id_override" type="int" default="-1" />
 			<description>
 				Adds a [TileSetSource] to the TileSet. If [param atlas_source_id_override] is not -1, also set its source ID. Otherwise, a unique identifier is automatically generated.
-				The function returns the added source source ID or -1 if the source could not be added.
+				The function returns the added source ID or -1 if the source could not be added.
 			</description>
 		</method>
 		<method name="add_terrain">
@@ -578,7 +578,7 @@
 			<param index="0" name="source_from" type="int" />
 			<param index="1" name="source_to" type="int" />
 			<description>
-				Creates a source-level proxy for the given source ID. A proxy will map set of tile identifiers to another set of identifiers. Both the atlac coordinates ID and the alternative tile ID are kept the same when using source-level proxies.
+				Creates a source-level proxy for the given source ID. A proxy will map set of tile identifiers to another set of identifiers. Both the atlas coordinates ID and the alternative tile ID are kept the same when using source-level proxies.
 				This can be used to replace a source in all TileMaps using this TileSet, as TileMap nodes will find and use the proxy's target source when one is available.
 				Proxied tiles can be automatically replaced in TileMap nodes using the editor.
 			</description>

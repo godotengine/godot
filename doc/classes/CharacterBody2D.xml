@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CharacterBody2D" inherits="PhysicsBody2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Specialized 2D physics body node for characters moved by script.
+		A 2D physics body specialized for characters moved by script.
 	</brief_description>
 	<description>
-		Character bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all; to other types of bodies, such as a rigid body, these are the same as a [AnimatableBody2D]. However, they have two main uses:
-		[b]Kinematic characters:[/b] Character bodies have an API for moving objects with walls and slopes detection ([method move_and_slide] method), in addition to collision detection (also done with [method PhysicsBody2D.move_and_collide]). This makes them really useful to implement characters that move in specific ways and collide with the world, but don't require advanced physics.
-		[b]Kinematic motion:[/b] Character bodies can also be used for kinematic motion (same functionality as [AnimatableBody2D]), which allows them to be moved by code and push other bodies on their path.
+		[CharacterBody2D] is a specialized class for physics bodies that are meant to be user-controlled. They are not affected by physics at all, but they affect other physics bodies in their path. They are mainly used to provide high-level API to move objects with wall and slope detection ([method move_and_slide] method) in addition to the general collision detection provided by [method PhysicsBody2D.move_and_collide]. This makes it useful for highly configurable physics bodies that must move in specific ways and collide with the world, as is often the case with user-controlled characters.
+		For game objects that don't require complex movement or collision detection, such as moving platforms, [AnimatableBody2D] is simpler to configure.
 	</description>
 	<tutorials>
 		<link title="Kinematic character (2D)">$DOCS_URL/tutorials/physics/kinematic_character_2d.html</link>

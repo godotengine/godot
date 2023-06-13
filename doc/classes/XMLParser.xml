@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="XMLParser" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Provides a low-level interface for creating parsers for XML files.
 		Low-level class for creating parsers for [url=https://en.wikipedia.org/wiki/XML]XML[/url] files.
 	</brief_description>
 	<description>
-		This class can serve as base to make custom XML parsers. Since XML is a very flexible standard, this interface is low-level so it can be applied to any possible schema.
+		Provides a low-level interface for creating parsers for [url=https://en.wikipedia.org/wiki/XML]XML[/url] files. This class can serve as base to make custom XML parsers.
 	</description>
 	<tutorials>
 	</tutorials>

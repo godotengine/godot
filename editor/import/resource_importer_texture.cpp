@@ -407,6 +407,20 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 	save_to_ctex_format(f, image, p_compress_mode, used_channels, p_vram_compression, p_lossy_quality);
 }
 
+void ResourceImporterTexture::_save_editor_meta(const Dictionary &p_metadata, const String &p_to_path) {
+	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
+	ERR_FAIL_COND(f.is_null());
+
+	f->store_var(p_metadata);
+}
+
+Dictionary ResourceImporterTexture::_load_editor_meta(const String &p_path) const {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), Dictionary(), "Missing required editor-specific import metadata for a texture; please, reimport.");
+
+	return f->get_var();
+}
+
 Error ResourceImporterTexture::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	// Parse import options.
 	int32_t loader_flags = ImageFormatLoader::FLAG_NONE;
@@ -667,6 +681,18 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 
 	if (editor_image.is_valid()) {
 		_save_ctex(editor_image, p_save_path + ".editor.ctex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+
+		// Generate and save editor-specific metadata, which we cannot save to the .import file.
+		Dictionary editor_meta;
+
+		if (use_editor_scale) {
+			editor_meta["editor_scale"] = EDSCALE;
+		}
+		if (convert_editor_colors) {
+			editor_meta["editor_dark_theme"] = EditorSettings::get_singleton()->is_dark_theme();
+		}
+
+		_save_editor_meta(editor_meta, p_save_path + ".editor.meta");
 	}
 
 	if (r_metadata) {
@@ -678,16 +704,11 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 
 		if (editor_image.is_valid()) {
 			meta["has_editor_variant"] = true;
-			if (use_editor_scale) {
-				meta["editor_scale"] = EDSCALE;
-			}
-			if (convert_editor_colors) {
-				meta["editor_dark_theme"] = EditorSettings::get_singleton()->is_dark_theme();
-			}
 		}
 
 		*r_metadata = meta;
 	}
+
 	return OK;
 }
 
@@ -713,14 +734,17 @@ String ResourceImporterTexture::get_import_settings_string() const {
 }
 
 bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) const {
-	//will become invalid if formats are missing to import
 	Dictionary meta = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
 
 	if (meta.has("has_editor_variant")) {
-		if (meta.has("editor_scale") && (float)meta["editor_scale"] != EDSCALE) {
+		String imported_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(p_path);
+		String editor_meta_path = imported_path.replace(".editor.ctex", ".editor.meta");
+		Dictionary editor_meta = _load_editor_meta(editor_meta_path);
+
+		if (editor_meta.has("editor_scale") && (float)editor_meta["editor_scale"] != EDSCALE) {
 			return false;
 		}
-		if (meta.has("editor_dark_theme") && (bool)meta["editor_dark_theme"] != EditorSettings::get_singleton()->is_dark_theme()) {
+		if (editor_meta.has("editor_dark_theme") && (bool)editor_meta["editor_dark_theme"] != EditorSettings::get_singleton()->is_dark_theme()) {
 			return false;
 		}
 	}
@@ -734,6 +758,7 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) co
 		return true; // Do not care about non-VRAM.
 	}
 
+	// Will become invalid if formats are missing to import.
 	Vector<String> formats_imported;
 	if (meta.has("imported_formats")) {
 		formats_imported = meta["imported_formats"];

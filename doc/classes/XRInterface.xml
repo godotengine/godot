@@ -57,6 +57,13 @@
 				Returns the an array of supported environment blend modes, see [enum XRInterface.EnvironmentBlendMode].
 			</description>
 		</method>
+		<method name="get_system_info">
+			<return type="Dictionary" />
+			<description>
+				Returns a [Dictionary] with extra system info. Interfaces are expected to return [code]XRRuntimeName[/code] and [code]XRRuntimeVersion[/code] providing info about the used XR runtime. Additional entries may be provided specific to an interface.
+				[b]Note:[/b]This information may only be available after [method initialize] was successfully called.
+			</description>
+		</method>
 		<method name="get_tracking_status" qualifiers="const">
 			<return type="int" enum="XRInterface.TrackingStatus" />
 			<description>
@@ -70,7 +77,7 @@
 			<description>
 				Returns the transform for a view/eye.
 				[param view] is the view/eye index.
-				[param cam_transform] is the transform that maps device coordinates to scene coordinates, typically the global_transform of the current XROrigin3D.
+				[param cam_transform] is the transform that maps device coordinates to scene coordinates, typically the [member Node3D.global_transform] of the current XROrigin3D.
 			</description>
 		</method>
 		<method name="get_view_count">
@@ -246,7 +253,7 @@
 			Player is free to move around, full positional tracking.
 		</constant>
 		<constant name="XR_PLAY_AREA_STAGE" value="4" enum="PlayAreaMode">
-			Same as roomscale but origin point is fixed to the center of the physical space, XRServer.center_on_hmd disabled.
+			Same as [constant XR_PLAY_AREA_ROOMSCALE] but origin point is fixed to the center of the physical space, [method XRServer.center_on_hmd] disabled.
 		</constant>
 		<constant name="XR_ENV_BLEND_MODE_OPAQUE" value="0" enum="EnvironmentBlendMode">
 			Opaque blend mode. This is typically used for VR devices.

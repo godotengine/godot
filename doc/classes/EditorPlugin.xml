@@ -532,7 +532,7 @@
 		<method name="get_editor_interface">
 			<return type="EditorInterface" />
 			<description>
-				Returns the [EditorInterface] object that gives you control over Godot editor's window and its functionalities.
+				Returns the [EditorInterface] singleton. It provides access to some parts of the editor GUI as well as various inner states and tools.
 			</description>
 		</method>
 		<method name="get_export_as_menu">

@@ -39,8 +39,8 @@
 #include "storage/material_storage.h"
 #include "storage/texture_storage.h"
 
-#include "shaders/canvas.glsl.gen.h"
-#include "shaders/canvas_occlusion.glsl.gen.h"
+#include "drivers/gles3/shaders/canvas.glsl.gen.h"
+#include "drivers/gles3/shaders/canvas_occlusion.glsl.gen.h"
 
 class RasterizerSceneGLES3;
 

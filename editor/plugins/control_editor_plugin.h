@@ -45,6 +45,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 
+class EditorSelection;
 class GridContainer;
 
 // Inspector controls.

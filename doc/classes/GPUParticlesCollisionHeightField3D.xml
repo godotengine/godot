@@ -50,7 +50,7 @@
 			Represents the size of the [enum Resolution] enum.
 		</constant>
 		<constant name="UPDATE_MODE_WHEN_MOVED" value="0" enum="UpdateMode">
-			Only update the heightmap when the [GPUParticlesCollisionHeightField3D] node is moved, or when the camera moves if [member follow_camera_enabled] is [code]true[/code]. An update can be forced by slightly moving the [GPUParticlesCollisionHeightField3D] in any direction.
+			Only update the heightmap when the [GPUParticlesCollisionHeightField3D] node is moved, or when the camera moves if [member follow_camera_enabled] is [code]true[/code]. An update can be forced by slightly moving the [GPUParticlesCollisionHeightField3D] in any direction, or by calling [method RenderingServer.particles_collision_height_field_update].
 		</constant>
 		<constant name="UPDATE_MODE_ALWAYS" value="1" enum="UpdateMode">
 			Update the heightmap every frame. This has a significant performance cost. This update should only be used when geometry that particles can collide with changes significantly during gameplay.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #ifndef _TVG_TASK_SCHEDULER_H_
 #define _TVG_TASK_SCHEDULER_H_
 
@@ -44,8 +45,8 @@ struct Task
 private:
     mutex                   mtx;
     condition_variable      cv;
-    bool                    ready{true};
-    bool                    pending{false};
+    bool                    ready = true;
+    bool                    pending = false;
 
 public:
     virtual ~Task() = default;
@@ -78,10 +79,8 @@ private:
         pending = true;
     }
 
-    friend class TaskSchedulerImpl;
+    friend struct TaskSchedulerImpl;
 };
-
-
 
 }
 

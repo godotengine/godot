@@ -371,7 +371,7 @@ struct ValueFormat : HBUINT16
     for (unsigned int i = 0; i < count; i++) {
       if (!sanitize_value_devices (c, base, values))
         return_trace (false);
-      values += stride;
+      values = &StructAtOffset<const Value> (values, stride);
     }
 
     return_trace (true);

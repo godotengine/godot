@@ -141,6 +141,7 @@ public:
 	virtual bool is_initialized() const override;
 	virtual bool initialize() override;
 	virtual void uninitialize() override;
+	virtual Dictionary get_system_info() override;
 
 	virtual bool supports_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
 	virtual XRInterface::PlayAreaMode get_play_area_mode() const override;

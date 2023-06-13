@@ -742,12 +742,12 @@ void CPUParticles3D::_particles_process(double p_delta) {
 				tex_linear_velocity = curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY]->sample(0);
 			}*/
 
-			real_t tex_angle = 0.0;
+			real_t tex_angle = 1.0;
 			if (curve_parameters[PARAM_ANGLE].is_valid()) {
 				tex_angle = curve_parameters[PARAM_ANGLE]->sample(tv);
 			}
 
-			real_t tex_anim_offset = 0.0;
+			real_t tex_anim_offset = 1.0;
 			if (curve_parameters[PARAM_ANGLE].is_valid()) {
 				tex_anim_offset = curve_parameters[PARAM_ANGLE]->sample(tv);
 			}
@@ -1327,7 +1327,7 @@ void CPUParticles3D::_notification(int p_what) {
 
 void CPUParticles3D::convert_from_particles(Node *p_particles) {
 	GPUParticles3D *gpu_particles = Object::cast_to<GPUParticles3D>(p_particles);
-	ERR_FAIL_COND_MSG(!gpu_particles, "Only GPUParticles3D nodes can be converted to CPUParticles3D.");
+	ERR_FAIL_NULL_MSG(gpu_particles, "Only GPUParticles3D nodes can be converted to CPUParticles3D.");
 
 	set_emitting(gpu_particles->is_emitting());
 	set_amount(gpu_particles->get_amount());
@@ -1588,8 +1588,8 @@ void CPUParticles3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "tangential_accel_max", PROPERTY_HINT_RANGE, "-100,100,0.01,or_less,or_greater"), "set_param_max", "get_param_max", PARAM_TANGENTIAL_ACCEL);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "tangential_accel_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_TANGENTIAL_ACCEL);
 	ADD_GROUP("Damping", "");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_min", PROPERTY_HINT_RANGE, "0,100,0.01,or_greater"), "set_param_min", "get_param_min", PARAM_DAMPING);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_max", PROPERTY_HINT_RANGE, "0,100,0.01,or_greater"), "set_param_max", "get_param_max", PARAM_DAMPING);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_min", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_param_min", "get_param_min", PARAM_DAMPING);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "damping_max", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_param_max", "get_param_max", PARAM_DAMPING);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "damping_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_DAMPING);
 	ADD_GROUP("Angle", "");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angle_min", PROPERTY_HINT_RANGE, "-720,720,0.1,or_less,or_greater,degrees"), "set_param_min", "get_param_min", PARAM_ANGLE);

@@ -69,7 +69,7 @@ struct hb_lockable_set_t
       item = items.push (v);
       l.unlock ();
     }
-    return item;
+    return items.in_error () ? nullptr : item;
   }
 
   template <typename T>
@@ -175,14 +175,34 @@ struct hb_user_data_array_t
 
   void init () { lock.init (); items.init (); }
 
-  HB_INTERNAL bool set (hb_user_data_key_t *key,
-			void *              data,
-			hb_destroy_func_t   destroy,
-			hb_bool_t           replace);
-
-  HB_INTERNAL void *get (hb_user_data_key_t *key);
-
   void fini () { items.fini (lock); lock.fini (); }
+
+  bool set (hb_user_data_key_t *key,
+	    void *              data,
+	    hb_destroy_func_t   destroy,
+	    hb_bool_t           replace)
+  {
+    if (!key)
+      return false;
+
+    if (replace) {
+      if (!data && !destroy) {
+	items.remove (key, lock);
+	return true;
+      }
+    }
+    hb_user_data_item_t item = {key, data, destroy};
+    bool ret = !!items.replace_or_insert (item, lock, (bool) replace);
+
+    return ret;
+  }
+
+  void *get (hb_user_data_key_t *key)
+  {
+    hb_user_data_item_t item = {nullptr, nullptr, nullptr};
+
+    return items.find (key, &item, lock) ? item.data : nullptr;
+  }
 };
 
 

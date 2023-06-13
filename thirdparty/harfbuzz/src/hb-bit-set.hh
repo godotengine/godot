@@ -38,7 +38,7 @@ struct hb_bit_set_t
   hb_bit_set_t () = default;
   ~hb_bit_set_t () = default;
 
-  hb_bit_set_t (const hb_bit_set_t& other) : hb_bit_set_t () { set (other); }
+  hb_bit_set_t (const hb_bit_set_t& other) : hb_bit_set_t () { set (other, true); }
   hb_bit_set_t ( hb_bit_set_t&& other) : hb_bit_set_t () { hb_swap (*this, other); }
   hb_bit_set_t& operator= (const hb_bit_set_t& other) { set (other); return *this; }
   hb_bit_set_t& operator= (hb_bit_set_t&& other) { hb_swap (*this, other); return *this; }
@@ -85,12 +85,16 @@ struct hb_bit_set_t
   void err () { if (successful) successful = false; } /* TODO Remove */
   bool in_error () const { return !successful; }
 
-  bool resize (unsigned int count, bool clear = true)
+  bool resize (unsigned int count, bool clear = true, bool exact_size = false)
   {
     if (unlikely (!successful)) return false;
-    if (unlikely (!pages.resize (count, clear) || !page_map.resize (count, clear)))
+
+    if (pages.length == 0 && count == 1)
+      exact_size = true; // Most sets are small and local
+
+    if (unlikely (!pages.resize (count, clear, exact_size) || !page_map.resize (count, clear, exact_size)))
     {
-      pages.resize (page_map.length);
+      pages.resize (page_map.length, clear, exact_size);
       successful = false;
       return false;
     }
@@ -190,7 +194,7 @@ struct hb_bit_set_t
       unsigned int end = major_start (m + 1);
       do
       {
-        if (v || page) /* The v check is to optimize out the page check if v is true. */
+        if (g != INVALID && (v || page)) /* The v check is to optimize out the page check if v is true. */
 	  page->set (g, v);
 
 	array = &StructAtOffsetUnaligned<T> (array, stride);
@@ -234,7 +238,7 @@ struct hb_bit_set_t
 	if (g < last_g) return false;
 	last_g = g;
 
-        if (v || page) /* The v check is to optimize out the page check if v is true. */
+        if (g != INVALID && (v || page)) /* The v check is to optimize out the page check if v is true. */
 	  page->add (g);
 
 	array = &StructAtOffsetUnaligned<T> (array, stride);
@@ -346,11 +350,11 @@ struct hb_bit_set_t
     hb_codepoint_t c = first - 1;
     return next (&c) && c <= last;
   }
-  void set (const hb_bit_set_t &other)
+  void set (const hb_bit_set_t &other, bool exact_size = false)
   {
     if (unlikely (!successful)) return;
     unsigned int count = other.pages.length;
-    if (unlikely (!resize (count, false)))
+    if (unlikely (!resize (count, false, exact_size)))
       return;
     population = other.population;
 
@@ -398,7 +402,6 @@ struct hb_bit_set_t
       uint32_t spm = page_map[spi].major;
       uint32_t lpm = larger_set.page_map[lpi].major;
       auto sp = page_at (spi);
-      auto lp = larger_set.page_at (lpi);
 
       if (spm < lpm && !sp.is_empty ())
         return false;
@@ -406,6 +409,7 @@ struct hb_bit_set_t
       if (lpm < spm)
         continue;
 
+      auto lp = larger_set.page_at (lpi);
       if (!sp.is_subset (lp))
         return false;
 
@@ -422,7 +426,7 @@ struct hb_bit_set_t
   private:
   bool allocate_compact_workspace (hb_vector_t<unsigned>& workspace)
   {
-    if (unlikely (!workspace.resize (pages.length)))
+    if (unlikely (!workspace.resize_exact (pages.length)))
     {
       successful = false;
       return false;
@@ -619,6 +623,7 @@ struct hb_bit_set_t
         *codepoint = INVALID;
         return false;
       }
+      last_page_lookup = i;
     }
 
     const auto* pages_array = pages.arrayZ;
@@ -628,7 +633,6 @@ struct hb_bit_set_t
       if (pages_array[current.index].next (codepoint))
       {
         *codepoint += current.major * page_t::PAGE_BITS;
-        last_page_lookup = i;
         return true;
       }
       i++;
@@ -645,7 +649,6 @@ struct hb_bit_set_t
 	return true;
       }
     }
-    last_page_lookup = 0;
     *codepoint = INVALID;
     return false;
   }
@@ -917,7 +920,7 @@ struct hb_bit_set_t
       memmove (page_map.arrayZ + i + 1,
 	       page_map.arrayZ + i,
 	       (page_map.length - 1 - i) * page_map.item_size);
-      page_map[i] = map;
+      page_map.arrayZ[i] = map;
     }
 
     last_page_lookup = i;

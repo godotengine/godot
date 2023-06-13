@@ -30,12 +30,13 @@
 
 #include "godot_plugin_jni.h"
 
-#include <core/config/engine.h>
-#include <core/config/project_settings.h>
-#include <core/error/error_macros.h>
-#include <platform/android/api/jni_singleton.h>
-#include <platform/android/jni_utils.h>
-#include <platform/android/string_android.h>
+#include "api/jni_singleton.h"
+#include "jni_utils.h"
+#include "string_android.h"
+
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 
 static HashMap<String, JNISingleton *> jni_singletons;
 
@@ -120,7 +121,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitS
 
 	for (int i = 0; i < count; i++) {
 		jobject j_param = env->GetObjectArrayElement(j_signal_params, i);
-		variant_params[i] = _jobject_to_variant(env, j_param);
+		ERR_FAIL_NULL(j_param);
+		memnew_placement(&variant_params[i], Variant(_jobject_to_variant(env, j_param)));
 		args[i] = &variant_params[i];
 		env->DeleteLocalRef(j_param);
 	}

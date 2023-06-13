@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include "tvgMath.h"
 #include "tvgSwCommon.h"
 
@@ -33,7 +34,7 @@ static inline bool _onlyShifted(const Matrix* m)
 }
 
 
-static bool _genOutline(SwImage* image, const Matrix* transform, SwMpool* mpool, unsigned tid)
+static bool _genOutline(SwImage* image, const RenderMesh* mesh, const Matrix* transform, SwMpool* mpool, unsigned tid)
 {
     image->outline = mpoolReqOutline(mpool, tid);
     auto outline = image->outline;
@@ -51,10 +52,50 @@ static bool _genOutline(SwImage* image, const Matrix* transform, SwMpool* mpool,
         outline->closed[0] = true;
     }
 
-    auto w = static_cast<float>(image->w);
-    auto h = static_cast<float>(image->h);
+    Point to[4];
+    if (mesh->triangleCnt > 0) {
+        // TODO: Optimise me. We appear to calculate this exact min/max bounding area in multiple
+        // places. We should be able to re-use one we have already done? Also see:
+        //   tvgPictureImpl.h --> bounds
+        //   tvgSwRasterTexmap.h --> _rasterTexmapPolygonMesh
+        //
+        // TODO: Should we calculate the exact path(s) of the triangle mesh instead?
+        // i.e. copy tvgSwShape.capp -> _genOutline?
+        //
+        // TODO: Cntrs?
+        auto triangles = mesh->triangles;
+        auto min = triangles[0].vertex[0].pt;
+        auto max = triangles[0].vertex[0].pt;
 
-    Point to[4] = {{0 ,0}, {w, 0}, {w, h}, {0, h}};
+        for (uint32_t i = 0; i < mesh->triangleCnt; ++i) {
+            if (triangles[i].vertex[0].pt.x < min.x) min.x = triangles[i].vertex[0].pt.x;
+            else if (triangles[i].vertex[0].pt.x > max.x) max.x = triangles[i].vertex[0].pt.x;
+            if (triangles[i].vertex[0].pt.y < min.y) min.y = triangles[i].vertex[0].pt.y;
+            else if (triangles[i].vertex[0].pt.y > max.y) max.y = triangles[i].vertex[0].pt.y;
+
+            if (triangles[i].vertex[1].pt.x < min.x) min.x = triangles[i].vertex[1].pt.x;
+            else if (triangles[i].vertex[1].pt.x > max.x) max.x = triangles[i].vertex[1].pt.x;
+            if (triangles[i].vertex[1].pt.y < min.y) min.y = triangles[i].vertex[1].pt.y;
+            else if (triangles[i].vertex[1].pt.y > max.y) max.y = triangles[i].vertex[1].pt.y;
+
+            if (triangles[i].vertex[2].pt.x < min.x) min.x = triangles[i].vertex[2].pt.x;
+            else if (triangles[i].vertex[2].pt.x > max.x) max.x = triangles[i].vertex[2].pt.x;
+            if (triangles[i].vertex[2].pt.y < min.y) min.y = triangles[i].vertex[2].pt.y;
+            else if (triangles[i].vertex[2].pt.y > max.y) max.y = triangles[i].vertex[2].pt.y;
+        }
+        to[0] = {min.x, min.y};
+        to[1] = {max.x, min.y};
+        to[2] = {max.x, max.y};
+        to[3] = {min.x, max.y};
+    } else {
+        auto w = static_cast<float>(image->w);
+        auto h = static_cast<float>(image->h);
+        to[0] = {0, 0};
+        to[1] = {w, 0};
+        to[2] = {w, h};
+        to[3] = {0, h};
+    }
+
     for (int i = 0; i < 4; i++) {
         outline->pts[outline->ptsCnt] = mathTransform(&to[i], transform);
         outline->types[outline->ptsCnt] = SW_CURVE_TYPE_POINT;
@@ -78,7 +119,7 @@ static bool _genOutline(SwImage* image, const Matrix* transform, SwMpool* mpool,
 /* External Class Implementation                                        */
 /************************************************************************/
 
-bool imagePrepare(SwImage* image, const Matrix* transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid)
+bool imagePrepare(SwImage* image, const RenderMesh* mesh, const Matrix* transform, const SwBBox& clipRegion, SwBBox& renderRegion, SwMpool* mpool, unsigned tid)
 {
     image->direct = _onlyShifted(transform);
 
@@ -96,7 +137,7 @@ bool imagePrepare(SwImage* image, const Matrix* transform, const SwBBox& clipReg
         else image->scaled = false;
     }
 
-    if (!_genOutline(image, transform, mpool, tid)) return false;
+    if (!_genOutline(image, mesh, transform, mpool, tid)) return false;
     return mathUpdateOutlineBBox(image->outline, clipRegion, renderRegion, image->direct);
 }
 

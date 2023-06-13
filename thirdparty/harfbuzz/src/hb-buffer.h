@@ -763,7 +763,7 @@ hb_buffer_diff (hb_buffer_t *buffer,
 
 
 /*
- * Debugging.
+ * Tracing.
  */
 
 /**

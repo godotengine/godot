@@ -411,6 +411,12 @@ public:
 
 	bool _is_initialized();
 	void _set_initialized(bool p_enabled);
+
+	String _get_name() const;
+	String _get_description() const;
+	String _get_category() const;
+	PortType _get_return_icon_type() const;
+	bool _is_highend() const;
 };
 
 /////

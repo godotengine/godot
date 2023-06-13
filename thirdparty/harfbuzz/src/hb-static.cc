@@ -33,9 +33,10 @@
 #include "hb-aat-layout-feat-table.hh"
 #include "hb-ot-layout-common.hh"
 #include "hb-ot-cmap-table.hh"
-#include "hb-ot-color-colr-table.hh"
+#include "OT/Color/COLR/COLR.hh"
 #include "hb-ot-glyf-table.hh"
 #include "hb-ot-head-table.hh"
+#include "hb-ot-hmtx-table.hh"
 #include "hb-ot-maxp-table.hh"
 
 #ifndef HB_NO_VISIBILITY
@@ -109,35 +110,25 @@ hb_face_t::load_upem () const
 }
 
 
-/* hb_user_data_array_t */
-
+#ifndef HB_NO_VAR
 bool
-hb_user_data_array_t::set (hb_user_data_key_t *key,
-			   void *              data,
-			   hb_destroy_func_t   destroy,
-			   hb_bool_t           replace)
+_glyf_get_leading_bearing_with_var_unscaled (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical,
+					     int *lsb)
 {
-  if (!key)
-    return false;
-
-  if (replace) {
-    if (!data && !destroy) {
-      items.remove (key, lock);
-      return true;
-    }
-  }
-  hb_user_data_item_t item = {key, data, destroy};
-  bool ret = !!items.replace_or_insert (item, lock, (bool) replace);
-
-  return ret;
+  return font->face->table.glyf->get_leading_bearing_with_var_unscaled (font, glyph, is_vertical, lsb);
 }
 
-void *
-hb_user_data_array_t::get (hb_user_data_key_t *key)
+unsigned
+_glyf_get_advance_with_var_unscaled (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)
 {
-  hb_user_data_item_t item = {nullptr, nullptr, nullptr};
+  return font->face->table.glyf->get_advance_with_var_unscaled (font, glyph, is_vertical);
+}
+#endif
 
-  return items.find (key, &item, lock) ? item.data : nullptr;
+bool
+_glyf_get_leading_bearing_without_var_unscaled (hb_face_t *face, hb_codepoint_t gid, bool is_vertical, int *lsb)
+{
+  return face->table.glyf->get_leading_bearing_without_var_unscaled (gid, is_vertical, lsb);
 }
 
 

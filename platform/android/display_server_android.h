@@ -39,6 +39,8 @@ class RenderingDeviceVulkan;
 #endif
 
 class DisplayServerAndroid : public DisplayServer {
+	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+
 	String rendering_driver;
 
 	// https://developer.android.com/reference/android/view/PointerIcon

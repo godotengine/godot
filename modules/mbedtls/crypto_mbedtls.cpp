@@ -36,12 +36,14 @@
 #include "core/config/project_settings.h"
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/compression.h"
+#include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
 #define PEM_BEGIN_CRT "-----BEGIN CERTIFICATE-----\n"
 #define PEM_END_CRT "-----END CERTIFICATE-----\n"
+#define PEM_MIN_SIZE 54
 
 #include <mbedtls/debug.h>
 #include <mbedtls/md.h>
@@ -181,6 +183,35 @@ Error X509CertificateMbedTLS::save(String p_path) {
 	return OK;
 }
 
+String X509CertificateMbedTLS::save_to_string() {
+	String buffer;
+	mbedtls_x509_crt *crt = &cert;
+	while (crt) {
+		unsigned char w[4096];
+		size_t wrote = 0;
+		int ret = mbedtls_pem_write_buffer(PEM_BEGIN_CRT, PEM_END_CRT, cert.raw.p, cert.raw.len, w, sizeof(w), &wrote);
+		ERR_FAIL_COND_V_MSG(ret != 0 || wrote == 0, String(), "Error saving the certificate.");
+
+		buffer += String((char *)w, wrote);
+		crt = crt->next;
+	}
+	if (buffer.length() <= PEM_MIN_SIZE) {
+		// When the returned value of variable 'buffer' would consist of no Base-64 data, return an empty String instead.
+		return String();
+	}
+	return buffer;
+}
+
+Error X509CertificateMbedTLS::load_from_string(const String &p_string_key) {
+	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is in use");
+	CharString cs = p_string_key.utf8();
+
+	int ret = mbedtls_x509_crt_parse(&cert, (const unsigned char *)cs.get_data(), cs.size());
+	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing some certificates: " + itos(ret));
+
+	return OK;
+}
+
 bool HMACContextMbedTLS::is_md_type_allowed(mbedtls_md_type_t p_md_type) {
 	switch (p_md_type) {
 		case MBEDTLS_MD_SHA1:
@@ -307,20 +338,26 @@ void CryptoMbedTLS::load_default_certificates(String p_path) {
 	if (!p_path.is_empty()) {
 		// Use certs defined in project settings.
 		default_certs->load(p_path);
-	}
+	} else {
+		// Try to use system certs otherwise.
+		String system_certs = OS::get_singleton()->get_system_ca_certificates();
+		if (!system_certs.is_empty()) {
+			CharString cs = system_certs.utf8();
+			default_certs->load_from_memory((const uint8_t *)cs.get_data(), cs.size());
+			print_verbose("Loaded system CA certificates");
+		}
 #ifdef BUILTIN_CERTS_ENABLED
-	else {
-		// Use builtin certs only if user did not override it in project settings.
-		PackedByteArray out;
-		out.resize(_certs_uncompressed_size + 1);
-		Compression::decompress(out.ptrw(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
-		out.write[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
-#ifdef DEBUG_ENABLED
-		print_verbose("Loaded builtin certs");
+		else {
+			// Use builtin certs if there are no system certs.
+			PackedByteArray certs;
+			certs.resize(_certs_uncompressed_size + 1);
+			Compression::decompress(certs.ptrw(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
+			certs.write[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
+			default_certs->load_from_memory(certs.ptr(), certs.size());
+			print_verbose("Loaded builtin CA certificates");
+		}
 #endif
-		default_certs->load_from_memory(out.ptr(), out.size());
 	}
-#endif
 }
 
 Ref<CryptoKey> CryptoMbedTLS::generate_rsa(int p_bytes) {

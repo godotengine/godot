@@ -32,22 +32,22 @@
 #include "scene/resources/mesh.h"
 #include "thirdparty/vhacd/public/VHACD.h"
 
-static Vector<Vector<Vector3>> convex_decompose(const real_t *p_vertices, int p_vertex_count, const uint32_t *p_triangles, int p_triangle_count, const Mesh::ConvexDecompositionSettings &p_settings, Vector<Vector<uint32_t>> *r_convex_indices) {
+static Vector<Vector<Vector3>> convex_decompose(const real_t *p_vertices, int p_vertex_count, const uint32_t *p_triangles, int p_triangle_count, const Ref<MeshConvexDecompositionSettings> &p_settings, Vector<Vector<uint32_t>> *r_convex_indices) {
 	VHACD::IVHACD::Parameters params;
-	params.m_concavity = p_settings.max_concavity;
-	params.m_alpha = p_settings.symmetry_planes_clipping_bias;
-	params.m_beta = p_settings.revolution_axes_clipping_bias;
-	params.m_minVolumePerCH = p_settings.min_volume_per_convex_hull;
-	params.m_resolution = p_settings.resolution;
-	params.m_maxNumVerticesPerCH = p_settings.max_num_vertices_per_convex_hull;
-	params.m_planeDownsampling = p_settings.plane_downsampling;
-	params.m_convexhullDownsampling = p_settings.convexhull_downsampling;
-	params.m_pca = p_settings.normalize_mesh;
-	params.m_mode = p_settings.mode;
-	params.m_convexhullApproximation = p_settings.convexhull_approximation;
+	params.m_concavity = p_settings->get_max_concavity();
+	params.m_alpha = p_settings->get_symmetry_planes_clipping_bias();
+	params.m_beta = p_settings->get_revolution_axes_clipping_bias();
+	params.m_minVolumePerCH = p_settings->get_min_volume_per_convex_hull();
+	params.m_resolution = p_settings->get_resolution();
+	params.m_maxNumVerticesPerCH = p_settings->get_max_num_vertices_per_convex_hull();
+	params.m_planeDownsampling = p_settings->get_plane_downsampling();
+	params.m_convexhullDownsampling = p_settings->get_convex_hull_downsampling();
+	params.m_pca = p_settings->get_normalize_mesh();
+	params.m_mode = p_settings->get_mode();
+	params.m_convexhullApproximation = p_settings->get_convex_hull_approximation();
 	params.m_oclAcceleration = true;
-	params.m_maxConvexHulls = p_settings.max_convex_hulls;
-	params.m_projectHullVertices = p_settings.project_hull_vertices;
+	params.m_maxConvexHulls = p_settings->get_max_convex_hulls();
+	params.m_projectHullVertices = p_settings->get_project_hull_vertices();
 
 	VHACD::IVHACD *decomposer = VHACD::CreateVHACD();
 	decomposer->Compute(p_vertices, p_vertex_count, p_triangles, p_triangle_count, params);

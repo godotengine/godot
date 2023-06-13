@@ -33,6 +33,7 @@ BASE_STRINGS = [
     "Globals",
     "Nodes",
     "Resources",
+    "Editor-only",
     "Other objects",
     "Variant types",
     "Description",
@@ -74,13 +75,22 @@ CLASS_GROUPS: Dict[str, str] = {
     "node": "Nodes",
     "resource": "Resources",
     "object": "Other objects",
+    "editor": "Editor-only",
     "variant": "Variant types",
 }
 CLASS_GROUPS_BASE: Dict[str, str] = {
     "node": "Node",
     "resource": "Resource",
     "object": "Object",
+    "variant": "Variant",
 }
+# Sync with editor\register_editor_types.cpp
+EDITOR_CLASSES: List[str] = [
+    "FileSystemDock",
+    "ScriptCreateDialog",
+    "ScriptEditor",
+    "ScriptEditorBase",
+]
 
 
 class State:
@@ -567,7 +577,7 @@ def main() -> None:
         if path.endswith("/") or path.endswith("\\"):
             path = path[:-1]
 
-        if os.path.basename(path) == "modules":
+        if os.path.basename(path) in ["modules", "platform"]:
             for subdir, dirs, _ in os.walk(path):
                 if "doc_classes" in dirs:
                     doc_dir = os.path.join(subdir, "doc_classes")
@@ -634,6 +644,11 @@ def main() -> None:
         if group_name not in grouped_classes:
             grouped_classes[group_name] = []
         grouped_classes[group_name].append(class_name)
+
+        if is_editor_class(class_def):
+            if "editor" not in grouped_classes:
+                grouped_classes["editor"] = []
+            grouped_classes["editor"].append(class_name)
 
     print("")
     print("Generating the index file...")
@@ -722,6 +737,17 @@ def get_class_group(class_def: ClassDef, state: State) -> str:
                 break
 
     return group_name
+
+
+def is_editor_class(class_def: ClassDef) -> bool:
+    class_name = class_def.name
+
+    if class_name.startswith("Editor"):
+        return True
+    if class_name in EDITOR_CLASSES:
+        return True
+
+    return False
 
 
 # Generator methods.
@@ -1472,6 +1498,9 @@ def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_
                 f.write(f"    class_{CLASS_GROUPS_BASE[group_name].lower()}\n")
 
             for class_name in grouped_classes[group_name]:
+                if group_name in CLASS_GROUPS_BASE and CLASS_GROUPS_BASE[group_name].lower() == class_name.lower():
+                    continue
+
                 f.write(f"    class_{class_name.lower()}\n")
 
             f.write("\n")
@@ -1648,6 +1677,26 @@ def format_text_block(
                 inside_code = True
                 inside_code_tag = cmd
                 escape_pre = True
+
+                valid_context = isinstance(context, (MethodDef, SignalDef, AnnotationDef))
+                if valid_context:
+                    endcode_pos = text.find("[/code]", endq_pos + 1)
+                    if endcode_pos == -1:
+                        print_error(
+                            f"{state.current_class}.xml: Tag depth mismatch for [code]: no closing [/code] in {context_name}.",
+                            state,
+                        )
+                        break
+
+                    inside_code_text = text[endq_pos + 1 : endcode_pos]
+                    context_params: List[ParameterDef] = context.parameters  # type: ignore
+                    for param_def in context_params:
+                        if param_def.name == inside_code_text:
+                            print_warning(
+                                f'{state.current_class}.xml: Potential error inside of a code tag, found a string "{inside_code_text}" that matches one of the parameters in {context_name}.',
+                                state,
+                            )
+                            break
 
             # Cross-references to items in this or other class documentation pages.
             elif is_in_tagset(cmd, RESERVED_CROSSLINK_TAGS):

@@ -135,7 +135,7 @@ struct ReverseChainSingleSubstFormat1
       if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
       {
 	c->buffer->message (c->font,
-			    "replacing glyph at %d (reverse chaining substitution)",
+			    "replacing glyph at %u (reverse chaining substitution)",
 			    c->buffer->idx);
       }
 
@@ -144,7 +144,7 @@ struct ReverseChainSingleSubstFormat1
       if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
       {
 	c->buffer->message (c->font,
-			    "replaced glyph at %d (reverse chaining substitution)",
+			    "replaced glyph at %u (reverse chaining substitution)",
 			    c->buffer->idx);
       }
 

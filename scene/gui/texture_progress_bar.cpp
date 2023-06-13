@@ -31,15 +31,10 @@
 #include "texture_progress_bar.h"
 
 #include "core/config/engine.h"
+#include "core/core_string_names.h"
 
 void TextureProgressBar::set_under_texture(const Ref<Texture2D> &p_texture) {
-	if (under == p_texture) {
-		return;
-	}
-
-	under = p_texture;
-	queue_redraw();
-	update_minimum_size();
+	_set_texture(&under, p_texture);
 }
 
 Ref<Texture2D> TextureProgressBar::get_under_texture() const {
@@ -47,15 +42,7 @@ Ref<Texture2D> TextureProgressBar::get_under_texture() const {
 }
 
 void TextureProgressBar::set_over_texture(const Ref<Texture2D> &p_texture) {
-	if (over == p_texture) {
-		return;
-	}
-
-	over = p_texture;
-	queue_redraw();
-	if (under.is_null()) {
-		update_minimum_size();
-	}
+	_set_texture(&over, p_texture);
 }
 
 Ref<Texture2D> TextureProgressBar::get_over_texture() const {
@@ -108,13 +95,7 @@ Size2 TextureProgressBar::get_minimum_size() const {
 }
 
 void TextureProgressBar::set_progress_texture(const Ref<Texture2D> &p_texture) {
-	if (progress == p_texture) {
-		return;
-	}
-
-	progress = p_texture;
-	queue_redraw();
-	update_minimum_size();
+	_set_texture(&progress, p_texture);
 }
 
 Ref<Texture2D> TextureProgressBar::get_progress_texture() const {
@@ -171,6 +152,28 @@ void TextureProgressBar::set_tint_over(const Color &p_tint) {
 
 Color TextureProgressBar::get_tint_over() const {
 	return tint_over;
+}
+
+void TextureProgressBar::_set_texture(Ref<Texture2D> *p_destination, const Ref<Texture2D> &p_texture) {
+	DEV_ASSERT(p_destination);
+	Ref<Texture2D> &destination = *p_destination;
+	if (destination == p_texture) {
+		return;
+	}
+	if (destination.is_valid()) {
+		destination->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TextureProgressBar::_texture_changed));
+	}
+	destination = p_texture;
+	if (destination.is_valid()) {
+		// Pass `CONNECT_REFERENCE_COUNTED` to avoid early disconnect in case the same texture is assigned to different "slots".
+		destination->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TextureProgressBar::_texture_changed), CONNECT_REFERENCE_COUNTED);
+	}
+	_texture_changed();
+}
+
+void TextureProgressBar::_texture_changed() {
+	update_minimum_size();
+	queue_redraw();
 }
 
 Point2 TextureProgressBar::unit_val_to_uv(float val) {

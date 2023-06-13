@@ -102,11 +102,25 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 	static GUID IID_X360WiredGamepad = { MAKELONG(0x045E, 0x02A1), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 	static GUID IID_X360WirelessGamepad = { MAKELONG(0x045E, 0x028E), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 	static GUID IID_XSWirelessGamepad = { MAKELONG(0x045E, 0x0B13), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
+	static GUID IID_XEliteWirelessGamepad = { MAKELONG(0x045E, 0x0B05), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
+	static GUID IID_XOneWiredGamepad = { MAKELONG(0x045E, 0x02FF), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
+	static GUID IID_XOneWirelessGamepad = { MAKELONG(0x045E, 0x02DD), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
+	static GUID IID_XOneNewWirelessGamepad = { MAKELONG(0x045E, 0x02D1), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
+	static GUID IID_XOneSWirelessGamepad = { MAKELONG(0x045E, 0x02EA), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
+	static GUID IID_XOneSBluetoothGamepad = { MAKELONG(0x045E, 0x02E0), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
+	static GUID IID_XOneEliteWirelessGamepad = { MAKELONG(0x045E, 0x02E3), 0x0000, 0x0000, { 0x00, 0x00, 0x50, 0x49, 0x44, 0x56, 0x49, 0x44 } };
 
 	if (memcmp(p_guid, &IID_ValveStreamingGamepad, sizeof(*p_guid)) == 0 ||
 			memcmp(p_guid, &IID_X360WiredGamepad, sizeof(*p_guid)) == 0 ||
 			memcmp(p_guid, &IID_X360WirelessGamepad, sizeof(*p_guid)) == 0 ||
-			memcmp(p_guid, &IID_XSWirelessGamepad, sizeof(*p_guid)) == 0)
+			memcmp(p_guid, &IID_XSWirelessGamepad, sizeof(*p_guid)) == 0 ||
+			memcmp(p_guid, &IID_XEliteWirelessGamepad, sizeof(*p_guid)) == 0 ||
+			memcmp(p_guid, &IID_XOneWiredGamepad, sizeof(*p_guid)) == 0 ||
+			memcmp(p_guid, &IID_XOneWirelessGamepad, sizeof(*p_guid)) == 0 ||
+			memcmp(p_guid, &IID_XOneNewWirelessGamepad, sizeof(*p_guid)) == 0 ||
+			memcmp(p_guid, &IID_XOneSWirelessGamepad, sizeof(*p_guid)) == 0 ||
+			memcmp(p_guid, &IID_XOneSBluetoothGamepad, sizeof(*p_guid)) == 0 ||
+			memcmp(p_guid, &IID_XOneEliteWirelessGamepad, sizeof(*p_guid)) == 0)
 		return true;
 
 	PRAWINPUTDEVICELIST dev_list = nullptr;
@@ -516,11 +530,13 @@ void JoypadWindows::joypad_vibration_stop_xinput(int p_device, uint64_t p_timest
 void JoypadWindows::load_xinput() {
 	xinput_get_state = &_xinput_get_state;
 	xinput_set_state = &_xinput_set_state;
+	bool legacy_xinput = false;
 	xinput_dll = LoadLibrary("XInput1_4.dll");
 	if (!xinput_dll) {
 		xinput_dll = LoadLibrary("XInput1_3.dll");
 		if (!xinput_dll) {
 			xinput_dll = LoadLibrary("XInput9_1_0.dll");
+			legacy_xinput = true;
 		}
 	}
 
@@ -529,7 +545,9 @@ void JoypadWindows::load_xinput() {
 		return;
 	}
 
-	XInputGetState_t func = (XInputGetState_t)GetProcAddress((HMODULE)xinput_dll, "XInputGetState");
+	// (LPCSTR)100 is the magic number to get XInputGetStateEx, which also provides the state for the guide button
+	LPCSTR get_state_func_name = legacy_xinput ? "XInputGetState" : (LPCSTR)100;
+	XInputGetState_t func = (XInputGetState_t)GetProcAddress((HMODULE)xinput_dll, get_state_func_name);
 	XInputSetState_t set_func = (XInputSetState_t)GetProcAddress((HMODULE)xinput_dll, "XInputSetState");
 	if (!func || !set_func) {
 		unload_xinput();

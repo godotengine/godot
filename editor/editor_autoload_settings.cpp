@@ -32,12 +32,12 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
-#include "project_settings_editor.h"
+#include "editor/gui/editor_file_dialog.h"
+#include "editor/project_settings_editor.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 

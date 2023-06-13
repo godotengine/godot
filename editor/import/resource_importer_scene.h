@@ -323,7 +323,8 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Impor
 	}
 
 	if (generate_shape_type == SHAPE_TYPE_DECOMPOSE_CONVEX) {
-		Mesh::ConvexDecompositionSettings decomposition_settings;
+		Ref<MeshConvexDecompositionSettings> decomposition_settings = Ref<MeshConvexDecompositionSettings>();
+		decomposition_settings.instantiate();
 		bool advanced = false;
 		if (p_options.has(SNAME("decomposition/advanced"))) {
 			advanced = p_options[SNAME("decomposition/advanced")];
@@ -331,55 +332,55 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Impor
 
 		if (advanced) {
 			if (p_options.has(SNAME("decomposition/max_concavity"))) {
-				decomposition_settings.max_concavity = p_options[SNAME("decomposition/max_concavity")];
+				decomposition_settings->set_max_concavity(p_options[SNAME("decomposition/max_concavity")]);
 			}
 
 			if (p_options.has(SNAME("decomposition/symmetry_planes_clipping_bias"))) {
-				decomposition_settings.symmetry_planes_clipping_bias = p_options[SNAME("decomposition/symmetry_planes_clipping_bias")];
+				decomposition_settings->set_symmetry_planes_clipping_bias(p_options[SNAME("decomposition/symmetry_planes_clipping_bias")]);
 			}
 
 			if (p_options.has(SNAME("decomposition/revolution_axes_clipping_bias"))) {
-				decomposition_settings.revolution_axes_clipping_bias = p_options[SNAME("decomposition/revolution_axes_clipping_bias")];
+				decomposition_settings->set_revolution_axes_clipping_bias(p_options[SNAME("decomposition/revolution_axes_clipping_bias")]);
 			}
 
 			if (p_options.has(SNAME("decomposition/min_volume_per_convex_hull"))) {
-				decomposition_settings.min_volume_per_convex_hull = p_options[SNAME("decomposition/min_volume_per_convex_hull")];
+				decomposition_settings->set_min_volume_per_convex_hull(p_options[SNAME("decomposition/min_volume_per_convex_hull")]);
 			}
 
 			if (p_options.has(SNAME("decomposition/resolution"))) {
-				decomposition_settings.resolution = p_options[SNAME("decomposition/resolution")];
+				decomposition_settings->set_resolution(p_options[SNAME("decomposition/resolution")]);
 			}
 
 			if (p_options.has(SNAME("decomposition/max_num_vertices_per_convex_hull"))) {
-				decomposition_settings.max_num_vertices_per_convex_hull = p_options[SNAME("decomposition/max_num_vertices_per_convex_hull")];
+				decomposition_settings->set_max_num_vertices_per_convex_hull(p_options[SNAME("decomposition/max_num_vertices_per_convex_hull")]);
 			}
 
 			if (p_options.has(SNAME("decomposition/plane_downsampling"))) {
-				decomposition_settings.plane_downsampling = p_options[SNAME("decomposition/plane_downsampling")];
+				decomposition_settings->set_plane_downsampling(p_options[SNAME("decomposition/plane_downsampling")]);
 			}
 
 			if (p_options.has(SNAME("decomposition/convexhull_downsampling"))) {
-				decomposition_settings.convexhull_downsampling = p_options[SNAME("decomposition/convexhull_downsampling")];
+				decomposition_settings->set_convex_hull_downsampling(p_options[SNAME("decomposition/convexhull_downsampling")]);
 			}
 
 			if (p_options.has(SNAME("decomposition/normalize_mesh"))) {
-				decomposition_settings.normalize_mesh = p_options[SNAME("decomposition/normalize_mesh")];
+				decomposition_settings->set_normalize_mesh(p_options[SNAME("decomposition/normalize_mesh")]);
 			}
 
 			if (p_options.has(SNAME("decomposition/mode"))) {
-				decomposition_settings.mode = (Mesh::ConvexDecompositionSettings::Mode)p_options[SNAME("decomposition/mode")].operator int();
+				decomposition_settings->set_mode((MeshConvexDecompositionSettings::Mode)p_options[SNAME("decomposition/mode")].operator int());
 			}
 
 			if (p_options.has(SNAME("decomposition/convexhull_approximation"))) {
-				decomposition_settings.convexhull_approximation = p_options[SNAME("decomposition/convexhull_approximation")];
+				decomposition_settings->set_convex_hull_approximation(p_options[SNAME("decomposition/convexhull_approximation")]);
 			}
 
 			if (p_options.has(SNAME("decomposition/max_convex_hulls"))) {
-				decomposition_settings.max_convex_hulls = MAX(1, (int)p_options[SNAME("decomposition/max_convex_hulls")]);
+				decomposition_settings->set_max_convex_hulls(MAX(1, (int)p_options[SNAME("decomposition/max_convex_hulls")]));
 			}
 
 			if (p_options.has(SNAME("decomposition/project_hull_vertices"))) {
-				decomposition_settings.project_hull_vertices = p_options[SNAME("decomposition/project_hull_vertices")];
+				decomposition_settings->set_project_hull_vertices(p_options[SNAME("decomposition/project_hull_vertices")]);
 			}
 		} else {
 			int precision_level = 5;
@@ -389,13 +390,13 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Impor
 
 			const real_t precision = real_t(precision_level - 1) / 9.0;
 
-			decomposition_settings.max_concavity = Math::lerp(real_t(1.0), real_t(0.001), precision);
-			decomposition_settings.min_volume_per_convex_hull = Math::lerp(real_t(0.01), real_t(0.0001), precision);
-			decomposition_settings.resolution = Math::lerp(10'000, 100'000, precision);
-			decomposition_settings.max_num_vertices_per_convex_hull = Math::lerp(32, 64, precision);
-			decomposition_settings.plane_downsampling = Math::lerp(3, 16, precision);
-			decomposition_settings.convexhull_downsampling = Math::lerp(3, 16, precision);
-			decomposition_settings.max_convex_hulls = Math::lerp(1, 32, precision);
+			decomposition_settings->set_max_concavity(Math::lerp(real_t(1.0), real_t(0.001), precision));
+			decomposition_settings->set_min_volume_per_convex_hull(Math::lerp(real_t(0.01), real_t(0.0001), precision));
+			decomposition_settings->set_resolution(Math::lerp(10'000, 100'000, precision));
+			decomposition_settings->set_max_num_vertices_per_convex_hull(Math::lerp(32, 64, precision));
+			decomposition_settings->set_plane_downsampling(Math::lerp(3, 16, precision));
+			decomposition_settings->set_convex_hull_downsampling(Math::lerp(3, 16, precision));
+			decomposition_settings->set_max_convex_hulls(Math::lerp(1, 32, precision));
 		}
 
 		return p_mesh->convex_decompose(decomposition_settings);

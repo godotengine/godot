@@ -10,7 +10,11 @@ if env["platform"] in ["haiku", "macos", "windows", "linuxbsd"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env.Prepend(CPPPATH=[thirdparty_dir])
+    # Treat glad headers as system headers to avoid raising warnings. Not supported on MSVC.
+    if not env.msvc:
+        env.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path])
+    else:
+        env.Prepend(CPPPATH=[thirdparty_dir])
 
     env.Append(CPPDEFINES=["GLAD_ENABLED"])
     env.Append(CPPDEFINES=["GLES_OVER_GL"])

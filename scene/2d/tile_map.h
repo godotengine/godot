@@ -39,7 +39,7 @@ class TileSetAtlasSource;
 
 struct TileMapQuadrant {
 	struct CoordsWorldComparator {
-		_ALWAYS_INLINE_ bool operator()(const Vector2i &p_a, const Vector2i &p_b) const {
+		_ALWAYS_INLINE_ bool operator()(const Vector2 &p_a, const Vector2 &p_b) const {
 			// We sort the cells by their local coords, as it is needed by rendering.
 			if (p_a.y == p_b.y) {
 				return p_a.x > p_b.x;
@@ -60,8 +60,8 @@ struct TileMapQuadrant {
 	RBSet<Vector2i> cells;
 	// We need those two maps to sort by local position for rendering
 	// This is kind of workaround, it would be better to sort the cells directly in the "cells" set instead.
-	RBMap<Vector2i, Vector2i> map_to_local;
-	RBMap<Vector2i, Vector2i, CoordsWorldComparator> local_to_map;
+	RBMap<Vector2i, Vector2> map_to_local;
+	RBMap<Vector2, Vector2i, CoordsWorldComparator> local_to_map;
 
 	// Debug.
 	RID debug_canvas_item;
@@ -219,6 +219,8 @@ private:
 
 	// Mapping for RID to coords.
 	HashMap<RID, Vector2i> bodies_coords;
+	// Mapping for RID to tile layer.
+	HashMap<RID, int> bodies_layers;
 
 	// Quadrants and internals management.
 	Vector2i _coords_to_quadrant_coords(int p_layer, const Vector2i &p_coords) const;
@@ -311,7 +313,7 @@ public:
 	void set_quadrant_size(int p_size);
 	int get_quadrant_size() const;
 
-	static void draw_tile(RID p_canvas_item, const Vector2i &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr);
+	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr);
 
 	// Layers management.
 	int get_layers_count() const;
@@ -396,6 +398,8 @@ public:
 
 	// For finding tiles from collision.
 	Vector2i get_coords_for_body_rid(RID p_physics_body);
+	// For getting their layers as well.
+	int get_layer_for_body_rid(RID p_physics_body);
 
 	// Fixing and clearing methods.
 	void fix_invalid_tiles();

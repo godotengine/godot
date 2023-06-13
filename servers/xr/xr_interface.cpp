@@ -43,6 +43,7 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_initialized"), &XRInterface::is_initialized);
 	ClassDB::bind_method(D_METHOD("initialize"), &XRInterface::initialize);
 	ClassDB::bind_method(D_METHOD("uninitialize"), &XRInterface::uninitialize);
+	ClassDB::bind_method(D_METHOD("get_system_info"), &XRInterface::get_system_info);
 
 	ClassDB::bind_method(D_METHOD("get_tracking_status"), &XRInterface::get_tracking_status);
 

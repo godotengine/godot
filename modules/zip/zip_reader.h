@@ -40,7 +40,7 @@ class ZIPReader : public RefCounted {
 	GDCLASS(ZIPReader, RefCounted)
 
 	Ref<FileAccess> fa;
-	unzFile uzf;
+	unzFile uzf = nullptr;
 
 protected:
 	static void _bind_methods();

@@ -436,6 +436,7 @@ ENetSocket enet_socket_create(ENetSocketType type) {
 }
 
 int enet_host_dtls_server_setup(ENetHost *host, void *p_options) {
+	ERR_FAIL_COND_V_MSG(!DTLSServer::is_available(), -1, "DTLS server is not available in this build.");
 	ENetGodotSocket *sock = (ENetGodotSocket *)host->socket;
 	if (!sock->can_upgrade()) {
 		return -1;
@@ -446,6 +447,7 @@ int enet_host_dtls_server_setup(ENetHost *host, void *p_options) {
 }
 
 int enet_host_dtls_client_setup(ENetHost *host, const char *p_for_hostname, void *p_options) {
+	ERR_FAIL_COND_V_MSG(!PacketPeerDTLS::is_available(), -1, "DTLS is not available in this build.");
 	ENetGodotSocket *sock = (ENetGodotSocket *)host->socket;
 	if (!sock->can_upgrade()) {
 		return -1;

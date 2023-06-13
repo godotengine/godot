@@ -29,11 +29,11 @@
 /**************************************************************************/
 
 #include "animation_library_editor.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_file_dialog.h"
 
 void AnimationLibraryEditor::set_animation_player(Object *p_player) {
 	player = p_player;

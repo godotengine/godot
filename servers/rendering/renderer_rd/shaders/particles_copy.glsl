@@ -206,11 +206,12 @@ void main() {
 			// as they will be drawn with the node position as origin.
 			txform = params.inv_emission_transform * txform;
 		}
-
-		txform = transpose(txform);
 	} else {
-		txform = mat4(vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0)); //zero scale, becomes invisible
+		// Set scale to zero and translate to -INF so particle will be invisible
+		// even for materials that ignore rotation/scale (i.e. billboards).
+		txform = mat4(vec4(0.0), vec4(0.0), vec4(0.0), vec4(-1.0 / 0.0, -1.0 / 0.0, -1.0 / 0.0, 0.0));
 	}
+	txform = transpose(txform);
 
 	if (params.copy_mode_2d) {
 		uint write_offset = gl_GlobalInvocationID.x * (2 + 1 + 1); //xform + color + custom

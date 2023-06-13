@@ -33,9 +33,10 @@
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_locale_dialog.h"
-#include "editor/editor_spin_slider.h"
 #include "editor/filesystem_dock.h"
-#include "scene/gui/button.h"
+
+class Button;
+class EditorSpinSlider;
 
 class EditorPropertyArrayObject : public RefCounted {
 	GDCLASS(EditorPropertyArrayObject, RefCounted);

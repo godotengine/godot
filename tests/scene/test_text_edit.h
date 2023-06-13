@@ -38,6 +38,7 @@
 namespace TestTextEdit {
 
 TEST_CASE("[SceneTree][TextEdit] text entry") {
+	SceneTree::get_singleton()->get_root()->set_physics_object_picking(false);
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 	text_edit->grab_focus();

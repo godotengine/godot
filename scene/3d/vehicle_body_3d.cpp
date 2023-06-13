@@ -160,11 +160,11 @@ real_t VehicleWheel3D::get_suspension_rest_length() const {
 }
 
 void VehicleWheel3D::set_suspension_travel(real_t p_length) {
-	m_maxSuspensionTravelCm = p_length / 0.01;
+	m_maxSuspensionTravel = p_length;
 }
 
 real_t VehicleWheel3D::get_suspension_travel() const {
-	return m_maxSuspensionTravelCm * 0.01;
+	return m_maxSuspensionTravel;
 }
 
 void VehicleWheel3D::set_suspension_stiffness(real_t p_value) {
@@ -429,8 +429,8 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 		wheel.m_raycastInfo.m_suspensionLength = hitDistance - wheel.m_wheelRadius;
 		//clamp on max suspension travel
 
-		real_t minSuspensionLength = wheel.m_suspensionRestLength - wheel.m_maxSuspensionTravelCm * real_t(0.01);
-		real_t maxSuspensionLength = wheel.m_suspensionRestLength + wheel.m_maxSuspensionTravelCm * real_t(0.01);
+		real_t minSuspensionLength = wheel.m_suspensionRestLength - wheel.m_maxSuspensionTravel;
+		real_t maxSuspensionLength = wheel.m_suspensionRestLength + wheel.m_maxSuspensionTravel;
 		if (wheel.m_raycastInfo.m_suspensionLength < minSuspensionLength) {
 			wheel.m_raycastInfo.m_suspensionLength = minSuspensionLength;
 		}

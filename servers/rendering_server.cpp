@@ -35,6 +35,7 @@
 #include "core/variant/typed_array.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/shader_language.h"
+#include "servers/rendering/shader_warnings.h"
 
 RenderingServer *RenderingServer::singleton = nullptr;
 RenderingServer *(*RenderingServer::create_func)() = nullptr;
@@ -140,9 +141,9 @@ RID RenderingServer::get_test_texture() {
 					c.b = y;
 				}
 
-				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 0] = uint8_t(CLAMP(c.r * 255, 0, 255));
-				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 1] = uint8_t(CLAMP(c.g * 255, 0, 255));
-				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 2] = uint8_t(CLAMP(c.b * 255, 0, 255));
+				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 0] = uint8_t(CLAMP(c.r, 0, 255));
+				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 1] = uint8_t(CLAMP(c.g, 0, 255));
+				w[(y * TEST_TEXTURE_SIZE + x) * 3 + 2] = uint8_t(CLAMP(c.b, 0, 255));
 			}
 		}
 	}
@@ -1698,6 +1699,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("texture_set_force_redraw_if_visible", "texture", "enable"), &RenderingServer::texture_set_force_redraw_if_visible);
 	ClassDB::bind_method(D_METHOD("texture_get_rd_texture", "texture", "srgb"), &RenderingServer::texture_get_rd_texture, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("texture_get_native_handle", "texture", "srgb"), &RenderingServer::texture_get_native_handle, DEFVAL(false));
 
 	BIND_ENUM_CONSTANT(TEXTURE_LAYERED_2D_ARRAY);
 	BIND_ENUM_CONSTANT(TEXTURE_LAYERED_CUBEMAP);
@@ -2120,7 +2122,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_collision_set_cull_mask", "particles_collision", "mask"), &RenderingServer::particles_collision_set_cull_mask);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_sphere_radius", "particles_collision", "radius"), &RenderingServer::particles_collision_set_sphere_radius);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_box_extents", "particles_collision", "extents"), &RenderingServer::particles_collision_set_box_extents);
-	ClassDB::bind_method(D_METHOD("particles_collision_set_attractor_strength", "particles_collision", "setrngth"), &RenderingServer::particles_collision_set_attractor_strength);
+	ClassDB::bind_method(D_METHOD("particles_collision_set_attractor_strength", "particles_collision", "strength"), &RenderingServer::particles_collision_set_attractor_strength);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_attractor_directionality", "particles_collision", "amount"), &RenderingServer::particles_collision_set_attractor_directionality);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_attractor_attenuation", "particles_collision", "curve"), &RenderingServer::particles_collision_set_attractor_attenuation);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_field_texture", "particles_collision", "texture"), &RenderingServer::particles_collision_set_field_texture);
@@ -2198,6 +2200,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_texture_mipmap_bias", "viewport", "mipmap_bias"), &RenderingServer::viewport_set_texture_mipmap_bias);
 	ClassDB::bind_method(D_METHOD("viewport_set_update_mode", "viewport", "update_mode"), &RenderingServer::viewport_set_update_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_clear_mode", "viewport", "clear_mode"), &RenderingServer::viewport_set_clear_mode);
+	ClassDB::bind_method(D_METHOD("viewport_get_render_target", "viewport"), &RenderingServer::viewport_get_render_target);
 	ClassDB::bind_method(D_METHOD("viewport_get_texture", "viewport"), &RenderingServer::viewport_get_texture);
 	ClassDB::bind_method(D_METHOD("viewport_set_disable_3d", "viewport", "disable"), &RenderingServer::viewport_set_disable_3d);
 	ClassDB::bind_method(D_METHOD("viewport_set_disable_2d", "viewport", "disable"), &RenderingServer::viewport_set_disable_2d);
@@ -2602,6 +2605,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("canvas_item_add_line", "item", "from", "to", "color", "width", "antialiased"), &RenderingServer::canvas_item_add_line, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_polyline", "item", "points", "colors", "width", "antialiased"), &RenderingServer::canvas_item_add_polyline, DEFVAL(-1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("canvas_item_add_multiline", "item", "points", "colors", "width"), &RenderingServer::canvas_item_add_multiline, DEFVAL(-1.0));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_rect", "item", "rect", "color"), &RenderingServer::canvas_item_add_rect);
 	ClassDB::bind_method(D_METHOD("canvas_item_add_circle", "item", "pos", "radius", "color"), &RenderingServer::canvas_item_add_circle);
 	ClassDB::bind_method(D_METHOD("canvas_item_add_texture_rect", "item", "rect", "texture", "tile", "modulate", "transpose"), &RenderingServer::canvas_item_add_texture_rect, DEFVAL(false), DEFVAL(Color(1, 1, 1)), DEFVAL(false));
@@ -2716,7 +2720,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_add", "name", "type", "default_value"), &RenderingServer::global_shader_parameter_add);
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_remove", "name"), &RenderingServer::global_shader_parameter_remove);
-	ClassDB::bind_method(D_METHOD("global_shader_parameter_get_list"), &RenderingServer::global_shader_parameter_get_list);
+	ClassDB::bind_method(D_METHOD("global_shader_parameter_get_list"), &RenderingServer::_global_shader_parameter_get_list);
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_set", "name", "value"), &RenderingServer::global_shader_parameter_set);
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_set_override", "name", "value"), &RenderingServer::global_shader_parameter_set_override);
 	ClassDB::bind_method(D_METHOD("global_shader_parameter_get", "name"), &RenderingServer::global_shader_parameter_get);
@@ -2855,9 +2859,22 @@ RenderingServer::RenderingServer() {
 	singleton = this;
 }
 
+TypedArray<StringName> RenderingServer::_global_shader_parameter_get_list() const {
+	TypedArray<StringName> gsp;
+	Vector<StringName> gsp_sn = global_shader_parameter_get_list();
+	gsp.resize(gsp_sn.size());
+	for (int i = 0; i < gsp_sn.size(); i++) {
+		gsp[i] = gsp_sn[i];
+	}
+	return gsp;
+}
+
 void RenderingServer::init() {
-	GLOBAL_DEF_RST_NOVAL_BASIC("rendering/textures/vram_compression/import_s3tc_bptc", OS::get_singleton()->get_preferred_texture_format() == OS::PREFERRED_TEXTURE_FORMAT_S3TC_BPTC);
-	GLOBAL_DEF_RST_NOVAL_BASIC("rendering/textures/vram_compression/import_etc2_astc", OS::get_singleton()->get_preferred_texture_format() == OS::PREFERRED_TEXTURE_FORMAT_ETC2_ASTC);
+	// These are overrides, even if they are false Godot will still
+	// import the texture formats that the host platform needs.
+	// See `const bool can_s3tc_bptc` in the resource importer.
+	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_s3tc_bptc", false);
+	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc2_astc", false);
 
 	GLOBAL_DEF("rendering/textures/lossless_compression/force_png", false);
 
@@ -2978,6 +2995,15 @@ void RenderingServer::init() {
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/opengl/max_lights_per_object", PROPERTY_HINT_RANGE, "2,1024,1"), 8);
 
 	GLOBAL_DEF_RST_BASIC("xr/shaders/enabled", false);
+
+	GLOBAL_DEF("debug/shader_language/warnings/enable", true);
+	GLOBAL_DEF("debug/shader_language/warnings/treat_warnings_as_errors", false);
+
+#ifdef DEBUG_ENABLED
+	for (int i = 0; i < (int)ShaderWarning::WARNING_MAX; i++) {
+		GLOBAL_DEF("debug/shader_language/warnings/" + ShaderWarning::get_name_from_code((ShaderWarning::Code)i).to_lower(), true);
+	}
+#endif
 }
 
 RenderingServer::~RenderingServer() {

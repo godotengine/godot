@@ -30,6 +30,9 @@
 
 #include "hb.hh"
 
+/* Variations of this code exist in hb-coretext.cc as well
+ * as hb-aat-map.cc... */
+
 typedef struct hb_ms_feature_t {
   uint32_t tag_le;
   uint32_t value;

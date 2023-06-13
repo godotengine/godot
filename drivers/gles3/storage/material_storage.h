@@ -42,11 +42,11 @@
 #include "servers/rendering/storage/material_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
-#include "../shaders/canvas.glsl.gen.h"
-#include "../shaders/cubemap_filter.glsl.gen.h"
-#include "../shaders/particles.glsl.gen.h"
-#include "../shaders/scene.glsl.gen.h"
-#include "../shaders/sky.glsl.gen.h"
+#include "drivers/gles3/shaders/canvas.glsl.gen.h"
+#include "drivers/gles3/shaders/cubemap_filter.glsl.gen.h"
+#include "drivers/gles3/shaders/particles.glsl.gen.h"
+#include "drivers/gles3/shaders/scene.glsl.gen.h"
+#include "drivers/gles3/shaders/sky.glsl.gen.h"
 
 namespace GLES3 {
 

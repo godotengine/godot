@@ -81,11 +81,11 @@ struct hb_serialize_context_t
       head = o.head;
       tail = o.tail;
       next = nullptr;
-      real_links.alloc (o.num_real_links);
+      real_links.alloc (o.num_real_links, true);
       for (unsigned i = 0 ; i < o.num_real_links; i++)
         real_links.push (o.real_links[i]);
 
-      virtual_links.alloc (o.num_virtual_links);
+      virtual_links.alloc (o.num_virtual_links, true);
       for (unsigned i = 0; i < o.num_virtual_links; i++)
         virtual_links.push (o.virtual_links[i]);
     }
@@ -629,6 +629,13 @@ struct hb_serialize_context_t
   template <typename Type>
   Type *embed (const Type &obj)
   { return embed (std::addressof (obj)); }
+  char *embed (const char *obj, unsigned size)
+  {
+    char *ret = this->allocate_size<char> (size, false);
+    if (unlikely (!ret)) return nullptr;
+    hb_memcpy (ret, obj, size);
+    return ret;
+  }
 
   template <typename Type, typename ...Ts> auto
   _copy (const Type &src, hb_priority<1>, Ts&&... ds) HB_RETURN

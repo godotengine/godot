@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Control" inherits="CanvasItem" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		All user interface nodes inherit from Control. A control's anchors and offsets adapt its position and size relative to its parent.
+		Base class for all GUI controls. Adapts its position and size based on its parent control.
 	</brief_description>
 	<description>
 		Base class for all UI-related nodes. [Control] features a bounding rectangle that defines its extents, an anchor position relative to its parent control or the current viewport, and offsets relative to the anchor. The offsets update automatically when the node, any of its parents, or the screen size change.
@@ -41,7 +41,7 @@
 				{
 				    // Check position if it is relevant to you
 				    // Otherwise, just check data
-				    return data.VariantType == Variant.Type.Dictionary &amp;&amp; data.AsGodotDictionary().Contains("expected");
+				    return data.VariantType == Variant.Type.Dictionary &amp;&amp; data.AsGodotDictionary().ContainsKey("expected");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -64,7 +64,7 @@
 				[csharp]
 				public override bool _CanDropData(Vector2 atPosition, Variant data)
 				{
-				    return data.VariantType == Variant.Type.Dictionary &amp;&amp; dict.AsGodotDictionary().Contains("color");
+				    return data.VariantType == Variant.Type.Dictionary &amp;&amp; dict.AsGodotDictionary().ContainsKey("color");
 				}
 
 				public override void _DropData(Vector2 atPosition, Variant data)
@@ -75,7 +75,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="_get_drag_data" qualifiers="virtual const">
+		<method name="_get_drag_data" qualifiers="virtual">
 			<return type="Variant" />
 			<param index="0" name="at_position" type="Vector2" />
 			<description>
@@ -105,6 +105,14 @@
 				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member custom_minimum_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
 				If not overridden, defaults to [constant Vector2.ZERO].
 				[b]Note:[/b] This method will not be called when the script is attached to a [Control] node that already overrides its minimum size (e.g. [Label], [Button], [PanelContainer] etc.). It can only be used with most basic GUI nodes, like [Control], [Container], [Panel] etc.
+			</description>
+		</method>
+		<method name="_get_tooltip" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="at_position" type="Vector2" />
+			<description>
+				Virtual method to be implemented by the user. Returns the tooltip text for the position [param at_position] in control's local coordinates, which will typically appear when the cursor is resting over this control. See [method get_tooltip].
+				[b]Note:[/b] If this method returns an empty [String], no tooltip is displayed.
 			</description>
 		</method>
 		<method name="_gui_input" qualifiers="virtual">
@@ -209,6 +217,7 @@
 			<return type="void" />
 			<description>
 				Marks an input event as handled. Once you accept an input event, it stops propagating, even to nodes listening to [method Node._unhandled_input] or [method Node._unhandled_key_input].
+				[b]Note:[/b] This does not affect the methods in [Input], only the way events are propagated.
 			</description>
 		</method>
 		<method name="add_theme_color_override">
@@ -532,8 +541,9 @@
 			<return type="String" />
 			<param index="0" name="at_position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Returns the tooltip text [param at_position] in local coordinates, which will typically appear when the cursor is resting over this control. By default, it returns [member tooltip_text].
-				[b]Note:[/b] This method can be overridden to customize its behavior. If this method returns an empty [String], no tooltip is displayed.
+				Returns the tooltip text for the position [param at_position] in control's local coordinates, which will typically appear when the cursor is resting over this control. By default, it returns [member tooltip_text].
+				This method can be overridden to customize its behavior. See [method _get_tooltip].
+				[b]Note:[/b] If this method returns an empty [String], no tooltip is displayed.
 			</description>
 		</method>
 		<method name="grab_click_focus">
@@ -918,7 +928,7 @@
 			Anchors the top edge of the node to the origin, the center or the end of its parent control. It changes how the top offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
 		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true">
-			Toggles if any text should automatically change to its translated version depending on the current locale. Note that this will not affect any internal nodes (e.g. the popup of a [MenuButton]).
+			Toggles if any text should automatically change to its translated version depending on the current locale.
 			Also decides if the node's strings should be parsed for POT generation.
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
@@ -937,10 +947,10 @@
 			Tells Godot which node it should give focus to if the user presses the left arrow on the keyboard or left on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_left] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the left of this one.
 		</member>
 		<member name="focus_neighbor_right" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
-			Tells Godot which node it should give focus to if the user presses the right arrow on the keyboard or right on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_right] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the bottom of this one.
+			Tells Godot which node it should give focus to if the user presses the right arrow on the keyboard or right on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_right] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the right of this one.
 		</member>
 		<member name="focus_neighbor_top" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)">
-			Tells Godot which node it should give focus to if the user presses the top arrow on the keyboard or top on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_up] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the bottom of this one.
+			Tells Godot which node it should give focus to if the user presses the top arrow on the keyboard or top on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_up] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the top of this one.
 		</member>
 		<member name="focus_next" type="NodePath" setter="set_focus_next" getter="get_focus_next" default="NodePath(&quot;&quot;)">
 			Tells Godot which node it should give focus to if the user presses [kbd]Tab[/kbd] on a keyboard by default. You can change the key by editing the [member ProjectSettings.input/ui_focus_next] input action.
@@ -1019,13 +1029,13 @@
 			The size of the node's bounding rectangle, in the node's coordinate system. [Container] nodes update this property automatically.
 		</member>
 		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" enum="Control.SizeFlags" default="1">
-			Tells the parent [Container] nodes how they should resize and place the node on the X axis. Use one of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
+			Tells the parent [Container] nodes how they should resize and place the node on the X axis. Use a combination of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
 		</member>
 		<member name="size_flags_stretch_ratio" type="float" setter="set_stretch_ratio" getter="get_stretch_ratio" default="1.0">
 			If the node and at least one of its neighbors uses the [constant SIZE_EXPAND] size flag, the parent [Container] will let it take more or less space depending on this property. If this node has a stretch ratio of 2 and its neighbor a ratio of 1, this node will take two thirds of the available space.
 		</member>
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" enum="Control.SizeFlags" default="1">
-			Tells the parent [Container] nodes how they should resize and place the node on the Y axis. Use one of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
+			Tells the parent [Container] nodes how they should resize and place the node on the Y axis. Use a combination of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
 			The [Theme] resource this node and all its [Control] and [Window] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.

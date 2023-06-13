@@ -508,7 +508,7 @@ void main() {
 		if (bool(draw_data.flags & FLAGS_FLIP_V)) {
 			normal.y = -normal.y;
 		}
-		normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
+		normal.z = sqrt(max(0.0, 1.0 - dot(normal.xy, normal.xy)));
 		normal_used = true;
 	} else {
 		normal = vec3(0.0, 0.0, 1.0);
@@ -568,7 +568,7 @@ void main() {
 	}
 
 #ifdef MODE_LIGHT_ONLY
-	color = vec4(0.0);
+	float light_only_alpha = 0.0;
 #elif !defined(MODE_UNSHADED)
 	color *= canvas_data.canvas_modulation;
 #endif
@@ -611,6 +611,9 @@ void main() {
 		}
 
 		light_blend_compute(light_base, light_color, color.rgb);
+#ifdef MODE_LIGHT_ONLY
+		light_only_alpha += light_color.a;
+#endif
 	}
 
 	// Positional Lights
@@ -695,7 +698,14 @@ void main() {
 		}
 
 		light_blend_compute(light_base, light_color, color.rgb);
+#ifdef MODE_LIGHT_ONLY
+		light_only_alpha += light_color.a;
+#endif
 	}
+#endif
+
+#ifdef MODE_LIGHT_ONLY
+	color.a *= light_only_alpha;
 #endif
 
 	frag_color = color;

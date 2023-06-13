@@ -115,7 +115,7 @@ bool _promote_extensions_if_needed (graph::gsubgpos_graph_context_t& ext_context
   if (!ext_context.lookups) return true;
 
   hb_vector_t<lookup_size_t> lookup_sizes;
-  lookup_sizes.alloc (ext_context.lookups.get_population ());
+  lookup_sizes.alloc (ext_context.lookups.get_population (), true);
 
   for (unsigned lookup_index : ext_context.lookups.keys ())
   {
@@ -216,7 +216,7 @@ bool _try_isolating_subgraphs (const hb_vector_t<graph::overflow_record_t>& over
   }
 
   DEBUG_MSG (SUBSET_REPACK, nullptr,
-             "Overflow in space %d (%d roots). Moving %d roots to space %d.",
+             "Overflow in space %u (%u roots). Moving %u roots to space %u.",
              space,
              sorted_graph.num_roots_for_space (space),
              roots_to_isolate.get_population (),
@@ -326,7 +326,7 @@ hb_resolve_graph_overflows (hb_tag_t table_tag,
   while (!sorted_graph.in_error ()
          && graph::will_overflow (sorted_graph, &overflows)
          && round < max_rounds) {
-    DEBUG_MSG (SUBSET_REPACK, nullptr, "=== Overflow resolution round %d ===", round);
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "=== Overflow resolution round %u ===", round);
     print_overflows (sorted_graph, overflows);
 
     hb_set_t priority_bumped_parents;

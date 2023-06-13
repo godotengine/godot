@@ -39,6 +39,7 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_is_initialized);
 	GDVIRTUAL_BIND(_initialize);
 	GDVIRTUAL_BIND(_uninitialize);
+	GDVIRTUAL_BIND(_get_system_info);
 
 	GDVIRTUAL_BIND(_supports_play_area_mode, "mode");
 	GDVIRTUAL_BIND(_get_play_area_mode);
@@ -117,6 +118,12 @@ bool XRInterfaceExtension::initialize() {
 
 void XRInterfaceExtension::uninitialize() {
 	GDVIRTUAL_CALL(_uninitialize);
+}
+
+Dictionary XRInterfaceExtension::get_system_info() {
+	Dictionary dict;
+	GDVIRTUAL_CALL(_get_system_info, dict);
+	return dict;
 }
 
 PackedStringArray XRInterfaceExtension::get_suggested_tracker_names() const {

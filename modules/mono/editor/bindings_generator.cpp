@@ -115,6 +115,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define C_METHOD_MANAGED_FROM_SIGNAL C_NS_MONOMARSHAL ".ConvertSignalToManaged"
 
 // Types that will be ignored by the generator and won't be available in C#.
+// This must be kept in sync with `ignored_types` in csharp_script.cpp
 const Vector<String> ignored_types = { "PhysicsServer2DExtension", "PhysicsServer3DExtension" };
 
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
@@ -128,7 +129,7 @@ void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::Ty
 	{
 		// The expected types for parameters and return value in ptrcall are 'int64_t' or 'uint64_t'.
 		r_enum_itype.c_in = "%5%0 %1_in = %1;\n";
-		r_enum_itype.c_out = "%5return (%0)%1;\n";
+		r_enum_itype.c_out = "%5return (%0)(%1);\n";
 		r_enum_itype.c_type = "long";
 		r_enum_itype.c_arg_in = "&%s_in";
 	}
@@ -523,7 +524,10 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 				p_xml_output.append(target_imethod->proxy_name);
 				p_xml_output.append("\"/>");
 			} else {
-				ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
+				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+					ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
+				}
+
 				_append_xml_undeclared(p_xml_output, p_link_target);
 			}
 		}
@@ -563,7 +567,10 @@ void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const Ty
 			p_xml_output.append(target_iprop->proxy_name);
 			p_xml_output.append("\"/>");
 		} else {
-			ERR_PRINT("Cannot resolve member reference in documentation: '" + p_link_target + "'.");
+			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+				ERR_PRINT("Cannot resolve member reference in documentation: '" + p_link_target + "'.");
+			}
+
 			_append_xml_undeclared(p_xml_output, p_link_target);
 		}
 	}
@@ -591,7 +598,10 @@ void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const Ty
 			p_xml_output.append(target_isignal->proxy_name);
 			p_xml_output.append("\"/>");
 		} else {
-			ERR_PRINT("Cannot resolve signal reference in documentation: '" + p_link_target + "'.");
+			if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+				ERR_PRINT("Cannot resolve signal reference in documentation: '" + p_link_target + "'.");
+			}
+
 			_append_xml_undeclared(p_xml_output, p_link_target);
 		}
 	}
@@ -613,7 +623,10 @@ void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const Type
 		p_xml_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
 		p_xml_output.append("\"/>");
 	} else {
-		ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
+		if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
+		}
+
 		_append_xml_undeclared(p_xml_output, p_link_target);
 	}
 }
@@ -673,7 +686,10 @@ void BindingsGenerator::_append_xml_constant(StringBuilder &p_xml_output, const 
 				// Also search in @GlobalScope as a last resort if no class was specified
 				_append_xml_constant_in_global_scope(p_xml_output, p_target_cname, p_link_target);
 			} else {
-				ERR_PRINT("Cannot resolve constant reference in documentation: '" + p_link_target + "'.");
+				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+					ERR_PRINT("Cannot resolve constant reference in documentation: '" + p_link_target + "'.");
+				}
+
 				_append_xml_undeclared(p_xml_output, p_link_target);
 			}
 		}
@@ -1360,6 +1376,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			output.append("/// </summary>\n");
 		}
+
+		if (class_doc->is_deprecated) {
+			output.append("[Obsolete(\"This class is deprecated.\")]\n");
+		}
 	}
 
 	// We generate a `GodotClassName` attribute if the engine class name is not the same as the
@@ -1411,6 +1431,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 				output.append(INDENT1 "/// </summary>");
 			}
+
+			if (iconstant.const_doc->is_deprecated) {
+				output.append(MEMBER_BEGIN "[Obsolete(\"This constant is deprecated.\")]");
+			}
 		}
 
 		output.append(MEMBER_BEGIN "public const long ");
@@ -1454,6 +1478,10 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 					}
 
 					output.append(INDENT2 "/// </summary>\n");
+				}
+
+				if (iconstant.const_doc->is_deprecated) {
+					output.append(INDENT2 "[Obsolete(\"This enum member is deprecated.\")]\n");
 				}
 			}
 
@@ -1852,6 +1880,10 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 			p_output.append(INDENT1 "/// </summary>");
 		}
+
+		if (p_iprop.prop_doc->is_deprecated) {
+			p_output.append(MEMBER_BEGIN "[Obsolete(\"This property is deprecated.\")]");
+		}
 	}
 
 	p_output.append(MEMBER_BEGIN "public ");
@@ -1878,7 +1910,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 				// Assume the index parameter is an enum
 				const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
 				CRASH_COND(idx_arg_type == nullptr);
-				p_output.append("(" + idx_arg_type->proxy_name + ")" + itos(p_iprop.index));
+				p_output.append("(" + idx_arg_type->proxy_name + ")(" + itos(p_iprop.index) + ")");
 			} else {
 				p_output.append(itos(p_iprop.index));
 			}
@@ -1896,7 +1928,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 				// Assume the index parameter is an enum
 				const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
 				CRASH_COND(idx_arg_type == nullptr);
-				p_output.append("(" + idx_arg_type->proxy_name + ")" + itos(p_iprop.index) + ", ");
+				p_output.append("(" + idx_arg_type->proxy_name + ")(" + itos(p_iprop.index) + "), ");
 			} else {
 				p_output.append(itos(p_iprop.index) + ", ");
 			}
@@ -2086,6 +2118,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 				}
 
 				p_output.append(INDENT1 "/// </summary>");
+			}
+
+			if (p_imethod.method_doc->is_deprecated) {
+				p_output.append(MEMBER_BEGIN "[Obsolete(\"This method is deprecated.\")]");
 			}
 		}
 
@@ -2298,6 +2334,10 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 				}
 
 				p_output.append(INDENT1 "/// </summary>");
+			}
+
+			if (p_isignal.method_doc->is_deprecated) {
+				p_output.append(MEMBER_BEGIN "[Obsolete(\"This signal is deprecated.\")]");
 			}
 		}
 
@@ -2850,7 +2890,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		itype.cs_out = "%5return (%2)%0(%1);";
 
-		itype.c_arg_in = "(void*)%s";
+		itype.c_arg_in = "&%s";
 		itype.c_type = "IntPtr";
 		itype.c_type_in = itype.c_type;
 		itype.c_type_out = "GodotObject";
@@ -2936,6 +2976,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			if (method_has_ptr_parameter(method_info)) {
 				// Pointers are not supported.
+				itype.ignored_members.insert(method_info.name);
 				continue;
 			}
 
@@ -3270,7 +3311,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			break;
 		case Variant::INT:
 			if (r_iarg.type.cname != name_cache.type_int) {
-				r_iarg.default_argument = "(%s)" + r_iarg.default_argument;
+				r_iarg.default_argument = "(%s)(" + r_iarg.default_argument + ")";
 			}
 			break;
 		case Variant::FLOAT:
@@ -3492,7 +3533,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype = TypeInterface::create_value_type(String(m_name));                              \
 		if (itype.name != "long" && itype.name != "ulong") {                                   \
 			itype.c_in = "%5%0 %1_in = %1;\n";                                                 \
-			itype.c_out = "%5return (%0)%1;\n";                                                \
+			itype.c_out = "%5return (%0)(%1);\n";                                              \
 			itype.c_type = "long";                                                             \
 			itype.c_arg_in = "&%s_in";                                                         \
 		} else {                                                                               \
@@ -3878,7 +3919,7 @@ void BindingsGenerator::_log(const char *p_format, ...) {
 void BindingsGenerator::_initialize() {
 	initialized = false;
 
-	EditorHelp::generate_doc();
+	EditorHelp::generate_doc(false);
 
 	enum_types.clear();
 

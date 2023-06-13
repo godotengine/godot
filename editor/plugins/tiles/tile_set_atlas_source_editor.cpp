@@ -34,7 +34,6 @@
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
-#include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -272,10 +271,10 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 				} else {
 					if (components[1] == "duration") {
 						tile_set_atlas_source->set_tile_animation_frame_duration(tile.tile, frame, p_value);
-						return true;
 					}
 				}
 			}
+			return true;
 		}
 	}
 
@@ -2415,14 +2414,6 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 				}
 			}
 		} break;
-
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
-				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_singleton()->get_settings_style();
-				atlas_source_inspector->set_property_name_style(style);
-				tile_inspector->set_property_name_style(style);
-			}
-		} break;
 	}
 }
 
@@ -2492,7 +2483,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_inspector->edit(tile_proxy_object);
 	tile_inspector->set_use_folding(true);
 	tile_inspector->connect("property_selected", callable_mp(this, &TileSetAtlasSourceEditor::_inspector_property_selected));
-	tile_inspector->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	middle_vbox_container->add_child(tile_inspector);
 
 	tile_inspector_no_tile_selected_label = memnew(Label);
@@ -2544,7 +2534,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	atlas_source_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	atlas_source_inspector->set_show_categories(true);
 	atlas_source_inspector->edit(atlas_source_proxy_object);
-	atlas_source_inspector->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	middle_vbox_container->add_child(atlas_source_inspector);
 
 	// -- Right side --
@@ -2730,14 +2719,14 @@ void EditorPropertyTilePolygon::update_property() {
 	if (String(count_property).is_empty()) {
 		if (base_type == "OccluderPolygon2D") {
 			// Single OccluderPolygon2D.
-			Ref<OccluderPolygon2D> occluder = get_edited_object()->get(get_edited_property());
+			Ref<OccluderPolygon2D> occluder = get_edited_property_value();
 			generic_tile_polygon_editor->clear_polygons();
 			if (occluder.is_valid()) {
 				generic_tile_polygon_editor->add_polygon(occluder->get_polygon());
 			}
 		} else if (base_type == "NavigationPolygon") {
 			// Single OccluderPolygon2D.
-			Ref<NavigationPolygon> navigation_polygon = get_edited_object()->get(get_edited_property());
+			Ref<NavigationPolygon> navigation_polygon = get_edited_property_value();
 			generic_tile_polygon_editor->clear_polygons();
 			if (navigation_polygon.is_valid()) {
 				for (int i = 0; i < navigation_polygon->get_outline_count(); i++) {

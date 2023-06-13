@@ -47,6 +47,11 @@ void OpenXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_display_refresh_rate", "refresh_rate"), &OpenXRInterface::set_display_refresh_rate);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "display_refresh_rate"), "set_display_refresh_rate", "get_display_refresh_rate");
 
+	// Render Target size multiplier
+	ClassDB::bind_method(D_METHOD("get_render_target_size_multiplier"), &OpenXRInterface::get_render_target_size_multiplier);
+	ClassDB::bind_method(D_METHOD("set_render_target_size_multiplier", "multiplier"), &OpenXRInterface::set_render_target_size_multiplier);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "render_target_size_multiplier"), "set_render_target_size_multiplier", "get_render_target_size_multiplier");
+
 	ClassDB::bind_method(D_METHOD("is_action_set_active", "name"), &OpenXRInterface::is_action_set_active);
 	ClassDB::bind_method(D_METHOD("set_action_set_active", "name", "active"), &OpenXRInterface::set_action_set_active);
 	ClassDB::bind_method(D_METHOD("get_action_sets"), &OpenXRInterface::get_action_sets);
@@ -583,6 +588,17 @@ void OpenXRInterface::uninitialize() {
 	initialized = false;
 }
 
+Dictionary OpenXRInterface::get_system_info() {
+	Dictionary dict;
+
+	if (openxr_api) {
+		dict[SNAME("XRRuntimeName")] = openxr_api->get_runtime_name();
+		dict[SNAME("XRRuntimeVersion")] = openxr_api->get_runtime_version();
+	}
+
+	return dict;
+}
+
 bool OpenXRInterface::supports_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 	return false;
 }
@@ -655,6 +671,22 @@ Array OpenXRInterface::get_action_sets() const {
 	}
 
 	return arr;
+}
+
+double OpenXRInterface::get_render_target_size_multiplier() const {
+	if (openxr_api == nullptr) {
+		return 1.0;
+	} else {
+		return openxr_api->get_render_target_size_multiplier();
+	}
+}
+
+void OpenXRInterface::set_render_target_size_multiplier(double multiplier) {
+	if (openxr_api == nullptr) {
+		return;
+	} else {
+		openxr_api->set_render_target_size_multiplier(multiplier);
+	}
 }
 
 Size2 OpenXRInterface::get_render_target_size() {

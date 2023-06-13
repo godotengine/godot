@@ -4,15 +4,14 @@
 		Server for anything visible.
 	</brief_description>
 	<description>
-		The rendering server is the API backend for everything visible. The whole scene system mounts on it to display.
-		The rendering server is completely opaque, the internals are entirely implementation specific and cannot be accessed.
-		The rendering server can be used to bypass the scene/[Node] system entirely.
+		The rendering server is the API backend for everything visible. The whole scene system mounts on it to display. The rendering server is completely opaque: the internals are entirely implementation-specific and cannot be accessed.
+		The rendering server can be used to bypass the scene/[Node] system entirely. This can improve performance in cases where the scene system is the bottleneck, but won't improve performance otherwise (for instance, if the GPU is already fully utilized).
 		Resources are created using the [code]*_create[/code] functions. These functions return [RID]s which are not references to the objects themselves, but opaque [i]pointers[/i] towards these objects.
 		All objects are drawn to a viewport. You can use the [Viewport] attached to the [SceneTree] or you can create one yourself with [method viewport_create]. When using a custom scenario or canvas, the scenario or canvas needs to be attached to the viewport using [method viewport_set_scenario] or [method viewport_attach_canvas].
-		In 3D, all visual objects must be associated with a scenario. The scenario is a visual representation of the world. If accessing the rendering server from a running game, the scenario can be accessed from the scene tree from any [Node3D] node with [method Node3D.get_world_3d]. Otherwise, a scenario can be created with [method scenario_create].
+		[b]Scenarios:[/b] In 3D, all visual objects must be associated with a scenario. The scenario is a visual representation of the world. If accessing the rendering server from a running game, the scenario can be accessed from the scene tree from any [Node3D] node with [method Node3D.get_world_3d]. Otherwise, a scenario can be created with [method scenario_create].
 		Similarly, in 2D, a canvas is needed to draw all canvas items.
-		In 3D, all visible objects are comprised of a resource and an instance. A resource can be a mesh, a particle system, a light, or any other 3D object. In order to be visible resources must be attached to an instance using [method instance_set_base]. The instance must also be attached to the scenario using [method instance_set_scenario] in order to be visible.
-		In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas.
+		[b]3D:[/b] In 3D, all visible objects are comprised of a resource and an instance. A resource can be a mesh, a particle system, a light, or any other 3D object. In order to be visible resources must be attached to an instance using [method instance_set_base]. The instance must also be attached to the scenario using [method instance_set_scenario] in order to be visible. RenderingServer methods that don't have a prefix are usually 3D-specific (but not always).
+		[b]2D:[/b] In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas. 2D-specific RenderingServer methods generally start with [code]canvas_*[/code].
 		[b]Headless mode:[/b] Starting the engine with the [code]--headless[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url] disables all rendering and window management functions. Most functions from [RenderingServer] will return dummy values in this case.
 	</description>
 	<tutorials>
@@ -32,7 +31,8 @@
 			<return type="RID" />
 			<description>
 				Creates a camera attributes object and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]camera_attributes_[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent resource is [CameraAttributes].
 			</description>
 		</method>
 		<method name="camera_attributes_set_auto_exposure">
@@ -98,8 +98,9 @@
 		<method name="camera_create">
 			<return type="RID" />
 			<description>
-				Creates a camera and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]camera_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Creates a 3D camera and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]camera_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent node is [Camera3D].
 			</description>
 		</method>
 		<method name="camera_set_camera_attributes">
@@ -177,7 +178,8 @@
 			<return type="RID" />
 			<description>
 				Creates a canvas and returns the assigned [RID]. It can be accessed with the RID that is returned. This RID will be used in all [code]canvas_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				Canvas has no [Resource] or [Node] equivalent.
 			</description>
 		</method>
 		<method name="canvas_item_add_animation_slice">
@@ -257,6 +259,16 @@
 				See also [method CanvasItem.draw_msdf_texture_rect_region].
 			</description>
 		</method>
+		<method name="canvas_item_add_multiline">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="points" type="PackedVector2Array" />
+			<param index="2" name="colors" type="PackedColorArray" />
+			<param index="3" name="width" type="float" default="-1.0" />
+			<description>
+				Draws a 2D multiline on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_multiline] and [method CanvasItem.draw_multiline_colors].
+			</description>
+		</method>
 		<method name="canvas_item_add_multimesh">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
@@ -299,7 +311,7 @@
 			<param index="3" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="4" name="texture" type="RID" />
 			<description>
-				Draws a 2D polygon on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_polygon].
+				Draws a 2D polygon on the [CanvasItem] pointed to by the [param item] [RID]. If you need more flexibility (such as being able to use bones), use [method canvas_item_add_triangle_array] instead. See also [method CanvasItem.draw_polygon].
 			</description>
 		</method>
 		<method name="canvas_item_add_polyline">
@@ -310,7 +322,7 @@
 			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a 2D polyline on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_polyline].
+				Draws a 2D polyline on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_polyline] and [method CanvasItem.draw_polyline_colors].
 			</description>
 		</method>
 		<method name="canvas_item_add_primitive">
@@ -350,6 +362,7 @@
 			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="5" name="transpose" type="bool" default="false" />
 			<description>
+				Draws a 2D textured rectangle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_texture_rect] and [method Texture2D.draw_rect].
 			</description>
 		</method>
 		<method name="canvas_item_add_texture_rect_region">
@@ -362,6 +375,7 @@
 			<param index="5" name="transpose" type="bool" default="false" />
 			<param index="6" name="clip_uv" type="bool" default="true" />
 			<description>
+				Draws the specified region of a 2D textured rectangle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_texture_rect_region] and [method Texture2D.draw_rect_region].
 			</description>
 		</method>
 		<method name="canvas_item_add_triangle_array">
@@ -376,6 +390,8 @@
 			<param index="7" name="texture" type="RID" />
 			<param index="8" name="count" type="int" default="-1" />
 			<description>
+				Draws a triangle array on the [CanvasItem] pointed to by the [param item] [RID]. This is internally used by [Line2D] and [StyleBoxFlat] for rendering. [method canvas_item_add_triangle_array] is highly flexible, but more complex to use than [method canvas_item_add_polygon].
+				[b]Note:[/b] [param count] is unused and can be left unspecified.
 			</description>
 		</method>
 		<method name="canvas_item_clear">
@@ -388,7 +404,9 @@
 		<method name="canvas_item_create">
 			<return type="RID" />
 			<description>
-				Creates a new [CanvasItem] instance and returns its [RID].
+				Creates a new CanvasItem instance and returns its [RID]. It can be accessed with the RID that is returned. This RID will be used in all [code]canvas_item_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent node is [CanvasItem].
 			</description>
 		</method>
 		<method name="canvas_item_set_canvas_group_mode">
@@ -400,6 +418,8 @@
 			<param index="4" name="fit_margin" type="float" default="0.0" />
 			<param index="5" name="blur_mipmaps" type="bool" default="false" />
 			<description>
+				Sets the canvas group mode used during 2D rendering for the canvas item specified by the [param item] RID. For faster but more limited clipping, use [method canvas_item_set_clip] instead.
+				[b]Note:[/b] The equivalent node functionality is found in [CanvasGroup] and [member CanvasItem.clip_children].
 			</description>
 		</method>
 		<method name="canvas_item_set_clip">
@@ -407,6 +427,8 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="clip" type="bool" />
 			<description>
+				If [param clip] is [code]true[/code], makes the canvas item specified by the [param item] RID not draw anything outside of its rect's coordinates. This clipping is fast, but works only with axis-aligned rectangles. This means that rotation is ignored by the clipping rectangle. For more advanced clipping shapes, use [method canvas_item_set_canvas_group_mode] instead.
+				[b]Note:[/b] The equivalent node functionality is found in [member Label.clip_text], [RichTextLabel] (always enabled) and more.
 			</description>
 		</method>
 		<method name="canvas_item_set_copy_to_backbuffer">
@@ -424,6 +446,7 @@
 			<param index="1" name="use_custom_rect" type="bool" />
 			<param index="2" name="rect" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<description>
+				If [param use_custom_rect] is [code]true[/code], sets the custom visibility rectangle (used for culling) to [param rect] for the canvas item specified by [param item]. Setting a custom visibility rect can reduce CPU load when drawing lots of 2D instances. If [param use_custom_rect] is [code]false[/code], automatically computes a visibility rectangle based on the canvas item's draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_set_default_texture_filter">
@@ -431,6 +454,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="filter" type="int" enum="RenderingServer.CanvasItemTextureFilter" />
 			<description>
+				Sets the default texture filter mode for the canvas item specified by the [param item] RID. Equivalent to [member CanvasItem.texture_filter].
 			</description>
 		</method>
 		<method name="canvas_item_set_default_texture_repeat">
@@ -438,6 +462,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" />
 			<description>
+				Sets the default texture repeat mode for the canvas item specified by the [param item] RID. Equivalent to [member CanvasItem.texture_repeat].
 			</description>
 		</method>
 		<method name="canvas_item_set_distance_field_mode">
@@ -445,6 +470,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
+				If [param enabled] is [code]true[/code], enables multichannel signed distance field rendering mode for the canvas item specified by the [param item] RID. This is meant to be used for font rendering, or with specially generated images using [url=https://github.com/Chlumsky/msdfgen]msdfgen[/url].
 			</description>
 		</method>
 		<method name="canvas_item_set_draw_behind_parent">
@@ -452,6 +478,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
+				If [param enabled] is [code]true[/code], draws the canvas item specified by the [param item] RID behind its parent. Equivalent to [member CanvasItem.show_behind_parent].
 			</description>
 		</method>
 		<method name="canvas_item_set_draw_index">
@@ -467,6 +494,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="mask" type="int" />
 			<description>
+				Sets the light [param mask] for the canvas item specified by the [param item] RID. Equivalent to [member CanvasItem.light_mask].
 			</description>
 		</method>
 		<method name="canvas_item_set_material">
@@ -474,7 +502,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="material" type="RID" />
 			<description>
-				Sets a new material to the [CanvasItem].
+				Sets a new [param material] to the canvas item specified by the [param item] RID. Equivalent to [member CanvasItem.material].
 			</description>
 		</method>
 		<method name="canvas_item_set_modulate">
@@ -482,6 +510,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="color" type="Color" />
 			<description>
+				Multiplies the color of the canvas item specified by the [param item] RID, while affecting its children. See also [method canvas_item_set_self_modulate]. Equivalent to [member CanvasItem.modulate].
 			</description>
 		</method>
 		<method name="canvas_item_set_parent">
@@ -489,6 +518,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="parent" type="RID" />
 			<description>
+				Sets a parent [CanvasItem] to the [CanvasItem]. The item will inherit transform, modulation and visibility from its parent, like [CanvasItem] nodes in the scene tree.
 			</description>
 		</method>
 		<method name="canvas_item_set_self_modulate">
@@ -496,6 +526,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="color" type="Color" />
 			<description>
+				Multiplies the color of the canvas item specified by the [param item] RID, without affecting its children. See also [method canvas_item_set_modulate]. Equivalent to [member CanvasItem.self_modulate].
 			</description>
 		</method>
 		<method name="canvas_item_set_sort_children_by_y">
@@ -503,6 +534,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
+				If [param enabled] is [code]true[/code], child nodes with the lowest Y position are drawn before those with a higher Y position. Y-sorting only affects children that inherit from the canvas item specified by the [param item] RID, not the canvas item itself. Equivalent to [member CanvasItem.y_sort_enabled].
 			</description>
 		</method>
 		<method name="canvas_item_set_transform">
@@ -510,6 +542,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
+				Sets the [param transform] of the canvas item specified by the [param item] RID. This affects where and how the item will be drawn. Child canvas items' transforms are multiplied by their parent's transform. Equivalent to [member Node2D.transform].
 			</description>
 		</method>
 		<method name="canvas_item_set_use_parent_material">
@@ -536,6 +569,8 @@
 			<param index="3" name="enter_callable" type="Callable" />
 			<param index="4" name="exit_callable" type="Callable" />
 			<description>
+				Sets the given [CanvasItem] as visibility notifier. [param area] defines the area of detecting visibility. [param enter_callable] is called when the [CanvasItem] enters the screen, [param exit_callable] is called when the [CanvasItem] exits the screen. If [param enable] is [code]false[/code], the item will no longer function as notifier.
+				This method can be used to manually mimic [VisibleOnScreenNotifier2D].
 			</description>
 		</method>
 		<method name="canvas_item_set_visible">
@@ -543,6 +578,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="visible" type="bool" />
 			<description>
+				Sets the visibility of the [CanvasItem].
 			</description>
 		</method>
 		<method name="canvas_item_set_z_as_relative_to_parent">
@@ -573,7 +609,8 @@
 			<return type="RID" />
 			<description>
 				Creates a canvas light and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]canvas_light_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent node is [Light2D].
 			</description>
 		</method>
 		<method name="canvas_light_occluder_attach_to_canvas">
@@ -587,8 +624,9 @@
 		<method name="canvas_light_occluder_create">
 			<return type="RID" />
 			<description>
-				Creates a light occluder and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]canvas_light_ocluder_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Creates a light occluder and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]canvas_light_occluder_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent node is [LightOccluder2D].
 			</description>
 		</method>
 		<method name="canvas_light_occluder_set_as_sdf_collision">
@@ -780,7 +818,8 @@
 			<return type="RID" />
 			<description>
 				Creates a new light occluder polygon and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]canvas_occluder_polygon_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent resource is [OccluderPolygon2D].
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_set_cull_mode">
@@ -827,11 +866,15 @@
 			<return type="void" />
 			<param index="0" name="size" type="int" />
 			<description>
+				Sets the [member ProjectSettings.rendering/2d/shadow_atlas/size] to use for [Light2D] shadow rendering (in pixels). The value is rounded up to the nearest power of 2.
 			</description>
 		</method>
 		<method name="canvas_texture_create">
 			<return type="RID" />
 			<description>
+				Creates a canvas texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]canvas_texture_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method. See also [method texture_2d_create].
+				[b]Note:[/b] The equivalent resource is [CanvasTexture] and is only meant to be used in 2D rendering, not 3D.
 			</description>
 		</method>
 		<method name="canvas_texture_set_channel">
@@ -840,6 +883,7 @@
 			<param index="1" name="channel" type="int" enum="RenderingServer.CanvasTextureChannel" />
 			<param index="2" name="texture" type="RID" />
 			<description>
+				Sets the [param channel]'s [param texture] for the canvas texture specified by the [param canvas_texture] RID. Equivalent to [member CanvasTexture.diffuse_texture], [member CanvasTexture.normal_texture] and [member CanvasTexture.specular_texture].
 			</description>
 		</method>
 		<method name="canvas_texture_set_shading_parameters">
@@ -848,6 +892,7 @@
 			<param index="1" name="base_color" type="Color" />
 			<param index="2" name="shininess" type="float" />
 			<description>
+				Sets the [param base_color] and [param shininess] to use for the canvas texture specified by the [param canvas_texture] RID. Equivalent to [member CanvasTexture.specular_color] and [member CanvasTexture.specular_shininess].
 			</description>
 		</method>
 		<method name="canvas_texture_set_texture_filter">
@@ -855,6 +900,7 @@
 			<param index="0" name="canvas_texture" type="RID" />
 			<param index="1" name="filter" type="int" enum="RenderingServer.CanvasItemTextureFilter" />
 			<description>
+				Sets the texture [param filter] mode to use for the canvas texture specified by the [param canvas_texture] RID.
 			</description>
 		</method>
 		<method name="canvas_texture_set_texture_repeat">
@@ -862,6 +908,7 @@
 			<param index="0" name="canvas_texture" type="RID" />
 			<param index="1" name="repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" />
 			<description>
+				Sets the texture [param repeat] mode to use for the canvas texture specified by the [param canvas_texture] RID.
 			</description>
 		</method>
 		<method name="create_local_rendering_device" qualifiers="const">
@@ -874,6 +921,10 @@
 		<method name="decal_create">
 			<return type="RID" />
 			<description>
+				Creates a decal and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]decal_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				To place in a scene, attach this decal to an instance using [method instance_set_base] using the returned RID.
+				[b]Note:[/b] The equivalent node is [Decal].
 			</description>
 		</method>
 		<method name="decal_set_albedo_mix">
@@ -881,6 +932,7 @@
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="albedo_mix" type="float" />
 			<description>
+				Sets the [param albedo_mix] in the decal specified by the [param decal] RID. Equivalent to [member Decal.albedo_mix].
 			</description>
 		</method>
 		<method name="decal_set_cull_mask">
@@ -888,6 +940,7 @@
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="mask" type="int" />
 			<description>
+				Sets the cull [param mask] in the decal specified by the [param decal] RID. Equivalent to [member Decal.cull_mask].
 			</description>
 		</method>
 		<method name="decal_set_distance_fade">
@@ -897,6 +950,7 @@
 			<param index="2" name="begin" type="float" />
 			<param index="3" name="length" type="float" />
 			<description>
+				Sets the distance fade parameters in the decal specified by the [param decal] RID. Equivalent to [member Decal.distance_fade_enabled], [member Decal.distance_fade_begin] and [member Decal.distance_fade_length].
 			</description>
 		</method>
 		<method name="decal_set_emission_energy">
@@ -904,6 +958,7 @@
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="energy" type="float" />
 			<description>
+				Sets the emission [param energy] in the decal specified by the [param decal] RID. Equivalent to [member Decal.emission_energy].
 			</description>
 		</method>
 		<method name="decal_set_fade">
@@ -912,6 +967,7 @@
 			<param index="1" name="above" type="float" />
 			<param index="2" name="below" type="float" />
 			<description>
+				Sets the upper fade ([param above]) and lower fade ([param below]) in the decal specified by the [param decal] RID. Equivalent to [member Decal.upper_fade] and [member Decal.lower_fade].
 			</description>
 		</method>
 		<method name="decal_set_modulate">
@@ -919,6 +975,7 @@
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="color" type="Color" />
 			<description>
+				Sets the color multiplier in the decal specified by the [param decal] RID to [param color]. Equivalent to [member Decal.modulate].
 			</description>
 		</method>
 		<method name="decal_set_normal_fade">
@@ -926,6 +983,7 @@
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="fade" type="float" />
 			<description>
+				Sets the normal [param fade] in the decal specified by the [param decal] RID. Equivalent to [member Decal.normal_fade].
 			</description>
 		</method>
 		<method name="decal_set_size">
@@ -933,6 +991,7 @@
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="size" type="Vector3" />
 			<description>
+				Sets the [param size] of the decal specified by the [param decal] RID. Equivalent to [member Decal.size].
 			</description>
 		</method>
 		<method name="decal_set_texture">
@@ -941,20 +1000,23 @@
 			<param index="1" name="type" type="int" enum="RenderingServer.DecalTexture" />
 			<param index="2" name="texture" type="RID" />
 			<description>
+				Sets the [param texture] in the given texture [param type] slot for the specified decal. Equivalent to [method Decal.set_texture].
 			</description>
 		</method>
 		<method name="decals_set_filter">
 			<return type="void" />
 			<param index="0" name="filter" type="int" enum="RenderingServer.DecalFilter" />
 			<description>
+				Sets the texture [param filter] mode to use when rendering decals. This parameter is global and cannot be set on a per-decal basis.
 			</description>
 		</method>
 		<method name="directional_light_create">
 			<return type="RID" />
 			<description>
 				Creates a directional light and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID can be used in most [code]light_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 				To place in a scene, attach this directional light to an instance using [method instance_set_base] using the returned RID.
+				[b]Note:[/b] The equivalent node is [DirectionalLight3D].
 			</description>
 		</method>
 		<method name="directional_shadow_atlas_set_size">
@@ -962,12 +1024,14 @@
 			<param index="0" name="size" type="int" />
 			<param index="1" name="is_16bits" type="bool" />
 			<description>
+				Sets the [param size] of the directional light shadows in 3D. See also [member ProjectSettings.rendering/lights_and_shadows/directional_shadow/size]. This parameter is global and cannot be set on a per-viewport basis.
 			</description>
 		</method>
 		<method name="directional_soft_shadow_filter_set_quality">
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.ShadowQuality" />
 			<description>
+				Sets the filter [param quality] for directional light shadows in 3D. See also [member ProjectSettings.rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality]. This parameter is global and cannot be set on a per-viewport basis.
 			</description>
 		</method>
 		<method name="environment_bake_panorama">
@@ -976,19 +1040,24 @@
 			<param index="1" name="bake_irradiance" type="bool" />
 			<param index="2" name="size" type="Vector2i" />
 			<description>
+				Generates and returns an [Image] containing the radiance map for the specified [param environment] RID's sky. This supports built-in sky material and custom sky shaders. If [param bake_irradiance] is [code]true[/code], the irradiance map is saved instead of the radiance map. The radiance map is used to render reflected light, while the irradiance map is used to render ambient light. See also [method sky_bake_panorama].
+				[b]Note:[/b] The image is saved in linear color space without any tonemapping performed, which means it will look too dark if viewed directly in an image editor.
+				[b]Note:[/b] [param size] should be a 2:1 aspect ratio for the generated panorama to have square pixels. For radiance maps, there is no point in using a height greater than [member Sky.radiance_size], as it won't increase detail. Irradiance maps only contain low-frequency data, so there is usually no point in going past a size of 128×64 pixels when saving an irradiance map.
 			</description>
 		</method>
 		<method name="environment_create">
 			<return type="RID" />
 			<description>
 				Creates an environment and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]environment_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent resource is [Environment].
 			</description>
 		</method>
 		<method name="environment_glow_set_use_bicubic_upscale">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
+				If [param enable] is [code]true[/code], enables bicubic upscaling for glow which improves quality at the cost of performance. Equivalent to [member ProjectSettings.rendering/environment/glow/upscale_mode].
 			</description>
 		</method>
 		<method name="environment_set_adjustment">
@@ -1001,7 +1070,7 @@
 			<param index="5" name="use_1d_color_correction" type="bool" />
 			<param index="6" name="color_correction" type="RID" />
 			<description>
-				Sets the values to be used with the "Adjustment" post-process effect. See [Environment] for more details.
+				Sets the values to be used with the "adjustments" post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_ambient_light">
@@ -1013,6 +1082,7 @@
 			<param index="4" name="sky_contibution" type="float" default="0.0" />
 			<param index="5" name="reflection_source" type="int" enum="RenderingServer.EnvironmentReflectionSource" default="0" />
 			<description>
+				Sets the values to be used for ambient light rendering. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_background">
@@ -1020,7 +1090,7 @@
 			<param index="0" name="env" type="RID" />
 			<param index="1" name="bg" type="int" enum="RenderingServer.EnvironmentBG" />
 			<description>
-				Sets the [i]BGMode[/i] of the environment. Equivalent to [member Environment.background_mode].
+				Sets the environment's background mode. Equivalent to [member Environment.background_mode].
 			</description>
 		</method>
 		<method name="environment_set_bg_color">
@@ -1028,7 +1098,7 @@
 			<param index="0" name="env" type="RID" />
 			<param index="1" name="color" type="Color" />
 			<description>
-				Color displayed for clear areas of the scene (if using Custom color or Color+Sky background modes).
+				Color displayed for clear areas of the scene. Only effective if using the [constant ENV_BG_COLOR] background mode.
 			</description>
 		</method>
 		<method name="environment_set_bg_energy">
@@ -1061,6 +1131,7 @@
 			<param index="8" name="aerial_perspective" type="float" />
 			<param index="9" name="sky_affect" type="float" />
 			<description>
+				Configures fog for the specified environment RID. See [code]fog_*[/code] properties in [Environment] for more information.
 			</description>
 		</method>
 		<method name="environment_set_glow">
@@ -1079,6 +1150,7 @@
 			<param index="11" name="glow_map_strength" type="float" />
 			<param index="12" name="glow_map" type="RID" />
 			<description>
+				Configures glow for the specified environment RID. See [code]glow_*[/code] properties in [Environment] for more information.
 			</description>
 		</method>
 		<method name="environment_set_sdfgi">
@@ -1095,24 +1167,28 @@
 			<param index="9" name="normal_bias" type="float" />
 			<param index="10" name="probe_bias" type="float" />
 			<description>
+				Configures signed distance field global illumination for the specified environment RID. See [code]sdfgi_*[/code] properties in [Environment] for more information.
 			</description>
 		</method>
 		<method name="environment_set_sdfgi_frames_to_converge">
 			<return type="void" />
 			<param index="0" name="frames" type="int" enum="RenderingServer.EnvironmentSDFGIFramesToConverge" />
 			<description>
+				Sets the number of frames to use for converging signed distance field global illumination. Equivalent to [member ProjectSettings.rendering/global_illumination/sdfgi/frames_to_converge].
 			</description>
 		</method>
 		<method name="environment_set_sdfgi_frames_to_update_light">
 			<return type="void" />
 			<param index="0" name="frames" type="int" enum="RenderingServer.EnvironmentSDFGIFramesToUpdateLight" />
 			<description>
+				Sets the update speed for dynamic lights' indirect lighting when computing signed distance field global illumination. Equivalent to [member ProjectSettings.rendering/global_illumination/sdfgi/frames_to_update_lights].
 			</description>
 		</method>
 		<method name="environment_set_sdfgi_ray_count">
 			<return type="void" />
 			<param index="0" name="ray_count" type="int" enum="RenderingServer.EnvironmentSDFGIRayCount" />
 			<description>
+				Sets the number of rays to throw per frame when computing signed distance field global illumination. Equivalent to [member ProjectSettings.rendering/global_illumination/sdfgi/probe_ray_count].
 			</description>
 		</method>
 		<method name="environment_set_sky">
@@ -1188,7 +1264,7 @@
 			<param index="4" name="fade_out" type="float" />
 			<param index="5" name="depth_tolerance" type="float" />
 			<description>
-				Sets the variables to be used with the "screen space reflections" post-process effect. See [Environment] for more details.
+				Sets the variables to be used with the screen-space reflections (SSR) post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_ssr_roughness_quality">
@@ -1224,6 +1300,7 @@
 			<param index="12" name="ambient_inject" type="float" />
 			<param index="13" name="sky_affect" type="float" />
 			<description>
+				Sets the variables to be used with the volumetric fog post-process effect. See [Environment] for more details.
 			</description>
 		</method>
 		<method name="environment_set_volumetric_fog_filter_active">
@@ -1244,7 +1321,9 @@
 		<method name="fog_volume_create">
 			<return type="RID" />
 			<description>
-				Creates a new fog volume and allocates an RID.
+				Creates a new fog volume and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]fog_volume_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent node is [FogVolume].
 			</description>
 		</method>
 		<method name="fog_volume_set_material">
@@ -1276,29 +1355,32 @@
 			<param index="0" name="swap_buffers" type="bool" default="true" />
 			<param index="1" name="frame_step" type="float" default="0.0" />
 			<description>
+				Forces redrawing of all viewports at once.
 			</description>
 		</method>
 		<method name="force_sync">
 			<return type="void" />
 			<description>
+				Forces a synchronization between the CPU and GPU, which may be required in certain cases. Only call this when needed, as CPU-GPU synchronization has a performance cost.
 			</description>
 		</method>
 		<method name="free_rid">
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
 			<description>
-				Tries to free an object in the RenderingServer.
+				Tries to free an object in the RenderingServer. To avoid memory leaks, this should be called after using an object as memory management does not occur automatically when using RendeeringServer directly.
 			</description>
 		</method>
 		<method name="get_default_clear_color">
 			<return type="Color" />
 			<description>
-				Returns the default clear color which is used when a specific clear color has not been selected.
+				Returns the default clear color which is used when a specific clear color has not been selected. See also [method set_default_clear_color].
 			</description>
 		</method>
 		<method name="get_frame_setup_time_cpu" qualifiers="const">
 			<return type="float" />
 			<description>
+				Returns the time taken to setup rendering on the CPU in milliseconds. This value is shared across all viewports and does [i]not[/i] require [method viewport_set_measure_render_time] to be enabled on a viewport to be queried. See also [method viewport_get_measured_render_time_cpu].
 			</description>
 		</method>
 		<method name="get_rendering_device" qualifiers="const">
@@ -1312,6 +1394,16 @@
 			<return type="int" />
 			<param index="0" name="info" type="int" enum="RenderingServer.RenderingInfo" />
 			<description>
+				Returns a statistic about the rendering engine which can be used for performance profiling. See [enum RenderingServer.RenderingInfo] for a list of values that can be queried. See also [method viewport_get_render_info], which returns information specific to a viewport.
+				[b]Note:[/b] Only 3D rendering is currently taken into account by some of these values, such as the number of draw calls.
+				[b]Note:[/b] Rendering information is not available until at least 2 frames have been rendered by the engine. If rendering information is not available, [method get_rendering_info] returns [code]0[/code]. To print rendering information in [code]_ready()[/code] successfully, use the following:
+				[codeblock]
+				func _ready():
+				    for _i in 2:
+				        await get_tree().process_frame
+
+				    print(RenderingServer.get_rendering_info(RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME))
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_shader_parameter_list" qualifiers="const">
@@ -1324,19 +1416,25 @@
 		<method name="get_test_cube">
 			<return type="RID" />
 			<description>
-				Returns the ID of the test cube. Creates one if none exists.
+				Returns the RID of the test cube. This mesh will be created and returned on the first call to [method get_test_cube], then it will be cached for subsequent calls. See also [method make_sphere_mesh].
 			</description>
 		</method>
 		<method name="get_test_texture">
 			<return type="RID" />
 			<description>
-				Returns the ID of the test texture. Creates one if none exists.
+				Returns the RID of a 256×256 texture with a testing pattern on it (in [constant Image.FORMAT_RGB8] format). This texture will be created and returned on the first call to [method get_test_texture], then it will be cached for subsequent calls. See also [method get_white_texture].
+				Example of getting the test texture and applying it to a [Sprite2D] node:
+				[codeblock]
+				var texture_rid = RenderingServer.get_test_texture()
+				var texture = ImageTexture.create_from_image(RenderingServer.texture_2d_get(texture_rid))
+				$Sprite2D.texture = texture
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_video_adapter_api_version" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the version of the graphics video adapter [i]currently in use[/i] (e.g. "1.2.189" for Vulkan, "3.3.0 NVIDIA 510.60.02" for OpenGL). This version may be different from the actual latest version supported by the hardware, as Godot may not always request the latest version.
+				Returns the version of the graphics video adapter [i]currently in use[/i] (e.g. "1.2.189" for Vulkan, "3.3.0 NVIDIA 510.60.02" for OpenGL). This version may be different from the actual latest version supported by the hardware, as Godot may not always request the latest version. See also [method OS.get_video_adapter_driver_info].
 				[b]Note:[/b] When running a headless or server binary, this function returns an empty string.
 			</description>
 		</method>
@@ -1364,14 +1462,20 @@
 		<method name="get_white_texture">
 			<return type="RID" />
 			<description>
-				Returns the ID of a white texture. Creates one if none exists.
+				Returns the ID of a 4×4 white texture (in [constant Image.FORMAT_RGB8] format). This texture will be created and returned on the first call to [method get_white_texture], then it will be cached for subsequent calls. See also [method get_test_texture].
+				Example of getting the white texture and applying it to a [Sprite2D] node:
+				[codeblock]
+				var texture_rid = RenderingServer.get_white_texture()
+				var texture = ImageTexture.create_from_image(RenderingServer.texture_2d_get(texture_rid))
+				$Sprite2D.texture = texture
+				[/codeblock]
 			</description>
 		</method>
 		<method name="gi_set_use_half_resolution">
 			<return type="void" />
 			<param index="0" name="half_resolution" type="bool" />
 			<description>
-				If [param half_resolution] is [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting. See also [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution].
+				If [param half_resolution] is [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution on each axis (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting. Equivalent to [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution].
 			</description>
 		</method>
 		<method name="global_shader_parameter_add">
@@ -1380,29 +1484,38 @@
 			<param index="1" name="type" type="int" enum="RenderingServer.GlobalShaderParameterType" />
 			<param index="2" name="default_value" type="Variant" />
 			<description>
+				Creates a new global shader uniform.
+				[b]Note:[/b] Global shader parameter names are case-sensitive.
 			</description>
 		</method>
 		<method name="global_shader_parameter_get" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="name" type="StringName" />
 			<description>
+				Returns the value of the global shader uniform specified by [param name].
+				[b]Note:[/b] [method global_shader_parameter_get] has a large performance penalty as the rendering thread needs to synchronize with the calling thread, which is slow. Do not use this method during gameplay to avoid stuttering. If you need to read values in a script after setting them, consider creating an autoload where you store the values you need to query at the same time you're setting them as global parameters.
 			</description>
 		</method>
 		<method name="global_shader_parameter_get_list" qualifiers="const">
-			<return type="PackedStringArray" />
+			<return type="StringName[]" />
 			<description>
+				Returns the list of global shader uniform names.
+				[b]Note:[/b] [method global_shader_parameter_get] has a large performance penalty as the rendering thread needs to synchronize with the calling thread, which is slow. Do not use this method during gameplay to avoid stuttering. If you need to read values in a script after setting them, consider creating an autoload where you store the values you need to query at the same time you're setting them as global parameters.
 			</description>
 		</method>
 		<method name="global_shader_parameter_get_type" qualifiers="const">
 			<return type="int" enum="RenderingServer.GlobalShaderParameterType" />
 			<param index="0" name="name" type="StringName" />
 			<description>
+				Returns the type associated to the global shader uniform specified by [param name].
+				[b]Note:[/b] [method global_shader_parameter_get] has a large performance penalty as the rendering thread needs to synchronize with the calling thread, which is slow. Do not use this method during gameplay to avoid stuttering. If you need to read values in a script after setting them, consider creating an autoload where you store the values you need to query at the same time you're setting them as global parameters.
 			</description>
 		</method>
 		<method name="global_shader_parameter_remove">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<description>
+				Removes the global shader uniform specified by [param name].
 			</description>
 		</method>
 		<method name="global_shader_parameter_set">
@@ -1410,6 +1523,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
+				Sets the global shader uniform [param name] to [param value].
 			</description>
 		</method>
 		<method name="global_shader_parameter_set_override">
@@ -1417,6 +1531,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
+				Overrides the global shader uniform [param name] with [param value]. Equivalent to the [ShaderGlobalsOverride] node.
 			</description>
 		</method>
 		<method name="has_changed" qualifiers="const">
@@ -1459,8 +1574,9 @@
 			<return type="RID" />
 			<description>
 				Creates a visual instance and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]instance_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
-				An instance is a way of placing a 3D object in the scenario. Objects like particles, meshes, and reflection probes need to be associated with an instance to be visible in the scenario using [method instance_set_base].
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				An instance is a way of placing a 3D object in the scenario. Objects like particles, meshes, reflection probes and decals need to be associated with an instance to be visible in the scenario using [method instance_set_base].
+				[b]Note:[/b] The equivalent node is [VisualInstance3D].
 			</description>
 		</method>
 		<method name="instance_create2">
@@ -1469,7 +1585,7 @@
 			<param index="1" name="scenario" type="RID" />
 			<description>
 				Creates a visual instance, adds it to the RenderingServer, and sets both base and scenario. It can be accessed with the RID that is returned. This RID will be used in all [code]instance_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method. This is a shorthand for using [method instance_create] and setting the base and scenario manually.
 			</description>
 		</method>
 		<method name="instance_geometry_get_shader_parameter" qualifiers="const">
@@ -1477,6 +1593,8 @@
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="parameter" type="StringName" />
 			<description>
+				Returns the value of the per-instance shader uniform from the specified 3D geometry instance. Equivalent to [method GeometryInstance3D.get_instance_shader_parameter].
+				[b]Note:[/b] Per-instance shader parameter names are case-sensitive.
 			</description>
 		</method>
 		<method name="instance_geometry_get_shader_parameter_default_value" qualifiers="const">
@@ -1484,12 +1602,14 @@
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="parameter" type="StringName" />
 			<description>
+				Returns the default value of the per-instance shader uniform from the specified 3D geometry instance. Equivalent to [method GeometryInstance3D.get_instance_shader_parameter].
 			</description>
 		</method>
 		<method name="instance_geometry_get_shader_parameter_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<param index="0" name="instance" type="RID" />
 			<description>
+				Returns a dictionary of per-instance shader uniform names of the per-instance shader uniform from the specified 3D geometry instance. The returned dictionary is in PropertyInfo format, with the keys [code]name[/code], [code]class_name[/code], [code]type[/code], [code]hint[/code], [code]hint_string[/code] and [code]usage[/code]. Equivalent to [method GeometryInstance3D.get_instance_shader_parameter].
 			</description>
 		</method>
 		<method name="instance_geometry_set_cast_shadows_setting">
@@ -1516,6 +1636,7 @@
 			<param index="2" name="lightmap_uv_scale" type="Rect2" />
 			<param index="3" name="lightmap_slice" type="int" />
 			<description>
+				Sets the lightmap GI instance to use for the specified 3D geometry instance. The lightmap UV scale for the specified instance (equivalent to [member GeometryInstance3D.gi_lightmap_scale]) and lightmap atlas slice must also be specified.
 			</description>
 		</method>
 		<method name="instance_geometry_set_lod_bias">
@@ -1523,6 +1644,7 @@
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="lod_bias" type="float" />
 			<description>
+				Sets the level of detail bias to use when rendering the specified 3D geometry instance. Higher values result in higher detail from further away. Equivalent to [member GeometryInstance3D.lod_bias].
 			</description>
 		</method>
 		<method name="instance_geometry_set_material_overlay">
@@ -1547,6 +1669,7 @@
 			<param index="1" name="parameter" type="StringName" />
 			<param index="2" name="value" type="Variant" />
 			<description>
+				Sets the per-instance shader uniform on the specified 3D geometry instance. Equivalent to [method GeometryInstance3D.set_instance_shader_parameter].
 			</description>
 		</method>
 		<method name="instance_geometry_set_transparency">
@@ -1577,7 +1700,7 @@
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="base" type="RID" />
 			<description>
-				Sets the base of the instance. A base can be any of the 3D objects that are created in the RenderingServer that can be displayed. For example, any of the light types, mesh, multimesh, immediate geometry, particle system, reflection probe, lightmap, and the GI probe are all types that can be set as the base of an instance in order to be displayed in the scenario.
+				Sets the base of the instance. A base can be any of the 3D objects that are created in the RenderingServer that can be displayed. For example, any of the light types, mesh, multimesh, particle system, reflection probe, decal, lightmap, voxel GI and visibility notifiers are all types that can be set as the base of an instance in order to be displayed in the scenario.
 			</description>
 		</method>
 		<method name="instance_set_blend_shape_weight">
@@ -1610,6 +1733,7 @@
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
+				If [code]true[/code], ignores both frustum and occlusion culling on the specified 3D geometry instance. This is not the same as [member GeometryInstance3D.ignore_occlusion_culling], which only ignores occlusion culling and leaves frustum culling intact.
 			</description>
 		</method>
 		<method name="instance_set_layer_mask">
@@ -1675,7 +1799,7 @@
 			<param index="0" name="aabb" type="AABB" />
 			<param index="1" name="scenario" type="RID" />
 			<description>
-				Returns an array of object IDs intersecting with the provided AABB. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
+				Returns an array of object IDs intersecting with the provided AABB. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
@@ -1684,7 +1808,7 @@
 			<param index="0" name="convex" type="Plane[]" />
 			<param index="1" name="scenario" type="RID" />
 			<description>
-				Returns an array of object IDs intersecting with the provided convex shape. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
+				Returns an array of object IDs intersecting with the provided convex shape. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
@@ -1694,7 +1818,7 @@
 			<param index="1" name="to" type="Vector3" />
 			<param index="2" name="scenario" type="RID" />
 			<description>
-				Returns an array of object IDs intersecting with the provided 3D ray. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
+				Returns an array of object IDs intersecting with the provided 3D ray. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
@@ -1734,6 +1858,7 @@
 			<return type="void" />
 			<param index="0" name="filter" type="int" enum="RenderingServer.LightProjectorFilter" />
 			<description>
+				Sets the texture filter mode to use when rendering light projectors. This parameter is global and cannot be set on a per-light basis.
 			</description>
 		</method>
 		<method name="light_set_bake_mode">
@@ -1741,6 +1866,7 @@
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="bake_mode" type="int" enum="RenderingServer.LightBakeMode" />
 			<description>
+				Sets the bake mode to use for the specified 3D light. Equivalent to [member Light3D.light_bake_mode].
 			</description>
 		</method>
 		<method name="light_set_color">
@@ -1756,7 +1882,7 @@
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="mask" type="int" />
 			<description>
-				Sets the cull mask for this Light3D. Lights only affect objects in the selected layers. Equivalent to [member Light3D.light_cull_mask].
+				Sets the cull mask for this 3D light. Lights only affect objects in the selected layers. Equivalent to [member Light3D.light_cull_mask].
 			</description>
 		</method>
 		<method name="light_set_distance_fade">
@@ -1767,7 +1893,7 @@
 			<param index="3" name="shadow" type="float" />
 			<param index="4" name="length" type="float" />
 			<description>
-				Sets the distance fade for this Light3D. This acts as a form of level of detail (LOD) and can be used to improve performance. Equivalent to [member Light3D.distance_fade_enabled], [member Light3D.distance_fade_begin], [member Light3D.distance_fade_shadow], and [member Light3D.distance_fade_length].
+				Sets the distance fade for this 3D light. This acts as a form of level of detail (LOD) and can be used to improve performance. Equivalent to [member Light3D.distance_fade_enabled], [member Light3D.distance_fade_begin], [member Light3D.distance_fade_shadow], and [member Light3D.distance_fade_length].
 			</description>
 		</method>
 		<method name="light_set_max_sdfgi_cascade">
@@ -1775,6 +1901,7 @@
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="cascade" type="int" />
 			<description>
+				Sets the maximum SDFGI cascade in which the 3D light's indirect lighting is rendered. Higher values allow the light to be rendered in SDFGI further away from the camera.
 			</description>
 		</method>
 		<method name="light_set_negative">
@@ -1782,7 +1909,7 @@
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], light will subtract light instead of adding light. Equivalent to [member Light3D.light_negative].
+				If [code]true[/code], the 3D light will subtract light instead of adding light. Equivalent to [member Light3D.light_negative].
 			</description>
 		</method>
 		<method name="light_set_param">
@@ -1791,7 +1918,7 @@
 			<param index="1" name="param" type="int" enum="RenderingServer.LightParam" />
 			<param index="2" name="value" type="float" />
 			<description>
-				Sets the specified light parameter. See [enum LightParam] for options. Equivalent to [method Light3D.set_param].
+				Sets the specified 3D light parameter. See [enum LightParam] for options. Equivalent to [method Light3D.set_param].
 			</description>
 		</method>
 		<method name="light_set_projector">
@@ -1799,7 +1926,7 @@
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="texture" type="RID" />
 			<description>
-				Not implemented in Godot 3.x.
+				Sets the projector texture to use for the specified 3D light. Equivalent to [member Light3D.light_projector].
 			</description>
 		</method>
 		<method name="light_set_reverse_cull_face_mode">
@@ -1821,7 +1948,9 @@
 		<method name="lightmap_create">
 			<return type="RID" />
 			<description>
-				Creates a new [LightmapGI] instance.
+				Creates a new lightmap global illumination instance and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]lightmap_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent node is [LightmapGI].
 			</description>
 		</method>
 		<method name="lightmap_get_probe_capture_bsp_tree" qualifiers="const">
@@ -1892,6 +2021,7 @@
 			<param index="1" name="light" type="RID" />
 			<param index="2" name="uses_sh" type="bool" />
 			<description>
+				Set the textures on the given [param lightmap] GI instance to the texture array pointed to by the [param light] RID. If the lightmap texture was baked with [member LightmapGI.directional] set to [code]true[/code], then [param uses_sh] must also be [code]true[/code].
 			</description>
 		</method>
 		<method name="make_sphere_mesh">
@@ -1900,14 +2030,15 @@
 			<param index="1" name="longitudes" type="int" />
 			<param index="2" name="radius" type="float" />
 			<description>
-				Returns a mesh of a sphere with the given number of horizontal and vertical subdivisions.
+				Returns a mesh of a sphere with the given number of horizontal subdivisions, vertical subdivisions and radius. See also [method get_test_cube].
 			</description>
 		</method>
 		<method name="material_create">
 			<return type="RID" />
 			<description>
 				Creates an empty material and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]material_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent resource is [Material].
 			</description>
 		</method>
 		<method name="material_get_param" qualifiers="const">
@@ -1980,8 +2111,9 @@
 			<return type="RID" />
 			<description>
 				Creates a new mesh and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]mesh_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 				To place in a scene, attach this mesh to an instance using [method instance_set_base] using the returned RID.
+				[b]Note:[/b] The equivalent resource is [Mesh].
 			</description>
 		</method>
 		<method name="mesh_create_from_surfaces">
@@ -2152,8 +2284,9 @@
 			<return type="RID" />
 			<description>
 				Creates a new multimesh on the RenderingServer and returns an [RID] handle. This RID will be used in all [code]multimesh_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 				To place in a scene, attach this multimesh to an instance using [method instance_set_base] using the returned RID.
+				[b]Note:[/b] The equivalent resource is [MultiMesh].
 			</description>
 		</method>
 		<method name="multimesh_get_aabb" qualifiers="const">
@@ -2167,6 +2300,8 @@
 			<return type="PackedFloat32Array" />
 			<param index="0" name="multimesh" type="RID" />
 			<description>
+				Returns the MultiMesh data (such as instance transforms, colors, etc). See [method multimesh_set_buffer] for a description of the returned data.
+				[b]Note:[/b] If the buffer is in the engine's internal cache, it will have to be fetched from GPU memory and possibly decompressed. This means [method multimesh_get_buffer] is potentially a slow operation and should be avoided whenever possible.
 			</description>
 		</method>
 		<method name="multimesh_get_instance_count" qualifiers="const">
@@ -2263,6 +2398,20 @@
 			<param index="0" name="multimesh" type="RID" />
 			<param index="1" name="buffer" type="PackedFloat32Array" />
 			<description>
+				Set the entire data to use for drawing the [param multimesh] at once to [param buffer] (such as instance transforms and colors). [param buffer]'s size must match the number of instances multiplied by the per-instance data size (which depends on the enabled MultiMesh fields). Otherwise, an error message is printed and nothing is rendered. See also [method multimesh_get_buffer].
+				The per-instance data size and expected data order is:
+				[codeblock]
+				2D:
+				  - Position: 8 floats (8 floats for Transform2D)
+				  - Position + Vertex color: 12 floats (8 floats for Transform2D, 4 floats for Color)
+				  - Position + Custom data: 12 floats (8 floats for Transform2D, 4 floats of custom data)
+				  - Position + Vertex color + Custom data: 16 floats (8 floats for Transform2D, 4 floats for Color, 4 floats of custom data)
+				3D:
+				  - Position: 12 floats (12 floats for Transform3D)
+				  - Position + Vertex color: 16 floats (12 floats for Transform3D, 4 floats for Color)
+				  - Position + Custom data: 16 floats (12 floats for Transform3D, 4 floats of custom data)
+				  - Position + Vertex color + Custom data: 20 floats (12 floats for Transform3D, 4 floats for Color, 4 floats of custom data)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="multimesh_set_mesh">
@@ -2284,6 +2433,9 @@
 		<method name="occluder_create">
 			<return type="RID" />
 			<description>
+				Creates an occluder instance and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]occluder_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent resource is [Occluder3D] (not to be confused with the [OccluderInstance3D] node).
 			</description>
 		</method>
 		<method name="occluder_set_mesh">
@@ -2292,25 +2444,30 @@
 			<param index="1" name="vertices" type="PackedVector3Array" />
 			<param index="2" name="indices" type="PackedInt32Array" />
 			<description>
+				Sets the mesh data for the given occluder RID, which controls the shape of the occlusion culling that will be performed.
 			</description>
 		</method>
 		<method name="omni_light_create">
 			<return type="RID" />
 			<description>
 				Creates a new omni light and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID can be used in most [code]light_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 				To place in a scene, attach this omni light to an instance using [method instance_set_base] using the returned RID.
+				[b]Note:[/b] The equivalent node is [OmniLight3D].
 			</description>
 		</method>
 		<method name="particles_collision_create">
 			<return type="RID" />
 			<description>
+				Creates a new 3D GPU particle collision or attractor and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID can be used in most [code]particles_collision_*[/code] RenderingServer functions.
+				[b]Note:[/b] The equivalent nodes are [GPUParticlesCollision3D] and [GPUParticlesAttractor3D].
 			</description>
 		</method>
 		<method name="particles_collision_height_field_update">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
 			<description>
+				Requests an update for the 3D GPU particle collision heightfield. This may be automatically called by the 3D GPU particle collision heightfield depending on its [member GPUParticlesCollisionHeightField3D.update_mode].
 			</description>
 		</method>
 		<method name="particles_collision_set_attractor_attenuation">
@@ -2318,6 +2475,7 @@
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="curve" type="float" />
 			<description>
+				Sets the attenuation [param curve] for the 3D GPU particles attractor specified by the [param particles_collision] RID. Only used for attractors, not colliders. Equivalent to [member GPUParticlesAttractor3D.attenuation].
 			</description>
 		</method>
 		<method name="particles_collision_set_attractor_directionality">
@@ -2325,13 +2483,15 @@
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="amount" type="float" />
 			<description>
+				Sets the directionality [param amount] for the 3D GPU particles attractor specified by the [param particles_collision] RID. Only used for attractors, not colliders. Equivalent to [member GPUParticlesAttractor3D.directionality].
 			</description>
 		</method>
 		<method name="particles_collision_set_attractor_strength">
 			<return type="void" />
 			<param index="0" name="particles_collision" type="RID" />
-			<param index="1" name="setrngth" type="float" />
+			<param index="1" name="strength" type="float" />
 			<description>
+				Sets the [param strength] for the 3D GPU particles attractor specified by the [param particles_collision] RID. Only used for attractors, not colliders. Equivalent to [member GPUParticlesAttractor3D.strength].
 			</description>
 		</method>
 		<method name="particles_collision_set_box_extents">
@@ -2339,6 +2499,7 @@
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="extents" type="Vector3" />
 			<description>
+				Sets the [param extents] for the 3D GPU particles collision by the [param particles_collision] RID. Equivalent to [member GPUParticlesCollisionBox3D.size], [member GPUParticlesCollisionSDF3D.size], [member GPUParticlesCollisionHeightField3D.size], [member GPUParticlesAttractorBox3D.size] or [member GPUParticlesAttractorVectorField3D.size] depending on the [param particles_collision] type.
 			</description>
 		</method>
 		<method name="particles_collision_set_collision_type">
@@ -2346,6 +2507,7 @@
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="type" type="int" enum="RenderingServer.ParticlesCollisionType" />
 			<description>
+				Sets the collision or attractor shape [param type] for the 3D GPU particles collision or attractor specified by the [param particles_collision] RID.
 			</description>
 		</method>
 		<method name="particles_collision_set_cull_mask">
@@ -2353,6 +2515,7 @@
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="mask" type="int" />
 			<description>
+				Sets the cull [param mask] for the 3D GPU particles collision or attractor specified by the [param particles_collision] RID. Equivalent to [member GPUParticlesCollision3D.cull_mask] or [member GPUParticlesAttractor3D.cull_mask] depending on the [param particles_collision] type.
 			</description>
 		</method>
 		<method name="particles_collision_set_field_texture">
@@ -2360,6 +2523,7 @@
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="texture" type="RID" />
 			<description>
+				Sets the signed distance field [param texture] for the 3D GPU particles collision specified by the [param particles_collision] RID. Equivalent to [member GPUParticlesCollisionSDF3D.texture] or [member GPUParticlesAttractorVectorField3D.texture] depending on the [param particles_collision] type.
 			</description>
 		</method>
 		<method name="particles_collision_set_height_field_resolution">
@@ -2367,6 +2531,7 @@
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="resolution" type="int" enum="RenderingServer.ParticlesCollisionHeightfieldResolution" />
 			<description>
+				Sets the heightmap [param resolution] for the 3D GPU particles heightfield collision specified by the [param particles_collision] RID. Equivalent to [member GPUParticlesCollisionHeightField3D.resolution].
 			</description>
 		</method>
 		<method name="particles_collision_set_sphere_radius">
@@ -2374,14 +2539,17 @@
 			<param index="0" name="particles_collision" type="RID" />
 			<param index="1" name="radius" type="float" />
 			<description>
+				Sets the [param radius] for the 3D GPU particles sphere collision or attractor specified by the [param particles_collision] RID. Equivalent to [member GPUParticlesCollisionSphere3D.radius] or [member GPUParticlesAttractorSphere3D.radius] depending on the [param particles_collision] type.
 			</description>
 		</method>
 		<method name="particles_create">
 			<return type="RID" />
 			<description>
-				Creates a particle system and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]particles_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Creates a GPU-based particle system and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]particles_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 				To place in a scene, attach these particles to an instance using [method instance_set_base] using the returned RID.
+				[b]Note:[/b] The equivalent nodes are [GPUParticles2D] and [GPUParticles3D].
+				[b]Note:[/b] All [code]particles_*[/code] methods only apply to GPU-based particles, not CPU-based particles. [CPUParticles2D] and [CPUParticles3D] do not have equivalent RenderingServer functions available, as these use [MultiMeshInstance2D] and [MultiMeshInstance3D] under the hood (see [code]multimesh_*[/code] methods).
 			</description>
 		</method>
 		<method name="particles_emit">
@@ -2393,6 +2561,7 @@
 			<param index="4" name="custom" type="Color" />
 			<param index="5" name="emit_flags" type="int" />
 			<description>
+				Manually emits particles from the [param particles] instance.
 			</description>
 		</method>
 		<method name="particles_get_current_aabb">
@@ -2538,6 +2707,7 @@
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.ParticlesMode" />
 			<description>
+				Sets whether the GPU particles specified by the [param particles] RID should be rendered in 2D or 3D according to [param mode].
 			</description>
 		</method>
 		<method name="particles_set_one_shot">
@@ -2601,6 +2771,7 @@
 			<param index="1" name="enable" type="bool" />
 			<param index="2" name="length_sec" type="float" />
 			<description>
+				If [param enable] is [code]true[/code], enables trails for the [param particles] with the specified [param length_sec] in seconds. Equivalent to [member GPUParticles3D.trail_enabled] and [member GPUParticles3D.trail_lifetime].
 			</description>
 		</method>
 		<method name="particles_set_transform_align">
@@ -2622,14 +2793,16 @@
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.ShadowQuality" />
 			<description>
+				Sets the filter quality for omni and spot light shadows in 3D. See also [member ProjectSettings.rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality]. This parameter is global and cannot be set on a per-viewport basis.
 			</description>
 		</method>
 		<method name="reflection_probe_create">
 			<return type="RID" />
 			<description>
 				Creates a reflection probe and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]reflection_probe_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 				To place in a scene, attach this reflection probe to an instance using [method instance_set_base] using the returned RID.
+				[b]Note:[/b] The equivalent node is [ReflectionProbe].
 			</description>
 		</method>
 		<method name="reflection_probe_set_ambient_color">
@@ -2637,6 +2810,7 @@
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="color" type="Color" />
 			<description>
+				Sets the reflection probe's custom ambient light color. Equivalent to [member ReflectionProbe.ambient_color].
 			</description>
 		</method>
 		<method name="reflection_probe_set_ambient_energy">
@@ -2644,6 +2818,7 @@
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="energy" type="float" />
 			<description>
+				Sets the reflection probe's custom ambient light energy. Equivalent to [member ReflectionProbe.ambient_color_energy].
 			</description>
 		</method>
 		<method name="reflection_probe_set_ambient_mode">
@@ -2651,6 +2826,7 @@
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.ReflectionProbeAmbientMode" />
 			<description>
+				Sets the reflection probe's ambient light mode. Equivalent to [member ReflectionProbe.ambient_mode].
 			</description>
 		</method>
 		<method name="reflection_probe_set_as_interior">
@@ -2706,6 +2882,7 @@
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="pixels" type="float" />
 			<description>
+				Sets the mesh level of detail to use in the reflection probe rendering. Higher values will use less detailed versions of meshes that have LOD variations generated, which can improve performance. Equivalent to [member ReflectionProbe.mesh_lod_threshold].
 			</description>
 		</method>
 		<method name="reflection_probe_set_origin_offset">
@@ -2721,6 +2898,7 @@
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="resolution" type="int" />
 			<description>
+				Sets the resolution to use when rendering the specified reflection probe. The [param resolution] is specified for each cubemap face: for instance, specifying [code]512[/code] will allocate 6 faces of 512×512 each (plus mipmaps for roughness levels).
 			</description>
 		</method>
 		<method name="reflection_probe_set_size">
@@ -2750,7 +2928,7 @@
 			<return type="RID" />
 			<description>
 				Creates a scenario and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]scenario_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 				The scenario is the 3D world that all the visual instances exist in.
 			</description>
 		</method>
@@ -2759,6 +2937,7 @@
 			<param index="0" name="scenario" type="RID" />
 			<param index="1" name="effects" type="RID" />
 			<description>
+				Sets the camera attributes ([param effects]) that will be used with this scenario. See also [CameraAttributes].
 			</description>
 		</method>
 		<method name="scenario_set_environment">
@@ -2766,7 +2945,7 @@
 			<param index="0" name="scenario" type="RID" />
 			<param index="1" name="environment" type="RID" />
 			<description>
-				Sets the environment that will be used with this scenario.
+				Sets the environment that will be used with this scenario. See also [Environment].
 			</description>
 		</method>
 		<method name="scenario_set_fallback_environment">
@@ -2783,6 +2962,7 @@
 			<param index="1" name="amount" type="float" />
 			<param index="2" name="limit" type="float" />
 			<description>
+				Sets the screen-space roughness limiter parameters, such as whether it should be enabled and its thresholds. Equivalent to [member ProjectSettings.rendering/anti_aliasing/screen_space_roughness_limiter/enabled], [member ProjectSettings.rendering/anti_aliasing/screen_space_roughness_limiter/amount] and [member ProjectSettings.rendering/anti_aliasing/screen_space_roughness_limiter/limit].
 			</description>
 		</method>
 		<method name="set_boot_image">
@@ -2799,28 +2979,29 @@
 			<return type="void" />
 			<param index="0" name="generate" type="bool" />
 			<description>
-				If [code]true[/code], the engine will generate wireframes for use with the wireframe debug mode.
+				This method is currently unimplemented and does nothing if called with [param generate] set to [code]true[/code].
 			</description>
 		</method>
 		<method name="set_default_clear_color">
 			<return type="void" />
 			<param index="0" name="color" type="Color" />
 			<description>
-				Sets the default clear color which is used when a specific clear color has not been selected.
+				Sets the default clear color which is used when a specific clear color has not been selected. See also [method get_default_clear_color].
 			</description>
 		</method>
 		<method name="shader_create">
 			<return type="RID" />
 			<description>
 				Creates an empty shader and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]shader_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent resource is [Shader].
 			</description>
 		</method>
 		<method name="shader_get_code" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="shader" type="RID" />
 			<description>
-				Returns a shader's code.
+				Returns a shader's source code as a string.
 			</description>
 		</method>
 		<method name="shader_get_default_texture_parameter" qualifiers="const">
@@ -2838,6 +3019,7 @@
 			<param index="0" name="shader" type="RID" />
 			<param index="1" name="name" type="StringName" />
 			<description>
+				Returns the default value for the specified shader uniform. This is usually the value written in the shader source code.
 			</description>
 		</method>
 		<method name="shader_set_code">
@@ -2845,6 +3027,7 @@
 			<param index="0" name="shader" type="RID" />
 			<param index="1" name="code" type="String" />
 			<description>
+				Sets the shader's source code (which triggers recompilation after being changed).
 			</description>
 		</method>
 		<method name="shader_set_default_texture_parameter">
@@ -2863,6 +3046,7 @@
 			<param index="0" name="shader" type="RID" />
 			<param index="1" name="path" type="String" />
 			<description>
+				Sets the path hint for the specified shader. This should generally match the [Shader] resource's [member Resource.resource_path].
 			</description>
 		</method>
 		<method name="skeleton_allocate_data">
@@ -2911,7 +3095,7 @@
 			<return type="RID" />
 			<description>
 				Creates a skeleton and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]skeleton_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 			</description>
 		</method>
 		<method name="skeleton_get_bone_count" qualifiers="const">
@@ -2935,13 +3119,16 @@
 			<param index="2" name="bake_irradiance" type="bool" />
 			<param index="3" name="size" type="Vector2i" />
 			<description>
+				Generates and returns an [Image] containing the radiance map for the specified [param sky] RID. This supports built-in sky material and custom sky shaders. If [param bake_irradiance] is [code]true[/code], the irradiance map is saved instead of the radiance map. The radiance map is used to render reflected light, while the irradiance map is used to render ambient light. See also [method environment_bake_panorama].
+				[b]Note:[/b] The image is saved in linear color space without any tonemapping performed, which means it will look too dark if viewed directly in an image editor. [param energy] values above [code]1.0[/code] can be used to brighten the resulting image.
+				[b]Note:[/b] [param size] should be a 2:1 aspect ratio for the generated panorama to have square pixels. For radiance maps, there is no point in using a height greater than [member Sky.radiance_size], as it won't increase detail. Irradiance maps only contain low-frequency data, so there is usually no point in going past a size of 128×64 pixels when saving an irradiance map.
 			</description>
 		</method>
 		<method name="sky_create">
 			<return type="RID" />
 			<description>
 				Creates an empty sky and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]sky_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 			</description>
 		</method>
 		<method name="sky_set_material">
@@ -2949,7 +3136,7 @@
 			<param index="0" name="sky" type="RID" />
 			<param index="1" name="material" type="RID" />
 			<description>
-				Sets the material that the sky uses to render the background and reflection maps.
+				Sets the material that the sky uses to render the background, ambient and reflection maps.
 			</description>
 		</method>
 		<method name="sky_set_mode">
@@ -2957,6 +3144,7 @@
 			<param index="0" name="sky" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.SkyMode" />
 			<description>
+				Sets the process [param mode] of the sky specified by the [param sky] RID. Equivalent to [member Sky.process_mode].
 			</description>
 		</method>
 		<method name="sky_set_radiance_size">
@@ -2964,13 +3152,14 @@
 			<param index="0" name="sky" type="RID" />
 			<param index="1" name="radiance_size" type="int" />
 			<description>
+				Sets the [param radiance_size] of the sky specified by the [param sky] RID (in pixels). Equivalent to [member Sky.radiance_size].
 			</description>
 		</method>
 		<method name="spot_light_create">
 			<return type="RID" />
 			<description>
 				Creates a spot light and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID can be used in most [code]light_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
 				To place in a scene, attach this spot light to an instance using [method instance_set_base] using the returned RID.
 			</description>
 		</method>
@@ -2978,6 +3167,7 @@
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.SubSurfaceScatteringQuality" />
 			<description>
+				Sets [member ProjectSettings.rendering/environment/subsurface_scattering/subsurface_scattering_quality] to use when rendering materials that have subsurface scattering enabled.
 			</description>
 		</method>
 		<method name="sub_surface_scattering_set_scale">
@@ -2985,18 +3175,30 @@
 			<param index="0" name="scale" type="float" />
 			<param index="1" name="depth_scale" type="float" />
 			<description>
+				Sets the [member ProjectSettings.rendering/environment/subsurface_scattering/subsurface_scattering_scale] and [member ProjectSettings.rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale] to use when rendering materials that have subsurface scattering enabled.
 			</description>
 		</method>
 		<method name="texture_2d_create">
 			<return type="RID" />
 			<param index="0" name="image" type="Image" />
 			<description>
+				Creates a 2-dimensional texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_2d_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent resource is [Texture2D].
+				[b]Note:[/b] Not to be confused with [method RenderingDevice.texture_create], which creates the graphics API's own texture type as opposed to the Godot-specific [Texture2D] resource.
 			</description>
 		</method>
 		<method name="texture_2d_get" qualifiers="const">
 			<return type="Image" />
 			<param index="0" name="texture" type="RID" />
 			<description>
+				Returns an [Image] instance from the given [param texture] [RID].
+				Example of getting the test texture from [method get_test_texture] and applying it to a [Sprite2D] node:
+				[codeblock]
+				var texture_rid = RenderingServer.get_test_texture()
+				var texture = ImageTexture.create_from_image(RenderingServer.texture_2d_get(texture_rid))
+				$Sprite2D.texture = texture
+				[/codeblock]
 			</description>
 		</method>
 		<method name="texture_2d_layer_get" qualifiers="const">
@@ -3004,6 +3206,7 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="layer" type="int" />
 			<description>
+				Returns an [Image] instance from the given [param texture] [RID] and [param layer].
 			</description>
 		</method>
 		<method name="texture_2d_layered_create">
@@ -3011,17 +3214,25 @@
 			<param index="0" name="layers" type="Image[]" />
 			<param index="1" name="layered_type" type="int" enum="RenderingServer.TextureLayeredType" />
 			<description>
+				Creates a 2-dimensional layered texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_2d_layered_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent resource is [TextureLayered].
 			</description>
 		</method>
 		<method name="texture_2d_layered_placeholder_create">
 			<return type="RID" />
 			<param index="0" name="layered_type" type="int" enum="RenderingServer.TextureLayeredType" />
 			<description>
+				Creates a placeholder for a 2-dimensional layered texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_2d_layered_*[/code] RenderingServer functions, although it does nothing when used. See also [method texture_2d_placeholder_create].
+				[b]Note:[/b] The equivalent resource is [PlaceholderTextureLayered].
 			</description>
 		</method>
 		<method name="texture_2d_placeholder_create">
 			<return type="RID" />
 			<description>
+				Creates a placeholder for a 2-dimensional layered texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_2d_layered_*[/code] RenderingServer functions, although it does nothing when used. See also [method texture_2d_layered_placeholder_create]
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent resource is [PlaceholderTexture2D].
 			</description>
 		</method>
 		<method name="texture_2d_update">
@@ -3030,6 +3241,8 @@
 			<param index="1" name="image" type="Image" />
 			<param index="2" name="layer" type="int" />
 			<description>
+				Updates the texture specified by the [param texture] [RID] with the data in [param image]. A [param layer] must also be specified, which should be [code]0[/code] when updating a single-layer texture ([Texture2D]).
+				[b]Note:[/b] The [param image] must have the same width, height and format as the current [param texture] data. Otherwise, an error will be printed and the original texture won't be modified. If you need to use different width, height or format, use [method texture_replace] instead.
 			</description>
 		</method>
 		<method name="texture_3d_create">
@@ -3041,17 +3254,22 @@
 			<param index="4" name="mipmaps" type="bool" />
 			<param index="5" name="data" type="Image[]" />
 			<description>
+				[b]Note:[/b] The equivalent resource is [Texture3D].
 			</description>
 		</method>
 		<method name="texture_3d_get" qualifiers="const">
 			<return type="Image[]" />
 			<param index="0" name="texture" type="RID" />
 			<description>
+				Returns 3D texture data as an array of [Image]s for the specified texture [RID].
 			</description>
 		</method>
 		<method name="texture_3d_placeholder_create">
 			<return type="RID" />
 			<description>
+				Creates a placeholder for a 3-dimensional texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]texture_3d_*[/code] RenderingServer functions, although it does nothing when used.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent resource is [PlaceholderTexture3D].
 			</description>
 		</method>
 		<method name="texture_3d_update">
@@ -3059,6 +3277,17 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="data" type="Image[]" />
 			<description>
+				Updates the texture specified by the [param texture] [RID]'s data with the data in [param data]. All the texture's layers must be replaced at once.
+				[b]Note:[/b] The [param texture] must have the same width, height, depth and format as the current texture data. Otherwise, an error will be printed and the original texture won't be modified. If you need to use different width, height, depth or format, use [method texture_replace] instead.
+			</description>
+		</method>
+		<method name="texture_get_native_handle" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="srgb" type="bool" default="false" />
+			<description>
+				Returns the internal graphics handle for this texture object. For use when communicating with 3rd party APIs mostly with GDExternal.
+				[b]Note:[/b] This functions returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
 			</description>
 		</method>
 		<method name="texture_get_path" qualifiers="const">
@@ -3075,17 +3304,19 @@
 				Returns a texture [RID] that can be used with [RenderingDevice].
 			</description>
 		</method>
-		<method name="texture_proxy_create">
+		<method name="texture_proxy_create" is_deprecated="true">
 			<return type="RID" />
 			<param index="0" name="base" type="RID" />
 			<description>
+				[i]Deprecated.[/i] ProxyTexture was removed in Godot 4, so this method does nothing when called and always returns a null [RID].
 			</description>
 		</method>
-		<method name="texture_proxy_update">
+		<method name="texture_proxy_update" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="proxy_to" type="RID" />
 			<description>
+				[i]Deprecated.[/i] ProxyTexture was removed in Godot 4, so this method cannot be used anymore.
 			</description>
 		</method>
 		<method name="texture_replace">
@@ -3093,6 +3324,7 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="by_texture" type="RID" />
 			<description>
+				Replaces [param texture]'s texture data by the texture specified by the [param by_texture] RID, without changing [param texture]'s RID.
 			</description>
 		</method>
 		<method name="texture_set_force_redraw_if_visible">
@@ -3156,19 +3388,25 @@
 			<return type="RID" />
 			<description>
 				Creates an empty viewport and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]viewport_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent node is [Viewport].
 			</description>
 		</method>
 		<method name="viewport_get_measured_render_time_cpu" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="viewport" type="RID" />
 			<description>
+				Returns the CPU time taken to render the last frame in milliseconds. This [i]only[/i] includes time spent in rendering-related operations; scripts' [code]_process[/code] functions and other engine subsystems are not included in this readout. To get a complete readout of CPU time spent to render the scene, sum the render times of all viewports that are drawn every frame plus [method get_frame_setup_time_cpu]. Unlike [method Engine.get_frames_per_second], this method will accurately reflect CPU utilization even if framerate is capped via V-Sync or [member Engine.max_fps]. See also [method viewport_get_measured_render_time_gpu].
+				[b]Note:[/b] Requires measurements to be enabled on the specified [param viewport] using [method viewport_set_measure_render_time]. Otherwise, this method returns [code]0.0[/code].
 			</description>
 		</method>
 		<method name="viewport_get_measured_render_time_gpu" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="viewport" type="RID" />
 			<description>
+				Returns the GPU time taken to render the last frame in milliseconds. To get a complete readout of GPU time spent to render the scene, sum the render times of all viewports that are drawn every frame. Unlike [method Engine.get_frames_per_second], this method accurately reflects GPU utilization even if framerate is capped via V-Sync or [member Engine.max_fps]. See also [method viewport_get_measured_render_time_gpu].
+				[b]Note:[/b] Requires measurements to be enabled on the specified [param viewport] using [method viewport_set_measure_render_time]. Otherwise, this method returns [code]0.0[/code].
+				[b]Note:[/b] When GPU utilization is low enough during a certain period of time, GPUs will decrease their power state (which in turn decreases core and memory clock speeds). This can cause the reported GPU time to increase if GPU utilization is kept low enough by a framerate cap (compared to what it would be at the GPU's highest power state). Keep this in mind when benchmarking using [method viewport_get_measured_render_time_gpu]. This behavior can be overridden in the graphics driver settings at the cost of higher power usage.
 			</description>
 		</method>
 		<method name="viewport_get_render_info">
@@ -3177,6 +3415,27 @@
 			<param index="1" name="type" type="int" enum="RenderingServer.ViewportRenderInfoType" />
 			<param index="2" name="info" type="int" enum="RenderingServer.ViewportRenderInfo" />
 			<description>
+				Returns a statistic about the rendering engine which can be used for performance profiling. This is separated into render pass [param type]s, each of them having the same [param info]s you can query (different passes will return different values). See [enum RenderingServer.ViewportRenderInfoType] for a list of render pass types and [enum RenderingServer.ViewportRenderInfo] for a list of information that can be queried.
+				See also [method get_rendering_info], which returns global information across all viewports.
+				[b]Note:[/b] Viewport rendering information is not available until at least 2 frames have been rendered by the engine. If rendering information is not available, [method viewport_get_render_info] returns [code]0[/code]. To print rendering information in [code]_ready()[/code] successfully, use the following:
+				[codeblock]
+				func _ready():
+				    for _i in 2:
+				        await get_tree().process_frame
+
+				    print(
+				            RenderingServer.viewport_get_render_info(get_viewport().get_viewport_rid(),
+				            RenderingServer.VIEWPORT_RENDER_INFO_TYPE_VISIBLE,
+				            RenderingServer.VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME)
+				    )
+				[/codeblock]
+			</description>
+		</method>
+		<method name="viewport_get_render_target" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Returns the render target for the viewport.
 			</description>
 		</method>
 		<method name="viewport_get_texture" qualifiers="const">
@@ -3251,6 +3510,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="filter" type="int" enum="RenderingServer.CanvasItemTextureFilter" />
 			<description>
+				Sets the default texture filtering mode for the specified [param viewport] RID. See [enum CanvasItemTextureFilter] for options.
 			</description>
 		</method>
 		<method name="viewport_set_default_canvas_item_texture_repeat">
@@ -3258,6 +3518,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" />
 			<description>
+				Sets the default texture repeat mode for the specified [param viewport] RID. See [enum CanvasItemTextureRepeat] for options.
 			</description>
 		</method>
 		<method name="viewport_set_disable_2d">
@@ -3265,7 +3526,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="disable" type="bool" />
 			<description>
-				If [code]true[/code], the viewport's canvas is not rendered.
+				If [code]true[/code], the viewport's canvas (i.e. 2D and GUI elements) is not rendered.
 			</description>
 		</method>
 		<method name="viewport_set_disable_3d">
@@ -3273,6 +3534,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="disable" type="bool" />
 			<description>
+				If [code]true[/code], the viewport's 3D elements are not rendered.
 			</description>
 		</method>
 		<method name="viewport_set_environment_mode">
@@ -3304,6 +3566,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
+				Sets the measurement for the given [param viewport] RID (obtained using [method Viewport.get_viewport_rid]). Once enabled, [method viewport_get_measured_render_time_cpu] and [method viewport_get_measured_render_time_gpu] will return values greater than [code]0.0[/code] when queried with the given [param viewport].
 			</description>
 		</method>
 		<method name="viewport_set_msaa_2d">
@@ -3311,7 +3574,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="msaa" type="int" enum="RenderingServer.ViewportMSAA" />
 			<description>
-				Sets the multisample anti-aliasing mode for 2D/Canvas. See [enum ViewportMSAA] for options.
+				Sets the multisample anti-aliasing mode for 2D/Canvas on the specified [param viewport] RID. See [enum ViewportMSAA] for options.
 			</description>
 		</method>
 		<method name="viewport_set_msaa_3d">
@@ -3319,19 +3582,21 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="msaa" type="int" enum="RenderingServer.ViewportMSAA" />
 			<description>
-				Sets the multisample anti-aliasing mode for 3D. See [enum ViewportMSAA] for options.
+				Sets the multisample anti-aliasing mode for 3D on the specified [param viewport] RID. See [enum ViewportMSAA] for options.
 			</description>
 		</method>
 		<method name="viewport_set_occlusion_culling_build_quality">
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.ViewportOcclusionCullingBuildQuality" />
 			<description>
+				Sets the [member ProjectSettings.rendering/occlusion_culling/bvh_build_quality] to use for occlusion culling. This parameter is global and cannot be set on a per-viewport basis.
 			</description>
 		</method>
 		<method name="viewport_set_occlusion_rays_per_thread">
 			<return type="void" />
 			<param index="0" name="rays_per_thread" type="int" />
 			<description>
+				Sets the [member ProjectSettings.rendering/occlusion_culling/occlusion_rays_per_thread] to use for occlusion culling. This parameter is global and cannot be set on a per-viewport basis.
 			</description>
 		</method>
 		<method name="viewport_set_parent_viewport">
@@ -3339,7 +3604,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="parent_viewport" type="RID" />
 			<description>
-				Sets the viewport's parent to another viewport.
+				Sets the viewport's parent to the viewport specified by the [param parent_viewport] RID.
 			</description>
 		</method>
 		<method name="viewport_set_positional_shadow_atlas_quadrant_subdivision">
@@ -3348,7 +3613,7 @@
 			<param index="1" name="quadrant" type="int" />
 			<param index="2" name="subdivision" type="int" />
 			<description>
-				Sets the shadow atlas quadrant's subdivision.
+				Sets the number of subdivisions to use in the specified shadow atlas [param quadrant] for omni and spot shadows. See also [method Viewport.set_positional_shadow_atlas_quadrant_subdiv].
 			</description>
 		</method>
 		<method name="viewport_set_positional_shadow_atlas_size">
@@ -3357,8 +3622,8 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="use_16_bits" type="bool" default="false" />
 			<description>
-				Sets the size of the shadow atlas's images (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
-				[b]Note:[/b] If this is set to [code]0[/code], no shadows will be visible at all (including directional shadows).
+				Sets the [param size] of the shadow atlas's images (used for omni and spot lights) on the viewport specified by the [param viewport] RID. The value is rounded up to the nearest power of 2. If [param use_16_bits] is [code]true[/code], use 16 bits for the omni/spot shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
+				[b]Note:[/b] If this is set to [code]0[/code], no positional shadows will be visible at all. This can improve performance significantly on low-end systems by reducing both the CPU and GPU load (as fewer draw calls are needed to draw the scene without shadows).
 			</description>
 		</method>
 		<method name="viewport_set_render_direct_to_screen">
@@ -3374,7 +3639,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="scaling_3d_mode" type="int" enum="RenderingServer.ViewportScaling3DMode" />
 			<description>
-				Sets scaling 3d mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. FSR should be used where possible.
+				Sets the 3D resolution scaling mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. FSR should be used where possible.
 			</description>
 		</method>
 		<method name="viewport_set_scaling_3d_scale">
@@ -3391,8 +3656,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="scenario" type="RID" />
 			<description>
-				Sets a viewport's scenario.
-				The scenario contains information about environment information, reflection atlas etc.
+				Sets a viewport's scenario. The scenario contains information about environment information, reflection atlas, etc.
 			</description>
 		</method>
 		<method name="viewport_set_screen_space_aa">
@@ -3400,6 +3664,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.ViewportScreenSpaceAA" />
 			<description>
+				Sets the viewport's screen-space antialiasing mode.
 			</description>
 		</method>
 		<method name="viewport_set_sdf_oversize_and_scale">
@@ -3408,6 +3673,7 @@
 			<param index="1" name="oversize" type="int" enum="RenderingServer.ViewportSDFOversize" />
 			<param index="2" name="scale" type="int" enum="RenderingServer.ViewportSDFScale" />
 			<description>
+				Sets the viewport's 2D signed distance field [member ProjectSettings.rendering/2d/sdf/oversize] and [member ProjectSettings.rendering/2d/sdf/scale]. This is used when sampling the signed distance field in [CanvasItem] shaders as well as [GPUParticles2D] collision. This is [i]not[/i] used by SDFGI in 3D rendering.
 			</description>
 		</method>
 		<method name="viewport_set_size">
@@ -3416,7 +3682,7 @@
 			<param index="1" name="width" type="int" />
 			<param index="2" name="height" type="int" />
 			<description>
-				Sets the viewport's width and height.
+				Sets the viewport's width and height in pixels.
 			</description>
 		</method>
 		<method name="viewport_set_snap_2d_transforms_to_pixel">
@@ -3424,6 +3690,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
+				If [code]true[/code], canvas item transforms (i.e. origin position) are snapped to the nearest pixel when rendering. This can lead to a crisper appearance at the cost of less smooth movement, especially when [Camera2D] smoothing is enabled. Equivalent to [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
 			</description>
 		</method>
 		<method name="viewport_set_snap_2d_vertices_to_pixel">
@@ -3431,6 +3698,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
+				If [code]true[/code], canvas item vertices (i.e. polygon points) are snapped to the nearest pixel when rendering. This can lead to a crisper appearance at the cost of less smooth movement, especially when [Camera2D] smoothing is enabled. Equivalent to [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel].
 			</description>
 		</method>
 		<method name="viewport_set_texture_mipmap_bias">
@@ -3463,6 +3731,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
+				If [code]true[/code], enables debanding on the specified viewport. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding].
 			</description>
 		</method>
 		<method name="viewport_set_use_occlusion_culling">
@@ -3470,6 +3739,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
+				If [code]true[/code], enables occlusion culling on the specified viewport. Equivalent to [member ProjectSettings.rendering/occlusion_culling/use_occlusion_culling].
 			</description>
 		</method>
 		<method name="viewport_set_use_taa">
@@ -3477,7 +3747,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], use Temporal Anti-Aliasing.
+				If [code]true[/code], use Temporal Anti-Aliasing. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/use_taa].
 			</description>
 		</method>
 		<method name="viewport_set_use_xr">
@@ -3493,7 +3763,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.ViewportVRSMode" />
 			<description>
-				Sets the Variable Rate Shading (VRS) mode for the viewport. Note, if hardware does not support VRS this property is ignored.
+				Sets the Variable Rate Shading (VRS) mode for the viewport. If the GPU does not support VRS, this property is ignored. Equivalent to [member ProjectSettings.rendering/vrs/mode].
 			</description>
 		</method>
 		<method name="viewport_set_vrs_texture">
@@ -3501,12 +3771,16 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="texture" type="RID" />
 			<description>
-				Texture to use when the VRS mode is set to [constant RenderingServer.VIEWPORT_VRS_TEXTURE].
+				The texture to use when the VRS mode is set to [constant RenderingServer.VIEWPORT_VRS_TEXTURE]. Equivalent to [member ProjectSettings.rendering/vrs/texture].
 			</description>
 		</method>
 		<method name="visibility_notifier_create">
 			<return type="RID" />
 			<description>
+				Creates a new 3D visibility notifier object and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]visibility_notifier_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				To place in a scene, attach this mesh to an instance using [method instance_set_base] using the returned RID.
+				[b]Note:[/b] The equivalent node is [VisibleOnScreenNotifier3D].
 			</description>
 		</method>
 		<method name="visibility_notifier_set_aabb">
@@ -3540,6 +3814,9 @@
 		<method name="voxel_gi_create">
 			<return type="RID" />
 			<description>
+				Creates a new voxel-based global illumination object and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]voxel_gi_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				[b]Note:[/b] The equivalent node is [VoxelGI].
 			</description>
 		</method>
 		<method name="voxel_gi_get_data_cells" qualifiers="const">
@@ -3591,6 +3868,7 @@
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="bias" type="float" />
 			<description>
+				Sets the [member VoxelGIData.bias] value to use on the specified [param voxel_gi]'s [RID].
 			</description>
 		</method>
 		<method name="voxel_gi_set_dynamic_range">
@@ -3598,6 +3876,7 @@
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="range" type="float" />
 			<description>
+				Sets the [member VoxelGIData.dynamic_range] value to use on the specified [param voxel_gi]'s [RID].
 			</description>
 		</method>
 		<method name="voxel_gi_set_energy">
@@ -3605,6 +3884,7 @@
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="energy" type="float" />
 			<description>
+				Sets the [member VoxelGIData.energy] value to use on the specified [param voxel_gi]'s [RID].
 			</description>
 		</method>
 		<method name="voxel_gi_set_interior">
@@ -3612,6 +3892,7 @@
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
+				Sets the [member VoxelGIData.interior] value to use on the specified [param voxel_gi]'s [RID].
 			</description>
 		</method>
 		<method name="voxel_gi_set_normal_bias">
@@ -3619,6 +3900,7 @@
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="bias" type="float" />
 			<description>
+				Sets the [member VoxelGIData.normal_bias] value to use on the specified [param voxel_gi]'s [RID].
 			</description>
 		</method>
 		<method name="voxel_gi_set_propagation">
@@ -3626,12 +3908,14 @@
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="amount" type="float" />
 			<description>
+				Sets the [member VoxelGIData.propagation] value to use on the specified [param voxel_gi]'s [RID].
 			</description>
 		</method>
 		<method name="voxel_gi_set_quality">
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.VoxelGIQuality" />
 			<description>
+				Sets the [member ProjectSettings.rendering/global_illumination/voxel_gi/quality] value to use when rendering. This parameter is global and cannot be set on a per-VoxelGI basis.
 			</description>
 		</method>
 		<method name="voxel_gi_set_use_two_bounces">
@@ -3639,6 +3923,7 @@
 			<param index="0" name="voxel_gi" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
+				Sets the [member VoxelGIData.use_two_bounces] value to use on the specified [param voxel_gi]'s [RID].
 			</description>
 		</method>
 	</methods>
@@ -3673,30 +3958,40 @@
 			The maximum Z-layer for canvas items.
 		</constant>
 		<constant name="MAX_GLOW_LEVELS" value="7">
-			Max number of glow levels that can be used with glow post-process effect.
+			The maximum number of glow levels that can be used with the glow post-processing effect.
 		</constant>
-		<constant name="MAX_CURSORS" value="8">
-			Unused enum in Godot 3.x.
+		<constant name="MAX_CURSORS" value="8" is_deprecated="true">
+			[i]Deprecated.[/i] This constant is unused internally.
 		</constant>
 		<constant name="MAX_2D_DIRECTIONAL_LIGHTS" value="8">
+			The maximum number of directional lights that can be rendered at a given time in 2D.
 		</constant>
 		<constant name="TEXTURE_LAYERED_2D_ARRAY" value="0" enum="TextureLayeredType">
+			Array of 2-dimensional textures (see [Texture2DArray]).
 		</constant>
 		<constant name="TEXTURE_LAYERED_CUBEMAP" value="1" enum="TextureLayeredType">
+			Cubemap texture (see [Cubemap]).
 		</constant>
 		<constant name="TEXTURE_LAYERED_CUBEMAP_ARRAY" value="2" enum="TextureLayeredType">
+			Array of cubemap textures (see [CubemapArray]).
 		</constant>
 		<constant name="CUBEMAP_LAYER_LEFT" value="0" enum="CubeMapLayer">
+			Left face of a [Cubemap].
 		</constant>
 		<constant name="CUBEMAP_LAYER_RIGHT" value="1" enum="CubeMapLayer">
+			Right face of a [Cubemap].
 		</constant>
 		<constant name="CUBEMAP_LAYER_BOTTOM" value="2" enum="CubeMapLayer">
+			Bottom face of a [Cubemap].
 		</constant>
 		<constant name="CUBEMAP_LAYER_TOP" value="3" enum="CubeMapLayer">
+			Top face of a [Cubemap].
 		</constant>
 		<constant name="CUBEMAP_LAYER_FRONT" value="4" enum="CubeMapLayer">
+			Front face of a [Cubemap].
 		</constant>
 		<constant name="CUBEMAP_LAYER_BACK" value="5" enum="CubeMapLayer">
+			Back face of a [Cubemap].
 		</constant>
 		<constant name="SHADER_SPATIAL" value="0" enum="ShaderMode">
 			Shader is a 3D shader.
@@ -3705,13 +4000,13 @@
 			Shader is a 2D shader.
 		</constant>
 		<constant name="SHADER_PARTICLES" value="2" enum="ShaderMode">
-			Shader is a particle shader.
+			Shader is a particle shader (can be used in both 2D and 3D).
 		</constant>
 		<constant name="SHADER_SKY" value="3" enum="ShaderMode">
-			Shader is a sky shader.
+			Shader is a 3D sky shader.
 		</constant>
 		<constant name="SHADER_FOG" value="4" enum="ShaderMode">
-			Shader is a fog shader.
+			Shader is a 3D fog shader.
 		</constant>
 		<constant name="SHADER_MAX" value="5" enum="ShaderMode">
 			Represents the size of the [enum ShaderMode] enum.
@@ -3723,7 +4018,7 @@
 			The maximum renderpriority of all materials.
 		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
-			Array is a vertex array.
+			Array is a vertex position array.
 		</constant>
 		<constant name="ARRAY_NORMAL" value="1" enum="ArrayType">
 			Array is a normal array.
@@ -3732,21 +4027,25 @@
 			Array is a tangent array.
 		</constant>
 		<constant name="ARRAY_COLOR" value="3" enum="ArrayType">
-			Array is a color array.
+			Array is a vertex color array.
 		</constant>
 		<constant name="ARRAY_TEX_UV" value="4" enum="ArrayType">
-			Array is an UV coordinates array.
+			Array is a UV coordinates array.
 		</constant>
 		<constant name="ARRAY_TEX_UV2" value="5" enum="ArrayType">
-			Array is an UV coordinates array for the second UV coordinates.
+			Array is a UV coordinates array for the second set of UV coordinates.
 		</constant>
 		<constant name="ARRAY_CUSTOM0" value="6" enum="ArrayType">
+			Array is a custom data array for the first set of custom data.
 		</constant>
 		<constant name="ARRAY_CUSTOM1" value="7" enum="ArrayType">
+			Array is a custom data array for the second set of custom data.
 		</constant>
 		<constant name="ARRAY_CUSTOM2" value="8" enum="ArrayType">
+			Array is a custom data array for the third set of custom data.
 		</constant>
 		<constant name="ARRAY_CUSTOM3" value="9" enum="ArrayType">
+			Array is a custom data array for the fourth set of custom data.
 		</constant>
 		<constant name="ARRAY_BONES" value="10" enum="ArrayType">
 			Array contains bone information.
@@ -3755,33 +4054,43 @@
 			Array is weight information.
 		</constant>
 		<constant name="ARRAY_INDEX" value="12" enum="ArrayType">
-			Array is index array.
+			Array is an index array.
 		</constant>
 		<constant name="ARRAY_MAX" value="13" enum="ArrayType">
 			Represents the size of the [enum ArrayType] enum.
 		</constant>
 		<constant name="ARRAY_CUSTOM_COUNT" value="4">
+			The number of custom data arrays available ([constant ARRAY_CUSTOM0], [constant ARRAY_CUSTOM1], [constant ARRAY_CUSTOM2], [constant ARRAY_CUSTOM3]).
 		</constant>
 		<constant name="ARRAY_CUSTOM_RGBA8_UNORM" value="0" enum="ArrayCustomFormat">
+			Custom data array contains 8-bit-per-channel red/green/blue/alpha color data. Values are normalized, unsigned floating-point in the [code][0.0, 1.0][/code] range.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RGBA8_SNORM" value="1" enum="ArrayCustomFormat">
+			Custom data array contains 8-bit-per-channel red/green/blue/alpha color data. Values are normalized, signed floating-point in the [code][-1.0, 1.0][/code] range.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RG_HALF" value="2" enum="ArrayCustomFormat">
+			Custom data array contains 16-bit-per-channel red/green color data. Values are floating-point in half precision.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RGBA_HALF" value="3" enum="ArrayCustomFormat">
+			Custom data array contains 16-bit-per-channel red/green/blue/alpha color data. Values are floating-point in half precision.
 		</constant>
 		<constant name="ARRAY_CUSTOM_R_FLOAT" value="4" enum="ArrayCustomFormat">
+			Custom data array contains 32-bit-per-channel red color data. Values are floating-point in single precision.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RG_FLOAT" value="5" enum="ArrayCustomFormat">
+			Custom data array contains 32-bit-per-channel red/green color data. Values are floating-point in single precision.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RGB_FLOAT" value="6" enum="ArrayCustomFormat">
+			Custom data array contains 32-bit-per-channel red/green/blue color data. Values are floating-point in single precision.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RGBA_FLOAT" value="7" enum="ArrayCustomFormat">
+			Custom data array contains 32-bit-per-channel red/green/blue/alpha color data. Values are floating-point in single precision.
 		</constant>
 		<constant name="ARRAY_CUSTOM_MAX" value="8" enum="ArrayCustomFormat">
+			Represents the size of the [enum ArrayCustomFormat] enum.
 		</constant>
 		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat" is_bitfield="true">
-			Flag used to mark a vertex array.
+			Flag used to mark a vertex position array.
 		</constant>
 		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark a normal array.
@@ -3790,21 +4099,25 @@
 			Flag used to mark a tangent array.
 		</constant>
 		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat" is_bitfield="true">
-			Flag used to mark a color array.
+			Flag used to mark a vertex color array.
 		</constant>
 		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat" is_bitfield="true">
-			Flag used to mark an UV coordinates array.
+			Flag used to mark a UV coordinates array.
 		</constant>
 		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat" is_bitfield="true">
-			Flag used to mark an UV coordinates array for the second UV coordinates.
+			Flag used to mark a UV coordinates array for the second UV coordinates.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM0" value="64" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark an array of custom per-vertex data for the first set of custom data.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM1" value="128" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark an array of custom per-vertex data for the second set of custom data.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM2" value="256" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark an array of custom per-vertex data for the third set of custom data.
 		</constant>
 		<constant name="ARRAY_FORMAT_CUSTOM3" value="512" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark an array of custom per-vertex data for the fourth set of custom data.
 		</constant>
 		<constant name="ARRAY_FORMAT_BONES" value="1024" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark a bone information array.
@@ -3839,6 +4152,7 @@
 		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="67108864" enum="ArrayFormat" is_bitfield="true">
 		</constant>
 		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark that the array uses 8 bone weighs instead of 4.
 		</constant>
 		<constant name="ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY" value="268435456" enum="ArrayFormat" is_bitfield="true">
 		</constant>
@@ -3891,13 +4205,13 @@
 			Linear filter for light projectors (use for non-pixel art light projectors). Anisotropic mipmaps are used for rendering, which means light projectors at a distance will look smooth and sharp when viewed from oblique angles. This looks better compared to isotropic mipmaps, but is slower. The level of anisotropic filtering is defined by [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL" value="0" enum="LightType">
-			Is a directional (sun) light.
+			Directional (sun/moon) light (see [DirectionalLight3D]).
 		</constant>
 		<constant name="LIGHT_OMNI" value="1" enum="LightType">
-			Is an omni light.
+			Omni light (see [OmniLight3D]).
 		</constant>
 		<constant name="LIGHT_SPOT" value="2" enum="LightType">
-			Is a spot light.
+			Spot light (see [SpotLight3D]).
 		</constant>
 		<constant name="LIGHT_PARAM_ENERGY" value="0" enum="LightParam">
 			The light's energy multiplier.
@@ -3927,7 +4241,7 @@
 			The spotlight's attenuation.
 		</constant>
 		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="9" enum="LightParam">
-			Max distance that shadows will be rendered.
+			The maximum distance for shadow splits. Increasing this value will make directional shadows visible from further away, at the cost of lower overall shadow detail and performance (since more objects need to be included in the directional shadow rendering).
 		</constant>
 		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="10" enum="LightParam">
 			Proportion of shadow atlas occupied by the first split.
@@ -3962,10 +4276,13 @@
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">
+			Light is ignored when baking. This is the fastest mode, but the light will be taken into account when baking global illumination. This mode should generally be used for dynamic lights that change quickly, as the effect of global illumination is less noticeable on those lights.
 		</constant>
 		<constant name="LIGHT_BAKE_STATIC" value="1" enum="LightBakeMode">
+			Light is taken into account in static baking ([VoxelGI], [LightmapGI], SDFGI ([member Environment.sdfgi_enabled])). The light can be moved around or modified, but its global illumination will not update in real-time. This is suitable for subtle changes (such as flickering torches), but generally not large changes such as toggling a light on and off.
 		</constant>
 		<constant name="LIGHT_BAKE_DYNAMIC" value="2" enum="LightBakeMode">
+			Light is taken into account in dynamic baking ([VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) only). The light can be moved around or modified with global illumination updating in real-time. The light's global illumination appearance will be slightly different compared to [constant LIGHT_BAKE_STATIC]. This has a greater performance cost compared to [constant LIGHT_BAKE_STATIC]. When using SDFGI, the update speed of dynamic lights is affected by [member ProjectSettings.rendering/global_illumination/sdfgi/frames_to_update_lights].
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_DUAL_PARABOLOID" value="0" enum="LightOmniShadowMode">
 			Use a dual paraboloid shadow map for omni lights.
@@ -4011,6 +4328,7 @@
 			Highest low shadow filtering quality (slowest). When using this quality setting, [member Light3D.shadow_blur] is automatically multiplied by 2× to better make use of the high sample count. This increased blur also improves the stability of dynamic object shadows. This multiplier only applies to lights whose [member Light3D.light_size] or [member Light3D.light_angular_distance] is [code]0.0[/code]).
 		</constant>
 		<constant name="SHADOW_QUALITY_MAX" value="6" enum="ShadowQuality">
+			Represents the size of the [enum ShadowQuality] enum.
 		</constant>
 		<constant name="REFLECTION_PROBE_UPDATE_ONCE" value="0" enum="ReflectionProbeUpdateMode">
 			Reflection probe will update reflections once and then stop.
@@ -4019,20 +4337,28 @@
 			Reflection probe will update each frame. This mode is necessary to capture moving objects.
 		</constant>
 		<constant name="REFLECTION_PROBE_AMBIENT_DISABLED" value="0" enum="ReflectionProbeAmbientMode">
+			Do not apply any ambient lighting inside the reflection probe's box defined by its size.
 		</constant>
 		<constant name="REFLECTION_PROBE_AMBIENT_ENVIRONMENT" value="1" enum="ReflectionProbeAmbientMode">
+			Apply automatically-sourced environment lighting inside the reflection probe's box defined by its size.
 		</constant>
 		<constant name="REFLECTION_PROBE_AMBIENT_COLOR" value="2" enum="ReflectionProbeAmbientMode">
+			Apply custom ambient lighting inside the reflection probe's box defined by its size. See [method reflection_probe_set_ambient_color] and [method reflection_probe_set_ambient_energy].
 		</constant>
 		<constant name="DECAL_TEXTURE_ALBEDO" value="0" enum="DecalTexture">
+			Albedo texture slot in a decal ([member Decal.texture_albedo]).
 		</constant>
 		<constant name="DECAL_TEXTURE_NORMAL" value="1" enum="DecalTexture">
+			Normal map texture slot in a decal ([member Decal.texture_normal]).
 		</constant>
 		<constant name="DECAL_TEXTURE_ORM" value="2" enum="DecalTexture">
+			Occlusion/Roughness/Metallic texture slot in a decal ([member Decal.texture_orm]).
 		</constant>
 		<constant name="DECAL_TEXTURE_EMISSION" value="3" enum="DecalTexture">
+			Emission texture slot in a decal ([member Decal.texture_emission]).
 		</constant>
 		<constant name="DECAL_TEXTURE_MAX" value="4" enum="DecalTexture">
+			Represents the size of the [enum DecalTexture] enum.
 		</constant>
 		<constant name="DECAL_FILTER_NEAREST" value="0" enum="DecalFilter">
 			Nearest-neighbor filter for decals (use for pixel art decals). No mipmaps are used for rendering, which means decals at a distance will look sharp but grainy. This has roughly the same performance cost as using mipmaps.
@@ -4053,12 +4379,16 @@
 			Linear filter for decals (use for non-pixel art decals). Anisotropic mipmaps are used for rendering, which means decals at a distance will look smooth and sharp when viewed from oblique angles. This looks better compared to isotropic mipmaps, but is slower. The level of anisotropic filtering is defined by [member ProjectSettings.rendering/textures/default_filters/anisotropic_filtering_level].
 		</constant>
 		<constant name="VOXEL_GI_QUALITY_LOW" value="0" enum="VoxelGIQuality">
+			Low [VoxelGI] rendering quality using 4 cones.
 		</constant>
 		<constant name="VOXEL_GI_QUALITY_HIGH" value="1" enum="VoxelGIQuality">
+			High [VoxelGI] rendering quality using 6 cones.
 		</constant>
 		<constant name="PARTICLES_MODE_2D" value="0" enum="ParticlesMode">
+			2D particles.
 		</constant>
 		<constant name="PARTICLES_MODE_3D" value="1" enum="ParticlesMode">
+			3D particles.
 		</constant>
 		<constant name="PARTICLES_TRANSFORM_ALIGN_DISABLED" value="0" enum="ParticlesTransformAlign">
 		</constant>
@@ -4116,6 +4446,7 @@
 		<constant name="PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_8192" value="5" enum="ParticlesCollisionHeightfieldResolution">
 		</constant>
 		<constant name="PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_MAX" value="6" enum="ParticlesCollisionHeightfieldResolution">
+			Represents the size of the [enum ParticlesCollisionHeightfieldResolution] enum.
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_ELLIPSOID" value="0" enum="FogVolumeShape">
 			[FogVolume] will be shaped like an ellipsoid (stretched sphere).
@@ -4133,37 +4464,40 @@
 			[FogVolume] will have no shape, will cover the whole world and will not be culled.
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_MAX" value="5" enum="FogVolumeShape">
+			Represents the size of the [enum FogVolumeShape] enum.
 		</constant>
 		<constant name="VIEWPORT_SCALING_3D_MODE_BILINEAR" value="0" enum="ViewportScaling3DMode">
-			Use bilinear scaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less then [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.
+			Use bilinear scaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.
 		</constant>
 		<constant name="VIEWPORT_SCALING_3D_MODE_FSR" value="1" enum="ViewportScaling3DMode">
-			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less then [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
+			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
 		</constant>
 		<constant name="VIEWPORT_SCALING_3D_MODE_MAX" value="2" enum="ViewportScaling3DMode">
+			Represents the size of the [enum ViewportScaling3DMode] enum.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_DISABLED" value="0" enum="ViewportUpdateMode">
-			Do not update the viewport.
+			Do not update the viewport's render target.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_ONCE" value="1" enum="ViewportUpdateMode">
-			Update the viewport once then set to disabled.
+			Update the viewport's render target once, then switch to [constant VIEWPORT_UPDATE_DISABLED].
 		</constant>
 		<constant name="VIEWPORT_UPDATE_WHEN_VISIBLE" value="2" enum="ViewportUpdateMode">
-			Update the viewport whenever it is visible.
+			Update the viewport's render target only when it is visible. This is the default value.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE" value="3" enum="ViewportUpdateMode">
+			Update the viewport's render target only when its parent is visible.
 		</constant>
 		<constant name="VIEWPORT_UPDATE_ALWAYS" value="4" enum="ViewportUpdateMode">
-			Always update the viewport.
+			Always update the viewport's render target.
 		</constant>
 		<constant name="VIEWPORT_CLEAR_ALWAYS" value="0" enum="ViewportClearMode">
-			The viewport is always cleared before drawing.
+			Always clear the viewport's render target before drawing.
 		</constant>
 		<constant name="VIEWPORT_CLEAR_NEVER" value="1" enum="ViewportClearMode">
-			The viewport is never cleared before drawing.
+			Never clear the viewport's render target.
 		</constant>
 		<constant name="VIEWPORT_CLEAR_ONLY_NEXT_FRAME" value="2" enum="ViewportClearMode">
-			The viewport is cleared once, then the clear mode is set to [constant VIEWPORT_CLEAR_NEVER].
+			Clear the viewport's render target on the next frame, then switch to [constant VIEWPORT_CLEAR_NEVER].
 		</constant>
 		<constant name="VIEWPORT_ENVIRONMENT_DISABLED" value="0" enum="ViewportEnvironmentMode">
 			Disable rendering of 3D environment over 2D canvas.
@@ -4172,28 +4506,37 @@
 			Enable rendering of 3D environment over 2D canvas.
 		</constant>
 		<constant name="VIEWPORT_ENVIRONMENT_INHERIT" value="2" enum="ViewportEnvironmentMode">
-			Inherit enable/disable value from parent. If topmost parent is also set to inherit, then this has the same behavior as [constant VIEWPORT_ENVIRONMENT_ENABLED].
+			Inherit enable/disable value from parent. If the topmost parent is also set to [constant VIEWPORT_ENVIRONMENT_INHERIT], then this has the same behavior as [constant VIEWPORT_ENVIRONMENT_ENABLED].
 		</constant>
 		<constant name="VIEWPORT_ENVIRONMENT_MAX" value="3" enum="ViewportEnvironmentMode">
-			Max value of [enum ViewportEnvironmentMode] enum.
+			Represents the size of the [enum ViewportEnvironmentMode] enum.
 		</constant>
 		<constant name="VIEWPORT_SDF_OVERSIZE_100_PERCENT" value="0" enum="ViewportSDFOversize">
+			Do not oversize the 2D signed distance field. Occluders may disappear when touching the viewport's edges, and [GPUParticles3D] collision may stop working earlier than intended. This has the lowest GPU requirements.
 		</constant>
 		<constant name="VIEWPORT_SDF_OVERSIZE_120_PERCENT" value="1" enum="ViewportSDFOversize">
+			2D signed distance field covers 20% of the viewport's size outside the viewport on each side (top, right, bottom, left).
 		</constant>
 		<constant name="VIEWPORT_SDF_OVERSIZE_150_PERCENT" value="2" enum="ViewportSDFOversize">
+			2D signed distance field covers 50% of the viewport's size outside the viewport on each side (top, right, bottom, left).
 		</constant>
 		<constant name="VIEWPORT_SDF_OVERSIZE_200_PERCENT" value="3" enum="ViewportSDFOversize">
+			2D signed distance field covers 100% of the viewport's size outside the viewport on each side (top, right, bottom, left). This has the highest GPU requirements.
 		</constant>
 		<constant name="VIEWPORT_SDF_OVERSIZE_MAX" value="4" enum="ViewportSDFOversize">
+			Represents the size of the [enum ViewportSDFOversize] enum.
 		</constant>
 		<constant name="VIEWPORT_SDF_SCALE_100_PERCENT" value="0" enum="ViewportSDFScale">
+			Full resolution 2D signed distance field scale. This has the highest GPU requirements.
 		</constant>
 		<constant name="VIEWPORT_SDF_SCALE_50_PERCENT" value="1" enum="ViewportSDFScale">
+			Half resolution 2D signed distance field scale on each axis (25% of the viewport pixel count).
 		</constant>
 		<constant name="VIEWPORT_SDF_SCALE_25_PERCENT" value="2" enum="ViewportSDFScale">
+			Quarter resolution 2D signed distance field scale on each axis (6.25% of the viewport pixel count). This has the lowest GPU requirements.
 		</constant>
 		<constant name="VIEWPORT_SDF_SCALE_MAX" value="3" enum="ViewportSDFScale">
+			Represents the size of the [enum ViewportSDFScale] enum.
 		</constant>
 		<constant name="VIEWPORT_MSAA_DISABLED" value="0" enum="ViewportMSAA">
 			Multisample antialiasing for 3D is disabled. This is the default value, and also the fastest setting.
@@ -4208,18 +4551,25 @@
 			Multisample antialiasing uses 8 samples per pixel for 3D. This has a very high impact on performance. Likely unsupported on low-end and older hardware.
 		</constant>
 		<constant name="VIEWPORT_MSAA_MAX" value="4" enum="ViewportMSAA">
+			Represents the size of the [enum ViewportMSAA] enum.
 		</constant>
 		<constant name="VIEWPORT_SCREEN_SPACE_AA_DISABLED" value="0" enum="ViewportScreenSpaceAA">
+			Do not perform any antialiasing in the full screen post-process.
 		</constant>
 		<constant name="VIEWPORT_SCREEN_SPACE_AA_FXAA" value="1" enum="ViewportScreenSpaceAA">
+			Use fast approximate antialiasing. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
 		</constant>
 		<constant name="VIEWPORT_SCREEN_SPACE_AA_MAX" value="2" enum="ViewportScreenSpaceAA">
+			Represents the size of the [enum ViewportScreenSpaceAA] enum.
 		</constant>
 		<constant name="VIEWPORT_OCCLUSION_BUILD_QUALITY_LOW" value="0" enum="ViewportOcclusionCullingBuildQuality">
+			Low occlusion culling BVH build quality (as defined by Embree). Results in the lowest CPU usage, but least effective culling.
 		</constant>
 		<constant name="VIEWPORT_OCCLUSION_BUILD_QUALITY_MEDIUM" value="1" enum="ViewportOcclusionCullingBuildQuality">
+			Medium occlusion culling BVH build quality (as defined by Embree).
 		</constant>
 		<constant name="VIEWPORT_OCCLUSION_BUILD_QUALITY_HIGH" value="2" enum="ViewportOcclusionCullingBuildQuality">
+			High occlusion culling BVH build quality (as defined by Embree). Results in the highest CPU usage, but most effective culling.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="ViewportRenderInfo">
 			Number of objects drawn in a single frame.
@@ -4234,10 +4584,13 @@
 			Represents the size of the [enum ViewportRenderInfo] enum.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_TYPE_VISIBLE" value="0" enum="ViewportRenderInfoType">
+			Visible render pass (excluding shadows).
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_TYPE_SHADOW" value="1" enum="ViewportRenderInfoType">
+			Shadow render pass. Objects will be rendered several times depending on the number of amounts of lights with shadows and the number of directional shadow splits.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_TYPE_MAX" value="2" enum="ViewportRenderInfoType">
+			Represents the size of the [enum ViewportRenderInfoType] enum.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DISABLED" value="0" enum="ViewportDebugDraw">
 			Debug draw is disabled. Default setting.
@@ -4274,6 +4627,7 @@
 			Draws the shadow atlas that stores shadows from [DirectionalLight3D]s in the upper left quadrant of the [Viewport].
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE" value="11" enum="ViewportDebugDraw">
+			Draws the estimated scene luminance. This is a 1×1 texture that is generated when autoexposure is enabled to control the scene's exposure.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SSAO" value="12" enum="ViewportDebugDraw">
 			Draws the screen space ambient occlusion texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssao_enabled] set in your [WorldEnvironment].
@@ -4285,49 +4639,62 @@
 			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order they will be colored red, green, blue, yellow.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DECAL_ATLAS" value="15" enum="ViewportDebugDraw">
+			Draws the decal atlas that stores decal textures from [Decal]s.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI" value="16" enum="ViewportDebugDraw">
+			Draws SDFGI cascade data. This is the data structure that is used to bounce lighting against and create reflections.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SDFGI_PROBES" value="17" enum="ViewportDebugDraw">
+			Draws SDFGI probe data. This is the data structure that is used to give indirect lighting dynamic objects moving within the scene.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_GI_BUFFER" value="18" enum="ViewportDebugDraw">
+			Draws the global illumination buffer ([VoxelGI] or SDFGI).
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DISABLE_LOD" value="19" enum="ViewportDebugDraw">
+			Disable mesh LOD. All meshes are drawn with full detail, which can be used to compare performance.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS" value="20" enum="ViewportDebugDraw">
+			Draws the [OmniLight3D] cluster. Clustering determines where lights are positioned in screen-space, which allows the engine to only process these portions of the screen for lighting.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS" value="21" enum="ViewportDebugDraw">
+			Draws the [SpotLight3D] cluster. Clustering determines where lights are positioned in screen-space, which allows the engine to only process these portions of the screen for lighting.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS" value="22" enum="ViewportDebugDraw">
+			Draws the [Decal] cluster. Clustering determines where decals are positioned in screen-space, which allows the engine to only process these portions of the screen for decals.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23" enum="ViewportDebugDraw">
+			Draws the [ReflectionProbe] cluster. Clustering determines where reflection probes are positioned in screen-space, which allows the engine to only process these portions of the screen for reflection probes.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="24" enum="ViewportDebugDraw">
+			Draws the occlusion culling buffer. This low-resolution occlusion culling buffer is rasterized on the CPU and is used to check whether instances are occluded by other objects.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_MOTION_VECTORS" value="25" enum="ViewportDebugDraw">
+			Draws the motion vectors buffer. This is used by temporal antialiasing to correct for motion that occurs during gameplay.
 		</constant>
 		<constant name="VIEWPORT_VRS_DISABLED" value="0" enum="ViewportVRSMode">
-			VRS is disabled.
+			Variable rate shading is disabled.
 		</constant>
 		<constant name="VIEWPORT_VRS_TEXTURE" value="1" enum="ViewportVRSMode">
-			VRS uses a texture. Note, for stereoscopic use a texture atlas with a texture for each view.
+			Variable rate shading uses a texture. Note, for stereoscopic use a texture atlas with a texture for each view.
 		</constant>
 		<constant name="VIEWPORT_VRS_XR" value="2" enum="ViewportVRSMode">
-			VRS texture is supplied by the primary [XRInterface].
+			Variable rate shading texture is supplied by the primary [XRInterface].
 		</constant>
 		<constant name="VIEWPORT_VRS_MAX" value="3" enum="ViewportVRSMode">
 			Represents the size of the [enum ViewportVRSMode] enum.
 		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
+			Automatically selects the appropriate process mode based on your sky shader. If your shader uses [code]TIME[/code] or [code]POSITION[/code], this will use [constant SKY_MODE_REALTIME]. If your shader uses any of the [code]LIGHT_*[/code] variables or any custom uniforms, this uses [constant SKY_MODE_INCREMENTAL]. Otherwise, this defaults to [constant SKY_MODE_QUALITY].
 		</constant>
 		<constant name="SKY_MODE_QUALITY" value="1" enum="SkyMode">
-			Uses high quality importance sampling to process the radiance map. In general, this results in much higher quality than [constant Sky.PROCESS_MODE_REALTIME] but takes much longer to generate. This should not be used if you plan on changing the sky at runtime. If you are finding that the reflection is not blurry enough and is showing sparkles or fireflies, try increasing [member ProjectSettings.rendering/reflections/sky_reflections/ggx_samples].
+			Uses high quality importance sampling to process the radiance map. In general, this results in much higher quality than [constant SKY_MODE_REALTIME] but takes much longer to generate. This should not be used if you plan on changing the sky at runtime. If you are finding that the reflection is not blurry enough and is showing sparkles or fireflies, try increasing [member ProjectSettings.rendering/reflections/sky_reflections/ggx_samples].
 		</constant>
 		<constant name="SKY_MODE_INCREMENTAL" value="2" enum="SkyMode">
+			Uses the same high quality importance sampling to process the radiance map as [constant SKY_MODE_QUALITY], but updates over several frames. The number of frames is determined by [member ProjectSettings.rendering/reflections/sky_reflections/roughness_layers]. Use this when you need highest quality radiance maps, but have a sky that updates slowly.
 		</constant>
 		<constant name="SKY_MODE_REALTIME" value="3" enum="SkyMode">
-			Uses the fast filtering algorithm to process the radiance map. In general this results in lower quality, but substantially faster run times.
-			[b]Note:[/b] The fast filtering algorithm is limited to 256x256 cubemaps, so [member Sky.radiance_size] must be set to [constant Sky.RADIANCE_SIZE_256].
+			Uses the fast filtering algorithm to process the radiance map. In general this results in lower quality, but substantially faster run times. If you need better quality, but still need to update the sky every frame, consider turning on [member ProjectSettings.rendering/reflections/sky_reflections/fast_filter_high_quality].
+			[b]Note:[/b] The fast filtering algorithm is limited to 256×256 cubemaps, so [method sky_set_radiance_size] must be set to [code]256[/code]. Otherwise, a warning is printed and the overridden radiance size is ignored.
 		</constant>
 		<constant name="ENV_BG_CLEAR_COLOR" value="0" enum="EnvironmentBG">
 			Use the clear color as background.
@@ -4442,60 +4809,88 @@
 			Highest quality screen-space indirect lighting. Uses the adaptive target setting which can be dynamically adjusted to smoothly balance performance and visual quality.
 		</constant>
 		<constant name="ENV_SDFGI_Y_SCALE_50_PERCENT" value="0" enum="EnvironmentSDFGIYScale">
+			Use 50% scale for SDFGI on the Y (vertical) axis. SDFGI cells will be twice as short as they are wide. This allows providing increased GI detail and reduced light leaking with thin floors and ceilings. This is usually the best choice for scenes that don't feature much verticality.
 		</constant>
 		<constant name="ENV_SDFGI_Y_SCALE_75_PERCENT" value="1" enum="EnvironmentSDFGIYScale">
+			Use 75% scale for SDFGI on the Y (vertical) axis. This is a balance between the 50% and 100% SDFGI Y scales.
 		</constant>
 		<constant name="ENV_SDFGI_Y_SCALE_100_PERCENT" value="2" enum="EnvironmentSDFGIYScale">
+			Use 100% scale for SDFGI on the Y (vertical) axis. SDFGI cells will be as tall as they are wide. This is usually the best choice for highly vertical scenes. The downside is that light leaking may become more noticeable with thin floors and ceilings.
 		</constant>
 		<constant name="ENV_SDFGI_RAY_COUNT_4" value="0" enum="EnvironmentSDFGIRayCount">
+			Throw 4 rays per frame when converging SDFGI. This has the lowest GPU requirements, but creates the most noisy result.
 		</constant>
 		<constant name="ENV_SDFGI_RAY_COUNT_8" value="1" enum="EnvironmentSDFGIRayCount">
+			Throw 8 rays per frame when converging SDFGI.
 		</constant>
 		<constant name="ENV_SDFGI_RAY_COUNT_16" value="2" enum="EnvironmentSDFGIRayCount">
+			Throw 16 rays per frame when converging SDFGI.
 		</constant>
 		<constant name="ENV_SDFGI_RAY_COUNT_32" value="3" enum="EnvironmentSDFGIRayCount">
+			Throw 32 rays per frame when converging SDFGI.
 		</constant>
 		<constant name="ENV_SDFGI_RAY_COUNT_64" value="4" enum="EnvironmentSDFGIRayCount">
+			Throw 64 rays per frame when converging SDFGI.
 		</constant>
 		<constant name="ENV_SDFGI_RAY_COUNT_96" value="5" enum="EnvironmentSDFGIRayCount">
+			Throw 96 rays per frame when converging SDFGI. This has high GPU requirements.
 		</constant>
 		<constant name="ENV_SDFGI_RAY_COUNT_128" value="6" enum="EnvironmentSDFGIRayCount">
+			Throw 128 rays per frame when converging SDFGI. This has very high GPU requirements, but creates the least noisy result.
 		</constant>
 		<constant name="ENV_SDFGI_RAY_COUNT_MAX" value="7" enum="EnvironmentSDFGIRayCount">
+			Represents the size of the [enum EnvironmentSDFGIRayCount] enum.
 		</constant>
 		<constant name="ENV_SDFGI_CONVERGE_IN_5_FRAMES" value="0" enum="EnvironmentSDFGIFramesToConverge">
+			Converge SDFGI over 5 frames. This is the most responsive, but creates the most noisy result with a given ray count.
 		</constant>
 		<constant name="ENV_SDFGI_CONVERGE_IN_10_FRAMES" value="1" enum="EnvironmentSDFGIFramesToConverge">
+			Configure SDFGI to fully converge over 10 frames.
 		</constant>
 		<constant name="ENV_SDFGI_CONVERGE_IN_15_FRAMES" value="2" enum="EnvironmentSDFGIFramesToConverge">
+			Configure SDFGI to fully converge over 15 frames.
 		</constant>
 		<constant name="ENV_SDFGI_CONVERGE_IN_20_FRAMES" value="3" enum="EnvironmentSDFGIFramesToConverge">
+			Configure SDFGI to fully converge over 20 frames.
 		</constant>
 		<constant name="ENV_SDFGI_CONVERGE_IN_25_FRAMES" value="4" enum="EnvironmentSDFGIFramesToConverge">
+			Configure SDFGI to fully converge over 25 frames.
 		</constant>
 		<constant name="ENV_SDFGI_CONVERGE_IN_30_FRAMES" value="5" enum="EnvironmentSDFGIFramesToConverge">
+			Configure SDFGI to fully converge over 30 frames. This is the least responsive, but creates the least noisy result with a given ray count.
 		</constant>
 		<constant name="ENV_SDFGI_CONVERGE_MAX" value="6" enum="EnvironmentSDFGIFramesToConverge">
+			Represents the size of the [enum EnvironmentSDFGIFramesToConverge] enum.
 		</constant>
 		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_1_FRAME" value="0" enum="EnvironmentSDFGIFramesToUpdateLight">
+			Update indirect light from dynamic lights in SDFGI over 1 frame. This is the most responsive, but has the highest GPU requirements.
 		</constant>
 		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_2_FRAMES" value="1" enum="EnvironmentSDFGIFramesToUpdateLight">
+			Update indirect light from dynamic lights in SDFGI over 2 frames.
 		</constant>
 		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_4_FRAMES" value="2" enum="EnvironmentSDFGIFramesToUpdateLight">
+			Update indirect light from dynamic lights in SDFGI over 4 frames.
 		</constant>
 		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_8_FRAMES" value="3" enum="EnvironmentSDFGIFramesToUpdateLight">
+			Update indirect light from dynamic lights in SDFGI over 8 frames.
 		</constant>
 		<constant name="ENV_SDFGI_UPDATE_LIGHT_IN_16_FRAMES" value="4" enum="EnvironmentSDFGIFramesToUpdateLight">
+			Update indirect light from dynamic lights in SDFGI over 16 frames. This is the least responsive, but has the lowest GPU requirements.
 		</constant>
 		<constant name="ENV_SDFGI_UPDATE_LIGHT_MAX" value="5" enum="EnvironmentSDFGIFramesToUpdateLight">
+			Represents the size of the [enum EnvironmentSDFGIFramesToUpdateLight] enum.
 		</constant>
 		<constant name="SUB_SURFACE_SCATTERING_QUALITY_DISABLED" value="0" enum="SubSurfaceScatteringQuality">
+			Disables subsurface scattering entirely, even on materials that have [member BaseMaterial3D.subsurf_scatter_enabled] set to [code]true[/code]. This has the lowest GPU requirements.
 		</constant>
 		<constant name="SUB_SURFACE_SCATTERING_QUALITY_LOW" value="1" enum="SubSurfaceScatteringQuality">
+			Low subsurface scattering quality.
 		</constant>
 		<constant name="SUB_SURFACE_SCATTERING_QUALITY_MEDIUM" value="2" enum="SubSurfaceScatteringQuality">
+			Medium subsurface scattering quality.
 		</constant>
 		<constant name="SUB_SURFACE_SCATTERING_QUALITY_HIGH" value="3" enum="SubSurfaceScatteringQuality">
+			High subsurface scattering quality. This has the highest GPU requirements.
 		</constant>
 		<constant name="DOF_BOKEH_BOX" value="0" enum="DOFBokehShape">
 			Calculate the DOF blur using a box filter. The fastest option, but results in obvious lines in blur pattern.
@@ -4531,6 +4926,7 @@
 			The instance is a particle emitter.
 		</constant>
 		<constant name="INSTANCE_PARTICLES_COLLISION" value="4" enum="InstanceType">
+			The instance is a GPUParticles collision shape.
 		</constant>
 		<constant name="INSTANCE_LIGHT" value="5" enum="InstanceType">
 			The instance is a light.
@@ -4548,10 +4944,13 @@
 			The instance is a lightmap.
 		</constant>
 		<constant name="INSTANCE_OCCLUDER" value="10" enum="InstanceType">
+			The instance is an occlusion culling occluder.
 		</constant>
 		<constant name="INSTANCE_VISIBLITY_NOTIFIER" value="11" enum="InstanceType">
+			The instance is a visible on-screen notifier.
 		</constant>
 		<constant name="INSTANCE_FOG_VOLUME" value="12" enum="InstanceType">
+			The instance is a fog volume.
 		</constant>
 		<constant name="INSTANCE_MAX" value="13" enum="InstanceType">
 			Represents the size of the [enum InstanceType] enum.
@@ -4569,6 +4968,7 @@
 			When set, manually requests to draw geometry on next frame.
 		</constant>
 		<constant name="INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING" value="3" enum="InstanceFlags">
+			Always draw, even if the instance would be culled by occlusion culling. Does not affect view frustum culling.
 		</constant>
 		<constant name="INSTANCE_FLAG_MAX" value="4" enum="InstanceFlags">
 			Represents the size of the [enum InstanceFlags] enum.
@@ -4607,10 +5007,13 @@
 			Index of [Image] in array of [Image]s returned by [method bake_render_uv2]. Image uses [constant Image.FORMAT_RGBAH] and contains emission color in the [code].rgb[/code] channels and nothing in the [code].a[/code] channel.
 		</constant>
 		<constant name="CANVAS_TEXTURE_CHANNEL_DIFFUSE" value="0" enum="CanvasTextureChannel">
+			Diffuse canvas texture ([member CanvasTexture.diffuse_texture]).
 		</constant>
 		<constant name="CANVAS_TEXTURE_CHANNEL_NORMAL" value="1" enum="CanvasTextureChannel">
+			Normal map canvas texture ([member CanvasTexture.normal_texture]).
 		</constant>
 		<constant name="CANVAS_TEXTURE_CHANNEL_SPECULAR" value="2" enum="CanvasTextureChannel">
+			Specular map canvas texture ([member CanvasTexture.specular_texture]).
 		</constant>
 		<constant name="NINE_PATCH_STRETCH" value="0" enum="NinePatchAxisMode">
 			The nine patch gets stretched where needed.
@@ -4661,16 +5064,21 @@
 			Max value for [enum CanvasItemTextureRepeat] enum.
 		</constant>
 		<constant name="CANVAS_GROUP_MODE_DISABLED" value="0" enum="CanvasGroupMode">
+			Child draws over parent and is not clipped.
 		</constant>
 		<constant name="CANVAS_GROUP_MODE_CLIP_ONLY" value="1" enum="CanvasGroupMode">
+			Parent is used for the purposes of clipping only. Child is clipped to the parent's visible area, parent is not drawn.
 		</constant>
 		<constant name="CANVAS_GROUP_MODE_CLIP_AND_DRAW" value="2" enum="CanvasGroupMode">
+			Parent is used for clipping child, but parent is also drawn underneath child as normal before clipping child to its visible area.
 		</constant>
 		<constant name="CANVAS_GROUP_MODE_TRANSPARENT" value="3" enum="CanvasGroupMode">
 		</constant>
 		<constant name="CANVAS_LIGHT_MODE_POINT" value="0" enum="CanvasLightMode">
+			2D point light (see [PointLight2D]).
 		</constant>
 		<constant name="CANVAS_LIGHT_MODE_DIRECTIONAL" value="1" enum="CanvasLightMode">
+			2D directional (sun/moon) light (see [DirectionalLight2D]).
 		</constant>
 		<constant name="CANVAS_LIGHT_BLEND_MODE_ADD" value="0" enum="CanvasLightBlendMode">
 			Adds light color additive to the canvas.
@@ -4703,74 +5111,109 @@
 			Culling of the canvas occluder is counterclockwise.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_BOOL" value="0" enum="GlobalShaderParameterType">
+			Boolean global shader parameter ([code]global uniform bool ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_BVEC2" value="1" enum="GlobalShaderParameterType">
+			2-dimensional boolean vector global shader parameter ([code]global uniform bvec2 ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_BVEC3" value="2" enum="GlobalShaderParameterType">
+			3-dimensional boolean vector global shader parameter ([code]global uniform bvec3 ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_BVEC4" value="3" enum="GlobalShaderParameterType">
+			4-dimensional boolean vector global shader parameter ([code]global uniform bvec4 ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_INT" value="4" enum="GlobalShaderParameterType">
+			Integer global shader parameter ([code]global uniform int ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_IVEC2" value="5" enum="GlobalShaderParameterType">
+			2-dimensional integer vector global shader parameter ([code]global uniform ivec2 ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_IVEC3" value="6" enum="GlobalShaderParameterType">
+			3-dimensional integer vector global shader parameter ([code]global uniform ivec3 ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_IVEC4" value="7" enum="GlobalShaderParameterType">
+			4-dimensional integer vector global shader parameter ([code]global uniform ivec4 ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_RECT2I" value="8" enum="GlobalShaderParameterType">
+			2-dimensional integer rectangle global shader parameter ([code]global uniform ivec4 ...[/code]). Equivalent to [constant GLOBAL_VAR_TYPE_IVEC4] in shader code, but exposed as a [Rect2i] in the editor UI.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_UINT" value="9" enum="GlobalShaderParameterType">
+			Unsigned integer global shader parameter ([code]global uniform uint ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_UVEC2" value="10" enum="GlobalShaderParameterType">
+			2-dimensional unsigned integer vector global shader parameter ([code]global uniform uvec2 ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_UVEC3" value="11" enum="GlobalShaderParameterType">
+			3-dimensional unsigned integer vector global shader parameter ([code]global uniform uvec3 ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_UVEC4" value="12" enum="GlobalShaderParameterType">
+			4-dimensional unsigned integer vector global shader parameter ([code]global uniform uvec4 ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_FLOAT" value="13" enum="GlobalShaderParameterType">
+			Single-precision floating-point global shader parameter ([code]global uniform float ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_VEC2" value="14" enum="GlobalShaderParameterType">
+			2-dimensional floating-point vector global shader parameter ([code]global uniform vec2 ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_VEC3" value="15" enum="GlobalShaderParameterType">
+			3-dimensional floating-point vector global shader parameter ([code]global uniform vec3 ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_VEC4" value="16" enum="GlobalShaderParameterType">
+			4-dimensional floating-point vector global shader parameter ([code]global uniform vec4 ...[/code]).
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_COLOR" value="17" enum="GlobalShaderParameterType">
+			Color global shader parameter ([code]global uniform vec4 ...[/code]). Equivalent to [constant GLOBAL_VAR_TYPE_VEC4] in shader code, but exposed as a [Color] in the editor UI.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_RECT2" value="18" enum="GlobalShaderParameterType">
+			2-dimensional floating-point rectangle global shader parameter ([code]global uniform vec4 ...[/code]). Equivalent to [constant GLOBAL_VAR_TYPE_VEC4] in shader code, but exposed as a [Rect2] in the editor UI.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_MAT2" value="19" enum="GlobalShaderParameterType">
+			2×2 matrix global shader parameter ([code]global uniform mat2 ...[/code]). Exposed as a [PackedInt32Array] in the editor UI.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_MAT3" value="20" enum="GlobalShaderParameterType">
+			3×3 matrix global shader parameter ([code]global uniform mat3 ...[/code]). Exposed as a [Basis] in the editor UI.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_MAT4" value="21" enum="GlobalShaderParameterType">
+			4×4 matrix global shader parameter ([code]global uniform mat4 ...[/code]). Exposed as a [Projection] in the editor UI.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_TRANSFORM_2D" value="22" enum="GlobalShaderParameterType">
+			2-dimensional transform global shader parameter ([code]global uniform mat2x3 ...[/code]). Exposed as a [Transform2D] in the editor UI.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_TRANSFORM" value="23" enum="GlobalShaderParameterType">
+			3-dimensional transform global shader parameter ([code]global uniform mat3x4 ...[/code]). Exposed as a [Transform3D] in the editor UI.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_SAMPLER2D" value="24" enum="GlobalShaderParameterType">
+			2D sampler global shader parameter ([code]global uniform sampler2D ...[/code]). Exposed as a [Texture2D] in the editor UI.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_SAMPLER2DARRAY" value="25" enum="GlobalShaderParameterType">
+			2D sampler array global shader parameter ([code]global uniform sampler2DArray ...[/code]). Exposed as a [Texture2DArray] in the editor UI.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_SAMPLER3D" value="26" enum="GlobalShaderParameterType">
+			3D sampler global shader parameter ([code]global uniform sampler3D ...[/code]). Exposed as a [Texture3D] in the editor UI.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_SAMPLERCUBE" value="27" enum="GlobalShaderParameterType">
+			Cubemap sampler global shader parameter ([code]global uniform samplerCube ...[/code]). Exposed as a [Cubemap] in the editor UI.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_MAX" value="28" enum="GlobalShaderParameterType">
+			Represents the size of the [enum GlobalShaderParameterType] enum.
 		</constant>
 		<constant name="RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME" value="0" enum="RenderingInfo">
+			Number of objects rendered in the current 3D scene. This varies depending on camera position and rotation.
 		</constant>
 		<constant name="RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME" value="1" enum="RenderingInfo">
+			Number of vertices/indices rendered in the current 3D scene. This varies depending on camera position and rotation.
 		</constant>
 		<constant name="RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME" value="2" enum="RenderingInfo">
+			Number of draw calls performed to render in the current 3D scene. This varies depending on camera position and rotation.
 		</constant>
 		<constant name="RENDERING_INFO_TEXTURE_MEM_USED" value="3" enum="RenderingInfo">
+			Texture memory used (in bytes).
 		</constant>
 		<constant name="RENDERING_INFO_BUFFER_MEM_USED" value="4" enum="RenderingInfo">
+			Buffer memory used (in bytes).
 		</constant>
 		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
+			Video memory used (in bytes). This is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics.
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features">
 			Hardware supports shaders. This enum is currently unused in Godot 3.x.

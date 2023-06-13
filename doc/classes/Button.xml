@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Button" inherits="BaseButton" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Standard themed Button.
+		A themed button that can contain text and an icon.
 	</brief_description>
 	<description>
-		Button is the standard themed button. It can contain text and an icon, and will display them according to the current [Theme].
+		[Button] is the standard themed button. It can contain text and an icon, and it will display them according to the current [Theme].
 		[b]Example of creating a button and assigning an action when pressed by code:[/b]
 		[codeblocks]
 		[gdscript]
@@ -32,9 +32,8 @@
 		}
 		[/csharp]
 		[/codeblocks]
-		Buttons (like all Control nodes) can also be created in the editor, but some situations may require creating them from code.
 		See also [BaseButton] which contains common properties and methods associated with this node.
-		[b]Note:[/b] Buttons do not interpret touch input and therefore don't support multitouch, since mouse emulation can only press one button at a given time. Use [TouchScreenButton] for buttons that trigger gameplay movement or actions, as [TouchScreenButton] supports multitouch.
+		[b]Note:[/b] Buttons do not interpret touch input and therefore don't support multitouch, since mouse emulation can only press one button at a given time. Use [TouchScreenButton] for buttons that trigger gameplay movement or actions.
 	</description>
 	<tutorials>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
@@ -48,7 +47,7 @@
 			When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text.
 		</member>
 		<member name="expand_icon" type="bool" setter="set_expand_icon" getter="is_expand_icon" default="false">
-			When enabled, the button's icon will expand/shrink to fit the button's size while keeping its aspect.
+			When enabled, the button's icon will expand/shrink to fit the button's size while keeping its aspect. See also [theme_item icon_max_width].
 		</member>
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
 			Flat buttons don't display decoration.
@@ -58,7 +57,7 @@
 			To edit margin and spacing of the icon, use [theme_item h_separation] theme property and [code]content_margin_*[/code] properties of the used [StyleBox]es.
 		</member>
 		<member name="icon_alignment" type="int" setter="set_icon_alignment" getter="get_icon_alignment" enum="HorizontalAlignment" default="0">
-			Specifies if the icon should be aligned to the left, right, or center of a button. Uses the same [enum HorizontalAlignment] constants as the text alignment. If centered, text will draw on top of the icon.
+			Specifies if the icon should be aligned horizontally to the left, right, or center of a button. Uses the same [enum HorizontalAlignment] constants as the text alignment. If centered horizontally and vertically, text will draw on top of the icon.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
@@ -71,6 +70,9 @@
 		</member>
 		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="0">
 			Sets the clipping behavior when the text exceeds the node's bounding rectangle. See [enum TextServer.OverrunBehavior] for a description of all modes.
+		</member>
+		<member name="vertical_icon_alignment" type="int" setter="set_vertical_icon_alignment" getter="get_vertical_icon_alignment" enum="VerticalAlignment" default="1">
+			Specifies if the icon should be aligned vertically to the top, bottom, or center of a button. Uses the same [enum VerticalAlignment] constants as the text alignment. If centered horizontally and vertically, text will draw on top of the icon.
 		</member>
 	</members>
 	<theme_items>
@@ -115,6 +117,9 @@
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="2">
 			The horizontal space between [Button]'s icon and text. Negative values will be treated as [code]0[/code] when used.
+		</theme_item>
+		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+			The maximum allowed width of the [Button]'s icon. This limit is applied on top of the default size of the icon, or its expanded size if [member expand_icon] is [code]true[/code]. The height is adjusted according to the icon's ratio.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.

@@ -160,6 +160,8 @@ HB_DEFINE_VTABLE (map);
 HB_DEFINE_VTABLE (set);
 HB_DEFINE_VTABLE (shape_plan);
 HB_DEFINE_VTABLE (unicode_funcs);
+HB_DEFINE_VTABLE (draw_funcs);
+HB_DEFINE_VTABLE (paint_funcs);
 
 #undef HB_DEFINE_VTABLE
 

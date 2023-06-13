@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PhysicsShapeQueryParameters2D" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Parameters to be sent to a 2D shape physics query.
+		Provides parameters for [method PhysicsDirectSpaceState2D.intersect_shape].
 	</brief_description>
 	<description>
-		This class contains the shape and other parameters for [PhysicsDirectSpaceState2D] intersection/collision queries.
+		By changing various properties of this object, such as the shape, you can configure the parameters for [method PhysicsDirectSpaceState2D.intersect_shape].
 	</description>
 	<tutorials>
 	</tutorials>

@@ -62,6 +62,7 @@ class CSharpScript : public Script {
 	friend class CSharpLanguage;
 
 	bool tool = false;
+	bool global_class = false;
 	bool valid = false;
 	bool reload_invalidated = false;
 
@@ -86,6 +87,8 @@ class CSharpScript : public Script {
 #endif
 
 	String source;
+	String class_name;
+	String icon_path;
 
 	SelfList<CSharpScript> script_list = this;
 
@@ -441,6 +444,10 @@ public:
 	virtual String _get_indentation() const;
 	/* TODO? */ void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override {}
 	/* TODO */ void add_global_constant(const StringName &p_variable, const Variant &p_value) override {}
+
+	/* SCRIPT GLOBAL CLASS FUNCTIONS */
+	virtual bool handles_global_class_type(const String &p_type) const override;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const override;
 
 	/* DEBUGGER FUNCTIONS */
 	String debug_get_error() const override;

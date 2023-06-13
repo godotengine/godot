@@ -65,7 +65,7 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns the arc cosine of [param x] in radians. Use to get the angle of cosine [param x]. [param x] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method acos] will return [constant @GDScript.NAN].
+				Returns the arc cosine of [param x] in radians. Use to get the angle of cosine [param x]. [param x] will be clamped between [code]-1.0[/code] and [code]1.0[/code] (inclusive), in order to prevent [method acos] from returning [constant @GDScript.NAN].
 				[codeblock]
 				# c is 0.523599 or 30 degrees if converted with rad_to_deg(c)
 				var c = acos(0.866025)
@@ -76,7 +76,7 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns the arc sine of [param x] in radians. Use to get the angle of sine [param x]. [param x] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method asin] will return [constant @GDScript.NAN].
+				Returns the arc sine of [param x] in radians. Use to get the angle of sine [param x]. [param x] will be clamped between [code]-1.0[/code] and [code]1.0[/code] (inclusive), in order to prevent [method asin] from returning [constant @GDScript.NAN].
 				[codeblock]
 				# s is 0.523599 or 30 degrees if converted with rad_to_deg(s)
 				var s = asin(0.5)
@@ -180,7 +180,7 @@
 			<param index="1" name="min" type="Variant" />
 			<param index="2" name="max" type="Variant" />
 			<description>
-				Clamps the [param value], returning a [Variant] not less than [param min] and not more than [param max]. Supported types: [int], [float], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
+				Clamps the [param value], returning a [Variant] not less than [param min] and not more than [param max]. Any values that can be compared with the less than and greater than operators will work.
 				[codeblock]
 				var a = clamp(-10, -1, 5)
 				# a is -1
@@ -200,7 +200,7 @@
 				var f = clamp(Vector3i(-7, -8, -9), Vector3i(-1, 2, 3), Vector3i(-4, -5, -6))
 				# f is (-4, -5, -6)
 				[/codeblock]
-				[b]Note:[/b] For better type safety, use [method clampf], [method clampi], [method Vector2.clamp], [method Vector2i.clamp], [method Vector3.clamp], [method Vector3i.clamp], [method Vector4.clamp], or [method Vector4i.clamp].
+				[b]Note:[/b] For better type safety, use [method clampf], [method clampi], [method Vector2.clamp], [method Vector2i.clamp], [method Vector3.clamp], [method Vector3i.clamp], [method Vector4.clamp], [method Vector4i.clamp], or [method Color.clamp].
 			</description>
 		</method>
 		<method name="clampf">
@@ -645,8 +645,8 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns the natural logarithm of [param x]. This is the amount of time needed to reach a certain level of continuous growth.
-				[b]Note:[/b] This is not the same as the "log" function on most calculators, which uses a base 10 logarithm.
+				Returns the [url=https://en.wikipedia.org/wiki/Natural_logarithm]natural logarithm[/url] of [param x] (base [url=https://en.wikipedia.org/wiki/E_(mathematical_constant)][i]e[/i][/url], with [i]e[/i] being approximately 2.71828). This is the amount of time needed to reach a certain level of continuous growth.
+				[b]Note:[/b] This is not the same as the "log" function on most calculators, which uses a base 10 logarithm. To use base 10 logarithm, use [code]log(x) / log(10)[/code].
 				[codeblock]
 				log(10) # Returns 2.302585
 				[/codeblock]
@@ -826,17 +826,21 @@
 		</method>
 		<method name="print_rich" qualifiers="vararg">
 			<description>
-				Converts one or more arguments of any type to string in the best way possible and prints them to the console. The following BBCode tags are supported: b, i, u, s, indent, code, url, center, right, color, bgcolor, fgcolor. Color tags only support named colors such as [code]red[/code], [i]not[/i] hexadecimal color codes. Unsupported tags will be left as-is in standard output.
-				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Displaying ANSI escape codes is currently only supported on Linux and macOS. Support for ANSI escape codes may vary across terminal emulators, especially for italic and strikethrough.
+				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
+				The following BBCode tags are supported: [code]b[/code], [code]i[/code], [code]u[/code], [code]s[/code], [code]indent[/code], [code]code[/code], [code]url[/code], [code]center[/code], [code]right[/code], [code]color[/code], [code]bgcolor[/code], [code]fgcolor[/code].
+				Color tags only support the following named colors: [code]black[/code], [code]red[/code], [code]green[/code], [code]yellow[/code], [code]blue[/code], [code]magenta[/code], [code]pink[/code], [code]purple[/code], [code]cyan[/code], [code]white[/code], [code]orange[/code], [code]gray[/code]. Hexadecimal color codes are not supported.
+				URL tags only support URLs wrapped by a URL tag, not URLs with a different title.
+				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Support for ANSI escape codes varies across terminal emulators, especially for italic and strikethrough. In standard output, [code]code[/code] is represented with faint text but without any font change. Unsupported tags are left as-is in standard output.
 				[codeblocks]
 				[gdscript]
-				print_rich("[code][b]Hello world![/b][/code]") # Prints out: [b]Hello world![/b]
+				print_rich("[color=green][b]Hello world![/b][/color]") # Prints out "Hello world!" in green with a bold font
 				[/gdscript]
 				[csharp]
-				GD.PrintRich("[code][b]Hello world![/b][/code]"); // Prints out: [b]Hello world![/b]
+				GD.PrintRich("[color=green][b]Hello world![/b][/color]"); // Prints out "Hello world!" in green with a bold font
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
+				[b]Note:[/b] On Windows, only Windows 10 and later correctly displays ANSI escape codes in standard output.
 			</description>
 		</method>
 		<method name="print_verbose" qualifiers="vararg">
@@ -2432,10 +2436,10 @@
 			Enum value which doesn't correspond to any MIDI message. This is used to initialize [enum MIDIMessage] properties with a generic state.
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MIDIMessage">
-			MIDI note OFF message. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
+			MIDI note OFF message. Not all MIDI devices send this event; some send [constant MIDI_MESSAGE_NOTE_ON] with zero velocity instead. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
 		</constant>
 		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MIDIMessage">
-			MIDI note ON message. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
+			MIDI note ON message. Some MIDI devices send this event with velocity zero instead of [constant MIDI_MESSAGE_NOTE_OFF], but implementations vary. See the documentation of [InputEventMIDI] for information of how to use MIDI inputs.
 		</constant>
 		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MIDIMessage">
 			MIDI aftertouch message. This message is most often sent by pressing down on the key after it "bottoms out".
@@ -2691,6 +2695,9 @@
 		<constant name="PROPERTY_HINT_LAYERS_3D_NAVIGATION" value="12" enum="PropertyHint">
 			Hints that an [int] property is a bitmask using the optionally named 3D navigation layers.
 		</constant>
+		<constant name="PROPERTY_HINT_LAYERS_AVOIDANCE" value="37" enum="PropertyHint">
+			Hints that an integer property is a bitmask using the optionally named avoidance layers.
+		</constant>
 		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
 			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
@@ -2760,7 +2767,7 @@
 		<constant name="PROPERTY_HINT_PASSWORD" value="36" enum="PropertyHint">
 			Hints that a string property is a password, and every character is replaced with the secret character.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="37" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MAX" value="38" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
@@ -2838,11 +2845,14 @@
 		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is read-only in the [EditorInspector].
 		</constant>
+		<constant name="PROPERTY_USAGE_SECRET" value="536870912" enum="PropertyUsageFlags" is_bitfield="true">
+			An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
+		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags" is_bitfield="true">
-			Default usage (storage, editor and network).
+			Default usage (storage and editor).
 		</constant>
 		<constant name="PROPERTY_USAGE_NO_EDITOR" value="2" enum="PropertyUsageFlags" is_bitfield="true">
-			Default usage but without showing the property in the editor (storage, network).
+			Default usage but without showing the property in the editor (storage).
 		</constant>
 		<constant name="METHOD_FLAG_NORMAL" value="1" enum="MethodFlags" is_bitfield="true">
 			Flag for a normal method.

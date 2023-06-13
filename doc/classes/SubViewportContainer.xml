@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SubViewportContainer" inherits="Container" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Control for holding [SubViewport]s.
+		A container used for displaying the contents of a [SubViewport].
 	</brief_description>
 	<description>
-		A [Container] node that holds a [SubViewport]. It uses the [SubViewport]'s size as minimum size, unless [member stretch] is enabled.
-		[b]Note:[/b] Changing a SubViewportContainer's [member Control.scale] will cause its contents to appear distorted. To change its visual size without causing distortion, adjust the node's margins instead (if it's not already in a container).
-		[b]Note:[/b] The SubViewportContainer forwards mouse-enter and mouse-exit notifications to its sub-viewports.
+		A container that displays the contents of underlying [SubViewport] child nodes. It uses the combined size of the [SubViewport]s as minimum size, unless [member stretch] is enabled.
+		[b]Note:[/b] Changing a [SubViewportContainer]'s [member Control.scale] will cause its contents to appear distorted. To change its visual size without causing distortion, adjust the node's margins instead (if it's not already in a container).
+		[b]Note:[/b] The [SubViewportContainer] forwards mouse-enter and mouse-exit notifications to its sub-viewports.
 	</description>
 	<tutorials>
 	</tutorials>

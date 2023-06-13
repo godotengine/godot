@@ -1,9 +1,10 @@
 name: 🌐 Web Builds
-on: [push, pull_request]
+on:
+  workflow_call:
 
 # Global Settings
 env:
-  # Only used for the cache key. Increment version to force clean build.
+  # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no
   EM_VERSION: 3.1.18
@@ -22,7 +23,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up Emscripten latest
-        uses: mymindstorm/setup-emsdk@v11
+        uses: mymindstorm/setup-emsdk@v12
         with:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: ${{env.EM_CACHE_FOLDER}}

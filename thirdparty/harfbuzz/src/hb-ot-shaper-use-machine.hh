@@ -835,7 +835,7 @@ static const int use_syllable_machine_en_main = 0;
 
 #define found_syllable(syllable_type) \
   HB_STMT_START { \
-    if (0) fprintf (stderr, "syllable %d..%d %s\n", (*ts).second.first, (*te).second.first, #syllable_type); \
+    if (0) fprintf (stderr, "syllable %u..%u %s\n", (*ts).second.first, (*te).second.first, #syllable_type); \
     for (unsigned i = (*ts).second.first; i < (*te).second.first; ++i) \
       info[i].syllable() = (syllable_serial << 4) | syllable_type; \
     syllable_serial++; \

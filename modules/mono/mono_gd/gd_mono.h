@@ -59,8 +59,9 @@ struct PluginCallbacks {
 } // namespace gdmono
 
 class GDMono {
-	bool runtime_initialized;
-	bool finalizing_scripts_domain;
+	bool initialized = false;
+	bool runtime_initialized = false;
+	bool finalizing_scripts_domain = false;
 
 	void *hostfxr_dll_handle = nullptr;
 	bool is_native_aot = false;
@@ -72,9 +73,9 @@ class GDMono {
 	bool _load_project_assembly();
 #endif
 
-	uint64_t api_core_hash;
+	uint64_t api_core_hash = 0;
 #ifdef TOOLS_ENABLED
-	uint64_t api_editor_hash;
+	uint64_t api_editor_hash = 0;
 #endif
 	void _init_godot_api_hashes();
 
@@ -119,6 +120,9 @@ public:
 		return singleton;
 	}
 
+	_FORCE_INLINE_ bool is_initialized() const {
+		return initialized;
+	}
 	_FORCE_INLINE_ bool is_runtime_initialized() const {
 		return runtime_initialized;
 	}

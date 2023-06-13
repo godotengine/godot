@@ -409,7 +409,8 @@ public:
 		ADDR_TYPE_STACK = 0,
 		ADDR_TYPE_CONSTANT = 1,
 		ADDR_TYPE_MEMBER = 2,
-		ADDR_TYPE_MAX = 3,
+		ADDR_TYPE_STATIC_VAR = 3,
+		ADDR_TYPE_MAX = 4,
 	};
 
 	enum FixedAddresses {

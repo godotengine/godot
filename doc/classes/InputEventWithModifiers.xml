@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEventWithModifiers" inherits="InputEventFromWindow" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for keys events with modifiers.
+		Abstract base class for input events affected by modifier keys like [kbd]Shift[/kbd] and [kbd]Alt[/kbd].
 	</brief_description>
 	<description>
-		Contains keys events information with modifiers support like [kbd]Shift[/kbd] or [kbd]Alt[/kbd]. See [method Node._input].
+		Stores information about mouse, keyboard, and touch gesture input events. This includes information about which modifier keys are pressed, such as [kbd]Shift[/kbd] or [kbd]Alt[/kbd]. See [method Node._input].
 	</description>
 	<tutorials>
-		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_modifiers_mask" qualifiers="const">

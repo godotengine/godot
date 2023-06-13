@@ -40,24 +40,25 @@
  */
 
 #define HB_FONT_FUNCS_IMPLEMENT_CALLBACKS \
-  HB_FONT_FUNC_IMPLEMENT (font_h_extents) \
-  HB_FONT_FUNC_IMPLEMENT (font_v_extents) \
-  HB_FONT_FUNC_IMPLEMENT (nominal_glyph) \
-  HB_FONT_FUNC_IMPLEMENT (nominal_glyphs) \
-  HB_FONT_FUNC_IMPLEMENT (variation_glyph) \
-  HB_FONT_FUNC_IMPLEMENT (glyph_h_advance) \
-  HB_FONT_FUNC_IMPLEMENT (glyph_v_advance) \
-  HB_FONT_FUNC_IMPLEMENT (glyph_h_advances) \
-  HB_FONT_FUNC_IMPLEMENT (glyph_v_advances) \
-  HB_FONT_FUNC_IMPLEMENT (glyph_h_origin) \
-  HB_FONT_FUNC_IMPLEMENT (glyph_v_origin) \
-  HB_FONT_FUNC_IMPLEMENT (glyph_h_kerning) \
-  HB_IF_NOT_DEPRECATED (HB_FONT_FUNC_IMPLEMENT (glyph_v_kerning)) \
-  HB_FONT_FUNC_IMPLEMENT (glyph_extents) \
-  HB_FONT_FUNC_IMPLEMENT (glyph_contour_point) \
-  HB_FONT_FUNC_IMPLEMENT (glyph_name) \
-  HB_FONT_FUNC_IMPLEMENT (glyph_from_name) \
-  HB_FONT_FUNC_IMPLEMENT (glyph_shape) \
+  HB_FONT_FUNC_IMPLEMENT (get_,font_h_extents) \
+  HB_FONT_FUNC_IMPLEMENT (get_,font_v_extents) \
+  HB_FONT_FUNC_IMPLEMENT (get_,nominal_glyph) \
+  HB_FONT_FUNC_IMPLEMENT (get_,nominal_glyphs) \
+  HB_FONT_FUNC_IMPLEMENT (get_,variation_glyph) \
+  HB_FONT_FUNC_IMPLEMENT (get_,glyph_h_advance) \
+  HB_FONT_FUNC_IMPLEMENT (get_,glyph_v_advance) \
+  HB_FONT_FUNC_IMPLEMENT (get_,glyph_h_advances) \
+  HB_FONT_FUNC_IMPLEMENT (get_,glyph_v_advances) \
+  HB_FONT_FUNC_IMPLEMENT (get_,glyph_h_origin) \
+  HB_FONT_FUNC_IMPLEMENT (get_,glyph_v_origin) \
+  HB_FONT_FUNC_IMPLEMENT (get_,glyph_h_kerning) \
+  HB_IF_NOT_DEPRECATED (HB_FONT_FUNC_IMPLEMENT (get_,glyph_v_kerning)) \
+  HB_FONT_FUNC_IMPLEMENT (get_,glyph_extents) \
+  HB_FONT_FUNC_IMPLEMENT (get_,glyph_contour_point) \
+  HB_FONT_FUNC_IMPLEMENT (get_,glyph_name) \
+  HB_FONT_FUNC_IMPLEMENT (get_,glyph_from_name) \
+  HB_FONT_FUNC_IMPLEMENT (,draw_glyph) \
+  HB_FONT_FUNC_IMPLEMENT (,paint_glyph) \
   /* ^--- Add new callbacks here */
 
 struct hb_font_funcs_t
@@ -65,13 +66,13 @@ struct hb_font_funcs_t
   hb_object_header_t header;
 
   struct {
-#define HB_FONT_FUNC_IMPLEMENT(name) void *name;
+#define HB_FONT_FUNC_IMPLEMENT(get_,name) void *name;
     HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_FONT_FUNC_IMPLEMENT
   } *user_data;
 
   struct {
-#define HB_FONT_FUNC_IMPLEMENT(name) hb_destroy_func_t name;
+#define HB_FONT_FUNC_IMPLEMENT(get_,name) hb_destroy_func_t name;
     HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_FONT_FUNC_IMPLEMENT
   } *destroy;
@@ -79,12 +80,12 @@ struct hb_font_funcs_t
   /* Don't access these directly.  Call font->get_*() instead. */
   union get_t {
     struct get_funcs_t {
-#define HB_FONT_FUNC_IMPLEMENT(name) hb_font_get_##name##_func_t name;
+#define HB_FONT_FUNC_IMPLEMENT(get_,name) hb_font_##get_##name##_func_t name;
       HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_FONT_FUNC_IMPLEMENT
     } f;
     void (*array[0
-#define HB_FONT_FUNC_IMPLEMENT(name) +1
+#define HB_FONT_FUNC_IMPLEMENT(get_,name) +1
       HB_FONT_FUNCS_IMPLEMENT_CALLBACKS
 #undef HB_FONT_FUNC_IMPLEMENT
 		]) ();
@@ -112,8 +113,16 @@ struct hb_font_t
 
   int32_t x_scale;
   int32_t y_scale;
+
+  float x_embolden;
+  float y_embolden;
+  bool embolden_in_place;
+  int32_t x_strength; /* x_embolden, in scaled units. */
+  int32_t y_strength; /* y_embolden, in scaled units. */
+
   float slant;
   float slant_xy;
+
   float x_multf;
   float y_multf;
   int64_t x_mult;
@@ -125,6 +134,7 @@ struct hb_font_t
   float ptem;
 
   /* Font variation coordinates. */
+  unsigned int instance_index;
   unsigned int num_coords;
   int *coords;
   float *design_coords;
@@ -179,6 +189,42 @@ struct hb_font_t
     *y = parent_scale_y_position (*y);
   }
 
+  void scale_glyph_extents (hb_glyph_extents_t *extents)
+  {
+    float x1 = em_fscale_x (extents->x_bearing);
+    float y1 = em_fscale_y (extents->y_bearing);
+    float x2 = em_fscale_x (extents->x_bearing + extents->width);
+    float y2 = em_fscale_y (extents->y_bearing + extents->height);
+
+    /* Apply slant. */
+    if (slant_xy)
+    {
+      x1 += hb_min (y1 * slant_xy, y2 * slant_xy);
+      x2 += hb_max (y1 * slant_xy, y2 * slant_xy);
+    }
+
+    extents->x_bearing = floorf (x1);
+    extents->y_bearing = floorf (y1);
+    extents->width = ceilf (x2) - extents->x_bearing;
+    extents->height = ceilf (y2) - extents->y_bearing;
+
+    if (x_strength || y_strength)
+    {
+      /* Y */
+      int y_shift = y_strength;
+      if (y_scale < 0) y_shift = -y_shift;
+      extents->y_bearing += y_shift;
+      extents->height -= y_shift;
+
+      /* X */
+      int x_shift = x_strength;
+      if (x_scale < 0) x_shift = -x_shift;
+      if (embolden_in_place)
+	extents->x_bearing -= x_shift / 2;
+      extents->width += x_shift;
+    }
+  }
+
 
   /* Public getters */
 
@@ -186,7 +232,7 @@ struct hb_font_t
   HB_INTERNAL bool has_func_set (unsigned int i);
 
   /* has_* ... */
-#define HB_FONT_FUNC_IMPLEMENT(name) \
+#define HB_FONT_FUNC_IMPLEMENT(get_,name) \
   bool \
   has_##name##_func () \
   { \
@@ -380,15 +426,26 @@ struct hb_font_t
 					 !klass->user_data ? nullptr : klass->user_data->glyph_from_name);
   }
 
-  void get_glyph_shape (hb_codepoint_t glyph,
-			hb_draw_funcs_t *draw_funcs, void *draw_data)
+  void draw_glyph (hb_codepoint_t glyph,
+		   hb_draw_funcs_t *draw_funcs, void *draw_data)
   {
-    klass->get.f.glyph_shape (this, user_data,
-			      glyph,
-			      draw_funcs, draw_data,
-			      !klass->user_data ? nullptr : klass->user_data->glyph_shape);
+    klass->get.f.draw_glyph (this, user_data,
+			     glyph,
+			     draw_funcs, draw_data,
+			     !klass->user_data ? nullptr : klass->user_data->draw_glyph);
   }
 
+  void paint_glyph (hb_codepoint_t glyph,
+                    hb_paint_funcs_t *paint_funcs, void *paint_data,
+                    unsigned int palette,
+                    hb_color_t foreground)
+  {
+    klass->get.f.paint_glyph (this, user_data,
+                              glyph,
+                              paint_funcs, paint_data,
+                              palette, foreground,
+                              !klass->user_data ? nullptr : klass->user_data->paint_glyph);
+  }
 
   /* A bit higher-level, and with fallback */
 
@@ -632,12 +689,17 @@ struct hb_font_t
   void mults_changed ()
   {
     float upem = face->get_upem ();
+
     x_multf = x_scale / upem;
     y_multf = y_scale / upem;
     bool x_neg = x_scale < 0;
     x_mult = (x_neg ? -((int64_t) -x_scale << 16) : ((int64_t) x_scale << 16)) / upem;
     bool y_neg = y_scale < 0;
     y_mult = (y_neg ? -((int64_t) -y_scale << 16) : ((int64_t) y_scale << 16)) / upem;
+
+    x_strength = fabsf (roundf (x_scale * x_embolden));
+    y_strength = fabsf (roundf (y_scale * y_embolden));
+
     slant_xy = y_scale ? slant * x_scale / y_scale : 0.f;
 
     data.fini ();

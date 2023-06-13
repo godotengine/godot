@@ -53,8 +53,10 @@ MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint3
 #endif
 
 ClassDB::APIType ClassDB::current_api = API_CORE;
+HashMap<ClassDB::APIType, uint64_t> ClassDB::api_hashes_cache;
 
 void ClassDB::set_current_api(APIType p_api) {
+	DEV_ASSERT(!api_hashes_cache.has(p_api)); // This API type may not be suitable for caching of hash if it can change later.
 	current_api = p_api;
 }
 
@@ -164,6 +166,10 @@ ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
 uint64_t ClassDB::get_api_hash(APIType p_api) {
 	OBJTYPE_RLOCK;
 #ifdef DEBUG_METHODS_ENABLED
+
+	if (api_hashes_cache.has(p_api)) {
+		return api_hashes_cache[p_api];
+	}
 
 	uint64_t hash = hash_murmur3_one_64(HashMapHasherDefault::hash(VERSION_FULL_CONFIG));
 
@@ -290,7 +296,14 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 		}
 	}
 
-	return hash_fmix32(hash);
+	hash = hash_fmix32(hash);
+
+	// Extension API changes at runtime; let's just not cache them by now.
+	if (p_api != API_EXTENSION && p_api != API_EDITOR_EXTENSION) {
+		api_hashes_cache[p_api] = hash;
+	}
+
+	return hash;
 #else
 	return 0;
 #endif
@@ -543,6 +556,60 @@ MethodBind *ClassDB::get_method(const StringName &p_class, const StringName &p_n
 		MethodBind **method = type->method_map.getptr(p_name);
 		if (method && *method) {
 			return *method;
+		}
+		type = type->inherits_ptr;
+	}
+	return nullptr;
+}
+
+Vector<uint32_t> ClassDB::get_method_compatibility_hashes(const StringName &p_class, const StringName &p_name) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		if (type->method_map_compatibility.has(p_name)) {
+			LocalVector<MethodBind *> *c = type->method_map_compatibility.getptr(p_name);
+			Vector<uint32_t> ret;
+			for (uint32_t i = 0; i < c->size(); i++) {
+				ret.push_back((*c)[i]->get_hash());
+			}
+			return ret;
+		}
+		type = type->inherits_ptr;
+	}
+	return Vector<uint32_t>();
+}
+
+MethodBind *ClassDB::get_method_with_compatibility(const StringName &p_class, const StringName &p_name, uint64_t p_hash, bool *r_method_exists, bool *r_is_deprecated) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *type = classes.getptr(p_class);
+
+	while (type) {
+		MethodBind **method = type->method_map.getptr(p_name);
+		if (method && *method) {
+			if (r_method_exists) {
+				*r_method_exists = true;
+			}
+			if ((*method)->get_hash() == p_hash) {
+				return *method;
+			}
+		}
+
+		LocalVector<MethodBind *> *compat = type->method_map_compatibility.getptr(p_name);
+		if (compat) {
+			if (r_method_exists) {
+				*r_method_exists = true;
+			}
+			for (uint32_t i = 0; i < compat->size(); i++) {
+				if ((*compat)[i]->get_hash() == p_hash) {
+					if (r_is_deprecated) {
+						*r_is_deprecated = true;
+					}
+					return (*compat)[i];
+				}
+			}
 		}
 		type = type->inherits_ptr;
 	}
@@ -1261,9 +1328,28 @@ bool ClassDB::has_method(const StringName &p_class, const StringName &p_method, 
 }
 
 void ClassDB::bind_method_custom(const StringName &p_class, MethodBind *p_method) {
+	_bind_method_custom(p_class, p_method, false);
+}
+void ClassDB::bind_compatibility_method_custom(const StringName &p_class, MethodBind *p_method) {
+	_bind_method_custom(p_class, p_method, true);
+}
+
+void ClassDB::_bind_compatibility(ClassInfo *type, MethodBind *p_method) {
+	if (!type->method_map_compatibility.has(p_method->get_name())) {
+		type->method_map_compatibility.insert(p_method->get_name(), LocalVector<MethodBind *>());
+	}
+	type->method_map_compatibility[p_method->get_name()].push_back(p_method);
+}
+
+void ClassDB::_bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_compatibility) {
 	ClassInfo *type = classes.getptr(p_class);
 	if (!type) {
 		ERR_FAIL_MSG("Couldn't bind custom method '" + p_method->get_name() + "' for instance '" + p_class + "'.");
+	}
+
+	if (p_compatibility) {
+		_bind_compatibility(type, p_method);
+		return;
 	}
 
 	if (type->method_map.has(p_method->get_name())) {
@@ -1278,11 +1364,44 @@ void ClassDB::bind_method_custom(const StringName &p_class, MethodBind *p_method
 	type->method_map[p_method->get_name()] = p_method;
 }
 
+MethodBind *ClassDB::_bind_vararg_method(MethodBind *p_bind, const StringName &p_name, const Vector<Variant> &p_default_args, bool p_compatibility) {
+	MethodBind *bind = p_bind;
+	bind->set_name(p_name);
+	bind->set_default_arguments(p_default_args);
+
+	String instance_type = bind->get_instance_class();
+
+	ClassInfo *type = classes.getptr(instance_type);
+	if (!type) {
+		memdelete(bind);
+		ERR_FAIL_COND_V(!type, nullptr);
+	}
+
+	if (p_compatibility) {
+		_bind_compatibility(type, bind);
+		return bind;
+	}
+
+	if (type->method_map.has(p_name)) {
+		memdelete(bind);
+		// Overloading not supported
+		ERR_FAIL_V_MSG(nullptr, "Method already bound: " + instance_type + "::" + p_name + ".");
+	}
+	type->method_map[p_name] = bind;
 #ifdef DEBUG_METHODS_ENABLED
-MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount) {
+	// FIXME: <reduz> set_return_type is no longer in MethodBind, so I guess it should be moved to vararg method bind
+	//bind->set_return_type("Variant");
+	type->method_order.push_back(p_name);
+#endif
+
+	return bind;
+}
+
+#ifdef DEBUG_METHODS_ENABLED
+MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount) {
 	StringName mdname = method_name.name;
 #else
-MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const char *method_name, const Variant **p_defs, int p_defcount) {
+MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const char *method_name, const Variant **p_defs, int p_defcount) {
 	StringName mdname = StaticCString::create(method_name);
 #endif
 
@@ -1294,7 +1413,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 
 #ifdef DEBUG_ENABLED
 
-	ERR_FAIL_COND_V_MSG(has_method(instance_type, mdname), nullptr, "Class " + String(instance_type) + " already has a method " + String(mdname) + ".");
+	ERR_FAIL_COND_V_MSG(!p_compatibility && has_method(instance_type, mdname), nullptr, "Class " + String(instance_type) + " already has a method " + String(mdname) + ".");
 #endif
 
 	ClassInfo *type = classes.getptr(instance_type);
@@ -1303,7 +1422,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 		ERR_FAIL_V_MSG(nullptr, "Couldn't bind method '" + mdname + "' for instance '" + instance_type + "'.");
 	}
 
-	if (type->method_map.has(mdname)) {
+	if (!p_compatibility && type->method_map.has(mdname)) {
 		memdelete(p_bind);
 		// overloading not supported
 		ERR_FAIL_V_MSG(nullptr, "Method already bound '" + instance_type + "::" + mdname + "'.");
@@ -1318,10 +1437,16 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 
 	p_bind->set_argument_names(method_name.args);
 
-	type->method_order.push_back(mdname);
+	if (!p_compatibility) {
+		type->method_order.push_back(mdname);
+	}
 #endif
 
-	type->method_map[mdname] = p_bind;
+	if (p_compatibility) {
+		_bind_compatibility(type, p_bind);
+	} else {
+		type->method_map[mdname] = p_bind;
+	}
 
 	Vector<Variant> defvals;
 
@@ -1595,7 +1720,13 @@ void ClassDB::cleanup() {
 		for (KeyValue<StringName, MethodBind *> &F : ti.method_map) {
 			memdelete(F.value);
 		}
+		for (KeyValue<StringName, LocalVector<MethodBind *>> &F : ti.method_map_compatibility) {
+			for (uint32_t i = 0; i < F.value.size(); i++) {
+				memdelete(F.value[i]);
+			}
+		}
 	}
+
 	classes.clear();
 	resource_base_extensions.clear();
 	compat_classes.clear();

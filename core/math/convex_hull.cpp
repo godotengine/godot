@@ -596,9 +596,9 @@ private:
 		}
 	};
 
-	enum Orientation { NONE,
-		CLOCKWISE,
-		COUNTER_CLOCKWISE };
+	enum Orientation { ORIENTATION_NONE,
+		ORIENTATION_CLOCKWISE,
+		ORIENTATION_COUNTER_CLOCKWISE };
 
 	Vector3 scaling;
 	Vector3 center;
@@ -1140,13 +1140,13 @@ ConvexHullInternal::Orientation ConvexHullInternal::get_orientation(const Edge *
 			CHULL_ASSERT(!m.is_zero());
 			int64_t dot = n.dot(m);
 			CHULL_ASSERT(dot != 0);
-			return (dot > 0) ? COUNTER_CLOCKWISE : CLOCKWISE;
+			return (dot > 0) ? ORIENTATION_COUNTER_CLOCKWISE : ORIENTATION_CLOCKWISE;
 		}
-		return COUNTER_CLOCKWISE;
+		return ORIENTATION_COUNTER_CLOCKWISE;
 	} else if (p_prev->prev == p_next) {
-		return CLOCKWISE;
+		return ORIENTATION_CLOCKWISE;
 	} else {
-		return NONE;
+		return ORIENTATION_NONE;
 	}
 }
 
@@ -1176,7 +1176,7 @@ ConvexHullInternal::Edge *ConvexHullInternal::find_max_angle(bool p_ccw, const V
 					} else if ((cmp = cot.compare(p_min_cot)) < 0) {
 						p_min_cot = cot;
 						min_edge = e;
-					} else if ((cmp == 0) && (p_ccw == (get_orientation(min_edge, e, p_s, t) == COUNTER_CLOCKWISE))) {
+					} else if ((cmp == 0) && (p_ccw == (get_orientation(min_edge, e, p_s, t) == ORIENTATION_COUNTER_CLOCKWISE))) {
 						min_edge = e;
 					}
 				}
@@ -1375,7 +1375,7 @@ void ConvexHullInternal::merge(IntermediateHull &p_h0, IntermediateHull &p_h1) {
 				int64_t dot = (*e->target - *c0).dot(normal);
 				CHULL_ASSERT(dot <= 0);
 				if ((dot == 0) && ((*e->target - *c0).dot(t) > 0)) {
-					if (!start0 || (get_orientation(start0, e, s, Point32(0, 0, -1)) == CLOCKWISE)) {
+					if (!start0 || (get_orientation(start0, e, s, Point32(0, 0, -1)) == ORIENTATION_CLOCKWISE)) {
 						start0 = e;
 					}
 				}
@@ -1390,7 +1390,7 @@ void ConvexHullInternal::merge(IntermediateHull &p_h0, IntermediateHull &p_h1) {
 				int64_t dot = (*e->target - *c1).dot(normal);
 				CHULL_ASSERT(dot <= 0);
 				if ((dot == 0) && ((*e->target - *c1).dot(t) > 0)) {
-					if (!start1 || (get_orientation(start1, e, s, Point32(0, 0, -1)) == COUNTER_CLOCKWISE)) {
+					if (!start1 || (get_orientation(start1, e, s, Point32(0, 0, -1)) == ORIENTATION_COUNTER_CLOCKWISE)) {
 						start1 = e;
 					}
 				}

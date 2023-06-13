@@ -185,15 +185,27 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_local_symbol(const ExtendGDScr
 	const lsp::DocumentSymbol *class_symbol = &p_parser->get_symbols();
 
 	for (int i = 0; i < class_symbol->children.size(); ++i) {
-		if (class_symbol->children[i].kind == lsp::SymbolKind::Function || class_symbol->children[i].kind == lsp::SymbolKind::Class) {
-			const lsp::DocumentSymbol *function_symbol = &class_symbol->children[i];
+		int kind = class_symbol->children[i].kind;
+		switch (kind) {
+			case lsp::SymbolKind::Function:
+			case lsp::SymbolKind::Method:
+			case lsp::SymbolKind::Class: {
+				const lsp::DocumentSymbol *function_symbol = &class_symbol->children[i];
 
-			for (int l = 0; l < function_symbol->children.size(); ++l) {
-				const lsp::DocumentSymbol *local = &function_symbol->children[l];
-				if (!local->detail.is_empty() && local->name == p_symbol_identifier) {
-					return local;
+				for (int l = 0; l < function_symbol->children.size(); ++l) {
+					const lsp::DocumentSymbol *local = &function_symbol->children[l];
+					if (!local->detail.is_empty() && local->name == p_symbol_identifier) {
+						return local;
+					}
 				}
-			}
+			} break;
+
+			case lsp::SymbolKind::Variable: {
+				const lsp::DocumentSymbol *variable_symbol = &class_symbol->children[i];
+				if (variable_symbol->name == p_symbol_identifier) {
+					return variable_symbol;
+				}
+			} break;
 		}
 	}
 
@@ -650,8 +662,18 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 						if (const ExtendGDScriptParser *target_parser = get_parse_result(target_script_path)) {
 							symbol = target_parser->get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(ret.location));
 
-							if (symbol && symbol->kind == lsp::SymbolKind::Function && symbol->name != symbol_identifier) {
-								symbol = get_parameter_symbol(symbol, symbol_identifier);
+							if (symbol) {
+								switch (symbol->kind) {
+									case lsp::SymbolKind::Function: {
+										if (symbol->name != symbol_identifier) {
+											symbol = get_parameter_symbol(symbol, symbol_identifier);
+										}
+									} break;
+
+									case lsp::SymbolKind::Variable: {
+										symbol = get_local_symbol(parser, symbol_identifier);
+									} break;
+								}
 							}
 						}
 

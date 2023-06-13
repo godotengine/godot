@@ -51,9 +51,9 @@ struct AnchorFormat3
     if (unlikely (!c->serializer->embed (yCoordinate))) return_trace (false);
 
     unsigned x_varidx = xDeviceTable ? (this+xDeviceTable).get_variation_index () : HB_OT_LAYOUT_NO_VARIATIONS_INDEX;
-    if (c->plan->layout_variation_idx_delta_map->has (x_varidx))
+    if (c->plan->layout_variation_idx_delta_map.has (x_varidx))
     {
-      int delta = hb_second (c->plan->layout_variation_idx_delta_map->get (x_varidx));
+      int delta = hb_second (c->plan->layout_variation_idx_delta_map.get (x_varidx));
       if (delta != 0)
       {
         if (!c->serializer->check_assign (out->xCoordinate, xCoordinate + delta,
@@ -63,9 +63,9 @@ struct AnchorFormat3
     }
 
     unsigned y_varidx = yDeviceTable ? (this+yDeviceTable).get_variation_index () : HB_OT_LAYOUT_NO_VARIATIONS_INDEX;
-    if (c->plan->layout_variation_idx_delta_map->has (y_varidx))
+    if (c->plan->layout_variation_idx_delta_map.has (y_varidx))
     {
-      int delta = hb_second (c->plan->layout_variation_idx_delta_map->get (y_varidx));
+      int delta = hb_second (c->plan->layout_variation_idx_delta_map.get (y_varidx));
       if (delta != 0)
       {
         if (!c->serializer->check_assign (out->yCoordinate, yCoordinate + delta,
@@ -80,8 +80,8 @@ struct AnchorFormat3
     if (!c->serializer->embed (xDeviceTable)) return_trace (false);
     if (!c->serializer->embed (yDeviceTable)) return_trace (false);
 
-    out->xDeviceTable.serialize_copy (c->serializer, xDeviceTable, this, 0, hb_serialize_context_t::Head, c->plan->layout_variation_idx_delta_map);
-    out->yDeviceTable.serialize_copy (c->serializer, yDeviceTable, this, 0, hb_serialize_context_t::Head, c->plan->layout_variation_idx_delta_map);
+    out->xDeviceTable.serialize_copy (c->serializer, xDeviceTable, this, 0, hb_serialize_context_t::Head, &c->plan->layout_variation_idx_delta_map);
+    out->yDeviceTable.serialize_copy (c->serializer, yDeviceTable, this, 0, hb_serialize_context_t::Head, &c->plan->layout_variation_idx_delta_map);
     return_trace (out);
   }
 

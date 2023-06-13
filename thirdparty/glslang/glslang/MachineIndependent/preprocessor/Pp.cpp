@@ -1126,9 +1126,6 @@ int TPpContext::tMacroInput::scan(TPpToken* ppToken)
         pasting = true;
     }
 
-    // HLSL does expand macros before concatenation
-    if (pasting && pp->parseContext.isReadingHLSL())
-        pasting = false;
 
     // TODO: preprocessor:  properly handle whitespace (or lack of it) between tokens when expanding
     if (token == PpAtomIdentifier) {
@@ -1138,9 +1135,12 @@ int TPpContext::tMacroInput::scan(TPpToken* ppToken)
                 break;
         if (i >= 0) {
             TokenStream* arg = expandedArgs[i];
-            if (arg == nullptr || pasting)
+            bool expanded = !!arg && !pasting;
+            // HLSL does expand macros before concatenation
+            if (arg == nullptr || (pasting && !pp->parseContext.isReadingHLSL()) ) {
                 arg = args[i];
-            pp->pushTokenStreamInput(*arg, prepaste);
+            }
+            pp->pushTokenStreamInput(*arg, prepaste, expanded);
 
             return pp->scanToken(ppToken);
         }
@@ -1183,6 +1183,9 @@ MacroExpandResult TPpContext::MacroExpand(TPpToken* ppToken, bool expandUndef, b
 {
     ppToken->space = false;
     int macroAtom = atomStrings.getAtom(ppToken->name);
+    if (ppToken->fullyExpanded)
+        return MacroExpandNotStarted;
+
     switch (macroAtom) {
     case PpAtomLineMacro:
         // Arguments which are macro have been replaced in the first stage.
@@ -1214,8 +1217,10 @@ MacroExpandResult TPpContext::MacroExpand(TPpToken* ppToken, bool expandUndef, b
     MacroSymbol* macro = macroAtom == 0 ? nullptr : lookupMacroDef(macroAtom);
 
     // no recursive expansions
-    if (macro != nullptr && macro->busy)
+    if (macro != nullptr && macro->busy) {
+        ppToken->fullyExpanded = true;
         return MacroExpandNotStarted;
+    }
 
     // not expanding undefined macros
     if ((macro == nullptr || macro->undef) && ! expandUndef)

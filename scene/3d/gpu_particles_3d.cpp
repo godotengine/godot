@@ -417,15 +417,6 @@ NodePath GPUParticles3D::get_sub_emitter() const {
 
 void GPUParticles3D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_PAUSED:
-		case NOTIFICATION_UNPAUSED: {
-			if (can_process()) {
-				RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
-			} else {
-				RS::get_singleton()->particles_set_speed_scale(particles, 0);
-			}
-		} break;
-
 		// Use internal process when emitting and one_shot is on so that when
 		// the shot ends the editor can properly update.
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -439,10 +430,26 @@ void GPUParticles3D::_notification(int p_what) {
 			if (sub_emitter != NodePath()) {
 				_attach_sub_emitter();
 			}
+			if (can_process()) {
+				RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
+			} else {
+				RS::get_singleton()->particles_set_speed_scale(particles, 0);
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			RS::get_singleton()->particles_set_subemitter(particles, RID());
+		} break;
+
+		case NOTIFICATION_PAUSED:
+		case NOTIFICATION_UNPAUSED: {
+			if (is_inside_tree()) {
+				if (can_process()) {
+					RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
+				} else {
+					RS::get_singleton()->particles_set_speed_scale(particles, 0);
+				}
+			}
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {

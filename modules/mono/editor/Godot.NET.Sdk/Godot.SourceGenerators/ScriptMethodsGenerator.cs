@@ -16,7 +16,7 @@ namespace Godot.SourceGenerators
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.AreGodotSourceGeneratorsDisabled())
+            if (context.IsGodotSourceGeneratorDisabled("ScriptMethods"))
                 return;
 
             INamedTypeSymbol[] godotClasses = context

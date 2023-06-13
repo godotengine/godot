@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,13 +19,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #ifndef _TVG_RAW_LOADER_H_
 #define _TVG_RAW_LOADER_H_
 
 class RawLoader : public LoadModule
 {
 public:
-    const uint32_t* content = nullptr;
+    uint32_t* content = nullptr;
     bool copy = false;
 
     ~RawLoader();

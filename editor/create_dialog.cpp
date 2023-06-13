@@ -291,12 +291,13 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 			p_type_category == TypeCategory::OTHER_TYPE;
 	bool is_virtual = ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type);
 
+	r_item->set_meta(SNAME("__instantiable"), can_instantiate && !is_virtual);
+
 	if (can_instantiate && !is_virtual) {
 		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
 	} else {
 		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, "NodeDisabled"));
 		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
-		r_item->set_selectable(0, false);
 	}
 
 	bool is_deprecated = EditorHelp::get_doc_data()->class_list[p_type].is_deprecated;
@@ -395,6 +396,11 @@ void CreateDialog::_confirmed() {
 		return;
 	}
 
+	TreeItem *selected = search_options->get_selected();
+	if (!selected->get_meta("__instantiable", true)) {
+		return;
+	}
+
 	{
 		Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("create_recent." + base_type), FileAccess::WRITE);
 		if (f.is_valid()) {
@@ -421,13 +427,20 @@ void CreateDialog::_text_changed(const String &p_newtext) {
 
 void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
-	if (k.is_valid()) {
+	if (k.is_valid() && k->is_pressed()) {
 		switch (k->get_keycode()) {
 			case Key::UP:
 			case Key::DOWN:
 			case Key::PAGEUP:
 			case Key::PAGEDOWN: {
 				search_options->gui_input(k);
+				search_box->accept_event();
+			} break;
+			case Key::SPACE: {
+				TreeItem *ti = search_options->get_selected();
+				if (ti) {
+					ti->set_collapsed(!ti->is_collapsed());
+				}
 				search_box->accept_event();
 			} break;
 			default:
@@ -457,11 +470,16 @@ void CreateDialog::_notification(int p_what) {
 				search_box->call_deferred(SNAME("grab_focus")); // still not visible
 				search_box->select_all();
 			} else {
-				EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
+				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "create_new_node", Rect2(get_position(), get_size()));
 			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			const int icon_width = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
+			search_options->add_theme_constant_override("icon_max_width", icon_width);
+			favorites->add_theme_constant_override("icon_max_width", icon_width);
+			recent->set_fixed_icon_size(Size2(icon_width, icon_width));
+
 			_update_theme();
 		} break;
 	}
@@ -805,4 +823,5 @@ CreateDialog::CreateDialog() {
 
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
+	set_clamp_to_embedder(true);
 }

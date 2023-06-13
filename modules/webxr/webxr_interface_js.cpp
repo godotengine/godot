@@ -202,6 +202,30 @@ PackedVector3Array WebXRInterfaceJS::get_play_area() const {
 	return ret;
 }
 
+float WebXRInterfaceJS::get_display_refresh_rate() const {
+	return godot_webxr_get_frame_rate();
+}
+
+void WebXRInterfaceJS::set_display_refresh_rate(float p_refresh_rate) {
+	godot_webxr_update_target_frame_rate(p_refresh_rate);
+}
+
+Array WebXRInterfaceJS::get_available_display_refresh_rates() const {
+	Array ret;
+
+	float *rates;
+	int rate_count = godot_webxr_get_supported_frame_rates(&rates);
+	if (rate_count > 0) {
+		ret.resize(rate_count);
+		for (int i = 0; i < rate_count; i++) {
+			ret[i] = rates[i];
+		}
+		free(rates);
+	}
+
+	return ret;
+}
+
 StringName WebXRInterfaceJS::get_name() const {
 	return "WebXR";
 };
@@ -300,6 +324,16 @@ void WebXRInterfaceJS::uninitialize() {
 		initialized = false;
 	};
 };
+
+Dictionary WebXRInterfaceJS::get_system_info() {
+	Dictionary dict;
+
+	// TODO get actual information from WebXR to return here
+	dict[SNAME("XRRuntimeName")] = String("WebXR");
+	dict[SNAME("XRRuntimeVersion")] = String("");
+
+	return dict;
+}
 
 Transform3D WebXRInterfaceJS::_js_matrix_to_transform(float *p_js_matrix) {
 	Transform3D transform;

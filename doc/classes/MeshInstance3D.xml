@@ -31,8 +31,9 @@
 		</method>
 		<method name="create_multiple_convex_collisions">
 			<return type="void" />
+			<param index="0" name="settings" type="MeshConvexDecompositionSettings" default="null" />
 			<description>
-				This helper creates a [StaticBody3D] child node with multiple [ConvexPolygonShape3D] collision shapes calculated from the mesh geometry via convex decomposition. It's mainly used for testing.
+				This helper creates a [StaticBody3D] child node with multiple [ConvexPolygonShape3D] collision shapes calculated from the mesh geometry via convex decomposition. The convex decomposition operation can be controlled with parameters from the optional [param settings].
 			</description>
 		</method>
 		<method name="create_trimesh_collision">

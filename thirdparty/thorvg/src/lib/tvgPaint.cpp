@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include "tvgMath.h"
 #include "tvgPaint.h"
 
@@ -38,9 +39,9 @@ static bool _compFastTrack(Paint* cmpTarget, const RenderTransform* pTransform, 
 
     if (rTransform) rTransform->update();
 
-    //No rotational.
-    if (pTransform && !mathRightAngle(&pTransform->m)) return false;
-    if (rTransform && !mathRightAngle(&rTransform->m)) return false;
+    //No rotation and no skewing
+    if (pTransform && (!mathRightAngle(&pTransform->m) || mathSkewed(&pTransform->m))) return false;
+    if (rTransform && (!mathRightAngle(&rTransform->m) || mathSkewed(&rTransform->m))) return false;
 
     //Perpendicular Rectangle?
     auto pt1 = pts + 0;
@@ -161,16 +162,15 @@ bool Paint::Impl::render(RenderMethod& renderer)
 {
     Compositor* cmp = nullptr;
 
-    //OPTIMIZE_ME: Can we replace the simple AlphaMasking with ClipPath?
-
     /* Note: only ClipPath is processed in update() step.
         Create a composition image. */
     if (compData && compData->method != CompositeMethod::ClipPath && !(compData->target->pImpl->ctxFlag & ContextFlag::FastTrack)) {
         auto region = smethod->bounds(renderer);
         if (region.w == 0 || region.h == 0) return true;
-        cmp = renderer.target(region);
-        renderer.beginComposite(cmp, CompositeMethod::None, 255);
-        compData->target->pImpl->render(renderer);
+        cmp = renderer.target(region, COMPOSITE_TO_COLORSPACE(renderer, compData->method));
+        if (renderer.beginComposite(cmp, CompositeMethod::None, 255)) {
+            compData->target->pImpl->render(renderer);
+        }
     }
 
     if (cmp) renderer.beginComposite(cmp, compData->method, compData->target->pImpl->opacity);
@@ -183,7 +183,7 @@ bool Paint::Impl::render(RenderMethod& renderer)
 }
 
 
-void* Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pTransform, uint32_t opacity, Array<RenderData>& clips, uint32_t pFlag)
+RenderData Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pTransform, uint32_t opacity, Array<RenderData>& clips, uint32_t pFlag, bool clipper)
 {
     if (renderFlag & RenderUpdateFlag::Transform) {
         if (!rTransform) return nullptr;
@@ -194,9 +194,10 @@ void* Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pTransf
     }
 
     /* 1. Composition Pre Processing */
-    void *tdata = nullptr;
+    RenderData trd = nullptr;                 //composite target render data
     RenderRegion viewport;
     bool compFastTrack = false;
+    bool childClipper = false;
 
     if (compData) {
         auto target = compData->target;
@@ -206,47 +207,50 @@ void* Paint::Impl::update(RenderMethod& renderer, const RenderTransform* pTransf
         /* If transform has no rotation factors && ClipPath / AlphaMasking is a simple rectangle,
            we can avoid regular ClipPath / AlphaMasking sequence but use viewport for performance */
         auto tryFastTrack = false;
-        if (method == CompositeMethod::ClipPath) tryFastTrack = true;
-        else if (method == CompositeMethod::AlphaMask && target->identifier() == TVG_CLASS_ID_SHAPE) {
-            auto shape = static_cast<Shape*>(target);
-            uint8_t a;
-            shape->fillColor(nullptr, nullptr, nullptr, &a);
-            if (a == 255 && shape->opacity() == 255 && !shape->fill()) tryFastTrack = true;
-        }
-        if (tryFastTrack) {
-            RenderRegion viewport2;
-            if ((compFastTrack = _compFastTrack(target, pTransform, target->pImpl->rTransform, viewport2))) {
-                viewport = renderer.viewport();
-                viewport2.intersect(viewport);
-                renderer.viewport(viewport2);
-                target->pImpl->ctxFlag |= ContextFlag::FastTrack;
+        if (target->identifier() == TVG_CLASS_ID_SHAPE) {
+            if (method == CompositeMethod::ClipPath) tryFastTrack = true;
+            else if (method == CompositeMethod::AlphaMask) {
+                auto shape = static_cast<Shape*>(target);
+                uint8_t a;
+                shape->fillColor(nullptr, nullptr, nullptr, &a);
+                if (a == 255 && shape->opacity() == 255 && !shape->fill()) tryFastTrack = true;
+            }
+            if (tryFastTrack) {
+                RenderRegion viewport2;
+                if ((compFastTrack = _compFastTrack(target, pTransform, target->pImpl->rTransform, viewport2))) {
+                    viewport = renderer.viewport();
+                    viewport2.intersect(viewport);
+                    renderer.viewport(viewport2);
+                    target->pImpl->ctxFlag |= ContextFlag::FastTrack;
+                }
             }
         }
         if (!compFastTrack) {
-            tdata = target->pImpl->update(renderer, pTransform, 255, clips, pFlag);
-            if (method == CompositeMethod::ClipPath) clips.push(tdata);
+            childClipper = compData->method == CompositeMethod::ClipPath ? true : false;
+            trd = target->pImpl->update(renderer, pTransform, 255, clips, pFlag, childClipper);
+            if (childClipper) clips.push(trd);
         }
     }
 
     /* 2. Main Update */
-    void *edata = nullptr;
+    RenderData rd = nullptr;
     auto newFlag = static_cast<RenderUpdateFlag>(pFlag | renderFlag);
     renderFlag = RenderUpdateFlag::None;
     opacity = (opacity * this->opacity) / 255;
 
     if (rTransform && pTransform) {
         RenderTransform outTransform(pTransform, rTransform);
-        edata = smethod->update(renderer, &outTransform, opacity, clips, newFlag);
+        rd = smethod->update(renderer, &outTransform, opacity, clips, newFlag, clipper);
     } else {
         auto outTransform = pTransform ? pTransform : rTransform;
-        edata = smethod->update(renderer, outTransform, opacity, clips, newFlag);
+        rd = smethod->update(renderer, outTransform, opacity, clips, newFlag, clipper);
     }
 
     /* 3. Composition Post Processing */
     if (compFastTrack) renderer.viewport(viewport);
-    else if (tdata && compData->method == CompositeMethod::ClipPath) clips.pop();
+    else if (childClipper) clips.pop();
 
-    return edata;
+    return rd;
 }
 
 

@@ -42,7 +42,7 @@ struct MarkArray : Array16Of<MarkRecord>        /* Array of MarkRecords--in Cove
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "attaching mark glyph at %d to glyph at %d",
+			  "attaching mark glyph at %u to glyph at %u",
 			  c->buffer->idx, glyph_pos);
     }
 
@@ -56,7 +56,7 @@ struct MarkArray : Array16Of<MarkRecord>        /* Array of MarkRecords--in Cove
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "attached mark glyph at %d to glyph at %d",
+			  "attached mark glyph at %u to glyph at %u",
 			  c->buffer->idx, glyph_pos);
     }
 

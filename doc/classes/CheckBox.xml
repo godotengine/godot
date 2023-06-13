@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CheckBox" inherits="Button" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Binary choice user interface widget. See also [CheckButton].
+		A button that represents a binary choice.
 	</brief_description>
 	<description>
-		A checkbox allows the user to make a binary choice (choosing only one of two possible options). It's similar to [CheckButton] in functionality, but it has a different appearance. To follow established UX patterns, it's recommended to use CheckBox when toggling it has [b]no[/b] immediate effect on something. For example, it could be used when toggling it will only do something once a confirmation button is pressed.
+		[CheckBox] allows the user to choose one of only two possible options. It's similar to [CheckButton] in functionality, but it has a different appearance. To follow established UX patterns, it's recommended to use [CheckBox] when toggling it has [b]no[/b] immediate effect on something. For example, it could be used when toggling it will only do something once a confirmation button is pressed.
 		See also [BaseButton] which contains common properties and methods associated with this node.
-		[b]Note:[/b] CheckBox changes its appearance when it's configured as a radio button. See various [code]radio_*[/code] theme properties. To configure CheckBox to act as a radio button, use [member BaseButton.button_group] and [ButtonGroup].
+		When [member BaseButton.button_group] specifies a [ButtonGroup], [CheckBox] changes its appearance to that of a radio button and uses the various [code]radio_*[/code] theme properties.
 	</description>
 	<tutorials>
 	</tutorials>

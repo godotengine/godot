@@ -1202,7 +1202,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				state.light_uniforms[index].color[i] = l->color[i];
 			}
 
-			state.light_uniforms[index].color[3] = l->energy; //use alpha for energy, so base color can go separate
+			state.light_uniforms[index].color[3] *= l->energy; //use alpha for energy, so base color can go separate
 
 			if (state.shadow_fb.is_valid()) {
 				state.light_uniforms[index].shadow_pixel_size = (1.0 / state.shadow_texture_size) * (1.0 + l->shadow_smooth);
@@ -1264,7 +1264,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				state.light_uniforms[index].color[i] = l->color[i];
 			}
 
-			state.light_uniforms[index].color[3] = l->energy; //use alpha for energy, so base color can go separate
+			state.light_uniforms[index].color[3] *= l->energy; //use alpha for energy, so base color can go separate
 
 			if (state.shadow_fb.is_valid()) {
 				state.light_uniforms[index].shadow_pixel_size = (1.0 / state.shadow_texture_size) * (1.0 + l->shadow_smooth);
@@ -1866,7 +1866,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		}
 	}
 
-	if (oc->line_point_count != lines.size() && oc->vertex_array.is_valid()) {
+	if ((oc->line_point_count != lines.size() || lines.size() == 0) && oc->vertex_array.is_valid()) {
 		RD::get_singleton()->free(oc->vertex_array);
 		RD::get_singleton()->free(oc->vertex_buffer);
 		RD::get_singleton()->free(oc->index_array);
@@ -1881,6 +1881,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 	}
 
 	if (lines.size()) {
+		oc->line_point_count = lines.size();
 		Vector<uint8_t> geometry;
 		Vector<uint8_t> indices;
 		int lc = lines.size();
@@ -1971,7 +1972,7 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 		}
 	}
 
-	if (oc->sdf_index_count != sdf_indices.size() && oc->sdf_point_count != p_points.size() && oc->sdf_vertex_array.is_valid()) {
+	if (((oc->sdf_index_count != sdf_indices.size() && oc->sdf_point_count != p_points.size()) || p_points.size() == 0) && oc->sdf_vertex_array.is_valid()) {
 		RD::get_singleton()->free(oc->sdf_vertex_array);
 		RD::get_singleton()->free(oc->sdf_vertex_buffer);
 		RD::get_singleton()->free(oc->sdf_index_array);
@@ -2120,8 +2121,8 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 		} break;
 		case BLEND_MODE_SUB: {
 			attachment.enable_blend = true;
-			attachment.alpha_blend_op = RD::BLEND_OP_SUBTRACT;
-			attachment.color_blend_op = RD::BLEND_OP_SUBTRACT;
+			attachment.alpha_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
+			attachment.color_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
 			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
 			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;

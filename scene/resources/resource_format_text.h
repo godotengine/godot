@@ -48,7 +48,7 @@ class ResourceLoaderText {
 	VariantParser::StreamFile stream;
 
 	struct ExtResource {
-		Ref<Resource> cache;
+		Ref<ResourceLoader::LoadToken> load_token;
 		String path;
 		String type;
 	};

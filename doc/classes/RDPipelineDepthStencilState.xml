@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RDPipelineDepthStencilState" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Pipeline depth/stencil state (used by [RenderingDevice]).
 	</brief_description>
 	<description>
+		[RDPipelineDepthStencilState] controls the way depth and stencil comparisons are performed when sampling those values using [RenderingDevice].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -30,6 +32,7 @@
 		<member name="enable_depth_range" type="bool" setter="set_enable_depth_range" getter="get_enable_depth_range" default="false">
 		</member>
 		<member name="enable_depth_test" type="bool" setter="set_enable_depth_test" getter="get_enable_depth_test" default="false">
+			If [code]true[/code], enables depth testing which allows objects to be automatically occluded by other objects based on their depth. This also allows objects to be partially occluded by other objects. If [code]false[/code], objects will appear in the order they were drawn (like in Godot's 2D renderer).
 		</member>
 		<member name="enable_depth_write" type="bool" setter="set_enable_depth_write" getter="get_enable_depth_write" default="false">
 		</member>

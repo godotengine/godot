@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Shape2D" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for all 2D shapes.
+		Abstract base class for 2D shapes used for physics collision.
 	</brief_description>
 	<description>
-		Base class for all 2D shapes. All 2D shape types inherit from this.
+		Abstract base class for all 2D shapes, intended for use in physics.
+		[b]Performance:[/b] Primitive shapes, especially [CircleShape2D], are fast to check collisions against. [ConvexPolygonShape2D] is slower, and [ConcavePolygonShape2D] is the slowest.
 	</description>
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>

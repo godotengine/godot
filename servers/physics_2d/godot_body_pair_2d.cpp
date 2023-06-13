@@ -455,14 +455,15 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 
 		c.acc_impulse -= P;
 
-		if (A->can_report_contacts()) {
-			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
-			A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity(), c.acc_impulse);
-		}
-
-		if (B->can_report_contacts()) {
-			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
-			B->add_contact(global_B + offset_A, c.normal, depth, shape_B, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity(), c.acc_impulse);
+		if (A->can_report_contacts() || B->can_report_contacts()) {
+			Vector2 crB = Vector2(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x) + B->get_linear_velocity();
+			Vector2 crA = Vector2(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x) + A->get_linear_velocity();
+			if (A->can_report_contacts()) {
+				A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, crA, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB, c.acc_impulse);
+			}
+			if (B->can_report_contacts()) {
+				B->add_contact(global_B + offset_A, c.normal, depth, shape_B, crB, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA, c.acc_impulse);
+			}
 		}
 
 		if (report_contacts_only) {

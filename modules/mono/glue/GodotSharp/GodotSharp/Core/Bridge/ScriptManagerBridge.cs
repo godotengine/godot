@@ -298,6 +298,13 @@ namespace Godot.Bridge
 
                 _pathTypeBiMap.Add(scriptPathAttr.Path, type);
 
+                // This method may be called before initialization.
+                if (NativeFuncs.godotsharp_dotnet_module_is_initialized().ToBool() && Engine.IsEditorHint())
+                {
+                    using godot_string scriptPath = Marshaling.ConvertStringToNative(scriptPathAttr.Path);
+                    NativeFuncs.godotsharp_internal_editor_file_system_update_file(scriptPath);
+                }
+
                 if (AlcReloadCfg.IsAlcReloadingEnabled)
                 {
                     AddTypeForAlcReloading(type);
@@ -584,7 +591,8 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe void UpdateScriptClassInfo(IntPtr scriptPtr, godot_bool* outTool,
+        internal static unsafe void UpdateScriptClassInfo(IntPtr scriptPtr, godot_string* outClassName,
+            godot_bool* outTool, godot_bool* outGlobal, godot_string* outIconPath,
             godot_array* outMethodsDest, godot_dictionary* outRpcFunctionsDest,
             godot_dictionary* outEventSignalsDest, godot_ref* outBaseScript)
         {
@@ -592,6 +600,8 @@ namespace Godot.Bridge
             {
                 // Performance is not critical here as this will be replaced with source generators.
                 var scriptType = _scriptTypeBiMap.GetScriptType(scriptPtr);
+
+                *outClassName = Marshaling.ConvertStringToNative(scriptType.Name);
 
                 *outTool = scriptType.GetCustomAttributes(inherit: false)
                     .OfType<ToolAttribute>()
@@ -606,6 +616,18 @@ namespace Godot.Bridge
 
                 if (!(*outTool).ToBool() && scriptType.Assembly.GetName().Name == "GodotTools")
                     *outTool = godot_bool.True;
+
+                var globalAttr = scriptType.GetCustomAttributes(inherit: false)
+                    .OfType<GlobalClassAttribute>()
+                    .FirstOrDefault();
+
+                *outGlobal = (globalAttr != null).ToGodotBool();
+
+                var iconAttr = scriptType.GetCustomAttributes(inherit: false)
+                    .OfType<IconAttribute>()
+                    .FirstOrDefault();
+
+                *outIconPath = Marshaling.ConvertStringToNative(iconAttr?.Path);
 
                 // Methods
 
@@ -693,7 +715,7 @@ namespace Godot.Bridge
                 }
 
                 *outRpcFunctionsDest = NativeFuncs.godotsharp_dictionary_new_copy(
-                    (godot_dictionary)(rpcFunctions).NativeValue);
+                    (godot_dictionary)rpcFunctions.NativeValue);
 
                 // Event signals
 
@@ -755,7 +777,10 @@ namespace Godot.Bridge
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
+                *outClassName = default;
                 *outTool = godot_bool.False;
+                *outGlobal = godot_bool.False;
+                *outIconPath = default;
                 *outMethodsDest = NativeFuncs.godotsharp_array_new();
                 *outRpcFunctionsDest = NativeFuncs.godotsharp_dictionary_new();
                 *outEventSignalsDest = NativeFuncs.godotsharp_dictionary_new();

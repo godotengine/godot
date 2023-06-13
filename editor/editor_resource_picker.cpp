@@ -31,13 +31,13 @@
 #include "editor_resource_picker.h"
 
 #include "editor/audio_stream_preview.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_quick_open.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
@@ -733,7 +733,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 					break;
 				}
 
-				if (at == "Texture2D" && Ref<Image>(dropped_resource).is_valid()) {
+				if (at == "ImageTexture" && Ref<Image>(dropped_resource).is_valid()) {
 					Ref<ImageTexture> texture = edited_resource;
 					if (!texture.is_valid()) {
 						texture.instantiate();
@@ -784,6 +784,7 @@ void EditorResourcePicker::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
+			assign_button->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), SNAME("Editor")));
 			edit_button->set_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
 		} break;
 
@@ -923,7 +924,9 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	assign_button->set_expand_icon(true);
 	assign_button->set_clip_text(true);
+	assign_button->set_auto_translate(false);
 	SET_DRAG_FORWARDING_GCD(assign_button, EditorResourcePicker);
 	add_child(assign_button);
 	assign_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_resource_selected));
@@ -1142,7 +1145,7 @@ void EditorAudioStreamPicker::_preview_draw() {
 
 	Rect2 rect(Point2(), size);
 
-	if (audio_stream->get_length() > 0) {
+	if (audio_stream->get_length() > 0 && size.width > 0) {
 		rect.size.height *= 0.5;
 
 		stream_preview_rect->draw_rect(rect, Color(0, 0, 0, 1));
@@ -1150,8 +1153,8 @@ void EditorAudioStreamPicker::_preview_draw() {
 		Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(audio_stream);
 		float preview_len = preview->get_length();
 
-		Vector<Vector2> lines;
-		lines.resize(size.width * 2);
+		Vector<Vector2> points;
+		points.resize(size.width * 2);
 
 		for (int i = 0; i < size.width; i++) {
 			float ofs = i * preview_len / size.width;
@@ -1160,14 +1163,13 @@ void EditorAudioStreamPicker::_preview_draw() {
 			float min = preview->get_min(ofs, ofs_n) * 0.5 + 0.5;
 
 			int idx = i;
-			lines.write[idx * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
-			lines.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
+			points.write[idx * 2 + 0] = Vector2(i + 1, rect.position.y + min * rect.size.y);
+			points.write[idx * 2 + 1] = Vector2(i + 1, rect.position.y + max * rect.size.y);
 		}
 
-		Vector<Color> color;
-		color.push_back(get_theme_color(SNAME("contrast_color_2"), SNAME("Editor")));
+		Vector<Color> colors = { get_theme_color(SNAME("contrast_color_2"), SNAME("Editor")) };
 
-		RS::get_singleton()->canvas_item_add_multiline(stream_preview_rect->get_canvas_item(), lines, color);
+		RS::get_singleton()->canvas_item_add_multiline(stream_preview_rect->get_canvas_item(), points, colors);
 
 		if (tagged_frame_offset_count) {
 			Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));

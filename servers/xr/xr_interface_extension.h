@@ -57,10 +57,12 @@ public:
 	virtual bool is_initialized() const override;
 	virtual bool initialize() override;
 	virtual void uninitialize() override;
+	virtual Dictionary get_system_info() override;
 
 	GDVIRTUAL0RC(bool, _is_initialized);
 	GDVIRTUAL0R(bool, _initialize);
 	GDVIRTUAL0(_uninitialize);
+	GDVIRTUAL0RC(Dictionary, _get_system_info);
 
 	/** input and output **/
 

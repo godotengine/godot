@@ -30,24 +30,23 @@
 
 #include "os_android.h"
 
+#include "dir_access_jandroid.h"
+#include "display_server_android.h"
+#include "file_access_android.h"
+#include "file_access_filesystem_jandroid.h"
+#include "java_godot_io_wrapper.h"
+#include "java_godot_wrapper.h"
+#include "net_socket_android.h"
+
 #include "core/config/project_settings.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
-#include "platform/android/display_server_android.h"
 #include "scene/main/scene_tree.h"
 #include "servers/rendering_server.h"
 
-#include "dir_access_jandroid.h"
-#include "file_access_android.h"
-#include "file_access_filesystem_jandroid.h"
-#include "net_socket_android.h"
-
 #include <dlfcn.h>
 #include <sys/system_properties.h>
-
-#include "java_godot_io_wrapper.h"
-#include "java_godot_wrapper.h"
 
 const char *OS_Android::ANDROID_EXEC_PATH = "apk";
 
@@ -182,7 +181,7 @@ String OS_Android::get_name() const {
 }
 
 String OS_Android::get_system_property(const char *key) const {
-	static String value;
+	String value;
 	char value_str[PROP_VALUE_MAX];
 	if (__system_property_get(key, value_str)) {
 		value = String(value_str);
@@ -230,20 +229,20 @@ String OS_Android::get_version() const {
 		"ro.potato.version", "ro.xtended.version", "org.evolution.version", "ro.corvus.version", "ro.pa.version",
 		"ro.crdroid.version", "ro.syberia.version", "ro.arrow.version", "ro.lineage.version" };
 	for (int i = 0; i < roms.size(); i++) {
-		static String rom_version = get_system_property(roms[i]);
+		String rom_version = get_system_property(roms[i]);
 		if (!rom_version.is_empty()) {
 			return rom_version;
 		}
 	}
 
-	static String mod_version = get_system_property("ro.modversion"); // Handles other Android custom ROMs.
+	String mod_version = get_system_property("ro.modversion"); // Handles other Android custom ROMs.
 	if (!mod_version.is_empty()) {
 		return mod_version;
 	}
 
 	// Handles stock Android.
-	static String sdk_version = get_system_property("ro.build.version.sdk_int");
-	static String build = get_system_property("ro.build.version.incremental");
+	String sdk_version = get_system_property("ro.build.version.sdk_int");
+	String build = get_system_property("ro.build.version.incremental");
 	if (!sdk_version.is_empty()) {
 		if (!build.is_empty()) {
 			return vformat("%s.%s", sdk_version, build);
@@ -311,7 +310,11 @@ String OS_Android::get_resource_dir() const {
 #ifdef TOOLS_ENABLED
 	return OS_Unix::get_resource_dir();
 #else
-	return "/"; //android has its own filesystem for resources inside the APK
+	if (remote_fs_dir.is_empty()) {
+		return "/"; // Android has its own filesystem for resources inside the APK
+	} else {
+		return remote_fs_dir;
+	}
 #endif
 }
 
@@ -671,6 +674,27 @@ String OS_Android::get_config_path() const {
 	return get_user_data_dir().path_join("config");
 }
 
+void OS_Android::benchmark_begin_measure(const String &p_what) {
+#ifdef TOOLS_ENABLED
+	godot_java->begin_benchmark_measure(p_what);
+#endif
+}
+
+void OS_Android::benchmark_end_measure(const String &p_what) {
+#ifdef TOOLS_ENABLED
+	godot_java->end_benchmark_measure(p_what);
+#endif
+}
+
+void OS_Android::benchmark_dump() {
+#ifdef TOOLS_ENABLED
+	if (!is_use_benchmark_set()) {
+		return;
+	}
+	godot_java->dump_benchmark(get_benchmark_file());
+#endif
+}
+
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "system_fonts") {
 		return true;
@@ -751,6 +775,20 @@ Error OS_Android::kill(const ProcessID &p_pid) {
 		return OK;
 	}
 	return OS_Unix::kill(p_pid);
+}
+
+String OS_Android::get_system_ca_certificates() {
+	return godot_java->get_ca_certificates();
+}
+
+Error OS_Android::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
+	r_project_path = get_user_data_dir();
+	Error err = OS_Unix::setup_remote_filesystem(p_server_host, p_port, p_password, r_project_path);
+	if (err == OK) {
+		remote_fs_dir = r_project_path;
+		FileAccess::make_default<FileAccessFilesystemJAndroid>(FileAccess::ACCESS_RESOURCES);
+	}
+	return err;
 }
 
 OS_Android::~OS_Android() {

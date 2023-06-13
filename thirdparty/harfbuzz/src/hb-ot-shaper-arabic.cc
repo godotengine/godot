@@ -556,9 +556,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
       }
       i++; // Don't touch i again.
 
-      DEBUG_MSG (ARABIC, nullptr, "%s stretch at (%d,%d,%d)",
+      DEBUG_MSG (ARABIC, nullptr, "%s stretch at (%u,%u,%u)",
 		 step == MEASURE ? "measuring" : "cutting", context, start, end);
-      DEBUG_MSG (ARABIC, nullptr, "rest of word:    count=%d width %d", start - context, w_total);
+      DEBUG_MSG (ARABIC, nullptr, "rest of word:    count=%u width %d", start - context, w_total);
       DEBUG_MSG (ARABIC, nullptr, "fixed tiles:     count=%d width=%d", n_fixed, w_fixed);
       DEBUG_MSG (ARABIC, nullptr, "repeating tiles: count=%d width=%d", n_repeating, w_repeating);
 
@@ -597,7 +597,7 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	  if (info[k - 1].arabic_shaping_action() == STCH_REPEATING)
 	    repeat += n_copies;
 
-	  DEBUG_MSG (ARABIC, nullptr, "appending %d copies of glyph %d; j=%d",
+	  DEBUG_MSG (ARABIC, nullptr, "appending %u copies of glyph %u; j=%u",
 		     repeat, info[k - 1].codepoint, j);
 	  for (unsigned int n = 0; n < repeat; n++)
 	  {
@@ -675,15 +675,15 @@ reorder_marks_arabic (const hb_ot_shape_plan_t *plan HB_UNUSED,
 {
   hb_glyph_info_t *info = buffer->info;
 
-  DEBUG_MSG (ARABIC, buffer, "Reordering marks from %d to %d", start, end);
+  DEBUG_MSG (ARABIC, buffer, "Reordering marks from %u to %u", start, end);
 
   unsigned int i = start;
   for (unsigned int cc = 220; cc <= 230; cc += 10)
   {
-    DEBUG_MSG (ARABIC, buffer, "Looking for %d's starting at %d", cc, i);
+    DEBUG_MSG (ARABIC, buffer, "Looking for %u's starting at %u", cc, i);
     while (i < end && info_cc(info[i]) < cc)
       i++;
-    DEBUG_MSG (ARABIC, buffer, "Looking for %d's stopped at %d", cc, i);
+    DEBUG_MSG (ARABIC, buffer, "Looking for %u's stopped at %u", cc, i);
 
     if (i == end)
       break;
@@ -698,10 +698,10 @@ reorder_marks_arabic (const hb_ot_shape_plan_t *plan HB_UNUSED,
     if (i == j)
       continue;
 
-    DEBUG_MSG (ARABIC, buffer, "Found %d's from %d to %d", cc, i, j);
+    DEBUG_MSG (ARABIC, buffer, "Found %u's from %u to %u", cc, i, j);
 
     /* Shift it! */
-    DEBUG_MSG (ARABIC, buffer, "Shifting %d's: %d %d", cc, i, j);
+    DEBUG_MSG (ARABIC, buffer, "Shifting %u's: %u %u", cc, i, j);
     hb_glyph_info_t temp[HB_OT_SHAPE_MAX_COMBINING_MARKS];
     assert (j - i <= ARRAY_LENGTH (temp));
     buffer->merge_clusters (start, j);

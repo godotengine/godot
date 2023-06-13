@@ -34,6 +34,7 @@
 #include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/json.h"
 #include "core/os/midi_driver.h"
 #include "core/version_generated.gen.h"
 
@@ -70,6 +71,10 @@ void OS::add_logger(Logger *p_logger) {
 	} else {
 		_logger->add_logger(p_logger);
 	}
+}
+
+String OS::get_identifier() const {
+	return get_name().to_lower();
 }
 
 void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, Logger::ErrorType p_type) {
@@ -145,6 +150,14 @@ void OS::set_low_processor_usage_mode_sleep_usec(int p_usec) {
 
 int OS::get_low_processor_usage_mode_sleep_usec() const {
 	return low_processor_usage_mode_sleep_usec;
+}
+
+void OS::set_delta_smoothing(bool p_enabled) {
+	_delta_smoothing_enabled = p_enabled;
+}
+
+bool OS::is_delta_smoothing_enabled() const {
+	return _delta_smoothing_enabled;
 }
 
 String OS::get_executable_path() const {
@@ -281,6 +294,15 @@ Error OS::shell_open(String p_uri) {
 	return ERR_UNAVAILABLE;
 }
 
+Error OS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
+	if (!p_path.begins_with("file://")) {
+		p_path = String("file://") + p_path;
+	}
+	if (!p_path.ends_with("/")) {
+		p_path = p_path.get_base_dir();
+	}
+	return shell_open(p_path);
+}
 // implement these with the canvas?
 
 uint64_t OS::get_static_memory_usage() const {
@@ -295,8 +317,15 @@ Error OS::set_cwd(const String &p_cwd) {
 	return ERR_CANT_OPEN;
 }
 
-uint64_t OS::get_free_static_memory() const {
-	return Memory::get_mem_available();
+Dictionary OS::get_memory_info() const {
+	Dictionary meminfo;
+
+	meminfo["physical"] = -1;
+	meminfo["free"] = -1;
+	meminfo["available"] = -1;
+	meminfo["stack"] = -1;
+
+	return meminfo;
 }
 
 void OS::yield() {
@@ -341,13 +370,7 @@ void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 
 bool OS::has_feature(const String &p_feature) {
 	// Feature tags are always lowercase for consistency.
-	if (p_feature == get_name().to_lower()) {
-		return true;
-	}
-
-	// Catch-all `linuxbsd` feature tag that matches on both Linux and BSD.
-	// This is the one exposed in the project settings dialog.
-	if (p_feature == "linuxbsd" && (get_name() == "Linux" || get_name() == "FreeBSD" || get_name() == "NetBSD" || get_name() == "OpenBSD" || get_name() == "BSD")) {
+	if (p_feature == get_identifier()) {
 		return true;
 	}
 
@@ -553,6 +576,10 @@ void OS::add_frame_delay(bool p_can_draw) {
 	}
 }
 
+Error OS::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
+	return default_rfs.synchronize_with_server(p_server_host, p_port, p_password, r_project_path);
+}
+
 OS::PreferredTextureFormat OS::get_preferred_texture_format() const {
 #if defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
 	return PREFERRED_TEXTURE_FORMAT_ETC2_ASTC; // By rule, ARM hardware uses ETC texture compression.
@@ -560,6 +587,59 @@ OS::PreferredTextureFormat OS::get_preferred_texture_format() const {
 	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC; // By rule, X86 hardware prefers S3TC and derivatives.
 #else
 	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC; // Override in platform if needed.
+#endif
+}
+
+void OS::set_use_benchmark(bool p_use_benchmark) {
+	use_benchmark = p_use_benchmark;
+}
+
+bool OS::is_use_benchmark_set() {
+	return use_benchmark;
+}
+
+void OS::set_benchmark_file(const String &p_benchmark_file) {
+	benchmark_file = p_benchmark_file;
+}
+
+String OS::get_benchmark_file() {
+	return benchmark_file;
+}
+
+void OS::benchmark_begin_measure(const String &p_what) {
+#ifdef TOOLS_ENABLED
+	start_benchmark_from[p_what] = OS::get_singleton()->get_ticks_usec();
+#endif
+}
+void OS::benchmark_end_measure(const String &p_what) {
+#ifdef TOOLS_ENABLED
+	uint64_t total = OS::get_singleton()->get_ticks_usec() - start_benchmark_from[p_what];
+	double total_f = double(total) / double(1000000);
+
+	startup_benchmark_json[p_what] = total_f;
+#endif
+}
+
+void OS::benchmark_dump() {
+#ifdef TOOLS_ENABLED
+	if (!use_benchmark) {
+		return;
+	}
+	if (!benchmark_file.is_empty()) {
+		Ref<FileAccess> f = FileAccess::open(benchmark_file, FileAccess::WRITE);
+		if (f.is_valid()) {
+			Ref<JSON> json;
+			json.instantiate();
+			f->store_string(json->stringify(startup_benchmark_json, "\t", false, true));
+		}
+	} else {
+		List<Variant> keys;
+		startup_benchmark_json.get_key_list(&keys);
+		print_line("BENCHMARK:");
+		for (const Variant &K : keys) {
+			print_line("\t-", K, ": ", startup_benchmark_json[K], +" sec.");
+		}
+	}
 #endif
 }
 

@@ -54,6 +54,7 @@ void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("\" \"");
 	p_delimiters->push_back("' '");
 	p_delimiters->push_back("\"\"\" \"\"\"");
+	p_delimiters->push_back("''' '''");
 }
 
 bool GDScriptLanguage::is_using_templates() {
@@ -73,9 +74,11 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 									 .replace(": String", "")
 									 .replace(": Array[String]", "")
 									 .replace(": float", "")
+									 .replace(": CharFXTransform", "")
 									 .replace(":=", "=")
 									 .replace(" -> String", "")
 									 .replace(" -> int", "")
+									 .replace(" -> bool", "")
 									 .replace(" -> void", "");
 	}
 
@@ -578,29 +581,34 @@ static int _get_enum_constant_location(StringName p_class, StringName p_enum_con
 
 // END LOCATION METHODS
 
-static String _get_visual_datatype(const PropertyInfo &p_info, bool p_is_arg = true) {
-	if (p_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
-		String enum_name = p_info.class_name;
-		if (!enum_name.contains(".")) {
-			return enum_name;
-		}
-		return enum_name.get_slice(".", 1);
+static String _trim_parent_class(const String &p_class, const String &p_base_class) {
+	if (p_base_class.is_empty()) {
+		return p_class;
 	}
-
-	String n = p_info.name;
-	int idx = n.find(":");
-	if (idx != -1) {
-		return n.substr(idx + 1, n.length());
-	}
-
-	if (p_info.type == Variant::OBJECT) {
-		if (p_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
-			return p_info.hint_string;
-		} else {
-			return p_info.class_name.operator String();
+	Vector<String> names = p_class.split(".", false, 1);
+	if (names.size() == 2) {
+		String first = names[0];
+		String rest = names[1];
+		if (ClassDB::class_exists(p_base_class) && ClassDB::class_exists(first) && ClassDB::is_parent_class(p_base_class, first)) {
+			return rest;
 		}
 	}
-	if (p_info.type == Variant::NIL) {
+	return p_class;
+}
+
+static String _get_visual_datatype(const PropertyInfo &p_info, bool p_is_arg, const String &p_base_class = "") {
+	String class_name = p_info.class_name;
+	bool is_enum = p_info.type == Variant::INT && p_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM;
+	// PROPERTY_USAGE_CLASS_IS_BITFIELD: BitField[T] isn't supported (yet?), use plain int.
+
+	if ((p_info.type == Variant::OBJECT || is_enum) && !class_name.is_empty()) {
+		if (is_enum && CoreConstants::is_global_enum(p_info.class_name)) {
+			return class_name;
+		}
+		return _trim_parent_class(class_name, p_base_class);
+	} else if (p_info.type == Variant::ARRAY && p_info.hint == PROPERTY_HINT_ARRAY_TYPE && !p_info.hint_string.is_empty()) {
+		return "Array[" + _trim_parent_class(p_info.hint_string, p_base_class) + "]";
+	} else if (p_info.type == Variant::NIL) {
 		if (p_is_arg || (p_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT)) {
 			return "Variant";
 		} else {
@@ -898,19 +906,20 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 	}
 }
 
-static void _find_identifiers_in_suite(const GDScriptParser::SuiteNode *p_suite, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result) {
+static void _find_identifiers_in_suite(const GDScriptParser::SuiteNode *p_suite, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, int p_recursion_depth = 0) {
 	for (int i = 0; i < p_suite->locals.size(); i++) {
 		ScriptLanguage::CodeCompletionOption option;
+		int location = p_recursion_depth == 0 ? ScriptLanguage::LOCATION_LOCAL : (p_recursion_depth | ScriptLanguage::LOCATION_PARENT_MASK);
 		if (p_suite->locals[i].type == GDScriptParser::SuiteNode::Local::CONSTANT) {
-			option = ScriptLanguage::CodeCompletionOption(p_suite->locals[i].name, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT, ScriptLanguage::LOCATION_LOCAL);
+			option = ScriptLanguage::CodeCompletionOption(p_suite->locals[i].name, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT, location);
 			option.default_value = p_suite->locals[i].constant->initializer->reduced_value;
 		} else {
-			option = ScriptLanguage::CodeCompletionOption(p_suite->locals[i].name, ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE, ScriptLanguage::LOCATION_LOCAL);
+			option = ScriptLanguage::CodeCompletionOption(p_suite->locals[i].name, ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE, location);
 		}
 		r_result.insert(option.display, option);
 	}
 	if (p_suite->parent_block) {
-		_find_identifiers_in_suite(p_suite->parent_block, r_result);
+		_find_identifiers_in_suite(p_suite->parent_block, r_result, p_recursion_depth + 1);
 	}
 }
 
@@ -925,7 +934,7 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 		int classes_processed = 0;
 		while (clss) {
 			for (int i = 0; i < clss->members.size(); i++) {
-				const int location = (classes_processed + p_recursion_depth) | ScriptLanguage::LOCATION_PARENT_MASK;
+				const int location = p_recursion_depth == 0 ? classes_processed : (p_recursion_depth | ScriptLanguage::LOCATION_PARENT_MASK);
 				const GDScriptParser::ClassNode::Member &member = clss->members[i];
 				ScriptLanguage::CodeCompletionOption option;
 				switch (member.type) {
@@ -1017,7 +1026,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 	while (!base_type.has_no_type()) {
 		switch (base_type.kind) {
 			case GDScriptParser::DataType::CLASS: {
-				_find_identifiers_in_class(base_type.class_type, p_only_functions, base_type.is_meta_type, false, r_result, p_recursion_depth + 1);
+				_find_identifiers_in_class(base_type.class_type, p_only_functions, base_type.is_meta_type, false, r_result, p_recursion_depth);
 				// This already finds all parent identifiers, so we are done.
 				base_type = GDScriptParser::DataType();
 			} break;
@@ -1197,7 +1206,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	}
 
 	if (p_context.current_class) {
-		_find_identifiers_in_class(p_context.current_class, p_only_functions, (!p_context.current_function || p_context.current_function->is_static), false, r_result, p_recursion_depth + 1);
+		_find_identifiers_in_class(p_context.current_class, p_only_functions, (!p_context.current_function || p_context.current_function->is_static), false, r_result, p_recursion_depth);
 	}
 
 	List<StringName> functions;
@@ -2984,6 +2993,15 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 
 			List<MethodInfo> virtual_methods;
 			ClassDB::get_virtual_methods(class_name, &virtual_methods);
+
+			{
+				// Not truly a virtual method, but can also be "overridden".
+				MethodInfo static_init("_static_init");
+				static_init.return_val.type = Variant::NIL;
+				static_init.flags |= METHOD_FLAG_STATIC | METHOD_FLAG_VIRTUAL;
+				virtual_methods.push_back(static_init);
+			}
+
 			for (const MethodInfo &mi : virtual_methods) {
 				String method_hint = mi.name;
 				if (method_hint.contains(":")) {
@@ -3001,26 +3019,14 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 							arg = arg.substr(0, arg.find(":"));
 						}
 						method_hint += arg;
-						if (use_type_hint && mi.arguments[i].type != Variant::NIL) {
-							method_hint += ": ";
-							if (mi.arguments[i].type == Variant::OBJECT && mi.arguments[i].class_name != StringName()) {
-								method_hint += mi.arguments[i].class_name.operator String();
-							} else {
-								method_hint += Variant::get_type_name(mi.arguments[i].type);
-							}
+						if (use_type_hint) {
+							method_hint += ": " + _get_visual_datatype(mi.arguments[i], true, class_name);
 						}
 					}
 				}
 				method_hint += ")";
-				if (use_type_hint && (mi.return_val.type != Variant::NIL || !(mi.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT))) {
-					method_hint += " -> ";
-					if (mi.return_val.type == Variant::NIL) {
-						method_hint += "void";
-					} else if (mi.return_val.type == Variant::OBJECT && mi.return_val.class_name != StringName()) {
-						method_hint += mi.return_val.class_name.operator String();
-					} else {
-						method_hint += Variant::get_type_name(mi.return_val.type);
-					}
+				if (use_type_hint) {
+					method_hint += " -> " + _get_visual_datatype(mi.return_val, false, class_name);
 				}
 				method_hint += ":";
 
@@ -3093,12 +3099,7 @@ String GDScriptLanguage::_get_indentation() const {
 
 		if (use_space_indentation) {
 			int indent_size = EDITOR_GET("text_editor/behavior/indent/size");
-
-			String space_indent = "";
-			for (int i = 0; i < indent_size; i++) {
-				space_indent += " ";
-			}
-			return space_indent;
+			return String(" ").repeat(indent_size);
 		}
 	}
 #endif
@@ -3145,12 +3146,7 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 		}
 
 		if (i >= p_from_line) {
-			l = "";
-			for (int j = 0; j < indent_stack.size(); j++) {
-				l += indent;
-			}
-			l += st;
-
+			l = indent.repeat(indent_stack.size()) + st;
 		} else if (i > p_to_line) {
 			break;
 		}

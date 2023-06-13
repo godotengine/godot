@@ -222,8 +222,8 @@ Error AudioDriverPulseAudio::init_output_device() {
 			break;
 	}
 
-	int latency = GLOBAL_GET("audio/driver/output_latency");
-	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
+	int tmp_latency = GLOBAL_GET("audio/driver/output_latency");
+	buffer_frames = closest_power_of_2(tmp_latency * mix_rate / 1000);
 	pa_buffer_size = buffer_frames * pa_map.channels;
 
 	print_verbose("PulseAudio: detected " + itos(pa_map.channels) + " output channels");
@@ -290,10 +290,22 @@ Error AudioDriverPulseAudio::init() {
 		return ERR_CANT_OPEN;
 	}
 #endif
+	bool ver_ok = false;
+	String version = String::utf8(pa_get_library_version());
+	Vector<String> ver_parts = version.split(".");
+	if (ver_parts.size() >= 2) {
+		ver_ok = (ver_parts[0].to_int() >= 8); // 8.0.0
+	}
+	print_verbose(vformat("PulseAudio %s detected.", version));
+	if (!ver_ok) {
+		print_verbose("Unsupported PulseAudio library version!");
+		return ERR_CANT_OPEN;
+	}
+
 	active.clear();
 	exit_thread.clear();
 
-	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
+	mix_rate = _get_configured_mix_rate();
 
 	pa_ml = pa_mainloop_new();
 	ERR_FAIL_COND_V(pa_ml == nullptr, ERR_CANT_OPEN);
@@ -664,7 +676,9 @@ void AudioDriverPulseAudio::finish() {
 	}
 
 	exit_thread.set();
-	thread.wait_to_finish();
+	if (thread.is_started()) {
+		thread.wait_to_finish();
+	}
 
 	finish_output_device();
 

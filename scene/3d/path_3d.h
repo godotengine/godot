@@ -72,6 +72,8 @@ public:
 		ROTATION_ORIENTED
 	};
 
+	bool use_model_front = false;
+
 	static Transform3D correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode);
 
 private:
@@ -108,14 +110,17 @@ public:
 	void set_loop(bool p_loop);
 	bool has_loop() const;
 
-	void set_tilt_enabled(bool p_enable);
+	void set_tilt_enabled(bool p_enabled);
 	bool is_tilt_enabled() const;
 
 	void set_rotation_mode(RotationMode p_rotation_mode);
 	RotationMode get_rotation_mode() const;
 
-	void set_cubic_interpolation(bool p_enable);
-	bool get_cubic_interpolation() const;
+	void set_use_model_front(bool p_use_model_front);
+	bool is_using_model_front() const;
+
+	void set_cubic_interpolation_enabled(bool p_enabled);
+	bool is_cubic_interpolation_enabled() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 

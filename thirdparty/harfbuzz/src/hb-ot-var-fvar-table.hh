@@ -56,18 +56,18 @@ struct InstanceRecord
     if (unlikely (!c->serializer->embed (flags))) return_trace (false);
 
     const hb_array_t<const F16DOT16> coords = get_coordinates (axis_count);
-    const hb_hashmap_t<hb_tag_t, float> *axes_location = c->plan->user_axes_location;
+    const hb_hashmap_t<hb_tag_t, float> *axes_location = &c->plan->user_axes_location;
     for (unsigned i = 0 ; i < axis_count; i++)
     {
       uint32_t *axis_tag;
       // only keep instances whose coordinates == pinned axis location
-      if (!c->plan->axes_old_index_tag_map->has (i, &axis_tag)) continue;
+      if (!c->plan->axes_old_index_tag_map.has (i, &axis_tag)) continue;
 
       if (axes_location->has (*axis_tag) &&
           fabsf (axes_location->get (*axis_tag) - coords[i].to_float ()) > 0.001f)
         return_trace (false);
 
-      if (!c->plan->axes_index_map->has (i))
+      if (!c->plan->axes_index_map.has (i))
         continue;
 
       if (!c->serializer->embed (coords[i]))
@@ -175,15 +175,15 @@ struct AxisRecord
 
   void get_coordinates (float &min, float &default_, float &max) const
   {
-    default_ = defaultValue / 65536.f;
+    default_ = defaultValue.to_float ();
     /* Ensure order, to simplify client math. */
-    min = hb_min (default_, minValue / 65536.f);
-    max = hb_max (default_, maxValue / 65536.f);
+    min = hb_min (default_, minValue.to_float ());
+    max = hb_max (default_, maxValue.to_float ());
   }
 
   float get_default () const
   {
-    return defaultValue / 65536.f;
+    return defaultValue.to_float ();
   }
 
   public:
@@ -362,7 +362,7 @@ struct fvar
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    unsigned retained_axis_count = c->plan->axes_index_map->get_population ();
+    unsigned retained_axis_count = c->plan->axes_index_map.get_population ();
     if (!retained_axis_count) //all axes are pinned
       return_trace (false);
 
@@ -383,7 +383,7 @@ struct fvar
     auto axes_records = get_axes ();
     for (unsigned i = 0 ; i < (unsigned)axisCount; i++)
     {
-      if (!c->plan->axes_index_map->has (i)) continue;
+      if (!c->plan->axes_index_map.has (i)) continue;
       if (unlikely (!c->serializer->embed (axes_records[i])))
         return_trace (false);
     }

@@ -31,6 +31,7 @@
 #ifndef WINDOWS_EXPORT_H
 #define WINDOWS_EXPORT_H
 
+void register_windows_exporter_types();
 void register_windows_exporter();
 
 #endif // WINDOWS_EXPORT_H

@@ -39,6 +39,7 @@ import org.godotengine.godot.io.file.FileAccessHandler;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.plugin.GodotPluginRegistry;
 import org.godotengine.godot.tts.GodotTTS;
+import org.godotengine.godot.utils.BenchmarkUtils;
 import org.godotengine.godot.utils.GodotNetUtils;
 import org.godotengine.godot.utils.PermissionsUtil;
 import org.godotengine.godot.xr.XRMode;
@@ -180,7 +181,8 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	public GodotIO io;
 	public GodotNetUtils netUtils;
 	public GodotTTS tts;
-	DirectoryAccessHandler directoryAccessHandler;
+	private DirectoryAccessHandler directoryAccessHandler;
+	private FileAccessHandler fileAccessHandler;
 
 	public interface ResultCallback {
 		void callback(int requestCode, int resultCode, Intent data);
@@ -274,7 +276,9 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		// ...add to FrameLayout
 		containerLayout.addView(editText);
 
-		if (!GodotLib.setup(command_line)) {
+		tts = new GodotTTS(activity);
+
+		if (!GodotLib.setup(command_line, tts)) {
 			Log.e(TAG, "Unable to setup the Godot engine! Aborting...");
 			alert(R.string.error_engine_setup_message, R.string.text_error_title, this::forceQuit);
 			return false;
@@ -520,7 +524,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			}
 			return cmdline;
 		} catch (Exception e) {
-			e.printStackTrace();
+			// The _cl_ file can be missing with no adverse effect
 			return new String[0];
 		}
 	}
@@ -574,10 +578,9 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		final Activity activity = getActivity();
 		io = new GodotIO(activity);
 		netUtils = new GodotNetUtils(activity);
-		tts = new GodotTTS(activity);
 		Context context = getContext();
 		directoryAccessHandler = new DirectoryAccessHandler(context);
-		FileAccessHandler fileAccessHandler = new FileAccessHandler(context);
+		fileAccessHandler = new FileAccessHandler(context);
 		mSensorManager = (SensorManager)activity.getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
@@ -591,8 +594,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 				netUtils,
 				directoryAccessHandler,
 				fileAccessHandler,
-				use_apk_expansion,
-				tts);
+				use_apk_expansion);
 
 		result_callback = null;
 	}
@@ -605,6 +607,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 	@Override
 	public void onCreate(Bundle icicle) {
+		BenchmarkUtils.beginBenchmarkMeasure("Godot::onCreate");
 		super.onCreate(icicle);
 
 		final Activity activity = getActivity();
@@ -652,6 +655,18 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 				editor.putString("store_public_key", main_pack_key);
 
 				editor.apply();
+				i++;
+			} else if (command_line[i].equals("--benchmark")) {
+				BenchmarkUtils.setUseBenchmark(true);
+				new_args.add(command_line[i]);
+			} else if (has_extra && command_line[i].equals("--benchmark-file")) {
+				BenchmarkUtils.setUseBenchmark(true);
+				new_args.add(command_line[i]);
+
+				// Retrieve the filepath
+				BenchmarkUtils.setBenchmarkFile(command_line[i + 1]);
+				new_args.add(command_line[i + 1]);
+
 				i++;
 			} else if (command_line[i].trim().length() != 0) {
 				new_args.add(command_line[i]);
@@ -723,6 +738,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		mCurrentIntent = activity.getIntent();
 
 		initializeGodot();
+		BenchmarkUtils.endBenchmarkMeasure("Godot::onCreate");
 	}
 
 	@Override
@@ -928,20 +944,6 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		// Do something here if sensor accuracy changes.
 	}
 
-	/*
-	@Override public boolean dispatchKeyEvent(KeyEvent event) {
-		if (event.getKeyCode()==KeyEvent.KEYCODE_BACK) {
-			System.out.printf("** BACK REQUEST!\n");
-
-			GodotLib.quit();
-			return true;
-		}
-		System.out.printf("** OTHER KEY!\n");
-
-		return false;
-	}
-	*/
-
 	public void onBackPressed() {
 		boolean shouldQuit = true;
 
@@ -1042,6 +1044,11 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 	public String[] getGrantedPermissions() {
 		return PermissionsUtil.getGrantedPermissions(getActivity());
+	}
+
+	@Keep
+	private String getCACertificates() {
+		return GodotNetUtils.getCACertificates();
 	}
 
 	/**
@@ -1148,10 +1155,35 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	@Keep
+	public DirectoryAccessHandler getDirectoryAccessHandler() {
+		return directoryAccessHandler;
+	}
+
+	@Keep
+	public FileAccessHandler getFileAccessHandler() {
+		return fileAccessHandler;
+	}
+
+	@Keep
 	private int createNewGodotInstance(String[] args) {
 		if (godotHost != null) {
 			return godotHost.onNewGodotInstanceRequested(args);
 		}
 		return 0;
+	}
+
+	@Keep
+	private void beginBenchmarkMeasure(String label) {
+		BenchmarkUtils.beginBenchmarkMeasure(label);
+	}
+
+	@Keep
+	private void endBenchmarkMeasure(String label) {
+		BenchmarkUtils.endBenchmarkMeasure(label);
+	}
+
+	@Keep
+	private void dumpBenchmark(String benchmarkFile) {
+		BenchmarkUtils.dumpBenchmark(fileAccessHandler, benchmarkFile);
 	}
 }

@@ -215,6 +215,6 @@ void main() {
 	frag_color.a = alpha;
 
 #ifdef USE_DEBANDING
-	frag_color.rgb += interleaved_gradient_noise(gl_FragCoord.xy);
+	frag_color.rgb += interleaved_gradient_noise(gl_FragCoord.xy) * luminance_multiplier;
 #endif
 }

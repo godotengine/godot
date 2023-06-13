@@ -42,6 +42,7 @@ class OptionButton : public Button {
 	bool fit_to_longest_item = true;
 	Vector2 _cached_size;
 	bool cache_refresh_pending = false;
+	bool allow_reselect = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal;
@@ -65,13 +66,13 @@ class OptionButton : public Button {
 	void _select(int p_which, bool p_emit = false);
 	void _select_int(int p_which);
 	void _refresh_size_cache();
-	void _queue_refresh_cache();
 
 	virtual void pressed() override;
 
 protected:
 	Size2 get_minimum_size() const override;
 	virtual void _update_theme_item_cache() override;
+	virtual void _queue_update_size_cache() override;
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -110,6 +111,9 @@ public:
 	int get_item_count() const;
 	void set_fit_to_longest_item(bool p_fit);
 	bool is_fit_to_longest_item() const;
+
+	void set_allow_reselect(bool p_allow);
+	bool get_allow_reselect() const;
 
 	void add_separator(const String &p_text = "");
 

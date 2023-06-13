@@ -62,7 +62,8 @@ open class GodotEditor : FullScreenGodotApp() {
 
 		private const val WAIT_FOR_DEBUGGER = false
 
-		private const val COMMAND_LINE_PARAMS = "command_line_params"
+		private const val EXTRA_FORCE_QUIT = "force_quit_requested"
+		private const val EXTRA_COMMAND_LINE_PARAMS = "command_line_params"
 
 		private const val EDITOR_ID = 777
 		private const val EDITOR_ARG = "--editor"
@@ -76,15 +77,26 @@ open class GodotEditor : FullScreenGodotApp() {
 		private const val PROJECT_MANAGER_ARG = "--project-manager"
 		private const val PROJECT_MANAGER_ARG_SHORT = "-p"
 		private const val PROJECT_MANAGER_PROCESS_NAME_SUFFIX = ":GodotProjectManager"
+
+		/**
+		 * Sets of constants to specify the window to use to run the project.
+		 *
+		 * Should match the values in 'editor/editor_settings.cpp' for the
+		 * 'run/window_placement/android_window' setting.
+		 */
+		private const val ANDROID_WINDOW_AUTO = 0
+		private const val ANDROID_WINDOW_SAME_AS_EDITOR = 1
+		private const val ANDROID_WINDOW_SIDE_BY_SIDE_WITH_EDITOR = 2
 	}
 
 	private val commandLineParams = ArrayList<String>()
 
 	override fun onCreate(savedInstanceState: Bundle?) {
-		PermissionsUtil.requestManifestPermissions(this)
+		// We exclude certain permissions from the set we request at startup, as they'll be
+		// requested on demand based on use-cases.
+		PermissionsUtil.requestManifestPermissions(this, setOf(Manifest.permission.RECORD_AUDIO))
 
-		val params = intent.getStringArrayExtra(COMMAND_LINE_PARAMS)
-		updateCommandLineParams(params)
+		handleIntentParams(intent)
 
 		if (BuildConfig.BUILD_TYPE == "dev" && WAIT_FOR_DEBUGGER) {
 			Debug.waitForDebugger()
@@ -93,10 +105,31 @@ open class GodotEditor : FullScreenGodotApp() {
 		super.onCreate(savedInstanceState)
 	}
 
+	override fun onNewIntent(newIntent: Intent) {
+		intent = newIntent
+		handleIntentParams(newIntent)
+		super.onNewIntent(newIntent)
+	}
+
+	private fun handleIntentParams(receivedIntent: Intent) {
+		val forceQuitRequested = receivedIntent.getBooleanExtra(EXTRA_FORCE_QUIT, false)
+		if (forceQuitRequested) {
+			Log.d(TAG, "Force quit requested, terminating..")
+			ProcessPhoenix.forceQuit(this)
+			return
+		}
+
+		val params = receivedIntent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
+		Log.d(TAG, "Received parameters ${params.contentToString()}")
+		updateCommandLineParams(params)
+	}
+
 	override fun onGodotSetupCompleted() {
 		super.onGodotSetupCompleted()
 		val longPressEnabled = enableLongPressGestures()
 		val panScaleEnabled = enablePanAndScaleGestures()
+
+		checkForProjectPermissionsToEnable()
 
 		runOnUiThread {
 			// Enable long press, panning and scaling gestures
@@ -107,11 +140,25 @@ open class GodotEditor : FullScreenGodotApp() {
 		}
 	}
 
+	/**
+	 * Check for project permissions to enable
+	 */
+	protected open fun checkForProjectPermissionsToEnable() {
+		// Check for RECORD_AUDIO permission
+		val audioInputEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("audio/driver/enable_input"));
+		if (audioInputEnabled) {
+			PermissionsUtil.requestPermission(Manifest.permission.RECORD_AUDIO, this)
+		}
+	}
+
 	private fun updateCommandLineParams(args: Array<String>?) {
 		// Update the list of command line params with the new args
 		commandLineParams.clear()
 		if (args != null && args.isNotEmpty()) {
 			commandLineParams.addAll(listOf(*args))
+		}
+		if (BuildConfig.BUILD_TYPE == "dev") {
+			commandLineParams.add("--benchmark")
 		}
 	}
 
@@ -124,8 +171,7 @@ open class GodotEditor : FullScreenGodotApp() {
 
 		// Whether we should launch the new godot instance in an adjacent window
 		// https://developer.android.com/reference/android/content/Intent#FLAG_ACTIVITY_LAUNCH_ADJACENT
-		var launchAdjacent =
-			Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && (isInMultiWindowMode || isLargeScreen)
+		var launchAdjacent = shouldGameLaunchAdjacent()
 
 		for (arg in args) {
 			if (EDITOR_ARG == arg || EDITOR_ARG_SHORT == arg) {
@@ -146,33 +192,48 @@ open class GodotEditor : FullScreenGodotApp() {
 		// Launch a new activity
 		val newInstance = Intent(this, targetClass)
 			.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-			.putExtra(COMMAND_LINE_PARAMS, args)
+			.putExtra(EXTRA_COMMAND_LINE_PARAMS, args)
 		if (launchAdjacent) {
 			newInstance.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT)
 		}
 		if (targetClass == javaClass) {
-			Log.d(TAG, "Restarting $targetClass")
+			Log.d(TAG, "Restarting $targetClass with parameters ${args.contentToString()}")
 			ProcessPhoenix.triggerRebirth(this, newInstance)
 		} else {
-			Log.d(TAG, "Starting $targetClass")
+			Log.d(TAG, "Starting $targetClass with parameters ${args.contentToString()}")
 			startActivity(newInstance)
 		}
 		return instanceId
 	}
 
 	override fun onGodotForceQuit(godotInstanceId: Int): Boolean {
-		val processNameSuffix = when (godotInstanceId) {
+		val targetClass: Class<*>?
+		val processNameSuffix: String
+		when (godotInstanceId) {
 			GAME_ID -> {
-				GAME_PROCESS_NAME_SUFFIX
+				processNameSuffix = GAME_PROCESS_NAME_SUFFIX
+				targetClass = GodotGame::class.java
 			}
 			EDITOR_ID -> {
-				EDITOR_PROCESS_NAME_SUFFIX
+				processNameSuffix = EDITOR_PROCESS_NAME_SUFFIX
+				targetClass = GodotEditor::class.java
 			}
 			PROJECT_MANAGER_ID -> {
-				PROJECT_MANAGER_PROCESS_NAME_SUFFIX
+				processNameSuffix = PROJECT_MANAGER_PROCESS_NAME_SUFFIX
+				targetClass = GodotProjectManager::class.java
 			}
-			else -> ""
+			else -> {
+				processNameSuffix = ""
+				targetClass = null
+			}
 		}
+
+		if (targetClass == javaClass) {
+			Log.d(TAG, "Force quitting $targetClass")
+			ProcessPhoenix.forceQuit(this)
+			return true
+		}
+
 		if (processNameSuffix.isBlank()) {
 			return false
 		}
@@ -181,8 +242,16 @@ open class GodotEditor : FullScreenGodotApp() {
 		val runningProcesses = activityManager.runningAppProcesses
 		for (runningProcess in runningProcesses) {
 			if (runningProcess.processName.endsWith(processNameSuffix)) {
-				Log.v(TAG, "Killing Godot process ${runningProcess.processName}")
-				Process.killProcess(runningProcess.pid)
+				if (targetClass == null) {
+					// Killing process directly
+					Log.v(TAG, "Killing Godot process ${runningProcess.processName}")
+					Process.killProcess(runningProcess.pid)
+				} else {
+					// Activity is running; sending a request for self termination.
+					Log.v(TAG, "Sending force quit request to $targetClass running on process ${runningProcess.processName}")
+					val forceQuitIntent = Intent(this, targetClass).putExtra(EXTRA_FORCE_QUIT, true)
+					startActivity(forceQuitIntent)
+				}
 				return true
 			}
 		}
@@ -227,6 +296,26 @@ open class GodotEditor : FullScreenGodotApp() {
 	 */
 	protected open fun enablePanAndScaleGestures() =
 		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/enable_pan_and_scale_gestures"))
+
+	private fun shouldGameLaunchAdjacent(): Boolean {
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			try {
+				when (Integer.parseInt(GodotLib.getEditorSetting("run/window_placement/android_window"))) {
+					ANDROID_WINDOW_SAME_AS_EDITOR -> false
+					ANDROID_WINDOW_SIDE_BY_SIDE_WITH_EDITOR -> true
+					else -> {
+						// ANDROID_WINDOW_AUTO
+						isInMultiWindowMode || isLargeScreen
+					}
+				}
+			} catch (e: NumberFormatException) {
+				// Fall-back to the 'Auto' behavior
+				isInMultiWindowMode || isLargeScreen
+			}
+		} else {
+			false
+		}
+	}
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)

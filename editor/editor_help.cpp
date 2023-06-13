@@ -32,10 +32,12 @@
 
 #include "core/core_constants.h"
 #include "core/input/input.h"
+#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
-#include "core/version_generated.gen.h"
+#include "core/version.h"
 #include "doc_data_compressed.gen.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -43,7 +45,85 @@
 
 #define CONTRIBUTE_URL vformat("%s/contributing/documentation/updating_the_class_reference.html", VERSION_DOCS_URL)
 
+// TODO: this is sometimes used directly as doc->something, other times as EditorHelp::get_doc_data(), which is thread-safe.
+// Might this be a problem?
 DocTools *EditorHelp::doc = nullptr;
+
+class DocCache : public Resource {
+	GDCLASS(DocCache, Resource);
+	RES_BASE_EXTENSION("doc_cache");
+
+	String version_hash;
+	Array classes;
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_method(D_METHOD("set_version_hash", "version_hash"), &DocCache::set_version_hash);
+		ClassDB::bind_method(D_METHOD("get_version_hash"), &DocCache::get_version_hash);
+
+		ClassDB::bind_method(D_METHOD("set_classes", "classes"), &DocCache::set_classes);
+		ClassDB::bind_method(D_METHOD("get_classes"), &DocCache::get_classes);
+
+		ADD_PROPERTY(PropertyInfo(Variant::STRING, "version_hash"), "set_version_hash", "get_version_hash");
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "classes"), "set_classes", "get_classes");
+	}
+
+public:
+	String get_version_hash() const { return version_hash; }
+	void set_version_hash(const String &p_version_hash) { version_hash = p_version_hash; }
+
+	Array get_classes() const { return classes; }
+	void set_classes(const Array &p_classes) { classes = p_classes; }
+};
+
+static bool _attempt_doc_load(const String &p_class) {
+	// Docgen always happens in the outer-most class: it also generates docs for inner classes.
+	String outer_class = p_class.get_slice(".", 0);
+	if (!ScriptServer::is_global_class(outer_class)) {
+		return false;
+	}
+
+	// ResourceLoader is used in order to have a script-agnostic way to load scripts.
+	// This forces GDScript to compile the code, which is unnecessary for docgen, but it's a good compromise right now.
+	Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(outer_class), outer_class);
+	if (script.is_valid()) {
+		Vector<DocData::ClassDoc> docs = script->get_documentation();
+		for (int j = 0; j < docs.size(); j++) {
+			const DocData::ClassDoc &doc = docs.get(j);
+			EditorHelp::get_doc_data()->add_doc(doc);
+		}
+		return true;
+	}
+
+	return false;
+}
+
+// Removes unnecessary prefix from p_class_specifier when within the p_edited_class context
+static String _contextualize_class_specifier(const String &p_class_specifier, const String &p_edited_class) {
+	// If this is a completely different context than the current class, then keep full path
+	if (!p_class_specifier.begins_with(p_edited_class)) {
+		return p_class_specifier;
+	}
+
+	// Here equal length + begins_with from above implies p_class_specifier == p_edited_class :)
+	if (p_class_specifier.length() == p_edited_class.length()) {
+		int rfind = p_class_specifier.rfind(".");
+		if (rfind == -1) { // Single identifier
+			return p_class_specifier;
+		}
+		// Multiple specifiers: keep last one only
+		return p_class_specifier.substr(rfind + 1);
+	}
+
+	// They share a _name_ prefix but not a _class specifier_ prefix, e.g. Tree & TreeItem
+	// begins_with + lengths being different implies p_class_specifier.length() > p_edited_class.length() so this is safe
+	if (p_class_specifier[p_edited_class.length()] != '.') {
+		return p_class_specifier;
+	}
+
+	// Remove class specifier prefix
+	return p_class_specifier.substr(p_edited_class.length() + 1);
+}
 
 void EditorHelp::_update_theme_item_cache() {
 	VBoxContainer::_update_theme_item_cache();
@@ -102,12 +182,13 @@ void EditorHelp::_class_list_select(const String &p_select) {
 }
 
 void EditorHelp::_class_desc_select(const String &p_select) {
-	if (p_select.begins_with("$")) { //enum
+	if (p_select.begins_with("$")) { // enum
 		String select = p_select.substr(1, p_select.length());
 		String class_name;
-		if (select.contains(".")) {
-			class_name = select.get_slice(".", 0);
-			select = select.get_slice(".", 1);
+		int rfind = select.rfind(".");
+		if (rfind != -1) {
+			class_name = select.substr(0, rfind);
+			select = select.substr(rfind + 1);
 		} else {
 			class_name = "@GlobalScope";
 		}
@@ -225,35 +306,36 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	bool is_enum_type = !p_enum.is_empty();
 	bool can_ref = !p_type.contains("*") || is_enum_type;
 
-	String t = p_type;
+	String link_t = p_type; // For links in metadata
+	String display_t = link_t; // For display purposes
 	if (is_enum_type) {
-		if (p_enum.get_slice_count(".") > 1) {
-			t = p_enum.get_slice(".", 1);
-		} else {
-			t = p_enum.get_slice(".", 0);
-		}
+		link_t = p_enum; // The link for enums is always the full enum description
+		display_t = _contextualize_class_specifier(p_enum, edited_class);
+	} else {
+		display_t = _contextualize_class_specifier(p_type, edited_class);
 	}
 
 	class_desc->push_color(theme_cache.type_color);
 	bool add_array = false;
 	if (can_ref) {
-		if (t.ends_with("[]")) {
+		if (link_t.ends_with("[]")) {
 			add_array = true;
-			t = t.replace("[]", "");
+			link_t = link_t.trim_suffix("[]");
+			display_t = display_t.trim_suffix("[]");
 
-			class_desc->push_meta("#Array"); //class
+			class_desc->push_meta("#Array"); // class
 			class_desc->add_text("Array");
 			class_desc->pop();
 			class_desc->add_text("[");
 		}
 
 		if (is_enum_type) {
-			class_desc->push_meta("$" + p_enum); //class
+			class_desc->push_meta("$" + link_t); // enum
 		} else {
-			class_desc->push_meta("#" + t); //class
+			class_desc->push_meta("#" + link_t); // class
 		}
 	}
-	class_desc->add_text(t);
+	class_desc->add_text(display_t);
 	if (can_ref) {
 		class_desc->pop(); // Pushed meta above.
 		if (add_array) {
@@ -263,16 +345,8 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	class_desc->pop();
 }
 
-void EditorHelp::_add_type_icon(const String &p_type, int p_size) {
-	Ref<Texture2D> icon;
-	if (has_theme_icon(p_type, SNAME("EditorIcons"))) {
-		icon = get_theme_icon(p_type, SNAME("EditorIcons"));
-	} else if (ClassDB::class_exists(p_type) && ClassDB::is_parent_class(p_type, "Object")) {
-		icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
-	} else {
-		icon = get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"));
-	}
-
+void EditorHelp::_add_type_icon(const String &p_type, int p_size, const String &p_fallback) {
+	Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(p_type, p_fallback);
 	Vector2i size = Vector2i(icon->get_width(), icon->get_height());
 	if (p_size > 0) {
 		// Ensures icon scales proportionally on both axis, based on icon height.
@@ -318,7 +392,7 @@ String EditorHelp::_fix_constant(const String &p_constant) const {
 	class_desc->pop();
 
 void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview) {
-	method_line[p_method.name] = class_desc->get_paragraph_count() - 2; //gets overridden if description
+	method_line[p_method.name] = class_desc->get_paragraph_count() - 2; // Gets overridden if description
 
 	const bool is_vararg = p_method.qualifiers.contains("vararg");
 
@@ -332,8 +406,8 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	_add_type(p_method.return_type, p_method.return_enum);
 
 	if (p_overview) {
-		class_desc->pop(); //align
-		class_desc->pop(); //cell
+		class_desc->pop(); // align
+		class_desc->pop(); // cell
 		class_desc->push_cell();
 	} else {
 		class_desc->add_text(" ");
@@ -348,7 +422,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	class_desc->pop();
 
 	if (p_overview && !p_method.description.strip_edges().is_empty()) {
-		class_desc->pop(); //meta
+		class_desc->pop(); // meta
 	}
 
 	class_desc->push_color(theme_cache.symbol_color);
@@ -427,7 +501,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	}
 
 	if (p_overview) {
-		class_desc->pop(); //cell
+		class_desc->pop(); // cell
 	}
 }
 
@@ -468,8 +542,9 @@ void EditorHelp::_pop_code_font() {
 	class_desc->pop();
 }
 
-Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
-	if (!doc->class_list.has(p_class)) {
+Error EditorHelp::_goto_desc(const String &p_class) {
+	// If class doesn't have docs listed, attempt on-demand docgen
+	if (!doc->class_list.has(p_class) && !_attempt_doc_load(p_class)) {
 		return ERR_DOES_NOT_EXIST;
 	}
 
@@ -509,9 +584,9 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods)
 
 		if (any_previous && !m.is_empty()) {
 			class_desc->push_cell();
-			class_desc->pop(); //cell
+			class_desc->pop(); // cell
 			class_desc->push_cell();
-			class_desc->pop(); //cell
+			class_desc->pop(); // cell
 		}
 
 		String group_prefix;
@@ -529,9 +604,9 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods)
 
 			if (is_new_group && pass == 1) {
 				class_desc->push_cell();
-				class_desc->pop(); //cell
+				class_desc->pop(); // cell
 				class_desc->push_cell();
-				class_desc->pop(); //cell
+				class_desc->pop(); // cell
 			}
 
 			_add_method(m[i], true);
@@ -540,7 +615,7 @@ void EditorHelp::_update_method_list(const Vector<DocData::MethodDoc> p_methods)
 		any_previous = !m.is_empty();
 	}
 
-	class_desc->pop(); //table
+	class_desc->pop(); // table
 	class_desc->pop();
 	_pop_code_font();
 
@@ -644,7 +719,7 @@ void EditorHelp::_update_doc() {
 	section_line.push_back(Pair<String, int>(TTR("Top"), 0));
 	_push_title_font();
 	class_desc->add_text(TTR("Class:") + " ");
-	_add_type_icon(edited_class, theme_cache.doc_title_font_size);
+	_add_type_icon(edited_class, theme_cache.doc_title_font_size, "Object");
 	class_desc->add_text(" ");
 	class_desc->push_color(theme_cache.headline_color);
 	_add_text(edited_class);
@@ -676,7 +751,7 @@ void EditorHelp::_update_doc() {
 		String inherits = cd.inherits;
 
 		while (!inherits.is_empty()) {
-			_add_type_icon(inherits);
+			_add_type_icon(inherits, theme_cache.doc_font_size, "ArrowRight");
 			class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
 			_add_type(inherits);
 
@@ -709,7 +784,7 @@ void EditorHelp::_update_doc() {
 				if (prev) {
 					class_desc->add_text(" , ");
 				}
-				_add_type_icon(E.value.name);
+				_add_type_icon(E.value.name, theme_cache.doc_font_size, "ArrowRight");
 				class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
 				_add_type(E.value.name);
 				prev = true;
@@ -841,14 +916,15 @@ void EditorHelp::_update_doc() {
 	// Properties overview
 	HashSet<String> skip_methods;
 
-	bool has_properties = cd.properties.size() != 0;
-	if (cd.is_script_doc) {
-		has_properties = false;
-		for (int i = 0; i < cd.properties.size(); i++) {
-			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.strip_edges().is_empty()) {
-				continue;
-			}
-			has_properties = true;
+	bool has_properties = false;
+	bool has_property_descriptions = false;
+	for (const DocData::PropertyDoc &prop : cd.properties) {
+		if (cd.is_script_doc && prop.name.begins_with("_") && prop.description.strip_edges().is_empty()) {
+			continue;
+		}
+		has_properties = true;
+		if (!prop.overridden) {
+			has_property_descriptions = true;
 			break;
 		}
 	}
@@ -1176,7 +1252,7 @@ void EditorHelp::_update_doc() {
 
 				_add_text(cd.signals[i].arguments[j].name);
 				class_desc->add_text(": ");
-				_add_type(cd.signals[i].arguments[j].type);
+				_add_type(cd.signals[i].arguments[j].type, cd.signals[i].arguments[j].enumeration);
 				if (!cd.signals[i].arguments[j].default_value.is_empty()) {
 					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text(" = ");
@@ -1527,7 +1603,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Property descriptions
-	if (has_properties) {
+	if (has_property_descriptions) {
 		section_line.push_back(Pair<String, int>(TTR("Property Descriptions"), class_desc->get_paragraph_count() - 2));
 		_push_title_font();
 		class_desc->add_text(TTR("Property Descriptions"));
@@ -1747,7 +1823,6 @@ void EditorHelp::_request_help(const String &p_string) {
 	if (err == OK) {
 		EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 	}
-	//100 palabras
 }
 
 void EditorHelp::_help_callback(const String &p_topic) {
@@ -2158,7 +2233,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			tag_stack.push_front("font");
 
 		} else {
-			p_rt->add_text("["); //ignore
+			p_rt->add_text("["); // ignore
 			pos = brk_pos + 1;
 		}
 	}
@@ -2176,24 +2251,84 @@ void EditorHelp::_wait_for_thread() {
 	}
 }
 
+String EditorHelp::get_cache_full_path() {
+	return EditorPaths::get_singleton()->get_cache_dir().path_join("editor.doc_cache");
+}
+
+static bool first_attempt = true;
+
+static String _compute_doc_version_hash() {
+	return vformat("%d/%d/%s", ClassDB::get_api_hash(ClassDB::API_CORE), ClassDB::get_api_hash(ClassDB::API_EDITOR), _doc_data_hash);
+}
+
+void EditorHelp::_load_doc_thread(void *p_udata) {
+	DEV_ASSERT(first_attempt);
+	Ref<DocCache> cache_res = ResourceLoader::load(get_cache_full_path());
+	if (cache_res.is_valid() && cache_res->get_version_hash() == _compute_doc_version_hash()) {
+		for (int i = 0; i < cache_res->get_classes().size(); i++) {
+			doc->add_doc(DocData::ClassDoc::from_dict(cache_res->get_classes()[i]));
+		}
+	} else {
+		// We have to go back to the main thread to start from scratch.
+		first_attempt = false;
+		callable_mp_static(&EditorHelp::generate_doc).bind(true).call_deferred();
+	}
+}
+
 void EditorHelp::_gen_doc_thread(void *p_udata) {
 	DocTools compdoc;
 	compdoc.load_compressed(_doc_data_compressed, _doc_data_compressed_size, _doc_data_uncompressed_size);
 	doc->merge_from(compdoc); // Ensure all is up to date.
+
+	Ref<DocCache> cache_res;
+	cache_res.instantiate();
+	cache_res->set_version_hash(_compute_doc_version_hash());
+	Array classes;
+	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
+		classes.push_back(DocData::ClassDoc::to_dict(E.value));
+	}
+	cache_res->set_classes(classes);
+	Error err = ResourceSaver::save(cache_res, get_cache_full_path(), ResourceSaver::FLAG_COMPRESS);
+	if (err) {
+		ERR_PRINT("Cannot save editor help cache (" + get_cache_full_path() + ").");
+	}
 }
 
 static bool doc_gen_use_threads = true;
 
-void EditorHelp::generate_doc() {
-	doc = memnew(DocTools);
-	// Not doable on threads unfortunately, since it instantiates all sorts of classes to get default values.
-	doc->generate(true);
-
+void EditorHelp::generate_doc(bool p_use_cache) {
+	OS::get_singleton()->benchmark_begin_measure("EditorHelp::generate_doc");
 	if (doc_gen_use_threads) {
-		thread.start(_gen_doc_thread, nullptr);
-	} else {
-		_gen_doc_thread(nullptr);
+		// In case not the first attempt.
+		_wait_for_thread();
 	}
+
+	DEV_ASSERT(first_attempt == (doc == nullptr));
+
+	if (!doc) {
+		GDREGISTER_CLASS(DocCache);
+		doc = memnew(DocTools);
+	}
+
+	if (p_use_cache && first_attempt && FileAccess::exists(get_cache_full_path())) {
+		if (doc_gen_use_threads) {
+			thread.start(_load_doc_thread, nullptr);
+		} else {
+			_load_doc_thread(nullptr);
+		}
+	} else {
+		print_verbose("Regenerating editor help cache");
+
+		// Not doable on threads unfortunately, since it instantiates all sorts of classes to get default values.
+		doc->generate(true);
+
+		if (doc_gen_use_threads) {
+			thread.start(_gen_doc_thread, nullptr);
+		} else {
+			_gen_doc_thread(nullptr);
+		}
+	}
+	OS::get_singleton()->benchmark_end_measure("EditorHelp::generate_doc");
 }
 
 void EditorHelp::_toggle_scripts_pressed() {
@@ -2232,9 +2367,9 @@ void EditorHelp::go_to_help(const String &p_help) {
 	_help_callback(p_help);
 }
 
-void EditorHelp::go_to_class(const String &p_class, int p_scroll) {
+void EditorHelp::go_to_class(const String &p_class) {
 	_wait_for_thread();
-	_goto_desc(p_class, p_scroll);
+	_goto_desc(p_class);
 }
 
 void EditorHelp::update_doc() {
@@ -2246,9 +2381,6 @@ void EditorHelp::update_doc() {
 
 void EditorHelp::cleanup_doc() {
 	_wait_for_thread();
-	if (doc_gen_use_threads) {
-		thread.wait_to_finish();
-	}
 	memdelete(doc);
 }
 
@@ -2365,14 +2497,15 @@ void EditorHelpBit::_go_to_help(String p_what) {
 }
 
 void EditorHelpBit::_meta_clicked(String p_select) {
-	if (p_select.begins_with("$")) { //enum
-
+	if (p_select.begins_with("$")) { // enum
 		String select = p_select.substr(1, p_select.length());
 		String class_name;
-		if (select.contains(".")) {
-			class_name = select.get_slice(".", 0);
+		int rfind = select.rfind(".");
+		if (rfind != -1) {
+			class_name = select.substr(0, rfind);
+			select = select.substr(rfind + 1);
 		} else {
-			class_name = "@Global";
+			class_name = "@GlobalScope";
 		}
 		_go_to_help("class_enum:" + class_name + ":" + select);
 		return;
@@ -2567,22 +2700,10 @@ void FindBar::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid()) {
-		if (k->is_pressed() && (rich_text_label->has_focus() || is_ancestor_of(get_viewport()->gui_get_focus_owner()))) {
-			bool accepted = true;
-
-			switch (k->get_keycode()) {
-				case Key::ESCAPE: {
-					_hide_bar();
-				} break;
-				default: {
-					accepted = false;
-				} break;
-			}
-
-			if (accepted) {
-				accept_event();
-			}
+	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+		if (rich_text_label->has_focus() || is_ancestor_of(get_viewport()->gui_get_focus_owner())) {
+			_hide_bar();
+			accept_event();
 		}
 	}
 }

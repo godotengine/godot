@@ -117,6 +117,15 @@ public:
 	_FORCE_INLINE_ bool operator<(const StringName &p_name) const {
 		return _data < p_name._data;
 	}
+	_FORCE_INLINE_ bool operator<=(const StringName &p_name) const {
+		return _data <= p_name._data;
+	}
+	_FORCE_INLINE_ bool operator>(const StringName &p_name) const {
+		return _data > p_name._data;
+	}
+	_FORCE_INLINE_ bool operator>=(const StringName &p_name) const {
+		return _data >= p_name._data;
+	}
 	_FORCE_INLINE_ bool operator==(const StringName &p_name) const {
 		// the real magic of all this mess happens here.
 		// this is why path comparisons are very fast
@@ -177,6 +186,8 @@ public:
 	StringName(const String &p_name, bool p_static = false);
 	StringName(const StaticCString &p_static_string, bool p_static = false);
 	StringName() {}
+
+	static void assign_static_unique_class_name(StringName *ptr, const char *p_name);
 	_FORCE_INLINE_ ~StringName() {
 		if (likely(configured) && _data) { //only free if configured
 			unref();

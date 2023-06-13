@@ -92,6 +92,7 @@ public:
 	virtual Vector2 get_contact_local_position(int p_contact_idx) const = 0;
 	virtual Vector2 get_contact_local_normal(int p_contact_idx) const = 0;
 	virtual int get_contact_local_shape(int p_contact_idx) const = 0;
+	virtual Vector2 get_contact_local_velocity_at_position(int p_contact_idx) const = 0;
 
 	virtual RID get_contact_collider(int p_contact_idx) const = 0;
 	virtual Vector2 get_contact_collider_position(int p_contact_idx) const = 0;
@@ -120,7 +121,7 @@ class PhysicsDirectSpaceState2D : public Object {
 	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters2D> &p_point_query, int p_max_results = 32);
 	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
 	Vector<real_t> _cast_motion(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
-	TypedArray<PackedVector2Array> _collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
+	TypedArray<Vector2> _collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
 	Dictionary _get_rest_info(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
 
 protected:

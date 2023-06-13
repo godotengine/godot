@@ -195,6 +195,12 @@ public:
 	void set_server_relay_enabled(bool p_enabled);
 	bool is_server_relay_enabled() const;
 
+	void set_max_sync_packet_size(int p_size);
+	int get_max_sync_packet_size() const;
+
+	void set_max_delta_packet_size(int p_size);
+	int get_max_delta_packet_size() const;
+
 	Ref<SceneCacheInterface> get_path_cache() { return cache; }
 	Ref<SceneReplicationInterface> get_replicator() { return replicator; }
 

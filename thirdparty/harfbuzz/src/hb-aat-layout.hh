@@ -53,7 +53,9 @@ hb_aat_layout_compile_map (const hb_aat_map_builder_t *mapper,
 HB_INTERNAL void
 hb_aat_layout_substitute (const hb_ot_shape_plan_t *plan,
 			  hb_font_t *font,
-			  hb_buffer_t *buffer);
+			  hb_buffer_t *buffer,
+			  const hb_feature_t *features,
+			  unsigned num_features);
 
 HB_INTERNAL void
 hb_aat_layout_zero_width_deleted_glyphs (hb_buffer_t *buffer);

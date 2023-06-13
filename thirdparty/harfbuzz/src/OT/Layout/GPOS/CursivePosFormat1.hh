@@ -122,9 +122,9 @@ struct CursivePosFormat1
     if (!this_record.entryAnchor) return_trace (false);
 
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-    skippy_iter.reset (buffer->idx, 1);
+    skippy_iter.reset_fast (buffer->idx, 1);
     unsigned unsafe_from;
-    if (!skippy_iter.prev (&unsafe_from))
+    if (unlikely (!skippy_iter.prev (&unsafe_from)))
     {
       buffer->unsafe_to_concat_from_outbuffer (unsafe_from, buffer->idx + 1);
       return_trace (false);
@@ -143,7 +143,7 @@ struct CursivePosFormat1
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "cursive attaching glyph at %d to glyph at %d",
+			  "cursive attaching glyph at %u to glyph at %u",
 			  i, j);
     }
 
@@ -241,7 +241,7 @@ struct CursivePosFormat1
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "cursive attached glyph at %d to glyph at %d",
+			  "cursive attached glyph at %u to glyph at %u",
 			  i, j);
     }
 

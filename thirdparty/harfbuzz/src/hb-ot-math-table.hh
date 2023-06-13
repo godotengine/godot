@@ -201,7 +201,7 @@ struct MathItalicsCorrectionInfo
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->_glyphset_mathed;
+    const hb_set_t &glyphset = c->plan->_glyphset_mathed;
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     auto *out = c->serializer->start_embed (*this);
@@ -254,7 +254,7 @@ struct MathTopAccentAttachment
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->_glyphset_mathed;
+    const hb_set_t &glyphset = c->plan->_glyphset_mathed;
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     auto *out = c->serializer->start_embed (*this);
@@ -486,7 +486,7 @@ struct MathKernInfo
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->_glyphset_mathed;
+    const hb_set_t &glyphset = c->plan->_glyphset_mathed;
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     auto *out = c->serializer->start_embed (*this);
@@ -567,7 +567,7 @@ struct MathGlyphInfo
     out->mathItalicsCorrectionInfo.serialize_subset (c, mathItalicsCorrectionInfo, this);
     out->mathTopAccentAttachment.serialize_subset (c, mathTopAccentAttachment, this);
 
-    const hb_set_t &glyphset = *c->plan->_glyphset_mathed;
+    const hb_set_t &glyphset = c->plan->_glyphset_mathed;
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     auto it =
@@ -938,7 +938,7 @@ struct MathVariants
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    const hb_set_t &glyphset = *c->plan->_glyphset_mathed;
+    const hb_set_t &glyphset = c->plan->_glyphset_mathed;
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     auto *out = c->serializer->start_embed (*this);

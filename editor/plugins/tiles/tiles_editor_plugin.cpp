@@ -34,6 +34,7 @@
 
 #include "core/os/mutex.h"
 
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -58,6 +59,7 @@ void TilesEditorPlugin::_pattern_preview_done() {
 
 void TilesEditorPlugin::_thread_func(void *ud) {
 	TilesEditorPlugin *te = static_cast<TilesEditorPlugin *>(ud);
+	set_current_thread_safe_for_nodes(true);
 	te->_thread();
 }
 
@@ -209,7 +211,7 @@ void TilesEditorPlugin::make_visible(bool p_visible) {
 }
 
 bool TilesEditorPlugin::is_tile_map_selected() {
-	TypedArray<Node> selection = get_editor_interface()->get_selection()->get_selected_nodes();
+	TypedArray<Node> selection = EditorInterface::get_singleton()->get_selection()->get_selected_nodes();
 	if (selection.size() == 1 && Object::cast_to<TileMap>(selection[0])) {
 		return true;
 	}

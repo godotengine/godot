@@ -67,6 +67,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	HashMap<String, String> class_icon_paths;
+
 	static String get_extension_list_config_file();
 	static String find_extension_library(const String &p_path, Ref<ConfigFile> p_config, std::function<bool(String)> p_has_feature, PackedStringArray *r_tags = nullptr);
 
@@ -86,7 +88,10 @@ public:
 	void initialize_library(InitializationLevel p_level);
 	void deinitialize_library(InitializationLevel p_level);
 
+	static void register_interface_function(StringName p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer);
+	static GDExtensionInterfaceFunctionPtr get_interface_function(StringName p_function_name);
 	static void initialize_gdextensions();
+
 	GDExtension();
 	~GDExtension();
 };
@@ -100,5 +105,29 @@ public:
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 };
+
+#ifdef TOOLS_ENABLED
+class GDExtensionEditorPlugins {
+private:
+	static Vector<StringName> extension_classes;
+
+protected:
+	friend class EditorNode;
+
+	// Since this in core, we can't directly reference EditorNode, so it will
+	// set these function pointers in its constructor.
+	typedef void (*EditorPluginRegisterFunc)(const StringName &p_class_name);
+	static EditorPluginRegisterFunc editor_node_add_plugin;
+	static EditorPluginRegisterFunc editor_node_remove_plugin;
+
+public:
+	static void add_extension_class(const StringName &p_class_name);
+	static void remove_extension_class(const StringName &p_class_name);
+
+	static const Vector<StringName> &get_extension_classes() {
+		return extension_classes;
+	}
+};
+#endif // TOOLS_ENABLED
 
 #endif // GDEXTENSION_H

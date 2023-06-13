@@ -445,13 +445,12 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 						WARN_PRINT("Broken external resource! (index out of size)");
 						r_v = Variant();
 					} else {
-						if (external_resources[erindex].cache.is_null()) {
-							//cache not here yet, wait for it?
-							if (use_sub_threads) {
-								Error err;
-								external_resources.write[erindex].cache = ResourceLoader::load_threaded_get(external_resources[erindex].path, &err);
-
-								if (err != OK || external_resources[erindex].cache.is_null()) {
+						Ref<ResourceLoader::LoadToken> &load_token = external_resources.write[erindex].load_token;
+						if (load_token.is_valid()) { // If not valid, it's OK since then we know this load accepts broken dependencies.
+							Error err;
+							Ref<Resource> res = ResourceLoader::_load_complete(*load_token.ptr(), &err);
+							if (res.is_null()) {
+								if (!ResourceLoader::is_cleaning_tasks()) {
 									if (!ResourceLoader::get_abort_on_missing_resources()) {
 										ResourceLoader::notify_dependency_error(local_path, external_resources[erindex].path, external_resources[erindex].type);
 									} else {
@@ -459,12 +458,11 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 										ERR_FAIL_V_MSG(error, "Can't load dependency: " + external_resources[erindex].path + ".");
 									}
 								}
+							} else {
+								r_v = res;
 							}
 						}
-
-						r_v = external_resources[erindex].cache;
 					}
-
 				} break;
 				default: {
 					ERR_FAIL_V(ERR_FILE_CORRUPT);
@@ -684,28 +682,13 @@ Error ResourceLoaderBinary::load() {
 		}
 
 		external_resources.write[i].path = path; //remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
-
-		if (!use_sub_threads) {
-			external_resources.write[i].cache = ResourceLoader::load(path, external_resources[i].type);
-
-			if (external_resources[i].cache.is_null()) {
-				if (!ResourceLoader::get_abort_on_missing_resources()) {
-					ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
-				} else {
-					error = ERR_FILE_MISSING_DEPENDENCIES;
-					ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
-				}
-			}
-
-		} else {
-			Error err = ResourceLoader::load_threaded_request(path, external_resources[i].type, use_sub_threads, ResourceFormatLoader::CACHE_MODE_REUSE, local_path);
-			if (err != OK) {
-				if (!ResourceLoader::get_abort_on_missing_resources()) {
-					ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
-				} else {
-					error = ERR_FILE_MISSING_DEPENDENCIES;
-					ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
-				}
+		external_resources.write[i].load_token = ResourceLoader::_load_start(path, external_resources[i].type, use_sub_threads ? ResourceLoader::LOAD_THREAD_DISTRIBUTE : ResourceLoader::LOAD_THREAD_FROM_CURRENT, ResourceFormatLoader::CACHE_MODE_REUSE);
+		if (!external_resources[i].load_token.is_valid()) {
+			if (!ResourceLoader::get_abort_on_missing_resources()) {
+				ResourceLoader::notify_dependency_error(local_path, path, external_resources[i].type);
+			} else {
+				error = ERR_FILE_MISSING_DEPENDENCIES;
+				ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
 			}
 		}
 	}

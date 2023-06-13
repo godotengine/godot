@@ -234,7 +234,7 @@ struct cff1_cs_opset_flatten_t : cff1_cs_opset_t<cff1_cs_opset_flatten_t, flatte
   {
     str_encoder_t  encoder (param.flatStr);
     for (unsigned int i = env.arg_start; i < env.argStack.get_count (); i++)
-      encoder.encode_num (env.eval_arg (i));
+      encoder.encode_num_cs (env.eval_arg (i));
     SUPER::flush_args (env, param);
   }
 
@@ -248,7 +248,7 @@ struct cff1_cs_opset_flatten_t : cff1_cs_opset_t<cff1_cs_opset_flatten_t, flatte
   {
     assert (env.has_width);
     str_encoder_t  encoder (param.flatStr);
-    encoder.encode_num (env.width);
+    encoder.encode_num_cs (env.width);
   }
 
   static void flush_hintmask (op_code_t op, cff1_cs_interp_env_t &env, flatten_param_t& param)
@@ -333,6 +333,36 @@ struct cff1_cs_opset_subr_subset_t : cff1_cs_opset_t<cff1_cs_opset_subr_subset_t
 
   private:
   typedef cff1_cs_opset_t<cff1_cs_opset_subr_subset_t, subr_subset_param_t> SUPER;
+};
+
+struct cff1_private_dict_op_serializer_t : op_serializer_t
+{
+  cff1_private_dict_op_serializer_t (bool desubroutinize_, bool drop_hints_)
+    : desubroutinize (desubroutinize_), drop_hints (drop_hints_) {}
+
+  bool serialize (hb_serialize_context_t *c,
+		  const op_str_t &opstr,
+		  objidx_t subrs_link) const
+  {
+    TRACE_SERIALIZE (this);
+
+    if (drop_hints && dict_opset_t::is_hint_op (opstr.op))
+      return_trace (true);
+
+    if (opstr.op == OpCode_Subrs)
+    {
+      if (desubroutinize || !subrs_link)
+	return_trace (true);
+      else
+	return_trace (FontDict::serialize_link2_op (c, opstr.op, subrs_link));
+    }
+
+    return_trace (copy_opstr (c, opstr));
+  }
+
+  protected:
+  const bool desubroutinize;
+  const bool drop_hints;
 };
 
 struct cff1_subr_subsetter_t : subr_subsetter_t<cff1_subr_subsetter_t, CFF1Subrs, const OT::cff1::accelerator_subset_t, cff1_cs_interp_env_t, cff1_cs_opset_subr_subset_t, OpCode_endchar>
@@ -721,7 +751,7 @@ static bool _serialize_cff1 (hb_serialize_context_t *c,
       PrivateDict *pd = c->start_embed<PrivateDict> ();
       if (unlikely (!pd)) return false;
       c->push ();
-      cff_private_dict_op_serializer_t privSzr (plan.desubroutinize, plan.drop_hints);
+      cff1_private_dict_op_serializer_t privSzr (plan.desubroutinize, plan.drop_hints);
       /* N.B. local subrs immediately follows its corresponding private dict. i.e., subr offset == private dict size */
       if (likely (pd->serialize (c, acc.privateDicts[i], privSzr, subrs_link)))
       {

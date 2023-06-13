@@ -128,7 +128,10 @@ void OptionButton::_notification(int p_what) {
 			theme_cache.arrow_icon->draw(ci, ofs, clr);
 		} break;
 
-		case NOTIFICATION_TRANSLATION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			popup->set_auto_translate(is_auto_translating());
+			[[fallthrough]];
+		}
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			popup->set_layout_direction((Window::LayoutDirection)get_layout_direction());
 			[[fallthrough]];
@@ -173,7 +176,7 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 		if (property == "text" || property == "icon") {
-			_queue_refresh_cache();
+			_queue_update_size_cache();
 		}
 
 		return valid;
@@ -240,7 +243,7 @@ void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_l
 	if (first_selectable) {
 		select(get_item_count() - 1);
 	}
-	_queue_refresh_cache();
+	_queue_update_size_cache();
 }
 
 void OptionButton::add_item(const String &p_label, int p_id) {
@@ -249,7 +252,7 @@ void OptionButton::add_item(const String &p_label, int p_id) {
 	if (first_selectable) {
 		select(get_item_count() - 1);
 	}
-	_queue_refresh_cache();
+	_queue_update_size_cache();
 }
 
 void OptionButton::set_item_text(int p_idx, const String &p_text) {
@@ -258,7 +261,7 @@ void OptionButton::set_item_text(int p_idx, const String &p_text) {
 	if (current == p_idx) {
 		set_text(p_text);
 	}
-	_queue_refresh_cache();
+	_queue_update_size_cache();
 }
 
 void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
@@ -267,7 +270,7 @@ void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	if (current == p_idx) {
 		set_icon(p_icon);
 	}
-	_queue_refresh_cache();
+	_queue_update_size_cache();
 }
 
 void OptionButton::set_item_id(int p_idx, int p_id) {
@@ -383,6 +386,14 @@ bool OptionButton::is_fit_to_longest_item() const {
 	return fit_to_longest_item;
 }
 
+void OptionButton::set_allow_reselect(bool p_allow) {
+	allow_reselect = p_allow;
+}
+
+bool OptionButton::get_allow_reselect() const {
+	return allow_reselect;
+}
+
 void OptionButton::add_separator(const String &p_text) {
 	popup->add_separator(p_text);
 }
@@ -395,7 +406,7 @@ void OptionButton::clear() {
 }
 
 void OptionButton::_select(int p_which, bool p_emit) {
-	if (p_which == current) {
+	if (p_which == current && !allow_reselect) {
 		return;
 	}
 
@@ -445,7 +456,7 @@ void OptionButton::_refresh_size_cache() {
 	update_minimum_size();
 }
 
-void OptionButton::_queue_refresh_cache() {
+void OptionButton::_queue_update_size_cache() {
 	if (cache_refresh_pending) {
 		return;
 	}
@@ -479,7 +490,7 @@ void OptionButton::remove_item(int p_idx) {
 	if (current == p_idx) {
 		_select(NONE_SELECTED);
 	}
-	_queue_refresh_cache();
+	_queue_update_size_cache();
 }
 
 PopupMenu *OptionButton::get_popup() const {
@@ -562,11 +573,14 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_selectable_item", "from_last"), &OptionButton::get_selectable_item, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_fit_to_longest_item", "fit"), &OptionButton::set_fit_to_longest_item);
 	ClassDB::bind_method(D_METHOD("is_fit_to_longest_item"), &OptionButton::is_fit_to_longest_item);
+	ClassDB::bind_method(D_METHOD("set_allow_reselect", "allow"), &OptionButton::set_allow_reselect);
+	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &OptionButton::get_allow_reselect);
 
 	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));
 	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
 }

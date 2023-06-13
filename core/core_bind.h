@@ -119,6 +119,8 @@ public:
 class OS : public Object {
 	GDCLASS(OS, Object);
 
+	mutable HashMap<String, bool> feature_cache;
+
 protected:
 	static void _bind_methods();
 	static OS *singleton;
@@ -139,6 +141,9 @@ public:
 	void set_low_processor_usage_mode_sleep_usec(int p_usec);
 	int get_low_processor_usage_mode_sleep_usec() const;
 
+	void set_delta_smoothing(bool p_enabled);
+	bool is_delta_smoothing_enabled() const;
+
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
 	void crash(const String &p_message);
 
@@ -152,6 +157,7 @@ public:
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
+	Error shell_show_in_file_manager(String p_path, bool p_open_folder = true);
 
 	bool is_process_running(int p_pid) const;
 	int get_process_id() const;
@@ -190,6 +196,7 @@ public:
 
 	uint64_t get_static_memory_usage() const;
 	uint64_t get_static_memory_peak_usage() const;
+	Dictionary get_memory_info() const;
 
 	void delay_usec(int p_usec) const;
 	void delay_msec(int p_msec) const;
@@ -322,7 +329,7 @@ public:
 
 	Vector<Vector3> segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius);
 	Vector<Vector3> segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, float p_height, float p_radius);
-	Vector<Vector3> segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Vector<Plane> &p_planes);
+	Vector<Vector3> segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const TypedArray<Plane> &p_planes);
 
 	Vector<Vector3> clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane);
 
@@ -401,6 +408,8 @@ public:
 	bool is_started() const;
 	bool is_alive() const;
 	Variant wait_to_finish();
+
+	static void set_thread_safety_checks_enabled(bool p_enabled);
 };
 
 namespace special {
@@ -420,26 +429,26 @@ public:
 	bool can_instantiate(const StringName &p_class) const;
 	Variant instantiate(const StringName &p_class) const;
 
-	bool has_signal(StringName p_class, StringName p_signal) const;
-	Dictionary get_signal(StringName p_class, StringName p_signal) const;
-	TypedArray<Dictionary> get_signal_list(StringName p_class, bool p_no_inheritance = false) const;
+	bool class_has_signal(StringName p_class, StringName p_signal) const;
+	Dictionary class_get_signal(StringName p_class, StringName p_signal) const;
+	TypedArray<Dictionary> class_get_signal_list(StringName p_class, bool p_no_inheritance = false) const;
 
-	TypedArray<Dictionary> get_property_list(StringName p_class, bool p_no_inheritance = false) const;
-	Variant get_property(Object *p_object, const StringName &p_property) const;
-	Error set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
+	TypedArray<Dictionary> class_get_property_list(StringName p_class, bool p_no_inheritance = false) const;
+	Variant class_get_property(Object *p_object, const StringName &p_property) const;
+	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
-	bool has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false) const;
+	bool class_has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false) const;
 
-	TypedArray<Dictionary> get_method_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_method_list(StringName p_class, bool p_no_inheritance = false) const;
 
-	PackedStringArray get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
-	bool has_integer_constant(const StringName &p_class, const StringName &p_name) const;
-	int64_t get_integer_constant(const StringName &p_class, const StringName &p_name) const;
+	PackedStringArray class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	bool class_has_integer_constant(const StringName &p_class, const StringName &p_name) const;
+	int64_t class_get_integer_constant(const StringName &p_class, const StringName &p_name) const;
 
-	bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
-	PackedStringArray get_enum_list(const StringName &p_class, bool p_no_inheritance = false) const;
-	PackedStringArray get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
-	StringName get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
+	bool class_has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
+	PackedStringArray class_get_enum_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	PackedStringArray class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
+	StringName class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
 	bool is_class_enabled(StringName p_class) const;
 
