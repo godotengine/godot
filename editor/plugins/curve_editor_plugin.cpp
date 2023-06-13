@@ -978,9 +978,11 @@ void CurveEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_READY: {
 			Ref<Curve> curve = curve_editor_rect->get_curve();
-			// Set snapping settings based on the curve's meta.
-			snap_button->set_pressed(curve->get_meta("_snap_enabled", false));
-			snap_count_edit->set_value(curve->get_meta("_snap_count", DEFAULT_SNAP));
+			if (curve.is_valid()) {
+				// Set snapping settings based on the curve's meta.
+				snap_button->set_pressed(curve->get_meta("_snap_enabled", false));
+				snap_count_edit->set_value(curve->get_meta("_snap_count", DEFAULT_SNAP));
+			}
 		} break;
 	}
 }
