@@ -4441,7 +4441,7 @@ uint32_t OS_X11::keyboard_get_scancode_from_physical(uint32_t p_scancode) const 
 	unsigned int modifiers = p_scancode & KEY_MODIFIER_MASK;
 	unsigned int scancode_no_mod = p_scancode & KEY_CODE_MASK;
 	unsigned int xkeycode = KeyMappingX11::get_xlibcode((uint32_t)scancode_no_mod);
-	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, 0, 0);
+	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, keyboard_get_current_layout(), 0);
 	if (xkeysym >= 'a' && xkeysym <= 'z') {
 		xkeysym -= ('a' - 'A');
 	}
