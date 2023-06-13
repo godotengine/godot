@@ -612,7 +612,7 @@
 				[/codeblock]
 			</description>
 		</annotation>
-		<annotation name="@rpc" qualifiers="vararg">
+		<annotation name="@rpc">
 			<return type="void" />
 			<param index="0" name="mode" type="String" default="&quot;authority&quot;" />
 			<param index="1" name="sync" type="String" default="&quot;call_remote&quot;" />
@@ -620,7 +620,11 @@
 			<param index="3" name="transfer_channel" type="int" default="0" />
 			<description>
 				Mark the following method for remote procedure calls. See [url=$DOCS_URL/tutorials/networking/high_level_multiplayer.html]High-level multiplayer[/url].
-				The order of [param mode], [param sync] and [param transfer_mode] does not matter and all arguments can be omitted, but [param transfer_channel] always has to be the last argument. The accepted values for [param mode] are [code]"any_peer"[/code] or [code]"authority"[/code], for [param sync] are [code]"call_remote"[/code] or [code]"call_local"[/code] and for [param transfer_mode] are [code]"unreliable"[/code], [code]"unreliable_ordered"[/code] or [code]"reliable"[/code].
+				The accepted values:
+				- for [param mode] are [code]"any_peer"[/code] or [code]"authority"[/code];
+				- for [param sync] are [code]"call_remote"[/code] or [code]"call_local"[/code];
+				- and for [param transfer_mode] are [code]"unreliable"[/code], [code]"unreliable_ordered"[/code], or [code]"reliable"[/code].
+				The order of [param mode], [param sync] and [param transfer_mode] does not matter, but values related to the same argument must not be used more than once. [param transfer_channel] always has to be the 4th argument (you must specify 3 preceding arguments).
 				[codeblock]
 				@rpc
 				func fn(): pass
