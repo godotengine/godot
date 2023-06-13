@@ -1692,6 +1692,9 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 	GDScriptParser::FunctionNode *previous_function = parser->current_function;
 	parser->current_function = p_function;
 
+	bool previous_static_context = static_context;
+	static_context = p_function->is_static;
+
 	resolve_suite(p_function->body);
 
 	if (!p_function->get_datatype().is_hard_type() && p_function->body->get_datatype().is_set()) {
@@ -1707,6 +1710,7 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 	parser->ignored_warnings = previously_ignored_warnings;
 #endif
 	parser->current_function = previous_function;
+	static_context = previous_static_context;
 }
 
 void GDScriptAnalyzer::decide_suite_type(GDScriptParser::Node *p_suite, GDScriptParser::Node *p_statement) {
