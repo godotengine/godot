@@ -217,7 +217,7 @@ void SaveloadSpawner::_notification(int p_what) {
 				Node *node = Object::cast_to<Node>(ObjectDB::get_instance(E.key));
 				ERR_CONTINUE(!node);
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &SaveloadSpawner::_node_exit));
-				get_multiplayer()->object_configuration_remove(node, this);
+				get_saveload()->object_configuration_remove(node, this);
 			}
 			tracked_nodes.clear();
 		} break;
@@ -225,9 +225,9 @@ void SaveloadSpawner::_notification(int p_what) {
 }
 
 void SaveloadSpawner::_node_added(Node *p_node) {
-	if (!get_multiplayer()->has_multiplayer_peer() || !is_multiplayer_authority()) {
-		return;
-	}
+//	if (!get_saveload()->has_multiplayer_peer() || !is_multiplayer_authority()) {
+//		return;
+//	}
 	if (tracked_nodes.has(p_node->get_instance_id())) {
 		return;
 	}
@@ -263,7 +263,7 @@ void SaveloadSpawner::_track(Node *p_node, const Variant &p_argument, int p_scen
 }
 
 void SaveloadSpawner::_spawn_notify(ObjectID p_id) {
-	get_multiplayer()->object_configuration_add(ObjectDB::get_instance(p_id), this);
+	get_saveload()->object_configuration_add(ObjectDB::get_instance(p_id), this);
 }
 
 void SaveloadSpawner::_node_exit(ObjectID p_id) {
@@ -271,7 +271,7 @@ void SaveloadSpawner::_node_exit(ObjectID p_id) {
 	ERR_FAIL_COND(!node);
 	if (tracked_nodes.has(p_id)) {
 		tracked_nodes.erase(p_id);
-		get_multiplayer()->object_configuration_remove(node, this);
+		get_saveload()->object_configuration_remove(node, this);
 	}
 }
 
@@ -318,7 +318,8 @@ Node *SaveloadSpawner::instantiate_custom(const Variant &p_data) {
 }
 
 Node *SaveloadSpawner::spawn(const Variant &p_data) {
-	ERR_FAIL_COND_V(!is_inside_tree() || !get_multiplayer()->has_multiplayer_peer() || !is_multiplayer_authority(), nullptr);
+//	ERR_FAIL_COND_V(!is_inside_tree() || !get_multiplayer()->has_multiplayer_peer() || !is_multiplayer_authority(), nullptr);
+	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 	ERR_FAIL_COND_V_MSG(spawn_limit && spawn_limit <= tracked_nodes.size(), nullptr, "Spawn limit reached!");
 	ERR_FAIL_COND_V_MSG(!spawn_function.is_valid(), nullptr, "Custom spawn requires the 'spawn_function' property to be a valid callable.");
 

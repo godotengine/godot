@@ -102,11 +102,12 @@ private:
 	void _send_delta(int p_peer, const HashSet<ObjectID> p_synchronizers, uint64_t p_usec, const HashMap<ObjectID, uint64_t> p_last_watch_usecs);
 	Error _make_spawn_packet(Node *p_node, SaveloadSpawner *p_spawner, int &r_len);
 	Error _make_despawn_packet(Node *p_node, int &r_len);
-
-	void _visibility_changed(int p_peer, ObjectID p_oid);
-	Error _update_sync_visibility(int p_peer, SaveloadSynchronizer *p_sync);
-	Error _update_spawn_visibility(int p_peer, const ObjectID &p_oid);
-	void _free_remotes(const PeerInfo &p_info);
+//	Error _send_raw(const uint8_t *p_buffer, int p_size, int p_peer, bool p_reliable);
+//
+//	void _visibility_changed(int p_peer, ObjectID p_oid);
+//	Error _update_sync_visibility(int p_peer, SaveloadSynchronizer *p_sync);
+//	Error _update_spawn_visibility(int p_peer, const ObjectID &p_oid);
+//	void _free_remotes(const PeerInfo &p_info);
 
 	template <class T>
 	static T *get_id_as(const ObjectID &p_id) {
@@ -121,13 +122,13 @@ public:
 	static void make_default();
 
 	void on_reset();
-	void on_peer_change(int p_id, bool p_connected);
-
+//	void on_peer_change(int p_id, bool p_connected);
+//
 	Error on_spawn(Object *p_obj, Variant p_config);
 	Error on_despawn(Object *p_obj, Variant p_config);
-	Error on_replication_start(Object *p_obj, Variant p_config);
-	Error on_replication_stop(Object *p_obj, Variant p_config);
-	void on_network_process();
+	Error on_saveload_start(Object *p_obj, Variant p_config);
+	Error on_saveload_stop(Object *p_obj, Variant p_config);
+//	void on_network_process();
 
 	Error on_spawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
 	Error on_despawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);

@@ -47,6 +47,7 @@
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/control.h"
 #include "scene/main/multiplayer_api.h"
+#include "scene/main/saveload_api.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/font.h"
@@ -491,6 +492,12 @@ bool SceneTree::process(double p_time) {
 	if (multiplayer_poll) {
 		multiplayer->poll();
 		for (KeyValue<NodePath, Ref<MultiplayerAPI>> &E : custom_multiplayers) {
+			E.value->poll();
+		}
+	}
+	if (saveload_poll) {
+		saveload->poll();
+		for (KeyValue<NodePath, Ref<SaveloadAPI>> &E : custom_saveloads) {
 			E.value->poll();
 		}
 	}
@@ -1534,6 +1541,61 @@ bool SceneTree::is_multiplayer_poll_enabled() const {
 	return multiplayer_poll;
 }
 
+Ref<SaveloadAPI> SceneTree::get_saveload(const NodePath &p_for_path) const {
+	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), Ref<SaveloadAPI>(), "Saveload can only be manipulated from the main thread.");
+	Ref<MultiplayerAPI> out = saveload;
+	for (const KeyValue<NodePath, Ref<SaveloadAPI>> &E : custom_saveloads) {
+		const Vector<StringName> snames = E.key.get_names();
+		const Vector<StringName> tnames = p_for_path.get_names();
+		if (tnames.size() < snames.size()) {
+			continue;
+		}
+		const StringName *sptr = snames.ptr();
+		const StringName *nptr = tnames.ptr();
+		bool valid = true;
+		for (int i = 0; i < snames.size(); i++) {
+			if (sptr[i] != nptr[i]) {
+				valid = false;
+				break;
+			}
+		}
+		if (valid) {
+			out = E.value;
+			break;
+		}
+	}
+	return out;
+}
+
+void SceneTree::set_saveload(Ref<SaveloadAPI> p_saveload, const NodePath &p_root_path) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Saveload can only be manipulated from the main thread.");
+	if (p_root_path.is_empty()) {
+		ERR_FAIL_COND(!p_saveload.is_valid());
+		if (saveload.is_valid()) {
+			saveload->object_configuration_remove(nullptr, NodePath("/" + root->get_name()));
+		}
+		saveload = p_saveload;
+		saveload->object_configuration_add(nullptr, NodePath("/" + root->get_name()));
+	} else {
+		if (custom_saveloads.has(p_root_path)) {
+			custom_saveloads[p_root_path]->object_configuration_remove(nullptr, p_root_path);
+		}
+		if (p_saveload.is_valid()) {
+			custom_saveloads[p_root_path] = p_saveload;
+			p_saveload->object_configuration_add(nullptr, p_root_path);
+		}
+	}
+}
+
+void SceneTree::set_saveload_poll_enabled(bool p_enabled) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Saveload can only be manipulated from the main thread.");
+	saveload_poll = p_enabled;
+}
+
+bool SceneTree::is_saveload_poll_enabled() const {
+	return saveload_poll;
+}
+
 void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root"), &SceneTree::get_root);
 	ClassDB::bind_method(D_METHOD("has_group", "name"), &SceneTree::has_group);
@@ -1605,6 +1667,11 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_multiplayer", "for_path"), &SceneTree::get_multiplayer, DEFVAL(NodePath()));
 	ClassDB::bind_method(D_METHOD("set_multiplayer_poll_enabled", "enabled"), &SceneTree::set_multiplayer_poll_enabled);
 	ClassDB::bind_method(D_METHOD("is_multiplayer_poll_enabled"), &SceneTree::is_multiplayer_poll_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_saveload", "saveload", "root_path"), &SceneTree::set_saveload, DEFVAL(NodePath()));
+	ClassDB::bind_method(D_METHOD("get_saveload", "for_path"), &SceneTree::get_saveload, DEFVAL(NodePath()));
+	ClassDB::bind_method(D_METHOD("set_saveload_poll_enabled", "enabled"), &SceneTree::set_saveload_poll_enabled);
+	ClassDB::bind_method(D_METHOD("is_saveload_poll_enabled"), &SceneTree::is_saveload_poll_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_accept_quit"), "set_auto_accept_quit", "is_auto_accept_quit");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "quit_on_go_back"), "set_quit_on_go_back", "is_quit_on_go_back");
@@ -1720,6 +1787,8 @@ SceneTree::SceneTree() {
 
 	// Initialize network state.
 	set_multiplayer(MultiplayerAPI::create_default_interface());
+
+	set_saveload(SaveloadAPI::create_default_interface());
 
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;

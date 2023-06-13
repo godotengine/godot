@@ -51,10 +51,11 @@ StringName SaveloadAPI::get_default_interface() {
 }
 
 Ref<SaveloadAPI> SaveloadAPI::create_default_interface() {
-	if (default_interface != StringName()) {
+	if (true) {
+//	if (default_interface != StringName()) {
 		return Ref<SaveloadAPI>(Object::cast_to<SaveloadAPI>(ClassDB::instantiate(default_interface)));
 	}
-	return Ref<SaveloadAPI>(memnew(SaveloadAPIExtension));
+//	return Ref<SaveloadAPI>(memnew(SaveloadAPIExtension));
 }
 
 // The variant is compressed and encoded; The first byte contains all the meta
@@ -292,19 +293,19 @@ void SaveloadAPI::_bind_methods() {
 
 /// SaveloadAPIExtension
 
-Error SaveloadAPIExtension::object_configuration_add(Object *p_object, Variant p_config) {
-	Error err = ERR_UNAVAILABLE;
-	GDVIRTUAL_CALL(_object_configuration_add, p_object, p_config, err);
-	return err;
-}
-
-Error SaveloadAPIExtension::object_configuration_remove(Object *p_object, Variant p_config) {
-	Error err = ERR_UNAVAILABLE;
-	GDVIRTUAL_CALL(_object_configuration_remove, p_object, p_config, err);
-	return err;
-}
-
-void SaveloadAPIExtension::_bind_methods() {
-	GDVIRTUAL_BIND(_object_configuration_add, "object", "configuration");
-	GDVIRTUAL_BIND(_object_configuration_remove, "object", "configuration");
-}
+//Error SaveloadAPIExtension::object_configuration_add(Object *p_object, Variant p_config) {
+//	Error err = ERR_UNAVAILABLE;
+//	GDVIRTUAL_CALL(_object_configuration_add, p_object, p_config, err);
+//	return err;
+//}
+//
+//Error SaveloadAPIExtension::object_configuration_remove(Object *p_object, Variant p_config) {
+//	Error err = ERR_UNAVAILABLE;
+//	GDVIRTUAL_CALL(_object_configuration_remove, p_object, p_config, err);
+//	return err;
+//}
+//
+//void SaveloadAPIExtension::_bind_methods() {
+//	GDVIRTUAL_BIND(_object_configuration_add, "object", "configuration");
+//	GDVIRTUAL_BIND(_object_configuration_remove, "object", "configuration");
+//}

@@ -55,10 +55,10 @@ private:
 	Button *add_pick_button = nullptr;
 	Button *add_from_path_button = nullptr;
 	LineEdit *np_line_edit = nullptr;
-
+	// delete this comment
 	Label *drop_label = nullptr;
 
-	Ref<SceneReplicationConfig> config;
+	Ref<SceneSaveloadConfig> config;
 	NodePath deleting;
 	Tree *tree = nullptr;
 

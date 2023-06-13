@@ -39,6 +39,7 @@
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/main/multiplayer_api.h"
+#include "scene/main/saveload_api.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
@@ -736,6 +737,13 @@ Ref<MultiplayerAPI> Node::get_multiplayer() const {
 }
 
 //////////// end of rpc
+
+Ref<SaveloadAPI> Node::get_saveload() const {
+	if (!is_inside_tree()) {
+		return Ref<SaveloadAPI>();
+	}
+	return get_tree()->get_saveload(get_path());
+}
 
 bool Node::can_process_notification(int p_what) const {
 	switch (p_what) {
@@ -3471,6 +3479,7 @@ void Node::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_file_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_file_path", "get_scene_file_path");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_owner", "get_owner");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", PROPERTY_USAGE_NONE), "", "get_multiplayer");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "saveload", PROPERTY_HINT_RESOURCE_TYPE, "SaveloadAPI", PROPERTY_USAGE_NONE), "", "get_saveload");
 
 	ADD_GROUP("Process", "process_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Inherit,Pausable,When Paused,Always,Disabled"), "set_process_mode", "get_process_mode");

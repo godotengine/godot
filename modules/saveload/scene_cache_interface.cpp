@@ -75,10 +75,10 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 
 	Node *node = root_node->get_node(path);
 	ERR_FAIL_COND(node == nullptr);
-	const bool valid_rpc_checksum = saveload->get_rpc_md5(node) == methods_md5;
-	if (valid_rpc_checksum == false) {
-		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + path);
-	}
+//	const bool valid_rpc_checksum = saveload->get_rpc_md5(node) == methods_md5;
+//	if (valid_rpc_checksum == false) {
+//		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + path);
+//	}
 
 	PathGetCache::NodeInfo ni;
 	ni.path = path;
@@ -93,14 +93,14 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 
 	packet.resize(1 + 1 + len);
 	packet.write[0] = SceneSaveload::NETWORK_COMMAND_CONFIRM_PATH;
-	packet.write[1] = valid_rpc_checksum;
+//	packet.write[1] = valid_rpc_checksum;
 	encode_cstring(pname.get_data(), &packet.write[2]);
 
-	Ref<MultiplayerPeer> multiplayer_peer = saveload->get_multiplayer_peer();
-	ERR_FAIL_COND(multiplayer_peer.is_null());
+//	Ref<MultiplayerPeer> multiplayer_peer = saveload->get_multiplayer_peer();
+//	ERR_FAIL_COND(multiplayer_peer.is_null());
 
-	multiplayer_peer->set_transfer_channel(0);
-	multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
+//	multiplayer_peer->set_transfer_channel(0);
+//	multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
 	saveload->send_command(p_from, packet.ptr(), packet.size());
 }
 
@@ -132,7 +132,7 @@ Error SceneCacheInterface::_send_confirm_path(Node *p_node, NodePath p_path, Pat
 	const int path_len = encode_cstring(path.get_data(), nullptr);
 
 	// Extract MD5 from rpc methods list.
-	const String methods_md5 = saveload->get_rpc_md5(p_node);
+//	const String methods_md5 = saveload->get_rpc_md5(p_node);
 	const int methods_md5_len = 33; // 32 + 1 for the `0` that is added by the encoder.
 
 	Vector<uint8_t> packet;
@@ -142,19 +142,19 @@ Error SceneCacheInterface::_send_confirm_path(Node *p_node, NodePath p_path, Pat
 	packet.write[ofs] = SceneSaveload::NETWORK_COMMAND_SIMPLIFY_PATH;
 	ofs += 1;
 
-	ofs += encode_cstring(methods_md5.utf8().get_data(), &packet.write[ofs]);
+//	ofs += encode_cstring(methods_md5.utf8().get_data(), &packet.write[ofs]);
 
 	ofs += encode_uint32(psc->id, &packet.write[ofs]);
 
 	ofs += encode_cstring(path.get_data(), &packet.write[ofs]);
 
-	Ref<MultiplayerPeer> multiplayer_peer = saveload->get_multiplayer_peer();
-	ERR_FAIL_COND_V(multiplayer_peer.is_null(), ERR_BUG);
+//	Ref<MultiplayerPeer> multiplayer_peer = saveload->get_multiplayer_peer();
+//	ERR_FAIL_COND_V(multiplayer_peer.is_null(), ERR_BUG);
 
 	Error err = OK;
 	for (int peer_id : p_peers) {
-		multiplayer_peer->set_transfer_channel(0);
-		multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
+		//multiplayer_peer->set_transfer_channel(0);
+		//multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
 		err = saveload->send_command(peer_id, packet.ptr(), packet.size());
 		ERR_FAIL_COND_V(err != OK, err);
 		// Insert into confirmed, but as false since it was not confirmed.
@@ -209,19 +209,19 @@ bool SceneCacheInterface::send_object_cache(Object *p_obj, int p_peer_id, int &r
 		}
 	} else {
 		// Long and painful.
-		for (const int &E : saveload->get_connected_peers()) {
-			if (p_peer_id < 0 && E == -p_peer_id) {
-				continue; // Continue, excluded.
-			}
-
-			HashMap<int, bool>::Iterator F = psc->confirmed_peers.find(E);
-			if (!F) {
-				peers_to_add.push_back(E); // Need to also be notified.
-				has_all_peers = false;
-			} else if (!F->value) {
-				has_all_peers = false;
-			}
-		}
+//		for (const int &E : saveload->get_connected_peers()) {
+//			if (p_peer_id < 0 && E == -p_peer_id) {
+//				continue; // Continue, excluded.
+//			}
+//
+//			HashMap<int, bool>::Iterator F = psc->confirmed_peers.find(E);
+//			if (!F) {
+//				peers_to_add.push_back(E); // Need to also be notified.
+//				has_all_peers = false;
+//			} else if (!F->value) {
+//				has_all_peers = false;
+//			}
+//		}
 	}
 
 	if (peers_to_add.size()) {

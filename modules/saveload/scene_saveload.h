@@ -87,7 +87,7 @@ private:
 	NodePath root_path;
 	bool allow_object_decoding = false;
 	bool server_relay = true;
-	Ref<StreamPeerBuffer> relay_buffer;
+//	Ref<StreamPeerBuffer> relay_buffer;
 
 	Ref<SceneCacheInterface> cache;
 	Ref<SceneSaveloadInterface> replicator;
@@ -104,6 +104,9 @@ protected:
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 public:
+	virtual Error poll() override;
+	virtual int get_unique_id() override;
+
 	virtual Error object_configuration_add(Object *p_obj, Variant p_config) override;
 	virtual Error object_configuration_remove(Object *p_obj, Variant p_config) override;
 

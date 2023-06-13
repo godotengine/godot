@@ -31,6 +31,7 @@
 #ifndef SCENE_CACHE_INTERFACE_H
 #define SCENE_CACHE_INTERFACE_H
 
+#include "scene/main/node.h"
 #include "scene/main/saveload_api.h"
 
 class SceneSaveload;

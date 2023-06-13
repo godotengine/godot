@@ -45,6 +45,7 @@ class Window;
 class Material;
 class Mesh;
 class MultiplayerAPI;
+class SaveloadAPI;
 class SceneDebugger;
 class Tween;
 class Viewport;
@@ -204,6 +205,10 @@ private:
 	Ref<MultiplayerAPI> multiplayer;
 	HashMap<NodePath, Ref<MultiplayerAPI>> custom_multiplayers;
 	bool multiplayer_poll = true;
+
+	Ref<SaveloadAPI> saveload;
+	HashMap<NodePath, Ref<SaveloadAPI>> custom_saveloads;
+	bool saveload_poll = true;
 
 	static SceneTree *singleton;
 	friend class Node;
@@ -423,6 +428,11 @@ public:
 	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path = NodePath());
 	void set_multiplayer_poll_enabled(bool p_enabled);
 	bool is_multiplayer_poll_enabled() const;
+
+	Ref<SaveloadAPI> get_saveload(const NodePath &p_for_path = NodePath()) const;
+	void set_saveload(Ref<SaveloadAPI> p_saveload, const NodePath &p_root_path = NodePath());
+	void set_saveload_poll_enabled(bool p_enabled);
+	bool is_saveload_poll_enabled() const;
 
 	static void add_idle_callback(IdleCallback p_callback);
 

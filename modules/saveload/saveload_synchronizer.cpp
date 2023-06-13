@@ -51,9 +51,9 @@ void SaveloadSynchronizer::_stop() {
 	root_node_cache = ObjectID();
 	reset();
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
-	if (node) {
-		get_saveload()->object_configuration_remove(node, this);
-	}
+//	if (node) {
+//		get_saveload()->object_configuration_remove(node, this);
+//	}
 }
 
 void SaveloadSynchronizer::_start() {
@@ -65,46 +65,46 @@ void SaveloadSynchronizer::_start() {
 	root_node_cache = ObjectID();
 	reset();
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
-	if (node) {
-		root_node_cache = node->get_instance_id();
-		get_saveload()->object_configuration_add(node, this);
-		_update_process();
-	}
+//	if (node) {
+//		root_node_cache = node->get_instance_id();
+//		get_saveload()->object_configuration_add(node, this);
+//		_update_process();
+//	}
 }
 
-void SaveloadSynchronizer::_update_process() {
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-#endif
-	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
-	if (!node) {
-		return;
-	}
-	set_process_internal(false);
-	set_physics_process_internal(false);
-	if (!visibility_filters.size()) {
-		return;
-	}
-	switch (visibility_update_mode) {
-		case VISIBILITY_PROCESS_IDLE:
-			set_process_internal(true);
-			break;
-		case VISIBILITY_PROCESS_PHYSICS:
-			set_physics_process_internal(true);
-			break;
-		case VISIBILITY_PROCESS_NONE:
-			break;
-	}
-}
+//void SaveloadSynchronizer::_update_process() {
+//#ifdef TOOLS_ENABLED
+//	if (Engine::get_singleton()->is_editor_hint()) {
+//		return;
+//	}
+//#endif
+//	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
+//	if (!node) {
+//		return;
+//	}
+//	set_process_internal(false);
+//	set_physics_process_internal(false);
+//	if (!visibility_filters.size()) {
+//		return;
+//	}
+//	switch (visibility_update_mode) {
+//		case VISIBILITY_PROCESS_IDLE:
+//			set_process_internal(true);
+//			break;
+//		case VISIBILITY_PROCESS_PHYSICS:
+//			set_physics_process_internal(true);
+//			break;
+//		case VISIBILITY_PROCESS_NONE:
+//			break;
+//	}
+//}
 
 Node *SaveloadSynchronizer::get_root_node() {
 	return root_node_cache.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(root_node_cache)) : nullptr;
 }
 
 void SaveloadSynchronizer::reset() {
-	net_id = 0;
+//	net_id = 0;
 	last_sync_usec = 0;
 	last_inbound_sync = 0;
 }
@@ -177,105 +177,105 @@ Error SaveloadSynchronizer::set_state(const List<NodePath> &p_properties, Object
 	return OK;
 }
 
-bool SaveloadSynchronizer::is_visibility_public() const {
-	return peer_visibility.has(0);
-}
-
-void SaveloadSynchronizer::set_visibility_public(bool p_visible) {
-	set_visibility_for(0, p_visible);
-}
-
-bool SaveloadSynchronizer::is_visible_to(int p_peer) {
-	if (visibility_filters.size()) {
-		Variant arg = p_peer;
-		const Variant *argv[1] = { &arg };
-		for (Callable filter : visibility_filters) {
-			Variant ret;
-			Callable::CallError err;
-			filter.callp(argv, 1, ret, err);
-			ERR_FAIL_COND_V(err.error != Callable::CallError::CALL_OK || ret.get_type() != Variant::BOOL, false);
-			if (!ret.operator bool()) {
-				return false;
-			}
-		}
-	}
-	return peer_visibility.has(0) || peer_visibility.has(p_peer);
-}
-
-void SaveloadSynchronizer::add_visibility_filter(Callable p_callback) {
-	visibility_filters.insert(p_callback);
-	_update_process();
-}
-
-void SaveloadSynchronizer::remove_visibility_filter(Callable p_callback) {
-	visibility_filters.erase(p_callback);
-	_update_process();
-}
-
-void SaveloadSynchronizer::set_visibility_for(int p_peer, bool p_visible) {
-	if (peer_visibility.has(p_peer) == p_visible) {
-		return;
-	}
-	if (p_visible) {
-		peer_visibility.insert(p_peer);
-	} else {
-		peer_visibility.erase(p_peer);
-	}
-	update_visibility(p_peer);
-}
-
-bool SaveloadSynchronizer::get_visibility_for(int p_peer) const {
-	return peer_visibility.has(p_peer);
-}
-
-void SaveloadSynchronizer::set_visibility_update_mode(VisibilityUpdateMode p_mode) {
-	visibility_update_mode = p_mode;
-	_update_process();
-}
-
-SaveloadSynchronizer::VisibilityUpdateMode SaveloadSynchronizer::get_visibility_update_mode() const {
-	return visibility_update_mode;
-}
-
+//bool SaveloadSynchronizer::is_visibility_public() const {
+//	return peer_visibility.has(0);
+//}
+//
+//void SaveloadSynchronizer::set_visibility_public(bool p_visible) {
+//	set_visibility_for(0, p_visible);
+//}
+//
+//bool SaveloadSynchronizer::is_visible_to(int p_peer) {
+//	if (visibility_filters.size()) {
+//		Variant arg = p_peer;
+//		const Variant *argv[1] = { &arg };
+//		for (Callable filter : visibility_filters) {
+//			Variant ret;
+//			Callable::CallError err;
+//			filter.callp(argv, 1, ret, err);
+//			ERR_FAIL_COND_V(err.error != Callable::CallError::CALL_OK || ret.get_type() != Variant::BOOL, false);
+//			if (!ret.operator bool()) {
+//				return false;
+//			}
+//		}
+//	}
+//	return peer_visibility.has(0) || peer_visibility.has(p_peer);
+//}
+//
+//void SaveloadSynchronizer::add_visibility_filter(Callable p_callback) {
+//	visibility_filters.insert(p_callback);
+//	_update_process();
+//}
+//
+//void SaveloadSynchronizer::remove_visibility_filter(Callable p_callback) {
+//	visibility_filters.erase(p_callback);
+//	_update_process();
+//}
+//
+//void SaveloadSynchronizer::set_visibility_for(int p_peer, bool p_visible) {
+//	if (peer_visibility.has(p_peer) == p_visible) {
+//		return;
+//	}
+//	if (p_visible) {
+//		peer_visibility.insert(p_peer);
+//	} else {
+//		peer_visibility.erase(p_peer);
+//	}
+//	update_visibility(p_peer);
+//}
+//
+//bool SaveloadSynchronizer::get_visibility_for(int p_peer) const {
+//	return peer_visibility.has(p_peer);
+//}
+//
+//void SaveloadSynchronizer::set_visibility_update_mode(VisibilityUpdateMode p_mode) {
+//	visibility_update_mode = p_mode;
+//	_update_process();
+//}
+//
+//SaveloadSynchronizer::VisibilityUpdateMode SaveloadSynchronizer::get_visibility_update_mode() const {
+//	return visibility_update_mode;
+//}
+//
 void SaveloadSynchronizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_path", "path"), &SaveloadSynchronizer::set_root_path);
 	ClassDB::bind_method(D_METHOD("get_root_path"), &SaveloadSynchronizer::get_root_path);
 
-	ClassDB::bind_method(D_METHOD("set_replication_interval", "milliseconds"), &SaveloadSynchronizer::set_replication_interval);
-	ClassDB::bind_method(D_METHOD("get_replication_interval"), &SaveloadSynchronizer::get_replication_interval);
+	ClassDB::bind_method(D_METHOD("set_saveload_interval", "milliseconds"), &SaveloadSynchronizer::set_saveload_interval);
+	ClassDB::bind_method(D_METHOD("get_saveload_interval"), &SaveloadSynchronizer::get_saveload_interval);
 
 	ClassDB::bind_method(D_METHOD("set_delta_interval", "milliseconds"), &SaveloadSynchronizer::set_delta_interval);
 	ClassDB::bind_method(D_METHOD("get_delta_interval"), &SaveloadSynchronizer::get_delta_interval);
 
-	ClassDB::bind_method(D_METHOD("set_replication_config", "config"), &SaveloadSynchronizer::set_replication_config);
-	ClassDB::bind_method(D_METHOD("get_replication_config"), &SaveloadSynchronizer::SaveloadSynchronizer);
+	ClassDB::bind_method(D_METHOD("set_saveload_config", "config"), &SaveloadSynchronizer::set_saveload_config);
+	ClassDB::bind_method(D_METHOD("get_saveload_config"), &SaveloadSynchronizer::get_saveload_config);
 
-	ClassDB::bind_method(D_METHOD("set_visibility_update_mode", "mode"), &SaveloadSynchronizer::set_visibility_update_mode);
-	ClassDB::bind_method(D_METHOD("get_visibility_update_mode"), &SaveloadSynchronizer::get_visibility_update_mode);
-	ClassDB::bind_method(D_METHOD("update_visibility", "for_peer"), &SaveloadSynchronizer::update_visibility, DEFVAL(0));
-
-	ClassDB::bind_method(D_METHOD("set_visibility_public", "visible"), &SaveloadSynchronizer::set_visibility_public);
-	ClassDB::bind_method(D_METHOD("is_visibility_public"), &SaveloadSynchronizer::is_visibility_public);
-
-	ClassDB::bind_method(D_METHOD("add_visibility_filter", "filter"), &SaveloadSynchronizer::add_visibility_filter);
-	ClassDB::bind_method(D_METHOD("remove_visibility_filter", "filter"), &SaveloadSynchronizer::remove_visibility_filter);
-	ClassDB::bind_method(D_METHOD("set_visibility_for", "peer", "visible"), &SaveloadSynchronizer::set_visibility_for);
-	ClassDB::bind_method(D_METHOD("get_visibility_for", "peer"), &SaveloadSynchronizer::get_visibility_for);
+//	ClassDB::bind_method(D_METHOD("set_visibility_update_mode", "mode"), &SaveloadSynchronizer::set_visibility_update_mode);
+//	ClassDB::bind_method(D_METHOD("get_visibility_update_mode"), &SaveloadSynchronizer::get_visibility_update_mode);
+//	ClassDB::bind_method(D_METHOD("update_visibility", "for_peer"), &SaveloadSynchronizer::update_visibility, DEFVAL(0));
+//
+//	ClassDB::bind_method(D_METHOD("set_visibility_public", "visible"), &SaveloadSynchronizer::set_visibility_public);
+//	ClassDB::bind_method(D_METHOD("is_visibility_public"), &SaveloadSynchronizer::is_visibility_public);
+//
+//	ClassDB::bind_method(D_METHOD("add_visibility_filter", "filter"), &SaveloadSynchronizer::add_visibility_filter);
+//	ClassDB::bind_method(D_METHOD("remove_visibility_filter", "filter"), &SaveloadSynchronizer::remove_visibility_filter);
+//	ClassDB::bind_method(D_METHOD("set_visibility_for", "peer", "visible"), &SaveloadSynchronizer::set_visibility_for);
+//	ClassDB::bind_method(D_METHOD("get_visibility_for", "peer"), &SaveloadSynchronizer::get_visibility_for);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "replication_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_replication_interval", "get_replication_interval");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "saveload_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_saveload_interval", "get_saveload_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "delta_interval", PROPERTY_HINT_RANGE, "0,5,0.001,suffix:s"), "set_delta_interval", "get_delta_interval");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "replication_config", PROPERTY_HINT_RESOURCE_TYPE, "SceneSaveloadConfig", PROPERTY_USAGE_NO_EDITOR), "set_replication_config", "get_replication_config");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,None"), "set_visibility_update_mode", "get_visibility_update_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "public_visibility"), "set_visibility_public", "is_visibility_public");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "saveload_config", PROPERTY_HINT_RESOURCE_TYPE, "SceneSaveloadConfig", PROPERTY_USAGE_NO_EDITOR), "set_saveload_config", "get_saveload_config");
+//	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_update_mode", PROPERTY_HINT_ENUM, "Idle,Physics,None"), "set_visibility_update_mode", "get_visibility_update_mode");
+//	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "public_visibility"), "set_visibility_public", "is_visibility_public");
 
-	BIND_ENUM_CONSTANT(VISIBILITY_PROCESS_IDLE);
-	BIND_ENUM_CONSTANT(VISIBILITY_PROCESS_PHYSICS);
-	BIND_ENUM_CONSTANT(VISIBILITY_PROCESS_NONE);
+//	BIND_ENUM_CONSTANT(VISIBILITY_PROCESS_IDLE);
+//	BIND_ENUM_CONSTANT(VISIBILITY_PROCESS_PHYSICS);
+//	BIND_ENUM_CONSTANT(VISIBILITY_PROCESS_NONE);
 
 	ADD_SIGNAL(MethodInfo("synchronized"));
 	ADD_SIGNAL(MethodInfo("delta_synchronized"));
-	ADD_SIGNAL(MethodInfo("visibility_changed", PropertyInfo(Variant::INT, "for_peer")));
+//	ADD_SIGNAL(MethodInfo("visibility_changed", PropertyInfo(Variant::INT, "for_peer")));
 }
 
 void SaveloadSynchronizer::_notification(int p_what) {
@@ -299,17 +299,17 @@ void SaveloadSynchronizer::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PROCESS:
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			update_visibility(0);
+//			update_visibility(0);
 		} break;
 	}
 }
 
-void SaveloadSynchronizer::set_replication_interval(double p_interval) {
+void SaveloadSynchronizer::set_saveload_interval(double p_interval) {
 	ERR_FAIL_COND_MSG(p_interval < 0, "Interval must be greater or equal to 0 (where 0 means default)");
 	sync_interval_usec = uint64_t(p_interval * 1000 * 1000);
 }
 
-double SaveloadSynchronizer::get_replication_interval() const {
+double SaveloadSynchronizer::get_saveload_interval() const {
 	return double(sync_interval_usec) / 1000.0 / 1000.0;
 }
 
@@ -322,26 +322,26 @@ double SaveloadSynchronizer::get_delta_interval() const {
 	return double(delta_interval_usec) / 1000.0 / 1000.0;
 }
 
-void SaveloadSynchronizer::set_replication_config(Ref<SceneSaveloadConfig> p_config) {
-	replication_config = p_config;
+void SaveloadSynchronizer::set_saveload_config(Ref<SceneSaveloadConfig> p_config) {
+	saveload_config = p_config;
 }
 
-Ref<SceneSaveloadConfig> SaveloadSynchronizer::get_replication_config() {
-	return replication_config;
+Ref<SceneSaveloadConfig> SaveloadSynchronizer::get_saveload_config() {
+	return saveload_config;
 }
 
-void SaveloadSynchronizer::update_visibility(int p_for_peer) {
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-#endif
-	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
-	if (node && get_saveload()->has_multiplayer_peer() && is_multiplayer_authority()) {
-		emit_signal(SNAME("visibility_changed"), p_for_peer);
-	}
-}
-
+//void SaveloadSynchronizer::update_visibility(int p_for_peer) {
+//#ifdef TOOLS_ENABLED
+//	if (Engine::get_singleton()->is_editor_hint()) {
+//		return;
+//	}
+//#endif
+//	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
+//	if (node && get_saveload()->has_multiplayer_peer() && is_multiplayer_authority()) {
+//		emit_signal(SNAME("visibility_changed"), p_for_peer);
+//	}
+//}
+//
 void SaveloadSynchronizer::set_root_path(const NodePath &p_path) {
 	_stop();
 	root_path = p_path;
@@ -353,8 +353,8 @@ NodePath SaveloadSynchronizer::get_root_path() const {
 }
 
 Error SaveloadSynchronizer::_watch_changes(uint64_t p_usec) {
-	ERR_FAIL_COND_V(replication_config.is_null(), FAILED);
-	const List<NodePath> props = replication_config->get_watch_properties();
+	ERR_FAIL_COND_V(saveload_config.is_null(), FAILED);
+	const List<NodePath> props = saveload_config->get_watch_properties();
 	if (props.size() != watchers.size()) {
 		watchers.resize(props.size());
 	}
@@ -417,8 +417,8 @@ List<Variant> SaveloadSynchronizer::get_delta_state(uint64_t p_cur_usec, uint64_
 
 List<NodePath> SaveloadSynchronizer::get_delta_properties(uint64_t p_indexes) {
 	List<NodePath> out;
-	ERR_FAIL_COND_V(replication_config.is_null(), out);
-	const List<NodePath> watch_props = replication_config->get_watch_properties();
+	ERR_FAIL_COND_V(saveload_config.is_null(), out);
+	const List<NodePath> watch_props = saveload_config->get_watch_properties();
 	int idx = 0;
 	for (const NodePath &prop : watch_props) {
 		if ((p_indexes & (1ULL << idx)) == 0) {
@@ -432,5 +432,5 @@ List<NodePath> SaveloadSynchronizer::get_delta_properties(uint64_t p_indexes) {
 
 SaveloadSynchronizer::SaveloadSynchronizer() {
 	// Publicly visible by default.
-	peer_visibility.insert(0);
+//	peer_visibility.insert(0);
 }

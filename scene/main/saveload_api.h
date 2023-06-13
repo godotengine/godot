@@ -52,6 +52,9 @@ public:
 	static Error encode_and_compress_variants(const Variant **p_variants, int p_count, uint8_t *p_buffer, int &r_len, bool *r_raw = nullptr, bool p_allow_object_decoding = false);
 	static Error decode_and_decompress_variants(Vector<Variant> &r_variants, const uint8_t *p_buffer, int p_len, int &r_len, bool p_raw = false, bool p_allow_object_decoding = false);
 
+	virtual Error poll() = 0;
+	virtual int get_unique_id() = 0;
+
 	virtual Error object_configuration_add(Object *p_object, Variant p_config) = 0;
 	virtual Error object_configuration_remove(Object *p_object, Variant p_config) = 0;
 
@@ -59,19 +62,19 @@ public:
 	virtual ~SaveloadAPI() {}
 };
 
-class SaveloadAPIExtension : public SaveloadAPI {
-	GDCLASS(SaveloadAPIExtension, SaveloadAPI);
-
-protected:
-	static void _bind_methods();
-
-public:
-	virtual Error object_configuration_add(Object *p_object, Variant p_config) override;
-	virtual Error object_configuration_remove(Object *p_object, Variant p_config) override;
-
-	// Extensions
-	GDVIRTUAL2R(Error, _object_configuration_add, Object *, Variant);
-	GDVIRTUAL2R(Error, _object_configuration_remove, Object *, Variant);
-};
+//class SaveloadAPIExtension : public SaveloadAPI {
+//	GDCLASS(SaveloadAPIExtension, SaveloadAPI);
+//
+//protected:
+//	static void _bind_methods();
+//
+//public:
+//	virtual Error object_configuration_add(Object *p_object, Variant p_config) override;
+//	virtual Error object_configuration_remove(Object *p_object, Variant p_config) override;
+//
+//	// Extensions
+//	GDVIRTUAL2R(Error, _object_configuration_add, Object *, Variant);
+//	GDVIRTUAL2R(Error, _object_configuration_remove, Object *, Variant);
+//};
 
 #endif // SAVELOAD_API_H

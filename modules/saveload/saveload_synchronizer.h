@@ -37,13 +37,13 @@
 
 class SaveloadSynchronizer : public Node {
 	GDCLASS(SaveloadSynchronizer, Node);
-
-public:
-	enum VisibilityUpdateMode {
-		VISIBILITY_PROCESS_IDLE,
-		VISIBILITY_PROCESS_PHYSICS,
-		VISIBILITY_PROCESS_NONE,
-	};
+//
+//public:
+//	enum VisibilityUpdateMode {
+//		VISIBILITY_PROCESS_IDLE,
+//		VISIBILITY_PROCESS_PHYSICS,
+//		VISIBILITY_PROCESS_NONE,
+//	};
 
 private:
 	struct Watcher {
@@ -52,13 +52,13 @@ private:
 		Variant value;
 	};
 
-	Ref<SceneSaveloadConfig> replication_config;
+	Ref<SceneSaveloadConfig> saveload_config;
 	NodePath root_path = NodePath(".."); // Start with parent, like with AnimationPlayer.
 	uint64_t sync_interval_usec = 0;
 	uint64_t delta_interval_usec = 0;
-	VisibilityUpdateMode visibility_update_mode = VISIBILITY_PROCESS_IDLE;
-	HashSet<Callable> visibility_filters;
-	HashSet<int> peer_visibility;
+//	VisibilityUpdateMode visibility_update_mode = VISIBILITY_PROCESS_IDLE;
+//	HashSet<Callable> visibility_filters;
+//	HashSet<int> peer_visibility;
 	Vector<Watcher> watchers;
 	uint64_t last_watch_usec = 0;
 
@@ -70,13 +70,13 @@ private:
 	static Object *_get_prop_target(Object *p_obj, const NodePath &p_prop);
 	void _start();
 	void _stop();
-	void _update_process();
+//	void _update_process();
 	Error _watch_changes(uint64_t p_usec);
-
+//
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-
+//
 public:
 	static Error get_state(const List<NodePath> &p_properties, Object *p_obj, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs);
 	static Error set_state(const List<NodePath> &p_properties, Object *p_obj, const Vector<Variant> &p_state);
@@ -92,28 +92,28 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
-	void set_replication_interval(double p_interval);
-	double get_replication_interval() const;
+	void set_saveload_interval(double p_interval);
+	double get_saveload_interval() const;
 
 	void set_delta_interval(double p_interval);
 	double get_delta_interval() const;
 
-	void set_replication_config(Ref<SceneSaveloadConfig> p_config);
-	Ref<SceneSaveloadConfig> get_replication_config();
-
+	void set_saveload_config(Ref<SceneSaveloadConfig> p_config);
+	Ref<SceneSaveloadConfig> get_saveload_config();
+//
 	void set_root_path(const NodePath &p_path);
 	NodePath get_root_path() const;
-
-	bool is_visibility_public() const;
-	void set_visibility_public(bool p_public);
-	bool is_visible_to(int p_peer);
-	void set_visibility_for(int p_peer, bool p_visible);
-	bool get_visibility_for(int p_peer) const;
-	void update_visibility(int p_for_peer);
-	void set_visibility_update_mode(VisibilityUpdateMode p_mode);
-	void add_visibility_filter(Callable p_callback);
-	void remove_visibility_filter(Callable p_callback);
-	VisibilityUpdateMode get_visibility_update_mode() const;
+//
+//	bool is_visibility_public() const;
+//	void set_visibility_public(bool p_public);
+//	bool is_visible_to(int p_peer);
+//	void set_visibility_for(int p_peer, bool p_visible);
+//	bool get_visibility_for(int p_peer) const;
+//	void update_visibility(int p_for_peer);
+//	void set_visibility_update_mode(VisibilityUpdateMode p_mode);
+//	void add_visibility_filter(Callable p_callback);
+//	void remove_visibility_filter(Callable p_callback);
+//	VisibilityUpdateMode get_visibility_update_mode() const;
 
 	List<Variant> get_delta_state(uint64_t p_cur_usec, uint64_t p_last_usec, uint64_t &r_indexes);
 	List<NodePath> get_delta_properties(uint64_t p_indexes);
@@ -121,6 +121,6 @@ public:
 	SaveloadSynchronizer();
 };
 
-VARIANT_ENUM_CAST(SaveloadSynchronizer::VisibilityUpdateMode);
+//VARIANT_ENUM_CAST(SaveloadSynchronizer::VisibilityUpdateMode);
 
 #endif // SAVELOAD_SYNCHRONIZER_H
