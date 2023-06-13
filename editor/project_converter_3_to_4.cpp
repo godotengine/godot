@@ -147,6 +147,15 @@ public:
 	// Keycode.
 	RegEx input_map_keycode = RegEx("\\b,\"((physical_)?)scancode\":(\\d+)\\b");
 
+	// Button index and joypad axis.
+	RegEx joypad_button_index = RegEx("\\b,\"button_index\":(\\d+),(\"pressure\":\\d+\\.\\d+,\"pressed\":(false|true))\\b");
+	RegEx joypad_axis = RegEx("\\b,\"axis\":(\\d+)\\b");
+
+	// Index represents Godot 3's value, entry represents Godot 4 value equivalency.
+	// i.e: Button4(L1 - Godot3) -> joypad_button_mappings[4]=9 -> Button9(L1 - Godot4).
+	int joypad_button_mappings[23] = { 0, 1, 2, 3, 9, 10, -1 /*L2*/, -1 /*R2*/, 7, 8, 4, 6, 11, 12, 13, 14, 5, 15, 16, 17, 18, 19, 20 };
+	// Entries for L2 and R2 are -1 since they match to joypad axes and no longer to joypad buttons in Godot 4.
+
 	LocalVector<RegEx *> class_regexes;
 
 	RegEx class_temp_tscn = RegEx("\\bTEMP_RENAMED_CLASS.tscn\\b");
@@ -440,6 +449,7 @@ bool ProjectConverter3To4::convert() {
 				rename_common(RenamesMap3To4::project_godot_renames, reg_container.project_godot_regexes, source_lines);
 				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, source_lines);
 				rename_input_map_scancode(source_lines, reg_container);
+				rename_joypad_buttons_and_axes(source_lines, reg_container);
 				rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, source_lines);
 				custom_rename(source_lines, "config_version=4", "config_version=5");
 			} else if (file_name.ends_with(".csproj")) {
@@ -622,6 +632,7 @@ bool ProjectConverter3To4::validate_conversion() {
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::project_godot_renames, reg_container.project_godot_regexes, lines));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines));
 				changed_elements.append_array(check_for_rename_input_map_scancode(lines, reg_container));
+				changed_elements.append_array(check_for_rename_joypad_buttons_and_axes(lines, reg_container));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, lines));
 			} else if (file_name.ends_with(".csproj")) {
 				// TODO
@@ -988,6 +999,10 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	// Note: Do not change to *scancode*, it is applied before that conversion.
 	valid = valid && test_conversion_with_regex("\"device\":-1,\"scancode\":16777231,\"physical_scancode\":16777232", "\"device\":-1,\"scancode\":4194319,\"physical_scancode\":4194320", &ProjectConverter3To4::rename_input_map_scancode, "custom rename", reg_container);
 	valid = valid && test_conversion_with_regex("\"device\":-1,\"scancode\":65,\"physical_scancode\":66", "\"device\":-1,\"scancode\":65,\"physical_scancode\":66", &ProjectConverter3To4::rename_input_map_scancode, "custom rename", reg_container);
+
+	valid = valid && test_conversion_with_regex("\"device\":0,\"button_index\":5,\"pressure\":0.0,\"pressed\":false,", "\"device\":0,\"button_index\":10,\"pressure\":0.0,\"pressed\":false,", &ProjectConverter3To4::rename_joypad_buttons_and_axes, "custom rename", reg_container);
+	valid = valid && test_conversion_with_regex("\"device\":0,\"axis\":6,", "\"device\":0,\"axis\":4,", &ProjectConverter3To4::rename_joypad_buttons_and_axes, "custom rename", reg_container);
+	valid = valid && test_conversion_with_regex("InputEventJoypadButton,\"button_index\":7,\"pressure\":0.0,\"pressed\":false,\"script\":null", "InputEventJoypadMotion,\"axis\":5,\"axis_value\":1.0,\"script\":null", &ProjectConverter3To4::rename_joypad_buttons_and_axes, "custom rename", reg_container);
 
 	// Custom rule conversion
 	{
@@ -2654,6 +2669,89 @@ void ProjectConverter3To4::rename_input_map_scancode(Vector<SourceLine> &source_
 			}
 		}
 	}
+}
+
+void ProjectConverter3To4::rename_joypad_buttons_and_axes(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
+	for (SourceLine &source_line : source_lines) {
+		if (source_line.is_comment) {
+			continue;
+		}
+		String &line = source_line.line;
+		if (uint64_t(line.length()) <= maximum_line_length) {
+			// Remap button indexes.
+			TypedArray<RegExMatch> reg_match = reg_container.joypad_button_index.search_all(line);
+			for (int i = 0; i < reg_match.size(); ++i) {
+				Ref<RegExMatch> match = reg_match[i];
+				PackedStringArray strings = match->get_strings();
+				String button_index_entry = strings[0];
+				int button_index_value = strings[1].to_int();
+				if (button_index_value == 6) { // L2 and R2 are mapped to joypad axes in Godot 4.
+					line = line.replace("InputEventJoypadButton", "InputEventJoypadMotion");
+					line = line.replace(button_index_entry, ",\"axis\":4,\"axis_value\":1.0");
+				} else if (button_index_value == 7) {
+					line = line.replace("InputEventJoypadButton", "InputEventJoypadMotion");
+					line = line.replace(button_index_entry, ",\"axis\":5,\"axis_value\":1.0");
+				} else if (button_index_value < 22) { // There are no mappings for indexes greater than 22 in both Godot 3 & 4.
+					String pressure_and_pressed_properties = strings[2];
+					line = line.replace(button_index_entry, ",\"button_index\":" + String::num_int64(reg_container.joypad_button_mappings[button_index_value]) + "," + pressure_and_pressed_properties);
+				}
+			}
+			// Remap axes. Only L2 and R2 need remapping.
+			reg_match = reg_container.joypad_axis.search_all(line);
+			for (int i = 0; i < reg_match.size(); ++i) {
+				Ref<RegExMatch> match = reg_match[i];
+				PackedStringArray strings = match->get_strings();
+				String axis_entry = strings[0];
+				int axis_value = strings[1].to_int();
+				if (axis_value == 6) {
+					line = line.replace(axis_entry, ",\"axis\":4");
+				} else if (axis_value == 7) {
+					line = line.replace(axis_entry, ",\"axis\":5");
+				}
+			}
+		}
+	}
+}
+
+Vector<String> ProjectConverter3To4::check_for_rename_joypad_buttons_and_axes(Vector<String> &lines, const RegExContainer &reg_container) {
+	Vector<String> found_renames;
+	int current_line = 1;
+	for (String &line : lines) {
+		if (uint64_t(line.length()) <= maximum_line_length) {
+			// Remap button indexes.
+			TypedArray<RegExMatch> reg_match = reg_container.joypad_button_index.search_all(line);
+			for (int i = 0; i < reg_match.size(); ++i) {
+				Ref<RegExMatch> match = reg_match[i];
+				PackedStringArray strings = match->get_strings();
+				String button_index_entry = strings[0];
+				int button_index_value = strings[1].to_int();
+				if (button_index_value == 6) { // L2 and R2 are mapped to joypad axes in Godot 4.
+					found_renames.append(line_formatter(current_line, "InputEventJoypadButton", "InputEventJoypadMotion", line));
+					found_renames.append(line_formatter(current_line, button_index_entry, ",\"axis\":4", line));
+				} else if (button_index_value == 7) {
+					found_renames.append(line_formatter(current_line, "InputEventJoypadButton", "InputEventJoypadMotion", line));
+					found_renames.append(line_formatter(current_line, button_index_entry, ",\"axis\":5", line));
+				} else if (button_index_value < 22) { // There are no mappings for indexes greater than 22 in both Godot 3 & 4.
+					found_renames.append(line_formatter(current_line, "\"button_index\":" + strings[1], "\"button_index\":" + String::num_int64(reg_container.joypad_button_mappings[button_index_value]), line));
+				}
+			}
+			// Remap axes. Only L2 and R2 need remapping.
+			reg_match = reg_container.joypad_axis.search_all(line);
+			for (int i = 0; i < reg_match.size(); ++i) {
+				Ref<RegExMatch> match = reg_match[i];
+				PackedStringArray strings = match->get_strings();
+				String axis_entry = strings[0];
+				int axis_value = strings[1].to_int();
+				if (axis_value == 6) {
+					found_renames.append(line_formatter(current_line, axis_entry, ",\"axis\":4", line));
+				} else if (axis_value == 7) {
+					found_renames.append(line_formatter(current_line, axis_entry, ",\"axis\":5", line));
+				}
+			}
+			current_line++;
+		}
+	}
+	return found_renames;
 }
 
 Vector<String> ProjectConverter3To4::check_for_rename_input_map_scancode(Vector<String> &lines, const RegExContainer &reg_container) {
