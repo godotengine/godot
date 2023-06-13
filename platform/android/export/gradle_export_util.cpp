@@ -294,11 +294,12 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_xr
 			orientation,
 			bool_to_string(bool(GLOBAL_GET("display/window/size/resizable"))));
 
+	manifest_activity_text += "            <intent-filter>\n"
+							  "                <action android:name=\"android.intent.action.MAIN\" />\n"
+							  "                <category android:name=\"android.intent.category.LAUNCHER\" />\n";
+
 	if (p_uses_xr) {
-		manifest_activity_text += "            <intent-filter>\n"
-								  "                <action android:name=\"android.intent.action.MAIN\" />\n"
-								  "                <category android:name=\"android.intent.category.LAUNCHER\" />\n"
-								  "\n"
+		manifest_activity_text += "\n"
 								  "                <!-- Enable access to OpenXR on Oculus mobile devices, no-op on other Android\n"
 								  "                platforms. -->\n"
 								  "                <category android:name=\"com.oculus.intent.category.VR\" />\n"
@@ -308,16 +309,22 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_xr
 								  "                <category android:name=\"org.khronos.openxr.intent.category.IMMERSIVE_HMD\" />\n"
 								  "\n"
 								  "                <!-- Enable VR access on HTC Vive Focus devices. -->\n"
-								  "                <category android:name=\"com.htc.intent.category.VRAPP\" />\n"
-								  "            </intent-filter>\n";
-	} else {
-		manifest_activity_text += "            <intent-filter>\n"
-								  "                <action android:name=\"android.intent.action.MAIN\" />\n"
-								  "                <category android:name=\"android.intent.category.LAUNCHER\" />\n"
-								  "            </intent-filter>\n";
+								  "                <category android:name=\"com.htc.intent.category.VRAPP\" />\n";
 	}
 
-	manifest_activity_text += "        </activity>\n";
+	bool uses_leanback_category = p_preset->get("package/show_in_android_tv");
+	if (uses_leanback_category) {
+		manifest_activity_text += "                <category android:name=\"android.intent.category.LEANBACK_LAUNCHER\" />\n";
+	}
+
+	bool uses_home_category = p_preset->get("package/show_as_launcher_app");
+	if (uses_home_category) {
+		manifest_activity_text += "                <category android:name=\"android.intent.category.HOME\" />\n";
+		manifest_activity_text += "                <category android:name=\"android.intent.category.DEFAULT\" />\n";
+	}
+
+	manifest_activity_text += "            </intent-filter>\n"
+							  "        </activity>\n";
 	return manifest_activity_text;
 }
 
