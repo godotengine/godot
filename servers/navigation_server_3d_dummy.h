@@ -45,6 +45,8 @@ public:
 	Vector3 map_get_up(RID p_map) const override { return Vector3(); }
 	void map_set_cell_size(RID p_map, real_t p_cell_size) override {}
 	real_t map_get_cell_size(RID p_map) const override { return 0; }
+	void map_set_cell_height(RID p_map, real_t p_cell_height) override {}
+	real_t map_get_cell_height(RID p_map) const override { return 0; }
 	void map_set_use_edge_connections(RID p_map, bool p_enabled) override {}
 	bool map_get_use_edge_connections(RID p_map) const override { return false; }
 	void map_set_edge_connection_margin(RID p_map, real_t p_connection_margin) override {}

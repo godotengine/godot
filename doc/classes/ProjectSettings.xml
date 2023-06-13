@@ -1952,6 +1952,9 @@
 		<member name="navigation/2d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 2D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World2D default navigation maps.
 		</member>
+		<member name="navigation/3d/default_cell_height" type="float" setter="" getter="" default="0.25">
+			Default cell height for 3D navigation maps. See [method NavigationServer3D.map_set_cell_height].
+		</member>
 		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.25">
 			Default cell size for 3D navigation maps. See [method NavigationServer3D.map_set_cell_size].
 		</member>

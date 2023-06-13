@@ -339,7 +339,7 @@
 			<return type="float" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns the map cell size.
+				Returns the map cell size used to rasterize the navigation mesh vertices.
 			</description>
 		</method>
 		<method name="map_get_closest_point" qualifiers="const">
@@ -431,7 +431,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="cell_size" type="float" />
 			<description>
-				Set the map cell size used to weld the navigation mesh polygons.
+				Sets the map cell size used to rasterize the navigation mesh vertices. Must match with the cell size of the used navigation meshes.
 			</description>
 		</method>
 		<method name="map_set_edge_connection_margin">
