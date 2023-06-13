@@ -102,6 +102,14 @@ class SceneState : public RefCounted {
 
 	int _find_base_scene_node_remap_key(int p_idx) const;
 
+#ifdef TOOLS_ENABLED
+public:
+	typedef void (*InstantiationWarningNotify)(const String &p_warning);
+
+private:
+	static InstantiationWarningNotify instantiation_warn_notify;
+#endif
+
 protected:
 	static void _bind_methods();
 
@@ -200,6 +208,10 @@ public:
 
 	// Used when saving pointers (saves a path property instead).
 	static String get_meta_pointer_property(const String &p_property);
+
+#ifdef TOOLS_ENABLED
+	static void set_instantiation_warning_notify_func(InstantiationWarningNotify p_warn_notify) { instantiation_warn_notify = p_warn_notify; }
+#endif
 
 	SceneState();
 };

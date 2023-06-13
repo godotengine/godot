@@ -731,6 +731,7 @@ public:
 	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 	static void disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames);
 	static void add_io_error(const String &p_error);
+	static void add_io_warning(const String &p_warning);
 
 	static void progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel = false);
 	static bool progress_task_step(const String &p_task, const String &p_state, int p_step = -1, bool p_force_refresh = true);

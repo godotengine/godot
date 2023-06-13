@@ -45,6 +45,10 @@
 
 #define PACKED_SCENE_VERSION 3
 
+#ifdef TOOLS_ENABLED
+SceneState::InstantiationWarningNotify SceneState::instantiation_warn_notify = nullptr;
+#endif
+
 bool SceneState::can_instantiate() const {
 	return nodes.size() > 0;
 }
@@ -380,7 +384,33 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				//if node was not part of instance, must set its name, parenthood and ownership
 				if (i > 0) {
 					if (parent) {
-						parent->_add_child_nocheck(node, snames[n.name]);
+						bool pending_add = true;
+#ifdef TOOLS_ENABLED
+						if (Engine::get_singleton()->is_editor_hint()) {
+							Node *existing = parent->_get_child_by_name(snames[n.name]);
+							if (existing) {
+								// There's already a node in the same parent with the same name.
+								// This means that somehow the node was added both to the scene being
+								// loaded and another one instantiated in the former, maybe because of
+								// manual editing, or a bug in scene saving, or a loophole in the workflow
+								// (with any of the bugs possibly already fixed).
+								// Bring consistency back by letting it be assigned a non-clashing name.
+								// This simple workaround at least avoids leaks and helps the user realize
+								// something awkward has happened.
+								if (instantiation_warn_notify) {
+									instantiation_warn_notify(vformat(
+											TTR("An incoming node's name clashes with %s already in the scene (presumably, from a more nested instance).\nThe less nested node will be renamed. Please fix and re-save the scene."),
+											ret_nodes[0]->get_path_to(existing)));
+								}
+								node->set_name(snames[n.name]);
+								parent->add_child(node, true);
+								pending_add = false;
+							}
+						}
+#endif
+						if (pending_add) {
+							parent->_add_child_nocheck(node, snames[n.name]);
+						}
 						if (n.index >= 0 && n.index < parent->get_child_count() - 1) {
 							parent->move_child(node, n.index);
 						}
