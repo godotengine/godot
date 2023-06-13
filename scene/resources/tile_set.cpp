@@ -148,6 +148,8 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				}
 				p.pop_front();
 			}
+		} else if (what == "fallback_mode") {
+			autotile_set_fallback_mode(id, (FallbackMode)((int)p_value));
 		}
 	} else if (what == "shape") {
 		if (tile_get_shape_count(id) > 0) {
@@ -293,6 +295,8 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 				}
 			}
 			r_ret = p;
+		} else if (what == "fallback_mode") {
+			r_ret = autotile_get_fallback_mode(id);
 		}
 	} else if (what == "shape") {
 		r_ret = tile_get_shape(id, 0);
@@ -345,6 +349,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "autotile/navpoly_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "autotile/priority_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "autotile/z_index_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+			p_list->push_back(PropertyInfo(Variant::INT, pre + "autotile/fallback_mode", PROPERTY_HINT_ENUM, "Auto,Icon", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 		} else if (tile_get_tile_mode(id) == ATLAS_TILE) {
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "autotile/icon_coordinate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "autotile/tile_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
@@ -550,6 +555,18 @@ const Map<Vector2, int> &TileSet::autotile_get_z_index_map(int p_id) const {
 	return tile_map[p_id].autotile_data.z_index_map;
 }
 
+void TileSet::autotile_set_fallback_mode(int p_id, FallbackMode p_mode) {
+	ERR_FAIL_COND_MSG(!tile_map.has(p_id), vformat("The TileSet doesn't have a tile with ID '%d'.", p_id));
+	tile_map[p_id].autotile_data.fallback_mode = p_mode;
+	_change_notify("");
+	emit_changed();
+}
+
+TileSet::FallbackMode TileSet::autotile_get_fallback_mode(int p_id) const {
+	ERR_FAIL_COND_V_MSG(!tile_map.has(p_id), FALLBACK_AUTO, vformat("The TileSet doesn't have a tile with ID '%d'.", p_id));
+	return tile_map[p_id].autotile_data.fallback_mode;
+}
+
 void TileSet::autotile_set_bitmask(int p_id, const Vector2 &p_coord, uint32_t p_flag) {
 	ERR_FAIL_COND_MSG(!tile_map.has(p_id), vformat("The TileSet doesn't have a tile with ID '%d'.", p_id));
 	if (p_flag == 0) {
@@ -589,23 +606,8 @@ const Map<Vector2, uint32_t> &TileSet::autotile_get_bitmask_map(int p_id) {
 	}
 }
 
-Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, const Node *p_tilemap_node, const Vector2 &p_tile_location) {
-	ERR_FAIL_COND_V_MSG(!tile_map.has(p_id), Vector2(), vformat("The TileSet doesn't have a tile with ID '%d'.", p_id));
-	//First try to forward selection to script
-	if (p_tilemap_node->get_class_name() == "TileMap") {
-		if (get_script_instance() != nullptr) {
-			if (get_script_instance()->has_method("_forward_subtile_selection")) {
-				Variant ret = get_script_instance()->call("_forward_subtile_selection", p_id, p_bitmask, p_tilemap_node, p_tile_location);
-				if (ret.get_type() == Variant::VECTOR2) {
-					return ret;
-				}
-			}
-		}
-	}
-
+List<Vector2> TileSet::_autotile_get_subtile_candidates_for_bitmask(int p_id, uint16_t p_bitmask) const {
 	List<Vector2> coords;
-	List<uint32_t> priorities;
-	uint32_t priority_sum = 0;
 	uint32_t mask;
 	uint16_t mask_;
 	uint16_t mask_ignore;
@@ -619,16 +621,121 @@ Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, 
 		mask_ignore = mask >> 16;
 
 		if (((mask_ & (~mask_ignore)) == (p_bitmask & (~mask_ignore))) && (((~mask_) | mask_ignore) == ((~p_bitmask) | mask_ignore))) {
-			uint32_t priority = autotile_get_subtile_priority(p_id, E->key());
-			priority_sum += priority;
-			priorities.push_back(priority);
 			coords.push_back(E->key());
 		}
+	}
+	return coords;
+}
+
+uint32_t TileSet::_count_bitmask_bits(uint32_t p_bitmask) {
+	uint32_t ret = 0;
+
+	for (uint32_t i = 1; i <= 256; i <<= 1) {
+		if (p_bitmask & i) {
+			ret++;
+		}
+	}
+
+	return ret;
+}
+uint32_t TileSet::_score_bitmask_difference(uint32_t p_bitmask, uint32_t p_ref_bitmask) {
+	// Low value means less difference, high value means more difference.
+	uint32_t ret = 0;
+
+	p_bitmask ^= p_ref_bitmask;
+	// Add one to the score for each non-matching bit.
+	for (uint32_t i = 1; i <= 256; i <<= 1) {
+		if (p_bitmask & i) {
+			ret += 1;
+			// Make axial edge mismatches cost four times as much.
+			if (i & (TileSet::BIND_TOP | TileSet::BIND_LEFT | TileSet::BIND_RIGHT | TileSet::BIND_BOTTOM)) {
+				ret += 3;
+			}
+		}
+	}
+	p_bitmask ^= p_ref_bitmask;
+	// Artificially reduce difference for all-filled and all-but-center-empty bitmasks.
+	// (511 is the non-IGNORE bitmasks all or'd together; 0x1FF)
+	if (ret > 0 && (p_bitmask == 511 || p_bitmask == TileSet::BIND_CENTER)) {
+		ret -= 1;
+	}
+	// Artificially increase difference for non-symmetric bitmasks if testing against all-filled or all-but-center-empty bitmask.
+	// This fixes some edge cases for certain common incomplete tilesheet layouts.
+	// (We only care about the truthiness of the bit tests, not their exact value, hence the bool casts.)
+	if ((p_ref_bitmask == 511 || p_ref_bitmask == TileSet::BIND_CENTER) &&
+			(bool(p_bitmask & TileSet::BIND_LEFT) != bool(p_bitmask & TileSet::BIND_RIGHT) ||
+					bool(p_bitmask & TileSet::BIND_TOP) != bool(p_bitmask & TileSet::BIND_BOTTOM) ||
+					bool(p_bitmask & TileSet::BIND_TOPRIGHT) != bool(p_bitmask & TileSet::BIND_BOTTOMLEFT) ||
+					bool(p_bitmask & TileSet::BIND_TOPLEFT) != bool(p_bitmask & TileSet::BIND_BOTTOMRIGHT))) {
+		ret += 16;
+	}
+	return ret;
+}
+
+Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, const Node *p_tilemap_node, const Vector2 &p_tile_location) {
+	ERR_FAIL_COND_V_MSG(!tile_map.has(p_id), Vector2(), vformat("The TileSet doesn't have a tile with ID '%d'.", p_id));
+	// First try to forward selection to script
+	if (p_tilemap_node->get_class_name() == "TileMap") {
+		if (get_script_instance() != nullptr) {
+			if (get_script_instance()->has_method("_forward_subtile_selection")) {
+				Variant ret = get_script_instance()->call("_forward_subtile_selection", p_id, p_bitmask, p_tilemap_node, p_tile_location);
+				if (ret.get_type() == Variant::VECTOR2) {
+					return ret;
+				}
+			}
+		}
+	}
+
+	// If we found no forward-selected tile, look for a matching tile.
+	List<Vector2> coords = _autotile_get_subtile_candidates_for_bitmask(p_id, p_bitmask);
+
+	// If we didn't find anything, and auto fallback is enabled, try falling back to a tile with a similar bitmask instead of the default tile.
+	if (tile_map[p_id].autotile_data.fallback_mode == FALLBACK_AUTO && coords.size() == 0) {
+		uint32_t best_match_cost = 100000; // Main point of comparison, general difference between bitmasks.
+		uint32_t best_match_bitcount = 0; // Bit count, as a tie breaker.
+		uint16_t best_match_bitmask = 0;
+
+		for (Map<Vector2, uint32_t>::Element *E = tile_map[p_id].autotile_data.flags.front(); E; E = E->next()) {
+			uint32_t mask = E->get();
+			if (tile_map[p_id].autotile_data.bitmask_mode == BITMASK_2X2) {
+				mask |= (BIND_IGNORE_TOP | BIND_IGNORE_LEFT | BIND_IGNORE_CENTER | BIND_IGNORE_RIGHT | BIND_IGNORE_BOTTOM);
+			}
+
+			uint16_t mask_ignore = mask >> 16;
+			uint16_t mask_low = mask & 0xFFFF;
+			mask_low &= ~mask_ignore;
+			mask_low |= p_bitmask & mask_ignore;
+
+			// Always skip bitmasks with no center bit, or that have already been matched as the best.
+			if ((mask_low & BIND_CENTER) == 0 || mask_low == best_match_bitmask) {
+				continue;
+			}
+
+			uint32_t cost = _score_bitmask_difference(mask_low, p_bitmask);
+			// To break ties, pick the bitmask with more set bits.
+			uint32_t bitcount = _count_bitmask_bits(mask_low);
+
+			// If more similar, confirm match.
+			if (cost < best_match_cost || (cost == best_match_cost && bitcount > best_match_bitcount)) {
+				best_match_cost = cost;
+				best_match_bitcount = bitcount;
+				best_match_bitmask = mask_low;
+			}
+		}
+		coords = _autotile_get_subtile_candidates_for_bitmask(p_id, best_match_bitmask);
 	}
 
 	if (coords.size() == 0) {
 		return autotile_get_icon_coordinate(p_id);
 	} else {
+		List<uint32_t> priorities;
+		uint32_t priority_sum = 0;
+		for (List<Vector2>::Element *E = coords.front(); E; E = E->next()) {
+			uint32_t priority = autotile_get_subtile_priority(p_id, E->get());
+			priority_sum += priority;
+			priorities.push_back(priority);
+		}
+
 		uint32_t picked_value = Math::rand() % priority_sum;
 		uint32_t upper_bound;
 		uint32_t lower_bound = 0;
@@ -1123,6 +1230,8 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("autotile_get_spacing", "id"), &TileSet::autotile_get_spacing);
 	ClassDB::bind_method(D_METHOD("autotile_set_size", "id", "size"), &TileSet::autotile_set_size);
 	ClassDB::bind_method(D_METHOD("autotile_get_size", "id"), &TileSet::autotile_get_size);
+	ClassDB::bind_method(D_METHOD("autotile_set_fallback_mode", "id", "mode"), &TileSet::autotile_set_fallback_mode);
+	ClassDB::bind_method(D_METHOD("autotile_get_fallback_mode", "id"), &TileSet::autotile_get_fallback_mode);
 	ClassDB::bind_method(D_METHOD("tile_set_name", "id", "name"), &TileSet::tile_set_name);
 	ClassDB::bind_method(D_METHOD("tile_get_name", "id"), &TileSet::tile_get_name);
 	ClassDB::bind_method(D_METHOD("tile_set_texture", "id", "texture"), &TileSet::tile_set_texture);
@@ -1177,6 +1286,9 @@ void TileSet::_bind_methods() {
 	BIND_ENUM_CONSTANT(BITMASK_2X2);
 	BIND_ENUM_CONSTANT(BITMASK_3X3_MINIMAL);
 	BIND_ENUM_CONSTANT(BITMASK_3X3);
+
+	BIND_ENUM_CONSTANT(FALLBACK_AUTO);
+	BIND_ENUM_CONSTANT(FALLBACK_ICON);
 
 	BIND_ENUM_CONSTANT(BIND_TOPLEFT);
 	BIND_ENUM_CONSTANT(BIND_TOP);

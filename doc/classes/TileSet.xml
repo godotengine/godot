@@ -66,6 +66,13 @@
 				Returns the [enum BitmaskMode] of the autotile.
 			</description>
 		</method>
+		<method name="autotile_get_fallback_mode" qualifiers="const">
+			<return type="int" enum="TileSet.FallbackMode" />
+			<argument index="0" name="id" type="int" />
+			<description>
+				Returns the [enum FallbackMode] of the autotile.
+			</description>
+		</method>
 		<method name="autotile_get_icon_coordinate" qualifiers="const">
 			<return type="Vector2" />
 			<argument index="0" name="id" type="int" />
@@ -139,13 +146,21 @@
 				Sets the [enum BitmaskMode] of the autotile.
 			</description>
 		</method>
+		<method name="autotile_set_fallback_mode">
+			<return type="void" />
+			<argument index="0" name="id" type="int" />
+			<argument index="1" name="mode" type="int" enum="TileSet.FallbackMode" />
+			<description>
+				Returns the [enum FallbackMode] of the autotile.
+			</description>
+		</method>
 		<method name="autotile_set_icon_coordinate">
 			<return type="void" />
 			<argument index="0" name="id" type="int" />
 			<argument index="1" name="coord" type="Vector2" />
 			<description>
 				Sets the subtile that will be used as an icon in an atlas/autotile given its coordinates.
-				The subtile defined as the icon will be used as a fallback when the atlas/autotile's bitmask information is incomplete. It will also be used to represent it in the TileSet editor.
+				The subtile defined as the icon may be used as a fallback when the atlas/autotile's bitmask information is incomplete. It will also be used to represent it in the TileSet editor.
 			</description>
 		</method>
 		<method name="autotile_set_light_occluder">
@@ -570,6 +585,12 @@
 		<constant name="BITMASK_3X3_MINIMAL" value="1" enum="BitmaskMode">
 		</constant>
 		<constant name="BITMASK_3X3" value="2" enum="BitmaskMode">
+		</constant>
+		<constant name="FALLBACK_AUTO" value="0" enum="FallbackMode">
+			Autotiles will automatically find a best match for missing tiles if they're incomplete.
+		</constant>
+		<constant name="FALLBACK_ICON" value="1" enum="FallbackMode">
+			Autotiles will use the icon tile for missing tiles if they're incomplete.
 		</constant>
 		<constant name="BIND_TOPLEFT" value="1" enum="AutotileBindings">
 		</constant>
