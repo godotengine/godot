@@ -31,16 +31,16 @@
 #ifndef GODOT_NAVIGATION_SERVER_H
 #define GODOT_NAVIGATION_SERVER_H
 
-#include "core/templates/local_vector.h"
-#include "core/templates/rid.h"
-#include "core/templates/rid_owner.h"
-#include "servers/navigation_server_3d.h"
-
 #include "nav_agent.h"
 #include "nav_link.h"
 #include "nav_map.h"
 #include "nav_obstacle.h"
 #include "nav_region.h"
+
+#include "core/templates/local_vector.h"
+#include "core/templates/rid.h"
+#include "core/templates/rid_owner.h"
+#include "servers/navigation_server_3d.h"
 
 /// The commands are functions executed during the `sync` phase.
 

@@ -31,17 +31,18 @@
 #ifndef GD_MONO_CACHE_H
 #define GD_MONO_CACHE_H
 
-#include <stdint.h>
-
 #include "../csharp_script.h"
 #include "../interop_types.h"
 #include "../mono_gc_handle.h"
+
 #include "core/object/object.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
+
+#include <stdint.h>
 
 class CSharpScript;
 

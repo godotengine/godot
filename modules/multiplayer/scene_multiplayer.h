@@ -31,11 +31,11 @@
 #ifndef SCENE_MULTIPLAYER_H
 #define SCENE_MULTIPLAYER_H
 
-#include "scene/main/multiplayer_api.h"
-
 #include "scene_cache_interface.h"
 #include "scene_replication_interface.h"
 #include "scene_rpc_interface.h"
+
+#include "scene/main/multiplayer_api.h"
 
 class OfflineMultiplayerPeer : public MultiplayerPeer {
 	GDCLASS(OfflineMultiplayerPeer, MultiplayerPeer);

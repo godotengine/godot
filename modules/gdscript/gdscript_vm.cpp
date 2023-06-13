@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "gdscript.h"
 #include "gdscript_function.h"
+#include "gdscript_lambda_callable.h"
 
 #include "core/core_string_names.h"
 #include "core/os/os.h"
-#include "gdscript.h"
-#include "gdscript_lambda_callable.h"
 
 #ifdef DEBUG_ENABLED
 static String _get_script_name(const Ref<Script> p_script) {

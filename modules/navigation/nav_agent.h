@@ -31,10 +31,11 @@
 #ifndef NAV_AGENT_H
 #define NAV_AGENT_H
 
-#include "core/object/class_db.h"
-#include "core/templates/local_vector.h"
 #include "nav_agent.h"
 #include "nav_rid.h"
+
+#include "core/object/class_db.h"
+#include "core/templates/local_vector.h"
 
 #include <Agent2d.h>
 #include <Agent3d.h>

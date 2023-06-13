@@ -32,6 +32,7 @@
 #define GLTF_COLLIDER_H
 
 #include "../../gltf_defines.h"
+
 #include "scene/3d/collision_shape_3d.h"
 
 class ImporterMesh;

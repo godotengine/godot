@@ -30,7 +30,20 @@
 
 #include "gdscript.h"
 
-#include <stdint.h>
+#include "gdscript_analyzer.h"
+#include "gdscript_cache.h"
+#include "gdscript_compiler.h"
+#include "gdscript_parser.h"
+#include "gdscript_rpc_callable.h"
+#include "gdscript_warning.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/gdscript_docgen.h"
+#endif
+
+#ifdef TESTS_ENABLED
+#include "tests/gdscript_test_runner.h"
+#endif
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
@@ -39,21 +52,12 @@
 #include "core/io/file_access.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/os/os.h"
-#include "gdscript_analyzer.h"
-#include "gdscript_cache.h"
-#include "gdscript_compiler.h"
-#include "gdscript_parser.h"
-#include "gdscript_rpc_callable.h"
-#include "gdscript_warning.h"
-
-#ifdef TESTS_ENABLED
-#include "tests/gdscript_test_runner.h"
-#endif
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_paths.h"
-#include "editor/gdscript_docgen.h"
 #endif
+
+#include <stdint.h>
 
 ///////////////////////////
 

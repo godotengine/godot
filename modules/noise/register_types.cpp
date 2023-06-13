@@ -36,8 +36,11 @@
 #include "noise_texture_3d.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_plugin.h"
 #include "editor/noise_editor_plugin.h"
+#endif
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_plugin.h"
 #endif
 
 void initialize_noise_module(ModuleInitializationLevel p_level) {

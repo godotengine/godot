@@ -28,10 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/string/print_string.h"
+#include "openxr_vulkan_extension.h"
 
-#include "../extensions/openxr_vulkan_extension.h"
 #include "../openxr_util.h"
+
+#include "core/string/print_string.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"

@@ -30,12 +30,13 @@
 
 #include "gdscript_cache.h"
 
-#include "core/io/file_access.h"
-#include "core/templates/vector.h"
 #include "gdscript.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
+
+#include "core/io/file_access.h"
+#include "core/templates/vector.h"
 #include "scene/resources/packed_scene.h"
 
 bool GDScriptParserRef::is_valid() const {

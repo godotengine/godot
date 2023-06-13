@@ -31,11 +31,12 @@
 #ifndef GDSCRIPT_COMPILER_H
 #define GDSCRIPT_COMPILER_H
 
-#include "core/templates/hash_set.h"
 #include "gdscript.h"
 #include "gdscript_codegen.h"
 #include "gdscript_function.h"
 #include "gdscript_parser.h"
+
+#include "core/templates/hash_set.h"
 
 class GDScriptCompiler {
 	const GDScriptParser *parser = nullptr;

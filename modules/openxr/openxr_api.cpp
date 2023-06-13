@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "openxr_api.h"
+
+#include "openxr_interface.h"
 #include "openxr_util.h"
 
 #include "core/config/engine.h"
@@ -38,10 +40,6 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
-#endif
-
-#ifdef ANDROID_ENABLED
-#define OPENXR_LOADER_NAME "libopenxr_loader.so"
 #endif
 
 // We need to have all the graphics API defines before the Vulkan or OpenGL
@@ -65,6 +63,7 @@
 #define GL3_PROTOTYPES 1
 #include "thirdparty/glad/glad/gl.h"
 #include "thirdparty/glad/glad/glx.h"
+
 #include <X11/Xlib.h>
 #endif // X11_ENABLED
 #endif // GLES_ENABLED
@@ -81,7 +80,9 @@
 #include "extensions/openxr_fb_display_refresh_rate_extension.h"
 #include "extensions/openxr_fb_passthrough_extension_wrapper.h"
 
-#include "modules/openxr/openxr_interface.h"
+#ifdef ANDROID_ENABLED
+#define OPENXR_LOADER_NAME "libopenxr_loader.so"
+#endif
 
 OpenXRAPI *OpenXRAPI::singleton = nullptr;
 Vector<OpenXRExtensionWrapper *> OpenXRAPI::registered_extension_wrappers;

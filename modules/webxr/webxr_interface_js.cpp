@@ -28,20 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "webxr_interface_js.h"
+
 #ifdef WEB_ENABLED
 
-#include "webxr_interface_js.h"
+#include "godot_webxr.h"
 
 #include "core/input/input.h"
 #include "core/os/os.h"
 #include "drivers/gles3/storage/texture_storage.h"
-#include "emscripten.h"
-#include "godot_webxr.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/rendering_server_globals.h"
 
+#include <emscripten.h>
 #include <stdlib.h>
 
 void _emwebxr_on_session_supported(char *p_session_mode, int p_supported) {

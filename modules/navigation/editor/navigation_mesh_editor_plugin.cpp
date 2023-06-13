@@ -33,6 +33,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "../navigation_mesh_generator.h"
+
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"

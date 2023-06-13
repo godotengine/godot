@@ -30,6 +30,13 @@
 
 #include "runtime_interop.h"
 
+#include "../csharp_script.h"
+#include "../interop_types.h"
+#include "../managed_callable.h"
+#include "../mono_gd/gd_mono_cache.h"
+#include "../signal_awaiter_utils.h"
+#include "../utils/path_utils.h"
+
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
@@ -43,14 +50,6 @@
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"
 #endif
-
-#include "../interop_types.h"
-
-#include "modules/mono/csharp_script.h"
-#include "modules/mono/managed_callable.h"
-#include "modules/mono/mono_gd/gd_mono_cache.h"
-#include "modules/mono/signal_awaiter_utils.h"
-#include "modules/mono/utils/path_utils.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -31,10 +31,10 @@
 #ifndef NAV_REGION_H
 #define NAV_REGION_H
 
-#include "scene/resources/navigation_mesh.h"
-
 #include "nav_base.h"
 #include "nav_utils.h"
+
+#include "scene/resources/navigation_mesh.h"
 
 class NavRegion : public NavBase {
 	NavMap *map = nullptr;

@@ -31,11 +31,12 @@
 #ifndef GDSCRIPT_ANALYZER_H
 #define GDSCRIPT_ANALYZER_H
 
+#include "gdscript_cache.h"
+#include "gdscript_parser.h"
+
 #include "core/object/object.h"
 #include "core/object/ref_counted.h"
 #include "core/templates/hash_set.h"
-#include "gdscript_cache.h"
-#include "gdscript_parser.h"
 
 class GDScriptAnalyzer {
 	GDScriptParser *parser = nullptr;

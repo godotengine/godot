@@ -55,8 +55,9 @@ using namespace godot;
 #ifdef MODULE_SVG_ENABLED
 #ifdef MODULE_FREETYPE_ENABLED
 
-#include "thorvg_bounds_iterator.h"
 #include "thorvg_svg_in_ot.h"
+
+#include "thorvg_bounds_iterator.h"
 
 #include <freetype/otsvg.h>
 #include <ft2build.h>

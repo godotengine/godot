@@ -30,6 +30,9 @@
 
 #include "gdscript_analyzer.h"
 
+#include "gdscript.h"
+#include "gdscript_utility_functions.h"
+
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
@@ -39,8 +42,6 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hash_map.h"
-#include "gdscript.h"
-#include "gdscript_utility_functions.h"
 #include "scene/resources/packed_scene.h"
 
 #if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)

@@ -33,9 +33,10 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
-#include <string.h>
 #include <webp/decode.h>
 #include <webp/encode.h>
+
+#include <string.h>
 
 namespace WebPCommon {
 Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quality) {

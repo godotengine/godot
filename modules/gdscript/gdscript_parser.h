@@ -31,6 +31,13 @@
 #ifndef GDSCRIPT_PARSER_H
 #define GDSCRIPT_PARSER_H
 
+#include "gdscript_cache.h"
+#include "gdscript_tokenizer.h"
+
+#ifdef DEBUG_ENABLED
+#include "gdscript_warning.h"
+#endif
+
 #include "core/io/resource.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
@@ -41,13 +48,10 @@
 #include "core/templates/rb_map.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
-#include "gdscript_cache.h"
-#include "gdscript_tokenizer.h"
 
 #ifdef DEBUG_ENABLED
 #include "core/string/string_builder.h"
-#include "gdscript_warning.h"
-#endif // DEBUG_ENABLED
+#endif
 
 class GDScriptParser {
 	struct AnnotationInfo;

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "openxr_util.h"
+
 #include <openxr/openxr_reflection.h>
 
 #define XR_ENUM_CASE_STR(name, val) \
