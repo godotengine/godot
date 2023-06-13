@@ -105,6 +105,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_action_just_released", "action", "exact_match"), &Input::is_action_just_released, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_action_strength", "action", "exact_match"), &Input::get_action_strength, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_action_raw_strength", "action", "exact_match"), &Input::get_action_raw_strength, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_action_peak_strength", "action", "exact_match"), &Input::get_action_peak_strength, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_axis", "negative_action", "positive_action"), &Input::get_axis);
 	ClassDB::bind_method(D_METHOD("get_vector", "negative_x", "positive_x", "negative_y", "positive_y", "deadzone"), &Input::get_vector, DEFVAL(-1.0f));
 	ClassDB::bind_method(D_METHOD("add_joy_mapping", "mapping", "update_existing"), &Input::add_joy_mapping, DEFVAL(false));
@@ -326,6 +327,20 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 	} else {
 		return released_requirement && E->value.released_process_frame == Engine::get_singleton()->get_process_frames();
 	}
+}
+
+float Input::get_action_peak_strength(const StringName &p_action, bool p_exact) const {
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), 0.0, InputMap::get_singleton()->suggest_actions(p_action));
+	HashMap<StringName, Action>::ConstIterator E = action_state.find(p_action);
+	if (!E) {
+		return 0.0f;
+	}
+
+	if (p_exact && E->value.exact == false) {
+		return 0.0f;
+	}
+
+	return E->value.peak_strength;
 }
 
 float Input::get_action_strength(const StringName &p_action, bool p_exact) const {
@@ -699,6 +714,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 					action.pressed = true;
 					action.pressed_physics_frame = Engine::get_singleton()->get_physics_frames();
 					action.pressed_process_frame = Engine::get_singleton()->get_process_frames();
+					action.peak_strength = 0.0f;
 				} else {
 					action.pressed = false;
 					action.released_physics_frame = Engine::get_singleton()->get_physics_frames();
@@ -710,6 +726,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			}
 			action.strength = p_event->get_action_strength(E.key);
 			action.raw_strength = p_event->get_action_raw_strength(E.key);
+			action.peak_strength = MAX(action.peak_strength, action.strength);
 		}
 	}
 
@@ -832,6 +849,7 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 	action.pressed = true;
 	action.strength = p_strength;
 	action.raw_strength = p_strength;
+	action.peak_strength = p_strength;
 	action.exact = true;
 }
 
