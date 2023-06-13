@@ -1384,6 +1384,8 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		wd.multiwindow_fs = false;
 		wd.maximized = wd.was_maximized;
 
+		_update_window_style(p_window, false);
+
 		if (wd.pre_fs_valid) {
 			rect = wd.pre_fs_rect;
 		} else {
@@ -1393,8 +1395,6 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 			rect.bottom = wd.height;
 			wd.pre_fs_valid = true;
 		}
-
-		_update_window_style(p_window, false);
 
 		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
 
