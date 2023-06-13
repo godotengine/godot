@@ -4478,7 +4478,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 			int fnt_size = -1;
 			for (int i = 1; i < subtag.size(); i++) {
-				Vector<String> subtag_a = subtag[i].split("=", true, 2);
+				Vector<String> subtag_a = subtag[i].split("=", true, 1);
 				_normalize_subtags(subtag_a);
 
 				if (subtag_a.size() == 2) {
