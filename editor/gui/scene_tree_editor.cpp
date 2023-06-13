@@ -643,6 +643,19 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 	bool keep = _item_matches_all_terms(p_parent, terms);
 
 	p_parent->set_visible(keep_for_children || keep);
+	if (keep && !valid_types.is_empty()) {
+		keep = false;
+		Node *n = get_node(p_parent->get_metadata(0));
+
+		for (const StringName &E : valid_types) {
+			if (n->is_class(E) ||
+					EditorNode::get_singleton()->is_object_of_custom_type(n, E)) {
+				keep = true;
+				break;
+			}
+		}
+	}
+
 	if (keep_for_children) {
 		if (keep) {
 			p_parent->clear_custom_color(0);
