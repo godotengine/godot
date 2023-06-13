@@ -265,9 +265,11 @@ void GradientTexture2DEditor::_notification(int p_what) {
 			snap_button->set_icon(get_theme_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
 		} break;
 		case NOTIFICATION_READY: {
-			// Set snapping settings based on the texture's meta.
-			snap_button->set_pressed(texture->get_meta("_snap_enabled", false));
-			snap_count_edit->set_value(texture->get_meta("_snap_count", DEFAULT_SNAP));
+			if (texture.is_valid()) {
+				// Set snapping settings based on the texture's meta.
+				snap_button->set_pressed(texture->get_meta("_snap_enabled", false));
+				snap_count_edit->set_value(texture->get_meta("_snap_count", DEFAULT_SNAP));
+			}
 		} break;
 	}
 }
