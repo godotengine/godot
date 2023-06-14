@@ -1036,9 +1036,6 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		environment_transform = get_global_transform().basis;
 
 		switch (environment_mode) {
-			case ENVIRONMENT_MODE_DISABLED: {
-				//nothing
-			} break;
 			case ENVIRONMENT_MODE_SCENE: {
 				Ref<World3D> world = get_world_3d();
 				if (world.is_valid()) {
