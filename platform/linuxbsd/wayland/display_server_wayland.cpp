@@ -2222,9 +2222,9 @@ void DisplayServerWayland::_show_window() {
 		// reports. We'll save the mode beforehand so that we can reapply it later.
 		WindowMode setup_mode = wd.mode;
 
-		wayland_thread.window_create();
-		wayland_thread.window_set_app_id(_get_app_id_from_context(context));
-		wayland_thread.window_set_borderless(window_get_flag(WINDOW_FLAG_BORDERLESS));
+		wayland_thread.window_create(MAIN_WINDOW_ID);
+		wayland_thread.window_set_app_id(MAIN_WINDOW_ID, _get_app_id_from_context(context));
+		wayland_thread.window_set_borderless(MAIN_WINDOW_ID, window_get_flag(WINDOW_FLAG_BORDERLESS));
 
 		// NOTE: The XDG shell protocol is built in a way that causes the window to
 		// be immediately shown as soon as a valid buffer is assigned to it. Hence,
@@ -2254,7 +2254,7 @@ void DisplayServerWayland::_show_window() {
 		// Actually try to apply the window's mode now that it's visible.
 		window_set_mode(setup_mode);
 
-		wayland_thread.window_set_title(wd.title);
+		wayland_thread.window_set_title(MAIN_WINDOW_ID, wd.title);
 	}
 }
 
@@ -2282,7 +2282,7 @@ void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer
 
 	wd.title = p_title;
 
-	wayland_thread.window_set_title(wd.title);
+	wayland_thread.window_set_title(MAIN_WINDOW_ID, wd.title);
 }
 
 void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServer::WindowID p_window) {
@@ -2367,7 +2367,7 @@ void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServe
 
 	wd.max_size = p_size;
 
-	wayland_thread.window_set_max_size(p_size);
+	wayland_thread.window_set_max_size(MAIN_WINDOW_ID, p_size);
 }
 
 Size2i DisplayServerWayland::window_get_max_size(DisplayServer::WindowID p_window) const {
@@ -2407,7 +2407,7 @@ void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServe
 
 	wd.min_size = p_size;
 
-	wayland_thread.window_set_min_size(p_size);
+	wayland_thread.window_set_min_size(MAIN_WINDOW_ID, p_size);
 }
 
 Size2i DisplayServerWayland::window_get_min_size(DisplayServer::WindowID p_window) const {
@@ -2419,7 +2419,7 @@ Size2i DisplayServerWayland::window_get_min_size(DisplayServer::WindowID p_windo
 void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::WindowID p_window) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	wayland_thread.window_resize(p_size);
+	wayland_thread.window_resize(MAIN_WINDOW_ID, p_size);
 	_resize_window(p_size);
 }
 
@@ -2608,7 +2608,7 @@ void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, D
 
 	switch (p_flag) {
 		case WINDOW_FLAG_BORDERLESS: {
-			wayland_thread.window_set_borderless(p_enabled);
+			wayland_thread.window_set_borderless(MAIN_WINDOW_ID, p_enabled);
 		} break;
 
 		default: {
@@ -2633,7 +2633,7 @@ void DisplayServerWayland::window_request_attention(DisplayServer::WindowID p_wi
 
 	DEBUG_LOG_WAYLAND("Requested attention.");
 
-	wayland_thread.window_request_attention();
+	wayland_thread.window_request_attention(MAIN_WINDOW_ID);
 }
 
 void DisplayServerWayland::window_move_to_foreground(DisplayServer::WindowID p_window) {
@@ -3044,7 +3044,7 @@ void DisplayServerWayland::set_context(Context p_context) {
 	context = p_context;
 
 	String app_id = _get_app_id_from_context(p_context);
-	wayland_thread.window_set_app_id(app_id);
+	wayland_thread.window_set_app_id(MAIN_WINDOW_ID, app_id);
 }
 
 Vector<String> DisplayServerWayland::get_rendering_drivers_func() {

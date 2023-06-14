@@ -550,7 +550,7 @@ int WaylandThread::window_data_calculate_scale(WindowData *p_wd) {
 }
 
 // TODO: Finish splitting.
-void WaylandThread::window_create() {
+void WaylandThread::window_create(DisplayServer::WindowID p_window_id) {
 	// TODO: Implement multi-window support.
 	WindowData &wd = wls->main_window;
 
@@ -599,7 +599,7 @@ void WaylandThread::window_create() {
 	wl_display_roundtrip(wl_display);
 }
 
-void WaylandThread::window_resize(Size2i p_size) {
+void WaylandThread::window_resize(DisplayServer::WindowID p_window_id, Size2i p_size) {
 	// TODO: Use window IDs for multiwindow support.
 	WindowData &wd = wls->main_window;
 
@@ -630,7 +630,7 @@ void WaylandThread::window_resize(Size2i p_size) {
 #endif
 }
 
-void WaylandThread::window_set_max_size(Size2i p_size) {
+void WaylandThread::window_set_max_size(DisplayServer::WindowID p_window_id, Size2i p_size) {
 	// TODO: Use window IDs for multiwindow support.
 	WindowData &wd = wls->main_window;
 
@@ -650,7 +650,7 @@ void WaylandThread::window_set_max_size(Size2i p_size) {
 #endif
 }
 
-void WaylandThread::window_set_min_size(Size2i p_size) {
+void WaylandThread::window_set_min_size(DisplayServer::WindowID p_window_id, Size2i p_size) {
 	// TODO: Use window IDs for multiwindow support.
 	WindowData &wd = wls->main_window;
 
@@ -670,7 +670,7 @@ void WaylandThread::window_set_min_size(Size2i p_size) {
 #endif
 }
 
-void WaylandThread::window_set_borderless(bool p_borderless) {
+void WaylandThread::window_set_borderless(DisplayServer::WindowID p_window_id, bool p_borderless) {
 	// TODO: Use window IDs for multiwindow support.
 	WindowData &wd = wls->main_window;
 
@@ -691,7 +691,7 @@ void WaylandThread::window_set_borderless(bool p_borderless) {
 #endif
 }
 
-void WaylandThread::window_set_title(String p_title) {
+void WaylandThread::window_set_title(DisplayServer::WindowID p_window_id, String p_title) {
 	// TODO: Use window IDs for multiwindow support.
 	WindowData &wd = wls->main_window;
 
@@ -706,7 +706,7 @@ void WaylandThread::window_set_title(String p_title) {
 	}
 }
 
-void WaylandThread::window_set_app_id(String p_app_id) {
+void WaylandThread::window_set_app_id(DisplayServer::WindowID p_window_id, String p_app_id) {
 	// TODO: Use window IDs for multiwindow support.
 	WindowData &wd = wls->main_window;
 
@@ -723,7 +723,7 @@ void WaylandThread::window_set_app_id(String p_app_id) {
 	}
 }
 
-void WaylandThread::window_request_attention() {
+void WaylandThread::window_request_attention(DisplayServer::WindowID p_window_id) {
 	// TODO: Use window IDs for multiwindow support.
 	WindowData &wd = wls->main_window;
 
