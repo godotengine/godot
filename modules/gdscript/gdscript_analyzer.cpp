@@ -2446,6 +2446,10 @@ void GDScriptAnalyzer::update_array_literal_element_type(GDScriptParser::ArrayNo
 			continue;
 		}
 		if (!is_type_compatible(p_element_type, element_type, true, p_array)) {
+			if (is_type_compatible(element_type, p_element_type)) {
+				mark_node_unsafe(element_node);
+				continue;
+			}
 			push_error(vformat(R"(Cannot have an element of type "%s" in an array of type "Array[%s]".)", element_type.to_string(), p_element_type.to_string()), element_node);
 			return;
 		}
