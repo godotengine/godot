@@ -3286,8 +3286,8 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="srgb" type="bool" default="false" />
 			<description>
-				Returns the internal graphics handle for this texture object. For use when communicating with 3rd party APIs mostly with GDExternal.
-				[b]Note:[/b] This functions returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
+				Returns the internal graphics handle for this texture object. For use when communicating with third-party APIs mostly with GDExtension.
+				[b]Note:[/b] This function returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
 			</description>
 		</method>
 		<method name="texture_get_path" qualifiers="const">
