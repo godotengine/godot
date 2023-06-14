@@ -48,7 +48,8 @@
 		<method name="clear">
 			<return type="void" />
 			<description>
-				Clears the tag stack and sets [member text] to an empty string.
+				Clears the tag stack.
+				[b]Note:[/b] This method will not modify [member text], but setting [member text] to an empty string also clears the stack.
 			</description>
 		</method>
 		<method name="deselect">
