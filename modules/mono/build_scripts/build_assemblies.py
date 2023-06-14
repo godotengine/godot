@@ -267,7 +267,7 @@ def generate_sdk_package_versions():
     script_path = dirname(os.path.abspath(__file__))
     root_path = dirname(dirname(dirname(script_path)))
 
-    sys.path.insert(0, root_path)
+    sys.path.insert(1, root_path)
     from methods import get_version_info
 
     version_info = get_version_info("")

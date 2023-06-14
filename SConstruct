@@ -81,7 +81,7 @@ for x in sorted(glob.glob("platform/*")):
         continue
     tmppath = "./" + x
 
-    sys.path.insert(0, tmppath)
+    sys.path.insert(1, tmppath)
     import detect
 
     # Get doc classes paths (if present)
@@ -363,7 +363,7 @@ for path in module_search_paths:
 
 # Add module options.
 for name, path in modules_detected.items():
-    sys.path.insert(0, path)
+    sys.path.insert(1, path)
     import config
 
     if env_base["modules_enabled_by_default"]:
@@ -466,7 +466,7 @@ if env_base["precision"] == "double":
 
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform
-    sys.path.insert(0, tmppath)
+    sys.path.insert(1, tmppath)
     import detect
 
     env = env_base.Clone()
@@ -592,6 +592,9 @@ if selected_platform in platform_list:
                 env.Append(CCFLAGS=["-g3"])
             else:
                 env.Append(CCFLAGS=["-g2"])
+            # Remap absolute paths to relative paths for debug symbols.
+            project_path = sys.path[0]
+            env.Append(CCFLAGS=[f"-ffile-prefix-map={project_path}=."])
         else:
             if methods.using_clang(env) and not methods.is_vanilla_clang(env):
                 # Apple Clang, its linker doesn't like -s.
@@ -814,7 +817,7 @@ if selected_platform in platform_list:
     for name, path in modules_detected.items():
         if not env["module_" + name + "_enabled"]:
             continue
-        sys.path.insert(0, path)
+        sys.path.insert(1, path)
         env.current_module = name
         import config
 
