@@ -2025,6 +2025,8 @@ void GDScriptLanguage::finish() {
 		}
 		s = s->next();
 	}
+	script_list.clear();
+	function_list.clear();
 }
 
 void GDScriptLanguage::profiling_start() {
