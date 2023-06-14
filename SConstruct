@@ -180,6 +180,7 @@ opts.Add(
 )
 opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
 opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a separate file", False))
+opts.Add(BoolVariable("debug_paths_relative", "Make file paths in debug symbols relative (if supported)", True))
 opts.Add(EnumVariable("lto", "Link-time optimization (production builds)", "none", ("none", "auto", "thin", "full")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
 opts.Add(BoolVariable("threads", "Enable threading support", True))
@@ -583,73 +584,6 @@ print(f'Building for platform "{selected_platform}", architecture "{env["arch"]}
 if env.dev_build:
     print("NOTE: Developer build, with debug optimization level and debug symbols (unless overridden).")
 
-# Set optimize and debug_symbols flags.
-# "custom" means do nothing and let users set their own optimization flags.
-# Needs to happen after configure to have `env.msvc` defined.
-if env.msvc:
-    if env["debug_symbols"]:
-        env.Append(CCFLAGS=["/Zi", "/FS"])
-        env.Append(LINKFLAGS=["/DEBUG:FULL"])
-    else:
-        env.Append(LINKFLAGS=["/DEBUG:NONE"])
-
-    if env["optimize"] == "speed":
-        env.Append(CCFLAGS=["/O2"])
-        env.Append(LINKFLAGS=["/OPT:REF"])
-    elif env["optimize"] == "speed_trace":
-        env.Append(CCFLAGS=["/O2"])
-        env.Append(LINKFLAGS=["/OPT:REF", "/OPT:NOICF"])
-    elif env["optimize"] == "size":
-        env.Append(CCFLAGS=["/O1"])
-        env.Append(LINKFLAGS=["/OPT:REF"])
-    elif env["optimize"] == "debug" or env["optimize"] == "none":
-        env.Append(CCFLAGS=["/Od"])
-else:
-    if env["debug_symbols"]:
-        # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
-        # otherwise addr2line doesn't understand them
-        env.Append(CCFLAGS=["-gdwarf-4"])
-        if env.dev_build:
-            env.Append(CCFLAGS=["-g3"])
-        else:
-            env.Append(CCFLAGS=["-g2"])
-    else:
-        if methods.using_clang(env) and not methods.is_vanilla_clang(env):
-            # Apple Clang, its linker doesn't like -s.
-            env.Append(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
-        else:
-            env.Append(LINKFLAGS=["-s"])
-
-    if env["optimize"] == "speed":
-        env.Append(CCFLAGS=["-O3"])
-    # `-O2` is friendlier to debuggers than `-O3`, leading to better crash backtraces.
-    elif env["optimize"] == "speed_trace":
-        env.Append(CCFLAGS=["-O2"])
-    elif env["optimize"] == "size":
-        env.Append(CCFLAGS=["-Os"])
-    elif env["optimize"] == "debug":
-        env.Append(CCFLAGS=["-Og"])
-    elif env["optimize"] == "none":
-        env.Append(CCFLAGS=["-O0"])
-
-# Needs to happen after configure to handle "auto".
-if env["lto"] != "none":
-    print("Using LTO: " + env["lto"])
-
-# Set our C and C++ standard requirements.
-# C++17 is required as we need guaranteed copy elision as per GH-36436.
-# Prepending to make it possible to override.
-# This needs to come after `configure`, otherwise we don't have env.msvc.
-if not env.msvc:
-    # Specifying GNU extensions support explicitly, which are supported by
-    # both GCC and Clang. Both currently default to gnu11 and gnu++14.
-    env.Prepend(CFLAGS=["-std=gnu11"])
-    env.Prepend(CXXFLAGS=["-std=gnu++17"])
-else:
-    # MSVC doesn't have clear C standard support, /std only covers C++.
-    # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
-    env.Prepend(CCFLAGS=["/std:c++17"])
-
 # Enforce our minimal compiler version requirements
 cc_version = methods.get_compiler_version(env) or {
     "major": None,
@@ -695,6 +629,9 @@ if methods.using_gcc(env):
             "to switch to posix threads."
         )
         Exit(255)
+    if env["debug_paths_relative"] and cc_version_major < 8:
+        print("GCC < 8 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+        env["debug_paths_relative"] = False
 elif methods.using_clang(env):
     if cc_version_major == -1:
         print(
@@ -717,12 +654,89 @@ elif methods.using_clang(env):
                 "support C++17. Supported versions are Apple Clang 10 and later."
             )
             Exit(255)
+        if env["debug_paths_relative"] and not vanilla and cc_version_major < 12:
+            print("Apple Clang < 12 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+            env["debug_paths_relative"] = False
     elif cc_version_major < 6:
         print(
             "Detected Clang version older than 6, which does not fully support "
             "C++17. Supported versions are Clang 6 and later."
         )
         Exit(255)
+    if env["debug_paths_relative"] and cc_version_major < 10:
+        print("Clang < 10 doesn't support -ffile-prefix-map, disabling `debug_paths_relative` option.")
+        env["debug_paths_relative"] = False
+
+# Set optimize and debug_symbols flags.
+# "custom" means do nothing and let users set their own optimization flags.
+# Needs to happen after configure to have `env.msvc` defined.
+if env.msvc:
+    if env["debug_symbols"]:
+        env.Append(CCFLAGS=["/Zi", "/FS"])
+        env.Append(LINKFLAGS=["/DEBUG:FULL"])
+    else:
+        env.Append(LINKFLAGS=["/DEBUG:NONE"])
+
+    if env["optimize"] == "speed":
+        env.Append(CCFLAGS=["/O2"])
+        env.Append(LINKFLAGS=["/OPT:REF"])
+    elif env["optimize"] == "speed_trace":
+        env.Append(CCFLAGS=["/O2"])
+        env.Append(LINKFLAGS=["/OPT:REF", "/OPT:NOICF"])
+    elif env["optimize"] == "size":
+        env.Append(CCFLAGS=["/O1"])
+        env.Append(LINKFLAGS=["/OPT:REF"])
+    elif env["optimize"] == "debug" or env["optimize"] == "none":
+        env.Append(CCFLAGS=["/Od"])
+else:
+    if env["debug_symbols"]:
+        # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
+        # otherwise addr2line doesn't understand them
+        env.Append(CCFLAGS=["-gdwarf-4"])
+        if env.dev_build:
+            env.Append(CCFLAGS=["-g3"])
+        else:
+            env.Append(CCFLAGS=["-g2"])
+        if env["debug_paths_relative"]:
+            # Remap absolute paths to relative paths for debug symbols.
+            project_path = Dir("#").abspath
+            env.Append(CCFLAGS=[f"-ffile-prefix-map={project_path}=."])
+    else:
+        if methods.using_clang(env) and not methods.is_vanilla_clang(env):
+            # Apple Clang, its linker doesn't like -s.
+            env.Append(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
+        else:
+            env.Append(LINKFLAGS=["-s"])
+
+    if env["optimize"] == "speed":
+        env.Append(CCFLAGS=["-O3"])
+    # `-O2` is friendlier to debuggers than `-O3`, leading to better crash backtraces.
+    elif env["optimize"] == "speed_trace":
+        env.Append(CCFLAGS=["-O2"])
+    elif env["optimize"] == "size":
+        env.Append(CCFLAGS=["-Os"])
+    elif env["optimize"] == "debug":
+        env.Append(CCFLAGS=["-Og"])
+    elif env["optimize"] == "none":
+        env.Append(CCFLAGS=["-O0"])
+
+# Needs to happen after configure to handle "auto".
+if env["lto"] != "none":
+    print("Using LTO: " + env["lto"])
+
+# Set our C and C++ standard requirements.
+# C++17 is required as we need guaranteed copy elision as per GH-36436.
+# Prepending to make it possible to override.
+# This needs to come after `configure`, otherwise we don't have env.msvc.
+if not env.msvc:
+    # Specifying GNU extensions support explicitly, which are supported by
+    # both GCC and Clang. Both currently default to gnu11 and gnu++14.
+    env.Prepend(CFLAGS=["-std=gnu11"])
+    env.Prepend(CXXFLAGS=["-std=gnu++17"])
+else:
+    # MSVC doesn't have clear C standard support, /std only covers C++.
+    # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
+    env.Prepend(CCFLAGS=["/std:c++17"])
 
 # Disable exception handling. Godot doesn't use exceptions anywhere, and this
 # saves around 20% of binary size and very significant build time (GH-80513).
