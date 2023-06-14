@@ -51,7 +51,7 @@ def find_files_in_folder(folder, sub_folder, include_list, extension, sought_exc
         if file.endswith(".gen.cpp"):
             continue
 
-        li = '#include "../' + sub_folder_slashed + file + '"'
+        li = '#include "' + folder + "/" + sub_folder_slashed + file + '"'
 
         if not simple_name in sought_exceptions:
             include_list.append(li)
