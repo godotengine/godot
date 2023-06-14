@@ -1,5 +1,5 @@
 /*
- * Obstacle2d.h
+ * Line.cc
  * RVO2 Library
  *
  * SPDX-FileCopyrightText: 2008 University of North Carolina at Chapel Hill
@@ -31,56 +31,13 @@
  * <https://gamma.cs.unc.edu/RVO2/>
  */
 
-#ifndef RVO2D_OBSTACLE_H_
-#define RVO2D_OBSTACLE_H_
-
 /**
- * @file  Obstacle2d.h
- * @brief Declares the Obstacle2D class.
+ * @file  Line.cc
+ * @brief Defines the Line class.
  */
 
-#include <cstddef>
-#include <cstdint>
-
-#include "Vector2.h"
+#include "Line.h"
 
 namespace RVO2D {
-/**
- * @brief Defines static obstacles in the simulation.
- */
-class Obstacle2D {
- public:
-  /**
-   * @brief Constructs a static obstacle instance.
-   */
-  Obstacle2D();
-
-  /**
-   * @brief Destroys this static obstacle instance.
-   */
-  ~Obstacle2D();
-
-  /* Not implemented. */
-  Obstacle2D(const Obstacle2D &other);
-
-  /* Not implemented. */
-  Obstacle2D &operator=(const Obstacle2D &other);
-
-  Vector2 direction_;
-  Vector2 point_;
-  Obstacle2D *next_;
-  Obstacle2D *previous_;
-  std::size_t id_;
-  bool isConvex_;
-
-  float height_ = 1.0;
-	float elevation_ = 0.0;
-	uint32_t avoidance_layers_ = 1;
-
-  friend class Agent2D;
-  friend class KdTree2D;
-  friend class RVOSimulator2D;
-};
+Line::Line() {}
 } /* namespace RVO2D */
-
-#endif /* RVO2D_OBSTACLE_H_ */

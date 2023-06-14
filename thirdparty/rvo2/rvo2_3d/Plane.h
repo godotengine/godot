@@ -1,6 +1,6 @@
 /*
- * Obstacle2d.h
- * RVO2 Library
+ * Plane.h
+ * RVO2-3D Library
  *
  * SPDX-FileCopyrightText: 2008 University of North Carolina at Chapel Hill
  * SPDX-License-Identifier: Apache-2.0
@@ -31,56 +31,37 @@
  * <https://gamma.cs.unc.edu/RVO2/>
  */
 
-#ifndef RVO2D_OBSTACLE_H_
-#define RVO2D_OBSTACLE_H_
+#ifndef RVO3D_PLANE_H_
+#define RVO3D_PLANE_H_
 
 /**
- * @file  Obstacle2d.h
- * @brief Declares the Obstacle2D class.
+ * @file  Plane.h
+ * @brief Contains the Plane class.
  */
 
-#include <cstddef>
-#include <cstdint>
+#include "Vector3.h"
 
-#include "Vector2.h"
-
-namespace RVO2D {
+namespace RVO3D {
 /**
- * @brief Defines static obstacles in the simulation.
+ * @brief Defines a plane.
  */
-class Obstacle2D {
+class Plane {
  public:
   /**
-   * @brief Constructs a static obstacle instance.
+   * @brief Constructs a plane.
    */
-  Obstacle2D();
+  Plane();
 
   /**
-   * @brief Destroys this static obstacle instance.
+   * @brief A point on the plane.
    */
-  ~Obstacle2D();
+  Vector3 point;
 
-  /* Not implemented. */
-  Obstacle2D(const Obstacle2D &other);
-
-  /* Not implemented. */
-  Obstacle2D &operator=(const Obstacle2D &other);
-
-  Vector2 direction_;
-  Vector2 point_;
-  Obstacle2D *next_;
-  Obstacle2D *previous_;
-  std::size_t id_;
-  bool isConvex_;
-
-  float height_ = 1.0;
-	float elevation_ = 0.0;
-	uint32_t avoidance_layers_ = 1;
-
-  friend class Agent2D;
-  friend class KdTree2D;
-  friend class RVOSimulator2D;
+  /**
+   * @brief The normal to the plane.
+   */
+  Vector3 normal;
 };
-} /* namespace RVO2D */
+} /* namespace RVO3D */
 
-#endif /* RVO2D_OBSTACLE_H_ */
+#endif /* RVO3D_PLANE_H_ */
