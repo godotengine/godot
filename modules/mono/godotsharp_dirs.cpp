@@ -44,6 +44,7 @@
 #endif
 
 #include "mono_gd/gd_mono.h"
+#include "utils/path_utils.h"
 
 namespace GodotSharpDirs {
 
@@ -149,15 +150,9 @@ private:
 		GLOBAL_DEF_RST("mono/project/solution_directory", "");
 		GLOBAL_DEF_RST("mono/project/c#_project_directory", "");
 
-		String appname = ProjectSettings::get_singleton()->get("application/config/name");
-		String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-		if (appname_safe.empty()) {
-			appname_safe = "UnnamedProject";
-		}
-
 		project_assembly_name = ProjectSettings::get_singleton()->get("mono/project/assembly_name");
 		if (project_assembly_name.empty()) {
-			project_assembly_name = appname_safe;
+			project_assembly_name = path::get_csharp_project_name();
 			ProjectSettings::get_singleton()->set("mono/project/assembly_name", project_assembly_name);
 		}
 

@@ -77,6 +77,12 @@ namespace GodotTools.Core
             foreach (string invalidChar in invalidChars)
                 safeDirName = safeDirName.Replace(invalidChar, "-");
 
+            // Avoid reserved names that conflict with Godot assemblies
+            if (safeDirName == "GodotSharp" || safeDirName == "GodotSharpEditor")
+            {
+                safeDirName += "_";
+            }
+
             return safeDirName;
         }
     }

@@ -59,6 +59,8 @@ String realpath(const String &p_path);
 
 String relative_to(const String &p_path, const String &p_relative_to);
 
+String get_csharp_project_name();
+
 } // namespace path
 
 #endif // MONO_PATH_UTILS_H
