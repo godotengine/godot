@@ -91,10 +91,10 @@
 			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell_size].
 		</member>
 		<member name="cell_height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.25">
-			The Y axis cell size to use for fields.
+			The cell height used to rasterize the navigation mesh vertices on the Y axis. Must match with the cell height on the navigation map.
 		</member>
 		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="0.25">
-			The XZ plane cell size to use for fields.
+			The cell size used to rasterize the navigation mesh vertices on the XZ plane. Must match with the cell size on the navigation map.
 		</member>
 		<member name="detail_sample_distance" type="float" setter="set_detail_sample_distance" getter="get_detail_sample_distance" default="6.0">
 			The sampling distance to use when generating the detail mesh, in cell unit.

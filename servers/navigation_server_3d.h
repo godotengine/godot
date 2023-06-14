@@ -80,6 +80,9 @@ public:
 	/// Returns the map cell size.
 	virtual real_t map_get_cell_size(RID p_map) const = 0;
 
+	virtual void map_set_cell_height(RID p_map, real_t p_height) = 0;
+	virtual real_t map_get_cell_height(RID p_map) const = 0;
+
 	virtual void map_set_use_edge_connections(RID p_map, bool p_enabled) = 0;
 	virtual bool map_get_use_edge_connections(RID p_map) const = 0;
 

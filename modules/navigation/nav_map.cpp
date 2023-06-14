@@ -69,6 +69,14 @@ void NavMap::set_cell_size(real_t p_cell_size) {
 	regenerate_polygons = true;
 }
 
+void NavMap::set_cell_height(real_t p_cell_height) {
+	if (cell_height == p_cell_height) {
+		return;
+	}
+	cell_height = p_cell_height;
+	regenerate_polygons = true;
+}
+
 void NavMap::set_use_edge_connections(bool p_enabled) {
 	if (use_edge_connections == p_enabled) {
 		return;
@@ -94,9 +102,9 @@ void NavMap::set_link_connection_radius(real_t p_link_connection_radius) {
 }
 
 gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
-	const int x = int(Math::floor(p_pos.x / cell_size));
-	const int y = int(Math::floor(p_pos.y / cell_size));
-	const int z = int(Math::floor(p_pos.z / cell_size));
+	const int x = static_cast<int>(Math::floor(p_pos.x / cell_size));
+	const int y = static_cast<int>(Math::floor(p_pos.y / cell_height));
+	const int z = static_cast<int>(Math::floor(p_pos.z / cell_size));
 
 	gd::PointKey p;
 	p.key = 0;
