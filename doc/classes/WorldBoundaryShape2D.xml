@@ -10,10 +10,11 @@
 	</tutorials>
 	<members>
 		<member name="distance" type="float" setter="set_distance" getter="get_distance" default="0.0">
-			The line's distance from the origin.
+			The distance from the origin to the line, expressed in terms of [member normal] (according to its direction and magnitude). Actual absolute distance from the origin to the line can be calculated as [code]abs(distance) / normal.length()[/code].
+			In the scalar equation of the line [code]ax + by = d[/code], this is [code]d[/code], while the [code](a, b)[/code] coordinates are represented by the [member normal] property.
 		</member>
 		<member name="normal" type="Vector2" setter="set_normal" getter="get_normal" default="Vector2(0, -1)">
-			The line's normal. Defaults to [code]Vector2.UP[/code].
+			The line's normal, typically a unit vector. Its direction indicates the non-colliding half-plane. Can be of any length but zero. Defaults to [code]Vector2.UP[/code].
 		</member>
 	</members>
 </class>
