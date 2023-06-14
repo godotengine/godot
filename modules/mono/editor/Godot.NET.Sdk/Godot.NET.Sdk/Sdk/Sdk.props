@@ -74,8 +74,13 @@
 
   <!-- Godot DefineConstants. -->
   <PropertyGroup>
-    <!-- Define constant to identify Godot builds. -->
-    <GodotDefineConstants>GODOT</GodotDefineConstants>
+    <!-- Define constants to identify Godot builds and versions. -->
+    <GodotDefineConstants>
+      GODOT;
+      GODOT4;GODOT4_OR_GREATER;
+      GODOT4_1;GODOT4_1_OR_GREATER;GODOT4_0_OR_GREATER;
+      GODOT4_1_0;GODOT4_1_0_OR_GREATER;
+    </GodotDefineConstants>
 
     <!--
     Define constant to determine the target Godot platform. This includes the
