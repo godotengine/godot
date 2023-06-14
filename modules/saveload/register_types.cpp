@@ -38,7 +38,7 @@
 #include "saveload_debugger.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/multiplayer_editor_plugin.h"
+#include "editor/saveload_editor_plugin.h"
 #endif
 
 void initialize_saveload_module(ModuleInitializationLevel p_level) {

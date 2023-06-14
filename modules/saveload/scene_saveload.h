@@ -90,7 +90,7 @@ private:
 //	Ref<StreamPeerBuffer> relay_buffer;
 
 	Ref<SceneCacheInterface> cache;
-	Ref<SceneSaveloadInterface> replicator;
+	Ref<SceneSaveloadInterface> saveloader;
 
 #ifdef DEBUG_ENABLED
 	_FORCE_INLINE_ void _profile_bandwidth(const String &p_what, int p_value);
@@ -128,7 +128,7 @@ public:
 	int get_max_delta_packet_size() const;
 
 	Ref<SceneCacheInterface> get_path_cache() { return cache; }
-	Ref<SceneSaveloadInterface> get_replicator() { return replicator; }
+	Ref<SceneSaveloadInterface> get_saveloader() { return saveloader; }
 
 	SceneSaveload();
 	~SceneSaveload();

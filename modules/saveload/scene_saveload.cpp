@@ -148,8 +148,8 @@ Error SceneSaveload::poll() {
 }
 
 void SceneSaveload::clear() {
-//	packet_cache.clear();
-	replicator->on_reset();
+	packet_cache.clear();
+	saveloader->on_reset();
 	cache->clear();
 //	relay_buffer->clear();
 }
@@ -183,13 +183,13 @@ void SceneSaveload::_process_packet(int p_from, const uint8_t *p_packet, int p_p
 			_process_raw(p_from, p_packet, p_packet_len);
 		} break;
 		case NETWORK_COMMAND_SPAWN: {
-			replicator->on_spawn_receive(p_from, p_packet, p_packet_len);
+			saveloader->on_spawn_receive(p_from, p_packet, p_packet_len);
 		} break;
 		case NETWORK_COMMAND_DESPAWN: {
-			replicator->on_despawn_receive(p_from, p_packet, p_packet_len);
+			saveloader->on_despawn_receive(p_from, p_packet, p_packet_len);
 		} break;
 		case NETWORK_COMMAND_SYNC: {
-			replicator->on_sync_receive(p_from, p_packet, p_packet_len);
+			saveloader->on_sync_receive(p_from, p_packet, p_packet_len);
 		} break;
 		default: {
 			ERR_FAIL_MSG("Invalid network command from " + itos(p_from));
@@ -517,9 +517,9 @@ Error SceneSaveload::object_configuration_add(Object *p_obj, Variant p_config) {
 	SaveloadSpawner *spawner = Object::cast_to<SaveloadSpawner>(p_config.get_validated_object());
 	SaveloadSynchronizer *sync = Object::cast_to<SaveloadSynchronizer>(p_config.get_validated_object());
 	if (spawner) {
-		return replicator->on_spawn(p_obj, p_config);
+		return saveloader->on_spawn(p_obj, p_config);
 	} else if (sync) {
-		return replicator->on_saveload_start(p_obj, p_config);
+		return saveloader->on_saveload_start(p_obj, p_config);
 	}
 	return ERR_INVALID_PARAMETER;
 }
@@ -533,28 +533,28 @@ Error SceneSaveload::object_configuration_remove(Object *p_obj, Variant p_config
 	SaveloadSpawner *spawner = Object::cast_to<SaveloadSpawner>(p_config.get_validated_object());
 	SaveloadSynchronizer *sync = Object::cast_to<SaveloadSynchronizer>(p_config.get_validated_object());
 	if (spawner) {
-		return replicator->on_despawn(p_obj, p_config);
+		return saveloader->on_despawn(p_obj, p_config);
 	}
 	if (sync) {
-		return replicator->on_saveload_stop(p_obj, p_config);
+		return saveloader->on_saveload_stop(p_obj, p_config);
 	}
 	return ERR_INVALID_PARAMETER;
 }
 
 void SceneSaveload::set_max_sync_packet_size(int p_size) {
-	replicator->set_max_sync_packet_size(p_size);
+	saveloader->set_max_sync_packet_size(p_size);
 }
 
 int SceneSaveload::get_max_sync_packet_size() const {
-	return replicator->get_max_sync_packet_size();
+	return saveloader->get_max_sync_packet_size();
 }
 
 void SceneSaveload::set_max_delta_packet_size(int p_size) {
-	replicator->set_max_delta_packet_size(p_size);
+	saveloader->set_max_delta_packet_size(p_size);
 }
 
 int SceneSaveload::get_max_delta_packet_size() const {
-	return replicator->get_max_delta_packet_size();
+	return saveloader->get_max_delta_packet_size();
 }
 
 void SceneSaveload::_bind_methods() {
@@ -570,7 +570,7 @@ void SceneSaveload::_bind_methods() {
 
 SceneSaveload::SceneSaveload() {
 //	relay_buffer.instantiate();
-	replicator = Ref<SceneSaveloadInterface>(memnew(SceneSaveloadInterface(this)));
+	saveloader = Ref<SceneSaveloadInterface>(memnew(SceneSaveloadInterface(this)));
 	cache = Ref<SceneCacheInterface>(memnew(SceneCacheInterface(this)));
 }
 

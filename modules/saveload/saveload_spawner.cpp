@@ -240,7 +240,7 @@ void SaveloadSpawner::_node_added(Node *p_node) {
 		return;
 	}
 	const String name = p_node->get_name();
-	ERR_FAIL_COND_MSG(name.validate_node_name() != name, vformat("Unable to auto-spawn node with reserved name: %s. Make sure to add your replicated scenes via 'add_child(node, true)' to produce valid names.", name));
+	ERR_FAIL_COND_MSG(name.validate_node_name() != name, vformat("Unable to auto-spawn node with reserved name: %s. Make sure to add your saveload scenes via 'add_child(node, true)' to produce valid names.", name));
 	_track(p_node, Variant(), id);
 }
 

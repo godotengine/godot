@@ -121,7 +121,7 @@ void SaveloadEditor::_pick_node_selected(NodePath p_path) {
 
 void SaveloadEditor::_pick_new_property() {
 	if (current == nullptr) {
-		EditorNode::get_singleton()->show_warning(TTR("Select a replicator node in order to pick a property to add to it."));
+		EditorNode::get_singleton()->show_warning(TTR("Select a SaveloadSynchronizer node in order to pick a property to add to it."));
 		return;
 	}
 	Node *root = current->get_node(current->get_root_path());
@@ -329,7 +329,7 @@ bool SaveloadEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 void SaveloadEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	if (current == nullptr) {
-		EditorNode::get_singleton()->show_warning(TTR("Select a replicator node in order to pick a property to add to it."));
+		EditorNode::get_singleton()->show_warning(TTR("Select a SaveloadSynchronizer node in order to pick a property to add to it."));
 		return;
 	}
 	Node *root = current->get_node(current->get_root_path());
