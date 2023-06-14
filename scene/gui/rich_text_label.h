@@ -421,6 +421,7 @@ private:
 	void _stop_thread();
 	bool _validate_line_caches();
 	void _process_line_caches();
+	_FORCE_INLINE_ float _update_scroll_exceeds(float p_total_height, float p_ctrl_height, float p_width, int p_idx, float p_old_scroll, float p_text_rect_height);
 
 	void _add_item(Item *p_item, bool p_enter = false, bool p_ensure_newline = false);
 	void _remove_item(Item *p_item, const int p_line, const int p_subitem_line);
