@@ -392,6 +392,9 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 
 	StringBuilder builder;
 	builder.append(">> ");
+	// Only include the file path and line for script errors, otherwise the test
+	// outputs include arbitrary data which can change when we edit engine code.
+	bool include_path = false;
 	switch (p_type) {
 		case ERR_HANDLER_ERROR:
 			builder.append("ERROR");
@@ -401,6 +404,7 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 			break;
 		case ERR_HANDLER_SCRIPT:
 			builder.append("SCRIPT ERROR");
+			include_path = true;
 			break;
 		case ERR_HANDLER_SHADER:
 			builder.append("SHADER ERROR");
@@ -413,10 +417,12 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 	builder.append("\n>> on function: ");
 	builder.append(String::utf8(p_function));
 	builder.append("()\n>> ");
-	builder.append(String::utf8(p_file).trim_prefix(self->base_dir));
-	builder.append("\n>> ");
-	builder.append(itos(p_line));
-	builder.append("\n>> ");
+	if (include_path) {
+		builder.append(String::utf8(p_file).trim_prefix(self->base_dir).replace("\\", "/"));
+		builder.append("\n>> ");
+		builder.append(itos(p_line));
+		builder.append("\n>> ");
+	}
 	builder.append(String::utf8(p_error));
 	if (strlen(p_explanation) > 0) {
 		builder.append("\n>> ");
