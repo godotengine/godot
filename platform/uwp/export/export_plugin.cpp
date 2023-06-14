@@ -515,8 +515,7 @@ EditorExportPlatformUWP::EditorExportPlatformUWP() {
 	Ref<Image> img = memnew(Image);
 	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-	ImageLoaderSVG img_loader;
-	img_loader.create_image_from_string(img, _uwp_logo_svg, EDSCALE, upsample, false);
+	ImageLoaderSVG::create_image_from_string(img, _uwp_logo_svg, EDSCALE, upsample, false);
 
 	logo = ImageTexture::create_from_image(img);
 #endif
