@@ -50,7 +50,7 @@ while read -r file; do
         make_annotation "The following validation errors no longer occur (compared to $reference_tag):" "$obsolete_validation_error" warning "$file"
     fi
     if [ -n "$new_validation_error" ]; then
-        make_annotation "Compatibility to $reference_tag is broken in the following ways:" "$new_validation_error" error README.md
+        make_annotation "Compatibility to $reference_tag is broken in the following ways:" "$new_validation_error" error "$file"
         has_problems=1
     fi
 
