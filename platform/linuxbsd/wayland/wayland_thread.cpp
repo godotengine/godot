@@ -385,18 +385,18 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 }
 
 void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
-	WindowData *wd = (WindowData *)data;
-	ERR_FAIL_NULL(wd);
+	WindowState *ws = (WindowState *)data;
+	ERR_FAIL_NULL(ws);
 
 	// TODO: Handle multiple outputs?
 
-	wd->wl_output = wl_output;
+	ws->wl_output = wl_output;
 }
 
 void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
 }
 
-void DisplayServerWayland::_wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {
+void WaylandThread::_wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {
 	ScreenState *ss = (ScreenState *)data;
 	ERR_FAIL_NULL(ss);
 
@@ -412,7 +412,7 @@ void DisplayServerWayland::_wl_output_on_geometry(void *data, struct wl_output *
 	ss->pending_data.model.parse_utf8(model);
 }
 
-void DisplayServerWayland::_wl_output_on_mode(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
+void WaylandThread::_wl_output_on_mode(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
 	ScreenState *ss = (ScreenState *)data;
 	ERR_FAIL_NULL(ss);
 
@@ -422,7 +422,7 @@ void DisplayServerWayland::_wl_output_on_mode(void *data, struct wl_output *wl_o
 	ss->pending_data.refresh_rate = refresh ? refresh / 1000.0f : -1;
 }
 
-void DisplayServerWayland::_wl_output_on_done(void *data, struct wl_output *wl_output) {
+void WaylandThread::_wl_output_on_done(void *data, struct wl_output *wl_output) {
 	ScreenState *ss = (ScreenState *)data;
 	ERR_FAIL_NULL(ss);
 
@@ -431,7 +431,7 @@ void DisplayServerWayland::_wl_output_on_done(void *data, struct wl_output *wl_o
 	DEBUG_LOG_WAYLAND(vformat("Output %x done.", (size_t)wl_output));
 }
 
-void DisplayServerWayland::_wl_output_on_scale(void *data, struct wl_output *wl_output, int32_t factor) {
+void WaylandThread::_wl_output_on_scale(void *data, struct wl_output *wl_output, int32_t factor) {
 	ScreenState *ss = (ScreenState *)data;
 	ERR_FAIL_NULL(ss);
 
@@ -440,14 +440,260 @@ void DisplayServerWayland::_wl_output_on_scale(void *data, struct wl_output *wl_
 	DEBUG_LOG_WAYLAND(vformat("Output %x scale %d", (size_t)wl_output, factor));
 }
 
-void DisplayServerWayland::_wl_output_on_name(void *data, struct wl_output *wl_output, const char *name) {
+void WaylandThread::_wl_output_on_name(void *data, struct wl_output *wl_output, const char *name) {
 }
 
-void DisplayServerWayland::_wl_output_on_description(void *data, struct wl_output *wl_output, const char *description) {
+void WaylandThread::_wl_output_on_description(void *data, struct wl_output *wl_output, const char *description) {
 }
+
+void WaylandThread::_xdg_wm_base_on_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial) {
+	xdg_wm_base_pong(xdg_wm_base, serial);
+}
+
+void WaylandThread::_xdg_surface_on_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial) {
+	xdg_surface_ack_configure(xdg_surface, serial);
+
+	WindowState *ws = (WindowState *)data;
+	ERR_FAIL_NULL(ws);
+
+	int scale = WaylandThread::window_state_calculate_scale(ws);
+
+	Rect2i scaled_rect = ws->rect;
+	scaled_rect.size *= scale;
+
+	if (ws->wl_surface) {
+		wl_surface_set_buffer_scale(ws->wl_surface, scale);
+	}
+
+	if (ws->xdg_surface) {
+		xdg_surface_set_window_geometry(ws->xdg_surface, 0, 0, scaled_rect.size.width, scaled_rect.size.height);
+	}
+
+#if 0
+	// TODO: Port to WaylandThread with wl_pointer user data.
+	//WaylandState *wls = ws->wls;
+	if (wls->current_seat && wls->current_seat->wp_locked_pointer) {
+		// Since the cursor's currently locked and the window's rect might have
+		// changed, we have to recenter the position hint to ensure that the cursor
+		// stays centered on unlock.
+		wl_fixed_t unlock_x = wl_fixed_from_int(width / 2);
+		wl_fixed_t unlock_y = wl_fixed_from_int(height / 2);
+
+		zwp_locked_pointer_v1_set_cursor_position_hint(wls->current_seat->wp_locked_pointer, unlock_x, unlock_y);
+	}
+#endif
+
+	Ref<WaylandWindowRectMessage> msg;
+	msg.instantiate();
+	msg->rect = scaled_rect;
+
+	ws->wayland_thread->push_message(msg);
+
+	DEBUG_LOG_WAYLAND(vformat("xdg surface on configure rect %s", ws->rect));
+}
+
+void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
+	WindowState *ws = (WindowState *)data;
+	ERR_FAIL_NULL(ws);
+
+	if (width != 0 && height != 0) {
+		ws->rect.size.width = width;
+		ws->rect.size.height = height;
+	}
+
+	// Expect the window to be in windowed mode. The mode will get overridden if
+	// the compositor reports otherwise.
+	ws->mode = WINDOW_MODE_WINDOWED;
+
+	uint32_t *state = nullptr;
+	wl_array_for_each(state, states) {
+		switch (*state) {
+			case XDG_TOPLEVEL_STATE_MAXIMIZED: {
+				ws->mode = WINDOW_MODE_MAXIMIZED;
+			} break;
+
+			case XDG_TOPLEVEL_STATE_FULLSCREEN: {
+				ws->mode = WINDOW_MODE_FULLSCREEN;
+			} break;
+
+			default: {
+				// We don't care about the other states (for now).
+			} break;
+		}
+	}
+
+	DEBUG_LOG_WAYLAND(vformat("XDG toplevel on configure width %d height %d.", width, height));
+}
+
+void WaylandThread::_xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_toplevel) {
+	WindowState *ws = (WindowState *)data;
+	ERR_FAIL_NULL(ws);
+
+	Ref<WaylandWindowEventMessage> msg;
+	msg.instantiate();
+	msg->event = WINDOW_EVENT_CLOSE_REQUEST;
+	ws->wayland_thread->push_message(msg);
+}
+
+void WaylandThread::_xdg_toplevel_on_configure_bounds(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height) {
+}
+
+void WaylandThread::_xdg_toplevel_on_wm_capabilities(void *data, struct xdg_toplevel *xdg_toplevel, struct wl_array *capabilities) {
+	WindowState *ws = (WindowState *)data;
+	ERR_FAIL_NULL(ws);
+
+	ws->can_maximize = false;
+	ws->can_fullscreen = false;
+	ws->can_minimize = false;
+
+	uint32_t *capability = nullptr;
+	wl_array_for_each(capability, capabilities) {
+		switch (*capability) {
+			case XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE: {
+				ws->can_maximize = true;
+			}; break;
+			case XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN: {
+				ws->can_fullscreen = true;
+			}; break;
+
+			case XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE: {
+				ws->can_minimize = true;
+			}; break;
+
+			default: {
+			}; break;
+		}
+	}
+}
+
+void WaylandThread::_xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode) {
+	if (mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE) {
+#ifdef LIBDECOR_ENABLED
+		WARN_PRINT_ONCE("Native client side decorations are not yet supported without libdecor!");
+#else
+		WARN_PRINT_ONCE("Native client side decorations are not yet supported!");
+#endif // LIBDECOR_ENABLED
+	}
+}
+
+#ifdef LIBDECOR_ENABLED
+void WaylandThread::libdecor_on_error(struct libdecor *context, enum libdecor_error error, const char *message) {
+	ERR_PRINT(vformat("libdecor error %d: %s", error, message));
+}
+
+// NOTE: This is pretty much a reimplementation of _xdg_surface_on_configure
+// and _xdg_toplevel_on_configure. Libdecor really likes wrapping everything,
+// forcing us to do stuff like this.
+void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, struct libdecor_configuration *configuration, void *user_data) {
+	WindowState *ws = (WindowState *)user_data;
+	ERR_FAIL_NULL(ws);
+
+	int width = 0;
+	int height = 0;
+
+	if (!libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
+		// The configuration doesn't have a size. We'll use the one already set in the window.
+		width = ws->rect.size.width;
+		height = ws->rect.size.height;
+	} else {
+		// The configuration has a size, let's update the window rect.
+		ws->rect.size.width = width;
+		ws->rect.size.height = height;
+	}
+
+	libdecor_window_state window_state = LIBDECOR_WINDOW_STATE_NONE;
+
+	// Expect the window to be in windowed mode. The mode will get overridden if
+	// the compositor reports otherwise.
+	ws->mode = WINDOW_MODE_WINDOWED;
+
+	if (libdecor_configuration_get_window_state(configuration, &window_state)) {
+		switch (window_state) {
+			case LIBDECOR_WINDOW_STATE_MAXIMIZED: {
+				ws->mode = WINDOW_MODE_MAXIMIZED;
+			} break;
+
+			case LIBDECOR_WINDOW_STATE_FULLSCREEN: {
+				ws->mode = WINDOW_MODE_FULLSCREEN;
+			} break;
+
+			default: {
+				// We don't care about the other states (for now).
+			} break;
+		}
+	}
+
+	int scale = WaylandThread::window_state_calculate_scale(ws);
+
+	Rect2i scaled_rect = ws->rect;
+	scaled_rect.size *= scale;
+
+	if (ws->wl_surface) {
+		wl_surface_set_buffer_scale(ws->wl_surface, scale);
+		wl_surface_commit(ws->wl_surface);
+	}
+
+	if (ws->libdecor_frame) {
+		struct libdecor_state *state = libdecor_state_new(scaled_rect.size.width, scaled_rect.size.height);
+		libdecor_frame_commit(ws->libdecor_frame, state, configuration);
+		libdecor_state_free(state);
+	}
+
+	Ref<WaylandWindowRectMessage> winrect_msg;
+	winrect_msg.instantiate();
+	winrect_msg->rect = scaled_rect;
+	ws->wayland_thread->push_message(winrect_msg);
+
+	DEBUG_LOG_WAYLAND("libdecor frame on configure");
+}
+
+void WaylandThread::libdecor_frame_on_close(struct libdecor_frame *frame, void *user_data) {
+	WindowState *ws = (WindowState *)user_data;
+	ERR_FAIL_NULL(ws);
+
+	Ref<WaylandWindowEventMessage> winevent_msg;
+	winevent_msg.instantiate();
+	winevent_msg->event = WINDOW_EVENT_CLOSE_REQUEST;
+
+	ws->wayland_thread->push_message(winevent_msg);
+
+	DEBUG_LOG_WAYLAND("libdecor frame on close");
+}
+
+void WaylandThread::libdecor_frame_on_commit(struct libdecor_frame *frame, void *user_data) {
+	WindowState *ws = (WindowState *)user_data;
+	ERR_FAIL_NULL(ws);
+
+	wl_surface_commit(ws->wl_surface);
+
+	DEBUG_LOG_WAYLAND("libdecor frame on commit");
+}
+
+void WaylandThread::libdecor_frame_on_dismiss_popup(struct libdecor_frame *frame, const char *seat_name, void *user_data) {
+}
+#endif // LIBDECOR_ENABLED
+
+void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token) {
+#if 0
+	// TODO: Port to `WaylandThread` API.
+	WindowState *ws = (WindowState *)state;
+	ERR_FAIL_NULL(ws);
+
+	ERR_FAIL_NULL(ws->wl_surface);
+
+	xdg_activation_v1_activate(wls->globals.xdg_activation, token, ws->wl_surface);
+
+	xdg_activation_token_v1_destroy(xdg_activation_token);
+
+	DEBUG_LOG_WAYLAND(vformat("Received activation token and requested window activation."));
+#endif
+}
+
 // NOTE: This must be started after a valid wl_display is loaded.
 void WaylandThread::_poll_events_thread(void *p_data) {
 	ThreadData *data = (ThreadData *)p_data;
+	ERR_FAIL_NULL(data);
+	ERR_FAIL_NULL(data->wl_display);
 
 	struct pollfd poll_fd;
 	poll_fd.fd = wl_display_get_fd(data->wl_display);
@@ -508,12 +754,11 @@ void WaylandThread::wl_proxy_tag_godot(struct wl_proxy *p_proxy) {
 	wl_proxy_set_tag(p_proxy, &proxy_tag);
 }
 
-// Returns the wl_surface's `WindowData`, otherwise `nullptr`.
+// Returns the wl_surface's `WindowState`, otherwise `nullptr`.
 // NOTE: This will fail if the surface isn't tagged as ours.
-// TODO: Remove `DisplayServerWayland::`.
-DisplayServerWayland::WindowData *WaylandThread::wl_surface_get_window_data(struct wl_surface *p_surface) {
+WaylandThread::WindowState *WaylandThread::wl_surface_get_window_state(struct wl_surface *p_surface) {
 	if (p_surface && wl_proxy_is_godot((wl_proxy *)p_surface)) {
-		return (WindowData *)wl_surface_get_user_data(p_surface);
+		return (WindowState *)wl_surface_get_user_data(p_surface);
 	}
 
 	return nullptr;
@@ -530,11 +775,11 @@ DisplayServerWayland::ScreenState *WaylandThread::wl_output_get_screen_state(str
 
 // NOTE: This method is the simplest way of accounting for dynamic output scale
 // changes.
-int WaylandThread::window_data_calculate_scale(WindowData *p_wd) {
+int WaylandThread::window_state_calculate_scale(WindowState *p_ws) {
 	// TODO: Handle multiple screens (eg. two screens: one scale 2, one scale 1).
 
 	// TODO: Cache value?
-	ScreenState *ss = wl_output_get_screen_state(p_wd->wl_output);
+	ScreenState *ss = wl_output_get_screen_state(p_ws->wl_output);
 
 	if (ss) {
 		// NOTE: For some mystical reason, wl_output.done is emitted _after_ windows
@@ -549,26 +794,50 @@ int WaylandThread::window_data_calculate_scale(WindowData *p_wd) {
 	return 1;
 }
 
+void WaylandThread::push_message(Ref<WaylandMessage> message) {
+	messages.push_back(message);
+}
+
+bool WaylandThread::has_message() {
+	return messages.front() != nullptr;
+}
+
+Ref<WaylandThread::WaylandMessage> WaylandThread::pop_message() {
+	if (messages.front() != nullptr) {
+		Ref<WaylandMessage> msg = messages.front()->get();
+		messages.pop_front();
+		return msg;
+	}
+
+	// This method should only be called if `has_messages` returns true but if
+	// that isn't the case we'll just return an invalid `Ref`. After all, due to
+	// its `InputEvent`-like interface, we still have to dynamically cast and check
+	// the `Ref`'s validity anyways.
+	return Ref<WaylandMessage>();
+}
+
 // TODO: Finish splitting.
-void WaylandThread::window_create(DisplayServer::WindowID p_window_id) {
+void WaylandThread::window_create(DisplayServer::WindowID p_window_id, int p_width, int p_height) {
 	// TODO: Implement multi-window support.
-	WindowData &wd = wls->main_window;
+	WindowState &ws = main_window;
 
-	wd.wl_surface = wl_compositor_create_surface(wls->globals.wl_compositor);
+	ws.globals = &wls->globals;
+	ws.wayland_thread = this;
 
-	wl_proxy_tag_godot((struct wl_proxy *)wd.wl_surface);
-	wl_surface_add_listener(wd.wl_surface, &wl_surface_listener, &wd);
+	ws.rect.size.width = p_width;
+	ws.rect.size.height = p_height;
+
+	ws.wl_surface = wl_compositor_create_surface(wls->globals.wl_compositor);
+
+	wl_proxy_tag_godot((struct wl_proxy *)ws.wl_surface);
+	wl_surface_add_listener(ws.wl_surface, &wl_surface_listener, &ws);
 
 	bool decorated = false;
 
 #ifdef LIBDECOR_ENABLED
 	if (!decorated && wls->libdecor_context) {
-		wd.libdecor_frame = libdecor_decorate(wls->libdecor_context, wd.wl_surface, (struct libdecor_frame_interface *)&libdecor_frame_interface, &wd);
-
-		libdecor_frame_set_max_content_size(wd.libdecor_frame, wd.max_size.width, wd.max_size.height);
-		libdecor_frame_set_min_content_size(wd.libdecor_frame, wd.min_size.width, wd.max_size.height);
-
-		libdecor_frame_map(wd.libdecor_frame);
+		ws.libdecor_frame = libdecor_decorate(wls->libdecor_context, ws.wl_surface, (struct libdecor_frame_interface *)&libdecor_frame_interface, &ws);
+		libdecor_frame_map(ws.libdecor_frame);
 
 		decorated = true;
 	}
@@ -578,53 +847,54 @@ void WaylandThread::window_create(DisplayServer::WindowID p_window_id) {
 		// libdecor has failed loading or is disabled, we shall handle xdg_toplevel
 		// creation and decoration ourselves (and by decorating for now I just mean
 		// asking for SSDs and hoping for the best).
-		wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls->globals.xdg_wm_base, wd.wl_surface);
-		xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
+		ws.xdg_surface = xdg_wm_base_get_xdg_surface(wls->globals.xdg_wm_base, ws.wl_surface);
+		xdg_surface_add_listener(ws.xdg_surface, &xdg_surface_listener, &ws);
 
-		wd.xdg_toplevel = xdg_surface_get_toplevel(wd.xdg_surface);
-		xdg_toplevel_add_listener(wd.xdg_toplevel, &xdg_toplevel_listener, &wd);
+		ws.xdg_toplevel = xdg_surface_get_toplevel(ws.xdg_surface);
+		xdg_toplevel_add_listener(ws.xdg_toplevel, &xdg_toplevel_listener, &ws);
 
-		xdg_toplevel_set_max_size(wd.xdg_toplevel, wd.max_size.width, wd.max_size.height);
-		xdg_toplevel_set_min_size(wd.xdg_toplevel, wd.min_size.width, wd.min_size.height);
-
-		wd.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(wls->globals.xdg_decoration_manager, wd.xdg_toplevel);
-		zxdg_toplevel_decoration_v1_add_listener(wd.xdg_toplevel_decoration, &xdg_toplevel_decoration_listener, &wd);
+		ws.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(wls->globals.xdg_decoration_manager, ws.xdg_toplevel);
+		zxdg_toplevel_decoration_v1_add_listener(ws.xdg_toplevel_decoration, &xdg_toplevel_decoration_listener, &ws);
 
 		decorated = true;
 	}
 
-	wl_surface_commit(wd.wl_surface);
+	wl_surface_commit(ws.wl_surface);
 
 	// Wait for the surface to be configured before continuing.
 	wl_display_roundtrip(wl_display);
 }
 
+struct wl_surface *WaylandThread::window_get_wl_surface(DisplayServer::WindowID p_window_id) const {
+	// TODO: Use window IDs for multiwindow support.
+	const WindowState &ws = main_window;
+
+	return ws.wl_surface;
+}
+
 void WaylandThread::window_resize(DisplayServer::WindowID p_window_id, Size2i p_size) {
 	// TODO: Use window IDs for multiwindow support.
-	WindowData &wd = wls->main_window;
+	WindowState &ws = main_window;
 
-	ScreenState *ss = wl_output_get_screen_state(wd.wl_output);
-	ERR_FAIL_NULL(ss);
+	int scale = window_state_calculate_scale(&ws);
 
-	int scale = window_data_calculate_scale(&wd);
+	ws.rect.size = p_size / scale;
 
-	wd.logical_rect.size = p_size / scale;
+	if (ws.wl_surface) {
+		wl_surface_set_buffer_scale(ws.wl_surface, scale);
 
-	if (wd.wl_surface) {
-		wl_surface_set_buffer_scale(wd.wl_surface, scale);
-
-		if (wd.xdg_surface) {
-			xdg_surface_set_window_geometry(wd.xdg_surface, 0, 0, p_size.width, p_size.height);
+		if (ws.xdg_surface) {
+			xdg_surface_set_window_geometry(ws.xdg_surface, 0, 0, p_size.width, p_size.height);
 		}
 
-		wl_surface_commit(wd.wl_surface);
+		wl_surface_commit(ws.wl_surface);
 	}
 
 #ifdef LIBDECOR_ENABLED
-	if (wd.libdecor_frame) {
+	if (ws.libdecor_frame) {
 		struct libdecor_state *state = libdecor_state_new(p_size.width, p_size.height);
 		// I'm not sure whether we can just pass null here.
-		libdecor_frame_commit(wd.libdecor_frame, state, nullptr);
+		libdecor_frame_commit(ws.libdecor_frame, state, nullptr);
 		libdecor_state_free(state);
 	}
 #endif
@@ -632,18 +902,18 @@ void WaylandThread::window_resize(DisplayServer::WindowID p_window_id, Size2i p_
 
 void WaylandThread::window_set_max_size(DisplayServer::WindowID p_window_id, Size2i p_size) {
 	// TODO: Use window IDs for multiwindow support.
-	WindowData &wd = wls->main_window;
+	WindowState &ws = main_window;
 
-	Size2i logical_max_size = p_size / window_data_calculate_scale(&wd);
+	Size2i logical_max_size = p_size / window_state_calculate_scale(&ws);
 
-	if (wd.wl_surface && wd.xdg_toplevel) {
-		xdg_toplevel_set_max_size(wd.xdg_toplevel, logical_max_size.width, logical_max_size.height);
-		wl_surface_commit(wd.wl_surface);
+	if (ws.wl_surface && ws.xdg_toplevel) {
+		xdg_toplevel_set_max_size(ws.xdg_toplevel, logical_max_size.width, logical_max_size.height);
+		wl_surface_commit(ws.wl_surface);
 	}
 
 #ifdef LIBDECOR_ENABLED
-	if (wd.libdecor_frame) {
-		libdecor_frame_set_max_content_size(wd.libdecor_frame, logical_max_size.width, logical_max_size.height);
+	if (ws.libdecor_frame) {
+		libdecor_frame_set_max_content_size(ws.libdecor_frame, logical_max_size.width, logical_max_size.height);
 	}
 
 	// FIXME: I'm not sure whether we have to commit the surface for this to apply.
@@ -652,87 +922,144 @@ void WaylandThread::window_set_max_size(DisplayServer::WindowID p_window_id, Siz
 
 void WaylandThread::window_set_min_size(DisplayServer::WindowID p_window_id, Size2i p_size) {
 	// TODO: Use window IDs for multiwindow support.
-	WindowData &wd = wls->main_window;
+	WindowState &ws = main_window;
 
-	Size2i logical_min_size = p_size / window_data_calculate_scale(&wd);
+	Size2i logical_min_size = p_size / window_state_calculate_scale(&ws);
 
-	if (wd.wl_surface && wd.xdg_toplevel) {
-		xdg_toplevel_set_min_size(wd.xdg_toplevel, logical_min_size.width, logical_min_size.height);
-		wl_surface_commit(wd.wl_surface);
+	if (ws.wl_surface && ws.xdg_toplevel) {
+		xdg_toplevel_set_min_size(ws.xdg_toplevel, logical_min_size.width, logical_min_size.height);
+		wl_surface_commit(ws.wl_surface);
 	}
 
 #ifdef LIBDECOR_ENABLED
-	if (wd.libdecor_frame) {
-		libdecor_frame_set_min_content_size(wd.libdecor_frame, logical_min_size.width, logical_min_size.height);
+	if (ws.libdecor_frame) {
+		libdecor_frame_set_min_content_size(ws.libdecor_frame, logical_min_size.width, logical_min_size.height);
 	}
 
 	// FIXME: I'm not sure whether we have to commit the surface for this to apply.
 #endif
 }
 
+bool WaylandThread::window_can_set_mode(DisplayServer::WindowID p_window_id_id, DisplayServer::WindowMode p_mode) const {
+	// TODO: Use window IDs for multiwindow support.
+	const WindowState &ws = main_window;
+
+	switch (p_mode) {
+		case WINDOW_MODE_WINDOWED: {
+			// Looks like it's guaranteed.
+			return true;
+		};
+
+		case WINDOW_MODE_MINIMIZED: {
+			return ws.can_minimize;
+		};
+
+		case WINDOW_MODE_MAXIMIZED: {
+			return ws.can_maximize;
+		};
+
+		case WINDOW_MODE_FULLSCREEN: {
+			return ws.can_fullscreen;
+		};
+
+		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN: {
+			// I'm not really sure but from what I can find Wayland doesn't really have
+			// the concept of exclusive fullscreen.
+			// TODO: Discuss whether to fallback to regular fullscreen or not.
+			return false;
+		};
+	}
+
+	return false;
+}
+
 void WaylandThread::window_set_borderless(DisplayServer::WindowID p_window_id, bool p_borderless) {
 	// TODO: Use window IDs for multiwindow support.
-	WindowData &wd = wls->main_window;
+	WindowState &ws = main_window;
 
-	if (wls->globals.xdg_decoration_manager && wd.xdg_toplevel_decoration) {
+	if (ws.xdg_toplevel_decoration) {
 		if (p_borderless) {
 			// We implement borderless windows by simply asking the compositor to let
 			// us handle decorations (we don't).
-			zxdg_toplevel_decoration_v1_set_mode(wd.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE);
+			zxdg_toplevel_decoration_v1_set_mode(ws.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE);
 		} else {
-			zxdg_toplevel_decoration_v1_set_mode(wd.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
+			zxdg_toplevel_decoration_v1_set_mode(ws.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
 		}
 	}
 
 #ifdef LIBDECOR_ENABLED
-	if (wd.libdecor_frame) {
-		libdecor_frame_set_visibility(wd.libdecor_frame, !p_borderless);
+	if (ws.libdecor_frame) {
+		libdecor_frame_set_visibility(ws.libdecor_frame, !p_borderless);
 	}
 #endif
 }
 
 void WaylandThread::window_set_title(DisplayServer::WindowID p_window_id, String p_title) {
 	// TODO: Use window IDs for multiwindow support.
-	WindowData &wd = wls->main_window;
+	WindowState &ws = main_window;
 
 #ifdef LIBDECOR_ENABLED
-	if (wd.libdecor_frame && p_title.utf8().ptr()) {
-		libdecor_frame_set_title(wd.libdecor_frame, wd.title.utf8().ptr());
+	if (ws.libdecor_frame && p_title.utf8().ptr()) {
+		libdecor_frame_set_title(ws.libdecor_frame, p_title.utf8().ptr());
 	}
 #endif // LIBDECOR_ENABLE
 
-	if (wd.xdg_toplevel && p_title.utf8().ptr()) {
-		xdg_toplevel_set_title(wd.xdg_toplevel, wd.title.utf8().ptr());
+	if (ws.xdg_toplevel && p_title.utf8().ptr()) {
+		xdg_toplevel_set_title(ws.xdg_toplevel, p_title.utf8().ptr());
 	}
 }
 
 void WaylandThread::window_set_app_id(DisplayServer::WindowID p_window_id, String p_app_id) {
 	// TODO: Use window IDs for multiwindow support.
-	WindowData &wd = wls->main_window;
+	WindowState &ws = main_window;
 
 #ifdef LIBDECOR_ENABLED
-	if (wd.libdecor_frame) {
-		libdecor_frame_set_app_id(wd.libdecor_frame, p_app_id.utf8().ptrw());
+	if (ws.libdecor_frame) {
+		libdecor_frame_set_app_id(ws.libdecor_frame, p_app_id.utf8().ptrw());
 		return;
 	}
 #endif
 
-	if (wd.xdg_toplevel) {
-		xdg_toplevel_set_app_id(wd.xdg_toplevel, p_app_id.utf8().ptrw());
+	if (ws.xdg_toplevel) {
+		xdg_toplevel_set_app_id(ws.xdg_toplevel, p_app_id.utf8().ptrw());
 		return;
 	}
 }
 
 void WaylandThread::window_request_attention(DisplayServer::WindowID p_window_id) {
 	// TODO: Use window IDs for multiwindow support.
-	WindowData &wd = wls->main_window;
+	WindowState &ws = main_window;
 
 	if (wls->globals.xdg_activation) {
 		// Window attention requests are done through the XDG activation protocol.
 		xdg_activation_token_v1 *xdg_activation_token = xdg_activation_v1_get_activation_token(wls->globals.xdg_activation);
-		xdg_activation_token_v1_add_listener(xdg_activation_token, &xdg_activation_token_listener, &wd);
+		xdg_activation_token_v1_add_listener(xdg_activation_token, &xdg_activation_token_listener, &ws);
 		xdg_activation_token_v1_commit(xdg_activation_token);
 	}
+}
+
+void WaylandThread::window_set_idle_inhibition(DisplayServer::WindowID p_window_id, bool p_enable) {
+	// TODO: Use window IDs for multiwindow support.
+	WindowState &ws = main_window;
+
+	if (p_enable) {
+		if (ws.globals->wp_idle_inhibit_manager && !ws.wp_idle_inhibitor) {
+			ERR_FAIL_COND(!ws.wl_surface);
+			ws.wp_idle_inhibitor = zwp_idle_inhibit_manager_v1_create_inhibitor(ws.globals->wp_idle_inhibit_manager, ws.wl_surface);
+		}
+	} else {
+		if (ws.wp_idle_inhibitor) {
+			zwp_idle_inhibitor_v1_destroy(ws.wp_idle_inhibitor);
+			ws.wp_idle_inhibitor = nullptr;
+		}
+	}
+}
+
+bool WaylandThread::window_get_idle_inhibition(DisplayServer::WindowID p_window_id) const {
+	// TODO: Use window IDs for multiwindow support.
+	const WindowState &ws = main_window;
+
+	return ws.wp_idle_inhibitor != nullptr;
 }
 
 DisplayServerWayland::ScreenData WaylandThread::screen_get_data(int p_screen) const {
@@ -863,20 +1190,16 @@ void WaylandThread::destroy() {
 		return;
 	}
 
-	if (wls->main_window.xdg_toplevel) {
-		xdg_toplevel_destroy(wls->main_window.xdg_toplevel);
+	if (main_window.xdg_toplevel) {
+		xdg_toplevel_destroy(main_window.xdg_toplevel);
 	}
 
-	if (wls->main_window.xdg_surface) {
-		xdg_surface_destroy(wls->main_window.xdg_surface);
+	if (main_window.xdg_surface) {
+		xdg_surface_destroy(main_window.xdg_surface);
 	}
 
-	if (wls->main_window.wl_egl_window) {
-		wl_egl_window_destroy(wls->main_window.wl_egl_window);
-	}
-
-	if (wls->main_window.wl_surface) {
-		wl_surface_destroy(wls->main_window.wl_surface);
+	if (main_window.wl_surface) {
+		wl_surface_destroy(main_window.wl_surface);
 	}
 
 	for (SeatState &seat : wls->seats) {

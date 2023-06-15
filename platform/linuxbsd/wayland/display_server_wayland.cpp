@@ -248,6 +248,7 @@ bool DisplayServerWayland::_seat_state_configure_key_event(SeatState &p_ss, Ref<
 	return true;
 }
 
+// TODO: Move this method or some parts of it into WaylandThread.
 void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 	if (!p_wls.current_seat || !p_wls.current_seat->wl_pointer) {
 		return;
@@ -314,7 +315,7 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 		wl_surface_commit(ss.cursor_surface);
 	}
 
-	WindowData &wd = p_wls.main_window;
+	GodotWindowData &wd = p_wls.main_window;
 
 	// Constrain/Free pointer movement depending on its mode.
 	switch (p_wls.mouse_mode) {
@@ -335,11 +336,16 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 		// Locked pointer.
 		case MOUSE_MODE_CAPTURED: {
 			if (!lp) {
-				lp = zwp_pointer_constraints_v1_lock_pointer(pc, wd.wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+				// TODO: Remove this temporary hack.
+				struct wl_surface *wl_surface = p_wls.wayland_thread->window_get_wl_surface(wd.id);
+				WaylandThread::WindowState *ws = p_wls.wayland_thread->wl_surface_get_window_state(wl_surface);
+				Rect2i logical_rect = ws->rect;
+
+				lp = zwp_pointer_constraints_v1_lock_pointer(pc, wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
 
 				// Center the cursor on unlock.
-				wl_fixed_t unlock_x = wl_fixed_from_int(wd.logical_rect.size.width / 2);
-				wl_fixed_t unlock_y = wl_fixed_from_int(wd.logical_rect.size.height / 2);
+				wl_fixed_t unlock_x = wl_fixed_from_int(logical_rect.size.width / 2);
+				wl_fixed_t unlock_y = wl_fixed_from_int(logical_rect.size.height / 2);
 
 				zwp_locked_pointer_v1_set_cursor_position_hint(lp, unlock_x, unlock_y);
 			}
@@ -349,7 +355,9 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 		case MOUSE_MODE_CONFINED:
 		case MOUSE_MODE_CONFINED_HIDDEN: {
 			if (!cp) {
-				cp = zwp_pointer_constraints_v1_confine_pointer(pc, wd.wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+				// TODO: Remove this temporary hack.
+				struct wl_surface *wl_surface = p_wls.wayland_thread->window_get_wl_surface(wd.id);
+				cp = zwp_pointer_constraints_v1_confine_pointer(pc, wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
 			}
 		}
 	}
@@ -382,7 +390,7 @@ String DisplayServerWayland::_get_app_id_from_context(Context context) {
 }
 
 void DisplayServerWayland::_send_window_event(WindowEvent p_event) {
-	WindowData &wd = wls.main_window;
+	GodotWindowData &wd = wls.main_window;
 
 	if (wd.window_event_callback.is_valid()) {
 		Variant var_event = Variant(p_event);
@@ -412,7 +420,7 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 }
 
 void DisplayServerWayland::_resize_window(Size2i size) {
-	WindowData &wd = wls.main_window;
+	GodotWindowData &wd = wls.main_window;
 
 	wd.actual_rect.size = size;
 
@@ -530,11 +538,11 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 	ss->window_pointed = true;
 	ss->pointed_surface = surface;
 
-	Ref<WaylandWindowEventMessage> msg;
+	Ref<WaylandThread::WaylandWindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_MOUSE_ENTER;
 
-	wls->messages.push_back(msg);
+	wls->wayland_thread->push_message(msg);
 
 	DEBUG_LOG_WAYLAND("Pointing window.");
 }
@@ -549,11 +557,11 @@ void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *w
 	ss->window_pointed = false;
 	ss->pointed_surface = nullptr;
 
-	Ref<WaylandWindowEventMessage> msg;
+	Ref<WaylandThread::WaylandWindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_MOUSE_EXIT;
 
-	wls->messages.push_back(msg);
+	wls->wayland_thread->push_message(msg);
 
 	DEBUG_LOG_WAYLAND("Left window.");
 }
@@ -562,10 +570,10 @@ void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WindowData *wd = WaylandThread::wl_surface_get_window_data(ss->pointed_surface);
-	ERR_FAIL_NULL(wd);
+	WaylandThread::WindowState *ws = WaylandThread::wl_surface_get_window_state(ss->pointed_surface);
+	ERR_FAIL_NULL(ws);
 
-	int scale = WaylandThread::window_data_calculate_scale(wd);
+	int scale = WaylandThread::window_state_calculate_scale(ws);
 
 	PointerData &pd = ss->pointer_data_buffer;
 
@@ -685,12 +693,12 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 			mm->set_relative(pd.position - old_pd.position);
 		}
 
-		Ref<WaylandInputEventMessage> msg;
+		Ref<WaylandThread::WaylandInputEventMessage> msg;
 		msg.instantiate();
 
 		msg->event = mm;
 
-		wls->messages.push_back(msg);
+		wls->wayland_thread->push_message(msg);
 	}
 
 	if (pd.discrete_scroll_vector - old_pd.discrete_scroll_vector != Vector2i()) {
@@ -723,12 +731,12 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 			pg->set_delta(pd.scroll_vector);
 
-			Ref<WaylandInputEventMessage> msg;
+			Ref<WaylandThread::WaylandInputEventMessage> msg;
 			msg.instantiate();
 
 			msg->event = pg;
 
-			wls->messages.push_back(msg);
+			wls->wayland_thread->push_message(msg);
 		}
 	}
 
@@ -792,12 +800,12 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 					mb->set_double_click(true);
 				}
 
-				Ref<WaylandInputEventMessage> msg;
+				Ref<WaylandThread::WaylandInputEventMessage> msg;
 				msg.instantiate();
 
 				msg->event = mb;
 
-				wls->messages.push_back(msg);
+				wls->wayland_thread->push_message(msg);
 
 				// Send an event resetting immediately the wheel key.
 				// Wayland specification defines axis_stop events as optional and says to
@@ -820,10 +828,10 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 					wh_up->set_button_index(test_button);
 					wh_up->set_pressed(false);
 
-					Ref<WaylandInputEventMessage> msg_up;
+					Ref<WaylandThread::WaylandInputEventMessage> msg_up;
 					msg_up.instantiate();
 					msg_up->event = wh_up;
-					wls->messages.push_back(msg_up);
+					wls->wayland_thread->push_message(msg_up);
 				}
 			}
 		}
@@ -909,10 +917,10 @@ void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard 
 
 	_seat_state_set_current(*ss);
 
-	Ref<WaylandWindowEventMessage> msg;
+	Ref<WaylandThread::WaylandWindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_FOCUS_IN;
-	wls->messages.push_back(msg);
+	wls->wayland_thread->push_message(msg);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
@@ -924,10 +932,10 @@ void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard 
 
 	ss->repeating_keycode = XKB_KEYCODE_INVALID;
 
-	Ref<WaylandWindowEventMessage> msg;
+	Ref<WaylandThread::WaylandWindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_FOCUS_OUT;
-	wls->messages.push_back(msg);
+	wls->wayland_thread->push_message(msg);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
@@ -962,10 +970,10 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 		return;
 	}
 
-	Ref<WaylandInputEventMessage> msg;
+	Ref<WaylandThread::WaylandInputEventMessage> msg;
 	msg.instantiate();
 	msg->event = k;
-	wls->messages.push_back(msg);
+	wls->wayland_thread->push_message(msg);
 }
 
 void DisplayServerWayland::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
@@ -1037,7 +1045,7 @@ void DisplayServerWayland::_wl_data_device_on_drop(void *data, struct wl_data_de
 		// just stall our next `read`s.
 		close(fds[1]);
 
-		Ref<WaylandDropFilesEventMessage> msg;
+		Ref<WaylandThread::WaylandDropFilesEventMessage> msg;
 		msg.instantiate();
 
 		msg->files = _string_read_fd(fds[0]).split("\r\n", false);
@@ -1045,7 +1053,7 @@ void DisplayServerWayland::_wl_data_device_on_drop(void *data, struct wl_data_de
 			msg->files.write[i] = msg->files[i].replace("file://", "").uri_decode();
 		}
 
-		ss->wls->messages.push_back(msg);
+		ss->wls->wayland_thread->push_message(msg);
 	}
 
 	wl_data_offer_finish(ss->wl_data_offer_dnd);
@@ -1138,150 +1146,6 @@ void DisplayServerWayland::_wl_data_source_on_dnd_finished(void *data, struct wl
 void DisplayServerWayland::_wl_data_source_on_action(void *data, struct wl_data_source *wl_data_source, uint32_t dnd_action) {
 }
 
-void DisplayServerWayland::_xdg_wm_base_on_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial) {
-	xdg_wm_base_pong(xdg_wm_base, serial);
-}
-
-void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial) {
-	xdg_surface_ack_configure(xdg_surface, serial);
-
-	WindowData *wd = (WindowData *)data;
-	ERR_FAIL_NULL(wd);
-	ERR_FAIL_NULL(wd->wls);
-
-	int scale = WaylandThread::window_data_calculate_scale(wd);
-
-	Rect2i scaled_rect = wd->logical_rect;
-	scaled_rect.size *= scale;
-
-	if (wd->wl_surface) {
-		wl_surface_set_buffer_scale(wd->wl_surface, scale);
-	}
-
-	if (wd->xdg_surface) {
-		xdg_surface_set_window_geometry(wd->xdg_surface, 0, 0, scaled_rect.size.width, scaled_rect.size.height);
-	}
-
-	Ref<WaylandWindowRectMessage> msg;
-	msg.instantiate();
-	msg->rect = scaled_rect;
-	wd->wls->messages.push_back(msg);
-
-	DEBUG_LOG_WAYLAND(vformat("xdg surface on configure rect %s", wd->logical_rect));
-}
-
-void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
-	WindowData *wd = (WindowData *)data;
-	ERR_FAIL_NULL(wd);
-
-	WaylandState *wls = wd->wls;
-
-	if (width != 0 && height != 0) {
-		wd->logical_rect.size.width = width;
-		wd->logical_rect.size.height = height;
-	}
-
-	if (wls->current_seat && wls->current_seat->wp_locked_pointer) {
-		// Since the cursor's currently locked and the window's rect might have
-		// changed, we have to recenter the position hint to ensure that the cursor
-		// stays centered on unlock.
-		wl_fixed_t unlock_x = wl_fixed_from_int(width / 2);
-		wl_fixed_t unlock_y = wl_fixed_from_int(height / 2);
-
-		zwp_locked_pointer_v1_set_cursor_position_hint(wls->current_seat->wp_locked_pointer, unlock_x, unlock_y);
-	}
-
-	// Expect the window to be in windowed mode. The mode will get overridden if
-	// the compositor reports otherwise.
-	wd->mode = WINDOW_MODE_WINDOWED;
-
-	uint32_t *state = nullptr;
-	wl_array_for_each(state, states) {
-		switch (*state) {
-			case XDG_TOPLEVEL_STATE_MAXIMIZED: {
-				wd->mode = WINDOW_MODE_MAXIMIZED;
-			} break;
-
-			case XDG_TOPLEVEL_STATE_FULLSCREEN: {
-				wd->mode = WINDOW_MODE_FULLSCREEN;
-			} break;
-
-			default: {
-				// We don't care about the other states (for now).
-			} break;
-		}
-	}
-
-	DEBUG_LOG_WAYLAND(vformat("XDG toplevel on configure width %d height %d.", width, height));
-}
-
-void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_toplevel) {
-	WindowData *wd = (WindowData *)data;
-	ERR_FAIL_NULL(wd);
-
-	WaylandState *wls = (WaylandState *)wd->wls;
-	ERR_FAIL_NULL(wls);
-
-	Ref<WaylandWindowEventMessage> msg;
-	msg.instantiate();
-	msg->event = WINDOW_EVENT_CLOSE_REQUEST;
-	wls->messages.push_back(msg);
-}
-
-void DisplayServerWayland::_xdg_toplevel_on_configure_bounds(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height) {
-}
-
-void DisplayServerWayland::_xdg_toplevel_on_wm_capabilities(void *data, struct xdg_toplevel *xdg_toplevel, struct wl_array *capabilities) {
-	WindowData *wd = (WindowData *)data;
-	ERR_FAIL_NULL(wd);
-
-	wd->can_maximize = false;
-	wd->can_fullscreen = false;
-	wd->can_minimize = false;
-
-	uint32_t *capability = nullptr;
-	wl_array_for_each(capability, capabilities) {
-		switch (*capability) {
-			case XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE: {
-				wd->can_maximize = true;
-			}; break;
-			case XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN: {
-				wd->can_fullscreen = true;
-			}; break;
-
-			case XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE: {
-				wd->can_minimize = true;
-			}; break;
-
-			default: {
-			}; break;
-		}
-	}
-}
-
-void DisplayServerWayland::_xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode) {
-	if (mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE) {
-#ifdef LIBDECOR_ENABLED
-		WARN_PRINT_ONCE("Native client side decorations are not yet supported without libdecor!");
-#else
-		WARN_PRINT_ONCE("Native client side decorations are not yet supported!");
-#endif // LIBDECOR_ENABLED
-	}
-}
-
-void DisplayServerWayland::_xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token) {
-	WindowData *wd = (WindowData *)data;
-	ERR_FAIL_NULL(wd);
-
-	ERR_FAIL_NULL(wd->wl_surface);
-
-	xdg_activation_v1_activate(wd->wls->globals.xdg_activation, token, wd->wl_surface);
-
-	xdg_activation_token_v1_destroy(xdg_activation_token);
-
-	DEBUG_LOG_WAYLAND(vformat("Received activation token and requested window activation."));
-}
-
 void DisplayServerWayland::_wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
@@ -1330,7 +1194,7 @@ void DisplayServerWayland::_wp_pointer_gesture_pinch_on_update(void *data, struc
 		wl_fixed_t scale_delta = scale - ss->old_pinch_scale;
 		mg->set_factor(1 + wl_fixed_to_double(scale_delta));
 
-		Ref<WaylandInputEventMessage> magnify_msg;
+		Ref<WaylandThread::WaylandInputEventMessage> magnify_msg;
 		magnify_msg.instantiate();
 		magnify_msg->event = mg;
 
@@ -1352,12 +1216,12 @@ void DisplayServerWayland::_wp_pointer_gesture_pinch_on_update(void *data, struc
 		pg->set_position(pd.position);
 		pg->set_delta(Vector2(wl_fixed_to_double(dx), wl_fixed_to_double(dy)));
 
-		Ref<WaylandInputEventMessage> pan_msg;
+		Ref<WaylandThread::WaylandInputEventMessage> pan_msg;
 		pan_msg.instantiate();
 		pan_msg->event = pg;
 
-		wls->messages.push_back(magnify_msg);
-		wls->messages.push_back(pan_msg);
+		wls->wayland_thread->push_message(magnify_msg);
+		wls->wayland_thread->push_message(pan_msg);
 
 		ss->old_pinch_scale = scale;
 	}
@@ -1511,11 +1375,11 @@ void DisplayServerWayland::_wp_tablet_tool_on_proximity_in(void *data, struct zw
 	DEBUG_LOG_WAYLAND("Tablet tool entered window.");
 
 	if (!ss->window_pointed) {
-		Ref<WaylandWindowEventMessage> msg;
+		Ref<WaylandThread::WaylandWindowEventMessage> msg;
 		msg.instantiate();
 		msg->event = WINDOW_EVENT_MOUSE_ENTER;
 
-		wls->messages.push_back(msg);
+		wls->wayland_thread->push_message(msg);
 	}
 
 	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on proximity in serial %d tablet %x surface %x", (size_t)zwp_tablet_tool_v2, serial, (size_t)tablet, (size_t)surface));
@@ -1533,11 +1397,11 @@ void DisplayServerWayland::_wp_tablet_tool_on_proximity_out(void *data, struct z
 	DEBUG_LOG_WAYLAND("Tablet tool left window.");
 
 	if (!ss->window_pointed) {
-		Ref<WaylandWindowEventMessage> msg;
+		Ref<WaylandThread::WaylandWindowEventMessage> msg;
 		msg.instantiate();
 		msg->event = WINDOW_EVENT_MOUSE_EXIT;
 
-		wls->messages.push_back(msg);
+		wls->wayland_thread->push_message(msg);
 	}
 	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on proximity out", (size_t)zwp_tablet_tool_v2));
 }
@@ -1578,10 +1442,10 @@ void DisplayServerWayland::_wp_tablet_tool_on_motion(void *data, struct zwp_tabl
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WindowData *wd = WaylandThread::wl_surface_get_window_data(ss->pointed_surface);
-	ERR_FAIL_NULL(wd);
+	WaylandThread::WindowState *ws = WaylandThread::wl_surface_get_window_state(ss->pointed_surface);
+	ERR_FAIL_NULL(ws);
 
-	int scale = WaylandThread::window_data_calculate_scale(wd);
+	int scale = WaylandThread::window_state_calculate_scale(ws);
 
 	ss->tablet_tool_data_buffer.position.x = wl_fixed_to_double(x) * scale;
 	ss->tablet_tool_data_buffer.position.y = wl_fixed_to_double(y) * scale;
@@ -1702,12 +1566,12 @@ void DisplayServerWayland::_wp_tablet_tool_on_frame(void *data, struct zwp_table
 		Input::get_singleton()->set_mouse_position(td.position);
 		mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
-		Ref<WaylandInputEventMessage> inputev_msg;
+		Ref<WaylandThread::WaylandInputEventMessage> inputev_msg;
 		inputev_msg.instantiate();
 
 		inputev_msg->event = mm;
 
-		wls->messages.push_back(inputev_msg);
+		wls->wayland_thread->push_message(inputev_msg);
 	}
 
 	if (old_td.pressed_button_mask != td.pressed_button_mask) {
@@ -1746,120 +1610,18 @@ void DisplayServerWayland::_wp_tablet_tool_on_frame(void *data, struct zwp_table
 					mb->set_double_click(true);
 				}
 
-				Ref<WaylandInputEventMessage> msg;
+				Ref<WaylandThread::WaylandInputEventMessage> msg;
 				msg.instantiate();
 
 				msg->event = mb;
 
-				wls->messages.push_back(msg);
+				wls->wayland_thread->push_message(msg);
 			}
 		}
 	}
 
 	old_td = td;
 }
-
-#ifdef LIBDECOR_ENABLED
-void DisplayServerWayland::libdecor_on_error(struct libdecor *context, enum libdecor_error error, const char *message) {
-	ERR_PRINT(vformat("libdecor error %d: %s", error, message));
-}
-
-// NOTE: This is pretty much a reimplementation of _xdg_surface_on_configure
-// and _xdg_toplevel_on_configure. Libdecor really likes wrapping everything,
-// forcing us to do stuff like this.
-void DisplayServerWayland::libdecor_frame_on_configure(struct libdecor_frame *frame, struct libdecor_configuration *configuration, void *user_data) {
-	WindowData *wd = (WindowData *)user_data;
-	ERR_FAIL_NULL(wd);
-	ERR_FAIL_NULL(wd->wls);
-
-	int width = 0;
-	int height = 0;
-
-	if (!libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
-		// The configuration doesn't have a size. We'll use the one already set in the window.
-		width = wd->logical_rect.size.width;
-		height = wd->logical_rect.size.height;
-	} else {
-		// The configuration has a size, let's update the window rect.
-		wd->logical_rect.size.width = width;
-		wd->logical_rect.size.height = height;
-	}
-
-	libdecor_window_state window_state = LIBDECOR_WINDOW_STATE_NONE;
-
-	// Expect the window to be in windowed mode. The mode will get overridden if
-	// the compositor reports otherwise.
-	wd->mode = WINDOW_MODE_WINDOWED;
-
-	if (libdecor_configuration_get_window_state(configuration, &window_state)) {
-		switch (window_state) {
-			case LIBDECOR_WINDOW_STATE_MAXIMIZED: {
-				wd->mode = WINDOW_MODE_MAXIMIZED;
-			} break;
-
-			case LIBDECOR_WINDOW_STATE_FULLSCREEN: {
-				wd->mode = WINDOW_MODE_FULLSCREEN;
-			} break;
-
-			default: {
-				// We don't care about the other states (for now).
-			} break;
-		}
-	}
-
-	int scale = WaylandThread::window_data_calculate_scale(wd);
-
-	Rect2i scaled_rect = wd->logical_rect;
-	scaled_rect.size *= scale;
-
-	if (wd->wl_surface) {
-		wl_surface_set_buffer_scale(wd->wl_surface, scale);
-		wl_surface_commit(wd->wl_surface);
-	}
-
-	if (wd->libdecor_frame) {
-		struct libdecor_state *state = libdecor_state_new(scaled_rect.size.width, scaled_rect.size.height);
-		libdecor_frame_commit(wd->libdecor_frame, state, configuration);
-		libdecor_state_free(state);
-	}
-
-	Ref<WaylandWindowRectMessage> winrect_msg;
-	winrect_msg.instantiate();
-	winrect_msg->rect = scaled_rect;
-	wd->wls->messages.push_back(winrect_msg);
-
-	DEBUG_LOG_WAYLAND("libdecor frame on configure");
-}
-
-void DisplayServerWayland::libdecor_frame_on_close(struct libdecor_frame *frame, void *user_data) {
-	WindowData *wd = (WindowData *)user_data;
-	ERR_FAIL_NULL(wd);
-
-	WaylandState *wls = wd->wls;
-	ERR_FAIL_NULL(wls);
-
-	Ref<WaylandWindowEventMessage> winevent_msg;
-	winevent_msg.instantiate();
-
-	winevent_msg->event = WINDOW_EVENT_CLOSE_REQUEST;
-
-	wls->messages.push_back(winevent_msg);
-
-	DEBUG_LOG_WAYLAND("libdecor frame on close");
-}
-
-void DisplayServerWayland::libdecor_frame_on_commit(struct libdecor_frame *frame, void *user_data) {
-	WindowData *wd = (WindowData *)user_data;
-	ERR_FAIL_NULL(wd);
-
-	wl_surface_commit(wd->wl_surface);
-
-	DEBUG_LOG_WAYLAND("libdecor frame on commit");
-}
-
-void DisplayServerWayland::libdecor_frame_on_dismiss_popup(struct libdecor_frame *frame, const char *seat_name, void *user_data) {
-}
-#endif // LIBDECOR_ENABLED
 
 // Interface mthods
 
@@ -1985,8 +1747,11 @@ void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 
 		// Override the hint set by MOUSE_MODE_CAPTURED with the requested one.
 		zwp_locked_pointer_v1_set_cursor_position_hint(wls.current_seat->wp_locked_pointer, wl_fixed_from_int(p_to.x), wl_fixed_from_int(p_to.y));
+
+		struct wl_surface *wl_surface = wayland_thread.window_get_wl_surface(MAIN_WINDOW_ID);
+
 		// Committing the surface is required to set the hint instantly.
-		wl_surface_commit(wls.main_window.wl_surface);
+		wl_surface_commit(wl_surface);
 
 		mouse_set_mode(old_mouse_mode);
 	}
@@ -2168,18 +1933,6 @@ void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 		return;
 	}
 
-	if (p_enable) {
-		if (wls.globals.wp_idle_inhibit_manager && !wls.wp_idle_inhibitor) {
-			ERR_FAIL_COND(!wls.main_window.wl_surface);
-			wls.wp_idle_inhibitor = zwp_idle_inhibit_manager_v1_create_inhibitor(wls.globals.wp_idle_inhibit_manager, wls.main_window.wl_surface);
-		}
-	} else {
-		if (wls.wp_idle_inhibitor) {
-			zwp_idle_inhibitor_v1_destroy(wls.wp_idle_inhibitor);
-			wls.wp_idle_inhibitor = nullptr;
-		}
-	}
-
 #ifdef DBUS_ENABLED
 	if (screensaver) {
 		if (p_enable) {
@@ -2195,10 +1948,10 @@ void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 
 bool DisplayServerWayland::screen_is_kept_on() const {
 #ifdef DBUS_ENABLED
-	return wls.wp_idle_inhibitor != nullptr || screensaver_inhibited;
+	return wayland_thread.window_get_idle_inhibition(MAIN_WINDOW_ID) || screensaver_inhibited;
 #endif
 
-	return wls.wp_idle_inhibitor != nullptr;
+	return wayland_thread.window_get_idle_inhibition(MAIN_WINDOW_ID);
 }
 
 Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
@@ -2213,16 +1966,19 @@ Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
 void DisplayServerWayland::_show_window() {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	WindowData &wd = wls.main_window;
+	GodotWindowData &wd = wls.main_window;
 
 	if (!wd.visible) {
 		DEBUG_LOG_WAYLAND("Showing window.");
 
 		// Showing this window will reset its mode with whatever the compositor
 		// reports. We'll save the mode beforehand so that we can reapply it later.
+		// TODO: Fix/Port/Move/Whatever to `WaylandThread` APIs.
 		WindowMode setup_mode = wd.mode;
 
-		wayland_thread.window_create(MAIN_WINDOW_ID);
+		wayland_thread.window_create(MAIN_WINDOW_ID, wd.actual_rect.size.width, wd.actual_rect.size.height);
+		wayland_thread.window_set_min_size(MAIN_WINDOW_ID, wd.min_size);
+		wayland_thread.window_set_max_size(MAIN_WINDOW_ID, wd.max_size);
 		wayland_thread.window_set_app_id(MAIN_WINDOW_ID, _get_app_id_from_context(context));
 		wayland_thread.window_set_borderless(MAIN_WINDOW_ID, window_get_flag(WINDOW_FLAG_BORDERLESS));
 
@@ -2232,14 +1988,16 @@ void DisplayServerWayland::_show_window() {
 		// graphics context window creation logic here.
 #ifdef VULKAN_ENABLED
 		if (context_vulkan) {
-			Error err = context_vulkan->window_create(MAIN_WINDOW_ID, wd.vsync_mode, wls.wl_display, wd.wl_surface, wd.actual_rect.size.width, wd.actual_rect.size.height);
+			struct wl_surface *wl_surface = wayland_thread.window_get_wl_surface(wd.id);
+			Error err = context_vulkan->window_create(MAIN_WINDOW_ID, wd.vsync_mode, wls.wl_display, wl_surface, wd.actual_rect.size.width, wd.actual_rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a Vulkan window.");
 		}
 #endif
 
 #ifdef GLES3_ENABLED
 		if (egl_manager) {
-			wd.wl_egl_window = wl_egl_window_create(wd.wl_surface, wd.actual_rect.size.width, wd.actual_rect.size.height);
+			struct wl_surface *wl_surface = wayland_thread.window_get_wl_surface(wd.id);
+			wd.wl_egl_window = wl_egl_window_create(wl_surface, wd.actual_rect.size.width, wd.actual_rect.size.height);
 
 			Error err = egl_manager->window_create(MAIN_WINDOW_ID, wls.wl_display, wd.wl_egl_window, wd.actual_rect.size.width, wd.actual_rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a GLES3 window.");
@@ -2263,80 +2021,80 @@ DisplayServer::WindowID DisplayServerWayland::get_window_at_screen_position(cons
 	return MAIN_WINDOW_ID;
 }
 
-void DisplayServerWayland::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
+void DisplayServerWayland::window_attach_instance_id(ObjectID p_instance, WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	wls.main_window.instance_id = p_instance;
 }
 
-ObjectID DisplayServerWayland::window_get_attached_instance_id(WindowID p_window) const {
+ObjectID DisplayServerWayland::window_get_attached_instance_id(WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	return wls.main_window.instance_id;
 }
 
-void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	WindowData &wd = wls.main_window;
+	GodotWindowData &wd = wls.main_window;
 
 	wd.title = p_title;
 
 	wayland_thread.window_set_title(MAIN_WINDOW_ID, wd.title);
 }
 
-void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServer::WindowID p_window_id) {
 	// TODO
 	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_mouse_passthrough region %s", p_region));
 }
 
-void DisplayServerWayland::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	wls.main_window.rect_changed_callback = p_callable;
 }
 
-void DisplayServerWayland::window_set_window_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_window_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	wls.main_window.window_event_callback = p_callable;
 }
 
-void DisplayServerWayland::window_set_input_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_input_event_callback(const Callable &p_callable, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	wls.main_window.input_event_callback = p_callable;
 }
 
-void DisplayServerWayland::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
+void DisplayServerWayland::window_set_input_text_callback(const Callable &p_callable, WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	wls.main_window.input_text_callback = p_callable;
 }
 
-void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_callable, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	wls.main_window.drop_files_callback = p_callable;
 }
 
-int DisplayServerWayland::window_get_current_screen(DisplayServer::WindowID p_window) const {
+int DisplayServerWayland::window_get_current_screen(DisplayServer::WindowID p_window_id) const {
 	// Standard Wayland APIs don't support getting the screen of a window.
 	return 0;
 }
 
-void DisplayServerWayland::window_set_current_screen(int p_screen, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_current_screen(int p_screen, DisplayServer::WindowID p_window_id) {
 	// Standard Wayland APIs don't support setting the screen of a window.
 }
 
-Point2i DisplayServerWayland::window_get_position(DisplayServer::WindowID p_window) const {
+Point2i DisplayServerWayland::window_get_position(DisplayServer::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	// We can't know the position of toplevels with the standard protocol.
 	return Point2i();
 }
 
-Point2i DisplayServerWayland::window_get_position_with_decorations(DisplayServer::WindowID p_window) const {
+Point2i DisplayServerWayland::window_get_position_with_decorations(DisplayServer::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	// We can't know the position of toplevels with the standard protocol, nor can
@@ -2344,11 +2102,11 @@ Point2i DisplayServerWayland::window_get_position_with_decorations(DisplayServer
 	return Point2i();
 }
 
-void DisplayServerWayland::window_set_position(const Point2i &p_position, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_position(const Point2i &p_position, DisplayServer::WindowID p_window_id) {
 	// Setting the position of a non borderless window is not supported.
 }
 
-void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	DEBUG_LOG_WAYLAND(vformat("window max size set to %s", p_size));
@@ -2357,7 +2115,7 @@ void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServe
 		ERR_FAIL_MSG("Maximum window size can't be negative!");
 	}
 
-	WindowData &wd = wls.main_window;
+	GodotWindowData &wd = wls.main_window;
 
 	// FIXME: Is `p_size.x < wd.min_size.x || p_size.y < wd.min_size.y` == `p_size < wd.min_size`?
 	if ((p_size != Size2i()) && ((p_size.x < wd.min_size.x) || (p_size.y < wd.min_size.y))) {
@@ -2370,13 +2128,13 @@ void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServe
 	wayland_thread.window_set_max_size(MAIN_WINDOW_ID, p_size);
 }
 
-Size2i DisplayServerWayland::window_get_max_size(DisplayServer::WindowID p_window) const {
+Size2i DisplayServerWayland::window_get_max_size(DisplayServer::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	return wls.main_window.max_size;
 }
 
-void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_window_id) {
+void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_window_id_id) {
 #ifdef GLES3_ENABLED
 	if (egl_manager) {
 		egl_manager->window_make_current(MAIN_WINDOW_ID);
@@ -2384,16 +2142,16 @@ void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_wind
 #endif
 }
 
-void DisplayServerWayland::window_set_transient(WindowID p_window, WindowID p_parent) {
+void DisplayServerWayland::window_set_transient(WindowID p_window_id, WindowID p_parent) {
 	// Currently unsupported.
 }
 
-void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	DEBUG_LOG_WAYLAND(vformat("window minsize set to %s", p_size));
 
-	WindowData &wd = wls.main_window;
+	GodotWindowData &wd = wls.main_window;
 
 	if (p_size.x < 0 || p_size.y < 0) {
 		ERR_FAIL_MSG("Minimum window size can't be negative!");
@@ -2410,26 +2168,26 @@ void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServe
 	wayland_thread.window_set_min_size(MAIN_WINDOW_ID, p_size);
 }
 
-Size2i DisplayServerWayland::window_get_min_size(DisplayServer::WindowID p_window) const {
+Size2i DisplayServerWayland::window_get_min_size(DisplayServer::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	return wls.main_window.min_size;
 }
 
-void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	wayland_thread.window_resize(MAIN_WINDOW_ID, p_size);
 	_resize_window(p_size);
 }
 
-Size2i DisplayServerWayland::window_get_size(DisplayServer::WindowID p_window) const {
+Size2i DisplayServerWayland::window_get_size(DisplayServer::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	return wls.main_window.actual_rect.size;
 }
 
-Size2i DisplayServerWayland::window_get_size_with_decorations(DisplayServer::WindowID p_window) const {
+Size2i DisplayServerWayland::window_get_size_with_decorations(DisplayServer::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	// I don't think there's a way of actually knowing the size of the window
@@ -2438,10 +2196,13 @@ Size2i DisplayServerWayland::window_get_size_with_decorations(DisplayServer::Win
 	return wls.main_window.actual_rect.size;
 }
 
-void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::WindowID p_window_id) {
+	// TODO: Port to `WaylandThread` APIs.
+
+#if 0
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	WindowData &wd = wls.main_window;
+	GodotWindowData &wd = wls.main_window;
 
 	if (!wd.visible || wd.mode == p_mode) {
 		return;
@@ -2585,24 +2346,25 @@ void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::Win
 		default: {
 		} break;
 	}
+#endif // 0
 }
 
-DisplayServer::WindowMode DisplayServerWayland::window_get_mode(DisplayServer::WindowID p_window) const {
+DisplayServer::WindowMode DisplayServerWayland::window_get_mode(DisplayServer::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	return wls.main_window.mode;
 }
 
-bool DisplayServerWayland::window_is_maximize_allowed(DisplayServer::WindowID p_window) const {
+bool DisplayServerWayland::window_is_maximize_allowed(DisplayServer::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	return wls.main_window.can_maximize;
+	return wayland_thread.window_can_set_mode(p_window_id, WINDOW_MODE_MAXIMIZED);
 }
 
-void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	WindowData &wd = wls.main_window;
+	GodotWindowData &wd = wls.main_window;
 
 	DEBUG_LOG_WAYLAND(vformat("Window set flag %d", p_flag));
 
@@ -2622,13 +2384,13 @@ void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, D
 	}
 }
 
-bool DisplayServerWayland::window_get_flag(WindowFlags p_flag, DisplayServer::WindowID p_window) const {
+bool DisplayServerWayland::window_get_flag(WindowFlags p_flag, DisplayServer::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	return wls.main_window.flags & (1 << p_flag);
 }
 
-void DisplayServerWayland::window_request_attention(DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_request_attention(DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	DEBUG_LOG_WAYLAND("Requested attention.");
@@ -2636,11 +2398,11 @@ void DisplayServerWayland::window_request_attention(DisplayServer::WindowID p_wi
 	wayland_thread.window_request_attention(MAIN_WINDOW_ID);
 }
 
-void DisplayServerWayland::window_move_to_foreground(DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_move_to_foreground(DisplayServer::WindowID p_window_id) {
 	// Standard Wayland APIs don't support this.
 }
 
-bool DisplayServerWayland::window_can_draw(DisplayServer::WindowID p_window) const {
+bool DisplayServerWayland::window_can_draw(DisplayServer::WindowID p_window_id) const {
 	// TODO: Implement this. For now a simple return true will work though.
 	return true;
 }
@@ -2650,26 +2412,26 @@ bool DisplayServerWayland::can_any_window_draw() const {
 	return true;
 }
 
-void DisplayServerWayland::window_set_ime_active(const bool p_active, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_ime_active(const bool p_active, DisplayServer::WindowID p_window_id) {
 	// TODO
 	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_ime_active active %s", p_active ? "true" : "false"));
 }
 
-void DisplayServerWayland::window_set_ime_position(const Point2i &p_pos, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_ime_position(const Point2i &p_pos, DisplayServer::WindowID p_window_id) {
 	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_ime_position pos %s window %d", p_pos, p_window));
+	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_ime_position pos %s window %d", p_pos, p_window_id));
 }
 
 // NOTE: While Wayland is supposed to be tear-free, wayland-protocols version
 // 1.30 added a protocol for allowing async flips which is supposed to be
 // handled by drivers such as Vulkan. We can then just ask to disable v-sync and
 // hope for the best. See: https://gitlab.freedesktop.org/wayland/wayland-protocols/-/commit/6394f0b4f3be151076f10a845a2fb131eeb56706
-void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, DisplayServer::WindowID p_window) {
+void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 #ifdef VULKAN_ENABLED
 	if (context_vulkan) {
-		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+		context_vulkan->set_vsync_mode(p_window_id, p_vsync_mode);
 	}
 #endif // VULKAN_ENABLED
 
@@ -2680,10 +2442,10 @@ void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 #endif // GLES3_ENABLED
 }
 
-DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServer::WindowID p_window) const {
+DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServer::WindowID p_window_id) const {
 #ifdef VULKAN_ENABLED
 	if (context_vulkan) {
-		return context_vulkan->get_vsync_mode(p_window);
+		return context_vulkan->get_vsync_mode(p_window_id);
 	}
 #endif // VULKAN_ENABLED
 
@@ -2925,15 +2687,15 @@ void DisplayServerWayland::process_events() {
 		}
 	}
 
-	while (wls.messages.front()) {
-		Ref<WaylandMessage> msg = wls.messages.front()->get();
+	while (wayland_thread.has_message()) {
+		Ref<WaylandThread::WaylandMessage> msg = wayland_thread.pop_message();
 
-		Ref<WaylandWindowRectMessage> winrect_msg = msg;
+		Ref<WaylandThread::WaylandWindowRectMessage> winrect_msg = msg;
 		if (winrect_msg.is_valid()) {
 			_resize_window(winrect_msg->rect.size);
 		}
 
-		Ref<WaylandWindowEventMessage> winev_msg = msg;
+		Ref<WaylandThread::WaylandWindowEventMessage> winev_msg = msg;
 		if (winev_msg.is_valid()) {
 			_send_window_event(winev_msg->event);
 
@@ -2948,14 +2710,14 @@ void DisplayServerWayland::process_events() {
 			}
 		}
 
-		Ref<WaylandInputEventMessage> inputev_msg = msg;
+		Ref<WaylandThread::WaylandInputEventMessage> inputev_msg = msg;
 		if (inputev_msg.is_valid()) {
 			Input::get_singleton()->parse_input_event(inputev_msg->event);
 		}
 
-		Ref<WaylandDropFilesEventMessage> dropfiles_msg = msg;
+		Ref<WaylandThread::WaylandDropFilesEventMessage> dropfiles_msg = msg;
 		if (dropfiles_msg.is_valid()) {
-			WindowData wd = wls.main_window;
+			GodotWindowData wd = wls.main_window;
 
 			if (wd.drop_files_callback.is_valid()) {
 				Variant var_files = dropfiles_msg->files;
@@ -2967,8 +2729,6 @@ void DisplayServerWayland::process_events() {
 				wd.drop_files_callback.callp((const Variant **)&arg, 1, ret, ce);
 			}
 		}
-
-		wls.messages.pop_front();
 	}
 
 	if (!wls.current_seat) {
@@ -3082,6 +2842,9 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 #endif // SOWRAP_ENABLED
 
 	r_error = ERR_UNAVAILABLE;
+
+	// TODO: Remove this.
+	wls.wayland_thread = &wayland_thread;
 
 	Error thread_err = wayland_thread.init(wls);
 
@@ -3204,13 +2967,13 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	cursor_set_shape(CURSOR_BUSY);
 
-	WindowData &wd = wls.main_window;
+	GodotWindowData &wd = wls.main_window;
 
 	wd.wls = &wls;
+	wd.id = MAIN_WINDOW_ID;
 	wd.mode = p_mode;
 	wd.flags = p_flags;
 	wd.vsync_mode = p_vsync_mode;
-	wd.logical_rect.size = p_resolution;
 	wd.actual_rect.size = p_resolution;
 	wd.title = "Godot";
 
@@ -3236,6 +2999,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 }
 
 DisplayServerWayland::~DisplayServerWayland() {
+	// TODO: Multiwindow support.
 	if (wls.main_window.visible) {
 #ifdef VULKAN_ENABLED
 		if (context_vulkan) {
@@ -3248,6 +3012,10 @@ DisplayServerWayland::~DisplayServerWayland() {
 			egl_manager->window_destroy(MAIN_WINDOW_ID);
 		}
 #endif
+	}
+
+	if (wls.main_window.wl_egl_window) {
+		wl_egl_window_destroy(wls.main_window.wl_egl_window);
 	}
 
 	wayland_thread.destroy();
