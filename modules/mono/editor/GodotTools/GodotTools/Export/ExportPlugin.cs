@@ -151,7 +151,7 @@ namespace GodotTools.Export
                 string ridOS = DetermineRuntimeIdentifierOS(platform);
                 string ridArch = DetermineRuntimeIdentifierArch(arch);
                 string runtimeIdentifier = $"{ridOS}-{ridArch}";
-                string projectDataDirName = $"{DetermineDataDirNameForProject()}_{arch}";
+                string projectDataDirName = $"data_{GodotSharpDirs.CSharpProjectName}_{arch}";
                 if (platform == OS.Platforms.MacOS)
                 {
                     projectDataDirName = Path.Combine("Contents", "Resources", projectDataDirName);
@@ -257,13 +257,6 @@ namespace GodotTools.Export
 
             platform = null;
             return false;
-        }
-
-        private static string DetermineDataDirNameForProject()
-        {
-            string appName = (string)ProjectSettings.GetSetting("application/config/name");
-            string appNameSafe = appName.ToSafeDirName();
-            return $"data_{appNameSafe}";
         }
     }
 }

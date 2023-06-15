@@ -49,6 +49,7 @@
 #include "../csharp_script.h"
 #include "../godotsharp_dirs.h"
 #include "../utils/macos_utils.h"
+#include "../utils/path_utils.h"
 #include "code_completion.h"
 
 #include "../interop_types.h"
@@ -79,6 +80,10 @@ void godot_icall_GodotSharpDirs_DataEditorToolsDir(godot_string *r_dest) {
 #else
 	return nullptr;
 #endif
+}
+
+void godot_icall_GodotSharpDirs_CSharpProjectName(godot_string *r_dest) {
+	memnew_placement(r_dest, String(path::get_csharp_project_name()));
 }
 
 void godot_icall_EditorProgress_Create(const godot_string *p_task, const godot_string *p_label, int32_t p_amount, bool p_can_cancel) {
@@ -231,6 +236,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godot_icall_GodotSharpDirs_MonoUserDir,
 	(void *)godot_icall_GodotSharpDirs_BuildLogsDirs,
 	(void *)godot_icall_GodotSharpDirs_DataEditorToolsDir,
+	(void *)godot_icall_GodotSharpDirs_CSharpProjectName,
 	(void *)godot_icall_EditorProgress_Create,
 	(void *)godot_icall_EditorProgress_Dispose,
 	(void *)godot_icall_EditorProgress_Step,

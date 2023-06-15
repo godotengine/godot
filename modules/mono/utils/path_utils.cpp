@@ -231,4 +231,27 @@ String relative_to(const String &p_path, const String &p_relative_to) {
 
 	return relative_to_impl(path_abs_norm, relative_to_abs_norm);
 }
+
+String get_csharp_project_name() {
+	String name = ProjectSettings::get_singleton()->get_setting_with_override("dotnet/project/assembly_name");
+	if (name.is_empty()) {
+		name = ProjectSettings::get_singleton()->get_setting_with_override("application/config/name");
+		Vector<String> invalid_chars = Vector<String>({ //
+				// Windows reserved filename chars.
+				":", "*", "?", "\"", "<", ">", "|",
+				// Directory separators.
+				"/", "\\",
+				// Other chars that have been found to break assembly loading.
+				";", "'", "=", "," });
+		name = name.strip_edges();
+		for (int i = 0; i < invalid_chars.size(); i++) {
+			name = name.replace(invalid_chars[i], "-");
+		}
+	}
+	if (name.is_empty()) {
+		name = "UnnamedProject";
+	}
+	return name;
+}
+
 } // namespace path

@@ -67,14 +67,6 @@ String ProjectSettings::get_resource_path() const {
 	return resource_path;
 }
 
-String ProjectSettings::get_safe_project_name() const {
-	String safe_name = OS::get_singleton()->get_safe_dir_name(get("application/config/name"));
-	if (safe_name.is_empty()) {
-		safe_name = "UnnamedProject";
-	}
-	return safe_name;
-}
-
 String ProjectSettings::get_imported_files_path() const {
 	return get_project_data_path().path_join("imported");
 }
@@ -930,9 +922,25 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<Str
 }
 
 Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other params as dictionary and array?
-
 	return save_custom(p_file);
 }
+
+#ifdef TOOLS_ENABLED
+bool _csproj_exists(String p_root_dir) {
+	Ref<DirAccess> dir = DirAccess::open(p_root_dir);
+
+	dir->list_dir_begin();
+	String file_name = dir->_get_next();
+	while (file_name != "") {
+		if (!dir->current_is_dir() && file_name.get_extension() == "csproj") {
+			return true;
+		}
+		file_name = dir->_get_next();
+	}
+
+	return false;
+}
+#endif // TOOLS_ENABLED
 
 Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current) {
 	ERR_FAIL_COND_V_MSG(p_path.is_empty(), ERR_INVALID_PARAMETER, "Project settings save path cannot be empty.");
@@ -952,7 +960,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		}
 	}
 	// Check for the existence of a csproj file.
-	if (FileAccess::exists(get_resource_path().path_join(get_safe_project_name() + ".csproj"))) {
+	if (_csproj_exists(get_resource_path())) {
 		// If there is a csproj file, add the C# feature if it doesn't already exist.
 		if (!project_features.has("C#")) {
 			project_features.append("C#");
