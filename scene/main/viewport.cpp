@@ -1718,6 +1718,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.last_mouse_focus = gui.mouse_focus;
 
 				if (!gui.mouse_focus) {
+					if (gui.key_focus && mb->get_button_index() == MouseButton::LEFT) {
+						gui.key_focus->release_focus();
+					}
 					gui.mouse_focus_mask.clear();
 					return;
 				}
@@ -1748,6 +1751,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			if (mb->get_button_index() == MouseButton::LEFT) { // Assign focus.
 				CanvasItem *ci = gui.mouse_focus;
+				Control *focus_to_release = gui.key_focus;
 				while (ci) {
 					Control *control = Object::cast_to<Control>(ci);
 					if (control) {
@@ -1755,6 +1759,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							if (control != gui.key_focus) {
 								control->grab_focus();
 							}
+							focus_to_release = nullptr;
 							break;
 						}
 
@@ -1768,6 +1773,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					}
 
 					ci = ci->get_parent_item();
+				}
+
+				if (focus_to_release) {
+					focus_to_release->release_focus();
 				}
 			}
 

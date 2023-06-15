@@ -257,7 +257,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(Point2i(15, 105), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 			}
 
-			SUBCASE("[Viewport][GuiInputEvent] No Focus change when clicking in background.") {
+			SUBCASE("[Viewport][GuiInputEvent] Focus release when clicking in background.") {
 				CHECK_FALSE(root->gui_get_focus_owner());
 
 				SEND_GUI_MOUSE_BUTTON_EVENT(on_background, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
@@ -269,7 +269,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 
 				SEND_GUI_MOUSE_BUTTON_EVENT(on_background, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 				SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_background, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
-				CHECK(node_a->has_focus());
+				CHECK_FALSE(root->gui_get_focus_owner());
 			}
 
 			SUBCASE("[Viewport][GuiInputEvent] Mouse Button No Focus Steal while other Mouse Button is pressed.") {
@@ -370,13 +370,17 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 					CHECK(node_b->has_focus());
 					SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_d + Point2i(20, 20), MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 
+					SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+					SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+					CHECK(node_a->has_focus());
+
 					// Verify break condition for Root Control.
 					node_a->set_focus_mode(Control::FOCUS_NONE);
 					node_a->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 
 					SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 					SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
-					CHECK(node_b->has_focus());
+					CHECK_FALSE(root->gui_get_focus_owner());
 				}
 
 				SUBCASE("[Viewport][GuiInputEvent] Top Level CanvasItem stops focus propagation.") {
