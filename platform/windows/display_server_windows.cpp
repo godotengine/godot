@@ -1598,7 +1598,7 @@ void DisplayServerWindows::window_request_attention(WindowID p_window) {
 	FLASHWINFO info;
 	info.cbSize = sizeof(FLASHWINFO);
 	info.hwnd = wd.hWnd;
-	info.dwFlags = FLASHW_TRAY;
+	info.dwFlags = FLASHW_ALL;
 	info.dwTimeout = 0;
 	info.uCount = 2;
 	FlashWindowEx(&info);
