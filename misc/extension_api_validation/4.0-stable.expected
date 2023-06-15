@@ -6,6 +6,10 @@ should instead be used to justify these changes and describe how users should wo
 
 ========================================================================================================================
 
+GH-78237
+--------
+Validate extension JSON: Error: Field 'classes/WebRTCPeerConnectionExtension/methods/_create_data_channel/return_value': type changed value in new API, from "Object" to "WebRTCDataChannel".
+
 GH-77757
 --------
 Validate extension JSON: Error: Field 'classes/Viewport/methods/gui_get_focus_owner': is_const changed value in new API, from false to true.
