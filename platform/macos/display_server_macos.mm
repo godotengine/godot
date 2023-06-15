@@ -3075,6 +3075,15 @@ void DisplayServerMacOS::window_move_to_foreground(WindowID p_window) {
 	}
 }
 
+bool DisplayServerMacOS::window_is_focused(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	const WindowData &wd = windows[p_window];
+
+	return wd.focused;
+}
+
 bool DisplayServerMacOS::window_can_draw(WindowID p_window) const {
 	return window_get_mode(p_window) != WINDOW_MODE_MINIMIZED;
 }

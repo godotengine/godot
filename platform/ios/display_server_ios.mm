@@ -562,6 +562,10 @@ void DisplayServerIOS::window_move_to_foreground(WindowID p_window) {
 	// Probably not supported for iOS
 }
 
+bool DisplayServerIOS::window_is_focused(WindowID p_window) const {
+	return true;
+}
+
 float DisplayServerIOS::screen_get_max_scale() const {
 	return screen_get_scale(SCREEN_OF_MAIN_WINDOW);
 }
