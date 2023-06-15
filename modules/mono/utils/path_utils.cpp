@@ -208,4 +208,23 @@ String relative_to(const String &p_path, const String &p_relative_to) {
 	return relative_to_impl(path_abs_norm, relative_to_abs_norm);
 }
 
+String get_csharp_project_name() {
+	String name = GLOBAL_GET("mono/project/assembly_name");
+	if (name.empty()) {
+		name = GLOBAL_GET("application/config/name");
+		name = OS::get_singleton()->get_safe_dir_name(name);
+	}
+
+	if (name.empty()) {
+		name = "UnnamedProject";
+	}
+
+	// Avoid reserved names that conflict with Godot assemblies.
+	if (name == "GodotSharp" || name == "GodotSharpEditor") {
+		name += "_";
+	}
+
+	return name;
+}
+
 } // namespace path

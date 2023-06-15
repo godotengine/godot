@@ -59,6 +59,7 @@
 #include "mono_gd/gd_mono_utils.h"
 #include "signal_awaiter_utils.h"
 #include "utils/macros.h"
+#include "utils/path_utils.h"
 #include "utils/string_utils.h"
 #include "utils/thread_local.h"
 
@@ -721,16 +722,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 
 	GDMonoAssembly *proj_assembly = gdmono->get_project_assembly();
 
-	String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String assembly_name = ProjectSettings::get_singleton()->get_setting("mono/project/assembly_name");
-
-	if (assembly_name.empty()) {
-		String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
-		if (appname_safe.empty()) {
-			appname_safe = "UnnamedProject";
-		}
-		assembly_name = appname_safe;
-	}
+	String assembly_name = path::get_csharp_project_name();
 
 	assembly_name += ".dll";
 
