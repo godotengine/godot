@@ -473,7 +473,10 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			const String base_property = string_property.get_slice("/", 0);
 			const int index = string_property.get_slice("/", 2).to_int();
 
-			Array array = dnp.base->get(base_property);
+			bool valid;
+			Array array = dnp.base->get(base_property, &valid);
+			ERR_CONTINUE(!valid);
+
 			if (array.size() >= index) {
 				array.push_back(other);
 			} else {
