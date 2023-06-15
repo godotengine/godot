@@ -38,6 +38,7 @@
 #include "gdscript.h"
 #include "scene/resources/packed_scene.h"
 
+class GDScript;
 class GDScriptAnalyzer;
 class GDScriptParser;
 

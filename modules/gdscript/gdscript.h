@@ -39,6 +39,7 @@
 #include "core/object/script_language.h"
 #include "core/templates/rb_set.h"
 #include "gdscript_function.h"
+#include "gdscript_parser.h"
 
 class GDScriptNativeClass : public RefCounted {
 	GDCLASS(GDScriptNativeClass, RefCounted);
@@ -99,7 +100,7 @@ class GDScript : public Script {
 	HashMap<StringName, GDScriptFunction *> member_functions;
 	HashMap<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
 	HashMap<StringName, Ref<GDScript>> subclasses;
-	HashMap<StringName, Vector<StringName>> _signals;
+	HashMap<StringName, Vector<Pair<StringName, GDScriptParser::DataType>>> _signals;
 	Dictionary rpc_config;
 
 #ifdef TOOLS_ENABLED

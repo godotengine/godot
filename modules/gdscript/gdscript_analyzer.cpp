@@ -3100,6 +3100,44 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				update_array_literal_element_type(E.value, par_types[index].get_container_element_type());
 			}
 		}
+
+		if (is_vararg) {
+			StringName signal_name;
+			// signal_name.emit(args...)
+			if (
+				p_call->function_name == "emit" &&
+				p_call->arguments.size() > 0 &&
+				p_call->callee->type == GDScriptParser::Node::SUBSCRIPT &&
+				static_cast<GDScriptParser::SubscriptNode *>(p_call->callee)->base->type == GDScriptParser::Node::IDENTIFIER) {
+				signal_name = static_cast<GDScriptParser::IdentifierNode*>(static_cast<GDScriptParser::SubscriptNode *>(p_call->callee)->base)->name;
+			}
+			// emit_signal(signal_name, args...)
+			else if (
+				p_call->function_name == "emit_signal" &&
+				p_call->arguments.size() >= 1 &&
+				p_call->arguments[0]->type == GDScriptParser::Node::LITERAL
+				) {
+				signal_name = static_cast<const GDScriptParser::LiteralNode *>(p_call->arguments[0])->value;
+			}
+
+			if (signal_name) {
+				if (!parser->current_class->has_member(signal_name)) {
+					push_error(vformat(R"*(Invalid "emit_signal" call", no such a signal named "%s".)*", signal_name), p_call);
+				} else {
+					const GDScriptParser::ClassNode::Member &current_signal_member = parser->current_class->get_member(signal_name);
+
+					if (current_signal_member.type != GDScriptParser::ClassNode::Member::SIGNAL) {
+						push_error(vformat(R"*(Invalid "emit_signal" call", "%s" is not a signal.)*", signal_name), p_call);
+					} else {
+						const GDScriptParser::SignalNode *current_signal = current_signal_member.signal;
+						for (int i = 0; i < current_signal->parameters.size(); ++i) {
+							par_types.push_back(current_signal->parameters[i]->get_datatype());
+						}
+					}
+				}
+			}
+		}
+
 		validate_call_arg(par_types, default_arg_count, is_vararg, p_call);
 
 		if (base_type.kind == GDScriptParser::DataType::ENUM && base_type.is_meta_type) {

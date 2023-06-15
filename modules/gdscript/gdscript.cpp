@@ -550,10 +550,15 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 					} break;
 					case GDScriptParser::ClassNode::Member::SIGNAL: {
 						// TODO: Cache this in parser to avoid loops like this.
-						Vector<StringName> parameters_names;
+						Vector<Pair<StringName, GDScriptParser::DataType>> parameters_names;
 						parameters_names.resize(member.signal->parameters.size());
 						for (int j = 0; j < member.signal->parameters.size(); j++) {
-							parameters_names.write[j] = member.signal->parameters[j]->identifier->name;
+							Pair<StringName, GDScriptParser::DataType> &current_parameter = parameters_names.write[j];
+
+							current_parameter.first = member.signal->parameters[j]->identifier->name;
+							if (member.signal->parameters[j]->datatype_specifier && member.signal->parameters[j]->datatype_specifier->type_chain.size() == 1) {
+								current_parameter.second = member.signal->parameters[j]->get_datatype();
+							}
 						}
 						_signals[member.signal->identifier->name] = parameters_names;
 					} break;
@@ -1196,12 +1201,32 @@ bool GDScript::has_script_signal(const StringName &p_signal) const {
 }
 
 void GDScript::_get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const {
-	for (const KeyValue<StringName, Vector<StringName>> &E : _signals) {
+	for (const KeyValue<StringName, Vector<Pair<StringName, GDScriptParser::DataType>>> &E : _signals) {
 		MethodInfo mi;
 		mi.name = E.key;
+
 		for (int i = 0; i < E.value.size(); i++) {
+			const Pair<StringName, GDScriptParser::DataType> &parameter = E.value[i];
+
 			PropertyInfo arg;
-			arg.name = E.value[i];
+			arg.name = parameter.first;
+			arg.type = Variant::NIL;
+
+			if (parameter.second.is_set()) {
+				if (parameter.second.kind == GDScriptParser::DataType::BUILTIN) {
+					arg.type = parameter.second.builtin_type;
+				} else if (parameter.second.kind == GDScriptParser::DataType::NATIVE) {
+					arg.type = Variant::OBJECT;
+					arg.class_name = parameter.second.native_type;
+				} else if (parameter.second.kind == GDScriptParser::DataType::SCRIPT) {
+					arg.type = Variant::OBJECT;
+					arg.class_name = parameter.second.script_type->get_instance_base_type();
+				} else if (parameter.second.kind == GDScriptParser::DataType::CLASS) {
+					arg.type = Variant::OBJECT;
+					arg.class_name = parameter.second.class_type->identifier->name;
+				}
+			}
+			
 			mi.arguments.push_back(arg);
 		}
 		r_list->push_back(mi);
@@ -1561,7 +1586,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 			// Signals.
 			const GDScript *sl = sptr;
 			while (sl) {
-				HashMap<StringName, Vector<StringName>>::ConstIterator E = sl->_signals.find(p_name);
+				HashMap<StringName, Vector<Pair<StringName, GDScriptParser::DataType>>>::ConstIterator E = sl->_signals.find(p_name);
 				if (E) {
 					r_ret = Signal(this->owner, E->key);
 					return true; //index found

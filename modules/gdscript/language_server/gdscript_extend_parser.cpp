@@ -268,7 +268,12 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					if (j > 0) {
 						symbol.detail += ", ";
 					}
-					symbol.detail += m.signal->parameters[j]->identifier->name;
+					const ParameterNode &this_parameter = *m.signal->parameters[j];
+					symbol.detail += this_parameter.identifier->name;
+					if (this_parameter.datatype_specifier && this_parameter.datatype_specifier->type_chain.size() == 1) {
+						symbol.detail += ": ";
+						symbol.detail += this_parameter.datatype_specifier->type_chain[0]->name;
+					}
 				}
 				symbol.detail += ")";
 
@@ -810,9 +815,14 @@ Dictionary ExtendGDScriptParser::dump_class_api(const GDScriptParser::ClassNode 
 			case ClassNode::Member::SIGNAL: {
 				Dictionary api;
 				api["name"] = m.signal->identifier->name;
-				Array pars;
+				Dictionary pars;
 				for (int j = 0; j < m.signal->parameters.size(); j++) {
-					pars.append(String(m.signal->parameters[i]->identifier->name));
+					const GDScriptParser::ParameterNode &this_parameter = *m.signal->parameters[i];
+					if (this_parameter.datatype_specifier && this_parameter.datatype_specifier->type_chain.size() == 1) {
+						pars[this_parameter.identifier->name] = this_parameter.datatype_specifier->type_chain[0]->name;
+					} else {
+						pars[this_parameter.identifier->name] = Variant::NIL;
+					}
 				}
 				api["arguments"] = pars;
 				if (const lsp::DocumentSymbol *symbol = get_symbol_defined_at_line(LINE_NUMBER_TO_INDEX(m.signal->start_line))) {

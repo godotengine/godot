@@ -2564,10 +2564,15 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				const GDScriptParser::SignalNode *signal = member.signal;
 				StringName name = signal->identifier->name;
 
-				Vector<StringName> parameters_names;
-				parameters_names.resize(signal->parameters.size());
-				for (int j = 0; j < signal->parameters.size(); j++) {
-					parameters_names.write[j] = signal->parameters[j]->identifier->name;
+				Vector<Pair<StringName, GDScriptParser::DataType>> parameters_names;
+				parameters_names.resize(member.signal->parameters.size());
+				for (int j = 0; j < member.signal->parameters.size(); j++) {
+					Pair<StringName, GDScriptParser::DataType> &current_parameter = parameters_names.write[j];
+
+					current_parameter.first = member.signal->parameters[j]->identifier->name;
+					if (member.signal->parameters[j]->datatype_specifier && member.signal->parameters[j]->datatype_specifier->type_chain.size() == 1) {
+						current_parameter.second = member.signal->parameters[j]->get_datatype();
+					}
 				}
 				p_script->_signals[name] = parameters_names;
 			} break;
