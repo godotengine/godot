@@ -1070,7 +1070,7 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 	Vector<RID> proxies_to_update = tex_to->proxies;
 	Vector<RID> proxies_to_redirect = tex_from->proxies;
 
-	tex_to->copy_from(*tex_from);
+	*tex_to = *tex_from;
 
 	tex_to->proxies = proxies_to_update; //restore proxies, so they can be updated
 
