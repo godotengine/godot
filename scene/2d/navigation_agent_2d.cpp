@@ -246,22 +246,14 @@ void NavigationAgent2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PAUSED: {
-			if (agent_parent && !agent_parent->can_process()) {
-				map_before_pause = NavigationServer2D::get_singleton()->agent_get_map(get_rid());
-				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), RID());
-			} else if (agent_parent && agent_parent->can_process() && !(map_before_pause == RID())) {
-				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), map_before_pause);
-				map_before_pause = RID();
+			if (agent_parent) {
+				NavigationServer2D::get_singleton()->agent_set_paused(get_rid(), !agent_parent->can_process());
 			}
 		} break;
 
 		case NOTIFICATION_UNPAUSED: {
-			if (agent_parent && !agent_parent->can_process()) {
-				map_before_pause = NavigationServer2D::get_singleton()->agent_get_map(get_rid());
-				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), RID());
-			} else if (agent_parent && agent_parent->can_process() && !(map_before_pause == RID())) {
-				NavigationServer2D::get_singleton()->agent_set_map(get_rid(), map_before_pause);
-				map_before_pause = RID();
+			if (agent_parent) {
+				NavigationServer2D::get_singleton()->agent_set_paused(get_rid(), !agent_parent->can_process());
 			}
 		} break;
 

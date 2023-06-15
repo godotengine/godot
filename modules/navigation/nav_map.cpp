@@ -628,6 +628,11 @@ bool NavMap::has_obstacle(NavObstacle *obstacle) const {
 }
 
 void NavMap::add_obstacle(NavObstacle *obstacle) {
+	if (obstacle->get_paused()) {
+		// No point in adding a paused obstacle, it will add itself when unpaused again.
+		return;
+	}
+
 	if (!has_obstacle(obstacle)) {
 		obstacles.push_back(obstacle);
 		obstacles_dirty = true;
@@ -644,6 +649,12 @@ void NavMap::remove_obstacle(NavObstacle *obstacle) {
 
 void NavMap::set_agent_as_controlled(NavAgent *agent) {
 	remove_agent_as_controlled(agent);
+
+	if (agent->get_paused()) {
+		// No point in adding a paused agent, it will add itself when unpaused again.
+		return;
+	}
+
 	if (agent->get_use_3d_avoidance()) {
 		int64_t agent_3d_index = active_3d_avoidance_agents.find(agent);
 		if (agent_3d_index < 0) {

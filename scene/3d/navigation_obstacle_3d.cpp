@@ -120,6 +120,7 @@ void NavigationObstacle3D::_notification(int p_what) {
 				_update_map(map_before_pause);
 				map_before_pause = RID();
 			}
+			NavigationServer3D::get_singleton()->obstacle_set_paused(obstacle, !can_process());
 		} break;
 
 		case NOTIFICATION_UNPAUSED: {
@@ -130,6 +131,7 @@ void NavigationObstacle3D::_notification(int p_what) {
 				_update_map(map_before_pause);
 				map_before_pause = RID();
 			}
+			NavigationServer3D::get_singleton()->obstacle_set_paused(obstacle, !can_process());
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
