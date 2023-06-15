@@ -819,7 +819,7 @@
 			If [code]true[/code], automatically completes braces when making use of code completion.
 		</member>
 		<member name="text_editor/completion/code_complete_delay" type="float" setter="" getter="">
-			The delay in seconds after which autocompletion suggestions should be displayed when the user stops typing.
+			The delay in seconds after which autocompletion suggestions should be displayed when the user stops typing. To disable suggestions entirely, set this to a very high value by manually entering a very high number in the setting (such as [code]10000[/code]).
 		</member>
 		<member name="text_editor/completion/complete_file_paths" type="bool" setter="" getter="">
 			If [code]true[/code], provides autocompletion suggestions for file paths in methods such as [code]load()[/code] and [code]preload()[/code].
