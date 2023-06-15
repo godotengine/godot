@@ -120,13 +120,46 @@
 #endif
 
 class DisplayServerWayland : public DisplayServer {
-public:
 	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	struct WindowData {
+		// TODO: Remove.
+		WaylandState *wls = nullptr;
+
+		WindowID id;
+
+		Rect2i rect;
+		Size2i max_size;
+		Size2i min_size;
+
+		Rect2i safe_rect;
+
+#ifdef GLES3_ENABLED
+		struct wl_egl_window *wl_egl_window = nullptr;
+#endif
+
+		// Flags whether we have allocated a buffer through the video drivers.
+		bool visible = false;
+
+		DisplayServer::VSyncMode vsync_mode;
+
+		uint32_t flags;
+
+		DisplayServer::WindowMode mode;
+
+		Callable rect_changed_callback;
+		Callable window_event_callback;
+		Callable input_event_callback;
+		Callable drop_files_callback;
+		Callable input_text_callback;
+
+		String title;
+		ObjectID instance_id;
+	};
 
 	// TODO: Remove this hack.
 	WaylandThread::WaylandState wls;
 
-	WaylandThread::GodotWindowData main_window;
+	WindowData main_window;
 	WaylandThread wayland_thread;
 
 	Context context;

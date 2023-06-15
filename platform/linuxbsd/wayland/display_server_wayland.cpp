@@ -67,7 +67,7 @@ String DisplayServerWayland::_get_app_id_from_context(Context context) {
 }
 
 void DisplayServerWayland::_send_window_event(WindowEvent p_event) {
-	WaylandThread::GodotWindowData &wd = main_window;
+	WindowData &wd = main_window;
 
 	if (wd.window_event_callback.is_valid()) {
 		Variant var_event = Variant(p_event);
@@ -97,7 +97,7 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 }
 
 void DisplayServerWayland::_resize_window(Size2i size) {
-	WaylandThread::GodotWindowData &wd = main_window;
+	WindowData &wd = main_window;
 
 	wd.rect.size = size;
 
@@ -473,7 +473,7 @@ Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
 void DisplayServerWayland::_show_window() {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	WaylandThread::GodotWindowData &wd = main_window;
+	WindowData &wd = main_window;
 
 	if (!wd.visible) {
 		DEBUG_LOG_WAYLAND("Showing window.");
@@ -543,7 +543,7 @@ ObjectID DisplayServerWayland::window_get_attached_instance_id(WindowID p_window
 void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	WaylandThread::GodotWindowData &wd = main_window;
+	WindowData &wd = main_window;
 
 	wd.title = p_title;
 
@@ -622,7 +622,7 @@ void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServe
 		ERR_FAIL_MSG("Maximum window size can't be negative!");
 	}
 
-	WaylandThread::GodotWindowData &wd = main_window;
+	WindowData &wd = main_window;
 
 	// FIXME: Is `p_size.x < wd.min_size.x || p_size.y < wd.min_size.y` == `p_size < wd.min_size`?
 	if ((p_size != Size2i()) && ((p_size.x < wd.min_size.x) || (p_size.y < wd.min_size.y))) {
@@ -658,7 +658,7 @@ void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServe
 
 	DEBUG_LOG_WAYLAND(vformat("window minsize set to %s", p_size));
 
-	WaylandThread::GodotWindowData &wd = main_window;
+	WindowData &wd = main_window;
 
 	if (p_size.x < 0 || p_size.y < 0) {
 		ERR_FAIL_MSG("Minimum window size can't be negative!");
@@ -709,7 +709,7 @@ void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::Win
 #if 0
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	WaylandThread::GodotWindowData &wd = main_window;
+	WindowData &wd = main_window;
 
 	if (!wd.visible || wd.mode == p_mode) {
 		return;
@@ -871,7 +871,7 @@ bool DisplayServerWayland::window_is_maximize_allowed(DisplayServer::WindowID p_
 void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	WaylandThread::GodotWindowData &wd = main_window;
+	WindowData &wd = main_window;
 
 	DEBUG_LOG_WAYLAND(vformat("Window set flag %d", p_flag));
 
@@ -1224,7 +1224,7 @@ void DisplayServerWayland::process_events() {
 
 		Ref<WaylandThread::DropFilesEventMessage> dropfiles_msg = msg;
 		if (dropfiles_msg.is_valid()) {
-			WaylandThread::GodotWindowData wd = main_window;
+			WindowData wd = main_window;
 
 			if (wd.drop_files_callback.is_valid()) {
 				Variant var_files = dropfiles_msg->files;
@@ -1474,7 +1474,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	cursor_set_shape(CURSOR_BUSY);
 
-	WaylandThread::GodotWindowData &wd = main_window;
+	WindowData &wd = main_window;
 
 	wd.wls = &wls;
 	wd.id = MAIN_WINDOW_ID;
