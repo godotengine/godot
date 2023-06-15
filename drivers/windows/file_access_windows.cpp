@@ -372,9 +372,9 @@ void FileAccessWindows::flush() {
 	}
 }
 
-void FileAccessWindows::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL_NULL(f);
-	ERR_FAIL_COND(!p_src && p_length > 0);
+bool FileAccessWindows::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_NULL_V(f, false);
+	ERR_FAIL_COND_V(!p_src && p_length > 0, false);
 
 	if (flags == READ_WRITE || flags == WRITE_READ) {
 		if (prev_op == READ) {
@@ -385,7 +385,7 @@ void FileAccessWindows::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 		prev_op = WRITE;
 	}
 
-	ERR_FAIL_COND(fwrite(p_src, 1, p_length, f) != (size_t)p_length);
+	return fwrite(p_src, 1, p_length, f) == (size_t)p_length;
 }
 
 bool FileAccessWindows::file_exists(const String &p_name) {
