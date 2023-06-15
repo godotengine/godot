@@ -112,6 +112,21 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	static Ref<FileAccess> _open_encrypted_bind_compat_98918(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
 
+	void store_8_bind_compat_78289(uint8_t p_dest);
+	void store_16_bind_compat_78289(uint16_t p_dest);
+	void store_32_bind_compat_78289(uint32_t p_dest);
+	void store_64_bind_compat_78289(uint64_t p_dest);
+	void store_buffer_bind_compat_78289(const Vector<uint8_t> &p_buffer);
+	void store_var_bind_compat_78289(const Variant &p_var, bool p_full_objects = false);
+	void store_half_bind_compat_78289(float p_dest);
+	void store_float_bind_compat_78289(float p_dest);
+	void store_double_bind_compat_78289(double p_dest);
+	void store_real_bind_compat_78289(real_t p_real);
+	void store_string_bind_compat_78289(const String &p_string);
+	void store_line_bind_compat_78289(const String &p_line);
+	void store_csv_line_bind_compat_78289(const Vector<String> &p_values, const String &p_delim = ",");
+	void store_pascal_string_bind_compat_78289(const String &p_string);
+
 	static void _bind_compatibility_methods();
 #endif
 
@@ -164,6 +179,7 @@ public:
 	virtual String get_as_utf8_string(bool p_skip_cr = false) const;
 
 	/**
+
 	 * Use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
 	 * It's not about the current CPU type but file formats.
 	 * This flag gets reset to `false` (little endian) on each open.
@@ -175,27 +191,27 @@ public:
 
 	virtual Error resize(int64_t p_length) = 0;
 	virtual void flush() = 0;
-	virtual void store_8(uint8_t p_dest); ///< store a byte
-	virtual void store_16(uint16_t p_dest); ///< store 16 bits uint
-	virtual void store_32(uint32_t p_dest); ///< store 32 bits uint
-	virtual void store_64(uint64_t p_dest); ///< store 64 bits uint
+	virtual bool store_8(uint8_t p_dest); ///< store a byte
+	virtual bool store_16(uint16_t p_dest); ///< store 16 bits uint
+	virtual bool store_32(uint32_t p_dest); ///< store 32 bits uint
+	virtual bool store_64(uint64_t p_dest); ///< store 64 bits uint
 
-	virtual void store_half(float p_dest);
-	virtual void store_float(float p_dest);
-	virtual void store_double(double p_dest);
-	virtual void store_real(real_t p_real);
+	virtual bool store_half(float p_dest);
+	virtual bool store_float(float p_dest);
+	virtual bool store_double(double p_dest);
+	virtual bool store_real(real_t p_real);
 
-	virtual void store_string(const String &p_string);
-	virtual void store_line(const String &p_line);
-	virtual void store_csv_line(const Vector<String> &p_values, const String &p_delim = ",");
+	virtual bool store_string(const String &p_string);
+	virtual bool store_line(const String &p_line);
+	virtual bool store_csv_line(const Vector<String> &p_values, const String &p_delim = ",");
 
-	virtual void store_pascal_string(const String &p_string);
+	virtual bool store_pascal_string(const String &p_string);
 	virtual String get_pascal_string();
 
-	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length) = 0; ///< store an array of bytes, needs to be overwritten by children.
-	void store_buffer(const Vector<uint8_t> &p_buffer);
+	virtual bool store_buffer(const uint8_t *p_src, uint64_t p_length) = 0; ///< store an array of bytes, needs to be overwritten by children.
+	bool store_buffer(const Vector<uint8_t> &p_buffer);
 
-	void store_var(const Variant &p_var, bool p_full_objects = false);
+	bool store_var(const Variant &p_var, bool p_full_objects = false);
 
 	virtual void close() = 0;
 

@@ -178,3 +178,23 @@ Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list
 
 Draw lists no longer require the initial and final action for color and depth attachments to be specified.
 Draw lists can now specify if a particular color, depth, or stencil attachment should be cleared.
+
+
+GH-78289
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_16': return_value
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_32': return_value
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_64': return_value
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_8': return_value
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_buffer': return_value
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_csv_line': return_value
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_double': return_value
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_half': return_value
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_float': return_value
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_line': return_value
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_pascal_string': return_value
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_real': return_value
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_string': return_value
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_var': return_value
+
+Added return values. Compatibility method registered.
