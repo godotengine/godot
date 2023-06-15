@@ -436,6 +436,8 @@ bool ProjectConverter3To4::convert() {
 					String &line = source_line.line;
 					if (line.contains("nodes/root_type=\"Spatial\"")) {
 						line = "nodes/root_type=\"Node3D\"";
+					} else if (line == "importer=\"ogg_vorbis\"") {
+						line = "importer=\"oggvorbisstr\"";
 					}
 				}
 			} else {
