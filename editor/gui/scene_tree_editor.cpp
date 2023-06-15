@@ -656,15 +656,13 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 		}
 	}
 
-	if (keep_for_children) {
-		if (keep) {
-			p_parent->clear_custom_color(0);
-			p_parent->set_selectable(0, true);
-		} else {
-			p_parent->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
-			p_parent->set_selectable(0, false);
-			p_parent->deselect(0);
-		}
+	if (keep) {
+		p_parent->clear_custom_color(0);
+		p_parent->set_selectable(0, true);
+	} else if (keep_for_children) {
+		p_parent->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+		p_parent->set_selectable(0, false);
+		p_parent->deselect(0);
 	}
 
 	if (editor_selection) {
