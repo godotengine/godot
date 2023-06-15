@@ -232,10 +232,12 @@ String relative_to(const String &p_path, const String &p_relative_to) {
 	return relative_to_impl(path_abs_norm, relative_to_abs_norm);
 }
 
+const Vector<String> reserved_assembly_names = { "GodotSharp", "GodotSharpEditor", "Godot.SourceGenerators" };
+
 String get_csharp_project_name() {
-	String name = ProjectSettings::get_singleton()->get_setting_with_override("dotnet/project/assembly_name");
+	String name = GLOBAL_GET("dotnet/project/assembly_name");
 	if (name.is_empty()) {
-		name = ProjectSettings::get_singleton()->get_setting_with_override("application/config/name");
+		name = GLOBAL_GET("application/config/name");
 		Vector<String> invalid_chars = Vector<String>({ //
 				// Windows reserved filename chars.
 				":", "*", "?", "\"", "<", ">", "|",
@@ -248,9 +250,16 @@ String get_csharp_project_name() {
 			name = name.replace(invalid_chars[i], "-");
 		}
 	}
+
 	if (name.is_empty()) {
 		name = "UnnamedProject";
 	}
+
+	// Avoid reserved names that conflict with Godot assemblies.
+	if (reserved_assembly_names.has(name)) {
+		name += "_";
+	}
+
 	return name;
 }
 
