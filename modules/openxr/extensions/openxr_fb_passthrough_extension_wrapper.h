@@ -33,7 +33,6 @@
 
 #include "../openxr_api.h"
 #include "../util.h"
-
 #include "openxr_composition_layer_provider.h"
 #include "openxr_extension_wrapper.h"
 

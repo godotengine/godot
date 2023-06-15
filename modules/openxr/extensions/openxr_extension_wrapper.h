@@ -37,6 +37,7 @@
 #include "core/templates/rid.h"
 
 #include "thirdparty/openxr/src/common/xr_linear.h"
+
 #include <openxr/openxr.h>
 
 class OpenXRAPI;

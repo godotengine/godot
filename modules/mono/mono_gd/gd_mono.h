@@ -31,9 +31,9 @@
 #ifndef GD_MONO_H
 #define GD_MONO_H
 
-#include "core/io/config_file.h"
-
 #include "../godotsharp_defs.h"
+
+#include "core/io/config_file.h"
 
 #ifndef GD_CLR_STDCALL
 #ifdef WIN32

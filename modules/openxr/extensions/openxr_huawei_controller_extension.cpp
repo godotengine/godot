@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "openxr_huawei_controller_extension.h"
+
 #include "../action_map/openxr_interaction_profile_meta_data.h"
 
 HashMap<String, bool *> OpenXRHuaweiControllerExtension::get_requested_extensions() {

@@ -30,8 +30,9 @@
 
 #include "gdscript_translation_parser_plugin.h"
 
+#include "../gdscript.h"
+
 #include "core/io/resource_loader.h"
-#include "modules/gdscript/gdscript.h"
 
 void GDScriptEditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
 	GDScriptLanguage::get_singleton()->get_recognized_extensions(r_extensions);

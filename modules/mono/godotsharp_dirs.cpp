@@ -30,6 +30,13 @@
 
 #include "godotsharp_dirs.h"
 
+#include "mono_gd/gd_mono.h"
+#include "utils/path_utils.h"
+
+#ifdef ANDROID_ENABLED
+#include "mono_gd/support/android_support.h"
+#endif
+
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
@@ -38,13 +45,6 @@
 #include "core/version.h"
 #include "editor/editor_paths.h"
 #endif
-
-#ifdef ANDROID_ENABLED
-#include "mono_gd/support/android_support.h"
-#endif
-
-#include "mono_gd/gd_mono.h"
-#include "utils/path_utils.h"
 
 namespace GodotSharpDirs {
 

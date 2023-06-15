@@ -33,11 +33,11 @@
 #include "core/os/os.h"
 #include "servers/rendering_server.h"
 
+#include <transcoder/basisu_transcoder.h>
+
 #ifdef TOOLS_ENABLED
 #include <encoder/basisu_comp.h>
 #endif
-
-#include <transcoder/basisu_transcoder.h>
 
 enum BasisDecompressFormat {
 	BASIS_DECOMPRESS_RG,

@@ -32,6 +32,7 @@
 #define RESOURCE_IMPORTER_OGG_VORBIS_H
 
 #include "audio_stream_ogg_vorbis.h"
+
 #include "core/io/resource_importer.h"
 
 class ResourceImporterOggVorbis : public ResourceImporter {

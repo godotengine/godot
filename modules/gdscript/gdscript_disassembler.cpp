@@ -30,10 +30,10 @@
 
 #ifdef DEBUG_ENABLED
 
+#include "gdscript.h"
 #include "gdscript_function.h"
 
 #include "core/string/string_builder.h"
-#include "gdscript.h"
 
 static String _get_variant_string(const Variant &p_variant) {
 	String txt;
@@ -1130,4 +1130,4 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 	}
 }
 
-#endif
+#endif // DEBUG_ENABLED

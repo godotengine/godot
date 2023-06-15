@@ -31,6 +31,8 @@
 #ifndef GDSCRIPT_H
 #define GDSCRIPT_H
 
+#include "gdscript_function.h"
+
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/doc_data.h"
@@ -38,7 +40,6 @@
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
 #include "core/templates/rb_set.h"
-#include "gdscript_function.h"
 
 class GDScriptNativeClass : public RefCounted {
 	GDCLASS(GDScriptNativeClass, RefCounted);

@@ -30,24 +30,24 @@
 
 #include "crypto_mbedtls.h"
 
-#include "core/io/file_access.h"
-
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/compression.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
-#define PEM_BEGIN_CRT "-----BEGIN CERTIFICATE-----\n"
-#define PEM_END_CRT "-----END CERTIFICATE-----\n"
-#define PEM_MIN_SIZE 54
 
 #include <mbedtls/debug.h>
 #include <mbedtls/md.h>
 #include <mbedtls/pem.h>
+
+#define PEM_BEGIN_CRT "-----BEGIN CERTIFICATE-----\n"
+#define PEM_END_CRT "-----END CERTIFICATE-----\n"
+#define PEM_MIN_SIZE 54
 
 CryptoKey *CryptoKeyMbedTLS::create() {
 	return memnew(CryptoKeyMbedTLS);

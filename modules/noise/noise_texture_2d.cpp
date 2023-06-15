@@ -30,8 +30,9 @@
 
 #include "noise_texture_2d.h"
 
-#include "core/core_string_names.h"
 #include "noise.h"
+
+#include "core/core_string_names.h"
 
 NoiseTexture2D::NoiseTexture2D() {
 	noise = Ref<Noise>();

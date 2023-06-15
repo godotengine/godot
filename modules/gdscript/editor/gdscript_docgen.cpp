@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "gdscript_docgen.h"
+
 #include "../gdscript.h"
 
 using GDP = GDScriptParser;

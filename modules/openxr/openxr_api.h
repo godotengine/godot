@@ -31,6 +31,11 @@
 #ifndef OPENXR_API_H
 #define OPENXR_API_H
 
+#include "action_map/openxr_action.h"
+#include "extensions/openxr_composition_layer_provider.h"
+#include "extensions/openxr_extension_wrapper.h"
+#include "util.h"
+
 #include "core/error/error_macros.h"
 #include "core/math/projection.h"
 #include "core/math/transform_3d.h"
@@ -44,14 +49,8 @@
 #include "servers/xr/xr_pose.h"
 
 #include "thirdparty/openxr/src/common/xr_linear.h"
+
 #include <openxr/openxr.h>
-
-#include "action_map/openxr_action.h"
-
-#include "extensions/openxr_composition_layer_provider.h"
-#include "extensions/openxr_extension_wrapper.h"
-
-#include "util.h"
 
 // Note, OpenXR code that we wrote for our plugin makes use of C++20 notation for initializing structs which ensures zeroing out unspecified members.
 // Godot is currently restricted to C++17 which doesn't allow this notation. Make sure critical fields are set.

@@ -31,9 +31,10 @@
 #ifndef NAV_OBSTACLE_H
 #define NAV_OBSTACLE_H
 
+#include "nav_rid.h"
+
 #include "core/object/class_db.h"
 #include "core/templates/local_vector.h"
-#include "nav_rid.h"
 
 class NavAgent;
 class NavMap;

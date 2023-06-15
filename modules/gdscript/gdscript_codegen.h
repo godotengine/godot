@@ -31,10 +31,11 @@
 #ifndef GDSCRIPT_CODEGEN_H
 #define GDSCRIPT_CODEGEN_H
 
-#include "core/string/string_name.h"
-#include "core/variant/variant.h"
 #include "gdscript_function.h"
 #include "gdscript_utility_functions.h"
+
+#include "core/string/string_name.h"
+#include "core/variant/variant.h"
 
 class GDScriptCodeGenerator {
 public:

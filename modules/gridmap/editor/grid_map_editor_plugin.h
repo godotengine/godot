@@ -34,6 +34,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "../grid_map.h"
+
 #include "editor/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/item_list.h"

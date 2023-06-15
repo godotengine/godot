@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "wsl_peer.h"
+
 #ifndef WEB_ENABLED
-
-#include "wsl_peer.h"
-
-#include "wsl_peer.h"
 
 #include "core/io/stream_peer_tls.h"
 

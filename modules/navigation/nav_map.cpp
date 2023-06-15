@@ -30,12 +30,13 @@
 
 #include "nav_map.h"
 
-#include "core/config/project_settings.h"
-#include "core/object/worker_thread_pool.h"
 #include "nav_agent.h"
 #include "nav_link.h"
 #include "nav_obstacle.h"
 #include "nav_region.h"
+
+#include "core/config/project_settings.h"
+#include "core/object/worker_thread_pool.h"
 
 #include <Obstacle2d.h>
 

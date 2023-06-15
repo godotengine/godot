@@ -32,16 +32,14 @@
 #define NAV_MAP_H
 
 #include "nav_rid.h"
+#include "nav_utils.h"
 
 #include "core/math/math_defs.h"
 #include "core/object/worker_thread_pool.h"
-#include "core/templates/rb_map.h"
-#include "nav_utils.h"
 
 #include <KdTree2d.h>
-#include <RVOSimulator2d.h>
-
 #include <KdTree3d.h>
+#include <RVOSimulator2d.h>
 #include <RVOSimulator3d.h>
 
 class NavLink;

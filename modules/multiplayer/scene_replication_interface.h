@@ -31,10 +31,10 @@
 #ifndef SCENE_REPLICATION_INTERFACE_H
 #define SCENE_REPLICATION_INTERFACE_H
 
-#include "core/object/ref_counted.h"
-
 #include "multiplayer_spawner.h"
 #include "multiplayer_synchronizer.h"
+
+#include "core/object/ref_counted.h"
 
 class SceneMultiplayer;
 

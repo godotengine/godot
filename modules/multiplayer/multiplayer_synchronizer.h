@@ -31,9 +31,9 @@
 #ifndef MULTIPLAYER_SYNCHRONIZER_H
 #define MULTIPLAYER_SYNCHRONIZER_H
 
-#include "scene/main/node.h"
-
 #include "scene_replication_config.h"
+
+#include "scene/main/node.h"
 
 class MultiplayerSynchronizer : public Node {
 	GDCLASS(MultiplayerSynchronizer, Node);

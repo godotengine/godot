@@ -31,10 +31,10 @@
 #ifndef ENET_CONNECTION_H
 #define ENET_CONNECTION_H
 
-#include "core/object/ref_counted.h"
+#include "enet_packet_peer.h"
 
 #include "core/crypto/crypto.h"
-#include "enet_packet_peer.h"
+#include "core/object/ref_counted.h"
 
 #include <enet/enet.h>
 

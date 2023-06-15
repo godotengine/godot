@@ -35,6 +35,8 @@
 #include "core/io/file_access.h"
 #include "core/os/os.h"
 
+#include <stdlib.h>
+
 #ifdef WINDOWS_ENABLED
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -46,8 +48,6 @@
 
 #define ENV_PATH_SEP ":"
 #endif
-
-#include <stdlib.h>
 
 namespace path {
 

@@ -30,7 +30,23 @@
 
 #include "csharp_script.h"
 
-#include <stdint.h>
+#include "godotsharp_dirs.h"
+#include "managed_callable.h"
+#include "mono_gd/gd_mono_cache.h"
+#include "signal_awaiter_utils.h"
+#include "utils/macros.h"
+#include "utils/naming_utils.h"
+#include "utils/path_utils.h"
+#include "utils/string_utils.h"
+
+#ifdef DEBUG_METHODS_ENABLED
+#include "class_db_api_json.h"
+#endif
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_internal_calls.h"
+#include "editor/script_templates/templates.gen.h"
+#endif
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
@@ -39,31 +55,18 @@
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
+#include "servers/text_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
 #include "editor/editor_file_system.h"
-#include "editor/editor_internal_calls.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
-#include "editor/script_templates/templates.gen.h"
 #endif
 
-#ifdef DEBUG_METHODS_ENABLED
-#include "class_db_api_json.h"
-#endif
-
-#include "godotsharp_dirs.h"
-#include "managed_callable.h"
-#include "mono_gd/gd_mono_cache.h"
-#include "servers/text_server.h"
-#include "signal_awaiter_utils.h"
-#include "utils/macros.h"
-#include "utils/naming_utils.h"
-#include "utils/path_utils.h"
-#include "utils/string_utils.h"
+#include <stdint.h>
 
 #define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->get_string_names().m_var)
 
