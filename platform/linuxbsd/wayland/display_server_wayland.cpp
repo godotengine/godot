@@ -538,7 +538,7 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 	ss->window_pointed = true;
 	ss->pointed_surface = surface;
 
-	Ref<WaylandThread::WaylandWindowEventMessage> msg;
+	Ref<WaylandThread::WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_MOUSE_ENTER;
 
@@ -557,7 +557,7 @@ void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *w
 	ss->window_pointed = false;
 	ss->pointed_surface = nullptr;
 
-	Ref<WaylandThread::WaylandWindowEventMessage> msg;
+	Ref<WaylandThread::WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_MOUSE_EXIT;
 
@@ -693,7 +693,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 			mm->set_relative(pd.position - old_pd.position);
 		}
 
-		Ref<WaylandThread::WaylandInputEventMessage> msg;
+		Ref<WaylandThread::InputEventMessage> msg;
 		msg.instantiate();
 
 		msg->event = mm;
@@ -731,7 +731,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 
 			pg->set_delta(pd.scroll_vector);
 
-			Ref<WaylandThread::WaylandInputEventMessage> msg;
+			Ref<WaylandThread::InputEventMessage> msg;
 			msg.instantiate();
 
 			msg->event = pg;
@@ -800,7 +800,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 					mb->set_double_click(true);
 				}
 
-				Ref<WaylandThread::WaylandInputEventMessage> msg;
+				Ref<WaylandThread::InputEventMessage> msg;
 				msg.instantiate();
 
 				msg->event = mb;
@@ -828,7 +828,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 					wh_up->set_button_index(test_button);
 					wh_up->set_pressed(false);
 
-					Ref<WaylandThread::WaylandInputEventMessage> msg_up;
+					Ref<WaylandThread::InputEventMessage> msg_up;
 					msg_up.instantiate();
 					msg_up->event = wh_up;
 					wls->wayland_thread->push_message(msg_up);
@@ -917,7 +917,7 @@ void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard 
 
 	_seat_state_set_current(*ss);
 
-	Ref<WaylandThread::WaylandWindowEventMessage> msg;
+	Ref<WaylandThread::WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_FOCUS_IN;
 	wls->wayland_thread->push_message(msg);
@@ -932,7 +932,7 @@ void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard 
 
 	ss->repeating_keycode = XKB_KEYCODE_INVALID;
 
-	Ref<WaylandThread::WaylandWindowEventMessage> msg;
+	Ref<WaylandThread::WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_FOCUS_OUT;
 	wls->wayland_thread->push_message(msg);
@@ -970,7 +970,7 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 		return;
 	}
 
-	Ref<WaylandThread::WaylandInputEventMessage> msg;
+	Ref<WaylandThread::InputEventMessage> msg;
 	msg.instantiate();
 	msg->event = k;
 	wls->wayland_thread->push_message(msg);
@@ -1045,7 +1045,7 @@ void DisplayServerWayland::_wl_data_device_on_drop(void *data, struct wl_data_de
 		// just stall our next `read`s.
 		close(fds[1]);
 
-		Ref<WaylandThread::WaylandDropFilesEventMessage> msg;
+		Ref<WaylandThread::DropFilesEventMessage> msg;
 		msg.instantiate();
 
 		msg->files = _string_read_fd(fds[0]).split("\r\n", false);
@@ -1194,7 +1194,7 @@ void DisplayServerWayland::_wp_pointer_gesture_pinch_on_update(void *data, struc
 		wl_fixed_t scale_delta = scale - ss->old_pinch_scale;
 		mg->set_factor(1 + wl_fixed_to_double(scale_delta));
 
-		Ref<WaylandThread::WaylandInputEventMessage> magnify_msg;
+		Ref<WaylandThread::InputEventMessage> magnify_msg;
 		magnify_msg.instantiate();
 		magnify_msg->event = mg;
 
@@ -1216,7 +1216,7 @@ void DisplayServerWayland::_wp_pointer_gesture_pinch_on_update(void *data, struc
 		pg->set_position(pd.position);
 		pg->set_delta(Vector2(wl_fixed_to_double(dx), wl_fixed_to_double(dy)));
 
-		Ref<WaylandThread::WaylandInputEventMessage> pan_msg;
+		Ref<WaylandThread::InputEventMessage> pan_msg;
 		pan_msg.instantiate();
 		pan_msg->event = pg;
 
@@ -1375,7 +1375,7 @@ void DisplayServerWayland::_wp_tablet_tool_on_proximity_in(void *data, struct zw
 	DEBUG_LOG_WAYLAND("Tablet tool entered window.");
 
 	if (!ss->window_pointed) {
-		Ref<WaylandThread::WaylandWindowEventMessage> msg;
+		Ref<WaylandThread::WindowEventMessage> msg;
 		msg.instantiate();
 		msg->event = WINDOW_EVENT_MOUSE_ENTER;
 
@@ -1397,7 +1397,7 @@ void DisplayServerWayland::_wp_tablet_tool_on_proximity_out(void *data, struct z
 	DEBUG_LOG_WAYLAND("Tablet tool left window.");
 
 	if (!ss->window_pointed) {
-		Ref<WaylandThread::WaylandWindowEventMessage> msg;
+		Ref<WaylandThread::WindowEventMessage> msg;
 		msg.instantiate();
 		msg->event = WINDOW_EVENT_MOUSE_EXIT;
 
@@ -1566,7 +1566,7 @@ void DisplayServerWayland::_wp_tablet_tool_on_frame(void *data, struct zwp_table
 		Input::get_singleton()->set_mouse_position(td.position);
 		mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
-		Ref<WaylandThread::WaylandInputEventMessage> inputev_msg;
+		Ref<WaylandThread::InputEventMessage> inputev_msg;
 		inputev_msg.instantiate();
 
 		inputev_msg->event = mm;
@@ -1610,7 +1610,7 @@ void DisplayServerWayland::_wp_tablet_tool_on_frame(void *data, struct zwp_table
 					mb->set_double_click(true);
 				}
 
-				Ref<WaylandThread::WaylandInputEventMessage> msg;
+				Ref<WaylandThread::InputEventMessage> msg;
 				msg.instantiate();
 
 				msg->event = mb;
@@ -2688,14 +2688,14 @@ void DisplayServerWayland::process_events() {
 	}
 
 	while (wayland_thread.has_message()) {
-		Ref<WaylandThread::WaylandMessage> msg = wayland_thread.pop_message();
+		Ref<WaylandThread::Message> msg = wayland_thread.pop_message();
 
-		Ref<WaylandThread::WaylandWindowRectMessage> winrect_msg = msg;
+		Ref<WaylandThread::WindowRectMessage> winrect_msg = msg;
 		if (winrect_msg.is_valid()) {
 			_resize_window(winrect_msg->rect.size);
 		}
 
-		Ref<WaylandThread::WaylandWindowEventMessage> winev_msg = msg;
+		Ref<WaylandThread::WindowEventMessage> winev_msg = msg;
 		if (winev_msg.is_valid()) {
 			_send_window_event(winev_msg->event);
 
@@ -2710,12 +2710,12 @@ void DisplayServerWayland::process_events() {
 			}
 		}
 
-		Ref<WaylandThread::WaylandInputEventMessage> inputev_msg = msg;
+		Ref<WaylandThread::InputEventMessage> inputev_msg = msg;
 		if (inputev_msg.is_valid()) {
 			Input::get_singleton()->parse_input_event(inputev_msg->event);
 		}
 
-		Ref<WaylandThread::WaylandDropFilesEventMessage> dropfiles_msg = msg;
+		Ref<WaylandThread::DropFilesEventMessage> dropfiles_msg = msg;
 		if (dropfiles_msg.is_valid()) {
 			GodotWindowData wd = wls.main_window;
 

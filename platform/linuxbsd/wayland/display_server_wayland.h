@@ -431,31 +431,31 @@ public:
 	class WaylandThread {
 	public:
 		// Messages used for exchanging information between Godot's and Wayland's thread.
-		class WaylandMessage : public RefCounted {
+		class Message : public RefCounted {
 		public:
-			WaylandMessage() {}
-			virtual ~WaylandMessage() = default;
+			Message() {}
+			virtual ~Message() = default;
 		};
 
-		// WaylandMessage data for window rect changes.
-		class WaylandWindowRectMessage : public WaylandMessage {
+		// Message data for window rect changes.
+		class WindowRectMessage : public Message {
 		public:
 			// NOTE: This is in "scaled" terms. For example, if there's a 1920x1080 rect
 			// with a scale factor of 2, the actual value of `rect` will be 3840x2160.
 			Rect2i rect;
 		};
 
-		class WaylandWindowEventMessage : public WaylandMessage {
+		class WindowEventMessage : public Message {
 		public:
 			WindowEvent event;
 		};
 
-		class WaylandInputEventMessage : public WaylandMessage {
+		class InputEventMessage : public Message {
 		public:
 			Ref<InputEvent> event;
 		};
 
-		class WaylandDropFilesEventMessage : public WaylandMessage {
+		class DropFilesEventMessage : public Message {
 		public:
 			Vector<String> files;
 		};
@@ -509,7 +509,7 @@ public:
 
 		WindowState main_window;
 
-		List<Ref<WaylandMessage>> messages;
+		List<Ref<WaylandThread::Message>> messages;
 
 		bool initialized = false;
 
@@ -648,9 +648,9 @@ public:
 
 		static int window_state_calculate_scale(WindowState *p_ws);
 
-		void push_message(Ref<WaylandMessage> message);
+		void push_message(Ref<Message> message);
 		bool has_message();
-		Ref<WaylandMessage> pop_message();
+		Ref<Message> pop_message();
 
 		void window_create(DisplayServer::WindowID p_window_id_id, int p_width, int p_height);
 

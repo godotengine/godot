@@ -483,7 +483,7 @@ void WaylandThread::_xdg_surface_on_configure(void *data, struct xdg_surface *xd
 	}
 #endif
 
-	Ref<WaylandWindowRectMessage> msg;
+	Ref<WindowRectMessage> msg;
 	msg.instantiate();
 	msg->rect = scaled_rect;
 
@@ -529,7 +529,7 @@ void WaylandThread::_xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
-	Ref<WaylandWindowEventMessage> msg;
+	Ref<WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_CLOSE_REQUEST;
 	ws->wayland_thread->push_message(msg);
@@ -639,7 +639,7 @@ void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, st
 		libdecor_state_free(state);
 	}
 
-	Ref<WaylandWindowRectMessage> winrect_msg;
+	Ref<WindowRectMessage> winrect_msg;
 	winrect_msg.instantiate();
 	winrect_msg->rect = scaled_rect;
 	ws->wayland_thread->push_message(winrect_msg);
@@ -651,7 +651,7 @@ void WaylandThread::libdecor_frame_on_close(struct libdecor_frame *frame, void *
 	WindowState *ws = (WindowState *)user_data;
 	ERR_FAIL_NULL(ws);
 
-	Ref<WaylandWindowEventMessage> winevent_msg;
+	Ref<WindowEventMessage> winevent_msg;
 	winevent_msg.instantiate();
 	winevent_msg->event = WINDOW_EVENT_CLOSE_REQUEST;
 
@@ -794,7 +794,7 @@ int WaylandThread::window_state_calculate_scale(WindowState *p_ws) {
 	return 1;
 }
 
-void WaylandThread::push_message(Ref<WaylandMessage> message) {
+void WaylandThread::push_message(Ref<Message> message) {
 	messages.push_back(message);
 }
 
@@ -802,9 +802,9 @@ bool WaylandThread::has_message() {
 	return messages.front() != nullptr;
 }
 
-Ref<WaylandThread::WaylandMessage> WaylandThread::pop_message() {
+Ref<WaylandThread::Message> WaylandThread::pop_message() {
 	if (messages.front() != nullptr) {
-		Ref<WaylandMessage> msg = messages.front()->get();
+		Ref<Message> msg = messages.front()->get();
 		messages.pop_front();
 		return msg;
 	}
@@ -813,7 +813,7 @@ Ref<WaylandThread::WaylandMessage> WaylandThread::pop_message() {
 	// that isn't the case we'll just return an invalid `Ref`. After all, due to
 	// its `InputEvent`-like interface, we still have to dynamically cast and check
 	// the `Ref`'s validity anyways.
-	return Ref<WaylandMessage>();
+	return Ref<Message>();
 }
 
 // TODO: Finish splitting.
