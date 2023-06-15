@@ -188,6 +188,7 @@ private:
 	Ref<ArrayMesh> debug_contact_mesh;
 	Ref<Material> debug_paths_material;
 	Ref<Material> collision_material;
+	Ref<Material> collision_face_material;
 	int collision_debug_contacts;
 
 	void _flush_scene_change();
@@ -372,6 +373,7 @@ public:
 
 	Ref<Material> get_debug_paths_material();
 	Ref<Material> get_debug_collision_material();
+	Ref<Material> get_debug_collision_face_material();
 	Ref<ArrayMesh> get_debug_contact_mesh();
 
 	int get_collision_debug_contact_count() { return collision_debug_contacts; }

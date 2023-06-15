@@ -43,7 +43,10 @@ class Shape3D : public Resource {
 	real_t custom_bias = 0.0;
 	real_t margin = 0.04;
 
-	Ref<ArrayMesh> debug_mesh_cache;
+#ifdef DEBUG_ENABLED
+	HashMap<Color, Ref<ArrayMesh>> debug_mesh_lines_cache;
+	HashMap<Color, Ref<ArrayMesh>> debug_mesh_face_cache;
+#endif // DEBUG_ENABLED
 
 protected:
 	static void _bind_methods();
@@ -53,11 +56,14 @@ protected:
 
 	virtual void _update_shape();
 
+	virtual void get_debug_face_mesh_arrays(Array &p_arr) const {}
+
 public:
 	virtual RID get_rid() const override { return shape; }
 
-	Ref<ArrayMesh> get_debug_mesh();
+	Ref<ArrayMesh> get_debug_mesh(const Color &p_debug_color = Color(), bool p_with_shape_faces = false);
 	virtual Vector<Vector3> get_debug_mesh_lines() const = 0; // { return Vector<Vector3>(); }
+	virtual Ref<ArrayMesh> get_debug_face_mesh(const Color &p_vertex_color) const;
 	/// Returns the radius of a sphere that fully enclose this shape
 	virtual real_t get_enclosing_radius() const = 0;
 
@@ -70,7 +76,7 @@ public:
 	void set_margin(real_t p_margin);
 
 	Shape3D();
-	~Shape3D();
+	virtual ~Shape3D() override;
 };
 
 #endif // SHAPE_3D_H

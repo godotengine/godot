@@ -68,12 +68,32 @@ void CollisionShape3D::make_convex_from_siblings() {
 	set_shape(shape_new);
 }
 
+Color CollisionShape3D::_get_default_debug_color() const {
+	SceneTree *st = SceneTree::get_singleton();
+	return st ? st->get_debug_collisions_color() : Color();
+}
+
 void CollisionShape3D::_update_in_shape_owner(bool p_xform_only) {
 	collision_object->shape_owner_set_transform(owner_id, get_transform());
 	if (p_xform_only) {
 		return;
 	}
 	collision_object->shape_owner_set_disabled(owner_id, disabled);
+#ifdef DEBUG_ENABLED
+	collision_object->shape_owner_set_debug(owner_id, debug_draw_faces, debug_color);
+#endif //DEBUG_ENABLED
+}
+
+void CollisionShape3D::_validate_property(PropertyInfo &p_property) const {
+#ifdef DEBUG_ENABLED
+	if (p_property.name == "debug_color") {
+		if (debug_color == _get_default_debug_color()) {
+			p_property.usage = PROPERTY_USAGE_DEFAULT & ~PROPERTY_USAGE_STORAGE;
+		} else {
+			p_property.usage = PROPERTY_USAGE_DEFAULT;
+		}
+	}
+#endif //DEBUG_ENABLED
 }
 
 void CollisionShape3D::_notification(int p_what) {
@@ -154,10 +174,16 @@ void CollisionShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disabled", "enable"), &CollisionShape3D::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionShape3D::is_disabled);
 	ClassDB::bind_method(D_METHOD("make_convex_from_siblings"), &CollisionShape3D::make_convex_from_siblings);
+	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape3D::set_debug_colour);
+	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape3D::get_debug_color);
+	ClassDB::bind_method(D_METHOD("set_debug_draw_faces", "debug_draw_faces"), &CollisionShape3D::set_debug_draw_faces);
+	ClassDB::bind_method(D_METHOD("get_debug_draw_faces"), &CollisionShape3D::get_debug_draw_faces);
 	ClassDB::set_method_flags("CollisionShape3D", "make_convex_from_siblings", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_color", PROPERTY_HINT_NONE, ""), "set_debug_color", "get_debug_color");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_draw_faces", PROPERTY_HINT_NONE, ""), "set_debug_draw_faces", "get_debug_draw_faces");
 }
 
 void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
@@ -190,6 +216,48 @@ Ref<Shape3D> CollisionShape3D::get_shape() const {
 	return shape;
 }
 
+Color CollisionShape3D::get_debug_color() const {
+#ifdef DEBUG_ENABLED
+	return debug_color;
+#else
+	return Color();
+#endif //DEBUG_ENABLED
+}
+
+void CollisionShape3D::set_debug_colour(const Color &p_color) {
+#ifdef DEBUG_ENABLED
+	if (debug_color == p_color) {
+		return;
+	}
+	debug_color = p_color;
+	update_gizmos();
+	if (collision_object) {
+		collision_object->shape_owner_set_debug(owner_id, debug_draw_faces, debug_color);
+	}
+#endif //DEBUG_ENABLED
+}
+
+bool CollisionShape3D::get_debug_draw_faces() const {
+#ifdef DEBUG_ENABLED
+	return debug_draw_faces;
+#else
+	return false;
+#endif //DEBUG_ENABLED
+}
+
+void CollisionShape3D::set_debug_draw_faces(bool p_debug_draw_faces) {
+#ifdef DEBUG_ENABLED
+	if (debug_draw_faces == p_debug_draw_faces) {
+		return;
+	}
+	debug_draw_faces = p_debug_draw_faces;
+	update_gizmos();
+	if (collision_object) {
+		collision_object->shape_owner_set_debug(owner_id, debug_draw_faces, debug_color);
+	}
+#endif //DEBUG_ENABLED
+}
+
 void CollisionShape3D::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
 	update_gizmos();
@@ -205,6 +273,9 @@ bool CollisionShape3D::is_disabled() const {
 CollisionShape3D::CollisionShape3D() {
 	//indicator = RenderingServer::get_singleton()->mesh_create();
 	set_notify_local_transform(true);
+#ifdef DEBUG_ENABLED
+	debug_color = _get_default_debug_color();
+#endif //DEBUG_ENABLED
 }
 
 CollisionShape3D::~CollisionShape3D() {

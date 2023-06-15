@@ -66,45 +66,104 @@ void Shape3D::set_margin(real_t p_margin) {
 	PhysicsServer3D::get_singleton()->shape_set_margin(shape, margin);
 }
 
-Ref<ArrayMesh> Shape3D::get_debug_mesh() {
-	if (debug_mesh_cache.is_valid()) {
-		return debug_mesh_cache;
+Ref<ArrayMesh> Shape3D::get_debug_mesh(const Color &p_debug_color, bool p_with_shape_faces) {
+#ifdef DEBUG_ENABLED
+	if (p_with_shape_faces) {
+		if (debug_mesh_face_cache.has(p_debug_color)) {
+			return debug_mesh_face_cache.get(p_debug_color);
+		}
+	} else {
+		if (debug_mesh_lines_cache.has(p_debug_color)) {
+			return debug_mesh_lines_cache.get(p_debug_color);
+		}
 	}
 
 	Vector<Vector3> lines = get_debug_mesh_lines();
 
-	debug_mesh_cache = Ref<ArrayMesh>(memnew(ArrayMesh));
+	Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 
 	if (!lines.is_empty()) {
 		//make mesh
 		Vector<Vector3> array;
+		Vector<Color> colors;
+		colors.resize(lines.size());
 		array.resize(lines.size());
 		{
 			Vector3 *w = array.ptrw();
+			Color *c = colors.ptrw();
 			for (int i = 0; i < lines.size(); i++) {
 				w[i] = lines[i];
+				c[i] = p_debug_color;
 			}
 		}
 
 		Array arr;
 		arr.resize(Mesh::ARRAY_MAX);
 		arr[Mesh::ARRAY_VERTEX] = array;
+		arr[Mesh::ARRAY_COLOR] = colors;
 
-		SceneTree *st = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+		SceneTree *st = cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 
-		debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, arr);
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, arr);
+		if (p_with_shape_faces) {
+			const Ref<ArrayMesh> face_mesh = get_debug_face_mesh(p_debug_color);
+			if (face_mesh.is_valid()) {
+				mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES,
+						face_mesh->surface_get_arrays(0));
+			}
+		}
 
 		if (st) {
-			debug_mesh_cache->surface_set_material(0, st->get_debug_collision_material());
+			mesh->surface_set_material(0, st->get_debug_collision_material());
+			if (p_with_shape_faces && mesh->get_surface_count() > 1) {
+				mesh->surface_set_material(1, st->get_debug_collision_face_material());
+			}
 		}
 	}
 
-	return debug_mesh_cache;
+	if (p_with_shape_faces) {
+		debug_mesh_face_cache.insert(p_debug_color, mesh);
+	} else {
+		debug_mesh_lines_cache.insert(p_debug_color, mesh);
+	}
+
+	return mesh;
+#else
+	return nullptr;
+#endif // DEBUG_ENABLED
+}
+
+Ref<ArrayMesh> Shape3D::get_debug_face_mesh(const Color &p_vertex_color) const {
+	Array arr;
+	arr.resize(Mesh::ARRAY_MAX);
+
+	get_debug_face_mesh_arrays(arr);
+
+	const Vector<Vector3> &vertices = arr[Mesh::ARRAY_VERTEX];
+	if (vertices.is_empty()) {
+		return nullptr;
+	}
+
+	Vector<Color> colors;
+	colors.resize(vertices.size());
+
+	Color *w = colors.ptrw();
+	for (int i = 0; i < colors.size(); i++) {
+		w[i] = p_vertex_color;
+	}
+	arr[Mesh::ARRAY_COLOR] = colors;
+
+	Ref<ArrayMesh> array_mesh = memnew(ArrayMesh);
+	array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr);
+	return array_mesh;
 }
 
 void Shape3D::_update_shape() {
 	emit_changed();
-	debug_mesh_cache.unref();
+#ifdef DEBUG_ENABLED
+	debug_mesh_lines_cache.clear();
+	debug_mesh_face_cache.clear();
+#endif // DEBUG_ENABLED
 }
 
 void Shape3D::_bind_methods() {
@@ -114,7 +173,7 @@ void Shape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &Shape3D::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &Shape3D::get_margin);
 
-	ClassDB::bind_method(D_METHOD("get_debug_mesh"), &Shape3D::get_debug_mesh);
+	ClassDB::bind_method(D_METHOD("get_debug_mesh", "vertex_color", "with_shape_faces"), &Shape3D::get_debug_mesh);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_solver_bias", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_custom_solver_bias", "get_custom_solver_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater,suffix:m"), "set_margin", "get_margin");

@@ -30,6 +30,7 @@
 
 #include "world_boundary_shape_3d.h"
 
+#include "scene/resources/mesh.h"
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> WorldBoundaryShape3D::get_debug_mesh_lines() const {
@@ -59,6 +60,47 @@ Vector<Vector3> WorldBoundaryShape3D::get_debug_mesh_lines() const {
 	};
 
 	return points;
+}
+
+Ref<ArrayMesh> WorldBoundaryShape3D::get_debug_face_mesh(const Color &p_vertex_color) const {
+	Plane p = get_plane();
+
+	Vector3 n1 = p.get_any_perpendicular_normal();
+	Vector3 n2 = p.normal.cross(n1).normalized();
+
+	PackedVector3Array pface = {
+		p.normal * p.d + n1 * 10.0 + n2 * 10.0,
+		p.normal * p.d + n1 * 10.0 + n2 * -10.0,
+		p.normal * p.d + n1 * -10.0 + n2 * -10.0,
+		p.normal * p.d + n1 * -10.0 + n2 * 10.0,
+	};
+
+	PackedInt32Array indices = {
+		0,
+		1,
+		2,
+		2,
+		3,
+		0,
+	};
+	Vector<Color> colors = {
+		p_vertex_color,
+		p_vertex_color,
+		p_vertex_color,
+		p_vertex_color
+	};
+
+	Array arr;
+	arr.resize(Mesh::ARRAY_MAX);
+
+	arr[Mesh::ARRAY_VERTEX] = pface;
+	arr[Mesh::ARRAY_INDEX] = indices;
+	arr[Mesh::ARRAY_COLOR] = colors;
+
+	Ref<ArrayMesh> array_mesh = memnew(ArrayMesh);
+	array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arr);
+
+	return array_mesh;
 }
 
 void WorldBoundaryShape3D::_update_shape() {

@@ -42,6 +42,7 @@ protected:
 	static void _bind_methods();
 
 	virtual void _update_shape() override;
+	void get_debug_face_mesh_arrays(Array &p_arr) const override;
 
 public:
 	void set_radius(float p_radius);

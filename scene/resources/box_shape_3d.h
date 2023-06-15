@@ -45,6 +45,7 @@ protected:
 #endif // DISABLE_DEPRECATED
 
 	virtual void _update_shape() override;
+	void get_debug_face_mesh_arrays(Array &p_arr) const override;
 
 public:
 	void set_size(const Vector3 &p_size);

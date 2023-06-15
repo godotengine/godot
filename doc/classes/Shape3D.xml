@@ -13,6 +13,8 @@
 	<methods>
 		<method name="get_debug_mesh">
 			<return type="ArrayMesh" />
+			<param index="0" name="vertex_color" type="Color" />
+			<param index="1" name="with_shape_faces" type="bool" />
 			<description>
 				Returns the [ArrayMesh] used to draw the debug collision for this [Shape3D].
 			</description>

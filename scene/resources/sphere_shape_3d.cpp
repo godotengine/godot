@@ -30,6 +30,7 @@
 
 #include "sphere_shape_3d.h"
 
+#include "scene/resources/primitive_meshes.h"
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> SphereShape3D::get_debug_mesh_lines() const {
@@ -61,6 +62,11 @@ real_t SphereShape3D::get_enclosing_radius() const {
 void SphereShape3D::_update_shape() {
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), radius);
 	Shape3D::_update_shape();
+}
+
+void SphereShape3D::get_debug_face_mesh_arrays(Array &p_arr) const {
+	SphereMesh sphere_mesh;
+	sphere_mesh.create_mesh_array(p_arr, radius, radius * 2.0, 32, 16);
 }
 
 void SphereShape3D::set_radius(float p_radius) {

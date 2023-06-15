@@ -810,11 +810,30 @@ Ref<Material> SceneTree::get_debug_collision_material() {
 	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	line_material->set_albedo(get_debug_collisions_color());
+	line_material->set_albedo(Color(1.0, 1.0, 1.0, 1.0));
 
 	collision_material = line_material;
 
 	return collision_material;
+}
+
+Ref<Material> SceneTree::get_debug_collision_face_material() {
+	_THREAD_SAFE_METHOD_
+
+	if (collision_face_material.is_valid()) {
+		return collision_face_material;
+	}
+
+	Ref<StandardMaterial3D> face_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	face_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	face_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	face_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	face_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	face_material->set_albedo(Color(1.0, 1.0, 1.0, 0.25));
+
+	collision_face_material = face_material;
+
+	return collision_face_material;
 }
 
 Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {

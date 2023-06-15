@@ -69,6 +69,10 @@ private:
 
 		Vector<ShapeBase> shapes;
 		bool disabled = false;
+#ifdef DEBUG_ENABLED
+		Color debug_color;
+		bool debug_draw_faces;
+#endif //DEBUG_ENABLED
 	};
 
 	int total_subshapes = 0;
@@ -152,6 +156,8 @@ public:
 
 	void shape_owner_set_disabled(uint32_t p_owner, bool p_disabled);
 	bool is_shape_owner_disabled(uint32_t p_owner) const;
+
+	void shape_owner_set_debug(uint32_t p_owner, bool p_debug_show_faces, const Color &p_debug_color);
 
 	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape3D> &p_shape);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;

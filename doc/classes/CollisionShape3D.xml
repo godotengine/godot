@@ -29,6 +29,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="debug_color" type="Color" setter="set_debug_color" getter="get_debug_color" default="Color(0, 0, 0, 1)">
+		</member>
+		<member name="debug_draw_faces" type="bool" setter="set_debug_draw_faces" getter="get_debug_draw_faces" default="false">
+		</member>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
 			A disabled collision shape has no effect in the world.
 		</member>

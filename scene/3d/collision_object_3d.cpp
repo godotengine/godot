@@ -41,7 +41,9 @@ void CollisionObject3D::_notification(int p_what) {
 				for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
 					debug_shapes_to_update.insert(E.key);
 				}
+#ifdef DEBUG_ENABLED
 				_update_debug_shapes();
+#endif //DEBUG_ENABLED
 			}
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint()) {
@@ -49,13 +51,13 @@ void CollisionObject3D::_notification(int p_what) {
 			}
 #endif
 		} break;
-
+#ifdef DEBUG_ENABLED
 		case NOTIFICATION_EXIT_TREE: {
 			if (debug_shapes_count > 0) {
 				_clear_debug_shapes();
 			}
 		} break;
-
+#endif //DEBUG_ENABLED
 		case NOTIFICATION_ENTER_WORLD: {
 			if (area) {
 				PhysicsServer3D::get_singleton()->area_set_transform(rid, get_global_transform());
@@ -355,20 +357,23 @@ void CollisionObject3D::_update_shape_data(uint32_t p_owner) {
 }
 
 void CollisionObject3D::_shape_changed(const Ref<Shape3D> &p_shape) {
+#ifdef DEBUG_ENABLED
 	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
 		ShapeData &shapedata = E.value;
 		ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptrw();
 		for (int i = 0; i < shapedata.shapes.size(); i++) {
 			ShapeData::ShapeBase &s = shape_bases[i];
 			if (s.shape == p_shape && s.debug_shape.is_valid()) {
-				Ref<Mesh> mesh = s.shape->get_debug_mesh();
+				Ref<Mesh> mesh = s.shape->get_debug_mesh(shapedata.debug_color, shapedata.debug_draw_faces);
 				RS::get_singleton()->instance_set_base(s.debug_shape, mesh->get_rid());
 			}
 		}
 	}
+#endif //DEBUG_ENABLED
 }
 
 void CollisionObject3D::_update_debug_shapes() {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 
 	if (!is_inside_tree()) {
@@ -398,13 +403,14 @@ void CollisionObject3D::_update_debug_shapes() {
 					++debug_shapes_count;
 				}
 
-				Ref<Mesh> mesh = s.shape->get_debug_mesh();
+				Ref<Mesh> mesh = s.shape->get_debug_mesh(shapedata.debug_color, shapedata.debug_draw_faces);
 				RS::get_singleton()->instance_set_base(s.debug_shape, mesh->get_rid());
 				RS::get_singleton()->instance_set_transform(s.debug_shape, get_global_transform() * shapedata.xform);
 			}
 		}
 	}
 	debug_shapes_to_update.clear();
+#endif //DEBUG_ENABLED
 }
 
 void CollisionObject3D::_clear_debug_shapes() {
@@ -560,6 +566,18 @@ bool CollisionObject3D::is_shape_owner_disabled(uint32_t p_owner) const {
 	return shapes[p_owner].disabled;
 }
 
+void CollisionObject3D::shape_owner_set_debug(uint32_t p_owner, bool p_debug_show_faces, const Color &p_debug_color) {
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(!shapes.has(p_owner));
+
+	ShapeData &sd = shapes[p_owner];
+	sd.debug_draw_faces = p_debug_show_faces;
+	sd.debug_color = p_debug_color;
+
+	_update_shape_data(p_owner);
+#endif //DEBUG_ENABLED
+}
+
 void CollisionObject3D::get_shape_owners(List<uint32_t> *r_owners) {
 	for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
 		r_owners->push_back(E.key);
@@ -656,7 +674,7 @@ void CollisionObject3D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 	} else {
 		PhysicsServer3D::get_singleton()->body_remove_shape(rid, index_to_remove);
 	}
-
+#ifdef DEBUG_ENABLED
 	if (s.debug_shape.is_valid()) {
 		RS::get_singleton()->free(s.debug_shape);
 		if (s.shape.is_valid()) {
@@ -664,7 +682,7 @@ void CollisionObject3D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 		}
 		--debug_shapes_count;
 	}
-
+#endif //DEBUG_ENABLED
 	shapes[p_owner].shapes.remove_at(p_shape);
 
 	for (KeyValue<uint32_t, ShapeData> &E : shapes) {

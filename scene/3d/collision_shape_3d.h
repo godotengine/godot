@@ -48,8 +48,16 @@ class CollisionShape3D : public Node3D {
 #endif
 	bool disabled = false;
 
+#ifdef DEBUG_ENABLED
+	Color debug_color;
+	bool debug_draw_faces = false;
+#endif //DEBUG_ENABLED
+
+	Color _get_default_debug_color() const;
+
 protected:
 	void _update_in_shape_owner(bool p_xform_only = false);
+	void _validate_property(PropertyInfo &p_property) const;
 
 protected:
 	void _notification(int p_what);
@@ -60,6 +68,12 @@ public:
 
 	void set_shape(const Ref<Shape3D> &p_shape);
 	Ref<Shape3D> get_shape() const;
+
+	Color get_debug_color() const;
+	void set_debug_colour(const Color &p_color);
+
+	bool get_debug_draw_faces() const;
+	void set_debug_draw_faces(bool p_debug_draw_faces);
 
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;

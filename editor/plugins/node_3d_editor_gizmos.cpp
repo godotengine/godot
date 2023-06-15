@@ -244,11 +244,11 @@ void EditorNode3DGizmo::add_mesh(const Ref<Mesh> &p_mesh, const Ref<Material> &p
 	instances.push_back(ins);
 }
 
-void EditorNode3DGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard, const Color &p_modulate) {
-	add_vertices(p_lines, p_material, Mesh::PRIMITIVE_LINES, p_billboard, p_modulate);
+void EditorNode3DGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard, const Color &p_modulate, bool p_mod_is_vertex_color) {
+	add_vertices(p_lines, p_material, Mesh::PRIMITIVE_LINES, p_billboard, p_modulate, p_mod_is_vertex_color);
 }
 
-void EditorNode3DGizmo::add_vertices(const Vector<Vector3> &p_vertices, const Ref<Material> &p_material, Mesh::PrimitiveType p_primitive_type, bool p_billboard, const Color &p_modulate) {
+void EditorNode3DGizmo::add_vertices(const Vector<Vector3> &p_vertices, const Ref<Material> &p_material, Mesh::PrimitiveType p_primitive_type, bool p_billboard, const Color &p_modulate, bool p_mod_is_vertex_color) {
 	if (p_vertices.is_empty()) {
 		return;
 	}
@@ -267,14 +267,17 @@ void EditorNode3DGizmo::add_vertices(const Vector<Vector3> &p_vertices, const Re
 	{
 		Color *w = color.ptrw();
 		for (int i = 0; i < p_vertices.size(); i++) {
-			if (is_selected()) {
-				w[i] = Color(1, 1, 1, 0.8) * p_modulate;
+			if (p_mod_is_vertex_color) {
+				w[i] = p_modulate;
 			} else {
-				w[i] = Color(1, 1, 1, 0.2) * p_modulate;
+				if (is_selected()) {
+					w[i] = Color(1, 1, 1, 0.8) * p_modulate;
+				} else {
+					w[i] = Color(1, 1, 1, 0.2) * p_modulate;
+				}
 			}
 		}
 	}
-
 	a[Mesh::ARRAY_COLOR] = color;
 
 	mesh->add_surface_from_arrays(p_primitive_type, a);
@@ -806,7 +809,7 @@ void EditorNode3DGizmo::set_plugin(EditorNode3DGizmoPlugin *p_plugin) {
 }
 
 void EditorNode3DGizmo::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_lines", "lines", "material", "billboard", "modulate"), &EditorNode3DGizmo::add_lines, DEFVAL(false), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("add_lines", "lines", "material", "billboard", "modulate", "modulate_is_vertex_color"), &EditorNode3DGizmo::add_lines, DEFVAL(false), DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_mesh", "mesh", "material", "transform", "skeleton"), &EditorNode3DGizmo::add_mesh, DEFVAL(Variant()), DEFVAL(Transform3D()), DEFVAL(Ref<SkinReference>()));
 	ClassDB::bind_method(D_METHOD("add_collision_segments", "segments"), &EditorNode3DGizmo::add_collision_segments);
 	ClassDB::bind_method(D_METHOD("add_collision_triangles", "triangles"), &EditorNode3DGizmo::add_collision_triangles);

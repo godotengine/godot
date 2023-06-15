@@ -30,6 +30,7 @@
 
 #include "capsule_shape_3d.h"
 
+#include "scene/resources/primitive_meshes.h"
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> CapsuleShape3D::get_debug_mesh_lines() const {
@@ -77,6 +78,11 @@ void CapsuleShape3D::_update_shape() {
 	d["height"] = height;
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 	Shape3D::_update_shape();
+}
+
+void CapsuleShape3D::get_debug_face_mesh_arrays(Array &p_arr) const {
+	CapsuleMesh capsule_mesh;
+	capsule_mesh.create_mesh_array(p_arr, radius, height, 32, 12);
 }
 
 void CapsuleShape3D::set_radius(float p_radius) {

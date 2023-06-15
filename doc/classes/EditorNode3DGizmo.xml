@@ -139,6 +139,7 @@
 			<param index="1" name="material" type="Material" />
 			<param index="2" name="billboard" type="bool" default="false" />
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="4" name="modulate_is_vertex_color" type="bool" default="false" />
 			<description>
 				Adds lines to the gizmo (as sets of 2 points), with a given material. The lines are used for visualizing the gizmo. Call this method during [method _redraw].
 			</description>

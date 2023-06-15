@@ -30,6 +30,7 @@
 
 #include "cylinder_shape_3d.h"
 
+#include "scene/resources/primitive_meshes.h"
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() const {
@@ -70,6 +71,11 @@ void CylinderShape3D::_update_shape() {
 	d["height"] = height;
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 	Shape3D::_update_shape();
+}
+
+void CylinderShape3D::get_debug_face_mesh_arrays(Array &p_arr) const {
+	CylinderMesh cylinder_mesh;
+	cylinder_mesh.create_mesh_array(p_arr, radius, radius, height, 32, 1);
 }
 
 void CylinderShape3D::set_radius(float p_radius) {

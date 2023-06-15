@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "box_shape_3d.h"
+
+#include "scene/resources/primitive_meshes.h"
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> BoxShape3D::get_debug_mesh_lines() const {
@@ -54,6 +56,11 @@ real_t BoxShape3D::get_enclosing_radius() const {
 void BoxShape3D::_update_shape() {
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), size / 2);
 	Shape3D::_update_shape();
+}
+
+void BoxShape3D::get_debug_face_mesh_arrays(Array &p_arr) const {
+	BoxMesh box_mesh;
+	box_mesh.create_mesh_array(p_arr, size);
 }
 
 #ifndef DISABLE_DEPRECATED
