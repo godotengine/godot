@@ -5,13 +5,27 @@ Import("env_modules")
 
 env_minimp3 = env_modules.Clone()
 
-thirdparty_dir = "#thirdparty/minimp3/"
+# Thirdparty source files
 
-# Treat minimp3 headers as system headers to avoid raising warnings. Not supported on MSVC.
-if not env.msvc:
-    env_minimp3.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path])
-else:
-    env_minimp3.Prepend(CPPPATH=[thirdparty_dir])
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/minimp3/"
+thirdparty_sources = [thirdparty_dir + "minimp3_ex.cpp"]
+
+env_minimp3.Prepend(CPPPATH=[thirdparty_dir])
+
+env_thirdparty = env_minimp3.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
+
 
 # Godot source files
-env_minimp3.add_source_files(env.modules_sources, "*.cpp")
+
+module_obj = []
+
+env_minimp3.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)
