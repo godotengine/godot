@@ -2033,10 +2033,6 @@ String PopupMenu::get_tooltip(const Point2 &p_pos) const {
 	return items[over].tooltip;
 }
 
-void PopupMenu::set_parent_rect(const Rect2 &p_rect) {
-	parent_rect = p_rect;
-}
-
 void PopupMenu::add_autohide_area(const Rect2 &p_area) {
 	autohide_areas.push_back(p_area);
 }

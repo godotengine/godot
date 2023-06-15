@@ -98,7 +98,6 @@ class PopupMenu : public Popup {
 	bool during_grabbed_click = false;
 	int mouse_over = -1;
 	int submenu_over = -1;
-	Rect2 parent_rect;
 	String _get_accel_text(const Item &p_item) const;
 	int _get_mouse_over(const Point2 &p_over) const;
 	virtual Size2 _get_contents_minimum_size() const override;
@@ -291,8 +290,6 @@ public:
 	void add_separator(const String &p_text = String(), int p_id = -1);
 
 	void clear();
-
-	void set_parent_rect(const Rect2 &p_rect);
 
 	virtual String get_tooltip(const Point2 &p_pos) const;
 
