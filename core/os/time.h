@@ -81,4 +81,7 @@ public:
 	virtual ~Time();
 };
 
+VARIANT_ENUM_CAST(Month);
+VARIANT_ENUM_CAST(Weekday);
+
 #endif // TIME_H

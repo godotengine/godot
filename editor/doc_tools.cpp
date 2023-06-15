@@ -502,6 +502,7 @@ void DocTools::generate(bool p_basic_types) {
 						found_type = true;
 						if (retinfo.type == Variant::INT && retinfo.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 							prop.enumeration = retinfo.class_name;
+							prop.is_bitfield = retinfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD;
 							prop.type = "int";
 						} else if (retinfo.class_name != StringName()) {
 							prop.type = retinfo.class_name;
@@ -1065,6 +1066,9 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 							method.return_type = parser->get_named_attribute_value("type");
 							if (parser->has_attribute("enum")) {
 								method.return_enum = parser->get_named_attribute_value("enum");
+								if (parser->has_attribute("is_bitfield")) {
+									method.return_is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+								}
 							}
 						} else if (name == "returns_error") {
 							ERR_FAIL_COND_V(!parser->has_attribute("number"), ERR_FILE_CORRUPT);
@@ -1077,6 +1081,9 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 							argument.type = parser->get_named_attribute_value("type");
 							if (parser->has_attribute("enum")) {
 								argument.enumeration = parser->get_named_attribute_value("enum");
+								if (parser->has_attribute("is_bitfield")) {
+									argument.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+								}
 							}
 
 							method.arguments.push_back(argument);
@@ -1267,6 +1274,9 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								}
 								if (parser->has_attribute("enum")) {
 									prop2.enumeration = parser->get_named_attribute_value("enum");
+									if (parser->has_attribute("is_bitfield")) {
+										prop2.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+									}
 								}
 								if (parser->has_attribute("is_deprecated")) {
 									prop2.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
@@ -1334,9 +1344,9 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								constant2.is_value_valid = true;
 								if (parser->has_attribute("enum")) {
 									constant2.enumeration = parser->get_named_attribute_value("enum");
-								}
-								if (parser->has_attribute("is_bitfield")) {
-									constant2.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+									if (parser->has_attribute("is_bitfield")) {
+										constant2.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
+									}
 								}
 								if (parser->has_attribute("is_deprecated")) {
 									constant2.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
@@ -1407,6 +1417,9 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 				String enum_text;
 				if (!m.return_enum.is_empty()) {
 					enum_text = " enum=\"" + m.return_enum + "\"";
+					if (m.return_is_bitfield) {
+						enum_text += " is_bitfield=\"true\"";
+					}
 				}
 				_write_string(f, 3, "<return type=\"" + m.return_type.xml_escape(true) + "\"" + enum_text + " />");
 			}
@@ -1422,6 +1435,9 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 				String enum_text;
 				if (!a.enumeration.is_empty()) {
 					enum_text = " enum=\"" + a.enumeration + "\"";
+					if (a.is_bitfield) {
+						enum_text += " is_bitfield=\"true\"";
+					}
 				}
 
 				if (!a.default_value.is_empty()) {
@@ -1512,6 +1528,9 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				String additional_attributes;
 				if (!c.properties[i].enumeration.is_empty()) {
 					additional_attributes += " enum=\"" + c.properties[i].enumeration + "\"";
+					if (c.properties[i].is_bitfield) {
+						additional_attributes += " is_bitfield=\"true\"";
+					}
 				}
 				if (!c.properties[i].default_value.is_empty()) {
 					additional_attributes += " default=\"" + c.properties[i].default_value.xml_escape(true) + "\"";

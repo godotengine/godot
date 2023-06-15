@@ -20,7 +20,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="image" type="Image" />
 			<param index="1" name="fileaccess" type="FileAccess" />
-			<param index="2" name="flags" type="int" enum="ImageFormatLoader.LoaderFlags" />
+			<param index="2" name="flags" type="int" enum="ImageFormatLoader.LoaderFlags" is_bitfield="true" />
 			<param index="3" name="scale" type="float" />
 			<description>
 				Loads the content of [param fileaccess] into the provided [param image].

@@ -332,7 +332,7 @@
 			</description>
 		</method>
 		<method name="_font_get_style" qualifiers="virtual const">
-			<return type="int" enum="TextServer.FontStyle" />
+			<return type="int" enum="TextServer.FontStyle" is_bitfield="true" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
 			</description>
@@ -734,7 +734,7 @@
 		<method name="_font_set_style" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
-			<param index="1" name="style" type="int" enum="TextServer.FontStyle" />
+			<param index="1" name="style" type="int" enum="TextServer.FontStyle" is_bitfield="true" />
 			<description>
 			</description>
 		</method>
@@ -1008,7 +1008,7 @@
 			<return type="float" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="width" type="float" />
-			<param index="2" name="justification_flags" type="int" enum="TextServer.JustificationFlag" />
+			<param index="2" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" />
 			<description>
 			</description>
 		</method>
@@ -1100,7 +1100,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="width" type="float" />
 			<param index="2" name="start" type="int" />
-			<param index="3" name="break_flags" type="int" enum="TextServer.LineBreakFlag" />
+			<param index="3" name="break_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" />
 			<description>
 			</description>
 		</method>
@@ -1110,7 +1110,7 @@
 			<param index="1" name="width" type="PackedFloat32Array" />
 			<param index="2" name="start" type="int" />
 			<param index="3" name="once" type="bool" />
-			<param index="4" name="break_flags" type="int" enum="TextServer.LineBreakFlag" />
+			<param index="4" name="break_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" />
 			<description>
 			</description>
 		</method>
@@ -1205,7 +1205,7 @@
 		<method name="_shaped_text_get_word_breaks" qualifiers="virtual const">
 			<return type="PackedInt32Array" />
 			<param index="0" name="shaped" type="RID" />
-			<param index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" />
+			<param index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" />
 			<description>
 			</description>
 		</method>
@@ -1240,7 +1240,7 @@
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="width" type="float" />
-			<param index="2" name="trim_flags" type="int" enum="TextServer.TextOverrunFlag" />
+			<param index="2" name="trim_flags" type="int" enum="TextServer.TextOverrunFlag" is_bitfield="true" />
 			<description>
 			</description>
 		</method>

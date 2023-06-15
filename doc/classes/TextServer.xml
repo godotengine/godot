@@ -386,7 +386,7 @@
 			</description>
 		</method>
 		<method name="font_get_style" qualifiers="const">
-			<return type="int" enum="TextServer.FontStyle" />
+			<return type="int" enum="TextServer.FontStyle" is_bitfield="true" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
 				Returns font style flags, see [enum FontStyle].
@@ -840,7 +840,7 @@
 		<method name="font_set_style">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
-			<param index="1" name="style" type="int" enum="TextServer.FontStyle" />
+			<param index="1" name="style" type="int" enum="TextServer.FontStyle" is_bitfield="true" />
 			<description>
 				Sets the font style flags, see [enum FontStyle].
 				[b]Note:[/b] This value is used for font matching only and will not affect font rendering. Use [method font_set_face_index], [method font_set_variation_coordinates], [method font_set_embolden], or [method font_set_transform] instead.
@@ -1168,7 +1168,7 @@
 			<return type="float" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="width" type="float" />
-			<param index="2" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="2" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<description>
 				Adjusts text width to fit to specified width, returns new text width.
 			</description>
@@ -1275,7 +1275,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="width" type="float" />
 			<param index="2" name="start" type="int" default="0" />
-			<param index="3" name="break_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
+			<param index="3" name="break_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
 			<description>
 				Breaks text to the lines and returns character ranges for each line.
 			</description>
@@ -1286,7 +1286,7 @@
 			<param index="1" name="width" type="PackedFloat32Array" />
 			<param index="2" name="start" type="int" default="0" />
 			<param index="3" name="once" type="bool" default="true" />
-			<param index="4" name="break_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
+			<param index="4" name="break_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
 			<description>
 				Breaks text to the lines and columns. Returns character ranges for each segment.
 			</description>
@@ -1397,7 +1397,7 @@
 		<method name="shaped_text_get_word_breaks" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<param index="0" name="shaped" type="RID" />
-			<param index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" default="264" />
+			<param index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" default="264" />
 			<description>
 				Breaks text into words and returns array of character ranges. Use [param grapheme_flags] to set what characters are used for breaking (see [enum GraphemeFlag]).
 			</description>
@@ -1444,7 +1444,7 @@
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="width" type="float" default="0" />
-			<param index="2" name="overrun_trim_flags" type="int" enum="TextServer.TextOverrunFlag" default="0" />
+			<param index="2" name="overrun_trim_flags" type="int" enum="TextServer.TextOverrunFlag" is_bitfield="true" default="0" />
 			<description>
 				Trims text if it exceeds the given width.
 			</description>

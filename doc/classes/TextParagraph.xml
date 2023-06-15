@@ -265,7 +265,7 @@
 		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="HorizontalAlignment" default="0">
 			Paragraph horizontal alignment.
 		</member>
-		<member name="break_flags" type="int" setter="set_break_flags" getter="get_break_flags" enum="TextServer.LineBreakFlag" default="3">
+		<member name="break_flags" type="int" setter="set_break_flags" getter="get_break_flags" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3">
 			Line breaking rules. For more info see [TextServer].
 		</member>
 		<member name="custom_punctuation" type="String" setter="set_custom_punctuation" getter="get_custom_punctuation" default="&quot;&quot;">
@@ -274,7 +274,7 @@
 		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
 			Text writing direction.
 		</member>
-		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" default="163">
+		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
 			Line fill alignment rules. For more info see [enum TextServer.JustificationFlag].
 		</member>
 		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible" default="-1">
