@@ -27,6 +27,10 @@
 			<param index="0" name="from" type="Array" />
 			<description>
 				Constructs a new [PackedVector3Array]. Optionally, you can pass in a generic [Array] that will be converted.
+				[b]Note:[/b] When initializing a [PackedVector3Array] with elements, it must be initialized with an [Array] of [Vector3] values:
+				[codeblock]
+				var array = PackedVector3Array([Vector3(12, 34, 56), Vector3(78, 90, 12)])
+				[/codeblock]
 			</description>
 		</constructor>
 	</constructors>

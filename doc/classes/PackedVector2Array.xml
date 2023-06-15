@@ -28,6 +28,10 @@
 			<param index="0" name="from" type="Array" />
 			<description>
 				Constructs a new [PackedVector2Array]. Optionally, you can pass in a generic [Array] that will be converted.
+				[b]Note:[/b] When initializing a [PackedVector2Array] with elements, it must be initialized with an [Array] of [Vector2] values:
+				[codeblock]
+				var array = PackedVector2Array([Vector2(12, 34), Vector2(56, 78)])
+				[/codeblock]
 			</description>
 		</constructor>
 	</constructors>
