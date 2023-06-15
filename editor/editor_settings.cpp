@@ -816,8 +816,8 @@ void EditorSettings::_load_godot2_text_editor_theme() {
 	_initial_set("text_editor/theme/highlighting/comment_color", Color(0.4, 0.4, 0.4));
 	_initial_set("text_editor/theme/highlighting/string_color", Color(0.94, 0.43, 0.75));
 	_initial_set("text_editor/theme/highlighting/background_color", Color(0.13, 0.12, 0.15));
-	_initial_set("text_editor/theme/highlighting/completion_background_color", Color(0.17, 0.16, 0.2));
-	_initial_set("text_editor/theme/highlighting/completion_selected_color", Color(0.26, 0.26, 0.27));
+	_initial_set("text_editor/theme/highlighting/completion_background_color", Color(0.17, 0.16, 0.2, 0.4));
+	_initial_set("text_editor/theme/highlighting/completion_selected_color", Color(1.0, 1.0, 1.0, 0.1));
 	_initial_set("text_editor/theme/highlighting/completion_existing_color", Color(0.87, 0.87, 0.87, 0.13));
 	_initial_set("text_editor/theme/highlighting/completion_scroll_color", Color(1, 1, 1, 0.29));
 	_initial_set("text_editor/theme/highlighting/completion_scroll_hovered_color", Color(1, 1, 1, 0.4));

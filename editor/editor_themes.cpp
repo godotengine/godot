@@ -2051,8 +2051,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Use the brightest background color on a light theme (which generally uses a negative contrast rate).
 	const Color te_background_color = dark_theme ? background_color : dark_color_3;
-	const Color completion_background_color = dark_theme ? base_color : background_color;
-	const Color completion_selected_color = alpha1;
+	const Color completion_background_color = (dark_theme ? base_color : background_color) * Color(1, 1, 1, 0.4);
+	const Color completion_selected_color = Color(mono_value, mono_value, mono_value, 0.1);
 	const Color completion_existing_color = alpha2;
 	// Same opacity as the scroll grabber editor icon.
 	const Color completion_scroll_color = Color(mono_value, mono_value, mono_value, 0.29);

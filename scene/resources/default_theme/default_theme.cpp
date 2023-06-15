@@ -484,8 +484,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font_size("font_size", "CodeEdit", -1);
 
 	theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0));
-	theme->set_color("completion_background_color", "CodeEdit", Color(0.17, 0.16, 0.2));
-	theme->set_color("completion_selected_color", "CodeEdit", Color(0.26, 0.26, 0.27));
+	theme->set_color("completion_background_color", "CodeEdit", Color(0.17, 0.16, 0.2, 0.4));
+	theme->set_color("completion_selected_color", "CodeEdit", Color(1.0, 1.0, 1.0, 0.1));
 	theme->set_color("completion_existing_color", "CodeEdit", Color(0.87, 0.87, 0.87, 0.13));
 	theme->set_color("completion_scroll_color", "CodeEdit", control_font_pressed_color * Color(1, 1, 1, 0.29));
 	theme->set_color("completion_scroll_hovered_color", "CodeEdit", control_font_pressed_color * Color(1, 1, 1, 0.4));
