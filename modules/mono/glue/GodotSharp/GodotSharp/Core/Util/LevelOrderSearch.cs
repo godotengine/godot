@@ -41,7 +41,7 @@ public class LevelOrderSearch
         if (level == 0)
         {
             hasChildren |= currentNode.GetChildCount() > 0;
-            if(currentNode is T node)
+            if (currentNode is T node)
                 yield return node;
         }
         else
