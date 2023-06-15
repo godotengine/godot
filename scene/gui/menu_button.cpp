@@ -106,7 +106,6 @@ void MenuButton::show_popup() {
 		gp.x += size.width - popup->get_size().width;
 	}
 	popup->set_position(gp);
-	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), size));
 
 	// If not triggered by the mouse, start the popup with its first enabled item focused.
 	if (!_was_pressed_by_mouse()) {
