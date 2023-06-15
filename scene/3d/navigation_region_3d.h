@@ -50,7 +50,7 @@ class NavigationRegion3D : public Node3D {
 
 	Thread bake_thread;
 
-	void _navigation_changed();
+	void _navigation_mesh_changed();
 
 #ifdef DEBUG_ENABLED
 	RID debug_instance;
