@@ -201,7 +201,7 @@ bool InputEventWithModifiers::is_alt_pressed() const {
 }
 
 void InputEventWithModifiers::set_ctrl_pressed(bool p_enabled) {
-	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command/Control autoremaping is enabled, cannot set Control directly!");
+	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command or Control autoremapping is enabled, cannot set Control directly!");
 	ctrl_pressed = p_enabled;
 	emit_changed();
 }
@@ -211,7 +211,7 @@ bool InputEventWithModifiers::is_ctrl_pressed() const {
 }
 
 void InputEventWithModifiers::set_meta_pressed(bool p_enabled) {
-	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command/Control autoremaping is enabled, cannot set Meta directly!");
+	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command or Control autoremapping is enabled, cannot set Meta directly!");
 	meta_pressed = p_enabled;
 	emit_changed();
 }
