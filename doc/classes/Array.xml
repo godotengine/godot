@@ -40,6 +40,7 @@
 		[/codeblocks]
 		[b]Note:[/b] Arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
 		[b]Note:[/b] Erasing elements while iterating over arrays is [b]not[/b] supported and will result in unpredictable behavior.
+		[b]Differences between packed arrays, typed arrays, and untyped arrays:[/b] Packed arrays are generally faster to iterate on and modify compared to a typed array of the same type (e.g. [PackedInt64Array] versus [code]Array[int][/code]). Also, packed arrays consume less memory. As a downside, packed arrays are less flexible as they don't offer as many convenience methods such as [method Array.map]. Typed arrays are in turn faster to iterate on and modify than untyped arrays.
 	</description>
 	<tutorials>
 	</tutorials>
