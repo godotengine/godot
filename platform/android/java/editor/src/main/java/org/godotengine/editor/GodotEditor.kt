@@ -62,7 +62,6 @@ open class GodotEditor : FullScreenGodotApp() {
 
 		private const val WAIT_FOR_DEBUGGER = false
 
-		private const val EXTRA_FORCE_QUIT = "force_quit_requested"
 		private const val EXTRA_COMMAND_LINE_PARAMS = "command_line_params"
 
 		private const val EDITOR_ID = 777
@@ -96,32 +95,15 @@ open class GodotEditor : FullScreenGodotApp() {
 		// requested on demand based on use-cases.
 		PermissionsUtil.requestManifestPermissions(this, setOf(Manifest.permission.RECORD_AUDIO))
 
-		handleIntentParams(intent)
+		val params = intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
+		Log.d(TAG, "Received parameters ${params.contentToString()}")
+		updateCommandLineParams(params)
 
 		if (BuildConfig.BUILD_TYPE == "dev" && WAIT_FOR_DEBUGGER) {
 			Debug.waitForDebugger()
 		}
 
 		super.onCreate(savedInstanceState)
-	}
-
-	override fun onNewIntent(newIntent: Intent) {
-		intent = newIntent
-		handleIntentParams(newIntent)
-		super.onNewIntent(newIntent)
-	}
-
-	private fun handleIntentParams(receivedIntent: Intent) {
-		val forceQuitRequested = receivedIntent.getBooleanExtra(EXTRA_FORCE_QUIT, false)
-		if (forceQuitRequested) {
-			Log.d(TAG, "Force quit requested, terminating..")
-			ProcessPhoenix.forceQuit(this)
-			return
-		}
-
-		val params = receivedIntent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
-		Log.d(TAG, "Received parameters ${params.contentToString()}")
-		updateCommandLineParams(params)
 	}
 
 	override fun onGodotSetupCompleted() {
@@ -154,7 +136,7 @@ open class GodotEditor : FullScreenGodotApp() {
 	private fun updateCommandLineParams(args: Array<String>?) {
 		// Update the list of command line params with the new args
 		commandLineParams.clear()
-		if (args != null && args.isNotEmpty()) {
+		if (!args.isNullOrEmpty()) {
 			commandLineParams.addAll(listOf(*args))
 		}
 		if (BuildConfig.BUILD_TYPE == "dev") {
@@ -201,6 +183,7 @@ open class GodotEditor : FullScreenGodotApp() {
 			ProcessPhoenix.triggerRebirth(this, newInstance)
 		} else {
 			Log.d(TAG, "Starting $targetClass with parameters ${args.contentToString()}")
+			newInstance.putExtra(EXTRA_NEW_LAUNCH, true)
 			startActivity(newInstance)
 		}
 		return instanceId
