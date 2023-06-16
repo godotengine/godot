@@ -466,6 +466,21 @@
 		<member name="filesystem/external_programs/raster_image_editor" type="String" setter="" getter="">
 			The program that opens raster image files when clicking "Open in External Program" option in Filesystem Dock. If not specified, the file will be opened in the system's default program.
 		</member>
+		<member name="filesystem/external_programs/terminal_emulator" type="String" setter="" getter="">
+			The terminal emulator program to use when using [b]Open in Terminal[/b] context menu action in the FileSystem dock. You can enter an absolute path to a program binary, or a path to a program that is present in the [code]PATH[/code] environment variable.
+			If left empty, Godot will use the default terminal emulator for the system:
+			- [b]Windows:[/b] PowerShell
+			- [b]macOS:[/b] Terminal.app
+			- [b]Linux:[/b] The first terminal found on the system in this order: gnome-terminal, konsole, xfce4-terminal, lxterminal, kitty, alacritty, urxvt, xterm.
+			To use Command Prompt (cmd) instead of PowerShell on Windows, enter [code]cmd[/code] in this field and the correct flags will automatically be used.
+			On macOS, make sure to point to the actual program binary located within the [code]Programs/MacOS[/code] folder of the .app bundle, rather than the .app bundle directory.
+			If specifying a custom terminal emulator, you may need to override [member filesystem/external_programs/terminal_emulator_flags] so it opens in the correct folder.
+		</member>
+		<member name="filesystem/external_programs/terminal_emulator_flags" type="String" setter="" getter="">
+			The command-line arguments to pass to the terminal emulator that is run when using [b]Open in Terminal[/b] context menu action in the FileSystem dock. See also [member filesystem/external_programs/terminal_emulator].
+			If left empty, the default flags are [code]{directory}[/code], which is replaced by the absolute path to the directory that is being opened in the terminal.
+			[b]Note:[/b] If the terminal emulator is set to PowerShell, cmd, or Konsole, Godot will automatically prepend arguments to this list, as these terminals require nonstandard arguments to open in the correct folder.
+		</member>
 		<member name="filesystem/external_programs/vector_image_editor" type="String" setter="" getter="">
 			The program that opens vector image files when clicking "Open in External Program" option in Filesystem Dock. If not specified, the file will be opened in the system's default program.
 		</member>
