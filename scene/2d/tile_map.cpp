@@ -3086,7 +3086,7 @@ void TileMap::_build_runtime_update_tile_data(SelfList<TileMapQuadrant>::List &r
 
 							// Create the runtime TileData.
 							TileData *tile_data_runtime_use = tile_data->duplicate();
-							tile_data->set_allow_transform(true);
+							tile_data_runtime_use->set_allow_transform(true);
 							q.runtime_tile_data_cache[E_cell.value] = tile_data_runtime_use;
 
 							GDVIRTUAL_CALL(_tile_data_runtime_update, q.layer, E_cell.value, tile_data_runtime_use);

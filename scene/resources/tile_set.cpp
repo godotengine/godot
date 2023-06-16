@@ -2563,7 +2563,7 @@ void TileSet::_compatibility_conversion() {
 					Transform2D xform;
 					xform = flip_h ? xform.scaled(Size2(-1, 1)) : xform;
 					xform = flip_v ? xform.scaled(Size2(1, -1)) : xform;
-					xform = transpose ? xform.rotated(Math_PI).scaled(Size2(-1, -1)) : xform;
+					xform = transpose ? Transform2D(xform[1], xform[0], Vector2()) : xform;
 
 					int alternative_tile = 0;
 					if (!atlas_source->has_tile(coords)) {
@@ -2677,7 +2677,7 @@ void TileSet::_compatibility_conversion() {
 							Transform2D xform;
 							xform = flip_h ? xform.scaled(Size2(-1, 1)) : xform;
 							xform = flip_v ? xform.scaled(Size2(1, -1)) : xform;
-							xform = transpose ? xform.rotated(Math_PI).scaled(Size2(-1, -1)) : xform;
+							xform = transpose ? Transform2D(xform[1], xform[0], Vector2()) : xform;
 
 							int alternative_tile = 0;
 							if (!atlas_source->has_tile(coords)) {
