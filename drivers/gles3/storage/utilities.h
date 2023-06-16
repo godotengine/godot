@@ -48,6 +48,18 @@ class Utilities : public RendererUtilities {
 private:
 	static Utilities *singleton;
 
+	struct ResourceAllocation {
+#ifdef DEV_ENABLED
+		String name;
+#endif
+		uint32_t size = 0;
+	};
+	HashMap<GLuint, ResourceAllocation> buffer_allocs_cache;
+	HashMap<GLuint, ResourceAllocation> texture_allocs_cache;
+
+	uint64_t buffer_mem_cache = 0;
+	uint64_t texture_mem_cache = 0;
+
 public:
 	static Utilities *get_singleton() { return singleton; }
 
@@ -56,6 +68,58 @@ public:
 
 	// Buffer size is specified in bytes
 	static Vector<uint8_t> buffer_get_data(GLenum p_target, GLuint p_buffer, uint32_t p_buffer_size);
+
+	// Allocate memory with glBufferData. Does not handle resizing.
+	_FORCE_INLINE_ void buffer_allocate_data(GLenum p_target, GLuint p_id, uint32_t p_size, const void *p_data, GLenum p_usage, String p_name = "") {
+		glBufferData(p_target, p_size, p_data, p_usage);
+		buffer_mem_cache += p_size;
+
+#ifdef DEV_ENABLED
+		ERR_FAIL_COND_MSG(buffer_allocs_cache.has(p_id), "trying to allocate buffer with name " + p_name + " but ID already used by " + buffer_allocs_cache[p_id].name);
+#endif
+
+		ResourceAllocation resource_allocation;
+		resource_allocation.size = p_size;
+#ifdef DEV_ENABLED
+		resource_allocation.name = p_name + ": " + itos((uint64_t)p_id);
+#endif
+		buffer_allocs_cache[p_id] = resource_allocation;
+	}
+
+	_FORCE_INLINE_ void buffer_free_data(GLuint p_id) {
+		ERR_FAIL_COND(!buffer_allocs_cache.has(p_id));
+		glDeleteBuffers(1, &p_id);
+		buffer_mem_cache -= buffer_allocs_cache[p_id].size;
+		buffer_allocs_cache.erase(p_id);
+	}
+
+	// Records that data was allocated for state tracking purposes.
+	_FORCE_INLINE_ void texture_allocated_data(GLuint p_id, uint32_t p_size, String p_name = "") {
+		texture_mem_cache += p_size;
+#ifdef DEV_ENABLED
+		ERR_FAIL_COND_MSG(texture_allocs_cache.has(p_id), "trying to allocate texture with name " + p_name + " but ID already used by " + texture_allocs_cache[p_id].name);
+#endif
+		ResourceAllocation resource_allocation;
+		resource_allocation.size = p_size;
+#ifdef DEV_ENABLED
+		resource_allocation.name = p_name + ": " + itos((uint64_t)p_id);
+#endif
+		texture_allocs_cache[p_id] = resource_allocation;
+	}
+
+	_FORCE_INLINE_ void texture_free_data(GLuint p_id) {
+		ERR_FAIL_COND(!texture_allocs_cache.has(p_id));
+		glDeleteTextures(1, &p_id);
+		texture_mem_cache -= texture_allocs_cache[p_id].size;
+		texture_allocs_cache.erase(p_id);
+	}
+
+	_FORCE_INLINE_ void texture_resize_data(GLuint p_id, uint32_t p_size) {
+		ERR_FAIL_COND(!texture_allocs_cache.has(p_id));
+		texture_mem_cache -= texture_allocs_cache[p_id].size;
+		texture_mem_cache += p_size;
+		texture_allocs_cache[p_id].size = p_size;
+	}
 
 	/* INSTANCES */
 

@@ -1790,6 +1790,7 @@ void RasterizerCanvasGLES3::_update_shadow_atlas() {
 			state.shadow_depth_buffer = 0;
 			WARN_PRINT("Could not create CanvasItem shadow atlas, status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
 		}
+		GLES3::Utilities::get_singleton()->texture_allocated_data(state.shadow_texture, state.shadow_texture_size * data.max_lights_per_render * 2 * 4, "2D shadow atlas texture");
 		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 }
@@ -1894,8 +1895,8 @@ void RasterizerCanvasGLES3::occluder_polygon_set_shape(RID p_occluder, const Vec
 
 	if (oc->line_point_count != lines.size() && oc->vertex_array != 0) {
 		glDeleteVertexArrays(1, &oc->vertex_array);
-		glDeleteBuffers(1, &oc->vertex_buffer);
-		glDeleteBuffers(1, &oc->index_buffer);
+		GLES3::Utilities::get_singleton()->buffer_free_data(oc->vertex_buffer);
+		GLES3::Utilities::get_singleton()->buffer_free_data(oc->index_buffer);
 
 		oc->vertex_array = 0;
 		oc->vertex_buffer = 0;
@@ -1954,13 +1955,15 @@ void RasterizerCanvasGLES3::occluder_polygon_set_shape(RID p_occluder, const Vec
 			glGenBuffers(1, &oc->vertex_buffer);
 			glBindBuffer(GL_ARRAY_BUFFER, oc->vertex_buffer);
 
-			glBufferData(GL_ARRAY_BUFFER, lc * 6 * sizeof(float), geometry.ptr(), GL_STATIC_DRAW);
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, oc->vertex_buffer, lc * 6 * sizeof(float), geometry.ptr(), GL_STATIC_DRAW, "Occluder polygon vertex buffer");
+
 			glEnableVertexAttribArray(RS::ARRAY_VERTEX);
 			glVertexAttribPointer(RS::ARRAY_VERTEX, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
 
 			glGenBuffers(1, &oc->index_buffer);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, oc->index_buffer);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * lc * sizeof(uint16_t), indices.ptr(), GL_STATIC_DRAW);
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ELEMENT_ARRAY_BUFFER, oc->index_buffer, 3 * lc * sizeof(uint16_t), indices.ptr(), GL_STATIC_DRAW, "Occluder polygon index buffer");
+
 			glBindVertexArray(0);
 		} else {
 			glBindBuffer(GL_ARRAY_BUFFER, oc->vertex_buffer);
@@ -1995,8 +1998,8 @@ void RasterizerCanvasGLES3::occluder_polygon_set_shape(RID p_occluder, const Vec
 
 	if (oc->sdf_index_count != sdf_indices.size() && oc->sdf_point_count != p_points.size() && oc->sdf_vertex_array != 0) {
 		glDeleteVertexArrays(1, &oc->sdf_vertex_array);
-		glDeleteBuffers(1, &oc->sdf_vertex_buffer);
-		glDeleteBuffers(1, &oc->sdf_index_buffer);
+		GLES3::Utilities::get_singleton()->buffer_free_data(oc->sdf_vertex_buffer);
+		GLES3::Utilities::get_singleton()->buffer_free_data(oc->sdf_index_buffer);
 
 		oc->sdf_vertex_array = 0;
 		oc->sdf_vertex_buffer = 0;
@@ -2015,13 +2018,15 @@ void RasterizerCanvasGLES3::occluder_polygon_set_shape(RID p_occluder, const Vec
 			glGenBuffers(1, &oc->sdf_vertex_buffer);
 			glBindBuffer(GL_ARRAY_BUFFER, oc->sdf_vertex_buffer);
 
-			glBufferData(GL_ARRAY_BUFFER, p_points.size() * 2 * sizeof(float), p_points.to_byte_array().ptr(), GL_STATIC_DRAW);
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, oc->sdf_vertex_buffer, oc->sdf_point_count * 2 * sizeof(float), p_points.to_byte_array().ptr(), GL_STATIC_DRAW, "Occluder polygon SDF vertex buffer");
+
 			glEnableVertexAttribArray(RS::ARRAY_VERTEX);
 			glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
 
 			glGenBuffers(1, &oc->sdf_index_buffer);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, oc->sdf_index_buffer);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sdf_indices.size() * sizeof(uint32_t), sdf_indices.to_byte_array().ptr(), GL_STATIC_DRAW);
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ELEMENT_ARRAY_BUFFER, oc->sdf_index_buffer, oc->sdf_index_count * sizeof(uint32_t), sdf_indices.to_byte_array().ptr(), GL_STATIC_DRAW, "Occluder polygon SDF index buffer");
+
 			glBindVertexArray(0);
 		} else {
 			glBindBuffer(GL_ARRAY_BUFFER, oc->sdf_vertex_buffer);
@@ -2410,7 +2415,7 @@ RendererCanvasRender::PolygonID RasterizerCanvasGLES3::request_polygon(const Vec
 		}
 
 		ERR_FAIL_COND_V(base_offset != stride, 0);
-		glBufferData(GL_ARRAY_BUFFER, vertex_count * stride * sizeof(float), polygon_buffer.ptr(), GL_STATIC_DRAW);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, pb.vertex_buffer, vertex_count * stride * sizeof(float), polygon_buffer.ptr(), GL_STATIC_DRAW, "Polygon 2D vertex buffer");
 	}
 
 	if (p_indices.size()) {
@@ -2423,7 +2428,7 @@ RendererCanvasRender::PolygonID RasterizerCanvasGLES3::request_polygon(const Vec
 		}
 		glGenBuffers(1, &pb.index_buffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pb.index_buffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, p_indices.size() * 4, index_buffer.ptr(), GL_STATIC_DRAW);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ELEMENT_ARRAY_BUFFER, pb.index_buffer, p_indices.size() * 4, index_buffer.ptr(), GL_STATIC_DRAW, "Polygon 2D index buffer");
 		pb.count = p_indices.size();
 	}
 
@@ -2444,11 +2449,11 @@ void RasterizerCanvasGLES3::free_polygon(PolygonID p_polygon) {
 	PolygonBuffers &pb = *pb_ptr;
 
 	if (pb.index_buffer != 0) {
-		glDeleteBuffers(1, &pb.index_buffer);
+		GLES3::Utilities::get_singleton()->buffer_free_data(pb.index_buffer);
 	}
 
 	glDeleteVertexArrays(1, &pb.vertex_array);
-	glDeleteBuffers(1, &pb.vertex_buffer);
+	GLES3::Utilities::get_singleton()->buffer_free_data(pb.vertex_buffer);
 
 	polygon_buffers.polygons.erase(p_polygon);
 }
@@ -2462,13 +2467,13 @@ void RasterizerCanvasGLES3::_allocate_instance_data_buffer() {
 	glGenBuffers(3, new_buffers);
 	// Batch UBO.
 	glBindBuffer(GL_ARRAY_BUFFER, new_buffers[0]);
-	glBufferData(GL_ARRAY_BUFFER, data.max_instance_buffer_size, nullptr, GL_STREAM_DRAW);
+	GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, new_buffers[0], data.max_instance_buffer_size, nullptr, GL_STREAM_DRAW, "2D Batch UBO[" + itos(state.current_data_buffer_index) + "][0]");
 	// Light uniform buffer.
 	glBindBuffer(GL_UNIFORM_BUFFER, new_buffers[1]);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(LightUniform) * data.max_lights_per_render, nullptr, GL_STREAM_DRAW);
+	GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, new_buffers[1], sizeof(LightUniform) * data.max_lights_per_render, nullptr, GL_STREAM_DRAW, "2D Lights UBO[" + itos(state.current_data_buffer_index) + "]");
 	// State buffer.
 	glBindBuffer(GL_UNIFORM_BUFFER, new_buffers[2]);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(StateBuffer), nullptr, GL_STREAM_DRAW);
+	GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, new_buffers[2], sizeof(StateBuffer), nullptr, GL_STREAM_DRAW, "2D State UBO[" + itos(state.current_data_buffer_index) + "]");
 
 	state.current_data_buffer_index = (state.current_data_buffer_index + 1);
 	DataBuffer db;
@@ -2493,7 +2498,7 @@ void RasterizerCanvasGLES3::_allocate_instance_buffer() {
 	glGenBuffers(1, &new_buffer);
 
 	glBindBuffer(GL_ARRAY_BUFFER, new_buffer);
-	glBufferData(GL_ARRAY_BUFFER, data.max_instance_buffer_size, nullptr, GL_STREAM_DRAW);
+	GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, new_buffer, data.max_instance_buffer_size, nullptr, GL_STREAM_DRAW, "Batch UBO[" + itos(state.current_data_buffer_index) + "][" + itos(state.canvas_instance_data_buffers[state.current_data_buffer_index].instance_buffers.size()) + "]");
 
 	state.canvas_instance_data_buffers[state.current_data_buffer_index].instance_buffers.push_back(new_buffer);
 
@@ -2656,13 +2661,13 @@ RasterizerCanvasGLES3::RasterizerCanvasGLES3() {
 		glGenBuffers(3, new_buffers);
 		// Batch UBO.
 		glBindBuffer(GL_ARRAY_BUFFER, new_buffers[0]);
-		glBufferData(GL_ARRAY_BUFFER, data.max_instance_buffer_size, nullptr, GL_STREAM_DRAW);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, new_buffers[0], data.max_instance_buffer_size, nullptr, GL_STREAM_DRAW, "Batch UBO[0][0]");
 		// Light uniform buffer.
 		glBindBuffer(GL_UNIFORM_BUFFER, new_buffers[1]);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(LightUniform) * data.max_lights_per_render, nullptr, GL_STREAM_DRAW);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, new_buffers[1], sizeof(LightUniform) * data.max_lights_per_render, nullptr, GL_STREAM_DRAW, "2D lights UBO[0]");
 		// State buffer.
 		glBindBuffer(GL_UNIFORM_BUFFER, new_buffers[2]);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(StateBuffer), nullptr, GL_STREAM_DRAW);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, new_buffers[2], sizeof(StateBuffer), nullptr, GL_STREAM_DRAW, "2D state UBO[0]");
 		DataBuffer db;
 		db.instance_buffers.push_back(new_buffers[0]);
 		db.light_ubo = new_buffers[1];
@@ -2779,11 +2784,25 @@ RasterizerCanvasGLES3::~RasterizerCanvasGLES3() {
 
 	if (state.shadow_fb != 0) {
 		glDeleteFramebuffers(1, &state.shadow_fb);
-		glDeleteTextures(1, &state.shadow_texture);
+		GLES3::Utilities::get_singleton()->texture_free_data(state.shadow_texture);
 		glDeleteRenderbuffers(1, &state.shadow_depth_buffer);
 		state.shadow_fb = 0;
 		state.shadow_texture = 0;
 		state.shadow_depth_buffer = 0;
+	}
+
+	for (uint32_t i = 0; i < state.canvas_instance_data_buffers.size(); i++) {
+		for (int j = 0; j < state.canvas_instance_data_buffers[i].instance_buffers.size(); j++) {
+			if (state.canvas_instance_data_buffers[i].instance_buffers[j]) {
+				GLES3::Utilities::get_singleton()->buffer_free_data(state.canvas_instance_data_buffers[i].instance_buffers[j]);
+			}
+		}
+		if (state.canvas_instance_data_buffers[i].light_ubo) {
+			GLES3::Utilities::get_singleton()->buffer_free_data(state.canvas_instance_data_buffers[i].light_ubo);
+		}
+		if (state.canvas_instance_data_buffers[i].state_ubo) {
+			GLES3::Utilities::get_singleton()->buffer_free_data(state.canvas_instance_data_buffers[i].state_ubo);
+		}
 	}
 }
 
