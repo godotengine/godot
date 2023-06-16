@@ -55,6 +55,7 @@
 			<param index="0" name="layer" type="int" />
 			<description>
 				Clears all cells on the given layer.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="erase_cell">
@@ -63,6 +64,7 @@
 			<param index="1" name="coords" type="Vector2i" />
 			<description>
 				Erases the cell on layer [param layer] at coordinates [param coords].
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="fix_invalid_tiles">
@@ -75,7 +77,7 @@
 			<return type="void" />
 			<param index="0" name="layer" type="int" default="-1" />
 			<description>
-				Triggers an update of the TileMap. If [param layer] is provided, only updates the given layer.
+				Triggers an update of the TileMap. If [param layer] is provided and is positive, only updates the given layer.
 				[b]Note:[/b] The TileMap node updates automatically when one of its properties is modified. A manual update is only needed if runtime modifications (implemented in [method _tile_data_runtime_update]) need to be applied.
 				[b]Warning:[/b] Updating the TileMap is computationally expensive and may impact performance. Try to limit the number of updates and the tiles they impact (by placing frequently updated tiles in a dedicated layer for example).
 			</description>
@@ -87,6 +89,7 @@
 			<param index="2" name="use_proxies" type="bool" default="false" />
 			<description>
 				Returns the tile alternative ID of the cell on layer [param layer] at [param coords]. If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="get_cell_atlas_coords" qualifiers="const">
@@ -96,6 +99,7 @@
 			<param index="2" name="use_proxies" type="bool" default="false" />
 			<description>
 				Returns the tile atlas coordinates ID of the cell on layer [param layer] at coordinates [param coords]. If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="get_cell_source_id" qualifiers="const">
@@ -106,6 +110,7 @@
 			<description>
 				Returns the tile source ID of the cell on layer [param layer] at coordinates [param coords]. Returns [code]-1[/code] if the cell does not exist.
 				If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="get_cell_tile_data" qualifiers="const">
@@ -115,6 +120,7 @@
 			<param index="2" name="use_proxies" type="bool" default="false" />
 			<description>
 				Returns the [TileData] object associated with the given cell, or [code]null[/code] if the cell does not exist or is not a [TileSetAtlasSource].
+				If [param layer] is negative, the layers are accessed from the last one.
 				If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
 				[codeblock]
 				func get_clicked_tile_power():
@@ -146,6 +152,7 @@
 			<param index="0" name="layer" type="int" />
 			<description>
 				Returns a TileMap layer's modulate.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="get_layer_name" qualifiers="const">
@@ -153,6 +160,17 @@
 			<param index="0" name="layer" type="int" />
 			<description>
 				Returns a TileMap layer's name.
+				If [param layer] is negative, the layers are accessed from the last one.
+			</description>
+		</method>
+		<method name="get_layer_navigation_map" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns the [NavigationServer2D] navigation map [RID] currently assigned to the specified TileMap [param layer].
+				By default the TileMap uses the default [World2D] navigation map for the first TileMap layer. For each additional TileMap layer a new navigation map is created for the additional layer.
+				In order to make [NavigationAgent2D] switch between TileMap layer navigation maps use [method NavigationAgent2D.set_navigation_map] with the navigation map received from [method get_layer_navigation_map].
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="get_layer_y_sort_origin" qualifiers="const">
@@ -160,6 +178,7 @@
 			<param index="0" name="layer" type="int" />
 			<description>
 				Returns a TileMap layer's Y sort origin.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="get_layer_z_index" qualifiers="const">
@@ -167,6 +186,7 @@
 			<param index="0" name="layer" type="int" />
 			<description>
 				Returns a TileMap layer's Z-index value.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="get_layers_count" qualifiers="const">
@@ -175,13 +195,11 @@
 				Returns the number of layers in the TileMap.
 			</description>
 		</method>
-		<method name="get_navigation_map" qualifiers="const">
+		<method name="get_navigation_map" qualifiers="const" is_deprecated="true">
 			<return type="RID" />
 			<param index="0" name="layer" type="int" />
 			<description>
-				Returns the [NavigationServer2D] navigation map [RID] currently assigned to the specified TileMap [param layer].
-				By default the TileMap uses the default [World2D] navigation map for the first TileMap layer. For each additional TileMap layer a new navigation map is created for the additional layer.
-				In order to make [NavigationAgent2D] switch between TileMap layer navigation maps use [method NavigationAgent2D.set_navigation_map] with the navigation map received from [method get_navigation_map].
+				See [method get_layer_navigation_map].
 			</description>
 		</method>
 		<method name="get_neighbor_cell" qualifiers="const">
@@ -198,6 +216,7 @@
 			<param index="1" name="coords_array" type="Vector2i[]" />
 			<description>
 				Creates a new [TileMapPattern] from the given layer and set of cells.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="get_surrounding_cells">
@@ -212,6 +231,7 @@
 			<param index="0" name="layer" type="int" />
 			<description>
 				Returns a [Vector2i] array with the positions of all cells containing a tile in the given layer. A cell is considered empty if its source identifier equals -1, its atlas coordinates identifiers is [code]Vector2(-1, -1)[/code] and its alternative identifier is -1.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="get_used_cells_by_id" qualifiers="const">
@@ -224,9 +244,10 @@
 				Returns a [Vector2i] array with the positions of all cells containing a tile in the given layer. Tiles may be filtered according to their source ([param source_id]), their atlas coordinates ([param atlas_coords]) or alternative id ([param alternative_tile]).
 				If a parameter has it's value set to the default one, this parameter is not used to filter a cell. Thus, if all parameters have their respective default value, this method returns the same result as [method get_used_cells].
 				A cell is considered empty if its source identifier equals -1, its atlas coordinates identifiers is [code]Vector2(-1, -1)[/code] and its alternative identifier is -1.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
-		<method name="get_used_rect">
+		<method name="get_used_rect" qualifiers="const">
 			<return type="Rect2i" />
 			<description>
 				Returns a rectangle enclosing the used (non-empty) tiles of the map, including all layers.
@@ -237,6 +258,7 @@
 			<param index="0" name="layer" type="int" />
 			<description>
 				Returns if a layer is enabled.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="is_layer_y_sort_enabled" qualifiers="const">
@@ -244,6 +266,7 @@
 			<param index="0" name="layer" type="int" />
 			<description>
 				Returns if a layer Y-sorts its tiles.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="local_to_map" qualifiers="const">
@@ -298,6 +321,7 @@
 				- The atlas coordinates identifier [param atlas_coords] identifies a tile coordinates in the atlas (if the source is a [TileSetAtlasSource]). For [TileSetScenesCollectionSource] it should always be [code]Vector2i(0, 0)[/code]),
 				- The alternative tile identifier [param alternative_tile] identifies a tile alternative in the atlas (if the source is a [TileSetAtlasSource]), and the scene for a [TileSetScenesCollectionSource].
 				If [param source_id] is set to [code]-1[/code], [param atlas_coords] to [code]Vector2i(-1, -1)[/code] or [param alternative_tile] to [code]-1[/code], the cell will be erased. An erased cell gets [b]all[/b] its identifiers automatically set to their respective invalid values, namely [code]-1[/code], [code]Vector2i(-1, -1)[/code] and [code]-1[/code].
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_cells_terrain_connect">
@@ -310,6 +334,7 @@
 			<description>
 				Update all the cells in the [param cells] coordinates array so that they use the given [param terrain] for the given [param terrain_set]. If an updated cell has the same terrain as one of its neighboring cells, this function tries to join the two. This function might update neighboring tiles if needed to create correct terrain transitions.
 				If [param ignore_empty_terrains] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
+				If [param layer] is negative, the layers are accessed from the last one.
 				[b]Note:[/b] To work correctly, this method requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
 			</description>
 		</method>
@@ -323,6 +348,7 @@
 			<description>
 				Update all the cells in the [param path] coordinates array so that they use the given [param terrain] for the given [param terrain_set]. The function will also connect two successive cell in the path with the same terrain. This function might update neighboring tiles if needed to create correct terrain transitions.
 				If [param ignore_empty_terrains] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
+				If [param layer] is negative, the layers are accessed from the last one.
 				[b]Note:[/b] To work correctly, this method requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
 			</description>
 		</method>
@@ -350,6 +376,17 @@
 			<param index="1" name="name" type="String" />
 			<description>
 				Sets a layer's name. This is mostly useful in the editor.
+				If [param layer] is negative, the layers are accessed from the last one.
+			</description>
+		</method>
+		<method name="set_layer_navigation_map">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="map" type="RID" />
+			<description>
+				Assigns a [NavigationServer2D] navigation map [RID] to the specified TileMap [param layer].
+				By default the TileMap uses the default [World2D] navigation map for the first TileMap layer. For each additional TileMap layer a new navigation map is created for the additional layer.
+				In order to make [NavigationAgent2D] switch between TileMap layer navigation maps use [method NavigationAgent2D.set_navigation_map] with the navigation map received from [method get_layer_navigation_map].
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
@@ -382,14 +419,12 @@
 				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
-		<method name="set_navigation_map">
+		<method name="set_navigation_map" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="map" type="RID" />
 			<description>
-				Assigns a [NavigationServer2D] navigation map [RID] to the specified TileMap [param layer].
-				By default the TileMap uses the default [World2D] navigation map for the first TileMap layer. For each additional TileMap layer a new navigation map is created for the additional layer.
-				In order to make [NavigationAgent2D] switch between TileMap layer navigation maps use [method NavigationAgent2D.set_navigation_map] with the navigation map received from [method get_navigation_map].
+				See [method set_layer_navigation_map].
 			</description>
 		</method>
 		<method name="set_pattern">
@@ -399,6 +434,7 @@
 			<param index="2" name="pattern" type="TileMapPattern" />
 			<description>
 				Paste the given [TileMapPattern] at the given [param position] and [param layer] in the tile map.
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 	</methods>
