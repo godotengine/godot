@@ -496,8 +496,6 @@ public:
 
 	virtual bool can_create_resources_async() const override;
 
-	RID texture_create();
-
 	virtual RID texture_allocate() override;
 	virtual void texture_free(RID p_rid) override;
 
