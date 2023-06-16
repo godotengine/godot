@@ -3049,7 +3049,9 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 	}
 
 	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
-		if (ED_IS_SHORTCUT("filesystem_dock/duplicate", p_event)) {
+		if (ED_IS_SHORTCUT("filesystem_dock/create_new_folder", p_event)) {
+			_tree_rmb_option(FILE_NEW_FOLDER);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/duplicate", p_event)) {
 			_tree_rmb_option(FILE_DUPLICATE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_path", p_event)) {
 			_tree_rmb_option(FILE_COPY_PATH);
@@ -3113,7 +3115,9 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
-		if (ED_IS_SHORTCUT("filesystem_dock/duplicate", p_event)) {
+		if (ED_IS_SHORTCUT("filesystem_dock/create_new_folder", p_event)) {
+			_file_list_rmb_option(FILE_NEW_FOLDER);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/duplicate", p_event)) {
 			_file_list_rmb_option(FILE_DUPLICATE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/copy_path", p_event)) {
 			_file_list_rmb_option(FILE_COPY_PATH);
@@ -3304,6 +3308,7 @@ FileSystemDock::FileSystemDock() {
 	set_name("FileSystem");
 	current_path = "res://";
 
+	ED_SHORTCUT("filesystem_dock/create_new_folder", TTR("Create New Folder"), Key::F10);
 	// `KeyModifierMask::CMD_OR_CTRL | Key::C` conflicts with other editor shortcuts.
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("filesystem_dock/copy_uid", TTR("Copy UID"));
