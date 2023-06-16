@@ -616,6 +616,8 @@ void Window::_update_from_window() {
 void Window::_clear_window() {
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
 
+	bool had_focus = has_focus();
+
 	DisplayServer::get_singleton()->window_set_rect_changed_callback(Callable(), window_id);
 	DisplayServer::get_singleton()->window_set_window_event_callback(Callable(), window_id);
 	DisplayServer::get_singleton()->window_set_input_event_callback(Callable(), window_id);
@@ -638,7 +640,7 @@ void Window::_clear_window() {
 	window_id = DisplayServer::INVALID_WINDOW_ID;
 
 	// If closing window was focused and has a parent, return focus.
-	if (focused && transient_parent) {
+	if (had_focus && transient_parent) {
 		transient_parent->grab_focus();
 	}
 
@@ -1185,6 +1187,7 @@ void Window::_notification(int p_what) {
 					{
 						position = DisplayServer::get_singleton()->window_get_position(window_id);
 						size = DisplayServer::get_singleton()->window_get_size(window_id);
+						focused = DisplayServer::get_singleton()->window_is_focused(window_id);
 					}
 					_update_window_size(); // Inform DisplayServer of minimum and maximum size.
 					_update_viewport_size(); // Then feed back to the viewport.
@@ -1762,6 +1765,9 @@ void Window::grab_focus() {
 
 bool Window::has_focus() const {
 	ERR_READ_THREAD_GUARD_V(false);
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		return DisplayServer::get_singleton()->window_is_focused(window_id);
+	}
 	return focused;
 }
 

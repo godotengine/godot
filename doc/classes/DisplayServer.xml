@@ -1258,6 +1258,13 @@
 				Returns the V-Sync mode of the given window.
 			</description>
 		</method>
+		<method name="window_is_focused" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns [code]true[/code] if the window specified by [param window_id] is focused.
+			</description>
+		</method>
 		<method name="window_is_maximize_allowed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="window_id" type="int" default="0" />

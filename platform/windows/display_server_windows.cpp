@@ -1615,6 +1615,15 @@ void DisplayServerWindows::window_move_to_foreground(WindowID p_window) {
 	}
 }
 
+bool DisplayServerWindows::window_is_focused(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	const WindowData &wd = windows[p_window];
+
+	return wd.window_focused;
+}
+
 bool DisplayServerWindows::window_can_draw(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
