@@ -737,14 +737,6 @@ void SceneTree::set_debug_navigation_hint(bool p_enabled) {
 bool SceneTree::is_debugging_navigation_hint() const {
 	return debug_navigation_hint;
 }
-
-void SceneTree::set_debug_avoidance_hint(bool p_enabled) {
-	debug_avoidance_hint = p_enabled;
-}
-
-bool SceneTree::is_debugging_avoidance_hint() const {
-	return debug_avoidance_hint;
-}
 #endif
 
 void SceneTree::set_debug_collisions_color(const Color &p_color) {

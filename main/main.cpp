@@ -2965,19 +2965,14 @@ bool Main::start() {
 		}
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
+			NavigationServer3D::get_singleton()->set_debug_navigation_enabled(true);
 		}
 		if (debug_avoidance) {
-			sml->set_debug_avoidance_hint(true);
+			NavigationServer3D::get_singleton()->set_debug_avoidance_enabled(true);
 		}
 		if (debug_navigation || debug_avoidance) {
 			NavigationServer3D::get_singleton()->set_active(true);
 			NavigationServer3D::get_singleton()->set_debug_enabled(true);
-			if (debug_navigation) {
-				NavigationServer3D::get_singleton()->set_debug_navigation_enabled(true);
-			}
-			if (debug_avoidance) {
-				NavigationServer3D::get_singleton()->set_debug_avoidance_enabled(true);
-			}
 		}
 #endif
 
