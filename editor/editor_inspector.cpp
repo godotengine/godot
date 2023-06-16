@@ -3645,8 +3645,9 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		Variant v_undo_redo = undo_redo;
 		Variant v_object = object;
 		Variant v_name = p_name;
-		for (int i = 0; i < EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback().size(); i++) {
-			const Callable &callback = EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback()[i];
+		const Vector<Callable> &callbacks = EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback();
+		for (int i = 0; i < callbacks.size(); i++) {
+			const Callable &callback = callbacks[i];
 
 			const Variant *p_arguments[] = { &v_undo_redo, &v_object, &v_name, &p_value };
 			Variant return_value;
