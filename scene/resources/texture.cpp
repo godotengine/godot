@@ -625,7 +625,7 @@ void PortableCompressedTexture2D::_bind_methods() {
 	ClassDB::bind_static_method("PortableCompressedTexture2D", D_METHOD("is_keeping_all_compressed_buffers"), &PortableCompressedTexture2D::is_keeping_all_compressed_buffers);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "_set_data", "_get_data");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size_override", PROPERTY_HINT_NONE, "suffix:px"), "set_size_override", "get_size_override");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size_override", PROPERTY_HINT_LINK, "suffix:px"), "set_size_override", "get_size_override");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_compressed_buffer"), "set_keep_compressed_buffer", "is_keeping_compressed_buffer");
 
 	BIND_ENUM_CONSTANT(COMPRESSION_MODE_LOSSLESS);
@@ -3476,7 +3476,7 @@ Vector<Ref<Image>> PlaceholderTexture3D::get_data() const {
 void PlaceholderTexture3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &PlaceholderTexture3D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &PlaceholderTexture3D::get_size);
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3I, "size", PROPERTY_HINT_LINK, "suffix:px"), "set_size", "get_size");
 }
 
 PlaceholderTexture3D::PlaceholderTexture3D() {
@@ -3533,7 +3533,7 @@ void PlaceholderTextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &PlaceholderTextureLayered::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &PlaceholderTextureLayered::get_size);
 	ClassDB::bind_method(D_METHOD("set_layers", "layers"), &PlaceholderTextureLayered::set_layers);
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_LINK, "suffix:px"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_RANGE, "1,4096"), "set_layers", "get_layers");
 }
 

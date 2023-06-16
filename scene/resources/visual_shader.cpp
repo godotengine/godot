@@ -4004,7 +4004,7 @@ void VisualShaderNodeResizableBase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &VisualShaderNodeResizableBase::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &VisualShaderNodeResizableBase::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_LINK), "set_size", "get_size");
 }
 
 VisualShaderNodeResizableBase::VisualShaderNodeResizableBase() {
