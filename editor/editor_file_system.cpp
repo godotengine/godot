@@ -262,7 +262,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 				} else {
 					Vector<String> split = l.split("::");
-					ERR_CONTINUE(split.size() != 9);
+					ERR_CONTINUE(split.size() < 9);
 					String name = split[0];
 					String file;
 
