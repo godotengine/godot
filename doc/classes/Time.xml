@@ -51,6 +51,7 @@
 				Converts the given ISO 8601 date and time string (YYYY-MM-DDTHH:MM:SS) to a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], [code]hour[/code], [code]minute[/code], and [code]second[/code].
 				If [param weekday] is [code]false[/code], then the [code]weekday[/code] entry is excluded (the calculation is relatively expensive).
 				[b]Note:[/b] Any decimal fraction in the time string will be ignored silently.
+				Returns an empty [Dictionary] if the datetime string is invalid. The error message can be obtained from [method get_datetime_error].
 			</description>
 		</method>
 		<method name="get_datetime_dict_from_system" qualifiers="const">
@@ -68,6 +69,12 @@
 				The returned Dictionary's values will be the same as the [method get_datetime_dict_from_system] if the Unix timestamp is the current time, with the exception of Daylight Savings Time as it cannot be determined from the epoch.
 			</description>
 		</method>
+		<method name="get_datetime_error" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the error string if an invalid date was provided to [method get_datetime_dict_from_datetime_string], [method get_datetime_string_from_datetime_dict], [method get_unix_time_from_datetime_dict], or [method get_unix_time_from_datetime_string].
+			</description>
+		</method>
 		<method name="get_datetime_string_from_datetime_dict" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="datetime" type="Dictionary" />
@@ -77,6 +84,7 @@
 				The given dictionary can be populated with the following keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]hour[/code], [code]minute[/code], and [code]second[/code]. Any other entries (including [code]dst[/code]) are ignored.
 				If the dictionary is empty, [code]0[/code] is returned. If some keys are omitted, they default to the equivalent values for the Unix epoch timestamp 0 (1970-01-01 at 00:00:00).
 				If [param use_space] is [code]true[/code], the date and time bits are separated by an empty space character instead of the letter T.
+				Returns an empty [String] if the datetime dictionary is invalid. The error message can be obtained from [method get_datetime_error].
 			</description>
 		</method>
 		<method name="get_datetime_string_from_system" qualifiers="const">
@@ -164,6 +172,7 @@
 				If the dictionary is empty, [code]0[/code] is returned. If some keys are omitted, they default to the equivalent values for the Unix epoch timestamp 0 (1970-01-01 at 00:00:00).
 				You can pass the output from [method get_datetime_dict_from_unix_time] directly into this function and get the same as what was put in.
 				[b]Note:[/b] Unix timestamps are often in UTC. This method does not do any timezone conversion, so the timestamp will be in the same timezone as the given datetime dictionary.
+				Returns [code]-1[/code] if the datetime dictionary is invalid. The error message can be obtained from [method get_datetime_error].
 			</description>
 		</method>
 		<method name="get_unix_time_from_datetime_string" qualifiers="const">
@@ -173,6 +182,7 @@
 				Converts the given ISO 8601 date and/or time string to a Unix timestamp. The string can contain a date only, a time only, or both.
 				[b]Note:[/b] Unix timestamps are often in UTC. This method does not do any timezone conversion, so the timestamp will be in the same timezone as the given datetime string.
 				[b]Note:[/b] Any decimal fraction in the time string will be ignored silently.
+				Returns [code]-1[/code] if the datetime string is invalid. The error message can be obtained from [method get_datetime_error].
 			</description>
 		</method>
 		<method name="get_unix_time_from_system" qualifiers="const">
