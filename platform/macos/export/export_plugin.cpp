@@ -30,11 +30,11 @@
 
 #include "export_plugin.h"
 
-#include "../logo_svg.gen.h"
-#include "../run_icon_svg.gen.h"
 #include "codesign.h"
 #include "lipo.h"
 #include "macho.h"
+#include "platform/macos/logo_svg.gen.h"
+#include "platform/macos/run_icon_svg.gen.h"
 
 #include "core/io/image_loader.h"
 #include "core/string/translation.h"
