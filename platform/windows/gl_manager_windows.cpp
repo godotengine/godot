@@ -86,7 +86,7 @@ typedef int(__cdecl *NvAPI_DRS_SetSetting_t)(NvDRSSessionHandle, NvDRSProfileHan
 typedef int(__cdecl *NvAPI_DRS_FindProfileByName_t)(NvDRSSessionHandle, NvAPI_UnicodeString, NvDRSProfileHandle *);
 NvAPI_GetErrorMessage_t NvAPI_GetErrorMessage__;
 
-static bool nvapi_err_check(char *msg, int status) {
+static bool nvapi_err_check(const char *msg, int status) {
 	if (status != 0) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			NvAPI_ShortString err_desc = { 0 };
