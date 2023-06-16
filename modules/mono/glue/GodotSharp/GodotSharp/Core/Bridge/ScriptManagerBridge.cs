@@ -655,12 +655,18 @@ namespace Godot.Bridge
                             {
                                 foreach (var param in method.Arguments)
                                 {
-                                    methodParams.Add(new Collections.Dictionary()
+                                    var pinfo = new Collections.Dictionary()
                                     {
                                         { "name", param.Name },
                                         { "type", (int)param.Type },
                                         { "usage", (int)param.Usage }
-                                    });
+                                    };
+                                    if (param.ClassName != null)
+                                    {
+                                        pinfo["class_name"] = param.ClassName;
+                                    }
+
+                                    methodParams.Add(pinfo);
                                 }
                             }
 
@@ -743,12 +749,18 @@ namespace Godot.Bridge
                             {
                                 foreach (var param in signal.Arguments)
                                 {
-                                    signalParams.Add(new Collections.Dictionary()
+                                    var pinfo = new Collections.Dictionary()
                                     {
                                         { "name", param.Name },
                                         { "type", (int)param.Type },
                                         { "usage", (int)param.Usage }
-                                    });
+                                    };
+                                    if (param.ClassName != null)
+                                    {
+                                        pinfo["class_name"] = param.ClassName;
+                                    }
+
+                                    signalParams.Add(pinfo);
                                 }
                             }
 
