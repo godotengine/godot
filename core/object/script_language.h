@@ -338,7 +338,7 @@ public:
 		Ref<Resource> icon;
 		Variant default_value;
 		Vector<Pair<int, int>> matches;
-		Vector<Pair<int, int>> last_matches;
+		Vector<Pair<int, int>> last_matches = { { -1, -1 } }; // This value correspond to an impossible match
 		int location = LOCATION_OTHER;
 
 		CodeCompletionOption() {}
