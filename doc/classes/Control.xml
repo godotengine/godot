@@ -1028,13 +1028,13 @@
 		<member name="size" type="Vector2" setter="_set_size" getter="get_size" default="Vector2(0, 0)">
 			The size of the node's bounding rectangle, in the node's coordinate system. [Container] nodes update this property automatically.
 		</member>
-		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" enum="Control.SizeFlags" default="1">
+		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" enum="Control.SizeFlags" is_bitfield="true" default="1">
 			Tells the parent [Container] nodes how they should resize and place the node on the X axis. Use a combination of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
 		</member>
 		<member name="size_flags_stretch_ratio" type="float" setter="set_stretch_ratio" getter="get_stretch_ratio" default="1.0">
 			If the node and at least one of its neighbors uses the [constant SIZE_EXPAND] size flag, the parent [Container] will let it take more or less space depending on this property. If this node has a stretch ratio of 2 and its neighbor a ratio of 1, this node will take two thirds of the available space.
 		</member>
-		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" enum="Control.SizeFlags" default="1">
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" enum="Control.SizeFlags" is_bitfield="true" default="1">
 			Tells the parent [Container] nodes how they should resize and place the node on the Y axis. Use a combination of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">

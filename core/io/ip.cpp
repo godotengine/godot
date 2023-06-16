@@ -35,8 +35,6 @@
 #include "core/templates/hash_map.h"
 #include "core/variant/typed_array.h"
 
-VARIANT_ENUM_CAST(IP::ResolverStatus);
-
 /************* RESOLVER ******************/
 
 struct _IP_ResolverPrivate {

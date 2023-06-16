@@ -44,7 +44,7 @@
 		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="RenderingDevice.TextureType" default="1">
 			The texture type.
 		</member>
-		<member name="usage_bits" type="int" setter="set_usage_bits" getter="get_usage_bits" enum="RenderingDevice.TextureUsageBits" default="0">
+		<member name="usage_bits" type="int" setter="set_usage_bits" getter="get_usage_bits" enum="RenderingDevice.TextureUsageBits" is_bitfield="true" default="0">
 			The texture's usage bits, which determine what can be done using the texture.
 		</member>
 		<member name="width" type="int" setter="set_width" getter="get_width" default="1">
