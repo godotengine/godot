@@ -3326,8 +3326,6 @@ CodeEdit::~CodeEdit() {
 
 // Return true if l should come before r
 bool CodeCompletionOptionCompare::operator()(const ScriptLanguage::CodeCompletionOption &l, const ScriptLanguage::CodeCompletionOption &r) const {
-	// Check if we are not completing an empty string in this case there is no reason to get matches characteristics.
-
 	TypedArray<int> lcharac = l.get_option_cached_characteristics();
 	TypedArray<int> rcharac = r.get_option_cached_characteristics();
 
@@ -3344,5 +3342,5 @@ bool CodeCompletionOptionCompare::operator()(const ScriptLanguage::CodeCompletio
 			return l.matches[i].second > r.matches[i].second;
 		}
 	}
-	return l.display < r.display;
+	return l.display.naturalnocasecmp_to(r.display) < 0;
 }
