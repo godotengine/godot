@@ -1544,7 +1544,7 @@ Input::Input() {
 
 	legacy_just_pressed_behavior = GLOBAL_DEF("input_devices/compatibility/legacy_just_pressed_behavior", false);
 	if (Engine::get_singleton()->is_editor_hint()) {
-		// Always use standard behaviour in the editor.
+		// Always use standard behavior in the editor.
 		legacy_just_pressed_behavior = false;
 	}
 }

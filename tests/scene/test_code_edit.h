@@ -3496,7 +3496,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "test");
 
-		/* Favorize good capitalisation. */
+		/* Favorize good capitalization. */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
@@ -3506,7 +3506,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "test");
 
-		/* Favorize location to good capitalisation. */
+		/* Favorize location to good capitalization. */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);
@@ -3526,7 +3526,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->confirm_code_completion();
 		CHECK(code_edit->get_line(0) == "stest");
 
-		/* Favorize good capitalisation to closest to start. */
+		/* Favorize good capitalization to closest to start. */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("te");
 		code_edit->set_caret_column(2);

@@ -1011,19 +1011,19 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--delta-smoothing") {
 			if (I->next()) {
 				String string = I->next()->get();
-				bool recognised = false;
+				bool recognized = false;
 				if (string == "enable") {
 					OS::get_singleton()->set_delta_smoothing(true);
 					delta_smoothing_override = true;
-					recognised = true;
+					recognized = true;
 				}
 				if (string == "disable") {
 					OS::get_singleton()->set_delta_smoothing(false);
 					delta_smoothing_override = false;
-					recognised = true;
+					recognized = true;
 				}
-				if (!recognised) {
-					OS::get_singleton()->print("Delta-smoothing argument not recognised, aborting.\n");
+				if (!recognized) {
+					OS::get_singleton()->print("Delta-smoothing argument not recognized, aborting.\n");
 					goto error;
 				}
 				N = I->next()->next();
