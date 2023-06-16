@@ -980,12 +980,19 @@ GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_var
 
 	make_completion_context(COMPLETION_PROPERTY_DECLARATION, property);
 
+	while (match(GDScriptTokenizer::Token::ANNOTATION)) {
+		AnnotationNode *const new_annotation = parse_annotation(AnnotationInfo::TargetKind::FUNCTION);
+		if (new_annotation) {
+			annotation_stack.push_back(new_annotation);
+		}
+	}
+
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected "get" or "set" for property declaration.)")) {
 		complete_extents(p_variable);
 		return nullptr;
 	}
 
-	IdentifierNode *function = parse_identifier();
+	IdentifierNode *identifier = parse_identifier();
 
 	if (check(GDScriptTokenizer::Token::EQUAL)) {
 		p_variable->property = VariableNode::PROP_SETGET;
@@ -1001,14 +1008,14 @@ GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_var
 
 	// Run with a loop because order doesn't matter.
 	for (int i = 0; i < 2; i++) {
-		if (function->name == SNAME("set")) {
+		if (identifier->name == SNAME("set")) {
 			if (setter_used) {
 				push_error(R"(Properties can only have one setter.)");
 			} else {
 				parse_property_setter(property);
 				setter_used = true;
 			}
-		} else if (function->name == SNAME("get")) {
+		} else if (identifier->name == SNAME("get")) {
 			if (getter_used) {
 				push_error(R"(Properties can only have one getter.)");
 			} else {
@@ -1016,8 +1023,14 @@ GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_var
 				getter_used = true;
 			}
 		} else {
-			// TODO: Update message to only have the missing one if it's the case.
-			push_error(R"(Expected "get" or "set" for property declaration.)");
+			if (setter_used && !getter_used) {
+				push_error(R"(Expected "get" for property declaration.)", identifier);
+			} else if (getter_used && !setter_used) {
+				push_error(R"(Expected "set" for property declaration.)", identifier);
+			} else {
+				push_error(R"(Expected "get" or "set" for property declaration.)", identifier);
+			}
+			break;
 		}
 
 		if (i == 0 && p_variable->property == VariableNode::PROP_SETGET) {
@@ -1033,10 +1046,18 @@ GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_var
 			}
 		}
 
+		while (match(GDScriptTokenizer::Token::ANNOTATION)) {
+			AnnotationNode *const new_annotation = parse_annotation(AnnotationInfo::TargetKind::FUNCTION);
+			if (new_annotation) {
+				annotation_stack.push_back(new_annotation);
+			}
+		}
+
 		if (!match(GDScriptTokenizer::Token::IDENTIFIER)) {
 			break;
 		}
-		function = parse_identifier();
+
+		identifier = parse_identifier();
 	}
 	complete_extents(p_variable);
 
@@ -1075,6 +1096,12 @@ void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
 			consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after parameter name.)*");
 			consume(GDScriptTokenizer::Token::COLON, R"*(Expected ":" after ")".)*");
 
+			while (!annotation_stack.is_empty()) {
+				AnnotationNode *const last_annotation = annotation_stack.back()->get();
+				function->annotations.push_front(last_annotation);
+				annotation_stack.pop_back();
+			}
+
 			FunctionNode *previous_function = current_function;
 			current_function = function;
 			if (p_variable->setter_parameter != nullptr) {
@@ -1111,6 +1138,12 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 			identifier->name = "@" + p_variable->identifier->name + "_getter";
 			function->identifier = identifier;
 			function->is_static = p_variable->is_static;
+
+			while (!annotation_stack.is_empty()) {
+				AnnotationNode *const last_annotation = annotation_stack.back()->get();
+				function->annotations.push_front(last_annotation);
+				annotation_stack.pop_back();
+			}
 
 			FunctionNode *previous_function = current_function;
 			current_function = function;

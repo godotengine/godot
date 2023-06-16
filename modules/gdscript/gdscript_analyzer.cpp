@@ -1234,11 +1234,21 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		} else if (member.type == GDScriptParser::ClassNode::Member::VARIABLE && member.variable->property != GDScriptParser::VariableNode::PROP_NONE) {
 			if (member.variable->property == GDScriptParser::VariableNode::PROP_INLINE) {
 				if (member.variable->getter != nullptr) {
+					// Apply annotations.
+					for (GDScriptParser::AnnotationNode *&E : member.variable->getter->annotations) {
+						resolve_annotation(E);
+						E->apply(parser, member.variable->getter);
+					}
 					member.variable->getter->set_datatype(member.variable->datatype);
 
 					resolve_function_body(member.variable->getter);
 				}
 				if (member.variable->setter != nullptr) {
+					// Apply annotations.
+					for (GDScriptParser::AnnotationNode *&E : member.variable->setter->annotations) {
+						resolve_annotation(E);
+						E->apply(parser, member.variable->setter);
+					}
 					resolve_function_signature(member.variable->setter);
 
 					if (member.variable->setter->parameters.size() > 0) {
