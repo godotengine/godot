@@ -222,7 +222,7 @@ public:
 	virtual void agent_set_velocity_forced(RID p_agent, Vector2 p_velocity);
 
 	/// The wanted velocity for the agent as a "suggestion" to the avoidance simulation.
-	/// The simulation will try to fulfil this velocity wish if possible but may change the velocity depending on other agent's and obstacles'.
+	/// The simulation will try to fulfill this velocity wish if possible but may change the velocity depending on other agent's and obstacles'.
 	virtual void agent_set_velocity(RID p_agent, Vector2 p_velocity);
 
 	/// Position of the agent in world space.
