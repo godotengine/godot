@@ -1693,10 +1693,8 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 				glTexImage2D(texture_target, 0, rt->color_internal_format, rt->size.x, rt->size.y, 0, rt->color_format, rt->color_type, nullptr);
 			}
 
-			glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+			texture->gl_set_repeat(RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 			GLES3::Utilities::get_singleton()->texture_allocated_data(rt->color, rt->size.x * rt->size.y * rt->view_count * 4, "Render target color texture");
 		}
