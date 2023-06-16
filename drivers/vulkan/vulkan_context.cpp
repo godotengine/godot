@@ -2688,12 +2688,12 @@ void VulkanContext::set_object_name(VkObjectType p_object_type, uint64_t p_objec
 	SetDebugUtilsObjectNameEXT(device, &name_info);
 }
 
-String VulkanContext::get_device_vendor_name() const {
-	return device_vendor;
-}
-
 String VulkanContext::get_device_name() const {
 	return device_name;
+}
+
+String VulkanContext::get_device_vendor_name() const {
+	return device_vendor;
 }
 
 RenderingDevice::DeviceType VulkanContext::get_device_type() const {
@@ -2702,6 +2702,44 @@ RenderingDevice::DeviceType VulkanContext::get_device_type() const {
 
 String VulkanContext::get_device_api_version() const {
 	return vformat("%d.%d.%d", VK_API_VERSION_MAJOR(device_api_version), VK_API_VERSION_MINOR(device_api_version), VK_API_VERSION_PATCH(device_api_version));
+}
+
+uint64_t VulkanContext::get_device_total_memory() const {
+	// See <https://www.asawicki.info/news_1740_vulkan_memory_types_on_pc_and_how_to_use_them>.
+	uint64_t result = UINT64_MAX;
+	uint64_t smallest_non_device_local = UINT64_MAX;
+	for (uint32_t i = 0; i < memory_properties.memoryHeapCount; i++) {
+		if (memory_properties.memoryHeaps[i].size < 300'000'000) {
+			// Heaps that are 256 MB or smaller (with some margin) are ignored as they usually represent the BAR size.
+			// All GPUs that support Vulkan will report at least 512 MB of *actual* video memory (or system memory) in practice.
+			continue;
+		}
+
+		if (memory_properties.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+			// Take the smallest memory heap that isn't too small (see above) and has the "device-local" flag
+			// (i.e. present on the graphics device itself).
+			result = MIN(result, memory_properties.memoryHeaps[i].size);
+		} else {
+			// Not device-local. This is usually system memory.
+			// Required for AMD APUs, as they report two heaps (system memory and BAR size).
+			// Only the second heap is device-local, but it's too small and is therefore ignored.
+			// As a result, we need to fallback to non-device local memory heap size.
+			smallest_non_device_local = MIN(smallest_non_device_local, memory_properties.memoryHeaps[i].size);
+		}
+	}
+
+	if (result != UINT64_MAX) {
+		// Suitable device-local value found.
+		return result;
+	} else {
+		if (smallest_non_device_local != UINT64_MAX) {
+			// No suitable device local-value found. Return the smallest suitable non-device local value as a fallback.
+			return smallest_non_device_local;
+		}
+
+		// No value found, return the "erronerous" value.
+		return 0;
+	}
 }
 
 String VulkanContext::get_device_pipeline_cache_uuid() const {

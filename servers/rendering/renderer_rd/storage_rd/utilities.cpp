@@ -333,3 +333,7 @@ Size2i Utilities::get_maximum_viewport_size() const {
 	int max_y = device->limit_get(RenderingDevice::LIMIT_MAX_VIEWPORT_DIMENSIONS_Y);
 	return Size2i(max_x, max_y);
 }
+
+uint64_t Utilities::get_video_adapter_total_memory() const {
+	return RenderingDevice::get_singleton()->get_device_total_memory();
+}

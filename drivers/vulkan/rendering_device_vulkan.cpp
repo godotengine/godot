@@ -8487,12 +8487,12 @@ void RenderingDeviceVulkan::draw_command_end_label() {
 	context->command_end_label(frames[frame].draw_command_buffer);
 }
 
-String RenderingDeviceVulkan::get_device_vendor_name() const {
-	return context->get_device_vendor_name();
-}
-
 String RenderingDeviceVulkan::get_device_name() const {
 	return context->get_device_name();
+}
+
+String RenderingDeviceVulkan::get_device_vendor_name() const {
+	return context->get_device_vendor_name();
 }
 
 RenderingDevice::DeviceType RenderingDeviceVulkan::get_device_type() const {
@@ -8501,6 +8501,10 @@ RenderingDevice::DeviceType RenderingDeviceVulkan::get_device_type() const {
 
 String RenderingDeviceVulkan::get_device_api_version() const {
 	return context->get_device_api_version();
+}
+
+uint64_t RenderingDeviceVulkan::get_device_total_memory() const {
+	return context->get_device_total_memory();
 }
 
 String RenderingDeviceVulkan::get_device_pipeline_cache_uuid() const {

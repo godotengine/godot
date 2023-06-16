@@ -356,4 +356,9 @@ Size2i Utilities::get_maximum_viewport_size() const {
 	return Size2i(config->max_viewport_size[0], config->max_viewport_size[1]);
 }
 
+uint64_t Utilities::get_video_adapter_total_memory() const {
+	// Not supported with standard extensions in OpenGL.
+	return 0;
+}
+
 #endif // GLES3_ENABLED

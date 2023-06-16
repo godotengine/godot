@@ -1266,10 +1266,11 @@ public:
 	virtual void draw_command_insert_label(String p_label_name, const Color p_color = Color(1, 1, 1, 1));
 	virtual void draw_command_end_label();
 
-	virtual String get_device_vendor_name() const;
 	virtual String get_device_name() const;
+	virtual String get_device_vendor_name() const;
 	virtual RenderingDevice::DeviceType get_device_type() const;
 	virtual String get_device_api_version() const;
+	virtual uint64_t get_device_total_memory() const;
 	virtual String get_device_pipeline_cache_uuid() const;
 
 	virtual uint64_t get_driver_resource(DriverResource p_resource, RID p_rid = RID(), uint64_t p_index = 0);

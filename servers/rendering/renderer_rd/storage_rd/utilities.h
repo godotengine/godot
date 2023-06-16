@@ -117,6 +117,7 @@ public:
 	virtual String get_video_adapter_api_version() const override;
 
 	virtual Size2i get_maximum_viewport_size() const override;
+	virtual uint64_t get_video_adapter_total_memory() const override;
 };
 
 } // namespace RendererRD
