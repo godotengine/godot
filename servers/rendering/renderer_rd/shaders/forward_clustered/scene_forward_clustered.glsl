@@ -761,15 +761,15 @@ void fragment_shader(in SceneData scene_data) {
 	float alpha = float(instances.data[instance_index].flags >> INSTANCE_FLAGS_FADE_SHIFT) / float(255.0);
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	vec3 binormal = normalize(binormal_interp);
-	vec3 tangent = normalize(tangent_interp);
+	vec3 binormal = binormal_interp;
+	vec3 tangent = tangent_interp;
 #else
 	vec3 binormal = vec3(0.0);
 	vec3 tangent = vec3(0.0);
 #endif
 
 #ifdef NORMAL_USED
-	vec3 normal = normalize(normal_interp);
+	vec3 normal = normal_interp;
 
 #if defined(DO_SIDE_CHECK)
 	if (!gl_FrontFacing) {
