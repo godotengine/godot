@@ -47,9 +47,9 @@ Error GLTFDocumentExtensionPhysics::import_preflight(Ref<GLTFState> p_state, Vec
 				if (state_collider_dicts.size() > 0) {
 					Array state_colliders;
 					for (int i = 0; i < state_collider_dicts.size(); i++) {
-						state_colliders.push_back(GLTFCollider::from_dictionary(state_collider_dicts[i]));
+						state_colliders.push_back(GLTFPhysicsShape::from_dictionary(state_collider_dicts[i]));
 					}
-					p_state->set_additional_data("GLTFColliders", state_colliders);
+					p_state->set_additional_data("GLTFPhysicsShapes", state_colliders);
 				}
 			}
 		}
@@ -70,11 +70,11 @@ Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state
 		if (node_collider_ext.has("collider")) {
 			// "collider" is the index of the collider in the state colliders array.
 			int node_collider_index = node_collider_ext["collider"];
-			Array state_colliders = p_state->get_additional_data("GLTFColliders");
+			Array state_colliders = p_state->get_additional_data("GLTFPhysicsShapes");
 			ERR_FAIL_INDEX_V_MSG(node_collider_index, state_colliders.size(), Error::ERR_FILE_CORRUPT, "GLTF Physics: On node " + p_gltf_node->get_name() + ", the collider index " + itos(node_collider_index) + " is not in the state colliders (size: " + itos(state_colliders.size()) + ").");
-			p_gltf_node->set_additional_data(StringName("GLTFCollider"), state_colliders[node_collider_index]);
+			p_gltf_node->set_additional_data(StringName("GLTFPhysicsShape"), state_colliders[node_collider_index]);
 		} else {
-			p_gltf_node->set_additional_data(StringName("GLTFCollider"), GLTFCollider::from_dictionary(p_extensions["OMI_collider"]));
+			p_gltf_node->set_additional_data(StringName("GLTFPhysicsShape"), GLTFPhysicsShape::from_dictionary(p_extensions["OMI_collider"]));
 		}
 	}
 	if (p_extensions.has("OMI_physics_body")) {
@@ -83,7 +83,7 @@ Error GLTFDocumentExtensionPhysics::parse_node_extensions(Ref<GLTFState> p_state
 	return OK;
 }
 
-void _setup_collider_mesh_resource_from_index_if_needed(Ref<GLTFState> p_state, Ref<GLTFCollider> p_collider) {
+void _setup_collider_mesh_resource_from_index_if_needed(Ref<GLTFState> p_state, Ref<GLTFPhysicsShape> p_collider) {
 	GLTFMeshIndex collider_mesh_index = p_collider->get_mesh_index();
 	if (collider_mesh_index == -1) {
 		return; // No mesh for this collider.
@@ -101,7 +101,7 @@ void _setup_collider_mesh_resource_from_index_if_needed(Ref<GLTFState> p_state, 
 	p_collider->set_importer_mesh(importer_mesh);
 }
 
-CollisionObject3D *_generate_collision_with_body(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Ref<GLTFCollider> p_collider, Ref<GLTFPhysicsBody> p_physics_body) {
+CollisionObject3D *_generate_collision_with_body(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Ref<GLTFPhysicsShape> p_collider, Ref<GLTFPhysicsBody> p_physics_body) {
 	print_verbose("glTF: Creating collision for: " + p_gltf_node->get_name());
 	bool is_trigger = p_collider->get_is_trigger();
 	// This method is used for the case where we must generate a parent body.
@@ -134,7 +134,7 @@ CollisionObject3D *_generate_collision_with_body(Ref<GLTFState> p_state, Ref<GLT
 
 Node3D *GLTFDocumentExtensionPhysics::generate_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_parent) {
 	Ref<GLTFPhysicsBody> physics_body = p_gltf_node->get_additional_data(StringName("GLTFPhysicsBody"));
-	Ref<GLTFCollider> collider = p_gltf_node->get_additional_data(StringName("GLTFCollider"));
+	Ref<GLTFPhysicsShape> collider = p_gltf_node->get_additional_data(StringName("GLTFPhysicsShape"));
 	if (collider.is_valid()) {
 		_setup_collider_mesh_resource_from_index_if_needed(p_state, collider);
 		// If the collider has the correct type of parent, we just return one node.
@@ -203,14 +203,14 @@ GLTFMeshIndex _get_or_insert_mesh_in_state(Ref<GLTFState> p_state, Ref<ImporterM
 void GLTFDocumentExtensionPhysics::convert_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_node) {
 	if (cast_to<CollisionShape3D>(p_scene_node)) {
 		CollisionShape3D *shape = Object::cast_to<CollisionShape3D>(p_scene_node);
-		Ref<GLTFCollider> collider = GLTFCollider::from_node(shape);
+		Ref<GLTFPhysicsShape> collider = GLTFPhysicsShape::from_node(shape);
 		{
 			Ref<ImporterMesh> importer_mesh = collider->get_importer_mesh();
 			if (importer_mesh.is_valid()) {
 				collider->set_mesh_index(_get_or_insert_mesh_in_state(p_state, importer_mesh));
 			}
 		}
-		p_gltf_node->set_additional_data(StringName("GLTFCollider"), collider);
+		p_gltf_node->set_additional_data(StringName("GLTFPhysicsShape"), collider);
 	} else if (cast_to<CollisionObject3D>(p_scene_node)) {
 		CollisionObject3D *body = Object::cast_to<CollisionObject3D>(p_scene_node);
 		p_gltf_node->set_additional_data(StringName("GLTFPhysicsBody"), GLTFPhysicsBody::from_node(body));
@@ -248,7 +248,7 @@ Error GLTFDocumentExtensionPhysics::export_node(Ref<GLTFState> p_state, Ref<GLTF
 		node_extensions["OMI_physics_body"] = physics_body->to_dictionary();
 		p_state->add_used_extension("OMI_physics_body");
 	}
-	Ref<GLTFCollider> collider = p_gltf_node->get_additional_data(StringName("GLTFCollider"));
+	Ref<GLTFPhysicsShape> collider = p_gltf_node->get_additional_data(StringName("GLTFPhysicsShape"));
 	if (collider.is_valid()) {
 		Array state_colliders = _get_or_create_state_colliders_in_state(p_state);
 		int size = state_colliders.size();

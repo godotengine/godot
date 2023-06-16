@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gltf_collider.h                                                       */
+/*  gltf_physics_shape.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_COLLIDER_H
-#define GLTF_COLLIDER_H
+#ifndef GLTF_PHYSICS_SHAPE_H
+#define GLTF_PHYSICS_SHAPE_H
 
 #include "../../gltf_defines.h"
 
@@ -37,11 +37,11 @@
 
 class ImporterMesh;
 
-// GLTFCollider is an intermediary between OMI_collider and Godot's collision shape nodes.
+// GLTFPhysicsShape is an intermediary between OMI_collider and Godot's collision shape nodes.
 // https://github.com/omigroup/gltf-extensions/tree/main/extensions/2.0/OMI_collider
 
-class GLTFCollider : public Resource {
-	GDCLASS(GLTFCollider, Resource)
+class GLTFPhysicsShape : public Resource {
+	GDCLASS(GLTFPhysicsShape, Resource)
 
 protected:
 	static void _bind_methods();
@@ -79,11 +79,11 @@ public:
 	Ref<ImporterMesh> get_importer_mesh() const;
 	void set_importer_mesh(Ref<ImporterMesh> p_importer_mesh);
 
-	static Ref<GLTFCollider> from_node(const CollisionShape3D *p_collider_node);
+	static Ref<GLTFPhysicsShape> from_node(const CollisionShape3D *p_shape_node);
 	CollisionShape3D *to_node(bool p_cache_shapes = false);
 
-	static Ref<GLTFCollider> from_dictionary(const Dictionary p_dictionary);
+	static Ref<GLTFPhysicsShape> from_dictionary(const Dictionary p_dictionary);
 	Dictionary to_dictionary() const;
 };
 
-#endif // GLTF_COLLIDER_H
+#endif // GLTF_PHYSICS_SHAPE_H

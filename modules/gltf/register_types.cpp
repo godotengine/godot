@@ -117,7 +117,6 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFAnimation);
 		GDREGISTER_CLASS(GLTFBufferView);
 		GDREGISTER_CLASS(GLTFCamera);
-		GDREGISTER_CLASS(GLTFCollider);
 		GDREGISTER_CLASS(GLTFDocument);
 		GDREGISTER_CLASS(GLTFDocumentExtension);
 		GDREGISTER_CLASS(GLTFDocumentExtensionConvertImporterMesh);
@@ -125,6 +124,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFMesh);
 		GDREGISTER_CLASS(GLTFNode);
 		GDREGISTER_CLASS(GLTFPhysicsBody);
+		GDREGISTER_CLASS(GLTFPhysicsShape);
 		GDREGISTER_CLASS(GLTFSkeleton);
 		GDREGISTER_CLASS(GLTFSkin);
 		GDREGISTER_CLASS(GLTFSpecGloss);
