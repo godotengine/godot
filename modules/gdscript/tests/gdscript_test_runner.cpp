@@ -41,7 +41,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/os.h"
-#include "core/string/string_builder.h"
+#include "core/string/string_buffer.h"
 #include "scene/resources/packed_scene.h"
 
 #include "tests/test_macros.h"
@@ -450,7 +450,7 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 
 	result->status = GDTEST_RUNTIME_ERROR;
 
-	StringBuilder builder;
+	StringBuffer<> builder;
 	builder.append(">> ");
 	// Only include the function, file and line for script errors, otherwise the
 	// test outputs changes based on the platform/compiler.
@@ -600,7 +600,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	}
 
 #ifdef DEBUG_ENABLED
-	StringBuilder warning_string;
+	StringBuffer<> warning_string;
 	for (const GDScriptWarning &E : parser.get_warnings()) {
 		const GDScriptWarning warning = E;
 		warning_string.append(">> WARNING");

@@ -41,7 +41,7 @@
 #include "core/io/file_access_pack.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
-#include "core/string/string_builder.h"
+#include "core/string/string_buffer.h"
 #include "scene/resources/packed_scene.h"
 
 #ifdef TOOLS_ENABLED
@@ -64,7 +64,7 @@ static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) 
 
 	GDScriptTokenizer::Token current = tokenizer.scan();
 	while (current.type != GDScriptTokenizer::Token::TK_EOF) {
-		StringBuilder token;
+		StringBuffer<> token;
 		token += " --> "; // Padding for line number.
 
 		for (int l = current.start_line; l <= current.end_line && l <= p_lines.size(); l++) {
@@ -73,7 +73,7 @@ static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) 
 
 		{
 			// Print carets to point at the token.
-			StringBuilder pointer;
+			StringBuffer<> pointer;
 			pointer += "     "; // Padding for line number.
 			int rightmost_column = current.rightmost_column;
 			if (current.end_line > current.start_line) {
@@ -95,7 +95,7 @@ static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) 
 			token += "(";
 			token += Variant::get_type_name(current.literal.get_type());
 			token += ") ";
-			token += current.literal;
+			token += current.literal.operator String();
 		}
 
 		print_line(token.as_string());
@@ -129,7 +129,7 @@ static void test_tokenizer_buffer(const Vector<uint8_t> &p_buffer, const Vector<
 
 	GDScriptTokenizer::Token current = tokenizer.scan();
 	while (current.type != GDScriptTokenizer::Token::TK_EOF) {
-		StringBuilder token;
+		StringBuffer<> token;
 		token += " --> "; // Padding for line number.
 
 		for (int l = current.start_line; l <= current.end_line && l <= p_lines.size(); l++) {
@@ -142,7 +142,7 @@ static void test_tokenizer_buffer(const Vector<uint8_t> &p_buffer, const Vector<
 			token += "(";
 			token += Variant::get_type_name(current.literal.get_type());
 			token += ") ";
-			token += current.literal;
+			token += current.literal.operator String();
 		}
 
 		print_line(token.as_string());

@@ -37,7 +37,7 @@
 
 #include "core/doc_data.h"
 #include "core/object/class_db.h"
-#include "core/string/string_builder.h"
+#include "core/string/string_buffer.h"
 #include "core/string/ustring.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_help.h"
@@ -795,23 +795,23 @@ class BindingsGenerator {
 	String bbcode_to_text(const String &p_bbcode, const TypeInterface *p_itype);
 	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype, bool p_is_signal = false);
 
-	void _append_text_method(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_text_member(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_text_signal(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_text_enum(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_text_constant(StringBuilder &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_text_constant_in_global_scope(StringBuilder &p_output, const String &p_target_cname, const String &p_link_target);
-	void _append_text_param(StringBuilder &p_output, const String &p_link_target);
-	void _append_text_undeclared(StringBuilder &p_output, const String &p_link_target);
+	void _append_text_method(StringBuffer<> &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_member(StringBuffer<> &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_signal(StringBuffer<> &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_enum(StringBuffer<> &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_constant(StringBuffer<> &p_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_text_constant_in_global_scope(StringBuffer<> &p_output, const String &p_target_cname, const String &p_link_target);
+	void _append_text_param(StringBuffer<> &p_output, const String &p_link_target);
+	void _append_text_undeclared(StringBuffer<> &p_output, const String &p_link_target);
 
-	void _append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_xml_signal(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_xml_constant(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_xml_constant_in_global_scope(StringBuilder &p_xml_output, const String &p_target_cname, const String &p_link_target);
-	void _append_xml_param(StringBuilder &p_xml_output, const String &p_link_target, bool p_is_signal);
-	void _append_xml_undeclared(StringBuilder &p_xml_output, const String &p_link_target);
+	void _append_xml_method(StringBuffer<> &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_member(StringBuffer<> &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_signal(StringBuffer<> &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_enum(StringBuffer<> &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_constant(StringBuffer<> &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_constant_in_global_scope(StringBuffer<> &p_xml_output, const String &p_target_cname, const String &p_link_target);
+	void _append_xml_param(StringBuffer<> &p_xml_output, const String &p_link_target, bool p_is_signal);
+	void _append_xml_undeclared(StringBuffer<> &p_xml_output, const String &p_link_target);
 
 	int _determine_enum_prefix(const EnumInterface &p_ienum);
 	void _apply_prefix_to_enum_constants(EnumInterface &p_ienum, int p_prefix_length);
@@ -840,16 +840,16 @@ class BindingsGenerator {
 
 	Error _generate_cs_type(const TypeInterface &itype, const String &p_output_file);
 
-	Error _generate_cs_property(const TypeInterface &p_itype, const PropertyInterface &p_iprop, StringBuilder &p_output);
-	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output, bool p_use_span);
-	Error _generate_cs_signal(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::SignalInterface &p_isignal, StringBuilder &p_output);
+	Error _generate_cs_property(const TypeInterface &p_itype, const PropertyInterface &p_iprop, StringBuffer<> &p_output);
+	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, StringBuffer<> &p_output, bool p_use_span);
+	Error _generate_cs_signal(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::SignalInterface &p_isignal, StringBuffer<> &p_output);
 
-	Error _generate_cs_native_calls(const InternalCall &p_icall, StringBuilder &r_output);
+	Error _generate_cs_native_calls(const InternalCall &p_icall, StringBuffer<> &r_output);
 
-	void _generate_array_extensions(StringBuilder &p_output);
-	void _generate_global_constants(StringBuilder &p_output);
+	void _generate_array_extensions(StringBuffer<> &p_output);
+	void _generate_global_constants(StringBuffer<> &p_output);
 
-	Error _save_file(const String &p_path, const StringBuilder &p_content);
+	Error _save_file(const String &p_path, const StringBuffer<> &p_content);
 
 	void _log(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 

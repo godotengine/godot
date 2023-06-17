@@ -32,7 +32,7 @@
 #include "code_edit.compat.inc"
 
 #include "core/os/keyboard.h"
-#include "core/string/string_builder.h"
+#include "core/string/string_buffer.h"
 #include "core/string/ustring.h"
 #include "scene/theme/theme_db.h"
 
@@ -2083,7 +2083,7 @@ TypedArray<String> CodeEdit::get_code_completion_prefixes() const {
 }
 
 String CodeEdit::get_text_for_code_completion() const {
-	StringBuilder completion_text;
+	StringBuffer<> completion_text;
 	const int text_size = get_line_count();
 	for (int i = 0; i < text_size; i++) {
 		String line = get_line(i);
@@ -2384,7 +2384,7 @@ String CodeEdit::get_text_for_symbol_lookup() const {
 
 String CodeEdit::get_text_with_cursor_char(int p_line, int p_column) const {
 	const int text_size = get_line_count();
-	StringBuilder result;
+	StringBuffer<> result;
 	for (int i = 0; i < text_size; i++) {
 		String line_text = get_line(i);
 		if (i == p_line && p_column >= 0 && p_column <= line_text.size()) {

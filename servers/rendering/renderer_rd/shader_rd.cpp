@@ -119,7 +119,7 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 		}
 	}
 
-	StringBuilder tohash;
+	StringBuffer<> tohash;
 	tohash.append("[GodotVersionNumber]");
 	tohash.append(VERSION_NUMBER);
 	tohash.append("[GodotVersionHash]");
@@ -179,54 +179,54 @@ void ShaderRD::_clear_version(Version *p_version) {
 	}
 }
 
-void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, const Version *p_version, const StageTemplate &p_template) {
+void ShaderRD::_build_variant_code(StringBuffer<> &buffer, uint32_t p_variant, const Version *p_version, const StageTemplate &p_template) {
 	for (const StageTemplate::Chunk &chunk : p_template.chunks) {
 		switch (chunk.type) {
 			case StageTemplate::Chunk::TYPE_VERSION_DEFINES: {
-				builder.append("\n"); //make sure defines begin at newline
-				builder.append(general_defines.get_data());
-				builder.append(variant_defines[p_variant].text.get_data());
+				buffer.append("\n"); //make sure defines begin at newline
+				buffer.append(general_defines.get_data());
+				buffer.append(variant_defines[p_variant].text.get_data());
 				for (int j = 0; j < p_version->custom_defines.size(); j++) {
-					builder.append(p_version->custom_defines[j].get_data());
+					buffer.append(p_version->custom_defines[j].get_data());
 				}
-				builder.append("\n"); //make sure defines begin at newline
+				buffer.append("\n"); //make sure defines begin at newline
 				if (p_version->uniforms.size()) {
-					builder.append("#define MATERIAL_UNIFORMS_USED\n");
+					buffer.append("#define MATERIAL_UNIFORMS_USED\n");
 				}
 				for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {
-					builder.append(String("#define ") + String(E.key) + "_CODE_USED\n");
+					buffer.append(String("#define ") + String(E.key) + "_CODE_USED\n");
 				}
 #if (defined(MACOS_ENABLED) || defined(IOS_ENABLED))
 				if (RD::get_singleton()->get_device_capabilities().device_family == RDD::DEVICE_VULKAN) {
-					builder.append("#define MOLTENVK_USED\n");
+					buffer.append("#define MOLTENVK_USED\n");
 				}
 				// Image atomics are supported on Metal 3.1 but no support in MoltenVK or SPIRV-Cross yet.
-				builder.append("#define NO_IMAGE_ATOMICS\n");
+				buffer.append("#define NO_IMAGE_ATOMICS\n");
 #endif
 
-				builder.append(String("#define RENDER_DRIVER_") + OS::get_singleton()->get_current_rendering_driver_name().to_upper() + "\n");
-				builder.append("#define samplerExternalOES sampler2D\n");
-				builder.append("#define textureExternalOES texture2D\n");
+				buffer.append(String("#define RENDER_DRIVER_") + OS::get_singleton()->get_current_rendering_driver_name().to_upper() + "\n");
+				buffer.append("#define samplerExternalOES sampler2D\n");
+				buffer.append("#define textureExternalOES texture2D\n");
 			} break;
 			case StageTemplate::Chunk::TYPE_MATERIAL_UNIFORMS: {
-				builder.append(p_version->uniforms.get_data()); //uniforms (same for vertex and fragment)
+				buffer.append(p_version->uniforms.get_data()); //uniforms (same for vertex and fragment)
 			} break;
 			case StageTemplate::Chunk::TYPE_VERTEX_GLOBALS: {
-				builder.append(p_version->vertex_globals.get_data()); // vertex globals
+				buffer.append(p_version->vertex_globals.get_data()); // vertex globals
 			} break;
 			case StageTemplate::Chunk::TYPE_FRAGMENT_GLOBALS: {
-				builder.append(p_version->fragment_globals.get_data()); // fragment globals
+				buffer.append(p_version->fragment_globals.get_data()); // fragment globals
 			} break;
 			case StageTemplate::Chunk::TYPE_COMPUTE_GLOBALS: {
-				builder.append(p_version->compute_globals.get_data()); // compute globals
+				buffer.append(p_version->compute_globals.get_data()); // compute globals
 			} break;
 			case StageTemplate::Chunk::TYPE_CODE: {
 				if (p_version->code_sections.has(chunk.code)) {
-					builder.append(p_version->code_sections[chunk.code].get_data());
+					buffer.append(p_version->code_sections[chunk.code].get_data());
 				}
 			} break;
 			case StageTemplate::Chunk::TYPE_TEXT: {
-				builder.append(chunk.text.get_data());
+				buffer.append(chunk.text.get_data());
 			} break;
 		}
 	}
@@ -249,10 +249,10 @@ void ShaderRD::_compile_variant(uint32_t p_variant, CompileData p_data) {
 	if (!is_compute) {
 		//vertex stage
 
-		StringBuilder builder;
-		_build_variant_code(builder, variant, p_data.version, stage_templates[STAGE_TYPE_VERTEX]);
+		StringBuffer<> buffer;
+		_build_variant_code(buffer, variant, p_data.version, stage_templates[STAGE_TYPE_VERTEX]);
 
-		current_source = builder.as_string();
+		current_source = buffer.as_string();
 		RD::ShaderStageSPIRVData stage;
 		stage.spirv = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_VERTEX, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
 		if (stage.spirv.size() == 0) {
@@ -267,10 +267,10 @@ void ShaderRD::_compile_variant(uint32_t p_variant, CompileData p_data) {
 		//fragment stage
 		current_stage = RD::SHADER_STAGE_FRAGMENT;
 
-		StringBuilder builder;
-		_build_variant_code(builder, variant, p_data.version, stage_templates[STAGE_TYPE_FRAGMENT]);
+		StringBuffer<> buffer;
+		_build_variant_code(buffer, variant, p_data.version, stage_templates[STAGE_TYPE_FRAGMENT]);
 
-		current_source = builder.as_string();
+		current_source = buffer.as_string();
 		RD::ShaderStageSPIRVData stage;
 		stage.spirv = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_FRAGMENT, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
 		if (stage.spirv.size() == 0) {
@@ -285,10 +285,10 @@ void ShaderRD::_compile_variant(uint32_t p_variant, CompileData p_data) {
 		//compute stage
 		current_stage = RD::SHADER_STAGE_COMPUTE;
 
-		StringBuilder builder;
-		_build_variant_code(builder, variant, p_data.version, stage_templates[STAGE_TYPE_COMPUTE]);
+		StringBuffer<> buffer;
+		_build_variant_code(buffer, variant, p_data.version, stage_templates[STAGE_TYPE_COMPUTE]);
 
-		current_source = builder.as_string();
+		current_source = buffer.as_string();
 
 		RD::ShaderStageSPIRVData stage;
 		stage.spirv = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_COMPUTE, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
@@ -334,12 +334,12 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 		if (!is_compute) {
 			//vertex stage
 
-			StringBuilder builder;
-			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_VERTEX]);
+			StringBuffer<> buffer;
+			_build_variant_code(buffer, i, version, stage_templates[STAGE_TYPE_VERTEX]);
 
 			RS::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "vertex";
-			stage.code = builder.as_string();
+			stage.code = buffer.as_string();
 
 			source_code.versions.write[i].stages.push_back(stage);
 		}
@@ -347,25 +347,24 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 		if (!is_compute) {
 			//fragment stage
 
-			StringBuilder builder;
-			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_FRAGMENT]);
+			StringBuffer<> buffer;
+			_build_variant_code(buffer, i, version, stage_templates[STAGE_TYPE_FRAGMENT]);
 
 			RS::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "fragment";
-			stage.code = builder.as_string();
+			stage.code = buffer.as_string();
 
 			source_code.versions.write[i].stages.push_back(stage);
 		}
 
 		if (is_compute) {
 			//compute stage
-
-			StringBuilder builder;
-			_build_variant_code(builder, i, version, stage_templates[STAGE_TYPE_COMPUTE]);
+			StringBuffer<> buffer;
+			_build_variant_code(buffer, i, version, stage_templates[STAGE_TYPE_COMPUTE]);
 
 			RS::ShaderNativeSourceCode::Version::Stage stage;
 			stage.name = "compute";
-			stage.code = builder.as_string();
+			stage.code = buffer.as_string();
 
 			source_code.versions.write[i].stages.push_back(stage);
 		}
@@ -375,7 +374,7 @@ RS::ShaderNativeSourceCode ShaderRD::version_get_native_source_code(RID p_versio
 }
 
 String ShaderRD::_version_get_sha1(Version *p_version) const {
-	StringBuilder hash_build;
+	StringBuffer<> hash_build;
 
 	hash_build.append("[uniforms]");
 	hash_build.append(p_version->uniforms.get_data());
@@ -763,7 +762,7 @@ void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String 
 
 void ShaderRD::_initialize_cache() {
 	for (const KeyValue<int, LocalVector<int>> &E : group_to_variant_map) {
-		StringBuilder hash_build;
+		StringBuffer<> hash_build;
 
 		hash_build.append("[base_hash]");
 		hash_build.append(base_sha256);

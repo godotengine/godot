@@ -31,7 +31,7 @@
 #ifndef VISUAL_SHADER_H
 #define VISUAL_SHADER_H
 
-#include "core/string/string_builder.h"
+#include "core/string/string_buffer.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/gui/control.h"
 #include "scene/resources/shader.h"
@@ -159,7 +159,7 @@ private:
 		}
 	};
 
-	Error _write_node(Type p_type, StringBuilder *p_global_code, StringBuilder *p_global_code_per_node, HashMap<Type, StringBuilder> *p_global_code_per_func, StringBuilder &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &p_output_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
+	Error _write_node(Type p_type, StringBuffer<> *p_global_code, StringBuffer<> *p_global_code_per_node, HashMap<Type, StringBuffer<>> *p_global_code_per_func, StringBuffer<> &r_code, Vector<DefaultTextureParam> &r_def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &p_input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &p_output_connections, int p_node, HashSet<int> &r_processed, bool p_for_preview, HashSet<StringName> &r_classes) const;
 
 	void _input_type_changed(Type p_type, int p_id);
 	bool has_func_name(RenderingServer::ShaderMode p_mode, const String &p_func_name) const;
