@@ -2523,14 +2523,22 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		//pipelines
 		Vector<RD::VertexAttribute> vf;
 		RD::VertexAttribute vd;
+#ifdef MACOS_ENABLED
+		vd.format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
+#else
 		vd.format = sizeof(real_t) == sizeof(float) ? RD::DATA_FORMAT_R32G32B32_SFLOAT : RD::DATA_FORMAT_R64G64B64_SFLOAT;
+#endif
 		vd.location = 0;
 		vd.offset = 0;
 		vd.stride = sizeof(real_t) * 3;
 		vf.push_back(vd);
 		shadow_render.vertex_format = RD::get_singleton()->vertex_format_create(vf);
 
+#ifdef MACOS_ENABLED
+		vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+#else
 		vd.format = sizeof(real_t) == sizeof(float) ? RD::DATA_FORMAT_R32G32_SFLOAT : RD::DATA_FORMAT_R64G64_SFLOAT;
+#endif
 		vd.stride = sizeof(real_t) * 2;
 
 		vf.write[0] = vd;
