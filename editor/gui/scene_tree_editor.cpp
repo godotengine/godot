@@ -988,6 +988,7 @@ void SceneTreeEditor::_rename_node(Node *p_node, const String &p_name) {
 	}
 	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace, which would make it more difficult to get the node via `get_node()`.
 	new_name = new_name.strip_edges();
+	new_name = p_node->get_parent()->validate_child_name(p_node, new_name);
 
 	if (!is_scene_tree_dock) {
 		p_node->set_name(new_name);
