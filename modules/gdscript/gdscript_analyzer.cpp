@@ -3366,7 +3366,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		base = *p_base;
 	}
 
-	const StringName &name = p_identifier->name;
+	StringName name = p_identifier->name;
 
 	if (base.kind == GDScriptParser::DataType::ENUM) {
 		if (base.is_meta_type) {
@@ -3461,10 +3461,16 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		get_class_node_current_scope_classes(base_class, &script_classes);
 	}
 
+	bool is_constructor = base.is_meta_type && p_identifier->name == SNAME("new");
+
 	for (GDScriptParser::ClassNode *script_class : script_classes) {
 		if (p_base == nullptr && script_class->identifier && script_class->identifier->name == name) {
 			reduce_identifier_from_base_set_class(p_identifier, script_class->get_datatype());
 			return;
+		}
+
+		if (is_constructor) {
+			name = "_init";
 		}
 
 		if (script_class->has_member(name)) {
@@ -3545,6 +3551,10 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 	const StringName &native = base.native_type;
 
 	if (class_exists(native)) {
+		if (is_constructor) {
+			name = "_init";
+		}
+
 		MethodInfo method_info;
 		if (ClassDB::has_property(native, name)) {
 			StringName getter_name = ClassDB::get_property_getter(native, name);
