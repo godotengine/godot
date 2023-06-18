@@ -477,7 +477,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			Array array = dnp.base->get(base_property, &valid);
 			ERR_CONTINUE(!valid);
 
-			if (array.size() >= index) {
+			if (index >= array.size()) {
 				array.push_back(other);
 			} else {
 				array.set(index, other);
