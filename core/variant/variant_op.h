@@ -805,14 +805,14 @@ class OperatorEvaluatorNot {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
-		*r_ret = !a;
+		*r_ret = a == A();
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<A>::get_ptr(left);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) == A();
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(!PtrToArg<A>::convert(left));
+		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) == A(), r_ret);
 	}
 	static Variant::Type get_return_type() { return Variant::BOOL; }
 };

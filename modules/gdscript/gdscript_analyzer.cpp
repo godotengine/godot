@@ -4955,6 +4955,17 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 }
 
 GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator p_operation, const GDScriptParser::DataType &p_a, const GDScriptParser::DataType &p_b, bool &r_valid, const GDScriptParser::Node *p_source) {
+	if (p_operation == Variant::OP_AND || p_operation == Variant::OP_OR) {
+		// Those work for any type of argument and always return a boolean.
+		// They don't use the Variant operator since they have short-circuit semantics.
+		r_valid = true;
+		GDScriptParser::DataType result;
+		result.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+		result.kind = GDScriptParser::DataType::BUILTIN;
+		result.builtin_type = Variant::BOOL;
+		return result;
+	}
+
 	Variant::Type a_type = p_a.builtin_type;
 	Variant::Type b_type = p_b.builtin_type;
 
