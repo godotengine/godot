@@ -1028,10 +1028,12 @@
 			Implemented on desktop and web platforms.
 		</constant>
 		<constant name="NOTIFICATION_WM_WINDOW_FOCUS_IN" value="1004">
-			Notification received from the OS when the node's parent [Window] is focused. This may be a change of focus between two windows of the same engine instance, or from the OS desktop or a third-party application to a window of the game (in which case [constant NOTIFICATION_APPLICATION_FOCUS_IN] is also emitted).
+			Notification received when the node's parent [Window] is focused. This may be a change of focus between two windows of the same engine instance, or from the OS desktop or a third-party application to a window of the game (in which case [constant NOTIFICATION_APPLICATION_FOCUS_IN] is also emitted).
+			A [Window] node receives this notification when it is focused.
 		</constant>
 		<constant name="NOTIFICATION_WM_WINDOW_FOCUS_OUT" value="1005">
-			Notification received from the OS when the node's parent [Window] is defocused. This may be a change of focus between two windows of the same engine instance, or from a window of the game to the OS desktop or a third-party application (in which case [constant NOTIFICATION_APPLICATION_FOCUS_OUT] is also emitted).
+			Notification received when the node's parent [Window] is defocused. This may be a change of focus between two windows of the same engine instance, or from a window of the game to the OS desktop or a third-party application (in which case [constant NOTIFICATION_APPLICATION_FOCUS_OUT] is also emitted).
+			A [Window] node receives this notification when it is defocused.
 		</constant>
 		<constant name="NOTIFICATION_WM_CLOSE_REQUEST" value="1006">
 			Notification received from the OS when a close request is sent (e.g. closing the window with a "Close" button or [kbd]Alt + F4[/kbd]).
