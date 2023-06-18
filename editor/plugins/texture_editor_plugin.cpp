@@ -160,6 +160,8 @@ void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
 	if (texture.is_null()) {
 		Ref<Image> image(Object::cast_to<Image>(p_object));
 		texture = ImageTexture::create_from_image(image);
+
+		ERR_FAIL_COND_MSG(texture == nullptr, "Failed to create the texture from an invalid image.");
 	}
 
 	add_custom_control(memnew(TexturePreview(texture, true)));
