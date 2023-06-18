@@ -72,6 +72,19 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="acosh">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns the hyperbolic arc (also called inverse) cosine of [param x], returning a value in radians. Use it to get the angle from an angle's cosine in hyperbolic space if [param x] is larger or equal to 1. For values of [param x] lower than 1, it will return 0, in order to prevent [method acosh] from returning [constant @GDScript.NAN].
+				[codeblock]
+				var a = acosh(2) # Returns 1.31695789692482
+				cosh(a) # Returns 2
+
+				var b = acosh(-1) # Returns 0
+				[/codeblock]
+			</description>
+		</method>
 		<method name="asin">
 			<return type="float" />
 			<param index="0" name="x" type="float" />
@@ -80,6 +93,17 @@
 				[codeblock]
 				# s is 0.523599 or 30 degrees if converted with rad_to_deg(s)
 				var s = asin(0.5)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="asinh">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns the hyperbolic arc (also called inverse) sine of [param x], returning a value in radians. Use it to get the angle from an angle's sine in hyperbolic space.
+				[codeblock]
+				var a = asinh(0.9) # Returns 0.8088669356527824
+				sinh(a) # Returns 0.9
 				[/codeblock]
 			</description>
 		</method>
@@ -104,6 +128,21 @@
 				Important note: The Y coordinate comes first, by convention.
 				[codeblock]
 				var a = atan2(0, -1) # a is 3.141593
+				[/codeblock]
+			</description>
+		</method>
+		<method name="atanh">
+			<return type="float" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns the hyperbolic arc (also called inverse) tangent of [param x], returning a value in radians. Use it to get the angle from an angle's tangent in hyperbolic space if [param x] is between -1 and 1 (non-inclusive).
+				In mathematics, the inverse hyperbolic tangent is only defined for -1 &lt; [param x] &lt; 1 in the real set, so values equal or lower to -1 for [param x] return negative [constant @GDScript.INF] and values equal or higher than 1 return positive [constant @GDScript.INF] in order to prevent [method atanh] from returning [constant @GDScript.NAN].
+				[codeblock]
+				var a = atanh(0.9) # Returns 1.47221948958322
+				tanh(a) # Returns 0.9
+
+				var b = atanh(-2) # Returns -inf
+				tanh(b) # Returns -1
 				[/codeblock]
 			</description>
 		</method>

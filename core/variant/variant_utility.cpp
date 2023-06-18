@@ -81,6 +81,18 @@ double VariantUtilityFunctions::atan2(double y, double x) {
 	return Math::atan2(y, x);
 }
 
+double VariantUtilityFunctions::asinh(double arg) {
+	return Math::asinh(arg);
+}
+
+double VariantUtilityFunctions::acosh(double arg) {
+	return Math::acosh(arg);
+}
+
+double VariantUtilityFunctions::atanh(double arg) {
+	return Math::atanh(arg);
+}
+
 double VariantUtilityFunctions::sqrt(double x) {
 	return Math::sqrt(x);
 }
@@ -1501,6 +1513,10 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(atan, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(atan2, sarray("y", "x"), Variant::UTILITY_FUNC_TYPE_MATH);
+
+	FUNCBINDR(asinh, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(acosh, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(atanh, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(sqrt, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(fmod, sarray("x", "y"), Variant::UTILITY_FUNC_TYPE_MATH);

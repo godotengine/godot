@@ -175,6 +175,37 @@ TEST_CASE_TEMPLATE("[Math] asin/acos/atan", T, float, double) {
 	CHECK(Math::atan((T)450.0) == doctest::Approx((T)1.5685741082));
 }
 
+TEST_CASE_TEMPLATE("[Math] asinh/acosh/atanh", T, float, double) {
+	CHECK(Math::asinh((T)-2.0) == doctest::Approx((T)-1.4436354751));
+	CHECK(Math::asinh((T)-0.1) == doctest::Approx((T)-0.0998340788));
+	CHECK(Math::asinh((T)0.1) == doctest::Approx((T)0.0998340788));
+	CHECK(Math::asinh((T)0.5) == doctest::Approx((T)0.4812118250));
+	CHECK(Math::asinh((T)1.0) == doctest::Approx((T)0.8813735870));
+	CHECK(Math::asinh((T)2.0) == doctest::Approx((T)1.4436354751));
+
+	CHECK(Math::acosh((T)-2.0) == doctest::Approx((T)0.0));
+	CHECK(Math::acosh((T)-0.1) == doctest::Approx((T)0.0));
+	CHECK(Math::acosh((T)0.1) == doctest::Approx((T)0.0));
+	CHECK(Math::acosh((T)0.5) == doctest::Approx((T)0.0));
+	CHECK(Math::acosh((T)1.0) == doctest::Approx((T)0.0));
+	CHECK(Math::acosh((T)2.0) == doctest::Approx((T)1.3169578969));
+	CHECK(Math::acosh((T)450.0) == doctest::Approx((T)6.8023935287));
+
+	CHECK(Math::is_inf(Math::atanh((T)-2.0)));
+	CHECK(Math::atanh((T)-2.0) < (T)0.0);
+	CHECK(Math::is_inf(Math::atanh((T)-1.0)));
+	CHECK(Math::atanh((T)-1.0) < (T)0.0);
+	CHECK(Math::atanh((T)-0.1) == doctest::Approx((T)-0.1003353477));
+	CHECK(Math::atanh((T)0.1) == doctest::Approx((T)0.1003353477));
+	CHECK(Math::atanh((T)0.5) == doctest::Approx((T)0.5493061443));
+	CHECK(Math::is_inf(Math::atanh((T)1.0)));
+	CHECK(Math::atanh((T)1.0) > (T)0.0);
+	CHECK(Math::is_inf(Math::atanh((T)1.5)));
+	CHECK(Math::atanh((T)1.5) > (T)0.0);
+	CHECK(Math::is_inf(Math::atanh((T)450.0)));
+	CHECK(Math::atanh((T)450.0) > (T)0.0);
+}
+
 TEST_CASE_TEMPLATE("[Math] sinc/sincn/atan2", T, float, double) {
 	CHECK(Math::sinc((T)-0.1) == doctest::Approx((T)0.9983341665));
 	CHECK(Math::sinc((T)0.1) == doctest::Approx((T)0.9983341665));
