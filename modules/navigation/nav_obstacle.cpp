@@ -186,6 +186,7 @@ void NavObstacle::internal_update_agent() {
 		agent->set_neighbor_distance(0.0);
 		agent->set_avoidance_priority(1.0);
 		agent->set_map(map);
+		agent->set_paused(paused);
 		agent->set_radius(radius);
 		agent->set_height(height);
 		agent->set_position(position);
@@ -193,4 +194,25 @@ void NavObstacle::internal_update_agent() {
 		agent->set_avoidance_enabled(avoidance_enabled);
 		agent->set_use_3d_avoidance(use_3d_avoidance);
 	}
+}
+
+void NavObstacle::set_paused(bool p_paused) {
+	if (paused == p_paused) {
+		return;
+	}
+
+	paused = p_paused;
+
+	if (map) {
+		if (paused) {
+			map->remove_obstacle(this);
+		} else {
+			map->add_obstacle(this);
+		}
+	}
+	internal_update_agent();
+}
+
+bool NavObstacle::get_paused() const {
+	return paused;
 }

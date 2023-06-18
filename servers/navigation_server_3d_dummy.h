@@ -103,6 +103,8 @@ public:
 	RID agent_create() override { return RID(); }
 	void agent_set_map(RID p_agent, RID p_map) override {}
 	RID agent_get_map(RID p_agent) const override { return RID(); }
+	void agent_set_paused(RID p_agent, bool p_paused) override {}
+	bool agent_get_paused(RID p_agent) const override { return false; }
 	void agent_set_avoidance_enabled(RID p_agent, bool p_enabled) override {}
 	bool agent_get_avoidance_enabled(RID p_agent) const override { return false; }
 	void agent_set_use_3d_avoidance(RID p_agent, bool p_enabled) override {}
@@ -125,6 +127,8 @@ public:
 	RID obstacle_create() override { return RID(); }
 	void obstacle_set_map(RID p_obstacle, RID p_map) override {}
 	RID obstacle_get_map(RID p_obstacle) const override { return RID(); }
+	void obstacle_set_paused(RID p_obstacle, bool p_paused) override {}
+	bool obstacle_get_paused(RID p_obstacle) const override { return false; }
 	void obstacle_set_avoidance_enabled(RID p_obstacle, bool p_enabled) override {}
 	bool obstacle_get_avoidance_enabled(RID p_obstacle) const override { return false; }
 	void obstacle_set_use_3d_avoidance(RID p_obstacle, bool p_enabled) override {}

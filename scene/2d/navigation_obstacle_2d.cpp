@@ -96,6 +96,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 				_update_map(map_before_pause);
 				map_before_pause = RID();
 			}
+			NavigationServer2D::get_singleton()->obstacle_set_paused(obstacle, !can_process());
 		} break;
 
 		case NOTIFICATION_UNPAUSED: {
@@ -106,6 +107,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 				_update_map(map_before_pause);
 				map_before_pause = RID();
 			}
+			NavigationServer2D::get_singleton()->obstacle_set_paused(obstacle, !can_process());
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {

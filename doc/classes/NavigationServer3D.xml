@@ -38,6 +38,13 @@
 				Returns the navigation map [RID] the requested [param agent] is currently assigned to.
 			</description>
 		</method>
+		<method name="agent_get_paused" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns [code]true[/code] if the specified [param agent] is paused.
+			</description>
+		</method>
 		<method name="agent_get_use_3d_avoidance" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="agent" type="RID" />
@@ -132,6 +139,14 @@
 			<param index="1" name="distance" type="float" />
 			<description>
 				Sets the maximum distance to other agents this agent takes into account in the navigation. The larger this number, the longer the running time of the simulation. If the number is too low, the simulation will not be safe.
+			</description>
+		</method>
+		<method name="agent_set_paused">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="paused" type="bool" />
+			<description>
+				If [param paused] is true the specified [param agent] will not be processed, e.g. calculate avoidance velocities or receive avoidance callbacks.
 			</description>
 		</method>
 		<method name="agent_set_position">
@@ -567,6 +582,13 @@
 				Returns the navigation map [RID] the requested [param obstacle] is currently assigned to.
 			</description>
 		</method>
+		<method name="obstacle_get_paused" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns [code]true[/code] if the specified [param obstacle] is paused.
+			</description>
+		</method>
 		<method name="obstacle_get_use_3d_avoidance" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="obstacle" type="RID" />
@@ -604,6 +626,14 @@
 			<param index="1" name="map" type="RID" />
 			<description>
 				Assigns the [param obstacle] to a navigation map.
+			</description>
+		</method>
+		<method name="obstacle_set_paused">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="paused" type="bool" />
+			<description>
+				If [param paused] is true the specified [param obstacle] will not be processed, e.g. affect avoidance velocities.
 			</description>
 		</method>
 		<method name="obstacle_set_position">

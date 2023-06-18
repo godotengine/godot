@@ -696,6 +696,20 @@ COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
 	}
 }
 
+COMMAND_2(agent_set_paused, RID, p_agent, bool, p_paused) {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_COND(agent == nullptr);
+
+	agent->set_paused(p_paused);
+}
+
+bool GodotNavigationServer::agent_get_paused(RID p_agent) const {
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_COND_V(agent == nullptr, false);
+
+	return agent->get_paused();
+}
+
 COMMAND_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_distance) {
 	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
@@ -887,6 +901,20 @@ RID GodotNavigationServer::obstacle_get_map(RID p_obstacle) const {
 		return obstacle->get_map()->get_self();
 	}
 	return RID();
+}
+
+COMMAND_2(obstacle_set_paused, RID, p_obstacle, bool, p_paused) {
+	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
+	ERR_FAIL_COND(obstacle == nullptr);
+
+	obstacle->set_paused(p_paused);
+}
+
+bool GodotNavigationServer::obstacle_get_paused(RID p_obstacle) const {
+	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
+	ERR_FAIL_COND_V(obstacle == nullptr, false);
+
+	return obstacle->get_paused();
 }
 
 COMMAND_2(obstacle_set_radius, RID, p_obstacle, real_t, p_radius) {

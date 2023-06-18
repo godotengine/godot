@@ -43,7 +43,6 @@ class NavigationAgent3D : public Node {
 	Node3D *agent_parent = nullptr;
 
 	RID agent;
-	RID map_before_pause;
 	RID map_override;
 
 	bool avoidance_enabled = false;

@@ -184,6 +184,8 @@ public:
 	virtual bool agent_get_use_3d_avoidance(RID p_agent) const override;
 	COMMAND_2(agent_set_map, RID, p_agent, RID, p_map);
 	virtual RID agent_get_map(RID p_agent) const override;
+	COMMAND_2(agent_set_paused, RID, p_agent, bool, p_paused);
+	virtual bool agent_get_paused(RID p_agent) const override;
 	COMMAND_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_distance);
 	COMMAND_2(agent_set_max_neighbors, RID, p_agent, int, p_count);
 	COMMAND_2(agent_set_time_horizon_agents, RID, p_agent, real_t, p_time_horizon);
@@ -207,6 +209,8 @@ public:
 	virtual bool obstacle_get_use_3d_avoidance(RID p_obstacle) const override;
 	COMMAND_2(obstacle_set_map, RID, p_obstacle, RID, p_map);
 	virtual RID obstacle_get_map(RID p_obstacle) const override;
+	COMMAND_2(obstacle_set_paused, RID, p_obstacle, bool, p_paused);
+	virtual bool obstacle_get_paused(RID p_obstacle) const override;
 	COMMAND_2(obstacle_set_radius, RID, p_obstacle, real_t, p_radius);
 	COMMAND_2(obstacle_set_velocity, RID, p_obstacle, Vector3, p_velocity);
 	COMMAND_2(obstacle_set_position, RID, p_obstacle, Vector3, p_position);
