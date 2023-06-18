@@ -490,6 +490,15 @@
 				If [code]true[/code], disables the button at index [param button_index] in the given [param column].
 			</description>
 		</method>
+		<method name="set_button_tooltip_text">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="button_index" type="int" />
+			<param index="2" name="tooltip" type="String" />
+			<description>
+				Sets the tooltip text for the button at index [param button_index] in the given [param column].
+			</description>
+		</method>
 		<method name="set_cell_mode">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
