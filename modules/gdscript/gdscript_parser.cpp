@@ -116,7 +116,7 @@ GDScriptParser::GDScriptParser() {
 	// Warning annotations.
 	register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS | AnnotationInfo::VARIABLE | AnnotationInfo::SIGNAL | AnnotationInfo::CONSTANT | AnnotationInfo::FUNCTION | AnnotationInfo::STATEMENT, &GDScriptParser::warning_annotations, varray(), true);
 	// Networking.
-	register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "unreliable", 0), true);
+	register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "unreliable", 0));
 
 #ifdef DEBUG_ENABLED
 	is_ignoring_warnings = !(bool)GLOBAL_GET("debug/gdscript/warnings/enable");
@@ -4141,21 +4141,16 @@ bool GDScriptParser::rpc_annotation(const AnnotationNode *p_annotation, Node *p_
 	Dictionary rpc_config;
 	rpc_config["rpc_mode"] = MultiplayerAPI::RPC_MODE_AUTHORITY;
 	if (!p_annotation->resolved_arguments.is_empty()) {
-		int last = p_annotation->resolved_arguments.size() - 1;
-		if (p_annotation->resolved_arguments[last].get_type() == Variant::INT) {
-			rpc_config["channel"] = p_annotation->resolved_arguments[last].operator int();
-			last -= 1;
-		}
-		if (last > 3) {
-			push_error(R"(Invalid RPC arguments. At most 4 arguments are allowed, where only the last argument can be an integer to specify the channel.')", p_annotation);
-			return false;
-		}
-
 		unsigned char locality_args = 0;
 		unsigned char permission_args = 0;
 		unsigned char transfer_mode_args = 0;
 
-		for (int i = last; i >= 0; i--) {
+		for (int i = 0; i < p_annotation->resolved_arguments.size(); i++) {
+			if (i == 3) {
+				rpc_config["channel"] = p_annotation->resolved_arguments[i].operator int();
+				continue;
+			}
+
 			String arg = p_annotation->resolved_arguments[i].operator String();
 			if (arg == "call_local") {
 				locality_args++;
