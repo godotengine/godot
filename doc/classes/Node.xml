@@ -716,7 +716,7 @@
 				[codeblock]
 				{
 				    rpc_mode = MultiplayerAPI.RPCMode,
-				    transfer_mode = MultiplayerPeer.TranferMode,
+				    transfer_mode = MultiplayerPeer.TransferMode,
 				    call_local = false,
 				    channel = 0,
 				}
