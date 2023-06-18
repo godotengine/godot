@@ -208,6 +208,9 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 	array.set(index, p_value);
 	object->set_array(array);
 	emit_changed(get_edited_property(), array, "", true);
+	if (!p_changing) {
+		update_property();
+	}
 }
 
 void EditorPropertyArray::_change_type(Object *p_button, int p_index) {
@@ -737,6 +740,9 @@ void EditorPropertyDictionary::_property_changed(const String &p_property, Varia
 
 		object->set_dict(dict);
 		emit_changed(get_edited_property(), dict, "", true);
+	}
+	if (!p_changing) {
+		update_property();
 	}
 }
 
