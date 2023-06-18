@@ -31,6 +31,7 @@
 #include "scene_saveload.h"
 
 #include "core/debugger/engine_debugger.h"
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 
 #include <stdint.h>
@@ -50,102 +51,6 @@ _FORCE_INLINE_ void SceneSaveload::_profile_bandwidth(const String &p_what, int 
 	}
 }
 #endif
-
-Error SceneSaveload::poll() {
-
-//	while (multiplayer_peer->get_available_packet_count()) {
-//		int sender = multiplayer_peer->get_packet_peer();
-//		const uint8_t *packet;
-//		int len;
-//
-//		int channel = multiplayer_peer->get_packet_channel();
-//		MultiplayerPeer::TransferMode mode = multiplayer_peer->get_packet_mode();
-//
-//		Error err = multiplayer_peer->get_packet(&packet, len);
-//		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Error getting packet! %d", err));
-//
-//#ifdef DEBUG_ENABLED
-//		_profile_bandwidth("in", len);
-//#endif
-//
-//		if (pending_peers.has(sender)) {
-//			if (pending_peers[sender].local) {
-//				// If the auth is over, admit the peer at the first packet.
-//				pending_peers.erase(sender);
-//				_admit_peer(sender);
-//			} else {
-//				ERR_CONTINUE(len < 2 || (packet[0] & CMD_MASK) != NETWORK_COMMAND_SYS || packet[1] != SYS_COMMAND_AUTH);
-//				// Auth message.
-//				PackedByteArray pba;
-//				pba.resize(len - 2);
-//				if (pba.size()) {
-//					memcpy(pba.ptrw(), &packet[2], len - 2);
-//					// User callback
-//					const Variant sv = sender;
-//					const Variant pbav = pba;
-//					const Variant *argv[2] = { &sv, &pbav };
-//					Variant ret;
-//					Callable::CallError ce;
-//					auth_callback.callp(argv, 2, ret, ce);
-//					ERR_CONTINUE_MSG(ce.error != Callable::CallError::CALL_OK, "Failed to call authentication callback");
-//				} else {
-//					// Remote complete notification.
-//					pending_peers[sender].remote = true;
-//					if (pending_peers[sender].local) {
-//						pending_peers.erase(sender);
-//						_admit_peer(sender);
-//					}
-//				}
-//				continue; // Auth in progress.
-//			}
-//		}
-//
-//		ERR_CONTINUE(!connected_peers.has(sender));
-//
-//		if (len && (packet[0] & CMD_MASK) == NETWORK_COMMAND_SYS) {
-//			// Sys messages are processed separately since they might call _process_packet themselves.
-//			if (len > 1 && packet[1] == SYS_COMMAND_AUTH) {
-//				ERR_CONTINUE(len != 2);
-//				// If we are here, we already admitted the peer locally, and this is just a confirmation packet.
-//				continue;
-//			}
-//
-//			_process_sys(sender, packet, len, mode, channel);
-//		} else {
-//			remote_sender_id = sender;
-//			_process_packet(sender, packet, len);
-//			remote_sender_id = 0;
-//		}
-//
-//		_update_status();
-//		if (last_connection_status != MultiplayerPeer::CONNECTION_CONNECTED) { // It's possible that processing a packet might have resulted in a disconnection, so check here.
-//			return OK;
-//		}
-//	}
-//	if (pending_peers.size() && auth_timeout) {
-//		HashSet<int> to_drop;
-//		uint64_t time = OS::get_singleton()->get_ticks_msec();
-//		for (const KeyValue<int, PendingPeer> &pending : pending_peers) {
-//			if (pending.value.time + auth_timeout <= time) {
-//				multiplayer_peer->disconnect_peer(pending.key);
-//				to_drop.insert(pending.key);
-//			}
-//		}
-//		for (const int &P : to_drop) {
-//			// Each signal might trigger a disconnection.
-//			pending_peers.erase(P);
-//			emit_signal(SNAME("peer_authentication_failed"), P);
-//		}
-//	}
-//
-//	_update_status();
-//	if (last_connection_status != MultiplayerPeer::CONNECTION_CONNECTED) { // Signals might have triggered disconnection.
-//		return OK;
-//	}
-
-//	replicator->on_network_process();
-	return OK;
-}
 
 void SceneSaveload::clear() {
 	packet_cache.clear();
@@ -171,24 +76,24 @@ void SceneSaveload::_process_packet(int p_from, const uint8_t *p_packet, int p_p
 	uint8_t packet_type = p_packet[0] & CMD_MASK;
 
 	switch (packet_type) {
-		case NETWORK_COMMAND_SIMPLIFY_PATH: {
+		case SAVELOAD_COMMAND_SIMPLIFY_PATH: {
 			cache->process_simplify_path(p_from, p_packet, p_packet_len);
 		} break;
 
-		case NETWORK_COMMAND_CONFIRM_PATH: {
+		case SAVELOAD_COMMAND_CONFIRM_PATH: {
 			cache->process_confirm_path(p_from, p_packet, p_packet_len);
 		} break;
 
-		case NETWORK_COMMAND_RAW: {
+		case SAVELOAD_COMMAND_RAW: {
 			_process_raw(p_from, p_packet, p_packet_len);
 		} break;
-		case NETWORK_COMMAND_SPAWN: {
+		case SAVELOAD_COMMAND_SPAWN: {
 			saveloader->on_spawn_receive(p_from, p_packet, p_packet_len);
 		} break;
-		case NETWORK_COMMAND_DESPAWN: {
+		case SAVELOAD_COMMAND_DESPAWN: {
 			saveloader->on_despawn_receive(p_from, p_packet, p_packet_len);
 		} break;
-		case NETWORK_COMMAND_SYNC: {
+		case SAVELOAD_COMMAND_SYNC: {
 			saveloader->on_sync_receive(p_from, p_packet, p_packet_len);
 		} break;
 		default: {
@@ -464,6 +369,32 @@ void SceneSaveload::_process_raw(int p_from, const uint8_t *p_packet, int p_pack
 	emit_signal(SNAME("peer_packet"), p_from, out);
 }
 
+Vector<uint8_t> SceneSaveload::encode(Object *p_object, const StringName section) {
+	return saveloader->encode(p_object, section);
+}
+Error SceneSaveload::decode(Vector<uint8_t> p_bytes, Object *p_object, const StringName section) {
+	return saveloader->decode(p_bytes, p_object, section);
+}
+Error SceneSaveload::save(const String p_path, Object *p_object, const StringName section) {
+	Error err;
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	if (err != OK) {
+		return err;
+	}
+	Vector<uint8_t> bytes = encode(p_object, section);
+	file->store_buffer(bytes);
+	file->close();
+	return err;
+}
+Error SceneSaveload::load(const String p_path, Object *p_object, const StringName section) {
+	Error err;
+	Vector<uint8_t> bytes = FileAccess::get_file_as_bytes(p_path, &err);
+	if (err != OK) {
+		return err;
+	}
+	return decode(bytes, p_object, section);
+}
+
 int SceneSaveload::get_unique_id() {
 //	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), 0, "No multiplayer peer is assigned. Unable to get unique ID.");
 //	return multiplayer_peer->get_unique_id();
@@ -561,6 +492,10 @@ void SceneSaveload::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_path", "path"), &SceneSaveload::set_root_path);
 	ClassDB::bind_method(D_METHOD("get_root_path"), &SceneSaveload::get_root_path);
 	ClassDB::bind_method(D_METHOD("clear"), &SceneSaveload::clear);
+	ClassDB::bind_method(D_METHOD("encode", "object", "section"), &SceneSaveload::encode);
+	ClassDB::bind_method(D_METHOD("decode", "bytes", "object", "section"), &SceneSaveload::decode);
+	ClassDB::bind_method(D_METHOD("save", "path", "object", "section"), &SceneSaveload::save);
+	ClassDB::bind_method(D_METHOD("load", "path", "object", "section"), &SceneSaveload::load);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");

@@ -213,7 +213,7 @@ Error SaveloadAPI::decode_and_decompress_variant(Variant &r_variant, const uint8
 	return OK;
 }
 
-Error SaveloadAPI::encode_and_compress_variants(const Variant **p_variants, int p_count, uint8_t *p_buffer, int &r_len, bool *r_raw, bool p_allow_object_decoding) {
+Error SaveloadAPI::encode_and_compress_variants(const Variant **p_variants, int p_count, uint8_t *r_buffer, int &r_len, bool *r_raw, bool p_allow_object_decoding) {
 	r_len = 0;
 	int size = 0;
 
@@ -231,12 +231,12 @@ Error SaveloadAPI::encode_and_compress_variants(const Variant **p_variants, int 
 		if (v.get_type() == Variant::PACKED_BYTE_ARRAY) {
 			*r_raw = true;
 			const PackedByteArray pba = v;
-			if (p_buffer) {
-				memcpy(p_buffer, pba.ptr(), pba.size());
+			if (r_buffer) {
+				memcpy(r_buffer, pba.ptr(), pba.size());
 			}
 			r_len += pba.size();
 		} else {
-			encode_and_compress_variant(v, p_buffer, size, p_allow_object_decoding);
+			encode_and_compress_variant(v, r_buffer, size, p_allow_object_decoding);
 			r_len += size;
 		}
 		return OK;
@@ -245,7 +245,7 @@ Error SaveloadAPI::encode_and_compress_variants(const Variant **p_variants, int 
 	// Regular encoding.
 	for (int i = 0; i < p_count; i++) {
 		const Variant &v = *(p_variants[i]);
-		encode_and_compress_variant(v, p_buffer ? p_buffer + r_len : nullptr, size, p_allow_object_decoding);
+		encode_and_compress_variant(v, r_buffer ? r_buffer + r_len : nullptr, size, p_allow_object_decoding);
 		r_len += size;
 	}
 	return OK;
@@ -283,6 +283,11 @@ Error SaveloadAPI::decode_and_decompress_variants(Vector<Variant> &r_variants, c
 }
 
 void SaveloadAPI::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("encode", "object", "section"), &SaveloadAPI::encode);
+	ClassDB::bind_method(D_METHOD("decode", "bytes", "object", "section"), &SaveloadAPI::decode);
+	ClassDB::bind_method(D_METHOD("save", "path", "object", "section"), &SaveloadAPI::save);
+	ClassDB::bind_method(D_METHOD("load", "path", "object", "section"), &SaveloadAPI::load);
+
 	ClassDB::bind_method(D_METHOD("object_configuration_add", "object", "configuration"), &SaveloadAPI::object_configuration_add);
 	ClassDB::bind_method(D_METHOD("object_configuration_remove", "object", "configuration"), &SaveloadAPI::object_configuration_remove);
 

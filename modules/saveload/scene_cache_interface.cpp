@@ -92,7 +92,7 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 	Vector<uint8_t> packet;
 
 	packet.resize(1 + 1 + len);
-	packet.write[0] = SceneSaveload::NETWORK_COMMAND_CONFIRM_PATH;
+	packet.write[0] = SceneSaveload::SAVELOAD_COMMAND_CONFIRM_PATH;
 //	packet.write[1] = valid_rpc_checksum;
 	encode_cstring(pname.get_data(), &packet.write[2]);
 
@@ -139,7 +139,7 @@ Error SceneCacheInterface::_send_confirm_path(Node *p_node, NodePath p_path, Pat
 	packet.resize(1 + 4 + path_len + methods_md5_len);
 	int ofs = 0;
 
-	packet.write[ofs] = SceneSaveload::NETWORK_COMMAND_SIMPLIFY_PATH;
+	packet.write[ofs] = SceneSaveload::SAVELOAD_COMMAND_SIMPLIFY_PATH;
 	ofs += 1;
 
 //	ofs += encode_cstring(methods_md5.utf8().get_data(), &packet.write[ofs]);

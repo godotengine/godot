@@ -70,12 +70,12 @@ void SceneSaveloadInterface::_untrack(const ObjectID &p_id) {
 	uint32_t peer = tracked_nodes[p_id].remote_peer;
 	tracked_nodes.erase(p_id);
 	// If it was spawned by a remote, remove it from the received nodes.
-	if (peer && peers_info.has(peer)) {
-		peers_info[peer].recv_nodes.erase(net_id);
+	if (peer && saveload_info.has(peer)) {
+		saveload_info[peer].recv_nodes.erase(net_id);
 	}
 	// If we spawned or synced it, we need to remove it from any peer it was sent to.
 	if (net_id || peer == 0) {
-		for (KeyValue<int, PeerInfo> &E : peers_info) {
+		for (KeyValue<int, SaveloadInfo> &E : saveload_info) {
 			E.value.spawn_nodes.erase(p_id);
 		}
 	}
@@ -109,7 +109,7 @@ void SceneSaveloadInterface::on_reset() {
 //	for (const KeyValue<int, PeerInfo> &E : peers_info) {
 //		_free_remotes(E.value);
 //	}
-	peers_info.clear();
+	saveload_info.clear();
 	// Tracked nodes are cleared on deletion, here we only reset the ids so they can be later re-assigned.
 	for (KeyValue<ObjectID, TrackedNode> &E : tracked_nodes) {
 		TrackedNode &tobj = E.value;
@@ -124,32 +124,33 @@ void SceneSaveloadInterface::on_reset() {
 	last_net_id = 0;
 }
 
-//void SceneSaveloadInterface::on_network_process() {
-//	// Prevent endless stalling in case of unforeseen spawn errors.
-//	if (spawn_queue.size()) {
-//		ERR_PRINT("An error happened during last spawn, this usually means the 'ready' signal was not emitted by the spawned node.");
-//		for (const ObjectID &oid : spawn_queue) {
-//			Node *node = get_id_as<Node>(oid);
-//			ERR_CONTINUE(!node);
-//			if (node->is_connected(SceneStringNames::get_singleton()->ready, callable_mp(this, &SceneSaveloadInterface::_node_ready))) {
-//				node->disconnect(SceneStringNames::get_singleton()->ready, callable_mp(this, &SceneSaveloadInterface::_node_ready));
-//			}
-//		}
-//		spawn_queue.clear();
-//	}
-//
-//	// Process syncs.
-//	uint64_t usec = OS::get_singleton()->get_ticks_usec();
-//	for (KeyValue<int, PeerInfo> &E : peers_info) {
-//		const HashSet<ObjectID> to_sync = E.value.sync_nodes;
-//		if (to_sync.is_empty()) {
-//			continue; // Nothing to sync
-//		}
-//		uint16_t sync_net_time = ++E.value.last_sent_sync;
-//		_send_sync(E.key, to_sync, sync_net_time, usec);
-//		_send_delta(E.key, to_sync, usec, E.value.last_watch_usecs);
-//	}
-//}
+void SceneSaveloadInterface::flush_spawn_queue() {
+	// Prevent endless stalling in case of unforeseen spawn errors.
+	if (spawn_queue.size()) {
+		ERR_PRINT("An error happened during last spawn, this usually means the 'ready' signal was not emitted by the spawned node.");
+		for (const ObjectID &oid : spawn_queue) {
+			Node *node = get_id_as<Node>(oid);
+			ERR_CONTINUE(!node);
+			if (node->is_connected(SceneStringNames::get_singleton()->ready, callable_mp(this, &SceneSaveloadInterface::_node_ready))) {
+				node->disconnect(SceneStringNames::get_singleton()->ready, callable_mp(this, &SceneSaveloadInterface::_node_ready));
+			}
+		}
+		spawn_queue.clear();
+	}
+}
+
+void SceneSaveloadInterface::process_syncs() {
+	uint64_t usec = OS::get_singleton()->get_ticks_usec();
+	for (KeyValue<int, SaveloadInfo> &E : saveload_info) {
+		const HashSet<ObjectID> to_sync = E.value.sync_nodes;
+		if (to_sync.is_empty()) {
+			continue; // Nothing to sync
+		}
+		uint16_t sync_net_time = ++E.value.last_sent_sync;
+		_encode_sync(to_sync, sync_net_time, usec);
+		_send_delta(E.key, to_sync, usec, E.value.last_watch_usecs);
+	}
+}
 
 Error SceneSaveloadInterface::on_spawn(Object *p_obj, Variant p_config) {
 	Node *node = Object::cast_to<Node>(p_obj);
@@ -205,7 +206,7 @@ Error SceneSaveloadInterface::on_despawn(Object *p_obj, Variant p_config) {
 	Error err = _make_despawn_packet(node, len);
 	ERR_FAIL_COND_V(err != OK, ERR_BUG);
 	const ObjectID oid = p_obj->get_instance_id();
-	for (const KeyValue<int, PeerInfo> &E : peers_info) {
+	for (const KeyValue<int, SaveloadInfo> &E : saveload_info) {
 		if (!E.value.spawn_nodes.has(oid)) {
 			continue;
 		}
@@ -217,7 +218,7 @@ Error SceneSaveloadInterface::on_despawn(Object *p_obj, Variant p_config) {
 	ERR_FAIL_COND_V(tobj.spawner != spawner->get_instance_id(), ERR_INVALID_PARAMETER);
 	tobj.spawner = ObjectID();
 	spawned_nodes.erase(oid);
-	for (KeyValue<int, PeerInfo> &E : peers_info) {
+	for (KeyValue<int, SaveloadInfo> &E : saveload_info) {
 		E.value.spawn_nodes.erase(oid);
 	}
 	return OK;
@@ -242,10 +243,10 @@ Error SceneSaveloadInterface::on_saveload_start(Object *p_obj, Variant p_config)
 	if (pending_spawn == p_obj->get_instance_id()) {
 		// Try to apply synchronizer Net ID
 		ERR_FAIL_COND_V_MSG(pending_sync_net_ids.is_empty(), ERR_INVALID_DATA, vformat("The SaveloadSynchronizer at path \"%s\" is unable to process the pending spawn since it has no network ID. This might happen when changing the multiplayer authority during the \"_ready\" callback. Make sure to only change the authority of saveload synchronizers during \"_enter_tree\" or the \"_spawn_custom\" callback of their saveload spawner.", sync->get_path()));
-		ERR_FAIL_COND_V(!peers_info.has(pending_spawn_remote), ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(!saveload_info.has(pending_spawn_remote), ERR_INVALID_DATA);
 		uint32_t net_id = pending_sync_net_ids[0];
 		pending_sync_net_ids.pop_front();
-		peers_info[pending_spawn_remote].recv_sync_ids[net_id] = sync->get_instance_id();
+		saveload_info[pending_spawn_remote].recv_sync_ids[net_id] = sync->get_instance_id();
 
 		// Try to apply spawn state (before ready).
 		if (pending_buffer_size > 0) {
@@ -280,7 +281,7 @@ Error SceneSaveloadInterface::on_saveload_stop(Object *p_obj, Variant p_config) 
 	TrackedNode &tobj = _track(oid);
 	tobj.synchronizers.erase(sid);
 	sync_nodes.erase(sid);
-	for (KeyValue<int, PeerInfo> &E : peers_info) {
+	for (KeyValue<int, SaveloadInfo> &E : saveload_info) {
 		E.value.sync_nodes.erase(sid);
 		E.value.last_watch_usecs.erase(sid);
 //		if (sync->get_net_id()) {
@@ -486,7 +487,7 @@ Error SceneSaveloadInterface::_make_spawn_packet(Node *p_node, SaveloadSpawner *
 	int nlen = encode_cstring(cname.get_data(), nullptr);
 	MAKE_ROOM(1 + 1 + 4 + 4 + 4 + 4 * sync_ids.size() + 4 + nlen + (is_custom ? 4 + spawn_arg_size : 0) + state_size);
 	uint8_t *ptr = packet_cache.ptrw();
-	ptr[0] = (uint8_t)SceneSaveload::NETWORK_COMMAND_SPAWN;
+	ptr[0] = (uint8_t)SceneSaveload::SAVELOAD_COMMAND_SPAWN;
 	ptr[1] = scene_id;
 	int ofs = 2;
 	ofs += encode_uint32(path_id, &ptr[ofs]);
@@ -520,7 +521,7 @@ Error SceneSaveloadInterface::_make_despawn_packet(Node *p_node, int &r_len) {
 	ERR_FAIL_COND_V(!tnode, ERR_INVALID_PARAMETER);
 	MAKE_ROOM(5);
 	uint8_t *ptr = packet_cache.ptrw();
-	ptr[0] = (uint8_t)SceneSaveload::NETWORK_COMMAND_DESPAWN;
+	ptr[0] = (uint8_t)SceneSaveload::SAVELOAD_COMMAND_DESPAWN;
 	int ofs = 1;
 	uint32_t nid = tnode->net_id;
 	ofs += encode_uint32(nid, &ptr[ofs]);
@@ -583,14 +584,14 @@ Error SceneSaveloadInterface::on_spawn_receive(int p_from, const uint8_t *p_buff
 	node->set_name(name);
 
 	// Add and track remote
-	ERR_FAIL_COND_V(!peers_info.has(p_from), ERR_UNAVAILABLE);
-	ERR_FAIL_COND_V(peers_info[p_from].recv_nodes.has(net_id), ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(!saveload_info.has(p_from), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(saveload_info[p_from].recv_nodes.has(net_id), ERR_ALREADY_IN_USE);
 	ObjectID oid = node->get_instance_id();
 	TrackedNode &tobj = _track(oid);
 	tobj.spawner = spawner->get_instance_id();
 	tobj.net_id = net_id;
 	tobj.remote_peer = p_from;
-	peers_info[p_from].recv_nodes[net_id] = oid;
+	saveload_info[p_from].recv_nodes[net_id] = oid;
 
 	// The initial state will be applied during the sync config (i.e. before _ready).
 	pending_spawn = node->get_instance_id();
@@ -620,8 +621,8 @@ Error SceneSaveloadInterface::on_despawn_receive(int p_from, const uint8_t *p_bu
 	ofs += 4;
 
 	// Untrack remote
-	ERR_FAIL_COND_V(!peers_info.has(p_from), ERR_UNAUTHORIZED);
-	PeerInfo &pinfo = peers_info[p_from];
+	ERR_FAIL_COND_V(!saveload_info.has(p_from), ERR_UNAUTHORIZED);
+	SaveloadInfo &pinfo = saveload_info[p_from];
 	ERR_FAIL_COND_V(!pinfo.recv_nodes.has(net_id), ERR_UNAUTHORIZED);
 	Node *node = get_id_as<Node>(pinfo.recv_nodes[net_id]);
 	ERR_FAIL_COND_V(!node, ERR_BUG);
@@ -642,7 +643,7 @@ Error SceneSaveloadInterface::on_despawn_receive(int p_from, const uint8_t *p_bu
 	return OK;
 }
 
-bool SceneSaveloadInterface::_verify_synchronizer(int p_peer, SaveloadSynchronizer *p_sync, uint32_t &r_net_id) {
+//bool SceneSaveloadInterface::_verify_synchronizer(int p_peer, SaveloadSynchronizer *p_sync, uint32_t &r_net_id) {
 //	r_net_id = p_sync->get_net_id();
 //	if (r_net_id == 0 || (r_net_id & 0x80000000)) {
 //		int path_id = 0;
@@ -655,15 +656,15 @@ bool SceneSaveloadInterface::_verify_synchronizer(int p_peer, SaveloadSynchroniz
 //		}
 //		return verified;
 //	}
-	return true;
-}
+//	return true;
+//}
 
 SaveloadSynchronizer *SceneSaveloadInterface::_find_synchronizer(int p_peer, uint32_t p_net_id) {
 	SaveloadSynchronizer *sync = nullptr;
 	if (p_net_id & 0x80000000) {
 		sync = Object::cast_to<SaveloadSynchronizer>(saveload->get_path_cache()->get_cached_object(p_peer, p_net_id & 0x7FFFFFFF));
-	} else if (peers_info[p_peer].recv_sync_ids.has(p_net_id)) {
-		const ObjectID &sid = peers_info[p_peer].recv_sync_ids[p_net_id];
+	} else if (saveload_info[p_peer].recv_sync_ids.has(p_net_id)) {
+		const ObjectID &sid = saveload_info[p_peer].recv_sync_ids[p_net_id];
 		sync = get_id_as<SaveloadSynchronizer>(sid);
 	}
 	return sync;
@@ -672,15 +673,15 @@ SaveloadSynchronizer *SceneSaveloadInterface::_find_synchronizer(int p_peer, uin
 void SceneSaveloadInterface::_send_delta(int p_peer, const HashSet<ObjectID> p_synchronizers, uint64_t p_usec, const HashMap<ObjectID, uint64_t> p_last_watch_usecs) {
 	MAKE_ROOM(/* header */ 1 + /* element */ 4 + 8 + 4 + delta_mtu);
 	uint8_t *ptr = packet_cache.ptrw();
-	ptr[0] = SceneSaveload::NETWORK_COMMAND_SYNC | (1 << SceneSaveload::CMD_FLAG_0_SHIFT);
+	ptr[0] = SceneSaveload::SAVELOAD_COMMAND_SYNC | (1 << SceneSaveload::CMD_FLAG_0_SHIFT);
 	int ofs = 1;
 	for (const ObjectID &oid : p_synchronizers) {
 		SaveloadSynchronizer *sync = get_id_as<SaveloadSynchronizer>(oid);
 		ERR_CONTINUE(!sync || !sync->get_saveload_config().is_valid());
 		uint32_t net_id;
-		if (!_verify_synchronizer(p_peer, sync, net_id)) {
-			continue;
-		}
+//		if (!_verify_synchronizer(p_peer, sync, net_id)) {
+//			continue;
+//		}
 		uint64_t last_usec = p_last_watch_usecs.has(oid) ? p_last_watch_usecs[oid] : 0;
 		uint64_t indexes;
 		List<Variant> delta = sync->get_delta_state(p_usec, last_usec, indexes);
@@ -717,7 +718,7 @@ void SceneSaveloadInterface::_send_delta(int p_peer, const HashSet<ObjectID> p_s
 #ifdef DEBUG_ENABLED
 		_profile_node_data("delta_out", oid, size);
 #endif
-		peers_info[p_peer].last_watch_usecs[oid] = p_usec;
+		saveload_info[p_peer].last_watch_usecs[oid] = p_usec;
 	}
 	if (ofs > 1) {
 		// Got some left over to send.
@@ -760,10 +761,63 @@ Error SceneSaveloadInterface::on_delta_receive(int p_from, const uint8_t *p_buff
 	return OK;
 }
 
-void SceneSaveloadInterface::_send_sync(int p_peer, const HashSet<ObjectID> p_synchronizers, uint16_t p_sync_net_time, uint64_t p_usec) {
+//void SceneSaveloadInterface::_send_sync(int p_peer, const HashSet<ObjectID> p_synchronizers, uint16_t p_sync_net_time, uint64_t p_usec) {
+//	MAKE_ROOM(/* header */ 3 + /* element */ 4 + 4 + sync_mtu);
+//	uint8_t *ptr = packet_cache.ptrw();
+//	ptr[0] = SceneSaveload::NETWORK_COMMAND_SYNC;
+//	int ofs = 1;
+//	ofs += encode_uint16(p_sync_net_time, &ptr[1]);
+//	// Can only send updates for already notified nodes.
+//	// This is a lazy implementation, we could optimize much more here with by grouping by replication config.
+//	for (const ObjectID &oid : p_synchronizers) {
+//		SaveloadSynchronizer *sync = get_id_as<SaveloadSynchronizer>(oid);
+//		ERR_CONTINUE(!sync || !sync->get_saveload_config().is_valid());
+//		if (!sync->update_outbound_sync_time(p_usec)) {
+//			continue; // nothing to sync.
+//		}
+//
+//		Node *node = sync->get_root_node();
+//		ERR_CONTINUE(!node);
+//		uint32_t net_id = sync->get_net_id();
+//		if (!_verify_synchronizer(p_peer, sync, net_id)) {
+//			// The path based sync is not yet confirmed, skipping.
+//			continue;
+//		}
+//		int size;
+//		Vector<Variant> vars;
+//		Vector<const Variant *> varp;
+//		const List<NodePath> props = sync->get_saveload_config()->get_sync_properties();
+//		Error err = SaveloadSynchronizer::get_state(props, node, vars, varp);
+//		ERR_CONTINUE_MSG(err != OK, "Unable to retrieve sync state.");
+//		err = SaveloadAPI::encode_and_compress_variants(varp.ptrw(), varp.size(), nullptr, size);
+//		ERR_CONTINUE_MSG(err != OK, "Unable to encode sync state.");
+//		// TODO Handle single state above MTU.
+//		ERR_CONTINUE_MSG(size > sync_mtu, vformat("Node states bigger than MTU will not be sent (%d > %d): %s", size, sync_mtu, node->get_path()));
+//		if (ofs + 4 + 4 + size > sync_mtu) {
+//			// Send what we got, and reset write.
+//			//_send_raw(packet_cache.ptr(), ofs, p_peer, false);
+//			ofs = 3;
+//		}
+//		if (size) {
+//			ofs += encode_uint32(sync->get_net_id(), &ptr[ofs]);
+//			ofs += encode_uint32(size, &ptr[ofs]);
+//			SaveloadAPI::encode_and_compress_variants(varp.ptrw(), varp.size(), &ptr[ofs], size);
+//			ofs += size;
+//		}
+//#ifdef DEBUG_ENABLED
+//		_profile_node_data("sync_out", oid, size);
+//#endif
+//	}
+//	if (ofs > 3) {
+//		// Got some left over to send.
+//		//_send_raw(packet_cache.ptr(), ofs, p_peer, false);
+//	}
+//}
+
+void SceneSaveloadInterface::_encode_sync(const HashSet<ObjectID> p_synchronizers, uint16_t p_sync_net_time, uint64_t p_usec) {
 	MAKE_ROOM(/* header */ 3 + /* element */ 4 + 4 + sync_mtu);
 	uint8_t *ptr = packet_cache.ptrw();
-	ptr[0] = SceneSaveload::NETWORK_COMMAND_SYNC;
+	ptr[0] = SceneSaveload::SAVELOAD_COMMAND_SYNC;
 	int ofs = 1;
 	ofs += encode_uint16(p_sync_net_time, &ptr[1]);
 	// Can only send updates for already notified nodes.
@@ -778,10 +832,10 @@ void SceneSaveloadInterface::_send_sync(int p_peer, const HashSet<ObjectID> p_sy
 		Node *node = sync->get_root_node();
 		ERR_CONTINUE(!node);
 		uint32_t net_id = sync->get_net_id();
-		if (!_verify_synchronizer(p_peer, sync, net_id)) {
-			// The path based sync is not yet confirmed, skipping.
-			continue;
-		}
+//		if (!_verify_synchronizer(p_peer, sync, net_id)) {
+//			// The path based sync is not yet confirmed, skipping.
+//			continue;
+//		}
 		int size;
 		Vector<Variant> vars;
 		Vector<const Variant *> varp;
@@ -859,6 +913,15 @@ Error SceneSaveloadInterface::on_sync_receive(int p_from, const uint8_t *p_buffe
 #endif
 	}
 	return OK;
+}
+
+Vector<uint8_t> SceneSaveloadInterface::encode(Object *p_obj, const StringName section) {
+	flush_spawn_queue();
+	process_syncs();
+	return packet_cache;
+}
+Error SceneSaveloadInterface::decode(Vector<uint8_t> p_bytes, Object *p_obj, const StringName section) {
+	return ERR_UNAVAILABLE; //TODO: not sure what to do here
 }
 
 void SceneSaveloadInterface::set_max_sync_packet_size(int p_size) {

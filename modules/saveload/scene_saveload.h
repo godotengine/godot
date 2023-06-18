@@ -40,23 +40,23 @@ class SceneSaveload : public SaveloadAPI {
 	GDCLASS(SceneSaveload, SaveloadAPI);
 
 public:
-	enum NetworkCommands {
-		NETWORK_COMMAND_REMOTE_CALL = 0,
-		NETWORK_COMMAND_SIMPLIFY_PATH,
-		NETWORK_COMMAND_CONFIRM_PATH,
-		NETWORK_COMMAND_RAW,
-		NETWORK_COMMAND_SPAWN,
-		NETWORK_COMMAND_DESPAWN,
-		NETWORK_COMMAND_SYNC,
-		NETWORK_COMMAND_SYS,
-	};
-
-	enum SysCommands {
-		SYS_COMMAND_AUTH,
-		SYS_COMMAND_ADD_PEER,
-		SYS_COMMAND_DEL_PEER,
-		SYS_COMMAND_RELAY,
-	};
+	enum SaveloadCommands {
+		SAVELOAD_COMMAND_REMOTE_CALL = 0,
+		SAVELOAD_COMMAND_SIMPLIFY_PATH,
+		SAVELOAD_COMMAND_CONFIRM_PATH,
+		SAVELOAD_COMMAND_RAW,
+		SAVELOAD_COMMAND_SPAWN,
+		SAVELOAD_COMMAND_DESPAWN,
+		SAVELOAD_COMMAND_SYNC,
+		SAVELOAD_COMMAND_SYS,
+};
+//
+//	enum SysCommands {
+//		SYS_COMMAND_AUTH,
+//		SYS_COMMAND_ADD_PEER,
+//		SYS_COMMAND_DEL_PEER,
+//		SYS_COMMAND_RELAY,
+//	};
 
 	enum {
 		SYS_CMD_SIZE = 6, // Command + sys command + peer_id (+ optional payload).
@@ -82,6 +82,14 @@ private:
 		uint64_t time = 0;
 	};
 
+	Ref<StreamPeerBuffer> stream_peer_buffer;
+//	MultiplayerPeer::ConnectionStatus last_connection_status = MultiplayerPeer::CONNECTION_DISCONNECTED;
+	Callable auth_callback;
+	uint64_t auth_timeout = 3000;
+	HashSet<int> connected_peers;
+	int remote_sender_id = 0;
+	int remote_sender_override = 0;
+
 	Vector<uint8_t> packet_cache;
 
 	NodePath root_path;
@@ -104,7 +112,12 @@ protected:
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 public:
-	virtual Error poll() override;
+	virtual Vector<uint8_t> encode(Object *p_object, const StringName section = "") override;
+	virtual Error decode(Vector<uint8_t> p_bytes, Object *p_object, const StringName section = "") override;
+
+	virtual Error save(const String p_path, Object *p_object, const StringName section = "");
+	virtual Error load(const String p_path, Object *p_object, const StringName section = "");
+
 	virtual int get_unique_id() override;
 
 	virtual Error object_configuration_add(Object *p_obj, Variant p_config) override;

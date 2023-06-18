@@ -59,7 +59,7 @@ private:
 		}
 	};
 
-	struct PeerInfo {
+	struct SaveloadInfo {
 		HashSet<ObjectID> sync_nodes;
 		HashSet<ObjectID> spawn_nodes;
 		HashMap<ObjectID, uint64_t> last_watch_usecs;
@@ -69,7 +69,7 @@ private:
 	};
 
 	// Replication state.
-	HashMap<int, PeerInfo> peers_info;
+	HashMap<int, SaveloadInfo> saveload_info;
 	uint32_t last_net_id = 0;
 	HashMap<ObjectID, TrackedNode> tracked_nodes;
 	HashSet<ObjectID> spawned_nodes;
@@ -95,15 +95,18 @@ private:
 	void _untrack(const ObjectID &p_id);
 	void _node_ready(const ObjectID &p_oid);
 
-	bool _verify_synchronizer(int p_peer, SaveloadSynchronizer *p_sync, uint32_t &r_net_id);
+//	bool _verify_synchronizer(int p_peer, SaveloadSynchronizer *p_sync, uint32_t &r_net_id);
 	SaveloadSynchronizer *_find_synchronizer(int p_peer, uint32_t p_net_ida);
 
-	void _send_sync(int p_peer, const HashSet<ObjectID> p_synchronizers, uint16_t p_sync_net_time, uint64_t p_usec);
 	void _send_delta(int p_peer, const HashSet<ObjectID> p_synchronizers, uint64_t p_usec, const HashMap<ObjectID, uint64_t> p_last_watch_usecs);
 	Error _make_spawn_packet(Node *p_node, SaveloadSpawner *p_spawner, int &r_len);
 	Error _make_despawn_packet(Node *p_node, int &r_len);
 //	Error _send_raw(const uint8_t *p_buffer, int p_size, int p_peer, bool p_reliable);
-//
+
+	void _encode_sync(const HashSet<ObjectID> p_synchronizers, uint16_t p_sync_net_time, uint64_t p_usec);
+	void _encode_spawn(Node *p_node, SaveloadSpawner *p_spawner, int &r_len);
+	void _encode_despawn(Node *p_node, int &r_len);
+
 //	void _visibility_changed(int p_peer, ObjectID p_oid);
 //	Error _update_sync_visibility(int p_peer, SaveloadSynchronizer *p_sync);
 //	Error _update_spawn_visibility(int p_peer, const ObjectID &p_oid);
@@ -128,12 +131,17 @@ public:
 	Error on_despawn(Object *p_obj, Variant p_config);
 	Error on_saveload_start(Object *p_obj, Variant p_config);
 	Error on_saveload_stop(Object *p_obj, Variant p_config);
-//	void on_network_process();
 
 	Error on_spawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
 	Error on_despawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
 	Error on_sync_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
 	Error on_delta_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
+
+	PackedByteArray encode(Object *p_obj, const StringName section = "");
+	Error decode(Vector<uint8_t> p_bytes, Object *p_obj, const StringName section = "");
+
+	void flush_spawn_queue();
+	void process_syncs();
 
 	void set_max_sync_packet_size(int p_size);
 	int get_max_sync_packet_size() const;

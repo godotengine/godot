@@ -495,12 +495,6 @@ bool SceneTree::process(double p_time) {
 			E.value->poll();
 		}
 	}
-	if (saveload_poll) {
-		saveload->poll();
-		for (KeyValue<NodePath, Ref<SaveloadAPI>> &E : custom_saveloads) {
-			E.value->poll();
-		}
-	}
 
 	emit_signal(SNAME("process_frame"));
 
@@ -1543,7 +1537,7 @@ bool SceneTree::is_multiplayer_poll_enabled() const {
 
 Ref<SaveloadAPI> SceneTree::get_saveload(const NodePath &p_for_path) const {
 	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), Ref<SaveloadAPI>(), "Saveload can only be manipulated from the main thread.");
-	Ref<MultiplayerAPI> out = saveload;
+	Ref<SaveloadAPI> out = saveload;
 	for (const KeyValue<NodePath, Ref<SaveloadAPI>> &E : custom_saveloads) {
 		const Vector<StringName> snames = E.key.get_names();
 		const Vector<StringName> tnames = p_for_path.get_names();
@@ -1585,15 +1579,6 @@ void SceneTree::set_saveload(Ref<SaveloadAPI> p_saveload, const NodePath &p_root
 			p_saveload->object_configuration_add(nullptr, p_root_path);
 		}
 	}
-}
-
-void SceneTree::set_saveload_poll_enabled(bool p_enabled) {
-	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Saveload can only be manipulated from the main thread.");
-	saveload_poll = p_enabled;
-}
-
-bool SceneTree::is_saveload_poll_enabled() const {
-	return saveload_poll;
 }
 
 void SceneTree::_bind_methods() {
@@ -1670,8 +1655,6 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_saveload", "saveload", "root_path"), &SceneTree::set_saveload, DEFVAL(NodePath()));
 	ClassDB::bind_method(D_METHOD("get_saveload", "for_path"), &SceneTree::get_saveload, DEFVAL(NodePath()));
-	ClassDB::bind_method(D_METHOD("set_saveload_poll_enabled", "enabled"), &SceneTree::set_saveload_poll_enabled);
-	ClassDB::bind_method(D_METHOD("is_saveload_poll_enabled"), &SceneTree::is_saveload_poll_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_accept_quit"), "set_auto_accept_quit", "is_auto_accept_quit");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "quit_on_go_back"), "set_quit_on_go_back", "is_quit_on_go_back");

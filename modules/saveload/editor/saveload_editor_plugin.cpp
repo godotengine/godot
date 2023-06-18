@@ -108,7 +108,7 @@ void SaveloadEditorDebugger::setup_session(int p_session_id) {
 	profilers[p_session_id] = profiler;
 }
 
-/// MultiplayerEditorPlugin
+/// SaveloadEditorPlugin
 
 SaveloadEditorPlugin::SaveloadEditorPlugin() {
 	saveload_editor = memnew(SaveloadEditor);

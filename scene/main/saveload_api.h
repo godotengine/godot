@@ -32,6 +32,7 @@
 #define SAVELOAD_API_H
 
 #include "core/object/ref_counted.h"
+#include "core/io/stream_peer.h"
 
 class SaveloadAPI : public RefCounted {
 	GDCLASS(SaveloadAPI, RefCounted);
@@ -47,12 +48,17 @@ public:
 	static void set_default_interface(const StringName &p_interface);
 	static StringName get_default_interface();
 
-	static Error encode_and_compress_variant(const Variant &p_variant, uint8_t *p_buffer, int &r_len, bool p_allow_object_decoding);
+	static Error encode_and_compress_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_allow_object_decoding);
 	static Error decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len, bool p_allow_object_decoding);
-	static Error encode_and_compress_variants(const Variant **p_variants, int p_count, uint8_t *p_buffer, int &r_len, bool *r_raw = nullptr, bool p_allow_object_decoding = false);
+	static Error encode_and_compress_variants(const Variant **p_variants, int p_count, uint8_t *r_buffer, int &r_len, bool *r_raw = nullptr, bool p_allow_object_decoding = false);
 	static Error decode_and_decompress_variants(Vector<Variant> &r_variants, const uint8_t *p_buffer, int p_len, int &r_len, bool p_raw = false, bool p_allow_object_decoding = false);
 
-	virtual Error poll() = 0;
+	virtual Vector<uint8_t> encode(Object *p_object, const StringName section = "");
+	virtual Error decode(Vector<uint8_t> p_bytes, Object *p_object, const StringName section = "");
+
+	virtual Error save(const String p_path, Object *p_object, const StringName section = "");
+	virtual Error load(const String p_path, Object *p_object, const StringName section = "");
+
 	virtual int get_unique_id() = 0;
 
 	virtual Error object_configuration_add(Object *p_object, Variant p_config) = 0;
