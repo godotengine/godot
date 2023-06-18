@@ -163,6 +163,24 @@ const char *GDScriptTokenizer::Token::get_name() const {
 	return token_names[type];
 }
 
+bool GDScriptTokenizer::Token::can_precede_bin_op() const {
+	switch (type) {
+		case IDENTIFIER:
+		case LITERAL:
+		case SELF:
+		case BRACKET_CLOSE:
+		case BRACE_CLOSE:
+		case PARENTHESIS_CLOSE:
+		case CONST_PI:
+		case CONST_TAU:
+		case CONST_INF:
+		case CONST_NAN:
+			return true;
+		default:
+			return false;
+	}
+}
+
 bool GDScriptTokenizer::Token::is_identifier() const {
 	// Note: Most keywords should not be recognized as identifiers.
 	// These are only exceptions for stuff that already is on the engine's API.
@@ -383,6 +401,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::make_token(Token::Type p_type) {
 		}
 	}
 
+	last_token = token;
 	return token;
 }
 
@@ -628,6 +647,7 @@ void GDScriptTokenizer::newline(bool p_make_token) {
 		newline.leftmost_column = newline.start_column;
 		newline.rightmost_column = newline.end_column;
 		pending_newline = true;
+		last_token = newline;
 		last_newline = newline;
 	}
 
@@ -643,6 +663,11 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 	bool has_exponent = false;
 	bool has_error = false;
 	bool (*digit_check_func)(char32_t) = is_digit;
+
+	// Sign before hexadecimal or binary.
+	if ((_peek(-1) == '+' || _peek(-1) == '-') && _peek() == '0') {
+		_advance();
+	}
 
 	if (_peek(-1) == '.') {
 		has_decimal = true;
@@ -1463,6 +1488,9 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			if (_peek() == '=') {
 				_advance();
 				return make_token(Token::PLUS_EQUAL);
+			} else if (is_digit(_peek()) && !last_token.can_precede_bin_op()) {
+				// Number starting with '+'.
+				return number();
 			} else {
 				return make_token(Token::PLUS);
 			}
@@ -1470,6 +1498,9 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			if (_peek() == '=') {
 				_advance();
 				return make_token(Token::MINUS_EQUAL);
+			} else if (is_digit(_peek()) && !last_token.can_precede_bin_op()) {
+				// Number starting with '-'.
+				return number();
 			} else if (_peek() == '>') {
 				_advance();
 				return make_token(Token::FORWARD_ARROW);
