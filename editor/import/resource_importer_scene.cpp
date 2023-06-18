@@ -1030,7 +1030,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, Map<Ref<
 				AnimationImportTracks(int(node_settings["import_tracks/scale"]))
 			};
 
-			// optimize track usage only if import options differ from default behaviour
+			// Optimize track usage only if import options differ from default behavior.
 			bool should_optimize_track_usage = false;
 			for (int i = 0; i < TRACK_CHANNEL_MAX; i++) {
 				if (import_tracks_mode[i] != ANIMATION_IMPORT_TRACKS_IF_PRESENT) {
