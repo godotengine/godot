@@ -260,6 +260,19 @@ bool EditorExportPlatformUWP::has_valid_project_configuration(const Ref<EditorEx
 	return valid;
 }
 
+
+void EditorExportPlatformUWP::open_export_dir(const String &p_path, int err) {
+	bool open_export_dir = EditorSettings::get_singleton()->get_setting("filesystem/directories/export_path/open_export_directory");
+
+	if (DisplayServer::get_singleton()->get_name() == "headless") {
+		return;
+	}
+
+	if (open_export_dir && err == OK) {
+		OS::get_singleton()->shell_open(p_path.get_base_dir());
+	}
+}
+
 Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
@@ -498,7 +511,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 
 	OS::get_singleton()->execute(signtool_path, args);
 #endif // WINDOWS_ENABLED
-
+	open_export_dir(p_path, err);
 	return OK;
 }
 

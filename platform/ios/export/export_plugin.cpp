@@ -1895,8 +1895,20 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 #else
 	add_message(EXPORT_MESSAGE_WARNING, TTR("Xcode Build"), TTR(".ipa can only be built on macOS. Leaving Xcode project without building the package."));
 #endif
-
+	open_export_dir(p_path, err);
 	return OK;
+}
+
+void EditorExportPlatformIOS::open_export_dir(const String &p_path, int err) {
+	bool open_export_dir = EditorSettings::get_singleton()->get_setting("filesystem/directories/export_path/open_export_directory");
+
+	if (DisplayServer::get_singleton()->get_name() == "headless") {
+		return;
+	}
+
+	if (open_export_dir && err == OK) {
+		OS::get_singleton()->shell_open(p_path.get_base_dir());
+	}
 }
 
 bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {

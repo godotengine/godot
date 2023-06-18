@@ -2685,6 +2685,18 @@ String EditorExportPlatformAndroid::join_abis(const Vector<EditorExportPlatformA
 	return ret;
 }
 
+void EditorExportPlatformAndroid::open_export_dir(const String &p_path, int err) {
+	bool open_export_dir = EditorSettings::get_singleton()->get_setting("filesystem/directories/export_path/open_export_directory");
+
+	if (DisplayServer::get_singleton()->get_name() == "headless") {
+		return;
+	}
+
+	if (open_export_dir && err == OK) {
+		OS::get_singleton()->shell_open(p_path.get_base_dir());
+	}
+}
+
 Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	int export_format = int(p_preset->get("gradle_build/export_format"));
 	bool should_sign = p_preset->get("package/signed");
@@ -3273,6 +3285,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 	}
 
+	open_export_dir(p_path, err);
 	CLEANUP_AND_RETURN(OK);
 }
 

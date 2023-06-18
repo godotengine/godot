@@ -98,6 +98,8 @@ private:
 
 	String default_filename;
 
+	void open_export_dir(const String &p_path, int err);
+
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);

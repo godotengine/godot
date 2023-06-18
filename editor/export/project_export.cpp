@@ -396,6 +396,18 @@ void ProjectExportDialog::_update_parameters(const String &p_edited_property) {
 	_update_current_preset();
 }
 
+void ProjectExportDialog::open_export_dir(const String &p_path, int err) {
+	bool open_export_dir = EditorSettings::get_singleton()->get_setting("filesystem/directories/export_path/open_export_directory");
+
+	if (DisplayServer::get_singleton()->get_name() == "headless") {
+		return;
+	}
+
+	if (open_export_dir && err == OK) {
+		OS::get_singleton()->shell_open(p_path.get_base_dir());
+	}
+}
+
 void ProjectExportDialog::_runnable_pressed() {
 	if (updating) {
 		return;
@@ -941,11 +953,14 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 	Ref<EditorExportPlatform> platform = current->get_platform();
 	ERR_FAIL_COND(platform.is_null());
 
+	Error err;
 	if (p_path.ends_with(".zip")) {
-		platform->export_zip(current, export_pck_zip_debug->is_pressed(), p_path);
+		err = platform->export_zip(current, export_pck_zip_debug->is_pressed(), p_path);
 	} else if (p_path.ends_with(".pck")) {
-		platform->export_pack(current, export_pck_zip_debug->is_pressed(), p_path);
+		err = platform->export_pack(current, export_pck_zip_debug->is_pressed(), p_path);
 	}
+
+	open_export_dir(p_path, err);
 }
 
 void ProjectExportDialog::_open_export_template_manager() {
@@ -1031,6 +1046,7 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 			result_dialog->popup_centered_ratio(0.5);
 		}
 	}
+	open_export_dir(p_path, err);
 }
 
 void ProjectExportDialog::_export_all_dialog() {

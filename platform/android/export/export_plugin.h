@@ -262,6 +262,8 @@ public:
 	static String join_list(const List<String> &p_parts, const String &p_separator);
 	static String join_abis(const Vector<ABI> &p_parts, const String &p_separator, bool p_use_arch);
 
+	void open_export_dir(const String& p_path, int err);
+
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 
 	Error export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int export_format, bool should_sign, int p_flags);
