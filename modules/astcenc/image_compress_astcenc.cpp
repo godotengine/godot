@@ -33,7 +33,7 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
-#include <astcenc.h>
+#include "thirdparty/astcenc/astcenc.h"
 
 void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
