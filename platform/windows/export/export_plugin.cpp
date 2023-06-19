@@ -674,9 +674,9 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	return OK;
 }
 
-bool EditorExportPlatformWindows::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformWindows::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err = "";
-	bool valid = EditorExportPlatformPC::has_valid_export_configuration(p_preset, err, r_missing_templates);
+	bool valid = EditorExportPlatformPC::has_valid_export_configuration(p_preset, err, r_missing_templates, p_debug);
 
 	String rcedit_path = EDITOR_GET("export/windows/rcedit");
 	if (p_preset->get("application/modify_resources") && rcedit_path.is_empty()) {
