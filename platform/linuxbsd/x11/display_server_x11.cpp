@@ -2856,11 +2856,11 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 			cursors[p_shape] = XcursorImageLoadCursor(x11_display, cursor_img[p_shape]);
 		}
 
+		cursors_cache.erase(p_shape);
+
 		CursorShape c = current_cursor;
 		current_cursor = CURSOR_MAX;
 		cursor_set_shape(c);
-
-		cursors_cache.erase(p_shape);
 	}
 }
 

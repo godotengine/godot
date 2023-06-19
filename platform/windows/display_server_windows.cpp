@@ -1907,11 +1907,11 @@ void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor
 		}
 		cursors[p_shape] = nullptr;
 
+		cursors_cache.erase(p_shape);
+
 		CursorShape c = cursor_shape;
 		cursor_shape = CURSOR_MAX;
 		cursor_set_shape(c);
-
-		cursors_cache.erase(p_shape);
 	}
 }
 

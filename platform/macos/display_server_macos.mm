@@ -3415,9 +3415,9 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 			cursors[p_shape] = nullptr;
 		}
 
-		cursor_update_shape();
-
 		cursors_cache.erase(p_shape);
+
+		cursor_update_shape();
 	}
 }
 
