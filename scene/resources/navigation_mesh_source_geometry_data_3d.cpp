@@ -70,12 +70,15 @@ void NavigationMeshSourceGeometryData3D::_add_mesh(const Ref<Mesh> &p_mesh, cons
 		int face_count = index_count / 3;
 
 		Array a = p_mesh->surface_get_arrays(i);
+		ERR_CONTINUE(a.is_empty() || (a.size() != Mesh::ARRAY_MAX));
 
 		Vector<Vector3> mesh_vertices = a[Mesh::ARRAY_VERTEX];
+		ERR_CONTINUE(mesh_vertices.is_empty());
 		const Vector3 *vr = mesh_vertices.ptr();
 
 		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
 			Vector<int> mesh_indices = a[Mesh::ARRAY_INDEX];
+			ERR_CONTINUE(mesh_indices.is_empty() || (mesh_indices.size() != index_count));
 			const int *ir = mesh_indices.ptr();
 
 			for (int j = 0; j < mesh_vertices.size(); j++) {
@@ -89,6 +92,7 @@ void NavigationMeshSourceGeometryData3D::_add_mesh(const Ref<Mesh> &p_mesh, cons
 				indices.push_back(current_vertex_count + (ir[j * 3 + 1]));
 			}
 		} else {
+			ERR_CONTINUE(mesh_vertices.size() != index_count);
 			face_count = mesh_vertices.size() / 3;
 			for (int j = 0; j < face_count; j++) {
 				_add_vertex(p_xform.xform(vr[j * 3 + 0]));
@@ -104,10 +108,14 @@ void NavigationMeshSourceGeometryData3D::_add_mesh(const Ref<Mesh> &p_mesh, cons
 }
 
 void NavigationMeshSourceGeometryData3D::_add_mesh_array(const Array &p_mesh_array, const Transform3D &p_xform) {
+	ERR_FAIL_COND(p_mesh_array.size() != Mesh::ARRAY_MAX);
+
 	Vector<Vector3> mesh_vertices = p_mesh_array[Mesh::ARRAY_VERTEX];
+	ERR_FAIL_COND(mesh_vertices.is_empty());
 	const Vector3 *vr = mesh_vertices.ptr();
 
 	Vector<int> mesh_indices = p_mesh_array[Mesh::ARRAY_INDEX];
+	ERR_FAIL_COND(mesh_indices.is_empty());
 	const int *ir = mesh_indices.ptr();
 
 	const int face_count = mesh_indices.size() / 3;
@@ -126,6 +134,8 @@ void NavigationMeshSourceGeometryData3D::_add_mesh_array(const Array &p_mesh_arr
 }
 
 void NavigationMeshSourceGeometryData3D::_add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform) {
+	ERR_FAIL_COND(p_faces.is_empty());
+	ERR_FAIL_COND(p_faces.size() % 3 != 0);
 	int face_count = p_faces.size() / 3;
 	int current_vertex_count = vertices.size() / 3;
 
