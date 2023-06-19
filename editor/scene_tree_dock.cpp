@@ -1949,8 +1949,9 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			undo_redo->add_do_method(new_parent, "add_child", node, true);
 		}
 
-		if (p_position_in_parent >= 0 || same_parent) {
-			undo_redo->add_do_method(new_parent, "move_child", node, p_position_in_parent + inc);
+		int new_position_in_parent = p_position_in_parent == -1 ? -1 : p_position_in_parent + inc;
+		if (new_position_in_parent >= 0 || same_parent) {
+			undo_redo->add_do_method(new_parent, "move_child", node, new_position_in_parent);
 		}
 
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
@@ -1980,7 +1981,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			}
 		}
 
-		undo_redo->add_do_method(ed, "live_debug_reparent_node", edited_scene->get_path_to(node), edited_scene->get_path_to(new_parent), new_name, p_position_in_parent + inc);
+		undo_redo->add_do_method(ed, "live_debug_reparent_node", edited_scene->get_path_to(node), edited_scene->get_path_to(new_parent), new_name, new_position_in_parent);
 		undo_redo->add_undo_method(ed, "live_debug_reparent_node", NodePath(String(edited_scene->get_path_to(new_parent)).path_join(new_name)), edited_scene->get_path_to(node->get_parent()), node->get_name(), node->get_index());
 
 		if (p_keep_global_xform) {
