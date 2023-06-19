@@ -1466,7 +1466,6 @@ def make_link(url: str, title: str) -> str:
 
 
 def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_dir: str) -> None:
-
     if dry_run:
         f = open(os.devnull, "w", encoding="utf-8")
     else:

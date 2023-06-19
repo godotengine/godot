@@ -23,7 +23,7 @@ jobs:
 
       - name: Install Python dependencies and general setup
         run: |
-          pip3 install black==22.3.0 pytest==7.1.2 mypy==0.971
+          pip3 install black==23.3.0 pytest==7.1.2 mypy==0.971
           git config diff.wsErrorHighlight all
 
       - name: Get changed files
