@@ -876,7 +876,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		// Thumbnails mode.
 		files->set_max_columns(0);
 		files->set_icon_mode(ItemList::ICON_MODE_TOP);
-		files->set_fixed_column_width(thumbnail_size * 3 / 2);
+		files->set_fixed_column_width(thumbnail_size * 1.5);
 		files->set_max_text_lines(2);
 		files->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 
