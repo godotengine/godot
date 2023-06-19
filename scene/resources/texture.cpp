@@ -2692,7 +2692,7 @@ Ref<Texture2D> AnimatedTexture::get_frame_texture(int p_frame) const {
 void AnimatedTexture::set_frame_duration(int p_frame, float p_duration) {
 	ERR_FAIL_INDEX(p_frame, MAX_FRAMES);
 
-	RWLockRead r(rw_lock);
+	RWLockWrite r(rw_lock);
 
 	frames[p_frame].duration = p_duration;
 }
@@ -2707,6 +2707,8 @@ float AnimatedTexture::get_frame_duration(int p_frame) const {
 
 void AnimatedTexture::set_speed_scale(float p_scale) {
 	ERR_FAIL_COND(p_scale < -1000 || p_scale >= 1000);
+
+	RWLockWrite r(rw_lock);
 
 	speed_scale = p_scale;
 }
