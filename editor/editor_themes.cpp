@@ -581,10 +581,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const float prop_color_saturation = accent_color.get_s() * 0.75;
 	const float prop_color_value = accent_color.get_v();
 
-	theme->set_color("property_color_x", "Editor", Color().from_hsv(0.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+	theme->set_color("property_color_x", "Editor", Color().from_hsv(0.05, prop_color_saturation, prop_color_value));
 	theme->set_color("property_color_y", "Editor", Color().from_hsv(1.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
 	theme->set_color("property_color_z", "Editor", Color().from_hsv(2.0 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
-	theme->set_color("property_color_w", "Editor", Color().from_hsv(1.5 / 3.0 + 0.05, prop_color_saturation, prop_color_value));
+	theme->set_color("property_color_w", "Editor", Color().from_hsv(0.55, prop_color_saturation, prop_color_value));
 
 	theme->set_color("font_color", "Editor", font_color);
 	theme->set_color("highlighted_font_color", "Editor", font_hover_color);
