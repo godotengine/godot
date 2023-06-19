@@ -865,7 +865,7 @@ Size2 EditorPropertyLayersGrid::get_minimum_size() const {
 
 	// Add extra rows when expanded.
 	if (expanded) {
-		const int bsize = (min_size.height * 80 / 100) / 2;
+		const int bsize = min_size.height * 2 / 5;
 		for (int i = 0; i < expansion_rows; ++i) {
 			min_size.y += 2 * (bsize + 1) + 3;
 		}
@@ -974,7 +974,7 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 			int prev_expansion_rows = expansion_rows;
 			expansion_rows = 0;
 
-			const int bsize = (grid_size.height * 80 / 100) / 2;
+			const int bsize = grid_size.height * 2 / 5;
 			const int h = bsize * 2 + 1;
 
 			Color color = get_theme_color(read_only ? SNAME("disabled_highlight_color") : SNAME("highlight_color"), SNAME("Editor"));
