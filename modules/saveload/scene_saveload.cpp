@@ -492,15 +492,45 @@ void SceneSaveload::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_path", "path"), &SceneSaveload::set_root_path);
 	ClassDB::bind_method(D_METHOD("get_root_path"), &SceneSaveload::get_root_path);
 	ClassDB::bind_method(D_METHOD("clear"), &SceneSaveload::clear);
-	ClassDB::bind_method(D_METHOD("encode", "object", "section"), &SceneSaveload::encode);
-	ClassDB::bind_method(D_METHOD("decode", "bytes", "object", "section"), &SceneSaveload::decode);
-	ClassDB::bind_method(D_METHOD("save", "path", "object", "section"), &SceneSaveload::save);
-	ClassDB::bind_method(D_METHOD("load", "path", "object", "section"), &SceneSaveload::load);
+
+//	ClassDB::bind_method(D_METHOD("disconnect_peer", "id"), &SceneSaveload::disconnect_peer);
+//
+//	ClassDB::bind_method(D_METHOD("get_authenticating_peers"), &SceneSaveload::get_authenticating_peer_ids);
+//	ClassDB::bind_method(D_METHOD("send_auth", "id", "data"), &SceneSaveload::send_auth);
+//	ClassDB::bind_method(D_METHOD("complete_auth", "id"), &SceneSaveload::complete_auth);
+//
+//	ClassDB::bind_method(D_METHOD("set_auth_callback", "callback"), &SceneSaveload::set_auth_callback);
+//	ClassDB::bind_method(D_METHOD("get_auth_callback"), &SceneSaveload::get_auth_callback);
+//	ClassDB::bind_method(D_METHOD("set_auth_timeout", "timeout"), &SceneSaveload::set_auth_timeout);
+//	ClassDB::bind_method(D_METHOD("get_auth_timeout"), &SceneSaveload::get_auth_timeout);
+
+//	ClassDB::bind_method(D_METHOD("set_refuse_new_connections", "refuse"), &SceneSaveload::set_refuse_new_connections);
+//	ClassDB::bind_method(D_METHOD("is_refusing_new_connections"), &SceneSaveload::is_refusing_new_connections);
+//	ClassDB::bind_method(D_METHOD("set_allow_object_decoding", "enable"), &SceneSaveload::set_allow_object_decoding);
+//	ClassDB::bind_method(D_METHOD("is_object_decoding_allowed"), &SceneSaveload::is_object_decoding_allowed);
+//	ClassDB::bind_method(D_METHOD("set_server_relay_enabled", "enabled"), &SceneSaveload::set_server_relay_enabled);
+//	ClassDB::bind_method(D_METHOD("is_server_relay_enabled"), &SceneSaveload::is_server_relay_enabled);
+//	ClassDB::bind_method(D_METHOD("send_bytes", "bytes", "id", "mode", "channel"), &SceneSaveload::send_bytes, DEFVAL(MultiplayerPeer::TARGET_PEER_BROADCAST), DEFVAL(MultiplayerPeer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
+
+	ClassDB::bind_method(D_METHOD("get_max_sync_packet_size"), &SceneSaveload::get_max_sync_packet_size);
+	ClassDB::bind_method(D_METHOD("set_max_sync_packet_size", "size"), &SceneSaveload::set_max_sync_packet_size);
+	ClassDB::bind_method(D_METHOD("get_max_delta_packet_size"), &SceneSaveload::get_max_delta_packet_size);
+	ClassDB::bind_method(D_METHOD("set_max_delta_packet_size", "size"), &SceneSaveload::set_max_delta_packet_size);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");
+//	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "auth_callback"), "set_auth_callback", "get_auth_callback");
+//	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auth_timeout", PROPERTY_HINT_RANGE, "0,30,0.1,or_greater,suffix:s"), "set_auth_timeout", "get_auth_timeout");
+//	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");
+//	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
+//	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "server_relay"), "set_server_relay_enabled", "is_server_relay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_sync_packet_size"), "set_max_sync_packet_size", "get_max_sync_packet_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_delta_packet_size"), "set_max_delta_packet_size", "get_max_delta_packet_size");
+
+	ADD_PROPERTY_DEFAULT("refuse_new_connections", false);
+
+	ADD_SIGNAL(MethodInfo("peer_authenticating", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("peer_authentication_failed", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("peer_packet", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "packet")));
 }
 
 SceneSaveload::SceneSaveload() {

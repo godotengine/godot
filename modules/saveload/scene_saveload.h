@@ -112,8 +112,8 @@ protected:
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 public:
-	virtual Vector<uint8_t> encode(Object *p_object, const StringName section = "") override;
-	virtual Error decode(Vector<uint8_t> p_bytes, Object *p_object, const StringName section = "") override;
+	virtual PackedByteArray encode(Object *p_object, const StringName section = "") override;
+	virtual Error decode(PackedByteArray p_bytes, Object *p_object, const StringName section = "") override;
 
 	virtual Error save(const String p_path, Object *p_object, const StringName section = "");
 	virtual Error load(const String p_path, Object *p_object, const StringName section = "");
