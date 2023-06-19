@@ -56,7 +56,7 @@ import methods
 import glsl_builders
 import gles3_builders
 import scu_builders
-from platform_methods import architectures, architecture_aliases
+from platform_methods import architectures, architecture_aliases, generate_export_icons
 
 if ARGUMENTS.get("target", "editor") == "editor":
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
@@ -68,9 +68,6 @@ platform_list = []  # list of platforms
 platform_opts = {}  # options for each platform
 platform_flags = {}  # flags for each platform
 platform_doc_class_path = {}
-
-active_platforms = []
-active_platform_ids = []
 platform_exporters = []
 platform_apis = []
 
@@ -93,13 +90,13 @@ for x in sorted(glob.glob("platform/*")):
     except Exception:
         pass
 
+    platform_name = x[9:]
+
     if os.path.exists(x + "/export/export.cpp"):
-        platform_exporters.append(x[9:])
+        platform_exporters.append(platform_name)
+        generate_export_icons(x, platform_name)
     if os.path.exists(x + "/api/api.cpp"):
-        platform_apis.append(x[9:])
-    if detect.is_active():
-        active_platforms.append(detect.get_name())
-        active_platform_ids.append(x)
+        platform_apis.append(platform_name)
     if detect.can_build():
         x = x.replace("platform/", "")  # rest of world
         x = x.replace("platform\\", "")  # win32
@@ -108,8 +105,6 @@ for x in sorted(glob.glob("platform/*")):
         platform_flags[x] = detect.get_flags()
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
-
-methods.save_active_platforms(active_platforms, active_platform_ids)
 
 custom_tools = ["default"]
 

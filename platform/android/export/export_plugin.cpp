@@ -30,9 +30,9 @@
 
 #include "export_plugin.h"
 
-#include "../logo_svg.gen.h"
-#include "../run_icon_svg.gen.h"
 #include "gradle_export_util.h"
+#include "logo_svg.gen.h"
+#include "run_icon_svg.gen.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
