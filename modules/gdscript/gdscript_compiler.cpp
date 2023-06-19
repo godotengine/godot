@@ -1342,7 +1342,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			}
 
 			// Get literal type into constant map.
-			GDScriptCodeGenerator::Address literal_type_addr = codegen.add_constant((int)p_pattern->literal->value.get_type());
+			Variant::Type literal_type = p_pattern->literal->value.get_type();
+			GDScriptCodeGenerator::Address literal_type_addr = codegen.add_constant(literal_type);
 
 			// Equality is always a boolean.
 			GDScriptDataType equality_type;
@@ -1350,29 +1351,31 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			equality_type.kind = GDScriptDataType::BUILTIN;
 			equality_type.builtin_type = Variant::BOOL;
 
-			GDScriptCodeGenerator::Address type_string_addr = codegen.add_constant(Variant::STRING);
-			GDScriptCodeGenerator::Address type_string_name_addr = codegen.add_constant(Variant::STRING_NAME);
-
 			// Check type equality.
 			GDScriptCodeGenerator::Address type_equality_addr = codegen.add_temporary(equality_type);
 			codegen.generator->write_binary_operator(type_equality_addr, Variant::OP_EQUAL, p_type_addr, literal_type_addr);
 
-			// Check if StringName <-> String comparison is possible.
-			GDScriptCodeGenerator::Address type_comp_addr_1 = codegen.add_temporary(equality_type);
-			GDScriptCodeGenerator::Address type_comp_addr_2 = codegen.add_temporary(equality_type);
+			if (literal_type == Variant::STRING) {
+				GDScriptCodeGenerator::Address type_stringname_addr = codegen.add_constant(Variant::STRING_NAME);
 
-			codegen.generator->write_binary_operator(type_comp_addr_1, Variant::OP_EQUAL, p_type_addr, type_string_addr);
-			codegen.generator->write_binary_operator(type_comp_addr_2, Variant::OP_EQUAL, literal_type_addr, type_string_name_addr);
-			codegen.generator->write_binary_operator(type_comp_addr_1, Variant::OP_AND, type_comp_addr_1, type_comp_addr_2);
-			codegen.generator->write_binary_operator(type_equality_addr, Variant::OP_OR, type_equality_addr, type_comp_addr_1);
+				// Check StringName <-> String type equality.
+				GDScriptCodeGenerator::Address tmp_comp_addr = codegen.add_temporary(equality_type);
 
-			codegen.generator->write_binary_operator(type_comp_addr_1, Variant::OP_EQUAL, p_type_addr, type_string_name_addr);
-			codegen.generator->write_binary_operator(type_comp_addr_2, Variant::OP_EQUAL, literal_type_addr, type_string_addr);
-			codegen.generator->write_binary_operator(type_comp_addr_1, Variant::OP_AND, type_comp_addr_1, type_comp_addr_2);
-			codegen.generator->write_binary_operator(type_equality_addr, Variant::OP_OR, type_equality_addr, type_comp_addr_1);
+				codegen.generator->write_binary_operator(tmp_comp_addr, Variant::OP_EQUAL, p_type_addr, type_stringname_addr);
+				codegen.generator->write_binary_operator(type_equality_addr, Variant::OP_OR, type_equality_addr, tmp_comp_addr);
 
-			codegen.generator->pop_temporary(); // Remove type_comp_addr_2 from stack.
-			codegen.generator->pop_temporary(); // Remove type_comp_addr_1 from stack.
+				codegen.generator->pop_temporary(); // Remove tmp_comp_addr from stack.
+			} else if (literal_type == Variant::STRING_NAME) {
+				GDScriptCodeGenerator::Address type_string_addr = codegen.add_constant(Variant::STRING);
+
+				// Check String <-> StringName type equality.
+				GDScriptCodeGenerator::Address tmp_comp_addr = codegen.add_temporary(equality_type);
+
+				codegen.generator->write_binary_operator(tmp_comp_addr, Variant::OP_EQUAL, p_type_addr, type_string_addr);
+				codegen.generator->write_binary_operator(type_equality_addr, Variant::OP_OR, type_equality_addr, tmp_comp_addr);
+
+				codegen.generator->pop_temporary(); // Remove tmp_comp_addr from stack.
+			}
 
 			codegen.generator->write_and_left_operand(type_equality_addr);
 
@@ -1419,9 +1422,22 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			} else if (!p_is_first) {
 				codegen.generator->write_or_left_operand(p_previous_test);
 			}
+
+			GDScriptCodeGenerator::Address type_string_addr = codegen.add_constant(Variant::STRING);
+			GDScriptCodeGenerator::Address type_stringname_addr = codegen.add_constant(Variant::STRING_NAME);
+
+			// Equality is always a boolean.
+			GDScriptDataType equality_type;
+			equality_type.has_type = true;
+			equality_type.kind = GDScriptDataType::BUILTIN;
+			equality_type.builtin_type = Variant::BOOL;
+
 			// Create the result temps first since it's the last to go away.
-			GDScriptCodeGenerator::Address result_addr = codegen.add_temporary();
-			GDScriptCodeGenerator::Address equality_test_addr = codegen.add_temporary();
+			GDScriptCodeGenerator::Address result_addr = codegen.add_temporary(equality_type);
+			GDScriptCodeGenerator::Address equality_test_addr = codegen.add_temporary(equality_type);
+			GDScriptCodeGenerator::Address stringy_comp_addr = codegen.add_temporary(equality_type);
+			GDScriptCodeGenerator::Address stringy_comp_addr_2 = codegen.add_temporary(equality_type);
+			GDScriptCodeGenerator::Address expr_type_addr = codegen.add_temporary();
 
 			// Evaluate expression.
 			GDScriptCodeGenerator::Address expr_addr;
@@ -1433,10 +1449,27 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			// Evaluate expression type.
 			Vector<GDScriptCodeGenerator::Address> typeof_args;
 			typeof_args.push_back(expr_addr);
-			codegen.generator->write_call_utility(result_addr, "typeof", typeof_args);
+			codegen.generator->write_call_utility(expr_type_addr, "typeof", typeof_args);
 
 			// Check type equality.
-			codegen.generator->write_binary_operator(result_addr, Variant::OP_EQUAL, p_type_addr, result_addr);
+			codegen.generator->write_binary_operator(result_addr, Variant::OP_EQUAL, p_type_addr, expr_type_addr);
+
+			// Check for String <-> StringName comparison.
+			codegen.generator->write_binary_operator(stringy_comp_addr, Variant::OP_EQUAL, p_type_addr, type_string_addr);
+			codegen.generator->write_binary_operator(stringy_comp_addr_2, Variant::OP_EQUAL, expr_type_addr, type_stringname_addr);
+			codegen.generator->write_binary_operator(stringy_comp_addr, Variant::OP_AND, stringy_comp_addr, stringy_comp_addr_2);
+			codegen.generator->write_binary_operator(result_addr, Variant::OP_OR, result_addr, stringy_comp_addr);
+
+			// Check for StringName <-> String comparison.
+			codegen.generator->write_binary_operator(stringy_comp_addr, Variant::OP_EQUAL, p_type_addr, type_stringname_addr);
+			codegen.generator->write_binary_operator(stringy_comp_addr_2, Variant::OP_EQUAL, expr_type_addr, type_string_addr);
+			codegen.generator->write_binary_operator(stringy_comp_addr, Variant::OP_AND, stringy_comp_addr, stringy_comp_addr_2);
+			codegen.generator->write_binary_operator(result_addr, Variant::OP_OR, result_addr, stringy_comp_addr);
+
+			codegen.generator->pop_temporary(); // Remove expr_type_addr from stack.
+			codegen.generator->pop_temporary(); // Remove stringy_comp_addr_2 from stack.
+			codegen.generator->pop_temporary(); // Remove stringy_comp_addr from stack.
+
 			codegen.generator->write_and_left_operand(result_addr);
 
 			// Check value equality.
@@ -1450,7 +1483,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 			if (expr_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 				codegen.generator->pop_temporary();
 			}
-			codegen.generator->pop_temporary(); // Remove type equality temporary.
+			codegen.generator->pop_temporary(); // Remove equality_test_addr from stack.
 
 			// If this isn't the first, we need to OR with the previous pattern. If it's nested, we use AND instead.
 			if (p_is_nested) {
