@@ -1242,45 +1242,7 @@ void DisplayServerWayland::process_events() {
 		}
 	}
 
-#if 0
-	if (!wls.current_seat) {
-		return;
-	}
-
-	WaylandThread::SeatState &seat = *wls.current_seat;
-
-	// TODO: Comment and document out properly this block of code.
-	// In short, this implements key repeating.
-	if (seat.repeat_key_delay_msec && seat.repeating_keycode != XKB_KEYCODE_INVALID) {
-		uint64_t current_ticks = OS::get_singleton()->get_ticks_msec();
-		uint64_t delayed_start_ticks = seat.last_repeat_start_msec + seat.repeat_start_delay_msec;
-
-		if (seat.last_repeat_msec < delayed_start_ticks) {
-			seat.last_repeat_msec = delayed_start_ticks;
-		}
-
-		if (current_ticks >= delayed_start_ticks) {
-			uint64_t ticks_delta = current_ticks - seat.last_repeat_msec;
-
-			int keys_amount = (ticks_delta / seat.repeat_key_delay_msec);
-
-			for (int i = 0; i < keys_amount; i++) {
-				Ref<InputEventKey> k;
-				k.instantiate();
-
-				if (!WaylandThread::_seat_state_configure_key_event(seat, k, seat.repeating_keycode, true)) {
-					continue;
-				}
-
-				k->set_echo(true);
-
-				Input::get_singleton()->parse_input_event(k);
-			}
-
-			seat.last_repeat_msec += ticks_delta - (ticks_delta % seat.repeat_key_delay_msec);
-		}
-	}
-#endif
+	wayland_thread.echo_keys();
 
 	Input::get_singleton()->flush_buffered_events();
 }

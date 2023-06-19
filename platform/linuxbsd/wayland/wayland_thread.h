@@ -764,6 +764,7 @@ public:
 	void seat_state_lock_pointer(SeatState *p_ss);
 	void seat_state_confine_pointer(SeatState *p_ss);
 	void seat_state_update_cursor(SeatState *p_ss);
+	void seat_state_echo_keys(SeatState *p_ss);
 
 	static int window_state_calculate_scale(WindowState *p_ws);
 
@@ -798,6 +799,8 @@ public:
 	void cursor_hide();
 	void cursor_set_shape(DisplayServer::CursorShape p_cursor_shape);
 	void cursor_cache_custom_shape(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image);
+
+	void echo_keys();
 
 	Error init(WaylandState &p_wls);
 	void destroy();

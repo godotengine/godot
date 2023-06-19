@@ -2468,6 +2468,46 @@ void WaylandThread::seat_state_update_cursor(SeatState *p_ss) {
 	}
 }
 
+void WaylandThread::seat_state_echo_keys(SeatState *p_ss) {
+	ERR_FAIL_NULL(p_ss);
+
+	if (p_ss->wl_keyboard == nullptr) {
+		return;
+	}
+
+	// TODO: Comment and document out properly this block of code.
+	// In short, this implements key repeating.
+	if (p_ss->repeat_key_delay_msec && p_ss->repeating_keycode != XKB_KEYCODE_INVALID) {
+		uint64_t current_ticks = OS::get_singleton()->get_ticks_msec();
+		uint64_t delayed_start_ticks = p_ss->last_repeat_start_msec + p_ss->repeat_start_delay_msec;
+
+		if (p_ss->last_repeat_msec < delayed_start_ticks) {
+			p_ss->last_repeat_msec = delayed_start_ticks;
+		}
+
+		if (current_ticks >= delayed_start_ticks) {
+			uint64_t ticks_delta = current_ticks - p_ss->last_repeat_msec;
+
+			int keys_amount = (ticks_delta / p_ss->repeat_key_delay_msec);
+
+			for (int i = 0; i < keys_amount; i++) {
+				Ref<InputEventKey> k;
+				k.instantiate();
+
+				if (!_seat_state_configure_key_event(*p_ss, k, p_ss->repeating_keycode, true)) {
+					continue;
+				}
+
+				k->set_echo(true);
+
+				Input::get_singleton()->parse_input_event(k);
+			}
+
+			p_ss->last_repeat_msec += ticks_delta - (ticks_delta % p_ss->repeat_key_delay_msec);
+		}
+	}
+}
+
 #if 0
 void WaylandThread::pointer_state_update(struct wl_pointer *p_pointer) {
 	ERR_FAIL_NULL(ss.cursor_surface);
@@ -3041,6 +3081,19 @@ void WaylandThread::cursor_set_shape(DisplayServer::CursorShape p_cursor_shape) 
 		ERR_FAIL_NULL(ss);
 
 		seat_state_update_cursor(ss);
+	}
+}
+
+void WaylandThread::cursor_cache_custom_shape(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image) {
+	// TODO
+}
+
+void WaylandThread::echo_keys() {
+	for (struct wl_seat *wl_seat : registry.wl_seats) {
+		SeatState *ss = wl_seat_get_seat_state(wl_seat);
+		ERR_FAIL_NULL(ss);
+
+		seat_state_echo_keys(ss);
 	}
 }
 
