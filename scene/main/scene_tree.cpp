@@ -456,7 +456,9 @@ bool SceneTree::physics_process(double p_time) {
 
 	flush_transform_notifications();
 
-	MainLoop::physics_process(p_time);
+	if (MainLoop::physics_process(p_time)) {
+		_quit = true;
+	}
 	physics_process_time = p_time;
 
 	emit_signal(SNAME("physics_frame"));
@@ -484,7 +486,9 @@ bool SceneTree::physics_process(double p_time) {
 bool SceneTree::process(double p_time) {
 	root_lock++;
 
-	MainLoop::process(p_time);
+	if (MainLoop::process(p_time)) {
+		_quit = true;
+	}
 
 	process_time = p_time;
 
