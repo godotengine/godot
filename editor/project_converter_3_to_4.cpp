@@ -410,6 +410,8 @@ bool ProjectConverter3To4::convert() {
 
 				custom_rename(source_lines, "\\.shader", ".gdshader");
 			} else if (file_name.ends_with(".tscn")) {
+				fix_pause_mode(source_lines, reg_container);
+
 				rename_classes(source_lines, reg_container); // Using only specialized function.
 
 				rename_common(RenamesMap3To4::enum_renames, reg_container.enum_regexes, source_lines);
@@ -773,6 +775,12 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_with_regex("tool", "@tool", &ProjectConverter3To4::fix_tool_declaration, "gdscript keyword", reg_container);
 	valid = valid && test_conversion_with_regex("\n    tool", "\n    tool", &ProjectConverter3To4::fix_tool_declaration, "gdscript keyword", reg_container);
 	valid = valid && test_conversion_with_regex("\n\ntool", "@tool\n\n", &ProjectConverter3To4::fix_tool_declaration, "gdscript keyword", reg_container);
+
+	valid = valid && test_conversion_with_regex("pause_mode = 2", "pause_mode = 3", &ProjectConverter3To4::fix_pause_mode, "pause_mode", reg_container);
+	valid = valid && test_conversion_with_regex("pause_mode = 1", "pause_mode = 1", &ProjectConverter3To4::fix_pause_mode, "pause_mode", reg_container);
+	valid = valid && test_conversion_with_regex("pause_mode = 3", "pause_mode = 3", &ProjectConverter3To4::fix_pause_mode, "pause_mode", reg_container);
+	valid = valid && test_conversion_with_regex("somepause_mode = 2", "somepause_mode = 2", &ProjectConverter3To4::fix_pause_mode, "pause_mode", reg_container);
+	valid = valid && test_conversion_with_regex("pause_mode_ext = 2", "pause_mode_ext = 2", &ProjectConverter3To4::fix_pause_mode, "pause_mode", reg_container);
 
 	valid = valid && test_conversion_basic("TYPE_REAL", "TYPE_FLOAT", RenamesMap3To4::enum_renames, reg_container.enum_regexes, "enum");
 
@@ -1476,12 +1484,26 @@ Vector<String> ProjectConverter3To4::check_for_rename_colors(Vector<String> &lin
 }
 
 void ProjectConverter3To4::fix_tool_declaration(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
-	// In godot4, "tool" became "@tool" and must be located at the top of the file
+	// In godot4, "tool" became "@tool" and must be located at the top of the file.
 	for (int i = 0; i < source_lines.size(); ++i) {
 		if (source_lines[i].line == "tool") {
 			source_lines.remove_at(i);
 			source_lines.insert(0, { "@tool", false });
-			return; // assuming there's at most 1 tool declaration
+			return; // assuming there's at most 1 tool declaration.
+		}
+	}
+}
+
+void ProjectConverter3To4::fix_pause_mode(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
+	// In Godot 3, the pause_mode 2 equals the PAUSE_MODE_PROCESS value.
+	// In Godot 4, the pause_mode PAUSE_MODE_PROCESS was renamed to PROCESS_MODE_ALWAYS and equals the number 3.
+	// We therefore convert pause_mode = 2 to pause_mode = 3.
+	for (SourceLine &source_line : source_lines) {
+		String &line = source_line.line;
+
+		if (line == "pause_mode = 2") {
+			// Note: pause_mode is renamed to process_mode later on, so no need to do it here.
+			line = "pause_mode = 3";
 		}
 	}
 }
