@@ -694,7 +694,7 @@ static int AllocateMemory(VP8Decoder* const dec) {
   const size_t mb_data_size =
       (dec->mt_method_ == 2 ? 2 : 1) * mb_w * sizeof(*dec->mb_data_);
   const size_t cache_height = (16 * num_caches
-                            + kFilterExtraRows[dec->filter_type_]) * 3 / 2;
+                            + kFilterExtraRows[dec->filter_type_]) * 1.5;
   const size_t cache_size = top_size * cache_height;
   // alpha_size is the only one that scales as width x height.
   const uint64_t alpha_size = (dec->alpha_data_ != NULL) ?
