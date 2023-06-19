@@ -946,6 +946,7 @@ void NavigationAgent2D::_update_debug_path() {
 	}
 
 	RenderingServer::get_singleton()->canvas_item_set_parent(debug_path_instance, agent_parent->get_canvas());
+	RenderingServer::get_singleton()->canvas_item_set_z_index(debug_path_instance, RS::CANVAS_ITEM_Z_MAX - 1);
 	RenderingServer::get_singleton()->canvas_item_set_visible(debug_path_instance, agent_parent->is_visible_in_tree());
 
 	const Vector<Vector2> &navigation_path = navigation_result->get_path();
