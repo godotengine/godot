@@ -262,18 +262,27 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			}
 
 			// Try static variables.
-			if (codegen.script->static_variables_indices.has(identifier)) {
-				if (codegen.script->static_variables_indices[identifier].getter != StringName() && codegen.script->static_variables_indices[identifier].getter != codegen.function_name) {
-					// Perform getter.
-					GDScriptCodeGenerator::Address temp = codegen.add_temporary(codegen.script->static_variables_indices[identifier].data_type);
-					GDScriptCodeGenerator::Address class_addr(GDScriptCodeGenerator::Address::CLASS);
-					Vector<GDScriptCodeGenerator::Address> args; // No argument needed.
-					gen->write_call(temp, class_addr, codegen.script->static_variables_indices[identifier].getter, args);
-					return temp;
-				} else {
-					// No getter or inside getter: direct variable access.
-					int idx = codegen.script->static_variables_indices[identifier].index;
-					return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::STATIC_VARIABLE, idx, codegen.script->static_variables_indices[identifier].data_type);
+			{
+				GDScript *scr = codegen.script;
+				while (scr) {
+					if (scr->static_variables_indices.has(identifier)) {
+						if (scr->static_variables_indices[identifier].getter != StringName() && scr->static_variables_indices[identifier].getter != codegen.function_name) {
+							// Perform getter.
+							GDScriptCodeGenerator::Address temp = codegen.add_temporary(scr->static_variables_indices[identifier].data_type);
+							GDScriptCodeGenerator::Address class_addr(GDScriptCodeGenerator::Address::CLASS);
+							Vector<GDScriptCodeGenerator::Address> args; // No argument needed.
+							gen->write_call(temp, class_addr, scr->static_variables_indices[identifier].getter, args);
+							return temp;
+						} else {
+							// No getter or inside getter: direct variable access.
+							GDScriptCodeGenerator::Address temp = codegen.add_temporary(scr->static_variables_indices[identifier].data_type);
+							GDScriptCodeGenerator::Address _class = codegen.add_constant(scr);
+							int index = scr->static_variables_indices[identifier].index;
+							gen->write_get_static_variable(temp, _class, index);
+							return temp;
+						}
+					}
+					scr = scr->_base;
 				}
 			}
 
@@ -926,6 +935,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				bool member_property_has_setter = false;
 				bool member_property_is_in_setter = false;
 				bool is_static = false;
+				GDScriptCodeGenerator::Address static_var_class;
+				int static_var_index = 0;
+				GDScriptDataType static_var_data_type;
+				StringName var_name;
 				StringName member_property_setter_function;
 
 				List<const GDScriptParser::SubscriptNode *> chain;
@@ -939,19 +952,39 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							// Check for a property.
 							if (n->base->type == GDScriptParser::Node::IDENTIFIER) {
 								GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(n->base);
-								StringName var_name = identifier->name;
+								var_name = identifier->name;
 								if (_is_class_member_property(codegen, var_name)) {
 									assign_class_member_property = var_name;
-								} else if (!_is_local_or_parameter(codegen, var_name) && (codegen.script->member_indices.has(var_name) || codegen.script->static_variables_indices.has(var_name))) {
-									is_member_property = true;
-									is_static = codegen.script->static_variables_indices.has(var_name);
-									const GDScript::MemberInfo &minfo = is_static ? codegen.script->static_variables_indices[var_name] : codegen.script->member_indices[var_name];
-									member_property_setter_function = minfo.setter;
-									member_property_has_setter = member_property_setter_function != StringName();
-									member_property_is_in_setter = member_property_has_setter && member_property_setter_function == codegen.function_name;
-									target_member_property.mode = is_static ? GDScriptCodeGenerator::Address::STATIC_VARIABLE : GDScriptCodeGenerator::Address::MEMBER;
-									target_member_property.address = minfo.index;
-									target_member_property.type = minfo.data_type;
+								} else if (!_is_local_or_parameter(codegen, var_name)) {
+									if (codegen.script->member_indices.has(var_name)) {
+										is_member_property = true;
+										is_static = false;
+										const GDScript::MemberInfo &minfo = codegen.script->member_indices[var_name];
+										member_property_setter_function = minfo.setter;
+										member_property_has_setter = member_property_setter_function != StringName();
+										member_property_is_in_setter = member_property_has_setter && member_property_setter_function == codegen.function_name;
+										target_member_property.mode = GDScriptCodeGenerator::Address::MEMBER;
+										target_member_property.address = minfo.index;
+										target_member_property.type = minfo.data_type;
+									} else {
+										// Try static variables.
+										GDScript *scr = codegen.script;
+										while (scr) {
+											if (scr->static_variables_indices.has(var_name)) {
+												is_member_property = true;
+												is_static = true;
+												const GDScript::MemberInfo &minfo = scr->static_variables_indices[var_name];
+												member_property_setter_function = minfo.setter;
+												member_property_has_setter = member_property_setter_function != StringName();
+												member_property_is_in_setter = member_property_has_setter && member_property_setter_function == codegen.function_name;
+												static_var_class = codegen.add_constant(scr);
+												static_var_index = minfo.index;
+												static_var_data_type = minfo.data_type;
+												break;
+											}
+											scr = scr->_base;
+										}
+									}
 								}
 							}
 							break;
@@ -1104,8 +1137,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						if (member_property_has_setter && !member_property_is_in_setter) {
 							Vector<GDScriptCodeGenerator::Address> args;
 							args.push_back(assigned);
-							GDScriptCodeGenerator::Address self = is_static ? GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::CLASS) : GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF);
-							gen->write_call(GDScriptCodeGenerator::Address(), self, member_property_setter_function, args);
+							GDScriptCodeGenerator::Address call_base = is_static ? GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::CLASS) : GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF);
+							gen->write_call(GDScriptCodeGenerator::Address(), call_base, member_property_setter_function, args);
+						} else if (is_static) {
+							GDScriptCodeGenerator::Address temp = codegen.add_temporary(static_var_data_type);
+							gen->write_assign(temp, assigned);
+							gen->write_set_static_variable(temp, static_var_class, static_var_index);
+							gen->pop_temporary();
 						} else {
 							gen->write_assign(target_member_property, assigned);
 						}
@@ -1155,18 +1193,42 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				bool has_setter = false;
 				bool is_in_setter = false;
 				bool is_static = false;
+				GDScriptCodeGenerator::Address static_var_class;
+				int static_var_index = 0;
+				GDScriptDataType static_var_data_type;
+				StringName var_name;
 				StringName setter_function;
-				StringName var_name = static_cast<const GDScriptParser::IdentifierNode *>(assignment->assignee)->name;
-				if (!_is_local_or_parameter(codegen, var_name) && (codegen.script->member_indices.has(var_name) || codegen.script->static_variables_indices.has(var_name))) {
-					is_member = true;
-					is_static = codegen.script->static_variables_indices.has(var_name);
-					GDScript::MemberInfo &minfo = is_static ? codegen.script->static_variables_indices[var_name] : codegen.script->member_indices[var_name];
-					setter_function = minfo.setter;
-					has_setter = setter_function != StringName();
-					is_in_setter = has_setter && setter_function == codegen.function_name;
-					member.mode = is_static ? GDScriptCodeGenerator::Address::STATIC_VARIABLE : GDScriptCodeGenerator::Address::MEMBER;
-					member.address = minfo.index;
-					member.type = minfo.data_type;
+				var_name = static_cast<const GDScriptParser::IdentifierNode *>(assignment->assignee)->name;
+				if (!_is_local_or_parameter(codegen, var_name)) {
+					if (codegen.script->member_indices.has(var_name)) {
+						is_member = true;
+						is_static = false;
+						GDScript::MemberInfo &minfo = codegen.script->member_indices[var_name];
+						setter_function = minfo.setter;
+						has_setter = setter_function != StringName();
+						is_in_setter = has_setter && setter_function == codegen.function_name;
+						member.mode = GDScriptCodeGenerator::Address::MEMBER;
+						member.address = minfo.index;
+						member.type = minfo.data_type;
+					} else {
+						// Try static variables.
+						GDScript *scr = codegen.script;
+						while (scr) {
+							if (scr->static_variables_indices.has(var_name)) {
+								is_member = true;
+								is_static = true;
+								GDScript::MemberInfo &minfo = scr->static_variables_indices[var_name];
+								setter_function = minfo.setter;
+								has_setter = setter_function != StringName();
+								is_in_setter = has_setter && setter_function == codegen.function_name;
+								static_var_class = codegen.add_constant(scr);
+								static_var_index = minfo.index;
+								static_var_data_type = minfo.data_type;
+								break;
+							}
+							scr = scr->_base;
+						}
+					}
 				}
 
 				GDScriptCodeGenerator::Address target;
@@ -1200,13 +1262,21 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					to_assign = assigned_value;
 				}
 
-				GDScriptDataType assign_type = _gdtype_from_datatype(assignment->assignee->get_datatype(), codegen.script);
-
 				if (has_setter && !is_in_setter) {
 					// Call setter.
 					Vector<GDScriptCodeGenerator::Address> args;
 					args.push_back(to_assign);
-					gen->write_call(GDScriptCodeGenerator::Address(), GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF), setter_function, args);
+					GDScriptCodeGenerator::Address call_base = is_static ? GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::CLASS) : GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF);
+					gen->write_call(GDScriptCodeGenerator::Address(), call_base, setter_function, args);
+				} else if (is_static) {
+					GDScriptCodeGenerator::Address temp = codegen.add_temporary(static_var_data_type);
+					if (assignment->use_conversion_assign) {
+						gen->write_assign_with_conversion(temp, to_assign);
+					} else {
+						gen->write_assign(temp, to_assign);
+					}
+					gen->write_set_static_variable(temp, static_var_class, static_var_index);
+					gen->pop_temporary();
 				} else {
 					// Just assign.
 					if (assignment->use_conversion_assign) {
@@ -2062,10 +2132,10 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			}
 
 			GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
-			GDScriptCodeGenerator::Address dst_address(GDScriptCodeGenerator::Address::MEMBER, codegen.script->member_indices[field->identifier->name].index, field_type);
-
 			if (field_type.has_type) {
 				codegen.generator->write_newline(field->start_line);
+
+				GDScriptCodeGenerator::Address dst_address(GDScriptCodeGenerator::Address::MEMBER, codegen.script->member_indices[field->identifier->name].index, field_type);
 
 				if (field_type.has_container_element_type()) {
 					codegen.generator->write_construct_typed_array(dst_address, field_type.get_container_element_type(), Vector<GDScriptCodeGenerator::Address>());
@@ -2093,9 +2163,6 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 				continue;
 			}
 
-			GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
-
-			GDScriptCodeGenerator::Address dst_address(GDScriptCodeGenerator::Address::MEMBER, codegen.script->member_indices[field->identifier->name].index, field_type);
 			if (field->initializer) {
 				// Emit proper line change.
 				codegen.generator->write_newline(field->initializer->start_line);
@@ -2105,6 +2172,9 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 					memdelete(codegen.generator);
 					return nullptr;
 				}
+
+				GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
+				GDScriptCodeGenerator::Address dst_address(GDScriptCodeGenerator::Address::MEMBER, codegen.script->member_indices[field->identifier->name].index, field_type);
 
 				if (field->use_conversion_assign) {
 					codegen.generator->write_assign_with_conversion(dst_address, src_address);
@@ -2235,6 +2305,8 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 	codegen.is_static = is_static;
 	codegen.generator->write_start(p_script, func_name, is_static, rpc_config, return_type);
 
+	// The static initializer is always called on the same class where the static variables are defined,
+	// so the CLASS address (current class) can be used instead of `codegen.add_constant(p_script)`.
 	GDScriptCodeGenerator::Address class_addr(GDScriptCodeGenerator::Address::CLASS);
 
 	// Initialize the default values for typed variables before anything.
@@ -2251,20 +2323,18 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 		}
 
 		GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
-
 		if (field_type.has_type) {
 			codegen.generator->write_newline(field->start_line);
 
 			if (field_type.has_container_element_type()) {
 				GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
 				codegen.generator->write_construct_typed_array(temp, field_type.get_container_element_type(), Vector<GDScriptCodeGenerator::Address>());
-				codegen.generator->write_set_named(class_addr, field->identifier->name, temp);
+				codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
 				codegen.generator->pop_temporary();
-
 			} else if (field_type.kind == GDScriptDataType::BUILTIN) {
 				GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
 				codegen.generator->write_construct(temp, field_type.builtin_type, Vector<GDScriptCodeGenerator::Address>());
-				codegen.generator->write_set_named(class_addr, field->identifier->name, temp);
+				codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
 				codegen.generator->pop_temporary();
 			}
 			// The `else` branch is for objects, in such case we leave it as `null`.
@@ -2281,8 +2351,6 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 			continue;
 		}
 
-		GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
-
 		if (field->initializer) {
 			// Emit proper line change.
 			codegen.generator->write_newline(field->initializer->start_line);
@@ -2293,7 +2361,9 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 				return nullptr;
 			}
 
+			GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
 			GDScriptCodeGenerator::Address temp = codegen.add_temporary(field_type);
+
 			if (field->use_conversion_assign) {
 				codegen.generator->write_assign_with_conversion(temp, src_address);
 			} else {
@@ -2303,7 +2373,7 @@ GDScriptFunction *GDScriptCompiler::_make_static_initializer(Error &r_error, GDS
 				codegen.generator->pop_temporary();
 			}
 
-			codegen.generator->write_set_named(class_addr, field->identifier->name, temp);
+			codegen.generator->write_set_static_variable(temp, class_addr, p_script->static_variables_indices[field->identifier->name].index);
 			codegen.generator->pop_temporary();
 		}
 	}

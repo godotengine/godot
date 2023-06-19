@@ -312,6 +312,36 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 3;
 			} break;
+			case OPCODE_SET_STATIC_VARIABLE: {
+				text += "set_static_variable script(";
+				Ref<GDScript> gdscript = get_constant(_code_ptr[ip + 2] & GDScriptFunction::ADDR_MASK);
+				text += gdscript.is_valid() ? gdscript->get_fully_qualified_name().get_file() : "<unknown script>";
+				text += ")";
+				if (gdscript.is_valid()) {
+					text += "[\"" + gdscript->debug_get_static_var_by_index(_code_ptr[ip + 3]) + "\"]";
+				} else {
+					text += "[<index " + itos(_code_ptr[ip + 3]) + ">]";
+				}
+				text += " = ";
+				text += DADDR(1);
+
+				incr += 4;
+			} break;
+			case OPCODE_GET_STATIC_VARIABLE: {
+				text += "get_static_variable ";
+				text += DADDR(1);
+				text += " = script(";
+				Ref<GDScript> gdscript = get_constant(_code_ptr[ip + 2] & GDScriptFunction::ADDR_MASK);
+				text += gdscript.is_valid() ? gdscript->get_fully_qualified_name().get_file() : "<unknown script>";
+				text += ")";
+				if (gdscript.is_valid()) {
+					text += "[\"" + gdscript->debug_get_static_var_by_index(_code_ptr[ip + 3]) + "\"]";
+				} else {
+					text += "[<index " + itos(_code_ptr[ip + 3]) + ">]";
+				}
+
+				incr += 4;
+			} break;
 			case OPCODE_ASSIGN: {
 				text += "assign ";
 				text += DADDR(1);
