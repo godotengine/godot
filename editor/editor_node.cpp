@@ -560,7 +560,7 @@ void EditorNode::_notification(int p_what) {
 			uint64_t frame = Engine::get_singleton()->get_frames_drawn();
 			uint64_t tick = OS::get_singleton()->get_ticks_msec();
 
-			if (frame != update_spinner_step_frame && (tick - update_spinner_step_msec) > (1000 / 8)) {
+			if (frame != update_spinner_step_frame && (tick - update_spinner_step_msec) > 125) {
 				update_spinner_step++;
 				if (update_spinner_step >= 8) {
 					update_spinner_step = 0;
