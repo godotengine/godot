@@ -2194,55 +2194,65 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!p_icon.is_valid());
-	if (icon != p_icon) {
-		icon = p_icon->duplicate();
-		if (icon->get_format() != Image::FORMAT_RGBA8) {
-			icon->convert(Image::FORMAT_RGBA8);
+	if (p_icon.is_valid()) {
+		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
+
+		Ref<Image> img = p_icon;
+		if (img != icon) {
+			img = img->duplicate();
+			img->convert(Image::FORMAT_RGBA8);
 		}
-	}
-	int w = icon->get_width();
-	int h = icon->get_height();
 
-	// Create temporary bitmap buffer.
-	int icon_len = 40 + h * w * 4;
-	Vector<BYTE> v;
-	v.resize(icon_len);
-	BYTE *icon_bmp = v.ptrw();
+		int w = img->get_width();
+		int h = img->get_height();
 
-	encode_uint32(40, &icon_bmp[0]);
-	encode_uint32(w, &icon_bmp[4]);
-	encode_uint32(h * 2, &icon_bmp[8]);
-	encode_uint16(1, &icon_bmp[12]);
-	encode_uint16(32, &icon_bmp[14]);
-	encode_uint32(BI_RGB, &icon_bmp[16]);
-	encode_uint32(w * h * 4, &icon_bmp[20]);
-	encode_uint32(0, &icon_bmp[24]);
-	encode_uint32(0, &icon_bmp[28]);
-	encode_uint32(0, &icon_bmp[32]);
-	encode_uint32(0, &icon_bmp[36]);
+		// Create temporary bitmap buffer.
+		int icon_len = 40 + h * w * 4;
+		Vector<BYTE> v;
+		v.resize(icon_len);
+		BYTE *icon_bmp = v.ptrw();
 
-	uint8_t *wr = &icon_bmp[40];
-	const uint8_t *r = icon->get_data().ptr();
+		encode_uint32(40, &icon_bmp[0]);
+		encode_uint32(w, &icon_bmp[4]);
+		encode_uint32(h * 2, &icon_bmp[8]);
+		encode_uint16(1, &icon_bmp[12]);
+		encode_uint16(32, &icon_bmp[14]);
+		encode_uint32(BI_RGB, &icon_bmp[16]);
+		encode_uint32(w * h * 4, &icon_bmp[20]);
+		encode_uint32(0, &icon_bmp[24]);
+		encode_uint32(0, &icon_bmp[28]);
+		encode_uint32(0, &icon_bmp[32]);
+		encode_uint32(0, &icon_bmp[36]);
 
-	for (int i = 0; i < h; i++) {
-		for (int j = 0; j < w; j++) {
-			const uint8_t *rpx = &r[((h - i - 1) * w + j) * 4];
-			uint8_t *wpx = &wr[(i * w + j) * 4];
-			wpx[0] = rpx[2];
-			wpx[1] = rpx[1];
-			wpx[2] = rpx[0];
-			wpx[3] = rpx[3];
+		uint8_t *wr = &icon_bmp[40];
+		const uint8_t *r = img->get_data().ptr();
+
+		for (int i = 0; i < h; i++) {
+			for (int j = 0; j < w; j++) {
+				const uint8_t *rpx = &r[((h - i - 1) * w + j) * 4];
+				uint8_t *wpx = &wr[(i * w + j) * 4];
+				wpx[0] = rpx[2];
+				wpx[1] = rpx[1];
+				wpx[2] = rpx[0];
+				wpx[3] = rpx[3];
+			}
 		}
+
+		HICON hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+		ERR_FAIL_COND(!hicon);
+
+		icon = img;
+
+		// Set the icon for the window.
+		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
+
+		// Set the icon in the task manager (should we do this?).
+		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
+	} else {
+		icon = Ref<Image>();
+		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, NULL);
+		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, NULL);
 	}
-
-	HICON hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
-
-	// Set the icon for the window.
-	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
-
-	// Set the icon in the task manager (should we do this?).
-	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
 }
 
 void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
