@@ -308,6 +308,9 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 		Node *child = SceneTree::get_singleton()->get_root()->find_child("NestedNode", true, false);
 		CHECK_EQ(child, nullptr);
 
+		TypedArray<Node> children = SceneTree::get_singleton()->get_root()->find_children("NestedNode", "", true, false);
+		CHECK_EQ(children.size(), 0);
+
 		node1->set_name("Node1");
 		node2->set_name("Node2");
 		node1_1->set_name("NestedNode");
@@ -315,15 +318,29 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 		child = SceneTree::get_singleton()->get_root()->find_child("NestedNode", true, false);
 		CHECK_EQ(child, node1_1);
 
+		children = SceneTree::get_singleton()->get_root()->find_children("NestedNode", "", true, false);
+		CHECK_EQ(children.size(), 1);
+		CHECK_EQ(Object::cast_to<Node>(children[0]), node1_1);
+
 		// First node that matches with the name is node1.
 		child = SceneTree::get_singleton()->get_root()->find_child("Node?", true, false);
 		CHECK_EQ(child, node1);
+
+		children = SceneTree::get_singleton()->get_root()->find_children("Node?", "", true, false);
+		CHECK_EQ(children.size(), 2);
+		CHECK_EQ(Object::cast_to<Node>(children[0]), node1);
+		CHECK_EQ(Object::cast_to<Node>(children[1]), node2);
 
 		SceneTree::get_singleton()->get_root()->move_child(node2, 0);
 
 		// It should be node2, as it is now the first one in the tree.
 		child = SceneTree::get_singleton()->get_root()->find_child("Node?", true, false);
 		CHECK_EQ(child, node2);
+
+		children = SceneTree::get_singleton()->get_root()->find_children("Node?", "", true, false);
+		CHECK_EQ(children.size(), 2);
+		CHECK_EQ(Object::cast_to<Node>(children[0]), node2);
+		CHECK_EQ(Object::cast_to<Node>(children[1]), node1);
 	}
 
 	SUBCASE("Nodes should be accessible via their node path") {
