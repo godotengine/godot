@@ -262,7 +262,7 @@ TypedArray<RID> GodotNavigationServer::map_get_links(RID p_map) const {
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, link_rids);
 
-	const LocalVector<NavLink *> links = map->get_links();
+	const LocalVector<NavLink *> &links = map->get_links();
 	link_rids.resize(links.size());
 
 	for (uint32_t i = 0; i < links.size(); i++) {
@@ -276,7 +276,7 @@ TypedArray<RID> GodotNavigationServer::map_get_regions(RID p_map) const {
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, regions_rids);
 
-	const LocalVector<NavRegion *> regions = map->get_regions();
+	const LocalVector<NavRegion *> &regions = map->get_regions();
 	regions_rids.resize(regions.size());
 
 	for (uint32_t i = 0; i < regions.size(); i++) {
@@ -290,7 +290,7 @@ TypedArray<RID> GodotNavigationServer::map_get_agents(RID p_map) const {
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, agents_rids);
 
-	const LocalVector<NavAgent *> agents = map->get_agents();
+	const LocalVector<NavAgent *> &agents = map->get_agents();
 	agents_rids.resize(agents.size());
 
 	for (uint32_t i = 0; i < agents.size(); i++) {

@@ -620,9 +620,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 						}
 
 						if (!found) {
-							LocalVector<int> new_group;
-							new_group.push_back(corner_idx);
-							normal_group_indices.push_back(new_group);
+							normal_group_indices.push_back({ corner_idx });
 							normal_group_averages.push_back(ray_normal);
 						}
 					}

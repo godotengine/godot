@@ -362,8 +362,7 @@ bool VisualShaderGraphPlugin::is_node_has_parameter_instances_relatively(VisualS
 		}
 	}
 
-	LocalVector<int> prev_connected_nodes;
-	visual_shader->get_prev_connected_nodes(p_type, p_node, prev_connected_nodes);
+	const LocalVector<int> &prev_connected_nodes = visual_shader->get_prev_connected_nodes(p_type, p_node);
 
 	for (const int &E : prev_connected_nodes) {
 		result = is_node_has_parameter_instances_relatively(p_type, E);
@@ -5038,8 +5037,7 @@ void VisualShaderEditor::_update_next_previews(int p_node_id) {
 }
 
 void VisualShaderEditor::_get_next_nodes_recursively(VisualShader::Type p_type, int p_node_id, LocalVector<int> &r_nodes) const {
-	LocalVector<int> next_connections;
-	visual_shader->get_next_connected_nodes(p_type, p_node_id, next_connections);
+	const LocalVector<int> &next_connections = visual_shader->get_next_connected_nodes(p_type, p_node_id);
 
 	for (int node_id : next_connections) {
 		r_nodes.push_back(node_id);
