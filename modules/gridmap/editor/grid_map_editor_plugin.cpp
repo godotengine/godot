@@ -704,6 +704,9 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
+		// Update the grid, to check if the grid needs to be moved to a tile cursor.
+		update_grid();
+
 		if (do_input_action(p_camera, mm->get_position(), false)) {
 			return EditorPlugin::AFTER_GUI_INPUT_STOP;
 		}
@@ -951,7 +954,8 @@ void GridMapEditor::update_grid() {
 
 	grid_ofs[edit_axis] = edit_floor[edit_axis] * node->get_cell_size()[edit_axis];
 
-	edit_grid_xform.origin = grid_ofs;
+	// If there's a valid tile cursor, offset the grid, otherwise move it back to the node.
+	edit_grid_xform.origin = cursor_instance.is_valid() ? grid_ofs : Vector3();
 	edit_grid_xform.basis = Basis();
 
 	for (int i = 0; i < 3; i++) {
@@ -1076,6 +1080,9 @@ void GridMapEditor::_notification(int p_what) {
 			Ref<MeshLibrary> cgmt = node->get_mesh_library();
 			if (cgmt.operator->() != last_mesh_library) {
 				update_palette();
+				// Update the cursor and grid in case the library is changed or removed.
+				_update_cursor_instance();
+				update_grid();
 			}
 		} break;
 
