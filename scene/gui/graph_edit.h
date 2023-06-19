@@ -227,7 +227,6 @@ private:
 	void _zoom_plus();
 	void _update_zoom_label();
 
-	PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to);
 	void _draw_connection_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color, float p_width, float p_zoom);
 
 	void _graph_node_selected(Node *p_gn);
@@ -243,8 +242,6 @@ private:
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 	void _top_layer_input(const Ref<InputEvent> &p_ev);
 
-	bool is_in_input_hotzone(GraphNode *p_graph_node, int p_port, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
-	bool is_in_output_hotzone(GraphNode *p_graph_node, int p_port, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
 	bool is_in_port_hotzone(const Vector2 &p_pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left);
 
 	void _top_layer_draw();
@@ -272,6 +269,9 @@ protected:
 
 	void _notification(int p_what);
 
+	virtual bool is_in_input_hotzone(GraphNode *p_graph_node, int p_port, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
+	virtual bool is_in_output_hotzone(GraphNode *p_graph_node, int p_port, const Vector2 &p_mouse_pos, const Vector2i &p_port_size);
+
 	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
 	GDVIRTUAL3R(bool, _is_in_input_hotzone, Object *, int, Vector2)
 	GDVIRTUAL3R(bool, _is_in_output_hotzone, Object *, int, Vector2)
@@ -287,6 +287,8 @@ public:
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void clear_connections();
 	void force_connection_drag_end();
+
+	virtual PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to);
 	virtual bool is_node_hover_valid(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 
 	void set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity);
