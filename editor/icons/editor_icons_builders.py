@@ -8,16 +8,15 @@ import os
 from io import StringIO
 from platform_methods import subprocess_main
 
+
 # See also `scene/resources/default_theme/default_theme_icons_builders.py`.
 def make_editor_icons_action(target, source, env):
-
     dst = target[0]
     svg_icons = source
 
     icons_string = StringIO()
 
     for f in svg_icons:
-
         fname = str(f)
 
         icons_string.write('\t"')
@@ -48,7 +47,6 @@ def make_editor_icons_action(target, source, env):
     thumb_big_indices = []
     index = 0
     for f in svg_icons:
-
         fname = str(f)
 
         # Trim the `.svg` extension from the string.
