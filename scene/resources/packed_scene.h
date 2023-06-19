@@ -72,7 +72,7 @@ class SceneState : public RefCounted {
 	struct DeferredNodePathProperties {
 		Node *base = nullptr;
 		StringName property;
-		NodePath path;
+		Variant value;
 	};
 
 	Vector<NodeData> nodes;
