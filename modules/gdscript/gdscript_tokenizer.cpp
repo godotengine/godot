@@ -1610,9 +1610,9 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 
 		default:
 			if (is_whitespace(c)) {
-				return make_error(vformat(R"(Invalid white space character "\\u%X".)", static_cast<int32_t>(c)));
+				return make_error(vformat(R"(Invalid white space character U+%04X.)", static_cast<int32_t>(c)));
 			} else {
-				return make_error(vformat(R"(Unknown character "%s".)", String(&c, 1)));
+				return make_error(vformat(R"(Invalid character "%c" (U+%04X).)", c, static_cast<int32_t>(c)));
 			}
 	}
 }
