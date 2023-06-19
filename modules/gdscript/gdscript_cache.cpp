@@ -254,7 +254,11 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 	Ref<GDScript> script;
 	script.instantiate();
 	script->set_path(p_path, true);
-	script->load_source_code(p_path);
+	r_error = script->load_source_code(p_path);
+
+	if (r_error) {
+		return Ref<GDScript>(); // Returns null and does not cache when the script fails to load.
+	}
 
 	Ref<GDScriptParserRef> parser_ref = get_parser(p_path, GDScriptParserRef::PARSED, r_error);
 	if (r_error == OK) {
