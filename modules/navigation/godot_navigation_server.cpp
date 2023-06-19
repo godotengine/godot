@@ -997,8 +997,10 @@ COMMAND_1(free, RID, p_object) {
 		}
 
 		int map_index = active_maps.find(map);
-		active_maps.remove_at(map_index);
-		active_maps_update_id.remove_at(map_index);
+		if (map_index >= 0) {
+			active_maps.remove_at(map_index);
+			active_maps_update_id.remove_at(map_index);
+		}
 		map_owner.free(p_object);
 
 	} else if (region_owner.owns(p_object)) {
