@@ -80,7 +80,7 @@ void VP8IteratorInit(VP8Encoder* const enc, VP8EncIterator* const it) {
   it->lf_stats_ = enc->lf_stats_;
   it->percent0_ = enc->percent_;
   it->y_left_ = (uint8_t*)WEBP_ALIGN(it->yuv_left_mem_ + 1);
-  it->u_left_ = it->y_left_ + 16 + 16;
+  it->u_left_ = it->y_left_ + 32;
   it->v_left_ = it->u_left_ + 16;
   it->top_derr_ = enc->top_derr_;
   VP8IteratorReset(it);
@@ -169,7 +169,7 @@ void VP8IteratorImport(VP8EncIterator* const it, uint8_t* const tmp_32) {
   } else {
     ImportLine(ysrc - pic->y_stride,  1, tmp_32,          w,   16);
     ImportLine(usrc - pic->uv_stride, 1, tmp_32 + 16,     uv_w, 8);
-    ImportLine(vsrc - pic->uv_stride, 1, tmp_32 + 16 + 8, uv_w, 8);
+    ImportLine(vsrc - pic->uv_stride, 1, tmp_32 + 24, uv_w, 8);
   }
 }
 
@@ -416,12 +416,12 @@ void VP8IteratorStartI4(VP8EncIterator* const it) {
   }
   // top-right samples have a special case on the far right of the picture
   if (it->x_ < enc->mb_w_ - 1) {
-    for (i = 16; i < 16 + 4; ++i) {
+    for (i = 16; i < 20; ++i) {
       it->i4_boundary_[17 + i] = it->y_top_[i];
     }
   } else {    // else, replicate the last valid pixel four times
-    for (i = 16; i < 16 + 4; ++i) {
-      it->i4_boundary_[17 + i] = it->i4_boundary_[17 + 15];
+    for (i = 16; i < 20; ++i) {
+      it->i4_boundary_[17 + i] = it->i4_boundary_[32];
     }
   }
   VP8IteratorNzToBytes(it);  // import the non-zero context
