@@ -310,16 +310,16 @@ void MultiplayerSynchronizer::set_replication_interval(double p_interval) {
 }
 
 double MultiplayerSynchronizer::get_replication_interval() const {
-	return double(sync_interval_usec) / 1000.0 / 1000.0;
+	return double(sync_interval_usec) / 1000000;
 }
 
 void MultiplayerSynchronizer::set_delta_interval(double p_interval) {
 	ERR_FAIL_COND_MSG(p_interval < 0, "Interval must be greater or equal to 0 (where 0 means default)");
-	delta_interval_usec = uint64_t(p_interval * 1000 * 1000);
+	delta_interval_usec = uint64_t(p_interval * 1000000);
 }
 
 double MultiplayerSynchronizer::get_delta_interval() const {
-	return double(delta_interval_usec) / 1000.0 / 1000.0;
+	return double(delta_interval_usec) / 1000000;
 }
 
 void MultiplayerSynchronizer::set_replication_config(Ref<SceneReplicationConfig> p_config) {
