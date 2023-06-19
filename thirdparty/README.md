@@ -416,7 +416,6 @@ Files extracted from upstream repository:
 
 Some changes have been made in order to fix Windows on ARM build errors, and
 to solve some MSVC warnings. See the patches in the `patches` directory.
-`minimp3_ex.cpp` was created to simplify the use of the single header library.
 
 
 ## miniupnpc

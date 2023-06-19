@@ -28,6 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#define MINIMP3_ONLY_MP3
+#define MINIMP3_FLOAT_OUTPUT
+#define MINIMP3_IMPLEMENTATION
+#define MINIMP3_NO_STDIO
+
 #include "audio_stream_mp3.h"
 
 #include "core/io/file_access.h"
