@@ -856,16 +856,16 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				correction.set_depth_correction(true);
 				Projection projection = correction * p_render_data->scene_data->cam_projection;
 
-				sky.setup_sky(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, p_render_data->camera_attributes, 1, &projection, &eye_offset, p_render_data->scene_data->cam_transform, screen_size, this);
+				sky.setup_sky(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, p_render_data->camera_attributes, 1, &projection, &eye_offset, p_render_data->scene_data->cam_transform, screen_size, false, this);
 			} else {
-				sky.setup_sky(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, p_render_data->camera_attributes, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, screen_size, this);
+				sky.setup_sky(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, p_render_data->camera_attributes, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, screen_size, true, this);
 			}
 
 			sky_energy_multiplier *= bg_energy_multiplier;
 
 			RID sky_rid = environment_get_sky(p_render_data->environment);
 			if (sky_rid.is_valid()) {
-				sky.update_radiance_buffers(rb, p_render_data->environment, p_render_data->scene_data->cam_transform.origin, time, sky_energy_multiplier);
+				sky.update_radiance_buffers(rb, p_render_data->environment, sky_energy_multiplier);
 				radiance_texture = sky.sky_get_radiance_texture_rd(sky_rid);
 			} else {
 				// do not try to draw sky if invalid
@@ -874,7 +874,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			if (draw_sky || draw_sky_fog_only) {
 				// update sky half/quarter res buffers (if required)
-				sky.update_res_buffers(rb, p_render_data->environment, time, sky_energy_multiplier);
+				sky.update_res_buffers(rb, p_render_data->environment, sky_energy_multiplier);
 			}
 			RD::get_singleton()->draw_command_end_label(); // Setup Sky
 		}
@@ -970,7 +970,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
 
-			sky.draw_sky(draw_list, rb, p_render_data->environment, framebuffer, time, sky_energy_multiplier);
+			sky.draw_sky(draw_list, rb, p_render_data->environment, framebuffer, sky_energy_multiplier);
 
 			RD::get_singleton()->draw_command_end_label(); // Draw Sky Subpass
 

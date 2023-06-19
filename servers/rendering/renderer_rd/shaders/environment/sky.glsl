@@ -4,28 +4,51 @@
 
 #VERSION_DEFINES
 
-#define MAX_VIEWS 2
+#include "sky_inc.glsl"
 
-#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
-#extension GL_EXT_multiview : enable
-#endif
+layout(location = 0) in vec3 vertex_attrib;
+layout(location = 1) in vec2 uv_attrib;
 
 layout(location = 0) out vec2 uv_interp;
-
-layout(push_constant, std430) uniform Params {
-	mat3 orientation;
-	vec4 projection; // only applicable if not multiview
-	vec3 position;
-	float time;
-	vec3 pad;
-	float luminance_multiplier;
-}
-params;
+layout(location = 1) out vec3 cube_normal;
+layout(location = 2) out vec2 panorama_coords;
 
 void main() {
-	vec2 base_arr[4] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 1.0), vec2(1.0, 1.0), vec2(1.0, -1.0));
-	uv_interp = base_arr[gl_VertexIndex];
-	gl_Position = vec4(uv_interp, 1.0, 1.0);
+	// We project a sphere around the camera location.
+	// This removes the need for some expensive calculations in the fragment shader,
+	// and enables prefetch of panoramic textures on mobile devices.
+
+	panorama_coords = uv_attrib;
+	cube_normal = vertex_attrib;
+
+	// On mono the radius of the sphere doesn't matter.
+	// On stereo we encorporate an eye offset and it does,
+	// we need a sufficiently high value.
+	float radius = 100000.0;
+
+#ifdef USE_CUBEMAP_PASS
+	// Adjust our orientation
+	vec3 vertex = params.cubemap_view_orientation * cube_normal;
+
+	// Project our cube normal.
+	vec4 position = sky_scene_data.cubemap_projection * vec4(vertex * radius, 1.0);
+#else
+	// Adjust our orientation
+	vec3 vertex = sky_scene_data.view_orientation * cube_normal;
+
+	// Project our cube normal.
+	vec4 position = sky_scene_data.view_projections[ViewIndex] * vec4(vertex * radius, 1.0);
+#endif
+
+	// Cap our Z so we're projecting on our far plane
+	if (position.w > 0.0 && position.z > position.w) {
+		position.z = position.w;
+	}
+
+	gl_Position = position;
+
+	// uv_interp should match our screen coords.
+	uv_interp = position.xy / position.w;
 }
 
 #[fragment]
@@ -34,33 +57,11 @@ void main() {
 
 #VERSION_DEFINES
 
-#ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
-#extension GL_EXT_multiview : enable
-#define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-// !BAS! This needs to become an input once we implement our fallback!
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
-#else // USE_MULTIVIEW
-// Set to zero, not supported in non stereo
-#define ViewIndex 0
-#endif //USE_MULTIVIEW
-
-#define M_PI 3.14159265359
-#define MAX_VIEWS 2
+#include "sky_inc.glsl"
 
 layout(location = 0) in vec2 uv_interp;
-
-layout(push_constant, std430) uniform Params {
-	mat3 orientation;
-	vec4 projection; // only applicable if not multiview
-	vec3 position;
-	float time;
-	vec3 pad;
-	float luminance_multiplier;
-}
-params;
+layout(location = 1) in vec3 cube_normal;
+layout(location = 2) in vec2 panorama_coords;
 
 #define SAMPLER_NEAREST_CLAMP 0
 #define SAMPLER_LINEAR_CLAMP 1
@@ -81,30 +82,6 @@ layout(set = 0, binding = 1, std430) restrict readonly buffer GlobalShaderUnifor
 	vec4 data[];
 }
 global_shader_uniforms;
-
-layout(set = 0, binding = 2, std140) uniform SkySceneData {
-	mat4 view_inv_projections[2];
-	vec4 view_eye_offsets[2];
-
-	bool volumetric_fog_enabled; // 4 - 4
-	float volumetric_fog_inv_length; // 4 - 8
-	float volumetric_fog_detail_spread; // 4 - 12
-	float volumetric_fog_sky_affect; // 4 - 16
-
-	bool fog_enabled; // 4 - 20
-	float fog_sky_affect; // 4 - 24
-	float fog_density; // 4 - 28
-	float fog_sun_scatter; // 4 - 32
-
-	vec3 fog_light_color; // 12 - 44
-	float fog_aerial_perspective; // 4 - 48
-
-	float z_far; // 4 - 52
-	uint directional_light_count; // 4 - 56
-	uint pad1; // 4 - 60
-	uint pad2; // 4 - 64
-}
-sky_scene_data;
 
 struct DirectionalLightData {
 	vec4 direction_energy;
@@ -191,30 +168,11 @@ vec4 fog_process(vec3 view, vec3 sky_color) {
 }
 
 void main() {
-	vec3 cube_normal;
-#ifdef USE_MULTIVIEW
-	// In multiview our projection matrices will contain positional and rotational offsets that we need to properly unproject.
-	vec4 unproject = vec4(uv_interp.x, -uv_interp.y, 1.0, 1.0);
-	vec4 unprojected = sky_scene_data.view_inv_projections[ViewIndex] * unproject;
-	cube_normal = unprojected.xyz / unprojected.w;
-	cube_normal += sky_scene_data.view_eye_offsets[ViewIndex].xyz;
-#else
-	cube_normal.z = -1.0;
-	cube_normal.x = (cube_normal.z * (-uv_interp.x - params.projection.x)) / params.projection.y;
-	cube_normal.y = -(cube_normal.z * (-uv_interp.y - params.projection.z)) / params.projection.w;
-#endif
-	cube_normal = mat3(params.orientation) * cube_normal;
-	cube_normal = normalize(cube_normal);
-
+	// Change this, uv_interp will now be perspective corrected which is NOT what we want!!
+	// Also this calculation prevents the ability to prefetch...
 	vec2 uv = uv_interp * 0.5 + 0.5;
 
-	vec2 panorama_coords = vec2(atan(cube_normal.x, -cube_normal.z), acos(cube_normal.y));
-
-	if (panorama_coords.x < 0.0) {
-		panorama_coords.x += M_PI * 2.0;
-	}
-
-	panorama_coords /= vec2(M_PI * 2.0, M_PI);
+	vec3 eye_dir = normalize(cube_normal);
 
 	vec3 color = vec3(0.0, 0.0, 0.0);
 	float alpha = 1.0; // Only available to subpasses
