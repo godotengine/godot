@@ -338,6 +338,7 @@ private:
 	struct SubWindow {
 		Window *window = nullptr;
 		RID canvas_item;
+		Rect2i parent_safe_rect;
 	};
 
 	// VRS
@@ -647,6 +648,7 @@ public:
 
 	Viewport *get_parent_viewport() const;
 	Window *get_base_window() const;
+	void window_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect);
 
 	void pass_mouse_focus_to(Viewport *p_viewport, Control *p_control);
 

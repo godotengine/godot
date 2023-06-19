@@ -354,11 +354,6 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 			gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 		}
 
-		Window *this_window = Object::cast_to<Window>(this);
-		if (this_window) {
-			this_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
-		}
-
 		return;
 	}
 
@@ -386,11 +381,6 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 		}
 		gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
 		gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
-	} else {
-		Window *this_window = Object::cast_to<Window>(this);
-		if (this_window) {
-			this_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
-		}
 	}
 
 	Window *old_focus = gui.subwindow_focused;
@@ -414,6 +404,14 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 	_sub_window_update(p_window);
 }
 
+void Viewport::window_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect) {
+	int index = _sub_window_find(p_window);
+	ERR_FAIL_COND(index == -1);
+
+	SubWindow sw = gui.sub_windows[index];
+	sw.parent_safe_rect = p_rect;
+}
+
 void Viewport::_sub_window_remove(Window *p_window) {
 	int index = _sub_window_find(p_window);
 	ERR_FAIL_COND(index == -1);
@@ -434,29 +432,8 @@ void Viewport::_sub_window_remove(Window *p_window) {
 	}
 
 	if (gui.subwindow_focused == p_window) {
-		Window *new_focused_window;
-		Window *parent_visible = p_window->get_parent_visible_window();
-
 		gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
-
-		if (parent_visible) {
-			new_focused_window = parent_visible;
-		} else {
-			new_focused_window = Object::cast_to<Window>(this);
-		}
-
-		if (new_focused_window) {
-			int new_focused_index = _sub_window_find(new_focused_window);
-			if (new_focused_index != -1) {
-				gui.subwindow_focused = new_focused_window;
-			} else {
-				gui.subwindow_focused = nullptr;
-			}
-
-			new_focused_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
-		} else {
-			gui.subwindow_focused = nullptr;
-		}
+		gui.subwindow_focused = nullptr;
 	}
 
 	RenderingServer::get_singleton()->viewport_set_parent_viewport(p_window->viewport, p_window->parent ? p_window->parent->viewport : RID());
@@ -2871,6 +2848,11 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 					_sub_window_grab_focus(sw.window);
 				}
 
+				click_on_window = sw.window;
+			}
+
+			// Verify, if safe_rect was clicked.
+			if (sw.parent_safe_rect != Rect2i() && sw.parent_safe_rect.has_point(mb->get_position())) {
 				click_on_window = sw.window;
 			}
 

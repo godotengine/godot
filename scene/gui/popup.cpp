@@ -41,33 +41,6 @@ void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void Popup::_initialize_visible_parents() {
-	if (is_embedded()) {
-		visible_parents.clear();
-
-		Window *parent_window = this;
-		while (parent_window) {
-			parent_window = parent_window->get_parent_visible_window();
-			if (parent_window) {
-				visible_parents.push_back(parent_window);
-				parent_window->connect("focus_entered", callable_mp(this, &Popup::_parent_focused));
-				parent_window->connect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
-			}
-		}
-	}
-}
-
-void Popup::_deinitialize_visible_parents() {
-	if (is_embedded()) {
-		for (Window *parent_window : visible_parents) {
-			parent_window->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
-			parent_window->disconnect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
-		}
-
-		visible_parents.clear();
-	}
-}
-
 void Popup::_update_theme_item_cache() {
 	Window::_update_theme_item_cache();
 
@@ -78,10 +51,7 @@ void Popup::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_in_edited_scene_root()) {
-				if (is_visible()) {
-					_initialize_visible_parents();
-				} else {
-					_deinitialize_visible_parents();
+				if (!is_visible()) {
 					emit_signal(SNAME("popup_hide"));
 					popped_up = false;
 				}
@@ -96,10 +66,10 @@ void Popup::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_UNPARENTED:
-		case NOTIFICATION_EXIT_TREE: {
-			if (!is_in_edited_scene_root()) {
-				_deinitialize_visible_parents();
+		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
+			if (popped_up && get_flag(FLAG_POPUP)) {
+				print_line("focus out");
+				_close_pressed();
 			}
 		} break;
 
@@ -117,17 +87,8 @@ void Popup::_notification(int p_what) {
 	}
 }
 
-void Popup::_parent_focused() {
-	if (popped_up && get_flag(FLAG_POPUP)) {
-		_close_pressed();
-	}
-}
-
 void Popup::_close_pressed() {
 	popped_up = false;
-
-	_deinitialize_visible_parents();
-
 	call_deferred(SNAME("hide"));
 }
 
