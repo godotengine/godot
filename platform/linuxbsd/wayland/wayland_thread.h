@@ -100,7 +100,10 @@ public:
 		Vector<String> files;
 	};
 
-	struct WaylandGlobals {
+	struct RegistryState {
+		WaylandThread *wayland_thread;
+
+		// Core Wayland globals.
 		struct wl_shm *wl_shm = nullptr;
 		uint32_t wl_shm_name = 0;
 
@@ -114,9 +117,14 @@ public:
 		uint32_t wl_data_device_manager_name = 0;
 
 		List<struct wl_output *> wl_outputs;
+		List<struct wl_seat *> wl_seats;
+
+		// xdg-shell globals.
 
 		struct xdg_wm_base *xdg_wm_base = nullptr;
 		uint32_t xdg_wm_base_name = 0;
+
+		// wayland-protocols globals.
 
 		struct zxdg_decoration_manager_v1 *xdg_decoration_manager = nullptr;
 		uint32_t xdg_decoration_manager_name = 0;
@@ -177,11 +185,11 @@ public:
 		struct libdecor_frame *libdecor_frame = nullptr;
 #endif
 
-		WaylandGlobals *globals;
+		RegistryState *registry;
 		WaylandThread *wayland_thread;
 	};
 
-	// "High level" godot-side screen data.
+	// "High level" Godot-side screen data.
 	struct ScreenData {
 		// Geometry data.
 		Point2i position;
@@ -211,6 +219,12 @@ public:
 	enum class Gesture {
 		NONE,
 		MAGNIFY,
+	};
+
+	enum class PointerConstraint {
+		NONE,
+		LOCKED,
+		CONFINED,
 	};
 
 	struct PointerData {
@@ -268,16 +282,19 @@ public:
 	struct SeatState {
 		WaylandThread::WaylandState *wls = nullptr;
 
-		struct wl_seat *wl_seat = nullptr;
+		RegistryState *registry = nullptr;
+
+		WaylandThread *wayland_thread = nullptr;
+
 		uint32_t wl_seat_name = 0;
 
 		// Pointer.
 		struct wl_pointer *wl_pointer = nullptr;
 
-		uint32_t pointer_enter_serial;
+		uint32_t pointer_enter_serial = 0;
 
-		bool window_pointed = false;
 		struct wl_surface *pointed_surface = nullptr;
+		struct wl_surface *last_pointed_surface = nullptr;
 
 		struct zwp_relative_pointer_v1 *wp_relative_pointer = nullptr;
 		struct zwp_locked_pointer_v1 *wp_locked_pointer = nullptr;
@@ -359,7 +376,7 @@ public:
 		TabletToolData tablet_tool_data;
 	};
 
-	struct CustomWaylandCursor {
+	struct CustomCursor {
 		struct wl_buffer *wl_buffer = nullptr;
 		uint32_t *buffer_data = nullptr;
 		uint32_t buffer_data_size = 0;
@@ -374,20 +391,9 @@ public:
 		struct wl_display *wl_display = nullptr;
 		struct wl_registry *wl_registry = nullptr;
 
-		WaylandGlobals globals;
-
 		SeatState *current_seat = nullptr;
 
-		struct wl_cursor_theme *wl_cursor_theme = nullptr;
-		struct wl_cursor_image *cursor_images[DisplayServer::CURSOR_MAX] = {};
-		struct wl_buffer *cursor_bufs[DisplayServer::CURSOR_MAX] = {};
-
-		HashMap<DisplayServer::CursorShape, CustomWaylandCursor> custom_cursors;
-
-		DisplayServer::CursorShape cursor_shape = DisplayServer::CURSOR_ARROW;
 		DisplayServer::MouseMode mouse_mode = DisplayServer::MOUSE_MODE_VISIBLE;
-
-		List<SeatState> seats;
 
 		WaylandThread *wayland_thread = nullptr;
 	};
@@ -402,10 +408,11 @@ private:
 		struct wl_display *wl_display = nullptr;
 	};
 
+	// TODO: Get rid of this.
+	WaylandState *wls;
+
 	// FIXME: Is this the right thing to do?
 	inline static const char *proxy_tag = "godot";
-
-	WaylandState *wls;
 
 	Thread events_thread;
 	ThreadData thread_data;
@@ -414,9 +421,23 @@ private:
 
 	List<Ref<Message>> messages;
 
-	bool initialized = false;
+	struct wl_cursor_theme *wl_cursor_theme = nullptr;
+	struct wl_cursor_image *cursor_images[DisplayServer::CURSOR_MAX] = {};
+	struct wl_buffer *cursor_bufs[DisplayServer::CURSOR_MAX] = {};
+
+	HashMap<DisplayServer::CursorShape, CustomCursor> custom_cursors;
+
+	struct wl_buffer *cursor_buffer = nullptr;
+	Point2i cursor_hotspot;
+
+	PointerConstraint pointer_constraint = PointerConstraint::NONE;
 
 	struct wl_display *wl_display = nullptr;
+	struct wl_registry *wl_registry = nullptr;
+
+	RegistryState registry;
+
+	bool initialized = false;
 
 #ifdef LIBDECOR_ENABLED
 	struct libdecor *libdecor_context = nullptr;
@@ -737,6 +758,12 @@ public:
 
 	static WindowState *wl_surface_get_window_state(struct wl_surface *p_surface);
 	static ScreenState *wl_output_get_screen_state(struct wl_output *p_output);
+	static SeatState *wl_seat_get_seat_state(struct wl_seat *p_seat);
+
+	void seat_state_unlock_pointer(SeatState *p_ss);
+	void seat_state_lock_pointer(SeatState *p_ss);
+	void seat_state_confine_pointer(SeatState *p_ss);
+	void seat_state_update_cursor(SeatState *p_ss);
 
 	static int window_state_calculate_scale(WindowState *p_ws);
 
@@ -767,6 +794,10 @@ public:
 
 	ScreenData screen_get_data(int p_screen) const;
 	int get_screen_count() const;
+
+	void cursor_hide();
+	void cursor_set_shape(DisplayServer::CursorShape p_cursor_shape);
+	void cursor_cache_custom_shape(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image);
 
 	Error init(WaylandState &p_wls);
 	void destroy();

@@ -123,7 +123,7 @@ class DisplayServerWayland : public DisplayServer {
 	// No need to register with GDCLASS, it's platform-specific and nothing is added.
 	struct WindowData {
 		// TODO: Remove.
-		WaylandState *wls = nullptr;
+		WaylandThread::WaylandState *wls = nullptr;
 
 		WindowID id;
 
@@ -158,6 +158,8 @@ class DisplayServerWayland : public DisplayServer {
 
 	// TODO: Remove this hack.
 	WaylandThread::WaylandState wls;
+
+	CursorShape cursor_shape = CURSOR_ARROW;
 
 	WindowData main_window;
 	WaylandThread wayland_thread;

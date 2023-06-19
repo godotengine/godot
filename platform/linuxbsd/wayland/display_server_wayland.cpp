@@ -210,6 +210,7 @@ bool DisplayServerWayland::is_dark_mode() const {
 #endif
 
 void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
+#if 0
 	if (p_mode == wls.mouse_mode) {
 		return;
 	}
@@ -228,6 +229,7 @@ void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 	wls.mouse_mode = p_mode;
 
 	WaylandThread::_wayland_state_update_cursor(wls);
+#endif
 }
 
 DisplayServerWayland::MouseMode DisplayServerWayland::mouse_get_mode() const {
@@ -969,26 +971,27 @@ void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
 
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (p_shape == wls.cursor_shape) {
+	if (p_shape == cursor_shape) {
 		return;
 	}
 
-	wls.cursor_shape = p_shape;
+	cursor_shape = p_shape;
 
-	WaylandThread::_wayland_state_update_cursor(wls);
+	wayland_thread.cursor_set_shape(p_shape);
 }
 
 DisplayServerWayland::CursorShape DisplayServerWayland::cursor_get_shape() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	return wls.cursor_shape;
+	return cursor_shape;
 }
 
 void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+#if 0
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (p_cursor.is_valid()) {
-		HashMap<CursorShape, WaylandThread::CustomWaylandCursor>::Iterator cursor_c = wls.custom_cursors.find(p_shape);
+		HashMap<CursorShape, WaylandThread::CustomCursor>::Iterator cursor_c = wls.custom_cursors.find(p_shape);
 
 		if (cursor_c) {
 			if (cursor_c->value.cursor_rid == p_cursor->get_rid() && cursor_c->value.hotspot == p_hotspot) {
@@ -1047,7 +1050,7 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 		int fd = WaylandThread::_allocate_shm_file(data_size);
 		ERR_FAIL_COND(fd == -1);
 
-		WaylandThread::CustomWaylandCursor &cursor = wls.custom_cursors[p_shape];
+		WaylandThread::CustomCursor &cursor = wls.custom_cursors[p_shape];
 		cursor.cursor_rid = p_cursor->get_rid();
 		cursor.hotspot = p_hotspot;
 
@@ -1098,6 +1101,7 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 	}
 
 	WaylandThread::_wayland_state_update_cursor(wls);
+#endif
 }
 
 int DisplayServerWayland::keyboard_get_layout_count() const {
@@ -1238,6 +1242,7 @@ void DisplayServerWayland::process_events() {
 		}
 	}
 
+#if 0
 	if (!wls.current_seat) {
 		return;
 	}
@@ -1275,6 +1280,7 @@ void DisplayServerWayland::process_events() {
 			seat.last_repeat_msec += ticks_delta - (ticks_delta % seat.repeat_key_delay_msec);
 		}
 	}
+#endif
 
 	Input::get_singleton()->flush_buffered_events();
 }
@@ -1402,75 +1408,6 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		RasterizerGLES3::make_current();
 	}
 #endif // GLES3_ENABLED
-	const char *cursor_theme = OS::get_singleton()->get_environment("XCURSOR_THEME").utf8().ptr();
-
-	int64_t cursor_size = OS::get_singleton()->get_environment("XCURSOR_SIZE").to_int();
-	if (cursor_size <= 0) {
-		print_verbose("Detected invalid cursor size preference, defaulting to 24.");
-		cursor_size = 24;
-	}
-
-	print_verbose(vformat("Loading cursor theme \"%s\" size %d.", cursor_theme, cursor_size));
-	wls.wl_cursor_theme = wl_cursor_theme_load(cursor_theme, cursor_size, wls.globals.wl_shm);
-
-	ERR_FAIL_NULL_MSG(wls.wl_cursor_theme, "Can't find a cursor theme.");
-
-	static const char *cursor_names[] = {
-		"left_ptr",
-		"xterm",
-		"hand2",
-		"cross",
-		"watch",
-		"left_ptr_watch",
-		"fleur",
-		"dnd-move",
-		"crossed_circle",
-		"v_double_arrow",
-		"h_double_arrow",
-		"size_bdiag",
-		"size_fdiag",
-		"move",
-		"row_resize",
-		"col_resize",
-		"question_arrow"
-	};
-
-	static const char *cursor_names_fallback[] = {
-		nullptr,
-		nullptr,
-		"pointer",
-		"cross",
-		"wait",
-		"progress",
-		"grabbing",
-		"hand1",
-		"forbidden",
-		"ns-resize",
-		"ew-resize",
-		"fd_double_arrow",
-		"bd_double_arrow",
-		"fleur",
-		"sb_v_double_arrow",
-		"sb_h_double_arrow",
-		"help"
-	};
-
-	for (int i = 0; i < CURSOR_MAX; i++) {
-		struct wl_cursor *cursor = wl_cursor_theme_get_cursor(wls.wl_cursor_theme, cursor_names[i]);
-
-		if (!cursor && cursor_names_fallback[i]) {
-			cursor = wl_cursor_theme_get_cursor(wls.wl_cursor_theme, cursor_names[i]);
-		}
-
-		if (cursor && cursor->image_count > 0) {
-			wls.cursor_images[i] = cursor->images[0];
-			wls.cursor_bufs[i] = wl_cursor_image_get_buffer(cursor->images[0]);
-		} else {
-			wls.cursor_images[i] = nullptr;
-			wls.cursor_bufs[i] = nullptr;
-			print_verbose("Failed loading cursor: " + String(cursor_names[i]));
-		}
-	}
 
 	cursor_set_shape(CURSOR_BUSY);
 
