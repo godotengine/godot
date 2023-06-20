@@ -128,7 +128,7 @@ void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::Ty
 	{
 		// The expected types for parameters and return value in ptrcall are 'int64_t' or 'uint64_t'.
 		r_enum_itype.c_in = "%5%0 %1_in = %1;\n";
-		r_enum_itype.c_out = "%5return (%0)%1;\n";
+		r_enum_itype.c_out = "%5return (%0)(%1);\n";
 		r_enum_itype.c_type = "long";
 		r_enum_itype.c_arg_in = "&%s_in";
 	}
@@ -1893,7 +1893,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 				// Assume the index parameter is an enum
 				const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
 				CRASH_COND(idx_arg_type == nullptr);
-				p_output.append("(" + idx_arg_type->proxy_name + ")" + itos(p_iprop.index));
+				p_output.append("(" + idx_arg_type->proxy_name + ")(" + itos(p_iprop.index) + ")");
 			} else {
 				p_output.append(itos(p_iprop.index));
 			}
@@ -1911,7 +1911,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 				// Assume the index parameter is an enum
 				const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
 				CRASH_COND(idx_arg_type == nullptr);
-				p_output.append("(" + idx_arg_type->proxy_name + ")" + itos(p_iprop.index) + ", ");
+				p_output.append("(" + idx_arg_type->proxy_name + ")(" + itos(p_iprop.index) + "), ");
 			} else {
 				p_output.append(itos(p_iprop.index) + ", ");
 			}
@@ -3286,7 +3286,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			break;
 		case Variant::INT:
 			if (r_iarg.type.cname != name_cache.type_int) {
-				r_iarg.default_argument = "(%s)" + r_iarg.default_argument;
+				r_iarg.default_argument = "(%s)(" + r_iarg.default_argument + ")";
 			}
 			break;
 		case Variant::FLOAT:
@@ -3508,7 +3508,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 		itype = TypeInterface::create_value_type(String(m_name));                              \
 		if (itype.name != "long" && itype.name != "ulong") {                                   \
 			itype.c_in = "%5%0 %1_in = %1;\n";                                                 \
-			itype.c_out = "%5return (%0)%1;\n";                                                \
+			itype.c_out = "%5return (%0)(%1);\n";                                              \
 			itype.c_type = "long";                                                             \
 			itype.c_arg_in = "&%s_in";                                                         \
 		} else {                                                                               \

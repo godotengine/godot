@@ -595,7 +595,7 @@
 				Sets the function used to calculate physics for the body, if that body allows it (see [method body_set_omit_force_integration]).
 				The force integration function takes the following two parameters:
 				1. a [PhysicsDirectBodyState2D] [code]state[/code]: used to retrieve and modify the body's state,
-				2. a [Variant] [code]userdata[/code]: optional user data.
+				2. a [Variant] [param userdata]: optional user data.
 				[b]Note:[/b] This callback is currently not called in Godot Physics.
 			</description>
 		</method>

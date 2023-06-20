@@ -13,21 +13,21 @@
 			<return type="bool" />
 			<param index="0" name="branch_name" type="String" />
 			<description>
-				Checks out a [code]branch_name[/code] in the VCS.
+				Checks out a [param branch_name] in the VCS.
 			</description>
 		</method>
 		<method name="_commit" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="msg" type="String" />
 			<description>
-				Commits the currently staged changes and applies the commit [code]msg[/code] to the resulting commit.
+				Commits the currently staged changes and applies the commit [param msg] to the resulting commit.
 			</description>
 		</method>
 		<method name="_create_branch" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="branch_name" type="String" />
 			<description>
-				Creates a new branch named [code]branch_name[/code] in the VCS.
+				Creates a new branch named [param branch_name] in the VCS.
 			</description>
 		</method>
 		<method name="_create_remote" qualifiers="virtual">
@@ -35,21 +35,21 @@
 			<param index="0" name="remote_name" type="String" />
 			<param index="1" name="remote_url" type="String" />
 			<description>
-				Creates a new remote destination with name [code]remote_name[/code] and points it to [code]remote_url[/code]. This can be an HTTPS remote or an SSH remote.
+				Creates a new remote destination with name [param remote_name] and points it to [param remote_url]. This can be an HTTPS remote or an SSH remote.
 			</description>
 		</method>
 		<method name="_discard_file" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="file_path" type="String" />
 			<description>
-				Discards the changes made in a file present at [code]file_path[/code].
+				Discards the changes made in a file present at [param file_path].
 			</description>
 		</method>
 		<method name="_fetch" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="remote" type="String" />
 			<description>
-				Fetches new changes from the remote, but doesn't write changes to the current working directory. Equivalent to [code]git fetch[/code].
+				Fetches new changes from the [param remote], but doesn't write changes to the current working directory. Equivalent to [code]git fetch[/code].
 			</description>
 		</method>
 		<method name="_get_branch_list" qualifiers="virtual">
@@ -69,7 +69,7 @@
 			<param index="0" name="identifier" type="String" />
 			<param index="1" name="area" type="int" />
 			<description>
-				Returns an array of [Dictionary] items (see [method create_diff_file], [method create_diff_hunk], [method create_diff_line], [method add_line_diffs_into_diff_hunk] and [method add_diff_hunks_into_diff_file]), each containing information about a diff. If [code]identifier[/code] is a file path, returns a file diff, and if it is a commit identifier, then returns a commit diff.
+				Returns an array of [Dictionary] items (see [method create_diff_file], [method create_diff_hunk], [method create_diff_line], [method add_line_diffs_into_diff_hunk] and [method add_diff_hunks_into_diff_file]), each containing information about a diff. If [param identifier] is a file path, returns a file diff, and if it is a commit identifier, then returns a commit diff.
 			</description>
 		</method>
 		<method name="_get_line_diff" qualifiers="virtual">
@@ -77,7 +77,7 @@
 			<param index="0" name="file_path" type="String" />
 			<param index="1" name="text" type="String" />
 			<description>
-				Returns an [Array] of [Dictionary] items (see [method create_diff_hunk]), each containing a line diff between a file at [code]file_path[/code] and the [code]text[/code] which is passed in.
+				Returns an [Array] of [Dictionary] items (see [method create_diff_hunk]), each containing a line diff between a file at [param file_path] and the [param text] which is passed in.
 			</description>
 		</method>
 		<method name="_get_modified_files_data" qualifiers="virtual">
@@ -109,7 +109,7 @@
 			<return type="bool" />
 			<param index="0" name="project_path" type="String" />
 			<description>
-				Initializes the VCS plugin when called from the editor. Returns whether or not the plugin was successfully initialized. A VCS project is initialized at [code]project_path[/code].
+				Initializes the VCS plugin when called from the editor. Returns whether or not the plugin was successfully initialized. A VCS project is initialized at [param project_path].
 			</description>
 		</method>
 		<method name="_pull" qualifiers="virtual">
@@ -149,7 +149,7 @@
 			<param index="3" name="ssh_private_key_path" type="String" />
 			<param index="4" name="ssh_passphrase" type="String" />
 			<description>
-				Set user credentials in the underlying VCS. [code]username[/code] and [code]password[/code] are used only during HTTPS authentication unless not already mentioned in the remote URL. [code]ssh_public_key_path[/code], [code]ssh_private_key_path[/code], and [code]ssh_passphrase[/code] are only used during SSH authentication.
+				Set user credentials in the underlying VCS. [param username] and [param password] are used only during HTTPS authentication unless not already mentioned in the remote URL. [param ssh_public_key_path], [param ssh_private_key_path], and [param ssh_passphrase] are only used during SSH authentication.
 			</description>
 		</method>
 		<method name="_shut_down" qualifiers="virtual">
@@ -162,14 +162,14 @@
 			<return type="void" />
 			<param index="0" name="file_path" type="String" />
 			<description>
-				Stages the file present at [code]file_path[/code] to the staged area.
+				Stages the file present at [param file_path] to the staged area.
 			</description>
 		</method>
 		<method name="_unstage_file" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="file_path" type="String" />
 			<description>
-				Unstages the file present at [code]file_path[/code] from the staged area to the unstaged area.
+				Unstages the file present at [param file_path] from the staged area to the unstaged area.
 			</description>
 		</method>
 		<method name="add_diff_hunks_into_diff_file">
@@ -177,7 +177,7 @@
 			<param index="0" name="diff_file" type="Dictionary" />
 			<param index="1" name="diff_hunks" type="Dictionary[]" />
 			<description>
-				Helper function to add an array of [code]diff_hunks[/code] into a [code]diff_file[/code].
+				Helper function to add an array of [param diff_hunks] into a [param diff_file].
 			</description>
 		</method>
 		<method name="add_line_diffs_into_diff_hunk">
@@ -185,7 +185,7 @@
 			<param index="0" name="diff_hunk" type="Dictionary" />
 			<param index="1" name="line_diffs" type="Dictionary[]" />
 			<description>
-				Helper function to add an array of [code]line_diffs[/code] into a [code]diff_hunk[/code].
+				Helper function to add an array of [param line_diffs] into a [param diff_hunk].
 			</description>
 		</method>
 		<method name="create_commit">
@@ -196,7 +196,7 @@
 			<param index="3" name="unix_timestamp" type="int" />
 			<param index="4" name="offset_minutes" type="int" />
 			<description>
-				Helper function to create a commit [Dictionary] item. [code]msg[/code] is the commit message of the commit. [code]author[/code] is a single human-readable string containing all the author's details, e.g. the email and name configured in the VCS. [code]id[/code] is the identifier of the commit, in whichever format your VCS may provide an identifier to commits. [code]unix_timestamp[/code] is the UTC Unix timestamp of when the commit was created. [code]offset_minutes[/code] is the timezone offset in minutes, recorded from the system timezone where the commit was created.
+				Helper function to create a commit [Dictionary] item. [param msg] is the commit message of the commit. [param author] is a single human-readable string containing all the author's details, e.g. the email and name configured in the VCS. [param id] is the identifier of the commit, in whichever format your VCS may provide an identifier to commits. [param unix_timestamp] is the UTC Unix timestamp of when the commit was created. [param offset_minutes] is the timezone offset in minutes, recorded from the system timezone where the commit was created.
 			</description>
 		</method>
 		<method name="create_diff_file">
@@ -204,7 +204,7 @@
 			<param index="0" name="new_file" type="String" />
 			<param index="1" name="old_file" type="String" />
 			<description>
-				Helper function to create a [code]Dictionary[/code] for storing old and new diff file paths.
+				Helper function to create a [Dictionary] for storing old and new diff file paths.
 			</description>
 		</method>
 		<method name="create_diff_hunk">
@@ -214,7 +214,7 @@
 			<param index="2" name="old_lines" type="int" />
 			<param index="3" name="new_lines" type="int" />
 			<description>
-				Helper function to create a [code]Dictionary[/code] for storing diff hunk data. [code]old_start[/code] is the starting line number in old file. [code]new_start[/code] is the starting line number in new file. [code]old_lines[/code] is the number of lines in the old file. [code]new_lines[/code] is the number of lines in the new file.
+				Helper function to create a [Dictionary] for storing diff hunk data. [param old_start] is the starting line number in old file. [param new_start] is the starting line number in new file. [param old_lines] is the number of lines in the old file. [param new_lines] is the number of lines in the new file.
 			</description>
 		</method>
 		<method name="create_diff_line">
@@ -224,7 +224,7 @@
 			<param index="2" name="content" type="String" />
 			<param index="3" name="status" type="String" />
 			<description>
-				Helper function to create a [code]Dictionary[/code] for storing a line diff. [code]new_line_no[/code] is the line number in the new file (can be [code]-1[/code] if the line is deleted). [code]old_line_no[/code] is the line number in the old file (can be [code]-1[/code] if the line is added). [code]content[/code] is the diff text. [code]status[/code] is a single character string which stores the line origin.
+				Helper function to create a [Dictionary] for storing a line diff. [param new_line_no] is the line number in the new file (can be [code]-1[/code] if the line is deleted). [param old_line_no] is the line number in the old file (can be [code]-1[/code] if the line is added). [param content] is the diff text. [param status] is a single character string which stores the line origin.
 			</description>
 		</method>
 		<method name="create_status_file">
@@ -233,7 +233,7 @@
 			<param index="1" name="change_type" type="int" enum="EditorVCSInterface.ChangeType" />
 			<param index="2" name="area" type="int" enum="EditorVCSInterface.TreeArea" />
 			<description>
-				Helper function to create a [code]Dictionary[/code] used by editor to read the status of a file.
+				Helper function to create a [Dictionary] used by editor to read the status of a file.
 			</description>
 		</method>
 		<method name="popup_error">

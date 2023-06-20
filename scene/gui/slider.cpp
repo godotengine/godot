@@ -289,6 +289,7 @@ void Slider::set_editable(bool p_editable) {
 	if (editable == p_editable) {
 		return;
 	}
+	grab.active = false;
 
 	editable = p_editable;
 	queue_redraw();

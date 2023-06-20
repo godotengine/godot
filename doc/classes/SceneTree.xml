@@ -62,9 +62,9 @@
 			<param index="3" name="ignore_time_scale" type="bool" default="false" />
 			<description>
 				Returns a [SceneTreeTimer] which will [signal SceneTreeTimer.timeout] after the given time in seconds elapsed in this [SceneTree].
-				If [code]process_always[/code] is set to [code]false[/code], pausing the [SceneTree] will also pause the timer.
-				If [code]process_in_physics[/code] is set to [code]true[/code], will update the [SceneTreeTimer] during the physics frame instead of the process frame (fixed framerate processing).
-				If [code]ignore_time_scale[/code] is set to [code]true[/code], will ignore [member Engine.time_scale] and update the [SceneTreeTimer] with the actual frame delta.
+				If [param process_always] is set to [code]false[/code], pausing the [SceneTree] will also pause the timer.
+				If [param process_in_physics] is set to [code]true[/code], will update the [SceneTreeTimer] during the physics frame instead of the process frame (fixed framerate processing).
+				If [param ignore_time_scale] is set to [code]true[/code], will ignore [member Engine.time_scale] and update the [SceneTreeTimer] with the actual frame delta.
 				Commonly used to create a one-shot delay timer as in the following example:
 				[codeblocks]
 				[gdscript]

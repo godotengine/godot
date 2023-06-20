@@ -26,7 +26,7 @@
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
 			<description>
-				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [code]layer_number[/code] between 1 and 32.
+				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_global_end_position">
@@ -48,7 +48,7 @@
 			<param index="0" name="layer_number" type="int" />
 			<param index="1" name="value" type="bool" />
 			<description>
-				Based on [code]value[/code], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [code]layer_number[/code] between 1 and 32.
+				Based on [param value], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 	</methods>
@@ -65,7 +65,7 @@
 			The distance the link will search is controlled by [method NavigationServer3D.map_set_link_connection_radius].
 		</member>
 		<member name="enter_cost" type="float" setter="set_enter_cost" getter="get_enter_cost" default="0.0">
-			When pathfinding enters this link from another regions navigation mesh the [code]enter_cost[/code] value is added to the path distance for determining the shortest path.
+			When pathfinding enters this link from another regions navigation mesh the [member enter_cost] value is added to the path distance for determining the shortest path.
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
 			A bitfield determining all navigation layers the link belongs to. These navigation layers will be checked when requesting a path with [method NavigationServer3D.map_get_path].
@@ -76,7 +76,7 @@
 			The distance the link will search is controlled by [method NavigationServer3D.map_set_link_connection_radius].
 		</member>
 		<member name="travel_cost" type="float" setter="set_travel_cost" getter="get_travel_cost" default="1.0">
-			When pathfinding moves along the link the traveled distance is multiplied with [code]travel_cost[/code] for determining the shortest path.
+			When pathfinding moves along the link the traveled distance is multiplied with [member travel_cost] for determining the shortest path.
 		</member>
 	</members>
 </class>

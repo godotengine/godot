@@ -49,7 +49,6 @@
 				Joins the [Thread] and waits for it to finish. Returns the output of the [Callable] passed to [method start].
 				Should either be used when you want to retrieve the value returned from the method called by the [Thread] or before freeing the instance that contains the [Thread].
 				To determine if this can be called without blocking the calling thread, check if [method is_alive] is [code]false[/code].
-				[b]Note:[/b] After the [Thread] finishes joining it will be disposed. If you want to use it again you will have to create a new instance of it.
 			</description>
 		</method>
 	</methods>

@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Semaphore" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A synchronization semaphore.
+		A synchronization mechanism used to control access to a shared resource by [Thread]s.
 	</brief_description>
 	<description>
 		A synchronization semaphore which can be used to synchronize multiple [Thread]s. Initialized to zero on creation. Be careful to avoid deadlocks. For a binary version, see [Mutex].
 	</description>
 	<tutorials>
 		<link title="Using multiple threads">$DOCS_URL/tutorials/performance/using_multiple_threads.html</link>
+		<link title="Thread-safe APIs">$DOCS_URL/tutorials/performance/thread_safe_apis.html</link>
 	</tutorials>
 	<methods>
 		<method name="post">
