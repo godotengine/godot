@@ -219,10 +219,10 @@
 	</signals>
 	<constants>
 		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback">
-			The animations will progress during the physics frame (i.e. [method Node._physics_process]).
+			The animations will progress during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
 		</constant>
 		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback">
-			The animations will progress during the idle frame (i.e. [method Node._process]).
+			The animations will progress during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
 		</constant>
 		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback">
 			The animations will only progress manually (see [method advance]).
