@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
+#include "editor/import/resource_importer_texture_settings.h"
 
 EditorExport *EditorExport::singleton = nullptr;
 
@@ -136,20 +137,16 @@ void EditorExport::add_export_preset(const Ref<EditorExportPreset> &p_preset, in
 }
 
 String EditorExportPlatform::test_etc2() const {
-	const bool etc2_supported = GLOBAL_GET("rendering/textures/vram_compression/import_etc2_astc");
-
-	if (!etc2_supported) {
-		return TTR("Target platform requires 'ETC2/ASTC' texture compression. Enable 'Import ETC2 ASTC' in Project Settings.");
+	if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
+		return TTR("Target platform requires 'ETC2/ASTC' texture compression. Enable 'Import ETC2 ASTC' in Project Settings.") + "\n";
 	}
 
 	return String();
 }
 
 String EditorExportPlatform::test_bc() const {
-	const bool bc_supported = GLOBAL_GET("rendering/textures/vram_compression/import_s3tc_bptc");
-
-	if (!bc_supported) {
-		return TTR("Target platform requires 'S3TC/BPTC' texture compression. Enable 'Import S3TC BPTC' in Project Settings.");
+	if (!ResourceImporterTextureSettings::should_import_s3tc_bptc()) {
+		return TTR("Target platform requires 'S3TC/BPTC' texture compression. Enable 'Import S3TC BPTC' in Project Settings.") + "\n";
 	}
 
 	return String();
