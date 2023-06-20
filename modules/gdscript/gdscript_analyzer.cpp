@@ -5003,7 +5003,7 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 	bool hard_operation = p_a.is_hard_type() && p_b.is_hard_type();
 
 	if (p_operation == Variant::OP_ADD && a_type == Variant::ARRAY && b_type == Variant::ARRAY) {
-		if (p_a.get_container_element_type() == p_a.get_container_element_type()) {
+		if (p_a.has_container_element_type() && p_b.has_container_element_type() && p_a.get_container_element_type() == p_b.get_container_element_type()) {
 			r_valid = true;
 			result = p_a;
 			result.type_source = hard_operation ? GDScriptParser::DataType::ANNOTATED_INFERRED : GDScriptParser::DataType::INFERRED;
