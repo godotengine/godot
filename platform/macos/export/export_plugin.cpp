@@ -2083,8 +2083,6 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
-	bool valid = false;
-
 	// Look for export templates (custom templates).
 	bool dvalid = false;
 	bool rvalid = false;
@@ -2102,8 +2100,17 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 		}
 	}
 
-	String architecture = p_preset->get("binary_format/architecture");
+	// Look for export templates (official templates, check only is custom templates are not set).
+	if (!dvalid || !rvalid) {
+		dvalid = exists_export_template("macos.zip", &err);
+		rvalid = dvalid; // Both in the same ZIP.
+	}
 
+	bool valid = dvalid || rvalid;
+	r_missing_templates = !valid;
+
+	// Check the texture formats, which vary depending on the target architecture.
+	String architecture = p_preset->get("binary_format/architecture");
 	if (architecture == "universal" || architecture == "x86_64") {
 		const String bc_error = test_bc();
 		if (!bc_error.is_empty()) {
@@ -2120,19 +2127,9 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 		ERR_PRINT("Invalid architecture");
 	}
 
-	// Look for export templates (official templates, check only is custom templates are not set).
-	if (!dvalid || !rvalid) {
-		dvalid = exists_export_template("macos.zip", &err);
-		rvalid = dvalid; // Both in the same ZIP.
-	}
-
-	valid = dvalid || rvalid;
-	r_missing_templates = !valid;
-
 	if (!err.is_empty()) {
 		r_error = err;
 	}
-
 	return valid;
 }
 
