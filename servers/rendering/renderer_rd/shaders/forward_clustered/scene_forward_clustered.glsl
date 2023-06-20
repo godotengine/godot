@@ -121,6 +121,7 @@ layout(location = 10) out flat uint instance_index_interp;
 vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
+layout(location = 11) out vec4 combined_projected;
 #else // USE_MULTIVIEW
 // Set to zero, not supported in non stereo
 #define ViewIndex 0
@@ -313,6 +314,7 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 #endif
 
 #ifdef USE_MULTIVIEW
+	mat4 combined_projection = scene_data.projection_matrix;
 	mat4 projection_matrix = scene_data.projection_matrix_view[ViewIndex];
 	mat4 inv_projection_matrix = scene_data.inv_projection_matrix_view[ViewIndex];
 	vec3 eye_offset = scene_data.eye_offset[ViewIndex].xyz;
@@ -432,6 +434,10 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 	gl_Position = position;
 #else
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
+#endif
+
+#ifdef USE_MULTIVIEW
+	combined_projected = combined_projection * vec4(vertex_interp, 1.0);
 #endif
 
 #ifdef MOTION_VECTORS
@@ -557,6 +563,7 @@ layout(location = 10) in flat uint instance_index_interp;
 vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
+layout(location = 11) in vec4 combined_projected;
 #else // USE_MULTIVIEW
 // Set to zero, not supported in non stereo
 #define ViewIndex 0
@@ -913,7 +920,12 @@ void fragment_shader(in SceneData scene_data) {
 	}
 
 	if (implementation_data.volumetric_fog_enabled) {
+#ifdef USE_MULTIVIEW
+		vec2 center_uv = (combined_projected.xy / combined_projected.w) * 0.5 + 0.5;
+		vec4 volumetric_fog = volumetric_fog_process(center_uv, -vertex.z);
+#else
 		vec4 volumetric_fog = volumetric_fog_process(screen_uv, -vertex.z);
+#endif
 		if (scene_data.fog_enabled) {
 			//must use the full blending equation here to blend fogs
 			vec4 res;
