@@ -51,9 +51,9 @@ void SaveloadSynchronizer::_stop() {
 	root_node_cache = ObjectID();
 	reset();
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
-//	if (node) {
-//		get_saveload()->object_configuration_remove(node, this);
-//	}
+	if (node) {
+		get_saveload()->object_configuration_remove(node, this);
+	}
 }
 
 void SaveloadSynchronizer::_start() {
@@ -65,25 +65,25 @@ void SaveloadSynchronizer::_start() {
 	root_node_cache = ObjectID();
 	reset();
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
-//	if (node) {
-//		root_node_cache = node->get_instance_id();
-//		get_saveload()->object_configuration_add(node, this);
-//		_update_process();
-//	}
+	if (node) {
+		root_node_cache = node->get_instance_id();
+		get_saveload()->object_configuration_add(node, this);
+		_update_process();
+	}
 }
 
-//void SaveloadSynchronizer::_update_process() {
-//#ifdef TOOLS_ENABLED
-//	if (Engine::get_singleton()->is_editor_hint()) {
-//		return;
-//	}
-//#endif
-//	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
-//	if (!node) {
-//		return;
-//	}
-//	set_process_internal(false);
-//	set_physics_process_internal(false);
+void SaveloadSynchronizer::_update_process() {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+#endif
+	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
+	if (!node) {
+		return;
+	}
+	set_process_internal(false);
+	set_physics_process_internal(false);
 //	if (!visibility_filters.size()) {
 //		return;
 //	}
@@ -97,7 +97,7 @@ void SaveloadSynchronizer::_start() {
 //		case VISIBILITY_PROCESS_NONE:
 //			break;
 //	}
-//}
+}
 
 Node *SaveloadSynchronizer::get_root_node() {
 	return root_node_cache.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(root_node_cache)) : nullptr;
@@ -163,6 +163,18 @@ Error SaveloadSynchronizer::get_state(const List<NodePath> &p_properties, Object
 		i++;
 	}
 	return OK;
+}
+
+Dictionary SaveloadSynchronizer::get_state_wrapper() {
+	Vector<Variant> vars;
+	Vector<const Variant *> varp;
+	const List<NodePath> props = get_saveload_config()->get_sync_properties();
+	get_state(props, get_root_node(), vars, varp);
+	Dictionary dict;
+	for (int i = 0; i < vars.size(); ++i) {
+		dict[props[i]] = vars[i];
+	}
+	return dict;
 }
 
 Error SaveloadSynchronizer::set_state(const List<NodePath> &p_properties, Object *p_obj, const Vector<Variant> &p_state) {
@@ -249,6 +261,8 @@ void SaveloadSynchronizer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_saveload_config", "config"), &SaveloadSynchronizer::set_saveload_config);
 	ClassDB::bind_method(D_METHOD("get_saveload_config"), &SaveloadSynchronizer::get_saveload_config);
+
+	ClassDB::bind_method(D_METHOD("get_state_wrapper"), &SaveloadSynchronizer::get_state_wrapper);
 
 //	ClassDB::bind_method(D_METHOD("set_visibility_update_mode", "mode"), &SaveloadSynchronizer::set_visibility_update_mode);
 //	ClassDB::bind_method(D_METHOD("get_visibility_update_mode"), &SaveloadSynchronizer::get_visibility_update_mode);
