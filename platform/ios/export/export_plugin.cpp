@@ -39,6 +39,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/export/editor_export.h"
+#include "editor/import/resource_importer_texture_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
 
 #include "modules/modules_enabled.gen.h" // For mono and svg.
@@ -1984,10 +1985,8 @@ bool EditorExportPlatformIOS::has_valid_project_configuration(const Ref<EditorEx
 		}
 	}
 
-	const String etc_error = test_etc2();
-	if (!etc_error.is_empty()) {
+	if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
 		valid = false;
-		err += etc_error;
 	}
 
 	if (!err.is_empty()) {
