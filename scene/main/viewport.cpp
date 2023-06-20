@@ -462,7 +462,7 @@ void Viewport::_sub_window_remove(Window *p_window) {
 	RenderingServer::get_singleton()->viewport_set_parent_viewport(p_window->viewport, p_window->parent ? p_window->parent->viewport : RID());
 }
 
-int Viewport::_sub_window_find(Window *p_window) {
+int Viewport::_sub_window_find(Window *p_window) const {
 	for (int i = 0; i < gui.sub_windows.size(); i++) {
 		if (gui.sub_windows[i].window == p_window) {
 			return i;
@@ -3480,6 +3480,21 @@ void Viewport::set_embedding_subwindows(bool p_embed) {
 bool Viewport::is_embedding_subwindows() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return gui.embed_subwindows_hint;
+}
+
+void Viewport::subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect) {
+	int index = _sub_window_find(p_window);
+	ERR_FAIL_COND(index == -1);
+
+	SubWindow sw = gui.sub_windows[index];
+	sw.parent_safe_rect = p_rect;
+}
+
+Rect2i Viewport::subwindow_get_popup_safe_rect(Window *p_window) const {
+	int index = _sub_window_find(p_window);
+	ERR_FAIL_COND_V(index == -1, Rect2i());
+
+	return gui.sub_windows[index].parent_safe_rect;
 }
 
 void Viewport::pass_mouse_focus_to(Viewport *p_viewport, Control *p_control) {

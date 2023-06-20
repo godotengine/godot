@@ -244,7 +244,12 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	Rect2 safe_area = this_rect;
 	safe_area.position.y += items[p_over]._ofs_cache + scroll_offset + theme_cache.panel_style->get_offset().height - theme_cache.v_separation / 2;
 	safe_area.size.y = items[p_over]._height_cache + theme_cache.v_separation;
-	DisplayServer::get_singleton()->window_set_popup_safe_rect(submenu_popup->get_window_id(), safe_area);
+	Viewport *vp = submenu_popup->get_embedder();
+	if (vp) {
+		vp->subwindow_set_popup_safe_rect(submenu_popup, safe_area);
+	} else {
+		DisplayServer::get_singleton()->window_set_popup_safe_rect(submenu_popup->get_window_id(), safe_area);
+	}
 
 	// Make the position of the parent popup relative to submenu popup.
 	this_rect.position = this_rect.position - submenu_pum->get_position();
@@ -273,7 +278,7 @@ void PopupMenu::_parent_focused() {
 			window_parent = Object::cast_to<Window>(window_parent->get_parent()->get_viewport());
 		}
 
-		Rect2 safe_area = DisplayServer::get_singleton()->window_get_popup_safe_rect(get_window_id());
+		Rect2 safe_area = get_embedder()->subwindow_get_popup_safe_rect(this);
 		Point2 pos = DisplayServer::get_singleton()->mouse_get_position() - mouse_pos_adjusted;
 		if (safe_area == Rect2i() || !safe_area.has_point(pos)) {
 			Popup::_parent_focused();

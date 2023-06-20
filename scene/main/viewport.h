@@ -338,6 +338,7 @@ private:
 	struct SubWindow {
 		Window *window = nullptr;
 		RID canvas_item;
+		Rect2i parent_safe_rect;
 	};
 
 	// VRS
@@ -461,7 +462,7 @@ private:
 	void _sub_window_update(Window *p_window);
 	void _sub_window_grab_focus(Window *p_window);
 	void _sub_window_remove(Window *p_window);
-	int _sub_window_find(Window *p_window);
+	int _sub_window_find(Window *p_window) const;
 	bool _sub_windows_forward_input(const Ref<InputEvent> &p_event);
 	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
 
@@ -644,6 +645,8 @@ public:
 
 	void set_embedding_subwindows(bool p_embed);
 	bool is_embedding_subwindows() const;
+	void subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect);
+	Rect2i subwindow_get_popup_safe_rect(Window *p_window) const;
 
 	Viewport *get_parent_viewport() const;
 	Window *get_base_window() const;
