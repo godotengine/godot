@@ -13,10 +13,6 @@ if TYPE_CHECKING:
 STACK_SIZE = 8388608
 
 
-def is_active():
-    return True
-
-
 def get_name():
     return "Windows"
 

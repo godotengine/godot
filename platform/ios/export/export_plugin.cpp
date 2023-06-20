@@ -30,7 +30,7 @@
 
 #include "export_plugin.h"
 
-#include "../logo_svg.gen.h"
+#include "logo_svg.gen.h"
 
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
