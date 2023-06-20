@@ -216,6 +216,10 @@ void CodeEdit::_notification(int p_what) {
 				}
 			}
 		} break;
+
+		case NOTIFICATION_DRAG_BEGIN: {
+			cancel_code_completion();
+		} break;
 	}
 }
 
