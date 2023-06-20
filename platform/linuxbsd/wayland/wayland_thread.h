@@ -286,6 +286,7 @@ public:
 
 		WaylandThread *wayland_thread = nullptr;
 
+		struct wl_seat *wl_seat = nullptr;
 		uint32_t wl_seat_name = 0;
 
 		// Pointer.
@@ -393,8 +394,6 @@ public:
 
 		SeatState *current_seat = nullptr;
 
-		DisplayServer::MouseMode mouse_mode = DisplayServer::MOUSE_MODE_VISIBLE;
-
 		WaylandThread *wayland_thread = nullptr;
 	};
 
@@ -434,6 +433,8 @@ private:
 
 	struct wl_display *wl_display = nullptr;
 	struct wl_registry *wl_registry = nullptr;
+
+	struct wl_seat *wl_seat_current = nullptr;
 
 	RegistryState registry;
 
@@ -752,6 +753,8 @@ public:
 
 	static void _wayland_state_update_cursor(WaylandThread::WaylandState &p_wls);
 
+	void _set_current_seat(struct wl_seat *p_seat);
+
 	// Core Wayland utilities for integrating with our own data structures.
 	static bool wl_proxy_is_godot(struct wl_proxy *p_proxy);
 	static void wl_proxy_tag_godot(struct wl_proxy *p_proxy);
@@ -762,8 +765,11 @@ public:
 
 	void seat_state_unlock_pointer(SeatState *p_ss);
 	void seat_state_lock_pointer(SeatState *p_ss);
+	void seat_state_set_hint(SeatState *p_ss, int p_x, int p_y);
 	void seat_state_confine_pointer(SeatState *p_ss);
+
 	void seat_state_update_cursor(SeatState *p_ss);
+
 	void seat_state_echo_keys(SeatState *p_ss);
 
 	static int window_state_calculate_scale(WindowState *p_ws);
@@ -777,14 +783,16 @@ public:
 	struct wl_surface *window_get_wl_surface(DisplayServer::WindowID p_window_id) const;
 
 	void window_resize(DisplayServer::WindowID p_window_id_id, Size2i p_size);
-	void window_set_max_size(DisplayServer::WindowID p_window_id_id, Size2i p_size);
-	void window_set_min_size(DisplayServer::WindowID p_window_id_id, Size2i p_size);
+	void window_set_max_size(DisplayServer::WindowID p_window_id, Size2i p_size);
+	void window_set_min_size(DisplayServer::WindowID p_window_id, Size2i p_size);
 
-	bool window_can_set_mode(DisplayServer::WindowID p_window_id_id, DisplayServer::WindowMode p_mode) const;
+	bool window_can_set_mode(DisplayServer::WindowID p_window_id, DisplayServer::WindowMode p_mode) const;
 
-	void window_set_borderless(DisplayServer::WindowID p_window_id_id, bool p_borderless);
-	void window_set_title(DisplayServer::WindowID p_window_id_id, String p_title);
-	void window_set_app_id(DisplayServer::WindowID p_window_id_id, String p_app_id);
+	void window_set_borderless(DisplayServer::WindowID p_window_id, bool p_borderless);
+	void window_set_title(DisplayServer::WindowID p_window_id, String p_title);
+	void window_set_app_id(DisplayServer::WindowID p_window_id, String p_app_id);
+
+	bool window_is_focused(DisplayServer::WindowID p_window_id);
 
 	// Implemented by xdg_activation_v1
 	void window_request_attention(DisplayServer::WindowID p_window_id);
@@ -795,6 +803,12 @@ public:
 
 	ScreenData screen_get_data(int p_screen) const;
 	int get_screen_count() const;
+
+	void pointer_set_constraint(PointerConstraint p_constraint);
+	void pointer_set_hint(int p_x, int p_y);
+	PointerConstraint pointer_get_constraint() const;
+	DisplayServer::WindowID pointer_get_pointed_window_id();
+	BitField<MouseButtonMask> pointer_get_button_mask() const;
 
 	void cursor_hide();
 	void cursor_set_shape(DisplayServer::CursorShape p_cursor_shape);

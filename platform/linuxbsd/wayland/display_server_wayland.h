@@ -160,6 +160,7 @@ class DisplayServerWayland : public DisplayServer {
 	WaylandThread::WaylandState wls;
 
 	CursorShape cursor_shape = CURSOR_ARROW;
+	DisplayServer::MouseMode mouse_mode = DisplayServer::MOUSE_MODE_VISIBLE;
 
 	WindowData main_window;
 	WaylandThread wayland_thread;

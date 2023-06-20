@@ -210,30 +210,50 @@ bool DisplayServerWayland::is_dark_mode() const {
 #endif
 
 void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
-#if 0
-	if (p_mode == wls.mouse_mode) {
+	if (p_mode == mouse_mode) {
 		return;
 	}
 
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
-	bool previously_shown = (wls.mouse_mode == MOUSE_MODE_VISIBLE || wls.mouse_mode == MOUSE_MODE_CONFINED);
+	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
 
 	// If the cursor is being shown while it's focusing the window we must send a
 	// mouse enter event.
-	if (wls.current_seat && wls.current_seat->window_pointed && show_cursor && !previously_shown) {
+	if (wayland_thread.pointer_get_pointed_window_id() != INVALID_WINDOW_ID && show_cursor && !previously_shown) {
 		_send_window_event(WINDOW_EVENT_MOUSE_ENTER);
 	}
 
-	wls.mouse_mode = p_mode;
+	if (show_cursor) {
+		wayland_thread.cursor_set_shape(cursor_shape);
+	} else {
+		wayland_thread.cursor_hide();
+	}
 
-	WaylandThread::_wayland_state_update_cursor(wls);
-#endif
+	WaylandThread::PointerConstraint constraint = WaylandThread::PointerConstraint::NONE;
+
+	switch (p_mode) {
+		case DisplayServer::MOUSE_MODE_CAPTURED: {
+			constraint = WaylandThread::PointerConstraint::LOCKED;
+		} break;
+
+		case DisplayServer::MOUSE_MODE_CONFINED:
+		case DisplayServer::MOUSE_MODE_CONFINED_HIDDEN: {
+			constraint = WaylandThread::PointerConstraint::CONFINED;
+		} break;
+
+		default: {
+		}
+	}
+
+	wayland_thread.pointer_set_constraint(constraint);
+
+	mouse_mode = p_mode;
 }
 
 DisplayServerWayland::MouseMode DisplayServerWayland::mouse_get_mode() const {
-	return wls.mouse_mode;
+	return mouse_mode;
 }
 
 void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
@@ -243,29 +263,20 @@ void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 	// the pointer capturing logic in general, but this will do for now.
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (wls.current_seat) {
-		MouseMode old_mouse_mode = wls.mouse_mode;
+	WaylandThread::PointerConstraint old_constraint = wayland_thread.pointer_get_constraint();
 
-		mouse_set_mode(MOUSE_MODE_CAPTURED);
+	wayland_thread.pointer_set_constraint(WaylandThread::PointerConstraint::LOCKED);
+	wayland_thread.pointer_set_hint(p_to.x, p_to.y);
 
-		// Override the hint set by MOUSE_MODE_CAPTURED with the requested one.
-		zwp_locked_pointer_v1_set_cursor_position_hint(wls.current_seat->wp_locked_pointer, wl_fixed_from_int(p_to.x), wl_fixed_from_int(p_to.y));
-
-		struct wl_surface *wl_surface = wayland_thread.window_get_wl_surface(MAIN_WINDOW_ID);
-
-		// Committing the surface is required to set the hint instantly.
-		wl_surface_commit(wl_surface);
-
-		mouse_set_mode(old_mouse_mode);
-	}
+	wayland_thread.pointer_set_constraint(old_constraint);
 }
 
 Point2i DisplayServerWayland::mouse_get_position() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (wls.current_seat) {
-		return wls.current_seat->pointer_data.position;
-	}
+	// We can't properly implement this method by design.
+	// This is the best we can do unfortunately.
+	return Input::get_singleton()->get_mouse_position();
 
 	return Point2i();
 }
@@ -273,17 +284,11 @@ Point2i DisplayServerWayland::mouse_get_position() const {
 BitField<MouseButtonMask> DisplayServerWayland::mouse_get_button_state() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (!wls.current_seat) {
-		return BitField<MouseButtonMask>();
-	}
-
-	BitField<MouseButtonMask> mouse_button_mask;
-
 	// Are we sure this is the only way? This seems sus.
-	mouse_button_mask.set_flag(MouseButtonMask((int64_t)wls.current_seat->pointer_data.pressed_button_mask));
-	mouse_button_mask.set_flag(MouseButtonMask((int64_t)wls.current_seat->tablet_tool_data.pressed_button_mask));
+	// TODO: Handle tablets properly.
+	//mouse_button_mask.set_flag(MouseButtonMask((int64_t)wls.current_seat->tablet_tool_data.pressed_button_mask));
 
-	return mouse_button_mask;
+	return wayland_thread.pointer_get_button_mask();
 }
 
 // NOTE: According to the Wayland specification, this method will only do
@@ -612,7 +617,7 @@ Point2i DisplayServerWayland::window_get_position_with_decorations(DisplayServer
 }
 
 void DisplayServerWayland::window_set_position(const Point2i &p_position, DisplayServer::WindowID p_window_id) {
-	// Setting the position of a non borderless window is not supported.
+	// Unsupported with toplevels.
 }
 
 void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServer::WindowID p_window_id) {
@@ -643,7 +648,7 @@ Size2i DisplayServerWayland::window_get_max_size(DisplayServer::WindowID p_windo
 	return main_window.max_size;
 }
 
-void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_window_id_id) {
+void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 #ifdef GLES3_ENABLED
 	if (egl_manager) {
 		egl_manager->window_make_current(MAIN_WINDOW_ID);

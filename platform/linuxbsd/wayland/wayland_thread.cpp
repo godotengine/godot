@@ -325,6 +325,24 @@ void WaylandThread::_wayland_state_update_cursor(WaylandThread::WaylandState &p_
 #endif
 }
 
+void WaylandThread::_set_current_seat(struct wl_seat *p_seat) {
+	if (p_seat == wl_seat_current) {
+		return;
+	}
+
+	SeatState *old_state = wl_seat_get_seat_state(wl_seat_current);
+
+	if (old_state) {
+		seat_state_unlock_pointer(old_state);
+	}
+
+	SeatState *new_state = wl_seat_get_seat_state(p_seat);
+	seat_state_unlock_pointer(new_state);
+
+	wl_seat_current = p_seat;
+	pointer_set_constraint(pointer_constraint);
+}
+
 void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
 	RegistryState *registry = (RegistryState *)data;
 	ERR_FAIL_NULL(registry);
@@ -382,6 +400,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		wl_proxy_tag_godot((struct wl_proxy *)wl_seat);
 
 		SeatState *ss = memnew(SeatState);
+		ss->wl_seat = wl_seat;
 		ss->wl_seat_name = name;
 
 		ss->registry = registry;
@@ -872,7 +891,7 @@ void WaylandThread::_xdg_surface_on_configure(void *data, struct xdg_surface *xd
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
 
-	int scale = WaylandThread::window_state_calculate_scale(ws);
+	int scale = window_state_calculate_scale(ws);
 
 	Rect2i scaled_rect = ws->rect;
 	scaled_rect.size *= scale;
@@ -1039,7 +1058,7 @@ void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, st
 		}
 	}
 
-	int scale = WaylandThread::window_state_calculate_scale(ws);
+	int scale = window_state_calculate_scale(ws);
 
 	Rect2i scaled_rect = ws->rect;
 	scaled_rect.size *= scale;
@@ -1184,7 +1203,7 @@ void WaylandThread::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_point
 
 	wl_surface_commit(ss->cursor_surface);
 
-	Ref<WaylandThread::WindowEventMessage> msg;
+	Ref<WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = DisplayServer::WINDOW_EVENT_MOUSE_ENTER;
 
@@ -1197,12 +1216,12 @@ void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_point
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WaylandState *wls = ss->wls;
+	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
 	ss->pointed_surface = nullptr;
 
-	Ref<WaylandThread::WindowEventMessage> msg;
+	Ref<WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = DisplayServer::WINDOW_EVENT_MOUSE_EXIT;
 
@@ -1215,12 +1234,12 @@ void WaylandThread::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_poin
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WindowState *ws = WaylandThread::wl_surface_get_window_state(ss->pointed_surface);
+	WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
 	ERR_FAIL_NULL(ws);
 
-	int scale = WaylandThread::window_state_calculate_scale(ws);
+	int scale = window_state_calculate_scale(ws);
 
-	WaylandThread::PointerData &pd = ss->pointer_data_buffer;
+	PointerData &pd = ss->pointer_data_buffer;
 
 	pd.position.x = wl_fixed_to_int(surface_x) * scale;
 	pd.position.y = wl_fixed_to_int(surface_y) * scale;
@@ -1232,10 +1251,10 @@ void WaylandThread::_wl_pointer_on_button(void *data, struct wl_pointer *wl_poin
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WaylandState *wls = ss->wls;
+	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
-	WaylandThread::PointerData &pd = ss->pointer_data_buffer;
+	PointerData &pd = ss->pointer_data_buffer;
 
 	MouseButton button_pressed = MouseButton::NONE;
 
@@ -1282,7 +1301,7 @@ void WaylandThread::_wl_pointer_on_axis(void *data, struct wl_pointer *wl_pointe
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::PointerData &pd = ss->pointer_data_buffer;
+	PointerData &pd = ss->pointer_data_buffer;
 
 	switch (axis) {
 		case WL_POINTER_AXIS_VERTICAL_SCROLL: {
@@ -1301,11 +1320,13 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
 
-	WaylandThread::PointerData &old_pd = ss->pointer_data;
-	WaylandThread::PointerData &pd = ss->pointer_data_buffer;
+	wayland_thread->_set_current_seat(ss->wl_seat);
+
+	PointerData &old_pd = ss->pointer_data;
+	PointerData &pd = ss->pointer_data_buffer;
 
 	if (old_pd.motion_time != pd.motion_time || old_pd.relative_motion_time != pd.relative_motion_time) {
 		Ref<InputEventMouseMotion> mm;
@@ -1322,8 +1343,7 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 		mm->set_position(pd.position);
 		mm->set_global_position(pd.position);
 
-		// FIXME: I'm not sure whether accessing the Input singleton like this might
-		// give problems.
+		// FIXME: Stop doing this to calculate speed.
 		Input::get_singleton()->set_mouse_position(pd.position);
 		mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
@@ -1332,16 +1352,17 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 		} else {
 			// The spec includes the possibility of having motion events without an
 			// associated relative motion event. If that's the case, fallback to a
-			// simple delta of the position.
+			// simple delta of the position. The captured mouse won't report the
+			// relative speed anymore though.
 			mm->set_relative(pd.position - old_pd.position);
 		}
 
-		Ref<WaylandThread::InputEventMessage> msg;
+		Ref<InputEventMessage> msg;
 		msg.instantiate();
 
 		msg->event = mm;
 
-		ss->wayland_thread->push_message(msg);
+		wayland_thread->push_message(msg);
 	}
 
 	if (pd.discrete_scroll_vector - old_pd.discrete_scroll_vector != Vector2i()) {
@@ -1374,12 +1395,12 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 
 			pg->set_delta(pd.scroll_vector);
 
-			Ref<WaylandThread::InputEventMessage> msg;
+			Ref<InputEventMessage> msg;
 			msg.instantiate();
 
 			msg->event = pg;
 
-			wls->wayland_thread->push_message(msg);
+			wayland_thread->push_message(msg);
 		}
 	}
 
@@ -1443,12 +1464,12 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 					mb->set_double_click(true);
 				}
 
-				Ref<WaylandThread::InputEventMessage> msg;
+				Ref<InputEventMessage> msg;
 				msg.instantiate();
 
 				msg->event = mb;
 
-				wls->wayland_thread->push_message(msg);
+				wayland_thread->push_message(msg);
 
 				// Send an event resetting immediately the wheel key.
 				// Wayland specification defines axis_stop events as optional and says to
@@ -1471,10 +1492,10 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 					wh_up->set_button_index(test_button);
 					wh_up->set_pressed(false);
 
-					Ref<WaylandThread::InputEventMessage> msg_up;
+					Ref<InputEventMessage> msg_up;
 					msg_up.instantiate();
 					msg_up->event = wh_up;
-					wls->wayland_thread->push_message(msg_up);
+					wayland_thread->push_message(msg_up);
 				}
 			}
 		}
@@ -1493,9 +1514,6 @@ void WaylandThread::_wl_pointer_on_axis_source(void *data, struct wl_pointer *wl
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
-
 	ss->pointer_data_buffer.scroll_type = axis_source;
 }
 
@@ -1506,10 +1524,10 @@ void WaylandThread::_wl_pointer_on_axis_discrete(void *data, struct wl_pointer *
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WaylandState *wls = ss->wls;
+	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
-	WaylandThread::PointerData &pd = ss->pointer_data_buffer;
+	PointerData &pd = ss->pointer_data_buffer;
 
 	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
 		pd.discrete_scroll_vector.y = discrete;
@@ -1530,7 +1548,7 @@ void WaylandThread::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_ke
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WaylandState *wls = ss->wls;
+	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
 	if (ss->keymap_buffer) {
@@ -1555,10 +1573,10 @@ void WaylandThread::_wl_keyboard_on_enter(void *data, struct wl_keyboard *wl_key
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WaylandState *wls = ss->wls;
+	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
-	Ref<WaylandThread::WindowEventMessage> msg;
+	Ref<WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = DisplayServer::WINDOW_EVENT_FOCUS_IN;
 	wls->wayland_thread->push_message(msg);
@@ -1568,12 +1586,12 @@ void WaylandThread::_wl_keyboard_on_leave(void *data, struct wl_keyboard *wl_key
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WaylandState *wls = ss->wls;
+	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
 	ss->repeating_keycode = XKB_KEYCODE_INVALID;
 
-	Ref<WaylandThread::WindowEventMessage> msg;
+	Ref<WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = DisplayServer::WINDOW_EVENT_FOCUS_OUT;
 	wls->wayland_thread->push_message(msg);
@@ -1583,7 +1601,7 @@ void WaylandThread::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keybo
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WaylandState *wls = ss->wls;
+	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
 	// We have to add 8 to the scancode to get an XKB-compatible keycode.
@@ -1609,7 +1627,7 @@ void WaylandThread::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keybo
 		return;
 	}
 
-	Ref<WaylandThread::InputEventMessage> msg;
+	Ref<InputEventMessage> msg;
 	msg.instantiate();
 	msg->event = k;
 	wls->wayland_thread->push_message(msg);
@@ -1682,7 +1700,7 @@ void WaylandThread::_wl_data_device_on_drop(void *data, struct wl_data_device *w
 		// just stall our next `read`s.
 		close(fds[1]);
 
-		Ref<WaylandThread::DropFilesEventMessage> msg;
+		Ref<DropFilesEventMessage> msg;
 		msg.instantiate();
 
 		msg->files = _string_read_fd(fds[0]).split("\r\n", false);
@@ -1787,7 +1805,7 @@ void WaylandThread::_wp_relative_pointer_on_relative_motion(void *data, struct z
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::PointerData &pd = ss->pointer_data_buffer;
+	PointerData &pd = ss->pointer_data_buffer;
 
 	pd.relative_motion.x = wl_fixed_to_double(dx);
 	pd.relative_motion.y = wl_fixed_to_double(dy);
@@ -1809,10 +1827,10 @@ void WaylandThread::_wp_pointer_gesture_pinch_on_update(void *data, struct zwp_p
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WaylandState *wls = ss->wls;
+	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
-	WaylandThread::PointerData &pd = ss->pointer_data_buffer;
+	PointerData &pd = ss->pointer_data_buffer;
 
 	if (ss->active_gesture == Gesture::MAGNIFY) {
 		Ref<InputEventMagnifyGesture> mg;
@@ -1831,7 +1849,7 @@ void WaylandThread::_wp_pointer_gesture_pinch_on_update(void *data, struct zwp_p
 		wl_fixed_t scale_delta = scale - ss->old_pinch_scale;
 		mg->set_factor(1 + wl_fixed_to_double(scale_delta));
 
-		Ref<WaylandThread::InputEventMessage> magnify_msg;
+		Ref<InputEventMessage> magnify_msg;
 		magnify_msg.instantiate();
 		magnify_msg->event = mg;
 
@@ -1853,7 +1871,7 @@ void WaylandThread::_wp_pointer_gesture_pinch_on_update(void *data, struct zwp_p
 		pg->set_position(pd.position);
 		pg->set_delta(Vector2(wl_fixed_to_double(dx), wl_fixed_to_double(dy)));
 
-		Ref<WaylandThread::InputEventMessage> pan_msg;
+		Ref<InputEventMessage> pan_msg;
 		pan_msg.instantiate();
 		pan_msg->event = pg;
 
@@ -2003,7 +2021,7 @@ void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_table
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WaylandState *wls = ss->wls;
+	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
 	ss->tablet_tool_data_buffer.in_proximity = true;
@@ -2012,7 +2030,7 @@ void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_table
 	ss->pointed_surface = surface;
 	ss->last_pointed_surface = surface;
 
-	Ref<WaylandThread::WindowEventMessage> msg;
+	Ref<WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = DisplayServer::WINDOW_EVENT_MOUSE_ENTER;
 	wls->wayland_thread->push_message(msg);
@@ -2026,7 +2044,7 @@ void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tabl
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WaylandState *wls = ss->wls;
+	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
 	ss->pointed_surface = nullptr;
@@ -2034,7 +2052,7 @@ void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tabl
 
 	DEBUG_LOG_WAYLAND("Tablet tool left window.");
 
-	Ref<WaylandThread::WindowEventMessage> msg;
+	Ref<WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = DisplayServer::WINDOW_EVENT_MOUSE_EXIT;
 
@@ -2047,7 +2065,7 @@ void WaylandThread::_wp_tablet_tool_on_down(void *data, struct zwp_tablet_tool_v
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::TabletToolData &td = ss->tablet_tool_data_buffer;
+	TabletToolData &td = ss->tablet_tool_data_buffer;
 
 	td.touching = true;
 	td.pressed_button_mask.set_flag(mouse_button_to_mask(MouseButton::LEFT));
@@ -2079,10 +2097,10 @@ void WaylandThread::_wp_tablet_tool_on_motion(void *data, struct zwp_tablet_tool
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WindowState *ws = WaylandThread::wl_surface_get_window_state(ss->pointed_surface);
+	WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
 	ERR_FAIL_NULL(ws);
 
-	int scale = WaylandThread::window_state_calculate_scale(ws);
+	int scale = window_state_calculate_scale(ws);
 
 	ss->tablet_tool_data_buffer.position.x = wl_fixed_to_double(x) * scale;
 	ss->tablet_tool_data_buffer.position.y = wl_fixed_to_double(y) * scale;
@@ -2123,7 +2141,7 @@ void WaylandThread::_wp_tablet_tool_on_button(void *data, struct zwp_tablet_tool
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::TabletToolData &td = ss->tablet_tool_data_buffer;
+	TabletToolData &td = ss->tablet_tool_data_buffer;
 
 	MouseButton mouse_button = MouseButton::NONE;
 
@@ -2156,11 +2174,11 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandThread::WaylandState *wls = ss->wls;
+	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
-	WaylandThread::TabletToolData &old_td = ss->tablet_tool_data;
-	WaylandThread::TabletToolData &td = ss->tablet_tool_data_buffer;
+	TabletToolData &old_td = ss->tablet_tool_data;
+	TabletToolData &td = ss->tablet_tool_data_buffer;
 
 	if (old_td.position != td.position || old_td.tilt != td.tilt || old_td.pressure != td.pressure) {
 		Ref<InputEventMouseMotion> mm;
@@ -2196,12 +2214,11 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 
 		mm->set_relative(td.position - old_td.position);
 
-		// FIXME: I'm not sure whether accessing the Input singleton like this might
-		// give problems.
+		// FIXME: Stop doing this to calculate speed.
 		Input::get_singleton()->set_mouse_position(td.position);
 		mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
-		Ref<WaylandThread::InputEventMessage> inputev_msg;
+		Ref<InputEventMessage> inputev_msg;
 		inputev_msg.instantiate();
 
 		inputev_msg->event = mm;
@@ -2245,7 +2262,7 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 					mb->set_double_click(true);
 				}
 
-				Ref<WaylandThread::InputEventMessage> msg;
+				Ref<InputEventMessage> msg;
 				msg.instantiate();
 
 				msg->event = mb;
@@ -2387,6 +2404,7 @@ int WaylandThread::window_state_calculate_scale(WindowState *p_ws) {
 
 	return 1;
 }
+
 void WaylandThread::seat_state_unlock_pointer(SeatState *p_ss) {
 	ERR_FAIL_NULL(p_ss);
 
@@ -2412,7 +2430,7 @@ void WaylandThread::seat_state_lock_pointer(SeatState *p_ss) {
 		return;
 	}
 
-	if (p_ss->wayland_thread->registry.wp_pointer_constraints == nullptr) {
+	if (registry.wp_pointer_constraints == nullptr) {
 		return;
 	}
 
@@ -2427,6 +2445,21 @@ void WaylandThread::seat_state_lock_pointer(SeatState *p_ss) {
 
 		p_ss->wp_locked_pointer = zwp_pointer_constraints_v1_lock_pointer(registry.wp_pointer_constraints, locked_surface, p_ss->wl_pointer, NULL, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
 	}
+}
+
+void WaylandThread::seat_state_set_hint(SeatState *p_ss, int p_x, int p_y) {
+	WindowState *ws = wl_surface_get_window_state(p_ss->pointed_surface);
+	if (p_ss->wp_locked_pointer == nullptr || ws == nullptr) {
+		return;
+	}
+
+	int scale = window_state_calculate_scale(ws);
+
+	p_x /= scale;
+	p_y /= scale;
+
+	zwp_locked_pointer_v1_set_cursor_position_hint(p_ss->wp_locked_pointer, wl_fixed_from_int(p_x), wl_fixed_from_int(p_y));
+	wl_surface_commit(p_ss->pointed_surface);
 }
 
 void WaylandThread::seat_state_confine_pointer(SeatState *p_ss) {
@@ -2760,7 +2793,7 @@ void WaylandThread::window_set_min_size(DisplayServer::WindowID p_window_id, Siz
 #endif
 }
 
-bool WaylandThread::window_can_set_mode(DisplayServer::WindowID p_window_id_id, DisplayServer::WindowMode p_mode) const {
+bool WaylandThread::window_can_set_mode(DisplayServer::WindowID p_window_id, DisplayServer::WindowMode p_mode) const {
 	// TODO: Use window IDs for multiwindow support.
 	const WindowState &ws = main_window;
 
@@ -2890,6 +2923,58 @@ WaylandThread::ScreenData WaylandThread::screen_get_data(int p_screen) const {
 
 int WaylandThread::get_screen_count() const {
 	return registry.wl_outputs.size();
+}
+
+DisplayServer::WindowID WaylandThread::pointer_get_pointed_window_id() {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss) {
+		WindowState *ws = wl_surface_get_window_state(ss->pointed_surface);
+
+		if (ws) {
+			return ws->id;
+		}
+	}
+
+	return DisplayServer::INVALID_WINDOW_ID;
+}
+
+void WaylandThread::pointer_set_constraint(PointerConstraint p_constraint) {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss) {
+		seat_state_unlock_pointer(ss);
+
+		if (p_constraint == PointerConstraint::LOCKED) {
+			seat_state_lock_pointer(ss);
+		} else if (p_constraint == PointerConstraint::CONFINED) {
+			seat_state_confine_pointer(ss);
+		}
+	}
+
+	pointer_constraint = p_constraint;
+}
+
+void WaylandThread::pointer_set_hint(int p_x, int p_y) {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss) {
+		seat_state_set_hint(ss, p_x, p_y);
+	}
+}
+
+WaylandThread::PointerConstraint WaylandThread::pointer_get_constraint() const {
+	return pointer_constraint;
+}
+
+BitField<MouseButtonMask> WaylandThread::pointer_get_button_mask() const {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss) {
+		return ss->pointer_data.pressed_button_mask;
+	}
+
+	return BitField<MouseButtonMask>();
 }
 
 Error WaylandThread::init(WaylandThread::WaylandState &p_wls) {
@@ -3068,6 +3153,17 @@ Error WaylandThread::init(WaylandThread::WaylandState &p_wls) {
 	return OK;
 }
 
+void WaylandThread::cursor_hide() {
+	cursor_buffer = nullptr;
+
+	cursor_hotspot.x = 0;
+	cursor_hotspot.y = 0;
+
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+	ERR_FAIL_NULL(ss);
+	seat_state_update_cursor(ss);
+}
+
 void WaylandThread::cursor_set_shape(DisplayServer::CursorShape p_cursor_shape) {
 	if (cursor_images[p_cursor_shape] != nullptr) {
 		cursor_buffer = cursor_bufs[p_cursor_shape];
@@ -3089,10 +3185,9 @@ void WaylandThread::cursor_cache_custom_shape(DisplayServer::CursorShape p_curso
 }
 
 void WaylandThread::echo_keys() {
-	for (struct wl_seat *wl_seat : registry.wl_seats) {
-		SeatState *ss = wl_seat_get_seat_state(wl_seat);
-		ERR_FAIL_NULL(ss);
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
+	if (ss) {
 		seat_state_echo_keys(ss);
 	}
 }
