@@ -104,7 +104,6 @@ class GDScript : public Script {
 	Dictionary rpc_config;
 
 #ifdef TOOLS_ENABLED
-
 	// For static data storage during hot-reloading.
 	HashMap<StringName, MemberInfo> old_static_variables_indices;
 	Vector<Variant> old_static_variables;
@@ -125,8 +124,8 @@ class GDScript : public Script {
 	Vector<DocData::ClassDoc> docs;
 	void _clear_doc();
 	void _add_doc(const DocData::ClassDoc &p_inner_class);
-
 #endif
+
 	HashMap<StringName, PropertyInfo> member_info;
 
 	GDScriptFunction *implicit_initializer = nullptr;
@@ -162,9 +161,7 @@ class GDScript : public Script {
 #endif
 
 #ifdef DEBUG_ENABLED
-
 	HashMap<ObjectID, List<Pair<StringName, Variant>>> pending_reload_state;
-
 #endif
 
 	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr);
@@ -192,6 +189,10 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef DEBUG_ENABLED
+	static String debug_get_script_name(const Ref<Script> &p_script);
+#endif
+
 	void clear(GDScript::ClearData *p_clear_data = nullptr);
 
 	virtual bool is_valid() const override { return valid; }

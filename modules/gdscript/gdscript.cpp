@@ -1354,7 +1354,7 @@ GDScript::GDScript() :
 	path = vformat("gdscript://%d.gd", get_instance_id());
 }
 
-void GDScript::_save_orphaned_subclasses(GDScript::ClearData *p_clear_data) {
+void GDScript::_save_orphaned_subclasses(ClearData *p_clear_data) {
 	struct ClassRefWithName {
 		ObjectID id;
 		String fully_qualified_name;
@@ -1411,7 +1411,31 @@ void GDScript::_init_rpc_methods_properties() {
 	}
 }
 
-void GDScript::clear(GDScript::ClearData *p_clear_data) {
+#ifdef DEBUG_ENABLED
+String GDScript::debug_get_script_name(const Ref<Script> &p_script) {
+	if (p_script.is_valid()) {
+		Ref<GDScript> gdscript = p_script;
+		if (gdscript.is_valid()) {
+			if (!gdscript->get_script_class_name().is_empty()) {
+				return gdscript->get_script_class_name();
+			}
+			return gdscript->get_fully_qualified_name().get_file();
+		}
+
+		if (p_script->get_global_name() != StringName()) {
+			return p_script->get_global_name();
+		} else if (!p_script->get_path().is_empty()) {
+			return p_script->get_path().get_file();
+		} else if (!p_script->get_name().is_empty()) {
+			return p_script->get_name(); // Resource name.
+		}
+	}
+
+	return "<unknown script>";
+}
+#endif
+
+void GDScript::clear(ClearData *p_clear_data) {
 	if (clearing) {
 		return;
 	}

@@ -36,20 +36,9 @@
 #include "core/os/os.h"
 
 #ifdef DEBUG_ENABLED
-static String _get_script_name(const Ref<Script> p_script) {
-	Ref<GDScript> gdscript = p_script;
-	if (gdscript.is_valid()) {
-		return gdscript->get_script_class_name();
-	} else if (p_script->get_name().is_empty()) {
-		return p_script->get_path().get_file();
-	} else {
-		return p_script->get_name();
-	}
-}
-
 static String _get_element_type(Variant::Type builtin_type, const StringName &native_type, const Ref<Script> &script_type) {
 	if (script_type.is_valid() && script_type->is_valid()) {
-		return _get_script_name(script_type);
+		return GDScript::debug_get_script_name(script_type);
 	} else if (native_type != StringName()) {
 		return native_type.operator String();
 	} else {
@@ -75,7 +64,7 @@ static String _get_var_type(const Variant *p_var) {
 			} else {
 				basestr = bobj->get_class();
 				if (bobj->get_script_instance()) {
-					basestr += " (" + _get_script_name(bobj->get_script_instance()->get_script()) + ")";
+					basestr += " (" + GDScript::debug_get_script_name(bobj->get_script_instance()->get_script()) + ")";
 				}
 			}
 		}
@@ -2684,7 +2673,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (r->get_type() != Variant::OBJECT && r->get_type() != Variant::NIL) {
 #ifdef DEBUG_ENABLED
 					err_text = vformat(R"(Trying to return value of type "%s" from a function which the return type is "%s".)",
-							Variant::get_type_name(r->get_type()), _get_script_name(Ref<Script>(base_type)));
+							Variant::get_type_name(r->get_type()), GDScript::debug_get_script_name(Ref<Script>(base_type)));
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
 				}
@@ -2706,7 +2695,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					if (!ret_inst) {
 #ifdef DEBUG_ENABLED
 						err_text = vformat(R"(Trying to return value of type "%s" from a function which the return type is "%s".)",
-								ret_obj->get_class_name(), _get_script_name(Ref<GDScript>(base_type)));
+								ret_obj->get_class_name(), GDScript::debug_get_script_name(Ref<GDScript>(base_type)));
 #endif // DEBUG_ENABLED
 						OPCODE_BREAK;
 					}
@@ -2725,7 +2714,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					if (!valid) {
 #ifdef DEBUG_ENABLED
 						err_text = vformat(R"(Trying to return value of type "%s" from a function which the return type is "%s".)",
-								_get_script_name(ret_obj->get_script_instance()->get_script()), _get_script_name(Ref<GDScript>(base_type)));
+								GDScript::debug_get_script_name(ret_obj->get_script_instance()->get_script()), GDScript::debug_get_script_name(Ref<GDScript>(base_type)));
 #endif // DEBUG_ENABLED
 						OPCODE_BREAK;
 					}
