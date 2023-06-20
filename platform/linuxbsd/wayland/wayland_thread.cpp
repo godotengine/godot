@@ -904,19 +904,7 @@ void WaylandThread::_xdg_surface_on_configure(void *data, struct xdg_surface *xd
 		xdg_surface_set_window_geometry(ws->xdg_surface, 0, 0, scaled_rect.size.width, scaled_rect.size.height);
 	}
 
-#if 0
-	// TODO: Port to WaylandThread with wl_pointer user data.
-	//WaylandState *wls = ws->wls;
-	if (wls->current_seat && wls->current_seat->wp_locked_pointer) {
-		// Since the cursor's currently locked and the window's rect might have
-		// changed, we have to recenter the position hint to ensure that the cursor
-		// stays centered on unlock.
-		wl_fixed_t unlock_x = wl_fixed_from_int(width / 2);
-		wl_fixed_t unlock_y = wl_fixed_from_int(height / 2);
-
-		zwp_locked_pointer_v1_set_cursor_position_hint(wls->current_seat->wp_locked_pointer, unlock_x, unlock_y);
-	}
-#endif
+	ws->wayland_thread->pointer_set_hint(scaled_rect.size.width / 2, scaled_rect.size.height / 2);
 
 	Ref<WindowRectMessage> msg;
 	msg.instantiate();
@@ -1074,12 +1062,17 @@ void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, st
 		libdecor_state_free(state);
 	}
 
+	// Since the cursor's currently locked and the window's rect might have
+	// changed, we have to recenter the position hint to ensure that the cursor
+	// stays centered on unlock.
+	ws->wayland_thread->pointer_set_hint(scaled_rect.size.width / 2, scaled_rect.size.height / 2);
+
 	Ref<WindowRectMessage> winrect_msg;
 	winrect_msg.instantiate();
 	winrect_msg->rect = scaled_rect;
 	ws->wayland_thread->push_message(winrect_msg);
 
-	DEBUG_LOG_WAYLAND("libdecor frame on configure");
+	DEBUG_LOG_WAYLAND(vformat("libdecor frame on configure rect %s", ws->rect));
 }
 
 void WaylandThread::libdecor_frame_on_close(struct libdecor_frame *frame, void *user_data) {
