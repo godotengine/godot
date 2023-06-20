@@ -4534,7 +4534,16 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 	result.builtin_type = p_value.get_type();
 	result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT; // Constant has explicit type.
 
-	if (p_value.get_type() == Variant::OBJECT) {
+	if (p_value.get_type() == Variant::ARRAY) {
+		const Array &array = p_value;
+		if (array.get_typed_script()) {
+			result.set_container_element_type(type_from_metatype(make_script_meta_type(array.get_typed_script())));
+		} else if (array.get_typed_class_name()) {
+			result.set_container_element_type(type_from_metatype(make_native_meta_type(array.get_typed_class_name())));
+		} else if (array.get_typed_builtin() != Variant::NIL) {
+			result.set_container_element_type(type_from_metatype(make_builtin_meta_type((Variant::Type)array.get_typed_builtin())));
+		}
+	} else if (p_value.get_type() == Variant::OBJECT) {
 		// Object is treated as a native type, not a builtin type.
 		result.kind = GDScriptParser::DataType::NATIVE;
 
@@ -4990,11 +4999,21 @@ GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator 
 		}
 	}
 
-	Variant::ValidatedOperatorEvaluator op_eval = Variant::get_validated_operator_evaluator(p_operation, a_type, b_type);
+	GDScriptParser::DataType result;
 	bool hard_operation = p_a.is_hard_type() && p_b.is_hard_type();
+
+	if (p_operation == Variant::OP_ADD && a_type == Variant::ARRAY && b_type == Variant::ARRAY) {
+		if (p_a.get_container_element_type() == p_a.get_container_element_type()) {
+			r_valid = true;
+			result = p_a;
+			result.type_source = hard_operation ? GDScriptParser::DataType::ANNOTATED_INFERRED : GDScriptParser::DataType::INFERRED;
+			return result;
+		}
+	}
+
+	Variant::ValidatedOperatorEvaluator op_eval = Variant::get_validated_operator_evaluator(p_operation, a_type, b_type);
 	bool validated = op_eval != nullptr;
 
-	GDScriptParser::DataType result;
 	if (validated) {
 		r_valid = true;
 		result.type_source = hard_operation ? GDScriptParser::DataType::ANNOTATED_INFERRED : GDScriptParser::DataType::INFERRED;

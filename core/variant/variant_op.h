@@ -824,6 +824,11 @@ public:
 	_FORCE_INLINE_ static void _add_arrays(Array &sum, const Array &array_a, const Array &array_b) {
 		int asize = array_a.size();
 		int bsize = array_b.size();
+
+		if (array_a.is_typed() && array_a.is_same_typed(array_b)) {
+			sum.set_typed(array_a.get_typed_builtin(), array_a.get_typed_class_name(), array_a.get_typed_script());
+		}
+
 		sum.resize(asize + bsize);
 		for (int i = 0; i < asize; i++) {
 			sum[i] = array_a[i];
