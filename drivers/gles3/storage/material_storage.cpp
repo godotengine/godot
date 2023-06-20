@@ -947,7 +947,7 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 					}
 				} break;
 				case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
-					ERR_PRINT_ONCE("Type: SamplerCubeArray not supported in OpenGL renderer, please use another type.");
+					ERR_PRINT_ONCE("Type: SamplerCubeArray not supported in GL Compatibility rendering backend, please use another type.");
 				} break;
 
 				case ShaderLanguage::TYPE_ISAMPLER3D:
@@ -1396,21 +1396,24 @@ MaterialStorage::MaterialStorage() {
 		//actions.renames["GRAVITY"] = "current_gravity";
 		actions.renames["EMISSION_TRANSFORM"] = "emission_transform";
 		actions.renames["RANDOM_SEED"] = "random_seed";
-		actions.renames["FLAG_EMIT_POSITION"] = "EMISSION_FLAG_HAS_POSITION";
-		actions.renames["FLAG_EMIT_ROT_SCALE"] = "EMISSION_FLAG_HAS_ROTATION_SCALE";
-		actions.renames["FLAG_EMIT_VELOCITY"] = "EMISSION_FLAG_HAS_VELOCITY";
-		actions.renames["FLAG_EMIT_COLOR"] = "EMISSION_FLAG_HAS_COLOR";
-		actions.renames["FLAG_EMIT_CUSTOM"] = "EMISSION_FLAG_HAS_CUSTOM";
 		actions.renames["RESTART_POSITION"] = "restart_position";
 		actions.renames["RESTART_ROT_SCALE"] = "restart_rotation_scale";
 		actions.renames["RESTART_VELOCITY"] = "restart_velocity";
 		actions.renames["RESTART_COLOR"] = "restart_color";
 		actions.renames["RESTART_CUSTOM"] = "restart_custom";
-		actions.renames["emit_subparticle"] = "emit_subparticle";
 		actions.renames["COLLIDED"] = "collided";
 		actions.renames["COLLISION_NORMAL"] = "collision_normal";
 		actions.renames["COLLISION_DEPTH"] = "collision_depth";
 		actions.renames["ATTRACTOR_FORCE"] = "attractor_force";
+
+		// These are unsupported, but may be used by users. To avoid compile time overhead, we add the stub only when used.
+		actions.renames["FLAG_EMIT_POSITION"] = "uint(1)";
+		actions.renames["FLAG_EMIT_ROT_SCALE"] = "uint(2)";
+		actions.renames["FLAG_EMIT_VELOCITY"] = "uint(4)";
+		actions.renames["FLAG_EMIT_COLOR"] = "uint(8)";
+		actions.renames["FLAG_EMIT_CUSTOM"] = "uint(16)";
+		actions.renames["emit_subparticle"] = "emit_subparticle";
+		actions.usage_defines["emit_subparticle"] = "\nbool emit_subparticle(mat4 p_xform, vec3 p_velocity, vec4 p_color, vec4 p_custom, uint p_flags) {\n\treturn false;\n}\n";
 
 		actions.render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
 		actions.render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
