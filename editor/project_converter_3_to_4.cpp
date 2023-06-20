@@ -1274,24 +1274,20 @@ Vector<String> ProjectConverter3To4::parse_arguments(const String &line) {
 	for (int current_index = 0; current_index < string_size; current_index++) {
 		char32_t character = line.get(current_index);
 		switch (character) {
-			case '(': {
+			case '(':
+			case '[':
+			case '{': {
 				parts_counter++;
 				if (parts_counter == 1 && !is_inside_string) {
 					start_part = current_index;
 				}
 				break;
 			};
-			case ')': {
+			case ')':
+			case '}': {
 				parts_counter--;
 				if (parts_counter == 0 && !is_inside_string) {
 					parts.append(line.substr(start_part + 1, current_index - start_part - 1));
-					start_part = current_index;
-				}
-				break;
-			};
-			case '[': {
-				parts_counter++;
-				if (parts_counter == 1 && !is_inside_string) {
 					start_part = current_index;
 				}
 				break;
