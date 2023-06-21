@@ -290,10 +290,10 @@
 			The grid division bias to use in the 3D editor. Negative values will cause small grid divisions to appear earlier, whereas positive values will cause small grid divisions to appear later.
 		</member>
 		<member name="editors/3d/grid_division_level_max" type="int" setter="" getter="">
-			The smallest grid division to use in the 3D editor, specified as a power of 2. The grid will not be able to get larger than [code]1 ^ grid_division_level_max[/code] units. By default, this means grid divisions cannot get smaller than 100 units each, no matter how far away the camera is from the grid.
+			The largest grid division to use in the 3D editor. Together with [member editors/3d/primary_grid_steps], this determines how large the grid divisions can be. The grid divisions will not be able to get larger than [code]primary_grid_steps ^ grid_division_level_max[/code] units. By default, when [member editors/3d/primary_grid_steps] is [code]8[/code], this means grid divisions cannot get larger than [code]64[/code] uints each (so primary grid lines are [code]512[/code] uints apart), no matter how far away the camera is from the grid.
 		</member>
 		<member name="editors/3d/grid_division_level_min" type="int" setter="" getter="">
-			The smallest grid division to use in the 3D editor, specified as a power of 2. The grid will not be able to get smaller than [code]1 ^ grid_division_level_min[/code] units. By default, this means grid divisions cannot get smaller than 1 unit each, no matter how close the camera is from the grid.
+			The smallest grid division to use in the 3D editor. Together with [member editors/3d/primary_grid_steps], this determines how small the grid divisions can be. The grid divisions will not be able to get smaller than [code]primary_grid_steps ^ grid_division_level_min[/code] units. By default, this means grid divisions cannot get smaller than 1 unit each, no matter how close the camera is from the grid.
 		</member>
 		<member name="editors/3d/grid_size" type="int" setter="" getter="">
 			The grid size in units. Higher values prevent the grid from appearing "cut off" at certain angles, but make the grid more demanding to render. Depending on the camera's position, the grid may not be fully visible since a shader is used to fade it progressively.

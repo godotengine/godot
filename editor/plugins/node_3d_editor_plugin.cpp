@@ -6987,9 +6987,9 @@ void Node3DEditor::_init_grid() {
 	// Offsets division_level for bigger or smaller grids.
 	// Default value is -0.2. -1.0 gives Blender-like behavior, 0.5 gives huge grids.
 	real_t division_level_bias = EDITOR_GET("editors/3d/grid_division_level_bias");
-	// Default largest grid size is 8^2 when primary_grid_steps is 8 (64m apart, so primary grid lines are 512m apart).
+	// Default largest grid size is 8^2 (default value is 2) when primary_grid_steps is 8 (64m apart, so primary grid lines are 512m apart).
 	int division_level_max = EDITOR_GET("editors/3d/grid_division_level_max");
-	// Default smallest grid size is 1cm, 10^-2 (default value is -2).
+	// Default smallest grid size is 8^0 (default value is 0) when primary_grid_steps is 8.
 	int division_level_min = EDITOR_GET("editors/3d/grid_division_level_min");
 	ERR_FAIL_COND_MSG(division_level_max < division_level_min, "The 3D grid's maximum division level cannot be lower than its minimum division level.");
 
