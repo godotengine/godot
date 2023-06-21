@@ -318,7 +318,9 @@ void JoypadWindows::probe_joypads() {
 				x_joypads[i].ff_end_timestamp = 0;
 				x_joypads[i].vibrating = false;
 				attached_joypads[id] = true;
-				input->joy_connection_changed(id, true, "XInput Gamepad", "__XINPUT_DEVICE__");
+				Dictionary joypad_info;
+				joypad_info["xinput_index"] = (int)i;
+				input->joy_connection_changed(id, true, "XInput Gamepad", "__XINPUT_DEVICE__", joypad_info);
 			}
 		} else if (x_joypads[i].attached) {
 			x_joypads[i].attached = false;

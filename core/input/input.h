@@ -149,6 +149,7 @@ private:
 		HatMask last_hat = HatMask::CENTER;
 		int mapping = -1;
 		int hat_current = 0;
+		Dictionary info;
 	};
 
 	VelocityTrack mouse_velocity_track;
@@ -276,7 +277,7 @@ public:
 	Vector2 get_joy_vibration_strength(int p_device);
 	float get_joy_vibration_duration(int p_device);
 	uint64_t get_joy_vibration_timestamp(int p_device);
-	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "");
+	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "", Dictionary p_joypad_info = Dictionary());
 
 	Vector3 get_gravity() const;
 	Vector3 get_accelerometer() const;
@@ -332,6 +333,7 @@ public:
 	bool is_joy_known(int p_device);
 	String get_joy_guid(int p_device) const;
 	bool should_ignore_device(int p_vendor_id, int p_product_id) const;
+	Dictionary get_joy_info(int p_device) const;
 	void set_fallback_mapping(String p_guid);
 
 	void flush_buffered_events();
