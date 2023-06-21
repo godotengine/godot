@@ -75,6 +75,7 @@ private:
 	HashSet<ObjectID> spawned_nodes;
 	HashSet<ObjectID> sync_nodes;
 
+private:
 	// Pending local spawn information (handles spawning nested nodes during ready).
 	HashSet<ObjectID> spawn_queue;
 
@@ -126,7 +127,9 @@ public:
 
 	void on_reset();
 //	void on_peer_change(int p_id, bool p_connected);
-//
+
+	TypedArray<SaveloadSynchronizer> get_sync_nodes();
+
 	Error on_spawn(Object *p_obj, Variant p_config);
 	Error on_despawn(Object *p_obj, Variant p_config);
 	Error on_saveload_start(Object *p_obj, Variant p_config);

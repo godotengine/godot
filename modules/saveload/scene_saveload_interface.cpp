@@ -152,6 +152,16 @@ void SceneSaveloadInterface::process_syncs() {
 	}
 }
 
+TypedArray<SaveloadSynchronizer> SceneSaveloadInterface::get_sync_nodes() {
+	TypedArray<SaveloadSynchronizer> syncs;
+	for (const ObjectID &oid : sync_nodes) {
+		SaveloadSynchronizer *sync = get_id_as<SaveloadSynchronizer>(oid);
+		ERR_CONTINUE(!sync);
+		syncs.append(sync);
+	}
+	return syncs;
+}
+
 Error SceneSaveloadInterface::on_spawn(Object *p_obj, Variant p_config) {
 	Node *node = Object::cast_to<Node>(p_obj);
 	ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);

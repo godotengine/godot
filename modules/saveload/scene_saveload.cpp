@@ -369,6 +369,17 @@ void SceneSaveload::_process_raw(int p_from, const uint8_t *p_packet, int p_pack
 	emit_signal(SNAME("peer_packet"), p_from, out);
 }
 
+TypedArray<SaveloadSynchronizer> SceneSaveload::get_sync_nodes() {
+	return saveloader->get_sync_nodes();
+}
+
+Variant SceneSaveload::get_state(const Object *p_object, const StringName section) {
+	return Variant();
+}
+Error SceneSaveload::set_state(const Variant p_value, const Object *p_object, const StringName section) {
+	return ERR_UNAVAILABLE;
+}
+
 Vector<uint8_t> SceneSaveload::encode(Object *p_object, const StringName section) {
 	return saveloader->encode(p_object, section);
 }
@@ -511,6 +522,8 @@ void SceneSaveload::_bind_methods() {
 //	ClassDB::bind_method(D_METHOD("set_server_relay_enabled", "enabled"), &SceneSaveload::set_server_relay_enabled);
 //	ClassDB::bind_method(D_METHOD("is_server_relay_enabled"), &SceneSaveload::is_server_relay_enabled);
 //	ClassDB::bind_method(D_METHOD("send_bytes", "bytes", "id", "mode", "channel"), &SceneSaveload::send_bytes, DEFVAL(MultiplayerPeer::TARGET_PEER_BROADCAST), DEFVAL(MultiplayerPeer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
+
+	ClassDB::bind_method(D_METHOD("get_sync_nodes"), &SceneSaveload::get_sync_nodes);
 
 	ClassDB::bind_method(D_METHOD("get_max_sync_packet_size"), &SceneSaveload::get_max_sync_packet_size);
 	ClassDB::bind_method(D_METHOD("set_max_sync_packet_size", "size"), &SceneSaveload::set_max_sync_packet_size);

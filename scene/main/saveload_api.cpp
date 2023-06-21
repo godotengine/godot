@@ -283,6 +283,8 @@ Error SaveloadAPI::decode_and_decompress_variants(Vector<Variant> &r_variants, c
 }
 
 void SaveloadAPI::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_state", "object", "section"), &SaveloadAPI::get_state);
+	ClassDB::bind_method(D_METHOD("set_state", "value", "object", "section"), &SaveloadAPI::set_state);
 	ClassDB::bind_method(D_METHOD("encode", "object", "section"), &SaveloadAPI::encode);
 	ClassDB::bind_method(D_METHOD("decode", "bytes", "object", "section"), &SaveloadAPI::decode);
 	ClassDB::bind_method(D_METHOD("save", "path", "object", "section"), &SaveloadAPI::save);
