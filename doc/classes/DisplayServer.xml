@@ -188,8 +188,8 @@
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
-			<param index="2" name="callback" type="Callable" />
-			<param index="3" name="key_callback" type="Callable" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<param index="3" name="key_callback" type="Callable" default="Callable()" />
 			<param index="4" name="tag" type="Variant" default="null" />
 			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="6" name="index" type="int" default="-1" />
@@ -211,8 +211,8 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
 			<param index="2" name="label" type="String" />
-			<param index="3" name="callback" type="Callable" />
-			<param index="4" name="key_callback" type="Callable" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
+			<param index="4" name="key_callback" type="Callable" default="Callable()" />
 			<param index="5" name="tag" type="Variant" default="null" />
 			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="7" name="index" type="int" default="-1" />
@@ -234,8 +234,8 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
 			<param index="2" name="label" type="String" />
-			<param index="3" name="callback" type="Callable" />
-			<param index="4" name="key_callback" type="Callable" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
+			<param index="4" name="key_callback" type="Callable" default="Callable()" />
 			<param index="5" name="tag" type="Variant" default="null" />
 			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="7" name="index" type="int" default="-1" />
@@ -257,8 +257,8 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="icon" type="Texture2D" />
 			<param index="2" name="label" type="String" />
-			<param index="3" name="callback" type="Callable" />
-			<param index="4" name="key_callback" type="Callable" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
+			<param index="4" name="key_callback" type="Callable" default="Callable()" />
 			<param index="5" name="tag" type="Variant" default="null" />
 			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="7" name="index" type="int" default="-1" />
@@ -280,8 +280,8 @@
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
-			<param index="2" name="callback" type="Callable" />
-			<param index="3" name="key_callback" type="Callable" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<param index="3" name="key_callback" type="Callable" default="Callable()" />
 			<param index="4" name="tag" type="Variant" default="null" />
 			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="6" name="index" type="int" default="-1" />
@@ -304,8 +304,8 @@
 			<param index="1" name="label" type="String" />
 			<param index="2" name="max_states" type="int" />
 			<param index="3" name="default_state" type="int" />
-			<param index="4" name="callback" type="Callable" />
-			<param index="5" name="key_callback" type="Callable" />
+			<param index="4" name="callback" type="Callable" default="Callable()" />
+			<param index="5" name="key_callback" type="Callable" default="Callable()" />
 			<param index="6" name="tag" type="Variant" default="null" />
 			<param index="7" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="8" name="index" type="int" default="-1" />
@@ -328,8 +328,8 @@
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
-			<param index="2" name="callback" type="Callable" />
-			<param index="3" name="key_callback" type="Callable" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<param index="3" name="key_callback" type="Callable" default="Callable()" />
 			<param index="4" name="tag" type="Variant" default="null" />
 			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="6" name="index" type="int" default="-1" />

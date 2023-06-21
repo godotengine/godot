@@ -240,7 +240,7 @@
 			<param index="1" name="mesh" type="RID" />
 			<param index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="4" name="texture" type="RID" />
+			<param index="4" name="texture" type="RID" default="RID()" />
 			<description>
 				Draws a mesh created with [method mesh_create] with given [param transform], [param modulate] color, and [param texture]. This is used internally by [MeshInstance2D].
 			</description>
@@ -273,7 +273,7 @@
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="mesh" type="RID" />
-			<param index="2" name="texture" type="RID" />
+			<param index="2" name="texture" type="RID" default="RID()" />
 			<description>
 				Draws a 2D [MultiMesh] on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_multimesh].
 			</description>
@@ -309,7 +309,7 @@
 			<param index="1" name="points" type="PackedVector2Array" />
 			<param index="2" name="colors" type="PackedColorArray" />
 			<param index="3" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
-			<param index="4" name="texture" type="RID" />
+			<param index="4" name="texture" type="RID" default="RID()" />
 			<description>
 				Draws a 2D polygon on the [CanvasItem] pointed to by the [param item] [RID]. If you need more flexibility (such as being able to use bones), use [method canvas_item_add_triangle_array] instead. See also [method CanvasItem.draw_polygon].
 			</description>
@@ -387,7 +387,7 @@
 			<param index="4" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="5" name="bones" type="PackedInt32Array" default="PackedInt32Array()" />
 			<param index="6" name="weights" type="PackedFloat32Array" default="PackedFloat32Array()" />
-			<param index="7" name="texture" type="RID" />
+			<param index="7" name="texture" type="RID" default="RID()" />
 			<param index="8" name="count" type="int" default="-1" />
 			<description>
 				Draws a triangle array on the [CanvasItem] pointed to by the [param item] [RID]. This is internally used by [Line2D] and [StyleBoxFlat] for rendering. [method canvas_item_add_triangle_array] is highly flexible, but more complex to use than [method canvas_item_add_polygon].
@@ -1797,7 +1797,7 @@
 		<method name="instances_cull_aabb" qualifiers="const">
 			<return type="PackedInt64Array" />
 			<param index="0" name="aabb" type="AABB" />
-			<param index="1" name="scenario" type="RID" />
+			<param index="1" name="scenario" type="RID" default="RID()" />
 			<description>
 				Returns an array of object IDs intersecting with the provided AABB. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
@@ -1806,7 +1806,7 @@
 		<method name="instances_cull_convex" qualifiers="const">
 			<return type="PackedInt64Array" />
 			<param index="0" name="convex" type="Plane[]" />
-			<param index="1" name="scenario" type="RID" />
+			<param index="1" name="scenario" type="RID" default="RID()" />
 			<description>
 				Returns an array of object IDs intersecting with the provided convex shape. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
@@ -1816,7 +1816,7 @@
 			<return type="PackedInt64Array" />
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="to" type="Vector3" />
-			<param index="2" name="scenario" type="RID" />
+			<param index="2" name="scenario" type="RID" default="RID()" />
 			<description>
 				Returns an array of object IDs intersecting with the provided 3D ray. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.

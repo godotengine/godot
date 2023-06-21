@@ -1379,6 +1379,7 @@
 				    "b": 2
 				}
 				[/codeblock]
+				[b]Note:[/b] Converting [Signal] or [Callable] is not supported and will result in an empty value for these types, regardless of their data.
 			</description>
 		</method>
 		<method name="weakref">

@@ -26,7 +26,7 @@
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="source_geometry_data" type="NavigationMeshSourceGeometryData3D" />
-			<param index="2" name="callback" type="Callable" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
 			<description>
 				Bakes the provided [param navigation_mesh] with the data from the provided [param source_geometry_data]. After the process is finished the optional [param callback] will be called.
 			</description>
@@ -43,7 +43,7 @@
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="source_geometry_data" type="NavigationMeshSourceGeometryData3D" />
 			<param index="2" name="root_node" type="Node" />
-			<param index="3" name="callback" type="Callable" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
 			<description>
 				Parses the [SceneTree] for source geometry according to the properties of [param navigation_mesh]. Updates the provided [param source_geometry_data] resource with the resulting data. The resource can then be used to bake a navigation mesh with [method bake_from_source_geometry_data]. After the process is finished the optional [param callback] will be called.
 				[b]Note:[/b] This function needs to run on the main thread or with a deferred call as the SceneTree is not thread-safe.
