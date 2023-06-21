@@ -3184,10 +3184,11 @@ void EditorInspector::update_tree() {
 										if (val.enumeration == enum_name && !val.name.ends_with("_MAX")) {
 											const String enum_value = EditorPropertyNameProcessor::get_singleton()->process_name(val.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 											// Prettify the enum value display, so that "<ENUM NAME>_<VALUE>" becomes "Value".
+											String desc = DTR(val.description).trim_prefix("\n");
 											doc_info.description += vformat(
 													"\n[b]%s:[/b] %s",
 													enum_value.trim_prefix(EditorPropertyNameProcessor::get_singleton()->process_name(enum_name, EditorPropertyNameProcessor::STYLE_CAPITALIZED) + " "),
-													DTR(val.description).trim_prefix("\n"));
+													desc.is_empty() ? ("[i]" + TTR("No description.") + "[/i]") : desc);
 										}
 									}
 								}
