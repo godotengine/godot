@@ -420,8 +420,16 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 		int item = node->get_cell_item(Vector3i(cell[0], cell[1], cell[2]));
 		if (item >= 0) {
 			selected_palette = item;
-			mesh_library_palette->set_current(item);
+
+			// Clear the filter if picked an item that's filtered out.
+			int index = mesh_library_palette->find_metadata(item);
+			if (index == -1) {
+				search_box->clear();
+			}
+
+			// This will select `selected_palette` in the ItemList when possible.
 			update_palette();
+
 			_update_cursor_instance();
 		}
 		return true;
@@ -830,8 +838,6 @@ void GridMapEditor::_icon_size_changed(float p_value) {
 }
 
 void GridMapEditor::update_palette() {
-	int selected = mesh_library_palette->get_current();
-
 	float min_size = EDITOR_GET("editors/grid_map/preview_size");
 	min_size *= EDSCALE;
 
@@ -899,13 +905,11 @@ void GridMapEditor::update_palette() {
 		mesh_library_palette->set_item_text(item, name);
 		mesh_library_palette->set_item_metadata(item, id);
 
-		item++;
-	}
+		if (selected_palette == id) {
+			mesh_library_palette->select(item);
+		}
 
-	if (selected != -1 && mesh_library_palette->get_item_count() > 0) {
-		// Make sure that this variable is set correctly.
-		selected_palette = MIN(selected, mesh_library_palette->get_item_count() - 1);
-		mesh_library_palette->select(selected_palette);
+		item++;
 	}
 
 	last_mesh_library = *mesh_library;
@@ -1232,6 +1236,7 @@ GridMapEditor::GridMapEditor() {
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTR("Filter Meshes"));
+	search_box->set_clear_button_enabled(true);
 	hb->add_child(search_box);
 	search_box->connect("text_changed", callable_mp(this, &GridMapEditor::_text_changed));
 	search_box->connect("gui_input", callable_mp(this, &GridMapEditor::_sbox_input));
