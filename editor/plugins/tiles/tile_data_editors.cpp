@@ -1185,19 +1185,18 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 		Ref<Font> font = TileSetEditor::get_singleton()->get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
 		int font_size = TileSetEditor::get_singleton()->get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
 		String text;
+		// Round floating point precision to 2 digits, as tiles don't have that much space.
 		switch (value.get_type()) {
-			case Variant::INT:
-				text = vformat("%d", value);
-				break;
 			case Variant::FLOAT:
 				text = vformat("%.2f", value);
 				break;
-			case Variant::STRING:
-			case Variant::STRING_NAME:
-				text = value;
+			case Variant::VECTOR2:
+			case Variant::VECTOR3:
+			case Variant::VECTOR4:
+				text = vformat("%.2v", value);
 				break;
 			default:
-				return;
+				text = value.stringify();
 				break;
 		}
 
@@ -1216,8 +1215,8 @@ void TileDataDefaultEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2
 		}
 
 		Vector2 string_size = font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
-		p_canvas_item->draw_string_outline(font, p_transform.xform(-texture_origin) + Vector2i(-string_size.x / 2, string_size.y / 2), text, HORIZONTAL_ALIGNMENT_CENTER, string_size.x, font_size, 1, Color(0, 0, 0, 1));
-		p_canvas_item->draw_string(font, p_transform.xform(-texture_origin) + Vector2i(-string_size.x / 2, string_size.y / 2), text, HORIZONTAL_ALIGNMENT_CENTER, string_size.x, font_size, color);
+		p_canvas_item->draw_string_outline(font, p_transform.xform(-texture_origin) + Vector2i(-string_size.x / 2, string_size.y / 4), text, HORIZONTAL_ALIGNMENT_CENTER, string_size.x, font_size, 3, Color(0, 0, 0));
+		p_canvas_item->draw_string(font, p_transform.xform(-texture_origin) + Vector2i(-string_size.x / 2, string_size.y / 4), text, HORIZONTAL_ALIGNMENT_CENTER, string_size.x, font_size, color);
 	}
 }
 
