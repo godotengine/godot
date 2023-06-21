@@ -1063,12 +1063,16 @@ void TileSet::move_custom_data_layer(int p_from_index, int p_to_pos) {
 void TileSet::remove_custom_data_layer(int p_index) {
 	ERR_FAIL_INDEX(p_index, custom_data_layers.size());
 	custom_data_layers.remove_at(p_index);
-	for (KeyValue<String, int> E : custom_data_layers_by_name) {
+
+	String to_erase;
+	for (KeyValue<String, int> &E : custom_data_layers_by_name) {
 		if (E.value == p_index) {
-			custom_data_layers_by_name.erase(E.key);
-			break;
+			to_erase = E.key;
+		} else if (E.value > p_index) {
+			E.value--;
 		}
 	}
+	custom_data_layers_by_name.erase(to_erase);
 
 	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
 		source.value->remove_custom_data_layer(p_index);
