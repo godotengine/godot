@@ -432,7 +432,6 @@ void ScreenSelect::pressed() {
 }
 
 ScreenSelect::ScreenSelect() {
-	set_text(TTR("Make Floating"));
 	set_tooltip_text(TTR("Make this panel floating.\nRight click to open the screen selector."));
 	set_button_mask(MouseButtonMask::RIGHT);
 	set_flat(true);
