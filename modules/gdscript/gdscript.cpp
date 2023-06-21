@@ -1542,7 +1542,7 @@ GDScript::~GDScript() {
 	{
 		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 
-		GDScriptLanguage::get_singleton()->script_list.remove(&script_list);
+		script_list.remove_from_list();
 	}
 }
 
