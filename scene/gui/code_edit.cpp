@@ -220,6 +220,10 @@ void CodeEdit::_notification(int p_what) {
 		case NOTIFICATION_DRAG_BEGIN: {
 			cancel_code_completion();
 		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			queue_redraw();
+		} break;
 	}
 }
 
