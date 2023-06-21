@@ -435,6 +435,11 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 		registry->wl_seats.push_back(wl_seat);
 
 		wl_seat_add_listener(wl_seat, &wl_seat_listener, ss);
+
+		if (registry->wayland_thread->wl_seat_current == nullptr) {
+			registry->wayland_thread->_set_current_seat(wl_seat);
+		}
+
 		return;
 	}
 
@@ -1566,28 +1571,30 @@ void WaylandThread::_wl_keyboard_on_enter(void *data, struct wl_keyboard *wl_key
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
+
+	wayland_thread->_set_current_seat(ss->wl_seat);
 
 	Ref<WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = DisplayServer::WINDOW_EVENT_FOCUS_IN;
-	wls->wayland_thread->push_message(msg);
+	wayland_thread->push_message(msg);
 }
 
 void WaylandThread::_wl_keyboard_on_leave(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
 
 	ss->repeating_keycode = XKB_KEYCODE_INVALID;
 
 	Ref<WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = DisplayServer::WINDOW_EVENT_FOCUS_OUT;
-	wls->wayland_thread->push_message(msg);
+	wayland_thread->push_message(msg);
 }
 
 void WaylandThread::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
@@ -1636,6 +1643,8 @@ void WaylandThread::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl
 	ss->ctrl_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_CTRL, XKB_STATE_MODS_DEPRESSED);
 	ss->alt_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_ALT, XKB_STATE_MODS_DEPRESSED);
 	ss->meta_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_LOGO, XKB_STATE_MODS_DEPRESSED);
+
+	ss->current_layout_index = group;
 }
 
 void WaylandThread::_wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay) {
@@ -3177,7 +3186,59 @@ void WaylandThread::cursor_cache_custom_shape(DisplayServer::CursorShape p_curso
 	// TODO
 }
 
-void WaylandThread::echo_keys() {
+int WaylandThread::keyboard_get_layout_count() const {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss && ss->xkb_keymap) {
+		return xkb_keymap_num_layouts(ss->xkb_keymap);
+	}
+
+	return 0;
+}
+
+int WaylandThread::keyboard_get_current_layout_index() const {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss) {
+		return ss->current_layout_index;
+	}
+
+	return 0;
+}
+
+void WaylandThread::keyboard_set_current_layout_index(int p_index) {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss) {
+		ss->current_layout_index = p_index;
+	}
+}
+
+String WaylandThread::keyboard_get_layout_name(int p_index) const {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss && ss->xkb_keymap) {
+		String ret;
+		ret.parse_utf8(xkb_keymap_layout_get_name(ss->xkb_keymap, p_index));
+
+		return ret;
+	}
+
+	return "";
+}
+
+Key WaylandThread::keyboard_get_key_from_physical(Key p_key) const {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss && ss->xkb_state) {
+		xkb_keycode_t xkb_keycode = KeyMappingXKB::get_xkb_keycode(p_key);
+		return KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(ss->xkb_state, xkb_keycode));
+	}
+
+	return Key::NONE;
+}
+
+void WaylandThread::keyboard_echo_keys() {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss) {

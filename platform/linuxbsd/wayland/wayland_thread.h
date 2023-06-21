@@ -502,6 +502,7 @@ private:
 
 	// xdg-shell event handlers.
 	static void _xdg_wm_base_on_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial);
+
 	static void _xdg_surface_on_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial);
 
 	static void _xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states);
@@ -814,7 +815,14 @@ public:
 	void cursor_set_shape(DisplayServer::CursorShape p_cursor_shape);
 	void cursor_cache_custom_shape(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image);
 
-	void echo_keys();
+	int keyboard_get_layout_count() const;
+	int keyboard_get_current_layout_index() const;
+	void keyboard_set_current_layout_index(int p_index);
+	String keyboard_get_layout_name(int p_index) const;
+
+	Key keyboard_get_key_from_physical(Key p_key) const;
+
+	void keyboard_echo_keys();
 
 	Error init(WaylandState &p_wls);
 	void destroy();

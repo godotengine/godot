@@ -258,9 +258,7 @@ DisplayServerWayland::MouseMode DisplayServerWayland::mouse_get_mode() const {
 
 void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
 	// NOTE: This is hacked together as for some reason the pointer constraints
-	// protocol doesn't implement pointer warping (not even in the window). This
-	// isn't efficient *at all* and perhaps there could be better behaviours in
-	// the pointer capturing logic in general, but this will do for now.
+	// protocol doesn't implement pointer warping (not even in the window).
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	WaylandThread::PointerConstraint old_constraint = wayland_thread.pointer_get_constraint();
@@ -1119,61 +1117,39 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 int DisplayServerWayland::keyboard_get_layout_count() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (wls.current_seat && wls.current_seat->xkb_keymap) {
-		return xkb_keymap_num_layouts(wls.current_seat->xkb_keymap);
-	}
-
-	return 0;
+	return wayland_thread.keyboard_get_layout_count();
 }
 
 int DisplayServerWayland::keyboard_get_current_layout() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (wls.current_seat) {
-		return wls.current_seat->current_layout_index;
-	}
-
-	return 0;
+	return wayland_thread.keyboard_get_current_layout_index();
 }
 
 void DisplayServerWayland::keyboard_set_current_layout(int p_index) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (wls.current_seat) {
-		wls.current_seat->current_layout_index = p_index;
-	}
+	wayland_thread.keyboard_set_current_layout_index(p_index);
 }
 
 String DisplayServerWayland::keyboard_get_layout_language(int p_index) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
 	// xkbcommon exposes only the layout's name, which looks like it overlaps with
 	// its language.
-	return keyboard_get_layout_name(p_index);
+	return wayland_thread.keyboard_get_layout_name(p_index);
 }
 
 String DisplayServerWayland::keyboard_get_layout_name(int p_index) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	String ret;
-
-	if (wls.current_seat && wls.current_seat->xkb_keymap) {
-		ret.parse_utf8(xkb_keymap_layout_get_name(wls.current_seat->xkb_keymap, p_index));
-	}
-
-	return ret;
+	return wayland_thread.keyboard_get_layout_name(p_index);
 }
 
 Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	xkb_keycode_t xkb_keycode = KeyMappingXKB::get_xkb_keycode(p_keycode);
-
-	Key key = Key::NONE;
-
-	if (wls.current_seat && wls.current_seat->xkb_state) {
-		// NOTE: Be aware that this method will always return something, even if this
-		// line might never be executed if the current seat doesn't have a keyboard.
-		key = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(wls.current_seat->xkb_state, xkb_keycode));
-	}
+	Key key = wayland_thread.keyboard_get_key_from_physical(p_keycode);
 
 	// If not found, fallback to QWERTY.
 	// This should match the behavior of the event pump.
@@ -1254,7 +1230,7 @@ void DisplayServerWayland::process_events() {
 		}
 	}
 
-	wayland_thread.echo_keys();
+	wayland_thread.keyboard_echo_keys();
 
 	Input::get_singleton()->flush_buffered_events();
 }
