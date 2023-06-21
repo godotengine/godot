@@ -124,7 +124,7 @@ private:
 	HashMap<Vector2i, TileMapCell> drag_modified;
 
 	TileMapCell _pick_random_tile(Ref<TileMapPattern> p_pattern);
-	HashMap<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos, bool p_erase);
+	HashMap<Vector2i, TileMapCell> _draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos, bool p_erase, bool p_use_small_step);
 	HashMap<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase);
 	HashMap<Vector2i, TileMapCell> _draw_bucket_fill(Vector2i p_coords, bool p_contiguous, bool p_erase);
 	void _stop_dragging();

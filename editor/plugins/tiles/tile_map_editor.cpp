@@ -570,7 +570,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 
 		switch (drag_type) {
 			case DRAG_TYPE_PAINT: {
-				HashMap<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_last_mouse_pos, mpos, drag_erasing);
+				HashMap<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_last_mouse_pos, mpos, drag_erasing, drag_erasing);
 				for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
 					Vector2i coords = E.key;
 					if (!drag_modified.has(coords)) {
@@ -656,7 +656,7 @@ bool TileMapEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p
 							drag_type = DRAG_TYPE_PAINT;
 							drag_start_mouse_pos = mpos;
 							drag_modified.clear();
-							HashMap<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, mpos, mpos, drag_erasing);
+							HashMap<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, mpos, mpos, drag_erasing, drag_erasing);
 							for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
 								if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
 									continue;
@@ -818,16 +818,16 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 			bool expand_grid = false;
 			if (tool_buttons_group->get_pressed_button() == paint_tool_button && drag_type == DRAG_TYPE_NONE) {
 				// Preview for a single pattern.
-				preview = _draw_line(mpos, mpos, mpos, erase_button->is_pressed());
+				preview = _draw_line(mpos, mpos, mpos, erase_button->is_pressed(), erase_button->is_pressed());
 				expand_grid = true;
 			} else if (tool_buttons_group->get_pressed_button() == line_tool_button || drag_type == DRAG_TYPE_LINE) {
 				if (drag_type == DRAG_TYPE_NONE) {
 					// Preview for a single pattern.
-					preview = _draw_line(mpos, mpos, mpos, erase_button->is_pressed());
+					preview = _draw_line(mpos, mpos, mpos, erase_button->is_pressed(), false);
 					expand_grid = true;
 				} else if (drag_type == DRAG_TYPE_LINE) {
 					// Preview for a line pattern.
-					preview = _draw_line(drag_start_mouse_pos, drag_start_mouse_pos, mpos, drag_erasing);
+					preview = _draw_line(drag_start_mouse_pos, drag_start_mouse_pos, mpos, drag_erasing, false);
 					expand_grid = true;
 				}
 			} else if (drag_type == DRAG_TYPE_RECT) {
@@ -1014,7 +1014,7 @@ TileMapCell TileMapEditorTilesPlugin::_pick_random_tile(Ref<TileMapPattern> p_pa
 	return TileMapCell();
 }
 
-HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos, bool p_erase) {
+HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos, bool p_erase, bool p_use_small_step) {
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
 	if (!tile_map) {
 		return HashMap<Vector2i, TileMapCell>();
@@ -1028,7 +1028,10 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_line(Vector2 p_st
 	// Get or create the pattern.
 	Ref<TileMapPattern> erase_pattern;
 	erase_pattern.instantiate();
-	erase_pattern->set_cell(Vector2i(0, 0), TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+	TypedArray<Vector2i> pattern_cells_array = selection_pattern->get_used_cells();
+	for (int i = 0; i < pattern_cells_array.size(); i++) {
+		erase_pattern->set_cell(pattern_cells_array[i], TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
+	}
 	Ref<TileMapPattern> pattern = p_erase ? erase_pattern : selection_pattern;
 
 	HashMap<Vector2i, TileMapCell> output;
@@ -1048,14 +1051,15 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTilesPlugin::_draw_line(Vector2 p_st
 			Vector2i new_hovered_cell = tile_map->local_to_map(p_to_mouse_pos - mouse_offset);
 			Vector2i drag_start_cell = tile_map->local_to_map(p_start_drag_mouse_pos - mouse_offset);
 
-			TypedArray<Vector2i> used_cells = pattern->get_used_cells();
-			Vector2i offset = Vector2i(Math::posmod(drag_start_cell.x, pattern->get_size().x), Math::posmod(drag_start_cell.y, pattern->get_size().y)); // Note: no posmodv for Vector2i for now. Meh.s
-			Vector<Vector2i> line = TileMapEditor::get_line(tile_map, (last_hovered_cell - offset) / pattern->get_size(), (new_hovered_cell - offset) / pattern->get_size());
+			Vector2i step = p_use_small_step ? Vector2i(1, 1) : pattern->get_size();
+
+			Vector2i offset = Vector2i(Math::posmod(drag_start_cell.x, pattern->get_size().x), Math::posmod(drag_start_cell.y, pattern->get_size().y)); // Note: no posmodv for Vector2i for now. Meh.
+			Vector<Vector2i> line = TileMapEditor::get_line(tile_map, (last_hovered_cell - offset) / step, (new_hovered_cell - offset) / step);
 			for (int i = 0; i < line.size(); i++) {
-				Vector2i top_left = line[i] * pattern->get_size() + offset;
-				for (int j = 0; j < used_cells.size(); j++) {
-					Vector2i coords = tile_map->map_pattern(top_left, used_cells[j], pattern);
-					output.insert(coords, TileMapCell(pattern->get_cell_source_id(used_cells[j]), pattern->get_cell_atlas_coords(used_cells[j]), pattern->get_cell_alternative_tile(used_cells[j])));
+				Vector2i top_left = line[i] * step + offset;
+				for (int j = 0; j < pattern_cells_array.size(); j++) {
+					Vector2i coords = tile_map->map_pattern(top_left, pattern_cells_array[j], pattern);
+					output.insert(coords, TileMapCell(pattern->get_cell_source_id(pattern_cells_array[j]), pattern->get_cell_atlas_coords(pattern_cells_array[j]), pattern->get_cell_alternative_tile(pattern_cells_array[j])));
 				}
 			}
 		}
@@ -1409,7 +1413,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 			undo_redo->commit_action(false);
 		} break;
 		case DRAG_TYPE_LINE: {
-			HashMap<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_start_mouse_pos, mpos, drag_erasing);
+			HashMap<Vector2i, TileMapCell> to_draw = _draw_line(drag_start_mouse_pos, drag_start_mouse_pos, mpos, drag_erasing, false);
 			undo_redo->create_action(TTR("Paint tiles"));
 			for (const KeyValue<Vector2i, TileMapCell> &E : to_draw) {
 				if (!drag_erasing && E.value.source_id == TileSet::INVALID_SOURCE) {
