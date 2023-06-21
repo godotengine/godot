@@ -720,6 +720,12 @@
 				Replaces all [b]case-insensitive[/b] occurrences of [param what] inside the string with the given [param forwhat].
 			</description>
 		</method>
+		<method name="reverse" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the copy of this string in reverse order.
+			</description>
+		</method>
 		<method name="rfind" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="what" type="String" />
