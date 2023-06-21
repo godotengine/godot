@@ -1451,6 +1451,11 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	RD::get_singleton()->barrier(RD::BARRIER_MASK_ALL_BARRIERS, RD::BARRIER_MASK_ALL_BARRIERS);
 
 	if (current_cluster_builder) {
+		// Note: when rendering stereoscopic (multiview) we are using our combined frustum projection to create
+		// our cluster data. We use reprojection in the shader to adjust for our left/right eye.
+		// This only works as we don't filter our cluster by depth buffer.
+		// If we ever make this optimisation we should make it optional and only use it in mono.
+		// What we win by filtering out a few lights, we loose by having to do the work double for stereo.
 		current_cluster_builder->begin(p_render_data->scene_data->cam_transform, p_render_data->scene_data->cam_projection, !p_render_data->reflection_probe.is_valid());
 	}
 

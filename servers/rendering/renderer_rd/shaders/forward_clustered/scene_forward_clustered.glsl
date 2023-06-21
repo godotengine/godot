@@ -735,6 +735,10 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef USE_MULTIVIEW
 	vec3 eye_offset = scene_data.eye_offset[ViewIndex].xyz;
 	vec3 view = -normalize(vertex_interp - eye_offset);
+
+	// UV in our combined frustum space is used for certain screen uv processes where it's
+	// overkill to render separate left and right eye views
+	vec2 combined_uv = (combined_projected.xy / combined_projected.w) * 0.5 + 0.5;
 #else
 	vec3 eye_offset = vec3(0.0, 0.0, 0.0);
 	vec3 view = -normalize(vertex_interp);
@@ -921,8 +925,7 @@ void fragment_shader(in SceneData scene_data) {
 
 	if (implementation_data.volumetric_fog_enabled) {
 #ifdef USE_MULTIVIEW
-		vec2 center_uv = (combined_projected.xy / combined_projected.w) * 0.5 + 0.5;
-		vec4 volumetric_fog = volumetric_fog_process(center_uv, -vertex.z);
+		vec4 volumetric_fog = volumetric_fog_process(combined_uv, -vertex.z);
 #else
 		vec4 volumetric_fog = volumetric_fog_process(screen_uv, -vertex.z);
 #endif
@@ -952,7 +955,11 @@ void fragment_shader(in SceneData scene_data) {
 
 #ifndef MODE_RENDER_DEPTH
 
+#ifdef USE_MULTIVIEW
+	uvec2 cluster_pos = uvec2(combined_uv.xy / scene_data.screen_pixel_size) >> implementation_data.cluster_shift;
+#else
 	uvec2 cluster_pos = uvec2(gl_FragCoord.xy) >> implementation_data.cluster_shift;
+#endif
 	uint cluster_offset = (implementation_data.cluster_width * cluster_pos.y + cluster_pos.x) * (implementation_data.max_cluster_element_count_div_32 + 32);
 
 	uint cluster_z = uint(clamp((-vertex.z / scene_data.z_far) * 32.0, 0.0, 31.0));
