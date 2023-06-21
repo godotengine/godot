@@ -1767,25 +1767,39 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_match_pattern(CodeGen &c
 	ERR_FAIL_V_MSG(p_previous_test, "Reaching the end of pattern compilation without matching a pattern.");
 }
 
-void GDScriptCompiler::_add_locals_in_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block) {
+List<GDScriptCodeGenerator::Address> GDScriptCompiler::_add_locals_in_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block) {
+	List<GDScriptCodeGenerator::Address> addresses;
 	for (int i = 0; i < p_block->locals.size(); i++) {
 		if (p_block->locals[i].type == GDScriptParser::SuiteNode::Local::PARAMETER || p_block->locals[i].type == GDScriptParser::SuiteNode::Local::FOR_VARIABLE) {
 			// Parameters are added directly from function and loop variables are declared explicitly.
 			continue;
 		}
-		codegen.add_local(p_block->locals[i].name, _gdtype_from_datatype(p_block->locals[i].get_datatype(), codegen.script));
+		addresses.push_back(codegen.add_local(p_block->locals[i].name, _gdtype_from_datatype(p_block->locals[i].get_datatype(), codegen.script)));
+	}
+	return addresses;
+}
+
+// Avoid keeping in the stack long-lived references to objects, which may prevent RefCounted objects from being freed.
+void GDScriptCompiler::_clear_addresses(CodeGen &codegen, const List<GDScriptCodeGenerator::Address> &p_addresses) {
+	for (const List<GDScriptCodeGenerator::Address>::Element *E = p_addresses.front(); E; E = E->next()) {
+		GDScriptDataType type = E->get().type;
+		// If not an object and cannot contain an object, no need to clear.
+		if (type.kind != GDScriptDataType::BUILTIN || type.builtin_type == Variant::ARRAY || type.builtin_type == Variant::DICTIONARY) {
+			codegen.generator->write_assign_false(E->get());
+		}
 	}
 }
 
-Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block, bool p_add_locals) {
+Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::SuiteNode *p_block, bool p_add_locals, bool p_reset_locals) {
 	Error err = OK;
 	GDScriptCodeGenerator *gen = codegen.generator;
+	List<GDScriptCodeGenerator::Address> block_locals;
 
 	gen->clean_temporaries();
 	codegen.start_block();
 
 	if (p_add_locals) {
-		_add_locals_in_block(codegen, p_block);
+		block_locals = _add_locals_in_block(codegen, p_block);
 	}
 
 	for (int i = 0; i < p_block->statements.size(); i++) {
@@ -1841,7 +1855,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					codegen.start_block(); // Create an extra block around for binds.
 
 					// Add locals in block before patterns, so temporaries don't use the stack address for binds.
-					_add_locals_in_block(codegen, branch->block);
+					List<GDScriptCodeGenerator::Address> branch_locals = _add_locals_in_block(codegen, branch->block);
 
 #ifdef DEBUG_ENABLED
 					// Add a newline before each branch, since the debugger needs those.
@@ -1867,6 +1881,8 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					if (err) {
 						return err;
 					}
+
+					_clear_addresses(codegen, branch_locals);
 
 					codegen.end_block(); // Get out of extra block.
 				}
@@ -2052,7 +2068,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 				}
 
 				// Assigns a null for the unassigned variables in loops.
-				if (!initialized && p_block->is_loop) {
+				if (!initialized && p_block->is_in_loop) {
 					codegen.generator->write_construct(local, Variant::NIL, Vector<GDScriptCodeGenerator::Address>());
 				}
 			} break;
@@ -2086,6 +2102,10 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 		}
 
 		gen->clean_temporaries();
+	}
+
+	if (p_add_locals && p_reset_locals) {
+		_clear_addresses(codegen, block_locals);
 	}
 
 	codegen.end_block();
@@ -2241,7 +2261,8 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			codegen.generator->end_parameters();
 		}
 
-		r_error = _parse_block(codegen, p_func->body);
+		// No need to reset locals at the end of the function, the stack will be cleared anyway.
+		r_error = _parse_block(codegen, p_func->body, true, false);
 		if (r_error) {
 			memdelete(codegen.generator);
 			return nullptr;
