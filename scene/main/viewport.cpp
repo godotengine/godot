@@ -1771,8 +1771,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 			}
 
-			bool stopped = gui.mouse_focus->can_process() && _gui_call_input(gui.mouse_focus, mb);
-
+			bool stopped = gui.mouse_focus && gui.mouse_focus->can_process() && _gui_call_input(gui.mouse_focus, mb);
 			if (stopped) {
 				set_input_as_handled();
 			}
