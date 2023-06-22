@@ -153,7 +153,6 @@ void Node3D::_notification(int p_what) {
 					data.local_transform = data.parent->get_global_transform() * get_transform();
 					_replace_dirty_mask(DIRTY_EULER_ROTATION_AND_SCALE); // As local transform was updated, rot/scale should be dirty.
 				}
-				data.top_level = true;
 			}
 
 			_set_dirty_bits(DIRTY_GLOBAL_TRANSFORM); // Global is always dirty upon entering a scene.
@@ -173,7 +172,6 @@ void Node3D::_notification(int p_what) {
 			}
 			data.parent = nullptr;
 			data.C = nullptr;
-			data.top_level = false;
 			_update_visibility_parent(true);
 		} break;
 
