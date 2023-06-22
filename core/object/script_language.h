@@ -35,6 +35,7 @@
 #include "core/io/resource.h"
 #include "core/templates/pair.h"
 #include "core/templates/rb_map.h"
+#include "core/templates/safe_refcount.h"
 #include "core/variant/typed_array.h"
 
 class ScriptLanguage;
@@ -52,7 +53,7 @@ class ScriptServer {
 	static int _language_count;
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
-	static bool languages_finished;
+	static SafeFlag languages_finished; // Used until GH-76581 is fixed properly.
 
 	struct GlobalScriptClass {
 		StringName language;
@@ -97,7 +98,7 @@ public:
 	static void init_languages();
 	static void finish_languages();
 
-	static bool are_languages_finished() { return languages_finished; }
+	static bool are_languages_finished() { return languages_finished.is_set(); }
 };
 
 class ScriptInstance;
