@@ -25,7 +25,7 @@
 			{"foo": "hello", "bar": true, "baz": 42, "color": Color(1, 1, 1, 1)}
 			[/codeblock]
 		</member>
-		<member name="font" type="RID" setter="set_font" getter="get_font">
+		<member name="font" type="RID" setter="set_font" getter="get_font" default="RID()">
 			Font resource used to render glyph.
 		</member>
 		<member name="glyph_count" type="int" setter="set_glyph_count" getter="get_glyph_count" default="0">

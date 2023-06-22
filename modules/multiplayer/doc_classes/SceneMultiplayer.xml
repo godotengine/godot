@@ -64,7 +64,7 @@
 			If [code]true[/code], the MultiplayerAPI will allow encoding and decoding of object during RPCs.
 			[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threat such as remote code execution.
 		</member>
-		<member name="auth_callback" type="Callable" setter="set_auth_callback" getter="get_auth_callback">
+		<member name="auth_callback" type="Callable" setter="set_auth_callback" getter="get_auth_callback" default="Callable()">
 			The callback to execute when when receiving authentication data sent via [method send_auth]. If the [Callable] is empty (default), peers will be automatically accepted as soon as they connect.
 		</member>
 		<member name="auth_timeout" type="float" setter="set_auth_timeout" getter="get_auth_timeout" default="3.0">
