@@ -154,6 +154,10 @@ void NavigationAgent3D::_notification(int p_what) {
 			set_agent_parent(get_parent());
 			set_physics_process_internal(true);
 
+			if (agent_parent && avoidance_enabled) {
+				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
+			}
+
 #ifdef DEBUG_ENABLED
 			if (NavigationServer3D::get_singleton()->get_debug_enabled()) {
 				debug_path_dirty = true;

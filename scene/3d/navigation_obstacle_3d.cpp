@@ -62,6 +62,9 @@ void NavigationObstacle3D::_notification(int p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
 			set_agent_parent(get_parent());
 			set_physics_process_internal(true);
+			if (parent_node3d && parent_node3d->is_inside_tree()) {
+				NavigationServer3D::get_singleton()->agent_set_position(agent, parent_node3d->get_global_position());
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
