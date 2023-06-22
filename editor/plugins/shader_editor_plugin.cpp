@@ -622,7 +622,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	empty.instantiate();
 	shader_tabs->add_theme_style_override("panel", empty);
 
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Shader Editor"), window_wrapper);
+	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Shader Editor"), window_wrapper, true);
 
 	// Defer connect because Editor class is not in the binding system yet.
 	EditorNode::get_singleton()->call_deferred("connect", "resource_saved", callable_mp(this, &ShaderEditorPlugin::_resource_saved), CONNECT_DEFERRED);

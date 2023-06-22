@@ -1998,7 +1998,7 @@ void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 
 AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin() {
 	anim_editor = memnew(AnimationPlayerEditor(this));
-	EditorNode::get_singleton()->add_bottom_panel_item(TTR("Animation"), anim_editor);
+	EditorNode::get_singleton()->add_bottom_panel_item(TTR("Animation"), anim_editor, true);
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {
