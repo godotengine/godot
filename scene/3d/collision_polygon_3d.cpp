@@ -35,11 +35,11 @@
 #include "scene/resources/convex_polygon_shape_3d.h"
 
 void CollisionPolygon3D::_build_polygon() {
-	if (!parent) {
+	if (!collision_object) {
 		return;
 	}
 
-	parent->shape_owner_clear_shapes(owner_id);
+	collision_object->shape_owner_clear_shapes(owner_id);
 
 	if (polygon.size() == 0) {
 		return;
@@ -70,56 +70,56 @@ void CollisionPolygon3D::_build_polygon() {
 
 		convex->set_points(cp);
 		convex->set_margin(margin);
-		parent->shape_owner_add_shape(owner_id, convex);
-		parent->shape_owner_set_disabled(owner_id, disabled);
+		collision_object->shape_owner_add_shape(owner_id, convex);
+		collision_object->shape_owner_set_disabled(owner_id, disabled);
 	}
 }
 
 void CollisionPolygon3D::_update_in_shape_owner(bool p_xform_only) {
-	parent->shape_owner_set_transform(owner_id, get_transform());
+	collision_object->shape_owner_set_transform(owner_id, get_transform());
 	if (p_xform_only) {
 		return;
 	}
-	parent->shape_owner_set_disabled(owner_id, disabled);
+	collision_object->shape_owner_set_disabled(owner_id, disabled);
 }
 
 void CollisionPolygon3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PARENTED: {
-			parent = Object::cast_to<CollisionObject3D>(get_parent());
-			if (parent) {
-				owner_id = parent->create_shape_owner(this);
+			collision_object = Object::cast_to<CollisionObject3D>(get_parent());
+			if (collision_object) {
+				owner_id = collision_object->create_shape_owner(this);
 				_build_polygon();
 				_update_in_shape_owner();
 			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			if (parent) {
+			if (collision_object) {
 				_update_in_shape_owner();
 			}
 		} break;
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-			if (parent) {
+			if (collision_object) {
 				_update_in_shape_owner(true);
 			}
 			update_configuration_warnings();
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
-			if (parent) {
-				parent->remove_shape_owner(owner_id);
+			if (collision_object) {
+				collision_object->remove_shape_owner(owner_id);
 			}
 			owner_id = 0;
-			parent = nullptr;
+			collision_object = nullptr;
 		} break;
 	}
 }
 
 void CollisionPolygon3D::set_polygon(const Vector<Point2> &p_polygon) {
 	polygon = p_polygon;
-	if (parent) {
+	if (collision_object) {
 		_build_polygon();
 	}
 	update_configuration_warnings();
@@ -148,8 +148,8 @@ void CollisionPolygon3D::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
 	update_gizmos();
 
-	if (parent) {
-		parent->shape_owner_set_disabled(owner_id, p_disabled);
+	if (collision_object) {
+		collision_object->shape_owner_set_disabled(owner_id, p_disabled);
 	}
 }
 
@@ -163,7 +163,7 @@ real_t CollisionPolygon3D::get_margin() const {
 
 void CollisionPolygon3D::set_margin(real_t p_margin) {
 	margin = p_margin;
-	if (parent) {
+	if (collision_object) {
 		_build_polygon();
 	}
 }
