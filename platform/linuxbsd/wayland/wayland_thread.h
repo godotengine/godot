@@ -211,11 +211,6 @@ public:
 		ScreenData data;
 	};
 
-	// BEGIN DISPLAYSERVERWAYLAND STUFF DUMP
-
-	// Because circular dependencies.
-	struct WaylandState;
-
 	enum class Gesture {
 		NONE,
 		MAGNIFY,
@@ -280,8 +275,6 @@ public:
 	};
 
 	struct SeatState {
-		WaylandThread::WaylandState *wls = nullptr;
-
 		RegistryState *registry = nullptr;
 
 		WaylandThread *wayland_thread = nullptr;
@@ -386,17 +379,6 @@ public:
 		Point2i hotspot;
 	};
 
-	// Jack of all trades. Currently used only by `DisplayServerWayland` code.
-	// TODO: Get rid of this thing.
-	struct WaylandState {
-		struct wl_display *wl_display = nullptr;
-		struct wl_registry *wl_registry = nullptr;
-
-		SeatState *current_seat = nullptr;
-
-		WaylandThread *wayland_thread = nullptr;
-	};
-
 	// END DISPLAYSERVERWAYLAND STUFF DUMP
 
 private:
@@ -406,9 +388,6 @@ private:
 
 		struct wl_display *wl_display = nullptr;
 	};
-
-	// TODO: Get rid of this.
-	WaylandState *wls;
 
 	// FIXME: Is this the right thing to do?
 	inline static const char *proxy_tag = "godot";
@@ -743,6 +722,8 @@ private:
 public:
 	Mutex &mutex = thread_data.mutex;
 
+	// TODO: Make all the methods starting with "_" actually private.
+
 	static String _string_read_fd(int fd);
 	static int _allocate_shm_file(size_t size);
 
@@ -752,9 +733,11 @@ public:
 	static void _seat_state_set_current(WaylandThread::SeatState &p_ss);
 	static bool _seat_state_configure_key_event(WaylandThread::SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);
 
-	static void _wayland_state_update_cursor(WaylandThread::WaylandState &p_wls);
+	static void _wayland_state_update_cursor();
 
 	void _set_current_seat(struct wl_seat *p_seat);
+
+	struct wl_display *get_wl_display() const;
 
 	// Core Wayland utilities for integrating with our own data structures.
 	static bool wl_proxy_is_godot(struct wl_proxy *p_proxy);
@@ -831,7 +814,7 @@ public:
 	void primary_set_text(String p_text);
 	String primary_get_text() const;
 
-	Error init(WaylandState &p_wls);
+	Error init();
 	void destroy();
 };
 

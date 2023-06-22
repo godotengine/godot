@@ -449,7 +449,7 @@ void DisplayServerWayland::_show_window() {
 #ifdef VULKAN_ENABLED
 		if (context_vulkan) {
 			struct wl_surface *wl_surface = wayland_thread.window_get_wl_surface(wd.id);
-			Error err = context_vulkan->window_create(MAIN_WINDOW_ID, wd.vsync_mode, wls.wl_display, wl_surface, wd.rect.size.width, wd.rect.size.height);
+			Error err = context_vulkan->window_create(MAIN_WINDOW_ID, wd.vsync_mode, wayland_thread.get_wl_display(), wl_surface, wd.rect.size.width, wd.rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a Vulkan window.");
 		}
 #endif
@@ -459,7 +459,7 @@ void DisplayServerWayland::_show_window() {
 			struct wl_surface *wl_surface = wayland_thread.window_get_wl_surface(wd.id);
 			wd.wl_egl_window = wl_egl_window_create(wl_surface, wd.rect.size.width, wd.rect.size.height);
 
-			Error err = egl_manager->window_create(MAIN_WINDOW_ID, wls.wl_display, wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height);
+			Error err = egl_manager->window_create(MAIN_WINDOW_ID, wayland_thread.get_wl_display(), wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a GLES3 window.");
 
 			window_set_vsync_mode(wd.vsync_mode, MAIN_WINDOW_ID);
@@ -728,7 +728,7 @@ void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::Win
 	}
 
 	// Wait for a configure event and hope that something changed.
-	wl_display_roundtrip(wls.wl_display);
+	wl_display_roundtrip(wayland_thread.get_wl_display());
 
 	if (wd.mode != WINDOW_MODE_WINDOWED) {
 		// The compositor refused our "normalization" request. It'd be useless or
@@ -1120,14 +1120,15 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 void DisplayServerWayland::process_events() {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	int werror = wl_display_get_error(wls.wl_display);
+	// TODO: Move this stuff in thread?
+	int werror = wl_display_get_error(wayland_thread.get_wl_display());
 
 	if (werror) {
 		if (werror == EPROTO) {
 			struct wl_interface *wl_interface = nullptr;
 			uint32_t id = 0;
 
-			int error_code = wl_display_get_protocol_error(wls.wl_display, (const struct wl_interface **)&wl_interface, &id);
+			int error_code = wl_display_get_protocol_error(wayland_thread.get_wl_display(), (const struct wl_interface **)&wl_interface, &id);
 			print_error(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
 		} else {
 			print_error(vformat("Wayland client error code %d.", werror));
@@ -1254,10 +1255,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	r_error = ERR_UNAVAILABLE;
 
-	// TODO: Remove this.
-	wls.wayland_thread = &wayland_thread;
-
-	Error thread_err = wayland_thread.init(wls);
+	Error thread_err = wayland_thread.init();
 
 	if (thread_err != OK) {
 		r_error = thread_err;
@@ -1311,7 +1309,6 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	WindowData &wd = main_window;
 
-	wd.wls = &wls;
 	wd.id = MAIN_WINDOW_ID;
 	wd.mode = p_mode;
 	wd.flags = p_flags;

@@ -213,118 +213,6 @@ bool WaylandThread::_seat_state_configure_key_event(SeatState &p_ss, Ref<InputEv
 	return true;
 }
 
-// TODO: Port this method properly with WaylandThread semantics.
-void WaylandThread::_wayland_state_update_cursor(WaylandThread::WaylandState &p_wls) {
-	ERR_PRINT("bruh.");
-#if 0
-	if (!p_wls.current_seat || !p_wls.current_seat->wl_pointer) {
-		return;
-	}
-
-	SeatState &ss = *p_wls.current_seat;
-
-	ERR_FAIL_NULL(ss.cursor_surface);
-
-	struct wl_pointer *wp = ss.wl_pointer;
-	struct zwp_pointer_constraints_v1 *pc = p_wls.registry.wp_pointer_constraints;
-
-	// In order to change the address of the SeatState's pointers we need to get
-	// their reference first.
-	struct zwp_locked_pointer_v1 *&lp = ss.wp_locked_pointer;
-	struct zwp_confined_pointer_v1 *&cp = ss.wp_confined_pointer;
-
-	// All modes but `MOUSE_MODE_VISIBLE` and `MOUSE_MODE_CONFINED` are hidden.
-	if (p_wls.mouse_mode != DisplayServer::MOUSE_MODE_VISIBLE && p_wls.mouse_mode != DisplayServer::MOUSE_MODE_CONFINED) {
-		// Reset the cursor's hotspot.
-		wl_pointer_set_cursor(ss.wl_pointer, ss.pointer_enter_serial, ss.cursor_surface, 0, 0);
-
-		// Unmap the cursor.
-		wl_surface_attach(ss.cursor_surface, nullptr, 0, 0);
-
-		wl_surface_commit(ss.cursor_surface);
-	} else {
-		// Update the cursor shape.
-		if (!ss.wl_pointer) {
-			return;
-		}
-
-		struct wl_buffer *cursor_buffer = nullptr;
-		Point2i hotspot;
-
-		if (!p_wls.custom_cursors.has(p_wls.cursor_shape)) {
-			cursor_buffer = p_wls.cursor_bufs[p_wls.cursor_shape];
-
-			if (!cursor_image) {
-				// TODO: Error out?
-				return;
-			}
-
-			hotspot.x = cursor_image->hotspot_x;
-			hotspot.y = cursor_image->hotspot_y;
-		} else {
-			// Select the custom cursor data.
-			WaylandThread::CustomWaylandCursor &custom_cursor = p_wls.custom_cursors[p_wls.cursor_shape];
-
-			cursor_buffer = custom_cursor.wl_buffer;
-			hotspot = custom_cursor.hotspot;
-		}
-
-		// Update the cursor's hotspot.
-		wl_pointer_set_cursor(ss.wl_pointer, ss.pointer_enter_serial, ss.cursor_surface, hotspot.x, hotspot.y);
-
-		// Attach the new cursor's buffer and damage it.
-		wl_surface_attach(ss.cursor_surface, cursor_buffer, 0, 0);
-		wl_surface_damage_buffer(ss.cursor_surface, 0, 0, INT_MAX, INT_MAX);
-
-		// Commit everything.
-		wl_surface_commit(ss.cursor_surface);
-	}
-
-	struct wl_surface *wl_surface = p_wls.wayland_thread->window_get_wl_surface(DisplayServer::MAIN_WINDOW_ID);
-	WaylandThread::WindowState *ws = p_wls.wayland_thread->wl_surface_get_window_state(wl_surface);
-
-	// Constrain/Free pointer movement depending on its mode.
-	switch (p_wls.mouse_mode) {
-		// Unconstrained pointer.
-		case DisplayServer::MOUSE_MODE_VISIBLE:
-		case DisplayServer::MOUSE_MODE_HIDDEN: {
-			if (lp) {
-				zwp_locked_pointer_v1_destroy(lp);
-				lp = nullptr;
-			}
-
-			if (cp) {
-				zwp_confined_pointer_v1_destroy(cp);
-				cp = nullptr;
-			}
-		} break;
-
-		// Locked pointer.
-		case DisplayServer::MOUSE_MODE_CAPTURED: {
-			if (!lp) {
-				Rect2i logical_rect = ws->rect;
-
-				lp = zwp_pointer_constraints_v1_lock_pointer(pc, wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
-
-				// Center the cursor on unlock.
-				wl_fixed_t unlock_x = wl_fixed_from_int(logical_rect.size.width / 2);
-				wl_fixed_t unlock_y = wl_fixed_from_int(logical_rect.size.height / 2);
-
-				zwp_locked_pointer_v1_set_cursor_position_hint(lp, unlock_x, unlock_y);
-			}
-		} break;
-
-		// Confined pointer.
-		case DisplayServer::MOUSE_MODE_CONFINED:
-		case DisplayServer::MOUSE_MODE_CONFINED_HIDDEN: {
-			if (!cp) {
-				cp = zwp_pointer_constraints_v1_confine_pointer(pc, wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
-			}
-		}
-	}
-#endif
-}
-
 void WaylandThread::_set_current_seat(struct wl_seat *p_seat) {
 	if (p_seat == wl_seat_current) {
 		return;
@@ -405,9 +293,6 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 
 		ss->registry = registry;
 		ss->wayland_thread = registry->wayland_thread;
-
-		// TODO: Remove.
-		ss->wls = registry->wayland_thread->wls;
 
 		// Some extra stuff depends on other globals. We'll initialize them if the
 		// globals are already there, otherwise we'll have to do that once and if they
@@ -1111,9 +996,6 @@ void WaylandThread::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat
 
 	ERR_FAIL_NULL(ss);
 
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
-
 	// TODO: Handle touch.
 
 	// Pointer handling.
@@ -1214,8 +1096,8 @@ void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_point
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
 
 	ss->pointed_surface = nullptr;
 
@@ -1223,7 +1105,7 @@ void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_point
 	msg.instantiate();
 	msg->event = DisplayServer::WINDOW_EVENT_MOUSE_EXIT;
 
-	wls->wayland_thread->push_message(msg);
+	wayland_thread->push_message(msg);
 
 	DEBUG_LOG_WAYLAND("Left window.");
 }
@@ -1248,9 +1130,6 @@ void WaylandThread::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_poin
 void WaylandThread::_wl_pointer_on_button(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
-
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
 
 	PointerData &pd = ss->pointer_data_buffer;
 
@@ -1522,9 +1401,6 @@ void WaylandThread::_wl_pointer_on_axis_discrete(void *data, struct wl_pointer *
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
-
 	PointerData &pd = ss->pointer_data_buffer;
 
 	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
@@ -1545,9 +1421,6 @@ void WaylandThread::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_ke
 
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
-
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
 
 	if (ss->keymap_buffer) {
 		// We have already a mapped buffer, so we unmap it. There's no need to reset
@@ -1601,8 +1474,8 @@ void WaylandThread::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keybo
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
 
 	// We have to add 8 to the scancode to get an XKB-compatible keycode.
 	xkb_keycode_t xkb_keycode = key + 8;
@@ -1630,7 +1503,7 @@ void WaylandThread::_wl_keyboard_on_key(void *data, struct wl_keyboard *wl_keybo
 	Ref<InputEventMessage> msg;
 	msg.instantiate();
 	msg->event = k;
-	wls->wayland_thread->push_message(msg);
+	wayland_thread->push_message(msg);
 }
 
 void WaylandThread::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
@@ -1687,6 +1560,9 @@ void WaylandThread::_wl_data_device_on_drop(void *data, struct wl_data_device *w
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
+
 	ERR_FAIL_NULL(ss->wl_data_offer_dnd);
 
 	int fds[2];
@@ -1696,7 +1572,7 @@ void WaylandThread::_wl_data_device_on_drop(void *data, struct wl_data_device *w
 		// Let the compositor know about the pipe, but don't handle any event. For
 		// some cursed reason both leave and drop events are released at the same
 		// time, although both of them clean up the offer. I'm still not sure why.
-		wl_display_flush(ss->wls->wl_display);
+		wl_display_flush(wayland_thread->wl_display);
 
 		// Close the write end of the pipe, which we don't need and would otherwise
 		// just stall our next `read`s.
@@ -1710,7 +1586,7 @@ void WaylandThread::_wl_data_device_on_drop(void *data, struct wl_data_device *w
 			msg->files.write[i] = msg->files[i].replace("file://", "").uri_decode();
 		}
 
-		ss->wls->wayland_thread->push_message(msg);
+		wayland_thread->push_message(msg);
 	}
 
 	wl_data_offer_finish(ss->wl_data_offer_dnd);
@@ -1828,8 +1704,8 @@ void WaylandThread::_wp_pointer_gesture_pinch_on_update(void *data, struct zwp_p
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
 
 	PointerData &pd = ss->pointer_data_buffer;
 
@@ -1876,8 +1752,8 @@ void WaylandThread::_wp_pointer_gesture_pinch_on_update(void *data, struct zwp_p
 		pan_msg.instantiate();
 		pan_msg->event = pg;
 
-		wls->wayland_thread->push_message(magnify_msg);
-		wls->wayland_thread->push_message(pan_msg);
+		wayland_thread->push_message(magnify_msg);
+		wayland_thread->push_message(pan_msg);
 
 		ss->old_pinch_scale = scale;
 	}
@@ -2022,8 +1898,8 @@ void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_table
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
 
 	ss->tablet_tool_data_buffer.in_proximity = true;
 
@@ -2034,7 +1910,7 @@ void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_table
 	Ref<WindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = DisplayServer::WINDOW_EVENT_MOUSE_ENTER;
-	wls->wayland_thread->push_message(msg);
+	wayland_thread->push_message(msg);
 
 	DEBUG_LOG_WAYLAND("Tablet tool entered window.");
 
@@ -2045,8 +1921,8 @@ void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tabl
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
 
 	ss->pointed_surface = nullptr;
 	ss->tablet_tool_data_buffer.in_proximity = false;
@@ -2057,7 +1933,7 @@ void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tabl
 	msg.instantiate();
 	msg->event = DisplayServer::WINDOW_EVENT_MOUSE_EXIT;
 
-	wls->wayland_thread->push_message(msg);
+	wayland_thread->push_message(msg);
 
 	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on proximity out", (size_t)zwp_tablet_tool_v2));
 }
@@ -2175,8 +2051,8 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
+	WaylandThread *wayland_thread = ss->wayland_thread;
+	ERR_FAIL_NULL(wayland_thread);
 
 	TabletToolData &old_td = ss->tablet_tool_data;
 	TabletToolData &td = ss->tablet_tool_data_buffer;
@@ -2224,7 +2100,7 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 
 		inputev_msg->event = mm;
 
-		wls->wayland_thread->push_message(inputev_msg);
+		wayland_thread->push_message(inputev_msg);
 	}
 
 	if (old_td.pressed_button_mask != td.pressed_button_mask) {
@@ -2268,7 +2144,7 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 
 				msg->event = mb;
 
-				wls->wayland_thread->push_message(msg);
+				wayland_thread->push_message(msg);
 			}
 		}
 	}
@@ -2339,6 +2215,10 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 			wl_display_cancel_read(data->wl_display);
 		}
 	}
+}
+
+struct wl_display *WaylandThread::get_wl_display() const {
+	return wl_display;
 }
 
 // NOTE: Stuff like libdecor can (and will) register foreign proxies which
@@ -2541,112 +2421,6 @@ void WaylandThread::seat_state_echo_keys(SeatState *p_ss) {
 		}
 	}
 }
-
-#if 0
-void WaylandThread::pointer_state_update(struct wl_pointer *p_pointer) {
-	ERR_FAIL_NULL(ss.cursor_surface);
-
-	struct wl_pointer *wp = ss.wl_pointer;
-	struct zwp_pointer_constraints_v1 *pc = p_wls.registry.wp_pointer_constraints;
-
-	// In order to change the address of the SeatState's pointers we need to get
-	// their reference first.
-	struct zwp_locked_pointer_v1 *&lp = ss.wp_locked_pointer;
-	struct zwp_confined_pointer_v1 *&cp = ss.wp_confined_pointer;
-
-	// All modes but `MOUSE_MODE_VISIBLE` and `MOUSE_MODE_CONFINED` are hidden.
-	if (p_wls.mouse_mode != DisplayServer::MOUSE_MODE_VISIBLE && p_wls.mouse_mode != DisplayServer::MOUSE_MODE_CONFINED) {
-		// Reset the cursor's hotspot.
-		wl_pointer_set_cursor(ss.wl_pointer, ss.pointer_enter_serial, ss.cursor_surface, 0, 0);
-
-		// Unmap the cursor.
-		wl_surface_attach(ss.cursor_surface, nullptr, 0, 0);
-
-		wl_surface_commit(ss.cursor_surface);
-	} else {
-		// Update the cursor shape.
-		if (!ss.wl_pointer) {
-			return;
-		}
-
-		struct wl_buffer *cursor_buffer = nullptr;
-		Point2i hotspot;
-
-		if (!p_wls.custom_cursors.has(p_wls.cursor_shape)) {
-			// Select the default cursor data.
-			struct wl_cursor_image *cursor_image = p_wls.cursor_images[p_wls.cursor_shape];
-
-			if (!cursor_image) {
-				// TODO: Error out?
-				return;
-			}
-
-			cursor_buffer = p_wls.cursor_bufs[p_wls.cursor_shape];
-			hotspot.x = cursor_image->hotspot_x;
-			hotspot.y = cursor_image->hotspot_y;
-		} else {
-			// Select the custom cursor data.
-			CustomCursor &custom_cursor = p_wls.custom_cursors[p_wls.cursor_shape];
-
-			cursor_buffer = custom_cursor.wl_buffer;
-			hotspot = custom_cursor.hotspot;
-		}
-
-		// Update the cursor's hotspot.
-		wl_pointer_set_cursor(ss.wl_pointer, ss.pointer_enter_serial, ss.cursor_surface, hotspot.x, hotspot.y);
-
-		// Attach the new cursor's buffer and damage it.
-		wl_surface_attach(ss.cursor_surface, cursor_buffer, 0, 0);
-		wl_surface_damage_buffer(ss.cursor_surface, 0, 0, INT_MAX, INT_MAX);
-
-		// Commit everything.
-		wl_surface_commit(ss.cursor_surface);
-	}
-
-	struct wl_surface *wl_surface = p_wls.wayland_thread->window_get_wl_surface(DisplayServer::MAIN_WINDOW_ID);
-	WaylandThread::WindowState *ws = p_wls.wayland_thread->wl_surface_get_window_state(wl_surface);
-
-	// Constrain/Free pointer movement depending on its mode.
-	switch (p_wls.mouse_mode) {
-		// Unconstrained pointer.
-		case DisplayServer::MOUSE_MODE_VISIBLE:
-		case DisplayServer::MOUSE_MODE_HIDDEN: {
-			if (lp) {
-				zwp_locked_pointer_v1_destroy(lp);
-				lp = nullptr;
-			}
-
-			if (cp) {
-				zwp_confined_pointer_v1_destroy(cp);
-				cp = nullptr;
-			}
-		} break;
-
-		// Locked pointer.
-		case DisplayServer::MOUSE_MODE_CAPTURED: {
-			if (!lp) {
-				Rect2i logical_rect = ws->rect;
-
-				lp = zwp_pointer_constraints_v1_lock_pointer(pc, wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
-
-				// Center the cursor on unlock.
-				wl_fixed_t unlock_x = wl_fixed_from_int(logical_rect.size.width / 2);
-				wl_fixed_t unlock_y = wl_fixed_from_int(logical_rect.size.height / 2);
-
-				zwp_locked_pointer_v1_set_cursor_position_hint(lp, unlock_x, unlock_y);
-			}
-		} break;
-
-		// Confined pointer.
-		case DisplayServer::MOUSE_MODE_CONFINED:
-		case DisplayServer::MOUSE_MODE_CONFINED_HIDDEN: {
-			if (!cp) {
-				cp = zwp_pointer_constraints_v1_confine_pointer(pc, wl_surface, wp, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
-			}
-		}
-	}
-}
-#endif
 
 void WaylandThread::push_message(Ref<Message> message) {
 	messages.push_back(message);
@@ -2978,7 +2752,7 @@ BitField<MouseButtonMask> WaylandThread::pointer_get_button_mask() const {
 	return BitField<MouseButtonMask>();
 }
 
-Error WaylandThread::init(WaylandThread::WaylandState &p_wls) {
+Error WaylandThread::init() {
 #ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
@@ -3009,20 +2783,9 @@ Error WaylandThread::init(WaylandThread::WaylandState &p_wls) {
 
 	thread_data.wl_display = wl_display;
 
-	// FIXME: Get rid of this.
-	{
-		wls = &p_wls;
-		wls->wl_display = wl_display;
-	}
-
 	events_thread.start(_poll_events_thread, &thread_data);
 
 	wl_registry = wl_display_get_registry(wl_display);
-
-	// FIXME: Get rid of this.
-	{
-		wls->wl_registry = wl_registry;
-	}
 
 	ERR_FAIL_COND_V_MSG(!wl_registry, ERR_UNAVAILABLE, "Can't obtain the Wayland registry global.");
 
@@ -3341,11 +3104,6 @@ void WaylandThread::destroy() {
 		wl_display_roundtrip(wl_display);
 
 		events_thread.wait_to_finish();
-	}
-
-	// TODO: Remove this.
-	if (!wls) {
-		return;
 	}
 
 	if (main_window.xdg_toplevel) {
