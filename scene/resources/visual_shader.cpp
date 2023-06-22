@@ -46,6 +46,10 @@ bool VisualShaderNode::is_simple_decl() const {
 	return simple_decl;
 }
 
+int VisualShaderNode::get_default_input_port(PortType p_type) const {
+	return 0;
+}
+
 void VisualShaderNode::set_output_port_for_preview(int p_index) {
 	port_preview = p_index;
 }
@@ -378,6 +382,8 @@ bool VisualShaderNode::is_input_port_default(int p_port, Shader::Mode p_mode) co
 }
 
 void VisualShaderNode::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_default_input_port", "type"), &VisualShaderNode::get_default_input_port);
+
 	ClassDB::bind_method(D_METHOD("set_output_port_for_preview", "port"), &VisualShaderNode::set_output_port_for_preview);
 	ClassDB::bind_method(D_METHOD("get_output_port_for_preview"), &VisualShaderNode::get_output_port_for_preview);
 
@@ -479,6 +485,12 @@ VisualShaderNodeCustom::PortType VisualShaderNodeCustom::get_input_port_type(int
 String VisualShaderNodeCustom::get_input_port_name(int p_port) const {
 	ERR_FAIL_INDEX_V(p_port, input_ports.size(), "");
 	return input_ports[p_port].name;
+}
+
+int VisualShaderNodeCustom::get_default_input_port(PortType p_type) const {
+	int ret = 0;
+	GDVIRTUAL_CALL(_get_default_input_port, p_type, ret);
+	return ret;
 }
 
 int VisualShaderNodeCustom::get_output_port_count() const {
@@ -649,6 +661,7 @@ void VisualShaderNodeCustom::_bind_methods() {
 	GDVIRTUAL_BIND(_get_input_port_count);
 	GDVIRTUAL_BIND(_get_input_port_type, "port");
 	GDVIRTUAL_BIND(_get_input_port_name, "port");
+	GDVIRTUAL_BIND(_get_default_input_port, "type");
 	GDVIRTUAL_BIND(_get_output_port_count);
 	GDVIRTUAL_BIND(_get_output_port_type, "port");
 	GDVIRTUAL_BIND(_get_output_port_name, "port");
