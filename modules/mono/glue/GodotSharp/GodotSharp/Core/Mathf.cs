@@ -112,8 +112,8 @@ namespace Godot
         /// <returns>The difference between the two angles.</returns>
         public static float AngleDifference(float from, float to)
         {
-            float diff = (to - from) % Mathf.Tau;
-            return ((2 * diff) % Mathf.Tau) - diff;
+            float difference = (to - from) % Mathf.Tau;
+            return ((2 * difference) % Mathf.Tau) - difference;
         }
 
         /// <summary>
@@ -125,8 +125,8 @@ namespace Godot
         /// <returns>The difference between the two angles.</returns>
         public static double AngleDifference(double from, double to)
         {
-            double diff = (to - from) % Mathf.Tau;
-            return ((2 * diff) % Mathf.Tau) - diff;
+            double difference = (to - from) % Mathf.Tau;
+            return ((2 * difference) % Mathf.Tau) - difference;
         }
 
         /// <summary>
@@ -1231,8 +1231,8 @@ namespace Godot
         /// <returns>The Angle after moving.</returns>
         public static float MoveTowardAngle(float from, float to, float delta)
         {
-            float diff = AngleDifference(from, to);
-            return from + Min(Abs(diff), delta) * Sign(diff);
+            float difference = AngleDifference(from, to);
+            return from + Math.Min(Math.Abs(difference), delta) * Math.Sign(difference);
         }
 
         /// <summary>
@@ -1247,8 +1247,8 @@ namespace Godot
         /// <returns>The Angle after moving.</returns>
         public static double MoveTowardAngle(double from, double to, double delta)
         {
-            double diff = AngleDifference(from, to);
-            return from + Min(Abs(diff), delta) * Sign(diff);
+            double difference = AngleDifference(from, to);
+            return from + Math.Min(Math.Abs(difference), delta) * Math.Sign(difference);
         }
 
         /// <summary>
