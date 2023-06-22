@@ -795,10 +795,10 @@ public:
 
 	bool window_is_focused(DisplayServer::WindowID p_window_id);
 
-	// Implemented by xdg_activation_v1
+	// Optional - requires xdg_activation_v1
 	void window_request_attention(DisplayServer::WindowID p_window_id);
 
-	// Implemented by wp_idle_inhibit_manager_v1
+	// Optional - require idle_inhibit_unstable_v1
 	void window_set_idle_inhibition(DisplayServer::WindowID p_window_id, bool p_enable);
 	bool window_get_idle_inhibition(DisplayServer::WindowID p_window_id) const;
 
@@ -823,6 +823,13 @@ public:
 	Key keyboard_get_key_from_physical(Key p_key) const;
 
 	void keyboard_echo_keys();
+
+	void selection_set_text(String p_text);
+	String selection_get_text() const;
+
+	// Optional - require wp_primary_selection_unstable_v1
+	void primary_set_text(String p_text);
+	String primary_get_text() const;
 
 	Error init(WaylandState &p_wls);
 	void destroy();

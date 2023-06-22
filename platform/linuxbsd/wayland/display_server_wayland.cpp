@@ -294,79 +294,27 @@ BitField<MouseButtonMask> DisplayServerWayland::mouse_get_button_state() const {
 // "recent enough" input event.
 // TODO: Add this limitation to the documentation.
 void DisplayServerWayland::clipboard_set(const String &p_text) {
-#if 0
-// TODO: Port to WaylandThread semantics.
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (!wls.current_seat) {
-		return;
-	}
-
-	WaylandThread::SeatState &ss = *wls.current_seat;
-
-	if (!wls.current_seat->wl_data_source_selection && wls.globals.wl_data_device_manager) {
-		ss.wl_data_source_selection = wl_data_device_manager_create_data_source(wls.globals.wl_data_device_manager);
-		wl_data_source_add_listener(ss.wl_data_source_selection, &wl_data_source_listener, wls.current_seat);
-		wl_data_source_offer(ss.wl_data_source_selection, "text/plain");
-	}
-
-	// TODO: Implement a good way of getting the latest serial from the user.
-	wl_data_device_set_selection(ss.wl_data_device, ss.wl_data_source_selection, MAX(ss.pointer_data.button_serial, ss.last_key_pressed_serial));
-
-	// Wait for the message to get to the server before continuing, otherwise the
-	// clipboard update might come with a delay.
-	wl_display_roundtrip(wls.wl_display);
-
-	ss.selection_data = p_text.to_utf8_buffer();
-#endif
+	wayland_thread.selection_set_text(p_text);
 }
 
 String DisplayServerWayland::clipboard_get() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (!wls.current_seat) {
-		return String();
-	}
-
-	return WaylandThread::_wl_data_offer_read(wls.wl_display, wls.current_seat->wl_data_offer_selection);
+	return wayland_thread.selection_get_text();
 }
 
 void DisplayServerWayland::clipboard_set_primary(const String &p_text) {
-#if 0
-// TODO: Port to WaylandThread semantics.
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (!wls.current_seat) {
-		return;
-	}
-
-	WaylandThread::SeatState &ss = *wls.current_seat;
-
-	if (!wls.current_seat->wp_primary_selection_source && wls.globals.wp_primary_selection_device_manager) {
-		ss.wp_primary_selection_source = zwp_primary_selection_device_manager_v1_create_source(wls.globals.wp_primary_selection_device_manager);
-		zwp_primary_selection_source_v1_add_listener(ss.wp_primary_selection_source, &wp_primary_selection_source_listener, wls.current_seat);
-		zwp_primary_selection_source_v1_offer(ss.wp_primary_selection_source, "text/plain");
-	}
-
-	// TODO: Implement a good way of getting the latest serial from the user.
-	zwp_primary_selection_device_v1_set_selection(ss.wp_primary_selection_device, ss.wp_primary_selection_source, MAX(ss.pointer_data.button_serial, ss.last_key_pressed_serial));
-
-	// Wait for the message to get to the server before continuing, otherwise the
-	// clipboard update might come with a delay.
-	wl_display_roundtrip(wls.wl_display);
-
-	ss.primary_data = p_text.to_utf8_buffer();
-#endif
+	wayland_thread.primary_set_text(p_text);
 }
 
 String DisplayServerWayland::clipboard_get_primary() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (!wls.current_seat) {
-		return String();
-	}
-
-	return WaylandThread::_wp_primary_selection_offer_read(wls.wl_display, wls.current_seat->wp_primary_selection_offer);
+	return wayland_thread.primary_get_text();
 }
 
 int DisplayServerWayland::get_screen_count() const {

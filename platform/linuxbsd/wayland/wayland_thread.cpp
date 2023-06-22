@@ -374,7 +374,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 			SeatState *ss = wl_seat_get_seat_state(wl_seat);
 			ERR_FAIL_NULL(ss);
 
-			if (!ss->wl_data_device && registry->wl_data_device_manager) {
+			if (ss->wl_data_device == nullptr) {
 				ss->wl_data_device = wl_data_device_manager_get_data_device(registry->wl_data_device_manager, wl_seat);
 				wl_data_device_add_listener(ss->wl_data_device, &wl_data_device_listener, ss);
 			}
@@ -1786,7 +1786,6 @@ void WaylandThread::_wl_data_source_on_cancelled(void *data, struct wl_data_sour
 
 	if (wl_data_source == ss->wl_data_source_selection) {
 		ss->wl_data_source_selection = nullptr;
-
 		ss->selection_data.clear();
 
 		DEBUG_LOG_WAYLAND("Clipboard: selection set by another program.");
@@ -3244,6 +3243,89 @@ void WaylandThread::keyboard_echo_keys() {
 	if (ss) {
 		seat_state_echo_keys(ss);
 	}
+}
+
+void WaylandThread::selection_set_text(String p_text) {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (registry.wl_data_device_manager == nullptr) {
+		DEBUG_LOG_WAYLAND("Couldn't set selection, wl_data_device_manager global not available.");
+	}
+
+	if (ss == nullptr) {
+		DEBUG_LOG_WAYLAND("Couldn't set selection, current seat not set.");
+		return;
+	}
+
+	if (ss->wl_data_device == nullptr) {
+		DEBUG_LOG_WAYLAND("Couldn't set selection, seat doesn't have wl_data_device.");
+	}
+
+	ss->selection_data = p_text.to_utf8_buffer();
+
+	if (ss->wl_data_source_selection == nullptr) {
+		ss->wl_data_source_selection = wl_data_device_manager_create_data_source(registry.wl_data_device_manager);
+		wl_data_source_add_listener(ss->wl_data_source_selection, &wl_data_source_listener, ss);
+		wl_data_source_offer(ss->wl_data_source_selection, "text/plain");
+	}
+
+	// TODO: Implement a good way of getting the latest serial from the user.
+	wl_data_device_set_selection(ss->wl_data_device, ss->wl_data_source_selection, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
+
+	// Wait for the message to get to the server before continuing, otherwise the
+	// clipboard update might come with a delay.
+	wl_display_roundtrip(wl_display);
+}
+
+String WaylandThread::selection_get_text() const {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss == nullptr) {
+		DEBUG_LOG_WAYLAND("Couldn't get selection, current seat not set.");
+		return "";
+	}
+
+	return _wl_data_offer_read(wl_display, ss->wl_data_offer_selection);
+}
+
+void WaylandThread::primary_set_text(String p_text) {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (registry.wp_primary_selection_device_manager == nullptr) {
+		DEBUG_LOG_WAYLAND("Couldn't set primary, protocol not available");
+		return;
+	}
+
+	if (ss == nullptr) {
+		DEBUG_LOG_WAYLAND("Couldn't set primary, current seat not set.");
+		return;
+	}
+
+	ss->primary_data = p_text.to_utf8_buffer();
+
+	if (ss->wp_primary_selection_source == nullptr) {
+		ss->wp_primary_selection_source = zwp_primary_selection_device_manager_v1_create_source(registry.wp_primary_selection_device_manager);
+		zwp_primary_selection_source_v1_add_listener(ss->wp_primary_selection_source, &wp_primary_selection_source_listener, ss);
+		zwp_primary_selection_source_v1_offer(ss->wp_primary_selection_source, "text/plain");
+	}
+
+	// TODO: Implement a good way of getting the latest serial from the user.
+	zwp_primary_selection_device_v1_set_selection(ss->wp_primary_selection_device, ss->wp_primary_selection_source, MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial));
+
+	// Wait for the message to get to the server before continuing, otherwise the
+	// clipboard update might come with a delay.
+	wl_display_roundtrip(wl_display);
+}
+
+String WaylandThread::primary_get_text() const {
+	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
+
+	if (ss == nullptr) {
+		DEBUG_LOG_WAYLAND("Couldn't get primary, current seat not set.");
+		return "";
+	}
+
+	return _wp_primary_selection_offer_read(wl_display, ss->wp_primary_selection_offer);
 }
 
 void WaylandThread::destroy() {
