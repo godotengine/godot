@@ -389,12 +389,12 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ double angle_difference(double p_from, double p_to) {
-		double diff = fmod(p_to - p_from, Math_TAU);
-		return fmod(2.0 * diff, Math_TAU) - diff;
+		double difference = fmod(p_to - p_from, Math_TAU);
+		return fmod(2.0 * difference, Math_TAU) - difference;
 	}
 	static _ALWAYS_INLINE_ float angle_difference(float p_from, float p_to) {
-		float diff = fmod(p_to - p_from, (float)Math_TAU);
-		return fmod(2.0f * diff, (float)Math_TAU) - diff;
+		float difference = fmod(p_to - p_from, (float)Math_TAU);
+		return fmod(2.0f * difference, (float)Math_TAU) - difference;
 	}
 
 	static _ALWAYS_INLINE_ double lerp_angle(double p_from, double p_to, double p_weight) {
@@ -441,12 +441,12 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ double move_toward_angle(double p_from, double p_to, double p_delta) {
-		double diff = angle_difference(p_from, p_to);
-		return p_from + fmin(abs(diff), p_delta) * SIGN(diff);
+		double difference = angle_difference(p_from, p_to);
+		return p_from + fmin(abs(difference), p_delta) * SIGN(difference);
 	}
 	static _ALWAYS_INLINE_ float move_toward_angle(float p_from, float p_to, float p_delta) {
-		float diff = angle_difference(p_from, p_to);
-		return p_from + fmin(abs(diff), p_delta) * SIGN(diff);
+		float difference = angle_difference(p_from, p_to);
+		return p_from + fmin(abs(difference), p_delta) * SIGN(difference);
 	}
 
 	static _ALWAYS_INLINE_ double linear_to_db(double p_linear) {
