@@ -1747,11 +1747,10 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 					Dictionary d = arr[i];
 					ERR_CONTINUE(!d.has("name"));
 					ERR_CONTINUE(!d.has("type"));
+
 					PropertyInfo pinfo;
-					pinfo.type = Variant::Type(d["type"].operator int());
-					ERR_CONTINUE(pinfo.type < 0 || pinfo.type >= Variant::VARIANT_MAX);
 					pinfo.name = d["name"];
-					ERR_CONTINUE(pinfo.name.is_empty());
+					pinfo.type = Variant::Type(d["type"].operator int());
 					if (d.has("hint")) {
 						pinfo.hint = PropertyHint(d["hint"].operator int());
 					}
@@ -1764,6 +1763,9 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 					if (d.has("class_name")) {
 						pinfo.class_name = d["class_name"];
 					}
+
+					ERR_CONTINUE(pinfo.name.is_empty() && (pinfo.usage & PROPERTY_USAGE_STORAGE));
+					ERR_CONTINUE(pinfo.type < 0 || pinfo.type >= Variant::VARIANT_MAX);
 
 					props.push_back(pinfo);
 				}
