@@ -738,6 +738,7 @@ void NavigationMeshGenerator::bake_from_source_geometry_data(Ref<NavigationMesh>
 		nav_vertices.push_back(Vector3(v[0], v[1], v[2]));
 	}
 	p_navigation_mesh->set_vertices(nav_vertices);
+	p_navigation_mesh->clear_polygons();
 
 	for (int i = 0; i < detail_mesh->nmeshes; i++) {
 		const unsigned int *detail_mesh_m = &detail_mesh->meshes[i * 4];
