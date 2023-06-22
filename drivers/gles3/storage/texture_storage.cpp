@@ -1744,7 +1744,12 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			glDeleteFramebuffers(1, &rt->fbo);
-			GLES3::Utilities::get_singleton()->texture_free_data(rt->color);
+			if (rt->overridden.color.is_null()) {
+				GLES3::Utilities::get_singleton()->texture_free_data(rt->color);
+			}
+			if (rt->overridden.depth.is_null()) {
+				GLES3::Utilities::get_singleton()->texture_free_data(rt->depth);
+			}
 			rt->fbo = 0;
 			rt->size.x = 0;
 			rt->size.y = 0;
