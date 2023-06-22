@@ -2667,6 +2667,8 @@ void RenderForwardMobile::_geometry_instance_update(RenderGeometryInstance *p_ge
 			if (ginstance->data->dirty_dependencies) {
 				mesh_storage->skeleton_update_dependency(ginstance->data->skeleton, &ginstance->data->dependency_tracker);
 			}
+		} else {
+			ginstance->transforms_uniform_set = RID();
 		}
 	}
 
