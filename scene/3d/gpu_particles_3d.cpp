@@ -363,6 +363,10 @@ PackedStringArray GPUParticles3D::get_configuration_warnings() const {
 		}
 	}
 
+	if (sub_emitter != NodePath() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("Particle sub-emitters are only available when using the Forward+ or Mobile rendering backends."));
+	}
+
 	return warnings;
 }
 
@@ -409,6 +413,7 @@ void GPUParticles3D::set_sub_emitter(const NodePath &p_path) {
 	if (is_inside_tree() && sub_emitter != NodePath()) {
 		_attach_sub_emitter();
 	}
+	update_configuration_warnings();
 }
 
 NodePath GPUParticles3D::get_sub_emitter() const {

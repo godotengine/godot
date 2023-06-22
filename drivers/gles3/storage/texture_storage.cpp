@@ -644,7 +644,7 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 			}
 		} break;
 		default: {
-			ERR_FAIL_V_MSG(Ref<Image>(), "Image Format: " + itos(p_format) + " is not supported by the OpenGL3 Renderer");
+			ERR_FAIL_V_MSG(Ref<Image>(), "The image format " + itos(p_format) + " is not supported by the GL Compatibility rendering backend.");
 		}
 	}
 
