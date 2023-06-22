@@ -108,11 +108,12 @@
 		<method name="call_deferred" qualifiers="vararg const">
 			<return type="void" />
 			<description>
-				Calls the method represented by this [Callable] in deferred mode, i.e. during the idle frame. Arguments can be passed and should match the method's signature.
+				Calls the method represented by this [Callable] in deferred mode, i.e. at the end of the current frame. Arguments can be passed and should match the method's signature.
 				[codeblock]
 				func _ready():
 				    grab_focus.call_deferred()
 				[/codeblock]
+				See also [method Object.call_deferred].
 			</description>
 		</method>
 		<method name="callv" qualifiers="const">

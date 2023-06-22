@@ -656,6 +656,7 @@
 			<description>
 				Queues a node for deletion at the end of the current frame. When deleted, all of its child nodes will be deleted as well, and all references to the node and its children will become invalid, see [method Object.free].
 				It is safe to call [method queue_free] multiple times per frame on a node, and to [method Object.free] a node that is currently queued for deletion. Use [method Object.is_queued_for_deletion] to check whether a node will be deleted at the end of the frame.
+				The node will only be freed after all other deferred calls are finished, so using [method queue_free] is not always the same as calling [method Object.free] through [method Object.call_deferred].
 			</description>
 		</method>
 		<method name="remove_child">
