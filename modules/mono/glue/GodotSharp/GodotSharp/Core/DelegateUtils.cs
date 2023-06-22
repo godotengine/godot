@@ -560,6 +560,38 @@ namespace Godot
             return type;
         }
 
+        // Returns true, if unloading the delegate is necessary for assembly unloading to succeed.
+        // This check is not perfect and only intended to prevent things in GodotTools from being reloaded.
+        internal static bool IsDelegateCollectible(Delegate @delegate)
+        {
+            if (@delegate.GetType().IsCollectible)
+                return true;
+
+            if (@delegate is MulticastDelegate multicastDelegate)
+            {
+                Delegate[] invocationList = multicastDelegate.GetInvocationList();
+
+                if (invocationList.Length > 1)
+                {
+                    foreach (Delegate oneDelegate in invocationList)
+                        if (IsDelegateCollectible(oneDelegate))
+                            return true;
+
+                    return false;
+                }
+            }
+
+            if (@delegate.Method.IsCollectible)
+                return true;
+
+            object? target = @delegate.Target;
+
+            if (target is not null && target.GetType().IsCollectible)
+                return true;
+
+            return false;
+        }
+
         internal static class RuntimeTypeConversionHelper
         {
             [SuppressMessage("ReSharper", "RedundantNameQualifier")]
