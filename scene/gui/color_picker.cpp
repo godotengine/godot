@@ -380,6 +380,9 @@ void ColorPicker::_value_changed(double) {
 		if (sliders[1]->get_value() > 0 || sliders[0]->get_value() != cached_hue) {
 			cached_hue = sliders[0]->get_value();
 		}
+		if (sliders[2]->get_value() > 0 || sliders[1]->get_value() != cached_saturation) {
+			cached_saturation = sliders[1]->get_value();
+		}
 	}
 
 	if (current_mode == MODE_HSV || current_mode == MODE_OKHSL) {

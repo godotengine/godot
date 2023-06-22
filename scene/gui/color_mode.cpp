@@ -124,8 +124,13 @@ float ColorModeHSV::get_slider_value(int idx) const {
 				return color_picker->get_cached_hue();
 			}
 		}
-		case 1:
-			return color_picker->get_pick_color().get_s() * 100.0;
+		case 1: {
+			if (color_picker->get_pick_color().get_v() > 0) {
+				return color_picker->get_pick_color().get_s() * 100.0;
+			} else {
+				return color_picker->get_cached_saturation();
+			}
+		}
 		case 2:
 			return color_picker->get_pick_color().get_v() * 100.0;
 		case 3:
