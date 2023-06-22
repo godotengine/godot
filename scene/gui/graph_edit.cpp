@@ -887,6 +887,7 @@ bool GraphEdit::is_in_port_hotzone(const Vector2 &p_pos, const Vector2 &p_mouse_
 			continue;
 		}
 		Rect2 child_rect = child->get_rect();
+		child_rect.size *= zoom;
 
 		if (child_rect.has_point(p_mouse_pos * zoom)) {
 			for (int j = 0; j < child->get_child_count(); j++) {
