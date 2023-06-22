@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Shader" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A custom shader program.
+		A shader implemented in the Godot shading language.
 	</brief_description>
 	<description>
-		This class allows you to define a custom shader program that can be used by a [ShaderMaterial]. Shaders allow you to write your own custom behavior for rendering objects or updating particle information. For a detailed explanation and usage, please see the tutorials linked below.
+		A custom shader program implemented in the Godot shading language, saved with the [code].gdshader[/code] extension.
+		This class is used by a [ShaderMaterial] and allows you to write your own custom behavior for rendering visual items or updating particle information. For a detailed explanation and usage, please see the tutorials linked below.
 	</description>
 	<tutorials>
 		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>
@@ -23,7 +24,7 @@
 		<method name="get_mode" qualifiers="const">
 			<return type="int" enum="Shader.Mode" />
 			<description>
-				Returns the shader mode for the shader, either [constant MODE_CANVAS_ITEM], [constant MODE_SPATIAL] or [constant MODE_PARTICLES].
+				Returns the shader mode for the shader.
 			</description>
 		</method>
 		<method name="get_shader_uniform_list">
