@@ -6308,29 +6308,21 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> p_state) {
 		node->rotation = mi_xform.basis.get_rotation_quaternion();
 		node->position = mi_xform.origin;
 
-		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(mi->get_node(mi->get_skeleton_path()));
-		if (!skeleton) {
+		Node *skel_node = mi->get_node_or_null(mi->get_skeleton_path());
+		Skeleton3D *godot_skeleton = Object::cast_to<Skeleton3D>(skel_node);
+		if (!godot_skeleton || godot_skeleton->get_bone_count() == 0) {
 			continue;
 		}
-		if (!skeleton->get_bone_count()) {
-			continue;
-		}
+		// At this point in the code, we know we have a Skeleton3D with at least one bone.
 		Ref<Skin> skin = mi->get_skin();
 		Ref<GLTFSkin> gltf_skin;
 		gltf_skin.instantiate();
 		Array json_joints;
-
-		NodePath skeleton_path = mi->get_skeleton_path();
-		Node *skel_node = mi->get_node_or_null(skeleton_path);
-		Skeleton3D *godot_skeleton = nullptr;
-		if (skel_node != nullptr) {
-			godot_skeleton = cast_to<Skeleton3D>(skel_node);
-		}
-		if (godot_skeleton != nullptr && p_state->skeleton3d_to_gltf_skeleton.has(godot_skeleton->get_instance_id())) {
+		if (p_state->skeleton3d_to_gltf_skeleton.has(godot_skeleton->get_instance_id())) {
 			// This is a skinned mesh. If the mesh has no ARRAY_WEIGHTS or ARRAY_BONES, it will be invisible.
 			const GLTFSkeletonIndex skeleton_gltf_i = p_state->skeleton3d_to_gltf_skeleton[godot_skeleton->get_instance_id()];
 			Ref<GLTFSkeleton> gltf_skeleton = p_state->skeletons[skeleton_gltf_i];
-			int bone_cnt = skeleton->get_bone_count();
+			int bone_cnt = godot_skeleton->get_bone_count();
 			ERR_FAIL_COND(bone_cnt != gltf_skeleton->joints.size());
 
 			ObjectID gltf_skin_key;
@@ -6348,7 +6340,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> p_state) {
 			} else {
 				if (skin.is_null()) {
 					// Note that gltf_skin_key should remain null, so these can share a reference.
-					skin = skeleton->create_skin_from_rest_transforms();
+					skin = godot_skeleton->create_skin_from_rest_transforms();
 				}
 				gltf_skin.instantiate();
 				gltf_skin->godot_skin = skin;
@@ -6358,7 +6350,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> p_state) {
 				//gltf_state->godot_to_gltf_node[skel_node]
 				HashMap<StringName, int> bone_name_to_idx;
 				for (int bone_i = 0; bone_i < bone_cnt; bone_i++) {
-					bone_name_to_idx[skeleton->get_bone_name(bone_i)] = bone_i;
+					bone_name_to_idx[godot_skeleton->get_bone_name(bone_i)] = bone_i;
 				}
 				for (int bind_i = 0, cnt = skin->get_bind_count(); bind_i < cnt; bind_i++) {
 					int bone_i = skin->get_bind_bone(bind_i);
@@ -6369,13 +6361,13 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> p_state) {
 					}
 					ERR_CONTINUE(bone_i < 0 || bone_i >= bone_cnt);
 					if (bind_name == StringName()) {
-						bind_name = skeleton->get_bone_name(bone_i);
+						bind_name = godot_skeleton->get_bone_name(bone_i);
 					}
 					GLTFNodeIndex skeleton_bone_i = gltf_skeleton->joints[bone_i];
 					gltf_skin->joints_original.push_back(skeleton_bone_i);
 					gltf_skin->joints.push_back(skeleton_bone_i);
 					gltf_skin->inverse_binds.push_back(bind_pose);
-					if (skeleton->get_bone_parent(bone_i) == -1) {
+					if (godot_skeleton->get_bone_parent(bone_i) == -1) {
 						gltf_skin->roots.push_back(skeleton_bone_i);
 					}
 					gltf_skin->joint_i_to_bone_i[bind_i] = bone_i;
