@@ -104,29 +104,29 @@ namespace Godot
         }
 
         /// <summary>
-        /// Gets the difference between two angles (in radians) by a normalized value,
-        /// but wraps around <see cref="Tau"/>, also creating a shortest path.
+        /// Returns the difference between the two angles,
+        /// correctly wrapping around <see cref="Tau"/>.
         /// </summary>
         /// <param name ="from">The start angle.</param>
         /// <param name ="to">the destination angle.</param>
         /// <returns>The difference between the two angles.</returns>
         public static float AngleDifference(float from, float to)
         {
-            float difference = (to - from) % Mathf.Tau;
-            return ((2 * difference) % Mathf.Tau) - difference;
+            float difference = (to - from) % MathF.Tau;
+            return ((2 * difference) % MathF.Tau) - difference;
         }
 
         /// <summary>
-        /// Gets the difference between two angles (in radians) by a normalized value,
-        /// but wraps around <see cref="Tau"/>, also creating a shortest path.
+        /// Returns the difference between the two angles,
+        /// correctly wrapping around <see cref="Tau"/>.
         /// </summary>
         /// <param name ="from">The start angle.</param>
         /// <param name ="to">the destination angle.</param>
         /// <returns>The difference between the two angles.</returns>
         public static double AngleDifference(double from, double to)
         {
-            double difference = (to - from) % Mathf.Tau;
-            return ((2 * difference) % Mathf.Tau) - difference;
+            double difference = (to - from) % Math.Tau;
+            return ((2 * difference) % Math.Tau) - difference;
         }
 
         /// <summary>
@@ -1220,10 +1220,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Moves <paramref name="from"/> toward <paramref name="to"/>
-        /// by the <paramref name="delta"/> angle (in radians).
-        /// Use a negative <paramref name="delta"/> angle to move away.
-        /// Similar to <see cref="MoveToward"/> but wraps around <see cref="Tau"/> and creates a shortest path.
+        /// Moves <paramref name="from"/> toward <paramref name="to"/> by the <paramref name="delta"/> amount. Will not go past <paramref name="to"/>.
+        /// Similar to <see cref="MoveToward"/> but interpolates correctly when the angles wrap around <see cref="Tau"/>.
+        /// Add 180 degrees to <paramref name="to"/> to move away. Using a negative value in <paramref name="delta"/> may cause oscillation.
         /// </summary>
         /// <param name="from">The start Angle.</param>
         /// <param name="to">The Angle to move towards.</param>
@@ -1232,14 +1231,13 @@ namespace Godot
         public static float MoveTowardAngle(float from, float to, float delta)
         {
             float difference = AngleDifference(from, to);
-            return from + Math.Min(Math.Abs(difference), delta) * Math.Sign(difference);
+            return Wrap(from + Math.Min(Math.Abs(difference), delta) * Math.Sign(difference), -MathF.Pi, MathF.Pi);
         }
 
         /// <summary>
-        /// Moves <paramref name="from"/> toward <paramref name="to"/>
-        /// by the <paramref name="delta"/> angle (in radians).
-        /// Use a negative <paramref name="delta"/> angle to move away.
-        /// Similar to <see cref="MoveToward"/> but wraps around <see cref="Tau"/> and creates a shortest path.
+        /// Moves <paramref name="from"/> toward <paramref name="to"/> by the <paramref name="delta"/> amount. Will not go past <paramref name="to"/>.
+        /// Similar to <see cref="MoveToward"/> but interpolates correctly when the angles wrap around <see cref="Tau"/>.
+        /// Add 180 degrees to <paramref name="to"/> to move away. Using a negative value in <paramref name="delta"/> may cause oscillation.
         /// </summary>
         /// <param name="from">The start Angle.</param>
         /// <param name="to">The Angle to move towards.</param>
@@ -1248,7 +1246,7 @@ namespace Godot
         public static double MoveTowardAngle(double from, double to, double delta)
         {
             double difference = AngleDifference(from, to);
-            return from + Math.Min(Math.Abs(difference), delta) * Math.Sign(difference);
+            return Wrap(from + Math.Min(Math.Abs(difference), delta) * Math.Sign(difference), -Math.Pi, Math.Pi);
         }
 
         /// <summary>
