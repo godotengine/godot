@@ -442,11 +442,15 @@ public:
 
 	static _ALWAYS_INLINE_ double move_toward_angle(double p_from, double p_to, double p_delta) {
 		double difference = Math::angle_difference(p_from, p_to);
-		return Math::wrapf(p_from + MIN(Math::abs(difference), p_delta) * SIGN(difference), -Math_PI, Math_PI);
+		double abs_difference = Math::abs(difference);
+		// When `p_delta < 0` move no further than to PI radians away from `p_to` (as PI is the max possible angle distance).
+		return p_from + CLAMP(p_delta, abs_difference - Math_PI, abs_difference) * SIGN(difference);
 	}
 	static _ALWAYS_INLINE_ float move_toward_angle(float p_from, float p_to, float p_delta) {
 		float difference = Math::angle_difference(p_from, p_to);
-		return Math::wrapf(p_from + MIN(Math::abs(difference), p_delta) * SIGN(difference), -(float)Math_PI, (float)Math_PI);
+		float abs_difference = Math::abs(difference);
+		// When `p_delta < 0` move no further than to PI radians away from `p_to` (as PI is the max possible angle distance).
+		return p_from + CLAMP(p_delta, abs_difference - (float)Math_PI, abs_difference) * SIGN(difference);
 	}
 
 	static _ALWAYS_INLINE_ double linear_to_db(double p_linear) {
