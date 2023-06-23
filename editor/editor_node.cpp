@@ -5256,7 +5256,7 @@ void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_
 
 	int selected_bottom_panel_item_idx = -1;
 	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		if (bottom_panel_items[i].button->is_pressed()) {
+		if (bottom_panel_items[i].permanent && bottom_panel_items[i].button->is_pressed()) {
 			selected_bottom_panel_item_idx = i;
 			break;
 		}
@@ -5663,7 +5663,7 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 	set_current_scene(p_tab);
 }
 
-Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
+Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item, bool p_permanent) {
 	Button *tb = memnew(Button);
 	tb->set_flat(true);
 	tb->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch).bind(bottom_panel_items.size()));
@@ -5679,6 +5679,7 @@ Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
 	bpi.button = tb;
 	bpi.control = p_item;
 	bpi.name = p_text;
+	bpi.permanent = p_permanent; // Serves as an information when saving editor layout.
 	bottom_panel_items.push_back(bpi);
 
 	return tb;
@@ -7755,7 +7756,7 @@ EditorNode::EditorNode() {
 	bottom_panel_raise->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_raise_toggled));
 
 	log = memnew(EditorLog);
-	Button *output_button = add_bottom_panel_item(TTR("Output"), log);
+	Button *output_button = add_bottom_panel_item(TTR("Output"), log, true);
 	log->set_tool_button(output_button);
 
 	center_split->connect("resized", callable_mp(this, &EditorNode::_vp_resized));

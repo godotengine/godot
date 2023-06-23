@@ -1050,7 +1050,7 @@ void EditorAudioBuses::_update_buses() {
 
 EditorAudioBuses *EditorAudioBuses::register_editor() {
 	EditorAudioBuses *audio_buses = memnew(EditorAudioBuses);
-	EditorNode::get_singleton()->add_bottom_panel_item(TTR("Audio"), audio_buses);
+	EditorNode::get_singleton()->add_bottom_panel_item(TTR("Audio"), audio_buses, true);
 	return audio_buses;
 }
 
