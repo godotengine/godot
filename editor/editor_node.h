@@ -252,7 +252,6 @@ private:
 		String name;
 		Control *control = nullptr;
 		Button *button = nullptr;
-		bool permanent = false;
 	};
 
 	struct ExportDefer {
@@ -905,7 +904,7 @@ public:
 
 	bool is_exiting() const { return exiting; }
 
-	Button *add_bottom_panel_item(String p_text, Control *p_item, bool p_permanent = false);
+	Button *add_bottom_panel_item(String p_text, Control *p_item);
 	void make_bottom_panel_item_visible(Control *p_item);
 	void raise_bottom_panel_item(Control *p_item);
 	void hide_bottom_panel();
