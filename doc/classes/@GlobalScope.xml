@@ -751,7 +751,7 @@
 			<description>
 				Moves [param from] toward [param to] by the [param delta] amount. Will not go past [param to].
 				Similar to [method move_toward], but interpolates correctly when the angles wrap around [constant @GDScript.TAU].
-				Add 180 degrees to [param to] to move away. Using a negative value in [param delta] may cause oscillation.
+				Use a negative [param delta] value to move toward the opposite angle.
 			</description>
 		</method>
 		<method name="nearest_po2">
