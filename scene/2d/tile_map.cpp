@@ -33,6 +33,7 @@
 #include "core/io/marshalls.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
+#include "scene/main/window.h"
 
 #ifdef DEBUG_ENABLED
 #include "servers/navigation_server_3d.h"
@@ -541,6 +542,19 @@ void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 	emit_signal(SNAME("changed"));
 }
 
+void TileMap::auto_resize_quadrants() {
+	if (tile_set.is_valid()) {
+		Vector2 real_size = get_tree()->get_root()->get_size_with_camera_2d();
+		Vector2 cell_size = get_tileset()->get_tile_size();
+		/* the first goal is to have at maximum a quadrant per screen, */
+		Vector2i tiles_per_screen = (real_size / cell_size).ceil();
+		/* Divides tiles in screen into subparts (the ratio of tiles per screen.) */ 
+		Vector2i tiles_ratio = tiles_per_screen.aspect_ratio();
+		/* sqrt so you get a squared aspect ratio from the total area. (as in w = h) */
+		set_quadrant_size(ceil(sqrt(tiles_ratio.area())));
+	}
+}
+
 void TileMap::set_quadrant_size(int p_size) {
 	ERR_FAIL_COND_MSG(p_size < 1, "TileMapQuadrant size cannot be smaller than 1.");
 
@@ -556,38 +570,6 @@ int TileMap::get_quadrant_size() const {
 
 int TileMap::get_layers_count() const {
 	return layers.size();
-}
-
-void TileMap::auto_resize_quadrant() {
-	int to_calc = 0;
-
-	for (int layer_id = 0; layer_id < get_layers_count(); layer_id++) {
-		to_calc += get_used_cells(layer_id).size();
-	}
-	to_calc = round(to_calc / get_layers_count()); // average
-
-	if (!to_calc) {
-		return; // keeps the size.
-	}
-
-	while (to_calc > 128) {
-		// calculates the minimum divisor, then divides it by it.
-		// if it's a prime, it won't have a minimum divisor so we subtract one and repeats it untill the best fit.
-		//
-		// To check if it's a prime we'll temporally use Fermat test - which is slow, but it does get things done.
-		for (int a = 2; a < to_calc; a++) {
-			int fermat = pow(a, to_calc) - a;
-			if (fermat % to_calc != 0) { // not a prime, which is probably.
-				for (int minimum_divisor = 2; minimum_divisor < to_calc; minimum_divisor++) { // the minimum before itself.
-					if (to_calc % minimum_divisor == 0) {
-						to_calc /= minimum_divisor;
-						break;
-					}
-				}
-			}
-		}
-	}
-	set_quadrant_size(to_calc);
 }
 
 void TileMap::add_layer(int p_to_pos) {
@@ -4153,11 +4135,9 @@ PackedStringArray TileMap::get_configuration_warnings() const {
 void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tileset", "tileset"), &TileMap::set_tileset);
 	ClassDB::bind_method(D_METHOD("get_tileset"), &TileMap::get_tileset);
-
+	ClassDB::bind_method(D_METHOD("auto_resize_quadrants"), &TileMap::auto_resize_quadrants);
 	ClassDB::bind_method(D_METHOD("set_quadrant_size", "size"), &TileMap::set_quadrant_size);
 	ClassDB::bind_method(D_METHOD("get_quadrant_size"), &TileMap::get_quadrant_size);
-	ClassDB::bind_method(D_METHOD("auto_resize_quadrant"), &TileMap::auto_resize_quadrant);
-
 	ClassDB::bind_method(D_METHOD("get_layers_count"), &TileMap::get_layers_count);
 	ClassDB::bind_method(D_METHOD("add_layer", "to_position"), &TileMap::add_layer);
 	ClassDB::bind_method(D_METHOD("move_layer", "layer", "to_position"), &TileMap::move_layer);

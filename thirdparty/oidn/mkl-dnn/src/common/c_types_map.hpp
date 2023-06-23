@@ -17,7 +17,7 @@
 #ifndef TYPE_MAPPING_HPP
 #define TYPE_MAPPING_HPP
 
-#include "mkldnn_types.h"
+#include "../../include/mkldnn_types.h"
 
 namespace mkldnn {
 namespace impl {

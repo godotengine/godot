@@ -20,7 +20,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "mkldnn.h"
+#include "../../include/mkldnn.h"
 #include "c_types_map.hpp"
 #include "nstl.hpp"
 #include "utils.hpp"

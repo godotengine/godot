@@ -158,7 +158,6 @@ public:
 		int get_priority() const {
 			return priority;
 		}
-
 		TerrainConstraint(const TileMap *p_tile_map, const Vector2i &p_position, int p_terrain); // For the center terrain bit
 		TerrainConstraint(const TileMap *p_tile_map, const Vector2i &p_position, const TileSet::CellNeighbor &p_bit, int p_terrain); // For peering bits
 		TerrainConstraint(){};
@@ -310,10 +309,11 @@ public:
 	void set_tileset(const Ref<TileSet> &p_tileset);
 	Ref<TileSet> get_tileset() const;
 
+	void auto_resize_quadrants();
+
 	void set_quadrant_size(int p_size);
 	int get_quadrant_size() const;
 
-	void auto_resize_quadrant();
 	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, Color p_modulation = Color(1.0, 1.0, 1.0, 1.0), const TileData *p_tile_data_override = nullptr);
 
 	// Layers management.

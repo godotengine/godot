@@ -170,6 +170,8 @@ struct _NO_DISCARD_ Vector2 {
 	Vector2 snapped(const Vector2 &p_by) const;
 	Vector2 clamp(const Vector2 &p_min, const Vector2 &p_max) const;
 	real_t aspect() const { return width / height; }
+	Vector2 aspect_ratio() const;
+	real_t area() const { return width * height; }
 
 	operator String() const;
 	operator Vector2i() const;

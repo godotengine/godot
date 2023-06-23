@@ -238,6 +238,7 @@ public:
 
 	void set_size(const Size2i &p_size);
 	Size2i get_size() const;
+	Size2i get_size_with_camera_2d() const;
 	void reset_size();
 
 	Point2i get_position_with_decorations() const;
