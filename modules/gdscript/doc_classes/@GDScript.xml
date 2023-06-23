@@ -35,6 +35,7 @@
 				Asserts that the [param condition] is [code]true[/code]. If the [param condition] is [code]false[/code], an error is generated. When running from the editor, the running project will also be paused until you resume it. This can be used as a stronger form of [method @GlobalScope.push_error] for reporting errors to project developers or add-on users.
 				An optional [param message] can be shown in addition to the generic "Assertion failed" message. You can use this to provide additional details about why the assertion failed.
 				[b]Warning:[/b] For performance reasons, the code inside [method assert] is only executed in debug builds or when running the project from the editor. Don't include code that has side effects in an [method assert] call. Otherwise, the project will behave differently when exported in release mode.
+				[b]Warning:[/b] For performance reasons, the [param message] is only evaluated if the [param condition] is [code]false[/code]. Don't use code that needs to be executed regardless of the [param condition] as the [param message] argument.
 				[codeblock]
 				# Imagine we always want speed to be between 0 and 20.
 				var speed = -10

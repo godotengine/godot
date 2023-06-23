@@ -366,7 +366,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_TYPE_ADJUST_PACKED_VECTOR2_ARRAY,   \
 		&&OPCODE_TYPE_ADJUST_PACKED_VECTOR3_ARRAY,   \
 		&&OPCODE_TYPE_ADJUST_PACKED_COLOR_ARRAY,     \
-		&&OPCODE_ASSERT,                             \
+		&&OPCODE_ASSERT_FAILED,                      \
 		&&OPCODE_BREAKPOINT,                         \
 		&&OPCODE_LINE,                               \
 		&&OPCODE_END                                 \
@@ -3501,32 +3501,27 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE_TYPE_ADJUST(PACKED_VECTOR3_ARRAY, PackedVector3Array);
 			OPCODE_TYPE_ADJUST(PACKED_COLOR_ARRAY, PackedColorArray);
 
-			OPCODE(OPCODE_ASSERT) {
-				CHECK_SPACE(3);
+			OPCODE(OPCODE_ASSERT_FAILED) {
+				CHECK_SPACE(2);
 
 #ifdef DEBUG_ENABLED
-				GET_VARIANT_PTR(test, 0);
-				bool result = test->booleanize();
-
-				if (!result) {
-					String message_str;
-					if (_code_ptr[ip + 2] != 0) {
-						GET_VARIANT_PTR(message, 1);
-						Variant message_var = *message;
-						if (message->get_type() != Variant::NIL) {
-							message_str = message_var;
-						}
+				String message_str;
+				if (_code_ptr[ip + 1] != 0) {
+					GET_VARIANT_PTR(message, 0);
+					Variant message_var = *message;
+					if (message->get_type() != Variant::NIL) {
+						message_str = message_var;
 					}
-					if (message_str.is_empty()) {
-						err_text = "Assertion failed.";
-					} else {
-						err_text = "Assertion failed: " + message_str;
-					}
-					OPCODE_BREAK;
 				}
+				if (message_str.is_empty()) {
+					err_text = "Assertion failed.";
+				} else {
+					err_text = "Assertion failed: " + message_str;
+				}
+				OPCODE_BREAK;
 
 #endif
-				ip += 3;
+				ip += 2;
 			}
 			DISPATCH_OPCODE;
 

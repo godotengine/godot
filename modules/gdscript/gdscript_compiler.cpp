@@ -2011,22 +2011,25 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					return err;
 				}
 
-				GDScriptCodeGenerator::Address message;
+				gen->write_if_not(condition);
+				if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					codegen.generator->pop_temporary();
+				}
 
+				GDScriptCodeGenerator::Address message;
 				if (as->message) {
 					message = _parse_expression(codegen, err, as->message);
 					if (err) {
 						return err;
 					}
 				}
-				gen->write_assert(condition, message);
 
-				if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-					codegen.generator->pop_temporary();
-				}
+				gen->write_assert_failed(message);
 				if (message.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}
+
+				gen->write_endif();
 #endif
 			} break;
 			case GDScriptParser::Node::BREAKPOINT: {

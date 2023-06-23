@@ -531,6 +531,7 @@ public:
 	virtual void write_construct_dictionary(const Address &p_target, const Vector<Address> &p_arguments) override;
 	virtual void write_await(const Address &p_target, const Address &p_operand) override;
 	virtual void write_if(const Address &p_condition) override;
+	virtual void write_if_not(const Address &p_condition) override;
 	virtual void write_else() override;
 	virtual void write_endif() override;
 	virtual void write_jump_if_shared(const Address &p_value) override;
@@ -547,7 +548,7 @@ public:
 	virtual void write_breakpoint() override;
 	virtual void write_newline(int p_line) override;
 	virtual void write_return(const Address &p_return_value) override;
-	virtual void write_assert(const Address &p_test, const Address &p_message) override;
+	virtual void write_assert_failed(const Address &p_message) override;
 
 	virtual ~GDScriptByteCodeGenerator();
 };
