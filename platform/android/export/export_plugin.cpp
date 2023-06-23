@@ -49,7 +49,7 @@
 #include "editor/editor_settings.h"
 #include "main/splash.gen.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
+#include "modules/modules_enabled.gen.h" // For mono and svg.
 #ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
 #endif
@@ -2231,6 +2231,14 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 	String err;
 	bool valid = false;
 	const bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+
+#ifdef MODULE_MONO_ENABLED
+	err += TTR("Exporting to Android is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Android with C#/Mono instead.") + "\n";
+	err += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
+	// Don't check for additional errors, as this particular error cannot be resolved.
+	r_error = err;
+	return false;
+#endif
 
 	// Look for export templates (first official, and if defined custom templates).
 
