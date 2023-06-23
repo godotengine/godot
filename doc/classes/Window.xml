@@ -378,7 +378,8 @@
 			<return type="void" />
 			<param index="0" name="ratio" type="float" default="0.8" />
 			<description>
-				Popups the [Window] centered inside its parent [Window] and sets its size as a [param ratio] of parent's size.
+				If [Window] is embedded, popups the [Window] centered inside its embedder and sets its size as a [param ratio] of embedder's size.
+				If [Window] is a native window, popups the [Window] centered inside the screen of its parent [Window] and sets its size as a [param ratio] of the screen size.
 			</description>
 		</method>
 		<method name="popup_exclusive">
