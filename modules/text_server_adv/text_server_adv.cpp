@@ -2112,10 +2112,12 @@ Dictionary TextServerAdvanced::_font_get_ot_name_strings(const RID &p_font_rid) 
 				name = vformat("unknown_%d", names[i].name_id);
 			} break;
 		}
-		String text;
 		unsigned int text_size = hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, nullptr, nullptr) + 1;
-		text.resize(text_size);
-		hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, &text_size, (uint32_t *)text.ptrw());
+		// @todo After godot-cpp#1141 is fixed, use text.resize() and write directly to text.wptr() instead of using a temporary buffer.
+		char32_t *buffer = memnew_arr(char32_t, text_size);
+		hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, &text_size, (uint32_t *)buffer);
+		String text(buffer);
+		memdelete_arr(buffer);
 		if (!text.is_empty()) {
 			Dictionary &id_string = names_for_lang[String(hb_language_to_string(names[i].language))];
 			id_string[name] = text;
