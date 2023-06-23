@@ -5256,13 +5256,15 @@ void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_
 
 	int selected_bottom_panel_item_idx = -1;
 	for (int i = 0; i < bottom_panel_items.size(); i++) {
-		if (bottom_panel_items[i].permanent && bottom_panel_items[i].button->is_pressed()) {
+		if (bottom_panel_items[i].button->is_pressed()) {
 			selected_bottom_panel_item_idx = i;
 			break;
 		}
 	}
 	if (selected_bottom_panel_item_idx != -1) {
 		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item", selected_bottom_panel_item_idx);
+	} else {
+		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item", Variant());
 	}
 
 	// Debugger tab.
@@ -5281,6 +5283,8 @@ void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_
 	}
 	if (selected_main_editor_idx != -1) {
 		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_main_editor_idx", selected_main_editor_idx);
+	} else {
+		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_main_editor_idx", Variant());
 	}
 }
 
@@ -5295,7 +5299,10 @@ void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_confi
 	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item")) {
 		int selected_bottom_panel_item_idx = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item");
 		if (selected_bottom_panel_item_idx >= 0 && selected_bottom_panel_item_idx < bottom_panel_items.size()) {
-			_bottom_panel_switch(true, selected_bottom_panel_item_idx);
+			// Make sure we don't try to open contextual editors which are not enabled in the current context.
+			if (bottom_panel_items[selected_bottom_panel_item_idx].button->is_visible()) {
+				_bottom_panel_switch(true, selected_bottom_panel_item_idx);
+			}
 		}
 	}
 
@@ -5663,7 +5670,7 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 	set_current_scene(p_tab);
 }
 
-Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item, bool p_permanent) {
+Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
 	Button *tb = memnew(Button);
 	tb->set_flat(true);
 	tb->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_switch).bind(bottom_panel_items.size()));
@@ -5679,7 +5686,6 @@ Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item, bool p
 	bpi.button = tb;
 	bpi.control = p_item;
 	bpi.name = p_text;
-	bpi.permanent = p_permanent; // Serves as an information when saving editor layout.
 	bottom_panel_items.push_back(bpi);
 
 	return tb;
@@ -7756,7 +7762,7 @@ EditorNode::EditorNode() {
 	bottom_panel_raise->connect("toggled", callable_mp(this, &EditorNode::_bottom_panel_raise_toggled));
 
 	log = memnew(EditorLog);
-	Button *output_button = add_bottom_panel_item(TTR("Output"), log, true);
+	Button *output_button = add_bottom_panel_item(TTR("Output"), log);
 	log->set_tool_button(output_button);
 
 	center_split->connect("resized", callable_mp(this, &EditorNode::_vp_resized));
