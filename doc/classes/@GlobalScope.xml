@@ -77,7 +77,7 @@
 			<param index="0" name="from" type="float" />
 			<param index="1" name="to" type="float" />
 			<description>
-				Finds the difference between the two provided angles, wrapping around [constant @GDScript.TAU] and finding the shortest path.
+				Returns the difference between the two angles, correctly wrapping around [constant @GDScript.TAU].
 			</description>
 		</method>
 		<method name="asin">
@@ -749,8 +749,9 @@
 			<param index="1" name="to" type="float" />
 			<param index="2" name="delta" type="float" />
 			<description>
-				Moves [param from] toward [param to] by the [param delta] value, wrapping around [constant @GDScript.TAU] and finding the shortest path.
-				Use a negative [param delta] value to move away.
+				Moves [param from] toward [param to] by the [param delta] amount. Will not go past [param to].
+				Similar to [method move_toward], but interpolates correctly when the angles wrap around [constant @GDScript.TAU].
+				Add 180 degrees to [param to] to move away. Using a negative value in [param delta] may cause oscillation.
 			</description>
 		</method>
 		<method name="nearest_po2">
