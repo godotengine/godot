@@ -1938,6 +1938,8 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 			tex->active = false;
 			tex->render_target = nullptr;
 			tex->is_render_target = false;
+			tex->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_MAX);
+			tex->gl_set_repeat(RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX);
 		}
 	} else {
 		Texture *tex = get_texture(rt->overridden.color);
