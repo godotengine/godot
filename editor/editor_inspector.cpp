@@ -954,6 +954,7 @@ void EditorProperty::menu_option(int p_option) {
 		} break;
 		case MENU_PASTE_VALUE: {
 			emit_changed(property, InspectorDock::get_inspector_singleton()->get_property_clipboard());
+			update_property();
 		} break;
 		case MENU_COPY_PROPERTY_PATH: {
 			DisplayServer::get_singleton()->clipboard_set(property_path);
