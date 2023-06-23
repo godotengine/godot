@@ -2427,10 +2427,12 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 		return;
 	}
 	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", (Node *)get_base_window());
-	gui.key_focus = p_control;
-	emit_signal(SNAME("gui_focus_changed"), p_control);
-	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
-	p_control->queue_redraw();
+	if (p_control->is_inside_tree() && p_control->get_viewport() == this) {
+		gui.key_focus = p_control;
+		emit_signal(SNAME("gui_focus_changed"), p_control);
+		p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
+		p_control->queue_redraw();
+	}
 }
 
 void Viewport::_gui_accept_event() {
