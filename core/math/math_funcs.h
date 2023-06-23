@@ -442,11 +442,11 @@ public:
 
 	static _ALWAYS_INLINE_ double move_toward_angle(double p_from, double p_to, double p_delta) {
 		double difference = angle_difference(p_from, p_to);
-		return p_from + fmin(abs(difference), p_delta) * SIGN(difference);
+		return wrapf(p_from + fmin(abs(difference), p_delta) * SIGN(difference), -Math_PI, Math_PI);
 	}
 	static _ALWAYS_INLINE_ float move_toward_angle(float p_from, float p_to, float p_delta) {
 		float difference = angle_difference(p_from, p_to);
-		return p_from + fmin(abs(difference), p_delta) * SIGN(difference);
+		return wrapf(p_from + fmin(abs(difference), p_delta) * SIGN(difference), -Math_PI, Math_PI);
 	}
 
 	static _ALWAYS_INLINE_ double linear_to_db(double p_linear) {
