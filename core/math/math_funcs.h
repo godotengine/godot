@@ -398,10 +398,10 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ double lerp_angle(double p_from, double p_to, double p_weight) {
-		return p_from + angle_difference(p_from, p_to) * p_weight;
+		return p_from + Math::angle_difference(p_from, p_to) * p_weight;
 	}
 	static _ALWAYS_INLINE_ float lerp_angle(float p_from, float p_to, float p_weight) {
-		return p_from + angle_difference(p_from, p_to) * p_weight;
+		return p_from + Math::angle_difference(p_from, p_to) * p_weight;
 	}
 
 	static _ALWAYS_INLINE_ double inverse_lerp(double p_from, double p_to, double p_value) {
@@ -441,12 +441,12 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ double move_toward_angle(double p_from, double p_to, double p_delta) {
-		double difference = angle_difference(p_from, p_to);
-		return wrapf(p_from + fmin(abs(difference), p_delta) * SIGN(difference), -Math_PI, Math_PI);
+		double difference = Math::angle_difference(p_from, p_to);
+		return Math::wrapf(p_from + MIN(Math::abs(difference), p_delta) * SIGN(difference), -Math_PI, Math_PI);
 	}
 	static _ALWAYS_INLINE_ float move_toward_angle(float p_from, float p_to, float p_delta) {
-		float difference = angle_difference(p_from, p_to);
-		return wrapf(p_from + fmin(abs(difference), p_delta) * SIGN(difference), -(float)Math_PI, (float)Math_PI);
+		float difference = Math::angle_difference(p_from, p_to);
+		return Math::wrapf(p_from + MIN(Math::abs(difference), p_delta) * SIGN(difference), -(float)Math_PI, (float)Math_PI);
 	}
 
 	static _ALWAYS_INLINE_ double linear_to_db(double p_linear) {
