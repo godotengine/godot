@@ -631,6 +631,8 @@ void Skeleton3D::_make_dirty() {
 		return;
 	}
 
+	MessageQueue::get_singleton()->push_notification(this, NOTIFICATION_UPDATE_SKELETON);
+
 	if (is_inside_tree()) {
 		notify_deferred_thread_group(NOTIFICATION_UPDATE_SKELETON);
 	}
