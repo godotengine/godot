@@ -1231,7 +1231,7 @@ namespace Godot
         public static float MoveTowardAngle(float from, float to, float delta)
         {
             float difference = AngleDifference(from, to);
-            return Wrap(from + Math.Min(Math.Abs(difference), delta) * Math.Sign(difference), -MathF.Pi, MathF.Pi);
+            return Wrap(from + Math.Min(Math.Abs(difference), delta) * Math.Sign(difference), -MathF.PI, MathF.PI);
         }
 
         /// <summary>
@@ -1246,7 +1246,7 @@ namespace Godot
         public static double MoveTowardAngle(double from, double to, double delta)
         {
             double difference = AngleDifference(from, to);
-            return Wrap(from + Math.Min(Math.Abs(difference), delta) * Math.Sign(difference), -Math.Pi, Math.Pi);
+            return Wrap(from + Math.Min(Math.Abs(difference), delta) * Math.Sign(difference), -Math.PI, Math.PI);
         }
 
         /// <summary>
