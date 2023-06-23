@@ -1222,7 +1222,7 @@ namespace Godot
         /// <summary>
         /// Moves <paramref name="from"/> toward <paramref name="to"/> by the <paramref name="delta"/> amount. Will not go past <paramref name="to"/>.
         /// Similar to <see cref="MoveToward"/> but interpolates correctly when the angles wrap around <see cref="Tau"/>.
-        /// Add 180 degrees to <paramref name="to"/> to move away. Using a negative value in <paramref name="delta"/> may cause oscillation.
+        /// Use a negative <paramref name="delta"/> value to move toward the opposite angle.
         /// </summary>
         /// <param name="from">The start Angle.</param>
         /// <param name="to">The Angle to move towards.</param>
@@ -1231,13 +1231,14 @@ namespace Godot
         public static float MoveTowardAngle(float from, float to, float delta)
         {
             float difference = AngleDifference(from, to);
-            return Wrap(from + Math.Min(Math.Abs(difference), delta) * Math.Sign(difference), -MathF.PI, MathF.PI);
+            float absDifference = Math.Abs(difference);
+            return from + Math.Clamp(delta, absDifference - MathF.PI, absDifference) * Math.Sign(difference);
         }
 
         /// <summary>
         /// Moves <paramref name="from"/> toward <paramref name="to"/> by the <paramref name="delta"/> amount. Will not go past <paramref name="to"/>.
         /// Similar to <see cref="MoveToward"/> but interpolates correctly when the angles wrap around <see cref="Tau"/>.
-        /// Add 180 degrees to <paramref name="to"/> to move away. Using a negative value in <paramref name="delta"/> may cause oscillation.
+        /// Use a negative <paramref name="delta"/> value to move toward the opposite angle.
         /// </summary>
         /// <param name="from">The start Angle.</param>
         /// <param name="to">The Angle to move towards.</param>
@@ -1246,7 +1247,8 @@ namespace Godot
         public static double MoveTowardAngle(double from, double to, double delta)
         {
             double difference = AngleDifference(from, to);
-            return Wrap(from + Math.Min(Math.Abs(difference), delta) * Math.Sign(difference), -Math.PI, Math.PI);
+            double absDifference = Math.Abs(difference);
+            return from + Math.Clamp(delta, absDifference - Math.PI, absDifference) * Math.Sign(difference);
         }
 
         /// <summary>
