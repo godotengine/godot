@@ -47,7 +47,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="spawn_function" type="Callable" setter="set_spawn_function" getter="get_spawn_function" default="Callable()">
+		<member name="spawn_function" type="Callable" setter="set_spawn_function" getter="get_spawn_function">
 			Method called on all peers when for every custom [method spawn] requested by the authority. Will receive the [code]data[/code] parameter, and should return a [Node] that is not in the scene tree.
 			[b]Note:[/b] The returned node should [b]not[/b] be added to the scene with [method Node.add_child]. This is done automatically.
 		</member>
