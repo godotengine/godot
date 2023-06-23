@@ -5263,6 +5263,8 @@ void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_
 	}
 	if (selected_bottom_panel_item_idx != -1) {
 		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item", selected_bottom_panel_item_idx);
+	} else {
+		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item", Variant());
 	}
 
 	// Debugger tab.
@@ -5281,6 +5283,8 @@ void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_
 	}
 	if (selected_main_editor_idx != -1) {
 		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_main_editor_idx", selected_main_editor_idx);
+	} else {
+		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_main_editor_idx", Variant());
 	}
 }
 
@@ -5295,7 +5299,10 @@ void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_confi
 	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item")) {
 		int selected_bottom_panel_item_idx = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item");
 		if (selected_bottom_panel_item_idx >= 0 && selected_bottom_panel_item_idx < bottom_panel_items.size()) {
-			_bottom_panel_switch(true, selected_bottom_panel_item_idx);
+			// Make sure we don't try to open contextual editors which are not enabled in the current context.
+			if (bottom_panel_items[selected_bottom_panel_item_idx].button->is_visible()) {
+				_bottom_panel_switch(true, selected_bottom_panel_item_idx);
+			}
 		}
 	}
 
