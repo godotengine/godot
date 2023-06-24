@@ -860,6 +860,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 							d2["arguments"] = arguments;
 						}
 
+						d2["flags"] = mi.flags;
+
 						methods.push_back(d2);
 
 					} else if (F.name.begins_with("_")) {
@@ -955,6 +957,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 						d2["arguments"] = arguments;
 					}
 
+					d2["flags"] = F.flags;
+
 					signals.push_back(d2);
 				}
 
@@ -994,6 +998,11 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 					if (index != -1) {
 						d2["index"] = index;
 					}
+
+					if (F.usage != 0) {
+						d2["usage"] = F.usage;
+					}
+
 					properties.push_back(d2);
 				}
 
