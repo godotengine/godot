@@ -2254,6 +2254,7 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Dictionary, size, sarray(), varray());
 	bind_method(Dictionary, is_empty, sarray(), varray());
 	bind_method(Dictionary, clear, sarray(), varray());
+	bind_method(Dictionary, assign, sarray("dictionary"), varray());
 	bind_method(Dictionary, merge, sarray("dictionary", "overwrite"), varray(false));
 	bind_method(Dictionary, merged, sarray("dictionary", "overwrite"), varray(false));
 	bind_method(Dictionary, has, sarray("key"), varray());
@@ -2266,6 +2267,18 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Dictionary, duplicate, sarray("deep"), varray(false));
 	bind_method(Dictionary, get, sarray("key", "default"), varray(Variant()));
 	bind_method(Dictionary, get_or_add, sarray("key", "default"), varray(Variant()));
+	bind_method(Dictionary, is_typed, sarray(), varray());
+	bind_method(Dictionary, is_typed_key, sarray(), varray());
+	bind_method(Dictionary, is_typed_value, sarray(), varray());
+	bind_method(Dictionary, is_same_typed, sarray("dictionary"), varray());
+	bind_method(Dictionary, is_same_typed_key, sarray("dictionary"), varray());
+	bind_method(Dictionary, is_same_typed_value, sarray("dictionary"), varray());
+	bind_method(Dictionary, get_typed_key_builtin, sarray(), varray());
+	bind_method(Dictionary, get_typed_value_builtin, sarray(), varray());
+	bind_method(Dictionary, get_typed_key_class_name, sarray(), varray());
+	bind_method(Dictionary, get_typed_value_class_name, sarray(), varray());
+	bind_method(Dictionary, get_typed_key_script, sarray(), varray());
+	bind_method(Dictionary, get_typed_value_script, sarray(), varray());
 	bind_method(Dictionary, make_read_only, sarray(), varray());
 	bind_method(Dictionary, is_read_only, sarray(), varray());
 	bind_method(Dictionary, recursive_equal, sarray("dictionary", "recursion_count"), varray());

@@ -376,10 +376,10 @@ static void _add_type_to_rt(const String &p_type, const String &p_enum, bool p_i
 	}
 
 	p_rt->push_color(type_color);
-	bool add_array = false;
+	bool add_typed_container = false;
 	if (can_ref) {
 		if (link_t.ends_with("[]")) {
-			add_array = true;
+			add_typed_container = true;
 			link_t = link_t.trim_suffix("[]");
 			display_t = display_t.trim_suffix("[]");
 
@@ -387,6 +387,22 @@ static void _add_type_to_rt(const String &p_type, const String &p_enum, bool p_i
 			p_rt->add_text("Array");
 			p_rt->pop(); // meta
 			p_rt->add_text("[");
+		} else if (link_t.begins_with("Dictionary[")) {
+			add_typed_container = true;
+			link_t = link_t.trim_prefix("Dictionary[").trim_suffix("]");
+			display_t = display_t.trim_prefix("Dictionary[").trim_suffix("]");
+
+			p_rt->push_meta("#Dictionary", RichTextLabel::META_UNDERLINE_ON_HOVER); // class
+			p_rt->add_text("Dictionary");
+			p_rt->pop(); // meta
+			p_rt->add_text("[");
+			p_rt->push_meta("#" + link_t.get_slice(", ", 0), RichTextLabel::META_UNDERLINE_ON_HOVER); // class
+			p_rt->add_text(_contextualize_class_specifier(display_t.get_slice(", ", 0), p_class));
+			p_rt->pop(); // meta
+			p_rt->add_text(", ");
+
+			link_t = link_t.get_slice(", ", 1);
+			display_t = _contextualize_class_specifier(display_t.get_slice(", ", 1), p_class);
 		} else if (is_bitfield) {
 			p_rt->push_color(Color(type_color, 0.5));
 			p_rt->push_hint(TTR("This value is an integer composed as a bitmask of the following flags."));
@@ -405,7 +421,7 @@ static void _add_type_to_rt(const String &p_type, const String &p_enum, bool p_i
 	p_rt->add_text(display_t);
 	if (can_ref) {
 		p_rt->pop(); // meta
-		if (add_array) {
+		if (add_typed_container) {
 			p_rt->add_text("]");
 		} else if (is_bitfield) {
 			p_rt->push_color(Color(type_color, 0.5));

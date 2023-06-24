@@ -2372,6 +2372,22 @@ typedef GDExtensionVariantPtr (*GDExtensionInterfaceDictionaryOperatorIndex)(GDE
  */
 typedef GDExtensionVariantPtr (*GDExtensionInterfaceDictionaryOperatorIndexConst)(GDExtensionConstTypePtr p_self, GDExtensionConstVariantPtr p_key);
 
+/**
+ * @name dictionary_set_typed
+ * @since 4.4
+ *
+ * Makes a Dictionary into a typed Dictionary.
+ *
+ * @param p_self A pointer to the Dictionary.
+ * @param p_key_type The type of Variant the Dictionary key will store.
+ * @param p_key_class_name A pointer to a StringName with the name of the object (if p_key_type is GDEXTENSION_VARIANT_TYPE_OBJECT).
+ * @param p_key_script A pointer to a Script object (if p_key_type is GDEXTENSION_VARIANT_TYPE_OBJECT and the base class is extended by a script).
+ * @param p_value_type The type of Variant the Dictionary value will store.
+ * @param p_value_class_name A pointer to a StringName with the name of the object (if p_value_type is GDEXTENSION_VARIANT_TYPE_OBJECT).
+ * @param p_value_script A pointer to a Script object (if p_value_type is GDEXTENSION_VARIANT_TYPE_OBJECT and the base class is extended by a script).
+ */
+typedef void (*GDExtensionInterfaceDictionarySetTyped)(GDExtensionTypePtr p_self, GDExtensionVariantType p_key_type, GDExtensionConstStringNamePtr p_key_class_name, GDExtensionConstVariantPtr p_key_script, GDExtensionVariantType p_value_type, GDExtensionConstStringNamePtr p_value_class_name, GDExtensionConstVariantPtr p_value_script);
+
 /* INTERFACE: Object */
 
 /**

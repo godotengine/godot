@@ -150,6 +150,19 @@
 		</constructor>
 		<constructor name="Dictionary">
 			<return type="Dictionary" />
+			<param index="0" name="base" type="Dictionary" />
+			<param index="1" name="key_type" type="int" />
+			<param index="2" name="key_class_name" type="StringName" />
+			<param index="3" name="key_script" type="Variant" />
+			<param index="4" name="value_type" type="int" />
+			<param index="5" name="value_class_name" type="StringName" />
+			<param index="6" name="value_script" type="Variant" />
+			<description>
+				Creates a typed dictionary from the [param base] dictionary. A typed dictionary can only contain keys and values of the given types, or that inherit from the given classes, as described by this constructor's parameters.
+			</description>
+		</constructor>
+		<constructor name="Dictionary">
+			<return type="Dictionary" />
 			<param index="0" name="from" type="Dictionary" />
 			<description>
 				Returns the same dictionary as [param from]. If you need a copy of the dictionary, use [method duplicate].
@@ -157,6 +170,13 @@
 		</constructor>
 	</constructors>
 	<methods>
+		<method name="assign">
+			<return type="void" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Assigns elements of another [param dictionary] into the dictionary. Resizes the dictionary to match [param dictionary]. Performs type conversions if the dictionary is typed.
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -200,6 +220,42 @@
 			<param index="1" name="default" type="Variant" default="null" />
 			<description>
 				Gets a value and ensures the key is set. If the [param key] exists in the dictionary, this behaves like [method get]. Otherwise, the [param default] value is inserted into the dictionary and returned.
+			</description>
+		</method>
+		<method name="get_typed_key_builtin" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the built-in [Variant] type of the typed dictionary's keys as a [enum Variant.Type] constant. If the keys are not typed, returns [constant TYPE_NIL]. See also [method is_typed_key].
+			</description>
+		</method>
+		<method name="get_typed_key_class_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the [b]built-in[/b] class name of the typed dictionary's keys, if the built-in [Variant] type is [constant TYPE_OBJECT]. Otherwise, returns an empty [StringName]. See also [method is_typed_key] and [method Object.get_class].
+			</description>
+		</method>
+		<method name="get_typed_key_script" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns the [Script] instance associated with this typed dictionary's keys, or [code]null[/code] if it does not exist. See also [method is_typed_key].
+			</description>
+		</method>
+		<method name="get_typed_value_builtin" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the built-in [Variant] type of the typed dictionary's values as a [enum Variant.Type] constant. If the values are not typed, returns [constant TYPE_NIL]. See also [method is_typed_value].
+			</description>
+		</method>
+		<method name="get_typed_value_class_name" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the [b]built-in[/b] class name of the typed dictionary's values, if the built-in [Variant] type is [constant TYPE_OBJECT]. Otherwise, returns an empty [StringName]. See also [method is_typed_value] and [method Object.get_class].
+			</description>
+		</method>
+		<method name="get_typed_value_script" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns the [Script] instance associated with this typed dictionary's values, or [code]null[/code] if it does not exist. See also [method is_typed_value].
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
@@ -282,6 +338,45 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the dictionary is read-only. See [method make_read_only]. Dictionaries are automatically read-only if declared with [code]const[/code] keyword.
+			</description>
+		</method>
+		<method name="is_same_typed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Returns [code]true[/code] if the dictionary is typed the same as [param dictionary].
+			</description>
+		</method>
+		<method name="is_same_typed_key" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Returns [code]true[/code] if the dictionary's keys are typed the same as [param dictionary]'s keys.
+			</description>
+		</method>
+		<method name="is_same_typed_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Returns [code]true[/code] if the dictionary's values are typed the same as [param dictionary]'s values.
+			</description>
+		</method>
+		<method name="is_typed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the dictionary is typed. Typed dictionaries can only store keys/values of their associated type and provide type safety for the [code][][/code] operator. Methods of typed dictionary still return [Variant].
+			</description>
+		</method>
+		<method name="is_typed_key" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the dictionary's keys are typed.
+			</description>
+		</method>
+		<method name="is_typed_value" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the dictionary's values are typed.
 			</description>
 		</method>
 		<method name="keys" qualifiers="const">
