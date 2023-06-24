@@ -1014,7 +1014,7 @@ SkyRD::~SkyRD() {
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 }
 
-void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, uint32_t p_view_count, const Projection *p_view_projections, const Vector3 *p_view_eye_offsets, const Transform3D &p_cam_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
+void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, uint32_t p_view_count, const Projection *p_view_projections, const Vector3 *p_view_eye_offsets, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(p_env.is_null());
@@ -1212,11 +1212,19 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 
 	sky_scene_state.view_count = p_view_count;
 	sky_scene_state.cam_transform = p_cam_transform;
-	sky_scene_state.cam_projection = p_view_projections[0]; // We only use this when rendering a single view
+	sky_scene_state.cam_projection = p_cam_projection; // We only use this when rendering a single view
 
 	// Our info in our UBO is only used if we're rendering stereo
 	for (uint32_t i = 0; i < p_view_count; i++) {
-		RendererRD::MaterialStorage::store_camera(p_view_projections[i].inverse(), sky_scene_state.ubo.view_inv_projections[i]);
+		Projection view_inv_projection = p_view_projections[i].inverse();
+		if (p_view_count > 1) {
+			RendererRD::MaterialStorage::store_camera(p_cam_projection * view_inv_projection, sky_scene_state.ubo.combined_reprojection[i]);
+		} else {
+			Projection ident;
+			RendererRD::MaterialStorage::store_camera(ident, sky_scene_state.ubo.combined_reprojection[i]);
+		}
+
+		RendererRD::MaterialStorage::store_camera(view_inv_projection, sky_scene_state.ubo.view_inv_projections[i]);
 		sky_scene_state.ubo.view_eye_offsets[i][0] = p_view_eye_offsets[i].x;
 		sky_scene_state.ubo.view_eye_offsets[i][1] = p_view_eye_offsets[i].y;
 		sky_scene_state.ubo.view_eye_offsets[i][2] = p_view_eye_offsets[i].z;
@@ -1619,7 +1627,7 @@ void SkyRD::update_dirty_skys() {
 			if (sky->mode == RS::SKY_MODE_REALTIME) {
 				layers = 8;
 				if (roughness_layers != 8) {
-					WARN_PRINT("When using REALTIME skies, roughness_layers should be set to 8 in the project settings for best quality reflections");
+					WARN_PRINT("When using the Real-Time sky update mode (or Automatic with a sky shader using \"TIME\"), \"rendering/reflections/sky_reflections/roughness_layers\" should be set to 8 in the project settings for best quality reflections.");
 				}
 			}
 

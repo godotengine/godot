@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-#include "stddef.h"
+#include <stddef.h>
 
 enum WebXRInputEvent {
 	WEBXR_INPUT_EVENT_SELECTSTART,
@@ -89,6 +89,10 @@ extern bool godot_webxr_update_input_source(
 
 extern char *godot_webxr_get_visibility_state();
 extern int godot_webxr_get_bounds_geometry(float **r_points);
+
+extern float godot_webxr_get_frame_rate();
+extern void godot_webxr_update_target_frame_rate(float p_frame_rate);
+extern int godot_webxr_get_supported_frame_rates(float **r_frame_rates);
 
 #ifdef __cplusplus
 }

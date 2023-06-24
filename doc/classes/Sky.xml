@@ -57,7 +57,7 @@
 		</constant>
 		<constant name="PROCESS_MODE_REALTIME" value="3" enum="ProcessMode">
 			Uses the fast filtering algorithm to process the radiance map. In general this results in lower quality, but substantially faster run times. If you need better quality, but still need to update the sky every frame, consider turning on [member ProjectSettings.rendering/reflections/sky_reflections/fast_filter_high_quality].
-			[b]Note:[/b] The fast filtering algorithm is limited to 256x256 cubemaps, so [member radiance_size] must be set to [constant RADIANCE_SIZE_256].
+			[b]Note:[/b] The fast filtering algorithm is limited to 256×256 cubemaps, so [member radiance_size] must be set to [constant RADIANCE_SIZE_256]. Otherwise, a warning is printed and the overridden radiance size is ignored.
 		</constant>
 	</constants>
 </class>

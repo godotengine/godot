@@ -78,7 +78,7 @@
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Removes the point at [code]index[/code] from the curve.
+				Removes the point at [param index] from the curve.
 			</description>
 		</method>
 		<method name="sample" qualifiers="const">

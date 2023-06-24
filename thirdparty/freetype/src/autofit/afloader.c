@@ -4,7 +4,7 @@
  *
  *   Auto-fitter glyph loading routines (body).
  *
- * Copyright (C) 2003-2022 by
+ * Copyright (C) 2003-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -228,9 +228,6 @@
     AF_StyleClass          style_class;
     AF_WritingSystemClass  writing_system_class;
 
-
-    if ( !size )
-      return FT_THROW( Invalid_Size_Handle );
 
     FT_ZERO( &scaler );
 

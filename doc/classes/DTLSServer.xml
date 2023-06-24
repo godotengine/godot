@@ -35,7 +35,7 @@
 		        if p.get_status() == PacketPeerDTLS.STATUS_CONNECTED:
 		            while p.get_available_packet_count() &gt; 0:
 		                print("Received message from client: %s" % p.get_packet().get_string_from_utf8())
-		                p.put_packet("Hello DTLS client".to_utf8())
+		                p.put_packet("Hello DTLS client".to_utf8_buffer())
 		[/gdscript]
 		[csharp]
 		// ServerNode.cs
@@ -77,7 +77,7 @@
 		                while (p.GetAvailablePacketCount() &gt; 0)
 		                {
 		                    GD.Print($"Received Message From Client: {p.GetPacket().GetStringFromUtf8()}");
-		                    p.PutPacket("Hello DTLS Client".ToUtf8());
+		                    p.PutPacket("Hello DTLS Client".ToUtf8Buffer());
 		                }
 		            }
 		        }
@@ -103,7 +103,7 @@
 		    if dtls.get_status() == PacketPeerDTLS.STATUS_CONNECTED:
 		        if !connected:
 		            # Try to contact server
-		            dtls.put_packet("The answer is... 42!".to_utf8())
+		            dtls.put_packet("The answer is... 42!".to_utf8_buffer())
 		        while dtls.get_available_packet_count() &gt; 0:
 		            print("Connected: %s" % dtls.get_packet().get_string_from_utf8())
 		            connected = true
@@ -133,7 +133,7 @@
 		            if (!_connected)
 		            {
 		                // Try to contact server
-		                _dtls.PutPacket("The Answer Is..42!".ToUtf8());
+		                _dtls.PutPacket("The Answer Is..42!".ToUtf8Buffer());
 		            }
 		            while (_dtls.GetAvailablePacketCount() &gt; 0)
 		            {

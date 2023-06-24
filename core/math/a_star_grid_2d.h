@@ -58,7 +58,7 @@ public:
 	};
 
 private:
-	Size2i size;
+	Rect2i region;
 	Vector2 offset;
 	Size2 cell_size = Size2(1, 1);
 	bool dirty = false;
@@ -107,21 +107,21 @@ private:
 
 private: // Internal routines.
 	_FORCE_INLINE_ bool _is_walkable(int64_t p_x, int64_t p_y) const {
-		if (p_x >= 0 && p_y >= 0 && p_x < size.width && p_y < size.height) {
-			return !points[p_y][p_x].solid;
+		if (region.has_point(Vector2i(p_x, p_y))) {
+			return !points[p_y - region.position.y][p_x - region.position.x].solid;
 		}
 		return false;
 	}
 
 	_FORCE_INLINE_ Point *_get_point(int64_t p_x, int64_t p_y) {
-		if (p_x >= 0 && p_y >= 0 && p_x < size.width && p_y < size.height) {
-			return &points[p_y][p_x];
+		if (region.has_point(Vector2i(p_x, p_y))) {
+			return &points[p_y - region.position.y][p_x - region.position.x];
 		}
 		return nullptr;
 	}
 
 	_FORCE_INLINE_ Point *_get_point_unchecked(int64_t p_x, int64_t p_y) {
-		return &points[p_y][p_x];
+		return &points[p_y - region.position.y][p_x - region.position.x];
 	}
 
 	void _get_nbors(Point *p_point, LocalVector<Point *> &r_nbors);
@@ -138,6 +138,9 @@ protected:
 	GDVIRTUAL2RC(real_t, _compute_cost, Vector2i, Vector2i)
 
 public:
+	void set_region(const Rect2i &p_region);
+	Rect2i get_region() const;
+
 	void set_size(const Size2i &p_size);
 	Size2i get_size() const;
 

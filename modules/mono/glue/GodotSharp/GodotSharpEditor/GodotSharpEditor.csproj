@@ -34,6 +34,10 @@
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
+  <!-- Compat Sources -->
+  <ItemGroup>
+    <Compile Include="Compat.cs" />
+  </ItemGroup>
   <!--
   We import a props file with auto-generated includes. This works well with Rider.
   However, Visual Studio and MonoDevelop won't list them in the solution explorer.

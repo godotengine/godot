@@ -42,9 +42,9 @@
  *
  * \return      All-bits-one if \p low <= \p c <= \p high, otherwise zero.
  */
-unsigned char mbedtls_ct_uchar_mask_of_range( unsigned char low,
-                                              unsigned char high,
-                                              unsigned char c );
+unsigned char mbedtls_ct_uchar_mask_of_range(unsigned char low,
+                                             unsigned char high,
+                                             unsigned char c);
 
 #endif /* MBEDTLS_TEST_HOOKS */
 

@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PhysicsServer2DExtension" inherits="PhysicsServer2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Provides virtual methods that can be overridden to create custom [PhysicsServer2D] implementations.
 	</brief_description>
 	<description>
+		This class extends [PhysicsServer2D] by providing additional virtual methods that can be overridden. When these methods are overridden, they will be called instead of the internal methods of the physics server.
+		Intended for use with GDExtension to create custom implementations of [PhysicsServer2D].
 	</description>
 	<tutorials>
 	</tutorials>

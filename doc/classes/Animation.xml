@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Animation" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Contains data used to animate everything in the engine.
+		Holds data that can be used to animate anything in the engine.
 	</brief_description>
 	<description>
-		An Animation resource contains data used to animate everything in the engine. Animations are divided into tracks, and each track must be linked to a node. The state of that node can be changed through time, by adding timed keys (events) to the track.
+		This resource holds data that can be used to animate anything in the engine. Animations are divided into tracks and each track must be linked to a node. The state of that node can be changed through time, by adding timed keys (events) to the track.
 		[codeblocks]
 		[gdscript]
 		# This creates an animation that makes the node "Enemy" move to the right by
@@ -228,6 +228,14 @@
 				Inserts a key in a given blend shape track. Returns the key index.
 			</description>
 		</method>
+		<method name="blend_shape_track_interpolate" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time_sec" type="float" />
+			<description>
+				Returns the interpolated blend shape value at the given time (in seconds). The [param track_idx] must be the index of a blend shape track.
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -291,6 +299,14 @@
 				Inserts a key in a given 3D position track. Returns the key index.
 			</description>
 		</method>
+		<method name="position_track_interpolate" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time_sec" type="float" />
+			<description>
+				Returns the interpolated position value at the given time (in seconds). The [param track_idx] must be the index of a 3D position track.
+			</description>
+		</method>
 		<method name="remove_track">
 			<return type="void" />
 			<param index="0" name="track_idx" type="int" />
@@ -307,6 +323,14 @@
 				Inserts a key in a given 3D rotation track. Returns the key index.
 			</description>
 		</method>
+		<method name="rotation_track_interpolate" qualifiers="const">
+			<return type="Quaternion" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time_sec" type="float" />
+			<description>
+				Returns the interpolated rotation value at the given time (in seconds). The [param track_idx] must be the index of a 3D rotation track.
+			</description>
+		</method>
 		<method name="scale_track_insert_key">
 			<return type="int" />
 			<param index="0" name="track_idx" type="int" />
@@ -314,6 +338,14 @@
 			<param index="2" name="scale" type="Vector3" />
 			<description>
 				Inserts a key in a given 3D scale track. Returns the key index.
+			</description>
+		</method>
+		<method name="scale_track_interpolate" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="time_sec" type="float" />
+			<description>
+				Returns the interpolated scale value at the given time (in seconds). The [param track_idx] must be the index of a 3D scale track.
 			</description>
 		</method>
 		<method name="track_find_key" qualifiers="const">

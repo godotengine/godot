@@ -42,25 +42,15 @@ void EditorLayoutsDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
-		if (!k->is_pressed()) {
-			return;
-		}
-
-		switch (k->get_keycode()) {
-			case Key::KP_ENTER:
-			case Key::ENTER: {
-				if (get_hide_on_ok()) {
-					hide();
-				}
-				ok_pressed();
-				set_input_as_handled();
-			} break;
-			case Key::ESCAPE: {
+		if (k->is_action_pressed(SNAME("ui_accept"), false, true)) {
+			if (get_hide_on_ok()) {
 				hide();
-				set_input_as_handled();
-			} break;
-			default:
-				break;
+			}
+			ok_pressed();
+			set_input_as_handled();
+		} else if (k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+			hide();
+			set_input_as_handled();
 		}
 	}
 }
@@ -122,21 +112,18 @@ void EditorLayoutsDialog::_post_popup() {
 EditorLayoutsDialog::EditorLayoutsDialog() {
 	makevb = memnew(VBoxContainer);
 	add_child(makevb);
-	makevb->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
-	makevb->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
 
 	layout_names = memnew(ItemList);
-	makevb->add_margin_child(TTR("Select existing layout:"), layout_names);
 	layout_names->set_auto_height(true);
 	layout_names->set_custom_minimum_size(Size2(300 * EDSCALE, 50 * EDSCALE));
 	layout_names->set_visible(true);
 	layout_names->set_offset(SIDE_TOP, 5);
-	layout_names->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
-	layout_names->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
 	layout_names->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	layout_names->set_select_mode(ItemList::SELECT_MULTI);
 	layout_names->set_allow_rmb_select(true);
 	layout_names->connect("multi_selected", callable_mp(this, &EditorLayoutsDialog::_update_ok_disable_state).unbind(2));
+	MarginContainer *mc = makevb->add_margin_child(TTR("Select existing layout:"), layout_names);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	name = memnew(LineEdit);
 	makevb->add_child(name);

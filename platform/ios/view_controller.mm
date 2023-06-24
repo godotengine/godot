@@ -29,13 +29,15 @@
 /**************************************************************************/
 
 #import "view_controller.h"
-#include "core/config/project_settings.h"
-#include "display_server_ios.h"
+
+#import "display_server_ios.h"
 #import "godot_view.h"
 #import "godot_view_renderer.h"
 #import "key_mapping_ios.h"
 #import "keyboard_input_view.h"
-#include "os_ios.h"
+#import "os_ios.h"
+
+#include "core/config/project_settings.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <GameController/GameController.h>

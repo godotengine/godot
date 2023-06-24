@@ -57,6 +57,34 @@ in this Software without prior written authorization from The Open Group.
   }
 
 
+#if defined( __clang__ )                                            || \
+    ( defined( __GNUC__ )                                          &&  \
+      ( __GNUC__ > 4 || ( __GNUC__ == 4 && __GNUC_MINOR__ >= 8 ) ) )
+
+#define BSWAP16( x )  __builtin_bswap16( x )
+#define BSWAP32( x )  __builtin_bswap32( x )
+
+#elif defined( _MSC_VER ) && _MSC_VER >= 1300
+
+#pragma intrinsic( _byteswap_ushort )
+#pragma intrinsic( _byteswap_ulong )
+
+#define BSWAP16( x )  _byteswap_ushort( x )
+#define BSWAP32( x )  _byteswap_ulong( x )
+
+#else
+
+#define BSWAP16( x )                             \
+        (FT_UInt16)( ( ( ( x ) >> 8 ) & 0xff ) | \
+                     ( ( ( x ) & 0xff ) << 8 ) )
+#define BSWAP32( x )                   \
+        (FT_UInt32)( ( ( ( x ) & 0xff000000u ) >> 24 ) | \
+                     ( ( ( x ) & 0x00ff0000u ) >> 8  ) | \
+                     ( ( ( x ) & 0x0000ff00u ) << 8  ) | \
+                     ( ( ( x ) & 0x000000ffu ) << 24 ) )
+
+#endif
+
   /*
    * Invert byte order within each 16-bits of an array.
    */
@@ -65,15 +93,11 @@ in this Software without prior written authorization from The Open Group.
   TwoByteSwap( unsigned char*  buf,
                size_t          nbytes )
   {
-    for ( ; nbytes >= 2; nbytes -= 2, buf += 2 )
-    {
-      unsigned char  c;
+    FT_UInt16*  b = (FT_UInt16*)buf;
 
 
-      c      = buf[0];
-      buf[0] = buf[1];
-      buf[1] = c;
-    }
+    for ( ; nbytes >= 2; nbytes -= 2, b++ )
+      *b = BSWAP16( *b );
   }
 
   /*
@@ -84,19 +108,11 @@ in this Software without prior written authorization from The Open Group.
   FourByteSwap( unsigned char*  buf,
                 size_t          nbytes )
   {
-    for ( ; nbytes >= 4; nbytes -= 4, buf += 4 )
-    {
-      unsigned char  c;
+    FT_UInt32*  b = (FT_UInt32*)buf;
 
 
-      c      = buf[0];
-      buf[0] = buf[3];
-      buf[3] = c;
-
-      c      = buf[1];
-      buf[1] = buf[2];
-      buf[2] = c;
-    }
+    for ( ; nbytes >= 4; nbytes -= 4, b++ )
+      *b = BSWAP32( *b );
   }
 
 

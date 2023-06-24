@@ -33,37 +33,54 @@
 #include "core/input/input.h"
 #include "core/io/marshalls.h"
 #include "editor/editor_properties.h"
+#include "editor/editor_properties_vector.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/inspector_dock.h"
+#include "scene/gui/button.h"
+#include "scene/resources/packed_scene.h"
 
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
 	String name = p_name;
 
-	if (name.begins_with("indices")) {
-		int index = name.get_slicec('/', 1).to_int();
-		array.set(index, p_value);
-		return true;
+	if (!name.begins_with("indices")) {
+		return false;
 	}
 
-	return false;
+	int index;
+	if (name.begins_with("metadata/")) {
+		index = name.get_slice("/", 2).to_int();
+	} else {
+		index = name.get_slice("/", 1).to_int();
+	}
+
+	array.set(index, p_value);
+	return true;
 }
 
 bool EditorPropertyArrayObject::_get(const StringName &p_name, Variant &r_ret) const {
 	String name = p_name;
 
-	if (name.begins_with("indices")) {
-		int index = name.get_slicec('/', 1).to_int();
-		bool valid;
-		r_ret = array.get(index, &valid);
-		if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
-			r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
-		}
-
-		return valid;
+	if (!name.begins_with("indices")) {
+		return false;
 	}
 
-	return false;
+	int index;
+	if (name.begins_with("metadata/")) {
+		index = name.get_slice("/", 2).to_int();
+	} else {
+		index = name.get_slice("/", 1).to_int();
+	}
+
+	bool valid;
+	r_ret = array.get(index, &valid);
+
+	if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
+		r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
+	}
+
+	return valid;
 }
 
 void EditorPropertyArrayObject::set_array(const Variant &p_array) {
@@ -176,15 +193,21 @@ void EditorPropertyArray::initialize_array(Variant &p_array) {
 }
 
 void EditorPropertyArray::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
-	if (p_property.begins_with("indices")) {
-		int index = p_property.get_slice("/", 1).to_int();
-
-		Variant array = object->get_array().duplicate();
-		array.set(index, p_value);
-
-		object->set_array(array);
-		emit_changed(get_edited_property(), array, "", true);
+	if (!p_property.begins_with("indices")) {
+		return;
 	}
+
+	int index;
+	if (p_property.begins_with("metadata/")) {
+		index = p_property.get_slice("/", 2).to_int();
+	} else {
+		index = p_property.get_slice("/", 1).to_int();
+	}
+
+	Variant array = object->get_array().duplicate();
+	array.set(index, p_value);
+	object->set_array(array);
+	emit_changed(get_edited_property(), array, "", true);
 }
 
 void EditorPropertyArray::_change_type(Object *p_button, int p_index) {
@@ -217,12 +240,12 @@ void EditorPropertyArray::_object_id_selected(const StringName &p_property, Obje
 }
 
 void EditorPropertyArray::update_property() {
-	Variant array = get_edited_object()->get(get_edited_property());
+	Variant array = get_edited_property_value();
 
 	String array_type_name = Variant::get_type_name(array_type);
 	if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
 		String type_name;
-		if (subtype == Variant::OBJECT && subtype_hint == PROPERTY_HINT_RESOURCE_TYPE) {
+		if (subtype == Variant::OBJECT && (subtype_hint == PROPERTY_HINT_RESOURCE_TYPE || subtype_hint == PROPERTY_HINT_NODE_TYPE)) {
 			type_name = subtype_hint_string;
 		} else {
 			type_name = Variant::get_type_name(subtype);
@@ -278,7 +301,7 @@ void EditorPropertyArray::update_property() {
 
 			size_slider = memnew(EditorSpinSlider);
 			size_slider->set_step(1);
-			size_slider->set_max(1000000);
+			size_slider->set_max(INT32_MAX);
 			size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
 			size_slider->set_read_only(is_read_only());
 			size_slider->connect("value_changed", callable_mp(this, &EditorPropertyArray::_length_changed));
@@ -535,7 +558,7 @@ void EditorPropertyArray::_notification(int p_what) {
 }
 
 void EditorPropertyArray::_edit_pressed() {
-	Variant array = get_edited_object()->get(get_edited_property());
+	Variant array = get_edited_property_value();
 	if (!array.is_array() && edit->is_pressed()) {
 		initialize_array(array);
 		get_edited_object()->set(get_edited_property(), array);
@@ -688,11 +711,6 @@ EditorPropertyArray::EditorPropertyArray() {
 	add_child(edit);
 	add_focusable(edit);
 
-	container = nullptr;
-	property_vbox = nullptr;
-	size_slider = nullptr;
-	button_add_item = nullptr;
-	paginator = nullptr;
 	change_type = memnew(PopupMenu);
 	add_child(change_type);
 	change_type->connect("id_pressed", callable_mp(this, &EditorPropertyArray::_change_type_menu));
@@ -726,6 +744,7 @@ void EditorPropertyDictionary::_change_type(Object *p_button, int p_index) {
 	Button *button = Object::cast_to<Button>(p_button);
 
 	Rect2 rect = button->get_screen_rect();
+	change_type->set_item_disabled(change_type->get_item_index(Variant::VARIANT_MAX), p_index < 0);
 	change_type->reset_size();
 	change_type->set_position(rect.get_end() - Vector2(change_type->get_contents_minimum_size().x, 0));
 	change_type->popup();
@@ -780,7 +799,7 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint) {
 }
 
 void EditorPropertyDictionary::update_property() {
-	Variant updated_val = get_edited_object()->get(get_edited_property());
+	Variant updated_val = get_edited_property_value();
 
 	if (updated_val.get_type() == Variant::NIL) {
 		edit->set_text(TTR("Dictionary (Nil)")); // This provides symmetry with the array property.
@@ -1189,7 +1208,7 @@ void EditorPropertyDictionary::_notification(int p_what) {
 }
 
 void EditorPropertyDictionary::_edit_pressed() {
-	Variant prop_val = get_edited_object()->get(get_edited_property());
+	Variant prop_val = get_edited_property_value();
 	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
 		VariantInternal::initialize(&prop_val, Variant::DICTIONARY);
 		get_edited_object()->set(get_edited_property(), prop_val);
@@ -1271,7 +1290,7 @@ void EditorPropertyLocalizableString::_remove_item(Object *p_button, int p_index
 }
 
 void EditorPropertyLocalizableString::update_property() {
-	Variant updated_val = get_edited_object()->get(get_edited_property());
+	Variant updated_val = get_edited_property_value();
 
 	if (updated_val.get_type() == Variant::NIL) {
 		edit->set_text(TTR("Localizable String (Nil)")); // This provides symmetry with the array property.
@@ -1403,7 +1422,7 @@ void EditorPropertyLocalizableString::_notification(int p_what) {
 }
 
 void EditorPropertyLocalizableString::_edit_pressed() {
-	Variant prop_val = get_edited_object()->get(get_edited_property());
+	Variant prop_val = get_edited_property_value();
 	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
 		VariantInternal::initialize(&prop_val, Variant::DICTIONARY);
 		get_edited_object()->set(get_edited_property(), prop_val);

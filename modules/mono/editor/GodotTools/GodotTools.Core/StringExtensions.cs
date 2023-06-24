@@ -57,27 +57,5 @@ namespace GodotTools.Core
                    path.StartsWith("\\", StringComparison.Ordinal) ||
                    path.StartsWith(_driveRoot, StringComparison.Ordinal);
         }
-
-        public static string ToSafeDirName(this string dirName, bool allowDirSeparator = false)
-        {
-            var invalidChars = new List<string> { ":", "*", "?", "\"", "<", ">", "|" };
-
-            if (allowDirSeparator)
-            {
-                // Directory separators are allowed, but disallow ".." to avoid going up the filesystem
-                invalidChars.Add("..");
-            }
-            else
-            {
-                invalidChars.Add("/");
-            }
-
-            string safeDirName = dirName.Replace("\\", "/").Trim();
-
-            foreach (string invalidChar in invalidChars)
-                safeDirName = safeDirName.Replace(invalidChar, "-");
-
-            return safeDirName;
-        }
     }
 }

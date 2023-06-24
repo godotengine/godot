@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+/*
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include <string.h>
 #include <math.h>
 #include "tvgSwCommon.h"
@@ -301,7 +302,7 @@ static void _inside(SwStroke& stroke, int32_t side, SwFixed lineLength)
     bool intersect = false;
 
     /* Only intersect borders if between two line_to's and both
-       lines are long enough (line length is zero fur curves). */
+       lines are long enough (line length is zero for curves). */
     if (border->movable && lineLength > 0) {
         //compute minimum required length of lines
         SwFixed minLength = abs(mathMultiply(stroke.width, mathTan(theta)));
@@ -381,8 +382,15 @@ static void _lineTo(SwStroke& stroke, const SwPoint& to)
     if (delta.zero()) return;
 
     //compute length of line
-    auto lineLength =  mathLength(delta);
     auto angle = mathAtan(delta);
+
+    /* The lineLength is used to determine the intersection of strokes outlines.
+       The scale needs to be reverted since the stroke width has not been scaled.
+       An alternative option is to scale the width of the stroke properly by
+       calculating the mixture of the sx/sy rating on the stroke direction. */
+    delta.x = static_cast<SwCoord>(delta.x / stroke.sx);
+    delta.y = static_cast<SwCoord>(delta.y / stroke.sy);
+    auto lineLength = mathLength(delta);
 
     delta = {static_cast<SwCoord>(stroke.width), 0};
     mathRotate(delta, angle + SW_ANGLE_PI2);
@@ -825,7 +833,7 @@ void strokeFree(SwStroke* stroke)
 }
 
 
-void strokeReset(SwStroke* stroke, const Shape* sdata, const Matrix* transform)
+void strokeReset(SwStroke* stroke, const RenderShape* rshape, const Matrix* transform)
 {
     if (transform) {
         stroke->sx = sqrtf(powf(transform->e11, 2.0f) + powf(transform->e21, 2.0f));
@@ -834,11 +842,11 @@ void strokeReset(SwStroke* stroke, const Shape* sdata, const Matrix* transform)
         stroke->sx = stroke->sy = 1.0f;
     }
 
-    stroke->width = HALF_STROKE(sdata->strokeWidth());
-    stroke->cap = sdata->strokeCap();
+    stroke->width = HALF_STROKE(rshape->strokeWidth());
+    stroke->cap = rshape->strokeCap();
 
     //Save line join: it can be temporarily changed when stroking curves...
-    stroke->joinSaved = stroke->join = sdata->strokeJoin();
+    stroke->joinSaved = stroke->join = rshape->strokeJoin();
 
     stroke->borders[0].ptsCnt = 0;
     stroke->borders[0].start = -1;

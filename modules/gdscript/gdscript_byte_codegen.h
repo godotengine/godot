@@ -32,7 +32,6 @@
 #define GDSCRIPT_BYTE_CODEGEN_H
 
 #include "gdscript_codegen.h"
-
 #include "gdscript_function.h"
 #include "gdscript_utility_functions.h"
 
@@ -88,6 +87,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	Vector<StackSlot> locals;
 	Vector<StackSlot> temporaries;
 	List<int> used_temporaries;
+	List<int> temporaries_pending_clear;
 	RBMap<Variant::Type, List<int>> temporaries_pool;
 
 	List<GDScriptFunction::StackDebug> stack_debug;
@@ -463,6 +463,7 @@ public:
 	virtual uint32_t add_or_get_name(const StringName &p_name) override;
 	virtual uint32_t add_temporary(const GDScriptDataType &p_type) override;
 	virtual void pop_temporary() override;
+	virtual void clean_temporaries() override;
 
 	virtual void start_parameters() override;
 	virtual void end_parameters() override;
@@ -499,6 +500,8 @@ public:
 	virtual void write_get_named(const Address &p_target, const StringName &p_name, const Address &p_source) override;
 	virtual void write_set_member(const Address &p_value, const StringName &p_name) override;
 	virtual void write_get_member(const Address &p_target, const StringName &p_name) override;
+	virtual void write_set_static_variable(const Address &p_value, const Address &p_class, int p_index) override;
+	virtual void write_get_static_variable(const Address &p_target, const Address &p_class, int p_index) override;
 	virtual void write_assign(const Address &p_target, const Address &p_source) override;
 	virtual void write_assign_with_conversion(const Address &p_target, const Address &p_source) override;
 	virtual void write_assign_true(const Address &p_target) override;

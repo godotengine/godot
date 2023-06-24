@@ -41,10 +41,14 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "modules/regex/regex.h"
 #include "plugins/script_editor_plugin.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
 
 RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor) {
@@ -584,7 +588,7 @@ void RenameDialog::rename() {
 
 	if (!to_rename.is_empty()) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Batch Rename"));
+		undo_redo->create_action(TTR("Batch Rename"), UndoRedo::MERGE_DISABLE, root_node, true);
 
 		// Make sure to iterate reversed so that child nodes will find parents.
 		for (int i = to_rename.size() - 1; i >= 0; --i) {
@@ -596,9 +600,7 @@ void RenameDialog::rename() {
 				continue;
 			}
 
-			scene_tree_editor->emit_signal(SNAME("node_prerename"), n, new_name);
-			undo_redo->add_do_method(scene_tree_editor, "_rename_node", n->get_instance_id(), new_name);
-			undo_redo->add_undo_method(scene_tree_editor, "_rename_node", n->get_instance_id(), n->get_name());
+			scene_tree_editor->call("_rename_node", n, new_name);
 		}
 
 		undo_redo->commit_action();

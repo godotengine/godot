@@ -203,11 +203,11 @@ public: // internal methods
 	_FORCE_INLINE_ Ref<VisualShaderNode> get_node_unchecked(Type p_type, int p_id) const {
 		return graph[p_type].nodes[p_id].node;
 	}
-	_FORCE_INLINE_ void get_next_connected_nodes(Type p_type, int p_id, LocalVector<int> &r_list) const {
-		r_list = graph[p_type].nodes[p_id].next_connected_nodes;
+	_FORCE_INLINE_ const LocalVector<int> &get_next_connected_nodes(Type p_type, int p_id) const {
+		return graph[p_type].nodes[p_id].next_connected_nodes;
 	}
-	_FORCE_INLINE_ void get_prev_connected_nodes(Type p_type, int p_id, LocalVector<int> &r_list) const {
-		r_list = graph[p_type].nodes[p_id].prev_connected_nodes;
+	_FORCE_INLINE_ const LocalVector<int> &get_prev_connected_nodes(Type p_type, int p_id) const {
+		return graph[p_type].nodes[p_id].prev_connected_nodes;
 	}
 
 	Vector<int> get_node_list(Type p_type) const;
@@ -411,6 +411,12 @@ public:
 
 	bool _is_initialized();
 	void _set_initialized(bool p_enabled);
+
+	String _get_name() const;
+	String _get_description() const;
+	String _get_category() const;
+	PortType _get_return_icon_type() const;
+	bool _is_highend() const;
 };
 
 /////

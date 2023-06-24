@@ -33,11 +33,17 @@ package org.godotengine.godot.utils;
 import android.app.Activity;
 import android.content.Context;
 import android.net.wifi.WifiManager;
+import android.util.Base64;
 import android.util.Log;
+
+import java.io.StringWriter;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
+import java.util.Enumeration;
 
 /**
  * This class handles Android-specific networking functions.
- * For now, it only provides access to WifiManager.MulticastLock, which is needed on some devices
+ * It provides access to the CA certificates KeyStore, and the WifiManager.MulticastLock, which is needed on some devices
  * to receive broadcast and multicast packets.
  */
 public class GodotNetUtils {
@@ -77,6 +83,36 @@ public class GodotNetUtils {
 			multicastLock.release();
 		} catch (RuntimeException e) {
 			Log.e("Godot", "Exception during multicast lock release: " + e);
+		}
+	}
+
+	/**
+	 * Retrieves the list of trusted CA certificates from the "AndroidCAStore" and returns them in PRM format.
+	 * @see https://developer.android.com/reference/java/security/KeyStore .
+	 * @return A string of concatenated X509 certificates in PEM format.
+	 */
+	public static String getCACertificates() {
+		try {
+			KeyStore ks = KeyStore.getInstance("AndroidCAStore");
+			StringBuilder writer = new StringBuilder();
+
+			if (ks != null) {
+				ks.load(null, null);
+				Enumeration<String> aliases = ks.aliases();
+
+				while (aliases.hasMoreElements()) {
+					String alias = (String)aliases.nextElement();
+
+					X509Certificate cert = (X509Certificate)ks.getCertificate(alias);
+					writer.append("-----BEGIN CERTIFICATE-----\n");
+					writer.append(Base64.encodeToString(cert.getEncoded(), Base64.DEFAULT));
+					writer.append("-----END CERTIFICATE-----\n");
+				}
+			}
+			return writer.toString();
+		} catch (Exception e) {
+			Log.e("Godot", "Exception while reading CA certificates: " + e);
+			return "";
 		}
 	}
 }

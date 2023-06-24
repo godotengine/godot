@@ -64,6 +64,8 @@ protected:
 public:
 	GraphEditMinimap(GraphEdit *p_edit);
 
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+
 	void update_minimap();
 	Rect2 get_camera_rect();
 
@@ -286,6 +288,8 @@ protected:
 	GDVIRTUAL4R(bool, _is_node_hover_valid, StringName, int, StringName, int);
 
 public:
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+
 	PackedStringArray get_configuration_warnings() const override;
 
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);

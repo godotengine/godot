@@ -44,7 +44,11 @@
 #include "scene/property_utils.h"
 
 #define PACKED_SCENE_VERSION 3
-#define META_POINTER_PROPERTY_BASE "metadata/_editor_prop_ptr_"
+
+#ifdef TOOLS_ENABLED
+SceneState::InstantiationWarningNotify SceneState::instantiation_warn_notify = nullptr;
+#endif
+
 bool SceneState::can_instantiate() const {
 	return nodes.size() > 0;
 }
@@ -142,7 +146,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			Ref<PackedScene> sdata = props[base_scene_idx];
 			ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
 			node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE); //only main gets main edit state
-			ERR_FAIL_COND_V(!node, nullptr);
+			ERR_FAIL_NULL_V(node, nullptr);
 			if (p_edit_state != GEN_EDIT_STATE_DISABLED) {
 				node->set_scene_inherited_state(sdata->get_state());
 			}
@@ -155,7 +159,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					Ref<PackedScene> sdata = ResourceLoader::load(scene_path, "PackedScene");
 					ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
 					node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
-					ERR_FAIL_COND_V(!node, nullptr);
+					ERR_FAIL_NULL_V(node, nullptr);
 				} else {
 					InstancePlaceholder *ip = memnew(InstancePlaceholder);
 					ip->set_instance_path(scene_path);
@@ -166,7 +170,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				Ref<PackedScene> sdata = props[n.instance & FLAG_MASK];
 				ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
 				node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
-				ERR_FAIL_COND_V(!node, nullptr);
+				ERR_FAIL_NULL_V(node, nullptr);
 			}
 
 		} else if (n.type == TYPE_INSTANTIATED) {
@@ -239,17 +243,12 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					if (nprops[j].name & FLAG_PATH_PROPERTY_IS_NODE) {
 						uint32_t name_idx = nprops[j].name & (FLAG_PATH_PROPERTY_IS_NODE - 1);
 						ERR_FAIL_UNSIGNED_INDEX_V(name_idx, (uint32_t)sname_count, nullptr);
-						if (Engine::get_singleton()->is_editor_hint()) {
-							// If editor, just set the metadata and be it
-							node->set(META_POINTER_PROPERTY_BASE + String(snames[name_idx]), props[nprops[j].value]);
-						} else {
-							// Do an actual deferred sed of the property path.
-							DeferredNodePathProperties dnp;
-							dnp.path = props[nprops[j].value];
-							dnp.base = node;
-							dnp.property = snames[name_idx];
-							deferred_node_paths.push_back(dnp);
-						}
+
+						DeferredNodePathProperties dnp;
+						dnp.value = props[nprops[j].value];
+						dnp.base = node;
+						dnp.property = snames[name_idx];
+						deferred_node_paths.push_back(dnp);
 						continue;
 					}
 
@@ -361,7 +360,33 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				//if node was not part of instance, must set its name, parenthood and ownership
 				if (i > 0) {
 					if (parent) {
-						parent->_add_child_nocheck(node, snames[n.name]);
+						bool pending_add = true;
+#ifdef TOOLS_ENABLED
+						if (Engine::get_singleton()->is_editor_hint()) {
+							Node *existing = parent->_get_child_by_name(snames[n.name]);
+							if (existing) {
+								// There's already a node in the same parent with the same name.
+								// This means that somehow the node was added both to the scene being
+								// loaded and another one instantiated in the former, maybe because of
+								// manual editing, or a bug in scene saving, or a loophole in the workflow
+								// (with any of the bugs possibly already fixed).
+								// Bring consistency back by letting it be assigned a non-clashing name.
+								// This simple workaround at least avoids leaks and helps the user realize
+								// something awkward has happened.
+								if (instantiation_warn_notify) {
+									instantiation_warn_notify(vformat(
+											TTR("An incoming node's name clashes with %s already in the scene (presumably, from a more nested instance).\nThe less nested node will be renamed. Please fix and re-save the scene."),
+											ret_nodes[0]->get_path_to(existing)));
+								}
+								node->set_name(snames[n.name]);
+								parent->add_child(node, true);
+								pending_add = false;
+							}
+						}
+#endif
+						if (pending_add) {
+							parent->_add_child_nocheck(node, snames[n.name]);
+						}
 						if (n.index >= 0 && n.index < parent->get_child_count() - 1) {
 							parent->move_child(node, n.index);
 						}
@@ -415,8 +440,23 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	}
 
 	for (const DeferredNodePathProperties &dnp : deferred_node_paths) {
-		Node *other = dnp.base->get_node_or_null(dnp.path);
-		dnp.base->set(dnp.property, other);
+		// Replace properties stored as NodePaths with actual Nodes.
+		if (dnp.value.get_type() == Variant::ARRAY) {
+			Array paths = dnp.value;
+
+			bool valid;
+			Array array = dnp.base->get(dnp.property, &valid);
+			ERR_CONTINUE(!valid);
+			array = array.duplicate();
+
+			array.resize(paths.size());
+			for (int i = 0; i < array.size(); i++) {
+				array.set(i, dnp.base->get_node_or_null(paths[i]));
+			}
+			dnp.base->set(dnp.property, array);
+		} else {
+			dnp.base->set(dnp.property, dnp.base->get_node_or_null(dnp.value));
+		}
 	}
 
 	for (KeyValue<Ref<Resource>, Ref<Resource>> &E : resources_local_to_scene) {
@@ -584,9 +624,6 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		if (E.name == META_PROPERTY_MISSING_RESOURCES) {
 			continue; // Ignore this property when packing.
 		}
-		if (E.name.begins_with(META_POINTER_PROPERTY_BASE)) {
-			continue; // do not save.
-		}
 
 		// If instance or inheriting, not saving if property requested so.
 		if (!states_stack.is_empty()) {
@@ -600,16 +637,49 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		bool use_deferred_node_path_bit = false;
 
 		if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
-			value = p_node->get(META_POINTER_PROPERTY_BASE + E.name);
+			if (value.get_type() == Variant::OBJECT) {
+				if (Node *n = Object::cast_to<Node>(value)) {
+					value = p_node->get_path_to(n);
+				}
+				use_deferred_node_path_bit = true;
+			}
 			if (value.get_type() != Variant::NODE_PATH) {
 				continue; //was never set, ignore.
 			}
-			use_deferred_node_path_bit = true;
 		} else if (E.type == Variant::OBJECT && missing_resource_properties.has(E.name)) {
 			// Was this missing resource overridden? If so do not save the old value.
 			Ref<Resource> ures = value;
 			if (ures.is_null()) {
 				value = missing_resource_properties[E.name];
+			}
+		} else if (E.type == Variant::ARRAY && E.hint == PROPERTY_HINT_TYPE_STRING) {
+			int hint_subtype_separator = E.hint_string.find(":");
+			if (hint_subtype_separator >= 0) {
+				String subtype_string = E.hint_string.substr(0, hint_subtype_separator);
+				int slash_pos = subtype_string.find("/");
+				PropertyHint subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
+				if (slash_pos >= 0) {
+					subtype_hint = PropertyHint(subtype_string.get_slice("/", 1).to_int());
+					subtype_string = subtype_string.substr(0, slash_pos);
+				}
+				Variant::Type subtype = Variant::Type(subtype_string.to_int());
+
+				if (subtype == Variant::OBJECT && subtype_hint == PROPERTY_HINT_NODE_TYPE) {
+					use_deferred_node_path_bit = true;
+					Array array = value;
+					Array new_array;
+					for (int i = 0; i < array.size(); i++) {
+						Variant elem = array[i];
+						if (elem.get_type() == Variant::OBJECT) {
+							if (Node *n = Object::cast_to<Node>(elem)) {
+								new_array.push_back(p_node->get_path_to(n));
+								continue;
+							}
+						}
+						new_array.push_back(elem);
+					}
+					value = new_array;
+				}
 			}
 		}
 
@@ -1733,10 +1803,6 @@ void SceneState::add_connection(int p_from, int p_to, int p_signal, int p_method
 
 void SceneState::add_editable_instance(const NodePath &p_path) {
 	editable_instances.push_back(p_path);
-}
-
-String SceneState::get_meta_pointer_property(const String &p_property) {
-	return META_POINTER_PROPERTY_BASE + p_property;
 }
 
 Vector<String> SceneState::_get_node_groups(int p_idx) const {

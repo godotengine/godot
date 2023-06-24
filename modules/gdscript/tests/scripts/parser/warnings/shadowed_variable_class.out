@@ -2,7 +2,7 @@ GDTEST_OK
 >> WARNING
 >> Line: 8
 >> UNUSED_VARIABLE
->> The local variable 'foo' is declared but never used in the block. If this is intended, prefix it with an underscore: '_foo'
+>> The local variable "foo" is declared but never used in the block. If this is intended, prefix it with an underscore: "_foo".
 >> WARNING
 >> Line: 8
 >> SHADOWED_VARIABLE

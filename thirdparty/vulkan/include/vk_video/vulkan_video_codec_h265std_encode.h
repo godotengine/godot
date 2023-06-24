@@ -2,7 +2,7 @@
 #define VULKAN_VIDEO_CODEC_H265STD_ENCODE_H_ 1
 
 /*
-** Copyright 2015-2022 The Khronos Group Inc.
+** Copyright 2015-2023 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -21,9 +21,9 @@ extern "C" {
 
 #define vulkan_video_codec_h265std_encode 1
 // Vulkan 0.9 provisional Vulkan video H.265 encode std specification version number
-#define VK_STD_VULKAN_VIDEO_CODEC_H265_ENCODE_API_VERSION_0_9_9 VK_MAKE_VIDEO_STD_VERSION(0, 9, 9) // Patch version should always be set to 0
+#define VK_STD_VULKAN_VIDEO_CODEC_H265_ENCODE_API_VERSION_0_9_10 VK_MAKE_VIDEO_STD_VERSION(0, 9, 10)
 
-#define VK_STD_VULKAN_VIDEO_CODEC_H265_ENCODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_H265_ENCODE_API_VERSION_0_9_9
+#define VK_STD_VULKAN_VIDEO_CODEC_H265_ENCODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_H265_ENCODE_API_VERSION_0_9_10
 #define VK_STD_VULKAN_VIDEO_CODEC_H265_ENCODE_EXTENSION_NAME "VK_STD_vulkan_video_codec_h265_encode"
 typedef struct StdVideoEncodeH265WeightTableFlags {
     uint16_t    luma_weight_l0_flag;
@@ -96,18 +96,21 @@ typedef struct StdVideoEncodeH265SliceSegmentHeader {
     const StdVideoEncodeH265WeightTable*                    pWeightTable;
 } StdVideoEncodeH265SliceSegmentHeader;
 
-typedef struct StdVideoEncodeH265ReferenceModificationFlags {
+typedef struct StdVideoEncodeH265ReferenceListsInfoFlags {
     uint32_t    ref_pic_list_modification_flag_l0 : 1;
     uint32_t    ref_pic_list_modification_flag_l1 : 1;
-} StdVideoEncodeH265ReferenceModificationFlags;
+} StdVideoEncodeH265ReferenceListsInfoFlags;
 
-typedef struct StdVideoEncodeH265ReferenceModifications {
-    StdVideoEncodeH265ReferenceModificationFlags    flags;
-    uint8_t                                         referenceList0ModificationsCount;
-    const uint8_t*                                  pReferenceList0Modifications;
-    uint8_t                                         referenceList1ModificationsCount;
-    const uint8_t*                                  pReferenceList1Modifications;
-} StdVideoEncodeH265ReferenceModifications;
+typedef struct StdVideoEncodeH265ReferenceListsInfo {
+    StdVideoEncodeH265ReferenceListsInfoFlags    flags;
+    uint8_t                                      num_ref_idx_l0_active_minus1;
+    uint8_t                                      num_ref_idx_l1_active_minus1;
+    uint16_t                                     reserved1;
+    const uint8_t*                               pRefPicList0Entries;
+    const uint8_t*                               pRefPicList1Entries;
+    const uint8_t*                               pRefList0Modifications;
+    const uint8_t*                               pRefList1Modifications;
+} StdVideoEncodeH265ReferenceListsInfo;
 
 typedef struct StdVideoEncodeH265PictureInfoFlags {
     uint32_t    is_reference_flag : 1;
@@ -123,8 +126,8 @@ typedef struct StdVideoEncodeH265PictureInfo {
     uint8_t                               sps_video_parameter_set_id;
     uint8_t                               pps_seq_parameter_set_id;
     uint8_t                               pps_pic_parameter_set_id;
-    int32_t                               PicOrderCntVal;
     uint8_t                               TemporalId;
+    int32_t                               PicOrderCntVal;
 } StdVideoEncodeH265PictureInfo;
 
 typedef struct StdVideoEncodeH265ReferenceInfoFlags {
@@ -134,6 +137,7 @@ typedef struct StdVideoEncodeH265ReferenceInfoFlags {
 
 typedef struct StdVideoEncodeH265ReferenceInfo {
     StdVideoEncodeH265ReferenceInfoFlags    flags;
+    StdVideoH265PictureType                 PictureType;
     int32_t                                 PicOrderCntVal;
     uint8_t                                 TemporalId;
 } StdVideoEncodeH265ReferenceInfo;

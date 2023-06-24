@@ -24,9 +24,9 @@
 # VladimirBlazek <vblazek042@gmail.com>, 2020.
 # kubajz22 <til.jakubesko@seznam.cz>, 2020.
 # Václav Blažej <vaclavblazej@seznam.cz>, 2020, 2021.
-# ProfJack <profjackcz@gmail.com>, 2021.
+# ProfJack <profjackcz@gmail.com>, 2021, 2023.
 # swifterik <blaha.j502@gmail.com>, 2021.
-# Daniel <dan@ger.cz>, 2021.
+# Daniel <dan@ger.cz>, 2021, 2023.
 # Jakub Janšta <jansta.ja@gmail.com>, 2021, 2023.
 # Petr Voparil <voparil.petr96@gmail.com>, 2022.
 # JoeMoos <josephmoose13@gmail.com>, 2022.
@@ -36,13 +36,15 @@
 # ElisHoli <eliskaholz@seznam.cz>, 2023.
 # Bluie <hruza.ondrej@gmail.com>, 2023.
 # Matej Fary <farymatej@gmail.com>, 2023.
+# Petr Novák <novakpeta06@gmail.com>, 2023.
+# Erik Mičulek <erikmiculek@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-18 08:29+0000\n"
-"Last-Translator: Matej Fary <farymatej@gmail.com>\n"
+"PO-Revision-Date: 2023-05-11 05:49+0000\n"
+"Last-Translator: ProfJack <profjackcz@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -50,7 +52,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.16.2-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
+
+msgid "Unset"
+msgstr "Nenastaveno"
 
 msgid "Physical"
 msgstr "Fyzická Klávesa"
@@ -70,11 +75,150 @@ msgstr "Kolečko nahoru"
 msgid "Mouse Wheel Down"
 msgstr "Kolečko dolů"
 
+msgid "Mouse Wheel Left"
+msgstr "Levé tlačítko kolečka myši"
+
+msgid "Mouse Wheel Right"
+msgstr "Pravé tlačítko kolečka myši"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Tlačítko myši 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Tlačítko myši 2"
+
 msgid "Button"
 msgstr "Tlačítko"
 
 msgid "Double Click"
 msgstr "Dvojklik"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Pohyb myši na pozici (%s) s rychlostí (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Osa X Levé Páčky, Osa X Joysticku 0"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Osy Y Levé Páčky, Joystick 0 Osa Y"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Osa X Pravé Páčky, Osa X Joysticku 1"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Osa Y Pravé Páčky, Osa Y Joysticku 1"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Joystick 2 Osa X, Levý Trigger, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Joystick 2 Osa Y, Pravý Trigger, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Joystick 3 Osa X"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Joystick 3 Osa Y"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Joystick 4 Osa X"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Joystick 4 Osa Y"
+
+msgid "Unknown Joypad Axis"
+msgstr "Neznámá Osa Gamepadu"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Pohyb Joypadu na ose %d (%s) s hodnotou %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Spodní Akce, Sony Kříž, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Pravá Akce, Sony Kruh, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Levá Akce, Sony Čtverec, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Horní Akce, Sony Trojúhelník, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Zpět, Sony Vybrat, Xbox Zpět, Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Průvodce, Sony PS, Xbox Home"
+
+msgid "Start, Nintendo +"
+msgstr "Start, Nintendo +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Levá páčka, Sony L3, Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Pravá páčka, Sony R3, Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Levý Shoulder, Sony L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Pravé Shoulder, Sony R1, Xbox RB"
+
+msgid "D-pad Up"
+msgstr "D-pad nahoru"
+
+msgid "D-pad Down"
+msgstr "D-pad dolů"
+
+msgid "D-pad Left"
+msgstr "D-pad vlevo"
+
+msgid "D-pad Right"
+msgstr "D-pad vpravo"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Sdílet, PS5 Mikrofon, Nintendo Capture"
+
+msgid "Xbox Paddle 1"
+msgstr "Xbox Pádlo 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox Pádlo 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox Pádlo 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox Pádlo 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 Dotykový panel"
+
+msgid "touched"
+msgstr "stisknutý"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Obrazovka %s v (%s) s %s dotykovými body"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr "Obrazovka tažená %s dotykovými body na pozici (%s) rychlostí (%s)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Gesto přiblížení na (%s) s faktorem %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Gesto přesouvání na (%s) se změnou (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "Vstup MIDI na Kanále=%s Zpráva=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Vstupní událost se zkratkou=%s"
+
+msgid "Accept"
+msgstr "Potvrdit"
 
 msgid "Select"
 msgstr "Vybrat"
@@ -82,14 +226,35 @@ msgstr "Vybrat"
 msgid "Cancel"
 msgstr "Zrušit"
 
+msgid "Focus Next"
+msgstr "Zvýraznit Dalši"
+
+msgid "Focus Prev"
+msgstr "Zvýraznit Předchozí"
+
+msgid "Left"
+msgstr "Vlevo"
+
+msgid "Right"
+msgstr "Vpravo"
+
 msgid "Up"
 msgstr "Nahoru"
 
 msgid "Down"
 msgstr "Dolů"
 
+msgid "Page Up"
+msgstr "Page Up"
+
+msgid "Page Down"
+msgstr "Page Down"
+
+msgid "Home"
+msgstr "Home"
+
 msgid "End"
-msgstr "Konec"
+msgstr "End"
 
 msgid "Cut"
 msgstr "Vyjmout"
@@ -106,20 +271,68 @@ msgstr "Zpět"
 msgid "Redo"
 msgstr "Znovu"
 
+msgid "New Line"
+msgstr "Nová linka"
+
+msgid "New Blank Line"
+msgstr "Nový prázdný řádek"
+
+msgid "New Line Above"
+msgstr "Nový řádek výše"
+
 msgid "Indent"
 msgstr "Odsazení"
+
+msgid "Backspace"
+msgstr "Backspace"
+
+msgid "Backspace Word"
+msgstr "Backspace Slovo"
+
+msgid "Backspace all to Left"
+msgstr "Backspace vše vlevo"
 
 msgid "Delete"
 msgstr "Odstranit"
 
+msgid "Delete Word"
+msgstr "Odstranit slovo"
+
+msgid "Delete all to Right"
+msgstr "Odstranit vše vpravo"
+
+msgid "Caret Left"
+msgstr "Caret vlevo"
+
+msgid "Caret Word Left"
+msgstr "Caret Slovo vlevo"
+
+msgid "Caret Right"
+msgstr "Caret vpravo"
+
+msgid "Caret Page Down"
+msgstr "Kurzor o stránku níž"
+
+msgid "Caret Add Above"
+msgstr "Přidat kurzor výš"
+
 msgid "Select All"
 msgstr "Vybrat vše"
+
+msgid "Select Word Under Caret"
+msgstr "Označit slovo pod kurzorem"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "Přidat další výskyt do označení"
 
 msgid "Duplicate Nodes"
 msgstr "Duplikovat uzly"
 
 msgid "Delete Nodes"
 msgstr "Smazat uzly"
+
+msgid "Go Up One Level"
+msgstr "Přejít o úroveň výš"
 
 msgid "Refresh"
 msgstr "Obnovit"
@@ -169,6 +382,15 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
+msgid "Example: %s"
+msgstr "Příklad: %s"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d položka"
+msgstr[1] "%d položky"
+msgstr[2] "%d položek"
+
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
@@ -178,6 +400,9 @@ msgstr ""
 
 msgid "An action with the name '%s' already exists."
 msgstr "Akce s názvem \"%s\" již existuje."
+
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Není možný návrat - akce je shodná s původní"
 
 msgid "Add Event"
 msgstr "Přidat událost"
@@ -196,6 +421,9 @@ msgstr "Odstranit událost"
 
 msgid "Add"
 msgstr "Přidat"
+
+msgid "Show Built-in Actions"
+msgstr "Zobrazit vestavěné akce"
 
 msgid "Action"
 msgstr "Akce"
@@ -218,6 +446,21 @@ msgstr "Duplikovat vybrané klíč(e)"
 msgid "Delete Selected Key(s)"
 msgstr "Smazat vybrané klíč(e)"
 
+msgid "Make Handles Linear"
+msgstr "Udělat úchyty lineárními"
+
+msgid "Make Handles Balanced"
+msgstr "Udělat úchyty vyvážené"
+
+msgid "Make Handles Mirrored"
+msgstr "Udělat úchyty zrcadlené"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Udělat úchyty vyvážené (automatická tečna)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Udělat úchyty zrcadlené (automatická tečna)"
+
 msgid "Add Bezier Point"
 msgstr "Přidat bod Bézierovy křivky"
 
@@ -230,8 +473,17 @@ msgstr "Změnit délku animace"
 msgid "Change Animation Loop"
 msgstr "Změnit smyčku animace"
 
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr "Nelze změnit režim smyčky na instanci animace z importované scény."
+
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr "Nelze změnit režim smyčky na animaci vložené do jiné scény."
+
 msgid "Property Track"
 msgstr "Stopa vlastnosti"
+
+msgid "Blend Shape Track"
+msgstr "Stopa prolínání tvarů"
 
 msgid "Call Method Track"
 msgstr "Stopa volání metody"
@@ -293,6 +545,21 @@ msgstr "Zvětšení:"
 msgid "Type:"
 msgstr "Typ:"
 
+msgid "Handle mode: Free\n"
+msgstr "Režim úchytu: Volný\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "Režim úchytu: Lineární\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "Režim úchytu: Vyvážený\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "Režim úchytu: Zrcadlený\n"
+
+msgid "Don't Use Blend"
+msgstr "Nepoužívat prolínání"
+
 msgid "Continuous"
 msgstr "Spojité"
 
@@ -334,6 +601,13 @@ msgstr "Změnit režim interpolace animace"
 
 msgid "Change Animation Loop Mode"
 msgstr "Změnit mód smyčky animace"
+
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"Komprimované stopy nelze upravit ani odstranit. Pro úpravu přeimportuj "
+"animaci bez povolené komprese."
 
 msgid "Remove Anim Track"
 msgstr "Odstranit stopu animace"
@@ -397,6 +671,9 @@ msgstr "Přidat stopu volání metody"
 msgid "Method not found in object:"
 msgstr "Tato metoda nebyla v objektu nalezena:"
 
+msgid "Position"
+msgstr "Pozice"
+
 msgid "Rotation"
 msgstr "Rotace"
 
@@ -406,6 +683,9 @@ msgstr "Měřítko"
 msgid "Methods"
 msgstr "Metody"
 
+msgid "Bezier"
+msgstr "Bézier"
+
 msgid "Audio"
 msgstr "Zvuk"
 
@@ -414,6 +694,9 @@ msgstr "Schránka je prázdná!"
 
 msgid "Paste Tracks"
 msgstr "Vložit stopy"
+
+msgid "Make Easing Keys"
+msgstr "Vytvoř klíče pro dynamiku"
 
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
@@ -427,6 +710,9 @@ msgstr "Upozornění: Upravuje se importovaná animace"
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
 "Pro přidání a úpravu animací vyberte ze stromu scény uzel AnimationPlayer."
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "Přepnout mezi editorem bézierovy křivky a editorem stopy."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Zobrazit pouze stopy vybraných uzlů."
@@ -505,6 +791,9 @@ msgstr "Pročistit"
 
 msgid "Scale Ratio:"
 msgstr "Poměr zvětšení:"
+
+msgid "Select Transition and Easing"
+msgstr "Vybrat přechod a dynamiku"
 
 msgid "Select Tracks to Copy"
 msgstr "Vybrat stopy ke kopírování"
@@ -605,6 +894,9 @@ msgstr "Scéna neobsahuje žádný skript."
 
 msgid "Select Method"
 msgstr "Vybrat metodu"
+
+msgid "No method found matching given filters."
+msgstr "Daným filtrům neodpovídá žádná metoda."
 
 msgid "Remove"
 msgstr "Odebrat"
@@ -720,7 +1012,7 @@ msgid "Debugger"
 msgstr "Ladicí program"
 
 msgid "Debug"
-msgstr "Ladění"
+msgstr "Debug"
 
 msgid "Save Branch as Scene"
 msgstr "Uložit větev jako scénu"
@@ -940,11 +1232,8 @@ msgstr "Editor závislostí"
 msgid "Search Replacement Resource:"
 msgstr "Hledat náhradní zdroj:"
 
-msgid "Open Scene"
-msgstr "Otevřít scénu"
-
-msgid "Open Scenes"
-msgstr "Otevřít scény"
+msgid "Open"
+msgstr "Otevřít"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "Vlastníci: %s (Dohromady: %d)"
@@ -1005,6 +1294,12 @@ msgstr "Vlastní"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Zdroje bez explicitního vlastnictví:"
+
+msgid "Could not create folder."
+msgstr "Nelze vytvořit složku."
+
+msgid "Create Folder"
+msgstr "Vytvořit složku"
 
 msgid "Thanks from the Godot community!"
 msgstr "Děkujeme za komunitu Godotu!"
@@ -1291,6 +1586,9 @@ msgstr "Navigace"
 msgid "OpenGL"
 msgstr "OpenGL"
 
+msgid "Vulkan"
+msgstr "Vulkan"
+
 msgid "File saving failed."
 msgstr "Ukládání souboru selhalo."
 
@@ -1335,24 +1633,6 @@ msgstr "[prázdné]"
 
 msgid "[unsaved]"
 msgstr "[neuloženo]"
-
-msgid "Please select a base directory first."
-msgstr "Nejprve vyberte výchozí složku."
-
-msgid "Choose a Directory"
-msgstr "Vyberte složku"
-
-msgid "Create Folder"
-msgstr "Vytvořit složku"
-
-msgid "Name:"
-msgstr "Jméno:"
-
-msgid "Could not create folder."
-msgstr "Nelze vytvořit složku."
-
-msgid "Choose"
-msgstr "Vyberte"
 
 msgid "3D Editor"
 msgstr "3D Editor"
@@ -1488,111 +1768,6 @@ msgstr "Importovat profil(y)"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Spravovat profily funkcí editoru"
-
-msgid "Network"
-msgstr "Síť"
-
-msgid "Open"
-msgstr "Otevřít"
-
-msgid "Select Current Folder"
-msgstr "Vybrat stávající složku"
-
-msgid "Select This Folder"
-msgstr "Vybrat tuto složku"
-
-msgid "Copy Path"
-msgstr "Kopírovat cestu"
-
-msgid "Open in File Manager"
-msgstr "Otevřít ve správci souborů"
-
-msgid "Show in File Manager"
-msgstr "Zobrazit ve správci souborů"
-
-msgid "New Folder..."
-msgstr "Nová složka..."
-
-msgid "All Recognized"
-msgstr "Všechny rozpoznatelné"
-
-msgid "All Files (*)"
-msgstr "Všechny soubory (*)"
-
-msgid "Open a File"
-msgstr "Otevřít soubor"
-
-msgid "Open File(s)"
-msgstr "Otevřít soubor(y)"
-
-msgid "Open a Directory"
-msgstr "Otevřít složku"
-
-msgid "Open a File or Directory"
-msgstr "Otevřít soubor nebo složku"
-
-msgid "Save a File"
-msgstr "Uložit soubor"
-
-msgid "Go Back"
-msgstr "Jít zpět"
-
-msgid "Go Forward"
-msgstr "Jit dopředu"
-
-msgid "Go Up"
-msgstr "Jít o úroveň výš"
-
-msgid "Toggle Hidden Files"
-msgstr "Zobrazit skryté soubory"
-
-msgid "Toggle Favorite"
-msgstr "Zobrazit oblíbené"
-
-msgid "Toggle Mode"
-msgstr "Přepnout režim"
-
-msgid "Focus Path"
-msgstr "Zvýraznit cestu"
-
-msgid "Move Favorite Up"
-msgstr "Přesunout oblíbenou položku nahoru"
-
-msgid "Move Favorite Down"
-msgstr "Přesunout oblíbenou položku dolů"
-
-msgid "Go to previous folder."
-msgstr "Přejít do předchozí složky."
-
-msgid "Go to next folder."
-msgstr "Přejít do další složky."
-
-msgid "Go to parent folder."
-msgstr "Přejít do nadřazené složky."
-
-msgid "Refresh files."
-msgstr "Obnovit soubory."
-
-msgid "(Un)favorite current folder."
-msgstr "Přidat/odebrat složku z oblíbených."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "Změnit viditelnost skrytých souborů."
-
-msgid "View items as a grid of thumbnails."
-msgstr "Zobrazit položky jako mřížku náhledů."
-
-msgid "View items as a list."
-msgstr "Zobrazit položky jako seznam."
-
-msgid "Directories & Files:"
-msgstr "Složky a soubory:"
-
-msgid "Preview:"
-msgstr "Náhled:"
-
-msgid "File:"
-msgstr "Soubor:"
 
 msgid "Restart"
 msgstr "Restartovat"
@@ -1784,6 +1959,15 @@ msgstr "Připnuté %s"
 msgid "Unpinned %s"
 msgstr "Nepřipnuté %s"
 
+msgid "Name:"
+msgstr "Jméno:"
+
+msgid "Creating Mesh Previews"
+msgstr "Vytváření náhledu modelu"
+
+msgid "Thumbnail..."
+msgstr "Náhled..."
+
 msgid "Select existing layout:"
 msgstr "Vybrat existující rozložení:"
 
@@ -1886,6 +2070,9 @@ msgstr ""
 "Nepodařilo se uložit scénu. Nejspíše se nepodařilo uspokojit závislosti "
 "(instance nebo dědičnosti)."
 
+msgid "Save scene before running..."
+msgstr "Uložit scénu před spuštěním..."
+
 msgid "Could not save one or more scenes!"
 msgstr "Nelze uložit jednu nebo více scén!"
 
@@ -1942,18 +2129,6 @@ msgstr ""
 msgid "Changes may be lost!"
 msgstr "Změny mohou být ztraceny!"
 
-msgid "There is no defined scene to run."
-msgstr "Neexistuje žádná scéna pro spuštění."
-
-msgid "Save scene before running..."
-msgstr "Uložit scénu před spuštěním..."
-
-msgid "Play the project."
-msgstr "Spustit projekt."
-
-msgid "Play the edited scene."
-msgstr "Spustit upravenou scénu."
-
 msgid "Open Base Scene"
 msgstr "Otevřít základní scénu"
 
@@ -1965,12 +2140,6 @@ msgstr "Rychle otevřít scénu..."
 
 msgid "Quick Open Script..."
 msgstr "Rychle otevřít skript..."
-
-msgid "Save & Quit"
-msgstr "Uložit a ukončit"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "Uložit změny '%s' před zavřením?"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s již neexistuje! Zadejte prosím nové umístění pro uložení."
@@ -2020,8 +2189,8 @@ msgstr ""
 "Aktuální scéna obsahuje neuložené změny.\n"
 "Přesto znovu načíst? Tuto akci nelze vrátit zpět."
 
-msgid "Quick Run Scene..."
-msgstr "Rychle spustit scénu..."
+msgid "Save & Quit"
+msgstr "Uložit a ukončit"
 
 msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Uložit změny následujících scén před ukončením?"
@@ -2095,6 +2264,9 @@ msgstr "Scéna '%s' má rozbité závislosti:"
 msgid "Clear Recent Scenes"
 msgstr "Vymazat nedávné scény"
 
+msgid "There is no defined scene to run."
+msgstr "Neexistuje žádná scéna pro spuštění."
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -2130,6 +2302,9 @@ msgstr "Výchozí"
 
 msgid "Save & Close"
 msgstr "Uložit a zavřít"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "Uložit změny '%s' před zavřením?"
 
 msgid "Show in FileSystem"
 msgstr "Zobrazit v souborovém systému"
@@ -2308,9 +2483,6 @@ msgstr "O aplikaci Godot"
 msgid "Support Godot Development"
 msgstr "Podpořte projekt Godot"
 
-msgid "Run Project"
-msgstr "Spustit projekt"
-
 msgid "Update Continuously"
 msgstr "Aktualizovat průběžně"
 
@@ -2354,6 +2526,9 @@ msgstr ""
 "Kompilační šablona pro Android je pro tento projekt již nainstalovaná a "
 "nebude přepsána.\n"
 "Odstraňte složku \"res://android/build\" před dalším pokusem o tuto operaci."
+
+msgid "Show in File Manager"
+msgstr "Zobrazit ve správci souborů"
 
 msgid "Import Templates From ZIP File"
 msgstr "Importovat šablony ze ZIP souboru"
@@ -2415,18 +2590,6 @@ msgstr "Otevřít předchozí editor"
 
 msgid "Warning!"
 msgstr "Varování!"
-
-msgid "No sub-resources found."
-msgstr "Nebyly nalezeny žádné dílčí zdroje."
-
-msgid "Open a list of sub-resources."
-msgstr "Otevřete seznam dílčích zdrojů."
-
-msgid "Creating Mesh Previews"
-msgstr "Vytváření náhledu modelu"
-
-msgid "Thumbnail..."
-msgstr "Náhled..."
 
 msgid "Main Script:"
 msgstr "Hlavní skript:"
@@ -2550,11 +2713,14 @@ msgstr "Napište svůj kód v _run() metodě."
 msgid "There is an edited scene already."
 msgstr "Nějaka scéna už je upravována."
 
+msgid "Common"
+msgstr "Společný"
+
 msgid "Editor Settings"
 msgstr "Nastavení editoru"
 
 msgid "General"
-msgstr "Všeobecné"
+msgstr "Obecné"
 
 msgid "The editor must be restarted for changes to take effect."
 msgstr "Pro projevení změn, je nutné restartovat editor."
@@ -2564,19 +2730,6 @@ msgstr "Zkratky"
 
 msgid "Binding"
 msgstr "Vazba"
-
-msgid ""
-"Hold %s to round to integers.\n"
-"Hold Shift for more precise changes."
-msgstr ""
-"Podržte %s pro zaokrouhlení na celá čísla.\n"
-" Pro přesnější změny podržte Shift."
-
-msgid "No notifications."
-msgstr "Žádné notifikace."
-
-msgid "Show notifications."
-msgstr "Zobrazit notifikace."
 
 msgid "All Devices"
 msgstr "Všechna zařízení"
@@ -2820,6 +2973,9 @@ msgstr ""
 msgid "Runnable"
 msgstr "Spustitelný"
 
+msgid "Resources to export:"
+msgstr "Zdroje k exportu:"
+
 msgid "Delete preset '%s'?"
 msgstr "Odstranit předvolbu '%s'?"
 
@@ -2865,9 +3021,6 @@ msgstr "Exportovat vybrané zdroje (a závislosti)"
 
 msgid "Export Mode:"
 msgstr "Expertní režim:"
-
-msgid "Resources to export:"
-msgstr "Zdroje k exportu:"
 
 msgid "Keep"
 msgstr "Zachovat"
@@ -2916,6 +3069,12 @@ msgstr "Procházet"
 msgid "Favorites"
 msgstr "Oblíbené"
 
+msgid "View items as a grid of thumbnails."
+msgstr "Zobrazit položky jako mřížku náhledů."
+
+msgid "View items as a list."
+msgstr "Zobrazit položky jako seznam."
+
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Status: import souboru selhal. Opravte, prosím, soubor a naimportujte ho "
@@ -2941,9 +3100,6 @@ msgstr "Chyba duplikování:"
 msgid "Unable to update dependencies:"
 msgstr "Nepodařilo se aktualizovat závislosti:"
 
-msgid "Provided name contains invalid characters."
-msgstr "Poskytnuté jméno obsahuje neplatné znaky."
-
 msgid ""
 "This file extension is not recognized by the editor.\n"
 "If you want to rename it anyway, use your operating system's file manager.\n"
@@ -2958,27 +3114,6 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "Soubor nebo složka s tímto názvem již existuje."
 
-msgid ""
-"The following files or folders conflict with items in the target location "
-"'%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Do you wish to overwrite them?"
-msgstr ""
-"Následující soubory nebo složky jsou v konfliktu s položkami v cílovém "
-"umístění '%s':\n"
-"\n"
-"%s\n"
-"\n"
-"Přejete si je přepsat?"
-
-msgid "Renaming file:"
-msgstr "Přejmenovávání souboru:"
-
-msgid "Renaming folder:"
-msgstr "Přejmenování složky:"
-
 msgid "Duplicating file:"
 msgstr "Duplikace souboru:"
 
@@ -2991,11 +3126,8 @@ msgstr "Nová zděděná scéna"
 msgid "Set As Main Scene"
 msgstr "Nastavit jako hlavní scénu"
 
-msgid "Add to Favorites"
-msgstr "Přidat do oblíbených"
-
-msgid "Remove from Favorites"
-msgstr "Odebrat z oblíbených"
+msgid "Open Scenes"
+msgstr "Otevřít scény"
 
 msgid "Edit Dependencies..."
 msgstr "Upravit závislosti..."
@@ -3003,8 +3135,17 @@ msgstr "Upravit závislosti..."
 msgid "View Owners..."
 msgstr "Zobrazit vlastníky..."
 
-msgid "Move To..."
-msgstr "Přesunout do..."
+msgid "Add to Favorites"
+msgstr "Přidat do oblíbených"
+
+msgid "Remove from Favorites"
+msgstr "Odebrat z oblíbených"
+
+msgid "Open in File Manager"
+msgstr "Otevřít ve správci souborů"
+
+msgid "New Folder..."
+msgstr "Nová složka..."
 
 msgid "New Scene..."
 msgstr "Nová scéna..."
@@ -3033,6 +3174,9 @@ msgstr "Seřadit podle poslední změny"
 msgid "Sort by First Modified"
 msgstr "Seřadit podle první změny"
 
+msgid "Copy Path"
+msgstr "Kopírovat cestu"
+
 msgid "Duplicate..."
 msgstr "Duplikovat..."
 
@@ -3051,9 +3195,6 @@ msgid ""
 msgstr ""
 "Skenování souborů,\n"
 "Prosím, čekejte..."
-
-msgid "Move"
-msgstr "Přesunout"
 
 msgid "Overwrite"
 msgstr "Přepsat"
@@ -3127,6 +3268,195 @@ msgstr "Editor skupin"
 
 msgid "Manage Groups"
 msgstr "Spravovat skupiny"
+
+msgid "Move"
+msgstr "Přesunout"
+
+msgid "Please select a base directory first."
+msgstr "Nejprve vyberte výchozí složku."
+
+msgid "Choose a Directory"
+msgstr "Vyberte složku"
+
+msgid "Network"
+msgstr "Síť"
+
+msgid "Select Current Folder"
+msgstr "Vybrat stávající složku"
+
+msgid "Select This Folder"
+msgstr "Vybrat tuto složku"
+
+msgid "All Recognized"
+msgstr "Všechny rozpoznatelné"
+
+msgid "All Files (*)"
+msgstr "Všechny soubory (*)"
+
+msgid "Open a File"
+msgstr "Otevřít soubor"
+
+msgid "Open File(s)"
+msgstr "Otevřít soubor(y)"
+
+msgid "Open a Directory"
+msgstr "Otevřít složku"
+
+msgid "Open a File or Directory"
+msgstr "Otevřít soubor nebo složku"
+
+msgid "Save a File"
+msgstr "Uložit soubor"
+
+msgid "Go Back"
+msgstr "Jít zpět"
+
+msgid "Go Forward"
+msgstr "Jit dopředu"
+
+msgid "Go Up"
+msgstr "Jít o úroveň výš"
+
+msgid "Toggle Hidden Files"
+msgstr "Zobrazit skryté soubory"
+
+msgid "Toggle Favorite"
+msgstr "Zobrazit oblíbené"
+
+msgid "Toggle Mode"
+msgstr "Přepnout režim"
+
+msgid "Focus Path"
+msgstr "Zvýraznit cestu"
+
+msgid "Move Favorite Up"
+msgstr "Přesunout oblíbenou položku nahoru"
+
+msgid "Move Favorite Down"
+msgstr "Přesunout oblíbenou položku dolů"
+
+msgid "Go to previous folder."
+msgstr "Přejít do předchozí složky."
+
+msgid "Go to next folder."
+msgstr "Přejít do další složky."
+
+msgid "Go to parent folder."
+msgstr "Přejít do nadřazené složky."
+
+msgid "Refresh files."
+msgstr "Obnovit soubory."
+
+msgid "(Un)favorite current folder."
+msgstr "Přidat/odebrat složku z oblíbených."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Změnit viditelnost skrytých souborů."
+
+msgid "Directories & Files:"
+msgstr "Složky a soubory:"
+
+msgid "Preview:"
+msgstr "Náhled:"
+
+msgid "File:"
+msgstr "Soubor:"
+
+msgid "No sub-resources found."
+msgstr "Nebyly nalezeny žádné dílčí zdroje."
+
+msgid "Open a list of sub-resources."
+msgstr "Otevřete seznam dílčích zdrojů."
+
+msgid "Play the project."
+msgstr "Spustit projekt."
+
+msgid "Play the edited scene."
+msgstr "Spustit upravenou scénu."
+
+msgid "Quick Run Scene..."
+msgstr "Rychle spustit scénu..."
+
+msgid "Run Project"
+msgstr "Spustit projekt"
+
+msgid ""
+"Hold %s to round to integers.\n"
+"Hold Shift for more precise changes."
+msgstr ""
+"Podržte %s pro zaokrouhlení na celá čísla.\n"
+" Pro přesnější změny podržte Shift."
+
+msgid "No notifications."
+msgstr "Žádné notifikace."
+
+msgid "Show notifications."
+msgstr "Zobrazit notifikace."
+
+msgid "Toggle Visible"
+msgstr "Přepnout viditelnost"
+
+msgid "Unlock Node"
+msgstr "Odemknout uzel"
+
+msgid "Button Group"
+msgstr "Skupina tlačítek"
+
+msgid "(Connecting From)"
+msgstr "(Připojování z)"
+
+msgid "Node configuration warning:"
+msgstr "Varování konfigurace uzlu:"
+
+msgid "Node has one connection."
+msgid_plural "Node has {num} connections."
+msgstr[0] "Uzel má jedno připojení."
+msgstr[1] "Uzel má {num} připojení."
+msgstr[2] "Uzel má {num} připojení."
+
+msgid "Node is in this group:"
+msgid_plural "Node is in the following groups:"
+msgstr[0] "Uzel je v této skupině:"
+msgstr[1] "Uzly je v těchto skupinách:"
+msgstr[2] "Uzel je v těchto skupinách:"
+
+msgid "Click to show signals dock."
+msgstr "Kliknutím zobrazíte panel signálů."
+
+msgid "Open in Editor"
+msgstr "Otevřít v editoru"
+
+msgid "Open Script:"
+msgstr "Otevřít skript:"
+
+msgid ""
+"Node is locked.\n"
+"Click to unlock it."
+msgstr ""
+"Uzel je zamčený.\n"
+"Klikněte pro odemčení."
+
+msgid ""
+"AnimationPlayer is pinned.\n"
+"Click to unpin."
+msgstr ""
+"AnimationPlayer je připnutý.\n"
+"Kliknutím odepnete."
+
+msgid "Invalid node name, the following characters are not allowed:"
+msgstr "Neplatný název uzlu, následující znaky nejsou povoleny:"
+
+msgid "Rename Node"
+msgstr "Přejmenovat uzel"
+
+msgid "Scene Tree (Nodes):"
+msgstr "Strom scény (uzly):"
+
+msgid "Node Configuration Warning!"
+msgstr "Varování konfigurace uzlu!"
+
+msgid "Select a Node"
+msgstr "Vybrat uzel"
 
 msgid "Reimport"
 msgstr "Znovu importovat"
@@ -3442,9 +3772,6 @@ msgstr "Odstranit bod BlendSpace2D"
 msgid "Remove BlendSpace2D Triangle"
 msgstr "Odstranit BlendSpace2D trojúhelník"
 
-msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr "BlendSpace2D nepatří k AnimationTree uzlu."
-
 msgid "No triangles exist, so no blending can take place."
 msgstr "Neexistují žádné trojúhelníky, takže nemůže nastat žádný blending."
 
@@ -3688,9 +4015,6 @@ msgstr "Na konci"
 
 msgid "Travel"
 msgstr "Cestovat"
-
-msgid "Start and end nodes are needed for a sub-transition."
-msgstr "Pro pod-přechod jsou potřeba začáteční a koncové uzly."
 
 msgid "No playback resource set at path: %s."
 msgstr "Na cestě nebyl nalezen žádný zdrojový playback: %s."
@@ -4297,11 +4621,17 @@ msgstr "Emisní barvy"
 msgid "Create Emission Points From Node"
 msgstr "Vytvořit emisní body z uzlu"
 
-msgid "Flat 0"
-msgstr "Plocha 0"
+msgid "Load Curve Preset"
+msgstr "Načíst předdefinovanou křivku"
 
-msgid "Flat 1"
-msgstr "Plocha 1"
+msgid "Remove Curve Point"
+msgstr "Odstranit bod křivky"
+
+msgid "Modify Curve Point"
+msgstr "Upravit bod křivky"
+
+msgid "Hold Shift to edit tangents individually"
+msgstr "Podržením Shift změníte tečny jednotlivě"
 
 msgid "Ease In"
 msgstr "Pozvolný vchod"
@@ -4311,42 +4641,6 @@ msgstr "Pozvolný odchod"
 
 msgid "Smoothstep"
 msgstr "Plynulý krok"
-
-msgid "Modify Curve Point"
-msgstr "Upravit bod křivky"
-
-msgid "Modify Curve Tangent"
-msgstr "Upravit tečnu křivky"
-
-msgid "Load Curve Preset"
-msgstr "Načíst předdefinovanou křivku"
-
-msgid "Add Point"
-msgstr "Přidat bod"
-
-msgid "Remove Point"
-msgstr "Odstranit bod"
-
-msgid "Left Linear"
-msgstr "Levé lineární"
-
-msgid "Right Linear"
-msgstr "Pravé lineární"
-
-msgid "Load Preset"
-msgstr "Načíst přednastavení"
-
-msgid "Remove Curve Point"
-msgstr "Odstranit bod křivky"
-
-msgid "Toggle Curve Linear Tangent"
-msgstr "Přepne lineární tečnu křivky"
-
-msgid "Hold Shift to edit tangents individually"
-msgstr "Podržením Shift změníte tečny jednotlivě"
-
-msgid "Right click to add point"
-msgstr "Pravý klik pro přidání bodu"
 
 msgid "Debug with External Editor"
 msgstr "Debugovat v externím editoru"
@@ -4369,7 +4663,7 @@ msgstr ""
 "Nemusíte ji povolovat abyste mohli použít lokální ladění GDScriptu."
 
 msgid "Small Deploy with Network Filesystem"
-msgstr "Tenké nasazení pomocí síťového souborového sistému"
+msgstr "Tenké nasazení pomocí síťového souborového systému"
 
 msgid ""
 "When this option is enabled, using one-click deploy for Android will only "
@@ -4441,6 +4735,39 @@ msgstr[2] "Spustit %d instancí"
 
 msgid " - Variation"
 msgstr " - Variace"
+
+msgid "Change AudioStreamPlayer3D Emission Angle"
+msgstr "Změnit úhel vysílání uzlu AudioStreamPlayer3D"
+
+msgid "Change Camera FOV"
+msgstr "Změnit zorné pole kamery"
+
+msgid "Change Camera Size"
+msgstr "Změnit velikost kamery"
+
+msgid "Change Sphere Shape Radius"
+msgstr "Změnit poloměr Sphere Shape"
+
+msgid "Change Capsule Shape Radius"
+msgstr "Změnit poloměr Capsule Shape"
+
+msgid "Change Capsule Shape Height"
+msgstr "Změnit výšku Capsule Shape"
+
+msgid "Change Cylinder Shape Radius"
+msgstr "Změnit poloměr Cylinder Shape"
+
+msgid "Change Cylinder Shape Height"
+msgstr "Změnit výšku Cylinder Shape"
+
+msgid "Change Particles AABB"
+msgstr "Změnit částice AABB"
+
+msgid "Change Light Radius"
+msgstr "Změnit rádius světla"
+
+msgid "Change Notifier AABB"
+msgstr "Změnit AABB Notifier"
 
 msgid "Convert to CPUParticles2D"
 msgstr "Převést na CPUParticles2D"
@@ -4728,44 +5055,17 @@ msgstr "Množství:"
 msgid "Populate"
 msgstr "Naplnit"
 
+msgid "Edit Poly"
+msgstr "Editovat polygon"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Upravit polygon (Odstranit bod)"
+
 msgid "Create Navigation Polygon"
 msgstr "Vytvořit navigační polygon"
 
 msgid "Unnamed Gizmo"
 msgstr "Nepojmenované gizmo"
-
-msgid "Change Light Radius"
-msgstr "Změnit rádius světla"
-
-msgid "Change AudioStreamPlayer3D Emission Angle"
-msgstr "Změnit úhel vysílání uzlu AudioStreamPlayer3D"
-
-msgid "Change Camera FOV"
-msgstr "Změnit zorné pole kamery"
-
-msgid "Change Camera Size"
-msgstr "Změnit velikost kamery"
-
-msgid "Change Sphere Shape Radius"
-msgstr "Změnit poloměr Sphere Shape"
-
-msgid "Change Notifier AABB"
-msgstr "Změnit AABB Notifier"
-
-msgid "Change Particles AABB"
-msgstr "Změnit částice AABB"
-
-msgid "Change Capsule Shape Radius"
-msgstr "Změnit poloměr Capsule Shape"
-
-msgid "Change Capsule Shape Height"
-msgstr "Změnit výšku Capsule Shape"
-
-msgid "Change Cylinder Shape Radius"
-msgstr "Změnit poloměr Cylinder Shape"
-
-msgid "Change Cylinder Shape Height"
-msgstr "Změnit výšku Cylinder Shape"
 
 msgid "Transform Aborted."
 msgstr "Transformace zrušena."
@@ -5304,12 +5604,6 @@ msgstr "Synchronizovat kosti do polygonu"
 msgid "Create Polygon3D"
 msgstr "Vytvořit Polygon3D"
 
-msgid "Edit Poly"
-msgstr "Editovat polygon"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Upravit polygon (Odstranit bod)"
-
 msgid "ERROR: Couldn't load resource!"
 msgstr "Chyba: Nelze načíst zdroj!"
 
@@ -5327,9 +5621,6 @@ msgstr "Schránka zdroje je prázdná!"
 
 msgid "Paste Resource"
 msgstr "Vložit zdroj"
-
-msgid "Open in Editor"
-msgstr "Otevřít v editoru"
 
 msgid "Load Resource"
 msgstr "Načíst zdroj"
@@ -5756,17 +6047,8 @@ msgstr "Obnovení lupy"
 msgid "Select Frames"
 msgstr "Vybrat snímky"
 
-msgid "Horizontal:"
-msgstr "Horizonálně:"
-
-msgid "Vertical:"
-msgstr "Vertikálně:"
-
-msgid "Separation:"
-msgstr "Oddělení:"
-
-msgid "Select/Clear All Frames"
-msgstr "Vybrat všechny/žádné rámečky"
+msgid "Size"
+msgstr "Velikost"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "Vytvořit rámečky ze Sprite Sheet"
@@ -5794,6 +6076,9 @@ msgstr "Automatický řez"
 
 msgid "Step:"
 msgstr "Krok:"
+
+msgid "Separation:"
+msgstr "Oddělení:"
 
 msgid "1 color"
 msgid_plural "{num} colors"
@@ -6019,6 +6304,12 @@ msgstr "Převrátit vertikálně"
 
 msgid "Scattering:"
 msgstr "Rozptyl:"
+
+msgid "Rendering"
+msgstr "Vykreslování"
+
+msgid "Physics"
+msgstr "Fyzika"
 
 msgid "Yes"
 msgstr "Ano"
@@ -6716,11 +7007,11 @@ msgstr "Instalační cesta k projektu:"
 msgid "Renderer:"
 msgstr "Vykreslovač:"
 
-msgid "Missing Project"
-msgstr "Chybějící projekt"
-
 msgid "Error: Project is missing on the filesystem."
 msgstr "Chyba: Projek se nevyskytuje v souborovém systému."
+
+msgid "Missing Project"
+msgstr "Chybějící projekt"
 
 msgid "Local"
 msgstr "Místní"
@@ -7191,68 +7482,6 @@ msgstr "Vzdálený"
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Vymazat dědičnost? (Nelze vrátit zpět!)"
 
-msgid "Toggle Visible"
-msgstr "Přepnout viditelnost"
-
-msgid "Unlock Node"
-msgstr "Odemknout uzel"
-
-msgid "Button Group"
-msgstr "Skupina tlačítek"
-
-msgid "(Connecting From)"
-msgstr "(Připojování z)"
-
-msgid "Node configuration warning:"
-msgstr "Varování konfigurace uzlu:"
-
-msgid "Node has one connection."
-msgid_plural "Node has {num} connections."
-msgstr[0] "Uzel má jedno připojení."
-msgstr[1] "Uzel má {num} připojení."
-msgstr[2] "Uzel má {num} připojení."
-
-msgid "Node is in this group:"
-msgid_plural "Node is in the following groups:"
-msgstr[0] "Uzel je v této skupině:"
-msgstr[1] "Uzly je v těchto skupinách:"
-msgstr[2] "Uzel je v těchto skupinách:"
-
-msgid "Click to show signals dock."
-msgstr "Kliknutím zobrazíte panel signálů."
-
-msgid "Open Script:"
-msgstr "Otevřít skript:"
-
-msgid ""
-"Node is locked.\n"
-"Click to unlock it."
-msgstr ""
-"Uzel je zamčený.\n"
-"Klikněte pro odemčení."
-
-msgid ""
-"AnimationPlayer is pinned.\n"
-"Click to unpin."
-msgstr ""
-"AnimationPlayer je připnutý.\n"
-"Kliknutím odepnete."
-
-msgid "Invalid node name, the following characters are not allowed:"
-msgstr "Neplatný název uzlu, následující znaky nejsou povoleny:"
-
-msgid "Rename Node"
-msgstr "Přejmenovat uzel"
-
-msgid "Scene Tree (Nodes):"
-msgstr "Strom scény (uzly):"
-
-msgid "Node Configuration Warning!"
-msgstr "Varování konfigurace uzlu!"
-
-msgid "Select a Node"
-msgstr "Vybrat uzel"
-
 msgid "Path is empty."
 msgstr "Cesta je prázdná."
 
@@ -7492,9 +7721,6 @@ msgstr "Konfigurace"
 msgid "Count"
 msgstr "Množství"
 
-msgid "Size"
-msgstr "Velikost"
-
 msgid "Network Profiler"
 msgstr "Síťový profiler"
 
@@ -7569,6 +7795,12 @@ msgstr "Znak '%s' nemůže být prvním znakem segmentu balíčku."
 msgid "The package must have at least one '.' separator."
 msgstr "Balíček musí mít alespoň jeden '.' oddělovač."
 
+msgid "Invalid public key for APK expansion."
+msgstr "Neplatný veřejný klíč pro rozšíření APK."
+
+msgid "Invalid package name:"
+msgstr "Neplatné jméno balíčku:"
+
 msgid "Select device from the list"
 msgstr "Vyberte zařízení ze seznamu"
 
@@ -7620,12 +7852,6 @@ msgstr "Chybí složka \"build-tools\"!"
 
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Nelze najít apksigner, nástrojů Android SDK."
-
-msgid "Invalid public key for APK expansion."
-msgstr "Neplatný veřejný klíč pro rozšíření APK."
-
-msgid "Invalid package name:"
-msgstr "Neplatné jméno balíčku:"
 
 msgid "Signing release %s..."
 msgstr "Podepisování vydání %s..."
@@ -7705,9 +7931,6 @@ msgstr "Přidávám soubory..."
 
 msgid "Aligning APK..."
 msgstr "Zarovnávání APK..."
-
-msgid "App Store Team ID not specified - cannot configure the project."
-msgstr "App Store Team ID nebyla poskytnuta - projekt nelze konfigurovat."
 
 msgid "Invalid Identifier:"
 msgstr "Neplatný identifikátor:"
@@ -7804,15 +8027,6 @@ msgstr "Nelze přejmenovat dočasný soubor: \"%s\"."
 
 msgid "Failed to remove temporary file \"%s\"."
 msgstr "Nelze odstranit dočasný soubor: \"%s\"."
-
-msgid "Invalid icon path:"
-msgstr "Neplatná cesta ikony:"
-
-msgid "Invalid file version:"
-msgstr "Neplatná verze souboru:"
-
-msgid "Invalid product version:"
-msgstr "Neplatná verze produktu:"
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
@@ -8056,13 +8270,6 @@ msgstr ""
 
 msgid "(Other)"
 msgstr "(Ostatní)"
-
-msgid ""
-"Default Environment as specified in Project Settings (Rendering -> "
-"Environment -> Default Environment) could not be loaded."
-msgstr ""
-"Výchozí prostředí specifikované v nastavení projektu (Vykreslování -> "
-"Zobrazovací výřez -> Výchozí prostředí) se nepodařilo načíst."
 
 msgid "Unsupported BMFont texture format."
 msgstr "Nepodporovaný formát textury BMFont."

@@ -30,12 +30,13 @@
 
 #include "gdscript_cache.h"
 
-#include "core/io/file_access.h"
-#include "core/templates/vector.h"
 #include "gdscript.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
+
+#include "core/io/file_access.h"
+#include "core/templates/vector.h"
 #include "scene/resources/packed_scene.h"
 
 bool GDScriptParserRef::is_valid() const {
@@ -253,7 +254,11 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 	Ref<GDScript> script;
 	script.instantiate();
 	script->set_path(p_path, true);
-	script->load_source_code(p_path);
+	r_error = script->load_source_code(p_path);
+
+	if (r_error) {
+		return Ref<GDScript>(); // Returns null and does not cache when the script fails to load.
+	}
 
 	Ref<GDScriptParserRef> parser_ref = get_parser(p_path, GDScriptParserRef::PARSED, r_error);
 	if (r_error == OK) {
@@ -340,6 +345,16 @@ Error GDScriptCache::finish_compiling(const String &p_owner) {
 	singleton->dependencies.erase(p_owner);
 
 	return err;
+}
+
+void GDScriptCache::add_static_script(Ref<GDScript> p_script) {
+	ERR_FAIL_COND_MSG(p_script.is_null(), "Trying to cache empty script as static.");
+	ERR_FAIL_COND_MSG(!p_script->is_valid(), "Trying to cache non-compiled script as static.");
+	singleton->static_gdscript_cache[p_script->get_fully_qualified_name()] = p_script;
+}
+
+void GDScriptCache::remove_static_script(const String &p_fqcn) {
+	singleton->static_gdscript_cache.erase(p_fqcn);
 }
 
 Ref<PackedScene> GDScriptCache::get_packed_scene(const String &p_path, Error &r_error, const String &p_owner) {

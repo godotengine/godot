@@ -34,13 +34,7 @@
 
 void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, uint32_t p_block_size) {
 	magic = p_magic.ascii().get_data();
-	if (magic.length() > 4) {
-		magic = magic.substr(0, 4);
-	} else {
-		while (magic.length() < 4) {
-			magic += " ";
-		}
-	}
+	magic = (magic + "    ").substr(0, 4);
 
 	cmode = p_mode;
 	block_size = p_block_size;

@@ -41,7 +41,6 @@
 #include "core/templates/list.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
-#include "core/templates/vmap.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant.h"
 
@@ -86,6 +85,7 @@ enum PropertyHint {
 	PROPERTY_HINT_NODE_TYPE, ///< a node object type
 	PROPERTY_HINT_HIDE_QUATERNION_EDIT, /// Only Node3D::transform should hide the quaternion editor.
 	PROPERTY_HINT_PASSWORD,
+	PROPERTY_HINT_LAYERS_AVOIDANCE,
 	PROPERTY_HINT_MAX,
 };
 
@@ -119,6 +119,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT = 1 << 26, // For Object properties, instantiate them when creating in editor.
 	PROPERTY_USAGE_EDITOR_BASIC_SETTING = 1 << 27, //for project or editor settings, show when basic settings are selected.
 	PROPERTY_USAGE_READ_ONLY = 1 << 28, // Mark a property as read-only in the inspector.
+	PROPERTY_USAGE_SECRET = 1 << 29, // Export preset credentials that should be stored separately from the rest of the export config.
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR,
 	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE,
@@ -303,8 +304,10 @@ struct MethodInfo {
 
 // API used to extend in GDExtension and other C compatible compiled languages.
 class MethodBind;
+class GDExtension;
 
 struct ObjectGDExtension {
+	GDExtension *library = nullptr;
 	ObjectGDExtension *parent = nullptr;
 	List<ObjectGDExtension *> children;
 	StringName parent_class_name;
@@ -587,7 +590,7 @@ private:
 		};
 
 		MethodInfo user;
-		VMap<Callable, Slot> slot_map;
+		HashMap<Callable, Slot, HashableHasher<Callable>> slot_map;
 	};
 
 	HashMap<StringName, SignalData> signal_map;
@@ -717,7 +720,7 @@ protected:
 		return &_class_name_static;
 	}
 
-	Vector<StringName> _get_meta_list_bind() const;
+	TypedArray<StringName> _get_meta_list_bind() const;
 	TypedArray<Dictionary> _get_property_list_bind() const;
 	TypedArray<Dictionary> _get_method_list_bind() const;
 
@@ -725,7 +728,7 @@ protected:
 
 	friend class ClassDB;
 
-	void _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
+	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
 
 public: // Should be protected, but bug in clang++.
 	static void initialize_class();
@@ -797,6 +800,8 @@ public:
 		return *_class_name_ptr;
 	}
 
+	StringName get_class_name_for_extension(const GDExtension *p_library) const;
+
 	/* IAPI */
 
 	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
@@ -835,14 +840,21 @@ public:
 
 	/* SCRIPT */
 
-	void set_script(const Variant &p_script);
-	Variant get_script() const;
+// When in debug, some non-virtual functions can be overridden for multithreaded guards.
+#ifdef DEBUG_ENABLED
+#define MTVIRTUAL virtual
+#else
+#define MTVIRTUAL
+#endif
 
-	bool has_meta(const StringName &p_name) const;
-	void set_meta(const StringName &p_name, const Variant &p_value);
-	void remove_meta(const StringName &p_name);
-	Variant get_meta(const StringName &p_name, const Variant &p_default = Variant()) const;
-	void get_meta_list(List<StringName> *p_list) const;
+	MTVIRTUAL void set_script(const Variant &p_script);
+	MTVIRTUAL Variant get_script() const;
+
+	MTVIRTUAL bool has_meta(const StringName &p_name) const;
+	MTVIRTUAL void set_meta(const StringName &p_name, const Variant &p_value);
+	MTVIRTUAL void remove_meta(const StringName &p_name);
+	MTVIRTUAL Variant get_meta(const StringName &p_name, const Variant &p_default = Variant()) const;
+	MTVIRTUAL void get_meta_list(List<StringName> *p_list) const;
 
 #ifdef TOOLS_ENABLED
 	void set_edited(bool p_edited);
@@ -869,17 +881,17 @@ public:
 		return emit_signalp(p_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
-	Error emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount);
-	bool has_signal(const StringName &p_name) const;
-	void get_signal_list(List<MethodInfo> *p_signals) const;
-	void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const;
-	void get_all_signal_connections(List<Connection> *p_connections) const;
-	int get_persistent_signal_connection_count() const;
-	void get_signals_connected_to_this(List<Connection> *p_connections) const;
+	MTVIRTUAL Error emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount);
+	MTVIRTUAL bool has_signal(const StringName &p_name) const;
+	MTVIRTUAL void get_signal_list(List<MethodInfo> *p_signals) const;
+	MTVIRTUAL void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const;
+	MTVIRTUAL void get_all_signal_connections(List<Connection> *p_connections) const;
+	MTVIRTUAL int get_persistent_signal_connection_count() const;
+	MTVIRTUAL void get_signals_connected_to_this(List<Connection> *p_connections) const;
 
-	Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
-	void disconnect(const StringName &p_signal, const Callable &p_callable);
-	bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
+	MTVIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
+	MTVIRTUAL void disconnect(const StringName &p_signal, const Callable &p_callable);
+	MTVIRTUAL bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
 
 	template <typename... VarArgs>
 	void call_deferred(const StringName &p_name, VarArgs... p_args) {
@@ -923,6 +935,8 @@ public:
 	void clear_internal_resource_paths();
 
 	_ALWAYS_INLINE_ bool is_ref_counted() const { return type_is_reference; }
+
+	void cancel_free();
 
 	Object();
 	virtual ~Object();

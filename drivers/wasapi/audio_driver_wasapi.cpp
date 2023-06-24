@@ -206,8 +206,6 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 	IMMDeviceEnumerator *enumerator = nullptr;
 	IMMDevice *output_device = nullptr;
 
-	CoInitialize(nullptr);
-
 	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, nullptr, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
@@ -482,6 +480,14 @@ Error AudioDriverWASAPI::init_output_device(bool p_reinit) {
 	}
 
 	switch (audio_output.channels) {
+		case 1: // Mono
+		case 3: // Surround 2.1
+		case 5: // Surround 5.0
+		case 7: // Surround 7.0
+			// We will downmix as required.
+			channels = audio_output.channels + 1;
+			break;
+
 		case 2: // Stereo
 		case 4: // Surround 3.1
 		case 6: // Surround 5.1
@@ -501,7 +507,7 @@ Error AudioDriverWASAPI::init_output_device(bool p_reinit) {
 	input_position = 0;
 	input_size = 0;
 
-	print_verbose("WASAPI: detected " + itos(channels) + " channels");
+	print_verbose("WASAPI: detected " + itos(audio_output.channels) + " channels");
 	print_verbose("WASAPI: audio buffer frames: " + itos(buffer_frames) + " calculated latency: " + itos(buffer_frames * 1000 / mix_rate) + "ms");
 
 	return OK;
@@ -547,7 +553,7 @@ Error AudioDriverWASAPI::finish_input_device() {
 }
 
 Error AudioDriverWASAPI::init() {
-	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
+	mix_rate = _get_configured_mix_rate();
 
 	target_latency_ms = GLOBAL_GET("audio/driver/output_latency");
 
@@ -581,8 +587,6 @@ PackedStringArray AudioDriverWASAPI::audio_device_get_list(bool p_input) {
 	IMMDeviceEnumerator *enumerator = nullptr;
 
 	list.push_back(String("Default"));
-
-	CoInitialize(nullptr);
 
 	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, nullptr, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
 	ERR_FAIL_COND_V(hr != S_OK, PackedStringArray());
@@ -702,6 +706,8 @@ void AudioDriverWASAPI::write_sample(WORD format_tag, int bits_per_sample, BYTE 
 }
 
 void AudioDriverWASAPI::thread_func(void *p_udata) {
+	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
 	AudioDriverWASAPI *ad = static_cast<AudioDriverWASAPI *>(p_udata);
 	uint32_t avail_frames = 0;
 	uint32_t write_ofs = 0;
@@ -747,6 +753,19 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 						if (ad->channels == ad->audio_output.channels) {
 							for (unsigned int i = 0; i < write_frames * ad->channels; i++) {
 								ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i, ad->samples_in.write[write_ofs++]);
+							}
+						} else if (ad->channels == ad->audio_output.channels + 1) {
+							// Pass all channels except the last two as-is, and then mix the last two
+							// together as one channel. E.g. stereo -> mono, or 3.1 -> 2.1.
+							unsigned int last_chan = ad->audio_output.channels - 1;
+							for (unsigned int i = 0; i < write_frames; i++) {
+								for (unsigned int j = 0; j < last_chan; j++) {
+									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in.write[write_ofs++]);
+								}
+								int32_t l = ad->samples_in.write[write_ofs++];
+								int32_t r = ad->samples_in.write[write_ofs++];
+								int32_t c = (int32_t)(((int64_t)l + (int64_t)r) / 2);
+								ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + last_chan, c);
 							}
 						} else {
 							for (unsigned int i = 0; i < write_frames; i++) {
@@ -908,6 +927,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			OS::get_singleton()->delay_usec(1000);
 		}
 	}
+	CoUninitialize();
 }
 
 void AudioDriverWASAPI::start() {
@@ -931,7 +951,9 @@ void AudioDriverWASAPI::unlock() {
 
 void AudioDriverWASAPI::finish() {
 	exit_thread.set();
-	thread.wait_to_finish();
+	if (thread.is_started()) {
+		thread.wait_to_finish();
+	}
 
 	finish_input_device();
 	finish_output_device();

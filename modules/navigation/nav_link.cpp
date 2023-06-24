@@ -33,21 +33,33 @@
 #include "nav_map.h"
 
 void NavLink::set_map(NavMap *p_map) {
+	if (map == p_map) {
+		return;
+	}
 	map = p_map;
 	link_dirty = true;
 }
 
 void NavLink::set_bidirectional(bool p_bidirectional) {
+	if (bidirectional == p_bidirectional) {
+		return;
+	}
 	bidirectional = p_bidirectional;
 	link_dirty = true;
 }
 
 void NavLink::set_start_position(const Vector3 p_position) {
+	if (start_position == p_position) {
+		return;
+	}
 	start_position = p_position;
 	link_dirty = true;
 }
 
 void NavLink::set_end_position(const Vector3 p_position) {
+	if (end_position == p_position) {
+		return;
+	}
 	end_position = p_position;
 	link_dirty = true;
 }

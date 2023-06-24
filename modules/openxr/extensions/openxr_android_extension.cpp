@@ -29,12 +29,14 @@
 /**************************************************************************/
 
 #include "openxr_android_extension.h"
+
+#include "../openxr_api.h"
+
 #include "java_godot_wrapper.h"
 #include "os_android.h"
 #include "thread_jandroid.h"
 
 #include <jni.h>
-#include <modules/openxr/openxr_api.h>
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
 

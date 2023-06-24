@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #ifndef _TVG_BINARY_DESC_H_
 #define _TVG_BINARY_DESC_H_
 
@@ -42,7 +43,7 @@ using TvgBinFlag = TvgBinByte;
 #define TVG_HEADER_VERSION_LENGTH 6
 #define TVG_HEADER_RESERVED_LENGTH 1      //Storing flags for extensions
 #define TVG_HEADER_COMPRESS_SIZE 12       //TVG_HEADER_UNCOMPRESSED_SIZE + TVG_HEADER_COMPRESSED_SIZE + TVG_HEADER_COMPRESSED_SIZE_BITS
-//Compress Size 
+//Compress Size
 #define TVG_HEADER_UNCOMPRESSED_SIZE 4     //SIZE (TvgBinCounter)
 #define TVG_HEADER_COMPRESSED_SIZE 4       //SIZE (TvgBinCounter)
 #define TVG_HEADER_COMPRESSED_SIZE_BITS 4  //SIZE (TvgBinCounter)
@@ -92,5 +93,6 @@ using TvgBinFlag = TvgBinByte;
 
 //Picture
 #define TVG_TAG_PICTURE_RAW_IMAGE                   (TvgBinTag)0x70
+#define TVG_TAG_PICTURE_MESH                        (TvgBinTag)0x71
 
 #endif //_TVG_BINARY_DESC_H_

@@ -39,7 +39,10 @@
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/panel.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/slider.h"
@@ -294,6 +297,8 @@ void Polygon2DEditor::_menu_option(int p_option) {
 				error->popup_centered();
 				return;
 			}
+
+			uv_edit_draw->set_texture_filter(node->get_texture_filter_in_tree());
 
 			Vector<Vector2> points = node->get_polygon();
 			Vector<Vector2> uvs = node->get_uv();

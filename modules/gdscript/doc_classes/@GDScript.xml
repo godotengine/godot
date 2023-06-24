@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="@GDScript" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		Built-in GDScript functions.
+		Built-in GDScript constants, functions, and annotations.
 	</brief_description>
 	<description>
 		A list of GDScript-specific utility functions and annotations accessible from any script.
@@ -139,7 +139,7 @@
 				print(is_instance_of(a, MyClass))
 				print(is_instance_of(a, MyClass.InnerClass))
 				[/codeblock]
-				[b]Note:[/b] If [param value] and/or [param type] are freed objects (see [method @GlobalScope.is_instance_valid]), or [param type] is not one of the above options, this method will raise an runtime error.
+				[b]Note:[/b] If [param value] and/or [param type] are freed objects (see [method @GlobalScope.is_instance_valid]), or [param type] is not one of the above options, this method will raise a runtime error.
 				See also [method @GlobalScope.typeof], [method type_exists], [method Array.is_same_typed] (and other [Array] methods).
 			</description>
 		</method>
@@ -170,6 +170,7 @@
 				[b]Important:[/b] The path must be absolute. A relative path will always return [code]null[/code].
 				This function is a simplified version of [method ResourceLoader.load], which can be used for more advanced scenarios.
 				[b]Note:[/b] Files have to be imported into the engine first to load them using this function. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
+				[b]Note:[/b] If [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to read converted files in an exported project. If you rely on run-time loading of files present within the PCK, set [member ProjectSettings.editor/export/convert_text_resources_to_binary] to [code]false[/code].
 			</description>
 		</method>
 		<method name="preload">
@@ -227,8 +228,8 @@
 				To iterate over an [Array] backwards, use:
 				[codeblock]
 				var array = [3, 6, 9]
-				for i in range(array.size(), 0, -1):
-				    print(array[i - 1])
+				for i in range(array.size() - 1, -1, -1):
+				    print(array[i])
 				[/codeblock]
 				Output:
 				[codeblock]
@@ -273,7 +274,7 @@
 			[b]Warning:[/b] Numeric infinity is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer number by [code]0[/code] will not result in [constant INF] and will result in a run-time error instead.
 		</constant>
 		<constant name="NAN" value="nan">
-			"Not a Number", an invalid floating-point value. [constant NAN] has special properties, including that it is not equal to itself ([code]NAN == NAN[/code] returns [code]false[/code]). It is output by some invalid operations, such as dividing floating-point [code]0.0[/code] by [code]0.0[/code].
+			"Not a Number", an invalid floating-point value. [constant NAN] has special properties, including that [code]!=[/code] always returns [code]true[/code], while other comparison operators always return [code]false[/code]. This is true even when comparing with itself ([code]NAN == NAN[/code] returns [code]false[/code] and [code]NAN != NAN[/code] returns [code]true[/code]). It is returned by some invalid operations, such as dividing floating-point [code]0.0[/code] by [code]0.0[/code].
 			[b]Warning:[/b] "Not a Number" is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer [code]0[/code] by [code]0[/code] will not result in [constant NAN] and will result in a run-time error instead.
 		</constant>
 	</constants>
@@ -457,6 +458,16 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@export_flags_avoidance">
+			<return type="void" />
+			<description>
+				Export an integer property as a bit flag field for navigation avoidance layers. The widget in the Inspector dock will use the layer names defined in [member ProjectSettings.layer_names/avoidance/layer_1].
+				See also [constant PROPERTY_HINT_LAYERS_AVOIDANCE].
+				[codeblock]
+				@export_flags_avoidance var avoidance_layers: int
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export_global_dir">
 			<return type="void" />
 			<description>
@@ -601,7 +612,7 @@
 				[/codeblock]
 			</description>
 		</annotation>
-		<annotation name="@rpc" qualifiers="vararg">
+		<annotation name="@rpc">
 			<return type="void" />
 			<param index="0" name="mode" type="String" default="&quot;authority&quot;" />
 			<param index="1" name="sync" type="String" default="&quot;call_remote&quot;" />
@@ -609,7 +620,11 @@
 			<param index="3" name="transfer_channel" type="int" default="0" />
 			<description>
 				Mark the following method for remote procedure calls. See [url=$DOCS_URL/tutorials/networking/high_level_multiplayer.html]High-level multiplayer[/url].
-				The order of [code]mode[/code], [code]sync[/code] and [code]transfer_mode[/code] does not matter and all arguments can be omitted, but [code]transfer_channel[/code] always has to be the last argument. The accepted values for [code]mode[/code] are [code]"any_peer"[/code] or [code]"authority"[/code], for [code]sync[/code] are [code]"call_remote"[/code] or [code]"call_local"[/code] and for [code]transfer_mode[/code] are [code]"unreliable"[/code], [code]"unreliable_ordered"[/code] or [code]"reliable"[/code].
+				The accepted values:
+				- for [param mode] are [code]"any_peer"[/code] or [code]"authority"[/code];
+				- for [param sync] are [code]"call_remote"[/code] or [code]"call_local"[/code];
+				- and for [param transfer_mode] are [code]"unreliable"[/code], [code]"unreliable_ordered"[/code], or [code]"reliable"[/code].
+				The order of [param mode], [param sync] and [param transfer_mode] does not matter, but values related to the same argument must not be used more than once. [param transfer_channel] always has to be the 4th argument (you must specify 3 preceding arguments).
 				[codeblock]
 				@rpc
 				func fn(): pass
@@ -620,6 +635,12 @@
 				@rpc("authority", "call_remote", "unreliable", 0) # Equivalent to @rpc
 				func fn_default(): pass
 				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@static_unload">
+			<return type="void" />
+			<description>
+				Make a script with static variables to not persist after all references are lost. If the script is loaded again the static variables will revert to their default values.
 			</description>
 		</annotation>
 		<annotation name="@tool">

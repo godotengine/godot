@@ -31,8 +31,9 @@
 #ifndef FILE_ACCESS_FILESYSTEM_JANDROID_H
 #define FILE_ACCESS_FILESYSTEM_JANDROID_H
 
-#include "core/io/file_access.h"
 #include "java_godot_lib_jni.h"
+
+#include "core/io/file_access.h"
 
 class FileAccessFilesystemJAndroid : public FileAccess {
 	static jobject file_access_handler;

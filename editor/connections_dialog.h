@@ -31,22 +31,20 @@
 #ifndef CONNECTIONS_DIALOG_H
 #define CONNECTIONS_DIALOG_H
 
-#include "editor/editor_inspector.h"
-#include "editor/scene_tree_editor.h"
-#include "scene/gui/button.h"
-#include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/label.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/popup.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/spin_box.h"
 #include "scene/gui/tree.h"
 
+class Button;
+class CheckBox;
 class ConnectDialogBinds;
+class EditorInspector;
+class Label;
+class LineEdit;
+class OptionButton;
+class PopupMenu;
+class SceneTreeEditor;
+class SpinBox;
 
 class ConnectDialog : public ConfirmationDialog {
 	GDCLASS(ConnectDialog, ConfirmationDialog);

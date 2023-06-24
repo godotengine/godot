@@ -222,9 +222,6 @@ public:
 	void trim_trailing_whitespace();
 	void insert_final_newline();
 
-	void convert_indent_to_spaces();
-	void convert_indent_to_tabs();
-
 	enum CaseStyle {
 		UPPER,
 		LOWER,

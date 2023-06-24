@@ -11,6 +11,7 @@
 
 #include "xr_dependencies.h"
 #include <string>
+#include <stdint.h>
 #include <stdlib.h>
 
 // OpenXR paths and registry key locations

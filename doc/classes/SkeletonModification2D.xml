@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SkeletonModification2D" inherits="Resource" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A resource that operates on [Bone2D] nodes in a [Skeleton2D].
+		Base class for resources that operate on [Bone2D]s in a [Skeleton2D].
 	</brief_description>
 	<description>
 		This resource provides an interface that can be expanded so code that operates on [Bone2D] nodes in a [Skeleton2D] can be mixed and matched together to create complex interactions.
@@ -38,7 +38,7 @@
 			<param index="2" name="max" type="float" />
 			<param index="3" name="invert" type="bool" />
 			<description>
-				Takes a angle and clamps it so it is within the passed-in [param min] and [param max] range. [param invert] will inversely clamp the angle, clamping it to the range outside of the given bounds.
+				Takes an angle and clamps it so it is within the passed-in [param min] and [param max] range. [param invert] will inversely clamp the angle, clamping it to the range outside of the given bounds.
 			</description>
 		</method>
 		<method name="get_editor_draw_gizmo" qualifiers="const">

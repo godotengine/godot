@@ -24,7 +24,7 @@
 			<param index="1" name="packet" type="PackedByteArray" />
 			<param index="2" name="flags" type="int" />
 			<description>
-				Queues a [code]packet[/code] to be sent to all peers associated with the host over the specified [code]channel[/code]. See [ENetPacketPeer] [code]FLAG_*[/code] constants for available packet flags.
+				Queues a [param packet] to be sent to all peers associated with the host over the specified [param channel]. See [ENetPacketPeer] [code]FLAG_*[/code] constants for available packet flags.
 			</description>
 		</method>
 		<method name="channel_limit">
@@ -50,7 +50,7 @@
 			<param index="2" name="channels" type="int" default="0" />
 			<param index="3" name="data" type="int" default="0" />
 			<description>
-				Initiates a connection to a foreign [code]address[/code] using the specified [code]port[/code] and allocating the requested [code]channels[/code]. Optional [code]data[/code] can be passed during connection in the form of a 32 bit integer.
+				Initiates a connection to a foreign [param address] using the specified [param port] and allocating the requested [param channels]. Optional [param data] can be passed during connection in the form of a 32 bit integer.
 				[b]Note:[/b] You must call either [method create_host] or [method create_host_bound] before calling this method.
 			</description>
 		</method>
@@ -61,7 +61,7 @@
 			<param index="2" name="in_bandwidth" type="int" default="0" />
 			<param index="3" name="out_bandwidth" type="int" default="0" />
 			<description>
-				Create an ENetHost that will allow up to [code]max_peers[/code] connected peers, each allocating up to [code]max_channels[/code] channels, optionally limiting bandwidth to [code]in_bandwidth[/code] and [code]out_bandwidth[/code].
+				Create an ENetHost that will allow up to [param max_peers] connected peers, each allocating up to [param max_channels] channels, optionally limiting bandwidth to [param in_bandwidth] and [param out_bandwidth].
 			</description>
 		</method>
 		<method name="create_host_bound">
@@ -73,7 +73,7 @@
 			<param index="4" name="in_bandwidth" type="int" default="0" />
 			<param index="5" name="out_bandwidth" type="int" default="0" />
 			<description>
-				Create an ENetHost like [method create_host] which is also bound to the given [code]bind_address[/code] and [code]bind_port[/code].
+				Create an ENetHost like [method create_host] which is also bound to the given [param bind_address] and [param bind_port].
 			</description>
 		</method>
 		<method name="destroy">
@@ -87,7 +87,7 @@
 			<param index="0" name="hostname" type="String" />
 			<param index="1" name="client_options" type="TLSOptions" default="null" />
 			<description>
-				Configure this ENetHost to use the custom Godot extension allowing DTLS encryption for ENet clients. Call this before [method connect_to_host] to have ENet connect using DTLS validating the server certificate against [code]hostname[/code]. You can pass the optional [param client_options] parameter to customize the trusted certification authorities, or disable the common name verification. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
+				Configure this ENetHost to use the custom Godot extension allowing DTLS encryption for ENet clients. Call this before [method connect_to_host] to have ENet connect using DTLS validating the server certificate against [param hostname]. You can pass the optional [param client_options] parameter to customize the trusted certification authorities, or disable the common name verification. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
 			</description>
 		</method>
 		<method name="dtls_server_setup">
@@ -143,6 +143,17 @@
 			<description>
 				Waits for events on the host specified and shuttles packets between the host and its peers. The returned [Array] will have 4 elements. An [enum EventType], the [ENetPacketPeer] which generated the event, the event associated data (if any), the event associated channel (if any). If the generated event is [constant EVENT_RECEIVE], the received packet will be queued to the associated [ENetPacketPeer].
 				Call this function regularly to handle connections, disconnections, and to receive new packets.
+			</description>
+		</method>
+		<method name="socket_send">
+			<return type="void" />
+			<param index="0" name="destination_address" type="String" />
+			<param index="1" name="destination_port" type="int" />
+			<param index="2" name="packet" type="PackedByteArray" />
+			<description>
+				Sends a [param packet] toward a destination from the address and port currently bound by this ENetConnection instance. 
+				This is useful as it serves to establish entries in NAT routing tables on all devices between this bound instance and the public facing internet, allowing a prospective client's connection packets to be routed backward through the NAT device(s) between the public internet and this host.
+				This requires forward knowledge of a prospective client's address and communication port as seen by the public internet - after any NAT devices have handled their connection request. This information can be obtained by a [url=https://en.wikipedia.org/wiki/STUN]STUN[/url] service, and must be handed off to your host by an entity that is not the prospective client. This will never work for a client behind a Symmetric NAT due to the nature of the Symmetric NAT routing algorithm, as their IP and Port cannot be known beforehand.
 			</description>
 		</method>
 	</methods>

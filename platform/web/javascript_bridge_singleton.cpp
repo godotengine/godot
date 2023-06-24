@@ -30,8 +30,9 @@
 
 #include "api/javascript_bridge_singleton.h"
 
-#include "emscripten.h"
 #include "os_web.h"
+
+#include <emscripten.h>
 
 extern "C" {
 extern void godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
@@ -352,6 +353,7 @@ Variant JavaScriptBridge::eval(const String &p_code, bool p_use_global_exec_cont
 			return Variant();
 	}
 }
+
 #endif // JAVASCRIPT_EVAL_ENABLED
 
 void JavaScriptBridge::download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime) {

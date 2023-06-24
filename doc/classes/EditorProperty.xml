@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorProperty" inherits="Container" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Custom control to edit properties for adding into the inspector.
+		Custom control for editing properties that can be added to the [EditorInspector].
 	</brief_description>
 	<description>
-		This control allows property editing for one or multiple properties into [EditorInspector]. It is added via [EditorInspectorPlugin].
+		A custom control for editing properties that can be added to the [EditorInspector]. It is added via [EditorInspectorPlugin].
 	</description>
 	<tutorials>
 	</tutorials>

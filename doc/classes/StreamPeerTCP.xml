@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="StreamPeerTCP" inherits="StreamPeer" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		TCP stream peer.
+		A stream peer that handles TCP connections.
 	</brief_description>
 	<description>
-		TCP stream peer. This object can be used to connect to TCP servers, or also is returned by a TCP server.
+		A stream peer that handles TCP connections. This object can be used to connect to TCP servers, or also is returned by a TCP server.
 		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 	</description>
 	<tutorials>

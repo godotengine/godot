@@ -63,7 +63,25 @@ struct head
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    return_trace (serialize (c->serializer));
+    head *out = c->serializer->embed (this);
+    if (unlikely (!out)) return_trace (false);
+
+    if (c->plan->normalized_coords)
+    {
+      if (unlikely (!c->serializer->check_assign (out->xMin, c->plan->head_maxp_info.xMin,
+                                                  HB_SERIALIZE_ERROR_INT_OVERFLOW)))
+        return_trace (false);
+      if (unlikely (!c->serializer->check_assign (out->xMax, c->plan->head_maxp_info.xMax,
+                                                  HB_SERIALIZE_ERROR_INT_OVERFLOW)))
+        return_trace (false);
+      if (unlikely (!c->serializer->check_assign (out->yMin, c->plan->head_maxp_info.yMin,
+                                                  HB_SERIALIZE_ERROR_INT_OVERFLOW)))
+        return_trace (false);
+      if (unlikely (!c->serializer->check_assign (out->yMax, c->plan->head_maxp_info.yMax,
+                                                  HB_SERIALIZE_ERROR_INT_OVERFLOW)))
+        return_trace (false);
+    }
+    return_trace (true);
   }
 
   enum mac_style_flag_t {

@@ -115,6 +115,20 @@ void AudioDriver::input_buffer_write(int32_t sample) {
 	}
 }
 
+int AudioDriver::_get_configured_mix_rate() {
+	StringName audio_driver_setting = "audio/driver/mix_rate";
+	int mix_rate = GLOBAL_GET(audio_driver_setting);
+
+	// In the case of invalid mix rate, let's default to a sensible value..
+	if (mix_rate <= 0) {
+		WARN_PRINT(vformat("Invalid mix rate of %d, consider reassigning setting \'%s\'. \nDefaulting mix rate to value %d.",
+				mix_rate, audio_driver_setting, AudioDriverManager::DEFAULT_MIX_RATE));
+		mix_rate = AudioDriverManager::DEFAULT_MIX_RATE;
+	}
+
+	return mix_rate;
+}
+
 AudioDriver::SpeakerMode AudioDriver::get_speaker_mode_by_total_channels(int p_channels) const {
 	switch (p_channels) {
 		case 4:

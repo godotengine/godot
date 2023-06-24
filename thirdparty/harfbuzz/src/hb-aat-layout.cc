@@ -55,7 +55,13 @@ AAT::hb_aat_apply_context_t::hb_aat_apply_context_t (const hb_ot_shape_plan_t *p
 						       buffer (buffer_),
 						       sanitizer (),
 						       ankr_table (&Null (AAT::ankr)),
-						       gdef_table (face->table.GDEF->table),
+						       gdef_table (
+#ifndef HB_NO_OT_LAYOUT
+							 face->table.GDEF->table
+#else
+							 &Null (GDEF)
+#endif
+						       ),
 						       lookup_index (0)
 {
   sanitizer.init (blob);

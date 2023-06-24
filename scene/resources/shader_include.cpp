@@ -37,10 +37,9 @@ void ShaderInclude::_dependency_changed() {
 }
 
 void ShaderInclude::set_code(const String &p_code) {
-	HashSet<Ref<ShaderInclude>> new_dependencies;
 	code = p_code;
 
-	for (Ref<ShaderInclude> E : dependencies) {
+	for (const Ref<ShaderInclude> &E : dependencies) {
 		E->disconnect(SNAME("changed"), callable_mp(this, &ShaderInclude::_dependency_changed));
 	}
 
@@ -51,14 +50,16 @@ void ShaderInclude::set_code(const String &p_code) {
 		}
 
 		String pp_code;
+		HashSet<Ref<ShaderInclude>> new_dependencies;
 		ShaderPreprocessor preprocessor;
-		preprocessor.preprocess(p_code, path, pp_code, nullptr, nullptr, nullptr, &new_dependencies);
+		Error result = preprocessor.preprocess(p_code, path, pp_code, nullptr, nullptr, nullptr, &new_dependencies);
+		if (result == OK) {
+			// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
+			dependencies = new_dependencies;
+		}
 	}
 
-	// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
-	dependencies = new_dependencies;
-
-	for (Ref<ShaderInclude> E : dependencies) {
+	for (const Ref<ShaderInclude> &E : dependencies) {
 		E->connect(SNAME("changed"), callable_mp(this, &ShaderInclude::_dependency_changed));
 	}
 

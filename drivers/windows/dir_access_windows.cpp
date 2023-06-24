@@ -59,6 +59,14 @@ struct DirAccessWindowsPrivate {
 	WIN32_FIND_DATAW fu; //unicode version
 };
 
+String DirAccessWindows::fix_path(String p_path) const {
+	String r_path = DirAccess::fix_path(p_path);
+	if (r_path.is_absolute_path() && !r_path.is_network_share_path() && r_path.length() > MAX_PATH) {
+		r_path = "\\\\?\\" + r_path.replace("/", "\\");
+	}
+	return r_path;
+}
+
 // CreateFolderAsync
 
 Error DirAccessWindows::list_dir_begin() {
@@ -158,18 +166,13 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	p_dir = fix_path(p_dir);
 	if (p_dir.is_relative_path()) {
 		p_dir = current_dir.path_join(p_dir);
+		p_dir = fix_path(p_dir);
 	}
 
 	p_dir = p_dir.simplify_path().replace("/", "\\");
 
 	bool success;
 	int err;
-
-	if (!p_dir.is_network_share_path()) {
-		p_dir = "\\\\?\\" + p_dir;
-		// Add "\\?\" to the path to extend max. path length past 248, if it's not a network share UNC path.
-		// See https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
-	}
 
 	success = CreateDirectoryW((LPCWSTR)(p_dir.utf16().get_data()), nullptr);
 	err = GetLastError();

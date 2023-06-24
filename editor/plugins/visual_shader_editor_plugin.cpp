@@ -37,6 +37,7 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
+#include "editor/editor_properties_vector.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -361,8 +362,7 @@ bool VisualShaderGraphPlugin::is_node_has_parameter_instances_relatively(VisualS
 		}
 	}
 
-	LocalVector<int> prev_connected_nodes;
-	visual_shader->get_prev_connected_nodes(p_type, p_node, prev_connected_nodes);
+	const LocalVector<int> &prev_connected_nodes = visual_shader->get_prev_connected_nodes(p_type, p_node);
 
 	for (const int &E : prev_connected_nodes) {
 		result = is_node_has_parameter_instances_relatively(p_type, E);
@@ -1209,13 +1209,19 @@ void VisualShaderEditor::clear_custom_types() {
 	}
 }
 
-void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend) {
+void VisualShaderEditor::add_custom_type(const String &p_name, const String &p_type, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend) {
 	ERR_FAIL_COND(!p_name.is_valid_identifier());
-	ERR_FAIL_COND(!p_script.is_valid());
+	ERR_FAIL_COND(p_type.is_empty() && !p_script.is_valid());
 
 	for (int i = 0; i < add_options.size(); i++) {
-		if (add_options[i].is_custom) {
-			if (add_options[i].script == p_script) {
+		const AddOption &op = add_options[i];
+
+		if (op.is_custom) {
+			if (!p_type.is_empty()) {
+				if (op.type == p_type) {
+					return;
+				}
+			} else if (op.script == p_script) {
 				return;
 			}
 		}
@@ -1223,12 +1229,14 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script>
 
 	AddOption ao;
 	ao.name = p_name;
+	ao.type = p_type;
 	ao.script = p_script;
 	ao.return_type = p_return_icon_type;
 	ao.description = p_description;
 	ao.category = p_category;
 	ao.highend = p_highend;
 	ao.is_custom = true;
+	ao.is_native = !p_type.is_empty();
 
 	bool begin = false;
 	String root = p_category.split("/")[0];
@@ -1253,49 +1261,22 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script>
 Dictionary VisualShaderEditor::get_custom_node_data(Ref<VisualShaderNodeCustom> &p_custom_node) {
 	Dictionary dict;
 	dict["script"] = p_custom_node->get_script();
+	dict["name"] = p_custom_node->_get_name();
+	dict["description"] = p_custom_node->_get_description();
+	dict["return_icon_type"] = p_custom_node->_get_return_icon_type();
+	dict["highend"] = p_custom_node->_is_highend();
 
-	String name;
-	if (p_custom_node->has_method("_get_name")) {
-		name = (String)p_custom_node->call("_get_name");
-	} else {
-		name = "Unnamed";
-	}
-	dict["name"] = name;
-
-	String description = "";
-	if (p_custom_node->has_method("_get_description")) {
-		description = (String)p_custom_node->call("_get_description");
-	}
-	dict["description"] = description;
-
-	int return_icon_type = -1;
-	if (p_custom_node->has_method("_get_return_icon_type")) {
-		return_icon_type = (int)p_custom_node->call("_get_return_icon_type");
-	}
-	dict["return_icon_type"] = return_icon_type;
-
-	String category = "";
-	if (p_custom_node->has_method("_get_category")) {
-		category = (String)p_custom_node->call("_get_category");
-	}
+	String category = p_custom_node->_get_category();
 	category = category.rstrip("/");
 	category = category.lstrip("/");
 	category = "Addons/" + category;
-
-	String subcategory = "";
 	if (p_custom_node->has_method("_get_subcategory")) {
-		subcategory = (String)p_custom_node->call("_get_subcategory");
-	}
-	if (!subcategory.is_empty()) {
-		category += "/" + subcategory;
+		String subcategory = (String)p_custom_node->call("_get_subcategory");
+		if (!subcategory.is_empty()) {
+			category += "/" + subcategory;
+		}
 	}
 	dict["category"] = category;
-
-	bool highend = false;
-	if (p_custom_node->has_method("_is_highend")) {
-		highend = (bool)p_custom_node->call("_is_highend");
-	}
-	dict["highend"] = highend;
 
 	return dict;
 }
@@ -1333,7 +1314,7 @@ void VisualShaderEditor::_script_created(const Ref<Script> &p_script) {
 	ref->set_script(p_script);
 
 	Dictionary dict = get_custom_node_data(ref);
-	add_custom_type(dict["name"], dict["script"], dict["description"], dict["return_icon_type"], dict["category"], dict["highend"]);
+	add_custom_type(dict["name"], String(), dict["script"], dict["description"], dict["return_icon_type"], dict["category"], dict["highend"]);
 
 	_update_options_menu();
 }
@@ -1456,7 +1437,7 @@ void VisualShaderEditor::_update_custom_script(const Ref<Script> &p_script) {
 	}
 
 	if (!found_type) {
-		add_custom_type(dict["name"], dict["script"], dict["description"], dict["return_icon_type"], dict["category"], dict["highend"]);
+		add_custom_type(dict["name"], String(), dict["script"], dict["description"], dict["return_icon_type"], dict["category"], dict["highend"]);
 	}
 
 	// To prevent updating options multiple times when multiple scripts are saved.
@@ -1595,29 +1576,60 @@ bool VisualShaderEditor::_is_available(int p_mode) {
 
 void VisualShaderEditor::_update_nodes() {
 	clear_custom_types();
-	List<StringName> class_list;
-	ScriptServer::get_global_class_list(&class_list);
 	Dictionary added;
-	for (int i = 0; i < class_list.size(); i++) {
-		if (ScriptServer::get_global_class_native_base(class_list[i]) == "VisualShaderNodeCustom") {
-			String script_path = ScriptServer::get_global_class_path(class_list[i]);
-			Ref<Resource> res = ResourceLoader::load(script_path);
-			ERR_FAIL_COND(res.is_null());
-			ERR_FAIL_COND(!res->is_class("Script"));
-			Ref<Script> scr = Ref<Script>(res);
 
-			Ref<VisualShaderNodeCustom> ref;
-			ref.instantiate();
-			ref->set_script(scr);
-			if (!ref->is_available(visual_shader->get_mode(), visual_shader->get_shader_type())) {
-				continue;
+	// Add GDScript classes.
+	{
+		List<StringName> class_list;
+		ScriptServer::get_global_class_list(&class_list);
+
+		for (int i = 0; i < class_list.size(); i++) {
+			if (ScriptServer::get_global_class_native_base(class_list[i]) == "VisualShaderNodeCustom") {
+				String script_path = ScriptServer::get_global_class_path(class_list[i]);
+				Ref<Resource> res = ResourceLoader::load(script_path);
+				ERR_CONTINUE(res.is_null());
+				ERR_CONTINUE(!res->is_class("Script"));
+				Ref<Script> scr = Ref<Script>(res);
+
+				Ref<VisualShaderNodeCustom> ref;
+				ref.instantiate();
+				ref->set_script(scr);
+				if (!ref->is_available(visual_shader->get_mode(), visual_shader->get_shader_type())) {
+					continue;
+				}
+				Dictionary dict = get_custom_node_data(ref);
+				dict["type"] = String();
+
+				String key;
+				key = String(dict["category"]) + "/" + String(dict["name"]);
+
+				added[key] = dict;
 			}
-			Dictionary dict = get_custom_node_data(ref);
+		}
+	}
 
-			String key;
-			key = String(dict["category"]) + "/" + String(dict["name"]);
+	// Add GDExtension classes.
+	{
+		List<StringName> class_list;
+		ClassDB::get_class_list(&class_list);
 
-			added[key] = dict;
+		for (int i = 0; i < class_list.size(); i++) {
+			if (ClassDB::get_parent_class(class_list[i]) == "VisualShaderNodeCustom") {
+				Object *instance = ClassDB::instantiate(class_list[i]);
+				Ref<VisualShaderNodeCustom> ref = Object::cast_to<VisualShaderNodeCustom>(instance);
+				ERR_CONTINUE(ref.is_null());
+				if (!ref->is_available(visual_shader->get_mode(), visual_shader->get_shader_type())) {
+					continue;
+				}
+				Dictionary dict = get_custom_node_data(ref);
+				dict["type"] = class_list[i];
+				dict["script"] = Ref<Script>();
+
+				String key;
+				key = String(dict["category"]) + "/" + String(dict["name"]);
+
+				added[key] = dict;
+			}
 		}
 	}
 
@@ -1655,7 +1667,7 @@ void VisualShaderEditor::_update_nodes() {
 
 		const Dictionary &value = (Dictionary)added[key];
 
-		add_custom_type(value["name"], value["script"], value["description"], value["return_icon_type"], value["category"], value["highend"]);
+		add_custom_type(value["name"], value["type"], value["script"], value["description"], value["return_icon_type"], value["category"], value["highend"]);
 	}
 
 	_update_options_menu();
@@ -1833,31 +1845,31 @@ void VisualShaderEditor::_update_options_menu() {
 		}
 		switch (options[i].return_type) {
 			case VisualShaderNode::PORT_TYPE_SCALAR:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("float"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("float"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_SCALAR_INT:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("int"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("int"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_SCALAR_UINT:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("uint"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("uint"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_VECTOR_2D:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_VECTOR_3D:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_VECTOR_4D:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_BOOLEAN:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("bool"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_TRANSFORM:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_SAMPLER:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")));
 				break;
 			default:
 				break;
@@ -3062,12 +3074,21 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 
 		vsnode = Ref<VisualShaderNode>(vsn);
 	} else {
-		ERR_FAIL_COND(add_options[p_idx].script.is_null());
-		StringName base_type = add_options[p_idx].script->get_instance_base_type();
+		StringName base_type;
+		bool is_native = add_options[p_idx].is_native;
+
+		if (is_native) {
+			base_type = add_options[p_idx].type;
+		} else {
+			ERR_FAIL_COND(add_options[p_idx].script.is_null());
+			base_type = add_options[p_idx].script->get_instance_base_type();
+		}
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instantiate(base_type));
 		ERR_FAIL_COND(!vsn);
 		vsnode = Ref<VisualShaderNode>(vsn);
-		vsnode->set_script(add_options[p_idx].script);
+		if (!is_native) {
+			vsnode->set_script(add_options[p_idx].script);
+		}
 	}
 
 	bool is_texture2d = (Object::cast_to<VisualShaderNodeTexture>(vsnode.ptr()) != nullptr);
@@ -4030,6 +4051,10 @@ void VisualShaderEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 
 void VisualShaderEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			_update_options_menu();
+		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
@@ -4056,8 +4081,8 @@ void VisualShaderEditor::_notification(int p_what) {
 
 			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
-			[[fallthrough]];
-		}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			highend_label->set_modulate(get_theme_color(SNAME("highend_color"), SNAME("Editor")));
 
@@ -4109,7 +4134,7 @@ void VisualShaderEditor::_notification(int p_what) {
 				error_label->add_theme_color_override("font_color", error_color);
 			}
 
-			tools->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
+			tools->set_icon(get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 
 			if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree()) {
 				_update_graph();
@@ -4956,7 +4981,7 @@ void VisualShaderEditor::_preview_size_changed() {
 	preview_vbox->set_custom_minimum_size(preview_window->get_size());
 }
 
-static ShaderLanguage::DataType _get_global_shader_uniform_type(const StringName &p_variable) {
+static ShaderLanguage::DataType _visual_shader_editor_get_global_shader_uniform_type(const StringName &p_variable) {
 	RS::GlobalShaderParameterType gvt = RS::get_singleton()->global_shader_parameter_get_type(p_variable);
 	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
@@ -4975,7 +5000,7 @@ void VisualShaderEditor::_update_preview() {
 	info.functions = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(visual_shader->get_mode()));
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(visual_shader->get_mode()));
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
-	info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
+	info.global_shader_uniform_type_func = _visual_shader_editor_get_global_shader_uniform_type;
 
 	ShaderLanguage sl;
 
@@ -5012,8 +5037,7 @@ void VisualShaderEditor::_update_next_previews(int p_node_id) {
 }
 
 void VisualShaderEditor::_get_next_nodes_recursively(VisualShader::Type p_type, int p_node_id, LocalVector<int> &r_nodes) const {
-	LocalVector<int> next_connections;
-	visual_shader->get_next_connected_nodes(p_type, p_node_id, next_connections);
+	const LocalVector<int> &next_connections = visual_shader->get_next_connected_nodes(p_type, p_node_id);
 
 	for (int node_id : next_connections) {
 		r_nodes.push_back(node_id);
@@ -5516,6 +5540,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// NODE3D-FOR-ALL
 
+	add_options.push_back(AddOption("Exposure", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "exposure", "EXPOSURE"), { "exposure" }, VisualShaderNode::PORT_TYPE_SCALAR, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("InvProjectionMatrix", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "inv_projection_matrix", "INV_PROJECTION_MATRIX"), { "inv_projection_matrix" }, VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("InvViewMatrix", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "inv_view_matrix", "INV_VIEW_MATRIX"), { "inv_view_matrix" }, VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("ModelMatrix", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "model_matrix", "MODEL_MATRIX"), { "model_matrix" }, VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_SPATIAL));
@@ -5621,6 +5646,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("FragCoord", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_fragment_and_light_shader_modes, "fragcoord", "FRAGCOORD"), { "fragcoord" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Light", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "light", "LIGHT"), { "light" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("LightColor", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "light_color", "LIGHT_COLOR"), { "light_color" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("LightIsDirectional", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "light_is_directional", "LIGHT_IS_DIRECTIONAL"), { "light_is_directional" }, VisualShaderNode::PORT_TYPE_BOOLEAN, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Metallic", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "metallic", "METALLIC"), { "metallic" }, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Roughness", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "roughness", "ROUGHNESS"), { "roughness" }, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Specular", "Input/Light", "VisualShaderNodeInput", vformat(input_param_for_light_shader_mode, "specular", "SPECULAR_LIGHT"), { "specular" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
@@ -6106,8 +6132,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	custom_node_option_idx = add_options.size();
 
 	/////////////////////////////////////////////////////////////////////
-
-	_update_options_menu();
 
 	Ref<VisualShaderNodePluginDefault> default_plugin;
 	default_plugin.instantiate();
@@ -6595,7 +6619,7 @@ void EditorPropertyVisualShaderMode::_option_selected(int p_which) {
 }
 
 void EditorPropertyVisualShaderMode::update_property() {
-	int which = get_edited_object()->get(get_edited_property());
+	int which = get_edited_property_value();
 	options->select(which);
 }
 

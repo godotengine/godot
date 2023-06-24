@@ -31,17 +31,20 @@
 #include "register_types.h"
 
 #include "extensions/gltf_document_extension_convert_importer_mesh.h"
+#include "extensions/gltf_document_extension_texture_webp.h"
 #include "extensions/gltf_spec_gloss.h"
+#include "extensions/physics/gltf_document_extension_physics.h"
 #include "gltf_document.h"
 
 #ifdef TOOLS_ENABLED
-#include "core/config/project_settings.h"
 #include "editor/editor_import_blend_runner.h"
-#include "editor/editor_node.h"
 #include "editor/editor_scene_exporter_gltf_plugin.h"
 #include "editor/editor_scene_importer_blend.h"
 #include "editor/editor_scene_importer_fbx.h"
 #include "editor/editor_scene_importer_gltf.h"
+
+#include "core/config/project_settings.h"
+#include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 
 static void _editor_init() {
@@ -120,6 +123,8 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFLight);
 		GDREGISTER_CLASS(GLTFMesh);
 		GDREGISTER_CLASS(GLTFNode);
+		GDREGISTER_CLASS(GLTFPhysicsBody);
+		GDREGISTER_CLASS(GLTFPhysicsShape);
 		GDREGISTER_CLASS(GLTFSkeleton);
 		GDREGISTER_CLASS(GLTFSkin);
 		GDREGISTER_CLASS(GLTFSpecGloss);
@@ -127,6 +132,8 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFTexture);
 		GDREGISTER_CLASS(GLTFTextureSampler);
 		// Register GLTFDocumentExtension classes with GLTFDocument.
+		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionPhysics);
+		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureWebP);
 		bool is_editor = ::Engine::get_singleton()->is_editor_hint();
 		if (!is_editor) {
 			GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionConvertImporterMesh);

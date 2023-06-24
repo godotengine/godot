@@ -9,10 +9,6 @@ if TYPE_CHECKING:
     from SCons import Environment
 
 
-def is_active():
-    return True
-
-
 def get_name():
     return "Android"
 
@@ -22,6 +18,8 @@ def can_build():
 
 
 def get_opts():
+    from SCons.Variables import BoolVariable
+
     return [
         ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_env_android_sdk_root()),
         (
@@ -29,7 +27,18 @@ def get_opts():
             'Target platform (android-<api>, e.g. "android-' + str(get_min_target_api()) + '")',
             "android-" + str(get_min_target_api()),
         ),
+        BoolVariable("store_release", "Editor build for Google Play Store (for official builds only)", False),
     ]
+
+
+def get_doc_classes():
+    return [
+        "EditorExportPlatformAndroid",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
 
 
 # Return the ANDROID_SDK_ROOT environment variable.

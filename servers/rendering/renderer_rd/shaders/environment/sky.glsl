@@ -83,6 +83,7 @@ layout(set = 0, binding = 1, std430) restrict readonly buffer GlobalShaderUnifor
 global_shader_uniforms;
 
 layout(set = 0, binding = 2, std140) uniform SkySceneData {
+	mat4 combined_reprojection[2];
 	mat4 view_inv_projections[2];
 	vec4 view_eye_offsets[2];
 
@@ -169,7 +170,12 @@ vec3 interleaved_gradient_noise(vec2 pos) {
 #endif
 
 vec4 volumetric_fog_process(vec2 screen_uv) {
+#ifdef USE_MULTIVIEW
+	vec4 reprojected = sky_scene_data.combined_reprojection[ViewIndex] * (vec4(screen_uv * 2.0 - 1.0, 1.0, 1.0) * sky_scene_data.z_far);
+	vec3 fog_pos = vec3(reprojected.xy / reprojected.w, 1.0) * 0.5 + 0.5;
+#else
 	vec3 fog_pos = vec3(screen_uv, 1.0);
+#endif
 
 	return texture(sampler3D(volumetric_fog_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), fog_pos);
 }
@@ -260,6 +266,10 @@ void main() {
 	frag_color.rgb = color;
 	frag_color.a = alpha;
 
+	// For mobile renderer we're multiplying by 0.5 as we're using a UNORM buffer.
+	// For both mobile and clustered, we also bake in the exposure value for the environment and camera.
+	frag_color.rgb = frag_color.rgb * params.luminance_multiplier;
+
 #if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
 
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
@@ -285,11 +295,7 @@ void main() {
 		frag_color.a = 0.0;
 	}
 
-	// For mobile renderer we're multiplying by 0.5 as we're using a UNORM buffer.
-	// For both mobile and clustered, we also bake in the exposure value for the environment and camera.
-	frag_color.rgb = frag_color.rgb * params.luminance_multiplier;
-
 #ifdef USE_DEBANDING
-	frag_color.rgb += interleaved_gradient_noise(gl_FragCoord.xy);
+	frag_color.rgb += interleaved_gradient_noise(gl_FragCoord.xy) * params.luminance_multiplier;
 #endif
 }

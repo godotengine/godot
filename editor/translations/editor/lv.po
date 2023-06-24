@@ -717,11 +717,8 @@ msgstr "Atkarību Redaktors"
 msgid "Search Replacement Resource:"
 msgstr "Meklēt aizstājēja resursu:"
 
-msgid "Open Scene"
-msgstr "Atvērt ainu"
-
-msgid "Open Scenes"
-msgstr "Atvērt Ainas"
+msgid "Open"
+msgstr "Atvērt"
 
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
@@ -780,6 +777,12 @@ msgstr "Pieder"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Resursi bez izteiktas piederības:"
+
+msgid "Could not create folder."
+msgstr "Neizdevās izveidot mapi."
+
+msgid "Create Folder"
+msgstr "Izveidot mapi"
 
 msgid "Thanks from the Godot community!"
 msgstr "Paldies no Godot sabiedrības!"
@@ -1100,24 +1103,6 @@ msgstr "[tukšs]"
 msgid "[unsaved]"
 msgstr "[nesaglabāts]"
 
-msgid "Please select a base directory first."
-msgstr "Lūdzu vispirms izvēlaties bāzes mapi."
-
-msgid "Choose a Directory"
-msgstr "Izvēlēties Direktoriju"
-
-msgid "Create Folder"
-msgstr "Izveidot mapi"
-
-msgid "Name:"
-msgstr "Nosaukums:"
-
-msgid "Could not create folder."
-msgstr "Neizdevās izveidot mapi."
-
-msgid "Choose"
-msgstr "Izvēlaties"
-
 msgid "3D Editor"
 msgstr "3D Redaktors"
 
@@ -1255,108 +1240,6 @@ msgstr "Importēt profilu(s)"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Pārvaldīt redaktora iespēju profilus"
-
-msgid "Open"
-msgstr "Atvērt"
-
-msgid "Select Current Folder"
-msgstr "Izvēlēties pašreizējo mapi"
-
-msgid "Select This Folder"
-msgstr "Izvēlēties Šo Mapi"
-
-msgid "Copy Path"
-msgstr "Kopēt celiņu"
-
-msgid "Open in File Manager"
-msgstr "Atvērt Failu Pārlūkā"
-
-msgid "Show in File Manager"
-msgstr "Parādīt failu menedžerī"
-
-msgid "New Folder..."
-msgstr "Jauna mape..."
-
-msgid "All Recognized"
-msgstr "Viss atpazīts"
-
-msgid "All Files (*)"
-msgstr "Visi faili (*)"
-
-msgid "Open a File"
-msgstr "Atvērt failu"
-
-msgid "Open File(s)"
-msgstr "Atvērt failu(s)"
-
-msgid "Open a Directory"
-msgstr "Atvērt mapi"
-
-msgid "Open a File or Directory"
-msgstr "Atvērt failu vai mapi"
-
-msgid "Save a File"
-msgstr "Saglabāt failu"
-
-msgid "Go Back"
-msgstr "Doties atpakaļ"
-
-msgid "Go Forward"
-msgstr "Doties tālāk"
-
-msgid "Go Up"
-msgstr "Doties augšup"
-
-msgid "Toggle Hidden Files"
-msgstr "Pārslēgt slēptos failus"
-
-msgid "Toggle Favorite"
-msgstr "Pārslēgt favorītu"
-
-msgid "Toggle Mode"
-msgstr "Pārslēgt režīmu"
-
-msgid "Focus Path"
-msgstr "Fokusa ceļš"
-
-msgid "Move Favorite Up"
-msgstr "Pārvietot favorītu augšup"
-
-msgid "Move Favorite Down"
-msgstr "Pārvietot favorītu lejup"
-
-msgid "Go to previous folder."
-msgstr "Doties uz iepriekšējo mapi."
-
-msgid "Go to next folder."
-msgstr "Doties uz nākamo mapi."
-
-msgid "Go to parent folder."
-msgstr "Atvērt mātes mapi."
-
-msgid "Refresh files."
-msgstr "Atjaunot failus."
-
-msgid "(Un)favorite current folder."
-msgstr "Pievienot/noņemt pašreizējo mapi pie/no favorītiem."
-
-msgid "Toggle the visibility of hidden files."
-msgstr "Pārslēgt slēpto failu redzamību."
-
-msgid "View items as a grid of thumbnails."
-msgstr "Skatīt vienumus kā režģi ar sīktēliem."
-
-msgid "View items as a list."
-msgstr "Skatīt lietas kā sarakstu."
-
-msgid "Directories & Files:"
-msgstr "Mapes & Faili:"
-
-msgid "Preview:"
-msgstr "Priekškatījums:"
-
-msgid "File:"
-msgstr "Fails:"
 
 msgid "Save & Restart"
 msgstr "Saglabāt & pārstartēt"
@@ -1531,8 +1414,14 @@ msgstr "Piesprausts %s"
 msgid "Unpinned %s"
 msgstr "Atsprausts %s"
 
+msgid "Name:"
+msgstr "Nosaukums:"
+
 msgid "Copy Property Path"
 msgstr "Kopēt mainīgā ceļu"
+
+msgid "Thumbnail..."
+msgstr "Sīktēls..."
 
 msgid "Language:"
 msgstr "Valoda:"
@@ -1608,6 +1497,9 @@ msgstr ""
 "Nevar saglabāt ainu. Drošivien atkarības (instances vai mantojumi) ir "
 "kļūdainas."
 
+msgid "Save scene before running..."
+msgstr "Saglabā ainu pirms palaišanas..."
+
 msgid "Could not save one or more scenes!"
 msgstr "Nevar saglabāt vienu vai vairākas ainas!"
 
@@ -1661,18 +1553,6 @@ msgstr ""
 "Šis resurss tika importēts, tāpēc to nevar rediģēt. Mainiet tā iestatījumus "
 "importēšanas panelī un pēc tam importējiet atkārtoti."
 
-msgid "There is no defined scene to run."
-msgstr "Nav definēta aina, kuru palaist."
-
-msgid "Save scene before running..."
-msgstr "Saglabā ainu pirms palaišanas..."
-
-msgid "Play the project."
-msgstr "Atskaņot projektu."
-
-msgid "Play the edited scene."
-msgstr "Atskaņot rediģēto ainu."
-
 msgid "Open Base Scene"
 msgstr "Atvērt bāzes ainu"
 
@@ -1684,12 +1564,6 @@ msgstr "Ātri atvērt ainu..."
 
 msgid "Quick Open Script..."
 msgstr "ātri atvērt skriptu..."
-
-msgid "Save & Quit"
-msgstr "Saglabāt & iziet"
-
-msgid "Save changes to '%s' before closing?"
-msgstr "Saglabāt izmaiņas '%s' pirms aizvēršanas ?"
 
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s vairs neeksistē! Lūdzu norādi jaunu saglabāšanas lokāciju."
@@ -1739,8 +1613,8 @@ msgstr ""
 "Pašreizējai ainai ir nesaglabātas izmaiņas.\n"
 "Vai tomēr pārlādēt saglabāto ainu? Šo darbību nevar atsaukt."
 
-msgid "Quick Run Scene..."
-msgstr "Ātri palaist ainu..."
+msgid "Save & Quit"
+msgstr "Saglabāt & iziet"
 
 msgid "Save changes to the following scene(s) before quitting?"
 msgstr "Saglabāt izmaiņas sekojošai ainai(-ām) pirms iziešanas ?"
@@ -1813,6 +1687,9 @@ msgstr "Ainai '%s' ir bojātas atkarības:"
 msgid "Clear Recent Scenes"
 msgstr "Notīrīt nesenās ainas"
 
+msgid "There is no defined scene to run."
+msgstr "Nav definēta aina, kuru palaist."
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -1848,6 +1725,9 @@ msgstr "Noklusējuma"
 
 msgid "Save & Close"
 msgstr "Saglabāt & aizvērt"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "Saglabāt izmaiņas '%s' pirms aizvēršanas ?"
 
 msgid "Show in FileSystem"
 msgstr "Parādīt failu sistēmā"
@@ -2020,9 +1900,6 @@ msgstr "Par Godot"
 msgid "Support Godot Development"
 msgstr "Atbalstīt Godot izstrādi"
 
-msgid "Run Project"
-msgstr "Palaist Projektu"
-
 msgid "Update Continuously"
 msgstr "Nepārtraukti Atjaunot"
 
@@ -2052,6 +1929,9 @@ msgstr "Pārvaldīt šablonus"
 
 msgid "Install from file"
 msgstr "Instalēt no faila"
+
+msgid "Show in File Manager"
+msgstr "Parādīt failu menedžerī"
 
 msgid "Import Templates From ZIP File"
 msgstr "Importēr šablonus no ZIP faila"
@@ -2104,15 +1984,6 @@ msgstr "Atvērt iepriekšējo redaktoru"
 
 msgid "Warning!"
 msgstr "Brīdinājums!"
-
-msgid "No sub-resources found."
-msgstr "Sub-resursi nav atrasti."
-
-msgid "Open a list of sub-resources."
-msgstr "Atvērt sarakstu ar sub-resursiem."
-
-msgid "Thumbnail..."
-msgstr "Sīktēls..."
 
 msgid "Main Script:"
 msgstr "Galvenais Skripts:"
@@ -2313,20 +2184,32 @@ msgstr "Pārlūkot"
 msgid "Favorites"
 msgstr "Favorīti"
 
+msgid "View items as a grid of thumbnails."
+msgstr "Skatīt vienumus kā režģi ar sīktēliem."
+
+msgid "View items as a list."
+msgstr "Skatīt lietas kā sarakstu."
+
 msgid "Error moving:"
 msgstr "Kļūda parvietojot:"
 
-msgid "Renaming file:"
-msgstr "Pārsauc failu:"
-
 msgid "Set As Main Scene"
 msgstr "Iestatīt Kā Galveno Ainu"
+
+msgid "Open Scenes"
+msgstr "Atvērt Ainas"
 
 msgid "Add to Favorites"
 msgstr "Pievienot Favorītiem"
 
 msgid "Remove from Favorites"
 msgstr "Noņemt no Favorītiem"
+
+msgid "Open in File Manager"
+msgstr "Atvērt Failu Pārlūkā"
+
+msgid "New Folder..."
+msgstr "Jauna mape..."
 
 msgid "New Scene..."
 msgstr "Jauna Aina..."
@@ -2337,14 +2220,14 @@ msgstr "Jauns Skripts..."
 msgid "New Resource..."
 msgstr "Jauns Resurss..."
 
+msgid "Copy Path"
+msgstr "Kopēt celiņu"
+
 msgid "Duplicate..."
 msgstr "Dublicēt..."
 
 msgid "Rename..."
 msgstr "Pārsaukt..."
-
-msgid "Move"
-msgstr "Kustināt"
 
 msgid "Find in Files"
 msgstr "Atrast Failos"
@@ -2384,6 +2267,117 @@ msgstr "Grupas Redaktors"
 
 msgid "Manage Groups"
 msgstr "Pārvaldīt grupas"
+
+msgid "Move"
+msgstr "Kustināt"
+
+msgid "Please select a base directory first."
+msgstr "Lūdzu vispirms izvēlaties bāzes mapi."
+
+msgid "Choose a Directory"
+msgstr "Izvēlēties Direktoriju"
+
+msgid "Select Current Folder"
+msgstr "Izvēlēties pašreizējo mapi"
+
+msgid "Select This Folder"
+msgstr "Izvēlēties Šo Mapi"
+
+msgid "All Recognized"
+msgstr "Viss atpazīts"
+
+msgid "All Files (*)"
+msgstr "Visi faili (*)"
+
+msgid "Open a File"
+msgstr "Atvērt failu"
+
+msgid "Open File(s)"
+msgstr "Atvērt failu(s)"
+
+msgid "Open a Directory"
+msgstr "Atvērt mapi"
+
+msgid "Open a File or Directory"
+msgstr "Atvērt failu vai mapi"
+
+msgid "Save a File"
+msgstr "Saglabāt failu"
+
+msgid "Go Back"
+msgstr "Doties atpakaļ"
+
+msgid "Go Forward"
+msgstr "Doties tālāk"
+
+msgid "Go Up"
+msgstr "Doties augšup"
+
+msgid "Toggle Hidden Files"
+msgstr "Pārslēgt slēptos failus"
+
+msgid "Toggle Favorite"
+msgstr "Pārslēgt favorītu"
+
+msgid "Toggle Mode"
+msgstr "Pārslēgt režīmu"
+
+msgid "Focus Path"
+msgstr "Fokusa ceļš"
+
+msgid "Move Favorite Up"
+msgstr "Pārvietot favorītu augšup"
+
+msgid "Move Favorite Down"
+msgstr "Pārvietot favorītu lejup"
+
+msgid "Go to previous folder."
+msgstr "Doties uz iepriekšējo mapi."
+
+msgid "Go to next folder."
+msgstr "Doties uz nākamo mapi."
+
+msgid "Go to parent folder."
+msgstr "Atvērt mātes mapi."
+
+msgid "Refresh files."
+msgstr "Atjaunot failus."
+
+msgid "(Un)favorite current folder."
+msgstr "Pievienot/noņemt pašreizējo mapi pie/no favorītiem."
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Pārslēgt slēpto failu redzamību."
+
+msgid "Directories & Files:"
+msgstr "Mapes & Faili:"
+
+msgid "Preview:"
+msgstr "Priekškatījums:"
+
+msgid "File:"
+msgstr "Fails:"
+
+msgid "No sub-resources found."
+msgstr "Sub-resursi nav atrasti."
+
+msgid "Open a list of sub-resources."
+msgstr "Atvērt sarakstu ar sub-resursiem."
+
+msgid "Play the project."
+msgstr "Atskaņot projektu."
+
+msgid "Play the edited scene."
+msgstr "Atskaņot rediģēto ainu."
+
+msgid "Quick Run Scene..."
+msgstr "Ātri palaist ainu..."
+
+msgid "Run Project"
+msgstr "Palaist Projektu"
+
+msgid "(Connecting From)"
+msgstr "(Savienojas No)"
 
 msgid "Reimport"
 msgstr "Reimportēt"
@@ -2697,24 +2691,6 @@ msgstr "Pa labi, Plašs"
 msgid "Full Rect"
 msgstr "Pilns logs"
 
-msgid "Flat 1"
-msgstr "Plakans 1"
-
-msgid "Add Point"
-msgstr "Pievienot Punktu"
-
-msgid "Remove Point"
-msgstr "Noņemt Punktu"
-
-msgid "Left Linear"
-msgstr "Pa Kreisi, Lineārs"
-
-msgid "Right Linear"
-msgstr "Pa Labi, Lineārs"
-
-msgid "Load Preset"
-msgstr "Ielādēt Sagatavi"
-
 msgid "Deploy with Remote Debug"
 msgstr "Palaist ar tālvadības atkļūdošanu"
 
@@ -3001,11 +2977,11 @@ msgstr "Animācijas Kadri:"
 msgid "Zoom Reset"
 msgstr "Atiestatīt Tuvinājumu"
 
+msgid "Size"
+msgstr "Izmērs"
+
 msgid "Separation:"
 msgstr "Atdalījums:"
-
-msgid "Select/Clear All Frames"
-msgstr "Izvēlēties/notīrīt visus kadrus"
 
 msgid "Importing Theme Items"
 msgstr "Tēmas elementu importēšana"
@@ -3377,9 +3353,6 @@ msgstr "Pievienot/Izveidot Jaunu Mezglu."
 msgid "Attach a new or existing script to the selected node."
 msgstr "Pievienot jaunu vai eksistējošu skriptu izvēlētajam mezglam."
 
-msgid "(Connecting From)"
-msgstr "(Savienojas No)"
-
 msgid "Path is empty."
 msgstr "Ceļš nav definēts."
 
@@ -3456,20 +3429,17 @@ msgstr "Ienākošs RPC"
 msgid "Outgoing RPC"
 msgstr "Izejošs RPC"
 
-msgid "Size"
-msgstr "Izmērs"
-
 msgid "Done!"
 msgstr "Darīts!"
+
+msgid "Invalid package name:"
+msgstr "Nederīgs paketes nosaukums:"
 
 msgid "Uninstalling..."
 msgstr "Atinstalē..."
 
 msgid "Installing to device, please wait..."
 msgstr "Instalē ierīcē, lūdzu uzgaidi..."
-
-msgid "Invalid package name:"
-msgstr "Nederīgs paketes nosaukums:"
 
 msgid "Adding files..."
 msgstr "Failu pievienošana..."
@@ -3524,13 +3494,6 @@ msgstr "Iespējot režģa minikarti."
 
 msgid "(Other)"
 msgstr "(Cits(i))"
-
-msgid ""
-"Default Environment as specified in Project Settings (Rendering -> "
-"Environment -> Default Environment) could not be loaded."
-msgstr ""
-"Noklusējuma vide, kas norādīta projekta iestatījumos, nevar tikt ielādēta. "
-"(Projekta iestatījumi -> Renderēšana -> vide -> noklusējuma vide)."
 
 msgid "Invalid source for preview."
 msgstr "Nederīgs avots priekšskatījumam."

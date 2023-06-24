@@ -53,7 +53,7 @@ public:
 	static Vector<String> (*get_editable_animation_list)();
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
 
 	void set_animation(const StringName &p_name);
 	StringName get_animation() const;
@@ -100,6 +100,7 @@ public:
 		ONE_SHOT_REQUEST_NONE,
 		ONE_SHOT_REQUEST_FIRE,
 		ONE_SHOT_REQUEST_ABORT,
+		ONE_SHOT_REQUEST_FADE_OUT,
 	};
 
 	enum MixMode {
@@ -109,17 +110,21 @@ public:
 
 private:
 	double fade_in = 0.0;
+	Ref<Curve> fade_in_curve;
 	double fade_out = 0.0;
+	Ref<Curve> fade_out_curve;
 
-	bool autorestart = false;
-	double autorestart_delay = 1.0;
-	double autorestart_random_delay = 0.0;
+	bool auto_restart = false;
+	double auto_restart_delay = 1.0;
+	double auto_restart_random_delay = 0.0;
 	MixMode mix = MIX_MODE_BLEND;
 
 	StringName request = PNAME("request");
 	StringName active = PNAME("active");
+	StringName internal_active = PNAME("internal_active");
 	StringName time = "time";
 	StringName remaining = "remaining";
+	StringName fade_out_remaining = "fade_out_remaining";
 	StringName time_to_restart = "time_to_restart";
 
 protected:
@@ -132,25 +137,31 @@ public:
 
 	virtual String get_caption() const override;
 
-	void set_fadein_time(double p_time);
-	void set_fadeout_time(double p_time);
+	void set_fade_in_time(double p_time);
+	double get_fade_in_time() const;
 
-	double get_fadein_time() const;
-	double get_fadeout_time() const;
+	void set_fade_in_curve(const Ref<Curve> &p_curve);
+	Ref<Curve> get_fade_in_curve() const;
 
-	void set_autorestart(bool p_active);
-	void set_autorestart_delay(double p_time);
-	void set_autorestart_random_delay(double p_time);
+	void set_fade_out_time(double p_time);
+	double get_fade_out_time() const;
 
-	bool has_autorestart() const;
-	double get_autorestart_delay() const;
-	double get_autorestart_random_delay() const;
+	void set_fade_out_curve(const Ref<Curve> &p_curve);
+	Ref<Curve> get_fade_out_curve() const;
+
+	void set_auto_restart_enabled(bool p_enabled);
+	void set_auto_restart_delay(double p_time);
+	void set_auto_restart_random_delay(double p_time);
+
+	bool is_auto_restart_enabled() const;
+	double get_auto_restart_delay() const;
+	double get_auto_restart_random_delay() const;
 
 	void set_mix_mode(MixMode p_mix);
 	MixMode get_mix_mode() const;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
 
 	AnimationNodeOneShot();
 };
@@ -173,7 +184,7 @@ public:
 	virtual String get_caption() const override;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
 
 	AnimationNodeAdd2();
 };
@@ -193,7 +204,7 @@ public:
 	virtual String get_caption() const override;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
 
 	AnimationNodeAdd3();
 };
@@ -211,7 +222,7 @@ public:
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
 
 	virtual bool has_filter() const override;
 	AnimationNodeBlend2();
@@ -231,8 +242,28 @@ public:
 
 	virtual String get_caption() const override;
 
-	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
 	AnimationNodeBlend3();
+};
+
+class AnimationNodeSub2 : public AnimationNodeSync {
+	GDCLASS(AnimationNodeSub2, AnimationNodeSync);
+
+	StringName sub_amount = PNAME("sub_amount");
+
+protected:
+	static void _bind_methods();
+
+public:
+	void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
+
+	virtual String get_caption() const override;
+
+	virtual bool has_filter() const override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
+
+	AnimationNodeSub2();
 };
 
 class AnimationNodeTimeScale : public AnimationNode {
@@ -249,7 +280,7 @@ public:
 
 	virtual String get_caption() const override;
 
-	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
 
 	AnimationNodeTimeScale();
 };
@@ -268,7 +299,7 @@ public:
 
 	virtual String get_caption() const override;
 
-	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
 
 	AnimationNodeTimeSeek();
 };
@@ -332,7 +363,7 @@ public:
 	void set_allow_transition_to_self(bool p_enable);
 	bool is_allow_transition_to_self() const;
 
-	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
 
 	AnimationNodeTransition();
 };
@@ -342,7 +373,7 @@ class AnimationNodeOutput : public AnimationNode {
 
 public:
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
 	AnimationNodeOutput();
 };
 
@@ -414,14 +445,14 @@ public:
 	void get_node_connections(List<NodeConnection> *r_connections) const;
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
 
 	void get_node_list(List<StringName> *r_list);
 
 	void set_graph_offset(const Vector2 &p_graph_offset);
 	Vector2 get_graph_offset() const;
 
-	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;
+	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;
 
 	AnimationNodeBlendTree();
 	~AnimationNodeBlendTree();

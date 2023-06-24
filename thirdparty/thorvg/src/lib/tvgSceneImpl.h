@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #ifndef _TVG_SCENE_IMPL_H_
 #define _TVG_SCENE_IMPL_H_
 
@@ -60,6 +61,7 @@ struct Scene::Impl
     Array<Paint*> paints;
     uint8_t opacity;                     //for composition
     RenderMethod* renderer = nullptr;    //keep it for explicit clear
+    RenderData rd = nullptr;
     Scene* scene = nullptr;
 
     Impl(Scene* s) : scene(s)
@@ -79,9 +81,11 @@ struct Scene::Impl
             (*paint)->pImpl->dispose(renderer);
         }
 
+        auto ret = renderer.dispose(rd);
         this->renderer = nullptr;
+        this->rd = nullptr;
 
-        return true;
+        return ret;
     }
 
     bool needComposition(uint32_t opacity)
@@ -101,23 +105,29 @@ struct Scene::Impl
         return false;
     }
 
-    void* update(RenderMethod &renderer, const RenderTransform* transform, uint32_t opacity, Array<RenderData>& clips, RenderUpdateFlag flag)
+    RenderData update(RenderMethod &renderer, const RenderTransform* transform, uint32_t opacity, Array<RenderData>& clips, RenderUpdateFlag flag, bool clipper)
     {
         /* Overriding opacity value. If this scene is half-translucent,
            It must do intermeidate composition with that opacity value. */
         this->opacity = static_cast<uint8_t>(opacity);
         if (needComposition(opacity)) opacity = 255;
 
-        for (auto paint = paints.data; paint < (paints.data + paints.count); ++paint) {
-            (*paint)->pImpl->update(renderer, transform, opacity, clips, static_cast<uint32_t>(flag));
-        }
-
-        /* FXIME: it requires to return list of children engine data
-           This is necessary for scene composition */
-
         this->renderer = &renderer;
 
-        return nullptr;
+        if (clipper) {
+            Array<RenderData> rds;
+            rds.reserve(paints.count);
+            for (auto paint = paints.data; paint < (paints.data + paints.count); ++paint) {
+                rds.push((*paint)->pImpl->update(renderer, transform, opacity, clips, flag, true));
+            }
+            rd = renderer.prepare(rds, rd, transform, opacity, clips, flag);
+            return rd;
+        } else {
+            for (auto paint = paints.data; paint < (paints.data + paints.count); ++paint) {
+                (*paint)->pImpl->update(renderer, transform, opacity, clips, flag, false);
+            }
+            return nullptr;
+        }
     }
 
     bool render(RenderMethod& renderer)
@@ -125,7 +135,7 @@ struct Scene::Impl
         Compositor* cmp = nullptr;
 
         if (needComposition(opacity)) {
-            cmp = renderer.target(bounds(renderer));
+            cmp = renderer.target(bounds(renderer), renderer.colorSpace());
             renderer.beginComposite(cmp, CompositeMethod::None, opacity);
         }
 

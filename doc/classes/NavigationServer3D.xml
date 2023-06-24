@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationServer3D" inherits="Object" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Server interface for low-level 3D navigation access.
+		A server interface for low-level 3D navigation access.
 	</brief_description>
 	<description>
-		NavigationServer3D is the server responsible for all 3D navigation. It handles several objects, namely maps, regions and agents.
+		NavigationServer2D is the server that handles navigation maps, regions and agents. It does not handle A* navigation from [AStar3D].
 		Maps are made up of regions, which are made of navigation meshes. Together, they define the navigable areas in the 3D world.
-		[b]Note:[/b] Most NavigationServer changes take effect after the next physics frame and not immediately. This includes all changes made to maps, regions or agents by navigation related Nodes in the SceneTree or made through scripts.
+		[b]Note:[/b] Most [NavigationServer3D] changes take effect after the next physics frame and not immediately. This includes all changes made to maps, regions or agents by navigation-related nodes in the scene tree or made through scripts.
 		For two regions to be connected to each other, they must share a similar edge. An edge is considered connected to another if both of its two vertices are at a distance less than [code]edge_connection_margin[/code] to the respective other edge's vertex.
-		You may assign navigation layers to regions with [method NavigationServer3D.region_set_navigation_layers], which then can be checked upon when requesting a path with [method NavigationServer3D.map_get_path]. This allows allowing or forbidding some areas to 3D objects.
+		You may assign navigation layers to regions with [method NavigationServer3D.region_set_navigation_layers], which then can be checked upon when requesting a path with [method NavigationServer3D.map_get_path]. This can be used to allow or deny certain areas for some objects.
 		To use the collision avoidance system, you may use agents. You can set an agent's target velocity, then the servers will emit a callback with a modified velocity.
-		[b]Note:[/b] The collision avoidance system ignores regions. Using the modified velocity as-is might lead to pushing and agent outside of a navigable area. This is a limitation of the collision avoidance system, any more complex situation may require the use of the physics engine.
+		[b]Note:[/b] The collision avoidance system ignores regions. Using the modified velocity directly may move an agent outside of the traversable area. This is a limitation of the collision avoidance system, any more complex situation may require the use of the physics engine.
 		This server keeps tracks of any call and executes them during the sync phase. This means that you can request any change to the map, using any thread, without worrying.
 	</description>
 	<tutorials>
@@ -24,11 +24,32 @@
 				Creates the agent.
 			</description>
 		</method>
+		<method name="agent_get_avoidance_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns [code]true[/code] if the provided [param agent] has avoidance enabled.
+			</description>
+		</method>
 		<method name="agent_get_map" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="agent" type="RID" />
 			<description>
 				Returns the navigation map [RID] the requested [param agent] is currently assigned to.
+			</description>
+		</method>
+		<method name="agent_get_paused" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns [code]true[/code] if the specified [param agent] is paused.
+			</description>
+		</method>
+		<method name="agent_get_use_3d_avoidance" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns [code]true[/code] if the provided [param agent] uses avoidance in 3D space Vector3(x,y,z) instead of horizontal 2D Vector2(x,y) / Vector3(x,0.0,z).
 			</description>
 		</method>
 		<method name="agent_is_map_changed" qualifiers="const">
@@ -38,13 +59,54 @@
 				Returns true if the map got changed the previous frame.
 			</description>
 		</method>
-		<method name="agent_set_callback">
+		<method name="agent_set_avoidance_callback">
 			<return type="void" />
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="callback" type="Callable" />
 			<description>
-				Sets the callback that gets called after each avoidance processing step for the [param agent]. The calculated [code]safe_velocity[/code] will be passed as the first parameter just before the physics calculations.
-				[b]Note:[/b] Created callbacks are always processed independently of the SceneTree state as long as the agent is on a navigation map and not freed. To disable the dispatch of a callback from an agent use [method agent_set_callback] again with an empty [Callable].
+				Sets the callback [Callable] that gets called after each avoidance processing step for the [param agent]. The calculated [code]safe_velocity[/code] will be dispatched with a signal to the object just before the physics calculations.
+				[b]Note:[/b] Created callbacks are always processed independently of the SceneTree state as long as the agent is on a navigation map and not freed. To disable the dispatch of a callback from an agent use [method agent_set_avoidance_callback] again with an empty [Callable].
+			</description>
+		</method>
+		<method name="agent_set_avoidance_enabled">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] the provided [param agent] calculates avoidance.
+			</description>
+		</method>
+		<method name="agent_set_avoidance_layers">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="layers" type="int" />
+			<description>
+				Set the agent's [code]avoidance_layers[/code] bitmask.
+			</description>
+		</method>
+		<method name="agent_set_avoidance_mask">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="mask" type="int" />
+			<description>
+				Set the agent's [code]avoidance_mask[/code] bitmask.
+			</description>
+		</method>
+		<method name="agent_set_avoidance_priority">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="priority" type="float" />
+			<description>
+				Set the agent's [code]avoidance_priority[/code] with a [param priority] between 0.0 (lowest priority) to 1.0 (highest priority).
+				The specified [param agent] does not adjust the velocity for other agents that would match the [code]avoidance_mask[/code] but have a lower [code] avoidance_priority[/code]. This in turn makes the other agents with lower priority adjust their velocities even more to avoid collision with this agent.
+			</description>
+		</method>
+		<method name="agent_set_height">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="height" type="float" />
+			<description>
+				Updates the provided [param agent] [param height].
 			</description>
 		</method>
 		<method name="agent_set_map">
@@ -79,6 +141,14 @@
 				Sets the maximum distance to other agents this agent takes into account in the navigation. The larger this number, the longer the running time of the simulation. If the number is too low, the simulation will not be safe.
 			</description>
 		</method>
+		<method name="agent_set_paused">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="paused" type="bool" />
+			<description>
+				If [param paused] is true the specified [param agent] will not be processed, e.g. calculate avoidance velocities or receive avoidance callbacks.
+			</description>
+		</method>
 		<method name="agent_set_position">
 			<return type="void" />
 			<param index="0" name="agent" type="RID" />
@@ -95,20 +165,30 @@
 				Sets the radius of the agent.
 			</description>
 		</method>
-		<method name="agent_set_target_velocity">
+		<method name="agent_set_time_horizon_agents">
 			<return type="void" />
 			<param index="0" name="agent" type="RID" />
-			<param index="1" name="target_velocity" type="Vector3" />
+			<param index="1" name="time_horizon" type="float" />
 			<description>
-				Sets the new target velocity.
+				The minimal amount of time for which the agent's velocities that are computed by the simulation are safe with respect to other agents. The larger this number, the sooner this agent will respond to the presence of other agents, but the less freedom this agent has in choosing its velocities. A too high value will slow down agents movement considerably. Must be positive.
 			</description>
 		</method>
-		<method name="agent_set_time_horizon">
+		<method name="agent_set_time_horizon_obstacles">
 			<return type="void" />
 			<param index="0" name="agent" type="RID" />
-			<param index="1" name="time" type="float" />
+			<param index="1" name="time_horizon" type="float" />
 			<description>
-				The minimal amount of time for which the agent's velocities that are computed by the simulation are safe with respect to other agents. The larger this number, the sooner this agent will respond to the presence of other agents, but the less freedom this agent has in choosing its velocities. Must be positive.
+				The minimal amount of time for which the agent's velocities that are computed by the simulation are safe with respect to static avoidance obstacles. The larger this number, the sooner this agent will respond to the presence of static avoidance obstacles, but the less freedom this agent has in choosing its velocities. A too high value will slow down agents movement considerably. Must be positive.
+			</description>
+		</method>
+		<method name="agent_set_use_3d_avoidance">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Sets if the agent uses the 2D avoidance or the 3D avoidance while avoidance is enabled.
+				If [code]true[/code] the agent calculates avoidance velocities in 3D for the xyz-axis, e.g. for games that take place in air, unterwater or space. The 3D using agent only avoids other 3D avoidance using agent's. The 3D using agent only reacts to radius based avoidance obstacles. The 3D using agent ignores any vertices based obstacles. The 3D using agent only avoids other 3D using agent's.
+				If [code]false[/code] the agent calculates avoidance velocities in 2D along the xz-axis ignoring the y-axis. The 2D using agent only avoids other 2D avoidance using agent's. The 2D using agent reacts to radius avoidance obstacles. The 2D using agent reacts to vertices based avoidance obstacles. The 2D using agent only avoids other 2D using agent's. 2D using agents will ignore other 2D using agents or obstacles that are below their current position or above their current position including the agents height in 2D avoidance.
 			</description>
 		</method>
 		<method name="agent_set_velocity">
@@ -116,7 +196,24 @@
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="velocity" type="Vector3" />
 			<description>
-				Sets the current velocity of the agent.
+				Sets [param velocity] as the new wanted velocity for the specified [param agent]. The avoidance simulation will try to fulfill this velocity if possible but will modify it to avoid collision with other agent's and obstacles. When an agent is teleported to a new position use [method agent_set_velocity_forced] as well to reset the internal simulation velocity.
+			</description>
+		</method>
+		<method name="agent_set_velocity_forced">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="velocity" type="Vector3" />
+			<description>
+				Replaces the internal velocity in the collision avoidance simulation with [param velocity] for the specified [param agent]. When an agent is teleported to a new position this function should be used in the same frame. If called frequently this function can get agents stuck.
+			</description>
+		</method>
+		<method name="bake_from_source_geometry_data">
+			<return type="void" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
+			<param index="1" name="source_geometry_data" type="NavigationMeshSourceGeometryData3D" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Bakes the provided [param navigation_mesh] with the data from the provided [param source_geometry_data]. After the process is finished the optional [param callback] will be called.
 			</description>
 		</method>
 		<method name="free_rid">
@@ -155,7 +252,7 @@
 			<return type="Vector3" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the ending position of this [code]link[/code].
+				Returns the ending position of this [param link].
 			</description>
 		</method>
 		<method name="link_get_enter_cost" qualifiers="const">
@@ -169,14 +266,14 @@
 			<return type="RID" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the navigation map [RID] the requested [code]link[/code] is currently assigned to.
+				Returns the navigation map [RID] the requested [param link] is currently assigned to.
 			</description>
 		</method>
 		<method name="link_get_navigation_layers" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the navigation layers for this [code]link[/code].
+				Returns the navigation layers for this [param link].
 			</description>
 		</method>
 		<method name="link_get_owner_id" qualifiers="const">
@@ -190,7 +287,7 @@
 			<return type="Vector3" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the starting position of this [code]link[/code].
+				Returns the starting position of this [param link].
 			</description>
 		</method>
 		<method name="link_get_travel_cost" qualifiers="const">
@@ -204,7 +301,7 @@
 			<return type="bool" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns whether this [code]link[/code] can be travelled in both directions.
+				Returns whether this [param link] can be travelled in both directions.
 			</description>
 		</method>
 		<method name="link_set_bidirectional">
@@ -212,7 +309,7 @@
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="bidirectional" type="bool" />
 			<description>
-				Sets whether this [code]link[/code] can be travelled in both directions.
+				Sets whether this [param link] can be travelled in both directions.
 			</description>
 		</method>
 		<method name="link_set_end_position">
@@ -220,7 +317,7 @@
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="position" type="Vector3" />
 			<description>
-				Sets the exit position for the [code]link[/code].
+				Sets the exit position for the [param link].
 			</description>
 		</method>
 		<method name="link_set_enter_cost">
@@ -228,7 +325,7 @@
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="enter_cost" type="float" />
 			<description>
-				Sets the [code]enter_cost[/code] for this [code]link[/code].
+				Sets the [param enter_cost] for this [param link].
 			</description>
 		</method>
 		<method name="link_set_map">
@@ -260,7 +357,7 @@
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="position" type="Vector3" />
 			<description>
-				Sets the entry position for this [code]link[/code].
+				Sets the entry position for this [param link].
 			</description>
 		</method>
 		<method name="link_set_travel_cost">
@@ -268,7 +365,7 @@
 			<param index="0" name="link" type="RID" />
 			<param index="1" name="travel_cost" type="float" />
 			<description>
-				Sets the [code]travel_cost[/code] for this [code]link[/code].
+				Sets the [param travel_cost] for this [param link].
 			</description>
 		</method>
 		<method name="map_create">
@@ -294,11 +391,18 @@
 				Returns all navigation agents [RID]s that are currently assigned to the requested navigation [param map].
 			</description>
 		</method>
+		<method name="map_get_cell_height" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns the map cell height used to rasterize the navigation mesh vertices on the Y axis.
+			</description>
+		</method>
 		<method name="map_get_cell_size" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns the map cell size.
+				Returns the map cell size used to rasterize the navigation mesh vertices on the XZ plane.
 			</description>
 		</method>
 		<method name="map_get_closest_point" qualifiers="const">
@@ -353,7 +457,14 @@
 			<return type="RID[]" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns all navigation link [RID]s that are currently assigned to the requested navigation [code]map[/code].
+				Returns all navigation link [RID]s that are currently assigned to the requested navigation [param map].
+			</description>
+		</method>
+		<method name="map_get_obstacles" qualifiers="const">
+			<return type="RID[]" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns all navigation obstacle [RID]s that are currently assigned to the requested navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_path" qualifiers="const">
@@ -381,6 +492,13 @@
 				Returns the map's up direction.
 			</description>
 		</method>
+		<method name="map_get_use_edge_connections" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns true if the navigation [param map] allows navigation regions to use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
+			</description>
+		</method>
 		<method name="map_is_active" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="map" type="RID" />
@@ -396,12 +514,20 @@
 				Sets the map active.
 			</description>
 		</method>
+		<method name="map_set_cell_height">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="cell_height" type="float" />
+			<description>
+				Sets the map cell height used to rasterize the navigation mesh vertices on the Y axis. Must match with the cell height of the used navigation meshes.
+			</description>
+		</method>
 		<method name="map_set_cell_size">
 			<return type="void" />
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="cell_size" type="float" />
 			<description>
-				Set the map cell size used to weld the navigation mesh polygons.
+				Sets the map cell size used to rasterize the navigation mesh vertices on the XZ plane. Must match with the cell size of the used navigation meshes.
 			</description>
 		</method>
 		<method name="map_set_edge_connection_margin">
@@ -426,6 +552,139 @@
 			<param index="1" name="up" type="Vector3" />
 			<description>
 				Sets the map up direction.
+			</description>
+		</method>
+		<method name="map_set_use_edge_connections">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Set the navigation [param map] edge connection use. If [param enabled] the navigation map allows navigation regions to use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
+			</description>
+		</method>
+		<method name="obstacle_create">
+			<return type="RID" />
+			<description>
+				Creates a new obstacle.
+			</description>
+		</method>
+		<method name="obstacle_get_avoidance_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns [code]true[/code] if the provided [param obstacle] has avoidance enabled.
+			</description>
+		</method>
+		<method name="obstacle_get_map" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns the navigation map [RID] the requested [param obstacle] is currently assigned to.
+			</description>
+		</method>
+		<method name="obstacle_get_paused" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns [code]true[/code] if the specified [param obstacle] is paused.
+			</description>
+		</method>
+		<method name="obstacle_get_use_3d_avoidance" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns [code]true[/code] if the provided [param obstacle] uses avoidance in 3D space Vector3(x,y,z) instead of horizontal 2D Vector2(x,y) / Vector3(x,0.0,z).
+			</description>
+		</method>
+		<method name="obstacle_set_avoidance_enabled">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] the provided [param obstacle] affects avoidance using agents.
+			</description>
+		</method>
+		<method name="obstacle_set_avoidance_layers">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="layers" type="int" />
+			<description>
+				Set the obstacles's [code]avoidance_layers[/code] bitmask.
+			</description>
+		</method>
+		<method name="obstacle_set_height">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="height" type="float" />
+			<description>
+				Sets the [param height] for the [param obstacle]. In 3D agents will ignore obstacles that are above or below them while using 2D avoidance.
+			</description>
+		</method>
+		<method name="obstacle_set_map">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="map" type="RID" />
+			<description>
+				Assigns the [param obstacle] to a navigation map.
+			</description>
+		</method>
+		<method name="obstacle_set_paused">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="paused" type="bool" />
+			<description>
+				If [param paused] is true the specified [param obstacle] will not be processed, e.g. affect avoidance velocities.
+			</description>
+		</method>
+		<method name="obstacle_set_position">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="position" type="Vector3" />
+			<description>
+				Updates the [param position] in world space for the [param obstacle].
+			</description>
+		</method>
+		<method name="obstacle_set_radius">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="radius" type="float" />
+			<description>
+				Sets the radius of the dynamic obstacle.
+			</description>
+		</method>
+		<method name="obstacle_set_use_3d_avoidance">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Sets if the [param obstacle] uses the 2D avoidance or the 3D avoidance while avoidance is enabled.
+			</description>
+		</method>
+		<method name="obstacle_set_velocity">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="velocity" type="Vector3" />
+			<description>
+				Sets [param velocity] of the dynamic [param obstacle]. Allows other agents to better predict the movement of the dynamic obstacle. Only works in combination with the radius of the obstacle.
+			</description>
+		</method>
+		<method name="obstacle_set_vertices">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="vertices" type="PackedVector3Array" />
+			<description>
+				Sets the outline vertices for the obstacle. If the vertices are winded in clockwise order agents will be pushed in by the obstacle, else they will be pushed out.
+			</description>
+		</method>
+		<method name="parse_source_geometry_data">
+			<return type="void" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
+			<param index="1" name="source_geometry_data" type="NavigationMeshSourceGeometryData3D" />
+			<param index="2" name="root_node" type="Node" />
+			<param index="3" name="callback" type="Callable" />
+			<description>
+				Parses the [SceneTree] for source geometry according to the properties of [param navigation_mesh]. Updates the provided [param source_geometry_data] resource with the resulting data. The resource can then be used to bake a navigation mesh with [method bake_from_source_geometry_data]. After the process is finished the optional [param callback] will be called.
+				[b]Note:[/b] This function needs to run on the main thread or with a deferred call as the SceneTree is not thread-safe.
 			</description>
 		</method>
 		<method name="query_path" qualifiers="const">
@@ -508,6 +767,13 @@
 				Returns the travel cost of this [param region].
 			</description>
 		</method>
+		<method name="region_get_use_edge_connections" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns true if the navigation [param region] is set to use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
+			</description>
+		</method>
 		<method name="region_owns_point" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="region" type="RID" />
@@ -574,6 +840,14 @@
 				Sets the [param travel_cost] for this [param region].
 			</description>
 		</method>
+		<method name="region_set_use_edge_connections">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] the navigation [param region] will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
+			</description>
+		</method>
 		<method name="set_active">
 			<return type="void" />
 			<param index="0" name="active" type="bool" />
@@ -590,6 +864,11 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="avoidance_debug_changed">
+			<description>
+				Emitted when avoidance debug settings are changed. Only available in debug builds.
+			</description>
+		</signal>
 		<signal name="map_changed">
 			<param index="0" name="map" type="RID" />
 			<description>

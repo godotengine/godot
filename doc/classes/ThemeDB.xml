@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ThemeDB" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		An engine singleton providing access to static [Theme] information, such as default and project theme, and fallback values.
+		A singleton that provides access to static information about [Theme] resources used by the engine and by your project.
 	</brief_description>
 	<description>
-		This engine singleton provides access to static information about [Theme] resources used by the engine and by your projects. You can fetch the default engine theme, as well as your project configured theme.
+		This singleton provides access to static information about [Theme] resources used by the engine and by your projects. You can fetch the default engine theme, as well as your project configured theme.
 		[ThemeDB] also contains fallback values for theme properties.
 	</description>
 	<tutorials>

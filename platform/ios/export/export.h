@@ -31,6 +31,7 @@
 #ifndef IOS_EXPORT_H
 #define IOS_EXPORT_H
 
+void register_ios_exporter_types();
 void register_ios_exporter();
 
 #endif // IOS_EXPORT_H

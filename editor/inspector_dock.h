@@ -34,7 +34,6 @@
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
 #include "editor/editor_inspector.h"
-#include "editor/editor_path.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -43,6 +42,7 @@
 #include "scene/gui/tree.h"
 
 class EditorFileDialog;
+class EditorObjectSelector;
 
 class InspectorDock : public VBoxContainer {
 	GDCLASS(InspectorDock, VBoxContainer);
@@ -92,7 +92,7 @@ class InspectorDock : public VBoxContainer {
 
 	Button *open_docs_button = nullptr;
 	MenuButton *object_menu = nullptr;
-	EditorPath *editor_path = nullptr;
+	EditorObjectSelector *object_selector = nullptr;
 
 	bool info_is_warning = false; // Display in yellow and use warning icon if true.
 	Button *info = nullptr;

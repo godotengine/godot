@@ -32,6 +32,7 @@
 #define OPENXR_SELECT_INTERACTION_PROFILE_DIALOG_H
 
 #include "../action_map/openxr_interaction_profile_meta_data.h"
+
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"

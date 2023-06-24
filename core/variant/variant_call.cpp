@@ -1633,6 +1633,7 @@ static void _register_variant_builtin_methods() {
 
 	bind_string_method(casecmp_to, sarray("to"), varray());
 	bind_string_method(nocasecmp_to, sarray("to"), varray());
+	bind_string_method(naturalcasecmp_to, sarray("to"), varray());
 	bind_string_method(naturalnocasecmp_to, sarray("to"), varray());
 	bind_string_method(length, sarray(), varray());
 	bind_string_method(substr, sarray("from", "len"), varray(-1));
@@ -1659,6 +1660,7 @@ static void _register_variant_builtin_methods() {
 	bind_string_method(replacen, sarray("what", "forwhat"), varray());
 	bind_string_method(repeat, sarray("count"), varray());
 	bind_string_method(insert, sarray("position", "what"), varray());
+	bind_string_method(erase, sarray("position", "chars"), varray(1));
 	bind_string_method(capitalize, sarray(), varray());
 	bind_string_method(to_camel_case, sarray(), varray());
 	bind_string_method(to_pascal_case, sarray(), varray());
@@ -1921,7 +1923,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4, distance_squared_to, sarray("to"), varray());
 	bind_method(Vector4, dot, sarray("with"), varray());
 	bind_method(Vector4, inverse, sarray(), varray());
-	bind_method(Vector4, is_equal_approx, sarray("with"), varray());
+	bind_method(Vector4, is_equal_approx, sarray("to"), varray());
 	bind_method(Vector4, is_zero_approx, sarray(), varray());
 	bind_method(Vector4, is_finite, sarray(), varray());
 
@@ -2073,6 +2075,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform2D, scaled_local, sarray("scale"), varray());
 	bind_method(Transform2D, translated, sarray("offset"), varray());
 	bind_method(Transform2D, translated_local, sarray("offset"), varray());
+	bind_method(Transform2D, determinant, sarray(), varray());
 	bind_method(Transform2D, basis_xform, sarray("v"), varray());
 	bind_method(Transform2D, basis_xform_inv, sarray("v"), varray());
 	bind_method(Transform2D, interpolate_with, sarray("xform", "weight"), varray());
@@ -2098,7 +2101,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, is_equal_approx, sarray("b"), varray());
 	bind_method(Basis, is_finite, sarray(), varray());
 	bind_method(Basis, get_rotation_quaternion, sarray(), varray());
-	bind_static_method(Basis, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
+	bind_static_method(Basis, looking_at, sarray("target", "up", "use_model_front"), varray(Vector3(0, 1, 0), false));
 	bind_static_method(Basis, from_scale, sarray("scale"), varray());
 	bind_static_method(Basis, from_euler, sarray("euler", "order"), varray((int64_t)EulerOrder::YXZ));
 
@@ -2141,7 +2144,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform3D, scaled_local, sarray("scale"), varray());
 	bind_method(Transform3D, translated, sarray("offset"), varray());
 	bind_method(Transform3D, translated_local, sarray("offset"), varray());
-	bind_method(Transform3D, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
+	bind_method(Transform3D, looking_at, sarray("target", "up", "use_model_front"), varray(Vector3(0, 1, 0), false));
 	bind_method(Transform3D, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform3D, is_equal_approx, sarray("xform"), varray());
 	bind_method(Transform3D, is_finite, sarray(), varray());
@@ -2528,6 +2531,13 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "DOWN", Vector3(0, -1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "FORWARD", Vector3(0, 0, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "BACK", Vector3(0, 0, 1));
+
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_LEFT", Vector3(1, 0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_RIGHT", Vector3(-1, 0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_TOP", Vector3(0, 1, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_BOTTOM", Vector3(0, -1, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_FRONT", Vector3(0, 0, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_REAR", Vector3(0, 0, -1));
 
 	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_X", Vector4::AXIS_X);
 	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_Y", Vector4::AXIS_Y);

@@ -129,7 +129,7 @@ public:
 	void set_y_label(const String &p_label);
 	String get_y_label() const;
 
-	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
 	virtual String get_caption() const override;
 
 	Vector2 get_closest_point(const Vector2 &p_point);
@@ -143,7 +143,7 @@ public:
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
 
-	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;
+	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) const override;
 
 	AnimationNodeBlendSpace2D();
 	~AnimationNodeBlendSpace2D();

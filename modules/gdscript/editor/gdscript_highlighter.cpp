@@ -29,8 +29,10 @@
 /**************************************************************************/
 
 #include "gdscript_highlighter.h"
+
 #include "../gdscript.h"
 #include "../gdscript_tokenizer.h"
+
 #include "core/config/project_settings.h"
 #include "editor/editor_settings.h"
 

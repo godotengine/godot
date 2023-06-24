@@ -206,16 +206,16 @@ namespace GodotTools.Build
 
         private static bool BuildProjectBlocking(BuildInfo buildInfo)
         {
-            if (!File.Exists(buildInfo.Solution))
-                return true; // No solution to build
+            if (!File.Exists(buildInfo.Project))
+                return true; // No project to build.
 
             using var pr = new EditorProgress("dotnet_build_project", "Building .NET project...", 1);
 
-            pr.Step("Building project solution", 0);
+            pr.Step("Building project", 0);
 
             if (!Build(buildInfo))
             {
-                ShowBuildErrorDialog("Failed to build project solution");
+                ShowBuildErrorDialog("Failed to build project");
                 return false;
             }
 
@@ -224,16 +224,16 @@ namespace GodotTools.Build
 
         private static bool CleanProjectBlocking(BuildInfo buildInfo)
         {
-            if (!File.Exists(buildInfo.Solution))
-                return true; // No solution to clean
+            if (!File.Exists(buildInfo.Project))
+                return true; // No project to clean.
 
             using var pr = new EditorProgress("dotnet_clean_project", "Cleaning .NET project...", 1);
 
-            pr.Step("Cleaning project solution", 0);
+            pr.Step("Cleaning project", 0);
 
             if (!Build(buildInfo))
             {
-                ShowBuildErrorDialog("Failed to clean project solution");
+                ShowBuildErrorDialog("Failed to clean project");
                 return false;
             }
 
@@ -270,7 +270,7 @@ namespace GodotTools.Build
                 buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
 
             if (Internal.GodotIsRealTDouble())
-                buildInfo.CustomProperties.Add("GodotRealTIsDouble=true");
+                buildInfo.CustomProperties.Add("GodotFloat64=true");
 
             return buildInfo;
         }
@@ -279,16 +279,23 @@ namespace GodotTools.Build
             [DisallowNull] string configuration,
             [DisallowNull] string platform,
             [DisallowNull] string runtimeIdentifier,
-            [DisallowNull] string publishOutputDir
+            [DisallowNull] string publishOutputDir,
+            bool includeDebugSymbols = true
         )
         {
             var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, GodotSharpDirs.ProjectCsProjPath, configuration,
                 runtimeIdentifier, publishOutputDir, restore: true, rebuild: false, onlyClean: false);
 
+            if (!includeDebugSymbols)
+            {
+                buildInfo.CustomProperties.Add("DebugType=None");
+                buildInfo.CustomProperties.Add("DebugSymbols=false");
+            }
+
             buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");
 
             if (Internal.GodotIsRealTDouble())
-                buildInfo.CustomProperties.Add("GodotRealTIsDouble=true");
+                buildInfo.CustomProperties.Add("GodotFloat64=true");
 
             return buildInfo;
         }
@@ -308,17 +315,18 @@ namespace GodotTools.Build
             [DisallowNull] string configuration,
             [DisallowNull] string platform,
             [DisallowNull] string runtimeIdentifier,
-            string publishOutputDir
+            string publishOutputDir,
+            bool includeDebugSymbols = true
         ) => PublishProjectBlocking(CreatePublishBuildInfo(configuration,
-            platform, runtimeIdentifier, publishOutputDir));
+            platform, runtimeIdentifier, publishOutputDir, includeDebugSymbols));
 
         public static bool EditorBuildCallback()
         {
-            if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
-                return true; // No solution to build
+            if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
+                return true; // No project to build.
 
             if (GodotSharpEditor.Instance.SkipBuildBeforePlaying)
-                return true; // Requested play from an external editor/IDE which already built the project
+                return true; // Requested play from an external editor/IDE which already built the project.
 
             return BuildProjectBlocking("Debug");
         }

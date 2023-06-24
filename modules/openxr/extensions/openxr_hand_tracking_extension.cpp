@@ -29,7 +29,9 @@
 /**************************************************************************/
 
 #include "openxr_hand_tracking_extension.h"
+
 #include "../openxr_api.h"
+
 #include "core/string/print_string.h"
 #include "servers/xr_server.h"
 

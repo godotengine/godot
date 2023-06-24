@@ -34,11 +34,6 @@
 #include "core/math/geometry_2d.h"
 #include "line_builder.h"
 
-// Needed so we can bind functions
-VARIANT_ENUM_CAST(Line2D::LineJointMode)
-VARIANT_ENUM_CAST(Line2D::LineCapMode)
-VARIANT_ENUM_CAST(Line2D::LineTextureMode)
-
 Line2D::Line2D() {
 }
 

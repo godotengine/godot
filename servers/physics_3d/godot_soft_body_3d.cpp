@@ -98,7 +98,6 @@ Variant GodotSoftBody3D::get_state(PhysicsServer3D::BodyState p_state) const {
 		} break;
 		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY: {
 			ERR_FAIL_V_MSG(Vector3(), "Angular velocity is not supported for Soft bodies.");
-			return Vector3();
 		} break;
 		case PhysicsServer3D::BODY_STATE_SLEEPING: {
 			ERR_FAIL_V_MSG(false, "Sleeping state is not supported for Soft bodies.");

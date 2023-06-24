@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Popup" inherits="Window" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Popup is a base window container for popup-like subwindows.
+		Base class for contextual windows and panels with fixed position.
 	</brief_description>
 	<description>
-		Popup is a base window container for popup-like subwindows. It's a modal by default (see [member Window.popup_window]) and has helpers for custom popup behavior.
+		[Popup] is a base class for contextual windows and panels with fixed position. It's a modal by default (see [member Window.popup_window]) and provides methods for implementing custom popup behavior.
 	</description>
 	<tutorials>
 	</tutorials>

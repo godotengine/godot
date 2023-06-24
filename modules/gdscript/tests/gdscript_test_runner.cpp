@@ -350,12 +350,12 @@ void GDScriptTestRunner::handle_cmdline() {
 	for (List<String>::Element *E = cmdline_args.front(); E; E = E->next()) {
 		String &cmd = E->get();
 		if (cmd == "--gdscript-generate-tests") {
-			if (E->next() == nullptr) {
-				ERR_PRINT("Needed a path for the test files.");
-				exit(-1);
+			String path;
+			if (E->next()) {
+				path = E->next()->get();
+			} else {
+				path = "modules/gdscript/tests/scripts";
 			}
-
-			const String &path = E->next()->get();
 
 			GDScriptTestRunner runner(path, false, cmdline_args.find("--print-filenames") != nullptr);
 
@@ -392,6 +392,9 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 
 	StringBuilder builder;
 	builder.append(">> ");
+	// Only include the function, file and line for script errors, otherwise the
+	// test outputs changes based on the platform/compiler.
+	bool include_source_info = false;
 	switch (p_type) {
 		case ERR_HANDLER_ERROR:
 			builder.append("ERROR");
@@ -401,6 +404,7 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 			break;
 		case ERR_HANDLER_SCRIPT:
 			builder.append("SCRIPT ERROR");
+			include_source_info = true;
 			break;
 		case ERR_HANDLER_SHADER:
 			builder.append("SHADER ERROR");
@@ -410,12 +414,14 @@ void GDScriptTest::error_handler(void *p_this, const char *p_function, const cha
 			break;
 	}
 
-	builder.append("\n>> on function: ");
-	builder.append(String::utf8(p_function));
-	builder.append("()\n>> ");
-	builder.append(String::utf8(p_file).trim_prefix(self->base_dir));
-	builder.append("\n>> ");
-	builder.append(itos(p_line));
+	if (include_source_info) {
+		builder.append("\n>> on function: ");
+		builder.append(String::utf8(p_function));
+		builder.append("()\n>> ");
+		builder.append(String::utf8(p_file).trim_prefix(self->base_dir).replace("\\", "/"));
+		builder.append("\n>> ");
+		builder.append(itos(p_line));
+	}
 	builder.append("\n>> ");
 	builder.append(String::utf8(p_error));
 	if (strlen(p_explanation) > 0) {
@@ -566,6 +572,14 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		ERR_FAIL_V_MSG(result, "\nCould not find test function on: '" + source_file + "'");
 	}
 
+	// Setup output handlers.
+	ErrorHandlerData error_data(&result, this);
+
+	_print_handler.userdata = &result;
+	_error_handler.userdata = &error_data;
+	add_print_handler(&_print_handler);
+	add_error_handler(&_error_handler);
+
 	script->reload();
 
 	// Create object instance for test.
@@ -576,14 +590,6 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	}
 	obj->set_script(script);
 	GDScriptInstance *instance = static_cast<GDScriptInstance *>(obj->get_script_instance());
-
-	// Setup output handlers.
-	ErrorHandlerData error_data(&result, this);
-
-	_print_handler.userdata = &result;
-	_error_handler.userdata = &error_data;
-	add_print_handler(&_print_handler);
-	add_error_handler(&_error_handler);
 
 	// Call test function.
 	Callable::CallError call_err;

@@ -32,6 +32,7 @@
 #define EDITOR_EXPORT_PLUGIN_H
 
 #include "core/extension/gdextension.h"
+#include "editor_export_platform.h"
 #include "editor_export_preset.h"
 #include "editor_export_shared_object.h"
 #include "scene/main/node.h"
@@ -39,6 +40,7 @@
 class EditorExportPlugin : public RefCounted {
 	GDCLASS(EditorExportPlugin, RefCounted);
 
+	friend class EditorExport;
 	friend class EditorExportPlatform;
 
 	Ref<EditorExportPreset> export_preset;
@@ -121,6 +123,8 @@ protected:
 	GDVIRTUAL0(_end_customize_resources)
 
 	GDVIRTUAL2RC(PackedStringArray, _get_export_features, const Ref<EditorExportPlatform> &, bool);
+	GDVIRTUAL1RC(TypedArray<Dictionary>, _get_export_options, const Ref<EditorExportPlatform> &);
+	GDVIRTUAL1RC(bool, _should_update_export_options, const Ref<EditorExportPlatform> &);
 
 	GDVIRTUAL0RC(String, _get_name)
 
@@ -136,6 +140,8 @@ protected:
 	virtual void _end_customize_resources();
 
 	virtual PackedStringArray _get_export_features(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
+	virtual void _get_export_options(const Ref<EditorExportPlatform> &p_export_platform, List<EditorExportPlatform::ExportOption> *r_options) const;
+	virtual bool _should_update_export_options(const Ref<EditorExportPlatform> &p_export_platform) const;
 
 	virtual String _get_name() const;
 
@@ -148,6 +154,7 @@ public:
 	Vector<String> get_ios_bundle_files() const;
 	String get_ios_cpp_code() const;
 	const Vector<String> &get_macos_plugin_files() const;
+	Variant get_option(const StringName &p_name) const;
 
 	EditorExportPlugin();
 };

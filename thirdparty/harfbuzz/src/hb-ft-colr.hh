@@ -301,8 +301,8 @@ _hb_ft_paint (hb_ft_paint_context_t *c,
       c->funcs->sweep_gradient (c->data, &cl,
 				paint.u.sweep_gradient.center.x / 65536.f,
 				paint.u.sweep_gradient.center.y / 65536.f,
-				(paint.u.sweep_gradient.start_angle / 65536.f + 1) * (float) M_PI,
-				(paint.u.sweep_gradient.end_angle / 65536.f + 1) * (float) M_PI);
+				(paint.u.sweep_gradient.start_angle / 65536.f + 1) * HB_PI,
+				(paint.u.sweep_gradient.end_angle / 65536.f + 1) * HB_PI);
     }
     break;
     case FT_COLR_PAINTFORMAT_GLYPH:

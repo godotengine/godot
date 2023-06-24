@@ -35,11 +35,11 @@
 #include "core/io/resource_loader.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/check_box.h"
@@ -820,9 +820,7 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 
 			String error;
 
-			if (!tree) {
-				error = TTR("BlendSpace2D does not belong to an AnimationTree node.");
-			} else if (!tree->is_active()) {
+			if (!tree->is_active()) {
 				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
 			} else if (tree->is_state_invalid()) {
 				error = tree->get_invalid_state_reason();

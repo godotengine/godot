@@ -34,6 +34,7 @@
 
 #include "core/os/mutex.h"
 
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -58,6 +59,7 @@ void TilesEditorPlugin::_pattern_preview_done() {
 
 void TilesEditorPlugin::_thread_func(void *ud) {
 	TilesEditorPlugin *te = static_cast<TilesEditorPlugin *>(ud);
+	set_current_thread_safe_for_nodes(true);
 	te->_thread();
 }
 
@@ -106,9 +108,11 @@ void TilesEditorPlugin::_thread() {
 						Vector2i coords = tile_map->get_cell_atlas_coords(0, cell);
 						int alternative = tile_map->get_cell_alternative_tile(0, cell);
 
-						Vector2 center = world_pos - atlas_source->get_tile_data(coords, alternative)->get_texture_origin();
-						encompassing_rect.expand_to(center - atlas_source->get_tile_texture_region(coords).size / 2);
-						encompassing_rect.expand_to(center + atlas_source->get_tile_texture_region(coords).size / 2);
+						if (atlas_source->has_tile(coords) && atlas_source->has_alternative_tile(coords, alternative)) {
+							Vector2 center = world_pos - atlas_source->get_tile_data(coords, alternative)->get_texture_origin();
+							encompassing_rect.expand_to(center - atlas_source->get_tile_texture_region(coords).size / 2);
+							encompassing_rect.expand_to(center + atlas_source->get_tile_texture_region(coords).size / 2);
+						}
 					}
 				}
 
@@ -209,7 +213,7 @@ void TilesEditorPlugin::make_visible(bool p_visible) {
 }
 
 bool TilesEditorPlugin::is_tile_map_selected() {
-	TypedArray<Node> selection = get_editor_interface()->get_selection()->get_selected_nodes();
+	TypedArray<Node> selection = EditorInterface::get_singleton()->get_selection()->get_selected_nodes();
 	if (selection.size() == 1 && Object::cast_to<TileMap>(selection[0])) {
 		return true;
 	}

@@ -35,17 +35,17 @@
 #include "servers/display_server.h"
 
 #if defined(VULKAN_ENABLED)
+#import "vulkan_context_ios.h"
+
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
-
-#include "vulkan_context_ios.h"
 
 #ifdef USE_VOLK
 #include <volk.h>
 #else
 #include <vulkan/vulkan.h>
 #endif
-#endif
+#endif // VULKAN_ENABLED
 
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -55,7 +55,7 @@
 #import <QuartzCore/CAMetalLayer.h>
 
 class DisplayServerIOS : public DisplayServer {
-	GDCLASS(DisplayServerIOS, DisplayServer)
+	// No need to register with GDCLASS, it's platform-specific and nothing is added.
 
 	_THREAD_SAFE_CLASS_
 
@@ -193,6 +193,7 @@ public:
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual float screen_get_max_scale() const override;
 

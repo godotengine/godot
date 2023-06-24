@@ -66,10 +66,10 @@ using namespace godot;
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
-#include "core/ShapeDistanceFinder.h"
-#include "core/contour-combiners.h"
-#include "core/edge-selectors.h"
-#include "msdfgen.h"
+#include <core/ShapeDistanceFinder.h>
+#include <core/contour-combiners.h>
+#include <core/edge-selectors.h>
+#include <msdfgen.h>
 #endif
 
 #ifdef MODULE_SVG_ENABLED
@@ -2015,6 +2015,121 @@ String TextServerAdvanced::_font_get_name(const RID &p_font_rid) const {
 	Vector2i size = _get_size(fd, 16);
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), String());
 	return fd->font_name;
+}
+
+Dictionary TextServerAdvanced::_font_get_ot_name_strings(const RID &p_font_rid) const {
+	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Dictionary());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Dictionary());
+
+	hb_face_t *hb_face = hb_font_get_face(fd->cache[size]->hb_handle);
+
+	unsigned int num_entries = 0;
+	const hb_ot_name_entry_t *names = hb_ot_name_list_names(hb_face, &num_entries);
+	HashMap<String, Dictionary> names_for_lang;
+	for (unsigned int i = 0; i < num_entries; i++) {
+		String name;
+		switch (names[i].name_id) {
+			case HB_OT_NAME_ID_COPYRIGHT: {
+				name = "copyright";
+			} break;
+			case HB_OT_NAME_ID_FONT_FAMILY: {
+				name = "family_name";
+			} break;
+			case HB_OT_NAME_ID_FONT_SUBFAMILY: {
+				name = "subfamily_name";
+			} break;
+			case HB_OT_NAME_ID_UNIQUE_ID: {
+				name = "unique_identifier";
+			} break;
+			case HB_OT_NAME_ID_FULL_NAME: {
+				name = "full_name";
+			} break;
+			case HB_OT_NAME_ID_VERSION_STRING: {
+				name = "version";
+			} break;
+			case HB_OT_NAME_ID_POSTSCRIPT_NAME: {
+				name = "postscript_name";
+			} break;
+			case HB_OT_NAME_ID_TRADEMARK: {
+				name = "trademark";
+			} break;
+			case HB_OT_NAME_ID_MANUFACTURER: {
+				name = "manufacturer";
+			} break;
+			case HB_OT_NAME_ID_DESIGNER: {
+				name = "designer";
+			} break;
+			case HB_OT_NAME_ID_DESCRIPTION: {
+				name = "description";
+			} break;
+			case HB_OT_NAME_ID_VENDOR_URL: {
+				name = "vendor_url";
+			} break;
+			case HB_OT_NAME_ID_DESIGNER_URL: {
+				name = "designer_url";
+			} break;
+			case HB_OT_NAME_ID_LICENSE: {
+				name = "license";
+			} break;
+			case HB_OT_NAME_ID_LICENSE_URL: {
+				name = "license_url";
+			} break;
+			case HB_OT_NAME_ID_TYPOGRAPHIC_FAMILY: {
+				name = "typographic_family_name";
+			} break;
+			case HB_OT_NAME_ID_TYPOGRAPHIC_SUBFAMILY: {
+				name = "typographic_subfamily_name";
+			} break;
+			case HB_OT_NAME_ID_MAC_FULL_NAME: {
+				name = "full_name_macos";
+			} break;
+			case HB_OT_NAME_ID_SAMPLE_TEXT: {
+				name = "sample_text";
+			} break;
+			case HB_OT_NAME_ID_CID_FINDFONT_NAME: {
+				name = "cid_findfont_name";
+			} break;
+			case HB_OT_NAME_ID_WWS_FAMILY: {
+				name = "weight_width_slope_family_name";
+			} break;
+			case HB_OT_NAME_ID_WWS_SUBFAMILY: {
+				name = "weight_width_slope_subfamily_name";
+			} break;
+			case HB_OT_NAME_ID_LIGHT_BACKGROUND: {
+				name = "light_background_palette";
+			} break;
+			case HB_OT_NAME_ID_DARK_BACKGROUND: {
+				name = "dark_background_palette";
+			} break;
+			case HB_OT_NAME_ID_VARIATIONS_PS_PREFIX: {
+				name = "postscript_name_prefix";
+			} break;
+			default: {
+				name = vformat("unknown_%d", names[i].name_id);
+			} break;
+		}
+		unsigned int text_size = hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, nullptr, nullptr) + 1;
+		// @todo After godot-cpp#1141 is fixed, use text.resize() and write directly to text.wptr() instead of using a temporary buffer.
+		char32_t *buffer = memnew_arr(char32_t, text_size);
+		hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, &text_size, (uint32_t *)buffer);
+		String text(buffer);
+		memdelete_arr(buffer);
+		if (!text.is_empty()) {
+			Dictionary &id_string = names_for_lang[String(hb_language_to_string(names[i].language))];
+			id_string[name] = text;
+		}
+	}
+
+	Dictionary out;
+	for (const KeyValue<String, Dictionary> &E : names_for_lang) {
+		out[E.key] = E.value;
+	}
+
+	return out;
 }
 
 void TextServerAdvanced::_font_set_antialiasing(const RID &p_font_rid, TextServer::FontAntialiasing p_antialiasing) {
@@ -4138,6 +4253,7 @@ RID TextServerAdvanced::_shaped_text_substr(const RID &p_shaped, int64_t p_start
 	new_sd->direction = sd->direction;
 	new_sd->custom_punct = sd->custom_punct;
 	new_sd->para_direction = sd->para_direction;
+	new_sd->base_para_direction = sd->base_para_direction;
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		new_sd->extra_spacing[i] = sd->extra_spacing[i];
 	}
@@ -4182,22 +4298,61 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 			ERR_FAIL_COND_V_MSG((start < 0 || end - start > p_new_sd->utf16.length()), false, "Invalid BiDi override range.");
 
 			// Create temporary line bidi & shape.
-			UBiDi *bidi_iter = ubidi_openSized(end - start, 0, &err);
-			ERR_FAIL_COND_V_MSG(U_FAILURE(err), false, u_errorName(err));
-			ubidi_setLine(p_sd->bidi_iter[ov], start, end, bidi_iter, &err);
-			if (U_FAILURE(err)) {
-				ubidi_close(bidi_iter);
-				ERR_FAIL_V_MSG(false, u_errorName(err));
+			UBiDi *bidi_iter = nullptr;
+			if (p_sd->bidi_iter[ov]) {
+				bidi_iter = ubidi_openSized(end - start, 0, &err);
+				if (U_SUCCESS(err)) {
+					ubidi_setLine(p_sd->bidi_iter[ov], start, end, bidi_iter, &err);
+					if (U_FAILURE(err)) {
+						// Line BiDi failed (string contains incompatible control characters), try full paragraph BiDi instead.
+						err = U_ZERO_ERROR;
+						const UChar *data = p_sd->utf16.get_data();
+						switch (static_cast<TextServer::Direction>(p_sd->bidi_override[ov].z)) {
+							case DIRECTION_LTR: {
+								ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_LTR, nullptr, &err);
+							} break;
+							case DIRECTION_RTL: {
+								ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_RTL, nullptr, &err);
+							} break;
+							case DIRECTION_INHERITED: {
+								ubidi_setPara(bidi_iter, data + start, end - start, p_sd->base_para_direction, nullptr, &err);
+							} break;
+							case DIRECTION_AUTO: {
+								UBiDiDirection direction = ubidi_getBaseDirection(data + start, end - start);
+								if (direction != UBIDI_NEUTRAL) {
+									ubidi_setPara(bidi_iter, data + start, end - start, direction, nullptr, &err);
+								} else {
+									ubidi_setPara(bidi_iter, data + start, end - start, p_sd->base_para_direction, nullptr, &err);
+								}
+							} break;
+						}
+						if (U_FAILURE(err)) {
+							ubidi_close(bidi_iter);
+							bidi_iter = nullptr;
+							ERR_PRINT(vformat("BiDi reordering for the line failed: %s", u_errorName(err)));
+						}
+					}
+				} else {
+					bidi_iter = nullptr;
+					ERR_PRINT(vformat("BiDi iterator allocation for the line failed: %s", u_errorName(err)));
+				}
 			}
 			p_new_sd->bidi_iter.push_back(bidi_iter);
 
 			err = U_ZERO_ERROR;
-			int bidi_run_count = ubidi_countRuns(bidi_iter, &err);
-			ERR_FAIL_COND_V_MSG(U_FAILURE(err), false, u_errorName(err));
+			int bidi_run_count = 1;
+			if (bidi_iter) {
+				bidi_run_count = ubidi_countRuns(bidi_iter, &err);
+				if (U_FAILURE(err)) {
+					ERR_PRINT(u_errorName(err));
+				}
+			}
 			for (int i = 0; i < bidi_run_count; i++) {
 				int32_t _bidi_run_start = 0;
-				int32_t _bidi_run_length = 0;
-				ubidi_getVisualRun(bidi_iter, i, &_bidi_run_start, &_bidi_run_length);
+				int32_t _bidi_run_length = end - start;
+				if (bidi_iter) {
+					ubidi_getVisualRun(bidi_iter, i, &_bidi_run_start, &_bidi_run_length);
+				}
 
 				int32_t bidi_run_start = _convert_pos(p_sd, ov_start + start + _bidi_run_start);
 				int32_t bidi_run_end = _convert_pos(p_sd, ov_start + start + _bidi_run_start + _bidi_run_length);
@@ -5604,25 +5759,25 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 		sd->script_iter = memnew(ScriptIterator(sd->text, 0, sd->text.length()));
 	}
 
-	int base_para_direction = UBIDI_DEFAULT_LTR;
+	sd->base_para_direction = UBIDI_DEFAULT_LTR;
 	switch (sd->direction) {
 		case DIRECTION_LTR: {
 			sd->para_direction = DIRECTION_LTR;
-			base_para_direction = UBIDI_LTR;
+			sd->base_para_direction = UBIDI_LTR;
 		} break;
 		case DIRECTION_RTL: {
 			sd->para_direction = DIRECTION_RTL;
-			base_para_direction = UBIDI_RTL;
+			sd->base_para_direction = UBIDI_RTL;
 		} break;
 		case DIRECTION_INHERITED:
 		case DIRECTION_AUTO: {
 			UBiDiDirection direction = ubidi_getBaseDirection(data, sd->utf16.length());
 			if (direction != UBIDI_NEUTRAL) {
 				sd->para_direction = (direction == UBIDI_RTL) ? DIRECTION_RTL : DIRECTION_LTR;
-				base_para_direction = direction;
+				sd->base_para_direction = direction;
 			} else {
 				sd->para_direction = DIRECTION_LTR;
-				base_para_direction = UBIDI_DEFAULT_LTR;
+				sd->base_para_direction = UBIDI_DEFAULT_LTR;
 			}
 		} break;
 	}
@@ -5642,38 +5797,53 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 
 		UErrorCode err = U_ZERO_ERROR;
 		UBiDi *bidi_iter = ubidi_openSized(end - start, 0, &err);
-		ERR_FAIL_COND_V_MSG(U_FAILURE(err), false, u_errorName(err));
-
-		switch (static_cast<TextServer::Direction>(sd->bidi_override[ov].z)) {
-			case DIRECTION_LTR: {
-				ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_LTR, nullptr, &err);
-			} break;
-			case DIRECTION_RTL: {
-				ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_RTL, nullptr, &err);
-			} break;
-			case DIRECTION_INHERITED: {
-				ubidi_setPara(bidi_iter, data + start, end - start, base_para_direction, nullptr, &err);
-			} break;
-			case DIRECTION_AUTO: {
-				UBiDiDirection direction = ubidi_getBaseDirection(data + start, end - start);
-				if (direction != UBIDI_NEUTRAL) {
-					ubidi_setPara(bidi_iter, data + start, end - start, direction, nullptr, &err);
-				} else {
-					ubidi_setPara(bidi_iter, data + start, end - start, base_para_direction, nullptr, &err);
-				}
-			} break;
+		if (U_SUCCESS(err)) {
+			switch (static_cast<TextServer::Direction>(sd->bidi_override[ov].z)) {
+				case DIRECTION_LTR: {
+					ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_LTR, nullptr, &err);
+				} break;
+				case DIRECTION_RTL: {
+					ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_RTL, nullptr, &err);
+				} break;
+				case DIRECTION_INHERITED: {
+					ubidi_setPara(bidi_iter, data + start, end - start, sd->base_para_direction, nullptr, &err);
+				} break;
+				case DIRECTION_AUTO: {
+					UBiDiDirection direction = ubidi_getBaseDirection(data + start, end - start);
+					if (direction != UBIDI_NEUTRAL) {
+						ubidi_setPara(bidi_iter, data + start, end - start, direction, nullptr, &err);
+					} else {
+						ubidi_setPara(bidi_iter, data + start, end - start, sd->base_para_direction, nullptr, &err);
+					}
+				} break;
+			}
+			if (U_FAILURE(err)) {
+				ubidi_close(bidi_iter);
+				bidi_iter = nullptr;
+				ERR_PRINT(vformat("BiDi reordering for the paragraph failed: %s", u_errorName(err)));
+			}
+		} else {
+			bidi_iter = nullptr;
+			ERR_PRINT(vformat("BiDi iterator allocation for the paragraph failed: %s", u_errorName(err)));
 		}
-		ERR_FAIL_COND_V_MSG(U_FAILURE(err), false, u_errorName(err));
 		sd->bidi_iter.push_back(bidi_iter);
 
 		err = U_ZERO_ERROR;
-		int bidi_run_count = ubidi_countRuns(bidi_iter, &err);
-		ERR_FAIL_COND_V_MSG(U_FAILURE(err), false, u_errorName(err));
+		int bidi_run_count = 1;
+		if (bidi_iter) {
+			bidi_run_count = ubidi_countRuns(bidi_iter, &err);
+			if (U_FAILURE(err)) {
+				ERR_PRINT(u_errorName(err));
+			}
+		}
 		for (int i = 0; i < bidi_run_count; i++) {
 			int32_t _bidi_run_start = 0;
-			int32_t _bidi_run_length = 0;
+			int32_t _bidi_run_length = end - start;
+			bool is_rtl = false;
 			hb_direction_t bidi_run_direction = HB_DIRECTION_INVALID;
-			bool is_rtl = (ubidi_getVisualRun(bidi_iter, i, &_bidi_run_start, &_bidi_run_length) == UBIDI_LTR);
+			if (bidi_iter) {
+				is_rtl = (ubidi_getVisualRun(bidi_iter, i, &_bidi_run_start, &_bidi_run_length) == UBIDI_LTR);
+			}
 			switch (sd->orientation) {
 				case ORIENTATION_HORIZONTAL: {
 					if (is_rtl) {
@@ -5730,7 +5900,7 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 							gl.start = span.start;
 							gl.end = span.end;
 							gl.count = 1;
-							gl.flags = GRAPHEME_IS_VALID | GRAPHEME_IS_VIRTUAL;
+							gl.flags = GRAPHEME_IS_VALID | GRAPHEME_IS_EMBEDDED_OBJECT;
 							if (sd->orientation == ORIENTATION_HORIZONTAL) {
 								gl.advance = sd->objects[span.embedded_key].rect.size.x;
 							} else {

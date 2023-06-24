@@ -17,10 +17,6 @@ if TYPE_CHECKING:
     from SCons import Environment
 
 
-def is_active():
-    return True
-
-
 def get_name():
     return "Web"
 
@@ -46,6 +42,16 @@ def get_opts():
         ),
         BoolVariable("use_closure_compiler", "Use closure compiler to minimize JavaScript code", False),
     ]
+
+
+def get_doc_classes():
+    return [
+        "EditorExportPlatformWeb",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
 
 
 def get_flags():

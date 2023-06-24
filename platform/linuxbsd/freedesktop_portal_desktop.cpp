@@ -35,14 +35,13 @@
 #include "core/error/error_macros.h"
 #include "core/os/os.h"
 #include "core/string/ustring.h"
+#include "core/variant/variant.h"
 
 #ifdef SOWRAP_ENABLED
 #include "dbus-so_wrap.h"
 #else
 #include <dbus/dbus.h>
 #endif
-
-#include "core/variant/variant.h"
 
 #define BUS_OBJECT_NAME "org.freedesktop.portal.Desktop"
 #define BUS_OBJECT_PATH "/org/freedesktop/portal/desktop"
@@ -138,6 +137,22 @@ FreeDesktopPortalDesktop::FreeDesktopPortalDesktop() {
 #else
 	unsupported = false;
 #endif
+
+	if (unsupported) {
+		return;
+	}
+
+	bool ver_ok = false;
+	int version_major = 0;
+	int version_minor = 0;
+	int version_rev = 0;
+	dbus_get_version(&version_major, &version_minor, &version_rev);
+	ver_ok = (version_major == 1 && version_minor >= 10) || (version_major > 1); // 1.10.0
+	print_verbose(vformat("PortalDesktop: DBus %d.%d.%d detected.", version_major, version_minor, version_rev));
+	if (!ver_ok) {
+		print_verbose("PortalDesktop: Unsupported DBus library version!");
+		unsupported = true;
+	}
 }
 
 #endif // DBUS_ENABLED

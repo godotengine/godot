@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,6 @@
 
 #include <cstring>
 #include <math.h>
-#include <clocale>
 #include <ctype.h>
 #include "tvgSvgLoaderCommon.h"
 #include "tvgSvgPath.h"
@@ -545,20 +544,12 @@ bool svgPathToTvgPath(const char* svgPath, Array<PathCommand>& cmds, Array<Point
     char cmd = 0;
     bool isQuadratic = false;
     char* path = (char*)svgPath;
-    char* curLocale;
-
-    curLocale = setlocale(LC_NUMERIC, NULL);
-    if (curLocale) curLocale = strdup(curLocale);
-    setlocale(LC_NUMERIC, "POSIX");
 
     while ((path[0] != '\0')) {
         path = _nextCommand(path, &cmd, numberArray, &numberCount);
         if (!path) break;
         if (!_processCommand(&cmds, &pts, cmd, numberArray, numberCount, &cur, &curCtl, &startPoint, &isQuadratic)) break;
     }
-
-    setlocale(LC_NUMERIC, curLocale);
-    if (curLocale) free(curLocale);
 
     return true;
 }

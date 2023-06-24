@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VSeparator" inherits="Separator" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Vertical version of [Separator].
+		A vertical line used for separating other controls.
 	</brief_description>
 	<description>
-		Vertical version of [Separator]. Even though it looks vertical, it is used to separate objects horizontally.
+		A vertical separator used for separating other controls that are arranged [b]horizontally[/b]. [VSeparator] is purely visual and normally drawn as a [StyleBoxLine].
 	</description>
 	<tutorials>
 	</tutorials>

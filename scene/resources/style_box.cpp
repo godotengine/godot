@@ -562,14 +562,16 @@ inline void set_inner_corner_radius(const Rect2 style_rect, const Rect2 inner_re
 	inner_corner_radius[3] = MAX(corner_radius[3] - rad, 0);
 }
 
-inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color> &colors, const Rect2 &style_rect, const real_t corner_radius[4],
-		const Rect2 &ring_rect, const Rect2 &inner_rect, const Color &inner_color, const Color &outer_color, const int corner_detail, const Vector2 &skew, bool fill_center = false) {
+inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color> &colors, const Rect2 &style_rect, const real_t corner_radius[4],
+		const Rect2 &ring_rect, const Rect2 &inner_rect, const Color &inner_color, const Color &outer_color, const int corner_detail, const Vector2 &skew, bool is_filled = false) {
 	int vert_offset = verts.size();
 	if (!vert_offset) {
 		vert_offset = 0;
 	}
 
 	int adapted_corner_detail = (corner_radius[0] == 0 && corner_radius[1] == 0 && corner_radius[2] == 0 && corner_radius[3] == 0) ? 1 : corner_detail;
+
+	bool draw_border = !is_filled;
 
 	real_t ring_corner_radius[4];
 	set_inner_corner_radius(style_rect, ring_rect, corner_radius, ring_corner_radius);
@@ -592,9 +594,14 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 		Point2(inner_rect.position.x + inner_corner_radius[3], inner_rect.position.y + inner_rect.size.y - inner_corner_radius[3]) //bl
 	};
 	// Calculate the vertices.
+
+	// If the center is filled, we do not draw the border and directly use the inner ring as reference. Because all calls to this
+	// method either draw a ring or a filled rounded rectangle, but not both.
+	int max_inner_outer = draw_border ? 2 : 1;
+
 	for (int corner_index = 0; corner_index < 4; corner_index++) {
 		for (int detail = 0; detail <= adapted_corner_detail; detail++) {
-			for (int inner_outer = 0; inner_outer < 2; inner_outer++) {
+			for (int inner_outer = 0; inner_outer < max_inner_outer; inner_outer++) {
 				real_t radius;
 				Color color;
 				Point2 corner_point;
@@ -621,24 +628,31 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 	int ring_vert_count = verts.size() - vert_offset;
 
 	// Fill the indices and the colors for the border.
-	for (int i = 0; i < ring_vert_count; i++) {
-		indices.push_back(vert_offset + ((i + 0) % ring_vert_count));
-		indices.push_back(vert_offset + ((i + 2) % ring_vert_count));
-		indices.push_back(vert_offset + ((i + 1) % ring_vert_count));
+
+	if (draw_border) {
+		for (int i = 0; i < ring_vert_count; i++) {
+			indices.push_back(vert_offset + ((i + 0) % ring_vert_count));
+			indices.push_back(vert_offset + ((i + 2) % ring_vert_count));
+			indices.push_back(vert_offset + ((i + 1) % ring_vert_count));
+		}
 	}
 
-	if (fill_center) {
-		//Fill the indices and the colors for the center.
-		for (int index = 0; index < ring_vert_count / 2; index += 2) {
-			int i = index;
+	if (is_filled) {
+		// Compute the triangles pattern to draw the rounded rectangle.
+		// Consists of vertical stripes of two triangles each.
+
+		int stripes_count = ring_vert_count / 2 - 1;
+		int last_vert_id = ring_vert_count - 1;
+
+		for (int i = 0; i < stripes_count; i++) {
 			// Polygon 1.
 			indices.push_back(vert_offset + i);
-			indices.push_back(vert_offset + ring_vert_count - 4 - i);
-			indices.push_back(vert_offset + i + 2);
+			indices.push_back(vert_offset + last_vert_id - i - 1);
+			indices.push_back(vert_offset + i + 1);
 			// Polygon 2.
 			indices.push_back(vert_offset + i);
-			indices.push_back(vert_offset + ring_vert_count - 2 - i);
-			indices.push_back(vert_offset + ring_vert_count - 4 - i);
+			indices.push_back(vert_offset + last_vert_id - 0 - i);
+			indices.push_back(vert_offset + last_vert_id - 1 - i);
 		}
 	}
 }
@@ -741,92 +755,100 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 		Color shadow_color_transparent = Color(shadow_color.r, shadow_color.g, shadow_color.b, 0);
 
-		draw_ring(verts, indices, colors, shadow_inner_rect, adapted_corner,
+		draw_rounded_rectangle(verts, indices, colors, shadow_inner_rect, adapted_corner,
 				shadow_rect, shadow_inner_rect, shadow_color, shadow_color_transparent, corner_detail, skew);
 
 		if (draw_center) {
-			draw_ring(verts, indices, colors, shadow_inner_rect, adapted_corner,
+			draw_rounded_rectangle(verts, indices, colors, shadow_inner_rect, adapted_corner,
 					shadow_inner_rect, shadow_inner_rect, shadow_color, shadow_color, corner_detail, skew, true);
 		}
 	}
 
 	// Create border (no AA).
 	if (draw_border && !aa_on) {
-		draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
+		draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
 				border_style_rect, infill_rect, border_color_inner, border_color, corner_detail, skew);
 	}
 
 	// Create infill (no AA).
-	if (draw_center && (!aa_on || blend_on || !draw_border)) {
-		draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
+	if (draw_center && (!aa_on || blend_on)) {
+		draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
 				infill_rect, infill_rect, bg_color, bg_color, corner_detail, skew, true);
 	}
 
 	if (aa_on) {
 		real_t aa_border_width[4];
+		real_t aa_border_width_half[4];
 		real_t aa_fill_width[4];
+		real_t aa_fill_width_half[4];
 		if (draw_border) {
 			for (int i = 0; i < 4; i++) {
 				if (border_width[i] > 0) {
 					aa_border_width[i] = aa_size;
+					aa_border_width_half[i] = aa_size / 2;
 					aa_fill_width[i] = 0;
+					aa_fill_width_half[i] = 0;
 				} else {
 					aa_border_width[i] = 0;
+					aa_border_width_half[i] = 0;
 					aa_fill_width[i] = aa_size;
+					aa_fill_width_half[i] = aa_size / 2;
 				}
 			}
 		} else {
 			for (int i = 0; i < 4; i++) {
 				aa_border_width[i] = 0;
+				aa_border_width_half[i] = 0;
 				aa_fill_width[i] = aa_size;
+				aa_fill_width_half[i] = aa_size / 2;
 			}
 		}
 
-		Rect2 infill_inner_rect = infill_rect.grow_individual(-aa_border_width[SIDE_LEFT], -aa_border_width[SIDE_TOP],
-				-aa_border_width[SIDE_RIGHT], -aa_border_width[SIDE_BOTTOM]);
-
 		if (draw_center) {
-			if (!blend_on && draw_border) {
-				Rect2 infill_inner_rect_aa = infill_inner_rect.grow_individual(aa_border_width[SIDE_LEFT], aa_border_width[SIDE_TOP],
-						aa_border_width[SIDE_RIGHT], aa_border_width[SIDE_BOTTOM]);
-				// Create infill within AA border.
-				draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-						infill_inner_rect_aa, infill_inner_rect_aa, bg_color, bg_color, corner_detail, skew, true);
+			// Infill rect, transparent side of antialiasing gradient (base infill rect enlarged by AA size)
+			Rect2 infill_rect_aa_transparent = infill_rect.grow_individual(aa_fill_width_half[SIDE_LEFT], aa_fill_width_half[SIDE_TOP],
+					aa_fill_width_half[SIDE_RIGHT], aa_fill_width_half[SIDE_BOTTOM]);
+			// Infill rect, colored side of antialiasing gradient (base infill rect shrunk by AA size)
+			Rect2 infill_rect_aa_colored = infill_rect_aa_transparent.grow_individual(-aa_fill_width[SIDE_LEFT], -aa_fill_width[SIDE_TOP],
+					-aa_fill_width[SIDE_RIGHT], -aa_fill_width[SIDE_BOTTOM]);
+			if (!blend_on) {
+				// Create center fill, not antialiased yet
+				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
+						infill_rect_aa_colored, infill_rect_aa_colored, bg_color, bg_color, corner_detail, skew, true);
 			}
-
 			if (!blend_on || !draw_border) {
-				Rect2 infill_rect_aa = infill_rect.grow_individual(aa_fill_width[SIDE_LEFT], aa_fill_width[SIDE_TOP],
-						aa_fill_width[SIDE_RIGHT], aa_fill_width[SIDE_BOTTOM]);
-
 				Color alpha_bg = Color(bg_color.r, bg_color.g, bg_color.b, 0);
-
-				// Create infill fake AA gradient.
-				draw_ring(verts, indices, colors, style_rect, adapted_corner,
-						infill_rect_aa, infill_rect, bg_color, alpha_bg, corner_detail, skew);
+				// Add antialiasing on the center fill
+				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
+						infill_rect_aa_transparent, infill_rect_aa_colored, bg_color, alpha_bg, corner_detail, skew);
 			}
 		}
 
 		if (draw_border) {
-			Rect2 infill_rect_aa = infill_rect.grow_individual(aa_border_width[SIDE_LEFT], aa_border_width[SIDE_TOP],
-					aa_border_width[SIDE_RIGHT], aa_border_width[SIDE_BOTTOM]);
-			Rect2 style_rect_aa = style_rect.grow_individual(aa_border_width[SIDE_LEFT], aa_border_width[SIDE_TOP],
-					aa_border_width[SIDE_RIGHT], aa_border_width[SIDE_BOTTOM]);
-			Rect2 border_style_rect_aa = border_style_rect.grow_individual(aa_border_width[SIDE_LEFT], aa_border_width[SIDE_TOP],
-					aa_border_width[SIDE_RIGHT], aa_border_width[SIDE_BOTTOM]);
+			// Inner border recct, fully colored side of antialiasing gradient (base inner rect enlarged by AA size)
+			Rect2 inner_rect_aa_colored = infill_rect.grow_individual(aa_border_width_half[SIDE_LEFT], aa_border_width_half[SIDE_TOP],
+					aa_border_width_half[SIDE_RIGHT], aa_border_width_half[SIDE_BOTTOM]);
+			// Inner border rect, transparent side of antialiasing gradient (base inner rect shrunk by AA size)
+			Rect2 inner_rect_aa_transparent = inner_rect_aa_colored.grow_individual(-aa_border_width[SIDE_LEFT], -aa_border_width[SIDE_TOP],
+					-aa_border_width[SIDE_RIGHT], -aa_border_width[SIDE_BOTTOM]);
+			// Outer border rect, transparent side of antialiasing gradient (base outer rect enlarged by AA size)
+			Rect2 outer_rect_aa_transparent = style_rect.grow_individual(aa_border_width_half[SIDE_LEFT], aa_border_width_half[SIDE_TOP],
+					aa_border_width_half[SIDE_RIGHT], aa_border_width_half[SIDE_BOTTOM]);
+			// Outer border rect, colored side of antialiasing gradient (base outer rect shrunk by AA size)
+			Rect2 outer_rect_aa_colored = border_style_rect.grow_individual(aa_border_width_half[SIDE_LEFT], aa_border_width_half[SIDE_TOP],
+					aa_border_width_half[SIDE_RIGHT], aa_border_width_half[SIDE_BOTTOM]);
 
-			// Create border.
-			draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-					border_style_rect_aa, ((blend_on) ? infill_rect : infill_rect_aa), border_color_inner, border_color, corner_detail, skew);
-
+			// Create border ring, not antialiased yet
+			draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
+					outer_rect_aa_colored, ((blend_on) ? infill_rect : inner_rect_aa_colored), border_color_inner, border_color, corner_detail, skew);
 			if (!blend_on) {
-				// Create inner border fake AA gradient.
-				draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-						infill_rect_aa, infill_rect, border_color_blend, border_color, corner_detail, skew);
+				// Add antialiasing on the ring inner border
+				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
+						inner_rect_aa_colored, inner_rect_aa_transparent, border_color_blend, border_color, corner_detail, skew);
 			}
-
-			// Create outer border fake AA gradient.
-			draw_ring(verts, indices, colors, border_style_rect, adapted_corner,
-					style_rect_aa, border_style_rect_aa, border_color, border_color_alpha, corner_detail, skew);
+			// Add antialiasing on the ring outer border
+			draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
+					outer_rect_aa_transparent, outer_rect_aa_colored, border_color, border_color_alpha, corner_detail, skew);
 		}
 	}
 

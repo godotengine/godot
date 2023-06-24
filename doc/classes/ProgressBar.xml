@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ProgressBar" inherits="Range" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		General-purpose progress bar.
+		A control used for visual representation of a percentage.
 	</brief_description>
 	<description>
-		General-purpose progress bar. Shows fill percentage from right to left.
+		A control used for visual representation of a percentage. Shows fill percentage from right to left.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -28,20 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#import "os_ios.h"
+
 #ifdef IOS_ENABLED
 
-#include "os_ios.h"
-
 #import "app_delegate.h"
+#import "display_server_ios.h"
+#import "godot_view.h"
+#import "view_controller.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
-#include "display_server_ios.h"
 #include "drivers/unix/syslog_logger.h"
-#import "godot_view.h"
 #include "main/main.h"
-#import "view_controller.h"
 
 #import <AudioToolbox/AudioServices.h>
 #import <CoreText/CoreText.h>
@@ -51,6 +52,7 @@
 
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+
 #import <QuartzCore/CAMetalLayer.h>
 #ifdef USE_VOLK
 #include <volk.h>
@@ -240,8 +242,18 @@ Error OS_IOS::open_dynamic_library(const String p_path, void *&p_library_handle,
 	}
 
 	if (!FileAccess::exists(path)) {
+		// Load .dylib converted to framework from within the executable path.
+		path = get_framework_executable(get_executable_path().get_base_dir().path_join(p_path.get_file().get_basename() + ".framework"));
+	}
+
+	if (!FileAccess::exists(path)) {
 		// Load .dylib or framework from a standard iOS location.
 		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file()));
+	}
+
+	if (!FileAccess::exists(path)) {
+		// Load .dylib converted to framework from a standard iOS location.
+		path = get_framework_executable(get_executable_path().get_base_dir().path_join("Frameworks").path_join(p_path.get_file().get_basename() + ".framework"));
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);

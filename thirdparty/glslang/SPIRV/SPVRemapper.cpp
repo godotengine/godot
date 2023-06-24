@@ -36,10 +36,6 @@
 #include "SPVRemapper.h"
 #include "doc.h"
 
-#if !defined (use_cpp11)
-// ... not supported before C++11
-#else // defined (use_cpp11)
-
 #include <algorithm>
 #include <cassert>
 #include "../glslang/Include/Common.h"
@@ -1527,6 +1523,4 @@ namespace spv {
     }
 
 } // namespace SPV
-
-#endif // defined (use_cpp11)
 

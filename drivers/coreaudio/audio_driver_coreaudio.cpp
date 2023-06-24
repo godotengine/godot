@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef COREAUDIO_ENABLED
-
 #include "audio_driver_coreaudio.h"
+
+#ifdef COREAUDIO_ENABLED
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
@@ -116,7 +116,7 @@ Error AudioDriverCoreAudio::init() {
 			break;
 	}
 
-	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
+	mix_rate = _get_configured_mix_rate();
 
 	memset(&strdesc, 0, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;
@@ -405,7 +405,7 @@ Error AudioDriverCoreAudio::init_input_device() {
 			break;
 	}
 
-	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
+	mix_rate = _get_configured_mix_rate();
 
 	memset(&strdesc, 0, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;

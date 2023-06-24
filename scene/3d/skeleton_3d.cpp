@@ -226,6 +226,11 @@ void Skeleton3D::_update_process_order() {
 
 void Skeleton3D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (dirty) {
+				notification(NOTIFICATION_UPDATE_SKELETON);
+			}
+		} break;
 		case NOTIFICATION_UPDATE_SKELETON: {
 			RenderingServer *rs = RenderingServer::get_singleton();
 			Bone *bonesptr = bones.ptrw();
@@ -378,15 +383,12 @@ uint64_t Skeleton3D::get_version() const {
 }
 
 void Skeleton3D::add_bone(const String &p_name) {
-	ERR_FAIL_COND(p_name.is_empty() || p_name.contains(":") || p_name.contains("/"));
-
-	for (int i = 0; i < bones.size(); i++) {
-		ERR_FAIL_COND(bones[i].name == p_name);
-	}
+	ERR_FAIL_COND(p_name.is_empty() || p_name.contains(":") || p_name.contains("/") || name_to_bone_index.has(p_name));
 
 	Bone b;
 	b.name = p_name;
 	bones.push_back(b);
+	name_to_bone_index.insert(p_name, bones.size() - 1);
 	process_order_dirty = true;
 	version++;
 	rest_dirty = true;
@@ -395,13 +397,8 @@ void Skeleton3D::add_bone(const String &p_name) {
 }
 
 int Skeleton3D::find_bone(const String &p_name) const {
-	for (int i = 0; i < bones.size(); i++) {
-		if (bones[i].name == p_name) {
-			return i;
-		}
-	}
-
-	return -1;
+	const int *bone_index_ptr = name_to_bone_index.getptr(p_name);
+	return bone_index_ptr != nullptr ? *bone_index_ptr : -1;
 }
 
 String Skeleton3D::get_bone_name(int p_bone) const {
@@ -409,17 +406,21 @@ String Skeleton3D::get_bone_name(int p_bone) const {
 	ERR_FAIL_INDEX_V(p_bone, bone_size, "");
 	return bones[p_bone].name;
 }
+
 void Skeleton3D::set_bone_name(int p_bone, const String &p_name) {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
 
-	for (int i = 0; i < bone_size; i++) {
-		if (i != p_bone) {
-			ERR_FAIL_COND_MSG(bones[i].name == p_name, "Skeleton3D: '" + get_name() + "', bone name:  '" + p_name + "' is already exist.");
-		}
+	const int *bone_index_ptr = name_to_bone_index.getptr(p_name);
+	if (bone_index_ptr != nullptr) {
+		ERR_FAIL_COND_MSG(*bone_index_ptr != p_bone, "Skeleton3D: '" + get_name() + "', bone name:  '" + p_name + "' already exists.");
+		return; // No need to rename, the bone already has the given name.
 	}
 
+	name_to_bone_index.erase(bones[p_bone].name);
 	bones.write[p_bone].name = p_name;
+	name_to_bone_index.insert(p_name, p_bone);
+
 	version++;
 }
 
@@ -547,6 +548,7 @@ bool Skeleton3D::is_show_rest_only() const {
 
 void Skeleton3D::clear_bones() {
 	bones.clear();
+	name_to_bone_index.clear();
 	process_order_dirty = true;
 	version++;
 	_make_dirty();
@@ -629,7 +631,9 @@ void Skeleton3D::_make_dirty() {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_notification(this, NOTIFICATION_UPDATE_SKELETON);
+	if (is_inside_tree()) {
+		notify_deferred_thread_group(NOTIFICATION_UPDATE_SKELETON);
+	}
 	dirty = true;
 }
 
@@ -676,7 +680,7 @@ void Skeleton3D::bind_physical_bone_to_bone(int p_bone, PhysicalBone3D *p_physic
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone, bone_size);
 	ERR_FAIL_COND(bones[p_bone].physical_bone);
-	ERR_FAIL_COND(!p_physical_bone);
+	ERR_FAIL_NULL(p_physical_bone);
 	bones.write[p_bone].physical_bone = p_physical_bone;
 
 	_rebuild_physical_bones_cache();
@@ -902,6 +906,7 @@ void Skeleton3D::force_update_all_bone_transforms() {
 	for (int i = 0; i < parentless_bones.size(); i++) {
 		force_update_bone_children_transforms(parentless_bones[i]);
 	}
+	rest_dirty = false;
 }
 
 void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
@@ -925,18 +930,18 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 
 			if (b.parent >= 0) {
 				b.pose_global = bonesptr[b.parent].pose_global * pose;
-				b.pose_global_no_override = b.pose_global;
+				b.pose_global_no_override = bonesptr[b.parent].pose_global_no_override * pose;
 			} else {
 				b.pose_global = pose;
-				b.pose_global_no_override = b.pose_global;
+				b.pose_global_no_override = pose;
 			}
 		} else {
 			if (b.parent >= 0) {
 				b.pose_global = bonesptr[b.parent].pose_global * b.rest;
-				b.pose_global_no_override = b.pose_global;
+				b.pose_global_no_override = bonesptr[b.parent].pose_global_no_override * b.rest;
 			} else {
 				b.pose_global = b.rest;
-				b.pose_global_no_override = b.pose_global;
+				b.pose_global_no_override = b.rest;
 			}
 		}
 		if (rest_dirty) {
@@ -959,7 +964,6 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 
 		emit_signal(SceneStringNames::get_singleton()->bone_pose_changed, current_bone_idx);
 	}
-	rest_dirty = false;
 }
 
 void Skeleton3D::_bind_methods() {

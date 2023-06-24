@@ -32,8 +32,8 @@
 #define TTS_WINDOWS_H
 
 #include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/list.h"
-#include "core/templates/rb_map.h"
 #include "core/variant/array.h"
 #include "servers/display_server.h"
 
@@ -54,7 +54,7 @@ class TTS_Windows {
 		int offset;
 		int id;
 	};
-	RBMap<ULONG, UTData> ids;
+	HashMap<uint32_t, UTData> ids;
 
 	static void __stdcall speech_event_callback(WPARAM wParam, LPARAM lParam);
 	void _update_tts();

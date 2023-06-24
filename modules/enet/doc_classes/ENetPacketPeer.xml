@@ -40,7 +40,7 @@
 			<return type="float" />
 			<param index="0" name="statistic" type="int" enum="ENetPacketPeer.PeerStatistic" />
 			<description>
-				Returns the requested [code]statistic[/code] for this peer. See [enum PeerStatistic].
+				Returns the requested [param statistic] for this peer. See [enum PeerStatistic].
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
@@ -80,7 +80,7 @@
 			<return type="void" />
 			<param index="0" name="ping_interval" type="int" />
 			<description>
-				Sets the [code]ping_interval[/code] in milliseconds at which pings will be sent to a peer. Pings are used both to monitor the liveness of the connection and also to dynamically adjust the throttle during periods of low traffic so that the throttle has reasonable responsiveness during traffic spikes. The default ping interval is [code]500[/code] milliseconds.
+				Sets the [param ping_interval] in milliseconds at which pings will be sent to a peer. Pings are used both to monitor the liveness of the connection and also to dynamically adjust the throttle during periods of low traffic so that the throttle has reasonable responsiveness during traffic spikes. The default ping interval is [code]500[/code] milliseconds.
 			</description>
 		</method>
 		<method name="reset">
@@ -95,7 +95,7 @@
 			<param index="1" name="packet" type="PackedByteArray" />
 			<param index="2" name="flags" type="int" />
 			<description>
-				Queues a [code]packet[/code] to be sent over the specified [code]channel[/code]. See [code]FLAG_*[/code] constants for available packet flags.
+				Queues a [param packet] to be sent over the specified [param channel]. See [code]FLAG_*[/code] constants for available packet flags.
 			</description>
 		</method>
 		<method name="set_timeout">
@@ -105,7 +105,7 @@
 			<param index="2" name="timeout_max" type="int" />
 			<description>
 				Sets the timeout parameters for a peer. The timeout parameters control how and when a peer will timeout from a failure to acknowledge reliable traffic. Timeout values are expressed in milliseconds.
-				The [code]timeout_limit[/code] is a factor that, multiplied by a value based on the average round trip time, will determine the timeout limit for a reliable packet. When that limit is reached, the timeout will be doubled, and the peer will be disconnected if that limit has reached [code]timeout_min[/code]. The [code]timeout_max[/code] parameter, on the other hand, defines a fixed timeout for which any packet must be acknowledged or the peer will be dropped.
+				The [param timeout] is a factor that, multiplied by a value based on the average round trip time, will determine the timeout limit for a reliable packet. When that limit is reached, the timeout will be doubled, and the peer will be disconnected if that limit has reached [param timeout_min]. The [param timeout_max] parameter, on the other hand, defines a fixed timeout for which any packet must be acknowledged or the peer will be dropped.
 			</description>
 		</method>
 		<method name="throttle_configure">
@@ -115,7 +115,7 @@
 			<param index="2" name="deceleration" type="int" />
 			<description>
 				Configures throttle parameter for a peer.
-				Unreliable packets are dropped by ENet in response to the varying conditions of the Internet connection to the peer. The throttle represents a probability that an unreliable packet should not be dropped and thus sent by ENet to the peer. By measuring fluctuations in round trip times of reliable packets over the specified [code]interval[/code], ENet will either increase the probability by the amount specified in the [code]acceleration[/code] parameter, or decrease it by the amount specified in the [code]deceleration[/code] parameter (both are ratios to [constant PACKET_THROTTLE_SCALE]).
+				Unreliable packets are dropped by ENet in response to the varying conditions of the Internet connection to the peer. The throttle represents a probability that an unreliable packet should not be dropped and thus sent by ENet to the peer. By measuring fluctuations in round trip times of reliable packets over the specified [param interval], ENet will either increase the probability by the amount specified in the [param acceleration] parameter, or decrease it by the amount specified in the [param deceleration] parameter (both are ratios to [constant PACKET_THROTTLE_SCALE]).
 				When the throttle has a value of [constant PACKET_THROTTLE_SCALE], no unreliable packets are dropped by ENet, and so 100% of all unreliable packets will be sent.
 				When the throttle has a value of [code]0[/code], all unreliable packets are dropped by ENet, and so 0% of all unreliable packets will be sent.
 				Intermediate values for the throttle represent intermediate probabilities between 0% and 100% of unreliable packets being sent. The bandwidth limits of the local and foreign hosts are taken into account to determine a sensible limit for the throttle probability above which it should not raise even in the best of conditions.

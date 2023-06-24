@@ -168,7 +168,8 @@ void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 Ref<ImageTexture> ImageTexture::create_from_image(const Ref<Image> &p_image) {
-	ERR_FAIL_COND_V_MSG(p_image.is_null() || p_image->is_empty(), Ref<ImageTexture>(), "Invalid image");
+	ERR_FAIL_COND_V_MSG(p_image.is_null(), Ref<ImageTexture>(), "Invalid image: null");
+	ERR_FAIL_COND_V_MSG(p_image->is_empty(), Ref<ImageTexture>(), "Invalid image: image is empty");
 
 	Ref<ImageTexture> image_texture;
 	image_texture.instantiate();
@@ -385,7 +386,7 @@ void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
 
 		} break;
 		case COMPRESSION_MODE_BASIS_UNIVERSAL: {
-			ERR_FAIL_COND(!Image::basis_universal_unpacker_ptr);
+			ERR_FAIL_NULL(Image::basis_universal_unpacker_ptr);
 			image = Image::basis_universal_unpacker_ptr(data, data_size);
 
 		} break;
@@ -811,21 +812,21 @@ void CompressedTexture2D::set_path(const String &p_path, bool p_take_over) {
 void CompressedTexture2D::_requested_3d(void *p_ud) {
 	CompressedTexture2D *ct = (CompressedTexture2D *)p_ud;
 	Ref<CompressedTexture2D> ctex(ct);
-	ERR_FAIL_COND(!request_3d_callback);
+	ERR_FAIL_NULL(request_3d_callback);
 	request_3d_callback(ctex);
 }
 
 void CompressedTexture2D::_requested_roughness(void *p_ud, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel) {
 	CompressedTexture2D *ct = (CompressedTexture2D *)p_ud;
 	Ref<CompressedTexture2D> ctex(ct);
-	ERR_FAIL_COND(!request_roughness_callback);
+	ERR_FAIL_NULL(request_roughness_callback);
 	request_roughness_callback(ctex, p_normal_path, p_roughness_channel);
 }
 
 void CompressedTexture2D::_requested_normal(void *p_ud) {
 	CompressedTexture2D *ct = (CompressedTexture2D *)p_ud;
 	Ref<CompressedTexture2D> ctex(ct);
-	ERR_FAIL_COND(!request_normal_callback);
+	ERR_FAIL_NULL(request_normal_callback);
 	request_normal_callback(ctex);
 }
 
@@ -2427,6 +2428,8 @@ float GradientTexture2D::_get_gradient_offset_at(int x, int y) const {
 		}
 	} else if (fill == Fill::FILL_RADIAL) {
 		ofs = (pos - fill_from).length() / (fill_to - fill_from).length();
+	} else if (fill == Fill::FILL_SQUARE) {
+		ofs = MAX(Math::abs(pos.x - fill_from.x), Math::abs(pos.y - fill_from.y)) / MAX(Math::abs(fill_to.x - fill_from.x), Math::abs(fill_to.y - fill_from.y));
 	}
 	if (repeat == Repeat::REPEAT_NONE) {
 		ofs = CLAMP(ofs, 0.0, 1.0);
@@ -2555,7 +2558,7 @@ void GradientTexture2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hdr"), "set_use_hdr", "is_using_hdr");
 
 	ADD_GROUP("Fill", "fill_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill", PROPERTY_HINT_ENUM, "Linear,Radial"), "set_fill", "get_fill");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill", PROPERTY_HINT_ENUM, "Linear,Radial,Square"), "set_fill", "get_fill");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "fill_from"), "set_fill_from", "get_fill_from");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "fill_to"), "set_fill_to", "get_fill_to");
 
@@ -2564,6 +2567,7 @@ void GradientTexture2D::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(FILL_LINEAR);
 	BIND_ENUM_CONSTANT(FILL_RADIAL);
+	BIND_ENUM_CONSTANT(FILL_SQUARE);
 
 	BIND_ENUM_CONSTANT(REPEAT_NONE);
 	BIND_ENUM_CONSTANT(REPEAT);
@@ -2688,7 +2692,7 @@ Ref<Texture2D> AnimatedTexture::get_frame_texture(int p_frame) const {
 void AnimatedTexture::set_frame_duration(int p_frame, float p_duration) {
 	ERR_FAIL_INDEX(p_frame, MAX_FRAMES);
 
-	RWLockRead r(rw_lock);
+	RWLockWrite r(rw_lock);
 
 	frames[p_frame].duration = p_duration;
 }
@@ -2703,6 +2707,8 @@ float AnimatedTexture::get_frame_duration(int p_frame) const {
 
 void AnimatedTexture::set_speed_scale(float p_scale) {
 	ERR_FAIL_COND(p_scale < -1000 || p_scale >= 1000);
+
+	RWLockWrite r(rw_lock);
 
 	speed_scale = p_scale;
 }
@@ -2800,7 +2806,7 @@ void AnimatedTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_frame", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_current_frame", "get_current_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pause"), "set_pause", "get_pause");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "-60,60,0.1,or_greater,or_lesser"), "set_speed_scale", "get_speed_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "-60,60,0.1,or_less,or_greater"), "set_speed_scale", "get_speed_scale");
 
 	for (int i = 0; i < MAX_FRAMES; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "frame_" + itos(i) + "/texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_frame_texture", "get_frame_texture", i);

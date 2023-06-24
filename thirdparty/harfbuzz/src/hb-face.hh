@@ -76,7 +76,7 @@ struct hb_face_t
     if (unlikely (!reference_table_func))
       return hb_blob_get_empty ();
 
-    blob = reference_table_func (/*XXX*/const_cast<hb_face_t *> (this), tag, user_data);
+    blob = reference_table_func (/*Oh, well.*/const_cast<hb_face_t *> (this), tag, user_data);
     if (unlikely (!blob))
       return hb_blob_get_empty ();
 

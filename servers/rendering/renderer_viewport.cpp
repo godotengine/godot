@@ -962,6 +962,13 @@ void RendererViewport::viewport_set_update_mode(RID p_viewport, RS::ViewportUpda
 	viewport->update_mode = p_mode;
 }
 
+RID RendererViewport::viewport_get_render_target(RID p_viewport) const {
+	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND_V(!viewport, RID());
+
+	return viewport->render_target;
+}
+
 RID RendererViewport::viewport_get_texture(RID p_viewport) const {
 	const Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND_V(!viewport, RID());
@@ -1396,7 +1403,7 @@ void RendererViewport::call_set_vsync_mode(DisplayServer::VSyncMode p_mode, Disp
 int RendererViewport::get_total_objects_drawn() const {
 	return total_objects_drawn;
 }
-int RendererViewport::get_total_vertices_drawn() const {
+int RendererViewport::get_total_primitives_drawn() const {
 	return total_vertices_drawn;
 }
 int RendererViewport::get_total_draw_calls_used() const {

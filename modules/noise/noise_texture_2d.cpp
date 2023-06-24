@@ -30,8 +30,9 @@
 
 #include "noise_texture_2d.h"
 
-#include "core/core_string_names.h"
 #include "noise.h"
+
+#include "core/core_string_names.h"
 
 NoiseTexture2D::NoiseTexture2D() {
 	noise = Ref<Noise>();
@@ -44,7 +45,9 @@ NoiseTexture2D::~NoiseTexture2D() {
 	if (texture.is_valid()) {
 		RS::get_singleton()->free(texture);
 	}
-	noise_thread.wait_to_finish();
+	if (noise_thread.is_started()) {
+		noise_thread.wait_to_finish();
+	}
 }
 
 void NoiseTexture2D::_bind_methods() {

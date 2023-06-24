@@ -31,8 +31,8 @@
 #include "cpu_particles_3d_editor_plugin.h"
 
 #include "editor/editor_node.h"
+#include "editor/gui/scene_tree_editor.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "editor/scene_tree_editor.h"
 #include "scene/gui/menu_button.h"
 
 void CPUParticles3DEditor::_node_removed(Node *p_node) {

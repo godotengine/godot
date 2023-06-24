@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PhysicsTestMotionParameters2D" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Parameters to be sent to a 2D body motion test.
+		Provides parameters for [method PhysicsServer2D.body_test_motion].
 	</brief_description>
 	<description>
-		This class contains parameters used in [method PhysicsServer2D.body_test_motion].
+		By changing various properties of this object, such as the motion, you can configure the parameters for [method PhysicsServer2D.body_test_motion].
 	</description>
 	<tutorials>
 	</tutorials>

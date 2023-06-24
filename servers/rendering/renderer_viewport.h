@@ -231,6 +231,7 @@ public:
 
 	void viewport_set_clear_mode(RID p_viewport, RS::ViewportClearMode p_clear_mode);
 
+	RID viewport_get_render_target(RID p_viewport) const;
 	RID viewport_get_texture(RID p_viewport) const;
 	RID viewport_get_occluder_debug_texture(RID p_viewport) const;
 
@@ -296,7 +297,7 @@ public:
 	bool free(RID p_rid);
 
 	int get_total_objects_drawn() const;
-	int get_total_vertices_drawn() const;
+	int get_total_primitives_drawn() const;
 	int get_total_draw_calls_used() const;
 
 	// Workaround for setting this on thread.

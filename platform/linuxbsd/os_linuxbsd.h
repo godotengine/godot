@@ -31,13 +31,14 @@
 #ifndef OS_LINUXBSD_H
 #define OS_LINUXBSD_H
 
-#include "core/input/input.h"
 #include "crash_handler_linuxbsd.h"
+#include "joypad_linux.h"
+
+#include "core/input/input.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "joypad_linux.h"
 #include "servers/audio_server.h"
 
 #ifdef FONTCONFIG_ENABLED
@@ -96,6 +97,7 @@ protected:
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
 
 public:
+	virtual String get_identifier() const override;
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
@@ -131,6 +133,8 @@ public:
 	virtual bool is_disable_crash_handler() const override;
 
 	virtual Error move_to_trash(const String &p_path) override;
+
+	virtual String get_system_ca_certificates() override;
 
 	OS_LinuxBSD();
 	~OS_LinuxBSD();

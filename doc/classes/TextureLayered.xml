@@ -22,7 +22,7 @@
 		<method name="_get_height" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Called when the the [TextureLayered]'s height is queried.
+				Called when the [TextureLayered]'s height is queried.
 			</description>
 		</method>
 		<method name="_get_layer_data" qualifiers="virtual const">

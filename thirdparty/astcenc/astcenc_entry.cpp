@@ -52,9 +52,9 @@ struct astcenc_preset_config
 	float tune_db_limit_a_base;
 	float tune_db_limit_b_base;
 	float tune_mse_overshoot;
-	float tune_2_partition_early_out_limit_factor;
-	float tune_3_partition_early_out_limit_factor;
-	float tune_2_plane_early_out_limit_correlation;
+	float tune_2partition_early_out_limit_factor;
+	float tune_3partition_early_out_limit_factor;
+	float tune_2plane_early_out_limit_correlation;
 };
 
 /**
@@ -153,48 +153,6 @@ static astcenc_error validate_cpu_float()
 	{
 		return ASTCENC_ERR_BAD_CPU_FLOAT;
 	}
-
-	return ASTCENC_SUCCESS;
-}
-
-/**
- * @brief Validate CPU ISA support meets the requirements of this build of the library.
- *
- * Each library build is statically compiled for a particular set of CPU ISA features, such as the
- * SIMD support or other ISA extensions such as POPCNT. This function checks that the host CPU
- * actually supports everything this build needs.
- *
- * @return Return @c ASTCENC_SUCCESS if validated, otherwise an error on failure.
- */
-static astcenc_error validate_cpu_isa()
-{
-	#if ASTCENC_SSE >= 41
-		if (!cpu_supports_sse41())
-		{
-			return ASTCENC_ERR_BAD_CPU_ISA;
-		}
-	#endif
-
-	#if ASTCENC_POPCNT >= 1
-		if (!cpu_supports_popcnt())
-		{
-			return ASTCENC_ERR_BAD_CPU_ISA;
-		}
-	#endif
-
-	#if ASTCENC_F16C >= 1
-		if (!cpu_supports_f16c())
-		{
-			return ASTCENC_ERR_BAD_CPU_ISA;
-		}
-	#endif
-
-	#if ASTCENC_AVX >= 2
-		if (!cpu_supports_avx2())
-		{
-			return ASTCENC_ERR_BAD_CPU_ISA;
-		}
-	#endif
 
 	return ASTCENC_SUCCESS;
 }
@@ -439,9 +397,9 @@ static astcenc_error validate_config(
 	config.tune_4partitioning_candidate_limit = astc::clamp(config.tune_4partitioning_candidate_limit, 1u, TUNE_MAX_PARTITIONING_CANDIDATES);
 	config.tune_db_limit = astc::max(config.tune_db_limit, 0.0f);
 	config.tune_mse_overshoot = astc::max(config.tune_mse_overshoot, 1.0f);
-	config.tune_2_partition_early_out_limit_factor = astc::max(config.tune_2_partition_early_out_limit_factor, 0.0f);
-	config.tune_3_partition_early_out_limit_factor = astc::max(config.tune_3_partition_early_out_limit_factor, 0.0f);
-	config.tune_2_plane_early_out_limit_correlation = astc::max(config.tune_2_plane_early_out_limit_correlation, 0.0f);
+	config.tune_2partition_early_out_limit_factor = astc::max(config.tune_2partition_early_out_limit_factor, 0.0f);
+	config.tune_3partition_early_out_limit_factor = astc::max(config.tune_3partition_early_out_limit_factor, 0.0f);
+	config.tune_2plane_early_out_limit_correlation = astc::max(config.tune_2plane_early_out_limit_correlation, 0.0f);
 
 	// Specifying a zero weight color component is not allowed; force to small value
 	float max_weight = astc::max(astc::max(config.cw_r_weight, config.cw_g_weight),
@@ -474,14 +432,6 @@ astcenc_error astcenc_config_init(
 	astcenc_config* configp
 ) {
 	astcenc_error status;
-
-	// Check basic library compatibility options here so they are checked early. Note, these checks
-	// are repeated in context_alloc for cases where callers use a manually defined config struct
-	status = validate_cpu_isa();
-	if (status != ASTCENC_SUCCESS)
-	{
-		return status;
-	}
 
 	status = validate_cpu_float();
 	if (status != ASTCENC_SUCCESS)
@@ -563,9 +513,9 @@ astcenc_error astcenc_config_init(
 
 		config.tune_mse_overshoot = (*preset_configs)[start].tune_mse_overshoot;
 
-		config.tune_2_partition_early_out_limit_factor = (*preset_configs)[start].tune_2_partition_early_out_limit_factor;
-		config.tune_3_partition_early_out_limit_factor =(*preset_configs)[start].tune_3_partition_early_out_limit_factor;
-		config.tune_2_plane_early_out_limit_correlation = (*preset_configs)[start].tune_2_plane_early_out_limit_correlation;
+		config.tune_2partition_early_out_limit_factor = (*preset_configs)[start].tune_2partition_early_out_limit_factor;
+		config.tune_3partition_early_out_limit_factor = (*preset_configs)[start].tune_3partition_early_out_limit_factor;
+		config.tune_2plane_early_out_limit_correlation = (*preset_configs)[start].tune_2plane_early_out_limit_correlation;
 	}
 	// Start and end node are not the same - so interpolate between them
 	else
@@ -605,9 +555,9 @@ astcenc_error astcenc_config_init(
 
 		config.tune_mse_overshoot = LERP(tune_mse_overshoot);
 
-		config.tune_2_partition_early_out_limit_factor = LERP(tune_2_partition_early_out_limit_factor);
-		config.tune_3_partition_early_out_limit_factor = LERP(tune_3_partition_early_out_limit_factor);
-		config.tune_2_plane_early_out_limit_correlation = LERP(tune_2_plane_early_out_limit_correlation);
+		config.tune_2partition_early_out_limit_factor = LERP(tune_2partition_early_out_limit_factor);
+		config.tune_3partition_early_out_limit_factor = LERP(tune_3partition_early_out_limit_factor);
+		config.tune_2plane_early_out_limit_correlation = LERP(tune_2plane_early_out_limit_correlation);
 		#undef LERP
 		#undef LERPI
 		#undef LERPUI
@@ -656,9 +606,9 @@ astcenc_error astcenc_config_init(
 
 		config.cw_g_weight = 0.0f;
 		config.cw_b_weight = 0.0f;
-		config.tune_2_partition_early_out_limit_factor *= 1.5f;
-		config.tune_3_partition_early_out_limit_factor *= 1.5f;
-		config.tune_2_plane_early_out_limit_correlation = 0.99f;
+		config.tune_2partition_early_out_limit_factor *= 1.5f;
+		config.tune_3partition_early_out_limit_factor *= 1.5f;
+		config.tune_2plane_early_out_limit_correlation = 0.99f;
 
 		// Normals are prone to blocking artifacts on smooth curves
 		// so force compressor to try harder here ...
@@ -701,12 +651,6 @@ astcenc_error astcenc_context_alloc(
 ) {
 	astcenc_error status;
 	const astcenc_config& config = *configp;
-
-	status = validate_cpu_isa();
-	if (status != ASTCENC_SUCCESS)
-	{
-		return status;
-	}
 
 	status = validate_cpu_float();
 	if (status != ASTCENC_SUCCESS)
@@ -1399,8 +1343,6 @@ const char* astcenc_get_error_string(
 		return "ASTCENC_ERR_OUT_OF_MEM";
 	case ASTCENC_ERR_BAD_CPU_FLOAT:
 		return "ASTCENC_ERR_BAD_CPU_FLOAT";
-	case ASTCENC_ERR_BAD_CPU_ISA:
-		return "ASTCENC_ERR_BAD_CPU_ISA";
 	case ASTCENC_ERR_BAD_PARAM:
 		return "ASTCENC_ERR_BAD_PARAM";
 	case ASTCENC_ERR_BAD_BLOCK_SIZE:

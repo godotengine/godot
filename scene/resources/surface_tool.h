@@ -38,6 +38,9 @@
 class SurfaceTool : public RefCounted {
 	GDCLASS(SurfaceTool, RefCounted);
 
+	static const uint32_t custom_mask[RS::ARRAY_CUSTOM_COUNT];
+	static const uint32_t custom_shift[RS::ARRAY_CUSTOM_COUNT];
+
 public:
 	struct Vertex {
 		Vector3 vertex;
@@ -166,6 +169,8 @@ private:
 	static void mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert);
 	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
 			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
+
+	void _add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs = Vector<Vector2>(), const Vector<Color> &p_colors = Vector<Color>(), const Vector<Vector2> &p_uv2s = Vector<Vector2>(), const Vector<Vector3> &p_normals = Vector<Vector3>(), const TypedArray<Plane> &p_tangents = TypedArray<Plane>());
 
 protected:
 	static void _bind_methods();

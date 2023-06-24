@@ -418,6 +418,7 @@ void TileSetEditor::_update_patterns_list() {
 	for (int i = 0; i < tile_set->get_patterns_count(); i++) {
 		int id = patterns_item_list->add_item("");
 		patterns_item_list->set_item_metadata(id, tile_set->get_pattern(i));
+		patterns_item_list->set_item_tooltip(id, vformat(TTR("Index: %d"), i));
 		TilesEditorPlugin::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(i), callable_mp(this, &TileSetEditor::_pattern_preview_done));
 	}
 
@@ -821,7 +822,7 @@ TileSetEditor::TileSetEditor() {
 
 	// No source selected.
 	no_source_selected_label = memnew(Label);
-	no_source_selected_label->set_text(TTR("No TileSet source selected. Select or create a TileSet source."));
+	no_source_selected_label->set_text(TTR("No TileSet source selected. Select or create a TileSet source.\nYou can create a new source by using the Add button on the left or by dropping a tileset texture onto the source list."));
 	no_source_selected_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	no_source_selected_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	no_source_selected_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

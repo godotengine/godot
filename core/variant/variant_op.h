@@ -805,14 +805,14 @@ class OperatorEvaluatorNot {
 public:
 	static void evaluate(const Variant &p_left, const Variant &p_right, Variant *r_ret, bool &r_valid) {
 		const A &a = *VariantGetInternalPtr<A>::get_ptr(&p_left);
-		*r_ret = !a;
+		*r_ret = a == A();
 		r_valid = true;
 	}
 	static inline void validated_evaluate(const Variant *left, const Variant *right, Variant *r_ret) {
-		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = !*VariantGetInternalPtr<A>::get_ptr(left);
+		*VariantGetInternalPtr<bool>::get_ptr(r_ret) = *VariantGetInternalPtr<A>::get_ptr(left) == A();
 	}
 	static void ptr_evaluate(const void *left, const void *right, void *r_ret) {
-		PtrToArg<bool>::encode(!PtrToArg<A>::convert(left));
+		PtrToArg<bool>::encode(PtrToArg<A>::convert(left) == A(), r_ret);
 	}
 	static Variant::Type get_return_type() { return Variant::BOOL; }
 };
@@ -824,6 +824,11 @@ public:
 	_FORCE_INLINE_ static void _add_arrays(Array &sum, const Array &array_a, const Array &array_b) {
 		int asize = array_a.size();
 		int bsize = array_b.size();
+
+		if (array_a.is_typed() && array_a.is_same_typed(array_b)) {
+			sum.set_typed(array_a.get_typed_builtin(), array_a.get_typed_class_name(), array_a.get_typed_script());
+		}
+
 		sum.resize(asize + bsize);
 		for (int i = 0; i < asize; i++) {
 			sum[i] = array_a[i];

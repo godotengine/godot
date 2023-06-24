@@ -613,6 +613,43 @@ namespace Godot
         }
 
         /// <summary>
+        /// Creates a <see cref="Basis"/> with a rotation such that the forward
+        /// axis (-Z) points towards the <paramref name="target"/> position.
+        /// The up axis (+Y) points as close to the <paramref name="up"/> vector
+        /// as possible while staying perpendicular to the forward axis.
+        /// The resulting Basis is orthonormalized.
+        /// The <paramref name="target"/> and <paramref name="up"/> vectors
+        /// cannot be zero, and cannot be parallel to each other.
+        /// </summary>
+        /// <param name="target">The position to look at.</param>
+        /// <param name="up">The relative up direction.</param>
+        /// <returns>The resulting basis matrix.</returns>
+        public static Basis LookingAt(Vector3 target, Vector3 up)
+        {
+#if DEBUG
+            if (target.IsZeroApprox())
+            {
+                throw new ArgumentException("The vector can't be zero.", nameof(target));
+            }
+            if (up.IsZeroApprox())
+            {
+                throw new ArgumentException("The vector can't be zero.", nameof(up));
+            }
+#endif
+            Vector3 column2 = -target.Normalized();
+            Vector3 column0 = up.Cross(column2);
+#if DEBUG
+            if (column0.IsZeroApprox())
+            {
+                throw new ArgumentException("The target vector and up vector can't be parallel to each other.");
+            }
+#endif
+            column0.Normalize();
+            Vector3 column1 = column2.Cross(column0);
+            return new Basis(column0, column1, column2);
+        }
+
+        /// <summary>
         /// Returns the orthonormalized version of the basis matrix (useful to
         /// call occasionally to avoid rounding errors for orthogonal matrices).
         /// This performs a Gram-Schmidt orthonormalization on the basis of the matrix.

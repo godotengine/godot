@@ -52,11 +52,18 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-constexpr double edge_support_threshold = 0.0002;
-constexpr double face_support_threshold = 0.9998;
+const double edge_support_threshold = 0.99999998;
+const double edge_support_threshold_lower = Math::sqrt(1.0 - edge_support_threshold * edge_support_threshold);
+// For a unit normal vector n, the horizontality condition
+//     sqrt(n.x * n.x + n.z * n.z) > edge_support_threshold
+// is equivalent to the condition
+//     abs(n.y) < edge_support_threshold_lower,
+// which is cheaper to test.
+const double face_support_threshold = 0.9998;
 
-constexpr double cylinder_edge_support_threshold = 0.002;
-constexpr double cylinder_face_support_threshold = 0.999;
+const double cylinder_edge_support_threshold = 0.999998;
+const double cylinder_edge_support_threshold_lower = Math::sqrt(1.0 - cylinder_edge_support_threshold * cylinder_edge_support_threshold);
+const double cylinder_face_support_threshold = 0.999;
 
 void GodotShape3D::configure(const AABB &p_aabb) {
 	aabb = p_aabb;
@@ -184,7 +191,7 @@ Vector3 GodotSeparationRayShape3D::get_support(const Vector3 &p_normal) const {
 }
 
 void GodotSeparationRayShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_supports, int &r_amount, FeatureType &r_type) const {
-	if (Math::abs(p_normal.z) < edge_support_threshold) {
+	if (Math::abs(p_normal.z) < edge_support_threshold_lower) {
 		r_amount = 2;
 		r_type = FEATURE_EDGE;
 		r_supports[0] = Vector3(0, 0, 0);
@@ -376,7 +383,7 @@ void GodotBoxShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *
 		Vector3 axis;
 		axis[i] = 1.0;
 
-		if (Math::abs(p_normal.dot(axis)) < edge_support_threshold) {
+		if (Math::abs(p_normal.dot(axis)) < edge_support_threshold_lower) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
 
@@ -523,7 +530,7 @@ void GodotCapsuleShape3D::get_supports(const Vector3 &p_normal, int p_max, Vecto
 	real_t d = n.y;
 	real_t h = height * 0.5 - radius; // half-height of the cylinder part
 
-	if (h > 0 && Math::abs(d) < edge_support_threshold) {
+	if (h > 0 && Math::abs(d) < edge_support_threshold_lower) {
 		// make it flat
 		n.y = 0.0;
 		n.normalize();
@@ -716,7 +723,7 @@ void GodotCylinderShape3D::get_supports(const Vector3 &p_normal, int p_max, Vect
 		r_supports[1].x += radius;
 		r_supports[2] = n;
 		r_supports[2].z += radius;
-	} else if (Math::abs(d) < cylinder_edge_support_threshold) {
+	} else if (Math::abs(d) < cylinder_edge_support_threshold_lower) {
 		// make it flat
 		Vector3 n = p_normal;
 		n.y = 0.0;
@@ -954,7 +961,7 @@ void GodotConvexPolygonShape3D::get_supports(const Vector3 &p_normal, int p_max,
 	for (int i = 0; i < ec; i++) {
 		real_t dot = (vertices[edges[i].vertex_a] - vertices[edges[i].vertex_b]).normalized().dot(p_normal);
 		dot = ABS(dot);
-		if (dot < edge_support_threshold && (edges[i].vertex_a == vtx || edges[i].vertex_b == vtx)) {
+		if (dot < edge_support_threshold_lower && (edges[i].vertex_a == vtx || edges[i].vertex_b == vtx)) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
 			r_supports[0] = vertices[edges[i].vertex_a];
@@ -1231,7 +1238,7 @@ void GodotFaceShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 
 		// check if edge is valid as a support
 		real_t dot = (vertex[i] - vertex[nx]).normalized().dot(n);
 		dot = ABS(dot);
-		if (dot < edge_support_threshold) {
+		if (dot < edge_support_threshold_lower) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
 			r_supports[0] = vertex[i];

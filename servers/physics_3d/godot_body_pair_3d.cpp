@@ -190,6 +190,9 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 
 	// A is moving fast enough that tunneling might occur. See if it's really about to collide.
 
+	// Roughly predict body B's position in the next frame (ignoring collisions).
+	Transform3D predicted_xform_B = p_xform_B.translated(p_B->get_linear_velocity() * p_step);
+
 	// Support points are the farthest forward points on A in the direction of the motion vector.
 	// i.e. the candidate points of which one should hit B first if any collision does occur.
 	static const int max_supports = 16;
@@ -209,7 +212,7 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 		Vector3 from = supports_A[i];
 		Vector3 to = from + motion;
 
-		Transform3D from_inv = p_xform_B.affine_inverse();
+		Transform3D from_inv = predicted_xform_B.affine_inverse();
 
 		// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
 		// At high speeds, this may mean we're actually casting from well behind the body instead of inside it, which is odd.
@@ -234,7 +237,7 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 		return false;
 	}
 
-	Vector3 hitpos = p_xform_B.xform(segment_hit_local);
+	Vector3 hitpos = predicted_xform_B.xform(segment_hit_local);
 
 	real_t newlen = hitpos.distance_to(supports_A[segment_support_idx]);
 	// Adding 1% of body length to the distance between collision and support point
@@ -354,6 +357,8 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 
 	bool do_process = false;
 
+	const Vector3 &offset_A = A->get_transform().get_origin();
+
 	const Basis &basis_A = A->get_transform().basis;
 	const Basis &basis_B = B->get_transform().basis;
 
@@ -382,7 +387,6 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 
 #ifdef DEBUG_ENABLED
 		if (space->is_debugging_contacts()) {
-			const Vector3 &offset_A = A->get_transform().get_origin();
 			space->add_debug_contact(global_A + offset_A);
 			space->add_debug_contact(global_B + offset_A);
 		}
@@ -407,14 +411,17 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 
 		// contact query reporting...
 
-		if (A->can_report_contacts()) {
-			Vector3 crA = A->get_angular_velocity().cross(c.rA) + A->get_linear_velocity();
-			A->add_contact(global_A, -c.normal, depth, shape_A, global_B, shape_B, B->get_instance_id(), B->get_self(), crA, c.acc_impulse);
-		}
-
-		if (B->can_report_contacts()) {
+		if (A->can_report_contacts() || B->can_report_contacts()) {
 			Vector3 crB = B->get_angular_velocity().cross(c.rB) + B->get_linear_velocity();
-			B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crB, -c.acc_impulse);
+			Vector3 crA = A->get_angular_velocity().cross(c.rA) + A->get_linear_velocity();
+
+			if (A->can_report_contacts()) {
+				A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, crA, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB, c.acc_impulse);
+			}
+
+			if (B->can_report_contacts()) {
+				B->add_contact(global_B + offset_A, c.normal, depth, shape_B, crB, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA, -c.acc_impulse);
+			}
 		}
 
 		if (report_contacts_only) {
@@ -797,9 +804,9 @@ bool GodotBodySoftBodyPair3D::pre_solve(real_t p_step) {
 
 		if (body->can_report_contacts()) {
 			Vector3 crA = body->get_angular_velocity().cross(c.rA) + body->get_linear_velocity();
-			body->add_contact(global_A, -c.normal, depth, body_shape, global_B, 0, soft_body->get_instance_id(), soft_body->get_self(), crA, c.acc_impulse);
+			Vector3 crB = soft_body->get_node_velocity(c.index_B);
+			body->add_contact(global_A, -c.normal, depth, body_shape, crA, global_B, 0, soft_body->get_instance_id(), soft_body->get_self(), crB, c.acc_impulse);
 		}
-
 		if (report_contacts_only) {
 			collided = false;
 			continue;

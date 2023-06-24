@@ -4,7 +4,7 @@
  *
  *   FreeType synthesizing code for emboldening and slanting (body).
  *
- * Copyright (C) 2000-2022 by
+ * Copyright (C) 2000-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -46,6 +46,18 @@
   FT_EXPORT_DEF( void )
   FT_GlyphSlot_Oblique( FT_GlyphSlot  slot )
   {
+    /* Value '0x0366A' corresponds to a shear angle of about 12 degrees. */
+    FT_GlyphSlot_Slant( slot, 0x0366A, 0 );
+  }
+
+
+  /* documentation is in ftsynth.h */
+
+  FT_EXPORT_DEF( void )
+  FT_GlyphSlot_Slant( FT_GlyphSlot  slot,
+                      FT_Fixed      xslant,
+                      FT_Fixed      yslant )
+  {
     FT_Matrix    transform;
     FT_Outline*  outline;
 
@@ -61,13 +73,11 @@
 
     /* we don't touch the advance width */
 
-    /* For italic, simply apply a shear transform, with an angle */
-    /* of about 12 degrees.                                      */
-
+    /* For italic, simply apply a shear transform */
     transform.xx = 0x10000L;
-    transform.yx = 0x00000L;
+    transform.yx = -yslant;
 
-    transform.xy = 0x0366AL;
+    transform.xy = xslant;
     transform.yy = 0x10000L;
 
     FT_Outline_Transform( outline, &transform );

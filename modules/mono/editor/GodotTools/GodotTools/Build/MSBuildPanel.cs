@@ -29,46 +29,46 @@ namespace GodotTools.Build
             BuildOutputView.UpdateIssuesList();
         }
 
-        public void BuildSolution()
+        public void BuildProject()
         {
-            if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
-                return; // No solution to build
+            if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
+                return; // No project to build.
 
             if (!BuildManager.BuildProjectBlocking("Debug"))
-                return; // Build failed
+                return; // Build failed.
 
-            // Notify running game for hot-reload
+            // Notify running game for hot-reload.
             Internal.EditorDebuggerNodeReloadScripts();
 
-            // Hot-reload in the editor
+            // Hot-reload in the editor.
             GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();
 
             if (Internal.IsAssembliesReloadingNeeded())
                 Internal.ReloadAssemblies(softReload: false);
         }
 
-        private void RebuildSolution()
+        private void RebuildProject()
         {
-            if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
-                return; // No solution to build
+            if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
+                return; // No project to build.
 
             if (!BuildManager.BuildProjectBlocking("Debug", rebuild: true))
-                return; // Build failed
+                return; // Build failed.
 
-            // Notify running game for hot-reload
+            // Notify running game for hot-reload.
             Internal.EditorDebuggerNodeReloadScripts();
 
-            // Hot-reload in the editor
+            // Hot-reload in the editor.
             GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();
 
             if (Internal.IsAssembliesReloadingNeeded())
                 Internal.ReloadAssemblies(softReload: false);
         }
 
-        private void CleanSolution()
+        private void CleanProject()
         {
-            if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
-                return; // No solution to build
+            if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
+                return; // No project to build.
 
             _ = BuildManager.CleanProjectBlocking("Debug");
         }
@@ -83,14 +83,14 @@ namespace GodotTools.Build
         {
             switch ((BuildMenuOptions)id)
             {
-                case BuildMenuOptions.BuildSolution:
-                    BuildSolution();
+                case BuildMenuOptions.BuildProject:
+                    BuildProject();
                     break;
-                case BuildMenuOptions.RebuildSolution:
-                    RebuildSolution();
+                case BuildMenuOptions.RebuildProject:
+                    RebuildProject();
                     break;
-                case BuildMenuOptions.CleanSolution:
-                    CleanSolution();
+                case BuildMenuOptions.CleanProject:
+                    CleanProject();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(id), id, "Invalid build menu option");
@@ -99,9 +99,9 @@ namespace GodotTools.Build
 
         private enum BuildMenuOptions
         {
-            BuildSolution,
-            RebuildSolution,
-            CleanSolution
+            BuildProject,
+            RebuildProject,
+            CleanProject
         }
 
         public override void _Ready()
@@ -118,9 +118,9 @@ namespace GodotTools.Build
             toolBarHBox.AddChild(_buildMenuBtn);
 
             var buildMenu = _buildMenuBtn.GetPopup();
-            buildMenu.AddItem("Build Solution".TTR(), (int)BuildMenuOptions.BuildSolution);
-            buildMenu.AddItem("Rebuild Solution".TTR(), (int)BuildMenuOptions.RebuildSolution);
-            buildMenu.AddItem("Clean Solution".TTR(), (int)BuildMenuOptions.CleanSolution);
+            buildMenu.AddItem("Build Project".TTR(), (int)BuildMenuOptions.BuildProject);
+            buildMenu.AddItem("Rebuild Project".TTR(), (int)BuildMenuOptions.RebuildProject);
+            buildMenu.AddItem("Clean Project".TTR(), (int)BuildMenuOptions.CleanProject);
             buildMenu.IdPressed += BuildMenuOptionPressed;
 
             _errorsBtn = new Button

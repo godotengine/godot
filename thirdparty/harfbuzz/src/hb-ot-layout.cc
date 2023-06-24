@@ -64,6 +64,8 @@ using OT::Layout::GPOS;
  * @include: hb-ot.h
  *
  * Functions for querying OpenType Layout features in the font face.
+ * See the [OpenType specification](http://www.microsoft.com/typography/otspec/)
+ * for details.
  **/
 
 
@@ -255,12 +257,13 @@ _hb_ot_layout_set_glyph_props (hb_font_t *font,
 {
   _hb_buffer_assert_gsubgpos_vars (buffer);
 
-  const OT::GDEF &gdef = *font->face->table.GDEF->table;
+  const auto &gdef = *font->face->table.GDEF;
   unsigned int count = buffer->len;
+  hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 0; i < count; i++)
   {
-    _hb_glyph_info_set_glyph_props (&buffer->info[i], gdef.get_glyph_props (buffer->info[i].codepoint));
-    _hb_glyph_info_clear_lig_props (&buffer->info[i]);
+    _hb_glyph_info_set_glyph_props (&info[i], gdef.get_glyph_props (info[i].codepoint));
+    _hb_glyph_info_clear_lig_props (&info[i]);
   }
 }
 
@@ -1893,7 +1896,7 @@ apply_backward (OT::hb_ot_apply_context_t *c,
     if (accel.digest.may_have (buffer->cur().codepoint) &&
 	(buffer->cur().mask & c->lookup_mask) &&
 	c->check_glyph_property (&buffer->cur(), c->lookup_props))
-     ret |= accel.apply (c, subtable_count, false);
+      ret |= accel.apply (c, subtable_count, false);
 
     /* The reverse lookup doesn't "advance" cursor (for good reason). */
     buffer->idx--;
@@ -1975,11 +1978,12 @@ inline void hb_ot_map_t::apply (const Proxy &proxy,
       if (accel->digest.may_have (c.digest))
       {
 	c.set_lookup_index (lookup_index);
-	c.set_lookup_mask (lookup.mask);
-	c.set_auto_zwj (lookup.auto_zwj);
-	c.set_auto_zwnj (lookup.auto_zwnj);
+	c.set_lookup_mask (lookup.mask, false);
+	c.set_auto_zwj (lookup.auto_zwj, false);
+	c.set_auto_zwnj (lookup.auto_zwnj, false);
 	c.set_random (lookup.random);
-	c.set_per_syllable (lookup.per_syllable);
+	c.set_per_syllable (lookup.per_syllable, false);
+	/* apply_string's set_lookup_props initializes the iterators. */
 
 	apply_string<Proxy> (&c,
 			     proxy.accel.table->get_lookup (lookup_index),

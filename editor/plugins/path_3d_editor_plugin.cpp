@@ -274,10 +274,10 @@ void Path3DGizmo::redraw() {
 
 			// Fish Bone.
 			v3p.push_back(p1);
-			v3p.push_back(p1 + (side - forward + up * 0.3) * 0.06);
+			v3p.push_back(p1 + (side + forward + up * 0.3) * 0.06);
 
 			v3p.push_back(p1);
-			v3p.push_back(p1 + (-side - forward + up * 0.3) * 0.06);
+			v3p.push_back(p1 + (-side + forward + up * 0.3) * 0.06);
 		}
 
 		add_lines(v3p, path_material);
@@ -474,6 +474,9 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 				}
 			}
 		}
+		if (curve_edit_curve->is_pressed()) {
+			mb->set_shift_pressed(true);
+		}
 	}
 
 	return EditorPlugin::AFTER_GUI_INPUT_PASS;
@@ -505,6 +508,7 @@ void Path3DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		curve_create->show();
 		curve_edit->show();
+		curve_edit_curve->show();
 		curve_del->show();
 		curve_close->show();
 		handle_menu->show();
@@ -512,6 +516,7 @@ void Path3DEditorPlugin::make_visible(bool p_visible) {
 	} else {
 		curve_create->hide();
 		curve_edit->hide();
+		curve_edit_curve->hide();
 		curve_del->hide();
 		curve_close->hide();
 		handle_menu->hide();
@@ -527,10 +532,11 @@ void Path3DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-void Path3DEditorPlugin::_mode_changed(int p_idx) {
-	curve_create->set_pressed(p_idx == 0);
-	curve_edit->set_pressed(p_idx == 1);
-	curve_del->set_pressed(p_idx == 2);
+void Path3DEditorPlugin::_mode_changed(int p_mode) {
+	curve_create->set_pressed(p_mode == MODE_CREATE);
+	curve_edit_curve->set_pressed(p_mode == MODE_EDIT_CURVE);
+	curve_edit->set_pressed(p_mode == MODE_EDIT);
+	curve_del->set_pressed(p_mode == MODE_DELETE);
 }
 
 void Path3DEditorPlugin::_close_curve() {
@@ -574,6 +580,7 @@ void Path3DEditorPlugin::_update_theme() {
 	// TODO: Split the EditorPlugin instance from the UI instance and connect this properly.
 	// See the 2D path editor for inspiration.
 	curve_edit->set_icon(Node3DEditor::get_singleton()->get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
+	curve_edit_curve->set_icon(Node3DEditor::get_singleton()->get_theme_icon(SNAME("CurveCurve"), SNAME("EditorIcons")));
 	curve_create->set_icon(Node3DEditor::get_singleton()->get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
 	curve_del->set_icon(Node3DEditor::get_singleton()->get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
 	curve_close->set_icon(Node3DEditor::get_singleton()->get_theme_icon(SNAME("CurveClose"), SNAME("EditorIcons")));
@@ -582,9 +589,10 @@ void Path3DEditorPlugin::_update_theme() {
 void Path3DEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			curve_create->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(0));
-			curve_edit->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(1));
-			curve_del->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(2));
+			curve_create->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_CREATE));
+			curve_edit_curve->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT_CURVE));
+			curve_edit->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT));
+			curve_del->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_DELETE));
 			curve_close->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_close_curve));
 
 			_update_theme();
@@ -622,6 +630,14 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_edit);
+
+	curve_edit_curve = memnew(Button);
+	curve_edit_curve->set_flat(true);
+	curve_edit_curve->set_toggle_mode(true);
+	curve_edit_curve->hide();
+	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
+	curve_edit_curve->set_tooltip_text(TTR("Select Control Points (Shift+Drag)"));
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_edit_curve);
 
 	curve_create = memnew(Button);
 	curve_create->set_flat(true);

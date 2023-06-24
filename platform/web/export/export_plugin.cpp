@@ -30,13 +30,15 @@
 
 #include "export_plugin.h"
 
+#include "logo_svg.gen.h"
+#include "run_icon_svg.gen.h"
+
 #include "core/config/project_settings.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "platform/web/logo_svg.gen.h"
-#include "platform/web/run_icon_svg.gen.h"
+#include "editor/export/editor_export.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
+#include "modules/modules_enabled.gen.h" // For mono and svg.
 #ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
 #endif
@@ -320,7 +322,7 @@ void EditorExportPlatformWeb::get_preset_features(const Ref<EditorExportPreset> 
 	r_features->push_back("wasm32");
 }
 
-void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) {
+void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) const {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
@@ -356,10 +358,18 @@ Ref<Texture2D> EditorExportPlatformWeb::get_logo() const {
 	return logo;
 }
 
-bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
 	bool valid = false;
 	bool extensions = (bool)p_preset->get("variant/extensions_support");
+
+#ifdef MODULE_MONO_ENABLED
+	err += TTR("Exporting to Web is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Web with C#/Mono instead.") + "\n";
+	err += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
+	// Don't check for additional errors, as this particular error cannot be resolved.
+	r_error = err;
+	return false;
+#endif
 
 	// Look for export templates (first official, and if defined custom templates).
 	bool dvalid = exists_export_template(_get_template_name(extensions, true), &err);
@@ -656,31 +666,37 @@ void EditorExportPlatformWeb::_server_thread_poll(void *data) {
 }
 
 EditorExportPlatformWeb::EditorExportPlatformWeb() {
-	server.instantiate();
-	server_thread.start(_server_thread_poll, this);
+	if (EditorNode::get_singleton()) {
+		server.instantiate();
+		server_thread.start(_server_thread_poll, this);
 
 #ifdef MODULE_SVG_ENABLED
-	Ref<Image> img = memnew(Image);
-	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
+		Ref<Image> img = memnew(Image);
+		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-	ImageLoaderSVG img_loader;
-	img_loader.create_image_from_string(img, _web_logo_svg, EDSCALE, upsample, false);
-	logo = ImageTexture::create_from_image(img);
+		ImageLoaderSVG img_loader;
+		img_loader.create_image_from_string(img, _web_logo_svg, EDSCALE, upsample, false);
+		logo = ImageTexture::create_from_image(img);
 
-	img_loader.create_image_from_string(img, _web_run_icon_svg, EDSCALE, upsample, false);
-	run_icon = ImageTexture::create_from_image(img);
+		img_loader.create_image_from_string(img, _web_run_icon_svg, EDSCALE, upsample, false);
+		run_icon = ImageTexture::create_from_image(img);
 #endif
 
-	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
-	if (theme.is_valid()) {
-		stop_icon = theme->get_icon(SNAME("Stop"), SNAME("EditorIcons"));
-	} else {
-		stop_icon.instantiate();
+		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
+		if (theme.is_valid()) {
+			stop_icon = theme->get_icon(SNAME("Stop"), SNAME("EditorIcons"));
+		} else {
+			stop_icon.instantiate();
+		}
 	}
 }
 
 EditorExportPlatformWeb::~EditorExportPlatformWeb() {
-	server->stop();
+	if (server.is_valid()) {
+		server->stop();
+	}
 	server_quit = true;
-	server_thread.wait_to_finish();
+	if (server_thread.is_started()) {
+		server_thread.wait_to_finish();
+	}
 }

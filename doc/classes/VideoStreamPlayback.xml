@@ -61,21 +61,21 @@
 			<return type="void" />
 			<param index="0" name="time" type="float" />
 			<description>
-				Seeks to [code]time[/code] seconds. Called in response to the [member VideoStreamPlayer.stream_position] setter.
+				Seeks to [param time] seconds. Called in response to the [member VideoStreamPlayer.stream_position] setter.
 			</description>
 		</method>
 		<method name="_set_audio_track" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Select the audio track [code]idx[/code]. Called when playback starts, and in response to the [member VideoStreamPlayer.audio_track] setter.
+				Select the audio track [param idx]. Called when playback starts, and in response to the [member VideoStreamPlayer.audio_track] setter.
 			</description>
 		</method>
 		<method name="_set_paused" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="paused" type="bool" />
 			<description>
-				Set the paused status of video playback. [method _is_paused] must return [code]paused[/code]. Called in response to the [member VideoStreamPlayer.paused] setter.
+				Set the paused status of video playback. [method _is_paused] must return [param paused]. Called in response to the [member VideoStreamPlayer.paused] setter.
 			</description>
 		</method>
 		<method name="_stop" qualifiers="virtual">
@@ -88,7 +88,7 @@
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Ticks video playback for [code]delta[/code] seconds. Called every frame as long as [method _is_paused] and [method _is_playing] return true.
+				Ticks video playback for [param delta] seconds. Called every frame as long as [method _is_paused] and [method _is_playing] return true.
 			</description>
 		</method>
 		<method name="mix_audio">
@@ -97,7 +97,7 @@
 			<param index="1" name="buffer" type="PackedFloat32Array" default="PackedFloat32Array()" />
 			<param index="2" name="offset" type="int" default="0" />
 			<description>
-				Render [code]num_frames[/code] audio frames (of [method _get_channels] floats each) from [code]buffer[/code], starting from index [code]offset[/code] in the array. Returns the number of audio frames rendered, or -1 on error.
+				Render [param num_frames] audio frames (of [method _get_channels] floats each) from [param buffer], starting from index [param offset] in the array. Returns the number of audio frames rendered, or -1 on error.
 			</description>
 		</method>
 	</methods>

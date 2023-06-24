@@ -27,12 +27,13 @@ MARKUP_ALLOWED_SUBSEQUENT = " -.,:;!?\\/'\")]}>"
 # Used to translate section headings and other hardcoded strings when required with
 # the --lang argument. The BASE_STRINGS list should be synced with what we actually
 # write in this script (check `translate()` uses), and also hardcoded in
-# `doc/translations/extract.py` to include them in the source POT file.
+# `scripts/extract_classes.py` (godotengine/godot-editor-l10n repo) to include them in the source POT file.
 BASE_STRINGS = [
     "All classes",
     "Globals",
     "Nodes",
     "Resources",
+    "Editor-only",
     "Other objects",
     "Variant types",
     "Description",
@@ -64,6 +65,7 @@ BASE_STRINGS = [
     "This method is used to construct a type.",
     "This method doesn't need an instance to be called, so it can be called directly using the class name.",
     "This method describes a valid operator to use with this type as left-hand operand.",
+    "This value is an integer composed as a bitmask of the following flags.",
 ]
 strings_l10n: Dict[str, str] = {}
 
@@ -74,13 +76,22 @@ CLASS_GROUPS: Dict[str, str] = {
     "node": "Nodes",
     "resource": "Resources",
     "object": "Other objects",
+    "editor": "Editor-only",
     "variant": "Variant types",
 }
 CLASS_GROUPS_BASE: Dict[str, str] = {
     "node": "Node",
     "resource": "Resource",
     "object": "Object",
+    "variant": "Variant",
 }
+# Sync with editor\register_editor_types.cpp
+EDITOR_CLASSES: List[str] = [
+    "FileSystemDock",
+    "ScriptCreateDialog",
+    "ScriptEditor",
+    "ScriptEditorBase",
+]
 
 
 class State:
@@ -352,13 +363,14 @@ class State:
 
 
 class TypeName:
-    def __init__(self, type_name: str, enum: Optional[str] = None) -> None:
+    def __init__(self, type_name: str, enum: Optional[str] = None, is_bitfield: bool = False) -> None:
         self.type_name = type_name
         self.enum = enum
+        self.is_bitfield = is_bitfield
 
     def to_rst(self, state: State) -> str:
         if self.enum is not None:
-            return make_enum(self.enum, state)
+            return make_enum(self.enum, self.is_bitfield, state)
         elif self.type_name == "void":
             return "void"
         else:
@@ -366,7 +378,7 @@ class TypeName:
 
     @classmethod
     def from_element(cls, element: ET.Element) -> "TypeName":
-        return cls(element.attrib["type"], element.get("enum"))
+        return cls(element.attrib["type"], element.get("enum"), element.get("is_bitfield") == "true")
 
 
 class DefinitionBase:
@@ -567,7 +579,7 @@ def main() -> None:
         if path.endswith("/") or path.endswith("\\"):
             path = path[:-1]
 
-        if os.path.basename(path) == "modules":
+        if os.path.basename(path) in ["modules", "platform"]:
             for subdir, dirs, _ in os.walk(path):
                 if "doc_classes" in dirs:
                     doc_dir = os.path.join(subdir, "doc_classes")
@@ -634,6 +646,11 @@ def main() -> None:
         if group_name not in grouped_classes:
             grouped_classes[group_name] = []
         grouped_classes[group_name].append(class_name)
+
+        if is_editor_class(class_def):
+            if "editor" not in grouped_classes:
+                grouped_classes["editor"] = []
+            grouped_classes["editor"].append(class_name)
 
     print("")
     print("Generating the index file...")
@@ -722,6 +739,17 @@ def get_class_group(class_def: ClassDef, state: State) -> str:
                 break
 
     return group_name
+
+
+def is_editor_class(class_def: ClassDef) -> bool:
+    class_name = class_def.name
+
+    if class_name.startswith("Editor"):
+        return True
+    if class_name in EDITOR_CLASSES:
+        return True
+
+    return False
 
 
 # Generator methods.
@@ -1254,7 +1282,7 @@ def make_type(klass: str, state: State) -> str:
     return klass
 
 
-def make_enum(t: str, state: State) -> str:
+def make_enum(t: str, is_bitfield: bool, state: State) -> str:
     p = t.find(".")
     if p >= 0:
         c = t[0:p]
@@ -1270,7 +1298,12 @@ def make_enum(t: str, state: State) -> str:
             c = "@GlobalScope"
 
     if c in state.classes and e in state.classes[c].enums:
-        return f":ref:`{e}<enum_{c}_{e}>`"
+        if is_bitfield:
+            if not state.classes[c].enums[e].is_bitfield:
+                print_error(f'{state.current_class}.xml: Enum "{t}" is not bitfield.', state)
+            return f"|bitfield|\<:ref:`{e}<enum_{c}_{e}>`\>"
+        else:
+            return f":ref:`{e}<enum_{c}_{e}>`"
 
     # Don't fail for `Vector3.Axis`, as this enum is a special case which is expected not to be resolved.
     if f"{c}.{e}" != "Vector3.Axis":
@@ -1386,6 +1419,7 @@ def make_footer() -> str:
         "This method doesn't need an instance to be called, so it can be called directly using the class name."
     )
     operator_msg = translate("This method describes a valid operator to use with this type as left-hand operand.")
+    bitfield_msg = translate("This value is an integer composed as a bitmask of the following flags.")
 
     return (
         f".. |virtual| replace:: :abbr:`virtual ({virtual_msg})`\n"
@@ -1394,6 +1428,7 @@ def make_footer() -> str:
         f".. |constructor| replace:: :abbr:`constructor ({constructor_msg})`\n"
         f".. |static| replace:: :abbr:`static ({static_msg})`\n"
         f".. |operator| replace:: :abbr:`operator ({operator_msg})`\n"
+        f".. |bitfield| replace:: :abbr:`BitField ({bitfield_msg})`\n"
     )
 
 
@@ -1431,7 +1466,6 @@ def make_link(url: str, title: str) -> str:
 
 
 def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_dir: str) -> None:
-
     if dry_run:
         f = open(os.devnull, "w", encoding="utf-8")
     else:
@@ -1472,6 +1506,9 @@ def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_
                 f.write(f"    class_{CLASS_GROUPS_BASE[group_name].lower()}\n")
 
             for class_name in grouped_classes[group_name]:
+                if group_name in CLASS_GROUPS_BASE and CLASS_GROUPS_BASE[group_name].lower() == class_name.lower():
+                    continue
+
                 f.write(f"    class_{class_name.lower()}\n")
 
             f.write("\n")
@@ -1649,6 +1686,26 @@ def format_text_block(
                 inside_code_tag = cmd
                 escape_pre = True
 
+                valid_context = isinstance(context, (MethodDef, SignalDef, AnnotationDef))
+                if valid_context:
+                    endcode_pos = text.find("[/code]", endq_pos + 1)
+                    if endcode_pos == -1:
+                        print_error(
+                            f"{state.current_class}.xml: Tag depth mismatch for [code]: no closing [/code] in {context_name}.",
+                            state,
+                        )
+                        break
+
+                    inside_code_text = text[endq_pos + 1 : endcode_pos]
+                    context_params: List[ParameterDef] = context.parameters  # type: ignore
+                    for param_def in context_params:
+                        if param_def.name == inside_code_text:
+                            print_warning(
+                                f'{state.current_class}.xml: Potential error inside of a code tag, found a string "{inside_code_text}" that matches one of the parameters in {context_name}.',
+                                state,
+                            )
+                            break
+
             # Cross-references to items in this or other class documentation pages.
             elif is_in_tagset(cmd, RESERVED_CROSSLINK_TAGS):
                 link_type: str = ""
@@ -1785,7 +1842,7 @@ def format_text_block(
                         escape_post = True
 
                     elif cmd.startswith("enum"):
-                        tag_text = make_enum(link_target, state)
+                        tag_text = make_enum(link_target, False, state)
                         escape_pre = True
                         escape_post = True
 

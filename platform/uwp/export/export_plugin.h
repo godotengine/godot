@@ -31,6 +31,8 @@
 #ifndef UWP_EXPORT_PLUGIN_H
 #define UWP_EXPORT_PLUGIN_H
 
+#include "app_packager.h"
+
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
@@ -45,8 +47,6 @@
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
-
-#include "app_packager.h"
 
 #include <zlib.h>
 
@@ -84,6 +84,11 @@ static const char *uwp_device_capabilities[] = {
 	"webcam",
 	nullptr
 };
+
+// Optional environment variables for defining confidential information. If any
+// of these is set, they will override the values set in the credentials file.
+const String ENV_UWP_SIGNING_CERT = "GODOT_UWP_SIGNING_CERTIFICATE";
+const String ENV_UWP_SIGNING_PASS = "GODOT_UWP_SIGNING_PASSWORD";
 
 class EditorExportPlatformUWP : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformUWP, EditorExportPlatform);
@@ -427,9 +432,9 @@ public:
 
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
-	virtual void get_export_options(List<ExportOption> *r_options) override;
+	virtual void get_export_options(List<ExportOption> *r_options) const override;
 
-	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
 
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;

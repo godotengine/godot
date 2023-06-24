@@ -217,6 +217,9 @@ msgstr "滑鼠模式"
 msgid "Use Accumulated Input"
 msgstr "使用累積輸入"
 
+msgid "Input Devices"
+msgstr "輸入裝置"
+
 msgid "Device"
 msgstr "裝置"
 
@@ -307,12 +310,6 @@ msgstr "控制器值"
 msgid "Big Endian"
 msgstr "大端"
 
-msgid "Network"
-msgstr "網路"
-
-msgid "Page Size"
-msgstr "分頁大小"
-
 msgid "Blocking Mode Enabled"
 msgstr "啟用阻塞模式"
 
@@ -346,6 +343,9 @@ msgstr "資料陣列"
 msgid "Max Pending Connections"
 msgstr "最大等待連接數"
 
+msgid "Region"
+msgstr "區域"
+
 msgid "Offset"
 msgstr "偏移"
 
@@ -357,6 +357,9 @@ msgstr "種子"
 
 msgid "State"
 msgstr "狀態"
+
+msgid "Network"
+msgstr "網路"
 
 msgid "Worker Pool"
 msgstr "工作池"
@@ -433,26 +436,23 @@ msgstr "遠端場景樹重新整理間隔"
 msgid "Remote Inspect Refresh Interval"
 msgstr "遠端檢查重新整理間隔"
 
+msgid "FileSystem"
+msgstr "檔案系統"
+
+msgid "File Server"
+msgstr "檔案伺服器"
+
+msgid "Port"
+msgstr "連接埠"
+
+msgid "Password"
+msgstr "密碼"
+
 msgid "Profiler Frame Max Functions"
 msgstr "分析工具影格最大函式數"
 
 msgid "Default Feature Profile"
 msgstr "預設功能設定檔"
-
-msgid "Access"
-msgstr "存取"
-
-msgid "Display Mode"
-msgstr "顯示模式"
-
-msgid "Filters"
-msgstr "篩選器"
-
-msgid "Show Hidden Files"
-msgstr "顯示隱藏的檔案"
-
-msgid "Disable Overwrite Warning"
-msgstr "停用覆寫警告"
 
 msgid "Text Editor"
 msgstr "文字編輯器"
@@ -477,6 +477,9 @@ msgstr "已勾選"
 
 msgid "Keying"
 msgstr "輸入"
+
+msgid "Distraction Free Mode"
+msgstr "專注模式"
 
 msgid "Interface"
 msgstr "界面"
@@ -516,9 +519,6 @@ msgstr "水平Vector類別編輯"
 
 msgid "Default Color Picker Mode"
 msgstr "預設顏色挑選器模式"
-
-msgid "Distraction Free Mode"
-msgstr "專注模式"
 
 msgid "Base Type"
 msgstr "基礎型別"
@@ -622,8 +622,8 @@ msgstr "自訂主題"
 msgid "Show Script Button"
 msgstr "顯示腳本按鈕"
 
-msgid "FileSystem"
-msgstr "檔案系統"
+msgid "Enable"
+msgstr "啟用"
 
 msgid "Directories"
 msgstr "方向"
@@ -642,6 +642,12 @@ msgstr "壓縮二進位資源"
 
 msgid "File Dialog"
 msgstr "檔案對話框"
+
+msgid "Show Hidden Files"
+msgstr "顯示隱藏的檔案"
+
+msgid "Display Mode"
+msgstr "顯示模式"
 
 msgid "Thumbnail Size"
 msgstr "縮圖大小"
@@ -702,9 +708,6 @@ msgstr "行號歸零"
 
 msgid "Highlight Type Safe Lines"
 msgstr "凸顯型別安全的行"
-
-msgid "Show Bookmark Gutter"
-msgstr "顯示書籤欄"
 
 msgid "Show Info Gutter"
 msgstr "顯示資訊欄"
@@ -958,9 +961,6 @@ msgstr "骨骼輪廓大小"
 msgid "Viewport Border Color"
 msgstr "檢視區邊框顏色"
 
-msgid "Constrain Editor View"
-msgstr "限制編輯器視圖"
-
 msgid "Simple Panning"
 msgstr "簡易平移"
 
@@ -1032,9 +1032,6 @@ msgstr "HTTP 代理程式"
 
 msgid "Host"
 msgstr "主機"
-
-msgid "Port"
-msgstr "連接埠"
 
 msgid "Project Manager"
 msgstr "專案管理員"
@@ -1150,12 +1147,6 @@ msgstr "搜尋結果顏色"
 msgid "Search Result Border Color"
 msgstr "搜尋結果邊界顏色"
 
-msgid "Flat"
-msgstr "平面"
-
-msgid "Hide Slider"
-msgstr "隱藏拖曳條"
-
 msgid "Custom Template"
 msgstr "自訂模板"
 
@@ -1189,11 +1180,20 @@ msgstr "匯出"
 msgid "Export Path"
 msgstr "匯出路徑"
 
-msgid "File Server"
-msgstr "檔案伺服器"
+msgid "Access"
+msgstr "存取"
 
-msgid "Password"
-msgstr "密碼"
+msgid "Filters"
+msgstr "篩選器"
+
+msgid "Disable Overwrite Warning"
+msgstr "停用覆寫警告"
+
+msgid "Flat"
+msgstr "平面"
+
+msgid "Hide Slider"
+msgstr "隱藏拖曳條"
 
 msgid "Compress"
 msgstr "壓縮"
@@ -1218,9 +1218,6 @@ msgstr "使用環境通道"
 
 msgid "Make Unique"
 msgstr "獨立化"
-
-msgid "Enable"
-msgstr "啟用"
 
 msgid "Filter"
 msgstr "篩選"
@@ -1293,6 +1290,9 @@ msgstr "最佳化器"
 
 msgid "Max Angular Error"
 msgstr "最大角度誤差"
+
+msgid "Page Size"
+msgstr "分頁大小"
 
 msgid "Nodes"
 msgstr "節點"
@@ -1411,20 +1411,20 @@ msgstr "StreamPlayer3D"
 msgid "Camera"
 msgstr "相機"
 
-msgid "Visibility Notifier"
-msgstr "VisibilityNotifier"
-
 msgid "Particles"
 msgstr "粒子"
-
-msgid "Reflection Probe"
-msgstr "反射探查"
 
 msgid "Joint Body A"
 msgstr "關節形體A"
 
 msgid "Joint Body B"
 msgstr "關節形體B"
+
+msgid "Reflection Probe"
+msgstr "反射探查"
+
+msgid "Visibility Notifier"
+msgstr "VisibilityNotifier"
 
 msgid "Manipulator Gizmo Size"
 msgstr "操縱器控制項大小"
@@ -1464,9 +1464,6 @@ msgstr "執行旗標"
 
 msgid "Skeleton"
 msgstr "骨架"
-
-msgid "Warnings"
-msgstr "警告"
 
 msgid "ID"
 msgstr "ID"
@@ -1566,9 +1563,6 @@ msgstr "啟動畫面"
 
 msgid "BG Color"
 msgstr "背景顏色"
-
-msgid "Input Devices"
-msgstr "輸入裝置"
 
 msgid "Environment"
 msgstr "環境"
@@ -1717,6 +1711,9 @@ msgstr "GDScript"
 msgid "Node Path Color"
 msgstr "節點路徑顏色"
 
+msgid "Warnings"
+msgstr "警告"
+
 msgid "Exclude Addons"
 msgstr "排除外掛程式"
 
@@ -1743,6 +1740,9 @@ msgstr "外圓錐角"
 
 msgid "Specular Factor"
 msgstr "鏡面反射係數"
+
+msgid "Linear Velocity"
+msgstr "線性速度"
 
 msgid "Json"
 msgstr "Json"
@@ -2041,6 +2041,9 @@ msgstr "麥克風使用描述"
 msgid "Codesign"
 msgstr "程式碼簽章"
 
+msgid "Apple Team ID"
+msgstr "Apple 團隊 ID"
+
 msgid "Identity"
 msgstr "身分"
 
@@ -2103,9 +2106,6 @@ msgstr "Apple ID 名稱"
 
 msgid "Apple ID Password"
 msgstr "Apple ID 密碼"
-
-msgid "Apple Team ID"
-msgstr "Apple 團隊 ID"
 
 msgid "Short Name"
 msgstr "短名稱"
@@ -2257,9 +2257,6 @@ msgstr "更新"
 msgid "Editor Settings"
 msgstr "編輯器設定"
 
-msgid "Region"
-msgstr "區域"
-
 msgid "Bitmask"
 msgstr "遮罩"
 
@@ -2331,9 +2328,6 @@ msgstr "角度下限"
 
 msgid "Body Offset"
 msgstr "形體偏移"
-
-msgid "Linear Velocity"
-msgstr "線性速度"
 
 msgid "Origin Offset"
 msgstr "原點偏移"
@@ -2628,9 +2622,6 @@ msgstr "功能"
 
 msgid "Extra Spacing"
 msgstr "額外間距"
-
-msgid "Interpolation Mode"
-msgstr "插值模式"
 
 msgid "Offsets"
 msgstr "偏移"

@@ -65,11 +65,11 @@ String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, boo
 		String mods_text = key->InputEventWithModifiers::as_text();
 		mods_text = mods_text.is_empty() ? mods_text : mods_text + "+";
 		if (key->is_command_or_control_autoremap()) {
-#ifdef MACOS_ENABLED
-			mods_text = mods_text.replace("Command", "Command/Ctrl");
-#else
-			mods_text = mods_text.replace("Ctrl", "Command/Ctrl");
-#endif
+			if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+				mods_text = mods_text.replace("Command", "Command/Ctrl");
+			} else {
+				mods_text = mods_text.replace("Ctrl", "Command/Ctrl");
+			}
 		}
 
 		if (key->get_keycode() != Key::NONE) {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Rect2i" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		2D axis-aligned bounding box using integer coordinates.
+		A 2D axis-aligned bounding box using integer coordinates.
 	</brief_description>
 	<description>
 		[Rect2i] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
@@ -143,7 +143,7 @@
 			<return type="Rect2i" />
 			<param index="0" name="b" type="Rect2i" />
 			<description>
-				Returns the intersection of this [Rect2i] and [code]b[/code].
+				Returns the intersection of this [Rect2i] and [param b].
 				If the rectangles do not intersect, an empty [Rect2i] is returned.
 			</description>
 		</method>
@@ -151,7 +151,7 @@
 			<return type="bool" />
 			<param index="0" name="b" type="Rect2i" />
 			<description>
-				Returns [code]true[/code] if the [Rect2i] overlaps with [code]b[/code] (i.e. they have at least one point in common).
+				Returns [code]true[/code] if the [Rect2i] overlaps with [param b] (i.e. they have at least one point in common).
 			</description>
 		</method>
 		<method name="merge" qualifiers="const">

@@ -32,13 +32,13 @@
 
 #include "core/config/project_settings.h"
 #include "core/version.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/item_list.h"
@@ -47,6 +47,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
@@ -68,10 +69,6 @@ void ProjectExportDialog::_notification(int p_what) {
 			delete_preset->set_icon(presets->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			connect("confirmed", callable_mp(this, &ProjectExportDialog::_export_pck_zip));
 			_update_export_all();
-		} break;
-
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			parameters->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 		} break;
 	}
 }
@@ -240,10 +237,12 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	export_path->update_property();
 	runnable->set_disabled(false);
 	runnable->set_pressed(current->is_runnable());
+	parameters->set_object_class(current->get_platform()->get_class_name());
 	parameters->edit(current.ptr());
 
 	export_filter->select(current->get_export_filter());
 	include_filters->set_text(current->get_include_filter());
+	include_label->set_text(current->get_export_filter() == EditorExportPreset::EXCLUDE_SELECTED_RESOURCES ? TTR("Resources to exclude:") : TTR("Resources to export:"));
 	exclude_filters->set_text(current->get_exclude_filter());
 	server_strip_message->set_visible(current->get_export_filter() == EditorExportPreset::EXPORT_CUSTOMIZED);
 
@@ -704,6 +703,7 @@ void ProjectExportDialog::_export_type_changed(int p_which) {
 	if (filter_type == EditorExportPreset::EXPORT_CUSTOMIZED && current->get_customized_files_count() == 0) {
 		current->set_file_export_mode("res://", EditorExportPreset::MODE_FILE_STRIP);
 	}
+	include_label->set_text(current->get_export_filter() == EditorExportPreset::EXCLUDE_SELECTED_RESOURCES ? TTR("Resources to exclude:") : TTR("Resources to export:"));
 
 	updating = true;
 	_fill_resource_tree();
@@ -831,14 +831,20 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 
 void ProjectExportDialog::_propagate_file_export_mode(TreeItem *p_item, EditorExportPreset::FileExportMode p_inherited_export_mode) {
 	EditorExportPreset::FileExportMode file_export_mode = (EditorExportPreset::FileExportMode)(int)p_item->get_metadata(1);
+	bool is_inherited = false;
 	if (file_export_mode == EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED) {
 		file_export_mode = p_inherited_export_mode;
+		is_inherited = true;
 	}
 
 	if (file_export_mode == EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED) {
 		p_item->set_text(1, "");
 	} else {
-		p_item->set_text(1, file_mode_popup->get_item_text(file_mode_popup->get_item_index(file_export_mode)));
+		String text = file_mode_popup->get_item_text(file_mode_popup->get_item_index(file_export_mode));
+		if (is_inherited) {
+			text += " " + TTR("(Inherited)");
+		}
+		p_item->set_text(1, text);
 	}
 
 	for (int i = 0; i < p_item->get_child_count(); i++) {
@@ -1159,7 +1165,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->add_child(parameters);
 	parameters->set_name(TTR("Options"));
 	parameters->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	parameters->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+	parameters->set_use_doc_hints(true);
 	parameters->connect("property_edited", callable_mp(this, &ProjectExportDialog::_update_parameters));
 	EditorExport::get_singleton()->connect("export_presets_updated", callable_mp(this, &ProjectExportDialog::_force_update_current_preset_parameters));
 

@@ -33,9 +33,11 @@
 
 #include "editor/editor_inspector.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
-#include "scene/gui/item_list.h"
 #include "scene/resources/tile_set.h"
+
+class Button;
+class ItemList;
+class Label;
 
 class TileSetScenesCollectionSourceEditor : public HBoxContainer {
 	GDCLASS(TileSetScenesCollectionSourceEditor, HBoxContainer);

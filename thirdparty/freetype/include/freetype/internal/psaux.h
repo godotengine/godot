@@ -5,7 +5,7 @@
  *   Auxiliary functions and data structures related to PostScript fonts
  *   (specification).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -132,9 +132,6 @@ FT_BEGIN_HEADER
    *   max_elems ::
    *     The maximum number of elements in table.
    *
-   *   num_elems ::
-   *     The current number of elements in table.
-   *
    *   elements ::
    *     A table of element addresses within the block.
    *
@@ -155,7 +152,6 @@ FT_BEGIN_HEADER
     FT_ULong           init;
 
     FT_Int             max_elems;
-    FT_Int             num_elems;
     FT_Byte**          elements;       /* addresses of table elements */
     FT_UInt*           lengths;        /* lengths of table elements   */
 

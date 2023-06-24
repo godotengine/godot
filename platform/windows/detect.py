@@ -13,10 +13,6 @@ if TYPE_CHECKING:
 STACK_SIZE = 8388608
 
 
-def is_active():
-    return True
-
-
 def get_name():
     return "Windows"
 
@@ -190,6 +186,16 @@ def get_opts():
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
     ]
+
+
+def get_doc_classes():
+    return [
+        "EditorExportPlatformWindows",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
 
 
 def get_flags():
@@ -403,11 +409,15 @@ def configure_msvc(env, vcvars_msvc_config):
         "dxguid",
         "imm32",
         "bcrypt",
+        "Crypt32",
         "Avrt",
         "dwmapi",
         "dwrite",
         "wbemuuid",
     ]
+
+    if env.debug_features:
+        LIBS += ["psapi", "dbghelp"]
 
     if env["vulkan"]:
         env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
@@ -456,6 +466,7 @@ def configure_msvc(env, vcvars_msvc_config):
     env["BUILDERS"]["ProgramOriginal"] = env["BUILDERS"]["Program"]
     env["BUILDERS"]["Program"] = methods.precious_program
 
+    env.Append(LINKFLAGS=["/NATVIS:platform\windows\godot.natvis"])
     env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
 
 
@@ -579,6 +590,7 @@ def configure_mingw(env):
             "ksuser",
             "imm32",
             "bcrypt",
+            "crypt32",
             "avrt",
             "uuid",
             "dwmapi",
@@ -586,6 +598,9 @@ def configure_mingw(env):
             "wbemuuid",
         ]
     )
+
+    if env.debug_features:
+        env.Append(LIBS=["psapi", "dbghelp"])
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])

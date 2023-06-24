@@ -36,10 +36,10 @@
 #include "editor/editor_properties.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/control.h"
-#include "scene/gui/label.h"
 
 class MenuButton;
+class SpinBox;
+class Label;
 class EditorUndoRedoManager;
 
 class TileDataEditor : public VBoxContainer {
@@ -120,8 +120,16 @@ private:
 	Button *button_create = nullptr;
 	Button *button_edit = nullptr;
 	Button *button_delete = nullptr;
-	Button *button_pixel_snap = nullptr;
 	MenuButton *button_advanced_menu = nullptr;
+
+	enum Snap {
+		SNAP_NONE,
+		SNAP_HALF_PIXEL,
+		SNAP_GRID,
+	};
+	int current_snap_option = SNAP_HALF_PIXEL;
+	MenuButton *button_pixel_snap = nullptr;
+	SpinBox *snap_subdivision = nullptr;
 
 	Vector<Point2> in_creation_polygon;
 
@@ -155,9 +163,11 @@ private:
 	void _advanced_menu_item_pressed(int p_item_pressed);
 	void _center_view();
 	void _base_control_gui_input(Ref<InputEvent> p_event);
+	void _set_snap_option(int p_index);
+	void _store_snap_options();
 
 	void _snap_to_tile_shape(Point2 &r_point, float &r_current_snapped_dist, float p_snap_dist);
-	void _snap_to_half_pixel(Point2 &r_point);
+	void _snap_point(Point2 &r_point);
 	void _grab_polygon_point(Vector2 p_pos, const Transform2D &p_polygon_xform, int &r_polygon_index, int &r_point_index);
 	void _grab_polygon_segment_point(Vector2 p_pos, const Transform2D &p_polygon_xform, int &r_polygon_index, int &r_segment_index, Vector2 &r_point);
 

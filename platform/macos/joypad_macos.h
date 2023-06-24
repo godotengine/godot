@@ -31,12 +31,12 @@
 #ifndef JOYPAD_MACOS_H
 #define JOYPAD_MACOS_H
 
+#include "core/input/input.h"
+
 #import <ForceFeedback/ForceFeedback.h>
 #import <ForceFeedback/ForceFeedbackConstants.h>
 #import <IOKit/hid/IOHIDLib.h>
 #import <Kernel/IOKit/hidsystem/IOHIDUsageTables.h>
-
-#include "core/input/input.h"
 
 struct rec_element {
 	IOHIDElementRef ref;

@@ -47,15 +47,29 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 	}
 
 	{
+		RD::FramebufferFormatID fb_format;
+		RD::PipelineColorBlendState blend_state;
+		String defines;
+		if (RD::get_singleton()->has_feature(RD::SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS)) {
+			fb_format = RD::get_singleton()->framebuffer_format_create_empty();
+			blend_state = RD::PipelineColorBlendState::create_disabled();
+		} else {
+			Vector<RD::AttachmentFormat> afs;
+			afs.push_back(RD::AttachmentFormat());
+			afs.write[0].usage_flags = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+			fb_format = RD::get_singleton()->framebuffer_format_create(afs);
+			defines = "\n#define USE_ATTACHMENT\n";
+		}
+
 		Vector<String> versions;
 		versions.push_back("");
-		cluster_render.cluster_render_shader.initialize(versions);
+		cluster_render.cluster_render_shader.initialize(versions, defines);
 		cluster_render.shader_version = cluster_render.cluster_render_shader.version_create();
 		cluster_render.shader = cluster_render.cluster_render_shader.version_get_shader(cluster_render.shader_version, 0);
-		cluster_render.shader_pipelines[ClusterRender::PIPELINE_NORMAL] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, RD::get_singleton()->framebuffer_format_create_empty(), vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState(), 0);
+		cluster_render.shader_pipelines[ClusterRender::PIPELINE_NORMAL] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
 		RD::PipelineMultisampleState ms;
 		ms.sample_count = RD::TEXTURE_SAMPLES_4;
-		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, RD::get_singleton()->framebuffer_format_create_empty(), vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), ms, RD::PipelineDepthStencilState(), RD::PipelineColorBlendState(), 0);
+		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), ms, RD::PipelineDepthStencilState(), blend_state, 0);
 	}
 	{
 		Vector<String> versions;

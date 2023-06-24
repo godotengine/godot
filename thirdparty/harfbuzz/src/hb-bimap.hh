@@ -83,9 +83,15 @@ struct hb_bimap_t
 
   unsigned int get_population () const { return forw_map.get_population (); }
 
+
   protected:
   hb_map_t  forw_map;
   hb_map_t  back_map;
+
+  public:
+  auto keys () const HB_AUTO_RETURN (+ forw_map.keys())
+  auto values () const HB_AUTO_RETURN (+ forw_map.values())
+  auto iter () const HB_AUTO_RETURN (+ forw_map.iter())
 };
 
 /* Inremental bimap: only lhs is given, rhs is incrementally assigned */
@@ -107,6 +113,9 @@ struct hb_inc_bimap_t : hb_bimap_t
 
   hb_codepoint_t skip ()
   { return next_value++; }
+
+  hb_codepoint_t skip (unsigned count)
+  { return next_value += count; }
 
   hb_codepoint_t get_next_value () const
   { return next_value; }

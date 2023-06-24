@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="FontVariation" inherits="Font" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Variation of the [Font].
+		A variation of a font with additional settings.
 	</brief_description>
 	<description>
-		OpenType variations, simulated bold / slant, and additional font settings like OpenType features and extra spacing.
+		Provides OpenType variations, simulated bold / slant, and additional font settings like OpenType features and extra spacing.
 		To use simulated bold font variant:
 		[codeblocks]
 		[gdscript]

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="UndoRedo" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		General-purpose helper to manage undo/redo operations.
+		Provides a high-level interface for implementing undo and redo operations.
 	</brief_description>
 	<description>
-		UndoRedo works by registering methods and property changes inside "actions".
-		Common behavior is to create an action, then add do/undo calls to functions or property changes, then committing the action.
-		Here's an example on how to add an UndoRedo action:
+		UndoRedo works by registering methods and property changes inside "actions". You can create an action, then provide ways to do and undo this action using function calls and property changes, then commit the action.
+		When an action is committed, all of the [code]do_*[/code] methods will run. If the [method undo] method is used, the [code]undo_*[/code] methods will run. If the [method redo] method is used, once again, all of the [code]do_*[/code] methods will run.
+		Here's an example on how to add an action:
 		[codeblocks]
 		[gdscript]
 		var undo_redo = UndoRedo.new()
@@ -56,9 +56,38 @@
 		}
 		[/csharp]
 		[/codeblocks]
-		[method create_action], [method add_do_method], [method add_undo_method], [method add_do_property], [method add_undo_property], and [method commit_action] should be called one after the other, like in the example. Not doing so could lead to crashes.
+		Before calling any of the [code]add_(un)do_*[/code] methods, you need to first call [method create_action]. Afterwards you need to call [method commit_action].
 		If you don't need to register a method, you can leave [method add_do_method] and [method add_undo_method] out; the same goes for properties. You can also register more than one method/property.
 		If you are making an [EditorPlugin] and want to integrate into the editor's undo history, use [EditorUndoRedoManager] instead.
+		If you are registering multiple properties/method which depend on one another, be aware that by default undo operation are called in the same order they have been added. Therefore instead of grouping do operation with their undo operations it is better to group do on one side and undo on the other as shown below.
+		[codeblocks]
+		[gdscript]
+		undo_redo.create_action("Add object")
+
+		# DO
+		undo_redo.add_do_method(_create_object)
+		undo_redo.add_do_method(_add_object_to_singleton)
+
+		# UNDO
+		undo_redo.add_undo_method(_remove_object_from_singleton)
+		undo_redo.add_undo_method(_destroy_that_object)
+
+		undo_redo.commit_action()
+		[/gdscript]
+		[csharp]
+		_undo_redo.CreateAction("Add object");
+
+		// DO
+		_undo_redo.AddDoMethod(new Callable(this, MethodName.CreateObject));
+		_undo_redo.AddDoMethod(new Callable(this, MethodName.AddObjectToSingleton));
+
+		// UNDO
+		_undo_redo.AddUndoMethod(new Callable(this, MethodName.RemoveObjectFromSingleton));
+		_undo_redo.AddUndoMethod(new Callable(this, MethodName.DestroyThatObject));
+
+		_undo_redo.CommitAction();
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -144,9 +173,11 @@
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<param index="1" name="merge_mode" type="int" enum="UndoRedo.MergeMode" default="0" />
+			<param index="2" name="backward_undo_ops" type="bool" default="false" />
 			<description>
 				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property], and [method add_undo_property], then commit the action with [method commit_action].
 				The way actions are merged is dictated by [param merge_mode]. See [enum MergeMode] for details.
+				The way undo operation are ordered in actions is dictated by [param backward_undo_ops]. When [param backward_undo_ops] is [code]false[/code] undo option are ordered in the same order they were added. Which means the first operation to be added will be the first to be undone.
 			</description>
 		</method>
 		<method name="end_force_keep_in_merge_ends">

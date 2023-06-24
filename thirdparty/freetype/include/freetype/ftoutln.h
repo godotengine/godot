@@ -5,7 +5,7 @@
  *   Support for the FT_Outline type used to store glyph shapes of
  *   most scalable font formats (specification).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,

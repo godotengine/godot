@@ -536,6 +536,8 @@ struct STAT
     | hb_map (&AxisValue::get_value_name_id)
     | hb_sink (nameids_to_retain)
     ;
+
+    nameids_to_retain->add (elidedFallbackNameID);
   }
 
   bool subset (hb_subset_context_t *c) const

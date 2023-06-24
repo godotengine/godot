@@ -41,9 +41,12 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 
+#include "scene/gui/control.h"
+#include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
 
 #ifdef DEBUG_ENABLED
 #include "servers/navigation_server_3d.h"
@@ -168,6 +171,17 @@ void GenericTilePolygonEditor::_base_control_draw() {
 		base_control->draw_texture_rect_region(background_texture, Rect2(-background_region.size / 2 - background_offset, region_size), background_region, background_modulate, background_transpose);
 	}
 
+	// Draw grid.
+	if (current_snap_option == SNAP_GRID) {
+		Vector2 spacing = tile_size / snap_subdivision->get_value();
+		Vector2 offset = -tile_size / 2;
+
+		for (int i = 1; i < snap_subdivision->get_value(); i++) {
+			base_control->draw_line(Vector2(spacing.x * i, 0) + offset, Vector2(spacing.x * i, tile_size.y) + offset, Color(1, 1, 1, 0.33));
+			base_control->draw_line(Vector2(0, spacing.y * i) + offset, Vector2(tile_size.x, spacing.y * i) + offset, Color(1, 1, 1, 0.33));
+		}
+	}
+
 	// Draw the polygons.
 	for (const Vector<Vector2> &polygon : polygons) {
 		Color color = polygon_color;
@@ -195,9 +209,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	Point2 in_creation_point = xform.affine_inverse().xform(base_control->get_local_mouse_position());
 	float in_creation_distance = grab_threshold * 2.0;
 	_snap_to_tile_shape(in_creation_point, in_creation_distance, grab_threshold / editor_zoom_widget->get_zoom());
-	if (button_pixel_snap->is_pressed()) {
-		_snap_to_half_pixel(in_creation_point);
-	}
+	_snap_point(in_creation_point);
 
 	if (drag_type == DRAG_TYPE_CREATE_POINT && !in_creation_polygon.is_empty()) {
 		base_control->draw_line(in_creation_polygon[in_creation_polygon.size() - 1], in_creation_point, Color(1.0, 1.0, 1.0));
@@ -443,8 +455,20 @@ void GenericTilePolygonEditor::_snap_to_tile_shape(Point2 &r_point, float &r_cur
 	r_point = snapped_point;
 }
 
-void GenericTilePolygonEditor::_snap_to_half_pixel(Point2 &r_point) {
-	r_point = (r_point * 2).round() / 2.0;
+void GenericTilePolygonEditor::_snap_point(Point2 &r_point) {
+	switch (current_snap_option) {
+		case SNAP_NONE:
+			break;
+
+		case SNAP_HALF_PIXEL:
+			r_point = r_point.snapped(Vector2(0.5, 0.5));
+			break;
+
+		case SNAP_GRID: {
+			const Vector2 tile_size = tile_set->get_tile_size();
+			r_point = (r_point + tile_size / 2).snapped(tile_size / snap_subdivision->get_value()) - tile_size / 2;
+		} break;
+	}
 }
 
 void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) {
@@ -475,9 +499,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 			Point2 point = xform.affine_inverse().xform(mm->get_position());
 			float distance = grab_threshold * 2.0;
 			_snap_to_tile_shape(point, distance, grab_threshold / editor_zoom_widget->get_zoom());
-			if (button_pixel_snap->is_pressed()) {
-				_snap_to_half_pixel(point);
-			}
+			_snap_point(point);
 			polygons[drag_polygon_index].write[drag_point_index] = point;
 		} else if (drag_type == DRAG_TYPE_PAN) {
 			panning += mm->get_position() - drag_last_pos;
@@ -592,9 +614,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 					Point2 point = xform.affine_inverse().xform(mb->get_position());
 					float distance = grab_threshold * 2;
 					_snap_to_tile_shape(point, distance, grab_threshold / editor_zoom_widget->get_zoom());
-					if (button_pixel_snap->is_pressed()) {
-						_snap_to_half_pixel(point);
-					}
+					_snap_point(point);
 					in_creation_polygon.push_back(point);
 				}
 				drag_type = DRAG_TYPE_NONE;
@@ -650,6 +670,19 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 	if (!use_undo_redo) {
 		memdelete(undo_redo);
 	}
+}
+
+void GenericTilePolygonEditor::_set_snap_option(int p_index) {
+	current_snap_option = p_index;
+	button_pixel_snap->set_icon(button_pixel_snap->get_popup()->get_item_icon(p_index));
+	snap_subdivision->set_visible(p_index == SNAP_GRID);
+	base_control->queue_redraw();
+	_store_snap_options();
+}
+
+void GenericTilePolygonEditor::_store_snap_options() {
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_snap_option", current_snap_option);
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_snap_subdiv", snap_subdivision->get_value());
 }
 
 void GenericTilePolygonEditor::set_use_undo_redo(bool p_use_undo_redo) {
@@ -766,8 +799,11 @@ void GenericTilePolygonEditor::_notification(int p_what) {
 			button_edit->set_icon(get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
 			button_delete->set_icon(get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
 			button_center_view->set_icon(get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons")));
-			button_pixel_snap->set_icon(get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
 			button_advanced_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+			button_pixel_snap->get_popup()->set_item_icon(0, get_theme_icon(SNAME("SnapDisable"), SNAME("EditorIcons")));
+			button_pixel_snap->get_popup()->set_item_icon(1, get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
+			button_pixel_snap->get_popup()->set_item_icon(2, get_theme_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
+			button_pixel_snap->set_icon(button_pixel_snap->get_popup()->get_item_icon(current_snap_option));
 
 			PopupMenu *p = button_advanced_menu->get_popup();
 			p->set_item_icon(p->get_item_index(ROTATE_RIGHT), get_theme_icon(SNAME("RotateRight"), SNAME("EditorIcons")));
@@ -833,12 +869,20 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 
 	toolbar->add_child(memnew(VSeparator));
 
-	button_pixel_snap = memnew(Button);
-	button_pixel_snap->set_flat(true);
-	button_pixel_snap->set_toggle_mode(true);
-	button_pixel_snap->set_pressed(true);
-	button_pixel_snap->set_tooltip_text(TTR("Snap to half-pixel"));
+	button_pixel_snap = memnew(MenuButton);
 	toolbar->add_child(button_pixel_snap);
+	button_pixel_snap->set_flat(true);
+	button_pixel_snap->set_tooltip_text(TTR("Toggle Grid Snap"));
+	button_pixel_snap->get_popup()->add_item(TTR("Disable Snap"), SNAP_NONE);
+	button_pixel_snap->get_popup()->add_item(TTR("Half-Pixel Snap"), SNAP_HALF_PIXEL);
+	button_pixel_snap->get_popup()->add_item(TTR("Grid Snap"), SNAP_GRID);
+	button_pixel_snap->get_popup()->connect("index_pressed", callable_mp(this, &GenericTilePolygonEditor::_set_snap_option));
+
+	snap_subdivision = memnew(SpinBox);
+	toolbar->add_child(snap_subdivision);
+	snap_subdivision->get_line_edit()->add_theme_constant_override("minimum_character_width", 2);
+	snap_subdivision->set_min(1);
+	snap_subdivision->set_max(99);
 
 	Control *root = memnew(Control);
 	root->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -859,6 +903,8 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	base_control->set_clip_contents(true);
 	base_control->set_focus_mode(Control::FOCUS_CLICK);
 	root->add_child(base_control);
+	snap_subdivision->connect("value_changed", callable_mp((CanvasItem *)base_control, &CanvasItem::queue_redraw).unbind(1));
+	snap_subdivision->connect("value_changed", callable_mp(this, &GenericTilePolygonEditor::_store_snap_options).unbind(1));
 
 	editor_zoom_widget = memnew(EditorZoomWidget);
 	editor_zoom_widget->set_position(Vector2(5, 5));
@@ -873,6 +919,9 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_center_view->set_flat(true);
 	button_center_view->set_disabled(true);
 	root->add_child(button_center_view);
+
+	snap_subdivision->set_value_no_signal(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_snap_subdiv", 4));
+	_set_snap_option(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_snap_option", SNAP_NONE));
 }
 
 void TileDataDefaultEditor::_property_value_changed(StringName p_property, Variant p_value, StringName p_field) {

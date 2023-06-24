@@ -20,7 +20,7 @@ Files extracted from upstream source:
 ## astcenc
 
 - Upstream: https://github.com/ARM-software/astc-encoder
-- Version: 4.3.0 (ec83dda79fcefe07f69cdae7ed980d169bf2c4d4, 2023)
+- Version: 4.4.0 (5a5b5a1ef60dd47c27c28c66c118d22c40e3197e, 2023)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -32,7 +32,7 @@ Files extracted from upstream source:
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: git (a91e94c8495d7f470d3df326a364d49324cfd4a3, 2022)
+- Version: 1.16.4 (900e40fb5d2502927360fe2f31762bdbb624455f, 2023)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -40,23 +40,27 @@ Files extracted from upstream source:
 - `encoder/` and `transcoder/` folders
 - `LICENSE`
 
+Applied upstream PR https://github.com/BinomialLLC/basis_universal/pull/344 to
+fix build with our own copy of zstd (patch in `patches`).
+
 
 ## brotli
 
 - Upstream: https://github.com/google/brotli
-- Version: git (f4153a09f87cbb9c826d8fc12c74642bb2d879ea, 2022)
+- Version: git (ed1995b6bda19244070ab5d331111f16f67c8054, 2023)
 - License: MIT
 
 Files extracted from upstream source:
 
-- `common/`, `dec/` and `include/` folders
+- `common/`, `dec/` and `include/` folders from `c/`,
+  minus the `dictionary.bin*` files
 - `LICENSE`
 
 
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
-- Version: git (b2f7415648411b6fd7c298c6c92d6552f0165f60, 2022)
+- Version: git (3aaca635bad074a0ce5c15fa8aa0dff47f5c639a, 2023)
 - License: MPL 2.0
 
 
@@ -79,7 +83,7 @@ in the `patches/` folder when syncing on newer upstream commits.
 ## doctest
 
 - Upstream: https://github.com/onqtam/doctest
-- Version: 2.4.9 (b7c21ec5ceeadb4951b00396fc1e4642dd347e5f, 2022)
+- Version: 2.4.11 (ae7a13539fb71f270b87eb2e874fbac80bc8dda2, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -174,7 +178,7 @@ Files extracted from upstream source:
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.12.1 (e8ebfe988b5f57bfb9a3ecb13c70d9791bce9ecf, 2022)
+- Version: 2.13.0 (de8b92dd7ec634e9e2b25ef534c54a3537555c11, 2023)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -185,16 +189,11 @@ Files extracted from upstream source:
 - `include/` folder, minus the `dlg` subfolder
 - `LICENSE.TXT` and `docs/FTL.TXT`
 
-Some changes have been made in order to prevent LTO from removing code.
-They are marked with `// -- GODOT start --` and `// -- GODOT end --`
-comments. Apply the patches in the `patches/` folder when syncing on newer upstream
-commits.
-
 
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad
-- Version: 2.0.2 (f237a2bfcec0d9b82b90ec9af4af265c40de7183, 2022)
+- Version: 2.0.4 (d08b1aa01f8fe57498f04d47b5fa8c48725be877, 2023)
 - License: CC0 1.0 and Apache 2.0
 
 Files extracted from upstream source:
@@ -207,11 +206,14 @@ Files generated from [upstream web instance](https://gen.glad.sh/):
 - `glx.c`
 - `glad/glx.h`
 
+See the permalinks in `glad/gl.h` and `glad/glx.h` to regenrate the files with
+a new version of the web instance.
+
 
 ## glslang
 
 - Upstream: https://github.com/KhronosGroup/glslang
-- Version: 11.12.0 / sdk-1.3.231.1 (5755de46b07e4374c05fb1081f65f7ae1f8cca81, 2022)
+- Version: 12.2.0 / sdk-1.3.250.0 (d1517d64cfca91f573af1bf7341dc3a5113349c0, 2023)
 - License: glslang
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
@@ -248,7 +250,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 7.1.0 (60841e26187576bff477c1a09ee2ffe544844abc, 2023)
+- Version: 7.3.0 (4584bcdc326564829d3cee3572386c90e4fd1974, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -262,7 +264,7 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 72.1 (ff3514f257ea10afe7e710e9f946f68d256704b1, 2022)
+- Version: 73.1 (5861e1fd52f1d7673eee38bc3c965aa18b336062, 2023)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -274,14 +276,14 @@ Files extracted from upstream source:
 
 Files generated from upstream source:
 
-- the `icudt72l.dat` built with the provided `godot_data.json` config file (see
+- the `icudt73l.dat` built with the provided `godot_data.json` config file (see
   https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
   for instructions).
 
 - Step 1: Build ICU with default options - `./runConfigureICU {PLATFORM} && make`.
 - Step 2: Reconfigure ICU with custom data config - `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`.
 - Step 3: Delete `data/out` folder and rebuild data - `cd data && rm -rf ./out && make`.
-- Step 4: Copy `source/data/out/icudt72l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt72l.dat`.
+- Step 4: Copy `source/data/out/icudt73l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt73l.dat`.
 
 
 ## jpeg-compressor
@@ -361,11 +363,13 @@ Files extracted from upstream source:
 - `src/` and `sharpyuv/` except from: `.am`, `.rc` and `.in` files
 - `AUTHORS`, `COPYING`, `PATENTS`
 
+Patch `godot-node-debug-fix.patch` workarounds shadowing of godot's Node class in the MSVC debugger.
+
 
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.18.2 (89f040a5c938985c5f30728baed21e49d0846a53, 2022)
+- Version: 2.18.3 (981743de6fcdbe672e482b6fd724d31d0a0d2476, 2023)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -373,11 +377,12 @@ File extracted from upstream release tarball:
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/` except `config_psa.h` and `psa_util.h`.
 - All `*.c` and `*.h` from `library/` to `thirdparty/mbedtls/library/` except those starting with `psa_*`.
 - The `LICENSE` file.
-- Applied the patch in `patches/1453.diff` (upstream PR:
+- Applied the patch in `patches/1453.diff` to fix UWP build (upstream PR:
   https://github.com/ARMmbed/mbedtls/pull/1453).
   Applied the patch in `patches/windows-arm64-hardclock.diff`
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
+- Added the file `godot_module_mbedtls_config.h` to customize the build configuration when bundling the full library.
 
 
 ## meshoptimizer
@@ -524,14 +529,23 @@ Collection of single-file libraries used in Godot components.
 ## msdfgen
 
 - Upstream: https://github.com/Chlumsky/msdfgen
-- Version: 1.9.2 (64a91eec3ca3787e6f78b4c99fcd3052ad3e37c0, 2021)
+- Version: 1.10 (64a91eec3ca3787e6f78b4c99fcd3052ad3e37c0, 2021)
 - License: MIT
 
 Files extracted from the upstream source:
 
 - `msdfgen.h`
 - Files in `core/` folder.
-- `LICENSE.txt` and `CHANGELOG.md`
+- `LICENSE.txt`
+
+
+## nvapi
+
+- Upstream: http://download.nvidia.com/XFree86/nvapi-open-source-sdk
+- Version: R525
+- License: MIT
+
+- `nvapi_minimal.h` was created by using `nvapi.h` from upstream and removing unnecessary code.
 
 
 ## oidn
@@ -592,7 +606,7 @@ Exclude:
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.40 (3103b8f20a3b9944b177e812fde29fbfb8b90558, 2022)
+- Version: 10.42 (52c08847921a324c804cabf2814549f50bce1265, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -611,7 +625,7 @@ in 10.40, it can be found in the `patches` folder.
 ## recastnavigation
 
 - Upstream: https://github.com/recastnavigation/recastnavigation
-- Version: git (4fef0446609b23d6ac180ed822817571525528a1, 2022)
+- Version: 1.6.0 (6dc1667f580357e8a2154c28b7867bea7e8ad3a7, 2023)
 - License: zlib
 
 Files extracted from upstream source:
@@ -622,24 +636,33 @@ Files extracted from upstream source:
 
 ## rvo2
 
+For 2D in `rvo2_2d` folder
+
+- Upstream: https://github.com/snape/RVO2
+- Version: git (5961f05ed310f3a5e902aa70ad54e010ba6dcdfd, 2022)
+- License: Apache 2.0
+
+For 3D in `rvo2_3d` folder
+
 - Upstream: https://github.com/snape/RVO2-3D
-- Version: git (bfc048670a4e85066e86a1f923d8ea92e3add3b2, 2021)
+- Version: git (8be355eb84dc763267b5acf7070d6d623d752e51, 2022)
 - License: Apache 2.0
 
 Files extracted from upstream source:
 
-- All .cpp and .h files in the `src/` folder except for Export.h, RVO.h, RVOSimulator.cpp and RVOSimulator.h
+- All .cpp and .h files in the `src/` folder except for Export.h and RVO.h
 - LICENSE
 
-Important: Some files have Godot-made changes; so to enrich the features
-originally proposed by this library and better integrate this library with
-Godot. See the patch in the `patches` folder for details.
+Important: Nearly all files have Godot-made changes and renames
+to make the 2D and 3D rvo libraries compatible with each other
+and solve conflicts and also enrich the feature set originally
+proposed by these libraries and better integrate them with Godot.
 
 
 ## spirv-reflect
 
 - Upstream: https://github.com/KhronosGroup/SPIRV-Reflect
-- Version: sdk-1.3.231.1 (b68b5a8a5d8ab5fce79e6596f3a731291046393a, 2022)
+- Version: sdk-1.3.250.0 (1fd43331f0bd77cc0f421745781f79a14d8f2bb1, 2023)
 - License: Apache 2.0
 
 Now tracks Vulkan SDK releases, so keep it in sync with volk / vulkan.
@@ -674,7 +697,7 @@ comments and a patch is provided in the squish/ folder.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: 1.0.1 (67010eae802211202d0797f4df2b809f4ba7442c, 2021)
+- Version: 1.0.5 (3627ab3060592468d49547b4cdf5353e9e2b50dc, 2023)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -687,8 +710,8 @@ instead of `miniz.h` as an external dependency.
 
 ## thorvg
 
-- Upstream: https://github.com/Samsung/thorvg
-- Version: 0.8.4 (b0b7f207c6235691d694fc3f76e0b96e4858e606, 2023)
+- Upstream: https://github.com/thorvg/thorvg
+- Version: 0.9.0 (a744006aa1edb918bacf0a415d0a57ca058e25f4, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -717,7 +740,7 @@ folder.
 ## volk
 
 - Upstream: https://github.com/zeux/volk
-- Version: sdk-1.3.231.1 (f29df7d2834c434b39169d5b2e4dde8c05a5adc1, 2022)
+- Version: sdk-1.3.250.0 (b3bc21e584f97400b6884cb2a541a56c6a5ddba3, 2023)
 - License: MIT
 
 Unless there is a specific reason to package a more recent version, please stick
@@ -736,7 +759,7 @@ Files extracted from upstream source:
 ## vulkan
 
 - Upstream: https://github.com/KhronosGroup/Vulkan-Headers
-- Version: sdk-1.3.231.1 (98f440ce6868c94f5ec6e198cc1adda4760e8849, 2022)
+- Version: sdk-1.3.250 (bae9700cd9425541a0f6029957f005e5ad3ef660, 2023)
 - License: Apache 2.0
 
 The vendored version should be kept in sync with volk, see above.
@@ -747,7 +770,7 @@ Files extracted from upstream source:
 - `LICENSE.txt`
 
 `vk_enum_string_helper.h` is taken from the matching `Vulkan-ValidationLayers`
-SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
+SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/main/layers/vulkan/generated/vk_enum_string_helper.h
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 Version: 3.0.1 (2022-06-10), commit `cfdc0f8775ab3258a3b9c4e47d8ce4b6f52a5441`
@@ -759,7 +782,7 @@ Patches in the `patches` directory should be re-applied after updates.
 ## wslay
 
 - Upstream: https://github.com/tatsuhiro-t/wslay
-- Version: 1.1.1+git (45d22583b488f79d5a4e598cc7675c191c5ab53f, 2021)
+- Version: 1.1.1+git (0e7d106ff89ad6638090fd811a9b2e4c5dda8d40, 2022)
 - License: MIT
 
 File extracted from upstream release tarball:
@@ -776,7 +799,7 @@ File extracted from upstream release tarball:
 ## xatlas
 
 - Upstream: https://github.com/jpcy/xatlas
-- Version: git (16ace528acd2cf1f16a7c0dde99c42c486488dbe, 2022)
+- Version: git (f700c7790aaa030e794b52ba7791a05c085faf0c, 2022)
 - License: MIT
 
 Files extracted from upstream source:
@@ -800,7 +823,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.5.2 (e47e674cd09583ff0503f0f6defd6d23d8b718d3, 2022)
+- Version: 1.5.5 (63779c798237346c2b245c546c40b72a5a5913fe, 2023)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

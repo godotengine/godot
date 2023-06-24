@@ -59,6 +59,11 @@
  *
  * HarfBuzz provides a built-in set of lightweight default
  * functions for each method in #hb_font_funcs_t.
+ *
+ * The default font functions are implemented in terms of the
+ * #hb_font_funcs_t methods of the parent font object.  This allows
+ * client programs to override only the methods they need to, and
+ * otherwise inherit the parent font's implementation, if any.
  **/
 
 
@@ -1387,7 +1392,7 @@ hb_font_get_glyph_from_name (hb_font_t      *font,
 /**
  * hb_font_get_glyph_shape:
  * @font: #hb_font_t to work upon
- * @glyph: : The glyph ID
+ * @glyph: The glyph ID
  * @dfuncs: #hb_draw_funcs_t to draw to
  * @draw_data: User data to pass to draw callbacks
  *
@@ -1409,7 +1414,7 @@ hb_font_get_glyph_shape (hb_font_t *font,
 /**
  * hb_font_draw_glyph:
  * @font: #hb_font_t to work upon
- * @glyph: : The glyph ID
+ * @glyph: The glyph ID
  * @dfuncs: #hb_draw_funcs_t to draw to
  * @draw_data: User data to pass to draw callbacks
  *

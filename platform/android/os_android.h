@@ -32,6 +32,7 @@
 #define OS_ANDROID_H
 
 #include "audio_driver_opensl.h"
+
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
@@ -57,6 +58,7 @@ private:
 
 	mutable String data_dir_cache;
 	mutable String cache_dir_cache;
+	mutable String remote_fs_dir;
 
 	AudioDriverOpenSL audio_driver_android;
 
@@ -159,6 +161,13 @@ public:
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
 	virtual Error kill(const ProcessID &p_pid) override;
+	virtual String get_system_ca_certificates() override;
+
+	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) override;
+
+	virtual void benchmark_begin_measure(const String &p_what) override;
+	virtual void benchmark_end_measure(const String &p_what) override;
+	virtual void benchmark_dump() override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);

@@ -30,8 +30,9 @@
 
 #include "gdscript_byte_codegen.h"
 
-#include "core/debugger/engine_debugger.h"
 #include "gdscript.h"
+
+#include "core/debugger/engine_debugger.h"
 
 uint32_t GDScriptByteCodeGenerator::add_parameter(const StringName &p_name, bool p_is_optional, const GDScriptDataType &p_type) {
 #ifdef TOOLS_ENABLED
@@ -69,56 +70,52 @@ uint32_t GDScriptByteCodeGenerator::add_or_get_name(const StringName &p_name) {
 
 uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type) {
 	Variant::Type temp_type = Variant::NIL;
-	if (p_type.has_type) {
-		if (p_type.kind == GDScriptDataType::BUILTIN) {
-			switch (p_type.builtin_type) {
-				case Variant::NIL:
-				case Variant::BOOL:
-				case Variant::INT:
-				case Variant::FLOAT:
-				case Variant::STRING:
-				case Variant::VECTOR2:
-				case Variant::VECTOR2I:
-				case Variant::RECT2:
-				case Variant::RECT2I:
-				case Variant::VECTOR3:
-				case Variant::VECTOR3I:
-				case Variant::TRANSFORM2D:
-				case Variant::VECTOR4:
-				case Variant::VECTOR4I:
-				case Variant::PLANE:
-				case Variant::QUATERNION:
-				case Variant::AABB:
-				case Variant::BASIS:
-				case Variant::TRANSFORM3D:
-				case Variant::PROJECTION:
-				case Variant::COLOR:
-				case Variant::STRING_NAME:
-				case Variant::NODE_PATH:
-				case Variant::RID:
-				case Variant::OBJECT:
-				case Variant::CALLABLE:
-				case Variant::SIGNAL:
-				case Variant::DICTIONARY:
-				case Variant::ARRAY:
-					temp_type = p_type.builtin_type;
-					break;
-				case Variant::PACKED_BYTE_ARRAY:
-				case Variant::PACKED_INT32_ARRAY:
-				case Variant::PACKED_INT64_ARRAY:
-				case Variant::PACKED_FLOAT32_ARRAY:
-				case Variant::PACKED_FLOAT64_ARRAY:
-				case Variant::PACKED_STRING_ARRAY:
-				case Variant::PACKED_VECTOR2_ARRAY:
-				case Variant::PACKED_VECTOR3_ARRAY:
-				case Variant::PACKED_COLOR_ARRAY:
-				case Variant::VARIANT_MAX:
-					// Packed arrays are reference counted, so we don't use the pool for them.
-					temp_type = Variant::NIL;
-					break;
-			}
-		} else {
-			temp_type = Variant::OBJECT;
+	if (p_type.has_type && p_type.kind == GDScriptDataType::BUILTIN) {
+		switch (p_type.builtin_type) {
+			case Variant::NIL:
+			case Variant::BOOL:
+			case Variant::INT:
+			case Variant::FLOAT:
+			case Variant::STRING:
+			case Variant::VECTOR2:
+			case Variant::VECTOR2I:
+			case Variant::RECT2:
+			case Variant::RECT2I:
+			case Variant::VECTOR3:
+			case Variant::VECTOR3I:
+			case Variant::TRANSFORM2D:
+			case Variant::VECTOR4:
+			case Variant::VECTOR4I:
+			case Variant::PLANE:
+			case Variant::QUATERNION:
+			case Variant::AABB:
+			case Variant::BASIS:
+			case Variant::TRANSFORM3D:
+			case Variant::PROJECTION:
+			case Variant::COLOR:
+			case Variant::STRING_NAME:
+			case Variant::NODE_PATH:
+			case Variant::RID:
+			case Variant::CALLABLE:
+			case Variant::SIGNAL:
+				temp_type = p_type.builtin_type;
+				break;
+			case Variant::OBJECT:
+			case Variant::DICTIONARY:
+			case Variant::ARRAY:
+			case Variant::PACKED_BYTE_ARRAY:
+			case Variant::PACKED_INT32_ARRAY:
+			case Variant::PACKED_INT64_ARRAY:
+			case Variant::PACKED_FLOAT32_ARRAY:
+			case Variant::PACKED_FLOAT64_ARRAY:
+			case Variant::PACKED_STRING_ARRAY:
+			case Variant::PACKED_VECTOR2_ARRAY:
+			case Variant::PACKED_VECTOR3_ARRAY:
+			case Variant::PACKED_COLOR_ARRAY:
+			case Variant::VARIANT_MAX:
+				// Arrays, dictionaries, and objects are reference counted, so we don't use the pool for them.
+				temp_type = Variant::NIL;
+				break;
 		}
 	}
 
@@ -143,10 +140,12 @@ void GDScriptByteCodeGenerator::pop_temporary() {
 	ERR_FAIL_COND(used_temporaries.is_empty());
 	int slot_idx = used_temporaries.back()->get();
 	const StackSlot &slot = temporaries[slot_idx];
-	if (slot.type == Variant::OBJECT) {
+	if (slot.type == Variant::NIL) {
 		// Avoid keeping in the stack long-lived references to objects,
 		// which may prevent RefCounted objects from being freed.
-		write_assign_false(Address(Address::TEMPORARY, slot_idx));
+		// However, the cleanup will be performed an the end of the
+		// statement, to allow object references to survive chaining.
+		temporaries_pending_clear.push_back(slot_idx);
 	}
 	temporaries_pool[slot.type].push_back(slot_idx);
 	used_temporaries.pop_back();
@@ -852,6 +851,20 @@ void GDScriptByteCodeGenerator::write_get_member(const Address &p_target, const 
 	append_opcode(GDScriptFunction::OPCODE_GET_MEMBER);
 	append(p_target);
 	append(p_name);
+}
+
+void GDScriptByteCodeGenerator::write_set_static_variable(const Address &p_value, const Address &p_class, int p_index) {
+	append_opcode(GDScriptFunction::OPCODE_SET_STATIC_VARIABLE);
+	append(p_value);
+	append(p_class);
+	append(p_index);
+}
+
+void GDScriptByteCodeGenerator::write_get_static_variable(const Address &p_target, const Address &p_class, int p_index) {
+	append_opcode(GDScriptFunction::OPCODE_GET_STATIC_VARIABLE);
+	append(p_target);
+	append(p_class);
+	append(p_index);
 }
 
 void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_target, const Address &p_source) {
@@ -1754,6 +1767,23 @@ void GDScriptByteCodeGenerator::start_block() {
 
 void GDScriptByteCodeGenerator::end_block() {
 	pop_stack_identifiers();
+}
+
+void GDScriptByteCodeGenerator::clean_temporaries() {
+	List<int>::Element *E = temporaries_pending_clear.front();
+	while (E) {
+		// The temporary may have been re-used as something else than an object
+		// since it was added to the list. In that case, there's no need to clear it.
+		int slot_idx = E->get();
+		const StackSlot &slot = temporaries[slot_idx];
+		if (slot.type == Variant::NIL) {
+			write_assign_false(Address(Address::TEMPORARY, slot_idx));
+		}
+
+		List<int>::Element *next = E->next();
+		E->erase();
+		E = next;
+	}
 }
 
 GDScriptByteCodeGenerator::~GDScriptByteCodeGenerator() {

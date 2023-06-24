@@ -68,6 +68,16 @@ XRSession.prototype.inputSources;
 XRSession.prototype.visibilityState;
 
 /**
+ * @type {?number}
+ */
+XRSession.prototype.frameRate;
+
+/**
+ * @type {?Float32Array}
+ */
+XRSession.prototype.supportedFrameRates;
+
+/**
  * @type {?function (Event)}
  */
 XRSession.prototype.onend;
@@ -140,6 +150,12 @@ XRSession.prototype.end = function () {};
  * @return {Promise<XRReferenceSpace>}
  */
 XRSession.prototype.requestReferenceSpace = function (referenceSpaceType) {};
+
+/**
+ * @param {number} rate
+ * @return {Promise<undefined>}
+ */
+XRSession.prototype.updateTargetFrameRate = function (rate) {};
 
 /**
  * @typedef {function(number, XRFrame): undefined}

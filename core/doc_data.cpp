@@ -51,6 +51,7 @@ void DocData::return_doc_from_retinfo(DocData::MethodDoc &p_method, const Proper
 		if (p_method.return_enum.begins_with("_")) { //proxy class
 			p_method.return_enum = p_method.return_enum.substr(1, p_method.return_enum.length());
 		}
+		p_method.return_is_bitfield = p_retinfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD;
 		p_method.return_type = "int";
 	} else if (p_retinfo.class_name != StringName()) {
 		p_method.return_type = p_retinfo.class_name;
@@ -82,6 +83,7 @@ void DocData::argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const 
 		if (p_argument.enumeration.begins_with("_")) { //proxy class
 			p_argument.enumeration = p_argument.enumeration.substr(1, p_argument.enumeration.length());
 		}
+		p_argument.is_bitfield = p_arginfo.usage & PROPERTY_USAGE_CLASS_IS_BITFIELD;
 		p_argument.type = "int";
 	} else if (p_arginfo.class_name != StringName()) {
 		p_argument.type = p_arginfo.class_name;
@@ -165,6 +167,7 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 void DocData::constant_doc_from_variant(DocData::ConstantDoc &p_const, const StringName &p_name, const Variant &p_value, const String &p_desc) {
 	p_const.name = p_name;
 	p_const.value = p_value;
+	p_const.is_value_valid = (p_value.get_type() != Variant::OBJECT);
 	p_const.description = p_desc;
 }
 

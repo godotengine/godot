@@ -77,13 +77,14 @@
 # Silvia Scaglione <sissisoad@gmail.com>, 2022.
 # Cosimo Davide Viggiano <cosimod089@gmail.com>, 2022.
 # Francesco Cammarata <francescocammarata.fr@gmail.com>, 2022.
+# Alessio Gasparini <alessiogasparini02@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-02 01:45+0000\n"
-"Last-Translator: \"Matteo A.\" <psyduck.boh@gmail.com>\n"
+"PO-Revision-Date: 2023-06-08 10:53+0000\n"
+"Last-Translator: Alessio Gasparini <alessiogasparini02@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -91,7 +92,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -170,6 +171,9 @@ msgstr "Senza contorno"
 
 msgid "Transparent"
 msgstr "Trasparente"
+
+msgid "No Focus"
+msgstr "Nessun Focus"
 
 msgid "Window Width Override"
 msgstr "Sovrascrivi la Larghezza della Finestra"
@@ -303,6 +307,9 @@ msgstr "Modalità Mouse"
 msgid "Use Accumulated Input"
 msgstr "Usa Input Accumulati"
 
+msgid "Input Devices"
+msgstr "Dispositivi Input"
+
 msgid "Device"
 msgstr "Dispositivo"
 
@@ -384,12 +391,6 @@ msgstr "Valore Controller"
 msgid "Big Endian"
 msgstr "Big Endian"
 
-msgid "Network"
-msgstr "Reti"
-
-msgid "Page Size"
-msgstr "Dimensione Pagina"
-
 msgid "Blocking Mode Enabled"
 msgstr "Modalità Blocco Attivata"
 
@@ -423,6 +424,9 @@ msgstr "Array di Dati"
 msgid "Max Pending Connections"
 msgstr "Quantità Massima Connessioni in Attesa"
 
+msgid "Region"
+msgstr "Regione"
+
 msgid "Offset"
 msgstr "Scostamento"
 
@@ -434,6 +438,9 @@ msgstr "Seme"
 
 msgid "State"
 msgstr "Stato"
+
+msgid "Network"
+msgstr "Reti"
 
 msgid "Locale"
 msgstr "Locale"
@@ -492,26 +499,23 @@ msgstr "Intervallo di Refresh dello Scene Tree Remoto"
 msgid "Remote Inspect Refresh Interval"
 msgstr "Intervallo Aggiornamento Ispettore Remoto"
 
+msgid "FileSystem"
+msgstr "Filesystem"
+
+msgid "File Server"
+msgstr "File Server"
+
+msgid "Port"
+msgstr "Porta"
+
+msgid "Password"
+msgstr "Password"
+
 msgid "Profiler Frame Max Functions"
 msgstr "Quantità Massima Funzioni Riquadro del Profiler"
 
 msgid "Default Feature Profile"
 msgstr "Profilo di Funzionalità Predefinito"
-
-msgid "Access"
-msgstr "Accedi"
-
-msgid "Display Mode"
-msgstr "Modalità di visualizzazione"
-
-msgid "Filters"
-msgstr "Filtri"
-
-msgid "Show Hidden Files"
-msgstr "Mostra File Nascosti"
-
-msgid "Disable Overwrite Warning"
-msgstr "Disabilita Avviso di Sovrascrittura"
 
 msgid "Text Editor"
 msgstr "Editor di Testo"
@@ -536,6 +540,9 @@ msgstr "Selezionato"
 
 msgid "Keying"
 msgstr "Tasti"
+
+msgid "Distraction Free Mode"
+msgstr "Modalità senza distrazioni"
 
 msgid "Interface"
 msgstr "Interfaccia Utente"
@@ -575,9 +582,6 @@ msgstr "Modifica Tipi di Vettori Orizzontali"
 
 msgid "Default Color Picker Mode"
 msgstr "Modalità di Scelta Colore Predefinita"
-
-msgid "Distraction Free Mode"
-msgstr "Modalità senza distrazioni"
 
 msgid "Base Type"
 msgstr "Tipo di Base"
@@ -660,8 +664,8 @@ msgstr "Tema Personalizzato"
 msgid "Show Script Button"
 msgstr "Mostra Pulsante di Script"
 
-msgid "FileSystem"
-msgstr "Filesystem"
+msgid "Enable"
+msgstr "Abilita"
 
 msgid "Directories"
 msgstr "Cartelle"
@@ -680,6 +684,12 @@ msgstr "Comprimi Risorse in Binario"
 
 msgid "File Dialog"
 msgstr "Finestra di Dialogo del File"
+
+msgid "Show Hidden Files"
+msgstr "Mostra File Nascosti"
+
+msgid "Display Mode"
+msgstr "Modalità di visualizzazione"
 
 msgid "Thumbnail Size"
 msgstr "Dimensione della Miniatura"
@@ -734,9 +744,6 @@ msgstr "Numeri di Riga Riempiti con Zeri"
 
 msgid "Highlight Type Safe Lines"
 msgstr "Evidenzia Righe Type Safe"
-
-msgid "Show Bookmark Gutter"
-msgstr "Mostra i segnalibri nella barra laterale"
 
 msgid "Show Info Gutter"
 msgstr "Mostra le informazioni nella barra laterale"
@@ -990,9 +997,6 @@ msgstr "Dimensione Contorno Osso"
 msgid "Viewport Border Color"
 msgstr "Colore Bordo Viewport"
 
-msgid "Constrain Editor View"
-msgstr "Vista Editor di Vincoli"
-
 msgid "Simple Panning"
 msgstr "Panning Semplice"
 
@@ -1064,9 +1068,6 @@ msgstr "Proxy HTTP"
 
 msgid "Host"
 msgstr "Host"
-
-msgid "Port"
-msgstr "Porta"
 
 msgid "Project Manager"
 msgstr "Gestore dei progetti"
@@ -1182,12 +1183,6 @@ msgstr "Colore Risultati Ricerca"
 msgid "Search Result Border Color"
 msgstr "Colore Bordo Risultati Ricerca"
 
-msgid "Flat"
-msgstr "Flat"
-
-msgid "Hide Slider"
-msgstr "Nascondi Slider"
-
 msgid "Custom Template"
 msgstr "Modello Personalizzato"
 
@@ -1221,11 +1216,20 @@ msgstr "Esporta"
 msgid "Export Path"
 msgstr "Percorso di Esportazione"
 
-msgid "File Server"
-msgstr "File Server"
+msgid "Access"
+msgstr "Accedi"
 
-msgid "Password"
-msgstr "Password"
+msgid "Filters"
+msgstr "Filtri"
+
+msgid "Disable Overwrite Warning"
+msgstr "Disabilita Avviso di Sovrascrittura"
+
+msgid "Flat"
+msgstr "Flat"
+
+msgid "Hide Slider"
+msgstr "Nascondi Slider"
 
 msgid "Compress"
 msgstr "Comprimi"
@@ -1244,9 +1248,6 @@ msgstr "Usa Ambiente"
 
 msgid "Make Unique"
 msgstr "Rendi Unico"
-
-msgid "Enable"
-msgstr "Abilita"
 
 msgid "Filter"
 msgstr "Filtro"
@@ -1322,6 +1323,9 @@ msgstr "Ottimizzatore"
 
 msgid "Max Angular Error"
 msgstr "Errore Angolare Max"
+
+msgid "Page Size"
+msgstr "Dimensione Pagina"
 
 msgid "Nodes"
 msgstr "Nodi"
@@ -1440,14 +1444,14 @@ msgstr "Stream Player 3D"
 msgid "Camera"
 msgstr "Telecamera"
 
-msgid "Visibility Notifier"
-msgstr "Visibilità Notifiche"
-
 msgid "Particles"
 msgstr "Particelle"
 
 msgid "Reflection Probe"
 msgstr "Sonda di Riflessione"
+
+msgid "Visibility Notifier"
+msgstr "Visibilità Notifiche"
 
 msgid "Manipulator Gizmo Size"
 msgstr "Dimensione Gizmo Di Controllo"
@@ -1487,9 +1491,6 @@ msgstr "Esegui Flag"
 
 msgid "Skeleton"
 msgstr "Scheletro"
-
-msgid "Warnings"
-msgstr "Avvisi"
 
 msgid "ID"
 msgstr "ID"
@@ -1592,9 +1593,6 @@ msgstr "Sfondo Di Avvio"
 
 msgid "BG Color"
 msgstr "Colore Sfondo"
-
-msgid "Input Devices"
-msgstr "Dispositivi Input"
 
 msgid "Environment"
 msgstr "Ambiente"
@@ -1742,6 +1740,9 @@ msgstr "Colore Definizione Funzione"
 
 msgid "Node Path Color"
 msgstr "Colore Percorso Nodo"
+
+msgid "Warnings"
+msgstr "Avvisi"
 
 msgid "Exclude Addons"
 msgstr "Escludi Componenti Aggiuntivi"
@@ -2394,6 +2395,9 @@ msgstr "Alta Risoluzione"
 msgid "Codesign"
 msgstr "Firma del codice"
 
+msgid "Apple Team ID"
+msgstr "ID Apple Team"
+
 msgid "Identity"
 msgstr "Identità"
 
@@ -2468,9 +2472,6 @@ msgstr "Autenticazione"
 
 msgid "Apple ID Name"
 msgstr "Nome Apple ID"
-
-msgid "Apple Team ID"
-msgstr "ID Apple Team"
 
 msgid "Location Usage Description"
 msgstr "Descrizione d'uso Posizione"
@@ -2654,9 +2655,6 @@ msgstr "Hframes"
 
 msgid "Vframes"
 msgstr "Vframes"
-
-msgid "Region"
-msgstr "Regione"
 
 msgid "Bitmask"
 msgstr "Bitmask"
@@ -2964,9 +2962,6 @@ msgstr "Correzione Colore"
 msgid "Features"
 msgstr "Funzionalità"
 
-msgid "Interpolation Mode"
-msgstr "Modalità d'interpolazione"
-
 msgid "Shader"
 msgstr "Shader"
 
@@ -3074,6 +3069,9 @@ msgstr "OpenGL"
 
 msgid "Shaders"
 msgstr "Shaders"
+
+msgid "World Origin"
+msgstr "Origine Globale"
 
 msgid "Property"
 msgstr "Proprietà"

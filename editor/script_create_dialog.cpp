@@ -35,12 +35,12 @@
 #include "core/io/resource_saver.h"
 #include "core/string/string_builder.h"
 #include "editor/create_dialog.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_file_dialog.h"
 
 static String _get_parent_class_of_script(String p_path) {
 	if (!ResourceLoader::exists(p_path, "Script")) {
@@ -894,9 +894,9 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 				if (line.begins_with("space-indent")) {
 					String indent_value = line.substr(17, -1).strip_edges();
 					if (indent_value.is_valid_int()) {
-						space_indent = "";
-						for (int i = 0; i < indent_value.to_int(); i++) {
-							space_indent += " ";
+						int indent_size = indent_value.to_int();
+						if (indent_size >= 0) {
+							space_indent = String(" ").repeat(indent_size);
 						}
 					} else {
 						WARN_PRINT(vformat("Template meta-use_space_indent need to be a valid integer value. Found %s.", indent_value));

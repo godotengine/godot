@@ -108,6 +108,16 @@ hb_font_funcs_set_glyph_func (hb_font_funcs_t *ffuncs,
 			      hb_font_get_glyph_func_t func,
 			      void *user_data, hb_destroy_func_t destroy);
 
+/* https://github.com/harfbuzz/harfbuzz/pull/4207 */
+/**
+ * HB_UNICODE_COMBINING_CLASS_CCC133:
+ *
+ * [Tibetan]
+ *
+ * Deprecated: 7.2.0
+ **/
+#define HB_UNICODE_COMBINING_CLASS_CCC133 133
+
 /**
  * hb_unicode_eastasian_width_func_t:
  * @ufuncs: A Unicode-functions structure
@@ -246,6 +256,7 @@ hb_font_get_glyph_v_kerning (hb_font_t *font,
 			     hb_codepoint_t top_glyph, hb_codepoint_t bottom_glyph);
 
 #endif
+
 
 HB_END_DECLS
 

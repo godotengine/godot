@@ -89,6 +89,7 @@ private:
 	ContextType context_type;
 
 private:
+	void _nvapi_disable_threaded_optimization();
 	int _find_or_create_display(GLWindow &win);
 	Error _create_context(GLWindow &win, GLDisplay &gl_display);
 
@@ -119,6 +120,6 @@ public:
 	~GLManager_Windows();
 };
 
-#endif // defined(WINDOWS_ENABLED) && defined(GLES3_ENABLED)
+#endif // WINDOWS_ENABLED && GLES3_ENABLED
 
 #endif // GL_MANAGER_WINDOWS_H

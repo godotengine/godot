@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="World2D" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Class that has everything pertaining to a 2D world.
+		A resource that holds all components of a 2D world, such as a canvas and a physics space.
 	</brief_description>
 	<description>
-		Class that has everything pertaining to a 2D world. A physics space, a visual scenario and a sound space. 2D nodes register their resources into the current 2D world.
+		Class that has everything pertaining to a 2D world: A physics space, a canvas, and a sound space. 2D nodes register their resources into the current 2D world.
 	</description>
 	<tutorials>
 		<link title="Ray-casting">$DOCS_URL/tutorials/physics/ray-casting.html</link>

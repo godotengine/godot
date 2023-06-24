@@ -47,7 +47,7 @@
 			<return type="PackedFloat32Array" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the height values of the specified bone.
+				Returns the weight values of the specified bone.
 			</description>
 		</method>
 		<method name="set_bone_path">

@@ -48,13 +48,13 @@
 				[b]Warning:[/b] The implementation of this method is currently disabled.
 			</description>
 		</method>
-		<method name="get_editor_interface">
+		<method name="get_editor_interface" qualifiers="const">
 			<return type="EditorInterface" />
 			<description>
 				Returns the [EditorInterface] singleton instance.
 			</description>
 		</method>
-		<method name="get_scene">
+		<method name="get_scene" qualifiers="const">
 			<return type="Node" />
 			<description>
 				Returns the Editor's currently active scene.

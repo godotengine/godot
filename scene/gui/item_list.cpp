@@ -294,6 +294,18 @@ Color ItemList::get_item_custom_fg_color(int p_idx) const {
 	return items[p_idx].custom_fg;
 }
 
+Rect2 ItemList::get_item_rect(int p_idx, bool p_expand) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Rect2());
+
+	Rect2 ret = items[p_idx].rect_cache;
+	ret.position += theme_cache.panel_style->get_offset();
+
+	if (p_expand && p_idx % current_columns == current_columns - 1) {
+		ret.size.width = get_size().width - ret.position.x;
+	}
+	return ret;
+}
+
 void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon) {
 	if (p_idx < 0) {
 		p_idx += get_item_count();
@@ -597,6 +609,7 @@ void ItemList::set_fixed_icon_size(const Size2i &p_size) {
 
 	fixed_icon_size = p_size;
 	queue_redraw();
+	shape_changed = true;
 }
 
 Size2i ItemList::get_fixed_icon_size() const {
@@ -646,15 +659,16 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	if (mm.is_valid()) {
+		int closest = get_item_at_position(mm->get_position(), true);
+		if (closest != hovered) {
+			hovered = closest;
+			queue_redraw();
+		}
+	}
+
 	if (mb.is_valid() && mb->is_pressed()) {
 		search_string = ""; //any mousepress cancels
-		Vector2 pos = mb->get_position();
-		pos -= theme_cache.panel_style->get_offset();
-		pos.y += scroll_bar->get_value();
-
-		if (is_layout_rtl()) {
-			pos.x = get_size().width - pos.x;
-		}
 
 		int closest = get_item_at_position(mb->get_position(), true);
 
@@ -889,7 +903,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		} else {
 			Ref<InputEventKey> k = p_event;
 
-			if (k.is_valid() && k->get_unicode()) {
+			if (allow_search && k.is_valid() && k->get_unicode()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
 				uint64_t max_interval = uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec"));
@@ -975,12 +989,14 @@ void ItemList::_update_theme_item_cache() {
 	theme_cache.font = get_theme_font(SNAME("font"));
 	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
 	theme_cache.font_color = get_theme_color(SNAME("font_color"));
+	theme_cache.font_hovered_color = get_theme_color(SNAME("font_hovered_color"));
 	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
 	theme_cache.font_outline_size = get_theme_constant(SNAME("outline_size"));
 	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
 
 	theme_cache.line_separation = get_theme_constant(SNAME("line_separation"));
 	theme_cache.icon_margin = get_theme_constant(SNAME("icon_margin"));
+	theme_cache.hovered_style = get_theme_stylebox(SNAME("hovered"));
 	theme_cache.selected_style = get_theme_stylebox(SNAME("selected"));
 	theme_cache.selected_focus_style = get_theme_stylebox(SNAME("selected_focus"));
 	theme_cache.cursor_style = get_theme_stylebox(SNAME("cursor_unfocused"));
@@ -1101,7 +1117,11 @@ void ItemList::_notification(int p_what) {
 					rcache.size.width = width - rcache.position.x;
 				}
 
-				if (items[i].selected) {
+				bool should_draw_selected_bg = items[i].selected;
+				bool should_draw_hovered_bg = hovered == i && !items[i].selected;
+				bool should_draw_custom_bg = items[i].custom_bg.a > 0.001;
+
+				if (should_draw_selected_bg || should_draw_hovered_bg || should_draw_custom_bg) {
 					Rect2 r = rcache;
 					r.position += base_ofs;
 					r.position.y -= theme_cache.v_separation / 2;
@@ -1113,23 +1133,15 @@ void ItemList::_notification(int p_what) {
 						r.position.x = size.width - r.position.x - r.size.x;
 					}
 
-					draw_style_box(sbsel, r);
-				}
-				if (items[i].custom_bg.a > 0.001) {
-					Rect2 r = rcache;
-					r.position += base_ofs;
-
-					// Size rect to make the align the temperature colors
-					r.position.y -= theme_cache.v_separation / 2;
-					r.size.y += theme_cache.v_separation;
-					r.position.x -= theme_cache.h_separation / 2;
-					r.size.x += theme_cache.h_separation;
-
-					if (rtl) {
-						r.position.x = size.width - r.position.x - r.size.x;
+					if (should_draw_selected_bg) {
+						draw_style_box(sbsel, r);
 					}
-
-					draw_rect(r, items[i].custom_bg);
+					if (should_draw_hovered_bg) {
+						draw_style_box(theme_cache.hovered_style, r);
+					}
+					if (should_draw_custom_bg) {
+						draw_rect(r, items[i].custom_bg);
+					}
 				}
 
 				Vector2 text_ofs;
@@ -1204,7 +1216,17 @@ void ItemList::_notification(int p_what) {
 						max_len = size2.x;
 					}
 
-					Color txt_modulate = items[i].selected ? theme_cache.font_selected_color : (items[i].custom_fg != Color() ? items[i].custom_fg : theme_cache.font_color);
+					Color txt_modulate;
+					if (items[i].selected) {
+						txt_modulate = theme_cache.font_selected_color;
+					} else if (hovered == i) {
+						txt_modulate = theme_cache.font_hovered_color;
+					} else if (items[i].custom_fg != Color()) {
+						txt_modulate = items[i].custom_fg;
+					} else {
+						txt_modulate = theme_cache.font_color;
+					}
+
 					if (items[i].disabled) {
 						txt_modulate.a *= 0.5;
 					}
@@ -1238,11 +1260,12 @@ void ItemList::_notification(int p_what) {
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
-						if (rtl) {
-							text_ofs.x = size.width - text_ofs.x - max_len;
-						}
+						float text_w = width - text_ofs.x;
+						items.write[i].text_buf->set_width(text_w);
 
-						items.write[i].text_buf->set_width(width - text_ofs.x);
+						if (rtl) {
+							text_ofs.x = size.width - width;
+						}
 
 						if (rtl) {
 							items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
@@ -1454,6 +1477,13 @@ void ItemList::_scroll_changed(double) {
 	queue_redraw();
 }
 
+void ItemList::_mouse_exited() {
+	if (hovered > -1) {
+		hovered = -1;
+		queue_redraw();
+	}
+}
+
 int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	Vector2 pos = p_pos;
 	pos -= theme_cache.panel_style->get_offset();
@@ -1561,6 +1591,14 @@ void ItemList::set_allow_reselect(bool p_allow) {
 
 bool ItemList::get_allow_reselect() const {
 	return allow_reselect;
+}
+
+void ItemList::set_allow_search(bool p_allow) {
+	allow_search = p_allow;
+}
+
+bool ItemList::get_allow_search() const {
+	return allow_search;
 }
 
 void ItemList::set_icon_scale(real_t p_scale) {
@@ -1753,6 +1791,8 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_custom_fg_color", "idx", "custom_fg_color"), &ItemList::set_item_custom_fg_color);
 	ClassDB::bind_method(D_METHOD("get_item_custom_fg_color", "idx"), &ItemList::get_item_custom_fg_color);
 
+	ClassDB::bind_method(D_METHOD("get_item_rect", "idx", "expand"), &ItemList::get_item_rect, DEFVAL(true));
+
 	ClassDB::bind_method(D_METHOD("set_item_tooltip_enabled", "idx", "enable"), &ItemList::set_item_tooltip_enabled);
 	ClassDB::bind_method(D_METHOD("is_item_tooltip_enabled", "idx"), &ItemList::is_item_tooltip_enabled);
 
@@ -1805,6 +1845,9 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_reselect", "allow"), &ItemList::set_allow_reselect);
 	ClassDB::bind_method(D_METHOD("get_allow_reselect"), &ItemList::get_allow_reselect);
 
+	ClassDB::bind_method(D_METHOD("set_allow_search", "allow"), &ItemList::set_allow_search);
+	ClassDB::bind_method(D_METHOD("get_allow_search"), &ItemList::get_allow_search);
+
 	ClassDB::bind_method(D_METHOD("set_auto_height", "enable"), &ItemList::set_auto_height);
 	ClassDB::bind_method(D_METHOD("has_auto_height"), &ItemList::has_auto_height);
 
@@ -1822,6 +1865,7 @@ void ItemList::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Multi"), "set_select_mode", "get_select_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_text_lines", PROPERTY_HINT_RANGE, "1,10,1,or_greater"), "set_max_text_lines", "get_max_text_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
@@ -1851,8 +1895,9 @@ void ItemList::_bind_methods() {
 ItemList::ItemList() {
 	scroll_bar = memnew(VScrollBar);
 	add_child(scroll_bar, false, INTERNAL_MODE_FRONT);
-
 	scroll_bar->connect("value_changed", callable_mp(this, &ItemList::_scroll_changed));
+
+	connect("mouse_exited", callable_mp(this, &ItemList::_mouse_exited));
 
 	set_focus_mode(FOCUS_ALL);
 	set_clip_contents(true);

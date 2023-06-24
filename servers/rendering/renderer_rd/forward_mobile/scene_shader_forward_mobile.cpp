@@ -218,8 +218,8 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 		} break;
 		case BLEND_MODE_SUB: {
 			blend_attachment.enable_blend = true;
-			blend_attachment.alpha_blend_op = RD::BLEND_OP_SUBTRACT;
-			blend_attachment.color_blend_op = RD::BLEND_OP_SUBTRACT;
+			blend_attachment.alpha_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
+			blend_attachment.color_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
 			blend_attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
 			blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
 			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
@@ -447,7 +447,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 
 		actions.renames["MODEL_MATRIX"] = "read_model_matrix";
 		actions.renames["MODEL_NORMAL_MATRIX"] = "model_normal_matrix";
-		actions.renames["VIEW_MATRIX"] = "scene_data.view_matrix";
+		actions.renames["VIEW_MATRIX"] = "read_view_matrix";
 		actions.renames["INV_VIEW_MATRIX"] = "inv_view_matrix";
 		actions.renames["PROJECTION_MATRIX"] = "projection_matrix";
 		actions.renames["INV_PROJECTION_MATRIX"] = "inv_projection_matrix";
@@ -474,10 +474,11 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		//builtins
 
 		actions.renames["TIME"] = "scene_data_block.data.time";
+		actions.renames["EXPOSURE"] = "(1.0 / scene_data_block.data.emissive_exposure_normalization)";
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);
 		actions.renames["E"] = _MKSTR(Math_E);
-		actions.renames["VIEWPORT_SIZE"] = "scene_data.viewport_size";
+		actions.renames["VIEWPORT_SIZE"] = "read_viewport_size";
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["FRONT_FACING"] = "gl_FrontFacing";
@@ -521,7 +522,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["CAMERA_POSITION_WORLD"] = "scene_data.inv_view_matrix[3].xyz";
 		actions.renames["CAMERA_DIRECTION_WORLD"] = "scene_data.view_matrix[3].xyz";
 		actions.renames["CAMERA_VISIBLE_LAYERS"] = "scene_data.camera_visible_layers";
-		actions.renames["NODE_POSITION_VIEW"] = "(read_model_matrix * scene_data.view_matrix)[3].xyz";
+		actions.renames["NODE_POSITION_VIEW"] = "(scene_data.view_matrix * read_model_matrix)[3].xyz";
 
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "0";
@@ -530,7 +531,9 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 
 		//for light
 		actions.renames["VIEW"] = "view";
+		actions.renames["SPECULAR_AMOUNT"] = "specular_amount";
 		actions.renames["LIGHT_COLOR"] = "light_color";
+		actions.renames["LIGHT_IS_DIRECTIONAL"] = "is_directional";
 		actions.renames["LIGHT"] = "light";
 		actions.renames["ATTENUATION"] = "attenuation";
 		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light";
@@ -606,6 +609,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.render_mode_defines["ambient_light_disabled"] = "#define AMBIENT_LIGHT_DISABLED\n";
 		actions.render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
+		actions.render_mode_defines["debug_shadow_splits"] = "#define DEBUG_DRAW_PSSM_SPLITS\n";
 
 		actions.sampler_array_name = "material_samplers";
 		actions.base_texture_binding_index = 1;
@@ -680,6 +684,30 @@ void fragment() {
 	}
 
 	{
+		debug_shadow_splits_material_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(debug_shadow_splits_material_shader);
+		// Use relatively low opacity so that more "layers" of overlapping objects can be distinguished.
+		material_storage->shader_set_code(debug_shadow_splits_material_shader, R"(
+// 3D debug shadow splits mode shader(mobile).
+
+shader_type spatial;
+
+render_mode debug_shadow_splits;
+
+void fragment() {
+	ALBEDO = vec3(1.0, 1.0, 1.0);
+}
+)");
+		debug_shadow_splits_material = material_storage->material_allocate();
+		material_storage->material_initialize(debug_shadow_splits_material);
+		material_storage->material_set_shader(debug_shadow_splits_material, debug_shadow_splits_material_shader);
+
+		MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(debug_shadow_splits_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
+		debug_shadow_splits_material_shader_ptr = md->shader_data;
+		debug_shadow_splits_material_uniform_set = md->uniform_set;
+	}
+
+	{
 		default_vec4_xform_buffer = RD::get_singleton()->storage_buffer_create(256);
 		Vector<RD::Uniform> uniforms;
 		RD::Uniform u;
@@ -721,7 +749,9 @@ SceneShaderForwardMobile::~SceneShaderForwardMobile() {
 
 	material_storage->shader_free(overdraw_material_shader);
 	material_storage->shader_free(default_shader);
+	material_storage->shader_free(debug_shadow_splits_material_shader);
 
 	material_storage->material_free(overdraw_material);
 	material_storage->material_free(default_material);
+	material_storage->material_free(debug_shadow_splits_material);
 }

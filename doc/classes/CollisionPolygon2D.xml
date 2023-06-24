@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CollisionPolygon2D" inherits="Node2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Node that represents a 2D collision polygon.
+		A node that provides a polygon shape to a [CollisionObject2D] parent.
 	</brief_description>
 	<description>
-		Provides a 2D collision polygon to a [CollisionObject2D] parent. Polygons can be drawn in the editor or specified by a list of vertices.
-		Depending on the build mode, this node effectively provides several convex shapes (by convex decomposition of the polygon) or a single concave shape made of the polygon's segments.
-		In the editor, a [CollisionPolygon2D] can be generated from a [Sprite2D]'s outline by selecting a [Sprite2D] node, going to the [b]Sprite2D[/b] menu at the top of the 2D editor viewport then choosing [b]Create CollisionPolygon2D Sibling[/b].
+		A node that provides a thickened polygon shape (a prism) to a [CollisionObject2D] parent and allows to edit it. The polygon can be concave or convex. This can give a detection shape to an [Area2D] or turn [PhysicsBody2D] into a solid object.
+		[b]Warning:[/b] A non-uniformly scaled [CollisionShape3D] will likely not behave as expected. Make sure to keep its scale the same on all axes and adjust its shape resource instead.
 	</description>
 	<tutorials>
 	</tutorials>

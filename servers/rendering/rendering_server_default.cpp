@@ -237,7 +237,9 @@ void RenderingServerDefault::init() {
 void RenderingServerDefault::finish() {
 	if (create_thread) {
 		command_queue.push(this, &RenderingServerDefault::_thread_exit);
-		thread.wait_to_finish();
+		if (thread.is_started()) {
+			thread.wait_to_finish();
+		}
 	} else {
 		_finish();
 	}
@@ -249,7 +251,7 @@ uint64_t RenderingServerDefault::get_rendering_info(RenderingInfo p_info) {
 	if (p_info == RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME) {
 		return RSG::viewport->get_total_objects_drawn();
 	} else if (p_info == RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME) {
-		return RSG::viewport->get_total_vertices_drawn();
+		return RSG::viewport->get_total_primitives_drawn();
 	} else if (p_info == RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME) {
 		return RSG::viewport->get_total_draw_calls_used();
 	}

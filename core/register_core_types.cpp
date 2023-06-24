@@ -120,6 +120,7 @@ static ResourceUID *resource_uid = nullptr;
 static bool _is_core_extensions_registered = false;
 
 void register_core_types() {
+	OS::get_singleton()->benchmark_begin_measure("register_core_types");
 	//consistency check
 	static_assert(sizeof(Callable) <= 16);
 
@@ -294,6 +295,8 @@ void register_core_types() {
 	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
 
 	worker_thread_pool = memnew(WorkerThreadPool);
+
+	OS::get_singleton()->benchmark_end_measure("register_core_types");
 }
 
 void register_core_settings() {
@@ -302,15 +305,9 @@ void register_core_settings() {
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), (16));
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "network/tls/certificate_bundle_override", PROPERTY_HINT_FILE, "*.crt"), "");
 
-	int worker_threads = GLOBAL_DEF("threading/worker_pool/max_threads", -1);
-	bool low_priority_use_system_threads = GLOBAL_DEF("threading/worker_pool/use_system_threads_for_low_priority_tasks", true);
-	float low_property_ratio = GLOBAL_DEF("threading/worker_pool/low_priority_thread_ratio", 0.3);
-
-	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
-		worker_thread_pool->init();
-	} else {
-		worker_thread_pool->init(worker_threads, low_priority_use_system_threads, low_property_ratio);
-	}
+	GLOBAL_DEF("threading/worker_pool/max_threads", -1);
+	GLOBAL_DEF("threading/worker_pool/use_system_threads_for_low_priority_tasks", true);
+	GLOBAL_DEF("threading/worker_pool/low_priority_thread_ratio", 0.3);
 }
 
 void register_core_singletons() {
@@ -366,21 +363,30 @@ void unregister_core_extensions() {
 }
 
 void unregister_core_types() {
+	OS::get_singleton()->benchmark_begin_measure("unregister_core_types");
+
+	// Destroy singletons in reverse order to ensure dependencies are not broken.
+
+	memdelete(worker_thread_pool);
+
+	memdelete(_engine_debugger);
+	memdelete(_marshalls);
+	memdelete(_classdb);
+	memdelete(_engine);
+	memdelete(_os);
+	memdelete(_resource_saver);
+	memdelete(_resource_loader);
+
+	memdelete(_geometry_3d);
+	memdelete(_geometry_2d);
+
 	memdelete(gdextension_manager);
 
 	memdelete(resource_uid);
-	memdelete(_resource_loader);
-	memdelete(_resource_saver);
-	memdelete(_os);
-	memdelete(_engine);
-	memdelete(_classdb);
-	memdelete(_marshalls);
-	memdelete(_engine_debugger);
 
-	memdelete(_geometry_2d);
-	memdelete(_geometry_3d);
-
-	memdelete(worker_thread_pool);
+	if (ip) {
+		memdelete(ip);
+	}
 
 	ResourceLoader::remove_resource_format_loader(resource_format_image);
 	resource_format_image.unref();
@@ -411,10 +417,6 @@ void unregister_core_types() {
 	ResourceLoader::remove_resource_format_loader(resource_loader_json);
 	resource_loader_json.unref();
 
-	if (ip) {
-		memdelete(ip);
-	}
-
 	ResourceLoader::remove_resource_format_loader(resource_loader_gdextension);
 	resource_loader_gdextension.unref();
 
@@ -431,4 +433,6 @@ void unregister_core_types() {
 	ResourceCache::clear();
 	CoreStringNames::free();
 	StringName::cleanup();
+
+	OS::get_singleton()->benchmark_end_measure("unregister_core_types");
 }

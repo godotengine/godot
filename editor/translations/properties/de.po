@@ -75,7 +75,7 @@
 # Zae Chao <zaevi@live.com>, 2021.
 # Tim <tim14speckenwirth@gmail.com>, 2021.
 # Antonio Noack <corperateraider@gmail.com>, 2022.
-# ‎ <artism90@googlemail.com>, 2022.
+# ‎ <artism90@googlemail.com>, 2022, 2023.
 # Coxcopi70f00b67b61542fe <hn_vogel@gmx.net>, 2022.
 # Andreas <self@andreasbresser.de>, 2022.
 # ARez <dark.gaming@fantasymail.de>, 2022.
@@ -88,13 +88,19 @@
 # Felix Bitsch <felix.a.bitsch@gmail.com>, 2022.
 # miguel <miguel-gonzalez@gmx.de>, 2022.
 # Least Significant Bite <leastsignificantbite@proton.me>, 2023.
+# Benno <bennocrafterdev@googlemail.com>, 2023.
+# Janosch Lion <janorico@posteo.de>, 2023.
+# "Dimitri A." <dimitripilot3@gmail.com>, 2023.
+# Roman Wanner <flugtauglicher@gmail.com>, 2023.
+# Ettore Atalan <atalanttore@googlemail.com>, 2023.
+# Lars Bollmann <lars.bollmann@tu-dortmund.de>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-27 01:56+0000\n"
-"Last-Translator: ‎ <artism90@googlemail.com>\n"
+"PO-Revision-Date: 2023-06-10 02:19+0000\n"
+"Last-Translator: Lars Bollmann <lars.bollmann@tu-dortmund.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/de/>\n"
 "Language: de\n"
@@ -102,7 +108,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -147,7 +153,10 @@ msgid "Main Loop Type"
 msgstr "Typ der Hauptschleife"
 
 msgid "Auto Accept Quit"
-msgstr "Automatisches Beendenakzeptieren"
+msgstr "Automatisches Beenden akzeptieren"
+
+msgid "Quit on Go Back"
+msgstr "Beenden beim Zurückgehen"
 
 msgid "Display"
 msgstr "Anzeige"
@@ -233,6 +242,12 @@ msgstr "Skript"
 msgid "Search in File Extensions"
 msgstr "In Dateierweiterungen suchen"
 
+msgid "Subwindows"
+msgstr "Unterfenster"
+
+msgid "Embed Subwindows"
+msgstr "Unterfenster einbetten"
+
 msgid "Physics"
 msgstr "Physik"
 
@@ -259,6 +274,9 @@ msgstr "Debuggen"
 
 msgid "Settings"
 msgstr "Einstellungen"
+
+msgid "Profiler"
+msgstr "Profiler"
 
 msgid "Max Functions"
 msgstr "Max Funktionen"
@@ -317,6 +335,9 @@ msgstr "Internationalisierung"
 msgid "Force Right to Left Layout Direction"
 msgstr "Layoutrichtung von rechts nach links erzwingen"
 
+msgid "Root Node Layout Direction"
+msgstr "Wurzelnode Layout Richtung"
+
 msgid "GUI"
 msgstr "GUI"
 
@@ -362,6 +383,12 @@ msgstr "Max Deskriptoren pro Pool"
 msgid "Textures"
 msgstr "Texturen"
 
+msgid "Default Texture Filter"
+msgstr "Standardtexturfilter"
+
+msgid "Default Texture Repeat"
+msgstr "Standardtexturwiederholung"
+
 msgid "Low Processor Usage Mode"
 msgstr "Niedrige-Prozessorauslastungsmodus"
 
@@ -388,6 +415,9 @@ msgstr "Mausmodus"
 
 msgid "Use Accumulated Input"
 msgstr "Kumulierte Eingabe verwenden"
+
+msgid "Input Devices"
+msgstr "Eingabegeräte"
 
 msgid "Device"
 msgstr "Gerät"
@@ -500,12 +530,6 @@ msgstr "Ereignisse"
 msgid "Big Endian"
 msgstr "Big-Endian"
 
-msgid "Network"
-msgstr "Netzwerk"
-
-msgid "Page Size"
-msgstr "Seitengröße"
-
 msgid "Blocking Mode Enabled"
 msgstr "Blockierender Modus aktiviert"
 
@@ -539,6 +563,9 @@ msgstr "Datenliste"
 msgid "Max Pending Connections"
 msgstr "Maximale Anzahl hängender Verbindungen"
 
+msgid "Region"
+msgstr "Bereich"
+
 msgid "Offset"
 msgstr "Versatz"
 
@@ -551,8 +578,8 @@ msgstr "Seed"
 msgid "State"
 msgstr "Status"
 
-msgid "Max Size (KB)"
-msgstr "Max. Größe (KB)"
+msgid "Network"
+msgstr "Netzwerk"
 
 msgid "Locale"
 msgstr "Gebietsschema"
@@ -626,26 +653,23 @@ msgstr "Fernszenenbaum-Aktualisierungsintervall"
 msgid "Remote Inspect Refresh Interval"
 msgstr "Ferninspektor-Aktualisierungsintervall"
 
+msgid "FileSystem"
+msgstr "Dateisystem"
+
+msgid "File Server"
+msgstr "Dateiserver"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Password"
+msgstr "Passwort"
+
 msgid "Profiler Frame Max Functions"
 msgstr "Profile-Frame Maximale Funktionen"
 
 msgid "Default Feature Profile"
 msgstr "Standardfunktionsprofil"
-
-msgid "Access"
-msgstr "Zugriff"
-
-msgid "Display Mode"
-msgstr "Darstellungsmodus"
-
-msgid "Filters"
-msgstr "Filter"
-
-msgid "Show Hidden Files"
-msgstr "Versteckte Dateien anzeigen"
-
-msgid "Disable Overwrite Warning"
-msgstr "Überschreibenwarnung deaktivieren"
 
 msgid "Text Editor"
 msgstr "Texteditor"
@@ -671,8 +695,11 @@ msgstr "Ausgewählt"
 msgid "Keying"
 msgstr "Schlüsselwerte erzeugen"
 
+msgid "Distraction Free Mode"
+msgstr "Ablenkungsfreier Modus"
+
 msgid "Interface"
-msgstr "Schnittstelle"
+msgstr "Oberfläche"
 
 msgid "Show Update Spinner"
 msgstr "Aktualisierungsrad anzeigen"
@@ -709,9 +736,6 @@ msgstr "Horizontales Vektortyp-Bearbeiten"
 
 msgid "Default Color Picker Mode"
 msgstr "Standard Farbwahlmodus"
-
-msgid "Distraction Free Mode"
-msgstr "Ablenkungsfreier Modus"
 
 msgid "Base Type"
 msgstr "Basistyp"
@@ -806,8 +830,8 @@ msgstr "Maximalbreite"
 msgid "Show Script Button"
 msgstr "Skriptknopf anzeigen"
 
-msgid "FileSystem"
-msgstr "Dateisystem"
+msgid "Enable"
+msgstr "Aktivieren"
 
 msgid "Directories"
 msgstr "Verzeichnisse"
@@ -826,6 +850,12 @@ msgstr "Binäre Ressourcen komprimieren"
 
 msgid "File Dialog"
 msgstr "Dateidialog"
+
+msgid "Show Hidden Files"
+msgstr "Versteckte Dateien anzeigen"
+
+msgid "Display Mode"
+msgstr "Darstellungsmodus"
 
 msgid "Thumbnail Size"
 msgstr "Vorschaubildgröße"
@@ -890,9 +920,6 @@ msgstr "Zeilennummer mit Nullen auffüllen"
 msgid "Highlight Type Safe Lines"
 msgstr "Typsichere Zeilen hervorheben"
 
-msgid "Show Bookmark Gutter"
-msgstr "Lesezeichenspalte anzeigen"
-
 msgid "Show Info Gutter"
 msgstr "Informationsspalte anzeigen"
 
@@ -919,6 +946,9 @@ msgstr "Leerzeichen anzeigen"
 
 msgid "Line Spacing"
 msgstr "Zeilenzwischenraum"
+
+msgid "Behavior"
+msgstr "Verhalten"
 
 msgid "Navigation"
 msgstr "Navigation"
@@ -1151,9 +1181,6 @@ msgstr "Größe des Knochenumrisses"
 msgid "Viewport Border Color"
 msgstr "Randfarbe des Ansichtsfensters"
 
-msgid "Constrain Editor View"
-msgstr "Eingeschränkter-Editor-Ansicht"
-
 msgid "Simple Panning"
 msgstr "Einfaches Schwenken"
 
@@ -1231,9 +1258,6 @@ msgstr "HTTP-Proxy"
 
 msgid "Host"
 msgstr "Hostname"
-
-msgid "Port"
-msgstr "Port"
 
 msgid "Project Manager"
 msgstr "Projektverwaltung"
@@ -1355,15 +1379,6 @@ msgstr "Suchergebnisfarbe"
 msgid "Search Result Border Color"
 msgstr "Suchergebnisrahmenfarbe"
 
-msgid "Flat"
-msgstr "Flach"
-
-msgid "Hide Slider"
-msgstr "Regler ausblenden"
-
-msgid "Zoom"
-msgstr "Vergrößerung"
-
 msgid "Custom Template"
 msgstr "Eigene Vorlage"
 
@@ -1406,11 +1421,23 @@ msgstr "SCP"
 msgid "Export Path"
 msgstr "Exportpfad"
 
-msgid "File Server"
-msgstr "Dateiserver"
+msgid "Access"
+msgstr "Zugriff"
 
-msgid "Password"
-msgstr "Passwort"
+msgid "Filters"
+msgstr "Filter"
+
+msgid "Disable Overwrite Warning"
+msgstr "Überschreibenwarnung deaktivieren"
+
+msgid "Flat"
+msgstr "Flach"
+
+msgid "Hide Slider"
+msgstr "Regler ausblenden"
+
+msgid "Zoom"
+msgstr "Vergrößerung"
 
 msgid "Antialiasing"
 msgstr "Kantenglättung"
@@ -1439,6 +1466,9 @@ msgstr "Überabtastung"
 msgid "Metadata Overrides"
 msgstr "Metadaten-Überschreibungen"
 
+msgid "Language Support"
+msgstr "Sprachunterstützung"
+
 msgid "Fallbacks"
 msgstr "Fallbacks"
 
@@ -1465,9 +1495,6 @@ msgstr "Ambient verwenden"
 
 msgid "Make Unique"
 msgstr "Einzigartig machen"
-
-msgid "Enable"
-msgstr "Aktivieren"
 
 msgid "Filter"
 msgstr "Filter"
@@ -1558,6 +1585,9 @@ msgstr "Optimierer"
 
 msgid "Max Angular Error"
 msgstr "Max Winkelfehler"
+
+msgid "Page Size"
+msgstr "Seitengröße"
 
 msgid "Nodes"
 msgstr "Nodes"
@@ -1682,23 +1712,23 @@ msgstr "Stream-Player-3D"
 msgid "Camera"
 msgstr "Kamera"
 
-msgid "Visibility Notifier"
-msgstr "Sichtbarkeitsbenachrichtigung"
+msgid "Decal"
+msgstr "Decal"
 
 msgid "Particles"
 msgstr "Partikel"
-
-msgid "Reflection Probe"
-msgstr "Reflexionssonde"
-
-msgid "Decal"
-msgstr "Decal"
 
 msgid "Joint Body A"
 msgstr "Gelenk Körper A"
 
 msgid "Joint Body B"
 msgstr "Gelenk Körper B"
+
+msgid "Reflection Probe"
+msgstr "Reflexionssonde"
+
+msgid "Visibility Notifier"
+msgstr "Sichtbarkeitsbenachrichtigung"
 
 msgid "Manipulator Gizmo Size"
 msgstr "Anpassgriffgröße"
@@ -1738,9 +1768,6 @@ msgstr "Ausführungsparameter"
 
 msgid "Skeleton"
 msgstr "Skelett"
-
-msgid "Warnings"
-msgstr "Warnungen"
 
 msgid "ID"
 msgstr "ID"
@@ -1861,9 +1888,6 @@ msgstr "Startladebild"
 
 msgid "BG Color"
 msgstr "Hintergrundfarbe"
-
-msgid "Input Devices"
-msgstr "Eingabegeräte"
 
 msgid "Pen Tablet"
 msgstr "Zeichentablett"
@@ -2030,14 +2054,17 @@ msgstr "Farbe von Funktionsdefinitionen"
 msgid "Node Path Color"
 msgstr "Node-Pfad-Farbe"
 
+msgid "Warnings"
+msgstr "Warnungen"
+
 msgid "Exclude Addons"
 msgstr "Addons ausschließen"
 
 msgid "Language Server"
-msgstr "Language-Server"
+msgstr "Language Server"
 
 msgid "Enable Smart Resolve"
-msgstr "Schlaues Auflösen aktivieren"
+msgstr "Intelligentes Auflösen aktivieren"
 
 msgid "Use Thread"
 msgstr "Thread verwenden"
@@ -2071,6 +2098,15 @@ msgstr "Specular Faktor"
 
 msgid "Spec Gloss Img"
 msgstr "Spec Gloss Bild"
+
+msgid "Mass"
+msgstr "Masse"
+
+msgid "Linear Velocity"
+msgstr "Lineare Geschwindigkeit"
+
+msgid "Angular Velocity"
+msgstr "Winkelgeschwindigkeit"
 
 msgid "Json"
 msgstr "JSON"
@@ -2747,6 +2783,9 @@ msgstr "Hohe Auflösung"
 msgid "Codesign"
 msgstr "Codesignierung"
 
+msgid "Apple Team ID"
+msgstr "Apple-Team-ID"
+
 msgid "Identity"
 msgstr "Identität"
 
@@ -2827,9 +2866,6 @@ msgstr "Apple-Id-Name"
 
 msgid "Apple ID Password"
 msgstr "Apple-ID-Password"
-
-msgid "Apple Team ID"
-msgstr "Apple-Team-ID"
 
 msgid "Location Usage Description"
 msgstr "Standortberechtigungsrechtfertigung"
@@ -3236,9 +3272,6 @@ msgstr "Streuung"
 msgid "Initial Velocity"
 msgstr "Anfängliche Geschwindigkeit"
 
-msgid "Angular Velocity"
-msgstr "Winkelgeschwindigkeit"
-
 msgid "Velocity Curve"
 msgstr "Geschwindigkeitskurve"
 
@@ -3437,9 +3470,6 @@ msgstr "Vermeiden aktiviert"
 msgid "Max Neighbors"
 msgstr "Maximale Nachbarn"
 
-msgid "Time Horizon"
-msgstr "Zeithorizont"
-
 msgid "Max Speed"
 msgstr "Max Geschw"
 
@@ -3454,9 +3484,6 @@ msgstr "Eintrittskosten"
 
 msgid "Travel Cost"
 msgstr "Reisekosten"
-
-msgid "Estimate Radius"
-msgstr "Radius schätzen"
 
 msgid "Skew"
 msgstr "Neigung"
@@ -3500,9 +3527,6 @@ msgstr "V Versatz"
 msgid "Cubic Interp"
 msgstr "Kubische Interpolation"
 
-msgid "Lookahead"
-msgstr "Vorausschauen"
-
 msgid "Physics Material Override"
 msgstr "Physik-Material-Überschreibung"
 
@@ -3511,9 +3535,6 @@ msgstr "Konstante lineare Geschwindigkeit"
 
 msgid "Constant Angular Velocity"
 msgstr "Konstante Winkelgeschwindigkeit"
-
-msgid "Mass"
-msgstr "Masse"
 
 msgid "Inertia"
 msgstr "Trägheit"
@@ -3613,9 +3634,6 @@ msgstr "V-Bilder"
 
 msgid "Frame Coords"
 msgstr "Framekoordinaten"
-
-msgid "Region"
-msgstr "Bereich"
 
 msgid "Tile Set"
 msgstr "Tileset"
@@ -3980,12 +3998,6 @@ msgstr "Lichtdaten"
 msgid "Surface Material Override"
 msgstr "Oberflächen-Material-Überschreibung"
 
-msgid "Agent Height Offset"
-msgstr "Agent Höhenversatz"
-
-msgid "Ignore Y"
-msgstr "Y ignorieren"
-
 msgid "Top Level"
 msgstr "Top-Level"
 
@@ -4108,9 +4120,6 @@ msgstr "Reibung"
 
 msgid "Bounce"
 msgstr "Elastizität"
-
-msgid "Linear Velocity"
-msgstr "Lineare Geschwindigkeit"
 
 msgid "Debug Shape"
 msgstr "Debug-Form"
@@ -4385,6 +4394,12 @@ msgstr "Bleibe außerhalb gedrückt"
 msgid "Button Group"
 msgstr "Knopf-Gruppe"
 
+msgid "Text Behavior"
+msgstr "Textverhalten"
+
+msgid "Text Overrun Behavior"
+msgstr "Textüberlaufverhalten"
+
 msgid "Clip Text"
 msgstr "Ausschnitttext"
 
@@ -4496,6 +4511,9 @@ msgstr "Wiederauswahl erlauben"
 msgid "Allow RMB Select"
 msgstr "Auswählen mit rechter Maustaste erlauben"
 
+msgid "Allow Search"
+msgstr "Suchen erlauben"
+
 msgid "Max Text Lines"
 msgstr "Max Textzeilen"
 
@@ -4582,9 +4600,6 @@ msgstr "Achsen strecken"
 
 msgid "Submenu Popup Delay"
 msgstr "Untermenü Popupverzögerung"
-
-msgid "Allow Search"
-msgstr "Suchen erlauben"
 
 msgid "Fill Mode"
 msgstr "Füllmodus"
@@ -5555,9 +5570,6 @@ msgstr "Eigenschaften und Merkmale"
 msgid "Extra Spacing"
 msgstr "Extrazwischenraum"
 
-msgid "Interpolation Mode"
-msgstr "Interpolationsmodus"
-
 msgid "Raw Data"
 msgstr "Rohdaten"
 
@@ -5947,6 +5959,9 @@ msgstr "Physik-Ebenen"
 
 msgid "Custom Data Layers"
 msgstr "Eigene Datenschichten"
+
+msgid "Scene"
+msgstr "Szene"
 
 msgid "Transpose"
 msgstr "Transponieren"

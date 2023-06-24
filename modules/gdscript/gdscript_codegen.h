@@ -31,10 +31,11 @@
 #ifndef GDSCRIPT_CODEGEN_H
 #define GDSCRIPT_CODEGEN_H
 
-#include "core/string/string_name.h"
-#include "core/variant/variant.h"
 #include "gdscript_function.h"
 #include "gdscript_utility_functions.h"
+
+#include "core/string/string_name.h"
+#include "core/variant/variant.h"
 
 class GDScriptCodeGenerator {
 public:
@@ -72,6 +73,7 @@ public:
 	virtual uint32_t add_or_get_name(const StringName &p_name) = 0;
 	virtual uint32_t add_temporary(const GDScriptDataType &p_type) = 0;
 	virtual void pop_temporary() = 0;
+	virtual void clean_temporaries() = 0;
 
 	virtual void start_parameters() = 0;
 	virtual void end_parameters() = 0;
@@ -108,6 +110,8 @@ public:
 	virtual void write_get_named(const Address &p_target, const StringName &p_name, const Address &p_source) = 0;
 	virtual void write_set_member(const Address &p_value, const StringName &p_name) = 0;
 	virtual void write_get_member(const Address &p_target, const StringName &p_name) = 0;
+	virtual void write_set_static_variable(const Address &p_value, const Address &p_class, int p_index) = 0;
+	virtual void write_get_static_variable(const Address &p_target, const Address &p_class, int p_index) = 0;
 	virtual void write_assign(const Address &p_target, const Address &p_source) = 0;
 	virtual void write_assign_with_conversion(const Address &p_target, const Address &p_source) = 0;
 	virtual void write_assign_true(const Address &p_target) = 0;

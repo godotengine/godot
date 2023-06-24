@@ -553,7 +553,7 @@ struct hb_buffer_t
   bool message (hb_font_t *font, const char *fmt, ...) HB_PRINTF_FUNC(3, 4)
   {
 #ifdef HB_NO_BUFFER_MESSAGE
-   return true;
+    return true;
 #else
     if (likely (!messaging ()))
       return true;

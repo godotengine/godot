@@ -176,7 +176,7 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 		if (property == "text" || property == "icon") {
-			_queue_refresh_cache();
+			_queue_update_size_cache();
 		}
 
 		return valid;
@@ -243,7 +243,7 @@ void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_l
 	if (first_selectable) {
 		select(get_item_count() - 1);
 	}
-	_queue_refresh_cache();
+	_queue_update_size_cache();
 }
 
 void OptionButton::add_item(const String &p_label, int p_id) {
@@ -252,7 +252,7 @@ void OptionButton::add_item(const String &p_label, int p_id) {
 	if (first_selectable) {
 		select(get_item_count() - 1);
 	}
-	_queue_refresh_cache();
+	_queue_update_size_cache();
 }
 
 void OptionButton::set_item_text(int p_idx, const String &p_text) {
@@ -261,7 +261,7 @@ void OptionButton::set_item_text(int p_idx, const String &p_text) {
 	if (current == p_idx) {
 		set_text(p_text);
 	}
-	_queue_refresh_cache();
+	_queue_update_size_cache();
 }
 
 void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
@@ -270,7 +270,7 @@ void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	if (current == p_idx) {
 		set_icon(p_icon);
 	}
-	_queue_refresh_cache();
+	_queue_update_size_cache();
 }
 
 void OptionButton::set_item_id(int p_idx, int p_id) {
@@ -456,7 +456,7 @@ void OptionButton::_refresh_size_cache() {
 	update_minimum_size();
 }
 
-void OptionButton::_queue_refresh_cache() {
+void OptionButton::_queue_update_size_cache() {
 	if (cache_refresh_pending) {
 		return;
 	}
@@ -490,7 +490,7 @@ void OptionButton::remove_item(int p_idx) {
 	if (current == p_idx) {
 		_select(NONE_SELECTED);
 	}
-	_queue_refresh_cache();
+	_queue_update_size_cache();
 }
 
 PopupMenu *OptionButton::get_popup() const {

@@ -59,10 +59,10 @@ using namespace godot;
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
-#include "core/ShapeDistanceFinder.h"
-#include "core/contour-combiners.h"
-#include "core/edge-selectors.h"
-#include "msdfgen.h"
+#include <core/ShapeDistanceFinder.h>
+#include <core/contour-combiners.h>
+#include <core/edge-selectors.h>
+#include <msdfgen.h>
 #endif
 
 #ifdef MODULE_SVG_ENABLED
@@ -3670,7 +3670,7 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 			gl.end = span.end;
 			gl.count = 1;
 			gl.index = 0;
-			gl.flags = GRAPHEME_IS_VALID | GRAPHEME_IS_VIRTUAL;
+			gl.flags = GRAPHEME_IS_VALID | GRAPHEME_IS_EMBEDDED_OBJECT;
 			if (sd->orientation == ORIENTATION_HORIZONTAL) {
 				gl.advance = sd->objects[span.embedded_key].rect.size.x;
 			} else {
@@ -3865,8 +3865,8 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 				}
 				prev_font = gl.font_rid;
 
-				double scale = _font_get_scale(gl.font_rid, gl.font_size);
 				if (gl.font_rid.is_valid()) {
+					double scale = _font_get_scale(gl.font_rid, gl.font_size);
 					bool subpos = (scale != 1.0) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_ONE_HALF) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_ONE_QUARTER) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_AUTO && gl.font_size <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE);
 					if (sd->text[j - sd->start] != 0 && !is_linebreak(sd->text[j - sd->start])) {
 						if (sd->orientation == ORIENTATION_HORIZONTAL) {

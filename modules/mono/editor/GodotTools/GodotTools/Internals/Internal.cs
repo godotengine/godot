@@ -101,6 +101,8 @@ namespace GodotTools.Internals
 
         public static partial void godot_icall_GodotSharpDirs_DataEditorToolsDir(out godot_string r_dest);
 
+        public static partial void godot_icall_GodotSharpDirs_CSharpProjectName(out godot_string r_dest);
+
         public static partial void godot_icall_EditorProgress_Create(in godot_string task, in godot_string label,
             int amount, bool canCancel);
 
