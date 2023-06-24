@@ -64,6 +64,7 @@ public:
 
 	NodePath rel_path_to(const NodePath &p_np) const;
 	NodePath get_as_property_path() const;
+	NodePath get_partial_path(int p_name_count) const;
 
 	void prepend_period();
 

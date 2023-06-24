@@ -2022,6 +2022,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(NodePath, get_concatenated_names, sarray(), varray());
 	bind_method(NodePath, get_concatenated_subnames, sarray(), varray());
 	bind_method(NodePath, get_as_property_path, sarray(), varray());
+	bind_method(NodePath, get_partial_path, sarray("name_count"), varray());
 	bind_method(NodePath, is_empty, sarray(), varray());
 
 	/* Callable */

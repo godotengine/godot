@@ -295,6 +295,21 @@ NodePath NodePath::get_as_property_path() const {
 	}
 }
 
+NodePath NodePath::get_partial_path(int p_name_count) const {
+	ERR_FAIL_COND_V(!data, NodePath());
+	int size = data->path.size();
+	if (p_name_count > size) {
+		WARN_PRINT("NodePath: The partial path was requested to have more names than are available. Returning the full path.");
+		return NodePath(*this);
+	}
+	Vector<StringName> new_path;
+	new_path.resize(p_name_count);
+	for (int i = 0; i < p_name_count; i++) {
+		new_path.set(i, data->path[i]);
+	}
+	return NodePath(new_path, data->absolute);
+}
+
 bool NodePath::is_empty() const {
 	return !data;
 }
@@ -331,7 +346,7 @@ NodePath NodePath::simplified() const {
 }
 
 NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
-	if (p_path.size() == 0) {
+	if (p_path.size() == 0 && !p_absolute) {
 		return;
 	}
 
@@ -343,7 +358,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
 }
 
 NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p_subpath, bool p_absolute) {
-	if (p_path.size() == 0 && p_subpath.size() == 0) {
+	if (p_path.size() == 0 && p_subpath.size() == 0 && !p_absolute) {
 		return;
 	}
 
