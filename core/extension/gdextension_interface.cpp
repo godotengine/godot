@@ -1041,7 +1041,43 @@ static void gdextension_ref_set_object(GDExtensionRefPtr p_ref, GDExtensionObjec
 	ref->reference_ptr(o);
 }
 
+#ifndef DISABLE_DEPRECATED
 static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDExtensionScriptInstanceInfo *p_info, GDExtensionScriptInstanceDataPtr p_instance_data) {
+	const GDExtensionScriptInstanceInfo2 info_2 = {
+		p_info->set_func,
+		p_info->get_func,
+		p_info->get_property_list_func,
+		p_info->free_property_list_func,
+		p_info->property_can_revert_func,
+		p_info->property_get_revert_func,
+		p_info->get_owner_func,
+		p_info->get_property_state_func,
+		p_info->get_method_list_func,
+		p_info->free_method_list_func,
+		p_info->get_property_type_func,
+		p_info->has_method_func,
+		p_info->call_func,
+		nullptr, // notification_func.
+		p_info->to_string_func,
+		p_info->refcount_incremented_func,
+		p_info->refcount_decremented_func,
+		p_info->get_script_func,
+		p_info->is_placeholder_func,
+		p_info->set_fallback_func,
+		p_info->get_fallback_func,
+		p_info->get_language_func,
+		p_info->free_func,
+	};
+
+	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
+	script_instance_extension->instance = p_instance_data;
+	script_instance_extension->native_info = &info_2;
+	script_instance_extension->deprecated_native_info.notification_func = p_info->notification_func;
+	return reinterpret_cast<GDExtensionScriptInstancePtr>(script_instance_extension);
+}
+#endif // DISABLE_DEPRECATED
+
+static GDExtensionScriptInstancePtr gdextension_script_instance_create2(const GDExtensionScriptInstanceInfo2 *p_info, GDExtensionScriptInstanceDataPtr p_instance_data) {
 	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
 	script_instance_extension->instance = p_instance_data;
 	script_instance_extension->native_info = p_info;
@@ -1269,7 +1305,10 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(object_get_instance_id);
 	REGISTER_INTERFACE_FUNC(ref_get_object);
 	REGISTER_INTERFACE_FUNC(ref_set_object);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(script_instance_create);
+#endif // DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(script_instance_create2);
 	REGISTER_INTERFACE_FUNC(placeholder_script_instance_create);
 	REGISTER_INTERFACE_FUNC(placeholder_script_instance_update);
 	REGISTER_INTERFACE_FUNC(object_get_script_instance);

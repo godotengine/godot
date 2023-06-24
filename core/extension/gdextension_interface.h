@@ -258,7 +258,8 @@ typedef const GDExtensionPropertyInfo *(*GDExtensionClassGetPropertyList)(GDExte
 typedef void (*GDExtensionClassFreePropertyList)(GDExtensionClassInstancePtr p_instance, const GDExtensionPropertyInfo *p_list);
 typedef GDExtensionBool (*GDExtensionClassPropertyCanRevert)(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name);
 typedef GDExtensionBool (*GDExtensionClassPropertyGetRevert)(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret);
-typedef void (*GDExtensionClassNotification)(GDExtensionClassInstancePtr p_instance, int32_t p_what);
+typedef void (*GDExtensionClassNotification)(GDExtensionClassInstancePtr p_instance, int32_t p_what); // Deprecated. Use GDExtensionClassNotification2 instead.
+typedef void (*GDExtensionClassNotification2)(GDExtensionClassInstancePtr p_instance, int32_t p_what, bool p_reversed);
 typedef void (*GDExtensionClassToString)(GDExtensionClassInstancePtr p_instance, GDExtensionBool *r_is_valid, GDExtensionStringPtr p_out);
 typedef void (*GDExtensionClassReference)(GDExtensionClassInstancePtr p_instance);
 typedef void (*GDExtensionClassUnreference)(GDExtensionClassInstancePtr p_instance);
@@ -285,7 +286,27 @@ typedef struct {
 	GDExtensionClassGetVirtual get_virtual_func; // Queries a virtual function by name and returns a callback to invoke the requested virtual function.
 	GDExtensionClassGetRID get_rid_func;
 	void *class_userdata; // Per-class user data, later accessible in instance bindings.
-} GDExtensionClassCreationInfo;
+} GDExtensionClassCreationInfo; // Deprecated. Use GDExtensionClassCreationInfo2 instead.
+
+typedef struct {
+	GDExtensionBool is_virtual;
+	GDExtensionBool is_abstract;
+	GDExtensionClassSet set_func;
+	GDExtensionClassGet get_func;
+	GDExtensionClassGetPropertyList get_property_list_func;
+	GDExtensionClassFreePropertyList free_property_list_func;
+	GDExtensionClassPropertyCanRevert property_can_revert_func;
+	GDExtensionClassPropertyGetRevert property_get_revert_func;
+	GDExtensionClassNotification2 notification_func;
+	GDExtensionClassToString to_string_func;
+	GDExtensionClassReference reference_func;
+	GDExtensionClassUnreference unreference_func;
+	GDExtensionClassCreateInstance create_instance_func; // (Default) constructor; mandatory. If the class is not instantiable, consider making it virtual or abstract.
+	GDExtensionClassFreeInstance free_instance_func; // Destructor; mandatory.
+	GDExtensionClassGetVirtual get_virtual_func; // Queries a virtual function by name and returns a callback to invoke the requested virtual function.
+	GDExtensionClassGetRID get_rid_func;
+	void *class_userdata; // Per-class user data, later accessible in instance bindings.
+} GDExtensionClassCreationInfo2;
 
 typedef void *GDExtensionClassLibraryPtr;
 
@@ -366,7 +387,8 @@ typedef void (*GDExtensionScriptInstanceFreeMethodList)(GDExtensionScriptInstanc
 typedef GDExtensionBool (*GDExtensionScriptInstanceHasMethod)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name);
 
 typedef void (*GDExtensionScriptInstanceCall)(GDExtensionScriptInstanceDataPtr p_self, GDExtensionConstStringNamePtr p_method, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error);
-typedef void (*GDExtensionScriptInstanceNotification)(GDExtensionScriptInstanceDataPtr p_instance, int32_t p_what);
+typedef void (*GDExtensionScriptInstanceNotification)(GDExtensionScriptInstanceDataPtr p_instance, int32_t p_what); // Deprecated. Use GDExtensionScriptInstanceNotification2 instead.
+typedef void (*GDExtensionScriptInstanceNotification2)(GDExtensionScriptInstanceDataPtr p_instance, int32_t p_what, bool p_reversed);
 typedef void (*GDExtensionScriptInstanceToString)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionBool *r_is_valid, GDExtensionStringPtr r_out);
 
 typedef void (*GDExtensionScriptInstanceRefCountIncremented)(GDExtensionScriptInstanceDataPtr p_instance);
@@ -420,7 +442,46 @@ typedef struct {
 
 	GDExtensionScriptInstanceFree free_func;
 
-} GDExtensionScriptInstanceInfo;
+} GDExtensionScriptInstanceInfo; // Deprecated. Use GDExtensionScriptInstanceInfo2 instead.
+
+typedef struct {
+	GDExtensionScriptInstanceSet set_func;
+	GDExtensionScriptInstanceGet get_func;
+	GDExtensionScriptInstanceGetPropertyList get_property_list_func;
+	GDExtensionScriptInstanceFreePropertyList free_property_list_func;
+
+	GDExtensionScriptInstancePropertyCanRevert property_can_revert_func;
+	GDExtensionScriptInstancePropertyGetRevert property_get_revert_func;
+
+	GDExtensionScriptInstanceGetOwner get_owner_func;
+	GDExtensionScriptInstanceGetPropertyState get_property_state_func;
+
+	GDExtensionScriptInstanceGetMethodList get_method_list_func;
+	GDExtensionScriptInstanceFreeMethodList free_method_list_func;
+	GDExtensionScriptInstanceGetPropertyType get_property_type_func;
+
+	GDExtensionScriptInstanceHasMethod has_method_func;
+
+	GDExtensionScriptInstanceCall call_func;
+	GDExtensionScriptInstanceNotification2 notification_func;
+
+	GDExtensionScriptInstanceToString to_string_func;
+
+	GDExtensionScriptInstanceRefCountIncremented refcount_incremented_func;
+	GDExtensionScriptInstanceRefCountDecremented refcount_decremented_func;
+
+	GDExtensionScriptInstanceGetScript get_script_func;
+
+	GDExtensionScriptInstanceIsPlaceholder is_placeholder_func;
+
+	GDExtensionScriptInstanceSet set_fallback_func;
+	GDExtensionScriptInstanceGet get_fallback_func;
+
+	GDExtensionScriptInstanceGetLanguage get_language_func;
+
+	GDExtensionScriptInstanceFree free_func;
+
+} GDExtensionScriptInstanceInfo2;
 
 /* INITIALIZATION */
 
@@ -2116,6 +2177,7 @@ typedef void (*GDExtensionInterfaceRefSetObject)(GDExtensionRefPtr p_ref, GDExte
 /**
  * @name script_instance_create
  * @since 4.1
+ * @deprecated in Godot 4.2. Use `script_instance_create2` instead.
  *
  * Creates a script instance that contains the given info and instance data.
  *
@@ -2125,6 +2187,19 @@ typedef void (*GDExtensionInterfaceRefSetObject)(GDExtensionRefPtr p_ref, GDExte
  * @return A pointer to a ScriptInstanceExtension object.
  */
 typedef GDExtensionScriptInstancePtr (*GDExtensionInterfaceScriptInstanceCreate)(const GDExtensionScriptInstanceInfo *p_info, GDExtensionScriptInstanceDataPtr p_instance_data);
+
+/**
+ * @name script_instance_create2
+ * @since 4.2
+ *
+ * Creates a script instance that contains the given info and instance data.
+ *
+ * @param p_info A pointer to a GDExtensionScriptInstanceInfo2 struct.
+ * @param p_instance_data A pointer to a data representing the script instance in the GDExtension. This will be passed to all the function pointers on p_info.
+ *
+ * @return A pointer to a ScriptInstanceExtension object.
+ */
+typedef GDExtensionScriptInstancePtr (*GDExtensionInterfaceScriptInstanceCreate2)(const GDExtensionScriptInstanceInfo2 *p_info, GDExtensionScriptInstanceDataPtr p_instance_data);
 
 /**
  * @name placeholder_script_instance_create
@@ -2217,6 +2292,7 @@ typedef void *(*GDExtensionInterfaceClassdbGetClassTag)(GDExtensionConstStringNa
 /**
  * @name classdb_register_extension_class
  * @since 4.1
+ * @deprecated in Godot 4.2. Use `classdb_register_extension_class2` instead.
  *
  * Registers an extension class in the ClassDB.
  *
@@ -2228,6 +2304,21 @@ typedef void *(*GDExtensionInterfaceClassdbGetClassTag)(GDExtensionConstStringNa
  * @param p_extension_funcs A pointer to a GDExtensionClassCreationInfo struct.
  */
 typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClass)(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo *p_extension_funcs);
+
+/**
+ * @name classdb_register_extension_class2
+ * @since 4.2
+ *
+ * Registers an extension class in the ClassDB.
+ *
+ * Provided struct can be safely freed once the function returns.
+ *
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_class_name A pointer to a StringName with the class name.
+ * @param p_parent_class_name A pointer to a StringName with the parent class name.
+ * @param p_extension_funcs A pointer to a GDExtensionClassCreationInfo2 struct.
+ */
+typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClass2)(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo2 *p_extension_funcs);
 
 /**
  * @name classdb_register_extension_class_method

@@ -1978,7 +1978,7 @@ const Variant CSharpInstance::get_rpc_config() const {
 	return script->get_rpc_config();
 }
 
-void CSharpInstance::notification(int p_notification) {
+void CSharpInstance::notification(int p_notification, bool p_reversed) {
 	if (p_notification == Object::NOTIFICATION_PREDELETE) {
 		// When NOTIFICATION_PREDELETE is sent, we also take the chance to call Dispose().
 		// It's safe to call Dispose() multiple times and NOTIFICATION_PREDELETE is guaranteed
@@ -1996,7 +1996,7 @@ void CSharpInstance::notification(int p_notification) {
 			return;
 		}
 
-		_call_notification(p_notification);
+		_call_notification(p_notification, p_reversed);
 
 		GDMonoCache::managed_callbacks.CSharpInstanceBridge_CallDispose(
 				gchandle.get_intptr(), /* okIfNull */ false);
@@ -2004,10 +2004,10 @@ void CSharpInstance::notification(int p_notification) {
 		return;
 	}
 
-	_call_notification(p_notification);
+	_call_notification(p_notification, p_reversed);
 }
 
-void CSharpInstance::_call_notification(int p_notification) {
+void CSharpInstance::_call_notification(int p_notification, bool p_reversed) {
 	Variant arg = p_notification;
 	const Variant *args[1] = { &arg };
 	StringName method_name = SNAME("_notification");

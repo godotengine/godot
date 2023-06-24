@@ -630,7 +630,11 @@ VARIANT_ENUM_CAST(ScriptLanguageExtension::CodeCompletionLocation)
 
 class ScriptInstanceExtension : public ScriptInstance {
 public:
-	const GDExtensionScriptInstanceInfo *native_info;
+	const GDExtensionScriptInstanceInfo2 *native_info;
+	struct {
+		GDExtensionClassNotification notification_func;
+	} deprecated_native_info;
+
 	GDExtensionScriptInstanceDataPtr instance = nullptr;
 
 // There should not be warnings on explicit casts.
@@ -746,11 +750,16 @@ public:
 		return ret;
 	}
 
-	virtual void notification(int p_notification) override {
+	virtual void notification(int p_notification, bool p_reversed = false) override {
 		if (native_info->notification_func) {
-			native_info->notification_func(instance, p_notification);
+			native_info->notification_func(instance, p_notification, p_reversed);
+#ifndef DISABLE_DEPRECATED
+		} else if (deprecated_native_info.notification_func) {
+			deprecated_native_info.notification_func(instance, p_notification);
+#endif // DISABLE_DEPRECATED
 		}
 	}
+
 	virtual String to_string(bool *r_valid) override {
 		if (native_info->to_string_func) {
 			GDExtensionBool valid;

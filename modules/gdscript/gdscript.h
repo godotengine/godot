@@ -332,7 +332,7 @@ public:
 
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 
-	virtual void notification(int p_notification);
+	virtual void notification(int p_notification, bool p_reversed = false);
 	String to_string(bool *r_valid);
 
 	virtual Ref<Script> get_script() const;
