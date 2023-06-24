@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GPUParticles2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		2D particle emitter.
+		A 2D particle emitter.
 	</brief_description>
 	<description>
 		2D particle node used to create a variety of particle systems and effects. [GPUParticles2D] features an emitter that generates some number of particles at a given rate.
 		Use the [member process_material] property to add a [ParticleProcessMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
-		2D particles can optionally collide with [LightOccluder2D] nodes (note: they don't collide with [PhysicsBody2D] nodes).
+		2D particles can optionally collide with [LightOccluder2D], but they don't collide with [PhysicsBody2D] nodes.
 	</description>
 	<tutorials>
 		<link title="Particle systems (2D)">$DOCS_URL/tutorials/2d/particle_systems_2d.html</link>
