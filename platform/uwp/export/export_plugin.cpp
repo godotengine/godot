@@ -266,7 +266,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 
 	String src_appx;
 
-	EditorProgress ep("export", "Exporting for UWP", 7, true);
+	EditorProgress ep("export", TTR("Exporting for UWP"), 7, true);
 
 	if (p_debug) {
 		src_appx = p_preset->get("custom_template/debug");
