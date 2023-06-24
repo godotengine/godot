@@ -3809,6 +3809,11 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			} else if (return_info.type == Variant::ARRAY && return_info.hint == PROPERTY_HINT_ARRAY_TYPE) {
 				imethod.return_type.cname = Variant::get_type_name(return_info.type) + "_@generic";
 				imethod.return_type.generic_type_parameters.push_back(TypeReference(return_info.hint_string));
+			} else if (return_info.type == Variant::DICTIONARY && return_info.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+				imethod.return_type.cname = Variant::get_type_name(return_info.type) + "_@generic";
+				Vector<String> split = return_info.hint_string.split(";");
+				imethod.return_type.generic_type_parameters.push_back(TypeReference(split.get(0)));
+				imethod.return_type.generic_type_parameters.push_back(TypeReference(split.get(1)));
 			} else if (return_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 				imethod.return_type.cname = return_info.hint_string;
 			} else if (return_info.type == Variant::NIL && return_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
@@ -3836,6 +3841,11 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				} else if (arginfo.type == Variant::ARRAY && arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 					iarg.type.cname = Variant::get_type_name(arginfo.type) + "_@generic";
 					iarg.type.generic_type_parameters.push_back(TypeReference(arginfo.hint_string));
+				} else if (arginfo.type == Variant::DICTIONARY && arginfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+					iarg.type.cname = Variant::get_type_name(arginfo.type) + "_@generic";
+					Vector<String> split = arginfo.hint_string.split(";");
+					iarg.type.generic_type_parameters.push_back(TypeReference(split.get(0)));
+					iarg.type.generic_type_parameters.push_back(TypeReference(split.get(1)));
 				} else if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 					iarg.type.cname = arginfo.hint_string;
 				} else if (arginfo.type == Variant::NIL) {
@@ -3963,6 +3973,11 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				} else if (arginfo.type == Variant::ARRAY && arginfo.hint == PROPERTY_HINT_ARRAY_TYPE) {
 					iarg.type.cname = Variant::get_type_name(arginfo.type) + "_@generic";
 					iarg.type.generic_type_parameters.push_back(TypeReference(arginfo.hint_string));
+				} else if (arginfo.type == Variant::DICTIONARY && arginfo.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
+					iarg.type.cname = Variant::get_type_name(arginfo.type) + "_@generic";
+					Vector<String> split = arginfo.hint_string.split(";");
+					iarg.type.generic_type_parameters.push_back(TypeReference(split.get(0)));
+					iarg.type.generic_type_parameters.push_back(TypeReference(split.get(1)));
 				} else if (arginfo.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 					iarg.type.cname = arginfo.hint_string;
 				} else if (arginfo.type == Variant::NIL) {

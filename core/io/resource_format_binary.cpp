@@ -857,6 +857,19 @@ Error ResourceLoaderBinary::load() {
 				}
 			}
 
+			if (value.get_type() == Variant::DICTIONARY) {
+				Dictionary set_dict = value;
+				bool is_get_valid = false;
+				Variant get_value = res->get(name, &is_get_valid);
+				if (is_get_valid && get_value.get_type() == Variant::DICTIONARY) {
+					Dictionary get_dict = get_value;
+					if (!set_dict.is_same_typed(get_dict)) {
+						value = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(),
+								get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
+					}
+				}
+			}
+
 			if (set_valid) {
 				res->set(name, value);
 			}

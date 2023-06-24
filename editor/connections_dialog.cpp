@@ -576,6 +576,13 @@ String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArra
 					type_name = "Array";
 				}
 				break;
+			case Variant::DICTIONARY:
+				if (pi.hint == PROPERTY_HINT_DICTIONARY_TYPE && !pi.hint_string.is_empty() && !pi.hint_string.begins_with("res://")) {
+					type_name = "Dictionary[" + pi.hint_string + "]";
+				} else {
+					type_name = "Dictionary";
+				}
+				break;
 			case Variant::OBJECT:
 				if (pi.class_name != StringName()) {
 					type_name = pi.class_name;

@@ -387,6 +387,23 @@ static void _add_type_to_rt(const String &p_type, const String &p_enum, bool p_i
 			p_rt->add_text("Array");
 			p_rt->pop(); // meta
 			p_rt->add_text("[");
+		} else if (link_t.begins_with("Dictionary[")) {
+			add_array = true;
+			link_t = link_t.trim_prefix("Dictionary[").trim_suffix("]");
+			display_t = display_t.trim_prefix("Dictionary[").trim_suffix("]");
+			PackedStringArray link_split = link_t.split(";");
+			PackedStringArray display_split = display_t.split(";");
+			link_t = link_split.get(1);
+			display_t = display_split.get(1);
+
+			p_rt->push_meta("#Dictionary"); // class
+			p_rt->add_text("Dictionary");
+			p_rt->pop();
+			p_rt->add_text("[");
+			p_rt->push_meta("#" + link_split.get(0)); // class
+			p_rt->add_text(display_split.get(0));
+			p_rt->pop();
+			p_rt->add_text(",");
 		} else if (is_bitfield) {
 			p_rt->push_color(Color(type_color, 0.5));
 			p_rt->push_hint(TTR("This value is an integer composed as a bitmask of the following flags."));
