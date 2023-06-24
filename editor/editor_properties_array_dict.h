@@ -161,9 +161,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	GDCLASS(EditorPropertyDictionary, EditorProperty);
 
 	PopupMenu *change_type = nullptr;
-	bool updating = false;
 
-	Ref<EditorPropertyDictionaryObject> object;
 	int page_length = 20;
 	int page_index = 0;
 	int changing_type_index;
@@ -174,22 +172,36 @@ class EditorPropertyDictionary : public EditorProperty {
 	Button *button_add_item = nullptr;
 	EditorPaginator *paginator = nullptr;
 	PropertyHint property_hint;
+	Variant::Type key_type;
+	PropertyHint key_type_hint;
+	String key_type_hint_string;
+	Variant::Type value_type;
+	PropertyHint value_type_hint;
+	String value_type_hint_string;
+
+	void initialize_dictionary(Variant &p_dictionary);
 
 	void _page_changed(int p_page);
-	void _edit_pressed();
-	void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
-	void _change_type(Object *p_button, int p_index);
-	void _change_type_menu(int p_index);
-
-	void _add_key_value();
-	void _object_id_selected(const StringName &p_property, ObjectID p_id);
 
 protected:
+	Ref<EditorPropertyDictionaryObject> object;
+
+	bool updating = false;
+
 	static void _bind_methods();
 	void _notification(int p_what);
 
+	virtual void _edit_pressed();
+	virtual void _property_changed(const String &p_property, Variant p_value, const String &p_name = "", bool p_changing = false);
+	virtual void _change_type(Object *p_button, int p_index);
+	virtual void _change_type_menu(int p_index);
+
+	virtual void _add_key_value();
+	virtual void _object_id_selected(const StringName &p_property, ObjectID p_id);
+	virtual void _remove_pressed(int p_index);
+
 public:
-	void setup(PropertyHint p_hint);
+	void setup(PropertyHint p_hint, const String &p_hint_string = "");
 	virtual void update_property() override;
 	EditorPropertyDictionary();
 };

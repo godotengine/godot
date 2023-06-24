@@ -36,6 +36,7 @@
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
+#include "core/variant/typed_dictionary.h"
 #include "core/version.h"
 #include "editor/doc_data_compressed.gen.h"
 #include "editor/editor_node.h"
@@ -348,6 +349,23 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum, bool p_is
 			class_desc->add_text("Array");
 			class_desc->pop(); // meta
 			class_desc->add_text("[");
+		} else if (link_t.begins_with("Dictionary[")) {
+			add_array = true;
+			link_t = link_t.trim_prefix("Dictionary[").trim_suffix("]");
+			display_t = display_t.trim_prefix("Dictionary[").trim_suffix("]");
+			PackedStringArray link_split = link_t.split(",");
+			PackedStringArray display_split = display_t.split(",");
+			link_t = link_split.get(1);
+			display_t = display_split.get(1);
+
+			class_desc->push_meta("#Dictionary"); // class
+			class_desc->add_text("Dictionary");
+			class_desc->pop();
+			class_desc->add_text("[");
+			class_desc->push_meta("#" + link_split.get(0)); // class
+			class_desc->add_text(display_split.get(0));
+			class_desc->pop();
+			class_desc->add_text(",");
 		} else if (is_bitfield) {
 			class_desc->push_color(Color(theme_cache.type_color, 0.5));
 			class_desc->push_hint(TTR("This value is an integer composed as a bitmask of the following flags."));
