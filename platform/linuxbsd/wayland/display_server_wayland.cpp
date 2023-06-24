@@ -935,7 +935,11 @@ void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
 
 	cursor_shape = p_shape;
 
-	wayland_thread.cursor_set_shape(p_shape);
+	if (custom_cursors.has(p_shape)) {
+		wayland_thread.cursor_set_custom_shape(p_shape);
+	} else {
+		wayland_thread.cursor_set_shape(p_shape);
+	}
 }
 
 DisplayServerWayland::CursorShape DisplayServerWayland::cursor_get_shape() const {
@@ -945,37 +949,29 @@ DisplayServerWayland::CursorShape DisplayServerWayland::cursor_get_shape() const
 }
 
 void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-#if 0
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	if (p_cursor.is_valid()) {
-		HashMap<CursorShape, WaylandThread::CustomCursor>::Iterator cursor_c = wls.custom_cursors.find(p_shape);
+		HashMap<CursorShape, CustomCursor>::Iterator cursor_c = custom_cursors.find(p_shape);
 
 		if (cursor_c) {
-			if (cursor_c->value.cursor_rid == p_cursor->get_rid() && cursor_c->value.hotspot == p_hotspot) {
-				cursor_set_shape(p_shape);
+			if (cursor_c->value.rid == p_cursor->get_rid() && cursor_c->value.hotspot == p_hotspot) {
+				wayland_thread.cursor_set_custom_shape(p_shape);
 				return;
 			}
 
-			wls.custom_cursors.erase(p_shape);
+			// We're changing this cursor; we'll have to rebuild it.
+			custom_cursors.erase(p_shape);
+			wayland_thread.cursor_shape_clear_custom_image(p_shape);
 		}
 
 		Ref<Texture2D> texture = p_cursor;
 		ERR_FAIL_COND(!texture.is_valid());
-		Ref<AtlasTexture> atlas_texture = p_cursor;
 		Size2i texture_size;
-		Rect2i atlas_rect;
 
-		ERR_FAIL_COND(!texture.is_valid());
+		Ref<AtlasTexture> atlas_texture = texture;
 
 		if (atlas_texture.is_valid()) {
-			texture = atlas_texture->get_atlas();
-
-			atlas_rect.size.width = texture->get_width();
-			atlas_rect.size.height = texture->get_height();
-			atlas_rect.position.x = atlas_texture->get_region().position.x;
-			atlas_rect.position.y = atlas_texture->get_region().position.y;
-
 			texture_size.width = atlas_texture->get_region().size.x;
 			texture_size.height = atlas_texture->get_region().size.y;
 		} else {
@@ -984,6 +980,7 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 		}
 
 		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
+
 		// NOTE: The Wayland protocol says nothing about cursor size limits, yet if
 		// the texture is larger than 256x256 it won't show at least on sway.
 		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
@@ -999,67 +996,25 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 			ERR_FAIL_COND_MSG(err != OK, "Couldn't decompress VRAM-compressed custom mouse cursor image. Switch to a lossless compression mode in the Import dock.");
 		}
 
-		// NOTE: The stride is the width of the image in bytes.
-		unsigned int texture_stride = texture_size.width * 4;
-		unsigned int data_size = texture_stride * texture_size.height;
+		CustomCursor &cursor = custom_cursors[p_shape];
 
-		// We need a shared memory object file descriptor in order to create a
-		// wl_buffer through wl_shm.
-		int fd = WaylandThread::_allocate_shm_file(data_size);
-		ERR_FAIL_COND(fd == -1);
-
-		WaylandThread::CustomCursor &cursor = wls.custom_cursors[p_shape];
-		cursor.cursor_rid = p_cursor->get_rid();
+		cursor.rid = p_cursor->get_rid();
 		cursor.hotspot = p_hotspot;
 
-		if (cursor.buffer_data) {
-			// Clean up the old buffer data.
-			munmap(cursor.buffer_data, cursor.buffer_data_size);
-		}
-
-		cursor.buffer_data = (uint32_t *)mmap(NULL, data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-		if (cursor.wl_buffer) {
-			// Clean up the old Wayland buffer.
-			wl_buffer_destroy(cursor.wl_buffer);
-		}
-
-		// Create the Wayland buffer.
-		struct wl_shm_pool *wl_shm_pool = wl_shm_create_pool(wls.globals.wl_shm, fd, texture_size.height * data_size);
-		// TODO: Make sure that WL_SHM_FORMAT_ARGB8888 format is supported. It
-		// technically isn't garaunteed to be supported, but I think that'd be a
-		// pretty unlikely thing to stumble upon.
-		cursor.wl_buffer = wl_shm_pool_create_buffer(wl_shm_pool, 0, texture_size.width, texture_size.height, texture_stride, WL_SHM_FORMAT_ARGB8888);
-		wl_shm_pool_destroy(wl_shm_pool);
-
-		// Fill the cursor buffer with the texture data.
-		for (unsigned int index = 0; index < (unsigned int)(texture_size.width * texture_size.height); index++) {
-			int row_index = floor(index / texture_size.width) + atlas_rect.position.y;
-			int column_index = (index % int(texture_size.width)) + atlas_rect.position.x;
-
-			if (atlas_texture.is_valid()) {
-				column_index = MIN(column_index, atlas_rect.size.width - 1);
-				row_index = MIN(row_index, atlas_rect.size.height - 1);
-			}
-
-			cursor.buffer_data[index] = image->get_pixel(column_index, row_index).to_argb32();
-
-			// Wayland buffers, unless specified, require associated alpha, so we'll just
-			// associate the alpha in-place.
-			uint8_t *pixel_data = (uint8_t *)&cursor.buffer_data[index];
-			pixel_data[0] = pixel_data[0] * pixel_data[3] / 255;
-			pixel_data[1] = pixel_data[1] * pixel_data[3] / 255;
-			pixel_data[2] = pixel_data[2] * pixel_data[3] / 255;
-		}
+		wayland_thread.cursor_shape_set_custom_image(p_shape, image, p_hotspot);
+		wayland_thread.cursor_set_custom_shape(p_shape);
 	} else {
-		// Reset to default system cursor.
-		if (wls.custom_cursors.has(p_shape)) {
-			wls.custom_cursors.erase(p_shape);
+		// Clear cache and reset to default system cursor.
+		if (cursor_shape == p_shape) {
+			wayland_thread.cursor_set_shape(p_shape);
 		}
-	}
 
-	WaylandThread::_wayland_state_update_cursor(wls);
-#endif
+		if (custom_cursors.has(p_shape)) {
+			custom_cursors.erase(p_shape);
+		}
+
+		wayland_thread.cursor_shape_clear_custom_image(p_shape);
+	}
 }
 
 int DisplayServerWayland::keyboard_get_layout_count() const {

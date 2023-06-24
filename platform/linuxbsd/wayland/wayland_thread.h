@@ -375,11 +375,9 @@ public:
 		uint32_t *buffer_data = nullptr;
 		uint32_t buffer_data_size = 0;
 
-		RID cursor_rid;
+		RID rid;
 		Point2i hotspot;
 	};
-
-	// END DISPLAYSERVERWAYLAND STUFF DUMP
 
 private:
 	struct ThreadData {
@@ -796,7 +794,10 @@ public:
 
 	void cursor_hide();
 	void cursor_set_shape(DisplayServer::CursorShape p_cursor_shape);
-	void cursor_cache_custom_shape(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image);
+
+	void cursor_set_custom_shape(DisplayServer::CursorShape p_cursor_shape);
+	void cursor_shape_set_custom_image(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image, Point2i p_hotspot);
+	void cursor_shape_clear_custom_image(DisplayServer::CursorShape p_cursor_shape);
 
 	int keyboard_get_layout_count() const;
 	int keyboard_get_current_layout_index() const;

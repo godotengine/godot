@@ -153,8 +153,15 @@ class DisplayServerWayland : public DisplayServer {
 		ObjectID instance_id;
 	};
 
+	struct CustomCursor {
+		RID rid;
+		Point2i hotspot;
+	};
+
 	CursorShape cursor_shape = CURSOR_ARROW;
 	DisplayServer::MouseMode mouse_mode = DisplayServer::MOUSE_MODE_VISIBLE;
+
+	HashMap<CursorShape, CustomCursor> custom_cursors;
 
 	WindowData main_window;
 	WaylandThread wayland_thread;

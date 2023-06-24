@@ -2944,8 +2944,88 @@ void WaylandThread::cursor_set_shape(DisplayServer::CursorShape p_cursor_shape) 
 	}
 }
 
-void WaylandThread::cursor_cache_custom_shape(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image) {
-	// TODO
+void WaylandThread::cursor_set_custom_shape(DisplayServer::CursorShape p_cursor_shape) {
+	ERR_FAIL_COND(!custom_cursors.has(p_cursor_shape));
+
+	CustomCursor &cursor = custom_cursors[p_cursor_shape];
+
+	cursor_buffer = cursor.wl_buffer;
+	cursor_hotspot = cursor.hotspot;
+
+	for (struct wl_seat *wl_seat : registry.wl_seats) {
+		SeatState *ss = wl_seat_get_seat_state(wl_seat);
+		ERR_FAIL_NULL(ss);
+
+		seat_state_update_cursor(ss);
+	}
+}
+
+void WaylandThread::cursor_shape_set_custom_image(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image, Point2i p_hotspot) {
+	ERR_FAIL_COND(!p_image.is_valid());
+
+	Size2i image_size = p_image->get_size();
+
+	// NOTE: The stride is the width of the image in bytes.
+	unsigned int image_stride = image_size.width * 4;
+	unsigned int data_size = image_stride * image_size.height;
+
+	// We need a shared memory object file descriptor in order to create a
+	// wl_buffer through wl_shm.
+	int fd = WaylandThread::_allocate_shm_file(data_size);
+	ERR_FAIL_COND(fd == -1);
+
+	CustomCursor &cursor = custom_cursors[p_cursor_shape];
+	cursor.hotspot = p_hotspot;
+
+	if (cursor.buffer_data) {
+		// Clean up the old buffer data.
+		munmap(cursor.buffer_data, cursor.buffer_data_size);
+	}
+
+	cursor.buffer_data = (uint32_t *)mmap(NULL, data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+	if (cursor.wl_buffer) {
+		// Clean up the old Wayland buffer.
+		wl_buffer_destroy(cursor.wl_buffer);
+	}
+
+	// Create the Wayland buffer.
+	struct wl_shm_pool *wl_shm_pool = wl_shm_create_pool(registry.wl_shm, fd, image_size.height * data_size);
+	// TODO: Make sure that WL_SHM_FORMAT_ARGB8888 format is supported. It
+	// technically isn't garaunteed to be supported, but I think that'd be a
+	// pretty unlikely thing to stumble upon.
+	cursor.wl_buffer = wl_shm_pool_create_buffer(wl_shm_pool, 0, image_size.width, image_size.height, image_stride, WL_SHM_FORMAT_ARGB8888);
+	wl_shm_pool_destroy(wl_shm_pool);
+
+	// Fill the cursor buffer with the image data.
+	for (unsigned int index = 0; index < (unsigned int)(image_size.width * image_size.height); index++) {
+		int row_index = floor(index / image_size.width);
+		int column_index = (index % int(image_size.width));
+
+		cursor.buffer_data[index] = p_image->get_pixel(column_index, row_index).to_argb32();
+
+		// Wayland buffers, unless specified, require associated alpha, so we'll just
+		// associate the alpha in-place.
+		uint8_t *pixel_data = (uint8_t *)&cursor.buffer_data[index];
+		pixel_data[0] = pixel_data[0] * pixel_data[3] / 255;
+		pixel_data[1] = pixel_data[1] * pixel_data[3] / 255;
+		pixel_data[2] = pixel_data[2] * pixel_data[3] / 255;
+	}
+}
+
+void WaylandThread::cursor_shape_clear_custom_image(DisplayServer::CursorShape p_cursor_shape) {
+	if (custom_cursors.has(p_cursor_shape)) {
+		CustomCursor cursor = custom_cursors[p_cursor_shape];
+		custom_cursors.erase(p_cursor_shape);
+
+		if (cursor.wl_buffer) {
+			wl_buffer_destroy(cursor.wl_buffer);
+		}
+
+		if (cursor.buffer_data) {
+			munmap(cursor.buffer_data, cursor.buffer_data_size);
+		}
+	}
 }
 
 int WaylandThread::keyboard_get_layout_count() const {
