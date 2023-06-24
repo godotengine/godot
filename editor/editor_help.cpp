@@ -2321,7 +2321,6 @@ void EditorHelp::generate_doc(bool p_use_cache) {
 	DEV_ASSERT(first_attempt == (doc == nullptr));
 
 	if (!doc) {
-		GDREGISTER_CLASS(DocCache);
 		doc = memnew(DocTools);
 	}
 
