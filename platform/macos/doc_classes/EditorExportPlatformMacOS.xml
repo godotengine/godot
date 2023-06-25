@@ -23,7 +23,7 @@
 			Copyright notice for the bundle visible to the user (localized).
 		</member>
 		<member name="application/icon" type="String" setter="" getter="">
-			Application icon file. If left empty, project icon is used instead.
+			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/macos_native_icon], and  then to [member ProjectSettings.application/config/icon].
 		</member>
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
@@ -148,8 +148,8 @@
 		<member name="custom_template/release" type="String" setter="" getter="">
 			Path to the custom export template. If left empty, default template is used.
 		</member>
-		<member name="debug/export_console_script" type="int" setter="" getter="">
-			If enabled, a script file that can be used to run the application with console output is created alongside the exported application.
+		<member name="debug/export_console_wrapper" type="int" setter="" getter="">
+			If enabled, a wrapper that can be used to run the application with console output is created alongside the exported application.
 		</member>
 		<member name="display/high_res" type="bool" setter="" getter="">
 			If [code]true[/code], the application is rendered at native display resolution, otherwise it is always rendered at loHPI resolution and upscaled by OS when required.

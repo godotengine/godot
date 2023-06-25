@@ -68,6 +68,7 @@
 			<description>
 				Adds a [TileSetSource] to the TileSet. If [param atlas_source_id_override] is not -1, also set its source ID. Otherwise, a unique identifier is automatically generated.
 				The function returns the added source ID or -1 if the source could not be added.
+				[b]Warning:[/b] A source cannot belong to two TileSets at the same time. If the added source was attached to another [TileSet], it will be removed from that one.
 			</description>
 		</method>
 		<method name="add_terrain">

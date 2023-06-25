@@ -332,6 +332,25 @@ Control::TextDirection TreeItem::get_text_direction(int p_column) const {
 	return cells[p_column].text_direction;
 }
 
+void TreeItem::set_autowrap_mode(int p_column, TextServer::AutowrapMode p_mode) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+	ERR_FAIL_COND(p_mode < TextServer::AUTOWRAP_OFF || p_mode > TextServer::AUTOWRAP_WORD_SMART);
+
+	if (cells[p_column].autowrap_mode == p_mode) {
+		return;
+	}
+
+	cells.write[p_column].autowrap_mode = p_mode;
+	cells.write[p_column].dirty = true;
+	_changed_notify(p_column);
+	cells.write[p_column].cached_minimum_size_dirty = true;
+}
+
+TextServer::AutowrapMode TreeItem::get_autowrap_mode(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), TextServer::AUTOWRAP_OFF);
+	return cells[p_column].autowrap_mode;
+}
+
 void TreeItem::set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
@@ -677,23 +696,26 @@ TreeItem *TreeItem::create_child(int p_index) {
 		tree->queue_redraw();
 	}
 
-	TreeItem *l_prev = nullptr;
-	TreeItem *c = first_child;
-	int idx = 0;
+	TreeItem *item_prev = nullptr;
+	TreeItem *item_next = first_child;
 
-	while (c) {
-		if (idx++ == p_index) {
-			c->prev = ti;
-			ti->next = c;
+	int idx = 0;
+	while (item_next) {
+		if (idx == p_index) {
+			item_next->prev = ti;
+			ti->next = item_next;
 			break;
 		}
-		l_prev = c;
-		c = c->next;
+
+		item_prev = item_next;
+		item_next = item_next->next;
+		idx++;
 	}
 
-	if (l_prev) {
-		l_prev->next = ti;
-		ti->prev = l_prev;
+	if (item_prev) {
+		item_prev->next = ti;
+		ti->prev = item_prev;
+
 		if (!children_cache.is_empty()) {
 			if (ti->next) {
 				children_cache.insert(p_index, ti);
@@ -711,6 +733,46 @@ TreeItem *TreeItem::create_child(int p_index) {
 	ti->parent = this;
 
 	return ti;
+}
+
+void TreeItem::add_child(TreeItem *p_item) {
+	ERR_FAIL_NULL(p_item);
+	ERR_FAIL_COND(p_item->tree);
+	ERR_FAIL_COND(p_item->parent);
+
+	p_item->_change_tree(tree);
+	p_item->parent = this;
+
+	TreeItem *item_prev = first_child;
+	while (item_prev && item_prev->next) {
+		item_prev = item_prev->next;
+	}
+
+	if (item_prev) {
+		item_prev->next = p_item;
+		p_item->prev = item_prev;
+	} else {
+		first_child = p_item;
+	}
+
+	if (!children_cache.is_empty()) {
+		children_cache.append(p_item);
+	}
+
+	validate_cache();
+}
+
+void TreeItem::remove_child(TreeItem *p_item) {
+	ERR_FAIL_NULL(p_item);
+	ERR_FAIL_COND(p_item->parent != this);
+
+	p_item->_unlink_from_tree();
+	p_item->_change_tree(nullptr);
+	p_item->prev = nullptr;
+	p_item->next = nullptr;
+	p_item->parent = nullptr;
+
+	validate_cache();
 }
 
 Tree *TreeItem::get_tree() const {
@@ -888,6 +950,18 @@ TypedArray<TreeItem> TreeItem::get_children() {
 	return arr;
 }
 
+void TreeItem::clear_children() {
+	TreeItem *c = first_child;
+	while (c) {
+		TreeItem *aux = c;
+		c = c->get_next();
+		aux->parent = nullptr; // So it won't try to recursively auto-remove from me in here.
+		memdelete(aux);
+	}
+
+	first_child = nullptr;
+};
+
 int TreeItem::get_index() {
 	int idx = 0;
 	TreeItem *c = this;
@@ -918,7 +992,7 @@ void TreeItem::validate_cache() const {
 void TreeItem::move_before(TreeItem *p_item) {
 	ERR_FAIL_NULL(p_item);
 	ERR_FAIL_COND(is_root);
-	ERR_FAIL_COND(!p_item->parent);
+	ERR_FAIL_NULL(p_item->parent);
 
 	if (p_item == this) {
 		return;
@@ -943,7 +1017,7 @@ void TreeItem::move_before(TreeItem *p_item) {
 	} else {
 		parent->first_child = this;
 		// If the cache is empty, it has not been built but there
-		// are items in the tree (note p_item != nullptr,) so we cannot update it.
+		// are items in the tree (note p_item != nullptr) so we cannot update it.
 		if (!parent->children_cache.is_empty()) {
 			parent->children_cache.insert(0, this);
 		}
@@ -963,7 +1037,7 @@ void TreeItem::move_before(TreeItem *p_item) {
 void TreeItem::move_after(TreeItem *p_item) {
 	ERR_FAIL_NULL(p_item);
 	ERR_FAIL_COND(is_root);
-	ERR_FAIL_COND(!p_item->parent);
+	ERR_FAIL_NULL(p_item->parent);
 
 	if (p_item == this) {
 		return;
@@ -998,21 +1072,6 @@ void TreeItem::move_after(TreeItem *p_item) {
 	}
 
 	if (tree && old_tree == tree) {
-		tree->queue_redraw();
-	}
-	validate_cache();
-}
-
-void TreeItem::remove_child(TreeItem *p_item) {
-	ERR_FAIL_NULL(p_item);
-	ERR_FAIL_COND(p_item->parent != this);
-
-	p_item->_unlink_from_tree();
-	p_item->prev = nullptr;
-	p_item->next = nullptr;
-	p_item->parent = nullptr;
-
-	if (tree) {
 		tree->queue_redraw();
 	}
 	validate_cache();
@@ -1341,7 +1400,7 @@ bool TreeItem::is_folding_disabled() const {
 Size2 TreeItem::get_minimum_size(int p_column) {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), Size2());
 	Tree *parent_tree = get_tree();
-	ERR_FAIL_COND_V(!parent_tree, Size2());
+	ERR_FAIL_NULL_V(parent_tree, Size2());
 
 	const TreeItem::Cell &cell = cells[p_column];
 
@@ -1443,6 +1502,9 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text_direction", "column", "direction"), &TreeItem::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction", "column"), &TreeItem::get_text_direction);
 
+	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "column", "autowrap_mode"), &TreeItem::set_autowrap_mode);
+	ClassDB::bind_method(D_METHOD("get_autowrap_mode", "column"), &TreeItem::get_autowrap_mode);
+
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "column", "parser"), &TreeItem::set_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override", "column"), &TreeItem::get_structured_text_bidi_override);
 
@@ -1542,6 +1604,9 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_folding_disabled"), &TreeItem::is_folding_disabled);
 
 	ClassDB::bind_method(D_METHOD("create_child", "index"), &TreeItem::create_child, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("add_child", "child"), &TreeItem::add_child);
+	ClassDB::bind_method(D_METHOD("remove_child", "child"), &TreeItem::remove_child);
+
 	ClassDB::bind_method(D_METHOD("get_tree"), &TreeItem::get_tree);
 
 	ClassDB::bind_method(D_METHOD("get_next"), &TreeItem::get_next);
@@ -1563,8 +1628,6 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_before", "item"), &TreeItem::move_before);
 	ClassDB::bind_method(D_METHOD("move_after", "item"), &TreeItem::move_after);
 
-	ClassDB::bind_method(D_METHOD("remove_child", "child"), &TreeItem::remove_child);
-
 	{
 		MethodInfo mi;
 		mi.name = "call_recursive";
@@ -1585,28 +1648,17 @@ void TreeItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(CELL_MODE_CUSTOM);
 }
 
-void TreeItem::clear_children() {
-	TreeItem *c = first_child;
-	while (c) {
-		TreeItem *aux = c;
-		c = c->get_next();
-		aux->parent = nullptr; // so it won't try to recursively autoremove from me in here
-		memdelete(aux);
-	}
-
-	first_child = nullptr;
-};
-
 TreeItem::TreeItem(Tree *p_tree) {
 	tree = p_tree;
 }
 
 TreeItem::~TreeItem() {
 	_unlink_from_tree();
+	_change_tree(nullptr);
+
 	validate_cache();
 	prev = nullptr;
 	clear_children();
-	_change_tree(nullptr);
 }
 
 /**********************************************/
@@ -1918,7 +1970,24 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 		font_size = theme_cache.font_size;
 	}
 	p_item->cells.write[p_col].text_buf->add_string(valtext, font, font_size, p_item->cells[p_col].language);
-	p_item->cells.write[p_col].text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE);
+
+	BitField<TextServer::LineBreakFlag> break_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_EDGE_SPACES;
+	switch (p_item->cells.write[p_col].autowrap_mode) {
+		case TextServer::AUTOWRAP_OFF:
+			break;
+		case TextServer::AUTOWRAP_ARBITRARY:
+			break_flags.set_flag(TextServer::BREAK_GRAPHEME_BOUND);
+			break;
+		case TextServer::AUTOWRAP_WORD:
+			break_flags.set_flag(TextServer::BREAK_WORD_BOUND);
+			break;
+		case TextServer::AUTOWRAP_WORD_SMART:
+			break_flags.set_flag(TextServer::BREAK_WORD_BOUND);
+			break_flags.set_flag(TextServer::BREAK_ADAPTIVE);
+			break;
+	}
+	p_item->cells.write[p_col].text_buf->set_break_flags(break_flags);
+
 	TS->shaped_text_set_bidi_override(p_item->cells[p_col].text_buf->get_rid(), structured_text_parser(p_item->cells[p_col].st_parser, p_item->cells[p_col].st_args, valtext));
 	p_item->cells.write[p_col].dirty = false;
 }
@@ -3190,15 +3259,6 @@ void Tree::_go_up() {
 		selected_col = 0;
 	} else {
 		prev = selected_item->get_prev_visible();
-		if (last_keypress != 0) {
-			//incr search next
-			int col;
-			prev = _search_item_text(prev, incr_search, &col, true, true);
-			if (!prev) {
-				accept_event();
-				return;
-			}
-		}
 	}
 
 	if (select_mode == SELECT_MULTI) {
@@ -3231,16 +3291,6 @@ void Tree::_go_down() {
 		}
 	} else {
 		next = selected_item->get_next_visible();
-
-		if (last_keypress != 0) {
-			//incr search next
-			int col;
-			next = _search_item_text(next, incr_search, &col, true);
-			if (!next) {
-				accept_event();
-				return;
-			}
-		}
 	}
 
 	if (select_mode == SELECT_MULTI) {
@@ -3866,7 +3916,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 bool Tree::edit_selected(bool p_force_edit) {
 	TreeItem *s = get_selected();
-	ERR_FAIL_COND_V_MSG(!s, false, "No item selected.");
+	ERR_FAIL_NULL_V_MSG(s, false, "No item selected.");
 	ensure_cursor_is_visible();
 	int col = get_selected_column();
 	ERR_FAIL_INDEX_V_MSG(col, columns.size(), false, "No item column selected.");
@@ -4288,7 +4338,7 @@ TreeItem *Tree::create_item(TreeItem *p_parent, int p_index) {
 		if (!root) {
 			// No root exists, make the given item the new root.
 			ti = memnew(TreeItem(this));
-			ERR_FAIL_COND_V(!ti, nullptr);
+			ERR_FAIL_NULL_V(ti, nullptr);
 			ti->cells.resize(columns.size());
 			ti->is_root = true;
 			root = ti;
@@ -4503,6 +4553,7 @@ bool Tree::is_column_expanding(int p_column) const {
 
 	return columns[p_column].expand;
 }
+
 int Tree::get_column_expand_ratio(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, columns.size(), 1);
 
@@ -4521,7 +4572,7 @@ TreeItem *Tree::get_selected() const {
 
 void Tree::set_selected(TreeItem *p_item, int p_column) {
 	ERR_FAIL_INDEX(p_column, columns.size());
-	ERR_FAIL_COND(!p_item);
+	ERR_FAIL_NULL(p_item);
 	select_single_item(p_item, get_root(), p_column);
 }
 

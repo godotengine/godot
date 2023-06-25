@@ -44,9 +44,9 @@
 		<member name="body_type" type="String" setter="set_body_type" getter="get_body_type" default="&quot;static&quot;">
 			The type of the body. Valid values are "static", "kinematic", "character", "rigid", "vehicle", and "trigger".
 		</member>
-		<member name="inertia" type="Vector3" setter="set_inertia" getter="get_inertia" default="Vector3(0, 0, 0)">
-			The principle axes of the inertia tensor of the physics body, in kilogram meter squared (kg⋅m²). This is only used when the body type is "rigid" or "vehicle".
-			This is written to and read from the GLTF file as a 3x3 matrix, but is exposed as a Vector3 since Godot only supports principal axis inertia values. When converted to a Godot [RigidBody3D] node, if this value is zero, then the inertia will be calculated automatically.
+		<member name="inertia_tensor" type="Basis" setter="set_inertia_tensor" getter="get_inertia_tensor" default="Basis(0, 0, 0, 0, 0, 0, 0, 0, 0)">
+			The inertia tensor of the physics body, in kilogram meter squared (kg⋅m²). This is only used when the body type is "rigid" or "vehicle".
+			When converted to a Godot [RigidBody3D] node, if this value is zero, then the inertia will be calculated automatically.
 		</member>
 		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3(0, 0, 0)">
 			The linear velocity of the physics body, in meters per second. This is only used when the body type is "rigid" or "vehicle".

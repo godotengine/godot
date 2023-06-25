@@ -20,7 +20,7 @@
 		animation_tree["parameters/Transition/current_state"]
 
 		# Get current state index (read-only).
-		animation_tree.get("parameters/Transition/current_index"))
+		animation_tree.get("parameters/Transition/current_index")
 		# Alternative syntax (same result as above).
 		animation_tree["parameters/Transition/current_index"]
 		[/gdscript]
@@ -78,7 +78,7 @@
 			If [code]true[/code], allows transition to the self state. When the reset option is enabled in input, the animation is restarted. If [code]false[/code], nothing happens on the transition to the self state.
 		</member>
 		<member name="input_count" type="int" setter="set_input_count" getter="get_input_count" default="0">
-			The number of enabled input ports for this node.
+			The number of enabled input ports for this animation node.
 		</member>
 		<member name="xfade_curve" type="Curve" setter="set_xfade_curve" getter="get_xfade_curve">
 			Determines how cross-fading between animations is eased. If empty, the transition will be linear.

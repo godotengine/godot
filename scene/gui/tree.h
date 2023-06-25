@@ -69,6 +69,7 @@ private:
 		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 		Array st_args;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_INHERITED;
+		TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
 		bool dirty = true;
 		double min = 0.0;
 		double max = 100.0;
@@ -227,6 +228,9 @@ public:
 	void set_text_direction(int p_column, Control::TextDirection p_text_direction);
 	Control::TextDirection get_text_direction(int p_column) const;
 
+	void set_autowrap_mode(int p_column, TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode(int p_column) const;
+
 	void set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override(int p_column) const;
 
@@ -336,6 +340,8 @@ public:
 	/* Item manipulation */
 
 	TreeItem *create_child(int p_index = -1);
+	void add_child(TreeItem *p_item);
+	void remove_child(TreeItem *p_item);
 
 	Tree *get_tree() const;
 
@@ -354,6 +360,7 @@ public:
 	int get_visible_child_count();
 	int get_child_count();
 	TypedArray<TreeItem> get_children();
+	void clear_children();
 	int get_index();
 
 #ifdef DEV_ENABLED
@@ -366,11 +373,7 @@ public:
 	void move_before(TreeItem *p_item);
 	void move_after(TreeItem *p_item);
 
-	void remove_child(TreeItem *p_item);
-
 	void call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-
-	void clear_children();
 
 	~TreeItem();
 };

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "openxr_ml2_controller_extension.h"
+
 #include "../action_map/openxr_interaction_profile_meta_data.h"
 
 HashMap<String, bool *> OpenXRML2ControllerExtension::get_requested_extensions() {

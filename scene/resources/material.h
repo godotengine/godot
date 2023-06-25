@@ -327,6 +327,7 @@ private:
 		uint64_t deep_parallax : 1;
 		uint64_t grow : 1;
 		uint64_t proximity_fade : 1;
+		uint64_t orm : 1;
 
 		// flag bitfield
 		uint32_t feature_mask;
@@ -378,6 +379,7 @@ private:
 		mk.distance_fade = distance_fade;
 		mk.emission_op = emission_op;
 		mk.alpha_antialiasing_mode = alpha_antialiasing_mode;
+		mk.orm = orm;
 
 		for (int i = 0; i < FEATURE_MAX; i++) {
 			if (features[i]) {
@@ -452,7 +454,7 @@ private:
 	};
 
 	static Mutex material_mutex;
-	static SelfList<BaseMaterial3D>::List *dirty_materials;
+	static SelfList<BaseMaterial3D>::List dirty_materials;
 	static ShaderNames *shader_names;
 
 	SelfList<BaseMaterial3D> element;

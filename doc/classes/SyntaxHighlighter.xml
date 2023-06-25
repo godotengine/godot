@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SyntaxHighlighter" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base Syntax highlighter resource for [TextEdit].
+		Base class for syntax highlighters. Provides syntax highlighting data to a [TextEdit].
 	</brief_description>
 	<description>
-		Base syntax highlighter resource all syntax highlighters extend from, provides syntax highlighting data to [TextEdit].
-		The associated [TextEdit] node will call into the [SyntaxHighlighter] on an as-needed basis.
-		[b]Note:[/b] Each Syntax highlighter instance should not be shared across multiple [TextEdit] nodes.
+		Base class for syntax highlighters. Provides syntax highlighting data to a [TextEdit]. The associated [TextEdit] will call into the [SyntaxHighlighter] on an as-needed basis.
+		[b]Note:[/b] A [SyntaxHighlighter] instance should not be used across multiple [TextEdit] nodes.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -2,7 +2,7 @@
 #define VULKAN_VIDEO_CODEC_H265STD_DECODE_H_ 1
 
 /*
-** Copyright 2015-2022 The Khronos Group Inc.
+** Copyright 2015-2023 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -20,11 +20,11 @@ extern "C" {
 
 
 #define vulkan_video_codec_h265std_decode 1
-// Vulkan 0.9 provisional Vulkan video H.265 decode std specification version number
-#define VK_STD_VULKAN_VIDEO_CODEC_H265_DECODE_API_VERSION_0_9_9 VK_MAKE_VIDEO_STD_VERSION(0, 9, 9) // Patch version should always be set to 0
+
+#define VK_STD_VULKAN_VIDEO_CODEC_H265_DECODE_API_VERSION_1_0_0 VK_MAKE_VIDEO_STD_VERSION(1, 0, 0)
 
 #define STD_VIDEO_DECODE_H265_REF_PIC_SET_LIST_SIZE 8
-#define VK_STD_VULKAN_VIDEO_CODEC_H265_DECODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_H265_DECODE_API_VERSION_0_9_9
+#define VK_STD_VULKAN_VIDEO_CODEC_H265_DECODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_H265_DECODE_API_VERSION_1_0_0
 #define VK_STD_VULKAN_VIDEO_CODEC_H265_DECODE_EXTENSION_NAME "VK_STD_vulkan_video_codec_h265_decode"
 typedef struct StdVideoDecodeH265PictureInfoFlags {
     uint32_t    IrapPicFlag : 1;

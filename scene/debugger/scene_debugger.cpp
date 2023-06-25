@@ -221,7 +221,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 
 void SceneDebugger::_save_node(ObjectID id, const String &p_path) {
 	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
-	ERR_FAIL_COND(!node);
+	ERR_FAIL_NULL(node);
 
 #ifdef TOOLS_ENABLED
 	HashMap<const Node *, Node *> duplimap;

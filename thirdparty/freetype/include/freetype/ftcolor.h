@@ -4,7 +4,7 @@
  *
  *   FreeType's glyph color management (specification).
  *
- * Copyright (C) 2018-2022 by
+ * Copyright (C) 2018-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -456,6 +456,9 @@ FT_BEGIN_HEADER
    *                                           &iterator ) );
    *     }
    *   ```
+   *
+   * @since:
+   *   2.10
    */
   FT_EXPORT( FT_Bool )
   FT_Get_Color_Glyph_Layer( FT_Face            face,
@@ -475,7 +478,7 @@ FT_BEGIN_HEADER
    *   extensions to the 'COLR' table, see
    *   'https://github.com/googlefonts/colr-gradients-spec'.
    *
-   *   The enumeration values losely correspond with the format numbers of
+   *   The enumeration values loosely correspond with the format numbers of
    *   the specification: FreeType always returns a fully specified 'Paint'
    *   structure for the 'Transform', 'Translate', 'Scale', 'Rotate', and
    *   'Skew' table types even though the specification has different formats
@@ -489,9 +492,7 @@ FT_BEGIN_HEADER
    *   structures.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef enum  FT_PaintFormat_
   {
@@ -521,9 +522,10 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   This iterator object is needed for @FT_Get_Colorline_Stops.  It keeps
-   *   state while iterating over the stops of an @FT_ColorLine,
-   *   representing the `ColorLine` struct of the v1 extensions to 'COLR',
-   *   see 'https://github.com/googlefonts/colr-gradients-spec'.
+   *   state while iterating over the stops of an @FT_ColorLine, representing
+   *   the `ColorLine` struct of the v1 extensions to 'COLR', see
+   *   'https://github.com/googlefonts/colr-gradients-spec'.  Do not manually
+   *   modify fields of this iterator.
    *
    * @fields:
    *   num_color_stops ::
@@ -537,10 +539,12 @@ FT_BEGIN_HEADER
    *     An opaque pointer into 'COLR' table data.  Set by @FT_Get_Paint.
    *     Updated by @FT_Get_Colorline_Stops.
    *
-   * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
+   *   read_variable ::
+   *     A boolean keeping track of whether variable color lines are to be
+   *     read.  Set by @FT_Get_Paint.
    *
+   * @since:
+   *   2.13
    */
   typedef struct  FT_ColorStopIterator_
   {
@@ -548,6 +552,8 @@ FT_BEGIN_HEADER
     FT_UInt  current_color_stop;
 
     FT_Byte*  p;
+
+    FT_Bool  read_variable;
 
   } FT_ColorStopIterator;
 
@@ -569,9 +575,7 @@ FT_BEGIN_HEADER
    *     Alpha transparency value multiplied with the value from 'CPAL'.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_ColorIndex_
   {
@@ -592,19 +596,18 @@ FT_BEGIN_HEADER
    *
    * @fields:
    *   stop_offset ::
-   *     The stop offset between 0 and 1 along the gradient.
+   *     The stop offset along the gradient, expressed as a 16.16 fixed-point
+   *     coordinate.
    *
    *   color ::
    *     The color information for this stop, see @FT_ColorIndex.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_ColorStop_
   {
-    FT_F2Dot14     stop_offset;
+    FT_Fixed       stop_offset;
     FT_ColorIndex  color;
 
   } FT_ColorStop;
@@ -621,9 +624,7 @@ FT_BEGIN_HEADER
    *   It describes how the gradient fill continues at the other boundaries.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef enum  FT_PaintExtend_
   {
@@ -653,9 +654,7 @@ FT_BEGIN_HEADER
    *     actual @FT_ColorStop's.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_ColorLine_
   {
@@ -699,9 +698,7 @@ FT_BEGIN_HEADER
    *     y translation.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_Affine_23_
   {
@@ -722,9 +719,7 @@ FT_BEGIN_HEADER
    *   'https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators'.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef enum  FT_Composite_Mode_
   {
@@ -786,9 +781,7 @@ FT_BEGIN_HEADER
    *     to be provided.  Do not set this value.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_Opaque_Paint_
   {
@@ -815,9 +808,7 @@ FT_BEGIN_HEADER
    *     The layer iterator that describes the layers of this paint.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_PaintColrLayers_
   {
@@ -842,9 +833,7 @@ FT_BEGIN_HEADER
    *     The color information for this solid paint, see @FT_ColorIndex.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_PaintSolid_
   {
@@ -883,9 +872,7 @@ FT_BEGIN_HEADER
    *     Otherwise equal to~p0.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_PaintLinearGradient_
   {
@@ -908,8 +895,7 @@ FT_BEGIN_HEADER
    *   A structure representing a `PaintRadialGradient` value of the 'COLR'
    *   v1 extensions, see
    *   'https://github.com/googlefonts/colr-gradients-spec'.  The glyph
-   *   layer filled with this paint is drawn filled filled with a radial
-   *   gradient.
+   *   layer filled with this paint is drawn filled with a radial gradient.
    *
    * @fields:
    *   colorline ::
@@ -933,9 +919,7 @@ FT_BEGIN_HEADER
    *     units represented as a 16.16 fixed-point value.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_PaintRadialGradient_
   {
@@ -983,9 +967,7 @@ FT_BEGIN_HEADER
    *     given counter-clockwise, starting from the (positive) y~axis.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_PaintSweepGradient_
   {
@@ -1016,9 +998,7 @@ FT_BEGIN_HEADER
    *     information that is filled with paint.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_PaintGlyph_
   {
@@ -1042,9 +1022,7 @@ FT_BEGIN_HEADER
    *     this paint.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_PaintColrGlyph_
   {
@@ -1070,9 +1048,7 @@ FT_BEGIN_HEADER
    *     16.16 fixed-point values.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_PaintTransform_
   {
@@ -1105,9 +1081,7 @@ FT_BEGIN_HEADER
    *     16.16 fixed-point value.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_PaintTranslate_
   {
@@ -1156,9 +1130,7 @@ FT_BEGIN_HEADER
    *     16.16 fixed-point value.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward-compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_PaintScale_
   {
@@ -1194,16 +1166,14 @@ FT_BEGIN_HEADER
    *
    *   center_x ::
    *     The x~coordinate of the pivot point of the rotation in font
-   *     units) represented as a 16.16 fixed-point value.
+   *     units represented as a 16.16 fixed-point value.
    *
    *   center_y ::
    *     The y~coordinate of the pivot point of the rotation in font
    *     units represented as a 16.16 fixed-point value.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
 
   typedef struct  FT_PaintRotate_
@@ -1252,9 +1222,7 @@ FT_BEGIN_HEADER
    *     represented as a 16.16 fixed-point value.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_PaintSkew_
   {
@@ -1275,9 +1243,8 @@ FT_BEGIN_HEADER
    *   FT_PaintComposite
    *
    * @description:
-   *   A structure representing a 'COLR'v1 `PaintComposite` paint table.
-   *   Used for compositing two paints in a 'COLR' v1 directed acycling
-   *   graph.
+   *   A structure representing a 'COLR' v1 `PaintComposite` paint table.
+   *   Used for compositing two paints in a 'COLR' v1 directed acyclic graph.
    *
    * @fields:
    *   source_paint ::
@@ -1293,9 +1260,7 @@ FT_BEGIN_HEADER
    *     `source_paint` is composited onto.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_PaintComposite_
   {
@@ -1339,9 +1304,7 @@ FT_BEGIN_HEADER
    *       * @FT_PaintColrGlyph
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_COLR_Paint_
   {
@@ -1386,9 +1349,7 @@ FT_BEGIN_HEADER
    *     Do not output an initial root transform.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef enum  FT_Color_Root_Transform_
   {
@@ -1429,9 +1390,7 @@ FT_BEGIN_HEADER
    *     fixed-point coordinates in 26.6 format.
    *
    * @since:
-   *   2.12 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   typedef struct  FT_ClipBox_
   {
@@ -1524,9 +1483,7 @@ FT_BEGIN_HEADER
    *   error, value~0 is returned also.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   FT_EXPORT( FT_Bool )
   FT_Get_Color_Glyph_Paint( FT_Face                  face,
@@ -1568,9 +1525,7 @@ FT_BEGIN_HEADER
    *   and remove transforms configured using @FT_Set_Transform.
    *
    * @since:
-   *   2.12 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   FT_EXPORT( FT_Bool )
   FT_Get_Color_Glyph_ClipBox( FT_Face      face,
@@ -1617,9 +1572,7 @@ FT_BEGIN_HEADER
    *   object can not be retrieved or any other error occurs.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   FT_EXPORT( FT_Bool )
   FT_Get_Paint_Layers( FT_Face            face,
@@ -1660,9 +1613,7 @@ FT_BEGIN_HEADER
    *   also.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   FT_EXPORT( FT_Bool )
   FT_Get_Colorline_Stops( FT_Face                face,
@@ -1698,9 +1649,7 @@ FT_BEGIN_HEADER
    *   this paint or any other error occured.
    *
    * @since:
-   *   2.11 -- **currently experimental only!**  There might be changes
-   *   without retaining backward compatibility of both the API and ABI.
-   *
+   *   2.13
    */
   FT_EXPORT( FT_Bool )
   FT_Get_Paint( FT_Face         face,

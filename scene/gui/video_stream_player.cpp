@@ -103,7 +103,7 @@ void VideoStreamPlayer::_mix_audio() {
 
 	if (cc == 1) {
 		AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 0);
-		ERR_FAIL_COND(!target);
+		ERR_FAIL_NULL(target);
 
 		for (int j = 0; j < buffer_size; j++) {
 			target[j] += buffer[j] * vol;
@@ -114,7 +114,7 @@ void VideoStreamPlayer::_mix_audio() {
 
 		for (int k = 0; k < cc; k++) {
 			targets[k] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, k);
-			ERR_FAIL_COND(!targets[k]);
+			ERR_FAIL_NULL(targets[k]);
 		}
 
 		for (int j = 0; j < buffer_size; j++) {
@@ -280,6 +280,9 @@ void VideoStreamPlayer::play() {
 	playback->play();
 	set_process_internal(true);
 	last_audio_time = 0;
+
+	// We update the playback to render the first frame immediately.
+	playback->update(0);
 
 	if (!can_process()) {
 		_notification(NOTIFICATION_PAUSED);

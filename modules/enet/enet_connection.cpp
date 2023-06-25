@@ -342,6 +342,39 @@ void ENetConnection::_broadcast(int p_channel, PackedByteArray p_packet, int p_f
 	broadcast(p_channel, pkt);
 }
 
+void ENetConnection::socket_send(const String &p_address, int p_port, const PackedByteArray &p_packet) {
+	ERR_FAIL_COND_MSG(!host, "The ENetConnection instance isn't currently active.");
+	ERR_FAIL_COND_MSG(!(host->socket), "The ENetConnection instance isn't currently bound");
+	ERR_FAIL_COND_MSG(p_port < 1 || p_port > 65535, "The remote port number must be between 1 and 65535 (inclusive).");
+
+	IPAddress ip;
+	if (p_address.is_valid_ip_address()) {
+		ip = p_address;
+	} else {
+#ifdef GODOT_ENET
+		ip = IP::get_singleton()->resolve_hostname(p_address);
+#else
+		ip = IP::get_singleton()->resolve_hostname(p_address, IP::TYPE_IPV4);
+#endif
+		ERR_FAIL_COND_MSG(!ip.is_valid(), "Couldn't resolve the server IP address or domain name.");
+	}
+
+	ENetAddress address;
+#ifdef GODOT_ENET
+	enet_address_set_ip(&address, ip.get_ipv6(), 16);
+#else
+	ERR_FAIL_COND_MSG(!ip.is_ipv4(), "Connecting to an IPv6 server isn't supported when using vanilla ENet. Recompile Godot with the bundled ENet library.");
+	address.host = *(uint32_t *)ip.get_ipv4();
+#endif
+	address.port = p_port;
+
+	ENetBuffer enet_buffers[1];
+	enet_buffers[0].data = (void *)p_packet.ptr();
+	enet_buffers[0].dataLength = p_packet.size();
+
+	enet_socket_send(host->socket, &address, enet_buffers, 1);
+}
+
 void ENetConnection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_host_bound", "bind_address", "bind_port", "max_peers", "max_channels", "in_bandwidth", "out_bandwidth"), &ENetConnection::create_host_bound, DEFVAL(32), DEFVAL(0), DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("create_host", "max_peers", "max_channels", "in_bandwidth", "out_bandwidth"), &ENetConnection::create_host, DEFVAL(32), DEFVAL(0), DEFVAL(0), DEFVAL(0));
@@ -360,6 +393,7 @@ void ENetConnection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_max_channels"), &ENetConnection::get_max_channels);
 	ClassDB::bind_method(D_METHOD("get_local_port"), &ENetConnection::get_local_port);
 	ClassDB::bind_method(D_METHOD("get_peers"), &ENetConnection::_get_peers);
+	ClassDB::bind_method(D_METHOD("socket_send", "destination_address", "destination_port", "packet"), &ENetConnection::socket_send);
 
 	BIND_ENUM_CONSTANT(COMPRESS_NONE);
 	BIND_ENUM_CONSTANT(COMPRESS_RANGE_CODER);

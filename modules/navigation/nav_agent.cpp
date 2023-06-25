@@ -342,3 +342,23 @@ const Dictionary NavAgent::get_avoidance_data() const {
 	}
 	return _avoidance_data;
 }
+
+void NavAgent::set_paused(bool p_paused) {
+	if (paused == p_paused) {
+		return;
+	}
+
+	paused = p_paused;
+
+	if (map) {
+		if (paused) {
+			map->remove_agent_as_controlled(this);
+		} else {
+			map->set_agent_as_controlled(this);
+		}
+	}
+}
+
+bool NavAgent::get_paused() const {
+	return paused;
+}

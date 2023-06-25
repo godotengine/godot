@@ -1827,7 +1827,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			}
 		}
 
-		if (!path || !path->is_inside_tree()) {
+		if (!path) {
 			return new_brush;
 		}
 

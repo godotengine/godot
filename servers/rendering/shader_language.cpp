@@ -3790,7 +3790,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					}
 					value = Variant(array);
 				} else {
-					value = Variant(Vector2(p_value[0].sint, p_value[1].sint));
+					value = Variant(Vector2i(p_value[0].sint, p_value[1].sint));
 				}
 				break;
 			case ShaderLanguage::TYPE_IVEC3:
@@ -3803,7 +3803,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					}
 					value = Variant(array);
 				} else {
-					value = Variant(Vector3(p_value[0].sint, p_value[1].sint, p_value[2].sint));
+					value = Variant(Vector3i(p_value[0].sint, p_value[1].sint, p_value[2].sint));
 				}
 				break;
 			case ShaderLanguage::TYPE_IVEC4:
@@ -3816,7 +3816,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					}
 					value = Variant(array);
 				} else {
-					value = Variant(Quaternion(p_value[0].sint, p_value[1].sint, p_value[2].sint, p_value[3].sint));
+					value = Variant(Vector4i(p_value[0].sint, p_value[1].sint, p_value[2].sint, p_value[3].sint));
 				}
 				break;
 			case ShaderLanguage::TYPE_UINT:
@@ -3840,7 +3840,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					}
 					value = Variant(array);
 				} else {
-					value = Variant(Vector2(p_value[0].uint, p_value[1].uint));
+					value = Variant(Vector2i(p_value[0].uint, p_value[1].uint));
 				}
 				break;
 			case ShaderLanguage::TYPE_UVEC3:
@@ -3853,7 +3853,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					}
 					value = Variant(array);
 				} else {
-					value = Variant(Vector3(p_value[0].uint, p_value[1].uint, p_value[2].uint));
+					value = Variant(Vector3i(p_value[0].uint, p_value[1].uint, p_value[2].uint));
 				}
 				break;
 			case ShaderLanguage::TYPE_UVEC4:
@@ -3866,7 +3866,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					}
 					value = Variant(array);
 				} else {
-					value = Variant(Quaternion(p_value[0].uint, p_value[1].uint, p_value[2].uint, p_value[3].uint));
+					value = Variant(Vector4i(p_value[0].uint, p_value[1].uint, p_value[2].uint, p_value[3].uint));
 				}
 				break;
 			case ShaderLanguage::TYPE_FLOAT:
@@ -3942,7 +3942,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 						value = Variant(Color(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
 					} else {
-						value = Variant(Quaternion(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
+						value = Variant(Vector4(p_value[0].real, p_value[1].real, p_value[2].real, p_value[3].real));
 					}
 				}
 				break;
@@ -8027,6 +8027,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 	while (tk.type != TK_EOF) {
 		switch (tk.type) {
 			case TK_RENDER_MODE: {
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_UNSPECIFIED;
+#endif // DEBUG_ENABLED
 				while (true) {
 					StringName mode;
 					_get_completable_identifier(nullptr, COMPLETION_RENDER_MODE, mode);
@@ -8114,6 +8117,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						return ERR_PARSE_ERROR;
 					}
 				}
+#ifdef DEBUG_ENABLED
+				keyword_completion_context = CF_GLOBAL_SPACE;
+#endif // DEBUG_ENABLED
 			} break;
 			case TK_STRUCT: {
 				ShaderNode::Struct st;

@@ -243,7 +243,7 @@ Node *MeshInstance3D::create_trimesh_collision_node() {
 
 void MeshInstance3D::create_trimesh_collision() {
 	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_trimesh_collision_node());
-	ERR_FAIL_COND(!static_body);
+	ERR_FAIL_NULL(static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
 	add_child(static_body, true);
@@ -273,7 +273,7 @@ Node *MeshInstance3D::create_convex_collision_node(bool p_clean, bool p_simplify
 
 void MeshInstance3D::create_convex_collision(bool p_clean, bool p_simplify) {
 	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_convex_collision_node(p_clean, p_simplify));
-	ERR_FAIL_COND(!static_body);
+	ERR_FAIL_NULL(static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
 	add_child(static_body, true);
@@ -312,7 +312,7 @@ Node *MeshInstance3D::create_multiple_convex_collisions_node(const Ref<MeshConve
 
 void MeshInstance3D::create_multiple_convex_collisions(const Ref<MeshConvexDecompositionSettings> &p_settings) {
 	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_multiple_convex_collisions_node(p_settings));
-	ERR_FAIL_COND(!static_body);
+	ERR_FAIL_NULL(static_body);
 	static_body->set_name(String(get_name()) + "_col");
 
 	add_child(static_body, true);

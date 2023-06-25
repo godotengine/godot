@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Label3D" inherits="GeometryInstance3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Displays plain text in a 3D world.
+		A node for displaying plain text in 3D space.
 	</brief_description>
 	<description>
-		Label3D displays plain text in a 3D world. It gives you control over the horizontal and vertical alignment.
+		A node for displaying plain text in 3D space. By adjusting various properties of this node, you can configure things such as the text's appearance and whether it always faces the camera.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -70,6 +70,9 @@
 		<member name="gi_mode" type="int" setter="set_gi_mode" getter="get_gi_mode" overrides="GeometryInstance3D" enum="GeometryInstance3D.GIMode" default="0" />
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="1">
 			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
+		</member>
+		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
+			Line fill alignment rules. For more info see [enum TextServer.JustificationFlag].
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.

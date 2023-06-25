@@ -31,8 +31,9 @@
 #ifndef STREAM_PEER_MBEDTLS_H
 #define STREAM_PEER_MBEDTLS_H
 
-#include "core/io/stream_peer_tls.h"
 #include "tls_context_mbedtls.h"
+
+#include "core/io/stream_peer_tls.h"
 
 class StreamPeerMbedTLS : public StreamPeerTLS {
 private:

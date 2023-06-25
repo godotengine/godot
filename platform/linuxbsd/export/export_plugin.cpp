@@ -30,13 +30,14 @@
 
 #include "export_plugin.h"
 
+#include "logo_svg.gen.h"
+#include "run_icon_svg.gen.h"
+
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/export/editor_export.h"
-#include "platform/linuxbsd/logo_svg.gen.h"
-#include "platform/linuxbsd/run_icon_svg.gen.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED
@@ -94,15 +95,15 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 		return err;
 	}
 
-	// Save console script.
+	// Save console wrapper.
 	if (err == OK) {
-		int con_scr = p_preset->get("debug/export_console_script");
+		int con_scr = p_preset->get("debug/export_console_wrapper");
 		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
 			String scr_path = path.get_basename() + ".sh";
 			err = _export_debug_script(p_preset, pkg_name, path.get_file(), scr_path);
 			FileAccess::set_unix_permissions(scr_path, 0755);
 			if (err != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Script Export"), TTR("Could not create console script."));
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Console Export"), TTR("Could not create console wrapper."));
 			}
 		}
 	}

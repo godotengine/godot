@@ -1079,6 +1079,7 @@ void PhysicsServer3DManager::on_servers_changed() {
 		physics_servers2 += "," + get_server_name(i);
 	}
 	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers2));
+	ProjectSettings::get_singleton()->set_restart_if_changed(setting_property_name, true);
 }
 
 void PhysicsServer3DManager::_bind_methods() {

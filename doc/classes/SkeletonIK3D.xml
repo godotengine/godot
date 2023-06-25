@@ -24,6 +24,7 @@
 		# Apply zero IK effect (a value at or below 0.01 also removes bones_global_pose_override on Skeleton)
 		skeleton_ik_node.set_interpolation(0.0)
 		[/codeblock]
+		[i]Deprecated.[/i] This class is deprecated, and might be removed in a future release.
 	</description>
 	<tutorials>
 		<link title="3D Inverse Kinematics Demo">https://godotengine.org/asset-library/asset/523</link>

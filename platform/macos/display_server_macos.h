@@ -31,8 +31,6 @@
 #ifndef DISPLAY_SERVER_MACOS_H
 #define DISPLAY_SERVER_MACOS_H
 
-#define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
-
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
@@ -41,9 +39,12 @@
 #endif // GLES3_ENABLED
 
 #if defined(VULKAN_ENABLED)
+#include "vulkan_context_macos.h"
+
 #include "drivers/vulkan/rendering_device_vulkan.h"
-#include "platform/macos/vulkan_context_macos.h"
 #endif // VULKAN_ENABLED
+
+#define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
 
 #import <AppKit/AppKit.h>
 #import <AppKit/NSCursor.h>
@@ -116,6 +117,7 @@ public:
 		bool no_focus = false;
 		bool is_popup = false;
 		bool mpass = false;
+		bool focused = false;
 
 		Rect2i parent_safe_rect;
 	};
@@ -336,6 +338,7 @@ public:
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Color screen_get_pixel(const Point2i &p_position) const override;
+	virtual Ref<Image> screen_get_image(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
 
@@ -388,6 +391,7 @@ public:
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override;
 

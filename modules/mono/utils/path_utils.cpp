@@ -35,6 +35,8 @@
 #include "core/io/file_access.h"
 #include "core/os/os.h"
 
+#include <stdlib.h>
+
 #ifdef WINDOWS_ENABLED
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -46,8 +48,6 @@
 
 #define ENV_PATH_SEP ":"
 #endif
-
-#include <stdlib.h>
 
 namespace path {
 
@@ -231,4 +231,36 @@ String relative_to(const String &p_path, const String &p_relative_to) {
 
 	return relative_to_impl(path_abs_norm, relative_to_abs_norm);
 }
+
+const Vector<String> reserved_assembly_names = { "GodotSharp", "GodotSharpEditor", "Godot.SourceGenerators" };
+
+String get_csharp_project_name() {
+	String name = GLOBAL_GET("dotnet/project/assembly_name");
+	if (name.is_empty()) {
+		name = GLOBAL_GET("application/config/name");
+		Vector<String> invalid_chars = Vector<String>({ //
+				// Windows reserved filename chars.
+				":", "*", "?", "\"", "<", ">", "|",
+				// Directory separators.
+				"/", "\\",
+				// Other chars that have been found to break assembly loading.
+				";", "'", "=", "," });
+		name = name.strip_edges();
+		for (int i = 0; i < invalid_chars.size(); i++) {
+			name = name.replace(invalid_chars[i], "-");
+		}
+	}
+
+	if (name.is_empty()) {
+		name = "UnnamedProject";
+	}
+
+	// Avoid reserved names that conflict with Godot assemblies.
+	if (reserved_assembly_names.has(name)) {
+		name += "_";
+	}
+
+	return name;
+}
+
 } // namespace path

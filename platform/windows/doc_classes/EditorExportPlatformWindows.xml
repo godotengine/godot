@@ -13,7 +13,7 @@
 			Company that produced the application. Required. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
 		</member>
 		<member name="application/console_wrapper_icon" type="String" setter="" getter="">
-			Console wrapper icon file. If left empty, application icon is used instead.
+			Console wrapper icon file. If left empty, it will fallback to [member application/icon], then to [member ProjectSettings.application/config/windows_native_icon], and lastly, [member ProjectSettings.application/config/icon].
 		</member>
 		<member name="application/copyright" type="String" setter="" getter="">
 			Copyright notice for the bundle visible to the user. Optional. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
@@ -25,7 +25,7 @@
 			Version number of the file. Required. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
 		</member>
 		<member name="application/icon" type="String" setter="" getter="">
-			Application icon file. If left empty, project icon is used instead.
+			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/windows_native_icon], and  then to [member ProjectSettings.application/config/icon].
 		</member>
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
@@ -86,7 +86,7 @@
 		<member name="custom_template/release" type="String" setter="" getter="">
 			Path to the custom export template. If left empty, default template is used.
 		</member>
-		<member name="debug/export_console_script" type="int" setter="" getter="">
+		<member name="debug/export_console_wrapper" type="int" setter="" getter="">
 			If [code]true[/code], a console wrapper executable is exported alongside the main executable, which allows running the project with enabled console output.
 		</member>
 		<member name="ssh_remote_deploy/cleanup_script" type="String" setter="" getter="">

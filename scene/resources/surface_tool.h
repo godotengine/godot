@@ -38,6 +38,9 @@
 class SurfaceTool : public RefCounted {
 	GDCLASS(SurfaceTool, RefCounted);
 
+	static const uint32_t custom_mask[RS::ARRAY_CUSTOM_COUNT];
+	static const uint32_t custom_shift[RS::ARRAY_CUSTOM_COUNT];
+
 public:
 	struct Vertex {
 		Vector3 vertex;

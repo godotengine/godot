@@ -207,8 +207,8 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 		} break;
 		case BLEND_MODE_SUB: {
 			blend_attachment.enable_blend = true;
-			blend_attachment.alpha_blend_op = RD::BLEND_OP_SUBTRACT;
-			blend_attachment.color_blend_op = RD::BLEND_OP_SUBTRACT;
+			blend_attachment.alpha_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
+			blend_attachment.color_blend_op = RD::BLEND_OP_REVERSE_SUBTRACT;
 			blend_attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
 			blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
 			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
@@ -465,9 +465,11 @@ SceneShaderForwardClustered::~SceneShaderForwardClustered() {
 
 	material_storage->shader_free(overdraw_material_shader);
 	material_storage->shader_free(default_shader);
+	material_storage->shader_free(debug_shadow_splits_material_shader);
 
 	material_storage->material_free(overdraw_material);
 	material_storage->material_free(default_material);
+	material_storage->material_free(debug_shadow_splits_material);
 }
 
 void SceneShaderForwardClustered::init(const String p_defines) {
@@ -557,7 +559,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 
 		actions.renames["MODEL_MATRIX"] = "read_model_matrix";
 		actions.renames["MODEL_NORMAL_MATRIX"] = "model_normal_matrix";
-		actions.renames["VIEW_MATRIX"] = "scene_data.view_matrix";
+		actions.renames["VIEW_MATRIX"] = "read_view_matrix";
 		actions.renames["INV_VIEW_MATRIX"] = "inv_view_matrix";
 		actions.renames["PROJECTION_MATRIX"] = "projection_matrix";
 		actions.renames["INV_PROJECTION_MATRIX"] = "inv_projection_matrix";
@@ -588,7 +590,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);
 		actions.renames["E"] = _MKSTR(Math_E);
-		actions.renames["VIEWPORT_SIZE"] = "scene_data.viewport_size";
+		actions.renames["VIEWPORT_SIZE"] = "read_viewport_size";
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["FRONT_FACING"] = "gl_FrontFacing";
@@ -720,12 +722,13 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.render_mode_defines["ambient_light_disabled"] = "#define AMBIENT_LIGHT_DISABLED\n";
 		actions.render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
+		actions.render_mode_defines["debug_shadow_splits"] = "#define DEBUG_DRAW_PSSM_SPLITS\n";
 
 		actions.sampler_array_name = "material_samplers";
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = RenderForwardClustered::MATERIAL_UNIFORM_SET;
 		actions.base_uniform_string = "material.";
-		actions.base_varying_index = 11;
+		actions.base_varying_index = 12;
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
@@ -791,6 +794,29 @@ void fragment() {
 		MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(overdraw_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
 		overdraw_material_shader_ptr = md->shader_data;
 		overdraw_material_uniform_set = md->uniform_set;
+	}
+
+	{
+		debug_shadow_splits_material_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(debug_shadow_splits_material_shader);
+		material_storage->shader_set_code(debug_shadow_splits_material_shader, R"(
+// 3D debug shadow splits mode shader(mobile).
+
+shader_type spatial;
+
+render_mode debug_shadow_splits;
+
+void fragment() {
+	ALBEDO = vec3(1.0, 1.0, 1.0);
+}
+)");
+		debug_shadow_splits_material = material_storage->material_allocate();
+		material_storage->material_initialize(debug_shadow_splits_material);
+		material_storage->material_set_shader(debug_shadow_splits_material, debug_shadow_splits_material_shader);
+
+		MaterialData *md = static_cast<MaterialData *>(material_storage->material_get_data(debug_shadow_splits_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
+		debug_shadow_splits_material_shader_ptr = md->shader_data;
+		debug_shadow_splits_material_uniform_set = md->uniform_set;
 	}
 
 	{

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="StreamPeerTLS" inherits="StreamPeer" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		TLS stream peer.
+		A stream peer that handles TLS connections.
 	</brief_description>
 	<description>
-		TLS stream peer. This object can be used to connect to a TLS server or accept a single TLS client connection.
+		A stream peer that handles TLS connections. This object can be used to connect to a TLS server or accept a single TLS client connection.
 		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 	</description>
 	<tutorials>

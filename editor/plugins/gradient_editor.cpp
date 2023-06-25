@@ -41,6 +41,7 @@ void GradientEditor::set_gradient(const Ref<Gradient> &p_gradient) {
 	gradient->connect("changed", callable_mp(this, &GradientEditor::_gradient_changed));
 	set_points(gradient->get_points());
 	set_interpolation_mode(gradient->get_interpolation_mode());
+	set_interpolation_color_space(gradient->get_interpolation_color_space());
 }
 
 void GradientEditor::reverse_gradient() {
@@ -93,6 +94,7 @@ void GradientEditor::_gradient_changed() {
 	Vector<Gradient::Point> grad_points = gradient->get_points();
 	set_points(grad_points);
 	set_interpolation_mode(gradient->get_interpolation_mode());
+	set_interpolation_color_space(gradient->get_interpolation_color_space());
 	queue_redraw();
 	editing = false;
 }
@@ -104,9 +106,11 @@ void GradientEditor::_ramp_changed() {
 	undo_redo->add_do_method(gradient.ptr(), "set_offsets", get_offsets());
 	undo_redo->add_do_method(gradient.ptr(), "set_colors", get_colors());
 	undo_redo->add_do_method(gradient.ptr(), "set_interpolation_mode", get_interpolation_mode());
+	undo_redo->add_do_method(gradient.ptr(), "set_interpolation_color_space", get_interpolation_color_space());
 	undo_redo->add_undo_method(gradient.ptr(), "set_offsets", gradient->get_offsets());
 	undo_redo->add_undo_method(gradient.ptr(), "set_colors", gradient->get_colors());
 	undo_redo->add_undo_method(gradient.ptr(), "set_interpolation_mode", gradient->get_interpolation_mode());
+	undo_redo->add_undo_method(gradient.ptr(), "set_interpolation_color_space", gradient->get_interpolation_color_space());
 	undo_redo->commit_action();
 	editing = false;
 }
@@ -169,6 +173,14 @@ void GradientEditor::set_interpolation_mode(Gradient::InterpolationMode p_interp
 
 Gradient::InterpolationMode GradientEditor::get_interpolation_mode() {
 	return interpolation_mode;
+}
+
+void GradientEditor::set_interpolation_color_space(Gradient::ColorSpace p_color_space) {
+	interpolation_color_space = p_color_space;
+}
+
+Gradient::ColorSpace GradientEditor::get_interpolation_color_space() {
+	return interpolation_color_space;
 }
 
 ColorPicker *GradientEditor::get_picker() {
@@ -385,6 +397,7 @@ void GradientEditor::_notification(int p_what) {
 			// Draw color ramp.
 			gradient_cache->set_points(points);
 			gradient_cache->set_interpolation_mode(interpolation_mode);
+			gradient_cache->set_interpolation_color_space(interpolation_color_space);
 			preview_texture->set_gradient(gradient_cache);
 			draw_texture_rect(preview_texture, Rect2(handle_width / 2, 0, total_w, h));
 

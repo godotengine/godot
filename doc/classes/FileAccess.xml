@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="FileAccess" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Type to handle file reading and writing operations.
+		Provides methods for file reading and writing operations.
 	</brief_description>
 	<description>
-		File type. This is used to permanently store data into the user device's file system and to read from it. This can be used to store game save data or player configuration files, for example.
+		This class can be used to permanently store data in the user device's file system and to read from it. This is useful for store game save data or player configuration files.
 		Here's a sample on how to write and read from a file:
 		[codeblocks]
 		[gdscript]
@@ -33,18 +33,8 @@
 		[/csharp]
 		[/codeblocks]
 		In the example above, the file will be saved in the user data folder as specified in the [url=$DOCS_URL/tutorials/io/data_paths.html]Data paths[/url] documentation.
-		[FileAccess] will close when it's freed, which happens when it goes out of scope or when it gets assigned with [code]null[/code]. In C# the reference must be disposed after we are done using it, this can be done with the [code]using[/code] statement or calling the [code]Dispose[/code] method directly.
-		[codeblocks]
-		[gdscript]
-		var file = FileAccess.open("res://something") # File is opened and locked for use.
-		file = null # File is closed.
-		[/gdscript]
-		[csharp]
-		using var file = FileAccess.Open("res://something"); // File is opened and locked for use.
-		// The using statement calls Dispose when going out of scope.
-		[/csharp]
-		[/codeblocks]
-		[b]Note:[/b] To access project resources once exported, it is recommended to use [ResourceLoader] instead of the [FileAccess] API, as some files are converted to engine-specific formats and their original source files might not be present in the exported PCK package.
+		[FileAccess] will close when it's freed, which happens when it goes out of scope or when it gets assigned with [code]null[/code]. [method close] can be used to close it before then explicitly. In C# the reference must be disposed manually, which can be done with the [code]using[/code] statement or by calling the [code]Dispose[/code] method directly.
+		[b]Note:[/b] To access project resources once exported, it is recommended to use [ResourceLoader] instead of [FileAccess], as some files are converted to engine-specific formats and their original source files might not be present in the exported PCK package.
 		[b]Note:[/b] Files are automatically closed only if the process exits "normally" (such as by clicking the window manager's close button or pressing [b]Alt + F4[/b]). If you stop the project execution by pressing [b]F8[/b] while the project is running, the file won't be closed as the game process will be killed. You can work around this by calling [method flush] at regular intervals.
 	</description>
 	<tutorials>

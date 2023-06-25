@@ -120,6 +120,7 @@ static ResourceUID *resource_uid = nullptr;
 static bool _is_core_extensions_registered = false;
 
 void register_core_types() {
+	OS::get_singleton()->benchmark_begin_measure("register_core_types");
 	//consistency check
 	static_assert(sizeof(Callable) <= 16);
 
@@ -294,6 +295,8 @@ void register_core_types() {
 	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
 
 	worker_thread_pool = memnew(WorkerThreadPool);
+
+	OS::get_singleton()->benchmark_end_measure("register_core_types");
 }
 
 void register_core_settings() {
@@ -360,21 +363,30 @@ void unregister_core_extensions() {
 }
 
 void unregister_core_types() {
+	OS::get_singleton()->benchmark_begin_measure("unregister_core_types");
+
+	// Destroy singletons in reverse order to ensure dependencies are not broken.
+
+	memdelete(worker_thread_pool);
+
+	memdelete(_engine_debugger);
+	memdelete(_marshalls);
+	memdelete(_classdb);
+	memdelete(_engine);
+	memdelete(_os);
+	memdelete(_resource_saver);
+	memdelete(_resource_loader);
+
+	memdelete(_geometry_3d);
+	memdelete(_geometry_2d);
+
 	memdelete(gdextension_manager);
 
 	memdelete(resource_uid);
-	memdelete(_resource_loader);
-	memdelete(_resource_saver);
-	memdelete(_os);
-	memdelete(_engine);
-	memdelete(_classdb);
-	memdelete(_marshalls);
-	memdelete(_engine_debugger);
 
-	memdelete(_geometry_2d);
-	memdelete(_geometry_3d);
-
-	memdelete(worker_thread_pool);
+	if (ip) {
+		memdelete(ip);
+	}
 
 	ResourceLoader::remove_resource_format_loader(resource_format_image);
 	resource_format_image.unref();
@@ -405,10 +417,6 @@ void unregister_core_types() {
 	ResourceLoader::remove_resource_format_loader(resource_loader_json);
 	resource_loader_json.unref();
 
-	if (ip) {
-		memdelete(ip);
-	}
-
 	ResourceLoader::remove_resource_format_loader(resource_loader_gdextension);
 	resource_loader_gdextension.unref();
 
@@ -425,4 +433,6 @@ void unregister_core_types() {
 	ResourceCache::clear();
 	CoreStringNames::free();
 	StringName::cleanup();
+
+	OS::get_singleton()->benchmark_end_measure("unregister_core_types");
 }

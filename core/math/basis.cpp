@@ -397,7 +397,7 @@ void Basis::rotate_to_align(Vector3 p_start_direction, Vector3 p_end_direction) 
 		real_t dot = p_start_direction.dot(p_end_direction);
 		dot = CLAMP(dot, -1.0f, 1.0f);
 		const real_t angle_rads = Math::acos(dot);
-		set_axis_angle(axis, angle_rads);
+		*this = Basis(axis, angle_rads) * (*this);
 	}
 }
 
@@ -1016,12 +1016,15 @@ void Basis::rotate_sh(real_t *p_values) {
 	p_values[8] = d4 * s_scale_dst4;
 }
 
-Basis Basis::looking_at(const Vector3 &p_target, const Vector3 &p_up) {
+Basis Basis::looking_at(const Vector3 &p_target, const Vector3 &p_up, bool p_use_model_front) {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(p_target.is_zero_approx(), Basis(), "The target vector can't be zero.");
 	ERR_FAIL_COND_V_MSG(p_up.is_zero_approx(), Basis(), "The up vector can't be zero.");
 #endif
-	Vector3 v_z = -p_target.normalized();
+	Vector3 v_z = p_target.normalized();
+	if (!p_use_model_front) {
+		v_z = -v_z;
+	}
 	Vector3 v_x = p_up.cross(v_z);
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V_MSG(v_x.is_zero_approx(), Basis(), "The target vector and up vector can't be parallel to each other.");

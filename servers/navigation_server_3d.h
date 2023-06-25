@@ -35,6 +35,7 @@
 #include "core/templates/rid.h"
 
 #include "scene/3d/navigation_region_3d.h"
+#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation/navigation_path_query_parameters_3d.h"
 #include "servers/navigation/navigation_path_query_result_3d.h"
 
@@ -79,6 +80,9 @@ public:
 
 	/// Returns the map cell size.
 	virtual real_t map_get_cell_size(RID p_map) const = 0;
+
+	virtual void map_set_cell_height(RID p_map, real_t p_height) = 0;
+	virtual real_t map_get_cell_height(RID p_map) const = 0;
 
 	virtual void map_set_use_edge_connections(RID p_map, bool p_enabled) = 0;
 	virtual bool map_get_use_edge_connections(RID p_map) const = 0;
@@ -194,6 +198,9 @@ public:
 	virtual void agent_set_map(RID p_agent, RID p_map) = 0;
 	virtual RID agent_get_map(RID p_agent) const = 0;
 
+	virtual void agent_set_paused(RID p_agent, bool p_paused) = 0;
+	virtual bool agent_get_paused(RID p_agent) const = 0;
+
 	virtual void agent_set_avoidance_enabled(RID p_agent, bool p_enabled) = 0;
 	virtual bool agent_get_avoidance_enabled(RID p_agent) const = 0;
 
@@ -240,7 +247,7 @@ public:
 	virtual void agent_set_velocity_forced(RID p_agent, Vector3 p_velocity) = 0;
 
 	/// The wanted velocity for the agent as a "suggestion" to the avoidance simulation.
-	/// The simulation will try to fulfil this velocity wish if possible but may change the velocity depending on other agent's and obstacles'.
+	/// The simulation will try to fulfill this velocity wish if possible but may change the velocity depending on other agent's and obstacles'.
 	virtual void agent_set_velocity(RID p_agent, Vector3 p_velocity) = 0;
 
 	/// Position of the agent in world space.
@@ -260,7 +267,17 @@ public:
 	virtual RID obstacle_create() = 0;
 	virtual void obstacle_set_map(RID p_obstacle, RID p_map) = 0;
 	virtual RID obstacle_get_map(RID p_obstacle) const = 0;
+
+	virtual void obstacle_set_paused(RID p_obstacle, bool p_paused) = 0;
+	virtual bool obstacle_get_paused(RID p_obstacle) const = 0;
+
+	virtual void obstacle_set_avoidance_enabled(RID p_obstacle, bool p_enabled) = 0;
+	virtual bool obstacle_get_avoidance_enabled(RID p_obstacle) const = 0;
+	virtual void obstacle_set_use_3d_avoidance(RID p_obstacle, bool p_enabled) = 0;
+	virtual bool obstacle_get_use_3d_avoidance(RID p_obstacle) const = 0;
+	virtual void obstacle_set_radius(RID p_obstacle, real_t p_radius) = 0;
 	virtual void obstacle_set_height(RID p_obstacle, real_t p_height) = 0;
+	virtual void obstacle_set_velocity(RID p_obstacle, Vector3 p_velocity) = 0;
 	virtual void obstacle_set_position(RID p_obstacle, Vector3 p_position) = 0;
 	virtual void obstacle_set_vertices(RID p_obstacle, const Vector<Vector3> &p_vertices) = 0;
 	virtual void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) = 0;
@@ -281,6 +298,9 @@ public:
 	virtual void query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result) const;
 
 	virtual NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const = 0;
+
+	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) = 0;
+	virtual void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
 
 	NavigationServer3D();
 	~NavigationServer3D() override;

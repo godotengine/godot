@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PanelContainer" inherits="Container" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Panel container type.
+		A container that keeps its child controls within the area of a [StyleBox].
 	</brief_description>
 	<description>
-		Panel container type. This container fits controls inside of the delimited area of a stylebox. It's useful for giving controls an outline.
+		A container that keeps its child controls within the area of a [StyleBox]. Useful for giving controls an outline.
 	</description>
 	<tutorials>
-		<link title="GUI containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
+		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>
 	</tutorials>
 	<members>

@@ -2,13 +2,14 @@
  * Obstacle2d.h
  * RVO2 Library
  *
- * Copyright 2008 University of North Carolina at Chapel Hill
+ * SPDX-FileCopyrightText: 2008 University of North Carolina at Chapel Hill
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,46 +28,59 @@
  * Chapel Hill, N.C. 27599-3175
  * United States of America
  *
- * <http://gamma.cs.unc.edu/RVO2/>
+ * <https://gamma.cs.unc.edu/RVO2/>
  */
 
 #ifndef RVO2D_OBSTACLE_H_
 #define RVO2D_OBSTACLE_H_
 
 /**
- * \file       Obstacle2d.h
- * \brief      Contains the Obstacle class.
+ * @file  Obstacle2d.h
+ * @brief Declares the Obstacle2D class.
  */
 
-#include "Definitions.h"
+#include <cstddef>
+#include <cstdint>
+
+#include "Vector2.h"
 
 namespace RVO2D {
-	/**
-	 * \brief      Defines static obstacles in the simulation.
-	 */
-	class Obstacle2D {
-	public:
-		/**
-		 * \brief      Constructs a static obstacle instance.
-		 */
-		Obstacle2D();
+/**
+ * @brief Defines static obstacles in the simulation.
+ */
+class Obstacle2D {
+ public:
+  /**
+   * @brief Constructs a static obstacle instance.
+   */
+  Obstacle2D();
 
-		bool isConvex_;
-		Obstacle2D *nextObstacle_;
-		Vector2 point_;
-		Obstacle2D *prevObstacle_;
-		Vector2 unitDir_;
+  /**
+   * @brief Destroys this static obstacle instance.
+   */
+  ~Obstacle2D();
 
-		float height_ = 1.0;
-		float elevation_ = 0.0;
-		uint32_t avoidance_layers_ = 1;
+  /* Not implemented. */
+  Obstacle2D(const Obstacle2D &other);
 
-		size_t id_;
+  /* Not implemented. */
+  Obstacle2D &operator=(const Obstacle2D &other);
 
-		friend class Agent2D;
-		friend class KdTree2D;
-		friend class RVOSimulator2D;
-	};
-}
+  Vector2 direction_;
+  Vector2 point_;
+  Obstacle2D *next_;
+  Obstacle2D *previous_;
+  std::size_t id_;
+  bool isConvex_;
+
+  float height_ = 1.0;
+	float elevation_ = 0.0;
+	uint32_t avoidance_layers_ = 1;
+
+  friend class Agent2D;
+  friend class KdTree2D;
+  friend class RVOSimulator2D;
+};
+} /* namespace RVO2D */
 
 #endif /* RVO2D_OBSTACLE_H_ */

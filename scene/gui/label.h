@@ -43,6 +43,7 @@ private:
 	String text;
 	String xl_text;
 	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
+	BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
 	bool clip = false;
 	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
 	Size2 minsize;
@@ -64,6 +65,7 @@ private:
 	float visible_ratio = 1.0;
 	int lines_skipped = 0;
 	int max_lines_visible = -1;
+	PackedFloat32Array tab_stops;
 
 	Ref<LabelSettings> settings;
 
@@ -122,6 +124,9 @@ public:
 	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
 	TextServer::AutowrapMode get_autowrap_mode() const;
 
+	void set_justification_flags(BitField<TextServer::JustificationFlag> p_flags);
+	BitField<TextServer::JustificationFlag> get_justification_flags() const;
+
 	void set_uppercase(bool p_uppercase);
 	bool is_uppercase() const;
 
@@ -137,6 +142,9 @@ public:
 
 	void set_clip_text(bool p_clip);
 	bool is_clipping_text() const;
+
+	void set_tab_stops(const PackedFloat32Array &p_tab_stops);
+	PackedFloat32Array get_tab_stops() const;
 
 	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
 	TextServer::OverrunBehavior get_text_overrun_behavior() const;

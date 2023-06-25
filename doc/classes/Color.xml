@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Color" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Color built-in type, in RGBA format.
+		A color represented in RGBA format.
 	</brief_description>
 	<description>
-		A color represented in RGBA format by red ([member r]), green ([member g]), blue ([member b]), and alpha ([member a]) components. Each component is a 16-bit floating-point value, usually ranging from 0 to 1. Some properties (such as [member CanvasItem.modulate]) may support values greater than 1, for overbright or High Dynamic Range colors. If you want to supply values in a range of 0 to 255, you should use [method @GDScript.Color8].
-		Colors can also be created by name from a set of standardized colors, through the [String] constructor, [method from_string], or by directly fetching the color constants documented here. The standardized color set is based on the [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url], with the addition of [constant TRANSPARENT].
-		[b]Note:[/b] In a boolean context, a Color will evaluate to [code]false[/code] if it's equal to [code]Color(0, 0, 0, 1)[/code] (opaque black). Otherwise, a Color will always evaluate to [code]true[/code].
+		A color represented in RGBA format by a red ([member r]), green ([member g]), blue ([member b]), and alpha ([member a]) component. Each component is a 16-bit floating-point value, usually ranging from [code]0.0[/code] to [code]1.0[/code]. Some properties (such as [member CanvasItem.modulate]) may support values greater than [code]1.0[/code], for overbright or HDR (High Dynamic Range) colors.
+		Colors can be created in various ways: By the various [Color] constructors, by static methods such as [method from_hsv], and by using a name from the set of standardized colors based on [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url] with the addition of [constant TRANSPARENT]. GDScript also provides [method @GDScript.Color8], which uses integers from [code]0[/code] to [code]255[/code] and doesn't support overbright colors.
+		[b]Note:[/b] In a boolean context, a Color will evaluate to [code]false[/code] if it is equal to [code]Color(0, 0, 0, 1)[/code] (opaque black). Otherwise, a Color will always evaluate to [code]true[/code].
 		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/color_constants.png]Color constants cheatsheet[/url]
 	</description>
 	<tutorials>
@@ -203,8 +203,8 @@
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
 			<description>
-				Returns the [Color] associated with the provided [param hex] integer in 32-bit RGBA format (8 bits per channel, alpha channel first).
-				In GDScript and C#, the [int] is best visualized with hexadecimal notation ([code]"0x"[/code] prefix).
+				Returns the [Color] associated with the provided [param hex] integer in 32-bit RGBA format (8 bits per channel).
+				In GDScript and C#, the [int] is best visualized with hexadecimal notation ([code]"0x"[/code] prefix, making it [code]"0xRRGGBBAA"[/code]).
 				[codeblocks]
 				[gdscript]
 				var red = Color.hex(0xff0000ff)
@@ -223,8 +223,8 @@
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
 			<description>
-				Returns the [Color] associated with the provided [param hex] integer in 64-bit RGBA format (16 bits per channel, alpha channel first).
-				In GDScript and C#, the [int] is best visualized with hexadecimal notation ([code]"0x"[/code] prefix).
+				Returns the [Color] associated with the provided [param hex] integer in 64-bit RGBA format (16 bits per channel).
+				In GDScript and C#, the [int] is best visualized with hexadecimal notation ([code]"0x"[/code] prefix, making it [code]"0xRRRRGGGGBBBBAAAA"[/code]).
 			</description>
 		</method>
 		<method name="html" qualifiers="static">

@@ -4,7 +4,7 @@
  *
  *   Auto-fitter types (specification only).
  *
- * Copyright (C) 2003-2022 by
+ * Copyright (C) 2003-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -57,10 +57,10 @@ FT_BEGIN_HEADER
 
 #ifdef FT_DEBUG_AUTOFIT
 
-extern int    _af_debug_disable_horz_hints;
-extern int    _af_debug_disable_vert_hints;
-extern int    _af_debug_disable_blue_hints;
-extern void*  _af_debug_hints;
+extern int    af_debug_disable_horz_hints_;
+extern int    af_debug_disable_vert_hints_;
+extern int    af_debug_disable_blue_hints_;
+extern void*  af_debug_hints_;
 
 #endif /* FT_DEBUG_AUTOFIT */
 
@@ -119,13 +119,13 @@ extern void*  _af_debug_hints;
 
   typedef struct  AF_ScalerRec_
   {
-    FT_Face         face;        /* source font face                        */
-    FT_Fixed        x_scale;     /* from font units to 1/64th device pixels */
-    FT_Fixed        y_scale;     /* from font units to 1/64th device pixels */
-    FT_Pos          x_delta;     /* in 1/64th device pixels                 */
-    FT_Pos          y_delta;     /* in 1/64th device pixels                 */
-    FT_Render_Mode  render_mode; /* monochrome, anti-aliased, LCD, etc.     */
-    FT_UInt32       flags;       /* additional control flags, see above     */
+    FT_Face         face;        /* source font face                      */
+    FT_Fixed        x_scale;     /* from font units to 1/64 device pixels */
+    FT_Fixed        y_scale;     /* from font units to 1/64 device pixels */
+    FT_Pos          x_delta;     /* in 1/64 device pixels                 */
+    FT_Pos          y_delta;     /* in 1/64 device pixels                 */
+    FT_Render_Mode  render_mode; /* monochrome, anti-aliased, LCD, etc.   */
+    FT_UInt32       flags;       /* additional control flags, see above   */
 
   } AF_ScalerRec, *AF_Scaler;
 

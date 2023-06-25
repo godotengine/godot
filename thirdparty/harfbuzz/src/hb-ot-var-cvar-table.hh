@@ -126,7 +126,6 @@ struct cvar
       hb_blob_destroy (cvt_prime_blob);
       return false;
     }
-    hb_memset (cvt_deltas.arrayZ, 0, cvt_deltas.get_size ());
 
     if (!calculate_cvt_deltas (plan->normalized_coords.length, plan->normalized_coords.as_array (),
                                num_cvt_item, tuple_var_data, base, cvt_deltas))

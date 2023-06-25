@@ -30,10 +30,10 @@
 
 #ifdef DEBUG_ENABLED
 
+#include "gdscript.h"
 #include "gdscript_function.h"
 
 #include "core/string/string_builder.h"
-#include "gdscript.h"
 
 static String _get_variant_string(const Variant &p_variant) {
 	String txt;
@@ -50,12 +50,17 @@ static String _get_variant_string(const Variant &p_variant) {
 		} else {
 			GDScriptNativeClass *cls = Object::cast_to<GDScriptNativeClass>(obj);
 			if (cls) {
-				txt += cls->get_name();
-				txt += " (class)";
+				txt = "class(" + cls->get_name() + ")";
 			} else {
-				txt = obj->get_class();
-				if (obj->get_script_instance()) {
-					txt += "(" + obj->get_script_instance()->get_script()->get_path() + ")";
+				Script *script = Object::cast_to<Script>(obj);
+				if (script) {
+					txt = "script(" + GDScript::debug_get_script_name(script) + ")";
+				} else {
+					txt = "object(" + obj->get_class();
+					if (obj->get_script_instance()) {
+						txt += ", " + GDScript::debug_get_script_name(obj->get_script_instance()->get_script());
+					}
+					txt += ")";
 				}
 			}
 		}
@@ -69,12 +74,6 @@ static String _disassemble_address(const GDScript *p_script, const GDScriptFunct
 	int addr = p_address & GDScriptFunction::ADDR_MASK;
 
 	switch (p_address >> GDScriptFunction::ADDR_BITS) {
-		case GDScriptFunction::ADDR_TYPE_MEMBER: {
-			return "member(" + p_script->debug_get_member_by_index(addr) + ")";
-		} break;
-		case GDScriptFunction::ADDR_TYPE_CONSTANT: {
-			return "const(" + _get_variant_string(p_function.get_constant(addr)) + ")";
-		} break;
 		case GDScriptFunction::ADDR_TYPE_STACK: {
 			switch (addr) {
 				case GDScriptFunction::ADDR_STACK_SELF:
@@ -86,6 +85,12 @@ static String _disassemble_address(const GDScript *p_script, const GDScriptFunct
 				default:
 					return "stack(" + itos(addr) + ")";
 			}
+		} break;
+		case GDScriptFunction::ADDR_TYPE_CONSTANT: {
+			return "const(" + _get_variant_string(p_function.get_constant(addr)) + ")";
+		} break;
+		case GDScriptFunction::ADDR_TYPE_MEMBER: {
+			return "member(" + p_script->debug_get_member_by_index(addr) + ")";
 		} break;
 	}
 
@@ -152,12 +157,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += DADDR(2);
 				text += " is Array[";
 
-				Ref<Script> script_type = get_constant(_code_ptr[ip + 3] & GDScriptFunction::ADDR_MASK);
+				Ref<Script> script_type = get_constant(_code_ptr[ip + 3] & ADDR_MASK);
 				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 4];
 				StringName native_type = get_global_name(_code_ptr[ip + 5]);
 
 				if (script_type.is_valid() && script_type->is_valid()) {
-					text += script_type->get_path();
+					text += "script(";
+					text += GDScript::debug_get_script_name(script_type);
+					text += ")";
 				} else if (native_type != StringName()) {
 					text += native_type;
 				} else {
@@ -312,6 +319,38 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 3;
 			} break;
+			case OPCODE_SET_STATIC_VARIABLE: {
+				Ref<GDScript> gdscript = get_constant(_code_ptr[ip + 2] & ADDR_MASK);
+
+				text += "set_static_variable script(";
+				text += GDScript::debug_get_script_name(gdscript);
+				text += ")";
+				if (gdscript.is_valid()) {
+					text += "[\"" + gdscript->debug_get_static_var_by_index(_code_ptr[ip + 3]) + "\"]";
+				} else {
+					text += "[<index " + itos(_code_ptr[ip + 3]) + ">]";
+				}
+				text += " = ";
+				text += DADDR(1);
+
+				incr += 4;
+			} break;
+			case OPCODE_GET_STATIC_VARIABLE: {
+				Ref<GDScript> gdscript = get_constant(_code_ptr[ip + 2] & ADDR_MASK);
+
+				text += "get_static_variable ";
+				text += DADDR(1);
+				text += " = script(";
+				text += GDScript::debug_get_script_name(gdscript);
+				text += ")";
+				if (gdscript.is_valid()) {
+					text += "[\"" + gdscript->debug_get_static_var_by_index(_code_ptr[ip + 3]) + "\"]";
+				} else {
+					text += "[<index " + itos(_code_ptr[ip + 3]) + ">]";
+				}
+
+				incr += 4;
+			} break;
 			case OPCODE_ASSIGN: {
 				text += "assign ";
 				text += DADDR(1);
@@ -363,11 +402,10 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 4;
 			} break;
 			case OPCODE_ASSIGN_TYPED_SCRIPT: {
-				Variant script = _constants_ptr[_code_ptr[ip + 3]];
-				Script *sc = Object::cast_to<Script>(script.operator Object *());
+				Ref<Script> script = get_constant(_code_ptr[ip + 3] & ADDR_MASK);
 
 				text += "assign typed script (";
-				text += sc->get_path();
+				text += GDScript::debug_get_script_name(script);
 				text += ") ";
 				text += DADDR(1);
 				text += " = ";
@@ -467,13 +505,13 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
-				Ref<Script> script_type = get_constant(_code_ptr[ip + argc + 2] & GDScriptFunction::ADDR_MASK);
+				Ref<Script> script_type = get_constant(_code_ptr[ip + argc + 2] & ADDR_MASK);
 				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + argc + 4];
 				StringName native_type = get_global_name(_code_ptr[ip + argc + 5]);
 
 				String type_name;
 				if (script_type.is_valid() && script_type->is_valid()) {
-					type_name = script_type->get_path();
+					type_name = "script(" + GDScript::debug_get_script_name(script_type) + ")";
 				} else if (native_type != StringName()) {
 					type_name = native_type;
 				} else {
@@ -937,11 +975,10 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 3;
 			} break;
 			case OPCODE_RETURN_TYPED_SCRIPT: {
-				Variant script = _constants_ptr[_code_ptr[ip + 2]];
-				Script *sc = Object::cast_to<Script>(script.operator Object *());
+				Ref<Script> script = get_constant(_code_ptr[ip + 2] & ADDR_MASK);
 
 				text += "return typed script (";
-				text += sc->get_path();
+				text += GDScript::debug_get_script_name(script);
 				text += ") ";
 				text += DADDR(1);
 
@@ -1130,4 +1167,4 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 	}
 }
 
-#endif
+#endif // DEBUG_ENABLED

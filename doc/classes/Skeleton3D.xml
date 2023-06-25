@@ -5,8 +5,8 @@
 	</brief_description>
 	<description>
 		[Skeleton3D] provides an interface for managing a hierarchy of bones, including pose, rest and animation (see [Animation]). It can also use ragdoll physics.
-		The overall transform of a bone with respect to the skeleton is determined by the following hierarchical order: rest pose, custom pose and pose.
-		Note that "global pose" below refers to the overall transform of the bone with respect to skeleton, so it not the actual global/world transform of the bone.
+		The overall transform of a bone with respect to the skeleton is determined by bone pose. Bone rest defines the initial transform of the bone pose.
+		Note that "global pose" below refers to the overall transform of the bone with respect to skeleton, so it is not the actual global/world transform of the bone.
 		To setup different types of inverse kinematics, consider using [SkeletonIK3D], or add a custom IK implementation in [method Node._process] as a child node.
 	</description>
 	<tutorials>
@@ -49,6 +49,7 @@
 			<return type="void" />
 			<description>
 				Force updates the bone transforms/poses for all bones in the skeleton.
+				[i]Deprecated.[/i] Do not use.
 			</description>
 		</method>
 		<method name="force_update_bone_child_transform">
@@ -118,7 +119,7 @@
 			<return type="Transform3D" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns the pose transform of the specified bone. Pose is applied on top of the custom pose, which is applied on top the rest pose.
+				Returns the pose transform of the specified bone.
 			</description>
 		</method>
 		<method name="get_bone_pose_position" qualifiers="const">

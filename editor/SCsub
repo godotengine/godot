@@ -29,9 +29,8 @@ if env.editor_build:
     reg_exporters_inc = '#include "register_exporters.h"\n\n'
     reg_exporters = "void register_exporters() {\n"
     for e in env.platform_exporters:
-        # Glob all .cpp files in export folder
-        files = Glob("#platform/" + e + "/export/" + "*.cpp")
-        env.add_source_files(env.editor_sources, files)
+        # Add all .cpp files in export folder
+        env.add_source_files(env.editor_sources, "../platform/" + e + "/export/" + "*.cpp")
 
         reg_exporters += "\tregister_" + e + "_exporter();\n"
         reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'

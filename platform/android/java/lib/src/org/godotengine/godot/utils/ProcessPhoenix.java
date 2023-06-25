@@ -90,7 +90,7 @@ public final class ProcessPhoenix extends Activity {
    */
   public static void forceQuit(Activity activity, int pid) {
     Process.killProcess(pid); // Kill original main process
-    activity.finish();
+    activity.finishAndRemoveTask();
     Runtime.getRuntime().exit(0); // Kill kill kill!
   }
 

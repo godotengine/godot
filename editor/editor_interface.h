@@ -41,6 +41,7 @@ class EditorCommandPalette;
 class EditorFileSystem;
 class EditorInspector;
 class EditorPaths;
+class EditorPlugin;
 class EditorResourcePreview;
 class EditorSelection;
 class EditorSettings;
@@ -50,6 +51,7 @@ class Node;
 class ScriptEditor;
 class Texture2D;
 class VBoxContainer;
+class Window;
 
 class EditorInterface : public Object {
 	GDCLASS(EditorInterface, Object);
@@ -82,6 +84,9 @@ public:
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
 
+	void add_editor_plugin(EditorPlugin *p_plugin);
+	void remove_editor_plugin(EditorPlugin *p_plugin);
+
 	// Editor GUI.
 
 	Control *get_base_control() const;
@@ -93,6 +98,11 @@ public:
 	bool is_distraction_free_mode_enabled() const;
 
 	float get_editor_scale() const;
+
+	void popup_dialog(Window *p_dialog, const Rect2i &p_screen_rect = Rect2i());
+	void popup_dialog_centered(Window *p_dialog, const Size2i &p_minsize = Size2i());
+	void popup_dialog_centered_ratio(Window *p_dialog, float p_ratio = 0.8);
+	void popup_dialog_centered_clamped(Window *p_dialog, const Size2i &p_size = Size2i(), float p_fallback_ratio = 0.75);
 
 	// Editor docks.
 
@@ -119,6 +129,7 @@ public:
 
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
+	void mark_scene_as_unsaved();
 
 	// Scene playback.
 

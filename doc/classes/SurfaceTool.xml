@@ -17,7 +17,7 @@
 		var st = new SurfaceTool();
 		st.Begin(Mesh.PrimitiveType.Triangles);
 		st.SetColor(new Color(1, 0, 0));
-		st.SetUv(new Vector2(0, 0));
+		st.SetUV(new Vector2(0, 0));
 		st.AddVertex(new Vector3(0, 0, 0));
 		[/csharp]
 		[/codeblocks]
@@ -124,7 +124,7 @@
 			<param index="1" name="target_index_count" type="int" default="3" />
 			<description>
 				Generates a LOD for a given [param nd_threshold] in linear units (square root of quadric error metric), using at most [param target_index_count] indices.
-				Deprecated. Unused internally and neglects to preserve normals or UVs. Consider using [method ImporterMesh.generate_lods] instead.
+				[i]Deprecated.[/i] Unused internally and neglects to preserve normals or UVs. Consider using [method ImporterMesh.generate_lods] instead.
 			</description>
 		</method>
 		<method name="generate_normals">
@@ -242,7 +242,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Specifies the smooth group to use for the [i]next[/i] vertex. If this is never called, all vertices will have the default smooth group of [code]0[/code] and will be smoothed with adjacent vertices of the same group. To produce a mesh with flat normals, set the smooth group to [code]-1[/code].
-				[b]Note:[/b] This function actually takes an [code]uint32_t[/code], so C# users should use [code]uint32.MaxValue[/code] instead of [code]-1[/code] to produce a mesh with flat normals.
+				[b]Note:[/b] This function actually takes a [code]uint32_t[/code], so C# users should use [code]uint32.MaxValue[/code] instead of [code]-1[/code] to produce a mesh with flat normals.
 			</description>
 		</method>
 		<method name="set_tangent">

@@ -37,6 +37,12 @@
 class GraphNode : public Container {
 	GDCLASS(GraphNode, Container);
 
+	struct _MinSizeCache {
+		int min_size;
+		bool will_stretch;
+		int final_size;
+	};
+
 public:
 	enum Overlay {
 		OVERLAY_DISABLED,

@@ -30,14 +30,15 @@
 
 #include "export_plugin.h"
 
+#include "logo_svg.gen.h"
+#include "run_icon_svg.gen.h"
+
 #include "core/config/project_settings.h"
 #include "core/io/image_loader.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/export/editor_export.h"
-#include "platform/windows/logo_svg.gen.h"
-#include "platform/windows/run_icon_svg.gen.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED
@@ -399,7 +400,16 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	}
 #endif
 
-	String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/icon"));
+	String icon_path;
+	if (p_preset->get("application/icon") != "") {
+		icon_path = p_preset->get("application/icon");
+	} else if (GLOBAL_GET("application/config/windows_native_icon") != "") {
+		icon_path = GLOBAL_GET("application/config/windows_native_icon");
+	} else {
+		icon_path = GLOBAL_GET("application/config/icon");
+	}
+	icon_path = ProjectSettings::get_singleton()->globalize_path(icon_path);
+
 	if (p_console_icon) {
 		String console_icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/console_wrapper_icon"));
 		if (!console_icon_path.is_empty() && FileAccess::exists(console_icon_path)) {
@@ -664,9 +674,9 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	return OK;
 }
 
-bool EditorExportPlatformWindows::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformWindows::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err = "";
-	bool valid = EditorExportPlatformPC::has_valid_export_configuration(p_preset, err, r_missing_templates);
+	bool valid = EditorExportPlatformPC::has_valid_export_configuration(p_preset, err, r_missing_templates, p_debug);
 
 	String rcedit_path = EDITOR_GET("export/windows/rcedit");
 	if (p_preset->get("application/modify_resources") && rcedit_path.is_empty()) {

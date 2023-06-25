@@ -451,7 +451,7 @@ public:
 
 	/* LIGHT */
 
-	bool owns_light(RID p_rid) { return light_owner.owns(p_rid); };
+	bool owns_light(RID p_rid) { return light_owner.owns(p_rid); }
 
 	void _light_initialize(RID p_rid, RS::LightType p_type);
 
@@ -563,6 +563,13 @@ public:
 		ERR_FAIL_COND_V(!light, 0.0);
 
 		return light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS];
+	}
+
+	virtual bool light_get_reverse_cull_face_mode(RID p_light) const override {
+		const Light *light = light_owner.get_or_null(p_light);
+		ERR_FAIL_COND_V(!light, false);
+
+		return light->reverse_cull;
 	}
 
 	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) override;

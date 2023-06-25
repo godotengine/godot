@@ -41,7 +41,7 @@ class CollisionShape2D : public Node2D {
 	Ref<Shape2D> shape;
 	Rect2 rect = Rect2(-Point2(10, 10), Point2(20, 20));
 	uint32_t owner_id = 0;
-	CollisionObject2D *parent = nullptr;
+	CollisionObject2D *collision_object = nullptr;
 	bool disabled = false;
 	bool one_way_collision = false;
 	real_t one_way_collision_margin = 1.0;

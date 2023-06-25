@@ -41,7 +41,6 @@ typedef void (*EditorPluginInitializeCallback)();
 typedef bool (*EditorBuildCallback)();
 
 class AcceptDialog;
-class AcceptDialogAutoReparent;
 class CenterContainer;
 class CheckBox;
 class ColorPicker;
@@ -196,6 +195,7 @@ private:
 		RUN_USER_DATA_FOLDER,
 		RELOAD_CURRENT_PROJECT,
 		RUN_PROJECT_MANAGER,
+		VCS_MENU,
 		RUN_VCS_METADATA,
 		RUN_VCS_SETTINGS,
 		SETTINGS_UPDATE_CONTINUOUSLY,
@@ -226,6 +226,7 @@ private:
 		HELP_DOCS,
 		HELP_QA,
 		HELP_REPORT_A_BUG,
+		HELP_COPY_SYSTEM_INFO,
 		HELP_SUGGEST_A_FEATURE,
 		HELP_SEND_DOCS_FEEDBACK,
 		HELP_COMMUNITY,
@@ -359,10 +360,10 @@ private:
 	PluginConfigDialog *plugin_config_dialog = nullptr;
 
 	RichTextLabel *load_errors = nullptr;
-	AcceptDialogAutoReparent *load_error_dialog = nullptr;
+	AcceptDialog *load_error_dialog = nullptr;
 
 	RichTextLabel *execute_outputs = nullptr;
-	AcceptDialogAutoReparent *execute_output_dialog = nullptr;
+	AcceptDialog *execute_output_dialog = nullptr;
 
 	Ref<Theme> theme;
 
@@ -377,10 +378,10 @@ private:
 	ConfirmationDialog *import_confirmation = nullptr;
 	ConfirmationDialog *pick_main_scene = nullptr;
 	Button *select_current_scene_button = nullptr;
-	AcceptDialogAutoReparent *accept = nullptr;
-	AcceptDialogAutoReparent *save_accept = nullptr;
+	AcceptDialog *accept = nullptr;
+	AcceptDialog *save_accept = nullptr;
 	EditorAbout *about = nullptr;
-	AcceptDialogAutoReparent *warning = nullptr;
+	AcceptDialog *warning = nullptr;
 
 	int overridden_default_layout = -1;
 	Ref<ConfigFile> default_layout;
@@ -504,12 +505,14 @@ private:
 	static int plugin_init_callback_count;
 	static Vector<EditorNodeInitCallback> _init_callbacks;
 
-	static void _dependency_error_report(void *ud, const String &p_path, const String &p_dep, const String &p_type) {
-		EditorNode *en = static_cast<EditorNode *>(ud);
-		if (!en->dependency_errors.has(p_path)) {
-			en->dependency_errors[p_path] = HashSet<String>();
+	String _get_system_info() const;
+
+	static void _dependency_error_report(const String &p_path, const String &p_dep, const String &p_type) {
+		DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
+		if (!singleton->dependency_errors.has(p_path)) {
+			singleton->dependency_errors[p_path] = HashSet<String>();
 		}
-		en->dependency_errors[p_path].insert(p_dep + "::" + p_type);
+		singleton->dependency_errors[p_path].insert(p_dep + "::" + p_type);
 	}
 
 	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
@@ -518,10 +521,11 @@ private:
 	static void _editor_file_dialog_register(EditorFileDialog *p_dialog);
 	static void _editor_file_dialog_unregister(EditorFileDialog *p_dialog);
 
-	static void _load_error_notify(void *p_ud, const String &p_text);
 	static void _file_access_close_error_notify(const String &p_str);
+	static void _file_access_close_error_notify_impl(const String &p_str);
 
 	static void _print_handler(void *p_this, const String &p_string, bool p_error, bool p_rich);
+	static void _print_handler_impl(const String &p_string, bool p_error, bool p_rich);
 	static void _resource_saved(Ref<Resource> p_resource, const String &p_path);
 	static void _resource_loaded(Ref<Resource> p_resource, const String &p_path);
 
@@ -694,8 +698,6 @@ private:
 	void _bottom_panel_raise_toggled(bool);
 
 	void _begin_first_scan();
-	bool use_startup_benchmark = false;
-	String startup_benchmark_file;
 
 protected:
 	friend class FileSystemDock;
@@ -729,6 +731,7 @@ public:
 	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 	static void disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames);
 	static void add_io_error(const String &p_error);
+	static void add_io_warning(const String &p_warning);
 
 	static void progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel = false);
 	static bool progress_task_step(const String &p_task, const String &p_state, int p_step = -1, bool p_force_refresh = true);
@@ -740,6 +743,9 @@ public:
 
 	static void add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
 	static void remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
+
+	static void add_extension_editor_plugin(const StringName &p_class_name);
+	static void remove_extension_editor_plugin(const StringName &p_class_name);
 
 	static void add_plugin_init_callback(EditorPluginInitializeCallback p_callback);
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
@@ -871,7 +877,6 @@ public:
 
 	void _copy_warning(const String &p_str);
 
-	void set_use_startup_benchmark(bool p_use_startup_benchmark, const String &p_startup_benchmark_file);
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
 
 	Control *get_gui_base() { return gui_base; }

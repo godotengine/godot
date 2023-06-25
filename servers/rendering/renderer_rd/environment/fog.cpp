@@ -312,11 +312,21 @@ ALBEDO = vec3(1.0);
 void Fog::free_fog_shader() {
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
-	volumetric_fog.process_shader.version_free(volumetric_fog.process_shader_version);
-	RD::get_singleton()->free(volumetric_fog.volume_ubo);
-	RD::get_singleton()->free(volumetric_fog.params_ubo);
-	material_storage->shader_free(volumetric_fog.default_shader);
-	material_storage->material_free(volumetric_fog.default_material);
+	if (volumetric_fog.process_shader_version.is_valid()) {
+		volumetric_fog.process_shader.version_free(volumetric_fog.process_shader_version);
+	}
+	if (volumetric_fog.volume_ubo.is_valid()) {
+		RD::get_singleton()->free(volumetric_fog.volume_ubo);
+	}
+	if (volumetric_fog.params_ubo.is_valid()) {
+		RD::get_singleton()->free(volumetric_fog.params_ubo);
+	}
+	if (volumetric_fog.default_shader.is_valid()) {
+		material_storage->shader_free(volumetric_fog.default_shader);
+	}
+	if (volumetric_fog.default_material.is_valid()) {
+		material_storage->material_free(volumetric_fog.default_material);
+	}
 }
 
 void Fog::FogShaderData::set_code(const String &p_code) {
@@ -389,22 +399,19 @@ Fog::FogShaderData::~FogShaderData() {
 // Volumetric Fog
 
 bool Fog::VolumetricFog::sync_gi_dependent_sets_validity(bool p_ensure_freed) {
-	bool null = gi_dependent_sets.copy_uniform_set.is_null();
-	bool valid = !null && RD::get_singleton()->uniform_set_is_valid(gi_dependent_sets.copy_uniform_set);
+	bool null = gi_dependent_sets.process_uniform_set_density.is_null();
+	bool valid = !null && RD::get_singleton()->uniform_set_is_valid(gi_dependent_sets.process_uniform_set_density);
 
 #ifdef DEV_ENABLED
 	// It's all-or-nothing, or something else has changed that requires dev attention.
-	DEV_ASSERT(null == gi_dependent_sets.process_uniform_set_density.is_null());
 	DEV_ASSERT(null == gi_dependent_sets.process_uniform_set.is_null());
 	DEV_ASSERT(null == gi_dependent_sets.process_uniform_set2.is_null());
-	DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(gi_dependent_sets.process_uniform_set_density));
 	DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(gi_dependent_sets.process_uniform_set));
 	DEV_ASSERT(valid == RD::get_singleton()->uniform_set_is_valid(gi_dependent_sets.process_uniform_set2));
 #endif
 
 	if (valid) {
 		if (p_ensure_freed) {
-			RD::get_singleton()->free(gi_dependent_sets.copy_uniform_set);
 			RD::get_singleton()->free(gi_dependent_sets.process_uniform_set_density);
 			RD::get_singleton()->free(gi_dependent_sets.process_uniform_set);
 			RD::get_singleton()->free(gi_dependent_sets.process_uniform_set2);
@@ -493,6 +500,9 @@ Fog::VolumetricFog::~VolumetricFog() {
 
 	if (fog_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(fog_uniform_set)) {
 		RD::get_singleton()->free(fog_uniform_set);
+	}
+	if (copy_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(copy_uniform_set)) {
+		RD::get_singleton()->free(copy_uniform_set);
 	}
 
 	sync_gi_dependent_sets_validity(true);
@@ -738,7 +748,11 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		RD::get_singleton()->compute_list_end();
 	}
 
-	if (!fog->sync_gi_dependent_sets_validity()) {
+	bool gi_dependent_sets_valid = fog->sync_gi_dependent_sets_validity();
+	if (!fog->copy_uniform_set.is_null() && !RD::get_singleton()->uniform_set_is_valid(fog->copy_uniform_set)) {
+		fog->copy_uniform_set = RID();
+	}
+	if (!gi_dependent_sets_valid || fog->copy_uniform_set.is_null()) {
 		//re create uniform set if needed
 		Vector<RD::Uniform> uniforms;
 		Vector<RD::Uniform> copy_uniforms;
@@ -935,21 +949,25 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			uniforms.push_back(u);
 		}
 
-		fog->gi_dependent_sets.copy_uniform_set = RD::get_singleton()->uniform_set_create(copy_uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_COPY), 0);
+		if (fog->copy_uniform_set.is_null()) {
+			fog->copy_uniform_set = RD::get_singleton()->uniform_set_create(copy_uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_COPY), 0);
+		}
 
-		fog->gi_dependent_sets.process_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG), 0);
+		if (!gi_dependent_sets_valid) {
+			fog->gi_dependent_sets.process_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG), 0);
 
-		RID aux7 = uniforms.write[7].get_id(0);
-		RID aux8 = uniforms.write[8].get_id(0);
+			RID aux7 = uniforms.write[7].get_id(0);
+			RID aux8 = uniforms.write[8].get_id(0);
 
-		uniforms.write[7].set_id(0, aux8);
-		uniforms.write[8].set_id(0, aux7);
+			uniforms.write[7].set_id(0, aux8);
+			uniforms.write[8].set_id(0, aux7);
 
-		fog->gi_dependent_sets.process_uniform_set2 = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG), 0);
+			fog->gi_dependent_sets.process_uniform_set2 = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG), 0);
 
-		uniforms.remove_at(8);
-		uniforms.write[7].set_id(0, aux7);
-		fog->gi_dependent_sets.process_uniform_set_density = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY), 0);
+			uniforms.remove_at(8);
+			uniforms.write[7].set_id(0, aux7);
+			fog->gi_dependent_sets.process_uniform_set_density = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY), 0);
+		}
 	}
 
 	bool using_sdfgi = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_gi_inject(p_settings.env) > 0.0001 && RendererSceneRenderRD::get_singleton()->environment_get_sdfgi_enabled(p_settings.env) && (p_settings.sdfgi.is_valid());
@@ -1103,7 +1121,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 	// Copy fog to history buffer
 	if (RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_temporal_reprojection(p_settings.env)) {
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, volumetric_fog.process_pipelines[VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_COPY]);
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->gi_dependent_sets.copy_uniform_set, 0);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, fog->copy_uniform_set, 0);
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, fog->width, fog->height, fog->depth);
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 	}

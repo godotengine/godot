@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimatableBody2D" inherits="StaticBody2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Physics body for 2D physics which moves only by script or animation (while affecting other bodies on its path). Useful for moving platforms and doors.
+		A 2D physics body that can't be moved by external forces. When moved manually, it affects other bodies in its path.
 	</brief_description>
 	<description>
-		Animatable body for 2D physics.
-		An animatable body can't be moved by external forces or contacts, but can be moved by script or animation to affect other bodies in its path. It is ideal for implementing moving objects in the environment, such as moving platforms or doors.
-		When the body is moved manually, either from code or from an [AnimationPlayer] (with [member AnimationPlayer.playback_process_mode] set to [code]physics[/code]), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
+		An animatable 2D physics body. It can't be moved by external forces or contacts, but can be moved manually by other means such as code, [AnimationPlayer]s (with [member AnimationPlayer.playback_process_mode] set to [code]ANIMATION_PROCESS_PHYSICS[/code]), and [RemoteTransform2D].
+		When [AnimatableBody2D] is moved, its linear and angular velocity are estimated and used to affect other physics bodies in its path. This makes it useful for moving platforms, doors, and other moving objects.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SliderJoint3D" inherits="Joint3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Slider between two PhysicsBodies in 3D.
+		A physics joint that restricts the movement of a 3D physics body along an axis relative to another physics body.
 	</brief_description>
 	<description>
-		Slides across the X axis of the pivot object. See also [Generic6DOFJoint3D].
+		A physics joint that restricts the movement of a 3D physics body along an axis relative to another physics body. For example, Body A could be a [StaticBody3D] representing a piston base, while Body B could be a [RigidBody3D] representing the piston head, moving up and down.
 	</description>
 	<tutorials>
 	</tutorials>

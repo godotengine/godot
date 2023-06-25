@@ -40,6 +40,8 @@
 class Object;
 
 class CallQueue {
+	friend class MessageQueue;
+
 public:
 	enum {
 		PAGE_SIZE_BYTES = 4096
@@ -74,6 +76,10 @@ private:
 	uint32_t max_pages = 0;
 	uint32_t pages_used = 0;
 	bool flushing = false;
+
+#ifdef DEV_ENABLED
+	bool is_current_thread_override = false;
+#endif
 
 	struct Message {
 		Callable callable;

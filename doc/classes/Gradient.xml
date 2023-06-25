@@ -80,8 +80,12 @@
 		<member name="colors" type="PackedColorArray" setter="set_colors" getter="get_colors" default="PackedColorArray(0, 0, 0, 1, 1, 1, 1, 1)">
 			Gradient's colors returned as a [PackedColorArray].
 		</member>
+		<member name="interpolation_color_space" type="int" setter="set_interpolation_color_space" getter="get_interpolation_color_space" enum="Gradient.ColorSpace" default="0">
+			The color space used to interpolate between points of the gradient. It does not affect the returned colors, which will always be in sRGB space. See [enum ColorSpace] for available modes.
+			[b]Note:[/b] This setting has no effect when [member interpolation_mode] is set to [constant GRADIENT_INTERPOLATE_CONSTANT].
+		</member>
 		<member name="interpolation_mode" type="int" setter="set_interpolation_mode" getter="get_interpolation_mode" enum="Gradient.InterpolationMode" default="0">
-			Defines how the colors between points of the gradient are interpolated. See [enum InterpolationMode] for available modes.
+			The algorithm used to interpolate between points of the gradient. See [enum InterpolationMode] for available modes.
 		</member>
 		<member name="offsets" type="PackedFloat32Array" setter="set_offsets" getter="get_offsets" default="PackedFloat32Array(0, 1)">
 			Gradient's offsets returned as a [PackedFloat32Array].
@@ -96,6 +100,15 @@
 		</constant>
 		<constant name="GRADIENT_INTERPOLATE_CUBIC" value="2" enum="InterpolationMode">
 			Cubic interpolation.
+		</constant>
+		<constant name="GRADIENT_COLOR_SPACE_SRGB" value="0" enum="ColorSpace">
+			sRGB color space.
+		</constant>
+		<constant name="GRADIENT_COLOR_SPACE_LINEAR_SRGB" value="1" enum="ColorSpace">
+			Linear sRGB color space.
+		</constant>
+		<constant name="GRADIENT_COLOR_SPACE_OKLAB" value="2" enum="ColorSpace">
+			[url=https://bottosson.github.io/posts/oklab/]Oklab[/url] color space. This color space provides a smooth and uniform-looking transition between colors.
 		</constant>
 	</constants>
 </class>

@@ -105,6 +105,20 @@ void NavRegion::update_polygons() {
 		return;
 	}
 
+#ifdef DEBUG_ENABLED
+	if (!Math::is_equal_approx(double(map->get_cell_size()), double(mesh->get_cell_size()))) {
+		ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to update a navigation region with a navigation mesh that uses a different `cell_size` than the `cell_size` set on the navigation map.");
+	}
+
+	if (!Math::is_equal_approx(double(map->get_cell_height()), double(mesh->get_cell_height()))) {
+		ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to update a navigation region with a navigation mesh that uses a different `cell_height` than the `cell_height` set on the navigation map.");
+	}
+
+	if (map && Math::rad_to_deg(map->get_up().angle_to(transform.basis.get_column(1))) >= 90.0f) {
+		ERR_PRINT_ONCE("Navigation map synchronization error. Attempted to update a navigation region transform rotated 90 degrees or more away from the current navigation map UP orientation.");
+	}
+#endif // DEBUG_ENABLED
+
 	Vector<Vector3> vertices = mesh->get_vertices();
 	int len = vertices.size();
 	if (len == 0) {

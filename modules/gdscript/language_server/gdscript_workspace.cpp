@@ -32,6 +32,8 @@
 
 #include "../gdscript.h"
 #include "../gdscript_parser.h"
+#include "gdscript_language_protocol.h"
+
 #include "core/config/project_settings.h"
 #include "core/object/script_language.h"
 #include "editor/doc_tools.h"
@@ -39,7 +41,6 @@
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "gdscript_language_protocol.h"
 #include "scene/resources/packed_scene.h"
 
 void GDScriptWorkspace::_bind_methods() {

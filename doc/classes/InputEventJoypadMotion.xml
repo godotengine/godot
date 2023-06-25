@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputEventJoypadMotion" inherits="InputEvent" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Input event type for gamepad joysticks and other motions. For buttons, see [code]InputEventJoypadButton[/code].
+		Represents axis motions (such as joystick or analog triggers) from a gamepad.
 	</brief_description>
 	<description>
-		Stores information about joystick motions. One [InputEventJoypadMotion] represents one axis at a time.
+		Stores information about joystick motions. One [InputEventJoypadMotion] represents one axis at a time. For gamepad buttons, see [InputEventJoypadButton].
 	</description>
 	<tutorials>
-		<link title="InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<members>
 		<member name="axis" type="int" setter="set_axis" getter="get_axis" enum="JoyAxis" default="0">

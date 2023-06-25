@@ -70,6 +70,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_request_permission = p_env->GetMethodID(godot_class, "requestPermission", "(Ljava/lang/String;)Z");
 	_request_permissions = p_env->GetMethodID(godot_class, "requestPermissions", "()Z");
 	_get_granted_permissions = p_env->GetMethodID(godot_class, "getGrantedPermissions", "()[Ljava/lang/String;");
+	_get_ca_certificates = p_env->GetMethodID(godot_class, "getCACertificates", "()Ljava/lang/String;");
 	_init_input_devices = p_env->GetMethodID(godot_class, "initInputDevices", "()V");
 	_get_surface = p_env->GetMethodID(godot_class, "getSurface", "()Landroid/view/Surface;");
 	_is_activity_resumed = p_env->GetMethodID(godot_class, "isActivityResumed", "()Z");
@@ -79,6 +80,9 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
 	_create_new_godot_instance = p_env->GetMethodID(godot_class, "createNewGodotInstance", "([Ljava/lang/String;)I");
 	_get_render_view = p_env->GetMethodID(godot_class, "getRenderView", "()Lorg/godotengine/godot/GodotRenderView;");
+	_begin_benchmark_measure = p_env->GetMethodID(godot_class, "beginBenchmarkMeasure", "(Ljava/lang/String;)V");
+	_end_benchmark_measure = p_env->GetMethodID(godot_class, "endBenchmarkMeasure", "(Ljava/lang/String;)V");
+	_dump_benchmark = p_env->GetMethodID(godot_class, "dumpBenchmark", "(Ljava/lang/String;)V");
 
 	// get some Activity method pointers...
 	_get_class_loader = p_env->GetMethodID(activity_class, "getClassLoader", "()Ljava/lang/ClassLoader;");
@@ -310,6 +314,17 @@ Vector<String> GodotJavaWrapper::get_granted_permissions() const {
 	return permissions_list;
 }
 
+String GodotJavaWrapper::get_ca_certificates() const {
+	if (_get_ca_certificates) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, String());
+		jstring s = (jstring)env->CallObjectMethod(godot_instance, _get_ca_certificates);
+		return jstring_to_string(s, env);
+	} else {
+		return String();
+	}
+}
+
 void GodotJavaWrapper::init_input_devices() {
 	if (_init_input_devices) {
 		JNIEnv *env = get_jni_env();
@@ -357,5 +372,32 @@ int GodotJavaWrapper::create_new_godot_instance(List<String> args) {
 		return env->CallIntMethod(godot_instance, _create_new_godot_instance, jargs);
 	} else {
 		return 0;
+	}
+}
+
+void GodotJavaWrapper::begin_benchmark_measure(const String &p_label) {
+	if (_begin_benchmark_measure) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		jstring j_label = env->NewStringUTF(p_label.utf8().get_data());
+		env->CallVoidMethod(godot_instance, _begin_benchmark_measure, j_label);
+	}
+}
+
+void GodotJavaWrapper::end_benchmark_measure(const String &p_label) {
+	if (_end_benchmark_measure) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		jstring j_label = env->NewStringUTF(p_label.utf8().get_data());
+		env->CallVoidMethod(godot_instance, _end_benchmark_measure, j_label);
+	}
+}
+
+void GodotJavaWrapper::dump_benchmark(const String &benchmark_file) {
+	if (_dump_benchmark) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		jstring j_benchmark_file = env->NewStringUTF(benchmark_file.utf8().get_data());
+		env->CallVoidMethod(godot_instance, _dump_benchmark, j_benchmark_file);
 	}
 }

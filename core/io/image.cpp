@@ -468,7 +468,7 @@ int Image::get_mipmap_count() const {
 //using template generates perfectly optimized code due to constant expression reduction and unused variable removal present in all compilers
 template <uint32_t read_bytes, bool read_alpha, uint32_t write_bytes, bool write_alpha, bool read_gray, bool write_gray>
 static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p_dst) {
-	uint32_t max_bytes = MAX(read_bytes, write_bytes);
+	constexpr uint32_t max_bytes = MAX(read_bytes, write_bytes);
 
 	for (int y = 0; y < p_height; y++) {
 		for (int x = 0; x < p_width; x++) {
@@ -492,8 +492,9 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 			}
 
 			if constexpr (write_gray) {
-				//TODO: not correct grayscale, should use fixed point version of actual weights
-				wofs[0] = uint8_t((uint16_t(rgba[0]) + uint16_t(rgba[1]) + uint16_t(rgba[2])) / 3);
+				// REC.709
+				const uint8_t luminance = (13938U * rgba[0] + 46869U * rgba[1] + 4729U * rgba[2] + 32768U) >> 16U;
+				wofs[0] = luminance;
 			} else {
 				for (uint32_t i = 0; i < write_bytes; i++) {
 					wofs[i] = rgba[i];
@@ -3718,9 +3719,9 @@ void Image::premultiply_alpha() {
 		for (int j = 0; j < width; j++) {
 			uint8_t *ptr = &data_ptr[(i * width + j) * 4];
 
-			ptr[0] = (uint16_t(ptr[0]) * uint16_t(ptr[3])) >> 8;
-			ptr[1] = (uint16_t(ptr[1]) * uint16_t(ptr[3])) >> 8;
-			ptr[2] = (uint16_t(ptr[2]) * uint16_t(ptr[3])) >> 8;
+			ptr[0] = (uint16_t(ptr[0]) * uint16_t(ptr[3]) + 255U) >> 8;
+			ptr[1] = (uint16_t(ptr[1]) * uint16_t(ptr[3]) + 255U) >> 8;
+			ptr[2] = (uint16_t(ptr[2]) * uint16_t(ptr[3]) + 255U) >> 8;
 		}
 	}
 }

@@ -1,20 +1,34 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="FileSystemDock" inherits="VBoxContainer" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Editor dock for managing files in the project.
+		Godot editor's dock for managing files in the project.
 	</brief_description>
 	<description>
 		This class is available only in [EditorPlugin]s and can't be instantiated. You can access it using [method EditorInterface.get_file_system_dock].
-		While FileSystemDock doesn't expose any methods for file manipulation, you can listen for various file-related signals.
+		While [FileSystemDock] doesn't expose any methods for file manipulation, it can listen for various file-related signals.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_resource_tooltip_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorResourceTooltipPlugin" />
+			<description>
+				Registers a new [EditorResourceTooltipPlugin].
+			</description>
+		</method>
 		<method name="navigate_to_path">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
 				Sets the given [param path] as currently selected, ensuring that the selected file/directory is visible.
+			</description>
+		</method>
+		<method name="remove_resource_tooltip_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorResourceTooltipPlugin" />
+			<description>
+				Removes an [EditorResourceTooltipPlugin]. Fails if the plugin wasn't previously added.
 			</description>
 		</method>
 	</methods>

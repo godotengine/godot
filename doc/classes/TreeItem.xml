@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TreeItem" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Control for a single item inside a [Tree].
+		An internal control for a single item inside [Tree].
 	</brief_description>
 	<description>
-		Control for a single item inside a [Tree]. May have child [TreeItem]s and be styled as well as contain buttons.
-		You can remove a [TreeItem] by using [method Object.free].
+		A single item of a [Tree] control. It can contain other [TreeItem]s as children, which allows it to create a hierarchy. It can also contain text and buttons. [TreeItem] is not a [Node], it is internal to the [Tree].
+		To create a [TreeItem], use [method Tree.create_item] or [method TreeItem.create_child]. To remove a [TreeItem], use [method Object.free].
+		[b]Note:[/b] The ID values used for buttons are 32-bit, unlike [int] which is always 64-bit. They go from [code]-2147483648[/code] to [code]2147483647[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -19,6 +20,13 @@
 			<param index="4" name="tooltip_text" type="String" default="&quot;&quot;" />
 			<description>
 				Adds a button with [Texture2D] [param button] at column [param column]. The [param id] is used to identify the button in the according [signal Tree.button_clicked] signal and can be different from the buttons index. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately before this method. Optionally, the button can be [param disabled] and have a [param tooltip_text].
+			</description>
+		</method>
+		<method name="add_child">
+			<return type="void" />
+			<param index="0" name="child" type="TreeItem" />
+			<description>
+				Adds a previously unparented [TreeItem] as a direct child of this one. The [param child] item must not be a part of any [Tree] or parented to any [TreeItem]. See also [method remove_child].
 			</description>
 		</method>
 		<method name="call_recursive" qualifiers="vararg">
@@ -63,6 +71,13 @@
 			<param index="1" name="button_index" type="int" />
 			<description>
 				Removes the button at index [param button_index] in column [param column].
+			</description>
+		</method>
+		<method name="get_autowrap_mode" qualifiers="const">
+			<return type="int" enum="TextServer.AutowrapMode" />
+			<param index="0" name="column" type="int" />
+			<description>
+				Returns the text autowrap mode in the given [param column]. By default it is [constant TextServer.AUTOWRAP_OFF].
 			</description>
 		</method>
 		<method name="get_button" qualifiers="const">
@@ -429,7 +444,8 @@
 			<return type="void" />
 			<param index="0" name="child" type="TreeItem" />
 			<description>
-				Removes the given child [TreeItem] and all its children from the [Tree]. Note that it doesn't free the item from memory, so it can be reused later. To completely remove a [TreeItem] use [method Object.free].
+				Removes the given child [TreeItem] and all its children from the [Tree]. Note that it doesn't free the item from memory, so it can be reused later (see [method add_child]). To completely remove a [TreeItem] use [method Object.free].
+				[b]Note:[/b] If you want to move a child from one [Tree] to another, then instead of removing and adding it manually you can use [method move_before] or [method move_after].
 			</description>
 		</method>
 		<method name="select">
@@ -437,6 +453,14 @@
 			<param index="0" name="column" type="int" />
 			<description>
 				Selects the given [param column].
+			</description>
+		</method>
+		<method name="set_autowrap_mode">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="autowrap_mode" type="int" enum="TextServer.AutowrapMode" />
+			<description>
+				Sets the autowrap mode in the given [param column]. If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the cell's bounding rectangle.
 			</description>
 		</method>
 		<method name="set_button">

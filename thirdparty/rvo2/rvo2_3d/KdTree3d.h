@@ -1,8 +1,9 @@
 /*
- * KdTree.h
+ * KdTree3d.h
  * RVO2-3D Library
  *
- * Copyright 2008 University of North Carolina at Chapel Hill
+ * SPDX-FileCopyrightText: 2008 University of North Carolina at Chapel Hill
+ * SPDX-License-Identifier: Apache-2.0
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,92 +30,88 @@
  *
  * <https://gamma.cs.unc.edu/RVO2/>
  */
-/**
- * \file    KdTree.h
- * \brief   Contains the KdTree class.
- */
+
 #ifndef RVO3D_KD_TREE_H_
 #define RVO3D_KD_TREE_H_
+
+/**
+ * @file  KdTree3d.h
+ * @brief Contains the KdTree3D class.
+ */
 
 #include <cstddef>
 #include <vector>
 
-#include "Vector3.h"
-
 namespace RVO3D {
-	class Agent3D;
-	class RVOSimulator3D;
+class Agent3D;
+class RVOSimulator3D;
 
-	/**
-	 * \brief   Defines <i>k</i>d-trees for agents in the simulation.
-	 */
-	class KdTree3D {
-	public:
-		/**
-		 * \brief   Defines an agent <i>k</i>d-tree node.
-		 */
-		class AgentTreeNode3D {
-		public:
-			/**
-			 * \brief   The beginning node number.
-			 */
-			size_t begin;
+/**
+ * @brief Defines a k-D tree for agents in the simulation.
+ */
+class KdTree3D {
+ public:
+  class AgentTreeNode;
 
-			/**
-			 * \brief   The ending node number.
-			 */
-			size_t end;
+  /**
+   * @brief     Constructs a k-D tree instance.
+   * @param[in] sim The simulator instance.
+   */
+  explicit KdTree3D(RVOSimulator3D *sim);
 
-			/**
-			 * \brief   The left node number.
-			 */
-			size_t left;
+  /**
+   * @brief Destroys this k-D tree instance.
+   */
+  ~KdTree3D();
 
-			/**
-			 * \brief   The right node number.
-			 */
-			size_t right;
+  /**
+   * @brief Builds an agent k-D tree.
+   */
+  void buildAgentTree(std::vector<Agent3D *> agents);
 
-			/**
-			 * \brief   The maximum coordinates.
-			 */
-			Vector3 maxCoord;
+  /**
+   * @brief     Recursive function to build a k-D tree.
+   * @param[in] begin The beginning k-D tree node.
+   * @param[in] end   The ending k-D tree node.
+   * @param[in] node  The current k-D tree node.
+   */
+  void buildAgentTreeRecursive(std::size_t begin, std::size_t end,
+                               std::size_t node);
 
-			/**
-			 * \brief   The minimum coordinates.
-			 */
-			Vector3 minCoord;
-		};
+  /**
+   * @brief     Computes the agent neighbors of the specified agent.
+   * @param[in] agent   A pointer to the agent for which agent neighbors are to
+   *                    be computed.
+   * @param[in] rangeSq The squared range around the agent.
+   */
+  void computeAgentNeighbors(Agent3D *agent, float rangeSq) const;
 
-		/**
-		 * \brief   Constructs a <i>k</i>d-tree instance.
-		 * \param   sim  The simulator instance.
-		 */
-		explicit KdTree3D(RVOSimulator3D *sim);
+  /**
+   * @brief         Recursive function to compute the neighbors of the specified
+   *                agent.
+   * @param[in]     agent   A pointer to the agent for which neighbors are to be
+   *                        computed.
+   * @param[in,out] rangeSq The squared range around the agent.
+   * @param[in]     node    The current k-D tree node.
+   */
 
-		/**
-		 * \brief   Builds an agent <i>k</i>d-tree.
-		 */
-		void buildAgentTree(std::vector<Agent3D *> agents);
+  void queryAgentTreeRecursive(Agent3D *agent,
+                               float &rangeSq, /* NOLINT(runtime/references) */
+                               std::size_t node) const;
 
-		void buildAgentTreeRecursive(size_t begin, size_t end, size_t node);
+  /* Not implemented. */
+  KdTree3D(const KdTree3D &other);
 
-		/**
-		 * \brief   Computes the agent neighbors of the specified agent.
-		 * \param   agent    A pointer to the agent for which agent neighbors are to be computed.
-		 * \param   rangeSq  The squared range around the agent.
-		 */
-		void computeAgentNeighbors(Agent3D *agent, float rangeSq) const;
+  /* Not implemented. */
+  KdTree3D &operator=(const KdTree3D &other);
 
-		void queryAgentTreeRecursive(Agent3D *agent, float &rangeSq, size_t node) const;
+  std::vector<Agent3D *> agents_;
+  std::vector<AgentTreeNode> agentTree_;
+  RVOSimulator3D *sim_;
 
-		std::vector<Agent3D *> agents_;
-		std::vector<AgentTreeNode3D> agentTree_;
-		RVOSimulator3D *sim_;
-
-		friend class Agent3D;
-		friend class RVOSimulator3D;
-	};
-}
+  friend class Agent3D;
+  friend class RVOSimulator3D;
+};
+} /* namespace RVO3D */
 
 #endif /* RVO3D_KD_TREE_H_ */

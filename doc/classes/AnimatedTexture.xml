@@ -8,7 +8,8 @@
 		The playback of the animation is controlled by the [member speed_scale] property, as well as each frame's duration (see [method set_frame_duration]). The animation loops, i.e. it will restart at frame 0 automatically after playing the last frame.
 		[AnimatedTexture] currently requires all frame textures to have the same size, otherwise the bigger ones will be cropped to match the smallest one.
 		[b]Note:[/b] AnimatedTexture doesn't support using [AtlasTexture]s. Each frame needs to be a separate [Texture2D].
-		[b]Warning:[/b] AnimatedTexture is deprecated, and might be removed in a future release. Its current implementation is not efficient for the modern renderers.
+		[b]Warning:[/b] The current implementation is not efficient for the modern renderers.
+		[i]Deprecated.[/i] This class is deprecated, and might be removed in a future release.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="InputMap" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Singleton that manages [InputEventAction].
+		A singleton that manages all [InputEventAction]s.
 	</brief_description>
 	<description>
 		Manages all [InputEventAction] which can be created/modified from the project settings menu [b]Project &gt; Project Settings &gt; Input Map[/b] or in code with [method add_action] and [method action_add_event]. See [method Node._input].
 	</description>
 	<tutorials>
-		<link title="InputEvent: InputMap">$DOCS_URL/tutorials/inputs/inputevent.html#inputmap</link>
+		<link title="Using InputEvent: InputMap">$DOCS_URL/tutorials/inputs/inputevent.html#inputmap</link>
 	</tutorials>
 	<methods>
 		<method name="action_add_event">

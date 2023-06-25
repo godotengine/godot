@@ -30,9 +30,9 @@
 
 #include "register_types.h"
 
-#include "servers/rendering/rendering_device.h"
-
 #include "glslang_resource_limits.h"
+
+#include "servers/rendering/rendering_device.h"
 
 #include <glslang/Include/Types.h>
 #include <glslang/Public/ShaderLang.h>

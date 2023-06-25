@@ -32,9 +32,9 @@
 #define OPENXR_ACTION_MAP_EDITOR_H
 
 #include "../action_map/openxr_action_map.h"
-#include "../editor/openxr_action_set_editor.h"
-#include "../editor/openxr_interaction_profile_editor.h"
-#include "../editor/openxr_select_interaction_profile_dialog.h"
+#include "openxr_action_set_editor.h"
+#include "openxr_interaction_profile_editor.h"
+#include "openxr_select_interaction_profile_dialog.h"
 
 #include "editor/editor_plugin.h"
 #include "editor/editor_undo_redo_manager.h"

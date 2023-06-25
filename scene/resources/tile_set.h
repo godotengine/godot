@@ -420,6 +420,7 @@ public:
 	int add_source(Ref<TileSetSource> p_tile_set_source, int p_source_id_override = -1);
 	void set_source_id(int p_source_id, int p_new_id);
 	void remove_source(int p_source_id);
+	void remove_source_ptr(TileSetSource *p_tile_set_source); // Not exposed
 	bool has_source(int p_source_id) const;
 	Ref<TileSetSource> get_source(int p_source_id) const;
 
@@ -555,6 +556,7 @@ public:
 
 	// Not exposed.
 	virtual void set_tile_set(const TileSet *p_tile_set);
+	TileSet *get_tile_set() const;
 	virtual void notify_tile_data_properties_should_change(){};
 	virtual void add_occlusion_layer(int p_index){};
 	virtual void move_occlusion_layer(int p_from_index, int p_to_pos){};

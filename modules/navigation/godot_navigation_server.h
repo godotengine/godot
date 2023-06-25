@@ -31,16 +31,16 @@
 #ifndef GODOT_NAVIGATION_SERVER_H
 #define GODOT_NAVIGATION_SERVER_H
 
-#include "core/templates/local_vector.h"
-#include "core/templates/rid.h"
-#include "core/templates/rid_owner.h"
-#include "servers/navigation_server_3d.h"
-
 #include "nav_agent.h"
 #include "nav_link.h"
 #include "nav_map.h"
 #include "nav_obstacle.h"
 #include "nav_region.h"
+
+#include "core/templates/local_vector.h"
+#include "core/templates/rid.h"
+#include "core/templates/rid_owner.h"
+#include "servers/navigation_server_3d.h"
 
 /// The commands are functions executed during the `sync` phase.
 
@@ -106,6 +106,9 @@ public:
 
 	COMMAND_2(map_set_cell_size, RID, p_map, real_t, p_cell_size);
 	virtual real_t map_get_cell_size(RID p_map) const override;
+
+	COMMAND_2(map_set_cell_height, RID, p_map, real_t, p_cell_height);
+	virtual real_t map_get_cell_height(RID p_map) const override;
 
 	COMMAND_2(map_set_use_edge_connections, RID, p_map, bool, p_enabled);
 	virtual bool map_get_use_edge_connections(RID p_map) const override;
@@ -181,6 +184,8 @@ public:
 	virtual bool agent_get_use_3d_avoidance(RID p_agent) const override;
 	COMMAND_2(agent_set_map, RID, p_agent, RID, p_map);
 	virtual RID agent_get_map(RID p_agent) const override;
+	COMMAND_2(agent_set_paused, RID, p_agent, bool, p_paused);
+	virtual bool agent_get_paused(RID p_agent) const override;
 	COMMAND_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_distance);
 	COMMAND_2(agent_set_max_neighbors, RID, p_agent, int, p_count);
 	COMMAND_2(agent_set_time_horizon_agents, RID, p_agent, real_t, p_time_horizon);
@@ -198,12 +203,23 @@ public:
 	COMMAND_2(agent_set_avoidance_priority, RID, p_agent, real_t, p_priority);
 
 	virtual RID obstacle_create() override;
+	COMMAND_2(obstacle_set_avoidance_enabled, RID, p_obstacle, bool, p_enabled);
+	virtual bool obstacle_get_avoidance_enabled(RID p_obstacle) const override;
+	COMMAND_2(obstacle_set_use_3d_avoidance, RID, p_obstacle, bool, p_enabled);
+	virtual bool obstacle_get_use_3d_avoidance(RID p_obstacle) const override;
 	COMMAND_2(obstacle_set_map, RID, p_obstacle, RID, p_map);
 	virtual RID obstacle_get_map(RID p_obstacle) const override;
+	COMMAND_2(obstacle_set_paused, RID, p_obstacle, bool, p_paused);
+	virtual bool obstacle_get_paused(RID p_obstacle) const override;
+	COMMAND_2(obstacle_set_radius, RID, p_obstacle, real_t, p_radius);
+	COMMAND_2(obstacle_set_velocity, RID, p_obstacle, Vector3, p_velocity);
 	COMMAND_2(obstacle_set_position, RID, p_obstacle, Vector3, p_position);
 	COMMAND_2(obstacle_set_height, RID, p_obstacle, real_t, p_height);
 	virtual void obstacle_set_vertices(RID p_obstacle, const Vector<Vector3> &p_vertices) override;
 	COMMAND_2(obstacle_set_avoidance_layers, RID, p_obstacle, uint32_t, p_layers);
+
+	virtual void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override;
+	virtual void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
 
 	COMMAND_1(free, RID, p_object);
 
@@ -215,6 +231,10 @@ public:
 	virtual NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const override;
 
 	int get_process_info(ProcessInfo p_info) const override;
+
+private:
+	void internal_free_agent(RID p_object);
+	void internal_free_obstacle(RID p_object);
 };
 
 #undef COMMAND_1

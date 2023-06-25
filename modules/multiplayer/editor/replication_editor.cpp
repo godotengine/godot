@@ -195,6 +195,51 @@ ReplicationEditor::ReplicationEditor() {
 
 	prop_selector = memnew(PropertySelector);
 	add_child(prop_selector);
+	// Filter out properties that cannot be synchronized.
+	// * RIDs do not match across network.
+	// * Objects are too large for replication.
+	Vector<Variant::Type> types = {
+		Variant::BOOL,
+		Variant::INT,
+		Variant::FLOAT,
+		Variant::STRING,
+
+		Variant::VECTOR2,
+		Variant::VECTOR2I,
+		Variant::RECT2,
+		Variant::RECT2I,
+		Variant::VECTOR3,
+		Variant::VECTOR3I,
+		Variant::TRANSFORM2D,
+		Variant::VECTOR4,
+		Variant::VECTOR4I,
+		Variant::PLANE,
+		Variant::QUATERNION,
+		Variant::AABB,
+		Variant::BASIS,
+		Variant::TRANSFORM3D,
+		Variant::PROJECTION,
+
+		Variant::COLOR,
+		Variant::STRING_NAME,
+		Variant::NODE_PATH,
+		// Variant::RID,
+		// Variant::OBJECT,
+		Variant::SIGNAL,
+		Variant::DICTIONARY,
+		Variant::ARRAY,
+
+		Variant::PACKED_BYTE_ARRAY,
+		Variant::PACKED_INT32_ARRAY,
+		Variant::PACKED_INT64_ARRAY,
+		Variant::PACKED_FLOAT32_ARRAY,
+		Variant::PACKED_FLOAT64_ARRAY,
+		Variant::PACKED_STRING_ARRAY,
+		Variant::PACKED_VECTOR2_ARRAY,
+		Variant::PACKED_VECTOR3_ARRAY,
+		Variant::PACKED_COLOR_ARRAY
+	};
+	prop_selector->set_type_filter(types);
 	prop_selector->connect("selected", callable_mp(this, &ReplicationEditor::_pick_node_property_selected));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -226,7 +271,7 @@ ReplicationEditor::ReplicationEditor() {
 
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
-	tree->set_columns(4);
+	tree->set_columns(5);
 	tree->set_column_titles_visible(true);
 	tree->set_column_title(0, TTR("Properties"));
 	tree->set_column_expand(0, true);
@@ -235,8 +280,11 @@ ReplicationEditor::ReplicationEditor() {
 	tree->set_column_custom_minimum_width(1, 100);
 	tree->set_column_title(2, TTR("Sync"));
 	tree->set_column_custom_minimum_width(2, 100);
+	tree->set_column_title(3, TTR("Watch"));
+	tree->set_column_custom_minimum_width(3, 100);
 	tree->set_column_expand(2, false);
 	tree->set_column_expand(3, false);
+	tree->set_column_expand(4, false);
 	tree->create_item();
 	tree->connect("button_clicked", callable_mp(this, &ReplicationEditor::_tree_button_pressed));
 	tree->connect("item_edited", callable_mp(this, &ReplicationEditor::_tree_item_edited));
@@ -353,17 +401,30 @@ void ReplicationEditor::_tree_item_edited() {
 		return;
 	}
 	int column = tree->get_edited_column();
-	ERR_FAIL_COND(column < 1 || column > 2);
+	ERR_FAIL_COND(column < 1 || column > 3);
 	const NodePath prop = ti->get_metadata(0);
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	bool value = ti->is_checked(column);
+
+	// We have a hard limit of 64 watchable properties per synchronizer.
+	if (column == 3 && value && config->get_watch_properties().size() > 64) {
+		error_dialog->set_text(TTR("Each MultiplayerSynchronizer can have no more than 64 watched properties."));
+		error_dialog->popup_centered();
+		ti->set_checked(column, false);
+		return;
+	}
 	String method;
 	if (column == 1) {
 		undo_redo->create_action(TTR("Set spawn property"));
 		method = "property_set_spawn";
-	} else {
+	} else if (column == 2) {
 		undo_redo->create_action(TTR("Set sync property"));
 		method = "property_set_sync";
+	} else if (column == 3) {
+		undo_redo->create_action(TTR("Set watch property"));
+		method = "property_set_watch";
+	} else {
+		ERR_FAIL();
 	}
 	undo_redo->add_do_method(config.ptr(), method, prop, value);
 	undo_redo->add_undo_method(config.ptr(), method, prop, !value);
@@ -395,12 +456,14 @@ void ReplicationEditor::_dialog_closed(bool p_confirmed) {
 		int idx = config->property_get_index(prop);
 		bool spawn = config->property_get_spawn(prop);
 		bool sync = config->property_get_sync(prop);
+		bool watch = config->property_get_watch(prop);
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Remove Property"));
 		undo_redo->add_do_method(config.ptr(), "remove_property", prop);
 		undo_redo->add_undo_method(config.ptr(), "add_property", prop, idx);
 		undo_redo->add_undo_method(config.ptr(), "property_set_spawn", prop, spawn);
 		undo_redo->add_undo_method(config.ptr(), "property_set_sync", prop, sync);
+		undo_redo->add_undo_method(config.ptr(), "property_set_watch", prop, watch);
 		undo_redo->add_do_method(this, "_update_config");
 		undo_redo->add_undo_method(this, "_update_config");
 		undo_redo->commit_action();
@@ -436,7 +499,7 @@ void ReplicationEditor::_update_config() {
 	}
 	for (int i = 0; i < props.size(); i++) {
 		const NodePath path = props[i];
-		_add_property(path, config->property_get_spawn(path), config->property_get_sync(path));
+		_add_property(path, config->property_get_spawn(path), config->property_get_sync(path), config->property_get_watch(path));
 	}
 }
 
@@ -460,13 +523,32 @@ Ref<Texture2D> ReplicationEditor::_get_class_icon(const Node *p_node) {
 	return get_theme_icon(p_node->get_class(), "EditorIcons");
 }
 
-void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, bool p_sync) {
+static bool can_sync(const Variant &p_var) {
+	switch (p_var.get_type()) {
+		case Variant::RID:
+		case Variant::OBJECT:
+			return false;
+		case Variant::ARRAY: {
+			const Array &arr = p_var;
+			if (arr.is_typed()) {
+				const uint32_t type = arr.get_typed_builtin();
+				return (type != Variant::RID) && (type != Variant::OBJECT);
+			}
+			return true;
+		}
+		default:
+			return true;
+	}
+}
+
+void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, bool p_sync, bool p_watch) {
 	String prop = String(p_property);
 	TreeItem *item = tree->create_item();
 	item->set_selectable(0, false);
 	item->set_selectable(1, false);
 	item->set_selectable(2, false);
 	item->set_selectable(3, false);
+	item->set_selectable(4, false);
 	item->set_text(0, prop);
 	item->set_metadata(0, prop);
 	Node *root_node = current && !current->get_root_path().is_empty() ? current->get_node(current->get_root_path()) : nullptr;
@@ -480,9 +562,15 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 		}
 		item->set_text(0, String(node->get_name()) + ":" + subpath);
 		icon = _get_class_icon(node);
+		bool valid = false;
+		Variant value = node->get(subpath, &valid);
+		if (valid && !can_sync(value)) {
+			item->set_icon(3, get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+			item->set_tooltip_text(3, TTR("Property of this type not supported."));
+		}
 	}
 	item->set_icon(0, icon);
-	item->add_button(3, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+	item->add_button(4, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 	item->set_text_alignment(1, HORIZONTAL_ALIGNMENT_CENTER);
 	item->set_cell_mode(1, TreeItem::CELL_MODE_CHECK);
 	item->set_checked(1, p_spawn);
@@ -491,4 +579,8 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 	item->set_cell_mode(2, TreeItem::CELL_MODE_CHECK);
 	item->set_checked(2, p_sync);
 	item->set_editable(2, true);
+	item->set_text_alignment(3, HORIZONTAL_ALIGNMENT_CENTER);
+	item->set_cell_mode(3, TreeItem::CELL_MODE_CHECK);
+	item->set_checked(3, p_watch);
+	item->set_editable(3, true);
 }

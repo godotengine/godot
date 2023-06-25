@@ -4,7 +4,7 @@
 		Godot editor's interface.
 	</brief_description>
 	<description>
-		EditorInterface gives you control over Godot editor's window. It allows customizing the window, saving and (re-)loading scenes, rendering mesh previews, inspecting and editing resources and objects, and provides access to [EditorSettings], [EditorFileSystem], [EditorResourcePreview], [ScriptEditor], the editor viewport, and information about scenes.
+		[EditorInterface] gives you control over Godot editor's window. It allows customizing the window, saving and (re-)loading scenes, rendering mesh previews, inspecting and editing resources and objects, and provides access to [EditorSettings], [EditorFileSystem], [EditorResourcePreview], [ScriptEditor], the editor viewport, and information about scenes.
 		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorPlugin.get_editor_interface].
 	</description>
 	<tutorials>
@@ -179,6 +179,12 @@
 				Returns mesh previews rendered at the given size as an [Array] of [Texture2D]s.
 			</description>
 		</method>
+		<method name="mark_scene_as_unsaved">
+			<return type="void" />
+			<description>
+				Marks the current scene tab as unsaved.
+			</description>
+		</method>
 		<method name="open_scene_from_path">
 			<return type="void" />
 			<param index="0" name="scene_filepath" type="String" />
@@ -203,6 +209,43 @@
 			<return type="void" />
 			<description>
 				Plays the main scene.
+			</description>
+		</method>
+		<method name="popup_dialog">
+			<return type="void" />
+			<param index="0" name="dialog" type="Window" />
+			<param index="1" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
+			<description>
+				Pops up the [param dialog] in the editor UI with [method Window.popup_exclusive]. The dialog must have no current parent, otherwise the method fails.
+				See also [method Window.set_unparent_when_invisible].
+			</description>
+		</method>
+		<method name="popup_dialog_centered">
+			<return type="void" />
+			<param index="0" name="dialog" type="Window" />
+			<param index="1" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
+			<description>
+				Pops up the [param dialog] in the editor UI with [method Window.popup_exclusive_centered]. The dialog must have no current parent, otherwise the method fails.
+				See also [method Window.set_unparent_when_invisible].
+			</description>
+		</method>
+		<method name="popup_dialog_centered_clamped">
+			<return type="void" />
+			<param index="0" name="dialog" type="Window" />
+			<param index="1" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
+			<param index="2" name="fallback_ratio" type="float" default="0.75" />
+			<description>
+				Pops up the [param dialog] in the editor UI with [method Window.popup_exclusive_centered_clamped]. The dialog must have no current parent, otherwise the method fails.
+				See also [method Window.set_unparent_when_invisible].
+			</description>
+		</method>
+		<method name="popup_dialog_centered_ratio">
+			<return type="void" />
+			<param index="0" name="dialog" type="Window" />
+			<param index="1" name="ratio" type="float" default="0.8" />
+			<description>
+				Pops up the [param dialog] in the editor UI with [method Window.popup_exclusive_centered_ratio]. The dialog must have no current parent, otherwise the method fails.
+				See also [method Window.set_unparent_when_invisible].
 			</description>
 		</method>
 		<method name="reload_scene_from_path">

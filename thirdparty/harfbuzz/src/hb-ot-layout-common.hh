@@ -189,7 +189,7 @@ struct hb_collect_variation_indices_context_t :
 
   hb_set_t *layout_variation_indices;
   hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *varidx_delta_map;
-  hb_font_t *font;
+  hb_vector_t<int> *normalized_coords;
   const VariationStore *var_store;
   const hb_set_t *glyph_set;
   const hb_map_t *gpos_lookups;
@@ -197,14 +197,14 @@ struct hb_collect_variation_indices_context_t :
 
   hb_collect_variation_indices_context_t (hb_set_t *layout_variation_indices_,
 					  hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *varidx_delta_map_,
-					  hb_font_t *font_,
+					  hb_vector_t<int> *normalized_coords_,
 					  const VariationStore *var_store_,
 					  const hb_set_t *glyph_set_,
 					  const hb_map_t *gpos_lookups_,
 					  float *store_cache_) :
 					layout_variation_indices (layout_variation_indices_),
 					varidx_delta_map (varidx_delta_map_),
-					font (font_),
+					normalized_coords (normalized_coords_),
 					var_store (var_store_),
 					glyph_set (glyph_set_),
 					gpos_lookups (gpos_lookups_),
@@ -529,6 +529,9 @@ struct FeatureParamsSize
       return_trace (true);
   }
 
+  void collect_name_ids (hb_set_t *nameids_to_retain /* OUT */) const
+  { nameids_to_retain->add (subfamilyNameID); }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -585,6 +588,9 @@ struct FeatureParamsStylisticSet
     return_trace (c->check_struct (this));
   }
 
+  void collect_name_ids (hb_set_t *nameids_to_retain /* OUT */) const
+  { nameids_to_retain->add (uiNameID); }
+
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
@@ -631,6 +637,20 @@ struct FeatureParamsCharacterVariants
 
   unsigned get_size () const
   { return min_size + characters.len * HBUINT24::static_size; }
+
+  void collect_name_ids (hb_set_t *nameids_to_retain /* OUT */) const
+  {
+    if (featUILableNameID) nameids_to_retain->add (featUILableNameID);
+    if (featUITooltipTextNameID) nameids_to_retain->add (featUITooltipTextNameID);
+    if (sampleTextNameID) nameids_to_retain->add (sampleTextNameID);
+
+    if (!firstParamUILabelNameID || !numNamedParameters || numNamedParameters >= 0x7FFF)
+      return;
+
+    unsigned last_name_id = (unsigned) firstParamUILabelNameID + (unsigned) numNamedParameters - 1;
+    if (last_name_id >= 256 && last_name_id <= 32767)
+      nameids_to_retain->add_range (firstParamUILabelNameID, last_name_id);
+  }
 
   bool subset (hb_subset_context_t *c) const
   {
@@ -692,6 +712,19 @@ struct FeatureParams
     if ((tag & 0xFFFF0000u) == HB_TAG ('c','v','\0','\0')) /* cvXX */
       return_trace (u.characterVariants.sanitize (c));
     return_trace (true);
+  }
+
+  void collect_name_ids (hb_tag_t tag, hb_set_t *nameids_to_retain /* OUT */) const
+  {
+#ifdef HB_NO_LAYOUT_FEATURE_PARAMS
+    return;
+#endif
+    if (tag == HB_TAG ('s','i','z','e'))
+      return (u.size.collect_name_ids (nameids_to_retain));
+    if ((tag & 0xFFFF0000u) == HB_TAG ('s','s','\0','\0')) /* ssXX */
+      return (u.stylisticSet.collect_name_ids (nameids_to_retain));
+    if ((tag & 0xFFFF0000u) == HB_TAG ('c','v','\0','\0')) /* cvXX */
+      return (u.characterVariants.collect_name_ids (nameids_to_retain));
   }
 
   bool subset (hb_subset_context_t *c, const Tag* tag) const
@@ -761,6 +794,12 @@ struct Feature
 
   bool intersects_lookup_indexes (const hb_map_t *lookup_indexes) const
   { return lookupIndex.intersects (lookup_indexes); }
+
+  void collect_name_ids (hb_tag_t tag, hb_set_t *nameids_to_retain /* OUT */) const
+  {
+    if (featureParams)
+      get_feature_params ().collect_name_ids (tag, nameids_to_retain);
+  }
 
   bool subset (hb_subset_context_t         *c,
 	       hb_subset_layout_context_t  *l,
@@ -1730,6 +1769,7 @@ struct ClassDefFormat2_4
       return_trace (true);
     }
 
+    unsigned unsorted = false;
     unsigned num_ranges = 1;
     hb_codepoint_t prev_gid = (*it).first;
     unsigned prev_klass = (*it).second;
@@ -1750,6 +1790,10 @@ struct ClassDefFormat2_4
       if (cur_gid != prev_gid + 1 ||
 	  cur_klass != prev_klass)
       {
+
+	if (unlikely (cur_gid < prev_gid))
+	  unsorted = true;
+
 	if (unlikely (!record)) break;
 	record->last = prev_gid;
 	num_ranges++;
@@ -1765,8 +1809,14 @@ struct ClassDefFormat2_4
       prev_gid = cur_gid;
     }
 
+    if (unlikely (c->in_error ())) return_trace (false);
+
     if (likely (record)) record->last = prev_gid;
     rangeRecord.len = num_ranges;
+
+    if (unlikely (unsorted))
+      rangeRecord.as_array ().qsort (RangeRecord<Types>::cmp_range);
+
     return_trace (true);
   }
 
@@ -2058,8 +2108,15 @@ struct ClassDef
 
 #ifndef HB_NO_BEYOND_64K
     if (glyph_max > 0xFFFFu)
-      format += 2;
+      u.format += 2;
+    if (unlikely (glyph_max > 0xFFFFFFu))
+#else
+    if (unlikely (glyph_max > 0xFFFFu))
 #endif
+    {
+      c->check_success (false, HB_SERIALIZE_ERROR_INT_OVERFLOW);
+      return_trace (false);
+    }
 
     u.format = format;
 
@@ -2233,19 +2290,20 @@ struct VarRegionAxis
 {
   float evaluate (int coord) const
   {
-    int start = startCoord.to_int (), peak = peakCoord.to_int (), end = endCoord.to_int ();
+    int peak = peakCoord.to_int ();
+    if (peak == 0 || coord == peak)
+      return 1.f;
+
+    int start = startCoord.to_int (), end = endCoord.to_int ();
 
     /* TODO Move these to sanitize(). */
     if (unlikely (start > peak || peak > end))
-      return 1.;
+      return 1.f;
     if (unlikely (start < 0 && end > 0 && peak != 0))
-      return 1.;
-
-    if (peak == 0 || coord == peak)
-      return 1.;
+      return 1.f;
 
     if (coord <= start || end <= coord)
-      return 0.;
+      return 0.f;
 
     /* Interpolate */
     if (coord < peak)
@@ -2462,10 +2520,9 @@ struct VarData
     {
       for (r = 0; r < src_word_count; r++)
       {
-	for (unsigned int i = 0; i < inner_map.get_next_value (); i++)
+        for (unsigned old_gid : inner_map.keys())
 	{
-	  unsigned int old = inner_map.backward (i);
-	  int32_t delta = src->get_item_delta_fast (old, r, src_delta_bytes, src_row_size);
+	  int32_t delta = src->get_item_delta_fast (old_gid, r, src_delta_bytes, src_row_size);
 	  if (delta < -65536 || 65535 < delta)
 	  {
 	    has_long = true;
@@ -2482,10 +2539,9 @@ struct VarData
       bool short_circuit = src_long_words == has_long && src_word_count <= r;
 
       delta_sz[r] = kZero;
-      for (unsigned int i = 0; i < inner_map.get_next_value (); i++)
+      for (unsigned old_gid : inner_map.keys())
       {
-	unsigned int old = inner_map.backward (i);
-	int32_t delta = src->get_item_delta_fast (old, r, src_delta_bytes, src_row_size);
+	int32_t delta = src->get_item_delta_fast (old_gid, r, src_delta_bytes, src_row_size);
 	if (delta < min_threshold || max_threshold < delta)
 	{
 	  delta_sz[r] = kWord;
@@ -2546,8 +2602,8 @@ struct VarData
     {
       unsigned int region = regionIndices.arrayZ[r];
       if (region_indices.has (region)) continue;
-      for (unsigned int i = 0; i < inner_map.get_next_value (); i++)
-	if (get_item_delta_fast (inner_map.backward (i), r, delta_bytes, row_size) != 0)
+      for (hb_codepoint_t old_gid : inner_map.keys())
+	if (get_item_delta_fast (old_gid, r, delta_bytes, row_size) != 0)
 	{
 	  region_indices.add (region);
 	  break;
@@ -3509,8 +3565,9 @@ struct VariationDevice
   {
     c->layout_variation_indices->add (varIdx);
     int delta = 0;
-    if (c->font && c->var_store)
-      delta = roundf (get_delta (c->font, *c->var_store, c->store_cache));
+    if (c->normalized_coords && c->var_store)
+      delta = roundf (c->var_store->get_delta (varIdx, c->normalized_coords->arrayZ,
+                                               c->normalized_coords->length, c->store_cache));
 
     /* set new varidx to HB_OT_LAYOUT_NO_VARIATIONS_INDEX here, will remap
      * varidx later*/

@@ -37,7 +37,8 @@
 #include "core/object/ref_counted.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "resource_importer_texture.h"
+#include "editor/import/resource_importer_texture.h"
+#include "editor/import/resource_importer_texture_settings.h"
 #include "scene/resources/texture.h"
 
 String ResourceImporterLayeredTexture::get_importer_name() const {
@@ -491,8 +492,8 @@ void ResourceImporterLayeredTexture::_check_compress_ctex(const String &p_source
 	// Must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
 	// Android, GLES 2.x
 
-	const bool can_s3tc_bptc = GLOBAL_GET("rendering/textures/vram_compression/import_s3tc_bptc") || OS::get_singleton()->get_preferred_texture_format() == OS::PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
-	const bool can_etc2_astc = GLOBAL_GET("rendering/textures/vram_compression/import_etc2_astc") || OS::get_singleton()->get_preferred_texture_format() == OS::PREFERRED_TEXTURE_FORMAT_ETC2_ASTC;
+	const bool can_s3tc_bptc = ResourceImporterTextureSettings::should_import_s3tc_bptc();
+	const bool can_etc2_astc = ResourceImporterTextureSettings::should_import_etc2_astc();
 
 	// Add list of formats imported
 	if (can_s3tc_bptc) {

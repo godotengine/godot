@@ -4,7 +4,7 @@
  *
  *   FreeType Cache subsystem (specification).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -424,7 +424,7 @@ FT_BEGIN_HEADER
    *   pixel ::
    *     A Boolean.  If 1, the `width` and `height` fields are interpreted as
    *     integer pixel character sizes.  Otherwise, they are expressed as
-   *     1/64th of points.
+   *     1/64 of points.
    *
    *   x_res ::
    *     Only used when `pixel` is value~0 to indicate the horizontal

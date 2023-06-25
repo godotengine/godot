@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationPolygon" inherits="Resource" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A node that has methods to draw outlines or use indices of vertices to create navigation polygons.
+		A navigation polygon that defines traversable areas and obstacles.
 	</brief_description>
 	<description>
 		There are two ways to create polygons. Either by using the [method add_outline] method, or using the [method add_polygon] method.
@@ -148,4 +148,9 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="1.0">
+			The cell size used to rasterize the navigation mesh vertices. Must match with the cell size on the navigation map.
+		</member>
+	</members>
 </class>

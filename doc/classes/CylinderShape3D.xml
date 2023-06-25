@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CylinderShape3D" inherits="Shape3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Cylinder shape for 3D collisions.
+		A 3D cylinder shape used for physics collision.
 	</brief_description>
 	<description>
-		Cylinder shape for collisions. Like [CapsuleShape3D], but without hemispheres at the cylinder's ends.
+		A 2D capsule shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D].
 		[b]Note:[/b] There are several known bugs with cylinder collision shapes. Using [CapsuleShape3D] or [BoxShape3D] instead is recommended.
-		[b]Performance:[/b] Being a primitive collision shape, [CylinderShape3D] is fast to check collisions against (though not as fast as [SphereShape3D]). [CylinderShape3D] is also more demanding compared to [CapsuleShape3D].
+		[b]Performance:[/b] [CylinderShape3D] is fast to check collisions against, but it is slower than [CapsuleShape3D], [BoxShape3D], and [CylinderShape3D].
 	</description>
 	<tutorials>
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>

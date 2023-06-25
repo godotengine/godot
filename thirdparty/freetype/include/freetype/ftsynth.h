@@ -5,7 +5,7 @@
  *   FreeType synthesizing code for emboldening and slanting
  *   (specification).
  *
- * Copyright (C) 2000-2022 by
+ * Copyright (C) 2000-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -68,9 +68,18 @@ FT_BEGIN_HEADER
   FT_EXPORT( void )
   FT_GlyphSlot_Embolden( FT_GlyphSlot  slot );
 
-  /* Slant an outline glyph to the right by about 12 degrees. */
+  /* Slant an outline glyph to the right by about 12 degrees.              */
   FT_EXPORT( void )
   FT_GlyphSlot_Oblique( FT_GlyphSlot  slot );
+
+  /* Slant an outline glyph by a given sine of an angle.  You can apply    */
+  /* slant along either x- or y-axis by choosing a corresponding non-zero  */
+  /* argument.  If both slants are non-zero, some affine transformation    */
+  /* will result.                                                          */
+  FT_EXPORT( void )
+  FT_GlyphSlot_Slant( FT_GlyphSlot  slot,
+                      FT_Fixed      xslant,
+                      FT_Fixed      yslant );
 
   /* */
 

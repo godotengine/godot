@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="HeightMapShape3D" inherits="Shape3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Height map shape resource for 3D physics.
+		A 3D height map shape used for physics collision.
 	</brief_description>
 	<description>
-		Height map shape resource, which can be added to a [PhysicsBody3D] or [Area3D]. Heightmap collision is typically used for colliding with terrains. However, since heightmaps cannot store overhangs, collisions with other structures (such as buildings) must be done with other collision shapes such as [ConcavePolygonShape3D]. If needed, "holes" can be created in an [HeightMapShape3D] by assigning very low points (like [code]-100000[/code]) in the desired area.
-		[b]Performance:[/b] [HeightMapShape3D] is faster to check collisions against compared to [ConcavePolygonShape3D], but it is slower than primitive collision shapes such as [SphereShape3D] or [BoxShape3D].
+		A 3D heightmap shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D]. This is useful for terrain, but it is limited as overhangs (such as caves) cannot be stored. Holes in a [HeightMapShape3D] are created by assigning very low values to points in the desired area.
+		[b]Performance:[/b] [HeightMapShape3D] is faster to check collisions against than [ConcavePolygonShape3D], but it is significantly slower than primitive shapes like [BoxShape3D].
 	</description>
 	<tutorials>
 	</tutorials>

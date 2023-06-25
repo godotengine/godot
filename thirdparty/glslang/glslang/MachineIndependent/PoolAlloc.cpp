@@ -267,8 +267,8 @@ void* TPoolAllocator::allocate(size_t numBytes)
         //
         size_t numBytesToAlloc = allocationSize + headerSkip;
         tHeader* memory = reinterpret_cast<tHeader*>(::new char[numBytesToAlloc]);
-        if (memory == 0)
-            return 0;
+        if (memory == nullptr)
+            return nullptr;
 
         // Use placement-new to initialize header
         new(memory) tHeader(inUseList, (numBytesToAlloc + pageSize - 1) / pageSize);
@@ -289,8 +289,8 @@ void* TPoolAllocator::allocate(size_t numBytes)
         freeList = freeList->nextPage;
     } else {
         memory = reinterpret_cast<tHeader*>(::new char[pageSize]);
-        if (memory == 0)
-            return 0;
+        if (memory == nullptr)
+            return nullptr;
     }
 
     // Use placement-new to initialize header
@@ -308,7 +308,7 @@ void* TPoolAllocator::allocate(size_t numBytes)
 //
 void TAllocation::checkAllocList() const
 {
-    for (const TAllocation* alloc = this; alloc != 0; alloc = alloc->prevAlloc)
+    for (const TAllocation* alloc = this; alloc != nullptr; alloc = alloc->prevAlloc)
         alloc->check();
 }
 

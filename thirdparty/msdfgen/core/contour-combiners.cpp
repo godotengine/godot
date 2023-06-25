@@ -1,18 +1,19 @@
 
 #include "contour-combiners.h"
 
+#include <cfloat>
 #include "arithmetics.hpp"
 
 namespace msdfgen {
 
 static void initDistance(double &distance) {
-    distance = SignedDistance::INFINITE.distance;
+    distance = -DBL_MAX;
 }
 
 static void initDistance(MultiDistance &distance) {
-    distance.r = SignedDistance::INFINITE.distance;
-    distance.g = SignedDistance::INFINITE.distance;
-    distance.b = SignedDistance::INFINITE.distance;
+    distance.r = -DBL_MAX;
+    distance.g = -DBL_MAX;
+    distance.b = -DBL_MAX;
 }
 
 static double resolveDistance(double distance) {

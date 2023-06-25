@@ -37,7 +37,7 @@
 			Texture to display when the mouse hovers the node.
 		</member>
 		<member name="texture_normal" type="Texture2D" setter="set_texture_normal" getter="get_texture_normal">
-			Texture to display by default, when the node is [b]not[/b] in the disabled, focused, hover or pressed state.
+			Texture to display by default, when the node is [b]not[/b] in the disabled, hover or pressed state. This texture is still displayed in the focused state, with [member texture_focused] drawn on top.
 		</member>
 		<member name="texture_pressed" type="Texture2D" setter="set_texture_pressed" getter="get_texture_pressed">
 			Texture to display on mouse down over the node, if the node has keyboard focus and the player presses the Enter key or if the player presses the [member BaseButton.shortcut] key.

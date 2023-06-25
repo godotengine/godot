@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Generic6DOFJoint3D" inherits="Joint3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		The generic 6-degrees-of-freedom joint can implement a variety of joint types by locking certain axes' rotation or translation.
+		A physics joint that allows for complex movement and rotation between two 3D physics bodies.
 	</brief_description>
 	<description>
-		The first 3 DOF axes are linear axes, which represent translation of Bodies, and the latter 3 DOF axes represent the angular motion. Each axis can be either locked, or limited.
+		The [Generic6DOFJoint3D] (6 Degrees Of Freedom) joint allows for implementing custom types of joints by locking the rotation and translation of certain axes.
+		The first 3 DOF represent the linear motion of the physics bodies and the last 3 DOF represent the angular motion of the physics bodies. Each axis can be either locked, or limited.
 	</description>
 	<tutorials>
 	</tutorials>

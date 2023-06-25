@@ -1933,6 +1933,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_OPACITY);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_BLUR);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_TRANSMITTANCE_BIAS);
+	BIND_ENUM_CONSTANT(LIGHT_PARAM_INTENSITY);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(LIGHT_BAKE_DISABLED);
@@ -2870,8 +2871,11 @@ TypedArray<StringName> RenderingServer::_global_shader_parameter_get_list() cons
 }
 
 void RenderingServer::init() {
-	GLOBAL_DEF_RST_NOVAL_BASIC("rendering/textures/vram_compression/import_s3tc_bptc", OS::get_singleton()->get_preferred_texture_format() == OS::PREFERRED_TEXTURE_FORMAT_S3TC_BPTC);
-	GLOBAL_DEF_RST_NOVAL_BASIC("rendering/textures/vram_compression/import_etc2_astc", OS::get_singleton()->get_preferred_texture_format() == OS::PREFERRED_TEXTURE_FORMAT_ETC2_ASTC);
+	// These are overrides, even if they are false Godot will still
+	// import the texture formats that the host platform needs.
+	// See `const bool can_s3tc_bptc` in the resource importer.
+	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_s3tc_bptc", false);
+	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc2_astc", false);
 
 	GLOBAL_DEF("rendering/textures/lossless_compression/force_png", false);
 

@@ -1834,19 +1834,13 @@ void ThemeItemEditorDialog::_edit_theme_item_gui_input(const Ref<InputEvent> &p_
 			return;
 		}
 
-		switch (k->get_keycode()) {
-			case Key::KP_ENTER:
-			case Key::ENTER: {
-				_confirm_edit_theme_item();
-				edit_theme_item_dialog->hide();
-				edit_theme_item_dialog->set_input_as_handled();
-			} break;
-			case Key::ESCAPE: {
-				edit_theme_item_dialog->hide();
-				edit_theme_item_dialog->set_input_as_handled();
-			} break;
-			default:
-				break;
+		if (k->is_action_pressed(SNAME("ui_accept"), false, true)) {
+			_confirm_edit_theme_item();
+			edit_theme_item_dialog->hide();
+			edit_theme_item_dialog->set_input_as_handled();
+		} else if (k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+			edit_theme_item_dialog->hide();
+			edit_theme_item_dialog->set_input_as_handled();
 		}
 	}
 }

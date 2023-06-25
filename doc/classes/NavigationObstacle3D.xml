@@ -13,12 +13,6 @@
 		<link title="Using NavigationObstacles">$DOCS_URL/tutorials/navigation/navigation_using_navigationobstacles.html</link>
 	</tutorials>
 	<methods>
-		<method name="get_agent_rid" qualifiers="const">
-			<return type="RID" />
-			<description>
-				Returns the [RID] of this agent on the [NavigationServer3D]. This [RID] is used for the moving avoidance "obstacle" component (using a fake avoidance agent) which size is defined by [member radius] and velocity set by using [member velocity].
-			</description>
-		</method>
 		<method name="get_avoidance_layer_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
@@ -32,10 +26,10 @@
 				Returns the [RID] of the navigation map for this NavigationObstacle node. This function returns always the map set on the NavigationObstacle node and not the map of the abstract obstacle on the NavigationServer. If the obstacle map is changed directly with the NavigationServer API the NavigationObstacle node will not be aware of the map change. Use [method set_navigation_map] to change the navigation map for the NavigationObstacle and also update the obstacle on the NavigationServer.
 			</description>
 		</method>
-		<method name="get_obstacle_rid" qualifiers="const">
+		<method name="get_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the [RID] of this obstacle on the [NavigationServer3D]. This [RID] is used for the static avoidance obstacle component which shape is defined by [member vertices].
+				Returns the [RID] of this obstacle on the [NavigationServer3D].
 			</description>
 		</method>
 		<method name="set_avoidance_layer_value">
@@ -55,6 +49,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="avoidance_enabled" type="bool" setter="set_avoidance_enabled" getter="get_avoidance_enabled" default="true">
+			If [code]true[/code] the obstacle affects avoidance using agents.
+		</member>
 		<member name="avoidance_layers" type="int" setter="set_avoidance_layers" getter="get_avoidance_layers" default="1">
 			A bitfield determining the avoidance layers for this obstacle. Agent's with a matching bit on the their avoidance mask will avoid this obstacle.
 		</member>

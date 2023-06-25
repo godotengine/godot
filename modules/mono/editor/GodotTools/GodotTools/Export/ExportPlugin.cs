@@ -1,7 +1,6 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using GodotTools.Build;
@@ -35,6 +34,17 @@ namespace GodotTools.Export
                         }
                     },
                     { "default_value", false }
+                },
+                new Godot.Collections.Dictionary()
+                {
+                    {
+                        "option", new Godot.Collections.Dictionary()
+                        {
+                            { "name", "dotnet/include_debug_symbols" },
+                            { "type", (int)Variant.Type.Bool }
+                        }
+                    },
+                    { "default_value", true }
                 }
             };
         }
@@ -110,10 +120,9 @@ namespace GodotTools.Export
                 throw new NotImplementedException("Target platform not yet implemented.");
             }
 
-            string outputDir = new FileInfo(path).Directory?.FullName ??
-                               throw new FileNotFoundException("Output base directory not found.");
-
             string buildConfig = isDebug ? "ExportDebug" : "ExportRelease";
+
+            bool includeDebugSymbols = (bool)GetOption("dotnet/include_debug_symbols");
 
             var archs = new List<string>();
             if (features.Contains("x86_64"))
@@ -142,7 +151,7 @@ namespace GodotTools.Export
                 string ridOS = DetermineRuntimeIdentifierOS(platform);
                 string ridArch = DetermineRuntimeIdentifierArch(arch);
                 string runtimeIdentifier = $"{ridOS}-{ridArch}";
-                string projectDataDirName = $"{DetermineDataDirNameForProject()}_{arch}";
+                string projectDataDirName = $"data_{GodotSharpDirs.CSharpProjectName}_{arch}";
                 if (platform == OS.Platforms.MacOS)
                 {
                     projectDataDirName = Path.Combine("Contents", "Resources", projectDataDirName);
@@ -151,7 +160,7 @@ namespace GodotTools.Export
                 // Create temporary publish output directory
 
                 string publishOutputTempDir = Path.Combine(Path.GetTempPath(), "godot-publish-dotnet",
-                    $"{Process.GetCurrentProcess().Id}-{buildConfig}-{runtimeIdentifier}");
+                    $"{System.Environment.ProcessId}-{buildConfig}-{runtimeIdentifier}");
 
                 _tempFolders.Add(publishOutputTempDir);
 
@@ -161,7 +170,7 @@ namespace GodotTools.Export
                 // Execute dotnet publish
 
                 if (!BuildManager.PublishProjectBlocking(buildConfig, platform,
-                        runtimeIdentifier, publishOutputTempDir))
+                        runtimeIdentifier, publishOutputTempDir, includeDebugSymbols))
                 {
                     throw new InvalidOperationException("Failed to build project.");
                 }
@@ -215,7 +224,7 @@ namespace GodotTools.Export
         {
             base._ExportEnd();
 
-            string aotTempDir = Path.Combine(Path.GetTempPath(), $"godot-aot-{Process.GetCurrentProcess().Id}");
+            string aotTempDir = Path.Combine(Path.GetTempPath(), $"godot-aot-{System.Environment.ProcessId}");
 
             if (Directory.Exists(aotTempDir))
                 Directory.Delete(aotTempDir, recursive: true);
@@ -248,13 +257,6 @@ namespace GodotTools.Export
 
             platform = null;
             return false;
-        }
-
-        private static string DetermineDataDirNameForProject()
-        {
-            string appName = (string)ProjectSettings.GetSetting("application/config/name");
-            string appNameSafe = appName.ToSafeDirName();
-            return $"data_{appNameSafe}";
         }
     }
 }

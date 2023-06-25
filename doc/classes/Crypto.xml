@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Crypto" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Access to advanced cryptographic functionalities.
+		Provides access to advanced cryptographic functionalities.
 	</brief_description>
 	<description>
-		The Crypto class allows you to access some more advanced cryptographic functionalities in Godot.
-		For now, this includes generating cryptographically secure random bytes, RSA keys and self-signed X509 certificates generation, asymmetric key encryption/decryption, and signing/verification.
+		The Crypto class provides access to advanced cryptographic functionalities.
+		Currently, this includes asymmetric key encryption/decryption, signing/verification, and generating cryptographically secure random bytes, RSA keys, HMAC digests, and self-signed [X509Certificate]s.
 		[codeblocks]
 		[gdscript]
 		extends Node

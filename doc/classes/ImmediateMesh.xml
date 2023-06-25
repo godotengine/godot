@@ -7,12 +7,14 @@
 		A mesh type optimized for creating geometry manually, similar to OpenGL 1.x immediate mode.
 		Here's a sample on how to generate a triangular face:
 		[codeblocks]
+		[gdscript]
 		var mesh = ImmediateMesh.new()
 		mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES)
 		mesh.surface_add_vertex(Vector3.LEFT)
 		mesh.surface_add_vertex(Vector3.FORWARD)
 		mesh.surface_add_vertex(Vector3.ZERO)
 		mesh.surface_end()
+		[/gdscript]
 		[/codeblocks]
 		[b]Note:[/b] Generating complex geometries with [ImmediateMesh] is highly inefficient. Instead, it is designed to generate simple geometry that changes often.
 	</description>

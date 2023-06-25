@@ -96,10 +96,12 @@ private:
 	Size2 _fit_icon_size(const Size2 &p_size) const;
 
 	void _shape(Ref<TextParagraph> p_paragraph = Ref<TextParagraph>(), String p_text = "");
+	void _texture_changed();
 
 protected:
 	void _set_internal_margin(Side p_side, float p_value);
 	virtual void _update_theme_item_cache() override;
+	virtual void _queue_update_size_cache();
 	void _notification(int p_what);
 	static void _bind_methods();
 

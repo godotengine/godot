@@ -443,8 +443,10 @@ void RasterizerSceneGLES3::_geometry_instance_update(RenderGeometryInstance *p_g
 
 void RasterizerSceneGLES3::_free_sky_data(Sky *p_sky) {
 	if (p_sky->radiance != 0) {
-		glDeleteTextures(1, &p_sky->radiance);
+		GLES3::Utilities::get_singleton()->texture_free_data(p_sky->radiance);
 		p_sky->radiance = 0;
+		GLES3::Utilities::get_singleton()->texture_free_data(p_sky->raw_radiance);
+		p_sky->raw_radiance = 0;
 		glDeleteFramebuffers(1, &p_sky->radiance_framebuffer);
 		p_sky->radiance_framebuffer = 0;
 	}
@@ -546,6 +548,8 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, sky->mipmap_count - 1);
 
+			GLES3::Utilities::get_singleton()->texture_allocated_data(sky->radiance, Image::get_image_data_size(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBA8, true), "Sky radiance map");
+
 			glGenTextures(1, &sky->raw_radiance);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, sky->raw_radiance);
 
@@ -568,6 +572,7 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, sky->mipmap_count - 1);
 
 			glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+			GLES3::Utilities::get_singleton()->texture_allocated_data(sky->raw_radiance, Image::get_image_data_size(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBA8, true), "Sky raw radiance map");
 		}
 
 		sky->reflection_dirty = true;
@@ -1154,6 +1159,11 @@ void RasterizerSceneGLES3::voxel_gi_update(RID p_probe, bool p_update_light_inst
 void RasterizerSceneGLES3::voxel_gi_set_quality(RS::VoxelGIQuality) {
 }
 
+_FORCE_INLINE_ static uint32_t _indices_to_primitives(RS::PrimitiveType p_primitive, uint32_t p_indices) {
+	static const uint32_t divisor[RS::PRIMITIVE_MAX] = { 1, 2, 1, 3, 1 };
+	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 1 };
+	return (p_indices - subtractor[p_primitive]) / divisor[p_primitive];
+}
 void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const RenderDataGLES3 *p_render_data, PassMode p_pass_mode, bool p_append) {
 	GLES3::MeshStorage *mesh_storage = GLES3::MeshStorage::get_singleton();
 
@@ -1258,7 +1268,8 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 
 				uint32_t indices = 0;
 				surf->lod_index = mesh_storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, distance * p_render_data->lod_distance_multiplier, p_render_data->screen_mesh_lod_threshold, indices);
-				/*
+				surf->index_count = indices;
+
 				if (p_render_data->render_info) {
 					indices = _indices_to_primitives(surf->primitive, indices);
 					if (p_render_list == RENDER_LIST_OPAQUE) { //opaque
@@ -1267,21 +1278,20 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 						p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_SHADOW][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += indices;
 					}
 				}
-				*/
+
 			} else {
 				surf->lod_index = 0;
-				/*
+
 				if (p_render_data->render_info) {
 					uint32_t to_draw = mesh_storage->mesh_surface_get_vertices_drawn_count(surf->surface);
 					to_draw = _indices_to_primitives(surf->primitive, to_draw);
-					to_draw *= inst->instance_count;
+					to_draw *= inst->instance_count > 0 ? inst->instance_count : 1;
 					if (p_render_list == RENDER_LIST_OPAQUE) { //opaque
-						p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += mesh_storage->mesh_surface_get_vertices_drawn_count(surf->surface);
+						p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += to_draw;
 					} else if (p_render_list == RENDER_LIST_SECONDARY) { //shadow
-						p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_SHADOW][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += mesh_storage->mesh_surface_get_vertices_drawn_count(surf->surface);
+						p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_SHADOW][RS::VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME] += to_draw;
 					}
 				}
-				*/
 			}
 
 			// ADD Element
@@ -1451,17 +1461,26 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 
 	if (scene_state.ubo_buffer == 0) {
 		glGenBuffers(1, &scene_state.ubo_buffer);
+		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_DATA_UNIFORM_LOCATION, scene_state.ubo_buffer);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, scene_state.ubo_buffer, sizeof(SceneState::UBO), &scene_state.ubo, GL_STREAM_DRAW, "Scene state UBO");
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	} else {
+		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_DATA_UNIFORM_LOCATION, scene_state.ubo_buffer);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(SceneState::UBO), &scene_state.ubo, GL_STREAM_DRAW);
 	}
-	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_DATA_UNIFORM_LOCATION, scene_state.ubo_buffer);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(SceneState::UBO), &scene_state.ubo, GL_STREAM_DRAW);
+
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	if (p_render_data->view_count > 1) {
 		if (scene_state.multiview_buffer == 0) {
 			glGenBuffers(1, &scene_state.multiview_buffer);
+			glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, scene_state.multiview_buffer, sizeof(SceneState::MultiviewUBO), &scene_state.multiview_ubo, GL_STREAM_DRAW, "Multiview UBO");
+		} else {
+			glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);
+			glBufferData(GL_UNIFORM_BUFFER, sizeof(SceneState::MultiviewUBO), &scene_state.multiview_ubo, GL_STREAM_DRAW);
 		}
-		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(SceneState::MultiviewUBO), &scene_state.multiview_ubo, GL_STREAM_DRAW);
+
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 }
@@ -1792,9 +1811,14 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	if (scene_state.tonemap_buffer == 0) {
 		// Only create if using 3D
 		glGenBuffers(1, &scene_state.tonemap_buffer);
+		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_TONEMAP_UNIFORM_LOCATION, scene_state.tonemap_buffer);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, scene_state.tonemap_buffer, sizeof(SceneState::TonemapUBO), &tonemap_ubo, GL_STREAM_DRAW, "Tonemap UBO");
+	} else {
+		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_TONEMAP_UNIFORM_LOCATION, scene_state.tonemap_buffer);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(SceneState::TonemapUBO), &tonemap_ubo, GL_STREAM_DRAW);
 	}
-	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_TONEMAP_UNIFORM_LOCATION, scene_state.tonemap_buffer);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(SceneState::TonemapUBO), &tonemap_ubo, GL_STREAM_DRAW);
+
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	scene_state.ubo.emissive_exposure_normalization = -1.0; // Use default exposure normalization.
 
@@ -2039,8 +2063,6 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 	GLES3::MeshStorage *mesh_storage = GLES3::MeshStorage::get_singleton();
 	GLES3::ParticlesStorage *particles_storage = GLES3::ParticlesStorage::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
-	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
-	GLES3::Config *config = GLES3::Config::get_singleton();
 
 	GLuint prev_vertex_array_gl = 0;
 	GLuint prev_index_array_gl = 0;
@@ -2073,6 +2095,8 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 	}
 
 	if constexpr (p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
+		GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
+		GLES3::Config *config = GLES3::Config::get_singleton();
 		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 2);
 		GLuint texture_to_bind = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_CUBEMAP_BLACK))->tex_id;
 		if (p_render_data->environment.is_valid()) {
@@ -2086,6 +2110,12 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 	}
 
 	bool should_request_redraw = false;
+	if constexpr (p_pass_mode != PASS_MODE_DEPTH) {
+		// Don't count elements during depth pre-pass to match the RD renderers.
+		if (p_render_data->render_info) {
+			p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] += p_to_element - p_from_element;
+		}
+	}
 
 	for (uint32_t i = p_from_element; i < p_to_element; i++) {
 		const GeometryInstanceSurface *surf = p_params->elements[i];
@@ -2326,6 +2356,21 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		}
 
 		material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, world_transform, shader->version, instance_variant, spec_constants);
+
+		// Can be index count or vertex count
+		uint32_t count = 0;
+		if (surf->lod_index > 0) {
+			count = surf->index_count;
+		} else {
+			count = mesh_storage->mesh_surface_get_vertices_drawn_count(mesh_surface);
+		}
+		if constexpr (p_pass_mode != PASS_MODE_DEPTH) {
+			// Don't count draw calls during depth pre-pass to match the RD renderers.
+			if (p_render_data->render_info) {
+				p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
+			}
+		}
+
 		if (inst->instance_count > 0) {
 			// Using MultiMesh or Particles.
 			// Bind instance buffers.
@@ -2366,16 +2411,16 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				glVertexAttribDivisor(15, 1);
 			}
 			if (use_index_buffer) {
-				glDrawElementsInstanced(primitive_gl, mesh_storage->mesh_surface_get_vertices_drawn_count(mesh_surface), mesh_storage->mesh_surface_get_index_type(mesh_surface), 0, inst->instance_count);
+				glDrawElementsInstanced(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), 0, inst->instance_count);
 			} else {
-				glDrawArraysInstanced(primitive_gl, 0, mesh_storage->mesh_surface_get_vertices_drawn_count(mesh_surface), inst->instance_count);
+				glDrawArraysInstanced(primitive_gl, 0, count, inst->instance_count);
 			}
 		} else {
 			// Using regular Mesh.
 			if (use_index_buffer) {
-				glDrawElements(primitive_gl, mesh_storage->mesh_surface_get_vertices_drawn_count(mesh_surface), mesh_storage->mesh_surface_get_index_type(mesh_surface), 0);
+				glDrawElements(primitive_gl, count, mesh_storage->mesh_surface_get_index_type(mesh_surface), 0);
 			} else {
-				glDrawArrays(primitive_gl, 0, mesh_storage->mesh_surface_get_vertices_drawn_count(mesh_surface));
+				glDrawArrays(primitive_gl, 0, count);
 			}
 		}
 		if (inst->instance_count > 0) {
@@ -2579,19 +2624,20 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 		scene_state.omni_light_sort = memnew_arr(InstanceSort<GLES3::LightInstance>, config->max_renderable_lights);
 		glGenBuffers(1, &scene_state.omni_light_buffer);
 		glBindBuffer(GL_UNIFORM_BUFFER, scene_state.omni_light_buffer);
-		glBufferData(GL_UNIFORM_BUFFER, light_buffer_size, nullptr, GL_STREAM_DRAW);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, scene_state.omni_light_buffer, light_buffer_size, nullptr, GL_STREAM_DRAW, "OmniLight UBO");
 
 		scene_state.spot_lights = memnew_arr(LightData, config->max_renderable_lights);
 		scene_state.spot_light_sort = memnew_arr(InstanceSort<GLES3::LightInstance>, config->max_renderable_lights);
 		glGenBuffers(1, &scene_state.spot_light_buffer);
 		glBindBuffer(GL_UNIFORM_BUFFER, scene_state.spot_light_buffer);
-		glBufferData(GL_UNIFORM_BUFFER, light_buffer_size, nullptr, GL_STREAM_DRAW);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, scene_state.spot_light_buffer, light_buffer_size, nullptr, GL_STREAM_DRAW, "SpotLight UBO");
 
 		uint32_t directional_light_buffer_size = MAX_DIRECTIONAL_LIGHTS * sizeof(DirectionalLightData);
 		scene_state.directional_lights = memnew_arr(DirectionalLightData, MAX_DIRECTIONAL_LIGHTS);
 		glGenBuffers(1, &scene_state.directional_light_buffer);
 		glBindBuffer(GL_UNIFORM_BUFFER, scene_state.directional_light_buffer);
-		glBufferData(GL_UNIFORM_BUFFER, directional_light_buffer_size, nullptr, GL_STREAM_DRAW);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, scene_state.directional_light_buffer, directional_light_buffer_size, nullptr, GL_STREAM_DRAW, "DirectionalLight UBO");
+
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
@@ -2603,7 +2649,8 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 		sky_globals.last_frame_directional_light_count = sky_globals.max_directional_lights + 1;
 		glGenBuffers(1, &sky_globals.directional_light_buffer);
 		glBindBuffer(GL_UNIFORM_BUFFER, sky_globals.directional_light_buffer);
-		glBufferData(GL_UNIFORM_BUFFER, directional_light_buffer_size, nullptr, GL_STREAM_DRAW);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, sky_globals.directional_light_buffer, directional_light_buffer_size, nullptr, GL_STREAM_DRAW, "Sky DirectionalLight UBO");
+
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
@@ -2702,6 +2749,8 @@ void sky() {
 	}
 
 	{
+		glGenVertexArrays(1, &sky_globals.screen_triangle_array);
+		glBindVertexArray(sky_globals.screen_triangle_array);
 		glGenBuffers(1, &sky_globals.screen_triangle);
 		glBindBuffer(GL_ARRAY_BUFFER, sky_globals.screen_triangle);
 
@@ -2714,12 +2763,8 @@ void sky() {
 			3.0f,
 		};
 
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6, qv, GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, sky_globals.screen_triangle, sizeof(float) * 6, qv, GL_STATIC_DRAW, "Screen triangle vertex buffer");
 
-		glGenVertexArrays(1, &sky_globals.screen_triangle_array);
-		glBindVertexArray(sky_globals.screen_triangle_array);
-		glBindBuffer(GL_ARRAY_BUFFER, sky_globals.screen_triangle);
 		glVertexAttribPointer(RS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, nullptr);
 		glEnableVertexAttribArray(RS::ARRAY_VERTEX);
 		glBindVertexArray(0);
@@ -2735,9 +2780,9 @@ void sky() {
 }
 
 RasterizerSceneGLES3::~RasterizerSceneGLES3() {
-	glDeleteBuffers(1, &scene_state.directional_light_buffer);
-	glDeleteBuffers(1, &scene_state.omni_light_buffer);
-	glDeleteBuffers(1, &scene_state.spot_light_buffer);
+	GLES3::Utilities::get_singleton()->buffer_free_data(scene_state.directional_light_buffer);
+	GLES3::Utilities::get_singleton()->buffer_free_data(scene_state.omni_light_buffer);
+	GLES3::Utilities::get_singleton()->buffer_free_data(scene_state.spot_light_buffer);
 	memdelete_arr(scene_state.directional_lights);
 	memdelete_arr(scene_state.omni_lights);
 	memdelete_arr(scene_state.spot_lights);
@@ -2756,12 +2801,25 @@ RasterizerSceneGLES3::~RasterizerSceneGLES3() {
 	RSG::material_storage->shader_free(sky_globals.default_shader);
 	RSG::material_storage->material_free(sky_globals.fog_material);
 	RSG::material_storage->shader_free(sky_globals.fog_shader);
-	glDeleteBuffers(1, &sky_globals.screen_triangle);
+	GLES3::Utilities::get_singleton()->buffer_free_data(sky_globals.screen_triangle);
 	glDeleteVertexArrays(1, &sky_globals.screen_triangle_array);
 	glDeleteTextures(1, &sky_globals.radical_inverse_vdc_cache_tex);
-	glDeleteBuffers(1, &sky_globals.directional_light_buffer);
+	GLES3::Utilities::get_singleton()->buffer_free_data(sky_globals.directional_light_buffer);
 	memdelete_arr(sky_globals.directional_lights);
 	memdelete_arr(sky_globals.last_frame_directional_lights);
+
+	// UBOs
+	if (scene_state.ubo_buffer != 0) {
+		GLES3::Utilities::get_singleton()->buffer_free_data(scene_state.ubo_buffer);
+	}
+
+	if (scene_state.multiview_buffer != 0) {
+		GLES3::Utilities::get_singleton()->buffer_free_data(scene_state.multiview_buffer);
+	}
+
+	if (scene_state.tonemap_buffer != 0) {
+		GLES3::Utilities::get_singleton()->buffer_free_data(scene_state.tonemap_buffer);
+	}
 
 	singleton = nullptr;
 }

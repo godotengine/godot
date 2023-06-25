@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Viewport" inherits="Node" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Base class for viewports.
+		Abstract base class for viewports. Encapsulates drawing and interaction with a game world.
 	</brief_description>
 	<description>
 		A Viewport creates a different view into the screen, or a sub-view inside another viewport. Children 2D Nodes will display on it, and children Camera3D 3D nodes will render on it too.
-		Optionally, a viewport can have its own 2D or 3D world, so they don't share what they draw with other viewports.
+		Optionally, a viewport can have its own 2D or 3D world, so it doesn't share what it draws with other viewports.
 		Viewports can also choose to be audio listeners, so they generate positional audio depending on a 2D or 3D camera child of it.
 		Also, viewports can be assigned to different screens in case the devices have multiple screens.
 		Finally, viewports can also behave as render targets, in which case they will not be visible unless the associated texture is used to draw.
@@ -115,7 +115,7 @@
 				Returns the drag data from the GUI, that was previously returned by [method Control._get_drag_data].
 			</description>
 		</method>
-		<method name="gui_get_focus_owner">
+		<method name="gui_get_focus_owner" qualifiers="const">
 			<return type="Control" />
 			<description>
 				Returns the [Control] having the focus within this viewport. If no [Control] has the focus, returns null.
@@ -173,7 +173,7 @@
 				Helper method which calls the [code]set_text()[/code] method on the currently focused [Control], provided that it is defined (e.g. if the focused Control is [Button] or [LineEdit]).
 			</description>
 		</method>
-		<method name="push_unhandled_input">
+		<method name="push_unhandled_input" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="event" type="InputEvent" />
 			<param index="1" name="in_local_coords" type="bool" default="false" />
@@ -187,6 +187,8 @@
 				- [method Node._unhandled_key_input]
 				If an earlier method marks the input as handled via [method set_input_as_handled], any later method in this list will not be called.
 				If none of the methods handle the event and [member physics_object_picking] is [code]true[/code], the event is used for physics object picking.
+				[b]Note:[/b] This method doesn't propagate input events to embedded [Window]s or [SubViewport]s.
+				[i]Deprecated.[/i] Use [method push_input] instead.
 			</description>
 		</method>
 		<method name="set_canvas_cull_mask_bit">
@@ -210,6 +212,12 @@
 			<param index="1" name="subdiv" type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
 			<description>
 				Sets the number of subdivisions to use in the specified quadrant. A higher number of subdivisions allows you to have more shadows in the scene at once, but reduces the quality of the shadows. A good practice is to have quadrants with a varying number of subdivisions and to have as few subdivisions as possible.
+			</description>
+		</method>
+		<method name="update_mouse_cursor_state">
+			<return type="void" />
+			<description>
+				Force instantly updating the display based on the current mouse cursor position. This includes updating the mouse cursor shape and sending necessary [signal Control.mouse_entered], [signal CollisionObject2D.mouse_entered], [signal CollisionObject3D.mouse_entered] and [signal Window.mouse_entered] signals and their respective [code]mouse_exited[/code] counterparts.
 			</description>
 		</method>
 		<method name="warp_mouse">

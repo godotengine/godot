@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AESContext" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Interface to low level AES encryption features.
+		Provides access to AES encryption/decryption of raw data.
 	</brief_description>
 	<description>
-		This class provides access to AES encryption/decryption of raw data. Both AES-ECB and AES-CBC mode are supported.
+		This class holds the context information required for encryption and decryption operations with AES (Advanced Encryption Standard). Both AES-ECB and AES-CBC modes are supported.
 		[codeblocks]
 		[gdscript]
 		extends Node

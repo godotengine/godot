@@ -100,16 +100,16 @@ struct MarkMarkPosFormat1_2
 
     /* now we search backwards for a suitable mark glyph until a non-mark glyph */
     hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
-    skippy_iter.reset (buffer->idx, 1);
+    skippy_iter.reset_fast (buffer->idx, 1);
     skippy_iter.set_lookup_props (c->lookup_props & ~(uint32_t)LookupFlag::IgnoreFlags);
     unsigned unsafe_from;
-    if (!skippy_iter.prev (&unsafe_from))
+    if (unlikely (!skippy_iter.prev (&unsafe_from)))
     {
       buffer->unsafe_to_concat_from_outbuffer (unsafe_from, buffer->idx + 1);
       return_trace (false);
     }
 
-    if (!_hb_glyph_info_is_mark (&buffer->info[skippy_iter.idx]))
+    if (likely (!_hb_glyph_info_is_mark (&buffer->info[skippy_iter.idx])))
     {
       buffer->unsafe_to_concat_from_outbuffer (skippy_iter.idx, buffer->idx + 1);
       return_trace (false);

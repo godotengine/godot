@@ -34,6 +34,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "../grid_map.h"
+
 #include "editor/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/item_list.h"
@@ -222,7 +223,6 @@ class GridMapEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
-	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
 public:

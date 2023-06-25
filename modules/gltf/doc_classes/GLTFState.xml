@@ -70,6 +70,7 @@
 		<method name="get_images">
 			<return type="Texture2D[]" />
 			<description>
+				Gets the images of the GLTF file as an array of [Texture2D]s. These are the images that the [member GLTFTexture.src_image] index refers to.
 			</description>
 		</method>
 		<method name="get_lights">
@@ -89,6 +90,14 @@
 				Returns an array of all [GLTFMesh]es in the GLTF file. These are the meshes that the [member GLTFNode.mesh] index refers to.
 			</description>
 		</method>
+		<method name="get_node_index">
+			<return type="int" />
+			<param index="0" name="scene_node" type="Node" />
+			<description>
+				Returns the index of the [GLTFNode] corresponding to this Godot scene node. This is the inverse of [method get_scene_node]. Useful during the export process.
+				[b]Note:[/b] Not every Godot scene node will have a corresponding [GLTFNode], and not every [GLTFNode] will have a scene node generated. If there is no [GLTFNode] index for this scene node, [code]-1[/code] is returned.
+			</description>
+		</method>
 		<method name="get_nodes">
 			<return type="GLTFNode[]" />
 			<description>
@@ -99,7 +108,8 @@
 			<return type="Node" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the Godot scene node that corresponds to the same index as the [GLTFNode] it was generated from. Not every [GLTFNode] will have a scene node generated, and not every generated scene node will have a corresponding [GLTFNode].
+				Returns the Godot scene node that corresponds to the same index as the [GLTFNode] it was generated from. This is the inverse of [method get_node_index]. Useful during the import process.
+				[b]Note:[/b] Not every [GLTFNode] will have a scene node generated, and not every generated scene node will have a corresponding [GLTFNode]. If there is no scene node for this [GLTFNode] index, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="get_skeletons">
@@ -182,6 +192,7 @@
 			<return type="void" />
 			<param index="0" name="images" type="Texture2D[]" />
 			<description>
+				Sets the images in the state stored as an array of [Texture2D]s. This can be used during export. These are the images that the [member GLTFTexture.src_image] index refers to.
 			</description>
 		</method>
 		<method name="set_lights">

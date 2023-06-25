@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Engine" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Access to engine properties.
+		Provides access to engine properties.
 	</brief_description>
 	<description>
 		The [Engine] singleton allows you to query and modify the project's run-time parameters, such as frames per second, time scale, and others.

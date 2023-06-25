@@ -30,7 +30,6 @@
 
 #include "curve.h"
 
-#include "core/core_string_names.h"
 #include "core/math/math_funcs.h"
 
 const char *Curve::SIGNAL_RANGE_CHANGED = "range_changed";
@@ -110,6 +109,13 @@ int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_
 int Curve::add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode) {
 	int ret = _add_point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode);
 	notify_property_list_changed();
+
+	return ret;
+}
+
+// TODO: Needed to make the curve editor function properly until https://github.com/godotengine/godot/issues/76985 is fixed.
+int Curve::add_point_no_update(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode) {
+	int ret = _add_point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode);
 
 	return ret;
 }
@@ -381,7 +387,7 @@ real_t Curve::sample_local_nocheck(int p_index, real_t p_local_offset) const {
 
 void Curve::mark_dirty() {
 	_baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_changed();
 }
 
 Array Curve::get_data() const {
@@ -452,7 +458,7 @@ void Curve::bake() {
 	_baked_cache.resize(_bake_resolution);
 
 	for (int i = 1; i < _bake_resolution - 1; ++i) {
-		real_t x = i / static_cast<real_t>(_bake_resolution);
+		real_t x = i / static_cast<real_t>(_bake_resolution - 1);
 		real_t y = sample(x);
 		_baked_cache.write[i] = y;
 	}
@@ -489,7 +495,7 @@ real_t Curve::sample_baked(real_t p_offset) const {
 	}
 
 	// Get interpolation index
-	real_t fi = p_offset * _baked_cache.size();
+	real_t fi = p_offset * (_baked_cache.size() - 1);
 	int i = Math::floor(fi);
 	if (i < 0) {
 		i = 0;
@@ -768,7 +774,7 @@ Vector2 Curve2D::samplef(real_t p_findex) const {
 
 void Curve2D::mark_dirty() {
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_changed();
 }
 
 void Curve2D::_bake_segment2d(RBMap<real_t, Vector2> &r_bake, real_t p_begin, real_t p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, real_t p_tol) const {
@@ -1485,7 +1491,7 @@ Vector3 Curve3D::samplef(real_t p_findex) const {
 
 void Curve3D::mark_dirty() {
 	baked_cache_dirty = true;
-	emit_signal(CoreStringNames::get_singleton()->changed);
+	emit_changed();
 }
 
 void Curve3D::_bake_segment3d(RBMap<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_tol) const {
@@ -1648,9 +1654,9 @@ void Curve3D::_bake() const {
 			Vector3 forward = forward_ptr[0];
 
 			if (abs(forward.dot(Vector3(0, 1, 0))) > 1.0 - UNIT_EPSILON) {
-				frame_prev = Basis::looking_at(-forward, Vector3(1, 0, 0));
+				frame_prev = Basis::looking_at(forward, Vector3(1, 0, 0));
 			} else {
-				frame_prev = Basis::looking_at(-forward, Vector3(0, 1, 0));
+				frame_prev = Basis::looking_at(forward, Vector3(0, 1, 0));
 			}
 
 			up_write[0] = frame_prev.get_column(1);
@@ -1809,8 +1815,8 @@ Basis Curve3D::_sample_posture(Interval p_interval, bool p_apply_tilt) const {
 	}
 
 	// Build frames at both ends of the interval, then interpolate.
-	const Basis frame_begin = Basis::looking_at(-forward_begin, up_begin);
-	const Basis frame_end = Basis::looking_at(-forward_end, up_end);
+	const Basis frame_begin = Basis::looking_at(forward_begin, up_begin);
+	const Basis frame_end = Basis::looking_at(forward_end, up_end);
 	const Basis frame = frame_begin.slerp(frame_end, frac).orthonormalized();
 
 	if (!p_apply_tilt) {

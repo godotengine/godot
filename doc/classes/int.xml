@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="int" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Built-in integer Variant type.
+		A built-in type for integers.
 	</brief_description>
 	<description>
 		Signed 64-bit integer type. This means that it can take values from [code]-2^63[/code] to [code]2^63 - 1[/code], i.e. from [code]-9223372036854775808[/code] to [code]9223372036854775807[/code]. When it exceeds these bounds, it will wrap around.

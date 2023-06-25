@@ -178,6 +178,10 @@ public:
 	/// Put the agent in the map.
 	virtual void agent_set_map(RID p_agent, RID p_map);
 	virtual RID agent_get_map(RID p_agent) const;
+
+	virtual void agent_set_paused(RID p_agent, bool p_paused);
+	virtual bool agent_get_paused(RID p_agent) const;
+
 	virtual void agent_set_avoidance_enabled(RID p_agent, bool p_enabled);
 	virtual bool agent_get_avoidance_enabled(RID p_agent) const;
 
@@ -222,7 +226,7 @@ public:
 	virtual void agent_set_velocity_forced(RID p_agent, Vector2 p_velocity);
 
 	/// The wanted velocity for the agent as a "suggestion" to the avoidance simulation.
-	/// The simulation will try to fulfil this velocity wish if possible but may change the velocity depending on other agent's and obstacles'.
+	/// The simulation will try to fulfill this velocity wish if possible but may change the velocity depending on other agent's and obstacles'.
 	virtual void agent_set_velocity(RID p_agent, Vector2 p_velocity);
 
 	/// Position of the agent in world space.
@@ -240,8 +244,14 @@ public:
 
 	/// Creates the obstacle.
 	virtual RID obstacle_create();
+	virtual void obstacle_set_avoidance_enabled(RID p_obstacle, bool p_enabled);
+	virtual bool obstacle_get_avoidance_enabled(RID p_obstacle) const;
 	virtual void obstacle_set_map(RID p_obstacle, RID p_map);
 	virtual RID obstacle_get_map(RID p_obstacle) const;
+	virtual void obstacle_set_paused(RID p_obstacle, bool p_paused);
+	virtual bool obstacle_get_paused(RID p_obstacle) const;
+	virtual void obstacle_set_radius(RID p_obstacle, real_t p_radius);
+	virtual void obstacle_set_velocity(RID p_obstacle, Vector2 p_velocity);
 	virtual void obstacle_set_position(RID p_obstacle, Vector2 p_position);
 	virtual void obstacle_set_vertices(RID p_obstacle, const Vector<Vector2> &p_vertices);
 	virtual void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers);

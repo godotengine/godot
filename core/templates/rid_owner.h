@@ -117,6 +117,7 @@ class RID_Alloc : public RID_AllocBase {
 		uint32_t free_element = free_index % elements_in_chunk;
 
 		uint32_t validator = (uint32_t)(_gen_id() & 0x7FFFFFFF);
+		CRASH_COND_MSG(validator == 0x7FFFFFFF, "Overflow in RID validator");
 		uint64_t id = validator;
 		id <<= 32;
 		id |= free_index;
@@ -238,7 +239,7 @@ public:
 
 		uint32_t validator = uint32_t(id >> 32);
 
-		bool owned = (validator_chunks[idx_chunk][idx_element] & 0x7FFFFFFF) == validator;
+		bool owned = (validator != 0x7FFFFFFF) && (validator_chunks[idx_chunk][idx_element] & 0x7FFFFFFF) == validator;
 
 		if (THREAD_SAFE) {
 			spin_lock.unlock();

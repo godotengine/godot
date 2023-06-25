@@ -2334,7 +2334,8 @@ Vector2i TileMap::map_pattern(const Vector2i &p_position_in_tilemap, const Vecto
 
 void TileMap::set_pattern(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
+	ERR_FAIL_COND(p_pattern.is_null());
 
 	TypedArray<Vector2i> used_cells = p_pattern->get_used_cells();
 	for (int i = 0; i < used_cells.size(); i++) {
@@ -3085,7 +3086,7 @@ void TileMap::_build_runtime_update_tile_data(SelfList<TileMapQuadrant>::List &r
 
 							// Create the runtime TileData.
 							TileData *tile_data_runtime_use = tile_data->duplicate();
-							tile_data->set_allow_transform(true);
+							tile_data_runtime_use->set_allow_transform(true);
 							q.runtime_tile_data_cache[E_cell.value] = tile_data_runtime_use;
 
 							GDVIRTUAL_CALL(_tile_data_runtime_update, q.layer, E_cell.value, tile_data_runtime_use);

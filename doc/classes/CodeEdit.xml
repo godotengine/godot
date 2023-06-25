@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="CodeEdit" inherits="TextEdit" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Multiline text control intended for editing code.
+		A multiline text editor designed for editing code.
 	</brief_description>
 	<description>
-		CodeEdit is a specialized [TextEdit] designed for editing plain text code files. It contains a bunch of features commonly found in code editors such as line numbers, line folding, code completion, indent management and string / comment management.
-		[b]Note:[/b] By default [CodeEdit] always use left-to-right text direction to correctly display source code.
+		CodeEdit is a specialized [TextEdit] designed for editing plain text code files. It has many features commonly found in code editors such as line numbers, line folding, code completion, indent management, and string/comment management.
+		[b]Note:[/b] Regardless of locale, [CodeEdit] will by default always use left-to-right text direction to correctly display source code.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -49,8 +49,10 @@
 			<param index="3" name="text_color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="icon" type="Resource" default="null" />
 			<param index="5" name="value" type="Variant" default="0" />
+			<param index="6" name="location" type="int" default="1024" />
 			<description>
 				Submits an item to the queue of potential candidates for the autocomplete menu. Call [method update_code_completion_options] to update the list.
+				[param location] indicates location of the option relative to the location of the code completion query. See [enum CodeEdit.CodeCompletionLocation] for how to set this value.
 				[b]Note:[/b] This list will replace all current candidates.
 			</description>
 		</method>
@@ -559,6 +561,18 @@
 		</constant>
 		<constant name="KIND_PLAIN_TEXT" value="9" enum="CodeCompletionKind">
 			Marks the option as unclassified or plain text.
+		</constant>
+		<constant name="LOCATION_LOCAL" value="0" enum="CodeCompletionLocation">
+			The option is local to the location of the code completion query - e.g. a local variable. Subsequent value of location represent options from the outer class, the exact value represent how far they are (in terms of inner classes).
+		</constant>
+		<constant name="LOCATION_PARENT_MASK" value="256" enum="CodeCompletionLocation">
+			The option is from the containing class or a parent class, relative to the location of the code completion query. Perform a bitwise OR with the class depth (e.g. 0 for the local class, 1 for the parent, 2 for the grandparent, etc) to store the depth of an option in the class or a parent class.
+		</constant>
+		<constant name="LOCATION_OTHER_USER_CODE" value="512" enum="CodeCompletionLocation">
+			The option is from user code which is not local and not in a derived class (e.g. Autoload Singletons).
+		</constant>
+		<constant name="LOCATION_OTHER" value="1024" enum="CodeCompletionLocation">
+			The option is from other engine code, not covered by the other enum constants - e.g. built-in classes.
 		</constant>
 	</constants>
 	<theme_items>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AStarGrid2D" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A* (or "A-Star") pathfinding tailored to find the shortest paths on 2D grids.
+		An implementation of A* for finding the shortest path between two points on a partial 2D grid.
 	</brief_description>
 	<description>
-		Compared to [AStar2D] you don't need to manually create points or connect them together. It also supports multiple type of heuristics and modes for diagonal movement. This class also provides a jumping mode which is faster to calculate than without it in the [AStar2D] class.
-		In contrast to [AStar2D], you only need set the [member region] of the grid, optionally set the [member cell_size] and then call the [method update] method:
+		[AStarGrid2D] is a variant of [AStar2D] that is specialized for partial 2D grids. It is simpler to use because it doesn't require you to manually create points and connect them together. This class also supports multiple types of heuristics, modes for diagonal movement, and a jumping mode to speed up calculations.
+		To use [AStarGrid2D], you only need to set the [member region] of the grid, optionally set the [member cell_size], and then call the [method update] method:
 		[codeblocks]
 		[gdscript]
 		var astar_grid = AStarGrid2D.new()
@@ -24,6 +24,7 @@
 		GD.Print(astarGrid.GetPointPath(Vector2I.Zero, new Vector2I(3, 4))); // prints (0, 0), (16, 16), (32, 32), (48, 48), (48, 64)
 		[/csharp]
 		[/codeblocks]
+		To remove a point from the pathfinding grid, it must be set as "solid" with [method set_point_solid].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -160,9 +161,9 @@
 		<member name="region" type="Rect2i" setter="set_region" getter="get_region" default="Rect2i(0, 0, 0, 0)">
 			The region of grid cells available for pathfinding. If changed, [method update] needs to be called before finding the next path.
 		</member>
-		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(0, 0)">
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(0, 0)" is_deprecated="true">
 			The size of the grid (number of cells of size [member cell_size] on each axis). If changed, [method update] needs to be called before finding the next path.
-			[b]Note:[/b] This property is deprecated, use [member region] instead.
+			[i]Deprecated.[/i] Use [member region] instead.
 		</member>
 	</members>
 	<constants>

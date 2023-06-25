@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PhysicsDirectBodyState3DExtension" inherits="PhysicsDirectBodyState3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Provides virtual methods that can be overridden to create custom [PhysicsDirectBodyState3D] implementations.
 	</brief_description>
 	<description>
+		This class extends [PhysicsDirectBodyState3D] by providing additional virtual methods that can be overridden. When these methods are overridden, they will be called instead of the internal methods of the physics server.
+		Intended for use with GDExtension to create custom implementations of [PhysicsDirectBodyState3D].
 	</description>
 	<tutorials>
 	</tutorials>

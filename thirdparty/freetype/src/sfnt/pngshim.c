@@ -4,7 +4,7 @@
  *
  *   PNG Bitmap glyph support.
  *
- * Copyright (C) 2013-2022 by
+ * Copyright (C) 2013-2023 by
  * Google, Inc.
  * Written by Stuart Gill and Behdad Esfahbod.
  *
@@ -239,7 +239,7 @@
       *e = FT_THROW( Invalid_Stream_Read );
       png_error( png, NULL );
 
-      return;
+      /* return; (never reached) */
     }
 
     ft_memcpy( data, stream->cursor, length );
@@ -407,7 +407,8 @@
     switch ( color_type )
     {
     default:
-      /* Shouldn't happen, but fall through. */
+      /* Shouldn't happen, but ... */
+      FALL_THROUGH;
 
     case PNG_COLOR_TYPE_RGB_ALPHA:
       png_set_read_user_transform_fn( png, premultiply_data );
