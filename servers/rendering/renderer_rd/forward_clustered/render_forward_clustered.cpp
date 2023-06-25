@@ -314,6 +314,9 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		if (surf->owner->instance_count == 0) {
 			continue;
 		}
+		if (element_info.repeat == 0) {
+			continue; // Skip equal elements
+		}
 
 		push_constant.base_index = i + p_params->element_offset;
 
@@ -514,7 +517,6 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		}
 
 		RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instance_count);
-		i += element_info.repeat - 1; //skip equal elements
 	}
 
 	// Make the actual redraw request
@@ -708,7 +710,8 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 		p_render_info[RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] += element_total;
 	}
 	uint64_t frame = RSG::rasterizer->get_frame_number();
-	uint32_t repeats = 0;
+
+	RenderElementInfo *repeater_info = nullptr;
 	GeometryInstanceSurfaceDataCache *prev_surface = nullptr;
 	for (uint32_t i = 0; i < element_total; i++) {
 		GeometryInstanceSurfaceDataCache *surface = rl->elements[i + p_offset];
@@ -748,22 +751,19 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 
 		bool cant_repeat = instance_data.flags & INSTANCE_DATA_FLAG_MULTIMESH || inst->mesh_instance.is_valid();
 
-		if (prev_surface != nullptr && !cant_repeat && prev_surface->sort.sort_key1 == surface->sort.sort_key1 && prev_surface->sort.sort_key2 == surface->sort.sort_key2 && inst->mirror == prev_surface->owner->mirror && repeats < RenderElementInfo::MAX_REPEATS) {
+		RenderElementInfo &element_info = rl->element_info[p_offset + i];
+
+		if (prev_surface != nullptr && !cant_repeat && prev_surface->sort.sort_key1 == surface->sort.sort_key1 && prev_surface->sort.sort_key2 == surface->sort.sort_key2 && inst->mirror == prev_surface->owner->mirror && repeater_info->repeat < RenderElementInfo::MAX_REPEATS) {
 			//this element is the same as the previous one, count repeats to draw it using instancing
-			repeats++;
+			repeater_info->repeat++;
+			element_info.repeat = 0;
 		} else {
-			if (repeats > 0) {
-				for (uint32_t j = 1; j <= repeats; j++) {
-					rl->element_info[p_offset + i - j].repeat = j;
-				}
-			}
-			repeats = 1;
+			repeater_info = &element_info;
+			repeater_info->repeat = 1;
 			if (p_render_info) {
 				p_render_info[RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME]++;
 			}
 		}
-
-		RenderElementInfo &element_info = rl->element_info[p_offset + i];
 
 		element_info.lod_index = surface->sort.lod_index;
 		element_info.uses_forward_gi = surface->sort.uses_forward_gi;
@@ -775,12 +775,6 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 			prev_surface = nullptr;
 		} else {
 			prev_surface = surface;
-		}
-	}
-
-	if (repeats > 0) {
-		for (uint32_t j = 1; j <= repeats; j++) {
-			rl->element_info[p_offset + element_total - j].repeat = j;
 		}
 	}
 
