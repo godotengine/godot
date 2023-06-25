@@ -36,10 +36,18 @@ void NavRegion::set_map(NavMap *p_map) {
 	if (map == p_map) {
 		return;
 	}
+
+	if (map) {
+		map->remove_region(this);
+	}
+
 	map = p_map;
 	polygons_dirty = true;
-	if (!map) {
-		connections.clear();
+
+	connections.clear();
+
+	if (map) {
+		map->add_region(this);
 	}
 }
 
