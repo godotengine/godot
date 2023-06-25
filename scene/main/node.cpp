@@ -226,9 +226,9 @@ void Node::_propagate_ready() {
 	notification(NOTIFICATION_POST_ENTER_TREE);
 
 	if (data.ready_first) {
-		data.ready_first = false;
 		notification(NOTIFICATION_READY);
 		emit_signal(SceneStringNames::get_singleton()->ready);
+		data.ready_first = false;
 	}
 }
 
