@@ -148,6 +148,7 @@ source_files = [
     "protocol/idle_inhibit.gen.c",
     "protocol/tablet.gen.c",
     "display_server_wayland.cpp",
+    "wayland_thread.cpp",
     "key_mapping_xkb.cpp",
 ]
 
