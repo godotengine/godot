@@ -114,7 +114,7 @@ namespace GodotTools.Build
             var toolBarHBox = new HBoxContainer { SizeFlagsHorizontal = SizeFlags.ExpandFill };
             AddChild(toolBarHBox);
 
-            _buildMenuBtn = new MenuButton { Text = "Build", Icon = GetThemeIcon("Play", "EditorIcons") };
+            _buildMenuBtn = new MenuButton { Text = "Build", Icon = GetThemeIcon("BuildCSharp", "EditorIcons") };
             toolBarHBox.AddChild(_buildMenuBtn);
 
             var buildMenu = _buildMenuBtn.GetPopup();
@@ -184,7 +184,7 @@ namespace GodotTools.Build
             if (what == NotificationThemeChanged)
             {
                 if (_buildMenuBtn != null)
-                    _buildMenuBtn.Icon = GetThemeIcon("Play", "EditorIcons");
+                    _buildMenuBtn.Icon = GetThemeIcon("BuildCSharp", "EditorIcons");
                 if (_errorsBtn != null)
                     _errorsBtn.Icon = GetThemeIcon("StatusError", "EditorIcons");
                 if (_warningsBtn != null)
