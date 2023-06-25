@@ -208,6 +208,7 @@ void SaveloadSpawner::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
 			_update_spawn_node();
+			//get_saveload()->object_configuration_add(get_spawn_node(), this);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {

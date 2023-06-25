@@ -162,6 +162,63 @@ TypedArray<SaveloadSynchronizer> SceneSaveloadInterface::get_sync_nodes() {
 	return syncs;
 }
 
+Dictionary SceneSaveloadInterface::get_sync_state() {
+	Dictionary sync_state;
+	for (const ObjectID &oid : sync_nodes) {
+		print_line("SceneSaveloadInterface::get_sync_state: getting syncer...");
+		SaveloadSynchronizer *sync = get_id_as<SaveloadSynchronizer>(oid);
+		ERR_CONTINUE(!sync);
+		print_line("SceneSaveloadInterface::get_sync_state: syncer: ", sync);
+		print_line("SceneSaveloadInterface::get_sync_state: getting node path...");
+		const NodePath node_path = sync->get_root_path();
+		print_line("SceneSaveloadInterface::get_sync_state: node path: ", node_path);
+		print_line("SceneSaveloadInterface::get_sync_state: getting state dict...");
+		Dictionary state_dict = sync->get_state_wrapper();
+		print_line("SceneSaveloadInterface::get_sync_state: adding to dict...");
+		sync_state[sync->get_root_path()] = sync->get_state_wrapper();
+	}
+}
+
+SceneSaveloadInterface::SaveloadState SceneSaveloadInterface::get_saveload_state() {
+	SaveloadState saveload_state;
+	print_line("SceneSaveloadInterface::get_saveload_state: getting spawn state...");
+//	for (const ObjectID &oid : spawn_nodes) {
+//		SaveloadSpawner *spawner = get_id_as<SaveloadSpawner>(oid);
+//		ERR_CONTINUE(!spawner);
+//		SaveloadSpawner::SpawnState spawn_state = spawner->get_spawn_state();
+//		saveload_state.spawn_states.insert(spawner->get_path(), spawn_state);
+//	}
+	print_line("SceneSaveloadInterface::get_saveload_state: getting sync state...");
+	for (const ObjectID &oid : sync_nodes) {
+		print_line("SceneSaveloadInterface::get_saveload_state: getting a sync state...");
+		SaveloadSynchronizer *sync = get_id_as<SaveloadSynchronizer>(oid);
+		print_line("SceneSaveloadInterface::get_saveload_state: dereferenced sync...");
+		ERR_CONTINUE_MSG(!sync, "invalid synchronizer");
+		print_line("SceneSaveloadInterface::get_saveload_state: getting state wrapper... ");
+		print_line(sync->get_state_wrapper());
+		SaveloadSynchronizer::SyncState sync_state = sync->get_sync_state();
+		print_line("SceneSaveloadInterface::get_saveload_state: got a sync state");
+		saveload_state.sync_states.insert(sync->get_path(), sync_state);
+		print_line("SceneSaveloadInterface::get_saveload_state: inserted sync state");
+	}
+	return saveload_state;
+}
+
+Dictionary SceneSaveloadInterface::SaveloadState::to_dict() {
+	Dictionary dict;
+	Dictionary spawn_dict;
+//	for (const KeyValue<const NodePath, SaveloadSpawner::SpawnState> &spawn_state : SaveloadState::spawn_states) {
+//		spawn_dict[spawn_state.key] = spawn_state.value.to_dict();
+//	}
+	Dictionary sync_dict;
+	for (const KeyValue<const NodePath, SaveloadSynchronizer::SyncState> &sync_state : SaveloadState::sync_states) {
+		sync_dict[sync_state.key] = sync_state.value.to_dict();
+	}
+	dict[StringName("spawn_states")] = spawn_dict;
+	dict[StringName("sync_states")] = sync_dict;
+	return dict;
+}
+
 Error SceneSaveloadInterface::on_spawn(Object *p_obj, Variant p_config) {
 	Node *node = Object::cast_to<Node>(p_obj);
 	ERR_FAIL_COND_V(!node || p_config.get_type() != Variant::OBJECT, ERR_INVALID_PARAMETER);
@@ -171,7 +228,10 @@ Error SceneSaveloadInterface::on_spawn(Object *p_obj, Variant p_config) {
 	const ObjectID oid = node->get_instance_id();
 	TrackedNode &tobj = _track(oid);
 
-	// Spawn state needs to be callected after "ready", but the spawn order follows "enter_tree".
+	// Add to list of spawn nodes
+	spawn_nodes.insert(spawner->get_instance_id());
+
+	// Spawn state needs to be collected after "ready", but the spawn order follows "enter_tree".
 	ERR_FAIL_COND_V(tobj.spawner != ObjectID(), ERR_ALREADY_IN_USE);
 	tobj.spawner = spawner->get_instance_id();
 	spawn_queue.insert(oid);

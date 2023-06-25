@@ -37,13 +37,26 @@
 
 class SaveloadSynchronizer : public Node {
 	GDCLASS(SaveloadSynchronizer, Node);
-//
-//public:
+
+public:
 //	enum VisibilityUpdateMode {
 //		VISIBILITY_PROCESS_IDLE,
 //		VISIBILITY_PROCESS_PHYSICS,
 //		VISIBILITY_PROCESS_NONE,
 //	};
+	struct SyncState {
+		HashMap<const NodePath, Variant> property_map;
+		Dictionary to_dict() const {
+			Dictionary dict;
+			for (const KeyValue<const NodePath, Variant> &property : property_map) {
+				dict[property.key] = property.value;
+				print_line(property.key);
+				print_line(property.value);
+			}
+			return dict;
+		};
+		SyncState() {};
+	};
 
 private:
 	struct Watcher {
@@ -80,6 +93,8 @@ protected:
 public:
 	static Error get_state(const List<NodePath> &p_properties, Object *p_obj, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs);
 	static Error set_state(const List<NodePath> &p_properties, Object *p_obj, const Vector<Variant> &p_state);
+
+	SyncState get_sync_state();
 
 	Dictionary get_state_wrapper();
 

@@ -373,9 +373,19 @@ TypedArray<SaveloadSynchronizer> SceneSaveload::get_sync_nodes() {
 	return saveloader->get_sync_nodes();
 }
 
-Variant SceneSaveload::get_state(const Object *p_object, const StringName section) {
-	return Variant();
+Dictionary SceneSaveload::get_dict() {
+	print_line("SceneSaveload::get_dict()");
+	SceneSaveloadInterface::SaveloadState saveload_state = saveloader->get_saveload_state();
+	print_line("SceneSaveload::get_dict() got savelaod_state");
+	return saveload_state.to_dict();
 }
+
+Variant SceneSaveload::get_state(const Object *p_object, const StringName section) {
+	Dictionary state;
+	state[StringName("synchers")] = saveloader->get_sync_state();
+	return state;
+}
+
 Error SceneSaveload::set_state(const Variant p_value, const Object *p_object, const StringName section) {
 	return ERR_UNAVAILABLE;
 }
@@ -524,6 +534,7 @@ void SceneSaveload::_bind_methods() {
 //	ClassDB::bind_method(D_METHOD("send_bytes", "bytes", "id", "mode", "channel"), &SceneSaveload::send_bytes, DEFVAL(MultiplayerPeer::TARGET_PEER_BROADCAST), DEFVAL(MultiplayerPeer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("get_sync_nodes"), &SceneSaveload::get_sync_nodes);
+	ClassDB::bind_method(D_METHOD("get_dict"), &SceneSaveload::get_dict);
 
 	ClassDB::bind_method(D_METHOD("get_max_sync_packet_size"), &SceneSaveload::get_max_sync_packet_size);
 	ClassDB::bind_method(D_METHOD("set_max_sync_packet_size", "size"), &SceneSaveload::set_max_sync_packet_size);

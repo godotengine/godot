@@ -46,6 +46,32 @@ public:
 	enum {
 		INVALID_ID = 0xFF,
 	};
+	struct SpawnInfo {
+		Variant args;
+		int id = INVALID_ID;
+		Dictionary to_dict() const {
+			Dictionary dict;
+			dict[StringName("args")] = args;
+			dict[StringName("id")] = id;
+			return dict;
+		}
+		SpawnInfo(Variant p_args, int p_id) {
+			id = p_id;
+			args = p_args;
+		}
+		SpawnInfo() {}
+	};
+	struct SpawnState {
+		HashMap<ObjectID, SpawnInfo> spawned_nodes;
+		Dictionary to_dict() const {
+			Dictionary dict;
+			for (const KeyValue<ObjectID, SpawnInfo> &spawned_node : spawned_nodes) {
+				dict[spawned_node.key] = spawned_node.value.to_dict();
+			}
+			return dict;
+		};
+		SpawnState(HashMap<ObjectID, SpawnInfo> p_spawned_nodes) {spawned_nodes = p_spawned_nodes;}
+	};
 
 private:
 	struct SpawnableScene {
@@ -57,16 +83,6 @@ private:
 
 	HashSet<ResourceUID::ID> spawnable_ids;
 	NodePath spawn_path;
-
-	struct SpawnInfo {
-		Variant args;
-		int id = INVALID_ID;
-		SpawnInfo(Variant p_args, int p_id) {
-			id = p_id;
-			args = p_args;
-		}
-		SpawnInfo() {}
-	};
 
 	ObjectID spawn_node;
 	HashMap<ObjectID, SpawnInfo> tracked_nodes;
@@ -97,6 +113,8 @@ public:
 	Node *get_spawn_node() const {
 		return spawn_node.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(spawn_node)) : nullptr;
 	}
+
+	SpawnState get_spawn_state() const { return SpawnState(tracked_nodes); }
 
 	void add_spawnable_scene(const String &p_path);
 	int get_spawnable_scene_count() const;

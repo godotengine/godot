@@ -112,7 +112,9 @@ protected:
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 public:
+
 	TypedArray<SaveloadSynchronizer> get_sync_nodes();
+	Dictionary get_dict();
 
 	virtual Variant get_state(const Object *p_object, const StringName section = "") override;
 	virtual Error set_state(const Variant p_value, const Object *p_object, const StringName section = "") override;

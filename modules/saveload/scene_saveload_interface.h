@@ -41,6 +41,13 @@ class SceneSaveload;
 class SceneSaveloadInterface : public RefCounted {
 	GDCLASS(SceneSaveloadInterface, RefCounted);
 
+public:
+	struct SaveloadState {
+		HashMap<const NodePath, SaveloadSpawner::SpawnState> spawn_states;
+		HashMap<const NodePath, SaveloadSynchronizer::SyncState> sync_states;
+		Dictionary to_dict();
+	};
+
 private:
 	struct TrackedNode {
 		ObjectID id;
@@ -73,6 +80,7 @@ private:
 	uint32_t last_net_id = 0;
 	HashMap<ObjectID, TrackedNode> tracked_nodes;
 	HashSet<ObjectID> spawned_nodes;
+	HashSet<ObjectID> spawn_nodes;
 	HashSet<ObjectID> sync_nodes;
 
 private:
@@ -129,6 +137,9 @@ public:
 //	void on_peer_change(int p_id, bool p_connected);
 
 	TypedArray<SaveloadSynchronizer> get_sync_nodes();
+	Dictionary get_sync_state();
+
+	SaveloadState get_saveload_state();
 
 	Error on_spawn(Object *p_obj, Variant p_config);
 	Error on_despawn(Object *p_obj, Variant p_config);

@@ -165,6 +165,21 @@ Error SaveloadSynchronizer::get_state(const List<NodePath> &p_properties, Object
 	return OK;
 }
 
+SaveloadSynchronizer::SyncState SaveloadSynchronizer::get_sync_state() {
+	Vector<Variant> vars;
+	Vector<const Variant *> varp;
+	print_line("SaveloadSynchronizer::get_sync_state: getting properties...");
+	const List<NodePath> props = get_saveload_config()->get_sync_properties();
+	print_line("SaveloadSynchronizer::get_sync_state: getting property values...");
+	get_state(props, get_root_node(), vars, varp);
+	SyncState sync_state;
+	for (int i = 0; i < vars.size(); ++i) {
+		print_line("SaveloadSynchronizer::get_sync_state: filling sync state...");
+		sync_state.property_map.insert(props[i], vars[i]);
+	}
+	return sync_state;
+}
+
 Dictionary SaveloadSynchronizer::get_state_wrapper() {
 	Vector<Variant> vars;
 	Vector<const Variant *> varp;
