@@ -134,7 +134,8 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
-		case FEATURE_CLIPBOARD_PRIMARY: {
+		case FEATURE_CLIPBOARD_PRIMARY:
+		case FEATURE_HIDPI: {
 			return true;
 		} break;
 
@@ -374,6 +375,16 @@ int DisplayServerWayland::screen_get_dpi(int p_screen) const {
 
 	// Could not get DPI.
 	return 96;
+}
+
+float DisplayServerWayland::screen_get_scale(int p_screen) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+		p_screen = window_get_current_screen();
+	}
+
+	return wayland_thread.screen_get_data(p_screen).scale;
 }
 
 float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {

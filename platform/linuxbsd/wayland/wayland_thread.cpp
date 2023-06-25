@@ -716,6 +716,22 @@ void WaylandThread::_wl_surface_on_enter(void *data, struct wl_surface *wl_surfa
 	// TODO: Handle multiple outputs?
 
 	ws->wl_output = wl_output;
+
+	// This event gets sent _after_ the initial creation of a window, so a new
+	// window has always scale 1. While this isn't ideal, the easiest solution is
+	// just to resize it ourselves.
+	int scale = window_state_calculate_scale(ws);
+
+	// FIXME: Multiplying and dividing isn't exactly ideal. Perhaps we could move
+	// the resizing logic into an internal, perhaps static, unscaled method?
+	ws->wayland_thread->window_resize(ws->id, ws->rect.size * scale);
+
+	// And we have to obviously tell the main thread about the resize.
+	Ref<WindowRectMessage> rect_msg;
+	rect_msg.instantiate();
+	rect_msg->rect = ws->rect;
+	rect_msg->rect.size *= scale;
+	ws->wayland_thread->push_message(rect_msg);
 }
 
 void WaylandThread::_wl_surface_on_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
