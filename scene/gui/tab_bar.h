@@ -107,6 +107,10 @@ private:
 	bool scroll_to_selected = true;
 	int tabs_rearrange_group = -1;
 
+	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
+	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 20;
+	float gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
+
 	struct ThemeCache {
 		int h_separation = 0;
 		int icon_max_width = 0;
@@ -115,6 +119,7 @@ private:
 		Ref<StyleBox> tab_hovered_style;
 		Ref<StyleBox> tab_selected_style;
 		Ref<StyleBox> tab_disabled_style;
+		Ref<StyleBox> tab_focus_style;
 
 		Ref<Texture2D> increment_icon;
 		Ref<Texture2D> increment_hl_icon;
@@ -148,7 +153,7 @@ private:
 	void _on_mouse_exited();
 
 	void _shape(int p_tab);
-	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x);
+	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x, bool p_focus);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -213,6 +218,9 @@ public:
 	int get_current_tab() const;
 	int get_previous_tab() const;
 	int get_hovered_tab() const;
+
+	bool select_previous_available();
+	bool select_next_available();
 
 	int get_tab_offset() const;
 	bool get_offset_buttons_visible() const;
