@@ -267,7 +267,7 @@ public:
 
 	virtual void window_set_max_size(const Size2i p_size, WindowID p_window_id = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_max_size(WindowID p_window_id = MAIN_WINDOW_ID) const override;
-	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id_id) override;
+	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id) override;
 
 	virtual void window_set_transient(WindowID p_window_id, WindowID p_parent) override;
 

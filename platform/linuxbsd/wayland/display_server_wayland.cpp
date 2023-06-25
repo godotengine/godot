@@ -664,162 +664,27 @@ Size2i DisplayServerWayland::window_get_size_with_decorations(DisplayServer::Win
 }
 
 void DisplayServerWayland::window_set_mode(WindowMode p_mode, DisplayServer::WindowID p_window_id) {
-	// TODO: Port to `WaylandThread` APIs.
-
-#if 0
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	WindowData &wd = main_window;
 
-	if (!wd.visible || wd.mode == p_mode) {
+	if (!wd.visible) {
 		return;
 	}
 
-	// Don't waste time with hidden windows and whatnot. Behave like it worked.
-#ifdef LIBDECOR_ENABLED
-	if ((!wd.wl_surface || !wd.xdg_toplevel) && !wd.libdecor_frame) {
-#else
-	if (!wd.wl_surface || !wd.xdg_toplevel) {
-#endif // LIBDECOR_ENABLED
-		wd.mode = p_mode;
-		return;
-	}
-
-	// Return back to a windowed state so that we can apply what the user asked.
-	switch (wd.mode) {
-		case WINDOW_MODE_WINDOWED: {
-			// Do nothing.
-		} break;
-
-		case WINDOW_MODE_MINIMIZED: {
-			// We can't do much according to the xdg_shell protocol. I have no idea
-			// whether this implies that we should return or who knows what. For now
-			// we'll do nothing.
-			// TODO: Test this properly.
-		} break;
-
-		case WINDOW_MODE_MAXIMIZED: {
-			// Try to unmaximize. This isn't garaunteed to work actually, so we'll have
-			// to check whether something changed.
-			if (wd.xdg_toplevel) {
-				xdg_toplevel_unset_maximized(wd.xdg_toplevel);
-			}
-
-#ifdef LIBDECOR_ENABLED
-			if (wd.libdecor_frame) {
-				libdecor_frame_unset_maximized(wd.libdecor_frame);
-			}
-#endif
-		} break;
-
-		case WINDOW_MODE_FULLSCREEN:
-		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN: {
-			// Same thing as above, unset fullscreen and check later if it worked.
-			if (wd.xdg_toplevel) {
-				xdg_toplevel_unset_fullscreen(wd.xdg_toplevel);
-			}
-
-#ifdef LIBDECOR_ENABLED
-			if (wd.libdecor_frame) {
-				libdecor_frame_unset_fullscreen(wd.libdecor_frame);
-			}
-#endif
-		} break;
-	}
-
-	// Wait for a configure event and hope that something changed.
-	wl_display_roundtrip(wayland_thread.get_wl_display());
-
-	if (wd.mode != WINDOW_MODE_WINDOWED) {
-		// The compositor refused our "normalization" request. It'd be useless or
-		// unpredictable to attempt setting a new state. We're done.
-		return;
-	}
-
-	// Ask the compositor to set the state indicated by the new mode.
-	switch (p_mode) {
-		case WINDOW_MODE_WINDOWED: {
-			// Do nothing. We're already windowed.
-		} break;
-
-		case WINDOW_MODE_MINIMIZED: {
-			if (wd.xdg_toplevel) {
-				if (!wd.can_minimize) {
-					// We can't minimize, ignore.
-					break;
-				}
-
-				xdg_toplevel_set_minimized(wd.xdg_toplevel);
-			}
-
-#ifdef LIBDECOR_ENABLED
-			if (wd.libdecor_frame) {
-				if (!libdecor_frame_has_capability(wd.libdecor_frame, LIBDECOR_ACTION_MINIMIZE)) {
-					// We can't minimize, ignore.
-					break;
-				}
-
-				libdecor_frame_set_minimized(wd.libdecor_frame);
-			}
-#endif
-			// We have no way to actually detect this state, so we'll have to report it
-			// manually to the engine (hoping that it worked). In the worst case it'll
-			// get reset by the next configure event.
-			wd.mode = WINDOW_MODE_MINIMIZED;
-		} break;
-
-		case WINDOW_MODE_MAXIMIZED: {
-			if (wd.xdg_toplevel) {
-				if (!wd.can_maximize) {
-					// We can't maximize, ignore.
-					break;
-				}
-
-				xdg_toplevel_set_maximized(wd.xdg_toplevel);
-			}
-
-#ifdef LIBDECOR_ENABLED
-			if (wd.libdecor_frame) {
-				// NOTE: libdecor doesn't seem to have a maximize capability query?
-				// The fact that there's a fullscreen one makes me suspicious.
-				libdecor_frame_set_maximized(wd.libdecor_frame);
-			}
-#endif
-		} break;
-
-		case WINDOW_MODE_FULLSCREEN:
-		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN: {
-			if (wd.xdg_toplevel) {
-				if (!wd.can_fullscreen) {
-					// We can't fullscreen, ignore.
-					break;
-				}
-
-				xdg_toplevel_set_fullscreen(wd.xdg_toplevel, nullptr);
-			}
-
-#ifdef LIBDECOR_ENABLED
-			if (wd.libdecor_frame) {
-				if (!libdecor_frame_has_capability(wd.libdecor_frame, LIBDECOR_ACTION_FULLSCREEN)) {
-					// We can't fullscreen, ignore.
-					break;
-				}
-
-				libdecor_frame_set_fullscreen(wd.libdecor_frame, nullptr);
-			}
-#endif
-		} break;
-
-		default: {
-		} break;
-	}
-#endif // 0
+	wayland_thread.window_try_set_mode(p_window_id, p_mode);
 }
 
 DisplayServer::WindowMode DisplayServerWayland::window_get_mode(DisplayServer::WindowID p_window_id) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	return main_window.mode;
+	const WindowData &wd = main_window;
+
+	if (!wd.visible) {
+		return WINDOW_MODE_WINDOWED;
+	}
+
+	return wayland_thread.window_get_mode(p_window_id);
 }
 
 bool DisplayServerWayland::window_is_maximize_allowed(DisplayServer::WindowID p_window_id) const {

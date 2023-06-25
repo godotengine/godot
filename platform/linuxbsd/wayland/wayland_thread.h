@@ -760,15 +760,17 @@ public:
 	bool has_message();
 	Ref<Message> pop_message();
 
-	void window_create(DisplayServer::WindowID p_window_id_id, int p_width, int p_height);
+	void window_create(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 
 	struct wl_surface *window_get_wl_surface(DisplayServer::WindowID p_window_id) const;
 
-	void window_resize(DisplayServer::WindowID p_window_id_id, Size2i p_size);
+	void window_resize(DisplayServer::WindowID p_window_id, Size2i p_size);
 	void window_set_max_size(DisplayServer::WindowID p_window_id, Size2i p_size);
 	void window_set_min_size(DisplayServer::WindowID p_window_id, Size2i p_size);
 
-	bool window_can_set_mode(DisplayServer::WindowID p_window_id, DisplayServer::WindowMode p_mode) const;
+	bool window_can_set_mode(DisplayServer::WindowID p_window_id, DisplayServer::WindowMode p_window_mode) const;
+	void window_try_set_mode(DisplayServer::WindowID p_window_id, DisplayServer::WindowMode p_window_mode);
+	DisplayServer::WindowMode window_get_mode(DisplayServer::WindowID p_window_id) const;
 
 	void window_set_borderless(DisplayServer::WindowID p_window_id, bool p_borderless);
 	void window_set_title(DisplayServer::WindowID p_window_id, String p_title);
