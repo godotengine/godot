@@ -863,7 +863,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 	ScriptLanguage::ScriptTemplate script_template = ScriptLanguage::ScriptTemplate();
 	script_template.origin = p_origin;
 	script_template.inherit = p_inherits;
-	String space_indent = "    ";
+	int space_indent_size = 4;
 	// Get meta delimiter
 	String meta_delimiter;
 	List<String> comment_delimiters;
@@ -884,30 +884,49 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 			String line = file->get_line();
 			if (line.begins_with(meta_prefix)) {
 				// Store meta information
-				line = line.substr(meta_prefix.length(), -1);
-				if (line.begins_with("name")) {
-					script_template.name = line.substr(5, -1).strip_edges();
-				}
-				if (line.begins_with("description")) {
-					script_template.description = line.substr(12, -1).strip_edges();
-				}
-				if (line.begins_with("space-indent")) {
-					String indent_value = line.substr(17, -1).strip_edges();
+				line = line.substr(meta_prefix.length());
+				if (line.begins_with("name:")) {
+					script_template.name = line.substr(5).strip_edges();
+				} else if (line.begins_with("description:")) {
+					script_template.description = line.substr(12).strip_edges();
+				} else if (line.begins_with("space-indent:")) {
+					String indent_value = line.substr(13).strip_edges();
 					if (indent_value.is_valid_int()) {
 						int indent_size = indent_value.to_int();
 						if (indent_size >= 0) {
-							space_indent = String(" ").repeat(indent_size);
+							space_indent_size = indent_size;
+						} else {
+							WARN_PRINT(vformat("Template meta-space-indent need to be a non-negative integer value. Found %s.", indent_value));
 						}
 					} else {
-						WARN_PRINT(vformat("Template meta-use_space_indent need to be a valid integer value. Found %s.", indent_value));
+						WARN_PRINT(vformat("Template meta-space-indent need to be a valid integer value. Found %s.", indent_value));
 					}
 				}
 			} else {
-				// Store script
-				if (space_indent != "") {
-					line = line.replace(space_indent, "_TS_");
+				// Replace indentation.
+				int i = 0;
+				int space_count = 0;
+				for (; i < line.length(); i++) {
+					if (line[i] == '\t') {
+						if (space_count) {
+							script_template.content += String(" ").repeat(space_count);
+							space_count = 0;
+						}
+						script_template.content += "_TS_";
+					} else if (line[i] == ' ') {
+						space_count++;
+						if (space_count == space_indent_size) {
+							script_template.content += "_TS_";
+							space_count = 0;
+						}
+					} else {
+						break;
+					}
 				}
-				script_template.content += line.replace("\t", "_TS_") + "\n";
+				if (space_count) {
+					script_template.content += String(" ").repeat(space_count);
+				}
+				script_template.content += line.substr(i) + "\n";
 			}
 		}
 	}
