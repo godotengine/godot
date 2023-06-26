@@ -1192,7 +1192,7 @@ static const char *_joy_button_descriptions[(size_t)JoyButton::SDL_MAX] = {
 	TTRC("Top Action, Sony Triangle, Xbox Y, Nintendo X"),
 	TTRC("Back, Sony Select, Xbox Back, Nintendo -"),
 	TTRC("Guide, Sony PS, Xbox Home"),
-	TTRC("Start, Nintendo +"),
+	TTRC("Start, Xbox Menu, Nintendo +"),
 	TTRC("Left Stick, Sony L3, Xbox L/LS"),
 	TTRC("Right Stick, Sony R3, Xbox R/RS"),
 	TTRC("Left Shoulder, Sony L1, Xbox LB"),
