@@ -33,91 +33,36 @@
 
 #ifdef WAYLAND_ENABLED
 
-#include <fcntl.h>
-#include <limits.h>
-#include <poll.h>
-#include <stdio.h>
-#include <sys/mman.h>
-#include <unistd.h>
-
-#ifdef SOWRAP_ENABLED
-#include "dynwrappers/wayland-client-core-so_wrap.h"
-#include "dynwrappers/wayland-cursor-so_wrap.h"
-#include "dynwrappers/wayland-egl-core-so_wrap.h"
-
-#include "../xkbcommon-so_wrap.h"
-#else
-#include <wayland-client-core.h>
-#include <wayland-cursor.h>
-#include <wayland-egl-core.h>
-
-#include <xkbcommon/xkbcommon.h>
-#endif // SOWRAP_ENABLED
-
-#ifdef LIBDECOR_ENABLED
-#ifdef SOWRAP_ENABLED
-#include "dynwrappers/libdecor-so_wrap.h"
-#else
-#include <libdecor-0/libdecor.h>
-#endif // SOWRAP_ENABLED
-#endif // LIBDECOR_ENABLED
-
-#include "wayland_thread.h"
-
-#include "key_mapping_xkb.h"
-#include "servers/display_server.h"
-
-#include "protocol/idle_inhibit.gen.h"
-#include "protocol/pointer_constraints.gen.h"
-#include "protocol/pointer_gestures.gen.h"
-#include "protocol/primary_selection.gen.h"
-#include "protocol/relative_pointer.gen.h"
-#include "protocol/tablet.gen.h"
-#include "protocol/wayland.gen.h"
-#include "protocol/xdg_activation.gen.h"
-#include "protocol/xdg_decoration.gen.h"
-#include "protocol/xdg_shell.gen.h"
-
-// FIXME: Since this platform is called linuxbsd, can we avoid this include?
-#include "linux/input-event-codes.h"
+#include "wayland/wayland_thread.h"
 
 #ifdef VULKAN_ENABLED
+#include "wayland/vulkan_context_wayland.h"
+
 #include "drivers/vulkan/rendering_device_vulkan.h"
-#include "vulkan_context_wayland.h"
 #endif
 
 #ifdef GLES3_ENABLED
-#include "egl_manager_wayland.h"
+#include "wayland/egl_manager_wayland.h"
 #endif
 
 #if defined(SPEECHD_ENABLED)
-#include "../tts_linux.h"
+#include "tts_linux.h"
 #endif
 
 #ifdef DBUS_ENABLED
-#include "../freedesktop_portal_desktop.h"
-#include "../freedesktop_screensaver.h"
+#include "freedesktop_portal_desktop.h"
+#include "freedesktop_screensaver.h"
 #endif
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
-
 #include "scene/resources/texture.h"
+#include "servers/display_server.h"
+
+#include <limits.h>
+#include <stdio.h>
 
 #undef CursorShape
-
-// Fix the wl_array_for_each macro to work with C++. This is based on the
-// original from `wayland-util.h` in the Wayland client library.
-#undef wl_array_for_each
-#define wl_array_for_each(pos, array) \
-	for (pos = (decltype(pos))(array)->data; (const char *)pos < ((const char *)(array)->data + (array)->size); (pos)++)
-
-#define DISPLAY_SERVER_WAYLAND_DEBUG_LOGS_ENABLED
-#ifdef DISPLAY_SERVER_WAYLAND_DEBUG_LOGS_ENABLED
-#define DEBUG_LOG_WAYLAND(...) print_verbose(__VA_ARGS__)
-#else
-#define DEBUG_LOG_WAYLAND(...)
-#endif
 
 class DisplayServerWayland : public DisplayServer {
 	// No need to register with GDCLASS, it's platform-specific and nothing is added.

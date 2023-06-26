@@ -32,6 +32,13 @@
 
 #ifdef WAYLAND_ENABLED
 
+#define WAYLAND_DISPLAY_SERVER_DEBUG_LOGS_ENABLED
+#ifdef WAYLAND_DISPLAY_SERVER_DEBUG_LOGS_ENABLED
+#define DEBUG_LOG_WAYLAND(...) print_verbose(__VA_ARGS__)
+#else
+#define DEBUG_LOG_WAYLAND(...)
+#endif
+
 #ifdef VULKAN_ENABLED
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif

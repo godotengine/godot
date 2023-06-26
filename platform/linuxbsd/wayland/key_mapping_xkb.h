@@ -31,14 +31,14 @@
 #ifndef KEY_MAPPING_XKB_H
 #define KEY_MAPPING_XKB_H
 
+#include "core/os/keyboard.h"
+#include "core/templates/hash_map.h"
+
 #ifdef SOWRAP_ENABLED
-#include "../xkbcommon-so_wrap.h"
+#include "xkbcommon-so_wrap.h"
 #else
 #include <xkbcommon/xkbcommon.h>
 #endif // SOWRAP_ENABLED
-
-#include "core/os/keyboard.h"
-#include "core/templates/hash_map.h"
 
 class KeyMappingXKB {
 	struct HashMapHasherKeys {

@@ -30,10 +30,31 @@
 
 #include "wayland_thread.h"
 
-// TODO: Get rid of this.
-#include "display_server_wayland.h"
-
 #ifdef WAYLAND_ENABLED
+
+// FIXME: Does this cause issues with *BSDs?
+#include <linux/input-event-codes.h>
+
+// For the actual polling thread.
+#include <poll.h>
+
+// For shared memory buffer creation.
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+// Fix the wl_array_for_each macro to work with C++. This is based on the
+// original from `wayland-util.h` in the Wayland client library.
+#undef wl_array_for_each
+#define wl_array_for_each(pos, array) \
+	for (pos = (decltype(pos))(array)->data; (const char *)pos < ((const char *)(array)->data + (array)->size); (pos)++)
+
+#define WAYLAND_THREAD_DEBUG_LOGS_ENABLED
+#ifdef WAYLAND_THREAD_DEBUG_LOGS_ENABLED
+#define DEBUG_LOG_WAYLAND_THREAD(...) print_verbose(__VA_ARGS__)
+#else
+#define DEBUG_LOG_WAYLAND_THREAD(...)
+#endif
 
 // Read the content pointed by fd into a string.
 String WaylandThread::_string_read_fd(int fd) {
@@ -54,12 +75,12 @@ String WaylandThread::_string_read_fd(int fd) {
 
 		if (last_bytes_read == 0) {
 			// We're done, we've reached the EOF.
-			DEBUG_LOG_WAYLAND(vformat("Done reading %d bytes.", bytes_read));
+			DEBUG_LOG_WAYLAND_THREAD(vformat("Done reading %d bytes.", bytes_read));
 			close(fd);
 			break;
 		}
 
-		DEBUG_LOG_WAYLAND(vformat("Read chunk of %d bytes.", last_bytes_read));
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Read chunk of %d bytes.", last_bytes_read));
 
 		bytes_read += last_bytes_read;
 
@@ -769,7 +790,7 @@ void WaylandThread::_wl_output_on_done(void *data, struct wl_output *wl_output) 
 
 	ss->data = ss->pending_data;
 
-	DEBUG_LOG_WAYLAND(vformat("Output %x done.", (size_t)wl_output));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Output %x done.", (size_t)wl_output));
 }
 
 void WaylandThread::_wl_output_on_scale(void *data, struct wl_output *wl_output, int32_t factor) {
@@ -778,7 +799,7 @@ void WaylandThread::_wl_output_on_scale(void *data, struct wl_output *wl_output,
 
 	ss->pending_data.scale = factor;
 
-	DEBUG_LOG_WAYLAND(vformat("Output %x scale %d", (size_t)wl_output, factor));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Output %x scale %d", (size_t)wl_output, factor));
 }
 
 void WaylandThread::_wl_output_on_name(void *data, struct wl_output *wl_output, const char *name) {
@@ -818,7 +839,7 @@ void WaylandThread::_xdg_surface_on_configure(void *data, struct xdg_surface *xd
 
 	ws->wayland_thread->push_message(msg);
 
-	DEBUG_LOG_WAYLAND(vformat("xdg surface on configure rect %s", ws->rect));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("xdg surface on configure rect %s", ws->rect));
 }
 
 void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
@@ -851,7 +872,7 @@ void WaylandThread::_xdg_toplevel_on_configure(void *data, struct xdg_toplevel *
 		}
 	}
 
-	DEBUG_LOG_WAYLAND(vformat("XDG toplevel on configure width %d height %d.", width, height));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("XDG toplevel on configure width %d height %d.", width, height));
 }
 
 void WaylandThread::_xdg_toplevel_on_close(void *data, struct xdg_toplevel *xdg_toplevel) {
@@ -972,7 +993,7 @@ void WaylandThread::libdecor_frame_on_configure(struct libdecor_frame *frame, st
 	winrect_msg->rect = scaled_rect;
 	ws->wayland_thread->push_message(winrect_msg);
 
-	DEBUG_LOG_WAYLAND(vformat("libdecor frame on configure rect %s", ws->rect));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("libdecor frame on configure rect %s", ws->rect));
 }
 
 void WaylandThread::libdecor_frame_on_close(struct libdecor_frame *frame, void *user_data) {
@@ -985,7 +1006,7 @@ void WaylandThread::libdecor_frame_on_close(struct libdecor_frame *frame, void *
 
 	ws->wayland_thread->push_message(winevent_msg);
 
-	DEBUG_LOG_WAYLAND("libdecor frame on close");
+	DEBUG_LOG_WAYLAND_THREAD("libdecor frame on close");
 }
 
 void WaylandThread::libdecor_frame_on_commit(struct libdecor_frame *frame, void *user_data) {
@@ -994,7 +1015,7 @@ void WaylandThread::libdecor_frame_on_commit(struct libdecor_frame *frame, void 
 
 	wl_surface_commit(ws->wl_surface);
 
-	DEBUG_LOG_WAYLAND("libdecor frame on commit");
+	DEBUG_LOG_WAYLAND_THREAD("libdecor frame on commit");
 }
 
 void WaylandThread::libdecor_frame_on_dismiss_popup(struct libdecor_frame *frame, const char *seat_name, void *user_data) {
@@ -1099,7 +1120,7 @@ void WaylandThread::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_point
 
 	ss->wayland_thread->push_message(msg);
 
-	DEBUG_LOG_WAYLAND("Pointing window.");
+	DEBUG_LOG_WAYLAND_THREAD("Pointing window.");
 }
 
 void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface) {
@@ -1117,7 +1138,7 @@ void WaylandThread::_wl_pointer_on_leave(void *data, struct wl_pointer *wl_point
 
 	wayland_thread->push_message(msg);
 
-	DEBUG_LOG_WAYLAND("Left window.");
+	DEBUG_LOG_WAYLAND_THREAD("Left window.");
 }
 
 void WaylandThread::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
@@ -1642,7 +1663,7 @@ void WaylandThread::_wl_data_source_on_send(void *data, struct wl_data_source *w
 
 	if (wl_data_source == ss->wl_data_source_selection) {
 		data_to_send = &ss->selection_data;
-		DEBUG_LOG_WAYLAND("Clipboard: requested selection.");
+		DEBUG_LOG_WAYLAND_THREAD("Clipboard: requested selection.");
 	}
 
 	if (data_to_send) {
@@ -1653,9 +1674,9 @@ void WaylandThread::_wl_data_source_on_send(void *data, struct wl_data_source *w
 		}
 
 		if (written_bytes > 0) {
-			DEBUG_LOG_WAYLAND(vformat("Clipboard: sent %d bytes.", written_bytes));
+			DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: sent %d bytes.", written_bytes));
 		} else if (written_bytes == 0) {
-			DEBUG_LOG_WAYLAND("Clipboard: no bytes sent.");
+			DEBUG_LOG_WAYLAND_THREAD("Clipboard: no bytes sent.");
 		} else {
 			ERR_PRINT(vformat("Clipboard: write error %d.", errno));
 		}
@@ -1674,7 +1695,7 @@ void WaylandThread::_wl_data_source_on_cancelled(void *data, struct wl_data_sour
 		ss->wl_data_source_selection = nullptr;
 		ss->selection_data.clear();
 
-		DEBUG_LOG_WAYLAND("Clipboard: selection set by another program.");
+		DEBUG_LOG_WAYLAND_THREAD("Clipboard: selection set by another program.");
 		return;
 	}
 }
@@ -1802,7 +1823,7 @@ void WaylandThread::_wp_primary_selection_source_on_send(void *data, struct zwp_
 
 	if (wp_primary_selection_source_v1 == ss->wp_primary_selection_source) {
 		data_to_send = &ss->primary_data;
-		DEBUG_LOG_WAYLAND("Clipboard: requested primary selection.");
+		DEBUG_LOG_WAYLAND_THREAD("Clipboard: requested primary selection.");
 	}
 
 	if (data_to_send) {
@@ -1813,9 +1834,9 @@ void WaylandThread::_wp_primary_selection_source_on_send(void *data, struct zwp_
 		}
 
 		if (written_bytes > 0) {
-			DEBUG_LOG_WAYLAND(vformat("Clipboard: sent %d bytes.", written_bytes));
+			DEBUG_LOG_WAYLAND_THREAD(vformat("Clipboard: sent %d bytes.", written_bytes));
 		} else if (written_bytes == 0) {
-			DEBUG_LOG_WAYLAND("Clipboard: no bytes sent.");
+			DEBUG_LOG_WAYLAND_THREAD("Clipboard: no bytes sent.");
 		} else {
 			ERR_PRINT(vformat("Clipboard: write error %d.", errno));
 		}
@@ -1834,13 +1855,13 @@ void WaylandThread::_wp_primary_selection_source_on_cancelled(void *data, struct
 
 		ss->primary_data.clear();
 
-		DEBUG_LOG_WAYLAND("Clipboard: primary selection set by another program.");
+		DEBUG_LOG_WAYLAND_THREAD("Clipboard: primary selection set by another program.");
 		return;
 	}
 }
 
 void WaylandThread::_wp_tablet_seat_on_tablet_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_v2 *id) {
-	DEBUG_LOG_WAYLAND(vformat("wp tablet seat %x on tablet %x added", (size_t)zwp_tablet_seat_v2, (size_t)id));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet seat %x on tablet %x added", (size_t)zwp_tablet_seat_v2, (size_t)id));
 }
 
 void WaylandThread::_wp_tablet_seat_on_tool_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_tool_v2 *id) {
@@ -1851,23 +1872,23 @@ void WaylandThread::_wp_tablet_seat_on_tool_added(void *data, struct zwp_tablet_
 
 	zwp_tablet_tool_v2_add_listener(id, &wp_tablet_tool_listener, ss);
 
-	DEBUG_LOG_WAYLAND(vformat("wp tablet seat %x on tool %x added", (size_t)zwp_tablet_seat_v2, (size_t)id));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet seat %x on tool %x added", (size_t)zwp_tablet_seat_v2, (size_t)id));
 }
 
 void WaylandThread::_wp_tablet_seat_on_pad_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_pad_v2 *id) {
-	DEBUG_LOG_WAYLAND(vformat("wp tablet seat %x on pad %x added", (size_t)zwp_tablet_seat_v2, (size_t)id));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet seat %x on pad %x added", (size_t)zwp_tablet_seat_v2, (size_t)id));
 }
 
 void WaylandThread::_wp_tablet_tool_on_type(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t tool_type) {
-	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on type %d", (size_t)zwp_tablet_tool_v2, tool_type));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on type %d", (size_t)zwp_tablet_tool_v2, tool_type));
 }
 
 void WaylandThread::_wp_tablet_tool_on_hardware_serial(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t hardware_serial_hi, uint32_t hardware_serial_lo) {
-	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on hardware serial %x%x", (size_t)zwp_tablet_tool_v2, hardware_serial_hi, hardware_serial_lo));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on hardware serial %x%x", (size_t)zwp_tablet_tool_v2, hardware_serial_hi, hardware_serial_lo));
 }
 
 void WaylandThread::_wp_tablet_tool_on_hardware_id_wacom(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t hardware_id_hi, uint32_t hardware_id_lo) {
-	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on hardware id wacom hardware id %x%x", (size_t)zwp_tablet_tool_v2, hardware_id_hi, hardware_id_lo));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on hardware id wacom hardware id %x%x", (size_t)zwp_tablet_tool_v2, hardware_id_hi, hardware_id_lo));
 }
 
 void WaylandThread::_wp_tablet_tool_on_capability(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t capability) {
@@ -1878,11 +1899,11 @@ void WaylandThread::_wp_tablet_tool_on_capability(void *data, struct zwp_tablet_
 		ss->tablet_tool_data_buffer.is_eraser = true;
 	}
 
-	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on capability %d", (size_t)zwp_tablet_tool_v2, capability));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on capability %d", (size_t)zwp_tablet_tool_v2, capability));
 }
 
 void WaylandThread::_wp_tablet_tool_on_done(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
-	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on done", (size_t)zwp_tablet_tool_v2));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on done", (size_t)zwp_tablet_tool_v2));
 }
 
 void WaylandThread::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
@@ -1901,7 +1922,7 @@ void WaylandThread::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_too
 		}
 	}
 
-	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on removed", (size_t)zwp_tablet_tool_v2));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on removed", (size_t)zwp_tablet_tool_v2));
 }
 
 void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial, struct zwp_tablet_v2 *tablet, struct wl_surface *surface) {
@@ -1922,9 +1943,9 @@ void WaylandThread::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_table
 	msg->event = DisplayServer::WINDOW_EVENT_MOUSE_ENTER;
 	wayland_thread->push_message(msg);
 
-	DEBUG_LOG_WAYLAND("Tablet tool entered window.");
+	DEBUG_LOG_WAYLAND_THREAD("Tablet tool entered window.");
 
-	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on proximity in serial %d tablet %x surface %x", (size_t)zwp_tablet_tool_v2, serial, (size_t)tablet, (size_t)surface));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on proximity in serial %d tablet %x surface %x", (size_t)zwp_tablet_tool_v2, serial, (size_t)tablet, (size_t)surface));
 }
 
 void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
@@ -1937,7 +1958,7 @@ void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tabl
 	ss->pointed_surface = nullptr;
 	ss->tablet_tool_data_buffer.in_proximity = false;
 
-	DEBUG_LOG_WAYLAND("Tablet tool left window.");
+	DEBUG_LOG_WAYLAND_THREAD("Tablet tool left window.");
 
 	Ref<WindowEventMessage> msg;
 	msg.instantiate();
@@ -1945,7 +1966,7 @@ void WaylandThread::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tabl
 
 	wayland_thread->push_message(msg);
 
-	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on proximity out", (size_t)zwp_tablet_tool_v2));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on proximity out", (size_t)zwp_tablet_tool_v2));
 }
 
 void WaylandThread::_wp_tablet_tool_on_down(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial) {
@@ -1963,7 +1984,7 @@ void WaylandThread::_wp_tablet_tool_on_down(void *data, struct zwp_tablet_tool_v
 	// double clicking work.
 	td.button_time = OS::get_singleton()->get_ticks_msec();
 
-	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on down serial %x", (size_t)zwp_tablet_tool_v2, serial));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on down serial %x", (size_t)zwp_tablet_tool_v2, serial));
 }
 
 void WaylandThread::_wp_tablet_tool_on_up(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
@@ -1977,7 +1998,7 @@ void WaylandThread::_wp_tablet_tool_on_up(void *data, struct zwp_tablet_tool_v2 
 	// double clicking work.
 	ss->tablet_tool_data_buffer.button_time = OS::get_singleton()->get_ticks_msec();
 
-	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on up", (size_t)zwp_tablet_tool_v2));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("wp tablet tool %x on up", (size_t)zwp_tablet_tool_v2));
 }
 
 void WaylandThread::_wp_tablet_tool_on_motion(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t x, wl_fixed_t y) {
@@ -2171,7 +2192,7 @@ void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activat
 	xdg_activation_v1_activate(ws->wayland_thread->registry.xdg_activation, token, ws->wl_surface);
 	xdg_activation_token_v1_destroy(xdg_activation_token);
 
-	DEBUG_LOG_WAYLAND(vformat("Received activation token and requested window activation."));
+	DEBUG_LOG_WAYLAND_THREAD(vformat("Received activation token and requested window activation."));
 }
 
 // NOTE: This must be started after a valid wl_display is loaded.
@@ -3245,16 +3266,16 @@ void WaylandThread::selection_set_text(String p_text) {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (registry.wl_data_device_manager == nullptr) {
-		DEBUG_LOG_WAYLAND("Couldn't set selection, wl_data_device_manager global not available.");
+		DEBUG_LOG_WAYLAND_THREAD("Couldn't set selection, wl_data_device_manager global not available.");
 	}
 
 	if (ss == nullptr) {
-		DEBUG_LOG_WAYLAND("Couldn't set selection, current seat not set.");
+		DEBUG_LOG_WAYLAND_THREAD("Couldn't set selection, current seat not set.");
 		return;
 	}
 
 	if (ss->wl_data_device == nullptr) {
-		DEBUG_LOG_WAYLAND("Couldn't set selection, seat doesn't have wl_data_device.");
+		DEBUG_LOG_WAYLAND_THREAD("Couldn't set selection, seat doesn't have wl_data_device.");
 	}
 
 	ss->selection_data = p_text.to_utf8_buffer();
@@ -3277,7 +3298,7 @@ String WaylandThread::selection_get_text() const {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss == nullptr) {
-		DEBUG_LOG_WAYLAND("Couldn't get selection, current seat not set.");
+		DEBUG_LOG_WAYLAND_THREAD("Couldn't get selection, current seat not set.");
 		return "";
 	}
 
@@ -3288,12 +3309,12 @@ void WaylandThread::primary_set_text(String p_text) {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (registry.wp_primary_selection_device_manager == nullptr) {
-		DEBUG_LOG_WAYLAND("Couldn't set primary, protocol not available");
+		DEBUG_LOG_WAYLAND_THREAD("Couldn't set primary, protocol not available");
 		return;
 	}
 
 	if (ss == nullptr) {
-		DEBUG_LOG_WAYLAND("Couldn't set primary, current seat not set.");
+		DEBUG_LOG_WAYLAND_THREAD("Couldn't set primary, current seat not set.");
 		return;
 	}
 
@@ -3317,7 +3338,7 @@ String WaylandThread::primary_get_text() const {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss == nullptr) {
-		DEBUG_LOG_WAYLAND("Couldn't get primary, current seat not set.");
+		DEBUG_LOG_WAYLAND_THREAD("Couldn't get primary, current seat not set.");
 		return "";
 	}
 

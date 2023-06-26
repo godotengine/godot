@@ -31,17 +31,41 @@
 #ifndef WAYLAND_THREAD_H
 #define WAYLAND_THREAD_H
 
-#ifdef SOWRAP_ENABLED
-#include "dynwrappers/wayland-client-core-so_wrap.h"
-#include "dynwrappers/wayland-cursor-so_wrap.h"
-#include "dynwrappers/wayland-egl-core-so_wrap.h"
+#ifdef WAYLAND_ENABLED
 
-#include "../xkbcommon-so_wrap.h"
+#include "key_mapping_xkb.h"
+
+#ifdef SOWRAP_ENABLED
+#include "wayland/dynwrappers/wayland-client-core-so_wrap.h"
+#include "wayland/dynwrappers/wayland-cursor-so_wrap.h"
+#include "wayland/dynwrappers/wayland-egl-core-so_wrap.h"
+
+#include "core/os/thread.h"
+#include "servers/display_server.h"
+
+#include "xkbcommon-so_wrap.h"
 #else
 #include <wayland-client-core.h>
 #include <wayland-cursor.h>
 #include <xkbcommon/xkbcommon.h>
 #endif // SOWRAP_ENABLED
+
+// These must go after the Wayland include to work properly.
+#include "wayland/protocol/idle_inhibit.gen.h"
+#include "wayland/protocol/primary_selection.gen.h"
+// These three protocol headers name wl_pointer method arguments as `pointer`,
+// which is the same name as X11's pointer typedef. This trips some very
+// annoying shadowing warnings. A `#define` works around this issue.
+#define pointer wl_pointer
+#include "wayland/protocol/pointer_constraints.gen.h"
+#include "wayland/protocol/pointer_gestures.gen.h"
+#include "wayland/protocol/relative_pointer.gen.h"
+#undef pointer
+#include "wayland/protocol/tablet.gen.h"
+#include "wayland/protocol/wayland.gen.h"
+#include "wayland/protocol/xdg_activation.gen.h"
+#include "wayland/protocol/xdg_decoration.gen.h"
+#include "wayland/protocol/xdg_shell.gen.h"
 
 #ifdef LIBDECOR_ENABLED
 #ifdef SOWRAP_ENABLED
@@ -50,30 +74,6 @@
 #include <libdecor-0/libdecor.h>
 #endif // SOWRAP_ENABLED
 #endif // LIBDECOR_ENABLED
-
-#include "protocol/idle_inhibit.gen.h"
-#include "protocol/primary_selection.gen.h"
-
-// These three protocol headers name wl_pointer method arguments as `pointer`,
-// which is the same name as X11's pointer typedef. This trips some very
-// annoying shadowing warnings. A `#define` works around this issue.
-#define pointer wl_pointer
-#include "protocol/pointer_constraints.gen.h"
-#include "protocol/pointer_gestures.gen.h"
-#include "protocol/relative_pointer.gen.h"
-#undef wl_pointer
-
-#include "protocol/tablet.gen.h"
-#include "protocol/wayland.gen.h"
-#include "protocol/xdg_activation.gen.h"
-#include "protocol/xdg_decoration.gen.h"
-#include "protocol/xdg_shell.gen.h"
-
-#include "servers/display_server.h"
-
-#include "core/os/thread.h"
-
-#ifdef WAYLAND_ENABLED
 
 class WaylandThread {
 public:
