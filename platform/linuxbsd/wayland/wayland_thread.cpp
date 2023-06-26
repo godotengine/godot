@@ -2857,7 +2857,7 @@ int WaylandThread::get_screen_count() const {
 	return registry.wl_outputs.size();
 }
 
-DisplayServer::WindowID WaylandThread::pointer_get_pointed_window_id() {
+DisplayServer::WindowID WaylandThread::pointer_get_pointed_window_id() const {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss) {

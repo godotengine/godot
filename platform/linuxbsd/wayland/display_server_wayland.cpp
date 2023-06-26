@@ -745,6 +745,10 @@ void DisplayServerWayland::window_move_to_foreground(DisplayServer::WindowID p_w
 	// Standard Wayland APIs don't support this.
 }
 
+bool DisplayServerWayland::window_is_focused(WindowID p_window_id) const {
+	return wayland_thread.pointer_get_pointed_window_id() == p_window_id;
+}
+
 bool DisplayServerWayland::window_can_draw(DisplayServer::WindowID p_window_id) const {
 	// TODO: Implement this. For now a simple return true will work though.
 	return true;

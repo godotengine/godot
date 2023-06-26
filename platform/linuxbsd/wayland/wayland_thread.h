@@ -791,7 +791,7 @@ public:
 	void pointer_set_constraint(PointerConstraint p_constraint);
 	void pointer_set_hint(int p_x, int p_y);
 	PointerConstraint pointer_get_constraint() const;
-	DisplayServer::WindowID pointer_get_pointed_window_id();
+	DisplayServer::WindowID pointer_get_pointed_window_id() const;
 	BitField<MouseButtonMask> pointer_get_button_mask() const;
 
 	void cursor_hide();
