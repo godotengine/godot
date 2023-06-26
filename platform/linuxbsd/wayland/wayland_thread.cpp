@@ -2163,19 +2163,15 @@ void WaylandThread::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_
 }
 
 void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token) {
-#if 0
-	// TODO: Port to `WaylandThread` API.
-	WindowState *ws = (WindowState *)state;
+	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
-
+	ERR_FAIL_NULL(ws->wayland_thread);
 	ERR_FAIL_NULL(ws->wl_surface);
 
-	xdg_activation_v1_activate(registry.xdg_activation, token, ws->wl_surface);
-
+	xdg_activation_v1_activate(ws->wayland_thread->registry.xdg_activation, token, ws->wl_surface);
 	xdg_activation_token_v1_destroy(xdg_activation_token);
 
 	DEBUG_LOG_WAYLAND(vformat("Received activation token and requested window activation."));
-#endif
 }
 
 // NOTE: This must be started after a valid wl_display is loaded.
