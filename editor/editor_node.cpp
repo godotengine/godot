@@ -3408,6 +3408,7 @@ void EditorNode::_remove_edited_scene(bool p_change_tab) {
 
 void EditorNode::_remove_scene(int index, bool p_change_tab) {
 	// Clear icon cache in case some scripts are no longer needed.
+	// FIXME: Perfectly the cache should never be cleared and only updated on per-script basis, when an icon changes.
 	editor_data.clear_script_icon_cache();
 
 	if (editor_data.get_edited_scene() == index) {
@@ -4242,23 +4243,6 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 		Ref<Texture2D> script_icon = ed.get_script_icon(p_script);
 		if (script_icon.is_valid()) {
 			return script_icon;
-		}
-
-		// No custom icon was found in the inheritance chain, so check the base
-		// class of the script instead.
-		String base_type;
-		p_script->get_language()->get_global_class_name(p_script->get_path(), &base_type);
-
-		// Check if the base type is an extension-defined type.
-		Ref<Texture2D> ext_icon = ed.extension_class_get_icon(base_type);
-		if (ext_icon.is_valid()) {
-			return ext_icon;
-		}
-
-		// Look for the base type in the editor theme.
-		// This is only relevant for built-in classes.
-		if (gui_base && gui_base->has_theme_icon(base_type, "EditorIcons")) {
-			return gui_base->get_theme_icon(base_type, "EditorIcons");
 		}
 	}
 
