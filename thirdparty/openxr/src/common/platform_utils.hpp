@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, The Khronos Group Inc.
+// Copyright (c) 2017-2023, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -36,6 +36,10 @@
 #ifdef OPENXR_HAVE_COMMON_CONFIG
 #include "common_config.h"
 #endif  // OPENXR_HAVE_COMMON_CONFIG
+
+// Consumers of this file must ensure this function is implemented. For example, the loader will implement this function so that it
+// can route messages through the loader's logging system.
+void LogPlatformUtilsError(const std::string& message);
 
 // Environment variables
 #if defined(XR_OS_LINUX) || defined(XR_OS_APPLE)
@@ -79,6 +83,12 @@ static inline std::string PlatformUtilsGetEnv(const char* name) {
 static inline std::string PlatformUtilsGetSecureEnv(const char* name) {
     auto str = detail::ImplGetSecureEnv(name);
     if (str == nullptr) {
+        str = detail::ImplGetEnv(name);
+        if (str != nullptr && !std::string(str).empty()) {
+            LogPlatformUtilsError(std::string("!!! WARNING !!! Environment variable ") + name +
+                                  " is being ignored due to running with secure execution. The value '" + str +
+                                  "' will NOT be used.");
+        }
         return {};
     }
     return str;
@@ -131,12 +141,6 @@ static inline bool PlatformGetGlobalRuntimeFileName(uint16_t major_version, std:
 
 #elif defined(XR_OS_WINDOWS)
 
-#if !defined(NDEBUG)
-inline void LogError(const std::string& error) { OutputDebugStringA(error.c_str()); }
-#else
-#define LogError(x)
-#endif
-
 inline std::wstring utf8_to_wide(const std::string& utf8Text) {
     if (utf8Text.empty()) {
         return {};
@@ -145,7 +149,7 @@ inline std::wstring utf8_to_wide(const std::string& utf8Text) {
     std::wstring wideText;
     const int wideLength = ::MultiByteToWideChar(CP_UTF8, 0, utf8Text.data(), (int)utf8Text.size(), nullptr, 0);
     if (wideLength == 0) {
-        LogError("utf8_to_wide get size error: " + std::to_string(::GetLastError()));
+        LogPlatformUtilsError("utf8_to_wide get size error: " + std::to_string(::GetLastError()));
         return {};
     }
 
@@ -154,7 +158,7 @@ inline std::wstring utf8_to_wide(const std::string& utf8Text) {
     wchar_t* wideString = const_cast<wchar_t*>(wideText.data());  // mutable data() only exists in c++17
     const int length = ::MultiByteToWideChar(CP_UTF8, 0, utf8Text.data(), (int)utf8Text.size(), wideString, wideLength);
     if (length != wideLength) {
-        LogError("utf8_to_wide convert string error: " + std::to_string(::GetLastError()));
+        LogPlatformUtilsError("utf8_to_wide convert string error: " + std::to_string(::GetLastError()));
         return {};
     }
 
@@ -169,7 +173,7 @@ inline std::string wide_to_utf8(const std::wstring& wideText) {
     std::string narrowText;
     int narrowLength = ::WideCharToMultiByte(CP_UTF8, 0, wideText.data(), (int)wideText.size(), nullptr, 0, nullptr, nullptr);
     if (narrowLength == 0) {
-        LogError("wide_to_utf8 get size error: " + std::to_string(::GetLastError()));
+        LogPlatformUtilsError("wide_to_utf8 get size error: " + std::to_string(::GetLastError()));
         return {};
     }
 
@@ -179,7 +183,7 @@ inline std::string wide_to_utf8(const std::wstring& wideText) {
     const int length =
         ::WideCharToMultiByte(CP_UTF8, 0, wideText.data(), (int)wideText.size(), narrowString, narrowLength, nullptr, nullptr);
     if (length != narrowLength) {
-        LogError("wide_to_utf8 convert string error: " + std::to_string(::GetLastError()));
+        LogPlatformUtilsError("wide_to_utf8 convert string error: " + std::to_string(::GetLastError()));
         return {};
     }
 
@@ -245,7 +249,7 @@ static inline std::string PlatformUtilsGetEnv(const char* name) {
     // call if there was enough capacity. Else it returns the required capacity (including null terminator).
     const DWORD length = ::GetEnvironmentVariableW(wname.c_str(), wValueData, (DWORD)wValue.size());
     if ((length == 0) || (length >= wValue.size())) {  // If error or the variable increased length between calls...
-        LogError("GetEnvironmentVariable get value error: " + std::to_string(::GetLastError()));
+        LogPlatformUtilsError("GetEnvironmentVariable get value error: " + std::to_string(::GetLastError()));
         return {};
     }
 
@@ -256,13 +260,20 @@ static inline std::string PlatformUtilsGetEnv(const char* name) {
 
 // Acts the same as PlatformUtilsGetEnv except returns an empty string if IsHighIntegrityLevel.
 static inline std::string PlatformUtilsGetSecureEnv(const char* name) {
+    // No secure version for Windows so the below integrity check is needed.
+    const std::string envValue = PlatformUtilsGetEnv(name);
+
     // Do not allow high integrity processes to act on data that can be controlled by medium integrity processes.
     if (IsHighIntegrityLevel()) {
+        if (!envValue.empty()) {
+            LogPlatformUtilsError(std::string("!!! WARNING !!! Environment variable ") + name +
+                                  " is being ignored due to running from an elevated context. The value '" + envValue +
+                                  "' will NOT be used.");
+        }
         return {};
     }
 
-    // No secure version for Windows so the above integrity check is needed.
-    return PlatformUtilsGetEnv(name);
+    return envValue;
 }
 
 // Sets an environment variable via UTF8 strings.

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, The Khronos Group Inc.
+// Copyright (c) 2017-2023, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -27,13 +27,13 @@
 #include <openxr/openxr.h>
 
 #include <algorithm>
+#include <cstdlib>
+#include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -447,9 +447,7 @@ static void GetExtensionProperties(const std::vector<ExtensionListing> &extensio
         if (it != props.end()) {
             it->extensionVersion = std::max(it->extensionVersion, ext.extension_version);
         } else {
-            XrExtensionProperties prop = {};
-            prop.type = XR_TYPE_EXTENSION_PROPERTIES;
-            prop.next = nullptr;
+            XrExtensionProperties prop = {XR_TYPE_EXTENSION_PROPERTIES};
             strncpy(prop.extensionName, ext.name.c_str(), XR_MAX_EXTENSION_NAME_SIZE - 1);
             prop.extensionName[XR_MAX_EXTENSION_NAME_SIZE - 1] = '\0';
             prop.extensionVersion = ext.extension_version;

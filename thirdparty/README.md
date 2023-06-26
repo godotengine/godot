@@ -582,7 +582,7 @@ Patch files are provided in `oidn/patches/`.
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.0.26 (e2da9ce83a4388c9622da328bf48548471261290, 2022)
+- Version: 1.0.27 (58a00cf85c39ad5ec4dc43a769624e420c06179a, 2023)
 - License: Apache 2.0
 
 Files extracted from upstream source:
