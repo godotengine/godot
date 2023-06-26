@@ -143,7 +143,7 @@
 # Kaycke <kaycke@ymail.com>, 2022.
 # Ednaldo Pereira Confia <filat51823@storypo.com>, 2022.
 # Mauricio <mauricio.fidalgo1@gmail.com>, 2022.
-# Felipe Kinoshita <kinofhek@gmail.com>, 2022.
+# Felipe Kinoshita <kinofhek@gmail.com>, 2022, 2023.
 # TLAliceDev <calicedev@protonmail.com>, 2022.
 # Mr.Albino <ricmorsoleto@gmail.com>, 2022.
 # Jaide Alonso Ambrosio <jaide.sp@gmail.com>, 2022.
@@ -163,7 +163,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-04-13 04:06+0000\n"
+"PO-Revision-Date: 2023-06-26 09:55+0000\n"
 "Last-Translator: Daniel Mucciolo <danielviannapsi@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/pt_BR/>\n"
@@ -172,7 +172,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -789,15 +789,6 @@ msgstr "Porta Remota"
 msgid "Sync Breakpoints"
 msgstr "Pontos de Quebra de Sincronismo"
 
-msgid "Debugger"
-msgstr "Depurador"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "Intervalo de Atualização da Árvore Remota"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "Intervalo de Atualização da Inspeção Remota"
-
 msgid "FileSystem"
 msgstr "Arquivos"
 
@@ -809,9 +800,6 @@ msgstr "Porta"
 
 msgid "Password"
 msgstr "Senha"
-
-msgid "Profiler Frame Max Functions"
-msgstr "Máximo de funções por quadro no \"Profiler\""
 
 msgid "Default Feature Profile"
 msgstr "Perfil de funcionalidade Padrão"
@@ -1494,8 +1482,20 @@ msgstr "Hospedeiro Remoto"
 msgid "Editor TLS Certificates"
 msgstr "Editor de Certificados TLS"
 
+msgid "Debugger"
+msgstr "Depurador"
+
 msgid "Profiler Frame History Size"
 msgstr "Tamanho de histórico disponível no \"Profiler\""
+
+msgid "Profiler Frame Max Functions"
+msgstr "Máximo de funções por quadro no \"Profiler\""
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Intervalo de Atualização da Árvore Remota"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Intervalo de Atualização da Inspeção Remota"
 
 msgid "HTTP Proxy"
 msgstr "Proxy HTTP"
@@ -1625,9 +1625,6 @@ msgstr "Modelo Customizado"
 
 msgid "Release"
 msgstr "Lançamento"
-
-msgid "Export Console Script"
-msgstr "Exportar Script de Console"
 
 msgid "Binary Format"
 msgstr "Formato Binário"
@@ -2149,7 +2146,7 @@ msgid "Handle Colors"
 msgstr "Manusear Cores"
 
 msgid "Unset"
-msgstr "Desativar"
+msgstr "Restaurar"
 
 msgid "Set"
 msgstr "Definir"
@@ -5568,6 +5565,9 @@ msgstr "ID do Feed da Câmera"
 msgid "Sky"
 msgstr "Céu"
 
+msgid "Ambient Light"
+msgstr "Luz ambiente"
+
 msgid "Source"
 msgstr "Fonte"
 
@@ -5610,6 +5610,9 @@ msgstr "1"
 msgid "2"
 msgstr "2"
 
+msgid "3"
+msgstr "3"
+
 msgid "4"
 msgstr "4"
 
@@ -5644,7 +5647,7 @@ msgid "Anisotropy"
 msgstr "Anisotrópico"
 
 msgid "Adjustments"
-msgstr "Ajustamentos"
+msgstr "Ajustes"
 
 msgid "Saturation"
 msgstr "Separação"
@@ -5994,8 +5997,14 @@ msgstr "Porta de Saída para Preview"
 msgid "Modes"
 msgstr "Modos"
 
+msgid "Varyings"
+msgstr "Variações"
+
 msgid "Parameter Name"
 msgstr "Nome do Parâmetro"
+
+msgid "Qualifier"
+msgstr "Qualificador"
 
 msgid "Constant"
 msgstr "Constante"

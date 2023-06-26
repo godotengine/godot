@@ -85,7 +85,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-11 23:11+0000\n"
+"PO-Revision-Date: 2023-06-20 03:05+0000\n"
 "Last-Translator: بسام العوفي <co-able@hotmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
@@ -95,7 +95,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Unset"
 msgstr "غير محدد"
@@ -3083,6 +3083,9 @@ msgstr "إدارة ميّزات المحرّر…"
 msgid "Manage Export Templates..."
 msgstr "إدارة قوالب التصدير..."
 
+msgid "Configure FBX Importer..."
+msgstr "تجهيز مستورِد FBX..."
+
 msgid "Help"
 msgstr "المساعدة"
 
@@ -3094,6 +3097,12 @@ msgstr "أسئلة وإجابات"
 
 msgid "Report a Bug"
 msgstr "بلِّغْ عن خلل برمجي"
+
+msgid "Copy System Info"
+msgstr "نسخ معلومات الجهاز"
+
+msgid "Copies the system info as a single-line text into the clipboard."
+msgstr "ينسخ معلومات الجهاز في سطر واحد إلى الحافظة."
 
 msgid "Suggest a Feature"
 msgstr "اقترح ميزة"
@@ -3111,16 +3120,19 @@ msgid "Support Godot Development"
 msgstr "ادعم تطوير جَوْدَتْ"
 
 msgid "Choose a renderer."
-msgstr "اخترْ نظام التكوين"
+msgstr "اخترْ نظام التكوين."
+
+msgid "Forward+"
+msgstr "المتقدم"
 
 msgid "Mobile"
-msgstr "المحمول (كالجوال والأجهزة اللوحية والحواسب المحمولة الضعيفة)"
+msgstr "المتنقل (كالجوال والأجهزة اللوحية والحواسب المحمولة الضعيفة)"
 
 msgid "Compatibility"
-msgstr "التوافق"
+msgstr "المتوافق"
 
 msgid "Changing the renderer requires restarting the editor."
-msgstr "تغييرنظام التكوين يتطلب استئناف المحرر"
+msgstr "تغييرنظام التكوين يتطلب استئناف المحرر."
 
 msgid "Update Continuously"
 msgstr "تحديث متواصل"
@@ -4090,7 +4102,7 @@ msgid "Toggle Favorite"
 msgstr "أظهر المُفضلة"
 
 msgid "Toggle Mode"
-msgstr "أظهر المود"
+msgstr "أظهر الوضع"
 
 msgid "Focus Path"
 msgstr "مسار التركيز"
@@ -4260,9 +4272,6 @@ msgstr "اسم عُقدة غير صالح، إن الأحرف التالية غ�
 
 msgid "Another node already uses this unique name in the scene."
 msgstr "عقدة أخرى في المشهد تستعمل هذا الاسم الفريد سابقا."
-
-msgid "Rename Node"
-msgstr "إعادة تسمية العُقدة"
 
 msgid "Scene Tree (Nodes):"
 msgstr "شجرة المشهد (العُقد):"
@@ -5595,7 +5604,7 @@ msgid "Show Bones"
 msgstr "إظهار العظام"
 
 msgid "View"
-msgstr "أظهر"
+msgstr "الرؤية"
 
 msgid "Hide"
 msgstr "اخفاء"
@@ -6292,6 +6301,12 @@ msgstr "تم تعطيل تعيين المفاتيح (لم يتم إدخال أي
 msgid "Animation Key Inserted."
 msgstr "أُدخل مفتاح الرسوم المتحركة."
 
+msgid "Objects: %d\n"
+msgstr "العناصر: %d\n"
+
+msgid "Draw Calls: %d"
+msgstr "دعوات الرسم: %d"
+
 msgid "CPU Time: %s ms"
 msgstr "وقت المعالِج: %s جزء ثانية"
 
@@ -6427,8 +6442,7 @@ msgstr "تدوير الرؤية مقفول"
 msgid ""
 "To zoom further, change the camera's clipping planes (View -> Settings...)"
 msgstr ""
-"للتكبير بشكل أكبر ، قم بتغيير مستويات اقتصاص (clipping planes) للكاميرا (عرض "
-"-> الإعدادات ...)"
+"للتكبير أكبر من هذا، غيِّرْ حد \"قص الأسطح\" للكَمِرة من (الرؤية -> الإعدادات ...)"
 
 msgid "XForm Dialog"
 msgstr "نافذة XForm"
@@ -6456,11 +6470,31 @@ msgstr "لا يوجد أرضية صلبة لمحاذاة المختار إليه
 msgid "Add Preview Sun to Scene"
 msgstr "إضافة معاينة الشمس إلى المشهد"
 
+msgid "Add Preview Environment to Scene"
+msgstr "أضِفْ معاينة البيئة للمشهد"
+
+msgid ""
+"Scene contains\n"
+"WorldEnvironment.\n"
+"Preview disabled."
+msgstr ""
+"المشهد يحوي\n"
+"بيئة-العالم.\n"
+"المعاينة معطلة."
+
 msgid "Use Local Space"
 msgstr "استخدام الحيّز المحلي"
 
 msgid "Use Snap"
 msgstr "استخدام المحاذاة"
+
+msgid ""
+"Toggle preview environment.\n"
+"If a WorldEnvironment node is added to the scene, preview environment is "
+"disabled."
+msgstr ""
+"تبديل معاينة البيئة.\n"
+"إذا كانت عقدة \"بيئة-العالم\" قد أُضِيفتْ إلى المشهد؛ فإن معاينة البيئة تتعطل."
 
 msgid "Bottom View"
 msgstr "المنظر السُّفلي"
@@ -6556,7 +6590,7 @@ msgid "View Grid"
 msgstr "إظهار الشبكة"
 
 msgid "Settings..."
-msgstr "اعدادات..."
+msgstr "الإعدادات..."
 
 msgid "Snap Settings"
 msgstr "إعدادات المحاذاة"
@@ -6609,8 +6643,30 @@ msgstr "اتجاه الشمس"
 msgid "Sun Color"
 msgstr "لون الشمس"
 
+msgid ""
+"Adds a DirectionalLight3D node matching the preview sun settings to the "
+"current scene.\n"
+"Hold Shift while clicking to also add the preview environment to the current "
+"scene."
+msgstr ""
+"يُضيف عقدة \"ضوء-توجيهي-ثلاثي\" تطابق هذه العقدةُ إعداداتِ معاينة الشمس مع "
+"المشهد الحالي.\n"
+"علّقْ على زر المناوبة Shift + هذا؛ لإضافة معاينة البيئة إلى المشهد الحالي."
+
+msgid "Preview Environment"
+msgstr "معاينة البيئة"
+
 msgid "Tonemap"
 msgstr "خريطة تناغم الألوان"
+
+msgid ""
+"Adds a WorldEnvironment node matching the preview environment settings to "
+"the current scene.\n"
+"Hold Shift while clicking to also add the preview sun to the current scene."
+msgstr ""
+"يُضيف عقدة بيئة-العالم تطابق هذه العقدةُ إعداداتٍ معاينة البيئة إلى المشهد "
+"الحالي.\n"
+"علقْ على زر المناوبة Shift + هذا؛ لإضافة معاينة الشمس إلى المشهد الحالى."
 
 msgid "Remove Point from Curve"
 msgstr "إزالة النقطة من المنحنى"
@@ -7883,9 +7939,6 @@ msgstr ""
 msgid "Yes"
 msgstr "نعم"
 
-msgid "No TileSet source selected. Select or create a TileSet source."
-msgstr "لا طقم-بلاط هنا. اخترْ أو أنشئْ مصدرًا لطقم-البلاط."
-
 msgid "Add new patterns in the TileMap editing mode."
 msgstr "أضف عينات جديدة من خريطة-البلاط."
 
@@ -8727,6 +8780,15 @@ msgstr ""
 msgid "Are you sure to run %d projects at once?"
 msgstr "هل أنت متأكد من فتح %d مشاريع مرّة واحدة؟"
 
+msgid "Tag name can't contain spaces."
+msgstr "اسم الوسم لا يصح أن يكون فيه فراغات."
+
+msgid "These characters are not allowed in tags: %s."
+msgstr "هذه الرموز أو الأحرف غير مسموح بها في الأوسمة: %s."
+
+msgid "Tag name must be lowercase."
+msgstr "اسم الوسم يجب أن يكتب بأحرف صغيرة."
+
 msgid "Remove %d projects from the list?"
 msgstr "أتريد إزالة %d مشروع من القائمة؟"
 
@@ -8777,6 +8839,9 @@ msgstr "يُحمّل، انتظرْ..."
 msgid "Last Edited"
 msgstr "المعدل آخِرا"
 
+msgid "Tags"
+msgstr "الأوسمة"
+
 msgid "New Project"
 msgstr "مشروع جديد"
 
@@ -8791,6 +8856,9 @@ msgstr "البحث في المشاريع"
 
 msgid "Edit Project"
 msgstr "تعديل المشروع"
+
+msgid "Manage Tags"
+msgstr "إدارة الأوسمة"
 
 msgid "Remove Project"
 msgstr "حذف المشروع"
@@ -8825,6 +8893,27 @@ msgid ""
 msgstr ""
 "لا تملك حالياً أية مشاريع.\n"
 "هل ترغب في استكشاف مشاريع الأمثلة الرسمية في مكتبة المُلحقات؟"
+
+msgid "Manage Project Tags"
+msgstr "إدارة أوسمة المشروع"
+
+msgid "Project Tags"
+msgstr "أوسمة المشروع"
+
+msgid "Click tag to remove it from the project."
+msgstr "اضغط على وسم لإزالته من المشروع."
+
+msgid "All Tags"
+msgstr "كل الأوسمة"
+
+msgid "Click tag to add it to the project."
+msgstr "اضغط وسما لإضافته إلى المشروع."
+
+msgid "Create New Tag"
+msgstr "إنشاء وسم جديد"
+
+msgid "Tags are capitalized automatically when displayed."
+msgstr "الأوسمة مكبرة الصادر (الحرف الأول) تلقائيا عند عرضها."
 
 msgid "Add Project Setting"
 msgstr "إضافة إعدادات مشروع"
@@ -9115,8 +9204,7 @@ msgid ""
 "Disabling \"editable_instance\" will cause all properties of the node to be "
 "reverted to their default."
 msgstr ""
-"سيسبب تعطيل خاصية \"النمذجة_المُحررة\" \"editable_instance\" عودة قيم العُقد "
-"إلى القيم الافتراضية لها."
+"تعطيل \"المثيل_المُحرر\" سيجعل كل خصائص العقدة ترجع إلى الحالة الافتراضية."
 
 msgid ""
 "Enabling \"Load As Placeholder\" will disable \"Editable Children\" and "
@@ -9580,45 +9668,6 @@ msgstr "اطبخ شبكة ملاحة"
 
 msgid "Clear the navigation mesh."
 msgstr "إخلاء ميش المحاور."
-
-msgid "Setting up Configuration..."
-msgstr "يُجهز الإعدادات..."
-
-msgid "Calculating grid size..."
-msgstr "يحسب حجم الشبكة..."
-
-msgid "Creating heightfield..."
-msgstr "إنشاء مجال الإرتفاع..."
-
-msgid "Marking walkable triangles..."
-msgstr "تعليم مثلثات التحرك..."
-
-msgid "Constructing compact heightfield..."
-msgstr "يبني مجال الإرتفاع المدمج..."
-
-msgid "Eroding walkable area..."
-msgstr "تقويض منطقة السير..."
-
-msgid "Partitioning..."
-msgstr "تجزئة..."
-
-msgid "Creating contours..."
-msgstr "إنشاء المحيط..."
-
-msgid "Creating polymesh..."
-msgstr "إنشاء نموذج الميش..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "يحول إلي ميش التنقل المحلي..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "منشئ تثبيت ميش التنقل:"
-
-msgid "Parsing Geometry..."
-msgstr "توزيع الأشكال الهندسية..."
-
-msgid "Done!"
-msgstr "تم!"
 
 msgid "Package name is missing."
 msgstr "اسم الرُزمة مفقود."
@@ -10102,6 +10151,15 @@ msgstr "تخطيط المجسمات"
 
 msgid "Finishing Plot"
 msgstr "الانتهاء من التخطيط"
+
+msgid ""
+"To have any visible effect, WorldEnvironment requires its \"Environment\" "
+"property to contain an Environment, its \"Camera Attributes\" property to "
+"contain a CameraAttributes resource, or both."
+msgstr ""
+"لتحصل على أي تأثير بصري في \"بيئة-العالم\"؛ لابد من إضافة خاصية \"بيئة\" في "
+"خصائصها، أو إضافة خاصية \"بيئة\" في خصائص عقدة \"الكامرة-الثلاثية\"، أو "
+"فيهما معا."
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr ""

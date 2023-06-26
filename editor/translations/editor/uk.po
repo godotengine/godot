@@ -4852,9 +4852,6 @@ msgstr "Некоректна назва вузла. Не можна викори
 msgid "Another node already uses this unique name in the scene."
 msgstr "Цю унікальну назву у сцені вже використано іншим вузлом."
 
-msgid "Rename Node"
-msgstr "Перейменувати вузол"
-
 msgid "Scene Tree (Nodes):"
 msgstr "Дерево сцени (вузли):"
 
@@ -7745,9 +7742,6 @@ msgstr "Розмір: %s (%.1fMP)\n"
 msgid "Objects: %d\n"
 msgstr "Об'єкти: %d\n"
 
-msgid "Primitive Indices: %d\n"
-msgstr "Індекси примітивів: %d\n"
-
 msgid "Draw Calls: %d"
 msgstr "Виклики малювання: %d"
 
@@ -8894,6 +8888,9 @@ msgstr "Перейти до наступної точки зупинки"
 msgid "Go to Previous Breakpoint"
 msgstr "Перейти до попередньої точки зупинки"
 
+msgid "Shader Editor"
+msgstr "Редактор шейдера"
+
 msgid "New Shader Include"
 msgstr "Новий шейдер у комплекті"
 
@@ -8914,9 +8911,6 @@ msgstr "Відкрити файл в Інспекторі"
 
 msgid "Close File"
 msgstr "Закрити файл"
-
-msgid "Shader Editor"
-msgstr "Редактор шейдера"
 
 msgid "No valid shader stages found."
 msgstr "Допустимих етапів шейдера не знайдено."
@@ -9961,13 +9955,6 @@ msgstr "Розсіювання:"
 msgid "Tiles"
 msgstr "Плитки"
 
-msgid ""
-"This TileMap's TileSet has no source configured. Edit the TileSet resource "
-"to add one."
-msgstr ""
-"Набір плиток цієї Карти плиток не має налаштованого джерела. Відредагуйте "
-"ресурс Набору плиток, щоб додати його."
-
 msgid "Sort sources"
 msgstr "Сортувати джерела"
 
@@ -10042,9 +10029,6 @@ msgstr "Перемкнути видимість ґратки."
 
 msgid "Automatically Replace Tiles with Proxies"
 msgstr "Автоматична заміна плиток на проксі"
-
-msgid "The edited TileMap node has no TileSet resource."
-msgstr "Відредагований вузол Карти плиток не має ресурсу TileSet."
 
 msgid "Remove Tile Proxies"
 msgstr "Видалити проксі плиток"
@@ -10248,11 +10232,6 @@ msgstr "Відкрити інструмент злиття атласів"
 
 msgid "Manage Tile Proxies"
 msgstr "Керівник проксі плиток"
-
-msgid "No TileSet source selected. Select or create a TileSet source."
-msgstr ""
-"Не вибрано джерело Набору плиток. Виберіть або створіть джерело Набору "
-"плиток."
 
 msgid "Add new patterns in the TileMap editing mode."
 msgstr "Додати нові візерунки в режимі редагування Карти плиток."
@@ -13214,45 +13193,6 @@ msgstr "Запекти NavMesh"
 msgid "Clear the navigation mesh."
 msgstr "Очистити навігаційну сітку."
 
-msgid "Setting up Configuration..."
-msgstr "Налаштування конфігурації..."
-
-msgid "Calculating grid size..."
-msgstr "Розрахунок розміру сітки..."
-
-msgid "Creating heightfield..."
-msgstr "Створення карти висот..."
-
-msgid "Marking walkable triangles..."
-msgstr "Позначення прохідних трикутників..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Створення компактної карти висот..."
-
-msgid "Eroding walkable area..."
-msgstr "Розмиття прохідної ділянки..."
-
-msgid "Partitioning..."
-msgstr "Розбиття..."
-
-msgid "Creating contours..."
-msgstr "Створення контурів..."
-
-msgid "Creating polymesh..."
-msgstr "Створення сітки..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Перетворення на власну навігаційну сітку..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Налаштування генератора навігаційної сітки:"
-
-msgid "Parsing Geometry..."
-msgstr "Аналіз геометрії..."
-
-msgid "Done!"
-msgstr "Зроблено!"
-
 msgid "Toggles whether the noise preview is computed in 3D space."
 msgstr "Перемикає попередній перегляд вирахуваного шуму в 3D просторі."
 
@@ -13712,9 +13652,6 @@ msgstr "Експорт скрипту налагодження"
 
 msgid "Could not open file \"%s\"."
 msgstr "Не вдалося відкрити файл \"%s\"."
-
-msgid "Could not create console script."
-msgstr "Не вдалося створити консольний скрипт."
 
 msgid "Failed to open executable file \"%s\"."
 msgstr "Не вдалося відкрити виконуваний файл \"%s\"."
@@ -14243,11 +14180,6 @@ msgstr ""
 msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
 "Некоректний полігон. У режимі збирання «Segments» потрібні принаймні 2 точки."
-
-msgid ""
-"The One Way Collision property will be ignored when the parent is an Area2D."
-msgstr ""
-"Властивість One Way Collision буде ігноруватися, якщо батьком є Area2D."
 
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "

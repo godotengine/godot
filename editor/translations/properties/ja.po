@@ -596,15 +596,6 @@ msgstr "イージング"
 msgid "Remote Port"
 msgstr "リモートポート"
 
-msgid "Debugger"
-msgstr "デバッガー"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "リモートシーンツリーの更新間隔"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "リモートインスペクトのリフレッシュ間隔"
-
 msgid "FileSystem"
 msgstr "ファイルシステム"
 
@@ -616,9 +607,6 @@ msgstr "ポート"
 
 msgid "Password"
 msgstr "パスワード"
-
-msgid "Profiler Frame Max Functions"
-msgstr "プロファイラーフレームの関数の上限"
 
 msgid "Default Feature Profile"
 msgstr "デフォルト機能プロファイル"
@@ -1220,8 +1208,20 @@ msgstr "フォントサイズ"
 msgid "Remote Host"
 msgstr "リモートホスト"
 
+msgid "Debugger"
+msgstr "デバッガー"
+
 msgid "Profiler Frame History Size"
 msgstr "プロファイラーフレームの履歴サイズ"
+
+msgid "Profiler Frame Max Functions"
+msgstr "プロファイラーフレームの関数の上限"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "リモートシーンツリーの更新間隔"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "リモートインスペクトのリフレッシュ間隔"
 
 msgid "HTTP Proxy"
 msgstr "HTTPプロキシ"

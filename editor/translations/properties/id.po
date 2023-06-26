@@ -698,18 +698,6 @@ msgstr "Permintaan diluar Batas Waktu"
 msgid "Sync Breakpoints"
 msgstr "Sinkronisasi Breakpoint"
 
-msgid "Debugger"
-msgstr "Pengawakutu"
-
-msgid "Auto Switch to Remote Scene Tree"
-msgstr "Beralih Otomatis Ke Pohon Adegan Remot"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "Interval Refresg Pohon Adegan Remot"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "Interval Refresh Pemeriksaan Remot"
-
 msgid "FileSystem"
 msgstr "Berkas Sistem"
 
@@ -721,9 +709,6 @@ msgstr "Port"
 
 msgid "Password"
 msgstr "Kata Sandi"
-
-msgid "Profiler Frame Max Functions"
-msgstr "Fungsi Maks Frame Profiler"
 
 msgid "Default Feature Profile"
 msgstr "Profil Fitur Default"
@@ -1109,6 +1094,9 @@ msgstr "Lipat Kode"
 msgid "Word Wrap"
 msgstr "Bungkus Kata"
 
+msgid "Autowrap Mode"
+msgstr "Mode Bungkus Otomatis"
+
 msgid "Whitespace"
 msgstr "Spasi"
 
@@ -1487,8 +1475,23 @@ msgstr "Host Jarak Jauh"
 msgid "Editor TLS Certificates"
 msgstr "Sertifikat Editor TLS"
 
+msgid "Debugger"
+msgstr "Pengawakutu"
+
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "Beralih Otomatis Ke Pohon Adegan Remot"
+
 msgid "Profiler Frame History Size"
 msgstr "Ukuran Riwayat Frame Profiler"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Fungsi Maks Frame Profiler"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Interval Refresg Pohon Adegan Remot"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Interval Refresh Pemeriksaan Remot"
 
 msgid "HTTP Proxy"
 msgstr "Proksi HTTP"
@@ -1621,9 +1624,6 @@ msgstr "Template Kustom"
 
 msgid "Release"
 msgstr "Rilis"
-
-msgid "Export Console Script"
-msgstr "Ekspor Skrip Konsol"
 
 msgid "Binary Format"
 msgstr "Format Biner"
@@ -5302,9 +5302,6 @@ msgstr "Penjajaran Vertikal"
 
 msgid "Uppercase"
 msgstr "Huruf Besar"
-
-msgid "Autowrap Mode"
-msgstr "Mode Bungkus Otomatis"
 
 msgid "BiDi"
 msgstr "BiDi"

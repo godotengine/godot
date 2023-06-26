@@ -490,15 +490,6 @@ msgstr "Allentamento"
 msgid "Remote Port"
 msgstr "Porta Remota"
 
-msgid "Debugger"
-msgstr "Debugger"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "Intervallo di Refresh dello Scene Tree Remoto"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "Intervallo Aggiornamento Ispettore Remoto"
-
 msgid "FileSystem"
 msgstr "Filesystem"
 
@@ -510,9 +501,6 @@ msgstr "Porta"
 
 msgid "Password"
 msgstr "Password"
-
-msgid "Profiler Frame Max Functions"
-msgstr "Quantità Massima Funzioni Riquadro del Profiler"
 
 msgid "Default Feature Profile"
 msgstr "Profilo di Funzionalità Predefinito"
@@ -1060,8 +1048,20 @@ msgstr "Dimensione Carattere"
 msgid "Remote Host"
 msgstr "Host Remoto"
 
+msgid "Debugger"
+msgstr "Debugger"
+
 msgid "Profiler Frame History Size"
 msgstr "Dimensione Cronologia Riquadro del Profiler"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Quantità Massima Funzioni Riquadro del Profiler"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Intervallo di Refresh dello Scene Tree Remoto"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Intervallo Aggiornamento Ispettore Remoto"
 
 msgid "HTTP Proxy"
 msgstr "Proxy HTTP"

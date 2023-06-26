@@ -49,13 +49,14 @@
 # EngageIndo <engageindo@gmail.com>, 2023.
 # Septian Kurniawan <septgsk@outlook.com>, 2023.
 # Septian Ganendra Savero Kurniawan <septgsk@outlook.com>, 2023.
+# Septian Ganendra Savero Kurniawan <mail@init.id>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-08 10:53+0000\n"
-"Last-Translator: Septian Ganendra Savero Kurniawan <septgsk@outlook.com>\n"
+"PO-Revision-Date: 2023-06-23 12:52+0000\n"
+"Last-Translator: Septian Ganendra Savero Kurniawan <mail@init.id>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -63,7 +64,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Unset"
 msgstr "Batal disetel"
@@ -211,6 +212,9 @@ msgstr "Tombol Joystick %d"
 
 msgid "Pressure:"
 msgstr "Tekanan:"
+
+msgid "canceled"
+msgstr "dibatalkan"
 
 msgid "touched"
 msgstr "disentuh"
@@ -1083,6 +1087,13 @@ msgstr "Rasio Skala:"
 msgid "Select Transition and Easing"
 msgstr "Pilih Transisi dan Pelonggaran"
 
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Elastis"
+
+msgid "FPS:"
+msgstr "FPS:"
+
 msgid "Animation Baker"
 msgstr "Animasi Baker"
 
@@ -1700,6 +1711,9 @@ msgstr "Memiliki"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Sumber Tanpa Kepemilikan yang Jelas:"
+
+msgid "Folder name cannot be empty."
+msgstr "Nama folder tidak boleh kosong."
 
 msgid "Could not create folder."
 msgstr "Tidak dapat membuat folder."
@@ -4952,9 +4966,6 @@ msgstr ""
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Nama node tidak valid, karakter berikut tidak diperbolehkan:"
 
-msgid "Rename Node"
-msgstr "Ubah Nama Node"
-
 msgid "Scene Tree (Nodes):"
 msgstr "Pohon Skena (Node):"
 
@@ -7870,9 +7881,6 @@ msgstr "Ukuran: %s (%.1fMP)\n"
 
 msgid "Objects: %d\n"
 msgstr "Objek: %d\n"
-
-msgid "Primitive Indices: %d\n"
-msgstr "Indeks Primitif: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "Menarik Panggilan: %d"
@@ -10848,45 +10856,6 @@ msgstr "Panggang NavMesh"
 
 msgid "Clear the navigation mesh."
 msgstr "Bersihkan mesh navigasi."
-
-msgid "Setting up Configuration..."
-msgstr "Menyiapkan Konfigurasi..."
-
-msgid "Calculating grid size..."
-msgstr "Menghitung ukuran kisi..."
-
-msgid "Creating heightfield..."
-msgstr "Membuat bidang ketinggian..."
-
-msgid "Marking walkable triangles..."
-msgstr "Segitiga penanda walkable..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Membangun dataran tinggi..."
-
-msgid "Eroding walkable area..."
-msgstr "Mengikis area jalan..."
-
-msgid "Partitioning..."
-msgstr "Mempartisi..."
-
-msgid "Creating contours..."
-msgstr "Membuat kontur..."
-
-msgid "Creating polymesh..."
-msgstr "Membuat polymesh..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Mengkonversi ke mesh navigasi native..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Pengaturan Generator Navigasi Mesh:"
-
-msgid "Parsing Geometry..."
-msgstr "Mengurai Geometri..."
-
-msgid "Done!"
-msgstr "Selesai!"
 
 msgid "Pose"
 msgstr "Pose"

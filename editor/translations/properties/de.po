@@ -94,13 +94,14 @@
 # Roman Wanner <flugtauglicher@gmail.com>, 2023.
 # Ettore Atalan <atalanttore@googlemail.com>, 2023.
 # Lars Bollmann <lars.bollmann@tu-dortmund.de>, 2023.
+# Benedikt Wicklein <benedikt.wicklein@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-10 02:19+0000\n"
-"Last-Translator: Lars Bollmann <lars.bollmann@tu-dortmund.de>\n"
+"PO-Revision-Date: 2023-06-26 17:31+0000\n"
+"Last-Translator: Least Significant Bite <leastsignificantbite@proton.me>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/de/>\n"
 "Language: de\n"
@@ -108,7 +109,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -147,7 +148,7 @@ msgid "Custom User Dir Name"
 msgstr "Eigener Nutzerverzeichnisname"
 
 msgid "Project Settings Override"
-msgstr "Projekteinstellungsüberbrückung"
+msgstr "Projekteinstellungen überschreiben"
 
 msgid "Main Loop Type"
 msgstr "Typ der Hauptschleife"
@@ -226,6 +227,9 @@ msgstr "Standard Bus Layout"
 
 msgid "General"
 msgstr "Allgemein"
+
+msgid "Text to Speech"
+msgstr "Text zu Sprache"
 
 msgid "2D Panning Strength"
 msgstr "Stärke der 2D-Verschiebung"
@@ -350,6 +354,9 @@ msgstr "Maximales Intervall für inkrementelle Suche in ms"
 msgid "Common"
 msgstr "Allgemein"
 
+msgid "Snap Controls to Pixels"
+msgstr "Kontrollpunkte auf Pixeln einrasten"
+
 msgid "Fonts"
 msgstr "Schriftarten"
 
@@ -373,6 +380,9 @@ msgstr "Maximale Größe (MB)"
 
 msgid "Texture Upload Region Size Px"
 msgstr "Größe Texturuploadbereich in Px"
+
+msgid "Save Chunk Size (MB)"
+msgstr "Speicher-Chunk-Größe (MB)"
 
 msgid "Vulkan"
 msgstr "Vulkan"
@@ -404,6 +414,9 @@ msgstr "Physik Ticks pro Sekunde"
 msgid "Max Physics Steps per Frame"
 msgstr "Max Physik Schritte pro Frame"
 
+msgid "Max FPS"
+msgstr "Max. FPS"
+
 msgid "Time Scale"
 msgstr "Zeitskalierung"
 
@@ -418,6 +431,9 @@ msgstr "Kumulierte Eingabe verwenden"
 
 msgid "Input Devices"
 msgstr "Eingabegeräte"
+
+msgid "Compatibility"
+msgstr "Kompatibilität"
 
 msgid "Device"
 msgstr "Gerät"
@@ -446,6 +462,9 @@ msgstr "Keycode"
 msgid "Physical Keycode"
 msgstr "Physischer Keycode"
 
+msgid "Key Label"
+msgstr "Tastenbeschreibung"
+
 msgid "Unicode"
 msgstr "Unicode"
 
@@ -466,6 +485,9 @@ msgstr "Faktor"
 
 msgid "Button Index"
 msgstr "Tastenindex"
+
+msgid "Canceled"
+msgstr "Abgebrochen"
 
 msgid "Double Click"
 msgstr "Doppelklick"
@@ -581,6 +603,12 @@ msgstr "Status"
 msgid "Network"
 msgstr "Netzwerk"
 
+msgid "TCP"
+msgstr "TCP"
+
+msgid "Packet Peer Stream"
+msgstr "Paket-Peer-Stream"
+
 msgid "Locale"
 msgstr "Gebietsschema"
 
@@ -595,6 +623,9 @@ msgstr "Pseudo-Lokalisierung"
 
 msgid "Use Pseudolocalization"
 msgstr "Verwende Pseudo-Lokalisierung"
+
+msgid "Double Vowels"
+msgstr "Doppelvokale"
 
 msgid "Override"
 msgstr "Überschreiben"
@@ -644,15 +675,6 @@ msgstr "Glätten Ein-Aus"
 msgid "Remote Port"
 msgstr "Fern-Port"
 
-msgid "Debugger"
-msgstr "Debugger"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "Fernszenenbaum-Aktualisierungsintervall"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "Ferninspektor-Aktualisierungsintervall"
-
 msgid "FileSystem"
 msgstr "Dateisystem"
 
@@ -664,9 +686,6 @@ msgstr "Port"
 
 msgid "Password"
 msgstr "Passwort"
-
-msgid "Profiler Frame Max Functions"
-msgstr "Profile-Frame Maximale Funktionen"
 
 msgid "Default Feature Profile"
 msgstr "Standardfunktionsprofil"
@@ -1250,8 +1269,20 @@ msgstr "Schriftgröße"
 msgid "Remote Host"
 msgstr "Fern-Hostname"
 
+msgid "Debugger"
+msgstr "Debugger"
+
 msgid "Profiler Frame History Size"
 msgstr "Profiler-Frame-Verlaufsgröße"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Profile-Frame Maximale Funktionen"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Fernszenenbaum-Aktualisierungsintervall"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Ferninspektor-Aktualisierungsintervall"
 
 msgid "HTTP Proxy"
 msgstr "HTTP-Proxy"
@@ -1384,9 +1415,6 @@ msgstr "Eigene Vorlage"
 
 msgid "Release"
 msgstr "Release"
-
-msgid "Export Console Script"
-msgstr "Konsolenskript exportieren"
 
 msgid "Binary Format"
 msgstr "Binärformat"

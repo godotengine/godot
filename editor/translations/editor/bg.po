@@ -5333,18 +5333,6 @@ msgstr "Изпичане на NavMesh"
 msgid "Clear the navigation mesh."
 msgstr "Изчистване на навигационната полигонна мрежа."
 
-msgid "Creating polymesh..."
-msgstr "Създаване на полигонна мрежа…"
-
-msgid "Converting to native navigation mesh..."
-msgstr "Преобразуване на навигационната полигонна мрежа в собствения формат…"
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Настройка на генератора на навигационни полигонни мрежи:"
-
-msgid "Done!"
-msgstr "Готово!"
-
 msgid "Error loading %s: %s."
 msgstr "Грешка при зареждането на %s: %s."
 

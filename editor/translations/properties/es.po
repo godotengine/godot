@@ -572,15 +572,6 @@ msgstr "Suavizar"
 msgid "Remote Port"
 msgstr "Puerto Remoto"
 
-msgid "Debugger"
-msgstr "Depurador"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "Intervalo de Refresco del Árbol de Escenas Remoto"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "Intervalo de Refresco de la Inspección Remota"
-
 msgid "FileSystem"
 msgstr "Sistema de Archivos"
 
@@ -592,9 +583,6 @@ msgstr "Puerto"
 
 msgid "Password"
 msgstr "Contraseña"
-
-msgid "Profiler Frame Max Functions"
-msgstr "Máximo de Funciones del Cuadro del Profiler"
 
 msgid "Default Feature Profile"
 msgstr "Perfil de Características Predeterminado"
@@ -1163,8 +1151,20 @@ msgstr "Tamaño de Fuente"
 msgid "Remote Host"
 msgstr "Host Remoto"
 
+msgid "Debugger"
+msgstr "Depurador"
+
 msgid "Profiler Frame History Size"
 msgstr "Tamaño del Historial del Perfilador de Fotogramas"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Máximo de Funciones del Cuadro del Profiler"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Intervalo de Refresco del Árbol de Escenas Remoto"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Intervalo de Refresco de la Inspección Remota"
 
 msgid "HTTP Proxy"
 msgstr "Proxy HTTP"

@@ -3040,9 +3040,6 @@ msgstr ""
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Virheellinen solmun nimi, seuraavat merkit eivät ole sallittuja:"
 
-msgid "Rename Node"
-msgstr "Nimeä solmu uudelleen"
-
 msgid "Scene Tree (Nodes):"
 msgstr "Kohtauspuu (solmut):"
 
@@ -7663,45 +7660,6 @@ msgstr "Kehitä NavMesh"
 
 msgid "Clear the navigation mesh."
 msgstr "Tyhjennä navigointiverkko."
-
-msgid "Setting up Configuration..."
-msgstr "Luodaan konfiguraatiota..."
-
-msgid "Calculating grid size..."
-msgstr "Lasketaan ruudukon kokoa..."
-
-msgid "Creating heightfield..."
-msgstr "Luodaan korkeuskenttää..."
-
-msgid "Marking walkable triangles..."
-msgstr "Merkitään kuljettavat kolmiot..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Rakennetaan tiivistä korkeuskenttää..."
-
-msgid "Eroding walkable area..."
-msgstr "Syövytetään kuljettavaa aluetta..."
-
-msgid "Partitioning..."
-msgstr "Ositetaan..."
-
-msgid "Creating contours..."
-msgstr "Luodaan korkeuskäyriä..."
-
-msgid "Creating polymesh..."
-msgstr "Luodaan polymesh..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Muunnetaan alkuperäiseksi navigointiverkoksi..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Navigointiverkon generaattorin asetukset:"
-
-msgid "Parsing Geometry..."
-msgstr "Jäsentää geometriaa…"
-
-msgid "Done!"
-msgstr "Valmis!"
 
 msgid "Package name is missing."
 msgstr "Paketin nimi puuttuu."

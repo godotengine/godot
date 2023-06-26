@@ -41,13 +41,14 @@
 # Edison Lee <edisonlee@edisonlee55.com>, 2023.
 # abcabcc <xmmandxpp@outlook.com>, 2023.
 # leo <leowong1220@gmail.com>, 2023.
+# adenpun <adenpun2000@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-31 00:59+0000\n"
-"Last-Translator: leo <leowong1220@gmail.com>\n"
+"PO-Revision-Date: 2023-06-13 15:35+0000\n"
+"Last-Translator: adenpun <adenpun2000@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -55,7 +56,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "未設定"
@@ -203,6 +204,9 @@ msgstr "搖桿按鈕 %d"
 
 msgid "Pressure:"
 msgstr "感壓:"
+
+msgid "canceled"
+msgstr "已取消"
 
 msgid "touched"
 msgstr "按下"
@@ -3535,9 +3539,6 @@ msgstr "無效的節點名稱，名稱不可包含下列字元："
 
 msgid "Another node already uses this unique name in the scene."
 msgstr "另一個節點已在該場景中使用了這個不可重複的名稱。"
-
-msgid "Rename Node"
-msgstr "重新命名節點"
 
 msgid "Scene Tree (Nodes):"
 msgstr "場景樹（節點）："
@@ -8187,45 +8188,6 @@ msgstr "製作 NavMesh"
 
 msgid "Clear the navigation mesh."
 msgstr "清除導航網格。"
-
-msgid "Setting up Configuration..."
-msgstr "正在設定組態..."
-
-msgid "Calculating grid size..."
-msgstr "正在計算網格大小..."
-
-msgid "Creating heightfield..."
-msgstr "正在建立 Heightfield..."
-
-msgid "Marking walkable triangles..."
-msgstr "正在標記可移動的三角形..."
-
-msgid "Constructing compact heightfield..."
-msgstr "正在建置緊湊 Heightfield..."
-
-msgid "Eroding walkable area..."
-msgstr "正在建立可移動區域..."
-
-msgid "Partitioning..."
-msgstr "正在分割..."
-
-msgid "Creating contours..."
-msgstr "正在建立輪廓..."
-
-msgid "Creating polymesh..."
-msgstr "正在建立多邊形網格..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "正在轉換為原生導航網格..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "導航網格產生器設定："
-
-msgid "Parsing Geometry..."
-msgstr "正在解析多邊形..."
-
-msgid "Done!"
-msgstr "完成！"
 
 msgid "Package name is missing."
 msgstr "缺少套件名稱。"

@@ -144,13 +144,16 @@
 # Кордис Ди <psevdoejik@gmail.com>, 2023.
 # W Red <elyeen777greating@gmail.com>, 2023.
 # Nikita <svinuhov.nikita@gmail.com>, 2023.
+# Don Miguel <mikhail.bratus@gmail.com>, 2023.
+# Mmaxum <max55926@yandex.ru>, 2023.
+# ZIP2020 <folstagking@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-03 17:28+0000\n"
-"Last-Translator: Nikita <svinuhov.nikita@gmail.com>\n"
+"PO-Revision-Date: 2023-06-23 12:52+0000\n"
+"Last-Translator: ZIP2020 <folstagking@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -159,7 +162,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Unset"
 msgstr "Не задано"
@@ -307,6 +310,9 @@ msgstr "Кнопка джойстика %d"
 
 msgid "Pressure:"
 msgstr "Сила нажатия:"
+
+msgid "canceled"
+msgstr "отменил"
 
 msgid "touched"
 msgstr "коснулся"
@@ -1182,8 +1188,62 @@ msgstr "Коэффициент масштабирования:"
 msgid "Select Transition and Easing"
 msgstr "Выбрать переход и ослабление"
 
-msgid "Animation Baker"
-msgstr "Запекатель анимации"
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Синусоидальный"
+
+msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Квинт"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Кварт"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "Квад"
+
+msgctxt "Transition Type"
+msgid "Expo"
+msgstr "Экспоненциальный"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Эластичный"
+
+msgctxt "Transition Type"
+msgid "Circ"
+msgstr "По окружности"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Отскок"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "Пружина"
+
+msgctxt "Ease Type"
+msgid "Out"
+msgstr "Выход"
+
+msgctxt "Ease Type"
+msgid "InOut"
+msgstr "Вход и выход"
+
+msgctxt "Ease Type"
+msgid "OutIn"
+msgstr "Выход и вход"
+
+msgid "Ease Type:"
+msgstr "Сглаживание:"
+
+msgid "FPS:"
+msgstr "Кадр. в сек.:"
+
+msgid "3D Pos/Rot/Scl Track:"
+msgstr "3D поз./Поворот/Масштаб:"
 
 msgid "Select Tracks to Copy"
 msgstr "Выбрать дорожки для копирования"
@@ -1473,6 +1533,12 @@ msgstr ""
 
 msgid "Toggle Visibility"
 msgstr "Переключить видимость"
+
+msgid "Updating assets on target device:"
+msgstr "Обновление ассетов на целевом устройстве:"
+
+msgid "Sending list of changed files:"
+msgstr "Отправка списка измененных файлов:"
 
 msgid "ms"
 msgstr "мс"
@@ -1803,6 +1869,11 @@ msgstr "Кол-во"
 
 msgid "Resources Without Explicit Ownership:"
 msgstr "Ресурсы без явного владения:"
+
+msgid "Using slashes in folder names will create subfolders recursively."
+msgstr ""
+"Использование косой черты в именах папок приведет к рекурсивному созданию "
+"подпапок."
 
 msgid "Could not create folder."
 msgstr "Невозможно создать папку."
@@ -3291,6 +3362,9 @@ msgstr "Очистить недавние сцены"
 msgid "There is no defined scene to run."
 msgstr "Не определена сцена для запуска."
 
+msgid "%s - Godot Engine"
+msgstr "%s - Godot Engine"
+
 msgid ""
 "No main scene has ever been defined, select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
@@ -3528,6 +3602,13 @@ msgstr "Вопросы и ответы"
 
 msgid "Report a Bug"
 msgstr "Сообщить об ошибке"
+
+msgid "Copy System Info"
+msgstr "Копировать системную информацию"
+
+msgid "Copies the system info as a single-line text into the clipboard."
+msgstr ""
+"Копирует системную информацию в виде однострочного текста в буфер обмена."
 
 msgid "Suggest a Feature"
 msgstr "Предложить функцию"
@@ -3843,6 +3924,9 @@ msgstr "Локализуемая строка (размер %d)"
 
 msgid "Add Translation"
 msgstr "Добавить перевод"
+
+msgid "Lock/Unlock Component Ratio"
+msgstr "Блокировка/разблокировка соотношения компонентов"
 
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
@@ -4587,6 +4671,12 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "Файл или папка с таким именем уже существует."
 
+msgid "Do you wish to overwrite them or rename the copied files?"
+msgstr "Вы хотите перезаписать их или переименовать скопированные файлы?"
+
+msgid "Do you wish to overwrite them or rename the moved files?"
+msgstr "Вы хотите перезаписать их или переименовать перемещенные файлы?"
+
 msgid "Duplicating file:"
 msgstr "Дублирование файла:"
 
@@ -5098,9 +5188,6 @@ msgstr "Некорректное имя узла, следующие симво�
 
 msgid "Another node already uses this unique name in the scene."
 msgstr "Данное уникальное имя уже использовано у другого узла в сцене."
-
-msgid "Rename Node"
-msgstr "Переименовать узел"
 
 msgid "Scene Tree (Nodes):"
 msgstr "Дерево сцены (Узлы):"
@@ -7913,6 +8000,9 @@ msgstr "Установить start_position"
 msgid "Set end_position"
 msgstr "Задать end_position"
 
+msgid "Set NavigationObstacle3D Vertices"
+msgstr "Установить вершины NavigationObstacle3D"
+
 msgid "Edit Poly"
 msgstr "Редактировать полигон"
 
@@ -8014,9 +8104,6 @@ msgstr "Размер: %s (%.1fMP)\n"
 
 msgid "Objects: %d\n"
 msgstr "Объекты: %d\n"
-
-msgid "Primitive Indices: %d\n"
-msgstr "Показатели примитивов: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "Вызовы отрисовки: %d"
@@ -9114,6 +9201,9 @@ msgstr "Переход к следующей точке останова"
 msgid "Go to Previous Breakpoint"
 msgstr "Перейти к предыдущей точке останова"
 
+msgid "Shader Editor"
+msgstr "Редактор шейдеров"
+
 msgid "Load Shader File"
 msgstr "Открыть файл шейдера"
 
@@ -9132,8 +9222,8 @@ msgstr "Открыть файл в инспекторе"
 msgid "Close File"
 msgstr "Закрыть файл"
 
-msgid "Shader Editor"
-msgstr "Редактор шейдеров"
+msgid "Make the shader editor floating."
+msgstr "Сделать окно редактора шейдеров плавающим."
 
 msgid "No valid shader stages found."
 msgstr "Допустимых этапов шейдера не найдено."
@@ -9353,14 +9443,20 @@ msgstr "Фильтр анимации"
 msgid "Delete Animation"
 msgstr "Удалить анимацию"
 
+msgid "This resource does not have any animations."
+msgstr "В этом ресурсе нет анимаций."
+
 msgid "Animation Frames:"
-msgstr "Кадры анимации:"
+msgstr "Кадры Анимации:"
 
 msgid "Frame Duration:"
 msgstr "Длительность кадра:"
 
 msgid "Zoom Reset"
 msgstr "Сбросить масштабирование"
+
+msgid "Add frame from file"
+msgstr "Добавить кадр из файла"
 
 msgid "Add frames from sprite sheet"
 msgstr "Добавить кадры из спрайт-листа"
@@ -9380,17 +9476,62 @@ msgstr "Переместить кадр вправо"
 msgid "Select Frames"
 msgstr "Выбрать кадры"
 
+msgid "Frame Order"
+msgstr "Порядок кадров"
+
+msgid "Left to Right, Top to Bottom"
+msgstr "Слева направо, сверху вниз"
+
+msgid "Left to Right, Bottom to Top"
+msgstr "Слева направо, снизу вверх"
+
+msgid "Right to Left, Top to Bottom"
+msgstr "Справа налево, сверху вниз"
+
+msgid "Right to Left, Bottom to Top"
+msgstr "Справа налево, снизу вверх"
+
+msgid "Top to Bottom, Left to Right"
+msgstr "Сверху вниз, слева направо"
+
+msgid "Top to Bottom, Right to Left"
+msgstr "Сверху вниз, справа налево"
+
+msgid "Bottom to Top, Left to Right"
+msgstr "Снизу вверх, слева направо"
+
+msgid "Bottom to Top, Right to Left"
+msgstr "Снизу вверх, справа налево"
+
+msgid "Select None"
+msgstr "Выбрать Ничего"
+
+msgid "Toggle Settings Panel"
+msgstr "Переключить панель настроек"
+
+msgid "Horizontal"
+msgstr "Горизонтально"
+
+msgid "Vertical"
+msgstr "Вертикально"
+
 msgid "Size"
 msgstr "Размер"
+
+msgid "Separation"
+msgstr "Разделение"
+
+msgid "Offset"
+msgstr "Отступ"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "Создать кадры из спрайт-листа"
 
 msgid "SpriteFrames"
-msgstr "Кадровая анимация"
+msgstr "Кадры анимации"
 
 msgid "Warnings should be fixed to prevent errors."
-msgstr "Предупреждения должны быть устранены для предотвращения ошибок."
+msgstr "Предупреждения должны быть исправлены, чтобы предотвратить ошибки."
 
 msgid ""
 "This shader has been modified on disk.\n"
@@ -9431,6 +9572,12 @@ msgstr "Шаг:"
 
 msgid "Separation:"
 msgstr "Разделение:"
+
+msgid "Region Editor"
+msgstr "Редактор Области"
+
+msgid "Edit Region"
+msgstr "Редактировать область"
 
 msgid "Styleboxes"
 msgstr "Стили"
@@ -10079,9 +10226,6 @@ msgstr "Выделить выбранный TileMap"
 msgid "Toggle grid visibility."
 msgstr "Отображение сетки."
 
-msgid "The edited TileMap node has no TileSet resource."
-msgstr "Редактируемый узел TileMap не имеет ресурса TileSet."
-
 msgid "Create Alternative-level Tile Proxy"
 msgstr "Создание прокси Тайл альтернативного уровня"
 
@@ -10110,6 +10254,9 @@ msgstr ""
 "Ресурс: %d\n"
 "Координаты атласа: %s\n"
 "Альтернативный: %d"
+
+msgid "Rendering"
+msgstr "*Рендеринг*"
 
 msgid "Physics"
 msgstr "Физика"
@@ -10182,9 +10329,6 @@ msgstr "Добавить новый исходник атласа"
 
 msgid "Open Atlas Merging Tool"
 msgstr "Открыть инструмент слияния атласов"
-
-msgid "No TileSet source selected. Select or create a TileSet source."
-msgstr "Ресурс TileSet не выбран. Выберите или создайте ресурс TileSet."
 
 msgid "Add new patterns in the TileMap editing mode."
 msgstr "Добавляйте новые шаблоны в режиме редактирования тайловой карты."
@@ -12534,45 +12678,6 @@ msgstr "Запечь NavMesh"
 msgid "Clear the navigation mesh."
 msgstr "Очистить меш навигации."
 
-msgid "Setting up Configuration..."
-msgstr "Настройка конфигурации..."
-
-msgid "Calculating grid size..."
-msgstr "Расчёт размера сетки..."
-
-msgid "Creating heightfield..."
-msgstr "Создание карты высот..."
-
-msgid "Marking walkable triangles..."
-msgstr "Маркировка проходимых треугольников..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Построение компактной карты высот..."
-
-msgid "Eroding walkable area..."
-msgstr "Размытие проходимого района..."
-
-msgid "Partitioning..."
-msgstr "Разбиение..."
-
-msgid "Creating contours..."
-msgstr "Создание контуров..."
-
-msgid "Creating polymesh..."
-msgstr "Создание полимеша..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Преобразование в собственный навигационный меш..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Настройка генератора меша навигации:"
-
-msgid "Parsing Geometry..."
-msgstr "Анализ геометрии..."
-
-msgid "Done!"
-msgstr "Сделано!"
-
 msgid "Toggles whether the noise preview is computed in 3D space."
 msgstr ""
 "Задаёт, будет ли предварительный просмотр шума вычисляться в трехмерном "
@@ -13436,12 +13541,6 @@ msgstr ""
 "Недопустимый полигон. В режиме 'Segments' необходимо по крайней мере 2 точки."
 
 msgid ""
-"The One Way Collision property will be ignored when the parent is an Area2D."
-msgstr ""
-"Свойство One Way Collision будет игнорироваться, если родителем является "
-"Area2D."
-
-msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
@@ -14205,17 +14304,75 @@ msgstr "Ошибка вычисления условия."
 msgid "Unmatched else."
 msgstr "Без других совпадений."
 
+msgid "Invalid else."
+msgstr "Недопустимый else."
+
+msgid "Unmatched endif."
+msgstr "Непарный endif."
+
+msgid "Invalid endif."
+msgstr "Недопустимый endif."
+
+msgid "Invalid ifdef."
+msgstr "Недопустимый ifdef."
+
+msgid "Invalid ifndef."
+msgstr "Недопустимый ifndef."
+
+msgid "Shader include file does not exist:"
+msgstr "Файл включенный в шейдер не существует:"
+
+msgid ""
+"Shader include load failed. Does the shader include exist? Is there a cyclic "
+"dependency?"
+msgstr ""
+"Не удалось загрузить шейдер. Существует ли шейдер? Есть ли циклическая "
+"зависимость?"
+
+msgid "Shader include resource type is wrong."
+msgstr "Шейдер включает неверный тип ресурса."
+
+msgid "Cyclic include found"
+msgstr "Обнаружено циклическое включение"
+
+msgid "Shader max include depth exceeded."
+msgstr "Превышена максимальная глубина include для шейдера."
+
+msgid "Invalid pragma directive."
+msgstr "Недопустимая директива прагмы."
+
+msgid "Invalid undef."
+msgstr "Неопределенное имя."
+
+msgid "Macro expansion limit exceeded."
+msgstr "Превышен предел расширения макроса."
+
+msgid "Invalid macro argument list."
+msgstr "Некорректный список аргументов макроса."
+
+msgid "Invalid macro argument."
+msgstr "Некорректный аргумент макроса."
+
 msgid "Invalid macro argument count."
 msgstr "Недопустимое количество аргументов макроса."
+
+msgid "Can't find matching branch directive."
+msgstr "Не удается найти соответствующую директиву ветки."
+
+msgid "Invalid symbols placed before directive."
+msgstr "Недопустимые символы перед директивой."
+
+msgid "Unmatched conditional statement."
+msgstr "Не парный условный оператор."
 
 msgid ""
 "Direct floating-point comparison (this may not evaluate to `true` as you "
 "expect). Instead, use `abs(a - b) < 0.0001` for an approximate but "
 "predictable comparison."
 msgstr ""
-"Точное сравнение с плавающей точкой (может быть не совсем `тем`, чего вы "
-"ожидаете). Вместо этого, используйте `abs(a - b) < 0.0001` для "
-"приблизительного, но предсказуемого, сравнения."
+"Прямое сравнение с плавающей запятой (это может не дать 'true', как вы "
+"ожидаете). Вместо этого используйте «abs(a - b) < 0,0001» для "
+"приблизительного, но предсказуемого сравнения."
 
 msgid "The const '%s' is declared but never used."
 msgstr "Константа '%s' объявлена, но не используется."
@@ -14228,6 +14385,9 @@ msgstr "Структура '%s' объявлена, но не используе
 
 msgid "The uniform '%s' is declared but never used."
 msgstr "Юниформа '%s' объявлена, но не используется."
+
+msgid "The varying '%s' is declared but never used."
+msgstr "Varying '%s' объявлен, но никогда не используется."
 
 msgid "The local variable '%s' is declared but never used."
 msgstr "Локальная переменная '%s' объявлена, но не используется."

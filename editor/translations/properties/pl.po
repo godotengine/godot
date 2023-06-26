@@ -77,8 +77,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-10 02:20+0000\n"
-"Last-Translator: stereopolex <stereopolex@gmail.com>\n"
+"PO-Revision-Date: 2023-06-16 02:06+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pl/>\n"
 "Language: pl\n"
@@ -87,7 +87,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1-dev\n"
 
 msgid "Application"
 msgstr "Aplikacja"
@@ -557,9 +557,6 @@ msgstr "Wygładzanie"
 msgid "Remote Port"
 msgstr "Zdalny port"
 
-msgid "Debugger"
-msgstr "Debugger"
-
 msgid "FileSystem"
 msgstr "System plików"
 
@@ -571,9 +568,6 @@ msgstr "Port"
 
 msgid "Password"
 msgstr "Hasło"
-
-msgid "Profiler Frame Max Functions"
-msgstr "Maksymalna ilość funkcji klatki profilera"
 
 msgid "Default Feature Profile"
 msgstr "Profil domyślnych funkcji"
@@ -1139,8 +1133,14 @@ msgstr "Rozmiar czcionki"
 msgid "Remote Host"
 msgstr "Zdalny host"
 
+msgid "Debugger"
+msgstr "Debugger"
+
 msgid "Profiler Frame History Size"
 msgstr "Rozmiar historii klatek profilera"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Maksymalna ilość funkcji klatki profilera"
 
 msgid "HTTP Proxy"
 msgstr "Proxy HTTP"
@@ -1267,9 +1267,6 @@ msgstr "Własny szablon"
 
 msgid "Release"
 msgstr "Wydanie"
-
-msgid "Export Console Script"
-msgstr "Eksportuj skrypt konsoli"
 
 msgid "Binary Format"
 msgstr "Format binarny"
@@ -1638,7 +1635,7 @@ msgid "Texture"
 msgstr "Tekstura"
 
 msgid "Separation"
-msgstr "Separacja"
+msgstr "Odstęp"
 
 msgid "Texture Region Size"
 msgstr "Rozmiar obszaru tekstury"

@@ -104,13 +104,15 @@
 # Joinner Medina <devjoi2018@gmail.com>, 2023.
 # Pedro Torcatt <pedrotorcattsoto@gmail.com>, 2023.
 # Pedro Zebenzui Ortega Diaz <pipo.tf@gmail.com>, 2023.
+# Santiago Valencia <santv05082011@gmail.com>, 2023.
+# Ghislain <ghyslainnen@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-23 01:52+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2023-06-23 12:52+0000\n"
+"Last-Translator: Ghislain <ghyslainnen@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -118,7 +120,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Unset"
 msgstr "Desactivar"
@@ -266,6 +268,9 @@ msgstr "Botón del Mando %d"
 
 msgid "Pressure:"
 msgstr "Presión:"
+
+msgid "canceled"
+msgstr "Cancelado"
 
 msgid "touched"
 msgstr "tocado"
@@ -1144,6 +1149,42 @@ msgstr "Relación de Escala:"
 
 msgid "Select Transition and Easing"
 msgstr "Seleccione Transición y Easing"
+
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Seno"
+
+msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Quíntica"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Cuártica"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "Cuadrática"
+
+msgctxt "Transition Type"
+msgid "Expo"
+msgstr "Exponencial"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Elástico"
+
+msgctxt "Transition Type"
+msgid "Cubic"
+msgstr "Cúbica"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Rebote"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "Resorte"
 
 msgid "Animation Baker"
 msgstr "Baker de Animación"
@@ -5104,9 +5145,6 @@ msgstr ""
 msgid "Another node already uses this unique name in the scene."
 msgstr "Otro nodo ya utiliza este nombre único en la escena."
 
-msgid "Rename Node"
-msgstr "Renombrar Nodo"
-
 msgid "Scene Tree (Nodes):"
 msgstr "Árbol de Escenas (Nodos):"
 
@@ -8070,9 +8108,6 @@ msgstr "Tamaño: %s (%.1fMP)\n"
 msgid "Objects: %d\n"
 msgstr "Objetos: %d\n"
 
-msgid "Primitive Indices: %d\n"
-msgstr "Índices Primitivos: %d\n"
-
 msgid "Draw Calls: %d"
 msgstr "Llamadas de Dibujado: %d"
 
@@ -9189,6 +9224,9 @@ msgstr "Ir al Siguiente Punto de Ruptura"
 msgid "Go to Previous Breakpoint"
 msgstr "Ir al Anterior Punto de Ruptura"
 
+msgid "Shader Editor"
+msgstr "Editor de Shader"
+
 msgid "New Shader Include"
 msgstr "Nueva Inclusión de Shader"
 
@@ -9209,9 +9247,6 @@ msgstr "Abrir Archivo en el Inspector"
 
 msgid "Close File"
 msgstr "Cerrar Archivo"
-
-msgid "Shader Editor"
-msgstr "Editor de Shader"
 
 msgid "No valid shader stages found."
 msgstr "No se encontraron etapas de shader válidas."
@@ -10192,13 +10227,6 @@ msgstr "Dispersión:"
 msgid "Tiles"
 msgstr "Tiles"
 
-msgid ""
-"This TileMap's TileSet has no source configured. Edit the TileSet resource "
-"to add one."
-msgstr ""
-"El TileSet de este TileMap no tiene una fuente configurada. Edita el recurso "
-"de TileSet para agregar una."
-
 msgid "Sort sources"
 msgstr "Ordenar recursos"
 
@@ -10274,9 +10302,6 @@ msgstr "Cambiar visibilidad de la cuadrícula."
 
 msgid "Automatically Replace Tiles with Proxies"
 msgstr "Reemplazar Automáticamente los Tiles con Proxies"
-
-msgid "The edited TileMap node has no TileSet resource."
-msgstr "El nodo TileMap editado no tiene un recurso TileSet."
 
 msgid "Remove Tile Proxies"
 msgstr "Eliminar Proxies de Tiles"
@@ -13287,45 +13312,6 @@ msgstr "Bakear NavMesh"
 msgid "Clear the navigation mesh."
 msgstr "Limpiar la malla de navegación."
 
-msgid "Setting up Configuration..."
-msgstr "Estableciendo la configuración..."
-
-msgid "Calculating grid size..."
-msgstr "Calculando tamaño la cuadrícula..."
-
-msgid "Creating heightfield..."
-msgstr "Creando campo de alturas..."
-
-msgid "Marking walkable triangles..."
-msgstr "Marcando triángulos transitables..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Construyendo heightfield compacto..."
-
-msgid "Eroding walkable area..."
-msgstr "Erosionando área transitable..."
-
-msgid "Partitioning..."
-msgstr "Particionando..."
-
-msgid "Creating contours..."
-msgstr "Creando contornos..."
-
-msgid "Creating polymesh..."
-msgstr "Creando polymesh..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Convertir a malla de navegación nativa..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Configuración del Generador de Mallas de Navegación:"
-
-msgid "Parsing Geometry..."
-msgstr "Analizando geometría..."
-
-msgid "Done!"
-msgstr "¡Hecho!"
-
 msgid "Rename Action"
 msgstr "Renombrar Acción"
 
@@ -13744,9 +13730,6 @@ msgstr "Exportación de Script de Depuración"
 msgid "Could not open file \"%s\"."
 msgstr "No se ha podido abrir el archivo \"%s\"."
 
-msgid "Could not create console script."
-msgstr "No se pudo crear el script de consola."
-
 msgid "Failed to open executable file \"%s\"."
 msgstr "Fallo al abrir el archivo ejecutable \"%s\"."
 
@@ -14143,12 +14126,6 @@ msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
 "Polígono inválido. Se necesitan al menos 2 puntos en modo de construcción "
 "'Segments'."
-
-msgid ""
-"The One Way Collision property will be ignored when the parent is an Area2D."
-msgstr ""
-"La propiedad Colisión en Una Dirección será ignorada cuando el padre sea un "
-"Area2D."
 
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "

@@ -69,7 +69,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-22 20:51+0000\n"
+"PO-Revision-Date: 2023-06-16 02:06+0000\n"
 "Last-Translator: Robbe Vanslambrouck <robbevsb.dev@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -78,7 +78,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1-dev\n"
 
 msgid "Unset"
 msgstr "Niet ingesteld"
@@ -217,6 +217,9 @@ msgstr "Xbox Paddle 3"
 
 msgid "Xbox Paddle 4"
 msgstr "Xbox Paddle 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 Touchpad"
 
 msgid "Joypad Button %d"
 msgstr "Controllerknop %d"
@@ -3313,9 +3316,6 @@ msgstr ""
 
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Ongeldige knoopnaam, deze karakters zijn niet toegestaan:"
-
-msgid "Rename Node"
-msgstr "Knoop hernoemen"
 
 msgid "Scene Tree (Nodes):"
 msgstr "Scèneboom (knopen):"
@@ -7243,45 +7243,6 @@ msgstr "Bak NavMesh"
 
 msgid "Clear the navigation mesh."
 msgstr "Navigatiemesh wissen."
-
-msgid "Setting up Configuration..."
-msgstr "Configuratie aan het instellen..."
-
-msgid "Calculating grid size..."
-msgstr "Raster groote uitrekenen..."
-
-msgid "Creating heightfield..."
-msgstr "Hoogteveld aan het creëeren..."
-
-msgid "Marking walkable triangles..."
-msgstr "begaanbaare driehoeken markeren..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Bezig met opbouw van compact hoogteveld..."
-
-msgid "Eroding walkable area..."
-msgstr "Wandelbaar gebied aan het eroderen..."
-
-msgid "Partitioning..."
-msgstr "Partitioneren..."
-
-msgid "Creating contours..."
-msgstr "Contouren aan het creëeren..."
-
-msgid "Creating polymesh..."
-msgstr "Polymesh aan het creëeren..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Naar navigatie mesh aan het converteren..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Navigatie Mesh Generator Setup:"
-
-msgid "Parsing Geometry..."
-msgstr "Geometrie aan het ontleden..."
-
-msgid "Done!"
-msgstr "Klaar!"
 
 msgid "Package name is missing."
 msgstr "Package naam ontbreekt."
