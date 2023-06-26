@@ -74,6 +74,7 @@ public:
 		STATIC_CALLED_ON_INSTANCE, // A static method was called on an instance of a class instead of on the class itself.
 		REDUNDANT_STATIC_UNLOAD, // The `@static_unload` annotation is used but the class does not have static data.
 		REDUNDANT_AWAIT, // await is used but expression is synchronous (not a signal nor a coroutine).
+		REDUNDANT_PATTERN, // Pattern in a match statement with a wildcard pattern.
 		ASSERT_ALWAYS_TRUE, // Expression for assert argument is always true.
 		ASSERT_ALWAYS_FALSE, // Expression for assert argument is always false.
 		INTEGER_DIVISION, // Integer divide by integer, decimal part is discarded.
@@ -122,6 +123,7 @@ public:
 		WARN, // STATIC_CALLED_ON_INSTANCE
 		WARN, // REDUNDANT_STATIC_UNLOAD
 		WARN, // REDUNDANT_AWAIT
+		WARN, // REDUNDANT_PATTERN
 		WARN, // ASSERT_ALWAYS_TRUE
 		WARN, // ASSERT_ALWAYS_FALSE
 		WARN, // INTEGER_DIVISION

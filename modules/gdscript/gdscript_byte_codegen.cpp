@@ -61,6 +61,10 @@ uint32_t GDScriptByteCodeGenerator::add_or_get_constant(const Variant &p_constan
 	return get_constant_pos(p_constant);
 }
 
+uint32_t GDScriptByteCodeGenerator::add_or_get_variant_vector_constant(const Vector<Variant> &p_constant) {
+	return get_variant_vector_constant_pos(p_constant);
+}
+
 uint32_t GDScriptByteCodeGenerator::add_or_get_name(const StringName &p_name) {
 	return get_name_map_pos(p_name);
 }
@@ -206,6 +210,11 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 	} else {
 		function->_constants_ptr = nullptr;
 		function->_constant_count = 0;
+	}
+
+	function->variant_vector_constants.resize(variant_vector_constant_map.size());
+	for (const KeyValue<Vector<Variant>, int> &K : variant_vector_constant_map) {
+		function->variant_vector_constants.write[K.value] = K.key;
 	}
 
 	if (name_map.size()) {
@@ -1480,6 +1489,82 @@ void GDScriptByteCodeGenerator::write_jump_if_shared(const Address &p_value) {
 void GDScriptByteCodeGenerator::write_end_jump_if_shared() {
 	patch_jump(if_jmp_addrs.back()->get());
 	if_jmp_addrs.pop_back();
+}
+
+void GDScriptByteCodeGenerator::write_jump_table_range(const Address &p_value, int p_offset, int p_size, int p_branch_count) {
+	ERR_FAIL_COND(p_size < 0);
+
+	append_opcode(GDScriptFunction::OPCODE_JUMP_TABLE_RANGE);
+	append(p_value);
+	append(p_offset);
+	append(p_size);
+
+	int start_addr = opcodes.size();
+	for (int i = 0; i < p_size; i++) {
+		append(-1); // Jump destination, will be patched.
+	}
+	append(-1); // Jump destination, will be patched.
+
+	jmp_tables.push_back(JumpTable(start_addr, p_size + 1, p_branch_count));
+}
+
+void GDScriptByteCodeGenerator::write_jump_table_bsearch(const Address &p_value, const Vector<Variant> &p_array, int p_branch_count) {
+	append_opcode(GDScriptFunction::OPCODE_JUMP_TABLE_BSEARCH);
+	append(p_value);
+	append(add_or_get_variant_vector_constant(p_array));
+
+	int start_addr = opcodes.size();
+	for (int i = 0; i < p_array.size(); i++) {
+		append(-1); // Jump destination, will be patched.
+	}
+	append(-1); // Jump destination, will be patched.
+
+	jmp_tables.push_back(JumpTable(start_addr, p_array.size() + 1, p_branch_count));
+}
+
+void GDScriptByteCodeGenerator::write_jump_table_branch() {
+	JumpTable &jmp_table = jmp_tables.back()->get();
+	jmp_table.current_branch++;
+
+	ERR_FAIL_COND(jmp_table.current_branch >= jmp_table.branch_count);
+
+	if (jmp_table.current_branch > 0) {
+		// End previous branch.
+		append_opcode(GDScriptFunction::OPCODE_JUMP); // Jump to end.
+		jmp_table.jmp_to_end_addrs.push_back(opcodes.size());
+		append(0); // Jump destination, will be patched.
+	}
+
+	jmp_table.branch_start_addrs.write[jmp_table.current_branch] = opcodes.size();
+}
+
+// Unset cases jump to the end.
+void GDScriptByteCodeGenerator::write_jump_table_set_case_branch(int p_case, int p_branch) {
+	JumpTable &jmp_table = jmp_tables.back()->get();
+
+	ERR_FAIL_INDEX(p_case, jmp_table.case_count);
+	ERR_FAIL_INDEX(p_branch, jmp_table.branch_count);
+	ERR_FAIL_COND(p_branch > jmp_table.current_branch);
+
+	opcodes.write[jmp_table.start_addr + p_case] = jmp_table.branch_start_addrs[p_branch];
+}
+
+void GDScriptByteCodeGenerator::write_end_jump_table() {
+	JumpTable &jmp_table = jmp_tables.back()->get();
+
+	ERR_FAIL_COND(jmp_table.current_branch != jmp_table.branch_count - 1);
+
+	for (int i = 0; i < jmp_table.case_count; i++) {
+		if (opcodes[jmp_table.start_addr + i] < 0) {
+			patch_jump(jmp_table.start_addr + i);
+		}
+	}
+
+	for (List<int>::Element *E = jmp_table.jmp_to_end_addrs.front(); E; E = E->next()) {
+		patch_jump(E->get());
+	}
+
+	jmp_tables.pop_back();
 }
 
 void GDScriptByteCodeGenerator::start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) {

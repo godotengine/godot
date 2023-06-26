@@ -70,6 +70,7 @@ public:
 	virtual uint32_t add_local(const StringName &p_name, const GDScriptDataType &p_type) = 0;
 	virtual uint32_t add_local_constant(const StringName &p_name, const Variant &p_constant) = 0;
 	virtual uint32_t add_or_get_constant(const Variant &p_constant) = 0;
+	virtual uint32_t add_or_get_variant_vector_constant(const Vector<Variant> &p_constant) = 0;
 	virtual uint32_t add_or_get_name(const StringName &p_name) = 0;
 	virtual uint32_t add_temporary(const GDScriptDataType &p_type) = 0;
 	virtual void pop_temporary() = 0;
@@ -144,6 +145,11 @@ public:
 	virtual void write_endif() = 0;
 	virtual void write_jump_if_shared(const Address &p_value) = 0;
 	virtual void write_end_jump_if_shared() = 0;
+	virtual void write_jump_table_range(const Address &p_value, int p_offset, int p_size, int p_branch_count) = 0;
+	virtual void write_jump_table_bsearch(const Address &p_value, const Vector<Variant> &p_array, int p_branch_count) = 0;
+	virtual void write_jump_table_branch() = 0;
+	virtual void write_jump_table_set_case_branch(int p_case, int p_branch) = 0;
+	virtual void write_end_jump_table() = 0;
 	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) = 0;
 	virtual void write_for_assignment(const Address &p_list) = 0;
 	virtual void write_for(const Address &p_variable, bool p_use_conversion) = 0;

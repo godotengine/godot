@@ -2266,7 +2266,9 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 				resolve_match_pattern(p_match_pattern->array[i], nullptr);
 				decide_suite_type(p_match_pattern, p_match_pattern->array[i]);
 			}
-			result = p_match_pattern->get_datatype();
+			result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+			result.kind = GDScriptParser::DataType::BUILTIN;
+			result.builtin_type = Variant::ARRAY;
 			break;
 		case GDScriptParser::PatternNode::PT_DICTIONARY:
 			for (int i = 0; i < p_match_pattern->dictionary.size(); i++) {
@@ -2282,12 +2284,23 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 					decide_suite_type(p_match_pattern, p_match_pattern->dictionary[i].value_pattern);
 				}
 			}
-			result = p_match_pattern->get_datatype();
+			result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+			result.kind = GDScriptParser::DataType::BUILTIN;
+			result.builtin_type = Variant::DICTIONARY;
 			break;
 		case GDScriptParser::PatternNode::PT_WILDCARD:
 		case GDScriptParser::PatternNode::PT_REST:
 			result.kind = GDScriptParser::DataType::VARIANT;
 			break;
+	}
+
+	if (p_match_test != nullptr) {
+		GDScriptParser::DataType test_type = p_match_test->get_datatype();
+		if (!result.is_variant() && result.is_hard_type() && !test_type.is_variant() && test_type.is_hard_type() && !is_type_compatible(result, test_type) && !is_type_compatible(test_type, result)) {
+			if (!(result.builtin_type == Variant::STRING && test_type.builtin_type == Variant::STRING_NAME) && !(result.builtin_type == Variant::STRING_NAME && test_type.builtin_type == Variant::STRING)) {
+				push_error(vformat(R"(Expression of type "%s" cannot match a pattern of type "%s".)", test_type.to_string(), result.to_string()), p_match_pattern);
+			}
+		}
 	}
 
 	p_match_pattern->set_datatype(result);

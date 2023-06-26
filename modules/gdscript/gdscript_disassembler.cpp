@@ -947,6 +947,55 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr = 3;
 			} break;
+			case OPCODE_JUMP_TABLE_RANGE: {
+				text += "jump-table-range ";
+				text += DADDR(1);
+				text += "\n";
+
+				int offset = _code_ptr[ip + 2];
+				int size = _code_ptr[ip + 3];
+
+				String indent = String(" ").repeat(7 + itos(ip).length());
+
+				for (int i = 0; i < size; i++) {
+					text += indent;
+					text += "case ";
+					text += itos(offset + i);
+					text += " to ";
+					text += itos(_code_ptr[ip + 4 + i]);
+					text += "\n";
+				}
+
+				text += indent;
+				text += "default to ";
+				text += itos(_code_ptr[ip + 4 + size]);
+
+				incr = 4 + size + 1;
+			} break;
+			case OPCODE_JUMP_TABLE_BSEARCH: {
+				text += "jump-table-bsearch ";
+				text += DADDR(1);
+				text += "\n";
+
+				Vector<Variant> array = get_variant_vector_constant(_code_ptr[ip + 2] & ADDR_MASK);
+
+				String indent = String(" ").repeat(7 + itos(ip).length());
+
+				for (int i = 0; i < array.size(); i++) {
+					text += indent;
+					text += "case ";
+					text += _get_variant_string(array[i]);
+					text += " to ";
+					text += itos(_code_ptr[ip + 3 + i]);
+					text += "\n";
+				}
+
+				text += indent;
+				text += "default to ";
+				text += itos(_code_ptr[ip + 3 + array.size()]);
+
+				incr = 3 + array.size() + 1;
+			} break;
 			case OPCODE_RETURN: {
 				text += "return ";
 				text += DADDR(1);

@@ -289,6 +289,8 @@ public:
 		OPCODE_JUMP_IF_NOT,
 		OPCODE_JUMP_TO_DEF_ARGUMENT,
 		OPCODE_JUMP_IF_SHARED,
+		OPCODE_JUMP_TABLE_RANGE,
+		OPCODE_JUMP_TABLE_BSEARCH,
 		OPCODE_RETURN,
 		OPCODE_RETURN_TYPED_BUILTIN,
 		OPCODE_RETURN_TYPED_ARRAY,
@@ -406,6 +408,23 @@ public:
 		StringName identifier;
 	};
 
+	// For binary search.
+	struct SafeVariantSort {
+		_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
+			if (p_l.get_type() != p_r.get_type()) {
+				return p_l.get_type() < p_r.get_type();
+			}
+			bool valid = false;
+			Variant res;
+			Variant::evaluate(Variant::OP_LESS, p_l, p_r, res, valid);
+			if (!valid) {
+				ERR_PRINT(vformat("Failed to compare %s and %s.", p_l, p_r));
+				res = false;
+			}
+			return res;
+		}
+	};
+
 private:
 	friend class GDScript;
 	friend class GDScriptCompiler;
@@ -435,6 +454,8 @@ private:
 	Vector<int> code;
 	Vector<int> default_arguments;
 	Vector<Variant> constants;
+	// For OPCODE_JUMP_TABLE_BSEARCH to avoid Array <-> Vector<Variant> conversion overhead.
+	Vector<Vector<Variant>> variant_vector_constants;
 	Vector<StringName> global_names;
 	Vector<Variant::ValidatedOperatorEvaluator> operator_funcs;
 	Vector<Variant::ValidatedSetter> setters;
@@ -543,6 +564,7 @@ public:
 	_FORCE_INLINE_ int get_max_stack_size() const { return _stack_size; }
 
 	Variant get_constant(int p_idx) const;
+	Vector<Variant> get_variant_vector_constant(int p_idx) const;
 	StringName get_global_name(int p_idx) const;
 
 	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
