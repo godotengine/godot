@@ -27,7 +27,7 @@
 			<return type="bool" />
 			<description>
 				Tries locking this [Mutex], but does not block. Returns [code]true[/code] on success, [code]false[/code] otherwise.
-				[b]Note:[/b] This function returns [constant OK] if the thread already has ownership of the mutex.
+				[b]Note:[/b] This function returns [code]true[/code] if the thread already has ownership of the mutex.
 			</description>
 		</method>
 		<method name="unlock">
