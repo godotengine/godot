@@ -44,23 +44,23 @@
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
 
 static const char *_button_names[JOY_BUTTON_MAX] = {
-	"DualShock Cross, Xbox A, Nintendo B",
-	"DualShock Circle, Xbox B, Nintendo A",
-	"DualShock Square, Xbox X, Nintendo Y",
-	"DualShock Triangle, Xbox Y, Nintendo X",
-	"L, L1",
-	"R, R1",
-	"L2",
-	"R2",
-	"L3",
-	"R3",
-	"Select, DualShock Share, Nintendo -",
-	"Start, DualShock Options, Nintendo +",
-	"D-Pad Up",
-	"D-Pad Down",
-	"D-Pad Left",
-	"D-Pad Right",
-	"Home, DualShock PS, Guide",
+	"Bottom Action, Sony Cross, Xbox A, Nintendo B",
+	"Right Action, Sony Circle, Xbox B, Nintendo A",
+	"Left Action, Sony Square, Xbox X, Nintendo Y",
+	"Top Action, Sony Triangle, Xbox Y, Nintendo X",
+	"Left Shoulder, Sony L1, Xbox LB",
+	"Right Shoulder, Sony R1, Xbox RB",
+	"Left Trigger, Sony L2, Xbox LT",
+	"Right Trigger, Sony R2, Xbox RT",
+	"Left Stick, Sony L3, Xbox L/LS",
+	"Right Stick, Sony R3, Xbox R/RS",
+	"Back, Sony Select, Xbox Back, Nintendo -",
+	"Start, Xbox Menu, Nintendo +",
+	"D-pad Up",
+	"D-pad Down",
+	"D-pad Left",
+	"D-pad Right",
+	"Guide, Sony PS, Xbox Home",
 	"Xbox Share, PS5 Microphone, Nintendo Capture",
 	"Xbox Paddle 1",
 	"Xbox Paddle 2",
@@ -79,8 +79,8 @@ static const char *_axis_names[JOY_AXIS_MAX * 2] = {
 	" (Right Stick Up)",
 	" (Right Stick Down)",
 	"", "", "", "",
-	"", " (L2)",
-	"", " (R2)"
+	"", " (Left Trigger, Sony L2, Xbox LT)",
+	"", " (Right Trigger, Sony R2, Xbox RT)"
 };
 
 void ProjectSettingsEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
