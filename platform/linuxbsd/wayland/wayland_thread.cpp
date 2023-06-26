@@ -2306,7 +2306,7 @@ int WaylandThread::window_state_calculate_scale(WindowState *p_ws) {
 		// towards the idea that rescaling when a window gets a resolution change is a
 		// pretty good approach, but this means that we'll have to use the screen data
 		// before it's "committed".
-		// FIXME: Use the commited data.
+		// FIXME: Use the committed data.
 		return ss->pending_data.scale;
 	}
 
