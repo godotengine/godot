@@ -52,10 +52,17 @@
 #endif // LIBDECOR_ENABLED
 
 #include "protocol/idle_inhibit.gen.h"
+#include "protocol/primary_selection.gen.h"
+
+// These three protocol headers name wl_pointer method arguments as `pointer`,
+// which is the same name as X11's pointer typedef. This trips some very
+// annoying shadowing warnings. A `#define` works around this issue.
+#define pointer wl_pointer
 #include "protocol/pointer_constraints.gen.h"
 #include "protocol/pointer_gestures.gen.h"
-#include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
+#undef wl_pointer
+
 #include "protocol/tablet.gen.h"
 #include "protocol/wayland.gen.h"
 #include "protocol/xdg_activation.gen.h"
