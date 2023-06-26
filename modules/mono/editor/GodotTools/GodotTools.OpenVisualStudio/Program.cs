@@ -129,7 +129,7 @@ namespace GodotTools.OpenVisualStudio
             {
                 var mainWindow = dte.MainWindow;
                 mainWindow.Activate();
-                SetForegroundWindow((nint)mainWindow.HWnd);
+                SetForegroundWindow(mainWindow.HWnd);
 
                 MessageFilter.Revoke();
             }
@@ -164,7 +164,7 @@ namespace GodotTools.OpenVisualStudio
 
                 var moniker = new IMoniker[1];
 
-                while (ppenumMoniker.Next(1, moniker, 0) == 0)
+                while (ppenumMoniker.Next(1, moniker, IntPtr.Zero) == 0)
                 {
                     string ppszDisplayName;
 

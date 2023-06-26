@@ -105,7 +105,7 @@ namespace Godot
                 for (int i = 0; i < argc; i++)
                 {
                     varargs[i] = (godot_variant)args[i].NativeVar;
-                    argsPtr[i] = (nint)(&varargs[i]);
+                    argsPtr[i] = new IntPtr(&varargs[i]);
                 }
 
                 godot_variant ret = NativeFuncs.godotsharp_callable_call(callable,
@@ -139,7 +139,7 @@ namespace Godot
                 for (int i = 0; i < argc; i++)
                 {
                     varargs[i] = (godot_variant)args[i].NativeVar;
-                    argsPtr[i] = (nint)(&varargs[i]);
+                    argsPtr[i] = new IntPtr(&varargs[i]);
                 }
 
                 NativeFuncs.godotsharp_callable_call_deferred(callable, (godot_variant**)argsPtr, argc);
