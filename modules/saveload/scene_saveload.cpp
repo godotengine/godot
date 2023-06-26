@@ -380,20 +380,20 @@ Dictionary SceneSaveload::get_dict() {
 	return saveload_state.to_dict();
 }
 
-Variant SceneSaveload::get_state(const Object *p_object, const StringName section) {
+Variant SceneSaveload::get_state(Object *p_object, const StringName section) {
 	Dictionary state;
 	state[StringName("synchers")] = saveloader->get_sync_state();
 	return state;
 }
 
-Error SceneSaveload::set_state(const Variant p_value, const Object *p_object, const StringName section) {
+Error SceneSaveload::set_state(Variant p_value, Object *p_object, const StringName section) {
 	return ERR_UNAVAILABLE;
 }
 
-Vector<uint8_t> SceneSaveload::encode(Object *p_object, const StringName section) {
+PackedByteArray SceneSaveload::encode(Object *p_object, const StringName section) {
 	return saveloader->encode(p_object, section);
 }
-Error SceneSaveload::decode(Vector<uint8_t> p_bytes, Object *p_object, const StringName section) {
+Error SceneSaveload::decode(PackedByteArray p_bytes, Object *p_object, const StringName section) {
 	return saveloader->decode(p_bytes, p_object, section);
 }
 Error SceneSaveload::save(const String p_path, Object *p_object, const StringName section) {
@@ -402,14 +402,14 @@ Error SceneSaveload::save(const String p_path, Object *p_object, const StringNam
 	if (err != OK) {
 		return err;
 	}
-	Vector<uint8_t> bytes = encode(p_object, section);
+	PackedByteArray bytes = encode(p_object, section);
 	file->store_buffer(bytes);
 	file->close();
 	return err;
 }
 Error SceneSaveload::load(const String p_path, Object *p_object, const StringName section) {
 	Error err;
-	Vector<uint8_t> bytes = FileAccess::get_file_as_bytes(p_path, &err);
+	PackedByteArray bytes = FileAccess::get_file_as_bytes(p_path, &err);
 	if (err != OK) {
 		return err;
 	}

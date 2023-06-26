@@ -82,13 +82,13 @@ private:
 		uint64_t time = 0;
 	};
 
-	Ref<StreamPeerBuffer> stream_peer_buffer;
+//	Ref<StreamPeerBuffer> stream_peer_buffer;
 //	MultiplayerPeer::ConnectionStatus last_connection_status = MultiplayerPeer::CONNECTION_DISCONNECTED;
-	Callable auth_callback;
-	uint64_t auth_timeout = 3000;
-	HashSet<int> connected_peers;
-	int remote_sender_id = 0;
-	int remote_sender_override = 0;
+//	Callable auth_callback;
+//	uint64_t auth_timeout = 3000;
+//	HashSet<int> connected_peers;
+//	int remote_sender_id = 0;
+//	int remote_sender_override = 0;
 
 	Vector<uint8_t> packet_cache;
 
@@ -116,14 +116,14 @@ public:
 	TypedArray<SaveloadSynchronizer> get_sync_nodes();
 	Dictionary get_dict();
 
-	virtual Variant get_state(const Object *p_object, const StringName section = "") override;
-	virtual Error set_state(const Variant p_value, const Object *p_object, const StringName section = "") override;
+	virtual Variant get_state(Object *p_object, const StringName section) override;
+	virtual Error set_state(Variant p_value, Object *p_object, const StringName section) override;
 
-	virtual PackedByteArray encode(Object *p_object, const StringName section = "") override;
-	virtual Error decode(PackedByteArray p_bytes, Object *p_object, const StringName section = "") override;
+	virtual PackedByteArray encode(Object *p_object, const StringName section) override;
+	virtual Error decode(PackedByteArray p_bytes, Object *p_object, const StringName section) override;
 
-	virtual Error save(const String p_path, Object *p_object, const StringName section = "");
-	virtual Error load(const String p_path, Object *p_object, const StringName section = "");
+	virtual Error save(const String p_path, Object *p_object, const StringName section) override;
+	virtual Error load(const String p_path, Object *p_object, const StringName section) override;
 
 	virtual int get_unique_id() override;
 

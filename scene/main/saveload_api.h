@@ -32,7 +32,6 @@
 #define SAVELOAD_API_H
 
 #include "core/object/ref_counted.h"
-#include "core/io/stream_peer.h"
 
 class SaveloadAPI : public RefCounted {
 	GDCLASS(SaveloadAPI, RefCounted);
@@ -53,14 +52,14 @@ public:
 	static Error encode_and_compress_variants(const Variant **p_variants, int p_count, uint8_t *r_buffer, int &r_len, bool *r_raw = nullptr, bool p_allow_object_decoding = false);
 	static Error decode_and_decompress_variants(Vector<Variant> &r_variants, const uint8_t *p_buffer, int p_len, int &r_len, bool p_raw = false, bool p_allow_object_decoding = false);
 
-	virtual Variant get_state(const Object *p_object, const StringName section = "");
-	virtual Error set_state(const Variant p_value, const Object *p_object, const StringName section = "");
+	virtual Variant get_state(Object *p_object, const StringName section) = 0;
+	virtual Error set_state(Variant p_value, Object *p_object, const StringName section) = 0;
 
-	virtual PackedByteArray encode(Object *p_object, const StringName section = "");
-	virtual Error decode(PackedByteArray p_bytes, Object *p_object, const StringName section = "");
+	virtual PackedByteArray encode(Object *p_object, const StringName section) = 0;
+	virtual Error decode(PackedByteArray p_bytes, Object *p_object, const StringName section) = 0;
 
-	virtual Error save(const String p_path, Object *p_object, const StringName section = "");
-	virtual Error load(const String p_path, Object *p_object, const StringName section = "");
+	virtual Error save(const String p_path, Object *p_object, const StringName section) = 0;
+	virtual Error load(const String p_path, Object *p_object, const StringName section) = 0;
 
 	virtual int get_unique_id() = 0;
 
