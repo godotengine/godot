@@ -595,9 +595,11 @@ void Node::_propagate_pause_notification(bool p_enable) {
 		notification(NOTIFICATION_UNPAUSED);
 	}
 
+	data.blocked++;
 	for (KeyValue<StringName, Node *> &K : data.children) {
 		K.value->_propagate_pause_notification(p_enable);
 	}
+	data.blocked--;
 }
 
 Node::ProcessMode Node::get_process_mode() const {
@@ -615,12 +617,14 @@ void Node::_propagate_process_owner(Node *p_owner, int p_pause_notification, int
 		notification(p_enabled_notification);
 	}
 
+	data.blocked++;
 	for (KeyValue<StringName, Node *> &K : data.children) {
 		Node *c = K.value;
 		if (c->data.process_mode == PROCESS_MODE_INHERIT) {
 			c->_propagate_process_owner(p_owner, p_pause_notification, p_enabled_notification);
 		}
 	}
+	data.blocked--;
 }
 
 void Node::set_multiplayer_authority(int p_peer_id, bool p_recursive) {
@@ -1132,7 +1136,8 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 }
 
 void Node::set_name(const String &p_name) {
-	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Changing the name to nodes inside the SceneTree is only allowed from the main thread. Use call_deferred(\"set_name\",new_name).");
+	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Changing the name to nodes inside the SceneTree is only allowed from the main thread. Use `set_name.call_deferred(new_name)`.");
+	ERR_FAIL_COND_MSG(data.parent && data.parent->data.blocked > 0, "Parent node is busy setting up children, `set_name(new_name)` failed. Consider using `set_name.call_deferred(new_name)` instead.");
 	String name = p_name.validate_node_name();
 
 	ERR_FAIL_COND(name.is_empty());
