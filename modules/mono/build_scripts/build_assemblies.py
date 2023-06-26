@@ -286,15 +286,33 @@ def generate_sdk_package_versions():
             version_status = version_status[:pos] + "." + version_status[pos:]
         version_str += "-" + version_status
 
+    import version
+
+    version_defines = (
+        [
+            f"GODOT{version.major}",
+            f"GODOT{version.major}_{version.minor}",
+            f"GODOT{version.major}_{version.minor}_{version.patch}",
+        ]
+        + [f"GODOT{v}_OR_GREATER" for v in range(4, version.major + 1)]
+        + [f"GODOT{version.major}_{v}_OR_GREATER" for v in range(0, version.minor + 1)]
+        + [
+            # Skip GODOT4_0_0_OR_GREATER to GODOT4_0_3_OR_GREATER because the versions defines don't exist for these version.
+            f"GODOT{version.major}_{version.minor}_{v}_OR_GREATER"
+            for v in range(4, version.patch + 1)
+        ]
+    )
+
     props = """<Project>
   <PropertyGroup>
     <PackageVersion_GodotSharp>{0}</PackageVersion_GodotSharp>
     <PackageVersion_Godot_NET_Sdk>{0}</PackageVersion_Godot_NET_Sdk>
     <PackageVersion_Godot_SourceGenerators>{0}</PackageVersion_Godot_SourceGenerators>
+    <GodotVersionConstants>{1}</GodotVersionConstants>
   </PropertyGroup>
 </Project>
 """.format(
-        version_str
+        version_str, ";".join(version_defines)
     )
 
     # We write in ../SdkPackageVersions.props.
