@@ -74,15 +74,8 @@
 
   <!-- Godot DefineConstants. -->
   <PropertyGroup>
-    <!-- Define constants to identify Godot builds and versions. -->
-    <GodotDefineConstants>
-      GODOT;
-      GODOT4;GODOT4_OR_GREATER;
-      GODOT4_1;GODOT4_1_OR_GREATER;GODOT4_0_OR_GREATER;
-      GODOT4_1_0;GODOT4_1_0_OR_GREATER;
-    </GodotDefineConstants>
-    <!-- Ensure the define constants don't contain whitespace (see https://github.com/dotnet/roslyn/issues/58391). -->
-    <GodotDefineConstants>$(GodotDefineConstants.Replace('%0A','').Replace('%0D','').Replace('%09','').Replace(' ',''))</GodotDefineConstants>
+    <!-- Define constants to identify Godot builds. -->
+    <GodotDefineConstants>GODOT</GodotDefineConstants>
 
     <!--
     Define constant to determine the target Godot platform. This includes the
@@ -97,7 +90,7 @@
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'ios' ">GODOT_IPHONE;GODOT_IOS;GODOT_MOBILE</GodotPlatformConstants>
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'web' ">GODOT_JAVASCRIPT;GODOT_HTML5;GODOT_WASM;GODOT_WEB</GodotPlatformConstants>
 
-    <GodotDefineConstants>$(GodotDefineConstants);$(GodotPlatformConstants)</GodotDefineConstants>
+    <GodotDefineConstants>$(GodotDefineConstants);$(GodotPlatformConstants);$(GodotVersionConstants)</GodotDefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
