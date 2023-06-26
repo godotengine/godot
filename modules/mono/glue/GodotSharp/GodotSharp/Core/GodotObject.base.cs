@@ -10,7 +10,7 @@ namespace Godot
         private bool _disposed = false;
         private static readonly Type CachedType = typeof(GodotObject);
 
-        internal IntPtr NativePtr;
+        internal nint NativePtr;
         private bool _memoryOwn;
 
         private WeakReference<GodotObject> _weakReferenceToSelf;
@@ -27,13 +27,13 @@ namespace Godot
         }
 
         internal unsafe void _ConstructAndInitialize(
-            delegate* unmanaged<IntPtr> nativeCtor,
+            delegate* unmanaged<nint> nativeCtor,
             StringName nativeName,
             Type cachedType,
             bool refCounted
         )
         {
-            if (NativePtr == IntPtr.Zero)
+            if (NativePtr == 0)
             {
                 NativePtr = nativeCtor();
 
@@ -57,19 +57,19 @@ namespace Godot
         /// <summary>
         /// The pointer to the native instance of this <see cref="GodotObject"/>.
         /// </summary>
-        public IntPtr NativeInstance => NativePtr;
+        public nint NativeInstance => NativePtr;
 
-        internal static IntPtr GetPtr(GodotObject instance)
+        internal static nint GetPtr(GodotObject instance)
         {
             if (instance == null)
-                return IntPtr.Zero;
+                return 0;
 
             // We check if NativePtr is null because this may be called by the debugger.
             // If the debugger puts a breakpoint in one of the base constructors, before
             // NativePtr is assigned, that would result in UB or crashes when calling
             // native functions that receive the pointer, which can happen because the
             // debugger calls ToString() and tries to get the value of properties.
-            if (instance._disposed || instance.NativePtr == IntPtr.Zero)
+            if (instance._disposed || instance.NativePtr == 0)
                 throw new ObjectDisposedException(instance.GetType().FullName);
 
             return instance.NativePtr;
@@ -99,17 +99,17 @@ namespace Godot
 
             _disposed = true;
 
-            if (NativePtr != IntPtr.Zero)
+            if (NativePtr != 0)
             {
-                IntPtr gcHandleToFree = NativeFuncs.godotsharp_internal_object_get_associated_gchandle(NativePtr);
+                nint gcHandleToFree = NativeFuncs.godotsharp_internal_object_get_associated_gchandle(NativePtr);
 
-                if (gcHandleToFree != IntPtr.Zero)
+                if (gcHandleToFree != 0)
                 {
                     object target = GCHandle.FromIntPtr(gcHandleToFree).Target;
                     // The GC handle may have been replaced in another thread. Release it only if
                     // it's associated to this managed instance, or if the target is no longer alive.
                     if (target != this && target != null)
-                        gcHandleToFree = IntPtr.Zero;
+                        gcHandleToFree = 0;
                 }
 
                 if (_memoryOwn)
@@ -122,7 +122,7 @@ namespace Godot
                     NativeFuncs.godotsharp_internal_object_disposed(NativePtr, gcHandleToFree);
                 }
 
-                NativePtr = IntPtr.Zero;
+                NativePtr = 0;
             }
 
             DisposablesTracker.UnregisterGodotObject(this, _weakReferenceToSelf);
@@ -206,19 +206,19 @@ namespace Godot
         {
         }
 
-        internal static IntPtr ClassDB_get_method(StringName type, StringName method)
+        internal static nint ClassDB_get_method(StringName type, StringName method)
         {
             var typeSelf = (godot_string_name)type.NativeValue;
             var methodSelf = (godot_string_name)method.NativeValue;
-            IntPtr methodBind = NativeFuncs.godotsharp_method_bind_get_method(typeSelf, methodSelf);
+            nint methodBind = NativeFuncs.godotsharp_method_bind_get_method(typeSelf, methodSelf);
 
-            if (methodBind == IntPtr.Zero)
+            if (methodBind == 0)
                 throw new NativeMethodBindNotFoundException(type + "." + method);
 
             return methodBind;
         }
 
-        internal static unsafe delegate* unmanaged<IntPtr> ClassDB_get_constructor(StringName type)
+        internal static unsafe delegate* unmanaged<nint> ClassDB_get_constructor(StringName type)
         {
             // for some reason the '??' operator doesn't support 'delegate*'
             var typeSelf = (godot_string_name)type.NativeValue;

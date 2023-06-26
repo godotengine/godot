@@ -39,17 +39,17 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_ref* GetUnsafeAddress()
             => (godot_ref*)Unsafe.AsPointer(ref Unsafe.AsRef(in _reference));
 
-        private IntPtr _reference;
+        private nint _reference;
 
         public void Dispose()
         {
-            if (_reference == IntPtr.Zero)
+            if (_reference == 0)
                 return;
             NativeFuncs.godotsharp_ref_destroy(ref this);
-            _reference = IntPtr.Zero;
+            _reference = 0;
         }
 
-        public readonly IntPtr Reference
+        public readonly nint Reference
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _reference;
@@ -58,7 +58,7 @@ namespace Godot.NativeInterop
         public readonly bool IsNull
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _reference == IntPtr.Zero;
+            get => _reference == 0;
         }
     }
 
@@ -160,7 +160,7 @@ namespace Godot.NativeInterop
             public struct godot_variant_obj_data
             {
                 public ulong id;
-                public IntPtr obj;
+                public nint obj;
             }
 
             [StructLayout(LayoutKind.Sequential)]
@@ -390,7 +390,7 @@ namespace Godot.NativeInterop
             set => _data._m_array = value;
         }
 
-        public readonly IntPtr Object
+        public readonly nint Object
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _data._m_obj_data.obj;
@@ -453,17 +453,17 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_string* GetUnsafeAddress()
             => (godot_string*)Unsafe.AsPointer(ref Unsafe.AsRef(in _ptr));
 
-        private IntPtr _ptr;
+        private nint _ptr;
 
         public void Dispose()
         {
-            if (_ptr == IntPtr.Zero)
+            if (_ptr == 0)
                 return;
             NativeFuncs.godotsharp_string_destroy(ref this);
-            _ptr = IntPtr.Zero;
+            _ptr = 0;
         }
 
-        public readonly IntPtr Buffer
+        public readonly nint Buffer
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _ptr;
@@ -473,7 +473,7 @@ namespace Godot.NativeInterop
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _ptr != IntPtr.Zero ? *((int*)_ptr - 1) : 0;
+            get => _ptr != 0 ? *((int*)_ptr - 1) : 0;
         }
     }
 
@@ -485,27 +485,27 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_string_name* GetUnsafeAddress()
             => (godot_string_name*)Unsafe.AsPointer(ref Unsafe.AsRef(in _data));
 
-        private IntPtr _data;
+        private nint _data;
 
         public void Dispose()
         {
-            if (_data == IntPtr.Zero)
+            if (_data == 0)
                 return;
             NativeFuncs.godotsharp_string_name_destroy(ref this);
-            _data = IntPtr.Zero;
+            _data = 0;
         }
 
         public readonly bool IsAllocated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _data != IntPtr.Zero;
+            get => _data != 0;
         }
 
         public readonly bool IsEmpty
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             // This is all that's needed to check if it's empty. Equivalent to `== StringName()` in C++.
-            get => _data == IntPtr.Zero;
+            get => _data == 0;
         }
 
         public static bool operator ==(godot_string_name left, godot_string_name right)
@@ -537,7 +537,7 @@ namespace Godot.NativeInterop
         // ReSharper disable once InconsistentNaming
         internal struct movable
         {
-            private IntPtr _data;
+            private nint _data;
 
             public static unsafe explicit operator movable(in godot_string_name value)
                 => *(movable*)CustomUnsafe.AsPointer(ref CustomUnsafe.AsRef(value));
@@ -558,34 +558,34 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_node_path* GetUnsafeAddress()
             => (godot_node_path*)Unsafe.AsPointer(ref Unsafe.AsRef(in _data));
 
-        private IntPtr _data;
+        private nint _data;
 
         public void Dispose()
         {
-            if (_data == IntPtr.Zero)
+            if (_data == 0)
                 return;
             NativeFuncs.godotsharp_node_path_destroy(ref this);
-            _data = IntPtr.Zero;
+            _data = 0;
         }
 
         public readonly bool IsAllocated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _data != IntPtr.Zero;
+            get => _data != 0;
         }
 
         public readonly bool IsEmpty
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             // This is all that's needed to check if it's empty. It's what the `is_empty()` C++ method does.
-            get => _data == IntPtr.Zero;
+            get => _data == 0;
         }
 
         [StructLayout(LayoutKind.Sequential)]
         // ReSharper disable once InconsistentNaming
         internal struct movable
         {
-            private IntPtr _data;
+            private nint _data;
 
             public static unsafe explicit operator movable(in godot_node_path value)
                 => *(movable*)CustomUnsafe.AsPointer(ref CustomUnsafe.AsRef(value));
@@ -657,7 +657,7 @@ namespace Godot.NativeInterop
 
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         [FieldOffset(8)] private ulong _objectId;
-        [FieldOffset(8)] private IntPtr _custom;
+        [FieldOffset(8)] private nint _custom;
 
         public godot_callable(godot_string_name method, ulong objectId) : this()
         {
@@ -668,11 +668,11 @@ namespace Godot.NativeInterop
         public void Dispose()
         {
             // _custom needs freeing as well
-            if (!_method.IsAllocated && _custom == IntPtr.Zero)
+            if (!_method.IsAllocated && _custom == 0)
                 return;
             NativeFuncs.godotsharp_callable_destroy(ref this);
             _method = default;
-            _custom = IntPtr.Zero;
+            _custom = 0;
         }
     }
 
@@ -718,7 +718,7 @@ namespace Godot.NativeInterop
         [StructLayout(LayoutKind.Sequential)]
         private struct VariantVector
         {
-            private IntPtr _writeProxy;
+            private nint _writeProxy;
             public unsafe godot_variant* _ptr;
 
             public readonly unsafe int Size
@@ -854,7 +854,7 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_packed_byte_array* GetUnsafeAddress()
             => (godot_packed_byte_array*)Unsafe.AsPointer(ref Unsafe.AsRef(in _writeProxy));
 
-        private IntPtr _writeProxy;
+        private nint _writeProxy;
         private unsafe byte* _ptr;
 
         public unsafe void Dispose()
@@ -886,7 +886,7 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_packed_int32_array* GetUnsafeAddress()
             => (godot_packed_int32_array*)Unsafe.AsPointer(ref Unsafe.AsRef(in _writeProxy));
 
-        private IntPtr _writeProxy;
+        private nint _writeProxy;
         private unsafe int* _ptr;
 
         public unsafe void Dispose()
@@ -918,7 +918,7 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_packed_int64_array* GetUnsafeAddress()
             => (godot_packed_int64_array*)Unsafe.AsPointer(ref Unsafe.AsRef(in _writeProxy));
 
-        private IntPtr _writeProxy;
+        private nint _writeProxy;
         private unsafe long* _ptr;
 
         public unsafe void Dispose()
@@ -950,7 +950,7 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_packed_float32_array* GetUnsafeAddress()
             => (godot_packed_float32_array*)Unsafe.AsPointer(ref Unsafe.AsRef(in _writeProxy));
 
-        private IntPtr _writeProxy;
+        private nint _writeProxy;
         private unsafe float* _ptr;
 
         public unsafe void Dispose()
@@ -982,7 +982,7 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_packed_float64_array* GetUnsafeAddress()
             => (godot_packed_float64_array*)Unsafe.AsPointer(ref Unsafe.AsRef(in _writeProxy));
 
-        private IntPtr _writeProxy;
+        private nint _writeProxy;
         private unsafe double* _ptr;
 
         public unsafe void Dispose()
@@ -1014,7 +1014,7 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_packed_string_array* GetUnsafeAddress()
             => (godot_packed_string_array*)Unsafe.AsPointer(ref Unsafe.AsRef(in _writeProxy));
 
-        private IntPtr _writeProxy;
+        private nint _writeProxy;
         private unsafe godot_string* _ptr;
 
         public unsafe void Dispose()
@@ -1046,7 +1046,7 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_packed_vector2_array* GetUnsafeAddress()
             => (godot_packed_vector2_array*)Unsafe.AsPointer(ref Unsafe.AsRef(in _writeProxy));
 
-        private IntPtr _writeProxy;
+        private nint _writeProxy;
         private unsafe Vector2* _ptr;
 
         public unsafe void Dispose()
@@ -1078,7 +1078,7 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_packed_vector3_array* GetUnsafeAddress()
             => (godot_packed_vector3_array*)Unsafe.AsPointer(ref Unsafe.AsRef(in _writeProxy));
 
-        private IntPtr _writeProxy;
+        private nint _writeProxy;
         private unsafe Vector3* _ptr;
 
         public unsafe void Dispose()
@@ -1110,7 +1110,7 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_packed_color_array* GetUnsafeAddress()
             => (godot_packed_color_array*)Unsafe.AsPointer(ref Unsafe.AsRef(in _writeProxy));
 
-        private IntPtr _writeProxy;
+        private nint _writeProxy;
         private unsafe Color* _ptr;
 
         public unsafe void Dispose()

@@ -8,13 +8,13 @@ namespace Godot.NativeInterop
 {
     internal static class InteropUtils
     {
-        public static GodotObject UnmanagedGetManaged(IntPtr unmanaged)
+        public static GodotObject UnmanagedGetManaged(nint unmanaged)
         {
             // The native pointer may be null
-            if (unmanaged == IntPtr.Zero)
+            if (unmanaged == 0)
                 return null;
 
-            IntPtr gcHandlePtr;
+            nint gcHandlePtr;
             godot_bool hasCsScriptInstance;
 
             // First try to get the tied managed instance from a CSharpInstance script instance
@@ -22,7 +22,7 @@ namespace Godot.NativeInterop
             gcHandlePtr = NativeFuncs.godotsharp_internal_unmanaged_get_script_instance_managed(
                 unmanaged, out hasCsScriptInstance);
 
-            if (gcHandlePtr != IntPtr.Zero)
+            if (gcHandlePtr != 0)
                 return (GodotObject)GCHandle.FromIntPtr(gcHandlePtr).Target;
 
             // Otherwise, if the object has a CSharpInstance script instance, return null
@@ -34,7 +34,7 @@ namespace Godot.NativeInterop
 
             gcHandlePtr = NativeFuncs.godotsharp_internal_unmanaged_get_instance_binding_managed(unmanaged);
 
-            object target = gcHandlePtr != IntPtr.Zero ? GCHandle.FromIntPtr(gcHandlePtr).Target : null;
+            object target = gcHandlePtr != 0 ? GCHandle.FromIntPtr(gcHandlePtr).Target : null;
 
             if (target != null)
                 return (GodotObject)target;
@@ -44,10 +44,10 @@ namespace Godot.NativeInterop
             gcHandlePtr = NativeFuncs.godotsharp_internal_unmanaged_instance_binding_create_managed(
                 unmanaged, gcHandlePtr);
 
-            return gcHandlePtr != IntPtr.Zero ? (GodotObject)GCHandle.FromIntPtr(gcHandlePtr).Target : null;
+            return gcHandlePtr != 0 ? (GodotObject)GCHandle.FromIntPtr(gcHandlePtr).Target : null;
         }
 
-        public static void TieManagedToUnmanaged(GodotObject managed, IntPtr unmanaged,
+        public static void TieManagedToUnmanaged(GodotObject managed, nint unmanaged,
             StringName nativeName, bool refCounted, Type type, Type nativeType)
         {
             var gcHandle = refCounted ?
@@ -76,7 +76,7 @@ namespace Godot.NativeInterop
             }
         }
 
-        public static void TieManagedToUnmanagedWithPreSetup(GodotObject managed, IntPtr unmanaged,
+        public static void TieManagedToUnmanagedWithPreSetup(GodotObject managed, nint unmanaged,
             Type type, Type nativeType)
         {
             if (type == nativeType)

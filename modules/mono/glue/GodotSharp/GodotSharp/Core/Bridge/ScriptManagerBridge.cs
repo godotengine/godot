@@ -27,7 +27,7 @@ namespace Godot.Bridge
             {
                 foreach (var type in typesInAlc.Keys)
                 {
-                    if (_scriptTypeBiMap.RemoveByScriptType(type, out IntPtr scriptPtr) &&
+                    if (_scriptTypeBiMap.RemoveByScriptType(type, out nint scriptPtr) &&
                         !_pathTypeBiMap.TryGetScriptPath(type, out _))
                     {
                         // For scripts without a path, we need to keep the class qualified name for reloading
@@ -70,7 +70,7 @@ namespace Godot.Bridge
         private static ScriptTypeBiMap _scriptTypeBiMap = new();
         private static PathScriptTypeBiMap _pathTypeBiMap = new();
 
-        private static ConcurrentDictionary<IntPtr, (string? assemblyName, string classFullName)>
+        private static ConcurrentDictionary<nint, (string? assemblyName, string classFullName)>
             _scriptDataForReload = new();
 
         [UnmanagedCallersOnly]
@@ -87,8 +87,8 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe IntPtr CreateManagedForGodotObjectBinding(godot_string_name* nativeTypeName,
-            IntPtr godotObject)
+        internal static unsafe nint CreateManagedForGodotObjectBinding(godot_string_name* nativeTypeName,
+            nint godotObject)
         {
             // TODO: Optimize with source generators and delegate pointers
 
@@ -115,13 +115,13 @@ namespace Godot.Bridge
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                return IntPtr.Zero;
+                return 0;
             }
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe godot_bool CreateManagedForGodotObjectScriptInstance(IntPtr scriptPtr,
-            IntPtr godotObject,
+        internal static unsafe godot_bool CreateManagedForGodotObjectScriptInstance(nint scriptPtr,
+            nint godotObject,
             godot_variant** args, int argCount)
         {
             // TODO: Optimize with source generators and delegate pointers
@@ -178,7 +178,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe void GetScriptNativeName(IntPtr scriptPtr, godot_string_name* outRes)
+        internal static unsafe void GetScriptNativeName(nint scriptPtr, godot_string_name* outRes)
         {
             try
             {
@@ -218,7 +218,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static void SetGodotObjectPtr(IntPtr gcHandlePtr, IntPtr newPtr)
+        internal static void SetGodotObjectPtr(nint gcHandlePtr, nint newPtr)
         {
             try
             {
@@ -350,7 +350,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe void RaiseEventSignal(IntPtr ownerGCHandlePtr,
+        internal static unsafe void RaiseEventSignal(nint ownerGCHandlePtr,
             godot_string_name* eventSignalName, godot_variant** args, int argCount, godot_bool* outOwnerIsNull)
         {
             try
@@ -376,7 +376,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static godot_bool ScriptIsOrInherits(IntPtr scriptPtr, IntPtr scriptPtrMaybeBase)
+        internal static godot_bool ScriptIsOrInherits(nint scriptPtr, nint scriptPtrMaybeBase)
         {
             try
             {
@@ -396,7 +396,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe godot_bool AddScriptBridge(IntPtr scriptPtr, godot_string* scriptPath)
+        internal static unsafe godot_bool AddScriptBridge(nint scriptPtr, godot_string* scriptPath)
         {
             try
             {
@@ -440,7 +440,7 @@ namespace Godot.Bridge
         {
             lock (_scriptTypeBiMap.ReadWriteLock)
             {
-                if (_scriptTypeBiMap.TryGetScriptPtr(scriptType, out IntPtr scriptPtr))
+                if (_scriptTypeBiMap.TryGetScriptPtr(scriptType, out nint scriptPtr))
                 {
                     // Use existing
                     NativeFuncs.godotsharp_ref_new_from_ref_counted_ptr(out *outScript, scriptPtr);
@@ -459,7 +459,7 @@ namespace Godot.Bridge
             {
                 lock (_scriptTypeBiMap.ReadWriteLock)
                 {
-                    if (_scriptTypeBiMap.TryGetScriptPtr(scriptType, out IntPtr scriptPtr))
+                    if (_scriptTypeBiMap.TryGetScriptPtr(scriptType, out nint scriptPtr))
                     {
                         // Use existing
                         NativeFuncs.godotsharp_ref_new_from_ref_counted_ptr(out *outScript, scriptPtr);
@@ -498,7 +498,7 @@ namespace Godot.Bridge
         private static unsafe void CreateScriptBridgeForType(Type scriptType, godot_ref* outScript)
         {
             NativeFuncs.godotsharp_internal_new_csharp_script(outScript);
-            IntPtr scriptPtr = outScript->Reference;
+            nint scriptPtr = outScript->Reference;
 
             // Caller takes care of locking
             _scriptTypeBiMap.Add(scriptPtr, scriptType);
@@ -507,7 +507,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static void RemoveScriptBridge(IntPtr scriptPtr)
+        internal static void RemoveScriptBridge(nint scriptPtr)
         {
             try
             {
@@ -523,7 +523,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static godot_bool TryReloadRegisteredScriptWithClass(IntPtr scriptPtr)
+        internal static godot_bool TryReloadRegisteredScriptWithClass(nint scriptPtr)
         {
             try
             {
@@ -584,7 +584,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe void UpdateScriptClassInfo(IntPtr scriptPtr, godot_bool* outTool,
+        internal static unsafe void UpdateScriptClassInfo(nint scriptPtr, godot_bool* outTool,
             godot_array* outMethodsDest, godot_dictionary* outRpcFunctionsDest,
             godot_dictionary* outEventSignalsDest, godot_ref* outBaseScript)
         {
@@ -809,8 +809,8 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe void GetPropertyInfoList(IntPtr scriptPtr,
-            delegate* unmanaged<IntPtr, godot_string*, void*, int, void> addPropInfoFunc)
+        internal static unsafe void GetPropertyInfoList(nint scriptPtr,
+            delegate* unmanaged<nint, godot_string*, void*, int, void> addPropInfoFunc)
         {
             try
             {
@@ -823,8 +823,8 @@ namespace Godot.Bridge
             }
         }
 
-        private static unsafe void GetPropertyInfoListForType(Type type, IntPtr scriptPtr,
-            delegate* unmanaged<IntPtr, godot_string*, void*, int, void> addPropInfoFunc)
+        private static unsafe void GetPropertyInfoListForType(Type type, nint scriptPtr,
+            delegate* unmanaged<nint, godot_string*, void*, int, void> addPropInfoFunc)
         {
             try
             {
@@ -917,8 +917,8 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe void GetPropertyDefaultValues(IntPtr scriptPtr,
-            delegate* unmanaged<IntPtr, void*, int, void> addDefValFunc)
+        internal static unsafe void GetPropertyDefaultValues(nint scriptPtr,
+            delegate* unmanaged<nint, void*, int, void> addDefValFunc)
         {
             try
             {
@@ -939,8 +939,8 @@ namespace Godot.Bridge
         }
 
         [SkipLocalsInit]
-        private static unsafe void GetPropertyDefaultValuesForType(Type type, IntPtr scriptPtr,
-            delegate* unmanaged<IntPtr, void*, int, void> addDefValFunc)
+        private static unsafe void GetPropertyDefaultValuesForType(Type type, nint scriptPtr,
+            delegate* unmanaged<nint, void*, int, void> addDefValFunc)
         {
             try
             {
@@ -1040,7 +1040,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe godot_bool SwapGCHandleForType(IntPtr oldGCHandlePtr, IntPtr* outNewGCHandlePtr,
+        internal static unsafe godot_bool SwapGCHandleForType(nint oldGCHandlePtr, nint* outNewGCHandlePtr,
             godot_bool createWeak)
         {
             try
@@ -1052,7 +1052,7 @@ namespace Godot.Bridge
                 if (target == null)
                 {
                     CustomGCHandle.Free(oldGCHandle);
-                    *outNewGCHandlePtr = IntPtr.Zero;
+                    *outNewGCHandlePtr = 0;
                     return godot_bool.False; // Called after the managed side was collected, so nothing to do here
                 }
 
@@ -1068,7 +1068,7 @@ namespace Godot.Bridge
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                *outNewGCHandlePtr = IntPtr.Zero;
+                *outNewGCHandlePtr = 0;
                 return godot_bool.False;
             }
         }

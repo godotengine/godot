@@ -8,35 +8,35 @@ namespace Godot.Bridge
     public unsafe struct ManagedCallbacks
     {
         // @formatter:off
-        public delegate* unmanaged<IntPtr, godot_variant**, int, godot_bool*, void> SignalAwaiter_SignalCallback;
-        public delegate* unmanaged<IntPtr, void*, godot_variant**, int, godot_variant*, void> DelegateUtils_InvokeWithVariantArgs;
-        public delegate* unmanaged<IntPtr, IntPtr, godot_bool> DelegateUtils_DelegateEquals;
-        public delegate* unmanaged<IntPtr, godot_array*, godot_bool> DelegateUtils_TrySerializeDelegateWithGCHandle;
-        public delegate* unmanaged<godot_array*, IntPtr*, godot_bool> DelegateUtils_TryDeserializeDelegateWithGCHandle;
+        public delegate* unmanaged<nint, godot_variant**, int, godot_bool*, void> SignalAwaiter_SignalCallback;
+        public delegate* unmanaged<nint, void*, godot_variant**, int, godot_variant*, void> DelegateUtils_InvokeWithVariantArgs;
+        public delegate* unmanaged<nint, nint, godot_bool> DelegateUtils_DelegateEquals;
+        public delegate* unmanaged<nint, godot_array*, godot_bool> DelegateUtils_TrySerializeDelegateWithGCHandle;
+        public delegate* unmanaged<godot_array*, nint*, godot_bool> DelegateUtils_TryDeserializeDelegateWithGCHandle;
         public delegate* unmanaged<void> ScriptManagerBridge_FrameCallback;
-        public delegate* unmanaged<godot_string_name*, IntPtr, IntPtr> ScriptManagerBridge_CreateManagedForGodotObjectBinding;
-        public delegate* unmanaged<IntPtr, IntPtr, godot_variant**, int, godot_bool> ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance;
-        public delegate* unmanaged<IntPtr, godot_string_name*, void> ScriptManagerBridge_GetScriptNativeName;
-        public delegate* unmanaged<IntPtr, IntPtr, void> ScriptManagerBridge_SetGodotObjectPtr;
-        public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant**, int, godot_bool*, void> ScriptManagerBridge_RaiseEventSignal;
-        public delegate* unmanaged<IntPtr, IntPtr, godot_bool> ScriptManagerBridge_ScriptIsOrInherits;
-        public delegate* unmanaged<IntPtr, godot_string*, godot_bool> ScriptManagerBridge_AddScriptBridge;
+        public delegate* unmanaged<godot_string_name*, nint, nint> ScriptManagerBridge_CreateManagedForGodotObjectBinding;
+        public delegate* unmanaged<nint, nint, godot_variant**, int, godot_bool> ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance;
+        public delegate* unmanaged<nint, godot_string_name*, void> ScriptManagerBridge_GetScriptNativeName;
+        public delegate* unmanaged<nint, nint, void> ScriptManagerBridge_SetGodotObjectPtr;
+        public delegate* unmanaged<nint, godot_string_name*, godot_variant**, int, godot_bool*, void> ScriptManagerBridge_RaiseEventSignal;
+        public delegate* unmanaged<nint, nint, godot_bool> ScriptManagerBridge_ScriptIsOrInherits;
+        public delegate* unmanaged<nint, godot_string*, godot_bool> ScriptManagerBridge_AddScriptBridge;
         public delegate* unmanaged<godot_string*, godot_ref*, void> ScriptManagerBridge_GetOrCreateScriptBridgeForPath;
-        public delegate* unmanaged<IntPtr, void> ScriptManagerBridge_RemoveScriptBridge;
-        public delegate* unmanaged<IntPtr, godot_bool> ScriptManagerBridge_TryReloadRegisteredScriptWithClass;
-        public delegate* unmanaged<IntPtr, godot_bool*, godot_array*, godot_dictionary*, godot_dictionary*, godot_ref*, void> ScriptManagerBridge_UpdateScriptClassInfo;
-        public delegate* unmanaged<IntPtr, IntPtr*, godot_bool, godot_bool> ScriptManagerBridge_SwapGCHandleForType;
-        public delegate* unmanaged<IntPtr, delegate* unmanaged<IntPtr, godot_string*, void*, int, void>, void> ScriptManagerBridge_GetPropertyInfoList;
-        public delegate* unmanaged<IntPtr, delegate* unmanaged<IntPtr, void*, int, void>, void> ScriptManagerBridge_GetPropertyDefaultValues;
-        public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant**, int, godot_variant_call_error*, godot_variant*, godot_bool> CSharpInstanceBridge_Call;
-        public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant*, godot_bool> CSharpInstanceBridge_Set;
-        public delegate* unmanaged<IntPtr, godot_string_name*, godot_variant*, godot_bool> CSharpInstanceBridge_Get;
-        public delegate* unmanaged<IntPtr, godot_bool, void> CSharpInstanceBridge_CallDispose;
-        public delegate* unmanaged<IntPtr, godot_string*, godot_bool*, void> CSharpInstanceBridge_CallToString;
-        public delegate* unmanaged<IntPtr, godot_string_name*, godot_bool> CSharpInstanceBridge_HasMethodUnknownParams;
-        public delegate* unmanaged<IntPtr, godot_dictionary*, godot_dictionary*, void> CSharpInstanceBridge_SerializeState;
-        public delegate* unmanaged<IntPtr, godot_dictionary*, godot_dictionary*, void> CSharpInstanceBridge_DeserializeState;
-        public delegate* unmanaged<IntPtr, void> GCHandleBridge_FreeGCHandle;
+        public delegate* unmanaged<nint, void> ScriptManagerBridge_RemoveScriptBridge;
+        public delegate* unmanaged<nint, godot_bool> ScriptManagerBridge_TryReloadRegisteredScriptWithClass;
+        public delegate* unmanaged<nint, godot_bool*, godot_array*, godot_dictionary*, godot_dictionary*, godot_ref*, void> ScriptManagerBridge_UpdateScriptClassInfo;
+        public delegate* unmanaged<nint, nint*, godot_bool, godot_bool> ScriptManagerBridge_SwapGCHandleForType;
+        public delegate* unmanaged<nint, delegate* unmanaged<nint, godot_string*, void*, int, void>, void> ScriptManagerBridge_GetPropertyInfoList;
+        public delegate* unmanaged<nint, delegate* unmanaged<nint, void*, int, void>, void> ScriptManagerBridge_GetPropertyDefaultValues;
+        public delegate* unmanaged<nint, godot_string_name*, godot_variant**, int, godot_variant_call_error*, godot_variant*, godot_bool> CSharpInstanceBridge_Call;
+        public delegate* unmanaged<nint, godot_string_name*, godot_variant*, godot_bool> CSharpInstanceBridge_Set;
+        public delegate* unmanaged<nint, godot_string_name*, godot_variant*, godot_bool> CSharpInstanceBridge_Get;
+        public delegate* unmanaged<nint, godot_bool, void> CSharpInstanceBridge_CallDispose;
+        public delegate* unmanaged<nint, godot_string*, godot_bool*, void> CSharpInstanceBridge_CallToString;
+        public delegate* unmanaged<nint, godot_string_name*, godot_bool> CSharpInstanceBridge_HasMethodUnknownParams;
+        public delegate* unmanaged<nint, godot_dictionary*, godot_dictionary*, void> CSharpInstanceBridge_SerializeState;
+        public delegate* unmanaged<nint, godot_dictionary*, godot_dictionary*, void> CSharpInstanceBridge_DeserializeState;
+        public delegate* unmanaged<nint, void> GCHandleBridge_FreeGCHandle;
         public delegate* unmanaged<void*, void> DebuggingUtils_GetCurrentStackInfo;
         public delegate* unmanaged<void> DisposablesTracker_OnGodotShuttingDown;
         public delegate* unmanaged<godot_bool, void> GD_OnCoreApiAssemblyLoaded;
@@ -83,7 +83,7 @@ namespace Godot.Bridge
             };
         }
 
-        public static void Create(IntPtr outManagedCallbacks)
+        public static void Create(nint outManagedCallbacks)
             => *(ManagedCallbacks*)outManagedCallbacks = Create();
     }
 }

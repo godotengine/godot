@@ -297,9 +297,9 @@ namespace Godot.NativeInterop
         public static godot_variant CreateFromNodePath(NodePath? from)
             => from != null ? CreateFromNodePath((godot_node_path)from.NativeValue) : default;
 
-        public static godot_variant CreateFromGodotObjectPtr(IntPtr from)
+        public static godot_variant CreateFromGodotObjectPtr(nint from)
         {
-            if (from == IntPtr.Zero)
+            if (from == 0)
                 return new godot_variant();
             NativeFuncs.godotsharp_variant_new_object(out godot_variant ret, from);
             return ret;
@@ -455,8 +455,8 @@ namespace Godot.NativeInterop
                 p_var.Rid :
                 NativeFuncs.godotsharp_variant_as_rid(p_var);
 
-        public static IntPtr ConvertToGodotObjectPtr(in godot_variant p_var)
-            => p_var.Type == Variant.Type.Object ? p_var.Object : IntPtr.Zero;
+        public static nint ConvertToGodotObjectPtr(in godot_variant p_var)
+            => p_var.Type == Variant.Type.Object ? p_var.Object : 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         // ReSharper disable once RedundantNameQualifier

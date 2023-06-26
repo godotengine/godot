@@ -27,8 +27,8 @@ namespace GodotPlugins.Game
     internal static partial class Main
     {
         [UnmanagedCallersOnly(EntryPoint = ""godotsharp_game_main_init"")]
-        private static godot_bool InitializeFromGameProject(IntPtr godotDllHandle, IntPtr outManagedCallbacks,
-            IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
+        private static godot_bool InitializeFromGameProject(nint godotDllHandle, nint outManagedCallbacks,
+            nint unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             try
             {

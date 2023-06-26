@@ -8,20 +8,20 @@ namespace Godot.NativeInterop
 {
     public class GodotDllImportResolver
     {
-        private IntPtr _internalHandle;
+        private nint _internalHandle;
 
-        public GodotDllImportResolver(IntPtr internalHandle)
+        public GodotDllImportResolver(nint internalHandle)
         {
             _internalHandle = internalHandle;
         }
 
-        public IntPtr OnResolveDllImport(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+        public nint OnResolveDllImport(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
         {
             if (libraryName == "__Internal")
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    return Win32.GetModuleHandle(IntPtr.Zero);
+                    return Win32.GetModuleHandle(0);
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
@@ -29,11 +29,11 @@ namespace Godot.NativeInterop
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    return MacOS.dlopen(IntPtr.Zero, MacOS.RTLD_LAZY);
+                    return MacOS.dlopen(0, MacOS.RTLD_LAZY);
                 }
             }
 
-            return IntPtr.Zero;
+            return 0;
         }
 
         // ReSharper disable InconsistentNaming
@@ -44,7 +44,7 @@ namespace Godot.NativeInterop
             public const int RTLD_LAZY = 1;
 
             [DllImport(SystemLibrary)]
-            public static extern IntPtr dlopen(IntPtr path, int mode);
+            public static extern nint dlopen(nint path, int mode);
         }
 
         private static class Win32
@@ -52,7 +52,7 @@ namespace Godot.NativeInterop
             private const string SystemLibrary = "Kernel32.dll";
 
             [DllImport(SystemLibrary)]
-            public static extern IntPtr GetModuleHandle(IntPtr lpModuleName);
+            public static extern nint GetModuleHandle(nint lpModuleName);
         }
         // ReSharper restore InconsistentNaming
     }

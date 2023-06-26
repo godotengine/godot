@@ -7,7 +7,7 @@ namespace Godot.Bridge
     internal static class GCHandleBridge
     {
         [UnmanagedCallersOnly]
-        internal static void FreeGCHandle(IntPtr gcHandlePtr)
+        internal static void FreeGCHandle(nint gcHandlePtr)
         {
             try
             {

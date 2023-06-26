@@ -16,7 +16,7 @@ namespace GodotTools.OpenVisualStudio
         private static extern void CreateBindCtx(int reserved, out IBindCtx ppbc);
 
         [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
+        private static extern bool SetForegroundWindow(nint hWnd);
 
         private static void ShowHelp()
         {
@@ -129,7 +129,7 @@ namespace GodotTools.OpenVisualStudio
             {
                 var mainWindow = dte.MainWindow;
                 mainWindow.Activate();
-                SetForegroundWindow(new IntPtr(mainWindow.HWnd));
+                SetForegroundWindow((nint)mainWindow.HWnd);
 
                 MessageFilter.Revoke();
             }
@@ -164,7 +164,7 @@ namespace GodotTools.OpenVisualStudio
 
                 var moniker = new IMoniker[1];
 
-                while (ppenumMoniker.Next(1, moniker, IntPtr.Zero) == 0)
+                while (ppenumMoniker.Next(1, moniker, 0) == 0)
                 {
                     string ppszDisplayName;
 
@@ -240,14 +240,14 @@ namespace GodotTools.OpenVisualStudio
             //
             // IOleMessageFilter functions
             // Handle incoming thread requests
-            int IOleMessageFilter.HandleInComingCall(int dwCallType, IntPtr hTaskCaller, int dwTickCount, IntPtr lpInterfaceInfo)
+            int IOleMessageFilter.HandleInComingCall(int dwCallType, nint hTaskCaller, int dwTickCount, nint lpInterfaceInfo)
             {
                 // Return the flag SERVERCALL_ISHANDLED
                 return 0;
             }
 
             // Thread call was rejected, so try again.
-            int IOleMessageFilter.RetryRejectedCall(IntPtr hTaskCallee, int dwTickCount, int dwRejectType)
+            int IOleMessageFilter.RetryRejectedCall(nint hTaskCallee, int dwTickCount, int dwRejectType)
             {
                 // flag = SERVERCALL_RETRYLATER
                 if (dwRejectType == 2)
@@ -260,7 +260,7 @@ namespace GodotTools.OpenVisualStudio
                 return -1;
             }
 
-            int IOleMessageFilter.MessagePending(IntPtr hTaskCallee, int dwTickCount, int dwPendingType)
+            int IOleMessageFilter.MessagePending(nint hTaskCallee, int dwTickCount, int dwPendingType)
             {
                 // Return the flag PENDINGMSG_WAITDEFPROCESS
                 return 2;
@@ -275,13 +275,13 @@ namespace GodotTools.OpenVisualStudio
         private interface IOleMessageFilter
         {
             [PreserveSig]
-            int HandleInComingCall(int dwCallType, IntPtr hTaskCaller, int dwTickCount, IntPtr lpInterfaceInfo);
+            int HandleInComingCall(int dwCallType, nint hTaskCaller, int dwTickCount, nint lpInterfaceInfo);
 
             [PreserveSig]
-            int RetryRejectedCall(IntPtr hTaskCallee, int dwTickCount, int dwRejectType);
+            int RetryRejectedCall(nint hTaskCallee, int dwTickCount, int dwRejectType);
 
             [PreserveSig]
-            int MessagePending(IntPtr hTaskCallee, int dwTickCount, int dwPendingType);
+            int MessagePending(nint hTaskCallee, int dwTickCount, int dwPendingType);
         }
 
         #endregion

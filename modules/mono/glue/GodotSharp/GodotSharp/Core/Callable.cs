@@ -91,21 +91,21 @@ namespace Godot
 
             int argc = args.Length;
 
-            Span<godot_variant.movable> argsStoreSpan = argc <= VarArgsSpanThreshold ?
-                stackalloc godot_variant.movable[VarArgsSpanThreshold] :
-                new godot_variant.movable[argc];
+            Span<godot_variant.movable> argsStoreSpan = stackalloc godot_variant.movable[argc <= VarArgsSpanThreshold ?
+                VarArgsSpanThreshold :
+                argc];
 
-            Span<IntPtr> argsSpan = argc <= VarArgsSpanThreshold ?
-                stackalloc IntPtr[VarArgsSpanThreshold] :
-                new IntPtr[argc];
+            Span<nint> argsSpan = stackalloc nint[argc <= VarArgsSpanThreshold ?
+                VarArgsSpanThreshold :
+                argc];
 
             fixed (godot_variant* varargs = &MemoryMarshal.GetReference(argsStoreSpan).DangerousSelfRef)
-            fixed (IntPtr* argsPtr = &MemoryMarshal.GetReference(argsSpan))
+            fixed (nint* argsPtr = &MemoryMarshal.GetReference(argsSpan))
             {
                 for (int i = 0; i < argc; i++)
                 {
                     varargs[i] = (godot_variant)args[i].NativeVar;
-                    argsPtr[i] = new IntPtr(&varargs[i]);
+                    argsPtr[i] = (nint)(&varargs[i]);
                 }
 
                 godot_variant ret = NativeFuncs.godotsharp_callable_call(callable,
@@ -129,17 +129,17 @@ namespace Godot
                 stackalloc godot_variant.movable[VarArgsSpanThreshold] :
                 new godot_variant.movable[argc];
 
-            Span<IntPtr> argsSpan = argc <= VarArgsSpanThreshold ?
-                stackalloc IntPtr[VarArgsSpanThreshold] :
-                new IntPtr[argc];
+            Span<nint> argsSpan = argc <= VarArgsSpanThreshold ?
+                stackalloc nint[VarArgsSpanThreshold] :
+                new nint[argc];
 
             fixed (godot_variant* varargs = &MemoryMarshal.GetReference(argsStoreSpan).DangerousSelfRef)
-            fixed (IntPtr* argsPtr = &MemoryMarshal.GetReference(argsSpan))
+            fixed (nint* argsPtr = &MemoryMarshal.GetReference(argsSpan))
             {
                 for (int i = 0; i < argc; i++)
                 {
                     varargs[i] = (godot_variant)args[i].NativeVar;
-                    argsPtr[i] = new IntPtr(&varargs[i]);
+                    argsPtr[i] = (nint)(&varargs[i]);
                 }
 
                 NativeFuncs.godotsharp_callable_call_deferred(callable, (godot_variant**)argsPtr, argc);

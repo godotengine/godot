@@ -7,7 +7,7 @@ namespace Godot.Bridge
     internal static class CSharpInstanceBridge
     {
         [UnmanagedCallersOnly]
-        internal static unsafe godot_bool Call(IntPtr godotObjectGCHandle, godot_string_name* method,
+        internal static unsafe godot_bool Call(nint godotObjectGCHandle, godot_string_name* method,
             godot_variant** args, int argCount, godot_variant_call_error* refCallError, godot_variant* ret)
         {
             try
@@ -45,7 +45,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe godot_bool Set(IntPtr godotObjectGCHandle, godot_string_name* name, godot_variant* value)
+        internal static unsafe godot_bool Set(nint godotObjectGCHandle, godot_string_name* name, godot_variant* value)
         {
             try
             {
@@ -74,7 +74,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe godot_bool Get(IntPtr godotObjectGCHandle, godot_string_name* name,
+        internal static unsafe godot_bool Get(nint godotObjectGCHandle, godot_string_name* name,
             godot_variant* outRet)
         {
             try
@@ -130,7 +130,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static void CallDispose(IntPtr godotObjectGCHandle, godot_bool okIfNull)
+        internal static void CallDispose(nint godotObjectGCHandle, godot_bool okIfNull)
         {
             try
             {
@@ -148,7 +148,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe void CallToString(IntPtr godotObjectGCHandle, godot_string* outRes, godot_bool* outValid)
+        internal static unsafe void CallToString(nint godotObjectGCHandle, godot_string* outRes, godot_bool* outValid)
         {
             try
             {
@@ -182,7 +182,7 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe godot_bool HasMethodUnknownParams(IntPtr godotObjectGCHandle, godot_string_name* method)
+        internal static unsafe godot_bool HasMethodUnknownParams(nint godotObjectGCHandle, godot_string_name* method)
         {
             try
             {
@@ -202,7 +202,7 @@ namespace Godot.Bridge
 
         [UnmanagedCallersOnly]
         internal static unsafe void SerializeState(
-            IntPtr godotObjectGCHandle,
+            nint godotObjectGCHandle,
             godot_dictionary* propertiesState,
             godot_dictionary* signalEventsState
         )
@@ -235,7 +235,7 @@ namespace Godot.Bridge
 
         [UnmanagedCallersOnly]
         internal static unsafe void DeserializeState(
-            IntPtr godotObjectGCHandle,
+            nint godotObjectGCHandle,
             godot_dictionary* propertiesState,
             godot_dictionary* signalEventsState
         )

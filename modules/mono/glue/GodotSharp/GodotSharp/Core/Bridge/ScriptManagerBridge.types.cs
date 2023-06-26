@@ -12,10 +12,10 @@ public static partial class ScriptManagerBridge
     private class ScriptTypeBiMap
     {
         public readonly object ReadWriteLock = new();
-        private System.Collections.Generic.Dictionary<IntPtr, Type> _scriptTypeMap = new();
-        private System.Collections.Generic.Dictionary<Type, IntPtr> _typeScriptMap = new();
+        private System.Collections.Generic.Dictionary<nint, Type> _scriptTypeMap = new();
+        private System.Collections.Generic.Dictionary<Type, nint> _typeScriptMap = new();
 
-        public void Add(IntPtr scriptPtr, Type scriptType)
+        public void Add(nint scriptPtr, Type scriptType)
         {
             // TODO: What if this is called while unloading a load context, but after we already did cleanup in preparation for unloading?
 
@@ -28,13 +28,13 @@ public static partial class ScriptManagerBridge
             }
         }
 
-        public void Remove(IntPtr scriptPtr)
+        public void Remove(nint scriptPtr)
         {
             if (_scriptTypeMap.Remove(scriptPtr, out Type? scriptType))
                 _ = _typeScriptMap.Remove(scriptType);
         }
 
-        public bool RemoveByScriptType(Type scriptType, out IntPtr scriptPtr)
+        public bool RemoveByScriptType(Type scriptType, out nint scriptPtr)
         {
             if (_typeScriptMap.Remove(scriptType, out scriptPtr))
                 return _scriptTypeMap.Remove(scriptPtr);
@@ -42,18 +42,18 @@ public static partial class ScriptManagerBridge
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Type GetScriptType(IntPtr scriptPtr) => _scriptTypeMap[scriptPtr];
+        public Type GetScriptType(nint scriptPtr) => _scriptTypeMap[scriptPtr];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetScriptType(IntPtr scriptPtr, [MaybeNullWhen(false)] out Type scriptType) =>
+        public bool TryGetScriptType(nint scriptPtr, [MaybeNullWhen(false)] out Type scriptType) =>
             _scriptTypeMap.TryGetValue(scriptPtr, out scriptType);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetScriptPtr(Type scriptType, out IntPtr scriptPtr) =>
+        public bool TryGetScriptPtr(Type scriptType, out nint scriptPtr) =>
             _typeScriptMap.TryGetValue(scriptType, out scriptPtr);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsScriptRegistered(IntPtr scriptPtr) => _scriptTypeMap.ContainsKey(scriptPtr);
+        public bool IsScriptRegistered(nint scriptPtr) => _scriptTypeMap.ContainsKey(scriptPtr);
     }
 
     private class PathScriptTypeBiMap

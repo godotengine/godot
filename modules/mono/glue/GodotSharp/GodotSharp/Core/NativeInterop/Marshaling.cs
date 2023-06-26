@@ -210,7 +210,7 @@ namespace Godot.NativeInterop
 
         public static unsafe string ConvertStringToManaged(in godot_string p_string)
         {
-            if (p_string.Buffer == IntPtr.Zero)
+            if (p_string.Buffer == 0)
                 return string.Empty;
 
             const int sizeOfChar32 = 4;
@@ -231,14 +231,14 @@ namespace Godot.NativeInterop
             {
                 var gcHandle = CustomGCHandle.AllocStrong(p_managed_callable.Delegate);
 
-                IntPtr objectPtr = p_managed_callable.Target != null ?
+                nint objectPtr = p_managed_callable.Target != null ?
                     GodotObject.GetPtr(p_managed_callable.Target) :
-                    IntPtr.Zero;
+                    0;
 
                 unsafe
                 {
                     NativeFuncs.godotsharp_callable_new_with_delegate(
-                        GCHandle.ToIntPtr(gcHandle), (IntPtr)p_managed_callable.Trampoline,
+                        GCHandle.ToIntPtr(gcHandle), (nint)p_managed_callable.Trampoline,
                         objectPtr, out godot_callable callable);
 
                     return callable;
@@ -266,10 +266,10 @@ namespace Godot.NativeInterop
         public static Callable ConvertCallableToManaged(in godot_callable p_callable)
         {
             if (NativeFuncs.godotsharp_callable_get_data_for_marshalling(p_callable,
-                    out IntPtr delegateGCHandle, out IntPtr trampoline,
-                    out IntPtr godotObject, out godot_string_name name).ToBool())
+                    out nint delegateGCHandle, out nint trampoline,
+                    out nint godotObject, out godot_string_name name).ToBool())
             {
-                if (delegateGCHandle != IntPtr.Zero)
+                if (delegateGCHandle != 0)
                 {
                     unsafe
                     {

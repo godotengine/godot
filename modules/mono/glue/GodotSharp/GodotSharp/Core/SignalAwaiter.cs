@@ -31,7 +31,7 @@ namespace Godot
         public IAwaiter<Variant[]> GetAwaiter() => this;
 
         [UnmanagedCallersOnly]
-        internal static unsafe void SignalCallback(IntPtr awaiterGCHandlePtr, godot_variant** args, int argCount,
+        internal static unsafe void SignalCallback(nint awaiterGCHandlePtr, godot_variant** args, int argCount,
             godot_bool* outAwaiterIsNull)
         {
             try

@@ -51,7 +51,7 @@ namespace Godot
         /// <returns>If the instance is a valid object.</returns>
         public static bool IsInstanceValid(GodotObject instance)
         {
-            return instance != null && instance.NativeInstance != IntPtr.Zero;
+            return instance != null && instance.NativeInstance != 0;
         }
 
         /// <summary>

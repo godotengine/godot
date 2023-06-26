@@ -14,7 +14,7 @@ namespace Godot
     internal static class DelegateUtils
     {
         [UnmanagedCallersOnly]
-        internal static godot_bool DelegateEquals(IntPtr delegateGCHandleA, IntPtr delegateGCHandleB)
+        internal static godot_bool DelegateEquals(nint delegateGCHandleA, nint delegateGCHandleB)
         {
             try
             {
@@ -30,7 +30,7 @@ namespace Godot
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, void* trampoline,
+        internal static unsafe void InvokeWithVariantArgs(nint delegateGCHandle, void* trampoline,
             godot_variant** args, int argc, godot_variant* outRet)
         {
             try
@@ -274,7 +274,7 @@ namespace Godot
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe godot_bool TrySerializeDelegateWithGCHandle(IntPtr delegateGCHandle,
+        internal static unsafe godot_bool TrySerializeDelegateWithGCHandle(nint delegateGCHandle,
             godot_array* nSerializedData)
         {
             try
@@ -296,7 +296,7 @@ namespace Godot
 
         [UnmanagedCallersOnly]
         internal static unsafe godot_bool TryDeserializeDelegateWithGCHandle(godot_array* nSerializedData,
-            IntPtr* delegateGCHandle)
+            nint* delegateGCHandle)
         {
             try
             {
@@ -310,7 +310,7 @@ namespace Godot
                 }
                 else
                 {
-                    *delegateGCHandle = IntPtr.Zero;
+                    *delegateGCHandle = 0;
                     return godot_bool.False;
                 }
             }

@@ -71,7 +71,7 @@ namespace GodotTools.Internals
         private static bool initialized = false;
 
         // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Global
-        internal static unsafe void Initialize(IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
+        internal static unsafe void Initialize(nint unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             if (initialized)
                 throw new InvalidOperationException("Already initialized.");
@@ -126,7 +126,7 @@ namespace GodotTools.Internals
 
         private static partial void godot_icall_Internal_EditorDebuggerNodeReloadScripts();
 
-        private static partial bool godot_icall_Internal_ScriptEditorEdit(IntPtr resource, int line, int col,
+        private static partial bool godot_icall_Internal_ScriptEditorEdit(nint resource, int line, int col,
             bool grabFocus);
 
         private static partial void godot_icall_Internal_EditorNodeShowScriptScreen();

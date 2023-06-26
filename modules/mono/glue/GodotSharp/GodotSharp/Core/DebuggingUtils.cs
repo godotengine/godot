@@ -43,7 +43,7 @@ namespace Godot
         // ReSharper disable once InconsistentNaming
         internal ref struct godot_stack_info_vector
         {
-            private IntPtr _writeProxy;
+            private nint _writeProxy;
             private unsafe godot_stack_info* _ptr;
 
             public readonly unsafe godot_stack_info* Elements

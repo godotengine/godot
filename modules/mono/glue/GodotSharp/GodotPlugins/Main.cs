@@ -79,9 +79,9 @@ namespace GodotPlugins
         // Right now we do it this way for simplicity as hot-reload is disabled. It will need to be changed later.
         [UnmanagedCallersOnly]
         // ReSharper disable once UnusedMember.Local
-        private static unsafe godot_bool InitializeFromEngine(IntPtr godotDllHandle, godot_bool editorHint,
+        private static unsafe godot_bool InitializeFromEngine(nint godotDllHandle, godot_bool editorHint,
             PluginsCallbacks* pluginsCallbacks, ManagedCallbacks* managedCallbacks,
-            IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
+            nint unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             try
             {
@@ -124,7 +124,7 @@ namespace GodotPlugins
         private struct PluginsCallbacks
         {
             public unsafe delegate* unmanaged<char*, godot_string*, godot_bool> LoadProjectAssemblyCallback;
-            public unsafe delegate* unmanaged<char*, IntPtr, int, IntPtr> LoadToolsAssemblyCallback;
+            public unsafe delegate* unmanaged<char*, nint, int, nint> LoadToolsAssemblyCallback;
             public unsafe delegate* unmanaged<godot_bool> UnloadProjectPluginCallback;
         }
 
@@ -155,8 +155,8 @@ namespace GodotPlugins
         }
 
         [UnmanagedCallersOnly]
-        private static unsafe IntPtr LoadToolsAssembly(char* nAssemblyPath,
-            IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
+        private static unsafe nint LoadToolsAssembly(char* nAssemblyPath,
+            nint unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             try
             {
@@ -179,14 +179,14 @@ namespace GodotPlugins
                         "InternalCreateInstance");
                 }
 
-                return (IntPtr?)method
+                return (nint?)method
                            .Invoke(null, new object[] { unmanagedCallbacks, unmanagedCallbacksSize })
-                       ?? IntPtr.Zero;
+                       ?? 0;
             }
             catch (Exception e)
             {
                 Console.Error.WriteLine(e);
-                return IntPtr.Zero;
+                return 0;
             }
         }
 

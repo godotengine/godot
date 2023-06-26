@@ -19,7 +19,7 @@ namespace Godot.NativeInterop
         private static bool initialized = false;
 
         // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Global
-        public static void Initialize(IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
+        public static void Initialize(nint unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             if (initialized)
                 throw new InvalidOperationException("Already initialized.");
@@ -37,13 +37,13 @@ namespace Godot.NativeInterop
 
         // Custom functions
 
-        public static partial IntPtr godotsharp_method_bind_get_method(in godot_string_name p_classname,
+        public static partial nint godotsharp_method_bind_get_method(in godot_string_name p_classname,
             in godot_string_name p_methodname);
 
-        public static partial delegate* unmanaged<IntPtr> godotsharp_get_class_constructor(
+        public static partial delegate* unmanaged<nint> godotsharp_get_class_constructor(
             in godot_string_name p_classname);
 
-        public static partial IntPtr godotsharp_engine_get_singleton(in godot_string p_name);
+        public static partial nint godotsharp_engine_get_singleton(in godot_string p_name);
 
 
         internal static partial Error godotsharp_stack_info_vector_resize(
@@ -58,39 +58,39 @@ namespace Godot.NativeInterop
 
         internal static partial bool godotsharp_internal_script_debugger_is_active();
 
-        internal static partial IntPtr godotsharp_internal_object_get_associated_gchandle(IntPtr ptr);
+        internal static partial nint godotsharp_internal_object_get_associated_gchandle(nint ptr);
 
-        internal static partial void godotsharp_internal_object_disposed(IntPtr ptr, IntPtr gcHandleToFree);
+        internal static partial void godotsharp_internal_object_disposed(nint ptr, nint gcHandleToFree);
 
-        internal static partial void godotsharp_internal_refcounted_disposed(IntPtr ptr, IntPtr gcHandleToFree,
+        internal static partial void godotsharp_internal_refcounted_disposed(nint ptr, nint gcHandleToFree,
             godot_bool isFinalizer);
 
-        internal static partial Error godotsharp_internal_signal_awaiter_connect(IntPtr source,
+        internal static partial Error godotsharp_internal_signal_awaiter_connect(nint source,
             in godot_string_name signal,
-            IntPtr target, IntPtr awaiterHandlePtr);
+            nint target, nint awaiterHandlePtr);
 
-        internal static partial void godotsharp_internal_tie_native_managed_to_unmanaged(IntPtr gcHandleIntPtr,
-            IntPtr unmanaged, in godot_string_name nativeName, godot_bool refCounted);
+        internal static partial void godotsharp_internal_tie_native_managed_to_unmanaged(nint gcHandleIntPtr,
+            nint unmanaged, in godot_string_name nativeName, godot_bool refCounted);
 
-        internal static partial void godotsharp_internal_tie_user_managed_to_unmanaged(IntPtr gcHandleIntPtr,
-            IntPtr unmanaged, godot_ref* scriptPtr, godot_bool refCounted);
+        internal static partial void godotsharp_internal_tie_user_managed_to_unmanaged(nint gcHandleIntPtr,
+            nint unmanaged, godot_ref* scriptPtr, godot_bool refCounted);
 
         internal static partial void godotsharp_internal_tie_managed_to_unmanaged_with_pre_setup(
-            IntPtr gcHandleIntPtr, IntPtr unmanaged);
+            nint gcHandleIntPtr, nint unmanaged);
 
-        internal static partial IntPtr godotsharp_internal_unmanaged_get_script_instance_managed(IntPtr p_unmanaged,
+        internal static partial nint godotsharp_internal_unmanaged_get_script_instance_managed(nint p_unmanaged,
             out godot_bool r_has_cs_script_instance);
 
-        internal static partial IntPtr godotsharp_internal_unmanaged_get_instance_binding_managed(IntPtr p_unmanaged);
+        internal static partial nint godotsharp_internal_unmanaged_get_instance_binding_managed(nint p_unmanaged);
 
-        internal static partial IntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(IntPtr p_unmanaged,
-            IntPtr oldGCHandlePtr);
+        internal static partial nint godotsharp_internal_unmanaged_instance_binding_create_managed(nint p_unmanaged,
+            nint oldGCHandlePtr);
 
         internal static partial void godotsharp_internal_new_csharp_script(godot_ref* r_dest);
 
         internal static partial godot_bool godotsharp_internal_script_load(in godot_string p_path, godot_ref* r_dest);
 
-        internal static partial void godotsharp_internal_reload_registered_script(IntPtr scriptPtr);
+        internal static partial void godotsharp_internal_reload_registered_script(nint scriptPtr);
 
         internal static partial void godotsharp_array_filter_godot_objects_by_native(in godot_string_name p_native_name,
             in godot_array p_input, out godot_array r_output);
@@ -99,7 +99,7 @@ namespace Godot.NativeInterop
             out godot_array r_output);
 
         public static partial void godotsharp_ref_new_from_ref_counted_ptr(out godot_ref r_dest,
-            IntPtr p_ref_counted_ptr);
+            nint p_ref_counted_ptr);
 
         public static partial void godotsharp_ref_destroy(ref godot_ref p_instance);
 
@@ -141,11 +141,11 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_packed_string_array_add(ref godot_packed_string_array r_dest,
             in godot_string p_element);
 
-        public static partial void godotsharp_callable_new_with_delegate(IntPtr p_delegate_handle, IntPtr p_trampoline,
-            IntPtr p_object, out godot_callable r_callable);
+        public static partial void godotsharp_callable_new_with_delegate(nint p_delegate_handle, nint p_trampoline,
+            nint p_object, out godot_callable r_callable);
 
         internal static partial godot_bool godotsharp_callable_get_data_for_marshalling(in godot_callable p_callable,
-            out IntPtr r_delegate_handle, out IntPtr r_trampoline, out IntPtr r_object, out godot_string_name r_name);
+            out nint r_delegate_handle, out nint r_trampoline, out nint r_object, out godot_string_name r_name);
 
         internal static partial godot_variant godotsharp_callable_call(in godot_callable p_callable,
             godot_variant** p_args, int p_arg_count, out godot_variant_call_error p_call_error);
@@ -159,10 +159,10 @@ namespace Godot.NativeInterop
 
         // gdnative.h
 
-        public static partial void godotsharp_method_bind_ptrcall(IntPtr p_method_bind, IntPtr p_instance, void** p_args,
+        public static partial void godotsharp_method_bind_ptrcall(nint p_method_bind, nint p_instance, void** p_args,
             void* p_ret);
 
-        public static partial godot_variant godotsharp_method_bind_call(IntPtr p_method_bind, IntPtr p_instance,
+        public static partial godot_variant godotsharp_method_bind_call(nint p_method_bind, nint p_instance,
             godot_variant** p_args, int p_arg_count, out godot_variant_call_error p_call_error);
 
         // variant.h
@@ -174,7 +174,7 @@ namespace Godot.NativeInterop
 
         public static partial void godotsharp_variant_new_node_path(out godot_variant r_dest, in godot_node_path p_np);
 
-        public static partial void godotsharp_variant_new_object(out godot_variant r_dest, IntPtr p_obj);
+        public static partial void godotsharp_variant_new_object(out godot_variant r_dest, nint p_obj);
 
         public static partial void godotsharp_variant_new_transform2d(out godot_variant r_dest, in Transform2D p_t2d);
 
@@ -497,7 +497,7 @@ namespace Godot.NativeInterop
 
         internal static partial int godotsharp_hash(in godot_variant p_var);
 
-        internal static partial IntPtr godotsharp_instance_from_id(ulong p_instance_id);
+        internal static partial nint godotsharp_instance_from_id(ulong p_instance_id);
 
         internal static partial void godotsharp_print(in godot_string p_what);
 
@@ -527,7 +527,7 @@ namespace Godot.NativeInterop
 
         internal static partial void godotsharp_seed(ulong seed);
 
-        internal static partial void godotsharp_weakref(IntPtr p_obj, out godot_ref r_weak_ref);
+        internal static partial void godotsharp_weakref(nint p_obj, out godot_ref r_weak_ref);
 
         internal static partial void godotsharp_str_to_var(in godot_string p_str, out godot_variant r_ret);
 
@@ -542,6 +542,6 @@ namespace Godot.NativeInterop
 
         // Object
 
-        public static partial void godotsharp_object_to_string(IntPtr ptr, out godot_string r_str);
+        public static partial void godotsharp_object_to_string(nint ptr, out godot_string r_str);
     }
 }
