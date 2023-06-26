@@ -1396,6 +1396,12 @@ String EditorSettings::get_editor_layouts_config() const {
 }
 
 float EditorSettings::get_auto_display_scale() const {
+#ifdef LINUXBSD_ENABLED
+	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
+		return DisplayServer::get_singleton()->screen_get_max_scale();
+	}
+#endif
+
 #if defined(MACOS_ENABLED) || defined(ANDROID_ENABLED)
 	return DisplayServer::get_singleton()->screen_get_max_scale();
 #else
