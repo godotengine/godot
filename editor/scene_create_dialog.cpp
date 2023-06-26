@@ -126,7 +126,7 @@ void SceneCreateDialog::update_dialog() {
 		node_type_other->set_icon(nullptr);
 	}
 
-	update_error(node_error_label, MSG_OK, "Root node valid.");
+	update_error(node_error_label, MSG_OK, TTR("Root node valid."));
 
 	root_name = root_name_edit->get_text().strip_edges();
 	if (root_name.is_empty()) {
