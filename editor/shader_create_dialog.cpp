@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_scale.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_validation_panel.h"
 #include "scene/resources/shader_include.h"
 #include "scene/resources/visual_shader.h"
 #include "servers/rendering/shader_types.h"
@@ -89,7 +90,6 @@ void ShaderCreateDialog::_update_theme() {
 	}
 
 	path_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
-	status_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 }
 
 void ShaderCreateDialog::_update_language_info() {
@@ -147,7 +147,7 @@ void ShaderCreateDialog::ok_pressed() {
 	}
 
 	is_new_shader_created = true;
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ShaderCreateDialog::_create_new() {
@@ -327,7 +327,7 @@ void ShaderCreateDialog::_type_changed(int p_language) {
 	}
 
 	EditorSettings::get_singleton()->set_project_metadata("shader_setup", "last_selected_language", type_menu->get_item_text(type_menu->get_selected()));
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ShaderCreateDialog::_built_in_toggled(bool p_enabled) {
@@ -337,7 +337,7 @@ void ShaderCreateDialog::_built_in_toggled(bool p_enabled) {
 	} else {
 		_path_changed(file_path->get_text());
 	}
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ShaderCreateDialog::_browse_path() {
@@ -378,10 +378,9 @@ void ShaderCreateDialog::_path_changed(const String &p_path) {
 	is_path_valid = false;
 	is_new_shader_created = true;
 
-	String path_error = _validate_path(p_path);
+	path_error = _validate_path(p_path);
 	if (!path_error.is_empty()) {
-		_msg_path_valid(false, path_error);
-		_update_dialog();
+		validation_panel->update();
 		return;
 	}
 
@@ -389,15 +388,16 @@ void ShaderCreateDialog::_path_changed(const String &p_path) {
 	String p = ProjectSettings::get_singleton()->localize_path(p_path.strip_edges());
 	if (f->file_exists(p)) {
 		is_new_shader_created = false;
-		_msg_path_valid(true, TTR("File exists, it will be reused."));
 	}
 
 	is_path_valid = true;
-	_update_dialog();
+	validation_panel->update();
 }
 
 void ShaderCreateDialog::_path_submitted(const String &p_path) {
-	ok_pressed();
+	if (!get_ok_button()->is_disabled()) {
+		ok_pressed();
+	}
 }
 
 void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabled, bool p_load_enabled, int p_preferred_type, int p_preferred_mode) {
@@ -490,33 +490,14 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 	return "";
 }
 
-void ShaderCreateDialog::_msg_script_valid(bool valid, const String &p_msg) {
-	error_label->set_text(String::utf8("•  ") + p_msg);
-	if (valid) {
-		error_label->add_theme_color_override("font_color", gc->get_theme_color(SNAME("success_color"), SNAME("Editor")));
-	} else {
-		error_label->add_theme_color_override("font_color", gc->get_theme_color(SNAME("error_color"), SNAME("Editor")));
-	}
-}
-
-void ShaderCreateDialog::_msg_path_valid(bool valid, const String &p_msg) {
-	path_error_label->set_text(String::utf8("•  ") + p_msg);
-	if (valid) {
-		path_error_label->add_theme_color_override("font_color", gc->get_theme_color(SNAME("success_color"), SNAME("Editor")));
-	} else {
-		path_error_label->add_theme_color_override("font_color", gc->get_theme_color(SNAME("error_color"), SNAME("Editor")));
-	}
-}
-
 void ShaderCreateDialog::_update_dialog() {
-	bool shader_ok = true;
-
 	if (!is_built_in && !is_path_valid) {
-		_msg_script_valid(false, TTR("Invalid path."));
-		shader_ok = false;
+		validation_panel->set_message(MSG_ID_SHADER, TTR("Invalid path."), EditorValidationPanel::MSG_ERROR);
 	}
-	if (shader_ok) {
-		_msg_script_valid(true, TTR("Shader path/name is valid."));
+	if (!path_error.is_empty()) {
+		validation_panel->set_message(MSG_ID_PATH, path_error, EditorValidationPanel::MSG_ERROR);
+	} else if (validation_panel->is_valid() && !is_new_shader_created) {
+		validation_panel->set_message(MSG_ID_SHADER, TTR("File exists, it will be reused."), EditorValidationPanel::MSG_OK);
 	}
 	if (!built_in_enabled) {
 		internal->set_pressed(false);
@@ -537,37 +518,23 @@ void ShaderCreateDialog::_update_dialog() {
 
 	internal->set_disabled(!built_in_enabled);
 
-	builtin_warning_label->set_visible(is_built_in);
+	if (is_built_in) {
+		validation_panel->set_message(MSG_ID_BUILT_IN, TTR("Note: Built-in shaders can't be edited using an external editor."), EditorValidationPanel::MSG_INFO, false);
+	}
 
 	if (is_built_in) {
 		set_ok_button_text(TTR("Create"));
-		_msg_path_valid(true, TTR("Built-in shader (into scene file)."));
+		validation_panel->set_message(MSG_ID_PATH, TTR("Built-in shader (into scene file)."), EditorValidationPanel::MSG_OK);
 	} else if (is_new_shader_created) {
 		set_ok_button_text(TTR("Create"));
-		if (is_path_valid) {
-			_msg_path_valid(true, TTR("Will create a new shader file."));
-		}
 	} else if (load_enabled) {
 		set_ok_button_text(TTR("Load"));
 		if (is_path_valid) {
-			_msg_path_valid(true, TTR("Will load an existing shader file."));
+			validation_panel->set_message(MSG_ID_PATH, TTR("Will load an existing shader file."), EditorValidationPanel::MSG_OK);
 		}
 	} else {
 		set_ok_button_text(TTR("Create"));
-		_msg_path_valid(false, TTR("Shader file already exists."));
-
-		shader_ok = false;
-	}
-
-	get_ok_button()->set_disabled(!shader_ok);
-
-	Callable entered_call = callable_mp(this, &ShaderCreateDialog::_path_submitted);
-	if (shader_ok) {
-		if (!file_path->is_connected("text_submitted", entered_call)) {
-			file_path->connect("text_submitted", entered_call);
-		}
-	} else if (file_path->is_connected("text_submitted", entered_call)) {
-		file_path->disconnect("text_submitted", entered_call);
+		validation_panel->set_message(MSG_ID_PATH, TTR("Shader file already exists."), EditorValidationPanel::MSG_ERROR);
 	}
 }
 
@@ -588,35 +555,22 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	// Error Fields.
 
-	VBoxContainer *vb = memnew(VBoxContainer);
-
-	error_label = memnew(Label);
-	vb->add_child(error_label);
-
-	path_error_label = memnew(Label);
-	vb->add_child(path_error_label);
-
-	builtin_warning_label = memnew(Label);
-	builtin_warning_label->set_text(
-			TTR("Note: Built-in shaders can't be edited using an external editor."));
-	vb->add_child(builtin_warning_label);
-	builtin_warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	builtin_warning_label->hide();
-
-	status_panel = memnew(PanelContainer);
-	status_panel->set_h_size_flags(Control::SIZE_FILL);
-	status_panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	status_panel->add_child(vb);
+	validation_panel = memnew(EditorValidationPanel);
+	validation_panel->add_line(MSG_ID_SHADER, TTR("Shader path/name is valid."));
+	validation_panel->add_line(MSG_ID_PATH, TTR("Will create a new shader file."));
+	validation_panel->add_line(MSG_ID_BUILT_IN);
+	validation_panel->set_update_callback(callable_mp(this, &ShaderCreateDialog::_update_dialog));
+	validation_panel->set_accept_button(get_ok_button());
 
 	// Spacing.
 
 	Control *spacing = memnew(Control);
 	spacing->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
 
-	vb = memnew(VBoxContainer);
+	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->add_child(gc);
 	vb->add_child(spacing);
-	vb->add_child(status_panel);
+	vb->add_child(validation_panel);
 	add_child(vb);
 
 	// Type.

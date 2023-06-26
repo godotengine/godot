@@ -1280,6 +1280,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	}
 
 	theme->set_stylebox("panel", "Tree", style_tree_bg);
+	theme->set_stylebox("panel", "EditorValidationPanel", style_tree_bg);
 
 	// Tree
 	theme->set_icon("checked", "Tree", theme->get_icon(SNAME("GuiChecked"), SNAME("EditorIcons")));

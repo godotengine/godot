@@ -39,6 +39,7 @@ class AcceptDialog;
 class Button;
 class ConfirmationDialog;
 class EditorInspector;
+class EditorValidationPanel;
 class LineEdit;
 class OptionButton;
 class PanelContainer;
@@ -543,12 +544,11 @@ class EditorInspector : public ScrollContainer {
 	ConfirmationDialog *add_meta_dialog = nullptr;
 	LineEdit *add_meta_name = nullptr;
 	OptionButton *add_meta_type = nullptr;
-	PanelContainer *add_meta_error_panel = nullptr;
-	Label *add_meta_error = nullptr;
+	EditorValidationPanel *validation_panel = nullptr;
 
 	void _add_meta_confirm();
 	void _show_add_meta_dialog();
-	void _check_meta_name(const String &p_name);
+	void _check_meta_name();
 
 protected:
 	static void _bind_methods();

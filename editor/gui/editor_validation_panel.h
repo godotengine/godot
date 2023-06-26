@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  directory_create_dialog.h                                             */
+/*  editor_validation_panel.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DIRECTORY_CREATE_DIALOG_H
-#define DIRECTORY_CREATE_DIALOG_H
+#ifndef EDITOR_VALIDATION_PANEL_H
+#define EDITOR_VALIDATION_PANEL_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/panel_container.h"
 
-class EditorValidationPanel;
+class Button;
 class Label;
-class LineEdit;
+class VBoxContainer;
 
-class DirectoryCreateDialog : public ConfirmationDialog {
-	GDCLASS(DirectoryCreateDialog, ConfirmationDialog);
-
-	String base_dir;
-
-	Label *label = nullptr;
-	LineEdit *dir_path = nullptr;
-	EditorValidationPanel *validation_panel = nullptr;
-
-	String _validate_path(const String &p_path) const;
-	void _on_dir_path_changed();
-
-protected:
-	static void _bind_methods();
-
-	virtual void ok_pressed() override;
-	virtual void _post_popup() override;
+class EditorValidationPanel : public PanelContainer {
+	GDCLASS(EditorValidationPanel, PanelContainer);
 
 public:
-	void config(const String &p_base_dir);
+	enum MessageType {
+		MSG_OK,
+		MSG_WARNING,
+		MSG_ERROR,
+		MSG_INFO,
+	};
 
-	DirectoryCreateDialog();
+	static const int MSG_ID_DEFAULT = 0; // Avoids hard-coding ID in dialogs with single-line validation.
+
+private:
+	VBoxContainer *message_container = nullptr;
+
+	HashMap<int, String> valid_messages;
+	HashMap<int, Label *> labels;
+
+	bool valid = false;
+	bool pending_update = false;
+
+	struct ThemeCache {
+		Color valid_color;
+		Color warning_color;
+		Color error_color;
+	} theme_cache;
+
+	void _update();
+
+	Callable update_callback;
+	Button *accept_button = nullptr;
+
+protected:
+	void _notification(int p_what);
+
+public:
+	void add_line(int p_id, const String &p_valid_message = "");
+	void set_accept_button(Button *p_button);
+	void set_update_callback(const Callable &p_callback);
+
+	void update();
+	void set_message(int p_id, const String &p_text, MessageType p_type, bool p_auto_prefix = true);
+	bool is_valid() const;
+
+	EditorValidationPanel();
 };
 
-#endif // DIRECTORY_CREATE_DIALOG_H
+#endif // EDITOR_VALIDATION_PANEL_H
