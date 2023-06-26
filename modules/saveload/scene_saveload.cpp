@@ -374,9 +374,7 @@ TypedArray<SaveloadSynchronizer> SceneSaveload::get_sync_nodes() {
 }
 
 Dictionary SceneSaveload::get_dict() {
-	print_line("SceneSaveload::get_dict()");
 	SceneSaveloadInterface::SaveloadState saveload_state = saveloader->get_saveload_state();
-	print_line("SceneSaveload::get_dict() got savelaod_state");
 	return saveload_state.to_dict();
 }
 
