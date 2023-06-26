@@ -1249,10 +1249,6 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 
-	// set filtering and repeat state to default
-	texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
-	texture->gl_set_repeat(RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-
 #ifndef WEB_ENABLED
 	switch (texture->format) {
 #ifdef GLES_OVER_GL
@@ -1293,6 +1289,15 @@ void TextureStorage::_texture_set_data(RID p_texture, const Ref<Image> &p_image,
 #endif // WEB_ENABLED
 
 	int mipmaps = img->has_mipmaps() ? img->get_mipmap_count() + 1 : 1;
+
+	// Set filtering and repeat state to default.
+	if (mipmaps > 1) {
+		texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+	} else {
+		texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	}
+
+	texture->gl_set_repeat(RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 
 	int w = img->get_width();
 	int h = img->get_height();
