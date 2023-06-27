@@ -117,6 +117,7 @@ private:
 
 		Cell() {
 			text_buf.instantiate();
+			text_buf->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 		}
 
 		Size2 get_icon_size() const;
@@ -230,6 +231,9 @@ public:
 
 	void set_autowrap_mode(int p_column, TextServer::AutowrapMode p_mode);
 	TextServer::AutowrapMode get_autowrap_mode(int p_column) const;
+
+	void set_text_overrun_behavior(int p_column, TextServer::OverrunBehavior p_behavior);
+	TextServer::OverrunBehavior get_text_overrun_behavior(int p_column) const;
 
 	void set_structured_text_bidi_override(int p_column, TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override(int p_column) const;
