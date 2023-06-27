@@ -343,6 +343,20 @@ typedef struct {
 	GDExtensionVariantPtr *default_arguments;
 } GDExtensionClassMethodInfo;
 
+typedef void (*GDExtensionCallableCustomCall)(void *callable_userdata, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_argument_count, GDExtensionVariantPtr r_return, GDExtensionCallError *r_error);
+typedef void (*GDExtensionCallableCustomFree)(void *callable_userdata);
+
+typedef struct {
+	/* Only `call_func` is strictly required, however, `object` should be passed if its not a static method.
+	 * Both `call_func` and `callable_userdata` together are used as the identity of the callable for hashing and comparison purposes.
+	 * `free_func` is necessary if `callable_userdata` needs to be cleaned up when the callable is freed.
+	 */
+	GDExtensionObjectPtr object;
+	GDExtensionCallableCustomCall call_func;
+	GDExtensionCallableCustomFree free_func;
+	void *callable_userdata;
+} GDExtensionCallableCustomInfo;
+
 /* SCRIPT INSTANCE EXTENSION */
 
 typedef void *GDExtensionScriptInstanceDataPtr; // Pointer to custom ScriptInstance native implementation.
@@ -2066,6 +2080,19 @@ typedef GDExtensionObjectPtr (*GDExtensionInterfaceObjectGetInstanceFromId)(GDOb
  * @return The instance ID.
  */
 typedef GDObjectInstanceID (*GDExtensionInterfaceObjectGetInstanceId)(GDExtensionConstObjectPtr p_object);
+
+/**
+ * @name callable_custom_create
+ * @since 4.2
+ *
+ * Creates a custom Callable object from a function pointer.
+ *
+ * Provided struct can be safely freed once the function returns.
+ *
+ * @param r_variant The variant to fill with the new Callable.
+ * @param p_callable_custom_info The info required to construct a Callable.
+ */
+typedef void (*GDExtensionInterfaceCallableCustomCreate)(GDExtensionUninitializedVariantPtr r_variant, GDExtensionCallableCustomInfo *p_callable_custom_info);
 
 /* INTERFACE: Reference */
 

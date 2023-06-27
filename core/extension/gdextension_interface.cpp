@@ -41,6 +41,93 @@
 #include "core/variant/variant.h"
 #include "core/version.h"
 
+class CallableCustomExtension : public CallableCustom {
+	ObjectID object;
+	GDExtensionCallableCustomCall call_func;
+	GDExtensionCallableCustomFree free_func;
+	void *userdata;
+
+	uint32_t h;
+
+	static bool compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
+		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
+
+		if (a->call_func != b->call_func || a->userdata != b->userdata) {
+			return false;
+		}
+		return true;
+	}
+
+	static bool compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomExtension *a = static_cast<const CallableCustomExtension *>(p_a);
+		const CallableCustomExtension *b = static_cast<const CallableCustomExtension *>(p_b);
+
+		if (a->call_func != b->call_func) {
+			return a->call_func < b->call_func;
+		}
+		return a->userdata < b->userdata;
+	}
+
+public:
+	uint32_t hash() const {
+		return h;
+	}
+
+	String get_as_text() const {
+		return String();
+	}
+
+	CompareEqualFunc get_compare_equal_func() const {
+		return compare_equal;
+	}
+
+	CompareLessFunc get_compare_less_func() const {
+		return compare_less;
+	}
+
+	bool is_valid() const {
+		return call_func != nullptr;
+	}
+
+	StringName get_method() const {
+		return StringName();
+	}
+
+	ObjectID get_object() const {
+		return object;
+	}
+
+	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
+		GDExtensionCallError error;
+
+		call_func(userdata, (GDExtensionConstVariantPtr *)p_arguments, p_argcount, &r_return_value, &error);
+
+		r_call_error.error = (Callable::CallError::Error)error.error;
+		r_call_error.argument = error.argument;
+		r_call_error.expected = error.expected;
+	}
+
+	CallableCustomExtension(GDExtensionCallableCustomInfo *p_info) {
+		if (p_info->object != nullptr) {
+			object = ((Object *)p_info->object)->get_instance_id();
+		}
+		call_func = p_info->call_func;
+		free_func = p_info->free_func;
+		userdata = p_info->callable_userdata;
+
+		// Pre-calculate the hash.
+		h = hash_murmur3_one_64((uint64_t)call_func);
+		h = hash_murmur3_one_64((uint64_t)userdata, h);
+	}
+
+	~CallableCustomExtension() {
+		if (free_func != nullptr) {
+			free_func(userdata);
+		}
+	}
+};
+
 // Core interface functions.
 GDExtensionInterfaceFunctionPtr gdextension_get_proc_address(const char *p_name) {
 	return GDExtension::get_interface_function(p_name);
@@ -1036,6 +1123,10 @@ static void gdextension_ref_set_object(GDExtensionRefPtr p_ref, GDExtensionObjec
 	ref->reference_ptr(o);
 }
 
+static void gdextension_callable_custom_create(GDExtensionUninitializedVariantPtr r_callable, GDExtensionCallableCustomInfo *p_custom_callable_info) {
+	memnew_placement(r_callable, Variant(Callable(memnew(CallableCustomExtension(p_custom_callable_info)))));
+}
+
 static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDExtensionScriptInstanceInfo *p_info, GDExtensionScriptInstanceDataPtr p_instance_data) {
 	ScriptInstanceExtension *script_instance_extension = memnew(ScriptInstanceExtension);
 	script_instance_extension->instance = p_instance_data;
@@ -1209,6 +1300,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(object_get_instance_id);
 	REGISTER_INTERFACE_FUNC(ref_get_object);
 	REGISTER_INTERFACE_FUNC(ref_set_object);
+	REGISTER_INTERFACE_FUNC(callable_custom_create);
 	REGISTER_INTERFACE_FUNC(script_instance_create);
 	REGISTER_INTERFACE_FUNC(classdb_construct_object);
 	REGISTER_INTERFACE_FUNC(classdb_get_method_bind);
