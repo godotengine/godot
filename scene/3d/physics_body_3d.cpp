@@ -1780,7 +1780,7 @@ const Vector3 &CharacterBody3D::get_last_motion() const {
 }
 
 Vector3 CharacterBody3D::get_position_delta() const {
-	return get_transform().origin - previous_position;
+	return get_global_transform().origin - previous_position;
 }
 
 const Vector3 &CharacterBody3D::get_real_velocity() const {
