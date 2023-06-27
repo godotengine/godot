@@ -449,6 +449,7 @@ public:
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const = 0;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) = 0;
 	virtual uint32_t skeleton_get_revision(RID p_skeleton) const = 0;
+	virtual void skeleton_attach_canvas_item(RID p_skeleton, RID p_canvas_item, bool p_attach) = 0;
 
 	/* Light API */
 
@@ -985,6 +986,7 @@ public:
 		bool light_masked : 1;
 		mutable bool custom_rect : 1;
 		mutable bool rect_dirty : 1;
+		mutable bool bound_dirty : 1;
 
 		Vector<Command *> commands;
 		mutable Rect2 rect;
@@ -1024,6 +1026,10 @@ public:
 		void precalculate_polygon_bone_bounds(const Item::CommandPolygon &p_polygon) const;
 
 	public:
+		// the rect containing this item and all children,
+		// in local space.
+		Rect2 local_bound;
+
 		const Rect2 &get_rect() const {
 			if (custom_rect) {
 				return rect;
@@ -1201,6 +1207,7 @@ public:
 			final_modulate = Color(1, 1, 1, 1);
 			visible = true;
 			rect_dirty = true;
+			bound_dirty = true;
 			custom_rect = false;
 			behind = false;
 			material_owner = nullptr;

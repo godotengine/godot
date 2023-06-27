@@ -1009,6 +1009,7 @@ public:
 
 	virtual RID canvas_item_create() = 0;
 	virtual void canvas_item_set_parent(RID p_item, RID p_parent) = 0;
+	virtual void canvas_item_set_name(RID p_item, String p_name) = 0;
 
 	virtual void canvas_item_set_visible(RID p_item, bool p_visible) = 0;
 	virtual void canvas_item_set_light_mask(RID p_item, int p_mask) = 0;

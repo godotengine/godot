@@ -147,6 +147,7 @@ public:
 	NodePath get_skeleton() const;
 
 	Polygon2D();
+	virtual ~Polygon2D();
 };
 
 #endif // POLYGON_2D_H

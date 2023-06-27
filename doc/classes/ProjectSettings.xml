@@ -1446,6 +1446,10 @@
 			[b]Experimental.[/b] If set to on, uses the [code]GL_STREAM_DRAW[/code] flag for legacy buffer uploads. If off, uses the [code]GL_DYNAMIC_DRAW[/code] flag.
 			[b]Note:[/b] Use with care. You are advised to leave this as default for exports. A non-default setting that works better on your machine may adversely affect performance for end users.
 		</member>
+		<member name="rendering/2d/options/culling_mode" type="int" setter="" getter="" default="1">
+			The culling mode determines the method used for rejecting canvas items that are outside a viewport. The visual result should be identical, but some modes may be faster for a particular project.
+			You can either cull items individually ([code]Item mode[/code]), or use hierarchical culling ([code]Node mode[/code]) which has a little more housekeeping but can increase performance by culling large numbers of items at once.
+		</member>
 		<member name="rendering/2d/options/ninepatch_mode" type="int" setter="" getter="" default="1">
 			Choose between fixed mode where corner scalings are preserved matching the artwork, and scaling mode.
 			Not available in GLES3 when [member rendering/batching/options/use_batching] is off.

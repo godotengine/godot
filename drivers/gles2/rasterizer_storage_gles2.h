@@ -903,6 +903,7 @@ public:
 		Set<RasterizerScene::InstanceBase *> instances;
 
 		Transform2D base_transform_2d;
+		LocalVector<RID> linked_canvas_items;
 
 		Skeleton() :
 				use_2d(false),
@@ -928,6 +929,7 @@ public:
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
 	virtual uint32_t skeleton_get_revision(RID p_skeleton) const;
+	virtual void skeleton_attach_canvas_item(RID p_skeleton, RID p_canvas_item, bool p_attach);
 
 	void _update_skeleton_transform_buffer(const PoolVector<float> &p_data, size_t p_size);
 

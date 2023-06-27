@@ -240,6 +240,10 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+#ifdef DEV_ENABLED
+	virtual void _name_changed_notify();
+#endif
+
 public:
 	enum {
 		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED, //unique

@@ -37,6 +37,8 @@
 #include "main/main.h"
 #include "rasterizer_canvas_gles3.h"
 #include "rasterizer_scene_gles3.h"
+#include "servers/visual/visual_server_canvas.h"
+#include "servers/visual/visual_server_globals.h"
 #include "servers/visual_server.h"
 
 #if defined(IPHONE_ENABLED) || defined(ANDROID_ENABLED)
@@ -5314,6 +5316,20 @@ void RasterizerStorageGLES3::skeleton_set_base_transform_2d(RID p_skeleton, cons
 	skeleton->base_transform_2d = p_base_transform;
 }
 
+void RasterizerStorageGLES3::skeleton_attach_canvas_item(RID p_skeleton, RID p_canvas_item, bool p_attach) {
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+	ERR_FAIL_NULL(skeleton);
+	ERR_FAIL_COND(!p_canvas_item.is_valid());
+
+	if (p_attach) {
+		skeleton->linked_canvas_items.push_back(p_canvas_item);
+	} else {
+		int64_t found = skeleton->linked_canvas_items.find(p_canvas_item);
+		ERR_FAIL_COND(found == -1);
+		skeleton->linked_canvas_items.remove_unordered(found);
+	}
+}
+
 uint32_t RasterizerStorageGLES3::skeleton_get_revision(RID p_skeleton) const {
 	const Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 	ERR_FAIL_COND_V(!skeleton, 0);
@@ -5321,6 +5337,24 @@ uint32_t RasterizerStorageGLES3::skeleton_get_revision(RID p_skeleton) const {
 }
 
 void RasterizerStorageGLES3::update_dirty_skeletons() {
+	// 2D Skeletons always need to update the polygons so they
+	// know the bounds have changed.
+	// TODO : Could we have a separate list for 2D only?
+	SelfList<Skeleton> *ele = skeleton_update_list.first();
+
+	while (ele) {
+		Skeleton *skeleton = ele->self();
+
+		int num_linked = skeleton->linked_canvas_items.size();
+		for (int n = 0; n < num_linked; n++) {
+			const RID &rid = skeleton->linked_canvas_items[n];
+			VSG::canvas->_canvas_item_skeleton_moved(rid);
+		}
+
+		ele = ele->next();
+	}
+
+	// TODO : Is this update necessary for 2D software skinning?
 	glActiveTexture(GL_TEXTURE0);
 
 	while (skeleton_update_list.first()) {

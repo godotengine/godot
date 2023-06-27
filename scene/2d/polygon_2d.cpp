@@ -96,6 +96,15 @@ void Polygon2D::_skeleton_bone_setup_changed() {
 
 void Polygon2D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			// Must re-establish any existing links with skeletons on re-entering the tree.
+			update();
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			// Always detach skeleton when exiting the tree, so skeletons don't inform
+			// Polygon2Ds outside the tree that they have moved (this would be useless work).
+			VS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), RID());
+		} break;
 		case NOTIFICATION_DRAW: {
 			if (polygon.size() < 3) {
 				return;
@@ -664,4 +673,12 @@ Polygon2D::Polygon2D() {
 	rect_cache_dirty = true;
 	internal_vertices = 0;
 	current_skeleton_id = 0;
+}
+
+Polygon2D::~Polygon2D() {
+	// Most definitely don't want to leave references to this deleted canvas item
+	// in the skeleton.
+	if (get_canvas_item().is_valid()) {
+		VS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), RID());
+	}
 }

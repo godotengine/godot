@@ -35,6 +35,8 @@
 #include "rasterizer_canvas_gles2.h"
 #include "rasterizer_scene_gles2.h"
 #include "servers/visual/shader_language.h"
+#include "servers/visual/visual_server_canvas.h"
+#include "servers/visual/visual_server_globals.h"
 
 GLuint RasterizerStorageGLES2::system_fbo = 0;
 
@@ -3772,6 +3774,20 @@ void RasterizerStorageGLES2::skeleton_set_base_transform_2d(RID p_skeleton, cons
 	skeleton->base_transform_2d = p_base_transform;
 }
 
+void RasterizerStorageGLES2::skeleton_attach_canvas_item(RID p_skeleton, RID p_canvas_item, bool p_attach) {
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+	ERR_FAIL_NULL(skeleton);
+	ERR_FAIL_COND(!p_canvas_item.is_valid());
+
+	if (p_attach) {
+		skeleton->linked_canvas_items.push_back(p_canvas_item);
+	} else {
+		int64_t found = skeleton->linked_canvas_items.find(p_canvas_item);
+		ERR_FAIL_COND(found == -1);
+		skeleton->linked_canvas_items.remove_unordered(found);
+	}
+}
+
 uint32_t RasterizerStorageGLES2::skeleton_get_revision(RID p_skeleton) const {
 	const Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 	ERR_FAIL_COND_V(!skeleton, 0);
@@ -4101,6 +4117,23 @@ void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const PoolVector<
 }
 
 void RasterizerStorageGLES2::update_dirty_skeletons() {
+	// 2D Skeletons always need to update the polygons so they
+	// know the bounds have changed.
+	// TODO : Could we have a separate list for 2D only?
+	SelfList<Skeleton> *ele = skeleton_update_list.first();
+
+	while (ele) {
+		Skeleton *skeleton = ele->self();
+
+		int num_linked = skeleton->linked_canvas_items.size();
+		for (int n = 0; n < num_linked; n++) {
+			const RID &rid = skeleton->linked_canvas_items[n];
+			VSG::canvas->_canvas_item_skeleton_moved(rid);
+		}
+
+		ele = ele->next();
+	}
+
 	if (config.use_skeleton_software) {
 		return;
 	}

@@ -39,6 +39,7 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 #include "scene/scene_string_names.h"
+#include "servers/visual/visual_server_constants.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual_server.h"
 
@@ -612,6 +613,17 @@ void CanvasItem::_notification(int p_what) {
 		} break;
 	}
 }
+
+#ifdef DEV_ENABLED
+void CanvasItem::_name_changed_notify() {
+	// Even in DEV builds, there is no point in calling this unless we are debugging
+	// canvas item names. Even calling the stub function will be expensive, as there
+	// are a lot of canvas items.
+#ifdef VISUAL_SERVER_CANVAS_DEBUG_ITEM_NAMES
+	VisualServer::get_singleton()->canvas_item_set_name(canvas_item, get_name());
+#endif
+}
+#endif
 
 void CanvasItem::update() {
 	if (!is_inside_tree()) {
