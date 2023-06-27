@@ -53,6 +53,7 @@ jobs:
             cache-name: linux-editor-llvm-sanitizers
             target: editor
             sconsflags: dev_build=yes use_asan=yes use_ubsan=yes use_llvm=yes linker=lld
+            import-test: true
             bin: "./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san"
             build-mono: false
             tests: true
@@ -182,6 +183,12 @@ jobs:
       - name: Test Godot project
         uses: ./.github/actions/godot-project-test
         if: ${{ matrix.proj-test }}
+        with:
+          bin: ${{ matrix.bin }}
+
+      - name: Test Godot importer
+        uses: ./.github/actions/godot-import-test
+        if: ${{ matrix.import-test }}
         with:
           bin: ${{ matrix.bin }}
 

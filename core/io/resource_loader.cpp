@@ -270,15 +270,13 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		return res;
 	}
 
-	ERR_FAIL_COND_V_MSG(found, Ref<Resource>(),
-			vformat("Failed loading resource: %s. Make sure resources have been imported by opening the project in the editor at least once.", p_path));
-
 #ifdef TOOLS_ENABLED
 	Ref<FileAccess> file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
 	ERR_FAIL_COND_V_MSG(!file_check->file_exists(p_path), Ref<Resource>(), vformat("Resource file not found: %s (expected type: %s)", p_path, p_type_hint));
 #endif
 
-	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("No loader found for resource: %s (expected type: %s)", p_path, p_type_hint));
+	ERR_FAIL_COND_V_MSG(!found, Ref<Resource>(), vformat("No loader found for resource: %s (expected type: %s)", p_path, p_type_hint));
+	ERR_FAIL_V_MSG(Ref<Resource>(), "Could not load resource: " + p_path + ".");
 }
 
 void ResourceLoader::_thread_load_function(void *p_userdata) {

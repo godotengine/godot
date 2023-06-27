@@ -137,6 +137,17 @@ Ref<Resource> ResourceFormatImporter::load(const String &p_path, const String &p
 	}
 
 	Ref<Resource> res = ResourceLoader::_load(pat.path, p_path, pat.type, p_cache_mode, r_error, p_use_sub_threads, r_progress);
+	if (res.is_null()) {
+		// Filename has already been printed in _load().
+		ERR_PRINT("Make sure resources have been imported by opening the project in the editor at least once.");
+
+#ifdef DEV_ENABLED
+		if (!Engine::get_singleton()->is_editor_hint()) {
+			// EXIT_FAILURE to assist CI.
+			OS::get_singleton()->set_exit_code(EXIT_FAILURE);
+		}
+#endif
+	}
 
 #ifdef TOOLS_ENABLED
 	if (res.is_valid()) {

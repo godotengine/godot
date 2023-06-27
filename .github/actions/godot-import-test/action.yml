@@ -1,0 +1,33 @@
+name: Test Godot importer
+description: Test the Godot asset importing process.
+inputs:
+  bin:
+    description: The path to the Godot executable
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Download test assets
+      shell: sh
+      env:
+        # Pinned to prevent godot-demo-projects from breaking CI. Update this regularly.
+        DEMO_COMMIT: 5867e5e9314272dceaf9359ce4b758ab60a30951
+      run: |
+        wget https://github.com/godotengine/godot-demo-projects/archive/$DEMO_COMMIT.zip
+        unzip $DEMO_COMMIT.zip
+        mv "godot-demo-projects-$DEMO_COMMIT" "godot-demo-projects"
+
+    - name: Import and export test assets
+      shell: sh
+      env:
+        ASAN_OPTIONS: detect_leaks=0
+        LSAN_OPTIONS: max_leaks=5
+        GODOT_BINARY: ${{ inputs.bin }}
+      # Importing currently takes over one minute per project,
+      # so we limit the number of projects tested to avoid locking up CI.
+      run: |
+        #./misc/scripts/import_test.sh import godot-demo-projects/2d/*/project.godot
+        #./misc/scripts/import_test.sh export godot-demo-projects/3d/*/project.godot
+
+        ./misc/scripts/import_test.sh import godot-demo-projects/2d/physics_platformer/project.godot
+        ./misc/scripts/import_test.sh export godot-demo-projects/3d/decals/project.godot

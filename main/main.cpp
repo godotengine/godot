@@ -477,6 +477,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --main-loop <main_loop_name>      Run a MainLoop specified by its global class name.\n");
 	OS::get_singleton()->print("  --check-only                      Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
+	OS::get_singleton()->print("  --import                          (Re)import all resources and quit. Useful for CI/CD.\n");
 	OS::get_singleton()->print("  --export-release <preset> <path>  Export the project in release mode using the given preset and output path. The preset name should match one defined in export_presets.cfg.\n");
 	OS::get_singleton()->print("                                    <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe').\n");
 	OS::get_singleton()->print("                                    The target directory must exist.\n");
@@ -1234,8 +1235,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 
-		} else if (I->get() == "--export-release" || I->get() == "--export-debug" ||
-				I->get() == "--export-pack") { // Export project
+		} else if (
+				I->get() == "--export-release" ||
+				I->get() == "--export-debug" ||
+				I->get() == "--export-pack" || // Export project.
+				I->get() == "--import" // Import assets.
+		) {
+			// Currently causes regressions in some situations if enabled.
+			// See:    GH-55711    GH-66842    GH-43752
+			//audio_driver = NULL_AUDIO_DRIVER;
+			//display_driver = NULL_DISPLAY_DRIVER;
+
 			// Actually handling is done in start().
 			editor = true;
 			cmdline_tool = true;
@@ -2690,6 +2700,18 @@ bool Main::start() {
 			} else if (args[i] == "--gdscript-docs") {
 				gdscript_docs_path = args[i + 1];
 #endif
+			} else if (args[i] == "--import") {
+				// TODO: Currently implemented as --export-pack <null> /dev/null
+				// This should be the other way around,
+				// --export should enable --import and wait for it to finish.
+
+				editor = true;
+				export_pack_only = true;
+
+				_export_preset = "<null>";
+				positional_arg = "/dev/null";
+
+				parsed_pair = false;
 			} else if (args[i] == "--export-release") {
 				editor = true; //needs editor
 				_export_preset = args[i + 1];

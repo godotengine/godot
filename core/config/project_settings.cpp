@@ -620,6 +620,15 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
 	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
+
+#ifdef DEV_ENABLED
+	if (err == ERR_CANT_OPEN) {
+		// Abort to assist CI.
+		OS::get_singleton()->set_exit_code(EXIT_FAILURE);
+		ERR_FAIL_V_MSG(FAILED, "No project found, aborting.");
+	}
+#endif
+
 	if (err == OK && !p_ignore_override) {
 		String custom_settings = GLOBAL_GET("application/config/project_settings_override");
 		if (!custom_settings.is_empty()) {

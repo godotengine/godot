@@ -942,6 +942,15 @@ void EditorNode::_fs_changed() {
 		// Ensures export_project does not loop infinitely, because notifications may
 		// come during the export.
 		export_defer.preset = "";
+
+		// TODO: --import is currently implemented as --export-pack <null> /dev/null
+		// This should be the other way around,
+		// --export should enable --import and wait for it to finish.
+		if ((preset_name == "<null>") && (export_defer.path == "/dev/null")) {
+			_exit_editor(EXIT_SUCCESS);
+			return;
+		}
+
 		Ref<EditorExportPreset> export_preset;
 		for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); ++i) {
 			export_preset = EditorExport::get_singleton()->get_export_preset(i);
