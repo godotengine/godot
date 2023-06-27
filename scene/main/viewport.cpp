@@ -2937,10 +2937,6 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (disable_input) {
-		return;
-	}
-
 	if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(this)) {
 		return;
 	}
@@ -2997,7 +2993,7 @@ void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local
 
 	local_input_handled = false;
 
-	if (disable_input || !_can_consume_input_events()) {
+	if (!_can_consume_input_events()) {
 		return;
 	}
 

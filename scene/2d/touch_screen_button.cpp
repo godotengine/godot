@@ -315,7 +315,7 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 
 	if (action != StringName()) {
 		Input::get_singleton()->action_release(action);
-		if (!p_exiting_tree) {
+		if (!p_exiting_tree && !get_viewport()->is_input_disabled()) {
 			Ref<InputEventAction> iea;
 			iea.instantiate();
 			iea->set_action(action);

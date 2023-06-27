@@ -262,7 +262,7 @@
 			The global canvas transform of the viewport. The canvas transform is relative to this.
 		</member>
 		<member name="gui_disable_input" type="bool" setter="set_disable_input" getter="is_input_disabled" default="false">
-			If [code]true[/code], the viewport will not receive input events.
+			If [code]true[/code], the viewport will not receive input events. Inputs from [method push_input] will still be taken.
 		</member>
 		<member name="gui_embed_subwindows" type="bool" setter="set_embedding_subwindows" getter="is_embedding_subwindows" default="false">
 			If [code]true[/code], sub-windows (popups and dialogs) will be embedded inside application window as control-like nodes. If [code]false[/code], they will appear as separate windows handled by the operating system.

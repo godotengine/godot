@@ -723,6 +723,11 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 
 void Window::update_mouse_cursor_state() {
 	ERR_MAIN_THREAD_GUARD;
+
+	if (is_input_disabled()) {
+		return;
+	}
+
 	// Update states based on mouse cursor position.
 	// This includes updated mouse_enter or mouse_exit signals or the current mouse cursor shape.
 	// These details are set in Viewport::_gui_input_event. To instantly
