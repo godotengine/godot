@@ -933,9 +933,11 @@ void Node::set_process_thread_group_order(int p_order) {
 	if (data.process_thread_group_order == p_order) {
 		return;
 	}
-	// Make sure we are in SceneTree and an actual process owner
+
+	data.process_thread_group_order = p_order;
+
+	// Not yet in the tree (or not a group owner, in whose case this is pointless but harmless); trivial update.
 	if (!is_inside_tree() || data.process_thread_group_owner != this) {
-		data.process_thread_group_order = p_order;
 		return;
 	}
 
@@ -951,8 +953,8 @@ void Node::set_process_priority(int p_priority) {
 	if (data.process_priority == p_priority) {
 		return;
 	}
-	// Make sure we are in SceneTree and an actual process owner
 	if (!is_inside_tree()) {
+		// Not yet in the tree; trivial update.
 		data.process_priority = p_priority;
 		return;
 	}
@@ -973,8 +975,8 @@ void Node::set_physics_process_priority(int p_priority) {
 	if (data.physics_process_priority == p_priority) {
 		return;
 	}
-	// Make sure we are in SceneTree and an actual physics_process owner
 	if (!is_inside_tree()) {
+		// Not yet in the tree; trivial update.
 		data.physics_process_priority = p_priority;
 		return;
 	}
@@ -997,11 +999,11 @@ void Node::set_process_thread_group(ProcessThreadGroup p_mode) {
 	}
 
 	if (!is_inside_tree()) {
+		// Not yet in the tree; trivial update.
 		data.process_thread_group = p_mode;
 		return;
 	}
 
-	// Mode changed, must update everything.
 	_remove_tree_from_process_thread_group();
 	if (data.process_thread_group != PROCESS_THREAD_GROUP_INHERIT) {
 		_remove_process_group();
@@ -1031,7 +1033,7 @@ Node::ProcessThreadGroup Node::get_process_thread_group() const {
 
 void Node::set_process_thread_messages(BitField<ProcessThreadMessages> p_flags) {
 	ERR_THREAD_GUARD
-	if (data.process_thread_group_order == p_flags) {
+	if (data.process_thread_messages == p_flags) {
 		return;
 	}
 
