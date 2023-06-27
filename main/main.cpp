@@ -2607,6 +2607,7 @@ void Main::cleanup(bool p_force) {
 
 	OS::get_singleton()->finalize_core();
 
+	AllocationTracking::report("Final Report");
 #ifdef RID_HANDLES_ENABLED
 	g_rid_database.shutdown();
 #endif

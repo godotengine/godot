@@ -562,6 +562,7 @@ void SceneTree::iteration_end() {
 }
 
 bool SceneTree::iteration(float p_time) {
+	AllocationTracking::tick_update();
 	root_lock++;
 
 	current_frame++;
@@ -616,6 +617,7 @@ bool SceneTree::idle(float p_time) {
 	//print_line("node count: "+itos(get_node_count()));
 	//print_line("TEXTURE RAM: "+itos(VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED)));
 
+	AllocationTracking::frame_update();
 	root_lock++;
 
 	MainLoop::idle(p_time);

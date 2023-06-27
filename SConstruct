@@ -155,6 +155,7 @@ opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and be
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", True))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
+opts.Add(BoolVariable("use_allocation_tracking", "Build with allocation tracking (debug option)", False))
 opts.Add(
     EnumVariable(
         "rids",
@@ -366,6 +367,10 @@ if env_base["rids"] == "tracked_handles":
     env_base.Append(CPPDEFINES=["RID_HANDLES_ENABLED"])
     env_base.Append(CPPDEFINES=["RID_HANDLE_ALLOCATION_TRACKING_ENABLED"])
     print("WARNING: Building with RIDs as tracked handles.")
+
+if env_base["use_allocation_tracking"]:
+    env_base.Append(CPPDEFINES=["ALLOCATION_TRACKING_ENABLED"])
+    print("WARNING: Building with allocation tracking.")
 
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform

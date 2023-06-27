@@ -65,6 +65,23 @@ SafeNumeric<uint64_t> Memory::max_usage;
 
 SafeNumeric<uint64_t> Memory::alloc_count;
 
+#ifdef ALLOCATION_TRACKING_ENABLED
+void *Memory::alloc_static_tracked(size_t p_bytes, const char *p_filename, int p_line, bool p_pad_align) {
+	void *addr = alloc_static(p_bytes, p_pad_align);
+	AllocationTracking::add_alloc(addr, p_bytes, p_filename, p_line);
+	return addr;
+}
+
+void *Memory::realloc_static_tracked(void *p_memory, size_t p_bytes, const char *p_filename, int p_line, bool p_pad_align) {
+	if (p_memory == nullptr) {
+		return alloc_static_tracked(p_bytes, p_filename, p_line, p_pad_align);
+	}
+
+	return realloc_static(p_memory, p_bytes, p_pad_align);
+}
+
+#endif
+
 void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 #ifdef DEBUG_ENABLED
 	bool prepad = true;
@@ -98,6 +115,10 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 	if (p_memory == nullptr) {
 		return alloc_static(p_bytes, p_pad_align);
 	}
+
+#ifdef ALLOCATION_TRACKING_ENABLED
+	AllocationTracking::realloc(p_memory, p_bytes);
+#endif
 
 	uint8_t *mem = (uint8_t *)p_memory;
 
@@ -146,6 +167,10 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 
 void Memory::free_static(void *p_ptr, bool p_pad_align) {
 	ERR_FAIL_COND(p_ptr == nullptr);
+
+#ifdef ALLOCATION_TRACKING_ENABLED
+	AllocationTracking::remove_alloc(p_ptr);
+#endif
 
 	uint8_t *mem = (uint8_t *)p_ptr;
 

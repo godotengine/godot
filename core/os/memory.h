@@ -32,6 +32,7 @@
 #define MEMORY_H
 
 #include "core/error_macros.h"
+#include "core/os/memory_tracker.h"
 #include "core/safe_refcount.h"
 
 #include <stddef.h>
@@ -50,6 +51,10 @@ class Memory {
 	static SafeNumeric<uint64_t> alloc_count;
 
 public:
+#ifdef ALLOCATION_TRACKING_ENABLED
+	static void *alloc_static_tracked(size_t p_bytes, const char *p_filename, int p_line, bool p_pad_align = false);
+	static void *realloc_static_tracked(void *p_memory, size_t p_bytes, const char *p_filename, int p_line, bool p_pad_align = false);
+#endif
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);
 	static void *realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align = false);
 	static void free_static(void *p_ptr, bool p_pad_align = false);
@@ -61,7 +66,12 @@ public:
 
 class DefaultAllocator {
 public:
+#ifdef ALLOCATION_TRACKING_ENABLED
+	// This kind of sucks because the tracking will only tell us the DefaultAllocator file, but is better than nothing...
+	_FORCE_INLINE_ static void *alloc(size_t p_memory) { return Memory::alloc_static_tracked(p_memory, __FILE__, __LINE__, false); }
+#else
 	_FORCE_INLINE_ static void *alloc(size_t p_memory) { return Memory::alloc_static(p_memory, false); }
+#endif
 	_FORCE_INLINE_ static void free(void *p_ptr) { Memory::free_static(p_ptr, false); }
 };
 
@@ -78,8 +88,13 @@ void operator delete(void *p_mem, void *(*p_allocfunc)(size_t p_size));
 void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_description);
 #endif
 
+#ifdef ALLOCATION_TRACKING_ENABLED
+#define memalloc(m_size) Memory::alloc_static_tracked(m_size, __FILE__, __LINE__)
+#define memrealloc(m_mem, m_size) Memory::realloc_static_tracked(m_mem, m_size, __FILE__, __LINE__)
+#else
 #define memalloc(m_size) Memory::alloc_static(m_size)
 #define memrealloc(m_mem, m_size) Memory::realloc_static(m_mem, m_size)
+#endif
 #define memfree(m_mem) Memory::free_static(m_mem)
 
 _ALWAYS_INLINE_ void postinitialize_handler(void *) {}
@@ -90,7 +105,18 @@ _ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
 	return p_obj;
 }
 
+#ifdef ALLOCATION_TRACKING_ENABLED
+
+template <class T>
+_ALWAYS_INLINE_ T *_post_initialize_tracked(T *p_obj, const char *p_filename, int p_line) {
+	postinitialize_handler(p_obj);
+	AllocationTracking::add_alloc(p_obj, sizeof(T), p_filename, p_line);
+	return p_obj;
+}
+#define memnew(m_class) _post_initialize_tracked(new ("") m_class, __FILE__, __LINE__)
+#else
 #define memnew(m_class) _post_initialize(new ("") m_class)
+#endif
 
 _ALWAYS_INLINE_ void *operator new(size_t p_size, void *p_pointer, size_t check, const char *p_description) {
 	//void *failptr=0;
@@ -108,6 +134,9 @@ _ALWAYS_INLINE_ bool predelete_handler(void *) {
 
 template <class T>
 void memdelete(T *p_class) {
+#ifdef ALLOCATION_TRACKING_ENABLED
+	AllocationTracking::remove_alloc(p_class);
+#endif
 	if (!predelete_handler(p_class)) {
 		return; // doesn't want to be deleted
 	}
@@ -136,10 +165,18 @@ void memdelete_allocator(T *p_class) {
 			memdelete(m_v);    \
 	}
 
+#ifdef ALLOCATION_TRACKING_ENABLED
+#define memnew_arr(m_class, m_count) memnew_arr_template<m_class>(m_count, __FILE__, __LINE__)
+#else
 #define memnew_arr(m_class, m_count) memnew_arr_template<m_class>(m_count)
+#endif
 
 template <typename T>
+#ifdef ALLOCATION_TRACKING_ENABLED
+T *memnew_arr_template(size_t p_elements, const char *p_filename, int p_line, const char *p_descr = "") {
+#else
 T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
+#endif
 	if (p_elements == 0) {
 		return nullptr;
 	}
@@ -147,7 +184,11 @@ T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
 	same strategy used by std::vector, and the PoolVector class, so it should be safe.*/
 
 	size_t len = sizeof(T) * p_elements;
+#ifdef ALLOCATION_TRACKING_ENABLED
+	uint64_t *mem = (uint64_t *)Memory::alloc_static_tracked(len, p_filename, p_line, true);
+#else
 	uint64_t *mem = (uint64_t *)Memory::alloc_static(len, true);
+#endif
 	T *failptr = nullptr; //get rid of a warning
 	ERR_FAIL_COND_V(!mem, failptr);
 	*(mem - 1) = p_elements;
