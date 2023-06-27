@@ -274,7 +274,7 @@ public:
 		Vector<Variant> defargs;
 		defargs.resize(p_method_info->default_argument_count);
 		for (uint32_t i = 0; i < p_method_info->default_argument_count; i++) {
-			defargs.write[i] = *static_cast<Variant *>(p_method_info->default_arguments[i]);
+			defargs.write[i] = *reinterpret_cast<Variant *>(p_method_info->default_arguments[i]);
 		}
 
 		set_default_arguments(defargs);
@@ -467,7 +467,7 @@ Error GDExtension::open_library(const String &p_path, const String &p_entry_symb
 	}
 
 	GDExtensionInitializationFunction initialization_function = (GDExtensionInitializationFunction)entry_funcptr;
-	GDExtensionBool ret = initialization_function(&gdextension_get_proc_address, this, &initialization);
+	GDExtensionBool ret = initialization_function(&gdextension_get_proc_address, reinterpret_cast<GDExtensionClassLibraryPtr>(this), &initialization);
 
 	if (ret) {
 		level_initialized = -1;

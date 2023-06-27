@@ -155,27 +155,45 @@ typedef enum {
 // - Some types have no destructor (see `extension_api.json`'s `has_destructor` field), for
 //   them it is always safe to skip the constructor for the return value if you are in a hurry ;-)
 
-typedef void *GDExtensionVariantPtr;
-typedef const void *GDExtensionConstVariantPtr;
-typedef void *GDExtensionUninitializedVariantPtr;
-typedef void *GDExtensionStringNamePtr;
-typedef const void *GDExtensionConstStringNamePtr;
-typedef void *GDExtensionUninitializedStringNamePtr;
-typedef void *GDExtensionStringPtr;
-typedef const void *GDExtensionConstStringPtr;
-typedef void *GDExtensionUninitializedStringPtr;
-typedef void *GDExtensionObjectPtr;
-typedef const void *GDExtensionConstObjectPtr;
-typedef void *GDExtensionUninitializedObjectPtr;
-typedef void *GDExtensionTypePtr;
-typedef const void *GDExtensionConstTypePtr;
-typedef void *GDExtensionUninitializedTypePtr;
-typedef const void *GDExtensionMethodBindPtr;
+#define GDEXTENSION_OPAQUE_PTR(type) \
+	typedef struct GDExtensionOpaque##type *GDExtension##type##Ptr;
+
+#define GDEXTENSION_CONST_OPAQUE_PTR(type) \
+	typedef const struct GDExtensionOpaque##type *GDExtensionConst##type##Ptr;
+
+#define GDEXTENSION_UNINITIALIZED_OPAQUE_PTR(type) \
+	typedef struct GDExtensionUninitialized##type *GDExtensionUninitialized##type##Ptr;
+
+GDEXTENSION_OPAQUE_PTR(Variant)
+GDEXTENSION_CONST_OPAQUE_PTR(Variant)
+GDEXTENSION_UNINITIALIZED_OPAQUE_PTR(Variant)
+
+GDEXTENSION_OPAQUE_PTR(StringName)
+GDEXTENSION_CONST_OPAQUE_PTR(StringName)
+GDEXTENSION_UNINITIALIZED_OPAQUE_PTR(StringName)
+
+GDEXTENSION_OPAQUE_PTR(String)
+GDEXTENSION_CONST_OPAQUE_PTR(String)
+GDEXTENSION_UNINITIALIZED_OPAQUE_PTR(String)
+
+GDEXTENSION_OPAQUE_PTR(Object)
+GDEXTENSION_CONST_OPAQUE_PTR(Object)
+GDEXTENSION_UNINITIALIZED_OPAQUE_PTR(Object)
+
+GDEXTENSION_OPAQUE_PTR(Type)
+GDEXTENSION_CONST_OPAQUE_PTR(Type)
+GDEXTENSION_UNINITIALIZED_OPAQUE_PTR(Type)
+
+GDEXTENSION_CONST_OPAQUE_PTR(MethodBind)
+
 typedef int64_t GDExtensionInt;
 typedef uint8_t GDExtensionBool;
+typedef double GDExtensionFloat;
+
 typedef uint64_t GDObjectInstanceID;
-typedef void *GDExtensionRefPtr;
-typedef const void *GDExtensionConstRefPtr;
+
+GDEXTENSION_OPAQUE_PTR(Ref)
+GDEXTENSION_CONST_OPAQUE_PTR(Ref)
 
 /* VARIANT DATA I/O */
 
@@ -195,8 +213,8 @@ typedef struct {
 	int32_t expected;
 } GDExtensionCallError;
 
-typedef void (*GDExtensionVariantFromTypeConstructorFunc)(GDExtensionUninitializedVariantPtr, GDExtensionTypePtr);
-typedef void (*GDExtensionTypeFromVariantConstructorFunc)(GDExtensionUninitializedTypePtr, GDExtensionVariantPtr);
+typedef void (*GDExtensionVariantFromTypeConstructorFunc)(GDExtensionUninitializedVariantPtr, GDExtensionConstTypePtr);
+typedef void (*GDExtensionTypeFromVariantConstructorFunc)(GDExtensionUninitializedTypePtr, GDExtensionConstVariantPtr);
 typedef void (*GDExtensionPtrOperatorEvaluator)(GDExtensionConstTypePtr p_left, GDExtensionConstTypePtr p_right, GDExtensionTypePtr r_result);
 typedef void (*GDExtensionPtrBuiltInMethod)(GDExtensionTypePtr p_base, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_return, int p_argument_count);
 typedef void (*GDExtensionPtrConstructor)(GDExtensionUninitializedTypePtr p_base, const GDExtensionConstTypePtr *p_args);
@@ -224,7 +242,7 @@ typedef struct {
 
 /* EXTENSION CLASSES */
 
-typedef void *GDExtensionClassInstancePtr;
+GDEXTENSION_OPAQUE_PTR(ClassInstance)
 
 typedef GDExtensionBool (*GDExtensionClassSet)(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value);
 typedef GDExtensionBool (*GDExtensionClassGet)(GDExtensionClassInstancePtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret);
@@ -287,7 +305,7 @@ typedef struct {
 	void *class_userdata; // Per-class user data, later accessible in instance bindings.
 } GDExtensionClassCreationInfo;
 
-typedef void *GDExtensionClassLibraryPtr;
+GDEXTENSION_OPAQUE_PTR(ClassLibrary)
 
 /* Method */
 
@@ -345,7 +363,7 @@ typedef struct {
 
 /* SCRIPT INSTANCE EXTENSION */
 
-typedef void *GDExtensionScriptInstanceDataPtr; // Pointer to custom ScriptInstance native implementation.
+GDEXTENSION_OPAQUE_PTR(ScriptInstanceData) // Pointer to custom ScriptInstance native implementation.
 
 typedef GDExtensionBool (*GDExtensionScriptInstanceSet)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionConstVariantPtr p_value);
 typedef GDExtensionBool (*GDExtensionScriptInstanceGet)(GDExtensionScriptInstanceDataPtr p_instance, GDExtensionConstStringNamePtr p_name, GDExtensionVariantPtr r_ret);
@@ -375,13 +393,13 @@ typedef GDExtensionBool (*GDExtensionScriptInstanceRefCountDecremented)(GDExtens
 typedef GDExtensionObjectPtr (*GDExtensionScriptInstanceGetScript)(GDExtensionScriptInstanceDataPtr p_instance);
 typedef GDExtensionBool (*GDExtensionScriptInstanceIsPlaceholder)(GDExtensionScriptInstanceDataPtr p_instance);
 
-typedef void *GDExtensionScriptLanguagePtr;
+GDEXTENSION_OPAQUE_PTR(ScriptLanguage)
 
 typedef GDExtensionScriptLanguagePtr (*GDExtensionScriptInstanceGetLanguage)(GDExtensionScriptInstanceDataPtr p_instance);
 
 typedef void (*GDExtensionScriptInstanceFree)(GDExtensionScriptInstanceDataPtr p_instance);
 
-typedef void *GDExtensionScriptInstancePtr; // Pointer to ScriptInstance.
+GDEXTENSION_OPAQUE_PTR(ScriptInstance) // Pointer to ScriptInstance.
 
 typedef struct {
 	GDExtensionScriptInstanceSet set_func;
@@ -1940,7 +1958,7 @@ typedef GDExtensionVariantPtr (*GDExtensionInterfaceDictionaryOperatorIndexConst
  * @param r_ret A pointer to Variant which will receive the return value.
  * @param r_error A pointer to a GDExtensionCallError struct that will receive error information.
  */
-typedef void (*GDExtensionInterfaceObjectMethodBindCall)(GDExtensionMethodBindPtr p_method_bind, GDExtensionObjectPtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_arg_count, GDExtensionUninitializedVariantPtr r_ret, GDExtensionCallError *r_error);
+typedef void (*GDExtensionInterfaceObjectMethodBindCall)(GDExtensionConstMethodBindPtr p_method_bind, GDExtensionObjectPtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_arg_count, GDExtensionUninitializedVariantPtr r_ret, GDExtensionCallError *r_error);
 
 /**
  * @name object_method_bind_ptrcall
@@ -1953,7 +1971,7 @@ typedef void (*GDExtensionInterfaceObjectMethodBindCall)(GDExtensionMethodBindPt
  * @param p_args A pointer to a C array representing the arguments.
  * @param r_ret A pointer to the Object that will receive the return value.
  */
-typedef void (*GDExtensionInterfaceObjectMethodBindPtrcall)(GDExtensionMethodBindPtr p_method_bind, GDExtensionObjectPtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_ret);
+typedef void (*GDExtensionInterfaceObjectMethodBindPtrcall)(GDExtensionConstMethodBindPtr p_method_bind, GDExtensionObjectPtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr r_ret);
 
 /**
  * @name object_destroy
@@ -2135,7 +2153,7 @@ typedef GDExtensionObjectPtr (*GDExtensionInterfaceClassdbConstructObject)(GDExt
  *
  * @return A pointer to the MethodBind from ClassDB.
  */
-typedef GDExtensionMethodBindPtr (*GDExtensionInterfaceClassdbGetMethodBind)(GDExtensionConstStringNamePtr p_classname, GDExtensionConstStringNamePtr p_methodname, GDExtensionInt p_hash);
+typedef GDExtensionConstMethodBindPtr (*GDExtensionInterfaceClassdbGetMethodBind)(GDExtensionConstStringNamePtr p_classname, GDExtensionConstStringNamePtr p_methodname, GDExtensionInt p_hash);
 
 /**
  * @name classdb_get_class_tag

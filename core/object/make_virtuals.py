@@ -112,7 +112,7 @@ def generate_version(argcount, const=False, returns=False):
         callptrargs += (
             "PtrToArg<m_type" + str(i + 1) + ">::EncodeT argval" + str(i + 1) + " = arg" + str(i + 1) + ";\\\n"
         )
-        callptrargsptr += "&argval" + str(i + 1)
+        callptrargsptr += "reinterpret_cast<GDExtensionConstTypePtr>(&argval" + str(i + 1) + ")"
         method_info += "\tmethod_info.arguments.push_back(GetTypeInfo<m_type" + str(i + 1) + ">::get_class_info());\\\n"
         method_info += (
             "\tmethod_info.arguments_metadata.push_back(GetTypeInfo<m_type" + str(i + 1) + ">::METADATA);\\\n"
@@ -138,7 +138,7 @@ def generate_version(argcount, const=False, returns=False):
         callargtext += " m_ret& r_ret"
         s = s.replace("$CALLSIBEGIN", "Variant ret = ")
         s = s.replace("$CALLSIRET", "r_ret = VariantCaster<m_ret>::cast(ret);")
-        s = s.replace("$CALLPTRRETPASS", "&ret")
+        s = s.replace("$CALLPTRRETPASS", "reinterpret_cast<GDExtensionTypePtr>(&ret)")
         s = s.replace("$CALLPTRRET", "r_ret = (m_ret)ret;")
     else:
         s = s.replace("$CALLSIBEGIN", "")

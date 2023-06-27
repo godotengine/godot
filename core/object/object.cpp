@@ -815,7 +815,7 @@ String Object::to_string() {
 	if (_extension && _extension->to_string) {
 		String ret;
 		GDExtensionBool is_valid;
-		_extension->to_string(_extension_instance, &is_valid, &ret);
+		_extension->to_string(_extension_instance, &is_valid, reinterpret_cast<GDExtensionStringPtr>(&ret));
 		return ret;
 	}
 	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
