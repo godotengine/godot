@@ -170,6 +170,9 @@ Ref<Image> ViewportTexture::get_image() const {
 }
 
 void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
+	// Always reset this, even if this call fails with an error.
+	vp_pending = false;
+
 	Node *vpn = p_loc_scene->get_node_or_null(path);
 	ERR_FAIL_NULL_MSG(vpn, "Path to node is invalid: '" + path + "'.");
 	vp = Object::cast_to<Viewport>(vpn);
@@ -186,7 +189,6 @@ void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
 		ERR_FAIL_COND(proxy.is_valid()); // Should be invalid.
 		proxy = RS::get_singleton()->texture_proxy_create(vp->texture_rid);
 	}
-	vp_pending = false;
 	vp_changed = false;
 
 	emit_changed();
