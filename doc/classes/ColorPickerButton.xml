@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ColorPickerButton" inherits="Button" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A button that brings up a [ColorPicker] when pressed.
+	</brief_description>
+	<description>
+		Encapsulates a [ColorPicker], making it accessible by pressing a button. Pressing the button will toggle the [ColorPicker]'s visibility.
+		See also [BaseButton] which contains common properties and methods associated with this node.
+		[b]Note:[/b] By default, the button may not be wide enough for the color preview swatch to be visible. Make sure to set [member Control.custom_minimum_size] to a big enough value to give the button enough space.
+	</description>
+	<tutorials>
+		<link title="GUI Drag And Drop Demo">https://godotengine.org/asset-library/asset/133</link>
+		<link title="2D GD Paint Demo">https://godotengine.org/asset-library/asset/517</link>
+	</tutorials>
+	<methods>
+		<method name="get_picker">
+			<return type="ColorPicker" />
+			<description>
+				Returns the [ColorPicker] that this node toggles.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
+			</description>
+		</method>
+		<method name="get_popup">
+			<return type="PopupPanel" />
+			<description>
+				Returns the control's [PopupPanel] which allows you to connect to popup signals. This allows you to handle events when the ColorPicker is shown or hidden.
+				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(0, 0, 0, 1)">
+			The currently selected color.
+		</member>
+		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" default="true">
+			If [code]true[/code], the alpha channel in the displayed [ColorPicker] will be visible.
+		</member>
+		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" overrides="BaseButton" default="true" />
+	</members>
+	<signals>
+		<signal name="color_changed">
+			<param index="0" name="color" type="Color" />
+			<description>
+				Emitted when the color changes.
+			</description>
+		</signal>
+		<signal name="picker_created">
+			<description>
+				Emitted when the [ColorPicker] is created (the button is pressed for the first time).
+			</description>
+		</signal>
+		<signal name="popup_closed">
+			<description>
+				Emitted when the [ColorPicker] is closed.
+			</description>
+		</signal>
+	</signals>
+	<theme_items>
+		<theme_item name="font_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Default text [Color] of the [ColorPickerButton].
+		</theme_item>
+		<theme_item name="font_disabled_color" data_type="color" type="Color" default="Color(0.9, 0.9, 0.9, 0.3)">
+			Text [Color] used when the [ColorPickerButton] is disabled.
+		</theme_item>
+		<theme_item name="font_focus_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Text [Color] used when the [ColorPickerButton] is focused. Only replaces the normal text color of the button. Disabled, hovered, and pressed states take precedence over this color.
+		</theme_item>
+		<theme_item name="font_hover_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			Text [Color] used when the [ColorPickerButton] is being hovered.
+		</theme_item>
+		<theme_item name="font_outline_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			The tint of text outline of the [ColorPickerButton].
+		</theme_item>
+		<theme_item name="font_pressed_color" data_type="color" type="Color" default="Color(0.8, 0.8, 0.8, 1)">
+			Text [Color] used when the [ColorPickerButton] is being pressed.
+		</theme_item>
+		<theme_item name="h_separation" data_type="constant" type="int" default="2">
+			The horizontal space between [ColorPickerButton]'s icon and text.
+		</theme_item>
+		<theme_item name="outline_size" data_type="constant" type="int" default="0">
+			The size of the text outline.
+			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+		</theme_item>
+		<theme_item name="font" data_type="font" type="Font">
+			[Font] of the [ColorPickerButton]'s text.
+		</theme_item>
+		<theme_item name="font_size" data_type="font_size" type="int">
+			Font size of the [ColorPickerButton]'s text.
+		</theme_item>
+		<theme_item name="bg" data_type="icon" type="Texture2D">
+			The background of the color preview rect on the button.
+		</theme_item>
+		<theme_item name="disabled" data_type="style" type="StyleBox">
+			[StyleBox] used when the [ColorPickerButton] is disabled.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			[StyleBox] used when the [ColorPickerButton] is focused. The [code]focus[/code] [StyleBox] is displayed [i]over[/i] the base [StyleBox], so a partially transparent [StyleBox] should be used to ensure the base [StyleBox] remains visible. A [StyleBox] that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a [StyleBoxEmpty] resource. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</theme_item>
+		<theme_item name="hover" data_type="style" type="StyleBox">
+			[StyleBox] used when the [ColorPickerButton] is being hovered.
+		</theme_item>
+		<theme_item name="normal" data_type="style" type="StyleBox">
+			Default [StyleBox] for the [ColorPickerButton].
+		</theme_item>
+		<theme_item name="pressed" data_type="style" type="StyleBox">
+			[StyleBox] used when the [ColorPickerButton] is being pressed.
+		</theme_item>
+	</theme_items>
+</class>

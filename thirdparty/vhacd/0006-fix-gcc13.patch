@@ -1,0 +1,38 @@
+diff --git a/thirdparty/vhacd/inc/vhacdICHull.h b/thirdparty/vhacd/inc/vhacdICHull.h
+index 132bdcfb3e..925584cf52 100644
+--- a/thirdparty/vhacd/inc/vhacdICHull.h
++++ b/thirdparty/vhacd/inc/vhacdICHull.h
+@@ -18,6 +18,10 @@
+ #include "vhacdManifoldMesh.h"
+ #include "vhacdVector.h"
+ 
++// -- GODOT start --
++#include <cstdint>
++// -- GODOT end --
++
+ namespace VHACD {
+ //!    Incremental Convex Hull algorithm (cf. http://cs.smith.edu/~orourke/books/ftp.html ).
+ enum ICHullError {
+diff --git a/thirdparty/vhacd/inc/vhacdManifoldMesh.h b/thirdparty/vhacd/inc/vhacdManifoldMesh.h
+index a48f53c5c5..5eed4e13aa 100644
+--- a/thirdparty/vhacd/inc/vhacdManifoldMesh.h
++++ b/thirdparty/vhacd/inc/vhacdManifoldMesh.h
+@@ -18,6 +18,11 @@ All rights reserved.
+ #include "vhacdCircularList.h"
+ #include "vhacdSArray.h"
+ #include "vhacdVector.h"
++
++// -- GODOT start --
++#include <cstdint>
++// -- GODOT end --
++
+ namespace VHACD {
+ class TMMTriangle;
+ class TMMEdge;
+@@ -139,4 +144,4 @@ private:
+     friend class ICHull;
+ };
+ }
+-#endif // VHACD_MANIFOLD_MESH_H
+\ No newline at end of file
++#endif // VHACD_MANIFOLD_MESH_H

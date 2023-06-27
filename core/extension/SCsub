@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+
+Import("env")
+
+import make_wrappers
+import make_interface_dumper
+from platform_methods import run_in_subprocess
+
+env.CommandNoCache(["ext_wrappers.gen.inc"], "make_wrappers.py", run_in_subprocess(make_wrappers.run))
+env.CommandNoCache(
+    "gdextension_interface_dump.gen.h",
+    ["gdextension_interface.h", "make_interface_dumper.py"],
+    run_in_subprocess(make_interface_dumper.run),
+)
+
+env_extension = env.Clone()
+
+env_extension.add_source_files(env.core_sources, "*.cpp")

@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+Import("env")
+
+from platform_methods import run_in_subprocess
+import platform_linuxbsd_builders
+
+common_linuxbsd = [
+    "crash_handler_linuxbsd.cpp",
+    "os_linuxbsd.cpp",
+    "joypad_linux.cpp",
+    "freedesktop_portal_desktop.cpp",
+    "freedesktop_screensaver.cpp",
+]
+
+if env["use_sowrap"]:
+    common_linuxbsd.append("xkbcommon-so_wrap.c")
+
+if env["x11"]:
+    common_linuxbsd += SConscript("x11/SCsub")
+
+if env["speechd"]:
+    common_linuxbsd.append("tts_linux.cpp")
+    if env["use_sowrap"]:
+        common_linuxbsd.append("speechd-so_wrap.c")
+
+if env["fontconfig"]:
+    if env["use_sowrap"]:
+        common_linuxbsd.append("fontconfig-so_wrap.c")
+
+if env["udev"]:
+    if env["use_sowrap"]:
+        common_linuxbsd.append("libudev-so_wrap.c")
+
+if env["dbus"]:
+    if env["use_sowrap"]:
+        common_linuxbsd.append("dbus-so_wrap.c")
+
+prog = env.add_program("#bin/godot", ["godot_linuxbsd.cpp"] + common_linuxbsd)
+
+if env["debug_symbols"] and env["separate_debug_symbols"]:
+    env.AddPostAction(prog, run_in_subprocess(platform_linuxbsd_builders.make_debug_linuxbsd))

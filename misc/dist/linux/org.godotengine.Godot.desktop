@@ -1,0 +1,18 @@
+[Desktop Entry]
+Name=Godot Engine
+GenericName=Libre game engine
+GenericName[el]=Ελεύθερη μηχανή παιχνιδιού
+GenericName[fr]=Moteur de jeu libre
+GenericName[zh_CN]=自由的游戏引擎
+Comment=Multi-platform 2D and 3D game engine with a feature-rich editor
+Comment[el]=2D και 3D μηχανή παιχνιδιού πολλαπλών πλατφορμών με επεξεργαστή πλούσιο σε χαρακτηριστικά
+Comment[fr]=Moteur de jeu 2D et 3D multiplateforme avec un éditeur riche en fonctionnalités
+Comment[zh_CN]=多平台 2D 和 3D 游戏引擎，带有功能丰富的编辑器
+Exec=godot %f
+Icon=godot
+Terminal=false
+PrefersNonDefaultGPU=true
+Type=Application
+MimeType=application/x-godot-project;
+Categories=Development;IDE;
+StartupWMClass=Godot

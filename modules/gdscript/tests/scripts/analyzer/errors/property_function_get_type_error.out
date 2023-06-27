@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Function with return type "int" cannot be used as getter for a property of type "String".

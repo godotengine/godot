@@ -1,0 +1,6 @@
+GDTEST_OK
+>> WARNING
+>> Line: 5
+>> INT_AS_ENUM_WITHOUT_MATCH
+>> Cannot cast 2 as Enum "cast_enum_bad_enum.gd.MyEnum": no enum member has matching value.
+2

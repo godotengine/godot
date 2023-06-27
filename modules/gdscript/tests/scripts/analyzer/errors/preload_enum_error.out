@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Cannot assign a value of type "enum_from_outer.gd.Named" as "preload_enum_error.gd.LocalNamed".

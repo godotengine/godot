@@ -1,0 +1,2 @@
+GDTEST_PARSER_ERROR
+Standalone lambdas cannot be accessed. Consider assigning it to a variable.

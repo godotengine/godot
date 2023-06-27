@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# Git pre-commit hook that checks the class reference syntax using make_rst.py.
+
+# Workaround because we can't execute the .py file directly on windows
+PYTHON=python
+py_ver=$($PYTHON -c "import sys; print(sys.version_info.major)")
+if [[ "$py_ver" != "3" ]]; then
+  PYTHON+=3
+fi
+
+$PYTHON doc/tools/make_rst.py doc/classes modules platform --dry-run --color

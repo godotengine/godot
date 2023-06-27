@@ -1,0 +1,15 @@
+// This is the root directory of the Godot Android gradle build.
+pluginManagement {
+    apply from: 'config.gradle'
+
+    plugins {
+        id 'com.android.application' version versions.androidGradlePlugin
+        id 'org.jetbrains.kotlin.android' version versions.kotlinVersion
+    }
+    repositories {
+        gradlePluginPortal()
+        google()
+    }
+}
+
+include ':assetPacks:installTime'

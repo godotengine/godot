@@ -1,0 +1,300 @@
+diff --git a/platform/android/java/src/com/google/android/vending/expansion/downloader/DownloaderClientMarshaller.java b/platform/android/java/src/com/google/android/vending/expansion/downloader/DownloaderClientMarshaller.java
+index ad6ea0de6..452c7d148 100644
+--- a/platform/android/java/src/com/google/android/vending/expansion/downloader/DownloaderClientMarshaller.java
++++ b/platform/android/java/src/com/google/android/vending/expansion/downloader/DownloaderClientMarshaller.java
+@@ -32,6 +32,9 @@ import android.os.Messenger;
+ import android.os.RemoteException;
+ import android.util.Log;
+ 
++// -- GODOT start --
++import java.lang.ref.WeakReference;
++// -- GODOT end --
+ 
+ 
+ /**
+@@ -118,29 +121,46 @@ public class DownloaderClientMarshaller {
+         /**
+          * Target we publish for clients to send messages to IncomingHandler.
+          */
+-        final Messenger mMessenger = new Messenger(new Handler() {
++        // -- GODOT start --
++        private final MessengerHandlerClient mMsgHandler = new MessengerHandlerClient(this);
++        final Messenger mMessenger = new Messenger(mMsgHandler);
++
++        private static class MessengerHandlerClient extends Handler {
++            private final WeakReference<Stub> mDownloader;
++            public MessengerHandlerClient(Stub downloader) {
++                mDownloader = new WeakReference<>(downloader);
++            }
++
+             @Override
+             public void handleMessage(Message msg) {
+-                switch (msg.what) {
+-                    case MSG_ONDOWNLOADPROGRESS:
+-                        Bundle bun = msg.getData();
+-                        if ( null != mContext ) {
+-                            bun.setClassLoader(mContext.getClassLoader());
+-                            DownloadProgressInfo dpi = (DownloadProgressInfo) msg.getData()
+-                                    .getParcelable(PARAM_PROGRESS);
+-                            mItf.onDownloadProgress(dpi);
+-                        }
+-                        break;
+-                    case MSG_ONDOWNLOADSTATE_CHANGED:
+-                        mItf.onDownloadStateChanged(msg.getData().getInt(PARAM_NEW_STATE));
+-                        break;
+-                    case MSG_ONSERVICECONNECTED:
+-                        mItf.onServiceConnected(
+-                                (Messenger) msg.getData().getParcelable(PARAM_MESSENGER));
+-                        break;
++                Stub downloader = mDownloader.get();
++                if (downloader != null) {
++                    downloader.handleMessage(msg);
+                 }
+             }
+-        });
++        }
++
++        private void handleMessage(Message msg) {
++            switch (msg.what) {
++                case MSG_ONDOWNLOADPROGRESS:
++                    Bundle bun = msg.getData();
++                    if (null != mContext) {
++                        bun.setClassLoader(mContext.getClassLoader());
++                        DownloadProgressInfo dpi = (DownloadProgressInfo)msg.getData()
++                                                            .getParcelable(PARAM_PROGRESS);
++                        mItf.onDownloadProgress(dpi);
++                    }
++                    break;
++                case MSG_ONDOWNLOADSTATE_CHANGED:
++                    mItf.onDownloadStateChanged(msg.getData().getInt(PARAM_NEW_STATE));
++                    break;
++                case MSG_ONSERVICECONNECTED:
++                    mItf.onServiceConnected(
++                            (Messenger)msg.getData().getParcelable(PARAM_MESSENGER));
++                    break;
++            }
++        }
++        // -- GODOT end --
+ 
+         public Stub(IDownloaderClient itf, Class<?> downloaderService) {
+             mItf = itf;
+diff --git a/platform/android/java/src/com/google/android/vending/expansion/downloader/DownloaderServiceMarshaller.java b/platform/android/java/src/com/google/android/vending/expansion/downloader/DownloaderServiceMarshaller.java
+index 979352299..3771d19c9 100644
+--- a/platform/android/java/src/com/google/android/vending/expansion/downloader/DownloaderServiceMarshaller.java
++++ b/platform/android/java/src/com/google/android/vending/expansion/downloader/DownloaderServiceMarshaller.java
+@@ -25,6 +25,9 @@ import android.os.Message;
+ import android.os.Messenger;
+ import android.os.RemoteException;
+ 
++// -- GODOT start --
++import java.lang.ref.WeakReference;
++// -- GODOT end --
+ 
+ 
+ /**
+@@ -108,32 +111,49 @@ public class DownloaderServiceMarshaller {
+ 
+     private static class Stub implements IStub {
+         private IDownloaderService mItf = null;
+-        final Messenger mMessenger = new Messenger(new Handler() {
++        // -- GODOT start --
++        private final MessengerHandlerServer mMsgHandler = new MessengerHandlerServer(this);
++        final Messenger mMessenger = new Messenger(mMsgHandler);
++
++        private static class MessengerHandlerServer extends Handler {
++            private final WeakReference<Stub> mDownloader;
++            public MessengerHandlerServer(Stub downloader) {
++                mDownloader = new WeakReference<>(downloader);
++            }
++
+             @Override
+             public void handleMessage(Message msg) {
+-                switch (msg.what) {
+-                    case MSG_REQUEST_ABORT_DOWNLOAD:
+-                        mItf.requestAbortDownload();
+-                        break;
+-                    case MSG_REQUEST_CONTINUE_DOWNLOAD:
+-                        mItf.requestContinueDownload();
+-                        break;
+-                    case MSG_REQUEST_PAUSE_DOWNLOAD:
+-                        mItf.requestPauseDownload();
+-                        break;
+-                    case MSG_SET_DOWNLOAD_FLAGS:
+-                        mItf.setDownloadFlags(msg.getData().getInt(PARAMS_FLAGS));
+-                        break;
+-                    case MSG_REQUEST_DOWNLOAD_STATE:
+-                        mItf.requestDownloadStatus();
+-                        break;
+-                    case MSG_REQUEST_CLIENT_UPDATE:
+-                        mItf.onClientUpdated((Messenger) msg.getData().getParcelable(
+-                                PARAM_MESSENGER));
+-                        break;
++                Stub downloader = mDownloader.get();
++                if (downloader != null) {
++                    downloader.handleMessage(msg);
+                 }
+             }
+-        });
++        }
++
++        private void handleMessage(Message msg) {
++            switch (msg.what) {
++                case MSG_REQUEST_ABORT_DOWNLOAD:
++                    mItf.requestAbortDownload();
++                    break;
++                case MSG_REQUEST_CONTINUE_DOWNLOAD:
++                    mItf.requestContinueDownload();
++                    break;
++                case MSG_REQUEST_PAUSE_DOWNLOAD:
++                    mItf.requestPauseDownload();
++                    break;
++                case MSG_SET_DOWNLOAD_FLAGS:
++                    mItf.setDownloadFlags(msg.getData().getInt(PARAMS_FLAGS));
++                    break;
++                case MSG_REQUEST_DOWNLOAD_STATE:
++                    mItf.requestDownloadStatus();
++                    break;
++                case MSG_REQUEST_CLIENT_UPDATE:
++                    mItf.onClientUpdated((Messenger)msg.getData().getParcelable(
++                            PARAM_MESSENGER));
++                    break;
++            }
++        }
++        // -- GODOT end --
+ 
+         public Stub(IDownloaderService itf) {
+             mItf = itf;
+diff --git a/platform/android/java/src/com/google/android/vending/expansion/downloader/Helpers.java b/platform/android/java/src/com/google/android/vending/expansion/downloader/Helpers.java
+index e4b1b0f1c..36cd6aacf 100644
+--- a/platform/android/java/src/com/google/android/vending/expansion/downloader/Helpers.java
++++ b/platform/android/java/src/com/google/android/vending/expansion/downloader/Helpers.java
+@@ -24,7 +24,10 @@ import android.os.StatFs;
+ import android.os.SystemClock;
+ import android.util.Log;
+ 
+-import com.android.vending.expansion.downloader.R;
++// -- GODOT start --
++//import com.android.vending.expansion.downloader.R;
++import org.godotengine.godot.R;
++// -- GODOT end --
+ 
+ import java.io.File;
+ import java.text.SimpleDateFormat;
+@@ -146,12 +149,14 @@ public class Helpers {
+             }
+             return "";
+         }
+-        return String.format("%.2f",
++        // -- GODOT start --
++        return String.format(Locale.ENGLISH, "%.2f",
+                 (float) overallProgress / (1024.0f * 1024.0f))
+                 + "MB /" +
+-                String.format("%.2f", (float) overallTotal /
++                String.format(Locale.ENGLISH, "%.2f", (float) overallTotal /
+                         (1024.0f * 1024.0f))
+                 + "MB";
++        // -- GODOT end --
+     }
+ 
+     /**
+@@ -184,7 +189,9 @@ public class Helpers {
+     }
+ 
+     public static String getSpeedString(float bytesPerMillisecond) {
+-        return String.format("%.2f", bytesPerMillisecond * 1000 / 1024);
++        // -- GODOT start --
++        return String.format(Locale.ENGLISH, "%.2f", bytesPerMillisecond * 1000 / 1024);
++        // -- GODOT end --
+     }
+ 
+     public static String getTimeRemaining(long durationInMilliseconds) {
+diff --git a/platform/android/java/src/com/google/android/vending/expansion/downloader/SystemFacade.java b/platform/android/java/src/com/google/android/vending/expansion/downloader/SystemFacade.java
+index 12edd97ab..a0e1165cc 100644
+--- a/platform/android/java/src/com/google/android/vending/expansion/downloader/SystemFacade.java
++++ b/platform/android/java/src/com/google/android/vending/expansion/downloader/SystemFacade.java
+@@ -26,6 +26,10 @@ import android.net.NetworkInfo;
+ import android.telephony.TelephonyManager;
+ import android.util.Log;
+ 
++// -- GODOT start --
++import android.annotation.SuppressLint;
++// -- GODOT end --
++
+ /**
+  * Contains useful helper functions, typically tied to the application context.
+  */
+@@ -51,6 +55,7 @@ class SystemFacade {
+             return null;
+         }
+ 
++        @SuppressLint("MissingPermission")
+         NetworkInfo activeInfo = connectivity.getActiveNetworkInfo();
+         if (activeInfo == null) {
+             if (Constants.LOGVV) {
+@@ -69,6 +74,7 @@ class SystemFacade {
+             return false;
+         }
+ 
++        @SuppressLint("MissingPermission")
+         NetworkInfo info = connectivity.getActiveNetworkInfo();
+         boolean isMobile = (info != null && info.getType() == ConnectivityManager.TYPE_MOBILE);
+         TelephonyManager tm = (TelephonyManager) mContext
+diff --git a/platform/android/java/src/com/google/android/vending/expansion/downloader/impl/DownloadNotification.java b/platform/android/java/src/com/google/android/vending/expansion/downloader/impl/DownloadNotification.java
+index f1536e80e..4b214b22d 100644
+--- a/platform/android/java/src/com/google/android/vending/expansion/downloader/impl/DownloadNotification.java
++++ b/platform/android/java/src/com/google/android/vending/expansion/downloader/impl/DownloadNotification.java
+@@ -16,7 +16,11 @@
+ 
+ package com.google.android.vending.expansion.downloader.impl;
+ 
+-import com.android.vending.expansion.downloader.R;
++// -- GODOT start --
++//import com.android.vending.expansion.downloader.R;
++import org.godotengine.godot.R;
++// -- GODOT end --
++
+ import com.google.android.vending.expansion.downloader.DownloadProgressInfo;
+ import com.google.android.vending.expansion.downloader.DownloaderClientMarshaller;
+ import com.google.android.vending.expansion.downloader.Helpers;
+diff --git a/platform/android/java/src/com/google/android/vending/expansion/downloader/impl/DownloadThread.java b/platform/android/java/src/com/google/android/vending/expansion/downloader/impl/DownloadThread.java
+index b2e0e7af0..c114b8a64 100644
+--- a/platform/android/java/src/com/google/android/vending/expansion/downloader/impl/DownloadThread.java
++++ b/platform/android/java/src/com/google/android/vending/expansion/downloader/impl/DownloadThread.java
+@@ -146,8 +146,12 @@ public class DownloadThread {
+ 
+         try {
+             PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+-            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Constants.TAG);
+-            wakeLock.acquire();
++            // -- GODOT start --
++            //wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Constants.TAG);
++            //wakeLock.acquire();
++            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "org.godot.game:wakelock");
++            wakeLock.acquire(20 * 60 * 1000L /*20 minutes*/);
++            // -- GODOT end --
+ 
+             if (Constants.LOGV) {
+                 Log.v(Constants.TAG, "initiating download for " + mInfo.mFileName);
+diff --git a/platform/android/java/src/com/google/android/vending/expansion/downloader/impl/DownloaderService.java b/platform/android/java/src/com/google/android/vending/expansion/downloader/impl/DownloaderService.java
+index 4babe476f..8d41a7690 100644
+--- a/platform/android/java/src/com/google/android/vending/expansion/downloader/impl/DownloaderService.java
++++ b/platform/android/java/src/com/google/android/vending/expansion/downloader/impl/DownloaderService.java
+@@ -50,6 +50,10 @@ import android.provider.Settings.Secure;
+ import android.telephony.TelephonyManager;
+ import android.util.Log;
+ 
++// -- GODOT start --
++import android.annotation.SuppressLint;
++// -- GODOT end --
++
+ import java.io.File;
+ 
+ /**
+@@ -578,6 +582,7 @@ public abstract class DownloaderService extends CustomIntentService implements I
+             Log.w(Constants.TAG,
+                     "couldn't get connectivity manager to poll network state");
+         } else {
++            @SuppressLint("MissingPermission")
+             NetworkInfo activeInfo = mConnectivityManager
+                     .getActiveNetworkInfo();
+             updateNetworkState(activeInfo);

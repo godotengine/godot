@@ -1,0 +1,81 @@
+From 02c22d3df501dc284ba732fa82a6c408c57b3237 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?R=C3=A9mi=20Verschelde?= <rverschelde@gmail.com>
+Date: Thu, 19 Jan 2023 23:30:13 +0100
+Subject: [PATCH] mathlib: Remove incomplete support for SSE3 which assumed
+ SSSE3
+
+`_mm_shuffle_epi8` requires SSSE3 so the check on `ASTCENC_SSE >= 30` is
+too lax and would fail if `__SSE3__` is supported, but not `__SSSE3__`.
+
+The only supported configurations are SSE2, SSE4.1, and AVX2, so as
+discussed in #393 we drop the SSE3 checks and require SSE4.1 instead.
+---
+ Source/astcenc_mathlib.h          |  2 --
+ Source/astcenc_vecmathlib_sse_4.h | 10 +++++-----
+ 2 files changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/Source/astcenc_mathlib.h b/Source/astcenc_mathlib.h
+index 67e989e..0540c4f 100644
+--- a/Source/astcenc_mathlib.h
++++ b/Source/astcenc_mathlib.h
+@@ -48,8 +48,6 @@
+     #define ASTCENC_SSE 42
+   #elif defined(__SSE4_1__)
+     #define ASTCENC_SSE 41
+-  #elif defined(__SSE3__)
+-    #define ASTCENC_SSE 30
+   #elif defined(__SSE2__)
+     #define ASTCENC_SSE 20
+   #else
+diff --git a/Source/astcenc_vecmathlib_sse_4.h b/Source/astcenc_vecmathlib_sse_4.h
+index 76fe577..26dcc4a 100644
+--- a/Source/astcenc_vecmathlib_sse_4.h
++++ b/Source/astcenc_vecmathlib_sse_4.h
+@@ -1046,7 +1046,7 @@ ASTCENC_SIMD_INLINE void vtable_prepare(vint4 t0, vint4& t0p)
+  */
+ ASTCENC_SIMD_INLINE void vtable_prepare(vint4 t0, vint4 t1, vint4& t0p, vint4& t1p)
+ {
+-#if ASTCENC_SSE >= 30
++#if ASTCENC_SSE >= 41
+ 	t0p = t0;
+ 	t1p = t0 ^ t1;
+ #else
+@@ -1062,7 +1062,7 @@ ASTCENC_SIMD_INLINE void vtable_prepare(
+ 	vint4 t0, vint4 t1, vint4 t2, vint4 t3,
+ 	vint4& t0p, vint4& t1p, vint4& t2p, vint4& t3p)
+ {
+-#if ASTCENC_SSE >= 30
++#if ASTCENC_SSE >= 41
+ 	t0p = t0;
+ 	t1p = t0 ^ t1;
+ 	t2p = t1 ^ t2;
+@@ -1080,7 +1080,7 @@ ASTCENC_SIMD_INLINE void vtable_prepare(
+  */
+ ASTCENC_SIMD_INLINE vint4 vtable_8bt_32bi(vint4 t0, vint4 idx)
+ {
+-#if ASTCENC_SSE >= 30
++#if ASTCENC_SSE >= 41
+ 	// Set index byte MSB to 1 for unused bytes so shuffle returns zero
+ 	__m128i idxx = _mm_or_si128(idx.m, _mm_set1_epi32(static_cast<int>(0xFFFFFF00)));
+ 
+@@ -1102,7 +1102,7 @@ ASTCENC_SIMD_INLINE vint4 vtable_8bt_32bi(vint4 t0, vint4 idx)
+  */
+ ASTCENC_SIMD_INLINE vint4 vtable_8bt_32bi(vint4 t0, vint4 t1, vint4 idx)
+ {
+-#if ASTCENC_SSE >= 30
++#if ASTCENC_SSE >= 41
+ 	// Set index byte MSB to 1 for unused bytes so shuffle returns zero
+ 	__m128i idxx = _mm_or_si128(idx.m, _mm_set1_epi32(static_cast<int>(0xFFFFFF00)));
+ 
+@@ -1130,7 +1130,7 @@ ASTCENC_SIMD_INLINE vint4 vtable_8bt_32bi(vint4 t0, vint4 t1, vint4 idx)
+  */
+ ASTCENC_SIMD_INLINE vint4 vtable_8bt_32bi(vint4 t0, vint4 t1, vint4 t2, vint4 t3, vint4 idx)
+ {
+-#if ASTCENC_SSE >= 30
++#if ASTCENC_SSE >= 41
+ 	// Set index byte MSB to 1 for unused bytes so shuffle returns zero
+ 	__m128i idxx = _mm_or_si128(idx.m, _mm_set1_epi32(static_cast<int>(0xFFFFFF00)));
+ 
+-- 
+2.39.1
+

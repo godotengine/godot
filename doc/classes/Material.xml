@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Material" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base [Resource] for coloring and shading geometry.
+	</brief_description>
+	<description>
+		Material is a base [Resource] used for coloring and shading geometry. All materials inherit from it and almost all [VisualInstance3D] derived nodes carry a Material. A few flags and parameters are shared between all material types and are configured here.
+	</description>
+	<tutorials>
+		<link title="3D Material Testers Demo">https://godotengine.org/asset-library/asset/123</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+	</tutorials>
+	<methods>
+		<method name="_can_do_next_pass" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_can_use_render_priority" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_shader_mode" qualifiers="virtual const">
+			<return type="int" enum="Shader.Mode" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_shader_rid" qualifiers="virtual const">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderMaterial]).
+			</description>
+		</method>
+		<method name="inspect_native_shader_code">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="next_pass" type="Material" setter="set_next_pass" getter="get_next_pass">
+			Sets the [Material] to be used for the next pass. This renders the object again using a different material.
+			[b]Note:[/b] This only applies to [StandardMaterial3D]s and [ShaderMaterial]s with type "Spatial".
+		</member>
+		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority">
+			Sets the render priority for transparent objects in 3D scenes. Higher priority objects will be sorted in front of lower priority objects.
+			[b]Note:[/b] This only applies to [StandardMaterial3D]s and [ShaderMaterial]s with type "Spatial".
+			[b]Note:[/b] This only applies to sorting of transparent objects. This will not impact how transparent objects are sorted relative to opaque objects. This is because opaque objects are not sorted, while transparent objects are sorted from back to front (subject to priority).
+		</member>
+	</members>
+	<constants>
+		<constant name="RENDER_PRIORITY_MAX" value="127">
+			Maximum value for the [member render_priority] parameter.
+		</constant>
+		<constant name="RENDER_PRIORITY_MIN" value="-128">
+			Minimum value for the [member render_priority] parameter.
+		</constant>
+	</constants>
+</class>

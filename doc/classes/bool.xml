@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="bool" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A built-in boolean type.
+	</brief_description>
+	<description>
+		A [bool] is always one of two values: [code]true[/code] or [code]false[/code], similar to a switch that is either on or off. Booleans are used in programming for logic in condition statements.
+		Booleans can be directly used in [code]if[/code] and [code]elif[/code] statements. You don't need to add [code]== true[/code] or [code]== false[/code]:
+		[codeblocks]
+		[gdscript]
+		if can_shoot:
+		    launch_bullet()
+		[/gdscript]
+		[csharp]
+		if (canShoot)
+		{
+		    launchBullet();
+		}
+		[/csharp]
+		[/codeblocks]
+		Many common methods and operations return [bool]s, for example, [code]shooting_cooldown &lt;= 0.0[/code] may evaluate to [code]true[/code] or [code]false[/code] depending on the number's value.
+		[bool]s are usually used with the logical operators [code]and[/code], [code]or[/code], and [code]not[/code] to create complex conditions:
+		[codeblocks]
+		[gdscript]
+		if bullets &gt; 0 and not is_reloading:
+		    launch_bullet()
+
+		if bullets == 0 or is_reloading:
+		    play_clack_sound()
+		[/gdscript]
+		[csharp]
+		if (bullets &gt; 0 &amp;&amp; !isReloading)
+		{
+		    launchBullet();
+		}
+
+		if (bullets == 0 || isReloading)
+		{
+		    playClackSound();
+		}
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+	<constructors>
+		<constructor name="bool">
+			<return type="bool" />
+			<description>
+				Constructs a default-initialized [bool] set to [code]false[/code].
+			</description>
+		</constructor>
+		<constructor name="bool">
+			<return type="bool" />
+			<param index="0" name="from" type="bool" />
+			<description>
+				Constructs a [bool] as a copy of the given [bool].
+			</description>
+		</constructor>
+		<constructor name="bool">
+			<return type="bool" />
+			<param index="0" name="from" type="float" />
+			<description>
+				Cast a [float] value to a boolean value. This method will return [code]false[/code] if [code]0.0[/code] is passed in, and [code]true[/code] for all other values.
+			</description>
+		</constructor>
+		<constructor name="bool">
+			<return type="bool" />
+			<param index="0" name="from" type="int" />
+			<description>
+				Cast an [int] value to a boolean value. This method will return [code]false[/code] if [code]0[/code] is passed in, and [code]true[/code] for all other values.
+			</description>
+		</constructor>
+	</constructors>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
+			<description>
+				Returns [code]true[/code] if two bools are different, i.e. one is [code]true[/code] and the other is [code]false[/code].
+			</description>
+		</operator>
+		<operator name="operator &lt;">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
+			<description>
+				Returns [code]true[/code] if the left operand is [code]false[/code] and the right operand is [code]true[/code].
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
+			<description>
+				Returns [code]true[/code] if two bools are equal, i.e. both are [code]true[/code] or both are [code]false[/code].
+			</description>
+		</operator>
+		<operator name="operator &gt;">
+			<return type="bool" />
+			<param index="0" name="right" type="bool" />
+			<description>
+				Returns [code]true[/code] if the left operand is [code]true[/code] and the right operand is [code]false[/code].
+			</description>
+		</operator>
+	</operators>
+</class>

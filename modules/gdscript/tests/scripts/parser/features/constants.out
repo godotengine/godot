@@ -1,0 +1,33 @@
+GDTEST_OK
+>> WARNING
+>> Line: 2
+>> UNUSED_LOCAL_CONSTANT
+>> The local constant "_TEST" is declared but never used in the block. If this is intended, prefix it with an underscore: "__TEST".
+>> WARNING
+>> Line: 3
+>> UNUSED_LOCAL_CONSTANT
+>> The local constant "_STRING" is declared but never used in the block. If this is intended, prefix it with an underscore: "__STRING".
+>> WARNING
+>> Line: 4
+>> UNUSED_LOCAL_CONSTANT
+>> The local constant "_VECTOR" is declared but never used in the block. If this is intended, prefix it with an underscore: "__VECTOR".
+>> WARNING
+>> Line: 5
+>> UNUSED_LOCAL_CONSTANT
+>> The local constant "_ARRAY" is declared but never used in the block. If this is intended, prefix it with an underscore: "__ARRAY".
+>> WARNING
+>> Line: 6
+>> UNUSED_LOCAL_CONSTANT
+>> The local constant "_DICTIONARY" is declared but never used in the block. If this is intended, prefix it with an underscore: "__DICTIONARY".
+>> WARNING
+>> Line: 9
+>> UNUSED_LOCAL_CONSTANT
+>> The local constant "_HELLO" is declared but never used in the block. If this is intended, prefix it with an underscore: "__HELLO".
+>> WARNING
+>> Line: 10
+>> UNUSED_LOCAL_CONSTANT
+>> The local constant "_INFINITY" is declared but never used in the block. If this is intended, prefix it with an underscore: "__INFINITY".
+>> WARNING
+>> Line: 11
+>> UNUSED_LOCAL_CONSTANT
+>> The local constant "_NOT_A_NUMBER" is declared but never used in the block. If this is intended, prefix it with an underscore: "__NOT_A_NUMBER".

@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+
+Import("env")
+
+if "GLES3_GLSL" in env["BUILDERS"]:
+    # find all include files
+    gl_include_files = [str(f) for f in Glob("*_inc.glsl")]
+
+    # find all shader code(all glsl files excluding our include files)
+    glsl_files = [str(f) for f in Glob("*.glsl") if str(f) not in gl_include_files]
+
+    # make sure we recompile shaders if include files change
+    env.Depends([f + ".gen.h" for f in glsl_files], gl_include_files + ["#gles3_builders.py"])
+
+    env.GLES3_GLSL("canvas.glsl")
+    env.GLES3_GLSL("copy.glsl")
+    env.GLES3_GLSL("scene.glsl")
+    env.GLES3_GLSL("sky.glsl")
+    env.GLES3_GLSL("cubemap_filter.glsl")
+    env.GLES3_GLSL("canvas_occlusion.glsl")
+    env.GLES3_GLSL("canvas_sdf.glsl")
+    env.GLES3_GLSL("particles.glsl")
+    env.GLES3_GLSL("particles_copy.glsl")
+    env.GLES3_GLSL("skeleton.glsl")

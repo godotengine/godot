@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Cannot get return value of call to "foo()" because it returns "void".

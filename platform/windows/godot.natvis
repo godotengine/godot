@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="Vector&lt;*&gt;">
+		<Expand>
+			<Item Name="[size]">_cowdata._ptr ? (((const unsigned int *)(_cowdata._ptr))[-1]) : 0</Item>
+			<ArrayItems>
+				<Size>_cowdata._ptr ? (((const unsigned int *)(_cowdata._ptr))[-1]) : 0</Size>
+				<ValuePointer>_cowdata._ptr</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="LocalVector&lt;*&gt;">
+		<Expand>
+			<Item Name="[size]">count</Item>
+			<ArrayItems>
+				<Size>count</Size>
+				<ValuePointer>data</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="List&lt;*&gt;">
+		<Expand>
+			<Item Name="[size]">_data ? (_data->size_cache) : 0</Item>
+			<LinkedListItems>
+				<Size>_data ? (_data->size_cache) : 0</Size>
+				<HeadPointer>_data->first</HeadPointer>
+				<NextPointer>next_ptr</NextPointer>
+				<ValueNode>value</ValueNode>
+			</LinkedListItems>
+		</Expand>
+	</Type>
+
+	<Type Name="HashMap&lt;*,*&gt;">
+		<Expand>
+			<Item Name="[size]">num_elements</Item>
+			<LinkedListItems>
+				<Size>num_elements</Size>
+				<HeadPointer>head_element</HeadPointer>
+				<NextPointer>next</NextPointer>
+				<ValueNode>data</ValueNode>
+			</LinkedListItems>
+		</Expand>
+	</Type>
+
+	<Type Name="VMap&lt;*,*&gt;">
+		<Expand>
+			<Item Condition="_cowdata._ptr" Name="[size]">*(reinterpret_cast&lt;int*&gt;(_cowdata._ptr) - 1)</Item>
+			<ArrayItems Condition="_cowdata._ptr">
+				<Size>*(reinterpret_cast&lt;int*&gt;(_cowdata._ptr) - 1)</Size>
+				<ValuePointer>reinterpret_cast&lt;VMap&lt;$T1,$T2&gt;::Pair*&gt;(_cowdata._ptr)</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
+	<Type Name="VMap&lt;Callable,*&gt;::Pair">
+		<DisplayString Condition="dynamic_cast&lt;CallableCustomMethodPointerBase*&gt;(key.custom)">{dynamic_cast&lt;CallableCustomMethodPointerBase*&gt;(key.custom)->text}</DisplayString>
+	</Type>
+
+	<!-- requires PR 64364
+	<Type Name="GDScriptThreadContext">
+		<DisplayString Condition="_is_main == true">main thread {_debug_thread_id}</DisplayString>
+	</Type>
+	-->
+
+	<Type Name="Variant">
+		<DisplayString Condition="type == Variant::NIL">nil</DisplayString>
+		<DisplayString Condition="type == Variant::BOOL">{_data._bool}</DisplayString>
+		<DisplayString Condition="type == Variant::INT">{_data._int}</DisplayString>
+		<DisplayString Condition="type == Variant::FLOAT">{_data._float}</DisplayString>
+		<DisplayString Condition="type == Variant::TRANSFORM2D">{_data._transform2d}</DisplayString>
+		<DisplayString Condition="type == Variant::AABB">{_data._aabb}</DisplayString>
+		<DisplayString Condition="type == Variant::BASIS">{_data._basis}</DisplayString>
+		<DisplayString Condition="type == Variant::TRANSFORM3D">{_data._transform3d}</DisplayString>
+		<DisplayString Condition="type == Variant::PROJECTION">{_data._projection}</DisplayString>
+		<DisplayString Condition="type == Variant::STRING">{*(String *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::VECTOR2">{*(Vector2 *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::RECT2">{*(Rect2 *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::VECTOR3">{*(Vector3 *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::VECTOR4">{*(Vector4 *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::PLANE">{*(Plane *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::QUATERNION">{*(Quaternion *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::COLOR">{*(Color *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::NODE_PATH">{*(NodePath *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::RID">{*(::RID *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::OBJECT">{*(Object *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::DICTIONARY">{*(Dictionary *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::ARRAY">{*(Array *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_BYTE_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;unsigned char&gt;*&gt;(_data.packed_array)->array}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_INT32_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;int&gt;*&gt;(_data.packed_array)->array}</DisplayString>
+		<!-- broken, will show incorrect data
+		<DisplayString Condition="type == Variant::PACKED_INT64_ARRAY">{*(PackedInt64Array *)_data._mem}</DisplayString>
+		-->
+		<DisplayString Condition="type == Variant::PACKED_FLOAT32_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;float&gt;*&gt;(_data.packed_array)->array}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_FLOAT64_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;double&gt;*&gt;(_data.packed_array)->array}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_STRING_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;String&gt;*&gt;(_data.packed_array)->array}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_VECTOR2_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Vector2&gt;*&gt;(_data.packed_array)->array}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_VECTOR3_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Vector3&gt;*&gt;(_data.packed_array)->array}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_COLOR_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Color&gt;*&gt;(_data.packed_array)->array}</DisplayString>
+
+		<StringView Condition="type == Variant::STRING &amp;&amp; ((String *)(_data._mem))->_cowdata._ptr">((String *)(_data._mem))->_cowdata._ptr,s32</StringView>
+
+		<Expand>
+			<Item Name="[value]" Condition="type == Variant::BOOL">_data._bool</Item>
+			<Item Name="[value]" Condition="type == Variant::INT">_data._int</Item>
+			<Item Name="[value]" Condition="type == Variant::FLOAT">_data._float</Item>
+			<Item Name="[value]" Condition="type == Variant::TRANSFORM2D">_data._transform2d</Item>
+			<Item Name="[value]" Condition="type == Variant::AABB">_data._aabb</Item>
+			<Item Name="[value]" Condition="type == Variant::BASIS">_data._basis</Item>
+			<Item Name="[value]" Condition="type == Variant::TRANSFORM3D">_data._transform3d</Item>
+			<Item Name="[value]" Condition="type == Variant::STRING">*(String *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::VECTOR2">*(Vector2 *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::RECT2">*(Rect2 *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::VECTOR3">*(Vector3 *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PLANE">*(Plane *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::QUATERNION">*(Quaternion *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::COLOR">*(Color *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::NODE_PATH">*(NodePath *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::RID">*(::RID *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::OBJECT">*(Object *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::DICTIONARY">*(Dictionary *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::ARRAY">*(Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_BYTE_ARRAY">reinterpret_cast&lt;const Variant::PackedArrayRef&lt;unsigned char&gt;*&gt;(_data.packed_array)->array</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_INT32_ARRAY">*(PackedInt32Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_INT64_ARRAY">*(PackedInt64Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_FLOAT32_ARRAY">*(PackedFloat32Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_FLOAT64_ARRAY">*(PackedFloat64Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_STRING_ARRAY">*(PackedStringArray *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_VECTOR2_ARRAY">*(PackedVector2Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_VECTOR3_ARRAY">*(PackedVector3Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_COLOR_ARRAY">*(PackedColorArray *)_data._mem</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="String">
+		<DisplayString Condition="_cowdata._ptr == 0">[empty]</DisplayString>
+		<DisplayString Condition="_cowdata._ptr != 0">{_cowdata._ptr,s32}</DisplayString>
+		<StringView Condition="_cowdata._ptr != 0">_cowdata._ptr,s32</StringView>
+	</Type>
+
+	<Type Name="godot::String">
+		<DisplayString>{*reinterpret_cast&lt;void**&gt;(opaque),s32}</DisplayString>
+		<Expand>
+			<Item Name="opaque_ptr">*reinterpret_cast&lt;void**&gt;(opaque)</Item>
+			<Item Name="string">*reinterpret_cast&lt;void**&gt;(opaque),s32</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="StringName">
+		<DisplayString Condition="_data &amp;&amp; _data->cname">{_data->cname}</DisplayString>
+		<DisplayString Condition="_data &amp;&amp; !_data->cname">{_data->name,s32}</DisplayString>
+		<DisplayString Condition="!_data">[empty]</DisplayString>
+		<StringView Condition="_data &amp;&amp; _data->cname">_data->cname</StringView>
+		<StringView Condition="_data &amp;&amp; !_data->cname">_data->name,s32</StringView>
+	</Type>
+
+	<!-- can't cast the opaque to ::StringName because Natvis does not support global namespace specifier? -->
+	<Type Name="godot::StringName">
+		<DisplayString Condition="(*reinterpret_cast&lt;const char***&gt;(opaque))[1]">{(*reinterpret_cast&lt;const char***&gt;(opaque))[1],s8}</DisplayString>
+		<DisplayString Condition="!(*reinterpret_cast&lt;const char***&gt;(opaque))[1]">{(*reinterpret_cast&lt;const char***&gt;(opaque))[2],s32}</DisplayString>
+		<Expand>
+			<Item Name="opaque_ptr">*reinterpret_cast&lt;void**&gt;(opaque)</Item>
+			<Item Name="&amp;cname">(*reinterpret_cast&lt;const char***&gt;(opaque))+1</Item>
+			<Item Name="cname">(*reinterpret_cast&lt;const char***&gt;(opaque))[1],s8</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Object::SignalData">
+		<DisplayString Condition="user.name._cowdata._ptr">"{user.name}" {slot_map}</DisplayString>
+		<DisplayString Condition="!user.name._cowdata._ptr">"{slot_map}</DisplayString>
+	</Type>
+
+	<Type Name="Vector2">
+		<DisplayString>{{{x},{y}}}</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Vector3">
+		<DisplayString>{{{x},{y},{z}}}</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+			<Item Name="z">z</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Quaternion">
+		<DisplayString>Quaternion {{{x},{y},{z},{w}}}</DisplayString>
+		<Expand>
+			<Item Name="x">x</Item>
+			<Item Name="y">y</Item>
+			<Item Name="z">z</Item>
+			<Item Name="w">w</Item>
+		</Expand>
+	</Type>
+
+	<Type Name="Color">
+		<DisplayString>Color {{{r},{g},{b},{a}}}</DisplayString>
+		<Expand>
+			<Item Name="red">r</Item>
+			<Item Name="green">g</Item>
+			<Item Name="blue">b</Item>
+			<Item Name="alpha">a</Item>
+		</Expand>
+	</Type>
+</AutoVisualizer>

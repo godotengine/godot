@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Slider" inherits="Range" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base class for sliders.
+	</brief_description>
+	<description>
+		Abstract base class for sliders, used to adjust a value by moving a grabber along a horizontal or vertical axis. Sliders are [Range]-based controls.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
+			If [code]true[/code], the slider can be interacted with. If [code]false[/code], the value can be changed only by code.
+		</member>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
+		<member name="scrollable" type="bool" setter="set_scrollable" getter="is_scrollable" default="true">
+			If [code]true[/code], the value can be changed using the mouse wheel.
+		</member>
+		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="1.0" />
+		<member name="tick_count" type="int" setter="set_ticks" getter="get_ticks" default="0">
+			Number of ticks displayed on the slider, including border ticks. Ticks are uniformly-distributed value markers.
+		</member>
+		<member name="ticks_on_borders" type="bool" setter="set_ticks_on_borders" getter="get_ticks_on_borders" default="false">
+			If [code]true[/code], the slider will display ticks for minimum and maximum values.
+		</member>
+	</members>
+	<signals>
+		<signal name="drag_ended">
+			<param index="0" name="value_changed" type="bool" />
+			<description>
+				Emitted when dragging stops. If [param value_changed] is true, [member Range.value] is different from the value when you started the dragging.
+			</description>
+		</signal>
+		<signal name="drag_started">
+			<description>
+				Emitted when dragging is started.
+			</description>
+		</signal>
+	</signals>
+</class>

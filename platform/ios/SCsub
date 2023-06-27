@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+Import("env")
+
+ios_lib = [
+    "godot_ios.mm",
+    "os_ios.mm",
+    "main.m",
+    "app_delegate.mm",
+    "view_controller.mm",
+    "ios.mm",
+    "vulkan_context_ios.mm",
+    "display_server_ios.mm",
+    "joypad_ios.mm",
+    "godot_view.mm",
+    "tts_ios.mm",
+    "display_layer.mm",
+    "godot_app_delegate.m",
+    "godot_view_renderer.mm",
+    "device_metrics.m",
+    "keyboard_input_view.mm",
+    "key_mapping_ios.mm",
+]
+
+env_ios = env.Clone()
+ios_lib = env_ios.add_library("ios", ios_lib)
+
+# (iOS) Enable module support
+env_ios.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+
+
+def combine_libs(target=None, source=None, env=None):
+    lib_path = target[0].srcnode().abspath
+    if "osxcross" in env:
+        libtool = "$IOS_TOOLCHAIN_PATH/usr/bin/${ios_triple}libtool"
+    else:
+        libtool = "$IOS_TOOLCHAIN_PATH/usr/bin/libtool"
+    env.Execute(
+        libtool + ' -static -o "' + lib_path + '" ' + " ".join([('"' + lib.srcnode().abspath + '"') for lib in source])
+    )
+
+
+combine_command = env_ios.Command("#bin/libgodot" + env_ios["LIBSUFFIX"], [ios_lib] + env_ios["LIBS"], combine_libs)

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Timer" inherits="Node" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A countdown timer.
+	</brief_description>
+	<description>
+		Counts down a specified interval and emits a signal on reaching 0. Can be set to repeat or "one-shot" mode.
+		[b]Note:[/b] Timers are affected by [member Engine.time_scale], a higher scale means quicker timeouts, and vice versa.
+		[b]Note:[/b] To create a one-shot timer without instantiating a node, use [method SceneTree.create_timer].
+	</description>
+	<tutorials>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
+	</tutorials>
+	<methods>
+		<method name="is_stopped" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the timer is stopped.
+			</description>
+		</method>
+		<method name="start">
+			<return type="void" />
+			<param index="0" name="time_sec" type="float" default="-1" />
+			<description>
+				Starts the timer. Sets [member wait_time] to [param time_sec] if [code]time_sec &gt; 0[/code]. This also resets the remaining time to [member wait_time].
+				[b]Note:[/b] This method will not resume a paused timer. See [member paused].
+			</description>
+		</method>
+		<method name="stop">
+			<return type="void" />
+			<description>
+				Stops the timer.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="autostart" type="bool" setter="set_autostart" getter="has_autostart" default="false">
+			If [code]true[/code], the timer will automatically start when entering the scene tree.
+			[b]Note:[/b] This property is automatically set to [code]false[/code] after the timer enters the scene tree and starts.
+		</member>
+		<member name="one_shot" type="bool" setter="set_one_shot" getter="is_one_shot" default="false">
+			If [code]true[/code], the timer will stop when reaching 0. If [code]false[/code], it will restart.
+		</member>
+		<member name="paused" type="bool" setter="set_paused" getter="is_paused">
+			If [code]true[/code], the timer is paused and will not process until it is unpaused again, even if [method start] is called.
+		</member>
+		<member name="process_callback" type="int" setter="set_timer_process_callback" getter="get_timer_process_callback" enum="Timer.TimerProcessCallback" default="1">
+			Processing callback. See [enum TimerProcessCallback].
+		</member>
+		<member name="time_left" type="float" setter="" getter="get_time_left">
+			The timer's remaining time in seconds. Returns 0 if the timer is inactive.
+			[b]Note:[/b] This value is read-only and cannot be set. It is based on [member wait_time], which can be set using [method start].
+		</member>
+		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time" default="1.0">
+			The wait time in seconds.
+			[b]Note:[/b] Timers can only emit once per rendered frame at most (or once per physics frame if [member process_callback] is [constant TIMER_PROCESS_PHYSICS]). This means very low wait times (lower than 0.05 seconds) will behave in significantly different ways depending on the rendered framerate. For very low wait times, it is recommended to use a process loop in a script instead of using a Timer node. Timers are affected by [member Engine.time_scale], a higher scale means quicker timeouts, and vice versa.
+		</member>
+	</members>
+	<signals>
+		<signal name="timeout">
+			<description>
+				Emitted when the timer reaches 0.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="TIMER_PROCESS_PHYSICS" value="0" enum="TimerProcessCallback">
+			Update the timer during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
+		</constant>
+		<constant name="TIMER_PROCESS_IDLE" value="1" enum="TimerProcessCallback">
+			Update the timer during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
+		</constant>
+	</constants>
+</class>

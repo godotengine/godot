@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_camera = env_modules.Clone()
+
+if env["platform"] == "windows":
+    env_camera.add_source_files(env.modules_sources, "register_types.cpp")
+    env_camera.add_source_files(env.modules_sources, "camera_win.cpp")
+
+elif env["platform"] == "macos":
+    env_camera.add_source_files(env.modules_sources, "register_types.cpp")
+    env_camera.add_source_files(env.modules_sources, "camera_macos.mm")

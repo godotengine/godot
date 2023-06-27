@@ -1,0 +1,43 @@
+[*.sln]
+indent_style = tab
+
+[*.{csproj,props,targets,nuspec,resx}]
+indent_style = space
+indent_size = 2
+
+[*.cs]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 120
+csharp_indent_case_contents_when_block = false
+
+[*.cs]
+# CA1707: Identifiers should not contain underscores
+# TODO:
+#  Maybe we could disable this selectively only
+#  where it's not desired and for generated code.
+dotnet_diagnostic.CA1707.severity = none
+# CA1711: Identifiers should not have incorrect suffix
+# Disable warning for suffixes like EventHandler, Flags, Enum, etc.
+dotnet_diagnostic.CA1711.severity = none
+# CA1716: Identifiers should not match keywords
+# TODO: We should look into this.
+dotnet_diagnostic.CA1716.severity = warning
+# CA1720: Identifiers should not contain type names
+dotnet_diagnostic.CA1720.severity = none
+# CA1805: Do not initialize unnecessarily
+# Don't tell me what to do.
+dotnet_diagnostic.CA1805.severity = none
+# CA1304: Specify CultureInfo
+# TODO: We should look into this.
+dotnet_diagnostic.CA1304.severity = warning
+# CA1305: Specify IFormatProvider
+# TODO: We should look into this. Disabled for now because it's annoying.
+dotnet_diagnostic.CA1305.severity = none
+# CA1310: Specify StringComparison for correctness
+# TODO: We should look into this. Disabled for now because it's annoying.
+dotnet_diagnostic.CA1310.severity = none
+# Diagnostics to prevent defensive copies of `in` struct parameters
+resharper_possibly_impure_method_call_on_readonly_variable_highlighting = error

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="HeightMapShape3D" inherits="Shape3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 3D height map shape used for physics collision.
+	</brief_description>
+	<description>
+		A 3D heightmap shape, intended for use in physics. Usually used to provide a shape for a [CollisionShape3D]. This is useful for terrain, but it is limited as overhangs (such as caves) cannot be stored. Holes in a [HeightMapShape3D] are created by assigning very low values to points in the desired area.
+		[b]Performance:[/b] [HeightMapShape3D] is faster to check collisions against than [ConcavePolygonShape3D], but it is significantly slower than primitive shapes like [BoxShape3D].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="map_data" type="PackedFloat32Array" setter="set_map_data" getter="get_map_data" default="PackedFloat32Array(0, 0, 0, 0)">
+			Height map data, pool array must be of [member map_width] * [member map_depth] size.
+		</member>
+		<member name="map_depth" type="int" setter="set_map_depth" getter="get_map_depth" default="2">
+			Number of vertices in the depth of the height map. Changing this will resize the [member map_data].
+		</member>
+		<member name="map_width" type="int" setter="set_map_width" getter="get_map_width" default="2">
+			Number of vertices in the width of the height map. Changing this will resize the [member map_data].
+		</member>
+	</members>
+</class>

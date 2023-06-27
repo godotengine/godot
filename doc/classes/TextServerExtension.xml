@@ -1,0 +1,1394 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextServerExtension" inherits="TextServer" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for custom [TextServer] implementations (plugins).
+	</brief_description>
+	<description>
+		External [TextServer] implementations should inherit from this class.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_cleanup" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_create_font" qualifiers="virtual">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_create_shaped_text" qualifiers="virtual">
+			<return type="RID" />
+			<param index="0" name="direction" type="int" enum="TextServer.Direction" />
+			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" />
+			<description>
+			</description>
+		</method>
+		<method name="_draw_hex_code_box" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="canvas" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="pos" type="Vector2" />
+			<param index="3" name="index" type="int" />
+			<param index="4" name="color" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_clear_glyphs" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_clear_kerning_map" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_clear_size_cache" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_clear_textures" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_draw_glyph" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="canvas" type="RID" />
+			<param index="2" name="size" type="int" />
+			<param index="3" name="pos" type="Vector2" />
+			<param index="4" name="index" type="int" />
+			<param index="5" name="color" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_draw_glyph_outline" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="canvas" type="RID" />
+			<param index="2" name="size" type="int" />
+			<param index="3" name="outline_size" type="int" />
+			<param index="4" name="pos" type="Vector2" />
+			<param index="5" name="index" type="int" />
+			<param index="6" name="color" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_antialiasing" qualifiers="virtual const">
+			<return type="int" enum="TextServer.FontAntialiasing" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_ascent" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_char_from_glyph_index" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_descent" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_embolden" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_face_count" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_face_index" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_fixed_size" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_generate_mipmaps" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_global_oversampling" qualifiers="virtual const">
+			<return type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_glyph_advance" qualifiers="virtual const">
+			<return type="Vector2" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_glyph_contours" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_glyph_index" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="char" type="int" />
+			<param index="3" name="variation_selector" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_glyph_list" qualifiers="virtual const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_glyph_offset" qualifiers="virtual const">
+			<return type="Vector2" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_glyph_size" qualifiers="virtual const">
+			<return type="Vector2" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_glyph_texture_idx" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_glyph_texture_rid" qualifiers="virtual const">
+			<return type="RID" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_glyph_texture_size" qualifiers="virtual const">
+			<return type="Vector2" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_glyph_uv_rect" qualifiers="virtual const">
+			<return type="Rect2" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_hinting" qualifiers="virtual const">
+			<return type="int" enum="TextServer.Hinting" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_kerning" qualifiers="virtual const">
+			<return type="Vector2" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_pair" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_kerning_list" qualifiers="virtual const">
+			<return type="Vector2i[]" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_language_support_override" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="language" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_language_support_overrides" qualifiers="virtual">
+			<return type="PackedStringArray" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_msdf_pixel_range" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_msdf_size" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_name" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_opentype_feature_overrides" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_ot_name_strings" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_oversampling" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_scale" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_script_support_override" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="script" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_script_support_overrides" qualifiers="virtual">
+			<return type="PackedStringArray" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_size_cache_list" qualifiers="virtual const">
+			<return type="Vector2i[]" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_stretch" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_style" qualifiers="virtual const">
+			<return type="int" enum="TextServer.FontStyle" is_bitfield="true" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_style_name" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_subpixel_positioning" qualifiers="virtual const">
+			<return type="int" enum="TextServer.SubpixelPositioning" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_supported_chars" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_texture_count" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_texture_image" qualifiers="virtual const">
+			<return type="Image" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_texture_offsets" qualifiers="virtual const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_transform" qualifiers="virtual const">
+			<return type="Transform2D" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_underline_position" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_underline_thickness" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_variation_coordinates" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_get_weight" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_has_char" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="char" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_is_allow_system_fallback" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_is_force_autohinter" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_is_language_supported" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="language" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_is_multichannel_signed_distance_field" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_is_script_supported" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="script" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_remove_glyph" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_remove_kerning" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_pair" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_remove_language_support_override" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="language" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_remove_script_support_override" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="script" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_remove_size_cache" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_remove_texture" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_render_glyph" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_render_range" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="start" type="int" />
+			<param index="3" name="end" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_allow_system_fallback" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="allow_system_fallback" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_antialiasing" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="antialiasing" type="int" enum="TextServer.FontAntialiasing" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_ascent" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="ascent" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_data" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="data" type="PackedByteArray" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_data_ptr" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="data_ptr" type="const uint8_t*" />
+			<param index="2" name="data_size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_descent" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="descent" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_embolden" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="strength" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_face_index" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="face_index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_fixed_size" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="fixed_size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_force_autohinter" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="force_autohinter" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_generate_mipmaps" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="generate_mipmaps" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_global_oversampling" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="oversampling" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_glyph_advance" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="advance" type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_glyph_offset" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="offset" type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_glyph_size" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="gl_size" type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_glyph_texture_idx" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="texture_idx" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_glyph_uv_rect" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="uv_rect" type="Rect2" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_hinting" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="hinting" type="int" enum="TextServer.Hinting" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_kerning" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_pair" type="Vector2i" />
+			<param index="3" name="kerning" type="Vector2" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_language_support_override" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="language" type="String" />
+			<param index="2" name="supported" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_msdf_pixel_range" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="msdf_pixel_range" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_msdf_size" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="msdf_size" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_multichannel_signed_distance_field" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="msdf" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_name" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="name" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_opentype_feature_overrides" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="overrides" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_oversampling" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="oversampling" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_scale" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="scale" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_script_support_override" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="script" type="String" />
+			<param index="2" name="supported" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_stretch" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="stretch" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_style" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="style" type="int" enum="TextServer.FontStyle" is_bitfield="true" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_style_name" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="name_style" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_subpixel_positioning" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="subpixel_positioning" type="int" enum="TextServer.SubpixelPositioning" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_texture_image" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<param index="3" name="image" type="Image" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_texture_offsets" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="texture_index" type="int" />
+			<param index="3" name="offset" type="PackedInt32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_transform" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="transform" type="Transform2D" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_underline_position" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="underline_position" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_underline_thickness" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="underline_thickness" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_variation_coordinates" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="variation_coordinates" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_set_weight" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="weight" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_supported_feature_list" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_font_supported_variation_list" qualifiers="virtual const">
+			<return type="Dictionary" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_format_number" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="language" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_free_rid" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_features" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_hex_code_box_size" qualifiers="virtual const">
+			<return type="Vector2" />
+			<param index="0" name="size" type="int" />
+			<param index="1" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_support_data_filename" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_get_support_data_info" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_has" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_has_feature" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="feature" type="int" enum="TextServer.Feature" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_confusable" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="dict" type="PackedStringArray" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_locale_right_to_left" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="locale" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_valid_identifier" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="string" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_load_support_data" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="filename" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_name_to_tag" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="name" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_parse_number" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="language" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_parse_structured_text" qualifiers="virtual const">
+			<return type="Vector3i[]" />
+			<param index="0" name="parser_type" type="int" enum="TextServer.StructuredTextParser" />
+			<param index="1" name="args" type="Array" />
+			<param index="2" name="text" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_percent_sign" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="language" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_save_support_data" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="filename" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_get_span_count" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_get_span_meta" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_set_span_update_font" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="index" type="int" />
+			<param index="2" name="fonts" type="RID[]" />
+			<param index="3" name="size" type="int" />
+			<param index="4" name="opentype_features" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_add_object" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<param index="2" name="size" type="Vector2" />
+			<param index="3" name="inline_align" type="int" enum="InlineAlignment" />
+			<param index="4" name="length" type="int" />
+			<param index="5" name="baseline" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_add_string" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="text" type="String" />
+			<param index="2" name="fonts" type="RID[]" />
+			<param index="3" name="size" type="int" />
+			<param index="4" name="opentype_features" type="Dictionary" />
+			<param index="5" name="language" type="String" />
+			<param index="6" name="meta" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_clear" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_draw" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="canvas" type="RID" />
+			<param index="2" name="pos" type="Vector2" />
+			<param index="3" name="clip_l" type="float" />
+			<param index="4" name="clip_r" type="float" />
+			<param index="5" name="color" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_draw_outline" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="canvas" type="RID" />
+			<param index="2" name="pos" type="Vector2" />
+			<param index="3" name="clip_l" type="float" />
+			<param index="4" name="clip_r" type="float" />
+			<param index="5" name="outline_size" type="int" />
+			<param index="6" name="color" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_fit_to_width" qualifiers="virtual">
+			<return type="float" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="width" type="float" />
+			<param index="2" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_ascent" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_carets" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="position" type="int" />
+			<param index="2" name="caret" type="CaretInfo*" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_custom_punctuation" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_descent" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_direction" qualifiers="virtual const">
+			<return type="int" enum="TextServer.Direction" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_dominant_direction_in_range" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="start" type="int" />
+			<param index="2" name="end" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_ellipsis_glyph_count" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_ellipsis_glyphs" qualifiers="virtual const">
+			<return type="const Glyph*" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_ellipsis_pos" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_glyph_count" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_glyphs" qualifiers="virtual const">
+			<return type="const Glyph*" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_grapheme_bounds" qualifiers="virtual const">
+			<return type="Vector2" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_inferred_direction" qualifiers="virtual const">
+			<return type="int" enum="TextServer.Direction" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_line_breaks" qualifiers="virtual const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="width" type="float" />
+			<param index="2" name="start" type="int" />
+			<param index="3" name="break_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_line_breaks_adv" qualifiers="virtual const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="width" type="PackedFloat32Array" />
+			<param index="2" name="start" type="int" />
+			<param index="3" name="once" type="bool" />
+			<param index="4" name="break_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_object_rect" qualifiers="virtual const">
+			<return type="Rect2" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_objects" qualifiers="virtual const">
+			<return type="Array" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_orientation" qualifiers="virtual const">
+			<return type="int" enum="TextServer.Orientation" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_parent" qualifiers="virtual const">
+			<return type="RID" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_preserve_control" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_preserve_invalid" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_range" qualifiers="virtual const">
+			<return type="Vector2i" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_selection" qualifiers="virtual const">
+			<return type="PackedVector2Array" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="start" type="int" />
+			<param index="2" name="end" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_size" qualifiers="virtual const">
+			<return type="Vector2" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_spacing" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_trim_pos" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_underline_position" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_underline_thickness" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_width" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_get_word_breaks" qualifiers="virtual const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="grapheme_flags" type="int" enum="TextServer.GraphemeFlag" is_bitfield="true" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_hit_test_grapheme" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="coord" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_hit_test_position" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="coord" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_is_ready" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_next_grapheme_pos" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_overrun_trim_to_width" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="width" type="float" />
+			<param index="2" name="trim_flags" type="int" enum="TextServer.TextOverrunFlag" is_bitfield="true" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_prev_grapheme_pos" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="pos" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_resize_object" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="key" type="Variant" />
+			<param index="2" name="size" type="Vector2" />
+			<param index="3" name="inline_align" type="int" enum="InlineAlignment" />
+			<param index="4" name="baseline" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_set_bidi_override" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="override" type="Array" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_set_custom_punctuation" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="punct" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_set_direction" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="direction" type="int" enum="TextServer.Direction" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_set_orientation" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_set_preserve_control" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_set_preserve_invalid" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_set_spacing" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="spacing" type="int" enum="TextServer.SpacingType" />
+			<param index="2" name="value" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_shape" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_sort_logical" qualifiers="virtual">
+			<return type="const Glyph*" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_substr" qualifiers="virtual const">
+			<return type="RID" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="start" type="int" />
+			<param index="2" name="length" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_tab_align" qualifiers="virtual">
+			<return type="float" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="tab_stops" type="PackedFloat32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_update_breaks" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_shaped_text_update_justification_ops" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_spoof_check" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="string" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_string_get_word_breaks" qualifiers="virtual const">
+			<return type="PackedInt32Array" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="language" type="String" />
+			<param index="2" name="chars_per_line" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_string_to_lower" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="language" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_string_to_upper" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="language" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_strip_diacritics" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="string" type="String" />
+			<description>
+			</description>
+		</method>
+		<method name="_tag_to_name" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="tag" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

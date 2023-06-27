@@ -1,0 +1,21 @@
+GDTEST_OK
+>> WARNING
+>> Line: 11
+>> UNUSED_LOCAL_CONSTANT
+>> The local constant "_INTEGER" is declared but never used in the block. If this is intended, prefix it with an underscore: "__INTEGER".
+>> WARNING
+>> Line: 12
+>> UNUSED_LOCAL_CONSTANT
+>> The local constant "_INTEGER_REDUNDANT_TYPED" is declared but never used in the block. If this is intended, prefix it with an underscore: "__INTEGER_REDUNDANT_TYPED".
+>> WARNING
+>> Line: 13
+>> UNUSED_LOCAL_CONSTANT
+>> The local constant "_INTEGER_REDUNDANT_TYPED2" is declared but never used in the block. If this is intended, prefix it with an underscore: "__INTEGER_REDUNDANT_TYPED2".
+>> WARNING
+>> Line: 14
+>> UNUSED_LOCAL_CONSTANT
+>> The local constant "_INTEGER_REDUNDANT_INFERRED" is declared but never used in the block. If this is intended, prefix it with an underscore: "__INTEGER_REDUNDANT_INFERRED".
+>> WARNING
+>> Line: 15
+>> UNUSED_LOCAL_CONSTANT
+>> The local constant "_INTEGER_REDUNDANT_INFERRED2" is declared but never used in the block. If this is intended, prefix it with an underscore: "__INTEGER_REDUNDANT_INFERRED2".

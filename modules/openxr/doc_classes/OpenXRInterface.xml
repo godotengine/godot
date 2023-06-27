@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRInterface" inherits="XRInterface" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Our OpenXR interface.
+	</brief_description>
+	<description>
+		The OpenXR interface allows Godot to interact with OpenXR runtimes and make it possible to create XR experiences and games.
+		Due to the needs of OpenXR this interface works slightly different than other plugin based XR interfaces. It needs to be initialized when Godot starts. You need to enable OpenXR, settings for this can be found in your games project settings under the XR heading. You do need to mark a viewport for use with XR in order for Godot to know which render result should be output to the headset.
+	</description>
+	<tutorials>
+		<link title="Setting up XR">$DOCS_URL/tutorials/xr/setting_up_xr.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_action_sets" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns a list of action sets registered with Godot (loaded from the action map at runtime).
+			</description>
+		</method>
+		<method name="get_available_display_refresh_rates" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns display refresh rates supported by the current HMD. Only returned if this feature is supported by the OpenXR runtime and after the interface has been initialized.
+			</description>
+		</method>
+		<method name="is_action_set_active" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns [code]true[/code] if the given action set is active.
+			</description>
+		</method>
+		<method name="set_action_set_active">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="active" type="bool" />
+			<description>
+				Sets the given action set as active or inactive.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="display_refresh_rate" type="float" setter="set_display_refresh_rate" getter="get_display_refresh_rate" default="0.0">
+			The display refresh rate for the current HMD. Only functional if this feature is supported by the OpenXR runtime and after the interface has been initialized.
+		</member>
+		<member name="render_target_size_multiplier" type="float" setter="set_render_target_size_multiplier" getter="get_render_target_size_multiplier" default="1.0">
+			The render size multiplier for the current HMD. Must be set before the interface has been initialized.
+		</member>
+	</members>
+	<signals>
+		<signal name="pose_recentered">
+			<description>
+				Informs the user queued a recenter of the player position.
+			</description>
+		</signal>
+		<signal name="session_begun">
+			<description>
+				Informs our OpenXR session has been started.
+			</description>
+		</signal>
+		<signal name="session_focussed">
+			<description>
+				Informs our OpenXR session now has focus.
+			</description>
+		</signal>
+		<signal name="session_stopping">
+			<description>
+				Informs our OpenXR session is stopping.
+			</description>
+		</signal>
+		<signal name="session_visible">
+			<description>
+				Informs our OpenXR session is now visible (output is being sent to the HMD).
+			</description>
+		</signal>
+	</signals>
+</class>

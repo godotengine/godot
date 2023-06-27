@@ -1,0 +1,7 @@
+GDTEST_OK
+>> WARNING
+>> Line: 11
+>> STATIC_CALLED_ON_INSTANCE
+>> The function "num_uint64()" is a static function but was called from an instance. Instead, it should be directly called from the type: "String.num_uint64()".
+8589934592
+8589934592

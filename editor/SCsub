@@ -1,0 +1,131 @@
+#!/usr/bin/env python
+
+Import("env")
+
+env.editor_sources = []
+
+import os
+import glob
+import editor_builders
+
+
+def _make_doc_data_class_path(to_path):
+    # NOTE: It is safe to generate this file here, since this is still executed serially
+    g = open(os.path.join(to_path, "doc_data_class_path.gen.h"), "w", encoding="utf-8")
+    g.write("static const int _doc_data_class_path_count = " + str(len(env.doc_class_path)) + ";\n")
+    g.write("struct _DocDataClassPath { const char* name; const char* path; };\n")
+
+    g.write("static const _DocDataClassPath _doc_data_class_paths[" + str(len(env.doc_class_path) + 1) + "] = {\n")
+    for c in sorted(env.doc_class_path):
+        g.write('\t{"' + c + '", "' + env.doc_class_path[c] + '"},\n')
+    g.write("\t{nullptr, nullptr}\n")
+    g.write("};\n")
+
+    g.close()
+
+
+if env.editor_build:
+    # Register exporters
+    reg_exporters_inc = '#include "register_exporters.h"\n\n'
+    reg_exporters = "void register_exporters() {\n"
+    for e in env.platform_exporters:
+        # Add all .cpp files in export folder
+        env.add_source_files(env.editor_sources, "../platform/" + e + "/export/" + "*.cpp")
+
+        reg_exporters += "\tregister_" + e + "_exporter();\n"
+        reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'
+    reg_exporters += "}\n\n"
+    reg_exporters += "void register_exporter_types() {\n"
+    for e in env.platform_exporters:
+        reg_exporters += "\tregister_" + e + "_exporter_types();\n"
+    reg_exporters += "}\n"
+
+    # NOTE: It is safe to generate this file here, since this is still executed serially
+    with open("register_exporters.gen.cpp", "w", encoding="utf-8") as f:
+        f.write(reg_exporters_inc)
+        f.write(reg_exporters)
+
+    # Core API documentation.
+    docs = []
+    docs += Glob("#doc/classes/*.xml")
+
+    # Module API documentation.
+    module_dirs = []
+    for d in env.doc_class_path.values():
+        if d not in module_dirs:
+            module_dirs.append(d)
+
+    for d in module_dirs:
+        if not os.path.isabs(d):
+            docs += Glob("#" + d + "/*.xml")  # Built-in.
+        else:
+            docs += Glob(d + "/*.xml")  # Custom.
+
+    _make_doc_data_class_path(env.Dir("#editor").abspath)
+
+    docs = sorted(docs)
+    env.Depends("#editor/doc_data_compressed.gen.h", docs)
+    env.CommandNoCache(
+        "#editor/doc_data_compressed.gen.h",
+        docs,
+        env.Run(editor_builders.make_doc_header, "Generating documentation header."),
+    )
+
+    # Editor interface and class reference translations incur a significant size
+    # cost for the editor binary (see godot-proposals#3421).
+    # To limit it, we only include translations with a high enough completion
+    # ratio (20% for the editor UI, 10% for the class reference).
+    # Generated with `make include-list` for each resource.
+
+    # Editor translations
+    tlist = glob.glob(env.Dir("#editor/translations/editor").abspath + "/*.po")
+    env.Depends("#editor/editor_translations.gen.h", tlist)
+    env.CommandNoCache(
+        "#editor/editor_translations.gen.h",
+        tlist,
+        env.Run(editor_builders.make_editor_translations_header, "Generating editor translations header."),
+    )
+
+    # Property translations
+    tlist = glob.glob(env.Dir("#editor/translations/properties").abspath + "/*.po")
+    env.Depends("#editor/property_translations.gen.h", tlist)
+    env.CommandNoCache(
+        "#editor/property_translations.gen.h",
+        tlist,
+        env.Run(editor_builders.make_property_translations_header, "Generating property translations header."),
+    )
+
+    # Documentation translations
+    tlist = glob.glob(env.Dir("#doc/translations").abspath + "/*.po")
+    env.Depends("#editor/doc_translations.gen.h", tlist)
+    env.CommandNoCache(
+        "#editor/doc_translations.gen.h",
+        tlist,
+        env.Run(editor_builders.make_doc_translations_header, "Generating translations header."),
+    )
+
+    # Fonts
+    flist = glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.ttf")
+    flist.extend(glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.otf"))
+    flist.extend(glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.woff"))
+    flist.extend(glob.glob(env.Dir("#thirdparty").abspath + "/fonts/*.woff2"))
+    flist.sort()
+    env.Depends("#editor/builtin_fonts.gen.h", flist)
+    env.CommandNoCache(
+        "#editor/builtin_fonts.gen.h",
+        flist,
+        env.Run(editor_builders.make_fonts_header, "Generating builtin fonts header."),
+    )
+
+    env.add_source_files(env.editor_sources, "*.cpp")
+    env.add_source_files(env.editor_sources, "register_exporters.gen.cpp")
+
+    SConscript("debugger/SCsub")
+    SConscript("export/SCsub")
+    SConscript("gui/SCsub")
+    SConscript("icons/SCsub")
+    SConscript("import/SCsub")
+    SConscript("plugins/SCsub")
+
+    lib = env.add_library("editor", env.editor_sources)
+    env.Prepend(LIBS=[lib])

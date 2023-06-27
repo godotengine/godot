@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventScreenDrag" inherits="InputEventFromWindow" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Represents a screen drag event.
+	</brief_description>
+	<description>
+		Stores information about screen drag events. See [method Node._input].
+	</description>
+	<tutorials>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+	</tutorials>
+	<members>
+		<member name="index" type="int" setter="set_index" getter="get_index" default="0">
+			The drag event index in the case of a multi-drag event.
+		</member>
+		<member name="pen_inverted" type="bool" setter="set_pen_inverted" getter="get_pen_inverted" default="false">
+			Returns [code]true[/code] when using the eraser end of a stylus pen.
+		</member>
+		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
+			The drag position.
+		</member>
+		<member name="pressure" type="float" setter="set_pressure" getter="get_pressure" default="0.0">
+			Represents the pressure the user puts on the pen. Ranges from [code]0.0[/code] to [code]1.0[/code].
+		</member>
+		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative" default="Vector2(0, 0)">
+			The drag position relative to the previous position (position at the last frame).
+		</member>
+		<member name="tilt" type="Vector2" setter="set_tilt" getter="get_tilt" default="Vector2(0, 0)">
+			Represents the angles of tilt of the pen. Positive X-coordinate value indicates a tilt to the right. Positive Y-coordinate value indicates a tilt toward the user. Ranges from [code]-1.0[/code] to [code]1.0[/code] for both axes.
+		</member>
+		<member name="velocity" type="Vector2" setter="set_velocity" getter="get_velocity" default="Vector2(0, 0)">
+			The drag velocity.
+		</member>
+	</members>
+</class>

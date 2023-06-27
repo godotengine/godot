@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+
+Import("env")
+Import("env_modules")
+
+env_dds = env_modules.Clone()
+
+env_dds.add_source_files(env.modules_sources, "*.cpp")

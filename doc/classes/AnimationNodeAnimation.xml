@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeAnimation" inherits="AnimationRootNode" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An input animation for an [AnimationNodeBlendTree].
+	</brief_description>
+	<description>
+		A resource to add to an [AnimationNodeBlendTree]. Only has one output port using the [member animation] property. Used as an input for [AnimationNode]s that blend animations together.
+	</description>
+	<tutorials>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
+		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
+	</tutorials>
+	<members>
+		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="&amp;&quot;&quot;">
+			Animation to use as an output. It is one of the animations provided by [member AnimationTree.anim_player].
+		</member>
+		<member name="play_mode" type="int" setter="set_play_mode" getter="get_play_mode" enum="AnimationNodeAnimation.PlayMode" default="0">
+			Determines the playback direction of the animation.
+		</member>
+	</members>
+	<constants>
+		<constant name="PLAY_MODE_FORWARD" value="0" enum="PlayMode">
+			Plays animation in forward direction.
+		</constant>
+		<constant name="PLAY_MODE_BACKWARD" value="1" enum="PlayMode">
+			Plays animation in backward direction.
+		</constant>
+	</constants>
+</class>

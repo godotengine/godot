@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Rect2" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 2D axis-aligned bounding box using floating-point coordinates.
+	</brief_description>
+	<description>
+		[Rect2] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
+		It uses floating-point coordinates. If you need integer coordinates, use [Rect2i] instead.
+		The 3D counterpart to [Rect2] is [AABB].
+		Negative values for [member size] are not supported and will not work for most methods. Use [method abs] to get a Rect2 with a positive size.
+	</description>
+	<tutorials>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Vector math">$DOCS_URL/tutorials/math/vector_math.html</link>
+		<link title="Advanced vector math">$DOCS_URL/tutorials/math/vectors_advanced.html</link>
+	</tutorials>
+	<constructors>
+		<constructor name="Rect2">
+			<return type="Rect2" />
+			<description>
+				Constructs a default-initialized [Rect2] with default (zero) values of [member position] and [member size].
+			</description>
+		</constructor>
+		<constructor name="Rect2">
+			<return type="Rect2" />
+			<param index="0" name="from" type="Rect2" />
+			<description>
+				Constructs a [Rect2] as a copy of the given [Rect2].
+			</description>
+		</constructor>
+		<constructor name="Rect2">
+			<return type="Rect2" />
+			<param index="0" name="from" type="Rect2i" />
+			<description>
+				Constructs a [Rect2] from a [Rect2i].
+			</description>
+		</constructor>
+		<constructor name="Rect2">
+			<return type="Rect2" />
+			<param index="0" name="position" type="Vector2" />
+			<param index="1" name="size" type="Vector2" />
+			<description>
+				Constructs a [Rect2] by position and size.
+			</description>
+		</constructor>
+		<constructor name="Rect2">
+			<return type="Rect2" />
+			<param index="0" name="x" type="float" />
+			<param index="1" name="y" type="float" />
+			<param index="2" name="width" type="float" />
+			<param index="3" name="height" type="float" />
+			<description>
+				Constructs a [Rect2] by x, y, width, and height.
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="abs" qualifiers="const">
+			<return type="Rect2" />
+			<description>
+				Returns a [Rect2] with equivalent position and area, modified so that the top-left corner is the origin and [code]width[/code] and [code]height[/code] are positive.
+			</description>
+		</method>
+		<method name="encloses" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="b" type="Rect2" />
+			<description>
+				Returns [code]true[/code] if this [Rect2] completely encloses another one.
+			</description>
+		</method>
+		<method name="expand" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="to" type="Vector2" />
+			<description>
+				Returns a copy of this [Rect2] expanded to include a given point.
+				[b]Example:[/b]
+				[codeblocks]
+				[gdscript]
+				# position (-3, 2), size (1, 1)
+				var rect = Rect2(Vector2(-3, 2), Vector2(1, 1))
+				# position (-3, -1), size (3, 4), so we fit both rect and Vector2(0, -1)
+				var rect2 = rect.expand(Vector2(0, -1))
+				[/gdscript]
+				[csharp]
+				// position (-3, 2), size (1, 1)
+				var rect = new Rect2(new Vector2(-3, 2), new Vector2(1, 1));
+				// position (-3, -1), size (3, 4), so we fit both rect and Vector2(0, -1)
+				var rect2 = rect.Expand(new Vector2(0, -1));
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="get_area" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the area of the [Rect2]. See also [method has_area].
+			</description>
+		</method>
+		<method name="get_center" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the center of the [Rect2], which is equal to [member position] + ([member size] / 2).
+			</description>
+		</method>
+		<method name="grow" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="amount" type="float" />
+			<description>
+				Returns a copy of the [Rect2] grown by the specified [param amount] on all sides.
+			</description>
+		</method>
+		<method name="grow_individual" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="left" type="float" />
+			<param index="1" name="top" type="float" />
+			<param index="2" name="right" type="float" />
+			<param index="3" name="bottom" type="float" />
+			<description>
+				Returns a copy of the [Rect2] grown by the specified amount on each side individually.
+			</description>
+		</method>
+		<method name="grow_side" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="side" type="int" />
+			<param index="1" name="amount" type="float" />
+			<description>
+				Returns a copy of the [Rect2] grown by the specified [param amount] on the specified [enum Side].
+			</description>
+		</method>
+		<method name="has_area" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the [Rect2] has area, and [code]false[/code] if the [Rect2] is linear, empty, or has a negative [member size]. See also [method get_area].
+			</description>
+		</method>
+		<method name="has_point" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="point" type="Vector2" />
+			<description>
+				Returns [code]true[/code] if the [Rect2] contains a point. By convention, the right and bottom edges of the [Rect2] are considered exclusive, so points on these edges are [b]not[/b] included.
+				[b]Note:[/b] This method is not reliable for [Rect2] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent rectangle to check for contained points.
+			</description>
+		</method>
+		<method name="intersection" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="b" type="Rect2" />
+			<description>
+				Returns the intersection of this [Rect2] and [param b].
+				If the rectangles do not intersect, an empty [Rect2] is returned.
+			</description>
+		</method>
+		<method name="intersects" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="b" type="Rect2" />
+			<param index="1" name="include_borders" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] if the [Rect2] overlaps with [param b] (i.e. they have at least one point in common).
+				If [param include_borders] is [code]true[/code], they will also be considered overlapping if their borders touch, even without intersection.
+			</description>
+		</method>
+		<method name="is_equal_approx" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="rect" type="Rect2" />
+			<description>
+				Returns [code]true[/code] if this [Rect2] and [param rect] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+			</description>
+		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Rect2] is finite, by calling [method @GlobalScope.is_finite] on each component.
+			</description>
+		</method>
+		<method name="merge" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="b" type="Rect2" />
+			<description>
+				Returns a larger [Rect2] that contains this [Rect2] and [param b].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="end" type="Vector2" setter="" getter="" default="Vector2(0, 0)">
+			Ending corner. This is calculated as [code]position + size[/code]. Setting this value will change the size.
+		</member>
+		<member name="position" type="Vector2" setter="" getter="" default="Vector2(0, 0)">
+			Beginning corner. Typically has values lower than [member end].
+		</member>
+		<member name="size" type="Vector2" setter="" getter="" default="Vector2(0, 0)">
+			Size from [member position] to [member end]. Typically, all components are positive.
+			If the size is negative, you can use [method abs] to fix it.
+		</member>
+	</members>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="Rect2" />
+			<description>
+				Returns [code]true[/code] if the rectangles are not equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Rect2" />
+			<param index="0" name="right" type="Transform2D" />
+			<description>
+				Inversely transforms (multiplies) the [Rect2] by the given [Transform2D] transformation matrix.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="Rect2" />
+			<description>
+				Returns [code]true[/code] if the rectangles are exactly equal.
+				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+			</description>
+		</operator>
+	</operators>
+</class>

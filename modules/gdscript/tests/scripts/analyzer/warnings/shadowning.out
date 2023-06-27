@@ -1,0 +1,26 @@
+GDTEST_OK
+>> WARNING
+>> Line: 5
+>> SHADOWED_GLOBAL_IDENTIFIER
+>> The variable "Array" has the same name as a built-in type.
+>> WARNING
+>> Line: 6
+>> SHADOWED_GLOBAL_IDENTIFIER
+>> The variable "Node" has the same name as a global class.
+>> WARNING
+>> Line: 7
+>> SHADOWED_GLOBAL_IDENTIFIER
+>> The variable "is_same" has the same name as a built-in function.
+>> WARNING
+>> Line: 8
+>> SHADOWED_GLOBAL_IDENTIFIER
+>> The variable "sqrt" has the same name as a built-in function.
+>> WARNING
+>> Line: 9
+>> SHADOWED_VARIABLE
+>> The local variable "member" is shadowing an already-declared variable at line 1.
+>> WARNING
+>> Line: 10
+>> SHADOWED_VARIABLE_BASE_CLASS
+>> The local variable "reference" is shadowing an already-declared method at the base class "RefCounted".
+warn

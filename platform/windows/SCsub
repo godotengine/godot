@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+
+Import("env")
+
+import os
+from platform_methods import run_in_subprocess
+import platform_windows_builders
+
+common_win = [
+    "godot_windows.cpp",
+    "crash_handler_windows.cpp",
+    "os_windows.cpp",
+    "display_server_windows.cpp",
+    "key_mapping_windows.cpp",
+    "joypad_windows.cpp",
+    "tts_windows.cpp",
+    "windows_terminal_logger.cpp",
+    "vulkan_context_win.cpp",
+    "gl_manager_windows.cpp",
+]
+
+common_win_wrap = [
+    "console_wrapper_windows.cpp",
+]
+
+res_file = "godot_res.rc"
+res_target = "godot_res" + env["OBJSUFFIX"]
+res_obj = env.RES(res_target, res_file)
+
+prog = env.add_program("#bin/godot", common_win + res_obj, PROGSUFFIX=env["PROGSUFFIX"])
+
+# Build console wrapper app.
+if env["windows_subsystem"] == "gui":
+    env_wrap = env.Clone()
+    res_wrap_file = "godot_res_wrap.rc"
+    res_wrap_target = "godot_res_wrap" + env["OBJSUFFIX"]
+    res_wrap_obj = env_wrap.RES(res_wrap_target, res_wrap_file)
+
+    if env.msvc:
+        env_wrap.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+        env_wrap.Append(LINKFLAGS=["version.lib"])
+    else:
+        env_wrap.Append(LINKFLAGS=["-Wl,--subsystem,console"])
+        env_wrap.Append(LIBS=["version"])
+
+    prog_wrap = env_wrap.add_program("#bin/godot", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"])
+
+# Microsoft Visual Studio Project Generation
+if env["vsproj"]:
+    env.vs_srcs += ["platform/windows/" + res_file]
+    env.vs_srcs += ["platform/windows/godot.natvis"]
+    for x in common_win:
+        env.vs_srcs += ["platform/windows/" + str(x)]
+    if env["windows_subsystem"] == "gui":
+        for x in common_win_wrap:
+            env.vs_srcs += ["platform/windows/" + str(x)]
+
+if not os.getenv("VCINSTALLDIR"):
+    if env["debug_symbols"] and env["separate_debug_symbols"]:
+        env.AddPostAction(prog, run_in_subprocess(platform_windows_builders.make_debug_mingw))
+        if env["windows_subsystem"] == "gui":
+            env.AddPostAction(prog_wrap, run_in_subprocess(platform_windows_builders.make_debug_mingw))

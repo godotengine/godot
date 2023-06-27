@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectInstance" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_process" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="src_buffer" type="const void*" />
+			<param index="1" name="dst_buffer" type="AudioFrame*" />
+			<param index="2" name="frame_count" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="_process_silence" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>
