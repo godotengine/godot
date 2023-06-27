@@ -3093,9 +3093,6 @@ msgid "Invalid node name, the following characters are not allowed:"
 msgstr ""
 "Nombre de nodo inválido, los siguientes caracteres no están permitidos:"
 
-msgid "Rename Node"
-msgstr "Renombrar Nodo"
-
 msgid "Scene Tree (Nodes):"
 msgstr "Arbol de Escenas (Nodos):"
 
@@ -7700,45 +7697,6 @@ msgstr "Bake NavMesh"
 
 msgid "Clear the navigation mesh."
 msgstr "Restablecer mesh de navegación."
-
-msgid "Setting up Configuration..."
-msgstr "Seteando Configuración..."
-
-msgid "Calculating grid size..."
-msgstr "Calculando tamaño de grilla..."
-
-msgid "Creating heightfield..."
-msgstr "Creando campo de alturas..."
-
-msgid "Marking walkable triangles..."
-msgstr "Marcando triangulos caminables..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Construyendo campo de alturas compacto..."
-
-msgid "Eroding walkable area..."
-msgstr "Erocionando area caminable..."
-
-msgid "Partitioning..."
-msgstr "Particionando..."
-
-msgid "Creating contours..."
-msgstr "Creando contornos..."
-
-msgid "Creating polymesh..."
-msgstr "Creando polymesh..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Convirtiendo a mesh de navegación nativo..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Configuración del Generador de Meshes de Navegación:"
-
-msgid "Parsing Geometry..."
-msgstr "Parseando Geometría..."
-
-msgid "Done!"
-msgstr "Hecho!"
 
 msgid "Package name is missing."
 msgstr "Nombre de paquete faltante."

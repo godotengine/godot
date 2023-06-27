@@ -3429,9 +3429,6 @@ msgstr "Ienākošs RPC"
 msgid "Outgoing RPC"
 msgstr "Izejošs RPC"
 
-msgid "Done!"
-msgstr "Darīts!"
-
 msgid "Invalid package name:"
 msgstr "Nederīgs paketes nosaukums:"
 

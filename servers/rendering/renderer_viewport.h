@@ -297,7 +297,7 @@ public:
 	bool free(RID p_rid);
 
 	int get_total_objects_drawn() const;
-	int get_total_vertices_drawn() const;
+	int get_total_primitives_drawn() const;
 	int get_total_draw_calls_used() const;
 
 	// Workaround for setting this on thread.

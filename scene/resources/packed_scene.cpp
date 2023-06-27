@@ -45,6 +45,10 @@
 
 #define PACKED_SCENE_VERSION 3
 
+#ifdef TOOLS_ENABLED
+SceneState::InstantiationWarningNotify SceneState::instantiation_warn_notify = nullptr;
+#endif
+
 bool SceneState::can_instantiate() const {
 	return nodes.size() > 0;
 }
@@ -240,35 +244,11 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						uint32_t name_idx = nprops[j].name & (FLAG_PATH_PROPERTY_IS_NODE - 1);
 						ERR_FAIL_UNSIGNED_INDEX_V(name_idx, (uint32_t)sname_count, nullptr);
 
-						const StringName &prop_name = snames[name_idx];
-						const Variant &prop_variant = props[nprops[j].value];
-
-						if (prop_variant.get_type() == Variant::ARRAY) {
-							const Array &array = prop_variant;
-							if (Engine::get_singleton()->is_editor_hint()) {
-								if (array.get_typed_builtin() == Variant::NODE_PATH) {
-									// If editor, simply set the original array of NodePaths.
-									node->set(prop_name, prop_variant);
-									continue;
-								}
-							}
-							for (int k = 0; k < array.size(); k++) {
-								DeferredNodePathProperties dnp;
-								dnp.path = array[k];
-								dnp.base = node;
-								// Use special property name to signify an array. This is only used in deferred_node_paths.
-								dnp.property = String(prop_name) + "/indices/" + itos(k);
-								deferred_node_paths.push_back(dnp);
-							}
-
-						} else {
-							// Do an actual deferred set of the property path.
-							DeferredNodePathProperties dnp;
-							dnp.path = prop_variant;
-							dnp.base = node;
-							dnp.property = prop_name;
-							deferred_node_paths.push_back(dnp);
-						}
+						DeferredNodePathProperties dnp;
+						dnp.value = props[nprops[j].value];
+						dnp.base = node;
+						dnp.property = snames[name_idx];
+						deferred_node_paths.push_back(dnp);
 						continue;
 					}
 
@@ -380,7 +360,33 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				//if node was not part of instance, must set its name, parenthood and ownership
 				if (i > 0) {
 					if (parent) {
-						parent->_add_child_nocheck(node, snames[n.name]);
+						bool pending_add = true;
+#ifdef TOOLS_ENABLED
+						if (Engine::get_singleton()->is_editor_hint()) {
+							Node *existing = parent->_get_child_by_name(snames[n.name]);
+							if (existing) {
+								// There's already a node in the same parent with the same name.
+								// This means that somehow the node was added both to the scene being
+								// loaded and another one instantiated in the former, maybe because of
+								// manual editing, or a bug in scene saving, or a loophole in the workflow
+								// (with any of the bugs possibly already fixed).
+								// Bring consistency back by letting it be assigned a non-clashing name.
+								// This simple workaround at least avoids leaks and helps the user realize
+								// something awkward has happened.
+								if (instantiation_warn_notify) {
+									instantiation_warn_notify(vformat(
+											TTR("An incoming node's name clashes with %s already in the scene (presumably, from a more nested instance).\nThe less nested node will be renamed. Please fix and re-save the scene."),
+											ret_nodes[0]->get_path_to(existing)));
+								}
+								node->set_name(snames[n.name]);
+								parent->add_child(node, true);
+								pending_add = false;
+							}
+						}
+#endif
+						if (pending_add) {
+							parent->_add_child_nocheck(node, snames[n.name]);
+						}
 						if (n.index >= 0 && n.index < parent->get_child_count() - 1) {
 							parent->move_child(node, n.index);
 						}
@@ -435,24 +441,21 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 	for (const DeferredNodePathProperties &dnp : deferred_node_paths) {
 		// Replace properties stored as NodePaths with actual Nodes.
-		Node *other = dnp.base->get_node_or_null(dnp.path);
+		if (dnp.value.get_type() == Variant::ARRAY) {
+			Array paths = dnp.value;
 
-		const String string_property = dnp.property;
-		if (string_property.contains("/indices/")) {
-			// For properties with "/indices/", the replacement takes place inside an Array.
-			const String base_property = string_property.get_slice("/", 0);
-			const int index = string_property.get_slice("/", 2).to_int();
+			bool valid;
+			Array array = dnp.base->get(dnp.property, &valid);
+			ERR_CONTINUE(!valid);
+			array = array.duplicate();
 
-			Array array = dnp.base->get(base_property);
-			if (array.size() >= index) {
-				array.push_back(other);
-			} else {
-				array.set(index, other);
+			array.resize(paths.size());
+			for (int i = 0; i < array.size(); i++) {
+				array.set(i, dnp.base->get_node_or_null(paths[i]));
 			}
-
-			dnp.base->set(base_property, array);
+			dnp.base->set(dnp.property, array);
 		} else {
-			dnp.base->set(dnp.property, other);
+			dnp.base->set(dnp.property, dnp.base->get_node_or_null(dnp.value));
 		}
 	}
 

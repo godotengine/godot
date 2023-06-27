@@ -132,7 +132,6 @@ private:
 	bool debug_collisions_hint = false;
 	bool debug_paths_hint = false;
 	bool debug_navigation_hint = false;
-	bool debug_avoidance_hint = false;
 #endif
 	bool paused = false;
 	int root_lock = 0;
@@ -185,12 +184,8 @@ private:
 	Color debug_collision_contact_color;
 	Color debug_paths_color;
 	float debug_paths_width = 1.0f;
-	Color debug_navigation_color;
-	Color debug_navigation_disabled_color;
 	Ref<ArrayMesh> debug_contact_mesh;
 	Ref<Material> debug_paths_material;
-	Ref<Material> navigation_material;
-	Ref<Material> navigation_disabled_material;
 	Ref<Material> collision_material;
 	int collision_debug_contacts;
 
@@ -351,9 +346,6 @@ public:
 
 	void set_debug_navigation_hint(bool p_enabled);
 	bool is_debugging_navigation_hint() const;
-
-	void set_debug_avoidance_hint(bool p_enabled);
-	bool is_debugging_avoidance_hint() const;
 #else
 	void set_debug_collisions_hint(bool p_enabled) {}
 	bool is_debugging_collisions_hint() const { return false; }

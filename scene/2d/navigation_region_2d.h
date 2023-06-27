@@ -52,7 +52,13 @@ class NavigationRegion2D : public Node2D {
 	Transform2D current_global_transform;
 
 	void _navigation_polygon_changed();
-	void _map_changed(RID p_RID);
+
+#ifdef DEBUG_ENABLED
+private:
+	void _update_debug_mesh();
+	void _update_debug_edge_connections_mesh();
+	void _navigation_map_changed(RID p_map);
+#endif // DEBUG_ENABLED
 
 protected:
 	void _notification(int p_what);

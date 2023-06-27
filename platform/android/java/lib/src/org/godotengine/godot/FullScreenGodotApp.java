@@ -51,6 +51,9 @@ import androidx.fragment.app.FragmentActivity;
 public abstract class FullScreenGodotApp extends FragmentActivity implements GodotHost {
 	private static final String TAG = FullScreenGodotApp.class.getSimpleName();
 
+	protected static final String EXTRA_FORCE_QUIT = "force_quit_requested";
+	protected static final String EXTRA_NEW_LAUNCH = "new_launch_requested";
+
 	@Nullable
 	private Godot godotFragment;
 
@@ -58,6 +61,8 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.godot_app_layout);
+
+		handleStartIntent(getIntent(), true);
 
 		Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.godot_fragment_container);
 		if (currentFragment instanceof Godot) {
@@ -109,8 +114,32 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 	@Override
 	public void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
+		setIntent(intent);
+
+		handleStartIntent(intent, false);
+
 		if (godotFragment != null) {
 			godotFragment.onNewIntent(intent);
+		}
+	}
+
+	private void handleStartIntent(Intent intent, boolean newLaunch) {
+		boolean forceQuitRequested = intent.getBooleanExtra(EXTRA_FORCE_QUIT, false);
+		if (forceQuitRequested) {
+			Log.d(TAG, "Force quit requested, terminating..");
+			ProcessPhoenix.forceQuit(this);
+			return;
+		}
+
+		if (!newLaunch) {
+			boolean newLaunchRequested = intent.getBooleanExtra(EXTRA_NEW_LAUNCH, false);
+			if (newLaunchRequested) {
+				Log.d(TAG, "New launch requested, restarting..");
+
+				Intent restartIntent = new Intent(intent).putExtra(EXTRA_NEW_LAUNCH, false);
+				ProcessPhoenix.triggerRebirth(this, restartIntent);
+				return;
+			}
 		}
 	}
 

@@ -2430,9 +2430,6 @@ msgstr ""
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "שם מפרק לא חוקי, התווים הבאים אינם מותרים:"
 
-msgid "Rename Node"
-msgstr "שינוי שם מפרק"
-
 msgid "Scene Tree (Nodes):"
 msgstr "עץ סצינה (מפרקים):"
 
@@ -3807,45 +3804,6 @@ msgstr "אפיית NavMesh"
 
 msgid "Clear the navigation mesh."
 msgstr "ניקוי רשת הניווט."
-
-msgid "Setting up Configuration..."
-msgstr "הגדרת תצורה..."
-
-msgid "Calculating grid size..."
-msgstr "חישוב גודל רשת..."
-
-msgid "Creating heightfield..."
-msgstr "יצירת שדה גובה..."
-
-msgid "Marking walkable triangles..."
-msgstr "סימון משולשים הניתנים להליכה..."
-
-msgid "Constructing compact heightfield..."
-msgstr "בונה שדה גובה קומפקטי..."
-
-msgid "Eroding walkable area..."
-msgstr "שחיקת השטח הניתן להליכה..."
-
-msgid "Partitioning..."
-msgstr "יצירת מחיצות..."
-
-msgid "Creating contours..."
-msgstr "יצירת קווי מתאר..."
-
-msgid "Creating polymesh..."
-msgstr "יצירת polymesh..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "המרה לרשת ניווט מקומית..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "הגדרת מחולל רשת ניווט:"
-
-msgid "Parsing Geometry..."
-msgstr "ניתוח גיאומטרי..."
-
-msgid "Done!"
-msgstr "בוצע!"
 
 msgid "Pose"
 msgstr "פוזה"

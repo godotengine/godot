@@ -548,6 +548,7 @@ void ScriptTextEditor::_update_warnings() {
 
 		warnings_panel->push_cell();
 		warnings_panel->add_text(w.message);
+		warnings_panel->add_newline();
 		warnings_panel->pop(); // Cell.
 	}
 	warnings_panel->pop(); // Table.
@@ -569,6 +570,7 @@ void ScriptTextEditor::_update_errors() {
 
 		errors_panel->push_cell();
 		errors_panel->add_text(err.message);
+		errors_panel->add_newline();
 		errors_panel->pop(); // Cell.
 	}
 	errors_panel->pop(); // Table

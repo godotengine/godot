@@ -330,6 +330,7 @@ void FabrikInverseKinematic::_update_chain(const Skeleton3D *p_sk, ChainItem *p_
 
 void SkeletonIK3D::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "root_bone" || p_property.name == "tip_bone") {
+		Skeleton3D *skeleton = get_parent_skeleton();
 		if (skeleton) {
 			String names("--,");
 			for (int i = 0; i < skeleton->get_bone_count(); i++) {
@@ -400,13 +401,13 @@ void SkeletonIK3D::_bind_methods() {
 void SkeletonIK3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			skeleton = Object::cast_to<Skeleton3D>(get_parent());
+			skeleton_ref = Object::cast_to<Skeleton3D>(get_parent());
 			set_process_priority(1);
 			reload_chain();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (target_node_override) {
+			if (target_node_override_ref) {
 				reload_goal();
 			}
 			_solve_chain();
@@ -463,7 +464,7 @@ const Transform3D &SkeletonIK3D::get_target_transform() const {
 
 void SkeletonIK3D::set_target_node(const NodePath &p_node) {
 	target_node_path_override = p_node;
-	target_node_override = nullptr;
+	target_node_override_ref = Variant();
 	reload_goal();
 }
 
@@ -503,6 +504,10 @@ void SkeletonIK3D::set_max_iterations(int p_iterations) {
 	max_iterations = p_iterations;
 }
 
+Skeleton3D *SkeletonIK3D::get_parent_skeleton() const {
+	return cast_to<Skeleton3D>(skeleton_ref.get_validated_object());
+}
+
 bool SkeletonIK3D::is_running() {
 	return is_processing_internal();
 }
@@ -511,7 +516,7 @@ void SkeletonIK3D::start(bool p_one_time) {
 	if (p_one_time) {
 		set_process_internal(false);
 
-		if (target_node_override) {
+		if (target_node_override_ref) {
 			reload_goal();
 		}
 
@@ -523,16 +528,18 @@ void SkeletonIK3D::start(bool p_one_time) {
 
 void SkeletonIK3D::stop() {
 	set_process_internal(false);
+	Skeleton3D *skeleton = get_parent_skeleton();
 	if (skeleton) {
 		skeleton->clear_bones_global_pose_override();
 	}
 }
 
 Transform3D SkeletonIK3D::_get_target_transform() {
-	if (!target_node_override && !target_node_path_override.is_empty()) {
-		target_node_override = Object::cast_to<Node3D>(get_node(target_node_path_override));
+	if (!target_node_override_ref && !target_node_path_override.is_empty()) {
+		target_node_override_ref = Object::cast_to<Node3D>(get_node(target_node_path_override));
 	}
 
+	Node3D *target_node_override = cast_to<Node3D>(target_node_override_ref.get_validated_object());
 	if (target_node_override && target_node_override->is_inside_tree()) {
 		return target_node_override->get_global_transform();
 	} else {
@@ -544,6 +551,7 @@ void SkeletonIK3D::reload_chain() {
 	FabrikInverseKinematic::free_task(task);
 	task = nullptr;
 
+	Skeleton3D *skeleton = get_parent_skeleton();
 	if (!skeleton) {
 		return;
 	}

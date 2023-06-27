@@ -293,7 +293,7 @@ void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 	}
 }
 
-void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
+void EditorHelp::_add_type(const String &p_type, const String &p_enum, bool p_is_bitfield) {
 	if (p_type.is_empty() || p_type == "void") {
 		class_desc->push_color(Color(theme_cache.type_color, 0.5));
 		class_desc->push_hint(TTR("No return value."));
@@ -304,6 +304,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	}
 
 	bool is_enum_type = !p_enum.is_empty();
+	bool is_bitfield = p_is_bitfield && is_enum_type;
 	bool can_ref = !p_type.contains("*") || is_enum_type;
 
 	String link_t = p_type; // For links in metadata
@@ -327,6 +328,13 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 			class_desc->add_text("Array");
 			class_desc->pop();
 			class_desc->add_text("[");
+		} else if (is_bitfield) {
+			class_desc->push_color(Color(theme_cache.type_color, 0.5));
+			class_desc->push_hint(TTR("This value is an integer composed as a bitmask of the following flags."));
+			class_desc->add_text("BitField");
+			class_desc->pop();
+			class_desc->add_text("[");
+			class_desc->pop();
 		}
 
 		if (is_enum_type) {
@@ -340,6 +348,10 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 		class_desc->pop(); // Pushed meta above.
 		if (add_array) {
 			class_desc->add_text("]");
+		} else if (is_bitfield) {
+			class_desc->push_color(Color(theme_cache.type_color, 0.5));
+			class_desc->add_text("]");
+			class_desc->pop();
 		}
 	}
 	class_desc->pop();
@@ -403,7 +415,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		_add_bulletpoint();
 	}
 
-	_add_type(p_method.return_type, p_method.return_enum);
+	_add_type(p_method.return_type, p_method.return_enum, p_method.return_is_bitfield);
 
 	if (p_overview) {
 		class_desc->pop(); // align
@@ -437,7 +449,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 
 		_add_text(p_method.arguments[j].name);
 		class_desc->add_text(": ");
-		_add_type(p_method.arguments[j].type, p_method.arguments[j].enumeration);
+		_add_type(p_method.arguments[j].type, p_method.arguments[j].enumeration, p_method.arguments[j].is_bitfield);
 		if (!p_method.arguments[j].default_value.is_empty()) {
 			class_desc->push_color(theme_cache.symbol_color);
 			class_desc->add_text(" = ");
@@ -953,7 +965,7 @@ void EditorHelp::_update_doc() {
 			class_desc->push_cell();
 			class_desc->push_paragraph(HORIZONTAL_ALIGNMENT_RIGHT, Control::TEXT_DIRECTION_AUTO, "");
 			_push_code_font();
-			_add_type(cd.properties[i].type, cd.properties[i].enumeration);
+			_add_type(cd.properties[i].type, cd.properties[i].enumeration, cd.properties[i].is_bitfield);
 			_pop_code_font();
 			class_desc->pop();
 			class_desc->pop(); // cell
@@ -1252,7 +1264,7 @@ void EditorHelp::_update_doc() {
 
 				_add_text(cd.signals[i].arguments[j].name);
 				class_desc->add_text(": ");
-				_add_type(cd.signals[i].arguments[j].type, cd.signals[i].arguments[j].enumeration);
+				_add_type(cd.signals[i].arguments[j].type, cd.signals[i].arguments[j].enumeration, cd.signals[i].arguments[j].is_bitfield);
 				if (!cd.signals[i].arguments[j].default_value.is_empty()) {
 					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text(" = ");
@@ -1630,7 +1642,7 @@ void EditorHelp::_update_doc() {
 			_push_code_font();
 			_add_bulletpoint();
 
-			_add_type(cd.properties[i].type, cd.properties[i].enumeration);
+			_add_type(cd.properties[i].type, cd.properties[i].enumeration, cd.properties[i].is_bitfield);
 			class_desc->add_text(" ");
 			_pop_code_font();
 			class_desc->pop(); // cell
@@ -2297,6 +2309,9 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 static bool doc_gen_use_threads = true;
 
 void EditorHelp::generate_doc(bool p_use_cache) {
+	// Temporarily disable use of cache for pre-RC stabilization.
+	p_use_cache = false;
+
 	OS::get_singleton()->benchmark_begin_measure("EditorHelp::generate_doc");
 	if (doc_gen_use_threads) {
 		// In case not the first attempt.
@@ -2306,7 +2321,6 @@ void EditorHelp::generate_doc(bool p_use_cache) {
 	DEV_ASSERT(first_attempt == (doc == nullptr));
 
 	if (!doc) {
-		GDREGISTER_CLASS(DocCache);
 		doc = memnew(DocTools);
 	}
 

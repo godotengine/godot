@@ -3446,9 +3446,6 @@ msgstr ""
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Neplatný název uzlu, následující znaky nejsou povoleny:"
 
-msgid "Rename Node"
-msgstr "Přejmenovat uzel"
-
 msgid "Scene Tree (Nodes):"
 msgstr "Strom scény (uzly):"
 
@@ -7737,45 +7734,6 @@ msgstr "Zapéct NavMesh"
 
 msgid "Clear the navigation mesh."
 msgstr "Vymazat navigační model."
-
-msgid "Setting up Configuration..."
-msgstr "Nastavuji konfiguraci..."
-
-msgid "Calculating grid size..."
-msgstr "Počítám velikost mřížky..."
-
-msgid "Creating heightfield..."
-msgstr "Vytvářím výškové pole..."
-
-msgid "Marking walkable triangles..."
-msgstr "Vyznačuji průchozí trojúhelníky..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Konstruuji kompaktní výškové pole..."
-
-msgid "Eroding walkable area..."
-msgstr "Eroduji průchozí oblast..."
-
-msgid "Partitioning..."
-msgstr "Rozděluji..."
-
-msgid "Creating contours..."
-msgstr "Vytvářím kontury..."
-
-msgid "Creating polymesh..."
-msgstr "Vytvářím polymesh..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Převádím na nativní navigační mřížku..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Nastavení generátoru navigační sítě:"
-
-msgid "Parsing Geometry..."
-msgstr "Parsuji geometrii..."
-
-msgid "Done!"
-msgstr "Hotovo!"
 
 msgid "Package name is missing."
 msgstr "Chybí jméno balíčku."

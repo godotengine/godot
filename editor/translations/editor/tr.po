@@ -98,13 +98,14 @@
 # Black <ebubekir23atalay@gmail.com>, 2023.
 # Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>, 2023.
 # ErcanPasha <dayanomerercan@gmail.com>, 2023.
+# Yoldaş Ulaş <yutalas@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-18 16:55+0000\n"
-"Last-Translator: ErcanPasha <dayanomerercan@gmail.com>\n"
+"PO-Revision-Date: 2023-06-23 12:52+0000\n"
+"Last-Translator: Black <ebubekir23atalay@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -112,7 +113,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Unset"
 msgstr "Atamayı Kaldır"
@@ -193,25 +194,25 @@ msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
 msgstr "%.2f Değerinde %d (%s) Ekseninde Oyun Kolu Hareketi"
 
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
-msgstr "Alt Aksiyon, Sony Çarpı, Xbox A, Nintendo B"
+msgstr "Alt Eylem, Sony Çarpı, Xbox A, Nintendo B"
 
 msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
-msgstr "Sağ Aksiyon, Sony Daire, Xbox B, Nintendo A"
+msgstr "Sağ Eylem, Sony Daire, Xbox B, Nintendo A"
 
 msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
-msgstr "Sol Aksiyon, Sony Kare, Xbox X, Nintendo Y"
+msgstr "Sol Eylem, Sony Kare, Xbox X, Nintendo Y"
 
 msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
-msgstr "Üst Aksiyon, Sony Üçgen, Xbox Y, Nintendo X"
+msgstr "Üst Eylem, Sony Üçgen, Xbox Y, Nintendo X"
 
 msgid "Back, Sony Select, Xbox Back, Nintendo -"
 msgstr "Geri, Sony Select, Xbox Back, Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
-msgstr "Kılavuz, Sony PS, Xbox Ana Sayfası"
+msgstr "Rehber, Sony PS, Xbox Ana Sayfası"
 
 msgid "Start, Nintendo +"
-msgstr "Start, Nintendo +"
+msgstr "Başlat, Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Sol Çubuk, Sony L3, Xbox L/LS"
@@ -240,11 +241,29 @@ msgstr "D-pad Sağ"
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
 msgstr "Xbox Share, PS5 Mikrofon, Nintendo Capture"
 
+msgid "Xbox Paddle 1"
+msgstr "Xbox Pedal 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox Pedal 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox Pedal 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox Pedal 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 Dokunmatik Alan"
+
 msgid "Joypad Button %d"
 msgstr "Oyun Kolu Düğmesi %d"
 
 msgid "Pressure:"
 msgstr "Basınç:"
+
+msgid "canceled"
+msgstr "vazgeçildi"
 
 msgid "touched"
 msgstr "dokunuldu"
@@ -320,6 +339,9 @@ msgstr "Yukarıya Yeni Satır"
 
 msgid "Indent"
 msgstr "Girintile"
+
+msgid "Dedent"
+msgstr "Çıkıntıla"
 
 msgid "Delete"
 msgstr "Sil"
@@ -1173,6 +1195,11 @@ msgstr "Bağımlılık Düzenleyicisi"
 msgid "Search Replacement Resource:"
 msgstr "Yerine Geçecek Kaynak Ara:"
 
+msgid "Open Scene"
+msgid_plural "Open Scenes"
+msgstr[0] "Sahneyi Aç"
+msgstr[1] "Sahneleri Aç"
+
 msgid "Open"
 msgstr "Aç"
 
@@ -1774,7 +1801,7 @@ msgid "default:"
 msgstr "varsayılan:"
 
 msgid "Constructors"
-msgstr "Yapıcı methodlar"
+msgstr "Kurucular"
 
 msgid "Operators"
 msgstr "Operatörler"
@@ -1889,6 +1916,29 @@ msgstr ""
 
 msgid "Open Documentation"
 msgstr "Klavuzu Aç"
+
+msgid "(%d change)"
+msgid_plural "(%d changes)"
+msgstr[0] "(%d değişen)"
+msgstr[1] "(%d değişen)"
+
+msgid "Add element to property array with prefix %s."
+msgstr "Elemanı, %s ön ekli özellik dizisine ekle."
+
+msgid "Remove element %d from property array with prefix %s."
+msgstr "%d elemanını, %s ön ekli özellik dizisinden kaldır."
+
+msgid "Move element %d to position %d in property array with prefix %s."
+msgstr "%d elemanını %d konumuna taşı (%s ön ekli özellik dizisi içinde)."
+
+msgid "Clear property array with prefix %s."
+msgstr "%s ön ekli özellik dizisini temizle."
+
+msgid "Resize property array with prefix %s."
+msgstr "%s ön ekli özellik dizisini boyutlandır."
+
+msgid "Element %d: %s%d*"
+msgstr "Eleman %d: %s%d*"
 
 msgid "Move Up"
 msgstr "Yukarı Taşı"
@@ -3550,9 +3600,6 @@ msgstr ""
 
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Geçersiz düğüm adı, aşağıdaki karakterlere izin verilmiyor:"
-
-msgid "Rename Node"
-msgstr "Düğümü Yeniden Adlandır"
 
 msgid "Scene Tree (Nodes):"
 msgstr "Sahne Ağacı (Düğümler):"
@@ -6990,6 +7037,9 @@ msgstr "Bölümlenme"
 msgid "Light"
 msgstr "Işık"
 
+msgid "Process"
+msgstr "İşlem"
+
 msgid "Sky"
 msgstr "Gökyüzü"
 
@@ -8294,44 +8344,8 @@ msgstr "NavMesh'i Sabitle"
 msgid "Clear the navigation mesh."
 msgstr "Yönlendirici örüntüsünü temizle."
 
-msgid "Setting up Configuration..."
-msgstr "Konfigürasyon Ayarlanıyor..."
-
-msgid "Calculating grid size..."
-msgstr "Izgara boyutu hesaplanıyor..."
-
-msgid "Creating heightfield..."
-msgstr "Yükseklik-alanı Oluşturuluyor..."
-
-msgid "Marking walkable triangles..."
-msgstr "Yürünebilir üçgenler işaretleniyor..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Aralıksız yükseklialanı inşa ediliyor..."
-
-msgid "Eroding walkable area..."
-msgstr "Yürünebilir alan aşındırılıyor..."
-
-msgid "Partitioning..."
-msgstr "Bölümleniyor..."
-
-msgid "Creating contours..."
-msgstr "Konturlar oluşturuluyor..."
-
-msgid "Creating polymesh..."
-msgstr "Çoklu-örüntü oluşturuluyor..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Yerli yönlendirici örüntüsüne dönüştürülüyor..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Navigasyon Örüntüsü Üreteci Kurulumu:"
-
-msgid "Parsing Geometry..."
-msgstr "Geometri Ayrıştırılıyor..."
-
-msgid "Done!"
-msgstr "Oldu!"
+msgid "Pose"
+msgstr "Duruş"
 
 msgid "Package name is missing."
 msgstr "Paket ismi eksik."
@@ -8616,6 +8630,9 @@ msgstr "Dosya yazılamadı: \"%s\"."
 
 msgid "Could not read file: \"%s\"."
 msgstr "Dosya okunamadı: \"%s\"."
+
+msgid "PWA"
+msgstr "PWA"
 
 msgid "Could not read HTML shell: \"%s\"."
 msgstr "HTML kabuğu okunamadı: \"%s\"."

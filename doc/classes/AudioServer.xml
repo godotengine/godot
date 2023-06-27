@@ -70,7 +70,7 @@
 			<return type="int" />
 			<param index="0" name="bus_name" type="StringName" />
 			<description>
-				Returns the index of the bus with the name [param bus_name].
+				Returns the index of the bus with the name [param bus_name]. Returns [code]-1[/code] if no bus with the specified name exist.
 			</description>
 		</method>
 		<method name="get_bus_name" qualifiers="const">

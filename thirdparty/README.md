@@ -539,6 +539,15 @@ Files extracted from the upstream source:
 - `LICENSE.txt`
 
 
+## nvapi
+
+- Upstream: http://download.nvidia.com/XFree86/nvapi-open-source-sdk
+- Version: R525
+- License: MIT
+
+- `nvapi_minimal.h` was created by using `nvapi.h` from upstream and removing unnecessary code.
+
+
 ## oidn
 
 - Upstream: https://github.com/OpenImageDenoise/oidn
@@ -597,7 +606,7 @@ Exclude:
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.40 (3103b8f20a3b9944b177e812fde29fbfb8b90558, 2022)
+- Version: 10.42 (52c08847921a324c804cabf2814549f50bce1265, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -630,13 +639,13 @@ Files extracted from upstream source:
 For 2D in `rvo2_2d` folder
 
 - Upstream: https://github.com/snape/RVO2
-- Version: git (f7c5380235f6c9ac8d19cbf71fc94e2d4758b0a3, 2021)
+- Version: git (5961f05ed310f3a5e902aa70ad54e010ba6dcdfd, 2022)
 - License: Apache 2.0
 
 For 3D in `rvo2_3d` folder
 
 - Upstream: https://github.com/snape/RVO2-3D
-- Version: git (bfc048670a4e85066e86a1f923d8ea92e3add3b2, 2021)
+- Version: git (8be355eb84dc763267b5acf7070d6d623d752e51, 2022)
 - License: Apache 2.0
 
 Files extracted from upstream source:

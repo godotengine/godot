@@ -33,11 +33,12 @@
 #include "core/error/error_macros.h"
 #include "core/string/char_utils.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
-#endif
 #ifdef DEBUG_ENABLED
 #include "servers/text_server.h"
+#endif
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
 #endif
 
 static const char *token_names[] = {
@@ -160,6 +161,24 @@ static_assert(sizeof(token_names) / sizeof(token_names[0]) == GDScriptTokenizer:
 const char *GDScriptTokenizer::Token::get_name() const {
 	ERR_FAIL_INDEX_V_MSG(type, TK_MAX, "<error>", "Using token type out of the enum.");
 	return token_names[type];
+}
+
+bool GDScriptTokenizer::Token::can_precede_bin_op() const {
+	switch (type) {
+		case IDENTIFIER:
+		case LITERAL:
+		case SELF:
+		case BRACKET_CLOSE:
+		case BRACE_CLOSE:
+		case PARENTHESIS_CLOSE:
+		case CONST_PI:
+		case CONST_TAU:
+		case CONST_INF:
+		case CONST_NAN:
+			return true;
+		default:
+			return false;
+	}
 }
 
 bool GDScriptTokenizer::Token::is_identifier() const {
@@ -382,6 +401,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::make_token(Token::Type p_type) {
 		}
 	}
 
+	last_token = token;
 	return token;
 }
 
@@ -627,6 +647,7 @@ void GDScriptTokenizer::newline(bool p_make_token) {
 		newline.leftmost_column = newline.start_column;
 		newline.rightmost_column = newline.end_column;
 		pending_newline = true;
+		last_token = newline;
 		last_newline = newline;
 	}
 
@@ -642,6 +663,11 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 	bool has_exponent = false;
 	bool has_error = false;
 	bool (*digit_check_func)(char32_t) = is_digit;
+
+	// Sign before hexadecimal or binary.
+	if ((_peek(-1) == '+' || _peek(-1) == '-') && _peek() == '0') {
+		_advance();
+	}
 
 	if (_peek(-1) == '.') {
 		has_decimal = true;
@@ -659,12 +685,20 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 		}
 	}
 
-	// Allow '_' to be used in a number, for readability.
-	bool previous_was_underscore = false;
+	if (base != 10 && is_underscore(_peek())) { // Disallow `0x_` and `0b_`.
+		Token error = make_error(vformat(R"(Unexpected underscore after "0%c".)", _peek(-1)));
+		error.start_column = column;
+		error.leftmost_column = column;
+		error.end_column = column + 1;
+		error.rightmost_column = column + 1;
+		push_error(error);
+		has_error = true;
+	}
+	bool previous_was_underscore = false; // Allow `_` to be used in a number, for readability.
 	while (digit_check_func(_peek()) || is_underscore(_peek())) {
 		if (is_underscore(_peek())) {
 			if (previous_was_underscore) {
-				Token error = make_error(R"(Only one underscore can be used as a numeric separator.)");
+				Token error = make_error(R"(Multiple underscores cannot be adjacent in a numeric literal.)");
 				error.start_column = column;
 				error.leftmost_column = column;
 				error.end_column = column + 1;
@@ -711,7 +745,30 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 			_advance();
 
 			// Consume decimal digits.
+			if (is_underscore(_peek())) { // Disallow `10._`, but allow `10.`.
+				Token error = make_error(R"(Unexpected underscore after decimal point.)");
+				error.start_column = column;
+				error.leftmost_column = column;
+				error.end_column = column + 1;
+				error.rightmost_column = column + 1;
+				push_error(error);
+				has_error = true;
+			}
+			previous_was_underscore = false;
 			while (is_digit(_peek()) || is_underscore(_peek())) {
+				if (is_underscore(_peek())) {
+					if (previous_was_underscore) {
+						Token error = make_error(R"(Multiple underscores cannot be adjacent in a numeric literal.)");
+						error.start_column = column;
+						error.leftmost_column = column;
+						error.end_column = column + 1;
+						error.rightmost_column = column + 1;
+						push_error(error);
+					}
+					previous_was_underscore = true;
+				} else {
+					previous_was_underscore = false;
+				}
 				_advance();
 			}
 		}
@@ -737,7 +794,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 			while (is_digit(_peek()) || is_underscore(_peek())) {
 				if (is_underscore(_peek())) {
 					if (previous_was_underscore) {
-						Token error = make_error(R"(Only one underscore can be used as a numeric separator.)");
+						Token error = make_error(R"(Multiple underscores cannot be adjacent in a numeric literal.)");
 						error.start_column = column;
 						error.leftmost_column = column;
 						error.end_column = column + 1;
@@ -1431,6 +1488,9 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			if (_peek() == '=') {
 				_advance();
 				return make_token(Token::PLUS_EQUAL);
+			} else if (is_digit(_peek()) && !last_token.can_precede_bin_op()) {
+				// Number starting with '+'.
+				return number();
 			} else {
 				return make_token(Token::PLUS);
 			}
@@ -1438,6 +1498,9 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			if (_peek() == '=') {
 				_advance();
 				return make_token(Token::MINUS_EQUAL);
+			} else if (is_digit(_peek()) && !last_token.can_precede_bin_op()) {
+				// Number starting with '-'.
+				return number();
 			} else if (_peek() == '>') {
 				_advance();
 				return make_token(Token::FORWARD_ARROW);
@@ -1547,9 +1610,9 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 
 		default:
 			if (is_whitespace(c)) {
-				return make_error(vformat(R"(Invalid white space character "\\u%X".)", static_cast<int32_t>(c)));
+				return make_error(vformat(R"(Invalid white space character U+%04X.)", static_cast<int32_t>(c)));
 			} else {
-				return make_error(vformat(R"(Unknown character "%s".)", String(&c, 1)));
+				return make_error(vformat(R"(Invalid character "%c" (U+%04X).)", c, static_cast<int32_t>(c)));
 			}
 	}
 }

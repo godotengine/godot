@@ -303,7 +303,7 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 					break;
 				}
 
-				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && E->get().class_name != F->get().class_name) {
+				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && !ClassDB::is_parent_class(E->get().class_name, F->get().class_name)) {
 					type_mismatch = true;
 					break;
 				}

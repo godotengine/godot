@@ -803,7 +803,7 @@
 			<param index="1" name="anchor_a" type="Vector2" />
 			<param index="2" name="anchor_b" type="Vector2" />
 			<param index="3" name="body_a" type="RID" />
-			<param index="4" name="body_b" type="RID" />
+			<param index="4" name="body_b" type="RID" default="RID()" />
 			<description>
 				Makes the joint a damped spring joint, attached at the point [param anchor_a] (given in global coordinates) on the body [param body_a] and at the point [param anchor_b] (given in global coordinates) on the body [param body_b]. To set the parameters which are specific to the damped spring, see [method damped_spring_joint_set_param].
 			</description>
@@ -814,8 +814,8 @@
 			<param index="1" name="groove1_a" type="Vector2" />
 			<param index="2" name="groove2_a" type="Vector2" />
 			<param index="3" name="anchor_b" type="Vector2" />
-			<param index="4" name="body_a" type="RID" />
-			<param index="5" name="body_b" type="RID" />
+			<param index="4" name="body_a" type="RID" default="RID()" />
+			<param index="5" name="body_b" type="RID" default="RID()" />
 			<description>
 				Makes the joint a groove joint.
 			</description>
@@ -825,7 +825,7 @@
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="anchor" type="Vector2" />
 			<param index="2" name="body_a" type="RID" />
-			<param index="3" name="body_b" type="RID" />
+			<param index="3" name="body_b" type="RID" default="RID()" />
 			<description>
 				Makes the joint a pin joint. If [param body_b] is [code]RID()[/code], then [param body_a] is pinned to the point [param anchor] (given in global coordinates); otherwise, [param body_a] is pinned to [param body_b] at the point [param anchor] (given in global coordinates). To set the parameters which are specific to the pin joint, see [method pin_joint_set_param].
 			</description>

@@ -182,8 +182,21 @@
 		</method>
 	</methods>
 	<members>
+		<member name="debugger/auto_switch_to_remote_scene_tree" type="bool" setter="" getter="">
+			If [code]true[/code], automatically switches to the [b]Remote[/b] scene tree when running the project from the editor. If [code]false[/code], stays on the [b]Local[/b] scene tree when running the project from the editor.
+		</member>
 		<member name="debugger/profiler_frame_history_size" type="int" setter="" getter="">
 			The size of the profiler's frame history. The default value (3600) allows seeing up to 60 seconds of profiling if the project renders at a constant 60 FPS. Higher values allow viewing longer periods of profiling in the graphs, especially when the project is running at high framerates.
+		</member>
+		<member name="debugger/profiler_frame_max_functions" type="int" setter="" getter="">
+			The maximum number of script functions that can be displayed per frame in the profiler. If there are more script functions called in a given profiler frame, these functions will be discarded from the profiling results entirely.
+			[b]Note:[/b] This setting is only read when the profiler is first started, so changing it during profiling will have no effect.
+		</member>
+		<member name="debugger/remote_inspect_refresh_interval" type="float" setter="" getter="">
+			The refresh interval for the remote inspector's properties (in seconds). Lower values are more reactive, but may cause stuttering while the project is running from the editor and the [b]Remote[/b] scene tree is selected in the Scene tree dock.
+		</member>
+		<member name="debugger/remote_scene_tree_refresh_interval" type="float" setter="" getter="">
+			The refresh interval for the remote scene tree (in seconds). Lower values are more reactive, but may cause stuttering while the project is running from the editor and the [b]Remote[/b] scene tree is selected in the Scene tree dock.
 		</member>
 		<member name="docks/filesystem/always_show_folders" type="bool" setter="" getter="">
 			If [code]true[/code], displays folders in the FileSystem dock's bottom pane when split mode is enabled. If [code]false[/code], only files will be displayed in the bottom pane. Split mode can be toggled by pressing the icon next to the [code]res://[/code] folder path.
@@ -277,10 +290,10 @@
 			The grid division bias to use in the 3D editor. Negative values will cause small grid divisions to appear earlier, whereas positive values will cause small grid divisions to appear later.
 		</member>
 		<member name="editors/3d/grid_division_level_max" type="int" setter="" getter="">
-			The smallest grid division to use in the 3D editor, specified as a power of 2. The grid will not be able to get larger than [code]1 ^ grid_division_level_max[/code] units. By default, this means grid divisions cannot get smaller than 100 units each, no matter how far away the camera is from the grid.
+			The largest grid division to use in the 3D editor. Together with [member editors/3d/primary_grid_steps], this determines how large the grid divisions can be. The grid divisions will not be able to get larger than [code]primary_grid_steps ^ grid_division_level_max[/code] units. By default, when [member editors/3d/primary_grid_steps] is [code]8[/code], this means grid divisions cannot get larger than [code]64[/code] uints each (so primary grid lines are [code]512[/code] uints apart), no matter how far away the camera is from the grid.
 		</member>
 		<member name="editors/3d/grid_division_level_min" type="int" setter="" getter="">
-			The smallest grid division to use in the 3D editor, specified as a power of 2. The grid will not be able to get smaller than [code]1 ^ grid_division_level_min[/code] units. By default, this means grid divisions cannot get smaller than 1 unit each, no matter how close the camera is from the grid.
+			The smallest grid division to use in the 3D editor. Together with [member editors/3d/primary_grid_steps], this determines how small the grid divisions can be. The grid divisions will not be able to get smaller than [code]primary_grid_steps ^ grid_division_level_min[/code] units. By default, this means grid divisions cannot get smaller than 1 unit each, no matter how close the camera is from the grid.
 		</member>
 		<member name="editors/3d/grid_size" type="int" setter="" getter="">
 			The grid size in units. Higher values prevent the grid from appearing "cut off" at certain angles, but make the grid more demanding to render. Depending on the camera's position, the grid may not be fully visible since a shader is used to fade it progressively.
@@ -745,6 +758,9 @@
 		</member>
 		<member name="text_editor/appearance/gutters/show_line_numbers" type="bool" setter="" getter="">
 			If [code]true[/code], displays line numbers in a gutter at the left.
+		</member>
+		<member name="text_editor/appearance/lines/autowrap_mode" type="int" setter="" getter="">
+			If [member text_editor/appearance/lines/word_wrap] is set to [code]1[/code], sets text wrapping mode. To see how each mode behaves, see [enum TextServer.AutowrapMode].
 		</member>
 		<member name="text_editor/appearance/lines/code_folding" type="bool" setter="" getter="">
 			If [code]true[/code], displays the folding arrows next to indented code sections and allows code folding. If [code]false[/code], hides the folding arrows next to indented code sections and disallows code folding.

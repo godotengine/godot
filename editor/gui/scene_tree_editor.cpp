@@ -357,33 +357,22 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 	}
 
-	// Display the node name in all tooltips so that long node names can be previewed
-	// without having to rename them.
-	if (p_node == get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
-		item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
+	{
+		// Display the node name in all tooltips so that long node names can be previewed
+		// without having to rename them.
+		String tooltip = String(p_node->get_name());
 
-		String tooltip = String(p_node->get_name()) + "\n" + TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path() + "\n" + TTR("Type:") + " " + p_node->get_class();
-		if (!p_node->get_editor_description().is_empty()) {
-			tooltip += "\n\n" + p_node->get_editor_description();
+		if (p_node == get_scene_node() && p_node->get_scene_inherited_state().is_valid()) {
+			item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
+			tooltip += String("\n" + TTR("Inherits:") + " " + p_node->get_scene_inherited_state()->get_path());
+		} else if (p_node != get_scene_node() && !p_node->get_scene_file_path().is_empty() && can_open_instance) {
+			item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
+			tooltip += String("\n" + TTR("Instance:") + " " + p_node->get_scene_file_path());
 		}
 
-		item->set_tooltip_text(0, tooltip);
-	} else if (p_node != get_scene_node() && !p_node->get_scene_file_path().is_empty() && can_open_instance) {
-		item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
+		StringName custom_type = EditorNode::get_singleton()->get_object_custom_type_name(p_node);
+		tooltip += String("\n" + TTR("Type:") + " " + (custom_type != StringName() ? String(custom_type) : p_node->get_class()));
 
-		String tooltip = String(p_node->get_name()) + "\n" + TTR("Instance:") + " " + p_node->get_scene_file_path() + "\n" + TTR("Type:") + " " + p_node->get_class();
-		if (!p_node->get_editor_description().is_empty()) {
-			tooltip += "\n\n" + p_node->get_editor_description();
-		}
-
-		item->set_tooltip_text(0, tooltip);
-	} else {
-		StringName type = EditorNode::get_singleton()->get_object_custom_type_name(p_node);
-		if (type == StringName()) {
-			type = p_node->get_class();
-		}
-
-		String tooltip = String(p_node->get_name()) + "\n" + TTR("Type:") + " " + type;
 		if (!p_node->get_editor_description().is_empty()) {
 			tooltip += "\n\n" + p_node->get_editor_description();
 		}
@@ -643,15 +632,26 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 	bool keep = _item_matches_all_terms(p_parent, terms);
 
 	p_parent->set_visible(keep_for_children || keep);
-	if (keep_for_children) {
-		if (keep) {
-			p_parent->clear_custom_color(0);
-			p_parent->set_selectable(0, true);
-		} else {
-			p_parent->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
-			p_parent->set_selectable(0, false);
-			p_parent->deselect(0);
+	if (keep && !valid_types.is_empty()) {
+		keep = false;
+		Node *n = get_node(p_parent->get_metadata(0));
+
+		for (const StringName &E : valid_types) {
+			if (n->is_class(E) ||
+					EditorNode::get_singleton()->is_object_of_custom_type(n, E)) {
+				keep = true;
+				break;
+			}
 		}
+	}
+
+	if (keep) {
+		p_parent->clear_custom_color(0);
+		p_parent->set_selectable(0, true);
+	} else if (keep_for_children) {
+		p_parent->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+		p_parent->set_selectable(0, false);
+		p_parent->deselect(0);
 	}
 
 	if (editor_selection) {
@@ -951,17 +951,54 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 	}
 }
 
-void SceneTreeEditor::_rename_node(ObjectID p_node, const String &p_name) {
-	Object *o = ObjectDB::get_instance(p_node);
-	ERR_FAIL_COND(!o);
-	Node *n = Object::cast_to<Node>(o);
-	ERR_FAIL_COND(!n);
-	TreeItem *item = _find(tree->get_root(), n->get_path());
+void SceneTreeEditor::_rename_node(Node *p_node, const String &p_name) {
+	TreeItem *item = _find(tree->get_root(), p_node->get_path());
 	ERR_FAIL_COND(!item);
+	String new_name = p_name.validate_node_name();
 
-	n->set_name(p_name);
-	item->set_metadata(0, n->get_path());
-	item->set_text(0, p_name);
+	if (new_name != p_name) {
+		error->set_text(TTR("Invalid node name, the following characters are not allowed:") + "\n" + String::get_invalid_node_name_characters());
+		error->popup_centered();
+
+		if (new_name.is_empty()) {
+			item->set_text(0, p_node->get_name());
+			return;
+		}
+
+		item->set_text(0, new_name);
+	}
+
+	if (new_name == p_node->get_name()) {
+		if (item->get_text(0).is_empty()) {
+			item->set_text(0, new_name);
+		}
+
+		return;
+	}
+	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace, which would make it more difficult to get the node via `get_node()`.
+	new_name = new_name.strip_edges();
+
+	if (!is_scene_tree_dock) {
+		p_node->set_name(new_name);
+		item->set_metadata(0, p_node->get_path());
+		emit_signal(SNAME("node_renamed"));
+	} else {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action("Rename Node", UndoRedo::MERGE_DISABLE, p_node);
+
+		emit_signal(SNAME("node_prerename"), p_node, new_name);
+
+		undo_redo->add_undo_method(p_node, "set_name", p_node->get_name());
+		undo_redo->add_undo_method(item, "set_metadata", 0, p_node->get_path());
+		undo_redo->add_undo_method(item, "set_text", 0, p_node->get_name());
+
+		p_node->set_name(p_name);
+		undo_redo->add_do_method(p_node, "set_name", new_name);
+		undo_redo->add_do_method(item, "set_metadata", 0, p_node->get_path());
+		undo_redo->add_do_method(item, "set_text", 0, new_name);
+
+		undo_redo->commit_action();
+	}
 }
 
 void SceneTreeEditor::_renamed() {
@@ -972,40 +1009,15 @@ void SceneTreeEditor::_renamed() {
 	Node *n = get_node(np);
 	ERR_FAIL_COND(!n);
 
-	String raw_new_name = which->get_text(0);
-	if (raw_new_name.strip_edges().is_empty()) {
+	String new_name = which->get_text(0);
+	if (new_name.strip_edges().is_empty()) {
 		// If name is empty, fallback to class name.
 		if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
-			raw_new_name = Node::adjust_name_casing(n->get_class());
+			new_name = Node::adjust_name_casing(n->get_class());
 		} else {
-			raw_new_name = n->get_class();
+			new_name = n->get_class();
 		}
 	}
-
-	String new_name = raw_new_name.validate_node_name();
-
-	if (new_name != raw_new_name) {
-		error->set_text(TTR("Invalid node name, the following characters are not allowed:") + "\n" + String::get_invalid_node_name_characters());
-		error->popup_centered();
-
-		if (new_name.is_empty()) {
-			which->set_text(0, n->get_name());
-			return;
-		}
-
-		which->set_text(0, new_name);
-	}
-
-	if (new_name == n->get_name()) {
-		if (which->get_text(0).is_empty()) {
-			which->set_text(0, new_name);
-		}
-
-		return;
-	}
-
-	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace, which would make it more difficult to get the node via `get_node()`.
-	new_name = new_name.strip_edges();
 
 	if (n->is_unique_name_in_owner() && get_tree()->get_edited_scene_root()->get_node_or_null("%" + new_name) != nullptr) {
 		error->set_text(TTR("Another node already uses this unique name in the scene."));
@@ -1014,18 +1026,7 @@ void SceneTreeEditor::_renamed() {
 		return;
 	}
 
-	if (!is_scene_tree_dock) {
-		n->set_name(new_name);
-		which->set_metadata(0, n->get_path());
-		emit_signal(SNAME("node_renamed"));
-	} else {
-		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Rename Node"), UndoRedo::MERGE_DISABLE, n);
-		emit_signal(SNAME("node_prerename"), n, new_name);
-		undo_redo->add_do_method(this, "_rename_node", n->get_instance_id(), new_name);
-		undo_redo->add_undo_method(this, "_rename_node", n->get_instance_id(), n->get_name());
-		undo_redo->commit_action();
-	}
+	_rename_node(n, new_name);
 }
 
 Node *SceneTreeEditor::get_selected() {

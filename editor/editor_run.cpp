@@ -37,6 +37,45 @@
 #include "main/main.h"
 #include "servers/display_server.h"
 
+/**
+ * Separates command line arguments without splitting up quoted strings.
+ */
+Vector<String> EditorRun::_split_cmdline_args(const String &arg_string) {
+	Vector<String> split_args;
+	int arg_start = 0;
+	bool is_quoted = false;
+	char32_t quote_char = '-';
+	char32_t arg_char;
+	int arg_length;
+	for (int i = 0; i < arg_string.length(); i++) {
+		arg_char = arg_string[i];
+		if (arg_char == '\"' || arg_char == '\'') {
+			if (i == 0 || arg_string[i - 1] != '\\') {
+				if (is_quoted) {
+					if (arg_char == quote_char) {
+						is_quoted = false;
+						quote_char = '-';
+					}
+				} else {
+					is_quoted = true;
+					quote_char = arg_char;
+				}
+			}
+		} else if (!is_quoted && arg_char == ' ') {
+			arg_length = i - arg_start;
+			if (arg_length > 0) {
+				split_args.push_back(arg_string.substr(arg_start, arg_length));
+			}
+			arg_start = i + 1;
+		}
+	}
+	arg_length = arg_string.length() - arg_start;
+	if (arg_length > 0) {
+		split_args.push_back(arg_string.substr(arg_start, arg_length));
+	}
+	return split_args;
+}
+
 EditorRun::Status EditorRun::get_status() const {
 	return status;
 }
@@ -232,7 +271,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		if (placeholder_pos != -1) {
 			// Prepend executable-specific custom arguments.
 			// If nothing is placed before `%command%`, behave as if no placeholder was specified.
-			Vector<String> exec_args = raw_custom_args.substr(0, placeholder_pos).split(" ", false);
+			Vector<String> exec_args = _split_cmdline_args(raw_custom_args.substr(0, placeholder_pos));
 			if (exec_args.size() >= 1) {
 				exec = exec_args[0];
 				exec_args.remove_at(0);
@@ -248,13 +287,13 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 			}
 
 			// Append Godot-specific custom arguments.
-			custom_args = raw_custom_args.substr(placeholder_pos + String("%command%").size()).split(" ", false);
+			custom_args = _split_cmdline_args(raw_custom_args.substr(placeholder_pos + String("%command%").size()));
 			for (int i = 0; i < custom_args.size(); i++) {
 				args.push_back(custom_args[i].replace(" ", "%20"));
 			}
 		} else {
 			// Append Godot-specific custom arguments.
-			custom_args = raw_custom_args.split(" ", false);
+			custom_args = _split_cmdline_args(raw_custom_args);
 			for (int i = 0; i < custom_args.size(); i++) {
 				args.push_back(custom_args[i].replace(" ", "%20"));
 			}

@@ -31,8 +31,6 @@
 #ifndef OPENXR_INTERACTION_PROFILE_META_DATA_H
 #define OPENXR_INTERACTION_PROFILE_META_DATA_H
 
-#include "openxr_action.h"
-
 ///////////////////////////////////////////////////////////////////////////
 // Stores available interaction profile meta data
 //
@@ -52,6 +50,8 @@
 // Note on action type that automatic conversions between boolean and float
 // are supported but otherwise action types should match between action and
 // input/output paths.
+
+#include "openxr_action.h"
 
 #include "core/object/object.h"
 

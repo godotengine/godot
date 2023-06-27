@@ -38,6 +38,13 @@
 				Returns the navigation map [RID] the requested [param agent] is currently assigned to.
 			</description>
 		</method>
+		<method name="agent_get_paused" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns [code]true[/code] if the specified [param agent] is paused.
+			</description>
+		</method>
 		<method name="agent_is_map_changed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="agent" type="RID" />
@@ -119,6 +126,14 @@
 				Sets the maximum distance to other agents this agent takes into account in the navigation. The larger this number, the longer the running time of the simulation. If the number is too low, the simulation will not be safe.
 			</description>
 		</method>
+		<method name="agent_set_paused">
+			<return type="void" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="paused" type="bool" />
+			<description>
+				If [param paused] is true the specified [param agent] will not be processed, e.g. calculate avoidance velocities or receive avoidance callbacks.
+			</description>
+		</method>
 		<method name="agent_set_position">
 			<return type="void" />
 			<param index="0" name="agent" type="RID" />
@@ -156,7 +171,7 @@
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="velocity" type="Vector2" />
 			<description>
-				Sets [param velocity] as the new wanted velocity for the specified [param agent]. The avoidance simulation will try to fulfil this velocity if possible but will modify it to avoid collision with other agent's and obstacles. When an agent is teleported to a new position far away use [method agent_set_velocity_forced] instead to reset the internal velocity state.
+				Sets [param velocity] as the new wanted velocity for the specified [param agent]. The avoidance simulation will try to fulfill this velocity if possible but will modify it to avoid collision with other agent's and obstacles. When an agent is teleported to a new position far away use [method agent_set_velocity_forced] instead to reset the internal velocity state.
 			</description>
 		</method>
 		<method name="agent_set_velocity_forced">
@@ -339,7 +354,7 @@
 			<return type="float" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns the map cell size.
+				Returns the map cell size used to rasterize the navigation mesh vertices.
 			</description>
 		</method>
 		<method name="map_get_closest_point" qualifiers="const">
@@ -431,7 +446,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="cell_size" type="float" />
 			<description>
-				Set the map cell size used to weld the navigation mesh polygons.
+				Sets the map cell size used to rasterize the navigation mesh vertices. Must match with the cell size of the used navigation meshes.
 			</description>
 		</method>
 		<method name="map_set_edge_connection_margin">
@@ -464,6 +479,13 @@
 				Creates a new navigation obstacle.
 			</description>
 		</method>
+		<method name="obstacle_get_avoidance_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns [code]true[/code] if the provided [param obstacle] has avoidance enabled.
+			</description>
+		</method>
 		<method name="obstacle_get_map" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="obstacle" type="RID" />
@@ -471,11 +493,27 @@
 				Returns the navigation map [RID] the requested [param obstacle] is currently assigned to.
 			</description>
 		</method>
+		<method name="obstacle_get_paused" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns [code]true[/code] if the specified [param obstacle] is paused.
+			</description>
+		</method>
+		<method name="obstacle_set_avoidance_enabled">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] the provided [param obstacle] affects avoidance using agents.
+			</description>
+		</method>
 		<method name="obstacle_set_avoidance_layers">
 			<return type="void" />
 			<param index="0" name="obstacle" type="RID" />
 			<param index="1" name="layers" type="int" />
 			<description>
+				Set the obstacles's [code]avoidance_layers[/code] bitmask.
 			</description>
 		</method>
 		<method name="obstacle_set_map">
@@ -486,12 +524,36 @@
 				Sets the navigation map [RID] for the obstacle.
 			</description>
 		</method>
+		<method name="obstacle_set_paused">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="paused" type="bool" />
+			<description>
+				If [param paused] is true the specified [param obstacle] will not be processed, e.g. affect avoidance velocities.
+			</description>
+		</method>
 		<method name="obstacle_set_position">
 			<return type="void" />
 			<param index="0" name="obstacle" type="RID" />
 			<param index="1" name="position" type="Vector2" />
 			<description>
 				Sets the position of the obstacle in world space.
+			</description>
+		</method>
+		<method name="obstacle_set_radius">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="radius" type="float" />
+			<description>
+				Sets the radius of the dynamic obstacle.
+			</description>
+		</method>
+		<method name="obstacle_set_velocity">
+			<return type="void" />
+			<param index="0" name="obstacle" type="RID" />
+			<param index="1" name="velocity" type="Vector2" />
+			<description>
+				Sets [param velocity] of the dynamic [param obstacle]. Allows other agents to better predict the movement of the dynamic obstacle. Only works in combination with the radius of the obstacle.
 			</description>
 		</method>
 		<method name="obstacle_set_vertices">

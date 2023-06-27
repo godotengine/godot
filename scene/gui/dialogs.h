@@ -44,8 +44,6 @@ class LineEdit;
 class AcceptDialog : public Window {
 	GDCLASS(AcceptDialog, Window);
 
-	Window *parent_visible = nullptr;
-
 	Panel *bg_panel = nullptr;
 	Label *message_label = nullptr;
 	HBoxContainer *buttons_hbox = nullptr;
@@ -65,7 +63,6 @@ class AcceptDialog : public Window {
 	static bool swap_cancel_ok;
 
 	void _input_from_window(const Ref<InputEvent> &p_event);
-	void _parent_focused();
 
 protected:
 	virtual Size2 _get_contents_minimum_size() const override;

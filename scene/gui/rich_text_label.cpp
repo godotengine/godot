@@ -2741,7 +2741,16 @@ void RichTextLabel::_stop_thread() {
 	}
 }
 
+int RichTextLabel::get_pending_paragraphs() const {
+	int to_line = main->first_invalid_line.load();
+	int lines = main->lines.size();
+
+	return lines - to_line;
+}
+
 bool RichTextLabel::is_ready() const {
+	const_cast<RichTextLabel *>(this)->_validate_line_caches();
+
 	if (updating.load()) {
 		return false;
 	}
@@ -2772,6 +2781,44 @@ int RichTextLabel::get_progress_bar_delay() const {
 	return progress_delay;
 }
 
+_FORCE_INLINE_ float RichTextLabel::_update_scroll_exceeds(float p_total_height, float p_ctrl_height, float p_width, int p_idx, float p_old_scroll, float p_text_rect_height) {
+	updating_scroll = true;
+
+	float total_height = p_total_height;
+	bool exceeds = p_total_height > p_ctrl_height && scroll_active;
+	if (exceeds != scroll_visible) {
+		if (exceeds) {
+			scroll_visible = true;
+			scroll_w = vscroll->get_combined_minimum_size().width;
+			vscroll->show();
+			vscroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -scroll_w);
+		} else {
+			scroll_visible = false;
+			scroll_w = 0;
+			vscroll->hide();
+		}
+
+		main->first_resized_line.store(0);
+
+		total_height = 0;
+		for (int j = 0; j <= p_idx; j++) {
+			total_height = _resize_line(main, j, theme_cache.normal_font, theme_cache.normal_font_size, p_width, total_height);
+
+			main->first_resized_line.store(j);
+		}
+	}
+	vscroll->set_max(total_height);
+	vscroll->set_page(p_text_rect_height);
+	if (scroll_follow && scroll_following) {
+		vscroll->set_value(total_height);
+	} else {
+		vscroll->set_value(p_old_scroll);
+	}
+	updating_scroll = false;
+
+	return total_height;
+}
+
 bool RichTextLabel::_validate_line_caches() {
 	if (updating.load()) {
 		return false;
@@ -2781,7 +2828,7 @@ bool RichTextLabel::_validate_line_caches() {
 		MutexLock data_lock(data_mutex);
 		Rect2 text_rect = _get_text_rect();
 
-		int ctrl_height = get_size().height;
+		float ctrl_height = get_size().height;
 
 		// Update fonts.
 		float old_scroll = vscroll->get_value();
@@ -2805,40 +2852,7 @@ bool RichTextLabel::_validate_line_caches() {
 		float total_height = (fi == 0) ? 0 : _calculate_line_vertical_offset(main->lines[fi - 1]);
 		for (int i = fi; i < (int)main->lines.size(); i++) {
 			total_height = _resize_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
-
-			updating_scroll = true;
-			bool exceeds = total_height > ctrl_height && scroll_active;
-			if (exceeds != scroll_visible) {
-				if (exceeds) {
-					scroll_visible = true;
-					scroll_w = vscroll->get_combined_minimum_size().width;
-					vscroll->show();
-					vscroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -scroll_w);
-				} else {
-					scroll_visible = false;
-					scroll_w = 0;
-					vscroll->hide();
-				}
-
-				main->first_resized_line.store(0);
-
-				total_height = 0;
-				for (int j = 0; j <= i; j++) {
-					total_height = _resize_line(main, j, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
-
-					main->first_resized_line.store(j);
-				}
-			}
-
-			vscroll->set_max(total_height);
-			vscroll->set_page(text_rect.size.height);
-			if (scroll_follow && scroll_following) {
-				vscroll->set_value(total_height);
-			} else {
-				vscroll->set_value(old_scroll);
-			}
-			updating_scroll = false;
-
+			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width - scroll_w, i, old_scroll, text_rect.size.height);
 			main->first_resized_line.store(i);
 		}
 
@@ -2877,47 +2891,34 @@ void RichTextLabel::_process_line_caches() {
 	MutexLock data_lock(data_mutex);
 	Rect2 text_rect = _get_text_rect();
 
-	int ctrl_height = get_size().height;
+	float ctrl_height = get_size().height;
 	int fi = main->first_invalid_line.load();
 	int total_chars = main->lines[fi].char_offset;
+	float old_scroll = vscroll->get_value();
 
-	float total_height = (fi == 0) ? 0 : _calculate_line_vertical_offset(main->lines[fi - 1]);
+	float total_height = 0;
+	if (fi != 0) {
+		// Update fonts.
+
+		for (int i = main->first_invalid_font_line.load(); i < fi; i++) {
+			_update_line_font(main, i, theme_cache.normal_font, theme_cache.normal_font_size);
+		}
+
+		// Resize lines without reshaping.
+		int sr = MIN(main->first_invalid_font_line.load(), main->first_resized_line.load());
+		main->first_invalid_font_line.store(fi);
+
+		for (int i = sr; i < fi; i++) {
+			total_height = _resize_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
+			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width - scroll_w, i, old_scroll, text_rect.size.height);
+
+			main->first_resized_line.store(i);
+		}
+	}
+
 	for (int i = fi; i < (int)main->lines.size(); i++) {
 		total_height = _shape_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
-		updating_scroll = true;
-		bool exceeds = total_height > ctrl_height && scroll_active;
-		if (exceeds != scroll_visible) {
-			if (exceeds) {
-				scroll_visible = true;
-				scroll_w = vscroll->get_combined_minimum_size().width;
-				vscroll->show();
-				vscroll->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -scroll_w);
-			} else {
-				scroll_visible = false;
-				scroll_w = 0;
-				vscroll->hide();
-			}
-			main->first_invalid_line.store(0);
-			main->first_resized_line.store(0);
-			main->first_invalid_font_line.store(0);
-
-			// since scroll was added or removed we need to resize all lines
-			total_height = 0;
-			for (int j = 0; j <= i; j++) {
-				total_height = _resize_line(main, j, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
-
-				main->first_invalid_line.store(j);
-				main->first_resized_line.store(j);
-				main->first_invalid_font_line.store(j);
-			}
-		}
-
-		vscroll->set_max(total_height);
-		vscroll->set_page(text_rect.size.height);
-		if (scroll_follow && scroll_following) {
-			vscroll->set_value(total_height);
-		}
-		updating_scroll = false;
+		total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width - scroll_w, i, old_scroll, text_rect.size.height);
 
 		main->first_invalid_line.store(i);
 		main->first_resized_line.store(i);
@@ -3177,7 +3178,8 @@ bool RichTextLabel::remove_paragraph(const int p_paragraph) {
 		main->lines[0].from = main;
 	}
 
-	main->first_invalid_line.store(0);
+	int to_line = main->first_invalid_line.load();
+	main->first_invalid_line.store(MIN(to_line, p_paragraph));
 	queue_redraw();
 
 	return true;
@@ -4468,7 +4470,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 			int fnt_size = -1;
 			for (int i = 1; i < subtag.size(); i++) {
-				Vector<String> subtag_a = subtag[i].split("=", true, 2);
+				Vector<String> subtag_a = subtag[i].split("=", true, 1);
 				_normalize_subtags(subtag_a);
 
 				if (subtag_a.size() == 2) {

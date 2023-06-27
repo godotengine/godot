@@ -31,9 +31,9 @@
 #ifndef GD_MONO_H
 #define GD_MONO_H
 
-#include "core/io/config_file.h"
-
 #include "../godotsharp_defs.h"
+
+#include "core/io/config_file.h"
 
 #ifndef GD_CLR_STDCALL
 #ifdef WIN32
@@ -68,6 +68,7 @@ class GDMono {
 
 	String project_assembly_path;
 	uint64_t project_assembly_modified_time = 0;
+	int project_load_failure_count = 0;
 
 #ifdef TOOLS_ENABLED
 	bool _load_project_assembly();
@@ -144,6 +145,7 @@ public:
 #endif
 
 #ifdef GD_MONO_HOT_RELOAD
+	void reload_failure();
 	Error reload_project_assemblies();
 #endif
 

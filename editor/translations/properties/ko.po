@@ -540,15 +540,6 @@ msgstr "속도 완화"
 msgid "Remote Port"
 msgstr "원격 포트"
 
-msgid "Debugger"
-msgstr "디버거"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "원격 장면 트리 새로 고침 간격"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "원격 검사 새로 고침 간격"
-
 msgid "FileSystem"
 msgstr "파일시스템"
 
@@ -560,9 +551,6 @@ msgstr "포트"
 
 msgid "Password"
 msgstr "비밀번호"
-
-msgid "Profiler Frame Max Functions"
-msgstr "프로파일러 프레임 최대 함수 개수"
 
 msgid "Default Feature Profile"
 msgstr "기본 기능 프로필"
@@ -1188,8 +1176,20 @@ msgstr "원격 호스트"
 msgid "Editor TLS Certificates"
 msgstr "에디터 TLS 인증서"
 
+msgid "Debugger"
+msgstr "디버거"
+
 msgid "Profiler Frame History Size"
 msgstr "프로파일러 프레임 기록 크기"
+
+msgid "Profiler Frame Max Functions"
+msgstr "프로파일러 프레임 최대 함수 개수"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "원격 장면 트리 새로 고침 간격"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "원격 검사 새로 고침 간격"
 
 msgid "HTTP Proxy"
 msgstr "HTTP 프록시"

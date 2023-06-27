@@ -19,7 +19,7 @@
 			<param index="1" name="method" type="StringName" />
 			<description>
 				Calls [param method] on each member of the given group. You can pass arguments to [param method] by specifying them at the end of the method call. If a node doesn't have the given method or the argument list does not match (either in count or in types), it will be skipped.
-				[b]Note:[/b] [method call_group] will call methods immediately on all members at once, which can cause stuttering if an expensive method is called on lots of members. To wait for one frame after [method call_group] was called, use [method call_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
+				[b]Note:[/b] [method call_group] will call methods immediately on all members at once, which can cause stuttering if an expensive method is called on lots of members.
 			</description>
 		</method>
 		<method name="call_group_flags" qualifiers="vararg">
@@ -33,7 +33,7 @@
 				# Call the method in a deferred manner and in reverse order.
 				get_tree().call_group_flags(SceneTree.GROUP_CALL_DEFERRED | SceneTree.GROUP_CALL_REVERSE)
 				[/codeblock]
-				[b]Note:[/b] Group call flags are used to control the method calling behavior. By default, methods will be called immediately in a way similar to [method call_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [param flags] argument, methods will be called with a one-frame delay in a way similar to [method Object.set_deferred].
+				[b]Note:[/b] Group call flags are used to control the method calling behavior. By default, methods will be called immediately in a way similar to [method call_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [param flags] argument, methods will be called at the end of the frame in a way similar to [method Object.set_deferred].
 			</description>
 		</method>
 		<method name="change_scene_to_file">
@@ -42,7 +42,7 @@
 			<description>
 				Changes the running scene to the one at the given [param path], after loading it into a [PackedScene] and creating a new instance.
 				Returns [constant OK] on success, [constant ERR_CANT_OPEN] if the [param path] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if that scene cannot be instantiated.
-				[b]Note:[/b] The scene change is deferred, which means that the new scene node is added on the next idle frame. This ensures that both scenes are never loaded at the same time, which can exhaust system resources if the scenes are too large or if running in a memory constrained environment. As such, you won't be able to access the loaded scene immediately after the [method change_scene_to_file] call.
+				[b]Note:[/b] The scene change is deferred, which means that the new scene node is added to the tree at the end of the frame. This ensures that both scenes aren't running at the same time, while still freeing the previous scene in a safe way similar to [method Node.queue_free]. As such, you won't be able to access the loaded scene immediately after the [method change_scene_to_file] call.
 			</description>
 		</method>
 		<method name="change_scene_to_packed">
@@ -51,7 +51,7 @@
 			<description>
 				Changes the running scene to a new instance of the given [PackedScene] (which must be valid).
 				Returns [constant OK] on success, [constant ERR_CANT_CREATE] if the scene cannot be instantiated, or [constant ERR_INVALID_PARAMETER] if the scene is invalid.
-				[b]Note:[/b] The scene change is deferred, which means that the new scene node is added on the next idle frame. You won't be able to access it immediately after the [method change_scene_to_packed] call.
+				[b]Note:[/b] The scene change is deferred, which means that the new scene node is added to the tree at the end of the frame. You won't be able to access it immediately after the [method change_scene_to_packed] call.
 			</description>
 		</method>
 		<method name="create_timer">
@@ -61,7 +61,7 @@
 			<param index="2" name="process_in_physics" type="bool" default="false" />
 			<param index="3" name="ignore_time_scale" type="bool" default="false" />
 			<description>
-				Returns a [SceneTreeTimer] which will [signal SceneTreeTimer.timeout] after the given time in seconds elapsed in this [SceneTree].
+				Returns a [SceneTreeTimer] which will emit [signal SceneTreeTimer.timeout] after the given time in seconds elapsed in this [SceneTree].
 				If [param process_always] is set to [code]false[/code], pausing the [SceneTree] will also pause the timer.
 				If [param process_in_physics] is set to [code]true[/code], will update the [SceneTreeTimer] during the physics frame instead of the process frame (fixed framerate processing).
 				If [param ignore_time_scale] is set to [code]true[/code], will ignore [member Engine.time_scale] and update the [SceneTreeTimer] with the actual frame delta.
@@ -83,6 +83,7 @@
 				[/csharp]
 				[/codeblocks]
 				The timer will be automatically freed after its time elapses.
+				[b]Note:[/b] The timer is processed after all of the nodes in the current frame, i.e. node's [method Node._process] method would be called before the timer (or [method Node._physics_process] if [param process_in_physics] is set to [code]true[/code]).
 			</description>
 		</method>
 		<method name="create_tween">
@@ -109,6 +110,7 @@
 			<param index="0" name="for_path" type="NodePath" default="NodePath(&quot;&quot;)" />
 			<description>
 				Return the [MultiplayerAPI] configured for the given path, or the default one if [param for_path] is empty.
+				[b]Note:[/b] Only one [MultiplayerAPI] may be configured for any subpath. If one is configured for [code]"/root/Foo"[/code] then calling this for [code]"/root/Foo/Bar"[/code] will return the one configured for [code]"/root/Foo"[/code], regardless if one is configured for that path.
 			</description>
 		</method>
 		<method name="get_node_count" qualifiers="const">
@@ -143,7 +145,7 @@
 			<param index="1" name="notification" type="int" />
 			<description>
 				Sends the given notification to all members of the [param group].
-				[b]Note:[/b] [method notify_group] will immediately notify all members at once, which can cause stuttering if an expensive method is called as a result of sending the notification lots of members. To wait for one frame, use [method notify_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
+				[b]Note:[/b] [method notify_group] will immediately notify all members at once, which can cause stuttering if an expensive method is called as a result of sending the notification to lots of members.
 			</description>
 		</method>
 		<method name="notify_group_flags">
@@ -153,14 +155,14 @@
 			<param index="2" name="notification" type="int" />
 			<description>
 				Sends the given notification to all members of the [param group], respecting the given [enum GroupCallFlags].
-				[b]Note:[/b] Group call flags are used to control the notification sending behavior. By default, notifications will be sent immediately in a way similar to [method notify_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [param call_flags] argument, notifications will be sent with a one-frame delay in a way similar to using [code]Object.call_deferred("notification", ...)[/code].
+				[b]Note:[/b] Group call flags are used to control the notification sending behavior. By default, notifications will be sent immediately in a way similar to [method notify_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [param call_flags] argument, notifications will be sent at the end of the current frame in a way similar to using [code]Object.call_deferred("notification", ...)[/code].
 			</description>
 		</method>
 		<method name="queue_delete">
 			<return type="void" />
 			<param index="0" name="obj" type="Object" />
 			<description>
-				Queues the given object for deletion, delaying the call to [method Object.free] to after the current frame.
+				Queues the given object for deletion, delaying the call to [method Object.free] to the end of the current frame.
 			</description>
 		</method>
 		<method name="quit">
@@ -187,7 +189,7 @@
 			<param index="2" name="value" type="Variant" />
 			<description>
 				Sets the given [param property] to [param value] on all members of the given group.
-				[b]Note:[/b] [method set_group] will set the property immediately on all members at once, which can cause stuttering if a property with an expensive setter is set on lots of members. To wait for one frame, use [method set_group_flags] with the [constant GROUP_CALL_DEFERRED] flag.
+				[b]Note:[/b] [method set_group] will set the property immediately on all members at once, which can cause stuttering if a property with an expensive setter is set on lots of members.
 			</description>
 		</method>
 		<method name="set_group_flags">
@@ -198,7 +200,7 @@
 			<param index="3" name="value" type="Variant" />
 			<description>
 				Sets the given [param property] to [param value] on all members of the given group, respecting the given [enum GroupCallFlags].
-				[b]Note:[/b] Group call flags are used to control the property setting behavior. By default, properties will be set immediately in a way similar to [method set_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [param call_flags] argument, properties will be set with a one-frame delay in a way similar to [method Object.call_deferred].
+				[b]Note:[/b] Group call flags are used to control the property setting behavior. By default, properties will be set immediately in a way similar to [method set_group]. However, if the [constant GROUP_CALL_DEFERRED] flag is present in the [param call_flags] argument, properties will be set at the end of the frame in a way similar to [method Object.call_deferred].
 			</description>
 		</method>
 		<method name="set_multiplayer">
@@ -207,6 +209,7 @@
 			<param index="1" name="root_path" type="NodePath" default="NodePath(&quot;&quot;)" />
 			<description>
 				Sets a custom [MultiplayerAPI] with the given [param root_path] (controlling also the relative subpaths), or override the default one if [param root_path] is empty.
+				[b]Note:[/b] Only one [MultiplayerAPI] may be configured for any subpath. If one is configured for [code]"/root/Foo"[/code] setting one for [code]"/root/Foo/Bar"[/code] will be ignored. See [method get_multiplayer].
 			</description>
 		</method>
 		<method name="unload_current_scene">
@@ -310,7 +313,7 @@
 			Call a group in reverse scene order.
 		</constant>
 		<constant name="GROUP_CALL_DEFERRED" value="2" enum="GroupCallFlags">
-			Call a group with a one-frame delay (idle frame, not physics).
+			Call a group at the end of the current frame (process or physics).
 		</constant>
 		<constant name="GROUP_CALL_UNIQUE" value="4" enum="GroupCallFlags">
 			Call a group only once even if the call is executed many times.

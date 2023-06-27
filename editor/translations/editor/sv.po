@@ -2669,9 +2669,6 @@ msgstr "Spela den redigerade scenen."
 msgid "Open Script:"
 msgstr "Öppna Skript:"
 
-msgid "Rename Node"
-msgstr "Byt namn på Node"
-
 msgid "Scene Tree (Nodes):"
 msgstr "Scenträd (Noder):"
 
@@ -3576,15 +3573,6 @@ msgstr "Utgående RPC"
 
 msgid "Network Profiler"
 msgstr "Nätverksprofilerare"
-
-msgid "Partitioning..."
-msgstr "Partitionerar..."
-
-msgid "Creating contours..."
-msgstr "Skapar konturer..."
-
-msgid "Done!"
-msgstr "Klar!"
 
 msgid "Invalid package name:"
 msgstr "Ogiltigt paket namn:"

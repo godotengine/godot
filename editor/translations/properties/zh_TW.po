@@ -427,15 +427,6 @@ msgstr "緩入緩出"
 msgid "Remote Port"
 msgstr "遠端阜"
 
-msgid "Debugger"
-msgstr "除錯工具"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "遠端場景樹重新整理間隔"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "遠端檢查重新整理間隔"
-
 msgid "FileSystem"
 msgstr "檔案系統"
 
@@ -447,9 +438,6 @@ msgstr "連接埠"
 
 msgid "Password"
 msgstr "密碼"
-
-msgid "Profiler Frame Max Functions"
-msgstr "分析工具影格最大函式數"
 
 msgid "Default Feature Profile"
 msgstr "預設功能設定檔"
@@ -1024,8 +1012,20 @@ msgstr "字體大小"
 msgid "Remote Host"
 msgstr "遠端主機"
 
+msgid "Debugger"
+msgstr "除錯工具"
+
 msgid "Profiler Frame History Size"
 msgstr "分析工具影格歷史大小"
+
+msgid "Profiler Frame Max Functions"
+msgstr "分析工具影格最大函式數"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "遠端場景樹重新整理間隔"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "遠端檢查重新整理間隔"
 
 msgid "HTTP Proxy"
 msgstr "HTTP 代理程式"

@@ -30,13 +30,12 @@
 
 #include "register_types.h"
 
+#include "multiplayer_debugger.h"
 #include "multiplayer_spawner.h"
 #include "multiplayer_synchronizer.h"
 #include "scene_multiplayer.h"
 #include "scene_replication_interface.h"
 #include "scene_rpc_interface.h"
-
-#include "multiplayer_debugger.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/multiplayer_editor_plugin.h"

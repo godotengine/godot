@@ -46,11 +46,6 @@
 
 #include <stdint.h>
 
-VARIANT_ENUM_CAST(Node::ProcessMode);
-VARIANT_ENUM_CAST(Node::ProcessThreadGroup);
-VARIANT_BITFIELD_CAST(Node::ProcessThreadMessages);
-VARIANT_ENUM_CAST(Node::InternalMode);
-
 int Node::orphan_node_count = 0;
 
 thread_local Node *Node::current_process_thread_group = nullptr;
@@ -600,9 +595,11 @@ void Node::_propagate_pause_notification(bool p_enable) {
 		notification(NOTIFICATION_UNPAUSED);
 	}
 
+	data.blocked++;
 	for (KeyValue<StringName, Node *> &K : data.children) {
 		K.value->_propagate_pause_notification(p_enable);
 	}
+	data.blocked--;
 }
 
 Node::ProcessMode Node::get_process_mode() const {
@@ -620,12 +617,14 @@ void Node::_propagate_process_owner(Node *p_owner, int p_pause_notification, int
 		notification(p_enabled_notification);
 	}
 
+	data.blocked++;
 	for (KeyValue<StringName, Node *> &K : data.children) {
 		Node *c = K.value;
 		if (c->data.process_mode == PROCESS_MODE_INHERIT) {
 			c->_propagate_process_owner(p_owner, p_pause_notification, p_enabled_notification);
 		}
 	}
+	data.blocked--;
 }
 
 void Node::set_multiplayer_authority(int p_peer_id, bool p_recursive) {
@@ -1137,7 +1136,8 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 }
 
 void Node::set_name(const String &p_name) {
-	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Changing the name to nodes inside the SceneTree is only allowed from the main thread. Use call_deferred(\"set_name\",new_name).");
+	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Changing the name to nodes inside the SceneTree is only allowed from the main thread. Use `set_name.call_deferred(new_name)`.");
+	ERR_FAIL_COND_MSG(data.parent && data.parent->data.blocked > 0, "Parent node is busy setting up children, `set_name(new_name)` failed. Consider using `set_name.call_deferred(new_name)` instead.");
 	String name = p_name.validate_node_name();
 
 	ERR_FAIL_COND(name.is_empty());
@@ -1670,25 +1670,19 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 			continue;
 		}
 
-		if (!p_pattern.is_empty()) {
-			if (!cptr[i]->data.name.operator String().match(p_pattern)) {
-				continue;
-			} else if (p_type.is_empty()) {
+		if (p_pattern.is_empty() || cptr[i]->data.name.operator String().match(p_pattern)) {
+			if (p_type.is_empty() || cptr[i]->is_class(p_type)) {
 				ret.append(cptr[i]);
-			}
-		}
+			} else if (cptr[i]->get_script_instance()) {
+				Ref<Script> scr = cptr[i]->get_script_instance()->get_script();
+				while (scr.is_valid()) {
+					if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == scr->get_path()) || p_type == scr->get_path()) {
+						ret.append(cptr[i]);
+						break;
+					}
 
-		if (cptr[i]->is_class(p_type)) {
-			ret.append(cptr[i]);
-		} else if (cptr[i]->get_script_instance()) {
-			Ref<Script> scr = cptr[i]->get_script_instance()->get_script();
-			while (scr.is_valid()) {
-				if ((ScriptServer::is_global_class(p_type) && ScriptServer::get_global_class_path(p_type) == scr->get_path()) || p_type == scr->get_path()) {
-					ret.append(cptr[i]);
-					break;
+					scr = scr->get_base_script();
 				}
-
-				scr = scr->get_base_script();
 			}
 		}
 
@@ -2779,6 +2773,8 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		parent->move_child(p_node, index_in_parent);
 	}
 
+	emit_signal(SNAME("replacing_by"), p_node);
+
 	while (get_child_count()) {
 		Node *child = get_child(0);
 		remove_child(child);
@@ -3444,9 +3440,9 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(PROCESS_THREAD_GROUP_MAIN_THREAD);
 	BIND_ENUM_CONSTANT(PROCESS_THREAD_GROUP_SUB_THREAD);
 
-	BIND_ENUM_CONSTANT(FLAG_PROCESS_THREAD_MESSAGES);
-	BIND_ENUM_CONSTANT(FLAG_PROCESS_THREAD_MESSAGES_PHYSICS);
-	BIND_ENUM_CONSTANT(FLAG_PROCESS_THREAD_MESSAGES_ALL);
+	BIND_BITFIELD_FLAG(FLAG_PROCESS_THREAD_MESSAGES);
+	BIND_BITFIELD_FLAG(FLAG_PROCESS_THREAD_MESSAGES_PHYSICS);
+	BIND_BITFIELD_FLAG(FLAG_PROCESS_THREAD_MESSAGES_ALL);
 
 	BIND_ENUM_CONSTANT(DUPLICATE_SIGNALS);
 	BIND_ENUM_CONSTANT(DUPLICATE_GROUPS);
@@ -3464,7 +3460,9 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_exited"));
 	ADD_SIGNAL(MethodInfo("child_entered_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 	ADD_SIGNAL(MethodInfo("child_exiting_tree", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+
 	ADD_SIGNAL(MethodInfo("child_order_changed"));
+	ADD_SIGNAL(MethodInfo("replacing_by", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");

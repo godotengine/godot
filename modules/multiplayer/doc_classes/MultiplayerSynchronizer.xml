@@ -92,10 +92,10 @@
 	</signals>
 	<constants>
 		<constant name="VISIBILITY_PROCESS_IDLE" value="0" enum="VisibilityUpdateMode">
-			Visibility filters are updated every idle process frame.
+			Visibility filters are updated during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
 		</constant>
 		<constant name="VISIBILITY_PROCESS_PHYSICS" value="1" enum="VisibilityUpdateMode">
-			Visibility filters are updated every physics process frame.
+			Visibility filters are updated during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
 		</constant>
 		<constant name="VISIBILITY_PROCESS_NONE" value="2" enum="VisibilityUpdateMode">
 			Visibility filters are not updated automatically, and must be updated manually by calling [method update_visibility].

@@ -30,8 +30,9 @@
 
 #include "register_types.h"
 
-#include "core/config/project_settings.h"
 #include "lightmapper_rd.h"
+
+#include "core/config/project_settings.h"
 #include "scene/3d/lightmapper.h"
 
 #ifndef _3D_DISABLED

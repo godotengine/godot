@@ -34,12 +34,12 @@ jobs:
             artifact: true
             compat: true
 
-          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
+          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
             cache-name: linux-editor-double-sanitizers
             target: editor
             tests: true
             # Debug symbols disabled as they're huge on this build and we hit the 14 GB limit for runners.
-            sconsflags: dev_build=yes debug_symbols=no precision=double use_asan=yes use_ubsan=yes linker=gold
+            sconsflags: dev_build=yes scu_build=yes debug_symbols=no precision=double use_asan=yes use_ubsan=yes linker=gold
             proj-test: true
             # Can be turned off for PRs that intentionally break compat with godot-cpp,
             # until both the upstream PR and the matching godot-cpp changes are merged.

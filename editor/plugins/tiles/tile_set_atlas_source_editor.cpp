@@ -87,7 +87,7 @@ bool TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_set(const StringN
 }
 
 bool TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_get(const StringName &p_name, Variant &r_ret) const {
-	if (!tile_set_atlas_source) {
+	if (!tile_set_atlas_source.is_valid()) {
 		return false;
 	}
 	if (p_name == "id") {
@@ -119,8 +119,8 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("changed", PropertyInfo(Variant::STRING, "what")));
 }
 
-void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id) {
-	ERR_FAIL_COND(!p_tile_set_atlas_source);
+void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::edit(Ref<TileSet> p_tile_set, Ref<TileSetAtlasSource> p_tile_set_atlas_source, int p_source_id) {
+	ERR_FAIL_COND(!p_tile_set_atlas_source.is_valid());
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set.is_valid() && p_tile_set->get_source(p_source_id) != p_tile_set_atlas_source);
 
@@ -129,7 +129,7 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::edit(Ref<TileSet> 
 	}
 
 	// Disconnect to changes.
-	if (tile_set_atlas_source) {
+	if (tile_set_atlas_source.is_valid()) {
 		tile_set_atlas_source->disconnect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
 
@@ -138,7 +138,7 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::edit(Ref<TileSet> 
 	source_id = p_source_id;
 
 	// Connect to changes.
-	if (tile_set_atlas_source) {
+	if (tile_set_atlas_source.is_valid()) {
 		if (!tile_set_atlas_source->is_connected(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed))) {
 			tile_set_atlas_source->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
 		}
@@ -149,7 +149,7 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::edit(Ref<TileSet> 
 
 // -- Proxy object used by the tile inspector --
 bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_name, const Variant &p_value) {
-	if (!tile_set_atlas_source) {
+	if (!tile_set_atlas_source.is_valid()) {
 		return false;
 	}
 
@@ -300,7 +300,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 }
 
 bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_name, Variant &r_ret) const {
-	if (!tile_set_atlas_source) {
+	if (!tile_set_atlas_source.is_valid()) {
 		return false;
 	}
 
@@ -384,7 +384,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_na
 }
 
 void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<PropertyInfo> *p_list) const {
-	if (!tile_set_atlas_source) {
+	if (!tile_set_atlas_source.is_valid()) {
 		return;
 	}
 
@@ -492,8 +492,8 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 	}
 }
 
-void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(TileSetAtlasSource *p_tile_set_atlas_source, RBSet<TileSelection> p_tiles) {
-	ERR_FAIL_COND(!p_tile_set_atlas_source);
+void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(Ref<TileSetAtlasSource> p_tile_set_atlas_source, RBSet<TileSelection> p_tiles) {
+	ERR_FAIL_COND(!p_tile_set_atlas_source.is_valid());
 	ERR_FAIL_COND(p_tiles.is_empty());
 	for (const TileSelection &E : p_tiles) {
 		ERR_FAIL_COND(E.tile == TileSetSource::INVALID_ATLAS_COORDS);
@@ -505,7 +505,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::edit(TileSetAtlasSource *p_
 		const Vector2i &coords = E.tile;
 		const int &alternative = E.alternative;
 
-		if (tile_set_atlas_source && tile_set_atlas_source->has_tile(coords) && tile_set_atlas_source->has_alternative_tile(coords, alternative)) {
+		if (tile_set_atlas_source.is_valid() && tile_set_atlas_source->has_tile(coords) && tile_set_atlas_source->has_alternative_tile(coords, alternative)) {
 			TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
 			if (tile_data->is_connected(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed))) {
 				tile_data->disconnect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
@@ -1031,7 +1031,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 		if (mm.is_valid()) {
 			Vector2i start_base_tiles_coords = tile_atlas_view->get_atlas_tile_coords_at_pos(drag_start_mouse_pos, true);
 			Vector2i last_base_tiles_coords = tile_atlas_view->get_atlas_tile_coords_at_pos(drag_last_mouse_pos, true);
-			Vector2i new_base_tiles_coords = tile_atlas_view->get_atlas_tile_coords_at_pos(tile_atlas_control->get_local_mouse_position(), true);
+			Vector2i new_base_tiles_coords = tile_atlas_view->get_atlas_tile_coords_at_pos(tile_atlas_control->get_local_mouse_position());
 
 			Vector2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 
@@ -2153,10 +2153,10 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 
 	TileSetAtlasSourceProxyObject *atlas_source_proxy = Object::cast_to<TileSetAtlasSourceProxyObject>(p_edited);
 	if (atlas_source_proxy) {
-		TileSetAtlasSource *atlas_source = atlas_source_proxy->get_edited();
-		ERR_FAIL_COND(!atlas_source);
+		Ref<TileSetAtlasSource> atlas_source = atlas_source_proxy->get_edited();
+		ERR_FAIL_COND(!atlas_source.is_valid());
 
-		UndoRedo *internal_undo_redo = undo_redo_man->get_history_for_object(atlas_source).undo_redo;
+		UndoRedo *internal_undo_redo = undo_redo_man->get_history_for_object(atlas_source.ptr()).undo_redo;
 		internal_undo_redo->start_force_keep_in_merge_ends();
 
 		PackedVector2Array arr;
@@ -2180,7 +2180,7 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 				String prefix = vformat("%d:%d/", coords.x, coords.y);
 				for (PropertyInfo pi : properties) {
 					if (pi.name.begins_with(prefix)) {
-						ADD_UNDO(atlas_source, pi.name);
+						ADD_UNDO(atlas_source.ptr(), pi.name);
 					}
 				}
 			}
@@ -2704,7 +2704,7 @@ void EditorPropertyTilePolygon::update_property() {
 	ERR_FAIL_COND(!atlas_tile_proxy_object);
 	ERR_FAIL_COND(atlas_tile_proxy_object->get_edited_tiles().is_empty());
 
-	TileSetAtlasSource *tile_set_atlas_source = atlas_tile_proxy_object->get_edited_tile_set_atlas_source();
+	Ref<TileSetAtlasSource> tile_set_atlas_source = atlas_tile_proxy_object->get_edited_tile_set_atlas_source();
 	generic_tile_polygon_editor->set_tile_set(Ref<TileSet>(tile_set_atlas_source->get_tile_set()));
 
 	// Set the background

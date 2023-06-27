@@ -51,13 +51,14 @@
 # coolkid <newtype20050831@gmail.com>, 2023.
 # asdfer-1234 <sh__lv@naver.com>, 2023.
 # Overdue - <kaameo12@gmail.com>, 2023.
+# 최시현 <hihyun1234@ajou.ac.kr>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-12 06:42+0000\n"
-"Last-Translator: Overdue - <kaameo12@gmail.com>\n"
+"PO-Revision-Date: 2023-06-23 13:10+0000\n"
+"Last-Translator: 최시현 <hihyun1234@ajou.ac.kr>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -65,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Unset"
 msgstr "설정 해제"
@@ -214,6 +215,9 @@ msgstr "조이패드 버튼 %d"
 msgid "Pressure:"
 msgstr "압력:"
 
+msgid "canceled"
+msgstr "취소된"
+
 msgid "touched"
 msgstr "터치"
 
@@ -309,6 +313,9 @@ msgstr "뉴라인(위로)"
 msgid "Indent"
 msgstr "들여쓰기"
 
+msgid "Dedent"
+msgstr "내어 쓰기"
+
 msgid "Backspace"
 msgstr "백스페이스"
 
@@ -324,11 +331,47 @@ msgstr "삭제"
 msgid "Delete Word"
 msgstr "단어 삭제"
 
+msgid "Delete all to Right"
+msgstr "오른쪽으로 모두 지우기"
+
+msgid "Caret Left"
+msgstr "왼쪽 ^"
+
+msgid "Caret Word Left"
+msgstr "왼쪽 단어 ^"
+
 msgid "Caret Right"
 msgstr "^ 오른쪽"
 
+msgid "Caret Word Right"
+msgstr "오른쪽 단어 ^"
+
+msgid "Caret Up"
+msgstr "^"
+
+msgid "Caret Down"
+msgstr "아래 캐럿"
+
+msgid "Caret Line Start"
+msgstr "줄 시작 캐럿"
+
+msgid "Caret Line End"
+msgstr "줄 마침 캐럿"
+
+msgid "Caret Page Up"
+msgstr "페이지 올리기 캐럿"
+
+msgid "Caret Page Down"
+msgstr "페이지 다운 캐럿"
+
+msgid "Caret Document Start"
+msgstr "문서 시작 캐럿"
+
 msgid "Caret Document End"
 msgstr "문서 종료"
+
+msgid "Caret Add Below"
+msgstr "아래에 캐럿 추가"
 
 msgid "Caret Add Above"
 msgstr "위에 캐럿 추가"
@@ -348,6 +391,12 @@ msgstr "캐럿 아래에서 단어 선택"
 msgid "Add Selection for Next Occurrence"
 msgstr "다음 발생을 위한 선택 항목 추가"
 
+msgid "Clear Carets and Selection"
+msgstr "캐럿과 선택 영역 지우기"
+
+msgid "Toggle Insert Mode"
+msgstr "입력 모드 전환"
+
 msgid "Submit Text"
 msgstr "텍스트 제출"
 
@@ -362,6 +411,12 @@ msgstr "한 단계 위로 이동"
 
 msgid "Refresh"
 msgstr "새로고침"
+
+msgid "Show Hidden"
+msgstr "숨긴 항목"
+
+msgid "Swap Input Direction"
+msgstr "입력 방향 변환"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "표현식의 입력 %d (전달되지 않음) 이(가) 올바르지 않습니다"
@@ -379,7 +434,7 @@ msgid "Invalid named index '%s' for base type %s"
 msgstr "타입 '%s'의 인덱스 이름이 기본 타입 %s에 올바르지 않습니다"
 
 msgid "Invalid arguments to construct '%s'"
-msgstr "'%s' 를 생성하기 위한 인수가 올바르지 않습니다"
+msgstr "'%s'을(를) 생성하기 위한 인수가 올바르지 않습니다"
 
 msgid "On call to '%s':"
 msgstr "'%s'을(를) 호출 시:"
@@ -431,11 +486,32 @@ msgstr "이름 '%s'을(를) 가진 액션이 이미 있습니다."
 msgid "Cannot Revert - Action is same as initial"
 msgstr "되돌릴 수 없음 - 동작이 초기값과 동일합니다"
 
+msgid "Revert Action"
+msgstr "작업 복원"
+
 msgid "Add Event"
 msgstr "이벤트 추가"
 
+msgid "Remove Action"
+msgstr "액션 제거"
+
 msgid "Cannot Remove Action"
 msgstr "액션을 제거할 수 없음"
+
+msgid "Edit Event"
+msgstr "이벤트 수정"
+
+msgid "Remove Event"
+msgstr "이벤트 제거"
+
+msgid "Filter by name..."
+msgstr "이름으로 필터링..."
+
+msgid "Clear All"
+msgstr "모두 지우기"
+
+msgid "Add New Action"
+msgstr "새로운 액션 추가"
 
 msgid "Add"
 msgstr "추가"
@@ -455,6 +531,9 @@ msgstr "시간:"
 msgid "Value:"
 msgstr "값:"
 
+msgid "Update Selected Key Handles"
+msgstr "선택한 키 핸들 수정"
+
 msgid "Insert Key Here"
 msgstr "여기에 키 삽입"
 
@@ -463,6 +542,9 @@ msgstr "선택한 키 복제"
 
 msgid "Delete Selected Key(s)"
 msgstr "선택한 키 삭제"
+
+msgid "Make Handles Free"
+msgstr "핸들 자유 설정"
 
 msgid "Make Handles Linear"
 msgstr "핸들 선형 만들기"
@@ -485,8 +567,35 @@ msgstr "베지어 점 추가"
 msgid "Move Bezier Points"
 msgstr "베지어 점 이동"
 
+msgid "Animation Duplicate Keys"
+msgstr "애니메이션 키프레임 복제"
+
+msgid "Animation Delete Keys"
+msgstr "애니메이션 키프레임 삭제"
+
+msgid "Select All Keys"
+msgstr "모든 키 선택"
+
+msgid "Deselect All Keys"
+msgstr "모든 키 선택 해제"
+
+msgid "Animation Change Transition"
+msgstr "애니메이션 변경 전환"
+
 msgid "Animation Change %s"
 msgstr "애니메이션 변경 %s"
+
+msgid "Animation Multi Change Transition"
+msgstr "애니메이션 다중 변경 전환"
+
+msgid "Animation Multi Change %s"
+msgstr "애니메이션 다중 변경"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "애니메이션 다중 키프레임 값 변경"
+
+msgid "Animation Multi Change Call"
+msgstr "애니메이션 다중 호출 바꾸기"
 
 msgid "Change Animation Length"
 msgstr "애니메이션 길이 바꾸기"
@@ -503,6 +612,15 @@ msgstr "다른 장면에 임베드된 애니메이션의 루프 모드를 변경
 
 msgid "Property Track"
 msgstr "속성 트랙"
+
+msgid "3D Position Track"
+msgstr "3D 위치 트래킹"
+
+msgid "3D Rotation Track"
+msgstr "3D 회전 트래킹"
+
+msgid "3D Scale Track"
+msgstr "3D 크기 트래킹"
 
 msgid "Blend Shape Track"
 msgstr "블렌드 모양 트랙"
@@ -569,6 +687,9 @@ msgstr "회전:"
 
 msgid "Scale:"
 msgstr "스케일:"
+
+msgid "Blend Shape:"
+msgstr "블렌드 쉐이프:"
 
 msgid "Type:"
 msgstr "타입:"
@@ -670,6 +791,12 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "애니메이션 트랙 제거"
 
+msgid "Create new track for %s and insert key?"
+msgstr "\"%s\"을(를) 위한 새로운 트랙을 생성하고 키를 삽입하시겠습니까?"
+
+msgid "Create %d new tracks and insert keys?"
+msgstr "%d개의 새로운 트랙을 생성하고 키를 삽입하시겠습니까?"
+
 msgid "Create"
 msgstr "만들기"
 
@@ -692,6 +819,12 @@ msgstr "애니메이션 단계 바꾸기"
 
 msgid "Rearrange Tracks"
 msgstr "트랙 다시 정렬"
+
+msgid "Blend Shape tracks only apply to MeshInstance3D nodes."
+msgstr "Blend Shape 트랙은 MeshInstance3D 노드에만 적용됩니다."
+
+msgid "Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."
+msgstr "변형 트랙은 3D 기반 노드에만 적용됩니다."
 
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
@@ -718,6 +851,18 @@ msgstr "베지어 트랙 추가"
 
 msgid "Track path is invalid, so can't add a key."
 msgstr "트랙 경로가 올바르지 않아 키를 추가할 수 없습니다."
+
+msgid "Track is not of type Node3D, can't insert key"
+msgstr "트랙이 3D 노드 타입이 아니므로 키를 추가할 수 없습니다"
+
+msgid "Add Position Key"
+msgstr "위치 키 추가"
+
+msgid "Add Rotation Key"
+msgstr "회전 키 추가"
+
+msgid "Add Scale Key"
+msgstr "스케일 키 추가"
 
 msgid "Add Track Key"
 msgstr "트랙 키 추가"
@@ -852,6 +997,22 @@ msgstr "스케일 비율:"
 
 msgid "Select Transition and Easing"
 msgstr "전환 및 완화 선택"
+
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "사인"
+
+msgctxt "Transition Type"
+msgid "Quint"
+msgstr "퀸텟트"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "쿼트"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "쿼드"
 
 msgid "Animation Baker"
 msgstr "애니메이션 베이커"
@@ -3960,9 +4121,6 @@ msgstr "잘못된 노드 이름입니다. 다음 문자는 허용하지 않습�
 
 msgid "Another node already uses this unique name in the scene."
 msgstr "다른 노드가 이미 장면에서 이 고유한 이름을 사용하고 있습니다."
-
-msgid "Rename Node"
-msgstr "노드 이름 바꾸기"
 
 msgid "Scene Tree (Nodes):"
 msgstr "씬 트리 (노드):"
@@ -8961,45 +9119,6 @@ msgstr "NavMesh 굽기"
 
 msgid "Clear the navigation mesh."
 msgstr "내비게이션 메시를 지웁니다."
-
-msgid "Setting up Configuration..."
-msgstr "구성 설정 중..."
-
-msgid "Calculating grid size..."
-msgstr "그리드 크기 계산 중..."
-
-msgid "Creating heightfield..."
-msgstr "Heightfield 만드는 중..."
-
-msgid "Marking walkable triangles..."
-msgstr "걷기 가능한 삼각형 표시 중..."
-
-msgid "Constructing compact heightfield..."
-msgstr "압축된 Heightfield를 구성 중..."
-
-msgid "Eroding walkable area..."
-msgstr "걷기 가능한 영역 계산 중..."
-
-msgid "Partitioning..."
-msgstr "파티션 중..."
-
-msgid "Creating contours..."
-msgstr "윤곽선 만드는 중..."
-
-msgid "Creating polymesh..."
-msgstr "Polymesh 만드는 중..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "네이티브 내비게이션 메시로 변환 중..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "내비게이션 메시 생성기 설정:"
-
-msgid "Parsing Geometry..."
-msgstr "지오메트리 분석 중..."
-
-msgid "Done!"
-msgstr "완료!"
 
 msgid "Pose"
 msgstr "자세"

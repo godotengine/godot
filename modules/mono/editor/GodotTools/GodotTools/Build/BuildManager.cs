@@ -206,16 +206,16 @@ namespace GodotTools.Build
 
         private static bool BuildProjectBlocking(BuildInfo buildInfo)
         {
-            if (!File.Exists(buildInfo.Solution))
-                return true; // No solution to build
+            if (!File.Exists(buildInfo.Project))
+                return true; // No project to build.
 
             using var pr = new EditorProgress("dotnet_build_project", "Building .NET project...", 1);
 
-            pr.Step("Building project solution", 0);
+            pr.Step("Building project", 0);
 
             if (!Build(buildInfo))
             {
-                ShowBuildErrorDialog("Failed to build project solution");
+                ShowBuildErrorDialog("Failed to build project");
                 return false;
             }
 
@@ -224,16 +224,16 @@ namespace GodotTools.Build
 
         private static bool CleanProjectBlocking(BuildInfo buildInfo)
         {
-            if (!File.Exists(buildInfo.Solution))
-                return true; // No solution to clean
+            if (!File.Exists(buildInfo.Project))
+                return true; // No project to clean.
 
             using var pr = new EditorProgress("dotnet_clean_project", "Cleaning .NET project...", 1);
 
-            pr.Step("Cleaning project solution", 0);
+            pr.Step("Cleaning project", 0);
 
             if (!Build(buildInfo))
             {
-                ShowBuildErrorDialog("Failed to clean project solution");
+                ShowBuildErrorDialog("Failed to clean project");
                 return false;
             }
 
@@ -322,11 +322,11 @@ namespace GodotTools.Build
 
         public static bool EditorBuildCallback()
         {
-            if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
-                return true; // No solution to build
+            if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
+                return true; // No project to build.
 
             if (GodotSharpEditor.Instance.SkipBuildBeforePlaying)
-                return true; // Requested play from an external editor/IDE which already built the project
+                return true; // Requested play from an external editor/IDE which already built the project.
 
             return BuildProjectBlocking("Debug");
         }

@@ -60,7 +60,7 @@
 			<param index="2" name="name" type="String" />
 			<param index="3" name="hint_type" type="int" enum="PropertyHint" />
 			<param index="4" name="hint_string" type="String" />
-			<param index="5" name="usage_flags" type="int" enum="PropertyUsageFlags" />
+			<param index="5" name="usage_flags" type="int" enum="PropertyUsageFlags" is_bitfield="true" />
 			<param index="6" name="wide" type="bool" />
 			<description>
 				Called to allow adding property-specific editors to the property list for [param object]. The added editor control must extend [EditorProperty]. Returning [code]true[/code] removes the built-in editor for this property, otherwise allows to insert a custom editor before the built-in one.

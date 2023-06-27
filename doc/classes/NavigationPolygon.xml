@@ -148,4 +148,9 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="1.0">
+			The cell size used to rasterize the navigation mesh vertices. Must match with the cell size on the navigation map.
+		</member>
+	</members>
 </class>

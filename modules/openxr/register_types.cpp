@@ -29,22 +29,14 @@
 /**************************************************************************/
 
 #include "register_types.h"
-#include "core/config/project_settings.h"
-#include "main/main.h"
-
-#include "openxr_interface.h"
 
 #include "action_map/openxr_action.h"
 #include "action_map/openxr_action_map.h"
 #include "action_map/openxr_action_set.h"
 #include "action_map/openxr_interaction_profile.h"
 #include "action_map/openxr_interaction_profile_meta_data.h"
-
+#include "openxr_interface.h"
 #include "scene/openxr_hand.h"
-
-#ifdef ANDROID_ENABLED
-#include "extensions/openxr_android_extension.h"
-#endif
 
 #include "extensions/openxr_composition_layer_depth_extension.h"
 #include "extensions/openxr_fb_display_refresh_rate_extension.h"
@@ -58,15 +50,26 @@
 #include "extensions/openxr_pico_controller_extension.h"
 #include "extensions/openxr_wmr_controller_extension.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/openxr_editor_plugin.h"
+#endif
+
+#ifdef ANDROID_ENABLED
+#include "extensions/openxr_android_extension.h"
+#endif
+
+#include "core/config/project_settings.h"
+#include "main/main.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+#endif
+
 static OpenXRAPI *openxr_api = nullptr;
 static OpenXRInteractionProfileMetaData *openxr_interaction_profile_meta_data = nullptr;
 static Ref<OpenXRInterface> openxr_interface;
 
 #ifdef TOOLS_ENABLED
-
-#include "editor/editor_node.h"
-#include "editor/openxr_editor_plugin.h"
-
 static void _editor_init() {
 	if (OpenXRAPI::openxr_is_enabled(false)) {
 		// Only add our OpenXR action map editor if OpenXR is enabled for our project
@@ -81,7 +84,6 @@ static void _editor_init() {
 		EditorNode::get_singleton()->add_editor_plugin(openxr_plugin);
 	}
 }
-
 #endif
 
 void initialize_openxr_module(ModuleInitializationLevel p_level) {

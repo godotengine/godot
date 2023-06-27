@@ -654,18 +654,6 @@ msgstr "Час очікування запиту минув"
 msgid "Sync Breakpoints"
 msgstr "Точки розриву синхронізації"
 
-msgid "Debugger"
-msgstr "Засіб діагностики"
-
-msgid "Auto Switch to Remote Scene Tree"
-msgstr "Автоматичний перехід до віддаленого Дерева Сцен"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "Інтервал оновлення ієрархії віддаленої сцени"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "Інтервал оновлення віддаленого інспектування"
-
 msgid "FileSystem"
 msgstr "Файлова система"
 
@@ -677,9 +665,6 @@ msgstr "Порт"
 
 msgid "Password"
 msgstr "Пароль"
-
-msgid "Profiler Frame Max Functions"
-msgstr "Перейменувати функцію"
 
 msgid "Default Feature Profile"
 msgstr "Типовий профіль можливостей"
@@ -1445,8 +1430,23 @@ msgstr "Віддалений вузол"
 msgid "Editor TLS Certificates"
 msgstr "Сертифікати TLS редактора"
 
+msgid "Debugger"
+msgstr "Засіб діагностики"
+
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "Автоматичний перехід до віддаленого Дерева Сцен"
+
 msgid "Profiler Frame History Size"
 msgstr "Розмір журналу панелі засобу профілювання"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Перейменувати функцію"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Інтервал оновлення ієрархії віддаленої сцени"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Інтервал оновлення віддаленого інспектування"
 
 msgid "HTTP Proxy"
 msgstr "HTTP-проксі"
@@ -1579,9 +1579,6 @@ msgstr "Нетиповий шаблон"
 
 msgid "Release"
 msgstr "Випуск"
-
-msgid "Export Console Script"
-msgstr "Експортувати скрипт консолі"
 
 msgid "Binary Format"
 msgstr "Двійковий формат"

@@ -822,6 +822,7 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &mpos
 
 	Rect2 control_rect = p_control->get_rect();
 	control_rect.position *= zoom;
+	control_rect.size *= zoom;
 	control_rect.position += p_offset;
 
 	if (!control_rect.has_point(mpos) || p_control->get_mouse_filter() == MOUSE_FILTER_IGNORE) {
@@ -886,8 +887,8 @@ bool GraphEdit::is_in_port_hotzone(const Vector2 &p_pos, const Vector2 &p_mouse_
 		if (!child) {
 			continue;
 		}
-		Rect2 child_rect = child->get_rect();
 
+		Rect2 child_rect = child->get_rect();
 		if (child_rect.has_point(p_mouse_pos * zoom)) {
 			for (int j = 0; j < child->get_child_count(); j++) {
 				Control *subchild = Object::cast_to<Control>(child->get_child(j));

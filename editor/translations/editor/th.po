@@ -3056,9 +3056,6 @@ msgstr ""
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "ชื่อโหนดไม่ถูกต้อง ใช้ตัวอักษรต่อไปนี้ไม่ได้:"
 
-msgid "Rename Node"
-msgstr "เปลี่ยนชื่อโหนด"
-
 msgid "Scene Tree (Nodes):"
 msgstr "ผังฉาก (โหนด):"
 
@@ -6845,45 +6842,6 @@ msgstr "Bake NavMesh"
 
 msgid "Clear the navigation mesh."
 msgstr "ล้าง Mesh นำทาง"
-
-msgid "Setting up Configuration..."
-msgstr "กำลังจัดการโครงร่าง..."
-
-msgid "Calculating grid size..."
-msgstr "กำลังคำนวณขนาดกริด..."
-
-msgid "Creating heightfield..."
-msgstr "กำลังสร้างสนามความสูง..."
-
-msgid "Marking walkable triangles..."
-msgstr "กำลังกำหนดพื้นผิวที่เดินผ่านได้..."
-
-msgid "Constructing compact heightfield..."
-msgstr "กำลังบีบอัดสนามความสูง..."
-
-msgid "Eroding walkable area..."
-msgstr "บีบแคบส่วนที่เดินผ่านได้..."
-
-msgid "Partitioning..."
-msgstr "กำลังแบ่งส่วน..."
-
-msgid "Creating contours..."
-msgstr "กำลังสร้างคอนทัวร์..."
-
-msgid "Creating polymesh..."
-msgstr "กำลังสร้าง Polymesh..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "กำลังแปลงกลับเป็น Mesh นำทาง..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "การตั้งค่าการสร้างพื้นผิวนำทาง:"
-
-msgid "Parsing Geometry..."
-msgstr "วิเคราะห์พื้นผิว..."
-
-msgid "Done!"
-msgstr "เสร็จสิ้น!"
 
 msgid "Package name is missing."
 msgstr "ชื่อแพ็คเกจหายไป"

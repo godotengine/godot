@@ -48,7 +48,8 @@
 		<method name="clear">
 			<return type="void" />
 			<description>
-				Clears the tag stack and sets [member text] to an empty string.
+				Clears the tag stack.
+				[b]Note:[/b] This method will not modify [member text], but setting [member text] to an empty string also clears the stack.
 			</description>
 		</method>
 		<method name="deselect">
@@ -409,7 +410,7 @@
 			<param index="1" name="base_direction" type="int" enum="Control.TextDirection" default="0" />
 			<param index="2" name="language" type="String" default="&quot;&quot;" />
 			<param index="3" name="st_parser" type="int" enum="TextServer.StructuredTextParser" default="0" />
-			<param index="4" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="163" />
+			<param index="4" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="163" />
 			<param index="5" name="tab_stops" type="PackedFloat32Array" default="PackedFloat32Array()" />
 			<description>
 				Adds a [code][p][/code] tag to the tag stack.

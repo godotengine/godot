@@ -3075,6 +3075,15 @@ void DisplayServerMacOS::window_move_to_foreground(WindowID p_window) {
 	}
 }
 
+bool DisplayServerMacOS::window_is_focused(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	const WindowData &wd = windows[p_window];
+
+	return wd.focused;
+}
+
 bool DisplayServerMacOS::window_can_draw(WindowID p_window) const {
 	return window_get_mode(p_window) != WINDOW_MODE_MINIMIZED;
 }
@@ -3406,9 +3415,9 @@ void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, 
 			cursors[p_shape] = nullptr;
 		}
 
-		cursor_update_shape();
-
 		cursors_cache.erase(p_shape);
+
+		cursor_update_shape();
 	}
 }
 

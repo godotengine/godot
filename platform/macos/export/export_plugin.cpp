@@ -30,11 +30,11 @@
 
 #include "export_plugin.h"
 
-#include "../logo_svg.gen.h"
-#include "../run_icon_svg.gen.h"
 #include "codesign.h"
 #include "lipo.h"
+#include "logo_svg.gen.h"
 #include "macho.h"
+#include "run_icon_svg.gen.h"
 
 #include "core/io/image_loader.h"
 #include "core/string/translation.h"
@@ -368,7 +368,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_script", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_wrapper", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.icns,*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), "", false, true));
@@ -1739,14 +1739,14 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		err = ERR_FILE_NOT_FOUND;
 	}
 
-	// Save console script.
+	// Save console wrapper.
 	if (err == OK) {
-		int con_scr = p_preset->get("debug/export_console_script");
+		int con_scr = p_preset->get("debug/export_console_wrapper");
 		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
 			err = _export_debug_script(p_preset, pkg_name, tmp_app_path_name.get_file() + "/Contents/MacOS/" + pkg_name, scr_path);
 			FileAccess::set_unix_permissions(scr_path, 0755);
 			if (err != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not create console script."));
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not create console wrapper."));
 			}
 		}
 	}
@@ -2081,10 +2081,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	return err;
 }
 
-bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
-	bool valid = false;
-
 	// Look for export templates (custom templates).
 	bool dvalid = false;
 	bool rvalid = false;
@@ -2102,8 +2100,17 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 		}
 	}
 
-	String architecture = p_preset->get("binary_format/architecture");
+	// Look for export templates (official templates, check only is custom templates are not set).
+	if (!dvalid || !rvalid) {
+		dvalid = exists_export_template("macos.zip", &err);
+		rvalid = dvalid; // Both in the same ZIP.
+	}
 
+	bool valid = dvalid || rvalid;
+	r_missing_templates = !valid;
+
+	// Check the texture formats, which vary depending on the target architecture.
+	String architecture = p_preset->get("binary_format/architecture");
 	if (architecture == "universal" || architecture == "x86_64") {
 		const String bc_error = test_bc();
 		if (!bc_error.is_empty()) {
@@ -2120,19 +2127,9 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 		ERR_PRINT("Invalid architecture");
 	}
 
-	// Look for export templates (official templates, check only is custom templates are not set).
-	if (!dvalid || !rvalid) {
-		dvalid = exists_export_template("macos.zip", &err);
-		rvalid = dvalid; // Both in the same ZIP.
-	}
-
-	valid = dvalid || rvalid;
-	r_missing_templates = !valid;
-
 	if (!err.is_empty()) {
 		r_error = err;
 	}
-
 	return valid;
 }
 

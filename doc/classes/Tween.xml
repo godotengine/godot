@@ -88,9 +88,9 @@
 		[/csharp]
 		[/codeblocks]
 		Some [Tweener]s use transitions and eases. The first accepts a [enum TransitionType] constant, and refers to the way the timing of the animation is handled (see [url=https://easings.net/]easings.net[/url] for some examples). The second accepts an [enum EaseType] constant, and controls where the [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different [enum TransitionType] constants with [constant EASE_IN_OUT], and use the one that looks best.
-		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/tween_cheatsheet.png]Tween easing and transition types cheatsheet[/url]
+		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/tween_cheatsheet.webp]Tween easing and transition types cheatsheet[/url]
 		[b]Note:[/b] Tweens are not designed to be re-used and trying to do so results in an undefined behavior. Create a new Tween for each animation and every time you replay an animation from start. Keep in mind that Tweens start immediately, so only create a Tween when you want to start animating.
-		[b]Note:[/b] Tweens are processing after all of nodes in the current frame, i.e. after [method Node._process] or [method Node._physics_process] (depending on [enum TweenProcessMode]).
+		[b]Note:[/b] The tween is processed after all of the nodes in the current frame, i.e. node's [method Node._process] method would be called before the timer (or [method Node._physics_process] depending on the value passed to [method set_process_mode]).
 	</description>
 	<tutorials>
 	</tutorials>
@@ -250,7 +250,7 @@
 			<return type="Tween" />
 			<param index="0" name="mode" type="int" enum="Tween.TweenProcessMode" />
 			<description>
-				Determines whether the [Tween] should run during idle frame (see [method Node._process]) or physics frame (see [method Node._physics_process].
+				Determines whether the [Tween] should run after process frames (see [method Node._process]) or physics frames (see [method Node._physics_process]).
 				Default value is [constant TWEEN_PROCESS_IDLE].
 			</description>
 		</method>
@@ -454,10 +454,10 @@
 	</signals>
 	<constants>
 		<constant name="TWEEN_PROCESS_PHYSICS" value="0" enum="TweenProcessMode">
-			The [Tween] updates during the physics frame.
+			The [Tween] updates after each physics frame (see [method Node._physics_process]).
 		</constant>
 		<constant name="TWEEN_PROCESS_IDLE" value="1" enum="TweenProcessMode">
-			The [Tween] updates during the idle frame.
+			The [Tween] updates after each process frame (see [method Node._process]).
 		</constant>
 		<constant name="TWEEN_PAUSE_BOUND" value="0" enum="TweenPauseMode">
 			If the [Tween] has a bound node, it will process when that node can process (see [member Node.process_mode]). Otherwise it's the same as [constant TWEEN_PAUSE_STOP].

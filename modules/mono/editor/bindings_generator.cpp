@@ -32,6 +32,11 @@
 
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 
+#include "../godotsharp_defs.h"
+#include "../utils/naming_utils.h"
+#include "../utils/path_utils.h"
+#include "../utils/string_utils.h"
+
 #include "core/config/engine.h"
 #include "core/core_constants.h"
 #include "core/io/compression.h"
@@ -39,11 +44,6 @@
 #include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "main/main.h"
-
-#include "../godotsharp_defs.h"
-#include "../utils/naming_utils.h"
-#include "../utils/path_utils.h"
-#include "../utils/string_utils.h"
 
 StringBuilder &operator<<(StringBuilder &r_sb, const String &p_string) {
 	r_sb.append(p_string);
@@ -115,6 +115,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define C_METHOD_MANAGED_FROM_SIGNAL C_NS_MONOMARSHAL ".ConvertSignalToManaged"
 
 // Types that will be ignored by the generator and won't be available in C#.
+// This must be kept in sync with `ignored_types` in csharp_script.cpp
 const Vector<String> ignored_types = { "PhysicsServer2DExtension", "PhysicsServer3DExtension" };
 
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {

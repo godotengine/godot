@@ -4552,45 +4552,6 @@ msgstr "Hálózati profilkészítő"
 msgid "Clear the navigation mesh."
 msgstr "Navigációs háló törlése."
 
-msgid "Setting up Configuration..."
-msgstr "Konfiguráció beállítása…"
-
-msgid "Calculating grid size..."
-msgstr "Rácsméret kiszámítása…"
-
-msgid "Creating heightfield..."
-msgstr "Magasságmező létrehozása…"
-
-msgid "Marking walkable triangles..."
-msgstr "Járható háromszögek megjelölése…"
-
-msgid "Constructing compact heightfield..."
-msgstr "Kompakt magasságmező kiépítése…"
-
-msgid "Eroding walkable area..."
-msgstr "Járható terület lepusztítása…"
-
-msgid "Partitioning..."
-msgstr "Particionálás…"
-
-msgid "Creating contours..."
-msgstr "Kontúrok létrehozása…"
-
-msgid "Creating polymesh..."
-msgstr "Polymesh létrehozása…"
-
-msgid "Converting to native navigation mesh..."
-msgstr "Átkonvertálás natív navigációs hálóra…"
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Navigációs Háló Generátor Beállítás:"
-
-msgid "Parsing Geometry..."
-msgstr "Geometria Elemzése…"
-
-msgid "Done!"
-msgstr "Kész!"
-
 msgid "Invalid package name:"
 msgstr "Érvénytelen csomagnév:"
 

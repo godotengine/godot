@@ -2882,7 +2882,7 @@ Size2i RenderingDeviceVulkan::texture_size(RID p_texture) {
 	return Size2i(tex->width, tex->height);
 }
 
-uint64_t RenderingDeviceVulkan::texture_native_handle(RID p_texture) {
+uint64_t RenderingDeviceVulkan::texture_get_native_handle(RID p_texture) {
 	_THREAD_SAFE_METHOD_
 
 	Texture *tex = texture_owner.get_or_null(p_texture);

@@ -32,7 +32,6 @@
 #define SCENE_REPLICATION_CONFIG_H
 
 #include "core/io/resource.h"
-
 #include "core/variant/typed_array.h"
 
 class SceneReplicationConfig : public Resource {

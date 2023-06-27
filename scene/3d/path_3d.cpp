@@ -361,6 +361,8 @@ void PathFollow3D::set_progress(real_t p_progress) {
 				if (!Math::is_zero_approx(p_progress) && Math::is_zero_approx(progress)) {
 					progress = path_length;
 				}
+			} else {
+				progress = CLAMP(progress, 0, path_length);
 			}
 		}
 

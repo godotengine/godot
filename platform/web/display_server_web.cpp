@@ -1073,6 +1073,10 @@ void DisplayServerWeb::window_move_to_foreground(WindowID p_window) {
 	// Not supported.
 }
 
+bool DisplayServerWeb::window_is_focused(WindowID p_window) const {
+	return true;
+}
+
 bool DisplayServerWeb::window_can_draw(WindowID p_window) const {
 	return true;
 }

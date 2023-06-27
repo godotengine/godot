@@ -30,12 +30,13 @@
 
 #include "nav_map.h"
 
-#include "core/config/project_settings.h"
-#include "core/object/worker_thread_pool.h"
 #include "nav_agent.h"
 #include "nav_link.h"
 #include "nav_obstacle.h"
 #include "nav_region.h"
+
+#include "core/config/project_settings.h"
+#include "core/object/worker_thread_pool.h"
 
 #include <Obstacle2d.h>
 
@@ -69,6 +70,14 @@ void NavMap::set_cell_size(real_t p_cell_size) {
 	regenerate_polygons = true;
 }
 
+void NavMap::set_cell_height(real_t p_cell_height) {
+	if (cell_height == p_cell_height) {
+		return;
+	}
+	cell_height = p_cell_height;
+	regenerate_polygons = true;
+}
+
 void NavMap::set_use_edge_connections(bool p_enabled) {
 	if (use_edge_connections == p_enabled) {
 		return;
@@ -94,9 +103,9 @@ void NavMap::set_link_connection_radius(real_t p_link_connection_radius) {
 }
 
 gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
-	const int x = int(Math::floor(p_pos.x / cell_size));
-	const int y = int(Math::floor(p_pos.y / cell_size));
-	const int z = int(Math::floor(p_pos.z / cell_size));
+	const int x = static_cast<int>(Math::floor(p_pos.x / cell_size));
+	const int y = static_cast<int>(Math::floor(p_pos.y / cell_height));
+	const int z = static_cast<int>(Math::floor(p_pos.z / cell_size));
 
 	gd::PointKey p;
 	p.key = 0;
@@ -107,6 +116,7 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 }
 
 Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const {
+	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector<Vector3>(), "NavigationServer map query failed because it was made before first map synchronization.");
 	// Clear metadata outputs.
 	if (r_path_types) {
 		r_path_types->clear();
@@ -480,6 +490,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 }
 
 Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
+	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
 	bool use_collision = p_use_collision;
 	Vector3 closest_point;
 	real_t closest_point_d = FLT_MAX;
@@ -527,16 +538,19 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 }
 
 Vector3 NavMap::get_closest_point(const Vector3 &p_point) const {
+	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.point;
 }
 
 Vector3 NavMap::get_closest_point_normal(const Vector3 &p_point) const {
+	ERR_FAIL_COND_V_MSG(map_update_id == 0, Vector3(), "NavigationServer map query failed because it was made before first map synchronization.");
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.normal;
 }
 
 RID NavMap::get_closest_point_owner(const Vector3 &p_point) const {
+	ERR_FAIL_COND_V_MSG(map_update_id == 0, RID(), "NavigationServer map query failed because it was made before first map synchronization.");
 	gd::ClosestPointQueryResult cp = get_closest_point_info(p_point);
 	return cp.owner;
 }
@@ -614,6 +628,11 @@ bool NavMap::has_obstacle(NavObstacle *obstacle) const {
 }
 
 void NavMap::add_obstacle(NavObstacle *obstacle) {
+	if (obstacle->get_paused()) {
+		// No point in adding a paused obstacle, it will add itself when unpaused again.
+		return;
+	}
+
 	if (!has_obstacle(obstacle)) {
 		obstacles.push_back(obstacle);
 		obstacles_dirty = true;
@@ -630,6 +649,12 @@ void NavMap::remove_obstacle(NavObstacle *obstacle) {
 
 void NavMap::set_agent_as_controlled(NavAgent *agent) {
 	remove_agent_as_controlled(agent);
+
+	if (agent->get_paused()) {
+		// No point in adding a paused agent, it will add itself when unpaused again.
+		return;
+	}
+
 	if (agent->get_use_3d_avoidance()) {
 		int64_t agent_3d_index = active_3d_avoidance_agents.find(agent);
 		if (agent_3d_index < 0) {
@@ -1017,16 +1042,16 @@ void NavMap::_update_rvo_obstacles_tree_2d() {
 			rvo_2d_obstacle->avoidance_layers_ = _obstacle_avoidance_layers;
 
 			if (i != 0) {
-				rvo_2d_obstacle->prevObstacle_ = raw_obstacles.back();
-				rvo_2d_obstacle->prevObstacle_->nextObstacle_ = rvo_2d_obstacle;
+				rvo_2d_obstacle->previous_ = raw_obstacles.back();
+				rvo_2d_obstacle->previous_->next_ = rvo_2d_obstacle;
 			}
 
 			if (i == rvo_2d_vertices.size() - 1) {
-				rvo_2d_obstacle->nextObstacle_ = raw_obstacles[obstacleNo];
-				rvo_2d_obstacle->nextObstacle_->prevObstacle_ = rvo_2d_obstacle;
+				rvo_2d_obstacle->next_ = raw_obstacles[obstacleNo];
+				rvo_2d_obstacle->next_->previous_ = rvo_2d_obstacle;
 			}
 
-			rvo_2d_obstacle->unitDir_ = normalize(rvo_2d_vertices[(i == rvo_2d_vertices.size() - 1 ? 0 : i + 1)] - rvo_2d_vertices[i]);
+			rvo_2d_obstacle->direction_ = normalize(rvo_2d_vertices[(i == rvo_2d_vertices.size() - 1 ? 0 : i + 1)] - rvo_2d_vertices[i]);
 
 			if (rvo_2d_vertices.size() == 2) {
 				rvo_2d_obstacle->isConvex_ = true;
@@ -1074,9 +1099,9 @@ void NavMap::_update_rvo_simulation() {
 }
 
 void NavMap::compute_single_avoidance_step_2d(uint32_t index, NavAgent **agent) {
-	(*(agent + index))->get_rvo_agent_2d()->computeNeighbors(&rvo_simulation_2d);
-	(*(agent + index))->get_rvo_agent_2d()->computeNewVelocity(&rvo_simulation_2d);
-	(*(agent + index))->get_rvo_agent_2d()->update(&rvo_simulation_2d);
+	(*(agent + index))->get_rvo_agent_2d()->computeNeighbors(rvo_simulation_2d.kdTree_);
+	(*(agent + index))->get_rvo_agent_2d()->computeNewVelocity(rvo_simulation_2d.timeStep_);
+	(*(agent + index))->get_rvo_agent_2d()->update(rvo_simulation_2d.timeStep_);
 	(*(agent + index))->update();
 }
 
@@ -1099,9 +1124,9 @@ void NavMap::step(real_t p_deltatime) {
 			WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 		} else {
 			for (NavAgent *agent : active_2d_avoidance_agents) {
-				agent->get_rvo_agent_2d()->computeNeighbors(&rvo_simulation_2d);
-				agent->get_rvo_agent_2d()->computeNewVelocity(&rvo_simulation_2d);
-				agent->get_rvo_agent_2d()->update(&rvo_simulation_2d);
+				agent->get_rvo_agent_2d()->computeNeighbors(rvo_simulation_2d.kdTree_);
+				agent->get_rvo_agent_2d()->computeNewVelocity(rvo_simulation_2d.timeStep_);
+				agent->get_rvo_agent_2d()->update(rvo_simulation_2d.timeStep_);
 				agent->update();
 			}
 		}

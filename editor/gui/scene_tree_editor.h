@@ -85,7 +85,7 @@ class SceneTreeEditor : public Control {
 	void _notification(int p_what);
 	void _selected_changed();
 	void _deselect_items();
-	void _rename_node(ObjectID p_node, const String &p_name);
+	void _rename_node(Node *p_node, const String &p_name);
 
 	void _cell_collapsed(Object *p_obj);
 

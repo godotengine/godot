@@ -193,8 +193,8 @@
 			<param index="5" name="font_size" type="int" default="16" />
 			<param index="6" name="max_lines" type="int" default="-1" />
 			<param index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="8" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
-			<param index="9" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="8" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
+			<param index="9" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="10" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -212,8 +212,8 @@
 			<param index="6" name="max_lines" type="int" default="-1" />
 			<param index="7" name="size" type="int" default="1" />
 			<param index="8" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="9" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" default="3" />
-			<param index="10" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="9" name="brk_flags" type="int" enum="TextServer.LineBreakFlag" is_bitfield="true" default="3" />
+			<param index="10" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="11" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="12" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -309,7 +309,7 @@
 			<param index="4" name="width" type="float" default="-1" />
 			<param index="5" name="font_size" type="int" default="16" />
 			<param index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="7" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="7" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="8" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
@@ -346,7 +346,7 @@
 			<param index="5" name="font_size" type="int" default="16" />
 			<param index="6" name="size" type="int" default="1" />
 			<param index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="8" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="3" />
+			<param index="8" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>

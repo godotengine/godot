@@ -16,8 +16,8 @@
 	<methods>
 		<method name="barrier">
 			<return type="void" />
-			<param index="0" name="from" type="int" enum="RenderingDevice.BarrierMask" default="7" />
-			<param index="1" name="to" type="int" enum="RenderingDevice.BarrierMask" default="7" />
+			<param index="0" name="from" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="7" />
+			<param index="1" name="to" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="7" />
 			<description>
 				Puts a memory barrier in place. This is used for synchronization to avoid data races. See also [method full_barrier], which may be useful for debugging.
 			</description>
@@ -27,7 +27,7 @@
 			<param index="0" name="buffer" type="RID" />
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="size_bytes" type="int" />
-			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
+			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="7" />
 			<description>
 			</description>
 		</method>
@@ -46,7 +46,7 @@
 			<param index="1" name="offset" type="int" />
 			<param index="2" name="size_bytes" type="int" />
 			<param index="3" name="data" type="PackedByteArray" />
-			<param index="4" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
+			<param index="4" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="7" />
 			<description>
 			</description>
 		</method>
@@ -114,7 +114,7 @@
 		</method>
 		<method name="compute_list_end">
 			<return type="void" />
-			<param index="0" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
+			<param index="0" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="7" />
 			<description>
 				Finishes a list of compute commands created with the [code]compute_*[/code] methods.
 			</description>
@@ -296,7 +296,7 @@
 		</method>
 		<method name="draw_list_end">
 			<return type="void" />
-			<param index="0" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
+			<param index="0" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="7" />
 			<description>
 				Finishes a list of raster drawing commands created with the [code]draw_*[/code] methods.
 			</description>
@@ -534,7 +534,7 @@
 			<param index="5" name="multisample_state" type="RDPipelineMultisampleState" />
 			<param index="6" name="stencil_state" type="RDPipelineDepthStencilState" />
 			<param index="7" name="color_blend_state" type="RDPipelineColorBlendState" />
-			<param index="8" name="dynamic_state_flags" type="int" enum="RenderingDevice.PipelineDynamicStateFlags" default="0" />
+			<param index="8" name="dynamic_state_flags" type="int" enum="RenderingDevice.PipelineDynamicStateFlags" is_bitfield="true" default="0" />
 			<param index="9" name="for_render_pass" type="int" default="0" />
 			<param index="10" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]" />
 			<description>
@@ -643,7 +643,7 @@
 			<return type="RID" />
 			<param index="0" name="size_bytes" type="int" />
 			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
-			<param index="2" name="usage" type="int" enum="RenderingDevice.StorageBufferUsage" default="0" />
+			<param index="2" name="usage" type="int" enum="RenderingDevice.StorageBufferUsage" is_bitfield="true" default="0" />
 			<description>
 				Creates a [url=https://vkguide.dev/docs/chapter-4/storage_buffers/]storage buffer[/url] with the specified [param data] and [param usage]. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
@@ -682,7 +682,7 @@
 			<param index="3" name="mipmap_count" type="int" />
 			<param index="4" name="base_layer" type="int" />
 			<param index="5" name="layer_count" type="int" />
-			<param index="6" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
+			<param index="6" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="7" />
 			<description>
 				Clears the specified [param texture] by replacing all of its pixels with the specified [param color]. [param base_mipmap] and [param mipmap_count] determine which mipmaps of the texture are affected by this clear operation, while [param base_layer] and [param layer_count] determine which layers of a 3D texture (or texture array) are affected by this clear operation. For 2D textures (which only have one layer by design), [param base_layer] and [param layer_count] must both be [code]0[/code].
 				[b]Note:[/b] [param texture] can't be cleared while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to clear this texture.
@@ -699,7 +699,7 @@
 			<param index="6" name="dst_mipmap" type="int" />
 			<param index="7" name="src_layer" type="int" />
 			<param index="8" name="dst_layer" type="int" />
-			<param index="9" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
+			<param index="9" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="7" />
 			<description>
 				Copies the [param from_texture] to [param to_texture] with the specified [param from_pos], [param to_pos] and [param size] coordinates. The Z axis of the [param from_pos], [param to_pos] and [param size] must be [code]0[/code] for 2-dimensional textures. Source and destination mipmaps/layers must also be specified, with these parameters being [code]0[/code] for textures without mipmaps or single-layer textures. Returns [constant @GlobalScope.OK] if the texture copy was successful or [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
 				[b]Note:[/b] [param from_texture] texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to copy this texture.
@@ -752,10 +752,18 @@
 				[b]Note:[/b] [param texture] requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved. Otherwise, an error is printed and a empty [PackedByteArray] is returned.
 			</description>
 		</method>
+		<method name="texture_get_native_handle">
+			<return type="int" />
+			<param index="0" name="texture" type="RID" />
+			<description>
+				Returns the internal graphics handle for this texture object. For use when communicating with third-party APIs mostly with GDExtension.
+				[b]Note:[/b] This function returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
+			</description>
+		</method>
 		<method name="texture_is_format_supported_for_usage" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="format" type="int" enum="RenderingDevice.DataFormat" />
-			<param index="1" name="usage_flags" type="int" enum="RenderingDevice.TextureUsageBits" />
+			<param index="1" name="usage_flags" type="int" enum="RenderingDevice.TextureUsageBits" is_bitfield="true" />
 			<description>
 				Returns [code]true[/code] if the specified [param format] is supported for the given [param usage_flags], [code]false[/code] otherwise.
 			</description>
@@ -778,7 +786,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="from_texture" type="RID" />
 			<param index="1" name="to_texture" type="RID" />
-			<param index="2" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
+			<param index="2" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="7" />
 			<description>
 				Resolves the [param from_texture] texture onto [param to_texture] with multisample antialiasing enabled. This must be used when rendering a framebuffer for MSAA to work. Returns [constant @GlobalScope.OK] if successful, [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
 				[b]Note:[/b] [param from_texture] and [param to_texture] textures must have the same dimension, format and type (color or depth).
@@ -795,7 +803,7 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="layer" type="int" />
 			<param index="2" name="data" type="PackedByteArray" />
-			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" default="7" />
+			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="7" />
 			<description>
 				Updates texture data with new data, replacing the previous data in place. The updated texture data must have the same dimensions and format. For 2D textures (which only have one layer), [param layer] must be [code]0[/code]. Returns [constant @GlobalScope.OK] if the update was successful, [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
 				[b]Note:[/b] Updating textures is forbidden during creation of a draw or compute list.

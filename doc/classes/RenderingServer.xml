@@ -240,7 +240,7 @@
 			<param index="1" name="mesh" type="RID" />
 			<param index="2" name="transform" type="Transform2D" default="Transform2D(1, 0, 0, 1, 0, 0)" />
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
-			<param index="4" name="texture" type="RID" />
+			<param index="4" name="texture" type="RID" default="RID()" />
 			<description>
 				Draws a mesh created with [method mesh_create] with given [param transform], [param modulate] color, and [param texture]. This is used internally by [MeshInstance2D].
 			</description>
@@ -273,7 +273,7 @@
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="mesh" type="RID" />
-			<param index="2" name="texture" type="RID" />
+			<param index="2" name="texture" type="RID" default="RID()" />
 			<description>
 				Draws a 2D [MultiMesh] on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_multimesh].
 			</description>
@@ -309,7 +309,7 @@
 			<param index="1" name="points" type="PackedVector2Array" />
 			<param index="2" name="colors" type="PackedColorArray" />
 			<param index="3" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
-			<param index="4" name="texture" type="RID" />
+			<param index="4" name="texture" type="RID" default="RID()" />
 			<description>
 				Draws a 2D polygon on the [CanvasItem] pointed to by the [param item] [RID]. If you need more flexibility (such as being able to use bones), use [method canvas_item_add_triangle_array] instead. See also [method CanvasItem.draw_polygon].
 			</description>
@@ -387,7 +387,7 @@
 			<param index="4" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="5" name="bones" type="PackedInt32Array" default="PackedInt32Array()" />
 			<param index="6" name="weights" type="PackedFloat32Array" default="PackedFloat32Array()" />
-			<param index="7" name="texture" type="RID" />
+			<param index="7" name="texture" type="RID" default="RID()" />
 			<param index="8" name="count" type="int" default="-1" />
 			<description>
 				Draws a triangle array on the [CanvasItem] pointed to by the [param item] [RID]. This is internally used by [Line2D] and [StyleBoxFlat] for rendering. [method canvas_item_add_triangle_array] is highly flexible, but more complex to use than [method canvas_item_add_polygon].
@@ -1797,7 +1797,7 @@
 		<method name="instances_cull_aabb" qualifiers="const">
 			<return type="PackedInt64Array" />
 			<param index="0" name="aabb" type="AABB" />
-			<param index="1" name="scenario" type="RID" />
+			<param index="1" name="scenario" type="RID" default="RID()" />
 			<description>
 				Returns an array of object IDs intersecting with the provided AABB. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
@@ -1806,7 +1806,7 @@
 		<method name="instances_cull_convex" qualifiers="const">
 			<return type="PackedInt64Array" />
 			<param index="0" name="convex" type="Plane[]" />
-			<param index="1" name="scenario" type="RID" />
+			<param index="1" name="scenario" type="RID" default="RID()" />
 			<description>
 				Returns an array of object IDs intersecting with the provided convex shape. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
@@ -1816,7 +1816,7 @@
 			<return type="PackedInt64Array" />
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="to" type="Vector3" />
-			<param index="2" name="scenario" type="RID" />
+			<param index="2" name="scenario" type="RID" default="RID()" />
 			<description>
 				Returns an array of object IDs intersecting with the provided 3D ray. Only 3D nodes that inherit from [VisualInstance3D] are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
 				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
@@ -2096,7 +2096,7 @@
 			<param index="2" name="arrays" type="Array" />
 			<param index="3" name="blend_shapes" type="Array" default="[]" />
 			<param index="4" name="lods" type="Dictionary" default="{}" />
-			<param index="5" name="compress_format" type="int" enum="RenderingServer.ArrayFormat" default="0" />
+			<param index="5" name="compress_format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" default="0" />
 			<description>
 			</description>
 		</method>
@@ -2199,14 +2199,14 @@
 		</method>
 		<method name="mesh_surface_get_format_attribute_stride" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_offset" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
 			<param index="1" name="vertex_count" type="int" />
 			<param index="2" name="array_index" type="int" />
 			<description>
@@ -2214,14 +2214,14 @@
 		</method>
 		<method name="mesh_surface_get_format_skin_stride" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_vertex_stride" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
 			</description>
@@ -3286,8 +3286,8 @@
 			<param index="0" name="texture" type="RID" />
 			<param index="1" name="srgb" type="bool" default="false" />
 			<description>
-				Returns the internal graphics handle for this texture object. For use when communicating with 3rd party APIs mostly with GDExternal.
-				[b]Note:[/b] This functions returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
+				Returns the internal graphics handle for this texture object. For use when communicating with third-party APIs mostly with GDExtension.
+				[b]Note:[/b] This function returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
 			</description>
 		</method>
 		<method name="texture_get_path" qualifiers="const">
@@ -4272,6 +4272,9 @@
 		</constant>
 		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="19" enum="LightParam">
 		</constant>
+		<constant name="LIGHT_PARAM_INTENSITY" value="20" enum="LightParam">
+			Constant representing the intensity of the light, measured in Lumens when dealing with a [SpotLight3D] or [OmniLight3D], or measured in Lux with a [DirectionalLight3D]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
+		</constant>
 		<constant name="LIGHT_PARAM_MAX" value="21" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
@@ -4575,7 +4578,7 @@
 			Number of objects drawn in a single frame.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME" value="1" enum="ViewportRenderInfo">
-			Number of vertices drawn in a single frame.
+			Number of points, lines, or triangles drawn in a single frame.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME" value="2" enum="ViewportRenderInfo">
 			Number of draw calls during this frame.
@@ -5201,7 +5204,7 @@
 			Number of objects rendered in the current 3D scene. This varies depending on camera position and rotation.
 		</constant>
 		<constant name="RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME" value="1" enum="RenderingInfo">
-			Number of vertices/indices rendered in the current 3D scene. This varies depending on camera position and rotation.
+			Number of points, lines, or triangles rendered in the current 3D scene. This varies depending on camera position and rotation.
 		</constant>
 		<constant name="RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME" value="2" enum="RenderingInfo">
 			Number of draw calls performed to render in the current 3D scene. This varies depending on camera position and rotation.
@@ -5210,10 +5213,10 @@
 			Texture memory used (in bytes).
 		</constant>
 		<constant name="RENDERING_INFO_BUFFER_MEM_USED" value="4" enum="RenderingInfo">
-			Buffer memory used (in bytes).
+			Buffer memory used (in bytes). This includes vertex data, uniform buffers, and many miscellaneous buffer types used internally.
 		</constant>
 		<constant name="RENDERING_INFO_VIDEO_MEM_USED" value="5" enum="RenderingInfo">
-			Video memory used (in bytes). This is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics.
+			Video memory used (in bytes). When using the Forward+ or mobile rendering backends, this is always greater than the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED], since there is miscellaneous data not accounted for by those two metrics. When using the GL Compatibility backend, this is equal to the sum of [constant RENDERING_INFO_TEXTURE_MEM_USED] and [constant RENDERING_INFO_BUFFER_MEM_USED].
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features">
 			Hardware supports shaders. This enum is currently unused in Godot 3.x.

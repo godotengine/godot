@@ -2477,9 +2477,6 @@ msgstr "گشودن در ویرایشگر"
 msgid "Open Script:"
 msgstr "باز کردن اسکریپت:"
 
-msgid "Rename Node"
-msgstr "تغییر نام گره"
-
 msgid "Select a Node"
 msgstr "انتخاب یک گره"
 
@@ -3908,9 +3905,6 @@ msgstr "پیکربندی"
 
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr "یک منبع NavigationMesh باید برای یک گره تنظیم یا ایجاد شود تا کار کند."
-
-msgid "Done!"
-msgstr "انجام شد!"
 
 msgid "Unknown"
 msgstr "ناشناخته"

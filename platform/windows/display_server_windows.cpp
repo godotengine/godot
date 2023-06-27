@@ -1384,6 +1384,8 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		wd.multiwindow_fs = false;
 		wd.maximized = wd.was_maximized;
 
+		_update_window_style(p_window, false);
+
 		if (wd.pre_fs_valid) {
 			rect = wd.pre_fs_rect;
 		} else {
@@ -1393,8 +1395,6 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 			rect.bottom = wd.height;
 			wd.pre_fs_valid = true;
 		}
-
-		_update_window_style(p_window, false);
 
 		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
 
@@ -1613,6 +1613,15 @@ void DisplayServerWindows::window_move_to_foreground(WindowID p_window) {
 	if (!wd.no_focus && !wd.is_popup) {
 		SetForegroundWindow(wd.hWnd);
 	}
+}
+
+bool DisplayServerWindows::window_is_focused(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	const WindowData &wd = windows[p_window];
+
+	return wd.window_focused;
 }
 
 bool DisplayServerWindows::window_can_draw(WindowID p_window) const {
@@ -1898,11 +1907,11 @@ void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor
 		}
 		cursors[p_shape] = nullptr;
 
+		cursors_cache.erase(p_shape);
+
 		CursorShape c = cursor_shape;
 		cursor_shape = CURSOR_MAX;
 		cursor_set_shape(c);
-
-		cursors_cache.erase(p_shape);
 	}
 }
 
@@ -3324,7 +3333,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						SetCapture(hWnd);
 					}
 				} else {
-					if (--pressrc <= 0) {
+					if (--pressrc <= 0 || last_button_state.is_empty()) {
 						if (mouse_mode != MOUSE_MODE_CAPTURED) {
 							ReleaseCapture();
 						}

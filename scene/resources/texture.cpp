@@ -2692,7 +2692,7 @@ Ref<Texture2D> AnimatedTexture::get_frame_texture(int p_frame) const {
 void AnimatedTexture::set_frame_duration(int p_frame, float p_duration) {
 	ERR_FAIL_INDEX(p_frame, MAX_FRAMES);
 
-	RWLockRead r(rw_lock);
+	RWLockWrite r(rw_lock);
 
 	frames[p_frame].duration = p_duration;
 }
@@ -2707,6 +2707,8 @@ float AnimatedTexture::get_frame_duration(int p_frame) const {
 
 void AnimatedTexture::set_speed_scale(float p_scale) {
 	ERR_FAIL_COND(p_scale < -1000 || p_scale >= 1000);
+
+	RWLockWrite r(rw_lock);
 
 	speed_scale = p_scale;
 }
@@ -2804,7 +2806,7 @@ void AnimatedTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_frame", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_current_frame", "get_current_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pause"), "set_pause", "get_pause");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "-60,60,0.1,or_greater,or_lesser"), "set_speed_scale", "get_speed_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "-60,60,0.1,or_less,or_greater"), "set_speed_scale", "get_speed_scale");
 
 	for (int i = 0; i < MAX_FRAMES; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "frame_" + itos(i) + "/texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_frame_texture", "get_frame_texture", i);

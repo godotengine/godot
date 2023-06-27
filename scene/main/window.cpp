@@ -616,6 +616,8 @@ void Window::_update_from_window() {
 void Window::_clear_window() {
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
 
+	bool had_focus = has_focus();
+
 	DisplayServer::get_singleton()->window_set_rect_changed_callback(Callable(), window_id);
 	DisplayServer::get_singleton()->window_set_window_event_callback(Callable(), window_id);
 	DisplayServer::get_singleton()->window_set_input_event_callback(Callable(), window_id);
@@ -638,7 +640,7 @@ void Window::_clear_window() {
 	window_id = DisplayServer::INVALID_WINDOW_ID;
 
 	// If closing window was focused and has a parent, return focus.
-	if (focused && transient_parent) {
+	if (had_focus && transient_parent) {
 		transient_parent->grab_focus();
 	}
 
@@ -1185,6 +1187,7 @@ void Window::_notification(int p_what) {
 					{
 						position = DisplayServer::get_singleton()->window_get_position(window_id);
 						size = DisplayServer::get_singleton()->window_get_size(window_id);
+						focused = DisplayServer::get_singleton()->window_is_focused(window_id);
 					}
 					_update_window_size(); // Inform DisplayServer of minimum and maximum size.
 					_update_viewport_size(); // Then feed back to the viewport.
@@ -1762,6 +1765,9 @@ void Window::grab_focus() {
 
 bool Window::has_focus() const {
 	ERR_READ_THREAD_GUARD_V(false);
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		return DisplayServer::get_singleton()->window_is_focused(window_id);
+	}
 	return focused;
 }
 
@@ -2646,13 +2652,15 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_exclusive_centered_ratio", "from_node", "ratio"), &Window::popup_exclusive_centered_ratio, DEFVAL(0.8));
 	ClassDB::bind_method(D_METHOD("popup_exclusive_centered_clamped", "from_node", "minsize", "fallback_ratio"), &Window::popup_exclusive_centered_clamped, DEFVAL(Size2i()), DEFVAL(0.75));
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "initial_position", PROPERTY_HINT_ENUM, "Absolute,Center of Primary Screen,Center of Other Screen,Center of Screen With Mouse Pointer,Center of Screen With Keyboard Focus"), "set_initial_position", "get_initial_position");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
+	// Keep the enum values in sync with the `Mode` enum.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen"), "set_mode", "get_mode");
 
-	// Keep the enum values in sync with the `DisplayServer::SCREEN_` enum.
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
+
+	// Keep the enum values in sync with the `WindowInitialPosition` enum.
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "initial_position", PROPERTY_HINT_ENUM, "Absolute,Center of Primary Screen,Center of Main Window Screen,Center of Other Screen,Center of Screen With Mouse Pointer,Center of Screen With Keyboard Focus"), "set_initial_position", "get_initial_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_current_screen", "get_current_screen");
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "mouse_passthrough_polygon"), "set_mouse_passthrough_polygon", "get_mouse_passthrough_polygon");

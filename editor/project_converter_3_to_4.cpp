@@ -68,7 +68,9 @@ public:
 	RegEx reg_json_parse = RegEx("([\t ]{0,})([^\n]+)parse_json\\(([^\n]+)");
 	RegEx reg_json_non_new = RegEx("([\t ]{0,})([^\n]+)JSON\\.parse\\(([^\n]+)");
 	RegEx reg_json_print = RegEx("\\bJSON\\b\\.print\\(");
-	RegEx reg_export = RegEx("export\\(([a-zA-Z0-9_]+)\\)[ ]+var[ ]+([a-zA-Z0-9_]+)");
+	RegEx reg_export_simple = RegEx("export\\(([a-zA-Z0-9_]+)\\)[ ]+var[ ]+([a-zA-Z0-9_]+)");
+	RegEx reg_export_typed = RegEx("export\\(([a-zA-Z0-9_]+)\\)[ ]+var[ ]+([a-zA-Z0-9_]+)[ ]*:[ ]*[a-zA-Z0-9_]+");
+	RegEx reg_export_inferred_type = RegEx("export\\([a-zA-Z0-9_]+\\)[ ]+var[ ]+([a-zA-Z0-9_]+)[ ]*:[ ]*=");
 	RegEx reg_export_advanced = RegEx("export\\(([^)^\n]+)\\)[ ]+var[ ]+([a-zA-Z0-9_]+)([^\n]+)");
 	RegEx reg_setget_setget = RegEx("var[ ]+([a-zA-Z0-9_]+)([^\n]+?)[ \t]*setget[ \t]+([a-zA-Z0-9_]+)[ \t]*,[ \t]*([a-zA-Z0-9_]+)");
 	RegEx reg_setget_set = RegEx("var[ ]+([a-zA-Z0-9_]+)([^\n]+?)[ \t]*setget[ \t]+([a-zA-Z0-9_]+)[ \t]*[,]*[^\n]*$");
@@ -144,6 +146,15 @@ public:
 
 	// Keycode.
 	RegEx input_map_keycode = RegEx("\\b,\"((physical_)?)scancode\":(\\d+)\\b");
+
+	// Button index and joypad axis.
+	RegEx joypad_button_index = RegEx("\\b,\"button_index\":(\\d+),(\"pressure\":\\d+\\.\\d+,\"pressed\":(false|true))\\b");
+	RegEx joypad_axis = RegEx("\\b,\"axis\":(\\d+)\\b");
+
+	// Index represents Godot 3's value, entry represents Godot 4 value equivalency.
+	// i.e: Button4(L1 - Godot3) -> joypad_button_mappings[4]=9 -> Button9(L1 - Godot4).
+	int joypad_button_mappings[23] = { 0, 1, 2, 3, 9, 10, -1 /*L2*/, -1 /*R2*/, 7, 8, 4, 6, 11, 12, 13, 14, 5, 15, 16, 17, 18, 19, 20 };
+	// Entries for L2 and R2 are -1 since they match to joypad axes and no longer to joypad buttons in Godot 4.
 
 	LocalVector<RegEx *> class_regexes;
 
@@ -399,6 +410,8 @@ bool ProjectConverter3To4::convert() {
 
 				custom_rename(source_lines, "\\.shader", ".gdshader");
 			} else if (file_name.ends_with(".tscn")) {
+				fix_pause_mode(source_lines, reg_container);
+
 				rename_classes(source_lines, reg_container); // Using only specialized function.
 
 				rename_common(RenamesMap3To4::enum_renames, reg_container.enum_regexes, source_lines);
@@ -438,6 +451,7 @@ bool ProjectConverter3To4::convert() {
 				rename_common(RenamesMap3To4::project_godot_renames, reg_container.project_godot_regexes, source_lines);
 				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, source_lines);
 				rename_input_map_scancode(source_lines, reg_container);
+				rename_joypad_buttons_and_axes(source_lines, reg_container);
 				rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, source_lines);
 				custom_rename(source_lines, "config_version=4", "config_version=5");
 			} else if (file_name.ends_with(".csproj")) {
@@ -447,6 +461,8 @@ bool ProjectConverter3To4::convert() {
 					String &line = source_line.line;
 					if (line.contains("nodes/root_type=\"Spatial\"")) {
 						line = "nodes/root_type=\"Node3D\"";
+					} else if (line == "importer=\"ogg_vorbis\"") {
+						line = "importer=\"oggvorbisstr\"";
 					}
 				}
 			} else {
@@ -620,6 +636,7 @@ bool ProjectConverter3To4::validate_conversion() {
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::project_godot_renames, reg_container.project_godot_regexes, lines));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines));
 				changed_elements.append_array(check_for_rename_input_map_scancode(lines, reg_container));
+				changed_elements.append_array(check_for_rename_joypad_buttons_and_axes(lines, reg_container));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, lines));
 			} else if (file_name.ends_with(".csproj")) {
 				// TODO
@@ -759,6 +776,12 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_with_regex("\n    tool", "\n    tool", &ProjectConverter3To4::fix_tool_declaration, "gdscript keyword", reg_container);
 	valid = valid && test_conversion_with_regex("\n\ntool", "@tool\n\n", &ProjectConverter3To4::fix_tool_declaration, "gdscript keyword", reg_container);
 
+	valid = valid && test_conversion_with_regex("pause_mode = 2", "pause_mode = 3", &ProjectConverter3To4::fix_pause_mode, "pause_mode", reg_container);
+	valid = valid && test_conversion_with_regex("pause_mode = 1", "pause_mode = 1", &ProjectConverter3To4::fix_pause_mode, "pause_mode", reg_container);
+	valid = valid && test_conversion_with_regex("pause_mode = 3", "pause_mode = 3", &ProjectConverter3To4::fix_pause_mode, "pause_mode", reg_container);
+	valid = valid && test_conversion_with_regex("somepause_mode = 2", "somepause_mode = 2", &ProjectConverter3To4::fix_pause_mode, "pause_mode", reg_container);
+	valid = valid && test_conversion_with_regex("pause_mode_ext = 2", "pause_mode_ext = 2", &ProjectConverter3To4::fix_pause_mode, "pause_mode", reg_container);
+
 	valid = valid && test_conversion_basic("TYPE_REAL", "TYPE_FLOAT", RenamesMap3To4::enum_renames, reg_container.enum_regexes, "enum");
 
 	valid = valid && test_conversion_basic("can_instance", "can_instantiate", RenamesMap3To4::gdscript_function_renames, reg_container.gdscript_function_regexes, "gdscript function");
@@ -839,6 +862,8 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_gdscript_builtin("\tvar aa = roman(r.move_and_slide_with_snap( a, g, b, c, d, e, f )) # Roman", "\tr.set_velocity(a)\n\t# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `g`\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tr.move_and_slide()\n\tvar aa = roman(r.velocity) # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("\tmove_and_slide_with_snap( a, g, b, c, d, e, f ) # Roman", "\tset_velocity(a)\n\t# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `g`\n\tset_up_direction(b)\n\tset_floor_stop_on_slope_enabled(c)\n\tset_max_slides(d)\n\tset_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tmove_and_slide() # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
+	valid = valid && test_conversion_gdscript_builtin("remove_and_slide(a,b,c,d,e,f)", "remove_and_slide(a,b,c,d,e,f)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+
 	valid = valid && test_conversion_gdscript_builtin("list_dir_begin( a , b )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("list_dir_begin( a )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("list_dir_begin( )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
@@ -900,6 +925,10 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_gdscript_builtin("export(float) var lifetime = 3.0", "export var lifetime: float = 3.0", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("export(String, 'AnonymousPro', 'CourierPrime') var _font_name = 'AnonymousPro'", "export var _font_name = 'AnonymousPro' # (String, 'AnonymousPro', 'CourierPrime')", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false); // TODO, this is only a workaround
 	valid = valid && test_conversion_gdscript_builtin("export(PackedScene) var mob_scene", "export var mob_scene: PackedScene", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("export(float) var lifetime: float = 3.0", "export var lifetime: float = 3.0", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("export var lifetime: float = 3.0", "export var lifetime: float = 3.0", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("export var lifetime := 3.0", "export var lifetime := 3.0", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("export(float) var lifetime := 3.0", "export var lifetime := 3.0", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
 	valid = valid && test_conversion_gdscript_builtin("var d = parse_json(roman(sfs))", "var test_json_conv = JSON.new()\ntest_json_conv.parse(roman(sfs))\nvar d = test_json_conv.get_data()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
@@ -926,6 +955,15 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,[D,E]) != OK):", "(connect(A, Callable(B, C).bind(D,E)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,[D,E],F) != OK):", "(connect(A, Callable(B, C).bind(D,E), F) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,D,E) != OK):", "(connect(A, Callable(B, C).bind(D), E) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+
+	valid = valid && test_conversion_gdscript_builtin(".connect(A,B,C)", ".connect(A, Callable(B, C))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("abc.connect(A,B,C)", "abc.connect(A, Callable(B, C))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tconnect(A,B,C)", "\tconnect(A, Callable(B, C))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin(" connect(A,B,C)", " connect(A, Callable(B, C))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("_connect(A,B,C)", "_connect(A,B,C)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("do_connect(A,B,C)", "do_connect(A,B,C)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("$connect(A,B,C)", "$connect(A,B,C)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("@connect(A,B,C)", "@connect(A,B,C)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
 	valid = valid && test_conversion_gdscript_builtin("(start(A,B) != OK):", "(start(Callable(A, B)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("func start(A,B):", "func start(A,B):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
@@ -971,6 +1009,10 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	// Note: Do not change to *scancode*, it is applied before that conversion.
 	valid = valid && test_conversion_with_regex("\"device\":-1,\"scancode\":16777231,\"physical_scancode\":16777232", "\"device\":-1,\"scancode\":4194319,\"physical_scancode\":4194320", &ProjectConverter3To4::rename_input_map_scancode, "custom rename", reg_container);
 	valid = valid && test_conversion_with_regex("\"device\":-1,\"scancode\":65,\"physical_scancode\":66", "\"device\":-1,\"scancode\":65,\"physical_scancode\":66", &ProjectConverter3To4::rename_input_map_scancode, "custom rename", reg_container);
+
+	valid = valid && test_conversion_with_regex("\"device\":0,\"button_index\":5,\"pressure\":0.0,\"pressed\":false,", "\"device\":0,\"button_index\":10,\"pressure\":0.0,\"pressed\":false,", &ProjectConverter3To4::rename_joypad_buttons_and_axes, "custom rename", reg_container);
+	valid = valid && test_conversion_with_regex("\"device\":0,\"axis\":6,", "\"device\":0,\"axis\":4,", &ProjectConverter3To4::rename_joypad_buttons_and_axes, "custom rename", reg_container);
+	valid = valid && test_conversion_with_regex("InputEventJoypadButton,\"button_index\":7,\"pressure\":0.0,\"pressed\":false,\"script\":null", "InputEventJoypadMotion,\"axis\":5,\"axis_value\":1.0,\"script\":null", &ProjectConverter3To4::rename_joypad_buttons_and_axes, "custom rename", reg_container);
 
 	// Custom rule conversion
 	{
@@ -1232,24 +1274,20 @@ Vector<String> ProjectConverter3To4::parse_arguments(const String &line) {
 	for (int current_index = 0; current_index < string_size; current_index++) {
 		char32_t character = line.get(current_index);
 		switch (character) {
-			case '(': {
+			case '(':
+			case '[':
+			case '{': {
 				parts_counter++;
 				if (parts_counter == 1 && !is_inside_string) {
 					start_part = current_index;
 				}
 				break;
 			};
-			case ')': {
+			case ')':
+			case '}': {
 				parts_counter--;
 				if (parts_counter == 0 && !is_inside_string) {
 					parts.append(line.substr(start_part + 1, current_index - start_part - 1));
-					start_part = current_index;
-				}
-				break;
-			};
-			case '[': {
-				parts_counter++;
-				if (parts_counter == 1 && !is_inside_string) {
 					start_part = current_index;
 				}
 				break;
@@ -1442,12 +1480,26 @@ Vector<String> ProjectConverter3To4::check_for_rename_colors(Vector<String> &lin
 }
 
 void ProjectConverter3To4::fix_tool_declaration(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
-	// In godot4, "tool" became "@tool" and must be located at the top of the file
+	// In godot4, "tool" became "@tool" and must be located at the top of the file.
 	for (int i = 0; i < source_lines.size(); ++i) {
 		if (source_lines[i].line == "tool") {
 			source_lines.remove_at(i);
 			source_lines.insert(0, { "@tool", false });
-			return; // assuming there's at most 1 tool declaration
+			return; // assuming there's at most 1 tool declaration.
+		}
+	}
+}
+
+void ProjectConverter3To4::fix_pause_mode(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
+	// In Godot 3, the pause_mode 2 equals the PAUSE_MODE_PROCESS value.
+	// In Godot 4, the pause_mode PAUSE_MODE_PROCESS was renamed to PROCESS_MODE_ALWAYS and equals the number 3.
+	// We therefore convert pause_mode = 2 to pause_mode = 3.
+	for (SourceLine &source_line : source_lines) {
+		String &line = source_line.line;
+
+		if (line == "pause_mode = 2") {
+			// Note: pause_mode is renamed to process_mode later on, so no need to do it here.
+			line = "pause_mode = 3";
 		}
 	}
 }
@@ -1556,6 +1608,22 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<
 	return found_renames;
 }
 
+bool ProjectConverter3To4::contains_function_call(String &line, String function) const {
+	// We want to convert the function only if it is completely standalone.
+	// For example, when we search for "connect(", we don't want to accidentally convert "reconnect(".
+	if (!line.contains(function)) {
+		return false;
+	}
+
+	int index = line.find(function);
+	if (index == 0) {
+		return true;
+	}
+
+	char32_t previous_char = line.get(index - 1);
+	return (previous_char < '0' || previous_char > '9') && (previous_char < 'a' || previous_char > 'z') && (previous_char < 'A' || previous_char > 'Z') && previous_char != '_' && previous_char != '$' && previous_char != '@';
+}
+
 // TODO, this function should run only on all ".gd" files and also on lines in ".tscn" files which are parts of built-in Scripts.
 void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContainer &reg_container, bool builtin) {
 	// In this and other functions, reg.sub() is used only after checking lines with str.contains().
@@ -1604,13 +1672,14 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		line = line.replace("get_node(@", "get_node(");
 	}
 
-	// export(float) var lifetime = 3.0 -> export var lifetime: float = 3.0     GDScript
 	if (line.contains("export")) {
-		line = reg_container.reg_export.sub(line, "export var $2: $1");
-	}
-
-	// export(String, 'AnonymousPro', 'CourierPrime') var _font_name = 'AnonymousPro' -> export var _font_name = 'AnonymousPro' #(String, 'AnonymousPro', 'CourierPrime')   GDScript
-	if (line.contains("export")) {
+		// 1. export(float) var lifetime: float = 3.0 -> export var lifetime: float = 3.0
+		line = reg_container.reg_export_typed.sub(line, "export var $2: $1");
+		// 2. export(float) var lifetime := 3.0 -> export var lifetime := 3.0
+		line = reg_container.reg_export_inferred_type.sub(line, "export var $1 :=");
+		// 3. export(float) var lifetime = 3.0 -> export var lifetime: float = 3.0     GDScript
+		line = reg_container.reg_export_simple.sub(line, "export var $2: $1");
+		// 4. export(String, 'AnonymousPro', 'CourierPrime') var _font_name = 'AnonymousPro' -> export var _font_name = 'AnonymousPro' #(String, 'AnonymousPro', 'CourierPrime')   GDScript
 		line = reg_container.reg_export_advanced.sub(line, "export var $2$3 # ($1)");
 	}
 
@@ -1722,12 +1791,12 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// Instantiate
-	if (line.contains("instance")) {
+	if (contains_function_call(line, "instance")) {
 		line = reg_container.reg_instantiate.sub(line, ".instantiate($1)", true);
 	}
 
 	// -- r.move_and_slide( a, b, c, d, e )  ->  r.set_velocity(a) ... r.move_and_slide()         KinematicBody
-	if (line.contains(("move_and_slide("))) {
+	if (contains_function_call(line, "move_and_slide(")) {
 		int start = line.find("move_and_slide(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1778,7 +1847,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- r.move_and_slide_with_snap( a, b, c, d, e )  ->  r.set_velocity(a) ... r.move_and_slide()         KinematicBody
-	if (line.contains("move_and_slide_with_snap(")) {
+	if (contains_function_call(line, "move_and_slide_with_snap(")) {
 		int start = line.find("move_and_slide_with_snap(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1834,7 +1903,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- sort_custom( a , b )  ->  sort_custom(Callable( a , b ))            Object
-	if (line.contains("sort_custom(")) {
+	if (contains_function_call(line, "sort_custom(")) {
 		int start = line.find("sort_custom(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1846,7 +1915,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- list_dir_begin( )  ->  list_dir_begin()            Object
-	if (line.contains("list_dir_begin(")) {
+	if (contains_function_call(line, "list_dir_begin(")) {
 		int start = line.find("list_dir_begin(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1855,7 +1924,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- draw_line(1,2,3,4,5) -> draw_line(1, 2, 3, 4)            CanvasItem
-	if (line.contains("draw_line(")) {
+	if (contains_function_call(line, "draw_line(")) {
 		int start = line.find("draw_line(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1886,7 +1955,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- yield(this, \"timeout\") -> await this.timeout         GDScript
-	if (line.contains("yield(")) {
+	if (contains_function_call(line, "yield(")) {
 		int start = line.find("yield(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1902,7 +1971,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- parse_json( AA ) -> TODO       Object
-	if (line.contains("parse_json(")) {
+	if (contains_function_call(line, "parse_json(")) {
 		int start = line.find("parse_json(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1940,23 +2009,20 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// -- "(connect(A,B,C,D,E) != OK):", "(connect(A, Callable(B, C).bind(D), E)      Object
-	if (line.contains("connect(")) {
+	if (contains_function_call(line, "connect(")) {
 		int start = line.find("connect(");
-		// Protection from disconnect
-		if (start == 0 || line.get(start - 1) != 's') {
-			int end = get_end_parenthesis(line.substr(start)) + 1;
-			if (end > -1) {
-				Vector<String> parts = parse_arguments(line.substr(start, end));
-				if (parts.size() == 3) {
-					line = line.substr(0, start) + "connect(" + parts[0] + ", Callable(" + parts[1] + ", " + parts[2] + "))" + line.substr(end + start);
-				} else if (parts.size() >= 4) {
-					line = line.substr(0, start) + "connect(" + parts[0] + ", Callable(" + parts[1] + ", " + parts[2] + ").bind(" + parts[3].lstrip(" [").rstrip("] ") + ")" + connect_arguments(parts, 4) + ")" + line.substr(end + start);
-				}
+		int end = get_end_parenthesis(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 3) {
+				line = line.substr(0, start) + "connect(" + parts[0] + ", Callable(" + parts[1] + ", " + parts[2] + "))" + line.substr(end + start);
+			} else if (parts.size() >= 4) {
+				line = line.substr(0, start) + "connect(" + parts[0] + ", Callable(" + parts[1] + ", " + parts[2] + ").bind(" + parts[3].lstrip(" [").rstrip("] ") + ")" + connect_arguments(parts, 4) + ")" + line.substr(end + start);
 			}
 		}
 	}
 	// -- disconnect(a,b,c) -> disconnect(a,Callable(b,c))      Object
-	if (line.contains("disconnect(")) {
+	if (contains_function_call(line, "disconnect(")) {
 		int start = line.find("disconnect(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1967,7 +2033,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	// -- is_connected(a,b,c) -> is_connected(a,Callable(b,c))      Object
-	if (line.contains("is_connected(")) {
+	if (contains_function_call(line, "is_connected(")) {
 		int start = line.find("is_connected(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1979,7 +2045,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 	// -- "(tween_method(A,B,C,D,E) != OK):", "(tween_method(Callable(A,B),C,D,E)      Object
 	// -- "(tween_method(A,B,C,D,E,[F,G]) != OK):", "(tween_method(Callable(A,B).bind(F,G),C,D,E)      Object
-	if (line.contains("tween_method(")) {
+	if (contains_function_call(line, "tween_method(")) {
 		int start = line.find("tween_method(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -1992,7 +2058,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	// -- "(tween_callback(A,B,[C,D]) != OK):", "(connect(Callable(A,B).bind(C,D))      Object
-	if (line.contains("tween_callback(")) {
+	if (contains_function_call(line, "tween_callback(")) {
 		int start = line.find("tween_callback(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2006,7 +2072,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 	// -- start(a,b) -> start(Callable(a, b))      Thread
 	// -- start(a,b,c,d) -> start(Callable(a, b).bind(c), d)      Thread
-	if (line.contains("start(")) {
+	if (contains_function_call(line, "start(")) {
 		int start = line.find("start(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		// Protection from 'func start'
@@ -2034,7 +2100,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	//  create_from_image(aa, bb)  ->   create_from_image(aa) #, bb   ImageTexture
-	if (line.contains("create_from_image(")) {
+	if (contains_function_call(line, "create_from_image(")) {
 		int start = line.find("create_from_image(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2045,7 +2111,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	//  set_cell_item(a, b, c, d ,e)  ->   set_cell_item(Vector3(a, b, c), d ,e)
-	if (line.contains("set_cell_item(")) {
+	if (contains_function_call(line, "set_cell_item(")) {
 		int start = line.find("set_cell_item(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2056,7 +2122,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	//  get_cell_item(a, b, c)  ->   get_cell_item(Vector3i(a, b, c))
-	if (line.contains("get_cell_item(")) {
+	if (contains_function_call(line, "get_cell_item(")) {
 		int start = line.find("get_cell_item(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2067,7 +2133,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	//  get_cell_item_orientation(a, b, c)  ->   get_cell_item_orientation(Vector3i(a, b, c))
-	if (line.contains("get_cell_item_orientation(")) {
+	if (contains_function_call(line, "get_cell_item_orientation(")) {
 		int start = line.find("get_cell_item_orientation(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2078,7 +2144,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	//  apply_impulse(A, B)  ->   apply_impulse(B, A)
-	if (line.contains("apply_impulse(")) {
+	if (contains_function_call(line, "apply_impulse(")) {
 		int start = line.find("apply_impulse(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2089,7 +2155,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	//  apply_force(A, B)  ->   apply_force(B, A)
-	if (line.contains("apply_force(")) {
+	if (contains_function_call(line, "apply_force(")) {
 		int start = line.find("apply_force(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2100,7 +2166,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	//  map_to_world(a, b, c)  ->   map_to_local(Vector3i(a, b, c))
-	if (line.contains("map_to_world(")) {
+	if (contains_function_call(line, "map_to_world(")) {
 		int start = line.find("map_to_world(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2114,7 +2180,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	//  set_rotating(true)  ->   set_ignore_rotation(false)
-	if (line.contains("set_rotating(")) {
+	if (contains_function_call(line, "set_rotating(")) {
 		int start = line.find("set_rotating(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2138,7 +2204,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	//  draw_rect(a,b,c,d,e)  ->   draw_rect(a,b,c,d)#e) TODOGODOT4 Antialiasing argument is missing
-	if (line.contains("draw_rect(")) {
+	if (contains_function_call(line, "draw_rect(")) {
 		int start = line.find("draw_rect(");
 		int end = get_end_parenthesis(line.substr(start)) + 1;
 		if (end > -1) {
@@ -2149,7 +2215,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 	}
 	// get_focus_owner() -> get_viewport().gui_get_focus_owner()
-	if (line.contains("get_focus_owner()")) {
+	if (contains_function_call(line, "get_focus_owner()")) {
 		line = line.replace("get_focus_owner()", "get_viewport().gui_get_focus_owner()");
 	}
 
@@ -2174,7 +2240,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 
 	// rotating = true  ->   ignore_rotation = false # reversed "rotating" for Camera2D
-	if (line.contains("rotating")) {
+	if (contains_function_call(line, "rotating")) {
 		int start = line.find("rotating");
 		bool foundNextEqual = false;
 		String line_to_check = line.substr(start + String("rotating").length());
@@ -2623,6 +2689,89 @@ void ProjectConverter3To4::rename_input_map_scancode(Vector<SourceLine> &source_
 			}
 		}
 	}
+}
+
+void ProjectConverter3To4::rename_joypad_buttons_and_axes(Vector<SourceLine> &source_lines, const RegExContainer &reg_container) {
+	for (SourceLine &source_line : source_lines) {
+		if (source_line.is_comment) {
+			continue;
+		}
+		String &line = source_line.line;
+		if (uint64_t(line.length()) <= maximum_line_length) {
+			// Remap button indexes.
+			TypedArray<RegExMatch> reg_match = reg_container.joypad_button_index.search_all(line);
+			for (int i = 0; i < reg_match.size(); ++i) {
+				Ref<RegExMatch> match = reg_match[i];
+				PackedStringArray strings = match->get_strings();
+				String button_index_entry = strings[0];
+				int button_index_value = strings[1].to_int();
+				if (button_index_value == 6) { // L2 and R2 are mapped to joypad axes in Godot 4.
+					line = line.replace("InputEventJoypadButton", "InputEventJoypadMotion");
+					line = line.replace(button_index_entry, ",\"axis\":4,\"axis_value\":1.0");
+				} else if (button_index_value == 7) {
+					line = line.replace("InputEventJoypadButton", "InputEventJoypadMotion");
+					line = line.replace(button_index_entry, ",\"axis\":5,\"axis_value\":1.0");
+				} else if (button_index_value < 22) { // There are no mappings for indexes greater than 22 in both Godot 3 & 4.
+					String pressure_and_pressed_properties = strings[2];
+					line = line.replace(button_index_entry, ",\"button_index\":" + String::num_int64(reg_container.joypad_button_mappings[button_index_value]) + "," + pressure_and_pressed_properties);
+				}
+			}
+			// Remap axes. Only L2 and R2 need remapping.
+			reg_match = reg_container.joypad_axis.search_all(line);
+			for (int i = 0; i < reg_match.size(); ++i) {
+				Ref<RegExMatch> match = reg_match[i];
+				PackedStringArray strings = match->get_strings();
+				String axis_entry = strings[0];
+				int axis_value = strings[1].to_int();
+				if (axis_value == 6) {
+					line = line.replace(axis_entry, ",\"axis\":4");
+				} else if (axis_value == 7) {
+					line = line.replace(axis_entry, ",\"axis\":5");
+				}
+			}
+		}
+	}
+}
+
+Vector<String> ProjectConverter3To4::check_for_rename_joypad_buttons_and_axes(Vector<String> &lines, const RegExContainer &reg_container) {
+	Vector<String> found_renames;
+	int current_line = 1;
+	for (String &line : lines) {
+		if (uint64_t(line.length()) <= maximum_line_length) {
+			// Remap button indexes.
+			TypedArray<RegExMatch> reg_match = reg_container.joypad_button_index.search_all(line);
+			for (int i = 0; i < reg_match.size(); ++i) {
+				Ref<RegExMatch> match = reg_match[i];
+				PackedStringArray strings = match->get_strings();
+				String button_index_entry = strings[0];
+				int button_index_value = strings[1].to_int();
+				if (button_index_value == 6) { // L2 and R2 are mapped to joypad axes in Godot 4.
+					found_renames.append(line_formatter(current_line, "InputEventJoypadButton", "InputEventJoypadMotion", line));
+					found_renames.append(line_formatter(current_line, button_index_entry, ",\"axis\":4", line));
+				} else if (button_index_value == 7) {
+					found_renames.append(line_formatter(current_line, "InputEventJoypadButton", "InputEventJoypadMotion", line));
+					found_renames.append(line_formatter(current_line, button_index_entry, ",\"axis\":5", line));
+				} else if (button_index_value < 22) { // There are no mappings for indexes greater than 22 in both Godot 3 & 4.
+					found_renames.append(line_formatter(current_line, "\"button_index\":" + strings[1], "\"button_index\":" + String::num_int64(reg_container.joypad_button_mappings[button_index_value]), line));
+				}
+			}
+			// Remap axes. Only L2 and R2 need remapping.
+			reg_match = reg_container.joypad_axis.search_all(line);
+			for (int i = 0; i < reg_match.size(); ++i) {
+				Ref<RegExMatch> match = reg_match[i];
+				PackedStringArray strings = match->get_strings();
+				String axis_entry = strings[0];
+				int axis_value = strings[1].to_int();
+				if (axis_value == 6) {
+					found_renames.append(line_formatter(current_line, axis_entry, ",\"axis\":4", line));
+				} else if (axis_value == 7) {
+					found_renames.append(line_formatter(current_line, axis_entry, ",\"axis\":5", line));
+				}
+			}
+			current_line++;
+		}
+	}
+	return found_renames;
 }
 
 Vector<String> ProjectConverter3To4::check_for_rename_input_map_scancode(Vector<String> &lines, const RegExContainer &reg_container) {

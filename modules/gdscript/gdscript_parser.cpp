@@ -30,23 +30,27 @@
 
 #include "gdscript_parser.h"
 
+#include "gdscript.h"
+
+#ifdef DEBUG_ENABLED
+#include "gdscript_warning.h"
+#endif
+
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
-#include "gdscript.h"
 #include "scene/main/multiplayer_api.h"
 
 #ifdef DEBUG_ENABLED
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
-#include "gdscript_warning.h"
 #include "servers/text_server.h"
-#endif // DEBUG_ENABLED
+#endif
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
-#endif // TOOLS_ENABLED
+#endif
 
 static HashMap<StringName, Variant::Type> builtin_types;
 Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
@@ -112,7 +116,7 @@ GDScriptParser::GDScriptParser() {
 	// Warning annotations.
 	register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS | AnnotationInfo::VARIABLE | AnnotationInfo::SIGNAL | AnnotationInfo::CONSTANT | AnnotationInfo::FUNCTION | AnnotationInfo::STATEMENT, &GDScriptParser::warning_annotations, varray(), true);
 	// Networking.
-	register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "unreliable", 0), true);
+	register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "unreliable", 0));
 
 #ifdef DEBUG_ENABLED
 	is_ignoring_warnings = !(bool)GLOBAL_GET("debug/gdscript/warnings/enable");
@@ -1532,6 +1536,11 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 	suite->parent_function = current_function;
 	current_suite = suite;
 
+	if (!p_for_lambda && suite->parent_block != nullptr && suite->parent_block->is_in_loop) {
+		// Do not reset to false if true is set before calling parse_suite().
+		suite->is_in_loop = true;
+	}
+
 	bool multiline = false;
 
 	if (match(GDScriptTokenizer::Token::NEWLINE)) {
@@ -1867,9 +1876,8 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 		}
 		suite->add_local(SuiteNode::Local(n_for->variable, current_function));
 	}
-
+	suite->is_in_loop = true;
 	n_for->loop = parse_suite(R"("for" block)", suite);
-	n_for->loop->is_loop = true;
 	complete_extents(n_for);
 
 	// Reset break/continue state.
@@ -2182,8 +2190,9 @@ GDScriptParser::WhileNode *GDScriptParser::parse_while() {
 	can_break = true;
 	can_continue = true;
 
-	n_while->loop = parse_suite(R"("while" block)");
-	n_while->loop->is_loop = true;
+	SuiteNode *suite = alloc_node<SuiteNode>();
+	suite->is_in_loop = true;
+	n_while->loop = parse_suite(R"("while" block)", suite);
 	complete_extents(n_while);
 
 	// Reset break/continue state.
@@ -2227,7 +2236,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 	ExpressionNode *previous_operand = (this->*prefix_rule)(nullptr, p_can_assign);
 
 	while (p_precedence <= get_rule(current.type)->precedence) {
-		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL) || (previous_operand->type == Node::LAMBDA && lambda_ended)) {
+		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL) || lambda_ended) {
 			return previous_operand;
 		}
 		// Also switch multiline mode on here for infix operators.
@@ -2760,12 +2769,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 			switch (dictionary->style) {
 				case DictionaryNode::LUA_TABLE:
 					if (key != nullptr && key->type != Node::IDENTIFIER && key->type != Node::LITERAL) {
-						push_error("Expected identifier or string as LUA-style dictionary key.");
+						push_error(R"(Expected identifier or string as Lua-style dictionary key (e.g "{ key = value }").)");
 						advance();
 						break;
 					}
 					if (key != nullptr && key->type == Node::LITERAL && static_cast<LiteralNode *>(key)->value.get_type() != Variant::STRING) {
-						push_error("Expected identifier or string as LUA-style dictionary key.");
+						push_error(R"(Expected identifier or string as Lua-style dictionary key (e.g "{ key = value }").)");
 						advance();
 						break;
 					}
@@ -3823,8 +3832,12 @@ bool GDScriptParser::onready_annotation(const AnnotationNode *p_annotation, Node
 	}
 
 	VariableNode *variable = static_cast<VariableNode *>(p_node);
+	if (variable->is_static) {
+		push_error(R"("@onready" annotation cannot be applied to a static variable.)", p_annotation);
+		return false;
+	}
 	if (variable->onready) {
-		push_error(R"("@onready" annotation can only be used once per variable.)");
+		push_error(R"("@onready" annotation can only be used once per variable.)", p_annotation);
 		return false;
 	}
 	variable->onready = true;
@@ -3837,6 +3850,10 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
 
 	VariableNode *variable = static_cast<VariableNode *>(p_node);
+	if (variable->is_static) {
+		push_error(vformat(R"(Annotation "%s" cannot be applied to a static variable.)", p_annotation->name), p_annotation);
+		return false;
+	}
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
 		return false;
@@ -4137,21 +4154,16 @@ bool GDScriptParser::rpc_annotation(const AnnotationNode *p_annotation, Node *p_
 	Dictionary rpc_config;
 	rpc_config["rpc_mode"] = MultiplayerAPI::RPC_MODE_AUTHORITY;
 	if (!p_annotation->resolved_arguments.is_empty()) {
-		int last = p_annotation->resolved_arguments.size() - 1;
-		if (p_annotation->resolved_arguments[last].get_type() == Variant::INT) {
-			rpc_config["channel"] = p_annotation->resolved_arguments[last].operator int();
-			last -= 1;
-		}
-		if (last > 3) {
-			push_error(R"(Invalid RPC arguments. At most 4 arguments are allowed, where only the last argument can be an integer to specify the channel.')", p_annotation);
-			return false;
-		}
-
 		unsigned char locality_args = 0;
 		unsigned char permission_args = 0;
 		unsigned char transfer_mode_args = 0;
 
-		for (int i = last; i >= 0; i--) {
+		for (int i = 0; i < p_annotation->resolved_arguments.size(); i++) {
+			if (i == 3) {
+				rpc_config["channel"] = p_annotation->resolved_arguments[i].operator int();
+				continue;
+			}
+
 			String arg = p_annotation->resolved_arguments[i].operator String();
 			if (arg == "call_local") {
 				locality_args++;

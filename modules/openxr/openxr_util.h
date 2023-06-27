@@ -32,6 +32,7 @@
 #define OPENXR_UTIL_H
 
 #include "core/string/ustring.h"
+
 #include <openxr/openxr.h>
 
 class OpenXRUtil {

@@ -30,7 +30,8 @@
 
 #include "navigation_region_3d.h"
 
-#include "mesh_instance_3d.h"
+#include "core/core_string_names.h"
+#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationRegion3D::set_enabled(bool p_enabled) {
@@ -179,12 +180,10 @@ void NavigationRegion3D::_notification(int p_what) {
 				_update_debug_mesh();
 			}
 #endif // DEBUG_ENABLED
-
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			set_physics_process_internal(true);
-
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -224,13 +223,13 @@ void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_naviga
 	}
 
 	if (navigation_mesh.is_valid()) {
-		navigation_mesh->disconnect("changed", callable_mp(this, &NavigationRegion3D::_navigation_changed));
+		navigation_mesh->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NavigationRegion3D::_navigation_mesh_changed));
 	}
 
 	navigation_mesh = p_navigation_mesh;
 
 	if (navigation_mesh.is_valid()) {
-		navigation_mesh->connect("changed", callable_mp(this, &NavigationRegion3D::_navigation_changed));
+		navigation_mesh->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NavigationRegion3D::_navigation_mesh_changed));
 	}
 
 	NavigationServer3D::get_singleton()->region_set_navigation_mesh(region, p_navigation_mesh);
@@ -263,6 +262,7 @@ Ref<NavigationMesh> NavigationRegion3D::get_navigation_mesh() const {
 
 struct BakeThreadsArgs {
 	NavigationRegion3D *nav_region = nullptr;
+	Ref<NavigationMeshSourceGeometryData3D> source_geometry_data;
 };
 
 void _bake_navigation_mesh(void *p_user_data) {
@@ -270,8 +270,9 @@ void _bake_navigation_mesh(void *p_user_data) {
 
 	if (args->nav_region->get_navigation_mesh().is_valid()) {
 		Ref<NavigationMesh> nav_mesh = args->nav_region->get_navigation_mesh()->duplicate();
+		Ref<NavigationMeshSourceGeometryData3D> source_geometry_data = args->source_geometry_data;
 
-		NavigationServer3D::get_singleton()->region_bake_navigation_mesh(nav_mesh, args->nav_region);
+		NavigationServer3D::get_singleton()->bake_from_source_geometry_data(nav_mesh, source_geometry_data);
 		args->nav_region->call_deferred(SNAME("_bake_finished"), nav_mesh);
 		memdelete(args);
 	} else {
@@ -282,10 +283,18 @@ void _bake_navigation_mesh(void *p_user_data) {
 }
 
 void NavigationRegion3D::bake_navigation_mesh(bool p_on_thread) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "The SceneTree can only be parsed on the main thread. Call this function from the main thread or use call_deferred().");
+	ERR_FAIL_COND_MSG(!navigation_mesh.is_valid(), "Baking the navigation mesh requires a valid `NavigationMesh` resource.");
 	ERR_FAIL_COND_MSG(bake_thread.is_started(), "Unable to start another bake request. The navigation mesh bake thread is already baking a navigation mesh.");
+
+	Ref<NavigationMeshSourceGeometryData3D> source_geometry_data;
+	source_geometry_data.instantiate();
+
+	NavigationServer3D::get_singleton()->parse_source_geometry_data(navigation_mesh, source_geometry_data, this);
 
 	BakeThreadsArgs *args = memnew(BakeThreadsArgs);
 	args->nav_region = this;
+	args->source_geometry_data = source_geometry_data;
 
 	if (p_on_thread) {
 		bake_thread.start(_bake_navigation_mesh, args);
@@ -371,7 +380,7 @@ bool NavigationRegion3D::_get(const StringName &p_name, Variant &r_ret) const {
 }
 #endif // DISABLE_DEPRECATED
 
-void NavigationRegion3D::_navigation_changed() {
+void NavigationRegion3D::_navigation_mesh_changed() {
 	update_gizmos();
 	update_configuration_warnings();
 
@@ -397,9 +406,9 @@ NavigationRegion3D::NavigationRegion3D() {
 	NavigationServer3D::get_singleton()->region_set_travel_cost(region, get_travel_cost());
 
 #ifdef DEBUG_ENABLED
-	NavigationServer3D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationRegion3D::_navigation_map_changed));
-	NavigationServer3D::get_singleton()->connect("navigation_debug_changed", callable_mp(this, &NavigationRegion3D::_update_debug_mesh));
-	NavigationServer3D::get_singleton()->connect("navigation_debug_changed", callable_mp(this, &NavigationRegion3D::_update_debug_edge_connections_mesh));
+	NavigationServer3D::get_singleton()->connect(SNAME("map_changed"), callable_mp(this, &NavigationRegion3D::_navigation_map_changed));
+	NavigationServer3D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion3D::_update_debug_mesh));
+	NavigationServer3D::get_singleton()->connect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion3D::_update_debug_edge_connections_mesh));
 #endif // DEBUG_ENABLED
 }
 
@@ -409,15 +418,15 @@ NavigationRegion3D::~NavigationRegion3D() {
 	}
 
 	if (navigation_mesh.is_valid()) {
-		navigation_mesh->disconnect("changed", callable_mp(this, &NavigationRegion3D::_navigation_changed));
+		navigation_mesh->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NavigationRegion3D::_navigation_mesh_changed));
 	}
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
 	NavigationServer3D::get_singleton()->free(region);
 
 #ifdef DEBUG_ENABLED
-	NavigationServer3D::get_singleton()->disconnect("map_changed", callable_mp(this, &NavigationRegion3D::_navigation_map_changed));
-	NavigationServer3D::get_singleton()->disconnect("navigation_debug_changed", callable_mp(this, &NavigationRegion3D::_update_debug_mesh));
-	NavigationServer3D::get_singleton()->disconnect("navigation_debug_changed", callable_mp(this, &NavigationRegion3D::_update_debug_edge_connections_mesh));
+	NavigationServer3D::get_singleton()->disconnect(SNAME("map_changed"), callable_mp(this, &NavigationRegion3D::_navigation_map_changed));
+	NavigationServer3D::get_singleton()->disconnect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion3D::_update_debug_mesh));
+	NavigationServer3D::get_singleton()->disconnect(SNAME("navigation_debug_changed"), callable_mp(this, &NavigationRegion3D::_update_debug_edge_connections_mesh));
 
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_instance.is_valid()) {

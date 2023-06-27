@@ -141,23 +141,23 @@ void ParticlesStorage::_particles_free_data(Particles *particles) {
 
 	if (particles->front_process_buffer != 0) {
 		glDeleteVertexArrays(1, &particles->front_vertex_array);
-		glDeleteBuffers(1, &particles->front_process_buffer);
-		glDeleteBuffers(1, &particles->front_instance_buffer);
+		GLES3::Utilities::get_singleton()->buffer_free_data(particles->front_process_buffer);
+		GLES3::Utilities::get_singleton()->buffer_free_data(particles->front_instance_buffer);
 		particles->front_vertex_array = 0;
 		particles->front_process_buffer = 0;
 		particles->front_instance_buffer = 0;
 
 		glDeleteVertexArrays(1, &particles->back_vertex_array);
-		glDeleteBuffers(1, &particles->back_process_buffer);
-		glDeleteBuffers(1, &particles->back_instance_buffer);
+		GLES3::Utilities::get_singleton()->buffer_free_data(particles->back_process_buffer);
+		GLES3::Utilities::get_singleton()->buffer_free_data(particles->back_instance_buffer);
 		particles->back_vertex_array = 0;
 		particles->back_process_buffer = 0;
 		particles->back_instance_buffer = 0;
 	}
 
 	if (particles->sort_buffer != 0) {
-		glDeleteBuffers(1, &particles->last_frame_buffer);
-		glDeleteBuffers(1, &particles->sort_buffer);
+		GLES3::Utilities::get_singleton()->buffer_free_data(particles->last_frame_buffer);
+		GLES3::Utilities::get_singleton()->buffer_free_data(particles->sort_buffer);
 		particles->last_frame_buffer = 0;
 		particles->sort_buffer = 0;
 		particles->sort_buffer_filled = false;
@@ -165,7 +165,7 @@ void ParticlesStorage::_particles_free_data(Particles *particles) {
 	}
 
 	if (particles->frame_params_ubo != 0) {
-		glDeleteBuffers(1, &particles->frame_params_ubo);
+		GLES3::Utilities::get_singleton()->buffer_free_data(particles->frame_params_ubo);
 		particles->frame_params_ubo = 0;
 	}
 }
@@ -271,13 +271,13 @@ void ParticlesStorage::particles_set_fractional_delta(RID p_particles, bool p_en
 
 void ParticlesStorage::particles_set_trails(RID p_particles, bool p_enable, double p_length) {
 	if (p_enable) {
-		WARN_PRINT_ONCE("The OpenGL 3 renderer does not support particle trails");
+		WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support particle trails.");
 	}
 }
 
 void ParticlesStorage::particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) {
 	if (p_bind_poses.size() != 0) {
-		WARN_PRINT_ONCE("The OpenGL 3 renderer does not support particle trails");
+		WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support particle trails.");
 	}
 }
 
@@ -341,12 +341,12 @@ void ParticlesStorage::particles_restart(RID p_particles) {
 
 void ParticlesStorage::particles_set_subemitter(RID p_particles, RID p_subemitter_particles) {
 	if (p_subemitter_particles.is_valid()) {
-		WARN_PRINT_ONCE("The OpenGL 3 renderer does not support particle sub emitters");
+		WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support particle sub-emitters.");
 	}
 }
 
 void ParticlesStorage::particles_emit(RID p_particles, const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
-	WARN_PRINT_ONCE("The OpenGL 3 renderer does not support manually emitting particles");
+	WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support manually emitting particles.");
 }
 
 void ParticlesStorage::particles_request_process(RID p_particles) {
@@ -613,7 +613,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 						attr.extents[2] = extents.z;
 					} break;
 					case RS::PARTICLES_COLLISION_TYPE_VECTOR_FIELD_ATTRACT: {
-						WARN_PRINT_ONCE("Vector field particle attractors are not available in the OpenGL2 renderer.");
+						WARN_PRINT_ONCE_ED("Vector field particle attractors are not available in the GL Compatibility rendering backend.");
 					} break;
 					default: {
 					}
@@ -646,7 +646,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 						col.extents[2] = extents.z;
 					} break;
 					case RS::PARTICLES_COLLISION_TYPE_SDF_COLLIDE: {
-						WARN_PRINT_ONCE("SDF Particle Colliders are not available in the OpenGL 3 renderer.");
+						WARN_PRINT_ONCE_ED("SDF Particle Colliders are not available in the GL Compatibility rendering backend.");
 					} break;
 					case RS::PARTICLES_COLLISION_TYPE_HEIGHTFIELD_COLLIDE: {
 						if (collision_heightmap_texture != 0) { //already taken
@@ -680,10 +680,13 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 
 	if (p_particles->frame_params_ubo == 0) {
 		glGenBuffers(1, &p_particles->frame_params_ubo);
+		glBindBufferBase(GL_UNIFORM_BUFFER, PARTICLES_FRAME_UNIFORM_LOCATION, p_particles->frame_params_ubo);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_UNIFORM_BUFFER, p_particles->frame_params_ubo, sizeof(ParticlesFrameParams), &frame_params, GL_STREAM_DRAW, "Particle Frame UBO");
+	} else {
+		// Update per-frame UBO.
+		glBindBufferBase(GL_UNIFORM_BUFFER, PARTICLES_FRAME_UNIFORM_LOCATION, p_particles->frame_params_ubo);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(ParticlesFrameParams), &frame_params, GL_STREAM_DRAW);
 	}
-	// Update per-frame UBO.
-	glBindBufferBase(GL_UNIFORM_BUFFER, PARTICLES_FRAME_UNIFORM_LOCATION, p_particles->frame_params_ubo);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(ParticlesFrameParams), &frame_params, GL_STREAM_DRAW);
 
 	// Get shader and set shader uniforms;
 	ParticleProcessMaterialData *m = static_cast<ParticleProcessMaterialData *>(material_storage->material_get_data(p_particles->process_material, RS::SHADER_PARTICLES));
@@ -831,7 +834,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 			glGenBuffers(1, &particles->front_instance_buffer);
 
 			glBindBuffer(GL_ARRAY_BUFFER, particles->front_process_buffer);
-			glBufferData(GL_ARRAY_BUFFER, particles->process_buffer_stride_cache * total_amount, data, GL_DYNAMIC_COPY);
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, particles->front_process_buffer, particles->process_buffer_stride_cache * total_amount, data, GL_DYNAMIC_COPY, "Particles front process buffer");
 
 			for (uint32_t j = 0; j < particles->num_attrib_arrays_cache; j++) {
 				glEnableVertexAttribArray(j);
@@ -840,7 +843,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 			glBindVertexArray(0);
 
 			glBindBuffer(GL_ARRAY_BUFFER, particles->front_instance_buffer);
-			glBufferData(GL_ARRAY_BUFFER, particles->instance_buffer_size_cache, nullptr, GL_DYNAMIC_COPY);
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, particles->front_instance_buffer, particles->instance_buffer_size_cache, nullptr, GL_DYNAMIC_COPY, "Particles front instance buffer");
 		}
 
 		{
@@ -850,7 +853,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 			glGenBuffers(1, &particles->back_instance_buffer);
 
 			glBindBuffer(GL_ARRAY_BUFFER, particles->back_process_buffer);
-			glBufferData(GL_ARRAY_BUFFER, particles->process_buffer_stride_cache * total_amount, data, GL_DYNAMIC_COPY);
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, particles->back_process_buffer, particles->process_buffer_stride_cache * total_amount, data, GL_DYNAMIC_COPY, "Particles back process buffer");
 
 			for (uint32_t j = 0; j < particles->num_attrib_arrays_cache; j++) {
 				glEnableVertexAttribArray(j);
@@ -859,7 +862,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 			glBindVertexArray(0);
 
 			glBindBuffer(GL_ARRAY_BUFFER, particles->back_instance_buffer);
-			glBufferData(GL_ARRAY_BUFFER, particles->instance_buffer_size_cache, nullptr, GL_DYNAMIC_COPY);
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, particles->back_instance_buffer, particles->instance_buffer_size_cache, nullptr, GL_DYNAMIC_COPY, "Particles back instance buffer");
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -871,11 +874,12 @@ void ParticlesStorage::_particles_allocate_history_buffers(Particles *particles)
 	if (particles->sort_buffer == 0) {
 		glGenBuffers(1, &particles->last_frame_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, particles->last_frame_buffer);
-		glBufferData(GL_ARRAY_BUFFER, particles->instance_buffer_size_cache, nullptr, GL_DYNAMIC_READ);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, particles->last_frame_buffer, particles->instance_buffer_size_cache, nullptr, GL_DYNAMIC_READ, "Particles last frame buffer");
 
 		glGenBuffers(1, &particles->sort_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, particles->sort_buffer);
-		glBufferData(GL_ARRAY_BUFFER, particles->instance_buffer_size_cache, nullptr, GL_DYNAMIC_READ);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, particles->sort_buffer, particles->instance_buffer_size_cache, nullptr, GL_DYNAMIC_READ, "Particles sort buffer");
+
 		particles->sort_buffer_filled = false;
 		particles->last_frame_buffer_filled = false;
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1179,7 +1183,7 @@ void ParticlesStorage::particles_collision_free(RID p_rid) {
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_rid);
 
 	if (particles_collision->heightfield_texture != 0) {
-		glDeleteTextures(1, &particles_collision->heightfield_texture);
+		GLES3::Utilities::get_singleton()->texture_free_data(particles_collision->heightfield_texture);
 		particles_collision->heightfield_texture = 0;
 		glDeleteFramebuffers(1, &particles_collision->heightfield_fb);
 		particles_collision->heightfield_fb = 0;
@@ -1226,6 +1230,8 @@ GLuint ParticlesStorage::particles_collision_get_heightfield_framebuffer(RID p_p
 			WARN_PRINT("Could create heightmap texture status: " + GLES3::TextureStorage::get_singleton()->get_framebuffer_error(status));
 		}
 #endif
+		GLES3::Utilities::get_singleton()->texture_allocated_data(particles_collision->heightfield_texture, size.x * size.y * 4, "Particles collision heightfield texture");
+
 		particles_collision->heightfield_fb_size = size;
 
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -1244,7 +1250,7 @@ void ParticlesStorage::particles_collision_set_collision_type(RID p_particles_co
 	}
 
 	if (particles_collision->heightfield_texture != 0) {
-		glDeleteTextures(1, &particles_collision->heightfield_texture);
+		GLES3::Utilities::get_singleton()->texture_free_data(particles_collision->heightfield_texture);
 		particles_collision->heightfield_texture = 0;
 		glDeleteFramebuffers(1, &particles_collision->heightfield_fb);
 		particles_collision->heightfield_fb = 0;
@@ -1298,7 +1304,7 @@ void ParticlesStorage::particles_collision_set_attractor_attenuation(RID p_parti
 }
 
 void ParticlesStorage::particles_collision_set_field_texture(RID p_particles_collision, RID p_texture) {
-	WARN_PRINT_ONCE("The OpenGL 3 renderer does not support SDF collisions in 3D particle shaders");
+	WARN_PRINT_ONCE_ED("The GL Compatibility rendering backend does not support SDF collisions in 3D particle shaders");
 }
 
 void ParticlesStorage::particles_collision_height_field_update(RID p_particles_collision) {
@@ -1319,7 +1325,7 @@ void ParticlesStorage::particles_collision_set_height_field_resolution(RID p_par
 	particles_collision->heightfield_resolution = p_resolution;
 
 	if (particles_collision->heightfield_texture != 0) {
-		glDeleteTextures(1, &particles_collision->heightfield_texture);
+		GLES3::Utilities::get_singleton()->texture_free_data(particles_collision->heightfield_texture);
 		particles_collision->heightfield_texture = 0;
 		glDeleteFramebuffers(1, &particles_collision->heightfield_fb);
 		particles_collision->heightfield_fb = 0;

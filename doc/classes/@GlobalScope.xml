@@ -725,11 +725,12 @@
 			<param index="1" name="to" type="float" />
 			<param index="2" name="delta" type="float" />
 			<description>
-				Moves [param from] toward [param to] by the [param delta] value.
+				Moves [param from] toward [param to] by the [param delta] amount. Will not go past [param to].
 				Use a negative [param delta] value to move away.
 				[codeblock]
 				move_toward(5, 10, 4)    # Returns 9
 				move_toward(10, 5, 4)    # Returns 6
+				move_toward(5, 10, 9)    # Returns 10
 				move_toward(10, 5, -1.5) # Returns 11.5
 				[/codeblock]
 			</description>
@@ -1378,6 +1379,7 @@
 				    "b": 2
 				}
 				[/codeblock]
+				[b]Note:[/b] Converting [Signal] or [Callable] is not supported and will result in an empty value for these types, regardless of their data.
 			</description>
 		</method>
 		<method name="weakref">
@@ -1507,7 +1509,7 @@
 			The [NavigationServer2D] singleton.
 		</member>
 		<member name="NavigationServer3D" type="NavigationServer3D" setter="" getter="">
-			The [NavigationServer2D] singleton.
+			The [NavigationServer3D] singleton.
 		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			The [OS] singleton.
@@ -2728,14 +2730,61 @@
 		<constant name="PROPERTY_HINT_OBJECT_ID" value="22" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_HINT_TYPE_STRING" value="23" enum="PropertyHint">
-			Hint that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For instance:
-			[codeblock]
-			hint_string = "%s:" % [TYPE_INT] # Array of integers.
-			hint_string = "%s:%s:" % [TYPE_ARRAY, TYPE_REAL] # Two-dimensional array of floats.
-			hint_string = "%s/%s:Resource" % [TYPE_OBJECT, TYPE_OBJECT] # Array of resources.
-			hint_string = "%s:%s/%s:Resource" % [TYPE_ARRAY, TYPE_OBJECT, TYPE_OBJECT] # Two-dimensional array of resources.
-			[/codeblock]
-			[b]Note:[/b] The final colon is required for properly detecting built-in types.
+			If a property is [String], hints that the property represents a particular type (class). This allows to select a type from the create dialog. The property will store the selected type as a string.
+			If a property is [Array], hints the editor how to show elements. The [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code].
+			[codeblocks]
+			[gdscript]
+			# Array of elem_type.
+			hint_string = "%d:" % [elem_type]
+			hint_string = "%d/%d:%s" % [elem_type, elem_hint, elem_hint_string]
+			# Two-dimensional array of elem_type (array of arrays of elem_type).
+			hint_string = "%d:%d:" % [TYPE_ARRAY, elem_type]
+			hint_string = "%d:%d/%d:%s" % [TYPE_ARRAY, elem_type, elem_hint, elem_hint_string]
+			# Three-dimensional array of elem_type (array of arrays of arrays of elem_type).
+			hint_string = "%d:%d:%d:" % [TYPE_ARRAY, TYPE_ARRAY, elem_type]
+			hint_string = "%d:%d:%d/%d:%s" % [TYPE_ARRAY, TYPE_ARRAY, elem_type, elem_hint, elem_hint_string]
+			[/gdscript]
+			[csharp]
+			// Array of elemType.
+			hintString = $"{elemType:D}:";
+			hintString = $"{elemType:}/{elemHint:D}:{elemHintString}";
+			// Two-dimensional array of elemType (array of arrays of elemType).
+			hintString = $"{Variant.Type.Array:D}:{elemType:D}:";
+			hintString = $"{Variant.Type.Array:D}:{elemType:D}/{elemHint:D}:{elemHintString}";
+			// Three-dimensional array of elemType (array of arrays of arrays of elemType).
+			hintString = $"{Variant.Type.Array:D}:{Variant.Type.Array:D}:{elemType:D}:";
+			hintString = $"{Variant.Type.Array:D}:{Variant.Type.Array:D}:{elemType:D}/{elemHint:D}:{elemHintString}";
+			[/csharp]
+			[/codeblocks]
+			Examples:
+			[codeblocks]
+			[gdscript]
+			hint_string = "%d:" % [TYPE_INT] # Array of integers.
+			hint_string = "%d/%d:1,10,1" % [TYPE_INT, PROPERTY_HINT_RANGE] # Array of integers (in range from 1 to 10).
+			hint_string = "%d/%d:Zero,One,Two" % [TYPE_INT, PROPERTY_HINT_ENUM] # Array of integers (an enum).
+			hint_string = "%d/%d:Zero,One,Three:3,Six:6" % [TYPE_INT, PROPERTY_HINT_ENUM] # Array of integers (an enum).
+			hint_string = "%d/%d:*.png" % [TYPE_STRING, PROPERTY_HINT_FILE] # Array of strings (file paths).
+			hint_string = "%d/%d:Texture2D" % [TYPE_OBJECT, PROPERTY_HINT_RESOURCE_TYPE] # Array of textures.
+
+			hint_string = "%d:%d:" % [TYPE_ARRAY, TYPE_FLOAT] # Two-dimensional array of floats.
+			hint_string = "%d:%d/%d:" % [TYPE_ARRAY, TYPE_STRING, PROPERTY_HINT_MULTILINE_TEXT] # Two-dimensional array of multiline strings.
+			hint_string = "%d:%d/%d:-1,1,0.1" % [TYPE_ARRAY, TYPE_FLOAT, PROPERTY_HINT_RANGE] # Two-dimensional array of floats (in range from -1 to 1).
+			hint_string = "%d:%d/%d:Texture2D" % [TYPE_ARRAY, TYPE_OBJECT, PROPERTY_HINT_RESOURCE_TYPE] # Two-dimensional array of textures.
+			[/gdscript]
+			[csharp]
+			hintString = $"{Variant.Type.Int:D}/{PropertyHint.Range:D}:1,10,1"; // Array of integers (in range from 1 to 10).
+			hintString = $"{Variant.Type.Int:D}/{PropertyHint.Enum:D}:Zero,One,Two"; // Array of integers (an enum).
+			hintString = $"{Variant.Type.Int:D}/{PropertyHint.Enum:D}:Zero,One,Three:3,Six:6"; // Array of integers (an enum).
+			hintString = $"{Variant.Type.String:D}/{PropertyHint.File:D}:*.png"; // Array of strings (file paths).
+			hintString = $"{Variant.Type.Object:D}/{PropertyHint.ResourceType:D}:Texture2D"; // Array of textures.
+
+			hintString = $"{Variant.Type.Array:D}:{Variant.Type.Float:D}:"; // Two-dimensional array of floats.
+			hintString = $"{Variant.Type.Array:D}:{Variant.Type.String:D}/{PropertyHint.MultilineText:D}:"; // Two-dimensional array of multiline strings.
+			hintString = $"{Variant.Type.Array:D}:{Variant.Type.Float:D}/{PropertyHint.Range:D}:-1,1,0.1"; // Two-dimensional array of floats (in range from -1 to 1).
+			hintString = $"{Variant.Type.Array:D}:{Variant.Type.Object:D}/{PropertyHint.ResourceType:D}:Texture2D"; // Two-dimensional array of textures.
+			[/csharp]
+			[/codeblocks]
+			[b]Note:[/b] The trailing colon is required for properly detecting built-in types.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint">
 		</constant>

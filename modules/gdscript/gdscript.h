@@ -31,6 +31,8 @@
 #ifndef GDSCRIPT_H
 #define GDSCRIPT_H
 
+#include "gdscript_function.h"
+
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/doc_data.h"
@@ -38,7 +40,6 @@
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
 #include "core/templates/rb_set.h"
-#include "gdscript_function.h"
 
 class GDScriptNativeClass : public RefCounted {
 	GDCLASS(GDScriptNativeClass, RefCounted);
@@ -103,7 +104,6 @@ class GDScript : public Script {
 	Dictionary rpc_config;
 
 #ifdef TOOLS_ENABLED
-
 	// For static data storage during hot-reloading.
 	HashMap<StringName, MemberInfo> old_static_variables_indices;
 	Vector<Variant> old_static_variables;
@@ -124,8 +124,8 @@ class GDScript : public Script {
 	Vector<DocData::ClassDoc> docs;
 	void _clear_doc();
 	void _add_doc(const DocData::ClassDoc &p_inner_class);
-
 #endif
+
 	HashMap<StringName, PropertyInfo> member_info;
 
 	GDScriptFunction *implicit_initializer = nullptr;
@@ -161,9 +161,7 @@ class GDScript : public Script {
 #endif
 
 #ifdef DEBUG_ENABLED
-
 	HashMap<ObjectID, List<Pair<StringName, Variant>>> pending_reload_state;
-
 #endif
 
 	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr);
@@ -191,6 +189,10 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef DEBUG_ENABLED
+	static String debug_get_script_name(const Ref<Script> &p_script);
+#endif
+
 	void clear(GDScript::ClearData *p_clear_data = nullptr);
 
 	virtual bool is_valid() const override { return valid; }
@@ -226,6 +228,7 @@ public:
 	const HashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
 	const HashMap<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
+	StringName debug_get_static_var_by_index(int p_idx) const;
 
 	Variant _new(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	virtual bool can_instantiate() const override;

@@ -60,6 +60,12 @@ String ResourceImporterTextureAtlas::get_resource_type() const {
 }
 
 bool ResourceImporterTextureAtlas::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
+	if (p_option == "crop_to_region" && int(p_options["import_mode"]) != IMPORT_MODE_REGION) {
+		return false;
+	} else if (p_option == "trim_alpha_border_from_region" && int(p_options["import_mode"]) != IMPORT_MODE_REGION) {
+		return false;
+	}
+
 	return true;
 }
 
@@ -73,7 +79,7 @@ String ResourceImporterTextureAtlas::get_preset_name(int p_idx) const {
 
 void ResourceImporterTextureAtlas::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "atlas_file", PROPERTY_HINT_SAVE_FILE, "*.png"), ""));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_mode", PROPERTY_HINT_ENUM, "Region,Mesh2D"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_mode", PROPERTY_HINT_ENUM, "Region,Mesh2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "crop_to_region"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "trim_alpha_border_from_region"), true));
 }
@@ -93,7 +99,8 @@ Error ResourceImporterTextureAtlas::import(const String &p_source_file, const St
 	return OK;
 }
 
-static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_transposed, Ref<Image> p_image, const Ref<Image> &p_src_image) {
+// FIXME: Rasterization has issues, see https://github.com/godotengine/godot/issues/68350#issuecomment-1305610290
+static void _plot_triangle(Vector2i *p_vertices, const Vector2i &p_offset, bool p_transposed, Ref<Image> p_image, const Ref<Image> &p_src_image) {
 	int width = p_image->get_width();
 	int height = p_image->get_height();
 	int src_width = p_src_image->get_width();
@@ -103,8 +110,8 @@ static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_
 	int y[3];
 
 	for (int j = 0; j < 3; j++) {
-		x[j] = vertices[j].x;
-		y[j] = vertices[j].y;
+		x[j] = p_vertices[j].x;
+		y[j] = p_vertices[j].y;
 	}
 
 	// sort the points vertically
@@ -126,7 +133,7 @@ static void _plot_triangle(Vector2i *vertices, const Vector2i &p_offset, bool p_
 	double dx_low = double(x[2] - x[1]) / (y[2] - y[1] + 1);
 	double xf = x[0];
 	double xt = x[0] + dx_upper; // if y[0] == y[1], special case
-	int max_y = MIN(y[2], height - p_offset.y - 1);
+	int max_y = MIN(y[2], p_transposed ? (width - p_offset.x - 1) : (height - p_offset.y - 1));
 	for (int yi = y[0]; yi < max_y; yi++) {
 		if (yi >= 0) {
 			for (int xi = (xf > 0 ? int(xf) : 0); xi < (xt <= src_width ? xt : src_width); xi++) {
@@ -202,18 +209,17 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		ERR_CONTINUE(err != OK);
 
 		pack_data.image = image;
-		pack_data.is_cropped = options["crop_to_region"];
 
 		int mode = options["import_mode"];
-		bool trim_alpha_border_from_region = options["trim_alpha_border_from_region"];
 
 		if (mode == IMPORT_MODE_REGION) {
 			pack_data.is_mesh = false;
+			pack_data.is_cropped = options["crop_to_region"];
 
 			EditorAtlasPacker::Chart chart;
 
 			Rect2i used_rect = Rect2i(Vector2i(), image->get_size());
-			if (trim_alpha_border_from_region) {
+			if (options["trim_alpha_border_from_region"]) {
 				// Clip a region from the image.
 				used_rect = image->get_used_rect();
 			}
@@ -243,7 +249,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			Ref<BitMap> bit_map;
 			bit_map.instantiate();
 			bit_map->create_from_image_alpha(image);
-			Vector<Vector<Vector2>> polygons = bit_map->clip_opaque_to_polygons(Rect2(0, 0, image->get_width(), image->get_height()));
+			Vector<Vector<Vector2>> polygons = bit_map->clip_opaque_to_polygons(Rect2(Vector2(), image->get_size()));
 
 			for (int j = 0; j < polygons.size(); j++) {
 				EditorAtlasPacker::Chart chart;

@@ -36,6 +36,8 @@
 /* shaping and advanced font features support.                           */
 /*************************************************************************/
 
+#include "script_iterator.h"
+
 #ifdef GDEXTENSION
 // Headers for building as GDExtension plug-in.
 
@@ -79,19 +81,16 @@ using namespace godot;
 #else
 // Headers for building as built-in module.
 
-#include "servers/text/text_server_extension.h"
-
 #include "core/extension/ext_wrappers.gen.inc"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "scene/resources/texture.h"
+#include "servers/text/text_server_extension.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
 
 #endif
-
-#include "script_iterator.h"
 
 // Thirdparty headers.
 

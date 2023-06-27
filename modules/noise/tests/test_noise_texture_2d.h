@@ -31,9 +31,9 @@
 #ifndef TEST_NOISE_TEXTURE_2D_H
 #define TEST_NOISE_TEXTURE_2D_H
 
-#include "tests/test_macros.h"
+#include "../noise_texture_2d.h"
 
-#include "modules/noise/noise_texture_2d.h"
+#include "tests/test_macros.h"
 
 namespace TestNoiseTexture2D {
 

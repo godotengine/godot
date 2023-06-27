@@ -32,8 +32,21 @@
 
 #if defined(ANDROID_ENABLED)
 
-#include <dlfcn.h> // dlopen, dlsym
+#include "../../utils/path_utils.h"
+#include "../../utils/string_utils.h"
+#include "../gd_mono_cache.h"
+#include "../gd_mono_marshal.h"
+
+#include "core/os/os.h"
+#include "core/string/ustring.h"
+
+#include "java_godot_wrapper.h"
+#include "os_android.h"
+#include "thread_jandroid.h"
+
 #include <mono/utils/mono-dl-fallback.h>
+
+#include <dlfcn.h> // dlopen, dlsym
 #include <sys/system_properties.h>
 #include <cstddef>
 
@@ -42,17 +55,6 @@
 #else
 #include <ifaddrs.h>
 #endif
-
-#include "core/os/os.h"
-#include "core/string/ustring.h"
-#include "platform/android/java_godot_wrapper.h"
-#include "platform/android/os_android.h"
-#include "platform/android/thread_jandroid.h"
-
-#include "../../utils/path_utils.h"
-#include "../../utils/string_utils.h"
-#include "../gd_mono_cache.h"
-#include "../gd_mono_marshal.h"
 
 // Warning: JNI boilerplate ahead... continue at your own risk
 

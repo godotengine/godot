@@ -684,8 +684,6 @@ EditorProfiler::EditorProfiler() {
 	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 10000);
 	frame_metrics.resize(metric_size);
 
-	EDITOR_DEF("debugger/profiler_frame_max_functions", 64);
-
 	frame_delay = memnew(Timer);
 	frame_delay->set_wait_time(0.1);
 	frame_delay->set_one_shot(true);

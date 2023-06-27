@@ -156,7 +156,7 @@
 			</description>
 		</method>
 		<method name="get_mouse_button_mask" qualifiers="const">
-			<return type="int" enum="MouseButtonMask" />
+			<return type="int" enum="MouseButtonMask" is_bitfield="true" />
 			<description>
 				Returns mouse buttons as a bitmask. If multiple mouse buttons are pressed at the same time, the bits are added together. Equivalent to [method DisplayServer.mouse_get_button_state].
 			</description>

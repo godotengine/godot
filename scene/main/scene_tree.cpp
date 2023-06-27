@@ -456,7 +456,9 @@ bool SceneTree::physics_process(double p_time) {
 
 	flush_transform_notifications();
 
-	MainLoop::physics_process(p_time);
+	if (MainLoop::physics_process(p_time)) {
+		_quit = true;
+	}
 	physics_process_time = p_time;
 
 	emit_signal(SNAME("physics_frame"));
@@ -484,7 +486,9 @@ bool SceneTree::physics_process(double p_time) {
 bool SceneTree::process(double p_time) {
 	root_lock++;
 
-	MainLoop::process(p_time);
+	if (MainLoop::process(p_time)) {
+		_quit = true;
+	}
 
 	process_time = p_time;
 
@@ -736,14 +740,6 @@ void SceneTree::set_debug_navigation_hint(bool p_enabled) {
 
 bool SceneTree::is_debugging_navigation_hint() const {
 	return debug_navigation_hint;
-}
-
-void SceneTree::set_debug_avoidance_hint(bool p_enabled) {
-	debug_avoidance_hint = p_enabled;
-}
-
-bool SceneTree::is_debugging_avoidance_hint() const {
-	return debug_avoidance_hint;
 }
 #endif
 
@@ -1056,13 +1052,13 @@ void SceneTree::_process(bool p_physics) {
 		if (p_physics) {
 			if (!pg->physics_nodes.is_empty()) {
 				process_valid = true;
-			} else if (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES_PHYSICS) && pg->call_queue.has_messages()) {
+			} else if ((pg == &default_process_group || (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES_PHYSICS))) && pg->call_queue.has_messages()) {
 				process_valid = true;
 			}
 		} else {
 			if (!pg->nodes.is_empty()) {
 				process_valid = true;
-			} else if (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES) && pg->call_queue.has_messages()) {
+			} else if ((pg == &default_process_group || (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES))) && pg->call_queue.has_messages()) {
 				process_valid = true;
 			}
 		}

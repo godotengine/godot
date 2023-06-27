@@ -2276,6 +2276,7 @@ Error VulkanContext::prepare_buffers() {
 				// presentation engine will still present the image correctly.
 				print_verbose("Vulkan: Early suboptimal swapchain, recreating.");
 				_update_swap_chain(w);
+				break;
 			} else if (err != VK_SUCCESS) {
 				ERR_BREAK_MSG(err != VK_SUCCESS, "Vulkan: Did not create swapchain successfully. Error code: " + String(string_VkResult(err)));
 			} else {

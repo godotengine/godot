@@ -131,7 +131,6 @@ void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 		screen_pos.x += screen_size.x - pm->get_size().width;
 	}
 	pm->set_position(screen_pos);
-	pm->set_parent_rect(Rect2(Point2(screen_pos - pm->get_position()), Size2(screen_size.x, screen_pos.y)));
 	pm->popup();
 
 	if (p_focus_item) {

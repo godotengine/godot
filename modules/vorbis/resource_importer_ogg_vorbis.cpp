@@ -34,12 +34,12 @@
 #include "core/io/resource_saver.h"
 #include "scene/resources/texture.h"
 
-#include <ogg/ogg.h>
-#include <vorbis/codec.h>
-
 #ifdef TOOLS_ENABLED
 #include "editor/import/audio_stream_import_settings.h"
 #endif
+
+#include <ogg/ogg.h>
+#include <vorbis/codec.h>
 
 String ResourceImporterOggVorbis::get_importer_name() const {
 	return "oggvorbisstr";

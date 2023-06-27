@@ -3734,45 +3734,6 @@ msgstr "Analizator Network"
 msgid "Clear the navigation mesh."
 msgstr "Curăță mesh-ul de navigare."
 
-msgid "Setting up Configuration..."
-msgstr "Inițializarea configurației..."
-
-msgid "Calculating grid size..."
-msgstr "Calcularea mărimii grilei..."
-
-msgid "Creating heightfield..."
-msgstr "Crearea câmpului de înălțare..."
-
-msgid "Marking walkable triangles..."
-msgstr "Marcarea triunghiurilor traversabile..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Construcție câmp de înălțare compact..."
-
-msgid "Eroding walkable area..."
-msgstr "Reducerea zonei traversabile..."
-
-msgid "Partitioning..."
-msgstr "Partiționare..."
-
-msgid "Creating contours..."
-msgstr "Crearea conturilor..."
-
-msgid "Creating polymesh..."
-msgstr "Crearea plasei de contur..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Se convertește în mesh nativ de navigare..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Setup Generare Mesh de Navigare:"
-
-msgid "Parsing Geometry..."
-msgstr "Analiza geometriei..."
-
-msgid "Done!"
-msgstr "Efectuat!"
-
 msgid "Invalid package name:"
 msgstr "Nume pachet nevalid:"
 

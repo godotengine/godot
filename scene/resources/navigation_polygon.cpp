@@ -183,6 +183,7 @@ Ref<NavigationMesh> NavigationPolygon::get_navigation_mesh() {
 		for (int i(0); i < get_polygon_count(); i++) {
 			navigation_mesh->add_polygon(get_polygon(i));
 		}
+		navigation_mesh->set_cell_size(cell_size); // Needed to not fail the cell size check on the server
 	}
 
 	return navigation_mesh;
@@ -322,6 +323,15 @@ void NavigationPolygon::make_polygons_from_outlines() {
 	emit_changed();
 }
 
+void NavigationPolygon::set_cell_size(real_t p_cell_size) {
+	cell_size = p_cell_size;
+	get_navigation_mesh()->set_cell_size(cell_size);
+}
+
+real_t NavigationPolygon::get_cell_size() const {
+	return cell_size;
+}
+
 void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &NavigationPolygon::set_vertices);
 	ClassDB::bind_method(D_METHOD("get_vertices"), &NavigationPolygon::get_vertices);
@@ -347,7 +357,11 @@ void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_outlines", "outlines"), &NavigationPolygon::_set_outlines);
 	ClassDB::bind_method(D_METHOD("_get_outlines"), &NavigationPolygon::_get_outlines);
 
+	ClassDB::bind_method(D_METHOD("set_cell_size", "cell_size"), &NavigationPolygon::set_cell_size);
+	ClassDB::bind_method(D_METHOD("get_cell_size"), &NavigationPolygon::get_cell_size);
+
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_outlines", "_get_outlines");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:px"), "set_cell_size", "get_cell_size");
 }

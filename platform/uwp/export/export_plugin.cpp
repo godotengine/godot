@@ -30,7 +30,7 @@
 
 #include "export_plugin.h"
 
-#include "../logo_svg.gen.h"
+#include "logo_svg.gen.h"
 
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -128,7 +128,7 @@ void EditorExportPlatformUWP::get_export_options(List<ExportOption> *r_options) 
 	}
 }
 
-bool EditorExportPlatformUWP::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformUWP::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 #ifndef DEV_ENABLED
 	// We don't provide export templates for the UWP platform currently as it
 	// has not been ported for Godot 4.0. This is skipped in DEV_ENABLED so that

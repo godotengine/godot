@@ -45,13 +45,12 @@ def find_files_in_folder(folder, sub_folder, include_list, extension, sought_exc
         sub_folder_slashed = sub_folder + "/"
 
     for file in glob.glob("*." + extension):
-
         simple_name = Path(file).stem
 
         if file.endswith(".gen.cpp"):
             continue
 
-        li = '#include "../' + sub_folder_slashed + file + '"'
+        li = '#include "' + folder + "/" + sub_folder_slashed + file + '"'
 
         if not simple_name in sought_exceptions:
             include_list.append(li)
@@ -62,7 +61,6 @@ def find_files_in_folder(folder, sub_folder, include_list, extension, sought_exc
 
 
 def write_output_file(file_count, include_list, start_line, end_line, output_folder, output_filename_prefix, extension):
-
     output_folder = os.path.abspath(output_folder)
 
     if not os.path.isdir(output_folder):
@@ -160,6 +158,7 @@ def find_section_name(sub_folder):
 # which is slow like a normal build, but prevents the naming conflicts.
 # Ideally in these situations, the source code should be changed to prevent naming conflicts.
 
+
 # "extension" will usually be cpp, but can also be set to c (for e.g. third party libraries that use c)
 def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension="cpp"):
     if len(folders) == 0:
@@ -243,7 +242,6 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
 
 
 def generate_scu_files(verbose, is_release_build):
-
     print("=============================")
     print("Single Compilation Unit Build")
     print("=============================")

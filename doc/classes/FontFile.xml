@@ -580,7 +580,7 @@
 		<member name="font_stretch" type="int" setter="set_font_stretch" getter="get_font_stretch" default="100">
 			Font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
 		</member>
-		<member name="font_style" type="int" setter="set_font_style" getter="get_font_style" enum="TextServer.FontStyle" default="0">
+		<member name="font_style" type="int" setter="set_font_style" getter="get_font_style" enum="TextServer.FontStyle" is_bitfield="true" default="0">
 			Font style flags, see [enum TextServer.FontStyle].
 		</member>
 		<member name="font_weight" type="int" setter="set_font_weight" getter="get_font_weight" default="400">

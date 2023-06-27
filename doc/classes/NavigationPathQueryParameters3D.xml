@@ -10,10 +10,10 @@
 		<link title="Using NavigationPathQueryObjects">$DOCS_URL/tutorials/navigation/navigation_using_navigationpathqueryobjects.html</link>
 	</tutorials>
 	<members>
-		<member name="map" type="RID" setter="set_map" getter="get_map">
+		<member name="map" type="RID" setter="set_map" getter="get_map" default="RID()">
 			The navigation [code]map[/code] [RID] used in the path query.
 		</member>
-		<member name="metadata_flags" type="int" setter="set_metadata_flags" getter="get_metadata_flags" enum="NavigationPathQueryParameters3D.PathMetadataFlags" default="7">
+		<member name="metadata_flags" type="int" setter="set_metadata_flags" getter="get_metadata_flags" enum="NavigationPathQueryParameters3D.PathMetadataFlags" is_bitfield="true" default="7">
 			Additional information to include with the navigation path.
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">

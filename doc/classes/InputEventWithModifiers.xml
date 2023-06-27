@@ -11,7 +11,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_modifiers_mask" qualifiers="const">
-			<return type="int" enum="KeyModifierMask" />
+			<return type="int" enum="KeyModifierMask" is_bitfield="true" />
 			<description>
 				Returns the keycode combination of modifier keys.
 			</description>

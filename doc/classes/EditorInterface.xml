@@ -179,6 +179,12 @@
 				Returns mesh previews rendered at the given size as an [Array] of [Texture2D]s.
 			</description>
 		</method>
+		<method name="mark_scene_as_unsaved">
+			<return type="void" />
+			<description>
+				Marks the current scene tab as unsaved.
+			</description>
+		</method>
 		<method name="open_scene_from_path">
 			<return type="void" />
 			<param index="0" name="scene_filepath" type="String" />

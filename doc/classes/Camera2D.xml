@@ -189,10 +189,10 @@
 			The camera's position takes into account vertical/horizontal offsets and the screen size.
 		</constant>
 		<constant name="CAMERA2D_PROCESS_PHYSICS" value="0" enum="Camera2DProcessCallback">
-			The camera updates with the [code]_physics_process[/code] callback.
+			The camera updates during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
 		</constant>
 		<constant name="CAMERA2D_PROCESS_IDLE" value="1" enum="Camera2DProcessCallback">
-			The camera updates with the [code]_process[/code] callback.
+			The camera updates during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
 		</constant>
 	</constants>
 </class>

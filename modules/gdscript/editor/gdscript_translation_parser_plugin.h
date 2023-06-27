@@ -31,9 +31,10 @@
 #ifndef GDSCRIPT_TRANSLATION_PARSER_PLUGIN_H
 #define GDSCRIPT_TRANSLATION_PARSER_PLUGIN_H
 
+#include "../gdscript_parser.h"
+
 #include "core/templates/hash_set.h"
 #include "editor/editor_translation_parser.h"
-#include "modules/gdscript/gdscript_parser.h"
 
 class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlugin {
 	GDCLASS(GDScriptEditorTranslationParserPlugin, EditorTranslationParserPlugin);

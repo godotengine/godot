@@ -27,13 +27,14 @@
 # Trần Văn Luyện <lightlyn203@gmail.com>, 2023.
 # Bế Trọng Nghĩa <benghia1st@gmail.com>, 2023.
 # Ky Bui Van <ky.buivan.dev@gmail.com>, 2023.
+# Schuetzer <minhtuvn@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-19 06:49+0000\n"
-"Last-Translator: Ky Bui Van <ky.buivan.dev@gmail.com>\n"
+"PO-Revision-Date: 2023-06-13 15:35+0000\n"
+"Last-Translator: Schuetzer <minhtuvn@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -375,7 +376,7 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
-"Các bản âm thanh chỉ có thể trỏ đến các loại:\n"
+"Các đường âm thanh chỉ có thể trỏ đến các loại:\n"
 "-AudioStreamPlayer\n"
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
@@ -2737,9 +2738,6 @@ msgstr ""
 
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Tên nút không hợp lệ, các ký tự sau bị cấm:"
-
-msgid "Rename Node"
-msgstr "Đổi tên nút"
 
 msgid "Scene Tree (Nodes):"
 msgstr "Cây (nút):"
@@ -5574,30 +5572,6 @@ msgstr "Phải tạo hoặc đặt một NavigationMesh cho nút này thì nó m
 
 msgid "Clear the navigation mesh."
 msgstr "Xóa lưới điều hướng."
-
-msgid "Setting up Configuration..."
-msgstr "Thiết lập cấu hình ..."
-
-msgid "Calculating grid size..."
-msgstr "Tính kích thước lưới ..."
-
-msgid "Marking walkable triangles..."
-msgstr "Đánh dấu tam giác có thể đi được..."
-
-msgid "Eroding walkable area..."
-msgstr "Làm xói mòn vùng đi được..."
-
-msgid "Partitioning..."
-msgstr "Phân vùng ..."
-
-msgid "Creating contours..."
-msgstr "Tạo đường viền ..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Thiết lập trình tạo lưới điều hướng:"
-
-msgid "Done!"
-msgstr "Xong!"
 
 msgid "Package name is missing."
 msgstr "Thiếu tên gói."

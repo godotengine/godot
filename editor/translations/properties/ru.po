@@ -140,13 +140,16 @@
 # W Red <elyeen777greating@gmail.com>, 2023.
 # Plizik <channelofplizik@gmail.com>, 2023.
 # Nikita <svinuhov.nikita@gmail.com>, 2023.
+# Don Miguel <mikhail.bratus@gmail.com>, 2023.
+# Mmaxum <max55926@yandex.ru>, 2023.
+# ZIP2020 <folstagking@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-03 17:28+0000\n"
-"Last-Translator: Nikita <svinuhov.nikita@gmail.com>\n"
+"PO-Revision-Date: 2023-06-23 12:55+0000\n"
+"Last-Translator: ZIP2020 <folstagking@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -155,7 +158,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -203,7 +206,7 @@ msgid "Auto Accept Quit"
 msgstr "Автоподтверждение выхода"
 
 msgid "Quit on Go Back"
-msgstr "Выход на \"Вернуться\""
+msgstr "Вернуться"
 
 msgid "Display"
 msgstr "Дисплей"
@@ -218,7 +221,7 @@ msgid "Viewport Width"
 msgstr "Ширина окна предпросмотра"
 
 msgid "Viewport Height"
-msgstr "Высота окна"
+msgstr "Высота экрана"
 
 msgid "Mode"
 msgstr "Режим"
@@ -265,8 +268,14 @@ msgstr "Не выключать экран"
 msgid "Audio"
 msgstr "Аудио"
 
+msgid "Default Bus Layout"
+msgstr "Значение по умолчанию включено"
+
 msgid "General"
 msgstr "Основное"
+
+msgid "Text to Speech"
+msgstr "Синтез речи"
 
 msgid "2D Panning Strength"
 msgstr "Сила панорамирования 2D"
@@ -326,19 +335,19 @@ msgid "Message"
 msgstr "Сообщение"
 
 msgid "Rendering"
-msgstr "Рендеринг"
+msgstr "*Рендеринг*"
 
 msgid "Memory"
 msgstr "Память"
 
 msgid "Limits"
-msgstr "Лимиты"
+msgstr "Ограничения"
 
 msgid "Internationalization"
 msgstr "Интернационализация"
 
 msgid "GUI"
-msgstr "ГПИ"
+msgstr "GUI (Графический интерфейс пользователя)"
 
 msgid "Common"
 msgstr "Общий"
@@ -506,7 +515,7 @@ msgid "Region"
 msgstr "Регион"
 
 msgid "Offset"
-msgstr "Смещение"
+msgstr "Отступ"
 
 msgid "Cell Size"
 msgstr "Размер ячейки"
@@ -574,15 +583,6 @@ msgstr "Облегчение"
 msgid "Remote Port"
 msgstr "Удалённый порт"
 
-msgid "Debugger"
-msgstr "Отладчик"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "Интервал обновления удалённого дерева сцены"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "Интервал обновления удалённого инспектора"
-
 msgid "FileSystem"
 msgstr "Файловая система"
 
@@ -594,9 +594,6 @@ msgstr "Порт"
 
 msgid "Password"
 msgstr "Пароль"
-
-msgid "Profiler Frame Max Functions"
-msgstr "Максимум функций в кадре профайлера"
 
 msgid "Default Feature Profile"
 msgstr "Профиль возможностей по умолчанию"
@@ -1153,8 +1150,20 @@ msgstr "Размер шрифта"
 msgid "Remote Host"
 msgstr "Удалённый хост"
 
+msgid "Debugger"
+msgstr "Отладчик"
+
 msgid "Profiler Frame History Size"
 msgstr "Размер истории кадров профайлера"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Максимум функций в кадре профайлера"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Интервал обновления удалённого дерева сцены"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Интервал обновления удалённого инспектора"
 
 msgid "HTTP Proxy"
 msgstr "HTTP-прокси"
@@ -1382,10 +1391,10 @@ msgid "Slices"
 msgstr "Нарезчик"
 
 msgid "Horizontal"
-msgstr "Горизонталь"
+msgstr "Горизонтально"
 
 msgid "Vertical"
-msgstr "Вертикаль"
+msgstr "Вертикально"
 
 msgid "Layout"
 msgstr "Макет"
@@ -2198,7 +2207,7 @@ msgid "Write Mode"
 msgstr "Режим записи"
 
 msgid "WebRTC"
-msgstr "WebRTC"
+msgstr "WebRTС"
 
 msgid "Handshake Timeout"
 msgstr "Таймаут рукопожатия"
@@ -2358,6 +2367,12 @@ msgstr "macOS"
 
 msgid "Copyright"
 msgstr "Авторские права"
+
+msgid "Xcode"
+msgstr "Xcоde"
+
+msgid "Provisioning Profile"
+msgstr "Профиль предоставления"
 
 msgid "Custom File"
 msgstr "Пользовательский файл"
@@ -2646,6 +2661,9 @@ msgstr "Вправо"
 
 msgid "Bottom"
 msgstr "Внизу"
+
+msgid "Tweaks"
+msgstr "Tweaks (надстройки)"
 
 msgid "Input"
 msgstr "Вход"
@@ -3985,6 +4003,9 @@ msgstr "Максимальное количество слоёв"
 msgid "Subsurface Scattering"
 msgstr "Подповерхностное рассеяние"
 
+msgid "Refraction"
+msgstr "Преломление (рефрацкция)"
+
 msgid "UV Layer"
 msgstr "UV Слой"
 
@@ -4152,6 +4173,9 @@ msgstr "Транспонировать"
 
 msgid "Modes"
 msgstr "Режимы"
+
+msgid "Varyings"
+msgstr "Varуings"
 
 msgid "Input Name"
 msgstr "Название входа"

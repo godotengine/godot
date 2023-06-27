@@ -14,12 +14,21 @@
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
 	</tutorials>
 	<methods>
-		<method name="bake">
+		<method name="bake" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="root_node" type="Node" />
 			<description>
-				Bakes navigation data to the provided [param navigation_mesh] by parsing child nodes under the provided [param root_node] or a specific group of nodes for potential source geometry. The parse behavior can be controlled with the [member NavigationMesh.geometry_parsed_geometry_type] and [member NavigationMesh.geometry_source_geometry_mode] properties on the [NavigationMesh] resource.
+				The bake function is deprecated due to core threading changes. To upgrade existing code, first create a [NavigationMeshSourceGeometryData3D] resource. Use this resource with [method parse_source_geometry_data] to parse the SceneTree for nodes that should contribute to the navigation mesh baking. The SceneTree parsing needs to happen on the main thread. After the parsing is finished use the resource with [method bake_from_source_geometry_data] to bake a navigation mesh.
+			</description>
+		</method>
+		<method name="bake_from_source_geometry_data">
+			<return type="void" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
+			<param index="1" name="source_geometry_data" type="NavigationMeshSourceGeometryData3D" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
+			<description>
+				Bakes the provided [param navigation_mesh] with the data from the provided [param source_geometry_data]. After the process is finished the optional [param callback] will be called.
 			</description>
 		</method>
 		<method name="clear">
@@ -27,6 +36,17 @@
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<description>
 				Removes all polygons and vertices from the provided [param navigation_mesh] resource.
+			</description>
+		</method>
+		<method name="parse_source_geometry_data">
+			<return type="void" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
+			<param index="1" name="source_geometry_data" type="NavigationMeshSourceGeometryData3D" />
+			<param index="2" name="root_node" type="Node" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
+			<description>
+				Parses the [SceneTree] for source geometry according to the properties of [param navigation_mesh]. Updates the provided [param source_geometry_data] resource with the resulting data. The resource can then be used to bake a navigation mesh with [method bake_from_source_geometry_data]. After the process is finished the optional [param callback] will be called.
+				[b]Note:[/b] This function needs to run on the main thread or with a deferred call as the SceneTree is not thread-safe.
 			</description>
 		</method>
 	</methods>

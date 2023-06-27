@@ -479,6 +479,11 @@ int TileSet::add_source(Ref<TileSetSource> p_tile_set_source, int p_atlas_source
 	sources[new_source_id] = p_tile_set_source;
 	source_ids.push_back(new_source_id);
 	source_ids.sort();
+	TileSet *old_tileset = p_tile_set_source->get_tile_set();
+	if (old_tileset != this && old_tileset != nullptr) {
+		// If the source is already in a TileSet (might happen when duplicating), remove it from the other TileSet.
+		old_tileset->remove_source_ptr(p_tile_set_source.ptr());
+	}
 	p_tile_set_source->set_tile_set(this);
 	_compute_next_source_id();
 
@@ -502,6 +507,16 @@ void TileSet::remove_source(int p_source_id) {
 
 	terrains_cache_dirty = true;
 	emit_changed();
+}
+
+void TileSet::remove_source_ptr(TileSetSource *p_tile_set_source) {
+	for (const KeyValue<int, Ref<TileSetSource>> &kv : sources) {
+		if (kv.value.ptr() == p_tile_set_source) {
+			remove_source(kv.key);
+			return;
+		}
+	}
+	ERR_FAIL_MSG(vformat("Attempting to remove source from a tileset, but the tileset doesn't have it: %s", p_tile_set_source));
 }
 
 void TileSet::set_source_id(int p_source_id, int p_new_source_id) {
@@ -1048,12 +1063,16 @@ void TileSet::move_custom_data_layer(int p_from_index, int p_to_pos) {
 void TileSet::remove_custom_data_layer(int p_index) {
 	ERR_FAIL_INDEX(p_index, custom_data_layers.size());
 	custom_data_layers.remove_at(p_index);
-	for (KeyValue<String, int> E : custom_data_layers_by_name) {
+
+	String to_erase;
+	for (KeyValue<String, int> &E : custom_data_layers_by_name) {
 		if (E.value == p_index) {
-			custom_data_layers_by_name.erase(E.key);
-			break;
+			to_erase = E.key;
+		} else if (E.value > p_index) {
+			E.value--;
 		}
 	}
+	custom_data_layers_by_name.erase(to_erase);
 
 	for (KeyValue<int, Ref<TileSetSource>> source : sources) {
 		source.value->remove_custom_data_layer(p_index);
@@ -2563,7 +2582,7 @@ void TileSet::_compatibility_conversion() {
 					Transform2D xform;
 					xform = flip_h ? xform.scaled(Size2(-1, 1)) : xform;
 					xform = flip_v ? xform.scaled(Size2(1, -1)) : xform;
-					xform = transpose ? xform.rotated(Math_PI).scaled(Size2(-1, -1)) : xform;
+					xform = transpose ? Transform2D(xform[1], xform[0], Vector2()) : xform;
 
 					int alternative_tile = 0;
 					if (!atlas_source->has_tile(coords)) {
@@ -2677,7 +2696,7 @@ void TileSet::_compatibility_conversion() {
 							Transform2D xform;
 							xform = flip_h ? xform.scaled(Size2(-1, 1)) : xform;
 							xform = flip_v ? xform.scaled(Size2(1, -1)) : xform;
-							xform = transpose ? xform.rotated(Math_PI).scaled(Size2(-1, -1)) : xform;
+							xform = transpose ? Transform2D(xform[1], xform[0], Vector2()) : xform;
 
 							int alternative_tile = 0;
 							if (!atlas_source->has_tile(coords)) {
@@ -3140,9 +3159,10 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 			// Create source only if it does not exists.
 			int source_id = components[1].to_int();
 
-			if (!has_source(source_id)) {
-				add_source(p_value, source_id);
+			if (has_source(source_id)) {
+				remove_source(source_id);
 			}
+			add_source(p_value, source_id);
 			return true;
 		} else if (components.size() == 2 && components[0] == "tile_proxies") {
 			ERR_FAIL_COND_V(p_value.get_type() != Variant::ARRAY, false);
@@ -3585,6 +3605,10 @@ TileSet::~TileSet() {
 
 void TileSetSource::set_tile_set(const TileSet *p_tile_set) {
 	tile_set = p_tile_set;
+}
+
+TileSet *TileSetSource::get_tile_set() const {
+	return (TileSet *)tile_set;
 }
 
 void TileSetSource::reset_state() {

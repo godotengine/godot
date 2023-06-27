@@ -30,14 +30,14 @@
 
 #include "export_plugin.h"
 
-#include "../logo_svg.gen.h"
+#include "logo_svg.gen.h"
 
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/export/editor_export.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
+#include "modules/modules_enabled.gen.h" // For mono and svg.
 #ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
 #endif
@@ -1899,9 +1899,17 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	return OK;
 }
 
-bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
 	bool valid = false;
+
+#ifdef MODULE_MONO_ENABLED
+	err += TTR("Exporting to iOS is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target iOS with C#/Mono instead.") + "\n";
+	err += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
+	// Don't check for additional errors, as this particular error cannot be resolved.
+	r_error = err;
+	return false;
+#endif
 
 	// Look for export templates (first official, and if defined custom templates).
 

@@ -30,10 +30,11 @@
 
 #include "resource_saver_webp.h"
 
+#include "webp_common.h"
+
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "scene/resources/texture.h"
-#include "webp_common.h"
 
 Error ResourceSaverWebP::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	Ref<ImageTexture> texture = p_resource;

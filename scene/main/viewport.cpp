@@ -170,6 +170,9 @@ Ref<Image> ViewportTexture::get_image() const {
 }
 
 void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
+	// Always reset this, even if this call fails with an error.
+	vp_pending = false;
+
 	Node *vpn = p_loc_scene->get_node_or_null(path);
 	ERR_FAIL_NULL_MSG(vpn, "Path to node is invalid: '" + path + "'.");
 	vp = Object::cast_to<Viewport>(vpn);
@@ -186,7 +189,6 @@ void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
 		ERR_FAIL_COND(proxy.is_valid()); // Should be invalid.
 		proxy = RS::get_singleton()->texture_proxy_create(vp->texture_rid);
 	}
-	vp_pending = false;
 	vp_changed = false;
 
 	emit_changed();
@@ -1773,8 +1775,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				}
 			}
 
-			bool stopped = gui.mouse_focus->can_process() && _gui_call_input(gui.mouse_focus, mb);
-
+			bool stopped = gui.mouse_focus && gui.mouse_focus->can_process() && _gui_call_input(gui.mouse_focus, mb);
 			if (stopped) {
 				set_input_as_handled();
 			}
@@ -2459,10 +2460,12 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 		return;
 	}
 	get_tree()->call_group("_viewports", "_gui_remove_focus_for_window", (Node *)get_base_window(), p_control->get_focus_layer());
-	_gui_set_focus_control(p_control);
-	emit_signal(SNAME("gui_focus_changed"), p_control);
-	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
-	p_control->queue_redraw();
+	if (p_control->is_inside_tree() && p_control->get_viewport() == this) {
+		_gui_set_focus_control(p_control);
+		emit_signal(SNAME("gui_focus_changed"), p_control);
+		p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
+		p_control->queue_redraw();
+	}
 }
 
 void Viewport::_gui_accept_event() {

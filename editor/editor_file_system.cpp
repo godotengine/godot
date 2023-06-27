@@ -262,7 +262,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 				} else {
 					Vector<String> split = l.split("::");
-					ERR_CONTINUE(split.size() != 9);
+					ERR_CONTINUE(split.size() < 9);
 					String name = split[0];
 					String file;
 
@@ -2330,6 +2330,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	ResourceUID::get_singleton()->update_cache(); // After reimporting, update the cache.
 
 	_save_filesystem_cache();
+	_update_pending_script_classes();
 	importing = false;
 	if (!is_scanning()) {
 		emit_signal(SNAME("filesystem_changed"));

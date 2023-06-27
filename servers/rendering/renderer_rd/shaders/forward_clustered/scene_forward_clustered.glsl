@@ -121,6 +121,7 @@ layout(location = 10) out flat uint instance_index_interp;
 vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
+layout(location = 11) out vec4 combined_projected;
 #else // USE_MULTIVIEW
 // Set to zero, not supported in non stereo
 #define ViewIndex 0
@@ -313,6 +314,7 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 #endif
 
 #ifdef USE_MULTIVIEW
+	mat4 combined_projection = scene_data.projection_matrix;
 	mat4 projection_matrix = scene_data.projection_matrix_view[ViewIndex];
 	mat4 inv_projection_matrix = scene_data.inv_projection_matrix_view[ViewIndex];
 	vec3 eye_offset = scene_data.eye_offset[ViewIndex].xyz;
@@ -432,6 +434,10 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 	gl_Position = position;
 #else
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
+#endif
+
+#ifdef USE_MULTIVIEW
+	combined_projected = combined_projection * vec4(vertex_interp, 1.0);
 #endif
 
 #ifdef MOTION_VECTORS
@@ -557,6 +563,7 @@ layout(location = 10) in flat uint instance_index_interp;
 vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
+layout(location = 11) in vec4 combined_projected;
 #else // USE_MULTIVIEW
 // Set to zero, not supported in non stereo
 #define ViewIndex 0
@@ -728,6 +735,10 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef USE_MULTIVIEW
 	vec3 eye_offset = scene_data.eye_offset[ViewIndex].xyz;
 	vec3 view = -normalize(vertex_interp - eye_offset);
+
+	// UV in our combined frustum space is used for certain screen uv processes where it's
+	// overkill to render separate left and right eye views
+	vec2 combined_uv = (combined_projected.xy / combined_projected.w) * 0.5 + 0.5;
 #else
 	vec3 eye_offset = vec3(0.0, 0.0, 0.0);
 	vec3 view = -normalize(vertex_interp);
@@ -913,7 +924,11 @@ void fragment_shader(in SceneData scene_data) {
 	}
 
 	if (implementation_data.volumetric_fog_enabled) {
+#ifdef USE_MULTIVIEW
+		vec4 volumetric_fog = volumetric_fog_process(combined_uv, -vertex.z);
+#else
 		vec4 volumetric_fog = volumetric_fog_process(screen_uv, -vertex.z);
+#endif
 		if (scene_data.fog_enabled) {
 			//must use the full blending equation here to blend fogs
 			vec4 res;
@@ -940,7 +955,11 @@ void fragment_shader(in SceneData scene_data) {
 
 #ifndef MODE_RENDER_DEPTH
 
+#ifdef USE_MULTIVIEW
+	uvec2 cluster_pos = uvec2(combined_uv.xy / scene_data.screen_pixel_size) >> implementation_data.cluster_shift;
+#else
 	uvec2 cluster_pos = uvec2(gl_FragCoord.xy) >> implementation_data.cluster_shift;
+#endif
 	uint cluster_offset = (implementation_data.cluster_width * cluster_pos.y + cluster_pos.x) * (implementation_data.max_cluster_element_count_div_32 + 32);
 
 	uint cluster_z = uint(clamp((-vertex.z / scene_data.z_far) * 32.0, 0.0, 31.0));
