@@ -315,7 +315,7 @@ Dictionary OS_Unix::get_memory_info() const {
 	mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
 	vm_statistics64_data_t vmstat;
 	if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&vmstat, &count) != KERN_SUCCESS) {
-		ERR_PRINT(vformat("Could not get host vm statistics."));
+		ERR_PRINT("Could not get host vm statistics.");
 	}
 	struct xsw_usage swap_used;
 	len = sizeof(swap_used);
