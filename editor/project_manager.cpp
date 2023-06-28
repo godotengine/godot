@@ -2337,6 +2337,8 @@ void ProjectManager::_perform_full_project_conversion() {
 	args.push_back("--path");
 	args.push_back(path);
 	args.push_back("--convert-3to4");
+	args.push_back("--rendering-driver");
+	args.push_back(Main::get_rendering_driver_name());
 
 	Error err = OS::get_singleton()->create_instance(args);
 	ERR_FAIL_COND(err);
