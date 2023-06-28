@@ -4854,7 +4854,7 @@ VisualShaderNodeVarying::VisualShaderNodeVarying() {
 ////////////// Varying Setter
 
 String VisualShaderNodeVaryingSetter::get_caption() const {
-	return vformat("VaryingSetter");
+	return "VaryingSetter";
 }
 
 int VisualShaderNodeVaryingSetter::get_input_port_count() const {
@@ -4896,7 +4896,7 @@ VisualShaderNodeVaryingSetter::VisualShaderNodeVaryingSetter() {
 ////////////// Varying Getter
 
 String VisualShaderNodeVaryingGetter::get_caption() const {
-	return vformat("VaryingGetter");
+	return "VaryingGetter";
 }
 
 int VisualShaderNodeVaryingGetter::get_input_port_count() const {
