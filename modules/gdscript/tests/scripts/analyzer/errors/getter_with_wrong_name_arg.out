@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+First mandatory argument of a getter must be a property name of type String or StringName.

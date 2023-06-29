@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Setter argument "value" of type "Array" is incompatible with variable type "int".

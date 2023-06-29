@@ -67,7 +67,9 @@ class GDScript : public Script {
 	struct MemberInfo {
 		int index = 0;
 		StringName setter;
+		bool setter_with_name = false;
 		StringName getter;
+		bool getter_with_name = false;
 		GDScriptDataType data_type;
 	};
 
@@ -179,6 +181,9 @@ class GDScript : public Script {
 
 	GDScript *_get_gdscript_from_variant(const Variant &p_variant);
 	void _get_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
+
+	Callable::CallError call_getter(const MemberInfo &p_member_info, const StringName &p_name, Variant &r_ret) const;
+	Callable::CallError call_setter(const MemberInfo &p_member_info, const StringName &p_name, const Variant &p_value);
 
 protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -313,6 +318,9 @@ class GDScriptInstance : public ScriptInstance {
 	bool base_ref_counted;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
+
+	Callable::CallError call_getter(const GDScript::MemberInfo &p_member_info, const StringName &p_name, Variant &r_ret) const;
+	Callable::CallError call_setter(const GDScript::MemberInfo &p_member_info, const StringName &p_name, const Variant &p_value);
 
 public:
 	virtual Object *get_owner() { return owner; }

@@ -1387,6 +1387,7 @@ void GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 					push_error("Cannot have mandatory parameters after optional parameters.");
 					continue;
 				}
+				p_function->mandatory_parameter_count++;
 			}
 			if (p_function->parameters_indices.has(parameter->identifier->name)) {
 				push_error(vformat(R"(Parameter with name "%s" was already declared for this %s.)", parameter->identifier->name, p_type));
