@@ -2898,21 +2898,33 @@ void RichTextLabel::_process_line_caches() {
 
 	float total_height = 0;
 	if (fi != 0) {
-		// Update fonts.
+		int sr = MIN(main->first_invalid_font_line.load(), main->first_resized_line.load());
 
+		// Update fonts.
 		for (int i = main->first_invalid_font_line.load(); i < fi; i++) {
 			_update_line_font(main, i, theme_cache.normal_font, theme_cache.normal_font_size);
+
+			main->first_invalid_font_line.store(i);
+
+			if (stop_thread.load()) {
+				return;
+			}
 		}
 
 		// Resize lines without reshaping.
-		int sr = MIN(main->first_invalid_font_line.load(), main->first_resized_line.load());
-		main->first_invalid_font_line.store(fi);
+		if (sr != 0) {
+			total_height = _calculate_line_vertical_offset(main->lines[sr - 1]);
+		}
 
 		for (int i = sr; i < fi; i++) {
 			total_height = _resize_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
 			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width - scroll_w, i, old_scroll, text_rect.size.height);
 
 			main->first_resized_line.store(i);
+
+			if (stop_thread.load()) {
+				return;
+			}
 		}
 	}
 
