@@ -1403,9 +1403,9 @@ void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_i
 void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
 	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Adding a sibling to a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"add_sibling\",node).");
 	ERR_FAIL_NULL(p_sibling);
-	ERR_FAIL_NULL(data.parent);
 	ERR_FAIL_COND_MSG(p_sibling == this, vformat("Can't add sibling '%s' to itself.", p_sibling->get_name())); // adding to itself!
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `add_sibling()` failed. Consider using `add_sibling.call_deferred(sibling)` instead.");
+	ERR_FAIL_NULL(data.parent);
+	ERR_FAIL_COND_MSG(data.parent->data.blocked > 0, "Parent node is busy setting up children, `add_sibling()` failed. Consider using `add_sibling.call_deferred(sibling)` instead.");
 
 	data.parent->add_child(p_sibling, p_force_readable_name, data.internal_mode);
 	data.parent->_update_children_cache();
