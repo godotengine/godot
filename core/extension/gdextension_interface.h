@@ -2297,6 +2297,46 @@ typedef void (*GDExtensionInterfaceEditorAddPlugin)(GDExtensionConstStringNamePt
  */
 typedef void (*GDExtensionInterfaceEditorRemovePlugin)(GDExtensionConstStringNamePtr p_class_name);
 
+/**
+ * @name android_get_env
+ * @since 4.2
+ *
+ * Gets the Android JNIEnv (when running on Android).
+ *
+ * @return The JNIEnv cast to a void pointer when running on Android; otherwise NULL.
+ */
+typedef void *(*GDExtensionInterfaceAndroidGetEnv)();
+
+/**
+ * @name android_get_activity
+ * @since 4.2
+ *
+ * Gets the Android activity jobject (when running on Android).
+ *
+ * @return The jobject cast to a void pointer when running on Android; otherwise NULL.
+ */
+typedef void *(*GDExtensionInterfaceAndroidGetActivity)();
+
+/**
+ * @name android_get_surface
+ * @since 4.2
+ *
+ * Gets the Android surface jobject (when running on Android).
+ *
+ * @return The jobject cast to a void pointer when running on Android; otherwise NULL.
+ */
+typedef void *(*GDExtensionInterfaceAndroidGetSurface)();
+
+/**
+ * @name android_is_activity_resumed
+ * @since 4.2
+ *
+ * Returns true if the Android activity is resumed (when running on Android).
+ *
+ * @return true if the Android activity is resumed when running on Android; otherwise, false.
+ */
+typedef GDExtensionBool (*GDExtensionInterfaceAndroidIsActivityResumed)();
+
 #ifdef __cplusplus
 }
 #endif

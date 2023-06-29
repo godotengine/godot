@@ -33,11 +33,68 @@
 #include "java_class_wrapper.h"
 #include "jni_singleton.h"
 
+#ifdef ANDROID_ENABLED
+#include "java_godot_wrapper.h"
+#include "os_android.h"
+#include "thread_jandroid.h"
+#endif
+
 #include "core/config/engine.h"
+#include "core/extension/gdextension.h"
 
 #if !defined(ANDROID_ENABLED)
 static JavaClassWrapper *java_class_wrapper = nullptr;
 #endif
+
+static void *gdextension_android_get_env() {
+#ifdef ANDROID_ENABLED
+	return (void *)get_jni_env();
+#else
+	return nullptr;
+#endif
+}
+
+static void *gdextension_android_get_activity() {
+#ifdef ANDROID_ENABLED
+	OS_Android *android = OS_Android::get_singleton();
+	if (android) {
+		GodotJavaWrapper *godot_java = android->get_godot_java();
+		if (godot_java) {
+			return (void *)godot_java->get_activity();
+		}
+	}
+#endif
+
+	return nullptr;
+}
+
+static void *gdextension_android_get_surface() {
+#ifdef ANDROID_ENABLED
+	OS_Android *android = OS_Android::get_singleton();
+	if (android) {
+		GodotJavaWrapper *godot_java = android->get_godot_java();
+		if (godot_java) {
+			return (void *)godot_java->get_surface();
+		}
+	}
+#endif
+
+	return nullptr;
+}
+
+static GDExtensionBool gdextension_android_is_activity_resumed() {
+#ifdef ANDROID_ENABLED
+	OS_Android *android = OS_Android::get_singleton();
+	if (android) {
+		GodotJavaWrapper *godot_java = android->get_godot_java();
+		if (godot_java) {
+			return godot_java->is_activity_resumed();
+		}
+	}
+#endif
+
+	return false;
+}
 
 void register_android_api() {
 #if !defined(ANDROID_ENABLED)
@@ -51,6 +108,11 @@ void register_android_api() {
 	GDREGISTER_CLASS(JavaClass);
 	GDREGISTER_CLASS(JavaClassWrapper);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("JavaClassWrapper", JavaClassWrapper::get_singleton()));
+
+	GDExtension::register_interface_function("android_get_env", (GDExtensionInterfaceFunctionPtr)&gdextension_android_get_env);
+	GDExtension::register_interface_function("android_get_activity", (GDExtensionInterfaceFunctionPtr)&gdextension_android_get_activity);
+	GDExtension::register_interface_function("android_get_surface", (GDExtensionInterfaceFunctionPtr)&gdextension_android_get_surface);
+	GDExtension::register_interface_function("android_is_activity_resumed", (GDExtensionInterfaceFunctionPtr)&gdextension_android_is_activity_resumed);
 }
 
 void unregister_android_api() {
