@@ -33,11 +33,11 @@
 
 #include "editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/scroll_container.h"
 
-class AcceptDialog;
 class Button;
-class ConfirmationDialog;
+class EditorFeatureProfile;
 class EditorInspector;
 class LineEdit;
 class OptionButton;
@@ -46,6 +46,8 @@ class PopupMenu;
 class SpinBox;
 class StyleBoxFlat;
 class TextureRect;
+class Tree;
+class TreeItem;
 
 class EditorPropertyRevert {
 public:
@@ -441,6 +443,31 @@ public:
 	EditorPaginator();
 };
 
+class EditorDisabledFeaturesDialog : public AcceptDialog {
+	GDCLASS(EditorDisabledFeaturesDialog, AcceptDialog);
+
+	List<List<StringName>> disabled_features;
+	Tree *features_tree = nullptr;
+
+	bool dirty = true;
+
+	void _update_features_tree();
+	TreeItem *_create_get_class_name_item(TreeItem *p_parent, const StringName &p_class, const Ref<EditorFeatureProfile> p_profile);
+
+	List<StringName> _get_missing_class_hierarchy(const StringName &p_from_class) const;
+
+	static void _bind_methods();
+
+public:
+	void clear_disabled_features();
+	void add_disabled_feature(const List<StringName> &p_feature_chain);
+	int disabled_feature_count() const;
+
+	void show();
+
+	EditorDisabledFeaturesDialog();
+};
+
 class EditorInspector : public ScrollContainer {
 	GDCLASS(EditorInspector, ScrollContainer);
 
@@ -451,6 +478,8 @@ class EditorInspector : public ScrollContainer {
 	static int inspector_plugin_count;
 
 	VBoxContainer *main_vbox = nullptr;
+
+	EditorDisabledFeaturesDialog *disabled_features_dialog = nullptr;
 
 	// Map used to cache the instantiated editors.
 	HashMap<StringName, List<EditorProperty *>> editor_property_map;
@@ -536,6 +565,7 @@ class EditorInspector : public ScrollContainer {
 
 	void _feature_profile_changed();
 
+	bool _is_class_disabled_by_feature_profile();
 	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
 
 	void _update_inspector_bg();

@@ -2448,6 +2448,151 @@ EditorPaginator::EditorPaginator() {
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
 
+void EditorDisabledFeaturesDialog::clear_disabled_features() {
+	disabled_features.clear();
+	dirty = true;
+}
+
+void EditorDisabledFeaturesDialog::add_disabled_feature(const List<StringName> &p_feature_chain) {
+	disabled_features.push_back(p_feature_chain);
+	dirty = true;
+}
+
+int EditorDisabledFeaturesDialog::disabled_feature_count() const {
+	return disabled_features.size();
+}
+
+List<StringName> EditorDisabledFeaturesDialog::_get_missing_class_hierarchy(const StringName &p_from_class) const {
+	List<StringName> missing;
+
+	StringName class_name = ClassDB::get_parent_class(p_from_class);
+
+	while (class_name != StringName()) {
+		missing.push_back(class_name);
+
+		if (class_name == SNAME("Resource") || class_name == SNAME("Node")) {
+			break; // Get the hierarchy till Resource or Node.
+		}
+
+		class_name = ClassDB::get_parent_class(class_name);
+	}
+
+	return missing;
+}
+
+void EditorDisabledFeaturesDialog::_update_features_tree() {
+	if (!dirty) {
+		return;
+	}
+
+	dirty = false;
+
+	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+	ERR_FAIL_COND_MSG(profile.is_null(), "Failed to get the current EditorFeatureProfile.");
+
+	const EditorPropertyNameProcessor::Style text_style = EditorPropertyNameProcessor::get_settings_style();
+	const EditorPropertyNameProcessor::Style tooltip_style = EditorPropertyNameProcessor::get_tooltip_style(text_style);
+
+	features_tree->clear();
+
+	TreeItem *root = features_tree->create_item();
+
+	for (int i = 0; i < disabled_features.size(); i++) {
+		const List<StringName> &feature_chain = disabled_features[i];
+
+		if (unlikely(feature_chain.is_empty())) {
+			continue;
+		}
+
+		List<StringName> missing_class_hierarchy = _get_missing_class_hierarchy(feature_chain.back()->get());
+
+		TreeItem *current_item = root;
+
+		for (int j = missing_class_hierarchy.size() - 1; j > -1; j--) {
+			current_item = _create_get_class_name_item(current_item, missing_class_hierarchy[j], profile);
+		}
+
+		// If the feature chain has one element: Class is disabled; Otherwise: Property is disabled.
+		if (feature_chain.size() == 1) {
+			_create_get_class_name_item(current_item, feature_chain[0], profile);
+		} else {
+			for (int j = feature_chain.size() - 1; j > 0; j--) {
+				current_item = _create_get_class_name_item(current_item, feature_chain[j], profile);
+			}
+
+			TreeItem *property_item = features_tree->create_item(current_item);
+
+			// Setup Property item.
+			const StringName &prop_class = feature_chain.back()->get();
+			const StringName &prop_name = feature_chain[0];
+
+			property_item->set_text(0, EditorPropertyNameProcessor::get_singleton()->process_name(prop_name, text_style));
+			property_item->set_tooltip_text(0, EditorPropertyNameProcessor::get_singleton()->process_name(prop_name, tooltip_style));
+			property_item->set_selectable(0, true);
+			property_item->set_collapsed(false);
+
+			PropertyInfo prop;
+			ClassDB::get_property_info(prop_class, prop_name, &prop);
+
+			property_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(Variant::get_type_name(prop.type)));
+
+			if (profile->is_class_property_disabled(prop_class, prop_name)) {
+				property_item->set_custom_color(0, features_tree->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+				property_item->set_icon_modulate(0, features_tree->get_theme_color(SNAME("icon_disabled_color"), SNAME("Editor")));
+			}
+		}
+	}
+}
+
+TreeItem *EditorDisabledFeaturesDialog::_create_get_class_name_item(TreeItem *p_parent, const StringName &p_class, const Ref<EditorFeatureProfile> p_profile) {
+	TreeItem *class_item;
+
+	// Search for already added class_item.
+	for (int i = 0; i < p_parent->get_child_count(); i++) {
+		class_item = p_parent->get_child(i);
+
+		if (class_item->get_text(0) == p_class) {
+			return class_item;
+		}
+	}
+
+	class_item = features_tree->create_item(p_parent);
+
+	// Setup Class item.
+	class_item->set_text(0, p_class);
+	class_item->set_selectable(0, true);
+	class_item->set_collapsed(false);
+
+	class_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_class, "Node"));
+
+	if (p_profile->is_class_disabled(p_class)) {
+		class_item->set_custom_color(0, features_tree->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+		class_item->set_icon_modulate(0, features_tree->get_theme_color(SNAME("icon_disabled_color"), SNAME("Editor")));
+	}
+
+	return class_item;
+}
+
+void EditorDisabledFeaturesDialog::show() {
+	_update_features_tree();
+	popup_centered_ratio(0.3);
+}
+
+void EditorDisabledFeaturesDialog::_bind_methods() {
+}
+
+EditorDisabledFeaturesDialog::EditorDisabledFeaturesDialog() {
+	set_title(TTR("Disabled Editor Features Preview"));
+
+	features_tree = memnew(Tree);
+	features_tree->set_hide_root(true);
+
+	add_child(features_tree);
+}
+
+////////////////////////////////////////////////
+////////////////////////////////////////////////
+
 Ref<EditorInspectorPlugin> EditorInspector::inspector_plugins[MAX_PLUGINS];
 int EditorInspector::inspector_plugin_count = 0;
 
@@ -2581,6 +2726,28 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 	ped->added_editors.clear();
 }
 
+bool EditorInspector::_is_class_disabled_by_feature_profile() {
+	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+	if (profile.is_null()) {
+		return false;
+	}
+
+	StringName class_name = object->get_class();
+
+	if (profile->is_class_disabled(class_name)) {
+		List<StringName> feature_chain;
+
+		feature_chain.push_back(class_name);
+
+		disabled_features_dialog->add_disabled_feature(feature_chain);
+
+		// Won't see properties of a disabled class.
+		return true;
+	}
+
+	return false;
+}
+
 bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName &p_property) {
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
 	if (profile.is_null()) {
@@ -2589,14 +2756,18 @@ bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName 
 
 	StringName class_name = object->get_class();
 
+	List<StringName> feature_chain;
+	feature_chain.push_back(p_property);
+
 	while (class_name != StringName()) {
+		feature_chain.push_back(class_name);
+
 		if (profile->is_class_property_disabled(class_name, p_property)) {
+			disabled_features_dialog->add_disabled_feature(feature_chain);
+
 			return true;
 		}
-		if (profile->is_class_disabled(class_name)) {
-			//won't see properties of a disabled class
-			return true;
-		}
+
 		class_name = ClassDB::get_parent_class(class_name);
 	}
 
@@ -2696,636 +2867,654 @@ void EditorInspector::update_tree() {
 
 	StringName doc_name;
 
-	// Get the lists of editors for properties.
-	for (List<PropertyInfo>::Element *E_property = plist.front(); E_property; E_property = E_property->next()) {
-		PropertyInfo &p = E_property->get();
+	Button *disabled_features_button = memnew(Button);
+	disabled_features_button->hide();
 
-		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
-			// Setup a property sub-group.
-			subgroup = p.name;
+	main_vbox->add_child(disabled_features_button);
 
-			Vector<String> hint_parts = p.hint_string.split(",");
-			subgroup_base = hint_parts[0];
-			if (hint_parts.size() > 1) {
-				section_depth = hint_parts[1].to_int();
-			} else {
+	if (!_is_class_disabled_by_feature_profile()) {
+		// Get the lists of editors for properties.
+		for (List<PropertyInfo>::Element *E_property = plist.front(); E_property; E_property = E_property->next()) {
+			PropertyInfo &p = E_property->get();
+
+			if (p.usage & PROPERTY_USAGE_SUBGROUP) {
+				// Setup a property sub-group.
+				subgroup = p.name;
+
+				Vector<String> hint_parts = p.hint_string.split(",");
+				subgroup_base = hint_parts[0];
+				if (hint_parts.size() > 1) {
+					section_depth = hint_parts[1].to_int();
+				} else {
+					section_depth = 0;
+				}
+
+				continue;
+
+			} else if (p.usage & PROPERTY_USAGE_GROUP) {
+				// Setup a property group.
+				group = p.name;
+
+				Vector<String> hint_parts = p.hint_string.split(",");
+				group_base = hint_parts[0];
+				if (hint_parts.size() > 1) {
+					section_depth = hint_parts[1].to_int();
+				} else {
+					section_depth = 0;
+				}
+
+				subgroup = "";
+				subgroup_base = "";
+
+				continue;
+
+			} else if (p.usage & PROPERTY_USAGE_CATEGORY) {
+				// Setup a property category.
+				group = "";
+				group_base = "";
+				subgroup = "";
+				subgroup_base = "";
 				section_depth = 0;
-			}
 
-			continue;
-
-		} else if (p.usage & PROPERTY_USAGE_GROUP) {
-			// Setup a property group.
-			group = p.name;
-
-			Vector<String> hint_parts = p.hint_string.split(",");
-			group_base = hint_parts[0];
-			if (hint_parts.size() > 1) {
-				section_depth = hint_parts[1].to_int();
-			} else {
-				section_depth = 0;
-			}
-
-			subgroup = "";
-			subgroup_base = "";
-
-			continue;
-
-		} else if (p.usage & PROPERTY_USAGE_CATEGORY) {
-			// Setup a property category.
-			group = "";
-			group_base = "";
-			subgroup = "";
-			subgroup_base = "";
-			section_depth = 0;
-
-			if (!show_categories) {
-				continue;
-			}
-
-			// Hide the "MultiNodeEdit" category for MultiNodeEdit.
-			if (Object::cast_to<MultiNodeEdit>(object) && p.name == "MultiNodeEdit") {
-				continue;
-			}
-
-			// Iterate over remaining properties. If no properties in category, skip the category.
-			List<PropertyInfo>::Element *N = E_property->next();
-			bool valid = true;
-			while (N) {
-				if (!N->get().name.begins_with("metadata/_") && N->get().usage & PROPERTY_USAGE_EDITOR &&
-						(!filter.is_empty() || !restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
-					break;
+				if (!show_categories) {
+					continue;
 				}
-				if (N->get().usage & PROPERTY_USAGE_CATEGORY) {
-					valid = false;
-					break;
+
+				// Hide the "MultiNodeEdit" category for MultiNodeEdit.
+				if (Object::cast_to<MultiNodeEdit>(object) && p.name == "MultiNodeEdit") {
+					continue;
 				}
-				N = N->next();
-			}
-			if (!valid) {
-				continue; // Empty, ignore it.
-			}
 
-			// Create an EditorInspectorCategory and add it to the inspector.
-			EditorInspectorCategory *category = memnew(EditorInspectorCategory);
-			main_vbox->add_child(category);
-			category_vbox = nullptr; //reset
-
-			String type = p.name;
-			String label = p.name;
-			doc_name = p.name;
-
-			// Use category's owner script to update some of its information.
-			if (!EditorNode::get_editor_data().is_type_recognized(type) && p.hint_string.length() && ResourceLoader::exists(p.hint_string)) {
-				Ref<Script> scr = ResourceLoader::load(p.hint_string, "Script");
-				if (scr.is_valid()) {
-					StringName script_name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
-
-					// Update the docs reference and the label based on the script.
-					Vector<DocData::ClassDoc> docs = scr->get_documentation();
-					if (!docs.is_empty()) {
-						// The documentation of a GDScript's main class is at the end of the array.
-						// Hacky because this isn't necessarily always guaranteed.
-						doc_name = docs[docs.size() - 1].name;
+				// Iterate over remaining properties. If no properties in category, skip the category.
+				List<PropertyInfo>::Element *N = E_property->next();
+				bool valid = true;
+				while (N) {
+					if (!N->get().name.begins_with("metadata/_") && N->get().usage & PROPERTY_USAGE_EDITOR &&
+							(!filter.is_empty() || !restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+						break;
 					}
-					if (script_name != StringName()) {
-						label = script_name;
+					if (N->get().usage & PROPERTY_USAGE_CATEGORY) {
+						valid = false;
+						break;
 					}
-
-					// Find the icon corresponding to the script.
-					if (script_name != StringName()) {
-						category->icon = EditorNode::get_singleton()->get_class_icon(script_name, "Object");
-					} else {
-						category->icon = EditorNode::get_singleton()->get_object_icon(scr.ptr(), "Object");
-					}
+					N = N->next();
 				}
-			}
-
-			if (category->icon.is_null() && !type.is_empty()) {
-				category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
-			}
-
-			// Set the category label.
-			category->label = label;
-
-			if (use_doc_hints) {
-				String descr = "";
-				// Sets the category tooltip to show documentation.
-				if (!class_descr_cache.has(doc_name)) {
-					DocTools *dd = EditorHelp::get_doc_data();
-					HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(doc_name);
-					if (E) {
-						descr = DTR(E->value.brief_description);
-					}
-					if (ClassDB::class_exists(doc_name)) {
-						class_descr_cache[doc_name] = descr; // Do not cache the class description of scripts.
-					}
-				} else {
-					descr = class_descr_cache[doc_name];
+				if (!valid) {
+					continue; // Empty, ignore it.
 				}
 
-				category->set_tooltip_text(p.name + "::" + descr);
-			}
+				// Create an EditorInspectorCategory and add it to the inspector.
+				EditorInspectorCategory *category = memnew(EditorInspectorCategory);
+				main_vbox->add_child(category);
+				category_vbox = nullptr; // Reset.
 
-			// Add editors at the start of a category.
-			for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
-				ped->parse_category(object, p.name);
-				_parse_added_editors(main_vbox, nullptr, ped);
-			}
+				String type = p.name;
+				String label = p.name;
+				doc_name = p.name;
 
-			continue;
-
-		} else if (p.name.begins_with("metadata/_") || !(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) ||
-				(filter.is_empty() && restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
-			// Ignore properties that are not supposed to be in the inspector.
-			continue;
-		}
-
-		if (p.name == "script") {
-			// Script should go into its own category.
-			category_vbox = nullptr;
-		}
-
-		if (p.usage & PROPERTY_USAGE_HIGH_END_GFX && RS::get_singleton()->is_low_end()) {
-			// Do not show this property in low end gfx.
-			continue;
-		}
-
-		if (p.name == "script" && (hide_script || bool(object->call("_hide_script_from_inspector")))) {
-			// Hide script variables from inspector if required.
-			continue;
-		}
-
-		if (p.name.begins_with("metadata/") && bool(object->call("_hide_metadata_from_inspector"))) {
-			// Hide metadata from inspector if required.
-			continue;
-		}
-
-		// Get the path for property.
-		String path = p.name;
-
-		// First check if we have an array that fits the prefix.
-		String array_prefix = "";
-		int array_index = -1;
-		for (KeyValue<String, EditorInspectorArray *> &E : editor_inspector_array_per_prefix) {
-			if (p.name.begins_with(E.key) && E.key.length() > array_prefix.length()) {
-				array_prefix = E.key;
-			}
-		}
-
-		if (!array_prefix.is_empty()) {
-			// If we have an array element, find the according index in array.
-			String str = p.name.trim_prefix(array_prefix);
-			int to_char_index = 0;
-			while (to_char_index < str.length()) {
-				if (!is_digit(str[to_char_index])) {
-					break;
-				}
-				to_char_index++;
-			}
-			if (to_char_index > 0) {
-				array_index = str.left(to_char_index).to_int();
-			} else {
-				array_prefix = "";
-			}
-		}
-
-		if (!array_prefix.is_empty()) {
-			path = path.trim_prefix(array_prefix);
-			int char_index = path.find("/");
-			if (char_index >= 0) {
-				path = path.right(-char_index - 1);
-			} else {
-				path = vformat(TTR("Element %s"), array_index);
-			}
-		} else {
-			// Check if we exit or not a subgroup. If there is a prefix, remove it from the property label string.
-			if (!subgroup.is_empty() && !subgroup_base.is_empty()) {
-				if (path.begins_with(subgroup_base)) {
-					path = path.trim_prefix(subgroup_base);
-				} else if (subgroup_base.begins_with(path)) {
-					// Keep it, this is used pretty often.
-				} else {
-					subgroup = ""; // The prefix changed, we are no longer in the subgroup.
-				}
-			}
-
-			// Check if we exit or not a group. If there is a prefix, remove it from the property label string.
-			if (!group.is_empty() && !group_base.is_empty() && subgroup.is_empty()) {
-				if (path.begins_with(group_base)) {
-					path = path.trim_prefix(group_base);
-				} else if (group_base.begins_with(path)) {
-					// Keep it, this is used pretty often.
-				} else {
-					group = ""; // The prefix changed, we are no longer in the group.
-					subgroup = "";
-				}
-			}
-
-			// Add the group and subgroup to the path.
-			if (!subgroup.is_empty()) {
-				path = subgroup + "/" + path;
-			}
-			if (!group.is_empty()) {
-				path = group + "/" + path;
-			}
-		}
-
-		// Get the property label's string.
-		String name_override = (path.contains("/")) ? path.substr(path.rfind("/") + 1) : path;
-		String feature_tag;
-		{
-			const int dot = name_override.find(".");
-			if (dot != -1) {
-				feature_tag = name_override.substr(dot);
-				name_override = name_override.substr(0, dot);
-			}
-		}
-
-		// Don't localize script variables.
-		EditorPropertyNameProcessor::Style name_style = property_name_style;
-		if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
-			name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
-		}
-		const String property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(name_override, name_style) + feature_tag;
-
-		// Remove the property from the path.
-		int idx = path.rfind("/");
-		if (idx > -1) {
-			path = path.left(idx);
-		} else {
-			path = "";
-		}
-
-		// Ignore properties that do not fit the filter.
-		if (use_filter && !filter.is_empty()) {
-			const String property_path = property_prefix + (path.is_empty() ? "" : path + "/") + name_override;
-			if (!_property_path_matches(property_path, filter, property_name_style)) {
-				continue;
-			}
-		}
-
-		// Recreate the category vbox if it was reset.
-		if (category_vbox == nullptr) {
-			category_vbox = memnew(VBoxContainer);
-			main_vbox->add_child(category_vbox);
-		}
-
-		// Find the correct section/vbox to add the property editor to.
-		VBoxContainer *root_vbox = array_prefix.is_empty() ? main_vbox : editor_inspector_array_per_prefix[array_prefix]->get_vbox(array_index);
-		if (!root_vbox) {
-			continue;
-		}
-
-		if (!vbox_per_path.has(root_vbox)) {
-			vbox_per_path[root_vbox] = HashMap<String, VBoxContainer *>();
-			vbox_per_path[root_vbox][""] = root_vbox;
-		}
-
-		VBoxContainer *current_vbox = root_vbox;
-		String acc_path = "";
-		int level = 1;
-
-		Vector<String> components = path.split("/");
-		for (int i = 0; i < components.size(); i++) {
-			String component = components[i];
-			acc_path += (i > 0) ? "/" + component : component;
-
-			if (!vbox_per_path[root_vbox].has(acc_path)) {
-				// If the section does not exists, create it.
-				EditorInspectorSection *section = memnew(EditorInspectorSection);
-				current_vbox->add_child(section);
-				sections.push_back(section);
-
-				String label;
-				String tooltip;
-
-				// Don't localize groups for script variables.
-				EditorPropertyNameProcessor::Style section_name_style = property_name_style;
-				if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && section_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
-					section_name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
-				}
-
-				// Only process group label if this is not the group or subgroup.
-				if ((i == 0 && component == group) || (i == 1 && component == subgroup)) {
-					if (section_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
-						label = EditorPropertyNameProcessor::get_singleton()->translate_group_name(component);
-						tooltip = component;
-					} else {
-						label = component;
-						tooltip = EditorPropertyNameProcessor::get_singleton()->translate_group_name(component);
-					}
-				} else {
-					label = EditorPropertyNameProcessor::get_singleton()->process_name(component, section_name_style);
-					tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(component, EditorPropertyNameProcessor::get_tooltip_style(section_name_style));
-				}
-
-				Color c = sscolor;
-				c.a /= level;
-				section->setup(acc_path, label, object, c, use_folding, section_depth);
-				section->set_tooltip_text(tooltip);
-
-				// Add editors at the start of a group.
-				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
-					ped->parse_group(object, path);
-					_parse_added_editors(section->get_vbox(), section, ped);
-				}
-
-				vbox_per_path[root_vbox][acc_path] = section->get_vbox();
-			}
-
-			current_vbox = vbox_per_path[root_vbox][acc_path];
-			level = (MIN(level + 1, 4));
-		}
-
-		// If we did not find a section to add the property to, add it to the category vbox instead (the category vbox handles margins correctly).
-		if (current_vbox == main_vbox) {
-			current_vbox = category_vbox;
-		}
-
-		// Check if the property is an array counter, if so create a dedicated array editor for the array.
-		if (p.usage & PROPERTY_USAGE_ARRAY) {
-			EditorInspectorArray *editor_inspector_array = nullptr;
-			StringName array_element_prefix;
-			Color c = sscolor;
-			c.a /= level;
-
-			Vector<String> class_name_components = String(p.class_name).split(",");
-
-			int page_size = 5;
-			bool movable = true;
-			bool numbered = false;
-			bool foldable = use_folding;
-			String add_button_text = TTR("Add Element");
-			String swap_method;
-			for (int i = (p.type == Variant::NIL ? 1 : 2); i < class_name_components.size(); i++) {
-				if (class_name_components[i].begins_with("page_size") && class_name_components[i].get_slice_count("=") == 2) {
-					page_size = class_name_components[i].get_slice("=", 1).to_int();
-				} else if (class_name_components[i].begins_with("add_button_text") && class_name_components[i].get_slice_count("=") == 2) {
-					add_button_text = class_name_components[i].get_slice("=", 1).strip_edges();
-				} else if (class_name_components[i] == "static") {
-					movable = false;
-				} else if (class_name_components[i] == "numbered") {
-					numbered = true;
-				} else if (class_name_components[i] == "unfoldable") {
-					foldable = false;
-				} else if (class_name_components[i].begins_with("swap_method") && class_name_components[i].get_slice_count("=") == 2) {
-					swap_method = class_name_components[i].get_slice("=", 1).strip_edges();
-				}
-			}
-
-			if (p.type == Variant::NIL) {
-				// Setup the array to use a method to create/move/delete elements.
-				array_element_prefix = class_name_components[0];
-				editor_inspector_array = memnew(EditorInspectorArray(all_read_only));
-
-				String array_label = path.contains("/") ? path.substr(path.rfind("/") + 1) : path;
-				array_label = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string, property_name_style);
-				int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
-				editor_inspector_array->setup_with_move_element_function(object, array_label, array_element_prefix, page, c, use_folding);
-				editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request).bind(array_element_prefix));
-			} else if (p.type == Variant::INT) {
-				// Setup the array to use the count property and built-in functions to create/move/delete elements.
-				if (class_name_components.size() >= 2) {
-					array_element_prefix = class_name_components[1];
-					editor_inspector_array = memnew(EditorInspectorArray(all_read_only));
-					int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
-
-					editor_inspector_array->setup_with_count_property(object, class_name_components[0], p.name, array_element_prefix, page, c, foldable, movable, numbered, page_size, add_button_text, swap_method);
-					editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request).bind(array_element_prefix));
-				}
-			}
-
-			if (editor_inspector_array) {
-				current_vbox->add_child(editor_inspector_array);
-				editor_inspector_array_per_prefix[array_element_prefix] = editor_inspector_array;
-			}
-
-			continue;
-		}
-
-		// Checkable and checked properties.
-		bool checkable = false;
-		bool checked = false;
-		if (p.usage & PROPERTY_USAGE_CHECKABLE) {
-			checkable = true;
-			checked = p.usage & PROPERTY_USAGE_CHECKED;
-		}
-
-		bool property_read_only = (p.usage & PROPERTY_USAGE_READ_ONLY) || read_only;
-
-		// Mark properties that would require an editor restart (mostly when editing editor settings).
-		if (p.usage & PROPERTY_USAGE_RESTART_IF_CHANGED) {
-			restart_request_props.insert(p.name);
-		}
-
-		PropertyDocInfo doc_info;
-
-		if (use_doc_hints) {
-			// Build the doc hint, to use as tooltip.
-
-			// Get the class name.
-			StringName classname = doc_name;
-			if (!object_class.is_empty()) {
-				classname = object_class;
-			} else if (Object::cast_to<MultiNodeEdit>(object)) {
-				classname = Object::cast_to<MultiNodeEdit>(object)->get_edited_class_name();
-			} else if (classname == "") {
-				classname = object->get_class_name();
-				Resource *res = Object::cast_to<Resource>(object);
-				if (res && !res->get_script().is_null()) {
-					// Grab the script of this resource to get the evaluated script class.
-					Ref<Script> scr = res->get_script();
+				// Use category's owner script to update some of its information.
+				if (!EditorNode::get_editor_data().is_type_recognized(type) && p.hint_string.length() && ResourceLoader::exists(p.hint_string)) {
+					Ref<Script> scr = ResourceLoader::load(p.hint_string, "Script");
 					if (scr.is_valid()) {
+						StringName script_name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
+
+						// Update the docs reference and the label based on the script.
 						Vector<DocData::ClassDoc> docs = scr->get_documentation();
 						if (!docs.is_empty()) {
 							// The documentation of a GDScript's main class is at the end of the array.
 							// Hacky because this isn't necessarily always guaranteed.
-							classname = docs[docs.size() - 1].name;
+							doc_name = docs[docs.size() - 1].name;
+						}
+						if (script_name != StringName()) {
+							label = script_name;
+						}
+
+						// Find the icon corresponding to the script.
+						if (script_name != StringName()) {
+							category->icon = EditorNode::get_singleton()->get_class_icon(script_name, "Object");
+						} else {
+							category->icon = EditorNode::get_singleton()->get_object_icon(scr.ptr(), "Object");
 						}
 					}
 				}
+
+				if (category->icon.is_null() && !type.is_empty()) {
+					category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
+				}
+
+				// Set the category label.
+				category->label = label;
+
+				if (use_doc_hints) {
+					String descr = "";
+					// Sets the category tooltip to show documentation.
+					if (!class_descr_cache.has(doc_name)) {
+						DocTools *dd = EditorHelp::get_doc_data();
+						HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(doc_name);
+						if (E) {
+							descr = DTR(E->value.brief_description);
+						}
+						if (ClassDB::class_exists(doc_name)) {
+							class_descr_cache[doc_name] = descr; // Do not cache the class description of scripts.
+						}
+					} else {
+						descr = class_descr_cache[doc_name];
+					}
+
+					category->set_tooltip_text(p.name + "::" + descr);
+				}
+
+				// Add editors at the start of a category.
+				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
+					ped->parse_category(object, p.name);
+					_parse_added_editors(main_vbox, nullptr, ped);
+				}
+
+				continue;
+
+			} else if (p.name.begins_with("metadata/_") || !(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) ||
+					(filter.is_empty() && restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+				// Ignore properties that are not supposed to be in the inspector.
+				continue;
 			}
 
-			StringName propname = property_prefix + p.name;
-			bool found = false;
-
-			// Small hack for theme_overrides. They are listed under Control, but come from another class.
-			if (classname == "Control" && p.name.begins_with("theme_override_")) {
-				classname = get_edited_object()->get_class();
+			if (p.name == "script") {
+				// Script should go into its own category.
+				category_vbox = nullptr;
 			}
 
-			// Search for the property description in the cache.
-			HashMap<StringName, HashMap<StringName, PropertyDocInfo>>::Iterator E = doc_info_cache.find(classname);
-			if (E) {
-				HashMap<StringName, PropertyDocInfo>::Iterator F = E->value.find(propname);
-				if (F) {
-					found = true;
-					doc_info = F->value;
+			if (p.usage & PROPERTY_USAGE_HIGH_END_GFX && RS::get_singleton()->is_low_end()) {
+				// Do not show this property in low end gfx.
+				continue;
+			}
+
+			if (p.name == "script" && (hide_script || bool(object->call("_hide_script_from_inspector")))) {
+				// Hide script variables from inspector if required.
+				continue;
+			}
+
+			if (p.name.begins_with("metadata/") && bool(object->call("_hide_metadata_from_inspector"))) {
+				// Hide metadata from inspector if required.
+				continue;
+			}
+
+			// Get the path for property.
+			String path = p.name;
+
+			// First check if we have an array that fits the prefix.
+			String array_prefix = "";
+			int array_index = -1;
+			for (KeyValue<String, EditorInspectorArray *> &E : editor_inspector_array_per_prefix) {
+				if (p.name.begins_with(E.key) && E.key.length() > array_prefix.length()) {
+					array_prefix = E.key;
 				}
 			}
 
-			if (!found) {
-				// Build the property description String and add it to the cache.
-				DocTools *dd = EditorHelp::get_doc_data();
-				HashMap<String, DocData::ClassDoc>::ConstIterator F = dd->class_list.find(classname);
-				while (F && doc_info.description.is_empty()) {
-					for (int i = 0; i < F->value.properties.size(); i++) {
-						if (F->value.properties[i].name == propname.operator String()) {
-							doc_info.description = DTR(F->value.properties[i].description);
+			if (!array_prefix.is_empty()) {
+				// If we have an array element, find the according index in array.
+				String str = p.name.trim_prefix(array_prefix);
+				int to_char_index = 0;
+				while (to_char_index < str.length()) {
+					if (!is_digit(str[to_char_index])) {
+						break;
+					}
+					to_char_index++;
+				}
+				if (to_char_index > 0) {
+					array_index = str.left(to_char_index).to_int();
+				} else {
+					array_prefix = "";
+				}
+			}
 
-							const Vector<String> class_enum = F->value.properties[i].enumeration.split(".");
-							const String class_name = class_enum[0];
-							const String enum_name = class_enum.size() >= 2 ? class_enum[1] : "";
-							if (!enum_name.is_empty()) {
-								HashMap<String, DocData::ClassDoc>::ConstIterator enum_class = dd->class_list.find(class_name);
-								if (enum_class) {
-									for (DocData::ConstantDoc val : enum_class->value.constants) {
-										// Don't display `_MAX` enum value descriptions, as these are never exposed in the inspector.
-										if (val.enumeration == enum_name && !val.name.ends_with("_MAX")) {
-											const String enum_value = EditorPropertyNameProcessor::get_singleton()->process_name(val.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
-											// Prettify the enum value display, so that "<ENUM NAME>_<VALUE>" becomes "Value".
-											String desc = DTR(val.description).trim_prefix("\n");
-											doc_info.description += vformat(
-													"\n[b]%s:[/b] %s",
-													enum_value.trim_prefix(EditorPropertyNameProcessor::get_singleton()->process_name(enum_name, EditorPropertyNameProcessor::STYLE_CAPITALIZED) + " "),
-													desc.is_empty() ? ("[i]" + TTR("No description.") + "[/i]") : desc);
+			if (!array_prefix.is_empty()) {
+				path = path.trim_prefix(array_prefix);
+				int char_index = path.find("/");
+				if (char_index >= 0) {
+					path = path.right(-char_index - 1);
+				} else {
+					path = vformat(TTR("Element %s"), array_index);
+				}
+			} else {
+				// Check if we exit or not a subgroup. If there is a prefix, remove it from the property label string.
+				if (!subgroup.is_empty() && !subgroup_base.is_empty()) {
+					if (path.begins_with(subgroup_base)) {
+						path = path.trim_prefix(subgroup_base);
+					} else if (subgroup_base.begins_with(path)) {
+						// Keep it, this is used pretty often.
+					} else {
+						subgroup = ""; // The prefix changed, we are no longer in the subgroup.
+					}
+				}
+
+				// Check if we exit or not a group. If there is a prefix, remove it from the property label string.
+				if (!group.is_empty() && !group_base.is_empty() && subgroup.is_empty()) {
+					if (path.begins_with(group_base)) {
+						path = path.trim_prefix(group_base);
+					} else if (group_base.begins_with(path)) {
+						// Keep it, this is used pretty often.
+					} else {
+						group = ""; // The prefix changed, we are no longer in the group.
+						subgroup = "";
+					}
+				}
+
+				// Add the group and subgroup to the path.
+				if (!subgroup.is_empty()) {
+					path = subgroup + "/" + path;
+				}
+				if (!group.is_empty()) {
+					path = group + "/" + path;
+				}
+			}
+
+			// Get the property label's string.
+			String name_override = (path.contains("/")) ? path.substr(path.rfind("/") + 1) : path;
+			String feature_tag;
+			{
+				const int dot = name_override.find(".");
+				if (dot != -1) {
+					feature_tag = name_override.substr(dot);
+					name_override = name_override.substr(0, dot);
+				}
+			}
+
+			// Don't localize script variables.
+			EditorPropertyNameProcessor::Style name_style = property_name_style;
+			if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+				name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
+			}
+			const String property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(name_override, name_style) + feature_tag;
+
+			// Remove the property from the path.
+			int idx = path.rfind("/");
+			if (idx > -1) {
+				path = path.left(idx);
+			} else {
+				path = "";
+			}
+
+			// Ignore properties that do not fit the filter.
+			if (use_filter && !filter.is_empty()) {
+				const String property_path = property_prefix + (path.is_empty() ? "" : path + "/") + name_override;
+				if (!_property_path_matches(property_path, filter, property_name_style)) {
+					continue;
+				}
+			}
+
+			// Recreate the category vbox if it was reset.
+			if (category_vbox == nullptr) {
+				category_vbox = memnew(VBoxContainer);
+				main_vbox->add_child(category_vbox);
+			}
+
+			// Find the correct section/vbox to add the property editor to.
+			VBoxContainer *root_vbox = array_prefix.is_empty() ? main_vbox : editor_inspector_array_per_prefix[array_prefix]->get_vbox(array_index);
+			if (!root_vbox) {
+				continue;
+			}
+
+			if (!vbox_per_path.has(root_vbox)) {
+				vbox_per_path[root_vbox] = HashMap<String, VBoxContainer *>();
+				vbox_per_path[root_vbox][""] = root_vbox;
+			}
+
+			VBoxContainer *current_vbox = root_vbox;
+			String acc_path = "";
+			int level = 1;
+
+			Vector<String> components = path.split("/");
+			for (int i = 0; i < components.size(); i++) {
+				String component = components[i];
+				acc_path += (i > 0) ? "/" + component : component;
+
+				if (!vbox_per_path[root_vbox].has(acc_path)) {
+					// If the section does not exists, create it.
+					EditorInspectorSection *section = memnew(EditorInspectorSection);
+					current_vbox->add_child(section);
+					sections.push_back(section);
+
+					String label;
+					String tooltip;
+
+					// Don't localize groups for script variables.
+					EditorPropertyNameProcessor::Style section_name_style = property_name_style;
+					if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && section_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+						section_name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
+					}
+
+					// Only process group label if this is not the group or subgroup.
+					if ((i == 0 && component == group) || (i == 1 && component == subgroup)) {
+						if (section_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+							label = EditorPropertyNameProcessor::get_singleton()->translate_group_name(component);
+							tooltip = component;
+						} else {
+							label = component;
+							tooltip = EditorPropertyNameProcessor::get_singleton()->translate_group_name(component);
+						}
+					} else {
+						label = EditorPropertyNameProcessor::get_singleton()->process_name(component, section_name_style);
+						tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(component, EditorPropertyNameProcessor::get_tooltip_style(section_name_style));
+					}
+
+					Color c = sscolor;
+					c.a /= level;
+					section->setup(acc_path, label, object, c, use_folding, section_depth);
+					section->set_tooltip_text(tooltip);
+
+					// Add editors at the start of a group.
+					for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
+						ped->parse_group(object, path);
+						_parse_added_editors(section->get_vbox(), section, ped);
+					}
+
+					vbox_per_path[root_vbox][acc_path] = section->get_vbox();
+				}
+
+				current_vbox = vbox_per_path[root_vbox][acc_path];
+				level = (MIN(level + 1, 4));
+			}
+
+			// If we did not find a section to add the property to, add it to the category vbox instead (the category vbox handles margins correctly).
+			if (current_vbox == main_vbox) {
+				current_vbox = category_vbox;
+			}
+
+			// Check if the property is an array counter, if so create a dedicated array editor for the array.
+			if (p.usage & PROPERTY_USAGE_ARRAY) {
+				EditorInspectorArray *editor_inspector_array = nullptr;
+				StringName array_element_prefix;
+				Color c = sscolor;
+				c.a /= level;
+
+				Vector<String> class_name_components = String(p.class_name).split(",");
+
+				int page_size = 5;
+				bool movable = true;
+				bool numbered = false;
+				bool foldable = use_folding;
+				String add_button_text = TTR("Add Element");
+				String swap_method;
+				for (int i = (p.type == Variant::NIL ? 1 : 2); i < class_name_components.size(); i++) {
+					if (class_name_components[i].begins_with("page_size") && class_name_components[i].get_slice_count("=") == 2) {
+						page_size = class_name_components[i].get_slice("=", 1).to_int();
+					} else if (class_name_components[i].begins_with("add_button_text") && class_name_components[i].get_slice_count("=") == 2) {
+						add_button_text = class_name_components[i].get_slice("=", 1).strip_edges();
+					} else if (class_name_components[i] == "static") {
+						movable = false;
+					} else if (class_name_components[i] == "numbered") {
+						numbered = true;
+					} else if (class_name_components[i] == "unfoldable") {
+						foldable = false;
+					} else if (class_name_components[i].begins_with("swap_method") && class_name_components[i].get_slice_count("=") == 2) {
+						swap_method = class_name_components[i].get_slice("=", 1).strip_edges();
+					}
+				}
+
+				if (p.type == Variant::NIL) {
+					// Setup the array to use a method to create/move/delete elements.
+					array_element_prefix = class_name_components[0];
+					editor_inspector_array = memnew(EditorInspectorArray(all_read_only));
+
+					String array_label = path.contains("/") ? path.substr(path.rfind("/") + 1) : path;
+					array_label = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string, property_name_style);
+					int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
+					editor_inspector_array->setup_with_move_element_function(object, array_label, array_element_prefix, page, c, use_folding);
+					editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request).bind(array_element_prefix));
+				} else if (p.type == Variant::INT) {
+					// Setup the array to use the count property and built-in functions to create/move/delete elements.
+					if (class_name_components.size() >= 2) {
+						array_element_prefix = class_name_components[1];
+						editor_inspector_array = memnew(EditorInspectorArray(all_read_only));
+						int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
+
+						editor_inspector_array->setup_with_count_property(object, class_name_components[0], p.name, array_element_prefix, page, c, foldable, movable, numbered, page_size, add_button_text, swap_method);
+						editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request).bind(array_element_prefix));
+					}
+				}
+
+				if (editor_inspector_array) {
+					current_vbox->add_child(editor_inspector_array);
+					editor_inspector_array_per_prefix[array_element_prefix] = editor_inspector_array;
+				}
+
+				continue;
+			}
+
+			// Checkable and checked properties.
+			bool checkable = false;
+			bool checked = false;
+			if (p.usage & PROPERTY_USAGE_CHECKABLE) {
+				checkable = true;
+				checked = p.usage & PROPERTY_USAGE_CHECKED;
+			}
+
+			bool property_read_only = (p.usage & PROPERTY_USAGE_READ_ONLY) || read_only;
+
+			// Mark properties that would require an editor restart (mostly when editing editor settings).
+			if (p.usage & PROPERTY_USAGE_RESTART_IF_CHANGED) {
+				restart_request_props.insert(p.name);
+			}
+
+			PropertyDocInfo doc_info;
+
+			if (use_doc_hints) {
+				// Build the doc hint, to use as tooltip.
+
+				// Get the class name.
+				StringName classname = doc_name;
+				if (!object_class.is_empty()) {
+					classname = object_class;
+				} else if (Object::cast_to<MultiNodeEdit>(object)) {
+					classname = Object::cast_to<MultiNodeEdit>(object)->get_edited_class_name();
+				} else if (classname == "") {
+					classname = object->get_class_name();
+					Resource *res = Object::cast_to<Resource>(object);
+					if (res && !res->get_script().is_null()) {
+						// Grab the script of this resource to get the evaluated script class.
+						Ref<Script> scr = res->get_script();
+						if (scr.is_valid()) {
+							Vector<DocData::ClassDoc> docs = scr->get_documentation();
+							if (!docs.is_empty()) {
+								// The documentation of a GDScript's main class is at the end of the array.
+								// Hacky because this isn't necessarily always guaranteed.
+								classname = docs[docs.size() - 1].name;
+							}
+						}
+					}
+				}
+
+				StringName propname = property_prefix + p.name;
+				bool found = false;
+
+				// Small hack for theme_overrides. They are listed under Control, but come from another class.
+				if (classname == "Control" && p.name.begins_with("theme_override_")) {
+					classname = get_edited_object()->get_class();
+				}
+
+				// Search for the property description in the cache.
+				HashMap<StringName, HashMap<StringName, PropertyDocInfo>>::Iterator E = doc_info_cache.find(classname);
+				if (E) {
+					HashMap<StringName, PropertyDocInfo>::Iterator F = E->value.find(propname);
+					if (F) {
+						found = true;
+						doc_info = F->value;
+					}
+				}
+
+				if (!found) {
+					// Build the property description String and add it to the cache.
+					DocTools *dd = EditorHelp::get_doc_data();
+					HashMap<String, DocData::ClassDoc>::ConstIterator F = dd->class_list.find(classname);
+					while (F && doc_info.description.is_empty()) {
+						for (int i = 0; i < F->value.properties.size(); i++) {
+							if (F->value.properties[i].name == propname.operator String()) {
+								doc_info.description = DTR(F->value.properties[i].description);
+
+								const Vector<String> class_enum = F->value.properties[i].enumeration.split(".");
+								const String class_name = class_enum[0];
+								const String enum_name = class_enum.size() >= 2 ? class_enum[1] : "";
+								if (!enum_name.is_empty()) {
+									HashMap<String, DocData::ClassDoc>::ConstIterator enum_class = dd->class_list.find(class_name);
+									if (enum_class) {
+										for (DocData::ConstantDoc val : enum_class->value.constants) {
+											// Don't display `_MAX` enum value descriptions, as these are never exposed in the inspector.
+											if (val.enumeration == enum_name && !val.name.ends_with("_MAX")) {
+												const String enum_value = EditorPropertyNameProcessor::get_singleton()->process_name(val.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
+												// Prettify the enum value display, so that "<ENUM NAME>_<VALUE>" becomes "Value".
+												String desc = DTR(val.description).trim_prefix("\n");
+												doc_info.description += vformat(
+														"\n[b]%s:[/b] %s",
+														enum_value.trim_prefix(EditorPropertyNameProcessor::get_singleton()->process_name(enum_name, EditorPropertyNameProcessor::STYLE_CAPITALIZED) + " "),
+														desc.is_empty() ? ("[i]" + TTR("No description.") + "[/i]") : desc);
+											}
 										}
 									}
 								}
-							}
 
-							doc_info.path = "class_property:" + F->value.name + ":" + F->value.properties[i].name;
+								doc_info.path = "class_property:" + F->value.name + ":" + F->value.properties[i].name;
+								break;
+							}
+						}
+
+						Vector<String> slices = propname.operator String().split("/");
+						if (slices.size() == 2 && slices[0].begins_with("theme_override_")) {
+							for (int i = 0; i < F->value.theme_properties.size(); i++) {
+								if (F->value.theme_properties[i].name == slices[1]) {
+									doc_info.description = DTR(F->value.theme_properties[i].description);
+									doc_info.path = "class_theme_item:" + F->value.name + ":" + F->value.theme_properties[i].name;
+									break;
+								}
+							}
+						}
+
+						if (!F->value.inherits.is_empty()) {
+							F = dd->class_list.find(F->value.inherits);
+						} else {
 							break;
 						}
 					}
 
-					Vector<String> slices = propname.operator String().split("/");
-					if (slices.size() == 2 && slices[0].begins_with("theme_override_")) {
-						for (int i = 0; i < F->value.theme_properties.size(); i++) {
-							if (F->value.theme_properties[i].name == slices[1]) {
-								doc_info.description = DTR(F->value.theme_properties[i].description);
-								doc_info.path = "class_theme_item:" + F->value.name + ":" + F->value.theme_properties[i].name;
-								break;
+					if (ClassDB::class_exists(classname)) {
+						doc_info_cache[classname][propname] = doc_info; // Do not cache the doc information of scripts.
+					}
+				}
+			}
+
+			Vector<EditorInspectorPlugin::AddedEditor> editors;
+			Vector<EditorInspectorPlugin::AddedEditor> late_editors;
+
+			// Search for the inspector plugin that will handle the properties. Then add the correct property editor to it.
+			for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
+				bool exclusive = ped->parse_property(object, p.type, p.name, p.hint, p.hint_string, p.usage, wide_editors);
+
+				for (const EditorInspectorPlugin::AddedEditor &F : ped->added_editors) {
+					if (F.add_to_end) {
+						late_editors.push_back(F);
+					} else {
+						editors.push_back(F);
+					}
+				}
+
+				ped->added_editors.clear();
+
+				if (exclusive) {
+					break;
+				}
+			}
+
+			editors.append_array(late_editors);
+
+			for (int i = 0; i < editors.size(); i++) {
+				EditorProperty *ep = Object::cast_to<EditorProperty>(editors[i].property_editor);
+				const Vector<String> &properties = editors[i].properties;
+
+				if (ep) {
+					// Set all this before the control gets the ENTER_TREE notification.
+					ep->object = object;
+
+					if (properties.size()) {
+						if (properties.size() == 1) {
+							// Since it's one, associate:
+							ep->property = properties[0];
+							ep->property_path = property_prefix + properties[0];
+							ep->property_usage = p.usage;
+							// And set label?
+						}
+						if (!editors[i].label.is_empty()) {
+							ep->set_label(editors[i].label);
+						} else {
+							// Use the existing one.
+							ep->set_label(property_label_string);
+						}
+
+						for (int j = 0; j < properties.size(); j++) {
+							String prop = properties[j];
+
+							if (!editor_property_map.has(prop)) {
+								editor_property_map[prop] = List<EditorProperty *>();
 							}
+							editor_property_map[prop].push_back(ep);
 						}
 					}
 
-					if (!F->value.inherits.is_empty()) {
-						F = dd->class_list.find(F->value.inherits);
+					EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(current_vbox->get_parent());
+					if (section) {
+						ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
+					}
+
+					ep->set_draw_warning(draw_warning);
+					ep->set_use_folding(use_folding);
+					ep->set_checkable(checkable);
+					ep->set_checked(checked);
+					ep->set_keying(keying);
+					ep->set_read_only(property_read_only || all_read_only);
+					ep->set_deletable(deletable_properties || p.name.begins_with("metadata/"));
+				}
+
+				current_vbox->add_child(editors[i].property_editor);
+
+				if (ep) {
+					// Eventually, set other properties/signals after the property editor got added to the tree.
+					bool update_all = (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED);
+					ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(update_all));
+					ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
+					ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
+					ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
+					ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
+					ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
+					ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
+					ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
+					ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), CONNECT_DEFERRED);
+					ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
+					if (!doc_info.description.is_empty()) {
+						ep->set_tooltip_text(property_prefix + p.name + "::" + doc_info.description);
 					} else {
-						break;
+						ep->set_tooltip_text(property_prefix + p.name);
 					}
-				}
+					ep->set_doc_path(doc_info.path);
+					ep->update_property();
+					ep->_update_pin_flags();
+					ep->update_editor_property_status();
+					ep->update_cache();
 
-				if (ClassDB::class_exists(classname)) {
-					doc_info_cache[classname][propname] = doc_info; // Do not cache the doc information of scripts.
+					if (current_selected && ep->property == current_selected) {
+						ep->select(current_focusable);
+					}
 				}
 			}
 		}
+	}
 
-		Vector<EditorInspectorPlugin::AddedEditor> editors;
-		Vector<EditorInspectorPlugin::AddedEditor> late_editors;
+	if (disabled_features_dialog->disabled_feature_count() > 0) {
+		disabled_features_button->set_text(TTR("Disabled editor features have been hidden."));
+		disabled_features_button->set_tooltip_text(TTR("Click to view which features have been disabled by the editor."));
+		disabled_features_button->set_clip_text(true);
+		disabled_features_button->set_icon(get_theme_icon(SNAME("NodeInfo"), SNAME("EditorIcons")));
+		disabled_features_button->add_theme_color_override(SNAME("font_color"), get_theme_color(SNAME("font_color"), SNAME("Editor")));
+		disabled_features_button->connect(SNAME("pressed"), callable_mp(disabled_features_dialog, &EditorDisabledFeaturesDialog::show));
 
-		// Search for the inspector plugin that will handle the properties. Then add the correct property editor to it.
-		for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
-			bool exclusive = ped->parse_property(object, p.type, p.name, p.hint, p.hint_string, p.usage, wide_editors);
-
-			for (const EditorInspectorPlugin::AddedEditor &F : ped->added_editors) {
-				if (F.add_to_end) {
-					late_editors.push_back(F);
-				} else {
-					editors.push_back(F);
-				}
-			}
-
-			ped->added_editors.clear();
-
-			if (exclusive) {
-				break;
-			}
-		}
-
-		editors.append_array(late_editors);
-
-		for (int i = 0; i < editors.size(); i++) {
-			EditorProperty *ep = Object::cast_to<EditorProperty>(editors[i].property_editor);
-			const Vector<String> &properties = editors[i].properties;
-
-			if (ep) {
-				// Set all this before the control gets the ENTER_TREE notification.
-				ep->object = object;
-
-				if (properties.size()) {
-					if (properties.size() == 1) {
-						//since it's one, associate:
-						ep->property = properties[0];
-						ep->property_path = property_prefix + properties[0];
-						ep->property_usage = p.usage;
-						//and set label?
-					}
-					if (!editors[i].label.is_empty()) {
-						ep->set_label(editors[i].label);
-					} else {
-						// Use the existing one.
-						ep->set_label(property_label_string);
-					}
-
-					for (int j = 0; j < properties.size(); j++) {
-						String prop = properties[j];
-
-						if (!editor_property_map.has(prop)) {
-							editor_property_map[prop] = List<EditorProperty *>();
-						}
-						editor_property_map[prop].push_back(ep);
-					}
-				}
-
-				EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(current_vbox->get_parent());
-				if (section) {
-					ep->connect("property_can_revert_changed", callable_mp(section, &EditorInspectorSection::property_can_revert_changed));
-				}
-
-				ep->set_draw_warning(draw_warning);
-				ep->set_use_folding(use_folding);
-				ep->set_checkable(checkable);
-				ep->set_checked(checked);
-				ep->set_keying(keying);
-				ep->set_read_only(property_read_only || all_read_only);
-				ep->set_deletable(deletable_properties || p.name.begins_with("metadata/"));
-			}
-
-			current_vbox->add_child(editors[i].property_editor);
-
-			if (ep) {
-				// Eventually, set other properties/signals after the property editor got added to the tree.
-				bool update_all = (p.usage & PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED);
-				ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(update_all));
-				ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
-				ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
-				ep->connect("property_keyed_with_value", callable_mp(this, &EditorInspector::_property_keyed_with_value));
-				ep->connect("property_checked", callable_mp(this, &EditorInspector::_property_checked));
-				ep->connect("property_pinned", callable_mp(this, &EditorInspector::_property_pinned));
-				ep->connect("selected", callable_mp(this, &EditorInspector::_property_selected));
-				ep->connect("multiple_properties_changed", callable_mp(this, &EditorInspector::_multiple_properties_changed));
-				ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), CONNECT_DEFERRED);
-				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
-				if (!doc_info.description.is_empty()) {
-					ep->set_tooltip_text(property_prefix + p.name + "::" + doc_info.description);
-				} else {
-					ep->set_tooltip_text(property_prefix + p.name);
-				}
-				ep->set_doc_path(doc_info.path);
-				ep->update_property();
-				ep->_update_pin_flags();
-				ep->update_editor_property_status();
-				ep->update_cache();
-
-				if (current_selected && ep->property == current_selected) {
-					ep->select(current_focusable);
-				}
-			}
-		}
+		disabled_features_button->show();
 	}
 
 	if (!hide_metadata && !object->call("_hide_metadata_from_inspector")) {
@@ -3378,6 +3567,7 @@ void EditorInspector::_clear(bool p_hide_plugins) {
 	sections.clear();
 	pending.clear();
 	restart_request_props.clear();
+	disabled_features_dialog->clear_disabled_features();
 
 	if (p_hide_plugins && is_main_editor_inspector()) {
 		EditorNode::get_singleton()->hide_unused_editors(this);
@@ -4191,6 +4381,9 @@ EditorInspector::EditorInspector() {
 	main_vbox->add_theme_constant_override("separation", 0);
 	add_child(main_vbox);
 	set_horizontal_scroll_mode(SCROLL_MODE_DISABLED);
+
+	disabled_features_dialog = memnew(EditorDisabledFeaturesDialog);
+	add_child(disabled_features_dialog);
 
 	changing = 0;
 	search_box = nullptr;

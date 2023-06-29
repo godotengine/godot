@@ -594,6 +594,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("disabled_font_color", "Editor", font_disabled_color);
 	theme->set_color("readonly_font_color", "Editor", font_readonly_color);
 
+	theme->set_color("icon_disabled_color", "Editor", icon_disabled_color);
+
 	theme->set_color("mono_color", "Editor", mono_color);
 
 	Color success_color = Color(0.45, 0.95, 0.5);
