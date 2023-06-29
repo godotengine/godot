@@ -592,6 +592,9 @@ void EditorProperty::add_focusable(Control *p_control) {
 
 void EditorProperty::select(int p_focusable) {
 	bool already_selected = selected;
+	if (!selectable) {
+		return;
+	}
 
 	if (p_focusable >= 0) {
 		ERR_FAIL_INDEX(p_focusable, focusables.size());
@@ -665,11 +668,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			mpos.x = get_size().x - mpos.x;
 		}
 
-		if (!selected && selectable) {
-			selected = true;
-			emit_signal(SNAME("selected"), property, -1);
-			queue_redraw();
-		}
+		select();
 
 		if (keying_rect.has_point(mpos)) {
 			accept_event();
