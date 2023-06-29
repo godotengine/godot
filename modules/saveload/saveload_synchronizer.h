@@ -46,16 +46,24 @@ public:
 //	};
 	struct SyncState {
 		HashMap<const NodePath, Variant> property_map;
+
 		Dictionary to_dict() const {
 			Dictionary dict;
 			for (const KeyValue<const NodePath, Variant> &property : property_map) {
 				dict[property.key] = property.value;
-				print_line(property.key);
-				print_line(property.value);
 			}
 			return dict;
 		};
-		SyncState() {};
+
+		SyncState(HashMap<const NodePath, Variant> p_property_map) { property_map = p_property_map; }
+		SyncState(const Dictionary &p_dict) {
+			List<Variant> property_keys;
+			p_dict.get_key_list(&property_keys);
+			for (const NodePath property_key : property_keys) {
+				property_map.insert(property_key, p_dict[property_key]);
+			}
+		}
+		SyncState() {}
 	};
 
 private:
@@ -95,6 +103,7 @@ public:
 	static Error set_state(const List<NodePath> &p_properties, Object *p_obj, const Vector<Variant> &p_state);
 
 	SyncState get_sync_state();
+	Error synchronize(const SyncState p_sync_state);
 
 	Dictionary get_state_wrapper();
 

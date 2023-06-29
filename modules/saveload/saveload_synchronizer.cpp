@@ -168,16 +168,23 @@ Error SaveloadSynchronizer::get_state(const List<NodePath> &p_properties, Object
 SaveloadSynchronizer::SyncState SaveloadSynchronizer::get_sync_state() {
 	Vector<Variant> vars;
 	Vector<const Variant *> varp;
-	print_line("SaveloadSynchronizer::get_sync_state: getting properties...");
 	const List<NodePath> props = get_saveload_config()->get_sync_properties();
-	print_line("SaveloadSynchronizer::get_sync_state: getting property values...");
 	get_state(props, get_root_node(), vars, varp);
 	SyncState sync_state;
 	for (int i = 0; i < vars.size(); ++i) {
-		print_line("SaveloadSynchronizer::get_sync_state: filling sync state...");
 		sync_state.property_map.insert(props[i], vars[i]);
 	}
 	return sync_state;
+}
+
+Error SaveloadSynchronizer::synchronize(const SaveloadSynchronizer::SyncState p_sync_state) {
+	for (const KeyValue<const NodePath, Variant> &property : p_sync_state.property_map) {
+		const NodePath path = property.key;
+		const NodePath node_path = NodePath(path.get_concatenated_names());
+		Node *node = get_root_node()->get_node(node_path); //TODO: what if node isn't found?
+		node->set_indexed(path.get_subnames(), property.value); //TODO: what if node doesn't have property?
+	}
+	return OK;
 }
 
 Dictionary SaveloadSynchronizer::get_state_wrapper() {

@@ -190,12 +190,26 @@ SceneSaveloadInterface::SaveloadState SceneSaveloadInterface::get_saveload_state
 	return saveload_state;
 }
 
+Error SceneSaveloadInterface::load_saveload_state(const SceneSaveloadInterface::SaveloadState p_saveload_state) {
+	for (const KeyValue<const NodePath, SaveloadSynchronizer::SyncState> &E : p_saveload_state.sync_states) {
+		Node *root = SceneTree::get_singleton()->get_current_scene(); //TODO: Is this the right root?
+		SaveloadSynchronizer *sync_node = Object::cast_to<SaveloadSynchronizer>(root->get_node(E.key)); //TODO: check that node is SaveloadSynchronizer
+		if (sync_node) {
+			return sync_node->synchronize(E.value);
+		}
+		else {
+			return ERR_INVALID_DATA; //TODO: Is this the right error value?
+		}
+	}
+	//TODO: Need to handle spawners as well
+}
+
 Dictionary SceneSaveloadInterface::SaveloadState::to_dict() {
 	Dictionary dict;
 	Dictionary spawn_dict;
-//	for (const KeyValue<const NodePath, SaveloadSpawner::SpawnState> &spawn_state : SaveloadState::spawn_states) {
-//		spawn_dict[spawn_state.key] = spawn_state.value.to_dict();
-//	}
+	for (const KeyValue<const NodePath, SaveloadSpawner::SpawnState> &spawn_state : SaveloadState::spawn_states) {
+		spawn_dict[spawn_state.key] = spawn_state.value.to_dict();
+	}
 	Dictionary sync_dict;
 	for (const KeyValue<const NodePath, SaveloadSynchronizer::SyncState> &sync_state : SaveloadState::sync_states) {
 		sync_dict[sync_state.key] = sync_state.value.to_dict();
@@ -203,6 +217,23 @@ Dictionary SceneSaveloadInterface::SaveloadState::to_dict() {
 	dict[StringName("spawn_states")] = spawn_dict;
 	dict[StringName("sync_states")] = sync_dict;
 	return dict;
+}
+
+SceneSaveloadInterface::SaveloadState::SaveloadState(const Dictionary &p_saveload_dict) {
+	Dictionary spawn_states_dict = p_saveload_dict[StringName("spawn_states")];
+	Dictionary sync_states_dict = p_saveload_dict[StringName("sync_states")];
+	List<Variant> spawn_keys;
+	spawn_states_dict.get_key_list(&spawn_keys);
+	for (const NodePath spawn_key : spawn_keys) {
+		Dictionary spawn_state_as_dict = spawn_states_dict[spawn_key];
+		spawn_states.insert(spawn_key, SaveloadSpawner::SpawnState(spawn_state_as_dict));
+	}
+	List<Variant> sync_keys;
+	sync_states_dict.get_key_list(&sync_keys);
+	for (const NodePath sync_key : sync_keys) {
+		Dictionary sync_state_as_dict = sync_states_dict[sync_key];
+		sync_states.insert(sync_key, SaveloadSynchronizer::SyncState(sync_state_as_dict));
+	}
 }
 
 Error SceneSaveloadInterface::on_spawn(Object *p_obj, Variant p_config) {

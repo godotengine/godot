@@ -49,28 +49,49 @@ public:
 	struct SpawnInfo {
 		Variant args;
 		int id = INVALID_ID;
+
 		Dictionary to_dict() const {
 			Dictionary dict;
 			dict[StringName("args")] = args;
 			dict[StringName("id")] = id;
 			return dict;
 		}
+
 		SpawnInfo(Variant p_args, int p_id) {
 			id = p_id;
 			args = p_args;
 		}
+		SpawnInfo(const Dictionary &p_dict) {
+			id = p_dict[StringName("id")];
+			args = p_dict[StringName("args")];
+		}
 		SpawnInfo() {}
 	};
 	struct SpawnState {
-		HashMap<ObjectID, SpawnInfo> spawned_nodes;
+		HashMap<const NodePath, SpawnInfo> spawned_nodes;
+
 		Dictionary to_dict() const {
 			Dictionary dict;
-			for (const KeyValue<ObjectID, SpawnInfo> &spawned_node : spawned_nodes) {
+			for (const KeyValue<const NodePath, SpawnInfo> &spawned_node : spawned_nodes) {
 				dict[spawned_node.key] = spawned_node.value.to_dict();
 			}
 			return dict;
 		};
-		SpawnState(HashMap<ObjectID, SpawnInfo> p_spawned_nodes) {spawned_nodes = p_spawned_nodes;}
+
+		SpawnState(HashMap<const NodePath, SpawnInfo> p_spawned_nodes) {spawned_nodes = p_spawned_nodes;}
+		SpawnState(HashMap<ObjectID, SpawnInfo> p_tracked_nodes) {
+			for (KeyValue<ObjectID, SpawnInfo> &E : p_tracked_nodes) {
+				Node *node = E.key.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(E.key)) : nullptr;
+				spawned_nodes.insert(node->get_path(), E.value);
+			}
+		}
+		SpawnState(Dictionary &p_dict) {
+			List<Variant> keys;
+			p_dict.get_key_list(&keys);
+			for (const NodePath key : keys) {
+				spawned_nodes.insert(key, SpawnInfo(p_dict[key]));
+			}
+		}
 	};
 
 private:

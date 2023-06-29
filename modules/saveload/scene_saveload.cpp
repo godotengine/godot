@@ -400,18 +400,25 @@ Error SceneSaveload::save(const String p_path, Object *p_object, const StringNam
 	if (err != OK) {
 		return err;
 	}
-	PackedByteArray bytes = encode(p_object, section);
-	file->store_buffer(bytes);
+	//PackedByteArray bytes = encode(p_object, section);
+	//file->store_buffer(bytes);
+	Dictionary dict = saveloader->get_saveload_state().to_dict();
+	file->store_var(dict, false);
 	file->close();
 	return err;
 }
 Error SceneSaveload::load(const String p_path, Object *p_object, const StringName section) {
 	Error err;
-	PackedByteArray bytes = FileAccess::get_file_as_bytes(p_path, &err);
+	//PackedByteArray bytes = FileAccess::get_file_as_bytes(p_path, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err != OK) {
 		return err;
 	}
-	return decode(bytes, p_object, section);
+	Dictionary dict = file->get_var(false);
+	print_line(dict);
+
+	SceneSaveloadInterface::SaveloadState saveload_state = SceneSaveloadInterface::SaveloadState(dict);
+	return saveloader->load_saveload_state(saveload_state);
 }
 
 int SceneSaveload::get_unique_id() {

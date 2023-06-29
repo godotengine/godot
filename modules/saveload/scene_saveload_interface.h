@@ -46,6 +46,8 @@ public:
 		HashMap<const NodePath, SaveloadSpawner::SpawnState> spawn_states;
 		HashMap<const NodePath, SaveloadSynchronizer::SyncState> sync_states;
 		Dictionary to_dict();
+		SaveloadState() {}
+		SaveloadState(const Dictionary &saveload_dict);
 	};
 
 private:
@@ -126,6 +128,25 @@ private:
 		return p_id.is_valid() ? Object::cast_to<T>(ObjectDB::get_instance(p_id)) : nullptr;
 	}
 
+	template <class K, class V>
+	static HashMap<K, V> DictionaryToHashMap(const Dictionary &p_dict) {
+		HashMap<K, V> hash_map;
+		List<Variant> keys;
+		p_dict.get_key_list(&keys);
+		for (Variant &key : keys) {
+			hash_map.insert(K(key), V(p_dict[key]));
+		}
+		return hash_map;
+	}
+
+	template <class K, class V>
+	static Dictionary HashMapToDictionary(const HashMap<K, V> &p_hash_map) {
+		Dictionary dict;
+		for (KeyValue<K, V> &E : p_hash_map) {
+			dict[E.key] = E.value;
+		}
+	}
+
 #ifdef DEBUG_ENABLED
 	_FORCE_INLINE_ void _profile_node_data(const String &p_what, ObjectID p_id, int p_size);
 #endif
@@ -140,6 +161,7 @@ public:
 	Dictionary get_sync_state();
 
 	SaveloadState get_saveload_state();
+	Error load_saveload_state(const SceneSaveloadInterface::SaveloadState p_saveload_state);
 
 	Error on_spawn(Object *p_obj, Variant p_config);
 	Error on_despawn(Object *p_obj, Variant p_config);
