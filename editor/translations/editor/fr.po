@@ -4092,6 +4092,12 @@ msgstr "Joystick 4 direction haut"
 msgid "Joystick 4 Down"
 msgstr "Joystick 4 direction bas"
 
+msgid "or"
+msgstr "ou"
+
+msgid "Unicode"
+msgstr "Unicode"
+
 msgid "Joypad Axis %d %s (%s)"
 msgstr "Joypad axe %d %s (%s)"
 

@@ -93,7 +93,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-06-13 15:35+0000\n"
+"PO-Revision-Date: 2023-06-27 20:10+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hans/>\n"
@@ -102,7 +102,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Application"
 msgstr "应用"
@@ -1730,6 +1730,9 @@ msgstr "自定义模板"
 msgid "Release"
 msgstr "发布"
 
+msgid "Export Console Wrapper"
+msgstr "导出控制台封装"
+
 msgid "Binary Format"
 msgstr "二进制格式"
 
@@ -2513,6 +2516,9 @@ msgstr "驱动"
 msgid "GL Compatibility"
 msgstr "GL 兼容性"
 
+msgid "Nvidia Disable Threaded Optimization"
+msgstr "Nvidia 禁用多线程优化"
+
 msgid "Renderer"
 msgstr "渲染器"
 
@@ -2695,6 +2701,9 @@ msgstr "程序集名称"
 
 msgid "Solution Directory"
 msgstr "解决方案目录"
+
+msgid "Assembly Reload Attempts"
+msgstr "尝试重新加载程序集"
 
 msgid "Operation"
 msgstr "操作"
@@ -9460,6 +9469,9 @@ msgstr "默认边界连接边距"
 
 msgid "Default Link Connection Radius"
 msgstr "默认链接连接半径"
+
+msgid "Default Cell Height"
+msgstr "默认单元格高度"
 
 msgid "Avoidance Use Multiple Threads"
 msgstr "避障使用多线程"

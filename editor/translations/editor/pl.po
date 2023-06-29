@@ -85,7 +85,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-20 03:05+0000\n"
+"PO-Revision-Date: 2023-06-29 11:26+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -2548,6 +2548,11 @@ msgstr "Zaimportuj zasoby typu: %s"
 
 msgid "No return value."
 msgstr "Brak zwracanego typu."
+
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr ""
+"Ta wartość jest liczbą całkowitą złożoną jako maska bitowa następujących "
+"flag."
 
 msgid "Deprecated"
 msgstr "Przestarzałe"
@@ -8199,6 +8204,9 @@ msgstr "Rozmiar: %s (%.1fMP)\n"
 msgid "Objects: %d\n"
 msgstr "Obiektów: %d\n"
 
+msgid "Primitives: %d\n"
+msgstr "Prymitywy: %d\n"
+
 msgid "Draw Calls: %d"
 msgstr "Wywołania rysowania: %d"
 
@@ -10536,6 +10544,13 @@ msgstr "Rozproszenie:"
 msgid "Tiles"
 msgstr "Kafelki"
 
+msgid ""
+"This TileMap's TileSet has no source configured. Go to the TileSet bottom "
+"tab to add one."
+msgstr ""
+"TileSet tej TileMapy nie ma skonfigurowanego źródła. Przejdź do dolnej "
+"zakładki TileSet, by jakieś dodać."
+
 msgid "Sort sources"
 msgstr "Sortuj źródła"
 
@@ -10611,6 +10626,13 @@ msgstr "Przełącz widoczność siatki."
 
 msgid "Automatically Replace Tiles with Proxies"
 msgstr "Automatycznie zastąp kafelki zamiennikami"
+
+msgid ""
+"The edited TileMap node has no TileSet resource.\n"
+"Create or load a TileSet resource in the Tile Set property in the inspector."
+msgstr ""
+"Edytowany węzeł TileMap nie ma zasobu TileSet.\n"
+"Utwórz lub wczytaj zasób TileSet we właściowości Tile Set w inspektorze."
 
 msgid "Remove Tile Proxies"
 msgstr "Usuń zamienniki kafelków"
@@ -10829,6 +10851,15 @@ msgstr "Otwórz narzędzie scalania atlasów"
 
 msgid "Manage Tile Proxies"
 msgstr "Zarządzaj zamiennikami kafelków"
+
+msgid ""
+"No TileSet source selected. Select or create a TileSet source.\n"
+"You can create a new source by using the Add button on the left or by "
+"dropping a tileset texture onto the source list."
+msgstr ""
+"Nie wybrano źródła TileSet. Wybierz lub utwórz źródło TileSet.\n"
+"Możesz utworzyć nowe źródło używając przycisku Dodaj po lewej albo "
+"upuszczając teksturę kafelków na listę źródeł."
 
 msgid "Add new patterns in the TileMap editing mode."
 msgstr "Dodaj nowe wzory w trybie edycji TileMap."
@@ -12942,6 +12973,9 @@ msgstr "Nazwa pliku nieprawidłowa."
 msgid "File already exists."
 msgstr "Plik już istnieje."
 
+msgid "Root node valid."
+msgstr "Korzeń prawidłowy."
+
 msgid "Invalid root node name."
 msgstr "Nieprawidłowa nazwa korzenia."
 
@@ -14135,6 +14169,20 @@ msgid "Could not execute on device."
 msgstr "Nie udało się uruchomić na urządzeniu."
 
 msgid ""
+"Exporting to Android is currently not supported in Godot 4 when using C#/."
+"NET. Use Godot 3 to target Android with C#/Mono instead."
+msgstr ""
+"Eksportowanie na Androida nie jest aktualnie wspierane w Godocie 4 z użyciem "
+"C#/.NET. Zamiast tego użyj Godota 3, by celować w Androida z C#/Mono."
+
+msgid ""
+"If this project does not use C#, use a non-C# editor build to export the "
+"project."
+msgstr ""
+"Jeśli ten projekt nie używa C#, użyj edytora bez C#, by wyeksportować "
+"projekt."
+
+msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
 msgstr ""
@@ -14384,6 +14432,13 @@ msgstr ""
 ".ipa można zbudować tylko w systemie macOS. Opuszczanie projektu Xcode bez "
 "budowania pakietu."
 
+msgid ""
+"Exporting to iOS is currently not supported in Godot 4 when using C#/.NET. "
+"Use Godot 3 to target iOS with C#/Mono instead."
+msgstr ""
+"Eksportowanie na iOS nie jest aktualnie wspierane w Godocie 4 z użyciem C#/."
+"NET. Zamiast tego użyj Godota 3, by celować w iOS z C#/Mono."
+
 msgid "Identifier is missing."
 msgstr "Brakuje identyfikatora."
 
@@ -14395,6 +14450,12 @@ msgstr "Eksport skryptu debugowania"
 
 msgid "Could not open file \"%s\"."
 msgstr "Nie można otworzyć pliku \"%s\"."
+
+msgid "Debug Console Export"
+msgstr "Eksport konsoli debugowania"
+
+msgid "Could not create console wrapper."
+msgstr "Nie udało się utworzyć pliku konsoli."
 
 msgid "Failed to open executable file \"%s\"."
 msgstr "Nie udało się otworzyć pliku wykonywalnego \"%s\"."
@@ -14873,6 +14934,14 @@ msgstr "Nie można odczytać pliku: \"%s\"."
 msgid "PWA"
 msgstr "PWA"
 
+msgid ""
+"Exporting to Web is currently not supported in Godot 4 when using C#/.NET. "
+"Use Godot 3 to target Web with C#/Mono instead."
+msgstr ""
+"Eksportowanie na przeglądarki nie jest aktualnie wspierane w Godocie 4 z "
+"użyciem C#/.NET. Zamiast tego użyj Godota 3, by celować w przeglądarki z C#/"
+"Mono."
+
 msgid "Could not read HTML shell: \"%s\"."
 msgstr "Nie można odczytać powłoki HTML: \"%s\"."
 
@@ -15090,6 +15159,13 @@ msgid ""
 msgstr ""
 "Ścieżki cząstek są dostępne tylko w przypadku korzystania z zaplecza "
 "renderowania Forward+ lub Mobile."
+
+msgid ""
+"Particle sub-emitters are not available when using the GL Compatibility "
+"rendering backend."
+msgstr ""
+"Podemitery cząstek nie są dostępne w przypadku korzystania z zaplecza "
+"renderowania Kompatybilności GL."
 
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Node A i Node B muszą być węzłami PhysicsBody2D"
@@ -15430,6 +15506,13 @@ msgid ""
 msgstr ""
 "Ślady włączone, ale jeden lub więcej materiałów siatek jest brakujące albo "
 "nie ustawione na renderowanie śladów."
+
+msgid ""
+"Particle sub-emitters are only available when using the Forward+ or Mobile "
+"rendering backends."
+msgstr ""
+"Podemitery cząstek są dostępne tylko w przypadku korzystania z zaplecza "
+"renderowania Forward+ lub Mobile."
 
 msgid ""
 "The Bake Mask has no bits enabled, which means baking will not produce any "
@@ -16069,6 +16152,16 @@ msgstr "Nieobsługiwany format tekstury BMFont."
 
 msgid "Invalid BMFont block type."
 msgstr "Nieprawidłowy typ bloku BMFont."
+
+msgid ""
+"An incoming node's name clashes with %s already in the scene (presumably, "
+"from a more nested instance).\n"
+"The less nested node will be renamed. Please fix and re-save the scene."
+msgstr ""
+"Przychodząca nazwa węzła konfliktuje z %s, która jest już na scenie "
+"(przypuszczalnie z bardziej zagnieżdżonej instancji).\n"
+"Mniej zagnieżdżony węzeł zostanie przemianowany. Proszę naprawić i zapisać "
+"scenę ponownie."
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

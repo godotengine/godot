@@ -96,7 +96,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-06-14 03:00+0000\n"
+"PO-Revision-Date: 2023-06-27 20:09+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -105,7 +105,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Unset"
 msgstr "未设置"
@@ -2510,6 +2510,9 @@ msgstr "导入 %s 类型的资源"
 
 msgid "No return value."
 msgstr "无返回值。"
+
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr "这个值是由下列标志构成的位掩码整数。"
 
 msgid "Deprecated"
 msgstr "已废弃"
@@ -7951,6 +7954,9 @@ msgstr "大小：%s（%.1fMP）\n"
 msgid "Objects: %d\n"
 msgstr "对象数：%d\n"
 
+msgid "Primitives: %d\n"
+msgstr "图元：%d\n"
+
 msgid "Draw Calls: %d"
 msgstr "绘制调用：%d"
 
@@ -10239,6 +10245,12 @@ msgstr "散布："
 msgid "Tiles"
 msgstr "图块"
 
+msgid ""
+"This TileMap's TileSet has no source configured. Go to the TileSet bottom "
+"tab to add one."
+msgstr ""
+"这个 TileMap 的 TileSet 中没有配置任何源。请在 TileSet 底部面板中进行添加。"
+
 msgid "Sort sources"
 msgstr "源排序"
 
@@ -10308,6 +10320,13 @@ msgstr "切换栅格可见性。"
 
 msgid "Automatically Replace Tiles with Proxies"
 msgstr "自动将图块替换为代理"
+
+msgid ""
+"The edited TileMap node has no TileSet resource.\n"
+"Create or load a TileSet resource in the Tile Set property in the inspector."
+msgstr ""
+"正在编辑的 TileMap 节点没有 TileSet 资源。\n"
+"请在检查器的 Tile Set 属性中创建或加载 TileSet 资源。"
 
 msgid "Remove Tile Proxies"
 msgstr "移除图块代理"
@@ -10523,6 +10542,15 @@ msgstr "打开图集合并工具"
 
 msgid "Manage Tile Proxies"
 msgstr "管理图块代理"
+
+msgid ""
+"No TileSet source selected. Select or create a TileSet source.\n"
+"You can create a new source by using the Add button on the left or by "
+"dropping a tileset texture onto the source list."
+msgstr ""
+"尚未选择 TileSet 源。请选择或创建 TileSet 源。\n"
+"源的新建方法有两种，可以使用左侧的“添加”按钮，也可以将图块集纹理拖放到源列表"
+"中。"
 
 msgid "Add new patterns in the TileMap editing mode."
 msgstr "请在 TileMap 编辑模式中添加新的图案。"
@@ -12524,6 +12552,9 @@ msgstr "文件名无效。"
 msgid "File already exists."
 msgstr "文件已经存在。"
 
+msgid "Root node valid."
+msgstr "根节点有效。"
+
 msgid "Invalid root node name."
 msgstr "根节点名称无效。"
 
@@ -13656,6 +13687,18 @@ msgid "Could not execute on device."
 msgstr "无法在设备上运行。"
 
 msgid ""
+"Exporting to Android is currently not supported in Godot 4 when using C#/."
+"NET. Use Godot 3 to target Android with C#/Mono instead."
+msgstr ""
+"Godot 4 中目前尚不支持使用 C#/.NET 导出到 Android。要在 Android 目标上使用 "
+"C#/Mono，请改用 Godot 3。"
+
+msgid ""
+"If this project does not use C#, use a non-C# editor build to export the "
+"project."
+msgstr "如果这个项目不使用 C#，请使用非 C# 版本的编辑器来导出项目。"
+
+msgid ""
 "Android build template not installed in the project. Install it from the "
 "Project menu."
 msgstr "未在项目中安装 Android 构建模板。从项目菜单安装它。"
@@ -13876,6 +13919,13 @@ msgid ""
 "package."
 msgstr ".ipa 只能在 macOS 上构建。正在离开 Xcode 项目，未构建包。"
 
+msgid ""
+"Exporting to iOS is currently not supported in Godot 4 when using C#/.NET. "
+"Use Godot 3 to target iOS with C#/Mono instead."
+msgstr ""
+"Godot 4 中目前尚不支持使用 C#/.NET 导出到 iOS。要在 iOS 目标上使用 C#/Mono，"
+"请改用 Godot 3。"
+
 msgid "Identifier is missing."
 msgstr "缺少标识符。"
 
@@ -13887,6 +13937,12 @@ msgstr "调试脚本导出"
 
 msgid "Could not open file \"%s\"."
 msgstr "无法打开文件“%s”。"
+
+msgid "Debug Console Export"
+msgstr "调试控制台导出"
+
+msgid "Could not create console wrapper."
+msgstr "无法创建控制台封装。"
 
 msgid "Failed to open executable file \"%s\"."
 msgstr "打开可执行文件“%s”失败。"
@@ -14322,6 +14378,13 @@ msgstr "无法读取文件：“%s”。"
 msgid "PWA"
 msgstr "PWA"
 
+msgid ""
+"Exporting to Web is currently not supported in Godot 4 when using C#/.NET. "
+"Use Godot 3 to target Web with C#/Mono instead."
+msgstr ""
+"Godot 4 中目前尚不支持使用 C#/.NET 导出到 Web。要在 Web 目标上使用 C#/Mono，"
+"请改用 Godot 3。"
+
 msgid "Could not read HTML shell: \"%s\"."
 msgstr "无法读取 HTML 壳：“%s”。"
 
@@ -14519,6 +14582,11 @@ msgid ""
 "Particle trails are only available when using the Forward+ or Mobile "
 "rendering backends."
 msgstr "粒子尾迹仅在使用 Forward+ 或 Mobile 渲染后端时可用。"
+
+msgid ""
+"Particle sub-emitters are not available when using the GL Compatibility "
+"rendering backend."
+msgstr "粒子的子发射器在使用 GL 兼容渲染后端时不可用。"
 
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Node A 与 Node B 必须为 PhysicsBody2D"
@@ -14803,6 +14871,11 @@ msgid ""
 "Trails enabled, but one or more mesh materials are either missing or not set "
 "for trails rendering."
 msgstr "尾迹已启用，但至少有一个网格材质处于缺失状态，或未设置尾迹渲染。"
+
+msgid ""
+"Particle sub-emitters are only available when using the Forward+ or Mobile "
+"rendering backends."
+msgstr "粒子的子发射器仅在使用 Forward+ 或 Mobile 渲染后端时可用。"
 
 msgid ""
 "The Bake Mask has no bits enabled, which means baking will not produce any "
@@ -15384,6 +15457,14 @@ msgstr "不支持的 BMFont 纹理格式。"
 
 msgid "Invalid BMFont block type."
 msgstr "无效的 BMFont 块类型。"
+
+msgid ""
+"An incoming node's name clashes with %s already in the scene (presumably, "
+"from a more nested instance).\n"
+"The less nested node will be renamed. Please fix and re-save the scene."
+msgstr ""
+"引入节点的名称与场景中已有的 %s 冲突（可能来自于嵌套的实例）。\n"
+"会对较外层的节点进行重命名。请修复并重新保存该场景。"
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

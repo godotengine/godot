@@ -91,13 +91,14 @@
 # Muhammed Said Gülberk <msgulberk@gmail.com>, 2022.
 # Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>, 2023.
 # Black <ebubekir23atalay@gmail.com>, 2023.
+# Mertcan YILDIRIM <mertcanyildirim463@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-23 12:55+0000\n"
-"Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
+"PO-Revision-Date: 2023-06-27 20:10+0000\n"
+"Last-Translator: Mertcan YILDIRIM <mertcanyildirim463@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
 "Language: tr\n"
@@ -224,6 +225,9 @@ msgstr "Varsayılan Veriyolu Düzeni"
 msgid "General"
 msgstr "Genel"
 
+msgid "Text to Speech"
+msgstr "Metin Okuma"
+
 msgid "2D Panning Strength"
 msgstr "2D Kaydırma Keskinliği"
 
@@ -272,11 +276,17 @@ msgstr "Hata Ayıklama"
 msgid "Settings"
 msgstr "Ayarlar"
 
+msgid "Profiler"
+msgstr "Profil Çıkarıcı"
+
 msgid "Compression"
 msgstr "Sıkıştırma"
 
 msgid "Formats"
 msgstr "Biçimler"
+
+msgid "Zstd"
+msgstr "Zstd"
 
 msgid "Long Distance Matching"
 msgstr "Uzun Mesafe Eşleşmesi"
@@ -286,6 +296,12 @@ msgstr "Sıkıştırma Seviyesi"
 
 msgid "Window Log Size"
 msgstr "Pencere Günlüğü Boyutu"
+
+msgid "Zlib"
+msgstr "Zlib"
+
+msgid "Gzip"
+msgstr "Gzip"
 
 msgid "Crash Handler"
 msgstr "Çökme İşleyicisi"
@@ -2191,6 +2207,9 @@ msgstr "Uçak"
 
 msgid "Custom"
 msgstr "Özel"
+
+msgid "Pan"
+msgstr "Kaydır"
 
 msgid "Sidechain"
 msgstr "Sidechain"

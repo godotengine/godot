@@ -51,12 +51,13 @@
 # Luis Ortiz <luisortiz66@hotmail.com>, 2023.
 # Biel Serrano Sanchez <bielsesa@gmail.com>, 2023.
 # Скотт Сторм <sors.inanis.immanis@gmail.com>, 2023.
+# Alvaro Tejada <santi_evil@yahoo.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2023-05-23 04:18+0000\n"
-"Last-Translator: Скотт Сторм <sors.inanis.immanis@gmail.com>\n"
+"PO-Revision-Date: 2023-06-29 11:26+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/es/>\n"
 "Language: es\n"
@@ -64,7 +65,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Description"
 msgstr "Descripción"
@@ -167,6 +168,11 @@ msgid ""
 msgstr ""
 "Este método describe un operador válido para usar con este tipo como "
 "operando izquierdo."
+
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr ""
+"Este valor es un entero compuesto como una máscara de bits de los siguientes "
+"indicadores."
 
 msgid ""
 "A list of GDScript-specific utility functions and annotations accessible "
