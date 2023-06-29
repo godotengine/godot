@@ -1042,16 +1042,16 @@ void NavMap::_update_rvo_obstacles_tree_2d() {
 			rvo_2d_obstacle->avoidance_layers_ = _obstacle_avoidance_layers;
 
 			if (i != 0) {
-				rvo_2d_obstacle->previous_ = raw_obstacles.back();
-				rvo_2d_obstacle->previous_->next_ = rvo_2d_obstacle;
+				rvo_2d_obstacle->prevObstacle_ = raw_obstacles.back();
+				rvo_2d_obstacle->prevObstacle_->nextObstacle_ = rvo_2d_obstacle;
 			}
 
 			if (i == rvo_2d_vertices.size() - 1) {
-				rvo_2d_obstacle->next_ = raw_obstacles[obstacleNo];
-				rvo_2d_obstacle->next_->previous_ = rvo_2d_obstacle;
+				rvo_2d_obstacle->nextObstacle_ = raw_obstacles[obstacleNo];
+				rvo_2d_obstacle->nextObstacle_->prevObstacle_ = rvo_2d_obstacle;
 			}
 
-			rvo_2d_obstacle->direction_ = normalize(rvo_2d_vertices[(i == rvo_2d_vertices.size() - 1 ? 0 : i + 1)] - rvo_2d_vertices[i]);
+			rvo_2d_obstacle->unitDir_ = normalize(rvo_2d_vertices[(i == rvo_2d_vertices.size() - 1 ? 0 : i + 1)] - rvo_2d_vertices[i]);
 
 			if (rvo_2d_vertices.size() == 2) {
 				rvo_2d_obstacle->isConvex_ = true;
@@ -1099,9 +1099,9 @@ void NavMap::_update_rvo_simulation() {
 }
 
 void NavMap::compute_single_avoidance_step_2d(uint32_t index, NavAgent **agent) {
-	(*(agent + index))->get_rvo_agent_2d()->computeNeighbors(rvo_simulation_2d.kdTree_);
-	(*(agent + index))->get_rvo_agent_2d()->computeNewVelocity(rvo_simulation_2d.timeStep_);
-	(*(agent + index))->get_rvo_agent_2d()->update(rvo_simulation_2d.timeStep_);
+	(*(agent + index))->get_rvo_agent_2d()->computeNeighbors(&rvo_simulation_2d);
+	(*(agent + index))->get_rvo_agent_2d()->computeNewVelocity(&rvo_simulation_2d);
+	(*(agent + index))->get_rvo_agent_2d()->update(&rvo_simulation_2d);
 	(*(agent + index))->update();
 }
 
@@ -1124,9 +1124,9 @@ void NavMap::step(real_t p_deltatime) {
 			WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 		} else {
 			for (NavAgent *agent : active_2d_avoidance_agents) {
-				agent->get_rvo_agent_2d()->computeNeighbors(rvo_simulation_2d.kdTree_);
-				agent->get_rvo_agent_2d()->computeNewVelocity(rvo_simulation_2d.timeStep_);
-				agent->get_rvo_agent_2d()->update(rvo_simulation_2d.timeStep_);
+				agent->get_rvo_agent_2d()->computeNeighbors(&rvo_simulation_2d);
+				agent->get_rvo_agent_2d()->computeNewVelocity(&rvo_simulation_2d);
+				agent->get_rvo_agent_2d()->update(&rvo_simulation_2d);
 				agent->update();
 			}
 		}

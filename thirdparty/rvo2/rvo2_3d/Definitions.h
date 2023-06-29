@@ -1,9 +1,8 @@
 /*
- * Line.h
- * RVO2 Library
+ * Definitions.h
+ * RVO2-3D Library
  *
- * SPDX-FileCopyrightText: 2008 University of North Carolina at Chapel Hill
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright 2008 University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,37 +30,24 @@
  * <https://gamma.cs.unc.edu/RVO2/>
  */
 
-#ifndef RVO2D_LINE_H_
-#define RVO2D_LINE_H_
-
 /**
- * @file  Line.h
- * @brief Declares the Line class.
+ * \file   Definitions.h
+ * \brief  Contains functions and constants used in multiple classes.
  */
 
-#include "Vector2.h"
+#ifndef RVO3D_DEFINITIONS_H_
+#define RVO3D_DEFINITIONS_H_
 
-namespace RVO2D {
-/**
- * @brief Defines a directed line.
- */
-class Line {
- public:
-  /**
-   * @brief Constructs a directed line instance.
-   */
-  Line();
+namespace RVO3D {
+	/**
+	 * \brief   Computes the square of a float.
+	 * \param   scalar  The float to be squared.
+	 * \return  The square of the float.
+	 */
+	inline float sqr(float scalar)
+	{
+		return scalar * scalar;
+	}
+}
 
-  /**
-   * @brief The direction of the directed line.
-   */
-  Vector2 direction;
-
-  /**
-   * @brief A point on the directed line.
-   */
-  Vector2 point;
-};
-} /* namespace RVO2D */
-
-#endif /* RVO2D_LINE_H_ */
+#endif /* RVO3D_DEFINITIONS_H_ */

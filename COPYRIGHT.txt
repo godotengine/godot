@@ -425,7 +425,7 @@ License: Zlib
 
 Files: ./thirdparty/rvo2/
 Comment: RVO2
-Copyright: 2008, University of North Carolina at Chapel Hill
+Copyright: 2016, University of North Carolina at Chapel Hill
 License: Apache-2.0
 
 Files: ./thirdparty/spirv-reflect/
