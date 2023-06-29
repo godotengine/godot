@@ -3647,7 +3647,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 					} else {
 						description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-						description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // Don't care what is there.
+						description.finalLayout = VK_IMAGE_LAYOUT_UNDEFINED; // Don't care what is there.
 						// TODO: What does this mean about the next usage (and thus appropriate dependency masks.
 					}
 				} break;
