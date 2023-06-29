@@ -4674,7 +4674,7 @@ String EditorNode::_get_system_info() const {
 	String driver_name = GLOBAL_GET("rendering/rendering_device/driver");
 	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
 
-	const String rendering_device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name();
+	const String rendering_device_name = RenderingServer::get_singleton()->get_video_adapter_name();
 
 	RenderingDevice::DeviceType device_type = RenderingServer::get_singleton()->get_video_adapter_type();
 	String device_type_string;
