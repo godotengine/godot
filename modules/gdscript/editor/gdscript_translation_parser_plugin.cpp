@@ -311,6 +311,14 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(GDScriptParser::C
 			}
 		}
 	}
+
+	if (p_call->callee && p_call->callee->type == GDScriptParser::Node::SUBSCRIPT) {
+		GDScriptParser::SubscriptNode *subscript_node = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
+		if (subscript_node->base && subscript_node->base->type == GDScriptParser::Node::CALL) {
+			GDScriptParser::CallNode *call_node = static_cast<GDScriptParser::CallNode *>(subscript_node->base);
+			_extract_from_call(call_node);
+		}
+	}
 }
 
 void GDScriptEditorTranslationParserPlugin::_extract_fd_literals(GDScriptParser::ExpressionNode *p_expression) {
