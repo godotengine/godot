@@ -5,9 +5,10 @@ body:
 - type: markdown
   attributes:
     value: |
-      - Read our [CONTRIBUTING.md guide](https://github.com/godotengine/godot/blob/master/CONTRIBUTING.md#reporting-bugs) on reporting bugs.
+      - When reporting bugs, you'll make our life simpler (and the fix will come sooner) if you follow the guidelines in this template.
       - Write a descriptive issue title above.
-      - Search [open](https://github.com/godotengine/godot/issues) and [closed](https://github.com/godotengine/godot/issues?q=is%3Aissue+is%3Aclosed) issues to ensure it has not already been reported.
+      - The golden rule is to **always open *one* issue for *one* bug**. If you notice several bugs and want to report them, make sure to create one new issue for each of them.
+      - Search [open](https://github.com/godotengine/godot/issues) and [closed](https://github.com/godotengine/godot/issues?q=is%3Aissue+is%3Aclosed) issues to ensure it has not already been reported. If you don't find a relevant match or if you're unsure, don't hesitate to **open a new issue**. The bugsquad will handle it from there if it's a duplicate.
       - Verify that you are using a [supported Godot version](https://docs.godotengine.org/en/stable/about/release_policy.html).
 
 - type: input
@@ -24,9 +25,11 @@ body:
   attributes:
     label: System information
     description: |
-      Specify the OS version, and when relevant hardware information.
-      For graphics-related issues, specify the GPU model, driver version, and the rendering backend (GLES2, GLES3, Vulkan).
-    placeholder: Windows 10, GLES3, Intel HD Graphics 620 (27.20.100.9616)
+      - Specify the OS version, and when relevant hardware information.
+      - For issues that are likely OS-specific and/or graphics-related, please specify the CPU model and architecture.
+      - For graphics-related issues, specify the GPU model, driver version, and the rendering backend (GLES2, GLES3, Vulkan).
+      - **Bug reports not including the required information may be closed at the maintainers' discretion.** If in doubt, always include all the requested information; it's better to include too much information than not enough information.
+    placeholder: Windows 10, Intel Core i5-7200U, GLES3, Intel HD Graphics 620 (27.20.100.9616)
   validations:
     required: true
 
@@ -52,8 +55,10 @@ body:
   attributes:
     label: Minimal reproduction project
     description: |
-      A small Godot project which reproduces the issue, with no unnecessary files included. Be sure to not include the `.godot` folder in the archive (but keep `project.godot`).
-      Required, unless the reproduction steps are trivial and don't require any project files to be followed. In this case, write "N/A" in the field.
-      Drag and drop a ZIP archive to upload it. **Do not select another field until the project is done uploading.**
+      - A small Godot project which reproduces the issue, with no unnecessary files included. Be sure to not include the `.godot` folder in the archive (but keep `project.godot`).
+      - Required, unless the reproduction steps are trivial and don't require any project files to be followed. In this case, write "N/A" in the field.
+      - Drag and drop a ZIP archive to upload it. **Do not select another field until the project is done uploading.**
+      - **Note for C# users:** If your issue is *not* Mono-specific, please upload a minimal reproduction project written in GDScript or VisualScript. This will make it easier for contributors to reproduce the issue locally as not everyone has a Mono setup available.
+      - **If you've been asked by a maintainer to upload a minimal reproduction project, you *must* do so within 7 days.** Otherwise, your bug report will be closed as it'll be considered too difficult to diagnose.
   validations:
     required: true
