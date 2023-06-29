@@ -73,6 +73,8 @@
 		</method>
 	</methods>
 	<members>
+		<member name="alpha_ramp" type="Texture2D" setter="set_alpha_ramp" getter="get_alpha_ramp">
+		</member>
 		<member name="angle_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's rotation will be animated along this [CurveTexture].
 		</member>
@@ -153,6 +155,10 @@
 		<member name="direction" type="Vector3" setter="set_direction" getter="get_direction" default="Vector3(1, 0, 0)">
 			Unit vector specifying the particles' emission direction.
 		</member>
+		<member name="direction_origin" type="Vector3" setter="set_direction_origin" getter="get_direction_origin" default="Vector3(0, 0, 0)">
+		</member>
+		<member name="direction_origin_influence" type="float" setter="set_direction_origin_influence" getter="get_direction_origin_influence" default="0.0">
+		</member>
 		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
 			The box's extents if [code]emission_shape[/code] is set to [constant EMISSION_SHAPE_BOX].
 		</member>
@@ -168,6 +174,8 @@
 		</member>
 		<member name="emission_point_texture" type="Texture2D" setter="set_emission_point_texture" getter="get_emission_point_texture">
 			Particles will be emitted at positions determined by sampling this texture at a random position. Used with [constant EMISSION_SHAPE_POINTS] and [constant EMISSION_SHAPE_DIRECTED_POINTS]. Can be created automatically from mesh or node by selecting "Create Emission Points from Mesh/Node" under the "Particles" tool in the toolbar.
+		</member>
+		<member name="emission_ramp" type="Texture2D" setter="set_emission_ramp" getter="get_emission_ramp">
 		</member>
 		<member name="emission_ring_axis" type="Vector3" setter="set_emission_ring_axis" getter="get_emission_ring_axis">
 			The axis of the ring when using the emitter [constant EMISSION_SHAPE_RING].
@@ -220,6 +228,8 @@
 		<member name="linear_accel_min" type="float" setter="set_param_min" getter="get_param_min" default="0.0">
 			Minimum equivalent of [member linear_accel_max].
 		</member>
+		<member name="linear_velocity_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
+		</member>
 		<member name="orbit_velocity_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's orbital velocity will vary along this [CurveTexture].
 		</member>
@@ -256,6 +266,8 @@
 		</member>
 		<member name="scale_min" type="float" setter="set_param_min" getter="get_param_min" default="1.0">
 			Minimum equivalent of [member scale_max].
+		</member>
+		<member name="split_color_curves" type="bool" setter="set_split_color_enabled" getter="is_split_color_enabled" default="false">
 		</member>
 		<member name="spread" type="float" setter="set_spread" getter="get_spread" default="45.0">
 			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees.

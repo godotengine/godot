@@ -117,6 +117,8 @@ private:
 			uint32_t collision_mode : 2;
 			uint32_t collision_scale : 1;
 			uint32_t turbulence_enabled : 1;
+			uint32_t split_color_curves : 1; //out of material keys?
+			uint32_t velocity_curve : 1;
 		};
 
 		uint64_t key = 0;
@@ -158,6 +160,7 @@ private:
 		}
 
 		mk.texture_color = color_ramp.is_valid() ? 1 : 0;
+		//mk.split_color_curves = split_color_curves;
 		mk.emission_shape = emission_shape;
 		mk.has_emission_color = emission_shape >= EMISSION_SHAPE_POINTS && emission_color_texture.is_valid();
 		mk.sub_emitter = sub_emitter_mode;
@@ -165,6 +168,7 @@ private:
 		mk.attractor_enabled = attractor_interaction_enabled;
 		mk.collision_scale = collision_scale;
 		mk.turbulence_enabled = turbulence_enabled;
+		mk.split_color_curves = split_color_curves;
 
 		return mk;
 	}
@@ -174,6 +178,8 @@ private:
 
 	struct ShaderNames {
 		StringName direction;
+		StringName direction_origin;
+		StringName direction_origin_influence;
 		StringName spread;
 		StringName flatness;
 		StringName initial_linear_velocity_min;
@@ -203,6 +209,7 @@ private:
 		StringName anim_offset_max;
 
 		StringName angle_texture;
+		StringName linear_velocity_texture;
 		StringName angular_velocity_texture;
 		StringName orbit_velocity_texture;
 		StringName linear_accel_texture;
@@ -216,6 +223,9 @@ private:
 
 		StringName color;
 		StringName color_ramp;
+		StringName alpha_ramp;
+		StringName split_color_curves;
+		StringName emission_ramp;
 		StringName color_initial_ramp;
 
 		StringName emission_sphere_radius;
@@ -262,6 +272,8 @@ private:
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
 	Vector3 direction;
+	Vector3 direction_origin;
+	float direction_origin_influence;
 	float spread = 0.0f;
 	float flatness = 0.0f;
 
@@ -271,7 +283,10 @@ private:
 
 	Ref<Texture2D> tex_parameters[PARAM_MAX];
 	Color color;
+	bool split_color_curves = false;
 	Ref<Texture2D> color_ramp;
+	Ref<Texture2D> alpha_ramp;
+	Ref<Texture2D> emission_ramp;
 	Ref<Texture2D> color_initial_ramp;
 
 	bool particle_flags[PARTICLE_FLAG_MAX];
@@ -322,6 +337,12 @@ public:
 	void set_direction(Vector3 p_direction);
 	Vector3 get_direction() const;
 
+	void set_direction_origin(Vector3 p_direction);
+	Vector3 get_direction_origin() const;
+
+	void set_direction_origin_influence(float p_direction_origin_influence);
+	float get_direction_origin_influence() const;
+
 	void set_spread(float p_spread);
 	float get_spread() const;
 
@@ -342,6 +363,13 @@ public:
 
 	void set_color_ramp(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_color_ramp() const;
+
+	void set_split_color_enabled(bool p_color_split_enabled);
+	bool is_split_color_enabled() const;
+	void set_alpha_ramp(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_alpha_ramp() const;
+	void set_emission_ramp(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_emission_ramp() const;
 
 	void set_color_initial_ramp(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_color_initial_ramp() const;

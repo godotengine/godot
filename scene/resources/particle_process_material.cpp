@@ -45,6 +45,8 @@ void ParticleProcessMaterial::init_shaders() {
 	shader_names->direction = "direction";
 	shader_names->spread = "spread";
 	shader_names->flatness = "flatness";
+	shader_names->direction_origin = "direction_origin";
+	shader_names->direction_origin_influence = "direction_origin_influence";
 	shader_names->initial_linear_velocity_min = "initial_linear_velocity_min";
 	shader_names->initial_angle_min = "initial_angle_min";
 	shader_names->angular_velocity_min = "angular_velocity_min";
@@ -72,6 +74,7 @@ void ParticleProcessMaterial::init_shaders() {
 	shader_names->anim_offset_max = "anim_offset_max";
 
 	shader_names->angle_texture = "angle_texture";
+	shader_names->linear_velocity_texture = "linear_velocity_texture";
 	shader_names->angular_velocity_texture = "angular_velocity_texture";
 	shader_names->orbit_velocity_texture = "orbit_velocity_texture";
 	shader_names->linear_accel_texture = "linear_accel_texture";
@@ -85,6 +88,9 @@ void ParticleProcessMaterial::init_shaders() {
 
 	shader_names->color = "color_value";
 	shader_names->color_ramp = "color_ramp";
+	shader_names->split_color_curves = "split_color_curves";
+	shader_names->alpha_ramp = "alpha_ramp";
+	shader_names->emission_ramp = "emission_ramp";
 	shader_names->color_initial_ramp = "color_initial_ramp";
 
 	shader_names->emission_sphere_radius = "emission_sphere_radius";
@@ -167,6 +173,8 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "uniform vec3 direction;\n";
 	code += "uniform float spread;\n";
 	code += "uniform float flatness;\n";
+	code += "uniform vec3 direction_origin = vec3(0.0);\n";
+	code += "uniform float direction_origin_influence = 0.0;\n";
 	code += "uniform float initial_linear_velocity_min;\n";
 	code += "uniform float initial_angle_min;\n";
 	code += "uniform float angular_velocity_min;\n";
@@ -252,6 +260,11 @@ void ParticleProcessMaterial::_update_shader() {
 
 	if (color_initial_ramp.is_valid()) {
 		code += "uniform sampler2D color_initial_ramp : repeat_disable;\n";
+	}
+
+	if (split_color_curves) {
+		code += "uniform sampler2D alpha_ramp: hint_default_white;";
+		code += "uniform sampler2D emission_ramp: hint_default_black;";
 	}
 
 	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
@@ -461,38 +474,6 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		float tex_linear_velocity = 1.0;\n";
 	}
 
-	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
-		code += "		{\n";
-		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
-		code += "			angle1_rad += direction.x != 0.0 ? atan(direction.y, direction.x) : sign(direction.y) * (pi / 2.0);\n";
-		code += "			vec3 rot = vec3(cos(angle1_rad), sin(angle1_rad), 0.0);\n";
-		code += "			VELOCITY = rot * mix(initial_linear_velocity_min,initial_linear_velocity_max, rand_from_seed(alt_seed));\n";
-		code += "		}\n";
-
-	} else {
-		//initiate velocity spread in 3D
-		code += "		{\n";
-		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
-		code += "			float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
-		code += "			vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
-		code += "			vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
-		code += "			direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
-		code += "			vec3 spread_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
-		code += "			vec3 direction_nrm = length(direction) > 0.0 ? normalize(direction) : vec3(0.0, 0.0, 1.0);\n";
-		code += "			// rotate spread to direction\n";
-		code += "			vec3 binormal = cross(vec3(0.0, 1.0, 0.0), direction_nrm);\n";
-		code += "			if (length(binormal) < 0.0001) {\n";
-		code += "				// direction is parallel to Y. Choose Z as the binormal.\n";
-		code += "				binormal = vec3(0.0, 0.0, 1.0);\n";
-		code += "			}\n";
-		code += "			binormal = normalize(binormal);\n";
-		code += "			vec3 normal = cross(binormal, direction_nrm);\n";
-		code += "			spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
-		code += "			VELOCITY = spread_direction * mix(initial_linear_velocity_min, initial_linear_velocity_max,rand_from_seed(alt_seed));\n";
-		code += "		}\n";
-	}
-	code += "	}\n";
-
 	code += "	float base_angle = (tex_angle) * mix(initial_angle_min, initial_angle_max, angle_rand);\n";
 	code += "	CUSTOM.x = base_angle * degree_to_rad;\n"; // angle
 	code += "	CUSTOM.y = 0.0;\n"; // phase
@@ -577,6 +558,7 @@ void ParticleProcessMaterial::_update_shader() {
 			break;
 		}
 	}
+
 	code += "	if (RESTART_VELOCITY) VELOCITY = (EMISSION_TRANSFORM * vec4(VELOCITY, 0.0)).xyz;\n";
 	// Apply noise/turbulence: initial displacement.
 	if (turbulence_enabled) {
@@ -584,6 +566,44 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	float turb_init_displacement = mix(turbulence_initial_displacement_min, turbulence_initial_displacement_max, rand_from_seed(alt_seed));";
 		code += "	TRANSFORM[3].xyz += noise_direction * turb_init_displacement;\n";
 	}
+
+	code += "   float initial_velocity_magnitude = mix(initial_linear_velocity_min, initial_linear_velocity_max,rand_from_seed(alt_seed));\n";
+
+	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
+		code += "		{\n";
+		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
+		code += "			angle1_rad += direction.x != 0.0 ? atan(direction.y, direction.x) : sign(direction.y) * (pi / 2.0);\n";
+		code += "			vec3 rot = vec3(cos(angle1_rad), sin(angle1_rad), 0.0);\n";
+		code += "			VELOCITY = rot;\n";
+		code += "		}\n";
+
+	} else {
+		//initiate velocity spread in 3D
+		code += "		{\n";
+		code += "			float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
+		code += "			float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
+		code += "			vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
+		code += "			vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
+		code += "			direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
+		code += "			vec3 spread_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
+		code += "			vec3 direction_nrm = length(direction) > 0.0 ? normalize(direction) : vec3(0.0, 0.0, 1.0);\n";
+		code += "			// rotate spread to direction\n";
+		code += "			vec3 binormal = cross(vec3(0.0, 1.0, 0.0), direction_nrm);\n";
+		code += "			if (length(binormal) < 0.0001) {\n";
+		code += "				// direction is parallel to Y. Choose Z as the binormal.\n";
+		code += "				binormal = vec3(0.0, 0.0, 1.0);\n";
+		code += "			}\n";
+		code += "			binormal = normalize(binormal);\n";
+		code += "			vec3 normal = cross(binormal, direction_nrm);\n";
+		code += "			spread_direction = binormal * spread_direction.x + normal * spread_direction.y + direction_nrm * spread_direction.z;\n";
+		code += "			VELOCITY = spread_direction;\n";
+		code += "		}\n";
+	}
+	code += "			";
+	code += "   vec3 velocity_from_point_dir = TRANSFORM[3].xyz - direction_origin;\n";
+	code += "   if (length(velocity_from_point_dir) < 0.01) {velocity_from_point_dir = VELOCITY;\n} else {velocity_from_point_dir = normalize(velocity_from_point_dir);}\n";
+	code += "   VELOCITY = normalize(mix(VELOCITY, velocity_from_point_dir, direction_origin_influence)) * initial_velocity_magnitude;\n";
+	code += "	}\n";
 	code += "	TRANSFORM = EMISSION_TRANSFORM * TRANSFORM;\n";
 	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 		code += "	VELOCITY.z = 0.0;\n";
@@ -599,6 +619,7 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	float scale_rand = rand_from_seed(alt_seed);\n";
 	code += "	float hue_rot_rand = rand_from_seed(alt_seed);\n";
 	code += "	float anim_offset_rand = rand_from_seed(alt_seed);\n";
+	code += "   float initial_velocity_magnitude = mix(initial_linear_velocity_min, initial_linear_velocity_max,rand_from_seed(alt_seed));\n";
 	if (color_initial_ramp.is_valid()) {
 		code += "	float color_initial_rand = rand_from_seed(alt_seed);\n";
 	}
@@ -703,10 +724,6 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	// apply attractor forces\n";
 	code += "	VELOCITY += force * DELTA;\n";
 
-	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
-		code += "	VELOCITY = normalize(VELOCITY) * tex_linear_velocity;\n";
-	}
-
 	// Apply noise/turbulence.
 	if (turbulence_enabled) {
 		code += "	// apply turbulence\n";
@@ -800,6 +817,10 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	vec4 start_color = textureLod(color_initial_ramp, vec2(color_initial_rand, 0.0), 0.0);\n";
 		code += "	COLOR *= start_color;\n";
 	}
+	if (split_color_curves) {
+		code += "COLOR.a *= textureLod(alpha_ramp, vec2(tv, 0.0), 0.0).r;\n";
+		code += "COLOR.rgb *= 1.0 + textureLod(emission_ramp, vec2(tv, 0.0), 0.0).r;\n";
+	}
 
 	if (emission_color_texture.is_valid() && (emission_shape == EMISSION_SHAPE_POINTS || emission_shape == EMISSION_SHAPE_DIRECTED_POINTS)) {
 		code += "	COLOR *= texelFetch(emission_texture_color, emission_tex_ofs, 0);\n";
@@ -853,6 +874,9 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	TRANSFORM[3].z = 0.0;\n";
 	}
 
+	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
+		code += "	VELOCITY = normalize(VELOCITY) * tex_linear_velocity * initial_velocity_magnitude;\n";
+	}
 	// scale by scale
 	code += "	float base_scale = mix(scale_min, scale_max, scale_rand);\n";
 	code += "	base_scale = sign(base_scale) * max(abs(base_scale), 0.001);\n";
@@ -970,6 +994,22 @@ void ParticleProcessMaterial::set_flatness(float p_flatness) {
 
 float ParticleProcessMaterial::get_flatness() const {
 	return flatness;
+}
+
+void ParticleProcessMaterial::set_direction_origin(Vector3 p_direction_origin) {
+	direction_origin = p_direction_origin;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->direction_origin, p_direction_origin);
+}
+Vector3 ParticleProcessMaterial::get_direction_origin() const {
+	return direction_origin;
+}
+
+void ParticleProcessMaterial::set_direction_origin_influence(float p_direction_origin_influence) {
+	direction_origin_influence = p_direction_origin_influence;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->direction_origin_influence, p_direction_origin_influence);
+}
+float ParticleProcessMaterial::get_direction_origin_influence() const {
+	return direction_origin_influence;
 }
 
 void ParticleProcessMaterial::set_param_min(Parameter p_param, float p_value) {
@@ -1120,7 +1160,8 @@ void ParticleProcessMaterial::set_param_texture(Parameter p_param, const Ref<Tex
 
 	switch (p_param) {
 		case PARAM_INITIAL_LINEAR_VELOCITY: {
-			//do none for this one
+			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->linear_velocity_texture, tex_rid);
+			_adjust_curve_range(p_texture, -1, 1);
 		} break;
 		case PARAM_ANGULAR_VELOCITY: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->angular_velocity_texture, tex_rid);
@@ -1207,6 +1248,40 @@ void ParticleProcessMaterial::set_color_ramp(const Ref<Texture2D> &p_texture) {
 
 Ref<Texture2D> ParticleProcessMaterial::get_color_ramp() const {
 	return color_ramp;
+}
+
+void ParticleProcessMaterial::set_split_color_enabled(bool p_color_split_enabled) {
+	split_color_curves = p_color_split_enabled;
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->split_color_curves, split_color_curves);
+	_queue_shader_change();
+	notify_property_list_changed();
+}
+
+bool ParticleProcessMaterial::is_split_color_enabled() const {
+	return split_color_curves;
+}
+
+void ParticleProcessMaterial::set_alpha_ramp(const Ref<Texture2D> &p_texture) {
+	alpha_ramp = p_texture;
+	RID tex_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->alpha_ramp, tex_rid);
+	_queue_shader_change();
+	notify_property_list_changed();
+}
+Ref<Texture2D> ParticleProcessMaterial::get_alpha_ramp() const {
+	return alpha_ramp;
+}
+
+void ParticleProcessMaterial::set_emission_ramp(const Ref<Texture2D> &p_texture) {
+	emission_ramp = p_texture;
+	RID tex_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ramp, tex_rid);
+	_queue_shader_change();
+	notify_property_list_changed();
+}
+
+Ref<Texture2D> ParticleProcessMaterial::get_emission_ramp() const {
+	return emission_ramp;
 }
 
 void ParticleProcessMaterial::set_color_initial_ramp(const Ref<Texture2D> &p_texture) {
@@ -1474,6 +1549,13 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 		}
 	}
 
+	if (p_property.name == "alpha_ramp" && !split_color_curves) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+	if (p_property.name == "emission_ramp" && !split_color_curves) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
 	if (p_property.name == "collision_friction" && collision_mode != COLLISION_RIGID) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
@@ -1591,6 +1673,12 @@ void ParticleProcessMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flatness", "amount"), &ParticleProcessMaterial::set_flatness);
 	ClassDB::bind_method(D_METHOD("get_flatness"), &ParticleProcessMaterial::get_flatness);
 
+	ClassDB::bind_method(D_METHOD("set_direction_origin", "origin"), &ParticleProcessMaterial::set_direction_origin);
+	ClassDB::bind_method(D_METHOD("get_direction_origin"), &ParticleProcessMaterial::get_direction_origin);
+
+	ClassDB::bind_method(D_METHOD("set_direction_origin_influence", "influence"), &ParticleProcessMaterial::set_direction_origin_influence);
+	ClassDB::bind_method(D_METHOD("get_direction_origin_influence"), &ParticleProcessMaterial::get_direction_origin_influence);
+
 	ClassDB::bind_method(D_METHOD("set_param_min", "param", "value"), &ParticleProcessMaterial::set_param_min);
 	ClassDB::bind_method(D_METHOD("get_param_min", "param"), &ParticleProcessMaterial::get_param_min);
 
@@ -1605,6 +1693,15 @@ void ParticleProcessMaterial::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_color_ramp", "ramp"), &ParticleProcessMaterial::set_color_ramp);
 	ClassDB::bind_method(D_METHOD("get_color_ramp"), &ParticleProcessMaterial::get_color_ramp);
+
+	ClassDB::bind_method(D_METHOD("set_alpha_ramp", "ramp"), &ParticleProcessMaterial::set_alpha_ramp);
+	ClassDB::bind_method(D_METHOD("get_alpha_ramp"), &ParticleProcessMaterial::get_alpha_ramp);
+
+	ClassDB::bind_method(D_METHOD("set_emission_ramp", "ramp"), &ParticleProcessMaterial::set_emission_ramp);
+	ClassDB::bind_method(D_METHOD("get_emission_ramp"), &ParticleProcessMaterial::get_emission_ramp);
+
+	ClassDB::bind_method(D_METHOD("set_split_color_enabled", "enabled"), &ParticleProcessMaterial::set_split_color_enabled);
+	ClassDB::bind_method(D_METHOD("is_split_color_enabled"), &ParticleProcessMaterial::is_split_color_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_color_initial_ramp", "ramp"), &ParticleProcessMaterial::set_color_initial_ramp);
 	ClassDB::bind_method(D_METHOD("get_color_initial_ramp"), &ParticleProcessMaterial::get_color_initial_ramp);
@@ -1719,11 +1816,14 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "direction"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spread", PROPERTY_HINT_RANGE, "0,180,0.01"), "set_spread", "get_spread");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "flatness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_flatness", "get_flatness");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "direction_origin"), "set_direction_origin", "get_direction_origin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "direction_origin_influence", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_direction_origin_influence", "get_direction_origin_influence");
 	ADD_GROUP("Gravity", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "gravity"), "set_gravity", "get_gravity");
-	ADD_GROUP("Initial Velocity", "initial_");
+	ADD_GROUP("Initial Velocity", "");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "initial_velocity_min", PROPERTY_HINT_RANGE, "0,1000,0.01,or_less,or_greater"), "set_param_min", "get_param_min", PARAM_INITIAL_LINEAR_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "initial_velocity_max", PROPERTY_HINT_RANGE, "0,1000,0.01,or_less,or_greater"), "set_param_max", "get_param_max", PARAM_INITIAL_LINEAR_VELOCITY);
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "linear_velocity_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture,CurveXYZTexture"), "set_param_texture", "get_param_texture", PARAM_INITIAL_LINEAR_VELOCITY);
 	ADD_GROUP("Angular Velocity", "angular_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_velocity_min", PROPERTY_HINT_RANGE, "-720,720,0.01,or_less,or_greater"), "set_param_min", "get_param_min", PARAM_ANGULAR_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "angular_velocity_max", PROPERTY_HINT_RANGE, "-720,720,0.01,or_less,or_greater"), "set_param_max", "get_param_max", PARAM_ANGULAR_VELOCITY);
@@ -1760,6 +1860,9 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "GradientTexture1D"), "set_color_ramp", "get_color_ramp");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_initial_ramp", PROPERTY_HINT_RESOURCE_TYPE, "GradientTexture1D"), "set_color_initial_ramp", "get_color_initial_ramp");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "split_color_curves"), "set_split_color_enabled", "is_split_color_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "alpha_ramp", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_alpha_ramp", "get_alpha_ramp");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "emission_ramp", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_emission_ramp", "get_emission_ramp");
 
 	ADD_GROUP("Hue Variation", "hue_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "hue_variation_min", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_param_min", "get_param_min", PARAM_HUE_VARIATION);
@@ -1881,6 +1984,7 @@ ParticleProcessMaterial::ParticleProcessMaterial() :
 	set_emission_ring_height(1);
 	set_emission_ring_radius(1);
 	set_emission_ring_inner_radius(0);
+	set_split_color_enabled(false);
 
 	set_turbulence_enabled(false);
 	set_turbulence_noise_speed(Vector3(0.0, 0.0, 0.0));
