@@ -4664,9 +4664,14 @@ String EditorNode::_get_system_info() const {
 	}
 	const String distribution_version = OS::get_singleton()->get_version();
 
-	const String godot_version = String(VERSION_FULL_BUILD);
+	String godot_version = "Godot v" + String(VERSION_FULL_CONFIG);
+	if (String(VERSION_BUILD) != "official") {
+		String hash = String(VERSION_HASH);
+		hash = hash.is_empty() ? String("unknown") : vformat("(%s)", hash.left(9));
+		godot_version += " " + hash;
+	}
 
-	const String driver_name = GLOBAL_GET("rendering/rendering_device/driver");
+	String driver_name = GLOBAL_GET("rendering/rendering_device/driver");
 	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
 
 	const String rendering_device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name();
@@ -4684,7 +4689,7 @@ String EditorNode::_get_system_info() const {
 			device_type_string = "virtual";
 			break;
 		case RenderingDevice::DeviceType::DEVICE_TYPE_CPU:
-			device_type_string = "software emulation on CPU";
+			device_type_string = "(software emulation on CPU)";
 			break;
 		case RenderingDevice::DeviceType::DEVICE_TYPE_OTHER:
 		case RenderingDevice::DeviceType::DEVICE_TYPE_MAX:
@@ -4697,6 +4702,11 @@ String EditorNode::_get_system_info() const {
 	const int processor_count = OS::get_singleton()->get_processor_count();
 
 	// Prettify
+	if (driver_name == "vulkan") {
+		driver_name = "Vulkan";
+	} else if (driver_name == "opengl3") {
+		driver_name = "GLES3";
+	}
 	if (rendering_method == "forward_plus") {
 		rendering_method = "Forward+";
 	} else if (rendering_method == "mobile") {
@@ -4707,32 +4717,33 @@ String EditorNode::_get_system_info() const {
 
 	// Join info.
 	Vector<String> info;
-	const String prefix = "*";
+	info.push_back(godot_version);
 	if (!distribution_version.is_empty()) {
-		info.push_back(vformat("%s OS: %s %s", prefix, distribution_name, distribution_version));
+		info.push_back(distribution_name + " " + distribution_version);
 	} else {
-		info.push_back(vformat("%s OS: %s", prefix, distribution_name));
+		info.push_back(distribution_name);
 	}
-	info.push_back(vformat("%s Godot Version: %s", prefix, godot_version));
-	info.push_back(vformat("%s Rendering Driver: %s", prefix, driver_name));
-	info.push_back(vformat("%s Rendering Method: %s", prefix, rendering_method));
-	if (device_type_string.is_empty()) {
-		info.push_back(vformat("%s Graphics Card: %s", prefix, rendering_device_name));
-	} else {
-		info.push_back(vformat("%s Graphics Card: %s (%s)", prefix, rendering_device_name, device_type_string));
+	info.push_back(vformat("%s (%s)", driver_name, rendering_method));
+
+	String graphics;
+	if (!device_type_string.is_empty()) {
+		graphics = device_type_string + " ";
 	}
+	graphics += rendering_device_name;
 	if (video_adapter_driver_info.size() == 2) { // This vector is always either of length 0 or 2.
 		String vad_name = video_adapter_driver_info[0];
 		String vad_version = video_adapter_driver_info[1]; // Version could be potentially empty on Linux/BSD.
 		if (!vad_version.is_empty()) {
-			info.push_back(vformat("%s Graphics Card Driver: %s, version %s", prefix, vad_name, vad_version));
+			graphics += vformat(" (%s; %s)", vad_name, vad_version);
 		} else {
-			info.push_back(vformat("%s Graphics Card Driver: %s", prefix, vad_name));
+			graphics += vformat(" (%s)", vad_name);
 		}
 	}
-	info.push_back(vformat("%s CPU: %s (%d Threads)", prefix, processor_name, processor_count));
+	info.push_back(graphics);
 
-	return String("\n").join(info);
+	info.push_back(vformat("%s (%d Threads)", processor_name, processor_count));
+
+	return String(" - ").join(info);
 }
 
 Ref<Texture2D> EditorNode::_file_dialog_get_icon(const String &p_path) {
@@ -7584,6 +7595,7 @@ EditorNode::EditorNode() {
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/q&a", TTR("Questions & Answers")), HELP_QA);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/report_a_bug", TTR("Report a Bug")), HELP_REPORT_A_BUG);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/copy_system_info", TTR("Copy System Info")), HELP_COPY_SYSTEM_INFO);
+	help_menu->set_item_tooltip(-1, TTR("Copies the system info as a single-line text into the clipboard."));
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/suggest_a_feature", TTR("Suggest a Feature")), HELP_SUGGEST_A_FEATURE);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/send_docs_feedback", TTR("Send Docs Feedback")), HELP_SEND_DOCS_FEEDBACK);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/community", TTR("Community")), HELP_COMMUNITY);
