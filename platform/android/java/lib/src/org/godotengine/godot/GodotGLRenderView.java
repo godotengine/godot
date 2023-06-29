@@ -166,8 +166,10 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 
 	@Override
 	public void requestPointerCapture() {
-		super.requestPointerCapture();
-		inputHandler.onPointerCaptureChange(true);
+		if (canCapturePointer()) {
+			super.requestPointerCapture();
+			inputHandler.onPointerCaptureChange(true);
+		}
 	}
 
 	@Override

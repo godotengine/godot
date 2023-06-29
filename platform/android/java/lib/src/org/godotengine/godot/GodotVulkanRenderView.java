@@ -134,8 +134,10 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 
 	@Override
 	public void requestPointerCapture() {
-		super.requestPointerCapture();
-		mInputHandler.onPointerCaptureChange(true);
+		if (canCapturePointer()) {
+			super.requestPointerCapture();
+			mInputHandler.onPointerCaptureChange(true);
+		}
 	}
 
 	@Override
