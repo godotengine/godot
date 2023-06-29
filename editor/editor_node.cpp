@@ -838,6 +838,7 @@ void EditorNode::_notification(int p_what) {
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_DOCS), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_QA), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_REPORT_A_BUG), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
+			help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), gui_base->get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_SUGGEST_A_FEATURE), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_SEND_DOCS_FEEDBACK), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_COMMUNITY), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
@@ -3170,6 +3171,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case HELP_REPORT_A_BUG: {
 			OS::get_singleton()->shell_open("https://github.com/godotengine/godot/issues");
 		} break;
+		case HELP_COPY_SYSTEM_INFO: {
+			String info = _get_system_info();
+			DisplayServer::get_singleton()->clipboard_set(info);
+		} break;
 		case HELP_SUGGEST_A_FEATURE: {
 			OS::get_singleton()->shell_open("https://github.com/godotengine/godot-proposals#readme");
 		} break;
@@ -4647,6 +4652,87 @@ void EditorNode::progress_task_step_bg(const String &p_task, int p_step) {
 
 void EditorNode::progress_end_task_bg(const String &p_task) {
 	singleton->progress_hb->end_task(p_task);
+}
+
+String EditorNode::_get_system_info() const {
+	String distribution_name = OS::get_singleton()->get_distribution_name();
+	if (distribution_name.is_empty()) {
+		distribution_name = OS::get_singleton()->get_name();
+	}
+	if (distribution_name.is_empty()) {
+		distribution_name = "Other";
+	}
+	const String distribution_version = OS::get_singleton()->get_version();
+
+	const String godot_version = String(VERSION_FULL_BUILD);
+
+	const String driver_name = GLOBAL_GET("rendering/rendering_device/driver");
+	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
+
+	const String rendering_device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name();
+
+	RenderingDevice::DeviceType device_type = RenderingServer::get_singleton()->get_video_adapter_type();
+	String device_type_string;
+	switch (device_type) {
+		case RenderingDevice::DeviceType::DEVICE_TYPE_INTEGRATED_GPU:
+			device_type_string = "integrated";
+			break;
+		case RenderingDevice::DeviceType::DEVICE_TYPE_DISCRETE_GPU:
+			device_type_string = "dedicated";
+			break;
+		case RenderingDevice::DeviceType::DEVICE_TYPE_VIRTUAL_GPU:
+			device_type_string = "virtual";
+			break;
+		case RenderingDevice::DeviceType::DEVICE_TYPE_CPU:
+			device_type_string = "software emulation on CPU";
+			break;
+		case RenderingDevice::DeviceType::DEVICE_TYPE_OTHER:
+		case RenderingDevice::DeviceType::DEVICE_TYPE_MAX:
+			break; // Can't happen, but silences warning for DEVICE_TYPE_MAX
+	}
+
+	const Vector<String> video_adapter_driver_info = OS::get_singleton()->get_video_adapter_driver_info();
+
+	const String processor_name = OS::get_singleton()->get_processor_name();
+	const int processor_count = OS::get_singleton()->get_processor_count();
+
+	// Prettify
+	if (rendering_method == "forward_plus") {
+		rendering_method = "Forward+";
+	} else if (rendering_method == "mobile") {
+		rendering_method = "Mobile";
+	} else if (rendering_method == "gl_compatibility") {
+		rendering_method = "Compatibility";
+	}
+
+	// Join info.
+	Vector<String> info;
+	const String prefix = "*";
+	if (!distribution_version.is_empty()) {
+		info.push_back(vformat("%s OS: %s %s", prefix, distribution_name, distribution_version));
+	} else {
+		info.push_back(vformat("%s OS: %s", prefix, distribution_name));
+	}
+	info.push_back(vformat("%s Godot Version: %s", prefix, godot_version));
+	info.push_back(vformat("%s Rendering Driver: %s", prefix, driver_name));
+	info.push_back(vformat("%s Rendering Method: %s", prefix, rendering_method));
+	if (device_type_string.is_empty()) {
+		info.push_back(vformat("%s Graphics Card: %s", prefix, rendering_device_name));
+	} else {
+		info.push_back(vformat("%s Graphics Card: %s (%s)", prefix, rendering_device_name, device_type_string));
+	}
+	if (video_adapter_driver_info.size() == 2) { // This vector is always either of length 0 or 2.
+		String vad_name = video_adapter_driver_info[0];
+		String vad_version = video_adapter_driver_info[1]; // Version could be potentially empty on Linux/BSD.
+		if (!vad_version.is_empty()) {
+			info.push_back(vformat("%s Graphics Card Driver: %s, version %s", prefix, vad_name, vad_version));
+		} else {
+			info.push_back(vformat("%s Graphics Card Driver: %s", prefix, vad_name));
+		}
+	}
+	info.push_back(vformat("%s CPU: %s (%d Threads)", prefix, processor_name, processor_count));
+
+	return String("\n").join(info);
 }
 
 Ref<Texture2D> EditorNode::_file_dialog_get_icon(const String &p_path) {
@@ -7497,6 +7583,7 @@ EditorNode::EditorNode() {
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/online_docs", TTR("Online Documentation")), HELP_DOCS);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/q&a", TTR("Questions & Answers")), HELP_QA);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/report_a_bug", TTR("Report a Bug")), HELP_REPORT_A_BUG);
+	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/copy_system_info", TTR("Copy System Info")), HELP_COPY_SYSTEM_INFO);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/suggest_a_feature", TTR("Suggest a Feature")), HELP_SUGGEST_A_FEATURE);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/send_docs_feedback", TTR("Send Docs Feedback")), HELP_SEND_DOCS_FEEDBACK);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/community", TTR("Community")), HELP_COMMUNITY);

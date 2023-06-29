@@ -230,6 +230,7 @@ private:
 		HELP_DOCS,
 		HELP_QA,
 		HELP_REPORT_A_BUG,
+		HELP_COPY_SYSTEM_INFO,
 		HELP_SUGGEST_A_FEATURE,
 		HELP_SEND_DOCS_FEEDBACK,
 		HELP_COMMUNITY,
@@ -521,6 +522,8 @@ private:
 	static int build_callback_count;
 	static int plugin_init_callback_count;
 	static Vector<EditorNodeInitCallback> _init_callbacks;
+
+	String _get_system_info() const;
 
 	static void _dependency_error_report(void *ud, const String &p_path, const String &p_dep, const String &p_type) {
 		EditorNode *en = static_cast<EditorNode *>(ud);
