@@ -56,7 +56,7 @@ namespace Godot.NativeInterop
             in godot_string p_file, int p_line, in godot_string p_err, in godot_string p_descr,
             godot_bool p_warning, in DebuggingUtils.godot_stack_info_vector p_stack_info_vector);
 
-        internal static partial bool godotsharp_internal_script_debugger_is_active();
+        internal static partial godot_bool godotsharp_internal_script_debugger_is_active();
 
         internal static partial IntPtr godotsharp_internal_object_get_associated_gchandle(IntPtr ptr);
 

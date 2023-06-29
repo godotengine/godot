@@ -103,7 +103,7 @@ namespace Godot.NativeInterop
         {
             try
             {
-                if (NativeFuncs.godotsharp_internal_script_debugger_is_active())
+                if (NativeFuncs.godotsharp_internal_script_debugger_is_active().ToBool())
                 {
                     SendToScriptDebugger(e);
                 }
@@ -122,7 +122,7 @@ namespace Godot.NativeInterop
         {
             try
             {
-                if (NativeFuncs.godotsharp_internal_script_debugger_is_active())
+                if (NativeFuncs.godotsharp_internal_script_debugger_is_active().ToBool())
                 {
                     SendToScriptDebugger(e);
                 }
