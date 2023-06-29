@@ -115,6 +115,7 @@ private:
 	// Constant
 	float _hover_radius;
 	float _tangents_length;
+	float _gizmo_handle_scale = 1.0;
 };
 
 class EditorInspectorPluginCurve : public EditorInspectorPlugin {
