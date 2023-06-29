@@ -434,6 +434,8 @@ void FileSystemDock::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			overwrite_dialog_scroll->add_theme_style_override("panel", get_theme_stylebox("panel", "Tree"));
+
 			if (is_visible_in_tree()) {
 				_update_display_mode(true);
 			}
@@ -1686,10 +1688,10 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool p_ove
 		Vector<String> conflicting_items = _check_existing();
 		if (!conflicting_items.is_empty()) {
 			// Ask to do something.
-			overwrite_dialog->set_text(vformat(
-					TTR("The following files or folders conflict with items in the target location '%s':\n\n%s\n\nDo you wish to overwrite them?"),
-					to_move_path,
-					String("\n").join(conflicting_items)));
+			overwrite_dialog_header->set_text(vformat(
+					TTR("The following files or folders conflict with items in the target location '%s':"), to_move_path));
+			overwrite_dialog_file_list->set_text(String("\n").join(conflicting_items));
+			overwrite_dialog_footer->set_text(TTR("Do you wish to overwrite them?"));
 			overwrite_dialog->popup_centered();
 			return;
 		}
@@ -3297,6 +3299,22 @@ FileSystemDock::FileSystemDock() {
 	overwrite_dialog->set_ok_button_text(TTR("Overwrite"));
 	add_child(overwrite_dialog);
 	overwrite_dialog->connect("confirmed", callable_mp(this, &FileSystemDock::_move_with_overwrite));
+
+	VBoxContainer *overwrite_dialog_vb = memnew(VBoxContainer);
+	overwrite_dialog->add_child(overwrite_dialog_vb);
+
+	overwrite_dialog_header = memnew(Label);
+	overwrite_dialog_vb->add_child(overwrite_dialog_header);
+
+	overwrite_dialog_scroll = memnew(ScrollContainer);
+	overwrite_dialog_vb->add_child(overwrite_dialog_scroll);
+	overwrite_dialog_scroll->set_custom_minimum_size(Vector2(400, 600) * EDSCALE);
+
+	overwrite_dialog_file_list = memnew(Label);
+	overwrite_dialog_scroll->add_child(overwrite_dialog_file_list);
+
+	overwrite_dialog_footer = memnew(Label);
+	overwrite_dialog_vb->add_child(overwrite_dialog_footer);
 
 	duplicate_dialog = memnew(ConfirmationDialog);
 	VBoxContainer *duplicate_dialog_vb = memnew(VBoxContainer);
