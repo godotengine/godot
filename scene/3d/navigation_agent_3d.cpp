@@ -801,6 +801,11 @@ void NavigationAgent3D::update_navigation() {
 				navigation_path_index -= 1;
 				navigation_finished = true;
 				target_position_submitted = false;
+				if (avoidance_enabled) {
+					NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
+					NavigationServer3D::get_singleton()->agent_set_velocity(agent, Vector3(0.0, 0.0, 0.0));
+					NavigationServer3D::get_singleton()->agent_set_velocity_forced(agent, Vector3(0.0, 0.0, 0.0));
+				}
 				emit_signal(SNAME("navigation_finished"));
 				break;
 			}
