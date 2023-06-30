@@ -1504,6 +1504,16 @@ void EditorFileSystem::_save_late_updated_files() {
 }
 
 Vector<String> EditorFileSystem::_get_dependencies(const String &p_path) {
+	// Avoid error spam on first opening of a not yet imported project by treating the following situation
+	// as a benign one, not letting the file open error happen: the resource is of an importable type but
+	// it has not been imported yet.
+	if (ResourceFormatImporter::get_singleton()->recognize_path(p_path)) {
+		const String &internal_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(p_path);
+		if (!internal_path.is_empty() && !FileAccess::exists(internal_path)) { // If path is empty (error), keep the code flow to the error.
+			return Vector<String>();
+		}
+	}
+
 	List<String> deps;
 	ResourceLoader::get_dependencies(p_path, &deps);
 

@@ -561,13 +561,14 @@ void ColorPicker::_update_presets() {
 
 #ifdef TOOLS_ENABLED
 	if (editor_settings) {
-		// Only load preset buttons when the only child is the add-preset button.
-		if (preset_container->get_child_count() == 1) {
-			for (int i = 0; i < preset_cache.size(); i++) {
-				_add_preset_button(preset_size, preset_cache[i]);
-			}
-			_notification(NOTIFICATION_VISIBILITY_CHANGED);
+		// Rebuild swatch color buttons, keeping the add-preset button in the first position.
+		for (int i = 1; i < preset_container->get_child_count(); i++) {
+			preset_container->get_child(i)->queue_free();
 		}
+		for (int i = 0; i < preset_cache.size(); i++) {
+			_add_preset_button(preset_size, preset_cache[i]);
+		}
+		_notification(NOTIFICATION_VISIBILITY_CHANGED);
 	}
 #endif
 }

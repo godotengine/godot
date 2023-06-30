@@ -157,7 +157,6 @@ void AudioStreamPlayer2D::_update_panning() {
 	Vector2 global_pos = get_global_position();
 
 	HashSet<Viewport *> viewports = world_2d->get_viewports();
-	viewports.insert(get_viewport()); // TODO: This is a mediocre workaround for #50958. Remove when that bug is fixed!
 
 	volume_vector.resize(4);
 	volume_vector.write[0] = AudioFrame(0, 0);
@@ -188,11 +187,11 @@ void AudioStreamPlayer2D::_update_panning() {
 		float dist = global_pos.distance_to(listener_in_global); // Distance to listener, or screen if none.
 
 		if (dist > max_distance) {
-			continue; //can't hear this sound in this viewport
+			continue; // Can't hear this sound in this viewport.
 		}
 
 		float multiplier = Math::pow(1.0f - dist / max_distance, attenuation);
-		multiplier *= Math::db_to_linear(volume_db); //also apply player volume!
+		multiplier *= Math::db_to_linear(volume_db); // Also apply player volume!
 
 		float pan = relative_to_listener.x / screen_size.x;
 		// Don't let the panning effect extend (too far) beyond the screen.
@@ -206,7 +205,9 @@ void AudioStreamPlayer2D::_update_panning() {
 		float l = 1.0 - pan;
 		float r = pan;
 
-		volume_vector.write[0] = AudioFrame(l, r) * multiplier;
+		const AudioFrame &prev_sample = volume_vector[0];
+		AudioFrame new_sample = AudioFrame(l, r) * multiplier;
+		volume_vector.write[0] = AudioFrame(MAX(prev_sample[0], new_sample[0]), MAX(prev_sample[1], new_sample[1]));
 	}
 
 	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {

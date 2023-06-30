@@ -69,6 +69,7 @@ class CollisionShape2DEditor : public Control {
 	int shape_type = -1;
 	int edit_handle = -1;
 	bool pressed = false;
+	real_t grab_threshold = 8;
 	Variant original;
 	Transform2D original_transform;
 	Vector2 original_point;
@@ -90,6 +91,8 @@ public:
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void edit(Node *p_node);
+
+	CollisionShape2DEditor();
 };
 
 class CollisionShape2DEditorPlugin : public EditorPlugin {

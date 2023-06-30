@@ -761,7 +761,9 @@ void EditorNode::_notification(int p_what) {
 					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help/help") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("filesystem/file_dialog/thumbnail_size") ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("run/output/font_size");
+					EditorSettings::get_singleton()->check_changed_settings_in_group("run/output/font_size") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/increase_scrollbar_touch_area") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/touchscreen/scale_gizmo_handles");
 
 			if (theme_changed) {
 				theme = create_custom_theme(theme_base->get_theme());
@@ -836,6 +838,7 @@ void EditorNode::_notification(int p_what) {
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_DOCS), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_QA), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_REPORT_A_BUG), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
+			help_menu->set_item_icon(help_menu->get_item_index(HELP_COPY_SYSTEM_INFO), gui_base->get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_SUGGEST_A_FEATURE), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_SEND_DOCS_FEEDBACK), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 			help_menu->set_item_icon(help_menu->get_item_index(HELP_COMMUNITY), gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
@@ -3168,6 +3171,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case HELP_REPORT_A_BUG: {
 			OS::get_singleton()->shell_open("https://github.com/godotengine/godot/issues");
 		} break;
+		case HELP_COPY_SYSTEM_INFO: {
+			String info = _get_system_info();
+			DisplayServer::get_singleton()->clipboard_set(info);
+		} break;
 		case HELP_SUGGEST_A_FEATURE: {
 			OS::get_singleton()->shell_open("https://github.com/godotengine/godot-proposals#readme");
 		} break;
@@ -4645,6 +4652,98 @@ void EditorNode::progress_task_step_bg(const String &p_task, int p_step) {
 
 void EditorNode::progress_end_task_bg(const String &p_task) {
 	singleton->progress_hb->end_task(p_task);
+}
+
+String EditorNode::_get_system_info() const {
+	String distribution_name = OS::get_singleton()->get_distribution_name();
+	if (distribution_name.is_empty()) {
+		distribution_name = OS::get_singleton()->get_name();
+	}
+	if (distribution_name.is_empty()) {
+		distribution_name = "Other";
+	}
+	const String distribution_version = OS::get_singleton()->get_version();
+
+	String godot_version = "Godot v" + String(VERSION_FULL_CONFIG);
+	if (String(VERSION_BUILD) != "official") {
+		String hash = String(VERSION_HASH);
+		hash = hash.is_empty() ? String("unknown") : vformat("(%s)", hash.left(9));
+		godot_version += " " + hash;
+	}
+
+	String driver_name = GLOBAL_GET("rendering/rendering_device/driver");
+	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
+
+	const String rendering_device_name = RenderingServer::get_singleton()->get_video_adapter_name();
+
+	RenderingDevice::DeviceType device_type = RenderingServer::get_singleton()->get_video_adapter_type();
+	String device_type_string;
+	switch (device_type) {
+		case RenderingDevice::DeviceType::DEVICE_TYPE_INTEGRATED_GPU:
+			device_type_string = "integrated";
+			break;
+		case RenderingDevice::DeviceType::DEVICE_TYPE_DISCRETE_GPU:
+			device_type_string = "dedicated";
+			break;
+		case RenderingDevice::DeviceType::DEVICE_TYPE_VIRTUAL_GPU:
+			device_type_string = "virtual";
+			break;
+		case RenderingDevice::DeviceType::DEVICE_TYPE_CPU:
+			device_type_string = "(software emulation on CPU)";
+			break;
+		case RenderingDevice::DeviceType::DEVICE_TYPE_OTHER:
+		case RenderingDevice::DeviceType::DEVICE_TYPE_MAX:
+			break; // Can't happen, but silences warning for DEVICE_TYPE_MAX
+	}
+
+	const Vector<String> video_adapter_driver_info = OS::get_singleton()->get_video_adapter_driver_info();
+
+	const String processor_name = OS::get_singleton()->get_processor_name();
+	const int processor_count = OS::get_singleton()->get_processor_count();
+
+	// Prettify
+	if (driver_name == "vulkan") {
+		driver_name = "Vulkan";
+	} else if (driver_name == "opengl3") {
+		driver_name = "GLES3";
+	}
+	if (rendering_method == "forward_plus") {
+		rendering_method = "Forward+";
+	} else if (rendering_method == "mobile") {
+		rendering_method = "Mobile";
+	} else if (rendering_method == "gl_compatibility") {
+		rendering_method = "Compatibility";
+	}
+
+	// Join info.
+	Vector<String> info;
+	info.push_back(godot_version);
+	if (!distribution_version.is_empty()) {
+		info.push_back(distribution_name + " " + distribution_version);
+	} else {
+		info.push_back(distribution_name);
+	}
+	info.push_back(vformat("%s (%s)", driver_name, rendering_method));
+
+	String graphics;
+	if (!device_type_string.is_empty()) {
+		graphics = device_type_string + " ";
+	}
+	graphics += rendering_device_name;
+	if (video_adapter_driver_info.size() == 2) { // This vector is always either of length 0 or 2.
+		String vad_name = video_adapter_driver_info[0];
+		String vad_version = video_adapter_driver_info[1]; // Version could be potentially empty on Linux/BSD.
+		if (!vad_version.is_empty()) {
+			graphics += vformat(" (%s; %s)", vad_name, vad_version);
+		} else {
+			graphics += vformat(" (%s)", vad_name);
+		}
+	}
+	info.push_back(graphics);
+
+	info.push_back(vformat("%s (%d Threads)", processor_name, processor_count));
+
+	return String(" - ").join(info);
 }
 
 Ref<Texture2D> EditorNode::_file_dialog_get_icon(const String &p_path) {
@@ -7374,14 +7473,8 @@ EditorNode::EditorNode() {
 	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/project_settings", TTR("Project Settings..."), Key::NONE, TTR("Project Settings")), RUN_SETTINGS);
 	project_menu->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));
 
-	vcs_actions_menu = VersionControlEditorPlugin::get_singleton()->get_version_control_actions_panel();
-	vcs_actions_menu->set_name("Version Control");
-	vcs_actions_menu->connect("index_pressed", callable_mp(this, &EditorNode::_version_control_menu_option));
 	project_menu->add_separator();
-	project_menu->add_child(vcs_actions_menu);
-	project_menu->add_submenu_item(TTR("Version Control"), "Version Control");
-	vcs_actions_menu->add_item(TTR("Create Version Control Metadata"), RUN_VCS_METADATA);
-	vcs_actions_menu->add_item(TTR("Version Control Settings"), RUN_VCS_SETTINGS);
+	project_menu->add_item(TTR("Version Control"), VCS_MENU);
 
 	project_menu->add_separator();
 	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/export", TTR("Export..."), Key::NONE, TTR("Export")), FILE_EXPORT_PROJECT);
@@ -7501,6 +7594,8 @@ EditorNode::EditorNode() {
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/online_docs", TTR("Online Documentation")), HELP_DOCS);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/q&a", TTR("Questions & Answers")), HELP_QA);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/report_a_bug", TTR("Report a Bug")), HELP_REPORT_A_BUG);
+	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/copy_system_info", TTR("Copy System Info")), HELP_COPY_SYSTEM_INFO);
+	help_menu->set_item_tooltip(-1, TTR("Copies the system info as a single-line text into the clipboard."));
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/suggest_a_feature", TTR("Suggest a Feature")), HELP_SUGGEST_A_FEATURE);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/send_docs_feedback", TTR("Send Docs Feedback")), HELP_SEND_DOCS_FEEDBACK);
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/community", TTR("Community")), HELP_COMMUNITY);
@@ -7974,6 +8069,15 @@ EditorNode::EditorNode() {
 	raise_bottom_panel_item(AnimationPlayerEditor::get_singleton());
 
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
+
+	vcs_actions_menu = VersionControlEditorPlugin::get_singleton()->get_version_control_actions_panel();
+	vcs_actions_menu->set_name("Version Control");
+	vcs_actions_menu->connect("index_pressed", callable_mp(this, &EditorNode::_version_control_menu_option));
+	vcs_actions_menu->add_item(TTR("Create Version Control Metadata"), RUN_VCS_METADATA);
+	vcs_actions_menu->add_item(TTR("Version Control Settings"), RUN_VCS_SETTINGS);
+	project_menu->add_child(vcs_actions_menu);
+	project_menu->set_item_submenu(project_menu->get_item_index(VCS_MENU), "Version Control");
+
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++) {

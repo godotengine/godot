@@ -151,7 +151,13 @@ private:
 	LineEdit *duplicate_dialog_text = nullptr;
 	ConfirmationDialog *make_dir_dialog = nullptr;
 	LineEdit *make_dir_dialog_text = nullptr;
+
 	ConfirmationDialog *overwrite_dialog = nullptr;
+	ScrollContainer *overwrite_dialog_scroll = nullptr;
+	Label *overwrite_dialog_header = nullptr;
+	Label *overwrite_dialog_footer = nullptr;
+	Label *overwrite_dialog_file_list = nullptr;
+
 	SceneCreateDialog *make_scene_dialog = nullptr;
 	ScriptCreateDialog *make_script_dialog = nullptr;
 	ShaderCreateDialog *make_shader_dialog = nullptr;

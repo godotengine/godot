@@ -177,7 +177,7 @@ void ViewportTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_viewport_path_in_scene", "path"), &ViewportTexture::set_viewport_path_in_scene);
 	ClassDB::bind_method(D_METHOD("get_viewport_path_in_scene"), &ViewportTexture::get_viewport_path_in_scene);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "viewport_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "SubViewport", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT), "set_viewport_path_in_scene", "get_viewport_path_in_scene");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "viewport_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Viewport", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT), "set_viewport_path_in_scene", "get_viewport_path_in_scene");
 }
 
 ViewportTexture::ViewportTexture() {
@@ -544,6 +544,7 @@ void Viewport::_notification(int p_what) {
 			gui.mouse_in_viewport = false;
 			_drop_physics_mouseover();
 			_drop_mouse_over();
+			_gui_cancel_tooltip();
 			// When the mouse exits the viewport, we want to end mouse_over, but
 			// not mouse_focus, because, for example, we want to continue
 			// dragging a scrollbar even if the mouse has left the viewport.
@@ -1080,6 +1081,10 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 		RenderingServer::get_singleton()->viewport_remove_canvas(viewport, current_canvas);
 	}
 
+	if (world_2d.is_valid()) {
+		world_2d->remove_viewport(this);
+	}
+
 	if (p_world_2d.is_valid()) {
 		world_2d = p_world_2d;
 	} else {
@@ -1087,6 +1092,7 @@ void Viewport::set_world_2d(const Ref<World2D> &p_world_2d) {
 		world_2d = Ref<World2D>(memnew(World2D));
 	}
 
+	world_2d->register_viewport(this);
 	_update_audio_listener_2d();
 
 	if (is_inside_tree()) {
@@ -2828,6 +2834,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 
 void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 	ERR_FAIL_COND(!is_inside_tree());
+	ERR_FAIL_COND(p_event.is_null());
 
 	if (disable_input) {
 		return;
@@ -4155,6 +4162,7 @@ void Viewport::_validate_property(PropertyInfo &p_property) const {
 
 Viewport::Viewport() {
 	world_2d = Ref<World2D>(memnew(World2D));
+	world_2d->register_viewport(this);
 
 	viewport = RenderingServer::get_singleton()->viewport_create();
 	texture_rid = RenderingServer::get_singleton()->viewport_get_texture(viewport);

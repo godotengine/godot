@@ -312,11 +312,21 @@ ALBEDO = vec3(1.0);
 void Fog::free_fog_shader() {
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
-	volumetric_fog.process_shader.version_free(volumetric_fog.process_shader_version);
-	RD::get_singleton()->free(volumetric_fog.volume_ubo);
-	RD::get_singleton()->free(volumetric_fog.params_ubo);
-	material_storage->shader_free(volumetric_fog.default_shader);
-	material_storage->material_free(volumetric_fog.default_material);
+	if (volumetric_fog.process_shader_version.is_valid()) {
+		volumetric_fog.process_shader.version_free(volumetric_fog.process_shader_version);
+	}
+	if (volumetric_fog.volume_ubo.is_valid()) {
+		RD::get_singleton()->free(volumetric_fog.volume_ubo);
+	}
+	if (volumetric_fog.params_ubo.is_valid()) {
+		RD::get_singleton()->free(volumetric_fog.params_ubo);
+	}
+	if (volumetric_fog.default_shader.is_valid()) {
+		material_storage->shader_free(volumetric_fog.default_shader);
+	}
+	if (volumetric_fog.default_material.is_valid()) {
+		material_storage->material_free(volumetric_fog.default_material);
+	}
 }
 
 void Fog::FogShaderData::set_code(const String &p_code) {
