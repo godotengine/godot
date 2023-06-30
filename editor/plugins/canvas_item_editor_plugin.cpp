@@ -43,6 +43,7 @@
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/plugins/shader_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/2d/gpu_particles_2d.h"
@@ -3984,6 +3985,18 @@ void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
 	Array selection = editor_selection->get_selected_nodes();
 	if (selection.size() != 1 || Object::cast_to<Node>(selection[0]) != p_canvas_item) {
 		_reset_drag();
+	}
+
+	// If this CanvasItem's shader is already open in the shader editor, switch to it.
+	ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_singleton()->get_editor_data().get_editor("Shader"));
+	Ref<ShaderMaterial> shader_material = Object::cast_to<ShaderMaterial>(p_canvas_item->call("get_material"));
+	if (shader_material.is_valid()) {
+		Ref<Shader> shader = shader_material->get_shader();
+		if (shader.is_valid()) {
+			if (shader_editor->get_shader_editor(shader.ptr())) {
+				shader_editor->edit(shader.ptr());
+			}
+		}
 	}
 }
 

@@ -34,6 +34,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/plugins/shader_editor_plugin.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/physics_body_3d.h"
@@ -579,6 +580,29 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 
 void MeshInstance3DEditorPlugin::edit(Object *p_object) {
 	mesh_editor->edit(Object::cast_to<MeshInstance3D>(p_object));
+
+	// If either of this MeshInstance3D's shaders are open in the shader editor, switch to them.
+	if (p_object) {
+		ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_singleton()->get_editor_data().get_editor("Shader"));
+		Ref<ShaderMaterial> material_overlay = Object::cast_to<ShaderMaterial>(p_object->call("get_material_overlay"));
+		if (material_overlay.is_valid()) {
+			Ref<Shader> shader = material_overlay->get_shader();
+			if (shader.is_valid()) {
+				if (shader_editor->get_shader_editor(shader.ptr())) {
+					shader_editor->edit(shader.ptr());
+				}
+			}
+		}
+		Ref<ShaderMaterial> material_override = Object::cast_to<ShaderMaterial>(p_object->call("get_material_override"));
+		if (material_override.is_valid()) {
+			Ref<Shader> shader = material_override->get_shader();
+			if (shader.is_valid()) {
+				if (shader_editor->get_shader_editor(shader.ptr())) {
+					shader_editor->edit(shader.ptr());
+				}
+			}
+		}
+	}
 }
 
 bool MeshInstance3DEditorPlugin::handles(Object *p_object) const {
