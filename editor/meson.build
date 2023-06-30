@@ -3,13 +3,7 @@ if get_option('tools')
 
     # NOTE: do not use files() here
     _exporter_list = [
-        'android',
-        'ios',
-        'web',
-        'linuxbsd',
-        'macos',
-        'uwp',
-        'windows'
+        PLATFORM
     ]
 
     _exporter_target = custom_target(
@@ -21,7 +15,7 @@ if get_option('tools')
     SOURCES += [_exporter_target]
 
     # need to built the sources
-    SOURCES += files(run_command(GLOB, '../platform/*/export/*.cpp', check: true).stdout().split('\n'))
+    SOURCES += files(run_command(GLOB, '../platform' / PLATFORM / 'export/*.cpp', check: true).stdout().split('\n'))
     ################################################################################
     # Doc generation
     ################################################################################

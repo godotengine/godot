@@ -8,7 +8,7 @@
 windows_logo = custom_target(
     'windows_logo',
     output: ['logo_svg.gen.h'],
-    input: ['logo.svg'],
+    input: ['export/logo.svg'],
     command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'windows'],
     build_by_default: true
 )
@@ -17,7 +17,7 @@ windows_logo = custom_target(
 windows_run_icon = custom_target(
     'android_run_icon',
     output: ['run_icon_svg.gen.h'],
-    input: ['run_icon.svg'],
+    input: ['export/run_icon.svg'],
     command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'windows'],
     build_by_default: true
 )

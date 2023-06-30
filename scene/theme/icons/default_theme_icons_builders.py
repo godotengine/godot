@@ -13,9 +13,8 @@ from glob import glob
 
 
 # See also `editor/icons/editor_icons_builders.py`.
-def make_default_theme_icons_action(target, source, env):
+def make_default_theme_icons_action(target, source_dir, env):
     dst = target
-    svg_icons = source
 
     svg_icons = glob(source_dir + '/*.svg')
     icons_string = StringIO()
