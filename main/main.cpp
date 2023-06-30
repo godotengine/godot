@@ -450,6 +450,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --profiling                       Enable profiling in the script debugger.\n");
 	OS::get_singleton()->print("  --gpu-profile                     Show a GPU profile of the tasks that took the most time during frame rendering.\n");
 	OS::get_singleton()->print("  --gpu-validation                  Enable graphics API validation layers for debugging.\n");
+	OS::get_singleton()->print("  --gpu-validation-features         Enable GPU validation features such as debugPrintf and shader debug information.\n");
 #if DEBUG_ENABLED
 	OS::get_singleton()->print("  --gpu-abort                       Abort on graphics API usage errors (usually validation layer errors). May help see the problem if your system freezes.\n");
 #endif
@@ -996,6 +997,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (I->get() == "--gpu-validation") {
 			Engine::singleton->use_validation_layers = true;
+		} else if (I->get() == "--gpu-validation-features") {
+			Engine::singleton->gpu_validation_features = true;
 #ifdef DEBUG_ENABLED
 		} else if (I->get() == "--gpu-abort") {
 			Engine::singleton->abort_on_gpu_errors = true;

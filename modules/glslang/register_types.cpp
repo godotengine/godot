@@ -130,6 +130,10 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	const int DefaultVersion = 100;
 	std::string pre_processed_code;
 
+	if (Engine::get_singleton()->is_gpu_validation_features_enabled()) {
+		messages = (EShMessages)(messages | EShMsgDebugInfo);
+	}
+
 	//preprocess
 	if (!shader.preprocess(&DefaultTBuiltInResource, DefaultVersion, ENoProfile, false, false, messages, &pre_processed_code, includer)) {
 		if (r_error) {
@@ -174,6 +178,11 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	std::vector<uint32_t> SpirV;
 	spv::SpvBuildLogger logger;
 	glslang::SpvOptions spvOptions;
+	if (Engine::get_singleton()->is_gpu_validation_features_enabled()) {
+		spvOptions.generateDebugInfo = true;
+		spvOptions.emitNonSemanticShaderDebugInfo = true;
+		spvOptions.emitNonSemanticShaderDebugSource = true;
+	}
 	glslang::GlslangToSpv(*program.getIntermediate(stages[p_stage]), SpirV, &logger, &spvOptions);
 
 	ret.resize(SpirV.size() * sizeof(uint32_t));

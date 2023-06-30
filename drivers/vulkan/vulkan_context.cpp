@@ -428,10 +428,15 @@ Error VulkanContext::_initialize_instance_extensions() {
 #ifdef DEV_ENABLED
 	bool want_debug_utils = true;
 #else
-	bool want_debug_utils = OS::get_singleton()->is_stdout_verbose();
+	bool want_debug_utils = OS::get_singleton()->is_stdout_verbose() || Engine::get_singleton()->is_gpu_validation_features_enabled();
 #endif
 	if (want_debug_utils) {
 		register_requested_instance_extension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false);
+	}
+
+	if (Engine::get_singleton()->is_gpu_validation_features_enabled()) {
+		register_requested_instance_extension(VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME, false);
+		register_requested_instance_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, false);
 	}
 
 	// Load instance extensions that are available...
@@ -1007,6 +1012,17 @@ Error VulkanContext::_create_instance() {
 	 */
 	VkDebugUtilsMessengerCreateInfoEXT dbg_messenger_create_info = {};
 	VkDebugReportCallbackCreateInfoEXT dbg_report_callback_create_info = {};
+	VkValidationFeaturesEXT val_features = {};
+	bool use_val_features = false;
+	if (is_instance_extension_enabled(VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME)) {
+		VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT };
+		val_features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+		val_features.enabledValidationFeatureCount = 1;
+		val_features.pEnabledValidationFeatures = enables;
+		inst_info.pNext = &val_features;
+		use_val_features = true;
+	}
+
 	if (is_instance_extension_enabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
 		// VK_EXT_debug_utils style.
 		dbg_messenger_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -1014,12 +1030,19 @@ Error VulkanContext::_create_instance() {
 		dbg_messenger_create_info.flags = 0;
 		dbg_messenger_create_info.messageSeverity =
 				VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+		if (use_val_features) {
+			dbg_messenger_create_info.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+		}
 		dbg_messenger_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
 				VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
 				VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 		dbg_messenger_create_info.pfnUserCallback = _debug_messenger_callback;
 		dbg_messenger_create_info.pUserData = this;
-		inst_info.pNext = &dbg_messenger_create_info;
+		if (use_val_features) {
+			val_features.pNext = &dbg_messenger_create_info;
+		} else {
+			inst_info.pNext = &dbg_messenger_create_info;
+		}
 	} else if (is_instance_extension_enabled(VK_EXT_DEBUG_REPORT_EXTENSION_NAME)) {
 		dbg_report_callback_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 		dbg_report_callback_create_info.flags = VK_DEBUG_REPORT_INFORMATION_BIT_EXT |
@@ -1029,7 +1052,11 @@ Error VulkanContext::_create_instance() {
 				VK_DEBUG_REPORT_DEBUG_BIT_EXT;
 		dbg_report_callback_create_info.pfnCallback = _debug_report_callback;
 		dbg_report_callback_create_info.pUserData = this;
-		inst_info.pNext = &dbg_report_callback_create_info;
+		if (use_val_features) {
+			val_features.pNext = &dbg_report_callback_create_info;
+		} else {
+			inst_info.pNext = &dbg_report_callback_create_info;
+		}
 	}
 
 	VkResult err;
@@ -2624,7 +2651,10 @@ void VulkanContext::local_device_sync(RID p_local_device) {
 	LocalDevice *ld = local_device_owner.get_or_null(p_local_device);
 	ERR_FAIL_COND(!ld->waiting);
 
-	vkDeviceWaitIdle(ld->device);
+	VkResult err = vkDeviceWaitIdle(ld->device);
+	if (err) {
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "vkDeviceWaitIdle failed: " + itos(err));
+	}
 	ld->waiting = false;
 }
 

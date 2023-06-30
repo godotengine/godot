@@ -67,6 +67,7 @@ _complete_godot_options() {
 --profiling
 --gpu-profile
 --gpu-validation
+--gpu-validation-features
 --gpu-abort
 --remote-debug
 --debug-collisions

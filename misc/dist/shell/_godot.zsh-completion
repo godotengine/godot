@@ -64,6 +64,7 @@ _arguments \
   '--profiling[enable profiling in the script debugger]' \
   '--gpu-profile[show a GPU profile of the tasks that took the most time during frame rendering]' \
   '--gpu-validation[enable graphics API validation layers for debugging]' \
+  '--gpu-validation-features[enable GPU validation features such as debugPrintf and shader debug information]' \
   '--gpu-abort[abort on graphics API usage errors (usually validation layer errors)]' \
   '--remote-debug[enable remote debugging]:remote debugger address' \
   '--debug-collisions[show collision shapes when running the scene]' \

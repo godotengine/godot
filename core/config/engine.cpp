@@ -239,6 +239,10 @@ bool Engine::is_validation_layers_enabled() const {
 	return use_validation_layers;
 }
 
+bool Engine::is_gpu_validation_features_enabled() const {
+	return gpu_validation_features;
+}
+
 void Engine::set_print_error_messages(bool p_enabled) {
 	CoreGlobals::print_error_enabled = p_enabled;
 }
