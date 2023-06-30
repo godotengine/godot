@@ -1526,6 +1526,25 @@ typedef void (*GDExtensionInterfaceStringOperatorPlusEqWcstr)(GDExtensionStringP
  */
 typedef void (*GDExtensionInterfaceStringOperatorPlusEqC32str)(GDExtensionStringPtr p_self, const char32_t *p_b);
 
+/**
+ * @name string_resize
+ * @since 4.2
+ *
+ * Resizes the underlying string data to the given number of characters.
+ *
+ * Space needs to be allocated for the null terminating character ('\0') which
+ * also must be added manually, in order for all string functions to work correctly.
+ *
+ * Warning: This is an error-prone operation - only use it if there's no other
+ * efficient way to accomplish your goal.
+ *
+ * @param p_self A pointer to the String.
+ * @param p_resize The new length for the String.
+ *
+ * @return Error code signifying if the operation successful.
+ */
+typedef GDExtensionInt (*GDExtensionInterfaceStringResize)(GDExtensionStringPtr p_self, GDExtensionInt p_resize);
+
 /* INTERFACE: XMLParser Utilities */
 
 /**
