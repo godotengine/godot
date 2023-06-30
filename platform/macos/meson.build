@@ -8,7 +8,7 @@
 macos_logo = custom_target(
                      'macos_logo',
     output: ['logo_svg.gen.h'],
-    input: ['logo.svg'],
+    input: ['export/logo.svg'],
     command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'macos'],
     build_by_default: true
 )
@@ -16,7 +16,7 @@ macos_logo = custom_target(
 macos_run_icon = custom_target(
     'android_run_icon',
     output: ['run_icon_svg.gen.h'],
-    input: ['run_icon.svg'],
+    input: ['export/run_icon.svg'],
     command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'macos'],
     build_by_default: true
 )

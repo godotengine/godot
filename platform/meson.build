@@ -17,11 +17,4 @@ SOURCES += files(
     'web/api/api.cpp'
 )
 
-subdir('android')
-subdir('ios')
-subdir('linuxbsd')
-subdir('macos')
-#subdir('server')
-subdir('uwp')
-subdir('web')
-subdir('windows')
+subdir(PLATFORM)

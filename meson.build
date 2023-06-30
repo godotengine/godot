@@ -28,19 +28,17 @@ endif
 # Determine Platform
 ################################################################################
 
-# First, let us determine what platform we are from a cross or native file
-# if it has been specified. Otherwise, fallback to the host machine.
-PLATFORM = meson.get_external_property('platform', 'none')
-if PLATFORM == 'none'
+if host_machine.system() == 'linux'
     PLATFORM = 'linuxbsd'
-    if host_machine.system() == 'windows'
-        PLATFORM = 'windows'
-    elif host_machine.system() == 'darwin'
-        # Not strictly speaking true, but will work for now.
-        PLATFORM = meson.is_cross_build() ? 'ios' : 'macos'
-    elif host_machine.system() == 'android'
-        PLATFORM = 'android'
-    endif
+elif host_machine.system() == 'windows'
+    PLATFORM = 'windows'
+elif host_machine.system() == 'darwin'
+    # Not strictly speaking true, but will work for now.
+    PLATFORM = meson.is_cross_build() ? 'ios' : 'macos'
+elif host_machine.system() == 'android'
+    PLATFORM = 'android'
+else
+    error('Unknown platform.')
 endif
 
 ################################################################################
@@ -49,7 +47,6 @@ endif
 
 # TODO - temporary way to do proper debug without /ZI on msvc (there is a PR for removing ZI already in meson)
 IS_DEBUG_BUILD = get_option('debug')
-
 
 # This is one of the very few, if only, times we will add defines to the entire project
 # WINVER is required for quite a few thirdparty libs when building, especially when using mingw
