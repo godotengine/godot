@@ -121,16 +121,27 @@ Variant VariantUtilityFunctions::floor(Variant x, Callable::CallError &r_error) 
 		case Variant::VECTOR2: {
 			return VariantInternalAccessor<Vector2>::get(&x).floor();
 		} break;
+		case Variant::VECTOR2I: {
+			return VariantInternalAccessor<Vector2i>::get(&x);
+		} break;
 		case Variant::VECTOR3: {
 			return VariantInternalAccessor<Vector3>::get(&x).floor();
+		} break;
+		case Variant::VECTOR3I: {
+			return VariantInternalAccessor<Vector3i>::get(&x);
 		} break;
 		case Variant::VECTOR4: {
 			return VariantInternalAccessor<Vector4>::get(&x).floor();
 		} break;
+		case Variant::VECTOR4I: {
+			return VariantInternalAccessor<Vector4i>::get(&x);
+		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-			return Variant();
-		}
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::NIL;
+			return R"(Argument "x" must be "int", "float", "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", or "Vector4i".)";
+		} break;
 	}
 }
 
@@ -154,16 +165,27 @@ Variant VariantUtilityFunctions::ceil(Variant x, Callable::CallError &r_error) {
 		case Variant::VECTOR2: {
 			return VariantInternalAccessor<Vector2>::get(&x).ceil();
 		} break;
+		case Variant::VECTOR2I: {
+			return VariantInternalAccessor<Vector2i>::get(&x);
+		} break;
 		case Variant::VECTOR3: {
 			return VariantInternalAccessor<Vector3>::get(&x).ceil();
+		} break;
+		case Variant::VECTOR3I: {
+			return VariantInternalAccessor<Vector3i>::get(&x);
 		} break;
 		case Variant::VECTOR4: {
 			return VariantInternalAccessor<Vector4>::get(&x).ceil();
 		} break;
+		case Variant::VECTOR4I: {
+			return VariantInternalAccessor<Vector4i>::get(&x);
+		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-			return Variant();
-		}
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::NIL;
+			return R"(Argument "x" must be "int", "float", "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", or "Vector4i".)";
+		} break;
 	}
 }
 
@@ -187,16 +209,27 @@ Variant VariantUtilityFunctions::round(Variant x, Callable::CallError &r_error) 
 		case Variant::VECTOR2: {
 			return VariantInternalAccessor<Vector2>::get(&x).round();
 		} break;
+		case Variant::VECTOR2I: {
+			return VariantInternalAccessor<Vector2i>::get(&x);
+		} break;
 		case Variant::VECTOR3: {
 			return VariantInternalAccessor<Vector3>::get(&x).round();
+		} break;
+		case Variant::VECTOR3I: {
+			return VariantInternalAccessor<Vector3i>::get(&x);
 		} break;
 		case Variant::VECTOR4: {
 			return VariantInternalAccessor<Vector4>::get(&x).round();
 		} break;
+		case Variant::VECTOR4I: {
+			return VariantInternalAccessor<Vector4i>::get(&x);
+		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-			return Variant();
-		}
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::NIL;
+			return R"(Argument "x" must be "int", "float", "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", or "Vector4i".)";
+		} break;
 	}
 }
 
@@ -236,9 +269,11 @@ Variant VariantUtilityFunctions::abs(const Variant &x, Callable::CallError &r_er
 			return VariantInternalAccessor<Vector4i>::get(&x).abs();
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-			return Variant();
-		}
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::NIL;
+			return R"(Argument "x" must be "int", "float", "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", or "Vector4i".)";
+		} break;
 	}
 }
 
@@ -278,9 +313,11 @@ Variant VariantUtilityFunctions::sign(const Variant &x, Callable::CallError &r_e
 			return VariantInternalAccessor<Vector4i>::get(&x).sign();
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-			return Variant();
-		}
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::NIL;
+			return R"(Argument "x" must be "int", "float", "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", or "Vector4i".)";
+		} break;
 	}
 }
 
@@ -333,14 +370,40 @@ int VariantUtilityFunctions::step_decimals(float step) {
 }
 
 Variant VariantUtilityFunctions::snapped(const Variant &x, const Variant &step, Callable::CallError &r_error) {
-	r_error.error = Callable::CallError::CALL_OK;
-	if (x.get_type() != step.get_type() && !((x.get_type() == Variant::INT && step.get_type() == Variant::FLOAT) || (x.get_type() == Variant::FLOAT && step.get_type() == Variant::INT))) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-		r_error.argument = 1;
-		r_error.expected = x.get_type();
-		return Variant();
+	switch (x.get_type()) {
+		case Variant::INT:
+		case Variant::FLOAT:
+		case Variant::VECTOR2:
+		case Variant::VECTOR2I:
+		case Variant::VECTOR3:
+		case Variant::VECTOR3I:
+		case Variant::VECTOR4:
+		case Variant::VECTOR4I:
+			break;
+		default:
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::NIL;
+			return R"(Argument "x" must be "int", "float", "Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", or "Vector4i".)";
 	}
 
+	if (x.get_type() != step.get_type()) {
+		if (x.get_type() == Variant::INT || x.get_type() == Variant::FLOAT) {
+			if (step.get_type() != Variant::INT && step.get_type() != Variant::FLOAT) {
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 1;
+				r_error.expected = Variant::NIL;
+				return R"(Argument "step" must be "int" or "float".)";
+			}
+		} else {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			r_error.expected = x.get_type();
+			return Variant();
+		}
+	}
+
+	r_error.error = Callable::CallError::CALL_OK;
 	switch (step.get_type()) {
 		case Variant::INT: {
 			return snappedi(x, VariantInternalAccessor<int64_t>::get(&step));
@@ -367,9 +430,8 @@ Variant VariantUtilityFunctions::snapped(const Variant &x, const Variant &step, 
 			return VariantInternalAccessor<Vector4i>::get(&x).snapped(VariantInternalAccessor<Vector4i>::get(&step));
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-			return Variant();
-		}
+			return Variant(); // Already handled.
+		} break;
 	}
 }
 
@@ -382,7 +444,23 @@ int64_t VariantUtilityFunctions::snappedi(double x, int64_t step) {
 }
 
 Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, double weight, Callable::CallError &r_error) {
-	r_error.error = Callable::CallError::CALL_OK;
+	switch (from.get_type()) {
+		case Variant::INT:
+		case Variant::FLOAT:
+		case Variant::VECTOR2:
+		case Variant::VECTOR3:
+		case Variant::VECTOR4:
+		case Variant::QUATERNION:
+		case Variant::BASIS:
+		case Variant::COLOR:
+			break;
+		default:
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::NIL;
+			return R"(Argument "from" must be "int", "float", "Vector2", "Vector3", "Vector4", "Quaternion", "Basis, or "Color".)";
+	}
+
 	if (from.get_type() != to.get_type()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 1;
@@ -390,6 +468,7 @@ Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, do
 		return Variant();
 	}
 
+	r_error.error = Callable::CallError::CALL_OK;
 	switch (from.get_type()) {
 		case Variant::INT: {
 			return lerpf(VariantInternalAccessor<int64_t>::get(&from), to, weight);
@@ -416,9 +495,8 @@ Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, do
 			return VariantInternalAccessor<Color>::get(&from).lerp(VariantInternalAccessor<Color>::get(&to), weight);
 		} break;
 		default: {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-			return Variant();
-		}
+			return Variant(); // Already handled.
+		} break;
 	}
 }
 

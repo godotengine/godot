@@ -3134,12 +3134,16 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				GDScriptUtilityFunctions::get_function(function_name)(&value, (const Variant **)args.ptr(), args.size(), err);
 
 				switch (err.error) {
-					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
-						PropertyInfo wrong_arg = function_info.arguments[err.argument];
-						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be "%s" but is "%s".)*", function_name, err.argument + 1,
-										   type_from_property(wrong_arg, true).to_string(), p_call->arguments[err.argument]->get_datatype().to_string()),
-								p_call->arguments[err.argument]);
-					} break;
+					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
+						if (value.get_type() == Variant::STRING && !value.operator String().is_empty()) {
+							push_error(vformat(R"*(Invalid argument for "%s()" function: %s)*", function_name, value), p_call->arguments[err.argument]);
+						} else {
+							// Do not use `type_from_property()` for expected type, since utility functions use their own checks.
+							push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be "%s" but is "%s".)*", function_name, err.argument + 1,
+											   Variant::get_type_name((Variant::Type)err.expected), p_call->arguments[err.argument]->get_datatype().to_string()),
+									p_call->arguments[err.argument]);
+						}
+						break;
 					case Callable::CallError::CALL_ERROR_INVALID_METHOD:
 						push_error(vformat(R"(Invalid call for function "%s".)", function_name), p_call);
 						break;
@@ -3181,18 +3185,16 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				Variant::call_utility_function(function_name, &value, (const Variant **)args.ptr(), args.size(), err);
 
 				switch (err.error) {
-					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
-						String expected_type_name;
-						if (err.argument < function_info.arguments.size()) {
-							expected_type_name = type_from_property(function_info.arguments[err.argument], true).to_string();
+					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
+						if (value.get_type() == Variant::STRING && !value.operator String().is_empty()) {
+							push_error(vformat(R"*(Invalid argument for "%s()" function: %s)*", function_name, value), p_call->arguments[err.argument]);
 						} else {
-							expected_type_name = Variant::get_type_name((Variant::Type)err.expected);
+							// Do not use `type_from_property()` for expected type, since utility functions use their own checks.
+							push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be "%s" but is "%s".)*", function_name, err.argument + 1,
+											   Variant::get_type_name((Variant::Type)err.expected), p_call->arguments[err.argument]->get_datatype().to_string()),
+									p_call->arguments[err.argument]);
 						}
-
-						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be "%s" but is "%s".)*", function_name, err.argument + 1,
-										   expected_type_name, p_call->arguments[err.argument]->get_datatype().to_string()),
-								p_call->arguments[err.argument]);
-					} break;
+						break;
 					case Callable::CallError::CALL_ERROR_INVALID_METHOD:
 						push_error(vformat(R"(Invalid call for function "%s".)", function_name), p_call);
 						break;
