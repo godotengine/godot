@@ -49,6 +49,8 @@ public:
 
 	virtual Color get_color() const = 0;
 
+	virtual void _value_changed(){};
+
 	virtual void slider_draw(int p_which) = 0;
 	virtual bool apply_theme() const { return false; }
 	virtual ColorPicker::PickerShapeType get_shape_override() const { return ColorPicker::SHAPE_MAX; }
@@ -61,6 +63,8 @@ class ColorModeHSV : public ColorMode {
 public:
 	String labels[3] = { "H", "S", "V" };
 	float slider_max[4] = { 359, 100, 100, 255 };
+	float cached_hue = 0.0;
+	float cached_saturation = 0.0;
 
 	virtual String get_name() const override { return "HSV"; }
 
@@ -70,6 +74,8 @@ public:
 	virtual float get_slider_value(int idx) const override;
 
 	virtual Color get_color() const override;
+
+	virtual void _value_changed() override;
 
 	virtual void slider_draw(int p_which) override;
 
@@ -121,6 +127,8 @@ class ColorModeOKHSL : public ColorMode {
 public:
 	String labels[3] = { "H", "S", "L" };
 	float slider_max[4] = { 359, 100, 100, 255 };
+	float cached_hue = 0.0;
+	float cached_saturation = 0.0;
 
 	virtual String get_name() const override { return "OKHSL"; }
 
@@ -130,6 +138,8 @@ public:
 	virtual float get_slider_value(int idx) const override;
 
 	virtual Color get_color() const override;
+
+	virtual void _value_changed() override;
 
 	virtual void slider_draw(int p_which) override;
 	virtual ColorPicker::PickerShapeType get_shape_override() const override { return ColorPicker::SHAPE_OKHSL_CIRCLE; }
