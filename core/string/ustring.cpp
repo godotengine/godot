@@ -5238,6 +5238,10 @@ String TTR(const String &p_text, const String &p_context) {
 	return p_text;
 }
 
+String TTR(const char *p_text, const String &p_context) {
+	return TTR(String::utf8(p_text), p_context);
+}
+
 /**
  * "Tools TRanslate for N items". Performs string replacement for
  * internationalization within the editor. A translation context can optionally
@@ -5260,6 +5264,10 @@ String TTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 		return p_text;
 	}
 	return p_text_plural;
+}
+
+String TTRN(const char *p_text, const char *p_text_plural, int p_n, const String &p_context) {
+	return TTRN(String::utf8(p_text), String::utf8(p_text_plural), p_n, p_context);
 }
 
 /**
@@ -5327,6 +5335,10 @@ String RTR(const String &p_text, const String &p_context) {
 	return p_text;
 }
 
+String RTR(const char *p_text, const String &p_context) {
+	return RTR(String::utf8(p_text), p_context);
+}
+
 /**
  * "Run-time TRanslate for N items". Performs string replacement for
  * internationalization within a running project. The translation string must be
@@ -5356,4 +5368,8 @@ String RTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 		return p_text;
 	}
 	return p_text_plural;
+}
+
+String RTRN(const char *p_text, const char *p_text_plural, int p_n, const String &p_context) {
+	return RTRN(String::utf8(p_text), String::utf8(p_text_plural), p_n, p_context);
 }
