@@ -380,6 +380,7 @@ private:
 	std::atomic<bool> stop_thread;
 	std::atomic<bool> updating;
 	std::atomic<bool> validating;
+	std::atomic<bool> size_update_required;
 	std::atomic<double> loaded;
 
 	uint64_t loading_started = 0;
@@ -416,7 +417,10 @@ private:
 
 	void _invalidate_current_line(ItemFrame *p_frame);
 
+	void _update_min_size();
+
 	void _thread_function(void *p_userdata);
+	void _thread_update_size();
 	void _thread_end();
 	void _stop_thread();
 	bool _validate_line_caches();

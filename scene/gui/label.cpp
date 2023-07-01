@@ -44,11 +44,9 @@ void Label::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 
 	autowrap_mode = p_mode;
 	lines_dirty = true;
-	queue_redraw();
 
-	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
-		update_minimum_size();
-	}
+	update_minimum_size();
+	queue_redraw();
 }
 
 TextServer::AutowrapMode Label::get_autowrap_mode() const {
@@ -62,6 +60,7 @@ void Label::set_justification_flags(BitField<TextServer::JustificationFlag> p_fl
 
 	jst_flags = p_flags;
 	lines_dirty = true;
+
 	queue_redraw();
 }
 
@@ -77,6 +76,7 @@ void Label::set_uppercase(bool p_uppercase) {
 	uppercase = p_uppercase;
 	dirty = true;
 
+	update_minimum_size();
 	queue_redraw();
 }
 
@@ -281,10 +281,6 @@ void Label::_shape() {
 	}
 
 	_update_visible();
-
-	if (autowrap_mode == TextServer::AUTOWRAP_OFF || !clip || overrun_behavior == TextServer::OVERRUN_NO_TRIMMING) {
-		update_minimum_size();
-	}
 }
 
 void Label::_update_visible() {
@@ -387,6 +383,7 @@ void Label::_notification(int p_what) {
 			}
 			dirty = true;
 
+			update_minimum_size();
 			queue_redraw();
 			update_configuration_warnings();
 		} break;
@@ -403,6 +400,7 @@ void Label::_notification(int p_what) {
 			// When a shaped text is invalidated by an external source, we want to reshape it.
 			if (!TS->shaped_text_is_ready(text_rid)) {
 				dirty = true;
+				update_minimum_size();
 			}
 
 			for (const RID &line_rid : lines_rid) {
@@ -660,6 +658,8 @@ void Label::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			font_dirty = true;
+
+			update_minimum_size();
 			queue_redraw();
 		} break;
 
@@ -778,6 +778,8 @@ void Label::set_text(const String &p_string) {
 
 void Label::_invalidate() {
 	font_dirty = true;
+
+	update_minimum_size();
 	queue_redraw();
 }
 
@@ -803,6 +805,7 @@ void Label::set_text_direction(Control::TextDirection p_text_direction) {
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
 		font_dirty = true;
+		update_minimum_size();
 		queue_redraw();
 	}
 }
@@ -811,6 +814,7 @@ void Label::set_structured_text_bidi_override(TextServer::StructuredTextParser p
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
 		dirty = true;
+		update_minimum_size();
 		queue_redraw();
 	}
 }
@@ -826,6 +830,7 @@ void Label::set_structured_text_bidi_override_options(Array p_args) {
 
 	st_args = p_args;
 	dirty = true;
+	update_minimum_size();
 	queue_redraw();
 }
 
@@ -841,6 +846,7 @@ void Label::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
 		dirty = true;
+		update_minimum_size();
 		queue_redraw();
 	}
 }
@@ -855,8 +861,8 @@ void Label::set_clip_text(bool p_clip) {
 	}
 
 	clip = p_clip;
-	queue_redraw();
 	update_minimum_size();
+	queue_redraw();
 }
 
 bool Label::is_clipping_text() const {
@@ -867,6 +873,8 @@ void Label::set_tab_stops(const PackedFloat32Array &p_tab_stops) {
 	if (tab_stops != p_tab_stops) {
 		tab_stops = p_tab_stops;
 		dirty = true;
+
+		update_minimum_size();
 		queue_redraw();
 	}
 }
@@ -882,10 +890,9 @@ void Label::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 
 	overrun_behavior = p_behavior;
 	lines_dirty = true;
+
+	update_minimum_size();
 	queue_redraw();
-	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
-		update_minimum_size();
-	}
 }
 
 TextServer::OverrunBehavior Label::get_text_overrun_behavior() const {
@@ -906,6 +913,7 @@ void Label::set_visible_characters(int p_amount) {
 		}
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			dirty = true;
+			update_minimum_size();
 		}
 		queue_redraw();
 	}
@@ -930,6 +938,7 @@ void Label::set_visible_ratio(float p_ratio) {
 
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			dirty = true;
+			update_minimum_size();
 		}
 		queue_redraw();
 	}
@@ -947,6 +956,8 @@ void Label::set_visible_characters_behavior(TextServer::VisibleCharactersBehavio
 	if (visible_chars_behavior != p_behavior) {
 		visible_chars_behavior = p_behavior;
 		dirty = true;
+
+		update_minimum_size();
 		queue_redraw();
 	}
 }
@@ -960,6 +971,8 @@ void Label::set_lines_skipped(int p_lines) {
 
 	lines_skipped = p_lines;
 	_update_visible();
+
+	update_minimum_size();
 	queue_redraw();
 }
 
@@ -974,6 +987,8 @@ void Label::set_max_lines_visible(int p_lines) {
 
 	max_lines_visible = p_lines;
 	_update_visible();
+
+	update_minimum_size();
 	queue_redraw();
 }
 
