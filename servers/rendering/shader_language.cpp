@@ -659,7 +659,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 							char t = char(i);
 
 							suffix_lut[CASE_ALL][i] = t == '.' || t == 'x' || t == 'e' || t == 'f' || t == 'u' || t == '-' || t == '+';
-							suffix_lut[CASE_HEXA_PERIOD][i] = t == 'e' || t == 'f';
+							suffix_lut[CASE_HEXA_PERIOD][i] = t == 'e' || t == 'f' || t == 'u';
 							suffix_lut[CASE_EXPONENT][i] = t == 'f' || t == '-' || t == '+';
 							suffix_lut[CASE_SIGN_AFTER_EXPONENT][i] = t == 'f';
 							suffix_lut[CASE_NONE][i] = false;
@@ -738,6 +738,13 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					char32_t last_char = str[str.length() - 1];
 
 					if (hexa_found) { // Integer (hex).
+						if (uint_suffix_found) {
+							// Strip the suffix.
+							str = str.left(str.length() - 1);
+
+							// Compensate reading cursor position.
+							char_idx += 1;
+						}
 						if (str.size() > 11 || !str.is_valid_hex_number(true)) { // > 0xFFFFFFFF
 							return _make_token(TK_ERROR, "Invalid (hexadecimal) numeric constant");
 						}
