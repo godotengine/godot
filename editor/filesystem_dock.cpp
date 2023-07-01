@@ -2617,8 +2617,10 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		if (!to_dir.is_empty()) {
 			Vector<String> fnames = drag_data["files"];
 			to_move.clear();
+			String target_dir = to_dir == "res://" ? to_dir : to_dir.trim_suffix("/");
+
 			for (int i = 0; i < fnames.size(); i++) {
-				if (fnames[i].trim_suffix("/").get_base_dir() != to_dir.trim_suffix("/")) {
+				if (fnames[i].trim_suffix("/").get_base_dir() != target_dir) {
 					to_move.push_back(FileOrFolder(fnames[i], !fnames[i].ends_with("/")));
 				}
 			}
