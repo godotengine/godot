@@ -33,6 +33,7 @@
 #include "core/math/math_funcs.h"
 
 const char *Curve::SIGNAL_RANGE_CHANGED = "range_changed";
+const char *Curve::SIGNAL_DOMAIN_CHANGED = "domain_changed";
 
 Curve::Curve() {
 }
@@ -56,14 +57,11 @@ void Curve::set_point_count(int p_count) {
 }
 
 int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode) {
-	// Add a point and preserve order
+	// Add a point and preserve order.
 
-	// Curve bounds is in 0..1
-	if (p_position.x > MAX_X) {
-		p_position.x = MAX_X;
-	} else if (p_position.x < MIN_X) {
-		p_position.x = MIN_X;
-	}
+	// Points must remain within the given value and domain ranges.
+	p_position.x = CLAMP(p_position.x, _min_domain, _max_domain);
+	p_position.y = CLAMP(p_position.y, _min_value, _max_value);
 
 	int ret = -1;
 
@@ -88,11 +86,11 @@ int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_
 		int i = get_index(p_position.x);
 
 		if (i == 0 && p_position.x < _points[0].position.x) {
-			// Insert before anything else
+			// Insert before anything else.
 			_points.insert(0, Point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode));
 			ret = 0;
 		} else {
-			// Insert between i and i+1
+			// Insert between i and i+1.
 			++i;
 			_points.insert(i, Point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode));
 			ret = i;
@@ -121,7 +119,7 @@ int Curve::add_point_no_update(Vector2 p_position, real_t p_left_tangent, real_t
 }
 
 int Curve::get_index(real_t p_offset) const {
-	// Lower-bound float binary search
+	// Lower-bound float binary search.
 
 	int imin = 0;
 	int imax = _points.size() - 1;
@@ -134,16 +132,14 @@ int Curve::get_index(real_t p_offset) const {
 
 		if (a < p_offset && b < p_offset) {
 			imin = m;
-
 		} else if (a > p_offset) {
 			imax = m;
-
 		} else {
 			return m;
 		}
 	}
 
-	// Will happen if the offset is out of bounds
+	// Will happen if the offset is out of bounds.
 	if (p_offset > _points[imax].position.x) {
 		return imax;
 	}
@@ -305,28 +301,78 @@ void Curve::update_auto_tangents(int p_index) {
 	}
 }
 
+#define MIN_X_RANGE 0.01
 #define MIN_Y_RANGE 0.01
 
-void Curve::set_min_value(real_t p_min) {
-	if (_minmax_set_once & 0b11 && p_min > _max_value - MIN_Y_RANGE) {
-		_min_value = _max_value - MIN_Y_RANGE;
-	} else {
-		_minmax_set_once |= 0b10; // first bit is "min set"
-		_min_value = p_min;
+Array Curve::get_limits() const {
+	Array output;
+	output.resize(4);
+
+	output[0] = _min_value;
+	output[1] = _max_value;
+	output[2] = _min_domain;
+	output[3] = _max_domain;
+
+	return output;
+}
+
+void Curve::set_limits(const Array &p_input) {
+	if (p_input.size() != 4) {
+		WARN_PRINT_ED(vformat(R"(Could not find Curve limit values when deserializing "%s". Resetting limits to default values.)", this->get_path()));
+		_min_value = 0;
+		_max_value = 1;
+		_min_domain = 0;
+		_max_domain = 1;
+		return;
 	}
-	// Note: min and max are indicative values,
-	// it's still possible that existing points are out of range at this point.
+
+	// Do not use setters because we don't want to enforce their logical constraints during deserialization.
+	_min_value = p_input[0];
+	_max_value = p_input[1];
+	_min_domain = p_input[2];
+	_max_domain = p_input[3];
+}
+
+void Curve::set_min_value(real_t p_min) {
+	_min_value = MIN(p_min, _max_value - MIN_Y_RANGE);
+
+	for (const Point &p : _points) {
+		_min_value = MIN(_min_value, p.position.y);
+	}
+
 	emit_signal(SNAME(SIGNAL_RANGE_CHANGED));
 }
 
 void Curve::set_max_value(real_t p_max) {
-	if (_minmax_set_once & 0b11 && p_max < _min_value + MIN_Y_RANGE) {
-		_max_value = _min_value + MIN_Y_RANGE;
-	} else {
-		_minmax_set_once |= 0b01; // second bit is "max set"
-		_max_value = p_max;
+	_max_value = MAX(p_max, _min_value + MIN_Y_RANGE);
+
+	for (const Point &p : _points) {
+		_max_value = MAX(_max_value, p.position.y);
 	}
+
 	emit_signal(SNAME(SIGNAL_RANGE_CHANGED));
+}
+
+void Curve::set_min_domain(real_t p_min) {
+	_min_domain = MIN(p_min, _max_domain - MIN_X_RANGE);
+
+	if (_points.size() > 0 && _min_domain > _points[0].position.x) {
+		_min_domain = _points[0].position.x;
+	}
+
+	mark_dirty();
+	emit_signal(SNAME(SIGNAL_DOMAIN_CHANGED));
+}
+
+void Curve::set_max_domain(real_t p_max) {
+	_max_domain = MAX(p_max, _min_domain + MIN_X_RANGE);
+
+	if (_points.size() > 0 && _max_domain < _points[_points.size() - 1].position.x) {
+		_max_domain = _points[_points.size() - 1].position.x;
+	}
+
+	mark_dirty();
+	emit_signal(SNAME(SIGNAL_DOMAIN_CHANGED));
 }
 
 real_t Curve::sample(real_t p_offset) const {
@@ -370,7 +416,7 @@ real_t Curve::sample_local_nocheck(int p_index, real_t p_local_offset) const {
 	 * d1 == d2 == d3 == d / 3
 	 */
 
-	// Control points are chosen at equal distances
+	// Control points are chosen at equal distances.
 	real_t d = b.position.x - a.position.x;
 	if (Math::is_zero_approx(d)) {
 		return b.position.y;
@@ -458,7 +504,7 @@ void Curve::bake() {
 	_baked_cache.resize(_bake_resolution);
 
 	for (int i = 1; i < _bake_resolution - 1; ++i) {
-		real_t x = i / static_cast<real_t>(_bake_resolution - 1);
+		real_t x = get_domain_range() * i / static_cast<real_t>(_bake_resolution - 1) + _min_domain;
 		real_t y = sample(x);
 		_baked_cache.write[i] = y;
 	}
@@ -480,11 +526,11 @@ void Curve::set_bake_resolution(int p_resolution) {
 
 real_t Curve::sample_baked(real_t p_offset) const {
 	if (_baked_cache_dirty) {
-		// Last-second bake if not done already
+		// Last-second bake if not done already.
 		const_cast<Curve *>(this)->bake();
 	}
 
-	// Special cases if the cache is too small
+	// Special cases if the cache is too small.
 	if (_baked_cache.size() == 0) {
 		if (_points.size() == 0) {
 			return 0;
@@ -494,8 +540,8 @@ real_t Curve::sample_baked(real_t p_offset) const {
 		return _baked_cache[0];
 	}
 
-	// Get interpolation index
-	real_t fi = p_offset * (_baked_cache.size() - 1);
+	// Get interpolation index.
+	real_t fi = (p_offset - _min_domain) / get_domain_range() * (_baked_cache.size() - 1);
 	int i = Math::floor(fi);
 	if (i < 0) {
 		i = 0;
@@ -505,7 +551,7 @@ real_t Curve::sample_baked(real_t p_offset) const {
 		fi = 0;
 	}
 
-	// Sample
+	// Sample.
 	if (i + 1 < _baked_cache.size()) {
 		real_t t = fi - i;
 		return Math::lerp(_baked_cache[i], _baked_cache[i + 1], t);
@@ -628,6 +674,14 @@ void Curve::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_min_value", "min"), &Curve::set_min_value);
 	ClassDB::bind_method(D_METHOD("get_max_value"), &Curve::get_max_value);
 	ClassDB::bind_method(D_METHOD("set_max_value", "max"), &Curve::set_max_value);
+	ClassDB::bind_method(D_METHOD("get_value_range"), &Curve::get_value_range);
+	ClassDB::bind_method(D_METHOD("get_min_domain"), &Curve::get_min_domain);
+	ClassDB::bind_method(D_METHOD("set_min_domain", "min"), &Curve::set_min_domain);
+	ClassDB::bind_method(D_METHOD("get_max_domain"), &Curve::get_max_domain);
+	ClassDB::bind_method(D_METHOD("set_max_domain", "max"), &Curve::set_max_domain);
+	ClassDB::bind_method(D_METHOD("get_domain_range"), &Curve::get_domain_range);
+	ClassDB::bind_method(D_METHOD("_get_limits"), &Curve::get_limits);
+	ClassDB::bind_method(D_METHOD("_set_limits", "data"), &Curve::set_limits);
 	ClassDB::bind_method(D_METHOD("clean_dupes"), &Curve::clean_dupes);
 	ClassDB::bind_method(D_METHOD("bake"), &Curve::bake);
 	ClassDB::bind_method(D_METHOD("get_bake_resolution"), &Curve::get_bake_resolution);
@@ -635,13 +689,17 @@ void Curve::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve::get_data);
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &Curve::set_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01"), "set_min_value", "get_min_value");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01"), "set_max_value", "get_max_value");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_domain", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_min_domain", "get_min_domain");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_domain", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_max_domain", "get_max_domain");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_min_value", "get_min_value");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_greater,or_less", PROPERTY_USAGE_EDITOR), "set_max_value", "get_max_value");
+	ADD_PROPERTY(PropertyInfo(Variant::NIL, "_limits", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_limits", "_get_limits");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_resolution", PROPERTY_HINT_RANGE, "1,1000,1"), "set_bake_resolution", "get_bake_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_RANGE_CHANGED));
+	ADD_SIGNAL(MethodInfo(SIGNAL_DOMAIN_CHANGED));
 
 	BIND_ENUM_CONSTANT(TANGENT_FREE);
 	BIND_ENUM_CONSTANT(TANGENT_LINEAR);
@@ -852,7 +910,7 @@ void Curve2D::_bake() const {
 		return;
 	}
 
-	// Tessellate curve to (almost) even length segments
+	// Tessellate curve to (almost) even length segments.
 	{
 		Vector<RBMap<real_t, Vector2>> midpoints = _tessellate_even_length(10, bake_interval);
 
@@ -1592,7 +1650,7 @@ void Curve3D::_bake() const {
 		return;
 	}
 
-	// Step 1: Tessellate curve to (almost) even length segments
+	// Step 1: Tessellate curve to (almost) even length segments.
 	{
 		Vector<RBMap<real_t, Vector3>> midpoints = _tessellate_even_length(10, bake_interval);
 
@@ -1653,7 +1711,7 @@ void Curve3D::_bake() const {
 		return;
 	}
 
-	// Step 2: Calculate the up vectors and the whole local reference frame
+	// Step 2: Calculate the up vectors and the whole local reference frame.
 	//
 	// See Dougan, Carl. "The parallel transport frame." Game Programming Gems 2 (2001): 215-219.
 	// for an example discussing about why not the Frenet frame.
@@ -1689,7 +1747,7 @@ void Curve3D::_bake() const {
 			Basis rotate;
 			rotate.rotate_to_align(-frame_prev.get_column(2), forward);
 			frame = rotate * frame_prev;
-			frame.orthonormalize(); // guard against float error accumulation
+			frame.orthonormalize(); // Guard against float error accumulation.
 
 			up_write[idx] = frame.get_column(1);
 			frame_prev = frame;
@@ -1941,7 +1999,7 @@ real_t Curve3D::sample_baked_tilt(real_t p_offset) const {
 		return baked_tilt_cache.get(0);
 	}
 
-	p_offset = CLAMP(p_offset, 0.0, get_baked_length()); // PathFollower implement wrapping logic
+	p_offset = CLAMP(p_offset, 0.0, get_baked_length()); // PathFollower implement wrapping logic.
 
 	Curve3D::Interval interval = _find_interval(p_offset);
 	return _sample_baked_tilt(interval);
