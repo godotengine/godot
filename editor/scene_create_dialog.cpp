@@ -130,7 +130,7 @@ void SceneCreateDialog::update_dialog() {
 
 	root_name = root_name_edit->get_text().strip_edges();
 	if (root_name.is_empty()) {
-		root_name = scene_name.get_file().get_basename();
+		root_name = adjust_name_casing(scene_name.get_file().get_basename());
 	}
 
 	if (root_name.is_empty() || root_name.validate_node_name().size() != root_name.size()) {
