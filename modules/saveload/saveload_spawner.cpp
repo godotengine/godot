@@ -30,10 +30,61 @@
 
 #include "saveload_spawner.h"
 
-#include "core/io/marshalls.h"
 #include "scene/main/saveload_api.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
+
+/*******************************
+ * SpawnInfo Definitions Start *
+ *******************************/
+
+Dictionary SaveloadSpawner::SpawnInfo::to_dict() const {
+	Dictionary dict;
+	dict[StringName("args")] = args;
+	dict[StringName("id")] = id;
+	return dict;
+}
+SaveloadSpawner::SpawnInfo::SpawnInfo(const Dictionary &p_dict) {
+	id = p_dict[StringName("id")];
+	args = p_dict[StringName("args")];
+}
+
+/*****************************
+ * SpawnInfo Definitions End *
+ *****************************/
+
+/********************************
+ * SpawnState Definitions Start *
+ ********************************/
+
+Dictionary SaveloadSpawner::SpawnState::to_dict() const {
+	Dictionary dict;
+	for (const KeyValue<const NodePath, SpawnInfo> &spawned_node : spawned_nodes) {
+		dict[spawned_node.key] = spawned_node.value.to_dict();
+	}
+	return dict;
+}
+SaveloadSpawner::SpawnState::SpawnState(const HashMap<ObjectID, SpawnInfo> &p_tracked_nodes) {
+	for (const KeyValue<ObjectID, SpawnInfo> &E : p_tracked_nodes) {
+		Node *node = E.key.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(E.key)) : nullptr;
+		spawned_nodes.insert(node->get_path(), E.value);
+	}
+}
+SaveloadSpawner::SpawnState::SpawnState(const Dictionary &p_dict) {
+	List<Variant> keys;
+	p_dict.get_key_list(&keys);
+	for (const NodePath key : keys) {
+		spawned_nodes.insert(key, SpawnInfo(p_dict[key]));
+	}
+}
+
+/******************************
+ * SpawnState Definitions End *
+ ******************************/
+
+/*************************************
+ * SaveloadSpawner Definitions Start *
+ *************************************/
 
 #ifdef TOOLS_ENABLED
 /* This is editor only */
@@ -108,7 +159,7 @@ void SaveloadSpawner::add_spawnable_scene(const String &p_path) {
 		return;
 	}
 #endif
-	Node *node = get_spawn_node();
+	Node *node = get_spawn_parent();
 	if (spawnable_scenes.size() == 1 && node && !node->is_connected("child_entered_tree", callable_mp(this, &SaveloadSpawner::_node_added))) {
 		node->connect("child_entered_tree", callable_mp(this, &SaveloadSpawner::_node_added));
 	}
@@ -130,7 +181,7 @@ void SaveloadSpawner::clear_spawnable_scenes() {
 		return;
 	}
 #endif
-	Node *node = get_spawn_node();
+	Node *node = get_spawn_parent();
 	if (node && node->is_connected("child_entered_tree", callable_mp(this, &SaveloadSpawner::_node_added))) {
 		node->disconnect("child_entered_tree", callable_mp(this, &SaveloadSpawner::_node_added));
 	}
@@ -181,44 +232,44 @@ void SaveloadSpawner::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("spawned", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 }
 
-void SaveloadSpawner::_update_spawn_node() {
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-#endif
-	if (spawn_node.is_valid()) {
-		Node *node = Object::cast_to<Node>(ObjectDB::get_instance(spawn_node));
-		if (node && node->is_connected("child_entered_tree", callable_mp(this, &SaveloadSpawner::_node_added))) {
-			node->disconnect("child_entered_tree", callable_mp(this, &SaveloadSpawner::_node_added));
+void SaveloadSpawner::_update_spawn_parent() {
+//#ifdef TOOLS_ENABLED
+//	if (Engine::get_singleton()->is_editor_hint()) {
+//		return;
+//	}
+//#endif
+	if (spawn_parent_id.is_valid()) {
+		Node *spawn_parent = Object::cast_to<Node>(ObjectDB::get_instance(spawn_parent_id));
+		if (spawn_parent && spawn_parent->is_connected("child_entered_tree", callable_mp(this, &SaveloadSpawner::_node_added))) {
+			spawn_parent->disconnect("child_entered_tree", callable_mp(this, &SaveloadSpawner::_node_added));
 		}
 	}
-	Node *node = spawn_path.is_empty() && is_inside_tree() ? nullptr : get_node_or_null(spawn_path);
-	if (node) {
-		spawn_node = node->get_instance_id();
+	Node *spawn_parent = spawn_path.is_empty() && is_inside_tree() ? nullptr : get_node_or_null(spawn_path);
+	if (spawn_parent) {
+		spawn_parent_id = spawn_parent->get_instance_id();
 		if (get_spawnable_scene_count()) {
-			node->connect("child_entered_tree", callable_mp(this, &SaveloadSpawner::_node_added));
+			spawn_parent->connect("child_entered_tree", callable_mp(this, &SaveloadSpawner::_node_added));
 		}
 	} else {
-		spawn_node = ObjectID();
+		spawn_parent_id = ObjectID();
 	}
 }
 
 void SaveloadSpawner::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
-			_update_spawn_node();
-			//get_saveload()->object_configuration_add(get_spawn_node(), this);
+			_update_spawn_parent();
+			get_saveload()->object_configuration_add(get_spawn_parent(), this);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			_update_spawn_node();
+			_update_spawn_parent();
 
 			for (const KeyValue<ObjectID, SpawnInfo> &E : tracked_nodes) {
 				Node *node = Object::cast_to<Node>(ObjectDB::get_instance(E.key));
 				ERR_CONTINUE(!node);
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &SaveloadSpawner::_node_exit));
-				get_saveload()->object_configuration_remove(node, this);
+				get_saveload()->object_configuration_remove(nullptr, this);
 			}
 			tracked_nodes.clear();
 		} break;
@@ -226,13 +277,10 @@ void SaveloadSpawner::_notification(int p_what) {
 }
 
 void SaveloadSpawner::_node_added(Node *p_node) {
-//	if (!get_saveload()->has_multiplayer_peer() || !is_multiplayer_authority()) {
-//		return;
-//	}
 	if (tracked_nodes.has(p_node->get_instance_id())) {
 		return;
 	}
-	const Node *parent = get_spawn_node();
+	const Node *parent = get_spawn_parent();
 	if (!parent || p_node->get_parent() != parent) {
 		return;
 	}
@@ -251,13 +299,14 @@ NodePath SaveloadSpawner::get_spawn_path() const {
 
 void SaveloadSpawner::set_spawn_path(const NodePath &p_path) {
 	spawn_path = p_path;
-	_update_spawn_node();
+	_update_spawn_parent();
 }
 
 void SaveloadSpawner::_track(Node *p_node, const Variant &p_argument, int p_scene_id) {
 	ObjectID oid = p_node->get_instance_id();
 	if (!tracked_nodes.has(oid)) {
-		tracked_nodes[oid] = SpawnInfo(p_argument.duplicate(true), p_scene_id);
+		SpawnInfo spawn_info = SpawnInfo(p_argument.duplicate(true), p_scene_id);
+		tracked_nodes.insert(oid, spawn_info);
 		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &SaveloadSpawner::_node_exit).bind(p_node->get_instance_id()), CONNECT_ONE_SHOT);
 		_spawn_notify(p_node->get_instance_id());
 	}
@@ -272,7 +321,6 @@ void SaveloadSpawner::_node_exit(ObjectID p_id) {
 	ERR_FAIL_COND(!node);
 	if (tracked_nodes.has(p_id)) {
 		tracked_nodes.erase(p_id);
-		get_saveload()->object_configuration_remove(node, this);
 	}
 }
 
@@ -293,6 +341,62 @@ int SaveloadSpawner::find_spawnable_scene_index_from_object(const ObjectID &p_id
 const Variant SaveloadSpawner::get_spawn_argument(const ObjectID &p_id) const {
 	const SpawnInfo *info = tracked_nodes.getptr(p_id);
 	return info ? info->args : Variant();
+}
+
+void SaveloadSpawner::spawn_all(const SaveloadSpawner::SpawnState &p_spawn_state) {
+	for (const KeyValue<const NodePath, SpawnInfo> &spawn_info : p_spawn_state.spawned_nodes) {
+		const Vector<StringName> spawn_path = spawn_info.key.get_names();
+		ERR_CONTINUE_MSG(spawn_path.size() < 1, vformat("spawn path %s does not contain a node name", spawn_info.key));
+		String spawn_name = spawn_path[spawn_path.size() - 1];
+		_spawn(spawn_info.value, spawn_name); //TODO: what do I do with spawn errors?
+	}
+}
+
+Error SaveloadSpawner::_spawn(const SpawnInfo &p_spawn_info, const String &p_name) {
+	ERR_FAIL_COND_V_MSG(p_name.validate_node_name() != p_name, ERR_INVALID_DATA, vformat("Invalid node name received: '%s'. Make sure to add nodes via 'add_child(node, true)' remotely.", p_name));
+
+	// Check that we can spawn.
+	Node *parent = get_spawn_parent();
+	ERR_FAIL_COND_V_MSG(!parent, ERR_UNCONFIGURED, vformat("Failed to get spawn parent for %s", this));
+	Node *node = parent->get_node_or_null(p_name);
+	if (node) {
+		WARN_PRINT_ED(vformat("node named %s is already a child of spawn parent %s", p_name, parent->get_path()));
+		_track(node, p_spawn_info.args, p_spawn_info.id);
+		return OK;
+	}
+	if (p_spawn_info.id == SaveloadSpawner::INVALID_ID) {
+		// Custom spawn.
+		node = instantiate_custom(p_spawn_info.args);
+	} else {
+		// Scene based spawn.
+		node = instantiate_scene(p_spawn_info.id);
+	}
+	ERR_FAIL_COND_V_MSG(!node, ERR_UNAUTHORIZED, "spawned node was null");
+	node->set_name(p_name);
+	_track(node, p_spawn_info.args, p_spawn_info.id);
+
+	parent->add_child(node, true);
+	emit_signal(SNAME("spawned"), node);
+
+	return OK;
+}
+
+Node *SaveloadSpawner::spawn(const Variant &p_data) {
+	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
+	ERR_FAIL_COND_V_MSG(spawn_limit && spawn_limit <= tracked_nodes.size(), nullptr, "Spawn limit reached!");
+	ERR_FAIL_COND_V_MSG(!spawn_function.is_valid(), nullptr, "Custom spawn requires the 'spawn_function' property to be a valid callable.");
+
+	Node *parent = get_spawn_parent();
+	ERR_FAIL_COND_V_MSG(!parent, nullptr, "Cannot find spawn node.");
+
+	Node *node = instantiate_custom(p_data);
+	ERR_FAIL_COND_V_MSG(!node, nullptr, "The 'spawn_function' callable must return a valid node.");
+
+	_track(node, p_data);
+	parent->add_child(node, true);
+	emit_signal(SNAME("spawned"), node);
+
+	return node;
 }
 
 Node *SaveloadSpawner::instantiate_scene(int p_id) {
@@ -318,19 +422,6 @@ Node *SaveloadSpawner::instantiate_custom(const Variant &p_data) {
 	return Object::cast_to<Node>(ret.operator Object *());
 }
 
-Node *SaveloadSpawner::spawn(const Variant &p_data) {
-//	ERR_FAIL_COND_V(!is_inside_tree() || !get_multiplayer()->has_multiplayer_peer() || !is_multiplayer_authority(), nullptr);
-	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
-	ERR_FAIL_COND_V_MSG(spawn_limit && spawn_limit <= tracked_nodes.size(), nullptr, "Spawn limit reached!");
-	ERR_FAIL_COND_V_MSG(!spawn_function.is_valid(), nullptr, "Custom spawn requires the 'spawn_function' property to be a valid callable.");
-
-	Node *parent = get_spawn_node();
-	ERR_FAIL_COND_V_MSG(!parent, nullptr, "Cannot find spawn node.");
-
-	Node *node = instantiate_custom(p_data);
-	ERR_FAIL_COND_V_MSG(!node, nullptr, "The 'spawn_function' callable must return a valid node.");
-
-	_track(node, p_data);
-	parent->add_child(node, true);
-	return node;
-}
+/***********************************
+ * SaveloadSpawner Definitions End *
+ ***********************************/

@@ -45,78 +45,40 @@ public:
 	struct SaveloadState {
 		HashMap<const NodePath, SaveloadSpawner::SpawnState> spawn_states;
 		HashMap<const NodePath, SaveloadSynchronizer::SyncState> sync_states;
+
 		Dictionary to_dict();
+
 		SaveloadState() {}
 		SaveloadState(const Dictionary &saveload_dict);
 	};
 
 private:
-	struct TrackedNode {
-		ObjectID id;
-		uint32_t net_id = 0;
-		uint32_t remote_peer = 0;
-		ObjectID spawner;
-		HashSet<ObjectID> synchronizers;
-
-		bool operator==(const ObjectID &p_other) { return id == p_other; }
-
-		TrackedNode() {}
-		TrackedNode(const ObjectID &p_id) { id = p_id; }
-		TrackedNode(const ObjectID &p_id, uint32_t p_net_id) {
-			id = p_id;
-			net_id = p_net_id;
-		}
-	};
-
-	struct SaveloadInfo {
-		HashSet<ObjectID> sync_nodes;
-		HashSet<ObjectID> spawn_nodes;
-		HashMap<ObjectID, uint64_t> last_watch_usecs;
-		HashMap<uint32_t, ObjectID> recv_sync_ids;
-		HashMap<uint32_t, ObjectID> recv_nodes;
-		uint16_t last_sent_sync = 0;
-	};
 
 	// Replication state.
-	HashMap<int, SaveloadInfo> saveload_info;
-	uint32_t last_net_id = 0;
-	HashMap<ObjectID, TrackedNode> tracked_nodes;
-	HashSet<ObjectID> spawned_nodes;
+	SaveloadState saveload_state_cache;
 	HashSet<ObjectID> spawn_nodes;
 	HashSet<ObjectID> sync_nodes;
 
-private:
 	// Pending local spawn information (handles spawning nested nodes during ready).
 	HashSet<ObjectID> spawn_queue;
-
-	// Pending remote spawn information.
-	ObjectID pending_spawn;
-	int pending_spawn_remote = 0;
-	const uint8_t *pending_buffer = nullptr;
-	int pending_buffer_size = 0;
-	List<uint32_t> pending_sync_net_ids;
 
 	// Replicator config.
 	SceneSaveload *saveload = nullptr;
 	PackedByteArray packet_cache;
-	int sync_mtu = 1350; // Highly dependent on underlying protocol.
-	int delta_mtu = 65535;
 
-	TrackedNode &_track(const ObjectID &p_id);
-	void _untrack(const ObjectID &p_id);
 	void _node_ready(const ObjectID &p_oid);
 
 //	bool _verify_synchronizer(int p_peer, SaveloadSynchronizer *p_sync, uint32_t &r_net_id);
-	SaveloadSynchronizer *_find_synchronizer(int p_peer, uint32_t p_net_ida);
-
-	void _send_delta(int p_peer, const HashSet<ObjectID> p_synchronizers, uint64_t p_usec, const HashMap<ObjectID, uint64_t> p_last_watch_usecs);
-	Error _make_spawn_packet(Node *p_node, SaveloadSpawner *p_spawner, int &r_len);
-	Error _make_despawn_packet(Node *p_node, int &r_len);
+//	SaveloadSynchronizer *_find_synchronizer(int p_peer, uint32_t p_net_ida);
+//
+//	void _send_delta(int p_peer, const HashSet<ObjectID> p_synchronizers, uint64_t p_usec, const HashMap<ObjectID, uint64_t> p_last_watch_usecs);
+//	Error _make_spawn_packet(Node *p_node, SaveloadSpawner *p_spawner, int &r_len);
+//	Error _make_despawn_packet(Node *p_node, int &r_len);
 //	Error _send_raw(const uint8_t *p_buffer, int p_size, int p_peer, bool p_reliable);
 
-	void _encode_sync(const HashSet<ObjectID> p_synchronizers, uint16_t p_sync_net_time, uint64_t p_usec);
-	void _encode_spawn(Node *p_node, SaveloadSpawner *p_spawner, int &r_len);
-	void _encode_despawn(Node *p_node, int &r_len);
+//	void _encode_sync(const HashSet<ObjectID> p_synchronizers, uint16_t p_sync_net_time, uint64_t p_usec);
+//	void _encode_spawn(Node *p_node, SaveloadSpawner *p_spawner, int &r_len);
+//	void _encode_despawn(Node *p_node, int &r_len);
 
 //	void _visibility_changed(int p_peer, ObjectID p_oid);
 //	Error _update_sync_visibility(int p_peer, SaveloadSynchronizer *p_sync);
@@ -126,25 +88,6 @@ private:
 	template <class T>
 	static T *get_id_as(const ObjectID &p_id) {
 		return p_id.is_valid() ? Object::cast_to<T>(ObjectDB::get_instance(p_id)) : nullptr;
-	}
-
-	template <class K, class V>
-	static HashMap<K, V> DictionaryToHashMap(const Dictionary &p_dict) {
-		HashMap<K, V> hash_map;
-		List<Variant> keys;
-		p_dict.get_key_list(&keys);
-		for (Variant &key : keys) {
-			hash_map.insert(K(key), V(p_dict[key]));
-		}
-		return hash_map;
-	}
-
-	template <class K, class V>
-	static Dictionary HashMapToDictionary(const HashMap<K, V> &p_hash_map) {
-		Dictionary dict;
-		for (KeyValue<K, V> &E : p_hash_map) {
-			dict[E.key] = E.value;
-		}
 	}
 
 #ifdef DEBUG_ENABLED
@@ -157,33 +100,22 @@ public:
 	void on_reset();
 //	void on_peer_change(int p_id, bool p_connected);
 
+	void configure_spawn(Node *p_node, const SaveloadSpawner &p_spawner);
+	void configure_sync(Node *p_node, const SaveloadSynchronizer &p_syncher);
+
+	void deconfigure_spawn(const SaveloadSpawner &p_spawner);
+	void deconfigure_sync(const SaveloadSynchronizer &p_syncher);
+
 	TypedArray<SaveloadSynchronizer> get_sync_nodes();
 	Dictionary get_sync_state();
 
 	SaveloadState get_saveload_state();
-	Error load_saveload_state(const SceneSaveloadInterface::SaveloadState p_saveload_state);
-
-	Error on_spawn(Object *p_obj, Variant p_config);
-	Error on_despawn(Object *p_obj, Variant p_config);
-	Error on_saveload_start(Object *p_obj, Variant p_config);
-	Error on_saveload_stop(Object *p_obj, Variant p_config);
-
-	Error on_spawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
-	Error on_despawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
-	Error on_sync_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
-	Error on_delta_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len);
+	void load_saveload_state(const SaveloadState p_saveload_state);
 
 	PackedByteArray encode(Object *p_obj, const StringName section = "");
-	Error decode(Vector<uint8_t> p_bytes, Object *p_obj, const StringName section = "");
+	Error decode(PackedByteArray p_bytes, Object *p_obj, const StringName section = "");
 
 	void flush_spawn_queue();
-	void process_syncs();
-
-	void set_max_sync_packet_size(int p_size);
-	int get_max_sync_packet_size() const;
-
-	void set_max_delta_packet_size(int p_size);
-	int get_max_delta_packet_size() const;
 
 	SceneSaveloadInterface(SceneSaveload *p_saveload) {
 		saveload = p_saveload;

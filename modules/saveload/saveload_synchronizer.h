@@ -108,7 +108,7 @@ public:
 	Dictionary get_state_wrapper();
 
 	void reset();
-	Node *get_root_node();
+	Node *get_root_node() const;
 
 	uint32_t get_net_id() const;
 	void set_net_id(uint32_t p_net_id);

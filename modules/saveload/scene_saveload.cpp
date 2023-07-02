@@ -68,40 +68,6 @@ NodePath SceneSaveload::get_root_path() const {
 	return root_path;
 }
 
-void SceneSaveload::_process_packet(int p_from, const uint8_t *p_packet, int p_packet_len) {
-	ERR_FAIL_COND_MSG(root_path.is_empty(), "Saveload root was not initialized. If you are using custom saveload, remember to set the root path via SceneSaveload.set_root_path before using it.");
-	ERR_FAIL_COND_MSG(p_packet_len < 1, "Invalid packet received. Size too small.");
-
-	// Extract the `packet_type` from the LSB three bits:
-	uint8_t packet_type = p_packet[0] & CMD_MASK;
-
-	switch (packet_type) {
-		case SAVELOAD_COMMAND_SIMPLIFY_PATH: {
-			cache->process_simplify_path(p_from, p_packet, p_packet_len);
-		} break;
-
-		case SAVELOAD_COMMAND_CONFIRM_PATH: {
-			cache->process_confirm_path(p_from, p_packet, p_packet_len);
-		} break;
-
-		case SAVELOAD_COMMAND_RAW: {
-			_process_raw(p_from, p_packet, p_packet_len);
-		} break;
-		case SAVELOAD_COMMAND_SPAWN: {
-			saveloader->on_spawn_receive(p_from, p_packet, p_packet_len);
-		} break;
-		case SAVELOAD_COMMAND_DESPAWN: {
-			saveloader->on_despawn_receive(p_from, p_packet, p_packet_len);
-		} break;
-		case SAVELOAD_COMMAND_SYNC: {
-			saveloader->on_sync_receive(p_from, p_packet, p_packet_len);
-		} break;
-		default: {
-			ERR_FAIL_MSG("Invalid network command from " + itos(p_from));
-		} break;
-	}
-}
-
 //#ifdef DEBUG_ENABLED
 //_FORCE_INLINE_ Error SceneSaveload::_send(const uint8_t *p_packet, int p_packet_len) {
 //	_profile_bandwidth("out", p_packet_len);
@@ -356,19 +322,6 @@ void SceneSaveload::_process_packet(int p_from, const uint8_t *p_packet, int p_p
 //	return double(auth_timeout) / 1000.0;
 //}
 
-void SceneSaveload::_process_raw(int p_from, const uint8_t *p_packet, int p_packet_len) {
-	ERR_FAIL_COND_MSG(p_packet_len < 2, "Invalid packet received. Size too small.");
-
-	Vector<uint8_t> out;
-	int len = p_packet_len - 1;
-	out.resize(len);
-	{
-		uint8_t *w = out.ptrw();
-		memcpy(&w[0], &p_packet[1], len);
-	}
-	emit_signal(SNAME("peer_packet"), p_from, out);
-}
-
 TypedArray<SaveloadSynchronizer> SceneSaveload::get_sync_nodes() {
 	return saveloader->get_sync_nodes();
 }
@@ -415,48 +368,11 @@ Error SceneSaveload::load(const String p_path, Object *p_object, const StringNam
 		return err;
 	}
 	Dictionary dict = file->get_var(false);
-	print_line(dict);
 
 	SceneSaveloadInterface::SaveloadState saveload_state = SceneSaveloadInterface::SaveloadState(dict);
-	return saveloader->load_saveload_state(saveload_state);
+	saveloader->load_saveload_state(saveload_state);
+	return OK;
 }
-
-int SceneSaveload::get_unique_id() {
-//	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), 0, "No multiplayer peer is assigned. Unable to get unique ID.");
-//	return multiplayer_peer->get_unique_id();
-	return 1;
-}
-
-//void SceneSaveload::set_refuse_new_connections(bool p_refuse) {
-//	ERR_FAIL_COND_MSG(!multiplayer_peer.is_valid(), "No multiplayer peer is assigned. Unable to set 'refuse_new_connections'.");
-//	multiplayer_peer->set_refuse_new_connections(p_refuse);
-//}
-
-//bool SceneSaveload::is_refusing_new_connections() const {
-//	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), false, "No multiplayer peer is assigned. Unable to get 'refuse_new_connections'.");
-//	return multiplayer_peer->is_refusing_new_connections();
-//}
-
-//Vector<int> SceneSaveload::get_peer_ids() {
-//	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), Vector<int>(), "No multiplayer peer is assigned. Assume no peers are connected.");
-//
-//	Vector<int> ret;
-//	for (const int &E : connected_peers) {
-//		ret.push_back(E);
-//	}
-//
-//	return ret;
-//}
-
-//Vector<int> SceneSaveload::get_authenticating_peer_ids() {
-//	Vector<int> out;
-//	out.resize(pending_peers.size());
-//	int idx = 0;
-//	for (const KeyValue<int, PendingPeer> &E : pending_peers) {
-//		out.write[idx++] = E.key;
-//	}
-//	return out;
-//}
 
 void SceneSaveload::set_allow_object_decoding(bool p_enable) {
 	allow_object_decoding = p_enable;
@@ -471,12 +387,16 @@ Error SceneSaveload::object_configuration_add(Object *p_obj, Variant p_config) {
 		set_root_path(p_config);
 		return OK;
 	}
+	Node *node = Object::cast_to<Node>(p_obj);
+	ERR_FAIL_COND_V(!node, ERR_INVALID_PARAMETER);
 	SaveloadSpawner *spawner = Object::cast_to<SaveloadSpawner>(p_config.get_validated_object());
 	SaveloadSynchronizer *sync = Object::cast_to<SaveloadSynchronizer>(p_config.get_validated_object());
 	if (spawner) {
-		return saveloader->on_spawn(p_obj, p_config);
+		saveloader->configure_spawn(node, *spawner);
+		return OK;
 	} else if (sync) {
-		return saveloader->on_saveload_start(p_obj, p_config);
+		saveloader->configure_sync(node, *sync);
+		return OK;
 	}
 	return ERR_INVALID_PARAMETER;
 }
@@ -490,28 +410,14 @@ Error SceneSaveload::object_configuration_remove(Object *p_obj, Variant p_config
 	SaveloadSpawner *spawner = Object::cast_to<SaveloadSpawner>(p_config.get_validated_object());
 	SaveloadSynchronizer *sync = Object::cast_to<SaveloadSynchronizer>(p_config.get_validated_object());
 	if (spawner) {
-		return saveloader->on_despawn(p_obj, p_config);
+		saveloader->deconfigure_spawn(*spawner);
+		return OK;
 	}
 	if (sync) {
-		return saveloader->on_saveload_stop(p_obj, p_config);
+		saveloader->deconfigure_sync(*sync);
+		return OK;
 	}
 	return ERR_INVALID_PARAMETER;
-}
-
-void SceneSaveload::set_max_sync_packet_size(int p_size) {
-	saveloader->set_max_sync_packet_size(p_size);
-}
-
-int SceneSaveload::get_max_sync_packet_size() const {
-	return saveloader->get_max_sync_packet_size();
-}
-
-void SceneSaveload::set_max_delta_packet_size(int p_size) {
-	saveloader->set_max_delta_packet_size(p_size);
-}
-
-int SceneSaveload::get_max_delta_packet_size() const {
-	return saveloader->get_max_delta_packet_size();
 }
 
 void SceneSaveload::_bind_methods() {
@@ -541,19 +447,12 @@ void SceneSaveload::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sync_nodes"), &SceneSaveload::get_sync_nodes);
 	ClassDB::bind_method(D_METHOD("get_dict"), &SceneSaveload::get_dict);
 
-	ClassDB::bind_method(D_METHOD("get_max_sync_packet_size"), &SceneSaveload::get_max_sync_packet_size);
-	ClassDB::bind_method(D_METHOD("set_max_sync_packet_size", "size"), &SceneSaveload::set_max_sync_packet_size);
-	ClassDB::bind_method(D_METHOD("get_max_delta_packet_size"), &SceneSaveload::get_max_delta_packet_size);
-	ClassDB::bind_method(D_METHOD("set_max_delta_packet_size", "size"), &SceneSaveload::set_max_delta_packet_size);
-
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
 //	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "auth_callback"), "set_auth_callback", "get_auth_callback");
 //	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auth_timeout", PROPERTY_HINT_RANGE, "0,30,0.1,or_greater,suffix:s"), "set_auth_timeout", "get_auth_timeout");
 //	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");
 //	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
 //	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "server_relay"), "set_server_relay_enabled", "is_server_relay_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_sync_packet_size"), "set_max_sync_packet_size", "get_max_sync_packet_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_delta_packet_size"), "set_max_delta_packet_size", "get_max_delta_packet_size");
 
 	ADD_PROPERTY_DEFAULT("refuse_new_connections", false);
 

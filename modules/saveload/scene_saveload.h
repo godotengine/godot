@@ -125,8 +125,6 @@ public:
 	virtual Error save(const String p_path, Object *p_object, const StringName section) override;
 	virtual Error load(const String p_path, Object *p_object, const StringName section) override;
 
-	virtual int get_unique_id() override;
-
 	virtual Error object_configuration_add(Object *p_obj, Variant p_config) override;
 	virtual Error object_configuration_remove(Object *p_obj, Variant p_config) override;
 
@@ -140,12 +138,6 @@ public:
 
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;
-
-	void set_max_sync_packet_size(int p_size);
-	int get_max_sync_packet_size() const;
-
-	void set_max_delta_packet_size(int p_size);
-	int get_max_delta_packet_size() const;
 
 	Ref<SceneCacheInterface> get_path_cache() { return cache; }
 	Ref<SceneSaveloadInterface> get_saveloader() { return saveloader; }

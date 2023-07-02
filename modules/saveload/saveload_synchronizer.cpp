@@ -99,7 +99,7 @@ void SaveloadSynchronizer::_update_process() {
 //	}
 }
 
-Node *SaveloadSynchronizer::get_root_node() {
+Node *SaveloadSynchronizer::get_root_node() const {
 	return root_node_cache.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(root_node_cache)) : nullptr;
 }
 
@@ -107,35 +107,6 @@ void SaveloadSynchronizer::reset() {
 //	net_id = 0;
 	last_sync_usec = 0;
 	last_inbound_sync = 0;
-}
-
-uint32_t SaveloadSynchronizer::get_net_id() const {
-	return net_id;
-}
-
-void SaveloadSynchronizer::set_net_id(uint32_t p_net_id) {
-	net_id = p_net_id;
-}
-
-bool SaveloadSynchronizer::update_outbound_sync_time(uint64_t p_usec) {
-	if (last_sync_usec == p_usec) {
-		// last_sync_usec has been updated in this frame.
-		return true;
-	}
-	if (p_usec < last_sync_usec + sync_interval_usec) {
-		// Too soon, should skip this synchronization frame.
-		return false;
-	}
-	last_sync_usec = p_usec;
-	return true;
-}
-
-bool SaveloadSynchronizer::update_inbound_sync_time(uint16_t p_network_time) {
-	if (p_network_time <= last_inbound_sync && last_inbound_sync - p_network_time < 32767) {
-		return false;
-	}
-	last_inbound_sync = p_network_time;
-	return true;
 }
 
 PackedStringArray SaveloadSynchronizer::get_configuration_warnings() const {
@@ -197,18 +168,6 @@ Dictionary SaveloadSynchronizer::get_state_wrapper() {
 		dict[props[i]] = vars[i];
 	}
 	return dict;
-}
-
-Error SaveloadSynchronizer::set_state(const List<NodePath> &p_properties, Object *p_obj, const Vector<Variant> &p_state) {
-	ERR_FAIL_COND_V(!p_obj, ERR_INVALID_PARAMETER);
-	int i = 0;
-	for (const NodePath &prop : p_properties) {
-		Object *obj = _get_prop_target(p_obj, prop);
-		ERR_FAIL_COND_V(!obj, FAILED);
-		obj->set(prop.get_concatenated_subnames(), p_state[i]);
-		i += 1;
-	}
-	return OK;
 }
 
 //bool SaveloadSynchronizer::is_visibility_public() const {

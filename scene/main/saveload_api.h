@@ -61,8 +61,6 @@ public:
 	virtual Error save(const String p_path, Object *p_object, const StringName section) = 0;
 	virtual Error load(const String p_path, Object *p_object, const StringName section) = 0;
 
-	virtual int get_unique_id() = 0;
-
 	virtual Error object_configuration_add(Object *p_object, Variant p_config) = 0;
 	virtual Error object_configuration_remove(Object *p_object, Variant p_config) = 0;
 

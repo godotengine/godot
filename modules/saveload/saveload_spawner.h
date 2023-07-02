@@ -50,48 +50,23 @@ public:
 		Variant args;
 		int id = INVALID_ID;
 
-		Dictionary to_dict() const {
-			Dictionary dict;
-			dict[StringName("args")] = args;
-			dict[StringName("id")] = id;
-			return dict;
-		}
+		Dictionary to_dict() const;
 
 		SpawnInfo(Variant p_args, int p_id) {
 			id = p_id;
 			args = p_args;
 		}
-		SpawnInfo(const Dictionary &p_dict) {
-			id = p_dict[StringName("id")];
-			args = p_dict[StringName("args")];
-		}
-		SpawnInfo() {}
+		SpawnInfo(const Dictionary &p_dict);
+		SpawnInfo () {};
 	};
 	struct SpawnState {
 		HashMap<const NodePath, SpawnInfo> spawned_nodes;
 
-		Dictionary to_dict() const {
-			Dictionary dict;
-			for (const KeyValue<const NodePath, SpawnInfo> &spawned_node : spawned_nodes) {
-				dict[spawned_node.key] = spawned_node.value.to_dict();
-			}
-			return dict;
-		};
+		Dictionary to_dict() const;
 
 		SpawnState(HashMap<const NodePath, SpawnInfo> p_spawned_nodes) {spawned_nodes = p_spawned_nodes;}
-		SpawnState(HashMap<ObjectID, SpawnInfo> p_tracked_nodes) {
-			for (KeyValue<ObjectID, SpawnInfo> &E : p_tracked_nodes) {
-				Node *node = E.key.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(E.key)) : nullptr;
-				spawned_nodes.insert(node->get_path(), E.value);
-			}
-		}
-		SpawnState(Dictionary &p_dict) {
-			List<Variant> keys;
-			p_dict.get_key_list(&keys);
-			for (const NodePath key : keys) {
-				spawned_nodes.insert(key, SpawnInfo(p_dict[key]));
-			}
-		}
+		SpawnState(const HashMap<ObjectID, SpawnInfo> &p_tracked_nodes);
+		SpawnState(const Dictionary &p_dict);
 	};
 
 private:
@@ -105,12 +80,13 @@ private:
 	HashSet<ResourceUID::ID> spawnable_ids;
 	NodePath spawn_path;
 
-	ObjectID spawn_node;
+	ObjectID spawn_parent_id;
 	HashMap<ObjectID, SpawnInfo> tracked_nodes;
 	uint32_t spawn_limit = 0;
 	Callable spawn_function;
 
-	void _update_spawn_node();
+	void _update_spawn_parent();
+	Error _spawn(const SpawnInfo &p_spawn_info, const String &p_name);
 	void _track(Node *p_node, const Variant &p_argument, int p_scene_id = INVALID_ID);
 	void _node_added(Node *p_node);
 	void _node_exit(ObjectID p_id);
@@ -131,8 +107,8 @@ protected:
 public:
 	PackedStringArray get_configuration_warnings() const override;
 
-	Node *get_spawn_node() const {
-		return spawn_node.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(spawn_node)) : nullptr;
+	Node *get_spawn_parent() const {
+		return spawn_parent_id.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(spawn_parent_id)) : nullptr;
 	}
 
 	SpawnState get_spawn_state() const { return SpawnState(tracked_nodes); }
@@ -153,6 +129,7 @@ public:
 	int find_spawnable_scene_index_from_object(const ObjectID &p_id) const;
 	int find_spawnable_scene_index_from_path(const String &p_path) const;
 	Node *spawn(const Variant &p_data = Variant());
+	void spawn_all(const SpawnState &p_spawn_state);
 	Node *instantiate_custom(const Variant &p_data);
 	Node *instantiate_scene(int p_idx);
 
