@@ -1019,11 +1019,18 @@ void SceneTreeEditor::_renamed() {
 		}
 	}
 
-	if (n->is_unique_name_in_owner() && get_tree()->get_edited_scene_root()->get_node_or_null("%" + new_name) != nullptr) {
-		error->set_text(TTR("Another node already uses this unique name in the scene."));
-		error->popup_centered();
-		which->set_text(0, n->get_name());
-		return;
+	if (n->is_unique_name_in_owner()) {
+		Node *existing = get_tree()->get_edited_scene_root()->get_node_or_null("%" + new_name);
+		if (existing == n) {
+			which->set_text(0, n->get_name());
+			return;
+		}
+		if (existing != nullptr) {
+			error->set_text(TTR("Another node already uses this unique name in the scene."));
+			error->popup_centered();
+			which->set_text(0, n->get_name());
+			return;
+		}
 	}
 
 	_rename_node(n, new_name);
