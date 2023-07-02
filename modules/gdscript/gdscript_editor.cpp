@@ -1898,7 +1898,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 	// Look in blocks first.
 	int last_assign_line = -1;
 	const GDScriptParser::ExpressionNode *last_assigned_expression = nullptr;
-	GDScriptParser::DataType id_type;
+	GDScriptParser::DataType id_type, weak_type;
 	GDScriptParser::SuiteNode *suite = p_context.current_suite;
 	bool is_function_parameter = false;
 
@@ -1907,6 +1907,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 			const GDScriptParser::SuiteNode::Local &local = suite->get_local(p_identifier);
 
 			id_type = local.get_datatype();
+			weak_type = id_type;
 
 			// Check initializer as the first assignment.
 			switch (local.type) {
@@ -1988,6 +1989,10 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 		c.current_line = last_assign_line;
 		r_type.assigned_expression = last_assigned_expression;
 		if (_guess_expression_type(c, last_assigned_expression, r_type)) {
+			// The expression has no type.
+			if ((!r_type.type.is_set() || r_type.type.is_variant()) && weak_type.type_source != GDScriptParser::DataType::UNDETECTED) {
+				r_type.type = weak_type;
+			}
 			return true;
 		}
 	}
