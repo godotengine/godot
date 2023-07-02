@@ -61,6 +61,7 @@ class EditorPlugin : public Node {
 	bool force_draw_over_forwarding_enabled = false;
 
 	String last_main_screen_name;
+	String plugin_version;
 
 	void _editor_project_settings_changed();
 
@@ -168,6 +169,8 @@ public:
 
 	virtual String get_name() const;
 	virtual const Ref<Texture2D> get_icon() const;
+	virtual String get_plugin_version() const;
+	virtual void set_plugin_version(const String &p_version);
 	virtual bool has_main_screen() const;
 	virtual void make_visible(bool p_visible);
 	virtual void selected_notify() {} //notify that it was raised by the user, not the editor

@@ -307,6 +307,14 @@ const Ref<Texture2D> EditorPlugin::get_icon() const {
 	return icon;
 }
 
+String EditorPlugin::get_plugin_version() const {
+	return plugin_version;
+}
+
+void EditorPlugin::set_plugin_version(const String &p_version) {
+	plugin_version = p_version;
+}
+
 bool EditorPlugin::has_main_screen() const {
 	bool success = false;
 	GDVIRTUAL_CALL(_has_main_screen, success);
@@ -583,6 +591,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_script_create_dialog"), &EditorPlugin::get_script_create_dialog);
 	ClassDB::bind_method(D_METHOD("add_debugger_plugin", "script"), &EditorPlugin::add_debugger_plugin);
 	ClassDB::bind_method(D_METHOD("remove_debugger_plugin", "script"), &EditorPlugin::remove_debugger_plugin);
+	ClassDB::bind_method(D_METHOD("get_plugin_version"), &EditorPlugin::get_plugin_version);
 
 	GDVIRTUAL_BIND(_forward_canvas_gui_input, "event");
 	GDVIRTUAL_BIND(_forward_canvas_draw_over_viewport, "viewport_control");

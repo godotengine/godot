@@ -31,6 +31,8 @@
 #ifndef ANDROID_GODOT_PLUGIN_CONFIG_H
 #define ANDROID_GODOT_PLUGIN_CONFIG_H
 
+#ifndef DISABLE_DEPRECATED
+
 #include "core/config/project_settings.h"
 #include "core/error/error_list.h"
 #include "core/io/config_file.h"
@@ -67,8 +69,6 @@ struct PluginConfigAndroid {
 	inline static const char *BINARY_TYPE_LOCAL = "local";
 	inline static const char *BINARY_TYPE_REMOTE = "remote";
 
-	inline static const char *PLUGIN_VALUE_SEPARATOR = "|";
-
 	// Set to true when the config file is properly loaded.
 	bool valid_config = false;
 	// Unix timestamp of last change to this plugin.
@@ -96,11 +96,13 @@ struct PluginConfigAndroid {
 
 	static PluginConfigAndroid load_plugin_config(Ref<ConfigFile> config_file, const String &path);
 
-	static String get_plugins_binaries(String binary_type, Vector<PluginConfigAndroid> plugins_configs);
+	static void get_plugins_binaries(String binary_type, Vector<PluginConfigAndroid> plugins_configs, Vector<String> &r_result);
 
-	static String get_plugins_custom_maven_repos(Vector<PluginConfigAndroid> plugins_configs);
+	static void get_plugins_custom_maven_repos(Vector<PluginConfigAndroid> plugins_configs, Vector<String> &r_result);
 
-	static String get_plugins_names(Vector<PluginConfigAndroid> plugins_configs);
+	static void get_plugins_names(Vector<PluginConfigAndroid> plugins_configs, Vector<String> &r_result);
 };
+
+#endif // DISABLE_DEPRECATED
 
 #endif // ANDROID_GODOT_PLUGIN_CONFIG_H
