@@ -410,7 +410,7 @@ void FindReplaceBar::_update_matches_label() {
 		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
 		if (results_count == 0) {
-			matches_label->set_text("No match");
+			matches_label->set_text(TTR("No match"));
 		} else if (results_count_to_current == -1) {
 			matches_label->set_text(vformat(TTRN("%d match", "%d matches", results_count), results_count));
 		} else {
