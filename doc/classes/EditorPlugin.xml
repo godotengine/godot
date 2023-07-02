@@ -569,6 +569,12 @@
 				Returns the [PopupMenu] under [b]Scene &gt; Export As...[/b].
 			</description>
 		</method>
+		<method name="get_plugin_version" qualifiers="const">
+			<return type="String" />
+			<description>
+				Provide the version of the plugin declared in the [code]plugin.cfg[/code] config file.
+			</description>
+		</method>
 		<method name="get_script_create_dialog">
 			<return type="ScriptCreateDialog" />
 			<description>
