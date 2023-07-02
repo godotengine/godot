@@ -48,6 +48,13 @@
 				Converts the given UID to a [code]uid://[/code] string value.
 			</description>
 		</method>
+		<method name="is_dummy" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether ResourceUID is stubbed, where it doesn't create and cache UIDs.
+				See also [member ProjectSettings.application/config/enable_uids].
+			</description>
+		</method>
 		<method name="remove_id">
 			<return type="void" />
 			<param index="0" name="id" type="int" />

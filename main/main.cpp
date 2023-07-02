@@ -123,6 +123,7 @@
 // Initialized in setup()
 static Engine *engine = nullptr;
 static ProjectSettings *globals = nullptr;
+static ResourceUID *resource_uid = nullptr;
 static Input *input = nullptr;
 static InputMap *input_map = nullptr;
 static TranslationServer *translation_server = nullptr;
@@ -537,6 +538,8 @@ Error Main::test_setup() {
 
 	register_core_settings(); // Here globals are present.
 
+	resource_uid = memnew(ResourceUID);
+
 	translation_server = memnew(TranslationServer);
 	tsman = memnew(TextServerManager);
 
@@ -681,6 +684,9 @@ void Main::test_cleanup() {
 	}
 	if (engine) {
 		memdelete(engine);
+	}
+	if (resource_uid) {
+		memdelete(resource_uid);
 	}
 
 	unregister_core_driver_types();
@@ -1578,6 +1584,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions(); // core extensions must be registered after globals setup and before display
 
+	resource_uid = memnew(ResourceUID);
 	ResourceUID::get_singleton()->load_from_cache(); // load UUIDs from cache.
 
 	if (ProjectSettings::get_singleton()->has_custom_feature("dedicated_server")) {
@@ -2109,6 +2116,9 @@ error:
 	}
 	if (packed_data) {
 		memdelete(packed_data);
+	}
+	if (resource_uid) {
+		memdelete(resource_uid);
 	}
 
 	unregister_core_driver_types();
@@ -3737,6 +3747,9 @@ void Main::cleanup(bool p_force) {
 	}
 	if (engine) {
 		memdelete(engine);
+	}
+	if (resource_uid) {
+		memdelete(resource_uid);
 	}
 
 	if (OS::get_singleton()->is_restart_on_exit_set()) {

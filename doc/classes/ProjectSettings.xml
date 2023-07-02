@@ -267,6 +267,13 @@
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
 		</member>
+		<member name="application/config/enable_uids" type="bool" setter="" getter="" default="true">
+			When enabled, create and use UIDs (unique identifiers) for every scene and resource, as well as cache them in [code].godot/uid_cache.bin[/code].
+			UIDs enable the following behaviors: Addons can be installed anywhere. Can move and rename files from a file explorer, version control, or anywhere while the editor is closed. Can open files with the [code]uid://[/code] syntax even if files are moved or renamed.
+			When disabled, [code].godot/uid_cache.bin[/code] is deleted and UIDs for every scene and resource are cleared only when the scene or resource is resaved.  Code that relies on opening files with the [code]uid://[/code] syntax will not work.
+			[b]Note:[/b] Restart the application after changing this setting.
+			[b]Note:[/b] Disabling or reenabling UIDs may reimport resources, as well as emit warnings until the scene(s) are saved again.
+		</member>
 		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon used for the project, set when project loads. Exporters will also use this icon as a fallback if necessary.
 		</member>

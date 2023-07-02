@@ -441,8 +441,8 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 		return false; //keep mode, do not reimport
 	}
 
-	if (!found_uid) {
-		return true; //UID not found, old format, reimport.
+	if ((!found_uid && !ResourceUID::get_singleton()->is_dummy()) || (found_uid && ResourceUID::get_singleton()->is_dummy())) {
+		return true; //UID not found when it should have one, or it is found when it shouldn't have one, reimport
 	}
 
 	Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
@@ -1832,7 +1832,9 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 				uid = ResourceUID::get_singleton()->create_id();
 			}
 
-			f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); // Store in readable format.
+			if (uid != ResourceUID::INVALID_ID) {
+				f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); // Store in readable format.
+			}
 
 			if (err == OK) {
 				String path = base_path + "." + importer->get_save_extension();
@@ -2066,7 +2068,9 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 			uid = ResourceUID::get_singleton()->create_id();
 		}
 
-		f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); //store in readable format
+		if (uid != ResourceUID::INVALID_ID) {
+			f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); //store in readable format
+		}
 
 		if (err == OK) {
 			if (importer->get_save_extension().is_empty()) {
@@ -2427,8 +2431,8 @@ void EditorFileSystem::move_group_file(const String &p_path, const String &p_new
 }
 
 ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate) {
-	if (!p_path.is_resource_file() || p_path.begins_with(ProjectSettings::get_singleton()->get_project_data_path())) {
-		// Saved externally (configuration file) or internal file, do not assign an ID.
+	if (!p_path.is_resource_file() || p_path.begins_with(ProjectSettings::get_singleton()->get_project_data_path()) || ResourceUID::get_singleton()->is_dummy()) {
+		// Saved externally (configuration file), internal file, or UIDs are not enabled, do not assign an ID.
 		return ResourceUID::INVALID_ID;
 	}
 

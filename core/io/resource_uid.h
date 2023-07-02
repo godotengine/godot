@@ -46,6 +46,8 @@ public:
 	static String get_cache_file();
 
 private:
+	bool _is_dummy = false;
+
 	void *crypto = nullptr; // CryptoCore::RandomGenerator (avoid including crypto_core.h)
 	Mutex mutex;
 	struct Cache {
@@ -63,6 +65,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	bool is_dummy() const;
+
 	String id_to_text(ID p_id) const;
 	ID text_to_id(const String &p_text) const;
 

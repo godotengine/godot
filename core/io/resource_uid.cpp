@@ -39,10 +39,18 @@ static constexpr uint32_t char_count = ('z' - 'a');
 static constexpr uint32_t base = char_count + ('9' - '0');
 
 String ResourceUID::get_cache_file() {
-	return ProjectSettings::get_singleton()->get_project_data_path().path_join("uid_cache.bin");
+	return ResourceUID::get_singleton()->is_dummy() ? "" : ProjectSettings::get_singleton()->get_project_data_path().path_join("uid_cache.bin");
+}
+
+bool ResourceUID::is_dummy() const {
+	return _is_dummy;
 }
 
 String ResourceUID::id_to_text(ID p_id) const {
+	if (_is_dummy) {
+		return "";
+	}
+
 	if (p_id < 0) {
 		return "uid://<invalid>";
 	}
@@ -62,7 +70,7 @@ String ResourceUID::id_to_text(ID p_id) const {
 }
 
 ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
-	if (!p_text.begins_with("uid://") || p_text == "uid://<invalid>") {
+	if (_is_dummy || !p_text.begins_with("uid://") || p_text == "uid://<invalid>") {
 		return INVALID_ID;
 	}
 
@@ -83,6 +91,10 @@ ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
 }
 
 ResourceUID::ID ResourceUID::create_id() {
+	if (_is_dummy) {
+		return INVALID_ID;
+	}
+
 	while (true) {
 		ID id = INVALID_ID;
 		MutexLock lock(mutex);
@@ -97,10 +109,18 @@ ResourceUID::ID ResourceUID::create_id() {
 }
 
 bool ResourceUID::has_id(ID p_id) const {
+	if (_is_dummy) {
+		return false;
+	}
+
 	MutexLock l(mutex);
 	return unique_ids.has(p_id);
 }
 void ResourceUID::add_id(ID p_id, const String &p_path) {
+	if (_is_dummy) {
+		return;
+	}
+
 	MutexLock l(mutex);
 	ERR_FAIL_COND(unique_ids.has(p_id));
 	Cache c;
@@ -110,6 +130,10 @@ void ResourceUID::add_id(ID p_id, const String &p_path) {
 }
 
 void ResourceUID::set_id(ID p_id, const String &p_path) {
+	if (_is_dummy) {
+		return;
+	}
+
 	MutexLock l(mutex);
 	ERR_FAIL_COND(!unique_ids.has(p_id));
 	CharString cs = p_path.utf8();
@@ -126,18 +150,30 @@ void ResourceUID::set_id(ID p_id, const String &p_path) {
 }
 
 String ResourceUID::get_id_path(ID p_id) const {
+	if (_is_dummy) {
+		return "";
+	}
+
 	MutexLock l(mutex);
 	ERR_FAIL_COND_V(!unique_ids.has(p_id), String());
 	const CharString &cs = unique_ids[p_id].cs;
 	return String::utf8(cs.ptr());
 }
 void ResourceUID::remove_id(ID p_id) {
+	if (_is_dummy) {
+		return;
+	}
+
 	MutexLock l(mutex);
 	ERR_FAIL_COND(!unique_ids.has(p_id));
 	unique_ids.erase(p_id);
 }
 
 Error ResourceUID::save_to_cache() {
+	if (_is_dummy) {
+		return OK;
+	}
+
 	String cache_file = get_cache_file();
 	if (!FileAccess::exists(cache_file)) {
 		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -168,6 +204,10 @@ Error ResourceUID::save_to_cache() {
 }
 
 Error ResourceUID::load_from_cache() {
+	if (_is_dummy) {
+		return OK;
+	}
+
 	Ref<FileAccess> f = FileAccess::open(get_cache_file(), FileAccess::READ);
 	if (f.is_null()) {
 		return ERR_CANT_OPEN;
@@ -197,7 +237,7 @@ Error ResourceUID::load_from_cache() {
 }
 
 Error ResourceUID::update_cache() {
-	if (!changed) {
+	if (_is_dummy || !changed) {
 		return OK;
 	}
 
@@ -236,11 +276,17 @@ Error ResourceUID::update_cache() {
 }
 
 void ResourceUID::clear() {
+	if (_is_dummy) {
+		return;
+	}
+
 	cache_entries = 0;
 	unique_ids.clear();
 	changed = false;
 }
 void ResourceUID::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("is_dummy"), &ResourceUID::is_dummy);
+
 	ClassDB::bind_method(D_METHOD("id_to_text", "id"), &ResourceUID::id_to_text);
 	ClassDB::bind_method(D_METHOD("text_to_id", "text_id"), &ResourceUID::text_to_id);
 
@@ -258,9 +304,21 @@ ResourceUID *ResourceUID::singleton = nullptr;
 ResourceUID::ResourceUID() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
-	crypto = memnew(CryptoCore::RandomGenerator);
-	((CryptoCore::RandomGenerator *)crypto)->init();
+
+	_is_dummy = !GLOBAL_GET("application/config/enable_uids");
+	if (_is_dummy) {
+		Error err;
+		Ref<DirAccess> uid_cache_dir = DirAccess::open(ProjectSettings::get_singleton()->get_project_data_path(), &err);
+		if (uid_cache_dir.is_valid()) {
+			uid_cache_dir->remove("uid_cache.bin");
+		}
+	} else {
+		crypto = memnew(CryptoCore::RandomGenerator);
+		((CryptoCore::RandomGenerator *)crypto)->init();
+	}
 }
 ResourceUID::~ResourceUID() {
-	memdelete((CryptoCore::RandomGenerator *)crypto);
+	if (!_is_dummy) {
+		memdelete((CryptoCore::RandomGenerator *)crypto);
+	}
 }
