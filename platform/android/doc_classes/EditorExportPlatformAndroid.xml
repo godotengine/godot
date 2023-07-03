@@ -584,12 +584,6 @@
 		<member name="version/name" type="String" setter="" getter="">
 			Application version visible to the user.
 		</member>
-		<member name="xr_features/hand_tracking" type="int" setter="" getter="">
-		</member>
-		<member name="xr_features/hand_tracking_frequency" type="int" setter="" getter="">
-		</member>
-		<member name="xr_features/passthrough" type="int" setter="" getter="">
-		</member>
 		<member name="xr_features/xr_mode" type="int" setter="" getter="">
 		</member>
 	</members>
