@@ -832,16 +832,6 @@ void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset>
 			r_permissions.push_back("android.permission.INTERNET");
 		}
 	}
-
-	int xr_mode_index = p_preset->get("xr_features/xr_mode");
-	if (xr_mode_index == XR_MODE_OPENXR) {
-		int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
-		if (hand_tracking_index > XR_HAND_TRACKING_NONE) {
-			if (r_permissions.find("com.oculus.permission.HAND_TRACKING") == -1) {
-				r_permissions.push_back("com.oculus.permission.HAND_TRACKING");
-			}
-		}
-	}
 }
 
 void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, bool p_debug) {
@@ -881,7 +871,6 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 		}
 	}
 
-	manifest_text += _get_xr_features_tag(p_preset);
 	manifest_text += _get_application_tag(Ref<EditorExportPlatform>(this), p_preset, _has_read_write_storage_permission(perms), p_debug);
 	manifest_text += "</manifest>\n";
 	String manifest_path = vformat("res://android/build/src/%s/AndroidManifest.xml", (p_debug ? "debug" : "release"));
@@ -1751,22 +1740,6 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			if (xr_mode_index == XR_MODE_OPENXR && !gradle_build_enabled) {
 				return TTR("OpenXR requires \"Use Gradle Build\" to be enabled");
 			}
-		} else if (p_name == "xr_features/hand_tracking") {
-			int xr_mode_index = p_preset->get("xr_features/xr_mode");
-			int hand_tracking = p_preset->get("xr_features/hand_tracking");
-			if (xr_mode_index != XR_MODE_OPENXR) {
-				if (hand_tracking > XR_HAND_TRACKING_NONE) {
-					return TTR("\"Hand Tracking\" is only valid when \"XR Mode\" is \"OpenXR\".");
-				}
-			}
-		} else if (p_name == "xr_features/passthrough") {
-			int xr_mode_index = p_preset->get("xr_features/xr_mode");
-			int passthrough_mode = p_preset->get("xr_features/passthrough");
-			if (xr_mode_index != XR_MODE_OPENXR) {
-				if (passthrough_mode > XR_PASSTHROUGH_NONE) {
-					return TTR("\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\".");
-				}
-			}
 		} else if (p_name == "gradle_build/export_format") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 			if (int(p_preset->get("gradle_build/export_format")) == EXPORT_FORMAT_AAB && !gradle_build_enabled) {
@@ -1874,9 +1847,6 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/opengl_debug"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,OpenXR"), XR_MODE_REGULAR, false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking", PROPERTY_HINT_ENUM, "None,Optional,Required"), XR_HAND_TRACKING_NONE, false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking_frequency", PROPERTY_HINT_ENUM, "Low,High"), XR_HAND_TRACKING_FREQUENCY_LOW));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/passthrough", PROPERTY_HINT_ENUM, "None,Optional,Required"), XR_PASSTHROUGH_NONE, false, true));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/immersive_mode"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_small"), true));
