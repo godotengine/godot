@@ -113,6 +113,7 @@ protected:
 
 public:
 
+	TypedArray<SaveloadSpawner> get_spawn_nodes();
 	TypedArray<SaveloadSynchronizer> get_sync_nodes();
 	Dictionary get_dict();
 

@@ -68,23 +68,6 @@ private:
 
 	void _node_ready(const ObjectID &p_oid);
 
-//	bool _verify_synchronizer(int p_peer, SaveloadSynchronizer *p_sync, uint32_t &r_net_id);
-//	SaveloadSynchronizer *_find_synchronizer(int p_peer, uint32_t p_net_ida);
-//
-//	void _send_delta(int p_peer, const HashSet<ObjectID> p_synchronizers, uint64_t p_usec, const HashMap<ObjectID, uint64_t> p_last_watch_usecs);
-//	Error _make_spawn_packet(Node *p_node, SaveloadSpawner *p_spawner, int &r_len);
-//	Error _make_despawn_packet(Node *p_node, int &r_len);
-//	Error _send_raw(const uint8_t *p_buffer, int p_size, int p_peer, bool p_reliable);
-
-//	void _encode_sync(const HashSet<ObjectID> p_synchronizers, uint16_t p_sync_net_time, uint64_t p_usec);
-//	void _encode_spawn(Node *p_node, SaveloadSpawner *p_spawner, int &r_len);
-//	void _encode_despawn(Node *p_node, int &r_len);
-
-//	void _visibility_changed(int p_peer, ObjectID p_oid);
-//	Error _update_sync_visibility(int p_peer, SaveloadSynchronizer *p_sync);
-//	Error _update_spawn_visibility(int p_peer, const ObjectID &p_oid);
-//	void _free_remotes(const PeerInfo &p_info);
-
 	template <class T>
 	static T *get_id_as(const ObjectID &p_id) {
 		return p_id.is_valid() ? Object::cast_to<T>(ObjectDB::get_instance(p_id)) : nullptr;
@@ -98,7 +81,6 @@ public:
 	static void make_default();
 
 	void on_reset();
-//	void on_peer_change(int p_id, bool p_connected);
 
 	void configure_spawn(Node *p_node, const SaveloadSpawner &p_spawner);
 	void configure_sync(Node *p_node, const SaveloadSynchronizer &p_syncher);
@@ -106,8 +88,9 @@ public:
 	void deconfigure_spawn(const SaveloadSpawner &p_spawner);
 	void deconfigure_sync(const SaveloadSynchronizer &p_syncher);
 
-	TypedArray<SaveloadSynchronizer> get_sync_nodes();
-	Dictionary get_sync_state();
+	TypedArray<SaveloadSpawner> get_spawn_nodes() const;
+	TypedArray<SaveloadSynchronizer> get_sync_nodes() const;
+	Dictionary get_sync_state() const;
 
 	SaveloadState get_saveload_state();
 	void load_saveload_state(const SaveloadState p_saveload_state);
