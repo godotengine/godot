@@ -30,7 +30,6 @@
 
 #include "button.h"
 
-#include "core/core_string_names.h"
 #include "core/string/translation.h"
 #include "servers/rendering_server.h"
 
@@ -540,13 +539,13 @@ void Button::set_icon(const Ref<Texture2D> &p_icon) {
 	}
 
 	if (icon.is_valid()) {
-		icon->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Button::_texture_changed));
+		icon->disconnect_changed(callable_mp(this, &Button::_texture_changed));
 	}
 
 	icon = p_icon;
 
 	if (icon.is_valid()) {
-		icon->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Button::_texture_changed));
+		icon->connect_changed(callable_mp(this, &Button::_texture_changed));
 	}
 
 	queue_redraw();

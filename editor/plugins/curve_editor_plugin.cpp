@@ -31,7 +31,6 @@
 #include "curve_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
@@ -62,15 +61,15 @@ void CurveEdit::set_curve(Ref<Curve> p_curve) {
 	}
 
 	if (curve.is_valid()) {
-		curve->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveEdit::_curve_changed));
-		curve->disconnect(Curve::SIGNAL_RANGE_CHANGED, callable_mp(this, &CurveEdit::_curve_changed));
+		curve->disconnect_changed(callable_mp(this, &CurveEdit::_curve_changed));
+		curve->disconnect_changed(callable_mp(this, &CurveEdit::_curve_changed));
 	}
 
 	curve = p_curve;
 
 	if (curve.is_valid()) {
-		curve->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveEdit::_curve_changed));
-		curve->connect(Curve::SIGNAL_RANGE_CHANGED, callable_mp(this, &CurveEdit::_curve_changed));
+		curve->connect_changed(callable_mp(this, &CurveEdit::_curve_changed));
+		curve->connect_changed(callable_mp(this, &CurveEdit::_curve_changed));
 	}
 
 	// Note: if you edit a curve, then set another, and try to undo,

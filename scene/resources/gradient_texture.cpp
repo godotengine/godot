@@ -66,11 +66,11 @@ void GradientTexture1D::set_gradient(Ref<Gradient> p_gradient) {
 		return;
 	}
 	if (gradient.is_valid()) {
-		gradient->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture1D::_update));
+		gradient->disconnect_changed(callable_mp(this, &GradientTexture1D::_update));
 	}
 	gradient = p_gradient;
 	if (gradient.is_valid()) {
-		gradient->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture1D::_update));
+		gradient->connect_changed(callable_mp(this, &GradientTexture1D::_update));
 	}
 	_update();
 	emit_changed();
@@ -192,11 +192,11 @@ void GradientTexture2D::set_gradient(Ref<Gradient> p_gradient) {
 		return;
 	}
 	if (gradient.is_valid()) {
-		gradient->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture2D::_queue_update));
+		gradient->disconnect_changed(callable_mp(this, &GradientTexture2D::_queue_update));
 	}
 	gradient = p_gradient;
 	if (gradient.is_valid()) {
-		gradient->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GradientTexture2D::_queue_update));
+		gradient->connect_changed(callable_mp(this, &GradientTexture2D::_queue_update));
 	}
 	_update();
 	emit_changed();

@@ -31,7 +31,6 @@
 #include "viewport.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/object/message_queue.h"
 #include "core/string/translation.h"
@@ -3864,7 +3863,7 @@ void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
 	}
 
 	if (own_world_3d.is_valid() && world_3d.is_valid()) {
-		world_3d->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_3d_changed));
+		world_3d->disconnect_changed(callable_mp(this, &Viewport::_own_world_3d_changed));
 	}
 
 	world_3d = p_world_3d;
@@ -3872,7 +3871,7 @@ void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
 	if (own_world_3d.is_valid()) {
 		if (world_3d.is_valid()) {
 			own_world_3d = world_3d->duplicate();
-			world_3d->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_3d_changed));
+			world_3d->connect_changed(callable_mp(this, &Viewport::_own_world_3d_changed));
 		} else {
 			own_world_3d = Ref<World3D>(memnew(World3D));
 		}
@@ -3923,14 +3922,14 @@ void Viewport::set_use_own_world_3d(bool p_use_own_world_3d) {
 	if (p_use_own_world_3d) {
 		if (world_3d.is_valid()) {
 			own_world_3d = world_3d->duplicate();
-			world_3d->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_3d_changed));
+			world_3d->connect_changed(callable_mp(this, &Viewport::_own_world_3d_changed));
 		} else {
 			own_world_3d = Ref<World3D>(memnew(World3D));
 		}
 	} else {
 		own_world_3d = Ref<World3D>();
 		if (world_3d.is_valid()) {
-			world_3d->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Viewport::_own_world_3d_changed));
+			world_3d->disconnect_changed(callable_mp(this, &Viewport::_own_world_3d_changed));
 		}
 	}
 

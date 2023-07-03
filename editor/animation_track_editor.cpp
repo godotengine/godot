@@ -3297,7 +3297,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		track_edits[_get_track_selected()]->release_focus();
 	}
 	if (animation.is_valid()) {
-		animation->disconnect("changed", callable_mp(this, &AnimationTrackEditor::_animation_changed));
+		animation->disconnect_changed(callable_mp(this, &AnimationTrackEditor::_animation_changed));
 		_clear_selection();
 	}
 	animation = p_anim;
@@ -3308,7 +3308,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 	_update_tracks();
 
 	if (animation.is_valid()) {
-		animation->connect("changed", callable_mp(this, &AnimationTrackEditor::_animation_changed));
+		animation->connect_changed(callable_mp(this, &AnimationTrackEditor::_animation_changed));
 
 		hscroll->show();
 		edit->set_disabled(read_only);

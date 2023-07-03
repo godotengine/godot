@@ -31,7 +31,6 @@
 #include "mesh_instance_3d.h"
 
 #include "collision_shape_3d.h"
-#include "core/core_string_names.h"
 #include "physics_body_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
@@ -111,7 +110,7 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 	}
 
 	if (mesh.is_valid()) {
-		mesh->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &MeshInstance3D::_mesh_changed));
+		mesh->disconnect_changed(callable_mp(this, &MeshInstance3D::_mesh_changed));
 	}
 
 	mesh = p_mesh;
@@ -120,7 +119,7 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 		// If mesh is a PrimitiveMesh, calling get_rid on it can trigger a changed callback
 		// so do this before connecting _mesh_changed.
 		set_base(mesh->get_rid());
-		mesh->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &MeshInstance3D::_mesh_changed));
+		mesh->connect_changed(callable_mp(this, &MeshInstance3D::_mesh_changed));
 		_mesh_changed();
 	} else {
 		blend_shape_tracks.clear();

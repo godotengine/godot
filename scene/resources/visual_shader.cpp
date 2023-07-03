@@ -767,7 +767,7 @@ void VisualShader::add_node(Type p_type, const Ref<VisualShaderNode> &p_node, co
 		input->shader_type = p_type;
 	}
 
-	n.node->connect("changed", callable_mp(this, &VisualShader::_queue_update));
+	n.node->connect_changed(callable_mp(this, &VisualShader::_queue_update));
 
 	Ref<VisualShaderNodeCustom> custom = n.node;
 	if (custom.is_valid()) {
@@ -834,7 +834,7 @@ void VisualShader::remove_node(Type p_type, int p_id) {
 	Graph *g = &graph[p_type];
 	ERR_FAIL_COND(!g->nodes.has(p_id));
 
-	g->nodes[p_id].node->disconnect("changed", callable_mp(this, &VisualShader::_queue_update));
+	g->nodes[p_id].node->disconnect_changed(callable_mp(this, &VisualShader::_queue_update));
 
 	g->nodes.erase(p_id);
 
@@ -907,7 +907,7 @@ void VisualShader::replace_node(Type p_type, int p_id, const StringName &p_new_c
 		}
 	}
 
-	vsn->connect("changed", callable_mp(this, &VisualShader::_queue_update));
+	vsn->connect_changed(callable_mp(this, &VisualShader::_queue_update));
 	g->nodes[p_id].node = Ref<VisualShaderNode>(vsn);
 
 	_queue_update();

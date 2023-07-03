@@ -524,7 +524,7 @@ void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 
 	// Set the tileset, registering to its changes.
 	if (tile_set.is_valid()) {
-		tile_set->disconnect("changed", callable_mp(this, &TileMap::_tile_set_changed));
+		tile_set->disconnect_changed(callable_mp(this, &TileMap::_tile_set_changed));
 	}
 
 	if (!p_tileset.is_valid()) {
@@ -534,7 +534,7 @@ void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 	tile_set = p_tileset;
 
 	if (tile_set.is_valid()) {
-		tile_set->connect("changed", callable_mp(this, &TileMap::_tile_set_changed));
+		tile_set->connect_changed(callable_mp(this, &TileMap::_tile_set_changed));
 		_clear_internals();
 		_recreate_internals();
 	}
@@ -4250,7 +4250,7 @@ TileMap::TileMap() {
 
 TileMap::~TileMap() {
 	if (tile_set.is_valid()) {
-		tile_set->disconnect("changed", callable_mp(this, &TileMap::_tile_set_changed));
+		tile_set->disconnect_changed(callable_mp(this, &TileMap::_tile_set_changed));
 	}
 
 	_clear_internals();

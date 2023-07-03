@@ -30,7 +30,6 @@
 
 #include "tile_set.h"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/templates/local_vector.h"
@@ -488,7 +487,7 @@ int TileSet::add_source(Ref<TileSetSource> p_tile_set_source, int p_atlas_source
 	p_tile_set_source->set_tile_set(this);
 	_compute_next_source_id();
 
-	sources[new_source_id]->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileSet::_source_changed));
+	sources[new_source_id]->connect_changed(callable_mp(this, &TileSet::_source_changed));
 
 	terrains_cache_dirty = true;
 	emit_changed();
@@ -499,7 +498,7 @@ int TileSet::add_source(Ref<TileSetSource> p_tile_set_source, int p_atlas_source
 void TileSet::remove_source(int p_source_id) {
 	ERR_FAIL_COND_MSG(!sources.has(p_source_id), vformat("Cannot remove TileSet atlas source. No tileset atlas source with id %d.", p_source_id));
 
-	sources[p_source_id]->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TileSet::_source_changed));
+	sources[p_source_id]->disconnect_changed(callable_mp(this, &TileSet::_source_changed));
 
 	sources[p_source_id]->set_tile_set(nullptr);
 	sources.erase(p_source_id);
@@ -3815,13 +3814,13 @@ void TileSetAtlasSource::reset_state() {
 
 void TileSetAtlasSource::set_texture(Ref<Texture2D> p_texture) {
 	if (texture.is_valid()) {
-		texture->disconnect(SNAME("changed"), callable_mp(this, &TileSetAtlasSource::_queue_update_padded_texture));
+		texture->disconnect_changed(callable_mp(this, &TileSetAtlasSource::_queue_update_padded_texture));
 	}
 
 	texture = p_texture;
 
 	if (texture.is_valid()) {
-		texture->connect(SNAME("changed"), callable_mp(this, &TileSetAtlasSource::_queue_update_padded_texture));
+		texture->connect_changed(callable_mp(this, &TileSetAtlasSource::_queue_update_padded_texture));
 	}
 
 	_clear_tiles_outside_texture();

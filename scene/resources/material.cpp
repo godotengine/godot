@@ -385,7 +385,7 @@ void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 	// This can be a slow operation, and `notify_property_list_changed()` (which is called by `_shader_changed()`)
 	// does nothing in non-editor builds anyway. See GH-34741 for details.
 	if (shader.is_valid() && Engine::get_singleton()->is_editor_hint()) {
-		shader->disconnect("changed", callable_mp(this, &ShaderMaterial::_shader_changed));
+		shader->disconnect_changed(callable_mp(this, &ShaderMaterial::_shader_changed));
 	}
 
 	shader = p_shader;
@@ -395,7 +395,7 @@ void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 		rid = shader->get_rid();
 
 		if (Engine::get_singleton()->is_editor_hint()) {
-			shader->connect("changed", callable_mp(this, &ShaderMaterial::_shader_changed));
+			shader->connect_changed(callable_mp(this, &ShaderMaterial::_shader_changed));
 		}
 	}
 

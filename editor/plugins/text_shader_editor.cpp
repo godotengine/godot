@@ -122,7 +122,7 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader, const Stri
 		return;
 	}
 	if (shader.is_valid()) {
-		shader->disconnect(SNAME("changed"), callable_mp(this, &ShaderTextEditor::_shader_changed));
+		shader->disconnect_changed(callable_mp(this, &ShaderTextEditor::_shader_changed));
 	}
 	shader = p_shader;
 	shader_inc = Ref<ShaderInclude>();
@@ -130,7 +130,7 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader, const Stri
 	set_edited_code(p_code);
 
 	if (shader.is_valid()) {
-		shader->connect(SNAME("changed"), callable_mp(this, &ShaderTextEditor::_shader_changed));
+		shader->connect_changed(callable_mp(this, &ShaderTextEditor::_shader_changed));
 	}
 }
 
@@ -152,7 +152,7 @@ void ShaderTextEditor::set_edited_shader_include(const Ref<ShaderInclude> &p_sha
 		return;
 	}
 	if (shader_inc.is_valid()) {
-		shader_inc->disconnect(SNAME("changed"), callable_mp(this, &ShaderTextEditor::_shader_changed));
+		shader_inc->disconnect_changed(callable_mp(this, &ShaderTextEditor::_shader_changed));
 	}
 	shader_inc = p_shader_inc;
 	shader = Ref<Shader>();
@@ -160,7 +160,7 @@ void ShaderTextEditor::set_edited_shader_include(const Ref<ShaderInclude> &p_sha
 	set_edited_code(p_code);
 
 	if (shader_inc.is_valid()) {
-		shader_inc->connect(SNAME("changed"), callable_mp(this, &ShaderTextEditor::_shader_changed));
+		shader_inc->connect_changed(callable_mp(this, &ShaderTextEditor::_shader_changed));
 	}
 }
 
