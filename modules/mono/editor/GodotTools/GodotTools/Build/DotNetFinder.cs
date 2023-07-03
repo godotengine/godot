@@ -20,19 +20,21 @@ namespace GodotTools.Build
 
             if (OS.IsMacOS)
             {
-                if (RuntimeInformation.OSArchitecture == Architecture.X64)
+                String[] pathList = {
+                    "/usr/local/share/dotnet/x64/dotnet", // Look for x64 version, when running under Rosetta 2.
+                    "/usr/local/share/dotnet/dotnet", // Look for native version.
+                    "/opt/homebrew/bin/dotnet" // Look for the homebrew path
+                };
+
+                for (int i = 0; i < pathList.Length; i++)
                 {
-                    string dotnet_x64 = "/usr/local/share/dotnet/x64/dotnet"; // Look for x64 version, when running under Rosetta 2.
-                    if (File.Exists(dotnet_x64))
+                    if(File.Exists(pathList[i]))
                     {
-                        return dotnet_x64;
+                        return pathList[i];
                     }
                 }
-                string dotnet = "/usr/local/share/dotnet/dotnet"; // Look for native version.
-                if (File.Exists(dotnet))
-                {
-                    return dotnet;
-                }
+
+                return null;
             }
 
             return OS.PathWhich("dotnet");
