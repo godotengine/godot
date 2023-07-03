@@ -722,7 +722,7 @@
 				Calls [method Object.notification] with [param what] on this node and all of its children, recursively.
 			</description>
 		</method>
-		<method name="queue_free">
+		<method name="queue_free" keywords="delete, remove, kill, die">
 			<return type="void" />
 			<description>
 				Queues this node to be deleted at the end of the current frame. When deleted, all of its children are deleted as well, and all references to the node and its children become invalid.

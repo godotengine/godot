@@ -623,7 +623,7 @@
 				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot signals. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
-		<method name="free">
+		<method name="free" keywords="delete, remove, kill, die">
 			<return type="void" />
 			<description>
 				Deletes the object from memory. Pre-existing references to the object become invalid, and any attempt to access them will result in a run-time error. Checking the references with [method @GlobalScope.is_instance_valid] will return [code]false[/code].

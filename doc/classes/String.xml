@@ -41,7 +41,7 @@
 		</constructor>
 	</constructors>
 	<methods>
-		<method name="begins_with" qualifiers="const">
+		<method name="begins_with" qualifiers="const" keywords="starts_with">
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
@@ -126,7 +126,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="contains" qualifiers="const">
+		<method name="contains" qualifiers="const" keywords="includes, has">
 			<return type="bool" />
 			<param index="0" name="what" type="String" />
 			<description>
