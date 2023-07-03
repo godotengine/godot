@@ -2802,7 +2802,7 @@ _FORCE_INLINE_ float RichTextLabel::_update_scroll_exceeds(float p_total_height,
 
 		total_height = 0;
 		for (int j = 0; j <= p_idx; j++) {
-			total_height = _resize_line(main, j, theme_cache.normal_font, theme_cache.normal_font_size, p_width, total_height);
+			total_height = _resize_line(main, j, theme_cache.normal_font, theme_cache.normal_font_size, p_width - scroll_w, total_height);
 
 			main->first_resized_line.store(j);
 		}
@@ -2852,7 +2852,7 @@ bool RichTextLabel::_validate_line_caches() {
 		float total_height = (fi == 0) ? 0 : _calculate_line_vertical_offset(main->lines[fi - 1]);
 		for (int i = fi; i < (int)main->lines.size(); i++) {
 			total_height = _resize_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
-			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width - scroll_w, i, old_scroll, text_rect.size.height);
+			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width, i, old_scroll, text_rect.size.height);
 			main->first_resized_line.store(i);
 		}
 
@@ -2918,7 +2918,7 @@ void RichTextLabel::_process_line_caches() {
 
 		for (int i = sr; i < fi; i++) {
 			total_height = _resize_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
-			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width - scroll_w, i, old_scroll, text_rect.size.height);
+			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width, i, old_scroll, text_rect.size.height);
 
 			main->first_resized_line.store(i);
 
@@ -2930,7 +2930,7 @@ void RichTextLabel::_process_line_caches() {
 
 	for (int i = fi; i < (int)main->lines.size(); i++) {
 		total_height = _shape_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
-		total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width - scroll_w, i, old_scroll, text_rect.size.height);
+		total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width, i, old_scroll, text_rect.size.height);
 
 		main->first_invalid_line.store(i);
 		main->first_resized_line.store(i);
