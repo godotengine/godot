@@ -220,7 +220,7 @@ void NavigationAgent3D::_notification(int p_what) {
 			set_agent_parent(get_parent());
 			set_physics_process_internal(true);
 
-			if (avoidance_enabled) {
+			if (agent_parent && avoidance_enabled) {
 				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
 			}
 
