@@ -1906,7 +1906,7 @@ void Node::set_owner(Node *p_owner) {
 		check = check->data.parent;
 	}
 
-	ERR_FAIL_COND(!owner_valid);
+	ERR_FAIL_COND_MSG(!owner_valid, "Invalid owner. Owner must be an ancestor in the tree.");
 
 	_set_owner_nocheck(p_owner);
 
