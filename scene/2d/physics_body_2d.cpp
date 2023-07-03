@@ -30,7 +30,6 @@
 
 #include "physics_body_2d.h"
 
-#include "core/core_string_names.h"
 #include "scene/scene_string_names.h"
 
 void PhysicsBody2D::_bind_methods() {
@@ -195,15 +194,13 @@ real_t StaticBody2D::get_constant_angular_velocity() const {
 
 void StaticBody2D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody2D::_reload_physics_characteristics))) {
-			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody2D::_reload_physics_characteristics));
-		}
+		physics_material_override->disconnect_changed(callable_mp(this, &StaticBody2D::_reload_physics_characteristics));
 	}
 
 	physics_material_override = p_physics_material_override;
 
 	if (physics_material_override.is_valid()) {
-		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody2D::_reload_physics_characteristics));
+		physics_material_override->connect_changed(callable_mp(this, &StaticBody2D::_reload_physics_characteristics));
 	}
 	_reload_physics_characteristics();
 }
@@ -651,15 +648,13 @@ const Vector2 &RigidBody2D::get_center_of_mass() const {
 
 void RigidBody2D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody2D::_reload_physics_characteristics))) {
-			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody2D::_reload_physics_characteristics));
-		}
+		physics_material_override->disconnect_changed(callable_mp(this, &RigidBody2D::_reload_physics_characteristics));
 	}
 
 	physics_material_override = p_physics_material_override;
 
 	if (physics_material_override.is_valid()) {
-		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody2D::_reload_physics_characteristics));
+		physics_material_override->connect_changed(callable_mp(this, &RigidBody2D::_reload_physics_characteristics));
 	}
 	_reload_physics_characteristics();
 }

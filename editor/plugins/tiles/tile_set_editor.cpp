@@ -723,7 +723,7 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 
 	// Remove listener.
 	if (tile_set.is_valid()) {
-		tile_set->disconnect("changed", callable_mp(this, &TileSetEditor::_tile_set_changed));
+		tile_set->disconnect_changed(callable_mp(this, &TileSetEditor::_tile_set_changed));
 	}
 
 	// Change the edited object.
@@ -738,7 +738,7 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 		sources_advanced_menu_button->set_disabled(read_only);
 		source_sort_button->set_disabled(read_only);
 
-		tile_set->connect("changed", callable_mp(this, &TileSetEditor::_tile_set_changed));
+		tile_set->connect_changed(callable_mp(this, &TileSetEditor::_tile_set_changed));
 		if (first_edit) {
 			first_edit = false;
 			_set_source_sort(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_source_sort", 0));

@@ -81,7 +81,7 @@ void ConcavePolygonShape3D::_update_shape() {
 void ConcavePolygonShape3D::set_faces(const Vector<Vector3> &p_faces) {
 	faces = p_faces;
 	_update_shape();
-	notify_change_to_owners();
+	emit_changed();
 }
 
 Vector<Vector3> ConcavePolygonShape3D::get_faces() const {
@@ -93,7 +93,7 @@ void ConcavePolygonShape3D::set_backface_collision_enabled(bool p_enabled) {
 
 	if (!faces.is_empty()) {
 		_update_shape();
-		notify_change_to_owners();
+		emit_changed();
 	}
 }
 

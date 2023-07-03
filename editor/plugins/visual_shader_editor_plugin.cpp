@@ -31,7 +31,6 @@
 #include "visual_shader_editor_plugin.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
@@ -242,7 +241,7 @@ void VisualShaderGraphPlugin::update_curve(int p_node_id) {
 		if (tex->get_texture().is_valid()) {
 			links[p_node_id].curve_editors[0]->set_curve(tex->get_texture()->get_curve());
 		}
-		tex->emit_signal(CoreStringNames::get_singleton()->changed);
+		tex->emit_changed();
 	}
 }
 
@@ -256,7 +255,7 @@ void VisualShaderGraphPlugin::update_curve_xyz(int p_node_id) {
 			links[p_node_id].curve_editors[1]->set_curve(tex->get_texture()->get_curve_y());
 			links[p_node_id].curve_editors[2]->set_curve(tex->get_texture()->get_curve_z());
 		}
-		tex->emit_signal(CoreStringNames::get_singleton()->changed);
+		tex->emit_changed();
 	}
 }
 
@@ -563,9 +562,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	if (curve.is_valid()) {
 		custom_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-		Callable ce = callable_mp(graph_plugin, &VisualShaderGraphPlugin::update_curve);
-		if (curve->get_texture().is_valid() && !curve->get_texture()->is_connected("changed", ce)) {
-			curve->get_texture()->connect("changed", ce.bind(p_id));
+		if (curve->get_texture().is_valid()) {
+			curve->get_texture()->connect_changed(callable_mp(graph_plugin, &VisualShaderGraphPlugin::update_curve).bind(p_id));
 		}
 
 		CurveEditor *curve_editor = memnew(CurveEditor);
@@ -581,9 +579,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	if (curve_xyz.is_valid()) {
 		custom_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-		Callable ce = callable_mp(graph_plugin, &VisualShaderGraphPlugin::update_curve_xyz);
-		if (curve_xyz->get_texture().is_valid() && !curve_xyz->get_texture()->is_connected("changed", ce)) {
-			curve_xyz->get_texture()->connect("changed", ce.bind(p_id));
+		if (curve_xyz->get_texture().is_valid()) {
+			curve_xyz->get_texture()->connect_changed(callable_mp(graph_plugin, &VisualShaderGraphPlugin::update_curve_xyz).bind(p_id));
 		}
 
 		CurveEditor *curve_editor_x = memnew(CurveEditor);
@@ -1162,20 +1159,14 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		visual_shader = Ref<VisualShader>(p_visual_shader);
 		graph_plugin->register_shader(visual_shader.ptr());
 
-		Callable ce = callable_mp(this, &VisualShaderEditor::_update_preview);
-		if (!visual_shader->is_connected("changed", ce)) {
-			visual_shader->connect("changed", ce);
-		}
+		visual_shader->connect_changed(callable_mp(this, &VisualShaderEditor::_update_preview));
 		visual_shader->set_graph_offset(graph->get_scroll_ofs() / EDSCALE);
 		_set_mode(visual_shader->get_mode());
 
 		_update_nodes();
 	} else {
 		if (visual_shader.is_valid()) {
-			Callable ce = callable_mp(this, &VisualShaderEditor::_update_preview);
-			if (visual_shader->is_connected("changed", ce)) {
-				visual_shader->disconnect("changed", ce);
-			}
+			visual_shader->disconnect_changed(callable_mp(this, &VisualShaderEditor::_update_preview));
 		}
 		visual_shader.unref();
 	}
@@ -6450,7 +6441,7 @@ public:
 			properties[i]->update_property();
 			properties[i]->set_name_split_ratio(0);
 		}
-		node->connect("changed", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_node_changed));
+		node->connect_changed(callable_mp(this, &VisualShaderNodePluginDefaultEditor::_node_changed));
 	}
 
 	static void _bind_methods() {
@@ -6716,7 +6707,7 @@ void VisualShaderNodePortPreview::_shader_changed() {
 
 void VisualShaderNodePortPreview::setup(const Ref<VisualShader> &p_shader, VisualShader::Type p_type, int p_node, int p_port, bool p_is_valid) {
 	shader = p_shader;
-	shader->connect("changed", callable_mp(this, &VisualShaderNodePortPreview::_shader_changed), CONNECT_DEFERRED);
+	shader->connect_changed(callable_mp(this, &VisualShaderNodePortPreview::_shader_changed), CONNECT_DEFERRED);
 	type = p_type;
 	port = p_port;
 	node = p_node;

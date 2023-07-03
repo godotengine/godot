@@ -384,7 +384,7 @@ void TileSetScenesCollectionSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetS
 
 	// Remove listener for old objects.
 	if (tile_set_scenes_collection_source) {
-		tile_set_scenes_collection_source->disconnect("changed", callable_mp(this, &TileSetScenesCollectionSourceEditor::_tile_set_scenes_collection_source_changed));
+		tile_set_scenes_collection_source->disconnect_changed(callable_mp(this, &TileSetScenesCollectionSourceEditor::_tile_set_scenes_collection_source_changed));
 	}
 
 	// Change the edited object.
@@ -404,7 +404,7 @@ void TileSetScenesCollectionSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetS
 
 	// Add the listener again.
 	if (tile_set_scenes_collection_source) {
-		tile_set_scenes_collection_source->connect("changed", callable_mp(this, &TileSetScenesCollectionSourceEditor::_tile_set_scenes_collection_source_changed));
+		tile_set_scenes_collection_source->connect_changed(callable_mp(this, &TileSetScenesCollectionSourceEditor::_tile_set_scenes_collection_source_changed));
 	}
 
 	// Update everything.

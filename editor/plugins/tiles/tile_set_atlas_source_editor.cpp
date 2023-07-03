@@ -2104,7 +2104,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 void TileSetAtlasSourceEditor::_tile_set_changed() {
 	if (tile_set->get_source_count() == 0) {
 		// No sources, so nothing to do here anymore.
-		tile_set->disconnect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
+		tile_set->disconnect_changed(callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
 		tile_set = Ref<TileSet>();
 		return;
 	}
@@ -2218,7 +2218,7 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 
 	// Remove listener for old objects.
 	if (tile_set.is_valid()) {
-		tile_set->disconnect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
+		tile_set->disconnect_changed(callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
 	}
 
 	// Clear the selection.
@@ -2233,7 +2233,7 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 	read_only = new_read_only_state;
 
 	if (tile_set.is_valid()) {
-		tile_set->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
+		tile_set->connect_changed(callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
 	}
 
 	if (read_only && tools_button_group->get_pressed_button() == tool_paint_button) {

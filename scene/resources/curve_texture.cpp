@@ -81,11 +81,11 @@ void CurveTexture::ensure_default_setup(float p_min, float p_max) {
 void CurveTexture::set_curve(Ref<Curve> p_curve) {
 	if (_curve != p_curve) {
 		if (_curve.is_valid()) {
-			_curve->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveTexture::_update));
+			_curve->disconnect_changed(callable_mp(this, &CurveTexture::_update));
 		}
 		_curve = p_curve;
 		if (_curve.is_valid()) {
-			_curve->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveTexture::_update));
+			_curve->connect_changed(callable_mp(this, &CurveTexture::_update));
 		}
 		_update();
 	}
@@ -245,11 +245,11 @@ void CurveXYZTexture::ensure_default_setup(float p_min, float p_max) {
 void CurveXYZTexture::set_curve_x(Ref<Curve> p_curve) {
 	if (_curve_x != p_curve) {
 		if (_curve_x.is_valid()) {
-			_curve_x->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update));
+			_curve_x->disconnect_changed(callable_mp(this, &CurveXYZTexture::_update));
 		}
 		_curve_x = p_curve;
 		if (_curve_x.is_valid()) {
-			_curve_x->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), CONNECT_REFERENCE_COUNTED);
+			_curve_x->connect_changed(callable_mp(this, &CurveXYZTexture::_update), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}
@@ -258,11 +258,11 @@ void CurveXYZTexture::set_curve_x(Ref<Curve> p_curve) {
 void CurveXYZTexture::set_curve_y(Ref<Curve> p_curve) {
 	if (_curve_y != p_curve) {
 		if (_curve_y.is_valid()) {
-			_curve_y->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update));
+			_curve_y->disconnect_changed(callable_mp(this, &CurveXYZTexture::_update));
 		}
 		_curve_y = p_curve;
 		if (_curve_y.is_valid()) {
-			_curve_y->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), CONNECT_REFERENCE_COUNTED);
+			_curve_y->connect_changed(callable_mp(this, &CurveXYZTexture::_update), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}
@@ -271,11 +271,11 @@ void CurveXYZTexture::set_curve_y(Ref<Curve> p_curve) {
 void CurveXYZTexture::set_curve_z(Ref<Curve> p_curve) {
 	if (_curve_z != p_curve) {
 		if (_curve_z.is_valid()) {
-			_curve_z->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update));
+			_curve_z->disconnect_changed(callable_mp(this, &CurveXYZTexture::_update));
 		}
 		_curve_z = p_curve;
 		if (_curve_z.is_valid()) {
-			_curve_z->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveXYZTexture::_update), CONNECT_REFERENCE_COUNTED);
+			_curve_z->connect_changed(callable_mp(this, &CurveXYZTexture::_update), CONNECT_REFERENCE_COUNTED);
 		}
 		_update();
 	}
