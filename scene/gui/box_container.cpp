@@ -32,12 +32,6 @@
 #include "label.h"
 #include "margin_container.h"
 
-struct _MinSizeCache {
-	int min_size;
-	bool will_stretch;
-	int final_size;
-};
-
 void BoxContainer::_resort() {
 	/** First pass, determine minimum size AND amount of stretchable elements */
 

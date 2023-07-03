@@ -2342,7 +2342,8 @@ VisualScriptNodeInstance *VisualScriptSceneNode::instance(VisualScriptInstance *
 
 #ifdef TOOLS_ENABLED
 
-static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
+namespace NSVisualScript {
+Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
 	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene) {
 		return nullptr;
 	}
@@ -2354,7 +2355,7 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 	}
 
 	for (int i = 0; i < p_current_node->get_child_count(); i++) {
-		Node *n = _find_script_node(p_edited_scene, p_current_node->get_child(i), script);
+		Node *n = NSVisualScript::_find_script_node(p_edited_scene, p_current_node->get_child(i), script);
 		if (n) {
 			return n;
 		}
@@ -2362,6 +2363,7 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 
 	return nullptr;
 }
+} //namespace NSVisualScript
 
 #endif
 
@@ -2389,7 +2391,7 @@ VisualScriptSceneNode::TypeGuess VisualScriptSceneNode::guess_output_type(TypeGu
 		return tg;
 	}
 
-	Node *script_node = _find_script_node(edited_scene, edited_scene, script);
+	Node *script_node = NSVisualScript::_find_script_node(edited_scene, edited_scene, script);
 
 	if (!script_node) {
 		return tg;
@@ -2426,7 +2428,7 @@ void VisualScriptSceneNode::_validate_property(PropertyInfo &property) const {
 			return;
 		}
 
-		Node *script_node = _find_script_node(edited_scene, edited_scene, script);
+		Node *script_node = NSVisualScript::_find_script_node(edited_scene, edited_scene, script);
 
 		if (!script_node) {
 			return;

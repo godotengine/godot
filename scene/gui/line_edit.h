@@ -150,6 +150,7 @@ private:
 	void _text_changed();
 	void _emit_text_change();
 	bool expand_to_text_length;
+	bool _is_text_char(CharType c);
 
 	void update_cached_width();
 	void update_placeholder_width();
