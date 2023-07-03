@@ -182,7 +182,7 @@ private:
 
 	static thread_local int load_nesting;
 	static thread_local WorkerThreadPool::TaskID caller_task_id;
-	static thread_local Vector<String> load_paths_stack;
+	static thread_local Vector<String> *load_paths_stack; // A pointer to avoid broken TLS implementations from double-running the destructor.
 	static SafeBinaryMutex<BINARY_MUTEX_TAG> thread_load_mutex;
 	static HashMap<String, ThreadLoadTask> thread_load_tasks;
 	static bool cleaning_tasks;
