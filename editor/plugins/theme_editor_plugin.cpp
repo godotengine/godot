@@ -3487,6 +3487,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 ///////////////////////
 
 void ThemeEditor::edit(const Ref<Theme> &p_theme) {
+	print_line(p_theme);
 	if (theme == p_theme) {
 		return;
 	}

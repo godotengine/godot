@@ -878,8 +878,8 @@ void EditorProperty::_update_pin_flags() {
 		// Avoid errors down the road by ignoring nodes which are not part of a scene
 		if (!node->get_owner()) {
 			bool is_scene_root = false;
-			for (int i = 0; i < EditorNode::get_singleton()->get_editor_data().get_edited_scene_count(); ++i) {
-				if (EditorNode::get_singleton()->get_editor_data().get_edited_scene_root(i) == node) {
+			for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); ++i) {
+				if (EditorNode::get_editor_data().get_edited_scene_root(i) == node) {
 					is_scene_root = true;
 					break;
 				}
@@ -1717,7 +1717,7 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 	undo_redo->create_action(action_name);
 	if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
 		// Call the function.
-		Callable move_function = EditorNode::get_singleton()->get_editor_data().get_move_array_element_function(object->get_class_name());
+		Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
 		if (move_function.is_valid()) {
 			Variant args[] = { undo_redo, object, array_element_prefix, p_element_index, p_to_pos };
 			const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
@@ -1862,7 +1862,7 @@ void EditorInspectorArray::_clear_array() {
 	if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
 		for (int i = count - 1; i >= 0; i--) {
 			// Call the function.
-			Callable move_function = EditorNode::get_singleton()->get_editor_data().get_move_array_element_function(object->get_class_name());
+			Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
 			if (move_function.is_valid()) {
 				Variant args[] = { undo_redo, object, array_element_prefix, i, -1 };
 				const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
@@ -1916,7 +1916,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 		if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
 			for (int i = count; i < p_size; i++) {
 				// Call the function.
-				Callable move_function = EditorNode::get_singleton()->get_editor_data().get_move_array_element_function(object->get_class_name());
+				Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
 				if (move_function.is_valid()) {
 					Variant args[] = { undo_redo, object, array_element_prefix, -1, -1 };
 					const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
@@ -1935,7 +1935,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 		if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
 			for (int i = count - 1; i > p_size - 1; i--) {
 				// Call the function.
-				Callable move_function = EditorNode::get_singleton()->get_editor_data().get_move_array_element_function(object->get_class_name());
+				Callable move_function = EditorNode::get_editor_data().get_move_array_element_function(object->get_class_name());
 				if (move_function.is_valid()) {
 					Variant args[] = { undo_redo, object, array_element_prefix, i, -1 };
 					const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
@@ -3690,7 +3690,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		Variant v_undo_redo = undo_redo;
 		Variant v_object = object;
 		Variant v_name = p_name;
-		const Vector<Callable> &callbacks = EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback();
+		const Vector<Callable> &callbacks = EditorNode::get_editor_data().get_undo_redo_inspector_hook_callback();
 		for (int i = 0; i < callbacks.size(); i++) {
 			const Callable &callback = callbacks[i];
 

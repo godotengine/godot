@@ -7618,8 +7618,8 @@ EditorNode::EditorNode() {
 
 	// Instantiate and place editor docks.
 
-	memnew(SceneTreeDock(scene_root, editor_selection, editor_data));
-	memnew(InspectorDock(editor_data));
+	memnew(SceneTreeDock);
+	memnew(InspectorDock);
 	memnew(ImportDock);
 	memnew(NodeDock);
 

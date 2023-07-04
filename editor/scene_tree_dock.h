@@ -37,8 +37,6 @@
 #include "scene/resources/animation.h"
 
 class CheckBox;
-class EditorData;
-class EditorSelection;
 class EditorQuickOpen;
 class MenuButton;
 class ReparentDialog;
@@ -138,9 +136,6 @@ class SceneTreeDock : public VBoxContainer {
 	String resource_drop_path;
 	void _perform_property_drop(Node *p_node, String p_property, Ref<Resource> p_res);
 
-	EditorData *editor_data = nullptr;
-	EditorSelection *editor_selection = nullptr;
-
 	List<Node *> node_clipboard;
 	String clipboard_source_scene;
 	HashMap<String, HashMap<Ref<Resource>, Ref<Resource>>> clipboard_resource_remap;
@@ -176,7 +171,6 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _create();
 	void _do_create(Node *p_parent);
-	Node *scene_root = nullptr;
 	Node *edited_scene = nullptr;
 	Node *pending_click_select = nullptr;
 	bool tree_clicked = false;
@@ -308,7 +302,6 @@ public:
 	void fill_path_renames(Node *p_node, Node *p_new_parent, HashMap<Node *, NodePath> *p_renames);
 	void perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims = nullptr);
 	SceneTreeEditor *get_tree_editor() { return scene_tree; }
-	EditorData *get_editor_data() { return editor_data; }
 
 	void add_remote_tree_editor(Control *p_remote);
 	void show_remote_tree();
@@ -334,7 +327,7 @@ public:
 		return script_create_dialog;
 	}
 
-	SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
+	SceneTreeDock();
 	~SceneTreeDock();
 };
 
