@@ -90,11 +90,12 @@ void EditorExport::_save() {
 
 		String option_section = "preset." + itos(i) + ".options";
 
-		for (const PropertyInfo &E : preset->get_properties()) {
-			if (E.usage & PROPERTY_USAGE_SECRET) {
-				credentials->set_value(option_section, E.name, preset->get(E.name));
+		for (const KeyValue<StringName, Variant> &E : preset->values) {
+			PropertyInfo *prop = preset->properties.getptr(E.key);
+			if (prop && prop->usage & PROPERTY_USAGE_SECRET) {
+				credentials->set_value(option_section, E.key, E.value);
 			} else {
-				config->set_value(option_section, E.name, preset->get(E.name));
+				config->set_value(option_section, E.key, E.value);
 			}
 		}
 	}
@@ -116,6 +117,7 @@ void EditorExport::_bind_methods() {
 
 void EditorExport::add_export_platform(const Ref<EditorExportPlatform> &p_platform) {
 	export_platforms.push_back(p_platform);
+	should_update_presets = true;
 }
 
 int EditorExport::get_export_platform_count() {
@@ -169,11 +171,13 @@ void EditorExport::remove_export_preset(int p_idx) {
 void EditorExport::add_export_plugin(const Ref<EditorExportPlugin> &p_plugin) {
 	if (!export_plugins.has(p_plugin)) {
 		export_plugins.push_back(p_plugin);
+		should_update_presets = true;
 	}
 }
 
 void EditorExport::remove_export_plugin(const Ref<EditorExportPlugin> &p_plugin) {
 	export_plugins.erase(p_plugin);
+	should_update_presets = true;
 }
 
 Vector<Ref<EditorExportPlugin>> EditorExport::get_export_plugins() {
@@ -314,8 +318,11 @@ void EditorExport::load_config() {
 			credentials->get_section_keys(option_section, &options);
 
 			for (const String &E : options) {
-				Variant value = credentials->get_value(option_section, E);
-				preset->set(E, value);
+				// Drop values for secret properties that no longer exist, or during the next save they would end up in the regular config file.
+				if (preset->get_properties().has(E)) {
+					Variant value = credentials->get_value(option_section, E);
+					preset->set(E, value);
+				}
 			}
 		}
 
@@ -332,7 +339,8 @@ void EditorExport::update_export_presets() {
 	for (int i = 0; i < export_platforms.size(); i++) {
 		Ref<EditorExportPlatform> platform = export_platforms[i];
 
-		bool should_update = platform->should_update_export_options();
+		bool should_update = should_update_presets;
+		should_update |= platform->should_update_export_options();
 		for (int j = 0; j < export_plugins.size(); j++) {
 			should_update |= export_plugins.write[j]->_should_update_export_options(platform);
 		}
@@ -342,12 +350,13 @@ void EditorExport::update_export_presets() {
 			platform->get_export_options(&options);
 
 			for (int j = 0; j < export_plugins.size(); j++) {
-				export_plugins.write[j]->_get_export_options(platform, &options);
+				export_plugins[j]->_get_export_options(platform, &options);
 			}
 
 			platform_options[platform->get_name()] = options;
 		}
 	}
+	should_update_presets = false;
 
 	bool export_presets_updated = false;
 	for (int i = 0; i < export_presets.size(); i++) {
@@ -357,19 +366,16 @@ void EditorExport::update_export_presets() {
 
 			List<EditorExportPlatform::ExportOption> options = platform_options[preset->get_platform()->get_name()];
 
-			// Copy the previous preset values
-			HashMap<StringName, Variant> previous_values = preset->values;
-
-			// Clear the preset properties and values prior to reloading
+			// Clear the preset properties prior to reloading, keep the values to preserve options from plugins that may be currently disabled.
 			preset->properties.clear();
-			preset->values.clear();
 			preset->update_visibility.clear();
 
 			for (const EditorExportPlatform::ExportOption &E : options) {
-				preset->properties.push_back(E.option);
-
 				StringName option_name = E.option.name;
-				preset->values[option_name] = previous_values.has(option_name) ? previous_values[option_name] : E.default_value;
+				preset->properties[option_name] = E.option;
+				if (!preset->has(option_name)) {
+					preset->values[option_name] = E.default_value;
+				}
 				preset->update_visibility[option_name] = E.update_visibility;
 			}
 		}
