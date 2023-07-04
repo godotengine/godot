@@ -3664,7 +3664,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::VECTOR2I: {
 			EditorPropertyVector2i *editor = memnew(EditorPropertyVector2i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
-			editor->setup(hint.min, hint.max, 1, true, p_hint == PROPERTY_HINT_LINK, hint.suffix);
+			editor->setup(hint.min, hint.max, 1, false, p_hint == PROPERTY_HINT_LINK, hint.suffix);
 			return editor;
 
 		} break;
@@ -3691,7 +3691,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::VECTOR3I: {
 			EditorPropertyVector3i *editor = memnew(EditorPropertyVector3i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
-			editor->setup(hint.min, hint.max, 1, true, p_hint == PROPERTY_HINT_LINK, hint.suffix);
+			editor->setup(hint.min, hint.max, 1, false, p_hint == PROPERTY_HINT_LINK, hint.suffix);
 			return editor;
 
 		} break;
@@ -3705,7 +3705,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::VECTOR4I: {
 			EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i);
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
-			editor->setup(hint.min, hint.max, 1, true, p_hint == PROPERTY_HINT_LINK, hint.suffix);
+			editor->setup(hint.min, hint.max, 1, false, p_hint == PROPERTY_HINT_LINK, hint.suffix);
 			return editor;
 
 		} break;
