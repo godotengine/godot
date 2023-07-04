@@ -40,6 +40,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 	virtual Size2 get_minimum_size() const override;
+	Size2 calc_child_size(const Size2 &p_child_minsize, const Size2 &p_size) const;
 
 public:
 	enum StretchMode {

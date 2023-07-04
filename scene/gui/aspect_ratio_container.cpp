@@ -34,6 +34,7 @@
 
 Size2 AspectRatioContainer::get_minimum_size() const {
 	Size2 ms;
+	Size2 own_size = get_size();
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c) {
@@ -45,11 +46,36 @@ Size2 AspectRatioContainer::get_minimum_size() const {
 		if (!c->is_visible()) {
 			continue;
 		}
-		Size2 minsize = c->get_combined_minimum_size();
-		ms.width = MAX(ms.width, minsize.width);
-		ms.height = MAX(ms.height, minsize.height);
+		Size2 size = calc_child_size(c->get_combined_minimum_size(), own_size);
+		ms.width = MAX(ms.width, size.width);
+		ms.height = MAX(ms.height, size.height);
 	}
 	return ms;
+}
+
+Size2 AspectRatioContainer::calc_child_size(const Size2 &p_child_minsize, const Size2 &p_size) const {
+	Size2 child_size = Size2(ratio, 1.0);
+	float scale_factor = 1.0;
+
+	switch (stretch_mode) {
+		case STRETCH_WIDTH_CONTROLS_HEIGHT: {
+			scale_factor = p_size.x / child_size.x;
+		} break;
+		case STRETCH_HEIGHT_CONTROLS_WIDTH: {
+			scale_factor = p_size.y / child_size.y;
+		} break;
+		case STRETCH_FIT: {
+			scale_factor = MIN(p_size.x / child_size.x, p_size.y / child_size.y);
+		} break;
+		case STRETCH_COVER: {
+			scale_factor = MAX(p_size.x / child_size.x, p_size.y / child_size.y);
+		} break;
+	}
+	child_size *= scale_factor;
+	child_size.x = MAX(child_size.x, p_child_minsize.x);
+	child_size.y = MAX(child_size.y, p_child_minsize.y);
+
+	return child_size;
 }
 
 void AspectRatioContainer::set_ratio(float p_ratio) {
@@ -125,28 +151,7 @@ void AspectRatioContainer::_notification(int p_what) {
 					}
 				}
 
-				Size2 child_minsize = c->get_combined_minimum_size();
-				Size2 child_size = Size2(ratio, 1.0);
-				float scale_factor = 1.0;
-
-				switch (stretch_mode) {
-					case STRETCH_WIDTH_CONTROLS_HEIGHT: {
-						scale_factor = size.x / child_size.x;
-					} break;
-					case STRETCH_HEIGHT_CONTROLS_WIDTH: {
-						scale_factor = size.y / child_size.y;
-					} break;
-					case STRETCH_FIT: {
-						scale_factor = MIN(size.x / child_size.x, size.y / child_size.y);
-					} break;
-					case STRETCH_COVER: {
-						scale_factor = MAX(size.x / child_size.x, size.y / child_size.y);
-					} break;
-				}
-				child_size *= scale_factor;
-				child_size.x = MAX(child_size.x, child_minsize.x);
-				child_size.y = MAX(child_size.y, child_minsize.y);
-
+				Size2 child_size = calc_child_size(c->get_combined_minimum_size(), size);
 				float align_x = 0.5;
 				switch (alignment_horizontal) {
 					case ALIGNMENT_BEGIN: {
