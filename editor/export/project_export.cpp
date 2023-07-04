@@ -577,8 +577,8 @@ void ProjectExportDialog::_duplicate_preset() {
 	preset->set_exclude_filter(current->get_exclude_filter());
 	preset->set_custom_features(current->get_custom_features());
 
-	for (const PropertyInfo &E : current->get_properties()) {
-		preset->set(E.name, current->get(E.name));
+	for (const KeyValue<StringName, Variant> &E : current->get_values()) {
+		preset->set(E.key, E.value);
 	}
 
 	EditorExport::get_singleton()->add_export_preset(preset);

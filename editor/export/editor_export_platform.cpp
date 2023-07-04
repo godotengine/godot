@@ -329,9 +329,10 @@ Ref<EditorExportPreset> EditorExportPlatform::create_preset() {
 	}
 
 	for (const ExportOption &E : options) {
-		preset->properties.push_back(E.option);
-		preset->values[E.option.name] = E.default_value;
-		preset->update_visibility[E.option.name] = E.update_visibility;
+		StringName option_name = E.option.name;
+		preset->properties[option_name] = E.option;
+		preset->values[option_name] = E.default_value;
+		preset->update_visibility[option_name] = E.update_visibility;
 	}
 
 	return preset;
