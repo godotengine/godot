@@ -42,7 +42,7 @@
 			<description>
 				Changes the running scene to the one at the given [param path], after loading it into a [PackedScene] and creating a new instance.
 				Returns [constant OK] on success, [constant ERR_CANT_OPEN] if the [param path] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if that scene cannot be instantiated.
-				[b]Note:[/b] The scene change is deferred, which means that the new scene node is added to the tree at the end of the frame. This ensures that both scenes aren't running at the same time, while still freeing the previous scene in a safe way similar to [method Node.queue_free]. As such, you won't be able to access the loaded scene immediately after the [method change_scene_to_file] call.
+				[b]Note:[/b] The new scene node is added to the tree at the end of the frame. This ensures that both scenes aren't running at the same time, while still freeing the previous scene in a safe way similar to [method Node.queue_free]. As such, you won't be able to access the loaded scene immediately after the [method change_scene_to_file] call.
 			</description>
 		</method>
 		<method name="change_scene_to_packed">
@@ -51,7 +51,7 @@
 			<description>
 				Changes the running scene to a new instance of the given [PackedScene] (which must be valid).
 				Returns [constant OK] on success, [constant ERR_CANT_CREATE] if the scene cannot be instantiated, or [constant ERR_INVALID_PARAMETER] if the scene is invalid.
-				[b]Note:[/b] The scene change is deferred, which means that the new scene node is added to the tree at the end of the frame. You won't be able to access it immediately after the [method change_scene_to_packed] call.
+				[b]Note:[/b] The new scene node is added to the tree at the end of the frame. You won't be able to access it immediately after the [method change_scene_to_packed] call.
 			</description>
 		</method>
 		<method name="create_timer">
