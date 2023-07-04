@@ -47,7 +47,10 @@ static void *godot_open(voidpf opaque, const char *p_fname, int mode) {
 		return nullptr;
 	}
 
-	Ref<FileAccess> f = FileAccess::open(p_fname, FileAccess::READ);
+	String fname;
+	fname.parse_utf8(p_fname);
+
+	Ref<FileAccess> f = FileAccess::open(fname, FileAccess::READ);
 	ERR_FAIL_COND_V(f.is_null(), nullptr);
 
 	ZipData *zd = memnew(ZipData);
