@@ -3444,6 +3444,7 @@ void RichTextLabel::push_fade(int p_start_index, int p_length) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemFade *item = memnew(ItemFade);
 	item->starting_index = p_start_index;
 	item->length = p_length;
@@ -3454,6 +3455,7 @@ void RichTextLabel::push_shake(int p_strength = 10, float p_rate = 24.0f, bool p
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemShake *item = memnew(ItemShake);
 	item->strength = p_strength;
 	item->rate = p_rate;
@@ -3465,6 +3467,7 @@ void RichTextLabel::push_wave(float p_frequency = 1.0f, float p_amplitude = 10.0
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemWave *item = memnew(ItemWave);
 	item->frequency = p_frequency;
 	item->amplitude = p_amplitude;
@@ -3476,6 +3479,7 @@ void RichTextLabel::push_tornado(float p_frequency = 1.0f, float p_radius = 10.0
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemTornado *item = memnew(ItemTornado);
 	item->frequency = p_frequency;
 	item->radius = p_radius;
@@ -3487,6 +3491,7 @@ void RichTextLabel::push_rainbow(float p_saturation, float p_value, float p_freq
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemRainbow *item = memnew(ItemRainbow);
 	item->frequency = p_frequency;
 	item->saturation = p_saturation;
@@ -3520,12 +3525,22 @@ void RichTextLabel::push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionar
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemCustomFX *item = memnew(ItemCustomFX);
 	item->custom_effect = p_custom_effect;
 	item->char_fx_transform->environment = p_environment;
 	_add_item(item, true);
 
 	set_process_internal(true);
+}
+
+void RichTextLabel::push_context() {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
+	ItemContext *item = memnew(ItemContext);
+	_add_item(item, true);
 }
 
 void RichTextLabel::set_table_column_expand(int p_column, bool p_expand, int p_ratio) {
@@ -3619,6 +3634,31 @@ void RichTextLabel::pop() {
 		current_frame = static_cast<ItemFrame *>(current)->parent_frame;
 	}
 	current = current->parent;
+}
+
+void RichTextLabel::pop_context() {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	ERR_FAIL_NULL(current->parent);
+
+	while (current->parent && current != main) {
+		if (current->type == ITEM_FRAME) {
+			current_frame = static_cast<ItemFrame *>(current)->parent_frame;
+		} else if (current->type == ITEM_CONTEXT) {
+			current = current->parent;
+			return;
+		}
+		current = current->parent;
+	}
+}
+
+void RichTextLabel::pop_all() {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	current = main;
+	current_frame = main;
 }
 
 void RichTextLabel::clear() {
@@ -5508,7 +5548,10 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_fgcolor", "fgcolor"), &RichTextLabel::push_fgcolor);
 	ClassDB::bind_method(D_METHOD("push_bgcolor", "bgcolor"), &RichTextLabel::push_bgcolor);
 	ClassDB::bind_method(D_METHOD("push_customfx", "effect", "env"), &RichTextLabel::push_customfx);
+	ClassDB::bind_method(D_METHOD("push_context"), &RichTextLabel::push_context);
+	ClassDB::bind_method(D_METHOD("pop_context"), &RichTextLabel::pop_context);
 	ClassDB::bind_method(D_METHOD("pop"), &RichTextLabel::pop);
+	ClassDB::bind_method(D_METHOD("pop_all"), &RichTextLabel::pop_all);
 
 	ClassDB::bind_method(D_METHOD("clear"), &RichTextLabel::clear);
 
