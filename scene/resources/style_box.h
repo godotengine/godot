@@ -82,6 +82,21 @@ public:
 	StyleBoxEmpty() {}
 };
 
+class StyleBoxMulti : public StyleBox {
+	GDCLASS(StyleBoxMulti, StyleBox);
+	TypedArray<StyleBox> style_boxes;
+
+protected:
+	static void _bind_methods();
+
+public:
+	TypedArray<StyleBox> get_style_boxes() const;
+	void set_style_boxes(const TypedArray<StyleBox> &p_styleboxes);
+
+	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const override;
+	StyleBoxMulti() {}
+};
+
 class StyleBoxTexture : public StyleBox {
 	GDCLASS(StyleBoxTexture, StyleBox);
 

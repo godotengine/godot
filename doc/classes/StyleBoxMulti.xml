@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="StyleBoxMulti" inherits="StyleBox" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Style box that can draw multiple style boxes.
+	</brief_description>
+	<description>
+		StyleBoxMulti is a style box that draws other style boxes. It can be used to combine multiple style boxes into one.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="style_boxes" type="StyleBox[]" setter="set_style_boxes" getter="get_style_boxes" default="[]">
+			The style boxes to draw. Each must be a [StyleBox] or a derived class (including custom style boxes defined in GDScript).
+		</member>
+	</members>
+</class>

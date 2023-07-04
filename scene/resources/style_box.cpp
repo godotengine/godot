@@ -146,6 +146,55 @@ StyleBox::StyleBox() {
 	}
 }
 
+void StyleBoxMulti::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_style_boxes"), &StyleBoxMulti::get_style_boxes);
+	ClassDB::bind_method(D_METHOD("set_style_boxes", "style_boxes"), &StyleBoxMulti::set_style_boxes);
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "style_boxes", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("StyleBox")), "set_style_boxes", "get_style_boxes");
+}
+
+TypedArray<StyleBox> StyleBoxMulti::get_style_boxes() const {
+	return style_boxes;
+}
+
+#ifdef DEBUG_ENABLED
+bool _check_for_recursive_style_box_multi_reference(StyleBoxMulti *start, StyleBoxMulti *current) {
+	if (start == current) {
+		return true;
+	}
+	TypedArray<StyleBox> style_boxes = current->get_style_boxes();
+	for (int i = 0; i < style_boxes.size(); i++) {
+		StyleBoxMulti *style_box_multi = Object::cast_to<StyleBoxMulti>(style_boxes[i]);
+		if (style_box_multi != nullptr) {
+			if (_check_for_recursive_style_box_multi_reference(start, style_box_multi)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+#endif // DEBUG_ENABLED
+
+void StyleBoxMulti::set_style_boxes(const TypedArray<StyleBox> &p_styleboxes) {
+#ifdef DEBUG_ENABLED
+	for (int i = 0; i < p_styleboxes.size(); i++) {
+		StyleBoxMulti *style_box_multi = Object::cast_to<StyleBoxMulti>(p_styleboxes[i]);
+		if (style_box_multi != nullptr) {
+			ERR_FAIL_COND_MSG(_check_for_recursive_style_box_multi_reference(this, style_box_multi), "StyleBoxMulti: Recursive StyleBoxMulti reference detected. Ensure that the StyleBoxMulti does not contain itself.");
+		}
+	}
+#endif // DEBUG_ENABLED
+	style_boxes = p_styleboxes;
+	emit_changed();
+}
+
+void StyleBoxMulti::draw(RID p_canvas_item, const Rect2 &p_rect) const {
+	for (int i = 0; i < style_boxes.size(); i++) {
+		StyleBox *style_box = Object::cast_to<StyleBox>(style_boxes[i]);
+		ERR_CONTINUE_MSG(style_box == nullptr, "StyleBoxMulti: An item the in style box array is not a valid StyleBox. Ensure it is set to a valid non-null StyleBox.");
+		style_box->draw(p_canvas_item, p_rect);
+	}
+}
+
 void StyleBoxTexture::set_texture(Ref<Texture2D> p_texture) {
 	if (texture == p_texture) {
 		return;

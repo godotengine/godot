@@ -891,6 +891,7 @@ void register_scene_types() {
 
 	GDREGISTER_VIRTUAL_CLASS(StyleBox);
 	GDREGISTER_CLASS(StyleBoxEmpty);
+	GDREGISTER_CLASS(StyleBoxMulti);
 	GDREGISTER_CLASS(StyleBoxTexture);
 	GDREGISTER_CLASS(StyleBoxFlat);
 	GDREGISTER_CLASS(StyleBoxLine);
