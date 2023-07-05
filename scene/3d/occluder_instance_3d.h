@@ -161,7 +161,7 @@ public:
 };
 
 class OccluderInstance3D : public VisualInstance3D {
-	GDCLASS(OccluderInstance3D, Node3D);
+	GDCLASS(OccluderInstance3D, VisualInstance3D);
 
 private:
 	Ref<Occluder3D> occluder;
@@ -204,11 +204,14 @@ public:
 	void set_bake_mask_value(int p_layer_number, bool p_enable);
 	bool get_bake_mask_value(int p_layer_number) const;
 
+	BakeError bake(Node *p_node);
 	BakeError bake_scene(Node *p_from_node, String p_occluder_path = "");
 	static void bake_single_node(const Node3D *p_node, float p_simplification_distance, PackedVector3Array &r_vertices, PackedInt32Array &r_indices);
 
 	OccluderInstance3D();
 	~OccluderInstance3D();
 };
+
+VARIANT_ENUM_CAST(OccluderInstance3D::BakeError);
 
 #endif // OCCLUDER_INSTANCE_3D_H

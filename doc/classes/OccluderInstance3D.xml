@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OccluderInstance3D" inherits="Node3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="OccluderInstance3D" inherits="VisualInstance3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides occlusion culling for 3D nodes, which improves performance in closed areas.
 	</brief_description>
@@ -7,12 +7,19 @@
 		Occlusion culling can improve rendering performance in closed/semi-open areas by hiding geometry that is occluded by other objects.
 		The occlusion culling system is mostly static. [OccluderInstance3D]s can be moved or hidden at run-time, but doing so will trigger a background recomputation that can take several frames. It is recommended to only move [OccluderInstance3D]s sporadically (e.g. for procedural generation purposes), rather than doing so every frame.
 		The occlusion culling system works by rendering the occluders on the CPU in parallel using [url=https://www.embree.org/]Embree[/url], drawing the result to a low-resolution buffer then using this to cull 3D nodes individually. In the 3D editor, you can preview the occlusion culling buffer by choosing [b]Perspective &gt; Debug Advanced... &gt; Occlusion Culling Buffer[/b] in the top-left corner of the 3D viewport. The occlusion culling buffer quality can be adjusted in the Project Settings.
-		[b]Baking:[/b] Select an [OccluderInstance3D] node, then use the [b]Bake Occluders[/b] button at the top of the 3D editor. Only opaque materials will be taken into account; transparent materials (alpha-blended or alpha-tested) will be ignored by the occluder generation.
+		[b]Baking:[/b] Select an [OccluderInstance3D] node, then use the [b]Bake Occluders[/b] button at the top of the 3D editor or use [method bake] at runtime. Only opaque materials will be taken into account; transparent materials (alpha-blended or alpha-tested) will be ignored by the occluder generation.
 		[b]Note:[/b] Occlusion culling is only effective if [member ProjectSettings.rendering/occlusion_culling/use_occlusion_culling] is [code]true[/code]. Enabling occlusion culling has a cost on the CPU. Only enable occlusion culling if you actually plan to use it. Large open scenes with few or no objects blocking the view will generally not benefit much from occlusion culling. Large open scenes generally benefit more from mesh LOD and visibility ranges ([member GeometryInstance3D.visibility_range_begin] and [member GeometryInstance3D.visibility_range_end]) compared to occlusion culling.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="bake">
+			<return type="int" enum="OccluderInstance3D.BakeError" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Bakes occluders for all [MeshInstance3D]s childs of [param node], whose [member VisualInstance3D.layers] match with this [member bake_mask] will be included in the generated occluder mesh.
+			</description>
+		</method>
 		<method name="get_bake_mask_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
@@ -46,4 +53,12 @@
 			Alternatively, you can select a primitive occluder to use: [QuadOccluder3D], [BoxOccluder3D] or [SphereOccluder3D].
 		</member>
 	</members>
+	<constants>
+		<constant name="BAKE_ERROR_OK" value="0" enum="BakeError">
+			Occluders baking was successful.
+		</constant>
+		<constant name="BAKE_ERROR_NO_MESHES" value="2" enum="BakeError">
+			Occluders baking failed as there are no meshes to bake or meshes are not using indices. Make sure there is at least one [MeshInstance3D] node in the [method bake] argument, whose visual layers are part of the [member bake_mask] property.
+		</constant>
+	</constants>
 </class>

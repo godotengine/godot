@@ -650,21 +650,15 @@ void OccluderInstance3D::bake_single_node(const Node3D *p_node, float p_simplifi
 	}
 }
 
-OccluderInstance3D::BakeError OccluderInstance3D::bake_scene(Node *p_from_node, String p_occluder_path) {
-	if (p_occluder_path.is_empty()) {
-		if (get_occluder().is_null()) {
-			return BAKE_ERROR_NO_SAVE_PATH;
-		}
-		p_occluder_path = get_occluder()->get_path();
-		if (!p_occluder_path.is_resource_file()) {
-			return BAKE_ERROR_NO_SAVE_PATH;
-		}
+OccluderInstance3D::BakeError OccluderInstance3D::bake(Node *p_node) {
+	if (p_node == nullptr) {
+		return BAKE_ERROR_NO_MESHES;
 	}
 
 	PackedVector3Array vertices;
 	PackedInt32Array indices;
 
-	_bake_node(p_from_node, vertices, indices);
+	_bake_node(p_node, vertices, indices);
 
 	if (vertices.is_empty() || indices.is_empty()) {
 		return BAKE_ERROR_NO_MESHES;
@@ -681,15 +675,36 @@ OccluderInstance3D::BakeError OccluderInstance3D::bake_scene(Node *p_from_node, 
 	}
 
 	occ->set_arrays(vertices, indices);
+	set_occluder(occ);
 
-	Error err = ResourceSaver::save(occ, p_occluder_path);
+	return BAKE_ERROR_OK;
+}
+
+OccluderInstance3D::BakeError OccluderInstance3D::bake_scene(Node *p_from_node, String p_occluder_path) {
+	if (p_occluder_path.is_empty()) {
+		if (get_occluder().is_null()) {
+			return BAKE_ERROR_NO_SAVE_PATH;
+		}
+		p_occluder_path = get_occluder()->get_path();
+		if (!p_occluder_path.is_resource_file()) {
+			return BAKE_ERROR_NO_SAVE_PATH;
+		}
+	}
+
+	BakeError bake_err = bake(p_from_node);
+
+	if (bake_err != BAKE_ERROR_OK) {
+		return bake_err;
+	}
+
+	Error err = ResourceSaver::save(occluder, p_occluder_path);
 
 	if (err != OK) {
+		set_occluder(Ref<Occluder3D>()); // clear
 		return BAKE_ERROR_CANT_SAVE;
 	}
 
-	occ->set_path(p_occluder_path);
-	set_occluder(occ);
+	occluder->set_path(p_occluder_path);
 
 	return BAKE_ERROR_OK;
 }
@@ -745,10 +760,15 @@ void OccluderInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_is_editable_3d_polygon"), &OccluderInstance3D::_is_editable_3d_polygon);
 	ClassDB::bind_method(D_METHOD("_get_editable_3d_polygon_resource"), &OccluderInstance3D::_get_editable_3d_polygon_resource);
 
+	ClassDB::bind_method(D_METHOD("bake", "node"), &OccluderInstance3D::bake);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "occluder", PROPERTY_HINT_RESOURCE_TYPE, "Occluder3D"), "set_occluder", "get_occluder");
 	ADD_GROUP("Bake", "bake_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_bake_mask", "get_bake_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_simplification_distance", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,suffix:m"), "set_bake_simplification_distance", "get_bake_simplification_distance");
+
+	BIND_ENUM_CONSTANT(BAKE_ERROR_OK);
+	BIND_ENUM_CONSTANT(BAKE_ERROR_NO_MESHES);
 }
 
 OccluderInstance3D::OccluderInstance3D() {
