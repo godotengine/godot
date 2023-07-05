@@ -1485,6 +1485,16 @@ void AnimationTimelineEdit::_notification(int p_what) {
 				if (step_size > 0) {
 					int prev_frame_ofs = -10000000;
 
+					const float last_pos = get_value() + double(zoomw - 1) / scale;
+					const int last_frame = last_pos / step_size;
+
+					int last_frame_digits = 1;
+					int last_frame_copy = last_frame;
+					while (last_frame_copy > 9) {
+						last_frame_copy /= 10;
+						last_frame_digits++;
+					}
+
 					for (int i = 0; i < zoomw; i++) {
 						float pos = get_value() + double(i) / scale;
 						float prev = get_value() + (double(i) - 1.0) / scale;
@@ -1498,7 +1508,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 							draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
 
 							draw_string(font, Point2(get_name_limit() + i + 3 * EDSCALE, (h - font->get_height(font_size)) / 2 + font->get_ascent(font_size)).floor(), itos(frame), HORIZONTAL_ALIGNMENT_LEFT, zoomw - i, font_size, sub ? color_time_dec : color_time_sec);
-							prev_frame_ofs = i + font->get_string_size(itos(frame), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 5 * EDSCALE;
+							prev_frame_ofs = i + max_digit_width * last_frame_digits + 5 * EDSCALE;
 						}
 					}
 				}
