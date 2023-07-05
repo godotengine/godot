@@ -329,9 +329,10 @@
 		<method name="push_font">
 			<return type="void" />
 			<param index="0" name="font" type="Font" />
-			<param index="1" name="font_size" type="int" />
+			<param index="1" name="font_size" type="int" default="0" />
 			<description>
 				Adds a [code][font][/code] tag to the tag stack. Overrides default fonts for its duration.
+				Passing [code]0[/code] to [param font_size] will use the existing default font size.
 			</description>
 		</method>
 		<method name="push_font_size">
@@ -506,7 +507,7 @@
 			<return type="void" />
 			<param index="0" name="column" type="int" />
 			<param index="1" name="expand" type="bool" />
-			<param index="2" name="ratio" type="int" />
+			<param index="2" name="ratio" type="int" default="1" />
 			<description>
 				Edits the selected column's expansion options. If [param expand] is [code]true[/code], the column expands in proportion to its expansion ratio versus the other columns' ratios.
 				For example, 2 columns with ratios 3 and 4 plus 70 pixels in available width would expand 30 and 40 pixels, respectively.

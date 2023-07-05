@@ -5480,7 +5480,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2(0, 0, 0, 0)));
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
 	ClassDB::bind_method(D_METHOD("remove_paragraph", "paragraph"), &RichTextLabel::remove_paragraph);
-	ClassDB::bind_method(D_METHOD("push_font", "font", "font_size"), &RichTextLabel::push_font);
+	ClassDB::bind_method(D_METHOD("push_font", "font", "font_size"), &RichTextLabel::push_font, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("push_font_size", "font_size"), &RichTextLabel::push_font_size);
 	ClassDB::bind_method(D_METHOD("push_normal"), &RichTextLabel::push_normal);
 	ClassDB::bind_method(D_METHOD("push_bold"), &RichTextLabel::push_bold);
@@ -5499,7 +5499,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_strikethrough"), &RichTextLabel::push_strikethrough);
 	ClassDB::bind_method(D_METHOD("push_table", "columns", "inline_align", "align_to_row"), &RichTextLabel::push_table, DEFVAL(INLINE_ALIGNMENT_TOP), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("push_dropcap", "string", "font", "size", "dropcap_margins", "color", "outline_size", "outline_color"), &RichTextLabel::push_dropcap, DEFVAL(Rect2()), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(0, 0, 0, 0)));
-	ClassDB::bind_method(D_METHOD("set_table_column_expand", "column", "expand", "ratio"), &RichTextLabel::set_table_column_expand);
+	ClassDB::bind_method(D_METHOD("set_table_column_expand", "column", "expand", "ratio"), &RichTextLabel::set_table_column_expand, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("set_cell_row_background_color", "odd_row_bg", "even_row_bg"), &RichTextLabel::set_cell_row_background_color);
 	ClassDB::bind_method(D_METHOD("set_cell_border_color", "color"), &RichTextLabel::set_cell_border_color);
 	ClassDB::bind_method(D_METHOD("set_cell_size_override", "min_size", "max_size"), &RichTextLabel::set_cell_size_override);
@@ -5619,6 +5619,11 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &RichTextLabel::menu_option);
 
 	ClassDB::bind_method(D_METHOD("_thread_end"), &RichTextLabel::_thread_end);
+
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_compatibility_method(D_METHOD("push_font", "font", "font_size"), &RichTextLabel::push_font);
+	ClassDB::bind_compatibility_method(D_METHOD("set_table_column_expand", "column", "expand", "ratio"), &RichTextLabel::set_table_column_expand);
+#endif // DISABLE_DEPRECATED
 
 	// Note: set "bbcode_enabled" first, to avoid unnecessary "text" resets.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
