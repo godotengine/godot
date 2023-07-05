@@ -5275,18 +5275,26 @@ void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_
 void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_config_file) {
 	// Bottom panel.
 
-	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "center_split_offset")) {
-		int center_split_offset = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "center_split_offset");
-		center_split->set_split_offset(center_split_offset);
-	}
-
+	bool has_active_tab = false;
 	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item")) {
 		int selected_bottom_panel_item_idx = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item");
 		if (selected_bottom_panel_item_idx >= 0 && selected_bottom_panel_item_idx < bottom_panel_items.size()) {
 			// Make sure we don't try to open contextual editors which are not enabled in the current context.
 			if (bottom_panel_items[selected_bottom_panel_item_idx].button->is_visible()) {
 				_bottom_panel_switch(true, selected_bottom_panel_item_idx);
+				has_active_tab = true;
 			}
+		}
+	}
+
+	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "center_split_offset")) {
+		int center_split_offset = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "center_split_offset");
+		center_split->set_split_offset(center_split_offset);
+
+		// If there is no active tab we need to collapse the panel.
+		if (!has_active_tab) {
+			bottom_panel_items[0].control->show(); // _bottom_panel_switch() can collapse only visible tabs.
+			_bottom_panel_switch(false, 0);
 		}
 	}
 
