@@ -1054,7 +1054,7 @@
 		<method name="validate_node_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns a copy of the string with all characters that are not allowed in [member Node.name] removed ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code] [code]%[/code]).
+				Returns a copy of the string with all characters that are not allowed in [member Node.name] ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code] [code]%[/code]) replaced with underscores.
 			</description>
 		</method>
 		<method name="xml_escape" qualifiers="const">
