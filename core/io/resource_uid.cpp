@@ -33,7 +33,6 @@
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
-#include "core/io/file_access.h"
 
 static constexpr uint32_t char_count = ('z' - 'a');
 static constexpr uint32_t base = char_count + ('9' - '0');
@@ -169,22 +168,27 @@ Error ResourceUID::save_to_cache() {
 
 Error ResourceUID::load_from_cache() {
 	Ref<FileAccess> f = FileAccess::open(get_cache_file(), FileAccess::READ);
-	if (f.is_null()) {
+	unique_ids.clear();
+
+	return load_from_file(f);
+}
+
+Error ResourceUID::load_from_file(const Ref<FileAccess> &p_file) {
+	if (p_file.is_null()) {
 		return ERR_CANT_OPEN;
 	}
 
 	MutexLock l(mutex);
-	unique_ids.clear();
 
-	uint32_t entry_count = f->get_32();
+	uint32_t entry_count = p_file->get_32();
 	for (uint32_t i = 0; i < entry_count; i++) {
-		int64_t id = f->get_64();
-		int32_t len = f->get_32();
+		int64_t id = p_file->get_64();
+		int32_t len = p_file->get_32();
 		Cache c;
 		c.cs.resize(len + 1);
 		ERR_FAIL_COND_V(c.cs.size() != len + 1, ERR_FILE_CORRUPT); // out of memory
 		c.cs[len] = 0;
-		int32_t rl = f->get_buffer((uint8_t *)c.cs.ptrw(), len);
+		int32_t rl = p_file->get_buffer((uint8_t *)c.cs.ptrw(), len);
 		ERR_FAIL_COND_V(rl != len, ERR_FILE_CORRUPT);
 
 		c.saved_to_cache = true;

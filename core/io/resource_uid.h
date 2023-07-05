@@ -31,6 +31,7 @@
 #ifndef RESOURCE_UID_H
 #define RESOURCE_UID_H
 
+#include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
 #include "core/string/string_name.h"
 #include "core/templates/hash_map.h"
@@ -74,6 +75,7 @@ public:
 	void remove_id(ID p_id);
 
 	Error load_from_cache();
+	Error load_from_file(const Ref<FileAccess> &p_file);
 	Error save_to_cache();
 	Error update_cache();
 

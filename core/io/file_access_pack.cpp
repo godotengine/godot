@@ -94,6 +94,13 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 			cd->files.insert(filename);
 		}
 	}
+
+	// Handle special files
+	if (simplified_path == ResourceUID::get_cache_file()) {
+		// UID cache file
+		Ref<FileAccessPack> f = memnew(FileAccessPack(p_pkg_path, pf));
+		ResourceUID::get_singleton()->load_from_file(f);
+	}
 }
 
 void PackedData::add_pack_source(PackSource *p_source) {
