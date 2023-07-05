@@ -47,7 +47,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-29 11:26+0000\n"
+"PO-Revision-Date: 2023-07-01 13:08+0000\n"
 "Last-Translator: 鄭惟中 <biglionlion06@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
@@ -56,7 +56,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18.1\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 msgid "Unset"
 msgstr "未設定"
@@ -3944,6 +3944,12 @@ msgstr "搖桿 4 往上"
 msgid "Joystick 4 Down"
 msgstr "搖桿 4 往下"
 
+msgid "or"
+msgstr "或"
+
+msgid "Unicode"
+msgstr "Unicode"
+
 msgid "Joypad Axis %d %s (%s)"
 msgstr "搖桿軸 %d %s (%s)"
 
@@ -7322,8 +7328,17 @@ msgstr "更改圓柱形高度"
 msgid "Change Separation Ray Shape Length"
 msgstr "更改分離射線形狀長度"
 
+msgid "Change Decal Size"
+msgstr "更改貼花尺寸"
+
+msgid "Change Fog Volume Size"
+msgstr "更改霧體積大小"
+
 msgid "Change Particles AABB"
 msgstr "更改粒子 AABB"
+
+msgid "Change Radius"
+msgstr "更改半徑"
 
 msgid "Change Light Radius"
 msgstr "更改光照半徑"
@@ -7340,14 +7355,23 @@ msgstr "更改起始位置"
 msgid "Change End Position"
 msgstr "更改結束位置"
 
+msgid "Change Probe Size"
+msgstr "更改探查大小"
+
 msgid "Change Notifier AABB"
 msgstr "更改通知器 AABB"
 
 msgid "Convert to CPUParticles2D"
 msgstr "轉換為 CPUParticles2D"
 
+msgid "Generating Visibility Rect (Waiting for Particle Simulation)"
+msgstr "生成可見性矩形（等待粒子模擬）"
+
 msgid "Generate Visibility Rect"
 msgstr "產生矩形可見性"
+
+msgid "Can only set point into a ParticleProcessMaterial process material"
+msgstr "僅可設為指向 ProticlesMaterial 處理材料"
 
 msgid "Clear Emission Mask"
 msgstr "清除發射遮罩"
@@ -7390,6 +7414,9 @@ msgstr "體積"
 
 msgid "Emission Source:"
 msgstr "發射源："
+
+msgid "A processor material of type 'ParticleProcessMaterial' is required."
+msgstr "需「ParticlesMaterial」型別的處理器材質。"
 
 msgid "Convert to CPUParticles3D"
 msgstr "轉換為 CPUParticles3D"
@@ -7584,6 +7611,14 @@ msgstr "網格"
 msgid "Create Trimesh Static Body"
 msgstr "建立三角網格靜態形體"
 
+msgid ""
+"Creates a StaticBody3D and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"建立 StaticBody 並自動指派一個基於多邊形的碰撞形體。\n"
+"對於碰撞偵測，該選項為最精確（但最慢）的選項。"
+
 msgid "Create Trimesh Collision Sibling"
 msgstr "建立三角網格碰撞同級"
 
@@ -7628,6 +7663,15 @@ msgstr ""
 
 msgid "Create Outline Mesh..."
 msgstr "建立輪廓網格..."
+
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the StandardMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
+"建立靜態輪廓網格。輪廓網格的法線會自動翻轉。\n"
+"當無法使用 SpatialMetarial 的 Grow 屬性時，可以使用該屬性來代替該屬性。"
 
 msgid "View UV1"
 msgstr "檢視 UV1"
@@ -7689,6 +7733,9 @@ msgstr "未指定網格來源（且 MultiMesh 未包含 Mesh）。"
 
 msgid "Mesh source is invalid (invalid path)."
 msgstr "網格來源無效（無效的路徑）。"
+
+msgid "Mesh source is invalid (not a MeshInstance3D)."
+msgstr "網格來源無效（非 MeshInstance3D）。"
 
 msgid "Mesh source is invalid (contains no Mesh resource)."
 msgstr "網格來源無效（未包含 Mesh 資源）。"
@@ -7956,6 +8003,12 @@ msgstr "法線緩衝"
 
 msgid "Shadow Atlas"
 msgstr "陰影合集"
+
+msgid "Directional Shadow Map"
+msgstr "定向陰影貼圖"
+
+msgid "Decal Atlas"
+msgstr "貼花圖集"
 
 msgid "VoxelGI Lighting"
 msgstr "VoxelGI 光照"
@@ -8375,6 +8428,12 @@ msgstr "AO(環境光遮蔽)"
 msgid "Glow"
 msgstr "發光"
 
+msgid "Tonemap"
+msgstr "色調圖"
+
+msgid "GI"
+msgstr "GI"
+
 msgid "Post Process"
 msgstr "後處理(Post Process)"
 
@@ -8410,6 +8469,9 @@ msgstr "無法在指定路徑保存新遮擋物："
 
 msgid "Bake Occluders"
 msgstr "烘焙遮擋物"
+
+msgid "Select occluder bake file:"
+msgstr "選擇遮擋器烘焙文件："
 
 msgid "Remove Point from Curve"
 msgstr "自曲線中刪除控制點"
@@ -8888,6 +8950,9 @@ msgstr "跳至函式"
 msgid "Only resources from filesystem can be dropped."
 msgstr "只可拖放來自檔案系統的資源。"
 
+msgid "Can't drop nodes without an open scene."
+msgstr "在沒有開放場景的情況下無法刪除節點。"
+
 msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr "無法放置節點，由於腳本「%s」並未在該場景中使用。"
 
@@ -8945,6 +9010,9 @@ msgstr "展開所有行"
 msgid "Evaluate Selection"
 msgstr "取值所選內容"
 
+msgid "Toggle Word Wrap"
+msgstr "切換自動換行"
+
 msgid "Trim Trailing Whitespace"
 msgstr "移除後方空白字元"
 
@@ -8998,6 +9066,9 @@ msgstr "跳至上一個中斷點"
 
 msgid "Shader Editor"
 msgstr "著色器編輯器"
+
+msgid "New Shader Include"
+msgstr "新著色器包含"
 
 msgid "Load Shader File"
 msgstr "載入著色器文件"
@@ -9072,6 +9143,9 @@ msgstr "無法導出沒有骨骼的 Skeleton3D 節點的 SkeletonProfile。"
 msgid "Export Skeleton Profile As..."
 msgstr "將骨架設定檔導出為..."
 
+msgid "Set Bone Parentage"
+msgstr "設置骨骼繼承"
+
 msgid "Skeleton3D"
 msgstr "Skeleton 3D"
 
@@ -9103,8 +9177,23 @@ msgstr ""
 msgid "Insert key of bone poses already exist track."
 msgstr "插入骨骼姿勢的關鍵幀已經存在軌道。"
 
+msgid "Insert key of all bone poses."
+msgstr "插入所有骨骼姿勢的關鍵幀。"
+
+msgid "Insert Key (All Bones)"
+msgstr "插入關鍵幀（所有骨骼）"
+
+msgid "Bone Transform"
+msgstr "骨骼變換"
+
 msgid "Play IK"
 msgstr "執行 IK"
+
+msgid "Create MeshInstance2D"
+msgstr "產生 MeshInstance2D"
+
+msgid "MeshInstance2D Preview"
+msgstr "MeshInstance2D 預覽"
 
 msgid "Create Polygon2D"
 msgstr "建立 Polygon2D"
@@ -9126,6 +9215,9 @@ msgstr "LightOccluder2D 預覽"
 
 msgid "Can't convert a Sprite2D from a foreign scene."
 msgstr "無法對外部場景的節點進行操作。"
+
+msgid "Sprite2D is empty!"
+msgstr "Sprite2D 為空！"
 
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr "無法使用動畫影格將 Sprite 轉換為網格。"
@@ -9229,6 +9321,9 @@ msgstr "動畫幀："
 msgid "Zoom Reset"
 msgstr "重設縮放"
 
+msgid "Add frames from sprite sheet"
+msgstr "自 Sprite 表新增影格"
+
 msgid "Delete Frame"
 msgstr "刪除影格"
 
@@ -9240,6 +9335,12 @@ msgstr "在選擇前面插入空白"
 
 msgid "Insert Empty (After Selected)"
 msgstr "在選擇後面插入空白"
+
+msgid "Move Frame Left"
+msgstr "向左移動影格"
+
+msgid "Move Frame Right"
+msgstr "向右移動影格"
 
 msgid "Select Frames"
 msgstr "選擇影格"

@@ -7505,6 +7505,15 @@ msgid_plural "Run %d Instances"
 msgstr[0] "Exécuter une instance %d"
 msgstr[1] "Exécuter des instances %d"
 
+msgid "Size: %s"
+msgstr "Taille : %s"
+
+msgid "Type: %s"
+msgstr "Type : %s"
+
+msgid "Dimensions: %d × %d"
+msgstr "Dimensions : %d × %d"
+
 msgid "Overrides (%d)"
 msgstr "Redéfinitions (%d)"
 

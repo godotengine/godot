@@ -163,7 +163,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-06-26 09:55+0000\n"
+"PO-Revision-Date: 2023-06-30 06:50+0000\n"
 "Last-Translator: Daniel Mucciolo <danielviannapsi@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/pt_BR/>\n"
@@ -4911,6 +4911,9 @@ msgstr "Nó Raiz"
 msgid "Root Motion"
 msgstr "Movimento Raiz"
 
+msgid "Stretch Mode"
+msgstr "Modo Esticado"
+
 msgid "Alignment"
 msgstr "Alinhamento"
 
@@ -5141,6 +5144,9 @@ msgstr "Rolagem"
 
 msgid "Split Offset"
 msgstr "Deslocamento de Divisão"
+
+msgid "Stretch Shrink"
+msgstr "Esticar Encolher"
 
 msgid "Current Tab"
 msgstr "Aba Atual"

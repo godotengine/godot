@@ -31,13 +31,14 @@
 # Dmytro Kyrychuk <dmytro@kyrych.uk>, 2023.
 # Maksym <maksym@mowemax.com>, 2023.
 # Lost Net <pc.mirkn@gmail.com>, 2023.
+# Dan <jonweblin2205@protonmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-21 11:48+0000\n"
-"Last-Translator: Lost Net <pc.mirkn@gmail.com>\n"
+"PO-Revision-Date: 2023-06-30 21:27+0000\n"
+"Last-Translator: Dan <jonweblin2205@protonmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -46,7 +47,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 msgid "Unset"
 msgstr "Зняти"
@@ -14125,7 +14126,7 @@ msgid ""
 "> rcedit) to change the icon or app information data."
 msgstr ""
 "Інструмент rcedit має бути налаштований у Параметрах редактора (Експорт > "
-"Windows > rcedit), щоб змінювати піктограму або інформаційні дані додатка."
+"Windows > rcedit), щоб змінювати піктограму або інформаційні дані застосунку."
 
 msgid "Windows executables cannot be >= 4 GiB."
 msgstr "Виконувані файли Windows не можуть мати розмір >= 4 Гб."

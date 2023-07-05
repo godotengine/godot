@@ -96,7 +96,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-06-27 20:09+0000\n"
+"PO-Revision-Date: 2023-06-29 16:02+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -3993,6 +3993,12 @@ msgstr "控制杆 4 向上"
 
 msgid "Joystick 4 Down"
 msgstr "控制杆 4 向下"
+
+msgid "or"
+msgstr "或"
+
+msgid "Unicode"
+msgstr "Unicode"
 
 msgid "Joypad Axis %d %s (%s)"
 msgstr "游戏手柄轴 %d %s （%s）"

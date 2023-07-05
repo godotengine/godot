@@ -107,13 +107,15 @@
 # Santiago Valencia <santv05082011@gmail.com>, 2023.
 # Ghislain <ghyslainnen@gmail.com>, 2023.
 # Alvaro Tejada <santi_evil@yahoo.com>, 2023.
+# Braulio León Madrid Escobar <brauliomadrid.developer@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-29 11:26+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2023-07-05 13:48+0000\n"
+"Last-Translator: Braulio León Madrid Escobar <brauliomadrid.developer@gmail."
+"com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -121,7 +123,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18.1\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 msgid "Unset"
 msgstr "Desactivar"
@@ -3574,7 +3576,7 @@ msgid "Export As..."
 msgstr "Exportar Como..."
 
 msgid "MeshLibrary..."
-msgstr "MeshLibrary..."
+msgstr "Libreria de Mallas..."
 
 msgid "Close Scene"
 msgstr "Cerrar Escena"
@@ -4158,6 +4160,12 @@ msgstr "Joystick 4 Arriba"
 
 msgid "Joystick 4 Down"
 msgstr "Joystick 4 Abajo"
+
+msgid "or"
+msgstr "o"
+
+msgid "Unicode"
+msgstr "Unicode"
 
 msgid "Joypad Axis %d %s (%s)"
 msgstr "Eje del Joypad %d %s (%s)"
@@ -10635,6 +10643,9 @@ msgstr "Línea"
 msgid "Rect"
 msgstr "Rectángulo"
 
+msgid "Bucket"
+msgstr "Balde"
+
 msgid "Alternatively hold Ctrl with other tools to pick tile."
 msgstr ""
 "Alternativamente, manten Ctrl pulsado con otras herramientas para "
@@ -10972,6 +10983,19 @@ msgstr "Abrir Herramienta de Unión de Atlas"
 msgid "Manage Tile Proxies"
 msgstr "Administrar Proxies de Tiles"
 
+msgid ""
+"No TileSet source selected. Select or create a TileSet source.\n"
+"You can create a new source by using the Add button on the left or by "
+"dropping a tileset texture onto the source list."
+msgstr ""
+"No se ha seleccionado ninguna fuente de TileSet. Seleccione o cree una "
+"fuente de TileSet.\n"
+"Puede crear una nueva fuente utilizando el botón Agregar a la izquierda o "
+"arrastrando una textura de tileset a la lista de fuentes."
+
+msgid "Add new patterns in the TileMap editing mode."
+msgstr "Agregue nuevos patrones en el modo de edición de TileMap."
+
 msgid "Add a Scene Tile"
 msgstr "Añadir un Tile de Escena"
 
@@ -10989,6 +11013,13 @@ msgstr "TileSet"
 
 msgid "TileMap"
 msgstr "TileMap"
+
+msgid ""
+"No VCS plugins are available in the project. Install a VCS plugin to use VCS "
+"integration features."
+msgstr ""
+"No hay complementos de VCS disponibles en el proyecto. Instale un "
+"complemento de VCS para utilizar las características de integración de VCS."
 
 msgid "Error"
 msgstr "Error"
@@ -11032,6 +11063,9 @@ msgstr "¿Quieres eliminar el %s remoto?"
 msgid "Create VCS metadata files for:"
 msgstr "Crear archivos de metadatos VCS para:"
 
+msgid "Existing VCS metadata files will be overwritten."
+msgstr "Los archivos de metadatos de VCS existentes serán sobrescritos."
+
 msgid "Local Settings"
 msgstr "Ajustes Locales"
 
@@ -11073,6 +11107,10 @@ msgstr "Detectar nuevos cambios"
 
 msgid "Discard all changes"
 msgstr "Descartar todos los cambios"
+
+msgid "This operation is IRREVERSIBLE. Your changes will be deleted FOREVER."
+msgstr ""
+"Esta operación es IRREVERSIBLE. Tus cambios serán eliminados PARA SIEMPRE."
 
 msgid "Permanentally delete my changes"
 msgstr "Eliminar permanentemente mis cambios"
@@ -11149,6 +11187,9 @@ msgstr "Cambio de Tipo"
 msgid "Unmerged"
 msgstr "Sin fusionar"
 
+msgid "View file diffs before committing them to the latest version"
+msgstr "Ver diferencias de archivos antes de confirmarlos a la última versión"
+
 msgid "View:"
 msgstr "Ver:"
 
@@ -11188,8 +11229,14 @@ msgstr "Añadir Entrada"
 msgid "Add Output"
 msgstr "Añadir Salida"
 
+msgid "Float"
+msgstr "Float"
+
 msgid "Int"
 msgstr "Int"
+
+msgid "UInt"
+msgstr "UInt"
 
 msgid "Vector2"
 msgstr "Vector2"
@@ -11208,6 +11255,13 @@ msgstr "Sampler"
 
 msgid "[default]"
 msgstr "[default]"
+
+msgid ""
+"The 2D preview cannot correctly show the result retrieved from instance "
+"parameter."
+msgstr ""
+"La vista previa 2D no puede mostrar el resultado obtenido del parámetro de "
+"instancia."
 
 msgid "Add Input Port"
 msgstr "Añadir Puerto de Entrada"
@@ -11274,6 +11328,9 @@ msgstr "Eliminar Variación al Visual Shader: %s"
 
 msgid "Node(s) Moved"
 msgstr "Nodo(s) Movido(s)"
+
+msgid "Convert Constant Node(s) To Parameter(s)"
+msgstr "Convertir Nodo(s) Contantes a Parametro(s)"
 
 msgid "Delete VisualShader Node"
 msgstr "Eliminar Nodo VisualShader"
@@ -11585,6 +11642,13 @@ msgstr ""
 "Parámetro de entrada %s' de procesamiento y colisión de los modos de "
 "sombreado."
 
+msgid ""
+"A node for help to multiply a position input vector by rotation using "
+"specific axis. Intended to work with emitters."
+msgstr ""
+"Un nodo para ayudar a multiplicar un vector de entrada de posición por una "
+"rotación utilizando un eje específico. Diseñado para funcionar con emisores."
+
 msgid "Float function."
 msgstr "Función de coma flotante."
 
@@ -11631,6 +11695,12 @@ msgid "Returns the result of bitwise NOT (~a) operation on the integer."
 msgstr ""
 "Devuelve el resultado de la operación bitwise NOT (~a) sobre el número "
 "entero."
+
+msgid ""
+"Returns the result of bitwise NOT (~a) operation on the unsigned integer."
+msgstr ""
+"Devuelve el resultado de la operación bitwise NOT (~a) sobre el entero sin "
+"signo."
 
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
@@ -11691,6 +11761,11 @@ msgstr "Devuelve el menor de dos valores."
 
 msgid "Linear interpolation between two scalars."
 msgstr "Interpolación lineal entre dos escalares."
+
+msgid "Performs a fused multiply-add operation (a * b + c) on scalars."
+msgstr ""
+"Realiza una operación de multiplicación y suma fusionada (a * b + c) en "
+"escalares."
 
 msgid "Returns the opposite value of the parameter."
 msgstr "Devuelve el valor opuesto del parámetro."
@@ -11986,6 +12061,14 @@ msgstr "Se descompone y transforma en cuatro vectores."
 msgid "Calculates the determinant of a transform."
 msgstr "Calcula el determinante de una transformación."
 
+msgid ""
+"Calculates how the object should face the camera to be applied on Model View "
+"Matrix output port for 3D objects."
+msgstr ""
+"Calcula cómo el objeto debe enfrentar la cámara para ser aplicado en el "
+"puerto de salida de la Matriz de Vista de Modelo (Model View Matrix) para "
+"objetos 3D."
+
 msgid "Calculates the inverse of a transform."
 msgstr "Calcula el inverso de una transformación."
 
@@ -12001,6 +12084,9 @@ msgstr "Divide dos transformaciones."
 msgid "Multiplies two transforms."
 msgstr "Multiplica dos transformaciones."
 
+msgid "Performs per-component multiplication of two transforms."
+msgstr "Realiza una multiplicación por componente de dos transformaciones."
+
 msgid "Subtracts two transforms."
 msgstr "Resta dos transformaciones."
 
@@ -12012,6 +12098,24 @@ msgstr "Constante de transformación."
 
 msgid "Transform parameter."
 msgstr "Parámetro de transformación."
+
+msgid ""
+"The distance fade effect fades out each pixel based on its distance to "
+"another object."
+msgstr ""
+"El efecto de atenuación de distancia desvanece cada píxel en función de su "
+"distancia a otro objeto."
+
+msgid ""
+"The proximity fade effect fades out each pixel based on its distance to "
+"another object."
+msgstr ""
+"El efecto de atenuación de proximidad desvanece cada píxel en función de su "
+"distancia a otro objeto."
+
+msgid "Returns a random value between the minimum and maximum input values."
+msgstr ""
+"Devuelve un valor aleatorio entre los valores mínimos y máximos de entrada."
 
 msgid "Vector function."
 msgstr "Función Vector."
@@ -15219,8 +15323,20 @@ msgstr "Preparando geometría %d/%d"
 msgid "Creating probes"
 msgstr "Crear sondas"
 
+msgid "Preparing Lightmapper"
+msgstr "Preparando el mapeador de luz"
+
+msgid "Preparing Environment"
+msgstr "Preparando entorno"
+
 msgid "Generating Probe Volumes"
 msgstr "Generando Volúmenes de Sonda"
+
+msgid ""
+"The NavigationAgent3D can be used only under a Node3D inheriting parent node."
+msgstr ""
+"El NavigationAgent3D solo puede ser utilizado bajo un nodo padre que herede "
+"de Node3D."
 
 msgid ""
 "The Bake Mask has no bits enabled, which means baking will not produce any "
@@ -15233,6 +15349,34 @@ msgstr ""
 "Para resolver esto, habilita al menos un bit en la propiedad Máscara de "
 "Bakeo."
 
+msgid "PathFollow3D only works when set as a child of a Path3D node."
+msgstr ""
+"PathFollow3D solo funciona cuando se establece como hijo de un nodo Path3D."
+
+msgid ""
+"PathFollow3D's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
+"parent Path3D's Curve resource."
+msgstr ""
+"ROTATION_ORIENTED de PathFollow3D requiere que el `Up Vector` esté activado "
+"en el recurso de Curve del nodo Path3D padre."
+
+msgid ""
+"Scale changes to RigidBody3D will be overridden by the physics engine when "
+"running.\n"
+"Please change the size in children collision shapes instead."
+msgstr ""
+"Los cambios de escala en RigidBody3D serán sobre escritos por el motor de "
+"física durante la ejecución.\n"
+"Por favor, cambia el tamaño en las formas de colisión de los hijos en su "
+"lugar."
+
+msgid ""
+"The \"Remote Path\" property must point to a valid Node3D or Node3D-derived "
+"node to work."
+msgstr ""
+"La propiedad \"Remote Path\" debe apuntar a un Node3D valido o un Node3D "
+"derivado para que funcione."
+
 msgid "This body will be ignored until you set a mesh."
 msgstr "Este cuerpo será ignorado hasta que se establezca una malla."
 
@@ -15243,11 +15387,21 @@ msgstr ""
 "Se debe crear o establecer un recurso SpriteFrames en la propiedad "
 "\"Frames\" para que AnimatedSprite3D pueda mostrar los fotogramas."
 
+msgid ""
+"VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please "
+"use it as a child of a VehicleBody3D."
+msgstr ""
+"VehicleWheel3D sirve para proporcionar un sistema de ruedas a un "
+"VehicleBody3D. Por favor, úsalo como hijo de un VehicleBody3D."
+
 msgid "Plotting Meshes"
 msgstr "Trazando Mallas"
 
 msgid "Finishing Plot"
 msgstr "Finalizar Trazado"
+
+msgid "Generating Distance Field"
+msgstr "Generando Campo de Distancia"
 
 msgid "On BlendTree node '%s', animation not found: '%s'"
 msgstr "En el nodo BlendTree '%s', no se encontró la animación: '%s'"

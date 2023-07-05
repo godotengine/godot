@@ -44,7 +44,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-29 11:26+0000\n"
+"PO-Revision-Date: 2023-07-01 13:08+0000\n"
 "Last-Translator: 鄭惟中 <biglionlion06@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hant/>\n"
@@ -53,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18.1\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 msgid "Application"
 msgstr "應用"
@@ -2635,6 +2635,9 @@ msgstr "節點"
 msgid "Source"
 msgstr "來源"
 
+msgid "Tonemap"
+msgstr "色調圖"
+
 msgid "Fade In"
 msgstr "淡入"
 
@@ -2847,6 +2850,9 @@ msgstr "反射"
 
 msgid "Texture Array Reflections"
 msgstr "紋理貼圖陣列反射"
+
+msgid "GI"
+msgstr "GI"
 
 msgid "Overrides"
 msgstr "複寫"
