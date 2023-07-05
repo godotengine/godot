@@ -126,7 +126,7 @@ void FindReplaceBar::unhandled_input(const Ref<InputEvent> &p_event) {
 	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
 		Control *focus_owner = get_viewport()->gui_get_focus_owner();
 
-		if (text_editor->has_focus() || (focus_owner && vbc_lineedit->is_ancestor_of(focus_owner))) {
+		if (text_editor->has_focus() || (focus_owner && is_ancestor_of(focus_owner))) {
 			_hide_bar();
 			accept_event();
 		}
