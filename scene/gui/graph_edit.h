@@ -375,7 +375,7 @@ public:
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);

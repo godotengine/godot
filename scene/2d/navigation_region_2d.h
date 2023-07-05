@@ -113,7 +113,7 @@ public:
 	void set_avoidance_layer_value(int p_layer_number, bool p_value);
 	bool get_avoidance_layer_value(int p_layer_number) const;
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	void bake_navigation_polygon(bool p_on_thread);
 	void _bake_finished(Ref<NavigationPolygon> p_navigation_polygon);

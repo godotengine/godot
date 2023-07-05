@@ -1103,8 +1103,8 @@ void TileMap::draw_cells_outline(Control *p_control, const RBSet<Vector2i> &p_ce
 #undef DRAW_SIDE_IF_NEEDED
 }
 
-PackedStringArray TileMap::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+Array TileMap::get_configuration_warnings() const {
+	Array warnings = Node::get_configuration_warnings();
 
 	// Retrieve the set of Z index values with a Y-sorted layer.
 	RBSet<int> y_sorted_z_index;

@@ -296,8 +296,8 @@ bool GPUParticles3D::get_interpolate() const {
 	return interpolate;
 }
 
-PackedStringArray GPUParticles3D::get_configuration_warnings() const {
-	PackedStringArray warnings = GeometryInstance3D::get_configuration_warnings();
+Array GPUParticles3D::get_configuration_warnings() const {
+	Array warnings = GeometryInstance3D::get_configuration_warnings();
 
 	bool meshes_found = false;
 	bool anim_material_found = false;

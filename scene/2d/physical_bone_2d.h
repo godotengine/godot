@@ -79,7 +79,7 @@ public:
 	void set_follow_bone_when_simulating(bool p_follow);
 	bool get_follow_bone_when_simulating() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	PhysicalBone2D();
 	~PhysicalBone2D();

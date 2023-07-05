@@ -63,7 +63,7 @@ public:
 	virtual Vector<int> get_allowed_size_flags_horizontal() const;
 	virtual Vector<int> get_allowed_size_flags_vertical() const;
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	Container();
 };

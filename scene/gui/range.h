@@ -103,7 +103,7 @@ public:
 	void share(Range *p_range);
 	void unshare();
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	Range();
 	~Range();

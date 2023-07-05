@@ -93,7 +93,7 @@ public:
 	void set_travel_cost(real_t p_travel_cost);
 	real_t get_travel_cost() const { return travel_cost; }
 
-	PackedStringArray get_configuration_warnings() const override;
+	Array get_configuration_warnings() const override;
 
 	NavigationLink2D();
 	~NavigationLink2D();
