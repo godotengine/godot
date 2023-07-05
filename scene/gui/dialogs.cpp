@@ -44,6 +44,12 @@ void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void AcceptDialog::_parent_focused() {
+	if (close_on_escape && !is_exclusive()) {
+		_cancel_pressed();
+	}
+}
+
 void AcceptDialog::_update_theme_item_cache() {
 	Window::_update_theme_item_cache();
 
@@ -64,6 +70,16 @@ void AcceptDialog::_notification(int p_what) {
 					get_ok_button()->grab_focus();
 				}
 				_update_child_rects();
+
+				parent_visible = get_parent_visible_window();
+				if (parent_visible) {
+					parent_visible->connect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
+				}
+			} else {
+				if (parent_visible) {
+					parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
+					parent_visible = nullptr;
+				}
 			}
 		} break;
 
@@ -76,9 +92,10 @@ void AcceptDialog::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
-			if (close_on_escape && !is_exclusive()) {
-				_cancel_pressed();
+		case NOTIFICATION_EXIT_TREE: {
+			if (parent_visible) {
+				parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
+				parent_visible = nullptr;
 			}
 		} break;
 
@@ -112,9 +129,21 @@ void AcceptDialog::_ok_pressed() {
 }
 
 void AcceptDialog::_cancel_pressed() {
+	Window *parent_window = parent_visible;
+	if (parent_visible) {
+		parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
+		parent_visible = nullptr;
+	}
+
 	call_deferred(SNAME("hide"));
+
 	emit_signal(SNAME("canceled"));
+
 	cancel_pressed();
+
+	if (parent_window) {
+		//parent_window->grab_focus();
+	}
 	set_input_as_handled();
 }
 
