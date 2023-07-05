@@ -17,7 +17,7 @@
 		</method>
 		<method name="_toggled" qualifiers="virtual">
 			<return type="void" />
-			<param index="0" name="button_pressed" type="bool" />
+			<param index="0" name="toggled_on" type="bool" />
 			<description>
 				Called when the button is toggled (only if [member toggle_mode] is active).
 			</description>
@@ -98,9 +98,9 @@
 			</description>
 		</signal>
 		<signal name="toggled">
-			<param index="0" name="button_pressed" type="bool" />
+			<param index="0" name="toggled_on" type="bool" />
 			<description>
-				Emitted when the button was just toggled between pressed and normal states (only if [member toggle_mode] is active). The new state is contained in the [param button_pressed] argument.
+				Emitted when the button was just toggled between pressed and normal states (only if [member toggle_mode] is active). The new state is contained in the [param toggled_on] argument.
 			</description>
 		</signal>
 	</signals>
