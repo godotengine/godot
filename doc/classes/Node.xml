@@ -37,9 +37,13 @@
 			</description>
 		</method>
 		<method name="_get_configuration_warnings" qualifiers="virtual const">
-			<return type="PackedStringArray" />
+			<return type="Array" />
 			<description>
 				The elements in the array returned from this method are displayed as warnings in the Scene dock if the script that overrides it is a [code]tool[/code] script.
+				Each array element must either be a [String] or a [Dictionary].
+				A dictionary element must contain a key [code]message[/code] of type [String] which is shown in the user interface.
+				The dictionary may optionally contain a key [code]property[/code] of type [NodePath], which also shows this warning in the inspector on the corresponding property.
+				If a string is found in the returned array, it is converted to an equivalent dictionary with the [code]message[/code] field set.
 				Returning an empty array produces no warnings.
 				Call [method update_configuration_warnings] when the warnings need to be updated for this node.
 				[codeblock]

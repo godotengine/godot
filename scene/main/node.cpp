@@ -3130,16 +3130,91 @@ void Node::clear_internal_tree_resource_paths() {
 	}
 }
 
-PackedStringArray Node::get_configuration_warnings() const {
-	ERR_THREAD_GUARD_V(PackedStringArray());
-	PackedStringArray ret;
+Array Node::get_configuration_warnings() const {
+	ERR_THREAD_GUARD_V(Array());
+	Array warnings;
+	GDVIRTUAL_CALL(_get_configuration_warnings, warnings);
+	return warnings;
+}
 
-	Vector<String> warnings;
-	if (GDVIRTUAL_CALL(_get_configuration_warnings, warnings)) {
-		ret.append_array(warnings);
+Dictionary Node::configuration_warning_to_dict(const Variant &p_warning) const {
+	switch (p_warning.get_type()) {
+		case Variant::Type::DICTIONARY:
+			return p_warning;
+		case Variant::Type::STRING: {
+			// Convert string to dictionary.
+			Dictionary warning;
+			warning["message"] = p_warning;
+			return warning;
+		}
+		default: {
+			ERR_FAIL_V_MSG(Dictionary(), "Node::get_configuration_warnings returned a value which is neither a string nor a dictionary, but a " + Variant::get_type_name(p_warning.get_type()));
+		}
 	}
+}
 
+Vector<Dictionary> Node::get_configuration_warnings_as_dicts() const {
+	Vector<Dictionary> ret;
+	Array mixed = get_configuration_warnings();
+	for (int i = 0; i < mixed.size(); i++) {
+		ret.append(configuration_warning_to_dict(mixed[i]));
+	}
 	return ret;
+}
+
+Vector<Dictionary> Node::get_configuration_warnings_of_property(const String &p_property) const {
+	Vector<Dictionary> ret;
+	Vector<Dictionary> warnings = get_configuration_warnings_as_dicts();
+	if (p_property.is_empty()) {
+		ret.append_array(warnings);
+	} else {
+		// Filter by property path.
+		for (int i = 0; i < warnings.size(); i++) {
+			Dictionary warning = warnings[i];
+			String warning_property = warning.get("property", String());
+			if (p_property == warning_property) {
+				ret.append(warning);
+			}
+		}
+	}
+	return ret;
+}
+
+PackedStringArray Node::get_configuration_warnings_as_strings(bool p_wrap_lines, const String &p_property) const {
+	Vector<Dictionary> warnings = get_configuration_warnings_of_property(p_property);
+
+	const String bullet_point = U"•  ";
+	PackedStringArray all_warnings;
+	for (const Dictionary &warning : warnings) {
+		if (!warning.has("message")) {
+			continue;
+		}
+
+		// Prefix with property name if we are showing all warnings.
+		String text;
+		if (warning.has("property") && p_property.is_empty()) {
+			text = bullet_point + vformat("[%s] %s", warning["property"], warning["message"]);
+		} else {
+			text = bullet_point + static_cast<String>(warning["message"]);
+		}
+
+		if (p_wrap_lines) {
+			// Limit the line width while keeping some padding.
+			// It is not efficient, but it does not have to be.
+			const PackedInt32Array boundaries = TS->string_get_word_breaks(text, "", 80);
+			PackedStringArray lines;
+			for (int i = 0; i < boundaries.size(); i += 2) {
+				const int start = boundaries[i];
+				const int end = boundaries[i + 1];
+				String line = text.substr(start, end - start);
+				lines.append(line);
+			}
+			text = String("\n").join(lines);
+		}
+		text = text.replace("\n", "\n    ");
+		all_warnings.append(text);
+	}
+	return all_warnings;
 }
 
 void Node::update_configuration_warnings() {
@@ -3609,6 +3684,16 @@ String Node::_get_name_num_separator() {
 			return "-";
 	}
 	return " ";
+}
+
+StringName Node::get_configuration_warning_icon(int p_count) {
+	if (p_count == 1) {
+		return SNAME("NodeWarning");
+	} else if (p_count <= 3) {
+		return vformat("NodeWarnings%d", p_count);
+	} else {
+		return SNAME("NodeWarnings4Plus");
+	}
 }
 
 Node::Node() {
