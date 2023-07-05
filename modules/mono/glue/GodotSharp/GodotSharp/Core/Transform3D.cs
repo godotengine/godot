@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.ComponentModel;
 
 namespace Godot
 {
@@ -175,12 +176,24 @@ namespace Godot
         /// </summary>
         /// <param name="target">The object to look at.</param>
         /// <param name="up">The relative up direction.</param>
+        /// <param name="useModelFront">
+        /// If true, then the model is oriented in reverse,
+        /// towards the model front axis (+Z, Vector3.ModelFront),
+        /// which is more useful for orienting 3D models.
+        /// </param>
         /// <returns>The resulting transform.</returns>
-        public readonly Transform3D LookingAt(Vector3 target, Vector3 up)
+        public readonly Transform3D LookingAt(Vector3 target, Vector3? up = null, bool useModelFront = false)
         {
             Transform3D t = this;
-            t.SetLookAt(Origin, target, up);
+            t.SetLookAt(Origin, target, up ?? Vector3.Up, useModelFront);
             return t;
+        }
+
+        /// <inheritdoc cref="LookingAt(Vector3, Nullable{Vector3}, bool)"/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public readonly Transform3D LookingAt(Vector3 target, Vector3 up)
+        {
+            return LookingAt(target, up, false);
         }
 
         /// <summary>
@@ -247,9 +260,9 @@ namespace Godot
             return new Transform3D(Basis * tmpBasis, Origin);
         }
 
-        private void SetLookAt(Vector3 eye, Vector3 target, Vector3 up)
+        private void SetLookAt(Vector3 eye, Vector3 target, Vector3 up, bool useModelFront = false)
         {
-            Basis = Basis.LookingAt(target - eye, up);
+            Basis = Basis.LookingAt(target - eye, up, useModelFront);
             Origin = eye;
         }
 
