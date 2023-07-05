@@ -147,7 +147,7 @@ public class GodotLib {
 	/**
 	 * Forward regular key events.
 	 */
-	public static native void key(int p_physical_keycode, int p_unicode, int p_key_label, boolean p_pressed);
+	public static native void key(int p_physical_keycode, int p_unicode, int p_key_label, boolean p_pressed, boolean p_echo);
 
 	/**
 	 * Forward game device's key events.

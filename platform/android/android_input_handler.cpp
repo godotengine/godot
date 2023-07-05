@@ -64,7 +64,7 @@ void AndroidInputHandler::_set_key_modifier_state(Ref<InputEventWithModifiers> e
 	}
 }
 
-void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed) {
+void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed, bool p_echo) {
 	static char32_t prev_wc = 0;
 	char32_t unicode = p_unicode;
 	if ((p_unicode & 0xfffffc00) == 0xd800) {
@@ -125,6 +125,7 @@ void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicod
 	ev->set_key_label(fix_key_label(p_key_label, keycode));
 	ev->set_unicode(fix_unicode(unicode));
 	ev->set_pressed(p_pressed);
+	ev->set_echo(p_echo);
 
 	_set_key_modifier_state(ev, keycode);
 
