@@ -295,12 +295,14 @@ Error OS::shell_open(String p_uri) {
 }
 
 Error OS::shell_show_in_file_manager(String p_path, bool p_open_folder) {
-	if (!p_path.begins_with("file://")) {
-		p_path = String("file://") + p_path;
-	}
-	if (!p_path.ends_with("/")) {
+	p_path = p_path.trim_prefix("file://");
+
+	if (!DirAccess::dir_exists_absolute(p_path)) {
 		p_path = p_path.get_base_dir();
 	}
+
+	p_path = String("file://") + p_path;
+
 	return shell_open(p_path);
 }
 // implement these with the canvas?
