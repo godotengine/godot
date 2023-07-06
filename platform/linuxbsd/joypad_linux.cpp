@@ -98,19 +98,20 @@ static bool detect_sandbox() {
 
 JoypadLinux::JoypadLinux(Input *in) {
 #ifdef UDEV_ENABLED
-#ifdef SOWRAP_ENABLED
-#ifdef DEBUG_ENABLED
-	int dylibloader_verbose = 1;
-#else
-	int dylibloader_verbose = 0;
-#endif
 	if (detect_sandbox()) {
 		// Linux binaries in sandboxes / containers need special handling because
 		// libudev doesn't work there. So we need to fallback to manual parsing
 		// of /dev/input in such case.
 		use_udev = false;
 		print_verbose("JoypadLinux: udev enabled, but detected incompatible sandboxed mode. Falling back to /dev/input to detect joypads.");
-	} else {
+	}
+#ifdef SOWRAP_ENABLED
+	else {
+#ifdef DEBUG_ENABLED
+		int dylibloader_verbose = 1;
+#else
+		int dylibloader_verbose = 0;
+#endif
 		use_udev = initialize_libudev(dylibloader_verbose) == 0;
 		if (use_udev) {
 			print_verbose("JoypadLinux: udev enabled and loaded successfully.");
@@ -118,10 +119,11 @@ JoypadLinux::JoypadLinux(Input *in) {
 			print_verbose("JoypadLinux: udev enabled, but couldn't be loaded. Falling back to /dev/input to detect joypads.");
 		}
 	}
-#endif
+#endif // SOWRAP_ENABLED
 #else
 	print_verbose("JoypadLinux: udev disabled, parsing /dev/input to detect joypads.");
-#endif
+#endif // UDEV_ENABLED
+
 	input = in;
 	monitor_joypads_thread.start(monitor_joypads_thread_func, this);
 	joypad_events_thread.start(joypad_events_thread_func, this);
