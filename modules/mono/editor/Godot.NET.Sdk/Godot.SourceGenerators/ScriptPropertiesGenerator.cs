@@ -362,7 +362,7 @@ namespace Godot.SourceGenerators
         {
             foreach (var attr in memberSymbol.GetAttributes())
             {
-                PropertyUsageFlags? propertyUsage = attr.AttributeClass?.ToString() switch
+                PropertyUsageFlags? propertyUsage = attr.AttributeClass?.FullQualifiedNameOmitGlobal() switch
                 {
                     GodotClasses.ExportCategoryAttr => PropertyUsageFlags.Category,
                     GodotClasses.ExportGroupAttr => PropertyUsageFlags.Group,
