@@ -65,7 +65,7 @@ thirdparty_misc_sources = [thirdparty_misc_dir + file for file in thirdparty_mis
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_misc_sources)
 
 # Brotli
-if env["brotli"]:
+if env["brotli"] and env["builtin_brotli"]:
     thirdparty_brotli_dir = "#thirdparty/brotli/"
     thirdparty_brotli_sources = [
         "common/constants.c",
