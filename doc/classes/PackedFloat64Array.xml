@@ -72,7 +72,7 @@
 				[b]Note:[/b] [constant @GDScript.NAN] doesn't behave the same as other numbers. Therefore, the results from this method may not be accurate if NaNs are included.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="duplicate" qualifiers="const">
 			<return type="PackedFloat64Array" />
 			<description>
 				Creates a copy of the array, and returns it.
