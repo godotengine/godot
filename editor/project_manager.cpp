@@ -1042,10 +1042,25 @@ void ProjectListItemControl::set_project_icon(const Ref<Texture2D> &p_icon) {
 	project_icon->set_texture(p_icon);
 }
 
-void ProjectListItemControl::set_unsupported_features(const PackedStringArray &p_features) {
+bool _project_feature_looks_like_version(const String &p_feature) {
+	return p_feature.contains(".") && p_feature.substr(0, 3).is_numeric();
+}
+
+void ProjectListItemControl::set_unsupported_features(PackedStringArray p_features) {
 	if (p_features.size() > 0) {
-		String unsupported_features_str = String(", ").join(p_features);
-		project_unsupported_features->set_tooltip_text(TTR("The project uses features unsupported by the current build:") + "\n" + unsupported_features_str);
+		String tooltip_text = "";
+		for (int i = 0; i < p_features.size(); i++) {
+			if (_project_feature_looks_like_version(p_features[i])) {
+				tooltip_text += TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
+				p_features.remove_at(i);
+				i--;
+			}
+		}
+		if (p_features.size() > 0) {
+			String unsupported_features_str = String(", ").join(p_features);
+			tooltip_text += TTR("This project uses features unsupported by the current build:") + "\n" + unsupported_features_str;
+		}
+		project_unsupported_features->set_tooltip_text(tooltip_text);
 		project_unsupported_features->show();
 	} else {
 		project_unsupported_features->hide();
@@ -1450,7 +1465,7 @@ void ProjectList::_create_project_item_control(int p_index) {
 	hb->set_project_path(item.path);
 	hb->set_tooltip_text(item.description);
 	hb->set_tags(item.tags, this);
-	hb->set_unsupported_features(item.unsupported_features);
+	hb->set_unsupported_features(item.unsupported_features.duplicate());
 
 	hb->set_is_favorite(item.favorite);
 	hb->set_is_missing(item.missing);
@@ -2297,7 +2312,7 @@ void ProjectManager::_open_selected_projects_ask() {
 				warning_message += TTR("Warning: This project uses C#, but this build of Godot does not have\nthe Mono module. If you proceed you will not be able to use any C# scripts.\n\n");
 				unsupported_features.remove_at(i);
 				i--;
-			} else if (feature.substr(0, 3).is_numeric()) {
+			} else if (_project_feature_looks_like_version(feature)) {
 				warning_message += vformat(TTR("Warning: This project was built in Godot %s.\nOpening will upgrade or downgrade the project to Godot %s.\n\n"), Variant(feature), Variant(VERSION_BRANCH));
 				unsupported_features.remove_at(i);
 				i--;
