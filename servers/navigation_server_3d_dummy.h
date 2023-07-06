@@ -64,6 +64,8 @@ public:
 	TypedArray<RID> map_get_obstacles(RID p_map) const override { return TypedArray<RID>(); }
 	void map_force_update(RID p_map) override {}
 	RID region_create() override { return RID(); }
+	void region_set_enabled(RID p_region, bool p_enabled) override {}
+	bool region_get_enabled(RID p_region) const override { return false; }
 	void region_set_use_edge_connections(RID p_region, bool p_enabled) override {}
 	bool region_get_use_edge_connections(RID p_region) const override { return false; }
 	void region_set_enter_cost(RID p_region, real_t p_enter_cost) override {}
@@ -88,6 +90,8 @@ public:
 	RID link_create() override { return RID(); }
 	void link_set_map(RID p_link, RID p_map) override {}
 	RID link_get_map(RID p_link) const override { return RID(); }
+	void link_set_enabled(RID p_link, bool p_enabled) override {}
+	bool link_get_enabled(RID p_link) const override { return false; }
 	void link_set_bidirectional(RID p_link, bool p_bidirectional) override {}
 	bool link_is_bidirectional(RID p_link) const override { return false; }
 	void link_set_navigation_layers(RID p_link, uint32_t p_navigation_layers) override {}
