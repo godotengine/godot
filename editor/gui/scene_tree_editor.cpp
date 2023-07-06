@@ -374,7 +374,14 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		tooltip += String("\n" + TTR("Type:") + " " + (custom_type != StringName() ? String(custom_type) : p_node->get_class()));
 
 		if (!p_node->get_editor_description().is_empty()) {
-			tooltip += "\n\n" + p_node->get_editor_description();
+			const PackedInt32Array boundaries = TS->string_get_word_breaks(p_node->get_editor_description(), "", 80);
+			tooltip += "\n";
+
+			for (int i = 0; i < boundaries.size(); i += 2) {
+				const int start = boundaries[i];
+				const int end = boundaries[i + 1];
+				tooltip += "\n" + p_node->get_editor_description().substr(start, end - start + 1).rstrip("\n");
+			}
 		}
 
 		item->set_tooltip_text(0, tooltip);
