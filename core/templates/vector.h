@@ -172,7 +172,7 @@ public:
 		return span().bisect(p_value, p_before, Comparator{ args... });
 	}
 
-	Vector<T> duplicate() {
+	Vector<T> duplicate() const {
 		return *this;
 	}
 
