@@ -179,6 +179,8 @@ public:
 	TypedArray<Texture2D> get_images();
 	void set_images(TypedArray<Texture2D> p_images);
 
+	TypedArray<Image> get_source_images();
+
 	TypedArray<GLTFSkin> get_skins();
 	void set_skins(TypedArray<GLTFSkin> p_skins);
 

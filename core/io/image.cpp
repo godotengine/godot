@@ -3393,6 +3393,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &Image::get_height);
 	ClassDB::bind_method(D_METHOD("get_size"), &Image::get_size);
 	ClassDB::bind_method(D_METHOD("has_mipmaps"), &Image::has_mipmaps);
+	ClassDB::bind_method(D_METHOD("get_mipmap_count"), &Image::get_mipmap_count);
 	ClassDB::bind_method(D_METHOD("get_format"), &Image::get_format);
 	ClassDB::bind_method(D_METHOD("get_data"), &Image::get_data);
 
