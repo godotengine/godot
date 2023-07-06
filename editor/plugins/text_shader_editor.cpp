@@ -238,7 +238,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	ShaderPreprocessor::get_keyword_list(&pp_keywords, false);
 
 	for (const String &E : pp_keywords) {
-		syntax_highlighter->add_keyword_color(E, keyword_color);
+		syntax_highlighter->add_keyword_color(E, control_flow_keyword_color);
 	}
 
 	// Colorize built-ins like `COLOR` differently to make them easier
