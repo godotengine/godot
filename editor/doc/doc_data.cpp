@@ -1100,7 +1100,6 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 		if (c.inherits != "") {
 			header += " inherits=\"" + c.inherits + "\"";
 		}
-		header += String(" version=\"") + VERSION_BRANCH + "\"";
 		// Reference the XML schema so editors can provide error checking.
 		// Modules are nested deep, so change the path to reference the same schema everywhere.
 		const String schema_path = save_path.find("modules/") != -1 ? "../../../doc/class.xsd" : "../class.xsd";

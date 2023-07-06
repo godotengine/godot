@@ -148,7 +148,6 @@
 			<xs:attribute type="xs:string" name="name" />
 			<xs:attribute type="xs:string" name="inherits" />
 			<xs:attribute type="xs:string" name="category" />
-			<xs:attribute type="xs:float" name="version" />
 		</xs:complexType>
 	</xs:element>
 </xs:schema>
