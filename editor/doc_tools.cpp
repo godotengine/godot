@@ -38,7 +38,6 @@
 #include "core/io/marshalls.h"
 #include "core/object/script_language.h"
 #include "core/string/translation.h"
-#include "core/version.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
 #include "scene/resources/theme.h"
@@ -1482,7 +1481,6 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				header += " is_experimental=\"true\"";
 			}
 		}
-		header += String(" version=\"") + VERSION_BRANCH + "\"";
 		if (p_include_xml_schema) {
 			// Reference the XML schema so editors can provide error checking.
 			// Modules are nested deep, so change the path to reference the same schema everywhere.
