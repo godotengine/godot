@@ -240,6 +240,9 @@ def configure(env: "Environment"):
     if not env["builtin_zstd"]:
         env.ParseConfig("pkg-config libzstd --cflags --libs")
 
+    if env["brotli"] and not env["builtin_brotli"]:
+        env.ParseConfig("pkg-config libbrotlicommon libbrotlidec --cflags --libs")
+
     # Sound and video libraries
     # Keep the order as it triggers chained dependencies (ogg needed by others, etc.)
 
