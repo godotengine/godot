@@ -2306,7 +2306,10 @@ Error Main::setup2() {
 
 	AudioDriverManager::initialize(audio_driver_idx);
 
-	print_line(" "); //add a blank line for readability
+	//add a blank line for readability
+	if (Engine::singleton->_print_header) {
+		print_line(" ");
+	}
 
 	// right moment to create and initialize the audio server
 
