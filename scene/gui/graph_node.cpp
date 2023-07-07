@@ -129,8 +129,8 @@ bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
 	int idx = 0;
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i, false));
-		if (!c || c->is_set_as_top_level()) {
+		Control *child = Object::cast_to<Control>(get_child(i, false));
+		if (!child || child->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -158,44 +158,43 @@ void GraphNode::_resort() {
 	Size2 titlebar_size = Size2(new_size.width, titlebar_hbox->get_size().height);
 	titlebar_size -= sb_titlebar->get_minimum_size();
 	Rect2 titlebar_rect = Rect2(sb_titlebar->get_offset(), titlebar_size);
-
 	fit_child_in_rect(titlebar_hbox, titlebar_rect);
 
-	// After resort the children of the titlebar container may have changed their height (e.g. Label autowrap).
+	// After resort, the children of the titlebar container may have changed their height (e.g. Label autowrap).
 	Size2i titlebar_min_size = titlebar_hbox->get_combined_minimum_size();
 
 	// First pass, determine minimum size AND amount of stretchable elements.
 	Ref<StyleBox> sb_slot = get_theme_stylebox(SNAME("slot"));
 	int separation = get_theme_constant(SNAME("separation"));
-	bool first = true;
+
 	int children_count = 0;
 	int stretch_min = 0;
-	int stretch_avail = 0;
+	int available_stretch_space = 0;
 	float stretch_ratio_total = 0;
 	HashMap<Control *, _MinSizeCache> min_size_cache;
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i, false));
-		if (!c || !c->is_visible_in_tree()) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
+		Control *child = Object::cast_to<Control>(get_child(i, false));
+
+		if (!child || !child->is_visible_in_tree() || child->is_set_as_top_level()) {
 			continue;
 		}
 
-		Size2i size = c->get_combined_minimum_size() + (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2());
-		_MinSizeCache msc;
+		Size2i size = child->get_combined_minimum_size() + (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2());
 
 		stretch_min += size.height;
+
+		_MinSizeCache msc;
 		msc.min_size = size.height;
-		msc.will_stretch = c->get_v_size_flags().has_flag(SIZE_EXPAND);
+		msc.will_stretch = child->get_v_size_flags().has_flag(SIZE_EXPAND);
+		msc.final_size = msc.min_size;
+		min_size_cache[child] = msc;
 
 		if (msc.will_stretch) {
-			stretch_avail += msc.min_size;
-			stretch_ratio_total += c->get_stretch_ratio();
+			available_stretch_space += msc.min_size;
+			stretch_ratio_total += child->get_stretch_ratio();
 		}
-		msc.final_size = msc.min_size;
-		min_size_cache[c] = msc;
+
 		children_count++;
 	}
 
@@ -205,13 +204,12 @@ void GraphNode::_resort() {
 
 	int stretch_max = new_size.height - (children_count - 1) * separation;
 	int stretch_diff = stretch_max - stretch_min;
-	if (stretch_diff < 0) {
-		// Avoid negative stretch space.
-		stretch_diff = 0;
-	}
 
-	// Available stretch space.
-	stretch_avail += stretch_diff - sb_frame->get_margin(SIDE_BOTTOM) - sb_frame->get_margin(SIDE_TOP);
+	// Avoid negative stretch space.
+	stretch_diff = MAX(stretch_diff, 0);
+
+	available_stretch_space += stretch_diff - sb_frame->get_margin(SIDE_BOTTOM) - sb_frame->get_margin(SIDE_TOP);
+
 	// Second, pass successively to discard elements that can't be stretched, this will run
 	// while stretchable elements exist.
 
@@ -220,26 +218,23 @@ void GraphNode::_resort() {
 		bool refit_successful = true;
 
 		for (int i = 0; i < get_child_count(false); i++) {
-			Control *c = Object::cast_to<Control>(get_child(i, false));
-			if (!c || !c->is_visible_in_tree()) {
-				continue;
-			}
-			if (c->is_set_as_top_level()) {
+			Control *child = Object::cast_to<Control>(get_child(i, false));
+			if (!child || !child->is_visible_in_tree() || child->is_set_as_top_level()) {
 				continue;
 			}
 
-			ERR_FAIL_COND(!min_size_cache.has(c));
-			_MinSizeCache &msc = min_size_cache[c];
+			ERR_FAIL_COND(!min_size_cache.has(child));
+			_MinSizeCache &msc = min_size_cache[child];
 
 			if (msc.will_stretch) {
-				int final_pixel_size = stretch_avail * c->get_stretch_ratio() / stretch_ratio_total;
+				int final_pixel_size = available_stretch_space * child->get_stretch_ratio() / stretch_ratio_total;
 				if (final_pixel_size < msc.min_size) {
 					// If the available stretching area is too small for a Control,
 					// then remove it from stretching area.
 					msc.will_stretch = false;
-					stretch_ratio_total -= c->get_stretch_ratio();
+					stretch_ratio_total -= child->get_stretch_ratio();
 					refit_successful = false;
-					stretch_avail -= msc.min_size;
+					available_stretch_space -= msc.min_size;
 					msc.final_size = msc.min_size;
 					break;
 				} else {
@@ -255,51 +250,40 @@ void GraphNode::_resort() {
 
 	// Final pass, draw and stretch elements.
 
-	int ofs = sb_frame->get_margin(SIDE_TOP) + titlebar_min_size.height + sb_titlebar->get_minimum_size().height;
+	int ofs_y = sb_frame->get_margin(SIDE_TOP) + titlebar_min_size.height + sb_titlebar->get_minimum_size().height;
 
-	first = true;
-	int idx = 0;
 	slot_y_cache.clear();
-	int width = new_size.width - sb_frame->get_minimum_size().x;
+	int width = new_size.width - sb_frame->get_minimum_size().width;
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i, false));
-		if (!c || !c->is_visible_in_tree()) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
+		Control *child = Object::cast_to<Control>(get_child(i, false));
+		if (!child || !child->is_visible_in_tree() || child->is_set_as_top_level()) {
 			continue;
 		}
 
-		_MinSizeCache &msc = min_size_cache[c];
+		_MinSizeCache &msc = min_size_cache[child];
 
-		if (first) {
-			first = false;
-		} else {
-			ofs += separation;
+		if (i > 0) {
+			ofs_y += separation;
 		}
 
-		int from = ofs;
-		int to = ofs + msc.final_size;
+		int from_y_pos = ofs_y;
+		int to_y_pos = ofs_y + msc.final_size;
 
-		if (msc.will_stretch && idx == children_count - 1) {
-			// Adjust so the last one always fits perfect.
-			// Compensating for numerical imprecision.
-
-			to = new_size.height - sb_frame->get_margin(SIDE_BOTTOM);
+		// Adjust so the last one always fits perfect, compensating for numerical imprecision.
+		if (msc.will_stretch && i == children_count - 1) {
+			to_y_pos = new_size.height - sb_frame->get_margin(SIDE_BOTTOM);
 		}
 
-		int size = to - from;
-
+		int height = to_y_pos - from_y_pos;
 		float margin = sb_frame->get_margin(SIDE_LEFT) + (slot_table[i].draw_stylebox ? sb_slot->get_margin(SIDE_LEFT) : 0);
 		float final_width = width - (slot_table[i].draw_stylebox ? sb_slot->get_minimum_size().x : 0);
-		Rect2 rect(margin, from, final_width, size);
+		Rect2 rect(margin, from_y_pos, final_width, height);
+		fit_child_in_rect(child, rect);
 
-		fit_child_in_rect(c, rect);
-		slot_y_cache.push_back(from - sb_frame->get_margin(SIDE_TOP) + size * 0.5);
+		slot_y_cache.push_back(from_y_pos - sb_frame->get_margin(SIDE_TOP) + height * 0.5);
 
-		ofs = to;
-		idx++;
+		ofs_y = to_y_pos;
 	}
 
 	queue_redraw();
@@ -326,7 +310,7 @@ void GraphNode::_notification(int p_what) {
 
 			Rect2 titlebar_rect(Point2(), titlebar_hbox->get_size() + sb_titlebar->get_minimum_size());
 			Size2 body_size = get_size();
-			body_size.y -= titlebar_rect.size.height;
+			body_size.height -= titlebar_rect.size.height;
 			Rect2 body_rect(0, titlebar_rect.size.height, body_size.width, body_size.height);
 
 			// Draw body (slots area) stylebox.
@@ -380,14 +364,14 @@ void GraphNode::_notification(int p_what) {
 
 					// Draw slot stylebox.
 					if (slot.draw_stylebox) {
-						Control *c = Object::cast_to<Control>(get_child(E.key, false));
-						if (!c || !c->is_visible_in_tree()) {
+						Control *child = Object::cast_to<Control>(get_child(E.key, false));
+						if (!child || !child->is_visible_in_tree()) {
 							continue;
 						}
-						Rect2 c_rect = c->get_rect();
-						c_rect.position.x = sb_frame->get_margin(SIDE_LEFT);
-						c_rect.size.width = width;
-						draw_style_box(sb_slot, c_rect);
+						Rect2 child_rect = child->get_rect();
+						child_rect.position.x = sb_frame->get_margin(SIDE_LEFT);
+						child_rect.size.width = width;
+						draw_style_box(sb_slot, child_rect);
 					}
 				}
 			}
@@ -587,32 +571,25 @@ Size2 GraphNode::get_minimum_size() const {
 	Ref<StyleBox> sb_slot = get_theme_stylebox(SNAME("slot"));
 
 	int separation = get_theme_constant(SNAME("separation"));
-
-	bool first = true;
-
 	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
+
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i, false));
-		if (!c || !c->is_visible()) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
+		Control *child = Object::cast_to<Control>(get_child(i, false));
+		if (!child || !child->is_visible() || child->is_set_as_top_level()) {
 			continue;
 		}
 
-		Size2i size = c->get_combined_minimum_size();
+		Size2i size = child->get_combined_minimum_size();
 		size.width += sb_frame->get_minimum_size().width;
 		if (slot_table.has(i)) {
 			size += slot_table[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2();
 		}
 
-		minsize.y += size.y;
-		minsize.x = MAX(minsize.x, size.x);
+		minsize.height += size.height;
+		minsize.width = MAX(minsize.width, size.width);
 
-		if (first) {
-			first = false;
-		} else {
-			minsize.y += separation;
+		if (i > 0) {
+			minsize.height += separation;
 		}
 	}
 
@@ -632,43 +609,35 @@ void GraphNode::_port_pos_update() {
 	right_port_cache.clear();
 	int vertical_ofs = titlebar_hbox->get_size().height + sb_titlebar->get_minimum_size().height + sb_frame->get_margin(SIDE_TOP);
 
-	int child_idx = 0;
-
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i, false));
-		if (!c) {
-			continue;
-		}
-		if (c->is_set_as_top_level()) {
+		Control *child = Object::cast_to<Control>(get_child(i, false));
+		if (!child || child->is_set_as_top_level()) {
 			continue;
 		}
 
-		Size2i size = c->get_rect().size;
+		Size2i size = child->get_rect().size;
 
-		if (slot_table.has(child_idx)) {
-			if (slot_table[child_idx].enable_left) {
+		if (slot_table.has(i)) {
+			if (slot_table[i].enable_left) {
 				PortCache port_cache;
 				port_cache.pos = Point2i(edgeofs, vertical_ofs + size.height / 2);
-				port_cache.type = slot_table[child_idx].type_left;
-				port_cache.color = slot_table[child_idx].color_left;
-				// port_cache.height = size.height;
-				port_cache.slot_idx = child_idx;
+				port_cache.type = slot_table[i].type_left;
+				port_cache.color = slot_table[i].color_left;
+				port_cache.slot_idx = child->get_index(); // Index with internal nodes included.
 				left_port_cache.push_back(port_cache);
 			}
-			if (slot_table[child_idx].enable_right) {
+			if (slot_table[i].enable_right) {
 				PortCache port_cache;
 				port_cache.pos = Point2i(get_size().width - edgeofs, vertical_ofs + size.height / 2);
-				port_cache.type = slot_table[child_idx].type_right;
-				port_cache.color = slot_table[child_idx].color_right;
-				// port_cache.height = size.height;
-				port_cache.slot_idx = child_idx;
+				port_cache.type = slot_table[i].type_right;
+				port_cache.color = slot_table[i].color_right;
+				port_cache.slot_idx = child->get_index(); // Index with internal nodes included.
 				right_port_cache.push_back(port_cache);
 			}
 		}
 
 		vertical_ofs += separation;
-		vertical_ofs += size.y;
-		child_idx++;
+		vertical_ofs += size.height;
 	}
 
 	port_pos_dirty = false;

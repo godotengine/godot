@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BASE_GRAPH_NODE_H
-#define BASE_GRAPH_NODE_H
+#ifndef GRAPH_CONTROL_H
+#define GRAPH_CONTROL_H
 
 #include "scene/gui/container.h"
 
@@ -92,4 +92,4 @@ public:
 	GraphControl(){};
 };
 
-#endif // BASE_GRAPH_NODE_H
+#endif // GRAPH_CONTROL_H

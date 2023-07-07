@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphNode" inherits="GraphControl" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GraphNode" inherits="GraphControl" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A container with connection ports, representing a node in a [GraphEdit].
 	</brief_description>
@@ -20,9 +20,9 @@
 		</method>
 		<method name="clear_slot">
 			<return type="void" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<description>
-				Disables input and output slot whose index is [param slot_idx].
+				Disables input and output slot whose index is [param slot_index].
 			</description>
 		</method>
 		<method name="get_port_input_color">
@@ -95,30 +95,30 @@
 		</method>
 		<method name="get_slot_color_left" qualifiers="const">
 			<return type="Color" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<description>
-				Returns the left (input) [Color] of the slot [param slot_idx].
+				Returns the left (input) [Color] of the slot [param slot_index].
 			</description>
 		</method>
 		<method name="get_slot_color_right" qualifiers="const">
 			<return type="Color" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<description>
-				Returns the right (output) [Color] of the slot [param slot_idx].
+				Returns the right (output) [Color] of the slot [param slot_index].
 			</description>
 		</method>
 		<method name="get_slot_type_left" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<description>
-				Returns the left (input) type of the slot [param slot_idx].
+				Returns the left (input) type of the slot [param slot_index].
 			</description>
 		</method>
 		<method name="get_slot_type_right" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<description>
-				Returns the right (output) type of the slot [param slot_idx].
+				Returns the right (output) type of the slot [param slot_index].
 			</description>
 		</method>
 		<method name="get_titlebar_hbox">
@@ -130,28 +130,28 @@
 		</method>
 		<method name="is_slot_draw_stylebox" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<description>
-				Returns true if the background [StyleBox] of the slot [param slot_idx] is drawn.
+				Returns true if the background [StyleBox] of the slot [param slot_index] is drawn.
 			</description>
 		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<description>
-				Returns [code]true[/code] if left (input) side of the slot [param slot_idx] is enabled.
+				Returns [code]true[/code] if left (input) side of the slot [param slot_index] is enabled.
 			</description>
 		</method>
 		<method name="is_slot_enabled_right" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<description>
-				Returns [code]true[/code] if right (output) side of the slot [param slot_idx] is enabled.
+				Returns [code]true[/code] if right (output) side of the slot [param slot_index] is enabled.
 			</description>
 		</method>
 		<method name="set_slot">
 			<return type="void" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<param index="1" name="enable_left_port" type="bool" />
 			<param index="2" name="type_left" type="int" />
 			<param index="3" name="color_left" type="Color" />
@@ -162,7 +162,7 @@
 			<param index="8" name="custom_icon_right" type="Texture2D" default="null" />
 			<param index="9" name="draw_stylebox" type="bool" default="true" />
 			<description>
-				Sets properties of the slot with the [param slot_idx] index.
+				Sets properties of the slot with the [param slot_index] index.
 				If [param enable_left_port]/[param enable_right_port] is [code]true[/code], a port will appear and the slot will be able to be connected from this side.
 				With [param type_left]/[param type_right] an arbitrary type can be assigned to each port. Two ports can be connected if they share the same type, or if the connection between their types is allowed in the parent [GraphEdit] (see [method GraphEdit.add_valid_connection_type]). Keep in mind that the [GraphEdit] has the final say in accepting the connection. Type compatibility simply allows the [signal GraphEdit.connection_request] signal to be emitted.
 				Ports can be further customized using [param color_left]/[param color_right] and [param custom_icon_left]/[param custom_icon_right]. The color parameter adds a tint to the icon. The custom icon can be used to override the default port dot.
@@ -173,58 +173,58 @@
 		</method>
 		<method name="set_slot_color_left">
 			<return type="void" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<param index="1" name="color" type="Color" />
 			<description>
-				Sets the [Color] of the left (input) side of the slot [param slot_idx] to [param color].
+				Sets the [Color] of the left (input) side of the slot [param slot_index] to [param color].
 			</description>
 		</method>
 		<method name="set_slot_color_right">
 			<return type="void" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<param index="1" name="color" type="Color" />
 			<description>
-				Sets the [Color] of the right (output) side of the slot [param slot_idx] to [param color].
+				Sets the [Color] of the right (output) side of the slot [param slot_index] to [param color].
 			</description>
 		</method>
 		<method name="set_slot_draw_stylebox">
 			<return type="void" />
-			<param index="0" name="slot_idx" type="int" />
-			<param index="1" name="draw_stylebox" type="bool" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="enable" type="bool" />
 			<description>
-				Toggles the background [StyleBox] of the slot [param slot_idx].
+				Toggles the background [StyleBox] of the slot [param slot_index].
 			</description>
 		</method>
 		<method name="set_slot_enabled_left">
 			<return type="void" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Toggles the left (input) side of the slot [param slot_idx]. If [param enable] is [code]true[/code], a port will appear on the left side and the slot will be able to be connected from this side.
+				Toggles the left (input) side of the slot [param slot_index]. If [param enable] is [code]true[/code], a port will appear on the left side and the slot will be able to be connected from this side.
 			</description>
 		</method>
 		<method name="set_slot_enabled_right">
 			<return type="void" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Toggles the right (output) side of the slot [param slot_idx]. If [param enable] is [code]true[/code], a port will appear on the right side and the slot will be able to be connected from this side.
+				Toggles the right (output) side of the slot [param slot_index]. If [param enable] is [code]true[/code], a port will appear on the right side and the slot will be able to be connected from this side.
 			</description>
 		</method>
 		<method name="set_slot_type_left">
 			<return type="void" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<param index="1" name="type" type="int" />
 			<description>
-				Sets the left (input) type of the slot [param slot_idx] to [param type]. If the value is negative, all connections will be disallowed to be created via user inputs.
+				Sets the left (input) type of the slot [param slot_index] to [param type]. If the value is negative, all connections will be disallowed to be created via user inputs.
 			</description>
 		</method>
 		<method name="set_slot_type_right">
 			<return type="void" />
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<param index="1" name="type" type="int" />
 			<description>
-				Sets the right (output) type of the slot [param slot_idx] to [param type]. If the value is negative, all connections will be disallowed to be created via user inputs.
+				Sets the right (output) type of the slot [param slot_index] to [param type]. If the value is negative, all connections will be disallowed to be created via user inputs.
 			</description>
 		</method>
 	</methods>
@@ -236,7 +236,7 @@
 	</members>
 	<signals>
 		<signal name="slot_updated">
-			<param index="0" name="slot_idx" type="int" />
+			<param index="0" name="slot_index" type="int" />
 			<description>
 				Emitted when any GraphNode's slot is updated.
 			</description>

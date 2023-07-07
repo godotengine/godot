@@ -125,7 +125,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 
 	visible_properties.clear();
 
-	graph->set_scroll_ofs(blend_tree->get_graph_offset() * EDSCALE);
+	graph->set_scroll_offset(blend_tree->get_graph_offset() * EDSCALE);
 
 	graph->clear_connections();
 	//erase all nodes
@@ -167,7 +167,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			name->connect("focus_exited", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode), CONNECT_DEFERRED);
 			name->connect("text_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
 			base = 1;
-			agnode->set_closable(true);
+			agnode->set_deletable(true);
 			node->connect("close_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_request).bind(E), CONNECT_DEFERRED);
 		}
 
@@ -347,7 +347,7 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		return;
 	}
 
-	Point2 instance_pos = graph->get_scroll_ofs();
+	Point2 instance_pos = graph->get_scroll_offset();
 	if (use_position_from_popup_menu) {
 		instance_pos += position_from_popup_menu;
 	} else {
@@ -533,7 +533,7 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request(const TypedArray<String
 			if (gn) {
 				String name = gn->get_name();
 				Ref<AnimationNode> anode = blend_tree->get_node(name);
-				if (gn->is_selected() && anode->is_closable()) {
+				if (gn->is_selected() && anode->is_deletable()) {
 					to_erase.push_back(gn->get_name());
 				}
 			}
@@ -541,7 +541,7 @@ void AnimationNodeBlendTreeEditor::_delete_nodes_request(const TypedArray<String
 	} else {
 		for (int i = 0; i < p_nodes.size(); i++) {
 			Ref<AnimationNode> anode = blend_tree->get_node(p_nodes[i]);
-			if (anode->is_closable()) {
+			if (anode->is_deletable()) {
 				to_erase.push_back(p_nodes[i]);
 			}
 		}

@@ -326,11 +326,11 @@ void VisualShaderNode::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
 }
 
-bool VisualShaderNode::is_closable() const {
+bool VisualShaderNode::is_deletable() const {
 	return closable;
 }
 
-void VisualShaderNode::set_closable(bool p_closable) {
+void VisualShaderNode::set_deletable(bool p_closable) {
 	closable = p_closable;
 }
 
@@ -4021,82 +4021,82 @@ VisualShaderNodeResizableBase::VisualShaderNodeResizableBase() {
 
 ////////////// Comment
 
-String VisualShaderNodeComment::get_caption() const {
+String VisualShaderNodeFrame::get_caption() const {
 	return title;
 }
 
-int VisualShaderNodeComment::get_input_port_count() const {
+int VisualShaderNodeFrame::get_input_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeComment::PortType VisualShaderNodeComment::get_input_port_type(int p_port) const {
+VisualShaderNodeFrame::PortType VisualShaderNodeFrame::get_input_port_type(int p_port) const {
 	return PortType::PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeComment::get_input_port_name(int p_port) const {
+String VisualShaderNodeFrame::get_input_port_name(int p_port) const {
 	return String();
 }
 
-int VisualShaderNodeComment::get_output_port_count() const {
+int VisualShaderNodeFrame::get_output_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeComment::PortType VisualShaderNodeComment::get_output_port_type(int p_port) const {
+VisualShaderNodeFrame::PortType VisualShaderNodeFrame::get_output_port_type(int p_port) const {
 	return PortType::PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeComment::get_output_port_name(int p_port) const {
+String VisualShaderNodeFrame::get_output_port_name(int p_port) const {
 	return String();
 }
 
-void VisualShaderNodeComment::set_title(const String &p_title) {
+void VisualShaderNodeFrame::set_title(const String &p_title) {
 	title = p_title;
 }
 
-String VisualShaderNodeComment::get_title() const {
+String VisualShaderNodeFrame::get_title() const {
 	return title;
 }
 
-void VisualShaderNodeComment::set_description(const String &p_description) {
+void VisualShaderNodeFrame::set_description(const String &p_description) {
 	description = p_description;
 }
 
-String VisualShaderNodeComment::get_description() const {
+String VisualShaderNodeFrame::get_description() const {
 	return description;
 }
 
-void VisualShaderNodeComment::set_tint_color_enabled(bool p_enabled) {
+void VisualShaderNodeFrame::set_tint_color_enabled(bool p_enabled) {
 	tint_color_enabled = p_enabled;
 }
 
-bool VisualShaderNodeComment::is_tint_color_enabled() const {
+bool VisualShaderNodeFrame::is_tint_color_enabled() const {
 	return tint_color_enabled;
 }
 
-void VisualShaderNodeComment::set_tint_color(const Color &p_color) {
+void VisualShaderNodeFrame::set_tint_color(const Color &p_color) {
 	tint_color = p_color;
 }
 
-Color VisualShaderNodeComment::get_tint_color() const {
+Color VisualShaderNodeFrame::get_tint_color() const {
 	return tint_color;
 }
 
-String VisualShaderNodeComment::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+String VisualShaderNodeFrame::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	return String();
 }
 
-void VisualShaderNodeComment::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_title", "title"), &VisualShaderNodeComment::set_title);
-	ClassDB::bind_method(D_METHOD("get_title"), &VisualShaderNodeComment::get_title);
+void VisualShaderNodeFrame::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_title", "title"), &VisualShaderNodeFrame::set_title);
+	ClassDB::bind_method(D_METHOD("get_title"), &VisualShaderNodeFrame::get_title);
 
-	ClassDB::bind_method(D_METHOD("set_description", "description"), &VisualShaderNodeComment::set_description);
-	ClassDB::bind_method(D_METHOD("get_description"), &VisualShaderNodeComment::get_description);
+	ClassDB::bind_method(D_METHOD("set_description", "description"), &VisualShaderNodeFrame::set_description);
+	ClassDB::bind_method(D_METHOD("get_description"), &VisualShaderNodeFrame::get_description);
 
-	ClassDB::bind_method(D_METHOD("set_tint_color_enabled", "p_enable"), &VisualShaderNodeComment::set_tint_color_enabled);
-	ClassDB::bind_method(D_METHOD("is_tint_color_enabled"), &VisualShaderNodeComment::is_tint_color_enabled);
+	ClassDB::bind_method(D_METHOD("set_tint_color_enabled", "p_enable"), &VisualShaderNodeFrame::set_tint_color_enabled);
+	ClassDB::bind_method(D_METHOD("is_tint_color_enabled"), &VisualShaderNodeFrame::is_tint_color_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_tint_color", "p_color"), &VisualShaderNodeComment::set_tint_color);
-	ClassDB::bind_method(D_METHOD("get_tint_color"), &VisualShaderNodeComment::get_tint_color);
+	ClassDB::bind_method(D_METHOD("set_tint_color", "p_color"), &VisualShaderNodeFrame::set_tint_color);
+	ClassDB::bind_method(D_METHOD("get_tint_color"), &VisualShaderNodeFrame::get_tint_color);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "description"), "set_description", "get_description");
@@ -4104,7 +4104,7 @@ void VisualShaderNodeComment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_color"), "set_tint_color", "get_tint_color");
 }
 
-VisualShaderNodeComment::VisualShaderNodeComment() {
+VisualShaderNodeFrame::VisualShaderNodeFrame() {
 }
 
 ////////////// GroupBase

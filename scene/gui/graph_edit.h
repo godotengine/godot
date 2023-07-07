@@ -100,8 +100,8 @@ class GraphEdit : public Control {
 
 public:
 	struct Connection {
-		StringName from;
-		StringName to;
+		StringName from_node;
+		StringName to_node;
 		int from_port = 0;
 		int to_port = 0;
 		float activity = 0.0;
@@ -148,8 +148,8 @@ private:
 
 	Button *layout_button = nullptr;
 
-	HScrollBar *h_scroll = nullptr;
-	VScrollBar *v_scroll = nullptr;
+	HScrollBar *h_scrollbar = nullptr;
+	VScrollBar *v_scrollbar = nullptr;
 
 	float port_hotzone_inner_extent = 0.0;
 	float port_hotzone_outer_extent = 0.0;
@@ -173,8 +173,10 @@ private:
 	Vector2 connecting_to;
 	StringName connecting_target_to;
 	int connecting_target_index = 0;
+
 	bool just_disconnected = false;
 	bool connecting_valid = false;
+
 	Vector2 click_pos;
 
 	PanningScheme panning_scheme = SCROLL_ZOOMS;
@@ -338,6 +340,7 @@ public:
 
 	GraphEditFilter *get_top_layer() const { return top_layer; }
 	GraphEditMinimap *get_minimap() const { return minimap; }
+
 	void get_connection_list(List<Connection> *r_connections) const;
 
 	void set_right_disconnects(bool p_enable);
@@ -349,8 +352,8 @@ public:
 	void add_valid_left_disconnect_type(int p_type);
 	void remove_valid_left_disconnect_type(int p_type);
 
-	void set_scroll_ofs(const Vector2 &p_ofs);
-	Vector2 get_scroll_ofs() const;
+	void set_scroll_offset(const Vector2 &p_ofs);
+	Vector2 get_scroll_offset() const;
 
 	void set_selected(Node *p_child);
 

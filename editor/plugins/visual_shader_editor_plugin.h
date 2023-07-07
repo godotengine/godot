@@ -42,6 +42,7 @@ class ColorPicker;
 class CurveEditor;
 class GraphEdit;
 class GraphControl;
+class GraphFrame;
 class MenuButton;
 class PopupPanel;
 class RichTextLabel;
@@ -279,10 +280,10 @@ class VisualShaderEditor : public VBoxContainer {
 		CONVERT_CONSTANTS_TO_PARAMETERS,
 		CONVERT_PARAMETERS_TO_CONSTANTS,
 		SEPARATOR3, // ignore
-		SET_COMMENT_TITLE,
-		SET_COMMENT_DESCRIPTION,
-		ENABLE_COMMENT_TINT_COLOR,
-		SET_COMMENT_TINT_COLOR
+		SET_FRAME_TITLE,
+		SET_FRAME_DESCRIPTION,
+		ENABLE_FRAME_COLOR,
+		SET_FRAME_COLOR
 	};
 
 	enum class VaryingMenuOptions {
@@ -402,7 +403,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	HashSet<int> selected_constants;
 	HashSet<int> selected_parameters;
-	int selected_comment = -1;
+	int selected_frame = -1;
 	int selected_float_constant = -1;
 
 	void _convert_constants_to_parameters(bool p_vice_versa);
@@ -413,21 +414,21 @@ class VisualShaderEditor : public VBoxContainer {
 	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
 	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
 
-	void _comment_title_popup_show(const Point2 &p_position, int p_node_id);
-	void _comment_title_popup_hide();
-	void _comment_title_popup_focus_out();
-	void _comment_title_text_changed(const String &p_new_text);
-	void _comment_title_text_submitted(const String &p_new_text);
+	void _frame_title_popup_show(const Point2 &p_position, int p_node_id);
+	void _frame_title_popup_hide();
+	void _frame_title_popup_focus_out();
+	void _frame_title_text_changed(const String &p_new_text);
+	void _frame_title_text_submitted(const String &p_new_text);
 
-	void _comment_desc_popup_show(const Point2 &p_position, int p_node_id);
-	void _comment_desc_popup_hide();
-	void _comment_desc_confirm();
-	void _comment_desc_text_changed();
+	void _frame_desc_popup_show(const Point2 &p_position, int p_node_id);
+	void _frame_desc_popup_hide();
+	void _frame_desc_confirm();
+	void _frame_desc_text_changed();
 
-	void _comment_tint_color_enabled_changed(int p_node_id);
-	void _comment_tint_color_popup_show(const Point2 &p_position, int p_node_id);
-	void _comment_tint_color_popup_hide();
-	void _comment_tint_color_confirm();
+	void _frame_color_enabled_changed(int p_node_id);
+	void _frame_color_popup_show(const Point2 &p_position, int p_node_id);
+	void _frame_color_popup_hide();
+	void _frame_color_confirm();
 
 	void _parameter_line_edit_changed(const String &p_text, int p_node_id);
 	void _parameter_line_edit_focus_out(Object *p_line_edit, int p_node_id);

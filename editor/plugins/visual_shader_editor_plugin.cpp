@@ -433,7 +433,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	Ref<VisualShaderNodeGroupBase> group_node = Object::cast_to<VisualShaderNodeGroupBase>(vsnode.ptr());
 	bool is_group = group_node.is_valid();
 
-	Ref<VisualShaderNodeComment> comment_node = Object::cast_to<VisualShaderNodeComment>(vsnode.ptr());
+	Ref<VisualShaderNodeFrame> comment_node = Object::cast_to<VisualShaderNodeFrame>(vsnode.ptr());
 	bool is_frame = comment_node.is_valid();
 
 	Ref<VisualShaderNodeExpression> expression_node = Object::cast_to<VisualShaderNodeExpression>(group_node.ptr());
@@ -458,7 +458,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 	// All nodes are closable except the output node.
 	if (p_id >= 2) {
-		vsnode->set_closable(true);
+		vsnode->set_deletable(true);
 		node->connect("close_request", callable_mp(editor, &VisualShaderEditor::_delete_node_request).bind(p_type, p_id), CONNECT_DEFERRED);
 	}
 	graph->add_child(node);
@@ -1098,7 +1098,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 void VisualShaderGraphPlugin::remove_node(VisualShader::Type p_type, int p_id, bool p_just_update) {
 	if (visual_shader->get_shader_type() == p_type && links.has(p_id)) {
-		links[p_id].graph_node->get_parent()->remove_child(links[p_id].graph_node);
+		GraphEdit *ge = Object::cast_to<GraphEdit>(links[p_id].graph_node->get_parent());
+		ge->remove_child(links[p_id].graph_node);
 		memdelete(links[p_id].graph_node);
 		if (!p_just_update) {
 			links.erase(p_id);
@@ -1187,7 +1188,7 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		if (!visual_shader->is_connected("changed", ce)) {
 			visual_shader->connect("changed", ce);
 		}
-		visual_shader->set_graph_offset(graph->get_scroll_ofs() / EDSCALE);
+		visual_shader->set_graph_offset(graph->get_scroll_offset() / EDSCALE);
 		_set_mode(visual_shader->get_mode());
 
 		_update_nodes();
@@ -2056,7 +2057,7 @@ void VisualShaderEditor::_update_graph() {
 		return;
 	}
 
-	graph->set_scroll_ofs(visual_shader->get_graph_offset() * EDSCALE);
+	graph->set_scroll_offset(visual_shader->get_graph_offset() * EDSCALE);
 
 	VisualShader::Type type = get_current_shader_type();
 
@@ -2545,9 +2546,9 @@ void VisualShaderEditor::_preview_select_port(int p_node, int p_port) {
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_comment_title_popup_show(const Point2 &p_position, int p_node_id) {
+void VisualShaderEditor::_frame_title_popup_show(const Point2 &p_position, int p_node_id) {
 	VisualShader::Type type = get_current_shader_type();
-	Ref<VisualShaderNodeComment> node = visual_shader->get_node(type, p_node_id);
+	Ref<VisualShaderNodeFrame> node = visual_shader->get_node(type, p_node_id);
 	if (node.is_null()) {
 		return;
 	}
@@ -2557,25 +2558,25 @@ void VisualShaderEditor::_comment_title_popup_show(const Point2 &p_position, int
 	comment_title_change_popup->set_position(p_position);
 }
 
-void VisualShaderEditor::_comment_title_text_changed(const String &p_new_text) {
+void VisualShaderEditor::_frame_title_text_changed(const String &p_new_text) {
 	comment_title_change_edit->reset_size();
 	comment_title_change_popup->reset_size();
 }
 
-void VisualShaderEditor::_comment_title_text_submitted(const String &p_new_text) {
+void VisualShaderEditor::_frame_title_text_submitted(const String &p_new_text) {
 	comment_title_change_popup->hide();
 }
 
-void VisualShaderEditor::_comment_title_popup_focus_out() {
+void VisualShaderEditor::_frame_title_popup_focus_out() {
 	comment_title_change_popup->hide();
 }
 
-void VisualShaderEditor::_comment_title_popup_hide() {
+void VisualShaderEditor::_frame_title_popup_hide() {
 	ERR_FAIL_COND(!comment_title_change_popup->has_meta("id"));
 	int node_id = (int)comment_title_change_popup->get_meta("id");
 
 	VisualShader::Type type = get_current_shader_type();
-	Ref<VisualShaderNodeComment> node = visual_shader->get_node(type, node_id);
+	Ref<VisualShaderNodeFrame> node = visual_shader->get_node(type, node_id);
 
 	ERR_FAIL_COND(node.is_null());
 
@@ -2583,7 +2584,7 @@ void VisualShaderEditor::_comment_title_popup_hide() {
 		return; // nothing changed - ignored
 	}
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Set Comment Node Title"));
+	undo_redo->create_action(TTR("Set Frame Title"));
 	undo_redo->add_do_method(node.ptr(), "set_title", comment_title_change_edit->get_text());
 	undo_redo->add_undo_method(node.ptr(), "set_title", node->get_title());
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, node_id);
@@ -2591,9 +2592,9 @@ void VisualShaderEditor::_comment_title_popup_hide() {
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_comment_desc_popup_show(const Point2 &p_position, int p_node_id) {
+void VisualShaderEditor::_frame_desc_popup_show(const Point2 &p_position, int p_node_id) {
 	VisualShader::Type type = get_current_shader_type();
-	Ref<VisualShaderNodeComment> node = visual_shader->get_node(type, p_node_id);
+	Ref<VisualShaderNodeFrame> node = visual_shader->get_node(type, p_node_id);
 	if (node.is_null()) {
 		return;
 	}
@@ -2604,21 +2605,21 @@ void VisualShaderEditor::_comment_desc_popup_show(const Point2 &p_position, int 
 	comment_desc_change_popup->set_position(p_position);
 }
 
-void VisualShaderEditor::_comment_desc_text_changed() {
+void VisualShaderEditor::_frame_desc_text_changed() {
 	comment_desc_change_edit->reset_size();
 	comment_desc_change_popup->reset_size();
 }
 
-void VisualShaderEditor::_comment_desc_confirm() {
+void VisualShaderEditor::_frame_desc_confirm() {
 	comment_desc_change_popup->hide();
 }
 
-void VisualShaderEditor::_comment_desc_popup_hide() {
+void VisualShaderEditor::_frame_desc_popup_hide() {
 	ERR_FAIL_COND(!comment_desc_change_popup->has_meta("id"));
 	int node_id = (int)comment_desc_change_popup->get_meta("id");
 
 	VisualShader::Type type = get_current_shader_type();
-	Ref<VisualShaderNodeComment> node = visual_shader->get_node(type, node_id);
+	Ref<VisualShaderNodeFrame> node = visual_shader->get_node(type, node_id);
 
 	ERR_FAIL_COND(node.is_null());
 
@@ -2626,7 +2627,7 @@ void VisualShaderEditor::_comment_desc_popup_hide() {
 		return; // nothing changed - ignored
 	}
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Set Comment Node Description"));
+	undo_redo->create_action(TTR("Set Frame Description"));
 	undo_redo->add_do_method(node.ptr(), "set_description", comment_desc_change_edit->get_text());
 	undo_redo->add_undo_method(node.ptr(), "set_description", node->get_title());
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, node_id);
@@ -2634,20 +2635,20 @@ void VisualShaderEditor::_comment_desc_popup_hide() {
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_comment_tint_color_enabled_changed(int p_node_id) {
-	int item_index = popup_menu->get_item_index(NodeMenuOptions::ENABLE_COMMENT_TINT_COLOR);
+void VisualShaderEditor::_frame_color_enabled_changed(int p_node_id) {
+	int item_index = popup_menu->get_item_index(NodeMenuOptions::ENABLE_FRAME_COLOR);
 
 	bool tint_color_enabled = popup_menu->is_item_checked(item_index);
 
 	popup_menu->set_item_checked(item_index, !tint_color_enabled);
 
 	VisualShader::Type type = get_current_shader_type();
-	Ref<VisualShaderNodeComment> node = visual_shader->get_node(type, p_node_id);
+	Ref<VisualShaderNodeFrame> node = visual_shader->get_node(type, p_node_id);
 
 	ERR_FAIL_COND(node.is_null());
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Toggle Comment Node Tint Color"));
+	undo_redo->create_action(TTR("Toggle Frame Color"));
 	undo_redo->add_do_method(node.ptr(), "set_tint_color_enabled", !tint_color_enabled);
 	undo_redo->add_undo_method(node.ptr(), "set_tint_color_enabled", node->is_tint_color_enabled());
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, p_node_id);
@@ -2655,9 +2656,9 @@ void VisualShaderEditor::_comment_tint_color_enabled_changed(int p_node_id) {
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_comment_tint_color_popup_show(const Point2 &p_position, int p_node_id) {
+void VisualShaderEditor::_frame_color_popup_show(const Point2 &p_position, int p_node_id) {
 	VisualShader::Type type = get_current_shader_type();
-	Ref<VisualShaderNodeComment> node = visual_shader->get_node(type, p_node_id);
+	Ref<VisualShaderNodeFrame> node = visual_shader->get_node(type, p_node_id);
 	if (node.is_null()) {
 		return;
 	}
@@ -2668,16 +2669,16 @@ void VisualShaderEditor::_comment_tint_color_popup_show(const Point2 &p_position
 	comment_tint_color_pick_popup->set_position(p_position);
 }
 
-void VisualShaderEditor::_comment_tint_color_confirm() {
+void VisualShaderEditor::_frame_color_confirm() {
 	comment_tint_color_pick_popup->hide();
 }
 
-void VisualShaderEditor::_comment_tint_color_popup_hide() {
+void VisualShaderEditor::_frame_color_popup_hide() {
 	ERR_FAIL_COND(!comment_tint_color_pick_popup->has_meta("id"));
 	int node_id = (int)comment_tint_color_pick_popup->get_meta("id");
 
 	VisualShader::Type type = get_current_shader_type();
-	Ref<VisualShaderNodeComment> node = visual_shader->get_node(type, node_id);
+	Ref<VisualShaderNodeFrame> node = visual_shader->get_node(type, node_id);
 
 	ERR_FAIL_COND(node.is_null());
 
@@ -2686,7 +2687,7 @@ void VisualShaderEditor::_comment_tint_color_popup_hide() {
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Set Comment Node Tint Color"));
+	undo_redo->create_action(TTR("Set Frame Color"));
 	undo_redo->add_do_method(node.ptr(), "set_tint_color", comment_tint_color_picker->get_pick_color());
 	undo_redo->add_undo_method(node.ptr(), "set_tint_color", node->get_tint_color());
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, node_id);
@@ -3184,7 +3185,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 	bool is_curve_xyz = (Object::cast_to<VisualShaderNodeCurveXYZTexture>(vsnode.ptr()) != nullptr);
 	bool is_parameter = (Object::cast_to<VisualShaderNodeParameter>(vsnode.ptr()) != nullptr);
 
-	Point2 position = graph->get_scroll_ofs();
+	Point2 position = graph->get_scroll_offset();
 
 	if (saved_node_pos_dirty) {
 		position += saved_node_pos;
@@ -3874,7 +3875,7 @@ void VisualShaderEditor::_convert_constants_to_parameters(bool p_vice_versa) {
 
 void VisualShaderEditor::_delete_node_request(int p_type, int p_node) {
 	Ref<VisualShaderNode> node = visual_shader->get_node((VisualShader::Type)p_type, p_node);
-	if (node->is_closable()) {
+	if (node->is_deletable()) {
 		List<int> to_erase;
 		to_erase.push_back(p_node);
 
@@ -3896,7 +3897,7 @@ void VisualShaderEditor::_delete_nodes_request(const TypedArray<StringName> &p_n
 				VisualShader::Type type = get_current_shader_type();
 				int id = String(gn->get_name()).to_int();
 				Ref<VisualShaderNode> vsnode = visual_shader->get_node(type, id);
-				if (gn->is_selected() && vsnode->is_closable()) {
+				if (gn->is_selected() && vsnode->is_deletable()) {
 					to_erase.push_back(gn->get_name().operator String().to_int());
 				}
 			}
@@ -3906,7 +3907,7 @@ void VisualShaderEditor::_delete_nodes_request(const TypedArray<StringName> &p_n
 		for (int i = 0; i < p_nodes.size(); i++) {
 			int id = p_nodes[i].operator String().to_int();
 			Ref<VisualShaderNode> vsnode = visual_shader->get_node(type, id);
-			if (vsnode->is_closable()) {
+			if (vsnode->is_deletable()) {
 				to_erase.push_back(id);
 			}
 		}
@@ -3943,43 +3944,53 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		selected_constants.clear();
 		selected_parameters.clear();
-		selected_comment = -1;
+		selected_frame = -1;
 		selected_float_constant = -1;
 
-		List<int> to_change;
+		List<int> selected_deletable_graph_controls;
+		List<GraphControl *> selected_graph_controls;
 		for (int i = 0; i < graph->get_child_count(); i++) {
 			GraphControl *gn = Object::cast_to<GraphControl>(graph->get_child(i));
 			if (gn) {
 				int id = String(gn->get_name()).to_int();
 				Ref<VisualShaderNode> vsnode = visual_shader->get_node(type, id);
-				if (gn->is_selected() && vsnode->is_closable()) {
-					to_change.push_back(id);
 
-					Ref<VisualShaderNode> node = visual_shader->get_node(type, id);
-					selected_vsnode = node;
+				if (!gn->is_selected()) {
+					continue;
+				}
 
-					VisualShaderNodeComment *comment_node = Object::cast_to<VisualShaderNodeComment>(node.ptr());
-					if (comment_node != nullptr) {
-						selected_comment = id;
-					}
-					VisualShaderNodeConstant *constant_node = Object::cast_to<VisualShaderNodeConstant>(node.ptr());
-					if (constant_node != nullptr) {
-						selected_constants.insert(id);
-					}
-					VisualShaderNodeFloatConstant *float_constant_node = Object::cast_to<VisualShaderNodeFloatConstant>(node.ptr());
-					if (float_constant_node != nullptr) {
-						selected_float_constant = id;
-					}
-					VisualShaderNodeParameter *parameter_node = Object::cast_to<VisualShaderNodeParameter>(node.ptr());
-					if (parameter_node != nullptr && parameter_node->is_convertible_to_constant()) {
-						selected_parameters.insert(id);
-					}
+				selected_graph_controls.push_back(gn);
+
+				if (!vsnode->is_deletable()) {
+					continue;
+				}
+
+				selected_deletable_graph_controls.push_back(id);
+
+				Ref<VisualShaderNode> node = visual_shader->get_node(type, id);
+				selected_vsnode = node;
+
+				VisualShaderNodeFrame *frame_node = Object::cast_to<VisualShaderNodeFrame>(node.ptr());
+				if (frame_node != nullptr) {
+					selected_frame = id;
+				}
+				VisualShaderNodeConstant *constant_node = Object::cast_to<VisualShaderNodeConstant>(node.ptr());
+				if (constant_node != nullptr) {
+					selected_constants.insert(id);
+				}
+				VisualShaderNodeFloatConstant *float_constant_node = Object::cast_to<VisualShaderNodeFloatConstant>(node.ptr());
+				if (float_constant_node != nullptr) {
+					selected_float_constant = id;
+				}
+				VisualShaderNodeParameter *parameter_node = Object::cast_to<VisualShaderNodeParameter>(node.ptr());
+				if (parameter_node != nullptr && parameter_node->is_convertible_to_constant()) {
+					selected_parameters.insert(id);
 				}
 			}
 		}
 
-		if (to_change.size() > 1) {
-			selected_comment = -1;
+		if (selected_deletable_graph_controls.size() > 1) {
+			selected_frame = -1;
 			selected_float_constant = -1;
 		}
 
@@ -3991,14 +4002,14 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (to_change.is_empty() && copy_buffer_empty) {
+		if (selected_deletable_graph_controls.is_empty() && copy_buffer_empty) {
 			_show_members_dialog(true);
 		} else {
-			popup_menu->set_item_disabled(NodeMenuOptions::CUT, to_change.is_empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::COPY, to_change.is_empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::CUT, selected_deletable_graph_controls.is_empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::COPY, selected_deletable_graph_controls.is_empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::PASTE, copy_buffer_empty);
-			popup_menu->set_item_disabled(NodeMenuOptions::DELETE, to_change.is_empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::DUPLICATE, to_change.is_empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::DELETE, selected_deletable_graph_controls.is_empty());
+			popup_menu->set_item_disabled(NodeMenuOptions::DUPLICATE, selected_deletable_graph_controls.is_empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::CLEAR_COPY_BUFFER, copy_buffer_empty);
 
 			int temp = popup_menu->get_item_index(NodeMenuOptions::SEPARATOR2);
@@ -4021,19 +4032,19 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::SET_COMMENT_TITLE);
+			temp = popup_menu->get_item_index(NodeMenuOptions::SET_FRAME_TITLE);
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::SET_COMMENT_DESCRIPTION);
+			temp = popup_menu->get_item_index(NodeMenuOptions::SET_FRAME_DESCRIPTION);
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::ENABLE_COMMENT_TINT_COLOR);
+			temp = popup_menu->get_item_index(NodeMenuOptions::ENABLE_FRAME_COLOR);
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::SET_COMMENT_TINT_COLOR);
+			temp = popup_menu->get_item_index(NodeMenuOptions::SET_FRAME_COLOR);
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
@@ -4065,18 +4076,18 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 
-			if (selected_comment != -1) {
+			if (selected_frame != -1) {
 				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR3);
-				popup_menu->add_item(TTR("Set Comment Title"), NodeMenuOptions::SET_COMMENT_TITLE);
-				popup_menu->add_item(TTR("Set Comment Description"), NodeMenuOptions::SET_COMMENT_DESCRIPTION);
-				popup_menu->add_check_item(TTR("Enable Tint Color"), NodeMenuOptions::ENABLE_COMMENT_TINT_COLOR);
-				VisualShaderNodeComment *comment_ref = Object::cast_to<VisualShaderNodeComment>(selected_vsnode.ptr());
-				if (comment_ref) {
-					int item_index = popup_menu->get_item_index(NodeMenuOptions::ENABLE_COMMENT_TINT_COLOR);
-					popup_menu->set_item_checked(item_index, comment_ref->is_tint_color_enabled());
+				popup_menu->add_item(TTR("Set Frame Title"), NodeMenuOptions::SET_FRAME_TITLE);
+				popup_menu->add_item(TTR("Set Frame Description"), NodeMenuOptions::SET_FRAME_DESCRIPTION);
+				popup_menu->add_check_item(TTR("Enable Tint Color"), NodeMenuOptions::ENABLE_FRAME_COLOR);
+				VisualShaderNodeFrame *frame_ref = Object::cast_to<VisualShaderNodeFrame>(selected_vsnode.ptr());
+				if (frame_ref) {
+					int item_index = popup_menu->get_item_index(NodeMenuOptions::ENABLE_FRAME_COLOR);
+					popup_menu->set_item_checked(item_index, frame_ref->is_tint_color_enabled());
 				}
 
-				popup_menu->add_item(TTR("Set Tint Color"), NodeMenuOptions::SET_COMMENT_TINT_COLOR);
+				popup_menu->add_item(TTR("Set Tint Color"), NodeMenuOptions::SET_FRAME_COLOR);
 			}
 
 			menu_point = graph->get_local_mouse_position();
@@ -4499,7 +4510,7 @@ void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 
 		mpos = graph->get_local_mouse_position();
 	}
 
-	_dup_paste_nodes(type, copy_items_buffer, copy_connections_buffer, graph->get_scroll_ofs() / scale + mpos / scale - selection_center, false);
+	_dup_paste_nodes(type, copy_items_buffer, copy_connections_buffer, graph->get_scroll_offset() / scale + mpos / scale - selection_center, false);
 }
 
 void VisualShaderEditor::_mode_selected(int p_id) {
@@ -4944,17 +4955,17 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 		case NodeMenuOptions::CONVERT_PARAMETERS_TO_CONSTANTS:
 			_convert_constants_to_parameters(true);
 			break;
-		case NodeMenuOptions::SET_COMMENT_TITLE:
-			_comment_title_popup_show(get_screen_position() + get_local_mouse_position(), selected_comment);
+		case NodeMenuOptions::SET_FRAME_TITLE:
+			_frame_title_popup_show(get_screen_position() + get_local_mouse_position(), selected_frame);
 			break;
-		case NodeMenuOptions::SET_COMMENT_DESCRIPTION:
-			_comment_desc_popup_show(get_screen_position() + get_local_mouse_position(), selected_comment);
+		case NodeMenuOptions::SET_FRAME_DESCRIPTION:
+			_frame_desc_popup_show(get_screen_position() + get_local_mouse_position(), selected_frame);
 			break;
-		case NodeMenuOptions::ENABLE_COMMENT_TINT_COLOR:
-			_comment_tint_color_enabled_changed(selected_comment);
+		case NodeMenuOptions::ENABLE_FRAME_COLOR:
+			_frame_color_enabled_changed(selected_frame);
 			break;
-		case NodeMenuOptions::SET_COMMENT_TINT_COLOR:
-			_comment_tint_color_popup_show(get_screen_position() + get_local_mouse_position(), selected_comment);
+		case NodeMenuOptions::SET_FRAME_COLOR:
+			_frame_color_popup_show(get_screen_position() + get_local_mouse_position(), selected_frame);
 			break;
 		default:
 			break;
@@ -5568,30 +5579,30 @@ VisualShaderEditor::VisualShaderEditor() {
 	comment_title_change_popup = memnew(PopupPanel);
 	comment_title_change_edit = memnew(LineEdit);
 	comment_title_change_edit->set_expand_to_text_length_enabled(true);
-	comment_title_change_edit->connect("text_changed", callable_mp(this, &VisualShaderEditor::_comment_title_text_changed));
-	comment_title_change_edit->connect("text_submitted", callable_mp(this, &VisualShaderEditor::_comment_title_text_submitted));
+	comment_title_change_edit->connect("text_changed", callable_mp(this, &VisualShaderEditor::_frame_title_text_changed));
+	comment_title_change_edit->connect("text_submitted", callable_mp(this, &VisualShaderEditor::_frame_title_text_submitted));
 	comment_title_change_popup->add_child(comment_title_change_edit);
 	comment_title_change_edit->reset_size();
 	comment_title_change_popup->reset_size();
-	comment_title_change_popup->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_comment_title_popup_focus_out));
-	comment_title_change_popup->connect("popup_hide", callable_mp(this, &VisualShaderEditor::_comment_title_popup_hide));
+	comment_title_change_popup->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_frame_title_popup_focus_out));
+	comment_title_change_popup->connect("popup_hide", callable_mp(this, &VisualShaderEditor::_frame_title_popup_hide));
 	add_child(comment_title_change_popup);
 
 	comment_desc_change_popup = memnew(PopupPanel);
 	VBoxContainer *comment_desc_vbox = memnew(VBoxContainer);
 	comment_desc_change_popup->add_child(comment_desc_vbox);
 	comment_desc_change_edit = memnew(TextEdit);
-	comment_desc_change_edit->connect("text_changed", callable_mp(this, &VisualShaderEditor::_comment_desc_text_changed));
+	comment_desc_change_edit->connect("text_changed", callable_mp(this, &VisualShaderEditor::_frame_desc_text_changed));
 	comment_desc_vbox->add_child(comment_desc_change_edit);
 	comment_desc_change_edit->set_custom_minimum_size(Size2(300 * EDSCALE, 150 * EDSCALE));
 	comment_desc_change_edit->reset_size();
 	comment_desc_change_popup->reset_size();
-	comment_desc_change_popup->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_comment_desc_confirm));
-	comment_desc_change_popup->connect("popup_hide", callable_mp(this, &VisualShaderEditor::_comment_desc_popup_hide));
+	comment_desc_change_popup->connect("focus_exited", callable_mp(this, &VisualShaderEditor::_frame_desc_confirm));
+	comment_desc_change_popup->connect("popup_hide", callable_mp(this, &VisualShaderEditor::_frame_desc_popup_hide));
 	Button *comment_desc_confirm_button = memnew(Button);
 	comment_desc_confirm_button->set_text(TTR("OK"));
 	comment_desc_vbox->add_child(comment_desc_confirm_button);
-	comment_desc_confirm_button->connect("pressed", callable_mp(this, &VisualShaderEditor::_comment_desc_confirm));
+	comment_desc_confirm_button->connect("pressed", callable_mp(this, &VisualShaderEditor::_frame_desc_confirm));
 	add_child(comment_desc_change_popup);
 
 	comment_tint_color_pick_popup = memnew(PopupPanel);
@@ -5603,8 +5614,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	Button *comment_tint_color_confirm_button = memnew(Button);
 	comment_tint_color_confirm_button->set_text(TTR("OK"));
 	comment_popup_item_tint_color_editor->add_child(comment_tint_color_confirm_button);
-	comment_tint_color_confirm_button->connect("pressed", callable_mp(this, &VisualShaderEditor::_comment_tint_color_confirm));
-	comment_tint_color_pick_popup->connect("popup_hide", callable_mp(this, &VisualShaderEditor::_comment_tint_color_popup_hide));
+	comment_tint_color_confirm_button->connect("pressed", callable_mp(this, &VisualShaderEditor::_frame_color_confirm));
+	comment_tint_color_pick_popup->connect("popup_hide", callable_mp(this, &VisualShaderEditor::_frame_color_popup_hide));
 	add_child(comment_tint_color_pick_popup);
 
 	///////////////////////////////////////
@@ -6252,7 +6263,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// SPECIAL
 
-	add_options.push_back(AddOption("Comment", "Special", "VisualShaderNodeComment", TTR("A rectangular area with a description string for better graph organization.")));
+	add_options.push_back(AddOption("Frame", "Special", "VisualShaderNodeFrame", TTR("A rectangular area with a description string for better graph organization.")));
 	add_options.push_back(AddOption("Expression", "Special", "VisualShaderNodeExpression", TTR("Custom Godot Shader Language expression, with custom amount of input and output ports. This is a direct injection of code into the vertex/fragment/light function, do not use it to write the function declarations inside.")));
 	add_options.push_back(AddOption("GlobalExpression", "Special", "VisualShaderNodeGlobalExpression", TTR("Custom Godot Shader Language expression, which is placed on top of the resulted shader. You can place various function definitions inside and call it later in the Expressions. You can also declare varyings, parameters and constants.")));
 	add_options.push_back(AddOption("ParameterRef", "Special", "VisualShaderNodeParameterRef", TTR("A reference to an existing parameter.")));

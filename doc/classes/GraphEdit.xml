@@ -255,7 +255,7 @@
 		<member name="right_disconnects" type="bool" setter="set_right_disconnects" getter="is_right_disconnects_enabled" default="false">
 			If [code]true[/code], enables disconnection of existing connections in the GraphEdit by dragging the right end.
 		</member>
-		<member name="scroll_offset" type="Vector2" setter="set_scroll_ofs" getter="get_scroll_ofs" default="Vector2(0, 0)">
+		<member name="scroll_offset" type="Vector2" setter="set_scroll_offset" getter="get_scroll_offset" default="Vector2(0, 0)">
 			The scroll offset.
 		</member>
 		<member name="show_grid" type="bool" setter="set_show_grid" getter="is_showing_grid" default="true">
@@ -264,10 +264,10 @@
 		<member name="show_zoom_label" type="bool" setter="set_show_zoom_label" getter="is_showing_zoom_label" default="false">
 			If [code]true[/code], makes a label with the current zoom level visible. The zoom value is displayed in percents.
 		</member>
-		<member name="snap_distance" type="int" setter="set_grid_snap_distance" getter="get_grid_snap_distance" default="20">
+		<member name="snapping_distance" type="int" setter="set_grid_snapping_distance" getter="get_grid_snapping_distance" default="20">
 			The snapping distance in pixels, also determines the grid line distance.
 		</member>
-		<member name="use_snap" type="bool" setter="set_use_grid_snap" getter="is_using_grid_snap" default="false">
+		<member name="use_snapping" type="bool" setter="set_snapping_enabled" getter="is_snapping_enabled" default="false">
 			If [code]true[/code], enables snapping.
 		</member>
 		<member name="zoom" type="float" setter="set_zoom" getter="get_zoom" default="1.0">
@@ -415,9 +415,14 @@
 		<theme_item name="port_hotzone_outer_extent" data_type="constant" type="int" default="26">
 			The horizontal range within which a port can be grabbed (outer side).
 		</theme_item>
+		<theme_item name="grid_toggle" data_type="icon" type="Texture2D">
+			The icon for the grid toggle button.
+		</theme_item>
 		<theme_item name="layout" data_type="icon" type="Texture2D">
+			The icon for the layout button for auto-arranging the graph.
 		</theme_item>
 		<theme_item name="minimap" data_type="icon" type="Texture2D">
+			The icon for the minimap toggle button.
 		</theme_item>
 		<theme_item name="minus" data_type="icon" type="Texture2D">
 			The icon for the zoom out button.
@@ -430,8 +435,6 @@
 		</theme_item>
 		<theme_item name="snap" data_type="icon" type="Texture2D">
 			The icon for the snap toggle button.
-		</theme_item>
-		<theme_item name="toggle_grid" data_type="icon" type="Texture2D">
 		</theme_item>
 		<theme_item name="bg" data_type="style" type="StyleBox">
 			The background drawn under the grid.

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeComment" inherits="VisualShaderNodeResizableBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VisualShaderNodeFrame" inherits="VisualShaderNodeResizableBase" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A comment node to be placed on visual shader graph.
+		A frame node to group and transform multiple nodes together.
 	</brief_description>
 	<description>
 		A resizable rectangular area with changeable [member title] and [member description] used for better organizing of other visual shader nodes.
@@ -13,10 +13,12 @@
 			An additional description which placed below the title.
 		</member>
 		<member name="tint_color" type="Color" setter="set_tint_color" getter="get_tint_color" default="Color(0.4, 0.8, 0.4, 1)">
+			The color used to tint the frame.
 		</member>
 		<member name="tint_color_enabled" type="bool" setter="set_tint_color_enabled" getter="is_tint_color_enabled" default="false">
+			If [code]true[/code], the tint color will be used to tint the frame.
 		</member>
-		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;Comment&quot;">
+		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;Frame&quot;">
 			A title of the node.
 		</member>
 	</members>

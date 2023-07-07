@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphControl" inherits="Container" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GraphControl" inherits="Container" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		GraphControl is a [Container] control that provides the basic functionality to be used inside a [GraphEdit] control (as a child), meaning it will be selectable and transformable by the graph editor.
 	</brief_description>

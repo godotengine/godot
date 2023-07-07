@@ -331,8 +331,8 @@ public:
 	bool is_disabled() const;
 	void set_disabled(bool p_disabled = true);
 
-	bool is_closable() const;
-	void set_closable(bool p_closable = true);
+	bool is_deletable() const;
+	void set_deletable(bool p_closable = true);
 
 	virtual Vector<StringName> get_editable_properties() const;
 	virtual HashMap<StringName, String> get_editable_properties_names() const;
@@ -655,11 +655,11 @@ public:
 	VisualShaderNodeResizableBase();
 };
 
-class VisualShaderNodeComment : public VisualShaderNodeResizableBase {
-	GDCLASS(VisualShaderNodeComment, VisualShaderNodeResizableBase);
+class VisualShaderNodeFrame : public VisualShaderNodeResizableBase {
+	GDCLASS(VisualShaderNodeFrame, VisualShaderNodeResizableBase);
 
 protected:
-	String title = "Comment";
+	String title = "Frame";
 	String description = "";
 	bool tint_color_enabled = false;
 	Color tint_color = Color(0.4, 0.8, 0.4);
@@ -692,7 +692,7 @@ public:
 	void set_tint_color(const Color &p_color);
 	Color get_tint_color() const;
 
-	VisualShaderNodeComment();
+	VisualShaderNodeFrame();
 };
 
 class VisualShaderNodeGroupBase : public VisualShaderNodeResizableBase {

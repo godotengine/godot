@@ -105,15 +105,15 @@ void GraphFrame::_resort() {
 	Point2 offset = Point2(sb_frame->get_margin(SIDE_LEFT), sb_frame->get_margin(SIDE_TOP) + titlebar_min_size.height + sb_titlebar->get_minimum_size().height);
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i, false));
-		if (!c || !c->is_visible_in_tree()) {
+		Control *child = Object::cast_to<Control>(get_child(i, false));
+		if (!child || !child->is_visible_in_tree()) {
 			continue;
 		}
-		if (c->is_set_as_top_level()) {
+		if (child->is_set_as_top_level()) {
 			continue;
 		}
 
-		fit_child_in_rect(c, Rect2(offset, size));
+		fit_child_in_rect(child, Rect2(offset, size));
 	}
 }
 
@@ -235,15 +235,15 @@ Size2 GraphFrame::get_minimum_size() const {
 	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *c = Object::cast_to<Control>(get_child(i, false));
-		if (!c) {
+		Control *child = Object::cast_to<Control>(get_child(i, false));
+		if (!child) {
 			continue;
 		}
-		if (c->is_set_as_top_level()) {
+		if (child->is_set_as_top_level()) {
 			continue;
 		}
 
-		Size2i size = c->get_combined_minimum_size();
+		Size2i size = child->get_combined_minimum_size();
 		size.width += sb_frame->get_minimum_size().width;
 
 		minsize.x = MAX(minsize.x, size.x);
