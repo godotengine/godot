@@ -1693,7 +1693,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 	}
 }
 
-void TileSetAtlasSourceEditor::_unhandled_key_input(const Ref<InputEvent> &p_event) {
+void TileSetAtlasSourceEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	// Check for shortcuts.
 	if (ED_IS_SHORTCUT("tiles_editor/delete_tile", p_event)) {
 		if (tools_button_group->get_pressed_button() == tool_select_button && !selection.is_empty()) {
@@ -2418,14 +2418,14 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 }
 
 void TileSetAtlasSourceEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &TileSetAtlasSourceEditor::_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("_set_selection_from_array"), &TileSetAtlasSourceEditor::_set_selection_from_array);
 
 	ADD_SIGNAL(MethodInfo("source_id_changed", PropertyInfo(Variant::INT, "source_id")));
 }
 
 TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
-	set_process_unhandled_key_input(true);
+	set_shortcut_context(this);
+	set_process_shortcut_input(true);
 	set_process_internal(true);
 
 	// Middle panel.
