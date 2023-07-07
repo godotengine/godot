@@ -2504,6 +2504,7 @@ void ProjectManager::_apply_project_tags() {
 		callable_mp((Window *)tag_manage_dialog, &Window::show).call_deferred(); // Make sure the dialog does not disappear.
 		return;
 	} else {
+		tags.sort();
 		cfg.set_value("application", "config/tags", tags);
 		err = cfg.save(project_godot);
 		if (err != OK) {
