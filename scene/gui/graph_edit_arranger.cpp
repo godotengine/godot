@@ -183,9 +183,9 @@ void GraphEditArranger::arrange_nodes() {
 		graph_node->set_drag(true);
 		Vector2 pos = (new_positions[E]);
 
-		if (graph_edit->is_using_grid_snap()) {
-			float grid_snap_distance = graph_edit->get_grid_snap_distance();
-			pos = pos.snapped(Vector2(grid_snap_distance, grid_snap_distance));
+		if (graph_edit->is_snapping_enabled()) {
+			float grid_snapping_distance = graph_edit->get_grid_snapping_distance();
+			pos = pos.snapped(Vector2(grid_snapping_distance, grid_snapping_distance));
 		}
 		graph_node->set_position_offset(pos);
 		graph_node->set_drag(false);

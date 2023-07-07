@@ -1962,7 +1962,6 @@ void VisualShaderEditor::_draw_color_over_button(Object *p_obj, Color p_color) {
 	button->draw_rect(Rect2(normal->get_offset(), button->get_size() - normal->get_minimum_size()), p_color);
 }
 
-//TODO @Geometror: Solve this
 void VisualShaderEditor::_update_created_node(GraphControl *p_node) {
 	const Ref<StyleBoxFlat> sb = p_node->get_theme_stylebox(SNAME("titlebar"), SNAME("GraphNode"));
 	Color c = sb->get_bg_color();
@@ -3875,15 +3874,17 @@ void VisualShaderEditor::_convert_constants_to_parameters(bool p_vice_versa) {
 
 void VisualShaderEditor::_delete_node_request(int p_type, int p_node) {
 	Ref<VisualShaderNode> node = visual_shader->get_node((VisualShader::Type)p_type, p_node);
-	if (node->is_deletable()) {
-		List<int> to_erase;
-		to_erase.push_back(p_node);
-
-		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-		undo_redo->create_action(TTR("Delete VisualShader Node"));
-		_delete_nodes(p_type, to_erase);
-		undo_redo->commit_action();
+	if (!node->is_deletable()) {
+		return;
 	}
+
+	List<int> to_erase;
+	to_erase.push_back(p_node);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Delete VisualShader Node"));
+	_delete_nodes(p_type, to_erase);
+	undo_redo->commit_action();
 }
 
 void VisualShaderEditor::_delete_nodes_request(const TypedArray<StringName> &p_nodes) {

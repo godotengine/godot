@@ -383,13 +383,13 @@ void GraphNode::_notification(int p_what) {
 	}
 }
 
-void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left, const Ref<Texture2D> &p_custom_right, bool p_draw_stylebox) {
-	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set slot with p_idx (%d) lesser than zero.", p_idx));
+void GraphNode::set_slot(int p_slot_index, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left, const Ref<Texture2D> &p_custom_right, bool p_draw_stylebox) {
+	ERR_FAIL_COND_MSG(p_slot_index < 0, vformat("Cannot set slot with index (%d) lesser than zero.", p_slot_index));
 
 	if (!p_enable_left && p_type_left == 0 && p_color_left == Color(1, 1, 1, 1) &&
 			!p_enable_right && p_type_right == 0 && p_color_right == Color(1, 1, 1, 1) &&
 			!p_custom_left.is_valid() && !p_custom_right.is_valid()) {
-		slot_table.erase(p_idx);
+		slot_table.erase(p_slot_index);
 		return;
 	}
 
@@ -403,15 +403,15 @@ void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const C
 	slot.custom_port_icon_left = p_custom_left;
 	slot.custom_port_icon_right = p_custom_right;
 	slot.draw_stylebox = p_draw_stylebox;
-	slot_table[p_idx] = slot;
+	slot_table[p_slot_index] = slot;
 	queue_redraw();
 	port_pos_dirty = true;
 
-	emit_signal(SNAME("slot_updated"), p_idx);
+	emit_signal(SNAME("slot_updated"), p_slot_index);
 }
 
-void GraphNode::clear_slot(int p_idx) {
-	slot_table.erase(p_idx);
+void GraphNode::clear_slot(int p_slot_index) {
+	slot_table.erase(p_slot_index);
 	queue_redraw();
 	port_pos_dirty = true;
 }
@@ -422,147 +422,147 @@ void GraphNode::clear_all_slots() {
 	port_pos_dirty = true;
 }
 
-bool GraphNode::is_slot_enabled_left(int p_idx) const {
-	if (!slot_table.has(p_idx)) {
+bool GraphNode::is_slot_enabled_left(int p_slot_index) const {
+	if (!slot_table.has(p_slot_index)) {
 		return false;
 	}
-	return slot_table[p_idx].enable_left;
+	return slot_table[p_slot_index].enable_left;
 }
 
-void GraphNode::set_slot_enabled_left(int p_idx, bool p_enable) {
-	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set enable_left for the slot with p_idx (%d) lesser than zero.", p_idx));
+void GraphNode::set_slot_enabled_left(int p_slot_index, bool p_enable) {
+	ERR_FAIL_COND_MSG(p_slot_index < 0, vformat("Cannot set enable_left for the slot with index (%d) lesser than zero.", p_slot_index));
 
-	if (slot_table[p_idx].enable_left == p_enable) {
+	if (slot_table[p_slot_index].enable_left == p_enable) {
 		return;
 	}
 
-	slot_table[p_idx].enable_left = p_enable;
+	slot_table[p_slot_index].enable_left = p_enable;
 	queue_redraw();
 	port_pos_dirty = true;
 
-	emit_signal(SNAME("slot_updated"), p_idx);
+	emit_signal(SNAME("slot_updated"), p_slot_index);
 }
 
-void GraphNode::set_slot_type_left(int p_idx, int p_type) {
-	ERR_FAIL_COND_MSG(!slot_table.has(p_idx), vformat("Cannot set type_left for the slot '%d' because it hasn't been enabled.", p_idx));
+void GraphNode::set_slot_type_left(int p_slot_index, int p_type) {
+	ERR_FAIL_COND_MSG(!slot_table.has(p_slot_index), vformat("Cannot set type_left for the slot with index '%d' because it hasn't been enabled.", p_slot_index));
 
-	if (slot_table[p_idx].type_left == p_type) {
+	if (slot_table[p_slot_index].type_left == p_type) {
 		return;
 	}
 
-	slot_table[p_idx].type_left = p_type;
+	slot_table[p_slot_index].type_left = p_type;
 	queue_redraw();
 	port_pos_dirty = true;
 
-	emit_signal(SNAME("slot_updated"), p_idx);
+	emit_signal(SNAME("slot_updated"), p_slot_index);
 }
 
-int GraphNode::get_slot_type_left(int p_idx) const {
-	if (!slot_table.has(p_idx)) {
+int GraphNode::get_slot_type_left(int p_slot_index) const {
+	if (!slot_table.has(p_slot_index)) {
 		return 0;
 	}
-	return slot_table[p_idx].type_left;
+	return slot_table[p_slot_index].type_left;
 }
 
-void GraphNode::set_slot_color_left(int p_idx, const Color &p_color) {
-	ERR_FAIL_COND_MSG(!slot_table.has(p_idx), vformat("Cannot set color_left for the slot '%d' because it hasn't been enabled.", p_idx));
+void GraphNode::set_slot_color_left(int p_slot_index, const Color &p_color) {
+	ERR_FAIL_COND_MSG(!slot_table.has(p_slot_index), vformat("Cannot set color_left for the slot with index '%d' because it hasn't been enabled.", p_slot_index));
 
-	if (slot_table[p_idx].color_left == p_color) {
+	if (slot_table[p_slot_index].color_left == p_color) {
 		return;
 	}
 
-	slot_table[p_idx].color_left = p_color;
+	slot_table[p_slot_index].color_left = p_color;
 	queue_redraw();
 	port_pos_dirty = true;
 
-	emit_signal(SNAME("slot_updated"), p_idx);
+	emit_signal(SNAME("slot_updated"), p_slot_index);
 }
 
-Color GraphNode::get_slot_color_left(int p_idx) const {
-	if (!slot_table.has(p_idx)) {
+Color GraphNode::get_slot_color_left(int p_slot_index) const {
+	if (!slot_table.has(p_slot_index)) {
 		return Color(1, 1, 1, 1);
 	}
-	return slot_table[p_idx].color_left;
+	return slot_table[p_slot_index].color_left;
 }
 
-bool GraphNode::is_slot_enabled_right(int p_idx) const {
-	if (!slot_table.has(p_idx)) {
+bool GraphNode::is_slot_enabled_right(int p_slot_index) const {
+	if (!slot_table.has(p_slot_index)) {
 		return false;
 	}
-	return slot_table[p_idx].enable_right;
+	return slot_table[p_slot_index].enable_right;
 }
 
-void GraphNode::set_slot_enabled_right(int p_idx, bool p_enable) {
-	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set enable_right for the slot with p_idx (%d) lesser than zero.", p_idx));
+void GraphNode::set_slot_enabled_right(int p_slot_index, bool p_enable) {
+	ERR_FAIL_COND_MSG(p_slot_index < 0, vformat("Cannot set enable_right for the slot with index (%d) lesser than zero.", p_slot_index));
 
-	if (slot_table[p_idx].enable_right == p_enable) {
+	if (slot_table[p_slot_index].enable_right == p_enable) {
 		return;
 	}
 
-	slot_table[p_idx].enable_right = p_enable;
+	slot_table[p_slot_index].enable_right = p_enable;
 	queue_redraw();
 	port_pos_dirty = true;
 
-	emit_signal(SNAME("slot_updated"), p_idx);
+	emit_signal(SNAME("slot_updated"), p_slot_index);
 }
 
-void GraphNode::set_slot_type_right(int p_idx, int p_type) {
-	ERR_FAIL_COND_MSG(!slot_table.has(p_idx), vformat("Cannot set type_right for the slot '%d' because it hasn't been enabled.", p_idx));
+void GraphNode::set_slot_type_right(int p_slot_index, int p_type) {
+	ERR_FAIL_COND_MSG(!slot_table.has(p_slot_index), vformat("Cannot set type_right for the slot with index '%d' because it hasn't been enabled.", p_slot_index));
 
-	if (slot_table[p_idx].type_right == p_type) {
+	if (slot_table[p_slot_index].type_right == p_type) {
 		return;
 	}
 
-	slot_table[p_idx].type_right = p_type;
+	slot_table[p_slot_index].type_right = p_type;
 	queue_redraw();
 	port_pos_dirty = true;
 
-	emit_signal(SNAME("slot_updated"), p_idx);
+	emit_signal(SNAME("slot_updated"), p_slot_index);
 }
 
-int GraphNode::get_slot_type_right(int p_idx) const {
-	if (!slot_table.has(p_idx)) {
+int GraphNode::get_slot_type_right(int p_slot_index) const {
+	if (!slot_table.has(p_slot_index)) {
 		return 0;
 	}
-	return slot_table[p_idx].type_right;
+	return slot_table[p_slot_index].type_right;
 }
 
-void GraphNode::set_slot_color_right(int p_idx, const Color &p_color) {
-	ERR_FAIL_COND_MSG(!slot_table.has(p_idx), vformat("Cannot set color_right for the slot '%d' because it hasn't been enabled.", p_idx));
+void GraphNode::set_slot_color_right(int p_slot_index, const Color &p_color) {
+	ERR_FAIL_COND_MSG(!slot_table.has(p_slot_index), vformat("Cannot set color_right for the slot with index '%d' because it hasn't been enabled.", p_slot_index));
 
-	if (slot_table[p_idx].color_right == p_color) {
+	if (slot_table[p_slot_index].color_right == p_color) {
 		return;
 	}
 
-	slot_table[p_idx].color_right = p_color;
+	slot_table[p_slot_index].color_right = p_color;
 	queue_redraw();
 	port_pos_dirty = true;
 
-	emit_signal(SNAME("slot_updated"), p_idx);
+	emit_signal(SNAME("slot_updated"), p_slot_index);
 }
 
-Color GraphNode::get_slot_color_right(int p_idx) const {
-	if (!slot_table.has(p_idx)) {
+Color GraphNode::get_slot_color_right(int p_slot_index) const {
+	if (!slot_table.has(p_slot_index)) {
 		return Color(1, 1, 1, 1);
 	}
-	return slot_table[p_idx].color_right;
+	return slot_table[p_slot_index].color_right;
 }
 
-bool GraphNode::is_slot_draw_stylebox(int p_idx) const {
-	if (!slot_table.has(p_idx)) {
+bool GraphNode::is_slot_draw_stylebox(int p_slot_index) const {
+	if (!slot_table.has(p_slot_index)) {
 		return false;
 	}
-	return slot_table[p_idx].draw_stylebox;
+	return slot_table[p_slot_index].draw_stylebox;
 }
 
-void GraphNode::set_slot_draw_stylebox(int p_idx, bool p_enable) {
-	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set draw_stylebox for the slot with p_idx (%d) lesser than zero.", p_idx));
+void GraphNode::set_slot_draw_stylebox(int p_slot_index, bool p_enable) {
+	ERR_FAIL_COND_MSG(p_slot_index < 0, vformat("Cannot set draw_stylebox for the slot with p_index (%d) lesser than zero.", p_slot_index));
 
-	slot_table[p_idx].draw_stylebox = p_enable;
+	slot_table[p_slot_index].draw_stylebox = p_enable;
 	queue_redraw();
 	port_pos_dirty = true;
 
-	emit_signal(SNAME("slot_updated"), p_idx);
+	emit_signal(SNAME("slot_updated"), p_slot_index);
 }
 
 Size2 GraphNode::get_minimum_size() const {
@@ -623,7 +623,7 @@ void GraphNode::_port_pos_update() {
 				port_cache.pos = Point2i(edgeofs, vertical_ofs + size.height / 2);
 				port_cache.type = slot_table[i].type_left;
 				port_cache.color = slot_table[i].color_left;
-				port_cache.slot_idx = child->get_index(); // Index with internal nodes included.
+				port_cache.slot_index = child->get_index(); // Index with internal nodes included.
 				left_port_cache.push_back(port_cache);
 			}
 			if (slot_table[i].enable_right) {
@@ -631,7 +631,7 @@ void GraphNode::_port_pos_update() {
 				port_cache.pos = Point2i(get_size().width - edgeofs, vertical_ofs + size.height / 2);
 				port_cache.type = slot_table[i].type_right;
 				port_cache.color = slot_table[i].color_right;
-				port_cache.slot_idx = child->get_index(); // Index with internal nodes included.
+				port_cache.slot_index = child->get_index(); // Index with internal nodes included.
 				right_port_cache.push_back(port_cache);
 			}
 		}
@@ -693,7 +693,7 @@ int GraphNode::get_port_input_slot(int p_port_idx) {
 	}
 
 	ERR_FAIL_INDEX_V(p_port_idx, left_port_cache.size(), -1);
-	return left_port_cache[p_port_idx].slot_idx;
+	return left_port_cache[p_port_idx].slot_index;
 }
 
 Vector2 GraphNode::get_port_output_position(int p_port_idx) {
@@ -730,7 +730,7 @@ int GraphNode::get_port_output_slot(int p_port_idx) {
 	}
 
 	ERR_FAIL_INDEX_V(p_port_idx, right_port_cache.size(), -1);
-	return right_port_cache[p_port_idx].slot_idx;
+	return right_port_cache[p_port_idx].slot_index;
 }
 
 void GraphNode::gui_input(const Ref<InputEvent> &p_ev) {
@@ -826,30 +826,30 @@ void GraphNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_titlebar_hbox"), &GraphNode::get_titlebar_hbox);
 
-	ClassDB::bind_method(D_METHOD("set_slot", "slot_idx", "enable_left_port", "type_left", "color_left", "enable_right_port", "type_right", "color_right", "custom_icon_left", "custom_icon_right", "draw_stylebox"), &GraphNode::set_slot, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("clear_slot", "slot_idx"), &GraphNode::clear_slot);
+	ClassDB::bind_method(D_METHOD("set_slot", "slot_index", "enable_left_port", "type_left", "color_left", "enable_right_port", "type_right", "color_right", "custom_icon_left", "custom_icon_right", "draw_stylebox"), &GraphNode::set_slot, DEFVAL(Ref<Texture2D>()), DEFVAL(Ref<Texture2D>()), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("clear_slot", "slot_index"), &GraphNode::clear_slot);
 	ClassDB::bind_method(D_METHOD("clear_all_slots"), &GraphNode::clear_all_slots);
 
-	ClassDB::bind_method(D_METHOD("is_slot_enabled_left", "slot_idx"), &GraphNode::is_slot_enabled_left);
-	ClassDB::bind_method(D_METHOD("set_slot_enabled_left", "slot_idx", "enable"), &GraphNode::set_slot_enabled_left);
+	ClassDB::bind_method(D_METHOD("is_slot_enabled_left", "slot_index"), &GraphNode::is_slot_enabled_left);
+	ClassDB::bind_method(D_METHOD("set_slot_enabled_left", "slot_index", "enable"), &GraphNode::set_slot_enabled_left);
 
-	ClassDB::bind_method(D_METHOD("set_slot_type_left", "slot_idx", "type"), &GraphNode::set_slot_type_left);
-	ClassDB::bind_method(D_METHOD("get_slot_type_left", "slot_idx"), &GraphNode::get_slot_type_left);
+	ClassDB::bind_method(D_METHOD("set_slot_type_left", "slot_index", "type"), &GraphNode::set_slot_type_left);
+	ClassDB::bind_method(D_METHOD("get_slot_type_left", "slot_index"), &GraphNode::get_slot_type_left);
 
-	ClassDB::bind_method(D_METHOD("set_slot_color_left", "slot_idx", "color"), &GraphNode::set_slot_color_left);
-	ClassDB::bind_method(D_METHOD("get_slot_color_left", "slot_idx"), &GraphNode::get_slot_color_left);
+	ClassDB::bind_method(D_METHOD("set_slot_color_left", "slot_index", "color"), &GraphNode::set_slot_color_left);
+	ClassDB::bind_method(D_METHOD("get_slot_color_left", "slot_index"), &GraphNode::get_slot_color_left);
 
-	ClassDB::bind_method(D_METHOD("is_slot_enabled_right", "slot_idx"), &GraphNode::is_slot_enabled_right);
-	ClassDB::bind_method(D_METHOD("set_slot_enabled_right", "slot_idx", "enable"), &GraphNode::set_slot_enabled_right);
+	ClassDB::bind_method(D_METHOD("is_slot_enabled_right", "slot_index"), &GraphNode::is_slot_enabled_right);
+	ClassDB::bind_method(D_METHOD("set_slot_enabled_right", "slot_index", "enable"), &GraphNode::set_slot_enabled_right);
 
-	ClassDB::bind_method(D_METHOD("set_slot_type_right", "slot_idx", "type"), &GraphNode::set_slot_type_right);
-	ClassDB::bind_method(D_METHOD("get_slot_type_right", "slot_idx"), &GraphNode::get_slot_type_right);
+	ClassDB::bind_method(D_METHOD("set_slot_type_right", "slot_index", "type"), &GraphNode::set_slot_type_right);
+	ClassDB::bind_method(D_METHOD("get_slot_type_right", "slot_index"), &GraphNode::get_slot_type_right);
 
-	ClassDB::bind_method(D_METHOD("set_slot_color_right", "slot_idx", "color"), &GraphNode::set_slot_color_right);
-	ClassDB::bind_method(D_METHOD("get_slot_color_right", "slot_idx"), &GraphNode::get_slot_color_right);
+	ClassDB::bind_method(D_METHOD("set_slot_color_right", "slot_index", "color"), &GraphNode::set_slot_color_right);
+	ClassDB::bind_method(D_METHOD("get_slot_color_right", "slot_index"), &GraphNode::get_slot_color_right);
 
-	ClassDB::bind_method(D_METHOD("is_slot_draw_stylebox", "slot_idx"), &GraphNode::is_slot_draw_stylebox);
-	ClassDB::bind_method(D_METHOD("set_slot_draw_stylebox", "slot_idx", "draw_stylebox"), &GraphNode::set_slot_draw_stylebox);
+	ClassDB::bind_method(D_METHOD("is_slot_draw_stylebox", "slot_index"), &GraphNode::is_slot_draw_stylebox);
+	ClassDB::bind_method(D_METHOD("set_slot_draw_stylebox", "slot_index", "enable"), &GraphNode::set_slot_draw_stylebox);
 
 	ClassDB::bind_method(D_METHOD("get_port_input_count"), &GraphNode::get_port_input_count);
 	ClassDB::bind_method(D_METHOD("get_port_input_position", "port_idx"), &GraphNode::get_port_input_position);
@@ -864,7 +864,7 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_port_output_slot", "port_idx"), &GraphNode::get_port_output_slot);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
-	ADD_SIGNAL(MethodInfo("slot_updated", PropertyInfo(Variant::INT, "slot_idx")));
+	ADD_SIGNAL(MethodInfo("slot_updated", PropertyInfo(Variant::INT, "slot_index")));
 }
 
 GraphNode::GraphNode() {

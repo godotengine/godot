@@ -31,8 +31,18 @@
 #include "graph_control.h"
 
 #include "core/string/translation.h"
+#include "scene/gui/graph_edit.h"
 
-#include "graph_edit.h"
+#ifdef TOOLS_ENABLED
+void GraphControl::_edit_set_position(const Point2 &p_position) {
+	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
+	if (graph) {
+		Point2 offset = (p_position + graph->get_scroll_offset()) * graph->get_zoom();
+		set_position_offset(offset);
+	}
+	set_position(p_position);
+}
+#endif
 
 void GraphControl::_close_requested() {
 	// Send focus to parent.
@@ -90,17 +100,6 @@ void GraphControl::_notification(int p_what) {
 		} break;
 	}
 }
-
-#ifdef TOOLS_ENABLED
-void GraphControl::_edit_set_position(const Point2 &p_position) {
-	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
-	if (graph) {
-		Point2 offset = (p_position + graph->get_scroll_offset()) * graph->get_zoom();
-		set_position_offset(offset);
-	}
-	set_position(p_position);
-}
-#endif
 
 void GraphControl::_validate_property(PropertyInfo &p_property) const {
 	Control::_validate_property(p_property);

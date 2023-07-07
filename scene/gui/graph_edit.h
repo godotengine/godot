@@ -141,8 +141,8 @@ private:
 	Button *zoom_reset_button = nullptr;
 	Button *zoom_plus_button = nullptr;
 
-	Button *snap_button = nullptr;
-	SpinBox *snap_distance_spinbox = nullptr;
+	Button *toggle_snapping_button = nullptr;
+	SpinBox *snapping_distance_spinbox = nullptr;
 	Button *show_grid_button = nullptr;
 	Button *minimap_button = nullptr;
 
@@ -159,8 +159,8 @@ private:
 
 	bool arrange_nodes_button_hidden = false;
 
-	bool use_grid_snap = false;
-	int grid_snap_distance = 20;
+	bool snapping_enabled = false;
+	int grid_snapping_distance = 20;
 	bool show_grid = true;
 
 	bool connecting = false;
@@ -266,8 +266,8 @@ private:
 
 	friend class GraphEditFilter;
 	bool _filter_input(const Point2 &p_point);
-	void _snap_toggled();
-	void _snap_value_changed(double);
+	void _snapping_toggled();
+	void _grid_snapping_value_changed(double);
 	void _show_grid_toggled();
 
 	friend class GraphEditMinimap;
@@ -357,11 +357,11 @@ public:
 
 	void set_selected(Node *p_child);
 
-	void set_use_grid_snap(bool p_enable);
-	bool is_using_grid_snap() const;
+	void set_snapping_enabled(bool p_enable);
+	bool is_snapping_enabled() const;
 
-	void set_grid_snap_distance(int p_snap_distance);
-	int get_grid_snap_distance() const;
+	void set_grid_snapping_distance(int p_snapping_distance);
+	int get_grid_snapping_distance() const;
 
 	void set_show_grid(bool p_enable);
 	bool is_showing_grid() const;

@@ -57,7 +57,7 @@ private:
 		Color color;
 		Vector2 pos;
 		int type = 0;
-		int slot_idx;
+		int slot_index;
 	};
 
 	struct _MinSizeCache {
@@ -99,30 +99,30 @@ public:
 
 	HBoxContainer *get_titlebar_hbox();
 
-	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left = Ref<Texture2D>(), const Ref<Texture2D> &p_custom_right = Ref<Texture2D>(), bool p_draw_stylebox = true);
-	void clear_slot(int p_idx);
+	void set_slot(int p_slot_index, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left = Ref<Texture2D>(), const Ref<Texture2D> &p_custom_right = Ref<Texture2D>(), bool p_draw_stylebox = true);
+	void clear_slot(int p_slot_index);
 	void clear_all_slots();
 
-	bool is_slot_enabled_left(int p_idx) const;
-	void set_slot_enabled_left(int p_idx, bool p_enable);
+	bool is_slot_enabled_left(int p_slot_index) const;
+	void set_slot_enabled_left(int p_slot_index, bool p_enable);
 
-	void set_slot_type_left(int p_idx, int p_type);
-	int get_slot_type_left(int p_idx) const;
+	void set_slot_type_left(int p_slot_index, int p_type);
+	int get_slot_type_left(int p_slot_index) const;
 
-	void set_slot_color_left(int p_idx, const Color &p_color);
-	Color get_slot_color_left(int p_idx) const;
+	void set_slot_color_left(int p_slot_index, const Color &p_color);
+	Color get_slot_color_left(int p_slot_index) const;
 
-	bool is_slot_enabled_right(int p_idx) const;
-	void set_slot_enabled_right(int p_idx, bool p_enable);
+	bool is_slot_enabled_right(int p_slot_index) const;
+	void set_slot_enabled_right(int p_slot_index, bool p_enable);
 
-	void set_slot_type_right(int p_idx, int p_type);
-	int get_slot_type_right(int p_idx) const;
+	void set_slot_type_right(int p_slot_index, int p_type);
+	int get_slot_type_right(int p_slot_index) const;
 
-	void set_slot_color_right(int p_idx, const Color &p_color);
-	Color get_slot_color_right(int p_idx) const;
+	void set_slot_color_right(int p_slot_index, const Color &p_color);
+	Color get_slot_color_right(int p_slot_index) const;
 
-	bool is_slot_draw_stylebox(int p_idx) const;
-	void set_slot_draw_stylebox(int p_idx, bool p_enable);
+	bool is_slot_draw_stylebox(int p_slot_index) const;
+	void set_slot_draw_stylebox(int p_slot_index, bool p_enable);
 
 	int get_port_input_count();
 	Vector2 get_port_input_position(int p_port_idx);

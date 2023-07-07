@@ -49,11 +49,11 @@ protected:
 
 	Vector2 position_offset;
 
-	void _close_requested();
-
 #ifdef TOOLS_ENABLED
 	void _edit_set_position(const Point2 &p_position) override;
 #endif
+
+	void _close_requested();
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
@@ -89,7 +89,7 @@ public:
 		return resizing;
 	}
 
-	GraphControl(){};
+	GraphControl() {}
 };
 
 #endif // GRAPH_CONTROL_H
