@@ -64,6 +64,7 @@ private:
 
 	ProjectionType mode = PROJECTION_PERSPECTIVE;
 
+	bool orthonormalization_forced = true;
 	real_t fov = 75.0;
 	real_t size = 1.0;
 	Vector2 frustum_offset;
@@ -123,6 +124,7 @@ public:
 
 	RID get_camera() const;
 
+	bool is_orthonormalization_forced() const;
 	real_t get_fov() const;
 	real_t get_size() const;
 	real_t get_far() const;
@@ -131,6 +133,7 @@ public:
 
 	ProjectionType get_projection() const;
 
+	void set_orthonormalization_forced(bool p_force);
 	void set_fov(real_t p_fov);
 	void set_size(real_t p_size);
 	void set_far(real_t p_far);

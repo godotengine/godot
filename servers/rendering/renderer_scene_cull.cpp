@@ -74,10 +74,13 @@ void RendererSceneCull::camera_set_frustum(RID p_camera, float p_size, Vector2 p
 	camera->zfar = p_z_far;
 }
 
-void RendererSceneCull::camera_set_transform(RID p_camera, const Transform3D &p_transform) {
+void RendererSceneCull::camera_set_transform(RID p_camera, const Transform3D &p_transform, bool p_orthonormalize) {
 	Camera *camera = camera_owner.get_or_null(p_camera);
 	ERR_FAIL_COND(!camera);
-	camera->transform = p_transform.orthonormalized();
+	if (p_orthonormalize)
+		camera->transform = p_transform.orthonormalized();
+	else
+		camera->transform = p_transform;
 }
 
 void RendererSceneCull::camera_set_cull_mask(RID p_camera, uint32_t p_layers) {
@@ -2516,6 +2519,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 	if (p_xr_interface.is_null()) {
 		// Normal camera
 		Transform3D transform = camera->transform;
+
 		Projection projection;
 		bool vaspect = camera->vaspect;
 		bool is_orthogonal = false;
@@ -2549,6 +2553,12 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 						camera->vaspect);
 			} break;
 		}
+
+		Transform3D ortho = transform.orthonormalized();
+		Transform3D diff = ortho.affine_inverse() * transform;
+
+		transform = ortho;
+		projection = projection * diff.affine_inverse();
 
 		camera_data.set_camera(transform, projection, is_orthogonal, vaspect, jitter, camera->visible_layers);
 	} else {

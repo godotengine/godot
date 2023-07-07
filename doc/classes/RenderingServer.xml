@@ -162,6 +162,7 @@
 			<return type="void" />
 			<param index="0" name="camera" type="RID" />
 			<param index="1" name="transform" type="Transform3D" />
+			<param index="2" name="orthonormalize" type="bool" default="true" />
 			<description>
 				Sets [Transform3D] of camera.
 			</description>
