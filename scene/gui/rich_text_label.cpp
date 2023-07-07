@@ -1,32 +1,32 @@
-/**************************************************************************/
-/*  rich_text_label.cpp                                                   */
-/**************************************************************************/
-/*                         This file is part of:                          */
-/*                             GODOT ENGINE                               */
-/*                        https://godotengine.org                         */
-/**************************************************************************/
-/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
-/*                                                                        */
-/* Permission is hereby granted, free of charge, to any person obtaining  */
-/* a copy of this software and associated documentation files (the        */
-/* "Software"), to deal in the Software without restriction, including    */
-/* without limitation the rights to use, copy, modify, merge, publish,    */
-/* distribute, sublicense, and/or sell copies of the Software, and to     */
-/* permit persons to whom the Software is furnished to do so, subject to  */
-/* the following conditions:                                              */
-/*                                                                        */
-/* The above copyright notice and this permission notice shall be         */
-/* included in all copies or substantial portions of the Software.        */
-/*                                                                        */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
-/**************************************************************************/
+/*************************************************************************/
+/*  rich_text_label.cpp                                                  */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 
 #include "rich_text_label.h"
 
@@ -138,6 +138,77 @@ RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) {
 Rect2 RichTextLabel::_get_text_rect() {
 	Ref<StyleBox> style = get_stylebox("normal");
 	return Rect2(style->get_offset(), get_size() - style->get_minimum_size());
+}
+
+float RichTextLabel::_get_text_length(Item *p_item, const Ref<Font> &p_base_font) {
+	float length = 0;
+
+	if (!p_item) {
+		return 0;
+	}
+
+	switch (p_item->type) {
+		case ITEM_ALIGN:
+		case ITEM_FADE:
+		case ITEM_FONT:
+		case ITEM_STRIKETHROUGH:
+		case ITEM_UNDERLINE:
+		case ITEM_META:
+		case ITEM_COLOR: {
+			for (int i = 0; i < p_item->subitems.size(); i++) {
+				length += _get_text_length(p_item->subitems[i], p_base_font);
+			}
+			break;
+		}
+		case ITEM_TEXT: {
+			ItemText* text = static_cast<ItemText*>(p_item);
+			const CharType* c = text->text.c_str();
+
+			float margin = _find_margin(p_item, p_base_font);
+			float begin = margin;
+
+			int end = 0;
+			float w = 0.0f;
+			Ref<Font> font = _find_font(p_item);
+			if (font.is_null()) {
+				font = p_base_font;
+			}
+
+			bool can_break = false;
+
+			while (c[end] != 0 && !(end && c[end - 1] == ' ' && c[end] != ' ')) {
+				can_break = false;
+				float cw = font->get_char_size(c[end], c[end + 1]).width;
+				if (c[end] == '\t') {
+					cw = tab_size * font->get_char_size(' ').width;
+					can_break = true;
+				}
+
+				const CharType current = c[end];
+				const bool separatable = (current >= 0x2E08 && current <= 0x9FFF) || // CJK scripts and symbols.
+					(current >= 0xAC00 && current <= 0xD7FF) || // Hangul Syllables and Hangul Jamo Extended-B.
+					(current >= 0xF900 && current <= 0xFAFF) || // CJK Compatibility Ideographs.
+					(current >= 0xFE30 && current <= 0xFE4F) || // CJK Compatibility Forms.
+					(current >= 0xFF65 && current <= 0xFF9F) || // Halfwidth forms of katakana
+					(current >= 0xFFA0 && current <= 0xFFDC) || // Halfwidth forms of compatibility jamo characters for Hangul
+					(current >= 0x20000 && current <= 0x2FA1F) || // CJK Unified Ideographs Extension B ~ F and CJK Compatibility Ideographs Supplement.
+					(current >= 0x30000 && current <= 0x3134F); // CJK Unified Ideographs Extension G.
+				can_break |= separatable || c[end] == ' ';
+
+				w += cw;
+
+				end++;
+			}
+
+			if (!can_break) {
+				w += _get_text_length(_get_next_item(p_item), p_base_font);
+			}
+
+			return w;
+		}
+		default: {}
+	}
+	return length;
 }
 
 int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos, Item **r_click_item, int *r_click_char, bool *r_outside, int p_char_count) {
@@ -403,6 +474,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					float w = 0.0f;
 					float fw = 0.0f;
 					bool was_separatable = false;
+					bool can_break = false;
 
 					lh = 0;
 
@@ -412,9 +484,11 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						line_descent = line < l.descent_caches.size() ? l.descent_caches[line] : 1;
 					}
 					while (c[end] != 0 && !(end && c[end - 1] == ' ' && c[end] != ' ')) {
+						can_break = false;
 						float cw = font->get_char_size(c[end], c[end + 1]).width;
 						if (c[end] == '\t') {
 							cw = tab_size * font->get_char_size(' ').width;
+							can_break = true;
 						}
 
 						if (end > 0 && w + cw + begin > p_width) {
@@ -439,6 +513,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						}
 						was_separatable = separatable;
 						just_breaked_in_middle = false;
+						can_break |= separatable || c[end] == ' ';
 
 						w += cw;
 						fw += cw;
@@ -446,7 +521,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						end++;
 					}
 					CHECK_HEIGHT(fh);
-					ENSURE_WIDTH(w);
+					float next_item_width = can_break ? 0 : _get_text_length(_get_next_item(it), p_base_font);
+					ENSURE_WIDTH(w + next_item_width);
 
 					line_ascent = MAX(line_ascent, ascent);
 					line_descent = MAX(line_descent, descent);
@@ -714,6 +790,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 				if (p_mode != PROCESS_CACHE) {
 					lh = line < l.height_caches.size() ? l.height_caches[line] : 1;
+					line_is_blank = true;
 				}
 
 			} break;
@@ -1000,12 +1077,6 @@ void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, float p_delta_
 	}
 }
 
-void RichTextLabel::_validate_property(PropertyInfo &p_property) const {
-	if (use_bbcode && p_property.name == "text") {
-		p_property.usage &= ~PROPERTY_USAGE_EDITOR;
-	}
-}
-
 void RichTextLabel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_MOUSE_EXIT: {
@@ -1016,17 +1087,20 @@ void RichTextLabel::_notification(int p_what) {
 				update();
 			}
 		} break;
-		case NOTIFICATION_RESIZED:
-		case NOTIFICATION_THEME_CHANGED: {
+		case NOTIFICATION_RESIZED: {
 			main->first_invalid_line = 0; //invalidate ALL
 			update();
+
 		} break;
+		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
 			if (bbcode != "") {
 				set_bbcode(bbcode);
 			}
+
 			main->first_invalid_line = 0; //invalidate ALL
 			update();
+
 		} break;
 		case NOTIFICATION_DRAW: {
 			_validate_line_caches(main);
@@ -2728,7 +2802,6 @@ void RichTextLabel::set_use_bbcode(bool p_enable) {
 	}
 	use_bbcode = p_enable;
 	set_bbcode(bbcode);
-	property_list_changed_notify();
 }
 
 bool RichTextLabel::is_using_bbcode() const {
@@ -2923,11 +2996,7 @@ void RichTextLabel::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
 
-	// See EditorPropertyArray::setup() for this esoteric hint string syntax for typed arrays.
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "custom_effects", PROPERTY_HINT_NONE,
-						 vformat("%d/%d:RichTextEffect", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE),
-						 (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE)),
-			"set_effects", "get_effects");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "custom_effects", PROPERTY_HINT_RESOURCE_TYPE, "17/17:RichTextEffect", (PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE), "RichTextEffect"), "set_effects", "get_effects");
 
 	ADD_SIGNAL(MethodInfo("meta_clicked", PropertyInfo(Variant::NIL, "meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 	ADD_SIGNAL(MethodInfo("meta_hover_started", PropertyInfo(Variant::NIL, "meta", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
