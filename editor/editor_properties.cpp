@@ -621,7 +621,7 @@ void EditorPropertyClassName::update_property() {
 }
 
 void EditorPropertyClassName::_property_selected() {
-	dialog->popup_create(true);
+	dialog->popup_create(true, true, get_edited_property_value(), get_edited_property());
 }
 
 void EditorPropertyClassName::_dialog_created() {
@@ -3622,7 +3622,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_TYPE_STRING) {
 				EditorPropertyClassName *editor = memnew(EditorPropertyClassName);
-				editor->setup("Object", p_hint_text);
+				editor->setup(p_hint_text, p_hint_text);
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_LOCALE_ID) {
 				EditorPropertyLocale *editor = memnew(EditorPropertyLocale);
