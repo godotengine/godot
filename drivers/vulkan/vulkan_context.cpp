@@ -1312,7 +1312,9 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 	}
 
 	// Output our device version
-	print_line(vformat("Vulkan API %s - %s - Using Vulkan Device #%d: %s - %s", get_device_api_version(), rendering_method, device_index, device_vendor, device_name));
+	if (Engine::get_singleton()->is_printing_header()) {
+		print_line(vformat("Vulkan API %s - %s - Using Vulkan Device #%d: %s - %s", get_device_api_version(), rendering_method, device_index, device_vendor, device_name));
+	}
 
 	{
 		Error _err = _initialize_device_extensions();
