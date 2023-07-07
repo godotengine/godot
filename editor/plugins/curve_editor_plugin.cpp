@@ -184,7 +184,9 @@ void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 					toggle_linear(selected_index, selected_tangent_index);
 				} else {
 					int point_to_remove = get_point_at(mpos);
-					if (point_to_remove != -1) {
+					if (point_to_remove == -1) {
+						set_selected_index(-1); // Nothing on the place of the click, just deselect the point.
+					} else {
 						if (grabbing == GRAB_ADD) {
 							curve->remove_point(point_to_remove); // Point is temporary, so remove directly from curve.
 							set_selected_index(-1);
