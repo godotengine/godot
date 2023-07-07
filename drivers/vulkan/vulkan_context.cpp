@@ -1818,7 +1818,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	if (window->width == 0 || window->height == 0) {
 		free(presentModes);
 		// Likely window minimized, no swapchain created.
-		return OK;
+		return ERR_SKIP;
 	}
 	// The FIFO present mode is guaranteed by the spec to be supported
 	// and to have no tearing.  It's a great default present mode to use.
@@ -2275,8 +2275,10 @@ Error VulkanContext::prepare_buffers() {
 				// Swapchain is not as optimal as it could be, but the platform's
 				// presentation engine will still present the image correctly.
 				print_verbose("Vulkan: Early suboptimal swapchain, recreating.");
-				_update_swap_chain(w);
-				break;
+				Error swap_chain_err = _update_swap_chain(w);
+				if (swap_chain_err == ERR_SKIP) {
+					break;
+				}
 			} else if (err != VK_SUCCESS) {
 				ERR_BREAK_MSG(err != VK_SUCCESS, "Vulkan: Did not create swapchain successfully. Error code: " + String(string_VkResult(err)));
 			} else {
