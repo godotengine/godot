@@ -720,6 +720,13 @@
 				Replaces all [b]case-insensitive[/b] occurrences of [param what] inside the string with the given [param forwhat].
 			</description>
 		</method>
+		<method name="resize">
+			<return type="int" />
+			<param index="0" name="size" type="int" />
+			<description>
+				Resizes this string to the new size. The size should be one more than desired string length (in order to accommodate the null terminator).
+			</description>
+		</method>
 		<method name="rfind" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="what" type="String" />
