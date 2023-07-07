@@ -647,11 +647,11 @@ SpriteBase3D::SpriteBase3D() {
 
 	// Create basic mesh and store format information.
 	for (int i = 0; i < 4; i++) {
-		mesh_normals.write[i] = Vector3(0.0, 0.0, 0.0);
-		mesh_tangents.write[i * 4 + 0] = 0.0;
+		mesh_normals.write[i] = Vector3(0.0, 0.0, 1.0);
+		mesh_tangents.write[i * 4 + 0] = 1.0;
 		mesh_tangents.write[i * 4 + 1] = 0.0;
 		mesh_tangents.write[i * 4 + 2] = 0.0;
-		mesh_tangents.write[i * 4 + 3] = 0.0;
+		mesh_tangents.write[i * 4 + 3] = 1.0;
 		mesh_colors.write[i] = Color(1.0, 1.0, 1.0, 1.0);
 		mesh_uvs.write[i] = Vector2(0.0, 0.0);
 		mesh_vertices.write[i] = Vector3(0.0, 0.0, 0.0);
