@@ -762,6 +762,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("title_button_font", "Tree", Ref<Font>());
 	theme->set_font("font", "Tree", Ref<Font>());
 	theme->set_font_size("font_size", "Tree", -1);
+	theme->set_font_size("title_button_font_size", "Tree", -1);
 
 	theme->set_color("title_button_color", "Tree", control_font_color);
 	theme->set_color("font_color", "Tree", control_font_low_color);

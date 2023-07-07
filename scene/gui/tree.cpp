@@ -1922,7 +1922,7 @@ void Tree::update_column(int p_col) {
 		columns.write[p_col].text_buf->set_direction((TextServer::Direction)columns[p_col].text_direction);
 	}
 
-	columns.write[p_col].text_buf->add_string(columns[p_col].title, theme_cache.font, theme_cache.font_size, columns[p_col].language);
+	columns.write[p_col].text_buf->add_string(columns[p_col].title, theme_cache.tb_font, theme_cache.tb_font_size, columns[p_col].language);
 	columns.write[p_col].cached_minimum_width_dirty = true;
 }
 
@@ -4108,7 +4108,7 @@ void Tree::update_scrollbars() {
 }
 
 int Tree::_get_title_button_height() const {
-	ERR_FAIL_COND_V(theme_cache.font.is_null() || theme_cache.title_button.is_null(), 0);
+	ERR_FAIL_COND_V(theme_cache.tb_font.is_null() || theme_cache.title_button.is_null(), 0);
 	int h = 0;
 	if (show_column_titles) {
 		for (int i = 0; i < columns.size(); i++) {
@@ -4243,7 +4243,6 @@ void Tree::_notification(int p_what) {
 				int ofs2 = theme_cache.panel_style->get_margin(SIDE_LEFT);
 				for (int i = 0; i < columns.size(); i++) {
 					Ref<StyleBox> sb = (cache.click_type == Cache::CLICK_TITLE && cache.click_index == i) ? theme_cache.title_button_pressed : ((cache.hover_type == Cache::CLICK_TITLE && cache.hover_index == i) ? theme_cache.title_button_hover : theme_cache.title_button);
-					Ref<Font> f = theme_cache.tb_font;
 					Rect2 tbrect = Rect2(ofs2 - theme_cache.offset.x, bg->get_margin(SIDE_TOP), get_column_width(i), tbh);
 					if (cache.rtl) {
 						tbrect.position.x = get_size().width - tbrect.size.x - tbrect.position.x;

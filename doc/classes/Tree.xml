@@ -606,6 +606,9 @@
 		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size of the item's text.
 		</theme_item>
+		<theme_item name="title_button_font_size" data_type="font_size" type="int">
+			Font size of the title button's text.
+		</theme_item>
 		<theme_item name="arrow" data_type="icon" type="Texture2D">
 			The arrow icon used when a foldable item is not collapsed.
 		</theme_item>
