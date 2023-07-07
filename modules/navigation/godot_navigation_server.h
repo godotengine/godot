@@ -56,6 +56,7 @@
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
 class GodotNavigationServer;
+class NavMeshGenerator3D;
 
 struct SetCommand {
 	virtual ~SetCommand() {}
@@ -78,6 +79,8 @@ class GodotNavigationServer : public NavigationServer3D {
 	bool active = true;
 	LocalVector<NavMap *> active_maps;
 	LocalVector<uint32_t> active_maps_update_id;
+
+	NavMeshGenerator3D *navmesh_generator_3d = nullptr;
 
 	// Performance Monitor
 	int pm_region_count = 0;
@@ -234,6 +237,8 @@ public:
 
 	void flush_queries();
 	virtual void process(real_t p_delta_time) override;
+	virtual void init() override;
+	virtual void finish() override;
 
 	virtual NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const override;
 

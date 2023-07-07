@@ -318,6 +318,7 @@ void finalize_display() {
 
 void initialize_navigation_server() {
 	ERR_FAIL_COND(navigation_server_3d != nullptr);
+	ERR_FAIL_COND(navigation_server_2d != nullptr);
 
 	// Init 3D Navigation Server
 	navigation_server_3d = NavigationServer3DManager::new_default_server();
@@ -330,6 +331,7 @@ void initialize_navigation_server() {
 
 	// Should be impossible, but make sure it's not null.
 	ERR_FAIL_NULL_MSG(navigation_server_3d, "Failed to initialize NavigationServer3D.");
+	navigation_server_3d->init();
 
 	// Init 2D Navigation Server
 	navigation_server_2d = memnew(NavigationServer2D);
@@ -337,9 +339,12 @@ void initialize_navigation_server() {
 }
 
 void finalize_navigation_server() {
+	ERR_FAIL_NULL(navigation_server_3d);
+	navigation_server_3d->finish();
 	memdelete(navigation_server_3d);
 	navigation_server_3d = nullptr;
 
+	ERR_FAIL_NULL(navigation_server_2d);
 	memdelete(navigation_server_2d);
 	navigation_server_2d = nullptr;
 }
@@ -581,6 +586,8 @@ Error Main::test_setup() {
 	theme_db->initialize_theme();
 	register_scene_singletons();
 
+	initialize_navigation_server();
+
 	ERR_FAIL_COND_V(TextServerManager::get_singleton()->get_interface_count() == 0, ERR_CANT_CREATE);
 
 	/* Use one with the most features available. */
@@ -638,6 +645,8 @@ void Main::test_cleanup() {
 	unregister_scene_types();
 
 	finalize_theme_db();
+
+	finalize_navigation_server();
 
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
