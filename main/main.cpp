@@ -374,6 +374,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --version                         Display the version string.\n");
 	OS::get_singleton()->print("  -v, --verbose                     Use verbose stdout mode.\n");
 	OS::get_singleton()->print("  -q, --quiet                       Quiet mode, silences stdout messages. Errors are still displayed.\n");
+	OS::get_singleton()->print("  --no-header                       Do not print engine header.\n");
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Run options:\n");
@@ -877,6 +878,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "-q" || I->get() == "--quiet") { // quieter output
 
 			quiet_stdout = true;
+
+		} else if (I->get() == "--no-header") {
+			Engine::singleton->_print_header = false;
 
 		} else if (I->get() == "--audio-driver") { // audio driver
 
@@ -2089,7 +2093,9 @@ Error Main::setup2() {
 	set_current_thread_safe_for_nodes(true);
 
 	// Print engine name and version
-	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+	if (Engine::singleton->_print_header) {
+		print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+	}
 
 	OS::get_singleton()->benchmark_begin_measure("servers");
 

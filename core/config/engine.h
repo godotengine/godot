@@ -78,6 +78,8 @@ private:
 	bool editor_hint = false;
 	bool project_manager_hint = false;
 
+	bool _print_header = true;
+
 	static Engine *singleton;
 
 	String write_movie_path;
@@ -114,6 +116,7 @@ public:
 
 	void set_print_error_messages(bool p_enabled);
 	bool is_printing_error_messages() const;
+	bool is_printing_header() const { return _print_header; }
 
 	void set_frame_delay(uint32_t p_msec);
 	uint32_t get_frame_delay() const;
