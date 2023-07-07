@@ -3588,16 +3588,22 @@ void DisplayServerMacOS::set_native_icon(const String &p_filename) {
 
 	Vector<uint8_t> data;
 	uint64_t len = f->get_length();
+	ERR_FAIL_COND_MSG(len < 8, "Error reading icon data."); // "icns" + 32-bit length
+
 	data.resize(len);
 	f->get_buffer((uint8_t *)&data.write[0], len);
 
-	NSData *icon_data = [[NSData alloc] initWithBytes:&data.write[0] length:len];
-	ERR_FAIL_COND_MSG(!icon_data, "Error reading icon data.");
+	@try {
+		NSData *icon_data = [[NSData alloc] initWithBytes:&data.write[0] length:len];
+		ERR_FAIL_COND_MSG(!icon_data, "Error reading icon data.");
 
-	NSImage *icon = [[NSImage alloc] initWithData:icon_data];
-	ERR_FAIL_COND_MSG(!icon, "Error loading icon.");
+		NSImage *icon = [[NSImage alloc] initWithData:icon_data];
+		ERR_FAIL_COND_MSG(!icon, "Error loading icon.");
 
-	[NSApp setApplicationIconImage:icon];
+		[NSApp setApplicationIconImage:icon];
+	} @catch (NSException *exception) {
+		ERR_FAIL_MSG("NSException: " + String::utf8([exception reason].UTF8String));
+	}
 }
 
 void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
