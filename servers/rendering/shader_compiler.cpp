@@ -178,7 +178,7 @@ static String _mkid(const String &p_id) {
 }
 
 static String f2sp0(float p_float) {
-	String num = rtoss(p_float);
+	String num = rtos(p_float);
 	if (!num.contains(".") && !num.contains("e")) {
 		num += ".0";
 	}
