@@ -125,7 +125,10 @@ namespace Godot
                 NativePtr = IntPtr.Zero;
             }
 
-            DisposablesTracker.UnregisterGodotObject(this, _weakReferenceToSelf);
+            if (_weakReferenceToSelf != null)
+            {
+                DisposablesTracker.UnregisterGodotObject(this, _weakReferenceToSelf);
+            }
         }
 
         /// <summary>
