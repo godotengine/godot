@@ -3769,6 +3769,12 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			extensions["KHR_materials_unlit"] = mat_unlit;
 			p_state->add_used_extension("KHR_materials_unlit");
 		}
+		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION) && !Math::is_equal_approx(base_material->get_emission_energy_multiplier(), 1.0f)) {
+			Dictionary mat_emissive_strength;
+			mat_emissive_strength["emissiveStrength"] = base_material->get_emission_energy_multiplier();
+			extensions["KHR_materials_emissive_strength"] = mat_emissive_strength;
+			p_state->add_used_extension("KHR_materials_emissive_strength");
+		}
 		d["extensions"] = extensions;
 
 		materials.push_back(d);
