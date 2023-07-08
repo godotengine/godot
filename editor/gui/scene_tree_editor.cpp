@@ -1114,9 +1114,15 @@ void SceneTreeEditor::_update_selection(TreeItem *item) {
 	}
 
 	if (editor_selection->is_selected(n)) {
-		item->select(0);
+		if (!item->is_selected(0)) {
+			item->select(0);
+		}
 	} else {
-		item->deselect(0);
+		if (item->is_selected(0)) {
+			TreeItem *previous_cursor_item = tree->get_selected();
+			item->deselect(0);
+			previous_cursor_item->set_as_cursor(0);
+		}
 	}
 
 	TreeItem *c = item->get_first_child();
