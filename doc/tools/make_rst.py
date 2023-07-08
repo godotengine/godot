@@ -66,6 +66,15 @@ BASE_STRINGS = [
     "This method doesn't need an instance to be called, so it can be called directly using the class name.",
     "This method describes a valid operator to use with this type as left-hand operand.",
     "This value is an integer composed as a bitmask of the following flags.",
+    "There is currently no description for this class. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this signal. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this annotation. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this constructor. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this method. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this operator. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this theme property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There are notable differences when using this API with C#. See :ref:`doc_c_sharp_differences` for more information.",
 ]
 strings_l10n: Dict[str, str] = {}
 
@@ -91,6 +100,36 @@ EDITOR_CLASSES: List[str] = [
     "ScriptCreateDialog",
     "ScriptEditor",
     "ScriptEditorBase",
+]
+# Sync with the types mentioned in https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_differences.html
+CLASSES_WITH_CSHARP_DIFFERENCES: List[str] = [
+    "@GlobalScope",
+    "String",
+    "NodePath",
+    "Signal",
+    "Callable",
+    "RID",
+    "Basis",
+    "Transform2D",
+    "Transform3D",
+    "Rect2",
+    "Rect2i",
+    "AABB",
+    "Quaternion",
+    "Projection",
+    "Color",
+    "Array",
+    "Dictionary",
+    "PackedByteArray",
+    "PackedColorArray",
+    "PackedFloat32Array",
+    "PackedFloat64Array",
+    "PackedInt32Array",
+    "PackedInt64Array",
+    "PackedStringArray",
+    "PackedVector2Array",
+    "PackedVector3Array",
+    "Variant",
 ]
 
 
@@ -838,6 +877,15 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         f.write(
             translate(
                 "There is currently no description for this class. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+            )
+            + "\n\n"
+        )
+
+    if class_def.name in CLASSES_WITH_CSHARP_DIFFERENCES:
+        f.write(".. note::\n\n\t")
+        f.write(
+            translate(
+                "There are notable differences when using this API with C#. See :ref:`doc_c_sharp_differences` for more information."
             )
             + "\n\n"
         )
