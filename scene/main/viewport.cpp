@@ -87,12 +87,7 @@ void ViewportTexture::setup_local_to_scene() {
 	}
 }
 
-void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
-	if (path == p_path) {
-		return;
-	}
-
-	path = p_path;
+void ViewportTexture::reset_local_to_scene() {
 	vp_changed = true;
 
 	if (vp) {
@@ -104,6 +99,16 @@ void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
 		proxy_ph = RS::get_singleton()->texture_2d_placeholder_create();
 		RS::get_singleton()->texture_proxy_update(proxy, proxy_ph);
 	}
+}
+
+void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
+	if (path == p_path) {
+		return;
+	}
+
+	path = p_path;
+
+	reset_local_to_scene();
 
 	if (get_local_scene() && !path.is_empty()) {
 		setup_local_to_scene();

@@ -239,6 +239,7 @@ void Resource::configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
+	reset_local_to_scene();
 	local_scene = p_for_scene;
 
 	for (const PropertyInfo &E : plist) {
@@ -380,6 +381,10 @@ Node *Resource::get_local_scene() const {
 void Resource::setup_local_to_scene() {
 	// Can't use GDVIRTUAL in Resource, so this will have to be done with a signal
 	emit_signal(SNAME("setup_local_to_scene_requested"));
+}
+
+void Resource::reset_local_to_scene() {
+	// Restores the state as if setup_local_to_scene() hadn't been called.
 }
 
 Node *(*Resource::_get_local_scene_func)() = nullptr;
