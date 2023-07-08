@@ -1612,6 +1612,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (bool(GLOBAL_GET("application/run/disable_stdout"))) {
 		quiet_stdout = true;
 	}
+	if(bool(GLOBAL_GET("application/run/quit_header"))){
+		_print_header = true;
+	}
+
 	if (bool(GLOBAL_GET("application/run/disable_stderr"))) {
 		CoreGlobals::print_error_enabled = false;
 	};
