@@ -963,6 +963,12 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 					distance = -distance_max;
 				}
 
+				if (inst->transformed_aabb.has_point(p_render_data->scene_data->cam_transform.origin)) {
+					Vector3 cam_to_center = inst->transformed_aabb.get_center() - p_render_data->scene_data->cam_transform.origin;
+					float scale_factor = cam_to_center.length() / inst->transformed_aabb.get_size().length();
+					distance *= scale_factor;
+				}
+
 				if (p_render_data->scene_data->cam_orthogonal) {
 					distance = 1.0;
 				}
