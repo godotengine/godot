@@ -536,7 +536,7 @@ const GodotDisplay = {
 		}
 		navigator.clipboard.writeText(text).catch(function (e) {
 			// Setting OS clipboard is only possible from an input callback.
-			GodotRuntime.error('Setting OS clipboard is only possible from an input callback for the Web plafrom. Exception:', e);
+			GodotRuntime.error('Setting OS clipboard is only possible from an input callback for the Web platform. Exception:', e);
 		});
 		return 0;
 	},
