@@ -7925,6 +7925,8 @@ void Node3DEditor::clear() {
 	}
 
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID), true);
+	grid_enabled = true;
+	grid_init_draw = false;
 }
 
 void Node3DEditor::_sun_direction_draw() {
