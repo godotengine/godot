@@ -7470,6 +7470,7 @@ uint32_t RenderingDeviceVulkan::draw_list_get_current_pass() {
 }
 
 RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_switch_to_next_pass() {
+	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(draw_list == nullptr, INVALID_ID);
 	ERR_FAIL_COND_V(draw_list_current_subpass >= draw_list_subpass_count - 1, INVALID_FORMAT_ID);
 
@@ -7485,6 +7486,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_switch_to_next_pass
 	return int64_t(ID_TYPE_DRAW_LIST) << ID_BASE_SHIFT;
 }
 Error RenderingDeviceVulkan::draw_list_switch_to_next_pass_split(uint32_t p_splits, DrawListID *r_split_ids) {
+	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V(draw_list == nullptr, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(draw_list_current_subpass >= draw_list_subpass_count - 1, ERR_INVALID_PARAMETER);
 
