@@ -2272,7 +2272,7 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 	// If the EditorFileSystem singleton is available, update the file;
 	// otherwise, the file will be updated when the singleton becomes available.
 	EditorFileSystem *efs = EditorFileSystem::get_singleton();
-	if (efs) {
+	if (efs && !p_script->get_path().is_empty()) {
 		efs->update_file(p_script->get_path());
 	}
 #endif
