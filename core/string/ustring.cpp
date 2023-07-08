@@ -4281,12 +4281,13 @@ String String::pad_zeros(int p_digits) const {
 		begin++;
 	}
 
-	if (begin >= end) {
-		return s;
-	}
-
 	int zeros_to_add = p_digits - (end - begin);
-	return s.insert(begin, String("0").repeat(zeros_to_add));
+
+	if (zeros_to_add <= 0) {
+		return s;
+	} else {
+		return s.insert(begin, String("0").repeat(zeros_to_add));
+	}
 }
 
 String String::trim_prefix(const String &p_prefix) const {
