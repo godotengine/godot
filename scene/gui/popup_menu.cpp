@@ -1471,6 +1471,11 @@ String PopupMenu::get_item_text(int p_idx) const {
 	return items[p_idx].text;
 }
 
+String PopupMenu::get_item_xl_text(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), "");
+	return items[p_idx].xl_text;
+}
+
 Control::TextDirection PopupMenu::get_item_text_direction(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Control::TEXT_DIRECTION_INHERITED);
 	return items[p_idx].text_direction;

@@ -451,7 +451,7 @@ void OptionButton::_refresh_size_cache() {
 
 	_cached_size = Vector2();
 	for (int i = 0; i < get_item_count(); i++) {
-		_cached_size = _cached_size.max(get_minimum_size_for_text_and_icon(get_item_text(i), get_item_icon(i)));
+		_cached_size = _cached_size.max(get_minimum_size_for_text_and_icon(popup->get_item_xl_text(i), get_item_icon(i)));
 	}
 	update_minimum_size();
 }
