@@ -1613,7 +1613,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		quiet_stdout = true;
 	}
 	if(bool(GLOBAL_GET("application/run/quit_header"))){
-		Engine::_print_header = true;
+		Engine::get_singleton()->_print_header = true;
 	}
 
 	if (bool(GLOBAL_GET("application/run/disable_stderr"))) {
