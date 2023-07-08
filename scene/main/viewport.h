@@ -70,6 +70,8 @@ class ViewportTexture : public Texture2D {
 protected:
 	static void _bind_methods();
 
+	virtual void reset_local_to_scene() override;
+
 public:
 	void set_viewport_path_in_scene(const NodePath &p_path);
 	NodePath get_viewport_path_in_scene() const;
