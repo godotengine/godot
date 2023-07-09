@@ -1612,7 +1612,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (bool(GLOBAL_GET("application/run/disable_stdout"))) {
 		quiet_stdout = true;
 	}
-	if(bool(GLOBAL_GET("application/run/quit_header"))){
+	if (bool(GLOBAL_GET("application/run/quit_header"))){
 		Engine::singleton->_print_header = false;
 	}
 
