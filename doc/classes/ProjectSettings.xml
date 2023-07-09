@@ -314,7 +314,8 @@
 			Changes to this setting will only be applied upon restarting the application.
 		</member>
 		<member name="application/run/quit_header", type="bool" setter="" getter="" default="false">
-		
+			If [code]true[/code], disables header printing on standard output. This is equivalent to starting the editor or project with the command line argument [code]--no-header[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line_tutorial[/url]. See also [member application/run/disable_stderr].
+			Changes made to this parameter will only be applied when the application is restarted.
 		</member>
 		<member name="application/run/flush_stdout_on_print" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], flushes the standard output stream every time a line is printed. This affects both terminal logging and file logging.
