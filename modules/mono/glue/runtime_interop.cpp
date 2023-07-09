@@ -92,10 +92,10 @@ void godotsharp_stack_info_vector_destroy(
 
 void godotsharp_internal_script_debugger_send_error(const String *p_func,
 		const String *p_file, int32_t p_line, const String *p_err, const String *p_descr,
-		bool p_warning, const Vector<ScriptLanguage::StackInfo> *p_stack_info_vector) {
+		ErrorHandlerType p_type, const Vector<ScriptLanguage::StackInfo> *p_stack_info_vector) {
 	const String file = ProjectSettings::get_singleton()->localize_path(p_file->simplify_path());
 	EngineDebugger::get_script_debugger()->send_error(*p_func, file, p_line, *p_err, *p_descr,
-			true, p_warning ? ERR_HANDLER_WARNING : ERR_HANDLER_ERROR, *p_stack_info_vector);
+			true, p_type, *p_stack_info_vector);
 }
 
 bool godotsharp_internal_script_debugger_is_active() {
@@ -1320,12 +1320,14 @@ void godotsharp_printraw(const godot_string *p_what) {
 	OS::get_singleton()->print("%s", reinterpret_cast<const String *>(p_what)->utf8().get_data());
 }
 
-void godotsharp_pusherror(const godot_string *p_str) {
-	ERR_PRINT(*reinterpret_cast<const String *>(p_str));
-}
-
-void godotsharp_pushwarning(const godot_string *p_str) {
-	WARN_PRINT(*reinterpret_cast<const String *>(p_str));
+void godotsharp_err_print_error(const godot_string *p_function, const godot_string *p_file, int32_t p_line, const godot_string *p_error, const godot_string *p_message, bool p_editor_notify, ErrorHandlerType p_type) {
+	_err_print_error(
+			reinterpret_cast<const String *>(p_function)->utf8().get_data(),
+			reinterpret_cast<const String *>(p_file)->utf8().get_data(),
+			p_line,
+			reinterpret_cast<const String *>(p_error)->utf8().get_data(),
+			reinterpret_cast<const String *>(p_message)->utf8().get_data(),
+			p_editor_notify, p_type);
 }
 
 void godotsharp_var_to_str(const godot_variant *p_var, godot_string *r_ret) {
@@ -1611,8 +1613,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_str_to_var,
 	(void *)godotsharp_var_to_bytes,
 	(void *)godotsharp_var_to_str,
-	(void *)godotsharp_pusherror,
-	(void *)godotsharp_pushwarning,
+	(void *)godotsharp_err_print_error,
 	(void *)godotsharp_object_to_string,
 };
 

@@ -95,7 +95,7 @@ namespace Godot.NativeInterop
                 }
 
                 NativeFuncs.godotsharp_internal_script_debugger_send_error(nFunc, nFile, line,
-                    nErrorMsg, nExcMsg, p_warning: godot_bool.False, stackInfoVector);
+                    nErrorMsg, nExcMsg, godot_error_handler_type.ERR_HANDLER_ERROR, stackInfoVector);
             }
         }
 
