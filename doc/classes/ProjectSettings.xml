@@ -313,7 +313,7 @@
 			If [code]true[/code], disables printing to standard output. This is equivalent to starting the editor or project with the [code]--quiet[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]. See also [member application/run/disable_stderr].
 			Changes to this setting will only be applied upon restarting the application.
 		</member>
-		<member name="application/run/quit_header", type="bool" setter="" getter="" default="false">
+		<member name="application/run/quit_header" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], disables header printing on standard output. This is equivalent to starting the editor or project with the command line argument [code]--no-header[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line_tutorial[/url]. See also [member application/run/disable_stderr].
 			Changes made to this parameter will only be applied when the application is restarted.
 		</member>
