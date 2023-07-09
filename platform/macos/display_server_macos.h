@@ -187,7 +187,7 @@ private:
 	bool keyboard_layout_dirty = true;
 
 	WindowID window_mouseover_id = INVALID_WINDOW_ID;
-	WindowID last_focused_window = INVALID_WINDOW_ID;
+	WindowID currently_focused_window = INVALID_WINDOW_ID;
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 	float display_max_scale = 1.f;
 	Point2i origin;
@@ -251,14 +251,14 @@ public:
 	void push_to_key_event_buffer(const KeyEvent &p_event);
 	void pop_last_key_event();
 	void update_im_text(const Point2i &p_selection, const String &p_text);
-	void set_last_focused_window(WindowID p_window);
+	void set_currently_focused_window(WindowID p_window);
 	bool mouse_process_popups(bool p_close = false);
 	void popup_open(WindowID p_window);
 	void popup_close(WindowID p_window);
 	void set_is_resizing(bool p_is_resizing);
 	bool get_is_resizing() const;
 	void reparent_check(WindowID p_window);
-	WindowID _get_focused_window_or_popup() const;
+	virtual WindowID _get_focused_window_or_popup() const override;
 	void mouse_enter_window(WindowID p_window);
 	void mouse_exit_window(WindowID p_window);
 	void update_presentation_mode();

@@ -2555,6 +2555,10 @@ Window *Viewport::get_base_window() const {
 	return w;
 }
 
+Window *Viewport::get_top_popup_or_focused_window() const {
+	return gui.subwindow_focused;
+}
+
 void Viewport::_gui_remove_focus_for_window(Node *p_window) {
 	if (get_base_window() == p_window) {
 		gui_release_focus();
@@ -4657,6 +4661,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_embedding_subwindows", "enable"), &Viewport::set_embedding_subwindows);
 	ClassDB::bind_method(D_METHOD("is_embedding_subwindows"), &Viewport::is_embedding_subwindows);
 	ClassDB::bind_method(D_METHOD("get_embedded_subwindows"), &Viewport::get_embedded_subwindows);
+	ClassDB::bind_method(D_METHOD("get_top_popup_or_focused_window"), &Viewport::get_top_popup_or_focused_window);
 
 	ClassDB::bind_method(D_METHOD("set_canvas_cull_mask", "mask"), &Viewport::set_canvas_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_canvas_cull_mask"), &Viewport::get_canvas_cull_mask);

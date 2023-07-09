@@ -388,7 +388,7 @@ DisplayServer::WindowID DisplayServerMacOS::_get_focused_window_or_popup() const
 		return E->get();
 	}
 
-	return last_focused_window;
+	return currently_focused_window;
 }
 
 void DisplayServerMacOS::mouse_enter_window(WindowID p_window) {
@@ -768,8 +768,8 @@ void DisplayServerMacOS::update_im_text(const Point2i &p_selection, const String
 	OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 }
 
-void DisplayServerMacOS::set_last_focused_window(WindowID p_window) {
-	last_focused_window = p_window;
+void DisplayServerMacOS::set_currently_focused_window(WindowID p_window) {
+	currently_focused_window = p_window;
 }
 
 void DisplayServerMacOS::set_is_resizing(bool p_is_resizing) {
@@ -2200,7 +2200,7 @@ Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &
 	NSString *url = [NSString stringWithUTF8String:p_current_directory.utf8().get_data()];
 	FileDialogDropdown *handler = nullptr;
 
-	WindowID prev_focus = last_focused_window;
+	WindowID prev_focus = currently_focused_window;
 
 	Callable callback = p_callback; // Make a copy for async completion handler.
 	if (p_mode == FILE_DIALOG_MODE_SAVE_FILE) {
@@ -3724,7 +3724,7 @@ bool DisplayServerMacOS::window_is_focused(WindowID p_window) const {
 }
 
 DisplayServerMacOS::WindowID DisplayServerMacOS::get_focused_window() const {
-	return last_focused_window;
+	return currently_focused_window;
 }
 
 bool DisplayServerMacOS::window_can_draw(WindowID p_window) const {

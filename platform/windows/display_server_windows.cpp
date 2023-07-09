@@ -159,7 +159,7 @@ DisplayServer::WindowID DisplayServerWindows::_get_focused_window_or_popup() con
 		return E->get();
 	}
 
-	return last_focused_window;
+	return currently_focused_window;
 }
 
 void DisplayServerWindows::_register_raw_input_devices(WindowID p_target_window) {
@@ -259,7 +259,7 @@ Error DisplayServerWindows::file_dialog_show(const String &p_title, const String
 		filters.push_back({ (LPCWSTR)filter_names[i].ptr(), (LPCWSTR)filter_exts[i].ptr() });
 	}
 
-	WindowID prev_focus = last_focused_window;
+	WindowID prev_focus = currently_focused_window;
 
 	HRESULT hr = S_OK;
 	IFileDialog *pfd = nullptr;
@@ -514,10 +514,10 @@ String DisplayServerWindows::clipboard_get() const {
 
 Ref<Image> DisplayServerWindows::clipboard_get_image() const {
 	Ref<Image> image;
-	if (!windows.has(last_focused_window)) {
+	if (!windows.has(currently_focused_window)) {
 		return image; // No focused window?
 	}
-	if (!OpenClipboard(windows[last_focused_window].hWnd)) {
+	if (!OpenClipboard(windows[currently_focused_window].hWnd)) {
 		ERR_FAIL_V_MSG(image, "Unable to open clipboard.");
 	}
 	UINT png_format = RegisterClipboardFormatA("PNG");
@@ -1155,8 +1155,8 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	DestroyWindow(windows[p_window].hWnd);
 	windows.erase(p_window);
 
-	if (last_focused_window == p_window) {
-		last_focused_window = INVALID_WINDOW_ID;
+	if (currently_focused_window == p_window) {
+		currently_focused_window = INVALID_WINDOW_ID;
 	}
 }
 
@@ -1949,7 +1949,7 @@ bool DisplayServerWindows::window_is_focused(WindowID p_window) const {
 }
 
 DisplayServerWindows::WindowID DisplayServerWindows::get_focused_window() const {
-	return last_focused_window;
+	return currently_focused_window;
 }
 
 bool DisplayServerWindows::window_can_draw(WindowID p_window) const {
@@ -2999,7 +2999,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_SETFOCUS: {
 			windows[window_id].window_has_focus = true;
-			last_focused_window = window_id;
+			currently_focused_window = window_id;
 
 			// Restore mouse mode.
 			_set_mouse_mode_impl(mouse_mode);
@@ -3013,7 +3013,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_KILLFOCUS: {
 			windows[window_id].window_has_focus = false;
-			last_focused_window = window_id;
+			currently_focused_window = INVALID_WINDOW_ID;
 
 			// Release capture unconditionally because it can be set due to dragging, in addition to captured mode.
 			ReleaseCapture();
