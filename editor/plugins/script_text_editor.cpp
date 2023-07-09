@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_toaster.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 
@@ -1759,10 +1760,14 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return;
 		}
 
+		if (!ClassDB::is_parent_class(script->get_instance_base_type(), "Node")) {
+			EditorToaster::get_singleton()->popup_str(vformat(TTR("Can't drop nodes because script '%s' does not inherit Node."), get_name()), EditorToaster::SEVERITY_WARNING);
+			return;
+		}
+
 		Node *sn = _find_script_node(scene_root, scene_root, script);
 		if (!sn) {
-			EditorNode::get_singleton()->show_warning(vformat(TTR("Can't drop nodes because script '%s' is not used in this scene."), get_name()));
-			return;
+			sn = scene_root;
 		}
 
 		Array nodes = d["nodes"];
