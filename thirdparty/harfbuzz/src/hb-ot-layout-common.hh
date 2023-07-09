@@ -55,19 +55,22 @@ static bool ClassDef_remap_and_serialize (
     hb_serialize_context_t *c,
     const hb_set_t &klasses,
     bool use_class_zero,
-    hb_sorted_vector_t<hb_pair_t<hb_codepoint_t, hb_codepoint_t>> &glyph_and_klass, /* IN/OUT */
+    hb_sorted_vector_t<hb_codepoint_pair_t> &glyph_and_klass, /* IN/OUT */
     hb_map_t *klass_map /*IN/OUT*/);
 
 struct hb_collect_feature_substitutes_with_var_context_t
 {
   const hb_map_t *axes_index_tag_map;
-  const hb_hashmap_t<hb_tag_t, int> *axes_location;
+  const hb_hashmap_t<hb_tag_t, Triple> *axes_location;
   hb_hashmap_t<unsigned, hb::shared_ptr<hb_set_t>> *record_cond_idx_map;
   hb_hashmap_t<unsigned, const Feature*> *feature_substitutes_map;
+  bool& insert_catch_all_feature_variation_record;
 
   // not stored in subset_plan
   hb_set_t *feature_indices;
   bool apply;
+  bool variation_applied;
+  bool universal;
   unsigned cur_record_idx;
   hb_hashmap_t<hb::shared_ptr<hb_map_t>, unsigned> *conditionset_map;
 };
@@ -807,7 +810,7 @@ struct Feature
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
 
     out->featureParams.serialize_subset (c, featureParams, this, tag);
 
@@ -981,7 +984,7 @@ struct RecordListOfFeature : RecordListOf<Feature>
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
 
     + hb_enumerate (*this)
     | hb_filter (l->feature_index_map, hb_first)
@@ -1078,7 +1081,7 @@ struct LangSys
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
 
     const uint32_t *v;
     out->reqFeatureIndex = l->feature_index_map->has (reqFeatureIndex, &v) ? *v : 0xFFFFu;
@@ -1188,7 +1191,7 @@ struct Script
       return false;
 
     auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
 
     bool defaultLang = false;
     if (has_default_lang_sys ())
@@ -1247,7 +1250,7 @@ struct RecordListOfScript : RecordListOf<Script>
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
 
     for (auto _ : + hb_enumerate (*this))
     {
@@ -1367,7 +1370,7 @@ struct Lookup
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
     out->lookupType = lookupType;
     out->lookupFlag = lookupFlag;
 
@@ -1456,7 +1459,7 @@ struct LookupOffsetList : List16OfOffsetTo<TLookup, OffsetType>
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (this);
-    if (unlikely (!out || !c->serializer->extend_min (out))) return_trace (false);
+    if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
 
     + hb_enumerate (*this)
     | hb_filter (l->lookup_index_map, hb_first)
@@ -1482,7 +1485,7 @@ struct LookupOffsetList : List16OfOffsetTo<TLookup, OffsetType>
 static bool ClassDef_remap_and_serialize (hb_serialize_context_t *c,
 					  const hb_set_t &klasses,
                                           bool use_class_zero,
-                                          hb_sorted_vector_t<hb_pair_t<hb_codepoint_t, hb_codepoint_t>> &glyph_and_klass, /* IN/OUT */
+                                          hb_sorted_vector_t<hb_codepoint_pair_t> &glyph_and_klass, /* IN/OUT */
 					  hb_map_t *klass_map /*IN/OUT*/)
 {
   if (!klass_map)
@@ -1573,7 +1576,7 @@ struct ClassDefFormat1_3
     TRACE_SUBSET (this);
     const hb_map_t &glyph_map = c->plan->glyph_map_gsub;
 
-    hb_sorted_vector_t<hb_pair_t<hb_codepoint_t, hb_codepoint_t>> glyph_and_klass;
+    hb_sorted_vector_t<hb_codepoint_pair_t> glyph_and_klass;
     hb_set_t orig_klasses;
 
     hb_codepoint_t start = startGlyph;
@@ -1592,10 +1595,13 @@ struct ClassDefFormat1_3
       orig_klasses.add (klass);
     }
 
-    unsigned glyph_count = glyph_filter
-                           ? hb_len (hb_iter (glyph_map.keys()) | hb_filter (glyph_filter))
-                           : glyph_map.get_population ();
-    use_class_zero = use_class_zero && glyph_count <= glyph_and_klass.length;
+    if (use_class_zero)
+    {
+      unsigned glyph_count = glyph_filter
+			     ? hb_len (hb_iter (glyph_map.keys()) | hb_filter (glyph_filter))
+			     : glyph_map.get_population ();
+      use_class_zero = glyph_count <= glyph_and_klass.length;
+    }
     if (!ClassDef_remap_and_serialize (c->serializer,
                                        orig_klasses,
                                        use_class_zero,
@@ -1830,7 +1836,7 @@ struct ClassDefFormat2_4
     const hb_map_t &glyph_map = c->plan->glyph_map_gsub;
     const hb_set_t &glyph_set = *c->plan->glyphset_gsub ();
 
-    hb_sorted_vector_t<hb_pair_t<hb_codepoint_t, hb_codepoint_t>> glyph_and_klass;
+    hb_sorted_vector_t<hb_codepoint_pair_t> glyph_and_klass;
     hb_set_t orig_klasses;
 
     if (glyph_set.get_population () * hb_bit_storage ((unsigned) rangeRecord.len) / 2
@@ -1916,7 +1922,7 @@ struct ClassDefFormat2_4
   {
     if (rangeRecord.len > glyphs->get_population () * hb_bit_storage ((unsigned) rangeRecord.len) / 2)
     {
-      for (hb_codepoint_t g = HB_SET_VALUE_INVALID; glyphs->next (&g);)
+      for (auto g : *glyphs)
         if (get_class (g))
 	  return true;
       return false;
@@ -1976,8 +1982,7 @@ struct ClassDefFormat2_4
     unsigned count = rangeRecord.len;
     if (count > glyphs->get_population () * hb_bit_storage (count) * 8)
     {
-      for (hb_codepoint_t g = HB_SET_VALUE_INVALID;
-	   glyphs->next (&g);)
+      for (auto g : *glyphs)
       {
         unsigned i;
         if (rangeRecord.as_array ().bfind (g, &i) &&
@@ -2377,7 +2382,7 @@ struct VarRegionList
     return_trace (c->check_struct (this) && axesZ.sanitize (c, axisCount * regionCount));
   }
 
-  bool serialize (hb_serialize_context_t *c, const VarRegionList *src, const hb_bimap_t &region_map)
+  bool serialize (hb_serialize_context_t *c, const VarRegionList *src, const hb_inc_bimap_t &region_map)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (this))) return_trace (false);
@@ -2494,7 +2499,7 @@ struct VarData
   bool serialize (hb_serialize_context_t *c,
 		  const VarData *src,
 		  const hb_inc_bimap_t &inner_map,
-		  const hb_bimap_t &region_map)
+		  const hb_inc_bimap_t &region_map)
   {
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (this))) return_trace (false);
@@ -2905,9 +2910,9 @@ struct VariationStore
 enum Cond_with_Var_flag_t
 {
   KEEP_COND_WITH_VAR = 0,
-  DROP_COND_WITH_VAR = 1,
-  DROP_RECORD_WITH_VAR = 2,
-  MEM_ERR_WITH_VAR = 3,
+  KEEP_RECORD_WITH_VAR = 1,
+  DROP_COND_WITH_VAR = 2,
+  DROP_RECORD_WITH_VAR = 3,
 };
 
 struct ConditionFormat1
@@ -2940,29 +2945,42 @@ struct ConditionFormat1
 
     hb_tag_t axis_tag = c->axes_index_tag_map->get (axisIndex);
 
-    //axis not pinned, keep the condition
-    if (!c->axes_location->has (axis_tag))
+    Triple axis_range (-1.f, 0.f, 1.f);
+    if (c->axes_location->has (axis_tag))
+      axis_range = c->axes_location->get (axis_tag);
+
+    int axis_min_val = axis_range.minimum;
+    int axis_default_val = axis_range.middle;
+    int axis_max_val = axis_range.maximum;
+
+    int16_t filter_min_val = filterRangeMinValue.to_int ();
+    int16_t filter_max_val = filterRangeMaxValue.to_int ();
+
+    if (axis_default_val < filter_min_val ||
+        axis_default_val > filter_max_val)
+      c->apply = false;
+
+    //condition not met, drop the entire record
+    if (axis_min_val > filter_max_val || axis_max_val < filter_min_val ||
+        filter_min_val > filter_max_val)
+      return DROP_RECORD_WITH_VAR;
+
+    //condition met and axis pinned, drop the condition
+    if (c->axes_location->has (axis_tag) &&
+        c->axes_location->get (axis_tag).is_point ())
+      return DROP_COND_WITH_VAR;
+
+    if (filter_max_val != axis_max_val || filter_min_val != axis_min_val)
     {
       // add axisIndex->value into the hashmap so we can check if the record is
       // unique with variations
-      int16_t min_val = filterRangeMinValue.to_int ();
-      int16_t max_val = filterRangeMaxValue.to_int ();
-      hb_codepoint_t val = (max_val << 16) + min_val;
+      hb_codepoint_t val = (filter_max_val << 16) + filter_min_val;
 
       condition_map->set (axisIndex, val);
       return KEEP_COND_WITH_VAR;
     }
 
-    //axis pinned, check if condition is met
-    //TODO: add check for axis Ranges
-    int v = c->axes_location->get (axis_tag);
-
-    //condition not met, drop the entire record
-    if (v < filterRangeMinValue.to_int () || v > filterRangeMaxValue.to_int ())
-      return DROP_RECORD_WITH_VAR;
-
-    //axis pinned and condition met, drop the condition
-    return DROP_COND_WITH_VAR;
+    return KEEP_RECORD_WITH_VAR;
   }
 
   bool evaluate (const int *coords, unsigned int coord_len) const
@@ -3001,7 +3019,7 @@ struct Condition
   {
     switch (u.format) {
     case 1: return u.format1.keep_with_variations (c, condition_map);
-    default:return KEEP_COND_WITH_VAR;
+    default: c->apply = false; return KEEP_COND_WITH_VAR;
     }
   }
 
@@ -3046,45 +3064,50 @@ struct ConditionSet
     return true;
   }
 
-  Cond_with_Var_flag_t keep_with_variations (hb_collect_feature_substitutes_with_var_context_t *c) const
+  void keep_with_variations (hb_collect_feature_substitutes_with_var_context_t *c) const
   {
     hb_map_t *condition_map = hb_map_create ();
-    if (unlikely (!condition_map)) return MEM_ERR_WITH_VAR;
+    if (unlikely (!condition_map)) return;
     hb::shared_ptr<hb_map_t> p {condition_map};
 
     hb_set_t *cond_set = hb_set_create ();
-    if (unlikely (!cond_set)) return MEM_ERR_WITH_VAR;
+    if (unlikely (!cond_set)) return;
     hb::shared_ptr<hb_set_t> s {cond_set};
 
+    c->apply = true;
+    bool should_keep = false;
     unsigned num_kept_cond = 0, cond_idx = 0;
     for (const auto& offset : conditions)
     {
       Cond_with_Var_flag_t ret = (this+offset).keep_with_variations (c, condition_map);
-      // one condition is not met, drop the entire record
+      // condition is not met or condition out of range, drop the entire record
       if (ret == DROP_RECORD_WITH_VAR)
-        return DROP_RECORD_WITH_VAR;
+        return;
 
-      // axis not pinned, keep this condition
       if (ret == KEEP_COND_WITH_VAR)
       {
+        should_keep = true;
         cond_set->add (cond_idx);
         num_kept_cond++;
       }
+
+      if (ret == KEEP_RECORD_WITH_VAR)
+        should_keep = true;
+
       cond_idx++;
     }
 
-    // all conditions met
-    if (num_kept_cond == 0) return DROP_COND_WITH_VAR;
+    if (!should_keep) return;
 
     //check if condition_set is unique with variations
     if (c->conditionset_map->has (p))
       //duplicate found, drop the entire record
-      return DROP_RECORD_WITH_VAR;
+      return;
 
     c->conditionset_map->set (p, 1);
     c->record_cond_idx_map->set (c->cur_record_idx, s);
-
-    return KEEP_COND_WITH_VAR;
+    if (should_keep && num_kept_cond == 0)
+      c->universal = true;
   }
 
   bool subset (hb_subset_context_t *c,
@@ -3289,12 +3312,11 @@ struct FeatureVariationRecord
   void collect_feature_substitutes_with_variations (hb_collect_feature_substitutes_with_var_context_t *c,
                                                     const void *base) const
   {
-    // ret == 1, all conditions met
-    if ((base+conditions).keep_with_variations (c) == DROP_COND_WITH_VAR &&
-        c->apply)
+    (base+conditions).keep_with_variations (c);
+    if (c->apply && !c->variation_applied)
     {
       (base+substitutions).collect_feature_substitutes_with_variations (c);
-      c->apply = false; // set variations only once
+      c->variation_applied = true; // set variations only once
     }
   }
 
@@ -3361,7 +3383,12 @@ struct FeatureVariations
     {
       c->cur_record_idx = i;
       varRecords[i].collect_feature_substitutes_with_variations (c, this);
+      if (c->universal)
+        break;
     }
+    if (c->variation_applied && !c->universal &&
+        !c->record_cond_idx_map->is_empty ())
+      c->insert_catch_all_feature_variation_record = true;
   }
 
   FeatureVariations* copy (hb_serialize_context_t *c) const

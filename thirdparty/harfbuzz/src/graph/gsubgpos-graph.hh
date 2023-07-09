@@ -166,7 +166,7 @@ struct Lookup : public OT::Lookup
     }
 
     if (all_new_subtables) {
-      add_sub_tables (c, this_index, type, all_new_subtables);
+      return add_sub_tables (c, this_index, type, all_new_subtables);
     }
 
     return true;
@@ -184,7 +184,7 @@ struct Lookup : public OT::Lookup
     return sub_table->split_subtables (c, parent_idx, objidx);
   }
 
-  void add_sub_tables (gsubgpos_graph_context_t& c,
+  bool add_sub_tables (gsubgpos_graph_context_t& c,
                        unsigned this_index,
                        unsigned type,
                        hb_vector_t<hb_pair_t<unsigned, hb_vector_t<unsigned>>>& subtable_ids)
@@ -200,7 +200,12 @@ struct Lookup : public OT::Lookup
     size_t new_size = v.table_size ()
                       + new_subtable_count * OT::Offset16::static_size;
     char* buffer = (char*) hb_calloc (1, new_size);
-    c.add_buffer (buffer);
+    if (!buffer) return false;
+    if (!c.add_buffer (buffer))
+    {
+      hb_free (buffer);
+     return false;
+    }
     hb_memcpy (buffer, v.obj.head, v.table_size());
 
     v.obj.head = buffer;
@@ -239,6 +244,7 @@ struct Lookup : public OT::Lookup
     // The head location of the lookup has changed, invalidating the lookups map entry
     // in the context. Update the map.
     c.lookups.set (this_index, new_lookup);
+    return true;
   }
 
   void fix_existing_subtable_links (gsubgpos_graph_context_t& c,

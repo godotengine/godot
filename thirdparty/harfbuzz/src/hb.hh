@@ -315,6 +315,14 @@ extern "C" void  hb_free_impl(void *ptr);
 #define __restrict
 #endif
 
+#ifndef HB_ALWAYS_INLINE
+#if defined(_MSC_VER)
+#define HB_ALWAYS_INLINE __forceinline
+#else
+#define HB_ALWAYS_INLINE __attribute__((always_inline)) inline
+#endif
+#endif
+
 /*
  * Borrowed from https://bugzilla.mozilla.org/show_bug.cgi?id=1215411
  * HB_FALLTHROUGH is an annotation to suppress compiler warnings about switch

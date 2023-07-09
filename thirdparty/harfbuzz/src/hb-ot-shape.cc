@@ -313,6 +313,8 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t *planner,
 {
   hb_ot_map_builder_t *map = &planner->map;
 
+  map->is_simple = true;
+
   map->enable_feature (HB_TAG('r','v','r','n'));
   map->add_gsub_pause (nullptr);
 
@@ -354,7 +356,10 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t *planner,
   map->enable_feature (HB_TAG ('H','A','R','F')); /* Considered discretionary. */
 
   if (planner->shaper->collect_features)
+  {
+    map->is_simple = false;
     planner->shaper->collect_features (planner);
+  }
 
   map->enable_feature (HB_TAG ('B','u','z','z')); /* Considered required. */
   map->enable_feature (HB_TAG ('B','U','Z','Z')); /* Considered discretionary. */
@@ -378,6 +383,8 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t *planner,
     map->enable_feature (HB_TAG ('v','e','r','t'), F_GLOBAL_SEARCH);
   }
 
+  if (num_user_features)
+    map->is_simple = false;
   for (unsigned int i = 0; i < num_user_features; i++)
   {
     const hb_feature_t *feature = &user_features[i];
