@@ -301,6 +301,46 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				}
 			}
 
+			// Search all faces of start polygon as well.
+			bool closest_point_on_start_poly = false;
+			for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
+				Face3 f(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
+				Vector3 spoint = f.get_closest_point_to(p_destination);
+				real_t dpoint = spoint.distance_to(p_destination);
+				if (dpoint < end_d) {
+					end_point = spoint;
+					end_d = dpoint;
+					closest_point_on_start_poly = true;
+				}
+			}
+
+			if (closest_point_on_start_poly) {
+				// No point to run PostProcessing when start and end convex polygon is the same.
+				if (r_path_types) {
+					r_path_types->resize(2);
+					r_path_types->write[0] = begin_poly->owner->get_type();
+					r_path_types->write[1] = begin_poly->owner->get_type();
+				}
+
+				if (r_path_rids) {
+					r_path_rids->resize(2);
+					(*r_path_rids)[0] = begin_poly->owner->get_self();
+					(*r_path_rids)[1] = begin_poly->owner->get_self();
+				}
+
+				if (r_path_owners) {
+					r_path_owners->resize(2);
+					r_path_owners->write[0] = begin_poly->owner->get_owner_id();
+					r_path_owners->write[1] = begin_poly->owner->get_owner_id();
+				}
+
+				Vector<Vector3> path;
+				path.resize(2);
+				path.write[0] = begin_point;
+				path.write[1] = end_point;
+				return path;
+			}
+
 			// Reset open and navigation_polys
 			gd::NavigationPoly np = navigation_polys[0];
 			navigation_polys.clear();
@@ -346,9 +386,44 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		}
 	}
 
-	// If we did not find a route, return an empty path.
+	// We did not find a route but we have both a start polygon and an end polygon at this point.
+	// Usually this happens because there was not a single external or internal connected edge, e.g. our start polygon is an isolated, single convex polygon.
 	if (!found_route) {
-		return Vector<Vector3>();
+		end_d = FLT_MAX;
+		// Search all faces of the start polygon for the closest point to our target position.
+		for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
+			Face3 f(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
+			Vector3 spoint = f.get_closest_point_to(p_destination);
+			real_t dpoint = spoint.distance_to(p_destination);
+			if (dpoint < end_d) {
+				end_point = spoint;
+				end_d = dpoint;
+			}
+		}
+
+		if (r_path_types) {
+			r_path_types->resize(2);
+			r_path_types->write[0] = begin_poly->owner->get_type();
+			r_path_types->write[1] = begin_poly->owner->get_type();
+		}
+
+		if (r_path_rids) {
+			r_path_rids->resize(2);
+			(*r_path_rids)[0] = begin_poly->owner->get_self();
+			(*r_path_rids)[1] = begin_poly->owner->get_self();
+		}
+
+		if (r_path_owners) {
+			r_path_owners->resize(2);
+			r_path_owners->write[0] = begin_poly->owner->get_owner_id();
+			r_path_owners->write[1] = begin_poly->owner->get_owner_id();
+		}
+
+		Vector<Vector3> path;
+		path.resize(2);
+		path.write[0] = begin_point;
+		path.write[1] = end_point;
+		return path;
 	}
 
 	Vector<Vector3> path;
