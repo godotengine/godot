@@ -154,6 +154,18 @@ void SubViewportContainer::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_EXIT: {
 			_notify_viewports(NOTIFICATION_VP_MOUSE_EXIT);
 		} break;
+
+		case NOTIFICATION_FOCUS_ENTER: {
+			// If focused, send InputEvent to the SubViewport before the Gui-Input stage.
+			set_process_input(true);
+			set_process_unhandled_input(false);
+		} break;
+
+		case NOTIFICATION_FOCUS_EXIT: {
+			// A different Control has focus and should receive Gui-Input before the InputEvent is sent to the SubViewport.
+			set_process_input(false);
+			set_process_unhandled_input(true);
+		} break;
 	}
 }
 
@@ -168,6 +180,14 @@ void SubViewportContainer::_notify_viewports(int p_notification) {
 }
 
 void SubViewportContainer::input(const Ref<InputEvent> &p_event) {
+	_propagate_nonpositional_event(p_event);
+}
+
+void SubViewportContainer::unhandled_input(const Ref<InputEvent> &p_event) {
+	_propagate_nonpositional_event(p_event);
+}
+
+void SubViewportContainer::_propagate_nonpositional_event(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (Engine::get_singleton()->is_editor_hint()) {
@@ -262,5 +282,6 @@ void SubViewportContainer::_bind_methods() {
 }
 
 SubViewportContainer::SubViewportContainer() {
-	set_process_input(true);
+	set_process_unhandled_input(true);
+	set_focus_mode(FOCUS_CLICK);
 }
