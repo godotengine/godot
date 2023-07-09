@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+"@export_enum": The array type must be "Array", "Array[int]", "Array[String]" or "Array[StringName]" but type "Array[Color]" was given instead.

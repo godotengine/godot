@@ -2676,7 +2676,7 @@
 		<constant name="PROPERTY_HINT_FLAGS" value="6" enum="PropertyHint">
 			Hints that an [int] property is a bitmask with named bit flags.
 			The hint string is a comma separated list of names such as [code]"Bit0,Bit1,Bit2,Bit3"[/code]. Whitespaces are [b]not[/b] removed from either end of a name. The first name in the list has value 1, the next 2, then 4, 8, 16 and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"A:4,B:8,C:16"[/code]. You can also combine several flags ([code]"A:4,B:8,AB:12,C:16"[/code]).
-			[b]Note:[/b] A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code].
+			[b]Note:[/b] A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code]. This means you can use up to 32 different bit flags.
 			[b]Note:[/b] Unlike [constant PROPERTY_HINT_ENUM], the previous explicit value is not taken into account. For the hint [code]"A:16,B,C"[/code], A is 16, B is 2, C is 4.
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="7" enum="PropertyHint">
@@ -2772,6 +2772,7 @@
 			hint_string = "%d:%d/%d:Texture2D" % [TYPE_ARRAY, TYPE_OBJECT, PROPERTY_HINT_RESOURCE_TYPE] # Two-dimensional array of textures.
 			[/gdscript]
 			[csharp]
+			hintString = $"{Variant.Type.Int:D}:"; // Array of integers.
 			hintString = $"{Variant.Type.Int:D}/{PropertyHint.Range:D}:1,10,1"; // Array of integers (in range from 1 to 10).
 			hintString = $"{Variant.Type.Int:D}/{PropertyHint.Enum:D}:Zero,One,Two"; // Array of integers (an enum).
 			hintString = $"{Variant.Type.Int:D}/{PropertyHint.Enum:D}:Zero,One,Three:3,Six:6"; // Array of integers (an enum).

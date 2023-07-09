@@ -4058,21 +4058,82 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 		}
 	} else if (p_annotation->name == SNAME("@export_enum")) {
 		Variant::Type enum_type = Variant::INT;
+		bool has_error = false;
 
-		if (export_type.kind == DataType::BUILTIN && export_type.builtin_type == Variant::STRING) {
-			enum_type = Variant::STRING;
+		if (export_type.kind == DataType::BUILTIN) {
+			switch (export_type.builtin_type) {
+				case Variant::INT:
+				case Variant::STRING:
+				case Variant::STRING_NAME:
+				case Variant::ARRAY:
+					enum_type = export_type.builtin_type;
+					break;
+				default:
+					has_error = true;
+					break;
+			}
 		} else if (export_type.is_variant() && variable->initializer != nullptr) {
 			DataType initializer_type = variable->initializer->get_datatype();
-			if (initializer_type.kind == DataType::BUILTIN && initializer_type.builtin_type == Variant::STRING) {
-				enum_type = Variant::STRING;
+			if (initializer_type.kind == DataType::BUILTIN) {
+				switch (initializer_type.builtin_type) {
+					case Variant::INT:
+					case Variant::STRING:
+					case Variant::STRING_NAME:
+					case Variant::ARRAY:
+						enum_type = initializer_type.builtin_type;
+						break;
+					default:
+						break; // No error since it's variant.
+				}
 			}
+		} else if (!export_type.is_variant()) {
+			has_error = true;
+		}
+
+		if (has_error) {
+			push_error(vformat(R"("@export_enum" annotation requires a variable of type "int", "String", "StringName" or "Array" but type "%s" was given instead.)", export_type.to_string()), variable);
+			return false;
 		}
 
 		variable->export_info.type = enum_type;
 
-		if (!export_type.is_variant() && (export_type.kind != DataType::BUILTIN || export_type.builtin_type != enum_type)) {
-			push_error(vformat(R"("@export_enum" annotation requires a variable of type "int" or "String" but type "%s" was given instead.)", export_type.to_string()), variable);
-			return false;
+		if (enum_type == Variant::ARRAY) {
+			Variant::Type enum_element_type = Variant::INT;
+
+			if (export_type.has_container_element_type()) {
+				DataType element_type = export_type.get_container_element_type();
+				switch (element_type.kind) {
+					case DataType::VARIANT:
+						break; // `Array[Variant]` is `Array`.
+					case DataType::BUILTIN:
+						switch (element_type.builtin_type) {
+							case Variant::INT:
+							case Variant::STRING:
+							case Variant::STRING_NAME:
+								enum_element_type = element_type.builtin_type;
+								break;
+							default:
+								has_error = true;
+								break;
+						}
+						break;
+					default:
+						has_error = true;
+						break;
+				}
+			}
+
+			if (has_error) {
+				push_error(vformat(R"("@export_enum": The array type must be "Array", "Array[int]", "Array[String]" or "Array[StringName]" but type "%s" was given instead.)", export_type.to_string()), variable);
+				return false;
+			}
+
+			String hint_prefix = itos(enum_element_type);
+			if (variable->export_info.hint) {
+				hint_prefix += "/" + itos(variable->export_info.hint);
+			}
+			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
+			variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
 		}
 	} else {
 		// Validate variable type with export.

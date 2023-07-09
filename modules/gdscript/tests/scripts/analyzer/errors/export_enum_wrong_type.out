@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+"@export_enum" annotation requires a variable of type "int", "String", "StringName" or "Array" but type "Color" was given instead.

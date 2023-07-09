@@ -1,7 +1,20 @@
 GDTEST_OK
-untyped 2 Red,Green,Blue
+with_values 2 Red:10,Green:20,Blue:30
+weak_variant 2 Red,Green,Blue
 weak_int 2 Red,Green,Blue
 weak_string 4 Red,Green,Blue
+weak_string_name 21 Red,Green,Blue
+weak_array 28 2/2:Red,Green,Blue
+weak_array_variant 28 2/2:Red,Green,Blue
+weak_array_int 28 2/2:Red,Green,Blue
+weak_array_string 28 4/2:Red,Green,Blue
+weak_array_string_name 28 21/2:Red,Green,Blue
+hard_variant 2 Red,Green,Blue
 hard_int 2 Red,Green,Blue
 hard_string 4 Red,Green,Blue
-with_values 2 Red:10,Green:20,Blue:30
+hard_string_name 21 Red,Green,Blue
+hard_array 28 2/2:Red,Green,Blue
+hard_array_variant 28 2/2:Red,Green,Blue
+hard_array_int 28 2/2:Red,Green,Blue
+hard_array_string 28 4/2:Red,Green,Blue
+hard_array_string_name 28 21/2:Red,Green,Blue

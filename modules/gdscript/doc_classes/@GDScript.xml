@@ -329,12 +329,17 @@
 			<return type="void" />
 			<param index="0" name="names" type="String" />
 			<description>
-				Export an [int] or [String] property as an enumerated list of options. If the property is an [int], then the index of the value is stored, in the same order the values are provided. You can add explicit values using a colon. If the property is a [String], then the value is stored.
-				See also [constant PROPERTY_HINT_ENUM].
+				Export an [int], [String], [StringName] or [Array] property as an enumerated list of options (or an array of options). If the property is an [int], then the value is stored. By default it's annotation argument index, starting from 0. You can specify explicit values using a colon. If the property is a [String] or [StringName], then the key is stored. If the property is an [Array] then the array of keys or values is stored (the array type must be [code]Array[/code], [code]Array[int][/code], [code]Array[String] or [code]Array[StringName][/code]).
+				See also [constant PROPERTY_HINT_ENUM] and [constant PROPERTY_HINT_TYPE_STRING].
 				[codeblock]
 				@export_enum("Warrior", "Magician", "Thief") var character_class: int
 				@export_enum("Slow:30", "Average:60", "Very Fast:200") var character_speed: int
 				@export_enum("Rebecca", "Mary", "Leah") var character_name: String
+				@export_enum("red", "blue") var character_team: StringName
+
+				@export_enum("Sword", "Spear", "Mace") var character_items: Array[int]
+				@export_enum("double_jump", "climb", "dash") var character_skills: Array[String]
+				@export_enum("fast", "nimble", "strong") var character_traits: Array[StringName]
 				[/codeblock]
 				If you want to set an initial value, you must specify it explicitly:
 				[codeblock]
@@ -344,7 +349,11 @@
 				[codeblock]
 				enum CharacterName {REBECCA, MARY, LEAH}
 				@export var character_name: CharacterName
+
+				enum CharacterItem {SWORD, SPEAR, MACE}
+				@export var character_items: Array[CharacterItem]
 				[/codeblock]
+				[b]Note:[/b] If the variable is untyped and uninitialized, the value will be stored as an integer. If the variable's type or initializer is an untyped array, then the value will be stored as an array of integers, regardless of the contents of the initializer array.
 			</description>
 		</annotation>
 		<annotation name="@export_exp_easing" qualifiers="vararg">
@@ -391,7 +400,7 @@
 				@export_flags("Self:4", "Allies:8", "Self and Allies:12", "Foes:16")
 				var spell_targets = 0
 				[/codeblock]
-				[b]Note:[/b] A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code].
+				[b]Note:[/b] A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code]. This means you can use up to 32 different bit flags.
 				[b]Note:[/b] Unlike [annotation @export_enum], the previous explicit value is not taken into account. In the following example, A is 16, B is 2, C is 4.
 				[codeblock]
 				@export_flags("A:16", "B", "C") var x
