@@ -1139,6 +1139,7 @@ GDScriptParser::ConstantNode *GDScriptParser::parse_constant(bool p_is_static) {
 	ConstantNode *constant = alloc_node<ConstantNode>();
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected constant name after "const".)")) {
+		complete_extents(constant);
 		return nullptr;
 	}
 
@@ -2147,6 +2148,7 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 			ExpressionNode *expression = parse_expression(false);
 			if (expression == nullptr) {
 				push_error(R"(Expected expression for match pattern.)");
+				complete_extents(pattern);
 				return nullptr;
 			} else {
 				if (expression->type == GDScriptParser::Node::LITERAL) {
