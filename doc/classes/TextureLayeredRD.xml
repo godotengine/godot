@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextureLayeredRD" inherits="TextureLayered" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base class for layered texture RD types.
+	</brief_description>
+	<description>
+		Base class for [Texture2DArrayRD], [TextureCubemapRD] and [TextureCubemapArrayRD]. Cannot be used directly, but contains all the functions necessary for accessing the derived resource types.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="texture_rd_rid" type="RID" setter="set_texture_rd_rid" getter="get_texture_rd_rid" default="RID()">
+			The RID of the texture object created on the [RenderingDevice].
+		</member>
+	</members>
+</class>

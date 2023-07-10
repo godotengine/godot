@@ -142,7 +142,7 @@ int ImageTexture::get_height() const {
 
 RID ImageTexture::get_rid() const {
 	if (texture.is_null()) {
-		//we are in trouble, create something temporary
+		// We are in trouble, create something temporary.
 		texture = RenderingServer::get_singleton()->texture_2d_placeholder_create();
 	}
 	return texture;

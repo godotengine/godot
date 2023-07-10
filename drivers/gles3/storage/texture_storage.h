@@ -545,11 +545,12 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
+	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY) override;
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override;
 
 	void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer = 0);
-	Image::Format texture_get_format(RID p_texture) const;
+	virtual Image::Format texture_get_format(RID p_texture) const override;
 	uint32_t texture_get_texid(RID p_texture) const;
 	uint32_t texture_get_width(RID p_texture) const;
 	uint32_t texture_get_height(RID p_texture) const;
