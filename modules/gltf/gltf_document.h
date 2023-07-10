@@ -272,7 +272,7 @@ private:
 	PackedByteArray _serialize_glb_buffer(Ref<GLTFState> p_state, Error *r_err);
 	Dictionary _serialize_texture_transform_uv1(Ref<BaseMaterial3D> p_material);
 	Dictionary _serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_material);
-	Error _serialize_version(Ref<GLTFState> p_state);
+	Error _serialize_asset_header(Ref<GLTFState> p_state);
 	Error _serialize_file(Ref<GLTFState> p_state, const String p_path);
 	Error _serialize_gltf_extensions(Ref<GLTFState> p_state) const;
 
@@ -304,6 +304,7 @@ public:
 
 public:
 	Error _parse_gltf_state(Ref<GLTFState> p_state, const String &p_search_path);
+	Error _parse_asset_header(Ref<GLTFState> p_state);
 	Error _parse_gltf_extensions(Ref<GLTFState> p_state);
 	void _process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene_root);
 	void _generate_scene_node(Ref<GLTFState> p_state, Node *p_scene_parent,
