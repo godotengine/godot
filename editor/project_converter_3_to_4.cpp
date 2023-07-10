@@ -2241,9 +2241,10 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 
 	// rotating = true  ->   ignore_rotation = false # reversed "rotating" for Camera2D
 	if (contains_function_call(line, "rotating")) {
-		int start = line.find("rotating");
+		String function_name = "rotating";
+		int start = line.find(function_name);
 		bool foundNextEqual = false;
-		String line_to_check = line.substr(start + String("rotating").length());
+		String line_to_check = line.substr(start + function_name.length());
 		String assigned_value;
 		for (int current_index = 0; line_to_check.length() > current_index; current_index++) {
 			char32_t chr = line_to_check.get(current_index);
@@ -2251,14 +2252,14 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 				continue;
 			} else if (chr == '=') {
 				foundNextEqual = true;
-				assigned_value = line.right(current_index).strip_edges();
+				assigned_value = line.substr(start + function_name.length() + current_index + 1).strip_edges();
 				assigned_value = assigned_value == "true" ? "false" : "true";
 			} else {
 				break;
 			}
 		}
 		if (foundNextEqual) {
-			line = line.substr(0, start) + "ignore_rotation =" + assigned_value + " # reversed \"rotating\" for Camera2D";
+			line = line.substr(0, start) + "ignore_rotation = " + assigned_value + " # reversed \"rotating\" for Camera2D";
 		}
 	}
 
