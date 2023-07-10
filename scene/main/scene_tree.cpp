@@ -1566,17 +1566,17 @@ void SceneTree::set_saveload(Ref<SaveloadAPI> p_saveload, const NodePath &p_root
 	if (p_root_path.is_empty()) {
 		ERR_FAIL_COND(!p_saveload.is_valid());
 		if (saveload.is_valid()) {
-			saveload->object_configuration_remove(nullptr, NodePath("/" + root->get_name()));
+			saveload->object_configuration_remove(nullptr, NodePath("/" + root->get_name())); //set root path
 		}
 		saveload = p_saveload;
-		saveload->object_configuration_add(nullptr, NodePath("/" + root->get_name()));
+		saveload->object_configuration_add(nullptr, NodePath("/" + root->get_name())); //set root path
 	} else {
 		if (custom_saveloads.has(p_root_path)) {
-			custom_saveloads[p_root_path]->object_configuration_remove(nullptr, p_root_path);
+			custom_saveloads[p_root_path]->object_configuration_remove(nullptr, p_root_path); //set root path
 		}
 		if (p_saveload.is_valid()) {
 			custom_saveloads[p_root_path] = p_saveload;
-			p_saveload->object_configuration_add(nullptr, p_root_path);
+			p_saveload->object_configuration_add(nullptr, p_root_path); //set root path
 		}
 	}
 }

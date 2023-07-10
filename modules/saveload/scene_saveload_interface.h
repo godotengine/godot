@@ -43,10 +43,10 @@ class SceneSaveloadInterface : public RefCounted {
 
 public:
 	struct SaveloadState {
-		HashMap<const NodePath, SaveloadSpawner::SpawnState> spawn_states;
+		HashMap<const NodePath, SaveloadSpawner::SpawnerState> spawner_states;
 		HashMap<const NodePath, SaveloadSynchronizer::SyncState> sync_states;
 
-		Dictionary to_dict();
+		Dictionary to_dict() const;
 
 		SaveloadState() {}
 		SaveloadState(const Dictionary &saveload_dict);
@@ -80,8 +80,6 @@ private:
 public:
 	static void make_default();
 
-	void on_reset();
-
 	void configure_spawn(Node *p_node, const SaveloadSpawner &p_spawner);
 	void configure_sync(Node *p_node, const SaveloadSynchronizer &p_syncher);
 
@@ -90,10 +88,11 @@ public:
 
 	TypedArray<SaveloadSpawner> get_spawn_nodes() const;
 	TypedArray<SaveloadSynchronizer> get_sync_nodes() const;
-	Dictionary get_sync_state() const;
+	Dictionary get_spawn_dict() const;
+	Dictionary get_sync_dict() const;
 
 	SaveloadState get_saveload_state();
-	void load_saveload_state(const SaveloadState p_saveload_state);
+	void load_saveload_state(const SaveloadState &p_saveload_state);
 
 	PackedByteArray encode(Object *p_obj, const StringName section = "");
 	Error decode(PackedByteArray p_bytes, Object *p_obj, const StringName section = "");

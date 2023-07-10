@@ -53,10 +53,7 @@ _FORCE_INLINE_ void SceneSaveload::_profile_bandwidth(const String &p_what, int 
 #endif
 
 void SceneSaveload::clear() {
-	packet_cache.clear();
-	saveloader->on_reset();
-	cache->clear();
-//	relay_buffer->clear();
+
 }
 
 void SceneSaveload::set_root_path(const NodePath &p_path) {
@@ -68,261 +65,7 @@ NodePath SceneSaveload::get_root_path() const {
 	return root_path;
 }
 
-//#ifdef DEBUG_ENABLED
-//_FORCE_INLINE_ Error SceneSaveload::_send(const uint8_t *p_packet, int p_packet_len) {
-//	_profile_bandwidth("out", p_packet_len);
-//	return multiplayer_peer->put_packet(p_packet, p_packet_len);
-//}
-//#endif
-
-//Error SceneSaveload::send_command(int p_to, const uint8_t *p_packet, int p_packet_len) {
-//	if (server_relay && get_unique_id() != 1 && p_to != 1 && multiplayer_peer->is_server_relay_supported()) {
-//		// Send relay packet.
-//		relay_buffer->seek(0);
-//		relay_buffer->put_u8(NETWORK_COMMAND_SYS);
-//		relay_buffer->put_u8(SYS_COMMAND_RELAY);
-//		relay_buffer->put_32(p_to); // Set the destination.
-//		relay_buffer->put_data(p_packet, p_packet_len);
-//		multiplayer_peer->set_target_peer(1);
-//		const Vector<uint8_t> data = relay_buffer->get_data_array();
-//		return _send(data.ptr(), relay_buffer->get_position());
-//	}
-//	if (p_to > 0) {
-//		ERR_FAIL_COND_V(!connected_peers.has(p_to), ERR_BUG);
-//		multiplayer_peer->set_target_peer(p_to);
-//		return _send(p_packet, p_packet_len);
-//	} else {
-//		for (const int &pid : connected_peers) {
-//			if (p_to && pid == -p_to) {
-//				continue;
-//			}
-//			multiplayer_peer->set_target_peer(pid);
-//			_send(p_packet, p_packet_len);
-//		}
-//		return OK;
-//	}
-//}
-
-//void SceneSaveload::_process_sys(int p_from, const uint8_t *p_packet, int p_packet_len, MultiplayerPeer::TransferMode p_mode, int p_channel) {
-//	ERR_FAIL_COND_MSG(p_packet_len < SYS_CMD_SIZE, "Invalid packet received. Size too small.");
-//	uint8_t sys_cmd_type = p_packet[1];
-//	int32_t peer = int32_t(decode_uint32(&p_packet[2]));
-//	switch (sys_cmd_type) {
-//		case SYS_COMMAND_ADD_PEER: {
-//			ERR_FAIL_COND(!server_relay || !multiplayer_peer->is_server_relay_supported() || get_unique_id() == 1 || p_from != 1);
-//			_admit_peer(peer); // Relayed peers are automatically accepted.
-//		} break;
-//		case SYS_COMMAND_DEL_PEER: {
-//			ERR_FAIL_COND(!server_relay || !multiplayer_peer->is_server_relay_supported() || get_unique_id() == 1 || p_from != 1);
-//			_del_peer(peer);
-//		} break;
-//		case SYS_COMMAND_RELAY: {
-//			ERR_FAIL_COND(!server_relay || !multiplayer_peer->is_server_relay_supported());
-//			ERR_FAIL_COND(p_packet_len < SYS_CMD_SIZE + 1);
-//			const uint8_t *packet = p_packet + SYS_CMD_SIZE;
-//			int len = p_packet_len - SYS_CMD_SIZE;
-//			bool should_process = false;
-//			if (get_unique_id() == 1) { // I am the server.
-//				// Direct messages to server should not go through relay.
-//				ERR_FAIL_COND(peer > 0 && !connected_peers.has(peer));
-//				// Send relay packet.
-//				relay_buffer->seek(0);
-//				relay_buffer->put_u8(NETWORK_COMMAND_SYS);
-//				relay_buffer->put_u8(SYS_COMMAND_RELAY);
-//				relay_buffer->put_32(p_from); // Set the source.
-//				relay_buffer->put_data(packet, len);
-//				const Vector<uint8_t> data = relay_buffer->get_data_array();
-//				multiplayer_peer->set_transfer_mode(p_mode);
-//				multiplayer_peer->set_transfer_channel(p_channel);
-//				if (peer > 0) {
-//					multiplayer_peer->set_target_peer(peer);
-//					_send(data.ptr(), relay_buffer->get_position());
-//				} else {
-//					for (const int &P : connected_peers) {
-//						// Not to sender, nor excluded.
-//						if (P == p_from || (peer < 0 && P != -peer)) {
-//							continue;
-//						}
-//						multiplayer_peer->set_target_peer(P);
-//						_send(data.ptr(), relay_buffer->get_position());
-//					}
-//				}
-//				if (peer == 0 || peer == -1) {
-//					should_process = true;
-//					peer = p_from; // Process as the source.
-//				}
-//			} else {
-//				ERR_FAIL_COND(p_from != 1); // Bug.
-//				should_process = true;
-//			}
-//			if (should_process) {
-//				remote_sender_id = peer;
-//				_process_packet(peer, packet, len);
-//				remote_sender_id = 0;
-//			}
-//		} break;
-//		default: {
-//			ERR_FAIL();
-//		}
-//	}
-//}
-
-//void SceneSaveload::_add_peer(int p_id) {
-//	if (auth_callback.is_valid()) {
-//		pending_peers[p_id] = PendingPeer();
-//		pending_peers[p_id].time = OS::get_singleton()->get_ticks_msec();
-//		emit_signal(SNAME("peer_authenticating"), p_id);
-//		return;
-//	} else {
-//		_admit_peer(p_id);
-//	}
-//}
-
-//void SceneSaveload::_admit_peer(int p_id) {
-//	if (server_relay && get_unique_id() == 1 && multiplayer_peer->is_server_relay_supported()) {
-//		// Notify others of connection, and send connected peers to newly connected one.
-//		uint8_t buf[SYS_CMD_SIZE];
-//		buf[0] = NETWORK_COMMAND_SYS;
-//		buf[1] = SYS_COMMAND_ADD_PEER;
-//		multiplayer_peer->set_transfer_channel(0);
-//		multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
-//		for (const int &P : connected_peers) {
-//			// Send new peer to already connected.
-//			encode_uint32(p_id, &buf[2]);
-//			multiplayer_peer->set_target_peer(P);
-//			_send(buf, sizeof(buf));
-//			// Send already connected to new peer.
-//			encode_uint32(P, &buf[2]);
-//			multiplayer_peer->set_target_peer(p_id);
-//			_send(buf, sizeof(buf));
-//		}
-//	}
-//
-//	connected_peers.insert(p_id);
-//	cache->on_peer_change(p_id, true);
-//	replicator->on_peer_change(p_id, true);
-//	if (p_id == 1) {
-//		emit_signal(SNAME("connected_to_server"));
-//	}
-//	emit_signal(SNAME("peer_connected"), p_id);
-//}
-
-//void SceneSaveload::_del_peer(int p_id) {
-//	if (pending_peers.has(p_id)) {
-//		pending_peers.erase(p_id);
-//		emit_signal(SNAME("peer_authentication_failed"), p_id);
-//		return;
-//	} else if (!connected_peers.has(p_id)) {
-//		return;
-//	}
-//
-//	if (server_relay && get_unique_id() == 1 && multiplayer_peer->is_server_relay_supported()) {
-//		// Notify others of disconnection.
-//		uint8_t buf[SYS_CMD_SIZE];
-//		buf[0] = NETWORK_COMMAND_SYS;
-//		buf[1] = SYS_COMMAND_DEL_PEER;
-//		multiplayer_peer->set_transfer_channel(0);
-//		multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
-//		encode_uint32(p_id, &buf[2]);
-//		for (const int &P : connected_peers) {
-//			if (P == p_id) {
-//				continue;
-//			}
-//			multiplayer_peer->set_target_peer(P);
-//			_send(buf, sizeof(buf));
-//		}
-//	}
-//
-//	replicator->on_peer_change(p_id, false);
-//	cache->on_peer_change(p_id, false);
-//	connected_peers.erase(p_id);
-//	emit_signal(SNAME("peer_disconnected"), p_id);
-//}
-
-//void SceneSaveload::disconnect_peer(int p_id) {
-//	ERR_FAIL_COND(multiplayer_peer.is_null() || multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED);
-//	if (pending_peers.has(p_id)) {
-//		pending_peers.erase(p_id);
-//	} else if (connected_peers.has(p_id)) {
-//		connected_peers.has(p_id);
-//	}
-//	multiplayer_peer->disconnect_peer(p_id);
-//}
-
-//Error SceneSaveload::send_bytes(Vector<uint8_t> p_data, int p_to, MultiplayerPeer::TransferMode p_mode, int p_channel) {
-//	ERR_FAIL_COND_V_MSG(p_data.size() < 1, ERR_INVALID_DATA, "Trying to send an empty raw packet.");
-//	ERR_FAIL_COND_V_MSG(!multiplayer_peer.is_valid(), ERR_UNCONFIGURED, "Trying to send a raw packet while no multiplayer peer is active.");
-//	ERR_FAIL_COND_V_MSG(multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED, "Trying to send a raw packet via a multiplayer peer which is not connected.");
-//
-//	if (packet_cache.size() < p_data.size() + 1) {
-//		packet_cache.resize(p_data.size() + 1);
-//	}
-//
-//	const uint8_t *r = p_data.ptr();
-//	packet_cache.write[0] = NETWORK_COMMAND_RAW;
-//	memcpy(&packet_cache.write[1], &r[0], p_data.size());
-//
-//	multiplayer_peer->set_transfer_channel(p_channel);
-//	multiplayer_peer->set_transfer_mode(p_mode);
-//	return send_command(p_to, packet_cache.ptr(), p_data.size() + 1);
-//}
-
-//Error SceneSaveload::send_auth(int p_to, Vector<uint8_t> p_data) {
-//	ERR_FAIL_COND_V(multiplayer_peer.is_null() || multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED);
-//	ERR_FAIL_COND_V(!pending_peers.has(p_to), ERR_INVALID_PARAMETER);
-//	ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_PARAMETER);
-//	ERR_FAIL_COND_V_MSG(pending_peers[p_to].local, ERR_FILE_CANT_WRITE, "The authentication session was previously marked as completed, no more authentication data can be sent.");
-//	ERR_FAIL_COND_V_MSG(pending_peers[p_to].remote, ERR_FILE_CANT_WRITE, "The remote peer notified that the authentication session was completed, no more authentication data can be sent.");
-//
-//	if (packet_cache.size() < p_data.size() + 2) {
-//		packet_cache.resize(p_data.size() + 2);
-//	}
-//
-//	packet_cache.write[0] = NETWORK_COMMAND_SYS;
-//	packet_cache.write[1] = SYS_COMMAND_AUTH;
-//	memcpy(&packet_cache.write[2], p_data.ptr(), p_data.size());
-//
-//	multiplayer_peer->set_target_peer(p_to);
-//	multiplayer_peer->set_transfer_channel(0);
-//	multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
-//	return _send(packet_cache.ptr(), p_data.size() + 2);
-//}
-
-//Error SceneSaveload::complete_auth(int p_peer) {
-//	ERR_FAIL_COND_V(multiplayer_peer.is_null() || multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED);
-//	ERR_FAIL_COND_V(!pending_peers.has(p_peer), ERR_INVALID_PARAMETER);
-//	ERR_FAIL_COND_V_MSG(pending_peers[p_peer].local, ERR_FILE_CANT_WRITE, "The authentication session was already marked as completed.");
-//	pending_peers[p_peer].local = true;
-//	// Notify the remote peer that the authentication has completed.
-//	uint8_t buf[2] = { NETWORK_COMMAND_SYS, SYS_COMMAND_AUTH };
-//	Error err = _send(buf, 2);
-//	// The remote peer already reported the authentication as completed, so admit the peer.
-//	// May generate new packets, so it must happen after sending confirmation.
-//	if (pending_peers[p_peer].remote) {
-//		pending_peers.erase(p_peer);
-//		_admit_peer(p_peer);
-//	}
-//	return err;
-//}
-
-//void SceneSaveload::set_auth_callback(Callable p_callback) {
-//	auth_callback = p_callback;
-//}
-
-//Callable SceneSaveload::get_auth_callback() const {
-//	return auth_callback;
-//}
-
-//void SceneSaveload::set_auth_timeout(double p_timeout) {
-//	ERR_FAIL_COND_MSG(p_timeout < 0, "Timeout must be greater or equal to 0 (where 0 means no timeout)");
-//	auth_timeout = uint64_t(p_timeout * 1000);
-//}
-
-//double SceneSaveload::get_auth_timeout() const {
-//	return double(auth_timeout) / 1000.0;
-//}
-
-TypedArray<SaveloadSynchronizer> SceneSaveload::get_sync_nodes() {
+TypedArray<SaveloadSpawner> SceneSaveload::get_spawn_nodes() {
 	return saveloader->get_spawn_nodes();
 }
 
@@ -337,8 +80,8 @@ Dictionary SceneSaveload::get_dict() {
 
 Variant SceneSaveload::get_state(Object *p_object, const StringName section) {
 	Dictionary state;
-	state[StringName("spawners")] = saveloader->get_sp
-	state[StringName("synchers")] = saveloader->get_sync_state();
+	state[StringName("spawners")] = saveloader->get_spawn_dict();
+	state[StringName("synchers")] = saveloader->get_sync_dict();
 	return state;
 }
 
@@ -407,7 +150,7 @@ Error SceneSaveload::object_configuration_add(Object *p_obj, Variant p_config) {
 }
 
 Error SceneSaveload::object_configuration_remove(Object *p_obj, Variant p_config) {
-	if (p_obj == nullptr && p_config.get_type() == Variant::NODE_PATH) {
+	if (p_obj == nullptr && p_config.get_type() == Variant::NODE_PATH) { //I don't think root path actually does anything
 		ERR_FAIL_COND_V(root_path != p_config.operator NodePath(), ERR_INVALID_PARAMETER);
 		set_root_path(NodePath());
 		return OK;
@@ -438,7 +181,6 @@ void SceneSaveload::_bind_methods() {
 
 SceneSaveload::SceneSaveload() {
 	saveloader = Ref<SceneSaveloadInterface>(memnew(SceneSaveloadInterface(this)));
-	cache = Ref<SceneCacheInterface>(memnew(SceneCacheInterface(this)));
 }
 
 SceneSaveload::~SceneSaveload() {

@@ -46,7 +46,6 @@ void initialize_saveload_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(SceneSaveloadConfig);
 		GDREGISTER_CLASS(SaveloadSpawner);
 		GDREGISTER_CLASS(SaveloadSynchronizer);
-//		GDREGISTER_CLASS(OfflineMultiplayerPeer);
 		GDREGISTER_CLASS(SceneSaveload);
 		SaveloadAPI::set_default_interface("SceneSaveload");
 		SaveloadDebugger::initialize();

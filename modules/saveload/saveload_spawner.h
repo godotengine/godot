@@ -32,9 +32,6 @@
 #define SAVELOAD_SPAWNER_H
 
 #include "scene/main/node.h"
-
-#include "core/templates/local_vector.h"
-#include "core/variant/typed_array.h"
 #include "scene/resources/packed_scene.h"
 
 #include "scene_saveload_config.h"
@@ -44,29 +41,39 @@ class SaveloadSpawner : public Node {
 
 public:
 	enum {
-		INVALID_ID = 0xFF,
+		CUSTOM_SPAWN = 0xFF,
 	};
+
 	struct SpawnInfo {
-		Variant args;
-		int id = INVALID_ID;
+		NodePath path;
+		int scene_index;
+		Variant spawn_args;
 
 		Dictionary to_dict() const;
 
-		SpawnInfo(Variant p_args, int p_id) {
-			id = p_id;
-			args = p_args;
-		}
+		SpawnInfo(NodePath p_path, int p_scene_index, Variant spawn_args);
 		SpawnInfo(const Dictionary &p_dict);
-		SpawnInfo () {};
+		SpawnInfo() {};
 	};
-	struct SpawnState {
-		HashMap<const NodePath, SpawnInfo> spawned_nodes;
 
-		Dictionary to_dict() const;
+	struct SpawnerState {
+		HashMap<const NodePath, int> tracked_paths;
+		LocalVector<SpawnInfo> spawn_infos;
 
-		SpawnState(HashMap<const NodePath, SpawnInfo> p_spawned_nodes) {spawned_nodes = p_spawned_nodes;}
-		SpawnState(const HashMap<ObjectID, SpawnInfo> &p_tracked_nodes);
-		SpawnState(const Dictionary &p_dict);
+		_FORCE_INLINE_ uint32_t size() const { return spawn_infos.size(); }
+
+		void push_back(SpawnInfo p_spawn_info) {
+			spawn_infos.push_back(p_spawn_info);
+			tracked_paths.insert(p_spawn_info.path, spawn_infos.size() - 1);
+		}
+		bool has(const NodePath &p_path) const;
+		bool erase(const NodePath &p_path);
+		void clear();		
+
+		TypedArray<Dictionary> to_array() const;
+
+		SpawnerState(const TypedArray<Dictionary> &p_array);
+		SpawnerState() {};
 	};
 
 private:
@@ -81,13 +88,13 @@ private:
 	NodePath spawn_path;
 
 	ObjectID spawn_parent_id;
-	HashMap<ObjectID, SpawnInfo> tracked_nodes;
+	SpawnerState spawner_state;
 	uint32_t spawn_limit = 0;
 	Callable spawn_function;
 
 	void _update_spawn_parent();
-	Error _spawn(const SpawnInfo &p_spawn_info, const String &p_name);
-	void _track(Node *p_node, const Variant &p_argument, int p_scene_id = INVALID_ID);
+	Error _spawn(const String &p_name, int p_scene_index, const Variant &p_spawn_args = Variant());
+	void _track(Node *p_node, int p_scene_index, const Variant &p_spawn_args = Variant());
 	void _node_added(Node *p_node);
 	void _node_exit(ObjectID p_id);
 	void _spawn_notify(ObjectID p_id);
@@ -111,7 +118,7 @@ public:
 		return spawn_parent_id.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(spawn_parent_id)) : nullptr;
 	}
 
-	SpawnState get_spawn_state() const { return SpawnState(tracked_nodes); }
+	SpawnerState get_spawner_state() const { return spawner_state; }
 
 	void add_spawnable_scene(const String &p_path);
 	int get_spawnable_scene_count() const;
@@ -125,11 +132,10 @@ public:
 	void set_spawn_function(Callable p_spawn_function) { spawn_function = p_spawn_function; }
 	Callable get_spawn_function() const { return spawn_function; }
 
-	const Variant get_spawn_argument(const ObjectID &p_id) const;
-	int find_spawnable_scene_index_from_object(const ObjectID &p_id) const;
 	int find_spawnable_scene_index_from_path(const String &p_path) const;
+	void load_spawn_state(const SpawnerState &p_spawner_state);
+	void free_tracked_nodes();
 	Node *spawn(const Variant &p_data = Variant());
-	void spawn_all(const SpawnState &p_spawn_state);
 	Node *instantiate_custom(const Variant &p_data);
 	Node *instantiate_scene(int p_idx);
 

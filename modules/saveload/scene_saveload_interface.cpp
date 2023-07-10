@@ -47,14 +47,6 @@ _FORCE_INLINE_ void SceneSaveloadInterface::_profile_node_data(const String &p_w
 }
 #endif
 
-void SceneSaveloadInterface::on_reset() {
-	for (const ObjectID &oid : sync_nodes) {
-		SaveloadSynchronizer *sync = get_id_as<SaveloadSynchronizer>(oid);
-		ERR_CONTINUE(!sync);
-		sync->reset();
-	}
-}
-
 void SceneSaveloadInterface::flush_spawn_queue() {
 	// Prevent endless stalling in case of unforeseen spawn errors.
 	if (spawn_queue.size()) {
@@ -119,41 +111,53 @@ TypedArray<SaveloadSynchronizer> SceneSaveloadInterface::get_sync_nodes() const 
 	return syncs;
 }
 
-Dictionary SceneSaveloadInterface::get_sync_state() const {
-	Dictionary sync_state;
+Dictionary SceneSaveloadInterface::get_spawn_dict() const {
+	Dictionary spawn_dict;
+	for (const ObjectID &oid : spawn_nodes) {
+		SaveloadSpawner *spawner = get_id_as<SaveloadSpawner>(oid);
+		ERR_CONTINUE_MSG(!spawner, vformat("%s is not a valid SaveloadSpawner", oid));
+		spawn_dict[spawner->get_path()] = spawner->get_spawner_state().to_array();
+	}
+	return spawn_dict;
+}
+
+Dictionary SceneSaveloadInterface::get_sync_dict() const {
+	Dictionary sync_dict;
 	for (const ObjectID &oid : sync_nodes) {
 		SaveloadSynchronizer *sync = get_id_as<SaveloadSynchronizer>(oid);
-		ERR_CONTINUE(!sync);
-		const NodePath node_path = sync->get_root_path();
-		Dictionary state_dict = sync->get_state_wrapper();
-		sync_state[sync->get_root_path()] = sync->get_state_wrapper();
+		ERR_CONTINUE_MSG(!sync, vformat("%s is not a valid SaveloadSynchronizer"));
+		sync_dict[sync->get_path()] = sync->get_sync_state().to_dict();
 	}
+	return sync_dict;
 }
 
 SceneSaveloadInterface::SaveloadState SceneSaveloadInterface::get_saveload_state() {
 	SaveloadState saveload_state;
 	for (const ObjectID &oid : spawn_nodes) {
 		SaveloadSpawner *spawner = get_id_as<SaveloadSpawner>(oid);
-		ERR_CONTINUE_MSG(!spawner, vformat("%s is not a valid spawner", oid));
-		SaveloadSpawner::SpawnState spawn_state = spawner->get_spawn_state();
-		saveload_state.spawn_states.insert(spawner->get_path(), spawn_state);
+		ERR_CONTINUE_MSG(!spawner, vformat("%s is not a valid SaveloadSpawner", oid));
+		SaveloadSpawner::SpawnerState spawn_state = spawner->get_spawner_state();
+		saveload_state.spawner_states.insert(spawner->get_path(), spawn_state);
 	}
 	for (const ObjectID &oid : sync_nodes) {
 		SaveloadSynchronizer *sync = get_id_as<SaveloadSynchronizer>(oid);
-		ERR_CONTINUE_MSG(!sync, vformat("%s is not a valid synchronizer", oid));
+		ERR_CONTINUE_MSG(!sync, vformat("%s is not a valid SaveloadSynchronizer", oid));
 		SaveloadSynchronizer::SyncState sync_state = sync->get_sync_state();
 		saveload_state.sync_states.insert(sync->get_path(), sync_state);
 	}
 	return saveload_state;
 }
 
-void SceneSaveloadInterface::load_saveload_state(const SaveloadState p_saveload_state) {
+void SceneSaveloadInterface::load_saveload_state(const SaveloadState &p_saveload_state) {
+	print_line("SceneSaveloadInterface::load_saveload_state saveload_state: ");
+	print_line(p_saveload_state.to_dict());
 	Node *root = SceneTree::get_singleton()->get_current_scene(); //TODO: Is this the right root?
-	for (const KeyValue<const NodePath, SaveloadSpawner::SpawnState> &spawn_state : p_saveload_state.spawn_states) {
-		//TODO: How should I delete nodes that aren't in the save file?
-		SaveloadSpawner *spawn_node = Object::cast_to<SaveloadSpawner>(root->get_node(spawn_state.key));
-		ERR_CONTINUE_MSG(!spawn_node, vformat("could not find SaveloadSpawner at path %s", spawn_state.key));
-		spawn_node->spawn_all(spawn_state.value);
+	for (const KeyValue<const NodePath, SaveloadSpawner::SpawnerState> &spawner_state : p_saveload_state.spawner_states) {
+		SaveloadSpawner *spawner_node = Object::cast_to<SaveloadSpawner>(root->get_node(spawner_state.key));
+		ERR_CONTINUE_MSG(!spawner_node, vformat("could not find SaveloadSpawner at path %s", spawner_state.key));
+		print_line("SceneSaveloadInterface::load_saveload_state spawner_state: ");
+		print_line(spawner_state.value.to_array());
+		spawner_node->load_spawn_state(spawner_state.value);
 	}
 	for (const KeyValue<const NodePath, SaveloadSynchronizer::SyncState> &sync_state : p_saveload_state.sync_states) {
 		SaveloadSynchronizer *sync_node = Object::cast_to<SaveloadSynchronizer>(root->get_node(sync_state.key));
@@ -162,11 +166,11 @@ void SceneSaveloadInterface::load_saveload_state(const SaveloadState p_saveload_
 	}
 }
 
-Dictionary SceneSaveloadInterface::SaveloadState::to_dict() {
+Dictionary SceneSaveloadInterface::SaveloadState::to_dict() const {
 	Dictionary dict;
 	Dictionary spawn_dict;
-	for (const KeyValue<const NodePath, SaveloadSpawner::SpawnState> &spawn_state : SaveloadState::spawn_states) {
-		spawn_dict[spawn_state.key] = spawn_state.value.to_dict();
+	for (const KeyValue<const NodePath, SaveloadSpawner::SpawnerState> &spawn_state : SaveloadState::spawner_states) {
+		spawn_dict[spawn_state.key] = spawn_state.value.to_array();
 	}
 	Dictionary sync_dict;
 	for (const KeyValue<const NodePath, SaveloadSynchronizer::SyncState> &sync_state : SaveloadState::sync_states) {
@@ -178,13 +182,21 @@ Dictionary SceneSaveloadInterface::SaveloadState::to_dict() {
 }
 
 SceneSaveloadInterface::SaveloadState::SaveloadState(const Dictionary &p_saveload_dict) {
+	print_line("SceneSveloadInterface::SaveloadState::SaveloadState dictionary in:");
+	print_line(p_saveload_dict);
 	Dictionary spawn_states_dict = p_saveload_dict[StringName("spawn_states")];
+	print_line("SceneSveloadInterface::SaveloadState::SaveloadState spawn_states_dict:");
+	print_line(spawn_states_dict);
 	Dictionary sync_states_dict = p_saveload_dict[StringName("sync_states")];
 	List<Variant> spawn_keys;
 	spawn_states_dict.get_key_list(&spawn_keys);
 	for (const NodePath spawn_key : spawn_keys) {
-		Dictionary spawn_state_as_dict = spawn_states_dict[spawn_key];
-		spawn_states.insert(spawn_key, SaveloadSpawner::SpawnState(spawn_state_as_dict));
+		print_line("SceneSveloadInterface::SaveloadState::SaveloadState spawn_key:");
+		print_line(spawn_key);
+		TypedArray<Dictionary> spawn_state_as_array = spawn_states_dict[spawn_key];
+		print_line("SceneSveloadInterface::SaveloadState::SaveloadState spawn_state_as_array:");
+		print_line(spawn_state_as_array);
+		spawner_states.insert(spawn_key, SaveloadSpawner::SpawnerState(spawn_state_as_array));
 	}
 	List<Variant> sync_keys;
 	sync_states_dict.get_key_list(&sync_keys);

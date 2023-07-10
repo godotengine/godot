@@ -34,6 +34,7 @@
 #include "scene/main/node.h"
 
 bool SceneSaveloadConfig::_set(const StringName &p_name, const Variant &p_value) {
+	print_line(vformat("SceneSaveloadConfig::_set p_name = %s, p_value = %s", p_name, p_value));
 	String prop_name = p_name;
 
 	if (prop_name.begins_with("properties/")) {
@@ -61,25 +62,6 @@ bool SceneSaveloadConfig::_set(const StringName &p_name, const Variant &p_value)
 				sync_props.erase(prop.name);
 			}
 			return true;
-		} else if (what == "spawn") {
-			if ((bool)p_value == prop.spawn) {
-				return true;
-			}
-			prop.spawn = p_value;
-			if (prop.spawn) {
-				spawn_props.push_back(prop.name);
-			} else {
-				spawn_props.erase(prop.name);
-			}
-			return true;
-		} else if (what == "watch") {
-			prop.watch = p_value;
-			if (prop.watch) {
-				watch_props.push_back(prop.name);
-			} else {
-				watch_props.erase(prop.name);
-			}
-			return true;
 		}
 	}
 	return false;
@@ -99,12 +81,6 @@ bool SceneSaveloadConfig::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (what == "sync") {
 			r_ret = prop.sync;
 			return true;
-		} else if (what == "spawn") {
-			r_ret = prop.spawn;
-			return true;
-		} else if (what == "watch") {
-			r_ret = prop.watch;
-			return true;
 		}
 	}
 	return false;
@@ -113,9 +89,7 @@ bool SceneSaveloadConfig::_get(const StringName &p_name, Variant &r_ret) const {
 void SceneSaveloadConfig::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < properties.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/spawn", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/sync", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::STRING, "properties/" + itos(i) + "/watch", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 	}
 }
 
@@ -133,7 +107,6 @@ void SceneSaveloadConfig::add_property(const NodePath &p_path, int p_index) {
 	if (p_index < 0 || p_index == properties.size()) {
 		properties.push_back(SaveloadProperty(p_path));
 		sync_props.push_back(p_path);
-		spawn_props.push_back(p_path);
 		return;
 	}
 
@@ -147,13 +120,9 @@ void SceneSaveloadConfig::add_property(const NodePath &p_path, int p_index) {
 	}
 	properties.insert_before(I, SaveloadProperty(p_path));
 	sync_props.clear();
-	spawn_props.clear();
 	for (const SaveloadProperty &prop : properties) {
 		if (prop.sync) {
 			sync_props.push_back(prop.name);
-		}
-		if (prop.spawn) {
-			spawn_props.push_back(prop.name);
 		}
 	}
 }
@@ -161,7 +130,6 @@ void SceneSaveloadConfig::add_property(const NodePath &p_path, int p_index) {
 void SceneSaveloadConfig::remove_property(const NodePath &p_path) {
 	properties.erase(p_path);
 	sync_props.erase(p_path);
-	spawn_props.erase(p_path);
 }
 
 bool SceneSaveloadConfig::has_property(const NodePath &p_path) const {
@@ -180,27 +148,6 @@ int SceneSaveloadConfig::property_get_index(const NodePath &p_path) const {
 		}
 	}
 	ERR_FAIL_V(-1);
-}
-
-bool SceneSaveloadConfig::property_get_spawn(const NodePath &p_path) {
-	List<SaveloadProperty>::Element *E = properties.find(p_path);
-	ERR_FAIL_COND_V(!E, false);
-	return E->get().spawn;
-}
-
-void SceneSaveloadConfig::property_set_spawn(const NodePath &p_path, bool p_enabled) {
-	List<SaveloadProperty>::Element *E = properties.find(p_path);
-	ERR_FAIL_COND(!E);
-	if (E->get().spawn == p_enabled) {
-		return;
-	}
-	E->get().spawn = p_enabled;
-	spawn_props.clear();
-	for (const SaveloadProperty &prop : properties) {
-		if (prop.spawn) {
-			spawn_props.push_back(prop.name);
-		}
-	}
 }
 
 bool SceneSaveloadConfig::property_get_sync(const NodePath &p_path) {
@@ -224,37 +171,12 @@ void SceneSaveloadConfig::property_set_sync(const NodePath &p_path, bool p_enabl
 	}
 }
 
-bool SceneSaveloadConfig::property_get_watch(const NodePath &p_path) {
-	List<SaveloadProperty>::Element *E = properties.find(p_path);
-	ERR_FAIL_COND_V(!E, false);
-	return E->get().watch;
-}
-
-void SceneSaveloadConfig::property_set_watch(const NodePath &p_path, bool p_enabled) {
-	List<SaveloadProperty>::Element *E = properties.find(p_path);
-	ERR_FAIL_COND(!E);
-	if (E->get().watch == p_enabled) {
-		return;
-	}
-	E->get().watch = p_enabled;
-	watch_props.clear();
-	for (const SaveloadProperty &prop : properties) {
-		if (prop.watch) {
-			watch_props.push_back(p_path);
-		}
-	}
-}
-
 void SceneSaveloadConfig::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_properties"), &SceneSaveloadConfig::get_properties);
 	ClassDB::bind_method(D_METHOD("add_property", "path", "index"), &SceneSaveloadConfig::add_property, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("has_property", "path"), &SceneSaveloadConfig::has_property);
 	ClassDB::bind_method(D_METHOD("remove_property", "path"), &SceneSaveloadConfig::remove_property);
 	ClassDB::bind_method(D_METHOD("property_get_index", "path"), &SceneSaveloadConfig::property_get_index);
-	ClassDB::bind_method(D_METHOD("property_get_spawn", "path"), &SceneSaveloadConfig::property_get_spawn);
-	ClassDB::bind_method(D_METHOD("property_set_spawn", "path", "enabled"), &SceneSaveloadConfig::property_set_spawn);
 	ClassDB::bind_method(D_METHOD("property_get_sync", "path"), &SceneSaveloadConfig::property_get_sync);
 	ClassDB::bind_method(D_METHOD("property_set_sync", "path", "enabled"), &SceneSaveloadConfig::property_set_sync);
-	ClassDB::bind_method(D_METHOD("property_get_watch", "path"), &SceneSaveloadConfig::property_get_watch);
-	ClassDB::bind_method(D_METHOD("property_set_watch", "path", "enabled"), &SceneSaveloadConfig::property_set_watch);
 }
