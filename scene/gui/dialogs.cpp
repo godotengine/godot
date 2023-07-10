@@ -286,18 +286,29 @@ void AcceptDialog::_custom_action(const String &p_action) {
 	custom_action(p_action);
 }
 
+void AcceptDialog::_custom_button_visibility_changed(Button *button) {
+	Control *right_spacer = Object::cast_to<Control>(button->get_meta("__right_spacer"));
+	if (right_spacer) {
+		right_spacer->set_visible(button->is_visible());
+	}
+}
+
 Button *AcceptDialog::add_button(const String &p_text, bool p_right, const String &p_action) {
 	Button *button = memnew(Button);
 	button->set_text(p_text);
 
+	Control *right_spacer;
 	if (p_right) {
 		buttons_hbox->add_child(button);
-		buttons_hbox->add_spacer();
+		right_spacer = buttons_hbox->add_spacer();
 	} else {
 		buttons_hbox->add_child(button);
 		buttons_hbox->move_child(button, 0);
-		buttons_hbox->add_spacer(true);
+		right_spacer = buttons_hbox->add_spacer(true);
 	}
+	button->set_meta("__right_spacer", right_spacer);
+
+	button->connect("visibility_changed", callable_mp(this, &AcceptDialog::_custom_button_visibility_changed).bind(button));
 
 	child_controls_changed();
 	if (is_visible()) {
@@ -330,6 +341,12 @@ void AcceptDialog::remove_button(Control *p_button) {
 	ERR_FAIL_COND_MSG(button->get_parent() != buttons_hbox, vformat("Cannot remove button %s as it does not belong to this dialog.", button->get_name()));
 	ERR_FAIL_COND_MSG(button == ok_button, "Cannot remove dialog's OK button.");
 
+	Control *right_spacer = Object::cast_to<Control>(button->get_meta("__right_spacer"));
+	if (right_spacer) {
+		ERR_FAIL_COND_MSG(right_spacer->get_parent() != buttons_hbox, vformat("Cannot remove button %s as its associated spacer does not belong to this dialog.", button->get_name()));
+	}
+
+	button->disconnect("visibility_changed", callable_mp(this, &AcceptDialog::_custom_button_visibility_changed));
 	if (button->is_connected("pressed", callable_mp(this, &AcceptDialog::_custom_action))) {
 		button->disconnect("pressed", callable_mp(this, &AcceptDialog::_custom_action));
 	}
@@ -337,11 +354,10 @@ void AcceptDialog::remove_button(Control *p_button) {
 		button->disconnect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
 	}
 
-	Node *right_spacer = buttons_hbox->get_child(button->get_index() + 1);
-	// Should always be valid but let's avoid crashing.
 	if (right_spacer) {
 		buttons_hbox->remove_child(right_spacer);
-		memdelete(right_spacer);
+		button->remove_meta("__right_spacer");
+		right_spacer->queue_free();
 	}
 	buttons_hbox->remove_child(button);
 
