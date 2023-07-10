@@ -60,6 +60,7 @@ class AcceptDialog : public Window {
 	} theme_cache;
 
 	void _custom_action(const String &p_action);
+	void _custom_button_visibility_changed(Button *button);
 	void _update_child_rects();
 
 	static bool swap_cancel_ok;
