@@ -33,6 +33,9 @@
 #include "core/project_settings.h"
 #include "core/translation.h"
 
+// For CJK related utility functions.
+#include "gs_cjk.h"
+
 void Label::set_autowrap(bool p_autowrap) {
 	if (autowrap == p_autowrap) {
 		return;
@@ -393,7 +396,8 @@ void Label::regenerate_word_cache() {
 
 	for (int i = 0; i <= xl_text.length(); i++) {
 		CharType current = i < xl_text.length() ? xl_text[i] : L' '; //always a space at the end, so the algo works
-
+		const CharType previous = i > 0 ? xl_text[i - 1] : L' ';
+		const CharType next = i + 1 < xl_text.length() ? xl_text[i + 1] : L'\0';
 		if (uppercase) {
 			current = String::char_uppercase(current);
 		}
@@ -401,14 +405,19 @@ void Label::regenerate_word_cache() {
 		// ranges taken from https://en.wikipedia.org/wiki/Plane_(Unicode)
 		// if your language is not well supported, consider helping improve
 		// the unicode support in Godot.
-		bool separatable = (current >= 0x2E08 && current <= 0x9FFF) || // CJK scripts and symbols.
-				(current >= 0xAC00 && current <= 0xD7FF) || // Hangul Syllables and Hangul Jamo Extended-B.
-				(current >= 0xF900 && current <= 0xFAFF) || // CJK Compatibility Ideographs.
-				(current >= 0xFE30 && current <= 0xFE4F) || // CJK Compatibility Forms.
-				(current >= 0xFF65 && current <= 0xFF9F) || // Halfwidth forms of katakana
-				(current >= 0xFFA0 && current <= 0xFFDC) || // Halfwidth forms of compatibility jamo characters for Hangul
-				(current >= 0x20000 && current <= 0x2FA1F) || // CJK Unified Ideographs Extension B ~ F and CJK Compatibility Ideographs Supplement.
-				(current >= 0x30000 && current <= 0x3134F); // CJK Unified Ideographs Extension G.
+		bool separatable = ((current >= 0x2E08 && current <= 0x9FFF) || // CJK scripts and symbols.
+			(current >= 0xAC00 && current <= 0xD7FF) || // Hangul Syllables and Hangul Jamo Extended-B.
+			(current >= 0xF900 && current <= 0xFAFF) || // CJK Compatibility Ideographs.
+			(current >= 0xFE30 && current <= 0xFE4F) || // CJK Compatibility Forms.
+			(current >= 0xFF65 && current <= 0xFF9F) || // Halfwidth forms of katakana
+			(current >= 0xFFA0 && current <= 0xFFDC) || // Halfwidth forms of compatibility jamo characters for Hangul
+			(current >= 0x20000 && current <= 0x2FA1F) || // CJK Unified Ideographs Extension B ~ F and CJK Compatibility Ideographs Supplement.
+			(current >= 0x30000 && current <= 0x3134F)) && // CJK Unified Ideographs Extension G.
+			// New separation conditions.
+			// These enforce CJK language rules on CJK separable characters.
+			((!gnomesort::is_cjk_cannot_separate(current) && !gnomesort::is_cjk_cannot_separate(next)) &&
+			(!gnomesort::is_cjk_cannot_begin_line(current) && !gnomesort::is_cjk_cannot_begin_line(next)) &&
+			(!gnomesort::is_cjk_cannot_end_line(previous) && !gnomesort::is_cjk_cannot_end_line(current)));
 		bool insert_newline = false;
 		real_t char_width = 0;
 
