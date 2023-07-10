@@ -1910,7 +1910,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_icon("close", "GraphNode", theme->get_icon(SNAME("GuiCloseCustomizable"), SNAME("EditorIcons")));
 	theme->set_icon("resizer", "GraphNode", theme->get_icon(SNAME("GuiResizer"), SNAME("EditorIcons")));
-	theme->set_icon("port", "GraphNode", theme->get_icon(SNAME("GuiGraphNodePort"), SNAME("EditorIcons")));
+	Ref<ImageTexture> port_icon = theme->get_icon(SNAME("GuiGraphNodePort"), SNAME("EditorIcons"));
+	// The true size is 24x24 This is necessary for sharp port icons at high zoom levels in GraphEdit (up to ~200%).
+	port_icon->set_size_override(Size2(12, 12));
+	theme->set_icon("port", "GraphNode", port_icon);
 
 	theme->set_font("title_font", "GraphNode", theme->get_font(SNAME("main_bold_msdf"), SNAME("EditorFonts")));
 
