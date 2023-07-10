@@ -66,20 +66,6 @@ void Shader::set_code(const String &p_code) {
 		E->disconnect(SNAME("changed"), callable_mp(this, &Shader::_dependency_changed));
 	}
 
-	String type = ShaderLanguage::get_shader_type(p_code);
-
-	if (type == "canvas_item") {
-		mode = MODE_CANVAS_ITEM;
-	} else if (type == "particles") {
-		mode = MODE_PARTICLES;
-	} else if (type == "sky") {
-		mode = MODE_SKY;
-	} else if (type == "fog") {
-		mode = MODE_FOG;
-	} else {
-		mode = MODE_SPATIAL;
-	}
-
 	code = p_code;
 	String pp_code = p_code;
 
@@ -98,6 +84,21 @@ void Shader::set_code(const String &p_code) {
 			// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
 			include_dependencies = new_include_dependencies;
 		}
+	}
+
+	// Try to get the shader type from the final, fully preprocessed shader code.
+	String type = ShaderLanguage::get_shader_type(pp_code);
+
+	if (type == "canvas_item") {
+		mode = MODE_CANVAS_ITEM;
+	} else if (type == "particles") {
+		mode = MODE_PARTICLES;
+	} else if (type == "sky") {
+		mode = MODE_SKY;
+	} else if (type == "fog") {
+		mode = MODE_FOG;
+	} else {
+		mode = MODE_SPATIAL;
 	}
 
 	for (const Ref<ShaderInclude> &E : include_dependencies) {
