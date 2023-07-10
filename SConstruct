@@ -297,21 +297,21 @@ else:
 if selected_platform in ["macos", "osx"]:
     if selected_platform == "osx":
         # Deprecated alias kept for compatibility.
-        print('Platform "osx" has been renamed to "macos" in Godot 4.0. Building for platform "macos".')
+        print('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
     # Alias for convenience.
     selected_platform = "macos"
 
 if selected_platform in ["ios", "iphone"]:
     if selected_platform == "iphone":
         # Deprecated alias kept for compatibility.
-        print('Platform "iphone" has been renamed to "ios" in Godot 4.0. Building for platform "ios".')
+        print('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
     # Alias for convenience.
     selected_platform = "ios"
 
 if selected_platform in ["linux", "bsd", "x11"]:
     if selected_platform == "x11":
         # Deprecated alias kept for compatibility.
-        print('Platform "x11" has been renamed to "linuxbsd" in Godot 4.0. Building for platform "linuxbsd".')
+        print('Platform "x11" has been renamed to "linuxbsd" in Godot 4. Building for platform "linuxbsd".')
     # Alias for convenience.
     selected_platform = "linuxbsd"
 

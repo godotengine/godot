@@ -3229,7 +3229,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_type_test(ExpressionNode *
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_yield(ExpressionNode *p_previous_operand, bool p_can_assign) {
-	push_error(R"("yield" was removed in Godot 4.0. Use "await" instead.)");
+	push_error(R"("yield" was removed in Godot 4. Use "await" instead.)");
 	return nullptr;
 }
 
