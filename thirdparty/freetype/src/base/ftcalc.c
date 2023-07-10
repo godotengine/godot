@@ -1061,7 +1061,7 @@
     /*                                                           */
     /* This approach has the advantage that the angle between    */
     /* `in' and `out' is not checked.  In case one of the two    */
-    /* vectors is `dominant', this is, much larger than the      */
+    /* vectors is `dominant', that is, much larger than the      */
     /* other vector, we thus always have a flat corner.          */
     /*                                                           */
     /*                hypotenuse                                 */
@@ -1103,7 +1103,7 @@
     for ( i = 0; i < count; ++i )
       temp += (FT_Int64)s[i] * f[i];
 
-    return ( temp + 0x8000 ) >> 16;
+    return (FT_Int32)( ( temp + 0x8000 ) >> 16 );
 #else
     temp.hi = 0;
     temp.lo = 0;

@@ -34,7 +34,7 @@ FT_BEGIN_HEADER
 
 
   FT_LOCAL( FT_Error )
-  tt_face_find_bdf_prop( TT_Face           face,
+  tt_face_find_bdf_prop( FT_Face           face,
                          const char*       property_name,
                          BDF_PropertyRec  *aprop );
 

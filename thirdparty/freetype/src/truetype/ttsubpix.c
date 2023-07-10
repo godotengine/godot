@@ -1004,7 +1004,7 @@
       /*   TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY) */
 
   /* ANSI C doesn't like empty source files */
-  typedef int  _tt_subpix_dummy;
+  typedef int  tt_subpix_dummy_;
 
 #endif /* !(TT_USE_BYTECODE_INTERPRETER &&          */
        /*   TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY) */

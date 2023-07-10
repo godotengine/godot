@@ -2055,7 +2055,9 @@
     FT_Error    error;
 
     FT_Int      n;         /* index of contour in outline     */
-    FT_UInt     first;     /* index of first point in contour */
+    FT_Int      first;     /* index of first point in contour */
+    FT_Int      last;      /* index of last point in contour  */
+
     FT_Int      tag;       /* current point's state           */
 
 
@@ -2067,22 +2069,17 @@
 
     FT_Stroker_Rewind( stroker );
 
-    first = 0;
-
+    last = -1;
     for ( n = 0; n < outline->n_contours; n++ )
     {
-      FT_UInt  last;  /* index of last point in contour */
-
-
-      last  = (FT_UInt)outline->contours[n];
-      limit = outline->points + last;
+      first = last + 1;
+      last  = outline->contours[n];
 
       /* skip empty points; we don't stroke these */
       if ( last <= first )
-      {
-        first = last + 1;
         continue;
-      }
+
+      limit = outline->points + last;
 
       v_start = outline->points[first];
       v_last  = outline->points[last];
@@ -2231,8 +2228,6 @@
         if ( error )
           goto Exit;
       }
-
-      first = last + 1;
     }
 
     return FT_Err_Ok;

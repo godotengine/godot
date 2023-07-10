@@ -27,8 +27,11 @@
 
   /* initialize renderer -- init its raster */
   static FT_Error
-  ft_raster1_init( FT_Renderer  render )
+  ft_raster1_init( FT_Module  module )   /* FT_Renderer */
   {
+    FT_Renderer  render = (FT_Renderer)module;
+
+
     render->clazz->raster_class->raster_reset( render->raster, NULL, 0 );
 
     return FT_Err_Ok;
@@ -188,18 +191,18 @@
 
       NULL,    /* module specific interface */
 
-      (FT_Module_Constructor)ft_raster1_init,  /* module_init   */
-      (FT_Module_Destructor) NULL,             /* module_done   */
-      (FT_Module_Requester)  NULL,             /* get_interface */
+      ft_raster1_init,  /* FT_Module_Constructor module_init   */
+      NULL,             /* FT_Module_Destructor  module_done   */
+      NULL,             /* FT_Module_Requester   get_interface */
 
     FT_GLYPH_FORMAT_OUTLINE,
 
-    (FT_Renderer_RenderFunc)   ft_raster1_render,     /* render_glyph    */
-    (FT_Renderer_TransformFunc)ft_raster1_transform,  /* transform_glyph */
-    (FT_Renderer_GetCBoxFunc)  ft_raster1_get_cbox,   /* get_glyph_cbox  */
-    (FT_Renderer_SetModeFunc)  ft_raster1_set_mode,   /* set_mode        */
+    ft_raster1_render,     /* FT_Renderer_RenderFunc    render_glyph    */
+    ft_raster1_transform,  /* FT_Renderer_TransformFunc transform_glyph */
+    ft_raster1_get_cbox,   /* FT_Renderer_GetCBoxFunc   get_glyph_cbox  */
+    ft_raster1_set_mode,   /* FT_Renderer_SetModeFunc   set_mode        */
 
-    (FT_Raster_Funcs*)&ft_standard_raster             /* raster_class    */
+    &ft_standard_raster    /* FT_Raster_Funcs*          raster_class    */
   )
 
 
