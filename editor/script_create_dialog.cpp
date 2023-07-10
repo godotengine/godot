@@ -171,7 +171,12 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	internal_name->set_text("");
 
 	if (!p_base_path.is_empty()) {
-		initial_bp = p_base_path.get_basename();
+		String file_name_no_ext = p_base_path.get_file().trim_suffix("." + p_base_path.get_extension());
+		String base_dir = p_base_path.get_base_dir();
+		if (!base_dir.ends_with("/")) {
+			base_dir = base_dir + "/";
+		}
+		initial_bp = base_dir + EditorNode::adjust_scene_name_casing(file_name_no_ext);
 		file_path->set_text(initial_bp + "." + ScriptServer::get_language(language_menu->get_selected())->get_extension());
 		current_language = language_menu->get_selected();
 	} else {
