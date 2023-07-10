@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Invalid argument for "foo()" function: argument 2 must not be null, but "String?" is nullable.

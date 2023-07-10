@@ -54,6 +54,7 @@ static const char *token_names[] = {
 	">=", // GREATER_EQUAL,
 	"==", // EQUAL_EQUAL,
 	"!=", // BANG_EQUAL,
+	"??", // COALESCE,
 	// Logical
 	"and", // AND,
 	"or", // OR,
@@ -1436,7 +1437,13 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 		case '$':
 			return make_token(Token::DOLLAR);
 		case '?':
-			return make_token(Token::QUESTION_MARK);
+			if (_peek() == '?') {
+				_advance();
+
+				return make_token(Token::COALESCE);
+			} else {
+				return make_token(Token::QUESTION_MARK);
+			}
 		case '`':
 			return make_token(Token::BACKTICK);
 
@@ -1615,6 +1622,10 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 				return make_error(vformat(R"(Invalid character "%c" (U+%04X).)", c, static_cast<int32_t>(c)));
 			}
 	}
+}
+
+String GDScriptTokenizer::get_source() const {
+	return source;
 }
 
 GDScriptTokenizer::GDScriptTokenizer() {

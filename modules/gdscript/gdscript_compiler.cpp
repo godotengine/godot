@@ -91,6 +91,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 
 	GDScriptDataType result;
 	result.has_type = true;
+	result.is_nullable = p_datatype.is_nullable;
 
 	switch (p_datatype.kind) {
 		case GDScriptParser::DataType::VARIANT: {
@@ -620,7 +621,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 									return GDScriptCodeGenerator::Address();
 								}
 								if (is_awaited) {
-									gen->write_call_async(result, base, call->function_name, arguments);
+									gen->write_call_async(result, base, call->function_name, arguments, subscript->is_nullable);
 								} else if (base.type.has_type && base.type.kind != GDScriptDataType::BUILTIN) {
 									// Native method, use faster path.
 									StringName class_name;
@@ -633,18 +634,18 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 										MethodBind *method = ClassDB::get_method(class_name, call->function_name);
 										if (_can_use_ptrcall(method, arguments)) {
 											// Exact arguments, use ptrcall.
-											gen->write_call_ptrcall(result, base, method, arguments);
+											gen->write_call_ptrcall(result, base, method, arguments, subscript->is_nullable);
 										} else {
 											// Not exact arguments, but still can use method bind call.
-											gen->write_call_method_bind(result, base, method, arguments);
+											gen->write_call_method_bind(result, base, method, arguments, subscript->is_nullable);
 										}
 									} else {
-										gen->write_call(result, base, call->function_name, arguments);
+										gen->write_call(result, base, call->function_name, arguments, subscript->is_nullable);
 									}
 								} else if (base.type.has_type && base.type.kind == GDScriptDataType::BUILTIN) {
-									gen->write_call_builtin_type(result, base, base.type.builtin_type, call->function_name, arguments);
+									gen->write_call_builtin_type(result, base, base.type.builtin_type, call->function_name, arguments, subscript->is_nullable);
 								} else {
-									gen->write_call(result, base, call->function_name, arguments);
+									gen->write_call(result, base, call->function_name, arguments, subscript->is_nullable);
 								}
 								if (base.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 									gen->pop_temporary();
@@ -762,9 +763,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			}
 
 			if (named) {
-				gen->write_get_named(result, name, base);
+				gen->write_get_named(result, name, base, subscript->is_nullable);
 			} else {
-				gen->write_get(result, index, base);
+				gen->write_get(result, index, base, subscript->is_nullable);
 			}
 
 			if (index.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
@@ -828,6 +829,27 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					if (right_operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						gen->pop_temporary();
 					}
+					if (left_operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+						gen->pop_temporary();
+					}
+				} break;
+				case GDScriptParser::BinaryOpNode::OP_COALESCE: {
+					// ?? operator with early out if left operand is not null.
+					GDScriptCodeGenerator::Address left_operand = _parse_expression(codegen, r_error, binary->left_operand);
+
+					if (!binary->left_operand->get_datatype().is_nullable && binary->left_operand->reduced_value.get_type() != Variant::NIL && binary->left_operand->reduced_value.get_type() != Variant::OBJECT) {
+						// OPTIMIZATION: A reduced constant expression that's not null and not an object can't possibly be null
+						gen->write_assign(result, left_operand);
+					} else {
+						gen->write_coalesce_operand(result, left_operand);
+						GDScriptCodeGenerator::Address right_operand = _parse_expression(codegen, r_error, binary->right_operand);
+						gen->write_end_coalesce_operand(result, right_operand);
+
+						if (right_operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+							gen->pop_temporary();
+						}
+					}
+
 					if (left_operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 						gen->pop_temporary();
 					}
@@ -1024,13 +1046,13 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 					if (subscript_elem->is_attribute) {
 						name = subscript_elem->attribute->name;
-						gen->write_get_named(value, name, prev_base);
+						gen->write_get_named(value, name, prev_base, subscript_elem->is_nullable);
 					} else {
 						key = _parse_expression(codegen, r_error, subscript_elem->index);
 						if (r_error) {
 							return GDScriptCodeGenerator::Address();
 						}
-						gen->write_get(value, key, prev_base);
+						gen->write_get(value, key, prev_base, subscript_elem->is_nullable);
 					}
 
 					// Store base and key for setting it back later.
@@ -1060,9 +1082,9 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					GDScriptCodeGenerator::Address op_result = codegen.add_temporary(_gdtype_from_datatype(assignment->get_datatype(), codegen.script));
 					GDScriptCodeGenerator::Address value = codegen.add_temporary(_gdtype_from_datatype(subscript->get_datatype(), codegen.script));
 					if (subscript->is_attribute) {
-						gen->write_get_named(value, name, prev_base);
+						gen->write_get_named(value, name, prev_base, subscript->is_nullable);
 					} else {
-						gen->write_get(value, key, prev_base);
+						gen->write_get(value, key, prev_base, subscript->is_nullable);
 					}
 					gen->write_binary_operator(op_result, assignment->variant_op, value, assigned);
 					gen->pop_temporary();
@@ -1138,7 +1160,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							Vector<GDScriptCodeGenerator::Address> args;
 							args.push_back(assigned);
 							GDScriptCodeGenerator::Address call_base = is_static ? GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::CLASS) : GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::SELF);
-							gen->write_call(GDScriptCodeGenerator::Address(), call_base, member_property_setter_function, args);
+							gen->write_call(GDScriptCodeGenerator::Address(), call_base, member_property_setter_function, args, subscript->is_nullable);
 						} else if (is_static) {
 							GDScriptCodeGenerator::Address temp = codegen.add_temporary(static_var_data_type);
 							gen->write_assign(temp, assigned);
@@ -2649,6 +2671,10 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 					prop_info.usage = export_info.usage | PROPERTY_USAGE_SCRIPT_VARIABLE;
 				} else {
 					prop_info.usage = PROPERTY_USAGE_SCRIPT_VARIABLE;
+				}
+
+				if (minfo.data_type.is_nullable) {
+					prop_info.usage |= PROPERTY_USAGE_NULLABLE;
 				}
 
 				if (variable->is_static) {

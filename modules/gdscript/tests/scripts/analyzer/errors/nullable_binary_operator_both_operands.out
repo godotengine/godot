@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Both operands for the "+" operator are nullable and as such, might be unsafe to be operated together.

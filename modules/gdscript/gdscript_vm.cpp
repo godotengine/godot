@@ -36,14 +36,19 @@
 #include "core/os/os.h"
 
 #ifdef DEBUG_ENABLED
-static String _get_element_type(Variant::Type builtin_type, const StringName &native_type, const Ref<Script> &script_type) {
+static String _get_element_type(Variant::Type builtin_type, const StringName &native_type, const Ref<Script> &script_type, bool is_nullable = false) {
+	String result;
 	if (script_type.is_valid() && script_type->is_valid()) {
-		return GDScript::debug_get_script_name(script_type);
+		result = GDScript::debug_get_script_name(script_type);
 	} else if (native_type != StringName()) {
-		return native_type.operator String();
+		result = native_type.operator String();
 	} else {
-		return Variant::get_type_name(builtin_type);
+		result = Variant::get_type_name(builtin_type);
 	}
+	if (is_nullable) {
+		result += "?";
+	}
+	return result;
 }
 
 static String _get_var_type(const Variant *p_var) {
@@ -75,7 +80,7 @@ static String _get_var_type(const Variant *p_var) {
 			const Array *p_array = VariantInternal::get_array(p_var);
 			Variant::Type builtin_type = (Variant::Type)p_array->get_typed_builtin();
 			if (builtin_type != Variant::NIL) {
-				basestr += "[" + _get_element_type(builtin_type, p_array->get_typed_class_name(), p_array->get_typed_script()) + "]";
+				basestr += "[" + _get_element_type(builtin_type, p_array->get_typed_class_name(), p_array->get_typed_script(), p_array->is_nullable()) + "]";
 			}
 		} else {
 			basestr = Variant::get_type_name(p_var->get_type());
@@ -282,6 +287,8 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_JUMP_IF_NOT,                        \
 		&&OPCODE_JUMP_TO_DEF_ARGUMENT,               \
 		&&OPCODE_JUMP_IF_SHARED,                     \
+		&&OPCODE_JUMP_IF_NULL,                       \
+		&&OPCODE_EXIT_IF_NULL,                       \
 		&&OPCODE_RETURN,                             \
 		&&OPCODE_RETURN_TYPED_BUILTIN,               \
 		&&OPCODE_RETURN_TYPED_ARRAY,                 \
@@ -1259,7 +1266,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ASSIGN_TYPED_ARRAY) {
-				CHECK_SPACE(6);
+				CHECK_SPACE(7);
+
 				GET_VARIANT_PTR(dst, 0);
 				GET_VARIANT_PTR(src, 1);
 
@@ -1268,28 +1276,29 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int native_type_idx = _code_ptr[ip + 5];
 				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
 				const StringName native_type = _global_names_ptr[native_type_idx];
+				bool is_nullable = _code_ptr[ip + 6];
 
 				if (src->get_type() != Variant::ARRAY) {
 #ifdef DEBUG_ENABLED
 					err_text = vformat(R"(Trying to assign a value of type "%s" to a variable of type "Array[%s]".)",
-							_get_var_type(src), _get_element_type(builtin_type, native_type, *script_type));
+							_get_var_type(src), _get_element_type(builtin_type, native_type, *script_type, is_nullable));
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
 				}
 
 				Array *array = VariantInternal::get_array(src);
 
-				if (array->get_typed_builtin() != ((uint32_t)builtin_type) || array->get_typed_class_name() != native_type || array->get_typed_script() != *script_type) {
+				if (array->get_typed_builtin() != ((uint32_t)builtin_type) || array->get_typed_class_name() != native_type || array->get_typed_script() != *script_type || (array->is_nullable() && !is_nullable)) {
 #ifdef DEBUG_ENABLED
 					err_text = vformat(R"(Trying to assign an array of type "%s" to a variable of type "Array[%s]".)",
-							_get_var_type(src), _get_element_type(builtin_type, native_type, *script_type));
+							_get_var_type(src), _get_element_type(builtin_type, native_type, *script_type, is_nullable));
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
 				}
 
 				*dst = *src;
 
-				ip += 6;
+				ip += 7;
 			}
 			DISPATCH_OPCODE;
 
@@ -1569,7 +1578,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 			OPCODE(OPCODE_CONSTRUCT_TYPED_ARRAY) {
 				LOAD_INSTRUCTION_ARGS
-				CHECK_SPACE(3 + instr_arg_count);
+				CHECK_SPACE(4 + instr_arg_count);
 				ip += instr_arg_count;
 
 				int argc = _code_ptr[ip + 1];
@@ -1579,6 +1588,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int native_type_idx = _code_ptr[ip + 3];
 				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
 				const StringName native_type = _global_names_ptr[native_type_idx];
+				bool is_nullable = _code_ptr[ip + 4];
 
 				Array array;
 				array.resize(argc);
@@ -1589,9 +1599,9 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_INSTRUCTION_ARG(dst, argc);
 				*dst = Variant(); // Clear potential previous typed array.
 
-				*dst = Array(array, builtin_type, native_type, *script_type);
+				*dst = Array(array, builtin_type, native_type, *script_type, is_nullable);
 
-				ip += 4;
+				ip += 5;
 			}
 			DISPATCH_OPCODE;
 
@@ -2545,6 +2555,56 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_JUMP_IF_NULL) {
+				CHECK_SPACE(4);
+
+				GET_VARIANT_PTR(src, 0);
+				GET_VARIANT_PTR(dst, 1);
+
+				bool should_skip = false;
+				if (src->get_type() == Variant::NIL) {
+					should_skip = true;
+				} else if (src->get_type() == Variant::OBJECT) {
+					Object *obj = src->get_validated_object_with_check(should_skip);
+					should_skip |= obj == nullptr;
+				}
+
+				if (should_skip) {
+					*dst = Variant();
+					int to = _code_ptr[ip + 3];
+					GD_ERR_BREAK(to < 0 || to > _code_size);
+					ip = to;
+				} else {
+					ip += 4;
+				}
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_EXIT_IF_NULL) {
+				CHECK_SPACE(2);
+
+				GET_VARIANT_PTR(src, 0);
+
+				bool should_skip = false;
+				if (src->get_type() == Variant::NIL) {
+					should_skip = true;
+				} else if (src->get_type() == Variant::OBJECT) {
+					Object *obj = src->get_validated_object_with_check(should_skip);
+					should_skip |= obj == nullptr;
+				}
+
+				if (should_skip) {
+					retvalue = Variant();
+#ifdef DEBUG_ENABLED
+					exit_ok = true;
+#endif
+					OPCODE_BREAK;
+				}
+
+				ip += 2;
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_RETURN) {
 				CHECK_SPACE(2);
 				GET_VARIANT_PTR(r, 0);
@@ -2587,7 +2647,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 
 			OPCODE(OPCODE_RETURN_TYPED_ARRAY) {
-				CHECK_SPACE(5);
+				CHECK_SPACE(6);
 				GET_VARIANT_PTR(r, 0);
 
 				GET_VARIANT_PTR(script_type, 1);
@@ -2595,21 +2655,22 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int native_type_idx = _code_ptr[ip + 4];
 				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
 				const StringName native_type = _global_names_ptr[native_type_idx];
+				bool is_nullable = _code_ptr[ip + 5];
 
 				if (r->get_type() != Variant::ARRAY) {
 #ifdef DEBUG_ENABLED
 					err_text = vformat(R"(Trying to return a value of type "%s" where expected return type is "Array[%s]".)",
-							_get_var_type(r), _get_element_type(builtin_type, native_type, *script_type));
+							_get_var_type(r), _get_element_type(builtin_type, native_type, *script_type, is_nullable));
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
 				}
 
 				Array *array = VariantInternal::get_array(r);
 
-				if (array->get_typed_builtin() != ((uint32_t)builtin_type) || array->get_typed_class_name() != native_type || array->get_typed_script() != *script_type) {
+				if (array->get_typed_builtin() != ((uint32_t)builtin_type) || array->get_typed_class_name() != native_type || array->get_typed_script() != *script_type || (array->is_nullable() && !is_nullable)) {
 #ifdef DEBUG_ENABLED
 					err_text = vformat(R"(Trying to return an array of type "%s" where expected return type is "Array[%s]".)",
-							_get_var_type(r), _get_element_type(builtin_type, native_type, *script_type));
+							_get_var_type(r), _get_element_type(builtin_type, native_type, *script_type, is_nullable));
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
 				}

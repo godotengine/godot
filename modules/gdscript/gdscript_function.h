@@ -60,6 +60,7 @@ public:
 	Kind kind = UNINITIALIZED;
 
 	bool has_type = false;
+	bool is_nullable = false;
 	Variant::Type builtin_type = Variant::NIL;
 	StringName native_type;
 	Script *script_type = nullptr;
@@ -68,6 +69,11 @@ public:
 	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
 		if (!has_type) {
 			return true; // Can't type check
+		}
+
+		// Allows for nulls to be provided to setters and getters of nullable properties
+		if (is_nullable && p_variant.get_type() == Variant::NIL) {
+			return true;
 		}
 
 		switch (kind) {
@@ -199,6 +205,7 @@ public:
 	void operator=(const GDScriptDataType &p_other) {
 		kind = p_other.kind;
 		has_type = p_other.has_type;
+		is_nullable = p_other.is_nullable;
 		builtin_type = p_other.builtin_type;
 		native_type = p_other.native_type;
 		script_type = p_other.script_type;
@@ -316,6 +323,8 @@ public:
 		OPCODE_JUMP_IF_NOT,
 		OPCODE_JUMP_TO_DEF_ARGUMENT,
 		OPCODE_JUMP_IF_SHARED,
+		OPCODE_JUMP_IF_NULL,
+		OPCODE_EXIT_IF_NULL,
 		OPCODE_RETURN,
 		OPCODE_RETURN_TYPED_BUILTIN,
 		OPCODE_RETURN_TYPED_ARRAY,

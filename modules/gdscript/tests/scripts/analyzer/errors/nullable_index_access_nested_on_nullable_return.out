@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Potentially unsafe for the nullable return of "nullable_return()" to be indexed with "0".

@@ -218,7 +218,7 @@ void Array::assign(const Array &p_array) {
 		// from base classes to subclasses
 		for (int i = 0; i < size; i++) {
 			const Variant &element = source[i];
-			if (element.get_type() != Variant::NIL && (element.get_type() != Variant::OBJECT || !typed.validate_object(element, "assign"))) {
+			if ((element.get_type() != Variant::NIL && !_p->typed.is_nullable) && (element.get_type() != Variant::OBJECT || !typed.validate_object(element, "assign"))) {
 				ERR_FAIL_MSG(vformat(R"(Unable to convert array index %i from "%s" to "%s".)", i, Variant::get_type_name(element.get_type()), Variant::get_type_name(typed.type)));
 			}
 		}
@@ -237,7 +237,8 @@ void Array::assign(const Array &p_array) {
 		// from variants to primitives
 		for (int i = 0; i < size; i++) {
 			const Variant *value = source + i;
-			if (value->get_type() == typed.type) {
+			// Force-assign the current value if it's null, and we're nullable
+			if (value->get_type() == typed.type || (value->get_type() == Variant::NIL && _p->typed.is_nullable)) {
 				data[i] = *value;
 				continue;
 			}
@@ -248,13 +249,16 @@ void Array::assign(const Array &p_array) {
 			Variant::construct(typed.type, data[i], &value, 1, ce);
 			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert array index %i from "%s" to "%s".)", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.type)));
 		}
-	} else if (Variant::can_convert_strict(source_typed.type, typed.type)) {
+	} else if (Variant::can_convert_strict(source_typed.type, typed.type) && (source_typed.type != Variant::NIL || _p->typed.is_nullable)) {
 		// from primitives to different convertible primitives
 		for (int i = 0; i < size; i++) {
 			const Variant *value = source + i;
-			Callable::CallError ce;
-			Variant::construct(typed.type, data[i], &value, 1, ce);
-			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert array index %i from "%s" to "%s".)", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.type)));
+			// Avoid constructing the variant if it's null, and we're nullable
+			if (value->get_type() != Variant::NIL && !_p->typed.is_nullable) {
+				Callable::CallError ce;
+				Variant::construct(typed.type, data[i], &value, 1, ce);
+				ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert array index %i from "%s" to "%s".)", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.type)));
+			}
 		}
 	} else {
 		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Array[%s]" to "Array[%s]".)", Variant::get_type_name(source_typed.type), Variant::get_type_name(typed.type)));
@@ -753,14 +757,14 @@ const void *Array::id() const {
 	return _p;
 }
 
-Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
+Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name, const Variant &p_script, bool p_is_nullable) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();
-	set_typed(p_type, p_class_name, p_script);
+	set_typed(p_type, p_class_name, p_script, p_is_nullable);
 	assign(p_from);
 }
 
-void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
+void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script, bool p_is_nullable) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
 	ERR_FAIL_COND_MSG(_p->array.size() > 0, "Type can only be set when array is empty.");
 	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when array has no more than one user.");
@@ -772,6 +776,7 @@ void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Var
 	_p->typed.type = Variant::Type(p_type);
 	_p->typed.class_name = p_class_name;
 	_p->typed.script = script;
+	_p->typed.is_nullable = p_is_nullable;
 	_p->typed.where = "TypedArray";
 }
 
@@ -793,6 +798,10 @@ StringName Array::get_typed_class_name() const {
 
 Variant Array::get_typed_script() const {
 	return _p->typed.script;
+}
+
+bool Array::is_nullable() const {
+	return _p->typed.is_nullable;
 }
 
 void Array::make_read_only() {

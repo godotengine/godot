@@ -32,6 +32,9 @@
 
 #include "gdscript.h"
 #include "gdscript_utility_functions.h"
+#ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
+#endif
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
@@ -600,10 +603,12 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 
 	GDScriptParser::DataType resolving_datatype;
 	resolving_datatype.kind = GDScriptParser::DataType::RESOLVING;
+	bool is_nullable = p_type->datatype.is_nullable;
 	p_type->set_datatype(resolving_datatype);
 
 	GDScriptParser::DataType result;
 	result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+	result.is_nullable = is_nullable;
 
 	if (p_type->type_chain.is_empty()) {
 		// void.
@@ -622,6 +627,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			StringName qualified_name = String(first) + ENUM_SEPARATOR + String(p_type->type_chain[1]->name);
 			if (CoreConstants::is_global_enum(qualified_name)) {
 				result = make_global_enum_type(enum_name, first, true);
+				result.is_nullable = is_nullable;
 				return result;
 			} else {
 				push_error(vformat(R"(Name "%s" is not a nested type of "Variant".)", enum_name), p_type->type_chain[1]);
@@ -675,6 +681,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				result = make_script_meta_type(ResourceLoader::load(path, "Script"));
 			}
 		}
+		result.is_nullable = is_nullable;
 	} else if (ProjectSettings::get_singleton()->has_autoload(first) && ProjectSettings::get_singleton()->get_autoload(first).is_singleton) {
 		const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(first);
 		Ref<GDScriptParserRef> ref = get_parser_for(autoload.path);
@@ -687,15 +694,18 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			return bad_type;
 		}
 		result = ref->get_parser()->head->get_datatype();
+		result.is_nullable = is_nullable;
 	} else if (ClassDB::has_enum(parser->current_class->base_type.native_type, first)) {
 		// Native enum in current class.
 		result = make_native_enum_type(first, parser->current_class->base_type.native_type);
+		result.is_nullable = is_nullable;
 	} else if (CoreConstants::is_global_enum(first)) {
 		if (p_type->type_chain.size() > 1) {
 			push_error(R"(Enums cannot contain nested types.)", p_type->type_chain[1]);
 			return bad_type;
 		}
 		result = make_global_enum_type(first, StringName());
+		result.is_nullable = is_nullable;
 	} else {
 		// Classes in current scope.
 		List<GDScriptParser::ClassNode *> script_classes;
@@ -750,6 +760,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				}
 			}
 		}
+		// Unless we return a bad type, we should have a valid result to nullify (if needed)
+		result.is_nullable = is_nullable;
 	}
 	if (!result.is_set()) {
 		push_error(vformat(R"(Could not find type "%s" in the current scope.)", first), p_type);
@@ -769,6 +781,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 					push_error(vformat(R"(Member "%s" under base "%s" is not a valid type.)", p_type->type_chain[i]->name, base.to_string()), p_type->type_chain[1]);
 					return bad_type;
 				}
+				result.is_nullable = is_nullable;
 			}
 		} else if (result.kind == GDScriptParser::DataType::NATIVE) {
 			// Only enums allowed for native.
@@ -788,6 +801,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			return bad_type;
 		}
 	}
+	result.is_nullable = is_nullable;
 
 	if (result.builtin_type != Variant::ARRAY && p_type->container_type != nullptr) {
 		push_error("Only arrays can specify the collection element type.", p_type);
@@ -1822,6 +1836,11 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 			}
 		}
 
+		if (!p_assignable->infer_datatype && is_effectively_non_nullable(p_assignable->initializer)) {
+			// This is a narrow nullable being assigned to a temporary variable, let's drop the "is_nullable" qualifier from the current variable
+			initializer_type.is_nullable = false;
+		}
+
 		if (!has_specified_type) {
 			type = initializer_type;
 
@@ -1861,6 +1880,12 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 	type.is_constant = is_constant;
 	type.is_read_only = false;
 	p_assignable->set_datatype(type);
+	// Makes it easier to figure out whether this assignment is nullable or not
+	p_assignable->identifier->datatype.is_nullable = p_assignable->get_datatype().is_nullable;
+
+	if (!p_assignable->infer_datatype && has_specified_type) {
+		assignable_nullity_guard(p_assignable->identifier, p_assignable->initializer, p_assignable);
+	}
 }
 
 void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable, bool p_is_local) {
@@ -1903,12 +1928,31 @@ void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parame
 void GDScriptAnalyzer::resolve_if(GDScriptParser::IfNode *p_if) {
 	reduce_expression(p_if->condition);
 
+	Vector<GDScriptParser::IdentifierNode *> identifiers = deduce_nullable_narrowing(p_if->condition);
+	push_narrowed_nullables(identifiers);
 	resolve_suite(p_if->true_block);
 	p_if->set_datatype(p_if->true_block->get_datatype());
+	pop_narrowed_nullables(identifiers);
 
 	if (p_if->false_block != nullptr) {
+		// Look for other if-nodes
+		GDScriptParser::IfNode *next_if_node = nullptr;
+		for (GDScriptParser::Node *node : p_if->false_block->statements) {
+			if (node->type == GDScriptParser::Node::IF) {
+				next_if_node = static_cast<GDScriptParser::IfNode *>(node);
+				break;
+			}
+		}
+		// If we don't have a next if node it means this false block is an else
+		if (!next_if_node) {
+			identifiers = deduce_nullable_narrowing(p_if->condition, true);
+			push_narrowed_nullables(identifiers);
+		}
 		resolve_suite(p_if->false_block);
 		decide_suite_type(p_if, p_if->false_block);
+		if (!next_if_node) {
+			pop_narrowed_nullables(identifiers);
+		}
 	}
 }
 
@@ -2047,7 +2091,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 	if (p_for->variable) {
 		p_for->variable->set_datatype(variable_type);
 	}
-
+	for_nullity_guard(p_for);
 	resolve_suite(p_for->loop);
 	p_for->set_datatype(p_for->loop->get_datatype());
 #ifdef DEBUG_ENABLED
@@ -2057,11 +2101,53 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 #endif
 }
 
+bool GDScriptAnalyzer::for_nullity_guard(GDScriptParser::ForNode *p_for) {
+	if (!p_for->list || p_for->list->is_constant) {
+		// Nothing to do here
+		return true;
+	}
+
+	switch (p_for->list->type) {
+		case GDScriptParser::Node::IDENTIFIER: {
+			GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(p_for->list);
+			if (is_effectively_non_nullable(identifier)) {
+				return true;
+			}
+
+			push_nullable_error(R"*(Potentially unsafe for nullable "%s" to be used in a for-loop.)*", { identifier }, identifier, identifier->name);
+			return false;
+		} break;
+		case GDScriptParser::Node::SUBSCRIPT: {
+			GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_for->list);
+			if (is_effectively_nullable(subscript)) {
+				push_nullable_error(R"*(Potentially unsafe for the nullable expression "%s" to be used in a for-loop.)*", {}, subscript, print_expression(subscript));
+				return false;
+			}
+
+			return true;
+		} break;
+		case GDScriptParser::Node::CALL: {
+			GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(p_for->list);
+			if (call->get_datatype().is_nullable) {
+				push_nullable_error(R"*(Potentially unsafe for the nullable return of "%s()" to be used in a for-loop.)*", {}, call, call->function_name);
+				return false;
+			}
+			return true;
+		} break;
+		default: {
+			return true;
+		}
+	}
+}
+
 void GDScriptAnalyzer::resolve_while(GDScriptParser::WhileNode *p_while) {
 	resolve_node(p_while->condition, false);
 
+	Vector<GDScriptParser::IdentifierNode *> identifiers = deduce_nullable_narrowing(p_while->condition);
+	push_narrowed_nullables(identifiers);
 	resolve_suite(p_while->loop);
 	p_while->set_datatype(p_while->loop->get_datatype());
+	pop_narrowed_nullables(identifiers);
 }
 
 void GDScriptAnalyzer::resolve_assert(GDScriptParser::AssertNode *p_assert) {
@@ -2089,28 +2175,42 @@ void GDScriptAnalyzer::resolve_assert(GDScriptParser::AssertNode *p_assert) {
 void GDScriptAnalyzer::resolve_match(GDScriptParser::MatchNode *p_match) {
 	reduce_expression(p_match->test);
 
+	Vector<GDScriptParser::IdentifierNode *> identifiers = deduce_nullable_narrowing(p_match->test);
+	push_narrowed_nullables(identifiers);
 	for (int i = 0; i < p_match->branches.size(); i++) {
-		resolve_match_branch(p_match->branches[i], p_match->test);
+		resolve_match_branch(p_match->branches[i], p_match->test, identifiers);
 
 		decide_suite_type(p_match, p_match->branches[i]);
 	}
+	pop_narrowed_nullables(identifiers);
 }
 
-void GDScriptAnalyzer::resolve_match_branch(GDScriptParser::MatchBranchNode *p_match_branch, GDScriptParser::ExpressionNode *p_match_test) {
+void GDScriptAnalyzer::resolve_match_branch(GDScriptParser::MatchBranchNode *p_match_branch, GDScriptParser::ExpressionNode *p_match_test, Vector<GDScriptParser::IdentifierNode *> p_nullable_identifier) {
 	for (int i = 0; i < p_match_branch->patterns.size(); i++) {
-		resolve_match_pattern(p_match_branch->patterns[i], p_match_test);
+		bool is_nullable = false;
+		resolve_match_pattern(p_match_branch->patterns[i], p_match_test, &is_nullable);
+		if (is_nullable) {
+			pop_narrowed_nullables(p_nullable_identifier);
+		}
 	}
 
 	resolve_suite(p_match_branch->block);
 
 	decide_suite_type(p_match_branch, p_match_branch->block);
+
+	// Re-push our nullable identifiers so the next branch has access to it
+	push_narrowed_nullables(p_nullable_identifier);
 }
 
-void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_match_pattern, GDScriptParser::ExpressionNode *p_match_test) {
+void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_match_pattern, GDScriptParser::ExpressionNode *p_match_test, bool *p_is_nullable) {
 	if (p_match_pattern == nullptr) {
 		return;
 	}
-
+#define SET_NULLABLE(value)         \
+	if (p_is_nullable != nullptr) { \
+		*p_is_nullable = value;     \
+	}
+	SET_NULLABLE(false);
 	GDScriptParser::DataType result;
 
 	switch (p_match_pattern->pattern_type) {
@@ -2118,6 +2218,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 			if (p_match_pattern->literal) {
 				reduce_literal(p_match_pattern->literal);
 				result = p_match_pattern->literal->get_datatype();
+				SET_NULLABLE(p_match_pattern->literal->reduced_value.get_type() == Variant::NIL)
 			}
 			break;
 		case GDScriptParser::PatternNode::PT_EXPRESSION:
@@ -2137,6 +2238,12 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 					if (!expr || expr->type != GDScriptParser::Node::IDENTIFIER) {
 						push_error(R"(Expression in match pattern must be a constant expression, an identifier, or an attribute access ("A.B").)", expr);
 					}
+
+					if (is_effectively_nullable(p_match_pattern->expression)) {
+						SET_NULLABLE(true);
+					}
+				} else {
+					SET_NULLABLE(expr->reduced_value.get_type() == Variant::NIL);
 				}
 			}
 			break;
@@ -2147,6 +2254,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 				result.kind = GDScriptParser::DataType::VARIANT;
 			}
 			p_match_pattern->bind->set_datatype(result);
+			SET_NULLABLE(true);
 #ifdef DEBUG_ENABLED
 			is_shadowing(p_match_pattern->bind, "pattern bind");
 			if (p_match_pattern->bind->usages == 0 && !String(p_match_pattern->bind->name).begins_with("_")) {
@@ -2180,10 +2288,13 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 		case GDScriptParser::PatternNode::PT_WILDCARD:
 		case GDScriptParser::PatternNode::PT_REST:
 			result.kind = GDScriptParser::DataType::VARIANT;
+			SET_NULLABLE(true);
 			break;
 	}
 
 	p_match_pattern->set_datatype(result);
+
+#undef SET_NULLABLE
 }
 
 void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
@@ -2257,6 +2368,16 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 	}
 
 	p_return->set_datatype(result);
+	return_nullity_guard(p_return, expected_type);
+}
+
+bool GDScriptAnalyzer::return_nullity_guard(GDScriptParser::ReturnNode *p_return, GDScriptParser::DataType p_expected_type) {
+	GDScriptParser::DataType result = p_return->get_datatype();
+	if ((result.is_nullable && is_effectively_nullable(p_return->return_value) && !p_expected_type.is_nullable) || (is_deeply_nullable(result, true) && !is_deeply_nullable(p_expected_type, true))) {
+		push_nullable_error(R"(Cannot return nullable value of type "%s" because the function return type is "%s".)", {}, p_return, result.to_string(), p_expected_type.to_string());
+		return false;
+	}
+	return true;
 }
 
 void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expression, bool p_is_root) {
@@ -2414,11 +2535,14 @@ void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::Expr
 
 	Variant converted_to;
 	const Variant *converted_from = &p_expression->reduced_value;
-	Callable::CallError call_error;
-	Variant::construct(p_type.builtin_type, converted_to, &converted_from, 1, call_error);
-	if (call_error.error) {
-		push_error(vformat(R"(Failed to convert a value of type "%s" to "%s".)", value_type.to_string(), p_type.to_string()), p_expression);
-		return;
+	// If our source is null and our target is nullable, no conversion is needed
+	if (!p_type.is_nullable || converted_from->get_type() != Variant::NIL) {
+		Callable::CallError call_error;
+		Variant::construct(p_type.builtin_type, converted_to, &converted_from, 1, call_error);
+		if (call_error.error) {
+			push_error(vformat(R"(Failed to convert a value of type "%s" to "%s".)", value_type.to_string(), p_type.to_string()), p_expression);
+			return;
+		}
 	}
 
 #ifdef DEBUG_ENABLED
@@ -2465,6 +2589,15 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 
 	if (p_assignment->assigned_value == nullptr || p_assignment->assignee == nullptr) {
 		return;
+	}
+
+	// Nullable access ("?." syntax) is not allowed for assignments
+	if (p_assignment->assignee->type == GDScriptParser::Node::SUBSCRIPT) {
+		GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_assignment->assignee);
+		if (subscript->is_nullable) {
+			push_error(vformat(R"*(The left-hand side of an assignment expression may not contain a nullable access operator ("?.").)*"), p_assignment);
+			return;
+		}
 	}
 
 	GDScriptParser::DataType assignee_type = p_assignment->assignee->get_datatype();
@@ -2595,11 +2728,125 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 		downgrade_node_type_source(p_assignment->assigned_value);
 	}
 
+	assignment_nullity_guard(p_assignment);
 #ifdef DEBUG_ENABLED
 	if (assignee_type.is_hard_type() && assignee_type.builtin_type == Variant::INT && assigned_value_type.builtin_type == Variant::FLOAT) {
 		parser->push_warning(p_assignment->assigned_value, GDScriptWarning::NARROWING_CONVERSION);
 	}
 #endif
+}
+
+bool GDScriptAnalyzer::assignment_nullity_guard(GDScriptParser::AssignmentNode *p_assignment) {
+	if (!p_assignment) {
+		return true;
+	}
+
+	// Type-check the assignment for nullables
+	assignable_nullity_guard(p_assignment->assignee, p_assignment->assigned_value, p_assignment);
+
+	// Treat the assignment as a binary operation for the sake of nullity-safety-check, except if the assignment is a "plain" one
+	GDScriptParser::BinaryOpNode *binary_op = parser->alloc_node<GDScriptParser::BinaryOpNode>();
+	switch (p_assignment->operation) {
+		case GDScriptParser::AssignmentNode::OP_NONE: {
+			return true; // Already taken care of above
+		} break;
+		case GDScriptParser::AssignmentNode::OP_ADDITION: {
+			binary_op->operation = GDScriptParser::BinaryOpNode::OP_ADDITION;
+			binary_op->variant_op = Variant::OP_ADD;
+		} break;
+		case GDScriptParser::AssignmentNode::OP_SUBTRACTION: {
+			binary_op->operation = GDScriptParser::BinaryOpNode::OP_SUBTRACTION;
+			binary_op->variant_op = Variant::OP_SUBTRACT;
+		} break;
+		case GDScriptParser::AssignmentNode::OP_MULTIPLICATION: {
+			binary_op->operation = GDScriptParser::BinaryOpNode::OP_MULTIPLICATION;
+			binary_op->variant_op = Variant::OP_MULTIPLY;
+		} break;
+		case GDScriptParser::AssignmentNode::OP_DIVISION: {
+			binary_op->operation = GDScriptParser::BinaryOpNode::OP_DIVISION;
+			binary_op->variant_op = Variant::OP_DIVIDE;
+		} break;
+		case GDScriptParser::AssignmentNode::OP_MODULO: {
+			binary_op->operation = GDScriptParser::BinaryOpNode::OP_MODULO;
+			binary_op->variant_op = Variant::OP_MODULE;
+		} break;
+		case GDScriptParser::AssignmentNode::OP_POWER: {
+			binary_op->operation = GDScriptParser::BinaryOpNode::OP_POWER;
+			binary_op->variant_op = Variant::OP_POWER;
+		} break;
+		case GDScriptParser::AssignmentNode::OP_BIT_SHIFT_LEFT: {
+			binary_op->operation = GDScriptParser::BinaryOpNode::OP_BIT_LEFT_SHIFT;
+			binary_op->variant_op = Variant::OP_SHIFT_LEFT;
+		} break;
+		case GDScriptParser::AssignmentNode::OP_BIT_SHIFT_RIGHT: {
+			binary_op->operation = GDScriptParser::BinaryOpNode::OP_BIT_RIGHT_SHIFT;
+			binary_op->variant_op = Variant::OP_SHIFT_RIGHT;
+		} break;
+		case GDScriptParser::AssignmentNode::OP_BIT_AND: {
+			binary_op->operation = GDScriptParser::BinaryOpNode::OP_BIT_AND;
+			binary_op->variant_op = Variant::OP_BIT_AND;
+		} break;
+		case GDScriptParser::AssignmentNode::OP_BIT_OR: {
+			binary_op->operation = GDScriptParser::BinaryOpNode::OP_BIT_OR;
+			binary_op->variant_op = Variant::OP_BIT_OR;
+		} break;
+		case GDScriptParser::AssignmentNode::OP_BIT_XOR: {
+			binary_op->operation = GDScriptParser::BinaryOpNode::OP_BIT_XOR;
+			binary_op->variant_op = Variant::OP_BIT_XOR;
+		} break;
+	}
+	binary_op->start_line = p_assignment->start_line;
+	binary_op->end_line = p_assignment->end_line;
+	binary_op->start_column = p_assignment->start_column;
+	binary_op->end_column = p_assignment->end_column;
+	binary_op->leftmost_column = p_assignment->leftmost_column;
+	binary_op->rightmost_column = p_assignment->rightmost_column;
+	binary_op->left_operand = p_assignment->assignee;
+	binary_op->right_operand = p_assignment->assigned_value;
+	reduce_binary_op(binary_op);
+	return false;
+}
+
+bool GDScriptAnalyzer::assignable_nullity_guard(GDScriptParser::ExpressionNode *p_assignee, GDScriptParser::ExpressionNode *p_assigned_value, GDScriptParser::Node *p_origin) {
+	if (!p_assignee || !p_assigned_value || !p_origin) {
+		return true;
+	}
+
+	if (p_assignee->type != GDScriptParser::Node::IDENTIFIER) {
+		return true;
+	}
+
+	GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(p_assignee);
+	// Assigning null or variant to a narrowed identifier should broaden it for safety
+	if (identifier->get_datatype().is_nullable && is_effectively_non_nullable(identifier)) {
+		GDScriptParser::DataType data_type = p_assigned_value->get_datatype();
+		if (is_potentially_null_value(p_assigned_value)) {
+			pop_narrowed_nullables({ identifier });
+		}
+	}
+
+	// Forbid nullables being assigned to non-nullables, unless the non-nullable is an object
+	if (identifier->get_datatype().builtin_type != Variant::OBJECT && !identifier->get_datatype().is_nullable && p_assigned_value->get_datatype().is_nullable && is_effectively_nullable(p_assigned_value)) {
+		// Single out calls to have a more accurate error message
+		if (p_assigned_value->type == GDScriptParser::Node::CALL) {
+			push_nullable_error(R"*(Potentially unsafe to assign the nullable return of "%s()" to non-nullable "%s".)*", {}, p_origin, static_cast<GDScriptParser::CallNode *>(p_assigned_value)->function_name, identifier->name);
+		} else {
+			push_nullable_error(R"*(Potentially unsafe to assign nullable "%s" to non-nullable "%s".)*", {}, p_origin, print_expression(p_assigned_value), identifier->name);
+		}
+		return false;
+	}
+
+	// Special case for container types, forbid assigning a nullable typed array to a non-nullable one (Like assigning an "Array[int?]" to an "Array[int]")
+	if (p_origin->get_datatype().has_container_element_type() && p_assigned_value->get_datatype().has_container_element_type()) {
+		GDScriptParser::DataType identifier_data_type = p_origin->get_datatype().get_container_element_type();
+		GDScriptParser::DataType assigned_data_type = p_assigned_value->get_datatype().get_container_element_type();
+		if (identifier_data_type.builtin_type != Variant::OBJECT && !identifier_data_type.is_nullable && assigned_data_type.is_nullable) {
+			push_nullable_error(R"*(Value of type "%s" cannot be assigned to a variable of type "%s".)*", {}, p_origin, p_assigned_value->get_datatype().to_string(), p_origin->get_datatype().to_string());
+			return false;
+		}
+	}
+
+	return true;
 }
 
 void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
@@ -2638,6 +2885,13 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 
 void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_op) {
 	reduce_expression(p_binary_op->left_operand);
+
+	Vector<GDScriptParser::IdentifierNode *> narrowed_identifiers;
+	if (p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_LOGIC_AND) {
+		// Special handling of the "and" operator that allows us to have "short-circuit" for nullable checks
+		narrowed_identifiers = deduce_nullable_narrowing(p_binary_op->left_operand, false);
+		push_narrowed_nullables(narrowed_identifiers);
+	}
 	reduce_expression(p_binary_op->right_operand);
 
 	GDScriptParser::DataType left_type;
@@ -2650,7 +2904,14 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 	}
 
 	if (!left_type.is_set() || !right_type.is_set()) {
+		pop_narrowed_nullables(narrowed_identifiers);
 		return;
+	}
+
+	// Coalescing is handled differently than the other operators
+	if (p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_COALESCE) {
+		pop_narrowed_nullables(narrowed_identifiers);
+		return reduce_coalesce_op(p_binary_op);
 	}
 
 #ifdef DEBUG_ENABLED
@@ -2680,6 +2941,7 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 		}
 		p_binary_op->set_datatype(type_from_variant(p_binary_op->reduced_value, p_binary_op));
 
+		pop_narrowed_nullables(narrowed_identifiers);
 		return;
 	}
 
@@ -2693,6 +2955,7 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 		result.builtin_type = Variant::BOOL;
 	} else if (left_type.is_variant() || right_type.is_variant()) {
 		// Cannot infer type because one operand can be anything.
+
 		result.kind = GDScriptParser::DataType::VARIANT;
 		mark_node_unsafe(p_binary_op);
 	} else if (p_binary_op->variant_op < Variant::OP_MAX) {
@@ -2708,6 +2971,61 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 	}
 
 	p_binary_op->set_datatype(result);
+	binary_op_nullity_guard(p_binary_op);
+	pop_narrowed_nullables(narrowed_identifiers);
+}
+
+void GDScriptAnalyzer::reduce_coalesce_op(GDScriptParser::BinaryOpNode *p_coalesce_op) {
+	GDScriptParser::DataType left_type = p_coalesce_op->left_operand->get_datatype();
+	GDScriptParser::DataType right_type = p_coalesce_op->right_operand->get_datatype();
+
+	if (left_type.is_variant() || right_type.is_variant()) {
+		return;
+	}
+
+	GDScriptParser::DataType non_nullable_left_type = left_type;
+	non_nullable_left_type.is_nullable = false;
+	if (!is_type_compatible(non_nullable_left_type, right_type, false, p_coalesce_op)) {
+		push_error(vformat(R"(Invalid operands "%s" and "%s" for "??" operator.)", left_type.to_string(), right_type.to_string()), p_coalesce_op);
+	}
+
+	p_coalesce_op->set_datatype(left_type);
+	p_coalesce_op->datatype.is_nullable = (left_type.is_nullable || left_type.builtin_type == Variant::OBJECT) && right_type.is_nullable;
+}
+
+bool GDScriptAnalyzer::binary_op_nullity_guard(GDScriptParser::BinaryOpNode *p_binary_op) {
+	GDScriptParser::ExpressionNode *left_operand = p_binary_op->left_operand, *right_operand = p_binary_op->right_operand;
+	GDScriptParser::DataType left_type = left_operand->get_datatype(), right_type = right_operand->get_datatype();
+
+	if (!left_type.is_nullable && !right_type.is_nullable) {
+		return true;
+	}
+	if (p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_COMP_EQUAL || p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_COMP_NOT_EQUAL || p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_LOGIC_AND || p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_LOGIC_OR || p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_COALESCE) {
+		// We don't need to check those operators for which null is a valid operand
+		return true;
+	}
+	if (is_effectively_non_nullable(p_binary_op->left_operand) && is_effectively_non_nullable(p_binary_op->right_operand)) {
+		return true;
+	}
+
+	if (left_type.is_nullable && right_type.is_nullable) {
+		push_nullable_error(
+				R"*(Both operands for the "%s" operator are nullable and as such, might be unsafe to be operated together.)*",
+				{ p_binary_op->left_operand, p_binary_op->right_operand },
+				p_binary_op,
+				Variant::get_operator_name(p_binary_op->variant_op));
+	} else {
+		String nullable_type = (left_type.is_nullable ? left_type : right_type).to_string();
+		String operand_side = left_type.is_nullable ? "left-side" : "right-side";
+		GDScriptParser::ExpressionNode *nullable_operand = left_type.is_nullable ? p_binary_op->left_operand : p_binary_op->right_operand;
+		push_nullable_error(
+				R"*(Potentially unsafe for nullable %s operand, of type "%s", to be used with the "%s" operator.)*",
+				{ nullable_operand },
+				p_binary_op,
+				operand_side, nullable_type, Variant::get_operator_name(p_binary_op->variant_op));
+	}
+
+	return false;
 }
 
 #ifdef SUGGEST_GODOT4_RENAMES
@@ -3081,6 +3399,10 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			base_type = subscript->base->get_datatype();
 			is_self = subscript->base->type == GDScriptParser::Node::SELF;
 		}
+
+		if (!is_self) {
+			call_nullity_guard(p_call);
+		}
 	} else {
 		// Invalid call. Error already sent in parser.
 		// TODO: Could check if Callable here too.
@@ -3211,6 +3533,104 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 	}
 
 	p_call->set_datatype(call_type);
+}
+
+bool GDScriptAnalyzer::call_nullity_guard(GDScriptParser::CallNode *p_call) {
+	if (p_call->callee->type != GDScriptParser::Node::SUBSCRIPT) {
+		// Nothing to do here
+		return true;
+	}
+
+	GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
+	if (subscript->is_nullable || !subscript->base->get_datatype().is_nullable) {
+		return true;
+	}
+
+#define IDENTIFIER_CLAUSE                                                    \
+	if (is_effectively_nullable(identifier)) {                               \
+		push_nullable_error(                                                 \
+				R"*(Potentially unsafe for nullable "%s" to call "%s()".)*", \
+				{ identifier },                                              \
+				identifier,                                                  \
+				identifier->name, p_call->function_name);                    \
+		return false;                                                        \
+	}
+
+	switch (subscript->base->type) {
+		case GDScriptParser::Node::IDENTIFIER: {
+			GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(subscript->base);
+			// The current call is being called off this identifier
+			IDENTIFIER_CLAUSE
+		} break;
+		case GDScriptParser::Node::CALL: {
+			GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(subscript->base);
+			// The current call is being called off this inner call
+			if (call->get_datatype().is_nullable) {
+				push_nullable_error(
+						R"*(Potentially unsafe for the nullable return of "%s" to call "%s()".)*",
+						{},
+						call,
+						call->function_name, p_call->function_name);
+				return false;
+			}
+		} break;
+		case GDScriptParser::Node::SUBSCRIPT: {
+			GDScriptParser::SubscriptNode *inner_subscript = static_cast<GDScriptParser::SubscriptNode *>(subscript->base);
+			if (inner_subscript->is_nullable) {
+				push_nullable_error(
+						R"*(Potentially unsafe for nullable "%s" to call "%s()".)*",
+						{ inner_subscript->is_attribute ? inner_subscript->attribute : inner_subscript->index },
+						inner_subscript,
+						print_expression(inner_subscript), p_call->function_name);
+				return false;
+			}
+
+			if (inner_subscript->is_attribute) {
+				GDScriptParser::IdentifierNode *identifier = inner_subscript->attribute;
+				// This identifier is being used a base to the current subscript
+				IDENTIFIER_CLAUSE
+			} else {
+				GDScriptParser::ExpressionNode *index = inner_subscript->index;
+				if (is_deeply_nullable(inner_subscript->get_datatype())) {
+					push_nullable_error(
+							R"*(Potentially unsafe for nullable "%s" to call "%s()".)*",
+							{},
+							index,
+							print_expression(inner_subscript), p_call->function_name);
+					return false;
+				} else if (!inner_subscript->base->get_datatype().is_nullable) {
+					return subscript_nullity_guard(inner_subscript);
+				}
+			}
+
+			return true;
+		} break;
+		case GDScriptParser::Node::CAST: {
+			GDScriptParser::CastNode *cast = static_cast<GDScriptParser::CastNode *>(subscript->base);
+			if (cast->get_datatype().is_nullable) {
+				push_nullable_error(
+						R"*(Potentially unsafe for the nullable cast expression "%s" to call "%s()".)*",
+						{},
+						cast,
+						print_expression(cast), p_call->function_name);
+				return false;
+			}
+		} break;
+		default: {
+			// Ideally we would like to support every case for specific messages, but this is better than nothing
+			if (subscript->base->get_datatype().is_nullable) {
+				push_nullable_error(
+						R"*(Potentially unsafe to call "%s()" on a nullable base.)*",
+						{},
+						subscript->base,
+						p_call->function_name);
+				return false;
+			}
+			return true; // Shouldn't happen
+		}
+	}
+	return true;
+#undef IDENTIFIER_CLAUSE
 }
 
 void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
@@ -4232,13 +4652,182 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 		}
 	}
 
+	if (p_subscript->base->get_datatype().is_nullable) {
+		result_type.is_nullable = true;
+	}
+
 	p_subscript->set_datatype(result_type);
+
+	subscript_nullity_guard(p_subscript);
+}
+
+bool GDScriptAnalyzer::subscript_nullity_guard(GDScriptParser::SubscriptNode *p_subscript) {
+	if (!p_subscript->attribute || !p_subscript->index || p_subscript->is_nullable) {
+		return true;
+	}
+
+#define IDENTIFIER_CLAUSE                                                                                                                                                                               \
+	if (is_effectively_nullable(identifier)) {                                                                                                                                                          \
+		if (is_subscript_key) {                                                                                                                                                                         \
+			push_nullable_error(                                                                                                                                                                        \
+					R"*(Potentially unsafe to use nullable "%s" as an %s.)*",                                                                                                                           \
+					{ identifier },                                                                                                                                                                     \
+					identifier,                                                                                                                                                                         \
+					identifier->name, p_subscript->is_attribute ? "attribute" : "index");                                                                                                               \
+		} else {                                                                                                                                                                                        \
+			push_nullable_error(                                                                                                                                                                        \
+					R"*(Potentially unsafe to access nullable "%s" with %s "%s".)*",                                                                                                                    \
+					{ identifier },                                                                                                                                                                     \
+					identifier,                                                                                                                                                                         \
+					identifier->name, p_subscript->is_attribute ? "attribute" : "index", p_subscript->is_attribute ? String(p_subscript->attribute->name) : String(p_subscript->index->reduced_value)); \
+		}                                                                                                                                                                                               \
+                                                                                                                                                                                                        \
+		return false;                                                                                                                                                                                   \
+	}
+
+	GDScriptParser::ExpressionNode *expression = p_subscript->base;
+	bool is_subscript_key = false;
+
+	// Address the subscript key itself being nullable
+	if (!p_subscript->is_attribute && p_subscript->index && is_deeply_nullable(p_subscript->index->get_datatype())) {
+		expression = p_subscript->index;
+		is_subscript_key = true;
+	}
+
+	switch (expression->type) {
+		case GDScriptParser::Node::IDENTIFIER: {
+			GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(expression);
+			// This identifier is being used a base to the current subscript
+			IDENTIFIER_CLAUSE
+		} break;
+		case GDScriptParser::Node::CALL: {
+			GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(expression);
+			// The return of this call is being used as a base to the current subscript
+			if (call->get_datatype().is_nullable) {
+				if (is_subscript_key) {
+					push_nullable_error(
+							R"*(Potentially unsafe for the nullable return of "%s()" to be used as an index.)*",
+							{},
+							call,
+							call->function_name);
+				} else {
+					if (p_subscript->is_attribute) {
+						push_nullable_error(
+								R"*(Potentially unsafe for the nullable return of "%s()" to access "%s".)*",
+								{},
+								call,
+								call->function_name, String(p_subscript->attribute->name));
+					} else {
+						push_nullable_error(
+								R"*(Potentially unsafe for the nullable return of "%s()" to be indexed with "%s".)*",
+								{},
+								call,
+								call->function_name, String(p_subscript->index->reduced_value));
+					}
+				}
+				return false;
+			}
+		} break;
+		case GDScriptParser::Node::SUBSCRIPT: {
+			GDScriptParser::SubscriptNode *inner_subscript = static_cast<GDScriptParser::SubscriptNode *>(expression);
+			if (inner_subscript->is_nullable) {
+				if (is_subscript_key) {
+					push_nullable_error(
+							R"*(Potentially unsafe for the nullable expression "%s" to be used as an index.)*",
+							{ inner_subscript->is_attribute ? inner_subscript->attribute : inner_subscript->index },
+							inner_subscript,
+							print_expression(inner_subscript));
+				} else {
+					push_nullable_error(
+							R"*(Potentially unsafe to access nullable "%s" with %s "%s".)*",
+							{ inner_subscript->is_attribute ? inner_subscript->attribute : inner_subscript->index },
+							inner_subscript,
+							print_expression(inner_subscript), p_subscript->is_attribute ? "attribute" : "index", p_subscript->is_attribute ? String(p_subscript->attribute->name) : String(p_subscript->index->reduced_value));
+				}
+				return false;
+			}
+
+			if (inner_subscript->is_attribute) {
+				GDScriptParser::IdentifierNode *identifier = inner_subscript->attribute;
+				// This identifier is being used a base to the current subscript
+				IDENTIFIER_CLAUSE
+			} else {
+				GDScriptParser::ExpressionNode *index = inner_subscript->index;
+				if (is_deeply_nullable(inner_subscript->get_datatype())) {
+					if (is_subscript_key) {
+						push_nullable_error(
+								R"*(Potentially unsafe to use nullable "%s" as an index.)*",
+								{},
+								index,
+								print_expression(inner_subscript));
+					} else {
+						push_nullable_error(
+								R"*(Potentially unsafe to access nullable "%s" with %s "%s".)*",
+								{},
+								index,
+								print_expression(inner_subscript), p_subscript->is_attribute ? "attribute" : "index", p_subscript->is_attribute ? String(p_subscript->attribute->name) : String(p_subscript->index->reduced_value));
+					}
+					return false;
+				} else if (!inner_subscript->base->get_datatype().is_nullable) {
+					return subscript_nullity_guard(inner_subscript);
+				}
+			}
+
+			return true;
+		} break;
+		case GDScriptParser::Node::CAST: {
+			GDScriptParser::CastNode *cast = static_cast<GDScriptParser::CastNode *>(expression);
+			if (cast->get_datatype().is_nullable) {
+				if (is_subscript_key) {
+					push_nullable_error(
+							R"*(Potentially unsafe to use nullable cast expression "%s" as an %s.)*",
+							{},
+							cast,
+							print_expression(cast), p_subscript->is_attribute ? "attribute" : "index");
+				} else {
+					push_nullable_error(
+							R"*(Potentially unsafe to access nullable cast expression "%s" with %s "%s".)*",
+							{},
+							cast,
+							print_expression(cast), p_subscript->is_attribute ? "attribute" : "index", p_subscript->is_attribute ? String(p_subscript->attribute->name) : String(p_subscript->index->reduced_value));
+				}
+				return false;
+			}
+		} break;
+		default: {
+			// Ideally we would like to support every case for specific messages, but this is better than nothing
+			if (expression->get_datatype().is_nullable) {
+				push_nullable_error(
+						R"*(Potentially unsafe to access "%s" on a nullable base.)*",
+						{},
+						expression,
+						print_expression(expression));
+				return false;
+			}
+			return true;
+		}
+	}
+#undef IDENTIFIER_CLAUSE
+	return true;
 }
 
 void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternary_op, bool p_is_root) {
 	reduce_expression(p_ternary_op->condition);
+
+	// Allow us to determine whether this ternary results in a nullable expression or not
+	bool is_result_nullable = false;
+
+	Vector<GDScriptParser::IdentifierNode *> identifiers = deduce_nullable_narrowing(p_ternary_op->condition);
+	push_narrowed_nullables(identifiers);
 	reduce_expression(p_ternary_op->true_expr, p_is_root);
+	is_result_nullable |= is_effectively_nullable(p_ternary_op->true_expr);
+	pop_narrowed_nullables(identifiers);
+
+	identifiers = deduce_nullable_narrowing(p_ternary_op->condition, true);
+	push_narrowed_nullables(identifiers);
 	reduce_expression(p_ternary_op->false_expr, p_is_root);
+	is_result_nullable |= is_effectively_nullable(p_ternary_op->false_expr);
+	pop_narrowed_nullables(identifiers);
 
 	GDScriptParser::DataType result;
 
@@ -4279,6 +4868,7 @@ void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternar
 		}
 	}
 	result.type_source = true_type.is_hard_type() && false_type.is_hard_type() ? GDScriptParser::DataType::ANNOTATED_INFERRED : GDScriptParser::DataType::INFERRED;
+	result.is_nullable = is_result_nullable;
 
 	p_ternary_op->set_datatype(result);
 }
@@ -4350,13 +4940,355 @@ void GDScriptAnalyzer::reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op) 
 	} else {
 		bool valid = false;
 		result = get_operation_type(p_unary_op->variant_op, operand_type, valid, p_unary_op);
-
 		if (!valid) {
 			push_error(vformat(R"(Invalid operand of type "%s" for unary operator "%s".)", operand_type.to_string(), Variant::get_operator_name(p_unary_op->variant_op)), p_unary_op);
 		}
+		unary_op_nullity_guard(p_unary_op);
 	}
 
 	p_unary_op->set_datatype(result);
+}
+
+bool GDScriptAnalyzer::unary_op_nullity_guard(GDScriptParser::UnaryOpNode *p_unary_op) {
+	if (!p_unary_op->operand->get_datatype().is_nullable || p_unary_op->operation == GDScriptParser::UnaryOpNode::OP_LOGIC_NOT) {
+		// Nullable verification only makes sense for unary operators if the operator is not the logic negation (!foo)
+		return true;
+	}
+
+	GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(p_unary_op->operand);
+	push_nullable_error(
+			R"*(Potentially unsafe for nullable "%s" to be used with the "%s" unary operator.)*",
+			{ p_unary_op->operand },
+			identifier,
+			p_unary_op->operand->type == GDScriptParser::Node::IDENTIFIER ? String(identifier->name) : p_unary_op->operand->get_datatype().to_string(),
+			Variant::get_operator_name(p_unary_op->variant_op));
+	return false;
+}
+
+Vector<GDScriptParser::IdentifierNode *> GDScriptAnalyzer::deduce_nullable_narrowing(GDScriptParser::ExpressionNode *p_node, bool p_should_be_false) {
+	if (p_node == nullptr) {
+		return {};
+	}
+
+	switch (p_node->type) {
+		case GDScriptParser::Node::BINARY_OPERATOR: {
+			// This deduces that "!=" and "==" can be used to narrow nullables.
+			GDScriptParser::BinaryOpNode *binary_op = static_cast<GDScriptParser::BinaryOpNode *>(p_node);
+			GDScriptParser::ExpressionNode *left = binary_op->left_operand;
+			GDScriptParser::ExpressionNode *right = binary_op->right_operand;
+
+			if (!left || !right) {
+				break;
+			}
+			switch (binary_op->variant_op) {
+				case Variant::OP_NOT_EQUAL:
+				case Variant::OP_EQUAL: {
+					if ((left->type != GDScriptParser::Node::LITERAL && left->type != GDScriptParser::Node::IDENTIFIER) && (right->type != GDScriptParser::Node::LITERAL && right->type != GDScriptParser::Node::IDENTIFIER)) {
+						// At least one of the operands must be a literal or an identifier
+						break;
+					}
+					if (left->get_datatype().is_nullable && right->get_datatype().is_nullable) {
+						// If both operands are nullable, we can't narrow them
+						break;
+					}
+
+					return find_nullable_identifier(left, right, (p_should_be_false ^ (binary_op->variant_op == Variant::OP_EQUAL)));
+				} break;
+				case Variant::OP_AND: {
+					// For the AND operator we can try deducing each side and then combining the resulting identifiers.
+					// That way we can support situations like: "if foo and bar:", where both foo and bar will be narrowed
+					Vector<GDScriptParser::IdentifierNode *> left_identifiers = deduce_nullable_narrowing(left, p_should_be_false);
+					Vector<GDScriptParser::IdentifierNode *> right_identifiers = deduce_nullable_narrowing(right, p_should_be_false);
+					// This might end up repeating identifiers, but given they will ultimately be stored in a HashSet it should be fine
+					left_identifiers.append_array(right_identifiers);
+					return left_identifiers;
+				} break;
+				default: {
+					return {}; // Not supported
+				}
+			}
+
+		} break;
+		case GDScriptParser::Node::IDENTIFIER: {
+			// This deduces that any sole identifier must be narrowed.
+			if (!p_should_be_false) {
+				return { static_cast<GDScriptParser::IdentifierNode *>(p_node) };
+			}
+		} break;
+		case GDScriptParser::Node::UNARY_OPERATOR: {
+			// This deduces that, except for the "!" operator (logic not), unary operators will always narrow nullables.
+			GDScriptParser::UnaryOpNode *unary_op = static_cast<GDScriptParser::UnaryOpNode *>(p_node);
+
+			if (!unary_op->operand) {
+				break;
+			}
+
+			if (!unary_op->operand->get_datatype().is_nullable) {
+				break;
+			}
+
+			if (unary_op->operation != GDScriptParser::UnaryOpNode::OP_LOGIC_NOT) {
+				break;
+			}
+
+			if (p_should_be_false) {
+				return { static_cast<GDScriptParser::IdentifierNode *>(unary_op->operand) };
+			}
+		} break;
+		case GDScriptParser::Node::CALL: {
+			// This deduces that certain "special" functions implicitly narrows one of its arguments
+			// Currently this applies to:
+			//   - if is_instance_valid(foo) -> foo will be narrowed
+			//   - if is_same(foo, bar) -> foo will be narrowed, if bar is not null
+			//   - is_instance_of(foo, Array) -> foo will be narrowed, if the type isn't TYPE_NIL
+			GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(p_node);
+			if (call->function_name == "is_instance_valid") {
+				if (call->arguments.size() != 1) {
+					break;
+				}
+
+				GDScriptParser::ExpressionNode *might_be_identifier = call->arguments.get(0);
+				if (might_be_identifier->type != GDScriptParser::Node::IDENTIFIER) {
+					break;
+				}
+				GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(might_be_identifier);
+				if (!identifier->get_datatype().is_nullable) {
+					break;
+				}
+
+				if (!p_should_be_false) {
+					return { identifier };
+				}
+			} else if (call->function_name == "is_same" || call->function_name == "is_instance_of") {
+				if (call->arguments.size() != 2) {
+					break;
+				}
+
+				GDScriptParser::ExpressionNode *first = call->arguments.get(0);
+				GDScriptParser::ExpressionNode *second = call->arguments.get(1);
+				if (call->function_name == "is_instance_of" && first->type == GDScriptParser::Node::IDENTIFIER && second->type == GDScriptParser::Node::IDENTIFIER) {
+					GDScriptParser::IdentifierNode *second_identifier = static_cast<GDScriptParser::IdentifierNode *>(second);
+					if (second_identifier->name == "TYPE_NIL") {
+						if (p_should_be_false) {
+							// If instance checking against null, no need to call 'find_nullable_identifier'
+							return { static_cast<GDScriptParser::IdentifierNode *>(first) };
+						}
+						break;
+					}
+				}
+				if ((first->type != GDScriptParser::Node::LITERAL && first->type != GDScriptParser::Node::IDENTIFIER) && (second->type != GDScriptParser::Node::LITERAL && second->type != GDScriptParser::Node::IDENTIFIER)) {
+					// At least one of the arguments must be a literal or an identifier
+					break;
+				}
+				if (first->get_datatype().is_nullable && second->get_datatype().is_nullable) {
+					// If both operands are nullable, we can't narrow them
+					break;
+				}
+				return find_nullable_identifier(first, second, !p_should_be_false);
+			}
+		} break;
+		case GDScriptParser::Node::TYPE_TEST: {
+			// This deduces expressions like "if foo is Array".
+			// Given that a type test can't be against null, foo will be narrowed.
+			GDScriptParser::TypeTestNode *type_test = static_cast<GDScriptParser::TypeTestNode *>(p_node);
+			if (!type_test->operand || type_test->operand->type != GDScriptParser::Node::IDENTIFIER) {
+				break;
+			}
+			if (!p_should_be_false) {
+				return { static_cast<GDScriptParser::IdentifierNode *>(type_test->operand) };
+			}
+		} break;
+		case GDScriptParser::Node::SUBSCRIPT: {
+			// This deduces that expressions like "if foo.bar.foobar" implicitly narrow foo, bar and foobar.
+			// Property nullable access rules apply elsewhere, during the safety checks.
+			GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_node);
+			Vector<GDScriptParser::IdentifierNode *> identifiers;
+			do {
+				if (subscript->is_attribute) {
+					identifiers.append(subscript->attribute);
+				}
+
+				switch (subscript->base->type) {
+					case GDScriptParser::Node::SUBSCRIPT: {
+						subscript = static_cast<GDScriptParser::SubscriptNode *>(subscript->base);
+					} break;
+					case GDScriptParser::Node::CALL: {
+						GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(subscript->base);
+						if (call->callee->type == GDScriptParser::Node::SUBSCRIPT) {
+							subscript = static_cast<GDScriptParser::SubscriptNode *>(call->callee);
+							break;
+						}
+
+						if (!p_should_be_false) {
+							return identifiers;
+						}
+						return {};
+					} break;
+					case GDScriptParser::Node::IDENTIFIER: {
+						identifiers.append(static_cast<GDScriptParser::IdentifierNode *>(subscript->base));
+					}
+						[[fallthrough]];
+					default: {
+						if (!p_should_be_false) {
+							return identifiers;
+						}
+						return {};
+					}
+				}
+			} while (true);
+		} break;
+		case GDScriptParser::Node::CAST: {
+			GDScriptParser::CastNode *cast = static_cast<GDScriptParser::CastNode *>(p_node);
+			return deduce_nullable_narrowing(cast->operand, p_should_be_false);
+		} break;
+		default: {
+		}
+	}
+
+	return {};
+}
+
+void GDScriptAnalyzer::push_narrowed_nullables(Vector<GDScriptParser::IdentifierNode *> p_identifiers) {
+	for (GDScriptParser::IdentifierNode *identifier : p_identifiers) {
+		if (identifier) {
+			narrowed_nullables_stack.insert(identifier);
+		}
+	}
+}
+
+void GDScriptAnalyzer::pop_narrowed_nullables(Vector<GDScriptParser::IdentifierNode *> p_identifiers) {
+	for (GDScriptParser::IdentifierNode *identifier : p_identifiers) {
+		if (identifier == nullptr) {
+			continue;
+		}
+
+		if (!narrowed_nullables_stack.has(identifier)) {
+			continue;
+		}
+
+		narrowed_nullables_stack.erase(identifier);
+	}
+}
+
+bool GDScriptAnalyzer::is_effectively_non_nullable(GDScriptParser::ExpressionNode *p_expression) const {
+	if (!p_expression || !p_expression->get_datatype().is_nullable) {
+		return true;
+	}
+
+	if (p_expression->type == GDScriptParser::Node::IDENTIFIER) {
+		return narrowed_nullables_stack.has(static_cast<GDScriptParser::IdentifierNode *>(p_expression));
+	} else if (p_expression->type == GDScriptParser::Node::SUBSCRIPT) {
+		GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_expression);
+
+		bool all_narrow = true;
+		do {
+			if (subscript->is_attribute) {
+				if (is_effectively_nullable(subscript->attribute)) {
+					all_narrow = false;
+					break;
+				}
+			}
+
+			if (subscript->base->type == GDScriptParser::Node::SUBSCRIPT) {
+				subscript = static_cast<GDScriptParser::SubscriptNode *>(subscript->base);
+			} else if (subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
+				if (is_effectively_nullable(static_cast<GDScriptParser::IdentifierNode *>(subscript->base))) {
+					all_narrow = false;
+				}
+				break;
+			} else {
+				break;
+			}
+		} while (all_narrow);
+
+		return all_narrow;
+	}
+
+	// Sane default
+	return !p_expression->get_datatype().is_nullable;
+}
+
+bool GDScriptAnalyzer::is_deeply_nullable(GDScriptParser::DataType p_data_type, bool p_strict) const {
+	return (!p_strict && p_data_type.is_nullable) || (p_data_type.has_container_element_type() && p_data_type.get_container_element_type().is_nullable);
+}
+
+bool GDScriptAnalyzer::is_potentially_null_value(GDScriptParser::ExpressionNode *p_expression) {
+	return is_effectively_nullable(p_expression) || p_expression->get_datatype().is_variant() || (p_expression->is_constant && p_expression->reduced_value.get_type() == Variant::NIL) || (p_expression->get_datatype().kind == GDScriptParser::DataType::BUILTIN && p_expression->get_datatype().builtin_type == Variant::NIL);
+}
+
+template <typename... Symbols>
+void GDScriptAnalyzer::push_nullable_error(const String &p_message, Vector<GDScriptParser::ExpressionNode *> p_expressions, const GDScriptParser::Node *p_origin, const Symbols &...p_symbols) {
+	bool are_all_expressions_nullable = true;
+	for (GDScriptParser::ExpressionNode *expression : p_expressions) {
+		if (expression->type == GDScriptParser::Node::IDENTIFIER && narrowed_nullables_stack.has(static_cast<GDScriptParser::IdentifierNode *>(expression))) {
+			are_all_expressions_nullable = false;
+			break;
+		}
+	}
+
+	if (!are_all_expressions_nullable) {
+		return;
+	}
+
+	push_error(vformat(p_message, p_symbols...), p_origin);
+}
+
+Vector<GDScriptParser::IdentifierNode *> GDScriptAnalyzer::find_nullable_identifier(GDScriptParser::ExpressionNode *left, GDScriptParser::ExpressionNode *right, bool should_be_false) {
+	GDScriptParser::ExpressionNode *nullable_to_narrow, *value_to_match_against;
+	if (left->type == GDScriptParser::Node::LITERAL || (left->is_constant && left->reduced_value.get_type() == Variant::NIL)) {
+		value_to_match_against = left;
+		nullable_to_narrow = right;
+	} else {
+		value_to_match_against = right;
+		nullable_to_narrow = left;
+	}
+	return deduce_nullable_narrowing(nullable_to_narrow, should_be_false ^ !is_potentially_null_value(value_to_match_against));
+};
+
+String GDScriptAnalyzer::print_expression(GDScriptParser::ExpressionNode *p_expression) {
+	// Slight optimization, if the expression is an identifier, just return its name
+	if (p_expression->type == GDScriptParser::Node::IDENTIFIER) {
+		return static_cast<GDScriptParser::IdentifierNode *>(p_expression)->name;
+	}
+
+	const String source = parser->tokenizer.get_source();
+	const char32_t *_source = source.get_data();
+	String result;
+	int line = 0, column = 0;
+	for (int i = 0, start = -1; i < source.length(); i++) {
+		if (_source[i] == '\n') {
+			line += 1;
+			column = 0;
+		} else if (_source[i] == '\t') {
+#ifdef TOOLS_ENABLED
+			if (EditorSettings::get_singleton()) {
+				int tab_size = EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");
+				column += tab_size;
+			} else {
+				column += 4;
+			}
+#else
+			column += 4;
+#endif // TOOLS_ENABLED
+		} else {
+			column += 1;
+		}
+
+		if (start < 0) {
+			// Look for the start of our expression
+			if (line == (p_expression->start_line - 1) && column == (p_expression->start_column)) {
+				start = i;
+			}
+		} else {
+			// Look for the end of it
+			if (line == (p_expression->end_line - 1) && column == (p_expression->end_column - 1)) {
+				result = String(&_source[start], i - start + 1);
+				break;
+			}
+		}
+	}
+
+	return result.strip_edges();
 }
 
 Variant GDScriptAnalyzer::make_expression_reduced_value(GDScriptParser::ExpressionNode *p_expression, bool &is_reduced) {
@@ -4868,12 +5800,21 @@ void GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 		}
 		GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
 
+		bool argument_is_nullable = par_type.builtin_type != Variant::OBJECT && arg_type.is_nullable && !par_type.is_nullable && !par_type.is_variant() && is_effectively_nullable(p_call->arguments[i]);
 		if (arg_type.is_variant() || !arg_type.is_hard_type()) {
 			// Argument can be anything, so this is unsafe (unless the parameter is a hard variant).
 			if (!(par_type.is_hard_type() && par_type.is_variant())) {
 				mark_node_unsafe(p_call->arguments[i]);
 			}
-		} else if (par_type.is_hard_type() && !is_type_compatible(par_type, arg_type, true)) {
+		} else if ((par_type.is_hard_type() && !is_type_compatible(par_type, arg_type, true)) || argument_is_nullable) {
+			if (argument_is_nullable) {
+				// We need to ensure "!par_type.is_variant()" because Variants can also be null, even though they might not have the nullable qualifier (which is the case for internal APIs)
+				push_nullable_error(
+						R"*(Invalid argument for "%s()" function: argument %s must not be null, but "%s" is nullable.)*",
+						{ p_call->arguments[i] },
+						p_call->arguments[i],
+						p_call->function_name, String::num(i + 1), arg_type.to_string());
+			}
 			// Supertypes are acceptable for dynamic compliance, but it's unsafe.
 			mark_node_unsafe(p_call);
 			if (!is_type_compatible(arg_type, par_type)) {
@@ -5033,6 +5974,11 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 		return true;
 	}
 
+	if (p_target.builtin_type != Variant::OBJECT && !p_target.is_nullable && p_source.is_nullable) {
+		// If the target is not nullable, but the source type is, they're incompatible
+		return false;
+	}
+
 	if (p_target.kind == GDScriptParser::DataType::BUILTIN) {
 		bool valid = p_source.kind == GDScriptParser::DataType::BUILTIN && p_target.builtin_type == p_source.builtin_type;
 		if (!valid && p_allow_implicit_conversion) {
@@ -5047,6 +5993,10 @@ bool GDScriptAnalyzer::is_type_compatible(const GDScriptParser::DataType &p_targ
 			if (p_target.has_container_element_type() && p_source.has_container_element_type()) {
 				valid = p_target.get_container_element_type() == p_source.get_container_element_type();
 			}
+		}
+		if (!valid && p_target.is_nullable && p_source.builtin_type == Variant::NIL) {
+			// If the target is nullable and the source type is null, we're good...
+			valid = true;
 		}
 		return valid;
 	}

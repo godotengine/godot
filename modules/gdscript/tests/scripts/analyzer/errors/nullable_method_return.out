@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Cannot return nullable value of type "String?" because the function return type is "String".

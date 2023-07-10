@@ -389,7 +389,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = ";
 				text += DADDR(2);
 
-				incr += 6;
+				incr += 7;
 			} break;
 			case OPCODE_ASSIGN_TYPED_NATIVE: {
 				text += "assign typed native (";
@@ -518,6 +518,10 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 					type_name = Variant::get_type_name(builtin_type);
 				}
 
+				if (_code_ptr[ip + 4]) {
+					type_name += "?";
+				}
+
 				text += " make_typed_array (";
 				text += type_name;
 				text += ") ";
@@ -534,7 +538,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += "]";
 
-				incr += 6 + argc;
+				incr += 7 + argc;
 			} break;
 			case OPCODE_CONSTRUCT_DICTIONARY: {
 				int instr_var_args = _code_ptr[++ip];
@@ -946,6 +950,20 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr = 3;
 			} break;
+			case OPCODE_JUMP_IF_NULL: {
+				text += "jump-if-null ";
+				text += DADDR(1);
+				text += " to ";
+				text += itos(_code_ptr[ip + 2]);
+
+				incr += 4;
+			} break;
+			case OPCODE_EXIT_IF_NULL: {
+				text += "exit-if-null ";
+				text += DADDR(1);
+
+				incr += 4;
+			} break;
 			case OPCODE_RETURN: {
 				text += "return ";
 				text += DADDR(1);
@@ -961,10 +979,14 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 3;
 			} break;
 			case OPCODE_RETURN_TYPED_ARRAY: {
-				text += "return typed array ";
+				text += "return ";
+				if (_code_ptr[ip + 5]) {
+					text += "nullable ";
+				}
+				text += "typed array ";
 				text += DADDR(1);
 
-				incr += 5;
+				incr += 6;
 			} break;
 			case OPCODE_RETURN_TYPED_NATIVE: {
 				text += "return typed native (";

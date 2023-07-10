@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Potentially unsafe to use nullable "nullable_index" as an index.

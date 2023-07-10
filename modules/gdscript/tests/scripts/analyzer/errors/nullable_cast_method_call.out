@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Potentially unsafe for the nullable cast expression "nullable_string as String?" to call "begins_with()".

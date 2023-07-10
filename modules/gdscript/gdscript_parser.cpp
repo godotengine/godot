@@ -1150,7 +1150,7 @@ GDScriptParser::ConstantNode *GDScriptParser::parse_constant(bool p_is_static) {
 			constant->infer_datatype = true;
 		} else {
 			// Parse type.
-			constant->datatype_specifier = parse_type();
+			constant->datatype_specifier = parse_type(false, false);
 		}
 	}
 
@@ -2233,7 +2233,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 
 	advance(); // Only consume the token if there's a valid rule.
 
-	ExpressionNode *previous_operand = (this->*prefix_rule)(nullptr, p_can_assign);
+	ExpressionNode *previous_operand = (this->*prefix_rule)(nullptr, p_can_assign, false);
 
 	while (p_precedence <= get_rule(current.type)->precedence) {
 		if (previous_operand == nullptr || (p_stop_on_assign && current.type == GDScriptTokenizer::Token::EQUAL) || lambda_ended) {
@@ -2251,7 +2251,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 		}
 		token = advance();
 		ParseFunction infix_rule = get_rule(token.type)->infix;
-		previous_operand = (this->*infix_rule)(previous_operand, p_can_assign);
+		previous_operand = (this->*infix_rule)(previous_operand, p_can_assign, false);
 	}
 
 	return previous_operand;
@@ -2272,7 +2272,7 @@ GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
 	return identifier;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	if (!previous.is_identifier()) {
 		ERR_FAIL_V_MSG(nullptr, "Parser bug: parsing identifier node without identifier token.");
 	}
@@ -2322,7 +2322,7 @@ GDScriptParser::LiteralNode *GDScriptParser::parse_literal() {
 	return static_cast<LiteralNode *>(parse_literal(nullptr, false));
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_literal(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_literal(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	if (previous.type != GDScriptTokenizer::Token::LITERAL) {
 		push_error("Parser bug: parsing literal node without literal token.");
 		ERR_FAIL_V_MSG(nullptr, "Parser bug: parsing literal node without literal token.");
@@ -2334,7 +2334,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_literal(ExpressionNode *p_
 	return literal;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_self(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_self(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	if (current_function && current_function->is_static) {
 		push_error(R"(Cannot use "self" inside a static function.)");
 	}
@@ -2344,7 +2344,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_self(ExpressionNode *p_pre
 	return self;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_builtin_constant(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_builtin_constant(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	GDScriptTokenizer::Token::Type op_type = previous.type;
 	LiteralNode *constant = alloc_node<LiteralNode>();
 	complete_extents(constant);
@@ -2369,7 +2369,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_builtin_constant(Expressio
 	return constant;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_unary_operator(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_unary_operator(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	GDScriptTokenizer::Token::Type op_type = previous.type;
 	UnaryOpNode *operation = alloc_node<UnaryOpNode>();
 
@@ -2416,7 +2416,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_unary_operator(ExpressionN
 	return operation;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_not_in_operator(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_not_in_operator(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	// check that NOT is followed by IN by consuming it before calling parse_binary_operator which will only receive a plain IN
 	UnaryOpNode *operation = alloc_node<UnaryOpNode>();
 	reset_extents(operation, p_previous_operand);
@@ -2430,7 +2430,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_not_in_operator(Exp
 	return operation;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	GDScriptTokenizer::Token op = previous;
 	BinaryOpNode *operation = alloc_node<BinaryOpNode>();
 	reset_extents(operation, p_previous_operand);
@@ -2529,6 +2529,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(Expression
 			operation->operation = BinaryOpNode::OP_COMP_GREATER_EQUAL;
 			operation->variant_op = Variant::OP_GREATER_EQUAL;
 			break;
+		case GDScriptTokenizer::Token::COALESCE:
+			operation->operation = BinaryOpNode::OP_COALESCE;
+			break;
 		default:
 			return nullptr; // Unreachable.
 	}
@@ -2536,7 +2539,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(Expression
 	return operation;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_ternary_operator(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_ternary_operator(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	// Only one ternary operation exists, so no abstraction here.
 	TernaryOpNode *operation = alloc_node<TernaryOpNode>();
 	reset_extents(operation, p_previous_operand);
@@ -2561,7 +2564,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_ternary_operator(Expressio
 	return operation;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	if (!p_can_assign) {
 		push_error("Assignment is not allowed inside an expression.");
 		return parse_expression(false); // Return the following expression.
@@ -2692,7 +2695,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_assignment(ExpressionNode 
 	return assignment;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	AwaitNode *await = alloc_node<AwaitNode>();
 	ExpressionNode *element = parse_precedence(PREC_AWAIT, false);
 	if (element == nullptr) {
@@ -2708,7 +2711,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_await(ExpressionNode *p_pr
 	return await;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	ArrayNode *array = alloc_node<ArrayNode>();
 
 	if (!check(GDScriptTokenizer::Token::BRACKET_CLOSE)) {
@@ -2733,7 +2736,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_array(ExpressionNode *p_pr
 	return array;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	DictionaryNode *dictionary = alloc_node<DictionaryNode>();
 
 	bool decided_style = false;
@@ -2825,7 +2828,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 	return dictionary;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	ExpressionNode *grouped = parse_expression(false);
 	pop_multiline();
 	if (grouped == nullptr) {
@@ -2836,7 +2839,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p
 	return grouped;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	SubscriptNode *attribute = alloc_node<SubscriptNode>();
 	reset_extents(attribute, p_previous_operand);
 	update_extents(attribute);
@@ -2857,6 +2860,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 	}
 
 	attribute->base = p_previous_operand;
+	attribute->is_nullable = p_is_nullable;
 
 	if (current.is_node_name()) {
 		current.type = GDScriptTokenizer::Token::IDENTIFIER;
@@ -2873,7 +2877,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *
 	return attribute;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_subscript(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_subscript(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	SubscriptNode *subscript = alloc_node<SubscriptNode>();
 	reset_extents(subscript, p_previous_operand);
 	update_extents(subscript);
@@ -2882,6 +2886,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_subscript(ExpressionNode *
 
 	subscript->base = p_previous_operand;
 	subscript->index = parse_expression(false);
+	subscript->is_nullable = p_is_nullable;
 
 	if (subscript->index == nullptr) {
 		push_error(R"(Expected expression after "[".)");
@@ -2894,7 +2899,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_subscript(ExpressionNode *
 	return subscript;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_cast(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_cast(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	CastNode *cast = alloc_node<CastNode>();
 	reset_extents(cast, p_previous_operand);
 	update_extents(cast);
@@ -2911,7 +2916,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_cast(ExpressionNode *p_pre
 	return cast;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	CallNode *call = alloc_node<CallNode>();
 	reset_extents(call, p_previous_operand);
 
@@ -3004,7 +3009,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	return call;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	if (!current.is_node_name() && !check(GDScriptTokenizer::Token::LITERAL) && !check(GDScriptTokenizer::Token::SLASH) && !check(GDScriptTokenizer::Token::PERCENT)) {
 		push_error(vformat(R"(Expected node path as string or identifier after "%s".)", previous.get_name()));
 		return nullptr;
@@ -3110,7 +3115,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 	return get_node;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	PreloadNode *preload = alloc_node<PreloadNode>();
 	preload->resolved_path = "<missing path>";
 
@@ -3135,7 +3140,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_preload(ExpressionNode *p_
 	return preload;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	LambdaNode *lambda = alloc_node<LambdaNode>();
 	lambda->parent_function = current_function;
 	FunctionNode *function = alloc_node<FunctionNode>();
@@ -3212,7 +3217,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_p
 	return lambda;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_type_test(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_type_test(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	TypeTestNode *type_test = alloc_node<TypeTestNode>();
 	reset_extents(type_test, p_previous_operand);
 	update_extents(type_test);
@@ -3228,28 +3233,30 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_type_test(ExpressionNode *
 	return type_test;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_yield(ExpressionNode *p_previous_operand, bool p_can_assign) {
+GDScriptParser::ExpressionNode *GDScriptParser::parse_yield(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
 	push_error(R"("yield" was removed in Godot 4.0. Use "await" instead.)");
 	return nullptr;
 }
 
-GDScriptParser::ExpressionNode *GDScriptParser::parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign) {
-	// Just for better error messages.
-	GDScriptTokenizer::Token::Type invalid = previous.type;
-
-	switch (invalid) {
-		case GDScriptTokenizer::Token::QUESTION_MARK:
-			push_error(R"(Unexpected "?" in source. If you want a ternary operator, use "truthy_value if true_condition else falsy_value".)");
-			break;
-		default:
-			return nullptr; // Unreachable.
+GDScriptParser::ExpressionNode *GDScriptParser::parse_nullable_access(ExpressionNode *p_previous_operand, bool p_can_assign, bool p_is_nullable) {
+	if (check(GDScriptTokenizer::Token::PERIOD)) {
+		advance();
+		return parse_attribute(p_previous_operand, false, true);
 	}
+
+	if (check(GDScriptTokenizer::Token::BRACKET_OPEN)) {
+		push_multiline(true);
+		advance();
+		return parse_subscript(p_previous_operand, false, true);
+	}
+
+	push_error(R"(Unexpected "?" in source. If you want a ternary operator, use "truthy_value if true_condition else falsy_value".)");
 
 	// Return the previous expression.
 	return p_previous_operand;
 }
 
-GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
+GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void, bool p_allow_nullable) {
 	TypeNode *type = alloc_node<TypeNode>();
 	make_completion_context(p_allow_void ? COMPLETION_TYPE_NAME_OR_VOID : COMPLETION_TYPE_NAME, type);
 	if (!match(GDScriptTokenizer::Token::IDENTIFIER)) {
@@ -3282,6 +3289,7 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 			push_error("Nested typed collections are not supported.");
 		}
 		consume(GDScriptTokenizer::Token::BRACKET_CLOSE, R"(Expected closing "]" after collection type.)");
+		parse_nullable_type(type, p_allow_nullable);
 		if (type != nullptr) {
 			complete_extents(type);
 		}
@@ -3297,8 +3305,25 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 		}
 	}
 
+	parse_nullable_type(type, p_allow_nullable);
 	complete_extents(type);
 	return type;
+}
+
+void GDScriptParser::parse_nullable_type(TypeNode *p_type, bool p_allow_nullable) {
+	if (!p_type) {
+		return;
+	}
+
+	DataType data_type = p_type->get_datatype();
+	data_type.is_nullable = match(GDScriptTokenizer::Token::QUESTION_MARK);
+	if (data_type.is_nullable && !p_allow_nullable) {
+		push_error(R"(Nullable qualifier ("?") not allowed in this context)", p_type);
+		return;
+	}
+	p_type->set_datatype(data_type);
+
+	return;
 }
 
 #ifdef TOOLS_ENABLED
@@ -3616,6 +3641,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON }, // GREATER_EQUAL,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON }, // EQUAL_EQUAL,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_COMPARISON }, // BANG_EQUAL,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,        	PREC_TYPE_TEST }, // COALESCE,
 		// Logical
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_LOGIC_AND }, // AND,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_LOGIC_OR }, // OR,
@@ -3711,7 +3737,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		// Error message improvement
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // VCS_CONFLICT_MARKER,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // BACKTICK,
-		{ nullptr,                                          &GDScriptParser::parse_invalid_token,        	PREC_CAST }, // QUESTION_MARK,
+		{ nullptr,                                          &GDScriptParser::parse_nullable_access,        	PREC_ATTRIBUTE }, // QUESTION_MARK,
 		// Special
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // ERROR,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // TK_EOF,
@@ -4251,49 +4277,71 @@ String GDScriptParser::SuiteNode::Local::get_name() const {
 }
 
 String GDScriptParser::DataType::to_string() const {
+	String result;
 	switch (kind) {
 		case VARIANT:
-			return "Variant";
+			result = "Variant";
+			break;
 		case BUILTIN:
 			if (builtin_type == Variant::NIL) {
-				return "null";
+				result = "null";
+				break;
 			}
 			if (builtin_type == Variant::ARRAY && has_container_element_type()) {
-				return vformat("Array[%s]", container_element_type->to_string());
+				result = vformat("Array[%s]", container_element_type->to_string());
+				break;
 			}
-			return Variant::get_type_name(builtin_type);
+			result = Variant::get_type_name(builtin_type);
+			break;
 		case NATIVE:
 			if (is_meta_type) {
-				return GDScriptNativeClass::get_class_static();
+				result = GDScriptNativeClass::get_class_static();
+				break;
 			}
-			return native_type.operator String();
+			result = native_type.operator String();
+			break;
 		case CLASS:
 			if (class_type->identifier != nullptr) {
-				return class_type->identifier->name.operator String();
+				result = class_type->identifier->name.operator String();
+				break;
 			}
-			return class_type->fqcn;
+			result = class_type->fqcn;
+			break;
 		case SCRIPT: {
 			if (is_meta_type) {
-				return script_type != nullptr ? script_type->get_class_name().operator String() : "";
+				result = script_type != nullptr ? script_type->get_class_name().operator String() : "";
 			}
 			String name = script_type != nullptr ? script_type->get_name() : "";
 			if (!name.is_empty()) {
-				return name;
+				result = name;
+				break;
 			}
 			name = script_path;
 			if (!name.is_empty()) {
-				return name;
+				result = name;
+				break;
 			}
-			return native_type.operator String();
+			result = native_type.operator String();
+			break;
 		}
 		case ENUM: {
 			// native_type contains either the native class defining the enum
 			// or the fully qualified class name of the script defining the enum
-			return String(native_type).get_file(); // Remove path, keep filename
+			result = String(native_type).get_file(); // Remove path, keep filename
+			break;
 		}
 		case RESOLVING:
 		case UNRESOLVED:
-			return "<unresolved type>";
+			result = "<unresolved type>";
+			break;
+	}
+
+	if (!result.is_empty()) {
+		if (is_nullable) {
+			result += "?";
+		}
+
+		return result;
 	}
 
 	ERR_FAIL_V_MSG("<unresolved type>", "Kind set outside the enum range.");
@@ -4569,6 +4617,9 @@ void GDScriptParser::TreePrinter::print_binary_op(BinaryOpNode *p_binary_op) {
 			break;
 		case BinaryOpNode::OP_COMP_GREATER_EQUAL:
 			push_text(" >= ");
+			break;
+		case BinaryOpNode::OP_COALESCE:
+			push_text(" ?? ");
 			break;
 	}
 	print_expression(p_binary_op->right_operand);
