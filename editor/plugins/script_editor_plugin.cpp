@@ -259,6 +259,42 @@ Ref<EditorSyntaxHighlighter> EditorJSONSyntaxHighlighter::_create() const {
 	return syntax_highlighter;
 }
 
+////
+
+void EditorGettextSyntaxHighlighter::_update_cache() {
+	highlighter->set_text_edit(text_edit);
+	highlighter->clear_keyword_colors();
+	highlighter->clear_member_keyword_colors();
+	highlighter->clear_color_regions();
+
+	highlighter->set_symbol_color(EDITOR_GET("text_editor/theme/highlighting/symbol_color"));
+	highlighter->set_number_color(EDITOR_GET("text_editor/theme/highlighting/number_color"));
+
+	// Disable some of the automatic symbolic highlights, as these don't make sense for gettext.
+	highlighter->set_member_variable_color(EDITOR_GET("text_editor/theme/highlighting/text_color"));
+	highlighter->set_function_color(EDITOR_GET("text_editor/theme/highlighting/text_color"));
+
+	// Key/value keywords.
+	const Color key_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
+	highlighter->add_keyword_color("msgid", key_color);
+	highlighter->add_keyword_color("msgid_plural", key_color);
+	highlighter->add_keyword_color("msgstr", key_color);
+
+	// String.
+	const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
+	highlighter->add_color_region("\"", "\"", string_color);
+
+	// Comment.
+	const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+	highlighter->add_color_region("#", "", comment_color, true);
+}
+
+Ref<EditorSyntaxHighlighter> EditorGettextSyntaxHighlighter::_create() const {
+	Ref<EditorGettextSyntaxHighlighter> syntax_highlighter;
+	syntax_highlighter.instantiate();
+	return syntax_highlighter;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /*** SCRIPT EDITOR ****/
@@ -4330,6 +4366,10 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	Ref<EditorJSONSyntaxHighlighter> json_syntax_highlighter;
 	json_syntax_highlighter.instantiate();
 	register_syntax_highlighter(json_syntax_highlighter);
+
+	Ref<EditorGettextSyntaxHighlighter> gettext_syntax_highlighter;
+	gettext_syntax_highlighter.instantiate();
+	register_syntax_highlighter(gettext_syntax_highlighter);
 
 	_update_online_doc();
 }
