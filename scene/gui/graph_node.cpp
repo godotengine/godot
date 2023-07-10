@@ -415,7 +415,7 @@ void GraphNode::_shape() {
 void GraphNode::_edit_set_position(const Point2 &p_position) {
 	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 	if (graph) {
-		Point2 offset = (p_position + graph->get_scroll_ofs()) * graph->get_zoom();
+		Point2 offset = (p_position + graph->get_scroll_offset()) * graph->get_zoom();
 		set_position_offset(offset);
 	}
 	set_position(p_position);
