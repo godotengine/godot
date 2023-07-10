@@ -201,30 +201,30 @@ FT_BEGIN_HEADER
 
   typedef struct  T1_FaceRec_
   {
-    FT_FaceRec      root;
-    T1_FontRec      type1;
-    const void*     psnames;
-    const void*     psaux;
-    const void*     afm_data;
-    FT_CharMapRec   charmaprecs[2];
-    FT_CharMap      charmaps[2];
+    FT_FaceRec     root;
+    T1_FontRec     type1;
+    const void*    psnames;
+    const void*    psaux;
+    const void*    afm_data;
+    FT_CharMapRec  charmaprecs[2];
+    FT_CharMap     charmaps[2];
 
     /* support for Multiple Masters fonts */
-    PS_Blend        blend;
+    PS_Blend       blend;
 
     /* undocumented, optional: indices of subroutines that express      */
     /* the NormalizeDesignVector and the ConvertDesignVector procedure, */
     /* respectively, as Type 2 charstrings; -1 if keywords not present  */
-    FT_Int           ndv_idx;
-    FT_Int           cdv_idx;
+    FT_Int         ndv_idx;
+    FT_Int         cdv_idx;
 
     /* undocumented, optional: has the same meaning as len_buildchar */
     /* for Type 2 fonts; manipulated by othersubrs 19, 24, and 25    */
-    FT_UInt          len_buildchar;
-    FT_Long*         buildchar;
+    FT_UInt        len_buildchar;
+    FT_Long*       buildchar;
 
     /* since version 2.1 - interface to PostScript hinter */
-    const void*     pshinter;
+    const void*    pshinter;
 
   } T1_FaceRec;
 
