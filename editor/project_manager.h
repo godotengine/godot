@@ -166,7 +166,7 @@ public:
 	void set_project_path(const String &p_path);
 	void set_tags(const PackedStringArray &p_tags, ProjectList *p_parent_list);
 	void set_project_icon(const Ref<Texture2D> &p_icon);
-	void set_unsupported_features(const PackedStringArray &p_features);
+	void set_unsupported_features(PackedStringArray p_features);
 
 	bool should_load_project_icon() const;
 	void set_selected(bool p_selected);
