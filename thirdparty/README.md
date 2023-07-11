@@ -583,7 +583,7 @@ Patch files are provided in `oidn/patches/`.
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.0.26 (e2da9ce83a4388c9622da328bf48548471261290, 2022)
+- Version: 1.0.28 (f5beb0131f1bea8701ace744d1b50df9049bf331, 2023)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -601,7 +601,8 @@ Exclude:
 - src/external/android-jni-wrappers and src/external/jnipp (not used yet)
 - All CMake stuff: cmake/, CMakeLists.txt and *.cmake
 - All Gradle stuff: *gradle*, AndroidManifest.xml
-- All following files (and their .license files): *.{def,in,json,map,pom,rc}
+- All following files (and their .license files): *.{def,expsym,in,json,map,pom,rc,txt}
+- All dotfiles
 
 
 ## pcre2
