@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, The Khronos Group Inc.
+// Copyright (c) 2017-2023, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -82,6 +82,12 @@ XrResult ApiLayerInterface::GetApiLayerProperties(const std::string& openxr_comm
         return result;
     }
 
+    // check for potential overflow before static_cast<uint32_t>
+    if (manifest_files.size() >= UINT32_MAX) {
+        LoaderLogger::LogErrorMessage(openxr_command, "ApiLayerInterface::GetApiLayerProperties - too many API layers found");
+        return XR_ERROR_RUNTIME_FAILURE;
+    }
+
     manifest_count = static_cast<uint32_t>(manifest_files.size());
     if (nullptr == outgoing_count) {
         LoaderLogger::LogErrorMessage("xrEnumerateInstanceExtensionProperties",
@@ -131,8 +137,8 @@ XrResult ApiLayerInterface::GetInstanceExtensionProperties(const std::string& op
             }
 
             bool found = false;
-            auto num_files = static_cast<uint32_t>(manifest_files.size());
-            for (uint32_t man_file = 0; man_file < num_files; ++man_file) {
+            size_t num_files = manifest_files.size();
+            for (size_t man_file = 0; man_file < num_files; ++man_file) {
                 // If a layer with the provided name exists, get it's instance extension information.
                 if (manifest_files[man_file]->LayerName() == layer_name) {
                     manifest_files[man_file]->GetInstanceExtensionProperties(extension_properties);
@@ -172,8 +178,8 @@ XrResult ApiLayerInterface::GetInstanceExtensionProperties(const std::string& op
         }
 
         // Grab the layer instance extensions information
-        auto num_files = static_cast<uint32_t>(manifest_files.size());
-        for (uint32_t man_file = 0; man_file < num_files; ++man_file) {
+        size_t num_files = manifest_files.size();
+        for (size_t man_file = 0; man_file < num_files; ++man_file) {
             manifest_files[man_file]->GetInstanceExtensionProperties(extension_properties);
         }
     }
