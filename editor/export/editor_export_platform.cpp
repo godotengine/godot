@@ -45,6 +45,7 @@
 #include "editor/export/editor_export.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_export_plugin.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/packed_scene.h"
 
 static int _get_pad(int p_alignment, int p_n) {

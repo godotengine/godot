@@ -47,6 +47,7 @@
 #include "scene/gui/separator.h"
 #include "scene/main/window.h"
 #include "scene/resources/animation.h"
+#include "scene/resources/image_texture.h"
 #include "scene/scene_string_names.h"
 #include "servers/rendering_server.h"
 

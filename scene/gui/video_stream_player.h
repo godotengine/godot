@@ -36,6 +36,8 @@
 #include "servers/audio/audio_rb_resampler.h"
 #include "servers/audio_server.h"
 
+class ImageTexture;
+
 class VideoStreamPlayer : public Control {
 	GDCLASS(VideoStreamPlayer, Control);
 

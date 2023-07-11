@@ -42,7 +42,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/view_panner.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/atlas_texture.h"
 
 void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 	Vector2 line = (to - from).normalized() * 10;

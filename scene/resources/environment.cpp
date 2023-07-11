@@ -32,8 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_string_names.h"
+#include "scene/resources/gradient_texture.h"
 #include "servers/rendering_server.h"
-#include "texture.h"
 
 RID Environment::get_rid() const {
 	return environment;

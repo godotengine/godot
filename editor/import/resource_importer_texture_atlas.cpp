@@ -36,8 +36,10 @@
 #include "core/io/resource_saver.h"
 #include "core/math/geometry_2d.h"
 #include "editor/editor_atlas_packer.h"
+#include "scene/resources/atlas_texture.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/mesh_texture.h"
 
 String ResourceImporterTextureAtlas::get_importer_name() const {
 	return "texture_atlas";

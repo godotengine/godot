@@ -45,6 +45,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/separator.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/tile_set.h"
 
 TilesEditorPlugin *TilesEditorPlugin::singleton = nullptr;

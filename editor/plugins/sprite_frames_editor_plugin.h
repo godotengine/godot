@@ -44,6 +44,7 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/image_texture.h"
 
 class OptionButton;
 class EditorFileDialog;

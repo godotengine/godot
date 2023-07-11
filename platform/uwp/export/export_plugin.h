@@ -44,6 +44,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/export/editor_export_platform.h"
+#include "scene/resources/compressed_texture.h"
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"

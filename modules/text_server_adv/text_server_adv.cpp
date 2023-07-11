@@ -52,6 +52,7 @@ using namespace godot;
 #include "core/object/worker_thread_pool.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
+#include "scene/resources/image_texture.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
 
