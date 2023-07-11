@@ -42,7 +42,8 @@
 	GNOMESORT_CJK_UC(0x3018) \
 	GNOMESORT_CJK_UC(0x301d) \
 	GNOMESORT_CJK_UC(0xff5b) \
-	GNOMESORT_CJK_UC(0xff5f)
+	GNOMESORT_CJK_UC(0xff5f) \
+	GNOMESORT_CJK_UC(0xff08)
 
 /**
  * @def GNOMESORT_CJK_NO_BEGIN_LINE_CHARS
@@ -126,7 +127,9 @@
 	GNOMESORT_CJK_UC(0x31fc) \
 	GNOMESORT_CJK_UC(0x31fd) \
 	GNOMESORT_CJK_UC(0x31fe) \
-	GNOMESORT_CJK_UC(0x31ff)
+	GNOMESORT_CJK_UC(0x31ff) \
+	GNOMESORT_CJK_UC(0xff0c) \
+	GNOMESORT_CJK_UC(0xff09) \
 
 /**
  * @def GNOMESORT_CJK_NO_SEPARATE_CHARS
@@ -162,6 +165,22 @@ namespace gnomesort {
 	 * @return True if the input character is not allowed to be separated. False in all other cases.
 	 */
 	bool is_cjk_cannot_separate(const int p_char);
+
+	/**
+	 * @brief Determine whether or not the input character is a CJK character.
+	 * @param p_char The character to test.
+	 * @return True if the input character is a CJK character. False in all other cases.
+	 */
+	bool is_cjk_char(const int p_char);
+
+	/**
+	 * @brief Determine whether or not it is safe to break a line of CJK text around p_char.
+	 * @param p_previous_char The previous character in sequence with p_char.
+	 * @param p_char The character to test.
+	 * @param p_next_char The next character in sequence with p_char.
+	 * @return True if a line break can be inserted around p_char. False in all other cases.
+	 */
+	bool is_cjk_separatable_char(const int p_previous_char, const int p_char, const int p_next_char);
 
 }
 
