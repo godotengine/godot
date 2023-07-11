@@ -3282,6 +3282,16 @@ void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dicti
 		}
 	}
 
+	if (parser->for_completion && parser->completion_context.node != nullptr) {
+		int cursor_line = parser->tokenizer.get_cursor_line();
+		int cursor_column = parser->tokenizer.get_cursor_column();
+		if (p_dictionary->start_line <= cursor_line && p_dictionary->end_line >= cursor_line && (p_dictionary->start_line != cursor_line || p_dictionary->start_column <= cursor_column) && (p_dictionary->end_line != cursor_line || p_dictionary->end_column >= cursor_column)) {
+			if (parser->completion_context.node->is_expression() && !static_cast<GDScriptParser::ExpressionNode *>(parser->completion_context.node)->reduced) {
+				reduce_expression(static_cast<GDScriptParser::ExpressionNode *>(parser->completion_context.node));
+			}
+		}
+	}
+
 	// It's dictionary in any case.
 	GDScriptParser::DataType dict_type;
 	dict_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
