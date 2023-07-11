@@ -130,7 +130,8 @@
 			<param index="1" name="file" type="PackedByteArray" />
 			<param index="2" name="remap" type="bool" />
 			<description>
-				Adds a custom file to be exported. [param path] is the virtual path that can be used to load the file, [param file] is the binary data of the file. If [param remap] is [code]true[/code], file will not be exported, but instead remapped to the given [param path].
+				Adds a custom file to be exported. [param path] is the virtual path that can be used to load the file, [param file] is the binary data of the file.
+				When called inside [method _export_file] and [param remap] is [code]true[/code], the current file will not be exported, but instead remapped to this custom file. [param remap] is ignored when called in other places.
 			</description>
 		</method>
 		<method name="add_ios_bundle_file">
