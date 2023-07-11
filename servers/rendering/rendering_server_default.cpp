@@ -387,9 +387,7 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 }
 
 void RenderingServerDefault::_call_on_render_thread(const Callable &p_callable) {
-	Variant ret;
-	Callable::CallError ce;
-	p_callable.callp(nullptr, 0, ret, ce);
+	p_callable.call();
 }
 
 RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :

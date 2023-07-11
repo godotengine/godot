@@ -2005,9 +2005,7 @@ void RendererCanvasCull::update_visibility_notifiers() {
 				if (RSG::threaded) {
 					visibility_notifier->enter_callable.call_deferred();
 				} else {
-					Callable::CallError ce;
-					Variant ret;
-					visibility_notifier->enter_callable.callp(nullptr, 0, ret, ce);
+					visibility_notifier->enter_callable.call();
 				}
 			}
 		} else {
@@ -2018,9 +2016,7 @@ void RendererCanvasCull::update_visibility_notifiers() {
 					if (RSG::threaded) {
 						visibility_notifier->exit_callable.call_deferred();
 					} else {
-						Callable::CallError ce;
-						Variant ret;
-						visibility_notifier->exit_callable.callp(nullptr, 0, ret, ce);
+						visibility_notifier->exit_callable.call();
 					}
 				}
 			}

@@ -256,11 +256,7 @@
 	ds->window_resize(window_id, wd.size.width, wd.size.height);
 
 	if (!wd.rect_changed_callback.is_null()) {
-		Variant size = Rect2i(ds->window_get_position(window_id), ds->window_get_size(window_id));
-		Variant *sizep = &size;
-		Variant ret;
-		Callable::CallError ce;
-		wd.rect_changed_callback.callp((const Variant **)&sizep, 1, ret, ce);
+		wd.rect_changed_callback.call(Rect2i(ds->window_get_position(window_id), ds->window_get_size(window_id)));
 	}
 }
 
@@ -283,11 +279,7 @@
 	ds->release_pressed_events();
 
 	if (!wd.rect_changed_callback.is_null()) {
-		Variant size = Rect2i(ds->window_get_position(window_id), ds->window_get_size(window_id));
-		Variant *sizep = &size;
-		Variant ret;
-		Callable::CallError ce;
-		wd.rect_changed_callback.callp((const Variant **)&sizep, 1, ret, ce);
+		wd.rect_changed_callback.call(Rect2i(ds->window_get_position(window_id), ds->window_get_size(window_id)));
 	}
 }
 

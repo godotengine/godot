@@ -195,10 +195,7 @@ void DisplayServerIOS::send_window_event(DisplayServer::WindowEvent p_event) con
 
 void DisplayServerIOS::_window_callback(const Callable &p_callable, const Variant &p_arg) const {
 	if (!p_callable.is_null()) {
-		const Variant *argp = &p_arg;
-		Variant ret;
-		Callable::CallError ce;
-		p_callable.callp((const Variant **)&argp, 1, ret, ce);
+		p_callable.call(p_arg);
 	}
 }
 

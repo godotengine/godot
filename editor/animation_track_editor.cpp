@@ -3169,26 +3169,7 @@ AnimationTrackEdit::AnimationTrackEdit() {
 
 AnimationTrackEdit *AnimationTrackEditPlugin::create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage) {
 	if (get_script_instance()) {
-		Variant args[6] = {
-			p_object,
-			p_type,
-			p_property,
-			p_hint,
-			p_hint_string,
-			p_usage
-		};
-
-		Variant *argptrs[6] = {
-			&args[0],
-			&args[1],
-			&args[2],
-			&args[3],
-			&args[4],
-			&args[5]
-		};
-
-		Callable::CallError ce;
-		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->callp("create_value_track_edit", (const Variant **)&argptrs, 6, ce).operator Object *());
+		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_value_track_edit", p_object, p_type, p_property, p_hint, p_hint_string, p_usage));
 	}
 	return nullptr;
 }

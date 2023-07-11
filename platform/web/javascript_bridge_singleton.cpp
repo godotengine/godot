@@ -256,15 +256,12 @@ void JavaScriptObjectImpl::_callback(void *p_ref, int p_args_id, int p_argc) {
 		int type = godot_js_wrapper_object_getvar(p_args_id, Variant::INT, &exchange);
 		arg_arr.push_back(_js2variant(type, &exchange));
 	}
-	Variant arg = arg_arr;
-	const Variant *argv[1] = { &arg };
-	Callable::CallError err;
-	Variant ret;
-	obj->_callable.callp(argv, 1, ret, err);
+	obj->_callable.call(arg_arr);
 
 	// Set return value
 	godot_js_wrapper_ex exchange;
 	void *lock = nullptr;
+	Variant ret;
 	const Variant *v = &ret;
 	int type = _variant2js((const void **)&v, 0, &exchange, &lock);
 	godot_js_wrapper_object_set_cb_ret(type, &exchange);
