@@ -1923,6 +1923,7 @@ void Tree::update_column(int p_col) {
 	}
 
 	columns.write[p_col].text_buf->add_string(columns[p_col].title, theme_cache.font, theme_cache.font_size, columns[p_col].language);
+	columns.write[p_col].cached_minimum_width_dirty = true;
 }
 
 void Tree::update_item_cell(TreeItem *p_item, int p_col) {
@@ -2015,7 +2016,7 @@ void Tree::update_item_cache(TreeItem *p_item) {
 	}
 }
 
-int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int *r_self_height) {
+int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height) {
 	if (p_pos.y - theme_cache.offset.y > (p_draw_size.height)) {
 		return -1; //draw no more!
 	}
@@ -2097,11 +2098,12 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			p_item->cells.write[i].text_buf->set_width(item_width);
 
-			label_h = compute_item_height(p_item);
-			if (r_self_height != nullptr) {
-				*r_self_height = label_h;
+			r_self_height = compute_item_height(p_item);
+			label_h = r_self_height + theme_cache.v_separation;
+
+			if (p_pos.y + label_h - theme_cache.offset.y < 0) {
+				continue; // No need to draw.
 			}
-			label_h += theme_cache.v_separation;
 
 			Rect2i item_rect = Rect2i(Point2i(ofs, p_pos.y) - theme_cache.offset + p_draw_ofs, Size2i(item_width, label_h));
 			Rect2i cell_rect = item_rect;
@@ -2450,7 +2452,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			int child_h = -1;
 			int child_self_height = 0;
 			if (htotal >= 0) {
-				child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c, &child_self_height);
+				child_h = draw_item(children_pos, p_draw_ofs, p_draw_size, c, child_self_height);
 				child_self_height += theme_cache.v_separation;
 			}
 
@@ -4232,7 +4234,8 @@ void Tree::_notification(int p_what) {
 			cache.rtl = is_layout_rtl();
 
 			if (root && get_size().x > 0 && get_size().y > 0) {
-				draw_item(Point2(), draw_ofs, draw_size, root);
+				int self_height = 0; // Just to pass a reference, we don't need the root's `self_height`.
+				draw_item(Point2(), draw_ofs, draw_size, root, self_height);
 			}
 
 			if (show_column_titles) {
@@ -4250,6 +4253,7 @@ void Tree::_notification(int p_what) {
 					//text
 					int clip_w = tbrect.size.width - sb->get_minimum_size().width;
 					columns.write[i].text_buf->set_width(clip_w);
+					columns.write[i].cached_minimum_width_dirty = true;
 
 					Vector2 text_pos = Point2i(tbrect.position.x, tbrect.position.y + (tbrect.size.height - columns[i].text_buf->get_size().y) / 2);
 					switch (columns[i].title_alignment) {
@@ -4387,6 +4391,7 @@ void Tree::item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mous
 void Tree::item_changed(int p_column, TreeItem *p_item) {
 	if (p_item != nullptr && p_column >= 0 && p_column < p_item->cells.size()) {
 		p_item->cells.write[p_column].dirty = true;
+		columns.write[p_column].cached_minimum_width_dirty = true;
 	}
 	queue_redraw();
 }
@@ -4518,6 +4523,7 @@ void Tree::set_column_custom_minimum_width(int p_column, int p_min_width) {
 		return;
 	}
 	columns.write[p_column].custom_min_width = p_min_width;
+	columns.write[p_column].cached_minimum_width_dirty = true;
 	queue_redraw();
 }
 
@@ -4529,6 +4535,7 @@ void Tree::set_column_expand(int p_column, bool p_expand) {
 	}
 
 	columns.write[p_column].expand = p_expand;
+	columns.write[p_column].cached_minimum_width_dirty = true;
 	queue_redraw();
 }
 
@@ -4540,6 +4547,7 @@ void Tree::set_column_expand_ratio(int p_column, int p_ratio) {
 	}
 
 	columns.write[p_column].expand_ratio = p_ratio;
+	columns.write[p_column].cached_minimum_width_dirty = true;
 	queue_redraw();
 }
 
@@ -4551,6 +4559,7 @@ void Tree::set_column_clip_content(int p_column, bool p_fit) {
 	}
 
 	columns.write[p_column].clip_content = p_fit;
+	columns.write[p_column].cached_minimum_width_dirty = true;
 	queue_redraw();
 }
 
@@ -4633,46 +4642,51 @@ TreeItem *Tree::get_next_selected(TreeItem *p_item) {
 int Tree::get_column_minimum_width(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, columns.size(), -1);
 
-	// Use the custom minimum width.
-	int min_width = columns[p_column].custom_min_width;
+	if (columns[p_column].cached_minimum_width_dirty) {
+		// Use the custom minimum width.
+		int min_width = columns[p_column].custom_min_width;
 
-	// Check if the visible title of the column is wider.
-	if (show_column_titles) {
-		min_width = MAX(theme_cache.font->get_string_size(columns[p_column].title, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT), min_width);
-	}
+		// Check if the visible title of the column is wider.
+		if (show_column_titles) {
+			min_width = MAX(theme_cache.font->get_string_size(columns[p_column].title, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT), min_width);
+		}
 
-	if (!columns[p_column].clip_content) {
-		int depth = 0;
-		TreeItem *next;
-		for (TreeItem *item = get_root(); item; item = next) {
-			next = item->get_next_visible();
-			// Compute the depth in tree.
-			if (next && p_column == 0) {
-				if (next->get_parent() == item) {
-					depth += 1;
-				} else {
-					TreeItem *common_parent = item->get_parent();
-					while (common_parent != next->get_parent() && common_parent) {
-						common_parent = common_parent->get_parent();
-						depth -= 1;
+		if (!columns[p_column].clip_content) {
+			int depth = 0;
+			TreeItem *next;
+			for (TreeItem *item = get_root(); item; item = next) {
+				next = item->get_next_visible();
+				// Compute the depth in tree.
+				if (next && p_column == 0) {
+					if (next->get_parent() == item) {
+						depth += 1;
+					} else {
+						TreeItem *common_parent = item->get_parent();
+						while (common_parent != next->get_parent() && common_parent) {
+							common_parent = common_parent->get_parent();
+							depth -= 1;
+						}
 					}
 				}
-			}
 
-			// Get the item minimum size.
-			Size2 item_size = item->get_minimum_size(p_column);
-			if (p_column == 0) {
-				item_size.width += theme_cache.item_margin * depth;
-			} else {
-				item_size.width += theme_cache.h_separation;
-			}
+				// Get the item minimum size.
+				Size2 item_size = item->get_minimum_size(p_column);
+				if (p_column == 0) {
+					item_size.width += theme_cache.item_margin * depth;
+				} else {
+					item_size.width += theme_cache.h_separation;
+				}
 
-			// Check if the item is wider.
-			min_width = MAX(min_width, item_size.width);
+				// Check if the item is wider.
+				min_width = MAX(min_width, item_size.width);
+			}
 		}
+
+		columns.get(p_column).cached_minimum_width = min_width;
+		columns.get(p_column).cached_minimum_width_dirty = false;
 	}
 
-	return min_width;
+	return columns[p_column].cached_minimum_width;
 }
 
 int Tree::get_column_width(int p_column) const {
