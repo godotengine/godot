@@ -690,6 +690,7 @@ public:
 	BIND2(canvas_item_set_self_modulate, RID, const Color &)
 
 	BIND2(canvas_item_set_draw_behind_parent, RID, bool)
+	BIND2(canvas_item_set_ignore_parent_transform, RID, bool)
 
 	BIND6(canvas_item_add_line, RID, const Point2 &, const Point2 &, const Color &, float, bool)
 	BIND5(canvas_item_add_polyline, RID, const Vector<Point2> &, const Vector<Color> &, float, bool)
