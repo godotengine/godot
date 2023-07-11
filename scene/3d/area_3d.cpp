@@ -641,6 +641,8 @@ void Area3D::_validate_property(PropertyInfo &p_property) const {
 			if (gravity_is_point) {
 				if (p_property.name == "gravity_direction") {
 					p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+				} else if (p_property.name == "gravity_apply_transform") {
+					p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 				}
 			} else {
 				if (p_property.name.begins_with("gravity_point_")) {

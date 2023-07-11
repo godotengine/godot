@@ -332,14 +332,9 @@ void GodotArea3D::call_queries() {
 }
 
 void GodotArea3D::compute_gravity(const Vector3 &p_position, Vector3 &r_gravity) const {
-	Vector3 gravity_vector = get_gravity_vector();
-	if (gravity_apply_transform) {
-		gravity_vector = get_transform().xform(gravity_vector);
-	}
-
 	if (is_gravity_point()) {
 		const real_t gr_unit_dist = get_gravity_point_unit_distance();
-		Vector3 v = gravity_vector - p_position;
+		Vector3 v = get_transform().xform(get_gravity_vector()) - p_position;
 		if (gr_unit_dist > 0) {
 			const real_t v_length_sq = v.length_squared();
 			if (v_length_sq > 0) {
@@ -351,8 +346,10 @@ void GodotArea3D::compute_gravity(const Vector3 &p_position, Vector3 &r_gravity)
 		} else {
 			r_gravity = v.normalized() * get_gravity();
 		}
+	} else if (gravity_apply_transform) {
+		r_gravity = get_transform().get_basis().xform(get_gravity_vector()) * get_gravity();
 	} else {
-		r_gravity = gravity_vector * get_gravity();
+		r_gravity = get_gravity_vector() * get_gravity();
 	}
 }
 
