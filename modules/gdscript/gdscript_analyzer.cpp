@@ -1237,6 +1237,10 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 					member.variable->getter->set_datatype(member.variable->datatype);
 
 					resolve_function_body(member.variable->getter);
+
+					if (!member.variable->getter->get_datatype().is_hard_type() && !member.variable->getter->body->has_return) {
+						push_error(R"(Not all code paths return a value.)", member.variable->getter);
+					}
 				}
 				if (member.variable->setter != nullptr) {
 					resolve_function_signature(member.variable->setter);
