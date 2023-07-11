@@ -577,6 +577,16 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="global_menu_is_item_hidden" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at index [param idx] is hidden.
+				See [method global_menu_set_item_hidden] for more info on how to hide an item.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
 		<method name="global_menu_is_item_radio_checkable" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="menu_root" type="String" />
@@ -645,6 +655,27 @@
 			<param index="2" name="disabled" type="bool" />
 			<description>
 				Enables/disables the item at index [param idx]. When it is disabled, it can't be selected and its action can't be invoked.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_hidden">
+			<return type="void" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="hidden" type="bool" />
+			<description>
+				Hides/shows the item at index [param idx]. When it is hidden, an item does not appear in a menu and its action cannot be invoked.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_hover_callbacks">
+			<return type="void" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Sets the callback of the item at index [param idx]. The callback is emitted when an item is hovered.
+				[b]Note:[/b] The [param callback] Callable needs to accept exactly one Variant parameter, the parameter passed to the Callable will be the value passed to the [code]tag[/code] parameter when the menu item was created.
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
@@ -749,6 +780,15 @@
 			<description>
 				Sets the [String] tooltip of the item at the specified index [param idx].
 				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_popup_callbacks">
+			<return type="void" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="open_callback" type="Callable" />
+			<param index="2" name="close_callback" type="Callable" />
+			<description>
+				Registers callables to emit when the menu is respectively about to show or closed.
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
