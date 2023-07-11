@@ -4,7 +4,7 @@
 		Blends two of three animations additively inside of an [AnimationNodeBlendTree].
 	</brief_description>
 	<description>
-		A resource to add to an [AnimationNodeBlendTree]. Blends two animations out of three additively out of three based on the amounmt value.
+		A resource to add to an [AnimationNodeBlendTree]. Blends two animations out of three additively out of three based on the amount value.
 		This animation node has three inputs:
 		- The base animation to add to
 		- A "-add" animation to blend with when the blend amount is negative

@@ -402,9 +402,9 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				const Vector3 *src = array.ptr();
 				for (int i = 0; i < p_vertex_array_len; i++) {
 					Vector2 res = src[i].octahedron_encode();
-					int16_t vector[2] = {
-						(int16_t)CLAMP(res.x * 65535, 0, 65535),
-						(int16_t)CLAMP(res.y * 65535, 0, 65535),
+					uint16_t vector[2] = {
+						(uint16_t)CLAMP(res.x * 65535, 0, 65535),
+						(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 					};
 
 					memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);
@@ -422,9 +422,9 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 					for (int i = 0; i < p_vertex_array_len; i++) {
 						const Vector3 src(src_ptr[i * 4 + 0], src_ptr[i * 4 + 1], src_ptr[i * 4 + 2]);
 						Vector2 res = src.octahedron_tangent_encode(src_ptr[i * 4 + 3]);
-						int16_t vector[2] = {
-							(int16_t)CLAMP(res.x * 65535, 0, 65535),
-							(int16_t)CLAMP(res.y * 65535, 0, 65535),
+						uint16_t vector[2] = {
+							(uint16_t)CLAMP(res.x * 65535, 0, 65535),
+							(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 						};
 
 						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);
@@ -437,9 +437,9 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 					for (int i = 0; i < p_vertex_array_len; i++) {
 						const Vector3 src(src_ptr[i * 4 + 0], src_ptr[i * 4 + 1], src_ptr[i * 4 + 2]);
 						Vector2 res = src.octahedron_tangent_encode(src_ptr[i * 4 + 3]);
-						int16_t vector[2] = {
-							(int16_t)CLAMP(res.x * 65535, 0, 65535),
-							(int16_t)CLAMP(res.y * 65535, 0, 65535),
+						uint16_t vector[2] = {
+							(uint16_t)CLAMP(res.x * 65535, 0, 65535),
+							(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 						};
 
 						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);

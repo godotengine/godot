@@ -1095,7 +1095,9 @@ TEST_CASE("[String] pad") {
 
 	s = String("10.10");
 	CHECK(s.pad_decimals(4) == U"10.1000");
+	CHECK(s.pad_decimals(1) == U"10.1");
 	CHECK(s.pad_zeros(4) == U"0010.10");
+	CHECK(s.pad_zeros(1) == U"10.10");
 }
 
 TEST_CASE("[String] is_subsequence_of") {

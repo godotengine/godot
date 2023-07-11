@@ -38,7 +38,7 @@ internal static class ExtensionMethods
     }
 
     private static bool IsGenerateUnmanagedCallbacksAttribute(this INamedTypeSymbol symbol)
-        => symbol.ToString() == GeneratorClasses.GenerateUnmanagedCallbacksAttr;
+        => symbol.FullQualifiedNameOmitGlobal() == GeneratorClasses.GenerateUnmanagedCallbacksAttr;
 
     public static IEnumerable<(ClassDeclarationSyntax cds, INamedTypeSymbol symbol)> SelectUnmanagedCallbacksClasses(
         this IEnumerable<ClassDeclarationSyntax> source,

@@ -954,45 +954,33 @@ static String get_mountpoint(const String &p_path) {
 }
 
 Error OS_LinuxBSD::move_to_trash(const String &p_path) {
-	String path = p_path.rstrip("/"); // Strip trailing slash when path points to a directory
+	// We try multiple methods, until we find one that works.
+	// So we only return on success until we exhausted possibilities.
 
+	String path = p_path.rstrip("/"); // Strip trailing slash when path points to a directory.
 	int err_code;
 	List<String> args;
 	args.push_back(path);
-	args.push_front("trash"); // The command is `gio trash <file_name>` so we need to add it to args.
+
+	args.push_front("trash"); // The command is `gio trash <file_name>` so we add it before the path.
 	Error result = execute("gio", args, nullptr, &err_code); // For GNOME based machines.
-	if (result == OK) { // The `execute` function has done its job without errors.
-		if (!err_code) { // The shell command has been executed without errors.
-			return OK;
-		} else if (err_code == 1) {
-			ERR_PRINT("move_to_trash: No such file or directory as " + path + ".");
-			return ERR_FILE_NOT_FOUND;
-		}
+	if (result == OK && err_code == 0) { // Success.
+		return OK;
 	}
 
 	args.pop_front();
 	args.push_front("move");
 	args.push_back("trash:/"); // The command is `kioclient5 move <file_name> trash:/`.
 	result = execute("kioclient5", args, nullptr, &err_code); // For KDE based machines.
-	if (result == OK) { // The `execute` function has done its job without errors.
-		if (!err_code) { // The shell command has been executed without errors.
-			return OK;
-		} else if (err_code == 1) {
-			ERR_PRINT("move_to_trash: No such file or directory as " + path + ".");
-			return ERR_FILE_NOT_FOUND;
-		}
+	if (result == OK && err_code == 0) {
+		return OK;
 	}
 
 	args.pop_front();
 	args.pop_back();
 	result = execute("gvfs-trash", args, nullptr, &err_code); // For older Linux machines.
-	if (result == OK) { // The `execute` function has done its job without errors.
-		if (!err_code) { // The shell command has been executed without errors.
-			return OK;
-		} else if (err_code == 1) {
-			ERR_PRINT("move_to_trash: No such file or directory as " + path + ".");
-			return ERR_FILE_NOT_FOUND;
-		}
+	if (result == OK && err_code == 0) {
+		return OK;
 	}
 
 	// If the commands `kioclient5`, `gio` or `gvfs-trash` don't work on the system we do it manually.

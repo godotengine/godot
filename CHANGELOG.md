@@ -4,6 +4,164 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [4.1.1] - TBD
+
+See the [release announcement](https://godotengine.org/article/maintenance-release-godot-4-1-1) for details.
+
+### Added
+
+#### Animation
+
+- Add 3.x compatibility for animation loop mode ([GH-79155](https://github.com/godotengine/godot/pull/79155)).
+
+#### GUI
+
+- Add compatibility properties to `TouchScreenButton` ([GH-78940](https://github.com/godotengine/godot/pull/78940)).
+
+### Changed
+
+#### 2D
+
+- Improve string drawing in the tiledata editor ([GH-78522](https://github.com/godotengine/godot/pull/78522)).
+- Make sure the shortcut key respects the context in `TileSetAtlasSourceEditor` ([GH-78920](https://github.com/godotengine/godot/pull/78920)).
+
+#### Buildsystem
+
+- Linux: Allow unbundling brotli to use system library ([GH-79101](https://github.com/godotengine/godot/pull/79101)).
+- Linux: Link libsquish directly when unbundling, .pc file unreliable ([GH-79105](https://github.com/godotengine/godot/pull/79105)).
+
+#### C#/.NET
+
+- Update the RiderPathLocator to support the JetBrains Toolbox 2.0 ([GH-78832](https://github.com/godotengine/godot/pull/78832)).
+- Compare symbol names without null flow state ([GH-79094](https://github.com/godotengine/godot/pull/79094)).
+- Add null check before calling `UnregisterGodotObject` ([GH-79151](https://github.com/godotengine/godot/pull/79151)).
+
+#### Core
+
+- Check parameter validity in `Object::set_script` ([GH-46125](https://github.com/godotengine/godot/pull/46125)).
+- Improve error message for `Node.set_owner` ([GH-79000](https://github.com/godotengine/godot/pull/79000)).
+
+#### Editor
+
+- Focus current node after connecting ([GH-54071](https://github.com/godotengine/godot/pull/54071)).
+- Fix tooltip of enum value without description ([GH-78524](https://github.com/godotengine/godot/pull/78524)).
+- Use bullet points in shader editor creation dialog ([GH-78631](https://github.com/godotengine/godot/pull/78631)).
+- Sort project tags before saving ([GH-78775](https://github.com/godotengine/godot/pull/78775)).
+- Project converter: Use same rendering driver as Project Manager ([GH-78795](https://github.com/godotengine/godot/pull/78795)).
+- Add tooltip description wrapping in scene tree and plugin settings ([GH-79090](https://github.com/godotengine/godot/pull/79090)).
+- Improve user-friendliness of project version mismatch messages ([GH-79118](https://github.com/godotengine/godot/pull/79118), [GH-79299](https://github.com/godotengine/godot/pull/79299)).
+
+#### GUI
+
+- Ensure that `_drop_physics_mouseover` only happens when necessary ([GH-78078](https://github.com/godotengine/godot/pull/78078)).
+- Update FileDialog button activity when `file_mode` is changed ([GH-79211](https://github.com/godotengine/godot/pull/79211)).
+- Hide/show `AcceptDialog`'s button spacer on button visibility changed ([GH-79274](https://github.com/godotengine/godot/pull/79274)).
+
+#### Porting
+
+- macOS/iOS: Set MoltenVK logging level based on `--verbose` flag ([GH-79061](https://github.com/godotengine/godot/pull/79061)).
+- Windows: Flash both the window caption and taskbar button on `request_attention` ([GH-78263](https://github.com/godotengine/godot/pull/78263)).
+
+#### Rendering
+
+- Clear specular buffer if sky mode is canvas and screen space effects are used ([GH-78624](https://github.com/godotengine/godot/pull/78624)).
+- Take eye offset into account for depth in StandardMaterial3D ([GH-79049](https://github.com/godotengine/godot/pull/79049)).
+
+### Fixed
+
+#### 2D
+
+- Fix `Camera2D.rotating` not being converted and reversed properly ([GH-79264](https://github.com/godotengine/godot/pull/79264)).
+
+#### 3D
+
+- Fix Camera3D `project_*` methods not accounting for frustum offset ([GH-75806](https://github.com/godotengine/godot/pull/75806)).
+- Fix 3D viewport grid disappearing on scene tab changes ([GH-78694](https://github.com/godotengine/godot/pull/78694)).
+
+#### Animation
+
+- Fix infinite loop state check in `AnimationStateMachine` ([GH-79141](https://github.com/godotengine/godot/pull/79141)).
+
+#### Buildsystem
+
+- Linux: Fix build with `use_sowrap=no` and various warnings/errors ([GH-79097](https://github.com/godotengine/godot/pull/79097)).
+
+#### C#/.NET
+
+- Fix command line exporting ([GH-79173](https://github.com/godotengine/godot/pull/79173)).
+
+#### Core
+
+- Fix zero-sized WorkerThreadPool not processing group tasks ([GH-78845](https://github.com/godotengine/godot/pull/78845)).
+- Fix `Node::add_sibling` parent check ([GH-78847](https://github.com/godotengine/godot/pull/78847)).
+- Fix error when non-ASCII characters in resource pack path ([GH-78935](https://github.com/godotengine/godot/pull/78935)).
+- Fix erroneous `pad_zeros()` warning ([GH-79202](https://github.com/godotengine/godot/pull/79202)).
+- Fix `PackedScene::get_last_modified_time()` always returns `0` ([GH-79237](https://github.com/godotengine/godot/pull/79237)).
+
+#### Editor
+
+- Fix dropping files from `res://` to `res://` ([GH-78914](https://github.com/godotengine/godot/pull/78914)).
+- Do not change a node unique name to the same name ([GH-78925](https://github.com/godotengine/godot/pull/78925)).
+- Collapse bottom panel if there is no active tab ([GH-79078](https://github.com/godotengine/godot/pull/79078)).
+
+#### Export
+
+- Fix export options of scripted `EditorExportPlugin`s ([GH-79025](https://github.com/godotengine/godot/pull/79025)).
+
+#### GDScript
+
+- Fix regression with GDScript enum descriptions now showing up in documentation ([GH-78953](https://github.com/godotengine/godot/pull/78953)).
+
+#### GUI
+
+- Fix cursor behavior for multiselect in Tree while holding CTRL ([GH-71024](https://github.com/godotengine/godot/pull/71024)).
+- Fix disabled slider highlighting ([GH-78776](https://github.com/godotengine/godot/pull/78776)).
+- Fix invalid minimum size for translated messages in option button ([GH-78835](https://github.com/godotengine/godot/pull/78835)).
+- Fix incorrect property names in `FontFile::_get_property_list()` ([GH-78907](https://github.com/godotengine/godot/pull/78907)).
+- Revert "Fix focusloss of non-exclusive `AcceptDialog` with `close_on_escape`" ([GH-79084](https://github.com/godotengine/godot/pull/79084)).
+
+#### Import
+
+- Fix property hint class name type string restriction and replace mode ([GH-79139](https://github.com/godotengine/godot/pull/79139)).
+
+#### Navigation
+
+- Fix closest possible navigation path position ([GH-79004](https://github.com/godotengine/godot/pull/79004)).
+
+#### Networking
+
+- Fix `rpc` calls with binds ([GH-78551](https://github.com/godotengine/godot/pull/78551)).
+
+#### Particles
+
+- Initialize particles instance buffer in case it is used before being updated ([GH-78852](https://github.com/godotengine/godot/pull/78852)).
+- Unify error condition for particles trail lifetime ([GH-79270](https://github.com/godotengine/godot/pull/79270)).
+
+#### Physics
+
+- Fix rigid body `contact_monitor` property description ([GH-79250](https://github.com/godotengine/godot/pull/79250)).
+
+#### Porting
+
+- Fix formatting of `dlopen` error messages ([GH-78802](https://github.com/godotengine/godot/pull/78802)).
+- Fix the fallback logic of `OS::shell_show_in_file_manager` ([GH-79087](https://github.com/godotengine/godot/pull/79087)).
+- Linux/BSD: Avoid freeze when interacting with menus on Wayland ([GH-79143](https://github.com/godotengine/godot/pull/79143)).
+- Linux/BSD: Fix `move_to_trash` wrongly reporting files as not found ([GH-79284](https://github.com/godotengine/godot/pull/79284)).
+- Windows: Fix setting initial non-exclusive window mode ([GH-79016](https://github.com/godotengine/godot/pull/79016)).
+
+#### Rendering
+
+- Fix threading bug in Vulkan rendering device ([GH-78794](https://github.com/godotengine/godot/pull/78794)).
+- Fix sanitizers reports about octahedral tangents in RenderingServer ([GH-78902](https://github.com/godotengine/godot/pull/78902)).
+
+#### Shaders
+
+- Fix invalid shader compilation when using `hint_normal_roughness_texture` in mobile backend ([GH-78839](https://github.com/godotengine/godot/pull/78839)).
+- Fix using uint suffix at the hex number declaration in shaders ([GH-78906](https://github.com/godotengine/godot/pull/78906)).
+- Fix shader language float literal precision truncation ([GH-78972](https://github.com/godotengine/godot/pull/78972)).
+- Fix comments and indentation in `.gdshaderinc` files ([GH-79158](https://github.com/godotengine/godot/pull/79158)).
+
+
 ## [4.1] - 2023-07-06
 
 See the [release announcement](https://godotengine.org/article/godot-4-1-is-here) for details.
@@ -2876,6 +3034,7 @@ See the [release announcement](https://godotengine.org/article/godot-3-3-has-arr
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
 
+[4.1.1]: https://github.com/godotengine/godot/compare/4.1-stable...4.1.1-stable
 [4.1]: https://github.com/godotengine/godot/compare/4.0-stable...4.1-stable
 [4.0]: https://github.com/godotengine/godot/compare/3.2-stable...4.0-stable
 [3.5]: https://github.com/godotengine/godot/compare/3.4-stable...3.5-stable
