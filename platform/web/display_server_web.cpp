@@ -174,6 +174,11 @@ void DisplayServerWeb::_key_callback(const String &p_key_event_code, const Strin
 	// Resume audio context after input in case autoplay was denied.
 	OS_Web::get_singleton()->resume_audio();
 
+	DisplayServerWeb *ds = get_singleton();
+	if (ds->ime_started) {
+		return;
+	}
+
 	char32_t c = 0x00;
 	String unicode = p_key_event_key;
 	if (unicode.length() == 1) {
@@ -183,17 +188,21 @@ void DisplayServerWeb::_key_callback(const String &p_key_event_code, const Strin
 	Key keycode = dom_code2godot_scancode(p_key_event_code.utf8().get_data(), p_key_event_key.utf8().get_data(), false);
 	Key scancode = dom_code2godot_scancode(p_key_event_code.utf8().get_data(), p_key_event_key.utf8().get_data(), true);
 
-	Ref<InputEventKey> ev;
-	ev.instantiate();
-	ev->set_echo(p_repeat);
-	ev->set_keycode(fix_keycode(c, keycode));
-	ev->set_physical_keycode(scancode);
-	ev->set_key_label(fix_key_label(c, keycode));
-	ev->set_unicode(fix_unicode(c));
-	ev->set_pressed(p_pressed);
-	dom2godot_mod(ev, p_modifiers, fix_keycode(c, keycode));
+	DisplayServerWeb::KeyEvent ke;
 
-	Input::get_singleton()->parse_input_event(ev);
+	ke.pressed = p_pressed;
+	ke.echo = p_repeat;
+	ke.raw = true;
+	ke.keycode = fix_keycode(c, keycode);
+	ke.physical_keycode = scancode;
+	ke.key_label = fix_key_label(c, keycode);
+	ke.unicode = fix_unicode(c);
+	ke.mod = p_modifiers;
+
+	if (ds->key_event_pos >= ds->key_event_buffer.size()) {
+		ds->key_event_buffer.resize(1 + ds->key_event_pos);
+	}
+	ds->key_event_buffer.write[ds->key_event_pos++] = ke;
 
 	// Make sure to flush all events so we can call restricted APIs inside the event.
 	Input::get_singleton()->flush_buffered_events();
@@ -619,7 +628,7 @@ int DisplayServerWeb::mouse_wheel_callback(double p_delta_x, double p_delta_y) {
 }
 
 int DisplayServerWeb::_mouse_wheel_callback(double p_delta_x, double p_delta_y) {
-	if (!godot_js_display_canvas_is_focused()) {
+	if (!godot_js_display_canvas_is_focused() && !godot_js_is_ime_focused()) {
 		if (get_singleton()->cursor_inside_canvas) {
 			godot_js_display_canvas_focus();
 		} else {
@@ -726,7 +735,7 @@ bool DisplayServerWeb::is_touchscreen_available() const {
 
 // Virtual Keyboard
 void DisplayServerWeb::vk_input_text_callback(const char *p_text, int p_cursor) {
-	String text = p_text;
+	String text = String::utf8(p_text);
 
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
@@ -807,6 +816,100 @@ void DisplayServerWeb::_gamepad_callback(int p_index, int p_connected, const Str
 	} else {
 		input->joy_connection_changed(p_index, false, "");
 	}
+}
+
+// IME.
+void DisplayServerWeb::ime_callback(int p_type, const char *p_text) {
+	String text = String::utf8(p_text);
+
+#ifdef PROXY_TO_PTHREAD_ENABLED
+	if (!Thread::is_main_thread()) {
+		callable_mp_static(DisplayServerWeb::_ime_callback).bind(p_type, text).call_deferred();
+		return;
+	}
+#endif
+
+	_ime_callback(p_type, text);
+}
+
+void DisplayServerWeb::_ime_callback(int p_type, const String &p_text) {
+	DisplayServerWeb *ds = get_singleton();
+	// Resume audio context after input in case autoplay was denied.
+	OS_Web::get_singleton()->resume_audio();
+
+	switch (p_type) {
+		case 0: {
+			// IME start.
+			ds->ime_text = String();
+			ds->ime_selection = Vector2i();
+			for (int i = ds->key_event_pos - 1; i >= 0; i--) {
+				// Delete last raw keydown event from query.
+				if (ds->key_event_buffer[i].pressed && ds->key_event_buffer[i].raw) {
+					ds->key_event_buffer.remove_at(i);
+					ds->key_event_pos--;
+					break;
+				}
+			}
+			OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+			ds->ime_started = true;
+		} break;
+		case 1: {
+			// IME update.
+			if (ds->ime_active && ds->ime_started) {
+				ds->ime_text = p_text;
+				ds->ime_selection = Vector2i(ds->ime_text.length(), ds->ime_text.length());
+				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+			}
+		} break;
+		case 2: {
+			// IME commit.
+			if (ds->ime_active && ds->ime_started) {
+				ds->ime_started = false;
+
+				ds->ime_text = String();
+				ds->ime_selection = Vector2i();
+				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+
+				String text = p_text;
+				for (int i = 0; i < text.length(); i++) {
+					DisplayServerWeb::KeyEvent ke;
+
+					ke.pressed = true;
+					ke.echo = false;
+					ke.raw = false;
+					ke.keycode = Key::NONE;
+					ke.physical_keycode = Key::NONE;
+					ke.key_label = Key::NONE;
+					ke.unicode = text[i];
+					ke.mod = 0;
+
+					if (ds->key_event_pos >= ds->key_event_buffer.size()) {
+						ds->key_event_buffer.resize(1 + ds->key_event_pos);
+					}
+					ds->key_event_buffer.write[ds->key_event_pos++] = ke;
+				}
+			}
+		} break;
+		default:
+			break;
+	}
+}
+
+void DisplayServerWeb::window_set_ime_active(const bool p_active, WindowID p_window) {
+	ime_active = p_active;
+	godot_js_set_ime_active(p_active);
+}
+
+void DisplayServerWeb::window_set_ime_position(const Point2i &p_pos, WindowID p_window) {
+	godot_js_set_ime_position(p_pos.x, p_pos.y);
+}
+
+Point2i DisplayServerWeb::ime_get_selection() const {
+	return ime_selection;
+}
+
+String DisplayServerWeb::ime_get_text() const {
+	return ime_text;
 }
 
 void DisplayServerWeb::process_joypads() {
@@ -892,6 +995,9 @@ void DisplayServerWeb::_send_window_event_callback(int p_notification) {
 	}
 	if (p_notification == DisplayServer::WINDOW_EVENT_MOUSE_ENTER || p_notification == DisplayServer::WINDOW_EVENT_MOUSE_EXIT) {
 		ds->cursor_inside_canvas = p_notification == DisplayServer::WINDOW_EVENT_MOUSE_ENTER;
+	}
+	if (godot_js_is_ime_focused() && (p_notification == DisplayServer::WINDOW_EVENT_FOCUS_IN || p_notification == DisplayServer::WINDOW_EVENT_FOCUS_OUT)) {
+		return;
 	}
 	if (!ds->window_event_callback.is_null()) {
 		Variant event = int(p_notification);
@@ -1003,6 +1109,7 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 	godot_js_input_paste_cb(&DisplayServerWeb::update_clipboard_callback);
 	godot_js_input_drop_files_cb(&DisplayServerWeb::drop_files_js_callback);
 	godot_js_input_gamepad_cb(&DisplayServerWeb::gamepad_callback);
+	godot_js_set_ime_cb(&DisplayServerWeb::ime_callback, &DisplayServerWeb::key_callback, key_event.code, key_event.key);
 
 	// JS Display interface (js/libs/library_godot_display.js)
 	godot_js_display_fullscreen_cb(&DisplayServerWeb::fullscreen_change_callback);
@@ -1030,7 +1137,6 @@ bool DisplayServerWeb::has_feature(Feature p_feature) const {
 	switch (p_feature) {
 		//case FEATURE_GLOBAL_MENU:
 		//case FEATURE_HIDPI:
-		//case FEATURE_IME:
 		case FEATURE_ICON:
 		case FEATURE_CLIPBOARD:
 		case FEATURE_CURSOR_SHAPE:
@@ -1044,6 +1150,9 @@ bool DisplayServerWeb::has_feature(Feature p_feature) const {
 		//case FEATURE_WINDOW_TRANSPARENCY:
 		//case FEATURE_KEEP_SCREEN_ON:
 		//case FEATURE_ORIENTATION:
+		case FEATURE_IME:
+			// IME does not work with experimental VK support.
+			return godot_js_display_vk_available() == 0;
 		case FEATURE_VIRTUAL_KEYBOARD:
 			return godot_js_display_vk_available() != 0;
 		case FEATURE_TEXT_TO_SPEECH:
@@ -1263,6 +1372,24 @@ void DisplayServerWeb::process_events() {
 	Input::get_singleton()->flush_buffered_events();
 	if (godot_js_input_gamepad_sample() == OK) {
 		process_joypads();
+		for (int i = 0; i < key_event_pos; i++) {
+			const DisplayServerWeb::KeyEvent &ke = key_event_buffer[i];
+
+			Ref<InputEventKey> ev;
+			ev.instantiate();
+			ev->set_pressed(ke.pressed);
+			ev->set_echo(ke.echo);
+			ev->set_keycode(ke.keycode);
+			ev->set_physical_keycode(ke.physical_keycode);
+			ev->set_key_label(ke.key_label);
+			ev->set_unicode(ke.unicode);
+			if (ke.raw) {
+				dom2godot_mod(ev, ke.mod, ke.keycode);
+			}
+
+			Input::get_singleton()->parse_input_event(ev);
+		}
+		key_event_pos = 0;
 	}
 }
 
