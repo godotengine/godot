@@ -488,9 +488,52 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 							cw = tab_size * font->get_char_size(' ').width;
 							can_break = true;
 						}
+						const CharType current = c[end];
+						const CharType previous = end > 0 ? c[end - 1] : L' ';
+						CharType next = c[end + 1];
+						CharType next_next = next ? c[end + 2] : L'\0';
+						// If the text crosses a BBCode boundary find the next characters there (if needed)
+						if (!next || !next_next)
+						{
+							Item *nit = _get_next_item(it);
+							while (nit)
+							{
+								const bool non_printing = nit->type == ITEM_ALIGN ||
+																				  nit->type == ITEM_META ||
+																				  nit->type == ITEM_COLOR ||
+																				  nit->type == ITEM_FONT ||
+																				  nit->type == ITEM_UNDERLINE ||
+																					nit->type == ITEM_STRIKETHROUGH;
+								if (non_printing)
+								{
+									nit = _get_next_item(nit);
+									continue;
+								}
+								break;
+							}
+							if (nit && nit->type == ITEM_TEXT)
+							{
+								ItemText *ntext = static_cast<ItemText*>(nit);
+								const int len = ntext->text.length();
+								if (!next)
+								{
+									next = len > 0 ? ntext->text.c_str()[0] : L'\0';
+									next_next = len > 1 ? ntext->text.c_str()[1] : L'\0';
+								}
+								else if (next)
+								{
+									next_next = len > 0 ? ntext->text.c_str()[0] : L'\0';
+								}
+							}
+						}
 						// If we just broke in the middle of the string and the next character cannot be placed at the
 						// end of a line then extend the current character's width.
-						if (just_breaked_in_middle && gnomesort::is_cjk_cannot_end_line(c[end + 1]))
+						if (just_breaked_in_middle && gnomesort::is_cjk_cannot_end_line(next) && (wofs - backtrack + w) > p_width - 3 * cw)
+						{
+							cw = p_width - (wofs - backtrack + w);
+						}
+						// Case: commas and periods between BBCode text elements.
+						if (!just_breaked_in_middle && gnomesort::is_cjk_cannot_begin_line(next_next) && (wofs - backtrack + w + 3 * cw > p_width))
 						{
 							cw *= 2;
 						}
@@ -500,9 +543,6 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						}
 
 						// For info about the unicode range, see Label::regenerate_word_cache.
-						const CharType current = c[end];
-						const CharType previous = end > 0 ? c[end - 1] : L' ';
-						const CharType next = c[end + 1];
 						const bool separatable = gnomesort::is_cjk_separatable_char(previous, current, next);
 						const bool long_separatable = separatable && (wofs - backtrack + w + cw > p_width);
 						const bool separation_changed = end > 0 && was_separatable != separatable;
@@ -520,8 +560,9 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						end++;
 					}
 					CHECK_HEIGHT(fh);
-					float next_item_width = can_break ? 0 : _get_text_length(_get_next_item(it), p_base_font);
-					ENSURE_WIDTH(w + next_item_width);
+					// Useless?
+					// float next_item_width = can_break ? 0 : _get_text_length(_get_next_item(it), p_base_font);
+					ENSURE_WIDTH(w /*+ next_item_width*/);
 
 					line_ascent = MAX(line_ascent, ascent);
 					line_descent = MAX(line_descent, descent);
