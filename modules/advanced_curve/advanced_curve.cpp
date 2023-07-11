@@ -37,7 +37,8 @@ void AdvancedCurve::_bind_methods(){
 
 void AdvancedCurve::set_bake_method(ApproxMethod new_method){
 	if (bake_method == new_method) return;
-	bake_method = new_method;
+	// Only AC_TRAPEZOID is supported for cached baking
+	bake_method = AC_TRAPEZOID;
 	pollute_samples(); emit_changed();
 }
 

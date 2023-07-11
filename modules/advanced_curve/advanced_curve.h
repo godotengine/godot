@@ -2,7 +2,7 @@
 #define ADVANCED_CURVE_H
 
 #include "scene/resources/curve.h"
-#include "core/variant.h"
+#include "core/vector.h"
 
 class AdvancedCurve : public Curve {
 	GDCLASS(AdvancedCurve, Curve);
@@ -18,14 +18,13 @@ protected:
 	inline void pollute_samples() { _is_samples_dirty = true; }
 	void trapezoid_bake();
 	void simpson_bake();
-	static inline float clampf(const float& val, const float& from, const float& to) { return (val < from ? from : (val > to ? to : val)); }
 private:
 	bool _is_samples_dirty = true;
 	int sample_resolution = 50; 
 	float range = 5.0;
 
 	ApproxMethod bake_method = ApproxMethod::AC_TRAPEZOID;
-	PoolRealArray samples_pool;
+	Vector<real_t> samples_pool;
 public:
 	AdvancedCurve();
 	~AdvancedCurve();

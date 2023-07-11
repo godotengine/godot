@@ -34,8 +34,8 @@ private:
 	SafeNumeric<uint64_t> reciever;
 protected:
 	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("set", "value"), &_SafeNumeric::set);
-		ClassDB::bind_method(D_METHOD("get"), &_SafeNumeric::get);
+		ClassDB::bind_method(D_METHOD("set_value", "value"), &_SafeNumeric::set);
+		ClassDB::bind_method(D_METHOD("get_value"), &_SafeNumeric::get);
 
 		ClassDB::bind_method(D_METHOD("increment"), &_SafeNumeric::increment);
 		ClassDB::bind_method(D_METHOD("postincrement"), &_SafeNumeric::postincrement);

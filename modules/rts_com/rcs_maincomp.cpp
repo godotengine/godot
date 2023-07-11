@@ -21,20 +21,10 @@
 		VEC_ERASE(vec, 0)                             \
 	}
 #define SimulationRecord(recorder, event)             \
-	SimulationSync(sync_mutex);                       \
 	event->simulation = this;                         \
 	if (recorder){                                    \
 		recorder->push_event(event);                  \
 	} else ((void)0)
-#define SimulationSyncCheck(is_sync, subject, action) \
-	if (is_sync){                                     \
-		SimulationSync(sync_mutex);                   \
-		sync_machine.push_back(new SyncTicket(        \
-			(action),                                 \
-			(const RID_RCS*)subject, nullptr          \
-		));                                           \
-		return;                                       \
-	}
 
 #if defined(DEBUG_ENABLED) && defined(RCS_MAINCOMP_DEBUG_LOG)
 #define CleanerLog(classptr, i) \
@@ -259,28 +249,6 @@ void RCSRecording::poll(const float& delta){
 #pragma endregion
 
 #pragma region Simulation
-RCSSyncServer::RCSSyncServer(){
-
-}
-RCSSyncServer::~RCSSyncServer(){
-	_THREAD_SAFE_METHOD_;
-	sync_requests.clear();
-}
-void RCSSyncServer::add_sync_request(void (*func)(const void*), const void* data){
-	_THREAD_SAFE_METHOD_;
-	sync_requests.push_back(SyncTicket(func, data));
-}
-
-void RCSSyncServer::sync(){
-	_THREAD_SAFE_METHOD_;
-	// auto a = &test;
-	while (!sync_requests.empty()){
-		auto E = sync_requests.front();
-		E->get().func(E->get().data);
-		E->erase();
-	}
-}
-
 
 void RCSSimulationProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_edt", "edt"), &RCSSimulationProfile::set_edt);
@@ -290,7 +258,6 @@ void RCSSimulationProfile::_bind_methods() {
 }
 
 RCSSimulation::RCSSimulation() {
-	sync_server = new RCSSyncServer();
 	profile = Ref<RCSSimulationProfile>(memnew(RCSSimulationProfile));
 	recorder = nullptr;
 }
@@ -316,7 +283,6 @@ RCSSimulation::~RCSSimulation(){
 		}
 		if (cond == 0) return;
 	}
-	delete sync_server;
 }
 
 Vector<RCSSquad*> RCSSimulation::request_scanable_squads(const RCSSquad* base) const{
@@ -422,9 +388,7 @@ Array RCSSimulation::request_all_engagements_compat() const {
 	return re;
 }
 
-void RCSSimulation::add_combatant(RCSCombatant* com, const bool& try_sync){
-	SimulationSyncCheck(try_sync, com, RCSSimulation::ADD
-		+ RCSSimulation::COMBATANT);
+void RCSSimulation::add_combatant(RCSCombatant* com){
 	FattCheck(combatants);
 	SimAdditionLog(com, RCSCombatant);
 	combatants.push_back(com);
@@ -435,9 +399,7 @@ void RCSSimulation::add_combatant(RCSCombatant* com, const bool& try_sync){
 		simulation_event(event);
 	}
 }
-void RCSSimulation::add_squad(RCSSquad* squad, const bool& try_sync){
-	SimulationSyncCheck(try_sync, squad, RCSSimulation::ADD
-		+ RCSSimulation::SQUAD);
+void RCSSimulation::add_squad(RCSSquad* squad){
 	FattCheck(squads);
 	SimAdditionLog(squad, RCSSquad);
 	squads.push_back(squad);
@@ -449,9 +411,7 @@ void RCSSimulation::add_squad(RCSSquad* squad, const bool& try_sync){
 	}
 }
 
-void RCSSimulation::add_team(RCSTeam* team, const bool& try_sync){
-	SimulationSyncCheck(try_sync, team, RCSSimulation::ADD
-		+ RCSSimulation::TEAM);
+void RCSSimulation::add_team(RCSTeam* team){
 	FattCheck(teams);
 	SimAdditionLog(team, RCSTeam);
 	teams.push_back(team);
@@ -463,9 +423,7 @@ void RCSSimulation::add_team(RCSTeam* team, const bool& try_sync){
 	}
 }
 
-void RCSSimulation::add_radar(RCSRadar* rad, const bool& try_sync){
-	SimulationSyncCheck(try_sync, rad, RCSSimulation::ADD
-		+ RCSSimulation::RADAR);
+void RCSSimulation::add_radar(RCSRadar* rad){
 	FattCheck(radars);
 	SimAdditionLog(rad, RCSRadar);
 	radars.push_back(rad);
@@ -477,10 +435,7 @@ void RCSSimulation::add_radar(RCSRadar* rad, const bool& try_sync){
 	}
 }
 
-void RCSSimulation::remove_combatant(RCSCombatant* com, const bool& try_sync)
-{
-	SimulationSyncCheck(try_sync, com, RCSSimulation::REMOVE
-	+ RCSSimulation::COMBATANT);
+void RCSSimulation::remove_combatant(RCSCombatant* com){
 	// print_verbose(String("Removing Combatant..."));
 	ThiccCheck(combatants);
 	SimErasureLog(com, RCSCombatant);
@@ -497,10 +452,7 @@ void RCSSimulation::remove_combatant(RCSCombatant* com, const bool& try_sync)
 	}
 }
 
-void RCSSimulation::remove_squad(RCSSquad* squad, const bool& try_sync)
-{
-	SimulationSyncCheck(try_sync, squad, RCSSimulation::REMOVE
-		+ RCSSimulation::SQUAD);
+void RCSSimulation::remove_squad(RCSSquad* squad){
 	ThiccCheck(squads);
 	auto idx = squads.find(squad);
 	if (idx == -1) return;
@@ -518,10 +470,7 @@ void RCSSimulation::remove_squad(RCSSquad* squad, const bool& try_sync)
 	}
 }
 
-void RCSSimulation::remove_team(RCSTeam* team, const bool& try_sync)
-{
-	SimulationSyncCheck(try_sync, team, RCSSimulation::REMOVE
-		+ RCSSimulation::TEAM);
+void RCSSimulation::remove_team(RCSTeam* team){
 	ThiccCheck(teams);
 	SimErasureLog(team, RCSTeam);
 	VEC_ERASE(teams, team)
@@ -542,9 +491,7 @@ static _FORCE_INLINE_ void remove_radar_from_engagement(const RID_TYPE& radar, c
 	}
 }
 
-void RCSSimulation::remove_radar(RCSRadar* rad, const bool& try_sync){
-	SimulationSyncCheck(try_sync, rad, RCSSimulation::REMOVE
-		+ RCSSimulation::RADAR);
+void RCSSimulation::remove_radar(RCSRadar* rad){
 	auto idx = radars.find(rad);
 	if (idx == -1) return;
 	SimErasureLog(rad, RCSRadar);
@@ -790,40 +737,8 @@ RCSCombatant* RCSSimulation::request_combatant_from_iid(const uint64_t& iid) con
 	}
 	return nullptr;
 }
-void RCSSimulation::sync(const float &delta) {
-	for (uint32_t i = 0; i < sync_machine.size(); i++){
-		auto& ticket = sync_machine.write[i];
-		const auto& action = ticket->action;
-		auto subject = ticket->subject;
-		if (action & RCSSimulation::ADD){
-			if (action & RCSSimulation::COMBATANT) {
-				add_combatant((RCSCombatant*)subject, false);
-			} else if (action & RCSSimulation::SQUAD) {
-				add_squad((RCSSquad*)subject, false);
-			} else if (action & RCSSimulation::TEAM) {
-				add_team((RCSTeam*)subject, false);
-			} else if (action & RCSSimulation::RADAR) {
-				add_radar((RCSRadar*)subject, false);
-			}
-		} else if (action & RCSSimulation::REMOVE){
-			if (action & RCSSimulation::COMBATANT) {
-				remove_combatant((RCSCombatant*)subject, false);
-			} else if (action & RCSSimulation::SQUAD) {
-				remove_squad((RCSSquad*)subject, false);
-			} else if (action & RCSSimulation::TEAM) {
-				remove_team((RCSTeam*)subject, false);
-			} else if (action & RCSSimulation::RADAR) {
-				remove_radar((RCSRadar*)subject, false);
-			}
-		}
-		delete ticket;
-		ticket = nullptr;
-	}
-	sync_machine.clear();
-}
 void RCSSimulation::poll(const float &delta) {
 	RID_RCS::poll(delta);
-	sync(delta);
 	// Radars run first for rechecks
 	auto radars_count = radars.size();
 	for (uint32_t k = 0; k < radars_count; k++) {
