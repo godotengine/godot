@@ -2094,6 +2094,16 @@ void GDScriptAnalyzer::resolve_match(GDScriptParser::MatchNode *p_match) {
 
 		decide_suite_type(p_match, p_match->branches[i]);
 	}
+
+	if (parser->for_completion && parser->completion_context.node != nullptr) {
+		int cursor_line = parser->tokenizer.get_cursor_line();
+		int cursor_column = parser->tokenizer.get_cursor_column();
+		if (p_match->start_line <= cursor_line && p_match->end_line >= cursor_line && (p_match->start_line != cursor_line || p_match->start_column <= cursor_column) && (p_match->end_line != cursor_line || p_match->end_column >= cursor_column)) {
+			if (parser->completion_context.node->is_expression() && !static_cast<GDScriptParser::ExpressionNode *>(parser->completion_context.node)->reduced) {
+				reduce_expression(static_cast<GDScriptParser::ExpressionNode *>(parser->completion_context.node));
+			}
+		}
+	}
 }
 
 void GDScriptAnalyzer::resolve_match_branch(GDScriptParser::MatchBranchNode *p_match_branch, GDScriptParser::ExpressionNode *p_match_test) {
