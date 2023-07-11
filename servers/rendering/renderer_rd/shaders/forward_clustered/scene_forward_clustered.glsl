@@ -879,11 +879,17 @@ void fragment_shader(in SceneData scene_data) {
 
 	normal = normalize(mix(normal, tangent * normal_map.x + binormal * normal_map.y + normal * normal_map.z, normal_map_depth));
 
+#elif defined(NORMAL_USED)
+	normal = normalize(normal);
 #endif
 
 #ifdef LIGHT_ANISOTROPY_USED
+	tangent = normalize(tangent);
+	binormal = normalize(binormal);
 
-	if (anisotropy > 0.01) {
+	if (abs(anisotropy) > 0.01) {
+		// Should normal be taken into rot here before normal mapping? Should tangent/binormal be reoriented based on normal map?
+		// Currently anisotropy causes a loss of normal map sync in the specular component of BRDF.
 		//rotation matrix
 		mat3 rot = mat3(tangent, binormal, normal);
 		//make local to space
