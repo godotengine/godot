@@ -55,6 +55,25 @@ namespace gnomesort {
 		}
 	}
 
+	bool is_cjk_char(const int p_char) {
+		return (p_char >= 0x2E08 && p_char <= 0x9FFF) || // CJK scripts and symbols.
+					 (p_char >= 0xFF00 && p_char <= 0xFFEF) || // Fullwidth Latin characters.
+					 (p_char >= 0xAC00 && p_char <= 0xD7FF) || // Hangul Syllables and Hangul Jamo Extended-B.
+					 (p_char >= 0xF900 && p_char <= 0xFAFF) || // CJK Compatibility Ideographs.
+					 (p_char >= 0xFE30 && p_char <= 0xFE4F) || // CJK Compatibility Forms.
+					 (p_char >= 0xFF65 && p_char <= 0xFF9F) || // Halfwidth forms of katakana
+					 (p_char >= 0xFFA0 && p_char <= 0xFFDC) || // Halfwidth forms of compatibility jamo characters for Hangul
+					 (p_char >= 0x20000 && p_char <= 0x2FA1F) || // CJK Unified Ideographs Extension B ~ F and CJK Compatibility Ideographs Supplement.
+					 (p_char >= 0x30000 && p_char <= 0x3134F); // CJK Unified Ideographs Extension G.
+	}
+
+	bool is_cjk_separatable_char(const int p_previous_char, const int p_char, const int p_next_char) {
+		return is_cjk_char(p_char) &&
+					 !(is_cjk_cannot_separate(p_char) || is_cjk_cannot_separate(p_next_char)) &&
+					 !(is_cjk_cannot_begin_line(p_char) || is_cjk_cannot_begin_line(p_next_char)) &&
+					 !(is_cjk_cannot_end_line(p_next_char));
+	}
+
 #undef GNOMESORT_CJK_UC
 
 }
