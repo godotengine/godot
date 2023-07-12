@@ -1276,6 +1276,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("h_separation", "Tree", 6 * EDSCALE);
 	theme->set_constant("guide_width", "Tree", border_width);
 	theme->set_constant("item_margin", "Tree", 3 * default_margin_size * EDSCALE);
+	theme->set_constant("inner_item_margin_bottom", "Tree", (default_margin_size + extra_spacing) * EDSCALE);
+	theme->set_constant("inner_item_margin_left", "Tree", (default_margin_size + extra_spacing) * EDSCALE);
+	theme->set_constant("inner_item_margin_right", "Tree", (default_margin_size + extra_spacing) * EDSCALE);
+	theme->set_constant("inner_item_margin_top", "Tree", (default_margin_size + extra_spacing) * EDSCALE);
 	theme->set_constant("button_margin", "Tree", default_margin_size * EDSCALE);
 	theme->set_constant("scroll_border", "Tree", 40 * EDSCALE);
 	theme->set_constant("scroll_speed", "Tree", 12);
