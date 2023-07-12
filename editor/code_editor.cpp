@@ -1485,12 +1485,13 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		// Check first if there's any uncommented lines in selection.
 		bool is_commented = true;
 		for (int line = from; line <= to; line++) {
-			if (!text_editor->get_line(line).begins_with(delimiter)) {
+			// `+ delimiter.length()` here because comment delimiter is not actually `in comment` so we check first character after it
+			int delimiter_idx = text_editor->is_in_comment(line, text_editor->get_first_non_whitespace_column(line) + delimiter.length());
+			if (delimiter_idx == -1 || text_editor->get_delimiter_start_key(delimiter_idx) != delimiter) {
 				is_commented = false;
 				break;
 			}
 		}
-
 		// Caret positions need to be saved since they could be moved at the eol.
 		Vector<int> caret_cols;
 		Vector<int> selection_to_cols;
@@ -1511,10 +1512,10 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 				continue;
 			}
 			if (is_commented) {
-				text_editor->set_line(line, line_text.substr(delimiter.length(), line_text.length()));
-				continue;
+				text_editor->set_line(line, line_text.replace_first(delimiter, ""));
+			} else {
+				text_editor->set_line(line, line_text.insert(text_editor->get_first_non_whitespace_column(line), delimiter));
 			}
-			text_editor->set_line(line, delimiter + line_text);
 		}
 
 		// Readjust carets and selections.
