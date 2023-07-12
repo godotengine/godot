@@ -2398,6 +2398,26 @@ void MaterialStorage::material_update_dependency(RID p_material, DependencyTrack
 	}
 }
 
+Vector<RD::Uniform> MaterialStorage::get_default_sampler_uniforms(int first_index) {
+	Vector<RD::Uniform> uniforms;
+
+	// Binding ids are aligned with samplers_inc.glsl.
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 0, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 1, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 2, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 3, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 4, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 5, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED)));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 6, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED)));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 7, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED)));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 8, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED)));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 9, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED)));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 10, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED)));
+	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, first_index + 11, sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED)));
+
+	return uniforms;
+}
+
 void MaterialStorage::material_set_data_request_function(ShaderType p_shader_type, MaterialStorage::MaterialDataRequestFunction p_function) {
 	ERR_FAIL_INDEX(p_shader_type, SHADER_TYPE_MAX);
 	material_data_request_func[p_shader_type] = p_function;
