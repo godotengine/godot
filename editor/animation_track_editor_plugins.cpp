@@ -875,8 +875,6 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 
 	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
 
-	float preview_len = preview->get_length();
-
 	int pixel_total_len = len * p_pixels_sec;
 
 	len -= end_ofs;
@@ -918,7 +916,7 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 
 	Vector<Vector2> points;
 	points.resize((to_x - from_x) * 2);
-	preview_len = preview->get_length();
+	float preview_len = preview->get_length();
 
 	for (int i = from_x; i < to_x; i++) {
 		float ofs = (i - pixel_begin) * preview_len / pixel_total_len;

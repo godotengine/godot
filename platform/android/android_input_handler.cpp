@@ -88,7 +88,7 @@ void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicod
 	ev.instantiate();
 
 	Key physical_keycode = godot_code_from_android_code(p_physical_keycode);
-	Key keycode = physical_keycode;
+	Key keycode;
 	if (unicode == '\b') { // 0x08
 		keycode = Key::BACKSPACE;
 	} else if (unicode == '\t') { // 0x09

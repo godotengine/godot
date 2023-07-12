@@ -1265,9 +1265,6 @@ void ItemList::_notification(int p_what) {
 
 						if (rtl) {
 							text_ofs.x = size.width - width;
-						}
-
-						if (rtl) {
 							items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 						} else {
 							items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_LEFT);

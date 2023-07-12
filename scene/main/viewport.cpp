@@ -1720,11 +1720,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.last_mouse_focus = gui.mouse_focus;
 
 				if (!gui.mouse_focus) {
-					gui.mouse_focus_mask.clear();
 					return;
 				}
 
-				gui.mouse_focus_mask.clear();
 				gui.mouse_focus_mask.set_flag(mouse_button_to_mask(mb->get_button_index()));
 
 				if (mb->get_button_index() == MouseButton::LEFT) {
