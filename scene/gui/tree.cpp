@@ -1176,6 +1176,12 @@ int TreeItem::get_button_by_id(int p_column, int p_id) const {
 	return -1;
 }
 
+void TreeItem::set_button_tooltip_text(int p_column, int p_index, const String &p_tooltip) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+	ERR_FAIL_INDEX(p_index, cells[p_column].buttons.size());
+	cells.write[p_column].buttons.write[p_index].tooltip = p_tooltip;
+}
+
 void TreeItem::set_button(int p_column, int p_index, const Ref<Texture2D> &p_button) {
 	ERR_FAIL_COND(p_button.is_null());
 	ERR_FAIL_INDEX(p_column, cells.size());
@@ -1586,6 +1592,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_button_id", "column", "button_index"), &TreeItem::get_button_id);
 	ClassDB::bind_method(D_METHOD("get_button_by_id", "column", "id"), &TreeItem::get_button_by_id);
 	ClassDB::bind_method(D_METHOD("get_button", "column", "button_index"), &TreeItem::get_button);
+	ClassDB::bind_method(D_METHOD("set_button_tooltip_text", "column", "button_index", "tooltip"), &TreeItem::set_button_tooltip_text);
 	ClassDB::bind_method(D_METHOD("set_button", "column", "button_index", "button"), &TreeItem::set_button);
 	ClassDB::bind_method(D_METHOD("erase_button", "column", "button_index"), &TreeItem::erase_button);
 	ClassDB::bind_method(D_METHOD("set_button_disabled", "column", "button_index", "disabled"), &TreeItem::set_button_disabled);
