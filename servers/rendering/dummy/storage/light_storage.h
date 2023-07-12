@@ -89,7 +89,7 @@ public:
 	void light_instance_free(RID p_light) override {}
 	void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) override {}
 	void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) override {}
-	void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override {}
+	void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2(), RID p_viewport = RID()) override {}
 	void light_instance_mark_visible(RID p_light_instance) override {}
 
 	/* PROBE API */
@@ -179,6 +179,11 @@ public:
 	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) override {}
 	virtual int get_directional_light_shadow_size(RID p_light_intance) override { return 0; }
 	virtual void set_directional_shadow_count(int p_count) override {}
+
+	virtual bool directional_shadow_get_needs_full_update(RID p_viewport) const override { return false; }
+	virtual void directional_shadow_set_needs_full_update(RID p_viewport, bool p_needs_update) override {}
+
+	virtual void cleanup_directional_shadow_viewport(RID p_viewport) override {}
 };
 
 } // namespace RendererDummy

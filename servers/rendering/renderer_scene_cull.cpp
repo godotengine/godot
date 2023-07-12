@@ -3142,19 +3142,62 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 		// Directional Shadows
 
+		int viewports_pass = RSG::viewport->get_draw_viewports_pass(); // this is increases for every frame we draw
+		RS::ViewportCascadeMode cascade_mode = p_viewport.is_valid() ? RSG::viewport->viewport_get_cascade_mode(p_viewport) : RS::VIEWPORT_CASCADE_ALL;
+		bool needs_full_update = RSG::light_storage->directional_shadow_get_needs_full_update(p_viewport);
+
 		for (uint32_t i = 0; i < cull.shadow_count; i++) {
 			for (uint32_t j = 0; j < cull.shadows[i].cascade_count; j++) {
-				const Cull::Shadow::Cascade &c = cull.shadows[i].cascades[j];
-				//			print_line("shadow " + itos(i) + " cascade " + itos(j) + " elements: " + itos(c.cull_result.size()));
-				RSG::light_storage->light_instance_set_shadow_transform(cull.shadows[i].light_instance, c.projection, c.transform, c.zfar, c.split, j, c.shadow_texel_size, c.bias_scale, c.range_begin, c.uv_scale);
-				if (max_shadows_used == MAX_UPDATE_SHADOWS) {
-					continue;
+				bool skip = false;
+				if (cascade_mode == RS::VIEWPORT_CASCADE_TWOSTEP && !needs_full_update && cull.shadows[i].cascade_count == 4) {
+					// We only render 3 cascades per frame (pass)
+					// 0: 0 + 1 + 2
+					// 1: 0 + 1 + 3
+					// So cascade 0 and 1 are always renderered
+					// And cascades 2 and 3 are rendered overy other frame
+
+					if (j == 2 && (viewports_pass % 2) != 0) {
+						skip = true;
+					} else if (j == 3 && (viewports_pass % 2) != 1) {
+						skip = true;
+					}
+				} else if (cascade_mode == RS::VIEWPORT_CASCADE_FOURSTEP && !needs_full_update && cull.shadows[i].cascade_count == 4) {
+					// We only render 2 cascades per frame (pass)
+					// 0: 0 + 1
+					// 1: 0 + 2
+					// 2: 0 + 1
+					// 3: 0 + 3
+					// So cascade 0 is always renderered
+					// Cascade 1 is rendered every other frame
+					// And cascades 2 and 3 are rendered once every 4 frames
+
+					if (j == 1 && (viewports_pass % 2) != 0) {
+						skip = true;
+					} else if (j == 2 && (viewports_pass % 4) != 1) {
+						skip = true;
+					} else if (j == 3 && (viewports_pass % 4) != 3) {
+						skip = true;
+					}
 				}
-				render_shadow_data[max_shadows_used].light = cull.shadows[i].light_instance;
-				render_shadow_data[max_shadows_used].pass = j;
-				render_shadow_data[max_shadows_used].instances.merge_unordered(scene_cull_result.directional_shadows[i].cascade_geometry_instances[j]);
-				max_shadows_used++;
+
+				if (!skip) {
+					const Cull::Shadow::Cascade &c = cull.shadows[i].cascades[j];
+					//			print_line("shadow " + itos(i) + " cascade " + itos(j) + " elements: " + itos(c.cull_result.size()));
+					RSG::light_storage->light_instance_set_shadow_transform(cull.shadows[i].light_instance, c.projection, c.transform, c.zfar, c.split, j, c.shadow_texel_size, c.bias_scale, c.range_begin, c.uv_scale, p_viewport);
+					if (max_shadows_used == MAX_UPDATE_SHADOWS) {
+						continue;
+					}
+					render_shadow_data[max_shadows_used].light = cull.shadows[i].light_instance;
+					render_shadow_data[max_shadows_used].pass = j;
+					render_shadow_data[max_shadows_used].instances.merge_unordered(scene_cull_result.directional_shadows[i].cascade_geometry_instances[j]);
+					max_shadows_used++;
+				}
 			}
+		}
+
+		if (cascade_mode != RS::VIEWPORT_CASCADE_ALL && needs_full_update) {
+			// Don't need to do this next frame..
+			RSG::light_storage->directional_shadow_set_needs_full_update(p_viewport, false);
 		}
 
 		// Positional Shadowss
@@ -3313,7 +3356,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	}
 
 	RENDER_TIMESTAMP("Render 3D Scene");
-	scene_render->render_scene(p_render_buffers, p_camera_data, prev_camera_data, scene_cull_result.geometry_instances, scene_cull_result.light_instances, scene_cull_result.reflections, scene_cull_result.voxel_gi_instances, scene_cull_result.decals, scene_cull_result.lightmaps, scene_cull_result.fog_volumes, p_environment, camera_attributes, p_shadow_atlas, occluders_tex, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass, p_screen_mesh_lod_threshold, render_shadow_data, max_shadows_used, render_sdfgi_data, cull.sdfgi.region_count, &sdfgi_update_data, r_render_info);
+	scene_render->render_scene(p_render_buffers, p_camera_data, prev_camera_data, scene_cull_result.geometry_instances, scene_cull_result.light_instances, scene_cull_result.reflections, scene_cull_result.voxel_gi_instances, scene_cull_result.decals, scene_cull_result.lightmaps, scene_cull_result.fog_volumes, p_environment, camera_attributes, p_shadow_atlas, occluders_tex, p_viewport, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass, p_screen_mesh_lod_threshold, render_shadow_data, max_shadows_used, render_sdfgi_data, cull.sdfgi.region_count, &sdfgi_update_data, r_render_info);
 
 	if (p_viewport.is_valid()) {
 		RSG::viewport->viewport_set_prev_camera_data(p_viewport, p_camera_data);
@@ -3365,7 +3408,7 @@ void RendererSceneCull::render_empty_scene(const Ref<RenderSceneBuffers> &p_rend
 	RendererSceneRender::CameraData camera_data;
 	camera_data.set_camera(Transform3D(), Projection(), true, false);
 
-	scene_render->render_scene(p_render_buffers, &camera_data, &camera_data, PagedArray<RenderGeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), environment, RID(), p_shadow_atlas, RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, nullptr);
+	scene_render->render_scene(p_render_buffers, &camera_data, &camera_data, PagedArray<RenderGeometryInstance *>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), PagedArray<RID>(), environment, RID(), p_shadow_atlas, RID(), RID(), scenario->reflection_atlas, RID(), 0, 0, nullptr, 0, nullptr, 0, nullptr);
 #endif
 }
 

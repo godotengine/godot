@@ -208,6 +208,10 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 		}
 	}
 
+	if (p_viewport->update_mode == RenderingServer::VIEWPORT_UPDATE_ONCE) {
+		RSG::light_storage->directional_shadow_set_needs_full_update(p_viewport->self, true);
+	}
+
 	float screen_mesh_lod_threshold = p_viewport->mesh_lod_threshold / float(p_viewport->size.width);
 	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, p_viewport->use_taa, screen_mesh_lod_threshold, p_viewport->shadow_atlas, xr_interface, &p_viewport->render_info);
 
@@ -1333,10 +1337,25 @@ void RendererViewport::viewport_set_vrs_texture(RID p_viewport, RID p_texture) {
 	_configure_3d_render_buffers(viewport);
 }
 
+void RendererViewport::viewport_set_cascade_mode(RID p_viewport, RS::ViewportCascadeMode p_mode) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	viewport->cascade_mode = p_mode;
+}
+
+RS::ViewportCascadeMode RendererViewport::viewport_get_cascade_mode(RID p_viewport) const {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND_V(!viewport, RS::VIEWPORT_CASCADE_ALL);
+
+	return viewport->cascade_mode;
+}
+
 bool RendererViewport::free(RID p_rid) {
 	if (viewport_owner.owns(p_rid)) {
 		Viewport *viewport = viewport_owner.get_or_null(p_rid);
 
+		RSG::light_storage->cleanup_directional_shadow_viewport(p_rid);
 		RSG::texture_storage->render_target_free(viewport->render_target);
 		RSG::light_storage->shadow_atlas_free(viewport->shadow_atlas);
 		if (viewport->render_buffers.is_valid()) {

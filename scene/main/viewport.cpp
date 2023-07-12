@@ -3461,6 +3461,26 @@ Ref<Texture2D> Viewport::get_vrs_texture() const {
 	return vrs_texture;
 }
 
+void Viewport::set_cascade_mode(Viewport::CascadeMode p_cascade_mode) {
+	cascade_mode = p_cascade_mode;
+
+	switch (cascade_mode) {
+		case CASCADE_TWOSTEP: {
+			RS::get_singleton()->viewport_set_cascade_mode(viewport, RS::VIEWPORT_CASCADE_TWOSTEP);
+		} break;
+		case CASCADE_FOURSTEP: {
+			RS::get_singleton()->viewport_set_cascade_mode(viewport, RS::VIEWPORT_CASCADE_FOURSTEP);
+		} break;
+		default: {
+			RS::get_singleton()->viewport_set_cascade_mode(viewport, RS::VIEWPORT_CASCADE_ALL);
+		} break;
+	}
+}
+
+Viewport::CascadeMode Viewport::get_cascade_mode() const {
+	return cascade_mode;
+}
+
 DisplayServer::WindowID Viewport::get_window_id() const {
 	ERR_READ_THREAD_GUARD_V(DisplayServer::INVALID_WINDOW_ID);
 	return DisplayServer::MAIN_WINDOW_ID;
@@ -4265,6 +4285,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_vrs_texture", "texture"), &Viewport::set_vrs_texture);
 	ClassDB::bind_method(D_METHOD("get_vrs_texture"), &Viewport::get_vrs_texture);
 
+	ClassDB::bind_method(D_METHOD("set_cascade_mode", "mode"), &Viewport::set_cascade_mode);
+	ClassDB::bind_method(D_METHOD("get_cascade_mode"), &Viewport::get_cascade_mode);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_xr"), "set_use_xr", "is_using_xr");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
@@ -4312,6 +4335,10 @@ void Viewport::_bind_methods() {
 	ADD_GROUP("SDF", "sdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_oversize", PROPERTY_HINT_ENUM, "100%,120%,150%,200%"), "set_sdf_oversize", "get_sdf_oversize");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sdf_scale", PROPERTY_HINT_ENUM, "100%,50%,25%"), "set_sdf_scale", "get_sdf_scale");
+#ifndef _3D_DISABLED
+	ADD_GROUP("Directional Shadow Atlas", "directional_shadow_atlas_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "directional_shadow_atlas_cascade_mode", PROPERTY_HINT_ENUM, "All (Slowest),Two step (Faster),Four step (Fastest)"), "set_cascade_mode", "get_cascade_mode");
+#endif
 	ADD_GROUP("Positional Shadow Atlas", "positional_shadow_atlas_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "positional_shadow_atlas_size"), "set_positional_shadow_atlas_size", "get_positional_shadow_atlas_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "positional_shadow_atlas_16_bits"), "set_positional_shadow_atlas_16_bits", "get_positional_shadow_atlas_16_bits");
@@ -4411,6 +4438,11 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(VRS_TEXTURE);
 	BIND_ENUM_CONSTANT(VRS_XR);
 	BIND_ENUM_CONSTANT(VRS_MAX);
+
+	BIND_ENUM_CONSTANT(CASCADE_ALL);
+	BIND_ENUM_CONSTANT(CASCADE_TWOSTEP);
+	BIND_ENUM_CONSTANT(CASCADE_FOURSTEP);
+	BIND_ENUM_CONSTANT(CASCADE_MAX);
 }
 
 void Viewport::_validate_property(PropertyInfo &p_property) const {
@@ -4460,6 +4492,7 @@ Viewport::Viewport() {
 	set_scaling_3d_scale(GLOBAL_GET("rendering/scaling_3d/scale"));
 	set_fsr_sharpness((float)GLOBAL_GET("rendering/scaling_3d/fsr_sharpness"));
 	set_texture_mipmap_bias((float)GLOBAL_GET("rendering/textures/default_filters/texture_mipmap_bias"));
+	set_cascade_mode(CascadeMode(int(GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/step_cascades"))));
 #endif // _3D_DISABLED
 
 	set_sdf_oversize(sdf_oversize); // Set to server.

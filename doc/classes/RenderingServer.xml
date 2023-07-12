@@ -3392,6 +3392,13 @@
 				[b]Note:[/b] The equivalent node is [Viewport].
 			</description>
 		</method>
+		<method name="viewport_get_cascade_mode" qualifiers="const">
+			<return type="int" enum="RenderingServer.ViewportCascadeMode" />
+			<param index="0" name="viewport" type="RID" />
+			<description>
+				Obtain the cascade step mode for a given viewport.
+			</description>
+		</method>
 		<method name="viewport_get_measured_render_time_cpu" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="viewport" type="RID" />
@@ -3487,6 +3494,14 @@
 			<param index="2" name="offset" type="Transform2D" />
 			<description>
 				Sets the transformation of a viewport's canvas.
+			</description>
+		</method>
+		<method name="viewport_set_cascade_mode">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="mode" type="int" enum="RenderingServer.ViewportCascadeMode" />
+			<description>
+				Sets the cascade step mode of a viewport. See [enum ViewportCascadeMode] for options.
 			</description>
 		</method>
 		<method name="viewport_set_clear_mode">
@@ -4685,6 +4700,18 @@
 		</constant>
 		<constant name="VIEWPORT_VRS_MAX" value="3" enum="ViewportVRSMode">
 			Represents the size of the [enum ViewportVRSMode] enum.
+		</constant>
+		<constant name="VIEWPORT_CASCADE_ALL" value="0" enum="ViewportCascadeMode">
+			All directional shadow map cascades are updated each frame.
+		</constant>
+		<constant name="VIEWPORT_CASCADE_TWOSTEP" value="1" enum="ViewportCascadeMode">
+			Cascades 1 and 2 are updated each frame, 3 and 4 alternate between frames.
+		</constant>
+		<constant name="VIEWPORT_CASCADE_FOURSTEP" value="2" enum="ViewportCascadeMode">
+			Cascades are updated in the following repeating sequence: 1 + 2, 1 + 3, 1 + 2, 1 + 4.
+		</constant>
+		<constant name="VIEWPORT_CASCADE_MAX" value="3" enum="ViewportCascadeMode">
+			Representes the size of the [enum ViewportCascadeMode] enum.
 		</constant>
 		<constant name="SKY_MODE_AUTOMATIC" value="0" enum="SkyMode">
 			Automatically selects the appropriate process mode based on your sky shader. If your shader uses [code]TIME[/code] or [code]POSITION[/code], this will use [constant SKY_MODE_REALTIME]. If your shader uses any of the [code]LIGHT_*[/code] variables or any custom uniforms, this uses [constant SKY_MODE_INCREMENTAL]. Otherwise, this defaults to [constant SKY_MODE_QUALITY].

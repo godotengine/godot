@@ -106,6 +106,12 @@ private:
 
 		ShadowTransform shadow_transform[6];
 
+		/* For stepped updates of directional lights, we need to store this per viewport */
+		struct ShadowTransformPass {
+			ShadowTransform pass[4];
+		};
+		mutable HashMap<RID, ShadowTransformPass> shadow_viewport;
+
 		AABB aabb;
 		RID self;
 		RID light;
@@ -414,14 +420,29 @@ private:
 	/* DIRECTIONAL SHADOW */
 
 	struct DirectionalShadow {
-		RID depth;
-		RID fb; //when renderign direct
-
-		int light_count = 0;
+		// settings
 		int size = 0;
 		bool use_16_bits = true;
+		bool step_cascades = false;
+
+		// Our shared shadow map
+		RID depth;
+		RID fb; // when rendering direct
+
 		int current_light = 0;
+		int light_count = 0;
 	} directional_shadow;
+
+	// To enabled stepped cascade updates, we need a separate shadow map per viewport
+	struct DirectionalShadowVP {
+		RID depth;
+		RID fb; // when rendering direct
+
+		bool needs_full_update = true;
+	};
+
+	HashMap<RID, DirectionalShadowVP> directional_shadow_vp;
+	bool free_directional_shadows();
 
 	/* SHADOW CUBEMAPS */
 
@@ -587,7 +608,7 @@ public:
 	virtual void light_instance_free(RID p_light) override;
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) override;
 	virtual void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) override;
-	virtual void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override;
+	virtual void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2(), RID p_viewport = RID()) override;
 	virtual void light_instance_mark_visible(RID p_light_instance) override;
 
 	_FORCE_INLINE_ RID light_instance_get_base_light(RID p_light_instance) {
@@ -672,52 +693,109 @@ public:
 		return float(1.0) / shadow_size;
 	}
 
-	_FORCE_INLINE_ Projection light_instance_get_shadow_camera(RID p_light_instance, int p_index) {
+	_FORCE_INLINE_ Projection light_instance_get_shadow_camera(RID p_light_instance, int p_index, RID p_viewport = RID()) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
-		return li->shadow_transform[p_index].camera;
+		ERR_FAIL_NULL_V(li, Projection());
+		if (p_viewport.is_valid()) {
+			ERR_FAIL_COND_V(!li->shadow_viewport.has(p_viewport), Projection());
+			ERR_FAIL_INDEX_V(p_index, 4, Projection());
+			return li->shadow_viewport[p_viewport].pass[p_index].camera;
+		} else {
+			return li->shadow_transform[p_index].camera;
+		}
 	}
 
 	_FORCE_INLINE_ Transform3D
-	light_instance_get_shadow_transform(RID p_light_instance, int p_index) {
+	light_instance_get_shadow_transform(RID p_light_instance, int p_index, RID p_viewport = RID()) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
-		return li->shadow_transform[p_index].transform;
+		ERR_FAIL_NULL_V(li, Transform3D());
+		if (p_viewport.is_valid()) {
+			ERR_FAIL_COND_V(!li->shadow_viewport.has(p_viewport), Transform3D());
+			ERR_FAIL_INDEX_V(p_index, 4, Transform3D());
+			return li->shadow_viewport[p_viewport].pass[p_index].transform;
+		} else {
+			return li->shadow_transform[p_index].transform;
+		}
 	}
-	_FORCE_INLINE_ float light_instance_get_shadow_bias_scale(RID p_light_instance, int p_index) {
+	_FORCE_INLINE_ float light_instance_get_shadow_bias_scale(RID p_light_instance, int p_index, RID p_viewport = RID()) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
-		return li->shadow_transform[p_index].bias_scale;
+		ERR_FAIL_NULL_V(li, 0.0);
+		if (p_viewport.is_valid()) {
+			ERR_FAIL_COND_V(!li->shadow_viewport.has(p_viewport), 0.0);
+			ERR_FAIL_INDEX_V(p_index, 4, 0.0);
+			return li->shadow_viewport[p_viewport].pass[p_index].bias_scale;
+		} else {
+			return li->shadow_transform[p_index].bias_scale;
+		}
 	}
-	_FORCE_INLINE_ float light_instance_get_shadow_range(RID p_light_instance, int p_index) {
+	_FORCE_INLINE_ float light_instance_get_shadow_range(RID p_light_instance, int p_index, RID p_viewport = RID()) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
-		return li->shadow_transform[p_index].farplane;
+		ERR_FAIL_NULL_V(li, 0.0);
+		if (p_viewport.is_valid()) {
+			ERR_FAIL_COND_V(!li->shadow_viewport.has(p_viewport), 0.0);
+			ERR_FAIL_INDEX_V(p_index, 4, 0.0);
+			return li->shadow_viewport[p_viewport].pass[p_index].farplane;
+		} else {
+			return li->shadow_transform[p_index].farplane;
+		}
 	}
-	_FORCE_INLINE_ float light_instance_get_shadow_range_begin(RID p_light_instance, int p_index) {
+	_FORCE_INLINE_ float light_instance_get_shadow_range_begin(RID p_light_instance, int p_index, RID p_viewport = RID()) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
-		return li->shadow_transform[p_index].range_begin;
+		ERR_FAIL_NULL_V(li, 0.0);
+		if (p_viewport.is_valid()) {
+			ERR_FAIL_COND_V(!li->shadow_viewport.has(p_viewport), 0.0);
+			ERR_FAIL_INDEX_V(p_index, 4, 0.0);
+			return li->shadow_viewport[p_viewport].pass[p_index].range_begin;
+		} else {
+			return li->shadow_transform[p_index].range_begin;
+		}
 	}
 
-	_FORCE_INLINE_ Vector2 light_instance_get_shadow_uv_scale(RID p_light_instance, int p_index) {
+	_FORCE_INLINE_ Vector2 light_instance_get_shadow_uv_scale(RID p_light_instance, int p_index, RID p_viewport = RID()) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
-		return li->shadow_transform[p_index].uv_scale;
+		ERR_FAIL_NULL_V(li, Vector2());
+		if (p_viewport.is_valid()) {
+			ERR_FAIL_COND_V(!li->shadow_viewport.has(p_viewport), Vector2());
+			ERR_FAIL_INDEX_V(p_index, 4, Vector2());
+			return li->shadow_viewport[p_viewport].pass[p_index].uv_scale;
+		} else {
+			return li->shadow_transform[p_index].uv_scale;
+		}
 	}
 
-	_FORCE_INLINE_ void light_instance_set_directional_shadow_atlas_rect(RID p_light_instance, int p_index, const Rect2 p_atlas_rect) {
+	_FORCE_INLINE_ void light_instance_set_directional_shadow_atlas_rect(RID p_light_instance, int p_index, const Rect2 p_atlas_rect, RID p_viewport) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
-		li->shadow_transform[p_index].atlas_rect = p_atlas_rect;
+		ERR_FAIL_NULL(li);
+		ERR_FAIL_INDEX(p_index, 4);
+
+		li->shadow_viewport[p_viewport].pass[p_index].atlas_rect = p_atlas_rect;
 	}
 
-	_FORCE_INLINE_ Rect2 light_instance_get_directional_shadow_atlas_rect(RID p_light_instance, int p_index) {
+	_FORCE_INLINE_ Rect2 light_instance_get_directional_shadow_atlas_rect(RID p_light_instance, int p_index, RID p_viewport) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
-		return li->shadow_transform[p_index].atlas_rect;
+		ERR_FAIL_NULL_V(li, Rect2());
+		ERR_FAIL_COND_V(!li->shadow_viewport.has(p_viewport), Rect2());
+		ERR_FAIL_INDEX_V(p_index, 4, Rect2());
+
+		return li->shadow_viewport[p_viewport].pass[p_index].atlas_rect;
 	}
 
-	_FORCE_INLINE_ float light_instance_get_directional_shadow_split(RID p_light_instance, int p_index) {
+	_FORCE_INLINE_ float light_instance_get_directional_shadow_split(RID p_light_instance, int p_index, RID p_viewport) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
-		return li->shadow_transform[p_index].split;
+		ERR_FAIL_NULL_V(li, 0.0);
+		ERR_FAIL_COND_V(!li->shadow_viewport.has(p_viewport), 0.0);
+		ERR_FAIL_INDEX_V(p_index, 4, 0.0);
+
+		return li->shadow_viewport[p_viewport].pass[p_index].split;
 	}
 
-	_FORCE_INLINE_ float light_instance_get_directional_shadow_texel_size(RID p_light_instance, int p_index) {
+	_FORCE_INLINE_ float light_instance_get_directional_shadow_texel_size(RID p_light_instance, int p_index, RID p_viewport) {
 		LightInstance *li = light_instance_owner.get_or_null(p_light_instance);
-		return li->shadow_transform[p_index].shadow_texel_size;
+		ERR_FAIL_NULL_V(li, 0.0);
+		ERR_FAIL_COND_V(!li->shadow_viewport.has(p_viewport), 0.0);
+		ERR_FAIL_INDEX_V(p_index, 4, 0.0);
+
+		return li->shadow_viewport[p_viewport].pass[p_index].shadow_texel_size;
 	}
 
 	_FORCE_INLINE_ void light_instance_set_render_pass(RID p_light_instance, uint64_t p_pass) {
@@ -1056,19 +1134,52 @@ public:
 	virtual int get_directional_light_shadow_size(RID p_light_intance) override;
 	virtual void set_directional_shadow_count(int p_count) override;
 
-	Rect2i get_directional_shadow_rect();
-	void update_directional_shadow_atlas();
+	virtual bool directional_shadow_get_needs_full_update(RID p_viewport) const override {
+		if (directional_shadow_vp.has(p_viewport)) {
+			return directional_shadow_vp[p_viewport].needs_full_update;
+		} else {
+			// we haven't created a shadowmap (yet), then once we do we will need a full update
+			return true;
+		}
+	}
 
-	_FORCE_INLINE_ RID directional_shadow_get_texture() {
-		return directional_shadow.depth;
+	virtual void directional_shadow_set_needs_full_update(RID p_viewport, bool p_needs_update) override {
+		// We only need to set this if our shadowmap was previously created.
+		// A full update must be triggered so we can ignore p_needs_update.
+		if (directional_shadow_vp.has(p_viewport)) {
+			directional_shadow_vp[p_viewport].needs_full_update = p_needs_update;
+		}
+	}
+
+	virtual void cleanup_directional_shadow_viewport(RID p_viewport) override;
+
+	Rect2i get_directional_shadow_rect();
+	void update_directional_shadow_atlas(RID p_viewport = RID());
+
+	_FORCE_INLINE_ RID directional_shadow_get_texture(RID p_viewport = RID()) {
+		if (p_viewport.is_valid()) {
+			ERR_FAIL_COND_V(!directional_shadow_vp.has(p_viewport), RID());
+			return directional_shadow_vp[p_viewport].depth;
+		} else {
+			return directional_shadow.depth;
+		}
 	}
 
 	_FORCE_INLINE_ int directional_shadow_get_size() {
 		return directional_shadow.size;
 	}
 
-	_FORCE_INLINE_ RID direction_shadow_get_fb() {
-		return directional_shadow.fb;
+	_FORCE_INLINE_ bool directional_shadow_use_16_bits() {
+		return directional_shadow.use_16_bits;
+	}
+
+	_FORCE_INLINE_ RID direction_shadow_get_fb(RID p_viewport = RID()) {
+		if (p_viewport.is_valid()) {
+			ERR_FAIL_COND_V(!directional_shadow_vp.has(p_viewport), RID());
+			return directional_shadow_vp[p_viewport].fb;
+		} else {
+			return directional_shadow.fb;
+		}
 	}
 
 	_FORCE_INLINE_ void directional_shadow_increase_current_light() {

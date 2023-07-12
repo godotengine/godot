@@ -251,6 +251,9 @@
 		<member name="debug_draw" type="int" setter="set_debug_draw" getter="get_debug_draw" enum="Viewport.DebugDraw" default="0">
 			The overlay mode for test rendered geometry in debug purposes.
 		</member>
+		<member name="directional_shadow_atlas_cascade_mode" type="int" setter="set_cascade_mode" getter="get_cascade_mode" enum="Viewport.CascadeMode" default="0">
+			The directinal shadow map cascade mode. See [enum CascadeMode] for options.
+		</member>
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
 			Disable 3D rendering (but keep 2D rendering).
 		</member>
@@ -595,6 +598,18 @@
 		</constant>
 		<constant name="VRS_MAX" value="3" enum="VRSMode">
 			Represents the size of the [enum VRSMode] enum.
+		</constant>
+		<constant name="CASCADE_ALL" value="0" enum="CascadeMode">
+			All directional shadow map cascades are updated each frame.
+		</constant>
+		<constant name="CASCADE_TWOSTEP" value="1" enum="CascadeMode">
+			Cascades 1 and 2 are updated each frame, 3 and 4 alternate between frames.
+		</constant>
+		<constant name="CASCADE_FOURSTEP" value="2" enum="CascadeMode">
+			Cascades are updated in the following repeating sequence: 1 + 2, 1 + 3, 1 + 2, 1 + 4.
+		</constant>
+		<constant name="CASCADE_MAX" value="3" enum="CascadeMode">
+			Representes the size of the [enum CascadeMode] enum.
 		</constant>
 	</constants>
 </class>
