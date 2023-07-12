@@ -4628,6 +4628,8 @@
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS" value="10" enum="ViewportDebugDraw">
 			Draws the shadow atlas that stores shadows from [DirectionalLight3D]s in the upper left quadrant of the [Viewport].
+			The slice of the camera frustum related to the shadow map cascade is superimposed to visualize coverage. The color of each slice matches the colors used for [constant VIEWPORT_DEBUG_DRAW_PSSM_SPLITS]. When shadow cascades are blended the overlap is taken into account when drawing the frustum slices.
+			The last cascade shows all frustum slices to illustrate the coverage of all slices.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE" value="11" enum="ViewportDebugDraw">
 			Draws the estimated scene luminance. This is a 1×1 texture that is generated when autoexposure is enabled to control the scene's exposure.
