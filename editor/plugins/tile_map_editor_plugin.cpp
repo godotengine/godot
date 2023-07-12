@@ -402,21 +402,6 @@ void TileMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 	}
 }
 
-// Implementation detail of TileMapEditor::_update_palette();
-// In modern C++ this could have been inside its body.
-namespace {
-struct _PaletteEntry {
-	int id;
-	String name;
-
-	bool operator<(const _PaletteEntry &p_rhs) const {
-		// Natural no case comparison will compare strings based on CharType
-		// order (except digits) and on numbers that start on the same position.
-		return name.naturalnocasecmp_to(p_rhs.name) < 0;
-	}
-};
-} // namespace
-
 void TileMapEditor::_update_palette() {
 	if (!node) {
 		return;
@@ -467,28 +452,40 @@ void TileMapEditor::_update_palette() {
 
 	String filter = search_box->get_text().strip_edges();
 
+	struct _PaletteEntry {
+		int id;
+		String item_name;
+
+		bool operator<(const _PaletteEntry &p_rhs) const {
+			// Natural no case comparison will compare strings based on CharType
+			// order (except digits) and on numbers that start on the same position.
+			return item_name.naturalnocasecmp_to(p_rhs.item_name) < 0;
+		}
+	};
 	Vector<_PaletteEntry> entries;
 
 	for (List<int>::Element *E = tiles.front(); E; E = E->next()) {
-		String name = tileset->tile_get_name(E->get());
+		int id = E->get();
 
-		if (name != "") {
-			if (show_tile_ids) {
-				if (sort_by_name) {
-					name = name + " - " + itos(E->get());
-				} else {
-					name = itos(E->get()) + " - " + name;
+		String item_name;
+		if (show_tile_ids) {
+			item_name += "#" + itos(id);
+		}
+		if (show_tile_names) {
+			String tile_name = tileset->tile_get_name(id);
+			if (tile_name != "") {
+				if (item_name != "") {
+					item_name += " ";
 				}
+				item_name += tile_name;
 			}
-		} else {
-			name = "#" + itos(E->get());
 		}
 
-		if (filter != "" && !filter.is_subsequence_ofi(name)) {
+		if (filter != "" && !filter.is_subsequence_ofi(item_name)) {
 			continue;
 		}
 
-		const _PaletteEntry entry = { E->get(), name };
+		const _PaletteEntry entry = { id, item_name };
 		entries.push_back(entry);
 	}
 
@@ -497,11 +494,8 @@ void TileMapEditor::_update_palette() {
 	}
 
 	for (int i = 0; i < entries.size(); i++) {
-		if (show_tile_names) {
-			palette->add_item(entries[i].name);
-		} else {
-			palette->add_item(String());
-		}
+		palette->add_item(entries[i].item_name);
+		palette->set_item_tooltip(palette->get_item_count() - 1, "ID = " + itos(entries[i].id) + "\nName = " + tileset->tile_get_name(entries[i].id));
 
 		Ref<Texture> tex = tileset->tile_get_texture(entries[i].id);
 
@@ -568,6 +562,7 @@ void TileMapEditor::_update_palette() {
 
 		for (int i = 0; i < entries2.size(); i++) {
 			manual_palette->add_item(String());
+			manual_palette->set_item_tooltip(manual_palette->get_item_count() - 1, "Autotile Coords = (" + entries2[i].operator String() + ")");
 
 			if (tex.is_valid()) {
 				Rect2 region = tileset->tile_get_region(sel_tile);
