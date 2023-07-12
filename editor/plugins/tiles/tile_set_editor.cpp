@@ -38,6 +38,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_file_dialog.h"
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
@@ -223,6 +224,30 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 	TilesEditorPlugin::get_singleton()->set_sources_lists_current(sources_list->get_current());
 }
 
+void TileSetEditor::_texture_file_selected(const String &p_path) {
+	Ref<Texture2D> texture = ResourceLoader::load(p_path);
+	if (texture.is_null()) {
+		EditorNode::get_singleton()->show_warning(TTR("Invalid texture selected."));
+		return;
+	}
+
+	int source_id = tile_set->get_next_source_id();
+
+	Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
+	atlas_source->set_texture(texture);
+
+	// Add a new source.
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Add atlas source"));
+	undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
+	undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
+	undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
+	undo_redo->commit_action();
+
+	_update_sources_list(source_id);
+	tile_set_atlas_source_editor->init_source();
+}
+
 void TileSetEditor::_source_selected(int p_source_index) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
@@ -278,19 +303,19 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 
 	switch (p_id_pressed) {
 		case 0: {
-			int source_id = tile_set->get_next_source_id();
+			if (!texture_file_dialog) {
+				texture_file_dialog = memnew(EditorFileDialog);
+				add_child(texture_file_dialog);
+				texture_file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+				texture_file_dialog->connect("file_selected", callable_mp(this, &TileSetEditor::_texture_file_selected));
 
-			Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
-
-			// Add a new source.
-			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			undo_redo->create_action(TTR("Add atlas source"));
-			undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
-			undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
-			undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
-			undo_redo->commit_action();
-
-			_update_sources_list(source_id);
+				List<String> extensions;
+				ResourceLoader::get_recognized_extensions_for_type("Texture2D", &extensions);
+				for (const String &E : extensions) {
+					texture_file_dialog->add_filter("*." + E, E.to_upper());
+				}
+			}
+			texture_file_dialog->popup_file_dialog();
 		} break;
 		case 1: {
 			int source_id = tile_set->get_next_source_id();

@@ -2250,6 +2250,7 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 }
 
 void TileSetAtlasSourceEditor::init_source() {
+	tool_setup_atlas_source_button->set_pressed(true);
 	confirm_auto_create_tiles->popup_centered();
 }
 
