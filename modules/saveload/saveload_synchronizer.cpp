@@ -33,7 +33,7 @@
 #include "core/config/engine.h"
 #include "scene/main/saveload_api.h"
 
-Dictionary SaveloadSynchronizer::SyncState::to_dict() const {
+Dictionary SaveloadSynchronizer::SyncherState::to_dict() const {
 	Dictionary dict;
 	for (const KeyValue<const NodePath, Variant> &property : property_map) {
 		dict[property.key] = property.value;
@@ -41,7 +41,7 @@ Dictionary SaveloadSynchronizer::SyncState::to_dict() const {
 	return dict;
 };
 
-SaveloadSynchronizer::SyncState::SyncState(const Dictionary &p_dict) {
+SaveloadSynchronizer::SyncherState::SyncherState(const Dictionary &p_dict) {
 	List<Variant> property_keys;
 	p_dict.get_key_list(&property_keys);
 	for (const NodePath property_key : property_keys) {
@@ -67,7 +67,7 @@ void SaveloadSynchronizer::_stop() {
 	root_node_cache = ObjectID();
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
-		get_saveload()->object_configuration_remove(node, this); //deconfigure sync
+		get_saveload()->untrack(this);
 	}
 }
 
@@ -81,7 +81,7 @@ void SaveloadSynchronizer::_start() {
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
 		root_node_cache = node->get_instance_id();
-		get_saveload()->object_configuration_add(node, this); //configure_sync
+		get_saveload()->track(this);
 		_update_process();
 	}
 }
@@ -131,26 +131,27 @@ Error SaveloadSynchronizer::get_state(const List<NodePath> &p_properties, Object
 	return OK;
 }
 
-SaveloadSynchronizer::SyncState SaveloadSynchronizer::get_sync_state() const {
+SaveloadSynchronizer::SyncherState SaveloadSynchronizer::get_syncher_state() const {
 	Vector<Variant> vars;
 	Vector<const Variant *> varp;
 	const List<NodePath> props = get_saveload_config()->get_sync_properties();
 	get_state(props, get_root_node(), vars, varp);
-	SyncState sync_state;
+	SyncherState sync_state;
 	for (int i = 0; i < vars.size(); ++i) {
 		sync_state.property_map.insert(props[i], vars[i]);
 	}
 	return sync_state;
 }
 
-Error SaveloadSynchronizer::synchronize(const SaveloadSynchronizer::SyncState p_sync_state) {
-	for (const KeyValue<const NodePath, Variant> &property : p_sync_state.property_map) {
+Error SaveloadSynchronizer::synchronize(const SaveloadSynchronizer::SyncherState &p_syncher_state) {
+	for (const KeyValue<const NodePath, Variant> &property : p_syncher_state.property_map) {
 		const NodePath path = property.key;
 		const NodePath node_path = NodePath(path.get_concatenated_names());
-		Node *node = get_root_node()->get_node(node_path); //TODO: what if node isn't found?
+		Node *node = get_root_node()->get_node_or_null(node_path);
+		ERR_CONTINUE_MSG(!node, vformat("could not find node at %s", node_path));
 		node->set_indexed(path.get_subnames(), property.value); //TODO: what if node doesn't have property?
 	}
-	return OK;
+	return OK; //TODO: need to return a useful error
 }
 
 void SaveloadSynchronizer::_bind_methods() {

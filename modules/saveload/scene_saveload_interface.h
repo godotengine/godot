@@ -44,7 +44,7 @@ class SceneSaveloadInterface : public RefCounted {
 public:
 	struct SaveloadState {
 		HashMap<const NodePath, SaveloadSpawner::SpawnerState> spawner_states;
-		HashMap<const NodePath, SaveloadSynchronizer::SyncState> sync_states;
+		HashMap<const NodePath, SaveloadSynchronizer::SyncherState> syncher_states;
 
 		Dictionary to_dict() const;
 
@@ -52,19 +52,12 @@ public:
 		SaveloadState(const Dictionary &saveload_dict);
 	};
 
+	HashSet<ObjectID> spawners;
+	HashSet<ObjectID> synchers;
+
 private:
-
-	// Replication state.
-	SaveloadState saveload_state_cache;
-	HashSet<ObjectID> spawn_nodes;
-	HashSet<ObjectID> sync_nodes;
-
-	// Pending local spawn information (handles spawning nested nodes during ready).
-	HashSet<ObjectID> spawn_queue;
-
 	// Replicator config.
 	SceneSaveload *saveload = nullptr;
-	PackedByteArray packet_cache;
 
 	void _node_ready(const ObjectID &p_oid);
 
@@ -78,26 +71,20 @@ private:
 #endif
 
 public:
-	static void make_default();
+	Error track(Object *p_object);
+	Error untrack(Object *p_object);
+	void track_spawner(const SaveloadSpawner &p_spawner);
+	void untrack_spawner(const SaveloadSpawner &p_spawner);
+	void track_syncher(const SaveloadSynchronizer &p_syncher);
+	void untrack_syncher(const SaveloadSynchronizer &p_syncher);
 
-	void configure_spawn(Node *p_node, const SaveloadSpawner &p_spawner);
-	void configure_sync(Node *p_node, const SaveloadSynchronizer &p_syncher);
-
-	void deconfigure_spawn(const SaveloadSpawner &p_spawner);
-	void deconfigure_sync(const SaveloadSynchronizer &p_syncher);
-
-	TypedArray<SaveloadSpawner> get_spawn_nodes() const;
-	TypedArray<SaveloadSynchronizer> get_sync_nodes() const;
+	TypedArray<SaveloadSpawner> get_spawners() const;
+	TypedArray<SaveloadSynchronizer> get_synchers() const;
 	Dictionary get_spawn_dict() const;
 	Dictionary get_sync_dict() const;
 
-	SaveloadState get_saveload_state();
-	void load_saveload_state(const SaveloadState &p_saveload_state);
-
-	PackedByteArray encode(Object *p_obj, const StringName section = "");
-	Error decode(PackedByteArray p_bytes, Object *p_obj, const StringName section = "");
-
-	void flush_spawn_queue();
+	SaveloadState get_saveload_state() const;
+	Error load_saveload_state(const SaveloadState &p_saveload_state);
 
 	SceneSaveloadInterface(SceneSaveload *p_saveload) {
 		saveload = p_saveload;

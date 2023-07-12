@@ -35,18 +35,20 @@
 
 #include "scene_saveload_config.h"
 
+class SceneSaveloadInterface;
+
 class SaveloadSynchronizer : public Node {
 	GDCLASS(SaveloadSynchronizer, Node);
 
 public:
-	struct SyncState {
+	struct SyncherState {
 		HashMap<const NodePath, Variant> property_map;
 
 		Dictionary to_dict() const;
 
-		SyncState(HashMap<const NodePath, Variant> p_property_map) { property_map = p_property_map; }
-		SyncState(const Dictionary &p_dict);
-		SyncState() {}
+		SyncherState(HashMap<const NodePath, Variant> p_property_map) { property_map = p_property_map; }
+		SyncherState(const Dictionary &p_dict);
+		SyncherState() {}
 	};
 
 private:
@@ -68,8 +70,8 @@ protected:
 	static Error set_state(const List<NodePath> &p_properties, Object *p_obj, const Vector<Variant> &p_state);
 
 public:
-	SyncState get_sync_state() const;
-	Error synchronize(const SyncState p_sync_state);
+	SyncherState get_syncher_state() const;
+	Error synchronize(const SyncherState &p_syncher_state);
 
 	Node *get_root_node() const;
 

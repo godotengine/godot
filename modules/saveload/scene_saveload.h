@@ -39,47 +39,27 @@ class SceneSaveload : public SaveloadAPI {
 	GDCLASS(SceneSaveload, SaveloadAPI);
 
 private:
-	NodePath root_path;
 	bool allow_object_decoding = false;
 
 	Ref<SceneSaveloadInterface> saveloader;
-
-#ifdef DEBUG_ENABLED
-	_FORCE_INLINE_ void _profile_bandwidth(const String &p_what, int p_value);
-#endif
 
 protected:
 	static void _bind_methods();
 
 public:
+	TypedArray<SaveloadSpawner> get_spawners() const;
+	TypedArray<SaveloadSynchronizer> get_synchers() const;
 
-	TypedArray<SaveloadSpawner> get_spawn_nodes();
-	TypedArray<SaveloadSynchronizer> get_sync_nodes();
-	Dictionary get_dict();
+	virtual Error track (Object *p_object) override;
+	virtual Error untrack (Object *p_object) override;
 
-	virtual Variant get_state(Object *p_object, const StringName section) override;
-	virtual Error set_state(Variant p_value, Object *p_object, const StringName section) override;
+	virtual Variant serialize(const Variant &p_configuration_data = Variant()) override;
+	virtual Error deserialize(const Variant &p_serialized_state, const Variant &p_configuration_data = Variant()) override;
 
-	virtual PackedByteArray encode(Object *p_object, const StringName section) override;
-	virtual Error decode(PackedByteArray p_bytes, Object *p_object, const StringName section) override;
+	virtual Error save(const String &p_path, const Variant &p_configuration_data = Variant()) override;
+	virtual Error load(const String &p_path, const Variant &p_configuration_data = Variant()) override;
 
-	virtual Error save(const String p_path, Object *p_object, const StringName section) override;
-	virtual Error load(const String p_path, Object *p_object, const StringName section) override;
-
-	//set root path, configure spawn, configure sync
-	virtual Error object_configuration_add(Object *p_obj, Variant p_config) override;
-	virtual Error object_configuration_remove(Object *p_obj, Variant p_config) override;
-
-	void clear();
-
-	// Usually from object_configuration_add/remove
-	void set_root_path(const NodePath &p_path);
-	NodePath get_root_path() const;
-
-	void set_allow_object_decoding(bool p_enable);
-	bool is_object_decoding_allowed() const;
-
-	Ref<SceneSaveloadInterface> get_saveloader() { return saveloader; }
+	Ref<SceneSaveloadInterface> get_saveloader() const { return saveloader; }
 
 	SceneSaveload();
 	~SceneSaveload();

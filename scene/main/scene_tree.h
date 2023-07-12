@@ -428,8 +428,8 @@ public:
 	void set_multiplayer_poll_enabled(bool p_enabled);
 	bool is_multiplayer_poll_enabled() const;
 
-	Ref<SaveloadAPI> get_saveload(const NodePath &p_for_path = NodePath()) const;
-	void set_saveload(Ref<SaveloadAPI> p_saveload, const NodePath &p_root_path = NodePath());
+	Ref<SaveloadAPI> get_saveload() const;
+	void set_saveload(Ref<SaveloadAPI> p_saveload);
 
 	static void add_idle_callback(IdleCallback p_callback);
 

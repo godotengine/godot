@@ -29,8 +29,9 @@
 /**************************************************************************/
 
 #include "saveload_spawner.h"
-
+#include "scene_saveload.h"
 #include "scene/main/saveload_api.h"
+
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 
@@ -100,14 +101,10 @@ TypedArray<Dictionary> SaveloadSpawner::SpawnerState::to_array() const {
 }
 
 SaveloadSpawner::SpawnerState::SpawnerState(const TypedArray<Dictionary> &p_array) {
-	print_line("SaveloadSpawner::SpawnerState::SpawnerState p_array");
-	print_line(p_array);
 	tracked_paths.clear();
 	spawn_infos.clear();
 	spawn_infos.reserve(p_array.size());
 	for (uint32_t i = 0; i < p_array.size(); ++i) {
-		print_line(vformat("SaveloadSpawner::SpawnerState::SpawnerState p_array[%s]", i));
-		print_line(p_array[i]);
 		spawn_infos.push_back(SpawnInfo(p_array[i]));
 		tracked_paths.insert(spawn_infos[i].path, i);
 	}
@@ -294,7 +291,7 @@ void SaveloadSpawner::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
 			_update_spawn_parent();
-			get_saveload()->object_configuration_add(get_spawn_parent(), this); //configure_spawn
+			get_saveload()->track(this);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -306,7 +303,7 @@ void SaveloadSpawner::_notification(int p_what) {
 				Node *node = get_node_or_null(path);
 				ERR_CONTINUE_MSG(!node, vformat("could not find node at path %s", path));
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &SaveloadSpawner::_node_exit));
-				get_saveload()->object_configuration_remove(nullptr, this); //deconfigure_spawn
+				get_saveload()->untrack(this);
 			}
 			spawner_state.clear();
 		} break;
@@ -345,12 +342,8 @@ void SaveloadSpawner::_track(Node *p_node, int p_scene_index, const Variant &p_s
 		SpawnInfo spawn_info = SpawnInfo(node_path, p_scene_index, p_spawn_args);
 		spawner_state.push_back(spawn_info);
 		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &SaveloadSpawner::_node_exit).bind(p_node->get_instance_id()), CONNECT_ONE_SHOT);
-		_spawn_notify(p_node->get_instance_id());
+		get_saveload()->track(this); //TODO: Is this redundant?
 	}
-}
-
-void SaveloadSpawner::_spawn_notify(ObjectID p_id) {
-	get_saveload()->object_configuration_add(ObjectDB::get_instance(p_id), this); //configure spawn
 }
 
 void SaveloadSpawner::_node_exit(ObjectID p_id) {
@@ -369,51 +362,31 @@ int SaveloadSpawner::find_spawnable_scene_index_from_path(const String &p_scene)
 }
 
 void SaveloadSpawner::load_spawn_state(const SaveloadSpawner::SpawnerState &p_spawner_state) {
-	print_line("SaveloadSpawner::load_spawn_state pased spawn state:");
-	print_line(p_spawner_state.to_array());
-	print_line("SaveloadSpawner::load_spawn_state current spawn state:");
-	print_line(get_spawner_state().to_array());
 	free_tracked_nodes();
-	print_line("SaveloadSpawner::load_spawn_state pased spawn state after free:");
-	print_line(p_spawner_state.to_array());
-	print_line("SaveloadSpawner::load_spawn_state freed spawn state:");
-	print_line(get_spawner_state().to_array());
 	for (const SpawnInfo &spawn_info : p_spawner_state.spawn_infos) {
-		print_line(vformat("SaveloadSpawner::load_spawn_state grabbing spawn_info for node %s", spawn_info.path));
 		const Vector<StringName> spawn_path_as_vector = spawn_info.path.get_names();
 		ERR_CONTINUE_MSG(spawn_path_as_vector.size() < 1, vformat("spawn path %s does not contain a node name", spawn_info.path));
 		String spawn_name = spawn_path_as_vector[spawn_path_as_vector.size() - 1];
 		_spawn(spawn_name, spawn_info.scene_index, spawn_info.spawn_args); //TODO: what do I do with spawn errors?
 	}
-	print_line("SaveloadSpawner::load_spawn_state loaded spawn state:");
-	print_line(get_spawner_state().to_array());
 }
 
 void SaveloadSpawner::free_tracked_nodes() {
-	print_line("SaveloadSpawner::free_tracked_nodes spawned_nodes:");
-	print_line(get_spawner_state().to_array());
 	uint32_t size = spawner_state.size();
 	for (uint32_t i = 0; i < size; ++i) {
 		SpawnInfo spawn_info = spawner_state.spawn_infos[size - 1 - i];
-		print_line("SaveloadSpawner::free_tracked_nodes path: ");
-		print_line(spawn_info.path);
 		Node *node = get_node_or_null(spawn_info.path);
 		ERR_CONTINUE_MSG(!node, vformat("could not find a Node at path %s", spawn_info.path));
-		print_line("SaveloadSpawner::free_tracked_nodes found node");
-		print_line(node->get_path());
 		Node *parent = node->get_parent();
 		if (parent) {
 			parent->remove_child(node);
-			print_line("SaveloadSpawner::free_tracked_nodes removed child");
 		}
 		node->queue_free();
-		print_line("SaveloadSpawner::free_tracked_nodes queued_free");
 	}
 	spawner_state.clear();
 }
 
 Error SaveloadSpawner::_spawn(const String &p_name, int p_scene_index, const Variant &p_spawn_args) {
-	print_line(vformat("SaveloadSpawner::_spawn attempting to spawn %s", p_name));
 	ERR_FAIL_COND_V_MSG(p_name.validate_node_name() != p_name, ERR_INVALID_DATA, vformat("Invalid node name received: '%s'. Make sure to add nodes via 'add_child(node, true)' remotely.", p_name));
 
 	// Check that we can spawn.
@@ -433,12 +406,9 @@ Error SaveloadSpawner::_spawn(const String &p_name, int p_scene_index, const Var
 		node = instantiate_scene(p_scene_index);
 	}
 	ERR_FAIL_COND_V_MSG(!node, ERR_UNAUTHORIZED, "spawned node was null");
-	print_line(vformat("SaveloadSpawner::_spawn instantiated node %s", p_name));
 	node->set_name(p_name);
 	parent->add_child(node, true);
-	print_line(vformat("SaveloadSpawner::_spawn added child %s to parent %s", node->get_name(), parent->get_name()));
 	_track(node, p_scene_index, p_spawn_args);
-	print_line(vformat("SaveloadSpawner::_spawn tracked child %s", node->get_name()));
 
 	emit_signal(SNAME("spawned"), node);
 

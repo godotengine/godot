@@ -742,7 +742,7 @@ Ref<SaveloadAPI> Node::get_saveload() const {
 	if (!is_inside_tree()) {
 		return Ref<SaveloadAPI>();
 	}
-	return get_tree()->get_saveload(get_path());
+	return get_tree()->get_saveload();
 }
 
 bool Node::can_process_notification(int p_what) const {

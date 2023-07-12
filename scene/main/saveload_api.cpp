@@ -283,15 +283,12 @@ Error SaveloadAPI::decode_and_decompress_variants(Vector<Variant> &r_variants, c
 }
 
 void SaveloadAPI::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_state", "object", "section"), &SaveloadAPI::get_state);
-	ClassDB::bind_method(D_METHOD("set_state", "value", "object", "section"), &SaveloadAPI::set_state);
-	ClassDB::bind_method(D_METHOD("encode", "object", "section"), &SaveloadAPI::encode);
-	ClassDB::bind_method(D_METHOD("decode", "bytes", "object", "section"), &SaveloadAPI::decode);
-	ClassDB::bind_method(D_METHOD("save", "path", "object", "section"), &SaveloadAPI::save);
-	ClassDB::bind_method(D_METHOD("load", "path", "object", "section"), &SaveloadAPI::load);
-
-	ClassDB::bind_method(D_METHOD("object_configuration_add", "object", "configuration"), &SaveloadAPI::object_configuration_add);
-	ClassDB::bind_method(D_METHOD("object_configuration_remove", "object", "configuration"), &SaveloadAPI::object_configuration_remove);
+	ClassDB::bind_method(D_METHOD("track", "object"), &SaveloadAPI::track);
+	ClassDB::bind_method(D_METHOD("untrack", "object"), &SaveloadAPI::untrack);
+	ClassDB::bind_method(D_METHOD("serialize", "configuration_data"), &SaveloadAPI::serialize, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("deserialize", "serialized_state", "configuration_data"), &SaveloadAPI::deserialize, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("save", "path", "configuration_data"), &SaveloadAPI::save, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("load", "path", "configuration_data"), &SaveloadAPI::load, DEFVAL(Variant()));
 
 	ClassDB::bind_static_method("SaveloadAPI", D_METHOD("set_default_interface", "interface_name"), &SaveloadAPI::set_default_interface);
 	ClassDB::bind_static_method("SaveloadAPI", D_METHOD("get_default_interface"), &SaveloadAPI::get_default_interface);

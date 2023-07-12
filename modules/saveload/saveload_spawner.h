@@ -36,6 +36,8 @@
 
 #include "scene_saveload_config.h"
 
+class SceneSaveloadInterface;
+
 class SaveloadSpawner : public Node {
 	GDCLASS(SaveloadSpawner, Node);
 

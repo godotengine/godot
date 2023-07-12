@@ -52,17 +52,14 @@ public:
 	static Error encode_and_compress_variants(const Variant **p_variants, int p_count, uint8_t *r_buffer, int &r_len, bool *r_raw = nullptr, bool p_allow_object_decoding = false);
 	static Error decode_and_decompress_variants(Vector<Variant> &r_variants, const uint8_t *p_buffer, int p_len, int &r_len, bool p_raw = false, bool p_allow_object_decoding = false);
 
-	virtual Variant get_state(Object *p_object, const StringName section) = 0;
-	virtual Error set_state(Variant p_value, Object *p_object, const StringName section) = 0;
+	virtual Error track(Object *p_object) = 0;
+	virtual Error untrack(Object *p_object) = 0;
 
-	virtual PackedByteArray encode(Object *p_object, const StringName section) = 0;
-	virtual Error decode(PackedByteArray p_bytes, Object *p_object, const StringName section) = 0;
+	virtual Variant serialize(const Variant &p_configuration_data = Variant()) = 0;
+	virtual Error deserialize(const Variant &p_serialized_state, const Variant &p_configuration_data = Variant()) = 0;
 
-	virtual Error save(const String p_path, Object *p_object, const StringName section) = 0;
-	virtual Error load(const String p_path, Object *p_object, const StringName section) = 0;
-
-	virtual Error object_configuration_add(Object *p_object, Variant p_config) = 0;
-	virtual Error object_configuration_remove(Object *p_object, Variant p_config) = 0;
+	virtual Error save(const String &p_path, const Variant &p_configuration_data = Variant()) = 0;
+	virtual Error load(const String &p_path, const Variant &p_configuration_data = Variant()) = 0;
 
 	SaveloadAPI() {}
 	virtual ~SaveloadAPI() {}
