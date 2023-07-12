@@ -500,7 +500,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						const CharType previous = end > 0 ? c[end - 1] : L'\0';
 						CharType next = c[end + 1];
 						CharType next_next = next ? c[end + 2] : L'\0';
-						if (current == L' ' && (!(wofs - backtrack + w) || !end))
+						if (current == L' ' && (!(wofs - backtrack + w) || (!end && wofs == 0.0f)))
 						{
 							cw = 0;
 						}
@@ -577,12 +577,16 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						// end of a line then extend the current character's width.
 						if (just_breaked_in_middle && cjk_pair && gnomesort::is_cjk_cannot_end_line(next) && (wofs - backtrack + w) > p_width - 3 * cw)
 						{
+							float old = cw;
 							cw = p_width - (wofs - backtrack + w);
+							cw = cw > old ? cw : old;
 						}
 						// Case: commas and periods between BBCode text elements.
 						if (!just_breaked_in_middle && cjk_pair && gnomesort::is_cjk_cannot_begin_line(next_next) && (wofs - backtrack + w) > p_width - 3 * cw)
 						{
+							float old = cw;
 							cw = p_width - (wofs - backtrack + w);
+							cw = cw > old ? cw : old;
 						}
 
 						if (end > 0 && w + cw + begin > p_width) {
