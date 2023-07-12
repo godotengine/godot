@@ -51,7 +51,7 @@ private:
 	Vector3 gravity_vec;
 	real_t gravity = 0.0;
 	bool gravity_is_point = false;
-	bool gravity_apply_transform = true;
+	bool gravity_apply_transform = false;
 	real_t gravity_point_unit_distance = 0.0;
 
 	SpaceOverride linear_damp_space_override = SPACE_OVERRIDE_DISABLED;

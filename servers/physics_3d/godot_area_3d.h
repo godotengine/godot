@@ -49,7 +49,7 @@ class GodotArea3D : public GodotCollisionObject3D {
 	real_t gravity = 9.80665;
 	Vector3 gravity_vector = Vector3(0, -1, 0);
 	bool gravity_is_point = false;
-	bool gravity_apply_transform = true;
+	bool gravity_apply_transform = false;
 	real_t gravity_point_unit_distance = 0.0;
 	real_t linear_damp = 0.1;
 	real_t angular_damp = 0.1;

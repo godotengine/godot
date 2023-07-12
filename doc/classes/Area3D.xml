@@ -90,7 +90,7 @@
 			The distance at which the gravity strength is equal to [member gravity]. For example, on a planet 100 meters in radius with a surface gravity of 4.0 m/s², set the [member gravity] to 4.0 and the unit distance to 100.0. The gravity will have falloff according to the inverse square law, so in the example, at 200 meters from the center the gravity will be 1.0 m/s² (twice the distance, 1/4th the gravity), at 50 meters it will be 16.0 m/s² (half the distance, 4x the gravity), and so on.
 			The above is true only when the unit distance is a positive number. When this is set to 0.0, the gravity will be constant regardless of distance.
 		</member>
-		<member name="gravity_apply_transform" type="bool" setter="set_gravity_apply_transform" getter="is_gravity_apply_transform" default="true">
+		<member name="gravity_apply_transform" type="bool" setter="set_gravity_apply_transform" getter="is_gravity_apply_transform" default="false">
 			If [code]true[/code], gravity is transformed using the Area's transform. In other words, rotating the area with this setting active will also rotate the gravity vector.
 		</member>
 		<member name="gravity_space_override" type="int" setter="set_gravity_space_override_mode" getter="get_gravity_space_override_mode" enum="Area3D.SpaceOverride" default="0">
