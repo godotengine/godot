@@ -161,6 +161,7 @@ See the [release announcement](https://godotengine.org/article/godot-4-1-is-here
 
 #### Core
 
+- The strings returned by `ResourceLoader::get_dependencies()` now include paths in addition to UIDs ([GH-73131](https://github.com/godotengine/godot/pull/73131)).
 - Optimize Node children management ([GH-75627](https://github.com/godotengine/godot/pull/75627)).
 - Deprecate `NOTIFICATION_MOVED_IN_PARENT` for `NOTIFICATION_CHILD_ORDER_CHANGED` ([GH-75701](https://github.com/godotengine/godot/pull/75701)).
 - Optimize `Node::add_child` validation ([GH-75760](https://github.com/godotengine/godot/pull/75760)).
