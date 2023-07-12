@@ -3948,6 +3948,9 @@ bool TileSetAtlasSource::_set(const StringName &p_name, const Variant &p_value) 
 			} else if (components[1] == "animation_speed") {
 				set_tile_animation_speed(coords, p_value);
 				return true;
+			} else if (components[1] == "animation_mode") {
+				set_tile_animation_mode(coords, VariantCaster<TileSetAtlasSource::TileAnimationMode>::cast(p_value));
+				return true;
 			} else if (components[1] == "animation_frames_count") {
 				set_tile_animation_frames_count(coords, p_value);
 				return true;
@@ -4014,6 +4017,9 @@ bool TileSetAtlasSource::_get(const StringName &p_name, Variant &r_ret) const {
 					return true;
 				} else if (components[1] == "animation_speed") {
 					r_ret = get_tile_animation_speed(coords);
+					return true;
+				} else if (components[1] == "animation_mode") {
+					r_ret = get_tile_animation_mode(coords);
 					return true;
 				} else if (components[1] == "animation_frames_count") {
 					r_ret = get_tile_animation_frames_count(coords);
@@ -4086,6 +4092,13 @@ void TileSetAtlasSource::_get_property_list(List<PropertyInfo> *p_list) const {
 		// animation_speed.
 		property_info = PropertyInfo(Variant::FLOAT, "animation_speed", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR);
 		if (E_tile.value.animation_speed == 1.0) {
+			property_info.usage ^= PROPERTY_USAGE_STORAGE;
+		}
+		tile_property_list.push_back(property_info);
+
+		// animation_mode.
+		property_info = PropertyInfo(Variant::INT, "animation_mode", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR);
+		if (E_tile.value.animation_mode == TILE_ANIMATION_MODE_DEFAULT) {
 			property_info.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 		tile_property_list.push_back(property_info);
@@ -4250,6 +4263,20 @@ void TileSetAtlasSource::set_tile_animation_speed(const Vector2i p_atlas_coords,
 real_t TileSetAtlasSource::get_tile_animation_speed(const Vector2i p_atlas_coords) const {
 	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1.0, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
 	return tiles[p_atlas_coords].animation_speed;
+}
+
+void TileSetAtlasSource::set_tile_animation_mode(const Vector2i p_atlas_coords, TileSetAtlasSource::TileAnimationMode p_mode) {
+	ERR_FAIL_COND_MSG(!tiles.has(p_atlas_coords), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+
+	tiles[p_atlas_coords].animation_mode = p_mode;
+
+	emit_signal(SNAME("changed"));
+}
+
+TileSetAtlasSource::TileAnimationMode TileSetAtlasSource::get_tile_animation_mode(const Vector2i p_atlas_coords) const {
+	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), TILE_ANIMATION_MODE_DEFAULT, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
+
+	return tiles[p_atlas_coords].animation_mode;
 }
 
 void TileSetAtlasSource::set_tile_animation_frames_count(const Vector2i p_atlas_coords, int p_frames_count) {
@@ -4577,6 +4604,8 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tile_animation_separation", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_separation);
 	ClassDB::bind_method(D_METHOD("set_tile_animation_speed", "atlas_coords", "speed"), &TileSetAtlasSource::set_tile_animation_speed);
 	ClassDB::bind_method(D_METHOD("get_tile_animation_speed", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_speed);
+	ClassDB::bind_method(D_METHOD("set_tile_animation_mode", "atlas_coords", "mode"), &TileSetAtlasSource::set_tile_animation_mode);
+	ClassDB::bind_method(D_METHOD("get_tile_animation_mode", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_mode);
 	ClassDB::bind_method(D_METHOD("set_tile_animation_frames_count", "atlas_coords", "frames_count"), &TileSetAtlasSource::set_tile_animation_frames_count);
 	ClassDB::bind_method(D_METHOD("get_tile_animation_frames_count", "atlas_coords"), &TileSetAtlasSource::get_tile_animation_frames_count);
 	ClassDB::bind_method(D_METHOD("set_tile_animation_frame_duration", "atlas_coords", "frame_index", "duration"), &TileSetAtlasSource::set_tile_animation_frame_duration);
@@ -4599,6 +4628,10 @@ void TileSetAtlasSource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_padded_texture"), &TileSetAtlasSource::_update_padded_texture);
 	ClassDB::bind_method(D_METHOD("get_runtime_texture"), &TileSetAtlasSource::get_runtime_texture);
 	ClassDB::bind_method(D_METHOD("get_runtime_tile_texture_region", "atlas_coords", "frame"), &TileSetAtlasSource::get_runtime_tile_texture_region);
+
+	BIND_ENUM_CONSTANT(TILE_ANIMATION_MODE_DEFAULT)
+	BIND_ENUM_CONSTANT(TILE_ANIMATION_MODE_RANDOM_START_TIMES)
+	BIND_ENUM_CONSTANT(TILE_ANIMATION_MODE_MAX)
 }
 
 TileSetAtlasSource::~TileSetAtlasSource() {
