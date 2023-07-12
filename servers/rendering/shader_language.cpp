@@ -10549,19 +10549,23 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 				}
 			} else if ((int(completion_base) > int(TYPE_MAT4) && int(completion_base) < int(TYPE_STRUCT))) {
 				Vector<String> options;
+				if (current_uniform_filter == FILTER_DEFAULT) {
+					options.push_back("filter_linear");
+					options.push_back("filter_linear_mipmap");
+					options.push_back("filter_linear_mipmap_anisotropic");
+					options.push_back("filter_nearest");
+					options.push_back("filter_nearest_mipmap");
+					options.push_back("filter_nearest_mipmap_anisotropic");
+				}
+				if (current_uniform_repeat == REPEAT_DEFAULT) {
+					options.push_back("repeat_enable");
+					options.push_back("repeat_disable");
+				}
 				if (completion_base_array) {
 					if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
 						options.push_back("source_color");
 					}
 				} else {
-					if (current_uniform_filter == FILTER_DEFAULT) {
-						options.push_back("filter_linear");
-						options.push_back("filter_linear_mipmap");
-						options.push_back("filter_linear_mipmap_anisotropic");
-						options.push_back("filter_nearest");
-						options.push_back("filter_nearest_mipmap");
-						options.push_back("filter_nearest_mipmap_anisotropic");
-					}
 					if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
 						options.push_back("hint_anisotropy");
 						options.push_back("hint_default_black");
@@ -10578,10 +10582,6 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 						options.push_back("hint_normal_roughness_texture");
 						options.push_back("hint_depth_texture");
 						options.push_back("source_color");
-					}
-					if (current_uniform_repeat == REPEAT_DEFAULT) {
-						options.push_back("repeat_enable");
-						options.push_back("repeat_disable");
 					}
 				}
 
