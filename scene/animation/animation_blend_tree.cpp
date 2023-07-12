@@ -1010,6 +1010,7 @@ double AnimationNodeTransition::_process(double p_time, bool p_seek, bool p_is_e
 	}
 
 	double rem = 0.0;
+	double abs_time = Math::abs(p_time);
 
 	if (sync) {
 		for (int i = 0; i < get_input_count(); i++) {
@@ -1024,9 +1025,9 @@ double AnimationNodeTransition::_process(double p_time, bool p_seek, bool p_is_e
 		rem = blend_input(cur_current_index, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true, p_test_only);
 
 		if (p_seek) {
-			cur_time = p_time;
+			cur_time = abs_time;
 		} else {
-			cur_time += p_time;
+			cur_time += abs_time;
 		}
 
 		if (input_data[cur_current_index].auto_advance && rem <= xfade_time) {
@@ -1058,10 +1059,10 @@ double AnimationNodeTransition::_process(double p_time, bool p_seek, bool p_is_e
 
 		blend_input(cur_prev_index, p_time, use_blend && p_seek, p_is_external_seeking, blend, FILTER_IGNORE, true, p_test_only);
 		if (p_seek) {
-			cur_time = p_time;
+			cur_time = abs_time;
 		} else {
-			cur_time += p_time;
-			cur_prev_xfading -= p_time;
+			cur_time += abs_time;
+			cur_prev_xfading -= abs_time;
 			if (cur_prev_xfading < 0) {
 				set_parameter(prev_index, -1);
 			}
