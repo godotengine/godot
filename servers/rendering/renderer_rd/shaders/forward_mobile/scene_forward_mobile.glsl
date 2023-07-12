@@ -703,6 +703,7 @@ void main() {
 #endif
 
 	float ao = 1.0;
+	float ao_original = 1.0;
 	float ao_light_affect = 0.0;
 
 	float alpha = 1.0;
@@ -1201,7 +1202,12 @@ void main() {
 #endif // AMBIENT_LIGHT_DISABLED
 	}
 
-	// convert ao to direct light ao
+	// Store original AO for specular occlusion approximation, because we want
+	// Light Affect to always be treated as 1.0 for specular lighting.
+	// This is not physically accurate, but it often looks better in practice.
+	ao_original = ao;
+
+	// Convert AO to direct light AO.
 	ao = mix(1.0, ao, ao_light_affect);
 
 	//this saves some VGPRs
@@ -1726,7 +1732,7 @@ void main() {
 
 	// apply direct light AO
 	ao = unpackUnorm4x8(orms).x;
-	specular_light *= ao;
+	specular_light *= ao_original;
 	diffuse_light *= ao;
 
 	// apply metallic
