@@ -696,12 +696,13 @@
 				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters3D]. Updates the provided [NavigationPathQueryResult3D] result object with the path among other results requested by the query.
 			</description>
 		</method>
-		<method name="region_bake_navigation_mesh">
+		<method name="region_bake_navigation_mesh" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="root_node" type="Node" />
 			<description>
 				Bakes the [param navigation_mesh] with bake source geometry collected starting from the [param root_node].
+				[i]Deprecated.[/i] This function is deprecated due to core threading changes. To upgrade existing code, first create a [NavigationMeshSourceGeometryData3D] resource. Use this resource with [method parse_source_geometry_data] to parse the SceneTree for nodes that should contribute to the navigation mesh baking. The SceneTree parsing needs to happen on the main thread. After the parsing is finished use the resource with [method bake_from_source_geometry_data] to bake a navigation mesh.
 			</description>
 		</method>
 		<method name="region_create">
