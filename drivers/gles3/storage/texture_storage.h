@@ -247,16 +247,12 @@ struct Texture {
 
 	// texture state
 	void gl_set_filter(RS::CanvasItemTextureFilter p_filter) {
-		if (p_filter == state_filter) {
-			return;
-		}
 		Config *config = Config::get_singleton();
-		state_filter = p_filter;
 		GLenum pmin = GL_NEAREST; // param min
 		GLenum pmag = GL_NEAREST; // param mag
 		GLint max_lod = 1000;
-		bool use_anisotropy = false;
-		switch (state_filter) {
+		float anisotropy = 1.0f;
+		switch (p_filter) {
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
 				pmin = GL_NEAREST;
 				pmag = GL_NEAREST;
@@ -268,7 +264,7 @@ struct Texture {
 				max_lod = 0;
 			} break;
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
-				use_anisotropy = true;
+				anisotropy = config->anisotropic_level;
 			};
 				[[fallthrough]];
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
@@ -283,7 +279,7 @@ struct Texture {
 				}
 			} break;
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
-				use_anisotropy = true;
+				anisotropy = config->anisotropic_level;
 			};
 				[[fallthrough]];
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
@@ -304,17 +300,13 @@ struct Texture {
 		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, pmag);
 		glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, max_lod);
-		if (config->support_anisotropic_filter && use_anisotropy) {
-			glTexParameterf(target, _GL_TEXTURE_MAX_ANISOTROPY_EXT, config->anisotropic_level);
+		if (config->support_anisotropic_filter) {
+			glTexParameterf(target, _GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
 		}
 	}
 	void gl_set_repeat(RS::CanvasItemTextureRepeat p_repeat) {
-		if (p_repeat == state_repeat) {
-			return;
-		}
-		state_repeat = p_repeat;
 		GLenum prep = GL_CLAMP_TO_EDGE; // parameter repeat
-		switch (state_repeat) {
+		switch (p_repeat) {
 			case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
 				prep = GL_REPEAT;
 			} break;
@@ -328,10 +320,6 @@ struct Texture {
 		glTexParameteri(target, GL_TEXTURE_WRAP_R, prep);
 		glTexParameteri(target, GL_TEXTURE_WRAP_S, prep);
 	}
-
-private:
-	RS::CanvasItemTextureFilter state_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
-	RS::CanvasItemTextureRepeat state_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 };
 
 struct RenderTarget {
