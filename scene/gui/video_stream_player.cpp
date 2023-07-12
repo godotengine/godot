@@ -401,6 +401,13 @@ String VideoStreamPlayer::get_stream_name() const {
 	return stream->get_name();
 }
 
+double VideoStreamPlayer::get_stream_length() const {
+	if (playback.is_null()) {
+		return 0;
+	}
+	return playback->get_length();
+}
+
 double VideoStreamPlayer::get_stream_position() const {
 	if (playback.is_null()) {
 		return 0;
@@ -486,6 +493,7 @@ void VideoStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_audio_track"), &VideoStreamPlayer::get_audio_track);
 
 	ClassDB::bind_method(D_METHOD("get_stream_name"), &VideoStreamPlayer::get_stream_name);
+	ClassDB::bind_method(D_METHOD("get_stream_length"), &VideoStreamPlayer::get_stream_length);
 
 	ClassDB::bind_method(D_METHOD("set_stream_position", "position"), &VideoStreamPlayer::set_stream_position);
 	ClassDB::bind_method(D_METHOD("get_stream_position"), &VideoStreamPlayer::get_stream_position);

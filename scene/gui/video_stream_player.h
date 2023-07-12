@@ -108,6 +108,7 @@ public:
 	float get_volume_db() const;
 
 	String get_stream_name() const;
+	double get_stream_length() const;
 	double get_stream_position() const;
 	void set_stream_position(double p_position);
 
