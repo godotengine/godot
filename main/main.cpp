@@ -474,6 +474,7 @@ void Main::print_help(const char *p_binary) {
 
 	OS::get_singleton()->print("Standalone tools:\n");
 	OS::get_singleton()->print("  -s, --script <script>             Run a script.\n");
+	OS::get_singleton()->print("  --main-loop <main_loop_name>      Run a MainLoop specified by its global class name.\n");
 	OS::get_singleton()->print("  --check-only                      Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("  --export-release <preset> <path>  Export the project in release mode using the given preset and output path. The preset name should match one defined in export_presets.cfg.\n");
@@ -2602,6 +2603,7 @@ bool Main::start() {
 	String positional_arg;
 	String game_path;
 	String script;
+	String main_loop_type;
 	bool check_only = false;
 
 #ifdef TOOLS_ENABLED
@@ -2665,6 +2667,8 @@ bool Main::start() {
 			bool parsed_pair = true;
 			if (args[i] == "-s" || args[i] == "--script") {
 				script = args[i + 1];
+			} else if (args[i] == "--main-loop") {
+				main_loop_type = args[i + 1];
 #ifdef TOOLS_ENABLED
 			} else if (args[i] == "--doctool") {
 				doc_tool_path = args[i + 1];
@@ -2884,7 +2888,9 @@ bool Main::start() {
 	if (editor) {
 		main_loop = memnew(SceneTree);
 	}
-	String main_loop_type = GLOBAL_GET("application/run/main_loop_type");
+	if (main_loop_type.is_empty()) {
+		main_loop_type = GLOBAL_GET("application/run/main_loop_type");
+	}
 
 	if (!script.is_empty()) {
 		Ref<Script> script_res = ResourceLoader::load(script);
