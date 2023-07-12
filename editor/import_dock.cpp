@@ -157,6 +157,13 @@ void ImportDock::_add_keep_import_option(const String &p_importer_name) {
 }
 
 void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_config) {
+	// Set the importer class to fetch the correct class in the XML class reference.
+	// This allows tooltips to display when hovering properties.
+	if (params->importer != nullptr) {
+		// Null check to avoid crashing if the "Keep File (No Import)" mode is selected.
+		import_opts->set_object_class(params->importer->get_class_name());
+	}
+
 	List<ResourceImporter::ImportOption> options;
 
 	if (params->importer.is_valid()) {
@@ -644,6 +651,9 @@ ImportDock::ImportDock() {
 	import_opts->set_v_size_flags(SIZE_EXPAND_FILL);
 	import_opts->connect("property_edited", callable_mp(this, &ImportDock::_property_edited));
 	import_opts->connect("property_toggled", callable_mp(this, &ImportDock::_property_toggled));
+	// Make it possible to display tooltips stored in the XML class reference.
+	// The object name is set when the importer changes in `_update_options()`.
+	import_opts->set_use_doc_hints(true);
 
 	hb = memnew(HBoxContainer);
 	content->add_child(hb);

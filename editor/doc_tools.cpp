@@ -36,6 +36,7 @@
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_importer.h"
 #include "core/object/script_language.h"
 #include "core/string/translation.h"
 #include "editor/editor_settings.h"
@@ -386,7 +387,13 @@ void DocTools::generate(bool p_basic_types) {
 			List<PropertyInfo> properties;
 			List<PropertyInfo> own_properties;
 
-			// Special case for editor and project settings, so they can be documented.
+			// Special cases for editor/project settings, and ResourceImporter classes,
+			// we have to rely on Object's property list to get settings and import options.
+			// Otherwise we just use ClassDB's property list (pure registered properties).
+
+			bool properties_from_instance = true; // To skip `script`, etc.
+			bool import_option = false; // Special case for default value.
+			HashMap<StringName, Variant> import_options_default;
 			if (name == "EditorSettings") {
 				// We don't create the full blown EditorSettings (+ config file) with `create()`,
 				// instead we just make a local instance to get default values.
@@ -396,7 +403,20 @@ void DocTools::generate(bool p_basic_types) {
 			} else if (name == "ProjectSettings") {
 				ProjectSettings::get_singleton()->get_property_list(&properties);
 				own_properties = properties;
+			} else if (ClassDB::is_parent_class(name, "ResourceImporter") && name != "EditorImportPlugin" && ClassDB::can_instantiate(name)) {
+				import_option = true;
+				ResourceImporter *resimp = Object::cast_to<ResourceImporter>(ClassDB::instantiate(name));
+				List<ResourceImporter::ImportOption> options;
+				resimp->get_import_options("", &options);
+				for (int i = 0; i < options.size(); i++) {
+					const PropertyInfo &prop = options[i].option;
+					properties.push_back(prop);
+					import_options_default[prop.name] = options[i].default_value;
+				}
+				own_properties = properties;
+				memdelete(resimp);
 			} else if (name.begins_with("EditorExportPlatform") && ClassDB::can_instantiate(name)) {
+				properties_from_instance = false;
 				Ref<EditorExportPlatform> platform = Object::cast_to<EditorExportPlatform>(ClassDB::instantiate(name));
 				if (platform.is_valid()) {
 					List<EditorExportPlatform::ExportOption> options;
@@ -407,6 +427,7 @@ void DocTools::generate(bool p_basic_types) {
 					own_properties = properties;
 				}
 			} else {
+				properties_from_instance = false;
 				ClassDB::get_property_list(name, &properties);
 				ClassDB::get_property_list(name, &own_properties, true);
 			}
@@ -421,6 +442,13 @@ void DocTools::generate(bool p_basic_types) {
 				if (EO && EO->get() == E) {
 					inherited = false;
 					EO = EO->next();
+				}
+
+				if (properties_from_instance) {
+					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script") {
+						// Don't include spurious properties from Object property list.
+						continue;
+					}
 				}
 
 				if (E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP || E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_INTERNAL || (E.type == Variant::NIL && E.usage & PROPERTY_USAGE_ARRAY)) {
@@ -442,22 +470,9 @@ void DocTools::generate(bool p_basic_types) {
 				bool default_value_valid = false;
 				Variant default_value;
 
-				if (name == "EditorSettings") {
-					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script") {
-						// Don't include spurious properties in the generated EditorSettings class reference.
-						continue;
-					}
-				}
-
-				if (name.begins_with("EditorExportPlatform")) {
-					if (E.name == "script") {
-						continue;
-					}
-				}
-
 				if (name == "ProjectSettings") {
 					// Special case for project settings, so that settings are not taken from the current project's settings
-					if (E.name == "script" || !ProjectSettings::get_singleton()->is_builtin_setting(E.name)) {
+					if (!ProjectSettings::get_singleton()->is_builtin_setting(E.name)) {
 						continue;
 					}
 					if (E.usage & PROPERTY_USAGE_EDITOR) {
@@ -466,6 +481,9 @@ void DocTools::generate(bool p_basic_types) {
 							default_value_valid = true;
 						}
 					}
+				} else if (import_option) {
+					default_value = import_options_default[E.name];
+					default_value_valid = true;
 				} else {
 					default_value = get_documentation_default_value(name, E.name, default_value_valid);
 					if (inherited) {

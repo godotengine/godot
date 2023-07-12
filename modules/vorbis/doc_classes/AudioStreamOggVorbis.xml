@@ -14,7 +14,7 @@
 		<member name="bpm" type="float" setter="set_bpm" getter="get_bpm" default="0.0">
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
-			If [code]true[/code], the stream will automatically loop when it reaches the end.
+			If [code]true[/code], the audio will play again from the specified [member loop_offset] once it is done playing. Useful for ambient sounds and background music.
 		</member>
 		<member name="loop_offset" type="float" setter="set_loop_offset" getter="get_loop_offset" default="0.0">
 			Time in seconds at which the stream starts after being looped.
