@@ -2980,6 +2980,30 @@ Key DisplayServerX11::keyboard_get_keycode_from_physical(Key p_keycode) const {
 	return (Key)(key | modifiers);
 }
 
+Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
+	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
+	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
+	unsigned int xkeycode = KeyMappingX11::get_xlibcode(keycode_no_mod);
+	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, keyboard_get_current_layout(), 0);
+	if (is_ascii_lower_case(xkeysym)) {
+		xkeysym -= ('a' - 'A');
+	}
+
+	Key key = KeyMappingX11::get_keycode(xkeysym);
+#ifdef XKB_ENABLED
+	if (xkb_loaded_v08p) {
+		String keysym = String::chr(xkb_keysym_to_utf32(xkb_keysym_to_upper(xkeysym)));
+		key = fix_key_label(keysym[0], KeyMappingX11::get_keycode(xkeysym));
+	}
+#endif
+
+	// If not found, fallback to QWERTY.
+	// This should match the behavior of the event pump
+	if (key == Key::NONE) {
+		return p_keycode;
+	}
+	return (Key)(key | modifiers);
+}
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {
 	Atom actual_type = None;
 	int actual_format = 0;

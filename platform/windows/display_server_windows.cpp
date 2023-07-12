@@ -2010,6 +2010,38 @@ Key DisplayServerWindows::keyboard_get_keycode_from_physical(Key p_keycode) cons
 	return (Key)(KeyMappingWindows::get_keysym(vk) | modifiers);
 }
 
+Key DisplayServerWindows::keyboard_get_label_from_physical(Key p_keycode) const {
+	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
+	Key keycode_no_mod = (Key)(p_keycode & KeyModifierMask::CODE_MASK);
+
+	if (keycode_no_mod == Key::PRINT ||
+			keycode_no_mod == Key::KP_ADD ||
+			keycode_no_mod == Key::KP_5 ||
+			(keycode_no_mod >= Key::KEY_0 && keycode_no_mod <= Key::KEY_9)) {
+		return p_keycode;
+	}
+
+	unsigned int scancode = KeyMappingWindows::get_scancode(keycode_no_mod);
+	if (scancode == 0) {
+		return p_keycode;
+	}
+
+	Key keycode = KeyMappingWindows::get_keysym(MapVirtualKey(scancode, MAPVK_VSC_TO_VK));
+
+	HKL current_layout = GetKeyboardLayout(0);
+	static BYTE keyboard_state[256];
+	memset(keyboard_state, 0, 256);
+	wchar_t chars[256] = {};
+	UINT extended_code = MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX);
+	if (ToUnicodeEx(extended_code, scancode, keyboard_state, chars, 255, 4, current_layout) > 0) {
+		String keysym = String::utf16((char16_t *)chars, 255);
+		if (!keysym.is_empty()) {
+			return fix_key_label(keysym[0], keycode) | modifiers;
+		}
+	}
+	return p_keycode;
+}
+
 String _get_full_layout_name_from_registry(HKL p_layout) {
 	String id = "SYSTEM\\CurrentControlSet\\Control\\Keyboard Layouts\\" + String::num_int64((int64_t)p_layout, 16, false).lpad(8, "0");
 	String ret;

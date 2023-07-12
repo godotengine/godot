@@ -3499,6 +3499,17 @@ Key DisplayServerMacOS::keyboard_get_keycode_from_physical(Key p_keycode) const 
 	return (Key)(KeyMappingMacOS::remap_key(macos_keycode, 0, false) | modifiers);
 }
 
+Key DisplayServerMacOS::keyboard_get_label_from_physical(Key p_keycode) const {
+	if (p_keycode == Key::PAUSE || p_keycode == Key::NONE) {
+		return p_keycode;
+	}
+
+	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
+	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
+	unsigned int macos_keycode = KeyMappingMacOS::unmap_key(keycode_no_mod);
+	return (Key)(KeyMappingMacOS::remap_key(macos_keycode, 0, true) | modifiers);
+}
+
 void DisplayServerMacOS::process_events() {
 	_THREAD_SAFE_METHOD_
 
