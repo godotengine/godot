@@ -450,8 +450,7 @@ String OS_UWP::get_distribution_name() const {
 
 String OS_UWP::get_version() const {
 	winrt::hstring df_version = VersionInfo().DeviceFamilyVersion();
-	static String version = String(winrt::to_string(df_version).c_str());
-	return version;
+	return String(winrt::to_string(df_version).c_str());
 }
 
 OS::DateTime OS_UWP::get_datetime(bool p_utc) const {
@@ -746,7 +745,7 @@ static String format_error_message(DWORD id) {
 Error OS_UWP::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String full_path = "game/" + p_path;
 	p_library_handle = (void *)LoadPackagedLibrary((LPCWSTR)(full_path.utf16().get_data()), 0);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + full_path + ", error: " + format_error_message(GetLastError()) + ".");
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", full_path, format_error_message(GetLastError())));
 
 	if (r_resolved_path != nullptr) {
 		*r_resolved_path = full_path;

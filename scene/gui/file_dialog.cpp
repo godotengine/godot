@@ -833,6 +833,8 @@ void FileDialog::set_file_mode(FileMode p_mode) {
 	} else {
 		tree->set_select_mode(Tree::SELECT_SINGLE);
 	}
+
+	get_ok_button()->set_disabled(_is_open_should_be_disabled());
 }
 
 FileDialog::FileMode FileDialog::get_file_mode() const {

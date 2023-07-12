@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include "tvgCommon.h"
 #include "tvgTaskScheduler.h"
 #include "tvgLoader.h"
@@ -43,6 +44,11 @@
 static int _initCnt = 0;
 static uint16_t _version = 0;
 
+//enum class operation helper
+static constexpr bool operator &(CanvasEngine a, CanvasEngine b)
+{
+    return int(a) & int(b);
+}
 
 static bool _buildVersionInfo()
 {
@@ -86,12 +92,12 @@ Result Initializer::init(CanvasEngine engine, uint32_t threads) noexcept
 {
     auto nonSupport = true;
 
-    if (static_cast<uint32_t>(engine) & static_cast<uint32_t>(CanvasEngine::Sw)) {
+    if (engine & CanvasEngine::Sw) {
         #ifdef THORVG_SW_RASTER_SUPPORT
             if (!SwRenderer::init(threads)) return Result::FailedAllocation;
             nonSupport = false;
         #endif
-    } else if (static_cast<uint32_t>(engine) & static_cast<uint32_t>(CanvasEngine::Gl)) {
+    } else if (engine & CanvasEngine::Gl) {
         #ifdef THORVG_GL_RASTER_SUPPORT
             if (!GlRenderer::init(threads)) return Result::FailedAllocation;
             nonSupport = false;
@@ -120,12 +126,12 @@ Result Initializer::term(CanvasEngine engine) noexcept
 
     auto nonSupport = true;
 
-    if (static_cast<uint32_t>(engine) & static_cast<uint32_t>(CanvasEngine::Sw)) {
+    if (engine & CanvasEngine::Sw) {
         #ifdef THORVG_SW_RASTER_SUPPORT
             if (!SwRenderer::term()) return Result::InsufficientCondition;
             nonSupport = false;
         #endif
-    } else if (static_cast<uint32_t>(engine) & static_cast<uint32_t>(CanvasEngine::Gl)) {
+    } else if (engine & CanvasEngine::Gl) {
         #ifdef THORVG_GL_RASTER_SUPPORT
             if (!GlRenderer::term()) return Result::InsufficientCondition;
             nonSupport = false;

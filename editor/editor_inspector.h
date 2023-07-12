@@ -149,6 +149,7 @@ public:
 
 	Object *get_edited_object();
 	StringName get_edited_property() const;
+	inline Variant get_edited_property_value() const { return object->get(property); }
 	EditorInspector *get_parent_inspector() const;
 
 	void set_doc_path(const String &p_doc_path);
@@ -298,6 +299,7 @@ public:
 	VBoxContainer *get_vbox();
 	void unfold();
 	void fold();
+	void set_bg_color(const Color &p_bg_color);
 
 	bool has_revertable_properties() const;
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);
@@ -510,6 +512,7 @@ class EditorInspector : public ScrollContainer {
 	void _property_deleted(const String &p_path);
 	void _property_checked(const String &p_path, bool p_checked);
 	void _property_pinned(const String &p_path, bool p_pinned);
+	bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style);
 
 	void _resource_selected(const String &p_path, Ref<Resource> p_resource);
 	void _property_selected(const String &p_path, int p_focusable);
@@ -539,6 +542,7 @@ class EditorInspector : public ScrollContainer {
 	ConfirmationDialog *add_meta_dialog = nullptr;
 	LineEdit *add_meta_name = nullptr;
 	OptionButton *add_meta_type = nullptr;
+	PanelContainer *add_meta_error_panel = nullptr;
 	Label *add_meta_error = nullptr;
 
 	void _add_meta_confirm();

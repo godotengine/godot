@@ -90,8 +90,23 @@ void NavAgent::_update_rvo_agent_properties() {
 }
 
 void NavAgent::set_map(NavMap *p_map) {
+	if (map == p_map) {
+		return;
+	}
+
+	if (map) {
+		map->remove_agent(this);
+	}
+
 	map = p_map;
 	agent_dirty = true;
+
+	if (map) {
+		map->add_agent(this);
+		if (avoidance_enabled) {
+			map->set_agent_as_controlled(this);
+		}
+	}
 }
 
 bool NavAgent::is_map_changed() {
@@ -341,4 +356,24 @@ const Dictionary NavAgent::get_avoidance_data() const {
 		_avoidance_data["avoidance_priority"] = float(rvo_agent_2d.avoidance_priority_);
 	}
 	return _avoidance_data;
+}
+
+void NavAgent::set_paused(bool p_paused) {
+	if (paused == p_paused) {
+		return;
+	}
+
+	paused = p_paused;
+
+	if (map) {
+		if (paused) {
+			map->remove_agent_as_controlled(this);
+		} else {
+			map->set_agent_as_controlled(this);
+		}
+	}
+}
+
+bool NavAgent::get_paused() const {
+	return paused;
 }

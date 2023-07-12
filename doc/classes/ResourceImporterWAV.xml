@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterWAV" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="compress/mode" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="edit/loop_begin" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="edit/loop_end" type="int" setter="" getter="" default="-1">
+		</member>
+		<member name="edit/loop_mode" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="edit/normalize" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="edit/trim" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="force/8_bit" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="force/max_rate" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="force/max_rate_hz" type="float" setter="" getter="" default="44100">
+		</member>
+		<member name="force/mono" type="bool" setter="" getter="" default="false">
+		</member>
+	</members>
+</class>

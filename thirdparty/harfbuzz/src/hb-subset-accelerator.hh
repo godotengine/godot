@@ -58,6 +58,8 @@ struct hb_subset_accelerator_t
     hb_subset_accelerator_t* accel =
         (hb_subset_accelerator_t*) hb_calloc (1, sizeof(hb_subset_accelerator_t));
 
+    if (unlikely (!accel)) return accel;
+
     new (accel) hb_subset_accelerator_t (unicode_to_gid_,
 					 gid_to_unicodes_,
 					 unicodes_,

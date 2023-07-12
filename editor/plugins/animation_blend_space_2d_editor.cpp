@@ -820,9 +820,7 @@ void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 
 			String error;
 
-			if (!tree) {
-				error = TTR("BlendSpace2D does not belong to an AnimationTree node.");
-			} else if (!tree->is_active()) {
+			if (!tree->is_active()) {
 				error = TTR("AnimationTree is inactive.\nActivate to enable playback, check node warnings if activation fails.");
 			} else if (tree->is_state_invalid()) {
 				error = tree->get_invalid_state_reason();

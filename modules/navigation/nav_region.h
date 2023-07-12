@@ -31,16 +31,18 @@
 #ifndef NAV_REGION_H
 #define NAV_REGION_H
 
-#include "scene/resources/navigation_mesh.h"
-
 #include "nav_base.h"
 #include "nav_utils.h"
+
+#include "scene/resources/navigation_mesh.h"
 
 class NavRegion : public NavBase {
 	NavMap *map = nullptr;
 	Transform3D transform;
 	Ref<NavigationMesh> mesh;
 	Vector<gd::Edge::Connection> connections;
+
+	bool use_edge_connections = true;
 
 	bool polygons_dirty = true;
 
@@ -59,6 +61,11 @@ public:
 	void set_map(NavMap *p_map);
 	NavMap *get_map() const {
 		return map;
+	}
+
+	void set_use_edge_connections(bool p_enabled);
+	bool get_use_edge_connections() const {
+		return use_edge_connections;
 	}
 
 	void set_transform(Transform3D transform);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ParticleProcessMaterial" inherits="Material" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ParticleProcessMaterial" inherits="Material" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Particle properties for [GPUParticles3D] and [GPUParticles2D] nodes.
 	</brief_description>
@@ -209,7 +209,7 @@
 			Minimum equivalent of [member initial_velocity_max].
 		</member>
 		<member name="lifetime_randomness" type="float" setter="set_lifetime_randomness" getter="get_lifetime_randomness" default="0.0">
-			Particle lifetime randomness ratio. The lifetime will be multiplied by a value interpolated between [code]1.0[/code] and a random number less than one. For example a random ratio of [code]0.4[/code] would scale the original lifetime between [code]0.4-1.0[/code] of its original value.
+			Particle lifetime randomness ratio. The equation for the lifetime of a particle is [code]lifetime * (1.0 - randf() * lifetime_randomness)[/code]. For example, a [member lifetime_randomness] of [code]0.4[/code] scales the lifetime between [code]0.6[/code] to [code]1.0[/code] of its original value.
 		</member>
 		<member name="linear_accel_curve" type="Texture2D" setter="set_param_texture" getter="get_param_texture">
 			Each particle's linear acceleration will vary along this [CurveTexture].
@@ -308,15 +308,16 @@
 			This value controls the overall scale/frequency of the turbulence noise pattern.
 			A small scale will result in smaller features with more detail while a high scale will result in smoother noise with larger features.
 		</member>
-		<member name="turbulence_noise_speed" type="Vector3" setter="set_turbulence_noise_speed" getter="get_turbulence_noise_speed" default="Vector3(0.5, 0.5, 0.5)">
-			The movement speed of the turbulence pattern. This changes how quickly the noise changes over time.
-			A value of [code]Vector3(0.0, 0.0, 0.0)[/code] will freeze the turbulence pattern in place.
+		<member name="turbulence_noise_speed" type="Vector3" setter="set_turbulence_noise_speed" getter="get_turbulence_noise_speed" default="Vector3(0, 0, 0)">
+			A scrolling velocity for the turbulence field. This sets a directional trend for the pattern to move in over time.
+			The default value of [code]Vector3(0, 0, 0)[/code] turns off the scrolling.
 		</member>
-		<member name="turbulence_noise_speed_random" type="float" setter="set_turbulence_noise_speed_random" getter="get_turbulence_noise_speed_random" default="0.0">
-			Use to influence the noise speed in a random pattern. This helps break up visible movement patterns.
+		<member name="turbulence_noise_speed_random" type="float" setter="set_turbulence_noise_speed_random" getter="get_turbulence_noise_speed_random" default="0.2">
+			The in-place rate of change of the turbulence field. This defines how quickly the noise pattern varies over time.
+			A value of 0.0 will result in a fixed pattern.
 		</member>
 		<member name="turbulence_noise_strength" type="float" setter="set_turbulence_noise_strength" getter="get_turbulence_noise_strength" default="1.0">
-			The turbulence noise strength. Increasing this will result in a stronger, more contrasting noise pattern.
+			The turbulence noise strength. Increasing this will result in a stronger, more contrasting, flow pattern.
 		</member>
 	</members>
 	<constants>

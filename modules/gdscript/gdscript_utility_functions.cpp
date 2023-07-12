@@ -30,6 +30,8 @@
 
 #include "gdscript_utility_functions.h"
 
+#include "gdscript.h"
+
 #include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
 #include "core/object/method_bind.h"
@@ -37,7 +39,6 @@
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/vector.h"
 #include "core/variant/typed_array.h"
-#include "gdscript.h"
 
 #ifdef DEBUG_ENABLED
 

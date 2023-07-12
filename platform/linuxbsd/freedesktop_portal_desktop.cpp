@@ -35,14 +35,13 @@
 #include "core/error/error_macros.h"
 #include "core/os/os.h"
 #include "core/string/ustring.h"
+#include "core/variant/variant.h"
 
 #ifdef SOWRAP_ENABLED
 #include "dbus-so_wrap.h"
 #else
 #include <dbus/dbus.h>
 #endif
-
-#include "core/variant/variant.h"
 
 #define BUS_OBJECT_NAME "org.freedesktop.portal.Desktop"
 #define BUS_OBJECT_PATH "/org/freedesktop/portal/desktop"
@@ -138,6 +137,11 @@ FreeDesktopPortalDesktop::FreeDesktopPortalDesktop() {
 #else
 	unsupported = false;
 #endif
+
+	if (unsupported) {
+		return;
+	}
+
 	bool ver_ok = false;
 	int version_major = 0;
 	int version_minor = 0;

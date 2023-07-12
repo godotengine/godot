@@ -32,8 +32,9 @@
 #define GDSCRIPT_EXTEND_PARSER_H
 
 #include "../gdscript_parser.h"
-#include "core/variant/variant.h"
 #include "godot_lsp.h"
+
+#include "core/variant/variant.h"
 
 #ifndef LINE_NUMBER_TO_INDEX
 #define LINE_NUMBER_TO_INDEX(p_line) ((p_line)-1)

@@ -34,12 +34,6 @@
 
 #include "graph_edit.h"
 
-struct _MinSizeCache {
-	int min_size;
-	bool will_stretch;
-	int final_size;
-};
-
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 	String str = p_name;
 

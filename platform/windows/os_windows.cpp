@@ -30,6 +30,11 @@
 
 #include "os_windows.h"
 
+#include "display_server_windows.h"
+#include "joypad_windows.h"
+#include "lang_table.h"
+#include "windows_terminal_logger.h"
+
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
@@ -37,14 +42,10 @@
 #include "drivers/unix/net_socket_posix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
-#include "joypad_windows.h"
-#include "lang_table.h"
 #include "main/main.h"
-#include "platform/windows/display_server_windows.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text_server.h"
-#include "windows_terminal_logger.h"
 
 #include <avrt.h>
 #include <bcrypt.h>
@@ -55,6 +56,7 @@
 #include <regstr.h>
 #include <shlobj.h>
 #include <wbemcli.h>
+#include <wincrypt.h>
 
 #ifdef DEBUG_ENABLED
 #pragma pack(push, before_imagehlp, 8)
@@ -387,13 +389,13 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 				}
 				missing += E;
 			}
-			ERR_FAIL_V_MSG(ERR_CANT_OPEN, vformat("Can't open dynamic library: %s, missing dependencies: (%s), error: \"%s\".", p_path, missing, format_error_message(err_code)));
+			ERR_FAIL_V_MSG(ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Missing dependencies: %s. Error: %s.", p_path, missing, format_error_message(err_code)));
 		} else {
-			ERR_FAIL_V_MSG(ERR_CANT_OPEN, vformat("Can't open dynamic library: %s, error: \"%s\"." + p_path, format_error_message(err_code)));
+			ERR_FAIL_V_MSG(ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, format_error_message(err_code)));
 		}
 	}
 #else
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s, error: \"%s\"." + p_path, format_error_message(GetLastError())));
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, format_error_message(GetLastError())));
 #endif
 
 	if (cookie) {
@@ -435,8 +437,6 @@ String OS_Windows::get_distribution_name() const {
 }
 
 String OS_Windows::get_version() const {
-	typedef LONG NTSTATUS;
-	typedef NTSTATUS(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
 	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
 	if (version_ptr != nullptr) {
 		RTL_OSVERSIONINFOW fow;
@@ -450,8 +450,13 @@ String OS_Windows::get_version() const {
 }
 
 Vector<String> OS_Windows::get_video_adapter_driver_info() const {
-	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
+	if (RenderingServer::get_singleton() == nullptr) {
 		return Vector<String>();
+	}
+
+	static Vector<String> info;
+	if (!info.is_empty()) {
+		return info;
 	}
 
 	REFCLSID clsid = CLSID_WbemLocator; // Unmarshaler CLSID
@@ -460,10 +465,10 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	IWbemServices *wbemServices = NULL; // to get the class
 	IEnumWbemClassObject *iter = NULL;
 	IWbemClassObject *pnpSDriverObject[1]; // contains driver name, version, etc.
-	static String driver_name;
-	static String driver_version;
+	String driver_name;
+	String driver_version;
 
-	const String device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name();
+	const String device_name = RenderingServer::get_singleton()->get_video_adapter_name();
 	if (device_name.is_empty()) {
 		return Vector<String>();
 	}
@@ -537,7 +542,6 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	SAFE_RELEASE(wbemServices)
 	SAFE_RELEASE(iter)
 
-	Vector<String> info;
 	info.push_back(driver_name);
 	info.push_back(driver_version);
 
@@ -554,9 +558,9 @@ OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
 
 	//Get DST information from Windows, but only if p_utc is false.
 	TIME_ZONE_INFORMATION info;
-	bool daylight = false;
+	bool is_daylight = false;
 	if (!p_utc && GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
-		daylight = true;
+		is_daylight = true;
 	}
 
 	DateTime dt;
@@ -567,20 +571,20 @@ OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
 	dt.hour = systemtime.wHour;
 	dt.minute = systemtime.wMinute;
 	dt.second = systemtime.wSecond;
-	dt.dst = daylight;
+	dt.dst = is_daylight;
 	return dt;
 }
 
 OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 	TIME_ZONE_INFORMATION info;
-	bool daylight = false;
+	bool is_daylight = false;
 	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
-		daylight = true;
+		is_daylight = true;
 	}
 
 	// Daylight Bias needs to be added to the bias if DST is in effect, or else it will not properly update.
 	TimeZoneInfo ret;
-	if (daylight) {
+	if (is_daylight) {
 		ret.name = info.DaylightName;
 		ret.bias = info.Bias + info.DaylightBias;
 	} else {
@@ -1675,6 +1679,36 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	}
 
 	return OK;
+}
+
+String OS_Windows::get_system_ca_certificates() {
+	HCERTSTORE cert_store = CertOpenSystemStoreA(0, "ROOT");
+	ERR_FAIL_COND_V_MSG(!cert_store, "", "Failed to read the root certificate store.");
+
+	FILETIME curr_time;
+	GetSystemTimeAsFileTime(&curr_time);
+
+	String certs;
+	PCCERT_CONTEXT curr = CertEnumCertificatesInStore(cert_store, nullptr);
+	while (curr) {
+		FILETIME ft;
+		DWORD size = sizeof(ft);
+		// Check if the certificate is disallowed.
+		if (CertGetCertificateContextProperty(curr, CERT_DISALLOWED_FILETIME_PROP_ID, &ft, &size) && CompareFileTime(&curr_time, &ft) != -1) {
+			curr = CertEnumCertificatesInStore(cert_store, curr);
+			continue;
+		}
+		// Encode and add to certificate list.
+		bool success = CryptBinaryToStringA(curr->pbCertEncoded, curr->cbCertEncoded, CRYPT_STRING_BASE64HEADER | CRYPT_STRING_NOCR, nullptr, &size);
+		ERR_CONTINUE(!success);
+		PackedByteArray pba;
+		pba.resize(size);
+		CryptBinaryToStringA(curr->pbCertEncoded, curr->cbCertEncoded, CRYPT_STRING_BASE64HEADER | CRYPT_STRING_NOCR, (char *)pba.ptrw(), &size);
+		certs += String((char *)pba.ptr(), size);
+		curr = CertEnumCertificatesInStore(cert_store, curr);
+	}
+	CertCloseStore(cert_store, 0);
+	return certs;
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {

@@ -4,7 +4,7 @@
  *
  *   TrueType bytecode interpreter (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1527,9 +1527,8 @@
   static void
   Modify_CVT_Check( TT_ExecContext  exc )
   {
-    /* TT_RunIns sets origCvt and restores cvt to origCvt when done. */
     if ( exc->iniRange == tt_coderange_glyph &&
-         exc->cvt == exc->origCvt            )
+         exc->cvt != exc->glyfCvt            )
     {
       exc->error = Update_Max( exc->memory,
                                &exc->glyfCvtSize,
@@ -3115,10 +3114,8 @@
     }
     else
     {
-      /* TT_RunIns sets origStorage and restores storage to origStorage */
-      /* when done.                                                     */
       if ( exc->iniRange == tt_coderange_glyph &&
-           exc->storage == exc->origStorage    )
+           exc->storage != exc->glyfStorage    )
       {
         FT_ULong  tmp = (FT_ULong)exc->glyfStoreSize;
 
@@ -6874,7 +6871,7 @@
 
 
   static void
-  _iup_worker_shift( IUP_Worker  worker,
+  iup_worker_shift_( IUP_Worker  worker,
                      FT_UInt     p1,
                      FT_UInt     p2,
                      FT_UInt     p )
@@ -6896,7 +6893,7 @@
 
 
   static void
-  _iup_worker_interpolate( IUP_Worker  worker,
+  iup_worker_interpolate_( IUP_Worker  worker,
                            FT_UInt     p1,
                            FT_UInt     p2,
                            FT_UInt     ref1,
@@ -7090,7 +7087,7 @@
         {
           if ( ( exc->pts.tags[point] & mask ) != 0 )
           {
-            _iup_worker_interpolate( &V,
+            iup_worker_interpolate_( &V,
                                      cur_touched + 1,
                                      point - 1,
                                      cur_touched,
@@ -7102,17 +7099,17 @@
         }
 
         if ( cur_touched == first_touched )
-          _iup_worker_shift( &V, first_point, end_point, cur_touched );
+          iup_worker_shift_( &V, first_point, end_point, cur_touched );
         else
         {
-          _iup_worker_interpolate( &V,
+          iup_worker_interpolate_( &V,
                                    (FT_UShort)( cur_touched + 1 ),
                                    end_point,
                                    cur_touched,
                                    first_touched );
 
           if ( first_touched > 0 )
-            _iup_worker_interpolate( &V,
+            iup_worker_interpolate_( &V,
                                      first_point,
                                      first_touched - 1,
                                      cur_touched,
@@ -7832,8 +7829,6 @@
       exc->func_move_cvt  = Move_CVT;
     }
 
-    exc->origCvt     = exc->cvt;
-    exc->origStorage = exc->storage;
     exc->iniRange    = exc->curRange;
 
     Compute_Funcs( exc );
@@ -8570,7 +8565,8 @@
 
       /* increment instruction counter and check if we didn't */
       /* run this program for too long (e.g. infinite loops). */
-      if ( ++ins_counter > TT_CONFIG_OPTION_MAX_RUNNABLE_OPCODES ) {
+      if ( ++ins_counter > TT_CONFIG_OPTION_MAX_RUNNABLE_OPCODES )
+      {
         exc->error = FT_THROW( Execution_Too_Long );
         goto LErrorLabel_;
       }
@@ -8593,9 +8589,6 @@
                 ins_counter,
                 ins_counter == 1 ? "" : "s" ));
 
-    exc->cvt     = exc->origCvt;
-    exc->storage = exc->origStorage;
-
     return FT_Err_Ok;
 
   LErrorCodeOverflow_:
@@ -8604,9 +8597,6 @@
   LErrorLabel_:
     if ( exc->error && !exc->instruction_trap )
       FT_TRACE1(( "  The interpreter returned error 0x%x\n", exc->error ));
-
-    exc->cvt     = exc->origCvt;
-    exc->storage = exc->origStorage;
 
     return exc->error;
   }

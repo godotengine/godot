@@ -28,12 +28,8 @@ struct path_builder_t
     { return optional_point_t (x + t * (p.x - x), y + t * (p.y - y)); }
   } first_oncurve, first_offcurve, first_offcurve2, last_offcurve, last_offcurve2;
 
-  path_builder_t (hb_font_t *font_, hb_draw_session_t &draw_session_)
-  {
-    font = font_;
-    draw_session = &draw_session_;
-    first_oncurve = first_offcurve = first_offcurve2 = last_offcurve = last_offcurve2 = optional_point_t ();
-  }
+  path_builder_t (hb_font_t *font_, hb_draw_session_t &draw_session_) :
+    font (font_), draw_session (&draw_session_) {}
 
   /* based on https://github.com/RazrFalcon/ttf-parser/blob/4f32821/src/glyf.rs#L287
      See also:

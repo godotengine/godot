@@ -30,17 +30,19 @@
 
 #include "display_server_web.h"
 
+#include "dom_keys.inc"
+#include "godot_js.h"
+#include "os_web.h"
+
+#include "core/config/project_settings.h"
+#include "servers/rendering/dummy/rasterizer_dummy.h"
+
 #ifdef GLES3_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
-#include "platform/web/os_web.h"
-#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #include <emscripten.h>
 #include <png.h>
-
-#include "dom_keys.inc"
-#include "godot_js.h"
 
 #define DOM_BUTTON_LEFT 0
 #define DOM_BUTTON_MIDDLE 1
@@ -298,10 +300,12 @@ const char *DisplayServerWeb::godot2dom_cursor(DisplayServer::CursorShape p_shap
 }
 
 bool DisplayServerWeb::tts_is_speaking() const {
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return godot_js_tts_is_speaking();
 }
 
 bool DisplayServerWeb::tts_is_paused() const {
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return godot_js_tts_is_paused();
 }
 
@@ -320,11 +324,13 @@ void DisplayServerWeb::update_voices_callback(int p_size, const char **p_voice) 
 }
 
 TypedArray<Dictionary> DisplayServerWeb::tts_get_voices() const {
+	ERR_FAIL_COND_V_MSG(!tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_get_voices(update_voices_callback);
 	return voices;
 }
 
 void DisplayServerWeb::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	if (p_interrupt) {
 		tts_stop();
 	}
@@ -341,14 +347,17 @@ void DisplayServerWeb::tts_speak(const String &p_text, const String &p_voice, in
 }
 
 void DisplayServerWeb::tts_pause() {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_pause();
 }
 
 void DisplayServerWeb::tts_resume() {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	godot_js_tts_resume();
 }
 
 void DisplayServerWeb::tts_stop() {
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	for (const KeyValue<int, CharString> &E : utterance_ids) {
 		tts_post_utterance_event(DisplayServer::TTS_UTTERANCE_CANCELED, E.key);
 	}
@@ -722,35 +731,40 @@ void DisplayServerWeb::send_window_event_callback(int p_notification) {
 }
 
 void DisplayServerWeb::set_icon(const Ref<Image> &p_icon) {
-	ERR_FAIL_COND(p_icon.is_null());
-	Ref<Image> icon = p_icon;
-	if (icon->is_compressed()) {
-		icon = icon->duplicate();
-		ERR_FAIL_COND(icon->decompress() != OK);
-	}
-	if (icon->get_format() != Image::FORMAT_RGBA8) {
-		if (icon == p_icon) {
+	if (p_icon.is_valid()) {
+		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
+
+		Ref<Image> icon = p_icon;
+		if (icon->is_compressed()) {
 			icon = icon->duplicate();
+			ERR_FAIL_COND(icon->decompress() != OK);
 		}
-		icon->convert(Image::FORMAT_RGBA8);
+		if (icon->get_format() != Image::FORMAT_RGBA8) {
+			if (icon == p_icon) {
+				icon = icon->duplicate();
+			}
+			icon->convert(Image::FORMAT_RGBA8);
+		}
+
+		png_image png_meta;
+		memset(&png_meta, 0, sizeof png_meta);
+		png_meta.version = PNG_IMAGE_VERSION;
+		png_meta.width = icon->get_width();
+		png_meta.height = icon->get_height();
+		png_meta.format = PNG_FORMAT_RGBA;
+
+		PackedByteArray png;
+		size_t len;
+		PackedByteArray data = icon->get_data();
+		ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, data.ptr(), 0, nullptr));
+
+		png.resize(len);
+		ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, png.ptrw(), &len, 0, data.ptr(), 0, nullptr));
+
+		godot_js_display_window_icon_set(png.ptr(), len);
+	} else {
+		godot_js_display_window_icon_set(nullptr, 0);
 	}
-
-	png_image png_meta;
-	memset(&png_meta, 0, sizeof png_meta);
-	png_meta.version = PNG_IMAGE_VERSION;
-	png_meta.width = icon->get_width();
-	png_meta.height = icon->get_height();
-	png_meta.format = PNG_FORMAT_RGBA;
-
-	PackedByteArray png;
-	size_t len;
-	PackedByteArray data = icon->get_data();
-	ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, data.ptr(), 0, nullptr));
-
-	png.resize(len);
-	ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, png.ptrw(), &len, 0, data.ptr(), 0, nullptr));
-
-	godot_js_display_window_icon_set(png.ptr(), len);
 }
 
 void DisplayServerWeb::_dispatch_input_event(const Ref<InputEvent> &p_event) {
@@ -770,6 +784,8 @@ DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, W
 
 DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Error &r_error) {
 	r_error = OK; // Always succeeds for now.
+
+	tts = GLOBAL_GET("audio/general/text_to_speech");
 
 	// Ensure the canvas ID.
 	godot_js_config_canvas_id_get(canvas_id, 256);
@@ -866,7 +882,7 @@ bool DisplayServerWeb::has_feature(Feature p_feature) const {
 		case FEATURE_VIRTUAL_KEYBOARD:
 			return godot_js_display_vk_available() != 0;
 		case FEATURE_TEXT_TO_SPEECH:
-			return godot_js_display_tts_available() != 0;
+			return tts && (godot_js_display_tts_available() != 0);
 		default:
 			return false;
 	}
@@ -1062,12 +1078,20 @@ void DisplayServerWeb::window_move_to_foreground(WindowID p_window) {
 	// Not supported.
 }
 
+bool DisplayServerWeb::window_is_focused(WindowID p_window) const {
+	return true;
+}
+
 bool DisplayServerWeb::window_can_draw(WindowID p_window) const {
 	return true;
 }
 
 bool DisplayServerWeb::can_any_window_draw() const {
 	return true;
+}
+
+DisplayServer::VSyncMode DisplayServerWeb::window_get_vsync_mode(WindowID p_vsync_mode) const {
+	return DisplayServer::VSYNC_ENABLED;
 }
 
 void DisplayServerWeb::process_events() {

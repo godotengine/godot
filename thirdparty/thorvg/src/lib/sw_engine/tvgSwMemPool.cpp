@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include "tvgSwCommon.h"
 
 
@@ -59,16 +60,16 @@ void mpoolRetStrokeOutline(SwMpool* mpool, unsigned idx)
 
 SwMpool* mpoolInit(unsigned threads)
 {
-    if (threads == 0) threads = 1;
+    auto allocSize = threads + 1;
 
     auto mpool = static_cast<SwMpool*>(calloc(sizeof(SwMpool), 1));
-    mpool->outline = static_cast<SwOutline*>(calloc(1, sizeof(SwOutline) * threads));
+    mpool->outline = static_cast<SwOutline*>(calloc(1, sizeof(SwOutline) * allocSize));
     if (!mpool->outline) goto err;
 
-    mpool->strokeOutline = static_cast<SwOutline*>(calloc(1, sizeof(SwOutline) * threads));
+    mpool->strokeOutline = static_cast<SwOutline*>(calloc(1, sizeof(SwOutline) * allocSize));
     if (!mpool->strokeOutline) goto err;
 
-    mpool->allocSize = threads;
+    mpool->allocSize = allocSize;
 
     return mpool;
 

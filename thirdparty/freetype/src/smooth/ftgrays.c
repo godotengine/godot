@@ -4,7 +4,7 @@
  *
  *   A new `perfect' anti-aliasing renderer (body).
  *
- * Copyright (C) 2000-2022 by
+ * Copyright (C) 2000-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -418,21 +418,21 @@ typedef ptrdiff_t  FT_PtrDist;
 
   /* It is faster to write small spans byte-by-byte than calling     */
   /* `memset'.  This is mainly due to the cost of the function call. */
-#define FT_GRAY_SET( d, s, count )                          \
-  FT_BEGIN_STMNT                                            \
-    unsigned char* q = d;                                   \
-    switch ( count )                                        \
-    {                                                       \
-      case 7: *q++ = (unsigned char)s; /* fall through */   \
-      case 6: *q++ = (unsigned char)s; /* fall through */   \
-      case 5: *q++ = (unsigned char)s; /* fall through */   \
-      case 4: *q++ = (unsigned char)s; /* fall through */   \
-      case 3: *q++ = (unsigned char)s; /* fall through */   \
-      case 2: *q++ = (unsigned char)s; /* fall through */   \
-      case 1: *q   = (unsigned char)s; /* fall through */   \
-      case 0: break;                                        \
-      default: FT_MEM_SET( d, s, count );                   \
-    }                                                       \
+#define FT_GRAY_SET( d, s, count )                   \
+  FT_BEGIN_STMNT                                     \
+    unsigned char* q = d;                            \
+    switch ( count )                                 \
+    {                                                \
+      case 7: *q++ = (unsigned char)s; FALL_THROUGH; \
+      case 6: *q++ = (unsigned char)s; FALL_THROUGH; \
+      case 5: *q++ = (unsigned char)s; FALL_THROUGH; \
+      case 4: *q++ = (unsigned char)s; FALL_THROUGH; \
+      case 3: *q++ = (unsigned char)s; FALL_THROUGH; \
+      case 2: *q++ = (unsigned char)s; FALL_THROUGH; \
+      case 1: *q   = (unsigned char)s; FALL_THROUGH; \
+      case 0: break;                                 \
+      default: FT_MEM_SET( d, s, count );            \
+    }                                                \
   FT_END_STMNT
 
 
@@ -1907,15 +1907,12 @@ typedef ptrdiff_t  FT_PtrDist;
     0                                        /* delta    */
   )
 
-// -- GODOT start --
-  static volatile int _lto_dummy = 0;
-// -- GODOT end --
 
   static int
-  gray_convert_glyph_inner( RAS_ARG,
+  gray_convert_glyph_inner( RAS_ARG_
                             int  continued )
   {
-    int  error;
+    volatile int  error;
 
 
     if ( ft_setjmp( ras.jump_buffer ) == 0 )
@@ -1931,9 +1928,6 @@ typedef ptrdiff_t  FT_PtrDist;
                   ras.max_ey,
                   ras.cell_null - ras.cell_free,
                   ras.cell_null - ras.cell_free == 1 ? "" : "s" ));
-// -- GODOT start --
-      _lto_dummy = error; // Prevents LTO from removing this branch.
-// -- GODOT end --
     }
     else
     {
@@ -1941,9 +1935,6 @@ typedef ptrdiff_t  FT_PtrDist;
 
       FT_TRACE7(( "band [%d..%d]: to be bisected\n",
                   ras.min_ey, ras.max_ey ));
-// -- GODOT start --
-      _lto_dummy = error; // Prevents LTO from removing this branch.
-// -- GODOT end --
     }
 
     return error;
@@ -2013,7 +2004,7 @@ typedef ptrdiff_t  FT_PtrDist;
         ras.max_ey    = band[0];
         ras.count_ey  = width;
 
-        error     = gray_convert_glyph_inner( RAS_VAR, continued );
+        error     = gray_convert_glyph_inner( RAS_VAR_ continued );
         continued = 1;
 
         if ( !error )

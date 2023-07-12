@@ -72,7 +72,7 @@ FT_BEGIN_HEADER
   } CF2_PathOp;
 
 
-  /* a matrix of fixed point values */
+  /* a matrix of fixed-point values */
   typedef struct  CF2_Matrix_
   {
     CF2_F16Dot16  a;

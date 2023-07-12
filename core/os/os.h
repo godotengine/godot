@@ -52,6 +52,7 @@ class OS {
 	bool _keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
 	bool low_processor_usage_mode = false;
 	int low_processor_usage_mode_sleep_usec = 10000;
+	bool _delta_smoothing_enabled = false;
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
 	String _local_clipboard;
@@ -74,6 +75,12 @@ class OS {
 	String _current_rendering_method;
 
 	RemoteFilesystemClient default_rfs;
+
+	// For tracking benchmark data
+	bool use_benchmark = false;
+	String benchmark_file;
+	HashMap<String, uint64_t> start_benchmark_from;
+	Dictionary startup_benchmark_json;
 
 protected:
 	void _set_logger(CompositeLogger *p_logger);
@@ -137,6 +144,7 @@ public:
 	virtual String get_stdin_string() = 0;
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) = 0; // Should return cryptographically-safe random bytes.
+	virtual String get_system_ca_certificates() { return ""; } // Concatenated certificates in PEM format.
 
 	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
@@ -152,6 +160,9 @@ public:
 	virtual bool is_in_low_processor_usage_mode() const;
 	virtual void set_low_processor_usage_mode_sleep_usec(int p_usec);
 	virtual int get_low_processor_usage_mode_sleep_usec() const;
+
+	void set_delta_smoothing(bool p_enabled);
+	bool is_delta_smoothing_enabled() const;
 
 	virtual Vector<String> get_system_fonts() const { return Vector<String>(); };
 	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return String(); };
@@ -293,6 +304,15 @@ public:
 	virtual bool request_permission(const String &p_name) { return true; }
 	virtual bool request_permissions() { return true; }
 	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
+
+	// For recording / measuring benchmark data. Only enabled with tools
+	void set_use_benchmark(bool p_use_benchmark);
+	bool is_use_benchmark_set();
+	void set_benchmark_file(const String &p_benchmark_file);
+	String get_benchmark_file();
+	virtual void benchmark_begin_measure(const String &p_what);
+	virtual void benchmark_end_measure(const String &p_what);
+	virtual void benchmark_dump();
 
 	virtual void process_and_drop_events() {}
 

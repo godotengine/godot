@@ -104,26 +104,19 @@ THE SOFTWARE.
   pcf_cmap_char_index( FT_CMap    pcfcmap,  /* PCF_CMap */
                        FT_UInt32  charcode )
   {
-    PCF_CMap   cmap = (PCF_CMap)pcfcmap;
-    PCF_Enc    enc  = cmap->enc;
-    FT_UShort  charcodeRow;
-    FT_UShort  charcodeCol;
+    PCF_Enc  enc = ( (PCF_CMap)pcfcmap )->enc;
+
+    FT_UInt32  i = ( charcode >> 8   ) - enc->firstRow;
+    FT_UInt32  j = ( charcode & 0xFF ) - enc->firstCol;
+    FT_UInt32  h = enc->lastRow - enc->firstRow + 1;
+    FT_UInt32  w = enc->lastCol - enc->firstCol + 1;
 
 
-    if ( charcode > (FT_UInt32)( enc->lastRow  * 256 + enc->lastCol  ) ||
-         charcode < (FT_UInt32)( enc->firstRow * 256 + enc->firstCol ) )
+    /* wrapped around "negative" values are also rejected */
+    if ( i >= h || j >= w )
       return 0;
 
-    charcodeRow = (FT_UShort)( charcode >> 8 );
-    charcodeCol = (FT_UShort)( charcode & 0xFF );
-
-    if ( charcodeCol < enc->firstCol ||
-         charcodeCol > enc->lastCol  )
-      return 0;
-
-    return (FT_UInt)enc->offset[( charcodeRow - enc->firstRow ) *
-                                  ( enc->lastCol - enc->firstCol + 1 ) +
-                                charcodeCol - enc->firstCol];
+    return (FT_UInt)enc->offset[i * w + j];
   }
 
 
@@ -131,42 +124,33 @@ THE SOFTWARE.
   pcf_cmap_char_next( FT_CMap    pcfcmap,   /* PCF_CMap */
                       FT_UInt32  *acharcode )
   {
-    PCF_CMap   cmap      = (PCF_CMap)pcfcmap;
-    PCF_Enc    enc       = cmap->enc;
-    FT_UInt32  charcode  = *acharcode;
-    FT_UShort  charcodeRow;
-    FT_UShort  charcodeCol;
-    FT_UInt    result = 0;
+    PCF_Enc    enc = ( (PCF_CMap)pcfcmap )->enc;
+    FT_UInt32  charcode = *acharcode + 1;
+
+    FT_UInt32  i = ( charcode >> 8   ) - enc->firstRow;
+    FT_UInt32  j = ( charcode & 0xFF ) - enc->firstCol;
+    FT_UInt32  h = enc->lastRow - enc->firstRow + 1;
+    FT_UInt32  w = enc->lastCol - enc->firstCol + 1;
+
+    FT_UInt  result = 0;
 
 
-    while ( charcode < (FT_UInt32)( enc->lastRow * 256 + enc->lastCol ) )
-    {
-      charcode++;
+    /* adjust wrapped around "negative" values */
+    if ( (FT_Int32)i < 0 )
+      i = 0;
+    if ( (FT_Int32)j < 0 )
+      j = 0;
 
-      if ( charcode < (FT_UInt32)( enc->firstRow * 256 + enc->firstCol ) )
-        charcode = (FT_UInt32)( enc->firstRow * 256 + enc->firstCol );
-
-      charcodeRow = (FT_UShort)( charcode >> 8 );
-      charcodeCol = (FT_UShort)( charcode & 0xFF );
-
-      if ( charcodeCol < enc->firstCol )
-        charcodeCol = enc->firstCol;
-      else if ( charcodeCol > enc->lastCol )
+    for ( ; i < h; i++, j = 0 )
+      for ( ; j < w; j++ )
       {
-        charcodeRow++;
-        charcodeCol = enc->firstCol;
+        result = (FT_UInt)enc->offset[i * w + j];
+        if ( result != 0xFFFFU )
+          goto Exit;
       }
 
-      charcode = (FT_UInt32)( charcodeRow * 256 + charcodeCol );
-
-      result = (FT_UInt)enc->offset[( charcodeRow - enc->firstRow ) *
-                                      ( enc->lastCol - enc->firstCol + 1 ) +
-                                    charcodeCol - enc->firstCol];
-      if ( result != 0xFFFFU )
-        break;
-    }
-
-    *acharcode = charcode;
+  Exit:
+    *acharcode = ( ( i + enc->firstRow ) << 8 ) | ( j + enc->firstCol );
 
     return result;
   }

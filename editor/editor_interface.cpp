@@ -36,12 +36,14 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/inspector_dock.h"
 #include "main/main.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
+#include "scene/main/window.h"
 
 EditorInterface *EditorInterface::singleton = nullptr;
 
@@ -221,6 +223,22 @@ float EditorInterface::get_editor_scale() const {
 	return EDSCALE;
 }
 
+void EditorInterface::popup_dialog(Window *p_dialog, const Rect2i &p_screen_rect) {
+	p_dialog->popup_exclusive(EditorNode::get_singleton(), p_screen_rect);
+}
+
+void EditorInterface::popup_dialog_centered(Window *p_dialog, const Size2i &p_minsize) {
+	p_dialog->popup_exclusive_centered(EditorNode::get_singleton(), p_minsize);
+}
+
+void EditorInterface::popup_dialog_centered_ratio(Window *p_dialog, float p_ratio) {
+	p_dialog->popup_exclusive_centered_ratio(EditorNode::get_singleton(), p_ratio);
+}
+
+void EditorInterface::popup_dialog_centered_clamped(Window *p_dialog, const Size2i &p_size, float p_fallback_ratio) {
+	p_dialog->popup_exclusive_centered_clamped(EditorNode::get_singleton(), p_size, p_fallback_ratio);
+}
+
 // Editor docks.
 
 FileSystemDock *EditorInterface::get_file_system_dock() const {
@@ -315,6 +333,10 @@ void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) 
 	EditorNode::get_singleton()->save_scene_to_path(p_scene, p_with_preview);
 }
 
+void EditorInterface::mark_scene_as_unsaved() {
+	EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(EditorNode::get_editor_data().get_current_edited_scene_history_id());
+}
+
 // Scene playback.
 
 void EditorInterface::play_main_scene() {
@@ -380,6 +402,11 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
 
+	ClassDB::bind_method(D_METHOD("popup_dialog", "dialog", "rect"), &EditorInterface::popup_dialog, DEFVAL(Rect2i()));
+	ClassDB::bind_method(D_METHOD("popup_dialog_centered", "dialog", "minsize"), &EditorInterface::popup_dialog_centered, DEFVAL(Size2i()));
+	ClassDB::bind_method(D_METHOD("popup_dialog_centered_ratio", "dialog", "ratio"), &EditorInterface::popup_dialog_centered_ratio, DEFVAL(0.8));
+	ClassDB::bind_method(D_METHOD("popup_dialog_centered_clamped", "dialog", "minsize", "fallback_ratio"), &EditorInterface::popup_dialog_centered_clamped, DEFVAL(Size2i()), DEFVAL(0.75));
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distraction_free_mode"), "set_distraction_free_mode", "is_distraction_free_mode_enabled");
 
 	// Editor docks.
@@ -407,6 +434,8 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
+
+	ClassDB::bind_method(D_METHOD("mark_scene_as_unsaved"), &EditorInterface::mark_scene_as_unsaved);
 
 	// Scene playback.
 

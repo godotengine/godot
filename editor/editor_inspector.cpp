@@ -46,14 +46,14 @@
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
-static bool _property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
+bool EditorInspector::_property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
 	if (p_property_path.findn(p_filter) != -1) {
 		return true;
 	}
 
-	const Vector<String> sections = p_property_path.split("/");
-	for (int i = 0; i < sections.size(); i++) {
-		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(sections[i], p_style))) {
+	const Vector<String> prop_sections = p_property_path.split("/");
+	for (int i = 0; i < prop_sections.size(); i++) {
+		if (p_filter.is_subsequence_ofn(EditorPropertyNameProcessor::get_singleton()->process_name(prop_sections[i], p_style))) {
 			return true;
 		}
 	}
@@ -598,6 +598,9 @@ void EditorProperty::add_focusable(Control *p_control) {
 
 void EditorProperty::select(int p_focusable) {
 	bool already_selected = selected;
+	if (!selectable) {
+		return;
+	}
 
 	if (p_focusable >= 0) {
 		ERR_FAIL_INDEX(p_focusable, focusables.size());
@@ -671,11 +674,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			mpos.x = get_size().x - mpos.x;
 		}
 
-		if (!selected && selectable) {
-			selected = true;
-			emit_signal(SNAME("selected"), property, -1);
-			queue_redraw();
-		}
+		select();
 
 		if (keying_rect.has_point(mpos)) {
 			accept_event();
@@ -1341,11 +1340,7 @@ void EditorInspectorSection::_notification(int p_what) {
 					Color light_font_color = get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"));
 
 					// Can we fit the long version of the revertable count text?
-					if (revertable_properties.size() == 1) {
-						num_revertable_str = "(1 change)";
-					} else {
-						num_revertable_str = vformat("(%d changes)", revertable_properties.size());
-					}
+					num_revertable_str = vformat(TTRN("(%d change)", "(%d changes)", revertable_properties.size()), revertable_properties.size());
 					num_revertable_width = light_font->get_string_size(num_revertable_str, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, light_font_size, TextServer::JUSTIFICATION_NONE).x;
 					if (label_width + separation + num_revertable_width > available) {
 						// We'll have to use the short version.
@@ -1533,6 +1528,11 @@ void EditorInspectorSection::fold() {
 
 	object->editor_set_section_unfold(section, false);
 	vbox->hide();
+	queue_redraw();
+}
+
+void EditorInspectorSection::set_bg_color(const Color &p_bg_color) {
+	bg_color = p_bg_color;
 	queue_redraw();
 }
 
@@ -2808,18 +2808,22 @@ void EditorInspector::update_tree() {
 			category->label = label;
 
 			if (use_doc_hints) {
+				String descr = "";
 				// Sets the category tooltip to show documentation.
 				if (!class_descr_cache.has(doc_name)) {
-					String descr;
 					DocTools *dd = EditorHelp::get_doc_data();
 					HashMap<String, DocData::ClassDoc>::Iterator E = dd->class_list.find(doc_name);
 					if (E) {
 						descr = DTR(E->value.brief_description);
 					}
-					class_descr_cache[doc_name] = descr;
+					if (ClassDB::class_exists(doc_name)) {
+						class_descr_cache[doc_name] = descr; // Do not cache the class description of scripts.
+					}
+				} else {
+					descr = class_descr_cache[doc_name];
 				}
 
-				category->set_tooltip_text(p.name + "::" + (class_descr_cache[doc_name].is_empty() ? "" : class_descr_cache[doc_name]));
+				category->set_tooltip_text(p.name + "::" + descr);
 			}
 
 			// Add editors at the start of a category.
@@ -3180,10 +3184,11 @@ void EditorInspector::update_tree() {
 										if (val.enumeration == enum_name && !val.name.ends_with("_MAX")) {
 											const String enum_value = EditorPropertyNameProcessor::get_singleton()->process_name(val.name, EditorPropertyNameProcessor::STYLE_CAPITALIZED);
 											// Prettify the enum value display, so that "<ENUM NAME>_<VALUE>" becomes "Value".
+											String desc = DTR(val.description).trim_prefix("\n");
 											doc_info.description += vformat(
 													"\n[b]%s:[/b] %s",
 													enum_value.trim_prefix(EditorPropertyNameProcessor::get_singleton()->process_name(enum_name, EditorPropertyNameProcessor::STYLE_CAPITALIZED) + " "),
-													DTR(val.description).trim_prefix("\n"));
+													desc.is_empty() ? ("[i]" + TTR("No description.") + "[/i]") : desc);
 										}
 									}
 								}
@@ -3212,7 +3217,9 @@ void EditorInspector::update_tree() {
 					}
 				}
 
-				doc_info_cache[classname][propname] = doc_info;
+				if (ClassDB::class_exists(classname)) {
+					doc_info_cache[classname][propname] = doc_info; // Do not cache the doc information of scripts.
+				}
 			}
 		}
 
@@ -3684,8 +3691,9 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		Variant v_undo_redo = undo_redo;
 		Variant v_object = object;
 		Variant v_name = p_name;
-		for (int i = 0; i < EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback().size(); i++) {
-			const Callable &callback = EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback()[i];
+		const Vector<Callable> &callbacks = EditorNode::get_singleton()->get_editor_data().get_undo_redo_inspector_hook_callback();
+		for (int i = 0; i < callbacks.size(); i++) {
+			const Callable &callback = callbacks[i];
 
 			const Variant *p_arguments[] = { &v_undo_redo, &v_object, &v_name, &p_value };
 			Variant return_value;
@@ -3918,6 +3926,12 @@ void EditorInspector::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_THEME_CHANGED: {
+			if (add_meta_error_panel) {
+				add_meta_error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			}
+		} break;
+
 		case NOTIFICATION_PREDELETE: {
 			edit(nullptr); //just in case
 		} break;
@@ -4098,13 +4112,16 @@ void EditorInspector::_show_add_meta_dialog() {
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		add_meta_dialog->add_child(vbc);
+
 		HBoxContainer *hbc = memnew(HBoxContainer);
 		vbc->add_child(hbc);
 		hbc->add_child(memnew(Label(TTR("Name:"))));
+
 		add_meta_name = memnew(LineEdit);
 		add_meta_name->set_custom_minimum_size(Size2(200 * EDSCALE, 1));
 		hbc->add_child(add_meta_name);
 		hbc->add_child(memnew(Label(TTR("Type:"))));
+
 		add_meta_type = memnew(OptionButton);
 		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 			if (i == Variant::NIL || i == Variant::RID || i == Variant::CALLABLE || i == Variant::SIGNAL) {
@@ -4115,12 +4132,24 @@ void EditorInspector::_show_add_meta_dialog() {
 			add_meta_type->add_icon_item(get_theme_icon(type, "EditorIcons"), type, i);
 		}
 		hbc->add_child(add_meta_type);
+
+		Control *spacing = memnew(Control);
+		vbc->add_child(spacing);
+		spacing->set_custom_minimum_size(Size2(0, 10 * EDSCALE));
+
 		add_meta_dialog->set_ok_button_text(TTR("Add"));
 		add_child(add_meta_dialog);
 		add_meta_dialog->register_text_enter(add_meta_name);
 		add_meta_dialog->connect("confirmed", callable_mp(this, &EditorInspector::_add_meta_confirm));
+
+		add_meta_error_panel = memnew(PanelContainer);
+		vbc->add_child(add_meta_error_panel);
+		if (is_inside_tree()) {
+			add_meta_error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+		}
+
 		add_meta_error = memnew(Label);
-		vbc->add_child(add_meta_error);
+		add_meta_error_panel->add_child(add_meta_error);
 
 		add_meta_name->connect("text_changed", callable_mp(this, &EditorInspector::_check_meta_name));
 	}

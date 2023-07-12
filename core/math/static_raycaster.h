@@ -59,15 +59,15 @@ public:
 
 		/*! Constructs a ray from origin, direction, and ray segment. Near
 		 *  has to be smaller than far. */
-		_FORCE_INLINE_ Ray(const Vector3 &org,
-				const Vector3 &dir,
-				float tnear = 0.0f,
-				float tfar = INFINITY) :
-				org(org),
-				tnear(tnear),
-				dir(dir),
+		_FORCE_INLINE_ Ray(const Vector3 &p_org,
+				const Vector3 &p_dir,
+				float p_tnear = 0.0f,
+				float p_tfar = INFINITY) :
+				org(p_org),
+				tnear(p_tnear),
+				dir(p_dir),
 				time(0.0f),
-				tfar(tfar),
+				tfar(p_tfar),
 				mask(-1),
 				u(0.0),
 				v(0.0),

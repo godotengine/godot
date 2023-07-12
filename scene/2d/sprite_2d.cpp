@@ -309,9 +309,9 @@ bool Sprite2D::is_pixel_opaque(const Point2 &p_point) const {
 		q.y = 1.0f - q.y;
 	}
 	q = q * src_rect.size + src_rect.position;
-	// TODO: This need to be obtained from CanvasItem new repeat mode (but it needs to guess it from hierarchy, need to add a function for that).
-	bool is_repeat = false;
-	bool is_mirrored_repeat = false;
+	TextureRepeat repeat_mode = get_texture_repeat_in_tree();
+	bool is_repeat = repeat_mode == TEXTURE_REPEAT_ENABLED || repeat_mode == TEXTURE_REPEAT_MIRROR;
+	bool is_mirrored_repeat = repeat_mode == TEXTURE_REPEAT_MIRROR;
 	if (is_repeat) {
 		int mirror_x = 0;
 		int mirror_y = 0;

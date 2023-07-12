@@ -100,7 +100,7 @@ struct maxp
     maxp *maxp_prime = c->serializer->embed (this);
     if (unlikely (!maxp_prime)) return_trace (false);
 
-    maxp_prime->numGlyphs = c->plan->num_output_glyphs ();
+    maxp_prime->numGlyphs = hb_min (c->plan->num_output_glyphs (), 0xFFFFu);
     if (maxp_prime->version.major == 1)
     {
       const maxpV1Tail *src_v1 = &StructAfter<maxpV1Tail> (*this);

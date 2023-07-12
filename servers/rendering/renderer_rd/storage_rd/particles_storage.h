@@ -53,6 +53,14 @@ private:
 
 	/* PARTICLES */
 
+	enum {
+		BASE_UNIFORM_SET,
+		MATERIAL_UNIFORM_SET,
+		COLLISION_TEXTURTES_UNIFORM_SET,
+	};
+
+	const int SAMPLERS_BINDING_FIRST_INDEX = 3;
+
 	struct ParticleData {
 		float xform[16];
 		float velocity[3];

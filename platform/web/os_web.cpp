@@ -30,21 +30,21 @@
 
 #include "os_web.h"
 
+#include "api/javascript_bridge_singleton.h"
+#include "display_server_web.h"
+#include "godot_js.h"
+
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
-#include "platform/web/display_server_web.h"
 
 #include "modules/modules_enabled.gen.h" // For websocket.
 
 #include <dlfcn.h>
 #include <emscripten.h>
 #include <stdlib.h>
-
-#include "api/javascript_bridge_singleton.h"
-#include "godot_js.h"
 
 void OS_Web::alert(const String &p_alert, const String &p_title) {
 	godot_js_display_alert(p_alert.utf8().get_data());
@@ -232,7 +232,7 @@ bool OS_Web::is_userfs_persistent() const {
 Error OS_Web::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path.get_file();
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ". Error: " + dlerror());
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, vformat("Can't open dynamic library: %s. Error: %s.", p_path, dlerror()));
 
 	if (r_resolved_path != nullptr) {
 		*r_resolved_path = path;

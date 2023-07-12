@@ -836,13 +836,15 @@ void Object::set_script(const Variant &p_script) {
 		return;
 	}
 
+	Ref<Script> s = p_script;
+	ERR_FAIL_COND_MSG(s.is_null() && !p_script.is_null(), "Invalid parameter, it should be a reference to a valid script (or null).");
+
+	script = p_script;
+
 	if (script_instance) {
 		memdelete(script_instance);
 		script_instance = nullptr;
 	}
-
-	script = p_script;
-	Ref<Script> s = script;
 
 	if (!s.is_null()) {
 		if (s->can_instantiate()) {
@@ -903,7 +905,7 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 	if (E) {
 		E->value = p_value;
 	} else {
-		ERR_FAIL_COND(!p_name.operator String().is_valid_identifier());
+		ERR_FAIL_COND_MSG(!p_name.operator String().is_valid_identifier(), "Invalid metadata identifier: '" + p_name + "'.");
 		Variant *V = &metadata.insert(p_name, p_value)->value;
 
 		const String &sname = p_name;
@@ -1350,7 +1352,7 @@ bool Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	}
 	ERR_FAIL_COND_V_MSG(!s, false, vformat("Disconnecting nonexistent signal '%s' in %s.", p_signal, to_string()));
 
-	ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false, "Disconnecting nonexistent signal '" + p_signal + "', callable: " + p_callable + ".");
+	ERR_FAIL_COND_V_MSG(!s->slot_map.has(*p_callable.get_base_comparator()), false, "Attempt to disconnect a nonexistent connection from '" + to_string() + "'. Signal: '" + p_signal + "', callable: '" + p_callable + "'.");
 
 	SignalData::Slot *slot = &s->slot_map[*p_callable.get_base_comparator()];
 
@@ -1719,6 +1721,30 @@ uint32_t Object::get_edited_version() const {
 }
 #endif
 
+StringName Object::get_class_name_for_extension(const GDExtension *p_library) const {
+	// Only return the class name per the extension if it matches the given p_library.
+	if (_extension && _extension->library == p_library) {
+		return _extension->class_name;
+	}
+
+	// Extensions only have wrapper classes for classes exposed in ClassDB.
+	const StringName *class_name = _get_class_namev();
+	if (ClassDB::is_class_exposed(*class_name)) {
+		return *class_name;
+	}
+
+	// Find the nearest parent class that's exposed.
+	StringName parent_class = ClassDB::get_parent_class(*class_name);
+	while (parent_class != StringName()) {
+		if (ClassDB::is_class_exposed(parent_class)) {
+			return parent_class;
+		}
+		parent_class = ClassDB::get_parent_class(parent_class);
+	}
+
+	return SNAME("Object");
+}
+
 void Object::set_instance_binding(void *p_token, void *p_binding, const GDExtensionInstanceBindingCallbacks *p_callbacks) {
 	// This is only meant to be used on creation by the binder.
 	ERR_FAIL_COND(_instance_bindings != nullptr);
@@ -1739,7 +1765,7 @@ void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindi
 			break;
 		}
 	}
-	if (unlikely(!binding)) {
+	if (unlikely(!binding && p_callbacks)) {
 		uint32_t current_size = next_power_of_2(_instance_binding_count);
 		uint32_t new_size = next_power_of_2(_instance_binding_count + 1);
 

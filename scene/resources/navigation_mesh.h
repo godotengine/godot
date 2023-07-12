@@ -91,8 +91,8 @@ public:
 	};
 
 protected:
-	float cell_size = 0.25f;
-	float cell_height = 0.25f;
+	float cell_size = 0.25f; // Must match ProjectSettings default 3D cell_size and NavigationServer NavMap cell_size.
+	float cell_height = 0.25f; // Must match ProjectSettings default 3D cell_height and NavigationServer NavMap cell_height.
 	float agent_height = 1.5f;
 	float agent_radius = 0.5f;
 	float agent_max_climb = 0.25f;

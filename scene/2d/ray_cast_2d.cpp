@@ -183,7 +183,7 @@ void RayCast2D::_update_raycast_state() {
 	ERR_FAIL_COND(w2d.is_null());
 
 	PhysicsDirectSpaceState2D *dss = PhysicsServer2D::get_singleton()->space_get_direct_state(w2d->get_space());
-	ERR_FAIL_COND(!dss);
+	ERR_FAIL_NULL(dss);
 
 	Transform2D gt = get_global_transform();
 

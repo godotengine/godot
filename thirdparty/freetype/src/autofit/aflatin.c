@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines for latin writing system (body).
  *
- * Copyright (C) 2003-2022 by
+ * Copyright (C) 2003-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1043,7 +1043,7 @@
       AF_FaceGlobals  globals = metrics->root.globals;
       FT_UShort*      gstyles = globals->glyph_styles;
 
-      FT_Long  i;
+      FT_UInt  i;
 
 
       FT_TRACE5(( "no blue zones found:"
@@ -1157,7 +1157,7 @@
     }
 
   Exit:
-    FT_Set_Charmap( face, oldmap );
+    face->charmap = oldmap;
     return error;
   }
 
@@ -1275,8 +1275,8 @@
               FT_TRACE5(( "                           "
                           " vertical scaling changed"
                           " from %.5f to %.5f (by %ld%%)\n",
-                          scale / 65536.0,
-                          new_scale / 65536.0,
+                          (double)scale / 65536,
+                          (double)new_scale / 65536,
                           ( fitted - scaled ) * 100 / scaled ));
               FT_TRACE5(( "\n" ));
 
@@ -1327,7 +1327,7 @@
 
       FT_TRACE5(( "  %ld scaled to %.2f\n",
                   width->org,
-                  width->cur / 64.0 ));
+                  (double)width->cur / 64 ));
     }
 
     FT_TRACE5(( "\n" ));
@@ -1471,13 +1471,13 @@
         FT_TRACE5(( "  reference %d: %ld scaled to %.2f%s\n",
                     nn,
                     blue->ref.org,
-                    blue->ref.fit / 64.0,
+                    (double)blue->ref.fit / 64,
                     ( blue->flags & AF_LATIN_BLUE_ACTIVE ) ? ""
                                                            : " (inactive)" ));
         FT_TRACE5(( "  overshoot %d: %ld scaled to %.2f%s\n",
                     nn,
                     blue->shoot.org,
-                    blue->shoot.fit / 64.0,
+                    (double)blue->shoot.fit / 64,
                     ( blue->flags & AF_LATIN_BLUE_ACTIVE ) ? ""
                                                            : " (inactive)" ));
       }
@@ -2203,7 +2203,7 @@
     for ( seg = segments; seg < segment_limit; seg++ )
     {
       AF_Edge  found = NULL;
-      FT_Int   ee;
+      FT_UInt  ee;
 
 
       /* ignore too short segments, too wide ones, and, in this loop, */
@@ -2277,7 +2277,7 @@
     for ( seg = segments; seg < segment_limit; seg++ )
     {
       AF_Edge  found = NULL;
-      FT_Int   ee;
+      FT_UInt  ee;
 
 
       if ( seg->dir != AF_DIR_NONE )
@@ -2955,8 +2955,9 @@
 
     FT_TRACE5(( "  LINK: edge %ld (opos=%.2f) linked to %.2f,"
                 " dist was %.2f, now %.2f\n",
-                stem_edge - hints->axis[dim].edges, stem_edge->opos / 64.0,
-                stem_edge->pos / 64.0, dist / 64.0, fitted_width / 64.0 ));
+                stem_edge - hints->axis[dim].edges,
+                (double)stem_edge->opos / 64, (double)stem_edge->pos / 64,
+                (double)dist / 64, (double)fitted_width / 64 ));
   }
 
 
@@ -3079,13 +3080,15 @@
         if ( !anchor )
           FT_TRACE5(( "  BLUE_ANCHOR: edge %ld (opos=%.2f) snapped to %.2f,"
                       " was %.2f (anchor=edge %ld)\n",
-                      edge1 - edges, edge1->opos / 64.0, blue->fit / 64.0,
-                      edge1->pos / 64.0, edge - edges ));
+                      edge1 - edges,
+                      (double)edge1->opos / 64, (double)blue->fit / 64,
+                      (double)edge1->pos / 64, edge - edges ));
         else
           FT_TRACE5(( "  BLUE: edge %ld (opos=%.2f) snapped to %.2f,"
                       " was %.2f\n",
-                      edge1 - edges, edge1->opos / 64.0, blue->fit / 64.0,
-                      edge1->pos / 64.0 ));
+                      edge1 - edges,
+                      (double)edge1->opos / 64, (double)blue->fit / 64,
+                      (double)edge1->pos / 64 ));
 
         num_actions++;
 #endif
@@ -3201,9 +3204,9 @@
 
         FT_TRACE5(( "  ANCHOR: edge %ld (opos=%.2f) and %ld (opos=%.2f)"
                     " snapped to %.2f and %.2f\n",
-                    edge - edges, edge->opos / 64.0,
-                    edge2 - edges, edge2->opos / 64.0,
-                    edge->pos / 64.0, edge2->pos / 64.0 ));
+                    edge - edges, (double)edge->opos / 64,
+                    edge2 - edges, (double)edge2->opos / 64,
+                    (double)edge->pos / 64, (double)edge2->pos / 64 ));
 
         af_latin_align_linked_edge( hints, dim, edge, edge2 );
 
@@ -3229,8 +3232,8 @@
         if ( edge2->flags & AF_EDGE_DONE )
         {
           FT_TRACE5(( "  ADJUST: edge %ld (pos=%.2f) moved to %.2f\n",
-                      edge - edges, edge->pos / 64.0,
-                      ( edge2->pos - cur_len ) / 64.0 ));
+                      edge - edges, (double)edge->pos / 64,
+                      (double)( edge2->pos - cur_len ) / 64 ));
 
           edge->pos = edge2->pos - cur_len;
         }
@@ -3271,9 +3274,9 @@
 
           FT_TRACE5(( "  STEM: edge %ld (opos=%.2f) linked to %ld (opos=%.2f)"
                       " snapped to %.2f and %.2f\n",
-                      edge - edges, edge->opos / 64.0,
-                      edge2 - edges, edge2->opos / 64.0,
-                      edge->pos / 64.0, edge2->pos / 64.0 ));
+                      edge - edges, (double)edge->opos / 64,
+                      edge2 - edges, (double)edge2->opos / 64,
+                      (double)edge->pos / 64, (double)edge2->pos / 64 ));
         }
 
         else
@@ -3302,9 +3305,9 @@
 
           FT_TRACE5(( "  STEM: edge %ld (opos=%.2f) linked to %ld (opos=%.2f)"
                       " snapped to %.2f and %.2f\n",
-                      edge - edges, edge->opos / 64.0,
-                      edge2 - edges, edge2->opos / 64.0,
-                      edge->pos / 64.0, edge2->pos / 64.0 ));
+                      edge - edges, (double)edge->opos / 64,
+                      edge2 - edges, (double)edge2->opos / 64,
+                      (double)edge->pos / 64, (double)edge2->pos / 64 ));
         }
 
 #ifdef FT_DEBUG_LEVEL_TRACE
@@ -3325,8 +3328,8 @@
 #ifdef FT_DEBUG_LEVEL_TRACE
             FT_TRACE5(( "  BOUND: edge %ld (pos=%.2f) moved to %.2f\n",
                         edge - edges,
-                        edge->pos / 64.0,
-                        edge[-1].pos / 64.0 ));
+                        (double)edge->pos / 64,
+                        (double)edge[-1].pos / 64 ));
 
             num_actions++;
 #endif
@@ -3427,9 +3430,9 @@
           af_latin_align_serif_edge( hints, edge->serif, edge );
           FT_TRACE5(( "  SERIF: edge %ld (opos=%.2f) serif to %ld (opos=%.2f)"
                       " aligned to %.2f\n",
-                      edge - edges, edge->opos / 64.0,
-                      edge->serif - edges, edge->serif->opos / 64.0,
-                      edge->pos / 64.0 ));
+                      edge - edges, (double)edge->opos / 64,
+                      edge->serif - edges, (double)edge->serif->opos / 64,
+                      (double)edge->pos / 64 ));
         }
         else if ( !anchor )
         {
@@ -3437,7 +3440,8 @@
           anchor    = edge;
           FT_TRACE5(( "  SERIF_ANCHOR: edge %ld (opos=%.2f)"
                       " snapped to %.2f\n",
-                      edge-edges, edge->opos / 64.0, edge->pos / 64.0 ));
+                      edge-edges,
+                      (double)edge->opos / 64, (double)edge->pos / 64 ));
         }
         else
         {
@@ -3465,9 +3469,9 @@
 
             FT_TRACE5(( "  SERIF_LINK1: edge %ld (opos=%.2f) snapped to %.2f"
                         " from %ld (opos=%.2f)\n",
-                        edge - edges, edge->opos / 64.0,
-                        edge->pos / 64.0,
-                        before - edges, before->opos / 64.0 ));
+                        edge - edges, (double)edge->opos / 64,
+                        (double)edge->pos / 64,
+                        before - edges, (double)before->opos / 64 ));
           }
           else
           {
@@ -3475,7 +3479,8 @@
                         ( ( edge->opos - anchor->opos + 16 ) & ~31 );
             FT_TRACE5(( "  SERIF_LINK2: edge %ld (opos=%.2f)"
                         " snapped to %.2f\n",
-                        edge - edges, edge->opos / 64.0, edge->pos / 64.0 ));
+                        edge - edges,
+                        (double)edge->opos / 64, (double)edge->pos / 64 ));
           }
         }
 
@@ -3495,8 +3500,8 @@
 #ifdef FT_DEBUG_LEVEL_TRACE
             FT_TRACE5(( "  BOUND: edge %ld (pos=%.2f) moved to %.2f\n",
                         edge - edges,
-                        edge->pos / 64.0,
-                        edge[-1].pos / 64.0 ));
+                        (double)edge->pos / 64,
+                        (double)edge[-1].pos / 64 ));
 
             num_actions++;
 #endif
@@ -3516,8 +3521,8 @@
 #ifdef FT_DEBUG_LEVEL_TRACE
             FT_TRACE5(( "  BOUND: edge %ld (pos=%.2f) moved to %.2f\n",
                         edge - edges,
-                        edge->pos / 64.0,
-                        edge[1].pos / 64.0 ));
+                        (double)edge->pos / 64,
+                        (double)edge[1].pos / 64 ));
 
             num_actions++;
 #endif

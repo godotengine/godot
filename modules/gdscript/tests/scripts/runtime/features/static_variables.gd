@@ -33,24 +33,24 @@ func test():
 	prints("perm:", perm)
 	prints("prop:", prop)
 
-	print("other.perm:", StaticVariablesOther.perm)
-	print("other.prop:", StaticVariablesOther.prop)
+	prints("other.perm:", StaticVariablesOther.perm)
+	prints("other.prop:", StaticVariablesOther.prop)
 
 	StaticVariablesOther.perm = 2
 	StaticVariablesOther.prop = "foo"
 
-	print("other.perm:", StaticVariablesOther.perm)
-	print("other.prop:", StaticVariablesOther.prop)
+	prints("other.perm:", StaticVariablesOther.perm)
+	prints("other.prop:", StaticVariablesOther.prop)
 
 	@warning_ignore("unsafe_method_access")
 	var path = get_script().get_path().get_base_dir()
-	var other = load(path  + "/static_variables_load.gd")
+	var other = load(path + "/static_variables_load.gd")
 
-	print("load.perm:", other.perm)
-	print("load.prop:", other.prop)
+	prints("load.perm:", other.perm)
+	prints("load.prop:", other.prop)
 
 	other.perm = 3
 	other.prop = "bar"
 
-	print("load.perm:", other.perm)
-	print("load.prop:", other.prop)
+	prints("load.perm:", other.perm)
+	prints("load.prop:", other.prop)

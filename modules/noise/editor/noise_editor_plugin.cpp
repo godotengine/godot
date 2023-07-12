@@ -32,13 +32,13 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "../noise.h"
+#include "../noise_texture_2d.h"
+
 #include "editor/editor_inspector.h"
 #include "editor/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/texture_rect.h"
-
-#include "modules/noise/noise.h"
-#include "modules/noise/noise_texture_2d.h"
 
 class NoisePreview : public Control {
 	GDCLASS(NoisePreview, Control)

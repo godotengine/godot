@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RDPipelineColorBlendStateAttachment" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RDPipelineColorBlendStateAttachment" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Pipeline color blend state attachment (used by [RenderingDevice]).
 	</brief_description>
@@ -32,8 +32,8 @@
 		[codeblock]
 		var attachment = RDPipelineColorBlendStateAttachment.new()
 		attachment.enable_blend = true
-		attachment.alpha_blend_op = RenderingDevice.BLEND_OP_SUBTRACT
-		attachment.color_blend_op = RenderingDevice.BLEND_OP_SUBTRACT
+		attachment.alpha_blend_op = RenderingDevice.BLEND_OP_REVERSE_SUBTRACT
+		attachment.color_blend_op = RenderingDevice.BLEND_OP_REVERSE_SUBTRACT
 		attachment.src_color_blend_factor = RenderingDevice.BLEND_FACTOR_SRC_ALPHA
 		attachment.dst_color_blend_factor = RenderingDevice.BLEND_FACTOR_ONE
 		attachment.src_alpha_blend_factor = RenderingDevice.BLEND_FACTOR_SRC_ALPHA

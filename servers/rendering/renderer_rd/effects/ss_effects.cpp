@@ -77,10 +77,9 @@ SSEffects::SSEffects() {
 		for (int pass = 0; pass < 4; pass++) {
 			for (int subPass = 0; subPass < sub_pass_count; subPass++) {
 				int a = pass;
-				int b = subPass;
 
 				int spmap[5]{ 0, 1, 4, 3, 2 };
-				b = spmap[subPass];
+				int b = spmap[subPass];
 
 				float ca, sa;
 				float angle0 = (float(a) + float(b) / float(sub_pass_count)) * Math_PI * 0.5f;

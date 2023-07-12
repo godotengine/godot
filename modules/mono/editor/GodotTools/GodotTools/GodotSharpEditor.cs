@@ -140,15 +140,15 @@ namespace GodotTools
             }
         }
 
-        private void BuildSolutionPressed()
+        private void BuildProjectPressed()
         {
-            if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
+            if (!File.Exists(GodotSharpDirs.ProjectCsProjPath))
             {
                 if (!CreateProjectSolution())
-                    return; // Failed to create solution
+                    return; // Failed to create project.
             }
 
-            Instance.MSBuildPanel.BuildSolution();
+            Instance.MSBuildPanel.BuildProject();
         }
 
         private enum MenuOptions
@@ -507,10 +507,10 @@ namespace GodotTools
                 Shortcut = buildSolutionShortcut,
                 ShortcutInTooltip = true
             };
-            _toolBarBuildButton.Pressed += BuildSolutionPressed;
+            _toolBarBuildButton.Pressed += BuildProjectPressed;
             AddControlToContainer(CustomControlContainer.Toolbar, _toolBarBuildButton);
 
-            if (File.Exists(GodotSharpDirs.ProjectSlnPath) && File.Exists(GodotSharpDirs.ProjectCsProjPath))
+            if (File.Exists(GodotSharpDirs.ProjectCsProjPath))
             {
                 ApplyNecessaryChangesToSolution();
             }

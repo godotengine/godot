@@ -31,11 +31,11 @@
 #ifndef MANAGED_CALLABLE_H
 #define MANAGED_CALLABLE_H
 
+#include "mono_gc_handle.h"
+
 #include "core/os/mutex.h"
 #include "core/templates/self_list.h"
 #include "core/variant/callable.h"
-
-#include "mono_gc_handle.h"
 
 class ManagedCallable : public CallableCustom {
 	friend class CSharpLanguage;

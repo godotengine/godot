@@ -190,6 +190,9 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 
 	// A is moving fast enough that tunneling might occur. See if it's really about to collide.
 
+	// Roughly predict body B's position in the next frame (ignoring collisions).
+	Transform3D predicted_xform_B = p_xform_B.translated(p_B->get_linear_velocity() * p_step);
+
 	// Support points are the farthest forward points on A in the direction of the motion vector.
 	// i.e. the candidate points of which one should hit B first if any collision does occur.
 	static const int max_supports = 16;
@@ -209,7 +212,7 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 		Vector3 from = supports_A[i];
 		Vector3 to = from + motion;
 
-		Transform3D from_inv = p_xform_B.affine_inverse();
+		Transform3D from_inv = predicted_xform_B.affine_inverse();
 
 		// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
 		// At high speeds, this may mean we're actually casting from well behind the body instead of inside it, which is odd.
@@ -234,7 +237,7 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 		return false;
 	}
 
-	Vector3 hitpos = p_xform_B.xform(segment_hit_local);
+	Vector3 hitpos = predicted_xform_B.xform(segment_hit_local);
 
 	real_t newlen = hitpos.distance_to(supports_A[segment_support_idx]);
 	// Adding 1% of body length to the distance between collision and support point

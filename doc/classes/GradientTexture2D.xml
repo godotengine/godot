@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GradientTexture2D" inherits="Texture2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GradientTexture2D" inherits="Texture2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Gradient-filled 2D texture.
 	</brief_description>
@@ -41,6 +41,9 @@
 		</constant>
 		<constant name="FILL_RADIAL" value="1" enum="Fill">
 			The colors are linearly interpolated in a circular pattern.
+		</constant>
+		<constant name="FILL_SQUARE" value="2" enum="Fill">
+			The colors are linearly interpolated in a square pattern.
 		</constant>
 		<constant name="REPEAT_NONE" value="0" enum="Repeat">
 			The gradient fill is restricted to the range defined by [member fill_from] to [member fill_to] offsets.

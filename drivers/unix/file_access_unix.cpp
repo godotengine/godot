@@ -108,6 +108,10 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 			last_error = ERR_FILE_CANT_OPEN;
 			return last_error;
 		}
+		// Fix temporary file permissions (defaults to 0600 instead of 0666 & ~umask).
+		mode_t mask = umask(022);
+		umask(mask);
+		fchmod(fd, 0666 & ~mask);
 		path = String::utf8(cs.ptr());
 
 		f = fdopen(fd, mode_string);
@@ -301,11 +305,11 @@ bool FileAccessUnix::file_exists(const String &p_path) {
 
 uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	String file = fix_path(p_file);
-	struct stat flags = {};
-	int err = stat(file.utf8().get_data(), &flags);
+	struct stat status = {};
+	int err = stat(file.utf8().get_data(), &status);
 
 	if (!err) {
-		return flags.st_mtime;
+		return status.st_mtime;
 	} else {
 		print_verbose("Failed to get modified time for: " + p_file + "");
 		return 0;
@@ -314,11 +318,11 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 
 uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
 	String file = fix_path(p_file);
-	struct stat flags = {};
-	int err = stat(file.utf8().get_data(), &flags);
+	struct stat status = {};
+	int err = stat(file.utf8().get_data(), &status);
 
 	if (!err) {
-		return flags.st_mode & 0x7FF; //only permissions
+		return status.st_mode & 0x7FF; //only permissions
 	} else {
 		ERR_FAIL_V_MSG(0, "Failed to get unix permissions for: " + p_file + ".");
 	}

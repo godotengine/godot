@@ -35,12 +35,12 @@
 
 #include "thirdparty/misc/fastlz.h"
 
-#ifdef BROTLI_ENABLED
-#include "thirdparty/brotli/include/brotli/decode.h"
-#endif
-
 #include <zlib.h>
 #include <zstd.h>
+
+#ifdef BROTLI_ENABLED
+#include <brotli/decode.h>
+#endif
 
 int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, Mode p_mode) {
 	switch (p_mode) {

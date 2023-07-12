@@ -32,6 +32,7 @@
 #define IOS_H
 
 #include "core/object/class_db.h"
+
 #import <CoreHaptics/CoreHaptics.h>
 
 class iOS : public Object {

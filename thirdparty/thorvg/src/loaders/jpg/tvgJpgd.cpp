@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -80,7 +80,7 @@ enum jpgd_status
 enum
 {
     JPGD_IN_BUF_SIZE = 8192, JPGD_MAX_BLOCKS_PER_MCU = 10, JPGD_MAX_HUFF_TABLES = 8, JPGD_MAX_QUANT_TABLES = 4,
-    JPGD_MAX_COMPONENTS = 4, JPGD_MAX_COMPS_IN_SCAN = 4, JPGD_MAX_BLOCKS_PER_ROW = 8192, JPGD_MAX_HEIGHT = 16384, JPGD_MAX_WIDTH = 16384 
+    JPGD_MAX_COMPONENTS = 4, JPGD_MAX_COMPS_IN_SCAN = 4, JPGD_MAX_BLOCKS_PER_ROW = 8192, JPGD_MAX_HEIGHT = 16384, JPGD_MAX_WIDTH = 16384
 };
 
 // Input stream interface.
@@ -151,7 +151,7 @@ public:
     // If JPGD_SUCCESS is returned you may then call decode() on each scanline.
     int begin_decoding();
     // Returns the next scan line.
-    // For grayscale images, pScan_line will point to a buffer containing 8-bit pixels (get_bytes_per_pixel() will return 1). 
+    // For grayscale images, pScan_line will point to a buffer containing 8-bit pixels (get_bytes_per_pixel() will return 1).
     // Otherwise, it will always point to a buffer containing 32-bit RGBA pixels (A will always be 255, and get_bytes_per_pixel() will return 4).
     // Returns JPGD_SUCCESS if a scan line has been returned.
     // Returns JPGD_DONE if all scan lines have been returned.
@@ -1246,7 +1246,7 @@ void jpeg_decoder::read_sof_marker()
     uint32_t num_left = get_bits(16);
 
     if (get_bits(8) != 8) stop_decoding(JPGD_BAD_PRECISION);   /* precision: sorry, only 8-bit precision is supported right now */
-       
+
     m_image_y_size = get_bits(16);
     if ((m_image_y_size < 1) || (m_image_y_size > JPGD_MAX_HEIGHT)) stop_decoding(JPGD_BAD_HEIGHT);
 
@@ -1326,7 +1326,7 @@ void jpeg_decoder::read_sos_marker()
     }
     num_left -= 3;
 
-    while (num_left) {    /* read past whatever is num_left */    
+    while (num_left) {    /* read past whatever is num_left */
         get_bits(8);
         num_left--;
     }
@@ -1411,7 +1411,7 @@ int jpeg_decoder::process_markers()
                 stop_decoding(JPGD_UNEXPECTED_MARKER);
                 break;
             }
-            default: {   /* must be DNL, DHP, EXP, APPn, JPGn, COM, or RESn or APP0 */            
+            default: {   /* must be DNL, DHP, EXP, APPn, JPGn, COM, or RESn or APP0 */
                 skip_variable_marker();
                 break;
             }
@@ -1441,7 +1441,7 @@ void jpeg_decoder::locate_soi_marker()
 
         if (lastchar == 0xFF) {
           if (thischar == M_SOI) break;
-          else if (thischar == M_EOI) stop_decoding(JPGD_NOT_JPEG); // get_bits will keep returning M_EOI if we read past the end    
+          else if (thischar == M_EOI) stop_decoding(JPGD_NOT_JPEG); // get_bits will keep returning M_EOI if we read past the end
         }
     }
 
@@ -1460,7 +1460,7 @@ void jpeg_decoder::locate_sof_marker()
     switch (c) {
         case M_SOF2: m_progressive_flag = true;
         case M_SOF0:  /* baseline DCT */
-        case M_SOF1: { /* extended sequential DCT */        
+        case M_SOF1: { /* extended sequential DCT */
           read_sof_marker();
           break;
         }
@@ -1671,7 +1671,7 @@ void jpeg_decoder::transform_mcu_expand(int mcu_row)
         JPGD_ASSERT(m_mcu_block_max_zag[mcu_block] >= 1);
         JPGD_ASSERT(m_mcu_block_max_zag[mcu_block] <= 64);
 
-        int max_zag = m_mcu_block_max_zag[mcu_block++] - 1; 
+        int max_zag = m_mcu_block_max_zag[mcu_block++] - 1;
         if (max_zag <= 0) max_zag = 0; // should never happen, only here to shut up static analysis
 
         switch (s_max_rc[max_zag]) {
@@ -1789,7 +1789,7 @@ void jpeg_decoder::load_next_row()
             p[0] = pDC[0];
             memcpy(&p[1], &pAC[1], 63 * sizeof(jpgd_block_t));
 
-            for (i = 63; i > 0; i--) { 
+            for (i = 63; i > 0; i--) {
                 if (p[g_ZAG[i]]) break;
             }
 
@@ -1809,7 +1809,7 @@ void jpeg_decoder::load_next_row()
                 if (++block_y_mcu_ofs == m_comp_v_samp[component_id]) {
                     block_y_mcu_ofs = 0;
                     block_x_mcu[component_id] += m_comp_h_samp[component_id];
-                }            
+                }
             }
         }
         if (m_freq_domain_chroma_upsample) transform_mcu_expand(mcu_row);
@@ -1865,7 +1865,7 @@ void jpeg_decoder::process_restart()
 
 
 static inline int dequantize_ac(int c, int q)
-{ 
+{
     c *= q;
     return c;
 }
@@ -1910,7 +1910,7 @@ void jpeg_decoder::decode_next_row()
                             while (n--) p[g_ZAG[kt++]] = 0;
                         }
                         k += r;
-                    }                
+                    }
                     s = JPGD_HUFF_EXTEND(extra_bits, s);
                     JPGD_ASSERT(k < 64);
                     p[g_ZAG[k]] = static_cast<jpgd_block_t>(dequantize_ac(s, q[k])); //s * q[k];
@@ -2204,7 +2204,7 @@ int jpeg_decoder::decode(const void** pScan_line, uint32_t* pScan_line_len)
                 }
               else *pScan_line = m_pScan_line_1;
               break;
-            } 
+            }
             case JPGD_YH2V1: {
                 H2V1Convert();
                 *pScan_line = m_pScan_line_0;
@@ -2609,11 +2609,11 @@ void jpeg_decoder::decode_block_ac_refine(jpeg_decoder *pD, int component_id, in
     int p1 = 1 << pD->m_successive_low;
     int m1 = static_cast<unsigned int>(-1) << pD->m_successive_low;
     jpgd_block_t *p = pD->coeff_buf_getp(pD->m_ac_coeffs[component_id], block_x, block_y);
-    
+
     JPGD_ASSERT(pD->m_spectral_end <= 63);
-    
+
     k = pD->m_spectral_start;
-    
+
     if (pD->m_eob_run == 0) {
         for ( ; k <= pD->m_spectral_end; k++) {
             s = pD->huff_decode(pD->m_pHuff_tabs[pD->m_comp_ac_tab[component_id]]);

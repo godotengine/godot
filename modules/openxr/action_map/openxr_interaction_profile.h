@@ -31,10 +31,10 @@
 #ifndef OPENXR_INTERACTION_PROFILE_H
 #define OPENXR_INTERACTION_PROFILE_H
 
-#include "core/io/resource.h"
-
 #include "openxr_action.h"
 #include "openxr_interaction_profile_meta_data.h"
+
+#include "core/io/resource.h"
 
 class OpenXRIPBinding : public Resource {
 	GDCLASS(OpenXRIPBinding, Resource);

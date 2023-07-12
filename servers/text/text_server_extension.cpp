@@ -65,6 +65,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_font_set_name, "font_rid", "name");
 	GDVIRTUAL_BIND(_font_get_name, "font_rid");
+	GDVIRTUAL_BIND(_font_get_ot_name_strings, "font_rid");
 
 	GDVIRTUAL_BIND(_font_set_style_name, "font_rid", "name_style");
 	GDVIRTUAL_BIND(_font_get_style_name, "font_rid");
@@ -251,7 +252,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_substr, "shaped", "start", "length");
 	GDVIRTUAL_BIND(_shaped_text_get_parent, "shaped");
 
-	GDVIRTUAL_BIND(_shaped_text_fit_to_width, "shaped", "width", "jst_flags");
+	GDVIRTUAL_BIND(_shaped_text_fit_to_width, "shaped", "width", "justification_flags");
 	GDVIRTUAL_BIND(_shaped_text_tab_align, "shaped", "tab_stops");
 
 	GDVIRTUAL_BIND(_shaped_text_shape, "shaped");
@@ -473,6 +474,12 @@ void TextServerExtension::font_set_name(const RID &p_font_rid, const String &p_n
 String TextServerExtension::font_get_name(const RID &p_font_rid) const {
 	String ret;
 	GDVIRTUAL_CALL(_font_get_name, p_font_rid, ret);
+	return ret;
+}
+
+Dictionary TextServerExtension::font_get_ot_name_strings(const RID &p_font_rid) const {
+	Dictionary ret;
+	GDVIRTUAL_CALL(_font_get_ot_name_strings, p_font_rid, ret);
 	return ret;
 }
 

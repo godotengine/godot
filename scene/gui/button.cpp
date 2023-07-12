@@ -30,6 +30,7 @@
 
 #include "button.h"
 
+#include "core/core_string_names.h"
 #include "core/string/translation.h"
 #include "servers/rendering_server.h"
 
@@ -44,6 +45,9 @@ Size2 Button::get_minimum_size() const {
 
 void Button::_set_internal_margin(Side p_side, float p_value) {
 	_internal_margin[p_side] = p_value;
+}
+
+void Button::_queue_update_size_cache() {
 }
 
 void Button::_update_theme_item_cache() {
@@ -530,8 +534,26 @@ String Button::get_language() const {
 }
 
 void Button::set_icon(const Ref<Texture2D> &p_icon) {
-	if (icon != p_icon) {
-		icon = p_icon;
+	if (icon == p_icon) {
+		return;
+	}
+
+	if (icon.is_valid()) {
+		icon->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Button::_texture_changed));
+	}
+
+	icon = p_icon;
+
+	if (icon.is_valid()) {
+		icon->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Button::_texture_changed));
+	}
+
+	queue_redraw();
+	update_minimum_size();
+}
+
+void Button::_texture_changed() {
+	if (icon.is_valid()) {
 		queue_redraw();
 		update_minimum_size();
 	}
@@ -544,6 +566,7 @@ Ref<Texture2D> Button::get_icon() const {
 void Button::set_expand_icon(bool p_enabled) {
 	if (expand_icon != p_enabled) {
 		expand_icon = p_enabled;
+		_queue_update_size_cache();
 		queue_redraw();
 		update_minimum_size();
 	}

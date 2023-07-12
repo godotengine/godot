@@ -1153,8 +1153,8 @@ void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &
 				image = image->duplicate();
 				image->convert(tex->validated_format);
 			}
-			all_data_size += images[i]->get_data().size();
-			images.push_back(image);
+			all_data_size += image->get_data().size();
+			images.write[i] = image;
 		}
 
 		all_data.resize(all_data_size); //consolidate all data here
@@ -1447,9 +1447,9 @@ uint64_t TextureStorage::texture_get_native_handle(RID p_texture, bool p_srgb) c
 	ERR_FAIL_COND_V(!tex, 0);
 
 	if (p_srgb && tex->rd_texture_srgb.is_valid()) {
-		return RD::get_singleton()->texture_native_handle(tex->rd_texture_srgb);
+		return RD::get_singleton()->texture_get_native_handle(tex->rd_texture_srgb);
 	} else {
-		return RD::get_singleton()->texture_native_handle(tex->rd_texture);
+		return RD::get_singleton()->texture_get_native_handle(tex->rd_texture);
 	}
 }
 

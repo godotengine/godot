@@ -43,6 +43,7 @@
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/cylinder_shape_3d.h"
 #include "scene/resources/height_map_shape_3d.h"
+#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/primitive_meshes.h"
 #include "scene/resources/shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
@@ -91,12 +92,15 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 		int face_count = index_count / 3;
 
 		Array a = p_mesh->surface_get_arrays(i);
+		ERR_CONTINUE(a.is_empty() || (a.size() != Mesh::ARRAY_MAX));
 
 		Vector<Vector3> mesh_vertices = a[Mesh::ARRAY_VERTEX];
+		ERR_CONTINUE(mesh_vertices.is_empty());
 		const Vector3 *vr = mesh_vertices.ptr();
 
 		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
 			Vector<int> mesh_indices = a[Mesh::ARRAY_INDEX];
+			ERR_CONTINUE(mesh_indices.is_empty() || (mesh_indices.size() != index_count));
 			const int *ir = mesh_indices.ptr();
 
 			for (int j = 0; j < mesh_vertices.size(); j++) {
@@ -110,6 +114,7 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 				p_indices.push_back(current_vertex_count + (ir[j * 3 + 1]));
 			}
 		} else {
+			ERR_CONTINUE(mesh_vertices.size() != index_count);
 			face_count = mesh_vertices.size() / 3;
 			for (int j = 0; j < face_count; j++) {
 				_add_vertex(p_xform.xform(vr[j * 3 + 0]), p_vertices);
@@ -125,10 +130,14 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 }
 
 void NavigationMeshGenerator::_add_mesh_array(const Array &p_array, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices) {
+	ERR_FAIL_COND(p_array.size() != Mesh::ARRAY_MAX);
+
 	Vector<Vector3> mesh_vertices = p_array[Mesh::ARRAY_VERTEX];
+	ERR_FAIL_COND(mesh_vertices.is_empty());
 	const Vector3 *vr = mesh_vertices.ptr();
 
 	Vector<int> mesh_indices = p_array[Mesh::ARRAY_INDEX];
+	ERR_FAIL_COND(mesh_indices.is_empty());
 	const int *ir = mesh_indices.ptr();
 
 	const int face_count = mesh_indices.size() / 3;
@@ -147,6 +156,8 @@ void NavigationMeshGenerator::_add_mesh_array(const Array &p_array, const Transf
 }
 
 void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, const Transform3D &p_xform, Vector<float> &p_vertices, Vector<int> &p_indices) {
+	ERR_FAIL_COND(p_faces.is_empty());
+	ERR_FAIL_COND(p_faces.size() % 3 != 0);
 	int face_count = p_faces.size() / 3;
 	int current_vertex_count = p_vertices.size() / 3;
 
@@ -466,52 +477,102 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 	}
 }
 
-void NavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_mesh(const rcPolyMeshDetail *p_detail_mesh, Ref<NavigationMesh> p_navigation_mesh) {
-	Vector<Vector3> nav_vertices;
+NavigationMeshGenerator *NavigationMeshGenerator::get_singleton() {
+	return singleton;
+}
 
-	for (int i = 0; i < p_detail_mesh->nverts; i++) {
-		const float *v = &p_detail_mesh->verts[i * 3];
-		nav_vertices.push_back(Vector3(v[0], v[1], v[2]));
+NavigationMeshGenerator::NavigationMeshGenerator() {
+	singleton = this;
+}
+
+NavigationMeshGenerator::~NavigationMeshGenerator() {
+}
+
+void NavigationMeshGenerator::bake(const Ref<NavigationMesh> &p_navigation_mesh, Node *p_root_node) {
+	WARN_PRINT_ONCE("NavigationMeshGenerator::bake() is deprecated due to core threading changes. To upgrade existing code, first create a NavigationMeshSourceGeometryData3D resource. Use this resource with method parse_source_geometry_data() to parse the SceneTree for nodes that should contribute to the navigation mesh baking. The SceneTree parsing needs to happen on the main thread. After the parsing is finished use the resource with method bake_from_source_geometry_data() to bake a navigation mesh..");
+}
+
+void NavigationMeshGenerator::clear(Ref<NavigationMesh> p_navigation_mesh) {
+	if (p_navigation_mesh.is_valid()) {
+		p_navigation_mesh->clear_polygons();
+		p_navigation_mesh->set_vertices(Vector<Vector3>());
 	}
-	p_navigation_mesh->set_vertices(nav_vertices);
+}
 
-	for (int i = 0; i < p_detail_mesh->nmeshes; i++) {
-		const unsigned int *m = &p_detail_mesh->meshes[i * 4];
-		const unsigned int bverts = m[0];
-		const unsigned int btris = m[2];
-		const unsigned int ntris = m[3];
-		const unsigned char *tris = &p_detail_mesh->tris[btris * 4];
-		for (unsigned int j = 0; j < ntris; j++) {
-			Vector<int> nav_indices;
-			nav_indices.resize(3);
-			// Polygon order in recast is opposite than godot's
-			nav_indices.write[0] = ((int)(bverts + tris[j * 4 + 0]));
-			nav_indices.write[1] = ((int)(bverts + tris[j * 4 + 2]));
-			nav_indices.write[2] = ((int)(bverts + tris[j * 4 + 1]));
-			p_navigation_mesh->add_polygon(nav_indices);
+void NavigationMeshGenerator::parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback) {
+	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "The SceneTree can only be parsed on the main thread. Call this function from the main thread or use call_deferred().");
+	ERR_FAIL_COND_MSG(!p_navigation_mesh.is_valid(), "Invalid navigation mesh.");
+	ERR_FAIL_COND_MSG(p_root_node == nullptr, "No parsing root node specified.");
+	ERR_FAIL_COND_MSG(!p_root_node->is_inside_tree(), "The root node needs to be inside the SceneTree.");
+
+	Vector<float> vertices;
+	Vector<int> indices;
+
+	List<Node *> parse_nodes;
+
+	if (p_navigation_mesh->get_source_geometry_mode() == NavigationMesh::SOURCE_GEOMETRY_ROOT_NODE_CHILDREN) {
+		parse_nodes.push_back(p_root_node);
+	} else {
+		p_root_node->get_tree()->get_nodes_in_group(p_navigation_mesh->get_source_group_name(), &parse_nodes);
+	}
+
+	Transform3D navmesh_xform = Transform3D();
+	if (Object::cast_to<Node3D>(p_root_node)) {
+		navmesh_xform = Object::cast_to<Node3D>(p_root_node)->get_global_transform().affine_inverse();
+	}
+	for (Node *E : parse_nodes) {
+		NavigationMesh::ParsedGeometryType geometry_type = p_navigation_mesh->get_parsed_geometry_type();
+		uint32_t collision_mask = p_navigation_mesh->get_collision_mask();
+		bool recurse_children = p_navigation_mesh->get_source_geometry_mode() != NavigationMesh::SOURCE_GEOMETRY_GROUPS_EXPLICIT;
+		_parse_geometry(navmesh_xform, E, vertices, indices, geometry_type, collision_mask, recurse_children);
+	}
+
+	p_source_geometry_data->set_vertices(vertices);
+	p_source_geometry_data->set_indices(indices);
+
+	if (p_callback.is_valid()) {
+		Callable::CallError ce;
+		Variant result;
+		p_callback.callp(nullptr, 0, result, ce);
+		if (ce.error == Callable::CallError::CALL_OK) {
+			//
 		}
 	}
 }
 
-void NavigationMeshGenerator::_build_recast_navigation_mesh(
-		Ref<NavigationMesh> p_navigation_mesh,
-#ifdef TOOLS_ENABLED
-		EditorProgress *ep,
-#endif
-		rcHeightfield *hf,
-		rcCompactHeightfield *chf,
-		rcContourSet *cset,
-		rcPolyMesh *poly_mesh,
-		rcPolyMeshDetail *detail_mesh,
-		Vector<float> &vertices,
-		Vector<int> &indices) {
+void NavigationMeshGenerator::bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) {
+	ERR_FAIL_COND_MSG(!p_navigation_mesh.is_valid(), "Invalid navigation mesh.");
+	ERR_FAIL_COND_MSG(!p_source_geometry_data.is_valid(), "Invalid NavigationMeshSourceGeometryData3D.");
+	ERR_FAIL_COND_MSG(!p_source_geometry_data->has_data(), "NavigationMeshSourceGeometryData3D is empty. Parse source geometry first.");
+
+	generator_mutex.lock();
+	if (baking_navmeshes.has(p_navigation_mesh)) {
+		generator_mutex.unlock();
+		ERR_FAIL_MSG("NavigationMesh is already baking. Wait for current bake to finish.");
+	} else {
+		baking_navmeshes.insert(p_navigation_mesh);
+		generator_mutex.unlock();
+	}
+
+#ifndef _3D_DISABLED
+	const Vector<float> vertices = p_source_geometry_data->get_vertices();
+	const Vector<int> indices = p_source_geometry_data->get_indices();
+
+	if (vertices.size() < 3 || indices.size() < 3) {
+		return;
+	}
+
+	rcHeightfield *hf = nullptr;
+	rcCompactHeightfield *chf = nullptr;
+	rcContourSet *cset = nullptr;
+	rcPolyMesh *poly_mesh = nullptr;
+	rcPolyMeshDetail *detail_mesh = nullptr;
 	rcContext ctx;
 
-#ifdef TOOLS_ENABLED
-	if (ep) {
-		ep->step(TTR("Setting up Configuration..."), 1);
-	}
-#endif
+	// added to keep track of steps, no functionality right now
+	String bake_state = "";
+
+	bake_state = "Setting up Configuration..."; // step #1
 
 	const float *verts = vertices.ptr();
 	const int nverts = vertices.size() / 3;
@@ -581,11 +642,7 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 		cfg.bmax[2] = cfg.bmin[2] + baking_aabb.size[2];
 	}
 
-#ifdef TOOLS_ENABLED
-	if (ep) {
-		ep->step(TTR("Calculating grid size..."), 2);
-	}
-#endif
+	bake_state = "Calculating grid size..."; // step #2
 	rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
 
 	// ~30000000 seems to be around sweetspot where Editor baking breaks
@@ -596,21 +653,13 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 				   "\nIt is advised to increase Cell Size and/or Cell Height in the NavMesh Resource bake settings or reduce the size / scale of the source geometry.");
 	}
 
-#ifdef TOOLS_ENABLED
-	if (ep) {
-		ep->step(TTR("Creating heightfield..."), 3);
-	}
-#endif
+	bake_state = "Creating heightfield..."; // step #3
 	hf = rcAllocHeightfield();
 
 	ERR_FAIL_COND(!hf);
 	ERR_FAIL_COND(!rcCreateHeightfield(&ctx, *hf, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch));
 
-#ifdef TOOLS_ENABLED
-	if (ep) {
-		ep->step(TTR("Marking walkable triangles..."), 4);
-	}
-#endif
+	bake_state = "Marking walkable triangles..."; // step #4
 	{
 		Vector<unsigned char> tri_areas;
 		tri_areas.resize(ntris);
@@ -633,11 +682,7 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 		rcFilterWalkableLowHeightSpans(&ctx, cfg.walkableHeight, *hf);
 	}
 
-#ifdef TOOLS_ENABLED
-	if (ep) {
-		ep->step(TTR("Constructing compact heightfield..."), 5);
-	}
-#endif
+	bake_state = "Constructing compact heightfield..."; // step #5
 
 	chf = rcAllocCompactHeightfield();
 
@@ -647,19 +692,11 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	rcFreeHeightField(hf);
 	hf = nullptr;
 
-#ifdef TOOLS_ENABLED
-	if (ep) {
-		ep->step(TTR("Eroding walkable area..."), 6);
-	}
-#endif
+	bake_state = "Eroding walkable area..."; // step #6
 
 	ERR_FAIL_COND(!rcErodeWalkableArea(&ctx, cfg.walkableRadius, *chf));
 
-#ifdef TOOLS_ENABLED
-	if (ep) {
-		ep->step(TTR("Partitioning..."), 7);
-	}
-#endif
+	bake_state = "Partitioning..."; // step #7
 
 	if (p_navigation_mesh->get_sample_partition_type() == NavigationMesh::SAMPLE_PARTITION_WATERSHED) {
 		ERR_FAIL_COND(!rcBuildDistanceField(&ctx, *chf));
@@ -670,22 +707,14 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 		ERR_FAIL_COND(!rcBuildLayerRegions(&ctx, *chf, 0, cfg.minRegionArea));
 	}
 
-#ifdef TOOLS_ENABLED
-	if (ep) {
-		ep->step(TTR("Creating contours..."), 8);
-	}
-#endif
+	bake_state = "Creating contours..."; // step #8
 
 	cset = rcAllocContourSet();
 
 	ERR_FAIL_COND(!cset);
 	ERR_FAIL_COND(!rcBuildContours(&ctx, *chf, cfg.maxSimplificationError, cfg.maxEdgeLen, *cset));
 
-#ifdef TOOLS_ENABLED
-	if (ep) {
-		ep->step(TTR("Creating polymesh..."), 9);
-	}
-#endif
+	bake_state = "Creating polymesh..."; // step #9
 
 	poly_mesh = rcAllocPolyMesh();
 	ERR_FAIL_COND(!poly_mesh);
@@ -700,128 +729,64 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	rcFreeContourSet(cset);
 	cset = nullptr;
 
-#ifdef TOOLS_ENABLED
-	if (ep) {
-		ep->step(TTR("Converting to native navigation mesh..."), 10);
-	}
-#endif
+	bake_state = "Converting to native navigation mesh..."; // step #10
 
-	_convert_detail_mesh_to_native_navigation_mesh(detail_mesh, p_navigation_mesh);
+	Vector<Vector3> nav_vertices;
+
+	for (int i = 0; i < detail_mesh->nverts; i++) {
+		const float *v = &detail_mesh->verts[i * 3];
+		nav_vertices.push_back(Vector3(v[0], v[1], v[2]));
+	}
+	p_navigation_mesh->set_vertices(nav_vertices);
+	p_navigation_mesh->clear_polygons();
+
+	for (int i = 0; i < detail_mesh->nmeshes; i++) {
+		const unsigned int *detail_mesh_m = &detail_mesh->meshes[i * 4];
+		const unsigned int detail_mesh_bverts = detail_mesh_m[0];
+		const unsigned int detail_mesh_m_btris = detail_mesh_m[2];
+		const unsigned int detail_mesh_ntris = detail_mesh_m[3];
+		const unsigned char *detail_mesh_tris = &detail_mesh->tris[detail_mesh_m_btris * 4];
+		for (unsigned int j = 0; j < detail_mesh_ntris; j++) {
+			Vector<int> nav_indices;
+			nav_indices.resize(3);
+			// Polygon order in recast is opposite than godot's
+			nav_indices.write[0] = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 0]));
+			nav_indices.write[1] = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 2]));
+			nav_indices.write[2] = ((int)(detail_mesh_bverts + detail_mesh_tris[j * 4 + 1]));
+			p_navigation_mesh->add_polygon(nav_indices);
+		}
+	}
+
+	bake_state = "Cleanup..."; // step #11
 
 	rcFreePolyMesh(poly_mesh);
 	poly_mesh = nullptr;
 	rcFreePolyMeshDetail(detail_mesh);
 	detail_mesh = nullptr;
-}
 
-NavigationMeshGenerator *NavigationMeshGenerator::get_singleton() {
-	return singleton;
-}
+	bake_state = "Baking finished."; // step #12
+#endif // _3D_DISABLED
 
-NavigationMeshGenerator::NavigationMeshGenerator() {
-	singleton = this;
-}
+	generator_mutex.lock();
+	baking_navmeshes.erase(p_navigation_mesh);
+	generator_mutex.unlock();
 
-NavigationMeshGenerator::~NavigationMeshGenerator() {
-}
-
-void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) {
-	ERR_FAIL_COND_MSG(!p_navigation_mesh.is_valid(), "Invalid navigation mesh.");
-
-#ifdef TOOLS_ENABLED
-	EditorProgress *ep(nullptr);
-	// FIXME
-#endif
-#if 0
-	// After discussion on devchat disabled EditorProgress for now as it is not thread-safe and uses hacks and Main::iteration() for steps.
-	// EditorProgress randomly crashes the Engine when the bake function is used with a thread e.g. inside Editor with a tool script and procedural navigation
-	// This was not a problem in older versions as previously Godot was unable to (re)bake NavigationMesh at runtime.
-	// If EditorProgress is fixed and made thread-safe this should be enabled again.
-	if (Engine::get_singleton()->is_editor_hint()) {
-		ep = memnew(EditorProgress("bake", TTR("Navigation Mesh Generator Setup:"), 11));
-	}
-
-	if (ep) {
-		ep->step(TTR("Parsing Geometry..."), 0);
-	}
-#endif
-
-	Vector<float> vertices;
-	Vector<int> indices;
-
-	List<Node *> parse_nodes;
-
-	if (p_navigation_mesh->get_source_geometry_mode() == NavigationMesh::SOURCE_GEOMETRY_ROOT_NODE_CHILDREN) {
-		parse_nodes.push_back(p_root_node);
-	} else {
-		p_root_node->get_tree()->get_nodes_in_group(p_navigation_mesh->get_source_group_name(), &parse_nodes);
-	}
-
-	Transform3D navmesh_xform = Object::cast_to<Node3D>(p_root_node)->get_global_transform().affine_inverse();
-	for (Node *E : parse_nodes) {
-		NavigationMesh::ParsedGeometryType geometry_type = p_navigation_mesh->get_parsed_geometry_type();
-		uint32_t collision_mask = p_navigation_mesh->get_collision_mask();
-		bool recurse_children = p_navigation_mesh->get_source_geometry_mode() != NavigationMesh::SOURCE_GEOMETRY_GROUPS_EXPLICIT;
-		_parse_geometry(navmesh_xform, E, vertices, indices, geometry_type, collision_mask, recurse_children);
-	}
-
-	if (vertices.size() > 0 && indices.size() > 0) {
-		rcHeightfield *hf = nullptr;
-		rcCompactHeightfield *chf = nullptr;
-		rcContourSet *cset = nullptr;
-		rcPolyMesh *poly_mesh = nullptr;
-		rcPolyMeshDetail *detail_mesh = nullptr;
-
-		_build_recast_navigation_mesh(
-				p_navigation_mesh,
-#ifdef TOOLS_ENABLED
-				ep,
-#endif
-				hf,
-				chf,
-				cset,
-				poly_mesh,
-				detail_mesh,
-				vertices,
-				indices);
-
-		rcFreeHeightField(hf);
-		hf = nullptr;
-
-		rcFreeCompactHeightfield(chf);
-		chf = nullptr;
-
-		rcFreeContourSet(cset);
-		cset = nullptr;
-
-		rcFreePolyMesh(poly_mesh);
-		poly_mesh = nullptr;
-
-		rcFreePolyMeshDetail(detail_mesh);
-		detail_mesh = nullptr;
-	}
-
-#ifdef TOOLS_ENABLED
-	if (ep) {
-		ep->step(TTR("Done!"), 11);
-	}
-
-	if (ep) {
-		memdelete(ep);
-	}
-#endif
-}
-
-void NavigationMeshGenerator::clear(Ref<NavigationMesh> p_navigation_mesh) {
-	if (p_navigation_mesh.is_valid()) {
-		p_navigation_mesh->clear_polygons();
-		p_navigation_mesh->set_vertices(Vector<Vector3>());
+	if (p_callback.is_valid()) {
+		Callable::CallError ce;
+		Variant result;
+		p_callback.callp(nullptr, 0, result, ce);
+		if (ce.error == Callable::CallError::CALL_OK) {
+			//
+		}
 	}
 }
 
 void NavigationMeshGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("bake", "navigation_mesh", "root_node"), &NavigationMeshGenerator::bake);
 	ClassDB::bind_method(D_METHOD("clear", "navigation_mesh"), &NavigationMeshGenerator::clear);
+
+	ClassDB::bind_method(D_METHOD("parse_source_geometry_data", "navigation_mesh", "source_geometry_data", "root_node", "callback"), &NavigationMeshGenerator::parse_source_geometry_data, DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data", "navigation_mesh", "source_geometry_data", "callback"), &NavigationMeshGenerator::bake_from_source_geometry_data, DEFVAL(Callable()));
 }
 
 #endif

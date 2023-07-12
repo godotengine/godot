@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,17 +19,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
-struct Vertex
-{
-   Point pt;
-   Point uv;
-};
-
-struct Polygon
-{
-   Vertex vertex[3];
-};
 
 struct AALine
 {
@@ -80,7 +69,7 @@ static bool _arrange(const SwImage* image, const SwBBox* region, int& yStart, in
 }
 
 
-static void _rasterPolygonImageSegment(SwSurface* surface, const SwImage* image, const SwBBox* region, int yStart, int yEnd, uint32_t opacity, uint32_t (*blendMethod)(uint32_t), AASpans* aaSpans)
+static void _rasterPolygonImageSegment(SwSurface* surface, const SwImage* image, const SwBBox* region, int yStart, int yEnd, uint32_t opacity, uint8_t(*blender)(uint8_t*), AASpans* aaSpans)
 {
 #define TEXMAP_TRANSLUCENT
 #define TEXMAP_MASKING
@@ -90,7 +79,7 @@ static void _rasterPolygonImageSegment(SwSurface* surface, const SwImage* image,
 }
 
 
-static void _rasterPolygonImageSegment(SwSurface* surface, const SwImage* image, const SwBBox* region, int yStart, int yEnd, uint32_t (*blendMethod)(uint32_t), AASpans* aaSpans)
+static void _rasterPolygonImageSegment(SwSurface* surface, const SwImage* image, const SwBBox* region, int yStart, int yEnd, uint8_t(*blender)(uint8_t*), AASpans* aaSpans)
 {
 #define TEXMAP_MASKING
     #include "tvgSwRasterTexmapInternal.h"
@@ -113,7 +102,7 @@ static void _rasterPolygonImageSegment(SwSurface* surface, const SwImage* image,
 
 
 /* This mapping algorithm is based on Mikael Kalms's. */
-static void _rasterPolygonImage(SwSurface* surface, const SwImage* image, const SwBBox* region, uint32_t opacity, Polygon& polygon, uint32_t (*blendMethod)(uint32_t), AASpans* aaSpans)
+static void _rasterPolygonImage(SwSurface* surface, const SwImage* image, const SwBBox* region, uint32_t opacity, Polygon& polygon, uint8_t(*blender)(uint8_t*), AASpans* aaSpans)
 {
     float x[3] = {polygon.vertex[0].pt.x, polygon.vertex[1].pt.x, polygon.vertex[2].pt.x};
     float y[3] = {polygon.vertex[0].pt.y, polygon.vertex[1].pt.y, polygon.vertex[2].pt.y};
@@ -201,9 +190,9 @@ static void _rasterPolygonImage(SwSurface* surface, const SwImage* image, const 
             dxdyb = dxdy[0];
             xb = x[0] + dy * dxdyb + (off_y * dxdyb);
 
-            if (blendMethod) {
-                if (opacity == 255) _rasterPolygonImageSegment(surface, image, region, yi[0], yi[1], blendMethod, aaSpans);
-                else _rasterPolygonImageSegment(surface, image, region, yi[0], yi[1], opacity, blendMethod, aaSpans);
+            if (blender) {
+                if (opacity == 255) _rasterPolygonImageSegment(surface, image, region, yi[0], yi[1], blender, aaSpans);
+                else _rasterPolygonImageSegment(surface, image, region, yi[0], yi[1], opacity, blender, aaSpans);
             } else {
                 if (opacity == 255) _rasterPolygonImageSegment(surface, image, region, yi[0], yi[1], aaSpans);
                 else _rasterPolygonImageSegment(surface, image, region, yi[0], yi[1], opacity, aaSpans);
@@ -222,9 +211,9 @@ static void _rasterPolygonImage(SwSurface* surface, const SwImage* image, const 
             // Set right edge X-slope and perform subpixel pre-stepping
             dxdyb = dxdy[2];
             xb = x[1] + (1 - (y[1] - yi[1])) * dxdyb + (off_y * dxdyb);
-            if (blendMethod) {
-                if (opacity == 255) _rasterPolygonImageSegment(surface, image, region, yi[1], yi[2], blendMethod, aaSpans);
-                else _rasterPolygonImageSegment(surface, image, region, yi[1], yi[2], opacity, blendMethod, aaSpans);
+            if (blender) {
+                if (opacity == 255) _rasterPolygonImageSegment(surface, image, region, yi[1], yi[2], blender, aaSpans);
+                else _rasterPolygonImageSegment(surface, image, region, yi[1], yi[2], opacity, blender, aaSpans);
             } else {
                 if (opacity == 255) _rasterPolygonImageSegment(surface, image, region, yi[1], yi[2], aaSpans);
                 else _rasterPolygonImageSegment(surface, image, region, yi[1], yi[2], opacity, aaSpans);
@@ -251,9 +240,9 @@ static void _rasterPolygonImage(SwSurface* surface, const SwImage* image, const 
             ua = u[0] + dy * dudya + (off_y * dudya);
             va = v[0] + dy * dvdya + (off_y * dvdya);
 
-            if (blendMethod) {
-                if (opacity == 255) _rasterPolygonImageSegment(surface, image, region, yi[0], yi[1], blendMethod, aaSpans);
-                else _rasterPolygonImageSegment(surface, image, region, yi[0], yi[1], opacity, blendMethod, aaSpans);
+            if (blender) {
+                if (opacity == 255) _rasterPolygonImageSegment(surface, image, region, yi[0], yi[1], blender, aaSpans);
+                else _rasterPolygonImageSegment(surface, image, region, yi[0], yi[1], opacity, blender, aaSpans);
             } else {
                 if (opacity == 255) _rasterPolygonImageSegment(surface, image, region, yi[0], yi[1], aaSpans);
                 else _rasterPolygonImageSegment(surface, image, region, yi[0], yi[1], opacity, aaSpans);
@@ -275,9 +264,9 @@ static void _rasterPolygonImage(SwSurface* surface, const SwImage* image, const 
             ua = u[1] + dy * dudya + (off_y * dudya);
             va = v[1] + dy * dvdya + (off_y * dvdya);
 
-            if (blendMethod) {
-                if (opacity == 255) _rasterPolygonImageSegment(surface, image, region, yi[1], yi[2], blendMethod, aaSpans);
-                else _rasterPolygonImageSegment(surface, image, region, yi[1], yi[2], opacity, blendMethod, aaSpans);
+            if (blender) {
+                if (opacity == 255) _rasterPolygonImageSegment(surface, image, region, yi[1], yi[2], blender, aaSpans);
+                else _rasterPolygonImageSegment(surface, image, region, yi[1], yi[2], opacity, blender, aaSpans);
             } else {
                 if (opacity == 255) _rasterPolygonImageSegment(surface, image, region, yi[1], yi[2], aaSpans);
                 else _rasterPolygonImageSegment(surface, image, region, yi[1], yi[2], opacity, aaSpans);
@@ -287,18 +276,10 @@ static void _rasterPolygonImage(SwSurface* surface, const SwImage* image, const 
 }
 
 
-static AASpans* _AASpans(const Vertex* vertices, const SwImage* image, const SwBBox* region)
+static AASpans* _AASpans(float ymin, float ymax, const SwImage* image, const SwBBox* region)
 {
-    //Initialize Y range
-    float ys = FLT_MAX, ye = -1.0f;
-
-    for (int i = 0; i < 4; i++) {
-        if (vertices[i].pt.y < ys) ys = vertices[i].pt.y;
-        if (vertices[i].pt.y > ye) ye = vertices[i].pt.y;
-    }
-
-    auto yStart = static_cast<int32_t>(ys);
-    auto yEnd = static_cast<int32_t>(ye);
+    auto yStart = static_cast<int32_t>(ymin);
+    auto yEnd = static_cast<int32_t>(ymax);
 
     if (!_arrange(image, region, yStart, yEnd)) return nullptr;
 
@@ -521,7 +502,7 @@ static bool _apply(SwSurface* surface, AASpans* aaSpans)
             auto offset = y * surface->stride;
 
             //Left edge
-            dst = surface->buffer + (offset + line->x[0]);
+            dst = surface->buf32 + (offset + line->x[0]);
             if (line->x[0] > 1) pixel = *(dst - 1);
             else pixel = *dst;
 
@@ -533,10 +514,10 @@ static bool _apply(SwSurface* surface, AASpans* aaSpans)
             }
 
             //Right edge
-            dst = surface->buffer + (offset + line->x[1] - 1);
+            dst = surface->buf32 + (offset + line->x[1] - 1);
             if (line->x[1] < (int32_t)(surface->w - 1)) pixel = *(dst + 1);
             else pixel = *dst;
-            
+
             pos = width;
             while ((int32_t)(width - line->length[1]) < pos) {
                 *dst = INTERPOLATE(255 - (line->coverage[1] * (line->length[1] - (width - pos))), *dst, pixel);
@@ -562,12 +543,12 @@ static bool _apply(SwSurface* surface, AASpans* aaSpans)
     0 -- 1
     |  / |
     | /  |
-    3 -- 2 
+    3 -- 2
 */
-static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const Matrix* transform, const SwBBox* region, uint32_t opacity, uint32_t (*blendMethod)(uint32_t))
+static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const Matrix* transform, const SwBBox* region, uint32_t opacity, uint8_t(*blender)(uint8_t*))
 {
     //Exceptions: No dedicated drawing area?
-    if (!region && image->rle->size == 0) return false;
+    if ((!image->rle && !region) || (image->rle && image->rle->size == 0)) return false;
 
    /* Prepare vertices.
       shift XY coordinates to match the sub-pixeling technique. */
@@ -577,9 +558,15 @@ static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const
     vertices[2] = {{float(image->w), float(image->h)}, {float(image->w), float(image->h)}};
     vertices[3] = {{0.0f, float(image->h)}, {0.0f, float(image->h)}};
 
-    for (int i = 0; i < 4; i++) mathMultiply(&vertices[i].pt, transform);
+    float ys = FLT_MAX, ye = -1.0f;
+    for (int i = 0; i < 4; i++) {
+        mathMultiply(&vertices[i].pt, transform);
 
-    auto aaSpans = _AASpans(vertices, image, region);
+        if (vertices[i].pt.y < ys) ys = vertices[i].pt.y;
+        if (vertices[i].pt.y > ye) ye = vertices[i].pt.y;
+    }
+
+    auto aaSpans = _AASpans(ys, ye, image, region);
     if (!aaSpans) return true;
 
     Polygon polygon;
@@ -589,14 +576,72 @@ static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const
     polygon.vertex[1] = vertices[1];
     polygon.vertex[2] = vertices[3];
 
-    _rasterPolygonImage(surface, image, region, opacity, polygon, blendMethod, aaSpans);
+    _rasterPolygonImage(surface, image, region, opacity, polygon, blender, aaSpans);
 
     //Draw the second polygon
     polygon.vertex[0] = vertices[1];
     polygon.vertex[1] = vertices[2];
     polygon.vertex[2] = vertices[3];
 
-    _rasterPolygonImage(surface, image, region, opacity, polygon, blendMethod, aaSpans);
+    _rasterPolygonImage(surface, image, region, opacity, polygon, blender, aaSpans);
 
     return _apply(surface, aaSpans);
+}
+
+
+/*
+    Provide any number of triangles to draw a mesh using the supplied image.
+    Indexes are not used, so each triangle (Polygon) vertex has to be defined, even if they copy the previous one.
+    Example:
+
+      0 -- 1       0 -- 1   0
+      |  / |  -->  |  /   / |
+      | /  |       | /   /  |
+      2 -- 3       2   1 -- 2
+
+      Should provide two Polygons, one for each triangle.
+      // TODO: region?
+*/
+static bool _rasterTexmapPolygonMesh(SwSurface* surface, const SwImage* image, const RenderMesh* mesh, const Matrix* transform, const SwBBox* region, uint32_t opacity, uint8_t(*blender)(uint8_t*))
+{
+    //Exceptions: No dedicated drawing area?
+    if ((!image->rle && !region) || (image->rle && image->rle->size == 0)) return false;
+
+    // Step polygons once to transform
+    auto transformedTris = (Polygon*)malloc(sizeof(Polygon) * mesh->triangleCnt);
+    float ys = FLT_MAX, ye = -1.0f;
+    for (uint32_t i = 0; i < mesh->triangleCnt; i++) {
+        transformedTris[i] = mesh->triangles[i];
+        mathMultiply(&transformedTris[i].vertex[0].pt, transform);
+        mathMultiply(&transformedTris[i].vertex[1].pt, transform);
+        mathMultiply(&transformedTris[i].vertex[2].pt, transform);
+
+        if (transformedTris[i].vertex[0].pt.y < ys) ys = transformedTris[i].vertex[0].pt.y;
+        else if (transformedTris[i].vertex[0].pt.y > ye) ye = transformedTris[i].vertex[0].pt.y;
+        if (transformedTris[i].vertex[1].pt.y < ys) ys = transformedTris[i].vertex[1].pt.y;
+        else if (transformedTris[i].vertex[1].pt.y > ye) ye = transformedTris[i].vertex[1].pt.y;
+        if (transformedTris[i].vertex[2].pt.y < ys) ys = transformedTris[i].vertex[2].pt.y;
+        else if (transformedTris[i].vertex[2].pt.y > ye) ye = transformedTris[i].vertex[2].pt.y;
+
+        // Convert normalized UV coordinates to image coordinates
+        transformedTris[i].vertex[0].uv.x *= (float)image->w;
+        transformedTris[i].vertex[0].uv.y *= (float)image->h;
+        transformedTris[i].vertex[1].uv.x *= (float)image->w;
+        transformedTris[i].vertex[1].uv.y *= (float)image->h;
+        transformedTris[i].vertex[2].uv.x *= (float)image->w;
+        transformedTris[i].vertex[2].uv.y *= (float)image->h;
+    }
+
+    // Get AA spans and step polygons again to draw
+    auto aaSpans = _AASpans(ys, ye, image, region);
+    if (aaSpans) {
+        for (uint32_t i = 0; i < mesh->triangleCnt; i++) {
+            _rasterPolygonImage(surface, image, region, opacity, transformedTris[i], blender, aaSpans);
+        }
+        // Apply to surface (note: frees the AA spans)
+        _apply(surface, aaSpans);
+    }
+    free(transformedTris);
+
+    return true;
 }

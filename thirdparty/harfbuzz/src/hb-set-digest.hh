@@ -45,10 +45,16 @@
  * a lookup's or subtable's Coverage table(s), and then when we
  * want to apply the lookup or subtable to a glyph, before trying
  * to apply, we ask the filter if the glyph may be covered. If it's
- * not, we return early.
+ * not, we return early.  We can also match a digest against another
+ * digest.
  *
- * We use these filters both at the lookup-level, and then again,
- * at the subtable-level. Both have performance win.
+ * We use these filters at three levels:
+ *   - If the digest for all the glyphs in the buffer as a whole
+ *     does not match the digest for the lookup, skip the lookup.
+ *   - For each glyph, if it doesn't match the lookup digest,
+ *     skip it.
+ *   - For each glyph, if it doesn't match the subtable digest,
+ *     skip it.
  *
  * The main filter we use is a combination of three bits-pattern
  * filters. A bits-pattern filter checks a number of bits (5 or 6)

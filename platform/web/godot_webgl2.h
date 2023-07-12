@@ -31,8 +31,8 @@
 #ifndef GODOT_WEBGL2_H
 #define GODOT_WEBGL2_H
 
-#include "GLES3/gl3.h"
-#include "webgl/webgl2.h"
+#include <GLES3/gl3.h>
+#include <webgl/webgl2.h>
 
 #define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR 0x9630
 #define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR 0x9632

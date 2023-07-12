@@ -33,11 +33,11 @@
 
 #ifdef GLES3_ENABLED
 
-#include "core/templates/vector.h"
-#include "openxr_extension_wrapper.h"
-
 #include "../openxr_api.h"
 #include "../util.h"
+#include "openxr_extension_wrapper.h"
+
+#include "core/templates/vector.h"
 
 #ifdef ANDROID_ENABLED
 #define XR_USE_GRAPHICS_API_OPENGL_ES
@@ -61,6 +61,7 @@
 #define GL3_PROTOTYPES 1
 #include "thirdparty/glad/glad/gl.h"
 #include "thirdparty/glad/glad/glx.h"
+
 #include <X11/Xlib.h>
 #endif
 
@@ -69,7 +70,7 @@
 #include <jni.h>
 #endif
 
-// include platform dependent structs
+// Include platform dependent structs.
 #include <openxr/openxr_platform.h>
 
 class OpenXROpenGLExtension : public OpenXRGraphicsExtensionWrapper {

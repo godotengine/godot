@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "openxr_api.h"
+
+#include "openxr_interface.h"
 #include "openxr_util.h"
 
 #include "core/config/engine.h"
@@ -38,10 +40,6 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
-#endif
-
-#ifdef ANDROID_ENABLED
-#define OPENXR_LOADER_NAME "libopenxr_loader.so"
 #endif
 
 // We need to have all the graphics API defines before the Vulkan or OpenGL
@@ -65,6 +63,7 @@
 #define GL3_PROTOTYPES 1
 #include "thirdparty/glad/glad/gl.h"
 #include "thirdparty/glad/glad/glx.h"
+
 #include <X11/Xlib.h>
 #endif // X11_ENABLED
 #endif // GLES_ENABLED
@@ -81,7 +80,9 @@
 #include "extensions/openxr_fb_display_refresh_rate_extension.h"
 #include "extensions/openxr_fb_passthrough_extension_wrapper.h"
 
-#include "modules/openxr/openxr_interface.h"
+#ifdef ANDROID_ENABLED
+#define OPENXR_LOADER_NAME "libopenxr_loader.so"
+#endif
 
 OpenXRAPI *OpenXRAPI::singleton = nullptr;
 Vector<OpenXRExtensionWrapper *> OpenXRAPI::registered_extension_wrappers;
@@ -854,18 +855,19 @@ bool OpenXRAPI::create_swapchains() {
 		}
 
 		if (swapchain_format_to_use == 0) {
-			swapchain_format_to_use = usable_swapchain_formats[0]; // just use the first one and hope for the best...
-			print_line("Couldn't find usable depth swap chain format, using", get_swapchain_format_name(swapchain_format_to_use), "instead.");
+			print_line("Couldn't find usable depth swap chain format, depth buffer will not be submitted.");
 		} else {
 			print_verbose(String("Using depth swap chain format:") + get_swapchain_format_name(swapchain_format_to_use));
-		}
 
-		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain, &swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain_graphics_data)) {
-			return false;
-		}
+			// Note, if VK_FORMAT_D32_SFLOAT is used here but we're using the forward+ renderer, we should probably output a warning.
 
-		depth_views = (XrCompositionLayerDepthInfoKHR *)memalloc(sizeof(XrCompositionLayerDepthInfoKHR) * view_count);
-		ERR_FAIL_NULL_V_MSG(depth_views, false, "OpenXR Couldn't allocate memory for depth views");
+			if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain, &swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain_graphics_data)) {
+				return false;
+			}
+
+			depth_views = (XrCompositionLayerDepthInfoKHR *)memalloc(sizeof(XrCompositionLayerDepthInfoKHR) * view_count);
+			ERR_FAIL_NULL_V_MSG(depth_views, false, "OpenXR Couldn't allocate memory for depth views");
+		}
 	}
 
 	// We create our velocity swapchain if:
@@ -1836,6 +1838,7 @@ RID OpenXRAPI::get_color_texture() {
 }
 
 RID OpenXRAPI::get_depth_texture() {
+	// Note, image will not be acquired if we didn't have a suitable swap chain format.
 	if (submit_depth_buffer && swapchains[OPENXR_SWAPCHAIN_DEPTH].image_acquired) {
 		return graphics_extension->get_texture(swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain_graphics_data, swapchains[OPENXR_SWAPCHAIN_DEPTH].image_index);
 	} else {

@@ -920,14 +920,23 @@ void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p
 
 	for (int i = 0; i < external_resources.size(); i++) {
 		String dep;
+		String fallback_path;
+
 		if (external_resources[i].uid != ResourceUID::INVALID_ID) {
 			dep = ResourceUID::get_singleton()->id_to_text(external_resources[i].uid);
+			fallback_path = external_resources[i].path; // Used by Dependency Editor, in case uid path fails.
 		} else {
 			dep = external_resources[i].path;
 		}
 
 		if (p_add_types && !external_resources[i].type.is_empty()) {
 			dep += "::" + external_resources[i].type;
+		}
+		if (!fallback_path.is_empty()) {
+			if (!p_add_types) {
+				dep += "::"; // Ensure that path comes third, even if there is no type.
+			}
+			dep += "::" + fallback_path;
 		}
 
 		p_dependencies->push_back(dep);
@@ -1766,9 +1775,9 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 		case Variant::OBJECT: {
 			f->store_32(VARIANT_OBJECT);
 			Ref<Resource> res = p_property;
-			if (res.is_null()) {
+			if (res.is_null() || res->get_meta(SNAME("_skip_save_"), false)) {
 				f->store_32(OBJECT_EMPTY);
-				return; // don't save it
+				return; // Don't save it.
 			}
 
 			if (!res->is_built_in()) {
@@ -1933,7 +1942,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 		case Variant::OBJECT: {
 			Ref<Resource> res = p_variant;
 
-			if (res.is_null() || external_resources.has(res)) {
+			if (res.is_null() || external_resources.has(res) || res->get_meta(SNAME("_skip_save_"), false)) {
 				return;
 			}
 

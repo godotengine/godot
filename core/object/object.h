@@ -61,7 +61,6 @@ enum PropertyHint {
 	PROPERTY_HINT_LAYERS_3D_RENDER,
 	PROPERTY_HINT_LAYERS_3D_PHYSICS,
 	PROPERTY_HINT_LAYERS_3D_NAVIGATION,
-	PROPERTY_HINT_LAYERS_AVOIDANCE,
 	PROPERTY_HINT_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
 	PROPERTY_HINT_DIR, ///< a directory path must be passed
 	PROPERTY_HINT_GLOBAL_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
@@ -86,6 +85,7 @@ enum PropertyHint {
 	PROPERTY_HINT_NODE_TYPE, ///< a node object type
 	PROPERTY_HINT_HIDE_QUATERNION_EDIT, /// Only Node3D::transform should hide the quaternion editor.
 	PROPERTY_HINT_PASSWORD,
+	PROPERTY_HINT_LAYERS_AVOIDANCE,
 	PROPERTY_HINT_MAX,
 };
 
@@ -304,8 +304,10 @@ struct MethodInfo {
 
 // API used to extend in GDExtension and other C compatible compiled languages.
 class MethodBind;
+class GDExtension;
 
 struct ObjectGDExtension {
+	GDExtension *library = nullptr;
 	ObjectGDExtension *parent = nullptr;
 	List<ObjectGDExtension *> children;
 	StringName parent_class_name;
@@ -798,6 +800,8 @@ public:
 		return *_class_name_ptr;
 	}
 
+	StringName get_class_name_for_extension(const GDExtension *p_library) const;
+
 	/* IAPI */
 
 	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
@@ -836,14 +840,21 @@ public:
 
 	/* SCRIPT */
 
-	void set_script(const Variant &p_script);
-	Variant get_script() const;
+// When in debug, some non-virtual functions can be overridden for multithreaded guards.
+#ifdef DEBUG_ENABLED
+#define MTVIRTUAL virtual
+#else
+#define MTVIRTUAL
+#endif
 
-	bool has_meta(const StringName &p_name) const;
-	void set_meta(const StringName &p_name, const Variant &p_value);
-	void remove_meta(const StringName &p_name);
-	Variant get_meta(const StringName &p_name, const Variant &p_default = Variant()) const;
-	void get_meta_list(List<StringName> *p_list) const;
+	MTVIRTUAL void set_script(const Variant &p_script);
+	MTVIRTUAL Variant get_script() const;
+
+	MTVIRTUAL bool has_meta(const StringName &p_name) const;
+	MTVIRTUAL void set_meta(const StringName &p_name, const Variant &p_value);
+	MTVIRTUAL void remove_meta(const StringName &p_name);
+	MTVIRTUAL Variant get_meta(const StringName &p_name, const Variant &p_default = Variant()) const;
+	MTVIRTUAL void get_meta_list(List<StringName> *p_list) const;
 
 #ifdef TOOLS_ENABLED
 	void set_edited(bool p_edited);
@@ -870,17 +881,17 @@ public:
 		return emit_signalp(p_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
-	Error emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount);
-	bool has_signal(const StringName &p_name) const;
-	void get_signal_list(List<MethodInfo> *p_signals) const;
-	void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const;
-	void get_all_signal_connections(List<Connection> *p_connections) const;
-	int get_persistent_signal_connection_count() const;
-	void get_signals_connected_to_this(List<Connection> *p_connections) const;
+	MTVIRTUAL Error emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount);
+	MTVIRTUAL bool has_signal(const StringName &p_name) const;
+	MTVIRTUAL void get_signal_list(List<MethodInfo> *p_signals) const;
+	MTVIRTUAL void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const;
+	MTVIRTUAL void get_all_signal_connections(List<Connection> *p_connections) const;
+	MTVIRTUAL int get_persistent_signal_connection_count() const;
+	MTVIRTUAL void get_signals_connected_to_this(List<Connection> *p_connections) const;
 
-	Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
-	void disconnect(const StringName &p_signal, const Callable &p_callable);
-	bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
+	MTVIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
+	MTVIRTUAL void disconnect(const StringName &p_signal, const Callable &p_callable);
+	MTVIRTUAL bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
 
 	template <typename... VarArgs>
 	void call_deferred(const StringName &p_name, VarArgs... p_args) {

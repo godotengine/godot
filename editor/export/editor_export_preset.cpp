@@ -31,9 +31,9 @@
 #include "editor_export.h"
 
 bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) {
-	if (values.has(p_name)) {
-		values[p_name] = p_value;
-		EditorExport::singleton->save_presets();
+	values[p_name] = p_value;
+	EditorExport::singleton->save_presets();
+	if (update_visibility.has(p_name)) {
 		if (update_visibility[p_name]) {
 			notify_property_list_changed();
 		}
@@ -61,9 +61,9 @@ String EditorExportPreset::_get_property_warning(const StringName &p_name) const
 }
 
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (const PropertyInfo &E : properties) {
-		if (platform->get_export_option_visibility(this, E.name)) {
-			p_list->push_back(E);
+	for (const KeyValue<StringName, PropertyInfo> &E : properties) {
+		if (platform->get_export_option_visibility(this, E.key)) {
+			p_list->push_back(E.value);
 		}
 	}
 }

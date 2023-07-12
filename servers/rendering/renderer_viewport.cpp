@@ -1403,7 +1403,7 @@ void RendererViewport::call_set_vsync_mode(DisplayServer::VSyncMode p_mode, Disp
 int RendererViewport::get_total_objects_drawn() const {
 	return total_objects_drawn;
 }
-int RendererViewport::get_total_vertices_drawn() const {
+int RendererViewport::get_total_primitives_drawn() const {
 	return total_vertices_drawn;
 }
 int RendererViewport::get_total_draw_calls_used() const {

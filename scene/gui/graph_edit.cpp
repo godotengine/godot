@@ -372,7 +372,7 @@ void GraphEdit::_update_scroll() {
 
 void GraphEdit::_graph_node_raised(Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 	if (gn->is_comment()) {
 		move_child(gn, 0);
 	} else {
@@ -382,21 +382,21 @@ void GraphEdit::_graph_node_raised(Node *p_gn) {
 
 void GraphEdit::_graph_node_selected(Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 
 	emit_signal(SNAME("node_selected"), gn);
 }
 
 void GraphEdit::_graph_node_deselected(Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 
 	emit_signal(SNAME("node_deselected"), gn);
 }
 
 void GraphEdit::_graph_node_moved(Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 	top_layer->queue_redraw();
 	minimap->queue_redraw();
 	queue_redraw();
@@ -405,7 +405,7 @@ void GraphEdit::_graph_node_moved(Node *p_gn) {
 
 void GraphEdit::_graph_node_slot_updated(int p_index, Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
-	ERR_FAIL_COND(!gn);
+	ERR_FAIL_NULL(gn);
 	top_layer->queue_redraw();
 	minimap->queue_redraw();
 	queue_redraw();
@@ -822,6 +822,7 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &mpos
 
 	Rect2 control_rect = p_control->get_rect();
 	control_rect.position *= zoom;
+	control_rect.size *= zoom;
 	control_rect.position += p_offset;
 
 	if (!control_rect.has_point(mpos) || p_control->get_mouse_filter() == MOUSE_FILTER_IGNORE) {
@@ -886,8 +887,8 @@ bool GraphEdit::is_in_port_hotzone(const Vector2 &p_pos, const Vector2 &p_mouse_
 		if (!child) {
 			continue;
 		}
-		Rect2 child_rect = child->get_rect();
 
+		Rect2 child_rect = child->get_rect();
 		if (child_rect.has_point(p_mouse_pos * zoom)) {
 			for (int j = 0; j < child->get_child_count(); j++) {
 				Control *subchild = Object::cast_to<Control>(child->get_child(j));
@@ -989,10 +990,10 @@ void GraphEdit::_top_layer_draw() {
 	_update_scroll();
 
 	if (connecting) {
-		Node *fromn = get_node(NodePath(connecting_from));
-		ERR_FAIL_COND(!fromn);
+		Node *fromn = get_node_or_null(NodePath(connecting_from));
+		ERR_FAIL_NULL(fromn);
 		GraphNode *from = Object::cast_to<GraphNode>(fromn);
-		ERR_FAIL_COND(!from);
+		ERR_FAIL_NULL(from);
 		Vector2 pos;
 		if (connecting_out) {
 			pos = from->get_connection_output_position(connecting_index);

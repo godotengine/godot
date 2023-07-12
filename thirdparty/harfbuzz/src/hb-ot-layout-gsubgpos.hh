@@ -476,6 +476,7 @@ struct hb_ot_apply_context_t :
     void init (hb_ot_apply_context_t *c_, bool context_match = false)
     {
       c = c_;
+      end = c->buffer->len;
       match_glyph_data16 = nullptr;
 #ifndef HB_NO_BEYOND_64K
       match_glyph_data24 = nullptr;
@@ -487,7 +488,9 @@ struct hb_ot_apply_context_t :
       /* Ignore ZWJ if we are matching context, or asked to. */
       matcher.set_ignore_zwj  (context_match || c->auto_zwj);
       matcher.set_mask (context_match ? -1 : c->lookup_mask);
-      matcher.set_per_syllable (c->per_syllable);
+      /* Per syllable matching is only for GSUB. */
+      matcher.set_per_syllable (c->table_index == 0 && c->per_syllable);
+      matcher.set_syllable (0);
     }
     void set_lookup_props (unsigned int lookup_props)
     {
@@ -520,6 +523,14 @@ struct hb_ot_apply_context_t :
       num_items = num_items_;
       end = c->buffer->len;
       matcher.set_syllable (start_index_ == c->buffer->idx ? c->buffer->cur().syllable () : 0);
+    }
+
+    void reset_fast (unsigned int start_index_,
+		     unsigned int num_items_)
+    {
+      // Doesn't set end or syllable. Used by GPOS which doesn't care / change.
+      idx = start_index_;
+      num_items = num_items_;
     }
 
     void reject ()
@@ -694,6 +705,7 @@ struct hb_ot_apply_context_t :
   hb_buffer_t *buffer;
   recurse_func_t recurse_func = nullptr;
   const GDEF &gdef;
+  const GDEF::accelerator_t &gdef_accel;
   const VariationStore &var_store;
   VariationStore::cache_t *var_store_cache;
   hb_set_digest_t digest;
@@ -727,6 +739,13 @@ struct hb_ot_apply_context_t :
 			      Null (GDEF)
 #endif
 			     ),
+			gdef_accel (
+#ifndef HB_NO_OT_LAYOUT
+			      *face->table.GDEF
+#else
+			      Null (GDEF::accelerator_t)
+#endif
+			     ),
 			var_store (gdef.get_var_store ()),
 			var_store_cache (
 #ifndef HB_NO_VAR
@@ -753,10 +772,10 @@ struct hb_ot_apply_context_t :
     iter_context.init (this, true);
   }
 
-  void set_lookup_mask (hb_mask_t mask) { lookup_mask = mask; last_base = -1; last_base_until = 0; init_iters (); }
-  void set_auto_zwj (bool auto_zwj_) { auto_zwj = auto_zwj_; init_iters (); }
-  void set_auto_zwnj (bool auto_zwnj_) { auto_zwnj = auto_zwnj_; init_iters (); }
-  void set_per_syllable (bool per_syllable_) { per_syllable = per_syllable_; init_iters (); }
+  void set_lookup_mask (hb_mask_t mask, bool init = true) { lookup_mask = mask; last_base = -1; last_base_until = 0; if (init) init_iters (); }
+  void set_auto_zwj (bool auto_zwj_, bool init = true) { auto_zwj = auto_zwj_; if (init) init_iters (); }
+  void set_auto_zwnj (bool auto_zwnj_, bool init = true) { auto_zwnj = auto_zwnj_; if (init) init_iters (); }
+  void set_per_syllable (bool per_syllable_, bool init = true) { per_syllable = per_syllable_; if (init) init_iters (); }
   void set_random (bool random_) { random = random_; }
   void set_recurse_func (recurse_func_t func) { recurse_func = func; }
   void set_lookup_index (unsigned int lookup_index_) { lookup_index = lookup_index_; }
@@ -792,7 +811,6 @@ struct hb_ot_apply_context_t :
   bool check_glyph_property (const hb_glyph_info_t *info,
 			     unsigned int  match_props) const
   {
-    hb_codepoint_t glyph = info->codepoint;
     unsigned int glyph_props = _hb_glyph_info_get_glyph_props (info);
 
     /* Not covered, if, for example, glyph class is ligature and
@@ -802,7 +820,7 @@ struct hb_ot_apply_context_t :
       return false;
 
     if (unlikely (glyph_props & HB_OT_LAYOUT_GLYPH_PROPS_MARK))
-      return match_properties_mark (glyph, glyph_props, match_props);
+      return match_properties_mark (info->codepoint, glyph_props, match_props);
 
     return true;
   }
@@ -835,7 +853,7 @@ struct hb_ot_apply_context_t :
     if (likely (has_glyph_classes))
     {
       props &= HB_OT_LAYOUT_GLYPH_PROPS_PRESERVE;
-      _hb_glyph_info_set_glyph_props (&buffer->cur(), props | gdef.get_glyph_props (glyph_index));
+      _hb_glyph_info_set_glyph_props (&buffer->cur(), props | gdef_accel.get_glyph_props (glyph_index));
     }
     else if (class_guess)
     {
@@ -883,7 +901,7 @@ struct hb_accelerate_subtables_context_t :
 
 #ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
   template <typename T>
-  static inline auto apply_cached_ (const T *obj, hb_ot_apply_context_t *c, hb_priority<1>) HB_RETURN (bool, obj->apply (c, true) )
+  static inline auto apply_cached_ (const T *obj, hb_ot_apply_context_t *c, hb_priority<1>) HB_RETURN (bool, obj->apply_cached (c) )
   template <typename T>
   static inline auto apply_cached_ (const T *obj, hb_ot_apply_context_t *c, hb_priority<0>) HB_RETURN (bool, obj->apply (c) )
   template <typename Type>
@@ -1240,7 +1258,6 @@ static inline bool match_input (hb_ot_apply_context_t *c,
    */
 
   unsigned int total_component_count = 0;
-  total_component_count += _hb_glyph_info_get_lig_num_comps (&buffer->cur());
 
   unsigned int first_lig_id = _hb_glyph_info_get_lig_id (&buffer->cur());
   unsigned int first_lig_comp = _hb_glyph_info_get_lig_comp (&buffer->cur());
@@ -1251,7 +1268,6 @@ static inline bool match_input (hb_ot_apply_context_t *c,
     LIGBASE_MAY_SKIP
   } ligbase = LIGBASE_NOT_CHECKED;
 
-  match_positions[0] = buffer->idx;
   for (unsigned int i = 1; i < count; i++)
   {
     unsigned unsafe_to;
@@ -1316,7 +1332,12 @@ static inline bool match_input (hb_ot_apply_context_t *c,
   *end_position = skippy_iter.idx + 1;
 
   if (p_total_component_count)
+  {
+    total_component_count += _hb_glyph_info_get_lig_num_comps (&buffer->cur());
     *p_total_component_count = total_component_count;
+  }
+
+  match_positions[0] = buffer->idx;
 
   return_trace (true);
 }
@@ -2430,7 +2451,9 @@ struct ContextFormat2_5
     }
   }
 
-  bool apply (hb_ot_apply_context_t *c, bool cached = false) const
+  bool apply_cached (hb_ot_apply_context_t *c) const { return _apply (c, true); }
+  bool apply (hb_ot_apply_context_t *c) const { return _apply (c, false); }
+  bool _apply (hb_ot_apply_context_t *c, bool cached) const
   {
     TRACE_APPLY (this);
     unsigned int index = (this+coverage).get_coverage (c->buffer->cur().codepoint);
@@ -3533,7 +3556,9 @@ struct ChainContextFormat2_5
     }
   }
 
-  bool apply (hb_ot_apply_context_t *c, bool cached = false) const
+  bool apply_cached (hb_ot_apply_context_t *c) const { return _apply (c, true); }
+  bool apply (hb_ot_apply_context_t *c) const { return _apply (c, false); }
+  bool _apply (hb_ot_apply_context_t *c, bool cached) const
   {
     TRACE_APPLY (this);
     unsigned int index = (this+coverage).get_coverage (c->buffer->cur().codepoint);
@@ -4458,6 +4483,18 @@ struct GSUBGPOS
 #endif
 	  )
 	feature_indices->del (i);
+    }
+  }
+
+  void collect_name_ids (const hb_map_t *feature_index_map,
+                         hb_set_t *nameids_to_retain /* OUT */) const
+  {
+    unsigned count = get_feature_count ();
+    for (unsigned i = 0 ; i < count; i++)
+    {
+      if (!feature_index_map->has (i)) continue;
+      hb_tag_t tag = get_feature_tag (i);
+      get_feature (i).collect_name_ids (tag, nameids_to_retain);
     }
   }
 

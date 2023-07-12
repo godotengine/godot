@@ -31,8 +31,9 @@
 #ifndef TEST_REGEX_H
 #define TEST_REGEX_H
 
+#include "../regex.h"
+
 #include "core/string/ustring.h"
-#include "modules/regex/regex.h"
 
 #include "tests/test_macros.h"
 

@@ -141,6 +141,11 @@ FreeDesktopScreenSaver::FreeDesktopScreenSaver() {
 #else
 	unsupported = false;
 #endif
+
+	if (unsupported) {
+		return;
+	}
+
 	bool ver_ok = false;
 	int version_major = 0;
 	int version_minor = 0;

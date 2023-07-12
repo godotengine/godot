@@ -89,7 +89,11 @@ private:
 	Control *base_tiles_drawing_root = nullptr;
 
 	Control *base_tiles_draw = nullptr;
+	HashMap<Ref<Material>, RID> material_tiles_draw;
+	HashMap<Ref<Material>, RID> material_alternatives_draw;
 	void _draw_base_tiles();
+	RID _get_canvas_item_to_draw(const TileData *p_for_data, const CanvasItem *p_base_item, HashMap<Ref<Material>, RID> &p_material_map);
+	void _clear_material_canvas_items();
 
 	Control *base_tiles_texture_grid = nullptr;
 	void _draw_base_tiles_texture_grid();
@@ -164,6 +168,7 @@ public:
 	void queue_redraw();
 
 	TileAtlasView();
+	~TileAtlasView();
 };
 
 #endif // TILE_ATLAS_VIEW_H

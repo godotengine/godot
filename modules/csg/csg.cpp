@@ -467,7 +467,7 @@ void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_b
 // Use a limit to speed up bvh and limit the depth.
 #define BVH_LIMIT 8
 
-int CSGBrushOperation::MeshMerge::_create_bvh(FaceBVH *facebvhptr, FaceBVH **facebvhptrptr, int p_from, int p_size, int p_depth, int &r_max_depth, int &r_max_alloc) {
+int CSGBrushOperation::MeshMerge::_create_bvh(FaceBVH *r_facebvhptr, FaceBVH **r_facebvhptrptr, int p_from, int p_size, int p_depth, int &r_max_depth, int &r_max_alloc) {
 	if (p_depth > r_max_depth) {
 		r_max_depth = p_depth;
 	}
@@ -478,15 +478,15 @@ int CSGBrushOperation::MeshMerge::_create_bvh(FaceBVH *facebvhptr, FaceBVH **fac
 
 	if (p_size <= BVH_LIMIT) {
 		for (int i = 0; i < p_size - 1; i++) {
-			facebvhptrptr[p_from + i]->next = facebvhptrptr[p_from + i + 1] - facebvhptr;
+			r_facebvhptrptr[p_from + i]->next = r_facebvhptrptr[p_from + i + 1] - r_facebvhptr;
 		}
-		return facebvhptrptr[p_from] - facebvhptr;
+		return r_facebvhptrptr[p_from] - r_facebvhptr;
 	}
 
 	AABB aabb;
-	aabb = facebvhptrptr[p_from]->aabb;
+	aabb = r_facebvhptrptr[p_from]->aabb;
 	for (int i = 1; i < p_size; i++) {
-		aabb.merge_with(facebvhptrptr[p_from + i]->aabb);
+		aabb.merge_with(r_facebvhptrptr[p_from + i]->aabb);
 	}
 
 	int li = aabb.get_longest_axis_index();
@@ -494,28 +494,28 @@ int CSGBrushOperation::MeshMerge::_create_bvh(FaceBVH *facebvhptr, FaceBVH **fac
 	switch (li) {
 		case Vector3::AXIS_X: {
 			SortArray<FaceBVH *, FaceBVHCmpX> sort_x;
-			sort_x.nth_element(0, p_size, p_size / 2, &facebvhptrptr[p_from]);
+			sort_x.nth_element(0, p_size, p_size / 2, &r_facebvhptrptr[p_from]);
 			//sort_x.sort(&p_bb[p_from],p_size);
 		} break;
 
 		case Vector3::AXIS_Y: {
 			SortArray<FaceBVH *, FaceBVHCmpY> sort_y;
-			sort_y.nth_element(0, p_size, p_size / 2, &facebvhptrptr[p_from]);
+			sort_y.nth_element(0, p_size, p_size / 2, &r_facebvhptrptr[p_from]);
 			//sort_y.sort(&p_bb[p_from],p_size);
 		} break;
 
 		case Vector3::AXIS_Z: {
 			SortArray<FaceBVH *, FaceBVHCmpZ> sort_z;
-			sort_z.nth_element(0, p_size, p_size / 2, &facebvhptrptr[p_from]);
+			sort_z.nth_element(0, p_size, p_size / 2, &r_facebvhptrptr[p_from]);
 			//sort_z.sort(&p_bb[p_from],p_size);
 		} break;
 	}
 
-	int left = _create_bvh(facebvhptr, facebvhptrptr, p_from, p_size / 2, p_depth + 1, r_max_depth, r_max_alloc);
-	int right = _create_bvh(facebvhptr, facebvhptrptr, p_from + p_size / 2, p_size - p_size / 2, p_depth + 1, r_max_depth, r_max_alloc);
+	int left = _create_bvh(r_facebvhptr, r_facebvhptrptr, p_from, p_size / 2, p_depth + 1, r_max_depth, r_max_alloc);
+	int right = _create_bvh(r_facebvhptr, r_facebvhptrptr, p_from + p_size / 2, p_size - p_size / 2, p_depth + 1, r_max_depth, r_max_alloc);
 
 	int index = r_max_alloc++;
-	FaceBVH *_new = &facebvhptr[index];
+	FaceBVH *_new = &r_facebvhptr[index];
 	_new->aabb = aabb;
 	_new->center = aabb.get_center();
 	_new->face = -1;
@@ -535,13 +535,13 @@ void CSGBrushOperation::MeshMerge::_add_distance(List<IntersectionDistance> &r_i
 			return;
 		}
 	}
-	IntersectionDistance IntersectionDistance;
-	IntersectionDistance.is_conormal = p_is_conormal;
-	IntersectionDistance.distance_squared = p_distance_squared;
-	intersections.push_back(IntersectionDistance);
+	IntersectionDistance distance;
+	distance.is_conormal = p_is_conormal;
+	distance.distance_squared = p_distance_squared;
+	intersections.push_back(distance);
 }
 
-bool CSGBrushOperation::MeshMerge::_bvh_inside(FaceBVH *facebvhptr, int p_max_depth, int p_bvh_first, int p_face_idx) const {
+bool CSGBrushOperation::MeshMerge::_bvh_inside(FaceBVH *r_facebvhptr, int p_max_depth, int p_bvh_first, int p_face_idx) const {
 	Face face = faces[p_face_idx];
 	Vector3 face_points[3] = {
 		points[face.points[0]],
@@ -575,7 +575,7 @@ bool CSGBrushOperation::MeshMerge::_bvh_inside(FaceBVH *facebvhptr, int p_max_de
 
 	while (true) {
 		uint32_t node = stack[level] & NODE_IDX_MASK;
-		const FaceBVH *current_facebvhptr = &(facebvhptr[node]);
+		const FaceBVH *current_facebvhptr = &(r_facebvhptr[node]);
 		bool done = false;
 
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
@@ -651,7 +651,7 @@ bool CSGBrushOperation::MeshMerge::_bvh_inside(FaceBVH *facebvhptr, int p_max_de
 						}
 
 						if (current_facebvhptr->next != -1) {
-							current_facebvhptr = &facebvhptr[current_facebvhptr->next];
+							current_facebvhptr = &r_facebvhptr[current_facebvhptr->next];
 						} else {
 							current_facebvhptr = nullptr;
 						}

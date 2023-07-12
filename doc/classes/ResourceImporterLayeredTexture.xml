@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterLayeredTexture" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="compress/channel_pack" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="compress/hdr_compression" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="compress/high_quality" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="compress/lossy_quality" type="float" setter="" getter="" default="0.7">
+		</member>
+		<member name="compress/mode" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="mipmaps/generate" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="mipmaps/limit" type="int" setter="" getter="" default="-1">
+		</member>
+		<member name="slices/arrangement" type="int" setter="" getter="" default="1">
+		</member>
+	</members>
+</class>

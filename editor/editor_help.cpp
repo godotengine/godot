@@ -65,7 +65,7 @@ protected:
 		ClassDB::bind_method(D_METHOD("get_classes"), &DocCache::get_classes);
 
 		ADD_PROPERTY(PropertyInfo(Variant::STRING, "version_hash"), "set_version_hash", "get_version_hash");
-		ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "classes"), "set_classes", "get_classes");
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "classes"), "set_classes", "get_classes");
 	}
 
 public:
@@ -293,7 +293,7 @@ void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 	}
 }
 
-void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
+void EditorHelp::_add_type(const String &p_type, const String &p_enum, bool p_is_bitfield) {
 	if (p_type.is_empty() || p_type == "void") {
 		class_desc->push_color(Color(theme_cache.type_color, 0.5));
 		class_desc->push_hint(TTR("No return value."));
@@ -304,10 +304,11 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	}
 
 	bool is_enum_type = !p_enum.is_empty();
+	bool is_bitfield = p_is_bitfield && is_enum_type;
 	bool can_ref = !p_type.contains("*") || is_enum_type;
 
 	String link_t = p_type; // For links in metadata
-	String display_t = link_t; // For display purposes
+	String display_t; // For display purposes.
 	if (is_enum_type) {
 		link_t = p_enum; // The link for enums is always the full enum description
 		display_t = _contextualize_class_specifier(p_enum, edited_class);
@@ -320,12 +321,20 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	if (can_ref) {
 		if (link_t.ends_with("[]")) {
 			add_array = true;
-			link_t = link_t.replace("[]", "");
+			link_t = link_t.trim_suffix("[]");
+			display_t = display_t.trim_suffix("[]");
 
 			class_desc->push_meta("#Array"); // class
 			class_desc->add_text("Array");
 			class_desc->pop();
 			class_desc->add_text("[");
+		} else if (is_bitfield) {
+			class_desc->push_color(Color(theme_cache.type_color, 0.5));
+			class_desc->push_hint(TTR("This value is an integer composed as a bitmask of the following flags."));
+			class_desc->add_text("BitField");
+			class_desc->pop();
+			class_desc->add_text("[");
+			class_desc->pop();
 		}
 
 		if (is_enum_type) {
@@ -339,6 +348,10 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 		class_desc->pop(); // Pushed meta above.
 		if (add_array) {
 			class_desc->add_text("]");
+		} else if (is_bitfield) {
+			class_desc->push_color(Color(theme_cache.type_color, 0.5));
+			class_desc->add_text("]");
+			class_desc->pop();
 		}
 	}
 	class_desc->pop();
@@ -402,7 +415,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		_add_bulletpoint();
 	}
 
-	_add_type(p_method.return_type, p_method.return_enum);
+	_add_type(p_method.return_type, p_method.return_enum, p_method.return_is_bitfield);
 
 	if (p_overview) {
 		class_desc->pop(); // align
@@ -436,7 +449,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 
 		_add_text(p_method.arguments[j].name);
 		class_desc->add_text(": ");
-		_add_type(p_method.arguments[j].type, p_method.arguments[j].enumeration);
+		_add_type(p_method.arguments[j].type, p_method.arguments[j].enumeration, p_method.arguments[j].is_bitfield);
 		if (!p_method.arguments[j].default_value.is_empty()) {
 			class_desc->push_color(theme_cache.symbol_color);
 			class_desc->add_text(" = ");
@@ -915,14 +928,15 @@ void EditorHelp::_update_doc() {
 	// Properties overview
 	HashSet<String> skip_methods;
 
-	bool has_properties = cd.properties.size() != 0;
-	if (cd.is_script_doc) {
-		has_properties = false;
-		for (int i = 0; i < cd.properties.size(); i++) {
-			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.strip_edges().is_empty()) {
-				continue;
-			}
-			has_properties = true;
+	bool has_properties = false;
+	bool has_property_descriptions = false;
+	for (const DocData::PropertyDoc &prop : cd.properties) {
+		if (cd.is_script_doc && prop.name.begins_with("_") && prop.description.strip_edges().is_empty()) {
+			continue;
+		}
+		has_properties = true;
+		if (!prop.overridden) {
+			has_property_descriptions = true;
 			break;
 		}
 	}
@@ -951,7 +965,7 @@ void EditorHelp::_update_doc() {
 			class_desc->push_cell();
 			class_desc->push_paragraph(HORIZONTAL_ALIGNMENT_RIGHT, Control::TEXT_DIRECTION_AUTO, "");
 			_push_code_font();
-			_add_type(cd.properties[i].type, cd.properties[i].enumeration);
+			_add_type(cd.properties[i].type, cd.properties[i].enumeration, cd.properties[i].is_bitfield);
 			_pop_code_font();
 			class_desc->pop();
 			class_desc->pop(); // cell
@@ -1250,7 +1264,7 @@ void EditorHelp::_update_doc() {
 
 				_add_text(cd.signals[i].arguments[j].name);
 				class_desc->add_text(": ");
-				_add_type(cd.signals[i].arguments[j].type, cd.signals[i].arguments[j].enumeration);
+				_add_type(cd.signals[i].arguments[j].type, cd.signals[i].arguments[j].enumeration, cd.signals[i].arguments[j].is_bitfield);
 				if (!cd.signals[i].arguments[j].default_value.is_empty()) {
 					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text(" = ");
@@ -1353,7 +1367,7 @@ void EditorHelp::_update_doc() {
 				class_desc->add_newline();
 
 				// Enum description.
-				if (e != "@unnamed_enums" && cd.enums.has(e)) {
+				if (e != "@unnamed_enums" && cd.enums.has(e) && !cd.enums[e].strip_edges().is_empty()) {
 					class_desc->push_color(theme_cache.text_color);
 					_push_normal_font();
 					class_desc->push_indent(1);
@@ -1601,7 +1615,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Property descriptions
-	if (has_properties) {
+	if (has_property_descriptions) {
 		section_line.push_back(Pair<String, int>(TTR("Property Descriptions"), class_desc->get_paragraph_count() - 2));
 		_push_title_font();
 		class_desc->add_text(TTR("Property Descriptions"));
@@ -1628,7 +1642,7 @@ void EditorHelp::_update_doc() {
 			_push_code_font();
 			_add_bulletpoint();
 
-			_add_type(cd.properties[i].type, cd.properties[i].enumeration);
+			_add_type(cd.properties[i].type, cd.properties[i].enumeration, cd.properties[i].is_bitfield);
 			class_desc->add_text(" ");
 			_pop_code_font();
 			class_desc->pop(); // cell
@@ -1892,7 +1906,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 }
 
-static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control *p_owner_node) {
+static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control *p_owner_node, const String &p_class = "") {
 	DocTools *doc = EditorHelp::get_doc_data();
 	String base_path;
 
@@ -2093,21 +2107,28 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			p_rt->pop(); // font
 			pos = brk_end + 1;
 
+		} else if (tag == p_class) {
+			// Use a bold font when class reference tags are in their own page.
+			p_rt->push_font(doc_bold_font);
+			p_rt->add_text(tag);
+			p_rt->pop();
+
+			pos = brk_end + 1;
+
 		} else if (doc->class_list.has(tag)) {
-			// Class reference tag such as [Node2D] or [SceneTree].
-			// Use monospace font to make clickable references
-			// easier to distinguish from inline code and other text.
+			// Use a monospace font for class reference tags such as [Node2D] or [SceneTree].
+
 			p_rt->push_font(doc_code_font);
 			p_rt->push_font_size(doc_code_font_size);
-
 			p_rt->push_color(type_color);
 			p_rt->push_meta("#" + tag);
 			p_rt->add_text(tag);
-			p_rt->pop();
-			p_rt->pop();
 
-			p_rt->pop(); // font size
-			p_rt->pop(); // font
+			p_rt->pop();
+			p_rt->pop();
+			p_rt->pop(); // Font size
+			p_rt->pop(); // Font
+
 			pos = brk_end + 1;
 
 		} else if (tag == "b") {
@@ -2238,7 +2259,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 }
 
 void EditorHelp::_add_text(const String &p_bbcode) {
-	_add_text_to_rt(p_bbcode, class_desc, this);
+	_add_text_to_rt(p_bbcode, class_desc, this, edited_class);
 }
 
 Thread EditorHelp::thread;
@@ -2256,7 +2277,7 @@ String EditorHelp::get_cache_full_path() {
 static bool first_attempt = true;
 
 static String _compute_doc_version_hash() {
-	return uitos(ClassDB::get_api_hash(ClassDB::API_CORE)) + "-" + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR));
+	return vformat("%d/%d/%s", ClassDB::get_api_hash(ClassDB::API_CORE), ClassDB::get_api_hash(ClassDB::API_EDITOR), _doc_data_hash);
 }
 
 void EditorHelp::_load_doc_thread(void *p_udata) {
@@ -2295,6 +2316,10 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 static bool doc_gen_use_threads = true;
 
 void EditorHelp::generate_doc(bool p_use_cache) {
+	// Temporarily disable use of cache for pre-RC stabilization.
+	p_use_cache = false;
+
+	OS::get_singleton()->benchmark_begin_measure("EditorHelp::generate_doc");
 	if (doc_gen_use_threads) {
 		// In case not the first attempt.
 		_wait_for_thread();
@@ -2303,7 +2328,6 @@ void EditorHelp::generate_doc(bool p_use_cache) {
 	DEV_ASSERT(first_attempt == (doc == nullptr));
 
 	if (!doc) {
-		GDREGISTER_CLASS(DocCache);
 		doc = memnew(DocTools);
 	}
 
@@ -2325,6 +2349,7 @@ void EditorHelp::generate_doc(bool p_use_cache) {
 			_gen_doc_thread(nullptr);
 		}
 	}
+	OS::get_singleton()->benchmark_end_measure("EditorHelp::generate_doc");
 }
 
 void EditorHelp::_toggle_scripts_pressed() {
@@ -2696,22 +2721,10 @@ void FindBar::unhandled_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid()) {
-		if (k->is_pressed() && (rich_text_label->has_focus() || is_ancestor_of(get_viewport()->gui_get_focus_owner()))) {
-			bool accepted = true;
-
-			switch (k->get_keycode()) {
-				case Key::ESCAPE: {
-					_hide_bar();
-				} break;
-				default: {
-					accepted = false;
-				} break;
-			}
-
-			if (accepted) {
-				accept_event();
-			}
+	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
+		if (rich_text_label->has_focus() || is_ancestor_of(get_viewport()->gui_get_focus_owner())) {
+			_hide_bar();
+			accept_event();
 		}
 	}
 }

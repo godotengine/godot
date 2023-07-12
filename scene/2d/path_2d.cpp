@@ -268,11 +268,11 @@ void PathFollow2D::_notification(int p_what) {
 	}
 }
 
-void PathFollow2D::set_cubic_interpolation(bool p_enable) {
-	cubic = p_enable;
+void PathFollow2D::set_cubic_interpolation_enabled(bool p_enabled) {
+	cubic = p_enabled;
 }
 
-bool PathFollow2D::get_cubic_interpolation() const {
+bool PathFollow2D::is_cubic_interpolation_enabled() const {
 	return cubic;
 }
 
@@ -312,17 +312,14 @@ void PathFollow2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_progress_ratio", "ratio"), &PathFollow2D::set_progress_ratio);
 	ClassDB::bind_method(D_METHOD("get_progress_ratio"), &PathFollow2D::get_progress_ratio);
 
-	ClassDB::bind_method(D_METHOD("set_rotates", "enable"), &PathFollow2D::set_rotates);
-	ClassDB::bind_method(D_METHOD("is_rotating"), &PathFollow2D::is_rotating);
+	ClassDB::bind_method(D_METHOD("set_rotates", "enabled"), &PathFollow2D::set_rotation_enabled);
+	ClassDB::bind_method(D_METHOD("is_rotating"), &PathFollow2D::is_rotation_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_cubic_interpolation", "enable"), &PathFollow2D::set_cubic_interpolation);
-	ClassDB::bind_method(D_METHOD("get_cubic_interpolation"), &PathFollow2D::get_cubic_interpolation);
+	ClassDB::bind_method(D_METHOD("set_cubic_interpolation", "enabled"), &PathFollow2D::set_cubic_interpolation_enabled);
+	ClassDB::bind_method(D_METHOD("get_cubic_interpolation"), &PathFollow2D::is_cubic_interpolation_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow2D::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow2D::has_loop);
-
-	ClassDB::bind_method(D_METHOD("set_lookahead", "lookahead"), &PathFollow2D::set_lookahead);
-	ClassDB::bind_method(D_METHOD("get_lookahead"), &PathFollow2D::get_lookahead);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_less,or_greater,suffix:px"), "set_progress", "get_progress");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_less,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
@@ -331,7 +328,6 @@ void PathFollow2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotates"), "set_rotates", "is_rotating");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lookahead", PROPERTY_HINT_RANGE, "0.001,1024.0,0.001"), "set_lookahead", "get_lookahead");
 }
 
 void PathFollow2D::set_progress(real_t p_progress) {
@@ -395,20 +391,12 @@ real_t PathFollow2D::get_progress_ratio() const {
 	}
 }
 
-void PathFollow2D::set_lookahead(real_t p_lookahead) {
-	lookahead = p_lookahead;
-}
-
-real_t PathFollow2D::get_lookahead() const {
-	return lookahead;
-}
-
-void PathFollow2D::set_rotates(bool p_rotates) {
-	rotates = p_rotates;
+void PathFollow2D::set_rotation_enabled(bool p_enabled) {
+	rotates = p_enabled;
 	_update_transform();
 }
 
-bool PathFollow2D::is_rotating() const {
+bool PathFollow2D::is_rotation_enabled() const {
 	return rotates;
 }
 

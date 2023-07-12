@@ -242,6 +242,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 
 	export_filter->select(current->get_export_filter());
 	include_filters->set_text(current->get_include_filter());
+	include_label->set_text(current->get_export_filter() == EditorExportPreset::EXCLUDE_SELECTED_RESOURCES ? TTR("Resources to exclude:") : TTR("Resources to export:"));
 	exclude_filters->set_text(current->get_exclude_filter());
 	server_strip_message->set_visible(current->get_export_filter() == EditorExportPreset::EXPORT_CUSTOMIZED);
 
@@ -576,8 +577,8 @@ void ProjectExportDialog::_duplicate_preset() {
 	preset->set_exclude_filter(current->get_exclude_filter());
 	preset->set_custom_features(current->get_custom_features());
 
-	for (const PropertyInfo &E : current->get_properties()) {
-		preset->set(E.name, current->get(E.name));
+	for (const KeyValue<StringName, Variant> &E : current->get_values()) {
+		preset->set(E.key, E.value);
 	}
 
 	EditorExport::get_singleton()->add_export_preset(preset);
@@ -702,6 +703,7 @@ void ProjectExportDialog::_export_type_changed(int p_which) {
 	if (filter_type == EditorExportPreset::EXPORT_CUSTOMIZED && current->get_customized_files_count() == 0) {
 		current->set_file_export_mode("res://", EditorExportPreset::MODE_FILE_STRIP);
 	}
+	include_label->set_text(current->get_export_filter() == EditorExportPreset::EXCLUDE_SELECTED_RESOURCES ? TTR("Resources to exclude:") : TTR("Resources to export:"));
 
 	updating = true;
 	_fill_resource_tree();

@@ -48,7 +48,8 @@ Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t 
 }
 
 void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted) {
-	PathMD5 pmd5(p_path.md5_buffer());
+	String simplified_path = p_path.simplify_path();
+	PathMD5 pmd5(simplified_path.md5_buffer());
 
 	bool exists = files.has(pmd5);
 
@@ -68,7 +69,7 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 
 	if (!exists) {
 		//search for dir
-		String p = p_path.replace_first("res://", "");
+		String p = simplified_path.replace_first("res://", "");
 		PackedDir *cd = root;
 
 		if (p.contains("/")) { //in a subdir
@@ -87,7 +88,7 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 				}
 			}
 		}
-		String filename = p_path.get_file();
+		String filename = simplified_path.get_file();
 		// Don't add as a file if the path points to a directory
 		if (!filename.is_empty()) {
 			cd->files.insert(filename);

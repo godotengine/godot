@@ -30,6 +30,13 @@
 
 #include "runtime_interop.h"
 
+#include "../csharp_script.h"
+#include "../interop_types.h"
+#include "../managed_callable.h"
+#include "../mono_gd/gd_mono_cache.h"
+#include "../signal_awaiter_utils.h"
+#include "../utils/path_utils.h"
+
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
@@ -40,13 +47,9 @@
 #include "core/os/os.h"
 #include "core/string/string_name.h"
 
-#include "../interop_types.h"
-
-#include "modules/mono/csharp_script.h"
-#include "modules/mono/managed_callable.h"
-#include "modules/mono/mono_gd/gd_mono_cache.h"
-#include "modules/mono/signal_awaiter_utils.h"
-#include "modules/mono/utils/path_utils.h"
+#ifdef TOOLS_ENABLED
+#include "editor/editor_file_system.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,6 +59,10 @@ extern "C" {
 static_assert(sizeof(SafeRefCount) == sizeof(uint32_t));
 
 typedef Object *(*godotsharp_class_creation_func)();
+
+bool godotsharp_dotnet_module_is_initialized() {
+	return GDMono::get_singleton()->is_initialized();
+}
 
 MethodBind *godotsharp_method_bind_get_method(const StringName *p_classname, const StringName *p_methodname) {
 	return ClassDB::get_method(*p_classname, *p_methodname);
@@ -302,6 +309,20 @@ void godotsharp_internal_tie_managed_to_unmanaged_with_pre_setup(GCHandleIntPtr 
 
 void godotsharp_internal_new_csharp_script(Ref<CSharpScript> *r_dest) {
 	memnew_placement(r_dest, Ref<CSharpScript>(memnew(CSharpScript)));
+}
+
+void godotsharp_internal_editor_file_system_update_file(const String *p_script_path) {
+#if TOOLS_ENABLED
+	// If the EditorFileSystem singleton is available, update the file;
+	// otherwise, the file will be updated when the singleton becomes available.
+	EditorFileSystem *efs = EditorFileSystem::get_singleton();
+	if (efs) {
+		efs->update_file(*p_script_path);
+	}
+#else
+	// EditorFileSystem is only available when running in the Godot editor.
+	DEV_ASSERT(false);
+#endif
 }
 
 bool godotsharp_internal_script_load(const String *p_path, Ref<CSharpScript> *r_dest) {
@@ -1391,11 +1412,13 @@ void godotsharp_object_to_string(Object *p_ptr, godot_string *r_str) {
 // The order in this array must match the declaration order of
 // the methods in 'GodotSharp/Core/NativeInterop/NativeFuncs.cs'.
 static const void *unmanaged_callbacks[]{
+	(void *)godotsharp_dotnet_module_is_initialized,
 	(void *)godotsharp_method_bind_get_method,
 	(void *)godotsharp_get_class_constructor,
 	(void *)godotsharp_engine_get_singleton,
 	(void *)godotsharp_stack_info_vector_resize,
 	(void *)godotsharp_stack_info_vector_destroy,
+	(void *)godotsharp_internal_editor_file_system_update_file,
 	(void *)godotsharp_internal_script_debugger_send_error,
 	(void *)godotsharp_internal_script_debugger_is_active,
 	(void *)godotsharp_internal_object_get_associated_gchandle,

@@ -135,7 +135,7 @@ int Area2D::get_priority() const {
 void Area2D::_body_enter_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
-	ERR_FAIL_COND(!node);
+	ERR_FAIL_NULL(node);
 
 	HashMap<ObjectID, BodyState>::Iterator E = body_map.find(p_id);
 	ERR_FAIL_COND(!E);
@@ -151,7 +151,7 @@ void Area2D::_body_enter_tree(ObjectID p_id) {
 void Area2D::_body_exit_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
-	ERR_FAIL_COND(!node);
+	ERR_FAIL_NULL(node);
 	HashMap<ObjectID, BodyState>::Iterator E = body_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(!E->value.in_tree);
@@ -231,7 +231,7 @@ void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 void Area2D::_area_enter_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
-	ERR_FAIL_COND(!node);
+	ERR_FAIL_NULL(node);
 
 	HashMap<ObjectID, AreaState>::Iterator E = area_map.find(p_id);
 	ERR_FAIL_COND(!E);
@@ -247,7 +247,7 @@ void Area2D::_area_enter_tree(ObjectID p_id) {
 void Area2D::_area_exit_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
-	ERR_FAIL_COND(!node);
+	ERR_FAIL_NULL(node);
 	HashMap<ObjectID, AreaState>::Iterator E = area_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(!E->value.in_tree);

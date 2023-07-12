@@ -865,12 +865,46 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			}
 
 			get_token(p_stream, token, line, r_err_str);
-			if (token.type != TK_NUMBER) {
-				r_err_str = "Expected number as argument";
+			// Permit empty RID.
+			if (token.type == TK_PARENTHESIS_CLOSE) {
+				value = RID();
+				return OK;
+			} else if (token.type != TK_NUMBER) {
+				r_err_str = "Expected number as argument or ')'";
 				return ERR_PARSE_ERROR;
 			}
 
-			value = token.value;
+			value = RID::from_uint64(token.value);
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_PARENTHESIS_CLOSE) {
+				r_err_str = "Expected ')'";
+				return ERR_PARSE_ERROR;
+			}
+		} else if (id == "Signal") {
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_PARENTHESIS_OPEN) {
+				r_err_str = "Expected '('";
+				return ERR_PARSE_ERROR;
+			}
+
+			// Load as empty.
+			value = Signal();
+
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_PARENTHESIS_CLOSE) {
+				r_err_str = "Expected ')'";
+				return ERR_PARSE_ERROR;
+			}
+		} else if (id == "Callable") {
+			get_token(p_stream, token, line, r_err_str);
+			if (token.type != TK_PARENTHESIS_OPEN) {
+				r_err_str = "Expected '('";
+				return ERR_PARSE_ERROR;
+			}
+
+			// Load as empty.
+			value = Callable();
 
 			get_token(p_stream, token, line, r_err_str);
 			if (token.type != TK_PARENTHESIS_CLOSE) {
@@ -1832,6 +1866,24 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 		} break;
 
+		case Variant::RID: {
+			RID rid = p_variant;
+
+			if (rid == RID()) {
+				p_store_string_func(p_store_string_ud, "RID()");
+			} else {
+				p_store_string_func(p_store_string_ud, "RID(" + itos(rid.get_id()) + ")");
+			}
+		} break;
+
+		// Do not really store these, but ensure that assignments are not empty.
+		case Variant::SIGNAL: {
+			p_store_string_func(p_store_string_ud, "Signal()");
+		} break;
+		case Variant::CALLABLE: {
+			p_store_string_func(p_store_string_ud, "Callable()");
+		} break;
+
 		case Variant::OBJECT: {
 			Object *obj = p_variant.get_validated_object();
 
@@ -2129,6 +2181,8 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 		} break;
 		default: {
+			ERR_PRINT("Unknown variant type");
+			return ERR_BUG;
 		}
 	}
 

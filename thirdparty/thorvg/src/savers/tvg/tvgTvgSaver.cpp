@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2022 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2021 - 2023 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 #include "tvgMath.h"
 #include "tvgSaveModule.h"
 #include "tvgTvgSaver.h"
@@ -169,7 +170,7 @@ bool TvgSaver::saveEncoding(const std::string& path)
     memcpy(uncompressed, &compressedSizeBits, TVG_HEADER_COMPRESSED_SIZE_BITS);
 
     //Good optimization, flush to file.
-    auto fp = _fopen(path.c_str(), "w+");
+    auto fp = _fopen(path.c_str(), "wb+");
     if (!fp) goto fail;
 
     //write header
@@ -192,7 +193,7 @@ fail:
 
 bool TvgSaver::flushTo(const std::string& path)
 {
-    auto fp = _fopen(path.c_str(), "w+");
+    auto fp = _fopen(path.c_str(), "wb+");
     if (!fp) return false;
 
     if (fwrite(buffer.data, SIZE(uint8_t), buffer.count, fp) == 0) {
@@ -355,7 +356,7 @@ TvgBinCounter TvgSaver::serializeChild(const Paint* parent, const Paint* child, 
 
 TvgBinCounter TvgSaver::serializeScene(const Scene* scene, const Matrix* pTransform, const Matrix* cTransform)
 {
-    auto it = this->iterator(scene);
+    auto it = IteratorAccessor::iterator(scene);
     if (it->count() == 0) {
         delete(it);
         return 0;
@@ -567,7 +568,7 @@ TvgBinCounter TvgSaver::serializeShape(const Shape* shape, const Matrix* pTransf
 /* Picture has either a vector scene or a bitmap. */
 TvgBinCounter TvgSaver::serializePicture(const Picture* picture, const Matrix* pTransform, const Matrix* cTransform)
 {
-    auto it = this->iterator(picture);
+    auto it = IteratorAccessor::iterator(picture);
 
     //Case - Vector Scene:
     if (it->count() == 1) {
@@ -608,6 +609,20 @@ TvgBinCounter TvgSaver::serializePicture(const Picture* picture, const Matrix* p
     cnt += writeData(&h, sizeCnt);
     cnt += writeData(pixels, imgSize);
     cnt += SIZE(TvgBinTag) + SIZE(TvgBinCounter);
+
+    //mesh: currently only available in bitmap image.
+    const Polygon* triangles = nullptr;
+    auto triangleCnt = picture->mesh(&triangles);
+    if (triangles && triangleCnt > 0) {
+        TvgBinCounter triangleCntSize = SIZE(triangleCnt);
+        TvgBinCounter trianglesSize = triangleCnt * SIZE(triangles[0]);
+
+        writeTag(TVG_TAG_PICTURE_MESH);
+        writeCount(triangleCntSize + trianglesSize);
+        cnt += writeData(&triangleCnt, triangleCntSize);
+        cnt += writeData(triangles, trianglesSize);
+        cnt += SIZE(TvgBinTag) + SIZE(TvgBinCounter);
+    }
 
     //Bitmap picture needs the transform info.
     cnt += writeTransform(cTransform, TVG_TAG_PAINT_TRANSFORM);

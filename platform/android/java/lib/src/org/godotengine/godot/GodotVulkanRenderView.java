@@ -134,8 +134,10 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 
 	@Override
 	public void requestPointerCapture() {
-		super.requestPointerCapture();
-		mInputHandler.onPointerCaptureChange(true);
+		if (canCapturePointer()) {
+			super.requestPointerCapture();
+			mInputHandler.onPointerCaptureChange(true);
+		}
 	}
 
 	@Override
@@ -162,10 +164,10 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 			try {
 				Bitmap bitmap = null;
 				if (!TextUtils.isEmpty(imagePath)) {
-					if (godot.directoryAccessHandler.filesystemFileExists(imagePath)) {
+					if (godot.getDirectoryAccessHandler().filesystemFileExists(imagePath)) {
 						// Try to load the bitmap from the file system
 						bitmap = BitmapFactory.decodeFile(imagePath);
-					} else if (godot.directoryAccessHandler.assetsFileExists(imagePath)) {
+					} else if (godot.getDirectoryAccessHandler().assetsFileExists(imagePath)) {
 						// Try to load the bitmap from the assets directory
 						AssetManager am = getContext().getAssets();
 						InputStream imageInputStream = am.open(imagePath);

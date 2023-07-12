@@ -60,6 +60,7 @@ class ViewportTexture : public Texture2D {
 	friend class Viewport;
 	Viewport *vp = nullptr;
 	bool vp_pending = false;
+	bool vp_changed = false;
 
 	void _setup_local_to_scene(const Node *p_loc_scene);
 
@@ -256,16 +257,6 @@ private:
 	Transform3D physics_last_object_transform;
 	Transform3D physics_last_camera_transform;
 	ObjectID physics_last_id;
-	bool physics_has_last_mousepos = false;
-	Vector2 physics_last_mousepos = Vector2(INFINITY, INFINITY);
-	struct {
-		bool alt = false;
-		bool control = false;
-		bool shift = false;
-		bool meta = false;
-		BitField<MouseButtonMask> mouse_mask;
-
-	} physics_last_mouse_state;
 
 	bool handle_input_locally = true;
 	bool local_input_handled = false;
@@ -347,6 +338,7 @@ private:
 	struct SubWindow {
 		Window *window = nullptr;
 		RID canvas_item;
+		Rect2i parent_safe_rect;
 	};
 
 	// VRS
@@ -388,6 +380,7 @@ private:
 		bool embed_subwindows_hint = false;
 
 		Window *subwindow_focused = nullptr;
+		Window *currently_dragged_subwindow = nullptr;
 		SubWindowDrag subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 		Vector2 subwindow_drag_from;
 		Vector2 subwindow_drag_pos;
@@ -413,6 +406,8 @@ private:
 	void _gui_input_event(Ref<InputEvent> p_event);
 	void _perform_drop(Control *p_control = nullptr, Point2 p_pos = Point2());
 	void _gui_cleanup_internal_state(Ref<InputEvent> p_event);
+
+	void _push_unhandled_input_internal(const Ref<InputEvent> &p_event);
 
 	Ref<InputEvent> _make_input_local(const Ref<InputEvent> &ev);
 
@@ -467,7 +462,7 @@ private:
 	void _sub_window_update(Window *p_window);
 	void _sub_window_grab_focus(Window *p_window);
 	void _sub_window_remove(Window *p_window);
-	int _sub_window_find(Window *p_window);
+	int _sub_window_find(Window *p_window) const;
 	bool _sub_windows_forward_input(const Ref<InputEvent> &p_event);
 	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
 
@@ -575,13 +570,16 @@ public:
 
 	void push_text_input(const String &p_text);
 	void push_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
+#ifndef DISABLE_DEPRECATED
 	void push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
+#endif // DISABLE_DEPRECATED
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
 
 	Vector2 get_mouse_position() const;
 	void warp_mouse(const Vector2 &p_position);
+	virtual void update_mouse_cursor_state();
 
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
@@ -594,7 +592,7 @@ public:
 	int gui_get_canvas_sort_index();
 
 	void gui_release_focus();
-	Control *gui_get_focus_owner();
+	Control *gui_get_focus_owner() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 
@@ -647,6 +645,8 @@ public:
 
 	void set_embedding_subwindows(bool p_embed);
 	bool is_embedding_subwindows() const;
+	void subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect);
+	Rect2i subwindow_get_popup_safe_rect(Window *p_window) const;
 
 	Viewport *get_parent_viewport() const;
 	Window *get_base_window() const;
@@ -664,6 +664,7 @@ public:
 	Transform2D get_screen_transform() const;
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const;
 	virtual Transform2D get_popup_base_transform() const { return Transform2D(); }
+	virtual bool is_directly_attached_to_screen() const { return false; };
 
 #ifndef _3D_DISABLED
 	bool use_xr = false;
@@ -795,6 +796,7 @@ public:
 
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
+	virtual bool is_directly_attached_to_screen() const override;
 
 	void _validate_property(PropertyInfo &p_property) const;
 	SubViewport();

@@ -29,10 +29,12 @@
 /**************************************************************************/
 
 #include "register_types.h"
-#include "core/error/error_macros.h"
+
 #include "enet_connection.h"
 #include "enet_multiplayer_peer.h"
 #include "enet_packet_peer.h"
+
+#include "core/error/error_macros.h"
 
 static bool enet_ok = false;
 

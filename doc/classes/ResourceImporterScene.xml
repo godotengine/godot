@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterScene" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="_subresources" type="Dictionary" setter="" getter="" default="{}">
+		</member>
+		<member name="animation/fps" type="float" setter="" getter="" default="30">
+		</member>
+		<member name="animation/import" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="animation/remove_immutable_tracks" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="animation/trimming" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="import_script/path" type="String" setter="" getter="" default="&quot;&quot;">
+		</member>
+		<member name="meshes/create_shadow_meshes" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="meshes/ensure_tangents" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="meshes/generate_lods" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="meshes/light_baking" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="meshes/lightmap_texel_size" type="float" setter="" getter="" default="0.2">
+		</member>
+		<member name="nodes/apply_root_scale" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="nodes/root_name" type="String" setter="" getter="" default="&quot;Scene Root&quot;">
+		</member>
+		<member name="nodes/root_scale" type="float" setter="" getter="" default="1.0">
+		</member>
+		<member name="nodes/root_type" type="String" setter="" getter="" default="&quot;Node3D&quot;">
+		</member>
+		<member name="skins/use_named_skins" type="bool" setter="" getter="" default="true">
+		</member>
+	</members>
+</class>

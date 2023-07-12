@@ -33,16 +33,18 @@
 
 #ifdef IOS_ENABLED
 
-#include "drivers/coreaudio/audio_driver_coreaudio.h"
+#import "ios.h"
+#import "joypad_ios.h"
+
+#import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "ios.h"
-#include "joypad_ios.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/renderer_compositor.h"
 
 #if defined(VULKAN_ENABLED)
+#import "vulkan_context_ios.h"
+
 #include "drivers/vulkan/rendering_device_vulkan.h"
-#include "platform/ios/vulkan_context_ios.h"
 #endif
 
 class OS_IOS : public OS_Unix {

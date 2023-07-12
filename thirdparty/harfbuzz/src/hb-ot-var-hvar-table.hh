@@ -185,12 +185,8 @@ struct hvarvvar_subset_plan_t
     {
       retain_adv_map = plan->flags & HB_SUBSET_FLAGS_RETAIN_GIDS;
       outer_map.add (0);
-      for (hb_codepoint_t gid = 0; gid < plan->num_output_glyphs (); gid++)
-      {
-	hb_codepoint_t old_gid;
-	if (plan->old_gid_for_new_gid (gid, &old_gid))
-	  inner_sets[0]->add (old_gid);
-      }
+      for (hb_codepoint_t old_gid : plan->glyphset()->iter())
+        inner_sets[0]->add (old_gid);
       hb_set_union (adv_set, inner_sets[0]);
     }
 
@@ -202,10 +198,12 @@ struct hvarvvar_subset_plan_t
     if (retain_adv_map)
     {
       for (hb_codepoint_t gid = 0; gid < plan->num_output_glyphs (); gid++)
+      {
 	if (inner_sets[0]->has (gid))
 	  inner_maps[0].add (gid);
 	else
 	  inner_maps[0].skip ();
+      }
     }
     else
     {
@@ -264,6 +262,9 @@ struct HVARVVAR
 		  lsbMap.sanitize (c, this) &&
 		  rsbMap.sanitize (c, this));
   }
+
+  const VariationStore& get_var_store () const
+  { return this+varStore; }
 
   void listup_index_maps (hb_vector_t<const DeltaSetIndexMap *> &index_maps) const
   {

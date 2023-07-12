@@ -158,8 +158,6 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 		}
 		r_texture = generated;
 
-		int small_thumbnail_size = EditorNode::get_singleton()->get_theme_base()->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"))->get_width(); // Kind of a workaround to retrieve the default icon size
-
 		if (preview_generators[i]->can_generate_small_preview()) {
 			Ref<Texture2D> generated_small;
 			Dictionary d;
@@ -198,9 +196,9 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 	}
 }
 
-Variant EditorResourcePreview::get_preview_metadata(const String &p_path, const String &p_meta) const {
-	ERR_FAIL_COND_V(!cache.has(p_path), Variant());
-	return cache[p_path].preview_metadata.get(p_meta, Variant());
+const Dictionary EditorResourcePreview::get_preview_metadata(const String &p_path) const {
+	ERR_FAIL_COND_V(!cache.has(p_path), Dictionary());
+	return cache[p_path].preview_metadata;
 }
 
 void EditorResourcePreview::_iterate() {
@@ -340,9 +338,16 @@ void EditorResourcePreview::_thread() {
 	exited.set();
 }
 
+void EditorResourcePreview::_update_thumbnail_sizes() {
+	if (small_thumbnail_size == -1) {
+		small_thumbnail_size = EditorNode::get_singleton()->get_theme_base()->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"))->get_width(); // Kind of a workaround to retrieve the default icon size
+	}
+}
+
 void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p_res, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata) {
 	ERR_FAIL_NULL(p_receiver);
 	ERR_FAIL_COND(!p_res.is_valid());
+	_update_thumbnail_sizes();
 
 	{
 		MutexLock lock(preview_mutex);
@@ -370,6 +375,8 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 }
 
 void EditorResourcePreview::queue_resource_preview(const String &p_path, Object *p_receiver, const StringName &p_receiver_func, const Variant &p_userdata) {
+	_update_thumbnail_sizes();
+
 	ERR_FAIL_NULL(p_receiver);
 	{
 		MutexLock lock(preview_mutex);

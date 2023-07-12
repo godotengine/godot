@@ -36,6 +36,8 @@
 /* shaping and advanced font features support.                           */
 /*************************************************************************/
 
+#include "script_iterator.h"
+
 #ifdef GDEXTENSION
 // Headers for building as GDExtension plug-in.
 
@@ -79,19 +81,16 @@ using namespace godot;
 #else
 // Headers for building as built-in module.
 
-#include "servers/text/text_server_extension.h"
-
 #include "core/extension/ext_wrappers.gen.inc"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "scene/resources/texture.h"
+#include "servers/text/text_server_extension.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
 
 #endif
-
-#include "script_iterator.h"
 
 // Thirdparty headers.
 
@@ -714,6 +713,7 @@ public:
 
 	MODBIND2(font_set_name, const RID &, const String &);
 	MODBIND1RC(String, font_get_name, const RID &);
+	MODBIND1RC(Dictionary, font_get_ot_name_strings, const RID &);
 
 	MODBIND2(font_set_antialiasing, const RID &, TextServer::FontAntialiasing);
 	MODBIND1RC(TextServer::FontAntialiasing, font_get_antialiasing, const RID &);
