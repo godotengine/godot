@@ -870,6 +870,14 @@ void CodeTextEditor::_reset_zoom() {
 }
 
 void CodeTextEditor::_line_col_changed() {
+	text_editor->set_code_hint("");
+	code_complete_timer_line = text_editor->get_caret_line();
+	if (code_complete_timer->is_inside_tree()) {
+		code_complete_timer->start();
+	} else { // if not in tree (most likely we are just opening the script) we can't start it yet so we wait for it to be inside tree and start it then thanks to autostart.
+		code_complete_timer->set_autostart(true);
+	}
+
 	if (!code_complete_timer->is_stopped() && code_complete_timer_line != text_editor->get_caret_line()) {
 		code_complete_timer->stop();
 	}
@@ -905,11 +913,6 @@ void CodeTextEditor::_line_col_changed() {
 }
 
 void CodeTextEditor::_text_changed() {
-	if (text_editor->is_insert_text_operation()) {
-		code_complete_timer_line = text_editor->get_caret_line();
-		code_complete_timer->start();
-	}
-
 	idle->start();
 
 	if (find_replace_bar) {

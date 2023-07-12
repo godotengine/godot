@@ -2977,13 +2977,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	push_completion_call(call);
 	int argument_index = 0;
 	do {
-		make_completion_context(ct, call, argument_index++, true);
+		make_completion_context(ct, call, argument_index, true);
 		if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
 			// Allow for trailing comma.
 			break;
 		}
 		bool use_identifier_completion = current.cursor_place == GDScriptTokenizer::CURSOR_END || current.cursor_place == GDScriptTokenizer::CURSOR_MIDDLE;
 		ExpressionNode *argument = parse_expression(false);
+		make_completion_context(ct, call, argument_index++, true);
 		if (argument == nullptr) {
 			push_error(R"(Expected expression as the function argument.)");
 		} else {

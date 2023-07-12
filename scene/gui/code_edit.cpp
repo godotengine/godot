@@ -356,7 +356,6 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		cancel_code_completion();
-		set_code_hint("");
 
 		if (mb->is_pressed()) {
 			Vector2i mpos = mb->get_position();
@@ -573,9 +572,6 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		set_code_hint("");
 		accept_event();
 		return;
-	}
-	if (allow_unicode_handling && k->get_unicode() == ')') {
-		set_code_hint("");
 	}
 
 	/* Indentation */
@@ -2035,6 +2031,55 @@ void CodeEdit::request_code_completion(bool p_force) {
 		emit_signal(SNAME("code_completion_requested"));
 	} else if (ofs > 1 && line[ofs - 1] == ' ' && code_completion_prefixes.has(line[ofs - 2])) {
 		emit_signal(SNAME("code_completion_requested"));
+	} else {
+		// try to find an opening bracket indicating we are between two brackets.
+		int stack = 1;
+		bool found_match = false;
+		char32_t closec = '(';
+		char32_t c = ')';
+		for (int i = get_caret_line(); i >= 0 && !found_match; i--) {
+			// if a line is empty (not even a tab) stop looking for an opening bracket
+			if (get_line(i).length() == 0) {
+				break;
+			}
+			int from = i == get_caret_line() ? get_caret_column() - 2 : get_line(i).length() - 1;
+			for (int j = from; j >= 0; j--) {
+				char32_t cc = get_line(i)[j];
+				// Ignore any brackets inside a string.
+				if (cc == '"' || cc == '\'') {
+					char32_t quotation = cc;
+					do {
+						j--;
+						if (!(j >= 0)) {
+							break;
+						}
+						cc = get_line(i)[j];
+						// Skip over escaped quotation marks inside strings.
+						if (cc == quotation) {
+							bool escaped = false;
+							while (j - 1 >= 0 && get_line(i)[j - 1] == '\\') {
+								escaped = !escaped;
+								j--;
+							}
+							if (escaped) {
+								cc = '\\';
+								continue;
+							}
+						}
+					} while (cc != quotation);
+				} else if (cc == c) {
+					stack++;
+				} else if (cc == closec) {
+					stack--;
+				}
+
+				if (stack == 0) {
+					found_match = true;
+					emit_signal(SNAME("code_completion_requested"));
+					break;
+				}
+			}
+		}
 	}
 }
 
