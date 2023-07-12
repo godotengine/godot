@@ -222,6 +222,12 @@
 				Returns the image's height.
 			</description>
 		</method>
+		<method name="get_mipmap_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the image's number of mipmaps.
+			</description>
+		</method>
 		<method name="get_mipmap_offset" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="mipmap" type="int" />
