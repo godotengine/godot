@@ -1050,6 +1050,9 @@
 		<constant name="AREA_PARAM_PRIORITY" value="9" enum="AreaParameter">
 			Constant to set/get the priority (order of processing) of an area. The default value of this parameter is [code]0[/code].
 		</constant>
+		<constant name="AREA_PARAM_GRAVITY_APPLY_TRANSFORM" value="10" enum="AreaParameter">
+			Constant to set/get whether the area transform is applied to the gravity vector.
+		</constant>
 		<constant name="AREA_SPACE_OVERRIDE_DISABLED" value="0" enum="AreaSpaceOverrideMode">
 			This area does not affect gravity/damp. These are generally areas that exist only to detect collisions, and objects entering or exiting them.
 		</constant>

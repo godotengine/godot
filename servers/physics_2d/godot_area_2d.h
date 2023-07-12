@@ -48,6 +48,7 @@ class GodotArea2D : public GodotCollisionObject2D {
 	real_t gravity = 9.80665;
 	Vector2 gravity_vector = Vector2(0, -1);
 	bool gravity_is_point = false;
+	bool gravity_apply_transform = false;
 	real_t gravity_point_unit_distance = 0.0;
 	real_t linear_damp = 0.1;
 	real_t angular_damp = 1.0;
@@ -123,6 +124,9 @@ public:
 
 	_FORCE_INLINE_ void set_gravity_as_point(bool p_enable) { gravity_is_point = p_enable; }
 	_FORCE_INLINE_ bool is_gravity_point() const { return gravity_is_point; }
+
+	_FORCE_INLINE_ void set_gravity_apply_transform(bool p_enable) { gravity_apply_transform = p_enable; }
+	_FORCE_INLINE_ bool is_gravity_apply_transform() const { return gravity_apply_transform; }
 
 	_FORCE_INLINE_ void set_gravity_point_unit_distance(real_t scale) { gravity_point_unit_distance = scale; }
 	_FORCE_INLINE_ real_t get_gravity_point_unit_distance() const { return gravity_point_unit_distance; }

@@ -51,6 +51,7 @@ private:
 	Vector2 gravity_vec;
 	real_t gravity = 0.0;
 	bool gravity_is_point = false;
+	bool gravity_apply_transform = false;
 	real_t gravity_point_unit_distance = 0.0;
 
 	SpaceOverride linear_damp_space_override = SPACE_OVERRIDE_DISABLED;
@@ -143,6 +144,9 @@ public:
 
 	void set_gravity_is_point(bool p_enabled);
 	bool is_gravity_a_point() const;
+
+	void set_gravity_apply_transform(bool p_enabled);
+	bool is_gravity_apply_transform() const;
 
 	void set_gravity_point_unit_distance(real_t p_scale);
 	real_t get_gravity_point_unit_distance() const;
