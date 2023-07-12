@@ -846,13 +846,14 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		_update_selected_editor_menu();
 	}
 
-	_update_history_arrows();
-
-	_update_script_names();
-	_update_members_overview_visibility();
-	_update_help_overview_visibility();
-	_save_layout();
-	_update_find_replace_bar();
+	if (script_close_queue.is_empty()) {
+		_update_history_arrows();
+		_update_script_names();
+		_update_members_overview_visibility();
+		_update_help_overview_visibility();
+		_save_layout();
+		_update_find_replace_bar();
+	}
 }
 
 void ScriptEditor::_close_current_tab(bool p_save) {
