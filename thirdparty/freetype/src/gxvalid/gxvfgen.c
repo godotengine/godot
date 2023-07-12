@@ -97,7 +97,8 @@
 #define EMPTYFEAT {0, 0, {NULL}}
 
 
-  static GX_Feature_RegistryRec featreg_table[] = {
+  static GX_Feature_RegistryRec featreg_table[] =
+  {
     {                                       /* 0 */
       "All Typographic Features",
       0,

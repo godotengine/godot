@@ -449,15 +449,16 @@
 
   /* load bitmap strikes lists */
   FT_CALLBACK_DEF( FT_Error )
-  pfr_extra_item_load_bitmap_info( FT_Byte*     p,
-                                   FT_Byte*     limit,
-                                   PFR_PhyFont  phy_font )
+  pfr_extra_item_load_bitmap_info( FT_Byte*  p,
+                                   FT_Byte*  limit,
+                                   void*     phy_font_ )
   {
-    FT_Memory   memory = phy_font->memory;
-    PFR_Strike  strike;
-    FT_UInt     flags0;
-    FT_UInt     n, count, size1;
-    FT_Error    error = FT_Err_Ok;
+    PFR_PhyFont  phy_font = (PFR_PhyFont)phy_font_;
+    FT_Memory    memory   = phy_font->memory;
+    PFR_Strike   strike;
+    FT_UInt      flags0;
+    FT_UInt      n, count, size1;
+    FT_Error     error    = FT_Err_Ok;
 
 
     PFR_CHECK( 5 );
@@ -549,13 +550,14 @@
    * family.
    */
   FT_CALLBACK_DEF( FT_Error )
-  pfr_extra_item_load_font_id( FT_Byte*     p,
-                               FT_Byte*     limit,
-                               PFR_PhyFont  phy_font )
+  pfr_extra_item_load_font_id( FT_Byte*  p,
+                               FT_Byte*  limit,
+                               void*     phy_font_ )
   {
-    FT_Error   error  = FT_Err_Ok;
-    FT_Memory  memory = phy_font->memory;
-    FT_UInt    len    = (FT_UInt)( limit - p );
+    PFR_PhyFont  phy_font = (PFR_PhyFont)phy_font_;
+    FT_Error     error    = FT_Err_Ok;
+    FT_Memory    memory   = phy_font->memory;
+    FT_UInt      len      = (FT_UInt)( limit - p );
 
 
     if ( phy_font->font_id )
@@ -575,14 +577,15 @@
 
   /* load stem snap tables */
   FT_CALLBACK_DEF( FT_Error )
-  pfr_extra_item_load_stem_snaps( FT_Byte*     p,
-                                  FT_Byte*     limit,
-                                  PFR_PhyFont  phy_font )
+  pfr_extra_item_load_stem_snaps( FT_Byte*  p,
+                                  FT_Byte*  limit,
+                                  void*     phy_font_ )
   {
-    FT_UInt    count, num_vert, num_horz;
-    FT_Int*    snaps  = NULL;
-    FT_Error   error  = FT_Err_Ok;
-    FT_Memory  memory = phy_font->memory;
+    PFR_PhyFont  phy_font = (PFR_PhyFont)phy_font_;
+    FT_UInt      count, num_vert, num_horz;
+    FT_Int*      snaps    = NULL;
+    FT_Error     error    = FT_Err_Ok;
+    FT_Memory    memory   = phy_font->memory;
 
 
     if ( phy_font->vertical.stem_snaps )
@@ -619,10 +622,11 @@
 
   /* load kerning pair data */
   FT_CALLBACK_DEF( FT_Error )
-  pfr_extra_item_load_kerning_pairs( FT_Byte*     p,
-                                     FT_Byte*     limit,
-                                     PFR_PhyFont  phy_font )
+  pfr_extra_item_load_kerning_pairs( FT_Byte*  p,
+                                     FT_Byte*  limit,
+                                     void*     phy_font_ )
   {
+    PFR_PhyFont  phy_font = (PFR_PhyFont)phy_font_;
     PFR_KernItem  item   = NULL;
     FT_Error      error  = FT_Err_Ok;
     FT_Memory     memory = phy_font->memory;
@@ -715,10 +719,10 @@
 
   static const PFR_ExtraItemRec  pfr_phy_font_extra_items[] =
   {
-    { 1, (PFR_ExtraItem_ParseFunc)pfr_extra_item_load_bitmap_info },
-    { 2, (PFR_ExtraItem_ParseFunc)pfr_extra_item_load_font_id },
-    { 3, (PFR_ExtraItem_ParseFunc)pfr_extra_item_load_stem_snaps },
-    { 4, (PFR_ExtraItem_ParseFunc)pfr_extra_item_load_kerning_pairs },
+    { 1, pfr_extra_item_load_bitmap_info },
+    { 2, pfr_extra_item_load_font_id },
+    { 3, pfr_extra_item_load_stem_snaps },
+    { 4, pfr_extra_item_load_kerning_pairs },
     { 0, NULL }
   };
 

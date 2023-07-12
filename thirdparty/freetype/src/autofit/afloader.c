@@ -55,10 +55,8 @@
       error = af_face_globals_new( face, &loader->globals, module );
       if ( !error )
       {
-        face->autohint.data =
-          (FT_Pointer)loader->globals;
-        face->autohint.finalizer =
-          (FT_Generic_Finalizer)af_face_globals_free;
+        face->autohint.data      = (FT_Pointer)loader->globals;
+        face->autohint.finalizer = af_face_globals_free;
       }
     }
 

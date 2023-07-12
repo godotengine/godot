@@ -118,7 +118,7 @@ FT_BEGIN_HEADER
    *   attachement.
    *
    *   Similarly, the function returns success for an empty outline also
-   *   (doing nothing, this is, not calling any emitter); if necessary, you
+   *   (doing nothing, that is, not calling any emitter); if necessary, you
    *   should filter this out, too.
    */
   FT_EXPORT( FT_Error )
