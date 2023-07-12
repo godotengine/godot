@@ -251,6 +251,15 @@ public:
 	virtual void clipboard_set_primary(const String &p_text);
 	virtual String clipboard_get_primary() const;
 
+	virtual void set_clipboard_string(const String &p_text);
+	virtual String get_clipboard_string() const;
+	virtual bool has_clipboard_string() const;
+	virtual void set_clipboard_primary(const String &p_text);
+	virtual String get_clipboard_primary() const;
+	virtual void set_clipboard_image(const Ref<Image> &p_image);
+	virtual Ref<Image> get_clipboard_image() const;
+	virtual bool has_clipboard_image() const;
+
 	virtual TypedArray<Rect2> get_display_cutouts() const { return TypedArray<Rect2>(); }
 	virtual Rect2i get_display_safe_area() const { return screen_get_usable_rect(); }
 
