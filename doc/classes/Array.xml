@@ -38,7 +38,7 @@
 		GD.Print(array1 + array2); // Prints [One, 2, 3, Four]
 		[/csharp]
 		[/codeblocks]
-		[b]Note:[/b] Arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
+		[b]Note:[/b] Array is a reference type. This means that changing the elements of an array will be reflected in other references to that array. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
 		[b]Note:[/b] Erasing elements while iterating over arrays is [b]not[/b] supported and will result in unpredictable behavior.
 	</description>
 	<tutorials>

@@ -4,8 +4,10 @@
 		A packed array of 32-bit floating-point values.
 	</brief_description>
 	<description>
-		An array specifically designed to hold 32-bit floating-point values (float). Packs data tightly, so it saves memory for large array sizes.
+		An array specifically designed to hold 32-bit floating-point values (float). It packs data tightly, so it saves memory for large array sizes.
 		If you need to pack 64-bit floats tightly, see [PackedFloat64Array].
+		[b]Note:[/b] PackedFloat32Array is a reference type. This means that changing the elements of an array will be reflected in other references to that array. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
+		[b]Note:[/b] Erasing elements while iterating over PackedFloat32Arrays is [b]not[/b] supported and will result in unpredictable behavior.
 	</description>
 	<tutorials>
 	</tutorials>

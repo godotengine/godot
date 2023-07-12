@@ -133,7 +133,7 @@
 		}
 		[/csharp]
 		[/codeblocks]
-		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
+		[b]Note:[/b] Dictionary is a reference type. This means that changing the entries of a dictionary will be reflected in other references to that dictionary. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
 		[b]Note:[/b] Erasing elements while iterating over dictionaries is [b]not[/b] supported and will result in unpredictable behavior.
 	</description>
 	<tutorials>
