@@ -689,9 +689,10 @@ namespace Godot
         /// <returns>The added vector.</returns>
         public static Vector2 operator +(Vector2 left, Vector2 right)
         {
-            left.X += right.X;
-            left.Y += right.Y;
-            return left;
+            Vector2 v;
+            v.X = left.X + right.X;
+            v.Y = left.Y + right.Y;
+            return v;
         }
 
         /// <summary>
@@ -703,9 +704,10 @@ namespace Godot
         /// <returns>The subtracted vector.</returns>
         public static Vector2 operator -(Vector2 left, Vector2 right)
         {
-            left.X -= right.X;
-            left.Y -= right.Y;
-            return left;
+            Vector2 v;
+            v.X = left.X - right.X;
+            v.Y = left.Y - right.Y;
+            return v;
         }
 
         /// <summary>
@@ -719,9 +721,10 @@ namespace Godot
         /// <returns>The negated/flipped vector.</returns>
         public static Vector2 operator -(Vector2 vec)
         {
-            vec.X = -vec.X;
-            vec.Y = -vec.Y;
-            return vec;
+            Vector2 v;
+            v.X = -vec.X;
+            v.Y = -vec.Y;
+            return v;
         }
 
         /// <summary>
@@ -733,9 +736,10 @@ namespace Godot
         /// <returns>The multiplied vector.</returns>
         public static Vector2 operator *(Vector2 vec, real_t scale)
         {
-            vec.X *= scale;
-            vec.Y *= scale;
-            return vec;
+            Vector2 v;
+            v.X = vec.X * scale;
+            v.Y = vec.Y * scale;
+            return v;
         }
 
         /// <summary>
@@ -747,9 +751,10 @@ namespace Godot
         /// <returns>The multiplied vector.</returns>
         public static Vector2 operator *(real_t scale, Vector2 vec)
         {
-            vec.X *= scale;
-            vec.Y *= scale;
-            return vec;
+            Vector2 v;
+            v.X = vec.X * scale;
+            v.Y = vec.Y * scale;
+            return v;
         }
 
         /// <summary>
@@ -761,9 +766,10 @@ namespace Godot
         /// <returns>The multiplied vector.</returns>
         public static Vector2 operator *(Vector2 left, Vector2 right)
         {
-            left.X *= right.X;
-            left.Y *= right.Y;
-            return left;
+            Vector2 v;
+            v.X = left.X * right.X;
+            v.Y = left.Y * right.Y;
+            return v;
         }
 
         /// <summary>
@@ -775,9 +781,10 @@ namespace Godot
         /// <returns>The divided vector.</returns>
         public static Vector2 operator /(Vector2 vec, real_t divisor)
         {
-            vec.X /= divisor;
-            vec.Y /= divisor;
-            return vec;
+            Vector2 v;
+            v.X = vec.X / divisor;
+            v.Y = vec.Y / divisor;
+            return v;
         }
 
         /// <summary>
@@ -789,9 +796,10 @@ namespace Godot
         /// <returns>The divided vector.</returns>
         public static Vector2 operator /(Vector2 vec, Vector2 divisorv)
         {
-            vec.X /= divisorv.X;
-            vec.Y /= divisorv.Y;
-            return vec;
+            Vector2 v;
+            v.X = vec.X / divisorv.X;
+            v.Y = vec.Y / divisorv.Y;
+            return v;
         }
 
         /// <summary>
@@ -812,9 +820,10 @@ namespace Godot
         /// <returns>The remainder vector.</returns>
         public static Vector2 operator %(Vector2 vec, real_t divisor)
         {
-            vec.X %= divisor;
-            vec.Y %= divisor;
-            return vec;
+            Vector2 v;
+            v.X = vec.X % divisor;
+            v.Y = vec.Y % divisor;
+            return v;
         }
 
         /// <summary>
@@ -835,9 +844,10 @@ namespace Godot
         /// <returns>The remainder vector.</returns>
         public static Vector2 operator %(Vector2 vec, Vector2 divisorv)
         {
-            vec.X %= divisorv.X;
-            vec.Y %= divisorv.Y;
-            return vec;
+            Vector2 v;
+            v.X = vec.X % divisorv.X;
+            v.Y = vec.Y % divisorv.Y;
+            return v;
         }
 
         /// <summary>
