@@ -89,6 +89,10 @@
 #endif
 
 
+#ifndef HB_GLYF_VAR_COMPOSITE_MAX_AXES
+#define HB_GLYF_VAR_COMPOSITE_MAX_AXES 4096
+#endif
+
 #ifndef HB_GLYF_MAX_POINTS
 #define HB_GLYF_MAX_POINTS 20000
 #endif

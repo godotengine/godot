@@ -278,7 +278,6 @@ struct CursivePosFormat1
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out)) return_trace (false);
 
     auto it =
     + hb_zip (this+coverage, entryExitRecord)

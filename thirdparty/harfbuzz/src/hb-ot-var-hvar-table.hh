@@ -56,52 +56,56 @@ struct index_map_subset_plan_t
     if (&index_map == &Null (DeltaSetIndexMap)) return;
 
     unsigned int	last_val = (unsigned int)-1;
-    hb_codepoint_t	last_gid = (hb_codepoint_t)-1;
-    hb_codepoint_t	gid = (hb_codepoint_t) hb_min (index_map.get_map_count (), plan->num_output_glyphs ());
+    hb_codepoint_t	last_gid = HB_CODEPOINT_INVALID;
+    hb_codepoint_t	num_gid = (hb_codepoint_t) hb_min (index_map.get_map_count (), plan->num_output_glyphs ());
 
     outer_bit_count = (index_map.get_width () * 8) - index_map.get_inner_bit_count ();
     max_inners.resize (inner_sets.length);
     for (unsigned i = 0; i < inner_sets.length; i++) max_inners[i] = 0;
 
     /* Search backwards for a map value different from the last map value */
-    for (; gid > 0; gid--)
+    auto &new_to_old_gid_list = plan->new_to_old_gid_list;
+    unsigned count = new_to_old_gid_list.length;
+    for (unsigned j = count; j; j--)
     {
-      hb_codepoint_t	old_gid;
-      if (!plan->old_gid_for_new_gid (gid - 1, &old_gid))
-      {
-	if (last_gid == (hb_codepoint_t) -1)
-	  continue;
-	else
-	  break;
-      }
+      hb_codepoint_t gid = new_to_old_gid_list[j - 1].first;
+      if (gid >= num_gid) continue;
+
+      hb_codepoint_t old_gid = new_to_old_gid_list[j - 1].second;
 
       unsigned int v = index_map.map (old_gid);
-      if (last_gid == (hb_codepoint_t) -1)
+      if (last_gid == HB_CODEPOINT_INVALID)
       {
+	if (gid + 1 != num_gid)
+	{
+	  last_gid = gid + 1;
+	  break;
+	}
 	last_val = v;
 	last_gid = gid;
 	continue;
       }
-      if (v != last_val) break;
+      if (v != last_val || gid + 1 != last_gid)
+	break;
 
       last_gid = gid;
     }
 
     if (unlikely (last_gid == (hb_codepoint_t)-1)) return;
-    map_count = last_gid;
-    for (gid = 0; gid < map_count; gid++)
+    map_count = last_gid + 1;
+    for (auto _ : plan->new_to_old_gid_list)
     {
-      hb_codepoint_t	old_gid;
-      if (plan->old_gid_for_new_gid (gid, &old_gid))
-      {
-	unsigned int v = index_map.map (old_gid);
-	unsigned int outer = v >> 16;
-	unsigned int inner = v & 0xFFFF;
-	outer_map.add (outer);
-	if (inner > max_inners[outer]) max_inners[outer] = inner;
-	if (outer >= inner_sets.length) return;
-	inner_sets[outer]->add (inner);
-      }
+      hb_codepoint_t gid = _.first;
+      if (gid >= map_count) break;
+
+      hb_codepoint_t old_gid = _.second;
+      unsigned int v = index_map.map (old_gid);
+      unsigned int outer = v >> 16;
+      unsigned int inner = v & 0xFFFF;
+      outer_map.add (outer);
+      if (inner > max_inners[outer]) max_inners[outer] = inner;
+      if (outer >= inner_sets.length) return;
+      inner_sets[outer]->add (inner);
     }
   }
 
@@ -197,7 +201,8 @@ struct hvarvvar_subset_plan_t
 
     if (retain_adv_map)
     {
-      for (hb_codepoint_t gid = 0; gid < plan->num_output_glyphs (); gid++)
+      unsigned num_glyphs = plan->num_output_glyphs ();
+      for (hb_codepoint_t gid = 0; gid < num_glyphs; gid++)
       {
 	if (inner_sets[0]->has (gid))
 	  inner_maps[0].add (gid);

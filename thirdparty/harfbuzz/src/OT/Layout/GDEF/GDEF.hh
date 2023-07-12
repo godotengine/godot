@@ -49,8 +49,6 @@ struct AttachPoint : Array16Of<HBUINT16>
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out)) return_trace (false);
-
     return_trace (out->serialize (c->serializer, + iter ()));
   }
 };
@@ -202,7 +200,6 @@ struct CaretValueFormat3
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out)) return_trace (false);
     if (!c->serializer->embed (caretValueFormat)) return_trace (false);
     if (!c->serializer->embed (coordinate)) return_trace (false);
 

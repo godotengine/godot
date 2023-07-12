@@ -213,7 +213,8 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
   /* Sort features and merge duplicates */
   if (feature_infos.length)
   {
-    feature_infos.qsort ();
+    if (!is_simple)
+      feature_infos.qsort ();
     auto *f = feature_infos.arrayZ;
     unsigned int j = 0;
     unsigned count = feature_infos.length;
@@ -314,7 +315,8 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
     map->needs_fallback = !found;
   }
   //feature_infos.shrink (0); /* Done with these */
-
+  if (is_simple)
+    m.features.qsort ();
 
   add_gsub_pause (nullptr);
   add_gpos_pause (nullptr);
@@ -350,7 +352,7 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
       }
 
       /* Sort lookups and merge duplicates */
-      if (last_num_lookups < lookups.length)
+      if (last_num_lookups + 1 < lookups.length)
       {
 	lookups.as_array ().sub_array (last_num_lookups, lookups.length - last_num_lookups).qsort ();
 

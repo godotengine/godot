@@ -60,6 +60,13 @@ struct hb_ot_map_t
 
     int cmp (const hb_tag_t tag_) const
     { return tag_ < tag ? -1 : tag_ > tag ? 1 : 0; }
+
+    HB_INTERNAL static int cmp (const void *pa, const void *pb)
+    {
+      const feature_map_t *a = (const feature_map_t *) pa;
+      const feature_map_t *b = (const feature_map_t *) pb;
+      return a->tag < b->tag ? -1 : a->tag > b->tag ? 1 : 0;
+    }
   };
 
   struct lookup_map_t {
@@ -273,6 +280,7 @@ struct hb_ot_map_builder_t
 
   hb_face_t *face;
   hb_segment_properties_t props;
+  bool is_simple;
 
   hb_tag_t chosen_script[2];
   bool found_script[2];
