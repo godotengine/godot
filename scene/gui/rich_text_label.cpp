@@ -1786,6 +1786,7 @@ void RichTextLabel::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_stop_thread();
 			main->first_invalid_font_line.store(0); //invalidate ALL
+			_update_min_size();
 			queue_redraw();
 		} break;
 
@@ -1796,6 +1797,7 @@ void RichTextLabel::_notification(int p_what) {
 			}
 
 			main->first_invalid_line.store(0); //invalidate ALL
+			_update_min_size();
 			queue_redraw();
 		} break;
 
@@ -1804,7 +1806,10 @@ void RichTextLabel::_notification(int p_what) {
 			_stop_thread();
 		} break;
 
-		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
+			queue_redraw();
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_apply_translation();
 			queue_redraw();
@@ -2721,7 +2726,14 @@ void RichTextLabel::_thread_function(void *p_userdata) {
 	set_current_thread_safe_for_nodes(true);
 	_process_line_caches();
 	updating.store(false);
-	call_deferred(SNAME("thread_end"));
+	callable_mp(this, &RichTextLabel::_thread_end).call_deferred();
+}
+
+void RichTextLabel::_thread_update_size() {
+	if (size_update_required.load()) {
+		size_update_required.store(false);
+		update_minimum_size();
+	}
 }
 
 void RichTextLabel::_thread_end() {
@@ -2858,9 +2870,6 @@ bool RichTextLabel::_validate_line_caches() {
 
 		main->first_resized_line.store(main->lines.size());
 
-		if (fit_content) {
-			update_minimum_size();
-		}
 		validating.store(false);
 		return true;
 	}
@@ -2947,9 +2956,7 @@ void RichTextLabel::_process_line_caches() {
 	main->first_resized_line.store(main->lines.size());
 	main->first_invalid_font_line.store(main->lines.size());
 
-	if (fit_content) {
-		update_minimum_size();
-	}
+	callable_mp(this, &RichTextLabel::_thread_update_size).call_deferred();
 	emit_signal(SNAME("finished"));
 }
 
@@ -3013,6 +3020,7 @@ void RichTextLabel::add_text(const String &p_text) {
 
 		pos = end + 1;
 	}
+	_update_min_size();
 	queue_redraw();
 }
 
@@ -3048,9 +3056,7 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 
 	_invalidate_current_line(current_frame);
 
-	if (fit_content) {
-		update_minimum_size();
-	}
+	_update_min_size();
 	queue_redraw();
 }
 
@@ -3153,7 +3159,6 @@ void RichTextLabel::add_newline() {
 	_add_item(item, false);
 	current_frame->lines.resize(current_frame->lines.size() + 1);
 	_invalidate_current_line(current_frame);
-	queue_redraw();
 }
 
 bool RichTextLabel::remove_paragraph(const int p_paragraph) {
@@ -3193,6 +3198,8 @@ bool RichTextLabel::remove_paragraph(const int p_paragraph) {
 
 	int to_line = main->first_invalid_line.load();
 	main->first_invalid_line.store(MIN(to_line, p_paragraph));
+
+	_update_min_size();
 	queue_redraw();
 
 	return true;
@@ -3642,9 +3649,8 @@ void RichTextLabel::clear() {
 		scroll_following = true;
 	}
 
-	if (fit_content) {
-		update_minimum_size();
-	}
+	_update_min_size();
+	queue_redraw();
 }
 
 void RichTextLabel::set_tab_size(int p_spaces) {
@@ -3656,6 +3662,8 @@ void RichTextLabel::set_tab_size(int p_spaces) {
 
 	tab_size = p_spaces;
 	main->first_resized_line.store(0);
+
+	_update_min_size();
 	queue_redraw();
 }
 
@@ -3669,7 +3677,12 @@ void RichTextLabel::set_fit_content(bool p_enabled) {
 	}
 
 	fit_content = p_enabled;
-	update_minimum_size();
+
+	if (threaded) {
+		size_update_required.store(true);
+	} else {
+		update_minimum_size();
+	}
 }
 
 bool RichTextLabel::is_fit_content_enabled() const {
@@ -5314,6 +5327,7 @@ void RichTextLabel::set_text_direction(Control::TextDirection p_text_direction) 
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
 		main->first_invalid_line.store(0); //invalidate ALL
+		_update_min_size();
 		_validate_line_caches();
 		queue_redraw();
 	}
@@ -5325,6 +5339,7 @@ void RichTextLabel::set_structured_text_bidi_override(TextServer::StructuredText
 
 		st_parser = p_parser;
 		main->first_invalid_line.store(0); //invalidate ALL
+		_update_min_size();
 		_validate_line_caches();
 		queue_redraw();
 	}
@@ -5340,6 +5355,7 @@ void RichTextLabel::set_structured_text_bidi_override_options(Array p_args) {
 
 		st_args = p_args;
 		main->first_invalid_line.store(0); //invalidate ALL
+		_update_min_size();
 		_validate_line_caches();
 		queue_redraw();
 	}
@@ -5359,6 +5375,7 @@ void RichTextLabel::set_language(const String &p_language) {
 
 		language = p_language;
 		main->first_invalid_line.store(0); //invalidate ALL
+		_update_min_size();
 		_validate_line_caches();
 		queue_redraw();
 	}
@@ -5373,8 +5390,9 @@ void RichTextLabel::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 		_stop_thread();
 
 		autowrap_mode = p_mode;
-		main->first_invalid_line = 0; //invalidate ALL
-		_validate_line_caches();
+		main->first_invalid_line.store(0); //invalidate ALL
+
+		_update_min_size();
 		queue_redraw();
 	}
 }
@@ -5400,6 +5418,7 @@ void RichTextLabel::set_visible_ratio(float p_ratio) {
 
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			main->first_invalid_line.store(0); // Invalidate ALL.
+			_update_min_size();
 			_validate_line_caches();
 		}
 		queue_redraw();
@@ -5618,8 +5637,6 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_menu_visible"), &RichTextLabel::is_menu_visible);
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &RichTextLabel::menu_option);
 
-	ClassDB::bind_method(D_METHOD("_thread_end"), &RichTextLabel::_thread_end);
-
 	// Note: set "bbcode_enabled" first, to avoid unnecessary "text" resets.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
@@ -5683,6 +5700,7 @@ void RichTextLabel::set_visible_characters_behavior(TextServer::VisibleCharacter
 
 		visible_chars_behavior = p_behavior;
 		main->first_invalid_line.store(0); //invalidate ALL
+		_update_min_size();
 		_validate_line_caches();
 		queue_redraw();
 	}
@@ -5703,6 +5721,7 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 		}
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			main->first_invalid_line.store(0); //invalidate ALL
+			_update_min_size();
 			_validate_line_caches();
 		}
 		queue_redraw();
@@ -6001,6 +6020,16 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 	return d;
 }
 
+void RichTextLabel::_update_min_size() {
+	if (fit_content) {
+		if (threaded) {
+			size_update_required.store(true);
+		} else {
+			update_minimum_size();
+		}
+	}
+}
+
 RichTextLabel::RichTextLabel(const String &p_text) {
 	main = memnew(ItemFrame);
 	main->index = 0;
@@ -6027,6 +6056,7 @@ RichTextLabel::RichTextLabel(const String &p_text) {
 	updating.store(false);
 	validating.store(false);
 	stop_thread.store(false);
+	size_update_required.store(false);
 
 	set_clip_contents(true);
 }
