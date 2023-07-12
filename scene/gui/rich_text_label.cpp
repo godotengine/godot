@@ -1097,6 +1097,11 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					ItemRainbow *item_rainbow = static_cast<ItemRainbow *>(item_fx);
 
 					font_color = font_color.from_hsv(item_rainbow->frequency * (item_rainbow->elapsed_time + ((p_ofs.x + gloff.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
+				} else if (item_fx->type == ITEM_PULSE) {
+					ItemPulse *item_pulse = static_cast<ItemPulse *>(item_fx);
+
+					const float sined_time = (Math::ease(Math::pingpong(item_pulse->elapsed_time, 1.0 / item_pulse->frequency) * item_pulse->frequency, item_pulse->ease));
+					font_color = font_color.lerp(font_color * item_pulse->color, sined_time);
 				}
 			}
 
@@ -1315,6 +1320,11 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					ItemRainbow *item_rainbow = static_cast<ItemRainbow *>(item_fx);
 
 					font_color = font_color.from_hsv(item_rainbow->frequency * (item_rainbow->elapsed_time + ((p_ofs.x + off.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
+				} else if (item_fx->type == ITEM_PULSE) {
+					ItemPulse *item_pulse = static_cast<ItemPulse *>(item_fx);
+
+					const float sined_time = (Math::ease(Math::pingpong(item_pulse->elapsed_time, 1.0 / item_pulse->frequency) * item_pulse->frequency, item_pulse->ease));
+					font_color = font_color.lerp(font_color * item_pulse->color, sined_time);
 				}
 			}
 
@@ -1675,7 +1685,7 @@ void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, double p_delta
 	while (it) {
 		ItemFX *ifx = nullptr;
 
-		if (it->type == ITEM_CUSTOMFX || it->type == ITEM_SHAKE || it->type == ITEM_WAVE || it->type == ITEM_TORNADO || it->type == ITEM_RAINBOW) {
+		if (it->type == ITEM_CUSTOMFX || it->type == ITEM_SHAKE || it->type == ITEM_WAVE || it->type == ITEM_TORNADO || it->type == ITEM_RAINBOW || it->type == ITEM_PULSE) {
 			ifx = static_cast<ItemFX *>(it);
 		}
 
@@ -2616,7 +2626,7 @@ bool RichTextLabel::_find_strikethrough(Item *p_item) {
 void RichTextLabel::_fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack) {
 	Item *item = p_item;
 	while (item) {
-		if (item->type == ITEM_CUSTOMFX || item->type == ITEM_SHAKE || item->type == ITEM_WAVE || item->type == ITEM_TORNADO || item->type == ITEM_RAINBOW) {
+		if (item->type == ITEM_CUSTOMFX || item->type == ITEM_SHAKE || item->type == ITEM_WAVE || item->type == ITEM_TORNADO || item->type == ITEM_RAINBOW || item->type == ITEM_PULSE) {
 			r_stack.push_back(static_cast<ItemFX *>(item));
 		}
 
@@ -3491,6 +3501,17 @@ void RichTextLabel::push_rainbow(float p_saturation, float p_value, float p_freq
 	item->frequency = p_frequency;
 	item->saturation = p_saturation;
 	item->value = p_value;
+	_add_item(item, true);
+}
+
+void RichTextLabel::push_pulse(const Color &p_color, float p_frequency, float p_ease) {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	ItemPulse *item = memnew(ItemPulse);
+	item->color = p_color;
+	item->frequency = p_frequency;
+	item->ease = p_ease;
 	_add_item(item, true);
 }
 
@@ -4677,7 +4698,29 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("rainbow");
 			set_process_internal(true);
+		} else if (bbcode_name == "pulse") {
+			Color color = Color(1, 1, 1, 0.25);
+			OptionMap::Iterator color_option = bbcode_options.find("color");
+			if (color_option) {
+				color = Color::from_string(color_option->value, color);
+			}
 
+			float frequency = 1.0;
+			OptionMap::Iterator freq_option = bbcode_options.find("freq");
+			if (freq_option) {
+				frequency = freq_option->value.to_float();
+			}
+
+			float ease = -2.0;
+			OptionMap::Iterator ease_option = bbcode_options.find("ease");
+			if (ease_option) {
+				ease = ease_option->value.to_float();
+			}
+
+			push_pulse(color, frequency, ease);
+			pos = brk_end + 1;
+			tag_stack.push_front("pulse");
+			set_process_internal(true);
 		} else if (tag.begins_with("bgcolor=")) {
 			String color_str = tag.substr(8, tag.length()).unquote();
 			Color color = Color::from_string(color_str, theme_cache.default_color);
