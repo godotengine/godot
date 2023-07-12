@@ -36,19 +36,23 @@
 class AnimationNodeAnimation : public AnimationRootNode {
 	GDCLASS(AnimationNodeAnimation, AnimationRootNode);
 
-	StringName animation;
-	StringName time = "time";
-
-	uint64_t last_version = 0;
-	bool skip = false;
-
 public:
 	enum PlayMode {
 		PLAY_MODE_FORWARD,
 		PLAY_MODE_BACKWARD
 	};
 
+private:
+	StringName animation;
+	StringName time = "time";
+	StringName loop_mode_override = "loop_mode_override";
+
+	uint64_t last_version = 0;
+	bool skip = false;
+
+public:
 	void get_parameter_list(List<PropertyInfo> *r_list) const override;
+	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	static Vector<String> (*get_editable_animation_list)();
 

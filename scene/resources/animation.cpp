@@ -3123,6 +3123,8 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 				from_time += CMP_EPSILON;
 			}
 		} break;
+		default: {
+		} break;
 	}
 	switch (t->type) {
 		case TYPE_POSITION_3D: {
@@ -3938,6 +3940,7 @@ void Animation::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOOP_NONE);
 	BIND_ENUM_CONSTANT(LOOP_LINEAR);
 	BIND_ENUM_CONSTANT(LOOP_PINGPONG);
+	BIND_ENUM_CONSTANT(LOOP_NO_OVERRIDE);
 
 	BIND_ENUM_CONSTANT(LOOPED_FLAG_NONE);
 	BIND_ENUM_CONSTANT(LOOPED_FLAG_END);

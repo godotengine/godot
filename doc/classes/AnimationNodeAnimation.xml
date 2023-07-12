@@ -5,6 +5,27 @@
 	</brief_description>
 	<description>
 		A resource to add to an [AnimationNodeBlendTree]. Only has one output port using the [member animation] property. Used as an input for [AnimationNode]s that blend animations together.
+		The [AnimationNodeAnimation] has [code]loop_mode_override[/code] parameter to manage the looping state of each [AnimationNodeAnimation] for each [AnimationTree] as a node. See also [enum Animation.LoopMode].
+		[codeblocks]
+		[gdscript]
+		# Set loop mode override.
+		animation_tree.set("parameters/Animation/loop_mode_override", Animation.LOOP_LINEAR)
+		# Alternative syntax (same result as above).
+		animation_tree["parameters/Animation/loop_mode_override"] = Animation.LOOP_LINEAR
+
+		# Get loop mode override.
+		animation_tree.get("parameters/Animation/loop_mode_override")
+		# Alternative syntax (same result as above).
+		animation_tree["parameters/Animation/loop_mode_override"]
+		[/gdscript]
+		[csharp]
+		// Set loop mode override.
+		animationTree.Set("parameters/Animation/loop_mode_override", (int)Animation.LoopMode.Linear);
+
+		// Get loop mode override.
+		animationTree.Get("parameters/Animation/loop_mode_override");
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>

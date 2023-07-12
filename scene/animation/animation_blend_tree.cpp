@@ -45,6 +45,15 @@ Vector<String> (*AnimationNodeAnimation::get_editable_animation_list)() = nullpt
 
 void AnimationNodeAnimation::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	r_list->push_back(PropertyInfo(Variant::INT, loop_mode_override, PROPERTY_HINT_ENUM, "None,Linear,Pingpong,No Override"));
+}
+
+Variant AnimationNodeAnimation::get_parameter_default_value(const StringName &p_parameter) const {
+	if (p_parameter == loop_mode_override) {
+		return Animation::LOOP_NO_OVERRIDE;
+	} else {
+		return 0.0;
+	}
 }
 
 void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const {
@@ -100,7 +109,12 @@ double AnimationNodeAnimation::_process(double p_time, bool p_seek, bool p_is_ex
 	}
 
 	bool is_looping = false;
-	if (anim->get_loop_mode() == Animation::LOOP_PINGPONG) {
+	Animation::LoopMode loop_mode = anim->get_loop_mode();
+	Animation::LoopMode override = static_cast<Animation::LoopMode>((int)get_parameter(loop_mode_override));
+	if (override != Animation::LOOP_NO_OVERRIDE) {
+		loop_mode = override;
+	}
+	if (loop_mode == Animation::LOOP_PINGPONG) {
 		if (!Math::is_zero_approx(anim_size)) {
 			if (prev_time >= 0 && cur_time < 0) {
 				backward = !backward;
@@ -113,7 +127,7 @@ double AnimationNodeAnimation::_process(double p_time, bool p_seek, bool p_is_ex
 			cur_time = Math::pingpong(cur_time, anim_size);
 		}
 		is_looping = true;
-	} else if (anim->get_loop_mode() == Animation::LOOP_LINEAR) {
+	} else if (loop_mode == Animation::LOOP_LINEAR) {
 		if (!Math::is_zero_approx(anim_size)) {
 			if (prev_time >= 0 && cur_time < 0) {
 				looped_flag = node_backward ? Animation::LOOPED_FLAG_END : Animation::LOOPED_FLAG_START;

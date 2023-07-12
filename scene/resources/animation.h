@@ -71,6 +71,7 @@ public:
 		LOOP_NONE,
 		LOOP_LINEAR,
 		LOOP_PINGPONG,
+		LOOP_NO_OVERRIDE,
 	};
 
 	enum LoopedFlag {

@@ -660,6 +660,9 @@
 		<constant name="LOOP_PINGPONG" value="2" enum="LoopMode">
 			Repeats playback and reverse playback at both ends of the animation.
 		</constant>
+		<constant name="LOOP_NO_OVERRIDE" value="3" enum="LoopMode">
+			Disables overriding loop mode if the overriding can be caused in the other class which uses animation.
+		</constant>
 		<constant name="LOOPED_FLAG_NONE" value="0" enum="LoopedFlag">
 			This flag indicates that the animation proceeds without any looping.
 		</constant>
