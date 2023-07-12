@@ -484,12 +484,16 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					while (c[end] != 0 && !(end && c[end - 1] == ' ' && c[end] != ' ')) {
 						can_break = false;
 						float cw = font->get_char_size(c[end], c[end + 1]).width;
+						if (!(wofs - backtrack + w) && c[end] == L' ')
+						{
+							cw = 0;
+						}
 						if (c[end] == '\t') {
 							cw = tab_size * font->get_char_size(' ').width;
 							can_break = true;
 						}
 						const CharType current = c[end];
-						const CharType previous = end > 0 ? c[end - 1] : L' ';
+						const CharType previous = end > 0 ? c[end - 1] : L'\0';
 						CharType next = c[end + 1];
 						CharType next_next = next ? c[end + 2] : L'\0';
 						// If the text crosses a BBCode boundary find the next characters there (if needed)

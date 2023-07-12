@@ -535,7 +535,7 @@ void Label::regenerate_word_cache() {
 		// OR
 		//  The current character is not allowed to end a line of CJK text.
 		if ((autowrap && (line_width >= width) && ((last && last->char_pos >= 0) || separatable)) || insert_newline ||
-				 gnomesort::is_cjk_cannot_end_line(current)) {
+				 ((line_width >= width - char_width) && gnomesort::is_cjk_cannot_end_line(current))) {
 			if (separatable) {
 				if (current_word_size > 0) {
 					WordCache *wc = memnew(WordCache);
