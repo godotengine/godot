@@ -425,7 +425,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					font = p_base_font;
 				}
 
-				bool no_cjk;
+				bool no_cjk = true;
 				const CharType *c = text->text.c_str();
 				const CharType *cf = c;
 				for (int i = 0; i < text->text.length(); ++i)
