@@ -517,21 +517,31 @@ void Image::convert(Format p_new_format) {
 		return;
 	}
 
+	// Includes the main image.
+	const int mipmap_count = get_mipmap_count() + 1;
+
 	if (format > FORMAT_RGBE9995 || p_new_format > FORMAT_RGBE9995) {
 		ERR_FAIL_MSG("Cannot convert to <-> from compressed formats. Use compress() and decompress() instead.");
 
 	} else if (format > FORMAT_RGBA8 || p_new_format > FORMAT_RGBA8) {
 		//use put/set pixel which is slower but works with non byte formats
-		Image new_img(width, height, false, p_new_format);
+		Image new_img(width, height, mipmaps, p_new_format);
 
-		for (int i = 0; i < width; i++) {
-			for (int j = 0; j < height; j++) {
-				new_img.set_pixel(i, j, get_pixel(i, j));
+		for (int mip = 0; mip < mipmap_count; mip++) {
+			Ref<Image> src_mip = get_image_from_mipmap(mip);
+			Ref<Image> new_mip = new_img.get_image_from_mipmap(mip);
+
+			for (int y = 0; y < src_mip->height; y++) {
+				for (int x = 0; x < src_mip->width; x++) {
+					new_mip->set_pixel(x, y, src_mip->get_pixel(x, y));
+				}
 			}
-		}
 
-		if (has_mipmaps()) {
-			new_img.generate_mipmaps();
+			int mip_offset = 0;
+			int mip_size = 0;
+			new_img.get_mipmap_offset_and_size(mip, mip_offset, mip_size);
+
+			memcpy(new_img.data.ptrw() + mip_offset, new_mip->data.ptr(), mip_size);
 		}
 
 		_copy_internals_from(new_img);
@@ -539,113 +549,115 @@ void Image::convert(Format p_new_format) {
 		return;
 	}
 
-	Image new_img(width, height, false, p_new_format);
-
-	const uint8_t *rptr = data.ptr();
-	uint8_t *wptr = new_img.data.ptrw();
+	Image new_img(width, height, mipmaps, p_new_format);
 
 	int conversion_type = format | p_new_format << 8;
 
-	switch (conversion_type) {
-		case FORMAT_L8 | (FORMAT_LA8 << 8):
-			_convert<1, false, 1, true, true, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_L8 | (FORMAT_R8 << 8):
-			_convert<1, false, 1, false, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_L8 | (FORMAT_RG8 << 8):
-			_convert<1, false, 2, false, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_L8 | (FORMAT_RGB8 << 8):
-			_convert<1, false, 3, false, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_L8 | (FORMAT_RGBA8 << 8):
-			_convert<1, false, 3, true, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_LA8 | (FORMAT_L8 << 8):
-			_convert<1, true, 1, false, true, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_LA8 | (FORMAT_R8 << 8):
-			_convert<1, true, 1, false, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_LA8 | (FORMAT_RG8 << 8):
-			_convert<1, true, 2, false, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_LA8 | (FORMAT_RGB8 << 8):
-			_convert<1, true, 3, false, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_LA8 | (FORMAT_RGBA8 << 8):
-			_convert<1, true, 3, true, true, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_R8 | (FORMAT_L8 << 8):
-			_convert<1, false, 1, false, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_R8 | (FORMAT_LA8 << 8):
-			_convert<1, false, 1, true, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_R8 | (FORMAT_RG8 << 8):
-			_convert<1, false, 2, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_R8 | (FORMAT_RGB8 << 8):
-			_convert<1, false, 3, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_R8 | (FORMAT_RGBA8 << 8):
-			_convert<1, false, 3, true, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RG8 | (FORMAT_L8 << 8):
-			_convert<2, false, 1, false, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RG8 | (FORMAT_LA8 << 8):
-			_convert<2, false, 1, true, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RG8 | (FORMAT_R8 << 8):
-			_convert<2, false, 1, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RG8 | (FORMAT_RGB8 << 8):
-			_convert<2, false, 3, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RG8 | (FORMAT_RGBA8 << 8):
-			_convert<2, false, 3, true, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGB8 | (FORMAT_L8 << 8):
-			_convert<3, false, 1, false, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGB8 | (FORMAT_LA8 << 8):
-			_convert<3, false, 1, true, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGB8 | (FORMAT_R8 << 8):
-			_convert<3, false, 1, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGB8 | (FORMAT_RG8 << 8):
-			_convert<3, false, 2, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGB8 | (FORMAT_RGBA8 << 8):
-			_convert<3, false, 3, true, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGBA8 | (FORMAT_L8 << 8):
-			_convert<3, true, 1, false, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGBA8 | (FORMAT_LA8 << 8):
-			_convert<3, true, 1, true, false, true>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGBA8 | (FORMAT_R8 << 8):
-			_convert<3, true, 1, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGBA8 | (FORMAT_RG8 << 8):
-			_convert<3, true, 2, false, false, false>(width, height, rptr, wptr);
-			break;
-		case FORMAT_RGBA8 | (FORMAT_RGB8 << 8):
-			_convert<3, true, 3, false, false, false>(width, height, rptr, wptr);
-			break;
-	}
+	for (int mip = 0; mip < mipmap_count; mip++) {
+		int mip_offset = 0;
+		int mip_size = 0;
+		int mip_width = 0;
+		int mip_height = 0;
+		get_mipmap_offset_size_and_dimensions(mip, mip_offset, mip_size, mip_width, mip_height);
 
-	bool gen_mipmaps = mipmaps;
+		const uint8_t *rptr = data.ptr() + mip_offset;
+		uint8_t *wptr = new_img.data.ptrw() + new_img.get_mipmap_offset(mip);
+
+		switch (conversion_type) {
+			case FORMAT_L8 | (FORMAT_LA8 << 8):
+				_convert<1, false, 1, true, true, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_L8 | (FORMAT_R8 << 8):
+				_convert<1, false, 1, false, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_L8 | (FORMAT_RG8 << 8):
+				_convert<1, false, 2, false, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_L8 | (FORMAT_RGB8 << 8):
+				_convert<1, false, 3, false, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_L8 | (FORMAT_RGBA8 << 8):
+				_convert<1, false, 3, true, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_LA8 | (FORMAT_L8 << 8):
+				_convert<1, true, 1, false, true, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_LA8 | (FORMAT_R8 << 8):
+				_convert<1, true, 1, false, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_LA8 | (FORMAT_RG8 << 8):
+				_convert<1, true, 2, false, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_LA8 | (FORMAT_RGB8 << 8):
+				_convert<1, true, 3, false, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_LA8 | (FORMAT_RGBA8 << 8):
+				_convert<1, true, 3, true, true, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_R8 | (FORMAT_L8 << 8):
+				_convert<1, false, 1, false, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_R8 | (FORMAT_LA8 << 8):
+				_convert<1, false, 1, true, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_R8 | (FORMAT_RG8 << 8):
+				_convert<1, false, 2, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_R8 | (FORMAT_RGB8 << 8):
+				_convert<1, false, 3, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_R8 | (FORMAT_RGBA8 << 8):
+				_convert<1, false, 3, true, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RG8 | (FORMAT_L8 << 8):
+				_convert<2, false, 1, false, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RG8 | (FORMAT_LA8 << 8):
+				_convert<2, false, 1, true, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RG8 | (FORMAT_R8 << 8):
+				_convert<2, false, 1, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RG8 | (FORMAT_RGB8 << 8):
+				_convert<2, false, 3, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RG8 | (FORMAT_RGBA8 << 8):
+				_convert<2, false, 3, true, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGB8 | (FORMAT_L8 << 8):
+				_convert<3, false, 1, false, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGB8 | (FORMAT_LA8 << 8):
+				_convert<3, false, 1, true, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGB8 | (FORMAT_R8 << 8):
+				_convert<3, false, 1, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGB8 | (FORMAT_RG8 << 8):
+				_convert<3, false, 2, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGB8 | (FORMAT_RGBA8 << 8):
+				_convert<3, false, 3, true, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGBA8 | (FORMAT_L8 << 8):
+				_convert<3, true, 1, false, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGBA8 | (FORMAT_LA8 << 8):
+				_convert<3, true, 1, true, false, true>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGBA8 | (FORMAT_R8 << 8):
+				_convert<3, true, 1, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGBA8 | (FORMAT_RG8 << 8):
+				_convert<3, true, 2, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+			case FORMAT_RGBA8 | (FORMAT_RGB8 << 8):
+				_convert<3, true, 3, false, false, false>(mip_width, mip_height, rptr, wptr);
+				break;
+		}
+	}
 
 	_copy_internals_from(new_img);
-
-	if (gen_mipmaps) {
-		generate_mipmaps();
-	}
 }
 
 Image::Format Image::get_format() const {

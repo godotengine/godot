@@ -325,6 +325,86 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 		CHECK_MESSAGE(gray_image->get_pixel(2, 2).is_equal_approx(Color(0.266666681, 0.266666681, 0.266666681, 1)), "convert() RGBA to L8 should be around 0.266666681 (68).");
 	}
 }
+
+TEST_CASE("[Image] Custom mipmaps") {
+	Ref<Image> image = memnew(Image(100, 100, false, Image::FORMAT_RGBA8));
+
+	REQUIRE(!image->has_mipmaps());
+	image->generate_mipmaps();
+	REQUIRE(image->has_mipmaps());
+
+	const int mipmaps = image->get_mipmap_count() + 1;
+	REQUIRE(mipmaps == 7);
+
+	// Initialize reference mipmap data.
+	// Each byte is given value "mipmap_index * 5".
+
+	{
+		PackedByteArray data = image->get_data();
+		uint8_t *data_ptr = data.ptrw();
+
+		for (int mip = 0; mip < mipmaps; mip++) {
+			int mip_offset = 0;
+			int mip_size = 0;
+			image->get_mipmap_offset_and_size(mip, mip_offset, mip_size);
+
+			for (int i = 0; i < mip_size; i++) {
+				data_ptr[mip_offset + i] = mip * 5;
+			}
+		}
+		image->set_data(image->get_width(), image->get_height(), image->has_mipmaps(), image->get_format(), data);
+	}
+
+	// Byte format conversion.
+
+	for (int format = Image::FORMAT_L8; format <= Image::FORMAT_RGBA8; format++) {
+		Ref<Image> image_bytes = memnew(Image());
+		image_bytes->copy_internals_from(image);
+		image_bytes->convert((Image::Format)format);
+		REQUIRE(image_bytes->has_mipmaps());
+
+		PackedByteArray data = image_bytes->get_data();
+		const uint8_t *data_ptr = data.ptr();
+
+		for (int mip = 0; mip < mipmaps; mip++) {
+			int mip_offset = 0;
+			int mip_size = 0;
+			image_bytes->get_mipmap_offset_and_size(mip, mip_offset, mip_size);
+
+			for (int i = 0; i < mip_size; i++) {
+				if (data_ptr[mip_offset + i] != mip * 5) {
+					REQUIRE_MESSAGE(false, "Byte format conversion error.");
+				}
+			}
+		}
+	}
+
+	// Floating point format conversion.
+
+	for (int format = Image::FORMAT_RF; format <= Image::FORMAT_RGBAF; format++) {
+		Ref<Image> image_rgbaf = memnew(Image());
+		image_rgbaf->copy_internals_from(image);
+		image_rgbaf->convert((Image::Format)format);
+		REQUIRE(image_rgbaf->has_mipmaps());
+
+		PackedByteArray data = image_rgbaf->get_data();
+		const uint8_t *data_ptr = data.ptr();
+
+		for (int mip = 0; mip < mipmaps; mip++) {
+			int mip_offset = 0;
+			int mip_size = 0;
+			image_rgbaf->get_mipmap_offset_and_size(mip, mip_offset, mip_size);
+
+			for (int i = 0; i < mip_size; i += 4) {
+				float value = *(float *)(data_ptr + mip_offset + i);
+				if (!Math::is_equal_approx(value * 255.0f, mip * 5)) {
+					REQUIRE_MESSAGE(false, "Floating point conversion error.");
+				}
+			}
+		}
+	}
+}
+
 } // namespace TestImage
 
 #endif // TEST_IMAGE_H
