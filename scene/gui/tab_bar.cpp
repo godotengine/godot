@@ -881,6 +881,8 @@ void TabBar::_update_hover() {
 		if (hover != -1) {
 			emit_signal(SNAME("tab_hovered"), hover);
 		}
+
+		_update_cache();
 		queue_redraw();
 	}
 
@@ -988,6 +990,7 @@ void TabBar::_on_mouse_exited() {
 	highlight_arrow = -1;
 	dragging_valid_tab = false;
 
+	_update_cache();
 	queue_redraw();
 }
 
