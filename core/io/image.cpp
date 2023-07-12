@@ -3004,6 +3004,7 @@ ImageMemLoadFunc Image::_jpg_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
+ScalableImageMemLoadFunc Image::_svg_scalable_mem_loader_func = nullptr;
 
 void (*Image::_image_compress_bc_func)(Image *, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_bptc_func)(Image *, Image::UsedChannels) = nullptr;
@@ -3476,6 +3477,9 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_tga_from_buffer", "buffer"), &Image::load_tga_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_bmp_from_buffer", "buffer"), &Image::load_bmp_from_buffer);
 
+	ClassDB::bind_method(D_METHOD("load_svg_from_buffer", "buffer", "scale"), &Image::load_svg_from_buffer, DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("load_svg_from_string", "svg_str", "scale"), &Image::load_svg_from_string, DEFVAL(1.0));
+
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_data", "_get_data");
 
 	BIND_CONSTANT(MAX_WIDTH);
@@ -3823,6 +3827,28 @@ Error Image::load_bmp_from_buffer(const Vector<uint8_t> &p_array) {
 			ERR_UNAVAILABLE,
 			"The BMP module isn't enabled. Recompile the Godot editor or export template binary with the `module_bmp_enabled=yes` SCons option.");
 	return _load_from_buffer(p_array, _bmp_mem_loader_func);
+}
+
+Error Image::load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale) {
+	ERR_FAIL_NULL_V_MSG(
+			_svg_scalable_mem_loader_func,
+			ERR_UNAVAILABLE,
+			"The SVG module isn't enabled. Recompile the Godot editor or export template binary with the `module_svg_enabled=yes` SCons option.");
+
+	int buffer_size = p_array.size();
+
+	ERR_FAIL_COND_V(buffer_size == 0, ERR_INVALID_PARAMETER);
+
+	Ref<Image> image = _svg_scalable_mem_loader_func(p_array.ptr(), buffer_size, scale);
+	ERR_FAIL_COND_V(!image.is_valid(), ERR_PARSE_ERROR);
+
+	copy_internals_from(image);
+
+	return OK;
+}
+
+Error Image::load_svg_from_string(const String &p_svg_str, float scale) {
+	return load_svg_from_buffer(p_svg_str.to_utf8_buffer(), scale);
 }
 
 void Image::convert_rg_to_ra_rgba8() {

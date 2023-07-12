@@ -333,6 +333,25 @@
 				Loads an image from the binary contents of a PNG file.
 			</description>
 		</method>
+		<method name="load_svg_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<param index="1" name="scale" type="float" default="1.0" />
+			<description>
+				Loads an image from the UTF-8 binary contents of an [b]uncompressed[/b] SVG file ([b].svg[/b]).
+				[b]Note:[/b] Beware when using compressed SVG files (like [b].svgz[/b]), they need to be [code]decompressed[/code] before loading.
+				[b]Note:[/b] This method is only available in engine builds with the SVG module enabled. By default, the SVG module is enabled, but it can be disabled at build-time using the [code]module_svg_enabled=no[/code] SCons option.
+			</description>
+		</method>
+		<method name="load_svg_from_string">
+			<return type="int" enum="Error" />
+			<param index="0" name="svg_str" type="String" />
+			<param index="1" name="scale" type="float" default="1.0" />
+			<description>
+				Loads an image from the string contents of a SVG file ([b].svg[/b]).
+				[b]Note:[/b] This method is only available in engine builds with the SVG module enabled. By default, the SVG module is enabled, but it can be disabled at build-time using the [code]module_svg_enabled=no[/code] SCons option.
+			</description>
+		</method>
 		<method name="load_tga_from_buffer">
 			<return type="int" enum="Error" />
 			<param index="0" name="buffer" type="PackedByteArray" />

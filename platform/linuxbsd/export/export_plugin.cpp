@@ -521,11 +521,10 @@ EditorExportPlatformLinuxBSD::EditorExportPlatformLinuxBSD() {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG img_loader;
-		img_loader.create_image_from_string(img, _linuxbsd_logo_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _linuxbsd_logo_svg, EDSCALE, upsample, false);
 		set_logo(ImageTexture::create_from_image(img));
 
-		img_loader.create_image_from_string(img, _linuxbsd_run_icon_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _linuxbsd_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
 #endif
 
