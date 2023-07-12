@@ -264,7 +264,7 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 73.1 (5861e1fd52f1d7673eee38bc3c965aa18b336062, 2023)
+- Version: 73.2 (680f521746a3bd6a86f25f25ee50a62d88b489cf, 2023)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -280,10 +280,11 @@ Files generated from upstream source:
   https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
   for instructions).
 
-- Step 1: Build ICU with default options - `./runConfigureICU {PLATFORM} && make`.
-- Step 2: Reconfigure ICU with custom data config - `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`.
-- Step 3: Delete `data/out` folder and rebuild data - `cd data && rm -rf ./out && make`.
-- Step 4: Copy `source/data/out/icudt73l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt73l.dat`.
+- Step 1: Download and extract both `icu4c-{version}-src.tgz` and `icu4c-{version}-data.zip` (replace `data` subfolder from the main source archive).
+- Step 2: Build ICU with default options - `./runConfigureICU {PLATFORM} && make`.
+- Step 3: Reconfigure ICU with custom data config - `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`.
+- Step 4: Delete `data/out` folder and rebuild data - `cd data && rm -rf ./out && make`.
+- Step 5: Copy `source/data/out/icudt73l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt73l.dat`.
 
 
 ## jpeg-compressor
