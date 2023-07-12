@@ -568,16 +568,23 @@ const GodotDisplay = {
 	godot_js_display_window_icon_set__sig: 'vii',
 	godot_js_display_window_icon_set: function (p_ptr, p_len) {
 		let link = document.getElementById('-gd-engine-icon');
-		if (link === null) {
-			link = document.createElement('link');
-			link.rel = 'icon';
-			link.id = '-gd-engine-icon';
-			document.head.appendChild(link);
-		}
 		const old_icon = GodotDisplay.window_icon;
-		const png = new Blob([GodotRuntime.heapSlice(HEAPU8, p_ptr, p_len)], { type: 'image/png' });
-		GodotDisplay.window_icon = URL.createObjectURL(png);
-		link.href = GodotDisplay.window_icon;
+		if (p_ptr) {
+			if (link === null) {
+				link = document.createElement('link');
+				link.rel = 'icon';
+				link.id = '-gd-engine-icon';
+				document.head.appendChild(link);
+			}
+			const png = new Blob([GodotRuntime.heapSlice(HEAPU8, p_ptr, p_len)], { type: 'image/png' });
+			GodotDisplay.window_icon = URL.createObjectURL(png);
+			link.href = GodotDisplay.window_icon;
+		} else {
+			if (link) {
+				link.remove();
+			}
+			GodotDisplay.window_icon = null;
+		}
 		if (old_icon) {
 			URL.revokeObjectURL(old_icon);
 		}
