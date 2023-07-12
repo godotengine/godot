@@ -91,7 +91,7 @@
 			The above is true only when the unit distance is a positive number. When this is set to 0.0, the gravity will be constant regardless of distance.
 		</member>
 		<member name="gravity_apply_transform" type="bool" setter="set_gravity_apply_transform" getter="is_gravity_apply_transform" default="false">
-			If [code]true[/code], gravity is transformed using the Area's transform. In other words, rotating the area with this setting active will also rotate the gravity vector.
+			If [code]true[/code], gravity is transformed using the area's transform. In other words, rotating the area with this setting active will also rotate the gravity vector.
 		</member>
 		<member name="gravity_space_override" type="int" setter="set_gravity_space_override_mode" getter="get_gravity_space_override_mode" enum="Area3D.SpaceOverride" default="0">
 			Override mode for gravity calculations within this area. See [enum SpaceOverride] for possible values.
