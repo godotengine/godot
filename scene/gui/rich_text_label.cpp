@@ -484,10 +484,6 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					while (c[end] != 0 && !(end && c[end - 1] == ' ' && c[end] != ' ')) {
 						can_break = false;
 						float cw = font->get_char_size(c[end], c[end + 1]).width;
-						if (!(wofs - backtrack + w) && c[end] == L' ')
-						{
-							cw = 0;
-						}
 						if (c[end] == '\t') {
 							cw = tab_size * font->get_char_size(' ').width;
 							can_break = true;
@@ -496,6 +492,10 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						const CharType previous = end > 0 ? c[end - 1] : L'\0';
 						CharType next = c[end + 1];
 						CharType next_next = next ? c[end + 2] : L'\0';
+						if (current == L' ' && (!(wofs - backtrack + w) || !end))
+						{
+							cw = 0;
+						}
 						// If the text crosses a BBCode boundary find the next characters there (if needed)
 						if (!next || !next_next)
 						{
@@ -530,14 +530,15 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 								}
 							}
 						}
+						const bool cjk_pair = gnomesort::is_cjk_char(current) && gnomesort::is_cjk_char(next);
 						// If we just broke in the middle of the string and the next character cannot be placed at the
 						// end of a line then extend the current character's width.
-						if (just_breaked_in_middle && gnomesort::is_cjk_cannot_end_line(next) && (wofs - backtrack + w) > p_width - 3 * cw)
+						if (just_breaked_in_middle && cjk_pair && gnomesort::is_cjk_cannot_end_line(next) && (wofs - backtrack + w) > p_width - 3 * cw)
 						{
 							cw = p_width - (wofs - backtrack + w);
 						}
 						// Case: commas and periods between BBCode text elements.
-						if (!just_breaked_in_middle && gnomesort::is_cjk_cannot_begin_line(next_next) && (wofs - backtrack + w + 3 * cw > p_width))
+						if (!just_breaked_in_middle && cjk_pair && gnomesort::is_cjk_cannot_begin_line(next_next) && (wofs - backtrack + w + 3 * cw > p_width))
 						{
 							cw *= 2;
 						}
