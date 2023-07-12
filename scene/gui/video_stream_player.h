@@ -65,6 +65,7 @@ class VideoStreamPlayer : public Control {
 	float volume = 1.0;
 	double last_audio_time = 0.0;
 	bool expand = false;
+	bool loop = false;
 	int buffering_ms = 500;
 	int audio_track = 0;
 	int bus_index = 0;
@@ -93,6 +94,9 @@ public:
 	void play();
 	void stop();
 	bool is_playing() const;
+
+	void set_loop(bool p_loop);
+	bool has_loop() const;
 
 	void set_paused(bool p_paused);
 	bool is_paused() const;
