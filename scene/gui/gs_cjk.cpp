@@ -68,10 +68,13 @@ namespace gnomesort {
 	}
 
 	bool is_cjk_separatable_char(const int p_previous_char, const int p_char, const int p_next_char) {
-		return is_cjk_char(p_char) &&
+		return (is_cjk_char(p_char) &&
 					 !(is_cjk_cannot_separate(p_char) || is_cjk_cannot_separate(p_next_char)) &&
 					 !(is_cjk_cannot_begin_line(p_char) || is_cjk_cannot_begin_line(p_next_char)) &&
-					 !(is_cjk_cannot_end_line(p_next_char));
+					 !(is_cjk_cannot_end_line(p_next_char))) ||
+					 (is_cjk_cannot_begin_line(p_previous_char)
+						&& !is_cjk_cannot_begin_line(p_char)
+						&& is_cjk_cannot_begin_line(p_next_char));
 	}
 
 #undef GNOMESORT_CJK_UC

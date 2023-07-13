@@ -425,8 +425,16 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					font = p_base_font;
 				}
 
+				bool no_cjk = true;
 				const CharType *c = text->text.c_str();
 				const CharType *cf = c;
+				for (int i = 0; i < text->text.length(); ++i)
+				{
+					if (gnomesort::is_cjk_char(c[i]))
+					{
+						no_cjk = false;
+					}
+				}
 				int ascent = font->get_ascent();
 				int descent = font->get_descent();
 
@@ -492,7 +500,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						const CharType previous = end > 0 ? c[end - 1] : L'\0';
 						CharType next = c[end + 1];
 						CharType next_next = next ? c[end + 2] : L'\0';
-						if (current == L' ' && (!(wofs - backtrack + w) || !end))
+						if (current == L' ' && (!(wofs - backtrack + w) || (!end && wofs == 0.0f)))
 						{
 							cw = 0;
 						}
@@ -518,15 +526,49 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 							if (nit && nit->type == ITEM_TEXT)
 							{
 								ItemText *ntext = static_cast<ItemText*>(nit);
-								const int len = ntext->text.length();
-								if (!next)
+								if (ntext->text.length() > 1 || next)
 								{
-									next = len > 0 ? ntext->text.c_str()[0] : L'\0';
-									next_next = len > 1 ? ntext->text.c_str()[1] : L'\0';
+									const int len = ntext->text.length();
+									if (!next)
+									{
+										next = len > 0 ? ntext->text.c_str()[0] : L'\0';
+										next_next = len > 1 ? ntext->text.c_str()[1] : L'\0';
+									}
+									else if (next)
+									{
+										next_next = len > 0 ? ntext->text.c_str()[0] : L'\0';
+									}
 								}
-								else if (next)
+								else
 								{
-									next_next = len > 0 ? ntext->text.c_str()[0] : L'\0';
+									if (!next)
+									{
+										next = ntext->text.c_str()[0];
+									}
+									Item *nnit = _get_next_item(nit);
+									while (nnit)
+									{
+										const bool non_printing = nnit->type == ITEM_ALIGN ||
+																				  nnit->type == ITEM_META ||
+																				  nnit->type == ITEM_COLOR ||
+																				  nnit->type == ITEM_FONT ||
+																				  nnit->type == ITEM_UNDERLINE ||
+																					nnit->type == ITEM_STRIKETHROUGH;
+										if (non_printing)
+										{
+											nnit = _get_next_item(nnit);
+											continue;
+										}
+										break;
+									}
+									if (nnit && nnit->type == ITEM_TEXT)
+									{
+										ItemText *nntext = static_cast<ItemText*>(nnit);
+										if (!next_next)
+										{
+											next_next = nntext->text.c_str()[0];
+										}
+									}
 								}
 							}
 						}
@@ -535,12 +577,16 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						// end of a line then extend the current character's width.
 						if (just_breaked_in_middle && cjk_pair && gnomesort::is_cjk_cannot_end_line(next) && (wofs - backtrack + w) > p_width - 3 * cw)
 						{
+							float old = cw;
 							cw = p_width - (wofs - backtrack + w);
+							cw = cw > old ? cw : old;
 						}
 						// Case: commas and periods between BBCode text elements.
-						if (!just_breaked_in_middle && cjk_pair && gnomesort::is_cjk_cannot_begin_line(next_next) && (wofs - backtrack + w + 3 * cw > p_width))
+						if (!just_breaked_in_middle && cjk_pair && gnomesort::is_cjk_cannot_begin_line(next_next) && (wofs - backtrack + w) > p_width - 3 * cw)
 						{
-							cw *= 2;
+							float old = cw;
+							cw = p_width - (wofs - backtrack + w);
+							cw = cw > old ? cw : old;
 						}
 
 						if (end > 0 && w + cw + begin > p_width) {
@@ -565,9 +611,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						end++;
 					}
 					CHECK_HEIGHT(fh);
-					// Useless?
-					// float next_item_width = can_break ? 0 : _get_text_length(_get_next_item(it), p_base_font);
-					ENSURE_WIDTH(w /*+ next_item_width*/);
+					float next_item_width = can_break || !no_cjk ? 0 : _get_text_length(_get_next_item(it), p_base_font);
+					ENSURE_WIDTH(w + next_item_width);
 
 					line_ascent = MAX(line_ascent, ascent);
 					line_descent = MAX(line_descent, descent);
