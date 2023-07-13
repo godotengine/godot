@@ -2178,7 +2178,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	min_thumbnail_zoom = 0.1f * MAX(1.0f, EDSCALE);
 	// Default the zoom to match the editor scale, but don't dezoom on editor scales below 100% to prevent pixel art from looking bad.
 	sheet_zoom = MAX(1.0f, EDSCALE);
-	max_sheet_zoom = 16.0f * MAX(1.0f, EDSCALE);
+	max_sheet_zoom = 128.0f * MAX(1.0f, EDSCALE);
 	min_sheet_zoom = 0.01f * MAX(1.0f, EDSCALE);
 	_zoom_reset();
 

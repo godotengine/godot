@@ -76,6 +76,8 @@ class TextureRegionEditor : public AcceptDialog {
 
 	Vector2 draw_ofs;
 	float draw_zoom = 1.0;
+	float min_draw_zoom = 1.0;
+	float max_draw_zoom = 1.0;
 	bool updating_scroll = false;
 
 	SnapMode snap_mode = SNAP_NONE;
