@@ -624,6 +624,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	bad_type.kind = GDScriptParser::DataType::VARIANT;
 	bad_type.type_source = GDScriptParser::DataType::INFERRED;
 
+	resolve_incomplete(p_type);
+
 	if (p_type == nullptr) {
 		return bad_type;
 	}
@@ -1462,6 +1464,8 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		resolve_pending_lambda_bodies();
 	}
 
+	resolve_incomplete(p_class);
+
 	parser->current_class = previous_class;
 }
 
@@ -1620,6 +1624,7 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 
 		p_annotation->resolved_arguments.push_back(value);
 	}
+	resolve_incomplete(p_annotation);
 }
 
 void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *p_function, const GDScriptParser::Node *p_source, bool p_is_lambda) {
@@ -1894,6 +1899,7 @@ void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite) {
 		resolve_pending_lambda_bodies();
 		decide_suite_type(p_suite, stmt);
 	}
+	resolve_incomplete(p_suite);
 }
 
 void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assignable, const char *p_kind) {
@@ -2043,6 +2049,7 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 	}
 	is_shadowing(p_variable->identifier, kind, p_is_local);
 #endif
+	resolve_incomplete(p_variable);
 }
 
 void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant, bool p_is_local) {
@@ -2057,11 +2064,13 @@ void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant
 	}
 	is_shadowing(p_constant->identifier, kind, p_is_local);
 #endif
+	resolve_incomplete(p_constant);
 }
 
 void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parameter) {
 	static constexpr const char *kind = "parameter";
 	resolve_assignable(p_parameter, kind);
+	resolve_incomplete(p_parameter);
 }
 
 void GDScriptAnalyzer::resolve_if(GDScriptParser::IfNode *p_if) {
@@ -2074,6 +2083,7 @@ void GDScriptAnalyzer::resolve_if(GDScriptParser::IfNode *p_if) {
 		resolve_suite(p_if->false_block);
 		decide_suite_type(p_if, p_if->false_block);
 	}
+	resolve_incomplete(p_if);
 }
 
 void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
@@ -2155,6 +2165,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 				}
 			}
 		}
+		resolve_incomplete(p_for);
 	}
 
 	GDScriptParser::DataType variable_type;
@@ -2260,6 +2271,8 @@ void GDScriptAnalyzer::resolve_while(GDScriptParser::WhileNode *p_while) {
 
 	resolve_suite(p_while->loop);
 	p_while->set_datatype(p_while->loop->get_datatype());
+
+	resolve_incomplete(p_while);
 }
 
 void GDScriptAnalyzer::resolve_assert(GDScriptParser::AssertNode *p_assert) {
@@ -2282,6 +2295,7 @@ void GDScriptAnalyzer::resolve_assert(GDScriptParser::AssertNode *p_assert) {
 		}
 	}
 #endif
+	resolve_incomplete(p_assert);
 }
 
 void GDScriptAnalyzer::resolve_match(GDScriptParser::MatchNode *p_match) {
@@ -2292,6 +2306,7 @@ void GDScriptAnalyzer::resolve_match(GDScriptParser::MatchNode *p_match) {
 
 		decide_suite_type(p_match, p_match->branches[i]);
 	}
+	resolve_incomplete(p_match);
 }
 
 void GDScriptAnalyzer::resolve_match_branch(GDScriptParser::MatchBranchNode *p_match_branch, GDScriptParser::ExpressionNode *p_match_test) {
@@ -2312,6 +2327,8 @@ void GDScriptAnalyzer::resolve_match_branch(GDScriptParser::MatchBranchNode *p_m
 	resolve_suite(p_match_branch->block);
 
 	decide_suite_type(p_match_branch, p_match_branch->block);
+
+	resolve_incomplete(p_match_branch);
 }
 
 void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_match_pattern, GDScriptParser::ExpressionNode *p_match_test) {
@@ -2392,6 +2409,8 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 	}
 
 	p_match_pattern->set_datatype(result);
+
+	resolve_incomplete(p_match_pattern);
 }
 
 void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
@@ -2465,6 +2484,18 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 	}
 
 	p_return->set_datatype(result);
+
+	resolve_incomplete(p_return);
+}
+
+inline void GDScriptAnalyzer::resolve_incomplete(GDScriptParser::Node *p_node) {
+#ifdef TOOLS_ENABLED
+	if (p_node != nullptr) {
+		for (GDScriptParser::Node *E : p_node->incomplete_fragments) {
+			resolve_node(E);
+		}
+	}
+#endif
 }
 
 void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expression, bool p_is_root) {
@@ -2567,6 +2598,8 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 		dummy.kind = GDScriptParser::DataType::VARIANT;
 		p_expression->set_datatype(dummy);
 	}
+
+	resolve_incomplete(p_expression);
 }
 
 void GDScriptAnalyzer::reduce_array(GDScriptParser::ArrayNode *p_array) {

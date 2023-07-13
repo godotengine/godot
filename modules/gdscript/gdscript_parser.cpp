@@ -245,6 +245,23 @@ void GDScriptParser::apply_pending_warnings() {
 }
 #endif
 
+inline void GDScriptParser::push_incomplete(GDScriptParser::Node *p_incomplete) {
+#ifdef TOOLS_ENABLED
+	if (p_incomplete != nullptr) {
+		incomplete_fragments.append(p_incomplete);
+	}
+#endif
+}
+
+inline void GDScriptParser::apply_incomplete(GDScriptParser::Node *p_apply_to) {
+#ifdef TOOLS_ENABLED
+	if (p_apply_to != nullptr) {
+		p_apply_to->incomplete_fragments.append_array(incomplete_fragments);
+		incomplete_fragments.clear();
+	}
+#endif
+}
+
 void GDScriptParser::override_completion_context(const Node *p_for_node, CompletionType p_type, Node *p_node, int p_argument) {
 	if (!for_completion) {
 		return;
@@ -1143,6 +1160,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_var
 	if (p_need_indent) {
 		if (!consume(GDScriptTokenizer::Token::INDENT, R"(Expected indented block for property after ":".)")) {
 			complete_extents(p_variable);
+			push_incomplete(p_variable);
 			return nullptr;
 		}
 	}
@@ -1153,6 +1171,7 @@ GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_var
 
 	if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected "get" or "set" for property declaration.)")) {
 		complete_extents(p_variable);
+		push_incomplete(p_variable);
 		return nullptr;
 	}
 
@@ -1787,6 +1806,9 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 	if (p_for_lambda) {
 		lambda_ended = true;
 	}
+
+	apply_incomplete(suite);
+
 	current_suite = suite->parent_block;
 	return suite;
 }
@@ -1963,6 +1985,8 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 		synchronize();
 	}
 
+	apply_incomplete(result);
+
 	return result;
 }
 
@@ -1987,6 +2011,7 @@ GDScriptParser::AssertNode *GDScriptParser::parse_assert() {
 			push_error(R"(Expected error message for assert after ",".)");
 			pop_multiline();
 			complete_extents(assert);
+			push_incomplete(assert->condition);
 			return nullptr;
 		}
 		match(GDScriptTokenizer::Token::COMMA);
@@ -2198,6 +2223,8 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 	}
 	match_branch_annotation_stack.clear();
 
+	apply_incomplete(match_node);
+
 	return match_node;
 }
 
@@ -2262,6 +2289,9 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 
 	if (!consume(GDScriptTokenizer::Token::COLON, vformat(R"(Expected ":"%s after "match" %s.)", has_guard ? "" : R"( or "when")", has_guard ? "pattern guard" : "patterns"))) {
 		complete_extents(branch);
+		for (GDScriptParser::PatternNode *E : branch->patterns) {
+			push_incomplete(E);
+		}
 		return nullptr;
 	}
 
@@ -3069,12 +3099,16 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_dictionary(ExpressionNode 
 
 			if (key != nullptr && value != nullptr) {
 				dictionary->elements.push_back({ key, value });
+			} else {
+				push_incomplete(key);
+				push_incomplete(value);
 			}
 		} while (match(GDScriptTokenizer::Token::COMMA) && !is_at_end());
 	}
 	pop_multiline();
 	consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected closing "}" after dictionary elements.)");
 	complete_extents(dictionary);
+	apply_incomplete(dictionary);
 
 	return dictionary;
 }
