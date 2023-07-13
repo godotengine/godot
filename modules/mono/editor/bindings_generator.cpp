@@ -70,6 +70,7 @@
 #define CS_FIELD_MEMORYOWN "memoryOwn"
 #define CS_PARAM_METHODBIND "method"
 #define CS_PARAM_INSTANCE "ptr"
+#define CS_PARAM_CALLER "caller"
 #define CS_SMETHOD_GETINSTANCE "GetPtr"
 #define CS_METHOD_CALL "Call"
 
@@ -87,6 +88,7 @@
 #define C_NS_MONOINTERNALS "GDMonoInternals"
 #define C_METHOD_TIE_MANAGED_TO_UNMANAGED C_NS_MONOINTERNALS "::tie_managed_to_unmanaged"
 #define C_METHOD_UNMANAGED_GET_MANAGED C_NS_MONOUTILS "::unmanaged_get_managed"
+#define C_METHOD_CHECK_CALL_ERROR C_NS_MONOINTERNALS "::check_call_error"
 
 #define C_NS_MONOMARSHAL "GDMonoMarshal"
 #define C_METHOD_MANAGED_TO_VARIANT C_NS_MONOMARSHAL "::mono_object_to_variant"
@@ -772,6 +774,11 @@ void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
 			im_unique_sig += get_unique_sig(*arg_type);
 
 			i++;
+		}
+
+		// Collect caller name for MethodBind
+		if (imethod.is_vararg) {
+			im_sig += ", string " CS_PARAM_CALLER;
 		}
 
 		String im_type_out = return_type->im_type_out;
@@ -1658,6 +1665,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		}
 	}
 
+	if (p_imethod.is_vararg) {
+		icall_params += ", \"" + p_imethod.cname + "\"";
+	}
+
 	// Generate method
 	{
 		if (!p_imethod.is_virtual && !p_imethod.requires_object_call) {
@@ -2002,6 +2013,11 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 		i++;
 	}
 
+	// Collect caller name for MethodBind
+	if (p_imethod.is_vararg) {
+		c_func_sig += ", MonoString* " CS_PARAM_CALLER;
+	}
+
 	if (return_type->ret_as_byref_arg) {
 		c_func_sig += ", ";
 		c_func_sig += return_type->c_type_in;
@@ -2114,6 +2130,15 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 			p_output.append(CS_PARAM_METHODBIND "->call(" CS_PARAM_INSTANCE ", ");
 			p_output.append(p_imethod.arguments.size() ? C_LOCAL_PTRCALL_ARGS ".ptr()" : "NULL");
 			p_output.append(", total_length, vcall_error);\n");
+
+			p_output.append("#ifdef DEBUG_ENABLED\n");
+			p_output.append("\tVariant instance_variant = Variant(" CS_PARAM_INSTANCE ");\n");
+			p_output.append("\t" C_METHOD_CHECK_CALL_ERROR "(");
+			p_output.append(C_METHOD_MONOSTR_TO_GODOT "(" CS_PARAM_CALLER ")");
+			p_output.append(", &instance_variant, ");
+			p_output.append(p_imethod.arguments.size() ? C_LOCAL_PTRCALL_ARGS ".ptr()" : "NULL");
+			p_output.append(", total_length, vcall_error);\n");
+			p_output.append("#endif // DEBUG_ENABLED\n");
 
 			if (!ret_void) {
 				// See the comment on the C_LOCAL_VARARG_RET declaration
