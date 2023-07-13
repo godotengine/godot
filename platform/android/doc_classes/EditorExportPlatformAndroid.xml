@@ -15,7 +15,7 @@
 		</member>
 		<member name="apk_expansion/enable" type="bool" setter="" getter="">
 			If [code]true[/code], project resources are stored in the separate APK expansion file, instead APK.
-			[b]Note:[/b] APK expansion should be enabled to use PCK encryption.
+			[note]APK expansion should be enabled to use PCK encryption.[/note]
 		</member>
 		<member name="apk_expansion/public_key" type="String" setter="" getter="">
 			Base64 encoded RSA public key for your publisher account, available from the profile page on the "Play Console".

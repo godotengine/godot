@@ -46,7 +46,7 @@
 		    # Prints "Attack!", when the button_pressed signal is emitted.
 		    button_pressed.connect(func(): print("Attack!"))
 		[/codeblock]
-		[b]Note:[/b] Methods of native types such as [Signal], [Array], or [Dictionary] are not of type [Callable] in order to avoid unnecessary overhead. If you need to pass those methods as [Callable], use a lambda function as a wrapper.
+		[note]Methods of native types such as [Signal], [Array], or [Dictionary] are not of type [Callable] in order to avoid unnecessary overhead. If you need to pass those methods as [Callable], use a lambda function as a wrapper.[/note]
 		[codeblock]
 		func _init():
 		    var my_dictionary = { "hello": "world" }
@@ -88,7 +88,7 @@
 			<return type="Callable" />
 			<description>
 				Returns a copy of this [Callable] with one or more arguments bound. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
-				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
+				[note]When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.[/note]
 			</description>
 		</method>
 		<method name="bindv">
@@ -96,7 +96,7 @@
 			<param index="0" name="arguments" type="Array" />
 			<description>
 				Returns a copy of this [Callable] with one or more arguments bound, reading them from an array. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call]. See also [method unbind].
-				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
+				[note]When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.[/note]
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg const">
@@ -157,7 +157,7 @@
 			<return type="int" />
 			<description>
 				Returns the 32-bit hash value of this [Callable]'s object.
-				[b]Note:[/b] [Callable]s with equal content will always produce identical hash values. However, the reverse is not true. Returning identical hash values does [i]not[/i] imply the callables are equal, because different callables can have identical hash values due to hash collisions. The engine uses a 32-bit hash algorithm for [method hash].
+				[note][Callable]s with equal content will always produce identical hash values. However, the reverse is not true. Returning identical hash values does [i]not[/i] imply the callables are equal, because different callables can have identical hash values due to hash collisions. The engine uses a 32-bit hash algorithm for [method hash].[/note]
 			</description>
 		</method>
 		<method name="is_custom" qualifiers="const">
@@ -202,7 +202,7 @@
 			<param index="0" name="argcount" type="int" />
 			<description>
 				Returns a copy of this [Callable] with a number of arguments unbound. In other words, when the new callable is called the last few arguments supplied by the user are ignored, according to [param argcount]. The remaining arguments are passed to the callable. This allows to use the original callable in a context that attempts to pass more arguments than this callable can handle, e.g. a signal with a fixed number of arguments. See also [method bind].
-				[b]Note:[/b] When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.
+				[note]When this method is chained with other similar methods, the order in which the argument list is modified is read from right to left.[/note]
 				[codeblock]
 				func _ready():
 				    foo.unbind(1).call(1, 2) # Calls foo(1).

@@ -26,7 +26,7 @@
 		[/csharp]
 		[/codeblocks]
 		Animations are just data containers, and must be added to nodes such as an [AnimationPlayer] to be played back. Animation tracks have different types, each with its own set of dedicated methods. Check [enum TrackType] to see available types.
-		[b]Note:[/b] For 3D position/rotation/scale, using the dedicated [constant TYPE_POSITION_3D], [constant TYPE_ROTATION_3D] and [constant TYPE_SCALE_3D] track types instead of [constant TYPE_VALUE] is recommended for performance reasons.
+		[note]For 3D position/rotation/scale, using the dedicated [constant TYPE_POSITION_3D], [constant TYPE_ROTATION_3D] and [constant TYPE_SCALE_3D] track types instead of [constant TYPE_VALUE] is recommended for performance reasons.[/note]
 	</description>
 	<tutorials>
 		<link title="Animation documentation index">$DOCS_URL/tutorials/animation/index.html</link>
@@ -249,7 +249,7 @@
 			<param index="2" name="split_tolerance" type="float" default="4.0" />
 			<description>
 				Compress the animation and all its tracks in-place. This will make [method track_is_compressed] return [code]true[/code] once called on this [Animation]. Compressed tracks require less memory to be played, and are designed to be used for complex 3D animations (such as cutscenes) imported from external 3D software. Compression is lossy, but the difference is usually not noticeable in real world conditions.
-				[b]Note:[/b] Compressed tracks have various limitations (such as not being editable from the editor), so only use compressed animations if you actually need them.
+				[note]Compressed tracks have various limitations (such as not being editable from the editor), so only use compressed animations if you actually need them.[/note]
 			</description>
 		</method>
 		<method name="copy_track">
@@ -588,7 +588,7 @@
 	<members>
 		<member name="length" type="float" setter="set_length" getter="get_length" default="1.0">
 			The total length of the animation (in seconds).
-			[b]Note:[/b] Length is not delimited by the last key, as this one may be before or after the end to ensure correct interpolation and looping.
+			[note]Length is not delimited by the last key, as this one may be before or after the end to ensure correct interpolation and looping.[/note]
 		</member>
 		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="Animation.LoopMode" default="0">
 			Determines the behavior of both ends of the animation timeline during animation playback. This is used for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
@@ -636,11 +636,11 @@
 		</constant>
 		<constant name="INTERPOLATION_LINEAR_ANGLE" value="3" enum="InterpolationType">
 			Linear interpolation with shortest path rotation.
-			[b]Note:[/b] The result value is always normalized and may not match the key value.
+			[note]The result value is always normalized and may not match the key value.[/note]
 		</constant>
 		<constant name="INTERPOLATION_CUBIC_ANGLE" value="4" enum="InterpolationType">
 			Cubic interpolation with shortest path rotation.
-			[b]Note:[/b] The result value is always normalized and may not match the key value.
+			[note]The result value is always normalized and may not match the key value.[/note]
 		</constant>
 		<constant name="UPDATE_CONTINUOUS" value="0" enum="UpdateMode">
 			Update between keyframes and hold the value.

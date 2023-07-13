@@ -153,7 +153,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Adds a dynamic library (*.dylib, *.framework) to Linking Phase in iOS's Xcode project and embeds it into resulting binary.
-				[b]Note:[/b] For static libraries (*.a) works in same way as [code]add_ios_framework[/code].
+				[note]For static libraries (*.a) works in same way as [code]add_ios_framework[/code].[/note]
 				This method should not be used for System libraries as they are already present on the device.
 			</description>
 		</method>
@@ -190,7 +190,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Adds file or directory matching [param path] to [code]PlugIns[/code] directory of macOS app bundle.
-				[b]Note:[/b] This is useful only for macOS exports.
+				[note]This is useful only for macOS exports.[/note]
 			</description>
 		</method>
 		<method name="add_shared_object">
@@ -200,7 +200,7 @@
 			<param index="2" name="target" type="String" />
 			<description>
 				Adds a shared object or a directory containing only shared objects with the given [param tags] and destination [param path].
-				[b]Note:[/b] In case of macOS exports, those shared objects will be added to [code]Frameworks[/code] directory of app bundle.
+				[note]In case of macOS exports, those shared objects will be added to [code]Frameworks[/code] directory of app bundle.[/note]
 				In case of a directory code-sign will error if you place non code object in directory.
 			</description>
 		</method>

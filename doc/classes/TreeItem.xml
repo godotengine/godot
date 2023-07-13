@@ -6,7 +6,7 @@
 	<description>
 		A single item of a [Tree] control. It can contain other [TreeItem]s as children, which allows it to create a hierarchy. It can also contain text and buttons. [TreeItem] is not a [Node], it is internal to the [Tree].
 		To create a [TreeItem], use [method Tree.create_item] or [method TreeItem.create_child]. To remove a [TreeItem], use [method Object.free].
-		[b]Note:[/b] The ID values used for buttons are 32-bit, unlike [int] which is always 64-bit. They go from [code]-2147483648[/code] to [code]2147483647[/code].
+		[note]The ID values used for buttons are 32-bit, unlike [int] which is always 64-bit. They go from [code]-2147483648[/code] to [code]2147483647[/code].[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -421,7 +421,7 @@
 			<param index="0" name="item" type="TreeItem" />
 			<description>
 				Moves this TreeItem right after the given [param item].
-				[b]Note:[/b] You can't move to the root or move the root.
+				[note]You can't move to the root or move the root.[/note]
 			</description>
 		</method>
 		<method name="move_before">
@@ -429,7 +429,7 @@
 			<param index="0" name="item" type="TreeItem" />
 			<description>
 				Moves this TreeItem right before the given [param item].
-				[b]Note:[/b] You can't move to the root or move the root.
+				[note]You can't move to the root or move the root.[/note]
 			</description>
 		</method>
 		<method name="propagate_check">
@@ -445,7 +445,7 @@
 			<param index="0" name="child" type="TreeItem" />
 			<description>
 				Removes the given child [TreeItem] and all its children from the [Tree]. Note that it doesn't free the item from memory, so it can be reused later (see [method add_child]). To completely remove a [TreeItem] use [method Object.free].
-				[b]Note:[/b] If you want to move a child from one [Tree] to another, then instead of removing and adding it manually you can use [method move_before] or [method move_after].
+				[note]If you want to move a child from one [Tree] to another, then instead of removing and adding it manually you can use [method move_before] or [method move_after].[/note]
 			</description>
 		</method>
 		<method name="select">
@@ -578,7 +578,7 @@
 			<param index="1" name="multiline" type="bool" />
 			<description>
 				If [param multiline] is [code]true[/code], the given [param column] is multiline editable.
-				[b]Note:[/b] This option only affects the type of control ([LineEdit] or [TextEdit]) that appears when editing the column. You can set multiline values with [method set_text] even if the column is not multiline editable.
+				[note]This option only affects the type of control ([LineEdit] or [TextEdit]) that appears when editing the column. You can set multiline values with [method set_text] even if the column is not multiline editable.[/note]
 			</description>
 		</method>
 		<method name="set_editable">
@@ -635,7 +635,7 @@
 			<param index="1" name="indeterminate" type="bool" />
 			<description>
 				If [param indeterminate] is [code]true[/code], the given [param column] is marked indeterminate.
-				[b]Note:[/b] If set [code]true[/code] from [code]false[/code], then column is cleared of checked status.
+				[note]If set [code]true[/code] from [code]false[/code], then column is cleared of checked status.[/note]
 			</description>
 		</method>
 		<method name="set_language">

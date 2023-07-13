@@ -82,7 +82,7 @@
 		</member>
 		<member name="codesign/entitlements/app_sandbox/enabled" type="bool" setter="" getter="">
 			Enables App Sandbox. The App Sandbox restricts access to user data, networking, and devices. Sandboxed apps can't access most of the file system, can't use custom file dialogs and execute binaries outside the .app bundle. See [url=https://developer.apple.com/documentation/security/app_sandbox]App Sandbox[/url].
-			[b]Note:[/b] To distribute an app through the App Store, you must enable the App Sandbox.
+			[note]To distribute an app through the App Store, you must enable the App Sandbox.[/note]
 		</member>
 		<member name="codesign/entitlements/app_sandbox/files_downloads" type="int" setter="" getter="">
 			Allows read or write access to the user's "Downloads" folder. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_files_downloads_read-write]com.apple.security.files.downloads.read-write[/url].

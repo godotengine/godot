@@ -23,7 +23,7 @@
 	<members>
 		<member name="points" type="PackedVector2Array" setter="set_points" getter="get_points" default="PackedVector2Array()">
 			The polygon's list of vertices that form a convex hull. Can be in either clockwise or counterclockwise order.
-			[b]Warning:[/b] Only set this property to a list of points that actually form a convex hull. Use [method set_point_cloud] to generate the convex hull of an arbitrary set of points.
+			[warning]Only set this property to a list of points that actually form a convex hull. Use [method set_point_cloud] to generate the convex hull of an arbitrary set of points.[/warning]
 		</member>
 	</members>
 </class>

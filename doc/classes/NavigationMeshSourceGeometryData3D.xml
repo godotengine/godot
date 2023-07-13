@@ -62,7 +62,7 @@
 			<param index="0" name="indices" type="PackedInt32Array" />
 			<description>
 				Sets the parsed source geometry data indices. The indices need to be matched with appropriated vertices.
-				[b]Warning:[/b] Inappropriate data can crash the baking process of the involved third-party libraries.
+				[warning]Inappropriate data can crash the baking process of the involved third-party libraries.[/warning]
 			</description>
 		</method>
 		<method name="set_vertices">
@@ -70,7 +70,7 @@
 			<param index="0" name="vertices" type="PackedFloat32Array" />
 			<description>
 				Sets the parsed source geometry data vertices. The vertices need to be matched with appropriated indices.
-				[b]Warning:[/b] Inappropriate data can crash the baking process of the involved third-party libraries.
+				[warning]Inappropriate data can crash the baking process of the involved third-party libraries.[/warning]
 			</description>
 		</method>
 	</methods>

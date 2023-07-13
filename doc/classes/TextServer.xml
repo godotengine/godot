@@ -21,8 +21,8 @@
 			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Creates new buffer for complex text layout, with the given [param direction] and [param orientation]. To free the resulting buffer, use [method free_rid] method.
-				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).
-				[b]Note:[/b] Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature (supported by [TextServerAdvanced]).
+				[note]Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).[/note]
+				[note]Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature (supported by [TextServerAdvanced]).[/note]
 			</description>
 		</method>
 		<method name="draw_hex_code_box" qualifiers="const">
@@ -42,7 +42,7 @@
 			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Removes all rendered glyphs information from the cache entry.
-				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
+				[note]This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.[/note]
 			</description>
 		</method>
 		<method name="font_clear_kerning_map">
@@ -66,7 +66,7 @@
 			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Removes all textures from font cache entry.
-				[b]Note:[/b] This function will not remove glyphs associated with the texture, use [method font_remove_glyph] to remove them manually.
+				[note]This function will not remove glyphs associated with the texture, use [method font_remove_glyph] to remove them manually.[/note]
 			</description>
 		</method>
 		<method name="font_draw_glyph" qualifiers="const">
@@ -79,8 +79,8 @@
 			<param index="5" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws single glyph into a canvas item at the position, using [param font_rid] at the size [param size].
-				[b]Note:[/b] Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
-				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
+				[note]Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].[/note]
+				[note]If there are pending glyphs to render, calling this function might trigger the texture cache update.[/note]
 			</description>
 		</method>
 		<method name="font_draw_glyph_outline" qualifiers="const">
@@ -94,8 +94,8 @@
 			<param index="6" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draws single glyph outline of size [param outline_size] into a canvas item at the position, using [param font_rid] at the size [param size].
-				[b]Note:[/b] Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].
-				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
+				[note]Glyph index is specific to the font, use glyphs indices returned by [method shaped_text_get_glyphs] or [method font_get_glyph_index].[/note]
+				[note]If there are pending glyphs to render, calling this function might trigger the texture cache update.[/note]
 			</description>
 		</method>
 		<method name="font_get_antialiasing" qualifiers="const">
@@ -178,7 +178,7 @@
 			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns glyph advance (offset of the next glyph).
-				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
+				[note]Advance for glyphs outlines is the same as the base glyph advance and is not saved.[/note]
 			</description>
 		</method>
 		<method name="font_get_glyph_contours" qualifiers="const">
@@ -245,7 +245,7 @@
 			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns resource ID of the cache texture containing the glyph.
-				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
+				[note]If there are pending glyphs to render, calling this function might trigger the texture cache update.[/note]
 			</description>
 		</method>
 		<method name="font_get_glyph_texture_size" qualifiers="const">
@@ -255,7 +255,7 @@
 			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns size of the cache texture containing the glyph.
-				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
+				[note]If there are pending glyphs to render, calling this function might trigger the texture cache update.[/note]
 			</description>
 		</method>
 		<method name="font_get_glyph_uv_rect" qualifiers="const">
@@ -528,7 +528,7 @@
 			<param index="2" name="glyph" type="int" />
 			<description>
 				Removes specified rendered glyph information from the cache entry.
-				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.
+				[note]This function will not remove textures associated with the glyphs, use [method font_remove_texture] to remove them manually.[/note]
 			</description>
 		</method>
 		<method name="font_remove_kerning">
@@ -571,7 +571,7 @@
 			<param index="2" name="texture_index" type="int" />
 			<description>
 				Removes specified texture from the cache entry.
-				[b]Note:[/b] This function will not remove glyphs associated with the texture, remove them manually, using [method font_remove_glyph].
+				[note]This function will not remove glyphs associated with the texture, remove them manually, using [method font_remove_glyph].[/note]
 			</description>
 		</method>
 		<method name="font_render_glyph">
@@ -680,7 +680,7 @@
 			<param index="0" name="oversampling" type="float" />
 			<description>
 				Sets oversampling factor, shared by all font in the TextServer.
-				[b]Note:[/b] This value can be automatically changed by display server.
+				[note]This value can be automatically changed by display server.[/note]
 			</description>
 		</method>
 		<method name="font_set_glyph_advance">
@@ -691,7 +691,7 @@
 			<param index="3" name="advance" type="Vector2" />
 			<description>
 				Sets glyph advance (offset of the next glyph).
-				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
+				[note]Advance for glyphs outlines is the same as the base glyph advance and is not saved.[/note]
 			</description>
 		</method>
 		<method name="font_set_glyph_offset">
@@ -783,7 +783,7 @@
 			<param index="1" name="msdf" type="bool" />
 			<description>
 				If set to [code]true[/code], glyphs of all sizes are rendered using single multichannel signed distance field generated from the dynamic font vector data. MSDF rendering allows displaying the font at any scaling factor without blurriness, and without incurring a CPU cost when the font size changes (since the font no longer needs to be rasterized on the CPU). As a downside, font hinting is not available with MSDF. The lack of font hinting may result in less crisp and less readable fonts at small sizes.
-				[b]Note:[/b] MSDF font rendering does not render glyphs with overlapping shapes correctly. Overlapping shapes are not valid per the OpenType standard, but are still commonly found in many font files, especially those converted by Google Fonts. To avoid issues with overlapping glyphs, consider downloading the font file directly from the type foundry instead of relying on Google Fonts.
+				[note]MSDF font rendering does not render glyphs with overlapping shapes correctly. Overlapping shapes are not valid per the OpenType standard, but are still commonly found in many font files, especially those converted by Google Fonts. To avoid issues with overlapping glyphs, consider downloading the font file directly from the type foundry instead of relying on Google Fonts.[/note]
 			</description>
 		</method>
 		<method name="font_set_name">
@@ -834,7 +834,7 @@
 			<param index="1" name="weight" type="int" />
 			<description>
 				Sets font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
-				[b]Note:[/b] This value is used for font matching only and will not affect font rendering. Use [method font_set_face_index], [method font_set_variation_coordinates], or [method font_set_transform] instead.
+				[note]This value is used for font matching only and will not affect font rendering. Use [method font_set_face_index], [method font_set_variation_coordinates], or [method font_set_transform] instead.[/note]
 			</description>
 		</method>
 		<method name="font_set_style">
@@ -843,7 +843,7 @@
 			<param index="1" name="style" type="int" enum="TextServer.FontStyle" is_bitfield="true" />
 			<description>
 				Sets the font style flags, see [enum FontStyle].
-				[b]Note:[/b] This value is used for font matching only and will not affect font rendering. Use [method font_set_face_index], [method font_set_variation_coordinates], [method font_set_embolden], or [method font_set_transform] instead.
+				[note]This value is used for font matching only and will not affect font rendering. Use [method font_set_face_index], [method font_set_variation_coordinates], [method font_set_embolden], or [method font_set_transform] instead.[/note]
 			</description>
 		</method>
 		<method name="font_set_style_name">
@@ -923,7 +923,7 @@
 			<param index="1" name="weight" type="int" />
 			<description>
 				Sets weight (boldness) of the font. A value in the [code]100...999[/code] range, normal font weight is [code]400[/code], bold font weight is [code]700[/code].
-				[b]Note:[/b] This value is used for font matching only and will not affect font rendering. Use [method font_set_face_index], [method font_set_variation_coordinates], or [method font_set_embolden] instead.
+				[note]This value is used for font matching only and will not affect font rendering. Use [method font_set_face_index], [method font_set_variation_coordinates], or [method font_set_embolden] instead.[/note]
 			</description>
 		</method>
 		<method name="font_supported_feature_list" qualifiers="const">
@@ -1008,8 +1008,8 @@
 			<param index="1" name="dict" type="PackedStringArray" />
 			<description>
 				Returns index of the first string in [param dict] which is visually confusable with the [param string], or [code]-1[/code] if none is found.
-				[b]Note:[/b] This method doesn't detect invisible characters, for spoof detection use it in combination with [method spoof_check].
-				[b]Note:[/b] Always returns [code]-1[/code] if the server does not support the [constant FEATURE_UNICODE_SECURITY] feature.
+				[note]This method doesn't detect invisible characters, for spoof detection use it in combination with [method spoof_check].[/note]
+				[note]Always returns [code]-1[/code] if the server does not support the [constant FEATURE_UNICODE_SECURITY] feature.[/note]
 			</description>
 		</method>
 		<method name="is_locale_right_to_left" qualifiers="const">
@@ -1039,7 +1039,7 @@
 			<param index="0" name="filename" type="String" />
 			<description>
 				Loads optional TextServer database (e.g. ICU break iterators and dictionaries).
-				[b]Note:[/b] This function should be called before any other TextServer functions used, otherwise it won't have any effect.
+				[note]This function should be called before any other TextServer functions used, otherwise it won't have any effect.[/note]
 			</description>
 		</method>
 		<method name="name_to_tag" qualifiers="const">
@@ -1078,7 +1078,7 @@
 			<param index="0" name="filename" type="String" />
 			<description>
 				Saves optional TextServer database (e.g. ICU break iterators and dictionaries) to the file.
-				[b]Note:[/b] This function is used by during project export, to include TextServer database.
+				[note]This function is used by during project export, to include TextServer database.[/note]
 			</description>
 		</method>
 		<method name="shaped_get_span_count" qualifiers="const">
@@ -1178,7 +1178,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<description>
 				Returns the text ascent (number of pixels above the baseline for horizontal layout or to the left of baseline for vertical).
-				[b]Note:[/b] Overall ascent can be higher than font ascent, if some glyphs are displaced from the baseline.
+				[note]Overall ascent can be higher than font ascent, if some glyphs are displaced from the baseline.[/note]
 			</description>
 		</method>
 		<method name="shaped_text_get_carets" qualifiers="const">
@@ -1201,7 +1201,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<description>
 				Returns the text descent (number of pixels below the baseline for horizontal layout or to the right of baseline for vertical).
-				[b]Note:[/b] Overall descent can be higher than font descent, if some glyphs are displaced from the baseline.
+				[note]Overall descent can be higher than font descent, if some glyphs are displaced from the baseline.[/note]
 			</description>
 		</method>
 		<method name="shaped_text_get_direction" qualifiers="const">
@@ -1332,7 +1332,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<description>
 				Returns [code]true[/code] if text buffer is configured to display hexadecimal codes in place of invalid characters.
-				[b]Note:[/b] If set to [code]false[/code], nothing is displayed in place of invalid characters.
+				[note]If set to [code]false[/code], nothing is displayed in place of invalid characters.[/note]
 			</description>
 		</method>
 		<method name="shaped_text_get_range" qualifiers="const">
@@ -1491,7 +1491,7 @@
 			<param index="1" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<description>
 				Sets desired text direction. If set to [constant DIRECTION_AUTO], direction will be detected based on the buffer contents and current locale.
-				[b]Note:[/b] Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).
+				[note]Direction is ignored if server does not support [constant FEATURE_BIDI_LAYOUT] feature (supported by [TextServerAdvanced]).[/note]
 			</description>
 		</method>
 		<method name="shaped_text_set_orientation">
@@ -1500,7 +1500,7 @@
 			<param index="1" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
 			<description>
 				Sets desired text orientation.
-				[b]Note:[/b] Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature (supported by [TextServerAdvanced]).
+				[note]Orientation is ignored if server does not support [constant FEATURE_VERTICAL_LAYOUT] feature (supported by [TextServerAdvanced]).[/note]
 			</description>
 		</method>
 		<method name="shaped_text_set_preserve_control">
@@ -1533,7 +1533,7 @@
 			<param index="0" name="shaped" type="RID" />
 			<description>
 				Shapes buffer if it's not shaped. Returns [code]true[/code] if the string is shaped successfully.
-				[b]Note:[/b] It is not necessary to call this function manually, buffer will be shaped automatically as soon as any of its output data is requested.
+				[note]It is not necessary to call this function manually, buffer will be shaped automatically as soon as any of its output data is requested.[/note]
 			</description>
 		</method>
 		<method name="shaped_text_sort_logical">
@@ -1565,7 +1565,7 @@
 			<param index="0" name="string" type="String" />
 			<description>
 				Returns [code]true[/code] if [param string] is likely to be an attempt at confusing the reader.
-				[b]Note:[/b] Always returns [code]false[/code] if the server does not support the [constant FEATURE_UNICODE_SECURITY] feature.
+				[note]Always returns [code]false[/code] if the server does not support the [constant FEATURE_UNICODE_SECURITY] feature.[/note]
 			</description>
 		</method>
 		<method name="string_get_word_breaks" qualifiers="const">
@@ -1589,8 +1589,8 @@
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Returns the string converted to lowercase.
-				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
-				[b]Note:[/b] The result may be longer or shorter than the original.
+				[note]Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).[/note]
+				[note]The result may be longer or shorter than the original.[/note]
 			</description>
 		</method>
 		<method name="string_to_upper" qualifiers="const">
@@ -1599,8 +1599,8 @@
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Returns the string converted to uppercase.
-				[b]Note:[/b] Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).
-				[b]Note:[/b] The result may be longer or shorter than the original.
+				[note]Casing is locale dependent and context sensitive if server support [constant FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION] feature (supported by [TextServerAdvanced]).[/note]
+				[note]The result may be longer or shorter than the original.[/note]
 			</description>
 		</method>
 		<method name="strip_diacritics" qualifiers="const">
@@ -1608,7 +1608,7 @@
 			<param index="0" name="string" type="String" />
 			<description>
 				Strips diacritics from the string.
-				[b]Note:[/b] The result may be longer or shorter than the original.
+				[note]The result may be longer or shorter than the original.[/note]
 			</description>
 		</method>
 		<method name="tag_to_name" qualifiers="const">
@@ -1818,7 +1818,7 @@
 		</constant>
 		<constant name="HINTING_NORMAL" value="2" enum="Hinting">
 			Use the default font hinting mode (crisper but less smooth).
-			[b]Note:[/b] This hinting mode changes both horizontal and vertical glyph metrics. If applied to monospace font, some glyphs might have different width.
+			[note]This hinting mode changes both horizontal and vertical glyph metrics. If applied to monospace font, some glyphs might have different width.[/note]
 		</constant>
 		<constant name="SUBPIXEL_POSITIONING_DISABLED" value="0" enum="SubpixelPositioning">
 			Glyph horizontal position is rounded to the whole pixel size, each glyph is rasterized once.

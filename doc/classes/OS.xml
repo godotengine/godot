@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This class wraps the most common functionalities for communicating with the host operating system, such as the video driver, delays, environment variables, execution of binaries, command line, etc.
-		[b]Note:[/b] In Godot 4, [OS] functions related to window management were moved to the [DisplayServer] singleton.
+		[note]In Godot 4, [OS] functions related to window management were moved to the [DisplayServer] singleton.[/note]
 	</description>
 	<tutorials>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
@@ -23,7 +23,7 @@
 			<return type="void" />
 			<description>
 				Shuts down system MIDI driver.
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[note]This method is implemented on Linux, macOS and Windows.[/note]
 			</description>
 		</method>
 		<method name="crash">
@@ -39,7 +39,7 @@
 			<description>
 				Creates a new instance of Godot that runs independently. The [param arguments] are used in the given order and separated by a space.
 				If the process creation succeeds, the method will return the new process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process creation fails, the method will return [code]-1[/code].
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[note]This method is implemented on Android, iOS, Linux, macOS and Windows.[/note]
 			</description>
 		</method>
 		<method name="create_process">
@@ -61,8 +61,8 @@
 				[/csharp]
 				[/codeblocks]
 				See [method execute] if you wish to run an external command and retrieve the results.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
-				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export or system .app bundle, system .app bundles will ignore arguments.
+				[note]This method is implemented on Android, iOS, Linux, macOS and Windows.[/note]
+				[note]On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export or system .app bundle, system .app bundles will ignore arguments.[/note]
 			</description>
 		</method>
 		<method name="delay_msec" qualifiers="const">
@@ -70,8 +70,8 @@
 			<param index="0" name="msec" type="int" />
 			<description>
 				Delays execution of the current thread by [param msec] milliseconds. [param msec] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_msec] will do nothing and will print an error message.
-				[b]Note:[/b] [method delay_msec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Awaiting with [method SceneTree.create_timer] will delay the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
-				[b]Note:[/b] When [method delay_msec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_msec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).
+				[note][method delay_msec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Awaiting with [method SceneTree.create_timer] will delay the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).[/note]
+				[note]When [method delay_msec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_msec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).[/note]
 			</description>
 		</method>
 		<method name="delay_usec" qualifiers="const">
@@ -79,8 +79,8 @@
 			<param index="0" name="usec" type="int" />
 			<description>
 				Delays execution of the current thread by [param usec] microseconds. [param usec] must be greater than or equal to [code]0[/code]. Otherwise, [method delay_usec] will do nothing and will print an error message.
-				[b]Note:[/b] [method delay_usec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Awaiting with [method SceneTree.create_timer] will delay the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).
-				[b]Note:[/b] When [method delay_usec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_usec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).
+				[note][method delay_usec] is a [i]blocking[/i] way to delay code execution. To delay code execution in a non-blocking way, see [method SceneTree.create_timer]. Awaiting with [method SceneTree.create_timer] will delay the execution of code placed below the [code]await[/code] without affecting the rest of the project (or editor, for [EditorPlugin]s and [EditorScript]s).[/note]
+				[note]When [method delay_usec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_usec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).[/note]
 			</description>
 		</method>
 		<method name="execute">
@@ -94,7 +94,7 @@
 				Executes a command. The file specified in [param path] must exist and be executable. Platform path resolution will be used. The [param arguments] are used in the given order, separated by spaces, and wrapped in quotes. If an [param output] [Array] is provided, the complete shell output of the process will be appended as a single [String] element in [param output]. If [param read_stderr] is [code]true[/code], the output to the standard error stream will be included too.
 				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened. This is ignored on other platforms.
 				If the command is successfully executed, the method will return the exit code of the command, or [code]-1[/code] if it fails.
-				[b]Note:[/b] The Godot thread will pause its execution until the executed command terminates. Use [Thread] to create a separate thread that will not pause the Godot thread, or use [method create_process] to create a completely independent process.
+				[note]The Godot thread will pause its execution until the executed command terminates. Use [Thread] to create a separate thread that will not pause the Godot thread, or use [method create_process] to create a completely independent process.[/note]
 				For example, to retrieve a list of the working directory's contents:
 				[codeblocks]
 				[gdscript]
@@ -117,11 +117,11 @@
 				OS.Execute("CMD.exe", new string[] {"/C", "cd %TEMP% &amp;&amp; dir"}, output);
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
-				[b]Note:[/b] To execute a Windows command interpreter built-in command, specify [code]cmd.exe[/code] in [param path], [code]/c[/code] as the first argument, and the desired command as the second argument.
-				[b]Note:[/b] To execute a PowerShell built-in command, specify [code]powershell.exe[/code] in [param path], [code]-Command[/code] as the first argument, and the desired command as the second argument.
-				[b]Note:[/b] To execute a Unix shell built-in command, specify shell executable name in [param path], [code]-c[/code] as the first argument, and the desired command as the second argument.
-				[b]Note:[/b] On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export.
+				[note]This method is implemented on Android, iOS, Linux, macOS and Windows.[/note]
+				[note]To execute a Windows command interpreter built-in command, specify [code]cmd.exe[/code] in [param path], [code]/c[/code] as the first argument, and the desired command as the second argument.[/note]
+				[note]To execute a PowerShell built-in command, specify [code]powershell.exe[/code] in [param path], [code]-Command[/code] as the first argument, and the desired command as the second argument.[/note]
+				[note]To execute a Unix shell built-in command, specify shell executable name in [param path], [code]-c[/code] as the first argument, and the desired command as the second argument.[/note]
+				[note]On macOS, sandboxed applications are limited to run only embedded helper executables, specified during export.[/note]
 			</description>
 		</method>
 		<method name="find_keycode_from_string" qualifiers="const">
@@ -176,7 +176,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] Passing custom user arguments directly is not recommended, as the engine may discard or modify them. Instead, the best way is to use the standard UNIX double dash ([code]--[/code]) and then pass custom arguments, which the engine itself will ignore. These can be read via [method get_cmdline_user_args].
+				[note]Passing custom user arguments directly is not recommended, as the engine may discard or modify them. Instead, the best way is to use the standard UNIX double dash ([code]--[/code]) and then pass custom arguments, which the engine itself will ignore. These can be read via [method get_cmdline_user_args].[/note]
 			</description>
 		</method>
 		<method name="get_cmdline_user_args">
@@ -203,7 +203,7 @@
 			<description>
 				Returns an array of MIDI device names.
 				The returned array will be empty if the system MIDI driver has not previously been initialized with [method open_midi_inputs].
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[note]This method is implemented on Linux, macOS and Windows.[/note]
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
@@ -219,7 +219,7 @@
 				Returns the name of the distribution for Linux and BSD platforms (e.g. Ubuntu, Manjaro, OpenBSD, etc.).
 				Returns the same value as [method get_name] for stock Android ROMs, but attempts to return the custom ROM name for popular Android derivatives such as LineageOS.
 				Returns the same value as [method get_name] for other platforms.
-				[b]Note:[/b] This method is not supported on the web platform. It returns an empty string.
+				[note]This method is not supported on the web platform. It returns an empty string.[/note]
 			</description>
 		</method>
 		<method name="get_environment" qualifiers="const">
@@ -227,21 +227,21 @@
 			<param index="0" name="variable" type="String" />
 			<description>
 				Returns the value of an environment variable. Returns an empty string if the environment variable doesn't exist.
-				[b]Note:[/b] Double-check the casing of [param variable]. Environment variable names are case-sensitive on all platforms except Windows.
+				[note]Double-check the casing of [param variable]. Environment variable names are case-sensitive on all platforms except Windows.[/note]
 			</description>
 		</method>
 		<method name="get_executable_path" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the path to the current engine executable.
-				[b]Note:[/b] On macOS, always use [method create_instance] instead of relying on executable path.
+				[note]On macOS, always use [method create_instance] instead of relying on executable path.[/note]
 			</description>
 		</method>
 		<method name="get_granted_permissions" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
 				With this function, you can get the list of dangerous permissions that have been granted to the Android application.
-				[b]Note:[/b] This method is implemented only on Android.
+				[note]This method is implemented only on Android.[/note]
 			</description>
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
@@ -274,7 +274,7 @@
 			<return type="int" />
 			<description>
 				Returns the ID of the main thread. See [method get_thread_caller_id].
-				[b]Note:[/b] Thread IDs are not deterministic and may be reused across application restarts.
+				[note]Thread IDs are not deterministic and may be reused across application restarts.[/note]
 			</description>
 		</method>
 		<method name="get_memory_info" qualifiers="const">
@@ -291,7 +291,7 @@
 			<return type="String" />
 			<description>
 				Returns the model name of the current device.
-				[b]Note:[/b] This method is implemented on Android and iOS. Returns [code]"GenericDevice"[/code] on unsupported platforms.
+				[note]This method is implemented on Android and iOS. Returns [code]"GenericDevice"[/code] on unsupported platforms.[/note]
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
@@ -305,7 +305,7 @@
 				On Android, this is [code]"Android"[/code].
 				On iOS, this is [code]"iOS"[/code].
 				On the web, this is [code]"Web"[/code].
-				[b]Note:[/b] Custom builds of the engine may support additional platforms, such as consoles, yielding other return values.
+				[note]Custom builds of the engine may support additional platforms, such as consoles, yielding other return values.[/note]
 				[codeblocks]
 				[gdscript]
 				match OS.get_name():
@@ -357,7 +357,7 @@
 			<return type="int" />
 			<description>
 				Returns the project's process ID.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[note]This method is implemented on Android, iOS, Linux, macOS and Windows.[/note]
 			</description>
 		</method>
 		<method name="get_processor_count" qualifiers="const">
@@ -370,7 +370,7 @@
 			<return type="String" />
 			<description>
 				Returns the name of the CPU model on the host machine (e.g. "Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz").
-				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and iOS. On Android, Web and UWP, [method get_processor_name] returns an empty string.
+				[note]This method is only implemented on Windows, macOS, Linux and iOS. On Android, Web and UWP, [method get_processor_name] returns an empty string.[/note]
 			</description>
 		</method>
 		<method name="get_restart_on_exit_arguments" qualifiers="const">
@@ -397,8 +397,8 @@
 			<param index="1" name="shared_storage" type="bool" default="true" />
 			<description>
 				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [enum SystemDir].
-				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
-				[b]Note:[/b] Shared storage is implemented on Android and allows to differentiate between app specific and shared directories. Shared directories have additional restrictions on Android.
+				[note]This method is implemented on Android, Linux, macOS and Windows.[/note]
+				[note]Shared storage is implemented on Android and allows to differentiate between app specific and shared directories. Shared directories have additional restrictions on Android.[/note]
 			</description>
 		</method>
 		<method name="get_system_font_path" qualifiers="const">
@@ -410,8 +410,8 @@
 			<description>
 				Returns path to the system font file with [param font_name] and style. Returns empty string if no matching fonts found.
 				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
-				[b]Note:[/b] Returned font might have different style if the requested style is not available.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[note]Returned font might have different style if the requested style is not available.[/note]
+				[note]This method is implemented on Android, iOS, Linux, macOS and Windows.[/note]
 			</description>
 		</method>
 		<method name="get_system_font_path_for_text" qualifiers="const">
@@ -426,31 +426,31 @@
 			<description>
 				Returns an array of the system substitute font file paths, which are similar to the font with [param font_name] and style for the specified text, locale and script. Returns empty array if no matching fonts found.
 				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
-				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts will be suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
-				[b]Note:[/b] Returned fonts might have different style if the requested style is not available or belong to a different font family.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[note]Depending on OS, it's not guaranteed that any of the returned fonts will be suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.[/note]
+				[note]Returned fonts might have different style if the requested style is not available or belong to a different font family.[/note]
+				[note]This method is implemented on Android, iOS, Linux, macOS and Windows.[/note]
 			</description>
 		</method>
 		<method name="get_system_fonts" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
 				Returns list of font family names available.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[note]This method is implemented on Android, iOS, Linux, macOS and Windows.[/note]
 			</description>
 		</method>
 		<method name="get_thread_caller_id" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the ID of the current thread. This can be used in logs to ease debugging of multi-threaded applications.
-				[b]Note:[/b] Thread IDs are not deterministic and may be reused across application restarts.
+				[note]Thread IDs are not deterministic and may be reused across application restarts.[/note]
 			</description>
 		</method>
 		<method name="get_unique_id" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns a string that is unique to the device.
-				[b]Note:[/b] This string may change without notice if the user reinstalls/upgrades their operating system or changes their hardware. This means it should generally not be used to encrypt persistent data as the data saved before an unexpected ID change would become inaccessible. The returned string may also be falsified using external programs, so do not rely on the string returned by [method get_unique_id] for security purposes.
-				[b]Note:[/b] Returns an empty string on Web and UWP, as this method isn't implemented on those platforms yet.
+				[note]This string may change without notice if the user reinstalls/upgrades their operating system or changes their hardware. This means it should generally not be used to encrypt persistent data as the data saved before an unexpected ID change would become inaccessible. The returned string may also be falsified using external programs, so do not rely on the string returned by [method get_unique_id] for security purposes.[/note]
+				[note]Returns an empty string on Web and UWP, as this method isn't implemented on those platforms yet.[/note]
 			</description>
 		</method>
 		<method name="get_user_data_dir" qualifiers="const">
@@ -475,7 +475,7 @@
 				For macOS and iOS, the major and minor version are returned, as well as the patch number.
 				For UWP, the device family version is returned.
 				For Android, the SDK version and the incremental build number are returned. If it's a custom ROM, it attempts to return its version instead.
-				[b]Note:[/b] This method is not supported on the web platform. It returns an empty string.
+				[note]This method is not supported on the web platform. It returns an empty string.[/note]
 			</description>
 		</method>
 		<method name="get_video_adapter_driver_info" qualifiers="const">
@@ -484,7 +484,7 @@
 				Returns the video adapter driver name and version for the user's currently active graphics card. See also [method RenderingServer.get_video_adapter_api_version].
 				The first element holds the driver name, such as [code]nvidia[/code], [code]amdgpu[/code], etc.
 				The second element holds the driver version. For e.g. the [code]nvidia[/code] driver on a Linux/BSD platform, the version is in the format [code]510.85.02[/code]. For Windows, the driver's format is [code]31.0.15.1659[/code].
-				[b]Note:[/b] This method is only supported on the platforms Linux/BSD and Windows when not running in headless mode. It returns an empty array on other platforms.
+				[note]This method is only supported on the platforms Linux/BSD and Windows when not running in headless mode. It returns an empty array on other platforms.[/note]
 			</description>
 		</method>
 		<method name="has_environment" qualifiers="const">
@@ -492,7 +492,7 @@
 			<param index="0" name="variable" type="String" />
 			<description>
 				Returns [code]true[/code] if the environment variable with the name [param variable] exists.
-				[b]Note:[/b] Double-check the casing of [param variable]. Environment variable names are case-sensitive on all platforms except Windows.
+				[note]Double-check the casing of [param variable]. Environment variable names are case-sensitive on all platforms except Windows.[/note]
 			</description>
 		</method>
 		<method name="has_feature" qualifiers="const">
@@ -500,8 +500,8 @@
 			<param index="0" name="tag_name" type="String" />
 			<description>
 				Returns [code]true[/code] if the feature for the given feature tag is supported in the currently running instance, depending on the platform, build, etc. Can be used to check whether you're currently running a debug build, on a certain platform or arch, etc. Refer to the [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature Tags[/url] documentation for more details.
-				[b]Note:[/b] Tag names are case-sensitive.
-				[b]Note:[/b] On the web platform, one of the following additional tags is defined to indicate host platform: [code]web_android[/code], [code]web_ios[/code], [code]web_linuxbsd[/code], [code]web_macos[/code], or [code]web_windows[/code].
+				[note]Tag names are case-sensitive.[/note]
+				[note]On the web platform, one of the following additional tags is defined to indicate host platform: [code]web_android[/code], [code]web_ios[/code], [code]web_linuxbsd[/code], [code]web_macos[/code], or [code]web_windows[/code].[/note]
 			</description>
 		</method>
 		<method name="is_debug_build" qualifiers="const">
@@ -525,7 +525,7 @@
 			<description>
 				Returns [code]true[/code] if the child process ID ([param pid]) is still running or [code]false[/code] if it has terminated.
 				Must be a valid ID generated from [method create_process].
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[note]This method is implemented on Android, iOS, Linux, macOS and Windows.[/note]
 			</description>
 		</method>
 		<method name="is_restart_on_exit_set" qualifiers="const">
@@ -551,8 +551,8 @@
 			<param index="0" name="pid" type="int" />
 			<description>
 				Kill (terminate) the process identified by the given process ID ([param pid]), e.g. the one returned by [method execute] in non-blocking mode. See also [method crash].
-				[b]Note:[/b] This method can also be used to kill processes that were not spawned by the game.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[note]This method can also be used to kill processes that were not spawned by the game.[/note]
+				[note]This method is implemented on Android, iOS, Linux, macOS and Windows.[/note]
 			</description>
 		</method>
 		<method name="move_to_trash" qualifiers="const">
@@ -561,7 +561,7 @@
 			<description>
 				Moves the file or directory to the system's recycle bin. See also [method DirAccess.remove].
 				The method takes only global paths, so you may need to use [method ProjectSettings.globalize_path]. Do not use it for files in [code]res://[/code] as it will not work in exported projects.
-				[b]Note:[/b] If the user has disabled the recycle bin on their system, the file will be permanently deleted instead.
+				[note]If the user has disabled the recycle bin on their system, the file will be permanently deleted instead.[/note]
 				[codeblocks]
 				[gdscript]
 				var file_to_remove = "user://slot1.save"
@@ -578,14 +578,14 @@
 			<return type="void" />
 			<description>
 				Initializes the singleton for the system MIDI driver.
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[note]This method is implemented on Linux, macOS and Windows.[/note]
 			</description>
 		</method>
 		<method name="read_string_from_stdin">
 			<return type="String" />
 			<description>
 				Reads a user input string from the standard input (usually the terminal). This operation is [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread. The thread calling [method read_string_from_stdin] will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[note]This method is implemented on Linux, macOS and Windows.[/note]
 			</description>
 		</method>
 		<method name="request_permission">
@@ -599,7 +599,7 @@
 			<return type="bool" />
 			<description>
 				With this function, you can request dangerous permissions since normal permissions are automatically granted at install time in Android applications.
-				[b]Note:[/b] This method is implemented only on Android.
+				[note]This method is implemented only on Android.[/note]
 			</description>
 		</method>
 		<method name="set_environment" qualifiers="const">
@@ -608,7 +608,7 @@
 			<param index="1" name="value" type="String" />
 			<description>
 				Sets the value of the environment variable [param variable] to [param value]. The environment variable will be set for the Godot process and any process executed with [method execute] after running [method set_environment]. The environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
-				[b]Note:[/b] Environment variable names are case-sensitive on all platforms except Windows. The [param variable] name cannot be empty or include the [code]=[/code] character. On Windows, there is a 32767 characters limit for the combined length of [param variable], [param value], and the [code]=[/code] and null terminator characters that will be registered in the environment block.
+				[note]Environment variable names are case-sensitive on all platforms except Windows. The [param variable] name cannot be empty or include the [code]=[/code] character. On Windows, there is a 32767 characters limit for the combined length of [param variable], [param value], and the [code]=[/code] and null terminator characters that will be registered in the environment block.[/note]
 			</description>
 		</method>
 		<method name="set_restart_on_exit">
@@ -618,8 +618,8 @@
 			<description>
 				If [param restart] is [code]true[/code], restarts the project automatically when it is exited with [method SceneTree.quit] or [constant Node.NOTIFICATION_WM_CLOSE_REQUEST]. Command line [param arguments] can be supplied. To restart the project with the same command line arguments as originally used to run the project, pass [method get_cmdline_args] as the value for [param arguments].
 				[method set_restart_on_exit] can be used to apply setting changes that require a restart. See also [method is_restart_on_exit_set] and [method get_restart_on_exit_arguments].
-				[b]Note:[/b] This method is only effective on desktop platforms, and only when the project isn't started from the editor. It will have no effect on mobile and Web platforms, or when the project is started from the editor.
-				[b]Note:[/b] If the project process crashes or is [i]killed[/i] by the user (by sending [code]SIGKILL[/code] instead of the usual [code]SIGTERM[/code]), the project won't restart automatically.
+				[note]This method is only effective on desktop platforms, and only when the project isn't started from the editor. It will have no effect on mobile and Web platforms, or when the project is started from the editor.[/note]
+				[note]If the project process crashes or is [i]killed[/i] by the user (by sending [code]SIGKILL[/code] instead of the usual [code]SIGTERM[/code]), the project won't restart automatically.[/note]
 			</description>
 		</method>
 		<method name="set_thread_name">
@@ -645,8 +645,8 @@
 				- [code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
 				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - The [code]mailto[/code] URL scheme[/url] for a list of fields that can be added.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
-				[b]Note:[/b] Use [method String.uri_encode] to encode characters within URLs in a URL-safe, portable way. This is especially required for line breaks. Otherwise, [method shell_open] may not work correctly in a project exported to the Web platform.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS and Windows.
+				[note]Use [method String.uri_encode] to encode characters within URLs in a URL-safe, portable way. This is especially required for line breaks. Otherwise, [method shell_open] may not work correctly in a project exported to the Web platform.[/note]
+				[note]This method is implemented on Android, iOS, Web, Linux, macOS and Windows.[/note]
 			</description>
 		</method>
 		<method name="shell_show_in_file_manager">
@@ -657,7 +657,7 @@
 				Requests the OS to open the file manager, then navigate to the given [param file_or_dir_path] and select the target file or folder.
 				If [param file_or_dir_path] is a valid directory path, and [param open_folder] is [code]true[/code], the method will open the file manager and enter the target folder without selecting anything.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
-				[b]Note:[/b] Currently this method is only implemented on Windows and macOS. On other platforms, it will fallback to [method shell_open] with a directory path of [param file_or_dir_path] with prefix [code]file://[/code].
+				[note]Currently this method is only implemented on Windows and macOS. On other platforms, it will fallback to [method shell_open] with a directory path of [param file_or_dir_path] with prefix [code]file://[/code].[/note]
 			</description>
 		</method>
 		<method name="unset_environment" qualifiers="const">
@@ -665,7 +665,7 @@
 			<param index="0" name="variable" type="String" />
 			<description>
 				Removes the environment [param variable] from the current environment, if it exists. The environment variable will be removed for the Godot process and any process executed with [method execute] after running [method unset_environment]. The removal of the environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
-				[b]Note:[/b] Environment variable names are case-sensitive on all platforms except Windows. The [param variable] name cannot be empty or include the [code]=[/code] character.
+				[note]Environment variable names are case-sensitive on all platforms except Windows. The [param variable] name cannot be empty or include the [code]=[/code] character.[/note]
 			</description>
 		</method>
 	</methods>

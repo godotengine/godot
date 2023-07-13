@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		CodeEdit is a specialized [TextEdit] designed for editing plain text code files. It has many features commonly found in code editors such as line numbers, line folding, code completion, indent management, and string/comment management.
-		[b]Note:[/b] Regardless of locale, [CodeEdit] will by default always use left-to-right text direction to correctly display source code.
+		[note]Regardless of locale, [CodeEdit] will by default always use left-to-right text direction to correctly display source code.[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -53,7 +53,7 @@
 			<description>
 				Submits an item to the queue of potential candidates for the autocomplete menu. Call [method update_code_completion_options] to update the list.
 				[param location] indicates location of the option relative to the location of the code completion query. See [enum CodeEdit.CodeCompletionLocation] for how to set this value.
-				[b]Note:[/b] This list will replace all current candidates.
+				[note]This list will replace all current candidates.[/note]
 			</description>
 		</method>
 		<method name="add_comment_delimiter">
@@ -436,7 +436,7 @@
 			<param index="0" name="force" type="bool" />
 			<description>
 				Submits all completion options added with [method add_code_completion_option]. Will try to force the autoccomplete menu to popup, if [param force] is [code]true[/code].
-				[b]Note:[/b] This will replace all current candidates.
+				[note]This will replace all current candidates.[/note]
 			</description>
 		</method>
 	</methods>
@@ -668,7 +668,7 @@
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
-			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+			[note]If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.[/note]
 		</theme_item>
 		<theme_item name="font" data_type="font" type="Font">
 			Sets the default [Font].

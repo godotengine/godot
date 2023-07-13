@@ -8,7 +8,7 @@
 		Generally, [CubemapArray]s provide a more efficient way for storing multiple [Cubemap]s compared to storing multiple [Cubemap]s themselves in an array.
 		Internally, Godot uses [CubemapArray]s for many effects including the [Sky], if you set [member ProjectSettings.rendering/reflections/sky_reflections/texture_array_reflections] to [code]true[/code].
 		To create such a texture file yourself, reimport your image files using the Godot Editor import presets.
-		[b]Note:[/b] [CubemapArray] is not supported in the OpenGL 3 rendering backend.
+		[note][CubemapArray] is not supported in the OpenGL 3 rendering backend.[/note]
 	</description>
 	<tutorials>
 	</tutorials>

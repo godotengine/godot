@@ -95,7 +95,7 @@
 			<return type="String" />
 			<description>
 				Returns the current locale of the editor.
-				[b]Note:[/b] When called from an exported project returns the same value as [method get_locale].
+				[note]When called from an exported project returns the same value as [method get_locale].[/note]
 			</description>
 		</method>
 		<method name="get_translation_object">

@@ -108,7 +108,7 @@
 			<param index="1" name="include_disabled" type="bool" default="false" />
 			<description>
 				Returns the ID of the closest point to [param to_position], optionally taking disabled points into account. Returns [code]-1[/code] if there are no points in the points pool.
-				[b]Note:[/b] If several points are the closest to [param to_position], the one with the smallest ID will be returned, ensuring a deterministic result.
+				[note]If several points are the closest to [param to_position], the one with the smallest ID will be returned, ensuring a deterministic result.[/note]
 			</description>
 		</method>
 		<method name="get_closest_position_in_segment" qualifiers="const">
@@ -230,7 +230,7 @@
 			<param index="1" name="to_id" type="int" />
 			<description>
 				Returns an array with the points that are in the path found by AStar2D between the given points. The array is ordered from the starting point to the ending point of the path.
-				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector2Array] and will print an error message.
+				[note]This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector2Array] and will print an error message.[/note]
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">

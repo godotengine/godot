@@ -45,14 +45,14 @@
 			<return type="Vector2" />
 			<description>
 				Returns the center of the screen from this camera's point of view, in global coordinates.
-				[b]Note:[/b] The exact targeted position of the camera may be different. See [method get_target_position].
+				[note]The exact targeted position of the camera may be different. See [method get_target_position].[/note]
 			</description>
 		</method>
 		<method name="get_target_position" qualifiers="const">
 			<return type="Vector2" />
 			<description>
 				Returns this camera's target position, in global coordinates.
-				[b]Note:[/b] The returned value is not the same as [member Node2D.global_position], as it is affected by the drag properties. It is also not the same as the current position if [member position_smoothing_enabled] is [code]true[/code] (see [method get_screen_center_position]).
+				[note]The returned value is not the same as [member Node2D.global_position], as it is affected by the drag properties. It is also not the same as the current position if [member position_smoothing_enabled] is [code]true[/code] (see [method get_screen_center_position]).[/note]
 			</description>
 		</method>
 		<method name="is_current" qualifiers="const">
@@ -106,7 +106,7 @@
 		</member>
 		<member name="drag_horizontal_offset" type="float" setter="set_drag_horizontal_offset" getter="get_drag_horizontal_offset" default="0.0">
 			The relative horizontal drag offset of the camera between the right ([code]-1[/code]) and left ([code]1[/code]) drag margins.
-			[b]Note:[/b] Used to set the initial horizontal drag offset; determine the current offset; or force the current offset. It's not automatically updated when [member drag_horizontal_enabled] is [code]true[/code] or the drag margins are changed.
+			[note]Used to set the initial horizontal drag offset; determine the current offset; or force the current offset. It's not automatically updated when [member drag_horizontal_enabled] is [code]true[/code] or the drag margins are changed.[/note]
 		</member>
 		<member name="drag_left_margin" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
 			Left margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the left edge of the screen.
@@ -122,7 +122,7 @@
 		</member>
 		<member name="drag_vertical_offset" type="float" setter="set_drag_vertical_offset" getter="get_drag_vertical_offset" default="0.0">
 			The relative vertical drag offset of the camera between the bottom ([code]-1[/code]) and top ([code]1[/code]) drag margins.
-			[b]Note:[/b] Used to set the initial vertical drag offset; determine the current offset; or force the current offset. It's not automatically updated when [member drag_vertical_enabled] is [code]true[/code] or the drag margins are changed.
+			[note]Used to set the initial vertical drag offset; determine the current offset; or force the current offset. It's not automatically updated when [member drag_vertical_enabled] is [code]true[/code] or the drag margins are changed.[/note]
 		</member>
 		<member name="editor_draw_drag_margin" type="bool" setter="set_margin_drawing_enabled" getter="is_margin_drawing_enabled" default="false">
 			If [code]true[/code], draws the camera's drag margin rectangle in the editor.
@@ -152,7 +152,7 @@
 		<member name="limit_smoothed" type="bool" setter="set_limit_smoothing_enabled" getter="is_limit_smoothing_enabled" default="false">
 			If [code]true[/code], the camera smoothly stops when reaches its limits.
 			This property has no effect if [member position_smoothing_enabled] is [code]false[/code].
-			[b]Note:[/b] To immediately update the camera's position to be within limits without smoothing, even with this setting enabled, invoke [method reset_smoothing].
+			[note]To immediately update the camera's position to be within limits without smoothing, even with this setting enabled, invoke [method reset_smoothing].[/note]
 		</member>
 		<member name="limit_top" type="int" setter="set_limit" getter="get_limit" default="-10000000">
 			Top scroll limit in pixels. The camera stops moving when reaching this value, but [member offset] can push the view past the limit.
@@ -171,14 +171,14 @@
 		</member>
 		<member name="rotation_smoothing_enabled" type="bool" setter="set_rotation_smoothing_enabled" getter="is_rotation_smoothing_enabled" default="false">
 			If [code]true[/code], the camera's view smoothly rotates, via asymptotic smoothing, to align with its target rotation at [member rotation_smoothing_speed].
-			[b]Note:[/b] This property has no effect if [member ignore_rotation] is [code]true[/code].
+			[note]This property has no effect if [member ignore_rotation] is [code]true[/code].[/note]
 		</member>
 		<member name="rotation_smoothing_speed" type="float" setter="set_rotation_smoothing_speed" getter="get_rotation_smoothing_speed" default="5.0">
 			The angular, asymptotic speed of the camera's rotation smoothing effect when [member rotation_smoothing_enabled] is [code]true[/code].
 		</member>
 		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom" default="Vector2(1, 1)">
 			The camera's zoom. A zoom of [code]Vector(2, 2)[/code] doubles the size seen in the viewport. A zoom of [code]Vector(0.5, 0.5)[/code] halves the size seen in the viewport.
-			[b]Note:[/b] [member FontFile.oversampling] does [i]not[/i] take [Camera2D] zoom into account. This means that zooming in/out will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated unless the font is part of a [CanvasLayer] that makes it ignore camera zoom. To ensure text remains crisp regardless of zoom, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_multichannel_signed_distance_field] (applies to the default project font only), or enabling [b]Multichannel Signed Distance Field[/b] in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.multichannel_signed_distance_field] can be enabled in the inspector.
+			[note][member FontFile.oversampling] does [i]not[/i] take [Camera2D] zoom into account. This means that zooming in/out will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated unless the font is part of a [CanvasLayer] that makes it ignore camera zoom. To ensure text remains crisp regardless of zoom, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_multichannel_signed_distance_field] (applies to the default project font only), or enabling [b]Multichannel Signed Distance Field[/b] in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.multichannel_signed_distance_field] can be enabled in the inspector.[/note]
 		</member>
 	</members>
 	<constants>

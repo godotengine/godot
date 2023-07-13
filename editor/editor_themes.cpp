@@ -1714,6 +1714,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("link_color", "EditorHelp", accent_color.lerp(mono_color, 0.8));
 	theme->set_color("code_color", "EditorHelp", accent_color.lerp(mono_color, 0.6));
 	theme->set_color("kbd_color", "EditorHelp", accent_color.lerp(property_color, 0.6));
+	theme->set_color("note_color", "EditorHelp", accent_color.lerp(mono_color, 0.3));
+	theme->set_color("warning_color", "EditorHelp", warning_color);
+	theme->set_color("important_color", "EditorHelp", warning_color.lerp(error_color, 0.5));
+	theme->set_color("tip_color", "EditorHelp", success_color.lerp(mono_color, 0.3));
 	theme->set_color("code_bg_color", "EditorHelp", dark_color_3);
 	theme->set_color("kbd_bg_color", "EditorHelp", dark_color_1);
 	theme->set_color("param_bg_color", "EditorHelp", dark_color_1);

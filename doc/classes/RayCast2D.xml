@@ -37,7 +37,7 @@
 			<return type="void" />
 			<description>
 				Updates the collision information for the ray. Use this method to update the collision information immediately instead of waiting for the next [code]_physics_process[/code] call, for example if the ray or its parent has changed state.
-				[b]Note:[/b] [member enabled] does not need to be [code]true[/code] for this to work.
+				[note][member enabled] does not need to be [code]true[/code] for this to work.[/note]
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
@@ -75,7 +75,7 @@
 			<return type="Vector2" />
 			<description>
 				Returns the collision point at which the ray intersects the closest object.
-				[b]Note:[/b] This point is in the [b]global[/b] coordinate system.
+				[note]This point is in the [b]global[/b] coordinate system.[/note]
 			</description>
 		</method>
 		<method name="is_colliding" qualifiers="const">

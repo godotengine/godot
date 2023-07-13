@@ -38,7 +38,7 @@
 			<param index="1" name="execution_mode" type="int" />
 			<description>
 				Executes all of the [SkeletonModification2D]s in the stack that use the same execution mode as the passed-in [param execution_mode], starting from index [code]0[/code] to [member modification_count].
-				[b]Note:[/b] The order of the modifications can matter depending on the modifications. For example, modifications on a spine should operate before modifications on the arms in order to get proper results.
+				[note]The order of the modifications can matter depending on the modifications. For example, modifications on a spine should operate before modifications on the arms in order to get proper results.[/note]
 			</description>
 		</method>
 		<method name="get_is_setup" qualifiers="const">

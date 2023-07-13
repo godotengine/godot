@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[MarginContainer] adds an adjustable margin on each side of its child controls. The margins are added around all children, not around each individual one. To control the [MarginContainer]'s margins, use the [code]margin_*[/code] theme properties listed below.
-		[b]Note:[/b] The margin sizes are theme overrides, not normal properties. This is an example of how to change them in code:
+		[note]The margin sizes are theme overrides, not normal properties. This is an example of how to change them in code:[/note]
 		[codeblocks]
 		[gdscript]
 		# This code sample assumes the current script is extending MarginContainer.

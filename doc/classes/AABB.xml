@@ -7,7 +7,7 @@
 		[AABB] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
 		It uses floating-point coordinates. The 2D counterpart to [AABB] is [Rect2].
 		Negative values for [member size] are not supported and will not work for most methods. Use [method abs] to get an AABB with a positive size.
-		[b]Note:[/b] Unlike [Rect2], [AABB] does not have a variant that uses integer coordinates.
+		[note]Unlike [Rect2], [AABB] does not have a variant that uses integer coordinates.[/note]
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
@@ -147,7 +147,7 @@
 			<param index="0" name="point" type="Vector3" />
 			<description>
 				Returns [code]true[/code] if the [AABB] contains a point. Points on the faces of the AABB are considered included, though float-point precision errors may impact the accuracy of such checks.
-				[b]Note:[/b] This method is not reliable for [AABB] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent [AABB] to check for contained points.
+				[note]This method is not reliable for [AABB] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent [AABB] to check for contained points.[/note]
 			</description>
 		</method>
 		<method name="has_surface" qualifiers="const">
@@ -238,7 +238,7 @@
 			<param index="0" name="right" type="AABB" />
 			<description>
 				Returns [code]true[/code] if the AABBs are not equal.
-				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+				[note]Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.[/note]
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -253,7 +253,7 @@
 			<param index="0" name="right" type="AABB" />
 			<description>
 				Returns [code]true[/code] if the AABBs are exactly equal.
-				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+				[note]Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.[/note]
 			</description>
 		</operator>
 	</operators>

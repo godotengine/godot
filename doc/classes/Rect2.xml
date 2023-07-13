@@ -138,7 +138,7 @@
 			<param index="0" name="point" type="Vector2" />
 			<description>
 				Returns [code]true[/code] if the [Rect2] contains a point. By convention, the right and bottom edges of the [Rect2] are considered exclusive, so points on these edges are [b]not[/b] included.
-				[b]Note:[/b] This method is not reliable for [Rect2] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent rectangle to check for contained points.
+				[note]This method is not reliable for [Rect2] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent rectangle to check for contained points.[/note]
 			</description>
 		</method>
 		<method name="intersection" qualifiers="const">
@@ -197,7 +197,7 @@
 			<param index="0" name="right" type="Rect2" />
 			<description>
 				Returns [code]true[/code] if the rectangles are not equal.
-				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+				[note]Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.[/note]
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -212,7 +212,7 @@
 			<param index="0" name="right" type="Rect2" />
 			<description>
 				Returns [code]true[/code] if the rectangles are exactly equal.
-				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+				[note]Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.[/note]
 			</description>
 		</operator>
 	</operators>

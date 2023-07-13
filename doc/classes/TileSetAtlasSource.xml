@@ -55,7 +55,7 @@
 			<param index="1" name="frame" type="int" />
 			<description>
 				Returns the region of the tile at coordinates [param atlas_coords] for the given [param frame] inside the texture returned by [method get_runtime_texture].
-				[b]Note:[/b] If [member use_texture_padding] is [code]false[/code], returns the same as [method get_tile_texture_region].
+				[note]If [member use_texture_padding] is [code]false[/code], returns the same as [method get_tile_texture_region].[/note]
 			</description>
 		</method>
 		<method name="get_tile_animation_columns" qualifiers="const">

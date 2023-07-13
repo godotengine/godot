@@ -42,14 +42,14 @@
 			<param index="0" name="data" type="Variant" default="null" />
 			<description>
 				Requests a custom spawn, with [param data] passed to [member spawn_function] on all peers. Returns the locally spawned node instance already inside the scene tree, and added as a child of the node pointed by [member spawn_path].
-				[b]Note:[/b] Spawnable scenes are spawned automatically. [method spawn] is only needed for custom spawns.
+				[note]Spawnable scenes are spawned automatically. [method spawn] is only needed for custom spawns.[/note]
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="spawn_function" type="Callable" setter="set_spawn_function" getter="get_spawn_function">
 			Method called on all peers when for every custom [method spawn] requested by the authority. Will receive the [code]data[/code] parameter, and should return a [Node] that is not in the scene tree.
-			[b]Note:[/b] The returned node should [b]not[/b] be added to the scene with [method Node.add_child]. This is done automatically.
+			[note]The returned node should [b]not[/b] be added to the scene with [method Node.add_child]. This is done automatically.[/note]
 		</member>
 		<member name="spawn_limit" type="int" setter="set_spawn_limit" getter="get_spawn_limit" default="0">
 			Maximum nodes that is allowed to be spawned by this spawner. Includes both spawnable scenes and custom spawns.

@@ -24,7 +24,7 @@
 				var dark_blue = Color8(0, 0, 51)        # Same as Color(0, 0, 0.2).
 				var my_color = Color8(306, 255, 0, 102) # Same as Color(1.2, 1, 0, 0.4).
 				[/codeblock]
-				[b]Note:[/b] Due to the lower precision of [method Color8] compared to the standard [Color] constructor, a color created with [method Color8] will generally not be equal to the same color created with the standard [Color] constructor. Use [method Color.is_equal_approx] for comparisons to avoid issues with floating-point precision error.
+				[note]Due to the lower precision of [method Color8] compared to the standard [Color] constructor, a color created with [method Color8] will generally not be equal to the same color created with the standard [Color] constructor. Use [method Color.is_equal_approx] for comparisons to avoid issues with floating-point precision error.[/note]
 			</description>
 		</method>
 		<method name="assert">
@@ -34,7 +34,7 @@
 			<description>
 				Asserts that the [param condition] is [code]true[/code]. If the [param condition] is [code]false[/code], an error is generated. When running from the editor, the running project will also be paused until you resume it. This can be used as a stronger form of [method @GlobalScope.push_error] for reporting errors to project developers or add-on users.
 				An optional [param message] can be shown in addition to the generic "Assertion failed" message. You can use this to provide additional details about why the assertion failed.
-				[b]Warning:[/b] For performance reasons, the code inside [method assert] is only executed in debug builds or when running the project from the editor. Don't include code that has side effects in an [method assert] call. Otherwise, the project will behave differently when exported in release mode.
+				[warning]For performance reasons, the code inside [method assert] is only executed in debug builds or when running the project from the editor. Don't include code that has side effects in an [method assert] call. Otherwise, the project will behave differently when exported in release mode.[/warning]
 				[codeblock]
 				# Imagine we always want speed to be between 0 and 20.
 				var speed = -10
@@ -98,8 +98,8 @@
 				[codeblock]
 				[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]
 				[/codeblock]
-				[b]Note:[/b] This function only works if the running instance is connected to a debugging server (i.e. an editor instance). [method get_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.
-				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will return an empty array.
+				[note]This function only works if the running instance is connected to a debugging server (i.e. an editor instance). [method get_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.[/note]
+				[note]Calling this function from a [Thread] is not supported. Doing so will return an empty array.[/note]
 			</description>
 		</method>
 		<method name="inst_to_dict">
@@ -107,7 +107,7 @@
 			<param index="0" name="instance" type="Object" />
 			<description>
 				Returns the passed [param instance] converted to a Dictionary. Can be useful for serializing.
-				[b]Note:[/b] Cannot be used to serialize objects with built-in scripts attached or objects allocated within built-in scripts.
+				[note]Cannot be used to serialize objects with built-in scripts attached or objects allocated within built-in scripts.[/note]
 				[codeblock]
 				var foo = "bar"
 				func _ready():
@@ -139,7 +139,7 @@
 				print(is_instance_of(a, MyClass))
 				print(is_instance_of(a, MyClass.InnerClass))
 				[/codeblock]
-				[b]Note:[/b] If [param value] and/or [param type] are freed objects (see [method @GlobalScope.is_instance_valid]), or [param type] is not one of the above options, this method will raise a runtime error.
+				[note]If [param value] and/or [param type] are freed objects (see [method @GlobalScope.is_instance_valid]), or [param type] is not one of the above options, this method will raise a runtime error.[/note]
 				See also [method @GlobalScope.typeof], [method type_exists], [method Array.is_same_typed] (and other [Array] methods).
 			</description>
 		</method>
@@ -162,15 +162,15 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns a [Resource] from the filesystem located at the absolute [param path]. Unless it's already referenced elsewhere (such as in another script or in the scene), the resource is loaded from disk on function call, which might cause a slight delay, especially when loading large scenes. To avoid unnecessary delays when loading something multiple times, either store the resource in a variable or use [method preload].
-				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the FileSystem dock and choosing "Copy Path", or by dragging the file from the FileSystem dock into the current script.
+				[note]Resource paths can be obtained by right-clicking on a resource in the FileSystem dock and choosing "Copy Path", or by dragging the file from the FileSystem dock into the current script.[/note]
 				[codeblock]
 				# Load a scene called "main" located in the root of the project directory and cache it in a variable.
 				var main = load("res://main.tscn") # main will contain a PackedScene resource.
 				[/codeblock]
-				[b]Important:[/b] The path must be absolute. A relative path will always return [code]null[/code].
+				[important]The path must be absolute. A relative path will always return [code]null[/code].[/important]
 				This function is a simplified version of [method ResourceLoader.load], which can be used for more advanced scenarios.
-				[b]Note:[/b] Files have to be imported into the engine first to load them using this function. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
-				[b]Note:[/b] If [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to read converted files in an exported project. If you rely on run-time loading of files present within the PCK, set [member ProjectSettings.editor/export/convert_text_resources_to_binary] to [code]false[/code].
+				[note]Files have to be imported into the engine first to load them using this function. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].[/note]
+				[note]If [member ProjectSettings.editor/export/convert_text_resources_to_binary] is [code]true[/code], [method @GDScript.load] will not be able to read converted files in an exported project. If you rely on run-time loading of files present within the PCK, set [member ProjectSettings.editor/export/convert_text_resources_to_binary] to [code]false[/code].[/note]
 			</description>
 		</method>
 		<method name="preload">
@@ -178,7 +178,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns a [Resource] from the filesystem located at [param path]. During run-time, the resource is loaded when the script is being parsed. This function effectively acts as a reference to that resource. Note that this function requires [param path] to be a constant [String]. If you want to load a resource from a dynamic/variable path, use [method load].
-				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the Assets Panel and choosing "Copy Path", or by dragging the file from the FileSystem dock into the current script.
+				[note]Resource paths can be obtained by right-clicking on a resource in the Assets Panel and choosing "Copy Path", or by dragging the file from the FileSystem dock into the current script.[/note]
 				[codeblock]
 				# Create instance of a scene.
 				var diamond = preload("res://diamond.tscn").instantiate()
@@ -194,7 +194,7 @@
 				Test print
 				At: res://test.gd:15:_process()
 				[/codeblock]
-				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will instead print the thread ID.
+				[note]Calling this function from a [Thread] is not supported. Doing so will instead print the thread ID.[/note]
 			</description>
 		</method>
 		<method name="print_stack">
@@ -205,8 +205,8 @@
 				[codeblock]
 				Frame 0 - res://test.gd:16 in function '_process'
 				[/codeblock]
-				[b]Note:[/b] This function only works if the running instance is connected to a debugging server (i.e. an editor instance). [method print_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.
-				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will instead print the thread ID.
+				[note]This function only works if the running instance is connected to a debugging server (i.e. an editor instance). [method print_stack] will not work in projects exported in release mode, or in projects exported in debug mode if not connected to a debugging server.[/note]
+				[note]Calling this function from a [Thread] is not supported. Doing so will instead print the thread ID.[/note]
 			</description>
 		</method>
 		<method name="range" qualifiers="vararg">
@@ -217,7 +217,7 @@
 				[code]range(b: int, n: int)[/code]: Starts from [code]b[/code], increases by steps of 1, and stops [i]before[/i] [code]n[/code]. The arguments [code]b[/code] and [code]n[/code] are [b]inclusive[/b] and [b]exclusive[/b], respectively.
 				[code]range(b: int, n: int, s: int)[/code]: Starts from [code]b[/code], increases/decreases by steps of [code]s[/code], and stops [i]before[/i] [code]n[/code]. The arguments [code]b[/code] and [code]n[/code] are [b]inclusive[/b] and [b]exclusive[/b], respectively. The argument [code]s[/code] [b]can[/b] be negative, but not [code]0[/code]. If [code]s[/code] is [code]0[/code], an error message is printed.
 				[method range] converts all arguments to [int] before processing.
-				[b]Note:[/b] Returns an empty array if no value meets the value constraint (e.g. [code]range(2, 5, -1)[/code] or [code]range(5, 5, 1)[/code]).
+				[note]Returns an empty array if no value meets the value constraint (e.g. [code]range(2, 5, -1)[/code] or [code]range(5, 5, 1)[/code]).[/note]
 				Examples:
 				[codeblock]
 				print(range(4))        # Prints [0, 1, 2, 3]
@@ -271,11 +271,11 @@
 		</constant>
 		<constant name="INF" value="inf">
 			Positive floating-point infinity. This is the result of floating-point division when the divisor is [code]0.0[/code]. For negative infinity, use [code]-INF[/code]. Dividing by [code]-0.0[/code] will result in negative infinity if the numerator is positive, so dividing by [code]0.0[/code] is not the same as dividing by [code]-0.0[/code] (despite [code]0.0 == -0.0[/code] returning [code]true[/code]).
-			[b]Warning:[/b] Numeric infinity is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer number by [code]0[/code] will not result in [constant INF] and will result in a run-time error instead.
+			[warning]Numeric infinity is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer number by [code]0[/code] will not result in [constant INF] and will result in a run-time error instead.[/warning]
 		</constant>
 		<constant name="NAN" value="nan">
 			"Not a Number", an invalid floating-point value. [constant NAN] has special properties, including that [code]!=[/code] always returns [code]true[/code], while other comparison operators always return [code]false[/code]. This is true even when comparing with itself ([code]NAN == NAN[/code] returns [code]false[/code] and [code]NAN != NAN[/code] returns [code]true[/code]). It is returned by some invalid operations, such as dividing floating-point [code]0.0[/code] by [code]0.0[/code].
-			[b]Warning:[/b] "Not a Number" is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer [code]0[/code] by [code]0[/code] will not result in [constant NAN] and will result in a run-time error instead.
+			[warning]"Not a Number" is only a concept with floating-point numbers, and has no equivalent for integers. Dividing an integer [code]0[/code] by [code]0[/code] will not result in [constant NAN] and will result in a run-time error instead.[/warning]
 		</constant>
 	</constants>
 	<annotations>
@@ -302,7 +302,7 @@
 				@export var hp = 30
 				@export var speed = 1.25
 				[/codeblock]
-				[b]Note:[/b] Categories in the Inspector dock's list usually divide properties coming from different classes (Node, Node2D, Sprite, etc.). For better clarity, it's recommended to use [annotation @export_group] and [annotation @export_subgroup], instead.
+				[note]Categories in the Inspector dock's list usually divide properties coming from different classes (Node, Node2D, Sprite, etc.). For better clarity, it's recommended to use [annotation @export_group] and [annotation @export_subgroup], instead.[/note]
 			</description>
 		</annotation>
 		<annotation name="@export_color_no_alpha">
@@ -391,8 +391,8 @@
 				@export_flags("Self:4", "Allies:8", "Self and Allies:12", "Foes:16")
 				var spell_targets = 0
 				[/codeblock]
-				[b]Note:[/b] A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code].
-				[b]Note:[/b] Unlike [annotation @export_enum], the previous explicit value is not taken into account. In the following example, A is 16, B is 2, C is 4.
+				[note]A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code].[/note]
+				[note]Unlike [annotation @export_enum], the previous explicit value is not taken into account. In the following example, A is 16, B is 2, C is 4.[/note]
 				[codeblock]
 				@export_flags("A:16", "B", "C") var x
 				[/codeblock]
@@ -587,7 +587,7 @@
 				@export var car_label = "Speedy"
 				@export var car_number = 3
 				[/codeblock]
-				[b]Note:[/b] Subgroups cannot be nested, they only provide one extra level of depth. Just like the next group ends the previous group, so do the subsequent subgroups.
+				[note]Subgroups cannot be nested, they only provide one extra level of depth. Just like the next group ends the previous group, so do the subsequent subgroups.[/note]
 			</description>
 		</annotation>
 		<annotation name="@icon">
@@ -598,9 +598,9 @@
 				[codeblock]
 				@icon("res://path/to/class/icon.svg")
 				[/codeblock]
-				[b]Note:[/b] Only the script can have a custom icon. Inner classes are not supported.
-				[b]Note:[/b] As annotations describe their subject, the [code]@icon[/code] annotation must be placed before the class definition and inheritance.
-				[b]Note:[/b] Unlike other annotations, the argument of the [code]@icon[/code] annotation must be a string literal (constant expressions are not supported).
+				[note]Only the script can have a custom icon. Inner classes are not supported.[/note]
+				[note]As annotations describe their subject, the [code]@icon[/code] annotation must be placed before the class definition and inheritance.[/note]
+				[note]Unlike other annotations, the argument of the [code]@icon[/code] annotation must be a string literal (constant expressions are not supported).[/note]
 			</description>
 		</annotation>
 		<annotation name="@onready">
@@ -651,7 +651,7 @@
 				@tool
 				extends Node
 				[/codeblock]
-				[b]Note:[/b] As annotations describe their subject, the [code]@tool[/code] annotation must be placed before the class definition and inheritance.
+				[note]As annotations describe their subject, the [code]@tool[/code] annotation must be placed before the class definition and inheritance.[/note]
 			</description>
 		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">

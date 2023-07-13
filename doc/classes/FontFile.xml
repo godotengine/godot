@@ -11,9 +11,9 @@
 		- Dynamic font importer: TrueType (.ttf), TrueType collection (.ttc), OpenType (.otf), OpenType collection (.otc), WOFF (.woff), WOFF2 (.woff2), Type 1 (.pfb, .pfm).
 		- Bitmap font importer: AngelCode BMFont (.fnt, .font), text and binary (version 3) format variants.
 		- Monospace image font importer: All supported image formats.
-		[b]Note:[/b] A character is a symbol that represents an item (letter, digit etc.) in an abstract way.
-		[b]Note:[/b] A glyph is a bitmap or a shape used to draw one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.
-		[b]Note:[/b] If none of the font data sources contain glyphs for a character used in a string, the character in question will be replaced with a box displaying its hexadecimal code.
+		[note]A character is a symbol that represents an item (letter, digit etc.) in an abstract way.[/note]
+		[note]A glyph is a bitmap or a shape used to draw one or more characters in a context-dependent manner. Glyph indices are bound to the specific font data source.[/note]
+		[note]If none of the font data sources contain glyphs for a character used in a string, the character in question will be replaced with a box displaying its hexadecimal code.[/note]
 		[codeblocks]
 		[gdscript]
 		var f = load("res://BarlowCondensed-Bold.ttf")
@@ -42,7 +42,7 @@
 			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Removes all rendered glyphs information from the cache entry.
-				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
+				[note]This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.[/note]
 			</description>
 		</method>
 		<method name="clear_kerning_map">
@@ -66,7 +66,7 @@
 			<param index="1" name="size" type="Vector2i" />
 			<description>
 				Removes all textures from font cache entry.
-				[b]Note:[/b] This function will not remove glyphs associated with the texture, use [method remove_glyph] to remove them manually.
+				[note]This function will not remove glyphs associated with the texture, use [method remove_glyph] to remove them manually.[/note]
 			</description>
 		</method>
 		<method name="get_cache_ascent" qualifiers="const">
@@ -144,7 +144,7 @@
 			<param index="2" name="glyph" type="int" />
 			<description>
 				Returns glyph advance (offset of the next glyph).
-				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
+				[note]Advance for glyphs outlines is the same as the base glyph advance and is not saved.[/note]
 			</description>
 		</method>
 		<method name="get_glyph_index" qualifiers="const">
@@ -295,7 +295,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Loads an AngelCode BMFont (.fnt, .font) bitmap font from file [param path].
-				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.
+				[warning]This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.[/warning]
 			</description>
 		</method>
 		<method name="load_dynamic_font">
@@ -303,7 +303,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Loads a TrueType (.ttf), OpenType (.otf), WOFF (.woff), WOFF2 (.woff2) or Type 1 (.pfb, .pfm) dynamic font from file [param path].
-				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.
+				[warning]This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.[/warning]
 			</description>
 		</method>
 		<method name="remove_cache">
@@ -320,7 +320,7 @@
 			<param index="2" name="glyph" type="int" />
 			<description>
 				Removes specified rendered glyph information from the cache entry.
-				[b]Note:[/b] This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.
+				[note]This function will not remove textures associated with the glyphs, use [method remove_texture] to remove them manually.[/note]
 			</description>
 		</method>
 		<method name="remove_kerning">
@@ -361,7 +361,7 @@
 			<param index="2" name="texture_index" type="int" />
 			<description>
 				Removes specified texture from the cache entry.
-				[b]Note:[/b] This function will not remove glyphs associated with the texture. Remove them manually using [method remove_glyph].
+				[note]This function will not remove glyphs associated with the texture. Remove them manually using [method remove_glyph].[/note]
 			</description>
 		</method>
 		<method name="render_glyph">
@@ -452,7 +452,7 @@
 			<param index="3" name="advance" type="Vector2" />
 			<description>
 				Sets glyph advance (offset of the next glyph).
-				[b]Note:[/b] Advance for glyphs outlines is the same as the base glyph advance and is not saved.
+				[note]Advance for glyphs outlines is the same as the base glyph advance and is not saved.[/note]
 			</description>
 		</method>
 		<method name="set_glyph_offset">
@@ -603,8 +603,8 @@
 		</member>
 		<member name="multichannel_signed_distance_field" type="bool" setter="set_multichannel_signed_distance_field" getter="is_multichannel_signed_distance_field" default="false">
 			If set to [code]true[/code], glyphs of all sizes are rendered using single multichannel signed distance field (MSDF) generated from the dynamic font vector data. Since this approach does not rely on rasterizing the font every time its size changes, this allows for resizing the font in real-time without any performance penalty. Text will also not look grainy for [Control]s that are scaled down (or for [Label3D]s viewed from a long distance). As a downside, font hinting is not available with MSDF. The lack of font hinting may result in less crisp and less readable fonts at small sizes.
-			[b]Note:[/b] If using font outlines, [member msdf_pixel_range] must be set to at least [i]twice[/i] the size of the largest font outline.
-			[b]Note:[/b] MSDF font rendering does not render glyphs with overlapping shapes correctly. Overlapping shapes are not valid per the OpenType standard, but are still commonly found in many font files, especially those converted by Google Fonts. To avoid issues with overlapping glyphs, consider downloading the font file directly from the type foundry instead of relying on Google Fonts.
+			[note]If using font outlines, [member msdf_pixel_range] must be set to at least [i]twice[/i] the size of the largest font outline.[/note]
+			[note]MSDF font rendering does not render glyphs with overlapping shapes correctly. Overlapping shapes are not valid per the OpenType standard, but are still commonly found in many font files, especially those converted by Google Fonts. To avoid issues with overlapping glyphs, consider downloading the font file directly from the type foundry instead of relying on Google Fonts.[/note]
 		</member>
 		<member name="opentype_feature_overrides" type="Dictionary" setter="set_opentype_feature_overrides" getter="get_opentype_feature_overrides" default="{}">
 			Font OpenType feature set override.

@@ -16,7 +16,7 @@
 		mesh.surface_end()
 		[/gdscript]
 		[/codeblocks]
-		[b]Note:[/b] Generating complex geometries with [ImmediateMesh] is highly inefficient. Instead, it is designed to generate simple geometry that changes often.
+		[note]Generating complex geometries with [ImmediateMesh] is highly inefficient. Instead, it is designed to generate simple geometry that changes often.[/note]
 	</description>
 	<tutorials>
 		<link title="Using ImmediateMesh">$DOCS_URL/tutorials/3d/procedural_geometry/immediatemesh.html</link>

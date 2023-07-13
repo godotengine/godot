@@ -14,7 +14,7 @@
 			<param index="1" name="index" type="int" default="-1" />
 			<description>
 				Adds the property identified by the given [param path] to the list of the properties being synchronized, optionally passing an [param index].
-				[b]Note:[/b] For details on restrictions and limitations on property synchronization, see [MultiplayerSynchronizer].
+				[note]For details on restrictions and limitations on property synchronization, see [MultiplayerSynchronizer].[/note]
 			</description>
 		</method>
 		<method name="get_properties" qualifiers="const">

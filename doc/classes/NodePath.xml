@@ -22,8 +22,8 @@
 		^"/root/MyAutoload" # If you have an autoloaded node or scene.
 		[/codeblock]
 		See also [StringName], which is a similar concept for general-purpose string interning.
-		[b]Note:[/b] In the editor, [NodePath] properties are automatically updated when moving, renaming or deleting a node in the scene tree, but they are never updated at runtime.
-		[b]Note:[/b] In a boolean context, a [NodePath] will evaluate to [code]false[/code] if it is empty ([code]NodePath("")[/code]). Otherwise, a [NodePath] will always evaluate to [code]true[/code].
+		[note]In the editor, [NodePath] properties are automatically updated when moving, renaming or deleting a node in the scene tree, but they are never updated at runtime.[/note]
+		[note]In a boolean context, a [NodePath] will evaluate to [code]false[/code] if it is empty ([code]NodePath("")[/code]). Otherwise, a [NodePath] will always evaluate to [code]true[/code].[/note]
 	</description>
 	<tutorials>
 		<link title="2D Role Playing Game Demo">https://godotengine.org/asset-library/asset/520</link>

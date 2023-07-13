@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Box-shaped 3D particle attractor affecting [GPUParticles3D] nodes.
-		[b]Note:[/b] Particle attractors only affect [GPUParticles3D], not [CPUParticles3D].
+		[note]Particle attractors only affect [GPUParticles3D], not [CPUParticles3D].[/note]
 	</description>
 	<tutorials>
 	</tutorials>

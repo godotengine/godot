@@ -18,7 +18,7 @@
 			<param index="0" name="theme_type" type="StringName" />
 			<description>
 				Adds an empty theme type for every valid data type.
-				[b]Note:[/b] Empty types are not saved with the theme. This method only exists to perform in-memory changes to the resource. Use available [code]set_*[/code] methods to add theme items.
+				[note]Empty types are not saved with the theme. This method only exists to perform in-memory changes to the resource. Use available [code]set_*[/code] methods to add theme items.[/note]
 			</description>
 		</method>
 		<method name="clear">
@@ -89,7 +89,7 @@
 			<description>
 				Removes the theme property of [param data_type] defined by [param name] and [param theme_type], if it exists.
 				Fails if it doesn't exist. Use [method has_theme_item] to check for existence.
-				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+				[note]This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.[/note]
 			</description>
 		</method>
 		<method name="clear_type_variation">
@@ -241,7 +241,7 @@
 			<description>
 				Returns the theme property of [param data_type] defined by [param name] and [param theme_type], if it exists.
 				Returns the engine fallback value if the property doesn't exist (see [ThemeDB]). Use [method has_theme_item] to check for existence.
-				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+				[note]This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.[/note]
 			</description>
 		</method>
 		<method name="get_theme_item_list" qualifiers="const">
@@ -250,7 +250,7 @@
 			<param index="1" name="theme_type" type="String" />
 			<description>
 				Returns a list of names for properties of [param data_type] defined with [param theme_type]. Use [method get_theme_item_type_list] to get a list of possible theme type names.
-				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+				[note]This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.[/note]
 			</description>
 		</method>
 		<method name="get_theme_item_type_list" qualifiers="const">
@@ -258,7 +258,7 @@
 			<param index="0" name="data_type" type="int" enum="Theme.DataType" />
 			<description>
 				Returns a list of all unique theme type names for [param data_type] properties. Use [method get_type_list] to get a list of all unique theme types.
-				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+				[note]This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.[/note]
 			</description>
 		</method>
 		<method name="get_type_list" qualifiers="const">
@@ -364,7 +364,7 @@
 			<description>
 				Returns [code]true[/code] if the theme property of [param data_type] defined by [param name] and [param theme_type] exists.
 				Returns [code]false[/code] if it doesn't exist. Use [method set_theme_item] to define it.
-				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+				[note]This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.[/note]
 			</description>
 		</method>
 		<method name="is_type_variation" qualifiers="const">
@@ -380,7 +380,7 @@
 			<param index="0" name="other" type="Theme" />
 			<description>
 				Adds missing and overrides existing definitions with values from the [param other] theme resource.
-				[b]Note:[/b] This modifies the current theme. If you want to merge two themes together without modifying either one, create a new empty theme and merge the other two into it one after another.
+				[note]This modifies the current theme. If you want to merge two themes together without modifying either one, create a new empty theme and merge the other two into it one after another.[/note]
 			</description>
 		</method>
 		<method name="remove_type">
@@ -459,7 +459,7 @@
 			<description>
 				Renames the theme property of [param data_type] defined by [param old_name] and [param theme_type] to [param name], if it exists.
 				Fails if it doesn't exist, or if a similar property with the new name already exists. Use [method has_theme_item] to check for existence, and [method clear_theme_item] to remove the existing property.
-				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+				[note]This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.[/note]
 			</description>
 		</method>
 		<method name="set_color">
@@ -525,7 +525,7 @@
 			<description>
 				Creates or changes the value of the theme property of [param data_type] defined by [param name] and [param theme_type]. Use [method clear_theme_item] to remove the property.
 				Fails if the [param value] type is not accepted by [param data_type].
-				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
+				[note]This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.[/note]
 			</description>
 		</method>
 		<method name="set_type_variation">
@@ -536,7 +536,7 @@
 				Marks [param theme_type] as a variation of [param base_type].
 				This adds [param theme_type] as a suggested option for [member Control.theme_type_variation] on a [Control] that is of the [param base_type] class.
 				Variations can also be nested, i.e. [param base_type] can be another variation. If a chain of variations ends with a [param base_type] matching the class of the [Control], the whole chain is going to be suggested as options.
-				[b]Note:[/b] Suggestions only show up if this theme resource is set as the project default theme. See [member ProjectSettings.gui/theme/custom].
+				[note]Suggestions only show up if this theme resource is set as the project default theme. See [member ProjectSettings.gui/theme/custom].[/note]
 			</description>
 		</method>
 	</methods>

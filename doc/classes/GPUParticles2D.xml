@@ -92,7 +92,7 @@
 		</member>
 		<member name="trail_enabled" type="bool" setter="set_trail_enabled" getter="is_trail_enabled" default="false">
 			If [code]true[/code], enables particle trails using a mesh skinning system.
-			[b]Note:[/b] Unlike [GPUParticles3D], the number of trail sections and subdivisions is set with the [member trail_sections] and [member trail_section_subdivisions] properties.
+			[note]Unlike [GPUParticles3D], the number of trail sections and subdivisions is set with the [member trail_sections] and [member trail_section_subdivisions] properties.[/note]
 		</member>
 		<member name="trail_lifetime" type="float" setter="set_trail_lifetime" getter="get_trail_lifetime" default="0.3">
 			The amount of time the particle's trail should represent (in seconds). Only effective if [member trail_enabled] is [code]true[/code].

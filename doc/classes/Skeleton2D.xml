@@ -60,7 +60,7 @@
 			<description>
 				Sets the local pose transform, [param override_pose], for the bone at [param bone_idx].
 				[param strength] is the interpolation strength that will be used when applying the pose, and [param persistent] determines if the applied pose will remain.
-				[b]Note:[/b] The pose transform needs to be a local transform relative to the [Bone2D] node at [param bone_idx]!
+				[note]The pose transform needs to be a local transform relative to the [Bone2D] node at [param bone_idx]![/note]
 			</description>
 		</method>
 		<method name="set_modification_stack">

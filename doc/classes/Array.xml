@@ -38,8 +38,8 @@
 		GD.Print(array1 + array2); // Prints [One, 2, 3, Four]
 		[/csharp]
 		[/codeblocks]
-		[b]Note:[/b] Arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
-		[b]Note:[/b] Erasing elements while iterating over arrays is [b]not[/b] supported and will result in unpredictable behavior.
+		[note]Arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate].[/note]
+		[note]Erasing elements while iterating over arrays is [b]not[/b] supported and will result in unpredictable behavior.[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -151,8 +151,8 @@
 				    return number &gt; 5
 				[/codeblock]
 				See also [method any], [method filter], [method map] and [method reduce].
-				[b]Note:[/b] Unlike relying on the size of an array returned by [method filter], this method will return as early as possible to improve performance (especially with large arrays).
-				[b]Note:[/b] For an empty array, this method [url=https://en.wikipedia.org/wiki/Vacuous_truth]always[/url] returns [code]true[/code].
+				[note]Unlike relying on the size of an array returned by [method filter], this method will return as early as possible to improve performance (especially with large arrays).[/note]
+				[note]For an empty array, this method [url=https://en.wikipedia.org/wiki/Vacuous_truth]always[/url] returns [code]true[/code].[/note]
 			</description>
 		</method>
 		<method name="any" qualifiers="const">
@@ -174,8 +174,8 @@
 				    return number &gt; 5
 				[/codeblock]
 				See also [method all], [method filter], [method map] and [method reduce].
-				[b]Note:[/b] Unlike relying on the size of an array returned by [method filter], this method will return as early as possible to improve performance (especially with large arrays).
-				[b]Note:[/b] For an empty array, this method always returns [code]false[/code].
+				[note]Unlike relying on the size of an array returned by [method filter], this method will return as early as possible to improve performance (especially with large arrays).[/note]
+				[note]For an empty array, this method always returns [code]false[/code].[/note]
 			</description>
 		</method>
 		<method name="append">
@@ -209,7 +209,7 @@
 			<return type="Variant" />
 			<description>
 				Returns the last element of the array. Prints an error and returns [code]null[/code] if the array is empty.
-				[b]Note:[/b] Calling this function is not the same as writing [code]array[-1][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
+				[note]Calling this function is not the same as writing [code]array[-1][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.[/note]
 			</description>
 		</method>
 		<method name="bsearch" qualifiers="const">
@@ -218,7 +218,7 @@
 			<param index="1" name="before" type="bool" default="true" />
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
-				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
+				[note]Calling [method bsearch] on an unsorted array results in unexpected behavior.[/note]
 			</description>
 		</method>
 		<method name="bsearch_custom" qualifiers="const">
@@ -228,7 +228,7 @@
 			<param index="2" name="before" type="bool" default="true" />
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
-				[b]Note:[/b] Calling [method bsearch_custom] on an unsorted array results in unexpected behavior.
+				[note]Calling [method bsearch_custom] on an unsorted array results in unexpected behavior.[/note]
 			</description>
 		</method>
 		<method name="clear">
@@ -257,9 +257,9 @@
 			<param index="0" name="value" type="Variant" />
 			<description>
 				Removes the first occurrence of a value from the array. If the value does not exist in the array, nothing happens. To remove an element by index, use [method remove_at] instead.
-				[b]Note:[/b] This method acts in-place and doesn't return a value.
-				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
-				[b]Note:[/b] Do not erase entries while iterating over the array.
+				[note]This method acts in-place and doesn't return a value.[/note]
+				[note]On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.[/note]
+				[note]Do not erase entries while iterating over the array.[/note]
 			</description>
 		</method>
 		<method name="fill">
@@ -279,7 +279,7 @@
 				array.Fill(0); // Initialize the 10 elements to 0.
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] If [param value] is of a reference type ([Object]-derived, [Array], [Dictionary], etc.) then the array is filled with the references to the same object, i.e. no duplicates are created.
+				[note]If [param value] is of a reference type ([Object]-derived, [Array], [Dictionary], etc.) then the array is filled with the references to the same object, i.e. no duplicates are created.[/note]
 			</description>
 		</method>
 		<method name="filter" qualifiers="const">
@@ -311,7 +311,7 @@
 			<return type="Variant" />
 			<description>
 				Returns the first element of the array. Prints an error and returns [code]null[/code] if the array is empty.
-				[b]Note:[/b] Calling this function is not the same as writing [code]array[0][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
+				[note]Calling this function is not the same as writing [code]array[0][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.[/note]
 			</description>
 		</method>
 		<method name="get_typed_builtin" qualifiers="const">
@@ -353,7 +353,7 @@
 				GD.Print(arr.Contains("7")); // False
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This is equivalent to using the [code]in[/code] operator as follows:
+				[note]This is equivalent to using the [code]in[/code] operator as follows:[/note]
 				[codeblocks]
 				[gdscript]
 				# Will evaluate to `true`.
@@ -375,7 +375,7 @@
 			<return type="int" />
 			<description>
 				Returns a hashed 32-bit integer value representing the array and its contents.
-				[b]Note:[/b] [Array]s with equal content will always produce identical hash values. However, the reverse is not true. Returning identical hash values does [i]not[/i] imply the arrays are equal, because different arrays can have identical hash values due to hash collisions.
+				[note][Array]s with equal content will always produce identical hash values. However, the reverse is not true. Returning identical hash values does [i]not[/i] imply the arrays are equal, because different arrays can have identical hash values due to hash collisions.[/note]
 			</description>
 		</method>
 		<method name="insert">
@@ -384,8 +384,8 @@
 			<param index="1" name="value" type="Variant" />
 			<description>
 				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]).
-				[b]Note:[/b] This method acts in-place and doesn't return a value.
-				[b]Note:[/b] On large arrays, this method will be slower if the inserted element is close to the beginning of the array (index 0). This is because all elements placed after the newly inserted element have to be reindexed.
+				[note]This method acts in-place and doesn't return a value.[/note]
+				[note]On large arrays, this method will be slower if the inserted element is close to the beginning of the array (index 0). This is because all elements placed after the newly inserted element have to be reindexed.[/note]
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
@@ -480,7 +480,7 @@
 			<param index="0" name="position" type="int" />
 			<description>
 				Removes and returns the element of the array at index [param position]. If negative, [param position] is considered relative to the end of the array. Leaves the array untouched and returns [code]null[/code] if the array is empty or if it's accessed out of bounds. An error message is printed when the array is accessed out of bounds, but not when the array is empty.
-				[b]Note:[/b] On large arrays, this method can be slower than [method pop_back] as it will reindex the array's elements that are located after the removed element. The larger the array and the lower the index of the removed element, the slower [method pop_at] will be.
+				[note]On large arrays, this method can be slower than [method pop_back] as it will reindex the array's elements that are located after the removed element. The larger the array and the lower the index of the removed element, the slower [method pop_at] will be.[/note]
 			</description>
 		</method>
 		<method name="pop_back">
@@ -493,7 +493,7 @@
 			<return type="Variant" />
 			<description>
 				Removes and returns the first element of the array. Returns [code]null[/code] if the array is empty, without printing an error message. See also [method pop_back].
-				[b]Note:[/b] On large arrays, this method is much slower than [method pop_back] as it will reindex all the array's elements every time it's called. The larger the array, the slower [method pop_front] will be.
+				[note]On large arrays, this method is much slower than [method pop_back] as it will reindex all the array's elements every time it's called. The larger the array, the slower [method pop_front] will be.[/note]
 			</description>
 		</method>
 		<method name="push_back">
@@ -508,7 +508,7 @@
 			<param index="0" name="value" type="Variant" />
 			<description>
 				Adds an element at the beginning of the array. See also [method push_back].
-				[b]Note:[/b] On large arrays, this method is much slower than [method push_back] as it will reindex all the array's elements every time it's called. The larger the array, the slower [method push_front] will be.
+				[note]On large arrays, this method is much slower than [method push_back] as it will reindex all the array's elements every time it's called. The larger the array, the slower [method push_front] will be.[/note]
 			</description>
 		</method>
 		<method name="reduce" qualifiers="const">
@@ -534,9 +534,9 @@
 			<param index="0" name="position" type="int" />
 			<description>
 				Removes an element from the array by index. If the index does not exist in the array, nothing happens. To remove an element by searching for its value, use [method erase] instead.
-				[b]Note:[/b] This method acts in-place and doesn't return a value.
-				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
-				[b]Note:[/b] [param position] cannot be negative. To remove an element relative to the end of the array, use [code]arr.remove_at(arr.size() - (i + 1))[/code]. To remove the last element from the array without returning the value, use [code]arr.resize(arr.size() - 1)[/code].
+				[note]This method acts in-place and doesn't return a value.[/note]
+				[note]On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.[/note]
+				[note][param position] cannot be negative. To remove an element relative to the end of the array, use [code]arr.remove_at(arr.size() - (i + 1))[/code]. To remove the last element from the array without returning the value, use [code]arr.resize(arr.size() - 1)[/code].[/note]
 			</description>
 		</method>
 		<method name="resize">
@@ -590,8 +590,8 @@
 			<return type="void" />
 			<description>
 				Sorts the array.
-				[b]Note:[/b] The sorting algorithm used is not [url=https://en.wikipedia.org/wiki/Sorting_algorithm#Stability]stable[/url]. This means that values considered equal may have their order changed when using [method sort].
-				[b]Note:[/b] Strings are sorted in alphabetical order (as opposed to natural order). This may lead to unexpected behavior when sorting an array of strings ending with a sequence of numbers. Consider the following example:
+				[note]The sorting algorithm used is not [url=https://en.wikipedia.org/wiki/Sorting_algorithm#Stability]stable[/url]. This means that values considered equal may have their order changed when using [method sort].[/note]
+				[note]Strings are sorted in alphabetical order (as opposed to natural order). This may lead to unexpected behavior when sorting an array of strings ending with a sequence of numbers. Consider the following example:[/note]
 				[codeblocks]
 				[gdscript]
 				var strings = ["string1", "string2", "string10", "string11"]
@@ -617,8 +617,8 @@
 			<param index="0" name="func" type="Callable" />
 			<description>
 				Sorts the array using a custom method. The custom method receives two arguments (a pair of elements from the array) and must return either [code]true[/code] or [code]false[/code]. For two elements [code]a[/code] and [code]b[/code], if the given method returns [code]true[/code], element [code]b[/code] will be after element [code]a[/code] in the array.
-				[b]Note:[/b] The sorting algorithm used is not [url=https://en.wikipedia.org/wiki/Sorting_algorithm#Stability]stable[/url]. This means that values considered equal may have their order changed when using [method sort_custom].
-				[b]Note:[/b] You cannot randomize the return value as the heapsort algorithm expects a deterministic result. Randomizing the return value will result in unexpected behavior.
+				[note]The sorting algorithm used is not [url=https://en.wikipedia.org/wiki/Sorting_algorithm#Stability]stable[/url]. This means that values considered equal may have their order changed when using [method sort_custom].[/note]
+				[note]You cannot randomize the return value as the heapsort algorithm expects a deterministic result. Randomizing the return value will result in unexpected behavior.[/note]
 				[codeblocks]
 				[gdscript]
 				func sort_ascending(a, b):

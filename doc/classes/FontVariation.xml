@@ -66,15 +66,15 @@
 		</member>
 		<member name="variation_embolden" type="float" setter="set_variation_embolden" getter="get_variation_embolden" default="0.0">
 			If is not equal to zero, emboldens the font outlines. Negative values reduce the outline thickness.
-			[b]Note:[/b] Emboldened fonts might have self-intersecting outlines, which will prevent MSDF fonts and [TextMesh] from working correctly.
+			[note]Emboldened fonts might have self-intersecting outlines, which will prevent MSDF fonts and [TextMesh] from working correctly.[/note]
 		</member>
 		<member name="variation_face_index" type="int" setter="set_variation_face_index" getter="get_variation_face_index" default="0">
 			Active face index in the TrueType / OpenType collection file.
 		</member>
 		<member name="variation_opentype" type="Dictionary" setter="set_variation_opentype" getter="get_variation_opentype" default="{}">
 			Font OpenType variation coordinates. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/dvaraxisreg]OpenType variation tags[/url].
-			[b]Note:[/b] This [Dictionary] uses OpenType tags as keys. Variation axes can be identified both by tags([code]int[/code]) and names ([code]string[/code]). Some axes might be accessible by multiple names. For example, [code]wght[/code] refers to the same axis as [code]weight[/code]. Tags on the other hand are unique. To convert between names and tags, use [method TextServer.name_to_tag] and [method TextServer.tag_to_name].
-			[b]Note:[/b] To get available variation axes of a font, use [method Font.get_supported_variation_list].
+			[note]This [Dictionary] uses OpenType tags as keys. Variation axes can be identified both by tags([code]int[/code]) and names ([code]string[/code]). Some axes might be accessible by multiple names. For example, [code]wght[/code] refers to the same axis as [code]weight[/code]. Tags on the other hand are unique. To convert between names and tags, use [method TextServer.name_to_tag] and [method TextServer.tag_to_name].[/note]
+			[note]To get available variation axes of a font, use [method Font.get_supported_variation_list].[/note]
 		</member>
 		<member name="variation_transform" type="Transform2D" setter="set_variation_transform" getter="get_variation_transform" default="Transform2D(1, 0, 0, 1, 0, 0)">
 			2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.

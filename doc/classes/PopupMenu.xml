@@ -8,7 +8,7 @@
 		The size of a [PopupMenu] can be limited by using [member Window.max_size]. If the height of the list of items is larger than the maximum height of the [PopupMenu], a [ScrollContainer] within the popup will allow the user to scroll the contents. If no maximum size is set, or if it is set to [code]0[/code], the [PopupMenu] height will be limited by its parent rect.
 		All [code]set_*[/code] methods allow negative item indices, i.e. [code]-1[/code] to access the last item, [code]-2[/code] to select the second-to-last item, and so on.
 		[b]Incremental search:[/b] Like [ItemList] and [Tree], [PopupMenu] supports searching within the list while the control is focused. Press a key that matches the first letter of an item's name to select the first item starting with the given letter. After that point, there are two ways to perform incremental search: 1) Press the same key again before the timeout duration to select the next item starting with the same letter. 2) Press letter keys that match the rest of the word before the timeout duration to match to select the item in question directly. Both of these actions will be reset to the beginning of the list if the timeout duration has passed since the last keystroke was registered. You can adjust the timeout duration by changing [member ProjectSettings.gui/timers/incremental_search_max_interval_msec].
-		[b]Note:[/b] The ID values used for items are limited to 32 bits, not full 64 bits of [int]. This has a range of [code]-2^32[/code] to [code]2^32 - 1[/code], i.e. [code]-2147483648[/code] to [code]2147483647[/code].
+		[note]The ID values used for items are limited to 32 bits, not full 64 bits of [int]. This has a range of [code]-2^32[/code] to [code]2^32 - 1[/code], i.e. [code]-2147483648[/code] to [code]2147483647[/code].[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -21,7 +21,7 @@
 			<description>
 				Adds a new checkable item with text [param label].
 				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
-				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
+				[note]Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.[/note]
 			</description>
 		</method>
 		<method name="add_check_shortcut">
@@ -32,7 +32,7 @@
 			<description>
 				Adds a new checkable item and assigns the specified [Shortcut] to it. Sets the label of the checkbox to the [Shortcut]'s name.
 				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
-				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
+				[note]Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.[/note]
 			</description>
 		</method>
 		<method name="add_icon_check_item">
@@ -44,7 +44,7 @@
 			<description>
 				Adds a new checkable item with text [param label] and icon [param texture].
 				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
-				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
+				[note]Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.[/note]
 			</description>
 		</method>
 		<method name="add_icon_check_shortcut">
@@ -56,7 +56,7 @@
 			<description>
 				Adds a new checkable item and assigns the specified [Shortcut] and icon [param texture] to it. Sets the label of the checkbox to the [Shortcut]'s name.
 				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
-				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
+				[note]Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.[/note]
 			</description>
 		</method>
 		<method name="add_icon_item">
@@ -109,7 +109,7 @@
 			<description>
 				Adds a new item with text [param label].
 				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
-				[b]Note:[/b] The provided [param id] is used only in [signal id_pressed] and [signal id_focused] signals. It's not related to the [code]index[/code] arguments in e.g. [method set_item_checked].
+				[note]The provided [param id] is used only in [signal id_pressed] and [signal id_focused] signals. It's not related to the [code]index[/code] arguments in e.g. [method set_item_checked].[/note]
 			</description>
 		</method>
 		<method name="add_multistate_item">
@@ -133,7 +133,7 @@
 			<description>
 				Adds a new radio check button with text [param label].
 				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
-				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
+				[note]Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.[/note]
 			</description>
 		</method>
 		<method name="add_radio_check_shortcut">
@@ -144,7 +144,7 @@
 			<description>
 				Adds a new radio check button and assigns a [Shortcut] to it. Sets the label of the checkbox to the [Shortcut]'s name.
 				An [param id] can optionally be provided. If no [param id] is provided, one will be created from the index.
-				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
+				[note]Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.[/note]
 			</description>
 		</method>
 		<method name="add_separator">
@@ -291,7 +291,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns [code]true[/code] if the item at the given [param index] is checkable in some way, i.e. if it has a checkbox or radio button.
-				[b]Note:[/b] Checkable items just display a checkmark or radio button, but don't have any built-in checking behavior and must be checked/unchecked manually.
+				[note]Checkable items just display a checkmark or radio button, but don't have any built-in checking behavior and must be checked/unchecked manually.[/note]
 			</description>
 		</method>
 		<method name="is_item_checked" qualifiers="const">
@@ -314,7 +314,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns [code]true[/code] if the item at the given [param index] has radio button-style checkability.
-				[b]Note:[/b] This is purely cosmetic; you must add the logic for checking/unchecking items in radio groups.
+				[note]This is purely cosmetic; you must add the logic for checking/unchecking items in radio groups.[/note]
 			</description>
 		</method>
 		<method name="is_item_separator" qualifiers="const">
@@ -336,7 +336,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Removes the item at the given [param index] from the menu.
-				[b]Note:[/b] The indices of items after the removed item will be shifted by one.
+				[note]The indices of items after the removed item will be shifted by one.[/note]
 			</description>
 		</method>
 		<method name="scroll_to_item">
@@ -368,7 +368,7 @@
 			<param index="1" name="enable" type="bool" />
 			<description>
 				Sets whether the item at the given [param index] has a checkbox. If [code]false[/code], sets the type of the item to plain text.
-				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.
+				[note]Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually.[/note]
 			</description>
 		</method>
 		<method name="set_item_as_radio_checkable">
@@ -563,7 +563,7 @@
 			<param index="0" name="id" type="int" />
 			<description>
 				Emitted when an item of some [param id] is pressed or its accelerator is activated.
-				[b]Note:[/b] If [param id] is negative (either explicitly or due to overflow), this will return the corresponding index instead.
+				[note]If [param id] is negative (either explicitly or due to overflow), this will return the corresponding index instead.[/note]
 			</description>
 		</signal>
 		<signal name="index_pressed">
@@ -617,7 +617,7 @@
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the item text outline.
-			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+			[note]If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.[/note]
 		</theme_item>
 		<theme_item name="separator_outline_size" data_type="constant" type="int" default="0">
 			The size of the labeled separator text outline.

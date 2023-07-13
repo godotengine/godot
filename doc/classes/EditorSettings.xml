@@ -25,7 +25,7 @@
 		Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; listOfSettings = settings.GetPropertyList();
 		[/csharp]
 		[/codeblocks]
-		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_editor_settings].
+		[note]This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_editor_settings].[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -190,7 +190,7 @@
 		</member>
 		<member name="debugger/profiler_frame_max_functions" type="int" setter="" getter="">
 			The maximum number of script functions that can be displayed per frame in the profiler. If there are more script functions called in a given profiler frame, these functions will be discarded from the profiling results entirely.
-			[b]Note:[/b] This setting is only read when the profiler is first started, so changing it during profiling will have no effect.
+			[note]This setting is only read when the profiler is first started, so changing it during profiling will have no effect.[/note]
 		</member>
 		<member name="debugger/remote_inspect_refresh_interval" type="float" setter="" getter="">
 			The refresh interval for the remote inspector's properties (in seconds). Lower values are more reactive, but may cause stuttering while the project is running from the editor and the [b]Remote[/b] scene tree is selected in the Scene tree dock.
@@ -200,7 +200,7 @@
 		</member>
 		<member name="docks/filesystem/always_show_folders" type="bool" setter="" getter="">
 			If [code]true[/code], displays folders in the FileSystem dock's bottom pane when split mode is enabled. If [code]false[/code], only files will be displayed in the bottom pane. Split mode can be toggled by pressing the icon next to the [code]res://[/code] folder path.
-			[b]Note:[/b] This setting has no effect when split mode is disabled (which is the default).
+			[note]This setting has no effect when split mode is disabled (which is the default).[/note]
 		</member>
 		<member name="docks/filesystem/textfile_extensions" type="String" setter="" getter="">
 			List of file extensions to consider as editable text files in the FileSystem dock (by double-clicking on the files).
@@ -264,8 +264,8 @@
 		</member>
 		<member name="editors/3d/freelook/freelook_activation_modifier" type="int" setter="" getter="">
 			The modifier key to use to enable freelook in the 3D editor (on top of pressing the right mouse button).
-			[b]Note:[/b] Regardless of this setting, the freelook toggle keyboard shortcut ([kbd]Shift + F[/kbd] by default) is always available.
-			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+			[note]Regardless of this setting, the freelook toggle keyboard shortcut ([kbd]Shift + F[/kbd] by default) is always available.[/note]
+			[note]On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.[/note]
 		</member>
 		<member name="editors/3d/freelook/freelook_base_speed" type="float" setter="" getter="">
 			The base 3D freelook speed in units per second. This can be adjusted by using the mouse wheel while in freelook mode, or by holding down the "fast" or "slow" modifier keys ([kbd]Shift[/kbd] and [kbd]Alt[/kbd] by default, respectively).
@@ -310,7 +310,7 @@
 		<member name="editors/3d/navigation/emulate_3_button_mouse" type="bool" setter="" getter="">
 			If [code]true[/code], enables 3-button mouse emulation mode. This is useful on laptops when using a trackpad.
 			When 3-button mouse emulation mode is enabled, the pan, zoom and orbit modifiers can always be used in the 3D editor viewport, even when not holding down any mouse button.
-			[b]Note:[/b] No matter the orbit modifier configured in [member editors/3d/navigation/orbit_modifier], [kbd]Alt[/kbd] will always remain usable for orbiting in this mode to improve usability with graphics tablets.
+			[note]No matter the orbit modifier configured in [member editors/3d/navigation/orbit_modifier], [kbd]Alt[/kbd] will always remain usable for orbiting in this mode to improve usability with graphics tablets.[/note]
 		</member>
 		<member name="editors/3d/navigation/emulate_numpad" type="bool" setter="" getter="">
 			If [code]true[/code], allows using the top row [kbd]0[/kbd]-[kbd]9[/kbd] keys to function as their equivalent numpad keys for 3D editor navigation. This should be enabled on keyboards that have no numeric keypad available.
@@ -327,23 +327,23 @@
 			- [b]Maya:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Middle mouse button[/kbd] to pan, [kbd]Shift + Middle mouse button[/kbd] to pan 10 times faster. [kbd]Mouse wheel[/kbd] to zoom.
 			- [b]Modo:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Alt + Shift + Left mouse button[/kbd] to pan. [kbd]Ctrl + Alt + Left mouse button[/kbd] to zoom.
 			See also [member editors/3d/freelook/freelook_navigation_scheme].
-			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+			[note]On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.[/note]
 		</member>
 		<member name="editors/3d/navigation/orbit_modifier" type="int" setter="" getter="">
 			The modifier key that must be held to orbit in the 3D editor.
-			[b]Note:[/b] If [member editors/3d/navigation/emulate_3_button_mouse] is [code]true[/code], [kbd]Alt[/kbd] will always remain usable for orbiting to improve usability with graphics tablets.
-			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+			[note]If [member editors/3d/navigation/emulate_3_button_mouse] is [code]true[/code], [kbd]Alt[/kbd] will always remain usable for orbiting to improve usability with graphics tablets.[/note]
+			[note]On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.[/note]
 		</member>
 		<member name="editors/3d/navigation/pan_modifier" type="int" setter="" getter="">
 			The modifier key that must be held to pan in the 3D editor.
-			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+			[note]On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.[/note]
 		</member>
 		<member name="editors/3d/navigation/warped_mouse_panning" type="bool" setter="" getter="">
 			If [code]true[/code], warps the mouse around the 3D viewport while panning in the 3D editor. This makes it possible to pan over a large area without having to exit panning and adjust the mouse cursor.
 		</member>
 		<member name="editors/3d/navigation/zoom_modifier" type="int" setter="" getter="">
 			The modifier key that must be held to zoom in the 3D editor.
-			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
+			[note]On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.[/note]
 		</member>
 		<member name="editors/3d/navigation/zoom_style" type="int" setter="" getter="">
 			The mouse cursor movement direction to use when zooming by moving the mouse. This does not affect zooming with the mouse wheel.
@@ -434,7 +434,7 @@
 		</member>
 		<member name="editors/tiles_editor/grid_color" type="Color" setter="" getter="">
 			The color to use for the TileMap editor's grid.
-			[b]Note:[/b] Only effective if [member editors/tiles_editor/display_grid] is [code]true[/code].
+			[note]Only effective if [member editors/tiles_editor/display_grid] is [code]true[/code].[/note]
 		</member>
 		<member name="editors/visual_editors/lines_curvature" type="float" setter="" getter="">
 			The curvature to use for connection lines in the visual shader editor. Higher values will make connection lines appear more curved, with values above [code]0.5[/code] resulting in more "angular" turns in the middle of connection lines.
@@ -447,7 +447,7 @@
 		</member>
 		<member name="filesystem/directories/autoscan_project_path" type="String" setter="" getter="">
 			The folder where projects should be scanned for (recursively), in a way similar to the project manager's [b]Scan[/b] button. This can be set to the same value as [member filesystem/directories/default_project_path] for convenience.
-			[b]Note:[/b] Setting this path to a folder with very large amounts of files/folders can slow down the project manager startup significantly. To keep the project manager quick to start up, it is recommended to set this value to a folder as "specific" as possible.
+			[note]Setting this path to a folder with very large amounts of files/folders can slow down the project manager startup significantly. To keep the project manager quick to start up, it is recommended to set this value to a folder as "specific" as possible.[/note]
 		</member>
 		<member name="filesystem/directories/default_project_path" type="String" setter="" getter="">
 			The folder where new projects should be created by default when clicking the project manager's [b]New Project[/b] button. This can be set to the same value as [member filesystem/directories/autoscan_project_path] for convenience.
@@ -480,7 +480,7 @@
 		</member>
 		<member name="filesystem/on_save/safe_save_on_backup_then_rename" type="bool" setter="" getter="">
 			If [code]true[/code], when saving a file, the editor will rename the old file to a different name, save a new file, then only remove the old file once the new file has been saved. This makes loss of data less likely to happen if the editor or operating system exits unexpectedly while saving (e.g. due to a crash or power outage).
-			[b]Note:[/b] On Windows, this feature can interact negatively with certain antivirus programs. In this case, you may have to set this to [code]false[/code] to prevent file locking issues.
+			[note]On Windows, this feature can interact negatively with certain antivirus programs. In this case, you may have to set this to [code]false[/code] to prevent file locking issues.[/note]
 		</member>
 		<member name="interface/editor/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
 			How to position the Cancel and OK buttons in the editor's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting. This is useful if you use Godot both on Windows and macOS/Linux and your Godot muscle memory is stronger than your OS specific one.
@@ -496,22 +496,22 @@
 		</member>
 		<member name="interface/editor/code_font_contextual_ligatures" type="int" setter="" getter="">
 			The font ligatures to enable for the currently configured code font. Not all fonts include support for ligatures.
-			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has contextual ligatures in its font file.
+			[note]The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has contextual ligatures in its font file.[/note]
 		</member>
 		<member name="interface/editor/code_font_custom_opentype_features" type="String" setter="" getter="">
 			List of custom OpenType features to use, if supported by the currently configured code font. Not all fonts include support for custom OpenType features. The string should follow the OpenType specification.
-			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has custom OpenType features in its font file, but there is no documented list yet.
+			[note]The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has custom OpenType features in its font file, but there is no documented list yet.[/note]
 		</member>
 		<member name="interface/editor/code_font_custom_variations" type="String" setter="" getter="">
 			List of alternative characters to use, if supported by the currently configured code font. Not all fonts include support for custom variations. The string should follow the OpenType specification.
-			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has alternate characters in its font file, but there is no documented list yet.
+			[note]The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has alternate characters in its font file, but there is no documented list yet.[/note]
 		</member>
 		<member name="interface/editor/code_font_size" type="int" setter="" getter="">
 			The size of the font in the script editor. This setting does not impact the font size of the Output panel (see [member run/output/font_size]).
 		</member>
 		<member name="interface/editor/custom_display_scale" type="float" setter="" getter="">
 			The custom editor scale factor to use. This can be used for displays with very high DPI where a scale factor of 200% is not sufficient.
-			[b]Note:[/b] Only effective if [member interface/editor/display_scale] is set to [b]Custom[/b].
+			[note]Only effective if [member interface/editor/display_scale] is set to [b]Custom[/b].[/note]
 		</member>
 		<member name="interface/editor/debug/enable_pseudolocalization" type="bool" setter="" getter="">
 			If [code]true[/code], lengthens the editor's localizable strings and replaces their characters with accented variants. This allows spotting non-localizable strings easily, while also ensuring the UI layout doesn't break when strings are made longer (as many languages require strings to be longer).
@@ -595,7 +595,7 @@
 		</member>
 		<member name="interface/multi_window/enable" type="bool" setter="" getter="">
 			If [code]true[/code], the multi window support in editor is enabled. The following panels can become dedicated windows (made floating): Docks, Script editor, and Shader editor.
-			[b]Note:[/b] When [member interface/editor/single_window_mode] is [code]true[/code], the multi window support is always disabled.
+			[note]When [member interface/editor/single_window_mode] is [code]true[/code], the multi window support is always disabled.[/note]
 		</member>
 		<member name="interface/multi_window/maximize_window" type="bool" setter="" getter="">
 			If [code]true[/code], when panels are made floating they will be maximized.
@@ -648,7 +648,7 @@
 		</member>
 		<member name="interface/theme/icon_saturation" type="float" setter="" getter="">
 			The saturation to use for editor icons. Higher values result in more vibrant colors.
-			[b]Note:[/b] The default editor icon saturation was increased by 30% in Godot 4.0 and later. To get Godot 3.x's icon saturation back, set [member interface/theme/icon_saturation] to [code]0.77[/code].
+			[note]The default editor icon saturation was increased by 30% in Godot 4.0 and later. To get Godot 3.x's icon saturation back, set [member interface/theme/icon_saturation] to [code]0.77[/code].[/note]
 		</member>
 		<member name="interface/theme/preset" type="String" setter="" getter="">
 			The editor theme preset to use.
@@ -658,19 +658,19 @@
 		</member>
 		<member name="interface/touchscreen/enable_long_press_as_right_click" type="bool" setter="" getter="">
 			If [code]true[/code], long press on touchscreen is treated as right click.
-			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
+			[note]Defaults to [code]true[/code] on touchscreen devices.[/note]
 		</member>
 		<member name="interface/touchscreen/enable_pan_and_scale_gestures" type="bool" setter="" getter="">
 			If [code]true[/code], enable two finger pan and scale gestures on touchscreen devices.
-			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
+			[note]Defaults to [code]true[/code] on touchscreen devices.[/note]
 		</member>
 		<member name="interface/touchscreen/increase_scrollbar_touch_area" type="bool" setter="" getter="">
 			If [code]true[/code], increases the scrollbar touch area to improve usability on touchscreen devices.
-			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
+			[note]Defaults to [code]true[/code] on touchscreen devices.[/note]
 		</member>
 		<member name="interface/touchscreen/scale_gizmo_handles" type="float" setter="" getter="">
 			Specify the multiplier to apply to the scale for the editor gizmo handles to improve usability on touchscreen devices.
-			[b]Note:[/b] Defaults to [code]1[/code] on non-touchscreen devices.
+			[note]Defaults to [code]1[/code] on non-touchscreen devices.[/note]
 		</member>
 		<member name="network/debug/remote_host" type="String" setter="" getter="">
 			The address to listen to when starting the remote debugger. This can be set to [code]0.0.0.0[/code] to allow external clients to connect to the remote debugger (instead of restricting the remote debugger to connections from [code]localhost[/code]).
@@ -680,11 +680,11 @@
 		</member>
 		<member name="network/http_proxy/host" type="String" setter="" getter="">
 			The host to use to contact the HTTP and HTTPS proxy in the editor (for the asset library and export template downloads). See also [member network/http_proxy/port].
-			[b]Note:[/b] Godot currently doesn't automatically use system proxy settings, so you have to enter them manually here if needed.
+			[note]Godot currently doesn't automatically use system proxy settings, so you have to enter them manually here if needed.[/note]
 		</member>
 		<member name="network/http_proxy/port" type="int" setter="" getter="">
 			The port number to use to contact the HTTP and HTTPS proxy in the editor (for the asset library and export template downloads). See also [member network/http_proxy/host].
-			[b]Note:[/b] Godot currently doesn't automatically use system proxy settings, so you have to enter them manually here if needed.
+			[note]Godot currently doesn't automatically use system proxy settings, so you have to enter them manually here if needed.[/note]
 		</member>
 		<member name="network/tls/editor_tls_certificates" type="String" setter="" getter="">
 			The TLS certificate bundle to use for HTTP requests made within the editor (e.g. from the AssetLib tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]included Mozilla certificate bundle[/url] will be used.
@@ -712,7 +712,7 @@
 		</member>
 		<member name="run/window_placement/android_window" type="int" setter="" getter="">
 			The Android window to display the project on when starting the project from the editor.
-			[b]Note:[/b] Only available in the Android editor.
+			[note]Only available in the Android editor.[/note]
 		</member>
 		<member name="run/window_placement/rect" type="int" setter="" getter="">
 			The window mode to use to display the project when starting the project from the editor.
@@ -806,7 +806,7 @@
 		</member>
 		<member name="text_editor/behavior/indent/type" type="int" setter="" getter="">
 			The indentation style to use (tabs or spaces).
-			[b]Note:[/b] The [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url] recommends using tabs for indentation. It is advised to change this setting only if you need to work on a project that currently uses spaces for indentation.
+			[note]The [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url] recommends using tabs for indentation. It is advised to change this setting only if you need to work on a project that currently uses spaces for indentation.[/note]
 		</member>
 		<member name="text_editor/behavior/navigation/drag_and_drop_selection" type="bool" setter="" getter="">
 			If [code]true[/code], allows drag-and-dropping text in the script editor to move text. Disable this if you find yourself accidentally drag-and-dropping text in the script editor.
@@ -819,14 +819,14 @@
 		</member>
 		<member name="text_editor/behavior/navigation/smooth_scrolling" type="bool" setter="" getter="">
 			If [code]true[/code], allows scrolling in sub-line intervals and enables a smooth scrolling animation when using the mouse wheel to scroll.
-			[b]Note:[/b] [member text_editor/behavior/navigation/smooth_scrolling] currently behaves poorly in projects where [member ProjectSettings.physics/common/physics_ticks_per_second] has been increased significantly from its default value ([code]60[/code]). In this case, it is recommended to disable this setting.
+			[note][member text_editor/behavior/navigation/smooth_scrolling] currently behaves poorly in projects where [member ProjectSettings.physics/common/physics_ticks_per_second] has been increased significantly from its default value ([code]60[/code]). In this case, it is recommended to disable this setting.[/note]
 		</member>
 		<member name="text_editor/behavior/navigation/stay_in_script_editor_on_node_selected" type="bool" setter="" getter="">
 			If [code]true[/code], prevents automatically switching between the Script and 2D/3D screens when selecting a node in the Scene tree dock.
 		</member>
 		<member name="text_editor/behavior/navigation/v_scroll_speed" type="int" setter="" getter="">
 			The number of pixels to scroll with every mouse wheel increment. Higher values make the script scroll by faster when using the mouse wheel.
-			[b]Note:[/b] You can hold down [kbd]Alt[/kbd] while using the mouse wheel to temporarily scroll 5 times faster.
+			[note]You can hold down [kbd]Alt[/kbd] while using the mouse wheel to temporarily scroll 5 times faster.[/note]
 		</member>
 		<member name="text_editor/completion/add_type_hints" type="bool" setter="" getter="">
 			If [code]true[/code], adds static typing hints such as [code]-&gt; void[/code] and [code]: int[/code] when using code autocompletion or when creating onready variables by drag and dropping nodes into the script editor while pressing the [kbd]Ctrl[/kbd] key.
@@ -872,7 +872,7 @@
 		</member>
 		<member name="text_editor/script_list/sort_members_outline_alphabetically" type="bool" setter="" getter="">
 			If [code]true[/code], sorts the members outline (located at the left of the script editor) using alphabetical order. If [code]false[/code], sorts the members outline depending on the order in which members are found in the script.
-			[b]Note:[/b] Only effective if [member text_editor/script_list/show_members_overview] is [code]true[/code].
+			[note]Only effective if [member text_editor/script_list/show_members_overview] is [code]true[/code].[/note]
 		</member>
 		<member name="text_editor/theme/color_theme" type="String" setter="" getter="">
 			The syntax theme to use in the script editor.
@@ -896,7 +896,7 @@
 		</member>
 		<member name="text_editor/theme/highlighting/caret_background_color" type="Color" setter="" getter="">
 			The script editor's caret background color.
-			[b]Note:[/b] This setting has no effect as it's currently unused.
+			[note]This setting has no effect as it's currently unused.[/note]
 		</member>
 		<member name="text_editor/theme/highlighting/caret_color" type="Color" setter="" getter="">
 			The script editor's caret color.
@@ -906,7 +906,7 @@
 		</member>
 		<member name="text_editor/theme/highlighting/comment_color" type="Color" setter="" getter="">
 			The script editor's comment color.
-			[b]Note:[/b] In GDScript, unlike Python, multiline strings are not considered to be comments, and will use the string highlighting color instead.
+			[note]In GDScript, unlike Python, multiline strings are not considered to be comments, and will use the string highlighting color instead.[/note]
 		</member>
 		<member name="text_editor/theme/highlighting/completion_background_color" type="Color" setter="" getter="">
 			The script editor's autocompletion box background color.
@@ -940,7 +940,7 @@
 		</member>
 		<member name="text_editor/theme/highlighting/function_color" type="Color" setter="" getter="">
 			The script editor's function call color.
-			[b]Note:[/b] When using the GDScript syntax highlighter, this is replaced by the function definition color configured in the syntax theme for function definitions (e.g. [code]func _ready():[/code]).
+			[note]When using the GDScript syntax highlighter, this is replaced by the function definition color configured in the syntax theme for function definitions (e.g. [code]func _ready():[/code]).[/note]
 		</member>
 		<member name="text_editor/theme/highlighting/keyword_color" type="Color" setter="" getter="">
 			The script editor's non-control flow keyword color (used for keywords like [code]var[/code], [code]func[/code], [code]extends[/code], ...).
@@ -956,14 +956,14 @@
 		</member>
 		<member name="text_editor/theme/highlighting/member_variable_color" type="Color" setter="" getter="">
 			The script editor's color for member variables on objects (e.g. [code]self.some_property[/code]).
-			[b]Note:[/b] This color is not used for local variable declaration and access.
+			[note]This color is not used for local variable declaration and access.[/note]
 		</member>
 		<member name="text_editor/theme/highlighting/number_color" type="Color" setter="" getter="">
 			The script editor's color for numbers (integer and floating-point).
 		</member>
 		<member name="text_editor/theme/highlighting/safe_line_number_color" type="Color" setter="" getter="">
 			The script editor's color for type-safe line numbers. See also [member text_editor/theme/highlighting/line_number_color].
-			[b]Note:[/b] Only displayed if [member text_editor/appearance/gutters/highlight_type_safe_lines] is [code]true[/code].
+			[note]Only displayed if [member text_editor/appearance/gutters/highlight_type_safe_lines] is [code]true[/code].[/note]
 		</member>
 		<member name="text_editor/theme/highlighting/search_result_border_color" type="Color" setter="" getter="">
 			The script editor's color for the border of search results. This border helps bring further attention to the search result. Set this color's opacity to 0 to disable the border.

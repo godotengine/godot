@@ -29,7 +29,7 @@
 			<param index="1" name="physicalbone2d_node" type="NodePath" />
 			<description>
 				Sets the [PhysicalBone2D] node at [param joint_idx].
-				[b]Note:[/b] This is just the index used for this modification, not the bone index used in the [Skeleton2D].
+				[note]This is just the index used for this modification, not the bone index used in the [Skeleton2D].[/note]
 			</description>
 		</method>
 		<method name="start_simulation">

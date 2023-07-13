@@ -71,7 +71,7 @@
 			<param index="1" name="no_inheritance" type="bool" default="false" />
 			<description>
 				Returns an array with all the methods of [param class] or its ancestry if [param no_inheritance] is [code]false[/code]. Every element of the array is a [Dictionary] with the following keys: [code]args[/code], [code]default_args[/code], [code]flags[/code], [code]id[/code], [code]name[/code], [code]return: (class_name, hint, hint_string, name, type, usage)[/code].
-				[b]Note:[/b] In exported release builds the debug info is not available, so the returned dictionaries will contain only method names.
+				[note]In exported release builds the debug info is not available, so the returned dictionaries will contain only method names.[/note]
 			</description>
 		</method>
 		<method name="class_get_property" qualifiers="const">

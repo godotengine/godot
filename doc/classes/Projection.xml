@@ -258,7 +258,7 @@
 			<param index="0" name="new_znear" type="float" />
 			<description>
 				Returns a [Projection] with the near clipping distance adjusted to be [param new_znear].
-				[b]Note:[/b] The original [Projection] must be a perspective projection.
+				[note]The original [Projection] must be a perspective projection.[/note]
 			</description>
 		</method>
 	</methods>
@@ -308,7 +308,7 @@
 			<param index="0" name="right" type="Projection" />
 			<description>
 				Returns [code]true[/code] if the projections are not equal.
-				[b]Note:[/b] Due to floating-point precision errors, this may return [code]true[/code], even if the projections are virtually equal. An [code]is_equal_approx[/code] method may be added in a future version of Godot.
+				[note]Due to floating-point precision errors, this may return [code]true[/code], even if the projections are virtually equal. An [code]is_equal_approx[/code] method may be added in a future version of Godot.[/note]
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -330,7 +330,7 @@
 			<param index="0" name="right" type="Projection" />
 			<description>
 				Returns [code]true[/code] if the projections are equal.
-				[b]Note:[/b] Due to floating-point precision errors, this may return [code]false[/code], even if the projections are virtually equal. An [code]is_equal_approx[/code] method may be added in a future version of Godot.
+				[note]Due to floating-point precision errors, this may return [code]false[/code], even if the projections are virtually equal. An [code]is_equal_approx[/code] method may be added in a future version of Godot.[/note]
 			</description>
 		</operator>
 		<operator name="operator []">

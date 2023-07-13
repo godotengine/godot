@@ -15,7 +15,7 @@
 		Finally, when a node is freed with [method Object.free] or [method queue_free], it will also free all its children.
 		[b]Groups:[/b] Nodes can be added to as many groups as you want to be easy to manage, you could create groups like "enemies" or "collectables" for example, depending on your game. See [method add_to_group], [method is_in_group] and [method remove_from_group]. You can then retrieve all nodes in these groups, iterate them and even call methods on groups via the methods on [SceneTree].
 		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [ENetMultiplayerPeer]), it is possible to use the built-in RPC (remote procedure call) system to communicate over the network. By calling [method rpc] with a method name, it will be called locally and in all connected peers (peers = clients and the server that accepts connections). To identify which node receives the RPC call, Godot will use its [NodePath] (make sure node names are the same on all peers). Also, take a look at the high-level networking tutorial and corresponding demos.
-		[b]Note:[/b] The [code]script[/code] property is part of the [Object] class, not [Node]. It isn't exposed like most properties but does have a setter and getter ([code]set_script()[/code] and [code]get_script()[/code]).
+		[note]The [code]script[/code] property is part of the [Object] class, not [Node]. It isn't exposed like most properties but does have a setter and getter ([code]set_script()[/code] and [code]get_script()[/code]).[/note]
 	</description>
 	<tutorials>
 		<link title="Nodes and scenes">$DOCS_URL/getting_started/step_by_step/nodes_and_scenes.html</link>
@@ -64,7 +64,7 @@
 				It is only called if input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, [method _unhandled_input] and [method _unhandled_key_input] are usually a better fit as they allow the GUI to intercept the events first.
-				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
+				[note]This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).[/note]
 			</description>
 		</method>
 		<method name="_physics_process" qualifiers="virtual">
@@ -74,7 +74,7 @@
 				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [param delta] variable should be constant. [param delta] is in seconds.
 				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
-				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
+				[note]This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).[/note]
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
@@ -84,7 +84,7 @@
 				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [param delta] time since the previous frame is not constant. [param delta] is in seconds.
 				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
 				Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method Object._notification].
-				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
+				[note]This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).[/note]
 			</description>
 		</method>
 		<method name="_ready" qualifiers="virtual">
@@ -93,7 +93,7 @@
 				Called when the node is "ready", i.e. when both the node and its children have entered the scene tree. If the node has children, their [method _ready] callbacks get triggered first, and the parent node will receive the ready notification afterwards.
 				Corresponds to the [constant NOTIFICATION_READY] notification in [method Object._notification]. See also the [code]@onready[/code] annotation for variables.
 				Usually used for initialization. For even earlier initialization, [method Object._init] may be used. See also [method _enter_tree].
-				[b]Note:[/b] [method _ready] may be called only once for each node. After removing a node from the scene tree and adding it again, [code]_ready[/code] will not be called a second time. This can be bypassed by requesting another call with [method request_ready], which may be called anywhere before adding the node again.
+				[note][method _ready] may be called only once for each node. After removing a node from the scene tree and adding it again, [code]_ready[/code] will not be called a second time. This can be bypassed by requesting another call with [method request_ready], which may be called anywhere before adding the node again.[/note]
 			</description>
 		</method>
 		<method name="_shortcut_input" qualifiers="virtual">
@@ -104,7 +104,7 @@
 				It is only called if shortcut processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_shortcut_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				This method can be used to handle shortcuts.
-				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not orphan).
+				[note]This method is only called if the node is present in the scene tree (i.e. if it's not orphan).[/note]
 			</description>
 		</method>
 		<method name="_unhandled_input" qualifiers="virtual">
@@ -115,7 +115,7 @@
 				It is only called if unhandled input processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process_unhandled_input].
 				To consume the input event and stop it propagating further to other nodes, [method Viewport.set_input_as_handled] can be called.
 				For gameplay input, this and [method _unhandled_key_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
-				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
+				[note]This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).[/note]
 			</description>
 		</method>
 		<method name="_unhandled_key_input" qualifiers="virtual">
@@ -128,7 +128,7 @@
 				This method can be used to handle Unicode character input with [kbd]Alt[/kbd], [kbd]Alt + Ctrl[/kbd], and [kbd]Alt + Shift[/kbd] modifiers, after shortcuts were handled.
 				For gameplay input, this and [method _unhandled_input] are usually a better fit than [method _input] as they allow the GUI to intercept the events first.
 				This method also performs better than [method _unhandled_input], since unrelated events such as [InputEventMouseMotion] are automatically filtered.
-				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
+				[note]This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).[/note]
 			</description>
 		</method>
 		<method name="add_child">
@@ -140,7 +140,7 @@
 				Adds a child [param node]. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
 				If [param force_readable_name] is [code]true[/code], improves the readability of the added [param node]. If not named, the [param node] is renamed to its type, and if it shares [member name] with a sibling, a number is suffixed more appropriately. This operation is very slow. As such, it is recommended leaving this to [code]false[/code], which assigns a dummy name featuring [code]@[/code] in both situations.
 				If [param internal] is different than [constant INTERNAL_MODE_DISABLED], the child will be added as internal node. Such nodes are ignored by methods like [method get_children], unless their parameter [code]include_internal[/code] is [code]true[/code]. The intended usage is to hide the internal nodes from the user, so the user won't accidentally delete or modify them. Used by some GUI nodes, e.g. [ColorPicker]. See [enum InternalMode] for available modes.
-				[b]Note:[/b] If the child node already has a parent, the function will fail. Use [method remove_child] first to remove the node from its current parent. For example:
+				[note]If the child node already has a parent, the function will fail. Use [method remove_child] first to remove the node from its current parent. For example:[/note]
 				[codeblocks]
 				[gdscript]
 				var child_node = get_child(0)
@@ -158,7 +158,7 @@
 				[/csharp]
 				[/codeblocks]
 				If you need the child node to be added below a specific node in the list of children, use [method add_sibling] instead of this method.
-				[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]tool scripts[/url] and [url=$DOCS_URL/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
+				[note]If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]tool scripts[/url] and [url=$DOCS_URL/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.[/note]
 			</description>
 		</method>
 		<method name="add_sibling">
@@ -169,7 +169,7 @@
 				Adds a [param sibling] node to current's node parent, at the same level as that node, right below it.
 				If [param force_readable_name] is [code]true[/code], improves the readability of the added [param sibling]. If not named, the [param sibling] is renamed to its type, and if it shares [member name] with a sibling, a number is suffixed more appropriately. This operation is very slow. As such, it is recommended leaving this to [code]false[/code], which assigns a dummy name featuring [code]@[/code] in both situations.
 				Use [method add_child] instead of this method if you don't need the child node to be added below a specific node in the list of children.
-				[b]Note:[/b] If this node is internal, the new sibling will be internal too (see [code]internal[/code] parameter in [method add_child]).
+				[note]If this node is internal, the new sibling will be internal too (see [code]internal[/code] parameter in [method add_child]).[/note]
 			</description>
 		</method>
 		<method name="add_to_group">
@@ -179,7 +179,7 @@
 			<description>
 				Adds the node to a group. Groups are helpers to name and organize a subset of nodes, for example "enemies" or "collectables". A node can be in any number of groups. Nodes can be assigned a group at any time, but will not be added until they are inside the scene tree (see [method is_inside_tree]). See notes in the description, and the group methods in [SceneTree].
 				The [param persistent] option is used when packing node to [PackedScene] and saving to file. Non-persistent groups aren't stored.
-				[b]Note:[/b] For performance reasons, the order of node groups is [i]not[/i] guaranteed. The order of node groups should not be relied upon as it can vary across project runs.
+				[note]For performance reasons, the order of node groups is [i]not[/i] guaranteed. The order of node groups should not be relied upon as it can vary across project runs.[/note]
 			</description>
 		</method>
 		<method name="call_deferred_thread_group" qualifiers="vararg">
@@ -223,7 +223,7 @@
 			<description>
 				Duplicates the node, returning a new node.
 				You can fine-tune the behavior using the [param flags] (see [enum DuplicateFlags]).
-				[b]Note:[/b] It will not work properly if the node contains a script with constructor arguments (i.e. needs to supply arguments to [method Object._init] method). In that case, the node will be duplicated without a script.
+				[note]It will not work properly if the node contains a script with constructor arguments (i.e. needs to supply arguments to [method Object._init] method). In that case, the node will be duplicated without a script.[/note]
 			</description>
 		</method>
 		<method name="find_child" qualifiers="const">
@@ -237,8 +237,8 @@
 				If [param recursive] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [param recursive] is [code]false[/code], only this node's direct children are matched.
 				If [param owned] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
 				Returns [code]null[/code] if no matching [Node] is found.
-				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get a reference to another node. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), or caching the node references into variable.
-				[b]Note:[/b] To find all descendant nodes matching a pattern or a class type, see [method find_children].
+				[note]As this method walks through all the descendants of the node, it is the slowest way to get a reference to another node. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), or caching the node references into variable.[/note]
+				[note]To find all descendant nodes matching a pattern or a class type, see [method find_children].[/note]
 			</description>
 		</method>
 		<method name="find_children" qualifiers="const">
@@ -254,8 +254,8 @@
 				If [param recursive] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [param recursive] is [code]false[/code], only this node's direct children are matched.
 				If [param owned] is [code]true[/code], this method only finds nodes who have an assigned [member Node.owner]. This is especially important for scenes instantiated through a script, because those scenes don't have an owner.
 				Returns an empty array if no matching nodes are found.
-				[b]Note:[/b] As this method walks through all the descendants of the node, it is the slowest way to get references to other nodes. Whenever possible, consider caching the node references into variables.
-				[b]Note:[/b] If you only want to find the first descendant node that matches a pattern, see [method find_child].
+				[note]As this method walks through all the descendants of the node, it is the slowest way to get references to other nodes. Whenever possible, consider caching the node references into variables.[/note]
+				[note]If you only want to find the first descendant node that matches a pattern, see [method find_child].[/note]
 			</description>
 		</method>
 		<method name="find_parent" qualifiers="const">
@@ -264,7 +264,7 @@
 			<description>
 				Finds the first parent of the current node whose name matches [param pattern] as in [method String.match].
 				[param pattern] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
-				[b]Note:[/b] As this method walks upwards in the scene tree, it can be slow in large, deeply nested scene trees. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), or caching the node references into variable.
+				[note]As this method walks upwards in the scene tree, it can be slow in large, deeply nested scene trees. Whenever possible, consider using [method get_node] with unique names instead (see [member unique_name_in_owner]), or caching the node references into variable.[/note]
 			</description>
 		</method>
 		<method name="get_child" qualifiers="const">
@@ -298,8 +298,8 @@
 			<return type="StringName[]" />
 			<description>
 				Returns an array listing the groups that the node is a member of.
-				[b]Note:[/b] For performance reasons, the order of node groups is [i]not[/i] guaranteed. The order of node groups should not be relied upon as it can vary across project runs.
-				[b]Note:[/b] The engine uses some group names internally (all starting with an underscore). To avoid conflicts with internal groups, do not add custom groups whose name starts with an underscore. To exclude internal groups while looping over [method get_groups], use the following snippet:
+				[note]For performance reasons, the order of node groups is [i]not[/i] guaranteed. The order of node groups should not be relied upon as it can vary across project runs.[/note]
+				[note]The engine uses some group names internally (all starting with an underscore). To avoid conflicts with internal groups, do not add custom groups whose name starts with an underscore. To exclude internal groups while looping over [method get_groups], use the following snippet:[/note]
 				[codeblocks]
 				[gdscript]
 				# Stores the node's non-internal groups only (as an array of Strings).
@@ -345,7 +345,7 @@
 			<param index="0" name="path" type="NodePath" />
 			<description>
 				Fetches a node. The [NodePath] can be either a relative path (from the current node) or an absolute path (in the scene tree) to a node. If the path does not exist, [code]null[/code] is returned and an error is logged. Attempts to access methods on the return value will result in an "Attempt to call &lt;method&gt; on a null instance." error.
-				[b]Note:[/b] Fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]).
+				[note]Fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_tree]).[/note]
 				[b]Example:[/b] Assume your current node is Character and the following tree:
 				[codeblock]
 				/root
@@ -421,7 +421,7 @@
 			<description>
 				Returns the relative [NodePath] from this node to the specified [param node]. Both nodes must be in the same scene or the function will fail.
 				If [param use_unique_path] is [code]true[/code], returns the shortest path considering unique node.
-				[b]Note:[/b] If you get a relative path which starts from a unique node, the path may be longer than a normal relative path due to the addition of the unique node's name.
+				[note]If you get a relative path which starts from a unique node, the path may be longer than a normal relative path due to the addition of the unique node's name.[/note]
 			</description>
 		</method>
 		<method name="get_physics_process_delta_time" qualifiers="const">
@@ -581,7 +581,7 @@
 			<param index="1" name="to_index" type="int" />
 			<description>
 				Moves a child node to a different index (order) among the other children. Since calls, signals, etc. are performed by tree order, changing the order of children nodes may be useful. If [param to_index] is negative, the index will be counted from the end.
-				[b]Note:[/b] Internal children can only be moved within their expected "internal range" (see [code]internal[/code] parameter in [method add_child]).
+				[note]Internal children can only be moved within their expected "internal range" (see [code]internal[/code] parameter in [method add_child]).[/note]
 			</description>
 		</method>
 		<method name="notify_deferred_thread_group">
@@ -602,7 +602,7 @@
 			<return type="void" />
 			<description>
 				Prints all orphan nodes (nodes outside the [SceneTree]). Used for debugging.
-				[b]Note:[/b] [method print_orphan_nodes] only works in debug builds. When called in a project exported in release mode, [method print_orphan_nodes] will not print anything.
+				[note][method print_orphan_nodes] only works in debug builds. When called in a project exported in release mode, [method print_orphan_nodes] will not print anything.[/note]
 			</description>
 		</method>
 		<method name="print_tree">
@@ -664,7 +664,7 @@
 			<param index="0" name="node" type="Node" />
 			<description>
 				Removes a child node. The node is NOT deleted and must be deleted manually.
-				[b]Note:[/b] This function may set the [member owner] of the removed Node (or its descendants) to be [code]null[/code], if that [member owner] is no longer a parent or ancestor.
+				[note]This function may set the [member owner] of the removed Node (or its descendants) to be [code]null[/code], if that [member owner] is no longer a parent or ancestor.[/note]
 			</description>
 		</method>
 		<method name="remove_from_group">
@@ -690,8 +690,8 @@
 			<description>
 				Replaces a node in a scene by the given one. Subscriptions that pass through this node will be lost.
 				If [param keep_groups] is [code]true[/code], the [param node] is added to the same groups that the replaced node is in.
-				[b]Note:[/b] The given node will become the new parent of any child nodes that the replaced node had.
-				[b]Note:[/b] The replaced node is not automatically freed, so you either need to keep it in a variable for later use or free it using [method Object.free].
+				[note]The given node will become the new parent of any child nodes that the replaced node had.[/note]
+				[note]The replaced node is not automatically freed, so you either need to keep it in a variable for later use or free it using [method Object.free].[/note]
 			</description>
 		</method>
 		<method name="request_ready">
@@ -705,7 +705,7 @@
 			<param index="0" name="method" type="StringName" />
 			<description>
 				Sends a remote procedure call request for the given [param method] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behavior depends on the RPC configuration for the given method, see [method rpc_config] and [annotation @GDScript.@rpc]. Methods are not exposed to RPCs by default. Returns [code]null[/code].
-				[b]Note:[/b] You can only safely use RPCs on clients after you received the [code]connected_to_server[/code] signal from the [MultiplayerAPI]. You also need to keep track of the connection state, either by the [MultiplayerAPI] signals like [code]server_disconnected[/code] or by checking [code]get_multiplayer().peer.get_connection_status() == CONNECTION_CONNECTED[/code].
+				[note]You can only safely use RPCs on clients after you received the [code]connected_to_server[/code] signal from the [MultiplayerAPI]. You also need to keep track of the connection state, either by the [MultiplayerAPI] signals like [code]server_disconnected[/code] or by checking [code]get_multiplayer().peer.get_connection_status() == CONNECTION_CONNECTED[/code].[/note]
 			</description>
 		</method>
 		<method name="rpc_config">
@@ -762,7 +762,7 @@
 			<param index="1" name="recursive" type="bool" default="true" />
 			<description>
 				Sets the node's multiplayer authority to the peer with the given peer ID. The multiplayer authority is the peer that has authority over the node on the network. Useful in conjunction with [method rpc_config] and the [MultiplayerAPI]. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [param recursive], the given peer is recursively set as the authority for all children of this node.
-				[b]Warning:[/b] This does [b]not[/b] automatically replicate the new authority to other peers. It is developer's responsibility to do so. You can propagate the information about the new authority using [member MultiplayerSpawner.spawn_function], an RPC, or using a [MultiplayerSynchronizer].
+				[warning]This does [b]not[/b] automatically replicate the new authority to other peers. It is developer's responsibility to do so. You can propagate the information about the new authority using [member MultiplayerSpawner.spawn_function], an RPC, or using a [MultiplayerSynchronizer].[/warning]
 			</description>
 		</method>
 		<method name="set_physics_process">
@@ -777,7 +777,7 @@
 			<param index="0" name="enable" type="bool" />
 			<description>
 				Enables or disables internal physics for this node. Internal physics processing happens in isolation from the normal [method _physics_process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or physics processing is disabled for scripting ([method set_physics_process]). Only useful for advanced uses to manipulate built-in nodes' behavior.
-				[b]Warning:[/b] Built-in Nodes rely on the internal processing for their own logic, so changing this value from your code may lead to unexpected behavior. Script access to this internal logic is provided for specific advanced uses, but is unsafe and not supported.
+				[warning]Built-in Nodes rely on the internal processing for their own logic, so changing this value from your code may lead to unexpected behavior. Script access to this internal logic is provided for specific advanced uses, but is unsafe and not supported.[/warning]
 			</description>
 		</method>
 		<method name="set_process">
@@ -799,7 +799,7 @@
 			<param index="0" name="enable" type="bool" />
 			<description>
 				Enables or disabled internal processing for this node. Internal processing happens in isolation from the normal [method _process] calls and is used by some nodes internally to guarantee proper functioning even if the node is paused or processing is disabled for scripting ([method set_process]). Only useful for advanced uses to manipulate built-in nodes' behavior.
-				[b]Warning:[/b] Built-in Nodes rely on the internal processing for their own logic, so changing this value from your code may lead to unexpected behavior. Script access to this internal logic is provided for specific advanced uses, but is unsafe and not supported.
+				[warning]Built-in Nodes rely on the internal processing for their own logic, so changing this value from your code may lead to unexpected behavior. Script access to this internal logic is provided for specific advanced uses, but is unsafe and not supported.[/warning]
 			</description>
 		</method>
 		<method name="set_process_shortcut_input">
@@ -855,11 +855,11 @@
 		</member>
 		<member name="name" type="StringName" setter="set_name" getter="get_name">
 			The name of the node. This name is unique among the siblings (other child nodes from the same parent). When set to an existing name, the node will be automatically renamed.
-			[b]Note:[/b] Auto-generated names might include the [code]@[/code] character, which is reserved for unique names when using [method add_child]. When setting the name manually, any [code]@[/code] will be removed.
+			[note]Auto-generated names might include the [code]@[/code] character, which is reserved for unique names when using [method add_child]. When setting the name manually, any [code]@[/code] will be removed.[/note]
 		</member>
 		<member name="owner" type="Node" setter="set_owner" getter="get_owner">
 			The node owner. A node can have any ancestor node as owner (i.e. a parent, grandparent, etc. node ascending in the tree). This implies that [method add_child] should be called before setting the owner, so that this relationship of parenting exists. When saving a node (using [PackedScene]), all the nodes it owns will be saved with it. This allows for the creation of complex scene trees, with instancing and subinstancing.
-			[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]tool scripts[/url] and [url=$DOCS_URL/tutorials/plugins/editor/index.html]editor plugins[/url]. If a new node is added to the tree without setting its owner as an ancestor in that tree, it will be visible in the 2D/3D view, but not in the scene tree (and not persisted when packing or saving).
+			[note]If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]tool scripts[/url] and [url=$DOCS_URL/tutorials/plugins/editor/index.html]editor plugins[/url]. If a new node is added to the tree without setting its owner as an ancestor in that tree, it will be visible in the 2D/3D view, but not in the scene tree (and not persisted when packing or saving).[/note]
 		</member>
 		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="Node.ProcessMode" default="0">
 			Can be used to pause or unpause the node, or make the node paused based on the [SceneTree], or make it inherit the process mode from its parent (default).
@@ -974,7 +974,7 @@
 		</constant>
 		<constant name="NOTIFICATION_PARENTED" value="18">
 			Notification received when a node is set as a child of another node.
-			[b]Note:[/b] This doesn't mean that a node entered the [SceneTree].
+			[note]This doesn't mean that a node entered the [SceneTree].[/note]
 		</constant>
 		<constant name="NOTIFICATION_UNPARENTED" value="19">
 			Notification received when a node is unparented (parent removed it from the list of children).

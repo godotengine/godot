@@ -167,7 +167,7 @@
 				Plays the animation with key [param name]. Custom blend times and speed can be set.
 				The [param from_end] option only affects when switching to a new animation track, or if the same track but at the start or end. It does not affect resuming playback that was paused in the middle of an animation. If [param custom_speed] is negative and [param from_end] is [code]true[/code], the animation will play backwards (which is equivalent to calling [method play_backwards]).
 				The [AnimationPlayer] keeps track of its current or last played animation with [member assigned_animation]. If this method is called with that same animation [param name], or with no [param name] parameter, the assigned animation will resume playing if it was paused.
-				[b]Note:[/b] The animation will be updated the next time the [AnimationPlayer] is processed. If other variables are updated at the same time this is called, they may be updated too early. To perform the update immediately, call [code]advance(0)[/code].
+				[note]The animation will be updated the next time the [AnimationPlayer] is processed. If other variables are updated at the same time this is called, they may be updated too early. To perform the update immediately, call [code]advance(0)[/code].[/note]
 			</description>
 		</method>
 		<method name="play_backwards">
@@ -184,7 +184,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Queues an animation for playback once the current one is done.
-				[b]Note:[/b] If a looped animation is currently playing, the queued animation will never play unless the looped animation is stopped somehow.
+				[note]If a looped animation is currently playing, the queued animation will never play unless the looped animation is stopped somehow.[/note]
 			</description>
 		</method>
 		<method name="remove_animation_library">
@@ -208,7 +208,7 @@
 			<param index="1" name="update" type="bool" default="false" />
 			<description>
 				Seeks the animation to the [param seconds] point in time (in seconds). If [param update] is [code]true[/code], the animation updates too, otherwise it updates at process time. Events between the current frame and [param seconds] are skipped.
-				[b]Note:[/b] Seeking to the end of the animation doesn't emit [signal animation_finished]. If you want to skip animation and emit the signal, use [method advance].
+				[note]Seeking to the end of the animation doesn't emit [signal animation_finished]. If you want to skip animation and emit the signal, use [method advance].[/note]
 			</description>
 		</method>
 		<method name="set_blend_time">
@@ -226,7 +226,7 @@
 			<description>
 				Stops the currently playing animation. The animation position is reset to [code]0[/code] and the [code]custom_speed[/code] is reset to [code]1.0[/code]. See also [method pause].
 				If [param keep_state] is [code]true[/code], the animation state is not updated visually.
-				[b]Note:[/b] The method / audio / animation playback tracks will not be processed by this method.
+				[note]The method / audio / animation playback tracks will not be processed by this method.[/note]
 			</description>
 		</method>
 	</methods>
@@ -243,7 +243,7 @@
 		</member>
 		<member name="current_animation" type="String" setter="set_current_animation" getter="get_current_animation" default="&quot;&quot;">
 			The key of the currently playing animation. If no animation is playing, the property's value is an empty string. Changing this value does not restart the animation. See [method play] for more information on playing animations.
-			[b]Note:[/b] While this property appears in the Inspector, it's not meant to be edited, and it's not saved in the scene. This property is mainly used to get the currently playing animation, and internally for animation playback tracks. For more information, see [Animation].
+			[note]While this property appears in the Inspector, it's not meant to be edited, and it's not saved in the scene. This property is mainly used to get the currently playing animation, and internally for animation playback tracks. For more information, see [Animation].[/note]
 		</member>
 		<member name="current_animation_length" type="float" setter="" getter="get_current_animation_length">
 			The length (in seconds) of the currently playing animation.
@@ -256,7 +256,7 @@
 		</member>
 		<member name="movie_quit_on_finish" type="bool" setter="set_movie_quit_on_finish_enabled" getter="is_movie_quit_on_finish_enabled" default="false">
 			If [code]true[/code] and the engine is running in Movie Maker mode (see [MovieWriter]), exits the engine with [method SceneTree.quit] as soon as an animation is done playing in this [AnimationPlayer]. A message is printed when the engine quits for this reason.
-			[b]Note:[/b] This obeys the same logic as the [signal animation_finished] signal, so it will not quit the engine if the animation is set to be looping.
+			[note]This obeys the same logic as the [signal animation_finished] signal, so it will not quit the engine if the animation is set to be looping.[/note]
 		</member>
 		<member name="playback_active" type="bool" setter="set_active" getter="is_active">
 			If [code]true[/code], updates animations in response to process-related notifications.
@@ -285,14 +285,14 @@
 			<param index="1" name="new_name" type="StringName" />
 			<description>
 				Emitted when a queued animation plays after the previous animation finished. See [method queue].
-				[b]Note:[/b] The signal is not emitted when the animation is changed via [method play] or by an [AnimationTree].
+				[note]The signal is not emitted when the animation is changed via [method play] or by an [AnimationTree].[/note]
 			</description>
 		</signal>
 		<signal name="animation_finished">
 			<param index="0" name="anim_name" type="StringName" />
 			<description>
 				Notifies when an animation finished playing.
-				[b]Note:[/b] This signal is not emitted if an animation is looping.
+				[note]This signal is not emitted if an animation is looping.[/note]
 			</description>
 		</signal>
 		<signal name="animation_libraries_updated">

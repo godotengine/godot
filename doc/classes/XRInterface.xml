@@ -91,7 +91,7 @@
 			<description>
 				Call this to initialize this interface. The first interface that is initialized is identified as the primary interface and it will be used for rendering output.
 				After initializing the interface you want to use you then need to enable the AR/VR mode of a viewport and rendering should commence.
-				[b]Note:[/b] You must enable the XR mode on the main viewport for any device that uses the main output of Godot, such as for mobile VR.
+				[note]You must enable the XR mode on the main viewport for any device that uses the main output of Godot, such as for mobile VR.[/note]
 				If you do this for a platform that handles its own output (such as OpenVR) Godot will show just one eye without distortion on screen. Alternatively, you can add a separate viewport node to your scene and enable AR/VR on that viewport. It will be used to output to the HMD, leaving you free to do anything you like in the main window, such as using a separate camera as a spectator camera or rendering something completely different.
 				While currently not used, you can activate additional interfaces. You may wish to do this if you want to track controllers from other platforms. However, at this point in time only one interface can render to an HMD.
 			</description>
@@ -120,7 +120,7 @@
 			<description>
 				Sets the active environment blend mode.
 				[param mode] is the [enum XRInterface.EnvironmentBlendMode] starting with the next frame.
-				[b]Note:[/b] Not all runtimes support all environment blend modes, so it is important to check this at startup. For example:
+				[note]Not all runtimes support all environment blend modes, so it is important to check this at startup. For example:[/note]
 				[codeblock]
 				                func _ready():
 				                    var xr_interface: XRInterface = XRServer.find_interface("OpenXR")
@@ -147,7 +147,7 @@
 			<return type="bool" />
 			<description>
 				Starts passthrough, will return [code]false[/code] if passthrough couldn't be started.
-				[b]Note:[/b] The viewport used for XR must have a transparent background, otherwise passthrough may not properly render.
+				[note]The viewport used for XR must have a transparent background, otherwise passthrough may not properly render.[/note]
 			</description>
 		</method>
 		<method name="stop_passthrough">

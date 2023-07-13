@@ -16,7 +16,7 @@
 			<param index="3" name="flags" type="int" default="0" />
 			<description>
 				Takes a [PackedByteArray] defining a GLTF and imports the data to the given [GLTFState] object through the [param state] parameter.
-				[b]Note:[/b] The [param base_path] tells [method append_from_buffer] where to find dependencies and can be empty.
+				[note]The [param base_path] tells [method append_from_buffer] where to find dependencies and can be empty.[/note]
 			</description>
 		</method>
 		<method name="append_from_file">
@@ -27,7 +27,7 @@
 			<param index="3" name="base_path" type="String" default="&quot;&quot;" />
 			<description>
 				Takes a path to a GLTF file and imports the data at that file path to the given [GLTFState] object through the [param state] parameter.
-				[b]Note:[/b] The [param base_path] tells [method append_from_file] where to find dependencies and can be empty.
+				[note]The [param base_path] tells [method append_from_file] where to find dependencies and can be empty.[/note]
 			</description>
 		</method>
 		<method name="append_from_scene">
@@ -62,7 +62,7 @@
 			<param index="1" name="first_priority" type="bool" default="false" />
 			<description>
 				Registers the given [GLTFDocumentExtension] instance with GLTFDocument. If [param first_priority] is true, this extension will be run first. Otherwise, it will be run last.
-				[b]Note:[/b] Like GLTFDocument itself, all GLTFDocumentExtension classes must be stateless in order to function properly. If you need to store data, use the [code]set_additional_data[/code] and [code]get_additional_data[/code] methods in [GLTFState] or [GLTFNode].
+				[note]Like GLTFDocument itself, all GLTFDocumentExtension classes must be stateless in order to function properly. If you need to store data, use the [code]set_additional_data[/code] and [code]get_additional_data[/code] methods in [GLTFState] or [GLTFNode].[/note]
 			</description>
 		</method>
 		<method name="unregister_gltf_document_extension" qualifiers="static">
@@ -78,7 +78,7 @@
 			<param index="1" name="path" type="String" />
 			<description>
 				Takes a [GLTFState] object through the [param state] parameter and writes a glTF file to the filesystem.
-				[b]Note:[/b] The extension of the glTF file determines if it is a .glb binary file or a .gltf file.
+				[note]The extension of the glTF file determines if it is a .glb binary file or a .gltf file.[/note]
 			</description>
 		</method>
 	</methods>

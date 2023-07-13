@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Arranges child controls into a tabbed view, creating a tab for each one. The active tab's corresponding control is made visible, while all other child controls are hidden. Ignores non-control children.
-		[b]Note:[/b] The drawing of the clickable tabs is handled by this node; [TabBar] is not needed.
+		[note]The drawing of the clickable tabs is handled by this node; [TabBar] is not needed.[/note]
 	</description>
 	<tutorials>
 		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
@@ -21,7 +21,7 @@
 			<return type="Popup" />
 			<description>
 				Returns the [Popup] node instance if one has been set already with [method set_popup].
-				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.
+				[warning]This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member Window.visible] property.[/warning]
 			</description>
 		</method>
 		<method name="get_previous_tab" qualifiers="const">
@@ -252,7 +252,7 @@
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the tab text outline.
-			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
+			[note]If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.[/note]
 		</theme_item>
 		<theme_item name="side_margin" data_type="constant" type="int" default="8">
 			The space at the left or right edges of the tab bar, accordingly with the current [member tab_alignment].

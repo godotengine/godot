@@ -7,7 +7,7 @@
 		A 3-element structure that can be used to represent 3D coordinates or any other triplet of numeric values.
 		It uses floating-point coordinates. By default, these floating-point values use 32-bit precision, unlike [float] which is always 64-bit. If double precision is needed, compile the engine with the option [code]precision=double[/code].
 		See [Vector3i] for its integer counterpart.
-		[b]Note:[/b] In a boolean context, a Vector3 will evaluate to [code]false[/code] if it's equal to [code]Vector3(0, 0, 0)[/code]. Otherwise, a Vector3 will always evaluate to [code]true[/code].
+		[note]In a boolean context, a Vector3 will evaluate to [code]false[/code] if it's equal to [code]Vector3(0, 0, 0)[/code]. Otherwise, a Vector3 will always evaluate to [code]true[/code].[/note]
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
@@ -163,7 +163,7 @@
 				Returns the dot product of this vector and [param with]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
 				The dot product will be [code]0[/code] for a straight angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
 				When using unit (normalized) vectors, the result will always be between [code]-1.0[/code] (180 degree angle) when the vectors are facing opposite directions, and [code]1.0[/code] (0 degree angle) when the vectors are aligned.
-				[b]Note:[/b] [code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code].
+				[note][code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code].[/note]
 			</description>
 		</method>
 		<method name="floor" qualifiers="const">
@@ -256,7 +256,7 @@
 			<return type="Vector3" />
 			<description>
 				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
-				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
+				[note]This function may return incorrect values if the input vector length is near zero.[/note]
 			</description>
 		</method>
 		<method name="octahedron_decode" qualifiers="static">
@@ -270,8 +270,8 @@
 			<return type="Vector2" />
 			<description>
 				Returns the octahedral-encoded (oct32) form of this [Vector3] as a [Vector2]. Since a [Vector2] occupies 1/3 less memory compared to [Vector3], this form of compression can be used to pass greater amounts of [method normalized] [Vector3]s without increasing storage or memory requirements. See also [method octahedron_decode].
-				[b]Note:[/b] [method octahedron_encode] can only be used for [method normalized] vectors. [method octahedron_encode] does [i]not[/i] check whether this [Vector3] is normalized, and will return a value that does not decompress to the original value if the [Vector3] is not normalized.
-				[b]Note:[/b] Octahedral compression is [i]lossy[/i], although visual differences are rarely perceptible in real world scenarios.
+				[note][method octahedron_encode] can only be used for [method normalized] vectors. [method octahedron_encode] does [i]not[/i] check whether this [Vector3] is normalized, and will return a value that does not decompress to the original value if the [Vector3] is not normalized.[/note]
+				[note]Octahedral compression is [i]lossy[/i], although visual differences are rarely perceptible in real world scenarios.[/note]
 			</description>
 		</method>
 		<method name="outer" qualifiers="const">
@@ -434,8 +434,8 @@
 			<param index="0" name="right" type="Vector3" />
 			<description>
 				Returns [code]true[/code] if the vectors are not equal.
-				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
-				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+				[note]Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.[/note]
+				[note]Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.[/note]
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -532,7 +532,7 @@
 			<param index="0" name="right" type="Vector3" />
 			<description>
 				Compares two [Vector3] vectors by first checking if the X value of the left vector is less than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
-				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+				[note]Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.[/note]
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
@@ -540,7 +540,7 @@
 			<param index="0" name="right" type="Vector3" />
 			<description>
 				Compares two [Vector3] vectors by first checking if the X value of the left vector is less than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
-				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+				[note]Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.[/note]
 			</description>
 		</operator>
 		<operator name="operator ==">
@@ -548,8 +548,8 @@
 			<param index="0" name="right" type="Vector3" />
 			<description>
 				Returns [code]true[/code] if the vectors are exactly equal.
-				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
-				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+				[note]Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.[/note]
+				[note]Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.[/note]
 			</description>
 		</operator>
 		<operator name="operator &gt;">
@@ -557,7 +557,7 @@
 			<param index="0" name="right" type="Vector3" />
 			<description>
 				Compares two [Vector3] vectors by first checking if the X value of the left vector is greater than the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
-				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+				[note]Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.[/note]
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
@@ -565,7 +565,7 @@
 			<param index="0" name="right" type="Vector3" />
 			<description>
 				Compares two [Vector3] vectors by first checking if the X value of the left vector is greater than or equal to the X value of the [param right] vector. If the X values are exactly equal, then it repeats this check with the Y values of the two vectors, and then with the Z values. This operator is useful for sorting vectors.
-				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.
+				[note]Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this operator may not be accurate if NaNs are included.[/note]
 			</description>
 		</operator>
 		<operator name="operator []">

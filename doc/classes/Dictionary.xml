@@ -133,8 +133,8 @@
 		}
 		[/csharp]
 		[/codeblocks]
-		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
-		[b]Note:[/b] Erasing elements while iterating over dictionaries is [b]not[/b] supported and will result in unpredictable behavior.
+		[note]Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].[/note]
+		[note]Erasing elements while iterating over dictionaries is [b]not[/b] supported and will result in unpredictable behavior.[/note]
 	</description>
 	<tutorials>
 		<link title="GDScript basics: Dictionary">$DOCS_URL/tutorials/scripting/gdscript/gdscript_basics.html#dictionary</link>
@@ -175,7 +175,7 @@
 			<param index="0" name="key" type="Variant" />
 			<description>
 				Removes the dictionary entry by key, if it exists. Returns [code]true[/code] if the given [param key] existed in the dictionary, otherwise [code]false[/code].
-				[b]Note:[/b] Do not erase entries while iterating over the dictionary. You can iterate over the [method keys] array instead.
+				[note]Do not erase entries while iterating over the dictionary. You can iterate over the [method keys] array instead.[/note]
 			</description>
 		</method>
 		<method name="find_key" qualifiers="const">
@@ -183,7 +183,7 @@
 			<param index="0" name="value" type="Variant" />
 			<description>
 				Finds and returns the first key whose associated value is equal to [param value], or [code]null[/code] if it is not found.
-				[b]Note:[/b] [code]null[/code] is also a valid key. If inside the dictionary, [method find_key] may give misleading results.
+				[note][code]null[/code] is also a valid key. If inside the dictionary, [method find_key] may give misleading results.[/note]
 			</description>
 		</method>
 		<method name="get" qualifiers="const">
@@ -227,7 +227,7 @@
 				if "Godot" in {"Godot": 4}:
 				    print("The key is here!") # Will be printed.
 				[/codeblock]
-				[b]Note:[/b] This method returns [code]true[/code] as long as the [param key] exists, even if its corresponding value is [code]null[/code].
+				[note]This method returns [code]true[/code] as long as the [param key] exists, even if its corresponding value is [code]null[/code].[/note]
 			</description>
 		</method>
 		<method name="has_all" qualifiers="const">
@@ -260,8 +260,8 @@
 				GD.Print(GD.Hash(dict1) == GD.Hash(dict2)); // Prints true
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] Dictionaries with the same entries but in a different order will not have the same hash.
-				[b]Note:[/b] Dictionaries with equal hash values are [i]not[/i] guaranteed to be the same, because of hash collisions. On the countrary, dictionaries with different hash values are guaranteed to be different.
+				[note]Dictionaries with the same entries but in a different order will not have the same hash.[/note]
+				[note]Dictionaries with equal hash values are [i]not[/i] guaranteed to be the same, because of hash collisions. On the countrary, dictionaries with different hash values are guaranteed to be different.[/note]
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">
@@ -322,7 +322,7 @@
 			<param index="0" name="right" type="Dictionary" />
 			<description>
 				Returns [code]true[/code] if the two dictionaries contain the same keys and values. The order of the entries does not matter.
-				[b]Note:[/b] In C#, by convention, this operator compares by [b]reference[/b]. If you need to compare by value, iterate over both dictionaries.
+				[note]In C#, by convention, this operator compares by [b]reference[/b]. If you need to compare by value, iterate over both dictionaries.[/note]
 			</description>
 		</operator>
 		<operator name="operator []">

@@ -112,7 +112,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<description>
 				Returns the bone index which is the parent of the bone at [param bone_idx]. If -1, then bone has no parent.
-				[b]Note:[/b] The parent bone returned will always be less than [param bone_idx].
+				[note]The parent bone returned will always be less than [param bone_idx].[/note]
 			</description>
 		</method>
 		<method name="get_bone_pose" qualifiers="const">
@@ -241,7 +241,7 @@
 			<description>
 				Sets the global pose transform, [param pose], for the bone at [param bone_idx].
 				[param amount] is the interpolation strength that will be used when applying the pose, and [param persistent] determines if the applied pose will remain.
-				[b]Note:[/b] The pose transform needs to be a global pose! To convert a world transform from a [Node3D] to a global bone pose, multiply the [method Transform3D.affine_inverse] of the node's [member Node3D.global_transform] by the desired world transform.
+				[note]The pose transform needs to be a global pose! To convert a world transform from a [Node3D] to a global bone pose, multiply the [method Transform3D.affine_inverse] of the node's [member Node3D.global_transform] by the desired world transform.[/note]
 			</description>
 		</method>
 		<method name="set_bone_name">
@@ -257,7 +257,7 @@
 			<param index="1" name="parent_idx" type="int" />
 			<description>
 				Sets the bone index [param parent_idx] as the parent of the bone at [param bone_idx]. If -1, then bone has no parent.
-				[b]Note:[/b] [param parent_idx] must be less than [param bone_idx].
+				[note][param parent_idx] must be less than [param bone_idx].[/note]
 			</description>
 		</method>
 		<method name="set_bone_pose_position">
@@ -302,7 +302,7 @@
 		</member>
 		<member name="motion_scale" type="float" setter="set_motion_scale" getter="get_motion_scale" default="1.0">
 			Multiplies the 3D position track animation.
-			[b]Note:[/b] Unless this value is [code]1.0[/code], the key value in animation will not match the actual position value.
+			[note]Unless this value is [code]1.0[/code], the key value in animation will not match the actual position value.[/note]
 		</member>
 		<member name="show_rest_only" type="bool" setter="set_show_rest_only" getter="is_show_rest_only" default="false">
 		</member>

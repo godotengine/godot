@@ -34,7 +34,7 @@
 			<param index="0" name="value" type="Variant" />
 			<description>
 				Packs the given container into a binary representation. The [param value] must be either [Array] or [Dictionary], any other type will result in invalid data error.
-				[b]Note:[/b] Subsequent calls to this method will overwrite the existing data.
+				[note]Subsequent calls to this method will overwrite the existing data.[/note]
 			</description>
 		</method>
 		<method name="size" qualifiers="const">

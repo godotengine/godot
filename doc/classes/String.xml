@@ -6,7 +6,7 @@
 	<description>
 		This is the built-in string Variant type (and the one used by GDScript). Strings may contain any number of Unicode characters, and expose methods useful for manipulating and generating strings. Strings are reference-counted and use a copy-on-write approach (every modification to a string returns a new [String]), so passing them around is cheap in resources.
 		Some string methods have corresponding variations. Variations suffixed with [code]n[/code] ([method countn], [method findn], [method replacen], etc.) are [b]case-insensitive[/b] (they make no distinction between uppercase and lowercase letters). Method variations prefixed with [code]r[/code] ([method rfind], [method rsplit], etc.) are reversed, and start from the end of the string, instead of the beginning.
-		[b]Note:[/b] In a boolean context, a string will evaluate to [code]false[/code] if it is empty ([code]""[/code]). Otherwise, a string will always evaluate to [code]true[/code]. The [code]not[/code] operator cannot be used. Instead, [method is_empty] should be used to check for empty strings.
+		[note]In a boolean context, a string will evaluate to [code]false[/code] if it is empty ([code]""[/code]). Otherwise, a string will always evaluate to [code]true[/code]. The [code]not[/code] operator cannot be used. Instead, [method is_empty] should be used to check for empty strings.[/note]
 	</description>
 	<tutorials>
 		<link title="GDScript format strings">$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html</link>
@@ -85,7 +85,7 @@
 			<return type="String" />
 			<description>
 				Returns a copy of the string with escaped characters replaced by their meanings. Supported escape sequences are [code]\'[/code], [code]\"[/code], [code]\\[/code], [code]\a[/code], [code]\b[/code], [code]\f[/code], [code]\n[/code], [code]\r[/code], [code]\t[/code], [code]\v[/code].
-				[b]Note:[/b] Unlike the GDScript parser, this method doesn't support the [code]\uXXXX[/code] escape sequence.
+				[note]Unlike the GDScript parser, this method doesn't support the [code]\uXXXX[/code] escape sequence.[/note]
 			</description>
 		</method>
 		<method name="capitalize" qualifiers="const">
@@ -102,7 +102,7 @@
 				"sceneFile_path".Capitalize(); // Returns "Scene File Path"
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method not the same as the default appearance of properties in the Inspector dock, as it does not capitalize acronyms ([code]"2D"[/code], [code]"FPS"[/code], [code]"PNG"[/code], etc.) as you may expect.
+				[note]This method not the same as the default appearance of properties in the Inspector dock, as it does not capitalize acronyms ([code]"2D"[/code], [code]"FPS"[/code], [code]"PNG"[/code], etc.) as you may expect.[/note]
 			</description>
 		</method>
 		<method name="casecmp_to" qualifiers="const">
@@ -205,7 +205,7 @@
 				GD.Print("Potato".Find("t", 5)); // Prints -1
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] If you just want to know whether the string contains [param what], use [method contains]. In GDScript, you may also use the [code]in[/code] operator.
+				[note]If you just want to know whether the string contains [param what], use [method contains]. In GDScript, you may also use the [code]in[/code] operator.[/note]
 			</description>
 		</method>
 		<method name="findn" qualifiers="const">
@@ -238,7 +238,7 @@
 				print("User {id} is {name}.".format([["id", 42], ["name", "Godot"]]))
 				[/codeblock]
 				See also the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format string[/url] tutorial.
-				[b]Note:[/b] In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.
+				[note]In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.[/note]
 			</description>
 		</method>
 		<method name="get_base_dir" qualifiers="const">
@@ -318,7 +318,7 @@
 			<return type="int" />
 			<description>
 				Returns the 32-bit hash value representing the string's contents.
-				[b]Note:[/b] Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the countrary, strings with different hash values are guaranteed to be different.
+				[note]Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the countrary, strings with different hash values are guaranteed to be different.[/note]
 			</description>
 		</method>
 		<method name="hex_decode" qualifiers="const">
@@ -549,7 +549,7 @@
 			<param index="0" name="chars" type="String" />
 			<description>
 				Removes a set of characters defined in [param chars] from the string's beginning. See also [method rstrip].
-				[b]Note:[/b] [param chars] is not a prefix. Use [method trim_prefix] to remove a single prefix, rather than a set of characters.
+				[note][param chars] is not a prefix. Use [method trim_prefix] to remove a single prefix, rather than a set of characters.[/note]
 			</description>
 		</method>
 		<method name="match" qualifiers="const">
@@ -661,7 +661,7 @@
 				GD.Print(n.ToString("e1")); // Prints -5.2e+008
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, this method is not implemented. To achieve similar results, see C#'s [url=https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings]Standard numeric format strings[/url]
+				[note]In C#, this method is not implemented. To achieve similar results, see C#'s [url=https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings]Standard numeric format strings[/url][/note]
 			</description>
 		</method>
 		<method name="num_uint64" qualifiers="static">
@@ -785,7 +785,7 @@
 			<param index="0" name="chars" type="String" />
 			<description>
 				Removes a set of characters defined in [param chars] from the string's end. See also [method lstrip].
-				[b]Note:[/b] [param chars] is not a suffix. Use [method trim_suffix] to remove a single suffix, rather than a set of characters.
+				[note][param chars] is not a suffix. Use [method trim_suffix] to remove a single suffix, rather than a set of characters.[/note]
 			</description>
 		</method>
 		<method name="sha1_buffer" qualifiers="const">
@@ -863,7 +863,7 @@
 				GD.Print(someArray[2]); // Prints "Three"
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] If you only need one substring from the array, consider using [method get_slice] which is faster. If you need to split strings with more complex rules, use the [RegEx] class instead.
+				[note]If you only need one substring from the array, consider using [method get_slice] which is faster. If you need to split strings with more complex rules, use the [RegEx] class instead.[/note]
 			</description>
 		</method>
 		<method name="split_floats" qualifiers="const">
@@ -1100,7 +1100,7 @@
 				print(my_message % [location, speed]) # Prints "Travelling to Deep Valley, at 40.35 km/h."
 				[/codeblock]
 				For more information, see the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url] tutorial.
-				[b]Note:[/b] In C#, this operator is not available. Instead, see [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]how to interpolate strings with "$"[/url].
+				[note]In C#, this operator is not available. Instead, see [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]how to interpolate strings with "$"[/url].[/note]
 			</description>
 		</operator>
 		<operator name="operator +">

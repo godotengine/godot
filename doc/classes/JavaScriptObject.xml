@@ -31,7 +31,7 @@
 		    # [0, 9, [JavaScriptObject:1180]]
 		    print(args)
 		[/codeblock]
-		[b]Note:[/b] Only available in the Web platform.
+		[note]Only available in the Web platform.[/note]
 	</description>
 	<tutorials>
 	</tutorials>

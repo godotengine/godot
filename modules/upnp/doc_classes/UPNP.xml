@@ -15,7 +15,7 @@
 		[codeblock]
 		upnp.delete_port_mapping(port)
 		[/codeblock]
-		[b]Note:[/b] UPnP discovery blocks the current thread. To perform discovery without blocking the main thread, use [Thread]s like this:
+		[note]UPnP discovery blocks the current thread. To perform discovery without blocking the main thread, use [Thread]s like this:[/note]
 		[codeblock]
 		# Emitted when UPnP port mapping setup is completed (regardless of success or failure).
 		signal upnp_completed(error)

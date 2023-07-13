@@ -233,7 +233,7 @@
 			<param index="0" name="right" type="Transform2D" />
 			<description>
 				Returns [code]true[/code] if the transforms are not equal.
-				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+				[note]Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.[/note]
 			</description>
 		</operator>
 		<operator name="operator *">
@@ -283,7 +283,7 @@
 			<param index="0" name="right" type="Transform2D" />
 			<description>
 				Returns [code]true[/code] if the transforms are exactly equal.
-				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
+				[note]Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.[/note]
 			</description>
 		</operator>
 		<operator name="operator []">

@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[CallbackTweener] is used to call a method in a tweening sequence. See [method Tween.tween_callback] for more usage information.
-		[b]Note:[/b] [method Tween.tween_callback] is the only correct way to create [CallbackTweener]. Any [CallbackTweener] created manually will not function correctly.
+		[note][method Tween.tween_callback] is the only correct way to create [CallbackTweener]. Any [CallbackTweener] created manually will not function correctly.[/note]
 	</description>
 	<tutorials>
 	</tutorials>

@@ -22,7 +22,7 @@
 			<param index="1" name="public_only" type="bool" default="false" />
 			<description>
 				Loads a key from [param path]. If [param public_only] is [code]true[/code], only the public key will be loaded.
-				[b]Note:[/b] [param path] should be a "*.pub" file if [param public_only] is [code]true[/code], a "*.key" file otherwise.
+				[note][param path] should be a "*.pub" file if [param public_only] is [code]true[/code], a "*.key" file otherwise.[/note]
 			</description>
 		</method>
 		<method name="load_from_string">
@@ -39,7 +39,7 @@
 			<param index="1" name="public_only" type="bool" default="false" />
 			<description>
 				Saves a key to the given [param path]. If [param public_only] is [code]true[/code], only the public key will be saved.
-				[b]Note:[/b] [param path] should be a "*.pub" file if [param public_only] is [code]true[/code], a "*.key" file otherwise.
+				[note][param path] should be a "*.pub" file if [param public_only] is [code]true[/code], a "*.key" file otherwise.[/note]
 			</description>
 		</method>
 		<method name="save_to_string">

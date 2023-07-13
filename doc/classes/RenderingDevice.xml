@@ -7,8 +7,8 @@
 		[RenderingDevice] is an abstraction for working with modern low-level graphics APIs such as Vulkan. Compared to [RenderingServer] (which works with Godot's own rendering subsystems), [RenderingDevice] is much lower-level and allows working more directly with the underlying graphics APIs. [RenderingDevice] is used in Godot to provide support for several modern low-level graphics APIs while reducing the amount of code duplication required. [RenderingDevice] can also be used in your own projects to perform things that are not exposed by [RenderingServer] or high-level nodes, such as using compute shaders.
 		On startup, Godot creates a global [RenderingDevice] which can be retrieved using [method RenderingServer.get_rendering_device]. This global [RenderingDevice] performs drawing to the screen.
 		[b]Local RenderingDevices:[/b] Using [method RenderingServer.create_local_rendering_device], you can create "secondary" rendering devices to perform drawing and GPU compute operations on separate threads.
-		[b]Note:[/b] [RenderingDevice] assumes intermediate knowledge of modern graphics APIs such as Vulkan, Direct3D 12, Metal or WebGPU. These graphics APIs are lower-level than OpenGL or Direct3D 11, requiring you to perform what was previously done by the graphics driver itself. If you have difficulty understanding the concepts used in this class, follow the [url=https://vulkan-tutorial.com/]Vulkan Tutorial[/url] or [url=https://vkguide.dev/]Vulkan Guide[/url]. It's recommended to have existing modern OpenGL or Direct3D 11 knowledge before attempting to learn a low-level graphics API.
-		[b]Note:[/b] [RenderingDevice] is not available when running in headless mode or when using the Compatibility rendering method.
+		[note][RenderingDevice] assumes intermediate knowledge of modern graphics APIs such as Vulkan, Direct3D 12, Metal or WebGPU. These graphics APIs are lower-level than OpenGL or Direct3D 11, requiring you to perform what was previously done by the graphics driver itself. If you have difficulty understanding the concepts used in this class, follow the [url=https://vulkan-tutorial.com/]Vulkan Tutorial[/url] or [url=https://vkguide.dev/]Vulkan Guide[/url]. It's recommended to have existing modern OpenGL or Direct3D 11 knowledge before attempting to learn a low-level graphics API.[/note]
+		[note][RenderingDevice] is not available when running in headless mode or when using the Compatibility rendering method.[/note]
 	</description>
 	<tutorials>
 		<link title="Using compute shaders">https://docs.godotengine.org/en/latest/tutorials/shaders/compute_shaders.html</link>
@@ -215,7 +215,7 @@
 			<param index="1" name="clear_color" type="Color" default="Color(0, 0, 0, 1)" />
 			<description>
 				High-level variant of [method draw_list_begin], with the parameters automtaically being adjusted for drawing onto the window specified by the [param screen] ID.
-				[b]Note:[/b] Cannot be used with local RenderingDevices, as these don't have a screen. If called on a local RenderingDevice, [method draw_list_begin_for_screen] returns [constant INVALID_ID].
+				[note]Cannot be used with local RenderingDevices, as these don't have a screen. If called on a local RenderingDevice, [method draw_list_begin_for_screen] returns [constant INVALID_ID].[/note]
 			</description>
 		</method>
 		<method name="draw_list_begin_split">
@@ -291,7 +291,7 @@
 			<param index="1" name="rect" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<description>
 				Creates a scissor rectangle and enables it for the specified [param draw_list]. Scissor rectangles are used for clipping by discarding fragments that fall outside a specified rectangular portion of the screen. See also [method draw_list_disable_scissor].
-				[b]Note:[/b] The specified [param rect] is automatically intersected with the screen's dimensions, which means it cannot exceed the screen's dimensions.
+				[note]The specified [param rect] is automatically intersected with the screen's dimensions, which means it cannot exceed the screen's dimensions.[/note]
 			</description>
 		</method>
 		<method name="draw_list_end">
@@ -569,7 +569,7 @@
 			<return type="int" />
 			<description>
 				Returns the screen's framebuffer format.
-				[b]Note:[/b] Only the main [RenderingDevice] returned by [method RenderingServer.get_rendering_device] has a format. If called on a local [RenderingDevice], this method prints an error and returns [constant INVALID_ID].
+				[note]Only the main [RenderingDevice] returned by [method RenderingServer.get_rendering_device] has a format. If called on a local [RenderingDevice], this method prints an error and returns [constant INVALID_ID].[/note]
 			</description>
 		</method>
 		<method name="screen_get_height" qualifiers="const">
@@ -577,7 +577,7 @@
 			<param index="0" name="screen" type="int" default="0" />
 			<description>
 				Returns the window height matching the graphics API context for the given window ID (in pixels). Despite the parameter being named [param screen], this returns the [i]window[/i] size. See also [method screen_get_width].
-				[b]Note:[/b] Only the main [RenderingDevice] returned by [method RenderingServer.get_rendering_device] has a height. If called on a local [RenderingDevice], this method prints an error and returns [constant INVALID_ID].
+				[note]Only the main [RenderingDevice] returned by [method RenderingServer.get_rendering_device] has a height. If called on a local [RenderingDevice], this method prints an error and returns [constant INVALID_ID].[/note]
 			</description>
 		</method>
 		<method name="screen_get_width" qualifiers="const">
@@ -585,7 +585,7 @@
 			<param index="0" name="screen" type="int" default="0" />
 			<description>
 				Returns the window width matching the graphics API context for the given window ID (in pixels). Despite the parameter being named [param screen], this returns the [i]window[/i] size. See also [method screen_get_height].
-				[b]Note:[/b] Only the main [RenderingDevice] returned by [method RenderingServer.get_rendering_device] has a width. If called on a local [RenderingDevice], this method prints an error and returns [constant INVALID_ID].
+				[note]Only the main [RenderingDevice] returned by [method RenderingServer.get_rendering_device] has a width. If called on a local [RenderingDevice], this method prints an error and returns [constant INVALID_ID].[/note]
 			</description>
 		</method>
 		<method name="set_resource_name">
@@ -595,7 +595,7 @@
 			<description>
 				Sets the resource name for [param id] to [param name]. This is used for debugging with third-party tools such as [url=https://renderdoc.org/]RenderDoc[/url].
 				The following types of resources can be named: texture, sampler, vertex buffer, index buffer, uniform buffer, texture buffer, storage buffer, uniform set buffer, shader, render pipeline and compute pipeline. Framebuffers cannot be named. Attempting to name an incompatible resource type will print an error.
-				[b]Note:[/b] Resource names are only set when the engine runs in verbose mode ([method OS.is_stdout_verbose] = [code]true[/code]), or when using an engine build compiled with the [code]dev_mode=yes[/code] SCons option. The graphics driver must also support the [code]VK_EXT_DEBUG_UTILS_EXTENSION_NAME[/code] Vulkan extension for named resources to work.
+				[note]Resource names are only set when the engine runs in verbose mode ([method OS.is_stdout_verbose] = [code]true[/code]), or when using an engine build compiled with the [code]dev_mode=yes[/code] SCons option. The graphics driver must also support the [code]VK_EXT_DEBUG_UTILS_EXTENSION_NAME[/code] Vulkan extension for named resources to work.[/note]
 			</description>
 		</method>
 		<method name="shader_compile_binary_from_spirv">
@@ -653,15 +653,15 @@
 			<return type="void" />
 			<description>
 				Pushes the frame setup and draw command buffers then marks the local device as currently processing (which allows calling [method sync]).
-				[b]Note:[/b] Only available in local RenderingDevices.
+				[note]Only available in local RenderingDevices.[/note]
 			</description>
 		</method>
 		<method name="sync">
 			<return type="void" />
 			<description>
 				Forces a synchronization between the CPU and GPU, which may be required in certain cases. Only call this when needed, as CPU-GPU synchronization has a performance cost.
-				[b]Note:[/b] Only available in local RenderingDevices.
-				[b]Note:[/b] [method sync] can only be called after a [method submit].
+				[note]Only available in local RenderingDevices.[/note]
+				[note][method sync] can only be called after a [method submit].[/note]
 			</description>
 		</method>
 		<method name="texture_buffer_create">
@@ -685,7 +685,7 @@
 			<param index="6" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="7" />
 			<description>
 				Clears the specified [param texture] by replacing all of its pixels with the specified [param color]. [param base_mipmap] and [param mipmap_count] determine which mipmaps of the texture are affected by this clear operation, while [param base_layer] and [param layer_count] determine which layers of a 3D texture (or texture array) are affected by this clear operation. For 2D textures (which only have one layer by design), [param base_layer] and [param layer_count] must both be [code]0[/code].
-				[b]Note:[/b] [param texture] can't be cleared while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to clear this texture.
+				[note][param texture] can't be cleared while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to clear this texture.[/note]
 			</description>
 		</method>
 		<method name="texture_copy">
@@ -702,11 +702,11 @@
 			<param index="9" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="7" />
 			<description>
 				Copies the [param from_texture] to [param to_texture] with the specified [param from_pos], [param to_pos] and [param size] coordinates. The Z axis of the [param from_pos], [param to_pos] and [param size] must be [code]0[/code] for 2-dimensional textures. Source and destination mipmaps/layers must also be specified, with these parameters being [code]0[/code] for textures without mipmaps or single-layer textures. Returns [constant @GlobalScope.OK] if the texture copy was successful or [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
-				[b]Note:[/b] [param from_texture] texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to copy this texture.
-				[b]Note:[/b] [param from_texture] texture requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved.
-				[b]Note:[/b] [param to_texture] can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to copy this texture.
-				[b]Note:[/b] [param to_texture] requires the [constant TEXTURE_USAGE_CAN_COPY_TO_BIT] to be retrieved.
-				[b]Note:[/b] [param from_texture] and [param to_texture] must be of the same type (color or depth).
+				[note][param from_texture] texture can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to copy this texture.[/note]
+				[note][param from_texture] texture requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved.[/note]
+				[note][param to_texture] can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to copy this texture.[/note]
+				[note][param to_texture] requires the [constant TEXTURE_USAGE_CAN_COPY_TO_BIT] to be retrieved.[/note]
+				[note][param from_texture] and [param to_texture] must be of the same type (color or depth).[/note]
 			</description>
 		</method>
 		<method name="texture_create">
@@ -717,7 +717,7 @@
 			<description>
 				Creates a new texture. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
-				[b]Note:[/b] Not to be confused with [method RenderingServer.texture_2d_create], which creates the Godot-specific [Texture2D] resource as opposed to the graphics API's own texture type.
+				[note]Not to be confused with [method RenderingServer.texture_2d_create], which creates the Godot-specific [Texture2D] resource as opposed to the graphics API's own texture type.[/note]
 			</description>
 		</method>
 		<method name="texture_create_shared">
@@ -739,7 +739,7 @@
 			<description>
 				Creates a shared texture using the specified [param view] and the texture information from [param with_texture]'s [param layer] and [param mipmap]. The number of included mipmaps from the original texture can be controlled using the [param mipmaps] parameter. Only relevant for textures with multiple layers, such as 3D textures, texture arrays and cubemaps. For single-layer textures, use [method texture_create_shared]
 				For 2D textures (which only have one layer), [param layer] must be [code]0[/code].
-				[b]Note:[/b] Layer slicing is only supported for 2D texture arrays, not 3D textures or cubemaps.
+				[note]Layer slicing is only supported for 2D texture arrays, not 3D textures or cubemaps.[/note]
 			</description>
 		</method>
 		<method name="texture_get_data">
@@ -748,8 +748,8 @@
 			<param index="1" name="layer" type="int" />
 			<description>
 				Returns the [param texture] data for the specified [param layer] as raw binary data. For 2D textures (which only have one layer), [param layer] must be [code]0[/code].
-				[b]Note:[/b] [param texture] can't be retrieved while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to retrieve this texture. Otherwise, an error is printed and a empty [PackedByteArray] is returned.
-				[b]Note:[/b] [param texture] requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved. Otherwise, an error is printed and a empty [PackedByteArray] is returned.
+				[note][param texture] can't be retrieved while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to retrieve this texture. Otherwise, an error is printed and a empty [PackedByteArray] is returned.[/note]
+				[note][param texture] requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved. Otherwise, an error is printed and a empty [PackedByteArray] is returned.[/note]
 			</description>
 		</method>
 		<method name="texture_get_native_handle">
@@ -757,7 +757,7 @@
 			<param index="0" name="texture" type="RID" />
 			<description>
 				Returns the internal graphics handle for this texture object. For use when communicating with third-party APIs mostly with GDExtension.
-				[b]Note:[/b] This function returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).
+				[note]This function returns a [code]uint64_t[/code] which internally maps to a [code]GLuint[/code] (OpenGL) or [code]VkImage[/code] (Vulkan).[/note]
 			</description>
 		</method>
 		<method name="texture_is_format_supported_for_usage" qualifiers="const">
@@ -789,13 +789,13 @@
 			<param index="2" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="7" />
 			<description>
 				Resolves the [param from_texture] texture onto [param to_texture] with multisample antialiasing enabled. This must be used when rendering a framebuffer for MSAA to work. Returns [constant @GlobalScope.OK] if successful, [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
-				[b]Note:[/b] [param from_texture] and [param to_texture] textures must have the same dimension, format and type (color or depth).
-				[b]Note:[/b] [param from_texture] can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to resolve this texture.
-				[b]Note:[/b] [param from_texture] requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved.
-				[b]Note:[/b] [param from_texture] must be multisampled and must also be 2D (or a slice of a 3D/cubemap texture).
-				[b]Note:[/b] [param to_texture] can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to resolve this texture.
-				[b]Note:[/b] [param to_texture] texture requires the [constant TEXTURE_USAGE_CAN_COPY_TO_BIT] to be retrieved.
-				[b]Note:[/b] [param to_texture] texture must [b]not[/b] be multisampled and must also be 2D (or a slice of a 3D/cubemap texture).
+				[note][param from_texture] and [param to_texture] textures must have the same dimension, format and type (color or depth).[/note]
+				[note][param from_texture] can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to resolve this texture.[/note]
+				[note][param from_texture] requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved.[/note]
+				[note][param from_texture] must be multisampled and must also be 2D (or a slice of a 3D/cubemap texture).[/note]
+				[note][param to_texture] can't be copied while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to resolve this texture.[/note]
+				[note][param to_texture] texture requires the [constant TEXTURE_USAGE_CAN_COPY_TO_BIT] to be retrieved.[/note]
+				[note][param to_texture] texture must [b]not[/b] be multisampled and must also be 2D (or a slice of a 3D/cubemap texture).[/note]
 			</description>
 		</method>
 		<method name="texture_update">
@@ -806,9 +806,9 @@
 			<param index="3" name="post_barrier" type="int" enum="RenderingDevice.BarrierMask" is_bitfield="true" default="7" />
 			<description>
 				Updates texture data with new data, replacing the previous data in place. The updated texture data must have the same dimensions and format. For 2D textures (which only have one layer), [param layer] must be [code]0[/code]. Returns [constant @GlobalScope.OK] if the update was successful, [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
-				[b]Note:[/b] Updating textures is forbidden during creation of a draw or compute list.
-				[b]Note:[/b] The existing [param texture] can't be updated while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to update this texture.
-				[b]Note:[/b] The existing [param texture] requires the [constant TEXTURE_USAGE_CAN_UPDATE_BIT] to be updatable.
+				[note]Updating textures is forbidden during creation of a draw or compute list.[/note]
+				[note]The existing [param texture] can't be updated while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to update this texture.[/note]
+				[note]The existing [param texture] requires the [constant TEXTURE_USAGE_CAN_UPDATE_BIT] to be updatable.[/note]
 			</description>
 		</method>
 		<method name="uniform_buffer_create">
@@ -924,7 +924,7 @@
 		</constant>
 		<constant name="DATA_FORMAT_R4G4_UNORM_PACK8" value="0" enum="DataFormat">
 			4-bit-per-channel red/green channel data format, packed into 8 bits. Values are in the [code][0.0, 1.0][/code] range.
-			[b]Note:[/b] More information on all data formats can be found on the [url=https://registry.khronos.org/vulkan/specs/1.1/html/vkspec.html#_identification_of_formats]Identification of formats[/url] section of the Vulkan specification, as well as the [url=https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkFormat.html]VkFormat[/url] enum.
+			[note]More information on all data formats can be found on the [url=https://registry.khronos.org/vulkan/specs/1.1/html/vkspec.html#_identification_of_formats]Identification of formats[/url] section of the Vulkan specification, as well as the [url=https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkFormat.html]VkFormat[/url] enum.[/note]
 		</constant>
 		<constant name="DATA_FORMAT_R4G4B4A4_UNORM_PACK16" value="1" enum="DataFormat">
 			4-bit-per-channel red/green/blue/alpha channel data format, packed into 16 bits. Values are in the [code][0.0, 1.0][/code] range.
@@ -1806,32 +1806,32 @@
 		</constant>
 		<constant name="RENDER_PRIMITIVE_LINES_WITH_ADJACENCY" value="2" enum="RenderPrimitive">
 			[url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#drawing-line-lists-with-adjacency]Line list rendering primitive with adjacency.[/url]
-			[b]Note:[/b] Adjacency is only useful with geometry shaders, which Godot does not expose.
+			[note]Adjacency is only useful with geometry shaders, which Godot does not expose.[/note]
 		</constant>
 		<constant name="RENDER_PRIMITIVE_LINESTRIPS" value="3" enum="RenderPrimitive">
 			Line strip rendering primitive. Lines drawn are connected to the previous vertex.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_LINESTRIPS_WITH_ADJACENCY" value="4" enum="RenderPrimitive">
 			[url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#drawing-line-strips-with-adjacency]Line strip rendering primitive with adjacency.[/url]
-			[b]Note:[/b] Adjacency is only useful with geometry shaders, which Godot does not expose.
+			[note]Adjacency is only useful with geometry shaders, which Godot does not expose.[/note]
 		</constant>
 		<constant name="RENDER_PRIMITIVE_TRIANGLES" value="5" enum="RenderPrimitive">
 			Triangle list rendering primitive. Triangles are drawn separated from each other.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_TRIANGLES_WITH_ADJACENCY" value="6" enum="RenderPrimitive">
 			[url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#drawing-triangle-lists-with-adjacency]Triangle list rendering primitive with adjacency.[/url]
-			 [b]Note:[/b] Adjacency is only useful with geometry shaders, which Godot does not expose.
+			 [note]Adjacency is only useful with geometry shaders, which Godot does not expose.[/note]
 		</constant>
 		<constant name="RENDER_PRIMITIVE_TRIANGLE_STRIPS" value="7" enum="RenderPrimitive">
 			Triangle strip rendering primitive. Triangles drawn are connected to the previous triangle.
 		</constant>
 		<constant name="RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_AJACENCY" value="8" enum="RenderPrimitive">
 			[url=https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#drawing-triangle-strips-with-adjacency]Triangle strip rendering primitive with adjacency.[/url]
-			[b]Note:[/b] Adjacency is only useful with geometry shaders, which Godot does not expose.
+			[note]Adjacency is only useful with geometry shaders, which Godot does not expose.[/note]
 		</constant>
 		<constant name="RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_RESTART_INDEX" value="9" enum="RenderPrimitive">
 			Triangle strip rendering primitive with [i]primitive restart[/i] enabled. Triangles drawn are connected to the previous triangle, but a primitive restart index can be specified before drawing to create a second triangle strip after the specified index.
-			[b]Note:[/b] Only compatible with indexed draws.
+			[note]Only compatible with indexed draws.[/note]
 		</constant>
 		<constant name="RENDER_PRIMITIVE_TESSELATION_PATCH" value="10" enum="RenderPrimitive">
 			Tessellation patch rendering primitive. Only useful with tessellation shaders, which can be used to deform these patches.

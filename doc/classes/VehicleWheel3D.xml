@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A node used as a child of a [VehicleBody3D] parent to simulate the behavior of one of its wheels. This node also acts as a collider to detect if the wheel is touching a surface.
-		[b]Note:[/b] This class has known issues and isn't designed to provide realistic 3D vehicle physics. If you want advanced vehicle physics, you may need to write your own physics integration using another [PhysicsBody3D] class.
+		[note]This class has known issues and isn't designed to provide realistic 3D vehicle physics. If you want advanced vehicle physics, you may need to write your own physics integration using another [PhysicsBody3D] class.[/note]
 	</description>
 	<tutorials>
 		<link title="3D Truck Town Demo">https://godotengine.org/asset-library/asset/524</link>
@@ -49,7 +49,7 @@
 		</member>
 		<member name="engine_force" type="float" setter="set_engine_force" getter="get_engine_force" default="0.0">
 			Accelerates the wheel by applying an engine force. The wheel is only sped up if it is in contact with a surface. The [member RigidBody3D.mass] of the vehicle has an effect on the acceleration of the vehicle. For a vehicle with a mass set to 1000, try a value in the 25 - 50 range for acceleration.
-			[b]Note:[/b] The simulation does not take the effect of gears into account, you will need to add logic for this if you wish to simulate gears.
+			[note]The simulation does not take the effect of gears into account, you will need to add logic for this if you wish to simulate gears.[/note]
 			A negative value will result in the wheel reversing.
 		</member>
 		<member name="steering" type="float" setter="set_steering" getter="get_steering" default="0.0">

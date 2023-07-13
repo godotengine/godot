@@ -6,7 +6,7 @@
 	<description>
 		Shape casting allows to detect collision objects by sweeping its [member shape] along the cast direction determined by [member target_position]. This is similar to [RayCast2D], but it allows for sweeping a region of space, rather than just a straight line. [ShapeCast2D] can detect multiple collision objects. It is useful for things like wide laser beams or snapping a simple shape to a floor.
 		Immediate collision overlaps can be done with the [member target_position] set to [code]Vector2(0, 0)[/code] and by calling [method force_shapecast_update] within the same physics frame. This helps to overcome some limitations of [Area2D] when used as an instantaneous detection area, as collision information isn't immediately available to it.
-		[b]Note:[/b] Shape casting is more computationally expensive than ray casting.
+		[note]Shape casting is more computationally expensive than ray casting.[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -35,7 +35,7 @@
 			<return type="void" />
 			<description>
 				Updates the collision information for the shape. Use this method to update the collision information immediately instead of waiting for the next [code]_physics_process[/code] call, for example if the shape or its parent has changed state.
-				[b]Note:[/b] [code]enabled == true[/code] is not required for this to work.
+				[note][code]enabled == true[/code] is not required for this to work.[/note]
 			</description>
 		</method>
 		<method name="get_closest_collision_safe_fraction" qualifiers="const">
@@ -96,7 +96,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the collision point of one of the multiple collisions at [param index] where the shape intersects the colliding object.
-				[b]Note:[/b] this point is in the [b]global[/b] coordinate system.
+				[note]this point is in the [b]global[/b] coordinate system.[/note]
 			</description>
 		</method>
 		<method name="is_colliding" qualifiers="const">

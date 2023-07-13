@@ -27,7 +27,7 @@
 			<return type="void" />
 			<description>
 				Close the peer connection and all data channels associated with it.
-				[b]Note:[/b] You cannot reuse this object for a new connection unless you call [method initialize].
+				[note]You cannot reuse this object for a new connection unless you call [method initialize].[/note]
 			</description>
 		</method>
 		<method name="create_data_channel">
@@ -51,7 +51,7 @@
 				    "protocol": "my-custom-protocol", # A custom sub-protocol string for this channel.
 				}
 				[/codeblock]
-				[b]Note:[/b] You must keep a reference to channels created this way, or it will be closed.
+				[note]You must keep a reference to channels created this way, or it will be closed.[/note]
 			</description>
 		</method>
 		<method name="create_offer">

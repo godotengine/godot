@@ -39,8 +39,8 @@
 			<param index="0" name="mode" type="int" enum="ENetConnection.CompressionMode" />
 			<description>
 				Sets the compression method used for network packets. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all.
-				[b]Note:[/b] Most games' network design involve sending many small packets frequently (smaller than 4 KB each). If in doubt, it is recommended to keep the default compression algorithm as it works best on these small packets.
-				[b]Note:[/b] The compression mode must be set to the same value on both the server and all its clients. Clients will fail to connect if the compression mode set on the client differs from the one set on the server.
+				[note]Most games' network design involve sending many small packets frequently (smaller than 4 KB each). If in doubt, it is recommended to keep the default compression algorithm as it works best on these small packets.[/note]
+				[note]The compression mode must be set to the same value on both the server and all its clients. Clients will fail to connect if the compression mode set on the client differs from the one set on the server.[/note]
 			</description>
 		</method>
 		<method name="connect_to_host">
@@ -51,7 +51,7 @@
 			<param index="3" name="data" type="int" default="0" />
 			<description>
 				Initiates a connection to a foreign [param address] using the specified [param port] and allocating the requested [param channels]. Optional [param data] can be passed during connection in the form of a 32 bit integer.
-				[b]Note:[/b] You must call either [method create_host] or [method create_host_bound] before calling this method.
+				[note]You must call either [method create_host] or [method create_host_bound] before calling this method.[/note]
 			</description>
 		</method>
 		<method name="create_host">
@@ -119,7 +119,7 @@
 			<return type="ENetPacketPeer[]" />
 			<description>
 				Returns the list of peers associated with this host.
-				[b]Note:[/b] This list might include some peers that are not fully connected or are still being disconnected.
+				[note]This list might include some peers that are not fully connected or are still being disconnected.[/note]
 			</description>
 		</method>
 		<method name="pop_statistic">
@@ -134,7 +134,7 @@
 			<param index="0" name="refuse" type="bool" />
 			<description>
 				Configures the DTLS server to automatically drop new connections.
-				[b]Note:[/b] This method is only relevant after calling [method dtls_server_setup].
+				[note]This method is only relevant after calling [method dtls_server_setup].[/note]
 			</description>
 		</method>
 		<method name="service">
@@ -151,7 +151,7 @@
 			<param index="1" name="destination_port" type="int" />
 			<param index="2" name="packet" type="PackedByteArray" />
 			<description>
-				Sends a [param packet] toward a destination from the address and port currently bound by this ENetConnection instance. 
+				Sends a [param packet] toward a destination from the address and port currently bound by this ENetConnection instance.
 				This is useful as it serves to establish entries in NAT routing tables on all devices between this bound instance and the public facing internet, allowing a prospective client's connection packets to be routed backward through the NAT device(s) between the public internet and this host.
 				This requires forward knowledge of a prospective client's address and communication port as seen by the public internet - after any NAT devices have handled their connection request. This information can be obtained by a [url=https://en.wikipedia.org/wiki/STUN]STUN[/url] service, and must be handed off to your host by an entity that is not the prospective client. This will never work for a client behind a Symmetric NAT due to the nature of the Symmetric NAT routing algorithm, as their IP and Port cannot be known beforehand.
 			</description>

@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A node that provides a thickened polygon shape (a prism) to a [CollisionObject2D] parent and allows to edit it. The polygon can be concave or convex. This can give a detection shape to an [Area2D] or turn [PhysicsBody2D] into a solid object.
-		[b]Warning:[/b] A non-uniformly scaled [CollisionShape3D] will likely not behave as expected. Make sure to keep its scale the same on all axes and adjust its shape resource instead.
+		[warning]A non-uniformly scaled [CollisionShape3D] will likely not behave as expected. Make sure to keep its scale the same on all axes and adjust its shape resource instead.[/warning]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -18,14 +18,14 @@
 		</member>
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" default="false">
 			If [code]true[/code], only edges that face up, relative to [CollisionPolygon2D]'s rotation, will collide with other objects.
-			[b]Note:[/b] This property has no effect if this [CollisionPolygon2D] is a child of an [Area2D] node.
+			[note]This property has no effect if this [CollisionPolygon2D] is a child of an [Area2D] node.[/note]
 		</member>
 		<member name="one_way_collision_margin" type="float" setter="set_one_way_collision_margin" getter="get_one_way_collision_margin" default="1.0">
 			The margin used for one-way collision (in pixels). Higher values will make the shape thicker, and work better for colliders that enter the polygon at a high velocity.
 		</member>
 		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array()">
 			The polygon's list of vertices. Each point will be connected to the next, and the final point will be connected to the first.
-			[b]Warning:[/b] The returned value is a clone of the [PackedVector2Array], not a reference.
+			[warning]The returned value is a clone of the [PackedVector2Array], not a reference.[/warning]
 		</member>
 	</members>
 	<constants>

@@ -25,7 +25,7 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the listener was made current using [method make_current], [code]false[/code] otherwise.
-				[b]Note:[/b] There may be more than one AudioListener3D marked as "current" in the scene tree, but only the one that was made current last will be used.
+				[note]There may be more than one AudioListener3D marked as "current" in the scene tree, but only the one that was made current last will be used.[/note]
 			</description>
 		</method>
 		<method name="make_current">

@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A custom effect for a [RichTextLabel].
-		[b]Note:[/b] For a [RichTextEffect] to be usable, a BBCode tag must be defined as a member variable called [code]bbcode[/code] in the script.
+		[note]For a [RichTextEffect] to be usable, a BBCode tag must be defined as a member variable called [code]bbcode[/code] in the script.[/note]
 		[codeblocks]
 		[gdscript]
 		# The RichTextEffect will be usable like this: `[example]Some text[/example]`
@@ -16,7 +16,7 @@
 		string bbcode = "example";
 		[/csharp]
 		[/codeblocks]
-		[b]Note:[/b] As soon as a [RichTextLabel] contains at least one [RichTextEffect], it will continuously process the effect unless the project is paused. This may impact battery life negatively.
+		[note]As soon as a [RichTextLabel] contains at least one [RichTextEffect], it will continuously process the effect unless the project is paused. This may impact battery life negatively.[/note]
 	</description>
 	<tutorials>
 		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>

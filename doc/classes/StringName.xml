@@ -8,7 +8,7 @@
 		You will usually just pass a [String] to methods expecting a [StringName] and it will be automatically converted, but you may occasionally want to construct a [StringName] ahead of time with the [StringName] constructor or, in GDScript, the literal syntax [code]&amp;"example"[/code].
 		See also [NodePath], which is a similar concept specifically designed to store pre-parsed scene tree paths.
 		All of [String]'s methods are available in this class too. They convert the [StringName] into a string, and they also return a string. This is highly inefficient and should only be used if the string is desired.
-		[b]Note:[/b] In a boolean context, a [StringName] will evaluate to [code]false[/code] if it is empty ([code]StringName("")[/code]). Otherwise, a [StringName] will always evaluate to [code]true[/code]. The [code]not[/code] operator cannot be used. Instead, [method is_empty] should be used to check for empty [StringName]s.
+		[note]In a boolean context, a [StringName] will evaluate to [code]false[/code] if it is empty ([code]StringName("")[/code]). Otherwise, a [StringName] will always evaluate to [code]true[/code]. The [code]not[/code] operator cannot be used. Instead, [method is_empty] should be used to check for empty [StringName]s.[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -79,7 +79,7 @@
 			<return type="String" />
 			<description>
 				Returns a copy of the string with escaped characters replaced by their meanings. Supported escape sequences are [code]\'[/code], [code]\"[/code], [code]\\[/code], [code]\a[/code], [code]\b[/code], [code]\f[/code], [code]\n[/code], [code]\r[/code], [code]\t[/code], [code]\v[/code].
-				[b]Note:[/b] Unlike the GDScript parser, this method doesn't support the [code]\uXXXX[/code] escape sequence.
+				[note]Unlike the GDScript parser, this method doesn't support the [code]\uXXXX[/code] escape sequence.[/note]
 			</description>
 		</method>
 		<method name="capitalize" qualifiers="const">
@@ -96,7 +96,7 @@
 				"sceneFile_path".Capitalize(); // Returns "Scene File Path"
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method not the same as the default appearance of properties in the Inspector dock, as it does not capitalize acronyms ([code]"2D"[/code], [code]"FPS"[/code], [code]"PNG"[/code], etc.) as you may expect.
+				[note]This method not the same as the default appearance of properties in the Inspector dock, as it does not capitalize acronyms ([code]"2D"[/code], [code]"FPS"[/code], [code]"PNG"[/code], etc.) as you may expect.[/note]
 			</description>
 		</method>
 		<method name="casecmp_to" qualifiers="const">
@@ -188,7 +188,7 @@
 				GD.Print("Potato".Find("t", 5)); // Prints -1
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] If you just want to know whether the string contains [param what], use [method contains]. In GDScript, you may also use the [code]in[/code] operator.
+				[note]If you just want to know whether the string contains [param what], use [method contains]. In GDScript, you may also use the [code]in[/code] operator.[/note]
 			</description>
 		</method>
 		<method name="findn" qualifiers="const">
@@ -221,7 +221,7 @@
 				print("User {id} is {name}.".format([["id", 42], ["name", "Godot"]]))
 				[/codeblock]
 				See also the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format string[/url] tutorial.
-				[b]Note:[/b] In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.
+				[note]In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.[/note]
 			</description>
 		</method>
 		<method name="get_base_dir" qualifiers="const">
@@ -301,7 +301,7 @@
 			<return type="int" />
 			<description>
 				Returns the 32-bit hash value representing the string's contents.
-				[b]Note:[/b] Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the countrary, strings with different hash values are guaranteed to be different.
+				[note]Strings with equal hash values are [i]not[/i] guaranteed to be the same, as a result of hash collisions. On the countrary, strings with different hash values are guaranteed to be different.[/note]
 			</description>
 		</method>
 		<method name="hex_decode" qualifiers="const">
@@ -524,7 +524,7 @@
 			<param index="0" name="chars" type="String" />
 			<description>
 				Removes a set of characters defined in [param chars] from the string's beginning. See also [method rstrip].
-				[b]Note:[/b] [param chars] is not a prefix. Use [method trim_prefix] to remove a single prefix, rather than a set of characters.
+				[note][param chars] is not a prefix. Use [method trim_prefix] to remove a single prefix, rather than a set of characters.[/note]
 			</description>
 		</method>
 		<method name="match" qualifiers="const">
@@ -692,7 +692,7 @@
 			<param index="0" name="chars" type="String" />
 			<description>
 				Removes a set of characters defined in [param chars] from the string's end. See also [method lstrip].
-				[b]Note:[/b] [param chars] is not a suffix. Use [method trim_suffix] to remove a single suffix, rather than a set of characters.
+				[note][param chars] is not a suffix. Use [method trim_suffix] to remove a single suffix, rather than a set of characters.[/note]
 			</description>
 		</method>
 		<method name="sha1_buffer" qualifiers="const">
@@ -770,7 +770,7 @@
 				GD.Print(someArray[2]); // Prints "Three"
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] If you only need one substring from the array, consider using [method get_slice] which is faster. If you need to split strings with more complex rules, use the [RegEx] class instead.
+				[note]If you only need one substring from the array, consider using [method get_slice] which is faster. If you need to split strings with more complex rules, use the [RegEx] class instead.[/note]
 			</description>
 		</method>
 		<method name="split_floats" qualifiers="const">
@@ -999,7 +999,7 @@
 			<description>
 				Formats the [StringName], replacing the placeholders with one or more parameters, returning a [String]. To pass multiple parameters, [param right] needs to be an [Array].
 				For more information, see the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url] tutorial.
-				[b]Note:[/b] In C#, this operator is not available. Instead, see [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]how to interpolate strings with "$"[/url].
+				[note]In C#, this operator is not available. Instead, see [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]how to interpolate strings with "$"[/url].[/note]
 			</description>
 		</operator>
 		<operator name="operator +">

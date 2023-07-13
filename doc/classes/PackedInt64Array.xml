@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		An array specifically designed to hold 64-bit integer values. Packs data tightly, so it saves memory for large array sizes.
-		[b]Note:[/b] This type stores signed 64-bit integers, which means it can take values in the interval [code][-2^63, 2^63 - 1][/code], i.e. [code][-9223372036854775808, 9223372036854775807][/code]. Exceeding those bounds will wrap around. If you only need to pack 32-bit integers tightly, see [PackedInt32Array] for a more memory-friendly alternative.
+		[note]This type stores signed 64-bit integers, which means it can take values in the interval [code][-2^63, 2^63 - 1][/code], i.e. [code][-9223372036854775808, 9223372036854775807][/code]. Exceeding those bounds will wrap around. If you only need to pack 32-bit integers tightly, see [PackedInt32Array] for a more memory-friendly alternative.[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -52,7 +52,7 @@
 			<param index="1" name="before" type="bool" default="true" />
 			<description>
 				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
-				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
+				[note]Calling [method bsearch] on an unsorted array results in unexpected behavior.[/note]
 			</description>
 		</method>
 		<method name="clear">

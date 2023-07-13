@@ -6,7 +6,7 @@
 	<description>
 		Native image datatype. Contains image data which can be converted to an [ImageTexture] and provides commonly used [i]image processing[/i] methods. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
 		An [Image] cannot be assigned to a [code]texture[/code] property of an object directly (such as [Sprite2D]), and has to be converted manually to an [ImageTexture] first.
-		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images may fail to import.
+		[note]The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images may fail to import.[/note]
 	</description>
 	<tutorials>
 		<link title="Importing images">$DOCS_URL/tutorials/assets_pipeline/importing_images.html</link>
@@ -149,7 +149,7 @@
 			<return type="int" enum="Error" />
 			<description>
 				Decompresses the image if it is VRAM compressed in a supported format. Returns [constant OK] if the format is supported, otherwise [constant ERR_UNAVAILABLE].
-				[b]Note:[/b] The following formats can be decompressed: DXT, RGTC, BPTC. The formats ETC1 and ETC2 are not supported.
+				[note]The following formats can be decompressed: DXT, RGTC, BPTC. The formats ETC1 and ETC2 are not supported.[/note]
 			</description>
 		</method>
 		<method name="detect_alpha" qualifiers="const">
@@ -300,7 +300,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Loads an image from file [param path]. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
-				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external images at run-time, such as images located at the [code]user://[/code] directory, and may not work in exported projects.
+				[warning]This method should only be used in the editor or in cases when you need to load external images at run-time, such as images located at the [code]user://[/code] directory, and may not work in exported projects.[/warning]
 				See also [ImageTexture] description for usage examples.
 			</description>
 		</method>
@@ -309,7 +309,7 @@
 			<param index="0" name="buffer" type="PackedByteArray" />
 			<description>
 				Loads an image from the binary contents of a BMP file.
-				[b]Note:[/b] Godot's BMP module doesn't support 16-bit per pixel images. Only 1-bit, 4-bit, 8-bit, 24-bit, and 32-bit per pixel images are supported.
+				[note]Godot's BMP module doesn't support 16-bit per pixel images. Only 1-bit, 4-bit, 8-bit, 24-bit, and 32-bit per pixel images are supported.[/note]
 			</description>
 		</method>
 		<method name="load_from_file" qualifiers="static">
@@ -339,8 +339,8 @@
 			<param index="1" name="scale" type="float" default="1.0" />
 			<description>
 				Loads an image from the UTF-8 binary contents of an [b]uncompressed[/b] SVG file ([b].svg[/b]).
-				[b]Note:[/b] Beware when using compressed SVG files (like [b].svgz[/b]), they need to be [code]decompressed[/code] before loading.
-				[b]Note:[/b] This method is only available in engine builds with the SVG module enabled. By default, the SVG module is enabled, but it can be disabled at build-time using the [code]module_svg_enabled=no[/code] SCons option.
+				[note]Beware when using compressed SVG files (like [b].svgz[/b]), they need to be [code]decompressed[/code] before loading.[/note]
+				[note]This method is only available in engine builds with the SVG module enabled. By default, the SVG module is enabled, but it can be disabled at build-time using the [code]module_svg_enabled=no[/code] SCons option.[/note]
 			</description>
 		</method>
 		<method name="load_svg_from_string">
@@ -349,7 +349,7 @@
 			<param index="1" name="scale" type="float" default="1.0" />
 			<description>
 				Loads an image from the string contents of a SVG file ([b].svg[/b]).
-				[b]Note:[/b] This method is only available in engine builds with the SVG module enabled. By default, the SVG module is enabled, but it can be disabled at build-time using the [code]module_svg_enabled=no[/code] SCons option.
+				[note]This method is only available in engine builds with the SVG module enabled. By default, the SVG module is enabled, but it can be disabled at build-time using the [code]module_svg_enabled=no[/code] SCons option.[/note]
 			</description>
 		</method>
 		<method name="load_tga_from_buffer">
@@ -420,7 +420,7 @@
 			<param index="1" name="grayscale" type="bool" default="false" />
 			<description>
 				Saves the image as an EXR file to [param path]. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return [constant ERR_UNAVAILABLE] if Godot was compiled without the TinyEXR module.
-				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
+				[note]The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.[/note]
 			</description>
 		</method>
 		<method name="save_exr_to_buffer" qualifiers="const">
@@ -428,7 +428,7 @@
 			<param index="0" name="grayscale" type="bool" default="false" />
 			<description>
 				Saves the image as an EXR file to a byte array. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return an empty byte array if Godot was compiled without the TinyEXR module.
-				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return an empty byte array when it is called from an exported project.
+				[note]The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return an empty byte array when it is called from an exported project.[/note]
 			</description>
 		</method>
 		<method name="save_jpg" qualifiers="const">
@@ -437,7 +437,7 @@
 			<param index="1" name="quality" type="float" default="0.75" />
 			<description>
 				Saves the image as a JPEG file to [param path] with the specified [param quality] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [param quality] values result in better-looking output at the cost of larger file sizes. Recommended [param quality] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
-				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting JPEG file won't contain the alpha channel.
+				[note]JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting JPEG file won't contain the alpha channel.[/note]
 			</description>
 		</method>
 		<method name="save_jpg_to_buffer" qualifiers="const">
@@ -445,7 +445,7 @@
 			<param index="0" name="quality" type="float" default="0.75" />
 			<description>
 				Saves the image as a JPEG file to a byte array with the specified [param quality] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [param quality] values result in better-looking output at the cost of larger byte array sizes (and therefore memory usage). Recommended [param quality] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
-				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting byte array won't contain the alpha channel.
+				[note]JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting byte array won't contain the alpha channel.[/note]
 			</description>
 		</method>
 		<method name="save_png" qualifiers="const">
@@ -581,11 +581,11 @@
 		</constant>
 		<constant name="FORMAT_RGB8" value="4" enum="Format">
 			OpenGL texture format [code]RGB[/code] with three components, each with a bitdepth of 8.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[note]When creating an [ImageTexture], an sRGB to linear color space conversion is performed.[/note]
 		</constant>
 		<constant name="FORMAT_RGBA8" value="5" enum="Format">
 			OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 8.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[note]When creating an [ImageTexture], an sRGB to linear color space conversion is performed.[/note]
 		</constant>
 		<constant name="FORMAT_RGBA4444" value="6" enum="Format">
 			OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 4.
@@ -621,15 +621,15 @@
 		</constant>
 		<constant name="FORMAT_DXT1" value="17" enum="Format">
 			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format that uses Block Compression 1, and is the smallest variation of S3TC, only providing 1 bit of alpha and color data being premultiplied with alpha.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[note]When creating an [ImageTexture], an sRGB to linear color space conversion is performed.[/note]
 		</constant>
 		<constant name="FORMAT_DXT3" value="18" enum="Format">
 			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format that uses Block Compression 2, and color data is interpreted as not having been premultiplied by alpha. Well suited for images with sharp alpha transitions between translucent and opaque areas.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[note]When creating an [ImageTexture], an sRGB to linear color space conversion is performed.[/note]
 		</constant>
 		<constant name="FORMAT_DXT5" value="19" enum="Format">
 			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format also known as Block Compression 3 or BC3 that contains 64 bits of alpha channel data followed by 64 bits of DXT1-encoded color data. Color data is not premultiplied by alpha, same as DXT3. DXT5 generally produces superior results for transparent gradients compared to DXT3.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[note]When creating an [ImageTexture], an sRGB to linear color space conversion is performed.[/note]
 		</constant>
 		<constant name="FORMAT_RGTC_R" value="20" enum="Format">
 			Texture format that uses [url=https://www.khronos.org/opengl/wiki/Red_Green_Texture_Compression]Red Green Texture Compression[/url], normalizing the red channel data using the same compression algorithm that DXT5 uses for the alpha channel.
@@ -639,7 +639,7 @@
 		</constant>
 		<constant name="FORMAT_BPTC_RGBA" value="22" enum="Format">
 			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with unsigned normalized RGBA components.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[note]When creating an [ImageTexture], an sRGB to linear color space conversion is performed.[/note]
 		</constant>
 		<constant name="FORMAT_BPTC_RGBF" value="23" enum="Format">
 			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with signed floating-point RGB components.
@@ -664,15 +664,15 @@
 		</constant>
 		<constant name="FORMAT_ETC2_RGB8" value="30" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8[/code] variant), which is a follow-up of ETC1 and compresses RGB888 data.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[note]When creating an [ImageTexture], an sRGB to linear color space conversion is performed.[/note]
 		</constant>
 		<constant name="FORMAT_ETC2_RGBA8" value="31" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGBA8[/code]variant), which compresses RGBA8888 data with full alpha support.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[note]When creating an [ImageTexture], an sRGB to linear color space conversion is performed.[/note]
 		</constant>
 		<constant name="FORMAT_ETC2_RGB8A1" value="32" enum="Format">
 			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8_PUNCHTHROUGH_ALPHA1[/code] variant), which compresses RGBA data to make alpha either fully transparent or fully opaque.
-			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[note]When creating an [ImageTexture], an sRGB to linear color space conversion is performed.[/note]
 		</constant>
 		<constant name="FORMAT_ETC2_RA_AS_RG" value="33" enum="Format">
 		</constant>
@@ -706,7 +706,7 @@
 			Performs bilinear separately on the two most-suited mipmap levels, then linearly interpolates between them.
 			It's slower than [constant INTERPOLATE_BILINEAR], but produces higher-quality results with far fewer aliasing artifacts.
 			If the image does not have mipmaps, they will be generated and used internally, but no mipmaps will be generated on the resulting image.
-			[b]Note:[/b] If you intend to scale multiple copies of the original image, it's better to call [method generate_mipmaps]] on it in advance, to avoid wasting processing power in generating them again and again.
+			[note]If you intend to scale multiple copies of the original image, it's better to call [method generate_mipmaps]] on it in advance, to avoid wasting processing power in generating them again and again.[/note]
 			On the other hand, if the image already has mipmaps, they will be used, and a new set will be generated for the resulting image.
 		</constant>
 		<constant name="INTERPOLATE_LANCZOS" value="4" enum="Interpolation">

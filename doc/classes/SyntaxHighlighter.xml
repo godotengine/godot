@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Base class for syntax highlighters. Provides syntax highlighting data to a [TextEdit]. The associated [TextEdit] will call into the [SyntaxHighlighter] on an as-needed basis.
-		[b]Note:[/b] A [SyntaxHighlighter] instance should not be used across multiple [TextEdit] nodes.
+		[note]A [SyntaxHighlighter] instance should not be used across multiple [TextEdit] nodes.[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -67,7 +67,7 @@
 			<return type="void" />
 			<description>
 				Clears then updates the [SyntaxHighlighter] caches. Override [method _update_cache] for a callback.
-				[b]Note:[/b] This is called automatically when the associated [TextEdit] node, updates its own cache.
+				[note]This is called automatically when the associated [TextEdit] node, updates its own cache.[/note]
 			</description>
 		</method>
 	</methods>

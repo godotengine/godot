@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A stream peer that handles TLS connections. This object can be used to connect to a TLS server or accept a single TLS client connection.
-		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
+		[note]When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.[/note]
 	</description>
 	<tutorials>
 		<link title="TLS certificates">$DOCS_URL/tutorials/networking/ssl_certificates.html</link>

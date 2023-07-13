@@ -30,7 +30,7 @@
 			<description>
 				Returns a decoded [Variant] corresponding to the Base64-encoded string [param base64_str]. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
 				Internally, this uses the same decoding mechanism as the [method @GlobalScope.bytes_to_var] method.
-				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
+				[warning]Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.[/warning]
 			</description>
 		</method>
 		<method name="raw_to_base64">

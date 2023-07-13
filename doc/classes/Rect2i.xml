@@ -136,7 +136,7 @@
 			<param index="0" name="point" type="Vector2i" />
 			<description>
 				Returns [code]true[/code] if the [Rect2i] contains a point. By convention, the right and bottom edges of the [Rect2i] are considered exclusive, so points on these edges are [b]not[/b] included.
-				[b]Note:[/b] This method is not reliable for [Rect2i] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent rectangle to check for contained points.
+				[note]This method is not reliable for [Rect2i] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent rectangle to check for contained points.[/note]
 			</description>
 		</method>
 		<method name="intersection" qualifiers="const">

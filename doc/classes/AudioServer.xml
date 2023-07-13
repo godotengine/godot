@@ -114,7 +114,7 @@
 			<return type="PackedStringArray" />
 			<description>
 				Returns the names of all audio input devices detected on the system.
-				[b]Note:[/b] [member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
+				[note][member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.[/note]
 			</description>
 		</method>
 		<method name="get_mix_rate" qualifiers="const">
@@ -186,7 +186,7 @@
 			<return type="void" />
 			<description>
 				Locks the audio driver's main loop.
-				[b]Note:[/b] Remember to unlock it afterwards.
+				[note]Remember to unlock it afterwards.[/note]
 			</description>
 		</method>
 		<method name="move_bus">
@@ -304,7 +304,7 @@
 		</member>
 		<member name="input_device" type="String" setter="set_input_device" getter="get_input_device" default="&quot;Default&quot;">
 			Name of the current device for audio input (see [method get_input_device_list]). On systems with multiple audio inputs (such as analog, USB and HDMI audio), this can be used to select the audio input device. The value [code]"Default"[/code] will record audio on the system-wide default audio input. If an invalid device name is set, the value will be reverted back to [code]"Default"[/code].
-			[b]Note:[/b] [member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
+			[note][member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.[/note]
 		</member>
 		<member name="output_device" type="String" setter="set_output_device" getter="get_output_device" default="&quot;Default&quot;">
 			Name of the current device for audio output (see [method get_output_device_list]). On systems with multiple audio outputs (such as analog, USB and HDMI audio), this can be used to select the audio output device. The value [code]"Default"[/code] will play audio on the system-wide default audio output. If an invalid device name is set, the value will be reverted back to [code]"Default"[/code].

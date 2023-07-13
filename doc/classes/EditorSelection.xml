@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This object manages the SceneTree selection in the editor.
-		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_selection].
+		[note]This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_selection].[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,7 +15,7 @@
 			<param index="0" name="node" type="Node" />
 			<description>
 				Adds a node to the selection.
-				[b]Note:[/b] The newly selected node will not be automatically edited in the inspector. If you want to edit a node, use [method EditorInterface.edit_node].
+				[note]The newly selected node will not be automatically edited in the inspector. If you want to edit a node, use [method EditorInterface.edit_node].[/note]
 			</description>
 		</method>
 		<method name="clear">

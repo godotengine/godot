@@ -8,8 +8,8 @@
 		MultiMesh is much faster as it can draw thousands of instances with a single draw call, resulting in less API overhead.
 		As a drawback, if the instances are too far away from each other, performance may be reduced as every single instance will always render (they are spatially indexed as one, for the whole object).
 		Since instances may have any behavior, the AABB used for visibility must be provided by the user.
-		[b]Note:[/b] A MultiMesh is a single object, therefore the same maximum lights per object restriction applies. This means, that once the maximum lights are consumed by one or more instances, the rest of the MultiMesh instances will [b]not[/b] receive any lighting.
-		[b]Note:[/b] Blend Shapes will be ignored if used in a MultiMesh.
+		[note]A MultiMesh is a single object, therefore the same maximum lights per object restriction applies. This means, that once the maximum lights are consumed by one or more instances, the rest of the MultiMesh instances will [b]not[/b] receive any lighting.[/note]
+		[note]Blend Shapes will be ignored if used in a MultiMesh.[/note]
 	</description>
 	<tutorials>
 		<link title="Animating thousands of fish with MultiMeshInstance">$DOCS_URL/tutorials/performance/vertex_animation/animating_thousands_of_fish.html</link>

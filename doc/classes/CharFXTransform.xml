@@ -16,7 +16,7 @@
 		</member>
 		<member name="elapsed_time" type="float" setter="set_elapsed_time" getter="get_elapsed_time" default="0.0">
 			The time elapsed since the [RichTextLabel] was added to the scene tree (in seconds). Time stops when the [RichTextLabel] is paused (see [member Node.process_mode]). Resets when the text in the [RichTextLabel] is changed.
-			[b]Note:[/b] Time still passes while the [RichTextLabel] is hidden.
+			[note]Time still passes while the [RichTextLabel] is hidden.[/note]
 		</member>
 		<member name="env" type="Dictionary" setter="set_environment" getter="get_environment" default="{}">
 			Contains the arguments passed in the opening BBCode tag. By default, arguments are strings; if their contents match a type such as [bool], [int] or [float], they will be converted automatically. Color codes in the form [code]#rrggbb[/code] or [code]#rgb[/code] will be converted to an opaque [Color]. String arguments may not contain spaces, even if they're quoted. If present, quotes will also be present in the final string.

@@ -7,7 +7,7 @@
 		A texture works by registering an image in the video hardware, which then can be used in 3D models or 2D [Sprite2D] or GUI [Control].
 		Textures are often created by loading them from a file. See [method @GDScript.load].
 		[Texture2D] is a base for other resources. It cannot be used directly.
-		[b]Note:[/b] The maximum texture size is 16384×16384 pixels due to graphics hardware limitations. Larger textures may fail to import.
+		[note]The maximum texture size is 16384×16384 pixels due to graphics hardware limitations. Larger textures may fail to import.[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -20,7 +20,7 @@
 			<param index="3" name="transpose" type="bool" />
 			<description>
 				Called when the entire [Texture2D] is requested to be drawn over a [CanvasItem], with the top-left offset specified in [param pos]. [param modulate] specifies a multiplier for the colors being drawn, while [param transpose] specifies whether drawing should be performed in column-major order instead of row-major order (resulting in 90-degree clockwise rotation).
-				[b]Note:[/b] This is only used in 2D rendering, not 3D.
+				[note]This is only used in 2D rendering, not 3D.[/note]
 			</description>
 		</method>
 		<method name="_draw_rect" qualifiers="virtual const">
@@ -32,7 +32,7 @@
 			<param index="4" name="transpose" type="bool" />
 			<description>
 				Called when the [Texture2D] is requested to be drawn onto [CanvasItem]'s specified [param rect]. [param modulate] specifies a multiplier for the colors being drawn, while [param transpose] specifies whether drawing should be performed in column-major order instead of row-major order (resulting in 90-degree clockwise rotation).
-				[b]Note:[/b] This is only used in 2D rendering, not 3D.
+				[note]This is only used in 2D rendering, not 3D.[/note]
 			</description>
 		</method>
 		<method name="_draw_rect_region" qualifiers="virtual const">
@@ -45,7 +45,7 @@
 			<param index="5" name="clip_uv" type="bool" />
 			<description>
 				Called when a part of the [Texture2D] specified by [param src_rect]'s coordinates is requested to be drawn onto [CanvasItem]'s specified [param rect]. [param modulate] specifies a multiplier for the colors being drawn, while [param transpose] specifies whether drawing should be performed in column-major order instead of row-major order (resulting in 90-degree clockwise rotation).
-				[b]Note:[/b] This is only used in 2D rendering, not 3D.
+				[note]This is only used in 2D rendering, not 3D.[/note]
 			</description>
 		</method>
 		<method name="_get_height" qualifiers="virtual const">
@@ -123,7 +123,7 @@
 			<return type="Image" />
 			<description>
 				Returns an [Image] that is a copy of data from this [Texture2D] (a new [Image] is created each time). [Image]s can be accessed and manipulated directly.
-				[b]Note:[/b] This will fetch the texture data from the GPU, which might cause performance problems when overused.
+				[note]This will fetch the texture data from the GPU, which might cause performance problems when overused.[/note]
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">

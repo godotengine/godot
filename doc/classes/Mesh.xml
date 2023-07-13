@@ -125,7 +125,7 @@
 			<param index="0" name="margin" type="float" />
 			<description>
 				Calculate an outline mesh at a defined offset (margin) from the original mesh.
-				[b]Note:[/b] This method typically returns the vertices in reverse order (e.g. clockwise to counterclockwise).
+				[note]This method typically returns the vertices in reverse order (e.g. clockwise to counterclockwise).[/note]
 			</description>
 		</method>
 		<method name="create_placeholder" qualifiers="const">
@@ -150,7 +150,7 @@
 			<return type="AABB" />
 			<description>
 				Returns the smallest [AABB] enclosing this mesh in local space. Not affected by [code]custom_aabb[/code].
-				[b]Note:[/b] This is only implemented for [ArrayMesh] and [PrimitiveMesh].
+				[note]This is only implemented for [ArrayMesh] and [PrimitiveMesh].[/note]
 			</description>
 		</method>
 		<method name="get_faces" qualifiers="const">

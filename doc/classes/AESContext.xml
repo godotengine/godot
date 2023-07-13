@@ -89,7 +89,7 @@
 			<return type="PackedByteArray" />
 			<description>
 				Get the current IV state for this context (IV gets updated when calling [method update]). You normally don't need this function.
-				[b]Note:[/b] This function only makes sense when the context is started with [constant MODE_CBC_ENCRYPT] or [constant MODE_CBC_DECRYPT].
+				[note]This function only makes sense when the context is started with [constant MODE_CBC_ENCRYPT] or [constant MODE_CBC_DECRYPT].[/note]
 			</description>
 		</method>
 		<method name="start">
@@ -106,7 +106,7 @@
 			<param index="0" name="src" type="PackedByteArray" />
 			<description>
 				Run the desired operation for this AES context. Will return a [PackedByteArray] containing the result of encrypting (or decrypting) the given [param src]. See [method start] for mode of operation.
-				[b]Note:[/b] The size of [param src] must be a multiple of 16. Apply some padding if needed.
+				[note]The size of [param src] must be a multiple of 16. Apply some padding if needed.[/note]
 			</description>
 		</method>
 	</methods>

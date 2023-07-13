@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[PhysicsServer2DManager] is the API for registering [PhysicsServer2D] implementations and for setting the default implementation.
-		[b]Note:[/b] It is not possible to switch physics servers at runtime. This class is only used on startup at the server initialization level, by Godot itself and possibly by GDExtensions.
+		[note]It is not possible to switch physics servers at runtime. This class is only used on startup at the server initialization level, by Godot itself and possibly by GDExtensions.[/note]
 	</description>
 	<tutorials>
 	</tutorials>

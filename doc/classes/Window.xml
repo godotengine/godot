@@ -362,7 +362,7 @@
 			<param index="0" name="minsize" type="Vector2i" default="Vector2i(0, 0)" />
 			<description>
 				Popups the [Window] at the center of the current screen, with optionally given minimum size. If the [Window] is embedded, it will be centered in the parent [Viewport] instead.
-				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
+				[note]Calling it with the default value of [param minsize] is equivalent to calling it with [member size].[/note]
 			</description>
 		</method>
 		<method name="popup_centered_clamped">
@@ -371,7 +371,7 @@
 			<param index="1" name="fallback_ratio" type="float" default="0.75" />
 			<description>
 				Popups the [Window] centered inside its parent [Window]. [param fallback_ratio] determines the maximum size of the [Window], in relation to its parent.
-				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
+				[note]Calling it with the default value of [param minsize] is equivalent to calling it with [member size].[/note]
 			</description>
 		</method>
 		<method name="popup_centered_ratio">
@@ -523,7 +523,7 @@
 			<param index="0" name="unparent" type="bool" />
 			<description>
 				If [param unparent] is [code]true[/code], the window is automatically unparented when going invisible.
-				[b]Note:[/b] Make sure to keep a reference to the node, otherwise it will be orphaned. You also need to manually call [method Node.queue_free] to free the window if it's not parented.
+				[note]Make sure to keep a reference to the node, otherwise it will be orphaned. You also need to manually call [method Node.queue_free] to free the window if it's not parented.[/note]
 			</description>
 		</method>
 		<method name="set_use_font_oversampling">
@@ -571,29 +571,29 @@
 		</member>
 		<member name="extend_to_title" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] contents is expanded to the full size of the window, window title bar is transparent.
-			[b]Note:[/b] This property is implemented only on macOS.
-			[b]Note:[/b] This property only works with native windows.
+			[note]This property is implemented only on macOS.[/note]
+			[note]This property only works with native windows.[/note]
 		</member>
 		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
 			Specifies the initial type of position for the [Window]. See [enum WindowInitialPosition] constants.
 		</member>
 		<member name="max_size" type="Vector2i" setter="set_max_size" getter="get_max_size" default="Vector2i(0, 0)">
 			If non-zero, the [Window] can't be resized to be bigger than this size.
-			[b]Note:[/b] This property will be ignored if the value is lower than [member min_size].
+			[note]This property will be ignored if the value is lower than [member min_size].[/note]
 		</member>
 		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" default="Vector2i(0, 0)">
 			If non-zero, the [Window] can't be resized to be smaller than this size.
-			[b]Note:[/b] This property will be ignored in favor of [method get_contents_minimum_size] if [member wrap_controls] is enabled and if its size is bigger.
+			[note]This property will be ignored in favor of [method get_contents_minimum_size] if [member wrap_controls] is enabled and if its size is bigger.[/note]
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Window.Mode" default="0">
 			Set's the window's current mode.
-			[b]Note:[/b] Fullscreen mode is not exclusive full screen on Windows and Linux.
-			[b]Note:[/b] This method only works with native windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
+			[note]Fullscreen mode is not exclusive full screen on Windows and Linux.[/note]
+			[note]This method only works with native windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.[/note]
 		</member>
 		<member name="mouse_passthrough" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], all mouse events will be passed to the underlying window of the same application. See also [member mouse_passthrough_polygon].
-			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
-			[b]Note:[/b] This property only works with native windows.
+			[note]This property is implemented on Linux (X11), macOS and Windows.[/note]
+			[note]This property only works with native windows.[/note]
 		</member>
 		<member name="mouse_passthrough_polygon" type="PackedVector2Array" setter="set_mouse_passthrough_polygon" getter="get_mouse_passthrough_polygon" default="PackedVector2Array()">
 			Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
@@ -620,25 +620,25 @@
 			GetNode&lt;Window&gt;("Window").MousePassthrough = new Vector2[] {};
 			[/csharp]
 			[/codeblocks]
-			[b]Note:[/b] This property is ignored if [member mouse_passthrough] is set to [code]true[/code].
-			[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.
-			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
+			[note]This property is ignored if [member mouse_passthrough] is set to [code]true[/code].[/note]
+			[note]On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.[/note]
+			[note]This property is implemented on Linux (X11), macOS and Windows.[/note]
 		</member>
 		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] will be considered a popup. Popups are sub-windows that don't show as separate windows in system's window manager's window list and will send close request when anything is clicked outside of them (unless [member exclusive] is enabled).
-			[b]Note:[/b] This property only works with native windows.
+			[note]This property only works with native windows.[/note]
 		</member>
 		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
 			The window's position in pixels.
 			If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code], the position is in absolute screen coordinates. This typically applies to editor plugins. If the setting is [code]true[/code], the window's position is in the coordinates of its parent [Viewport].
-			[b]Note:[/b] This property only works if [member initial_position] is set to [constant WINDOW_INITIAL_POSITION_ABSOLUTE].
+			[note]This property only works if [member initial_position] is set to [constant WINDOW_INITIAL_POSITION_ABSOLUTE].[/note]
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(100, 100)">
 			The window's size in pixels.
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
 			The [Theme] resource this node and all its [Control] and [Window] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.
-			[b]Note:[/b] [Window] styles will have no effect unless the window is embedded.
+			[note][Window] styles will have no effect unless the window is embedded.[/note]
 		</member>
 		<member name="theme_type_variation" type="StringName" setter="set_theme_type_variation" getter="get_theme_type_variation" default="&amp;&quot;&quot;">
 			The name of a theme type variation used by this [Window] to look up its own theme items. See [member Control.theme_type_variation] for more details.
@@ -652,8 +652,8 @@
 		</member>
 		<member name="transparent" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window]'s background can be transparent. This is best used with embedded windows.
-			[b]Note:[/b] Transparency support is implemented on Linux, macOS and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
-			[b]Note:[/b] This property has no effect if either [member ProjectSettings.display/window/per_pixel_transparency/allowed], or the window's [member Viewport.transparent_bg] is set to [code]false[/code].
+			[note]Transparency support is implemented on Linux, macOS and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.[/note]
+			[note]This property has no effect if either [member ProjectSettings.display/window/per_pixel_transparency/allowed], or the window's [member Viewport.transparent_bg] is set to [code]false[/code].[/note]
 		</member>
 		<member name="unfocusable" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] can't be focused nor interacted with. It can still be visible.
@@ -684,7 +684,7 @@
 		<signal name="dpi_changed">
 			<description>
 				Emitted when the [Window]'s DPI changes as a result of OS-level changes (e.g. moving the window from a Retina display to a lower resolution one).
-				[b]Note:[/b] Only implemented on macOS.
+				[note]Only implemented on macOS.[/note]
 			</description>
 		</signal>
 		<signal name="files_dropped">
@@ -758,7 +758,7 @@
 			- The [member theme] property is changed on this node or any of its ancestors.
 			- The [member theme_type_variation] property is changed on this node.
 			- The node enters the scene tree.
-			[b]Note:[/b] As an optimization, this notification won't be sent from changes that occur while this node is outside of the scene tree. Instead, all of the theme item updates can be applied at once when the node enters the scene tree.
+			[note]As an optimization, this notification won't be sent from changes that occur while this node is outside of the scene tree. Instead, all of the theme item updates can be applied at once when the node enters the scene tree.[/note]
 		</constant>
 		<constant name="MODE_WINDOWED" value="0" enum="Mode">
 			Windowed mode, i.e. [Window] doesn't occupy the whole screen (unless set to the size of the screen).
@@ -789,23 +789,23 @@
 		</constant>
 		<constant name="FLAG_TRANSPARENT" value="3" enum="Flags">
 			The window background can be transparent. Set with [member transparent].
-			[b]Note:[/b] This flag has no effect if either [member ProjectSettings.display/window/per_pixel_transparency/allowed], or the window's [member Viewport.transparent_bg] is set to [code]false[/code].
+			[note]This flag has no effect if either [member ProjectSettings.display/window/per_pixel_transparency/allowed], or the window's [member Viewport.transparent_bg] is set to [code]false[/code].[/note]
 		</constant>
 		<constant name="FLAG_NO_FOCUS" value="4" enum="Flags">
 			The window can't be focused. No-focus window will ignore all input, except mouse clicks. Set with [member unfocusable].
 		</constant>
 		<constant name="FLAG_POPUP" value="5" enum="Flags">
 			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have transient parent set (see [member transient]).
-			[b]Note:[/b] This flag has no effect in embedded windows (unless said window is a [Popup]).
+			[note]This flag has no effect in embedded windows (unless said window is a [Popup]).[/note]
 		</constant>
 		<constant name="FLAG_EXTEND_TO_TITLE" value="6" enum="Flags">
 			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons. Set with [member extend_to_title].
-			[b]Note:[/b] This flag is implemented only on macOS.
-			[b]Note:[/b] This flag has no effect in embedded windows.
+			[note]This flag is implemented only on macOS.[/note]
+			[note]This flag has no effect in embedded windows.[/note]
 		</constant>
 		<constant name="FLAG_MOUSE_PASSTHROUGH" value="7" enum="Flags">
 			All mouse events are passed to the underlying window of the same application.
-			[b]Note:[/b] This flag has no effect in embedded windows.
+			[note]This flag has no effect in embedded windows.[/note]
 		</constant>
 		<constant name="FLAG_MAX" value="8" enum="Flags">
 			Max value of the [enum Flags].
@@ -901,7 +901,7 @@
 		</theme_item>
 		<theme_item name="embedded_border" data_type="style" type="StyleBox">
 			The background style used when the [Window] is embedded. Note that this is drawn only under the window's content, excluding the title. For proper borders and title bar style, you can use [code]expand_margin_*[/code] properties of [StyleBoxFlat].
-			[b]Note:[/b] The content background will not be visible unless [member transparent] is enabled.
+			[note]The content background will not be visible unless [member transparent] is enabled.[/note]
 		</theme_item>
 	</theme_items>
 </class>

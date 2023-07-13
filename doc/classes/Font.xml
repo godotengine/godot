@@ -18,7 +18,7 @@
 			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draw a single Unicode character [param char] into a canvas item using the font, at a given position, with [param modulate] color. [param pos] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
-				[b]Note:[/b] Do not use this function to draw strings character by character, use [method draw_string] or [TextLine] instead.
+				[note]Do not use this function to draw strings character by character, use [method draw_string] or [TextLine] instead.[/note]
 			</description>
 		</method>
 		<method name="draw_char_outline" qualifiers="const">
@@ -31,7 +31,7 @@
 			<param index="5" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draw a single Unicode character [param char] outline into a canvas item using the font, at a given position, with [param modulate] color and [param size] outline size. [param pos] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
-				[b]Note:[/b] Do not use this function to draw strings character by character, use [method draw_string] or [TextLine] instead.
+				[note]Do not use this function to draw strings character by character, use [method draw_string] or [TextLine] instead.[/note]
 			</description>
 		</method>
 		<method name="draw_multiline_string" qualifiers="const">
@@ -123,7 +123,7 @@
 			<param index="0" name="font_size" type="int" default="16" />
 			<description>
 				Returns the average font ascent (number of pixels above the baseline).
-				[b]Note:[/b] Real ascent of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the ascent of empty line).
+				[note]Real ascent of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the ascent of empty line).[/note]
 			</description>
 		</method>
 		<method name="get_char_size" qualifiers="const">
@@ -132,7 +132,7 @@
 			<param index="1" name="font_size" type="int" />
 			<description>
 				Returns the size of a character, optionally taking kerning into account if the next character is provided.
-				[b]Note:[/b] Do not use this function to calculate width of the string character by character, use [method get_string_size] or [TextLine] instead. The height returned is the font height (see also [method get_height]) and has no relation to the glyph height.
+				[note]Do not use this function to calculate width of the string character by character, use [method get_string_size] or [TextLine] instead. The height returned is the font height (see also [method get_height]) and has no relation to the glyph height.[/note]
 			</description>
 		</method>
 		<method name="get_descent" qualifiers="const">
@@ -140,7 +140,7 @@
 			<param index="0" name="font_size" type="int" default="16" />
 			<description>
 				Returns the average font descent (number of pixels below the baseline).
-				[b]Note:[/b] Real descent of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the descent of empty line).
+				[note]Real descent of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the descent of empty line).[/note]
 			</description>
 		</method>
 		<method name="get_face_count" qualifiers="const">
@@ -190,7 +190,7 @@
 			<param index="0" name="font_size" type="int" default="16" />
 			<description>
 				Returns the total average font height (ascent plus descent) in pixels.
-				[b]Note:[/b] Real height of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the height of empty line).
+				[note]Real height of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate (e.g. as the height of empty line).[/note]
 			</description>
 		</method>
 		<method name="get_multiline_string_size" qualifiers="const">
@@ -255,8 +255,8 @@
 				Vector2 stringSize = label.GetThemeFont("font").GetStringSize(label.Text, HorizontalAlignment.Left, -1, label.GetThemeFontSize("font_size"));
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] Since kerning, advance and subpixel positioning are taken into account by [method get_string_size], using separate [method get_string_size] calls on substrings of a string then adding the results together will return a different result compared to using a single [method get_string_size] call on the full string.
-				[b]Note:[/b] Real height of the string is context-dependent and can be significantly different from the value returned by [method get_height].
+				[note]Since kerning, advance and subpixel positioning are taken into account by [method get_string_size], using separate [method get_string_size] calls on substrings of a string then adding the results together will return a different result compared to using a single [method get_string_size] call on the full string.[/note]
+				[note]Real height of the string is context-dependent and can be significantly different from the value returned by [method get_height].[/note]
 			</description>
 		</method>
 		<method name="get_supported_chars" qualifiers="const">
@@ -287,7 +287,7 @@
 				    var values = variation_list[tag]
 				    print("variation axis: %s (%d)\n\tmin, max, default: %s" % [name, tag, values])
 				[/codeblock]
-				[b]Note:[/b] To set and get variation coordinates of a [FontVariation], use [member FontVariation.variation_opentype].
+				[note]To set and get variation coordinates of a [FontVariation], use [member FontVariation.variation_opentype].[/note]
 			</description>
 		</method>
 		<method name="get_underline_position" qualifiers="const">
@@ -295,7 +295,7 @@
 			<param index="0" name="font_size" type="int" default="16" />
 			<description>
 				Returns average pixel offset of the underline below the baseline.
-				[b]Note:[/b] Real underline position of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate.
+				[note]Real underline position of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate.[/note]
 			</description>
 		</method>
 		<method name="get_underline_thickness" qualifiers="const">
@@ -303,7 +303,7 @@
 			<param index="0" name="font_size" type="int" default="16" />
 			<description>
 				Returns average thickness of the underline.
-				[b]Note:[/b] Real underline thickness of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate.
+				[note]Real underline thickness of the string is context-dependent and can be significantly different from the value returned by this function. Use it only as rough estimate.[/note]
 			</description>
 		</method>
 		<method name="has_char" qualifiers="const">

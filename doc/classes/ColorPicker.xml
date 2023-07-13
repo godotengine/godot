@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A widget that provides an interface for selecting or modifying a color. It can optionally provide functionalities like a color sampler (eyedropper), color modes, and presets.
-		[b]Note:[/b] This control is the color picker widget itself. You can use a [ColorPickerButton] instead if you need a button that brings up a [ColorPicker] in a popup.
+		[note]This control is the color picker widget itself. You can use a [ColorPickerButton] instead if you need a button that brings up a [ColorPicker] in a popup.[/note]
 	</description>
 	<tutorials>
 		<link title="Tween Demo">https://godotengine.org/asset-library/asset/146</link>
@@ -16,7 +16,7 @@
 			<param index="0" name="color" type="Color" />
 			<description>
 				Adds the given color to a list of color presets. The presets are displayed in the color picker and the user will be able to select them.
-				[b]Note:[/b] The presets list is only for [i]this[/i] color picker.
+				[note]The presets list is only for [i]this[/i] color picker.[/note]
 			</description>
 		</method>
 		<method name="add_recent_preset">
@@ -24,7 +24,7 @@
 			<param index="0" name="color" type="Color" />
 			<description>
 				Adds the given color to a list of color recent presets so that it can be picked later. Recent presets are the colors that were picked recently, a new preset is automatically created and added to recent presets when you pick a new color.
-				[b]Note:[/b] The recent presets list is only for [i]this[/i] color picker.
+				[note]The recent presets list is only for [i]this[/i] color picker.[/note]
 			</description>
 		</method>
 		<method name="erase_preset">

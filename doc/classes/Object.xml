@@ -20,8 +20,8 @@
 		[/codeblock]
 		Notifications are [int] constants commonly sent and received by objects. For example, on every rendered frame, the [SceneTree] notifies nodes inside the tree with a [constant Node.NOTIFICATION_PROCESS]. The nodes receive it and may call [method Node._process] to update. To make use of notifications, see [method notification] and [method _notification].
 		Lastly, every object can also contain metadata (data about data). [method set_meta] can be useful to store information that the object itself does not depend on. To keep your code clean, making excessive use of metadata is discouraged.
-		[b]Note:[/b] Unlike references to a [RefCounted], references to an object stored in a variable can become invalid without being set to [code]null[/code]. To check if an object has been deleted, do [i]not[/i] compare it against [code]null[/code]. Instead, use [method @GlobalScope.is_instance_valid]. It's also recommended to inherit from [RefCounted] for classes storing data instead of [Object].
-		[b]Note:[/b] The [code]script[/code] is not exposed like most properties. To set or get an object's [Script] in code, use [method set_script] and [method get_script], respectively.
+		[note]Unlike references to a [RefCounted], references to an object stored in a variable can become invalid without being set to [code]null[/code]. To check if an object has been deleted, do [i]not[/i] compare it against [code]null[/code]. Instead, use [method @GlobalScope.is_instance_valid]. It's also recommended to inherit from [RefCounted] for classes storing data instead of [Object].[/note]
+		[note]The [code]script[/code] is not exposed like most properties. To set or get an object's [Script] in code, use [method set_script] and [method get_script], respectively.[/note]
 	</description>
 	<tutorials>
 		<link title="Object class introduction">$DOCS_URL/contributing/development/core_and_modules/object_class.html</link>
@@ -152,15 +152,15 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method is intended for advanced purposes. For most common use cases, the scripting languages offer easier ways to handle properties. See [annotation @GDScript.@export], [annotation @GDScript.@export_enum], [annotation @GDScript.@export_group], etc.
-				[b]Note:[/b] If the object's script is not [annotation @GDScript.@tool], this method will not be called in the editor.
+				[note]This method is intended for advanced purposes. For most common use cases, the scripting languages offer easier ways to handle properties. See [annotation @GDScript.@export], [annotation @GDScript.@export_enum], [annotation @GDScript.@export_group], etc.[/note]
+				[note]If the object's script is not [annotation @GDScript.@tool], this method will not be called in the editor.[/note]
 			</description>
 		</method>
 		<method name="_init" qualifiers="virtual">
 			<return type="void" />
 			<description>
 				Called when the object's script is instantiated, oftentimes after the object is initialized in memory (through [code]Object.new()[/code] in GDScript, or [code]new Object[/code] in C#). It can be also defined to take in parameters. This method is similar to a constructor in most programming languages.
-				[b]Note:[/b] If [method _init] is defined with [i]required[/i] parameters, the Object with script may only be created directly. If any other means (such as [method PackedScene.instantiate] or [method Node.duplicate]) are used, the script's initialization will fail.
+				[note]If [method _init] is defined with [i]required[/i] parameters, the Object with script may only be created directly. If any other means (such as [method PackedScene.instantiate] or [method Node.duplicate]) are used, the script's initialization will fail.[/note]
 			</description>
 		</method>
 		<method name="_notification" qualifiers="virtual">
@@ -184,7 +184,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] The base [Object] defines a few notifications ([constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE]). Inheriting classes such as [Node] define a lot more notifications, which are also received by this method.
+				[note]The base [Object] defines a few notifications ([constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE]). Inheriting classes such as [Node] define a lot more notifications, which are also received by this method.[/note]
 			</description>
 		</method>
 		<method name="_property_can_revert" qualifiers="virtual">
@@ -192,7 +192,7 @@
 			<param index="0" name="property" type="StringName" />
 			<description>
 				Override this method to customize the given [param property]'s revert behavior. Should return [code]true[/code] if the [param property] can be reverted in the Inspector dock. Use [method _property_get_revert] to specify the [param property]'s default value.
-				[b]Note:[/b] This method must return consistently, regardless of the current value of the [param property].
+				[note]This method must return consistently, regardless of the current value of the [param property].[/note]
 			</description>
 		</method>
 		<method name="_property_get_revert" qualifiers="virtual">
@@ -200,7 +200,7 @@
 			<param index="0" name="property" type="StringName" />
 			<description>
 				Override this method to customize the given [param property]'s revert behavior. Should return the default value for the [param property]. If the default value differs from the [param property]'s current value, a revert icon is displayed in the Inspector dock.
-				[b]Note:[/b] [method _property_can_revert] must also be overridden for this method to be called.
+				[note][method _property_can_revert] must also be overridden for this method to be called.[/note]
 			</description>
 		</method>
 		<method name="_set" qualifiers="virtual">
@@ -308,7 +308,7 @@
 				node.Call(Node3D.MethodName.Rotate, new Vector3(1f, 0f, 0f), 1.571f);
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
+				[note]In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.[/note]
 			</description>
 		</method>
 		<method name="call_deferred" qualifiers="vararg">
@@ -329,8 +329,8 @@
 				[/csharp]
 				[/codeblocks]
 				See also [method Callable.call_deferred].
-				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
-				[b]Note:[/b] If you're looking to delay the function call by a frame, refer to the [signal SceneTree.process_frame] and [signal SceneTree.physics_frame] signals.
+				[note]In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.[/note]
+				[note]If you're looking to delay the function call by a frame, refer to the [signal SceneTree.process_frame] and [signal SceneTree.physics_frame] signals.[/note]
 				[codeblock]
 				var node = Node3D.new()
 				# Make a Callable and bind the arguments to the node's rotate() call.
@@ -357,7 +357,7 @@
 				node.Callv(Node3D.MethodName.Rotate, new Godot.Collections.Array { new Vector3(1f, 0f, 0f), 1.571f });
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
+				[note]In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.[/note]
 			</description>
 		</method>
 		<method name="can_translate_messages" qualifiers="const">
@@ -530,7 +530,7 @@
 				EmitSignal(SignalName.GameOver);
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot signals. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
+				[note]In C#, [param signal] must be in snake_case when referring to built-in Godot signals. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.[/note]
 			</description>
 		</method>
 		<method name="free">
@@ -556,14 +556,14 @@
 				var a = node.Get("rotation"); // a is 1.5
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
+				[note]In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.[/note]
 			</description>
 		</method>
 		<method name="get_class" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the object's built-in class name, as a [String]. See also [method is_class].
-				[b]Note:[/b] This method ignores [code]class_name[/code] declarations. If this object's script has defined a [code]class_name[/code], the base, built-in class name is returned instead.
+				[note]This method ignores [code]class_name[/code] declarations. If this object's script has defined a [code]class_name[/code], the base, built-in class name is returned instead.[/note]
 			</description>
 		</method>
 		<method name="get_incoming_connections" qualifiers="const">
@@ -595,8 +595,8 @@
 				var b = node.GetIndexed("position:y"); // b is -10
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param property_path] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
-				[b]Note:[/b] This method does not support actual paths to nodes in the [SceneTree], only sub-property paths. In the context of nodes, use [method Node.get_node_and_resource] instead.
+				[note]In C#, [param property_path] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.[/note]
+				[note]This method does not support actual paths to nodes in the [SceneTree], only sub-property paths. In the context of nodes, use [method Node.get_node_and_resource] instead.[/note]
 			</description>
 		</method>
 		<method name="get_instance_id" qualifiers="const">
@@ -611,8 +611,8 @@
 			<param index="1" name="default" type="Variant" default="null" />
 			<description>
 				Returns the object's metadata value for the given entry [param name]. If the entry does not exist, returns [param default]. If [param default] is [code]null[/code], an error is also generated.
-				[b]Note:[/b] A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+				[note]A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.[/note]
+				[note]Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.[/note]
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
@@ -631,7 +631,7 @@
 				- [code]flags[/code] is a combination of [enum MethodFlags];
 				- [code]id[/code] is the method's internal identifier [int];
 				- [code]return[/code] is the returned value, as a [Dictionary];
-				[b]Note:[/b] The dictionaries of [code]args[/code] and [code]return[/code] are formatted identically to the results of [method get_property_list], although not all entries are used.
+				[note]The dictionaries of [code]args[/code] and [code]return[/code] are formatted identically to the results of [method get_property_list], although not all entries are used.[/note]
 			</description>
 		</method>
 		<method name="get_property_list" qualifiers="const">
@@ -666,7 +666,7 @@
 			<return type="Dictionary[]" />
 			<description>
 				Returns the list of existing signals as an [Array] of dictionaries.
-				[b]Note:[/b] Due of the implementation, each [Dictionary] is formatted very similarly to the returned values of [method get_method_list].
+				[note]Due of the implementation, each [Dictionary] is formatted very similarly to the returned values of [method get_method_list].[/note]
 			</description>
 		</method>
 		<method name="has_meta" qualifiers="const">
@@ -674,8 +674,8 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a metadata entry is found with the given [param name]. See also [method get_meta], [method set_meta] and [method remove_meta].
-				[b]Note:[/b] A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+				[note]A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.[/note]
+				[note]Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.[/note]
 			</description>
 		</method>
 		<method name="has_method" qualifiers="const">
@@ -683,7 +683,7 @@
 			<param index="0" name="method" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the given [param method] name exists in the object.
-				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
+				[note]In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.[/note]
 			</description>
 		</method>
 		<method name="has_signal" qualifiers="const">
@@ -691,7 +691,7 @@
 			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the given [param signal] name exists in the object.
-				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
+				[note]In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.[/note]
 			</description>
 		</method>
 		<method name="has_user_signal" qualifiers="const">
@@ -726,7 +726,7 @@
 				sprite2D.IsClass("Node3D");   // Returns false
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method ignores [code]class_name[/code] declarations in the object's script.
+				[note]This method ignores [code]class_name[/code] declarations in the object's script.[/note]
 			</description>
 		</method>
 		<method name="is_connected" qualifiers="const">
@@ -735,7 +735,7 @@
 			<param index="1" name="callable" type="Callable" />
 			<description>
 				Returns [code]true[/code] if a connection exists between the given [param signal] name and [param callable].
-				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
+				[note]In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.[/note]
 			</description>
 		</method>
 		<method name="is_queued_for_deletion" qualifiers="const">
@@ -786,7 +786,7 @@
 			<param index="0" name="property" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the given [param property] has a custom default value. Use [method property_get_revert] to get the [param property]'s default value.
-				[b]Note:[/b] This method is used by the Inspector dock to display a revert icon. The object must implement [method _property_can_revert] to customize the default value. If [method _property_can_revert] is not implemented, this method returns [code]false[/code].
+				[note]This method is used by the Inspector dock to display a revert icon. The object must implement [method _property_can_revert] to customize the default value. If [method _property_can_revert] is not implemented, this method returns [code]false[/code].[/note]
 			</description>
 		</method>
 		<method name="property_get_revert" qualifiers="const">
@@ -794,7 +794,7 @@
 			<param index="0" name="property" type="StringName" />
 			<description>
 				Returns the custom default value of the given [param property]. Use [method property_can_revert] to check if the [param property] has a custom default value.
-				[b]Note:[/b] This method is used by the Inspector dock to display a revert icon. The object must implement [method _property_get_revert] to customize the default value. If [method _property_get_revert] is not implemented, this method returns [code]null[/code].
+				[note]This method is used by the Inspector dock to display a revert icon. The object must implement [method _property_get_revert] to customize the default value. If [method _property_get_revert] is not implemented, this method returns [code]null[/code].[/note]
 			</description>
 		</method>
 		<method name="remove_meta">
@@ -802,8 +802,8 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Removes the given entry [param name] from the object's metadata. See also [method has_meta], [method get_meta] and [method set_meta].
-				[b]Note:[/b] A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+				[note]A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.[/note]
+				[note]Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.[/note]
 			</description>
 		</method>
 		<method name="set">
@@ -824,7 +824,7 @@
 				GD.Print(node.GlobalScale); // Prints Vector2(8, 2.5)
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
+				[note]In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.[/note]
 			</description>
 		</method>
 		<method name="set_block_signals">
@@ -862,7 +862,7 @@
 				GD.Print(node.Rotation); // Prints 90.0
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
+				[note]In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.[/note]
 			</description>
 		</method>
 		<method name="set_indexed">
@@ -885,7 +885,7 @@
 				GD.Print(node.Position); // Prints (42, -10)
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, [param property_path] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
+				[note]In C#, [param property_path] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.[/note]
 			</description>
 		</method>
 		<method name="set_message_translation">
@@ -902,8 +902,8 @@
 			<description>
 				Adds or changes the entry [param name] inside the object's metadata. The metadata [param value] can be any [Variant], although some types cannot be serialized correctly.
 				If [param value] is [code]null[/code], the entry is removed. This is the equivalent of using [method remove_meta]. See also [method has_meta] and [method get_meta].
-				[b]Note:[/b] A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+				[note]A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.[/note]
+				[note]Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.[/note]
 			</description>
 		</method>
 		<method name="set_script">
@@ -941,7 +941,7 @@
 				If [method can_translate_messages] is [code]false[/code], or no translation is available, this method returns [param message] or [param plural_message], without changes. See [method set_message_translation].
 				The [param n] is the number, or amount, of the message's subject. It is used by the translation system to fetch the correct plural form for the current language.
 				For detailed examples, see [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url].
-				[b]Note:[/b] Negative and [float] numbers may not properly apply to some countable subjects. It's recommended handling these cases with [method tr].
+				[note]Negative and [float] numbers may not properly apply to some countable subjects. It's recommended handling these cases with [method tr].[/note]
 			</description>
 		</method>
 	</methods>
@@ -954,7 +954,7 @@
 		<signal name="script_changed">
 			<description>
 				Emitted when the object's script is changed.
-				[b]Note:[/b] When this signal is emitted, the new script is not initialized yet. If you need to access the new script, defer connections to this signal with [constant CONNECT_DEFERRED].
+				[note]When this signal is emitted, the new script is not initialized yet. If you need to access the new script, defer connections to this signal with [constant CONNECT_DEFERRED].[/note]
 			</description>
 		</signal>
 	</signals>

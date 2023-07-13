@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[SubViewport] Isolates a rectangular region of a scene to be displayed independently. This can be used, for example, to display UI in 3D space.
-		[b]Note:[/b] [SubViewport] is a [Viewport] that isn't a [Window], i.e. it doesn't draw anything by itself. To display anything, [SubViewport] must have a non-zero size and be either put inside a [SubViewportContainer] or assigned to a [ViewportTexture].
+		[note][SubViewport] is a [Viewport] that isn't a [Window], i.e. it doesn't draw anything by itself. To display anything, [SubViewport] must have a non-zero size and be either put inside a [SubViewportContainer] or assigned to a [ViewportTexture].[/note]
 	</description>
 	<tutorials>
 		<link title="Using Viewports">$DOCS_URL/tutorials/rendering/viewports.html</link>
@@ -20,14 +20,14 @@
 	<members>
 		<member name="render_target_clear_mode" type="int" setter="set_clear_mode" getter="get_clear_mode" enum="SubViewport.ClearMode" default="0">
 			The clear mode when the sub-viewport is used as a render target.
-			[b]Note:[/b] This property is intended for 2D usage.
+			[note]This property is intended for 2D usage.[/note]
 		</member>
 		<member name="render_target_update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="SubViewport.UpdateMode" default="2">
 			The update mode when the sub-viewport is used as a render target.
 		</member>
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(512, 512)">
 			The width and height of the sub-viewport. Must be set to a value greater than or equal to 2 pixels on both dimensions. Otherwise, nothing will be displayed.
-			[b]Note:[/b] If the parent node is a [SubViewportContainer] and its [member SubViewportContainer.stretch] is [code]true[/code], the viewport size cannot be changed manually.
+			[note]If the parent node is a [SubViewportContainer] and its [member SubViewportContainer.stretch] is [code]true[/code], the viewport size cannot be changed manually.[/note]
 		</member>
 		<member name="size_2d_override" type="Vector2i" setter="set_size_2d_override" getter="get_size_2d_override" default="Vector2i(0, 0)">
 			The 2D size override of the sub-viewport. If either the width or height is [code]0[/code], the override is disabled.

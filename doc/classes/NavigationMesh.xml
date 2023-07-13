@@ -29,7 +29,7 @@
 			<param index="0" name="mesh" type="Mesh" />
 			<description>
 				Initializes the navigation mesh by setting the vertices and indices according to a [Mesh].
-				[b]Note:[/b] The given [param mesh] must be of type [constant Mesh.PRIMITIVE_TRIANGLES] and have an index array.
+				[note]The given [param mesh] must be of type [constant Mesh.PRIMITIVE_TRIANGLES] and have an index array.[/note]
 			</description>
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
@@ -77,18 +77,18 @@
 	<members>
 		<member name="agent_height" type="float" setter="set_agent_height" getter="get_agent_height" default="1.5">
 			The minimum floor to ceiling height that will still allow the floor area to be considered walkable.
-			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell_height].
+			[note]While baking, this value will be rounded up to the nearest multiple of [member cell_height].[/note]
 		</member>
 		<member name="agent_max_climb" type="float" setter="set_agent_max_climb" getter="get_agent_max_climb" default="0.25">
 			The minimum ledge height that is considered to still be traversable.
-			[b]Note:[/b] While baking, this value will be rounded down to the nearest multiple of [member cell_height].
+			[note]While baking, this value will be rounded down to the nearest multiple of [member cell_height].[/note]
 		</member>
 		<member name="agent_max_slope" type="float" setter="set_agent_max_slope" getter="get_agent_max_slope" default="45.0">
 			The maximum slope that is considered walkable, in degrees.
 		</member>
 		<member name="agent_radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="0.5">
 			The distance to erode/shrink the walkable area of the heightfield away from obstructions.
-			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell_size].
+			[note]While baking, this value will be rounded up to the nearest multiple of [member cell_size].[/note]
 		</member>
 		<member name="cell_height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.25">
 			The cell height used to rasterize the navigation mesh vertices on the Y axis. Must match with the cell height on the navigation map.
@@ -107,7 +107,7 @@
 		</member>
 		<member name="edge_max_length" type="float" setter="set_edge_max_length" getter="get_edge_max_length" default="12.0">
 			The maximum allowed length for contour edges along the border of the mesh.
-			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell_size].
+			[note]While baking, this value will be rounded up to the nearest multiple of [member cell_size].[/note]
 		</member>
 		<member name="filter_baking_aabb" type="AABB" setter="set_filter_baking_aabb" getter="get_filter_baking_aabb" default="AABB(0, 0, 0, 0, 0, 0)">
 			If the baking [AABB] has a volume the navigation mesh baking will be restricted to its enclosing area.
@@ -140,11 +140,11 @@
 		</member>
 		<member name="region_merge_size" type="float" setter="set_region_merge_size" getter="get_region_merge_size" default="20.0">
 			Any regions with a size smaller than this will be merged with larger regions if possible.
-			[b]Note:[/b] This value will be squared to calculate the number of cells. For example, a value of 20 will set the number of cells to 400.
+			[note]This value will be squared to calculate the number of cells. For example, a value of 20 will set the number of cells to 400.[/note]
 		</member>
 		<member name="region_min_size" type="float" setter="set_region_min_size" getter="get_region_min_size" default="2.0">
 			The minimum size of a region for it to be created.
-			[b]Note:[/b] This value will be squared to calculate the minimum number of cells allowed to form isolated island areas. For example, a value of 8 will set the number of cells to 64.
+			[note]This value will be squared to calculate the minimum number of cells allowed to form isolated island areas. For example, a value of 8 will set the number of cells to 64.[/note]
 		</member>
 		<member name="sample_partition_type" type="int" setter="set_sample_partition_type" getter="get_sample_partition_type" enum="NavigationMesh.SamplePartitionType" default="0">
 			Partitioning algorithm for creating the navigation mesh polys. See [enum SamplePartitionType] for possible values.

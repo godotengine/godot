@@ -1513,7 +1513,7 @@ def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_
 # Formatting helpers.
 
 
-RESERVED_FORMATTING_TAGS = ["i", "b", "u", "code", "kbd", "center", "url", "br"]
+RESERVED_FORMATTING_TAGS = ["i", "b", "u", "code", "note", "warning", "important", "tip", "kbd", "center", "url", "br"]
 RESERVED_CODEBLOCK_TAGS = ["codeblocks", "codeblock", "gdscript", "csharp"]
 RESERVED_CROSSLINK_TAGS = ["method", "member", "signal", "constant", "enum", "annotation", "theme_item", "param"]
 
@@ -1931,6 +1931,38 @@ def format_text_block(
                     tag_depth += 1
                     escape_pre = True
                 tag_text = "**"
+
+            elif cmd == "note" or cmd == "/note":
+                if cmd == "/note":
+                    tag_text = ""
+                    tag_depth -= 1
+                else:
+                    tag_text = ".. note::\n\n    "
+                    tag_depth += 1
+
+            elif cmd == "warning" or cmd == "/warning":
+                if cmd == "/warning":
+                    tag_text = ""
+                    tag_depth -= 1
+                else:
+                    tag_text = ".. warning::\n\n    "
+                    tag_depth += 1
+
+            elif cmd == "important" or cmd == "/important":
+                if cmd == "/important":
+                    tag_text = ""
+                    tag_depth -= 1
+                else:
+                    tag_text = ".. important::\n\n    "
+                    tag_depth += 1
+
+            elif cmd == "tip" or cmd == "/tip":
+                if cmd == "/tip":
+                    tag_text = ""
+                    tag_depth -= 1
+                else:
+                    tag_text = ".. tip::\n\n    "
+                    tag_depth += 1
 
             elif cmd == "u" or cmd == "/u":
                 if cmd == "/u":

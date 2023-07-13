@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A MultiplayerPeer implementation that should be passed to [member MultiplayerAPI.multiplayer_peer] after being initialized as either a client, server, or mesh. Events can then be handled by connecting to [MultiplayerAPI] signals. See [ENetConnection] for more information on the ENet library wrapper.
-		[b]Note:[/b] ENet only uses UDP, not TCP. When forwarding the server port to make your server accessible on the public Internet, you only need to forward the server port in UDP. You can use the [UPNP] class to try to forward the server port automatically when starting the server.
+		[note]ENet only uses UDP, not TCP. When forwarding the server port to make your server accessible on the public Internet, you only need to forward the server port in UDP. You can use the [UPNP] class to try to forward the server port automatically when starting the server.[/note]
 	</description>
 	<tutorials>
 		<link title="High-level multiplayer">$DOCS_URL/tutorials/networking/high_level_multiplayer.html</link>
@@ -18,7 +18,7 @@
 			<param index="1" name="host" type="ENetConnection" />
 			<description>
 				Add a new remote peer with the given [param peer_id] connected to the given [param host].
-				[b]Note:[/b] The [param host] must have exactly one peer in the [constant ENetPacketPeer.STATE_CONNECTED] state.
+				[note]The [param host] must have exactly one peer in the [constant ENetPacketPeer.STATE_CONNECTED] state.[/note]
 			</description>
 		</method>
 		<method name="create_client">

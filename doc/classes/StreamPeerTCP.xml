@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A stream peer that handles TCP connections. This object can be used to connect to TCP servers, or also is returned by a TCP server.
-		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
+		[note]When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -68,7 +68,7 @@
 			<param index="0" name="enabled" type="bool" />
 			<description>
 				If [param enabled] is [code]true[/code], packets will be sent immediately. If [param enabled] is [code]false[/code] (the default), packet transfers will be delayed and combined using [url=https://en.wikipedia.org/wiki/Nagle%27s_algorithm]Nagle's algorithm[/url].
-				[b]Note:[/b] It's recommended to leave this disabled for applications that send large packets or need to transfer a lot of data, as enabling this can decrease the total available bandwidth.
+				[note]It's recommended to leave this disabled for applications that send large packets or need to transfer a lot of data, as enabling this can decrease the total available bandwidth.[/note]
 			</description>
 		</method>
 	</methods>

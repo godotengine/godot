@@ -36,7 +36,7 @@
 				var f = abs(Vector3i(-7, -8, -9))
 				# f is (7, 8, 9)
 				[/codeblock]
-				[b]Note:[/b] For better type safety, use [method absf], [method absi], [method Vector2.abs], [method Vector2i.abs], [method Vector3.abs], [method Vector3i.abs], [method Vector4.abs], or [method Vector4i.abs].
+				[note]For better type safety, use [method absf], [method absi], [method Vector2.abs], [method Vector2i.abs], [method Vector3.abs], [method Vector3i.abs], [method Vector4.abs], or [method Vector4i.abs].[/note]
 			</description>
 		</method>
 		<method name="absf">
@@ -134,7 +134,7 @@
 			<param index="0" name="bytes" type="PackedByteArray" />
 			<description>
 				Decodes a byte array back to a [Variant] value, without decoding objects.
-				[b]Note:[/b] If you need object deserialization, see [method bytes_to_var_with_objects].
+				[note]If you need object deserialization, see [method bytes_to_var_with_objects].[/note]
 			</description>
 		</method>
 		<method name="bytes_to_var_with_objects">
@@ -142,7 +142,7 @@
 			<param index="0" name="bytes" type="PackedByteArray" />
 			<description>
 				Decodes a byte array back to a [Variant] value. Decoding objects is allowed.
-				[b]Warning:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
+				[warning]Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).[/warning]
 			</description>
 		</method>
 		<method name="ceil">
@@ -155,7 +155,7 @@
 				i = ceil(1.001)    # i is 2.0
 				[/codeblock]
 				See also [method floor], [method round], and [method snapped].
-				[b]Note:[/b] For better type safety, use [method ceilf], [method ceili], [method Vector2.ceil], [method Vector3.ceil], or [method Vector4.ceil].
+				[note]For better type safety, use [method ceilf], [method ceili], [method Vector2.ceil], [method Vector3.ceil], or [method Vector4.ceil].[/note]
 			</description>
 		</method>
 		<method name="ceilf">
@@ -200,7 +200,7 @@
 				var f = clamp(Vector3i(-7, -8, -9), Vector3i(-1, 2, 3), Vector3i(-4, -5, -6))
 				# f is (-4, -5, -6)
 				[/codeblock]
-				[b]Note:[/b] For better type safety, use [method clampf], [method clampi], [method Vector2.clamp], [method Vector2i.clamp], [method Vector3.clamp], [method Vector3i.clamp], [method Vector4.clamp], [method Vector4i.clamp], or [method Color.clamp].
+				[note]For better type safety, use [method clampf], [method clampi], [method Vector2.clamp], [method Vector2i.clamp], [method Vector3.clamp], [method Vector3i.clamp], [method Vector4.clamp], [method Vector4i.clamp], or [method Color.clamp].[/note]
 			</description>
 		</method>
 		<method name="clampf">
@@ -380,7 +380,7 @@
 				a = floor(-2.99)    # a is -3.0
 				[/codeblock]
 				See also [method ceil], [method round], and [method snapped].
-				[b]Note:[/b] For better type safety, use [method floorf], [method floori], [method Vector2.floor], [method Vector3.floor], or [method Vector4.floor].
+				[note]For better type safety, use [method floorf], [method floori], [method Vector2.floor], [method Vector3.floor], or [method Vector4.floor].[/note]
 			</description>
 		</method>
 		<method name="floorf">
@@ -397,7 +397,7 @@
 			<description>
 				Rounds [param x] downward (towards negative infinity), returning the largest whole number that is not more than [param x].
 				A type-safe version of [method floor], returning an [int].
-				[b]Note:[/b] This function is [i]not[/i] the same as [code]int(x)[/code], which rounds towards 0.
+				[note]This function is [i]not[/i] the same as [code]int(x)[/code], which rounds towards 0.[/note]
 			</description>
 		</method>
 		<method name="fmod">
@@ -591,7 +591,7 @@
 				lerp(0, 4, 0.75) # Returns 3.0
 				[/codeblock]
 				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep]. See also [method remap] to map a continuous series of values to another.
-				[b]Note:[/b] For better type safety, use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp] or [method Basis.slerp].
+				[note]For better type safety, use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp] or [method Basis.slerp].[/note]
 			</description>
 		</method>
 		<method name="lerp_angle">
@@ -611,7 +611,7 @@
 				    rotation = lerp_angle(min_angle, max_angle, elapsed)
 				    elapsed += delta
 				[/codeblock]
-				[b]Note:[/b] This function lerps through the shortest path between [param from] and [param to]. However, when these two angles are approximately [code]PI + k * TAU[/code] apart for any integer [code]k[/code], it's not obvious which way they lerp due to floating-point precision errors. For example, [code]lerp_angle(0, PI, weight)[/code] lerps counter-clockwise, while [code]lerp_angle(0, PI + 5 * TAU, weight)[/code] lerps clockwise.
+				[note]This function lerps through the shortest path between [param from] and [param to]. However, when these two angles are approximately [code]PI + k * TAU[/code] apart for any integer [code]k[/code], it's not obvious which way they lerp due to floating-point precision errors. For example, [code]lerp_angle(0, PI, weight)[/code] lerps counter-clockwise, while [code]lerp_angle(0, PI + 5 * TAU, weight)[/code] lerps clockwise.[/note]
 			</description>
 		</method>
 		<method name="lerpf">
@@ -646,11 +646,11 @@
 			<param index="0" name="x" type="float" />
 			<description>
 				Returns the [url=https://en.wikipedia.org/wiki/Natural_logarithm]natural logarithm[/url] of [param x] (base [url=https://en.wikipedia.org/wiki/E_(mathematical_constant)][i]e[/i][/url], with [i]e[/i] being approximately 2.71828). This is the amount of time needed to reach a certain level of continuous growth.
-				[b]Note:[/b] This is not the same as the "log" function on most calculators, which uses a base 10 logarithm. To use base 10 logarithm, use [code]log(x) / log(10)[/code].
+				[note]This is not the same as the "log" function on most calculators, which uses a base 10 logarithm. To use base 10 logarithm, use [code]log(x) / log(10)[/code].[/note]
 				[codeblock]
 				log(10) # Returns 2.302585
 				[/codeblock]
-				[b]Note:[/b] The logarithm of [code]0[/code] returns [code]-inf[/code], while negative values return [code]-nan[/code].
+				[note]The logarithm of [code]0[/code] returns [code]-inf[/code], while negative values return [code]-nan[/code].[/note]
 			</description>
 		</method>
 		<method name="max" qualifiers="vararg">
@@ -749,7 +749,7 @@
 				nearest_po2(0)  # Returns 0 (this may not be expected)
 				nearest_po2(-1) # Returns 0 (this may not be expected)
 				[/codeblock]
-				[b]Warning:[/b] Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for negative values of [param value] (in reality, 1 is the smallest integer power of 2).
+				[warning]Due to the way it is implemented, this function returns [code]0[/code] rather than [code]1[/code] for negative values of [param value] (in reality, 1 is the smallest integer power of 2).[/warning]
 			</description>
 		</method>
 		<method name="pingpong">
@@ -822,7 +822,7 @@
 				GD.Print("a", "b", a); // Prints ab[1, 2, 3]
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
+				[note]Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.[/note]
 			</description>
 		</method>
 		<method name="print_rich" qualifiers="vararg">
@@ -840,8 +840,8 @@
 				GD.PrintRich("[color=green][b]Hello world![/b][/color]"); // Prints out "Hello world!" in green with a bold font
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
-				[b]Note:[/b] On Windows, only Windows 10 and later correctly displays ANSI escape codes in standard output.
+				[note]Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.[/note]
+				[note]On Windows, only Windows 10 and later correctly displays ANSI escape codes in standard output.[/note]
 			</description>
 		</method>
 		<method name="print_verbose" qualifiers="vararg">
@@ -918,7 +918,7 @@
 				GD.PushError("test error"); // Prints "test error" to debugger and terminal as error call
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This function does not pause project execution. To print an error message and pause project execution in debug builds, use [code]assert(false, "test error")[/code] instead.
+				[note]This function does not pause project execution. To print an error message and pause project execution in debug builds, use [code]assert(false, "test error")[/code] instead.[/note]
 			</description>
 		</method>
 		<method name="push_warning" qualifiers="vararg">
@@ -951,7 +951,7 @@
 			<param index="0" name="seed" type="int" />
 			<description>
 				Given a [param seed], returns a [PackedInt64Array] of size [code]2[/code], where its first element is the randomized [int] value, and the second element is the same as [param seed]. Passing the same [param seed] consistently returns the same array.
-				[b]Note:[/b] "Seed" here refers to the internal state of the pseudo random number generator, currently implemented as a 64 bit integer.
+				[note]"Seed" here refers to the internal state of the pseudo random number generator, currently implemented as a 64 bit integer.[/note]
 				[codeblock]
 				var a = rand_from_seed(4)
 
@@ -1041,7 +1041,7 @@
 		<method name="randomize">
 			<description>
 				Randomizes the seed (or the internal state) of the random number generator. The current implementation uses a number based on the device's time.
-				[b]Note:[/b] This function is called automatically when the project is run. If you need to fix the seed to have consistent, reproducible results, use [method seed] to initialize the random number generator.
+				[note]This function is called automatically when the project is run. If you need to fix the seed to have consistent, reproducible results, use [method seed] to initialize the random number generator.[/note]
 			</description>
 		</method>
 		<method name="remap">
@@ -1083,7 +1083,7 @@
 				round(2.6) # Returns 3
 				[/codeblock]
 				See also [method floor], [method ceil], and [method snapped].
-				[b]Note:[/b] For better type safety, use [method roundf], [method roundi], [method Vector2.round], [method Vector3.round], or [method Vector4.round].
+				[note]For better type safety, use [method roundf], [method roundi], [method Vector2.round], [method Vector3.round], or [method Vector4.round].[/note]
 			</description>
 		</method>
 		<method name="roundf">
@@ -1138,7 +1138,7 @@
 
 				sign(Vector3(-6.0, 0.0, 6.0)) # Returns (-1, 0, 1)
 				[/codeblock]
-				[b]Note:[/b] For better type safety, use [method signf], [method signi], [method Vector2.sign], [method Vector2i.sign], [method Vector3.sign], [method Vector3i.sign], [method Vector4.sign], or [method Vector4i.sign].
+				[note]For better type safety, use [method signf], [method signi], [method Vector2.sign], [method Vector2i.sign], [method Vector3.sign], [method Vector3i.sign], [method Vector4.sign], or [method Vector4i.sign].[/note]
 			</description>
 		</method>
 		<method name="signf">
@@ -1220,7 +1220,7 @@
 				snapped(Vector2(34, 70), Vector2(8, 8))  # Returns (32, 72)
 				[/codeblock]
 				See also [method ceil], [method floor], and [method round].
-				[b]Note:[/b] For better type safety, use [method snappedf], [method snappedi], [method Vector2.snapped], [method Vector2i.snapped], [method Vector3.snapped], [method Vector3i.snapped], [method Vector4.snapped], or [method Vector4i.snapped].
+				[note]For better type safety, use [method snappedf], [method snappedi], [method Vector2.snapped], [method Vector2i.snapped], [method Vector3.snapped], [method Vector3i.snapped], [method Vector4.snapped], or [method Vector4i.snapped].[/note]
 			</description>
 		</method>
 		<method name="snappedf">
@@ -1259,7 +1259,7 @@
 				sqrt(10.24) # Returns 3.2
 				sqrt(-1)    # Returns NaN
 				[/codeblock]
-				[b]Note:[/b] Negative values of [param x] return NaN ("Not a Number"). in C#, if you need negative inputs, use [code]System.Numerics.Complex[/code].
+				[note]Negative values of [param x] return NaN ("Not a Number"). in C#, if you need negative inputs, use [code]System.Numerics.Complex[/code].[/note]
 			</description>
 		</method>
 		<method name="step_decimals">
@@ -1347,7 +1347,7 @@
 			<param index="0" name="variable" type="Variant" />
 			<description>
 				Encodes a [Variant] value to a byte array, without encoding objects. Deserialization can be done with [method bytes_to_var].
-				[b]Note:[/b] If you need object serialization, see [method var_to_bytes_with_objects].
+				[note]If you need object serialization, see [method var_to_bytes_with_objects].[/note]
 			</description>
 		</method>
 		<method name="var_to_bytes_with_objects">
@@ -1379,7 +1379,7 @@
 				    "b": 2
 				}
 				[/codeblock]
-				[b]Note:[/b] Converting [Signal] or [Callable] is not supported and will result in an empty value for these types, regardless of their data.
+				[note]Converting [Signal] or [Callable] is not supported and will result in an empty value for these types, regardless of their data.[/note]
 			</description>
 		</method>
 		<method name="weakref">
@@ -1429,7 +1429,7 @@
 				# Infinite rotation (in radians)
 				angle = wrapf(angle + 0.1, -PI, PI)
 				[/codeblock]
-				[b]Note:[/b] If [param min] is [code]0[/code], this is equivalent to [method fposmod], so prefer using that instead.
+				[note]If [param min] is [code]0[/code], this is equivalent to [method fposmod], so prefer using that instead.[/note]
 				[code]wrapf[/code] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
 			</description>
 		</method>
@@ -1493,11 +1493,11 @@
 		</member>
 		<member name="JavaClassWrapper" type="JavaClassWrapper" setter="" getter="">
 			The [JavaClassWrapper] singleton.
-			[b]Note:[/b] Only implemented on Android.
+			[note]Only implemented on Android.[/note]
 		</member>
 		<member name="JavaScriptBridge" type="JavaScriptBridge" setter="" getter="">
 			The [JavaScriptBridge] singleton.
-			[b]Note:[/b] Only implemented on the Web platform.
+			[note]Only implemented on the Web platform.[/note]
 		</member>
 		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
@@ -2504,7 +2504,7 @@
 			if error:
 			    printerr("Still failing!")
 			[/codeblock]
-			[b]Note:[/b] Many functions do not return an error code, but will print error messages to standard output.
+			[note]Many functions do not return an error code, but will print error messages to standard output.[/note]
 		</constant>
 		<constant name="FAILED" value="1" enum="Error">
 			Generic error.
@@ -2646,7 +2646,7 @@
 		</constant>
 		<constant name="ERR_BUG" value="47" enum="Error">
 			Bug error, caused by an implementation issue in the method.
-			[b]Note:[/b] If a built-in method returns this code, please open an issue on [url=https://github.com/godotengine/godot/issues]the GitHub Issue Tracker[/url].
+			[note]If a built-in method returns this code, please open an issue on [url=https://github.com/godotengine/godot/issues]the GitHub Issue Tracker[/url].[/note]
 		</constant>
 		<constant name="ERR_PRINTER_ON_FIRE" value="48" enum="Error">
 			Printer on fire error (This is an easter egg, no built-in methods return this error code).
@@ -2676,8 +2676,8 @@
 		<constant name="PROPERTY_HINT_FLAGS" value="6" enum="PropertyHint">
 			Hints that an [int] property is a bitmask with named bit flags.
 			The hint string is a comma separated list of names such as [code]"Bit0,Bit1,Bit2,Bit3"[/code]. Whitespaces are [b]not[/b] removed from either end of a name. The first name in the list has value 1, the next 2, then 4, 8, 16 and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"A:4,B:8,C:16"[/code]. You can also combine several flags ([code]"A:4,B:8,AB:12,C:16"[/code]).
-			[b]Note:[/b] A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code].
-			[b]Note:[/b] Unlike [constant PROPERTY_HINT_ENUM], the previous explicit value is not taken into account. For the hint [code]"A:16,B,C"[/code], A is 16, B is 2, C is 4.
+			[note]A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code].[/note]
+			[note]Unlike [constant PROPERTY_HINT_ENUM], the previous explicit value is not taken into account. For the hint [code]"A:16,B,C"[/code], A is 16, B is 2, C is 4.[/note]
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="7" enum="PropertyHint">
 			Hints that an [int] property is a bitmask using the optionally named 2D render layers.
@@ -2784,7 +2784,7 @@
 			hintString = $"{Variant.Type.Array:D}:{Variant.Type.Object:D}/{PropertyHint.ResourceType:D}:Texture2D"; // Two-dimensional array of textures.
 			[/csharp]
 			[/codeblocks]
-			[b]Note:[/b] The trailing colon is required for properly detecting built-in types.
+			[note]The trailing colon is required for properly detecting built-in types.[/note]
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint">
 		</constant>

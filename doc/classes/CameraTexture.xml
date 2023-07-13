@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This texture gives access to the camera texture provided by a [CameraFeed].
-		[b]Note:[/b] Many cameras supply YCbCr images which need to be converted in a shader.
+		[note]Many cameras supply YCbCr images which need to be converted in a shader.[/note]
 	</description>
 	<tutorials>
 	</tutorials>

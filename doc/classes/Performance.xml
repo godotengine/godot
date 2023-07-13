@@ -6,9 +6,9 @@
 	<description>
 		This class provides access to a number of different monitors related to performance, such as memory usage, draw calls, and FPS. These are the same as the values displayed in the [b]Monitor[/b] tab in the editor's [b]Debugger[/b] panel. By using the [method get_monitor] method of this class, you can access this data from your code.
 		You can add custom monitors using the [method add_custom_monitor] method. Custom monitors are available in [b]Monitor[/b] tab in the editor's [b]Debugger[/b] panel together with built-in monitors.
-		[b]Note:[/b] Some of the built-in monitors are only available in debug mode and will always return [code]0[/code] when used in a project exported in release mode.
-		[b]Note:[/b] Some of the built-in monitors are not updated in real-time for performance reasons, so there may be a delay of up to 1 second between changes.
-		[b]Note:[/b] Custom monitors do not support negative values. Negative values are clamped to 0.
+		[note]Some of the built-in monitors are only available in debug mode and will always return [code]0[/code] when used in a project exported in release mode.[/note]
+		[note]Some of the built-in monitors are not updated in real-time for performance reasons, so there may be a delay of up to 1 second between changes.[/note]
+		[note]Custom monitors do not support negative values. Negative values are clamped to 0.[/note]
 	</description>
 	<tutorials>
 	</tutorials>

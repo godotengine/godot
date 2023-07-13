@@ -25,7 +25,7 @@
 		Vertex attributes must be passed [b]before[/b] calling [method add_vertex]. Failure to do so will result in an error when committing the vertex information to a mesh.
 		Additionally, the attributes used before the first vertex is added determine the format of the mesh. For example, if you only add UVs to the first vertex, you cannot add color to any of the subsequent vertices.
 		See also [ArrayMesh], [ImmediateMesh] and [MeshDataTool] for procedural geometry generation.
-		[b]Note:[/b] Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.
+		[note]Godot uses clockwise [url=https://learnopengl.com/Advanced-OpenGL/Face-culling]winding order[/url] for front faces of triangle primitive modes.[/note]
 	</description>
 	<tutorials>
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
@@ -132,8 +132,8 @@
 			<param index="0" name="flip" type="bool" default="false" />
 			<description>
 				Generates normals from vertices so you do not have to do it manually. If [param flip] is [code]true[/code], the resulting normals will be inverted. [method generate_normals] should be called [i]after[/i] generating geometry and [i]before[/i] committing the mesh using [method commit] or [method commit_to_arrays]. For correct display of normal-mapped surfaces, you will also have to generate tangents using [method generate_tangents].
-				[b]Note:[/b] [method generate_normals] only works if the primitive type to be set to [constant Mesh.PRIMITIVE_TRIANGLES].
-				[b]Note:[/b] [method generate_normals] takes smooth groups into account. To generate smooth normals, set the smooth group to a value greater than or equal to [code]0[/code] using [method set_smooth_group] or leave the smooth group at the default of [code]0[/code]. To generate flat normals, set the smooth group to [code]-1[/code] using [method set_smooth_group] prior to adding vertices.
+				[note][method generate_normals] only works if the primitive type to be set to [constant Mesh.PRIMITIVE_TRIANGLES].[/note]
+				[note][method generate_normals] takes smooth groups into account. To generate smooth normals, set the smooth group to a value greater than or equal to [code]0[/code] using [method set_smooth_group] or leave the smooth group at the default of [code]0[/code]. To generate flat normals, set the smooth group to [code]-1[/code] using [method set_smooth_group] prior to adding vertices.[/note]
 			</description>
 		</method>
 		<method name="generate_tangents">
@@ -166,7 +166,7 @@
 			<description>
 				By default, returns [constant SKIN_4_WEIGHTS] to indicate only 4 bone influences per vertex are used.
 				Returns [constant SKIN_8_WEIGHTS] if up to 8 influences are used.
-				[b]Note:[/b] This function returns an enum, not the exact number of weights.
+				[note]This function returns an enum, not the exact number of weights.[/note]
 			</description>
 		</method>
 		<method name="index">
@@ -193,7 +193,7 @@
 			<param index="0" name="color" type="Color" />
 			<description>
 				Specifies a [Color] to use for the [i]next[/i] vertex. If every vertex needs to have this information set and you fail to submit it for the first vertex, this information may not be used at all.
-				[b]Note:[/b] The material must have [member BaseMaterial3D.vertex_color_use_as_albedo] enabled for the vertex color to be visible.
+				[note]The material must have [member BaseMaterial3D.vertex_color_use_as_albedo] enabled for the vertex color to be visible.[/note]
 			</description>
 		</method>
 		<method name="set_custom">
@@ -234,7 +234,7 @@
 			<description>
 				Set to [constant SKIN_8_WEIGHTS] to indicate that up to 8 bone influences per vertex may be used.
 				By default, only 4 bone influences are used ([constant SKIN_4_WEIGHTS])
-				[b]Note:[/b] This function takes an enum, not the exact number of weights.
+				[note]This function takes an enum, not the exact number of weights.[/note]
 			</description>
 		</method>
 		<method name="set_smooth_group">
@@ -242,7 +242,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Specifies the smooth group to use for the [i]next[/i] vertex. If this is never called, all vertices will have the default smooth group of [code]0[/code] and will be smoothed with adjacent vertices of the same group. To produce a mesh with flat normals, set the smooth group to [code]-1[/code].
-				[b]Note:[/b] This function actually takes a [code]uint32_t[/code], so C# users should use [code]uint32.MaxValue[/code] instead of [code]-1[/code] to produce a mesh with flat normals.
+				[note]This function actually takes a [code]uint32_t[/code], so C# users should use [code]uint32.MaxValue[/code] instead of [code]-1[/code] to produce a mesh with flat normals.[/note]
 			</description>
 		</method>
 		<method name="set_tangent">

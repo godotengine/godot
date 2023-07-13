@@ -14,7 +14,7 @@
 		</member>
 		<member name="is_hemisphere" type="bool" setter="set_is_hemisphere" getter="get_is_hemisphere" default="false">
 			If [code]true[/code], a hemisphere is created rather than a full sphere.
-			[b]Note:[/b] To get a regular hemisphere, the height and radius of the sphere must be equal.
+			[note]To get a regular hemisphere, the height and radius of the sphere must be equal.[/note]
 		</member>
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="64">
 			Number of radial segments on the sphere.

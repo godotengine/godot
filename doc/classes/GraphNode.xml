@@ -7,7 +7,7 @@
 		[GraphNode] allows to create nodes for a [GraphEdit] graph with customizable content based on its child controls. [GraphNode] is derived from [Container] and it is responsible for placing its children on screen. This works similar to [VBoxContainer]. Children, in turn, provide [GraphNode] with so-called slots, each of which can have a connection port on either side.
 		Each [GraphNode] slot is defined by its index and can provide the node with up to two ports: one on the left, and one on the right. By convention the left port is also referred to as the [b]input port[/b] and the right port is referred to as the [b]output port[/b]. Each port can be enabled and configured individually, using different type and color. The type is an arbitrary value that you can define using your own considerations. The parent [GraphEdit] will receive this information on each connect and disconnect request.
 		Slots can be configured in the Inspector dock once you add at least one child [Control]. The properties are grouped by each slot's index in the "Slot" section.
-		[b]Note:[/b] While GraphNode is set up using slots and slot indices, connections are made between the ports which are enabled. Because of that, [GraphEdit] uses the port's index and not the slot's index. You can use [method get_connection_input_slot] and [method get_connection_output_slot] to get the slot index from the port index.
+		[note]While GraphNode is set up using slots and slot indices, connections are made between the ports which are enabled. Because of that, [GraphEdit] uses the port's index and not the slot's index. You can use [method get_connection_input_slot] and [method get_connection_output_slot] to get the slot index from the port index.[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -175,7 +175,7 @@
 				Ports can be further customized using [param color_left]/[param color_right] and [param custom_icon_left]/[param custom_icon_right]. The color parameter adds a tint to the icon. The custom icon can be used to override the default port dot.
 				Additionally, [param draw_stylebox] can be used to enable or disable drawing of the background stylebox for each slot. See [theme_item slot].
 				Individual properties can also be set using one of the [code]set_slot_*[/code] methods.
-				[b]Note:[/b] This method only sets properties of the slot. To create the slot itself, add a [Control]-derived child to the GraphNode.
+				[note]This method only sets properties of the slot. To create the slot itself, add a [Control]-derived child to the GraphNode.[/note]
 			</description>
 		</method>
 		<method name="set_slot_color_left">
@@ -251,11 +251,11 @@
 		</member>
 		<member name="position_offset" type="Vector2" setter="set_position_offset" getter="get_position_offset" default="Vector2(0, 0)">
 			The offset of the GraphNode, relative to the scroll offset of the [GraphEdit].
-			[b]Note:[/b] You cannot use position offset directly, as [GraphEdit] is a [Container].
+			[note]You cannot use position offset directly, as [GraphEdit] is a [Container].[/note]
 		</member>
 		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable" default="false">
 			If [code]true[/code], the user can resize the GraphNode.
-			[b]Note:[/b] Dragging the handle will only emit the [signal resize_request] signal, the GraphNode needs to be resized manually.
+			[note]Dragging the handle will only emit the [signal resize_request] signal, the GraphNode needs to be resized manually.[/note]
 		</member>
 		<member name="selectable" type="bool" setter="set_selectable" getter="is_selectable" default="true">
 			If [code]true[/code], the user can select the GraphNode.
@@ -265,7 +265,7 @@
 		</member>
 		<member name="show_close" type="bool" setter="set_show_close_button" getter="is_close_button_visible" default="false">
 			If [code]true[/code], the close button will be visible.
-			[b]Note:[/b] Pressing it will only emit the [signal close_request] signal, the GraphNode needs to be removed manually.
+			[note]Pressing it will only emit the [signal close_request] signal, the GraphNode needs to be removed manually.[/note]
 		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
 			Base text writing direction.

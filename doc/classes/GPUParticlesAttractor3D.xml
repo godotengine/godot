@@ -7,7 +7,7 @@
 		Particle attractors can be used to attract particles towards the attractor's origin, or to push them away from the attractor's origin.
 		Particle attractors work in real-time and can be moved, rotated and scaled during gameplay. Unlike collision shapes, non-uniform scaling of attractors is also supported.
 		Attractors can be temporarily disabled by hiding them, or by setting their [member strength] to [code]0.0[/code].
-		[b]Note:[/b] Particle attractors only affect [GPUParticles3D], not [CPUParticles3D].
+		[note]Particle attractors only affect [GPUParticles3D], not [CPUParticles3D].[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -22,7 +22,7 @@
 		</member>
 		<member name="directionality" type="float" setter="set_directionality" getter="get_directionality" default="0.0">
 			Adjusts how directional the attractor is. At [code]0.0[/code], the attractor is not directional at all: it will attract particles towards its center. At [code]1.0[/code], the attractor is fully directional: particles will always be pushed towards local -Z (or +Z if [member strength] is negative).
-			[b]Note:[/b] If [member directionality] is greater than [code]0.0[/code], the direction in which particles are pushed can be changed by rotating the [GPUParticlesAttractor3D] node.
+			[note]If [member directionality] is greater than [code]0.0[/code], the direction in which particles are pushed can be changed by rotating the [GPUParticlesAttractor3D] node.[/note]
 		</member>
 		<member name="strength" type="float" setter="set_strength" getter="get_strength" default="1.0">
 			If [member strength] is negative, particles will be pushed in the reverse direction. Particles will be pushed [i]away[/i] from the attractor's  origin if [member directionality] is [code]0.0[/code], or towards local +Z if [member directionality] is greater than [code]0.0[/code].

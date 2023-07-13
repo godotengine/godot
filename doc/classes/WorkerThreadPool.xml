@@ -40,7 +40,7 @@
 		[/csharp]
 		[/codeblocks]
 		The above code relies on the number of elements in the [code]enemies[/code] array remaining constant during the multithreaded part.
-		[b]Note:[/b] Using this singleton could affect performance negatively if the task being distributed between threads is not computationally expensive.
+		[note]Using this singleton could affect performance negatively if the task being distributed between threads is not computationally expensive.[/note]
 	</description>
 	<tutorials>
 		<link title="Using multiple threads">$DOCS_URL/tutorials/performance/using_multiple_threads.html</link>
@@ -75,7 +75,7 @@
 			<param index="0" name="group_id" type="int" />
 			<description>
 				Returns how many times the [Callable] of the group task with the given ID has already been executed by the worker threads.
-				[b]Note:[/b] If a thread has started executing the [Callable] but is yet to finish, it won't be counted.
+				[note]If a thread has started executing the [Callable] but is yet to finish, it won't be counted.[/note]
 			</description>
 		</method>
 		<method name="is_group_task_completed" qualifiers="const">

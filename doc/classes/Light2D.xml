@@ -42,7 +42,7 @@
 		</member>
 		<member name="range_item_cull_mask" type="int" setter="set_item_cull_mask" getter="get_item_cull_mask" default="1">
 			The layer mask. Only objects with a matching [member CanvasItem.light_mask] will be affected by the Light2D. See also [member shadow_item_cull_mask], which affects which objects can cast shadows.
-			[b]Note:[/b] [member range_item_cull_mask] is ignored by [DirectionalLight2D], which will always light a 2D node regardless of the 2D node's [member CanvasItem.light_mask].
+			[note][member range_item_cull_mask] is ignored by [DirectionalLight2D], which will always light a 2D node regardless of the 2D node's [member CanvasItem.light_mask].[/note]
 		</member>
 		<member name="range_layer_max" type="int" setter="set_layer_range_max" getter="get_layer_range_max" default="0">
 			Maximum layer value of objects that are affected by the Light2D.

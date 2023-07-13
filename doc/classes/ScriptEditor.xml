@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Godot editor's script editor.
-		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_script_editor].
+		[note]This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_script_editor].[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -54,7 +54,7 @@
 			<param index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter" />
 			<description>
 				Registers the [EditorSyntaxHighlighter] to the editor, the [EditorSyntaxHighlighter] will be available on all open scripts.
-				[b]Note:[/b] Does not apply to scripts that are already opened.
+				[note]Does not apply to scripts that are already opened.[/note]
 			</description>
 		</method>
 		<method name="unregister_syntax_highlighter">
@@ -62,7 +62,7 @@
 			<param index="0" name="syntax_highlighter" type="EditorSyntaxHighlighter" />
 			<description>
 				Unregisters the [EditorSyntaxHighlighter] from the editor.
-				[b]Note:[/b] The [EditorSyntaxHighlighter] will still be applied to scripts that are already opened.
+				[note]The [EditorSyntaxHighlighter] will still be applied to scripts that are already opened.[/note]
 			</description>
 		</method>
 	</methods>

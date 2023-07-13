@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		StreamPeer is an abstract base class mostly used for stream-based protocols (such as TCP). It provides an API for sending and receiving data through streams as raw data or strings.
-		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
+		[note]When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -110,7 +110,7 @@
 			<description>
 				Gets a Variant from the stream. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
 				Internally, this uses the same decoding mechanism as the [method @GlobalScope.bytes_to_var] method.
-				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
+				[warning]Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.[/warning]
 			</description>
 		</method>
 		<method name="put_8">
@@ -174,7 +174,7 @@
 			<param index="0" name="value" type="String" />
 			<description>
 				Puts a zero-terminated ASCII string into the stream prepended by a 32-bit unsigned integer representing its size.
-				[b]Note:[/b] To put an ASCII string without prepending its size, you can use [method put_data]:
+				[note]To put an ASCII string without prepending its size, you can use [method put_data]:[/note]
 				[codeblocks]
 				[gdscript]
 				put_data("Hello world".to_ascii_buffer())
@@ -218,7 +218,7 @@
 			<param index="0" name="value" type="String" />
 			<description>
 				Puts a zero-terminated UTF-8 string into the stream prepended by a 32 bits unsigned integer representing its size.
-				[b]Note:[/b] To put a UTF-8 string without prepending its size, you can use [method put_data]:
+				[note]To put a UTF-8 string without prepending its size, you can use [method put_data]:[/note]
 				[codeblocks]
 				[gdscript]
 				put_data("Hello world".to_utf8_buffer())

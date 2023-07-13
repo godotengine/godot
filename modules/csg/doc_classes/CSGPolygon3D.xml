@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		An array of 2D points is extruded to quickly and easily create a variety of 3D meshes. See also [CSGMesh3D] for using 3D meshes as CSG nodes.
-		[b]Note:[/b] CSG nodes are intended to be used for level prototyping. Creating CSG nodes has a significant CPU cost compared to creating a [MeshInstance3D] with a [PrimitiveMesh]. Moving a CSG node within another CSG node also has a significant CPU cost, so it should be avoided during gameplay.
+		[note]CSG nodes are intended to be used for level prototyping. Creating CSG nodes has a significant CPU cost compared to creating a [MeshInstance3D] with a [PrimitiveMesh]. Moving a CSG node within another CSG node also has a significant CPU cost, so it should be avoided during gameplay.[/note]
 	</description>
 	<tutorials>
 		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
@@ -49,7 +49,7 @@
 		</member>
 		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array(0, 0, 0, 1, 1, 1, 1, 0)">
 			The point array that defines the 2D polygon that is extruded. This can be a convex or concave polygon with 3 or more points. The polygon must [i]not[/i] have any intersecting edges. Otherwise, triangulation will fail and no mesh will be generated.
-			[b]Note:[/b] If only 1 or 2 points are defined in [member polygon], no mesh will be generated.
+			[note]If only 1 or 2 points are defined in [member polygon], no mesh will be generated.[/note]
 		</member>
 		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces" default="false">
 			If [code]true[/code], applies smooth shading to the extrusions.
@@ -73,11 +73,11 @@
 		</constant>
 		<constant name="PATH_ROTATION_POLYGON" value="0" enum="PathRotation">
 			The [member polygon] shape is not rotated.
-			[b]Note:[/b] Requires the path Z coordinates to continually decrease to ensure viable shapes.
+			[note]Requires the path Z coordinates to continually decrease to ensure viable shapes.[/note]
 		</constant>
 		<constant name="PATH_ROTATION_PATH" value="1" enum="PathRotation">
 			The [member polygon] shape is rotated along the path, but it is not rotated around the path axis.
-			[b]Note:[/b] Requires the path Z coordinates to continually decrease to ensure viable shapes.
+			[note]Requires the path Z coordinates to continually decrease to ensure viable shapes.[/note]
 		</constant>
 		<constant name="PATH_ROTATION_PATH_FOLLOW" value="2" enum="PathRotation">
 			The [member polygon] shape follows the path and its rotations around the path axis.

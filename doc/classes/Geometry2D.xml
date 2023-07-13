@@ -126,7 +126,7 @@
 			<param index="3" name="dir_b" type="Vector2" />
 			<description>
 				Checks if the two lines ([param from_a], [param dir_a]) and ([param from_b], [param dir_b]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns [code]null[/code].
-				[b]Note:[/b] The lines are specified using direction vectors, not end points.
+				[note]The lines are specified using direction vectors, not end points.[/note]
 			</description>
 		</method>
 		<method name="make_atlas">
@@ -154,7 +154,7 @@
 				Inflates or deflates [param polygon] by [param delta] units (pixels). If [param delta] is positive, makes the polygon grow outward. If [param delta] is negative, shrinks the polygon inward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. Returns an empty array if [param delta] is negative and the absolute value of it approximately exceeds the minimum bounding rectangle dimensions of the polygon.
 				Each polygon's vertices will be rounded as determined by [param join_type], see [enum PolyJoinType].
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
-				[b]Note:[/b] To translate the polygon's vertices specifically, multiply them to a [Transform2D]:
+				[note]To translate the polygon's vertices specifically, multiply them to a [Transform2D]:[/note]
 				[codeblocks]
 				[gdscript]
 				var polygon = PackedVector2Array([Vector2(0, 0), Vector2(100, 0), Vector2(100, 100), Vector2(0, 100)])
