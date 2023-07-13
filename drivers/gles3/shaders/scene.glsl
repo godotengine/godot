@@ -1059,12 +1059,17 @@ void main() {
 	normal_map.z = sqrt(max(0.0, 1.0 - dot(normal_map.xy, normal_map.xy))); //always ignore Z, as it can be RG packed, Z may be pos/neg, etc.
 
 	normal = normalize(mix(normal, tangent * normal_map.x + binormal * normal_map.y + normal * normal_map.z, normal_map_depth));
-
+#elif defined(NORMAL_USED)
+	normal = normalize(normal);
 #endif
 
 #ifdef LIGHT_ANISOTROPY_USED
+	// Reconstructing orthonormal tangent frame from normal map result means that anisotropic specularity can be synced to the tangent basis.
+	// Without this, anisotropy can look wibbly-wobbly in extreme cases and dark around the edges otherwise.
+	tangent = normalize(cross(binormal, normal));
+	binormal = normalize(cross(normal, tangent));
 
-	if (anisotropy > 0.01) {
+	if (abs(anisotropy) > 0.01) {
 		//rotation matrix
 		mat3 rot = mat3(tangent, binormal, normal);
 		//make local to space
