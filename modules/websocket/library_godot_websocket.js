@@ -124,7 +124,7 @@ const GodotWebSocket = {
 			const ref = IDHandler.get(p_id);
 			if (ref && ref.readyState < ref.CLOSING) {
 				const code = p_code;
-				const reason = GodotRuntime.parseString(p_reason);
+				const reason = p_reason;
 				ref.close(code, reason);
 			}
 		},
