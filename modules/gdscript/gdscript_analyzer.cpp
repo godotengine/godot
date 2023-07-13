@@ -1281,6 +1281,10 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 					member.variable->getter->set_datatype(member.variable->datatype);
 
 					resolve_function_body(member.variable->getter);
+
+					if (!member.variable->getter->body->has_return) {
+						push_error(R"(Not all code paths in the getter function return a value.)", member.variable);
+					}
 				}
 				if (member.variable->setter != nullptr) {
 					resolve_function_signature(member.variable->setter);
@@ -1333,6 +1337,10 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 						if (getter_function->return_type != nullptr) {
 							return_datatype = getter_function->return_type->datatype;
 							return_datatype.is_meta_type = false;
+						}
+
+						if (!getter_function->body->has_return) {
+							push_error(R"(Not all code paths in the getter function return a value.)", member.variable);
 						}
 
 						if (getter_function->parameters.size() != 0 || return_datatype.has_no_type()) {
