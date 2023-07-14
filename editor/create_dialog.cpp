@@ -38,10 +38,12 @@
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 
-void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {
+void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name, const String &p_search_placeholder) {
 	_fill_type_list();
 
 	icon_fallback = search_options->has_theme_icon(base_type, EditorStringName(EditorIcons)) ? base_type : "Object";
+
+	search_box->set_placeholder(p_search_placeholder);
 
 	if (p_dont_clear) {
 		search_box->select_all();
