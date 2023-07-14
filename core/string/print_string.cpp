@@ -164,6 +164,8 @@ void __print_line_rich(String p_string) {
 		p_string_ansi = p_string_ansi.replace("[/fgcolor]", "\u001b[39;49m");
 	}
 
+	p_string_ansi += "\u001b[0m"; // Reset.
+
 	OS::get_singleton()->print_rich("%s\n", p_string_ansi.utf8().get_data());
 
 	_global_lock();
