@@ -231,6 +231,14 @@ class BindingsGenerator {
 		bool is_ref_counted = false;
 
 		/**
+		 * Class is a singleton, but can't be declared as a static class as that would
+		 * break backwards compatibility. As such, instead of going with a static class,
+		 * we use the actual singleton pattern (private constructor with instance property),
+		 * which doesn't break compatibility.
+		 */
+		bool is_compat_singleton = false;
+
+		/**
 		 * Determines whether the native return value of this type must be disposed
 		 * by the generated internal call (think of `godot_string`, whose destructor
 		 * must be called). Some structs that are disposable may still disable this
@@ -615,8 +623,10 @@ class BindingsGenerator {
 	HashMap<const MethodInterface *, const InternalCall *> method_icalls_map;
 
 	HashMap<StringName, List<StringName>> blacklisted_methods;
+	HashSet<StringName> compat_singletons;
 
 	void _initialize_blacklisted_methods();
+	void _initialize_compat_singletons();
 
 	struct NameCache {
 		StringName type_void = StaticCString::create("void");

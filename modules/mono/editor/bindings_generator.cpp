@@ -1515,38 +1515,43 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 						"' for class '" + itype.name + "'.");
 	}
 
-	if (itype.is_singleton) {
-		// Add the type name and the singleton pointer as static fields
-		StringName instance_name = itype.name + CS_SINGLETON_INSTANCE_SUFFIX;
-		String instance_type_name = obj_types.has(instance_name)
-				? obj_types[instance_name].proxy_name
-				: "GodotObject";
+	// Add native name static field and cached type.
+
+	if (is_derived_type && !itype.is_singleton) {
+		output << MEMBER_BEGIN "private static readonly System.Type CachedType = typeof(" << itype.proxy_name << ");\n";
+	}
+
+	output.append(MEMBER_BEGIN "private static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
+	output.append(itype.name);
+	output.append("\";\n");
+
+	if (itype.is_singleton || itype.is_compat_singleton) {
+		// Add the Singleton static property.
+
+		String instance_type_name;
+
+		if (itype.is_singleton) {
+			StringName instance_name = itype.name + CS_SINGLETON_INSTANCE_SUFFIX;
+			instance_type_name = obj_types.has(instance_name)
+					? obj_types[instance_name].proxy_name
+					: "GodotObject";
+		} else {
+			instance_type_name = itype.proxy_name;
+		}
 
 		output.append(MEMBER_BEGIN "private static " + instance_type_name + " singleton;\n");
 
 		output << MEMBER_BEGIN "public static " + instance_type_name + " " CS_PROPERTY_SINGLETON " =>\n"
 			   << INDENT2 "singleton \?\?= (" + instance_type_name + ")"
 			   << C_METHOD_ENGINE_GET_SINGLETON "(\"" << itype.name << "\");\n";
+	}
 
-		output.append(MEMBER_BEGIN "private static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
-		output.append(itype.name);
-		output.append("\";\n");
-	} else {
+	if (!itype.is_singleton) {
 		// IMPORTANT: We also generate the static fields for GodotObject instead of declaring
 		// them manually in the `GodotObject.base.cs` partial class declaration, because they're
 		// required by other static fields in this generated partial class declaration.
 		// Static fields are initialized in order of declaration, but when they're in different
 		// partial class declarations then it becomes harder to tell (Rider warns about this).
-
-		// Add native name static field
-
-		if (is_derived_type) {
-			output << MEMBER_BEGIN "private static readonly System.Type CachedType = typeof(" << itype.proxy_name << ");\n";
-		}
-
-		output.append(MEMBER_BEGIN "private static readonly StringName " BINDINGS_NATIVE_NAME_FIELD " = \"");
-		output.append(itype.name);
-		output.append("\";\n");
 
 		if (itype.is_instantiable) {
 			// Add native constructor static field
@@ -2964,6 +2969,11 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		itype.is_ref_counted = ClassDB::is_parent_class(type_cname, name_cache.type_RefCounted);
 		itype.memory_own = itype.is_ref_counted;
 
+		if (itype.is_singleton && compat_singletons.has(itype.cname)) {
+			itype.is_singleton = false;
+			itype.is_compat_singleton = true;
+		}
+
 		itype.c_out = "%5return ";
 		itype.c_out += C_METHOD_UNMANAGED_GET_MANAGED;
 		itype.c_out += itype.is_ref_counted ? "(%1.Reference);\n" : "(%1);\n";
@@ -4003,6 +4013,10 @@ void BindingsGenerator::_initialize_blacklisted_methods() {
 	blacklisted_methods["Object"].push_back("_init"); // never called in C# (TODO: implement it)
 }
 
+void BindingsGenerator::_initialize_compat_singletons() {
+	// No compat singletons yet.
+}
+
 void BindingsGenerator::_log(const char *p_format, ...) {
 	if (log_print_enabled) {
 		va_list list;
@@ -4021,6 +4035,8 @@ void BindingsGenerator::_initialize() {
 	enum_types.clear();
 
 	_initialize_blacklisted_methods();
+
+	_initialize_compat_singletons();
 
 	bool obj_type_ok = _populate_object_type_interfaces();
 	ERR_FAIL_COND_MSG(!obj_type_ok, "Failed to generate object type interfaces");
