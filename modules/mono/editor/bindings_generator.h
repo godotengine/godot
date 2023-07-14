@@ -60,6 +60,7 @@ class BindingsGenerator {
 
 	struct EnumInterface {
 		StringName cname;
+		String proxy_name;
 		List<ConstantInterface> constants;
 		bool is_flags = false;
 
@@ -69,8 +70,10 @@ class BindingsGenerator {
 
 		EnumInterface() {}
 
-		EnumInterface(const StringName &p_cname) {
+		EnumInterface(const StringName &p_cname, const String &p_proxy_name, bool p_is_flags) {
 			cname = p_cname;
+			proxy_name = p_proxy_name;
+			is_flags = p_is_flags;
 		}
 	};
 
@@ -164,6 +167,11 @@ class BindingsGenerator {
 		 * Methods that are not meant to be exposed are those that begin with underscore and are not virtual.
 		 */
 		bool is_internal = false;
+
+		/**
+		 * Determines if the method hides a System.Object name & requires the "new" keyword.
+		 */
+		bool hides_object = false;
 
 		List<ArgumentInterface> arguments;
 
@@ -740,7 +748,7 @@ class BindingsGenerator {
 		return p_type->name;
 	}
 
-	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype);
+	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype, bool p_is_signal = false);
 
 	void _append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
 	void _append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
@@ -785,6 +793,7 @@ class BindingsGenerator {
 	Error _save_file(const String &p_path, const StringBuilder &p_content);
 
 	void _log(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
+	void _log_warn(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
 	void _initialize();
 

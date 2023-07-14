@@ -118,6 +118,13 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 // This must be kept in sync with `ignored_types` in csharp_script.cpp
 const Vector<String> ignored_types = { "PhysicsServer2DExtension", "PhysicsServer3DExtension" };
 
+// Special [code] keywords to wrap with <langword> instead of <c>.
+// Don't check against all C# reserved words, as many cases are GDScript-specific.
+const Vector<String> langword_check = { "true", "false", "null" };
+
+// Property names derived from System.Object to wrap with "new" keyword.
+const Vector<String> object_inherit = { "Equals", "GetHashCode", "GetType", "MemberwiseClone", "ReferenceEquals", "ToString" };
+
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
 	// C interface for enums is the same as that of 'uint32_t'. Remember to apply
 	// any of the changes done here to the 'uint32_t' type interface as well.
@@ -147,7 +154,7 @@ static String fix_doc_description(const String &p_bbcode) {
 			.strip_edges();
 }
 
-String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype) {
+String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype, bool p_is_signal) {
 	// Based on the version in EditorHelp
 
 	if (p_bbcode.is_empty()) {
@@ -308,7 +315,16 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				// We do not declare theme_items in any way in C#, so there is nothing to reference
 				_append_xml_undeclared(xml_output, link_target);
 			} else if (link_tag == "param") {
-				_append_xml_undeclared(xml_output, snake_to_camel_case(link_target, false));
+				if (p_is_signal) {
+					// Documentation in C# is added to an event, not the delegate itself
+					// As such, we treat these parameters as codeblocks instead
+					// See: https://github.com/godotengine/godot/pull/65529
+					_append_xml_undeclared(xml_output, snake_to_camel_case(link_target, false));
+				} else {
+					xml_output.append("<paramref name=\"");
+					xml_output.append(snake_to_camel_case(link_target, false));
+					xml_output.append("\"/>");
+				}
 			}
 
 			pos = brk_end + 1;
@@ -366,9 +382,19 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				}
 
 				if (target_itype) {
-					xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-					xml_output.append(target_itype->proxy_name);
-					xml_output.append("\"/>");
+					if ((!p_itype || p_itype->api_type == ClassDB::API_CORE) && target_itype->api_type == ClassDB::API_EDITOR) {
+						// Editor references in core documentation cannot be resolved,
+						// handle as standard codeblock
+						_log_warn("Handling editor reference '%s' inside core documentation for '%s'\n",
+								target_itype->proxy_name.utf8().get_data(), p_itype ? p_itype->proxy_name.utf8().get_data() : "@GlobalScope");
+						xml_output.append("<c>");
+						xml_output.append(tag);
+						xml_output.append("</c>");
+					} else {
+						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+						xml_output.append(target_itype->proxy_name);
+						xml_output.append("\"/>");
+					}
 				} else {
 					ERR_PRINT("Cannot resolve type reference in documentation: '" + tag + "'.");
 
@@ -390,11 +416,24 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code") {
-			xml_output.append("<c>");
+			int end = bbcode.find("[", brk_end);
+			if (end == -1) {
+				end = bbcode.length();
+			}
+			String code = bbcode.substr(brk_end + 1, end - brk_end - 1);
+			if (langword_check.has(code)) {
+				xml_output.append("<see langword=\"");
+				xml_output.append(code);
+				xml_output.append("\"/>");
 
-			code_tag = true;
-			pos = brk_end + 1;
-			tag_stack.push_front(tag);
+				pos = brk_end + code.length() + 8;
+			} else {
+				xml_output.append("<c>");
+
+				code_tag = true;
+				pos = brk_end + 1;
+				tag_stack.push_front(tag);
+			}
 		} else if (tag == "codeblock") {
 			xml_output.append("<code>");
 
@@ -522,7 +561,27 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 				p_xml_output.append(p_target_itype->proxy_name);
 				p_xml_output.append(".");
 				p_xml_output.append(target_imethod->proxy_name);
-				p_xml_output.append("\"/>");
+				p_xml_output.append("(");
+				bool first_key = true;
+				for (const ArgumentInterface &iarg : target_imethod->arguments) {
+					const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+
+					ERR_FAIL_NULL(arg_type); // Argument type not found
+					if (first_key) {
+						first_key = false;
+					} else {
+						p_xml_output.append(", ");
+					}
+					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+						p_xml_output.append("Nullable{");
+					}
+					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+					p_xml_output.append(arg_cs_type.replacen("<", "{").replacen(">", "}").replacen("params ", ""));
+					if (iarg.def_param_mode == ArgumentInterface::NULLABLE_VAL) {
+						p_xml_output.append("}");
+					}
+				}
+				p_xml_output.append(")\"/>");
 			} else {
 				if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
 					ERR_PRINT("Cannot resolve method reference in documentation: '" + p_link_target + "'.");
@@ -678,7 +737,7 @@ void BindingsGenerator::_append_xml_constant(StringBuilder &p_xml_output, const 
 				p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
 				p_xml_output.append(p_target_itype->proxy_name);
 				p_xml_output.append(".");
-				p_xml_output.append(target_ienum->cname);
+				p_xml_output.append(target_ienum->proxy_name);
 				p_xml_output.append(".");
 				p_xml_output.append(target_iconst->proxy_name);
 				p_xml_output.append("\"/>");
@@ -719,7 +778,7 @@ void BindingsGenerator::_append_xml_constant_in_global_scope(StringBuilder &p_xm
 
 		if (target_iconst) {
 			p_xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
-			p_xml_output.append(target_ienum->cname);
+			p_xml_output.append(target_ienum->proxy_name);
 			p_xml_output.append(".");
 			p_xml_output.append(target_iconst->proxy_name);
 			p_xml_output.append("\"/>");
@@ -1458,7 +1517,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		output.append(MEMBER_BEGIN "public enum ");
-		output.append(pascal_to_pascal_case(ienum.cname.operator String()));
+		output.append(ienum.proxy_name);
 		output.append(" : long");
 		output.append(MEMBER_BEGIN OPEN_BLOCK);
 
@@ -1616,14 +1675,18 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// Generate InvokeGodotClassMethod
 
-		output << MEMBER_BEGIN "/// <summary>\n"
-			   << INDENT1 "/// Invokes the method with the given name, using the given arguments.\n"
-			   << INDENT1 "/// This method is used by Godot to invoke methods from the engine side.\n"
-			   << INDENT1 "/// Do not call or override this method.\n"
-			   << INDENT1 "/// </summary>\n"
-			   << INDENT1 "/// <param name=\"method\">Name of the method to invoke.</param>\n"
-			   << INDENT1 "/// <param name=\"args\">Arguments to use with the invoked method.</param>\n"
-			   << INDENT1 "/// <param name=\"ret\">Value returned by the invoked method.</param>\n";
+		if (is_derived_type) {
+			output << MEMBER_BEGIN "/// <inheritdoc/>\n";
+		} else {
+			output << MEMBER_BEGIN "/// <summary>\n" INDENT1 "/// Invokes the method with the given name,"
+				   << " using the given arguments. This method is used by Godot to invoke methods from the"
+				   << " engine side. Do not call or override this method.\n" INDENT1 "/// </summary>\n"
+				   << INDENT1 "/// <param name=\"method\">Name of the method to invoke.</param>\n"
+				   << INDENT1 "/// <param name=\"args\">Arguments to use with the invoked method.</param>\n"
+				   << INDENT1 "/// <param name=\"ret\">Value returned by the invoked method.</param>\n"
+				   << INDENT1 "/// <returns><see langword=\"true\"/> if the method was"
+				   << " successfully invoked; otherwise <see langword=\"false\"/>.</returns>\n";
+		}
 
 		output << INDENT1 "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(in godot_string_name method, "
@@ -1705,14 +1768,18 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// Generate HasGodotClassMethod
 
-		output << MEMBER_BEGIN "/// <summary>\n"
-			   << INDENT1 "/// Check if the type contains a method with the given name.\n"
-			   << INDENT1 "/// This method is used by Godot to check if a method exists before invoking it.\n"
-			   << INDENT1 "/// Do not call or override this method.\n"
-			   << INDENT1 "/// </summary>\n"
-			   << INDENT1 "/// <param name=\"method\">Name of the method to check for.</param>\n";
+		if (is_derived_type) {
+			output << MEMBER_BEGIN "/// <inheritdoc/>\n";
+		} else {
+			output << MEMBER_BEGIN "/// <summary>\n" INDENT1 "/// Check if the type contains a method with"
+				   << " the given name. This method is used by Godot to check if a method exists before"
+				   << " invoking it. Do not call or override this method.\n" INDENT1 "/// </summary>\n"
+				   << INDENT1 "/// <param name=\"method\">Name of the method to check for.</param>\n"
+				   << INDENT1 "/// <returns><see langword=\"true\"/> if the method exists;"
+				   << " otherwise <see langword=\"false\"/>.</returns>\n";
+		}
 
-		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
+		output << INDENT1 "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_METHOD "(in godot_string_name method)\n"
 			   << INDENT1 "{\n";
 
@@ -1744,14 +1811,18 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// Generate HasGodotClassSignal
 
-		output << MEMBER_BEGIN "/// <summary>\n"
-			   << INDENT1 "/// Check if the type contains a signal with the given name.\n"
-			   << INDENT1 "/// This method is used by Godot to check if a signal exists before raising it.\n"
-			   << INDENT1 "/// Do not call or override this method.\n"
-			   << INDENT1 "/// </summary>\n"
-			   << INDENT1 "/// <param name=\"method\">Name of the method to check for.</param>\n";
+		if (is_derived_type) {
+			output << MEMBER_BEGIN "/// <inheritdoc/>\n";
+		} else {
+			output << MEMBER_BEGIN "/// <summary>\n" INDENT1 "/// Check if the type contains a signal with"
+				   << " the given name. This method is used by Godot to check if a signal exists before"
+				   << " invoking it. Do not call or override this method.\n" INDENT1 "/// </summary>\n"
+				   << INDENT1 "/// <param name=\"signal\">Name of the signal to check for.</param>\n"
+				   << INDENT1 "/// <returns><see langword=\"true\"/> if the signal exists;"
+				   << " otherwise <see langword=\"false\"/>.</returns>\n";
+		}
 
-		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
+		output << INDENT1 "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(in godot_string_name signal)\n"
 			   << INDENT1 "{\n";
 
@@ -1781,56 +1852,55 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	//Generate StringName for all class members
 	bool is_inherit = !itype.is_singleton && obj_types.has(itype.base_name);
 	//PropertyName
-	output << MEMBER_BEGIN "/// <summary>\n"
-		   << INDENT1 "/// Cached StringNames for the properties and fields contained in this class, for fast lookup.\n"
-		   << INDENT1 "/// </summary>\n";
 	if (is_inherit) {
-		output << INDENT1 "public new class PropertyName : " << obj_types[itype.base_name].proxy_name << ".PropertyName";
+		output << MEMBER_BEGIN "/// <inheritdoc/>\n" INDENT1 "public new class PropertyName : "
+			   << obj_types[itype.base_name].proxy_name << ".PropertyName";
 	} else {
-		output << INDENT1 "public class PropertyName";
+		output << MEMBER_BEGIN "/// <summary>\n" INDENT1 "/// Cached StringNames for the properties and fields"
+			   << " contained within this class, for fast lookup.\n" INDENT1 "/// </summary>\n"
+			   << INDENT1 "public class PropertyName";
 	}
 	output << "\n"
 		   << INDENT1 "{\n";
 	for (const PropertyInterface &iprop : itype.properties) {
-		output << INDENT2 "/// <summary>\n"
-			   << INDENT2 "/// Cached name for the '" << iprop.cname << "' property.\n"
-			   << INDENT2 "/// </summary>\n"
+		output << INDENT2 "/// <value><c>\"" << iprop.cname << "\"</c></value>\n"
 			   << INDENT2 "public static readonly StringName " << iprop.proxy_name << " = \"" << iprop.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
 	//MethodName
-	output << MEMBER_BEGIN "/// <summary>\n"
-		   << INDENT1 "/// Cached StringNames for the methods contained in this class, for fast lookup.\n"
-		   << INDENT1 "/// </summary>\n";
 	if (is_inherit) {
-		output << INDENT1 "public new class MethodName : " << obj_types[itype.base_name].proxy_name << ".MethodName";
+		output << MEMBER_BEGIN "/// <inheritdoc/>\n" INDENT1 "public new class MethodName : "
+			   << obj_types[itype.base_name].proxy_name << ".MethodName";
 	} else {
-		output << INDENT1 "public class MethodName";
+		output << MEMBER_BEGIN "/// <summary>\n" INDENT1 "/// Cached StringNames for the methods"
+			   << " contained within this class, for fast lookup.\n" INDENT1 "/// </summary>\n"
+			   << INDENT1 "public class MethodName";
 	}
 	output << "\n"
 		   << INDENT1 "{\n";
 	for (const MethodInterface &imethod : itype.methods) {
-		output << INDENT2 "/// <summary>\n"
-			   << INDENT2 "/// Cached name for the '" << imethod.cname << "' method.\n"
-			   << INDENT2 "/// </summary>\n"
-			   << INDENT2 "public static readonly StringName " << imethod.proxy_name << " = \"" << imethod.cname << "\";\n";
+		output << INDENT2 "/// <value><c>\"" << imethod.cname << "\"</c></value>\n"
+			   << INDENT2 "public static readonly ";
+		if (imethod.hides_object) {
+			_log_warn("Prepending 'new' to inherited 'System.Object' name '%s'\n", imethod.proxy_name.utf8().get_data());
+			output << "new ";
+		}
+		output << "StringName " << imethod.proxy_name << " = \"" << imethod.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
 	//SignalName
-	output << MEMBER_BEGIN "/// <summary>\n"
-		   << INDENT1 "/// Cached StringNames for the signals contained in this class, for fast lookup.\n"
-		   << INDENT1 "/// </summary>\n";
 	if (is_inherit) {
-		output << INDENT1 "public new class SignalName : " << obj_types[itype.base_name].proxy_name << ".SignalName";
+		output << MEMBER_BEGIN "/// <inheritdoc/>\n" INDENT1 "public new class SignalName : "
+			   << obj_types[itype.base_name].proxy_name << ".SignalName";
 	} else {
-		output << INDENT1 "public class SignalName";
+		output << MEMBER_BEGIN "/// <summary>\n" INDENT1 "/// Cached StringNames for the signals"
+			   << " contained within this class, for fast lookup.\n" INDENT1 "/// </summary>\n"
+			   << INDENT1 "public class SignalName";
 	}
 	output << "\n"
 		   << INDENT1 "{\n";
 	for (const SignalInterface &isignal : itype.signals_) {
-		output << INDENT2 "/// <summary>\n"
-			   << INDENT2 "/// Cached name for the '" << isignal.cname << "' signal.\n"
-			   << INDENT2 "/// </summary>\n"
+		output << INDENT2 "/// <value><c>\"" << isignal.cname << "\"</c></value>\n"
 			   << INDENT2 "public static readonly StringName " << isignal.proxy_name << " = \"" << isignal.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
@@ -1931,6 +2001,25 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 	if (p_itype.is_singleton) {
 		p_output.append("static ");
+	}
+
+	if (prop_itype->proxy_name.contains(p_iprop.proxy_name)) {
+		Vector<String> split_proxy_name = prop_itype->proxy_name.split(".");
+		if (split_proxy_name.size() != 1 && split_proxy_name[1] == p_iprop.proxy_name) {
+			String proxy_name = split_proxy_name[0];
+			TypeInterface base_type = obj_types[p_itype.base_name];
+			while (true) {
+				if (base_type.proxy_name == proxy_name) {
+					_log_warn("Prepending 'new' to inherited '%s' name '%s'\n", base_type.proxy_name.utf8().get_data(), p_iprop.proxy_name.utf8().get_data());
+					p_output.append("new ");
+					break;
+				}
+				if (base_type.base_name == StringName()) {
+					break;
+				}
+				base_type = obj_types[base_type.base_name];
+			}
+		}
 	}
 
 	String prop_cs_type = prop_itype->cs_type + _get_generic_type_parameters(*prop_itype, proptype_name.generic_type_parameters);
@@ -2115,7 +2204,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			// Escape < and > in the attribute default value
 			String param_def_arg = def_arg.replacen("<", "&lt;").replacen(">", "&gt;");
 
-			default_args_doc.append(MEMBER_BEGIN "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is <c>" + param_def_arg + "</c>.</param>");
+			default_args_doc.append(MEMBER_BEGIN "/// <param name=\"" + param_tag_name + "\">If the parameter is <see langword=\"null\"/>, then the default value is <c>" + param_def_arg + "</c>.</param>");
 		} else {
 			if (arg_type->cs_in.size()) {
 				cs_in_statements << sformat(arg_type->cs_in, arg_type->c_type, iarg.name,
@@ -2182,6 +2271,11 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		p_output.append(MEMBER_BEGIN);
 		p_output.append(p_imethod.is_internal ? "internal " : "public ");
+
+		if (p_imethod.hides_object) {
+			_log_warn("Prepending 'new' to inherited 'System.Object' name '%s'\n", p_imethod.proxy_name.utf8().get_data());
+			p_output.append("new ");
+		}
 
 		if (p_itype.is_singleton || p_imethod.is_static) {
 			p_output.append("static ");
@@ -2302,31 +2396,31 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 	// Generate signal
 	{
-		p_output.append(MEMBER_BEGIN "/// <summary>\n");
-		p_output.append(INDENT1 "/// ");
-		p_output.append("Represents the method that handles the ");
-		p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "." + p_isignal.proxy_name + "\"/>");
-		p_output.append(" event of a ");
-		p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "\"/>");
-		p_output.append(" class.\n");
-		p_output.append(INDENT1 "/// </summary>");
-
-		if (p_isignal.is_deprecated) {
-			if (p_isignal.deprecation_message.is_empty()) {
-				WARN_PRINT("An empty deprecation message is discouraged. Signal: '" + p_isignal.proxy_name + "'.");
-			}
-
-			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
-			p_output.append(p_isignal.deprecation_message);
-			p_output.append("\")]");
-		}
-
 		bool is_parameterless = p_isignal.arguments.size() == 0;
 
 		// Delegate name is [SignalName]EventHandler
 		String delegate_name = is_parameterless ? "Action" : p_isignal.proxy_name + "EventHandler";
 
 		if (!is_parameterless) {
+			p_output.append(MEMBER_BEGIN "/// <summary>\n");
+			p_output.append(INDENT1 "/// ");
+			p_output.append("Represents the method that handles the ");
+			p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "." + p_isignal.proxy_name + "\"/>");
+			p_output.append(" event of a ");
+			p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "\"/>");
+			p_output.append(" class.\n");
+			p_output.append(INDENT1 "/// </summary>");
+
+			if (p_isignal.is_deprecated) {
+				if (p_isignal.deprecation_message.is_empty()) {
+					WARN_PRINT("An empty deprecation message is discouraged. Signal: '" + p_isignal.proxy_name + "'.");
+				}
+
+				p_output.append(MEMBER_BEGIN "[Obsolete(\"");
+				p_output.append(p_isignal.deprecation_message);
+				p_output.append("\")]");
+			}
+
 			// Generate delegate
 			p_output.append(MEMBER_BEGIN "public delegate void ");
 			p_output.append(delegate_name);
@@ -2362,7 +2456,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		}
 
 		if (p_isignal.method_doc && p_isignal.method_doc->description.size()) {
-			String xml_summary = bbcode_to_xml(fix_doc_description(p_isignal.method_doc->description), &p_itype);
+			String xml_summary = bbcode_to_xml(fix_doc_description(p_isignal.method_doc->description), &p_itype, true);
 			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 			if (summary_lines.size()) {
@@ -3129,6 +3223,10 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			imethod.proxy_name = escape_csharp_keyword(snake_to_pascal_case(imethod.name));
 
+			if (object_inherit.has(imethod.proxy_name)) {
+				imethod.hides_object = true;
+			}
+
 			// Prevent the method and its enclosing type from sharing the same name
 			if (imethod.proxy_name == itype.proxy_name) {
 				_log("Name of method '%s' is ambiguous with the name of its enclosing class '%s'. Renaming method to '%s_'\n",
@@ -3263,8 +3361,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				enum_proxy_name += "Enum";
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
-			EnumInterface ienum(enum_proxy_cname);
-			ienum.is_flags = E.value.is_bitfield;
+			EnumInterface ienum(enum_proxy_cname, pascal_to_pascal_case(enum_proxy_cname), E.value.is_bitfield);
 			const List<StringName> &enum_constants = E.value.constants;
 			for (const StringName &constant_cname : enum_constants) {
 				String constant_name = constant_cname.operator String();
@@ -3884,8 +3981,7 @@ void BindingsGenerator::_populate_global_constants() {
 			iconstant.const_doc = const_doc;
 
 			if (enum_name != StringName()) {
-				EnumInterface ienum(enum_name);
-				ienum.is_flags = CoreConstants::is_global_constant_bitfield(i);
+				EnumInterface ienum(enum_name, pascal_to_pascal_case(enum_name), CoreConstants::is_global_constant_bitfield(i));
 				List<EnumInterface>::Element *enum_match = global_enums.find(ienum);
 				if (enum_match) {
 					enum_match->get().constants.push_back(iconstant);
@@ -3953,6 +4049,16 @@ void BindingsGenerator::_log(const char *p_format, ...) {
 
 		va_start(list, p_format);
 		OS::get_singleton()->print("%s", str_format(p_format, list).utf8().get_data());
+		va_end(list);
+	}
+}
+
+void BindingsGenerator::_log_warn(const char *p_format, ...) {
+	if (log_print_enabled) {
+		va_list list;
+
+		va_start(list, p_format);
+		OS::get_singleton()->print("\x1b[1;33mWARNING: %s\x1b[0m", str_format(p_format, list).utf8().get_data());
 		va_end(list);
 	}
 }
