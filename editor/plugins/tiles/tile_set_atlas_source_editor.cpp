@@ -2529,6 +2529,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	atlas_source_inspector = memnew(EditorInspector);
 	atlas_source_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	atlas_source_inspector->set_show_categories(true);
+	atlas_source_inspector->add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 	atlas_source_inspector->edit(atlas_source_proxy_object);
 	middle_vbox_container->add_child(atlas_source_inspector);
 

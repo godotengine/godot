@@ -34,6 +34,7 @@
 #include "tiles_editor_plugin.h"
 
 #include "editor/editor_file_system.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -42,6 +43,7 @@
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
 
 TileSetEditor *TileSetEditor::singleton = nullptr;
@@ -158,7 +160,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 
 		// Common to all type of sources.
 		if (!source->get_name().is_empty()) {
-			item_text = vformat(TTR("%s (ID: %d)"), source->get_name(), source_id);
+			item_text = source->get_name();
 		}
 
 		// Atlas source.
@@ -167,7 +169,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 			texture = atlas_source->get_texture();
 			if (item_text.is_empty()) {
 				if (texture.is_valid()) {
-					item_text = vformat(TTR("%s (ID: %d)"), texture->get_path().get_file(), source_id);
+					item_text = texture->get_path().get_file();
 				} else {
 					item_text = vformat(TTR("No Texture Atlas Source (ID: %d)"), source_id);
 				}
@@ -963,4 +965,55 @@ TileSetEditor::TileSetEditor() {
 	// Registers UndoRedo inspector callback.
 	EditorNode::get_singleton()->get_editor_data().add_move_array_element_function(SNAME("TileSet"), callable_mp(this, &TileSetEditor::_move_tile_set_array_element));
 	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(callable_mp(this, &TileSetEditor::_undo_redo_inspector_callback));
+}
+
+void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
+	if (!id_edit_dialog) {
+		id_edit_dialog = memnew(ConfirmationDialog);
+		TileSetEditor::get_singleton()->add_child(id_edit_dialog);
+
+		VBoxContainer *vbox = memnew(VBoxContainer);
+		id_edit_dialog->add_child(vbox);
+
+		Label *label = memnew(Label(TTR("Warning: Modifying a source ID will result in all TileMaps using that source to reference an invalid source instead. This may result in unexpected data loss. Change this ID carefully.")));
+		label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
+		vbox->add_child(label);
+
+		id_input = memnew(SpinBox);
+		vbox->add_child(id_input);
+		id_input->set_max(INT_MAX);
+
+		id_edit_dialog->connect("confirmed", callable_mp(this, &TileSourceInspectorPlugin::_confirm_change_id));
+	}
+	edited_source = p_for_source;
+	id_input->set_value(p_for_source->get("id"));
+	id_edit_dialog->popup_centered(Vector2i(400, 0) * EDSCALE);
+	callable_mp((Control *)id_input->get_line_edit(), &Control::grab_focus).call_deferred();
+}
+
+void TileSourceInspectorPlugin::_confirm_change_id() {
+	edited_source->set("id", id_input->get_value());
+	id_label->set_text(vformat(TTR("ID: %d"), edited_source->get("id"))); // Use get(), because the provided ID might've been invalid.
+}
+
+bool TileSourceInspectorPlugin::can_handle(Object *p_object) {
+	return p_object->is_class("TileSetAtlasSourceProxyObject") || p_object->is_class("TileSetScenesCollectionProxyObject");
+}
+
+bool TileSourceInspectorPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
+	if (p_path == "id") {
+		HBoxContainer *hbox = memnew(HBoxContainer);
+		hbox->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+
+		id_label = memnew(Label(vformat(TTR("ID: %d"), p_object->get("id"))));
+		hbox->add_child(id_label);
+
+		Button *button = memnew(Button(TTR("Edit")));
+		hbox->add_child(button);
+		button->connect("pressed", callable_mp(this, &TileSourceInspectorPlugin::_show_id_edit_dialog).bind(p_object));
+
+		add_custom_control(hbox);
+		return true;
+	}
+	return false;
 }
