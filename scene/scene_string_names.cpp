@@ -168,8 +168,6 @@ SceneStringNames::SceneStringNames() {
 	_drop_data = StaticCString::create("_drop_data");
 	_can_drop_data = StaticCString::create("_can_drop_data");
 
-	_im_update = StaticCString::create("_im_update"); // Sprite3D
-
 	baked_light_changed = StaticCString::create("baked_light_changed");
 	_baked_light_changed = StaticCString::create("_baked_light_changed");
 
