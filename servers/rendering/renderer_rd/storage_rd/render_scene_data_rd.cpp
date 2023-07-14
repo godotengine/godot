@@ -34,11 +34,15 @@
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 
-RID RenderSceneDataRD::create_uniform_buffer() {
-	return RD::get_singleton()->uniform_buffer_create(sizeof(UBODATA));
+RID RenderSceneDataRD::create_uniform_buffer(bool p_including_previous_state) {
+	if (p_including_previous_state) {
+		return RD::get_singleton()->uniform_buffer_create(sizeof(UBODATA));
+	} else {
+		return RD::get_singleton()->uniform_buffer_create(sizeof(UBO));
+	}
 }
 
-void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_flip_y, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers) {
+void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_flip_y, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_including_previous_state) {
 	RendererSceneRenderRD *render_scene_render = RendererSceneRenderRD::get_singleton();
 
 	UBODATA ubo_data;
@@ -219,7 +223,7 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 	ubo.roughness_limiter_amount = render_scene_render->screen_space_roughness_limiter_get_amount();
 	ubo.roughness_limiter_limit = render_scene_render->screen_space_roughness_limiter_get_limit();
 
-	if (calculate_motion_vectors) {
+	if (calculate_motion_vectors && p_including_previous_state) {
 		// Q : Should we make a complete copy or should we define a separate UBO with just the components we need?
 		memcpy(&prev_ubo, &ubo, sizeof(UBO));
 
@@ -245,7 +249,11 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 	}
 
 	uniform_buffer = p_uniform_buffer;
-	RD::get_singleton()->buffer_update(uniform_buffer, 0, sizeof(UBODATA), &ubo, RD::BARRIER_MASK_RASTER);
+	if (p_including_previous_state) {
+		RD::get_singleton()->buffer_update(uniform_buffer, 0, sizeof(UBODATA), &ubo, RD::BARRIER_MASK_RASTER);
+	} else {
+		RD::get_singleton()->buffer_update(uniform_buffer, 0, sizeof(UBO), &ubo, RD::BARRIER_MASK_RASTER);
+	}
 }
 
 RID RenderSceneDataRD::get_uniform_buffer() {

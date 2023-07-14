@@ -194,15 +194,12 @@ private:
 
 	/* Render shadows */
 
-	void _render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<RenderGeometryInstance *> &p_instances, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_mesh_lod_threshold = 0.0, bool p_open_pass = true, bool p_close_pass = true, bool p_clear_region = true, RenderingMethod::RenderInfo *p_render_info = nullptr);
-	void _render_shadow_begin();
-	void _render_shadow_append(RID p_framebuffer, const PagedArray<RenderGeometryInstance *> &p_instances, const Projection &p_projection, const Transform3D &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0.0, float p_screen_mesh_lod_threshold = 0.0, const Rect2i &p_rect = Rect2i(), bool p_flip_y = false, bool p_clear_region = true, bool p_begin = true, bool p_end = true, RenderingMethod::RenderInfo *p_render_info = nullptr);
-	void _render_shadow_process();
-	void _render_shadow_end(uint32_t p_barrier = RD::BARRIER_MASK_ALL_BARRIERS);
+	void _render_shadow_directional_shadow_map(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<RenderGeometryInstance *> &p_instances, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, bool p_close_pass, RenderingMethod::RenderInfo *p_render_info, uint32_t p_shadow_pass_index);
+	void _render_shadow_positional_shadow_map(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<RenderGeometryInstance *> &p_instances, const Plane &p_camera_plane, float p_lod_distance_multiplier, float p_screen_mesh_lod_threshold, bool p_open_pass, bool p_close_pass, RenderingMethod::RenderInfo *p_render_info, uint32_t p_shadow_pass_index);
 
 	/* Render Scene */
 
-	RID _setup_render_pass_uniform_set(RenderListType p_render_list, const RenderDataRD *p_render_data, RID p_radiance_texture, bool p_use_directional_shadow_atlas = false, int p_index = 0);
+	RID _setup_render_pass_uniform_set(const RenderDataRD *p_render_data, RID p_radiance_texture, bool p_use_directional_shadow_atlas = false, int p_index = 0);
 	void _pre_opaque_render(RenderDataRD *p_render_data);
 
 	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
@@ -252,25 +249,6 @@ private:
 		bool used_normal_texture = false;
 		bool used_depth_texture = false;
 		bool used_sss = false;
-
-		struct ShadowPass {
-			uint32_t element_from;
-			uint32_t element_count;
-			bool flip_cull;
-			PassMode pass_mode;
-
-			RID rp_uniform_set;
-			Plane camera_plane;
-			float lod_distance_multiplier;
-			float screen_mesh_lod_threshold;
-
-			RID framebuffer;
-			RD::InitialAction initial_depth_action;
-			RD::FinalAction final_depth_action;
-			Rect2i rect;
-		};
-
-		LocalVector<ShadowPass> shadow_passes;
 	} scene_state;
 
 	/* Render List */

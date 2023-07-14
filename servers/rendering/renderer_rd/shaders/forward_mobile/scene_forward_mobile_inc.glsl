@@ -119,7 +119,7 @@ global_shader_uniforms;
 
 layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
 	SceneData data;
-	SceneData prev_data;
+	//	SceneData prev_data; // Note supported on the mobile renderer
 }
 scene_data_block;
 
@@ -131,7 +131,7 @@ layout(set = 1, binding = 2) uniform mediump textureCubeArray radiance_cubemap;
 
 layout(set = 1, binding = 2) uniform mediump textureCube radiance_cubemap;
 
-#endif
+#endif // USE_RADIANCE_CUBEMAP_ARRAY
 
 layout(set = 1, binding = 3) uniform mediump textureCubeArray reflection_atlas;
 
@@ -143,12 +143,12 @@ layout(set = 1, binding = 5) uniform highp texture2D directional_shadow_atlas;
 layout(set = 1, binding = 6) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
 
 #ifdef USE_MULTIVIEW
-layout(set = 1, binding = 9) uniform highp texture2DArray depth_buffer;
-layout(set = 1, binding = 10) uniform mediump texture2DArray color_buffer;
+layout(set = 1, binding = 7) uniform highp texture2DArray depth_buffer;
+layout(set = 1, binding = 8) uniform mediump texture2DArray color_buffer;
 #define multiviewSampler sampler2DArray
 #else
-layout(set = 1, binding = 9) uniform highp texture2D depth_buffer;
-layout(set = 1, binding = 10) uniform mediump texture2D color_buffer;
+layout(set = 1, binding = 7) uniform highp texture2D depth_buffer;
+layout(set = 1, binding = 8) uniform mediump texture2D color_buffer;
 #define multiviewSampler sampler2D
 #endif // USE_MULTIVIEW
 

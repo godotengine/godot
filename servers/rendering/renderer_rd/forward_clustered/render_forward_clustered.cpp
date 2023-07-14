@@ -1419,7 +1419,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 
 	//Do shadow rendering (in parallel with GI)
 	if (render_shadows) {
-		_render_shadow_end(RD::BARRIER_MASK_NO_BARRIER);
+		_render_shadow_end();
 	}
 
 	if (render_gi) {
@@ -2316,13 +2316,17 @@ void RenderForwardClustered::_render_shadow_pass(RID p_light, RID p_shadow_atlas
 		if (finalize_cubemap) {
 			_render_shadow_process();
 			_render_shadow_end();
+
+			//barrier, don't start our next fragment shader until previous fragment shaders are done...
+			RD::get_singleton()->barrier(RD::BARRIER_MASK_FRAGMENT, RD::BARRIER_MASK_FRAGMENT);
+
 			//reblit
 			Rect2 atlas_rect_norm = atlas_rect;
 			atlas_rect_norm.position /= float(atlas_size);
 			atlas_rect_norm.size /= float(atlas_size);
-			copy_effects->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect_norm, atlas_rect.size, light_projection.get_z_near(), light_projection.get_z_far(), false);
+			copy_effects->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect_norm, atlas_rect.size, light_projection.get_z_near(), light_projection.get_z_far(), false, RD::BARRIER_MASK_NO_BARRIER);
 			atlas_rect_norm.position += Vector2(dual_paraboloid_offset) * atlas_rect_norm.size;
-			copy_effects->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect_norm, atlas_rect.size, light_projection.get_z_near(), light_projection.get_z_far(), true);
+			copy_effects->copy_cubemap_to_dp(render_texture, atlas_fb, atlas_rect_norm, atlas_rect.size, light_projection.get_z_near(), light_projection.get_z_far(), true, RD::BARRIER_MASK_NO_BARRIER);
 
 			//restore transform so it can be properly used
 			light_storage->light_instance_set_shadow_transform(p_light, Projection(), light_storage->light_instance_get_base_transform(p_light), zfar, 0, 0, 0);
@@ -2425,7 +2429,7 @@ void RenderForwardClustered::_render_shadow_process() {
 
 	RD::get_singleton()->draw_command_end_label();
 }
-void RenderForwardClustered::_render_shadow_end(uint32_t p_barrier) {
+void RenderForwardClustered::_render_shadow_end() {
 	RD::get_singleton()->draw_command_begin_label("Shadow Render");
 
 	for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
@@ -2433,9 +2437,6 @@ void RenderForwardClustered::_render_shadow_end(uint32_t p_barrier) {
 		_render_list_with_threads(&render_list_parameters, shadow_pass.framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, shadow_pass.initial_depth_action, shadow_pass.final_depth_action, Vector<Color>(), 1.0, 0, shadow_pass.rect);
 	}
 
-	if (p_barrier != RD::BARRIER_MASK_NO_BARRIER) {
-		RD::get_singleton()->barrier(RD::BARRIER_MASK_RASTER, p_barrier);
-	}
 	RD::get_singleton()->draw_command_end_label();
 }
 

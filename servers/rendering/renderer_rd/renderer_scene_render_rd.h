@@ -87,9 +87,9 @@ struct RenderDataRD {
 	const RendererSceneRender::RenderShadowData *render_shadows = nullptr;
 	int render_shadow_count = 0;
 
-	LocalVector<int> cube_shadows;
-	LocalVector<int> shadows;
-	LocalVector<int> directional_shadows;
+	LocalVector<uint64_t> cube_shadows;
+	LocalVector<uint64_t> shadows;
+	LocalVector<uint64_t> directional_shadows;
 
 	/* GI info */
 	const RendererSceneRender::RenderSDFGIData *render_sdfgi_regions = nullptr;

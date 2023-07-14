@@ -6719,18 +6719,27 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 	render_pass_begin.pNext = nullptr;
 	render_pass_begin.renderPass = render_pass;
 	render_pass_begin.framebuffer = vkframebuffer;
-	/*
-	 * Given how API works, it makes sense to always fully operate on the whole framebuffer.
-	 * This allows better continue operations for operations like shadowmapping.
-	render_pass_begin.renderArea.extent.width = viewport_size.width;
-	render_pass_begin.renderArea.extent.height = viewport_size.height;
-	render_pass_begin.renderArea.offset.x = viewport_offset.x;
-	render_pass_begin.renderArea.offset.y = viewport_offset.y;
-	*/
-	render_pass_begin.renderArea.extent.width = framebuffer->size.width;
-	render_pass_begin.renderArea.extent.height = framebuffer->size.height;
-	render_pass_begin.renderArea.offset.x = 0;
-	render_pass_begin.renderArea.offset.y = 0;
+
+	if (use_render_area) {
+		/*
+		 * Regardless of the original remark here, copied below,
+		 * feedback from GPU vendors is that if the full texture is specified here,
+		 * the full texture is processed by the tiled system wasting bandwidth.
+		 */
+		render_pass_begin.renderArea.extent.width = viewport_size.width;
+		render_pass_begin.renderArea.extent.height = viewport_size.height;
+		render_pass_begin.renderArea.offset.x = viewport_offset.x;
+		render_pass_begin.renderArea.offset.y = viewport_offset.y;
+	} else {
+		/*
+		 * Given how API works, it makes sense to always fully operate on the whole framebuffer.
+		 * This allows better continue operations for operations like shadowmapping.
+		 */
+		render_pass_begin.renderArea.extent.width = framebuffer->size.width;
+		render_pass_begin.renderArea.extent.height = framebuffer->size.height;
+		render_pass_begin.renderArea.offset.x = 0;
+		render_pass_begin.renderArea.offset.y = 0;
+	}
 
 	Vector<VkClearValue> clear_values;
 	clear_values.resize(framebuffer->texture_ids.size());
@@ -8199,9 +8208,15 @@ void RenderingDeviceVulkan::compute_list_end(BitField<BarrierMask> p_post_barrie
 		barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 		access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 	}
-	if (p_post_barrier.has_flag(BARRIER_MASK_RASTER)) {
-		barrier_flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+	if (p_post_barrier.has_flag(BARRIER_MASK_VERTEX)) {
+		// TODO check if VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT/VK_ACCESS_INDIRECT_COMMAND_READ_BIT makes sense.
+		barrier_flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
 		access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+	}
+	if (p_post_barrier.has_flag(BARRIER_MASK_FRAGMENT)) {
+		// TODO check if VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT/VK_ACCESS_INDIRECT_COMMAND_READ_BIT makes sense.
+		barrier_flags |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+		access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
 	}
 	if (p_post_barrier.has_flag(BARRIER_MASK_TRANSFER)) {
 		barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -8227,7 +8242,10 @@ void RenderingDeviceVulkan::barrier(BitField<BarrierMask> p_from, BitField<Barri
 			src_barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 			src_access_flags |= VK_ACCESS_SHADER_WRITE_BIT;
 		}
-		if (p_from.has_flag(BARRIER_MASK_RASTER)) {
+		if (p_from.has_flag(BARRIER_MASK_VERTEX)) {
+			// don't seem to have barrier here that make sense (logical because we're inside of a pass)
+		}
+		if (p_from.has_flag(BARRIER_MASK_FRAGMENT)) {
 			src_barrier_flags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 			src_access_flags |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		}
@@ -8247,9 +8265,15 @@ void RenderingDeviceVulkan::barrier(BitField<BarrierMask> p_from, BitField<Barri
 			dst_barrier_flags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 			dst_access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 		}
-		if (p_to.has_flag(BARRIER_MASK_RASTER)) {
-			dst_barrier_flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+		if (p_to.has_flag(BARRIER_MASK_VERTEX)) {
+			// TODO check if VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT/VK_ACCESS_INDIRECT_COMMAND_READ_BIT makes sense.
+			dst_barrier_flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
 			dst_access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+		}
+		if (p_to.has_flag(BARRIER_MASK_FRAGMENT)) {
+			// TODO check if VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT/VK_ACCESS_INDIRECT_COMMAND_READ_BIT makes sense.
+			dst_barrier_flags |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+			dst_access_flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
 		}
 		if (p_to.has_flag(BARRIER_MASK_TRANSFER)) {
 			dst_barrier_flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;

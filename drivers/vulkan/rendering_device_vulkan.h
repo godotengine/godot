@@ -921,6 +921,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 #endif
 	uint32_t draw_list_current_subpass = 0;
 
+	bool use_render_area = true; // Use render area to constraint render target (faster on mobile, slower on desktop?? Or incorrect assumption?)
 	bool draw_list_split = false;
 	Vector<RID> draw_list_bound_textures;
 	Vector<RID> draw_list_storage_textures;
