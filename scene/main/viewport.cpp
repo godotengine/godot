@@ -315,7 +315,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 	Rect2i r = Rect2i(p_window->get_position(), sw.window->get_size());
 
 	if (!p_window->get_flag(Window::FLAG_BORDERLESS)) {
-		Ref<StyleBox> panel = p_window->get_theme_stylebox(SNAME("embedded_border"));
+		Ref<StyleBox> panel = p_window->get_theme_stylebox(gui.subwindow_focused == p_window ? SNAME("embedded_border") : SNAME("embedded_unfocused_border"));
 		panel->draw(sw.canvas_item, r);
 
 		// Draw the title bar text.
