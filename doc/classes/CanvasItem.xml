@@ -600,7 +600,7 @@
 			[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 		</member>
 		<member name="y_sort_enabled" type="bool" setter="set_y_sort_enabled" getter="is_y_sort_enabled" default="false">
-			If [code]true[/code], child nodes with the lowest Y position are drawn before those with a higher Y position. If [code]false[/code], Y-sorting is disabled. Y-sorting only affects children that inherit from [CanvasItem].
+			If [code]true[/code], this [CanvasItem] and its [CanvasItem] child nodes are sorted according to the Y position. Nodes with a lower Y position are drawn before those with a higher Y position. If [code]false[/code], Y-sorting is disabled.
 			You can nest nodes with Y-sorting. Child Y-sorted nodes are sorted in the same space as the parent Y-sort. This feature allows you to organize a scene better or divide it into multiple ones without changing your scene tree.
 		</member>
 		<member name="z_as_relative" type="bool" setter="set_z_as_relative" getter="is_z_relative" default="true">
