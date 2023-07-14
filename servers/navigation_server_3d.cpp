@@ -185,10 +185,10 @@ NavigationServer3D::NavigationServer3D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
-	GLOBAL_DEF_BASIC("navigation/2d/default_cell_size", 1);
+	GLOBAL_DEF_BASIC("navigation/2d/default_cell_size", 1.0);
 	GLOBAL_DEF("navigation/2d/use_edge_connections", true);
-	GLOBAL_DEF_BASIC("navigation/2d/default_edge_connection_margin", 1);
-	GLOBAL_DEF_BASIC("navigation/2d/default_link_connection_radius", 4);
+	GLOBAL_DEF_BASIC("navigation/2d/default_edge_connection_margin", 1.0);
+	GLOBAL_DEF_BASIC("navigation/2d/default_link_connection_radius", 4.0);
 
 	GLOBAL_DEF_BASIC("navigation/3d/default_cell_size", 0.25);
 	GLOBAL_DEF_BASIC("navigation/3d/default_cell_height", 0.25);
