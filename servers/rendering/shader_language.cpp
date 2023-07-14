@@ -3388,12 +3388,14 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 	}
 
 	int last_arg_count = 0;
+	bool exists = false;
 	String arg_list = "";
 
 	for (int i = 0; i < shader->functions.size(); i++) {
 		if (name != shader->functions[i].name) {
 			continue;
 		}
+		exists = true;
 
 		if (!shader->functions[i].callable) {
 			_set_error(vformat(RTR("Function '%s' can't be called from source code."), String(name)));
@@ -3494,10 +3496,12 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, const FunctionI
 		}
 	}
 
-	if (last_arg_count > args.size()) {
-		_set_error(vformat(RTR("Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."), String(name), arg_list, last_arg_count, args.size()));
-	} else if (last_arg_count < args.size()) {
-		_set_error(vformat(RTR("Too many arguments for \"%s(%s)\" call. Expected at most %d but received %d."), String(name), arg_list, last_arg_count, args.size()));
+	if (exists) {
+		if (last_arg_count > args.size()) {
+			_set_error(vformat(RTR("Too few arguments for \"%s(%s)\" call. Expected at least %d but received %d."), String(name), arg_list, last_arg_count, args.size()));
+		} else if (last_arg_count < args.size()) {
+			_set_error(vformat(RTR("Too many arguments for \"%s(%s)\" call. Expected at most %d but received %d."), String(name), arg_list, last_arg_count, args.size()));
+		}
 	}
 
 	return false;
