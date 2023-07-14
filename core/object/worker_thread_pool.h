@@ -204,6 +204,10 @@ public:
 
 template <typename F>
 static _FORCE_INLINE_ void for_range(int i_begin, int i_end, bool parallel, String name, F f) {
+	if (i_begin >= i_end) {
+		return;
+	}
+
 	if (!parallel) {
 		for (int i = i_begin; i < i_end; i++) {
 			f(i);

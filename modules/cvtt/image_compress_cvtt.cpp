@@ -53,13 +53,6 @@ struct CVTTCompressionRowTask {
 	int height = 0;
 };
 
-struct CVTTCompressionJobQueue {
-	CVTTCompressionJobParams job_params;
-	const CVTTCompressionRowTask *job_tasks = nullptr;
-	uint32_t num_tasks = 0;
-	SafeNumeric<uint32_t> current_task;
-};
-
 static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const CVTTCompressionRowTask &p_row_task) {
 	const uint8_t *in_bytes = p_row_task.in_mm_bytes;
 	uint8_t *out_bytes = p_row_task.out_mm_bytes;
@@ -129,18 +122,6 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 	}
 }
 
-static void _digest_job_queue(void *p_job_queue, uint32_t p_index) {
-	CVTTCompressionJobQueue *job_queue = static_cast<CVTTCompressionJobQueue *>(p_job_queue);
-	uint32_t num_tasks = job_queue->num_tasks;
-	uint32_t total_threads = WorkerThreadPool::get_singleton()->get_thread_count();
-	uint32_t start = p_index * num_tasks / total_threads;
-	uint32_t end = (p_index + 1 == total_threads) ? num_tasks : ((p_index + 1) * num_tasks / total_threads);
-
-	for (uint32_t i = start; i < end; i++) {
-		_digest_row_task(job_queue->job_params, job_queue->job_tasks[i]);
-	}
-}
-
 void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	if (p_image->get_format() >= Image::FORMAT_BPTC_RGBA) {
 		return; //do not compress, already compressed
@@ -199,12 +180,12 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 
 	int dst_ofs = 0;
 
-	CVTTCompressionJobQueue job_queue;
-	job_queue.job_params.is_hdr = is_hdr;
-	job_queue.job_params.is_signed = is_signed;
-	job_queue.job_params.options = options;
-	job_queue.job_params.bytes_per_pixel = is_hdr ? 6 : 4;
-	cvtt::Kernels::ConfigureBC7EncodingPlanFromQuality(job_queue.job_params.bc7_plan, 5);
+	CVTTCompressionJobParams job_params;
+	job_params.is_hdr = is_hdr;
+	job_params.is_signed = is_signed;
+	job_params.options = options;
+	job_params.bytes_per_pixel = is_hdr ? 6 : 4;
+	cvtt::Kernels::ConfigureBC7EncodingPlanFromQuality(job_params.bc7_plan, 5);
 
 	// Amdahl's law (Wikipedia)
 	// If a program needs 20 hours to complete using a single thread, but a one-hour portion of the program cannot be parallelized,
@@ -242,12 +223,9 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 		h = MAX(h / 2, 1);
 	}
 
-	const CVTTCompressionRowTask *tasks_rb = tasks.ptr();
-
-	job_queue.job_tasks = &tasks_rb[0];
-	job_queue.num_tasks = static_cast<uint32_t>(tasks.size());
-	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&_digest_job_queue, &job_queue, WorkerThreadPool::get_singleton()->get_thread_count(), -1, true, SNAME("CVTT Compress"));
-	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+	for_range(0, tasks.size(), true, SNAME("CVTT Compress"), [&](const int i) {
+		_digest_row_task(job_params, tasks[i]);
+	});
 
 	p_image->set_data(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }

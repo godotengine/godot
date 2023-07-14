@@ -1173,53 +1173,28 @@ void NavMap::_update_rvo_simulation() {
 	}
 }
 
-void NavMap::compute_single_avoidance_step_2d(uint32_t index, NavAgent **agent) {
-	(*(agent + index))->get_rvo_agent_2d()->computeNeighbors(&rvo_simulation_2d);
-	(*(agent + index))->get_rvo_agent_2d()->computeNewVelocity(&rvo_simulation_2d);
-	(*(agent + index))->get_rvo_agent_2d()->update(&rvo_simulation_2d);
-	(*(agent + index))->update();
-}
-
-void NavMap::compute_single_avoidance_step_3d(uint32_t index, NavAgent **agent) {
-	(*(agent + index))->get_rvo_agent_3d()->computeNeighbors(&rvo_simulation_3d);
-	(*(agent + index))->get_rvo_agent_3d()->computeNewVelocity(&rvo_simulation_3d);
-	(*(agent + index))->get_rvo_agent_3d()->update(&rvo_simulation_3d);
-	(*(agent + index))->update();
-}
-
 void NavMap::step(real_t p_deltatime) {
 	deltatime = p_deltatime;
 
 	rvo_simulation_2d.setTimeStep(float(deltatime));
 	rvo_simulation_3d.setTimeStep(float(deltatime));
 
-	if (active_2d_avoidance_agents.size() > 0) {
-		if (use_threads && avoidance_use_multiple_threads) {
-			WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &NavMap::compute_single_avoidance_step_2d, active_2d_avoidance_agents.ptr(), active_2d_avoidance_agents.size(), -1, true, SNAME("RVOAvoidanceAgents2D"));
-			WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
-		} else {
-			for (NavAgent *agent : active_2d_avoidance_agents) {
-				agent->get_rvo_agent_2d()->computeNeighbors(&rvo_simulation_2d);
-				agent->get_rvo_agent_2d()->computeNewVelocity(&rvo_simulation_2d);
-				agent->get_rvo_agent_2d()->update(&rvo_simulation_2d);
-				agent->update();
-			}
-		}
-	}
+	bool use_parallel_for = use_threads && avoidance_use_multiple_threads;
 
-	if (active_3d_avoidance_agents.size() > 0) {
-		if (use_threads && avoidance_use_multiple_threads) {
-			WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &NavMap::compute_single_avoidance_step_3d, active_3d_avoidance_agents.ptr(), active_3d_avoidance_agents.size(), -1, true, SNAME("RVOAvoidanceAgents3D"));
-			WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
-		} else {
-			for (NavAgent *agent : active_3d_avoidance_agents) {
-				agent->get_rvo_agent_3d()->computeNeighbors(&rvo_simulation_3d);
-				agent->get_rvo_agent_3d()->computeNewVelocity(&rvo_simulation_3d);
-				agent->get_rvo_agent_3d()->update(&rvo_simulation_3d);
-				agent->update();
-			}
-		}
-	}
+	for_range(0, active_2d_avoidance_agents.size(), use_parallel_for, SNAME("RVOAvoidanceAgents2D"), [&](const int i) {
+		NavAgent *agent = active_2d_avoidance_agents[i];
+		agent->get_rvo_agent_2d()->computeNeighbors(&rvo_simulation_2d);
+		agent->get_rvo_agent_2d()->computeNewVelocity(&rvo_simulation_2d);
+		agent->get_rvo_agent_2d()->update(&rvo_simulation_2d);
+		agent->update();
+	});
+	for_range(0, active_3d_avoidance_agents.size(), use_parallel_for, SNAME("RVOAvoidanceAgents3D"), [&](const int i) {
+		NavAgent *agent = active_3d_avoidance_agents[i];
+		agent->get_rvo_agent_3d()->computeNeighbors(&rvo_simulation_3d);
+		agent->get_rvo_agent_3d()->computeNewVelocity(&rvo_simulation_3d);
+		agent->get_rvo_agent_3d()->update(&rvo_simulation_3d);
+		agent->update();
+	});
 }
 
 void NavMap::dispatch_callbacks() {

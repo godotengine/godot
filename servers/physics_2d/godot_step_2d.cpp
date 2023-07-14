@@ -72,11 +72,6 @@ void GodotStep2D::_populate_island(GodotBody2D *p_body, LocalVector<GodotBody2D 
 	}
 }
 
-void GodotStep2D::_setup_constraint(uint32_t p_constraint_index, void *p_userdata) {
-	GodotConstraint2D *constraint = all_constraints[p_constraint_index];
-	constraint->setup(delta);
-}
-
 void GodotStep2D::_pre_solve_island(LocalVector<GodotConstraint2D *> &p_constraint_island) const {
 	uint32_t constraint_count = p_constraint_island.size();
 	uint32_t valid_constraint_count = 0;
@@ -90,7 +85,7 @@ void GodotStep2D::_pre_solve_island(LocalVector<GodotConstraint2D *> &p_constrai
 	p_constraint_island.resize(valid_constraint_count);
 }
 
-void GodotStep2D::_solve_island(uint32_t p_island_index, void *p_userdata) const {
+void GodotStep2D::_solve_island(uint32_t p_island_index) const {
 	const LocalVector<GodotConstraint2D *> &constraint_island = constraint_islands[p_island_index];
 
 	for (int i = 0; i < iterations; i++) {
@@ -238,10 +233,10 @@ void GodotStep2D::step(GodotSpace2D *p_space, real_t p_delta) {
 	}
 
 	/* SETUP CONSTRAINTS / PROCESS COLLISIONS */
-
-	uint32_t total_constraint_count = all_constraints.size();
-	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GodotStep2D::_setup_constraint, nullptr, total_constraint_count, -1, true, SNAME("Physics2DConstraintSetup"));
-	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+	for_range(0, all_constraints.size(), true, SNAME("Physics2DConstraintSetup"), [&](const int i) {
+		GodotConstraint2D *constraint = all_constraints[i];
+		constraint->setup(delta);
+	});
 
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
@@ -260,8 +255,9 @@ void GodotStep2D::step(GodotSpace2D *p_space, real_t p_delta) {
 
 	// Warning: _solve_island modifies the constraint islands for optimization purpose,
 	// their content is not reliable after these calls and shouldn't be used anymore.
-	group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &GodotStep2D::_solve_island, nullptr, island_count, -1, true, SNAME("Physics2DConstraintSolveIslands"));
-	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+	for_range(0, island_count, true, SNAME("Physics2DConstraintSolveIslands"), [&](const int i) {
+		_solve_island(i);
+	});
 
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();

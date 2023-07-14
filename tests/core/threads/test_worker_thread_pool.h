@@ -109,7 +109,7 @@ TEST_CASE("[WorkerThreadPool] Process elements using group tasks") {
 TEST_CASE("[WorkerThreadPool] Parallel foreach") {
 	const int count_max = 256;
 
-	for (int midpoint = 0; midpoint < count_max; midpoint++) {
+	for (int midpoint = 0; midpoint <= count_max; midpoint++) {
 		LocalVector<int> c;
 		c.resize(count_max);
 

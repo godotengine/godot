@@ -883,13 +883,6 @@ public:
 	}
 };
 
-struct MSDFThreadData {
-	msdfgen::Bitmap<float, 4> *output;
-	msdfgen::Shape *shape;
-	msdfgen::Projection *projection;
-	DistancePixelConversion *distancePixelConversion;
-};
-
 static msdfgen::Point2 ft_point2(const FT_Vector &vector) {
 	return msdfgen::Point2(vector.x / 60.0f, vector.y / 60.0f);
 }
@@ -925,19 +918,6 @@ static int ft_cubic_to(const FT_Vector *control1, const FT_Vector *control2, con
 	context->contour->addEdge(new msdfgen::CubicSegment(context->position, ft_point2(*control1), ft_point2(*control2), ft_point2(*to)));
 	context->position = ft_point2(*to);
 	return 0;
-}
-
-void TextServerAdvanced::_generateMTSDF_threaded(void *p_td, uint32_t p_y) {
-	MSDFThreadData *td = static_cast<MSDFThreadData *>(p_td);
-
-	msdfgen::ShapeDistanceFinder<msdfgen::OverlappingContourCombiner<msdfgen::MultiAndTrueDistanceSelector>> distanceFinder(*td->shape);
-	int row = td->shape->inverseYAxis ? td->output->height() - p_y - 1 : p_y;
-	for (int col = 0; col < td->output->width(); ++col) {
-		int x = (p_y % 2) ? td->output->width() - col - 1 : col;
-		msdfgen::Point2 p = td->projection->unproject(msdfgen::Point2(x + .5, p_y + .5));
-		msdfgen::MultiAndTrueDistance distance = distanceFinder.distance(p);
-		td->distancePixelConversion->operator()(td->output->operator()(x, row), distance);
-	}
 }
 
 _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(FontAdvanced *p_font_data, FontForSizeAdvanced *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *outline, const Vector2 &advance) const {
@@ -998,14 +978,16 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 		msdfgen::Projection projection(msdfgen::Vector2(1.0, 1.0), msdfgen::Vector2(-bounds.l, -bounds.b));
 		msdfgen::MSDFGeneratorConfig config(true, msdfgen::ErrorCorrectionConfig());
 
-		MSDFThreadData td;
-		td.output = &image;
-		td.shape = &shape;
-		td.projection = &projection;
-		td.distancePixelConversion = &distancePixelConversion;
-
-		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&TextServerAdvanced::_generateMTSDF_threaded, &td, h, -1, true, String("FontServerRasterizeMSDF"));
-		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+		for_range(0, h, true, SNAME("FontServerRasterizeMSDF"), [&](const int p_y) {
+			msdfgen::ShapeDistanceFinder<msdfgen::OverlappingContourCombiner<msdfgen::MultiAndTrueDistanceSelector>> distanceFinder(shape);
+			int row = shape.inverseYAxis ? image.height() - p_y - 1 : p_y;
+			for (int col = 0; col < image.width(); ++col) {
+				int x = (p_y % 2) ? image.width() - col - 1 : col;
+				msdfgen::Point2 p = projection.unproject(msdfgen::Point2(x + .5, p_y + .5));
+				msdfgen::MultiAndTrueDistance distance = distanceFinder.distance(p);
+				distancePixelConversion.operator()(image.operator()(x, row), distance);
+			}
+		});
 
 		msdfgen::msdfErrorCorrection(image, shape, projection, p_pixel_range, config);
 
