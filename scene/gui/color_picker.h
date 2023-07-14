@@ -46,6 +46,7 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/resources/style_box_flat.h"
 
 class ColorMode;
 class ColorModeRGB;

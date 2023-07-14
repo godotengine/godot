@@ -48,6 +48,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
+#include "scene/resources/style_box_flat.h"
 
 void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script) {
 	for (int i = 0; i < add_options.size(); i++) {

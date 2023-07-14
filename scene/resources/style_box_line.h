@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  style_box.h                                                           */
+/*  style_box_line.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,60 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STYLE_BOX_H
-#define STYLE_BOX_H
+#ifndef STYLE_BOX_LINE_H
+#define STYLE_BOX_LINE_H
 
-#include "core/io/resource.h"
-#include "core/object/class_db.h"
-#include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
+#include "scene/resources/style_box.h"
 
-class CanvasItem;
-
-class StyleBox : public Resource {
-	GDCLASS(StyleBox, Resource);
-	RES_BASE_EXTENSION("stylebox");
-	OBJ_SAVE_TYPE(StyleBox);
-
-	float content_margin[4];
+class StyleBoxLine : public StyleBox {
+	GDCLASS(StyleBoxLine, StyleBox);
+	Color color;
+	int thickness = 1;
+	bool vertical = false;
+	float grow_begin = 1.0;
+	float grow_end = 1.0;
 
 protected:
+	virtual float get_style_margin(Side p_side) const override;
 	static void _bind_methods();
-	virtual float get_style_margin(Side p_side) const { return 0; }
-
-	GDVIRTUAL2C(_draw, RID, Rect2)
-	GDVIRTUAL1RC(Rect2, _get_draw_rect, Rect2)
-	GDVIRTUAL0RC(Size2, _get_minimum_size)
-	GDVIRTUAL2RC(bool, _test_mask, Point2, Rect2)
 
 public:
-	virtual Size2 get_minimum_size() const;
+	void set_color(const Color &p_color);
+	Color get_color() const;
 
-	void set_content_margin(Side p_side, float p_value);
-	void set_content_margin_all(float p_value);
-	void set_content_margin_individual(float p_left, float p_top, float p_right, float p_bottom);
-	float get_content_margin(Side p_side) const;
+	void set_thickness(int p_thickness);
+	int get_thickness() const;
 
-	float get_margin(Side p_side) const;
-	Point2 get_offset() const;
+	void set_vertical(bool p_vertical);
+	bool is_vertical() const;
 
-	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const;
-	virtual Rect2 get_draw_rect(const Rect2 &p_rect) const;
+	void set_grow_begin(float p_grow);
+	float get_grow_begin() const;
 
-	CanvasItem *get_current_item_drawn() const;
+	void set_grow_end(float p_grow);
+	float get_grow_end() const;
 
-	virtual bool test_mask(const Point2 &p_point, const Rect2 &p_rect) const;
+	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const override;
 
-	StyleBox();
+	StyleBoxLine();
+	~StyleBoxLine();
 };
 
-class StyleBoxEmpty : public StyleBox {
-	GDCLASS(StyleBoxEmpty, StyleBox);
-	virtual float get_style_margin(Side p_side) const override { return 0; }
-
-public:
-	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const override {}
-	StyleBoxEmpty() {}
-};
-
-#endif // STYLE_BOX_H
+#endif // STYLE_BOX_LINE_H

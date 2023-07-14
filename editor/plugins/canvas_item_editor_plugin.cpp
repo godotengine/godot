@@ -62,6 +62,7 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/style_box_texture.h"
 
 // Min and Max are power of two in order to play nicely with successive increment.
 // That way, we can naturally reach a 100% zoom from boundaries.

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  style_box.h                                                           */
+/*  style_box_texture.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,60 +28,72 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STYLE_BOX_H
-#define STYLE_BOX_H
+#ifndef STYLE_BOX_TEXTURE_H
+#define STYLE_BOX_TEXTURE_H
 
-#include "core/io/resource.h"
-#include "core/object/class_db.h"
-#include "core/object/gdvirtual.gen.inc"
-#include "core/object/script_language.h"
+#include "scene/resources/style_box.h"
+#include "scene/resources/texture.h"
 
-class CanvasItem;
+class StyleBoxTexture : public StyleBox {
+	GDCLASS(StyleBoxTexture, StyleBox);
 
-class StyleBox : public Resource {
-	GDCLASS(StyleBox, Resource);
-	RES_BASE_EXTENSION("stylebox");
-	OBJ_SAVE_TYPE(StyleBox);
+public:
+	enum AxisStretchMode {
+		AXIS_STRETCH_MODE_STRETCH,
+		AXIS_STRETCH_MODE_TILE,
+		AXIS_STRETCH_MODE_TILE_FIT,
+	};
 
-	float content_margin[4];
+private:
+	float expand_margin[4] = {};
+	float texture_margin[4] = {};
+	Rect2 region_rect;
+	Ref<Texture2D> texture;
+	bool draw_center = true;
+	Color modulate = Color(1, 1, 1, 1);
+	AxisStretchMode axis_h = AXIS_STRETCH_MODE_STRETCH;
+	AxisStretchMode axis_v = AXIS_STRETCH_MODE_STRETCH;
 
 protected:
+	virtual float get_style_margin(Side p_side) const override;
 	static void _bind_methods();
-	virtual float get_style_margin(Side p_side) const { return 0; }
-
-	GDVIRTUAL2C(_draw, RID, Rect2)
-	GDVIRTUAL1RC(Rect2, _get_draw_rect, Rect2)
-	GDVIRTUAL0RC(Size2, _get_minimum_size)
-	GDVIRTUAL2RC(bool, _test_mask, Point2, Rect2)
 
 public:
-	virtual Size2 get_minimum_size() const;
+	void set_texture(Ref<Texture2D> p_texture);
+	Ref<Texture2D> get_texture() const;
 
-	void set_content_margin(Side p_side, float p_value);
-	void set_content_margin_all(float p_value);
-	void set_content_margin_individual(float p_left, float p_top, float p_right, float p_bottom);
-	float get_content_margin(Side p_side) const;
+	void set_texture_margin(Side p_side, float p_size);
+	void set_texture_margin_all(float p_size);
+	void set_texture_margin_individual(float p_left, float p_top, float p_right, float p_bottom);
+	float get_texture_margin(Side p_side) const;
 
-	float get_margin(Side p_side) const;
-	Point2 get_offset() const;
+	void set_expand_margin(Side p_expand_side, float p_size);
+	void set_expand_margin_all(float p_expand_margin_size);
+	void set_expand_margin_individual(float p_left, float p_top, float p_right, float p_bottom);
+	float get_expand_margin(Side p_expand_side) const;
 
-	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const;
-	virtual Rect2 get_draw_rect(const Rect2 &p_rect) const;
+	void set_region_rect(const Rect2 &p_region_rect);
+	Rect2 get_region_rect() const;
 
-	CanvasItem *get_current_item_drawn() const;
+	void set_draw_center(bool p_enabled);
+	bool is_draw_center_enabled() const;
 
-	virtual bool test_mask(const Point2 &p_point, const Rect2 &p_rect) const;
+	void set_h_axis_stretch_mode(AxisStretchMode p_mode);
+	AxisStretchMode get_h_axis_stretch_mode() const;
 
-	StyleBox();
+	void set_v_axis_stretch_mode(AxisStretchMode p_mode);
+	AxisStretchMode get_v_axis_stretch_mode() const;
+
+	void set_modulate(const Color &p_modulate);
+	Color get_modulate() const;
+
+	virtual Rect2 get_draw_rect(const Rect2 &p_rect) const override;
+	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const override;
+
+	StyleBoxTexture();
+	~StyleBoxTexture();
 };
 
-class StyleBoxEmpty : public StyleBox {
-	GDCLASS(StyleBoxEmpty, StyleBox);
-	virtual float get_style_margin(Side p_side) const override { return 0; }
+VARIANT_ENUM_CAST(StyleBoxTexture::AxisStretchMode)
 
-public:
-	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const override {}
-	StyleBoxEmpty() {}
-};
-
-#endif // STYLE_BOX_H
+#endif // STYLE_BOX_TEXTURE_H
