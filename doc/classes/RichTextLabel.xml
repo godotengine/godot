@@ -266,6 +266,18 @@
 				Terminates the current tag. Use after [code]push_*[/code] methods to close BBCodes manually. Does not need to follow [code]add_*[/code] methods.
 			</description>
 		</method>
+		<method name="pop_all">
+			<return type="void" />
+			<description>
+				Terminates all tags opened by [code]push_*[/code] methods.
+			</description>
+		</method>
+		<method name="pop_context">
+			<return type="void" />
+			<description>
+				Terminates tags opened after the last [method push_context] call (including context marker), or all tags if there's no context marker on the stack.
+			</description>
+		</method>
 		<method name="push_bgcolor">
 			<return type="void" />
 			<param index="0" name="bgcolor" type="Color" />
@@ -296,6 +308,12 @@
 			<param index="0" name="color" type="Color" />
 			<description>
 				Adds a [code][color][/code] tag to the tag stack.
+			</description>
+		</method>
+		<method name="push_context">
+			<return type="void" />
+			<description>
+				Adds a context marker to the tag stack. See [method pop_context].
 			</description>
 		</method>
 		<method name="push_customfx">
