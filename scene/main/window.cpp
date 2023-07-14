@@ -3087,6 +3087,16 @@ void Window::_mouse_leave_viewport() {
 	}
 }
 
+void Window::set_multi_viewport_focus(bool p_enable) {
+	ERR_MAIN_THREAD_GUARD;
+	multi_viewport_focus = p_enable;
+}
+
+bool Window::is_multi_viewport_focus_enabled() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return multi_viewport_focus;
+}
+
 void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
@@ -3248,6 +3258,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layout_direction"), &Window::get_layout_direction);
 	ClassDB::bind_method(D_METHOD("is_layout_rtl"), &Window::is_layout_rtl);
 
+	ClassDB::bind_method(D_METHOD("set_multi_viewport_focus", "enable"), &Window::set_multi_viewport_focus);
+	ClassDB::bind_method(D_METHOD("is_multi_viewport_focus_enabled"), &Window::is_multi_viewport_focus_enabled);
+
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_auto_translate", "enable"), &Window::set_auto_translate);
 	ClassDB::bind_method(D_METHOD("is_auto_translating"), &Window::is_auto_translating);
@@ -3313,6 +3326,8 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_aspect", PROPERTY_HINT_ENUM, "Ignore,Keep,Keep Width,Keep Height,Expand"), "set_content_scale_aspect", "get_content_scale_aspect");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "content_scale_stretch", PROPERTY_HINT_ENUM, "Fractional,Integer"), "set_content_scale_stretch", "get_content_scale_stretch");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "content_scale_factor", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), "set_content_scale_factor", "get_content_scale_factor");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multi_viewport_focus"), "set_multi_viewport_focus", "is_multi_viewport_focus_enabled");
 
 #ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_auto_translate", "is_auto_translating");
