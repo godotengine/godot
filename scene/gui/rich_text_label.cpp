@@ -35,7 +35,8 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/translation.h"
-#include "label.h"
+#include "scene/gui/label.h"
+#include "scene/resources/atlas_texture.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 

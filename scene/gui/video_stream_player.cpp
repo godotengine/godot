@@ -31,6 +31,7 @@
 #include "video_stream_player.h"
 
 #include "core/os/os.h"
+#include "scene/resources/image_texture.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio_server.h"
 

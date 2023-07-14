@@ -31,6 +31,7 @@
 #include "texture_rect.h"
 
 #include "core/core_string_names.h"
+#include "scene/resources/atlas_texture.h"
 #include "servers/rendering_server.h"
 
 void TextureRect::_notification(int p_what) {

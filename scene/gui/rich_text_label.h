@@ -32,8 +32,8 @@
 #define RICH_TEXT_LABEL_H
 
 #include "core/object/worker_thread_pool.h"
-#include "rich_text_effect.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/rich_text_effect.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/resources/text_paragraph.h"
 

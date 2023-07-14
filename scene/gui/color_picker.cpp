@@ -36,6 +36,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "scene/gui/color_mode.h"
+#include "scene/resources/image_texture.h"
 #include "servers/display_server.h"
 #include "thirdparty/misc/ok_color.h"
 #include "thirdparty/misc/ok_color_shader.h"

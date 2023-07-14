@@ -40,7 +40,7 @@
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "main/main.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/atlas_texture.h"
 
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"

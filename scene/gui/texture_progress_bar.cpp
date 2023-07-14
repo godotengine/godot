@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/core_string_names.h"
+#include "scene/resources/atlas_texture.h"
 
 void TextureProgressBar::set_under_texture(const Ref<Texture2D> &p_texture) {
 	_set_texture(&under, p_texture);

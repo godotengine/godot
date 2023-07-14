@@ -48,6 +48,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "main/splash.gen.h"
+#include "scene/resources/image_texture.h"
 
 #include "modules/modules_enabled.gen.h" // For mono and svg.
 #ifdef MODULE_SVG_ENABLED

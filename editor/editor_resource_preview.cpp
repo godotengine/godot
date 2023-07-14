@@ -40,6 +40,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/resources/image_texture.h"
 
 bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	bool success = false;

@@ -31,6 +31,7 @@
 #include "gpu_particles_2d.h"
 
 #include "core/core_string_names.h"
+#include "scene/resources/atlas_texture.h"
 #include "scene/resources/particle_process_material.h"
 #include "scene/scene_string_names.h"
 

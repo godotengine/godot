@@ -33,6 +33,7 @@
 #include "editor/editor_scale.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/resources/image_texture.h"
 
 void BitMapEditor::setup(const Ref<BitMap> &p_bitmap) {
 	texture_rect->set_texture(ImageTexture::create_from_image(p_bitmap->convert_to_image()));
