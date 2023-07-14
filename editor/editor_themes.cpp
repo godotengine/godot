@@ -465,6 +465,15 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		preset_base_color = Color(0.9, 0.9, 0.9);
 		// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
 		preset_contrast = -0.08;
+	} else if (preset == "Rose Pine") {
+		preset_accent_color = Color(0.19, 0.45, 0.56);
+		preset_base_color = Color(0.15, 0.14, 0.23);
+		preset_contrast = 0.23;
+	} else if (preset == "Rose Pine Dawn") {
+		preset_accent_color = Color(0.16, 0.41, 0.51);
+		preset_base_color = Color(0.98, 0.96, 0.93);
+		// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
+		preset_contrast = -0.01;
 	} else if (preset == "Solarized (Dark)") {
 		preset_accent_color = Color(0.15, 0.55, 0.82);
 		preset_base_color = Color(0.04, 0.23, 0.27);
