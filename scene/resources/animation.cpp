@@ -5508,6 +5508,9 @@ Variant Animation::add_variant(const Variant &a, const Variant &b) {
 			const ::AABB ab = b.operator ::AABB();
 			return ::AABB(aa.position + ab.position, aa.size + ab.size);
 		}
+		case Variant::BASIS: {
+			return (a.operator Basis()) * (b.operator Basis());
+		}
 		case Variant::QUATERNION: {
 			return (a.operator Quaternion()) * (b.operator Quaternion());
 		}
@@ -5554,6 +5557,9 @@ Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
 			const ::AABB aa = a.operator ::AABB();
 			const ::AABB ab = b.operator ::AABB();
 			return ::AABB(aa.position - ab.position, aa.size - ab.size);
+		}
+		case Variant::BASIS: {
+			return (b.operator Basis()).inverse() * (a.operator Basis());
 		}
 		case Variant::QUATERNION: {
 			return (b.operator Quaternion()).inverse() * (a.operator Quaternion());
