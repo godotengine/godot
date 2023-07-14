@@ -493,6 +493,15 @@ public:
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback);
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback);
 
+	enum FileDialogMode {
+		FILE_DIALOG_MODE_OPEN_FILE,
+		FILE_DIALOG_MODE_OPEN_FILES,
+		FILE_DIALOG_MODE_OPEN_DIR,
+		FILE_DIALOG_MODE_OPEN_ANY,
+		FILE_DIALOG_MODE_SAVE_FILE
+	};
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback);
+
 	virtual int keyboard_get_layout_count() const;
 	virtual int keyboard_get_current_layout() const;
 	virtual void keyboard_set_current_layout(int p_index);
@@ -546,5 +555,6 @@ VARIANT_ENUM_CAST(DisplayServer::VirtualKeyboardType);
 VARIANT_ENUM_CAST(DisplayServer::CursorShape)
 VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
 VARIANT_ENUM_CAST(DisplayServer::TTSUtteranceEvent)
+VARIANT_ENUM_CAST(DisplayServer::FileDialogMode)
 
 #endif // DISPLAY_SERVER_H

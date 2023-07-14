@@ -96,6 +96,24 @@
 				[b]Note:[/b] This method is implemented only on Windows.
 			</description>
 		</method>
+		<method name="file_dialog_show">
+			<return type="int" enum="Error" />
+			<param index="0" name="title" type="String" />
+			<param index="1" name="current_directory" type="String" />
+			<param index="2" name="filename" type="String" />
+			<param index="3" name="show_hidden" type="bool" />
+			<param index="4" name="mode" type="int" enum="DisplayServer.FileDialogMode" />
+			<param index="5" name="filters" type="PackedStringArray" />
+			<param index="6" name="callback" type="Callable" />
+			<description>
+				Displays OS native dialog for selecting files or directories in the file system.
+				Callbacks have the following arguments: [code]bool status, PackedStringArray selected_paths[/code].
+				[b]Note:[/b] This method is implemented if the display server has the [code]FEATURE_NATIVE_DIALOG[/code] feature.
+				[b]Note:[/b] This method is implemented on macOS.
+				[b]Note:[/b] On macOS, native file dialogs have no title.
+				[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
+			</description>
+		</method>
 		<method name="force_process_and_drop_events">
 			<return type="void" />
 			<description>
@@ -1728,6 +1746,21 @@
 		</constant>
 		<constant name="CURSOR_MAX" value="17" enum="CursorShape">
 			Represents the size of the [enum CursorShape] enum.
+		</constant>
+		<constant name="FILE_DIALOG_MODE_OPEN_FILE" value="0" enum="FileDialogMode">
+			The native file dialog allows selecting one, and only one file.
+		</constant>
+		<constant name="FILE_DIALOG_MODE_OPEN_FILES" value="1" enum="FileDialogMode">
+			The native file dialog allows selecting multiple files.
+		</constant>
+		<constant name="FILE_DIALOG_MODE_OPEN_DIR" value="2" enum="FileDialogMode">
+			The native file dialog only allows selecting a directory, disallowing the selection of any file.
+		</constant>
+		<constant name="FILE_DIALOG_MODE_OPEN_ANY" value="3" enum="FileDialogMode">
+			The native file dialog allows selecting one file or directory.
+		</constant>
+		<constant name="FILE_DIALOG_MODE_SAVE_FILE" value="4" enum="FileDialogMode">
+			The native file dialog will warn when a file exists.
 		</constant>
 		<constant name="WINDOW_MODE_WINDOWED" value="0" enum="WindowMode">
 			Windowed mode, i.e. [Window] doesn't occupy the whole screen (unless set to the size of the screen).

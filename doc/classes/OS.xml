@@ -240,8 +240,8 @@
 		<method name="get_granted_permissions" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				With this function, you can get the list of dangerous permissions that have been granted to the Android application.
-				[b]Note:[/b] This method is implemented only on Android.
+				On Android devices: With this function, you can get the list of dangerous permissions that have been granted.
+				On macOS (sandboxed applications only): This function returns the list of user selected folders accessible to the application. Use native file dialog to request folder access permission.
 			</description>
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
@@ -534,6 +534,13 @@
 				Returns [code]true[/code] if the project will automatically restart when it exits for any reason, [code]false[/code] otherwise. See also [method set_restart_on_exit] and [method get_restart_on_exit_arguments].
 			</description>
 		</method>
+		<method name="is_sandboxed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if application is running in the sandbox.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
 		<method name="is_stdout_verbose" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -600,6 +607,12 @@
 			<description>
 				With this function, you can request dangerous permissions since normal permissions are automatically granted at install time in Android applications.
 				[b]Note:[/b] This method is implemented only on Android.
+			</description>
+		</method>
+		<method name="revoke_granted_permissions">
+			<return type="void" />
+			<description>
+				On macOS (sandboxed applications only), this function clears list of user selected folders accessible to the application.
 			</description>
 		</method>
 		<method name="set_environment" qualifiers="const">

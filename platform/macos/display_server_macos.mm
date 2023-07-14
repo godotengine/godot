@@ -1847,6 +1847,176 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 	return OK;
 }
 
+Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	_THREAD_SAFE_METHOD_
+
+	NSString *url = [NSString stringWithUTF8String:p_current_directory.utf8().get_data()];
+	NSMutableArray *allowed_types = [[NSMutableArray alloc] init];
+	bool allow_other = false;
+	for (int i = 0; i < p_filters.size(); i++) {
+		Vector<String> tokens = p_filters[i].split(";");
+		if (tokens.size() > 0) {
+			if (tokens[0].strip_edges() == "*.*") {
+				allow_other = true;
+			} else {
+				[allowed_types addObject:[NSString stringWithUTF8String:tokens[0].replace("*.", "").strip_edges().utf8().get_data()]];
+			}
+		}
+	}
+
+	Callable callback = p_callback; // Make a copy for async completion handler.
+	switch (p_mode) {
+		case FILE_DIALOG_MODE_SAVE_FILE: {
+			NSSavePanel *panel = [NSSavePanel savePanel];
+
+			[panel setDirectoryURL:[NSURL fileURLWithPath:url]];
+			if ([allowed_types count]) {
+				[panel setAllowedFileTypes:allowed_types];
+			}
+			[panel setAllowsOtherFileTypes:allow_other];
+			[panel setExtensionHidden:YES];
+			[panel setCanSelectHiddenExtension:YES];
+			[panel setCanCreateDirectories:YES];
+			[panel setShowsHiddenFiles:p_show_hidden];
+			if (p_filename != "") {
+				NSString *fileurl = [NSString stringWithUTF8String:p_filename.utf8().get_data()];
+				[panel setNameFieldStringValue:fileurl];
+			}
+
+			[panel beginSheetModalForWindow:[[NSApplication sharedApplication] mainWindow]
+						  completionHandler:^(NSInteger ret) {
+							  if (ret == NSModalResponseOK) {
+								  // Save bookmark for folder.
+								  if (OS::get_singleton()->is_sandboxed()) {
+									  NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+									  bool skip = false;
+									  for (id bookmark in bookmarks) {
+										  NSError *error = nil;
+										  BOOL isStale = NO;
+										  NSURL *exurl = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+										  if (!error && !isStale && ([[exurl path] compare:[[panel directoryURL] path]] == NSOrderedSame)) {
+											  skip = true;
+											  break;
+										  }
+									  }
+									  if (!skip) {
+										  NSError *error = nil;
+										  NSData *bookmark = [[panel directoryURL] bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
+										  if (!error) {
+											  NSArray *new_bookmarks = [bookmarks arrayByAddingObject:bookmark];
+											  [[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
+										  }
+									  }
+								  }
+								  // Callback.
+								  Vector<String> files;
+								  String url;
+								  url.parse_utf8([[[panel URL] path] UTF8String]);
+								  files.push_back(url);
+								  if (!callback.is_null()) {
+									  Variant v_status = true;
+									  Variant v_files = files;
+									  Variant *v_args[2] = { &v_status, &v_files };
+									  Variant ret;
+									  Callable::CallError ce;
+									  callback.callp((const Variant **)&v_args, 2, ret, ce);
+								  }
+							  } else {
+								  if (!callback.is_null()) {
+									  Variant v_status = false;
+									  Variant v_files = Vector<String>();
+									  Variant *v_args[2] = { &v_status, &v_files };
+									  Variant ret;
+									  Callable::CallError ce;
+									  callback.callp((const Variant **)&v_args, 2, ret, ce);
+								  }
+							  }
+						  }];
+		} break;
+		case FILE_DIALOG_MODE_OPEN_ANY:
+		case FILE_DIALOG_MODE_OPEN_FILE:
+		case FILE_DIALOG_MODE_OPEN_FILES:
+		case FILE_DIALOG_MODE_OPEN_DIR: {
+			NSOpenPanel *panel = [NSOpenPanel openPanel];
+
+			[panel setDirectoryURL:[NSURL fileURLWithPath:url]];
+			if ([allowed_types count]) {
+				[panel setAllowedFileTypes:allowed_types];
+			}
+			[panel setAllowsOtherFileTypes:allow_other];
+			[panel setExtensionHidden:YES];
+			[panel setCanSelectHiddenExtension:YES];
+			[panel setCanCreateDirectories:YES];
+			[panel setCanChooseFiles:(p_mode != FILE_DIALOG_MODE_OPEN_DIR)];
+			[panel setCanChooseDirectories:(p_mode == FILE_DIALOG_MODE_OPEN_DIR || p_mode == FILE_DIALOG_MODE_OPEN_ANY)];
+			[panel setShowsHiddenFiles:p_show_hidden];
+			if (p_filename != "") {
+				NSString *fileurl = [NSString stringWithUTF8String:p_filename.utf8().get_data()];
+				[panel setNameFieldStringValue:fileurl];
+			}
+			[panel setAllowsMultipleSelection:(p_mode == FILE_DIALOG_MODE_OPEN_FILES)];
+
+			[panel beginSheetModalForWindow:[[NSApplication sharedApplication] mainWindow]
+						  completionHandler:^(NSInteger ret) {
+							  if (ret == NSModalResponseOK) {
+								  // Save bookmark for folder.
+								  NSArray *urls = [(NSOpenPanel *)panel URLs];
+								  if (OS::get_singleton()->is_sandboxed()) {
+									  NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+									  NSMutableArray *new_bookmarks = [bookmarks mutableCopy];
+									  for (NSUInteger i = 0; i != [urls count]; ++i) {
+										  bool skip = false;
+										  for (id bookmark in bookmarks) {
+											  NSError *error = nil;
+											  BOOL isStale = NO;
+											  NSURL *exurl = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+											  if (!error && !isStale && ([[exurl path] compare:[[urls objectAtIndex:i] path]] == NSOrderedSame)) {
+												  skip = true;
+												  break;
+											  }
+										  }
+										  if (!skip) {
+											  NSError *error = nil;
+											  NSData *bookmark = [[urls objectAtIndex:i] bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
+											  if (!error) {
+												  [new_bookmarks addObject:bookmark];
+											  }
+										  }
+									  }
+									  [[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
+								  }
+								  // Callback.
+								  Vector<String> files;
+								  for (NSUInteger i = 0; i != [urls count]; ++i) {
+									  String url;
+									  url.parse_utf8([[[urls objectAtIndex:i] path] UTF8String]);
+									  files.push_back(url);
+								  }
+								  if (!callback.is_null()) {
+									  Variant v_status = true;
+									  Variant v_files = files;
+									  Variant *v_args[2] = { &v_status, &v_files };
+									  Variant ret;
+									  Callable::CallError ce;
+									  callback.callp((const Variant **)&v_args, 2, ret, ce);
+								  }
+							  } else {
+								  if (!callback.is_null()) {
+									  Variant v_status = false;
+									  Variant v_files = Vector<String>();
+									  Variant *v_args[2] = { &v_status, &v_files };
+									  Variant ret;
+									  Callable::CallError ce;
+									  callback.callp((const Variant **)&v_args, 2, ret, ce);
+								  }
+							  }
+						  }];
+		} break;
+	}
+
+	return OK;
+}
+
 Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
 	_THREAD_SAFE_METHOD_
 
