@@ -45,6 +45,39 @@
 
 #define CONTRIBUTE_URL vformat("%s/contributing/documentation/updating_the_class_reference.html", VERSION_DOCS_URL)
 
+#ifdef MODULE_MONO_ENABLED
+// Sync with the types mentioned in https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_differences.html
+const Vector<String> classes_with_csharp_differences = {
+	"@GlobalScope",
+	"String",
+	"NodePath",
+	"Signal",
+	"Callable",
+	"RID",
+	"Basis",
+	"Transform2D",
+	"Transform3D",
+	"Rect2",
+	"Rect2i",
+	"AABB",
+	"Quaternion",
+	"Projection",
+	"Color",
+	"Array",
+	"Dictionary",
+	"PackedByteArray",
+	"PackedColorArray",
+	"PackedFloat32Array",
+	"PackedFloat64Array",
+	"PackedInt32Array",
+	"PackedInt64Array",
+	"PackedStringArray",
+	"PackedVector2Array",
+	"PackedVector3Array",
+	"Variant",
+};
+#endif
+
 // TODO: this is sometimes used directly as doc->something, other times as EditorHelp::get_doc_data(), which is thread-safe.
 // Might this be a problem?
 DocTools *EditorHelp::doc = nullptr;
@@ -888,10 +921,26 @@ void EditorHelp::_update_doc() {
 			class_desc->append_text(TTR("There is currently no description for this class. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 		}
 
-		class_desc->pop();
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
+
+#ifdef MODULE_MONO_ENABLED
+	if (classes_with_csharp_differences.has(cd.name)) {
+		const String &csharp_differences_url = vformat("%s/tutorials/scripting/c_sharp/c_sharp_differences.html", VERSION_DOCS_URL);
+
+		class_desc->push_color(theme_cache.text_color);
+		_push_normal_font();
+		class_desc->push_indent(1);
+		_add_text("[b]" + TTR("Note:") + "[/b] " + vformat(TTR("There are notable differences when using this API with C#. See [url=%s]C# API differences to GDScript[/url] for more information."), csharp_differences_url));
+		class_desc->pop();
+		_pop_normal_font();
+		class_desc->pop();
+
+		class_desc->add_newline();
+		class_desc->add_newline();
+	}
+#endif
 
 	// Online tutorials
 	if (cd.tutorials.size()) {
