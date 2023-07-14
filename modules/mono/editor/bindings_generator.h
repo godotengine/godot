@@ -227,6 +227,7 @@ class BindingsGenerator {
 		bool is_enum = false;
 		bool is_object_type = false;
 		bool is_singleton = false;
+		bool is_singleton_instance = false;
 		bool is_ref_counted = false;
 
 		/**
@@ -756,6 +757,7 @@ class BindingsGenerator {
 	Error _populate_method_icalls_table(const TypeInterface &p_itype);
 
 	const TypeInterface *_get_type_or_null(const TypeReference &p_typeref);
+	const TypeInterface *_get_type_or_singleton_or_null(const TypeReference &p_typeref);
 
 	const String _get_generic_type_parameters(const TypeInterface &p_itype, const List<TypeReference> &p_generic_type_parameters);
 
