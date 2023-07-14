@@ -50,22 +50,6 @@ public:
 	private:
 		Size2i tile_grid_size;
 
-		struct CameraRayThreadData {
-			int thread_count;
-			float z_near;
-			float z_far;
-			Vector3 camera_dir;
-			Vector3 camera_pos;
-			Vector3 pixel_corner;
-			Vector3 pixel_u_interp;
-			Vector3 pixel_v_interp;
-			bool camera_orthogonal;
-			Size2i buffer_size;
-		};
-
-		void _camera_rays_threaded(uint32_t p_thread, const CameraRayThreadData *p_data);
-		void _generate_camera_rays(const CameraRayThreadData *p_data, int p_from, int p_to);
-
 	public:
 		unsigned int camera_rays_tile_count = 0;
 		uint8_t *camera_rays_unaligned_buffer = nullptr;
@@ -116,11 +100,6 @@ private:
 	};
 
 	struct Scenario {
-		struct RaycastThreadData {
-			CameraRayTile *rays = nullptr;
-			const uint32_t *masks;
-		};
-
 		Thread *commit_thread = nullptr;
 		bool commit_done = true;
 		bool dirty = false;
@@ -139,7 +118,6 @@ private:
 		static void _commit_scene(void *p_ud);
 		bool update();
 
-		void _raycast(uint32_t p_thread, const RaycastThreadData *p_raycast_data) const;
 		void raycast(CameraRayTile *r_rays, const uint32_t *p_valid_masks, uint32_t p_tile_count) const;
 	};
 

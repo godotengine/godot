@@ -81,19 +81,16 @@ void RaycastOcclusionCull::RaycastHZBuffer::resize(const Size2i &p_size) {
 }
 
 void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal) {
-	CameraRayThreadData td;
-	td.thread_count = WorkerThreadPool::get_singleton()->get_thread_count();
+	const float z_near = p_cam_projection.get_z_near();
+	const float z_far = p_cam_projection.get_z_far() * 1.05f;
 
-	td.z_near = p_cam_projection.get_z_near();
-	td.z_far = p_cam_projection.get_z_far() * 1.05f;
-	td.camera_pos = p_cam_transform.origin;
-	td.camera_dir = -p_cam_transform.basis.get_column(2);
-	td.camera_orthogonal = p_cam_orthogonal;
+	const Vector3 camera_pos = p_cam_transform.origin;
+	const Vector3 camera_dir = -p_cam_transform.basis.get_column(2);
 
 	Projection inv_camera_matrix = p_cam_projection.inverse();
 	Vector3 camera_corner_proj = Vector3(-1.0f, -1.0f, -1.0f);
 	Vector3 camera_corner_view = inv_camera_matrix.xform(camera_corner_proj);
-	td.pixel_corner = p_cam_transform.xform(camera_corner_view);
+	const Vector3 pixel_corner = p_cam_transform.xform(camera_corner_view);
 
 	Vector3 top_corner_proj = Vector3(-1.0f, 1.0f, -1.0f);
 	Vector3 top_corner_view = inv_camera_matrix.xform(top_corner_proj);
@@ -103,27 +100,14 @@ void RaycastOcclusionCull::RaycastHZBuffer::update_camera_rays(const Transform3D
 	Vector3 left_corner_view = inv_camera_matrix.xform(left_corner_proj);
 	Vector3 left_corner_world = p_cam_transform.xform(left_corner_view);
 
-	td.pixel_u_interp = left_corner_world - td.pixel_corner;
-	td.pixel_v_interp = top_corner_world - td.pixel_corner;
+	const Vector3 pixel_u_interp = left_corner_world - pixel_corner;
+	const Vector3 pixel_v_interp = top_corner_world - pixel_corner;
 
-	debug_tex_range = td.z_far;
+	debug_tex_range = z_far;
 
-	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RaycastHZBuffer::_camera_rays_threaded, &td, td.thread_count, -1, true, SNAME("RaycastOcclusionCullUpdateCamera"));
-	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
-}
-
-void RaycastOcclusionCull::RaycastHZBuffer::_camera_rays_threaded(uint32_t p_thread, const CameraRayThreadData *p_data) {
-	uint32_t total_tiles = camera_rays_tile_count;
-	uint32_t total_threads = p_data->thread_count;
-	uint32_t from = p_thread * total_tiles / total_threads;
-	uint32_t to = (p_thread + 1 == total_threads) ? total_tiles : ((p_thread + 1) * total_tiles / total_threads);
-	_generate_camera_rays(p_data, from, to);
-}
-
-void RaycastOcclusionCull::RaycastHZBuffer::_generate_camera_rays(const CameraRayThreadData *p_data, int p_from, int p_to) {
 	const Size2i &buffer_size = sizes[0];
 
-	for (int i = p_from; i < p_to; i++) {
+	for_range(0, camera_rays_tile_count, true, SNAME("RaycastOcclusionCullUpdateCamera"), [&](const int i) {
 		CameraRayTile &tile = camera_rays[i];
 		int tile_x = (i % tile_grid_size.x) * TILE_SIZE;
 		int tile_y = (i / tile_grid_size.x) * TILE_SIZE;
@@ -134,36 +118,36 @@ void RaycastOcclusionCull::RaycastHZBuffer::_generate_camera_rays(const CameraRa
 
 			float u = (float(x) + 0.5f) / buffer_size.x;
 			float v = (float(y) + 0.5f) / buffer_size.y;
-			Vector3 pixel_pos = p_data->pixel_corner + u * p_data->pixel_u_interp + v * p_data->pixel_v_interp;
+			Vector3 pixel_pos = pixel_corner + u * pixel_u_interp + v * pixel_v_interp;
 
-			tile.ray.tnear[j] = p_data->z_near;
+			tile.ray.tnear[j] = z_near;
 
 			Vector3 dir;
-			if (p_data->camera_orthogonal) {
-				dir = -p_data->camera_dir;
-				tile.ray.org_x[j] = pixel_pos.x - dir.x * p_data->z_near;
-				tile.ray.org_y[j] = pixel_pos.y - dir.y * p_data->z_near;
-				tile.ray.org_z[j] = pixel_pos.z - dir.z * p_data->z_near;
+			if (p_cam_orthogonal) {
+				dir = -camera_dir;
+				tile.ray.org_x[j] = pixel_pos.x - dir.x * z_near;
+				tile.ray.org_y[j] = pixel_pos.y - dir.y * z_near;
+				tile.ray.org_z[j] = pixel_pos.z - dir.z * z_near;
 			} else {
-				dir = (pixel_pos - p_data->camera_pos).normalized();
-				tile.ray.org_x[j] = p_data->camera_pos.x;
-				tile.ray.org_y[j] = p_data->camera_pos.y;
-				tile.ray.org_z[j] = p_data->camera_pos.z;
-				tile.ray.tnear[j] /= dir.dot(p_data->camera_dir);
+				dir = (pixel_pos - camera_pos).normalized();
+				tile.ray.org_x[j] = camera_pos.x;
+				tile.ray.org_y[j] = camera_pos.y;
+				tile.ray.org_z[j] = camera_pos.z;
+				tile.ray.tnear[j] /= dir.dot(camera_dir);
 			}
 
 			tile.ray.dir_x[j] = dir.x;
 			tile.ray.dir_y[j] = dir.y;
 			tile.ray.dir_z[j] = dir.z;
 
-			tile.ray.tfar[j] = p_data->z_far;
+			tile.ray.tfar[j] = z_far;
 			tile.ray.time[j] = 0.0f;
 
 			tile.ray.flags[j] = 0;
 			tile.ray.mask[j] = ~0U;
 			tile.hit.geomID[j] = RTC_INVALID_GEOMETRY_ID;
 		}
-	}
+	});
 }
 
 void RaycastOcclusionCull::RaycastHZBuffer::sort_rays(const Vector3 &p_camera_dir, bool p_orthogonal) {
@@ -456,14 +440,6 @@ bool RaycastOcclusionCull::Scenario::update() {
 	return false;
 }
 
-void RaycastOcclusionCull::Scenario::_raycast(uint32_t p_idx, const RaycastThreadData *p_raycast_data) const {
-	RTCIntersectContext ctx;
-	rtcInitIntersectContext(&ctx);
-	ctx.flags = RTC_INTERSECT_CONTEXT_FLAG_COHERENT;
-
-	rtcIntersect16((const int *)&p_raycast_data->masks[p_idx * TILE_RAYS], ebr_scene[current_scene_idx], &ctx, &p_raycast_data->rays[p_idx]);
-}
-
 void RaycastOcclusionCull::Scenario::raycast(CameraRayTile *r_rays, const uint32_t *p_valid_masks, uint32_t p_tile_count) const {
 	ERR_FAIL_COND(singleton == nullptr);
 	if (raycast_singleton->ebr_device == nullptr) {
@@ -474,12 +450,13 @@ void RaycastOcclusionCull::Scenario::raycast(CameraRayTile *r_rays, const uint32
 		return;
 	}
 
-	RaycastThreadData td;
-	td.rays = r_rays;
-	td.masks = p_valid_masks;
+	for_range(0, p_tile_count, true, SNAME("RaycastOcclusionCullRaycast"), [&](const uint32_t p_idx) {
+		RTCIntersectContext ctx;
+		rtcInitIntersectContext(&ctx);
+		ctx.flags = RTC_INTERSECT_CONTEXT_FLAG_COHERENT;
 
-	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &Scenario::_raycast, &td, p_tile_count, -1, true, SNAME("RaycastOcclusionCullRaycast"));
-	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+		rtcIntersect16((const int *)&p_valid_masks[p_idx * TILE_RAYS], ebr_scene[current_scene_idx], &ctx, &r_rays[p_idx]);
+	});
 }
 
 ////////////////////////////////////////////////////////

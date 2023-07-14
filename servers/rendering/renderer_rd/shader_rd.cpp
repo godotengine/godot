@@ -480,16 +480,9 @@ void ShaderRD::_compile_version(Version *p_version) {
 		}
 	}
 
-#if 1
-
-	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &ShaderRD::_compile_variant, p_version, variant_defines.size(), -1, true, SNAME("ShaderCompilation"));
-	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
-
-#else
-	for (int i = 0; i < variant_defines.size(); i++) {
+	for_range(0, variant_defines.size(), true, SNAME("ShaderCompilation"), [&](const int i) {
 		_compile_variant(i, p_version);
-	}
-#endif
+	});
 
 	bool all_valid = true;
 	for (int i = 0; i < variant_defines.size(); i++) {
