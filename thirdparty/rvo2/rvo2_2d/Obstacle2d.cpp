@@ -2,14 +2,13 @@
  * Obstacle2d.cpp
  * RVO2 Library
  *
- * SPDX-FileCopyrightText: 2008 University of North Carolina at Chapel Hill
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright 2008 University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,19 +27,12 @@
  * Chapel Hill, N.C. 27599-3175
  * United States of America
  *
- * <https://gamma.cs.unc.edu/RVO2/>
- */
-
-/**
- * @file  Obstacle2d.cpp
- * @brief Defines the Obstacle2D class.
+ * <http://gamma.cs.unc.edu/RVO2/>
  */
 
 #include "Obstacle2d.h"
+#include "RVOSimulator2d.h"
 
 namespace RVO2D {
-Obstacle2D::Obstacle2D()
-    : next_(NULL), previous_(NULL), id_(0U), isConvex_(false) {}
-
-Obstacle2D::~Obstacle2D() {}
-} /* namespace RVO2D */
+	Obstacle2D::Obstacle2D() : isConvex_(false), nextObstacle_(NULL), prevObstacle_(NULL), id_(0) { }
+}

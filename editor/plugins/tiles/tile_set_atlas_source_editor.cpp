@@ -246,6 +246,12 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 			}
 			emit_signal(SNAME("changed"), "animation_speed");
 			return true;
+		} else if (p_name == "animation_mode") {
+			for (TileSelection tile : tiles) {
+				tile_set_atlas_source->set_tile_animation_mode(tile.tile, VariantCaster<TileSetAtlasSource::TileAnimationMode>::cast(p_value));
+			}
+			emit_signal(SNAME("changed"), "animation_mode");
+			return true;
 		} else if (p_name == "animation_frames_count") {
 			for (TileSelection tile : tiles) {
 				int frame_count = p_value;
@@ -349,6 +355,9 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_get(const StringName &p_na
 		} else if (p_name == "animation_speed") {
 			r_ret = tile_set_atlas_source->get_tile_animation_speed(coords);
 			return true;
+		} else if (p_name == "animation_mode") {
+			r_ret = tile_set_atlas_source->get_tile_animation_mode(coords);
+			return true;
 		} else if (p_name == "animation_frames_count") {
 			r_ret = tile_set_atlas_source->get_tile_animation_frames_count(coords);
 			return true;
@@ -417,6 +426,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_columns")));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("animation_separation")));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("animation_speed")));
+		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_mode"), PROPERTY_HINT_ENUM, "Default,Random Start Times"));
 		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_frames_count"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, "Frames,animation_frame_"));
 		// Not optimal, but returns value for the first tile. This is similar to what MultiNodeEdit does.
 		if (tile_set_atlas_source->get_tile_animation_frames_count(tiles.front()->get().tile) == 1) {
@@ -1693,7 +1703,7 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 	}
 }
 
-void TileSetAtlasSourceEditor::_unhandled_key_input(const Ref<InputEvent> &p_event) {
+void TileSetAtlasSourceEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 	// Check for shortcuts.
 	if (ED_IS_SHORTCUT("tiles_editor/delete_tile", p_event)) {
 		if (tools_button_group->get_pressed_button() == tool_select_button && !selection.is_empty()) {
@@ -2250,6 +2260,7 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 }
 
 void TileSetAtlasSourceEditor::init_source() {
+	tool_setup_atlas_source_button->set_pressed(true);
 	confirm_auto_create_tiles->popup_centered();
 }
 
@@ -2418,14 +2429,14 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 }
 
 void TileSetAtlasSourceEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &TileSetAtlasSourceEditor::_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("_set_selection_from_array"), &TileSetAtlasSourceEditor::_set_selection_from_array);
 
 	ADD_SIGNAL(MethodInfo("source_id_changed", PropertyInfo(Variant::INT, "source_id")));
 }
 
 TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
-	set_process_unhandled_key_input(true);
+	set_shortcut_context(this);
+	set_process_shortcut_input(true);
 	set_process_internal(true);
 
 	// Middle panel.

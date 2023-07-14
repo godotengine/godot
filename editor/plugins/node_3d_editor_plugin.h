@@ -401,6 +401,7 @@ private:
 	void _surface_focus_enter();
 	void _surface_focus_exit();
 
+	void input(const Ref<InputEvent> &p_event) override;
 	void _sinput(const Ref<InputEvent> &p_event);
 	void _update_freelook(real_t delta);
 	Node3DEditor *spatial_editor = nullptr;
@@ -444,7 +445,7 @@ private:
 
 	void begin_transform(TransformMode p_mode, bool instant);
 	void commit_transform();
-	void update_transform(Point2 p_mousepos, bool p_shift);
+	void update_transform(bool p_shift);
 	void finish_transform();
 
 	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical = false);

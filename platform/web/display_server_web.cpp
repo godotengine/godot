@@ -731,35 +731,40 @@ void DisplayServerWeb::send_window_event_callback(int p_notification) {
 }
 
 void DisplayServerWeb::set_icon(const Ref<Image> &p_icon) {
-	ERR_FAIL_COND(p_icon.is_null());
-	Ref<Image> icon = p_icon;
-	if (icon->is_compressed()) {
-		icon = icon->duplicate();
-		ERR_FAIL_COND(icon->decompress() != OK);
-	}
-	if (icon->get_format() != Image::FORMAT_RGBA8) {
-		if (icon == p_icon) {
+	if (p_icon.is_valid()) {
+		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
+
+		Ref<Image> icon = p_icon;
+		if (icon->is_compressed()) {
 			icon = icon->duplicate();
+			ERR_FAIL_COND(icon->decompress() != OK);
 		}
-		icon->convert(Image::FORMAT_RGBA8);
+		if (icon->get_format() != Image::FORMAT_RGBA8) {
+			if (icon == p_icon) {
+				icon = icon->duplicate();
+			}
+			icon->convert(Image::FORMAT_RGBA8);
+		}
+
+		png_image png_meta;
+		memset(&png_meta, 0, sizeof png_meta);
+		png_meta.version = PNG_IMAGE_VERSION;
+		png_meta.width = icon->get_width();
+		png_meta.height = icon->get_height();
+		png_meta.format = PNG_FORMAT_RGBA;
+
+		PackedByteArray png;
+		size_t len;
+		PackedByteArray data = icon->get_data();
+		ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, data.ptr(), 0, nullptr));
+
+		png.resize(len);
+		ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, png.ptrw(), &len, 0, data.ptr(), 0, nullptr));
+
+		godot_js_display_window_icon_set(png.ptr(), len);
+	} else {
+		godot_js_display_window_icon_set(nullptr, 0);
 	}
-
-	png_image png_meta;
-	memset(&png_meta, 0, sizeof png_meta);
-	png_meta.version = PNG_IMAGE_VERSION;
-	png_meta.width = icon->get_width();
-	png_meta.height = icon->get_height();
-	png_meta.format = PNG_FORMAT_RGBA;
-
-	PackedByteArray png;
-	size_t len;
-	PackedByteArray data = icon->get_data();
-	ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, data.ptr(), 0, nullptr));
-
-	png.resize(len);
-	ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, png.ptrw(), &len, 0, data.ptr(), 0, nullptr));
-
-	godot_js_display_window_icon_set(png.ptr(), len);
 }
 
 void DisplayServerWeb::_dispatch_input_event(const Ref<InputEvent> &p_event) {

@@ -37,12 +37,10 @@ if env["builtin_recastnavigation"]:
 if env["builtin_rvo2_2d"]:
     thirdparty_dir = "#thirdparty/rvo2/rvo2_2d/"
     thirdparty_sources = [
-        "Agent2d.cc",
-        "Obstacle2d.cc",
-        "KdTree2d.cc",
-        "Line.cc",
-        "RVOSimulator2d.cc",
-        "Vector2.cc",
+        "Agent2d.cpp",
+        "Obstacle2d.cpp",
+        "KdTree2d.cpp",
+        "RVOSimulator2d.cpp",
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
@@ -56,11 +54,9 @@ if env["builtin_rvo2_2d"]:
 if env["builtin_rvo2_3d"]:
     thirdparty_dir = "#thirdparty/rvo2/rvo2_3d/"
     thirdparty_sources = [
-        "Agent3d.cc",
-        "KdTree3d.cc",
-        "Plane.cc",
-        "RVOSimulator3d.cc",
-        "Vector3.cc",
+        "Agent3d.cpp",
+        "KdTree3d.cpp",
+        "RVOSimulator3d.cpp",
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 

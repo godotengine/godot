@@ -262,6 +262,7 @@ public:
 	int get_button_id(int p_column, int p_index) const;
 	void erase_button(int p_column, int p_index);
 	int get_button_by_id(int p_column, int p_id) const;
+	void set_button_tooltip_text(int p_column, int p_index, const String &p_tooltip);
 	void set_button(int p_column, int p_index, const Ref<Texture2D> &p_button);
 	void set_button_color(int p_column, int p_index, const Color &p_color);
 	void set_button_disabled(int p_column, int p_index, bool p_disabled);
@@ -550,6 +551,10 @@ private:
 
 		int h_separation = 0;
 		int v_separation = 0;
+		int inner_item_margin_bottom = 0;
+		int inner_item_margin_left = 0;
+		int inner_item_margin_right = 0;
+		int inner_item_margin_top = 0;
 		int item_margin = 0;
 		int button_margin = 0;
 		int icon_max_width = 0;

@@ -255,6 +255,7 @@ public:
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 #ifdef TOOLS_ENABLED
 	virtual void set_last_modified_time(uint64_t p_time) override {
+		Resource::set_last_modified_time(p_time);
 		state->set_last_modified_time(p_time);
 	}
 

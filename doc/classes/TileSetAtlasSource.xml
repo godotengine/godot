@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileSetAtlasSource" inherits="TileSetSource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TileSetAtlasSource" inherits="TileSetSource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Exposes a 2D atlas texture as a set of tiles for a [TileSet] resource.
 	</brief_description>
@@ -78,6 +78,13 @@
 			<param index="0" name="atlas_coords" type="Vector2i" />
 			<description>
 				Returns how many animation frames has the tile at coordinates [param atlas_coords].
+			</description>
+		</method>
+		<method name="get_tile_animation_mode" qualifiers="const">
+			<return type="int" enum="TileSetAtlasSource.TileAnimationMode" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<description>
+				Returns the [enum TileAnimationMode] of the tile at [param atlas_coords]. See also [method set_tile_animation_mode].
 			</description>
 		</method>
 		<method name="get_tile_animation_separation" qualifiers="const">
@@ -215,6 +222,14 @@
 				Sets how many animation frames the tile at coordinates [param atlas_coords] has.
 			</description>
 		</method>
+		<method name="set_tile_animation_mode">
+			<return type="void" />
+			<param index="0" name="atlas_coords" type="Vector2i" />
+			<param index="1" name="mode" type="int" enum="TileSetAtlasSource.TileAnimationMode" />
+			<description>
+				Sets the [enum TileAnimationMode] of the tile at [param atlas_coords] to [param mode]. See also [method get_tile_animation_mode].
+			</description>
+		</method>
 		<method name="set_tile_animation_separation">
 			<return type="void" />
 			<param index="0" name="atlas_coords" type="Vector2i" />
@@ -250,4 +265,15 @@
 			Disabling this setting might lead a small performance improvement, as generating the internal texture requires both memory and processing time when the TileSetAtlasSource resource is modified.
 		</member>
 	</members>
+	<constants>
+		<constant name="TILE_ANIMATION_MODE_DEFAULT" value="0" enum="TileAnimationMode">
+			Tile animations start at same time, looking identical.
+		</constant>
+		<constant name="TILE_ANIMATION_MODE_RANDOM_START_TIMES" value="1" enum="TileAnimationMode">
+			Tile animations start at random times, looking varied.
+		</constant>
+		<constant name="TILE_ANIMATION_MODE_MAX" value="2" enum="TileAnimationMode">
+			Represents the size of the [enum TileAnimationMode] enum.
+		</constant>
+	</constants>
 </class>

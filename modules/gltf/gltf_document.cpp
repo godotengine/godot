@@ -3808,6 +3808,13 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			material->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
 		}
 
+		if (pbr_spec_gloss_extensions.has("KHR_materials_emissive_strength")) {
+			Dictionary emissive_strength = pbr_spec_gloss_extensions["KHR_materials_emissive_strength"];
+			if (emissive_strength.has("emissiveStrength")) {
+				material->set_emission_energy_multiplier(emissive_strength["emissiveStrength"]);
+			}
+		}
+
 		if (pbr_spec_gloss_extensions.has("KHR_materials_pbrSpecularGlossiness")) {
 			WARN_PRINT("Material uses a specular and glossiness workflow. Textures will be converted to roughness and metallic workflow, which may not be 100% accurate.");
 			Dictionary sgm = pbr_spec_gloss_extensions["KHR_materials_pbrSpecularGlossiness"];
@@ -7461,6 +7468,7 @@ Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> p_state) {
 	supported_extensions.insert("KHR_materials_pbrSpecularGlossiness");
 	supported_extensions.insert("KHR_texture_transform");
 	supported_extensions.insert("KHR_materials_unlit");
+	supported_extensions.insert("KHR_materials_emissive_strength");
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
 		Vector<String> ext_supported_extensions = ext->get_supported_extensions();

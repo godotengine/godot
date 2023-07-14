@@ -244,8 +244,7 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, float p_scale, float 
 	// Generating upsampled icons is slower, and the benefit is hardly visible
 	// with integer editor scales.
 	const bool upsample = !Math::is_equal_approx(Math::round(p_scale), p_scale);
-	ImageLoaderSVG img_loader;
-	Error err = img_loader.create_image_from_string(img, editor_icons_sources[p_index], p_scale, upsample, p_convert_colors);
+	Error err = ImageLoaderSVG::create_image_from_string(img, editor_icons_sources[p_index], p_scale, upsample, p_convert_colors);
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Failed generating icon, unsupported or invalid SVG data in editor theme.");
 	if (p_saturation != 1.0) {
 		img->adjust_bcs(1.0, 1.0, p_saturation);
@@ -1276,6 +1275,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("h_separation", "Tree", 6 * EDSCALE);
 	theme->set_constant("guide_width", "Tree", border_width);
 	theme->set_constant("item_margin", "Tree", 3 * default_margin_size * EDSCALE);
+	theme->set_constant("inner_item_margin_bottom", "Tree", (default_margin_size + extra_spacing) * EDSCALE);
+	theme->set_constant("inner_item_margin_left", "Tree", (default_margin_size + extra_spacing) * EDSCALE);
+	theme->set_constant("inner_item_margin_right", "Tree", (default_margin_size + extra_spacing) * EDSCALE);
+	theme->set_constant("inner_item_margin_top", "Tree", (default_margin_size + extra_spacing) * EDSCALE);
 	theme->set_constant("button_margin", "Tree", default_margin_size * EDSCALE);
 	theme->set_constant("scroll_border", "Tree", 40 * EDSCALE);
 	theme->set_constant("scroll_speed", "Tree", 12);
@@ -1910,7 +1913,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_icon("close", "GraphNode", theme->get_icon(SNAME("GuiCloseCustomizable"), SNAME("EditorIcons")));
 	theme->set_icon("resizer", "GraphNode", theme->get_icon(SNAME("GuiResizer"), SNAME("EditorIcons")));
-	theme->set_icon("port", "GraphNode", theme->get_icon(SNAME("GuiGraphNodePort"), SNAME("EditorIcons")));
+	Ref<ImageTexture> port_icon = theme->get_icon(SNAME("GuiGraphNodePort"), SNAME("EditorIcons"));
+	// The true size is 24x24 This is necessary for sharp port icons at high zoom levels in GraphEdit (up to ~200%).
+	port_icon->set_size_override(Size2(12, 12));
+	theme->set_icon("port", "GraphNode", port_icon);
 
 	theme->set_font("title_font", "GraphNode", theme->get_font(SNAME("main_bold_msdf"), SNAME("EditorFonts")));
 

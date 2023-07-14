@@ -374,7 +374,14 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		tooltip += String("\n" + TTR("Type:") + " " + (custom_type != StringName() ? String(custom_type) : p_node->get_class()));
 
 		if (!p_node->get_editor_description().is_empty()) {
-			tooltip += "\n\n" + p_node->get_editor_description();
+			const PackedInt32Array boundaries = TS->string_get_word_breaks(p_node->get_editor_description(), "", 80);
+			tooltip += "\n";
+
+			for (int i = 0; i < boundaries.size(); i += 2) {
+				const int start = boundaries[i];
+				const int end = boundaries[i + 1];
+				tooltip += "\n" + p_node->get_editor_description().substr(start, end - start + 1).rstrip("\n");
+			}
 		}
 
 		item->set_tooltip_text(0, tooltip);
@@ -1019,11 +1026,18 @@ void SceneTreeEditor::_renamed() {
 		}
 	}
 
-	if (n->is_unique_name_in_owner() && get_tree()->get_edited_scene_root()->get_node_or_null("%" + new_name) != nullptr) {
-		error->set_text(TTR("Another node already uses this unique name in the scene."));
-		error->popup_centered();
-		which->set_text(0, n->get_name());
-		return;
+	if (n->is_unique_name_in_owner()) {
+		Node *existing = get_tree()->get_edited_scene_root()->get_node_or_null("%" + new_name);
+		if (existing == n) {
+			which->set_text(0, n->get_name());
+			return;
+		}
+		if (existing != nullptr) {
+			error->set_text(TTR("Another node already uses this unique name in the scene."));
+			error->popup_centered();
+			which->set_text(0, n->get_name());
+			return;
+		}
 	}
 
 	_rename_node(n, new_name);
@@ -1100,9 +1114,15 @@ void SceneTreeEditor::_update_selection(TreeItem *item) {
 	}
 
 	if (editor_selection->is_selected(n)) {
-		item->select(0);
+		if (!item->is_selected(0)) {
+			item->select(0);
+		}
 	} else {
-		item->deselect(0);
+		if (item->is_selected(0)) {
+			TreeItem *previous_cursor_item = tree->get_selected();
+			item->deselect(0);
+			previous_cursor_item->set_as_cursor(0);
+		}
 	}
 
 	TreeItem *c = item->get_first_child();
@@ -1188,8 +1208,11 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 		if (i < list_max) {
 			HBoxContainer *hb = memnew(HBoxContainer);
 			TextureRect *tf = memnew(TextureRect);
+			int icon_size = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
+			tf->set_custom_minimum_size(Size2(icon_size, icon_size));
+			tf->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+			tf->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 			tf->set_texture(icons[i]);
-			tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 			hb->add_child(tf);
 			Label *label = memnew(Label(selected_nodes[i]->get_name()));
 			hb->add_child(label);

@@ -820,12 +820,11 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 		particles->num_attrib_arrays_cache = 5 + userdata_count + (xform_size - 2);
 		particles->process_buffer_stride_cache = sizeof(float) * 4 * particles->num_attrib_arrays_cache;
 
-		int process_data_amount = 4 * particles->num_attrib_arrays_cache * total_amount;
-		float *data = memnew_arr(float, process_data_amount);
+		PackedByteArray data;
+		data.resize_zeroed(particles->process_buffer_stride_cache * total_amount);
 
-		for (int i = 0; i < process_data_amount; i++) {
-			data[i] = 0;
-		}
+		PackedByteArray instance_data;
+		instance_data.resize_zeroed(particles->instance_buffer_size_cache);
 
 		{
 			glGenVertexArrays(1, &particles->front_vertex_array);
@@ -834,7 +833,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 			glGenBuffers(1, &particles->front_instance_buffer);
 
 			glBindBuffer(GL_ARRAY_BUFFER, particles->front_process_buffer);
-			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, particles->front_process_buffer, particles->process_buffer_stride_cache * total_amount, data, GL_DYNAMIC_COPY, "Particles front process buffer");
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, particles->front_process_buffer, particles->process_buffer_stride_cache * total_amount, data.ptr(), GL_DYNAMIC_COPY, "Particles front process buffer");
 
 			for (uint32_t j = 0; j < particles->num_attrib_arrays_cache; j++) {
 				glEnableVertexAttribArray(j);
@@ -843,7 +842,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 			glBindVertexArray(0);
 
 			glBindBuffer(GL_ARRAY_BUFFER, particles->front_instance_buffer);
-			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, particles->front_instance_buffer, particles->instance_buffer_size_cache, nullptr, GL_DYNAMIC_COPY, "Particles front instance buffer");
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, particles->front_instance_buffer, particles->instance_buffer_size_cache, instance_data.ptr(), GL_DYNAMIC_COPY, "Particles front instance buffer");
 		}
 
 		{
@@ -853,7 +852,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 			glGenBuffers(1, &particles->back_instance_buffer);
 
 			glBindBuffer(GL_ARRAY_BUFFER, particles->back_process_buffer);
-			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, particles->back_process_buffer, particles->process_buffer_stride_cache * total_amount, data, GL_DYNAMIC_COPY, "Particles back process buffer");
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, particles->back_process_buffer, particles->process_buffer_stride_cache * total_amount, data.ptr(), GL_DYNAMIC_COPY, "Particles back process buffer");
 
 			for (uint32_t j = 0; j < particles->num_attrib_arrays_cache; j++) {
 				glEnableVertexAttribArray(j);
@@ -862,11 +861,9 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 			glBindVertexArray(0);
 
 			glBindBuffer(GL_ARRAY_BUFFER, particles->back_instance_buffer);
-			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, particles->back_instance_buffer, particles->instance_buffer_size_cache, nullptr, GL_DYNAMIC_COPY, "Particles back instance buffer");
+			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, particles->back_instance_buffer, particles->instance_buffer_size_cache, instance_data.ptr(), GL_DYNAMIC_COPY, "Particles back instance buffer");
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		memdelete_arr(data);
 	}
 }
 

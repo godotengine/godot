@@ -500,24 +500,17 @@ namespace Godot
             Type? returnType = hasReturn ? DeserializeType(reader) : typeof(void);
 
             int parametersCount = reader.ReadInt32();
+            var parameterTypes = parametersCount == 0 ? Type.EmptyTypes : new Type[parametersCount];
 
-            if (parametersCount > 0)
+            for (int i = 0; i < parametersCount; i++)
             {
-                var parameterTypes = new Type[parametersCount];
-
-                for (int i = 0; i < parametersCount; i++)
-                {
-                    Type? parameterType = DeserializeType(reader);
-                    if (parameterType == null)
-                        return false;
-                    parameterTypes[i] = parameterType;
-                }
-
-                methodInfo = declaringType.GetMethod(methodName, (BindingFlags)flags, null, parameterTypes, null);
-                return methodInfo != null && methodInfo.ReturnType == returnType;
+                Type? parameterType = DeserializeType(reader);
+                if (parameterType == null)
+                    return false;
+                parameterTypes[i] = parameterType;
             }
 
-            methodInfo = declaringType.GetMethod(methodName, (BindingFlags)flags);
+            methodInfo = declaringType.GetMethod(methodName, (BindingFlags)flags, null, parameterTypes, null);
             return methodInfo != null && methodInfo.ReturnType == returnType;
         }
 

@@ -226,6 +226,9 @@ inline hb_blob_t* serialize (const graph_t& graph)
 {
   hb_vector_t<char> buffer;
   size_t size = graph.total_size_in_bytes ();
+
+  if (!size) return hb_blob_get_empty ();
+
   if (!buffer.alloc (size)) {
     DEBUG_MSG (SUBSET_REPACK, nullptr, "Unable to allocate output buffer.");
     return nullptr;

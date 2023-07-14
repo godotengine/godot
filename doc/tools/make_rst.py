@@ -607,10 +607,6 @@ def main() -> None:
             continue
         doc = tree.getroot()
 
-        if "version" not in doc.attrib:
-            print_error(f'{cur_file}: "version" attribute missing from "doc".', state)
-            continue
-
         name = doc.attrib["name"]
         if name in classes:
             print_error(f'{cur_file}: Duplicate class "{name}".', state)

@@ -933,9 +933,11 @@ void Node::set_process_thread_group_order(int p_order) {
 	if (data.process_thread_group_order == p_order) {
 		return;
 	}
-	// Make sure we are in SceneTree and an actual process owner
+
+	data.process_thread_group_order = p_order;
+
+	// Not yet in the tree (or not a group owner, in whose case this is pointless but harmless); trivial update.
 	if (!is_inside_tree() || data.process_thread_group_owner != this) {
-		data.process_thread_group_order = p_order;
 		return;
 	}
 
@@ -951,8 +953,8 @@ void Node::set_process_priority(int p_priority) {
 	if (data.process_priority == p_priority) {
 		return;
 	}
-	// Make sure we are in SceneTree and an actual process owner
 	if (!is_inside_tree()) {
+		// Not yet in the tree; trivial update.
 		data.process_priority = p_priority;
 		return;
 	}
@@ -973,8 +975,8 @@ void Node::set_physics_process_priority(int p_priority) {
 	if (data.physics_process_priority == p_priority) {
 		return;
 	}
-	// Make sure we are in SceneTree and an actual physics_process owner
 	if (!is_inside_tree()) {
+		// Not yet in the tree; trivial update.
 		data.physics_process_priority = p_priority;
 		return;
 	}
@@ -997,11 +999,11 @@ void Node::set_process_thread_group(ProcessThreadGroup p_mode) {
 	}
 
 	if (!is_inside_tree()) {
+		// Not yet in the tree; trivial update.
 		data.process_thread_group = p_mode;
 		return;
 	}
 
-	// Mode changed, must update everything.
 	_remove_tree_from_process_thread_group();
 	if (data.process_thread_group != PROCESS_THREAD_GROUP_INHERIT) {
 		_remove_process_group();
@@ -1031,7 +1033,7 @@ Node::ProcessThreadGroup Node::get_process_thread_group() const {
 
 void Node::set_process_thread_messages(BitField<ProcessThreadMessages> p_flags) {
 	ERR_THREAD_GUARD
-	if (data.process_thread_group_order == p_flags) {
+	if (data.process_thread_messages == p_flags) {
 		return;
 	}
 
@@ -1401,9 +1403,9 @@ void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_i
 void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
 	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Adding a sibling to a node inside the SceneTree is only allowed from the main thread. Use call_deferred(\"add_sibling\",node).");
 	ERR_FAIL_NULL(p_sibling);
-	ERR_FAIL_NULL(data.parent);
 	ERR_FAIL_COND_MSG(p_sibling == this, vformat("Can't add sibling '%s' to itself.", p_sibling->get_name())); // adding to itself!
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `add_sibling()` failed. Consider using `add_sibling.call_deferred(sibling)` instead.");
+	ERR_FAIL_NULL(data.parent);
+	ERR_FAIL_COND_MSG(data.parent->data.blocked > 0, "Parent node is busy setting up children, `add_sibling()` failed. Consider using `add_sibling.call_deferred(sibling)` instead.");
 
 	data.parent->add_child(p_sibling, p_force_readable_name, data.internal_mode);
 	data.parent->_update_children_cache();
@@ -1904,7 +1906,7 @@ void Node::set_owner(Node *p_owner) {
 		check = check->data.parent;
 	}
 
-	ERR_FAIL_COND(!owner_valid);
+	ERR_FAIL_COND_MSG(!owner_valid, "Invalid owner. Owner must be an ancestor in the tree.");
 
 	_set_owner_nocheck(p_owner);
 

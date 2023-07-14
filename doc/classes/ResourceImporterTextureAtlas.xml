@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterTextureAtlas" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="atlas_file" type="String" setter="" getter="" default="&quot;&quot;">
+		</member>
+		<member name="crop_to_region" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="import_mode" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="trim_alpha_border_from_region" type="bool" setter="" getter="" default="true">
+		</member>
+	</members>
+</class>

@@ -100,8 +100,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-26 17:31+0000\n"
-"Last-Translator: Least Significant Bite <leastsignificantbite@proton.me>\n"
+"PO-Revision-Date: 2023-07-05 13:49+0000\n"
+"Last-Translator: ‎ <artism90@googlemail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/de/>\n"
 "Language: de\n"
@@ -109,7 +109,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18.1\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -732,6 +732,9 @@ msgstr "Einstellungen übersetzen"
 msgid "Scene Tabs"
 msgstr "Szenen-Tabs"
 
+msgid "Restore Scenes on Load"
+msgstr "Szenen beim Laden wiederherstellen"
+
 msgid "Inspector"
 msgstr "Inspektor"
 
@@ -771,6 +774,12 @@ msgstr "Editorsprache"
 msgid "Display Scale"
 msgstr "Anzeigeskalierung"
 
+msgid "Editor Screen"
+msgstr "Bildschirm Editor"
+
+msgid "Project Manager Screen"
+msgstr "Bildschirm Projektverwaltung"
+
 msgid "Enable Pseudolocalization"
 msgstr "Aktiviere Pseudo-Lokalisierung"
 
@@ -782,9 +791,6 @@ msgstr "Hauptschriftgröße"
 
 msgid "Code Font Size"
 msgstr "Quellcodeschriftgröße"
-
-msgid "Font Hinting"
-msgstr "Font-Hinting"
 
 msgid "Main Font"
 msgstr "Hauptschriftart"
@@ -849,8 +855,17 @@ msgstr "Maximalbreite"
 msgid "Show Script Button"
 msgstr "Skriptknopf anzeigen"
 
+msgid "Multi Window"
+msgstr "Mehrfenster"
+
 msgid "Enable"
 msgstr "Aktivieren"
+
+msgid "Restore Windows on Load"
+msgstr "Fenster beim Laden wiederherstellen"
+
+msgid "Maximize Window"
+msgstr "Fenster maximieren"
 
 msgid "Directories"
 msgstr "Verzeichnisse"
@@ -972,11 +987,17 @@ msgstr "Verhalten"
 msgid "Navigation"
 msgstr "Navigation"
 
+msgid "Move Caret on Right Click"
+msgstr "Textcursor bei Rechtsklick bewegen"
+
 msgid "Smooth Scrolling"
-msgstr "Glattes Skrollen"
+msgstr "Flüssiges Scrollen"
 
 msgid "V Scroll Speed"
-msgstr "Vertikale Skrollgeschwindigkeit"
+msgstr "Vertikale Scrollgeschwindigkeit"
+
+msgid "Stay in Script Editor on Node Selected"
+msgstr "Im Skript-Editor bleiben bei Node-Selektion"
 
 msgid "Indent"
 msgstr "Einrücken"
@@ -989,6 +1010,9 @@ msgstr "Dateien"
 
 msgid "Autosave Interval Secs"
 msgstr "Autospeicherinterval (s)"
+
+msgid "Restore Scripts on Load"
+msgstr "Skripte beim Laden wiederherstellen"
 
 msgid "Script List"
 msgstr "Skriptliste"
@@ -1232,6 +1256,9 @@ msgstr "Zwiebelebenenfarbe vorher"
 
 msgid "Onion Layers Future Color"
 msgstr "Zwiebelebenenfarbe nächste"
+
+msgid "Restore Shaders on Load"
+msgstr "Shader beim Laden wiederherstellen"
 
 msgid "Visual Editors"
 msgstr "Visuelle Editoren"
@@ -5173,7 +5200,7 @@ msgid "Completion Scroll Width"
 msgstr "Vervollständigung Scrollbreite"
 
 msgid "Scroll Focus"
-msgstr "Skrollen Fokus"
+msgstr "Scrollen Fokus"
 
 msgid "Grabber"
 msgstr "Greifer"

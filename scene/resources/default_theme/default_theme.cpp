@@ -83,8 +83,8 @@ static Ref<ImageTexture> generate_icon(int p_index) {
 	// Generating upsampled icons is slower, and the benefit is hardly visible
 	// with integer scales.
 	const bool upsample = !Math::is_equal_approx(Math::round(scale), scale);
-	ImageLoaderSVG img_loader;
-	Error err = img_loader.create_image_from_string(img, default_theme_icons_sources[p_index], scale, upsample, HashMap<Color, Color>());
+
+	Error err = ImageLoaderSVG::create_image_from_string(img, default_theme_icons_sources[p_index], scale, upsample, HashMap<Color, Color>());
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Failed generating icon, unsupported or invalid SVG data in default theme.");
 #else
 	// If the SVG module is disabled, we can't really display the UI well, but at least we won't crash.
@@ -774,6 +774,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_separation", "Tree", 4 * scale);
 	theme->set_constant("v_separation", "Tree", 4 * scale);
 	theme->set_constant("item_margin", "Tree", 16 * scale);
+	theme->set_constant("inner_item_margin_bottom", "Tree", 0);
+	theme->set_constant("inner_item_margin_left", "Tree", 0);
+	theme->set_constant("inner_item_margin_right", "Tree", 0);
+	theme->set_constant("inner_item_margin_top", "Tree", 0);
 	theme->set_constant("button_margin", "Tree", 4 * scale);
 	theme->set_constant("draw_relationship_lines", "Tree", 0);
 	theme->set_constant("relationship_line_width", "Tree", 1);

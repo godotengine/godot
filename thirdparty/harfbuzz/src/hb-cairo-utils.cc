@@ -80,7 +80,7 @@ hb_cairo_read_blob (void *closure,
   if (r->offset + length > size)
     return CAIRO_STATUS_READ_ERROR;
 
-  memcpy (data, d + r->offset, length);
+  hb_memcpy (data, d + r->offset, length);
   r->offset += length;
 
   return CAIRO_STATUS_SUCCESS;
@@ -763,7 +763,7 @@ _hb_cairo_add_sweep_gradient_patches (hb_color_stop_t *stops,
     }
 
     //assert (angles[0] + k * span <= 0 && 0 < angles[n_stops - 1] + k * span);
-    span = fabs (span);
+    span = fabsf (span);
 
     for (signed l = k; l < 1000; l++)
     {

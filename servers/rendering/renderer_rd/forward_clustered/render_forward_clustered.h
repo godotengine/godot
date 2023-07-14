@@ -60,8 +60,10 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		SCENE_UNIFORM_SET = 0,
 		RENDER_PASS_UNIFORM_SET = 1,
 		TRANSFORMS_UNIFORM_SET = 2,
-		MATERIAL_UNIFORM_SET = 3
+		MATERIAL_UNIFORM_SET = 3,
 	};
+
+	const int SAMPLERS_BINDING_FIRST_INDEX = 16;
 
 	enum {
 		SPEC_CONSTANT_SOFT_SHADOW_SAMPLES = 6,
@@ -618,7 +620,7 @@ protected:
 	/* Rendering */
 
 	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) override;
-	virtual void _render_buffers_debug_draw(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer) override;
+	virtual void _render_buffers_debug_draw(const RenderDataRD *p_render_data) override;
 
 	virtual void _render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) override;
 	virtual void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;

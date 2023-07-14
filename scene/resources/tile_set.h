@@ -592,6 +592,13 @@ public:
 class TileSetAtlasSource : public TileSetSource {
 	GDCLASS(TileSetAtlasSource, TileSetSource);
 
+public:
+	enum TileAnimationMode {
+		TILE_ANIMATION_MODE_DEFAULT,
+		TILE_ANIMATION_MODE_RANDOM_START_TIMES,
+		TILE_ANIMATION_MODE_MAX,
+	};
+
 private:
 	struct TileAlternativesData {
 		Vector2i size_in_atlas = Vector2i(1, 1);
@@ -601,6 +608,7 @@ private:
 		int animation_columns = 0;
 		Vector2i animation_separation;
 		real_t animation_speed = 1.0;
+		TileSetAtlasSource::TileAnimationMode animation_mode = TILE_ANIMATION_MODE_DEFAULT;
 		LocalVector<real_t> animation_frames_durations;
 
 		// Alternatives
@@ -701,6 +709,8 @@ public:
 	Vector2i get_tile_animation_separation(const Vector2i p_atlas_coords) const;
 	void set_tile_animation_speed(const Vector2i p_atlas_coords, real_t p_speed);
 	real_t get_tile_animation_speed(const Vector2i p_atlas_coords) const;
+	void set_tile_animation_mode(const Vector2i p_atlas_coords, const TileSetAtlasSource::TileAnimationMode p_mode);
+	TileSetAtlasSource::TileAnimationMode get_tile_animation_mode(const Vector2i p_atlas_coords) const;
 	void set_tile_animation_frames_count(const Vector2i p_atlas_coords, int p_frames_count);
 	int get_tile_animation_frames_count(const Vector2i p_atlas_coords) const;
 	void set_tile_animation_frame_duration(const Vector2i p_atlas_coords, int p_frame_index, real_t p_duration);
@@ -931,5 +941,7 @@ VARIANT_ENUM_CAST(TileSet::TerrainMode);
 VARIANT_ENUM_CAST(TileSet::TileShape);
 VARIANT_ENUM_CAST(TileSet::TileLayout);
 VARIANT_ENUM_CAST(TileSet::TileOffsetAxis);
+
+VARIANT_ENUM_CAST(TileSetAtlasSource::TileAnimationMode);
 
 #endif // TILE_SET_H

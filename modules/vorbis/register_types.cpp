@@ -44,7 +44,11 @@ void initialize_vorbis_module(ModuleInitializationLevel p_level) {
 		ogg_vorbis_importer.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(ogg_vorbis_importer);
 	}
+
+	// Required to document import options in the class reference.
+	GDREGISTER_CLASS(ResourceImporterOggVorbis);
 #endif
+
 	GDREGISTER_CLASS(AudioStreamOggVorbis);
 	GDREGISTER_CLASS(AudioStreamPlaybackOggVorbis);
 }

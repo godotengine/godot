@@ -191,7 +191,6 @@ struct ReverseChainSingleSubstFormat1
     TRACE_SERIALIZE (this);
 
     auto *out = c->serializer->start_embed (this);
-    if (unlikely (!c->serializer->check_success (out))) return_trace (false);
     if (unlikely (!c->serializer->embed (this->format))) return_trace (false);
     if (unlikely (!c->serializer->embed (this->coverage))) return_trace (false);
 

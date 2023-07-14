@@ -308,7 +308,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum, bool p_is
 	bool can_ref = !p_type.contains("*") || is_enum_type;
 
 	String link_t = p_type; // For links in metadata
-	String display_t = link_t; // For display purposes
+	String display_t; // For display purposes.
 	if (is_enum_type) {
 		link_t = p_enum; // The link for enums is always the full enum description
 		display_t = _contextualize_class_specifier(p_enum, edited_class);
@@ -1367,7 +1367,7 @@ void EditorHelp::_update_doc() {
 				class_desc->add_newline();
 
 				// Enum description.
-				if (e != "@unnamed_enums" && cd.enums.has(e)) {
+				if (e != "@unnamed_enums" && cd.enums.has(e) && !cd.enums[e].strip_edges().is_empty()) {
 					class_desc->push_color(theme_cache.text_color);
 					_push_normal_font();
 					class_desc->push_indent(1);
@@ -1906,7 +1906,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 }
 
-static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control *p_owner_node) {
+static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control *p_owner_node, const String &p_class = "") {
 	DocTools *doc = EditorHelp::get_doc_data();
 	String base_path;
 
@@ -2107,21 +2107,28 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			p_rt->pop(); // font
 			pos = brk_end + 1;
 
+		} else if (tag == p_class) {
+			// Use a bold font when class reference tags are in their own page.
+			p_rt->push_font(doc_bold_font);
+			p_rt->add_text(tag);
+			p_rt->pop();
+
+			pos = brk_end + 1;
+
 		} else if (doc->class_list.has(tag)) {
-			// Class reference tag such as [Node2D] or [SceneTree].
-			// Use monospace font to make clickable references
-			// easier to distinguish from inline code and other text.
+			// Use a monospace font for class reference tags such as [Node2D] or [SceneTree].
+
 			p_rt->push_font(doc_code_font);
 			p_rt->push_font_size(doc_code_font_size);
-
 			p_rt->push_color(type_color);
 			p_rt->push_meta("#" + tag);
 			p_rt->add_text(tag);
-			p_rt->pop();
-			p_rt->pop();
 
-			p_rt->pop(); // font size
-			p_rt->pop(); // font
+			p_rt->pop();
+			p_rt->pop();
+			p_rt->pop(); // Font size
+			p_rt->pop(); // Font
+
 			pos = brk_end + 1;
 
 		} else if (tag == "b") {
@@ -2252,7 +2259,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 }
 
 void EditorHelp::_add_text(const String &p_bbcode) {
-	_add_text_to_rt(p_bbcode, class_desc, this);
+	_add_text_to_rt(p_bbcode, class_desc, this, edited_class);
 }
 
 Thread EditorHelp::thread;

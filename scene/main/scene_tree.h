@@ -138,7 +138,6 @@ private:
 
 	HashMap<StringName, Group> group_map;
 	bool _quit = false;
-	bool initialized = false;
 
 	StringName tree_changed_name = "tree_changed";
 	StringName node_added_name = "node_added";

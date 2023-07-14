@@ -105,6 +105,17 @@ void ColorModeRGB::slider_draw(int p_which) {
 	slider->draw_polygon(pos, col);
 }
 
+void ColorModeHSV::_value_changed() {
+	Vector<float> values = color_picker->get_active_slider_values();
+
+	if (values[1] > 0 || values[0] != cached_hue) {
+		cached_hue = values[0];
+	}
+	if (values[2] > 0 || values[1] != cached_saturation) {
+		cached_saturation = values[1];
+	}
+}
+
 String ColorModeHSV::get_slider_label(int idx) const {
 	ERR_FAIL_INDEX_V_MSG(idx, 3, String(), "Couldn't get slider label.");
 	return labels[idx];
@@ -121,14 +132,14 @@ float ColorModeHSV::get_slider_value(int idx) const {
 			if (color_picker->get_pick_color().get_s() > 0) {
 				return color_picker->get_pick_color().get_h() * 360.0;
 			} else {
-				return color_picker->get_cached_hue();
+				return cached_hue;
 			}
 		}
 		case 1: {
 			if (color_picker->get_pick_color().get_v() > 0) {
 				return color_picker->get_pick_color().get_s() * 100.0;
 			} else {
-				return color_picker->get_cached_saturation();
+				return cached_saturation;
 			}
 		}
 		case 2:
@@ -167,16 +178,16 @@ void ColorModeHSV::slider_draw(int p_which) {
 		right_color = color;
 		right_color.a = 1;
 	} else if (p_which == 0) {
-		Ref<Texture2D> hue = color_picker->get_theme_icon(SNAME("color_hue"), SNAME("ColorPicker"));
-		slider->draw_texture_rect(hue, Rect2(Vector2(), Vector2(size.x, margin)), false);
-		return;
+		float v = color.get_v();
+		left_color = Color(v, v, v);
+		right_color = left_color;
 	} else {
 		Color s_col;
 		Color v_col;
 		s_col.set_hsv(color.get_h(), 0, color.get_v());
 		left_color = (p_which == 1) ? s_col : Color(0, 0, 0);
 
-		float s_col_hue = (color.get_s() == 0.0) ? color_picker->get_cached_hue() / 360.0 : color.get_h();
+		float s_col_hue = (Math::is_zero_approx(color.get_s())) ? cached_hue / 360.0 : color.get_h();
 		s_col.set_hsv(s_col_hue, 1, color.get_v());
 		v_col.set_hsv(color.get_h(), color.get_s(), 1);
 		right_color = (p_which == 1) ? s_col : v_col;
@@ -191,6 +202,11 @@ void ColorModeHSV::slider_draw(int p_which) {
 	pos.set(3, Vector2(0, margin));
 
 	slider->draw_polygon(pos, col);
+
+	if (p_which == 0) { // H
+		Ref<Texture2D> hue = color_picker->get_theme_icon(SNAME("color_hue"), SNAME("ColorPicker"));
+		slider->draw_texture_rect(hue, Rect2(Vector2(), Vector2(size.x, margin)), false, Color::from_hsv(0, 0, color.get_v(), color.get_s()));
+	}
 }
 
 String ColorModeRAW::get_slider_label(int idx) const {
@@ -262,6 +278,17 @@ bool ColorModeRAW::apply_theme() const {
 	return true;
 }
 
+void ColorModeOKHSL::_value_changed() {
+	Vector<float> values = color_picker->get_active_slider_values();
+
+	if (values[1] > 0 || values[0] != cached_hue) {
+		cached_hue = values[0];
+	}
+	if (values[2] > 0 || values[1] != cached_saturation) {
+		cached_saturation = values[1];
+	}
+}
+
 String ColorModeOKHSL::get_slider_label(int idx) const {
 	ERR_FAIL_INDEX_V_MSG(idx, 3, String(), "Couldn't get slider label.");
 	return labels[idx];
@@ -274,10 +301,20 @@ float ColorModeOKHSL::get_slider_max(int idx) const {
 
 float ColorModeOKHSL::get_slider_value(int idx) const {
 	switch (idx) {
-		case 0:
-			return color_picker->get_pick_color().get_ok_hsl_h() * 360.0;
-		case 1:
-			return color_picker->get_pick_color().get_ok_hsl_s() * 100.0;
+		case 0: {
+			if (color_picker->get_pick_color().get_ok_hsl_s() > 0) {
+				return color_picker->get_pick_color().get_ok_hsl_h() * 360.0;
+			} else {
+				return cached_hue;
+			}
+		}
+		case 1: {
+			if (color_picker->get_pick_color().get_ok_hsl_l() > 0) {
+				return color_picker->get_pick_color().get_ok_hsl_s() * 100.0;
+			} else {
+				return cached_saturation;
+			}
+		}
 		case 2:
 			return color_picker->get_pick_color().get_ok_hsl_l() * 100.0;
 		case 3:
@@ -299,12 +336,6 @@ void ColorModeOKHSL::slider_draw(int p_which) {
 	Size2 size = slider->get_size();
 	const real_t margin = 16 * color_picker->get_theme_default_base_scale();
 
-	if (p_which == 0) { // H
-		Ref<Texture2D> hue = color_picker->get_theme_icon(SNAME("color_okhsl_hue"), SNAME("ColorPicker"));
-		slider->draw_texture_rect(hue, Rect2(Vector2(), Vector2(size.x, margin)), false);
-		return;
-	}
-
 	Vector<Vector2> pos;
 	Vector<Color> col;
 	Color left_color;
@@ -316,8 +347,11 @@ void ColorModeOKHSL::slider_draw(int p_which) {
 		col.resize(6);
 		left_color = Color(0, 0, 0);
 		Color middle_color;
-		middle_color.set_ok_hsl(color.get_ok_hsl_h(), color.get_ok_hsl_s(), 0.5);
-		right_color.set_ok_hsl(color.get_ok_hsl_h(), color.get_ok_hsl_s(), 1);
+		float slider_hue = (Math::is_zero_approx(color.get_ok_hsl_s())) ? cached_hue / 360.0 : color.get_ok_hsl_h();
+		float slider_sat = (Math::is_zero_approx(color.get_ok_hsl_l())) ? cached_saturation / 100.0 : color.get_ok_hsl_s();
+
+		middle_color.set_ok_hsl(slider_hue, slider_sat, 0.5);
+		right_color.set_ok_hsl(slider_hue, slider_sat, 1);
 
 		col.set(0, left_color);
 		col.set(1, middle_color);
@@ -331,7 +365,7 @@ void ColorModeOKHSL::slider_draw(int p_which) {
 		pos.set(3, Vector2(size.x, margin));
 		pos.set(4, Vector2(size.x * 0.5, margin));
 		pos.set(5, Vector2(0, margin));
-	} else { // A / S
+	} else {
 		pos.resize(4);
 		col.resize(4);
 
@@ -342,9 +376,14 @@ void ColorModeOKHSL::slider_draw(int p_which) {
 			left_color.a = 0;
 			right_color = color;
 			right_color.a = 1;
+		} else if (p_which == 0) {
+			float l = color.get_ok_hsl_l();
+			left_color = Color(l, l, l);
+			right_color = left_color;
 		} else {
 			left_color.set_ok_hsl(color.get_ok_hsl_h(), 0, color.get_ok_hsl_l());
-			right_color.set_ok_hsl(color.get_ok_hsl_h(), 1, color.get_ok_hsl_l());
+			float s_col_hue = (Math::is_zero_approx(color.get_ok_hsl_s())) ? cached_hue / 360.0 : color.get_ok_hsl_h();
+			right_color.set_ok_hsl(s_col_hue, 1, color.get_ok_hsl_l());
 		}
 
 		col.set(0, left_color);
@@ -358,4 +397,10 @@ void ColorModeOKHSL::slider_draw(int p_which) {
 	}
 
 	slider->draw_polygon(pos, col);
+
+	if (p_which == 0) { // H
+		Ref<Texture2D> hue = color_picker->get_theme_icon(SNAME("color_okhsl_hue"), SNAME("ColorPicker"));
+		slider->draw_texture_rect(hue, Rect2(Vector2(), Vector2(size.x, margin)), false, Color::from_hsv(0, 0, color.get_ok_hsl_l() * 2.0, color.get_ok_hsl_s()));
+		return;
+	}
 }

@@ -48,8 +48,6 @@
 #include "core/templates/vector.h"
 #include "servers/xr/xr_pose.h"
 
-#include "thirdparty/openxr/src/common/xr_linear.h"
-
 #include <openxr/openxr.h>
 
 // Note, OpenXR code that we wrote for our plugin makes use of C++20 notation for initializing structs which ensures zeroing out unspecified members.

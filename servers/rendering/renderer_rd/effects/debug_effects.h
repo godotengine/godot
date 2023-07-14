@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  threaded_array_processor.h                                            */
+/*  debug_effects.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,60 +28,58 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef THREADED_ARRAY_PROCESSOR_H
-#define THREADED_ARRAY_PROCESSOR_H
+#ifndef DEBUG_EFFECTS_RD_H
+#define DEBUG_EFFECTS_RD_H
 
-#include "core/os/os.h"
-#include "core/os/thread.h"
-#include "core/os/thread_safe.h"
-#include "core/templates/safe_refcount.h"
+#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
+#include "servers/rendering/renderer_rd/shaders/effects/shadow_frustum.glsl.gen.h"
+#include "servers/rendering/renderer_scene_render.h"
 
-template <class C, class U>
-struct ThreadArrayProcessData {
-	uint32_t elements;
-	SafeNumeric<uint32_t> index;
-	C *instance;
-	U userdata;
-	void (C::*method)(uint32_t, U);
+#include "servers/rendering_server.h"
 
-	void process(uint32_t p_index) {
-		(instance->*method)(p_index, userdata);
-	}
+namespace RendererRD {
+
+class DebugEffects {
+private:
+	struct {
+		RD::VertexFormatID vertex_format;
+		RID vertex_buffer;
+		RID vertex_array;
+
+		RID index_buffer;
+		RID index_array;
+
+		RID lines_buffer;
+		RID lines_array;
+	} frustum;
+
+	struct ShadowFrustumPushConstant {
+		float mvp[16];
+		float color[4];
+	};
+
+	enum ShadowFrustumPipelines {
+		SFP_TRANSPARENT,
+		SFP_WIREFRAME,
+		SFP_MAX
+	};
+
+	struct {
+		ShadowFrustumShaderRD shader;
+		RID shader_version;
+		PipelineCacheRD pipelines[SFP_MAX];
+	} shadow_frustum;
+
+	void _create_frustum_arrays();
+
+protected:
+public:
+	DebugEffects();
+	~DebugEffects();
+
+	void draw_shadow_frustum(RID p_light, const Projection &p_cam_projection, const Transform3D &p_cam_transform, RID p_dest_fb, const Rect2 p_rect);
 };
 
-template <class T>
-void process_array_thread(void *ud) {
-	T &data = *(T *)ud;
-	while (true) {
-		uint32_t index = data.index.increment();
-		if (index >= data.elements) {
-			break;
-		}
-		data.process(index);
-	}
-}
+} // namespace RendererRD
 
-template <class C, class M, class U>
-void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_userdata) {
-	ThreadArrayProcessData<C, U> data;
-	data.method = p_method;
-	data.instance = p_instance;
-	data.userdata = p_userdata;
-	data.index.set(0);
-	data.elements = p_elements;
-	data.process(0); //process first, let threads increment for next
-
-	int thread_count = OS::get_singleton()->get_processor_count();
-	Thread *threads = memnew_arr(Thread, thread_count);
-
-	for (int i = 0; i < thread_count; i++) {
-		threads[i].start(process_array_thread<ThreadArrayProcessData<C, U>>, &data);
-	}
-
-	for (int i = 0; i < thread_count; i++) {
-		threads[i].wait_to_finish();
-	}
-	memdelete_arr(threads);
-}
-
-#endif // THREADED_ARRAY_PROCESSOR_H
+#endif // DEBUG_EFFECTS_RD_H

@@ -1837,10 +1837,10 @@ void TextureStorage::_create_render_target_backbuffer(RenderTarget *rt) {
 		}
 		GLES3::Utilities::get_singleton()->texture_allocated_data(rt->backbuffer, texture_size_bytes, "Render target backbuffer color texture");
 
-		// Initialize all levels to opaque Magenta.
+		// Initialize all levels to clear black.
 		for (int j = 0; j < count; j++) {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->backbuffer, j);
-			glClearColor(1.0, 0.0, 1.0, 1.0);
+			glClearColor(0.0, 0.0, 0.0, 0.0);
 			glClear(GL_COLOR_BUFFER_BIT);
 		}
 
@@ -2568,18 +2568,18 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	}
 
 	glDisable(GL_BLEND);
-	//single texture copy for backbuffer
+	// Single texture copy for backbuffer.
 	glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, rt->color);
 	GLES3::CopyEffects::get_singleton()->copy_screen();
 
 	if (p_gen_mipmaps) {
-		GLES3::CopyEffects::get_singleton()->bilinear_blur(rt->backbuffer, rt->mipmap_count, region);
+		GLES3::CopyEffects::get_singleton()->gaussian_blur(rt->backbuffer, rt->mipmap_count, region, rt->size);
 		glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
 	}
 
-	glEnable(GL_BLEND); // 2D almost always uses blend.
+	glEnable(GL_BLEND); // 2D starts with blend enabled.
 }
 
 void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color) {
@@ -2624,8 +2624,10 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 			return; //nothing to do
 		}
 	}
+	glDisable(GL_BLEND);
+	GLES3::CopyEffects::get_singleton()->gaussian_blur(rt->backbuffer, rt->mipmap_count, region, rt->size);
+	glEnable(GL_BLEND); // 2D starts with blend enabled.
 
-	GLES3::CopyEffects::get_singleton()->bilinear_blur(rt->backbuffer, rt->mipmap_count, region);
 	glBindFramebuffer(GL_FRAMEBUFFER, rt->backbuffer_fbo);
 }
 

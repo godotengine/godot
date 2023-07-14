@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, The Khronos Group Inc.
+// Copyright (c) 2017-2023, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 // SPDX-License-Identifier: Apache-2.0 OR MIT
@@ -6,7 +6,7 @@
 //     See utility_source_generator.py for modifications
 // ************************************************************
 
-// Copyright (c) 2017-2022, The Khronos Group Inc.
+// Copyright (c) 2017-2023, The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -239,6 +239,12 @@ struct XrGeneratedDispatchTable {
     PFN_xrUpdateSwapchainFB UpdateSwapchainFB;
     PFN_xrGetSwapchainStateFB GetSwapchainStateFB;
 
+    // ---- XR_FB_body_tracking extension commands
+    PFN_xrCreateBodyTrackerFB CreateBodyTrackerFB;
+    PFN_xrDestroyBodyTrackerFB DestroyBodyTrackerFB;
+    PFN_xrLocateBodyJointsFB LocateBodyJointsFB;
+    PFN_xrGetBodySkeletonFB GetBodySkeletonFB;
+
     // ---- XR_MSFT_scene_understanding extension commands
     PFN_xrEnumerateSceneComputeFeaturesMSFT EnumerateSceneComputeFeaturesMSFT;
     PFN_xrCreateSceneObserverMSFT CreateSceneObserverMSFT;
@@ -332,6 +338,11 @@ struct XrGeneratedDispatchTable {
     // ---- XR_VARJO_view_offset extension commands
     PFN_xrSetViewOffsetVARJO SetViewOffsetVARJO;
 
+    // ---- XR_ML_compat extension commands
+#if defined(XR_USE_PLATFORM_ML)
+    PFN_xrCreateSpaceFromCoordinateFrameUIDML CreateSpaceFromCoordinateFrameUIDML;
+#endif // defined(XR_USE_PLATFORM_ML)
+
     // ---- XR_MSFT_spatial_anchor_persistence extension commands
     PFN_xrCreateSpatialAnchorStoreConnectionMSFT CreateSpatialAnchorStoreConnectionMSFT;
     PFN_xrDestroySpatialAnchorStoreConnectionMSFT DestroySpatialAnchorStoreConnectionMSFT;
@@ -357,6 +368,9 @@ struct XrGeneratedDispatchTable {
     PFN_xrGetAudioInputDeviceGuidOculus GetAudioInputDeviceGuidOculus;
 #endif // defined(XR_USE_PLATFORM_WIN32)
 
+    // ---- XR_FB_spatial_entity_sharing extension commands
+    PFN_xrShareSpacesFB ShareSpacesFB;
+
     // ---- XR_FB_scene extension commands
     PFN_xrGetSpaceBoundingBox2DFB GetSpaceBoundingBox2DFB;
     PFN_xrGetSpaceBoundingBox3DFB GetSpaceBoundingBox3DFB;
@@ -367,11 +381,46 @@ struct XrGeneratedDispatchTable {
     // ---- XR_ALMALENCE_digital_lens_control extension commands
     PFN_xrSetDigitalLensControlALMALENCE SetDigitalLensControlALMALENCE;
 
+    // ---- XR_FB_scene_capture extension commands
+    PFN_xrRequestSceneCaptureFB RequestSceneCaptureFB;
+
     // ---- XR_FB_spatial_entity_container extension commands
     PFN_xrGetSpaceContainerFB GetSpaceContainerFB;
 
+    // ---- XR_META_foveation_eye_tracked extension commands
+    PFN_xrGetFoveationEyeTrackedStateMETA GetFoveationEyeTrackedStateMETA;
+
+    // ---- XR_FB_face_tracking extension commands
+    PFN_xrCreateFaceTrackerFB CreateFaceTrackerFB;
+    PFN_xrDestroyFaceTrackerFB DestroyFaceTrackerFB;
+    PFN_xrGetFaceExpressionWeightsFB GetFaceExpressionWeightsFB;
+
+    // ---- XR_FB_eye_tracking_social extension commands
+    PFN_xrCreateEyeTrackerFB CreateEyeTrackerFB;
+    PFN_xrDestroyEyeTrackerFB DestroyEyeTrackerFB;
+    PFN_xrGetEyeGazesFB GetEyeGazesFB;
+
     // ---- XR_FB_passthrough_keyboard_hands extension commands
     PFN_xrPassthroughLayerSetKeyboardHandsIntensityFB PassthroughLayerSetKeyboardHandsIntensityFB;
+
+    // ---- XR_FB_haptic_pcm extension commands
+    PFN_xrGetDeviceSampleRateFB GetDeviceSampleRateFB;
+
+    // ---- XR_META_virtual_keyboard extension commands
+    PFN_xrCreateVirtualKeyboardMETA CreateVirtualKeyboardMETA;
+    PFN_xrDestroyVirtualKeyboardMETA DestroyVirtualKeyboardMETA;
+    PFN_xrCreateVirtualKeyboardSpaceMETA CreateVirtualKeyboardSpaceMETA;
+    PFN_xrSuggestVirtualKeyboardLocationMETA SuggestVirtualKeyboardLocationMETA;
+    PFN_xrGetVirtualKeyboardScaleMETA GetVirtualKeyboardScaleMETA;
+    PFN_xrSetVirtualKeyboardModelVisibilityMETA SetVirtualKeyboardModelVisibilityMETA;
+    PFN_xrGetVirtualKeyboardModelAnimationStatesMETA GetVirtualKeyboardModelAnimationStatesMETA;
+    PFN_xrGetVirtualKeyboardDirtyTexturesMETA GetVirtualKeyboardDirtyTexturesMETA;
+    PFN_xrGetVirtualKeyboardTextureDataMETA GetVirtualKeyboardTextureDataMETA;
+    PFN_xrSendVirtualKeyboardInputMETA SendVirtualKeyboardInputMETA;
+    PFN_xrChangeVirtualKeyboardTextContextMETA ChangeVirtualKeyboardTextContextMETA;
+
+    // ---- XR_OCULUS_external_camera extension commands
+    PFN_xrEnumerateExternalCamerasOCULUS EnumerateExternalCamerasOCULUS;
 
     // ---- XR_META_performance_metrics extension commands
     PFN_xrEnumeratePerformanceMetricsCounterPathsMETA EnumeratePerformanceMetricsCounterPathsMETA;
@@ -379,12 +428,39 @@ struct XrGeneratedDispatchTable {
     PFN_xrGetPerformanceMetricsStateMETA GetPerformanceMetricsStateMETA;
     PFN_xrQueryPerformanceMetricsCounterMETA QueryPerformanceMetricsCounterMETA;
 
+    // ---- XR_FB_spatial_entity_storage_batch extension commands
+    PFN_xrSaveSpaceListFB SaveSpaceListFB;
+
+    // ---- XR_FB_spatial_entity_user extension commands
+    PFN_xrCreateSpaceUserFB CreateSpaceUserFB;
+    PFN_xrGetSpaceUserIdFB GetSpaceUserIdFB;
+    PFN_xrDestroySpaceUserFB DestroySpaceUserFB;
+
+    // ---- XR_META_passthrough_color_lut extension commands
+    PFN_xrCreatePassthroughColorLutMETA CreatePassthroughColorLutMETA;
+    PFN_xrDestroyPassthroughColorLutMETA DestroyPassthroughColorLutMETA;
+    PFN_xrUpdatePassthroughColorLutMETA UpdatePassthroughColorLutMETA;
+
+    // ---- XR_QCOM_tracking_optimization_settings extension commands
+    PFN_xrSetTrackingOptimizationSettingsHintQCOM SetTrackingOptimizationSettingsHintQCOM;
+
     // ---- XR_HTC_passthrough extension commands
     PFN_xrCreatePassthroughHTC CreatePassthroughHTC;
     PFN_xrDestroyPassthroughHTC DestroyPassthroughHTC;
 
     // ---- XR_HTC_foveation extension commands
     PFN_xrApplyFoveationHTC ApplyFoveationHTC;
+
+    // ---- XR_MNDX_force_feedback_curl extension commands
+    PFN_xrApplyForceFeedbackCurlMNDX ApplyForceFeedbackCurlMNDX;
+
+    // ---- XR_EXT_plane_detection extension commands
+    PFN_xrCreatePlaneDetectorEXT CreatePlaneDetectorEXT;
+    PFN_xrDestroyPlaneDetectorEXT DestroyPlaneDetectorEXT;
+    PFN_xrBeginPlaneDetectionEXT BeginPlaneDetectionEXT;
+    PFN_xrGetPlaneDetectionStateEXT GetPlaneDetectionStateEXT;
+    PFN_xrGetPlaneDetectionsEXT GetPlaneDetectionsEXT;
+    PFN_xrGetPlanePolygonBufferEXT GetPlanePolygonBufferEXT;
 };
 
 
