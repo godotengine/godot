@@ -3789,35 +3789,35 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 
 	const Array &materials = p_state->json["materials"];
 	for (GLTFMaterialIndex i = 0; i < materials.size(); i++) {
-		const Dictionary &d = materials[i];
+		const Dictionary &material_dict = materials[i];
 
 		Ref<StandardMaterial3D> material;
 		material.instantiate();
-		if (d.has("name") && !String(d["name"]).is_empty()) {
-			material->set_name(d["name"]);
+		if (material_dict.has("name") && !String(material_dict["name"]).is_empty()) {
+			material->set_name(material_dict["name"]);
 		} else {
 			material->set_name(vformat("material_%s", itos(i)));
 		}
 		material->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		Dictionary pbr_spec_gloss_extensions;
-		if (d.has("extensions")) {
-			pbr_spec_gloss_extensions = d["extensions"];
+		Dictionary material_extensions;
+		if (material_dict.has("extensions")) {
+			material_extensions = material_dict["extensions"];
 		}
 
-		if (pbr_spec_gloss_extensions.has("KHR_materials_unlit")) {
+		if (material_extensions.has("KHR_materials_unlit")) {
 			material->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
 		}
 
-		if (pbr_spec_gloss_extensions.has("KHR_materials_emissive_strength")) {
-			Dictionary emissive_strength = pbr_spec_gloss_extensions["KHR_materials_emissive_strength"];
+		if (material_extensions.has("KHR_materials_emissive_strength")) {
+			Dictionary emissive_strength = material_extensions["KHR_materials_emissive_strength"];
 			if (emissive_strength.has("emissiveStrength")) {
 				material->set_emission_energy_multiplier(emissive_strength["emissiveStrength"]);
 			}
 		}
 
-		if (pbr_spec_gloss_extensions.has("KHR_materials_pbrSpecularGlossiness")) {
+		if (material_extensions.has("KHR_materials_pbrSpecularGlossiness")) {
 			WARN_PRINT("Material uses a specular and glossiness workflow. Textures will be converted to roughness and metallic workflow, which may not be 100% accurate.");
-			Dictionary sgm = pbr_spec_gloss_extensions["KHR_materials_pbrSpecularGlossiness"];
+			Dictionary sgm = material_extensions["KHR_materials_pbrSpecularGlossiness"];
 
 			Ref<GLTFSpecGloss> spec_gloss;
 			spec_gloss.instantiate();
@@ -3865,8 +3865,8 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			}
 			spec_gloss_to_rough_metal(spec_gloss, material);
 
-		} else if (d.has("pbrMetallicRoughness")) {
-			const Dictionary &mr = d["pbrMetallicRoughness"];
+		} else if (material_dict.has("pbrMetallicRoughness")) {
+			const Dictionary &mr = material_dict["pbrMetallicRoughness"];
 			if (mr.has("baseColorFactor")) {
 				const Array &arr = mr["baseColorFactor"];
 				ERR_FAIL_COND_V(arr.size() != 4, ERR_PARSE_ERROR);
@@ -3918,8 +3918,8 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			}
 		}
 
-		if (d.has("normalTexture")) {
-			const Dictionary &bct = d["normalTexture"];
+		if (material_dict.has("normalTexture")) {
+			const Dictionary &bct = material_dict["normalTexture"];
 			if (bct.has("index")) {
 				material->set_texture(BaseMaterial3D::TEXTURE_NORMAL, _get_texture(p_state, bct["index"], TEXTURE_TYPE_NORMAL));
 				material->set_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING, true);
@@ -3928,8 +3928,8 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 				material->set_normal_scale(bct["scale"]);
 			}
 		}
-		if (d.has("occlusionTexture")) {
-			const Dictionary &bct = d["occlusionTexture"];
+		if (material_dict.has("occlusionTexture")) {
+			const Dictionary &bct = material_dict["occlusionTexture"];
 			if (bct.has("index")) {
 				material->set_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
 				material->set_ao_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_RED);
@@ -3937,8 +3937,8 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			}
 		}
 
-		if (d.has("emissiveFactor")) {
-			const Array &arr = d["emissiveFactor"];
+		if (material_dict.has("emissiveFactor")) {
+			const Array &arr = material_dict["emissiveFactor"];
 			ERR_FAIL_COND_V(arr.size() != 3, ERR_PARSE_ERROR);
 			const Color c = Color(arr[0], arr[1], arr[2]).linear_to_srgb();
 			material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
@@ -3946,8 +3946,8 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			material->set_emission(c);
 		}
 
-		if (d.has("emissiveTexture")) {
-			const Dictionary &bct = d["emissiveTexture"];
+		if (material_dict.has("emissiveTexture")) {
+			const Dictionary &bct = material_dict["emissiveTexture"];
 			if (bct.has("index")) {
 				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
 				material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
@@ -3955,20 +3955,20 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			}
 		}
 
-		if (d.has("doubleSided")) {
-			const bool ds = d["doubleSided"];
+		if (material_dict.has("doubleSided")) {
+			const bool ds = material_dict["doubleSided"];
 			if (ds) {
 				material->set_cull_mode(BaseMaterial3D::CULL_DISABLED);
 			}
 		}
-		if (d.has("alphaMode")) {
-			const String &am = d["alphaMode"];
+		if (material_dict.has("alphaMode")) {
+			const String &am = material_dict["alphaMode"];
 			if (am == "BLEND") {
 				material->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
 			} else if (am == "MASK") {
 				material->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA_SCISSOR);
-				if (d.has("alphaCutoff")) {
-					material->set_alpha_scissor_threshold(d["alphaCutoff"]);
+				if (material_dict.has("alphaCutoff")) {
+					material->set_alpha_scissor_threshold(material_dict["alphaCutoff"]);
 				} else {
 					material->set_alpha_scissor_threshold(0.5f);
 				}
