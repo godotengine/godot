@@ -97,7 +97,6 @@ private:
 
 public:
 	// Simple API
-	void begin();
 	void add_rect(RID p_canvas_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, RID p_normal_map = RID(), bool p_clip_uv = false);
 
 	// Efficient API
@@ -105,10 +104,12 @@ public:
 	bool add(const Rect2 &p_rect, const Rect2 &p_src_rect, bool p_commit_on_flip_change = true);
 	bool is_empty() const { return rects.is_empty(); }
 	bool is_full() const { return rects.is_full(); }
-	void end();
 
-	MultiRect();
-	~MultiRect();
+	// Always called in destructor, but can be used explicitly
+	// for multiple draws, or to time the flush.
+	void flush();
+
+	~MultiRect() { flush(); }
 };
 
 #endif // VISUAL_SERVER_CANVAS_HELPER_H

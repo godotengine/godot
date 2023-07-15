@@ -110,6 +110,7 @@ public:
 		return font->draw_char_ex(p_canvas_item, p_pos, p_char, p_next, has_outline ? outline_color : p_modulate, has_outline, &multirect);
 	}
 	MultiRect &get_multirect() { return multirect; }
+	void flush();
 
 	~FontDrawer();
 };

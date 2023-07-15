@@ -38,22 +38,6 @@ Mutex VisualServerCanvasHelper::_tilemap_mutex;
 
 bool VisualServerCanvasHelper::_multirect_enabled = true;
 
-MultiRect::MultiRect() {
-	begin();
-}
-MultiRect::~MultiRect() {
-	end();
-}
-
-void MultiRect::begin() {
-	DEV_CHECK_ONCE(!rects.size());
-	rects.clear();
-	sources.clear();
-
-	state.flags = 0;
-	state_set = false;
-}
-
 void MultiRect::add_rect(RID p_canvas_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, RID p_normal_map, bool p_clip_uv) {
 	bool new_common_data = true;
 
@@ -101,7 +85,7 @@ void MultiRect::add_rect(RID p_canvas_item, const Rect2 &p_rect, RID p_texture, 
 	if (!is_empty()) {
 		if ((state != s) ||
 				(rects.size() >= MAX_RECTS)) {
-			end();
+			flush();
 		} else {
 			new_common_data = false;
 		}
@@ -113,6 +97,11 @@ void MultiRect::add_rect(RID p_canvas_item, const Rect2 &p_rect, RID p_texture, 
 
 	rects.push_back(rect);
 	sources.push_back(source);
+
+	// Legacy path
+	if (!VisualServerCanvasHelper::_multirect_enabled) {
+		flush();
+	}
 }
 
 void MultiRect::begin(const VisualServerCanvasHelper::State &p_state) {
@@ -184,7 +173,7 @@ bool MultiRect::add(const Rect2 &p_rect, const Rect2 &p_src_rect, bool p_commit_
 	return true;
 }
 
-void MultiRect::end() {
+void MultiRect::flush() {
 	if (!is_empty()) {
 		if (VisualServerCanvasHelper::_multirect_enabled) {
 			VisualServer::get_singleton()->canvas_item_add_texture_multirect_region(state.item, rects, state.texture, sources, state.modulate, state.flags, state.normal_map);
@@ -203,6 +192,9 @@ void MultiRect::end() {
 		sources.clear();
 	}
 	state_set = false;
+
+	// This may not be necessary (if needing to eek out maximum speed).
+	state.flags = 0;
 }
 
 void VisualServerCanvasHelper::tilemap_begin() {
@@ -272,7 +264,7 @@ void VisualServerCanvasHelper::tilemap_end() {
 	}
 
 	for (uint32_t n = 0; n < _tilemap_multirects.size(); n++) {
-		_tilemap_multirects[n].end();
+		_tilemap_multirects[n].flush();
 	}
 
 	_tilemap_multirects.clear();

@@ -542,15 +542,18 @@ FontDrawer::FontDrawer(const Ref<Font> &p_font, const Color &p_outline_color) :
 		font(p_font),
 		outline_color(p_outline_color) {
 	has_outline = p_font->has_outline();
-	multirect.begin();
 }
 
-FontDrawer::~FontDrawer() {
+void FontDrawer::flush() {
 	for (int i = 0; i < pending_draws.size(); ++i) {
 		const PendingDraw &draw = pending_draws[i];
 		font->draw_char_ex(draw.canvas_item, draw.pos, draw.chr, draw.next, draw.modulate, false, &multirect);
 	}
-	multirect.end();
+	multirect.flush();
+}
+
+FontDrawer::~FontDrawer() {
+	flush();
 }
 
 void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
