@@ -4293,6 +4293,15 @@
 		<constant name="MATERIAL_RENDER_PRIORITY_MAX" value="127">
 			The maximum renderpriority of all materials.
 		</constant>
+		<constant name="BASE_MATERIAL_3D_DITHERING_JITTER_AUTO" value="0" enum="BaseMaterial3DDitheringJitter">
+			Jitter the [BaseMaterial3D] dithered transparency modes' pattern if temporal antialiasing (TAA) is enabled.
+		</constant>
+		<constant name="BASE_MATERIAL_3D_DITHERING_JITTER_NEVER" value="1" enum="BaseMaterial3DDitheringJitter">
+			Never jitter the [BaseMaterial3D] dithered transparency modes' pattern, even if temporal antialiasing (TAA) is enabled.
+		</constant>
+		<constant name="BASE_MATERIAL_3D_DITHERING_JITTER_ALWAYS" value="2" enum="BaseMaterial3DDitheringJitter">
+			Always jitter the [BaseMaterial3D] dithered transparency modes' pattern, even if temporal antialiasing (TAA) is disabled.
+		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
 			Array is a vertex position array.
 		</constant>

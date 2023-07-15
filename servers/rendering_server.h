@@ -231,6 +231,12 @@ public:
 		MATERIAL_RENDER_PRIORITY_MAX = 127,
 	};
 
+	enum BaseMaterial3DDitheringJitter {
+		BASE_MATERIAL_3D_DITHERING_JITTER_AUTO,
+		BASE_MATERIAL_3D_DITHERING_JITTER_NEVER,
+		BASE_MATERIAL_3D_DITHERING_JITTER_ALWAYS,
+	};
+
 	virtual RID material_create() = 0;
 
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) = 0;
@@ -1779,6 +1785,7 @@ private:
 VARIANT_ENUM_CAST(RenderingServer::TextureLayeredType);
 VARIANT_ENUM_CAST(RenderingServer::CubeMapLayer);
 VARIANT_ENUM_CAST(RenderingServer::ShaderMode);
+VARIANT_ENUM_CAST(RenderingServer::BaseMaterial3DDitheringJitter);
 VARIANT_ENUM_CAST(RenderingServer::ArrayType);
 VARIANT_BITFIELD_CAST(RenderingServer::ArrayFormat);
 VARIANT_ENUM_CAST(RenderingServer::ArrayCustomFormat);
