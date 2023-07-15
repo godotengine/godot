@@ -53,6 +53,24 @@
 				Clears the grid and sets the [member region] to [code]Rect2i(0, 0, 0, 0)[/code].
 			</description>
 		</method>
+		<method name="fill_solid_region">
+			<return type="void" />
+			<param index="0" name="region" type="Rect2i" />
+			<param index="1" name="solid" type="bool" default="true" />
+			<description>
+				Fills the given [param region] on the grid with the specified value for the solid flag.
+				[b]Note:[/b] Calling [method update] is not needed after the call of this function.
+			</description>
+		</method>
+		<method name="fill_weight_scale_region">
+			<return type="void" />
+			<param index="0" name="region" type="Rect2i" />
+			<param index="1" name="weight_scale" type="float" />
+			<description>
+				Fills the given [param region] on the grid with the specified value for the weight scale.
+				[b]Note:[/b] Calling [method update] is not needed after the call of this function.
+			</description>
+		</method>
 		<method name="get_id_path">
 			<return type="Vector2i[]" />
 			<param index="0" name="from_id" type="Vector2i" />
