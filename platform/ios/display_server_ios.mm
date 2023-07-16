@@ -39,6 +39,7 @@
 #import "os_ios.h"
 #import "tts_ios.h"
 #import "view_controller.h"
+#include <drivers/png/png_driver_common.h>
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access_pack.h"
@@ -663,15 +664,46 @@ int DisplayServerIOS::virtual_keyboard_get_height() const {
 	return virtual_keyboard_height;
 }
 
-void DisplayServerIOS::clipboard_set(const String &p_text) {
+void DisplayServerIOS::set_clipboard_string(const String &p_text) {
 	[UIPasteboard generalPasteboard].string = [NSString stringWithUTF8String:p_text.utf8()];
 }
 
-String DisplayServerIOS::clipboard_get() const {
+String DisplayServerIOS::get_clipboard_string() const {
 	NSString *text = [UIPasteboard generalPasteboard].string;
 
 	return String::utf8([text UTF8String]);
 }
+
+Ref<Image> DisplayServerMacOS::get_clipboard_image() const {
+	Ref<Image> image;
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
+	if (!result)
+		return image;
+	NSData *data = [pasteboard dataForType:result];
+	if (!data)
+		return image;
+	NSBitmapImageRep *bitmap = [NSBitmapImageRep imageRepWithData:data];
+	NSData *pngData = [bitmap representationUsingType:NSPNGFileType properties:@{}];
+	image.instantiate();
+	PNGDriverCommon::png_to_image((const uint8_t *)pngData.bytes, pngData.length, false, image);
+	return image;
+}
+
+bool DisplayServerMacOS::has_clipboard_string() const {
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
+	NSDictionary *options = [NSDictionary dictionary];
+	return [pasteboard canReadObjectForClasses:classArray options:options];
+}
+
+bool DisplayServerMacOS::has_clipboard_image() const {
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
+	return result;
+}
+
+
 
 void DisplayServerIOS::screen_set_keep_on(bool p_enable) {
 	[UIApplication sharedApplication].idleTimerDisabled = p_enable;
