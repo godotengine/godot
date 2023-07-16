@@ -278,6 +278,7 @@ protected:
 public:
 	void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_source, int p_source_id);
 	void init_source();
+	void auto_create_tiles();
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 

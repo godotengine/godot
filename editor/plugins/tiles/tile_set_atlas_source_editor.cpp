@@ -2253,6 +2253,10 @@ void TileSetAtlasSourceEditor::init_source() {
 	confirm_auto_create_tiles->popup_centered();
 }
 
+void TileSetAtlasSourceEditor::auto_create_tiles() {
+	_auto_create_tiles();
+}
+
 void TileSetAtlasSourceEditor::_auto_create_tiles() {
 	if (!tile_set_atlas_source) {
 		return;
