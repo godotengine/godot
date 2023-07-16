@@ -40,7 +40,8 @@ public:
 	enum HashType {
 		HASH_MD5,
 		HASH_SHA1,
-		HASH_SHA256
+		HASH_SHA256,
+		HASH_SHA512
 	};
 
 private:

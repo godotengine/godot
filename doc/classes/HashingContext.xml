@@ -89,5 +89,8 @@
 		<constant name="HASH_SHA256" value="2" enum="HashType">
 			Hashing algorithm: SHA-256.
 		</constant>
+		<constant name="HASH_SHA512" value="3" enum="HashType">
+			Hashing algorithm: SHA-512.
+		</constant>
 	</constants>
 </class>

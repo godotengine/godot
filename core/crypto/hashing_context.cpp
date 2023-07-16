@@ -43,6 +43,8 @@ Error HashingContext::start(HashType p_type) {
 			return ((CryptoCore::SHA1Context *)ctx)->start();
 		case HASH_SHA256:
 			return ((CryptoCore::SHA256Context *)ctx)->start();
+		case HASH_SHA512:
+			return ((CryptoCore::SHA512Context *)ctx)->start();
 	}
 	return ERR_UNAVAILABLE;
 }
@@ -59,6 +61,8 @@ Error HashingContext::update(PackedByteArray p_chunk) {
 			return ((CryptoCore::SHA1Context *)ctx)->update(&r[0], len);
 		case HASH_SHA256:
 			return ((CryptoCore::SHA256Context *)ctx)->update(&r[0], len);
+		case HASH_SHA512:
+			return ((CryptoCore::SHA512Context *)ctx)->update(&r[0], len);
 	}
 	return ERR_UNAVAILABLE;
 }
@@ -80,6 +84,10 @@ PackedByteArray HashingContext::finish() {
 			out.resize(32);
 			err = ((CryptoCore::SHA256Context *)ctx)->finish(out.ptrw());
 			break;
+		case HASH_SHA512:
+			out.resize(64);
+			err = ((CryptoCore::SHA512Context *)ctx)->finish(out.ptrw());
+			break;
 	}
 	_delete_ctx();
 	ERR_FAIL_COND_V(err != OK, PackedByteArray());
@@ -98,6 +106,9 @@ void HashingContext::_create_ctx(HashType p_type) {
 		case HASH_SHA256:
 			ctx = memnew(CryptoCore::SHA256Context);
 			break;
+		case HASH_SHA512:
+			ctx = memnew(CryptoCore::SHA512Context);
+			break;
 		default:
 			ctx = nullptr;
 	}
@@ -114,6 +125,9 @@ void HashingContext::_delete_ctx() {
 		case HASH_SHA256:
 			memdelete((CryptoCore::SHA256Context *)ctx);
 			break;
+		case HASH_SHA512:
+			memdelete((CryptoCore::SHA512Context *)ctx);
+			break;
 	}
 	ctx = nullptr;
 }
@@ -125,6 +139,7 @@ void HashingContext::_bind_methods() {
 	BIND_ENUM_CONSTANT(HASH_MD5);
 	BIND_ENUM_CONSTANT(HASH_SHA1);
 	BIND_ENUM_CONSTANT(HASH_SHA256);
+	BIND_ENUM_CONSTANT(HASH_SHA512);
 }
 
 HashingContext::~HashingContext() {
