@@ -379,7 +379,7 @@ void WaylandThread::_wl_registry_on_global(void *data, struct wl_registry *wl_re
 
 			if (!ss->wp_primary_selection_device && registry->wp_primary_selection_device_manager) {
 				ss->wp_primary_selection_device = zwp_primary_selection_device_manager_v1_get_device(registry->wp_primary_selection_device_manager, wl_seat);
-				zwp_primary_selection_device_v1_add_listener(ss->wp_primary_selection_device, &wp_primary_selection_device_listener, &ss);
+				zwp_primary_selection_device_v1_add_listener(ss->wp_primary_selection_device, &wp_primary_selection_device_listener, ss);
 			}
 		}
 	}
