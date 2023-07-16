@@ -1224,7 +1224,7 @@ namespace Godot
         /// Similar to <see cref="MoveToward"/> but interpolates correctly when the angles wrap around <see cref="Tau"/>.
         /// Use a negative <paramref name="delta"/> value to move toward the opposite angle.
         /// </summary>
-        /// <param name="from">The start Angle.</param>
+        /// <param name="from">The start angle.</param>
         /// <param name="to">The angle to move towards.</param>
         /// <param name="delta">The amount to move by.</param>
         /// <returns>The angle after moving.</returns>
@@ -1240,7 +1240,7 @@ namespace Godot
         /// Similar to <see cref="MoveToward"/> but interpolates correctly when the angles wrap around <see cref="Tau"/>.
         /// Use a negative <paramref name="delta"/> value to move toward the opposite angle.
         /// </summary>
-        /// <param name="from">The start Angle.</param>
+        /// <param name="from">The start angle.</param>
         /// <param name="to">The angle to move towards.</param>
         /// <param name="delta">The amount to move by.</param>
         /// <returns>The angle after moving.</returns>
