@@ -674,33 +674,25 @@ String DisplayServerIOS::get_clipboard_string() const {
 	return String::utf8([text UTF8String]);
 }
 
-Ref<Image> DisplayServerMacOS::get_clipboard_image() const {
+bool DisplayServerIOS::has_clipboard_string() {
+	return [UIPasteboard generalPasteboard].hasStrings;
+}
+
+Ref<Image> DisplayServerIOS::get_clipboard_image() const {
 	Ref<Image> image;
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
-	if (!result)
+	UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+	if (!pasteboard.hasImages) {
 		return image;
-	NSData *data = [pasteboard dataForType:result];
-	if (!data)
-		return image;
-	NSBitmapImageRep *bitmap = [NSBitmapImageRep imageRepWithData:data];
-	NSData *pngData = [bitmap representationUsingType:NSPNGFileType properties:@{}];
+	}
+	UIImage *data = pasteboard.image;
+	NSData *pngData = UIImagePNGRepresentation(data);
 	image.instantiate();
 	PNGDriverCommon::png_to_image((const uint8_t *)pngData.bytes, pngData.length, false, image);
 	return image;
 }
 
-bool DisplayServerMacOS::has_clipboard_string() const {
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
-	NSDictionary *options = [NSDictionary dictionary];
-	return [pasteboard canReadObjectForClasses:classArray options:options];
-}
-
-bool DisplayServerMacOS::has_clipboard_image() const {
-	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
-	return result;
+bool DisplayServerIOS::has_clipboard_image() {
+	return [UIPasteboard generalPasteboard].hasImages;
 }
 
 
