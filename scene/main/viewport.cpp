@@ -717,6 +717,7 @@ void Viewport::_process_picking() {
 	}
 
 	while (physics_picking_events.size()) {
+		local_input_handled = false;
 		Ref<InputEvent> ev = physics_picking_events.front()->get();
 		physics_picking_events.pop_front();
 
