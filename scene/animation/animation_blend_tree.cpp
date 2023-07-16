@@ -1328,6 +1328,19 @@ void AnimationNodeBlendTree::get_node_connections(List<NodeConnection> *r_connec
 			}
 		}
 	}
+	// Keep node connections sorted for deterministic scene file output.
+	struct Comparator {
+		bool operator()(const NodeConnection &p_a, const NodeConnection &p_b) const {
+			if (p_a.input_node == p_b.input_node) {
+				if (p_a.input_index == p_b.input_index) {
+					return StringName::AlphCompare()(p_a.output_node, p_b.output_node);
+				}
+				return p_a.input_index < p_b.input_index;
+			}
+			return StringName::AlphCompare()(p_a.input_node, p_b.input_node);
+		}
+	};
+	r_connections->sort_custom<Comparator>();
 }
 
 String AnimationNodeBlendTree::get_caption() const {
