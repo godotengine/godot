@@ -56,6 +56,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "scene/resources/atlas_texture.h"
 #include "scene/resources/texture.h"
 #include "servers/display_server.h"
 
