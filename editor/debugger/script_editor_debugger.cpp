@@ -87,7 +87,7 @@ void ScriptEditorDebugger::debug_copy() {
 	if (msg.is_empty()) {
 		return;
 	}
-	DisplayServer::get_singleton()->clipboard_set(msg);
+	DisplayServer::get_singleton()->set_clipboard_string(msg);
 }
 
 void ScriptEditorDebugger::debug_skip_breakpoints() {
@@ -1648,7 +1648,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 				ci = ci->get_next();
 			}
 
-			DisplayServer::get_singleton()->clipboard_set(text);
+			DisplayServer::get_singleton()->set_clipboard_string(text);
 		} break;
 
 		case ACTION_OPEN_SOURCE: {

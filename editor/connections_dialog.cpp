@@ -1114,7 +1114,7 @@ void ConnectionsDock::_handle_signal_menu_option(int p_option) {
 			disconnect_all_dialog->popup_centered();
 		} break;
 		case COPY_NAME: {
-			DisplayServer::get_singleton()->clipboard_set(item->get_metadata(0).operator Dictionary()["name"]);
+			DisplayServer::get_singleton()->set_clipboard_string(item->get_metadata(0).operator Dictionary()["name"]);
 		} break;
 	}
 }

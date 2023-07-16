@@ -2727,7 +2727,7 @@ void ProjectManager::_open_asset_library() {
 }
 
 void ProjectManager::_version_button_pressed() {
-	DisplayServer::get_singleton()->clipboard_set(version_btn->get_text());
+	DisplayServer::get_singleton()->set_clipboard_string(version_btn->get_text());
 }
 
 LineEdit *ProjectManager::get_search_box() {

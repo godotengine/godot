@@ -694,6 +694,14 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clipboard_has_image"), &DisplayServer::clipboard_has_image);
 	ClassDB::bind_method(D_METHOD("clipboard_set_primary", "clipboard_primary"), &DisplayServer::clipboard_set_primary);
 	ClassDB::bind_method(D_METHOD("clipboard_get_primary"), &DisplayServer::clipboard_get_primary);
+	ClassDB::bind_method(D_METHOD("set_clipboard_string", "clipboard"), &DisplayServer::set_clipboard_string);
+	ClassDB::bind_method(D_METHOD("get_clipboard_string"), &DisplayServer::get_clipboard_string);
+	ClassDB::bind_method(D_METHOD("has_clipboard_string"), &DisplayServer::has_clipboard_string);
+	ClassDB::bind_method(D_METHOD("set_clipboard_primary", "clipboard_primary"), &DisplayServer::set_clipboard_primary);
+	ClassDB::bind_method(D_METHOD("get_clipboard_primary"), &DisplayServer::get_clipboard_primary);
+	ClassDB::bind_method(D_METHOD("set_clipboard_image", "clipboard"), &DisplayServer::set_clipboard_image);
+	ClassDB::bind_method(D_METHOD("get_clipboard_image"), &DisplayServer::get_clipboard_image);
+	ClassDB::bind_method(D_METHOD("has_clipboard_image"), &DisplayServer::has_clipboard_image);
 
 	ClassDB::bind_method(D_METHOD("get_display_cutouts"), &DisplayServer::get_display_cutouts);
 	ClassDB::bind_method(D_METHOD("get_display_safe_area"), &DisplayServer::get_display_safe_area);

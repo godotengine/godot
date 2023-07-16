@@ -1168,13 +1168,13 @@ void LineEdit::_notification(int p_what) {
 
 void LineEdit::copy_text() {
 	if (selection.enabled && !pass) {
-		DisplayServer::get_singleton()->clipboard_set(get_selected_text());
+		DisplayServer::get_singleton()->set_clipboard_string(get_selected_text());
 	}
 }
 
 void LineEdit::cut_text() {
 	if (editable && selection.enabled && !pass) {
-		DisplayServer::get_singleton()->clipboard_set(get_selected_text());
+		DisplayServer::get_singleton()->set_clipboard_string(get_selected_text());
 		selection_delete();
 	}
 }
@@ -1185,7 +1185,7 @@ void LineEdit::paste_text() {
 	}
 
 	// Strip escape characters like \n and \t as they can't be displayed on LineEdit.
-	String paste_buffer = DisplayServer::get_singleton()->clipboard_get().strip_escapes();
+	String paste_buffer = DisplayServer::get_singleton()->get_clipboard_string().strip_escapes();
 
 	if (!paste_buffer.is_empty()) {
 		int prev_len = text.length();
