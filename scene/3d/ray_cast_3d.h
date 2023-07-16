@@ -69,6 +69,7 @@ class RayCast3D : public Node3D {
 	bool collide_with_bodies = true;
 
 	bool hit_from_inside = false;
+	bool hit_back_faces = true;
 
 protected:
 	void _notification(int p_what);
@@ -84,6 +85,9 @@ public:
 
 	void set_hit_from_inside(bool p_enabled);
 	bool is_hit_from_inside_enabled() const;
+
+	void set_hit_back_faces(bool p_enabled);
+	bool is_hit_back_faces_enabled() const;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;

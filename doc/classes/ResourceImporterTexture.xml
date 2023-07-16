@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterTexture" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="compress/channel_pack" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="compress/hdr_compression" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="compress/high_quality" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="compress/lossy_quality" type="float" setter="" getter="" default="0.7">
+		</member>
+		<member name="compress/mode" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="compress/normal_map" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="detect_3d/compress_to" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="editor/convert_colors_with_editor_theme" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="editor/scale_with_editor_scale" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="mipmaps/generate" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="mipmaps/limit" type="int" setter="" getter="" default="-1">
+		</member>
+		<member name="process/fix_alpha_border" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="process/hdr_as_srgb" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="process/hdr_clamp_exposure" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="process/normal_map_invert_y" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="process/premult_alpha" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="process/size_limit" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="roughness/mode" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="roughness/src_normal" type="String" setter="" getter="" default="&quot;&quot;">
+		</member>
+		<member name="svg/scale" type="float" setter="" getter="" default="1.0">
+		</member>
+	</members>
+</class>

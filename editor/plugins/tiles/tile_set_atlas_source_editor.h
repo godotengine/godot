@@ -257,9 +257,6 @@ private:
 	void _update_atlas_view();
 	void _update_toolbar();
 
-	// -- input events --
-	void _unhandled_key_input(const Ref<InputEvent> &p_event);
-
 	// -- Misc --
 	void _auto_create_tiles();
 	void _auto_remove_tiles();
@@ -274,6 +271,9 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	// -- input events --
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_source, int p_source_id);

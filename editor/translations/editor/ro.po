@@ -25,13 +25,14 @@
 # Vlad Cuciureanu <vlad.cuciureanu@pm.me>, 2023.
 # "Hash Volt[ing]" <hashvolting@gmail.com>, 2023.
 # RaresX22 <raresadv22@gmail.com>, 2023.
+# omoNattie <omonattie@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-23 20:05+0000\n"
-"Last-Translator: RaresX22 <raresadv22@gmail.com>\n"
+"PO-Revision-Date: 2023-06-27 20:09+0000\n"
+"Last-Translator: omoNattie <omonattie@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -40,7 +41,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Unset"
 msgstr "Nesetat"
@@ -638,7 +639,7 @@ msgid "Cannot connect signal"
 msgstr "Nu se poate conecta semnalul"
 
 msgid "Close"
-msgstr "Aproape"
+msgstr "Închide"
 
 msgid "Connect"
 msgstr "Conectați"
@@ -3733,45 +3734,6 @@ msgstr "Analizator Network"
 
 msgid "Clear the navigation mesh."
 msgstr "Curăță mesh-ul de navigare."
-
-msgid "Setting up Configuration..."
-msgstr "Inițializarea configurației..."
-
-msgid "Calculating grid size..."
-msgstr "Calcularea mărimii grilei..."
-
-msgid "Creating heightfield..."
-msgstr "Crearea câmpului de înălțare..."
-
-msgid "Marking walkable triangles..."
-msgstr "Marcarea triunghiurilor traversabile..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Construcție câmp de înălțare compact..."
-
-msgid "Eroding walkable area..."
-msgstr "Reducerea zonei traversabile..."
-
-msgid "Partitioning..."
-msgstr "Partiționare..."
-
-msgid "Creating contours..."
-msgstr "Crearea conturilor..."
-
-msgid "Creating polymesh..."
-msgstr "Crearea plasei de contur..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Se convertește în mesh nativ de navigare..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Setup Generare Mesh de Navigare:"
-
-msgid "Parsing Geometry..."
-msgstr "Analiza geometriei..."
-
-msgid "Done!"
-msgstr "Efectuat!"
 
 msgid "Invalid package name:"
 msgstr "Nume pachet nevalid:"

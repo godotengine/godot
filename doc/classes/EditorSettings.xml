@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorSettings" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorSettings" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Object that holds the project-independent editor settings.
 	</brief_description>
@@ -249,6 +249,9 @@
 		</member>
 		<member name="editors/2d/smart_snapping_line_color" type="Color" setter="" getter="">
 			The color to use when drawing smart snapping lines in the 2D editor. The smart snapping lines will automatically display when moving 2D nodes if smart snapping is enabled in the Snapping Options menu at the top of the 2D editor viewport.
+		</member>
+		<member name="editors/2d/use_integer_zoom_by_default" type="bool" setter="" getter="">
+			If [code]true[/code], the 2D editor will snap to integer zoom values while not holding the [kbd]Alt[/kbd] key and powers of two while holding it. If [code]false[/code], this behavior is swapped.
 		</member>
 		<member name="editors/2d/viewport_border_color" type="Color" setter="" getter="">
 			The color of the viewport border in the 2D editor. This border represents the viewport's size at the base resolution defined in the Project Settings. Objects placed outside this border will not be visible unless a [Camera2D] node is used, or unless the window is resized and the stretch mode is set to [code]disabled[/code].
@@ -836,6 +839,9 @@
 		</member>
 		<member name="text_editor/completion/code_complete_delay" type="float" setter="" getter="">
 			The delay in seconds after which autocompletion suggestions should be displayed when the user stops typing.
+		</member>
+		<member name="text_editor/completion/code_complete_enabled" type="bool" setter="" getter="">
+			If [code]true[/code], code completion will be triggered automatically after [member text_editor/completion/code_complete_delay]. If [code]false[/code], you can still trigger completion manually by pressing [kbd]Ctrl + Space[/kbd] ([kbd]Cmd + Space[/kbd] on macOS).
 		</member>
 		<member name="text_editor/completion/complete_file_paths" type="bool" setter="" getter="">
 			If [code]true[/code], provides autocompletion suggestions for file paths in methods such as [code]load()[/code] and [code]preload()[/code].

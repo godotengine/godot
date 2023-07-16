@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Engine" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Engine" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides access to engine properties.
 	</brief_description>
@@ -12,20 +12,20 @@
 		<method name="get_architecture_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the name of the CPU architecture the Godot binary was built for. Possible return values are [code]x86_64[/code], [code]x86_32[/code], [code]arm64[/code], [code]armv7[/code], [code]rv64[/code], [code]riscv[/code], [code]ppc64[/code], [code]ppc[/code], [code]wasm64[/code] and [code]wasm32[/code].
+				Returns the name of the CPU architecture the Godot binary was built for. Possible return values are [code]x86_64[/code], [code]x86_32[/code], [code]arm64[/code], [code]arm32[/code], [code]rv64[/code], [code]riscv[/code], [code]ppc64[/code], [code]ppc[/code], [code]wasm64[/code] and [code]wasm32[/code].
 				To detect whether the current CPU architecture is 64-bit, you can use the fact that all 64-bit architecture names have [code]64[/code] in their name:
 				[codeblocks]
 				[gdscript]
 				if "64" in Engine.get_architecture_name():
-				    print("Running on 64-bit CPU.")
+				    print("Running a 64-bit build of Godot.")
 				else:
-				    print("Running on 32-bit CPU.")
+				    print("Running a 32-bit build of Godot.")
 				[/gdscript]
 				[csharp]
 				if (Engine.GetArchitectureName().Contains("64"))
-				    GD.Print("Running on 64-bit CPU.");
+				    GD.Print("Running a 64-bit build of Godot.");
 				else
-				    GD.Print("Running on 32-bit CPU.");
+				    GD.Print("Running a 32-bit build of Godot.");
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] [method get_architecture_name] does [i]not[/i] return the name of the host CPU architecture. For example, if running an x86_32 Godot binary on a x86_64 system, the returned value will be [code]x86_32[/code].

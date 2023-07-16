@@ -45,6 +45,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
+#include "scene/resources/image_texture.h"
 
 CurveEdit::CurveEdit() {
 	set_focus_mode(FOCUS_ALL);

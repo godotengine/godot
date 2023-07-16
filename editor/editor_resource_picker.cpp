@@ -41,6 +41,8 @@
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
+#include "scene/resources/gradient_texture.h"
+#include "scene/resources/image_texture.h"
 
 void EditorResourcePicker::_update_resource() {
 	String resource_path;

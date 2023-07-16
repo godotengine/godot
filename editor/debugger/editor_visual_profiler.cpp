@@ -33,6 +33,7 @@
 #include "core/os/os.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/resources/image_texture.h"
 
 void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 	++last_metric;

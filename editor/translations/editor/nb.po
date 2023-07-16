@@ -3157,18 +3157,6 @@ msgstr "%s/s"
 msgid "Config"
 msgstr "konfigurer"
 
-msgid "Calculating grid size..."
-msgstr "Regner ut rutenettstørrelse…"
-
-msgid "Partitioning..."
-msgstr "Partisjonerer..."
-
-msgid "Creating contours..."
-msgstr "Lager konturer..."
-
-msgid "Done!"
-msgstr "Ferdig"
-
 msgid "Pose"
 msgstr "Positur"
 

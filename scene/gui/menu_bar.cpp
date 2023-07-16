@@ -453,7 +453,7 @@ void MenuBar::_draw_menu_item(int p_index) {
 	}
 
 	Color color;
-	Ref<StyleBox> style = theme_cache.normal;
+	Ref<StyleBox> style;
 	Rect2 item_rect = _get_menu_item_rect(p_index);
 
 	if (menu_cache[p_index].disabled) {

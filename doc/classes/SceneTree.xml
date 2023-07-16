@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SceneTree" inherits="MainLoop" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SceneTree" inherits="MainLoop" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Manages the game loop via a hierarchy of nodes.
 	</brief_description>
@@ -110,6 +110,7 @@
 			<param index="0" name="for_path" type="NodePath" default="NodePath(&quot;&quot;)" />
 			<description>
 				Return the [MultiplayerAPI] configured for the given path, or the default one if [param for_path] is empty.
+				[b]Note:[/b] Only one [MultiplayerAPI] may be configured for any subpath. If one is configured for [code]"/root/Foo"[/code] then calling this for [code]"/root/Foo/Bar"[/code] will return the one configured for [code]"/root/Foo"[/code], regardless if one is configured for that path.
 			</description>
 		</method>
 		<method name="get_node_count" qualifiers="const">
@@ -208,6 +209,7 @@
 			<param index="1" name="root_path" type="NodePath" default="NodePath(&quot;&quot;)" />
 			<description>
 				Sets a custom [MultiplayerAPI] with the given [param root_path] (controlling also the relative subpaths), or override the default one if [param root_path] is empty.
+				[b]Note:[/b] Only one [MultiplayerAPI] may be configured for any subpath. If one is configured for [code]"/root/Foo"[/code] setting one for [code]"/root/Foo/Bar"[/code] will be ignored. See [method get_multiplayer].
 			</description>
 		</method>
 		<method name="unload_current_scene">

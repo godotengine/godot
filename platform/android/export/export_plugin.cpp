@@ -48,6 +48,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "main/splash.gen.h"
+#include "scene/resources/image_texture.h"
 
 #include "modules/modules_enabled.gen.h" // For mono and svg.
 #ifdef MODULE_SVG_ENABLED
@@ -1841,6 +1842,8 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "package/app_category", PROPERTY_HINT_ENUM, "Accessibility,Audio,Game,Image,Maps,News,Productivity,Social,Video"), APP_CATEGORY_GAME));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/retain_data_on_uninstall"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/exclude_from_recents"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/show_in_android_tv"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/show_as_launcher_app"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icon_option, PROPERTY_HINT_FILE, "*.png"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_foreground_option, PROPERTY_HINT_FILE, "*.png"), ""));
@@ -3299,11 +3302,10 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG img_loader;
-		img_loader.create_image_from_string(img, _android_logo_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _android_logo_svg, EDSCALE, upsample, false);
 		logo = ImageTexture::create_from_image(img);
 
-		img_loader.create_image_from_string(img, _android_run_icon_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _android_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
 #endif
 

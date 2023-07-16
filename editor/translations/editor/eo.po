@@ -18,11 +18,12 @@
 # Isaac Iverson <isaaciverson1024@gmail.com>, 2023.
 # Blua Punkto <bluapunkto@proton.me>, 2023.
 # Omicron <omicron666.dev@gmail.com>, 2023.
+# aligator <johannes.hoermann@t-online.de>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2023-05-26 01:16+0000\n"
+"PO-Revision-Date: 2023-06-20 03:05+0000\n"
 "Last-Translator: Omicron <omicron666.dev@gmail.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
@@ -30,10 +31,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Unset"
 msgstr "malŝalti"
+
+msgid "Physical"
+msgstr "Fizika"
 
 msgid "Left Mouse Button"
 msgstr "Maldekstra Musbutono"
@@ -45,16 +49,16 @@ msgid "Middle Mouse Button"
 msgstr "Meza Musbutono"
 
 msgid "Mouse Wheel Up"
-msgstr "Musa Rado Supren"
+msgstr "Musa Radeto Supren"
 
 msgid "Mouse Wheel Down"
-msgstr "Musa Rado Malsupren"
+msgstr "Musa Radeto Malsupren"
 
 msgid "Mouse Wheel Left"
-msgstr "Musa Rado Maldekstre"
+msgstr "Musa Radeto Maldekstre"
 
 msgid "Mouse Wheel Right"
-msgstr "Musa Rado Dekstre"
+msgstr "Musa Radeto Dekstre"
 
 msgid "Mouse Thumb Button 1"
 msgstr "Musa Dikfingra Butono 1"
@@ -70,6 +74,27 @@ msgstr "Duobla alklako"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Musmovo ĉe pozicio (%s) kun rapideco (%s)"
+
+msgid "Joystick 3 X-Axis"
+msgstr "X-Akso de stirstango 3"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Y-Akso de stirstango 3"
+
+msgid "Joystick 4 X-Axis"
+msgstr "X-Akso de stirstango 4"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Y-Akso de stirstango 4"
+
+msgid "Unknown Joypad Axis"
+msgstr "Nekonata Stirstanga Akso"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Stirstanga moviĝo sur akso %d (%s) kun valoro %.2f"
+
+msgid "Joypad Button %d"
+msgstr "Butono de ludstrilo %d"
 
 msgid "Select"
 msgstr "Elekti"
@@ -2187,6 +2212,9 @@ msgstr "Ĝenerala"
 msgid "The editor must be restarted for changes to take effect."
 msgstr "La redaktilon devas rekomencigi por ŝanĝoj efektiviĝus."
 
+msgid "Joypad Axis %d %s (%s)"
+msgstr "Stirstanga akso %d %s (%s)"
+
 msgid "All Devices"
 msgstr "Ĉiuj aparatoj"
 
@@ -2356,6 +2384,13 @@ msgstr "Ne eblas ĝisdatigi dependojn:"
 
 msgid "A file or folder with this name already exists."
 msgstr "Dosiero aŭ dosierujo kun ĉi tiu nomo jam ekzistas."
+
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':"
+msgstr ""
+"La jenaj dosieroj aŭ dosierujoj konfliktas kun elementoj en la cela loko "
+"'%s':"
 
 msgid "Duplicating file:"
 msgstr "Duplikatas dosieron:"
@@ -2634,9 +2669,6 @@ msgstr ""
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Malvalida nomo de nodo, la jenaj signoj ne permesas:"
 
-msgid "Rename Node"
-msgstr "Renomi nodon"
-
 msgid "Scene Tree (Nodes):"
 msgstr "Scenoarbo (nodoj):"
 
@@ -2697,6 +2729,9 @@ msgstr "Konservi scenojn, reenporti, kaj rekomenci"
 msgid "Changing the type of an imported file requires editor restart."
 msgstr ""
 "Ŝanĝado de la tipo de enportita dosiero postulas redaktilan rekomencon."
+
+msgid "Joypad Axes"
+msgstr "Stirstangaj aksoj"
 
 msgid "Device:"
 msgstr "Aparato:"
@@ -3967,11 +4002,20 @@ msgstr "Kunteksta Helpo"
 msgid "Delete Animation?"
 msgstr "Forigi animacion?"
 
+msgid "Filter Animations"
+msgstr "Filtrili animacioj"
+
+msgid "Delete Animation"
+msgstr "Forigi animacion"
+
 msgid "Zoom Reset"
 msgstr "Rekomencigi zomon"
 
 msgid "Size"
 msgstr "Grando"
+
+msgid "Updating the editor"
+msgstr "Eliras la editilo"
 
 msgid "Yes"
 msgstr "Jes"
@@ -4169,6 +4213,15 @@ msgstr "3D Sceno"
 msgid "User Interface"
 msgstr "Uzanta Interfaco"
 
+msgid "Delete %d nodes and any children?"
+msgstr "Forigi %d nodoj kaj ĉiuj infanoj?"
+
+msgid "Delete %d nodes?"
+msgstr "Forigi %d nodoj?"
+
+msgid "Delete node \"%s\"?"
+msgstr "Forigi nodo \"%s\"?"
+
 msgid "Save New Scene As..."
 msgstr "Konservi novan scenon kiel..."
 
@@ -4334,6 +4387,9 @@ msgstr "Elira RPC"
 
 msgid "Network Profiler"
 msgstr "Reta Profililo"
+
+msgid "Delete Property?"
+msgstr "Forigi atributon?"
 
 msgid "Run in Browser"
 msgstr "Ruli en foliumilo"

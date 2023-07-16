@@ -313,8 +313,9 @@ String ResourceImporterScene::get_preset_name(int p_idx) const {
 static bool _teststr(const String &p_what, const String &p_str) {
 	String what = p_what;
 
-	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
-	while (what.length() && (is_digit(what[what.length() - 1]) || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
+	// Remove trailing spaces and numbers, some apps like blender add ".number" to duplicates
+	// (dot is replaced with _ as invalid character) so also compensate for this.
+	while (what.length() && (is_digit(what[what.length() - 1]) || what[what.length() - 1] <= 32 || what[what.length() - 1] == '_')) {
 		what = what.substr(0, what.length() - 1);
 	}
 
@@ -333,8 +334,9 @@ static bool _teststr(const String &p_what, const String &p_str) {
 static String _fixstr(const String &p_what, const String &p_str) {
 	String what = p_what;
 
-	//remove trailing spaces and numbers, some apps like blender add ".number" to duplicates so also compensate for this
-	while (what.length() && (is_digit(what[what.length() - 1]) || what[what.length() - 1] <= 32 || what[what.length() - 1] == '.')) {
+	// Remove trailing spaces and numbers, some apps like blender add ".number" to duplicates
+	// (dot is replaced with _ as invalid character) so also compensate for this.
+	while (what.length() && (is_digit(what[what.length() - 1]) || what[what.length() - 1] <= 32 || what[what.length() - 1] == '_')) {
 		what = what.substr(0, what.length() - 1);
 	}
 

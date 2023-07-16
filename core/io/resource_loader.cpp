@@ -239,15 +239,15 @@ ResourceLoader::LoadToken::~LoadToken() {
 
 Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 	load_nesting++;
-	if (load_paths_stack.size()) {
+	if (load_paths_stack->size()) {
 		thread_load_mutex.lock();
-		HashMap<String, ThreadLoadTask>::Iterator E = thread_load_tasks.find(load_paths_stack[load_paths_stack.size() - 1]);
+		HashMap<String, ThreadLoadTask>::Iterator E = thread_load_tasks.find(load_paths_stack->get(load_paths_stack->size() - 1));
 		if (E) {
 			E->value.sub_tasks.insert(p_path);
 		}
 		thread_load_mutex.unlock();
 	}
-	load_paths_stack.push_back(p_path);
+	load_paths_stack->push_back(p_path);
 
 	// Try all loaders and pick the first match for the type hint
 	bool found = false;
@@ -263,7 +263,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		}
 	}
 
-	load_paths_stack.resize(load_paths_stack.size() - 1);
+	load_paths_stack->resize(load_paths_stack->size() - 1);
 	load_nesting--;
 
 	if (!res.is_null()) {
@@ -296,8 +296,10 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	// Thread-safe either if it's the current thread or a brand new one.
 	CallQueue *mq_override = nullptr;
 	if (load_nesting == 0) {
+		load_paths_stack = memnew(Vector<String>);
+
 		if (!load_task.dependent_path.is_empty()) {
-			load_paths_stack.push_back(load_task.dependent_path);
+			load_paths_stack->push_back(load_task.dependent_path);
 		}
 		if (!Thread::is_main_thread()) {
 			mq_override = memnew(CallQueue);
@@ -308,6 +310,10 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		DEV_ASSERT(load_task.dependent_path.is_empty());
 	}
 	// --
+
+	if (!Thread::is_main_thread()) {
+		set_current_thread_safe_for_nodes(true);
+	}
 
 	Ref<Resource> res = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
 	if (mq_override) {
@@ -356,8 +362,11 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 	thread_load_mutex.unlock();
 
-	if (load_nesting == 0 && mq_override) {
-		memdelete(mq_override);
+	if (load_nesting == 0) {
+		if (mq_override) {
+			memdelete(mq_override);
+		}
+		memdelete(load_paths_stack);
 	}
 }
 
@@ -1166,7 +1175,7 @@ bool ResourceLoader::timestamp_on_load = false;
 
 thread_local int ResourceLoader::load_nesting = 0;
 thread_local WorkerThreadPool::TaskID ResourceLoader::caller_task_id = 0;
-thread_local Vector<String> ResourceLoader::load_paths_stack;
+thread_local Vector<String> *ResourceLoader::load_paths_stack;
 
 template <>
 thread_local uint32_t SafeBinaryMutex<ResourceLoader::BINARY_MUTEX_TAG>::count = 0;

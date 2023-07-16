@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StringName" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="StringName" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A built-in type for unique strings.
 	</brief_description>
@@ -961,7 +961,7 @@
 		<method name="validate_node_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns a copy of the string with all characters that are not allowed in [member Node.name] removed ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code] [code]%[/code]).
+				Returns a copy of the string with all characters that are not allowed in [member Node.name] ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code] [code]%[/code]) replaced with underscores.
 			</description>
 		</method>
 		<method name="xml_escape" qualifiers="const">

@@ -180,10 +180,11 @@
 
 
   FT_LOCAL_DEF( FT_ULong )
-  tt_face_get_location( TT_Face   face,
-                        FT_UInt   gindex,
-                        FT_UInt  *asize )
+  tt_face_get_location( FT_Face    face,   /* TT_Face */
+                        FT_UInt    gindex,
+                        FT_ULong  *asize )
   {
+    TT_Face   ttface = (TT_Face)face;
     FT_ULong  pos1, pos2;
     FT_Byte*  p;
     FT_Byte*  p_limit;
@@ -191,12 +192,12 @@
 
     pos1 = pos2 = 0;
 
-    if ( gindex < face->num_locations )
+    if ( gindex < ttface->num_locations )
     {
-      if ( face->header.Index_To_Loc_Format != 0 )
+      if ( ttface->header.Index_To_Loc_Format != 0 )
       {
-        p       = face->glyph_locations + gindex * 4;
-        p_limit = face->glyph_locations + face->num_locations * 4;
+        p       = ttface->glyph_locations + gindex * 4;
+        p_limit = ttface->glyph_locations + ttface->num_locations * 4;
 
         pos1 = FT_NEXT_ULONG( p );
         pos2 = pos1;
@@ -206,8 +207,8 @@
       }
       else
       {
-        p       = face->glyph_locations + gindex * 2;
-        p_limit = face->glyph_locations + face->num_locations * 2;
+        p       = ttface->glyph_locations + gindex * 2;
+        p_limit = ttface->glyph_locations + ttface->num_locations * 2;
 
         pos1 = FT_NEXT_USHORT( p );
         pos2 = pos1;
@@ -221,30 +222,30 @@
     }
 
     /* Check broken location data. */
-    if ( pos1 > face->glyf_len )
+    if ( pos1 > ttface->glyf_len )
     {
       FT_TRACE1(( "tt_face_get_location:"
                   " too large offset (0x%08lx) found for glyph index %d,\n",
                   pos1, gindex ));
       FT_TRACE1(( "                     "
                   " exceeding the end of `glyf' table (0x%08lx)\n",
-                  face->glyf_len ));
+                  ttface->glyf_len ));
       *asize = 0;
       return 0;
     }
 
-    if ( pos2 > face->glyf_len )
+    if ( pos2 > ttface->glyf_len )
     {
       /* We try to sanitize the last `loca' entry. */
-      if ( gindex == face->num_locations - 2 )
+      if ( gindex == ttface->num_locations - 2 )
       {
         FT_TRACE1(( "tt_face_get_location:"
                     " too large size (%ld bytes) found for glyph index %d,\n",
                     pos2 - pos1, gindex ));
         FT_TRACE1(( "                     "
                     " truncating at the end of `glyf' table to %ld bytes\n",
-                    face->glyf_len - pos1 ));
-        pos2 = face->glyf_len;
+                    ttface->glyf_len - pos1 ));
+        pos2 = ttface->glyf_len;
       }
       else
       {
@@ -253,7 +254,7 @@
                     pos2, gindex + 1 ));
         FT_TRACE1(( "                     "
                     " exceeding the end of `glyf' table (0x%08lx)\n",
-                    face->glyf_len ));
+                    ttface->glyf_len ));
         *asize = 0;
         return 0;
       }
@@ -268,9 +269,9 @@
     /* We get (intentionally) a wrong, non-zero result in case the  */
     /* `glyf' table is missing.                                     */
     if ( pos2 >= pos1 )
-      *asize = (FT_UInt)( pos2 - pos1 );
+      *asize = (FT_ULong)( pos2 - pos1 );
     else
-      *asize = (FT_UInt)( face->glyf_len - pos1 );
+      *asize = (FT_ULong)( ttface->glyf_len - pos1 );
 
     return pos1;
   }

@@ -50,6 +50,7 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/font.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
@@ -444,9 +445,8 @@ void SceneTree::set_group(const StringName &p_group, const String &p_name, const
 
 void SceneTree::initialize() {
 	ERR_FAIL_NULL(root);
-	initialized = true;
-	root->_set_tree(this);
 	MainLoop::initialize();
+	root->_set_tree(this);
 }
 
 bool SceneTree::physics_process(double p_time) {
@@ -618,20 +618,18 @@ void SceneTree::finalize() {
 
 	_flush_ugc();
 
-	initialized = false;
-
-	MainLoop::finalize();
-
 	if (root) {
 		root->_set_tree(nullptr);
 		root->_propagate_after_exit_tree();
 		memdelete(root); //delete root
 		root = nullptr;
+
+		// In case deletion of some objects was queued when destructing the `root`.
+		// E.g. if `queue_free()` was called for some node outside the tree when handling NOTIFICATION_PREDELETE for some node in the tree.
+		_flush_delete_queue();
 	}
 
-	// In case deletion of some objects was queued when destructing the `root`.
-	// E.g. if `queue_free()` was called for some node outside the tree when handling NOTIFICATION_PREDELETE for some node in the tree.
-	_flush_delete_queue();
+	MainLoop::finalize();
 
 	// Cleanup timers.
 	for (Ref<SceneTreeTimer> &timer : timers) {
@@ -932,18 +930,18 @@ void SceneTree::_process_group(ProcessGroup *p_group, bool p_physics) {
 		}
 
 		if (p_physics) {
-			if (n->is_physics_processing()) {
-				n->notification(Node::NOTIFICATION_PHYSICS_PROCESS);
-			}
 			if (n->is_physics_processing_internal()) {
 				n->notification(Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 			}
-		} else {
-			if (n->is_processing()) {
-				n->notification(Node::NOTIFICATION_PROCESS);
+			if (n->is_physics_processing()) {
+				n->notification(Node::NOTIFICATION_PHYSICS_PROCESS);
 			}
+		} else {
 			if (n->is_processing_internal()) {
 				n->notification(Node::NOTIFICATION_INTERNAL_PROCESS);
+			}
+			if (n->is_processing()) {
+				n->notification(Node::NOTIFICATION_PROCESS);
 			}
 		}
 	}
@@ -1052,13 +1050,13 @@ void SceneTree::_process(bool p_physics) {
 		if (p_physics) {
 			if (!pg->physics_nodes.is_empty()) {
 				process_valid = true;
-			} else if (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES_PHYSICS) && pg->call_queue.has_messages()) {
+			} else if ((pg == &default_process_group || (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES_PHYSICS))) && pg->call_queue.has_messages()) {
 				process_valid = true;
 			}
 		} else {
 			if (!pg->nodes.is_empty()) {
 				process_valid = true;
-			} else if (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES) && pg->call_queue.has_messages()) {
+			} else if ((pg == &default_process_group || (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES))) && pg->call_queue.has_messages()) {
 				process_valid = true;
 			}
 		}

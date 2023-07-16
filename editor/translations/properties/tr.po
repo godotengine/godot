@@ -90,13 +90,15 @@
 # alpdenthedev <ekrem_ekrem_45@hotmail.com>, 2022.
 # Muhammed Said Gülberk <msgulberk@gmail.com>, 2022.
 # Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>, 2023.
+# Black <ebubekir23atalay@gmail.com>, 2023.
+# Mertcan YILDIRIM <mertcanyildirim463@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-01 11:34+0000\n"
-"Last-Translator: Emir Tunahan Alim <emrtnhalim@gmail.com>\n"
+"PO-Revision-Date: 2023-06-27 20:10+0000\n"
+"Last-Translator: Mertcan YILDIRIM <mertcanyildirim463@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
 "Language: tr\n"
@@ -104,7 +106,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -223,6 +225,9 @@ msgstr "Varsayılan Veriyolu Düzeni"
 msgid "General"
 msgstr "Genel"
 
+msgid "Text to Speech"
+msgstr "Metin Okuma"
+
 msgid "2D Panning Strength"
 msgstr "2D Kaydırma Keskinliği"
 
@@ -271,11 +276,17 @@ msgstr "Hata Ayıklama"
 msgid "Settings"
 msgstr "Ayarlar"
 
+msgid "Profiler"
+msgstr "Profil Çıkarıcı"
+
 msgid "Compression"
 msgstr "Sıkıştırma"
 
 msgid "Formats"
 msgstr "Biçimler"
+
+msgid "Zstd"
+msgstr "Zstd"
 
 msgid "Long Distance Matching"
 msgstr "Uzun Mesafe Eşleşmesi"
@@ -285,6 +296,12 @@ msgstr "Sıkıştırma Seviyesi"
 
 msgid "Window Log Size"
 msgstr "Pencere Günlüğü Boyutu"
+
+msgid "Zlib"
+msgstr "Zlib"
+
+msgid "Gzip"
+msgstr "Gzip"
 
 msgid "Crash Handler"
 msgstr "Çökme İşleyicisi"
@@ -571,9 +588,6 @@ msgstr "Yumuşatma"
 msgid "Remote Port"
 msgstr "Uzak Port"
 
-msgid "Debugger"
-msgstr "Hata Ayıklayıcı"
-
 msgid "FileSystem"
 msgstr "DosyaSistemi"
 
@@ -585,9 +599,6 @@ msgstr "Port"
 
 msgid "Password"
 msgstr "Şifre"
-
-msgid "Profiler Frame Max Functions"
-msgstr "Profil Oluşturucu Çerçeve Maksimum Fonksiyon Sayısı"
 
 msgid "Default Feature Profile"
 msgstr "Varsayılan Özellik Profili"
@@ -1120,8 +1131,14 @@ msgstr "Yazı Tipi Boyutu"
 msgid "Remote Host"
 msgstr "Uzak Ana Bilgisayar"
 
+msgid "Debugger"
+msgstr "Hata Ayıklayıcı"
+
 msgid "Profiler Frame History Size"
 msgstr "Profil Oluşturucu Çerçeve Geçmişi Boyutu"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Profil Oluşturucu Çerçeve Maksimum Fonksiyon Sayısı"
 
 msgid "HTTP Proxy"
 msgstr "HTTP Proxy"
@@ -1294,6 +1311,9 @@ msgstr "Kaydırıcıyı Gizle"
 msgid "Multichannel Signed Distance Field"
 msgstr "Çokkanallı İşaretli Uzaklık Alanı"
 
+msgid "Hinting"
+msgstr "İpucu"
+
 msgid "Oversampling"
 msgstr "Sıkörnekleme"
 
@@ -1410,6 +1430,9 @@ msgstr "İsimlendirilmiş Kaplamaları Kullan"
 
 msgid "FPS"
 msgstr "FPS"
+
+msgid "Process"
+msgstr "İşlem"
 
 msgid "Normal Map Invert Y"
 msgstr "Normal Haritası Y Eksenini Ters Çevir"
@@ -1581,6 +1604,9 @@ msgstr "Sahne Adı"
 
 msgid "Animations"
 msgstr "Animasyonlar"
+
+msgid "FBX"
+msgstr "FBX"
 
 msgid "Count"
 msgstr "Sayma"
@@ -1866,6 +1892,9 @@ msgstr "Seyahat"
 
 msgid "End"
 msgstr "Bitiş"
+
+msgid "Pose"
+msgstr "Duruş"
 
 msgid "World Scale"
 msgstr "Dünya Ölçeği"
@@ -2179,6 +2208,9 @@ msgstr "Uçak"
 msgid "Custom"
 msgstr "Özel"
 
+msgid "Pan"
+msgstr "Kaydır"
+
 msgid "Sidechain"
 msgstr "Sidechain"
 
@@ -2187,6 +2219,9 @@ msgstr "Vuruş 1"
 
 msgid "Tap 2"
 msgstr "Vuruş 2"
+
+msgid "Drive"
+msgstr "Sürücü"
 
 msgid "Soft Clip dB"
 msgstr "Yumuşak Kesme dB"

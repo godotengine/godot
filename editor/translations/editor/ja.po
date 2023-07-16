@@ -56,13 +56,14 @@
 # "Takefumi \"abell\" Ota" <taketakegogo@gmail.com>, 2023.
 # Septian Kurniawan <septgsk@outlook.com>, 2023.
 # 上城肇 <hajime.kamishiro@manyversegames.com>, 2023.
+# hl <ixfuon@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-11 23:11+0000\n"
-"Last-Translator: 上城肇 <hajime.kamishiro@manyversegames.com>\n"
+"PO-Revision-Date: 2023-06-26 17:31+0000\n"
+"Last-Translator: hl <ixfuon@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -70,7 +71,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Unset"
 msgstr "未設定"
@@ -1089,6 +1090,18 @@ msgstr "スケール比:"
 
 msgid "Select Transition and Easing"
 msgstr "トランジションとイージングを選択"
+
+msgctxt "Ease Type"
+msgid "In"
+msgstr "In"
+
+msgctxt "Ease Type"
+msgid "Out"
+msgstr "Out"
+
+msgctxt "Ease Type"
+msgid "InOut"
+msgstr "InOut"
 
 msgid "Animation Baker"
 msgstr "アニメーションベイカー:"
@@ -4514,6 +4527,9 @@ msgstr "依存関係の編集..."
 msgid "View Owners..."
 msgstr "オーナーを見る..."
 
+msgid "Create New"
+msgstr "新規作成"
+
 msgid "Folder..."
 msgstr "フォルダー..."
 
@@ -4981,9 +4997,6 @@ msgstr "無効なノード名。以下の文字は使えません:"
 
 msgid "Another node already uses this unique name in the scene."
 msgstr "既にシーン中の他のノードにこの固有名が使われています。"
-
-msgid "Rename Node"
-msgstr "ノードの名前を変更"
 
 msgid "Scene Tree (Nodes):"
 msgstr "シーンツリー(ノード):"
@@ -7865,9 +7878,6 @@ msgstr "サイズ: %s (%.1fMP)\n"
 msgid "Objects: %d\n"
 msgstr "オブジェクト数: %d\n"
 
-msgid "Primitive Indices: %d\n"
-msgstr "プリミティブ インデックス数: %d\n"
-
 msgid "Draw Calls: %d"
 msgstr "ドローコール数: %d"
 
@@ -9029,6 +9039,9 @@ msgstr "次のブレークポイントに移動"
 msgid "Go to Previous Breakpoint"
 msgstr "前のブレークポイントに移動"
 
+msgid "Shader Editor"
+msgstr "シェーダーエディタ"
+
 msgid "New Shader Include"
 msgstr "新しいシェーダーインクルード"
 
@@ -9049,9 +9062,6 @@ msgstr "インスペクターでファイルを開く"
 
 msgid "Close File"
 msgstr "ファイルを閉じる"
-
-msgid "Shader Editor"
-msgstr "シェーダーエディタ"
 
 msgid "No valid shader stages found."
 msgstr "有効なシェーダー ステージが見つかりません。"
@@ -10071,13 +10081,6 @@ msgstr "拡散:"
 msgid "Tiles"
 msgstr "タイル"
 
-msgid ""
-"This TileMap's TileSet has no source configured. Edit the TileSet resource "
-"to add one."
-msgstr ""
-"このTileMapのTileSetにはソースが構成されていません。 TileSetリソースを編集し"
-"てソースを追加してください。"
-
 msgid "Sort sources"
 msgstr "ソースの並べ替え"
 
@@ -10152,9 +10155,6 @@ msgstr "グリッドの表示を切り替え"
 
 msgid "Automatically Replace Tiles with Proxies"
 msgstr "タイルを自動的にプロキシに置き換える"
-
-msgid "The edited TileMap node has no TileSet resource."
-msgstr "編集された TileMap ノードには TileSet リソースがありません。"
 
 msgid "Remove Tile Proxies"
 msgstr "タイルプロキシを削除"
@@ -10359,9 +10359,6 @@ msgstr "アトラスのマージツールを開く"
 
 msgid "Manage Tile Proxies"
 msgstr "タイルプロキシの管理"
-
-msgid "No TileSet source selected. Select or create a TileSet source."
-msgstr "TileSetソース未選択。TileSetソースを選択または作成してください。"
 
 msgid "Add new patterns in the TileMap editing mode."
 msgstr "TileMap 編集モードで新しいパターンを追加します。"
@@ -12278,45 +12275,6 @@ msgstr "NavMeshを焼き込む"
 
 msgid "Clear the navigation mesh."
 msgstr "ナビゲーションメッシュの消去。"
-
-msgid "Setting up Configuration..."
-msgstr "設定中..."
-
-msgid "Calculating grid size..."
-msgstr "グリッドサイズ計算中..."
-
-msgid "Creating heightfield..."
-msgstr "ハイトフィールド生成中..."
-
-msgid "Marking walkable triangles..."
-msgstr "移動可能なポリゴンを記録中..."
-
-msgid "Constructing compact heightfield..."
-msgstr "ハイトフィールド圧縮中..."
-
-msgid "Eroding walkable area..."
-msgstr "移動可能な領域を作成中..."
-
-msgid "Partitioning..."
-msgstr "分割中..."
-
-msgid "Creating contours..."
-msgstr "輪郭を生成中..."
-
-msgid "Creating polymesh..."
-msgstr "ポリメッシュを作成しています..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "ネイティブナビゲーションメッシュに変換しています..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "ナビゲーションメッシュ生成設定:"
-
-msgid "Parsing Geometry..."
-msgstr "ジオメトリを解析しています..."
-
-msgid "Done!"
-msgstr "完了！"
 
 msgid "Rename Action"
 msgstr "アクション名を変更"

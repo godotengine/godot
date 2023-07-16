@@ -44,13 +44,14 @@
 # 오지훈 <jule1130@naver.com>, 2023.
 # coolkid <newtype20050831@gmail.com>, 2023.
 # Overdue - <kaameo12@gmail.com>, 2023.
+# nulta <un5450@naver.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-12 12:27+0000\n"
-"Last-Translator: Overdue - <kaameo12@gmail.com>\n"
+"PO-Revision-Date: 2023-07-05 13:49+0000\n"
+"Last-Translator: nulta <un5450@naver.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ko/>\n"
 "Language: ko\n"
@@ -58,7 +59,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 msgid "Application"
 msgstr "어플리케이션"
@@ -147,6 +148,9 @@ msgstr "항상 맨 위에"
 msgid "Transparent"
 msgstr "투명"
 
+msgid "Extend to Title"
+msgstr "제목 표시줄로 확장"
+
 msgid "No Focus"
 msgstr "포커스 없음"
 
@@ -174,6 +178,9 @@ msgstr "기본 버스 레이아웃"
 msgid "General"
 msgstr "일반"
 
+msgid "Text to Speech"
+msgstr "텍스트 음성 변환"
+
 msgid "2D Panning Strength"
 msgstr "2D 패닝 강도"
 
@@ -189,11 +196,20 @@ msgstr "스크립트"
 msgid "Search in File Extensions"
 msgstr "파일 확장자로 찾기"
 
+msgid "Subwindows"
+msgstr "보조 창"
+
+msgid "Embed Subwindows"
+msgstr "보조 창 내장"
+
 msgid "Physics"
 msgstr "물리"
 
 msgid "2D"
 msgstr "2D"
+
+msgid "Run on Separate Thread"
+msgstr "다른 스레드에서 실행"
 
 msgid "3D"
 msgstr "3D"
@@ -225,14 +241,23 @@ msgstr "압축"
 msgid "Formats"
 msgstr "형식"
 
+msgid "Zstd"
+msgstr "Zstd"
+
 msgid "Long Distance Matching"
 msgstr "원거리 매칭"
 
 msgid "Compression Level"
 msgstr "압축률"
 
+msgid "Window Log Size"
+msgstr "창 로그 크기"
+
 msgid "Zlib"
 msgstr "Zlib"
+
+msgid "Gzip"
+msgstr "Gzip"
 
 msgid "Crash Handler"
 msgstr "충돌 처리기"
@@ -246,6 +271,9 @@ msgstr "렌더링"
 msgid "Occlusion Culling"
 msgstr "오클루전 컬링"
 
+msgid "BVH Build Quality"
+msgstr "BVH 빌드 품질"
+
 msgid "Memory"
 msgstr "메모리"
 
@@ -255,8 +283,17 @@ msgstr "제한"
 msgid "Multithreaded Server"
 msgstr "다중 스레드 서버"
 
+msgid "RID Pool Prealloc"
+msgstr "RID 풀 선할당"
+
 msgid "Internationalization"
 msgstr "국제화"
+
+msgid "Force Right to Left Layout Direction"
+msgstr "레이아웃 방향을 오른쪽에서 왼쪽으로 강제"
+
+msgid "Root Node Layout Direction"
+msgstr "루트 노드 레이아웃 방향"
 
 msgid "GUI"
 msgstr "GUI"
@@ -264,8 +301,14 @@ msgstr "GUI"
 msgid "Timers"
 msgstr "타이머"
 
+msgid "Incremental Search Max Interval Msec"
+msgstr "증분 검색의 최대 간격 밀리초"
+
 msgid "Common"
 msgstr "일반"
+
+msgid "Snap Controls to Pixels"
+msgstr "픽셀에 컨트롤 스냅"
 
 msgid "Fonts"
 msgstr "글꼴"
@@ -276,17 +319,44 @@ msgstr "동적 글꼴"
 msgid "Use Oversampling"
 msgstr "오버샘플링 사용"
 
+msgid "Rendering Device"
+msgstr "렌더링 디바이스"
+
+msgid "Staging Buffer"
+msgstr "스테이지 버퍼"
+
 msgid "Block Size (KB)"
 msgstr "블록 크기 (KB)"
 
 msgid "Max Size (MB)"
 msgstr "최대 크기(MB)"
 
+msgid "Texture Upload Region Size Px"
+msgstr "텍스쳐 업로드 영역 크기 px"
+
+msgid "Pipeline Cache"
+msgstr "파이프라인 캐시"
+
+msgid "Save Chunk Size (MB)"
+msgstr "저장 청크 크기 (MB)"
+
 msgid "Vulkan"
-msgstr "벌칸"
+msgstr "Vulkan"
+
+msgid "Max Descriptors per Pool"
+msgstr "풀 당 최대 디스크립터"
 
 msgid "Textures"
 msgstr "텍스처"
+
+msgid "Canvas Textures"
+msgstr "캔버스 텍스처"
+
+msgid "Default Texture Filter"
+msgstr "기본 텍스처 필터"
+
+msgid "Default Texture Repeat"
+msgstr "기본 텍스처 반복"
 
 msgid "Low Processor Usage Mode"
 msgstr "저사양 모드"
@@ -294,8 +364,20 @@ msgstr "저사양 모드"
 msgid "Low Processor Usage Mode Sleep (µsec)"
 msgstr "저사양 모드 슬립 (마이크로초 단위)"
 
+msgid "Delta Smoothing"
+msgstr "델타 스무딩"
+
 msgid "Print Error Messages"
 msgstr "에러 메시지 출력"
+
+msgid "Physics Ticks per Second"
+msgstr "초당 물리 틱"
+
+msgid "Max Physics Steps per Frame"
+msgstr "프레임당 최대 물리 스텝"
+
+msgid "Max FPS"
+msgstr "최대 FPS"
 
 msgid "Time Scale"
 msgstr "시간 스케일"
@@ -312,11 +394,32 @@ msgstr "누적 입력 사용"
 msgid "Input Devices"
 msgstr "입력 장치"
 
+msgid "Compatibility"
+msgstr "호환성"
+
+msgid "Legacy Just Pressed Behavior"
+msgstr "오래된 just_pressed 동작"
+
 msgid "Device"
 msgstr "기기"
 
 msgid "Window ID"
 msgstr "창 ID"
+
+msgid "Command or Control Autoremap"
+msgstr "Command와 Ctrl 자동 리매핑"
+
+msgid "Alt Pressed"
+msgstr "Alt 눌림"
+
+msgid "Shift Pressed"
+msgstr "Shift 눌림"
+
+msgid "Ctrl Pressed"
+msgstr "Ctrl 눌림"
+
+msgid "Meta Pressed"
+msgstr "Meta 눌림"
 
 msgid "Pressed"
 msgstr "눌림"
@@ -350,6 +453,9 @@ msgstr "공식"
 
 msgid "Button Index"
 msgstr "버튼 인덱스"
+
+msgid "Canceled"
+msgstr "취소됨"
 
 msgid "Double Click"
 msgstr "더블 클릭"
@@ -411,6 +517,9 @@ msgstr "단축키"
 msgid "Events"
 msgstr "이벤트"
 
+msgid "Include Navigational"
+msgstr "내비게이셔널 포함"
+
 msgid "Include Hidden"
 msgstr "숨김 파일 보이기"
 
@@ -462,6 +571,18 @@ msgstr "오프셋"
 msgid "Cell Size"
 msgstr "셀 크기"
 
+msgid "Jumping Enabled"
+msgstr "점핑 활성화"
+
+msgid "Default Compute Heuristic"
+msgstr "기본 연산 휴리스틱"
+
+msgid "Default Estimate Heuristic"
+msgstr "기본 추정 휴리스틱"
+
+msgid "Diagonal Mode"
+msgstr "대각선 모드"
+
 msgid "Seed"
 msgstr "시드"
 
@@ -477,6 +598,15 @@ msgstr "네트워크"
 msgid "TCP"
 msgstr "TCP"
 
+msgid "Connect Timeout Seconds"
+msgstr "연결 타임아웃 초"
+
+msgid "Packet Peer Stream"
+msgstr "패킷 피어 스트림"
+
+msgid "Max Buffer (Power of 2)"
+msgstr "최대 버퍼 (2의 제곱수 단위)"
+
 msgid "TLS"
 msgstr "TLS"
 
@@ -486,11 +616,20 @@ msgstr "인증서 번들 오버라이드"
 msgid "Threading"
 msgstr "스레딩"
 
+msgid "Worker Pool"
+msgstr "워커 풀"
+
 msgid "Max Threads"
 msgstr "최대 스레드"
 
+msgid "Use System Threads for Low Priority Tasks"
+msgstr "저 우선순위 작업에 시스템 스레드 사용"
+
+msgid "Low Priority Thread Ratio"
+msgstr "저 우선순위 스레드 비율"
+
 msgid "Locale"
-msgstr "위치"
+msgstr "로케일"
 
 msgid "Test"
 msgstr "테스트"
@@ -498,8 +637,35 @@ msgstr "테스트"
 msgid "Fallback"
 msgstr "폴백"
 
+msgid "Pseudolocalization"
+msgstr "가짜 현지화"
+
+msgid "Use Pseudolocalization"
+msgstr "가짜 현지화 사용"
+
+msgid "Replace With Accents"
+msgstr "악센트 부호 붙이기"
+
+msgid "Double Vowels"
+msgstr "모음 두 번 작성"
+
+msgid "Fake BiDi"
+msgstr "가짜 BiDi"
+
 msgid "Override"
 msgstr "오버라이드"
+
+msgid "Expansion Ratio"
+msgstr "확장 비율"
+
+msgid "Prefix"
+msgstr "접두사"
+
+msgid "Suffix"
+msgstr "접미사"
+
+msgid "Skip Placeholders"
+msgstr "자리 표시자 건너뛰기"
 
 msgid "Rotation"
 msgstr "회전"
@@ -522,6 +688,9 @@ msgstr "입력 핸들"
 msgid "Out Handle"
 msgstr "출력 핸들"
 
+msgid "Handle Mode"
+msgstr "핸들 모드"
+
 msgid "Stream"
 msgstr "스트림"
 
@@ -537,17 +706,17 @@ msgstr "애니메이션"
 msgid "Easing"
 msgstr "속도 완화"
 
+msgid "Debug Adapter"
+msgstr "디버그 어댑터"
+
 msgid "Remote Port"
 msgstr "원격 포트"
 
-msgid "Debugger"
-msgstr "디버거"
+msgid "Request Timeout"
+msgstr "요청 타임아웃"
 
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "원격 장면 트리 새로 고침 간격"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "원격 검사 새로 고침 간격"
+msgid "Sync Breakpoints"
+msgstr "중단점 동기화"
 
 msgid "FileSystem"
 msgstr "파일시스템"
@@ -561,11 +730,14 @@ msgstr "포트"
 msgid "Password"
 msgstr "비밀번호"
 
-msgid "Profiler Frame Max Functions"
-msgstr "프로파일러 프레임 최대 함수 개수"
-
 msgid "Default Feature Profile"
 msgstr "기본 기능 프로필"
+
+msgid "Version Hash"
+msgstr "버전 해시"
+
+msgid "Classes"
+msgstr "클래스"
 
 msgid "Text Editor"
 msgstr "텍스트 에디터"
@@ -588,6 +760,9 @@ msgstr "확인 가능"
 msgid "Checked"
 msgstr "확인됨"
 
+msgid "Draw Warning"
+msgstr "경고 그리기"
+
 msgid "Keying"
 msgstr "키 값 생성"
 
@@ -597,8 +772,14 @@ msgstr "삭제 가능"
 msgid "Distraction Free Mode"
 msgstr "집중 모드"
 
+msgid "Movie Maker Enabled"
+msgstr "무비 메이커 활성화됨"
+
 msgid "Interface"
 msgstr "인터페이스"
+
+msgid "Save on Focus Loss"
+msgstr "포커스를 잃을 때 저장"
 
 msgid "Show Update Spinner"
 msgstr "업데이트 스피너 표시"
@@ -611,6 +792,9 @@ msgstr "현지화 설정"
 
 msgid "Scene Tabs"
 msgstr "씬 탭"
+
+msgid "Restore Scenes on Load"
+msgstr "불러오기 시 씬 복원"
 
 msgid "Inspector"
 msgstr "인스펙터"
@@ -633,8 +817,17 @@ msgstr "수평 2차원 벡터 변경"
 msgid "Horizontal Vector Types Editing"
 msgstr "수평 벡터 타입 변경"
 
+msgid "Open Resources in Current Inspector"
+msgstr "현재 인스펙터에서 리소스 열기"
+
+msgid "Resources to Open in New Inspector"
+msgstr "새로운 인스펙터에서 열 리소스"
+
 msgid "Default Color Picker Mode"
-msgstr "기본 색 고르기 모드"
+msgstr "기본 색상 선택기 모드"
+
+msgid "Default Color Picker Shape"
+msgstr "기본 색상 선택기 모양"
 
 msgid "Base Type"
 msgstr "기본 타입"
@@ -651,6 +844,21 @@ msgstr "에디터 언어"
 msgid "Display Scale"
 msgstr "화면 크기"
 
+msgid "Editor Screen"
+msgstr "에디터 화면"
+
+msgid "Project Manager Screen"
+msgstr "프로젝트 매니저 화면"
+
+msgid "Enable Pseudolocalization"
+msgstr "가짜 현지화 사용"
+
+msgid "Use Embedded Menu"
+msgstr "내장된 메뉴 사용"
+
+msgid "Expand to Title"
+msgstr "제목 표시줄로 확장"
+
 msgid "Custom Display Scale"
 msgstr "사용자 지정 화면 크기"
 
@@ -660,8 +868,23 @@ msgstr "기본 글꼴 크기"
 msgid "Code Font Size"
 msgstr "코드 글꼴 크기"
 
+msgid "Code Font Contextual Ligatures"
+msgstr "코드 글꼴에 합자 사용"
+
+msgid "Code Font Custom OpenType Features"
+msgstr "코드 글꼴 커스텀 OpenType 기능"
+
+msgid "Code Font Custom Variations"
+msgstr "코드 글꼴 커스텀 바리에이션"
+
+msgid "Font Antialiasing"
+msgstr "글꼴 안티앨리어싱"
+
 msgid "Font Hinting"
-msgstr "폰트 힌팅"
+msgstr "글꼴 힌팅"
+
+msgid "Font Subpixel Positioning"
+msgstr "글꼴 서브픽셀 포지셔닝"
 
 msgid "Main Font"
 msgstr "기본 글꼴"
@@ -684,8 +907,29 @@ msgstr "분리 방해 모드"
 msgid "Automatically Open Screenshots"
 msgstr "자동으로 스크린샷 열기"
 
+msgid "Single Window Mode"
+msgstr "단일 창 모드"
+
 msgid "Mouse Extra Buttons Navigate History"
 msgstr "마우스 부가 버튼으로 히스토리 둘러보기"
+
+msgid "Save Each Scene on Quit"
+msgstr "종료 시 각 씬 저장"
+
+msgid "Accept Dialog Cancel OK Buttons"
+msgstr "확인 창의 취소 확인 버튼"
+
+msgid "Show Internal Errors in Toast Notifications"
+msgstr "내부적인 오류를 토스트 알림에 표시"
+
+msgid "Max Array Dictionary Items per Page"
+msgstr "페이지 당 최대 딕셔너리 아이템 배열 크기"
+
+msgid "Show Low Level OpenType Features"
+msgstr "저수준 OpenType 기능 보이기"
+
+msgid "Float Drag Speed"
+msgstr "플로트 드래그 속도"
 
 msgid "Theme"
 msgstr "테마"
@@ -705,6 +949,9 @@ msgstr "강조 색"
 msgid "Contrast"
 msgstr "대비"
 
+msgid "Draw Extra Borders"
+msgstr "추가적인 외곽선 그리기"
+
 msgid "Icon Saturation"
 msgstr "아이콘 채도"
 
@@ -714,11 +961,35 @@ msgstr "관계선 불투명도"
 msgid "Border Size"
 msgstr "테두리 크기"
 
+msgid "Corner Radius"
+msgstr "모서리 둥글기"
+
 msgid "Additional Spacing"
 msgstr "추가적인 공간 확보"
 
 msgid "Custom Theme"
 msgstr "사용자 지정 테마"
+
+msgid "Touchscreen"
+msgstr "터치스크린"
+
+msgid "Increase Scrollbar Touch Area"
+msgstr "스크롤바 터치 영역 늘리기"
+
+msgid "Enable Long Press as Right Click"
+msgstr "길게 누를 시 우클릭하기 활성화"
+
+msgid "Enable Pan and Scale Gestures"
+msgstr "이동 및 확대 제스처 활성화"
+
+msgid "Scale Gizmo Handles"
+msgstr "기즈모 핸들 스케일"
+
+msgid "Display Close Button"
+msgstr "닫기 버튼 표시"
+
+msgid "Show Thumbnail on Hover"
+msgstr "마우스 오버 시 썸네일 표시"
 
 msgid "Maximum Width"
 msgstr "최대 너비"
@@ -726,8 +997,17 @@ msgstr "최대 너비"
 msgid "Show Script Button"
 msgstr "스크립트 버튼 보이기"
 
+msgid "Multi Window"
+msgstr "다중 창"
+
 msgid "Enable"
 msgstr "활성화"
+
+msgid "Restore Windows on Load"
+msgstr "불러오기 시 창 복원"
+
+msgid "Maximize Window"
+msgstr "창 최대화"
 
 msgid "External Programs"
 msgstr "외부 프로그램"
@@ -783,8 +1063,14 @@ msgstr "씬 트리"
 msgid "Start Create Dialog Fully Expanded"
 msgstr "완전히 확장된 대화 상자 생성 시작"
 
+msgid "Auto Expand to Selected"
+msgstr "선택으로 자동 확장"
+
 msgid "Always Show Folders"
 msgstr "폴더 항상 보이기"
+
+msgid "TextFile Extensions"
+msgstr "텍스트 파일 확장자"
 
 msgid "Property Editor"
 msgstr "속성 에디터"
@@ -807,11 +1093,17 @@ msgstr "탈자 기호"
 msgid "Caret Blink"
 msgstr "탈자 기호 깜빡임"
 
+msgid "Caret Blink Interval"
+msgstr "탈자 기호 깜빡임 간격"
+
 msgid "Highlight Current Line"
 msgstr "현재 줄 강조"
 
 msgid "Highlight All Occurrences"
 msgstr "모든 발생 강조"
+
+msgid "Guidelines"
+msgstr "가이드라인"
 
 msgid "Show Line Length Guidelines"
 msgstr "줄 길이 가이드라인 보이기"
@@ -821,6 +1113,9 @@ msgstr "줄 길이 가이드라인 소프트 열"
 
 msgid "Line Length Guideline Hard Column"
 msgstr "줄 길이 가이드라인 하드 열"
+
+msgid "Gutters"
+msgstr "거터"
 
 msgid "Show Line Numbers"
 msgstr "줄 번호 보이기"
@@ -833,6 +1128,9 @@ msgstr "타입 안전 줄 강조"
 
 msgid "Show Info Gutter"
 msgstr "정보 여백 보이기"
+
+msgid "Minimap"
+msgstr "미니맵"
 
 msgid "Show Minimap"
 msgstr "미니맵 보이기"
@@ -849,6 +1147,9 @@ msgstr "코드 접기"
 msgid "Word Wrap"
 msgstr "단어 감싸기"
 
+msgid "Autowrap Mode"
+msgstr "자동 줄바꿈 모드"
+
 msgid "Whitespace"
 msgstr "공백"
 
@@ -861,8 +1162,14 @@ msgstr "공백 사용"
 msgid "Line Spacing"
 msgstr "라인 간격"
 
+msgid "Behavior"
+msgstr "행동"
+
 msgid "Navigation"
 msgstr "네비게이션"
+
+msgid "Move Caret on Right Click"
+msgstr "우클릭 시 텍스트 커서 이동"
 
 msgid "Scroll Past End of File"
 msgstr "파일 끝을 넘어서도 스크롤"
@@ -872,6 +1179,12 @@ msgstr "부드러운 스크롤링"
 
 msgid "V Scroll Speed"
 msgstr "수직 스크롤 속도"
+
+msgid "Drag and Drop Selection"
+msgstr "선택된 항목을 드래그 & 드롭"
+
+msgid "Stay in Script Editor on Node Selected"
+msgstr "선택한 노드에서 스크립트 에디터 유지"
 
 msgid "Indent"
 msgstr "들여쓰기"
@@ -1006,10 +1319,10 @@ msgid "Default FOV"
 msgstr "기본 시야각"
 
 msgid "Default Z Near"
-msgstr "기본 Z Near"
+msgstr "기본 Z 근경"
 
 msgid "Default Z Far"
-msgstr "기본 Z Far"
+msgstr "기본 Z 원경"
 
 msgid "Invert X Axis"
 msgstr "X축 반전"
@@ -1113,8 +1426,20 @@ msgstr "표시 영역 테두리 색상"
 msgid "Panning"
 msgstr "패닝"
 
+msgid "2D Editor Panning Scheme"
+msgstr "2D 에디터 패닝 방식"
+
+msgid "Sub Editors Panning Scheme"
+msgstr "보조 에디터 패닝 방식"
+
+msgid "Animation Editors Panning Scheme"
+msgstr "애니메이션 에디터 패닝 방식"
+
 msgid "Simple Panning"
 msgstr "간단한 패닝"
+
+msgid "2D Editor Pan Speed"
+msgstr "2D 에디터 패닝 속도"
 
 msgid "Tiles Editor"
 msgstr "타일 에디터"
@@ -1149,14 +1474,26 @@ msgstr "양파 레이어 과거 색상"
 msgid "Onion Layers Future Color"
 msgstr "양파 레이어 미래 색상"
 
+msgid "Shader Editor"
+msgstr "셰이더 에디터"
+
+msgid "Restore Shaders on Load"
+msgstr "불러오기 시 셰이더 복원"
+
 msgid "Visual Editors"
-msgstr "비주얼 편집기"
+msgstr "비주얼 에디터"
 
 msgid "Minimap Opacity"
 msgstr "미니맵 불투명도"
 
+msgid "Lines Curvature"
+msgstr "선 곡률"
+
 msgid "Visual Shader"
 msgstr "비주얼 셰이더"
+
+msgid "Port Preview Size"
+msgstr "포트 미리보기 크기"
 
 msgid "Window Placement"
 msgstr "창 배치"
@@ -1170,6 +1507,9 @@ msgstr "직사각형 사용자 정의 위치"
 msgid "Screen"
 msgstr "화면"
 
+msgid "Android Window"
+msgstr "Android 창"
+
 msgid "Auto Save"
 msgstr "자동 저장"
 
@@ -1182,14 +1522,38 @@ msgstr "출력"
 msgid "Font Size"
 msgstr "폰트 크기"
 
+msgid "Always Clear Output on Play"
+msgstr "실행 시 항상 출력 지우기"
+
+msgid "Always Open Output on Play"
+msgstr "실행 시 항상 출력 열기"
+
+msgid "Always Close Output on Stop"
+msgstr "정지 시 항상 출력 닫기"
+
 msgid "Remote Host"
 msgstr "원격 호스트"
 
 msgid "Editor TLS Certificates"
 msgstr "에디터 TLS 인증서"
 
+msgid "Debugger"
+msgstr "디버거"
+
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "원격 씬 트리로 자동 전환"
+
 msgid "Profiler Frame History Size"
 msgstr "프로파일러 프레임 기록 크기"
+
+msgid "Profiler Frame Max Functions"
+msgstr "프로파일러 프레임 최대 함수 개수"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "원격 장면 트리 새로 고침 간격"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "원격 검사 새로 고침 간격"
 
 msgid "HTTP Proxy"
 msgstr "HTTP 프록시"
@@ -1210,61 +1574,64 @@ msgid "Highlighting"
 msgstr "강조"
 
 msgid "Symbol Color"
-msgstr "상징 색"
+msgstr "심볼 색상"
 
 msgid "Keyword Color"
 msgstr "키워드 색상"
 
 msgid "Control Flow Keyword Color"
-msgstr "플로우 키워드 색상 제어"
+msgstr "흐름 제어 키워드 색상"
 
 msgid "Base Type Color"
-msgstr "기본 유형 색상"
+msgstr "기본 타입 색상"
 
 msgid "Engine Type Color"
-msgstr "엔진 유형 색상"
+msgstr "엔진 타입 색상"
 
 msgid "User Type Color"
-msgstr "사용자 유형 색상"
+msgstr "사용자 타입 색상"
 
 msgid "Comment Color"
-msgstr "댓글 색상"
+msgstr "주석 색상"
 
 msgid "String Color"
-msgstr "문자열 색"
+msgstr "문자열 색상"
 
 msgid "Background Color"
-msgstr "배경 색"
+msgstr "배경 색상"
 
 msgid "Completion Background Color"
-msgstr "완성 배경 색"
+msgstr "자동완성 창 배경 색상"
 
 msgid "Completion Selected Color"
-msgstr "선택 색상 완료"
+msgstr "자동완성 창 선택 색상"
 
 msgid "Completion Existing Color"
-msgstr "기존 색상 완성"
+msgstr "자동완성 창 텍스트 강조 색상"
 
 msgid "Completion Scroll Color"
-msgstr "스크롤 색상 완료"
+msgstr "자동완성 창 스크롤 색상"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "자동완성 창 스크롤 호버 시 색상"
 
 msgid "Completion Font Color"
-msgstr "글꼴 색상 완료"
+msgstr "자동완성 창 글자 색상"
 
 msgid "Text Color"
-msgstr "글자색"
+msgstr "글자 색상"
 
 msgid "Line Number Color"
-msgstr "행 번호의 색"
+msgstr "행 번호 색상"
 
 msgid "Safe Line Number Color"
 msgstr "안전 라인 번호 색상"
 
 msgid "Caret Color"
-msgstr "탈자 기호 색"
+msgstr "탈자 기호 색상"
 
 msgid "Caret Background Color"
-msgstr "탈자 기호 배경 색"
+msgstr "탈자 기호 배경 색상"
 
 msgid "Text Selected Color"
 msgstr "선택한 텍스트 색상"
@@ -1303,10 +1670,10 @@ msgid "Breakpoint Color"
 msgstr "중단점 색상"
 
 msgid "Executing Line Color"
-msgstr "라인 색상 실행"
+msgstr "실행 중인 줄 색상"
 
 msgid "Code Folding Color"
-msgstr "코드 폴딩 색상"
+msgstr "코드 접기 색상"
 
 msgid "Search Result Color"
 msgstr "검색 결과 색상"
@@ -1319,6 +1686,9 @@ msgstr "커스텀 템플릿"
 
 msgid "Release"
 msgstr "출시"
+
+msgid "Export Console Wrapper"
+msgstr "콘솔 래퍼 내보내기"
 
 msgid "Binary Format"
 msgstr "바이너리 포맷"
@@ -1351,10 +1721,13 @@ msgid "SCP"
 msgstr "SCP"
 
 msgid "Export Path"
-msgstr "경로 내보내기"
+msgstr "내보낼 경로"
 
 msgid "Access"
 msgstr "액세스"
+
+msgid "File Mode"
+msgstr "파일 모드"
 
 msgid "Filters"
 msgstr "필터"
@@ -1371,17 +1744,71 @@ msgstr "슬라이더 숨기기"
 msgid "Zoom"
 msgstr "줌"
 
+msgid "Antialiasing"
+msgstr "안티앨리어싱"
+
+msgid "Generate Mipmaps"
+msgstr "밉맵 생성"
+
+msgid "Multichannel Signed Distance Field"
+msgstr "다중 채널 부호 있는 거리 필드 (MSDF)"
+
+msgid "MSDF Pixel Range"
+msgstr "MSDF 픽셀 범위"
+
+msgid "MSDF Size"
+msgstr "MSDF 크기"
+
+msgid "Allow System Fallback"
+msgstr "시스템 폴백 허용"
+
+msgid "Force Autohinter"
+msgstr "오토힌터 강제"
+
 msgid "Hinting"
 msgstr "힌팅"
 
+msgid "Subpixel Positioning"
+msgstr "서브픽셀 포지셔닝"
+
 msgid "Oversampling"
 msgstr "오버샘플링"
+
+msgid "Metadata Overrides"
+msgstr "메타데이터 오버라이드"
+
+msgid "Language Support"
+msgstr "언어 지원"
+
+msgid "Script Support"
+msgstr "스크립트 지원"
+
+msgid "OpenType Features"
+msgstr "OpenType 기능"
+
+msgid "Fallbacks"
+msgstr "폴백"
 
 msgid "Compress"
 msgstr "컴프레스"
 
 msgid "Language"
 msgstr "언어"
+
+msgid "Outline Size"
+msgstr "윤곽선 크기"
+
+msgid "Variation"
+msgstr "바리에이션"
+
+msgid "OpenType"
+msgstr "OpenType"
+
+msgid "Embolden"
+msgstr "굵게 하기"
+
+msgid "Face Index"
+msgstr "면 인덱스"
 
 msgid "Transform"
 msgstr "변형"
@@ -1392,14 +1819,59 @@ msgstr "COLLADA"
 msgid "Use Ambient"
 msgstr "주변광 사용"
 
+msgid "Retarget"
+msgstr "리타겟"
+
+msgid "Bone Renamer"
+msgstr "본 리네이머"
+
+msgid "Rename Bones"
+msgstr "본 이름 바꾸기"
+
+msgid "Unique Node"
+msgstr "고유 노드"
+
 msgid "Make Unique"
 msgstr "유일하게 만들기"
+
+msgid "Skeleton Name"
+msgstr "스켈레톤 이름"
+
+msgid "Rest Fixer"
+msgstr "레스트 픽서"
+
+msgid "Apply Node Transforms"
+msgstr "노드 변환 적용"
+
+msgid "Normalize Position Tracks"
+msgstr "위치 트랙 정규화"
+
+msgid "Overwrite Axis"
+msgstr "축 덮어쓰기"
+
+msgid "Fix Silhouette"
+msgstr "실루엣 픽스"
 
 msgid "Filter"
 msgstr "필터"
 
 msgid "Threshold"
-msgstr "스레숄드"
+msgstr "역치값"
+
+msgid "Base Height Adjustment"
+msgstr "기본 높이 조정"
+
+msgid "Remove Tracks"
+msgstr "트랙 제거"
+
+msgid "Except Bone Transform"
+msgstr "본 변형 제외"
+
+msgid "Unimportant Positions"
+msgstr "중요하지 않은 위치"
+
+msgid "Unmapped Bones"
+msgstr "매핑되지 않은 본"
 
 msgid "Create From"
 msgstr "다음에서 만들기"
@@ -1407,11 +1879,41 @@ msgstr "다음에서 만들기"
 msgid "Delimiter"
 msgstr "디리미터"
 
+msgid "Character Ranges"
+msgstr "문자 범위"
+
+msgid "Columns"
+msgstr "열"
+
+msgid "Rows"
+msgstr "행"
+
+msgid "Image Margin"
+msgstr "이미지 여백"
+
+msgid "Character Margin"
+msgstr "글자 여백"
+
+msgid "High Quality"
+msgstr "고품질"
+
 msgid "Lossy Quality"
 msgstr "손실 품질"
 
+msgid "HDR Compression"
+msgstr "HDR 압축"
+
+msgid "Channel Pack"
+msgstr "채널 팩"
+
 msgid "Mipmaps"
 msgstr "밉맵"
+
+msgid "Generate"
+msgstr "생성"
+
+msgid "Limit"
+msgstr "제한"
 
 msgid "Slices"
 msgstr "슬라이스"
@@ -1421,6 +1923,9 @@ msgstr "수평"
 
 msgid "Vertical"
 msgstr "수직"
+
+msgid "Arrangement"
+msgstr "어레인지먼트"
 
 msgid "Layout"
 msgstr "레이아웃"
@@ -1437,11 +1942,71 @@ msgstr "스케일 메쉬"
 msgid "Offset Mesh"
 msgstr "오프셋 메시"
 
+msgid "Optimize Mesh"
+msgstr "메시 최적화"
+
 msgid "Import"
 msgstr "가져오기"
 
+msgid "Skip Import"
+msgstr "가져오기 건너뛰기"
+
+msgid "NavMesh"
+msgstr "NavMesh"
+
+msgid "Body Type"
+msgstr "바디 타입"
+
+msgid "Shape Type"
+msgstr "모양 타입"
+
+msgid "Decomposition"
+msgstr "해체"
+
 msgid "Advanced"
 msgstr "고급"
+
+msgid "Precision"
+msgstr "정밀도"
+
+msgid "Max Concavity"
+msgstr "최대 오목성"
+
+msgid "Symmetry Planes Clipping Bias"
+msgstr "대칭 평면 클리핑 바이어스"
+
+msgid "Revolution Axes Clipping Bias"
+msgstr "회전축 클리핑 바이어스"
+
+msgid "Min Volume per Convex Hull"
+msgstr "컨벡스 헐 당 최소 부피"
+
+msgid "Resolution"
+msgstr "해상도"
+
+msgid "Max Num Vertices per Convex Hull"
+msgstr "컨벡스 헐 당 최대 꼭지점 수"
+
+msgid "Plane Downsampling"
+msgstr "평면 다운샘플링"
+
+msgid "Convexhull Downsampling"
+msgstr "컨벡스 헐 다운샘플링"
+
+msgid "Normalize Mesh"
+msgstr "메시 정규화"
+
+msgid "Convexhull Approximation"
+msgstr "컨벡스 헐 근사"
+
+msgid "Max Convex Hulls"
+msgstr "최대 컨벡스 헐"
+
+msgid "Project Hull Vertices"
+msgstr "프로젝트 헐 꼭지점"
+
+msgid "Primitive"
+msgstr "프리미티브"
 
 msgid "Height"
 msgstr "높이"
@@ -1452,11 +2017,35 @@ msgstr "반지름"
 msgid "Occluder"
 msgstr "오클루더"
 
+msgid "Simplification Distance"
+msgstr "단순화 거리"
+
+msgid "Save to File"
+msgstr "파일로 저장"
+
 msgid "Enabled"
 msgstr "활성화됨"
 
+msgid "Make Streamable"
+msgstr "스트림 가능하게 하기"
+
+msgid "Shadow Meshes"
+msgstr "그림자 메시"
+
+msgid "Lightmap UV"
+msgstr "라이트맵 UV"
+
+msgid "LODs"
+msgstr "LOD"
+
+msgid "Normal Split Angle"
+msgstr "노멀 스플릿 각도"
+
 msgid "Normal Merge Angle"
-msgstr "정상적인 병합 각도"
+msgstr "노멀 머지 각도"
+
+msgid "Use External"
+msgstr "외부 것 사용"
 
 msgid "Loop Mode"
 msgstr "루프 모드"
@@ -1467,11 +2056,23 @@ msgstr "맞춤 트랙 유지"
 msgid "Optimizer"
 msgstr "최적화 도구"
 
+msgid "Max Velocity Error"
+msgstr "최대 속도 오차"
+
 msgid "Max Angular Error"
-msgstr "최대 각도 오류"
+msgstr "최대 각도 오차"
+
+msgid "Max Precision Error"
+msgstr "최대 정밀도 오차"
 
 msgid "Page Size"
 msgstr "페이지 크기"
+
+msgid "Import Tracks"
+msgstr "트랙 가져오기"
+
+msgid "Bone Map"
+msgstr "본 맵"
 
 msgid "Nodes"
 msgstr "노드"
@@ -1482,6 +2083,9 @@ msgstr "루트 유형"
 msgid "Root Name"
 msgstr "루트 이름"
 
+msgid "Apply Root Scale"
+msgstr "루트 스케일 적용"
+
 msgid "Root Scale"
 msgstr "루트 스케일"
 
@@ -1490,6 +2094,12 @@ msgstr "메쉬"
 
 msgid "Ensure Tangents"
 msgstr "접선 확인"
+
+msgid "Generate LODs"
+msgstr "LOD 생성"
+
+msgid "Create Shadow Meshes"
+msgstr "그림자 메시 생성"
 
 msgid "Light Baking"
 msgstr "라이트 베이킹"
@@ -1506,8 +2116,23 @@ msgstr "네임드 스킨 사용"
 msgid "FPS"
 msgstr "초당 프레임"
 
+msgid "Trimming"
+msgstr "트리밍"
+
+msgid "Remove Immutable Tracks"
+msgstr "변경 불가한 트랙 제거"
+
+msgid "Import Script"
+msgstr "스크립트 가져오기"
+
 msgid "Normal Map"
 msgstr "일반 맵"
+
+msgid "Roughness"
+msgstr "굵기"
+
+msgid "Src Normal"
+msgstr "소스 노멀"
 
 msgid "Process"
 msgstr "프로세스"
@@ -1521,20 +2146,38 @@ msgstr "프리멀트 알파"
 msgid "Normal Map Invert Y"
 msgstr "노멀 맵 Y축 반전"
 
+msgid "HDR as sRGB"
+msgstr "HDR을 sRGB로"
+
+msgid "HDR Clamp Exposure"
+msgstr "HDR 클램프 노출"
+
 msgid "Size Limit"
 msgstr "크기 제한"
 
 msgid "Detect 3D"
 msgstr "3D 감지"
 
+msgid "Compress To"
+msgstr "압축:"
+
 msgid "SVG"
 msgstr "SVG"
+
+msgid "Scale With Editor Scale"
+msgstr "에디터 스케일과 함께 스케일"
+
+msgid "Convert Colors With Editor Theme"
+msgstr "색상을 에디터 테마로 변환"
 
 msgid "Atlas File"
 msgstr "아틀라스 파일"
 
 msgid "Import Mode"
 msgstr "가져오기 모드"
+
+msgid "Crop to Region"
+msgstr "영역으로 자르기"
 
 msgid "Trim Alpha Border From Region"
 msgstr "영역에서 알파 테두리 자르기"
@@ -1570,7 +2213,7 @@ msgid "Loop End"
 msgstr "루프 종료"
 
 msgid "Asset Library"
-msgstr "애셋 라이브러리"
+msgstr "에셋 라이브러리"
 
 msgid "Use Threads"
 msgstr "스레드 사용"
@@ -1578,8 +2221,26 @@ msgstr "스레드 사용"
 msgid "Available URLs"
 msgstr "사용 가능한 URL"
 
+msgid "Current Group Idx"
+msgstr "현재 그룹 인덱스"
+
+msgid "Current Bone Idx"
+msgstr "현재 본 인덱스"
+
+msgid "Bone Mapper"
+msgstr "본 매퍼"
+
+msgid "Handle Colors"
+msgstr "핸들 색상"
+
 msgid "Unset"
 msgstr "설정 해제"
+
+msgid "Set"
+msgstr "설정"
+
+msgid "Missing"
+msgstr "알 수 없음"
 
 msgid "Error"
 msgstr "오류"
@@ -1593,8 +2254,17 @@ msgstr "카메라"
 msgid "Decal"
 msgstr "데칼"
 
+msgid "Fog Volume"
+msgstr "포그 볼륨"
+
 msgid "Particles"
 msgstr "파티클"
+
+msgid "Particle Attractor"
+msgstr "파티클 어트랙터"
+
+msgid "Particle Collision"
+msgstr "파티클 충돌"
 
 msgid "Joint Body A"
 msgstr "조인트 바디 A"
@@ -1602,11 +2272,20 @@ msgstr "조인트 바디 A"
 msgid "Joint Body B"
 msgstr "조인트 바디 B"
 
+msgid "Lightmap Lines"
+msgstr "라이트맵 라인"
+
+msgid "Lightprobe Lines"
+msgstr "라이트프로브 라인"
+
 msgid "Reflection Probe"
 msgstr "반사 프로브"
 
 msgid "Visibility Notifier"
 msgstr "가시성 알리미"
+
+msgid "Voxel GI"
+msgstr "Voxel GI"
 
 msgid "Manipulator Gizmo Size"
 msgstr "조작기 기즈모 크기"
@@ -1616,6 +2295,15 @@ msgstr "조작기 기즈모 불투명도"
 
 msgid "Show Viewport Rotation Gizmo"
 msgstr "뷰포트 회전 기즈모 표시"
+
+msgid "Show Viewport Navigation Gizmo"
+msgstr "뷰포트 네비게이션 기즈모 표시"
+
+msgid "Auto Reload and Parse Scripts on Save"
+msgstr "저장 시 스크립트 자동 리로드 및 파싱"
+
+msgid "Open Dominant Script on Scene Change"
+msgstr "씬 변경 시 주요 스크립트 열기"
 
 msgid "External"
 msgstr "외부"
@@ -1647,17 +2335,53 @@ msgstr "실행 플래그"
 msgid "Skeleton"
 msgstr "스켈레톤"
 
+msgid "Selected Bone"
+msgstr "선택된 본"
+
+msgid "Gizmo Settings"
+msgstr "기즈모 설정"
+
+msgid "Bone Axis Length"
+msgstr "본 축 길이"
+
+msgid "Bone Shape"
+msgstr "본 모양"
+
 msgid "ID"
 msgstr "ID"
 
 msgid "Texture"
 msgstr "텍스쳐"
 
+msgid "Margins"
+msgstr "여백"
+
 msgid "Separation"
-msgstr "분리"
+msgstr "간격"
+
+msgid "Texture Region Size"
+msgstr "텍스처 영역 크기"
+
+msgid "Use Texture Padding"
+msgstr "텍스쳐 패딩 사용"
+
+msgid "Atlas Coords"
+msgstr "아틀라스 좌표"
+
+msgid "Size in Atlas"
+msgstr "아틀라스 내 크기"
+
+msgid "Alternative ID"
+msgstr "다른 ID"
 
 msgid "Speed"
 msgstr "속력"
+
+msgid "Frames Count"
+msgstr "프레임 카운트"
+
+msgid "Duration"
+msgstr "지속 시간"
 
 msgid "Version Control"
 msgstr "버전 컨트롤"
@@ -1674,14 +2398,62 @@ msgstr "SSH 개인 키 경로"
 msgid "Main Run Args"
 msgstr "메인 실행 인자"
 
+msgid "Templates Search Path"
+msgstr "템플릿 탐색 경로"
+
+msgid "Naming"
+msgstr "이름짓기"
+
+msgid "Default Signal Callback Name"
+msgstr "신호 콜백 기본 이름"
+
+msgid "Default Signal Callback to Self Name"
+msgstr "자신으로의 신호 콜백 기본 이름"
+
+msgid "Scene Name Casing"
+msgstr "씬 이름 대소문자"
+
 msgid "Reimport Missing Imported Files"
 msgstr "누락된 가져온 파일 다시 가져오기"
+
+msgid "Use Multiple Threads"
+msgstr "다중 스레드 사용"
+
+msgid "Convert Text Resources to Binary"
+msgstr "텍스트 리소스를 바이너리로 변환"
+
+msgid "Plugin Name"
+msgstr "플러그인 이름"
+
+msgid "Autoload on Startup"
+msgstr "시작 시 오토로드"
 
 msgid "Show Scene Tree Root Selection"
 msgstr "장면 트리 루트 선택 표시"
 
+msgid "Derive Script Globals by Name"
+msgstr "스크립트 글로벌을 이름으로 상속"
+
+msgid "Ask Before Deleting Related Animation Tracks"
+msgstr "연관 애니메이션 트랙을 지우기 전 물어보기"
+
 msgid "Use Favorites Root Selection"
 msgstr "즐겨찾기 루트 선택 사용"
+
+msgid "Flush stdout on Print"
+msgstr "출력 시 stdout 플러시"
+
+msgid "Max Chars per Second"
+msgstr "초당 최대 글자수"
+
+msgid "Max Queued Messages"
+msgstr "큐 내 최대 메시지 수"
+
+msgid "Max Errors per Second"
+msgstr "초당 최대 오류 수"
+
+msgid "Max Warnings per Second"
+msgstr "초당 최대 경고 수"
 
 msgid "File Logging"
 msgstr "파일 로깅"
@@ -1692,8 +2464,26 @@ msgstr "파일 로깅 활성화"
 msgid "Log Path"
 msgstr "로그 경로"
 
+msgid "Max Log Files"
+msgstr "최대 로그 파일 수"
+
 msgid "Driver"
 msgstr "드라이버"
+
+msgid "GL Compatibility"
+msgstr "GL 호환성"
+
+msgid "Nvidia Disable Threaded Optimization"
+msgstr "NVidia 스레드 최적화 사용 안함"
+
+msgid "Renderer"
+msgstr "렌더러"
+
+msgid "Rendering Method"
+msgstr "렌더링 방식"
+
+msgid "Include Text Server Data"
+msgstr "텍스트 서버 데이터 포함"
 
 msgid "DPI"
 msgstr "DPI"
@@ -1722,14 +2512,23 @@ msgstr "오리엔테이션"
 msgid "V-Sync"
 msgstr "수직동기화"
 
+msgid "V-Sync Mode"
+msgstr "수직동기화 모드"
+
 msgid "stdout"
 msgstr "표준 출력"
 
 msgid "Print FPS"
 msgstr "FPS 인쇄"
 
+msgid "Print GPU Profile"
+msgstr "GPU 프로필 출력"
+
 msgid "Verbose stdout"
 msgstr "자세한 표준 출력"
+
+msgid "Frame Delay Msec"
+msgstr "프레임 딜레이 밀리초"
 
 msgid "Low Processor Mode"
 msgstr "낮은 프로세서 모드"
@@ -1737,17 +2536,53 @@ msgstr "낮은 프로세서 모드"
 msgid "iOS"
 msgstr "iOS"
 
+msgid "Allow High Refresh Rate"
+msgstr "높은 주사율 허용"
+
 msgid "Hide Home Indicator"
 msgstr "홈 표시기 숨기기"
 
+msgid "Hide Status Bar"
+msgstr "상태 표시줄 숨기기"
+
+msgid "Suppress UI Gesture"
+msgstr "UI 제스쳐 막기"
+
 msgid "XR"
 msgstr "XR"
+
+msgid "OpenXR"
+msgstr "OpenXR"
+
+msgid "Default Action Map"
+msgstr "기본 액션 맵"
+
+msgid "Form Factor"
+msgstr "폼 팩터"
+
+msgid "View Configuration"
+msgstr "보기 설정"
+
+msgid "Reference Space"
+msgstr "레퍼런스 공간"
+
+msgid "Submit Depth Buffer"
+msgstr "깊이 버퍼 제출"
+
+msgid "Startup Alert"
+msgstr "시작 알림"
+
+msgid "In Editor"
+msgstr "에디터 내"
 
 msgid "Boot Splash"
 msgstr "부트 스플래쉬"
 
 msgid "BG Color"
 msgstr "배경색"
+
+msgid "Pen Tablet"
+msgstr "펜 타블렛"
 
 msgid "Environment"
 msgstr "환경"
@@ -1773,6 +2608,12 @@ msgstr "필터 사용"
 msgid "Icon"
 msgstr "아이콘"
 
+msgid "macOS Native Icon"
+msgstr "macOS 네이티브 아이콘"
+
+msgid "Windows Native Icon"
+msgstr "Windows 네이티브 아이콘"
+
 msgid "Buffering"
 msgstr "버퍼링"
 
@@ -1788,14 +2629,26 @@ msgstr "마우스 터치 에뮬레이트"
 msgid "Emulate Mouse From Touch"
 msgstr "터치로 마우스 에뮬레이트"
 
+msgid "Text Driver"
+msgstr "텍스트 드라이버"
+
 msgid "Mouse Cursor"
 msgstr "마우스 커서"
+
+msgid "Custom Image"
+msgstr "커스텀 이미지"
 
 msgid "Custom Image Hotspot"
 msgstr "사용자 정의 이미지 핫스팟"
 
 msgid "Tooltip Position Offset"
 msgstr "툴팁 위치 오프셋"
+
+msgid "Minimum Display Time"
+msgstr "최소 표시 시간"
+
+msgid "Dotnet"
+msgstr "닷넷"
 
 msgid "Project"
 msgstr "프로젝트"
@@ -1805,6 +2658,9 @@ msgstr "어셈블리 이름"
 
 msgid "Solution Directory"
 msgstr "솔루션 디렉토리"
+
+msgid "Assembly Reload Attempts"
+msgstr "어셈블리 리로드 시도 횟수"
 
 msgid "Operation"
 msgstr "오퍼레이션"
@@ -1826,6 +2682,12 @@ msgstr "충돌 레이어"
 
 msgid "Collision Mask"
 msgstr "충돌 마스크"
+
+msgid "Collision Priority"
+msgstr "충돌우선순위"
+
+msgid "Flip Faces"
+msgstr "면 뒤집기"
 
 msgid "Mesh"
 msgstr "메시"
@@ -1900,13 +2762,28 @@ msgid "CSG"
 msgstr "CSG"
 
 msgid "GDScript"
-msgstr "GD스크립트"
+msgstr "GDScript"
 
 msgid "Function Definition Color"
 msgstr "함수 정의 색상"
 
+msgid "Global Function Color"
+msgstr "전역 함수 색상"
+
 msgid "Node Path Color"
 msgstr "노드 경로 색상"
+
+msgid "Node Reference Color"
+msgstr "노드 레퍼런스 색상"
+
+msgid "Annotation Color"
+msgstr "어노테이션 색상"
+
+msgid "String Name Color"
+msgstr "문자열 이름 색상"
+
+msgid "Max Call Stack"
+msgstr "최대 호출 스택"
 
 msgid "Warnings"
 msgstr "경고"
@@ -1920,14 +2797,26 @@ msgstr "언어 서버"
 msgid "Enable Smart Resolve"
 msgstr "스마트 해결 활성화"
 
+msgid "Show Native Symbols in Editor"
+msgstr "에디터에서 네이티브 기호 표시"
+
 msgid "Use Thread"
 msgstr "스레드 사용"
+
+msgid "glTF"
+msgstr "glTF"
+
+msgid "Embedded Image Handling"
+msgstr "임베디드 이미지 핸들링"
 
 msgid "Color"
 msgstr "색상"
 
 msgid "Intensity"
 msgstr "강함"
+
+msgid "Light Type"
+msgstr "광원 타입"
 
 msgid "Range"
 msgstr "범위"
@@ -1953,8 +2842,26 @@ msgstr "반사 인자"
 msgid "Spec Gloss Img"
 msgstr "반사광 이미지"
 
+msgid "Mass"
+msgstr "질량"
+
+msgid "Linear Velocity"
+msgstr "선속도"
+
 msgid "Angular Velocity"
 msgstr "각속도"
+
+msgid "Inertia Tensor"
+msgstr "관성 텐서"
+
+msgid "Is Trigger"
+msgstr "트리거 여부"
+
+msgid "Mesh Index"
+msgstr "메시 인덱스"
+
+msgid "Importer Mesh"
+msgstr "임포터 메시"
 
 msgid "Json"
 msgstr "Json"
@@ -1986,8 +2893,14 @@ msgstr "머티리얼"
 msgid "Scene Name"
 msgstr "씬 이름"
 
+msgid "Base Path"
+msgstr "기본 경로"
+
 msgid "Root Nodes"
 msgstr "루트 노드"
+
+msgid "Texture Samplers"
+msgstr "텍스처 샘플러"
 
 msgid "Images"
 msgstr "이미지"
@@ -2007,11 +2920,32 @@ msgstr "고유한 애니메이션 이름"
 msgid "Skeletons"
 msgstr "스켈레톤"
 
+msgid "Create Animations"
+msgstr "애니메이션 생성"
+
 msgid "Animations"
 msgstr "애니메이션"
 
+msgid "Handle Binary Image"
+msgstr "바이너리 이미지 처리"
+
+msgid "Blender"
+msgstr "Blender"
+
+msgid "RPC Port"
+msgstr "RPC 포트"
+
+msgid "RPC Server Uptime"
+msgstr "RPC 서버 업타임"
+
+msgid "Blender 3 Path"
+msgstr "Blender 3 경로"
+
 msgid "FBX"
 msgstr "FBX"
+
+msgid "FBX2glTF Path"
+msgstr "FBX2glTF 경로"
 
 msgid "Buffer View"
 msgstr "버퍼 보기"
@@ -2070,6 +3004,15 @@ msgstr "인덱스"
 msgid "Perspective"
 msgstr "원근"
 
+msgid "FOV"
+msgstr "FOV"
+
+msgid "Depth Far"
+msgstr "원경 깊이"
+
+msgid "Depth Near"
+msgstr "근경 깊이"
+
 msgid "Blend Weights"
 msgstr "혼합 가중치"
 
@@ -2118,6 +3061,18 @@ msgstr "SRC 이미지"
 msgid "Sampler"
 msgstr "샘플러"
 
+msgid "Mag Filter"
+msgstr "Mag 필터"
+
+msgid "Min Filter"
+msgstr "Min 필터"
+
+msgid "Wrap S"
+msgstr "S 래핑"
+
+msgid "Wrap T"
+msgstr "T 래핑"
+
 msgid "Palette Min Width"
 msgstr "팔레트 최소 너비"
 
@@ -2125,7 +3080,7 @@ msgid "Preview Size"
 msgstr "미리보기 크기"
 
 msgid "Editor Side"
-msgstr "편집기 사이드"
+msgstr "에디터 쪽"
 
 msgid "Mesh Library"
 msgstr "메시 라이브러리"
@@ -2158,22 +3113,64 @@ msgid "Priority"
 msgstr "우선 순위"
 
 msgid "Bake Navigation"
-msgstr "베이크 내비게이션"
+msgstr "내비게이션 굽기"
 
 msgid "Lightmapping"
 msgstr "라이트 매핑"
 
+msgid "Bake Quality"
+msgstr "굽기 품질"
+
 msgid "Low Quality Ray Count"
-msgstr "낮은 품질의 광선 수"
+msgstr "낮은 품질 광선 수"
 
 msgid "Medium Quality Ray Count"
 msgstr "중간 품질 광선 수"
 
 msgid "High Quality Ray Count"
-msgstr "고품질 광선 수"
+msgstr "높은 품질 광선 수"
 
 msgid "Ultra Quality Ray Count"
-msgstr "초고품질 광선 수"
+msgstr "매우 높은 품질 광선 수"
+
+msgid "Bake Performance"
+msgstr "굽기 성능"
+
+msgid "Max Rays per Pass"
+msgstr "패스당 최대 광선 수"
+
+msgid "Region Size"
+msgstr "영역 크기"
+
+msgid "Low Quality Probe Ray Count"
+msgstr "낮은 품질 프로브 광선 수"
+
+msgid "Medium Quality Probe Ray Count"
+msgstr "중간 품질의 프로브 광선 수"
+
+msgid "High Quality Probe Ray Count"
+msgstr "높은 품질 프로브 광선 수"
+
+msgid "Ultra Quality Probe Ray Count"
+msgstr "매우 높은 품질 프로브 광선 수"
+
+msgid "Max Rays per Probe Pass"
+msgstr "프로브 패스 당 최대 광선 수"
+
+msgid "Primitive Meshes"
+msgstr "프리미티브 메시"
+
+msgid "Texel Size"
+msgstr "텍셀 크기"
+
+msgid "BPM"
+msgstr "BPM"
+
+msgid "Beat Count"
+msgstr "박자수"
+
+msgid "Bar Beats"
+msgstr "마디당 비트"
 
 msgid "Loop Offset"
 msgstr "루프 오프셋"
@@ -2187,6 +3184,9 @@ msgstr "IOD"
 msgid "Display Width"
 msgstr "디스플레이 너비"
 
+msgid "Display to Lens"
+msgstr "렌즈에 표시"
+
 msgid "Oversample"
 msgstr "오버샘플"
 
@@ -2195,6 +3195,36 @@ msgstr "K1"
 
 msgid "K2"
 msgstr "K2"
+
+msgid "Spawnable Scenes"
+msgstr "소환 가능한 씬"
+
+msgid "Spawn Path"
+msgstr "소환 경로"
+
+msgid "Spawn Limit"
+msgstr "소환 제한"
+
+msgid "Root Path"
+msgstr "루트 경로"
+
+msgid "Replication Interval"
+msgstr "리플리케이션 간격"
+
+msgid "Delta Interval"
+msgstr "델타 간격"
+
+msgid "Visibility Update Mode"
+msgstr "가시성 업데이트 모드"
+
+msgid "Public Visibility"
+msgstr "공개 가시성"
+
+msgid "Auth Callback"
+msgstr "인증 콜백"
+
+msgid "Auth Timeout"
+msgstr "인증 타임아웃"
 
 msgid "Allow Object Decoding"
 msgstr "오브젝트 디코딩 허용"
@@ -2205,23 +3235,80 @@ msgstr "새로운 연결 거부"
 msgid "Server Relay"
 msgstr "서버 릴레이"
 
+msgid "Max Sync Packet Size"
+msgstr "최대 동기화 패킷 크기"
+
+msgid "Max Delta Packet Size"
+msgstr "최대 델타 패킷 크기"
+
+msgid "Noise Type"
+msgstr "노이즈 타입"
+
+msgid "Frequency"
+msgstr "주파수"
+
+msgid "Fractal"
+msgstr "프랙탈"
+
 msgid "Octaves"
 msgstr "옥타브"
 
 msgid "Lacunarity"
-msgstr "세심함"
+msgstr "라쿠나리티"
+
+msgid "Gain"
+msgstr "게인"
+
+msgid "Weighted Strength"
+msgstr "가중치 강도"
+
+msgid "Ping Pong Strength"
+msgstr "핑퐁 강도"
+
+msgid "Cellular"
+msgstr "셀룰러"
+
+msgid "Distance Function"
+msgstr "거리 함수"
+
+msgid "Jitter"
+msgstr "지터"
 
 msgid "Return Type"
 msgstr "반환 유형"
 
+msgid "Domain Warp"
+msgstr "도메인 래핑"
+
+msgid "Amplitude"
+msgstr "진폭"
+
+msgid "Fractal Type"
+msgstr "프랙탈 종류"
+
 msgid "Fractal Octaves"
-msgstr "프랙털 옥타브"
+msgstr "프랙탈 옥타브"
+
+msgid "Fractal Lacunarity"
+msgstr "프랙탈 라쿠나리티"
+
+msgid "Fractal Gain"
+msgstr "프랙탈 게인"
 
 msgid "Width"
 msgstr "너비"
 
+msgid "Invert"
+msgstr "반전"
+
+msgid "In 3D Space"
+msgstr "3차원 공간에서"
+
 msgid "Seamless"
-msgstr "원활한"
+msgstr "틈 없이"
+
+msgid "Seamless Blend Skirt"
+msgstr "틈 없는 혼합 스커트"
 
 msgid "As Normal Map"
 msgstr "노멀 맵으로"
@@ -2229,8 +3316,41 @@ msgstr "노멀 맵으로"
 msgid "Bump Strength"
 msgstr "범프 강도"
 
+msgid "Color Ramp"
+msgstr "색 변환"
+
 msgid "Noise"
-msgstr "소음"
+msgstr "노이즈"
+
+msgid "Localized Name"
+msgstr "현지화된 이름"
+
+msgid "Action Type"
+msgstr "액션 타입"
+
+msgid "Toplevel Paths"
+msgstr "최상위 경로"
+
+msgid "Paths"
+msgstr "경로"
+
+msgid "Interaction Profile Path"
+msgstr "상호작용 프로필 경로"
+
+msgid "Display Refresh Rate"
+msgstr "디스플레이 주사율"
+
+msgid "Render Target Size Multiplier"
+msgstr "렌더 타겟 크기 배수"
+
+msgid "Hand"
+msgstr "손"
+
+msgid "Motion Range"
+msgstr "모션 범위"
+
+msgid "Hand Skeleton"
+msgstr "손 스켈레톤"
 
 msgid "Subject"
 msgstr "서브젝트"
@@ -2268,11 +3388,35 @@ msgstr "IGD 우리의 주소"
 msgid "IGD Status"
 msgstr "IGD 상태"
 
+msgid "Write Mode"
+msgstr "쓰기 모드"
+
 msgid "WebRTC"
 msgstr "WebRTC"
 
+msgid "Max Channel in Buffer (KB)"
+msgstr "버퍼 내 최대 채널 (KB)"
+
+msgid "Supported Protocols"
+msgstr "지원 프로토콜"
+
+msgid "Handshake Headers"
+msgstr "핸드쉐이크 헤더"
+
+msgid "Inbound Buffer Size"
+msgstr "인바운드 버퍼 크기"
+
+msgid "Outbound Buffer Size"
+msgstr "아웃바운드 버퍼 크기"
+
 msgid "Handshake Timeout"
 msgstr "핸드쉐이크 타임아웃"
+
+msgid "Max Queued Packets"
+msgstr "큐 내 최대 패킷 수"
+
+msgid "Session Mode"
+msgstr "세션 모드"
 
 msgid "Required Features"
 msgstr "필수적 기능"
@@ -2280,32 +3424,293 @@ msgstr "필수적 기능"
 msgid "Optional Features"
 msgstr "선택적 기능"
 
+msgid "Requested Reference Space Types"
+msgstr "요청된 레퍼런스 공간 타입"
+
+msgid "Reference Space Type"
+msgstr "레퍼런스 공간 타입"
+
+msgid "Visibility State"
+msgstr "가시성 상태"
+
 msgid "Android"
 msgstr "Android"
+
+msgid "Android SDK Path"
+msgstr "Android SDK 경로"
+
+msgid "Debug Keystore"
+msgstr "디버그 Keystore"
+
+msgid "Debug Keystore User"
+msgstr "디버그 Keystore 유저명"
+
+msgid "Debug Keystore Pass"
+msgstr "디버그 Keystore 암호"
+
+msgid "Force System User"
+msgstr "시스템 유저 강제"
+
+msgid "Shutdown ADB on Exit"
+msgstr "종료 시 ADB도 종료"
+
+msgid "One Click Deploy Clear Previous Install"
+msgstr "원클릭 배포의 이전 설치 모두 삭제"
+
+msgid "Launcher Icons"
+msgstr "런처 아이콘"
+
+msgid "Main 192 X 192"
+msgstr "메인 192 x 192"
+
+msgid "Adaptive Foreground 432 X 432"
+msgstr "적응형 앞배경 432 x 432"
+
+msgid "Adaptive Background 432 X 432"
+msgstr "적응형 뒷배경 432 x 432"
+
+msgid "Gradle Build"
+msgstr "Gradle 빌드"
+
+msgid "Use Gradle Build"
+msgstr "Gradle 빌드 사용"
+
+msgid "Export Format"
+msgstr "내보내기 종류"
+
+msgid "Min SDK"
+msgstr "최소 SDK"
+
+msgid "Target SDK"
+msgstr "대상 SDK"
 
 msgid "Plugins"
 msgstr "플러그인(Plugin)"
 
+msgid "Architectures"
+msgstr "구조"
+
+msgid "Keystore"
+msgstr "Keystore"
+
+msgid "Debug User"
+msgstr "디버그 유저"
+
+msgid "Debug Password"
+msgstr "디버그 암호"
+
+msgid "Release User"
+msgstr "릴리즈 유저"
+
+msgid "Release Password"
+msgstr "릴리즈 암호"
+
 msgid "Version"
 msgstr "버전"
+
+msgid "Code"
+msgstr "코드"
+
+msgid "Package"
+msgstr "패키지"
 
 msgid "Unique Name"
 msgstr "고유 이름"
 
+msgid "Signed"
+msgstr "서명됨"
+
 msgid "App Category"
 msgstr "앱 카테고리"
+
+msgid "Retain Data on Uninstall"
+msgstr "설치 삭제 시 데이터 유지"
+
+msgid "Exclude From Recents"
+msgstr "최근 항목에서 제외"
 
 msgid "Graphics"
 msgstr "그래픽"
 
+msgid "OpenGL Debug"
+msgstr "OpenGL 디버그"
+
+msgid "XR Features"
+msgstr "XR 기능"
+
+msgid "XR Mode"
+msgstr "XR 모드"
+
+msgid "Hand Tracking"
+msgstr "손 트래킹"
+
+msgid "Hand Tracking Frequency"
+msgstr "손 트래킹 빈도"
+
+msgid "Passthrough"
+msgstr "패스스루"
+
+msgid "Immersive Mode"
+msgstr "몰입형 모드"
+
+msgid "Support Small"
+msgstr "소형 화면 지원"
+
+msgid "Support Normal"
+msgstr "중형 화면 지원"
+
+msgid "Support Large"
+msgstr "대형 화면 지원"
+
+msgid "Support Xlarge"
+msgstr "초대형 화면 지원"
+
+msgid "User Data Backup"
+msgstr "유저 데이터 백업"
+
+msgid "Allow"
+msgstr "허용"
+
+msgid "Command Line"
+msgstr "명령줄 인수"
+
 msgid "Extra Args"
 msgstr "추가적인 인수"
+
+msgid "APK Expansion"
+msgstr "APK 확장"
+
+msgid "Salt"
+msgstr "솔트"
+
+msgid "Public Key"
+msgstr "공개 키"
+
+msgid "Permissions"
+msgstr "권한"
+
+msgid "Custom Permissions"
+msgstr "커스텀 권한"
 
 msgid "Icons"
 msgstr "아이콘"
 
+msgid "iPhone 120 X 120"
+msgstr "iPhone 120 X 120"
+
+msgid "iPhone 180 X 180"
+msgstr "iPhone 180 X 180"
+
+msgid "iPad 76 X 76"
+msgstr "iPad 76 X 76"
+
+msgid "iPad 152 X 152"
+msgstr "iPad 152 X 152"
+
+msgid "iPad 167 X 167"
+msgstr "iPad 167 X 167"
+
+msgid "App Store 1024 X 1024"
+msgstr "App Store 1024 X 1024"
+
+msgid "Spotlight 40 X 40"
+msgstr "Spotlight 40 X 40"
+
+msgid "Spotlight 80 X 80"
+msgstr "Spotlight 80 X 80"
+
+msgid "Settings 58 X 58"
+msgstr "설정 58 X 58"
+
+msgid "Settings 87 X 87"
+msgstr "설정 87 X 87"
+
+msgid "Notification 40 X 40"
+msgstr "알림 40 X 40"
+
+msgid "Notification 60 X 60"
+msgstr "알림 60 X 60"
+
+msgid "Landscape Launch Screens"
+msgstr "가로 모드 실행 화면"
+
+msgid "iPhone 2436 X 1125"
+msgstr "iPhone 2436 X 1125"
+
+msgid "iPhone 2208 X 1242"
+msgstr "iPhone 2208 X 1242"
+
+msgid "iPad 1024 X 768"
+msgstr "iPad 1024 X 768"
+
+msgid "iPad 2048 X 1536"
+msgstr "iPad 1024 X 768"
+
+msgid "Portrait Launch Screens"
+msgstr "세로 모드 실행 화면"
+
+msgid "iPhone 640 X 960"
+msgstr "iPhone 640 X 960"
+
+msgid "iPhone 640 X 1136"
+msgstr "iPhone 640 X 1136"
+
+msgid "iPhone 750 X 1334"
+msgstr "iPhone 750 X 1334"
+
+msgid "iPhone 1125 X 2436"
+msgstr "iPhone 1125 X 2436"
+
+msgid "iPad 768 X 1024"
+msgstr "iPad 768 X 1024"
+
+msgid "iPad 1536 X 2048"
+msgstr "iPad 1536 X 2048"
+
+msgid "iPhone 1242 X 2208"
+msgstr "iPhone 1242 X 2208"
+
+msgid "App Store Team ID"
+msgstr "App Store 팀 ID"
+
+msgid "Provisioning Profile UUID Debug"
+msgstr "권한 설정 프로파일 UUID 디버그"
+
+msgid "Code Sign Identity Debug"
+msgstr "코드 서명 ID 디버그"
+
+msgid "Export Method Debug"
+msgstr "내보내기 방법 디버그"
+
+msgid "Provisioning Profile UUID Release"
+msgstr "권한 설정 프로파일 UUID 릴리즈"
+
+msgid "Code Sign Identity Release"
+msgstr "코드 서명 ID 릴리즈"
+
 msgid "Export Method Release"
-msgstr "내보내기 모드 출시"
+msgstr "내보내기 방법 릴리즈"
+
+msgid "Targeted Device Family"
+msgstr "목표 디바이스 제품군"
+
+msgid "Bundle Identifier"
+msgstr "번들 식별자"
+
+msgid "Signature"
+msgstr "서명"
+
+msgid "Short Version"
+msgstr "짧은 버전"
+
+msgid "Icon Interpolation"
+msgstr "아이콘 보간"
+
+msgid "Launch Screens Interpolation"
+msgstr "실행 화면 보간"
+
+msgid "Capabilities"
+msgstr "앱 기능"
 
 msgid "Access Wi-Fi"
 msgstr "Wi-Fi 연결"
@@ -2313,8 +3718,140 @@ msgstr "Wi-Fi 연결"
 msgid "Push Notifications"
 msgstr "푸시 알림"
 
+msgid "User Data"
+msgstr "유저 데이터"
+
+msgid "Accessible From Files App"
+msgstr "파일 앱에서 접근 가능"
+
+msgid "Accessible From iTunes Sharing"
+msgstr "iTunes 공유에서 접근 가능"
+
+msgid "Privacy"
+msgstr "프라이버시"
+
+msgid "Camera Usage Description"
+msgstr "카메라 사용 설명"
+
+msgid "Camera Usage Description Localized"
+msgstr "카메라 사용 설명 현지화됨"
+
+msgid "Microphone Usage Description"
+msgstr "마이크 사용 설명"
+
+msgid "Microphone Usage Description Localized"
+msgstr "마이크 사용 설명 현지화됨"
+
+msgid "Photolibrary Usage Description"
+msgstr "사진 보관함 사용 설명"
+
+msgid "Photolibrary Usage Description Localized"
+msgstr "사진 보관함 사용 설명 현지화됨"
+
+msgid "Storyboard"
+msgstr "스토리보드"
+
+msgid "Use Launch Screen Storyboard"
+msgstr "실행 화면 스토리보드 사용"
+
+msgid "Image Scale Mode"
+msgstr "이미지 스케일 모드"
+
+msgid "Custom Image @2x"
+msgstr "커스텀 이미지 @ 2x"
+
+msgid "Custom Image @3x"
+msgstr "커스텀 이미지 @ 3x"
+
+msgid "Use Custom BG Color"
+msgstr "커스텀 배경색 사용"
+
+msgid "Custom BG Color"
+msgstr "커스텀 배경색"
+
+msgid "Architecture"
+msgstr "아키텍쳐"
+
+msgid "SSH Remote Deploy"
+msgstr "SSH 원격 배포"
+
+msgid "Extra Args SSH"
+msgstr "SSH 추가적인 인수"
+
+msgid "Extra Args SCP"
+msgstr "SCP 추가적인 인수"
+
+msgid "Run Script"
+msgstr "실행 스크립트"
+
+msgid "Cleanup Script"
+msgstr "클린업 스크립트"
+
+msgid "macOS"
+msgstr "macOS"
+
+msgid "rcodesign"
+msgstr "rcodesign"
+
+msgid "Distribution Type"
+msgstr "배포 타입"
+
+msgid "Copyright"
+msgstr "저작권"
+
+msgid "Copyright Localized"
+msgstr "저작권 현지화됨"
+
+msgid "Min macOS Version"
+msgstr "최소 macOS 버전"
+
+msgid "High Res"
+msgstr "고해상도"
+
+msgid "Xcode"
+msgstr "XCode"
+
+msgid "Platform Build"
+msgstr "플랫폼 빌드"
+
+msgid "SDK Version"
+msgstr "SDK 버전"
+
+msgid "SDK Build"
+msgstr "SDK 빌드"
+
+msgid "SDK Name"
+msgstr "SDK 이름"
+
+msgid "Xcode Version"
+msgstr "XCode 버전"
+
+msgid "Xcode Build"
+msgstr "Xcode 빌드"
+
+msgid "Codesign"
+msgstr "코드 서명"
+
+msgid "Installer Identity"
+msgstr "인스톨러 아이덴티티"
+
+msgid "Apple Team ID"
+msgstr "Apple 팀 ID"
+
+msgid "Identity"
+msgstr "아이덴티티"
+
+msgid "Certificate File"
+msgstr "인증서 파일"
+
+msgid "Certificate Password"
+msgstr "인증서 암호"
+
 msgid "Location"
 msgstr "위치"
+
+msgid "UWP"
+msgstr "UWP"
 
 msgid "Product GUID"
 msgstr "제품 GUID"
@@ -2331,8 +3868,107 @@ msgstr "풍경"
 msgid "Tiles"
 msgstr "타일"
 
+msgid "Web"
+msgstr "웹"
+
+msgid "HTTP Host"
+msgstr "HTTP 호스트"
+
+msgid "HTTP Port"
+msgstr "HTTP 포트"
+
+msgid "Use TLS"
+msgstr "TLS 사용"
+
+msgid "TLS Key"
+msgstr "TLS 키"
+
+msgid "TLS Certificate"
+msgstr "TLS 인증서"
+
 msgid "Variant"
 msgstr "변종"
+
+msgid "Extensions Support"
+msgstr "확장 기능 지원"
+
+msgid "VRAM Texture Compression"
+msgstr "VRAM 텍스처 압축"
+
+msgid "For Desktop"
+msgstr "데스크탑용"
+
+msgid "For Mobile"
+msgstr "모바일용"
+
+msgid "HTML"
+msgstr "HTML"
+
+msgid "Export Icon"
+msgstr "내보내기 아이콘"
+
+msgid "Custom HTML Shell"
+msgstr "커스텀 HTML 셸"
+
+msgid "Head Include"
+msgstr "Head에 포함"
+
+msgid "Canvas Resize Policy"
+msgstr "Canvas 크기 조정 방식"
+
+msgid "Focus Canvas on Start"
+msgstr "시작할 때 Canvas에 포커스"
+
+msgid "Experimental Virtual Keyboard"
+msgstr "실험용 가상 키보드"
+
+msgid "Progressive Web App"
+msgstr "프로그레시브 웹 앱"
+
+msgid "Offline Page"
+msgstr "오프라인 페이지"
+
+msgid "Icon 144 X 144"
+msgstr "아이콘 144 X 144"
+
+msgid "Icon 180 X 180"
+msgstr "아이콘 180 X 180"
+
+msgid "Icon 512 X 512"
+msgstr "아이콘 512 X 512"
+
+msgid "Windows"
+msgstr "Windows"
+
+msgid "rcedit"
+msgstr "rcedit"
+
+msgid "osslsigncode"
+msgstr "osslsigncode"
+
+msgid "wine"
+msgstr "wine"
+
+msgid "Identity Type"
+msgstr "아이덴티티 종류"
+
+msgid "Timestamp"
+msgstr "타임스탬프"
+
+msgid "Timestamp Server URL"
+msgstr "타임스탬프 서버 URL"
+
+msgid "Digest Algorithm"
+msgstr "해시 알고리즘"
+
+msgid "Modify Resources"
+msgstr "리소스 수정"
+
+msgid "Console Wrapper Icon"
+msgstr "콘솔 래퍼 아이콘"
+
+msgid "File Version"
+msgstr "파일 버전"
 
 msgid "Product Version"
 msgstr "제품 버전"
@@ -2343,8 +3979,38 @@ msgstr "회사 이름"
 msgid "Product Name"
 msgstr "제품 이름"
 
+msgid "File Description"
+msgstr "파일 설명"
+
+msgid "Trademarks"
+msgstr "상표"
+
+msgid "Sprite Frames"
+msgstr "스프라이트 프레임"
+
 msgid "Frame"
 msgstr "프레임"
+
+msgid "Speed Scale"
+msgstr "속도 배수"
+
+msgid "Centered"
+msgstr "가운데 맞춤"
+
+msgid "Flip H"
+msgstr "가로 뒤집기"
+
+msgid "Flip V"
+msgstr "세로 뒤집기"
+
+msgid "Monitoring"
+msgstr "모니터링"
+
+msgid "Monitorable"
+msgstr "모니터링 가능"
+
+msgid "Gravity"
+msgstr "중력"
 
 msgid "Space Override"
 msgstr "공간 오버라이드"
@@ -2352,41 +4018,302 @@ msgstr "공간 오버라이드"
 msgid "Point"
 msgstr "점"
 
+msgid "Point Unit Distance"
+msgstr "점 유닛 거리"
+
+msgid "Point Center"
+msgstr "점 중간"
+
+msgid "Direction"
+msgstr "방향"
+
+msgid "Linear Damp"
+msgstr "선형 댐핑"
+
+msgid "Angular Damp"
+msgstr "각도 댐핑"
+
+msgid "Audio Bus"
+msgstr "오디오 버스"
+
 msgid "Current"
-msgstr "현재"
+msgstr "사용 중"
+
+msgid "Volume dB"
+msgstr "음량 dB"
+
+msgid "Pitch Scale"
+msgstr "피치 스케일"
+
+msgid "Playing"
+msgstr "재생"
+
+msgid "Autoplay"
+msgstr "자동 재생"
+
+msgid "Stream Paused"
+msgstr "재생 일시정지"
 
 msgid "Max Distance"
 msgstr "최대 거리"
+
+msgid "Attenuation"
+msgstr "감쇠량"
+
+msgid "Max Polyphony"
+msgstr "최대 동시재생"
+
+msgid "Panning Strength"
+msgstr "패닝 강도"
+
+msgid "Bus"
+msgstr "버스"
+
+msgid "Area Mask"
+msgstr "구역 마스크"
+
+msgid "Copy Mode"
+msgstr "복사 모드"
+
+msgid "Anchor Mode"
+msgstr "앵커 모드"
+
+msgid "Ignore Rotation"
+msgstr "회전 무시"
+
+msgid "Process Callback"
+msgstr "Process 콜백"
 
 msgid "Left"
 msgstr "왼쪽"
 
 msgid "Top"
-msgstr "맨 위"
+msgstr "위쪽"
 
 msgid "Right"
 msgstr "오른쪽"
 
+msgid "Bottom"
+msgstr "아래쪽"
+
+msgid "Smoothed"
+msgstr "부드럽게 하기"
+
+msgid "Position Smoothing"
+msgstr "부드러운 위치 이동"
+
+msgid "Rotation Smoothing"
+msgstr "부드러운 회전"
+
+msgid "Drag"
+msgstr "드래그"
+
+msgid "Horizontal Enabled"
+msgstr "가로 활성화"
+
+msgid "Vertical Enabled"
+msgstr "세로 활성화"
+
+msgid "Horizontal Offset"
+msgstr "가로 오프셋"
+
+msgid "Vertical Offset"
+msgstr "세로 오프셋"
+
+msgid "Left Margin"
+msgstr "왼쪽 마진"
+
+msgid "Top Margin"
+msgstr "위쪽 마진"
+
+msgid "Right Margin"
+msgstr "오른쪽 마진"
+
+msgid "Bottom Margin"
+msgstr "아래쪽 마진"
+
+msgid "Draw Screen"
+msgstr "화면 그리기"
+
+msgid "Draw Limits"
+msgstr "제한 그리기"
+
+msgid "Draw Drag Margin"
+msgstr "드래그 마진 그리기"
+
+msgid "Tweaks"
+msgstr "트윅"
+
+msgid "Fit Margin"
+msgstr "여백에 맞추기"
+
+msgid "Clear Margin"
+msgstr "여백 비우기"
+
+msgid "Use Mipmaps"
+msgstr "밉맵 사용"
+
+msgid "Disable Mode"
+msgstr "비활성화 모드"
+
 msgid "Input"
 msgstr "입력"
+
+msgid "Disabled"
+msgstr "비활성화됨"
+
+msgid "One Way Collision"
+msgstr "일방향 충돌"
+
+msgid "One Way Collision Margin"
+msgstr "일방향 충돌 간격"
+
+msgid "Debug Color"
+msgstr "디버그 색상"
+
+msgid "Emitting"
+msgstr "방출"
 
 msgid "Time"
 msgstr "시간"
 
+msgid "Lifetime"
+msgstr "수명"
+
+msgid "One Shot"
+msgstr "원샷"
+
+msgid "Preprocess"
+msgstr "전처리"
+
+msgid "Explosiveness"
+msgstr "폭발성"
+
 msgid "Randomness"
 msgstr "무작위성"
+
+msgid "Lifetime Randomness"
+msgstr "수명 무작위성"
+
+msgid "Fixed FPS"
+msgstr "고정 FPS"
+
+msgid "Draw Order"
+msgstr "그리기 순서"
 
 msgid "Points"
 msgstr "점"
 
+msgid "Normals"
+msgstr "노멀"
+
 msgid "Colors"
 msgstr "색상"
+
+msgid "Linear Accel"
+msgstr "선형 가속도"
 
 msgid "Accel Min"
 msgstr "최소 가속도"
 
 msgid "Accel Max"
 msgstr "최대 가속도"
+
+msgid "Accel Curve"
+msgstr "가속도 곡선"
+
+msgid "Radial Accel"
+msgstr "방사형 가속도"
+
+msgid "Tangential Accel"
+msgstr "접선 가속도"
+
+msgid "Damping"
+msgstr "댐핑"
+
+msgid "Damping Min"
+msgstr "최소 댐핑"
+
+msgid "Damping Max"
+msgstr "최대 댐핑"
+
+msgid "Damping Curve"
+msgstr "댐핑 곡선"
+
+msgid "Angle"
+msgstr "각도"
+
+msgid "Angle Min"
+msgstr "최대 각도"
+
+msgid "Angle Max"
+msgstr "최소 각도"
+
+msgid "Angle Curve"
+msgstr "각도 곡선"
+
+msgid "Interpolate"
+msgstr "보간"
+
+msgid "Trails"
+msgstr "자취"
+
+msgid "Bias"
+msgstr "바이어스"
+
+msgid "Length"
+msgstr "길이"
+
+msgid "Initial Offset"
+msgstr "초기 오프셋"
+
+msgid "Editor Only"
+msgstr "에디터 전용"
+
+msgid "Energy"
+msgstr "에너지"
+
+msgid "Blend Mode"
+msgstr "혼합 모드"
+
+msgid "Z Min"
+msgstr "최소 Z"
+
+msgid "Z Max"
+msgstr "최대 Z"
+
+msgid "Layer Min"
+msgstr "최소 레이어"
+
+msgid "Layer Max"
+msgstr "최대 레이어"
+
+msgid "Item Cull Mask"
+msgstr "개체 컬 마스크"
+
+msgid "Shadow"
+msgstr "그림자"
+
+msgid "Filter Smooth"
+msgstr "부드럽게 필터"
+
+msgid "Texture Scale"
+msgstr "텍스처 스케일"
+
+msgid "Closed"
+msgstr "닫힘"
+
+msgid "Cull Mode"
+msgstr "컬 모드"
+
+msgid "SDF Collision"
+msgstr "SDF 콜리전"
+
+msgid "Default Color"
+msgstr "기본 색"
+
+msgid "Fill"
+msgstr "채우기"
 
 msgid "Path Max Distance"
 msgstr "경로 최대 거리"
@@ -2397,8 +4324,32 @@ msgstr "내비게이션 레이어"
 msgid "Max Speed"
 msgstr "최대 속도"
 
+msgid "Skew"
+msgstr "기울임"
+
+msgid "Scroll"
+msgstr "스크롤"
+
 msgid "Base Offset"
 msgstr "기본 오프셋"
+
+msgid "Base Scale"
+msgstr "기본 스케일"
+
+msgid "Limit Begin"
+msgstr "제한범위 시작"
+
+msgid "Limit End"
+msgstr "제한범위 끝"
+
+msgid "Ignore Camera Zoom"
+msgstr "카메라 줌 무시"
+
+msgid "Progress"
+msgstr "진행도"
+
+msgid "Progress Ratio"
+msgstr "진행도 비율"
 
 msgid "H Offset"
 msgstr "가로 오프셋"
@@ -2406,17 +4357,29 @@ msgstr "가로 오프셋"
 msgid "V Offset"
 msgstr "세로 오프셋"
 
+msgid "Rotates"
+msgstr "회전함"
+
+msgid "Cubic Interp"
+msgstr "입방형 보간"
+
 msgid "Physics Material Override"
 msgstr "물리 머티리얼 오버라이드"
 
 msgid "Inertia"
 msgstr "관성"
 
+msgid "Sleeping"
+msgstr "슬립 중"
+
 msgid "Can Sleep"
 msgstr "슬립 가능"
 
 msgid "Linear"
 msgstr "직선형"
+
+msgid "Torque"
+msgstr "토크"
 
 msgid "Max Angle"
 msgstr "최대 각도"
@@ -2439,29 +4402,188 @@ msgstr "업데이트"
 msgid "Editor Settings"
 msgstr "에디터 설정"
 
+msgid "Tile Set"
+msgstr "타일셋"
+
+msgid "Layers"
+msgstr "레이어"
+
 msgid "Bitmask"
 msgstr "비트 마스크"
+
+msgid "Enabling"
+msgstr "활성화함"
+
+msgid "Wind"
+msgstr "바람"
+
+msgid "Reverb Bus"
+msgstr "리버브 버스"
+
+msgid "Max dB"
+msgstr "최대 dB"
 
 msgid "Degrees"
 msgstr "각도"
 
+msgid "Cutoff Hz"
+msgstr "컷오프 Hz"
+
 msgid "dB"
 msgstr "dB"
+
+msgid "Doppler"
+msgstr "도플러 효과"
+
+msgid "Keep Aspect"
+msgstr "비율 유지"
+
+msgid "Cull Mask"
+msgstr "컬 마스크"
+
+msgid "Attributes"
+msgstr "속성"
+
+msgid "Doppler Tracking"
+msgstr "도플러 효과"
+
+msgid "Projection"
+msgstr "투상"
+
+msgid "Frustum Offset"
+msgstr "절두체 오프셋"
+
+msgid "Near"
+msgstr "근경"
+
+msgid "Far"
+msgstr "원경"
+
+msgid "Albedo"
+msgstr "알베도"
+
+msgid "Normal"
+msgstr "노멀"
+
+msgid "Emission"
+msgstr "방출"
+
+msgid "Parameters"
+msgstr "매개변수"
+
+msgid "Emission Energy"
+msgstr "방출 에너지"
 
 msgid "Modulate"
 msgstr "변조"
 
+msgid "Begin"
+msgstr "시작점"
+
+msgid "Visibility AABB"
+msgstr "가시성 AABB"
+
+msgid "X"
+msgstr "X"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Equilibrium Point"
+msgstr "평형점"
+
+msgid "ERP"
+msgstr "ERP"
+
+msgid "Pixel Size"
+msgstr "픽셀 크기"
+
 msgid "Flags"
 msgstr "플래그"
+
+msgid "Billboard"
+msgstr "빌보드"
+
+msgid "Shaded"
+msgstr "셰이딩 받음"
+
+msgid "Double Sided"
+msgstr "양면"
+
+msgid "No Depth Test"
+msgstr "깊이 테스트 없음"
+
+msgid "Fixed Size"
+msgstr "고정 크기"
+
+msgid "Alpha Cut"
+msgstr "알파 자르기"
+
+msgid "Alpha Scissor Threshold"
+msgstr "알파 가위 역치값"
+
+msgid "Alpha Hash Scale"
+msgstr "알파 해시 스케일"
+
+msgid "Alpha Antialiasing Mode"
+msgstr "알파 안티앨리어싱 모드"
+
+msgid "Alpha Antialiasing Edge"
+msgstr "알파 안티앨리어싱 윤곽선"
+
+msgid "Texture Filter"
+msgstr "텍스처 필터"
 
 msgid "Render Priority"
 msgstr "렌더 우선 순위"
 
+msgid "Outline Render Priority"
+msgstr "윤곽선 렌더 우선순위"
+
 msgid "Text"
 msgstr "텍스트"
 
+msgid "Outline Modulate"
+msgstr "윤곽선 조정"
+
+msgid "Font"
+msgstr "글꼴"
+
+msgid "Horizontal Alignment"
+msgstr "가로 정렬"
+
+msgid "Vertical Alignment"
+msgstr "세로 정렬"
+
 msgid "Uppercase"
 msgstr "대문자로"
+
+msgid "BiDi"
+msgstr "BiDi"
+
+msgid "Text Direction"
+msgstr "텍스트 방향"
+
+msgid "Intensity Lumens"
+msgstr "강도 루멘"
+
+msgid "Intensity Lux"
+msgstr "강도 럭스"
+
+msgid "Temperature"
+msgstr "색온도"
+
+msgid "Indirect Energy"
+msgstr "간접광 에너지"
+
+msgid "Volumetric Fog Energy"
+msgstr "볼류메트릭 안개 에너지"
+
+msgid "Opacity"
+msgstr "투명도"
 
 msgid "Blur"
 msgstr "흐림"
@@ -2472,14 +4594,53 @@ msgstr "품질"
 msgid "Use Denoiser"
 msgstr "노이즈 감소 사용"
 
+msgid "Visibility"
+msgstr "가시성"
+
+msgid "Visible"
+msgstr "볼 수 있음"
+
+msgid "Visibility Parent"
+msgstr "가시성 부모"
+
+msgid "Bake"
+msgstr "굽기"
+
+msgid "Rotation Mode"
+msgstr "회전 모드"
+
+msgid "Axis Lock"
+msgstr "축 잠금"
+
+msgid "Linear X"
+msgstr "선형 X"
+
+msgid "Linear Y"
+msgstr "선형 Y"
+
+msgid "Linear Z"
+msgstr "선형 Z"
+
+msgid "Angular X"
+msgstr "각 X"
+
+msgid "Angular Y"
+msgstr "각 Y"
+
+msgid "Angular Z"
+msgstr "각 Z"
+
 msgid "Enable Shadows"
 msgstr "그림자 켜기"
 
 msgid "Bones"
 msgstr "본"
 
+msgid "Interpolation"
+msgstr "보간"
+
 msgid "Target"
-msgstr "Target(대상)"
+msgstr "대상"
 
 msgid "Use Magnet"
 msgstr "자석 사용"
@@ -2532,11 +4693,17 @@ msgstr "무작위 지연"
 msgid "Request"
 msgstr "요청"
 
+msgid "Active"
+msgstr "활성"
+
 msgid "Reset"
 msgstr "되돌리기"
 
 msgid "Switch"
 msgstr "스위치"
+
+msgid "Advance"
+msgstr "진행"
 
 msgid "Condition"
 msgstr "조건"
@@ -2547,14 +4714,86 @@ msgstr "표현"
 msgid "Root Node"
 msgstr "루트 노드"
 
+msgid "Alignment"
+msgstr "정렬"
+
 msgid "Button Group"
 msgstr "버튼 그룹"
+
+msgid "Indentation"
+msgstr "들여쓰기"
+
+msgid "Theme Overrides"
+msgstr "테마 오버라이드"
+
+msgid "Constants"
+msgstr "제약"
+
+msgid "Font Sizes"
+msgstr "글꼴 크기"
+
+msgid "Styles"
+msgstr "스타일"
+
+msgid "Clip Contents"
+msgstr "내용물 자르기"
+
+msgid "Custom Minimum Size"
+msgstr "커스텀 최소 크기"
+
+msgid "Layout Direction"
+msgstr "레이아웃 방향"
+
+msgid "Layout Mode"
+msgstr "레이아웃 모드"
+
+msgid "Anchors Preset"
+msgstr "앵커 프리셋"
+
+msgid "Anchor Points"
+msgstr "앵커 지점"
+
+msgid "Anchor Offsets"
+msgstr "앵커 오프셋"
+
+msgid "Grow Direction"
+msgstr "자라날 방향"
+
+msgid "Pivot Offset"
+msgstr "회전축 오프셋"
+
+msgid "Container Sizing"
+msgstr "컨테이너 크기"
+
+msgid "Stretch Ratio"
+msgstr "늘림 비율"
 
 msgid "Localization"
 msgstr "현지화"
 
 msgid "Auto Translate"
-msgstr "자동 옮기기"
+msgstr "자동 번역"
+
+msgid "Localize Numeral System"
+msgstr "숫자 체계 현지화"
+
+msgid "Tooltip"
+msgstr "툴팁"
+
+msgid "Focus"
+msgstr "포커스"
+
+msgid "Neighbor Left"
+msgstr "왼쪽 이웃"
+
+msgid "Neighbor Top"
+msgstr "위쪽 이웃"
+
+msgid "Neighbor Right"
+msgstr "오른쪽 이웃"
+
+msgid "Neighbor Bottom"
+msgstr "아래쪽 이웃"
 
 msgid "Next"
 msgstr "다음"
@@ -2562,11 +4801,71 @@ msgstr "다음"
 msgid "Previous"
 msgstr "이전"
 
+msgid "Mouse"
+msgstr "마우스"
+
+msgid "Force Pass Scroll Events"
+msgstr "강제로 스크롤 이벤트 넘겨주기"
+
+msgid "Default Cursor Shape"
+msgstr "기본 커서 모양"
+
+msgid "Shortcut Context"
+msgstr "단축키 문맥"
+
+msgid "Type Variation"
+msgstr "타입 바리에이션"
+
+msgid "OK Button Text"
+msgstr "확인 버튼 텍스트"
+
+msgid "Dialog"
+msgstr "창"
+
+msgid "Hide on OK"
+msgstr "확인 시 숨기기"
+
+msgid "Close on Escape"
+msgstr "ESC 시 닫기"
+
+msgid "Autowrap"
+msgstr "자동 줄바꿈"
+
+msgid "Cancel Button Text"
+msgstr "취소 버튼 텍스트"
+
+msgid "Mode Overrides Title"
+msgstr "모드가 제목을 정함"
+
+msgid "Root Subfolder"
+msgstr "루트 서브폴더"
+
 msgid "Use Snap"
 msgstr "스냅 사용"
 
+msgid "UI"
+msgstr "UI"
+
+msgid "Selected"
+msgstr "선택됨"
+
+msgid "Comment"
+msgstr "주석"
+
+msgid "Overlay"
+msgstr "오버레이"
+
 msgid "Select Mode"
-msgstr "모드 선택"
+msgstr "선택 모드"
+
+msgid "Allow Reselect"
+msgstr "재선택 허용"
+
+msgid "Allow RMB Select"
+msgstr "우클릭 선택 허용"
+
+msgid "Allow Search"
+msgstr "검색 허용"
 
 msgid "Items"
 msgstr "항목"
@@ -2574,23 +4873,239 @@ msgstr "항목"
 msgid "Icon Mode"
 msgstr "아이콘 모드"
 
+msgid "Label Settings"
+msgstr "라벨 설정"
+
+msgid "Tab Stops"
+msgstr "탭 정지점"
+
+msgid "Displayed Text"
+msgstr "표시되는 텍스트"
+
+msgid "Lines Skipped"
+msgstr "건너뛴 줄"
+
+msgid "Max Lines Visible"
+msgstr "표시할 최대 줄 수"
+
+msgid "Visible Characters"
+msgstr "표시할 글자 수"
+
+msgid "Visible Characters Behavior"
+msgstr "표시할 글자 행동"
+
+msgid "Visible Ratio"
+msgstr "표시할 글자 비율"
+
+msgid "Placeholder Text"
+msgstr "플레이스홀더 텍스트"
+
+msgid "Max Length"
+msgstr "최대 길이"
+
+msgid "Secret"
+msgstr "비밀번호"
+
+msgid "Secret Character"
+msgstr "비밀번호 문자"
+
+msgid "Expand to Text Length"
+msgstr "텍스트 길이에 따라 늘어남"
+
+msgid "Context Menu Enabled"
+msgstr "우클릭 메뉴 허용"
+
+msgid "Virtual Keyboard Enabled"
+msgstr "가상 키보드 허용"
+
+msgid "Virtual Keyboard Type"
+msgstr "가상 키보드 타입"
+
+msgid "Clear Button Enabled"
+msgstr "전체 삭제 버튼 허용"
+
+msgid "Shortcut Keys Enabled"
+msgstr "단축키 허용"
+
+msgid "Middle Mouse Paste Enabled"
+msgstr "휠 클릭시 붙여넣기 허용"
+
+msgid "Selecting Enabled"
+msgstr "텍스트 선택 허용"
+
+msgid "Deselect on Focus Loss Enabled"
+msgstr "포커스 잃을 시 텍스트 선택 해제"
+
+msgid "Right Icon"
+msgstr "우측 아이콘"
+
+msgid "Draw Control Chars"
+msgstr "제어 문자 표시"
+
+msgid "Select All on Focus"
+msgstr "포커스를 얻을 때 전체 선택"
+
+msgid "Blink"
+msgstr "깜빡이기"
+
+msgid "Blink Interval"
+msgstr "깜빡임 간격"
+
+msgid "Column"
+msgstr "열"
+
+msgid "Force Displayed"
+msgstr "항상 보이기"
+
+msgid "Mid Grapheme"
+msgstr "조합형 문자 단위 편집"
+
+msgid "Underline"
+msgstr "밑줄"
+
+msgid "URI"
+msgstr "URI"
+
+msgid "Start Index"
+msgstr "시작 인덱스"
+
 msgid "Step"
 msgstr "단계"
 
 msgid "Syntax Highlighter"
 msgstr "구문 강조"
 
+msgid "Smooth"
+msgstr "부드럽게"
+
+msgid "Past End of File"
+msgstr "파일의 끝을 넘어서"
+
+msgid "Fit Content Height"
+msgstr "내용물 높이에 맞추기"
+
+msgid "Draw"
+msgstr "그리기"
+
+msgid "Draw When Editable Disabled"
+msgstr "편집 불가능할 때도 그리기"
+
+msgid "Hover"
+msgstr "호버"
+
+msgid "Focused"
+msgstr "포커스"
+
+msgid "Tint"
+msgstr "색조"
+
+msgid "Paused"
+msgstr "일시정지"
+
+msgid "Expand"
+msgstr "확장"
+
+msgid "Self Modulate"
+msgstr "자신 변조"
+
+msgid "Show Behind Parent"
+msgstr "부모 뒤에 그리기"
+
+msgid "Clip Children"
+msgstr "자식 자르기"
+
+msgid "Light Mask"
+msgstr "광원 마스크"
+
+msgid "Visibility Layer"
+msgstr "가시성 레이어"
+
+msgid "Ordering"
+msgstr "순서"
+
 msgid "Z Index"
 msgstr "Z 인덱스"
 
+msgid "Z as Relative"
+msgstr "Z를 상대값으로"
+
+msgid "Y Sort Enabled"
+msgstr "Y 정렬 사용"
+
 msgid "Repeat"
 msgstr "반복"
+
+msgid "Use Parent Material"
+msgstr "부모 머티리얼 사용"
+
+msgid "NormalMap"
+msgstr "노멀 맵"
+
+msgid "Follow Viewport"
+msgstr "뷰포트 따라가기"
+
+msgid "Download File"
+msgstr "다운로드 파일"
+
+msgid "Download Chunk Size"
+msgstr "다운로드 청크 크기"
+
+msgid "Accept Gzip"
+msgstr "Gzip 허용"
+
+msgid "Body Size Limit"
+msgstr "본문 크기 제한"
+
+msgid "Max Redirects"
+msgstr "최대 리다이렉트 수"
+
+msgid "Timeout"
+msgstr "최대 대기 시간"
 
 msgid "Transfer Mode"
 msgstr "전송 모드"
 
 msgid "Transfer Channel"
 msgstr "전송 채널"
+
+msgid "Node Name Num Separator"
+msgstr "노드 이름 숫자 구분자"
+
+msgid "Node Name Casing"
+msgstr "노드 이름 대소문자"
+
+msgid "Physics Priority"
+msgstr "물리 우선순위"
+
+msgid "Thread Group"
+msgstr "스레드 그룹"
+
+msgid "Group"
+msgstr "그룹"
+
+msgid "Group Order"
+msgstr "그룹 순서"
+
+msgid "Messages"
+msgstr "메시지"
+
+msgid "Editor Description"
+msgstr "에디터상 설명"
+
+msgid "Time Left"
+msgstr "남은 시간"
+
+msgid "MSAA 2D"
+msgstr "MSAA 2D"
+
+msgid "MSAA 3D"
+msgstr "MSAA 3D"
+
+msgid "VRS"
+msgstr "VRS"
+
+msgid "SDF"
+msgstr "SDF"
 
 msgid "Audio Listener"
 msgstr "오디오 리스너"
@@ -2637,14 +5152,59 @@ msgstr "메뉴 강조"
 msgid "Node"
 msgstr "노드"
 
+msgid "Sky"
+msgstr "스카이"
+
 msgid "Source"
 msgstr "소스"
+
+msgid "Tonemap"
+msgstr "톤맵"
+
+msgid "SSR"
+msgstr "SSR"
+
+msgid "SSAO"
+msgstr "SSAO"
+
+msgid "SSIL"
+msgstr "SSIL"
+
+msgid "SDFGI"
+msgstr "SDFGI"
+
+msgid "Glow"
+msgstr "빛번짐"
+
+msgid "1"
+msgstr "1"
+
+msgid "2"
+msgstr "2"
+
+msgid "3"
+msgstr "3"
+
+msgid "4"
+msgstr "4"
+
+msgid "5"
+msgstr "5"
+
+msgid "6"
+msgstr "6"
+
+msgid "7"
+msgstr "7"
 
 msgid "Mix"
 msgstr "믹스"
 
 msgid "Bloom"
 msgstr "블룸"
+
+msgid "Fog"
+msgstr "포그"
 
 msgid "Features"
 msgstr "기능"
@@ -2661,17 +5221,38 @@ msgstr "연산자"
 msgid "Subsurface Scattering"
 msgstr "서브서피스 산란"
 
+msgid "UV1"
+msgstr "UV1"
+
+msgid "UV2"
+msgstr "UV2"
+
+msgid "H Frames"
+msgstr "가로 프레임 수"
+
+msgid "V Frames"
+msgstr "세로 프레임 수"
+
+msgid "MSDF"
+msgstr "MSDF"
+
 msgid "Item"
 msgstr "항목"
 
 msgid "Preview"
 msgstr "미리보기"
 
+msgid "A"
+msgstr "A"
+
 msgid "B"
 msgstr "B"
 
 msgid "Bone"
 msgstr "뼈"
+
+msgid "Ground Color"
+msgstr "땅 색상"
 
 msgid "Blend"
 msgstr "혼합"
@@ -2688,17 +5269,266 @@ msgstr "오른쪽 아래"
 msgid "Bottom Left"
 msgstr "왼쪽 아래"
 
+msgid "Atlas"
+msgstr "아틀라스"
+
+msgid "Terrains"
+msgstr "지형"
+
+msgid "Custom Data"
+msgstr "커스텀 데이터"
+
 msgid "Scene"
 msgstr "씬"
 
 msgid "Transpose"
 msgstr "행렬 맞바꾸기"
 
+msgid "Probability"
+msgstr "확률"
+
 msgid "Constant"
 msgstr "상수"
 
 msgid "Function"
 msgstr "함수"
+
+msgid "Degrees Mode"
+msgstr "각도 모드"
+
+msgid "Custom"
+msgstr "커스텀"
+
+msgid "Streams"
+msgstr "스트림"
+
+msgid "Playback Mode"
+msgstr "재생 모드"
+
+msgid "Random Pitch"
+msgstr "무작위 피치"
+
+msgid "Random Volume Offset dB"
+msgstr "무작위 볼륨 오프셋 dB"
+
+msgid "Buffer Length"
+msgstr "버퍼 길이"
+
+msgid "Voice Count"
+msgstr "보이스 개수"
+
+msgid "Voice"
+msgstr "보이스"
+
+msgid "Delay (ms)"
+msgstr "딜레이 (ms)"
+
+msgid "Rate Hz"
+msgstr "빈도 Hz"
+
+msgid "Depth (ms)"
+msgstr "깊이 (ms)"
+
+msgid "Level dB"
+msgstr "레벨 dB"
+
+msgid "Pan"
+msgstr "패닝"
+
+msgid "Attack (µs)"
+msgstr "어택 (µs)"
+
+msgid "Release (ms)"
+msgstr "릴리즈 (ms)"
+
+msgid "Sidechain"
+msgstr "사이드체인"
+
+msgid "Tap 1"
+msgstr "탭 1"
+
+msgid "Tap 2"
+msgstr "탭 2"
+
+msgid "Feedback"
+msgstr "피드백"
+
+msgid "Low-pass"
+msgstr "로우패스"
+
+msgid "Pre Gain"
+msgstr "프리 게인"
+
+msgid "Drive"
+msgstr "드라이브"
+
+msgid "Post Gain"
+msgstr "포스트 게인"
+
+msgid "Resonance"
+msgstr "레조넌스"
+
+msgid "Ceiling dB"
+msgstr "천장값 dB"
+
+msgid "Threshold dB"
+msgstr "역치값 dB"
+
+msgid "Soft Clip dB"
+msgstr "소프트 클립 dB"
+
+msgid "Soft Clip Ratio"
+msgstr "소프트 클립 비율"
+
+msgid "Range Min Hz"
+msgstr "범위 최소 Hz"
+
+msgid "Range Max Hz"
+msgstr "범위 최대 Hz"
+
+msgid "FFT Size"
+msgstr "FFT 크기"
+
+msgid "Predelay"
+msgstr "선 딜레이"
+
+msgid "Msec"
+msgstr "밀리초"
+
+msgid "Room Size"
+msgstr "공간 크기"
+
+msgid "High-pass"
+msgstr "하이패스"
+
+msgid "Surround"
+msgstr "서라운드"
+
+msgid "Enable Input"
+msgstr "입력 활성화"
+
+msgid "Output Latency"
+msgstr "출력 레이턴시"
+
+msgid "Channel Disable Threshold dB"
+msgstr "채널 비활성화 역치값 dB"
+
+msgid "Channel Disable Time"
+msgstr "채널 비활성화 시간"
+
+msgid "Video"
+msgstr "비디오"
+
+msgid "Video Delay Compensation (ms)"
+msgstr "비디오 딜레이 보정 (ms)"
+
+msgid "Bus Count"
+msgstr "버스 개수"
+
+msgid "Output Device"
+msgstr "출력 장치"
+
+msgid "Input Device"
+msgstr "입력 장치"
+
+msgid "Playback Speed Scale"
+msgstr "재생 속도 스케일"
+
+msgid "Feed"
+msgstr "피드"
+
+msgid "Is Active"
+msgstr "활성화됨"
+
+msgid "Movie Writer"
+msgstr "영상 제작기"
+
+msgid "Speaker Mode"
+msgstr "스피커 모드"
+
+msgid "MJPEG Quality"
+msgstr "MJPEG 품질"
+
+msgid "Movie File"
+msgstr "영상 파일"
+
+msgid "Disable V-Sync"
+msgstr "수직동기화 비활성화"
+
+msgid "Inverse Mass"
+msgstr "질량의 역수"
+
+msgid "Inverse Inertia"
+msgstr "관성의 역수"
+
+msgid "Total Angular Damp"
+msgstr "총 각도 댐핑"
+
+msgid "Total Linear Damp"
+msgstr "총 선형 댐핑"
+
+msgid "Total Gravity"
+msgstr "총 중력"
+
+msgid "Center of Mass Local"
+msgstr "로컬 질량 중심점"
+
+msgid "Exclude"
+msgstr "제외"
+
+msgid "Collide With Bodies"
+msgstr "물체와 충돌"
+
+msgid "Collide With Areas"
+msgstr "구역과 충돌"
+
+msgid "Canvas Instance ID"
+msgstr "캔버스 인스턴스 ID"
+
+msgid "Shape RID"
+msgstr "모양 RID"
+
+msgid "Default Gravity"
+msgstr "기본 중력"
+
+msgid "Default Gravity Vector"
+msgstr "기본 중력 벡터"
+
+msgid "Default Linear Damp"
+msgstr "기본 선형 댐핑"
+
+msgid "Default Angular Damp"
+msgstr "기본 각도 댐핑"
+
+msgid "Sleep Threshold Linear"
+msgstr "선형 슬립 역치값"
+
+msgid "Sleep Threshold Angular"
+msgstr "각도 슬립 역치값"
+
+msgid "Time Before Sleep"
+msgstr "슬립까지 기다릴 시간"
+
+msgid "Solver"
+msgstr "솔버"
+
+msgid "Solver Iterations"
+msgstr "솔버 반복 횟수"
+
+msgid "Contact Recycle Radius"
+msgstr "접촉 재활용 범위"
+
+msgid "Contact Max Separation"
+msgstr "접촉 최대 분리"
+
+msgid "Physics Engine"
+msgstr "물리 엔진"
+
+msgid "Inverse Inertia Tensor"
+msgstr "역 관성 텐서"
+
+msgid "Max Collisions"
+msgstr "최대 충돌 수"
 
 msgid "Vertex"
 msgstr "꼭짓점"
@@ -2709,6 +5539,9 @@ msgstr "프래그먼트"
 msgid "Vertex Lighting"
 msgstr "꼭짓점 조명"
 
+msgid "Shadow Atlas"
+msgstr "그림자 아틀라스"
+
 msgid "Shader Compiler"
 msgstr "셰이더 컴파일러"
 
@@ -2718,11 +5551,17 @@ msgstr "셰이더 캐시"
 msgid "Reflections"
 msgstr "반사"
 
+msgid "GI"
+msgstr "GI"
+
 msgid "Overrides"
 msgstr "오버라이드"
 
 msgid "Global Shader Variables"
 msgstr "전역 셰이더 변수"
+
+msgid "OpenGL"
+msgstr "OpenGL"
 
 msgid "Shaders"
 msgstr "셰이더"

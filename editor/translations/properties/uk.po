@@ -28,13 +28,14 @@
 # kirill7606 <k7606irill@gmail.com>, 2022.
 # Alex <anna.loban@yahoo.com>, 2023.
 # Maksym <maksym@mowemax.com>, 2023.
+# Dan <jonweblin2205@protonmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-20 03:46+0000\n"
-"Last-Translator: Мирослав <hlopukmyroslav@gmail.com>\n"
+"PO-Revision-Date: 2023-06-30 21:28+0000\n"
+"Last-Translator: Dan <jonweblin2205@protonmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
 "Language: uk\n"
@@ -43,10 +44,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 msgid "Application"
-msgstr "Програма"
+msgstr "Застосунок"
 
 msgid "Config"
 msgstr "Налаштування"
@@ -654,18 +655,6 @@ msgstr "Час очікування запиту минув"
 msgid "Sync Breakpoints"
 msgstr "Точки розриву синхронізації"
 
-msgid "Debugger"
-msgstr "Засіб діагностики"
-
-msgid "Auto Switch to Remote Scene Tree"
-msgstr "Автоматичний перехід до віддаленого Дерева Сцен"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "Інтервал оновлення ієрархії віддаленої сцени"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "Інтервал оновлення віддаленого інспектування"
-
 msgid "FileSystem"
 msgstr "Файлова система"
 
@@ -677,9 +666,6 @@ msgstr "Порт"
 
 msgid "Password"
 msgstr "Пароль"
-
-msgid "Profiler Frame Max Functions"
-msgstr "Перейменувати функцію"
 
 msgid "Default Feature Profile"
 msgstr "Типовий профіль можливостей"
@@ -1445,8 +1431,23 @@ msgstr "Віддалений вузол"
 msgid "Editor TLS Certificates"
 msgstr "Сертифікати TLS редактора"
 
+msgid "Debugger"
+msgstr "Засіб діагностики"
+
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "Автоматичний перехід до віддаленого Дерева Сцен"
+
 msgid "Profiler Frame History Size"
 msgstr "Розмір журналу панелі засобу профілювання"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Перейменувати функцію"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Інтервал оновлення ієрархії віддаленої сцени"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Інтервал оновлення віддаленого інспектування"
 
 msgid "HTTP Proxy"
 msgstr "HTTP-проксі"
@@ -1579,9 +1580,6 @@ msgstr "Нетиповий шаблон"
 
 msgid "Release"
 msgstr "Випуск"
-
-msgid "Export Console Script"
-msgstr "Експортувати скрипт консолі"
 
 msgid "Binary Format"
 msgstr "Двійковий формат"

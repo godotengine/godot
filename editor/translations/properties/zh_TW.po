@@ -18,7 +18,7 @@
 # leela <53352@protonmail.com>, 2019.
 # Kenneth Lo <closer.tw@gmail.com>, 2019.
 # SIYU FU <1002492607@qq.com>, 2019.
-# 鄭惟中 <biglionlion06@gmail.com>, 2020.
+# 鄭惟中 <biglionlion06@gmail.com>, 2020, 2023.
 # Alexander Wang <zxcvb22217@gmail.com>, 2020.
 # binotaliu <binota@protonmail.ch>, 2020.
 # Allen H. <w84miracle@gmail.com>, 2020.
@@ -44,8 +44,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-31 00:59+0000\n"
-"Last-Translator: leo <leowong1220@gmail.com>\n"
+"PO-Revision-Date: 2023-07-01 13:08+0000\n"
+"Last-Translator: 鄭惟中 <biglionlion06@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -53,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 msgid "Application"
 msgstr "應用"
@@ -220,6 +220,9 @@ msgstr "使用累積輸入"
 msgid "Input Devices"
 msgstr "輸入裝置"
 
+msgid "Compatibility"
+msgstr "相容"
+
 msgid "Device"
 msgstr "裝置"
 
@@ -347,7 +350,7 @@ msgid "Region"
 msgstr "區域"
 
 msgid "Offset"
-msgstr "偏移"
+msgstr "偏移量"
 
 msgid "Cell Size"
 msgstr "單元格大小"
@@ -427,15 +430,6 @@ msgstr "緩入緩出"
 msgid "Remote Port"
 msgstr "遠端阜"
 
-msgid "Debugger"
-msgstr "除錯工具"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "遠端場景樹重新整理間隔"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "遠端檢查重新整理間隔"
-
 msgid "FileSystem"
 msgstr "檔案系統"
 
@@ -447,9 +441,6 @@ msgstr "連接埠"
 
 msgid "Password"
 msgstr "密碼"
-
-msgid "Profiler Frame Max Functions"
-msgstr "分析工具影格最大函式數"
 
 msgid "Default Feature Profile"
 msgstr "預設功能設定檔"
@@ -991,6 +982,9 @@ msgstr "洋蔥層先前顏色"
 msgid "Onion Layers Future Color"
 msgstr "洋蔥層未來顏色"
 
+msgid "Shader Editor"
+msgstr "著色器編輯器"
+
 msgid "Visual Editors"
 msgstr "視覺化編輯器"
 
@@ -1024,8 +1018,20 @@ msgstr "字體大小"
 msgid "Remote Host"
 msgstr "遠端主機"
 
+msgid "Debugger"
+msgstr "除錯工具"
+
 msgid "Profiler Frame History Size"
 msgstr "分析工具影格歷史大小"
+
+msgid "Profiler Frame Max Functions"
+msgstr "分析工具影格最大函式數"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "遠端場景樹重新整理間隔"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "遠端檢查重新整理間隔"
 
 msgid "HTTP Proxy"
 msgstr "HTTP 代理程式"
@@ -1241,10 +1247,10 @@ msgid "Slices"
 msgstr "切片"
 
 msgid "Horizontal"
-msgstr "水平"
+msgstr "水平方向"
 
 msgid "Vertical"
-msgstr "垂直"
+msgstr "垂直方向"
 
 msgid "Layout"
 msgstr "配置；畫面佈局"
@@ -1472,7 +1478,7 @@ msgid "Texture"
 msgstr "紋理貼圖"
 
 msgid "Separation"
-msgstr "間距"
+msgstr "分隔方向"
 
 msgid "Speed"
 msgstr "速度"
@@ -1557,6 +1563,9 @@ msgstr "iOS"
 
 msgid "Hide Home Indicator"
 msgstr "隱藏 Home 橫條"
+
+msgid "XR"
+msgstr "XR"
 
 msgid "Boot Splash"
 msgstr "啟動畫面"
@@ -2191,6 +2200,9 @@ msgstr "發射"
 msgid "Time"
 msgstr "時間"
 
+msgid "One Shot"
+msgstr "一次性"
+
 msgid "Randomness"
 msgstr "隨機性"
 
@@ -2208,6 +2220,9 @@ msgstr "色相變化"
 
 msgid "Variation Curve"
 msgstr "變化曲線"
+
+msgid "Fill"
+msgstr "填滿"
 
 msgid "End Cap Mode"
 msgstr "尾端模式"
@@ -2413,11 +2428,20 @@ msgstr "樹根節點"
 msgid "Button Group"
 msgstr "按鍵分組"
 
+msgid "Indentation"
+msgstr "縮 排"
+
+msgid "Font Sizes"
+msgstr "字體大小s"
+
 msgid "Pivot Offset"
 msgstr "樞紐偏移量"
 
 msgid "Localization"
 msgstr "在地化"
+
+msgid "Focus"
+msgstr "焦點"
 
 msgid "Next"
 msgstr "下一頁"
@@ -2488,6 +2512,9 @@ msgstr "填充角度"
 msgid "Hide Root"
 msgstr "隱藏根節點"
 
+msgid "Expand"
+msgstr "展開"
+
 msgid "Z Index"
 msgstr "Z 索引"
 
@@ -2520,6 +2547,12 @@ msgstr "最小尺寸"
 
 msgid "Max Size"
 msgstr "最大大小"
+
+msgid "2D Physics"
+msgstr "2D物理"
+
+msgid "3D Physics"
+msgstr "3D物理"
 
 msgid "Format"
 msgstr "格式"
@@ -2602,11 +2635,23 @@ msgstr "節點"
 msgid "Source"
 msgstr "來源"
 
+msgid "Tonemap"
+msgstr "色調圖"
+
 msgid "Fade In"
 msgstr "淡入"
 
 msgid "Fade Out"
 msgstr "淡出"
+
+msgid "SSAO"
+msgstr "SSAO(螢幕空間環境光遮蔽)"
+
+msgid "SSIL"
+msgstr "SSIL(螢幕空間間接照明)"
+
+msgid "Glow"
+msgstr "發光"
 
 msgid "Mix"
 msgstr "混合 (Mix)"
@@ -2683,6 +2728,9 @@ msgstr "光澤大小"
 msgid "Horizon Color"
 msgstr "地平線顏色"
 
+msgid "Ground Color"
+msgstr "地面顏色"
+
 msgid "Blend"
 msgstr "混合 (Blend)"
 
@@ -2715,6 +2763,9 @@ msgstr "函式"
 
 msgid "Plane"
 msgstr "平面"
+
+msgid "Custom"
+msgstr "自訂"
 
 msgid "Random Pitch"
 msgstr "隨機音高"
@@ -2791,14 +2842,23 @@ msgstr "VRAM壓縮"
 msgid "Force PNG"
 msgstr "強制 PNG"
 
+msgid "Shadow Atlas"
+msgstr "陰影合集"
+
 msgid "Reflections"
 msgstr "反射"
 
 msgid "Texture Array Reflections"
 msgstr "紋理貼圖陣列反射"
 
+msgid "GI"
+msgstr "GI"
+
 msgid "Overrides"
 msgstr "複寫"
+
+msgid "OpenGL"
+msgstr "OpenGL(開放圖形庫)"
 
 msgid "Shaders"
 msgstr "著色器"

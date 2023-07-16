@@ -51,7 +51,11 @@ void initialize_minimp3_module(ModuleInitializationLevel p_level) {
 		mp3_import.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(mp3_import);
 	}
+
+	// Required to document import options in the class reference.
+	GDREGISTER_CLASS(ResourceImporterMP3);
 #endif
+
 	GDREGISTER_CLASS(AudioStreamMP3);
 }
 

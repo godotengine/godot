@@ -37,6 +37,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
+#include "scene/resources/image_texture.h"
 
 #include "modules/modules_enabled.gen.h" // For mono and svg.
 #ifdef MODULE_SVG_ENABLED
@@ -674,11 +675,10 @@ EditorExportPlatformWeb::EditorExportPlatformWeb() {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG img_loader;
-		img_loader.create_image_from_string(img, _web_logo_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _web_logo_svg, EDSCALE, upsample, false);
 		logo = ImageTexture::create_from_image(img);
 
-		img_loader.create_image_from_string(img, _web_run_icon_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _web_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
 #endif
 

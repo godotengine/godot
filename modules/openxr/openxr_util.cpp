@@ -32,6 +32,8 @@
 
 #include <openxr/openxr_reflection.h>
 
+#include <math.h>
+
 #define XR_ENUM_CASE_STR(name, val) \
 	case name:                      \
 		return #name;
@@ -74,4 +76,90 @@ String OpenXRUtil::make_xr_version_string(XrVersion p_version) {
 	version += String::num_int64(XR_VERSION_PATCH(p_version));
 
 	return version;
+}
+
+// Copied from OpenXR xr_linear.h private header, so we can still link against
+// system-provided packages without relying on our `thirdparty` code.
+
+// Copyright (c) 2017 The Khronos Group Inc.
+// Copyright (c) 2016 Oculus VR, LLC.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+// Creates a projection matrix based on the specified dimensions.
+// The projection matrix transforms -Z=forward, +Y=up, +X=right to the appropriate clip space for the graphics API.
+// The far plane is placed at infinity if farZ <= nearZ.
+// An infinite projection matrix is preferred for rasterization because, except for
+// things *right* up against the near plane, it always provides better precision:
+//              "Tightening the Precision of Perspective Rendering"
+//              Paul Upchurch, Mathieu Desbrun
+//              Journal of Graphics Tools, Volume 16, Issue 1, 2012
+void OpenXRUtil::XrMatrix4x4f_CreateProjection(XrMatrix4x4f *result, GraphicsAPI graphicsApi, const float tanAngleLeft,
+		const float tanAngleRight, const float tanAngleUp, float const tanAngleDown,
+		const float nearZ, const float farZ) {
+	const float tanAngleWidth = tanAngleRight - tanAngleLeft;
+
+	// Set to tanAngleDown - tanAngleUp for a clip space with positive Y down (Vulkan).
+	// Set to tanAngleUp - tanAngleDown for a clip space with positive Y up (OpenGL / D3D / Metal).
+	const float tanAngleHeight = graphicsApi == GRAPHICS_VULKAN ? (tanAngleDown - tanAngleUp) : (tanAngleUp - tanAngleDown);
+
+	// Set to nearZ for a [-1,1] Z clip space (OpenGL / OpenGL ES).
+	// Set to zero for a [0,1] Z clip space (Vulkan / D3D / Metal).
+	const float offsetZ = (graphicsApi == GRAPHICS_OPENGL || graphicsApi == GRAPHICS_OPENGL_ES) ? nearZ : 0;
+
+	if (farZ <= nearZ) {
+		// place the far plane at infinity
+		result->m[0] = 2.0f / tanAngleWidth;
+		result->m[4] = 0.0f;
+		result->m[8] = (tanAngleRight + tanAngleLeft) / tanAngleWidth;
+		result->m[12] = 0.0f;
+
+		result->m[1] = 0.0f;
+		result->m[5] = 2.0f / tanAngleHeight;
+		result->m[9] = (tanAngleUp + tanAngleDown) / tanAngleHeight;
+		result->m[13] = 0.0f;
+
+		result->m[2] = 0.0f;
+		result->m[6] = 0.0f;
+		result->m[10] = -1.0f;
+		result->m[14] = -(nearZ + offsetZ);
+
+		result->m[3] = 0.0f;
+		result->m[7] = 0.0f;
+		result->m[11] = -1.0f;
+		result->m[15] = 0.0f;
+	} else {
+		// normal projection
+		result->m[0] = 2.0f / tanAngleWidth;
+		result->m[4] = 0.0f;
+		result->m[8] = (tanAngleRight + tanAngleLeft) / tanAngleWidth;
+		result->m[12] = 0.0f;
+
+		result->m[1] = 0.0f;
+		result->m[5] = 2.0f / tanAngleHeight;
+		result->m[9] = (tanAngleUp + tanAngleDown) / tanAngleHeight;
+		result->m[13] = 0.0f;
+
+		result->m[2] = 0.0f;
+		result->m[6] = 0.0f;
+		result->m[10] = -(farZ + offsetZ) / (farZ - nearZ);
+		result->m[14] = -(farZ * (nearZ + offsetZ)) / (farZ - nearZ);
+
+		result->m[3] = 0.0f;
+		result->m[7] = 0.0f;
+		result->m[11] = -1.0f;
+		result->m[15] = 0.0f;
+	}
+}
+
+// Creates a projection matrix based on the specified FOV.
+void OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(XrMatrix4x4f *result, GraphicsAPI graphicsApi, const XrFovf fov,
+		const float nearZ, const float farZ) {
+	const float tanLeft = tanf(fov.angleLeft);
+	const float tanRight = tanf(fov.angleRight);
+
+	const float tanDown = tanf(fov.angleDown);
+	const float tanUp = tanf(fov.angleUp);
+
+	XrMatrix4x4f_CreateProjection(result, graphicsApi, tanLeft, tanRight, tanUp, tanDown, nearZ, farZ);
 }

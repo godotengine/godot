@@ -143,7 +143,7 @@
 # Kaycke <kaycke@ymail.com>, 2022.
 # Ednaldo Pereira Confia <filat51823@storypo.com>, 2022.
 # Mauricio <mauricio.fidalgo1@gmail.com>, 2022.
-# Felipe Kinoshita <kinofhek@gmail.com>, 2022.
+# Felipe Kinoshita <kinofhek@gmail.com>, 2022, 2023.
 # TLAliceDev <calicedev@protonmail.com>, 2022.
 # Mr.Albino <ricmorsoleto@gmail.com>, 2022.
 # Jaide Alonso Ambrosio <jaide.sp@gmail.com>, 2022.
@@ -165,13 +165,14 @@
 # "Márcio A. M. Reyes" <reyes.marcio@gmail.com>, 2023.
 # Fernando Lopes <fefehex12@gmail.com>, 2023.
 # Daniel Mucciolo <danielviannapsi@gmail.com>, 2023.
+# Guilherme <gui.rugai.freire@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-04-17 06:03+0000\n"
-"Last-Translator: Elizandro Baldin <ejbaldin@gmail.com>\n"
+"PO-Revision-Date: 2023-06-14 03:00+0000\n"
+"Last-Translator: Felipe Kinoshita <kinofhek@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -179,10 +180,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
-msgstr "Desativar"
+msgstr "Restaurar"
 
 msgid "Physical"
 msgstr "Físico"
@@ -327,6 +328,9 @@ msgstr "Botão do Joypad %d"
 
 msgid "Pressure:"
 msgstr "Toque:"
+
+msgid "canceled"
+msgstr "Cancelado"
 
 msgid "touched"
 msgstr "tocado"
@@ -1203,6 +1207,25 @@ msgstr "Razão de Escala:"
 msgid "Select Transition and Easing"
 msgstr "Selecione a Transição e Suavização"
 
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Seno"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Elástico"
+
+msgctxt "Transition Type"
+msgid "Cubic"
+msgstr "Cúbica"
+
+msgctxt "Transition Type"
+msgid "Back"
+msgstr "Voltar"
+
+msgid "Transition Type:"
+msgstr "Tipo de Transição:"
+
 msgid "Animation Baker"
 msgstr "Gerar Animação"
 
@@ -1492,6 +1515,15 @@ msgstr ""
 msgid "Toggle Visibility"
 msgstr "Alternar Visibilidade"
 
+msgid "Scanning for local changes"
+msgstr "Procurando por mudanças locais"
+
+msgid "Sending list of changed files:"
+msgstr "Enviando lista de arquivos alterados:"
+
+msgid "Sending file:"
+msgstr "Enviando arquivo:"
+
 msgid "ms"
 msgstr "ms"
 
@@ -1752,6 +1784,11 @@ msgstr "Editor de Dependências"
 msgid "Search Replacement Resource:"
 msgstr "Buscar Recurso para Substituição:"
 
+msgid "Open Scene"
+msgid_plural "Open Scenes"
+msgstr[0] "Abrir Cena"
+msgstr[1] "Abrir Cenas"
+
 msgid "Open"
 msgstr "Abrir"
 
@@ -1822,8 +1859,29 @@ msgstr "Vínculos"
 msgid "Resources Without Explicit Ownership:"
 msgstr "Recursos Sem Vínculo Explícito:"
 
+msgid "Folder name cannot be empty."
+msgstr "Nome da pasta não poder ser vazio."
+
+msgid "Folder name contains invalid characters."
+msgstr "O nome da pasta contém caracteres inválidos."
+
+msgid "File with that name already exists."
+msgstr "Um arquivo com esse nome já existe."
+
+msgid "Folder with that name already exists."
+msgstr "Uma pasta com esse nome já existe."
+
+msgid "Using slashes in folder names will create subfolders recursively."
+msgstr "Usar barras em nome de pastas irá criar subpastas recursivamente."
+
+msgid "Folder name is valid."
+msgstr "O nome da pasta é válido."
+
 msgid "Could not create folder."
 msgstr "Não foi possível criar a pasta."
+
+msgid "Create new folder in %s:"
+msgstr "Criar nova pasta em %s:"
 
 msgid "Create Folder"
 msgstr "Criar Pasta"
@@ -2765,6 +2823,11 @@ msgstr ""
 msgid "Open Documentation"
 msgstr "Abrir Documentação"
 
+msgid "(%d change)"
+msgid_plural "(%d changes)"
+msgstr[0] "(%d alteração)"
+msgstr[1] "(%d alterações)"
+
 msgid "Add element to property array with prefix %s."
 msgstr "Adicionar o elemento para a matriz de propriedades com prefixo %s."
 
@@ -3557,6 +3620,14 @@ msgstr "Perguntas & Respostas"
 
 msgid "Report a Bug"
 msgstr "Reportar um Bug"
+
+msgid "Copy System Info"
+msgstr "Copiar Informações do Sistema"
+
+msgid "Copies the system info as a single-line text into the clipboard."
+msgstr ""
+"Copia as informações do sistema como um texto de linha única para a área de "
+"transferência."
 
 msgid "Suggest a Feature"
 msgstr "Sugira uma Funcionalidade"
@@ -4356,6 +4427,9 @@ msgstr ""
 "Todas as predefinições devem ter um caminho de exportação definido para que "
 "Exportar Tudo funcione."
 
+msgid "Resources to exclude:"
+msgstr "Recursos para excluir:"
+
 msgid "Resources to export:"
 msgstr "Recursos para exportar:"
 
@@ -4629,6 +4703,12 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "Um arquivo ou pasta com esse nome já existe."
 
+msgid "Do you wish to overwrite them or rename the copied files?"
+msgstr "Você deseja sobrescreve-los ou renomear os arquivos copiados?"
+
+msgid "Do you wish to overwrite them or rename the moved files?"
+msgstr "Você deseja sobrescreve-los ou renomear os arquivos movidos?"
+
 msgid "Duplicating file:"
 msgstr "Duplicando arquivo:"
 
@@ -4667,6 +4747,12 @@ msgstr "Recurso..."
 
 msgid "TextFile..."
 msgstr "Arquivo de Texto..."
+
+msgid "Expand Folder"
+msgstr "Expandir Pasta"
+
+msgid "Expand Hierarchy"
+msgstr "Expandir Hierarquia"
 
 msgid "Add to Favorites"
 msgstr "Adicionar aos Favoritos"
@@ -4752,6 +4838,9 @@ msgstr ""
 
 msgid "Overwrite"
 msgstr "Sobrescrever"
+
+msgid "Keep Both"
+msgstr "Manter Ambos"
 
 msgid "Create Script"
 msgstr "Criar Script"
@@ -4849,6 +4938,9 @@ msgstr "Não foi possível criar a pasta. Já existe uma com esse nome."
 
 msgid "Choose a Directory"
 msgstr "Escolha um Diretório"
+
+msgid "Copy File(s)"
+msgstr "Copiar Arquivo(s)"
 
 msgid "Network"
 msgstr "Rede"
@@ -5139,9 +5231,6 @@ msgstr "Nome de nó inválido, os seguintes caracteres não são permitidos:"
 
 msgid "Another node already uses this unique name in the scene."
 msgstr "Outro nó já está usando este nome único na cena atual."
-
-msgid "Rename Node"
-msgstr "Renomear Nó"
 
 msgid "Scene Tree (Nodes):"
 msgstr "Árvore de Cena (Nós):"
@@ -7415,6 +7504,12 @@ msgid_plural "Run %d Instances"
 msgstr[0] "Executando %d Instância"
 msgstr[1] "Executando %d Instâncias"
 
+msgid "Size: %s"
+msgstr "Tamanho: %s"
+
+msgid "Type: %s"
+msgstr "Tipo: %s"
+
 msgid "Overrides (%d)"
 msgstr "Sobrescreveu (%d)"
 
@@ -7966,6 +8061,9 @@ msgstr "Definir start_position"
 msgid "Set end_position"
 msgstr "Definir end_position"
 
+msgid "Edit Vertices"
+msgstr "Editar Vértices"
+
 msgid "Edit Poly"
 msgstr "Editar Polígono"
 
@@ -8067,9 +8165,6 @@ msgstr "Tamanho: %s (%.1fMP)\n"
 
 msgid "Objects: %d\n"
 msgstr "Objetos: %d\n"
-
-msgid "Primitive Indices: %d\n"
-msgstr "Índices Primitivos: %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "Chamadas de Desenho: %d"
@@ -9236,6 +9331,9 @@ msgstr "Vá para o Próximo Ponto de Interrupção"
 msgid "Go to Previous Breakpoint"
 msgstr "Ir para Ponto de Interrupção Anterior"
 
+msgid "Shader Editor"
+msgstr "Editor Shader"
+
 msgid "New Shader Include"
 msgstr "Incluir Novo Shader"
 
@@ -9256,9 +9354,6 @@ msgstr "Abrir Arquivo no Inspetor"
 
 msgid "Close File"
 msgstr "Fechar Arquivo"
-
-msgid "Shader Editor"
-msgstr "Editor Shader"
 
 msgid "No valid shader stages found."
 msgstr "Não foi encontrado estágio válido de Shader."
@@ -9522,6 +9617,24 @@ msgstr "Mover Quadro para Direita"
 
 msgid "Select Frames"
 msgstr "Selecionar Quadros"
+
+msgid "By Row"
+msgstr "Por Linha"
+
+msgid "Left to Right, Top to Bottom"
+msgstr "Esquerda para Direita, Cima para Baixo"
+
+msgid "Left to Right, Bottom to Top"
+msgstr "Esquerda para Direita, Baixo para Cima"
+
+msgid "Right to Left, Top to Bottom"
+msgstr "Direita para Esquerda, Cima para Baixo"
+
+msgid "Right to Left, Bottom to Top"
+msgstr "Direita para Esquerda, Baixo para Cima"
+
+msgid "By Column"
+msgstr "Por Coluna"
 
 msgid "Size"
 msgstr "Tamanho"
@@ -10326,13 +10439,6 @@ msgstr "Espalhamento:"
 msgid "Tiles"
 msgstr "Tiles"
 
-msgid ""
-"This TileMap's TileSet has no source configured. Edit the TileSet resource "
-"to add one."
-msgstr ""
-"Esse TileSet do TileMap não tem fonte configurada. Edite o recurso TileSet "
-"para adicionar uma."
-
 msgid "Sort sources"
 msgstr "Classificar fontes"
 
@@ -10407,9 +10513,6 @@ msgstr "Alterna visibilidade da grade."
 
 msgid "Automatically Replace Tiles with Proxies"
 msgstr "Automaticamente Substitui Tiles com Proxies"
-
-msgid "The edited TileMap node has no TileSet resource."
-msgstr "O nó TileMap editado não tem recurso de TileSet."
 
 msgid "Remove Tile Proxies"
 msgstr "Remover Proxies de Tile"
@@ -10627,10 +10730,6 @@ msgstr "Abrir Ferramenta de Mesclagem do Atlas"
 
 msgid "Manage Tile Proxies"
 msgstr "Gerenciar Proxies Tile"
-
-msgid "No TileSet source selected. Select or create a TileSet source."
-msgstr ""
-"Nenhuma fonte TileSet selecionada. Selecione ou crie uma fonte TileSet."
 
 msgid "Add new patterns in the TileMap editing mode."
 msgstr "Adicione novos padrões no modo de edição TileMap."
@@ -13649,45 +13748,6 @@ msgstr "Gerar Malha de Navegação"
 msgid "Clear the navigation mesh."
 msgstr "Apagar a malha de navegação."
 
-msgid "Setting up Configuration..."
-msgstr "Preparando Configuração..."
-
-msgid "Calculating grid size..."
-msgstr "Calculando tamanho da grade..."
-
-msgid "Creating heightfield..."
-msgstr "Criando mapa de altura..."
-
-msgid "Marking walkable triangles..."
-msgstr "Marcando triângulos caminháveis..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Construindo um mapa de altura compacto..."
-
-msgid "Eroding walkable area..."
-msgstr "Erodindo área caminhável..."
-
-msgid "Partitioning..."
-msgstr "Particionando..."
-
-msgid "Creating contours..."
-msgstr "Criando contornos..."
-
-msgid "Creating polymesh..."
-msgstr "Criando polimalha..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Convertendo para malha de navegação nativa..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Configuração do Gerador de Malha de Navegação:"
-
-msgid "Parsing Geometry..."
-msgstr "Analisando Geometria..."
-
-msgid "Done!"
-msgstr "Pronto!"
-
 msgid "Toggles whether the noise preview is computed in 3D space."
 msgstr "Alterna se a visualização do ruído é computada no espaço 3D."
 
@@ -14159,9 +14219,6 @@ msgstr "Exportar Script de Depuração"
 
 msgid "Could not open file \"%s\"."
 msgstr "Não foi possível abrir o arquivo \"%s\"."
-
-msgid "Could not create console script."
-msgstr "Não foi possível criar o script do console."
 
 msgid "Failed to open executable file \"%s\"."
 msgstr "Falha ao abrir o arquivo executável \"%s\"."
@@ -14714,11 +14771,6 @@ msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
 "Polígono inválido. Pelo menos 2 pontos são necessários no modo de construção "
 "de 'Segmentos'."
-
-msgid ""
-"The One Way Collision property will be ignored when the parent is an Area2D."
-msgstr ""
-"A propriedade 'One Way Collision' será ignorada quando o pai for um Area2D."
 
 msgid ""
 "CollisionShape2D only serves to provide a collision shape to a "

@@ -40,7 +40,7 @@
 # Tommy Melançon-Roy <tommel1234@hotmail.com>, 2017-2018.
 # Willow <theotimefd@aol.com>, 2018.
 # Xananax <xananax@yelostudio.com>, 2017-2018.
-# Perrier Mathis <mathis.perrier73@gmail.com>, 2018, 2022.
+# Perrier Mathis <mathis.perrier73@gmail.com>, 2018, 2022, 2023.
 # Ewan Lehnebach <ewan.lehnebach@gmail.com>, 2018.
 # Hugo Locurcio <hugo.locurcio@hugo.pro>, 2018, 2019, 2020, 2021.
 # Grigore Antoniuc <grisa181@gmail.com>, 2018.
@@ -117,8 +117,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-03 11:49+0000\n"
-"Last-Translator: \"Dimitri A.\" <dimitripilot3@gmail.com>\n"
+"PO-Revision-Date: 2023-06-13 15:35+0000\n"
+"Last-Translator: Perrier Mathis <mathis.perrier73@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fr/>\n"
 "Language: fr\n"
@@ -244,6 +244,9 @@ msgstr "Disposition de bus par défaut"
 
 msgid "General"
 msgstr "Général"
+
+msgid "Text to Speech"
+msgstr "Synthèse vocale"
 
 msgid "2D Panning Strength"
 msgstr "Intensité du panoramique audio en 2D"
@@ -725,18 +728,6 @@ msgstr "Délai de requête expiré (Timeout)"
 msgid "Sync Breakpoints"
 msgstr "Synchroniser les point d'arrêts"
 
-msgid "Debugger"
-msgstr "Débogueur"
-
-msgid "Auto Switch to Remote Scene Tree"
-msgstr "Basculer automatiquement vers l'arborescence de scène distante"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "Intervalle de rafraîchissement de l'arborescence distante"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "Intervalle de rafraîchissement d'inspection distante"
-
 msgid "FileSystem"
 msgstr "Système de fichiers"
 
@@ -748,9 +739,6 @@ msgstr "Port"
 
 msgid "Password"
 msgstr "Mot de passe"
-
-msgid "Profiler Frame Max Functions"
-msgstr "Nombre maximum de fonctions par trame de profileur"
 
 msgid "Default Feature Profile"
 msgstr "Profil de fonctionalités par défaut"
@@ -1484,8 +1472,23 @@ msgstr "Hôte distant"
 msgid "Editor TLS Certificates"
 msgstr "Certificats TLS de l’éditeur"
 
+msgid "Debugger"
+msgstr "Débogueur"
+
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "Basculer automatiquement vers l'arborescence de scène distante"
+
 msgid "Profiler Frame History Size"
 msgstr "Taille de l'historique de la trame du profileur"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Nombre maximum de fonctions par trame de profileur"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Intervalle de rafraîchissement de l'arborescence distante"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Intervalle de rafraîchissement d'inspection distante"
 
 msgid "HTTP Proxy"
 msgstr "Proxy HTTP"

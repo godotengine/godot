@@ -4902,9 +4902,6 @@ msgstr "Nome nodo invalido, i caratteri seguenti non sono consentiti:"
 msgid "Another node already uses this unique name in the scene."
 msgstr "Un altro nodo sta già usando questo nome unico nella scena."
 
-msgid "Rename Node"
-msgstr "Rinomina Nodo"
-
 msgid "Scene Tree (Nodes):"
 msgstr "Scene Tree (Nodi):"
 
@@ -7697,9 +7694,6 @@ msgstr "Dimensioni: %s (%.1fMP)\n"
 msgid "Objects: %d\n"
 msgstr "Oggetti: %d\n"
 
-msgid "Primitive Indices: %d\n"
-msgstr "Indici primitivi: %d\n"
-
 msgid "Draw Calls: %d"
 msgstr "Chiamate di disegno: %d"
 
@@ -8842,6 +8836,9 @@ msgstr "Vai al punto di interruzione successivo"
 msgid "Go to Previous Breakpoint"
 msgstr "Vai al punto di interruzione precedente"
 
+msgid "Shader Editor"
+msgstr "Editor degli shader"
+
 msgid "Load Shader File"
 msgstr "Carica un file shader"
 
@@ -8856,9 +8853,6 @@ msgstr "Apri il file nell'ispettore"
 
 msgid "Close File"
 msgstr "Chiudi il file"
-
-msgid "Shader Editor"
-msgstr "Editor degli shader"
 
 msgid ""
 "File structure for '%s' contains unrecoverable errors:\n"
@@ -9831,9 +9825,6 @@ msgstr "Seleziona il livello della mappa dei tasselli selezionata"
 msgid "Toggle grid visibility."
 msgstr "Commuta la visibilità della griglia."
 
-msgid "The edited TileMap node has no TileSet resource."
-msgstr "Il nodo TileMap modificato non ha alcuna risorsa TileSet."
-
 msgid "Atlas"
 msgstr "Atlas"
 
@@ -9948,10 +9939,6 @@ msgstr "Ordina i sorgenti"
 
 msgid "Open Atlas Merging Tool"
 msgstr "Apri lo strumento di fusione degli atlas"
-
-msgid "No TileSet source selected. Select or create a TileSet source."
-msgstr ""
-"Nessuna sorgente TileSet selezionata. Selezionare o creare una fonte TileSet."
 
 msgid "Add a Scene Tile"
 msgstr "Aggiungi un tassello scena"
@@ -12686,45 +12673,6 @@ msgstr "Preprocessa NavMesh"
 msgid "Clear the navigation mesh."
 msgstr "Cancella mesh di navigazione."
 
-msgid "Setting up Configuration..."
-msgstr "Impostando la Configurazione..."
-
-msgid "Calculating grid size..."
-msgstr "Calcolando dimensioni griglia..."
-
-msgid "Creating heightfield..."
-msgstr "Creazione heightfield..."
-
-msgid "Marking walkable triangles..."
-msgstr "Segnando triangoli percorribili..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Costruendo heightfield compatto..."
-
-msgid "Eroding walkable area..."
-msgstr "Erodendo area percorribile..."
-
-msgid "Partitioning..."
-msgstr "Partizionando..."
-
-msgid "Creating contours..."
-msgstr "Creazione contorni..."
-
-msgid "Creating polymesh..."
-msgstr "Creando polymesh..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Convertendo a Mesh di Navigazione nativa..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Impostazioni Generatore Mesh di Navigazione:"
-
-msgid "Parsing Geometry..."
-msgstr "Elaborazione Geometria..."
-
-msgid "Done!"
-msgstr "Fatto!"
-
 msgid "Rename Action"
 msgstr "Rinomina un'azione"
 
@@ -13195,9 +13143,6 @@ msgstr "Esportazione di debug degli script"
 
 msgid "Could not open file \"%s\"."
 msgstr "Impossibile aprire il file \"%s\"."
-
-msgid "Could not create console script."
-msgstr "Impossibile creare lo script dei console."
 
 msgid "Failed to open executable file \"%s\"."
 msgstr "Impossibile aprire l'eseguibile \"%s\"."

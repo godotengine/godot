@@ -170,6 +170,9 @@ Ref<Image> ViewportTexture::get_image() const {
 }
 
 void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
+	// Always reset this, even if this call fails with an error.
+	vp_pending = false;
+
 	Node *vpn = p_loc_scene->get_node_or_null(path);
 	ERR_FAIL_NULL_MSG(vpn, "Path to node is invalid: '" + path + "'.");
 	vp = Object::cast_to<Viewport>(vpn);
@@ -186,7 +189,6 @@ void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
 		ERR_FAIL_COND(proxy.is_valid()); // Should be invalid.
 		proxy = RS::get_singleton()->texture_proxy_create(vp->texture_rid);
 	}
-	vp_pending = false;
 	vp_changed = false;
 
 	emit_changed();
@@ -313,7 +315,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 	Rect2i r = Rect2i(p_window->get_position(), sw.window->get_size());
 
 	if (!p_window->get_flag(Window::FLAG_BORDERLESS)) {
-		Ref<StyleBox> panel = p_window->get_theme_stylebox(SNAME("embedded_border"));
+		Ref<StyleBox> panel = p_window->get_theme_stylebox(gui.subwindow_focused == p_window ? SNAME("embedded_border") : SNAME("embedded_unfocused_border"));
 		panel->draw(sw.canvas_item, r);
 
 		// Draw the title bar text.
@@ -462,7 +464,7 @@ void Viewport::_sub_window_remove(Window *p_window) {
 	RenderingServer::get_singleton()->viewport_set_parent_viewport(p_window->viewport, p_window->parent ? p_window->parent->viewport : RID());
 }
 
-int Viewport::_sub_window_find(Window *p_window) {
+int Viewport::_sub_window_find(Window *p_window) const {
 	for (int i = 0; i < gui.sub_windows.size(); i++) {
 		if (gui.sub_windows[i].window == p_window) {
 			return i;
@@ -839,6 +841,9 @@ void Viewport::_process_picking() {
 			capture_object = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_capture));
 			if (!capture_object || !camera_3d || (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed())) {
 				physics_object_capture = ObjectID();
+			} else {
+				last_id = physics_object_capture;
+				last_object = capture_object;
 			}
 		}
 
@@ -1718,11 +1723,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				gui.last_mouse_focus = gui.mouse_focus;
 
 				if (!gui.mouse_focus) {
-					gui.mouse_focus_mask.clear();
 					return;
 				}
 
-				gui.mouse_focus_mask.clear();
 				gui.mouse_focus_mask.set_flag(mouse_button_to_mask(mb->get_button_index()));
 
 				if (mb->get_button_index() == MouseButton::LEFT) {
@@ -1873,13 +1876,13 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		}
 
 		if (over != gui.mouse_over) {
+			if (!gui.mouse_over) {
+				_drop_physics_mouseover();
+			}
 			_drop_mouse_over();
 			_gui_cancel_tooltip();
 
 			if (over) {
-				if (!gui.mouse_over) {
-					_drop_physics_mouseover();
-				}
 				_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
 				gui.mouse_over = over;
 			}
@@ -3481,6 +3484,21 @@ void Viewport::set_embedding_subwindows(bool p_embed) {
 bool Viewport::is_embedding_subwindows() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return gui.embed_subwindows_hint;
+}
+
+void Viewport::subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect) {
+	int index = _sub_window_find(p_window);
+	ERR_FAIL_COND(index == -1);
+
+	SubWindow sw = gui.sub_windows[index];
+	sw.parent_safe_rect = p_rect;
+}
+
+Rect2i Viewport::subwindow_get_popup_safe_rect(Window *p_window) const {
+	int index = _sub_window_find(p_window);
+	ERR_FAIL_COND_V(index == -1, Rect2i());
+
+	return gui.sub_windows[index].parent_safe_rect;
 }
 
 void Viewport::pass_mouse_focus_to(Viewport *p_viewport, Control *p_control) {

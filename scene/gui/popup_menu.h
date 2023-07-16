@@ -250,6 +250,7 @@ public:
 	void toggle_item_checked(int p_idx);
 
 	String get_item_text(int p_idx) const;
+	String get_item_xl_text(int p_idx) const;
 	Control::TextDirection get_item_text_direction(int p_idx) const;
 	String get_item_language(int p_idx) const;
 	int get_item_idx_from_text(const String &text) const;
@@ -311,7 +312,7 @@ public:
 	void set_allow_search(bool p_allow);
 	bool get_allow_search() const;
 
-	virtual void popup(const Rect2 &p_bounds = Rect2());
+	virtual void popup(const Rect2i &p_bounds = Rect2i()) override;
 
 	void take_mouse_focus();
 

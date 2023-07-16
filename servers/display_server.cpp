@@ -497,6 +497,11 @@ Error DisplayServer::dialog_input_text(String p_title, String p_description, Str
 	return OK;
 }
 
+Error DisplayServer::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	WARN_PRINT("Native dialogs not supported by this display server.");
+	return OK;
+}
+
 int DisplayServer::keyboard_get_layout_count() const {
 	return 0;
 }
@@ -517,6 +522,10 @@ String DisplayServer::keyboard_get_layout_name(int p_index) const {
 }
 
 Key DisplayServer::keyboard_get_keycode_from_physical(Key p_keycode) const {
+	ERR_FAIL_V_MSG(p_keycode, "Not supported by this display server.");
+}
+
+Key DisplayServer::keyboard_get_label_from_physical(Key p_keycode) const {
 	ERR_FAIL_V_MSG(p_keycode, "Not supported by this display server.");
 }
 
@@ -751,12 +760,15 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("dialog_show", "title", "description", "buttons", "callback"), &DisplayServer::dialog_show);
 	ClassDB::bind_method(D_METHOD("dialog_input_text", "title", "description", "existing_text", "callback"), &DisplayServer::dialog_input_text);
 
+	ClassDB::bind_method(D_METHOD("file_dialog_show", "title", "current_directory", "filename", "show_hidden", "mode", "filters", "callback"), &DisplayServer::file_dialog_show);
+
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_count"), &DisplayServer::keyboard_get_layout_count);
 	ClassDB::bind_method(D_METHOD("keyboard_get_current_layout"), &DisplayServer::keyboard_get_current_layout);
 	ClassDB::bind_method(D_METHOD("keyboard_set_current_layout", "index"), &DisplayServer::keyboard_set_current_layout);
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_language", "index"), &DisplayServer::keyboard_get_layout_language);
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_name", "index"), &DisplayServer::keyboard_get_layout_name);
 	ClassDB::bind_method(D_METHOD("keyboard_get_keycode_from_physical", "keycode"), &DisplayServer::keyboard_get_keycode_from_physical);
+	ClassDB::bind_method(D_METHOD("keyboard_get_label_from_physical", "keycode"), &DisplayServer::keyboard_get_label_from_physical);
 
 	ClassDB::bind_method(D_METHOD("process_events"), &DisplayServer::process_events);
 	ClassDB::bind_method(D_METHOD("force_process_and_drop_events"), &DisplayServer::force_process_and_drop_events);
@@ -840,6 +852,12 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CURSOR_HSPLIT);
 	BIND_ENUM_CONSTANT(CURSOR_HELP);
 	BIND_ENUM_CONSTANT(CURSOR_MAX);
+
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_OPEN_FILE);
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_OPEN_FILES);
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_OPEN_DIR);
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_OPEN_ANY);
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_SAVE_FILE);
 
 	BIND_ENUM_CONSTANT(WINDOW_MODE_WINDOWED);
 	BIND_ENUM_CONSTANT(WINDOW_MODE_MINIMIZED);

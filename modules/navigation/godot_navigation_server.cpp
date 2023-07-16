@@ -358,22 +358,9 @@ COMMAND_2(region_set_map, RID, p_region, RID, p_map) {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_COND(region == nullptr);
 
-	if (region->get_map() != nullptr) {
-		if (region->get_map()->get_self() == p_map) {
-			return; // Pointless
-		}
+	NavMap *map = map_owner.get_or_null(p_map);
 
-		region->get_map()->remove_region(region);
-		region->set_map(nullptr);
-	}
-
-	if (p_map.is_valid()) {
-		NavMap *map = map_owner.get_or_null(p_map);
-		ERR_FAIL_COND(map == nullptr);
-
-		map->add_region(region);
-		region->set_map(map);
-	}
+	region->set_map(map);
 }
 
 COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform) {
@@ -459,9 +446,12 @@ COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navi
 	region->set_mesh(p_navigation_mesh);
 }
 
+#ifndef DISABLE_DEPRECATED
 void GodotNavigationServer::region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) {
 	ERR_FAIL_COND(p_navigation_mesh.is_null());
 	ERR_FAIL_COND(p_root_node == nullptr);
+
+	WARN_PRINT_ONCE("NavigationServer3D::region_bake_navigation_mesh() is deprecated due to core threading changes. To upgrade existing code, first create a NavigationMeshSourceGeometryData3D resource. Use this resource with method parse_source_geometry_data() to parse the SceneTree for nodes that should contribute to the navigation mesh baking. The SceneTree parsing needs to happen on the main thread. After the parsing is finished use the resource with method bake_from_source_geometry_data() to bake a navigation mesh..");
 
 #ifndef _3D_DISABLED
 	NavigationMeshGenerator::get_singleton()->clear(p_navigation_mesh);
@@ -471,6 +461,7 @@ void GodotNavigationServer::region_bake_navigation_mesh(Ref<NavigationMesh> p_na
 	NavigationMeshGenerator::get_singleton()->bake_from_source_geometry_data(p_navigation_mesh, source_geometry_data);
 #endif
 }
+#endif // DISABLE_DEPRECATED
 
 int GodotNavigationServer::region_get_connections_count(RID p_region) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
@@ -506,22 +497,9 @@ COMMAND_2(link_set_map, RID, p_link, RID, p_map) {
 	NavLink *link = link_owner.get_or_null(p_link);
 	ERR_FAIL_COND(link == nullptr);
 
-	if (link->get_map() != nullptr) {
-		if (link->get_map()->get_self() == p_map) {
-			return; // Pointless
-		}
+	NavMap *map = map_owner.get_or_null(p_map);
 
-		link->get_map()->remove_link(link);
-		link->set_map(nullptr);
-	}
-
-	if (p_map.is_valid()) {
-		NavMap *map = map_owner.get_or_null(p_map);
-		ERR_FAIL_COND(map == nullptr);
-
-		map->add_link(link);
-		link->set_map(map);
-	}
+	link->set_map(map);
 }
 
 RID GodotNavigationServer::link_get_map(const RID p_link) const {
@@ -673,27 +651,9 @@ COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
 	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
-	if (agent->get_map()) {
-		if (agent->get_map()->get_self() == p_map) {
-			return; // Pointless
-		}
+	NavMap *map = map_owner.get_or_null(p_map);
 
-		agent->get_map()->remove_agent(agent);
-	}
-
-	agent->set_map(nullptr);
-
-	if (p_map.is_valid()) {
-		NavMap *map = map_owner.get_or_null(p_map);
-		ERR_FAIL_COND(map == nullptr);
-
-		agent->set_map(map);
-		map->add_agent(agent);
-
-		if (agent->has_avoidance_callback()) {
-			map->set_agent_as_controlled(agent);
-		}
-	}
+	agent->set_map(map);
 }
 
 COMMAND_2(agent_set_paused, RID, p_agent, bool, p_paused) {
@@ -875,23 +835,9 @@ COMMAND_2(obstacle_set_map, RID, p_obstacle, RID, p_map) {
 	NavObstacle *obstacle = obstacle_owner.get_or_null(p_obstacle);
 	ERR_FAIL_COND(obstacle == nullptr);
 
-	if (obstacle->get_map()) {
-		if (obstacle->get_map()->get_self() == p_map) {
-			return; // Pointless
-		}
+	NavMap *map = map_owner.get_or_null(p_map);
 
-		obstacle->get_map()->remove_obstacle(obstacle);
-	}
-
-	obstacle->set_map(nullptr);
-
-	if (p_map.is_valid()) {
-		NavMap *map = map_owner.get_or_null(p_map);
-		ERR_FAIL_COND(map == nullptr);
-
-		obstacle->set_map(map);
-		map->add_obstacle(obstacle);
-	}
+	obstacle->set_map(map);
 }
 
 RID GodotNavigationServer::obstacle_get_map(RID p_obstacle) const {
@@ -1050,16 +996,15 @@ void GodotNavigationServer::internal_free_agent(RID p_object) {
 void GodotNavigationServer::internal_free_obstacle(RID p_object) {
 	NavObstacle *obstacle = obstacle_owner.get_or_null(p_object);
 	if (obstacle) {
+		NavAgent *obstacle_agent = obstacle->get_agent();
+		if (obstacle_agent) {
+			RID _agent_rid = obstacle_agent->get_self();
+			internal_free_agent(_agent_rid);
+			obstacle->set_agent(nullptr);
+		}
 		if (obstacle->get_map() != nullptr) {
 			obstacle->get_map()->remove_obstacle(obstacle);
 			obstacle->set_map(nullptr);
-		}
-		if (obstacle->get_agent()) {
-			if (obstacle->get_agent()->get_self() != RID()) {
-				RID _agent_rid = obstacle->get_agent()->get_self();
-				obstacle->set_agent(nullptr);
-				internal_free_agent(_agent_rid);
-			}
 		}
 		obstacle_owner.free(p_object);
 	}

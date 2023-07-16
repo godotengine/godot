@@ -258,11 +258,13 @@ void NavigationAgent2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (agent_parent && avoidance_enabled) {
+				NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
+			}
 			if (agent_parent && target_position_submitted) {
 				if (velocity_submitted) {
 					velocity_submitted = false;
 					if (avoidance_enabled) {
-						NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
 						NavigationServer2D::get_singleton()->agent_set_velocity(agent, velocity);
 					}
 				}
@@ -755,6 +757,11 @@ void NavigationAgent2D::update_navigation() {
 				navigation_path_index -= 1;
 				navigation_finished = true;
 				target_position_submitted = false;
+				if (avoidance_enabled) {
+					NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
+					NavigationServer2D::get_singleton()->agent_set_velocity(agent, Vector2(0.0, 0.0));
+					NavigationServer2D::get_singleton()->agent_set_velocity_forced(agent, Vector2(0.0, 0.0));
+				}
 				emit_signal(SNAME("navigation_finished"));
 				break;
 			}

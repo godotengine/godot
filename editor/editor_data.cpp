@@ -925,7 +925,6 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 	for (Node *E : es.selection) {
 		p_selection->add_node(E);
 	}
-	p_selection->cancel_update(); // Selection update results in redundant Node edit, so we cancel it.
 	set_editor_plugin_states(es.editor_states);
 
 	return es.custom_state;
@@ -1114,7 +1113,9 @@ Ref<Texture2D> EditorData::_load_script_icon(const String &p_path) const {
 
 Ref<Texture2D> EditorData::get_script_icon(const Ref<Script> &p_script) {
 	// Take from the local cache, if available.
-	if (_script_icon_cache.has(p_script) && _script_icon_cache[p_script].is_valid()) {
+	if (_script_icon_cache.has(p_script)) {
+		// Can be an empty value if we can't resolve any icon for this script.
+		// An empty value is still cached to avoid unnecessary attempts at resolving it again.
 		return _script_icon_cache[p_script];
 	}
 
@@ -1139,6 +1140,27 @@ Ref<Texture2D> EditorData::get_script_icon(const Ref<Script> &p_script) {
 
 		// Move to the base class.
 		base_scr = base_scr->get_base_script();
+	}
+
+	// No custom icon was found in the inheritance chain, so check the base
+	// class of the script instead.
+	String base_type;
+	p_script->get_language()->get_global_class_name(p_script->get_path(), &base_type);
+
+	// Check if the base type is an extension-defined type.
+	Ref<Texture2D> ext_icon = extension_class_get_icon(base_type);
+	if (ext_icon.is_valid()) {
+		_script_icon_cache[p_script] = ext_icon;
+		return ext_icon;
+	}
+
+	// Look for the base type in the editor theme.
+	// This is only relevant for built-in classes.
+	const Control *gui_base = EditorNode::get_singleton()->get_gui_base();
+	if (gui_base && gui_base->has_theme_icon(base_type, SNAME("EditorIcons"))) {
+		Ref<Texture2D> theme_icon = gui_base->get_theme_icon(base_type, SNAME("EditorIcons"));
+		_script_icon_cache[p_script] = theme_icon;
+		return theme_icon;
 	}
 
 	// If no icon found, cache it as null.
@@ -1325,10 +1347,6 @@ void EditorSelection::clear() {
 
 	changed = true;
 	node_list_changed = true;
-}
-
-void EditorSelection::cancel_update() {
-	changed = false;
 }
 
 EditorSelection::EditorSelection() {

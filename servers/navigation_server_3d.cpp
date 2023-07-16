@@ -82,7 +82,9 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_navigation_layers", "region"), &NavigationServer3D::region_get_navigation_layers);
 	ClassDB::bind_method(D_METHOD("region_set_transform", "region", "transform"), &NavigationServer3D::region_set_transform);
 	ClassDB::bind_method(D_METHOD("region_set_navigation_mesh", "region", "navigation_mesh"), &NavigationServer3D::region_set_navigation_mesh);
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("region_bake_navigation_mesh", "navigation_mesh", "root_node"), &NavigationServer3D::region_bake_navigation_mesh);
+#endif // DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("region_get_connections_count", "region"), &NavigationServer3D::region_get_connections_count);
 	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_start", "region", "connection"), &NavigationServer3D::region_get_connection_pathway_start);
 	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_end", "region", "connection"), &NavigationServer3D::region_get_connection_pathway_end);
@@ -147,8 +149,8 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("obstacle_set_vertices", "obstacle", "vertices"), &NavigationServer3D::obstacle_set_vertices);
 	ClassDB::bind_method(D_METHOD("obstacle_set_avoidance_layers", "obstacle", "layers"), &NavigationServer3D::obstacle_set_avoidance_layers);
 
-	ClassDB::bind_method(D_METHOD("parse_source_geometry_data", "navigation_mesh", "source_geometry_data", "root_node", "callback"), &NavigationServer3D::parse_source_geometry_data);
-	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data", "navigation_mesh", "source_geometry_data", "callback"), &NavigationServer3D::bake_from_source_geometry_data);
+	ClassDB::bind_method(D_METHOD("parse_source_geometry_data", "navigation_mesh", "source_geometry_data", "root_node", "callback"), &NavigationServer3D::parse_source_geometry_data, DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("bake_from_source_geometry_data", "navigation_mesh", "source_geometry_data", "callback"), &NavigationServer3D::bake_from_source_geometry_data, DEFVAL(Callable()));
 
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &NavigationServer3D::free);
 

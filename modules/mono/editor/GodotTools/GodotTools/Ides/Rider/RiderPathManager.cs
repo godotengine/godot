@@ -4,11 +4,19 @@ using System.IO;
 using System.Linq;
 using Godot;
 using GodotTools.Internals;
+using JetBrains.Rider.PathLocator;
 
 namespace GodotTools.Ides.Rider
 {
     public static class RiderPathManager
     {
+        private static readonly RiderPathLocator RiderPathLocator;
+
+        static RiderPathManager()
+        {
+            RiderPathLocator = new RiderPathLocator(new RiderLocatorEnvironment());
+        }
+
         public static readonly string EditorPathSettingName = "dotnet/editor/editor_path_optional";
 
         private static string GetRiderPathFromSettings()

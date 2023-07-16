@@ -389,6 +389,10 @@ struct hb_no_trace_t {
 #define HB_DEBUG_UNISCRIBE (HB_DEBUG+0)
 #endif
 
+#ifndef HB_DEBUG_WASM
+#define HB_DEBUG_WASM (HB_DEBUG+0)
+#endif
+
 /*
  * With tracing.
  */

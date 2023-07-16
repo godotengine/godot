@@ -31,7 +31,11 @@
 #ifndef VISUAL_SHADER_NODES_H
 #define VISUAL_SHADER_NODES_H
 
+#include "scene/resources/curve_texture.h"
 #include "scene/resources/visual_shader.h"
+
+class Cubemap;
+class Texture2DArray;
 
 ///////////////////////////////////////
 /// Vector Base Node

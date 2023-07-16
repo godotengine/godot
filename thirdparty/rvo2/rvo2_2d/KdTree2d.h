@@ -2,14 +2,13 @@
  * KdTree2d.h
  * RVO2 Library
  *
- * SPDX-FileCopyrightText: 2008 University of North Carolina at Chapel Hill
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright 2008 University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,162 +27,177 @@
  * Chapel Hill, N.C. 27599-3175
  * United States of America
  *
- * <https://gamma.cs.unc.edu/RVO2/>
+ * <http://gamma.cs.unc.edu/RVO2/>
  */
 
 #ifndef RVO2D_KD_TREE_H_
 #define RVO2D_KD_TREE_H_
 
 /**
- * @file  KdTree2d.h
- * @brief Declares the KdTree2D class.
+ * \file       KdTree2d.h
+ * \brief      Contains the KdTree class.
  */
 
-#include <cstddef>
-#include <vector>
+#include "Definitions.h"
 
 namespace RVO2D {
-class Agent2D;
-class Obstacle2D;
-class RVOSimulator2D;
-class Vector2;
+	/**
+	 * \brief      Defines <i>k</i>d-trees for agents and static obstacles in the
+	 *             simulation.
+	 */
+	class KdTree2D {
+	public:
+		/**
+		 * \brief      Defines an agent <i>k</i>d-tree node.
+		 */
+		class AgentTreeNode {
+		public:
+			/**
+			 * \brief      The beginning node number.
+			 */
+			size_t begin;
 
-/**
- * @brief Defines k-D trees for agents and static obstacles in the simulation.
- */
-class KdTree2D {
- public:
-  class AgentTreeNode;
-  class ObstacleTreeNode;
+			/**
+			 * \brief      The ending node number.
+			 */
+			size_t end;
 
-  /**
-   * @brief     Constructs a k-D tree instance.
-   * @param[in] simulator The simulator instance.
-   */
-  explicit KdTree2D(RVOSimulator2D *simulator);
+			/**
+			 * \brief      The left node number.
+			 */
+			size_t left;
 
-  /**
-   * @brief Destroys this k-D tree instance.
-   */
-  ~KdTree2D();
+			/**
+			 * \brief      The maximum x-coordinate.
+			 */
+			float maxX;
 
-  /**
-   * @brief Builds an agent k-D tree.
-   */
-  void buildAgentTree(std::vector<Agent2D *> agents);
+			/**
+			 * \brief      The maximum y-coordinate.
+			 */
+			float maxY;
 
-  /**
-   * @brief     Recursive function to build an agent k-D tree.
-   * @param[in] begin The beginning agent k-D tree node.
-   * @param[in] end   The ending agent k-D tree node.
-   * @param[in] node  The current agent k-D tree node.
-   */
-  void buildAgentTreeRecursive(std::size_t begin, std::size_t end,
-                               std::size_t node);
+			/**
+			 * \brief      The minimum x-coordinate.
+			 */
+			float minX;
 
-  /**
-   * @brief Builds an obstacle k-D tree.
-   */
-  void buildObstacleTree(std::vector<Obstacle2D *> obstacles);
+			/**
+			 * \brief      The minimum y-coordinate.
+			 */
+			float minY;
 
-  /**
-   * @brief     Recursive function to build an obstacle k-D tree.
-   * @param[in] obstacles List of obstacles from which to build the obstacle k-D
-   *                      tree.
-   */
-  ObstacleTreeNode *buildObstacleTreeRecursive(
-      const std::vector<Obstacle2D *> &obstacles);
+			/**
+			 * \brief      The right node number.
+			 */
+			size_t right;
+		};
 
-  /**
-   * @brief     Computes the agent neighbors of the specified agent.
-   * @param[in] agent        A pointer to the agent for which agent neighbors
-   *                         are to be computed.
-   * @param[in, out] rangeSq The squared range around the agent.
-   */
-  void computeAgentNeighbors(
-      Agent2D *agent, float &rangeSq) const; /* NOLINT(runtime/references) */
+		/**
+		 * \brief      Defines an obstacle <i>k</i>d-tree node.
+		 */
+		class ObstacleTreeNode {
+		public:
+			/**
+			 * \brief      The left obstacle tree node.
+			 */
+			ObstacleTreeNode *left;
 
-  /**
-   * @brief     Computes the obstacle neighbors of the specified agent.
-   * @param[in] agent   A pointer to the agent for which obstacle neighbors are
-   *                    to be computed.
-   * @param[in] rangeSq The squared range around the agent.
-   */
-  void computeObstacleNeighbors(Agent2D *agent, float rangeSq) const;
+			/**
+			 * \brief      The obstacle number.
+			 */
+			const Obstacle2D *obstacle;
 
-  /**
-   * @brief     Deletes the specified obstacle tree node.
-   * @param[in] node A pointer to the obstacle tree node to be deleted.
-   */
-  void deleteObstacleTree(ObstacleTreeNode *node);
+			/**
+			 * \brief      The right obstacle tree node.
+			 */
+			ObstacleTreeNode *right;
+		};
 
-  /**
-   * @brief         Recursive function to compute the neighbors of the specified
-   *                agent.
-   * @param[in]     agent   A pointer to the agent for which neighbors are to be
-   *                        computed.
-   * @param[in,out] rangeSq The squared range around the agent.
-   * @param[in]     node    The current agent k-D tree node.
-   */
-  void queryAgentTreeRecursive(Agent2D *agent,
-                               float &rangeSq, /* NOLINT(runtime/references) */
-                               std::size_t node) const;
+		/**
+		 * \brief      Constructs a <i>k</i>d-tree instance.
+		 * \param      sim             The simulator instance.
+		 */
+		explicit KdTree2D(RVOSimulator2D *sim);
 
-  /**
-   * @brief         Recursive function to compute the neighbors of the specified
-   *                obstacle.
-   * @param[in]     agent   A pointer to the agent for which neighbors are to be
-   *                        computed.
-   * @param[in,out] rangeSq The squared range around the agent.
-   * @param[in]     node    The current obstacle k-D tree node.
-   */
-  void queryObstacleTreeRecursive(Agent2D *agent, float rangeSq,
-                                  const ObstacleTreeNode *node) const;
+		/**
+		 * \brief      Destroys this kd-tree instance.
+		 */
+		~KdTree2D();
 
-  /**
-   * @brief     Queries the visibility between two points within a specified
-   *            radius.
-   * @param[in] vector1 The first point between which visibility is to be
-   * tested.
-   * @param[in] vector2 The second point between which visibility is to be
-   *                    tested.
-   * @param[in] radius  The radius within which visibility is to be tested.
-   * @return    True if q1 and q2 are mutually visible within the radius; false
-   *            otherwise.
-   */
-  bool queryVisibility(const Vector2 &vector1, const Vector2 &vector2,
-                       float radius) const;
+		/**
+		 * \brief      Builds an agent <i>k</i>d-tree.
+		 */
+		void buildAgentTree(std::vector<Agent2D *> agents);
 
-  /**
-   * @brief     Recursive function to query the visibility between two points
-   *            within a specified radius.
-   * @param[in] vector1 The first point between which visibility is to be
-   *                    tested.
-   * @param[in] vector2 The second point between which visibility is to be
-   *                    tested.
-   * @param[in] radius  The radius within which visibility is to be tested.
-   * @param[in] node    The current obstacle k-D tree node.
-   * @return    True if q1 and q2 are mutually visible within the radius; false
-   *            otherwise.
-   */
-  bool queryVisibilityRecursive(const Vector2 &vector1, const Vector2 &vector2,
-                                float radius,
-                                const ObstacleTreeNode *node) const;
+		void buildAgentTreeRecursive(size_t begin, size_t end, size_t node);
 
-  /* Not implemented. */
-  KdTree2D(const KdTree2D &other);
+		/**
+		 * \brief      Builds an obstacle <i>k</i>d-tree.
+		 */
+		void buildObstacleTree(std::vector<Obstacle2D *> obstacles);
 
-  /* Not implemented. */
-  KdTree2D &operator=(const KdTree2D &other);
+		ObstacleTreeNode *buildObstacleTreeRecursive(const std::vector<Obstacle2D *> &
+													 obstacles);
 
-  std::vector<Agent2D *> agents_;
-  std::vector<AgentTreeNode> agentTree_;
-  ObstacleTreeNode *obstacleTree_;
-  RVOSimulator2D *simulator_;
+		/**
+		 * \brief      Computes the agent neighbors of the specified agent.
+		 * \param      agent           A pointer to the agent for which agent
+		 *                             neighbors are to be computed.
+		 * \param      rangeSq         The squared range around the agent.
+		 */
+		void computeAgentNeighbors(Agent2D *agent, float &rangeSq) const;
 
-  friend class Agent2D;
-  friend class RVOSimulator2D;
-};
-} /* namespace RVO2D */
+		/**
+		 * \brief      Computes the obstacle neighbors of the specified agent.
+		 * \param      agent           A pointer to the agent for which obstacle
+		 *                             neighbors are to be computed.
+		 * \param      rangeSq         The squared range around the agent.
+		 */
+		void computeObstacleNeighbors(Agent2D *agent, float rangeSq) const;
+
+		/**
+		 * \brief      Deletes the specified obstacle tree node.
+		 * \param      node            A pointer to the obstacle tree node to be
+		 *                             deleted.
+		 */
+		void deleteObstacleTree(ObstacleTreeNode *node);
+
+		void queryAgentTreeRecursive(Agent2D *agent, float &rangeSq,
+									 size_t node) const;
+
+		void queryObstacleTreeRecursive(Agent2D *agent, float rangeSq,
+										const ObstacleTreeNode *node) const;
+
+		/**
+		 * \brief      Queries the visibility between two points within a
+		 *             specified radius.
+		 * \param      q1              The first point between which visibility is
+		 *                             to be tested.
+		 * \param      q2              The second point between which visibility is
+		 *                             to be tested.
+		 * \param      radius          The radius within which visibility is to be
+		 *                             tested.
+		 * \return     True if q1 and q2 are mutually visible within the radius;
+		 *             false otherwise.
+		 */
+		bool queryVisibility(const Vector2 &q1, const Vector2 &q2,
+							 float radius) const;
+
+		bool queryVisibilityRecursive(const Vector2 &q1, const Vector2 &q2,
+									  float radius,
+									  const ObstacleTreeNode *node) const;
+
+		std::vector<Agent2D *> agents_;
+		std::vector<AgentTreeNode> agentTree_;
+		ObstacleTreeNode *obstacleTree_;
+		RVOSimulator2D *sim_;
+
+		static const size_t MAX_LEAF_SIZE = 10;
+
+		friend class Agent2D;
+		friend class RVOSimulator2D;
+	};
+}
 
 #endif /* RVO2D_KD_TREE_H_ */

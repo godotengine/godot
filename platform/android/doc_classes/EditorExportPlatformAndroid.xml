@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorExportPlatformAndroid" inherits="EditorExportPlatform" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorExportPlatformAndroid" inherits="EditorExportPlatform" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Exporter for Android.
 	</brief_description>
@@ -103,6 +103,12 @@
 		</member>
 		<member name="package/retain_data_on_uninstall" type="bool" setter="" getter="">
 			If [code]true[/code], when the user uninstalls an app, a prompt to keep the app's data will be shown.
+		</member>
+		<member name="package/show_as_launcher_app" type="bool" setter="" getter="">
+			If [code]true[/code], the user will be able to set this app as the system launcher in Android preferences.
+		</member>
+		<member name="package/show_in_android_tv" type="bool" setter="" getter="">
+			If [code]true[/code], this app will show in Android TV launcher UI.
 		</member>
 		<member name="package/signed" type="bool" setter="" getter="">
 			If [code]true[/code], package signing is enabled.

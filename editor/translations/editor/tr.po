@@ -98,13 +98,15 @@
 # Black <ebubekir23atalay@gmail.com>, 2023.
 # Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>, 2023.
 # ErcanPasha <dayanomerercan@gmail.com>, 2023.
+# Yoldaş Ulaş <yutalas@gmail.com>, 2023.
+# Mertcan YILDIRIM <mertcanyildirim463@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-18 16:55+0000\n"
-"Last-Translator: ErcanPasha <dayanomerercan@gmail.com>\n"
+"PO-Revision-Date: 2023-07-05 13:48+0000\n"
+"Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -112,7 +114,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 msgid "Unset"
 msgstr "Atamayı Kaldır"
@@ -193,25 +195,25 @@ msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
 msgstr "%.2f Değerinde %d (%s) Ekseninde Oyun Kolu Hareketi"
 
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
-msgstr "Alt Aksiyon, Sony Çarpı, Xbox A, Nintendo B"
+msgstr "Alt Eylem, Sony Çarpı, Xbox A, Nintendo B"
 
 msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
-msgstr "Sağ Aksiyon, Sony Daire, Xbox B, Nintendo A"
+msgstr "Sağ Eylem, Sony Daire, Xbox B, Nintendo A"
 
 msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
-msgstr "Sol Aksiyon, Sony Kare, Xbox X, Nintendo Y"
+msgstr "Sol Eylem, Sony Kare, Xbox X, Nintendo Y"
 
 msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
-msgstr "Üst Aksiyon, Sony Üçgen, Xbox Y, Nintendo X"
+msgstr "Üst Eylem, Sony Üçgen, Xbox Y, Nintendo X"
 
 msgid "Back, Sony Select, Xbox Back, Nintendo -"
 msgstr "Geri, Sony Select, Xbox Back, Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
-msgstr "Kılavuz, Sony PS, Xbox Ana Sayfası"
+msgstr "Rehber, Sony PS, Xbox Ana Sayfası"
 
 msgid "Start, Nintendo +"
-msgstr "Start, Nintendo +"
+msgstr "Başlat, Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "Sol Çubuk, Sony L3, Xbox L/LS"
@@ -240,17 +242,54 @@ msgstr "D-pad Sağ"
 msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
 msgstr "Xbox Share, PS5 Mikrofon, Nintendo Capture"
 
+msgid "Xbox Paddle 1"
+msgstr "Xbox Pedal 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox Pedal 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox Pedal 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox Pedal 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 Dokunmatik Alan"
+
 msgid "Joypad Button %d"
 msgstr "Oyun Kolu Düğmesi %d"
 
 msgid "Pressure:"
 msgstr "Basınç:"
 
+msgid "canceled"
+msgstr "vazgeçildi"
+
 msgid "touched"
 msgstr "dokunuldu"
 
 msgid "released"
 msgstr "bırakıldı"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Ekran %s (%s üzerinde, %s dokunma noktalı)"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr "Ekran sürüklendi ( %s dokunma noktası ile, %s konumuna, %s hızında)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Büyütme Hareketi (%s konumunda, %s oranında)"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Kaydırma Hareketi (%s konumunda, %s artışlı)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "MIDI Girişi (Kanal=%s İleti=%s)"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Girdi Olayı (Kısayol=%s)"
 
 msgid "Accept"
 msgstr "Kabul Et"
@@ -321,11 +360,89 @@ msgstr "Yukarıya Yeni Satır"
 msgid "Indent"
 msgstr "Girintile"
 
+msgid "Dedent"
+msgstr "Çıkıntıla"
+
+msgid "Backspace"
+msgstr "Gerisilme"
+
+msgid "Backspace Word"
+msgstr "Kelime Gersilme"
+
+msgid "Backspace all to Left"
+msgstr "Soldakilerin tümünü Gersilme"
+
 msgid "Delete"
 msgstr "Sil"
 
+msgid "Delete Word"
+msgstr "Kelime Silme"
+
+msgid "Delete all to Right"
+msgstr "Sağdakilerin tümünü Silme"
+
+msgid "Caret Left"
+msgstr "İmleç Sola"
+
+msgid "Caret Word Left"
+msgstr "İmleç Kelimenin Soluna"
+
+msgid "Caret Right"
+msgstr "İmleç Sağa"
+
+msgid "Caret Word Right"
+msgstr "İmleç Kelimenin Sağına"
+
+msgid "Caret Up"
+msgstr "İmleç Yukarı"
+
+msgid "Caret Down"
+msgstr "İmleci Aşağı"
+
+msgid "Caret Line Start"
+msgstr "İmleç Satır Başına"
+
+msgid "Caret Line End"
+msgstr "İmleç Satır Sonuna"
+
+msgid "Caret Page Up"
+msgstr "İmleç Sayfa Yukarı"
+
+msgid "Caret Page Down"
+msgstr "İmleç Sayfa Aşağı"
+
+msgid "Caret Document Start"
+msgstr "İmleç Belge Başlangıcına"
+
+msgid "Caret Document End"
+msgstr "İmleç Belge Sonuna"
+
+msgid "Caret Add Below"
+msgstr "Alta İmleç Ekle"
+
+msgid "Caret Add Above"
+msgstr "Üste İmleç Ekle"
+
+msgid "Scroll Up"
+msgstr "Yukarı Kaydır"
+
+msgid "Scroll Down"
+msgstr "Aşağı Kaydır"
+
 msgid "Select All"
 msgstr "Hepsini Seç"
+
+msgid "Select Word Under Caret"
+msgstr "İmlecin Durduğu Kelimeyi Seç"
+
+msgid "Clear Carets and Selection"
+msgstr "İmleçleri ve Seçimi Temizle"
+
+msgid "Toggle Insert Mode"
+msgstr "Araekleme Şeklini Değiştir"
+
+msgid "Submit Text"
+msgstr "Metin Gönder"
 
 msgid "Duplicate Nodes"
 msgstr "Düğümleri Çokla"
@@ -356,6 +473,12 @@ msgstr "'%s' oluşturulurken geçersiz argümanlar atandı"
 
 msgid "On call to '%s':"
 msgstr "'%s' çağrıldığında:"
+
+msgid "Built-in script"
+msgstr "Yerleşik Betik"
+
+msgid "Built-in"
+msgstr "Yerleşik"
 
 msgid "B"
 msgstr "B"
@@ -390,6 +513,9 @@ msgstr "İşlem '%s' zaten var."
 msgid "Add Event"
 msgstr "Olay Ekle"
 
+msgid "Cannot Remove Action"
+msgstr "Eylem Kaldırılamıyor"
+
 msgid "Add"
 msgstr "Ekle"
 
@@ -422,6 +548,9 @@ msgstr "Bezier Noktalarını Taşı"
 
 msgid "Focus"
 msgstr "Odak"
+
+msgid "Animation Change %s"
+msgstr "Animasyon Değişimi %s"
 
 msgid "Change Animation Length"
 msgstr "Animasyon Uzunluğunu Değiştir"
@@ -747,6 +876,9 @@ msgstr "Temizlik"
 msgid "Scale Ratio:"
 msgstr "Ölçek Oranı:"
 
+msgid "Value Track:"
+msgstr "Değer Takibi:"
+
 msgid "Select Tracks to Copy"
 msgstr "Kopyalanacak izleri seç"
 
@@ -853,6 +985,9 @@ msgstr "Ekstra Çağrı Argümanı Ekle:"
 
 msgid "Extra Call Arguments:"
 msgstr "Ekstra Çağrı Argümanları:"
+
+msgid "Unbind Signal Arguments:"
+msgstr "Sinyal Argümanlarını Çöz:"
 
 msgid "Receiver Method:"
 msgstr "Alıcı Metodu:"
@@ -1036,6 +1171,9 @@ msgstr "Zaman"
 msgid "Calls"
 msgstr "Çağrılar"
 
+msgid "Linked"
+msgstr "Bağlantılı"
+
 msgid "Bytes:"
 msgstr "Baytlar:"
 
@@ -1048,8 +1186,14 @@ msgstr "Hata:"
 msgid "%s Error"
 msgstr "%s Hatası"
 
+msgid "%s Error:"
+msgstr "%s Hatası:"
+
 msgid "Stack Trace"
 msgstr "Bellek Dökümü"
+
+msgid "Stack Trace:"
+msgstr "Yığın İzleme:"
 
 msgid "Copy Error"
 msgstr "Hatayı Kopyala"
@@ -1091,7 +1235,7 @@ msgid "Collapse All"
 msgstr "Hepsini Daralt"
 
 msgid "Profiler"
-msgstr "Profil Oluşturucu"
+msgstr "Profil Çıkarıcı"
 
 msgid "List of Video Memory Usage by Resource:"
 msgstr "Kaynağa Göre İzleti Belleği Kullanımının Dizelgesi:"
@@ -1173,6 +1317,11 @@ msgstr "Bağımlılık Düzenleyicisi"
 msgid "Search Replacement Resource:"
 msgstr "Yerine Geçecek Kaynak Ara:"
 
+msgid "Open Scene"
+msgid_plural "Open Scenes"
+msgstr[0] "Sahneyi Aç"
+msgstr[1] "Sahneleri Aç"
+
 msgid "Open"
 msgstr "Aç"
 
@@ -1239,6 +1388,9 @@ msgstr "Belirgin Sahipliği Olmayan Kaynaklar:"
 
 msgid "Could not create folder."
 msgstr "Klasör oluşturulamadı."
+
+msgid "Create new folder in %s:"
+msgstr "Şurada yeni klasör oluştur: %s"
 
 msgid "Create Folder"
 msgstr "Klasör Oluştur"
@@ -1559,6 +1711,9 @@ msgstr "Yeni"
 msgid "Save"
 msgstr "Kaydet"
 
+msgid "Profile:"
+msgstr "Profil:"
+
 msgid "Reset to Defaults"
 msgstr "Varsayılanlara dön"
 
@@ -1743,6 +1898,9 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "Varlıklar Yeniden-İçe Aktarılıyor"
 
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr "Bu değer, şu bayrakların bitmaskesi olarak birleştiği bir tam sayıdır."
+
 msgid "Experimental"
 msgstr "Deneysel"
 
@@ -1774,7 +1932,7 @@ msgid "default:"
 msgstr "varsayılan:"
 
 msgid "Constructors"
-msgstr "Yapıcı methodlar"
+msgstr "Kurucular"
 
 msgid "Operators"
 msgstr "Operatörler"
@@ -1889,6 +2047,29 @@ msgstr ""
 
 msgid "Open Documentation"
 msgstr "Klavuzu Aç"
+
+msgid "(%d change)"
+msgid_plural "(%d changes)"
+msgstr[0] "(%d değişen)"
+msgstr[1] "(%d değişen)"
+
+msgid "Add element to property array with prefix %s."
+msgstr "Elemanı, %s ön ekli özellik dizisine ekle."
+
+msgid "Remove element %d from property array with prefix %s."
+msgstr "%d elemanını, %s ön ekli özellik dizisinden kaldır."
+
+msgid "Move element %d to position %d in property array with prefix %s."
+msgstr "%d elemanını %d konumuna taşı (%s ön ekli özellik dizisi içinde)."
+
+msgid "Clear property array with prefix %s."
+msgstr "%s ön ekli özellik dizisini temizle."
+
+msgid "Resize property array with prefix %s."
+msgstr "%s ön ekli özellik dizisini boyutlandır."
+
+msgid "Element %d: %s%d*"
+msgstr "Eleman %d: %s%d*"
 
 msgid "Move Up"
 msgstr "Yukarı Taşı"
@@ -3225,6 +3406,12 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "Bu isimde zaten bir dosya ve ya klasör mevcut."
 
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':"
+msgstr ""
+"Aşağıdaki dosyalar veya klasörler '%s' hedef konumundaki ögelerle çakışıyor:"
+
 msgid "Duplicating file:"
 msgstr "Dosya çoğaltılıyor:"
 
@@ -3528,6 +3715,16 @@ msgstr "(Gelen Bağlantı)"
 msgid "Node configuration warning:"
 msgstr "Düğüm yapılandırma uyarısı:"
 
+msgid "Node has one connection."
+msgid_plural "Node has {num} connections."
+msgstr[0] "Düğümün bir bağlantısı var."
+msgstr[1] "Düğümün {num} bağlantısı var."
+
+msgid "Node is in this group:"
+msgid_plural "Node is in the following groups:"
+msgstr[0] "Düğüm bu grupta:"
+msgstr[1] "Düğüm bu gruplarda:"
+
 msgid "Open in Editor"
 msgstr "Düzenleyicide Aç"
 
@@ -3550,9 +3747,6 @@ msgstr ""
 
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Geçersiz düğüm adı, aşağıdaki karakterlere izin verilmiyor:"
-
-msgid "Rename Node"
-msgstr "Düğümü Yeniden Adlandır"
 
 msgid "Scene Tree (Nodes):"
 msgstr "Sahne Ağacı (Düğümler):"
@@ -4903,6 +5097,11 @@ msgstr ""
 "Bir cihazda uzaktan kullanıldığında, bu, ağ dosya sistemi seçeneği "
 "etkinleştirildiğinde daha etkilidir."
 
+msgid "Run %d Instance"
+msgid_plural "Run %d Instances"
+msgstr[0] "%d Örnekleme çalıştır"
+msgstr[1] "%d Örnekleme çalıştır"
+
 msgid "No supported features"
 msgstr "Desteklenen özellik yok"
 
@@ -6178,6 +6377,9 @@ msgstr "Sonraki Kesme Noktasına Git"
 msgid "Go to Previous Breakpoint"
 msgstr "Önceki Kesme Noktasına Git"
 
+msgid "ShaderFile"
+msgstr "GölgelendirmeDosyası"
+
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Bu iskelette hiç kemik yok, alt öge olarak Kemik2D düğümleri oluştur."
 
@@ -6342,7 +6544,7 @@ msgid "Separation:"
 msgstr "Ayrım:"
 
 msgid "Styleboxes"
-msgstr "StilKutusu"
+msgstr "Tarzkutuları"
 
 msgid "1 color"
 msgid_plural "{num} colors"
@@ -6371,8 +6573,18 @@ msgstr[1] "{num} yazı boyutu"
 msgid "No icons found."
 msgstr "Simge bulunamadı."
 
+msgid "1 stylebox"
+msgid_plural "{num} styleboxes"
+msgstr[0] "1 tarzkutusu"
+msgstr[1] "{num} tarzkutusu"
+
 msgid "No styleboxes found."
-msgstr "Stil kutusu bulunamadı."
+msgstr "Hiç tarzkutusu bulunamadı."
+
+msgid "{num} currently selected"
+msgid_plural "{num} currently selected"
+msgstr[0] "{num} şuan seçili"
+msgstr[1] "{num} şuan seçili"
 
 msgid "Nothing was selected for the import."
 msgstr "İçe aktarma için hiçbir şey seçilmedi."
@@ -6432,13 +6644,13 @@ msgid "Deselect all visible icon items."
 msgstr "Tüm görünür simge öğelerinin seçimini kaldırın."
 
 msgid "Select all visible stylebox items."
-msgstr "Tüm görünür stil kutusu öğelerini seçin."
+msgstr "Tüm görünür tarzkutusu öğelerini seç."
 
 msgid "Select all visible stylebox items and their data."
-msgstr "Tüm görünür stil kutusu öğelerini ve verilerini seçin."
+msgstr "Tüm görünür tarzkutusu öğelerini ve bunların verilerini seç."
 
 msgid "Deselect all visible stylebox items."
-msgstr "Tüm görünür stil kutusu öğelerinin seçimini kaldırın."
+msgstr "Tüm görünür tarzkutusu öğelerinin seçimini kaldır."
 
 msgid ""
 "Caution: Adding icon data may considerably increase the size of your Theme "
@@ -6504,7 +6716,7 @@ msgid "Remove All Icon Items"
 msgstr "Tüm Simge Öğelerini Kaldır"
 
 msgid "Remove All StyleBox Items"
-msgstr "Tüm Stil Kutusu Öğelerini Kaldır"
+msgstr "Tüm TarzKutusu Öğelerini Kaldır"
 
 msgid ""
 "This theme type is empty.\n"
@@ -6526,7 +6738,7 @@ msgid "Add Icon Item"
 msgstr "Simge Öğesi Ekle"
 
 msgid "Add Stylebox Item"
-msgstr "Stil Kutusu Öğesi Ekle"
+msgstr "Tarzkutusu Öğesi Ekle"
 
 msgid "Rename Color Item"
 msgstr "Renk Öğesini Yeniden Adlandır"
@@ -6541,7 +6753,7 @@ msgid "Rename Icon Item"
 msgstr "Simge Öğesini Yeniden Adlandır"
 
 msgid "Rename Stylebox Item"
-msgstr "Stil Kutusu Öğesini Yeniden Adlandır"
+msgstr "Tarzkutusu Öğesini Yeniden Adlandır"
 
 msgid "Invalid file, not a Theme resource."
 msgstr "Geçersiz dosya, Tema kaynağı değil."
@@ -6565,7 +6777,7 @@ msgid "Add Item:"
 msgstr "Öğe Ekle:"
 
 msgid "Add StyleBox Item"
-msgstr "Stil Kutusu Öğesi Ekle"
+msgstr "TarzKutusu Öğesi Ekle"
 
 msgid "Remove Items:"
 msgstr "Öğeleri kaldır:"
@@ -6622,20 +6834,29 @@ msgid "Override Item"
 msgstr "Öğeyi Geçersiz Kıl"
 
 msgid "Unpin this StyleBox as a main style."
-msgstr "Bu Stil Kutusunun ana stil olarak sabitlemesini kaldırın."
+msgstr "Bu TarzKutusu'nun ana tarz sabitlemesini kaldır."
 
 msgid ""
 "Pin this StyleBox as a main style. Editing its properties will update the "
 "same properties in all other StyleBoxes of this type."
 msgstr ""
-"Bu Stil Kutusunu ana stil olarak sabitleyin. Özelliklerini düzenlemek, bu "
-"tipteki diğer tüm StyleBox'larda aynı özellikleri güncelleyecektir."
+"Bu TarzKutusunu ana tarz olarak sabitle. Bunun özelliklerini düzenlemek, bu "
+"tipteki diğer tüm TarzKutularının aynı özelliklerini güncelleyecektir."
 
 msgid "Add Item Type"
 msgstr "Öğe Türü Ekle"
 
 msgid "Add Type"
 msgstr "Tür Ekle"
+
+msgid "Set Stylebox Item in Theme"
+msgstr "TarzKutusu Öğesini Temaya Ayarla"
+
+msgid "Pin Stylebox"
+msgstr "TarzKutusunu Sabitle"
+
+msgid "Unpin Stylebox"
+msgstr "TarzKutusunun Sabitlemesini Kaldır"
 
 msgid "Show Default"
 msgstr "Varsayılanı Göster"
@@ -6989,6 +7210,9 @@ msgstr "Bölümlenme"
 
 msgid "Light"
 msgstr "Işık"
+
+msgid "Process"
+msgstr "İşlem"
 
 msgid "Sky"
 msgstr "Gökyüzü"
@@ -8294,44 +8518,8 @@ msgstr "NavMesh'i Sabitle"
 msgid "Clear the navigation mesh."
 msgstr "Yönlendirici örüntüsünü temizle."
 
-msgid "Setting up Configuration..."
-msgstr "Konfigürasyon Ayarlanıyor..."
-
-msgid "Calculating grid size..."
-msgstr "Izgara boyutu hesaplanıyor..."
-
-msgid "Creating heightfield..."
-msgstr "Yükseklik-alanı Oluşturuluyor..."
-
-msgid "Marking walkable triangles..."
-msgstr "Yürünebilir üçgenler işaretleniyor..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Aralıksız yükseklialanı inşa ediliyor..."
-
-msgid "Eroding walkable area..."
-msgstr "Yürünebilir alan aşındırılıyor..."
-
-msgid "Partitioning..."
-msgstr "Bölümleniyor..."
-
-msgid "Creating contours..."
-msgstr "Konturlar oluşturuluyor..."
-
-msgid "Creating polymesh..."
-msgstr "Çoklu-örüntü oluşturuluyor..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Yerli yönlendirici örüntüsüne dönüştürülüyor..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Navigasyon Örüntüsü Üreteci Kurulumu:"
-
-msgid "Parsing Geometry..."
-msgstr "Geometri Ayrıştırılıyor..."
-
-msgid "Done!"
-msgstr "Oldu!"
+msgid "Pose"
+msgstr "Duruş"
 
 msgid "Package name is missing."
 msgstr "Paket ismi eksik."
@@ -8539,6 +8727,9 @@ msgstr "Tanımlayıcı eksik."
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "Tanımlayıcı'da '%s' karakterine izin verilmiyor."
 
+msgid "Starting project..."
+msgstr "Proje Başlatılıyor..."
+
 msgid "Can't get filesystem access."
 msgstr "Dosya sistemi erişimi alınamıyor."
 
@@ -8616,6 +8807,9 @@ msgstr "Dosya yazılamadı: \"%s\"."
 
 msgid "Could not read file: \"%s\"."
 msgstr "Dosya okunamadı: \"%s\"."
+
+msgid "PWA"
+msgstr "PWA"
 
 msgid "Could not read HTML shell: \"%s\"."
 msgstr "HTML kabuğu okunamadı: \"%s\"."
@@ -8909,3 +9103,6 @@ msgstr "uniform için atama."
 
 msgid "Constants cannot be modified."
 msgstr "Sabit değerler değiştirilemez."
+
+msgid "Shader include file does not exist:"
+msgstr "Gölgelendirici içerme dosyası mevcut değil:"

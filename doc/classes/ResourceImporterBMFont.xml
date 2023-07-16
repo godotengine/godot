@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterBMFont" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="compress" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="fallbacks" type="Array" setter="" getter="" default="[]">
+		</member>
+	</members>
+</class>

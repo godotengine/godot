@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GlobalScope" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="@GlobalScope" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Global scope constants and functions.
 	</brief_description>
@@ -1509,7 +1509,7 @@
 			The [NavigationServer2D] singleton.
 		</member>
 		<member name="NavigationServer3D" type="NavigationServer3D" setter="" getter="">
-			The [NavigationServer2D] singleton.
+			The [NavigationServer3D] singleton.
 		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			The [OS] singleton.

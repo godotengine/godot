@@ -90,8 +90,23 @@ void NavAgent::_update_rvo_agent_properties() {
 }
 
 void NavAgent::set_map(NavMap *p_map) {
+	if (map == p_map) {
+		return;
+	}
+
+	if (map) {
+		map->remove_agent(this);
+	}
+
 	map = p_map;
 	agent_dirty = true;
+
+	if (map) {
+		map->add_agent(this);
+		if (avoidance_enabled) {
+			map->set_agent_as_controlled(this);
+		}
+	}
 }
 
 bool NavAgent::is_map_changed() {

@@ -36,6 +36,7 @@
 #include "core/string/translation.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
 #include "scene/resources/theme.h"
@@ -1266,9 +1267,9 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 		String prefix = "cache/" + itos(i) + "/";
 		TypedArray<Vector2i> sizes = get_size_cache_list(i);
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, prefix + "variation_coordinates", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::INT, "face_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "embolden", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM2D, "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + "face_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "embolden", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM2D, prefix + "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 
 		for (int j = 0; j < sizes.size(); j++) {
 			Vector2i sz = sizes[j];

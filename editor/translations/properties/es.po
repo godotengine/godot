@@ -94,13 +94,15 @@
 # Daniel Miranda <danmiranda@gmail.com>, 2023.
 # Sebas Echazú <sebastianechazu@outlook.com>, 2023.
 # Pedro Zebenzui Ortega Diaz <pipo.tf@gmail.com>, 2023.
+# Braulio León Madrid Escobar <brauliomadrid.developer@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-05-17 00:52+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2023-07-05 13:49+0000\n"
+"Last-Translator: Braulio León Madrid Escobar <brauliomadrid.developer@gmail."
+"com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
 "Language: es\n"
@@ -108,7 +110,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 msgid "Application"
 msgstr "Aplicación"
@@ -227,6 +229,9 @@ msgstr "Esquema de bus por defecto"
 msgid "General"
 msgstr "General"
 
+msgid "Text to Speech"
+msgstr "Texto a Voz"
+
 msgid "2D Panning Strength"
 msgstr "Fuerza de panoramización 2D"
 
@@ -241,6 +246,12 @@ msgstr "Script"
 
 msgid "Search in File Extensions"
 msgstr "Buscar en Extensiones de Archivos"
+
+msgid "Subwindows"
+msgstr "Subventanas"
+
+msgid "Embed Subwindows"
+msgstr "Incrustar Subventanas"
 
 msgid "Physics"
 msgstr "Físicas"
@@ -269,6 +280,9 @@ msgstr "Depurar"
 msgid "Settings"
 msgstr "Configuración"
 
+msgid "Profiler"
+msgstr "Perfilador"
+
 msgid "Max Functions"
 msgstr "Funciones Máximas"
 
@@ -280,6 +294,9 @@ msgstr "Formatos"
 
 msgid "Zstd"
 msgstr "Zstd"
+
+msgid "Long Distance Matching"
+msgstr "Coincidencia de larga distancia"
 
 msgid "Compression Level"
 msgstr "Nivel de Compresión"
@@ -311,6 +328,12 @@ msgstr "Servidor Multihilo"
 msgid "Internationalization"
 msgstr "Internacionalización"
 
+msgid "Force Right to Left Layout Direction"
+msgstr "Forzar dirección de diseño de derecha a izquierda"
+
+msgid "Root Node Layout Direction"
+msgstr "Dirección de diseño del nodo raíz"
+
 msgid "GUI"
 msgstr "GUI"
 
@@ -341,11 +364,23 @@ msgstr "Tamaño del Bloque (KB)"
 msgid "Max Size (MB)"
 msgstr "Tamaño Máximo (MB)"
 
+msgid "Texture Upload Region Size Px"
+msgstr "Tamaño de región de carga de textura en píxeles"
+
 msgid "Vulkan"
 msgstr "Vulkan"
 
+msgid "Max Descriptors per Pool"
+msgstr "Descriptores Máximos por Grupo"
+
 msgid "Textures"
 msgstr "Texturas"
+
+msgid "Canvas Textures"
+msgstr "Textura del lienzo"
+
+msgid "Default Texture Filter"
+msgstr "Filtro de Textura Predeterminado"
 
 msgid "Low Processor Usage Mode"
 msgstr "Modo de Bajo Uso del Procesador"
@@ -355,6 +390,9 @@ msgstr "Modo de Bajo Uso del Procesador en Reposo (µseg)"
 
 msgid "Print Error Messages"
 msgstr "Imprimir Mensajes de Error"
+
+msgid "Physics Ticks per Second"
+msgstr "Ticks de física por segundo"
 
 msgid "Max FPS"
 msgstr "FPS Máximos"
@@ -374,11 +412,44 @@ msgstr "Usar entrada acumulada"
 msgid "Input Devices"
 msgstr "Dispositivos de Entrada"
 
+msgid "Compatibility"
+msgstr "Compatibilidad"
+
+msgid "Legacy Just Pressed Behavior"
+msgstr "Comportamiento heredado recién presionado"
+
 msgid "Device"
 msgstr "Dispositivo"
 
+msgid "Window ID"
+msgstr "ID de Ventana"
+
+msgid "Command or Control Autoremap"
+msgstr "Comando o Control de Autoremapeo"
+
+msgid "Alt Pressed"
+msgstr "Alt Presionado"
+
+msgid "Shift Pressed"
+msgstr "Shift Presionado"
+
+msgid "Ctrl Pressed"
+msgstr "Ctrl Presionado"
+
+msgid "Meta Pressed"
+msgstr "Meta Presionado"
+
 msgid "Pressed"
 msgstr "Presionado"
+
+msgid "Keycode"
+msgstr "Código de tecla"
+
+msgid "Physical Keycode"
+msgstr "Código de Tecla Física"
+
+msgid "Key Label"
+msgstr "Etiqueta de tecla"
 
 msgid "Unicode"
 msgstr "Unicode"
@@ -400,6 +471,9 @@ msgstr "Factor"
 
 msgid "Button Index"
 msgstr "Índice de Botones"
+
+msgid "Canceled"
+msgstr "Cancelado"
 
 msgid "Double Click"
 msgstr "Doble Clic"
@@ -428,6 +502,9 @@ msgstr "Valor de los Ejes"
 msgid "Index"
 msgstr "Índice"
 
+msgid "Double Tap"
+msgstr "Doble Toque"
+
 msgid "Action"
 msgstr "Acción"
 
@@ -454,6 +531,15 @@ msgstr "Valor del Controlador"
 
 msgid "Shortcut"
 msgstr "Atajo"
+
+msgid "Events"
+msgstr "Eventos"
+
+msgid "Include Navigational"
+msgstr "Incluir Navegación"
+
+msgid "Include Hidden"
+msgstr "Incluir Oculto"
 
 msgid "Big Endian"
 msgstr "Big Endian"
@@ -482,6 +568,9 @@ msgstr "Tamaño Máximo del Buffer de Salida"
 msgid "Resource"
 msgstr "Recursos"
 
+msgid "Local to Scene"
+msgstr "Local a Escena"
+
 msgid "Path"
 msgstr "Ruta"
 
@@ -495,10 +584,16 @@ msgid "Region"
 msgstr "Región"
 
 msgid "Offset"
-msgstr "Offset"
+msgstr "Desplazamiento"
 
 msgid "Cell Size"
 msgstr "Tamaño de la casilla"
+
+msgid "Jumping Enabled"
+msgstr "Salto Habilitado"
+
+msgid "Default Compute Heuristic"
+msgstr "Cálculo Heurístico Predeterminado"
 
 msgid "Seed"
 msgstr "Semilla"
@@ -572,15 +667,6 @@ msgstr "Suavizar"
 msgid "Remote Port"
 msgstr "Puerto Remoto"
 
-msgid "Debugger"
-msgstr "Depurador"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "Intervalo de Refresco del Árbol de Escenas Remoto"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "Intervalo de Refresco de la Inspección Remota"
-
 msgid "FileSystem"
 msgstr "Sistema de Archivos"
 
@@ -592,9 +678,6 @@ msgstr "Puerto"
 
 msgid "Password"
 msgstr "Contraseña"
-
-msgid "Profiler Frame Max Functions"
-msgstr "Máximo de Funciones del Cuadro del Profiler"
 
 msgid "Default Feature Profile"
 msgstr "Perfil de Características Predeterminado"
@@ -1163,8 +1246,20 @@ msgstr "Tamaño de Fuente"
 msgid "Remote Host"
 msgstr "Host Remoto"
 
+msgid "Debugger"
+msgstr "Depurador"
+
 msgid "Profiler Frame History Size"
 msgstr "Tamaño del Historial del Perfilador de Fotogramas"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Máximo de Funciones del Cuadro del Profiler"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Intervalo de Refresco del Árbol de Escenas Remoto"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Intervalo de Refresco de la Inspección Remota"
 
 msgid "HTTP Proxy"
 msgstr "Proxy HTTP"
@@ -4326,7 +4421,7 @@ msgid "Snap Distance"
 msgstr "Ajustar Distancia"
 
 msgid "Use Snap"
-msgstr "Usar Snap"
+msgstr "Usar Ajuste"
 
 msgid "Zoom Min"
 msgstr "Zoom Mínimo"

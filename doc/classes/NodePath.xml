@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NodePath" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NodePath" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A pre-parsed scene tree path.
 	</brief_description>
@@ -15,6 +15,7 @@
 		^"." # The current node.
 		^".." # The parent node.
 		^"../C" # A sibling node C.
+		^"../.." # The grandparent node.
 		# A leading slash means it is absolute from the SceneTree.
 		^"/root" # Equivalent to get_tree().get_root().
 		^"/root/Main" # If your main scene's root node were named "Main".

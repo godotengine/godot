@@ -29,9 +29,14 @@
 /**************************************************************************/
 
 #include "texture_editor_plugin.h"
+
 #include "editor/editor_scale.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/resources/animated_texture.h"
+#include "scene/resources/atlas_texture.h"
+#include "scene/resources/compressed_texture.h"
+#include "scene/resources/image_texture.h"
 
 TextureRect *TexturePreview::get_texture_display() {
 	return texture_display;

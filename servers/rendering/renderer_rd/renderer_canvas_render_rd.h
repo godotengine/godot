@@ -48,6 +48,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		CANVAS_TEXTURE_UNIFORM_SET = 3,
 	};
 
+	const int SAMPLERS_BINDING_FIRST_INDEX = 10;
+
 	enum ShaderVariant {
 		SHADER_VARIANT_QUAD,
 		SHADER_VARIANT_NINEPATCH,

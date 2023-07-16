@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="OS" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides access to common operating system functionalities.
 	</brief_description>
@@ -240,8 +240,8 @@
 		<method name="get_granted_permissions" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				With this function, you can get the list of dangerous permissions that have been granted to the Android application.
-				[b]Note:[/b] This method is implemented only on Android.
+				On Android devices: With this function, you can get the list of dangerous permissions that have been granted.
+				On macOS (sandboxed applications only): This function returns the list of user selected folders accessible to the application. Use native file dialog to request folder access permission.
 			</description>
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
@@ -534,6 +534,13 @@
 				Returns [code]true[/code] if the project will automatically restart when it exits for any reason, [code]false[/code] otherwise. See also [method set_restart_on_exit] and [method get_restart_on_exit_arguments].
 			</description>
 		</method>
+		<method name="is_sandboxed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if application is running in the sandbox.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
 		<method name="is_stdout_verbose" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -602,6 +609,12 @@
 				[b]Note:[/b] This method is implemented only on Android.
 			</description>
 		</method>
+		<method name="revoke_granted_permissions">
+			<return type="void" />
+			<description>
+				On macOS (sandboxed applications only), this function clears list of user selected folders accessible to the application.
+			</description>
+		</method>
 		<method name="set_environment" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="variable" type="String" />
@@ -657,7 +670,7 @@
 				Requests the OS to open the file manager, then navigate to the given [param file_or_dir_path] and select the target file or folder.
 				If [param file_or_dir_path] is a valid directory path, and [param open_folder] is [code]true[/code], the method will open the file manager and enter the target folder without selecting anything.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
-				[b]Note:[/b] Currently this method is only implemented on Windows. On other platforms, it will fallback to [method shell_open] with a directory path for [param file_or_dir_path].
+				[b]Note:[/b] Currently this method is only implemented on Windows and macOS. On other platforms, it will fallback to [method shell_open] with a directory path of [param file_or_dir_path] with prefix [code]file://[/code].
 			</description>
 		</method>
 		<method name="unset_environment" qualifiers="const">

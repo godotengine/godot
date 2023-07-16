@@ -31,11 +31,15 @@
 #include "export_plugin.h"
 
 #include "logo_svg.gen.h"
+#include "run_icon_svg.gen.h"
 
+#include "core/io/json.h"
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/export/editor_export.h"
+#include "editor/plugins/script_editor_plugin.h"
 
 #include "modules/modules_enabled.gen.h" // For mono and svg.
 #ifdef MODULE_SVG_ENABLED
@@ -1475,6 +1479,10 @@ Error EditorExportPlatformIOS::_export_ios_plugins(const Ref<EditorExportPreset>
 }
 
 Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+	return _export_project_helper(p_preset, p_debug, p_path, p_flags, false, false);
+}
+
+Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags, bool p_simulator, bool p_skip_ipa) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	String src_pkg_name;
@@ -1853,11 +1861,19 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	archive_args.push_back("-scheme");
 	archive_args.push_back(binary_name);
 	archive_args.push_back("-sdk");
-	archive_args.push_back("iphoneos");
+	if (p_simulator) {
+		archive_args.push_back("iphonesimulator");
+	} else {
+		archive_args.push_back("iphoneos");
+	}
 	archive_args.push_back("-configuration");
 	archive_args.push_back(p_debug ? "Debug" : "Release");
 	archive_args.push_back("-destination");
-	archive_args.push_back("generic/platform=iOS");
+	if (p_simulator) {
+		archive_args.push_back("generic/platform=iOS Simulator");
+	} else {
+		archive_args.push_back("generic/platform=iOS");
+	}
 	archive_args.push_back("archive");
 	archive_args.push_back("-allowProvisioningUpdates");
 	archive_args.push_back("-archivePath");
@@ -1871,26 +1887,27 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		return FAILED;
 	}
 
-	if (ep.step("Making .ipa", 4)) {
-		return ERR_SKIP;
-	}
-	List<String> export_args;
-	export_args.push_back("-exportArchive");
-	export_args.push_back("-archivePath");
-	export_args.push_back(archive_path);
-	export_args.push_back("-exportOptionsPlist");
-	export_args.push_back(dest_dir + binary_name + "/export_options.plist");
-	export_args.push_back("-allowProvisioningUpdates");
-	export_args.push_back("-exportPath");
-	export_args.push_back(dest_dir);
-	String export_str;
-	err = OS::get_singleton()->execute("xcodebuild", export_args, &export_str, nullptr, true);
-	ERR_FAIL_COND_V(err, err);
-
-	print_line("xcodebuild (.ipa):\n" + export_str);
-	if (!export_str.contains("** EXPORT SUCCEEDED **")) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), TTR(".ipa export failed, see editor log for details."));
-		return FAILED;
+	if (!p_skip_ipa) {
+		if (ep.step("Making .ipa", 4)) {
+			return ERR_SKIP;
+		}
+		List<String> export_args;
+		export_args.push_back("-exportArchive");
+		export_args.push_back("-archivePath");
+		export_args.push_back(archive_path);
+		export_args.push_back("-exportOptionsPlist");
+		export_args.push_back(dest_dir + binary_name + "/export_options.plist");
+		export_args.push_back("-allowProvisioningUpdates");
+		export_args.push_back("-exportPath");
+		export_args.push_back(dest_dir);
+		String export_str;
+		err = OS::get_singleton()->execute("xcodebuild", export_args, &export_str, nullptr, true);
+		ERR_FAIL_COND_V(err, err);
+		print_line("xcodebuild (.ipa):\n" + export_str);
+		if (!export_str.contains("** EXPORT SUCCEEDED **")) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), TTR(".ipa export failed, see editor log for details."));
+			return FAILED;
+		}
 	}
 #else
 	add_message(EXPORT_MESSAGE_WARNING, TTR("Xcode Build"), TTR(".ipa can only be built on macOS. Leaving Xcode project without building the package."));
@@ -1972,26 +1989,419 @@ bool EditorExportPlatformIOS::has_valid_project_configuration(const Ref<EditorEx
 	return valid;
 }
 
+int EditorExportPlatformIOS::get_options_count() const {
+	MutexLock lock(device_lock);
+	return devices.size();
+}
+
+String EditorExportPlatformIOS::get_options_tooltip() const {
+	return TTR("Select device from the list");
+}
+
+Ref<ImageTexture> EditorExportPlatformIOS::get_option_icon(int p_index) const {
+	MutexLock lock(device_lock);
+
+	Ref<ImageTexture> icon;
+	if (p_index >= 0 || p_index < devices.size()) {
+		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
+		if (theme.is_valid()) {
+			if (devices[p_index].simulator) {
+				icon = theme->get_icon("IOSSimulator", "EditorIcons");
+			} else if (devices[p_index].wifi) {
+				icon = theme->get_icon("IOSDeviceWireless", "EditorIcons");
+			} else {
+				icon = theme->get_icon("IOSDeviceWired", "EditorIcons");
+			}
+		}
+	}
+	return icon;
+}
+
+String EditorExportPlatformIOS::get_option_label(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, devices.size(), "");
+	MutexLock lock(device_lock);
+	return devices[p_index].name;
+}
+
+String EditorExportPlatformIOS::get_option_tooltip(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, devices.size(), "");
+	MutexLock lock(device_lock);
+	return "UUID: " + devices[p_index].id;
+}
+
+bool EditorExportPlatformIOS::is_package_name_valid(const String &p_package, String *r_error) const {
+	String pname = p_package;
+
+	if (pname.length() == 0) {
+		if (r_error) {
+			*r_error = TTR("Identifier is missing.");
+		}
+		return false;
+	}
+
+	for (int i = 0; i < pname.length(); i++) {
+		char32_t c = pname[i];
+		if (!(is_ascii_alphanumeric_char(c) || c == '-' || c == '.')) {
+			if (r_error) {
+				*r_error = vformat(TTR("The character '%s' is not allowed in Identifier."), String::chr(c));
+			}
+			return false;
+		}
+	}
+
+	return true;
+}
+
+#ifdef MACOS_ENABLED
+void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
+	EditorExportPlatformIOS *ea = static_cast<EditorExportPlatformIOS *>(ud);
+
+	while (!ea->quit_request.is_set()) {
+		// Nothing to do if we already know the plugins have changed.
+		if (!ea->plugins_changed.is_set()) {
+			MutexLock lock(ea->plugins_lock);
+
+			Vector<PluginConfigIOS> loaded_plugins = get_plugins();
+
+			if (ea->plugins.size() != loaded_plugins.size()) {
+				ea->plugins_changed.set();
+			} else {
+				for (int i = 0; i < ea->plugins.size(); i++) {
+					if (ea->plugins[i].name != loaded_plugins[i].name || ea->plugins[i].last_updated != loaded_plugins[i].last_updated) {
+						ea->plugins_changed.set();
+						break;
+					}
+				}
+			}
+		}
+
+		// Check for devices updates.
+		Vector<Device> ldevices;
+
+		// Enum real devices.
+		String idepl = EDITOR_GET("export/ios/ios_deploy");
+		if (idepl.is_empty()) {
+			idepl = "ios-deploy";
+		}
+		{
+			String devices;
+			List<String> args;
+			args.push_back("-c");
+			args.push_back("-timeout");
+			args.push_back("1");
+			args.push_back("-j");
+			args.push_back("-u");
+			args.push_back("-I");
+
+			int ec = 0;
+			Error err = OS::get_singleton()->execute(idepl, args, &devices, &ec, true);
+			if (err == OK && ec == 0) {
+				Ref<JSON> json;
+				json.instantiate();
+				devices = "{ \"devices\":[" + devices.replace("}{", "},{") + "]}";
+				err = json->parse(devices);
+				if (err == OK) {
+					Dictionary data = json->get_data();
+					Array devices = data["devices"];
+					for (int i = 0; i < devices.size(); i++) {
+						Dictionary device_event = devices[i];
+						if (device_event["Event"] == "DeviceDetected") {
+							Dictionary device_info = device_event["Device"];
+							Device nd;
+							nd.id = device_info["DeviceIdentifier"];
+							nd.name = device_info["DeviceName"].operator String() + " (connected through " + device_event["Interface"].operator String() + ")";
+							nd.wifi = device_event["Interface"] == "WIFI";
+							nd.simulator = false;
+							ldevices.push_back(nd);
+						}
+					}
+				}
+			}
+		}
+
+		// Enum simulators
+		if (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun")) {
+			String devices;
+			List<String> args;
+			args.push_back("simctl");
+			args.push_back("list");
+			args.push_back("devices");
+			args.push_back("-j");
+
+			int ec = 0;
+			Error err = OS::get_singleton()->execute("xcrun", args, &devices, &ec, true);
+			if (err == OK && ec == 0) {
+				Ref<JSON> json;
+				json.instantiate();
+				err = json->parse(devices);
+				if (err == OK) {
+					Dictionary data = json->get_data();
+					Dictionary devices = data["devices"];
+					for (const Variant *key = devices.next(nullptr); key; key = devices.next(key)) {
+						Array os_devices = devices[*key];
+						for (int i = 0; i < os_devices.size(); i++) {
+							Dictionary device_info = os_devices[i];
+							if (device_info["isAvailable"].operator bool() && device_info["state"] == "Booted") {
+								Device nd;
+								nd.id = device_info["udid"];
+								nd.name = device_info["name"].operator String() + " (simulator)";
+								nd.simulator = true;
+								ldevices.push_back(nd);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Update device list.
+		{
+			MutexLock lock(ea->device_lock);
+
+			bool different = false;
+
+			if (ea->devices.size() != ldevices.size()) {
+				different = true;
+			} else {
+				for (int i = 0; i < ea->devices.size(); i++) {
+					if (ea->devices[i].id != ldevices[i].id) {
+						different = true;
+						break;
+					}
+				}
+			}
+
+			if (different) {
+				ea->devices = ldevices;
+				ea->devices_changed.set();
+			}
+		}
+
+		uint64_t sleep = 200;
+		uint64_t wait = 3000000;
+		uint64_t time = OS::get_singleton()->get_ticks_usec();
+		while (OS::get_singleton()->get_ticks_usec() - time < wait) {
+			OS::get_singleton()->delay_usec(1000 * sleep);
+			if (ea->quit_request.is_set()) {
+				break;
+			}
+		}
+	}
+}
+#endif
+
+Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
+#ifdef MACOS_ENABLED
+	ERR_FAIL_INDEX_V(p_device, devices.size(), ERR_INVALID_PARAMETER);
+
+	String can_export_error;
+	bool can_export_missing_templates;
+	if (!can_export(p_preset, can_export_error, can_export_missing_templates)) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), can_export_error);
+		return ERR_UNCONFIGURED;
+	}
+
+	MutexLock lock(device_lock);
+
+	EditorProgress ep("run", vformat(TTR("Running on %s"), devices[p_device].name), 3);
+
+	String id = "tmpexport." + uitos(OS::get_singleton()->get_unix_time());
+
+	Ref<DirAccess> filesystem_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	ERR_FAIL_COND_V_MSG(filesystem_da.is_null(), ERR_CANT_CREATE, "Cannot create DirAccess for path '" + EditorPaths::get_singleton()->get_cache_dir() + "'.");
+	filesystem_da->make_dir_recursive(EditorPaths::get_singleton()->get_cache_dir().path_join(id));
+	String tmp_export_path = EditorPaths::get_singleton()->get_cache_dir().path_join(id).path_join("export.ipa");
+
+#define CLEANUP_AND_RETURN(m_err)                                                                           \
+	{                                                                                                       \
+		if (filesystem_da->change_dir(EditorPaths::get_singleton()->get_cache_dir().path_join(id)) == OK) { \
+			filesystem_da->erase_contents_recursive();                                                      \
+			filesystem_da->change_dir("..");                                                                \
+			filesystem_da->remove(id);                                                                      \
+		}                                                                                                   \
+		return m_err;                                                                                       \
+	}                                                                                                       \
+	((void)0)
+
+	Device dev = devices[p_device];
+
+	// Export before sending to device.
+	Error err = _export_project_helper(p_preset, true, tmp_export_path, p_debug_flags, dev.simulator, true);
+
+	if (err != OK) {
+		CLEANUP_AND_RETURN(err);
+	}
+
+	Vector<String> cmd_args_list;
+	String host = EDITOR_GET("network/debug/remote_host");
+	int remote_port = (int)EDITOR_GET("network/debug/remote_port");
+
+	if (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST) {
+		host = "localhost";
+	}
+
+	if (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT) {
+		int port = EDITOR_GET("filesystem/file_server/port");
+		String passwd = EDITOR_GET("filesystem/file_server/password");
+		cmd_args_list.push_back("--remote-fs");
+		cmd_args_list.push_back(host + ":" + itos(port));
+		if (!passwd.is_empty()) {
+			cmd_args_list.push_back("--remote-fs-password");
+			cmd_args_list.push_back(passwd);
+		}
+	}
+
+	if (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) {
+		cmd_args_list.push_back("--remote-debug");
+
+		cmd_args_list.push_back(get_debug_protocol() + host + ":" + String::num(remote_port));
+
+		List<String> breakpoints;
+		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
+
+		if (breakpoints.size()) {
+			cmd_args_list.push_back("--breakpoints");
+			String bpoints;
+			for (const List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
+				bpoints += E->get().replace(" ", "%20");
+				if (E->next()) {
+					bpoints += ",";
+				}
+			}
+
+			cmd_args_list.push_back(bpoints);
+		}
+	}
+
+	if (p_debug_flags & DEBUG_FLAG_VIEW_COLLISIONS) {
+		cmd_args_list.push_back("--debug-collisions");
+	}
+
+	if (p_debug_flags & DEBUG_FLAG_VIEW_NAVIGATION) {
+		cmd_args_list.push_back("--debug-navigation");
+	}
+
+	if (dev.simulator) {
+		// Deploy and run on simulator.
+		if (ep.step("Installing to simulator...", 3)) {
+			CLEANUP_AND_RETURN(ERR_SKIP);
+		} else {
+			List<String> args;
+			args.push_back("simctl");
+			args.push_back("install");
+			args.push_back(dev.id);
+			args.push_back(EditorPaths::get_singleton()->get_cache_dir().path_join(id).path_join("export.xcarchive/Products/Applications/export.app"));
+
+			String log;
+			int ec;
+			err = OS::get_singleton()->execute("xcrun", args, &log, &ec, true);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_WARNING, TTR("Run"), TTR("Could not start simctl executable."));
+				CLEANUP_AND_RETURN(err);
+			}
+			if (ec != 0) {
+				print_line("simctl install:\n" + log);
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Installation failed, see editor log for details."));
+				CLEANUP_AND_RETURN(ERR_UNCONFIGURED);
+			}
+		}
+
+		if (ep.step("Running on simulator...", 4)) {
+			CLEANUP_AND_RETURN(ERR_SKIP);
+		} else {
+			List<String> args;
+			args.push_back("simctl");
+			args.push_back("launch");
+			args.push_back(dev.id);
+			args.push_back(p_preset->get("application/bundle_identifier"));
+			for (const String &E : cmd_args_list) {
+				args.push_back(E);
+			}
+
+			String log;
+			int ec;
+			err = OS::get_singleton()->execute("xcrun", args, &log, &ec, true);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_WARNING, TTR("Run"), TTR("Could not start simctl executable."));
+				CLEANUP_AND_RETURN(err);
+			}
+			if (ec != 0) {
+				print_line("simctl launch:\n" + log);
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Running failed, see editor log for details."));
+			}
+		}
+	} else {
+		// Deploy and run on real device.
+		if (ep.step("Installing and running on device...", 4)) {
+			CLEANUP_AND_RETURN(ERR_SKIP);
+		} else {
+			List<String> args;
+			args.push_back("-u");
+			args.push_back("-I");
+			args.push_back("--id");
+			args.push_back(dev.id);
+			args.push_back("--justlaunch");
+			args.push_back("--bundle");
+			args.push_back(EditorPaths::get_singleton()->get_cache_dir().path_join(id).path_join("export.xcarchive/Products/Applications/export.app"));
+			String app_args;
+			for (const String &E : cmd_args_list) {
+				app_args += E + " ";
+			}
+			if (!app_args.is_empty()) {
+				args.push_back("--args");
+				args.push_back(app_args);
+			}
+
+			String idepl = EDITOR_GET("export/ios/ios_deploy");
+			if (idepl.is_empty()) {
+				idepl = "ios-deploy";
+			}
+			String log;
+			int ec;
+			err = OS::get_singleton()->execute(idepl, args, &log, &ec, true);
+			if (err != OK) {
+				add_message(EXPORT_MESSAGE_WARNING, TTR("Run"), TTR("Could not start ios-deploy executable."));
+				CLEANUP_AND_RETURN(err);
+			}
+			if (ec != 0) {
+				print_line("ios-deploy:\n" + log);
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Installation/running failed, see editor log for details."));
+				CLEANUP_AND_RETURN(ERR_UNCONFIGURED);
+			}
+		}
+	}
+
+	CLEANUP_AND_RETURN(OK);
+
+#undef CLEANUP_AND_RETURN
+#else
+	return ERR_UNCONFIGURED;
+#endif
+}
+
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
 	if (EditorNode::get_singleton()) {
 #ifdef MODULE_SVG_ENABLED
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG img_loader;
-		img_loader.create_image_from_string(img, _ios_logo_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _ios_logo_svg, EDSCALE, upsample, false);
 		logo = ImageTexture::create_from_image(img);
+
+		ImageLoaderSVG::create_image_from_string(img, _ios_run_icon_svg, EDSCALE, upsample, false);
+		run_icon = ImageTexture::create_from_image(img);
 #endif
 
 		plugins_changed.set();
-#ifndef ANDROID_ENABLED
+		devices_changed.set();
+#ifdef MACOS_ENABLED
 		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 #endif
 	}
 }
 
 EditorExportPlatformIOS::~EditorExportPlatformIOS() {
-#ifndef ANDROID_ENABLED
+#ifdef MACOS_ENABLED
 	quit_request.set();
 	if (check_for_changes_thread.is_started()) {
 		check_for_changes_thread.wait_to_finish();

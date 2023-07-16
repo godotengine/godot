@@ -315,6 +315,8 @@ public:
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
 
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
+
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 
@@ -433,6 +435,7 @@ public:
 	virtual String keyboard_get_layout_language(int p_index) const override;
 	virtual String keyboard_get_layout_name(int p_index) const override;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
+	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
 
 	virtual void process_events() override;
 	virtual void force_process_and_drop_events() override;

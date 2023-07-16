@@ -474,6 +474,7 @@ void Main::print_help(const char *p_binary) {
 
 	OS::get_singleton()->print("Standalone tools:\n");
 	OS::get_singleton()->print("  -s, --script <script>             Run a script.\n");
+	OS::get_singleton()->print("  --main-loop <main_loop_name>      Run a MainLoop specified by its global class name.\n");
 	OS::get_singleton()->print("  --check-only                      Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("  --export-release <preset> <path>  Export the project in release mode using the given preset and output path. The preset name should match one defined in export_presets.cfg.\n");
@@ -1956,6 +1957,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->_verbose_stdout = GLOBAL_GET("debug/settings/stdout/verbose_stdout");
 	}
 
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+	OS::get_singleton()->set_environment("MVK_CONFIG_LOG_LEVEL", OS::get_singleton()->_verbose_stdout ? "3" : "1"); // 1 = Errors only, 3 = Info
+#endif
+
 	if (frame_delay == 0) {
 		frame_delay = GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/frame_delay_msec", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), 0);
 	}
@@ -2598,6 +2603,7 @@ bool Main::start() {
 	String positional_arg;
 	String game_path;
 	String script;
+	String main_loop_type;
 	bool check_only = false;
 
 #ifdef TOOLS_ENABLED
@@ -2661,6 +2667,8 @@ bool Main::start() {
 			bool parsed_pair = true;
 			if (args[i] == "-s" || args[i] == "--script") {
 				script = args[i + 1];
+			} else if (args[i] == "--main-loop") {
+				main_loop_type = args[i + 1];
 #ifdef TOOLS_ENABLED
 			} else if (args[i] == "--doctool") {
 				doc_tool_path = args[i + 1];
@@ -2880,7 +2888,9 @@ bool Main::start() {
 	if (editor) {
 		main_loop = memnew(SceneTree);
 	}
-	String main_loop_type = GLOBAL_GET("application/run/main_loop_type");
+	if (main_loop_type.is_empty()) {
+		main_loop_type = GLOBAL_GET("application/run/main_loop_type");
+	}
 
 	if (!script.is_empty()) {
 		Ref<Script> script_res = ResourceLoader::load(script);
@@ -2907,7 +2917,7 @@ bool Main::start() {
 				ERR_FAIL_V_MSG(false, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 			}
 
-			script_loop->set_initialize_script(script_res);
+			script_loop->set_script(script_res);
 			main_loop = script_loop;
 		} else {
 			return false;
@@ -2930,7 +2940,7 @@ bool Main::start() {
 				OS::get_singleton()->alert("Error: Invalid MainLoop script base type: " + script_base);
 				ERR_FAIL_V_MSG(false, vformat("The global class %s does not inherit from SceneTree or MainLoop.", main_loop_type));
 			}
-			script_loop->set_initialize_script(script_res);
+			script_loop->set_script(script_res);
 			main_loop = script_loop;
 		}
 	}
@@ -2954,6 +2964,8 @@ bool Main::start() {
 			}
 		}
 	}
+
+	OS::get_singleton()->set_main_loop(main_loop);
 
 	SceneTree *sml = Object::cast_to<SceneTree>(main_loop);
 	if (sml) {
@@ -3273,8 +3285,6 @@ bool Main::start() {
 		Ref<Image> icon = memnew(Image(app_icon_png));
 		DisplayServer::get_singleton()->set_icon(icon);
 	}
-
-	OS::get_singleton()->set_main_loop(main_loop);
 
 	if (movie_writer) {
 		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());

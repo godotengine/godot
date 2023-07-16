@@ -31,6 +31,7 @@
 #include "particle_process_material.h"
 
 #include "core/version.h"
+#include "scene/resources/curve_texture.h"
 
 Mutex ParticleProcessMaterial::material_mutex;
 SelfList<ParticleProcessMaterial>::List *ParticleProcessMaterial::dirty_materials = nullptr;

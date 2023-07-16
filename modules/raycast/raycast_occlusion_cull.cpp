@@ -355,39 +355,12 @@ void RaycastOcclusionCull::Scenario::_update_dirty_instance(int p_idx, RID *p_in
 	// Embree requires the last element to be readable by a 16-byte SSE load instruction, so we add padding to be safe.
 	occ_inst->xformed_vertices.resize(vertices_size + 1);
 
-	const Vector3 *read_ptr = occ->vertices.ptr();
-	Vector3 *write_ptr = occ_inst->xformed_vertices.ptr();
-
-	if (vertices_size > 1024) {
-		TransformThreadData td;
-		td.xform = occ_inst->xform;
-		td.read = read_ptr;
-		td.write = write_ptr;
-		td.vertex_count = vertices_size;
-		td.thread_count = WorkerThreadPool::get_singleton()->get_thread_count();
-		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &Scenario::_transform_vertices_thread, &td, td.thread_count, -1, true, SNAME("RaycastOcclusionCull"));
-		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
-
-	} else {
-		_transform_vertices_range(read_ptr, write_ptr, occ_inst->xform, 0, vertices_size);
-	}
+	for_range(0, vertices_size, vertices_size > 1024, SNAME("RaycastOcclusionCull"), [&](const int i) {
+		occ_inst->xformed_vertices[i] = occ_inst->xform.xform(occ->vertices[i]);
+	});
 
 	occ_inst->indices.resize(occ->indices.size());
 	memcpy(occ_inst->indices.ptr(), occ->indices.ptr(), occ->indices.size() * sizeof(int32_t));
-}
-
-void RaycastOcclusionCull::Scenario::_transform_vertices_thread(uint32_t p_thread, TransformThreadData *p_data) {
-	uint32_t vertex_total = p_data->vertex_count;
-	uint32_t total_threads = p_data->thread_count;
-	uint32_t from = p_thread * vertex_total / total_threads;
-	uint32_t to = (p_thread + 1 == total_threads) ? vertex_total : ((p_thread + 1) * vertex_total / total_threads);
-	_transform_vertices_range(p_data->read, p_data->write, p_data->xform, from, to);
-}
-
-void RaycastOcclusionCull::Scenario::_transform_vertices_range(const Vector3 *p_read, Vector3 *p_write, const Transform3D &p_xform, int p_from, int p_to) {
-	for (int i = p_from; i < p_to; i++) {
-		p_write[i] = p_xform.xform(p_read[i]);
-	}
 }
 
 void RaycastOcclusionCull::Scenario::_commit_scene(void *p_ud) {

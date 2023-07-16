@@ -47,6 +47,9 @@ public:
 private:
 	RID particles;
 
+	bool emitting = false;
+	bool active = false;
+	bool signal_cancled = false;
 	bool one_shot = false;
 	int amount = 0;
 	double lifetime = 0.0;
@@ -77,6 +80,10 @@ private:
 	double trail_lifetime = 0.3;
 	int trail_sections = 8;
 	int trail_section_subdivisions = 4;
+
+	double time = 0.0;
+	double emission_time = 0.0;
+	double active_time = 0.0;
 
 	RID mesh;
 

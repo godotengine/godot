@@ -299,9 +299,15 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 								}
 
 							} break;
-							default: {
+							case '"':
+							case '\\':
+							case '/': {
 								res = next;
 							} break;
+							default: {
+								r_err_str = "Invalid escape sequence.";
+								return ERR_PARSE_ERROR;
+							}
 						}
 
 						str += res;

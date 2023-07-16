@@ -3015,9 +3015,6 @@ msgstr ""
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Άκυρο όνομα κόμβου, οι ακόλουθοι χαρακτήρες δεν επιτρέπονται:"
 
-msgid "Rename Node"
-msgstr "Μετονομασία κόμβου"
-
 msgid "Scene Tree (Nodes):"
 msgstr "Δέντρο σκηνής (Κόμβοι):"
 
@@ -6887,45 +6884,6 @@ msgstr "Ψήσιμο NavMesh"
 
 msgid "Clear the navigation mesh."
 msgstr "Εκκαθάριση του πλέγματος πλοήγησης."
-
-msgid "Setting up Configuration..."
-msgstr "Ρύθμιση παραμέτρων..."
-
-msgid "Calculating grid size..."
-msgstr "Υπολογισμός μεγέθους πλέγματος..."
-
-msgid "Creating heightfield..."
-msgstr "Δημιουργία πεδίου ύψους..."
-
-msgid "Marking walkable triangles..."
-msgstr "Επισήμανση βατών τριγώνων..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Δημιουργία συμπυκνωμένου πεδίου ύψους..."
-
-msgid "Eroding walkable area..."
-msgstr "Διάβρωση βατής περιοχής..."
-
-msgid "Partitioning..."
-msgstr "Διαμερισμός..."
-
-msgid "Creating contours..."
-msgstr "Δημιουργία περιγραμμάτων..."
-
-msgid "Creating polymesh..."
-msgstr "Δημιουργία πολύ-πλέγματος..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Μετατροπή σε εγγενή πλέγμα πλοήγησης..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Ρύθμιση γενήτριας πλέγματος πλοήγησης:"
-
-msgid "Parsing Geometry..."
-msgstr "Ανάλυση γεωμετρίας..."
-
-msgid "Done!"
-msgstr "Τέλος!"
 
 msgid "Package name is missing."
 msgstr "Το όνομα του πακέτου λείπει."

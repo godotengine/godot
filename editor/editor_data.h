@@ -312,7 +312,6 @@ public:
 
 	void update();
 	void clear();
-	void cancel_update();
 
 	// Returns all the selected nodes.
 	TypedArray<Node> get_selected_nodes();

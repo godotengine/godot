@@ -3385,9 +3385,6 @@ msgstr ""
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "El Nom del node no és vàlid. No es permeten els caràcters següents:"
 
-msgid "Rename Node"
-msgstr "Reanomena el Node"
-
 msgid "Scene Tree (Nodes):"
 msgstr "Arbre d'Escenes (Nodes):"
 
@@ -6581,45 +6578,6 @@ msgstr ""
 
 msgid "Clear the navigation mesh."
 msgstr "Reestableix la malla de navegació."
-
-msgid "Setting up Configuration..."
-msgstr "Establint la Configuració..."
-
-msgid "Calculating grid size..."
-msgstr "Calculant la mida de la quadrícula..."
-
-msgid "Creating heightfield..."
-msgstr "Creant un camp de desplaçaments verticals..."
-
-msgid "Marking walkable triangles..."
-msgstr "Marcant els triangles transitables..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Construcció d'un camp compacte de desplaçaments verticals..."
-
-msgid "Eroding walkable area..."
-msgstr "Erosionant l'àrea transitable..."
-
-msgid "Partitioning..."
-msgstr "Establint Particions..."
-
-msgid "Creating contours..."
-msgstr "Creant els contorns..."
-
-msgid "Creating polymesh..."
-msgstr "creant la polyMesh..."
-
-msgid "Converting to native navigation mesh..."
-msgstr "Convertint-ho en una malla de navegació nativa..."
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Configuració del Generador de Malles de Navegació:"
-
-msgid "Parsing Geometry..."
-msgstr "Analitzant la Geometria..."
-
-msgid "Done!"
-msgstr "Fet!"
 
 msgid "Package name is missing."
 msgstr "El nom del paquet falta."

@@ -21,18 +21,25 @@ struct AnchorMatrix
     if (unlikely (hb_unsigned_mul_overflows (rows, cols))) return_trace (false);
     unsigned int count = rows * cols;
     if (!c->check_array (matrixZ.arrayZ, count)) return_trace (false);
+
+    if (c->lazy_some_gpos)
+      return_trace (true);
+
     for (unsigned int i = 0; i < count; i++)
       if (!matrixZ[i].sanitize (c, this)) return_trace (false);
     return_trace (true);
   }
 
-  const Anchor& get_anchor (unsigned int row, unsigned int col,
-                            unsigned int cols, bool *found) const
+  const Anchor& get_anchor (hb_ot_apply_context_t *c,
+			    unsigned int row, unsigned int col,
+			    unsigned int cols, bool *found) const
   {
     *found = false;
     if (unlikely (row >= rows || col >= cols)) return Null (Anchor);
-    *found = !matrixZ[row * cols + col].is_null ();
-    return this+matrixZ[row * cols + col];
+    auto &offset = matrixZ[row * cols + col];
+    if (unlikely (!offset.sanitize (&c->sanitizer, this))) return Null (Anchor);
+    *found = !offset.is_null ();
+    return this+offset;
   }
 
   template <typename Iterator,

@@ -33,13 +33,14 @@
 # Isaque Mendes <isaquemendes405@gmail.com>, 2022.
 # Alex Bruno Boiniak <aboiniak@gmail.com>, 2022.
 # Deolindo <deolindojvn@gmail.com>, 2023.
+# Hevinis <meauriocardoso@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-20 17:02+0000\n"
-"Last-Translator: Deolindo <deolindojvn@gmail.com>\n"
+"PO-Revision-Date: 2023-06-18 13:52+0000\n"
+"Last-Translator: Hevinis <meauriocardoso@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pt/>\n"
 "Language: pt\n"
@@ -47,7 +48,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -160,14 +161,38 @@ msgstr "Áudio"
 msgid "Buses"
 msgstr "Barramento"
 
+msgid "Default Bus Layout"
+msgstr "Esquema Padrão de Bus"
+
+msgid "General"
+msgstr "Geral"
+
+msgid "Text to Speech"
+msgstr "Texto para Fala"
+
+msgid "2D Panning Strength"
+msgstr "Força de Panning 2D"
+
+msgid "3D Panning Strength"
+msgstr "Força de Panning 3D"
+
 msgid "Editor"
 msgstr "Editor"
+
+msgid "Script"
+msgstr "Script"
+
+msgid "Search in File Extensions"
+msgstr "Pesquisar em Extensões de Arquivo"
 
 msgid "Physics"
 msgstr "Física"
 
 msgid "2D"
 msgstr "2D"
+
+msgid "Run on Separate Thread"
+msgstr "Rodar em Sequência Separada"
 
 msgid "3D"
 msgstr "3D"
@@ -490,15 +515,6 @@ msgstr "Flexibilização"
 msgid "Remote Port"
 msgstr "Porta Remota"
 
-msgid "Debugger"
-msgstr "Depurador"
-
-msgid "Remote Scene Tree Refresh Interval"
-msgstr "Intervalo de Atualização da Árvore de Cena Remota"
-
-msgid "Remote Inspect Refresh Interval"
-msgstr "Intervalo de Atualização de Inspeção Remota"
-
 msgid "FileSystem"
 msgstr "Sistema de Ficheiros"
 
@@ -510,9 +526,6 @@ msgstr "Porta"
 
 msgid "Password"
 msgstr "Senha"
-
-msgid "Profiler Frame Max Functions"
-msgstr "Profiler Frame Max Funções"
 
 msgid "Default Feature Profile"
 msgstr "Perfil de Funcionalidades padrão"
@@ -1117,8 +1130,20 @@ msgstr "Tamanho da Fonte"
 msgid "Remote Host"
 msgstr "Host Remoto"
 
+msgid "Debugger"
+msgstr "Depurador"
+
 msgid "Profiler Frame History Size"
 msgstr "Tamanho do Histórico do Perfilador de Quadro"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Profiler Frame Max Funções"
+
+msgid "Remote Scene Tree Refresh Interval"
+msgstr "Intervalo de Atualização da Árvore de Cena Remota"
+
+msgid "Remote Inspect Refresh Interval"
+msgstr "Intervalo de Atualização de Inspeção Remota"
 
 msgid "HTTP Proxy"
 msgstr "Proxy HTTP"

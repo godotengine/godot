@@ -2343,9 +2343,6 @@ msgstr "Desbloquear Nodo"
 msgid "Node configuration warning:"
 msgstr "Aviso sobre a configuración do nodo:"
 
-msgid "Rename Node"
-msgstr "Renomear Nodo"
-
 msgid "Select a Node"
 msgstr "Seleccione un Nodo"
 
@@ -4133,12 +4130,6 @@ msgstr "RPC Saínte"
 
 msgid "Network Profiler"
 msgstr "Analítica de Rendemento de Rede"
-
-msgid "Partitioning..."
-msgstr "Particionando..."
-
-msgid "Done!"
-msgstr "Feito!"
 
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""

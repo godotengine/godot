@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationServer3D" inherits="Object" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationServer3D" inherits="Object" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A server interface for low-level 3D navigation access.
 	</brief_description>
@@ -211,7 +211,7 @@
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="source_geometry_data" type="NavigationMeshSourceGeometryData3D" />
-			<param index="2" name="callback" type="Callable" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
 			<description>
 				Bakes the provided [param navigation_mesh] with the data from the provided [param source_geometry_data]. After the process is finished the optional [param callback] will be called.
 			</description>
@@ -681,10 +681,11 @@
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="source_geometry_data" type="NavigationMeshSourceGeometryData3D" />
 			<param index="2" name="root_node" type="Node" />
-			<param index="3" name="callback" type="Callable" />
+			<param index="3" name="callback" type="Callable" default="Callable()" />
 			<description>
 				Parses the [SceneTree] for source geometry according to the properties of [param navigation_mesh]. Updates the provided [param source_geometry_data] resource with the resulting data. The resource can then be used to bake a navigation mesh with [method bake_from_source_geometry_data]. After the process is finished the optional [param callback] will be called.
 				[b]Note:[/b] This function needs to run on the main thread or with a deferred call as the SceneTree is not thread-safe.
+				[b]Performance:[/b] While convenient, reading data arrays from [Mesh] resources can affect the frame rate negatively. The data needs to be received from the GPU, stalling the [RenderingServer] in the process. For performance prefer the use of e.g. collision shapes or creating the data arrays entirely in code.
 			</description>
 		</method>
 		<method name="query_path" qualifiers="const">
@@ -695,12 +696,13 @@
 				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters3D]. Updates the provided [NavigationPathQueryResult3D] result object with the path among other results requested by the query.
 			</description>
 		</method>
-		<method name="region_bake_navigation_mesh">
+		<method name="region_bake_navigation_mesh" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="root_node" type="Node" />
 			<description>
 				Bakes the [param navigation_mesh] with bake source geometry collected starting from the [param root_node].
+				[i]Deprecated.[/i] This function is deprecated due to core threading changes. To upgrade existing code, first create a [NavigationMeshSourceGeometryData3D] resource. Use this resource with [method parse_source_geometry_data] to parse the SceneTree for nodes that should contribute to the navigation mesh baking. The SceneTree parsing needs to happen on the main thread. After the parsing is finished use the resource with [method bake_from_source_geometry_data] to bake a navigation mesh.
 			</description>
 		</method>
 		<method name="region_create">

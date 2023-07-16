@@ -597,7 +597,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Completion
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/idle_parse_delay", 2.0, "0.1,10,0.01")
 	_initial_set("text_editor/completion/auto_brace_complete", true);
-	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/code_complete_delay", 0.3, "0.01,5,0.01")
+	_initial_set("text_editor/completion/code_complete_enabled", true);
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/code_complete_delay", 0.3, "0.01,5,0.01,or_greater")
 	_initial_set("text_editor/completion/put_callhint_tooltip_below_current_line", true);
 	_initial_set("text_editor/completion/complete_file_paths", true);
 	_initial_set("text_editor/completion/add_type_hints", false);
@@ -687,6 +688,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/bone_outline_color", Color(0.35, 0.35, 0.35, 0.5));
 	_initial_set("editors/2d/bone_outline_size", 2);
 	_initial_set("editors/2d/viewport_border_color", Color(0.4, 0.4, 1.0, 0.4));
+	_initial_set("editors/2d/use_integer_zoom_by_default", false);
 
 	// Panning
 	// Enum should be in sync with ControlScheme in ViewPanner.

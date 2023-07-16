@@ -31,20 +31,39 @@
 #include "gpu_particles_2d.h"
 
 #include "core/core_string_names.h"
+#include "scene/resources/atlas_texture.h"
 #include "scene/resources/particle_process_material.h"
+#include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/config/engine.h"
 #endif
 
 void GPUParticles2D::set_emitting(bool p_emitting) {
-	RS::get_singleton()->particles_set_emitting(particles, p_emitting);
+	// Do not return even if `p_emitting == emitting` because `emitting` is just an approximation.
 
 	if (p_emitting && one_shot) {
+		if (!active && !emitting) {
+			// Last cycle ended.
+			active = true;
+			time = 0;
+			signal_cancled = false;
+			emission_time = lifetime;
+			active_time = lifetime * (2 - explosiveness_ratio);
+		} else {
+			signal_cancled = true;
+		}
 		set_process_internal(true);
 	} else if (!p_emitting) {
-		set_process_internal(false);
+		if (one_shot) {
+			set_process_internal(true);
+		} else {
+			set_process_internal(false);
+		}
 	}
+
+	emitting = p_emitting;
+	RS::get_singleton()->particles_set_emitting(particles, p_emitting);
 }
 
 void GPUParticles2D::set_amount(int p_amount) {
@@ -149,7 +168,7 @@ void GPUParticles2D::set_trail_enabled(bool p_enabled) {
 }
 
 void GPUParticles2D::set_trail_lifetime(double p_seconds) {
-	ERR_FAIL_COND(p_seconds < 0.001);
+	ERR_FAIL_COND(p_seconds < 0.01);
 	trail_lifetime = p_seconds;
 	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_lifetime);
 	queue_redraw();
@@ -211,7 +230,7 @@ void GPUParticles2D::set_speed_scale(double p_scale) {
 }
 
 bool GPUParticles2D::is_emitting() const {
-	return RS::get_singleton()->particles_get_emitting(particles);
+	return emitting;
 }
 
 int GPUParticles2D::get_amount() const {
@@ -405,6 +424,16 @@ NodePath GPUParticles2D::get_sub_emitter() const {
 void GPUParticles2D::restart() {
 	RS::get_singleton()->particles_restart(particles);
 	RS::get_singleton()->particles_set_emitting(particles, true);
+
+	emitting = true;
+	active = true;
+	signal_cancled = false;
+	time = 0;
+	emission_time = lifetime;
+	active_time = lifetime * (2 - explosiveness_ratio);
+	if (one_shot) {
+		set_process_internal(true);
+	}
 }
 
 void GPUParticles2D::_notification(int p_what) {
@@ -570,9 +599,23 @@ void GPUParticles2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (one_shot && !is_emitting()) {
-				notify_property_list_changed();
-				set_process_internal(false);
+			if (one_shot) {
+				time += get_process_delta_time();
+				if (time > emission_time) {
+					emitting = false;
+					if (!active) {
+						set_process_internal(false);
+					}
+				}
+				if (time > active_time) {
+					if (active && !signal_cancled) {
+						emit_signal(SceneStringNames::get_singleton()->finished);
+					}
+					active = false;
+					if (!emitting) {
+						set_process_internal(false);
+					}
+				}
 			}
 		} break;
 	}
@@ -637,6 +680,8 @@ void GPUParticles2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_trail_section_subdivisions", "subdivisions"), &GPUParticles2D::set_trail_section_subdivisions);
 	ClassDB::bind_method(D_METHOD("get_trail_section_subdivisions"), &GPUParticles2D::get_trail_section_subdivisions);
+
+	ADD_SIGNAL(MethodInfo("finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY_DEFAULT("emitting", true); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Window" inherits="Viewport" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Window" inherits="Viewport" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all windows, dialogs, and popups.
 	</brief_description>
@@ -378,7 +378,8 @@
 			<return type="void" />
 			<param index="0" name="ratio" type="float" default="0.8" />
 			<description>
-				Popups the [Window] centered inside its parent [Window] and sets its size as a [param ratio] of parent's size.
+				If [Window] is embedded, popups the [Window] centered inside its embedder and sets its size as a [param ratio] of embedder's size.
+				If [Window] is a native window, popups the [Window] centered inside the screen of its parent [Window] and sets its size as a [param ratio] of the screen size.
 			</description>
 		</method>
 		<method name="popup_exclusive">
@@ -901,6 +902,9 @@
 		<theme_item name="embedded_border" data_type="style" type="StyleBox">
 			The background style used when the [Window] is embedded. Note that this is drawn only under the window's content, excluding the title. For proper borders and title bar style, you can use [code]expand_margin_*[/code] properties of [StyleBoxFlat].
 			[b]Note:[/b] The content background will not be visible unless [member transparent] is enabled.
+		</theme_item>
+		<theme_item name="embedded_unfocused_border" data_type="style" type="StyleBox">
+			The background style used when the [Window] is embedded and unfocused.
 		</theme_item>
 	</theme_items>
 </class>

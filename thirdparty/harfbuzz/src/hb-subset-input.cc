@@ -438,7 +438,8 @@ hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
   if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
     return false;
 
-  return input->axes_location.set (axis_tag, axis_info.default_value);
+  float default_val = axis_info.default_value;
+  return input->axes_location.set (axis_tag, Triple (default_val, default_val, default_val));
 }
 
 /**
@@ -468,8 +469,52 @@ hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
     return false;
 
   float val = hb_clamp(axis_value, axis_info.min_value, axis_info.max_value);
-  return input->axes_location.set (axis_tag, val);
+  return input->axes_location.set (axis_tag, Triple (val, val, val));
 }
+
+#ifdef HB_EXPERIMENTAL_API
+/**
+ * hb_subset_input_set_axis_range: (skip)
+ * @input: a #hb_subset_input_t object.
+ * @face: a #hb_face_t object.
+ * @axis_tag: Tag of the axis
+ * @axis_min_value: Minimum value of the axis variation range to set
+ * @axis_max_value: Maximum value of the axis variation range to set
+ *
+ * Restricting the range of variation on an axis in the given subset input object.
+ * New min/max values will be clamped if they're not within the fvar axis range.
+ * If the fvar axis default value is not within the new range, the new default
+ * value will be changed to the new min or max value, whichever is closer to the fvar
+ * axis default.
+ *
+ * Note: input min value can not be bigger than input max value
+ * Note: currently this API does not support changing axis limits yet.It'd be only
+ * used internally for setting axis limits in the internal data structures
+ *
+ * Return value: `true` if success, `false` otherwise
+ *
+ * XSince: EXPERIMENTAL
+ **/
+HB_EXTERN hb_bool_t
+hb_subset_input_set_axis_range (hb_subset_input_t  *input,
+                                hb_face_t          *face,
+                                hb_tag_t            axis_tag,
+                                float               axis_min_value,
+                                float               axis_max_value)
+{
+  if (axis_min_value > axis_max_value)
+    return false;
+
+  hb_ot_var_axis_info_t axis_info;
+  if (!hb_ot_var_find_axis_info (face, axis_tag, &axis_info))
+    return false;
+
+  float new_min_val = hb_clamp(axis_min_value, axis_info.min_value, axis_info.max_value);
+  float new_max_val = hb_clamp(axis_max_value, axis_info.min_value, axis_info.max_value);
+  float new_default_val = hb_clamp(axis_info.default_value, new_min_val, new_max_val);
+  return input->axes_location.set (axis_tag, Triple (new_min_val, new_default_val, new_max_val));
+}
+#endif
 #endif
 
 /**

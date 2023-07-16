@@ -460,14 +460,6 @@ FT_BEGIN_HEADER
   FT_LOCAL( void )
   TT_Clear_CodeRange( TT_ExecContext  exec,
                       FT_Int          range );
-
-
-  FT_LOCAL( FT_Error )
-  Update_Max( FT_Memory  memory,
-              FT_ULong*  size,
-              FT_ULong   multiplier,
-              void*      _pbuff,
-              FT_ULong   new_max );
 #endif /* TT_USE_BYTECODE_INTERPRETER */
 
 
@@ -536,7 +528,7 @@ FT_BEGIN_HEADER
    *   invoked by the TrueType debugger.
    */
   FT_EXPORT( FT_Error )
-  TT_RunIns( TT_ExecContext  exec );
+  TT_RunIns( void*  exec );
 
 
 FT_END_HEADER

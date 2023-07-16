@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VideoStreamPlayer" inherits="Control" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VideoStreamPlayer" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A control used for video playback.
 	</brief_description>
@@ -12,6 +12,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_stream_length" qualifiers="const">
+			<return type="float" />
+			<description>
+				The length of the current stream, in seconds.
+				[b]Note:[/b] For [VideoStreamTheora] streams (the built-in format supported by Godot), this value will always be zero, as getting the stream length is not implemented yet. The feature may be supported by video formats implemented by a GDExtension add-on.
+			</description>
+		</method>
 		<method name="get_stream_name" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -60,6 +67,9 @@
 		</member>
 		<member name="expand" type="bool" setter="set_expand" getter="has_expand" default="false">
 			If [code]true[/code], the video scales to the control size. Otherwise, the control minimum size will be automatically adjusted to match the video stream's dimensions.
+		</member>
+		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="false">
+			If [code]true[/code], the video restarts when it reaches its end.
 		</member>
 		<member name="paused" type="bool" setter="set_paused" getter="is_paused" default="false">
 			If [code]true[/code], the video is paused.

@@ -433,11 +433,10 @@ List<NodePath> MultiplayerSynchronizer::get_delta_properties(uint64_t p_indexes)
 	const List<NodePath> watch_props = replication_config->get_watch_properties();
 	int idx = 0;
 	for (const NodePath &prop : watch_props) {
-		if ((p_indexes & (1ULL << idx)) == 0) {
+		if ((p_indexes & (1ULL << idx++)) == 0) {
 			continue;
 		}
 		out.push_back(prop);
-		idx++;
 	}
 	return out;
 }

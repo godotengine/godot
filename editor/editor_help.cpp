@@ -45,6 +45,39 @@
 
 #define CONTRIBUTE_URL vformat("%s/contributing/documentation/updating_the_class_reference.html", VERSION_DOCS_URL)
 
+#ifdef MODULE_MONO_ENABLED
+// Sync with the types mentioned in https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_differences.html
+const Vector<String> classes_with_csharp_differences = {
+	"@GlobalScope",
+	"String",
+	"NodePath",
+	"Signal",
+	"Callable",
+	"RID",
+	"Basis",
+	"Transform2D",
+	"Transform3D",
+	"Rect2",
+	"Rect2i",
+	"AABB",
+	"Quaternion",
+	"Projection",
+	"Color",
+	"Array",
+	"Dictionary",
+	"PackedByteArray",
+	"PackedColorArray",
+	"PackedFloat32Array",
+	"PackedFloat64Array",
+	"PackedInt32Array",
+	"PackedInt64Array",
+	"PackedStringArray",
+	"PackedVector2Array",
+	"PackedVector3Array",
+	"Variant",
+};
+#endif
+
 // TODO: this is sometimes used directly as doc->something, other times as EditorHelp::get_doc_data(), which is thread-safe.
 // Might this be a problem?
 DocTools *EditorHelp::doc = nullptr;
@@ -308,7 +341,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum, bool p_is
 	bool can_ref = !p_type.contains("*") || is_enum_type;
 
 	String link_t = p_type; // For links in metadata
-	String display_t = link_t; // For display purposes
+	String display_t; // For display purposes.
 	if (is_enum_type) {
 		link_t = p_enum; // The link for enums is always the full enum description
 		display_t = _contextualize_class_specifier(p_enum, edited_class);
@@ -888,10 +921,26 @@ void EditorHelp::_update_doc() {
 			class_desc->append_text(TTR("There is currently no description for this class. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
 		}
 
-		class_desc->pop();
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
+
+#ifdef MODULE_MONO_ENABLED
+	if (classes_with_csharp_differences.has(cd.name)) {
+		const String &csharp_differences_url = vformat("%s/tutorials/scripting/c_sharp/c_sharp_differences.html", VERSION_DOCS_URL);
+
+		class_desc->push_color(theme_cache.text_color);
+		_push_normal_font();
+		class_desc->push_indent(1);
+		_add_text("[b]" + TTR("Note:") + "[/b] " + vformat(TTR("There are notable differences when using this API with C#. See [url=%s]C# API differences to GDScript[/url] for more information."), csharp_differences_url));
+		class_desc->pop();
+		_pop_normal_font();
+		class_desc->pop();
+
+		class_desc->add_newline();
+		class_desc->add_newline();
+	}
+#endif
 
 	// Online tutorials
 	if (cd.tutorials.size()) {
@@ -1367,7 +1416,7 @@ void EditorHelp::_update_doc() {
 				class_desc->add_newline();
 
 				// Enum description.
-				if (e != "@unnamed_enums" && cd.enums.has(e)) {
+				if (e != "@unnamed_enums" && cd.enums.has(e) && !cd.enums[e].strip_edges().is_empty()) {
 					class_desc->push_color(theme_cache.text_color);
 					_push_normal_font();
 					class_desc->push_indent(1);
@@ -1906,7 +1955,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 }
 
-static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control *p_owner_node) {
+static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control *p_owner_node, const String &p_class = "") {
 	DocTools *doc = EditorHelp::get_doc_data();
 	String base_path;
 
@@ -2107,21 +2156,28 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 			p_rt->pop(); // font
 			pos = brk_end + 1;
 
+		} else if (tag == p_class) {
+			// Use a bold font when class reference tags are in their own page.
+			p_rt->push_font(doc_bold_font);
+			p_rt->add_text(tag);
+			p_rt->pop();
+
+			pos = brk_end + 1;
+
 		} else if (doc->class_list.has(tag)) {
-			// Class reference tag such as [Node2D] or [SceneTree].
-			// Use monospace font to make clickable references
-			// easier to distinguish from inline code and other text.
+			// Use a monospace font for class reference tags such as [Node2D] or [SceneTree].
+
 			p_rt->push_font(doc_code_font);
 			p_rt->push_font_size(doc_code_font_size);
-
 			p_rt->push_color(type_color);
 			p_rt->push_meta("#" + tag);
 			p_rt->add_text(tag);
-			p_rt->pop();
-			p_rt->pop();
 
-			p_rt->pop(); // font size
-			p_rt->pop(); // font
+			p_rt->pop();
+			p_rt->pop();
+			p_rt->pop(); // Font size
+			p_rt->pop(); // Font
+
 			pos = brk_end + 1;
 
 		} else if (tag == "b") {
@@ -2252,7 +2308,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control
 }
 
 void EditorHelp::_add_text(const String &p_bbcode) {
-	_add_text_to_rt(p_bbcode, class_desc, this);
+	_add_text_to_rt(p_bbcode, class_desc, this, edited_class);
 }
 
 Thread EditorHelp::thread;
@@ -2321,7 +2377,6 @@ void EditorHelp::generate_doc(bool p_use_cache) {
 	DEV_ASSERT(first_attempt == (doc == nullptr));
 
 	if (!doc) {
-		GDREGISTER_CLASS(DocCache);
 		doc = memnew(DocTools);
 	}
 

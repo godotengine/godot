@@ -35,7 +35,8 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/string/translation.h"
-#include "label.h"
+#include "scene/gui/label.h"
+#include "scene/resources/atlas_texture.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
 
@@ -1097,6 +1098,11 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					ItemRainbow *item_rainbow = static_cast<ItemRainbow *>(item_fx);
 
 					font_color = font_color.from_hsv(item_rainbow->frequency * (item_rainbow->elapsed_time + ((p_ofs.x + gloff.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
+				} else if (item_fx->type == ITEM_PULSE) {
+					ItemPulse *item_pulse = static_cast<ItemPulse *>(item_fx);
+
+					const float sined_time = (Math::ease(Math::pingpong(item_pulse->elapsed_time, 1.0 / item_pulse->frequency) * item_pulse->frequency, item_pulse->ease));
+					font_color = font_color.lerp(font_color * item_pulse->color, sined_time);
 				}
 			}
 
@@ -1315,6 +1321,11 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					ItemRainbow *item_rainbow = static_cast<ItemRainbow *>(item_fx);
 
 					font_color = font_color.from_hsv(item_rainbow->frequency * (item_rainbow->elapsed_time + ((p_ofs.x + off.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
+				} else if (item_fx->type == ITEM_PULSE) {
+					ItemPulse *item_pulse = static_cast<ItemPulse *>(item_fx);
+
+					const float sined_time = (Math::ease(Math::pingpong(item_pulse->elapsed_time, 1.0 / item_pulse->frequency) * item_pulse->frequency, item_pulse->ease));
+					font_color = font_color.lerp(font_color * item_pulse->color, sined_time);
 				}
 			}
 
@@ -1675,7 +1686,7 @@ void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, double p_delta
 	while (it) {
 		ItemFX *ifx = nullptr;
 
-		if (it->type == ITEM_CUSTOMFX || it->type == ITEM_SHAKE || it->type == ITEM_WAVE || it->type == ITEM_TORNADO || it->type == ITEM_RAINBOW) {
+		if (it->type == ITEM_CUSTOMFX || it->type == ITEM_SHAKE || it->type == ITEM_WAVE || it->type == ITEM_TORNADO || it->type == ITEM_RAINBOW || it->type == ITEM_PULSE) {
 			ifx = static_cast<ItemFX *>(it);
 		}
 
@@ -2616,7 +2627,7 @@ bool RichTextLabel::_find_strikethrough(Item *p_item) {
 void RichTextLabel::_fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack) {
 	Item *item = p_item;
 	while (item) {
-		if (item->type == ITEM_CUSTOMFX || item->type == ITEM_SHAKE || item->type == ITEM_WAVE || item->type == ITEM_TORNADO || item->type == ITEM_RAINBOW) {
+		if (item->type == ITEM_CUSTOMFX || item->type == ITEM_SHAKE || item->type == ITEM_WAVE || item->type == ITEM_TORNADO || item->type == ITEM_RAINBOW || item->type == ITEM_PULSE) {
 			r_stack.push_back(static_cast<ItemFX *>(item));
 		}
 
@@ -2802,7 +2813,7 @@ _FORCE_INLINE_ float RichTextLabel::_update_scroll_exceeds(float p_total_height,
 
 		total_height = 0;
 		for (int j = 0; j <= p_idx; j++) {
-			total_height = _resize_line(main, j, theme_cache.normal_font, theme_cache.normal_font_size, p_width, total_height);
+			total_height = _resize_line(main, j, theme_cache.normal_font, theme_cache.normal_font_size, p_width - scroll_w, total_height);
 
 			main->first_resized_line.store(j);
 		}
@@ -2852,7 +2863,7 @@ bool RichTextLabel::_validate_line_caches() {
 		float total_height = (fi == 0) ? 0 : _calculate_line_vertical_offset(main->lines[fi - 1]);
 		for (int i = fi; i < (int)main->lines.size(); i++) {
 			total_height = _resize_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
-			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width - scroll_w, i, old_scroll, text_rect.size.height);
+			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width, i, old_scroll, text_rect.size.height);
 			main->first_resized_line.store(i);
 		}
 
@@ -2898,27 +2909,40 @@ void RichTextLabel::_process_line_caches() {
 
 	float total_height = 0;
 	if (fi != 0) {
-		// Update fonts.
+		int sr = MIN(main->first_invalid_font_line.load(), main->first_resized_line.load());
 
+		// Update fonts.
 		for (int i = main->first_invalid_font_line.load(); i < fi; i++) {
 			_update_line_font(main, i, theme_cache.normal_font, theme_cache.normal_font_size);
+
+			main->first_invalid_font_line.store(i);
+
+			if (stop_thread.load()) {
+				return;
+			}
 		}
 
 		// Resize lines without reshaping.
-		int sr = MIN(main->first_invalid_font_line.load(), main->first_resized_line.load());
-		main->first_invalid_font_line.store(fi);
+		if (sr != 0) {
+			total_height = _calculate_line_vertical_offset(main->lines[sr - 1]);
+		}
 
 		for (int i = sr; i < fi; i++) {
 			total_height = _resize_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height);
-			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width - scroll_w, i, old_scroll, text_rect.size.height);
+			total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width, i, old_scroll, text_rect.size.height);
 
 			main->first_resized_line.store(i);
+
+			if (stop_thread.load()) {
+				return;
+			}
 		}
 	}
 
+	total_height = (fi == 0) ? 0 : _calculate_line_vertical_offset(main->lines[fi - 1]);
 	for (int i = fi; i < (int)main->lines.size(); i++) {
 		total_height = _shape_line(main, i, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
-		total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width - scroll_w, i, old_scroll, text_rect.size.height);
+		total_height = _update_scroll_exceeds(total_height, ctrl_height, text_rect.get_size().width, i, old_scroll, text_rect.size.height);
 
 		main->first_invalid_line.store(i);
 		main->first_resized_line.store(i);
@@ -3431,6 +3455,7 @@ void RichTextLabel::push_fade(int p_start_index, int p_length) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemFade *item = memnew(ItemFade);
 	item->starting_index = p_start_index;
 	item->length = p_length;
@@ -3441,6 +3466,7 @@ void RichTextLabel::push_shake(int p_strength = 10, float p_rate = 24.0f, bool p
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemShake *item = memnew(ItemShake);
 	item->strength = p_strength;
 	item->rate = p_rate;
@@ -3452,6 +3478,7 @@ void RichTextLabel::push_wave(float p_frequency = 1.0f, float p_amplitude = 10.0
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemWave *item = memnew(ItemWave);
 	item->frequency = p_frequency;
 	item->amplitude = p_amplitude;
@@ -3463,6 +3490,7 @@ void RichTextLabel::push_tornado(float p_frequency = 1.0f, float p_radius = 10.0
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemTornado *item = memnew(ItemTornado);
 	item->frequency = p_frequency;
 	item->radius = p_radius;
@@ -3474,10 +3502,22 @@ void RichTextLabel::push_rainbow(float p_saturation, float p_value, float p_freq
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemRainbow *item = memnew(ItemRainbow);
 	item->frequency = p_frequency;
 	item->saturation = p_saturation;
 	item->value = p_value;
+	_add_item(item, true);
+}
+
+void RichTextLabel::push_pulse(const Color &p_color, float p_frequency, float p_ease) {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	ItemPulse *item = memnew(ItemPulse);
+	item->color = p_color;
+	item->frequency = p_frequency;
+	item->ease = p_ease;
 	_add_item(item, true);
 }
 
@@ -3507,12 +3547,22 @@ void RichTextLabel::push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionar
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemCustomFX *item = memnew(ItemCustomFX);
 	item->custom_effect = p_custom_effect;
 	item->char_fx_transform->environment = p_environment;
 	_add_item(item, true);
 
 	set_process_internal(true);
+}
+
+void RichTextLabel::push_context() {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
+	ItemContext *item = memnew(ItemContext);
+	_add_item(item, true);
 }
 
 void RichTextLabel::set_table_column_expand(int p_column, bool p_expand, int p_ratio) {
@@ -3606,6 +3656,31 @@ void RichTextLabel::pop() {
 		current_frame = static_cast<ItemFrame *>(current)->parent_frame;
 	}
 	current = current->parent;
+}
+
+void RichTextLabel::pop_context() {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	ERR_FAIL_NULL(current->parent);
+
+	while (current->parent && current != main) {
+		if (current->type == ITEM_FRAME) {
+			current_frame = static_cast<ItemFrame *>(current)->parent_frame;
+		} else if (current->type == ITEM_CONTEXT) {
+			current = current->parent;
+			return;
+		}
+		current = current->parent;
+	}
+}
+
+void RichTextLabel::pop_all() {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	current = main;
+	current_frame = main;
 }
 
 void RichTextLabel::clear() {
@@ -4664,7 +4739,29 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("rainbow");
 			set_process_internal(true);
+		} else if (bbcode_name == "pulse") {
+			Color color = Color(1, 1, 1, 0.25);
+			OptionMap::Iterator color_option = bbcode_options.find("color");
+			if (color_option) {
+				color = Color::from_string(color_option->value, color);
+			}
 
+			float frequency = 1.0;
+			OptionMap::Iterator freq_option = bbcode_options.find("freq");
+			if (freq_option) {
+				frequency = freq_option->value.to_float();
+			}
+
+			float ease = -2.0;
+			OptionMap::Iterator ease_option = bbcode_options.find("ease");
+			if (ease_option) {
+				ease = ease_option->value.to_float();
+			}
+
+			push_pulse(color, frequency, ease);
+			pos = brk_end + 1;
+			tag_stack.push_front("pulse");
+			set_process_internal(true);
 		} else if (tag.begins_with("bgcolor=")) {
 			String color_str = tag.substr(8, tag.length()).unquote();
 			Color color = Color::from_string(color_str, theme_cache.default_color);
@@ -5467,7 +5564,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2(0, 0, 0, 0)));
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
 	ClassDB::bind_method(D_METHOD("remove_paragraph", "paragraph"), &RichTextLabel::remove_paragraph);
-	ClassDB::bind_method(D_METHOD("push_font", "font", "font_size"), &RichTextLabel::push_font);
+	ClassDB::bind_method(D_METHOD("push_font", "font", "font_size"), &RichTextLabel::push_font, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("push_font_size", "font_size"), &RichTextLabel::push_font_size);
 	ClassDB::bind_method(D_METHOD("push_normal"), &RichTextLabel::push_normal);
 	ClassDB::bind_method(D_METHOD("push_bold"), &RichTextLabel::push_bold);
@@ -5486,7 +5583,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_strikethrough"), &RichTextLabel::push_strikethrough);
 	ClassDB::bind_method(D_METHOD("push_table", "columns", "inline_align", "align_to_row"), &RichTextLabel::push_table, DEFVAL(INLINE_ALIGNMENT_TOP), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("push_dropcap", "string", "font", "size", "dropcap_margins", "color", "outline_size", "outline_color"), &RichTextLabel::push_dropcap, DEFVAL(Rect2()), DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(Color(0, 0, 0, 0)));
-	ClassDB::bind_method(D_METHOD("set_table_column_expand", "column", "expand", "ratio"), &RichTextLabel::set_table_column_expand);
+	ClassDB::bind_method(D_METHOD("set_table_column_expand", "column", "expand", "ratio"), &RichTextLabel::set_table_column_expand, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("set_cell_row_background_color", "odd_row_bg", "even_row_bg"), &RichTextLabel::set_cell_row_background_color);
 	ClassDB::bind_method(D_METHOD("set_cell_border_color", "color"), &RichTextLabel::set_cell_border_color);
 	ClassDB::bind_method(D_METHOD("set_cell_size_override", "min_size", "max_size"), &RichTextLabel::set_cell_size_override);
@@ -5495,7 +5592,10 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_fgcolor", "fgcolor"), &RichTextLabel::push_fgcolor);
 	ClassDB::bind_method(D_METHOD("push_bgcolor", "bgcolor"), &RichTextLabel::push_bgcolor);
 	ClassDB::bind_method(D_METHOD("push_customfx", "effect", "env"), &RichTextLabel::push_customfx);
+	ClassDB::bind_method(D_METHOD("push_context"), &RichTextLabel::push_context);
+	ClassDB::bind_method(D_METHOD("pop_context"), &RichTextLabel::pop_context);
 	ClassDB::bind_method(D_METHOD("pop"), &RichTextLabel::pop);
+	ClassDB::bind_method(D_METHOD("pop_all"), &RichTextLabel::pop_all);
 
 	ClassDB::bind_method(D_METHOD("clear"), &RichTextLabel::clear);
 
@@ -5606,6 +5706,11 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("menu_option", "option"), &RichTextLabel::menu_option);
 
 	ClassDB::bind_method(D_METHOD("_thread_end"), &RichTextLabel::_thread_end);
+
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_compatibility_method(D_METHOD("push_font", "font", "font_size"), &RichTextLabel::push_font);
+	ClassDB::bind_compatibility_method(D_METHOD("set_table_column_expand", "column", "expand", "ratio"), &RichTextLabel::set_table_column_expand);
+#endif // DISABLE_DEPRECATED
 
 	// Note: set "bbcode_enabled" first, to avoid unnecessary "text" resets.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");

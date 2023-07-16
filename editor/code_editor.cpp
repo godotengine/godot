@@ -126,7 +126,7 @@ void FindReplaceBar::unhandled_input(const Ref<InputEvent> &p_event) {
 	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true)) {
 		Control *focus_owner = get_viewport()->gui_get_focus_owner();
 
-		if (text_editor->has_focus() || (focus_owner && vbc_lineedit->is_ancestor_of(focus_owner))) {
+		if (text_editor->has_focus() || (focus_owner && is_ancestor_of(focus_owner))) {
 			_hide_bar();
 			accept_event();
 		}
@@ -410,7 +410,7 @@ void FindReplaceBar::_update_matches_label() {
 		matches_label->add_theme_color_override("font_color", results_count > 0 ? get_theme_color(SNAME("font_color"), SNAME("Label")) : get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
 		if (results_count == 0) {
-			matches_label->set_text("No match");
+			matches_label->set_text(TTR("No match"));
 		} else if (results_count_to_current == -1) {
 			matches_label->set_text(vformat(TTRN("%d match", "%d matches", results_count), results_count));
 		} else {
@@ -905,7 +905,7 @@ void CodeTextEditor::_line_col_changed() {
 }
 
 void CodeTextEditor::_text_changed() {
-	if (text_editor->is_insert_text_operation()) {
+	if (code_complete_enabled && text_editor->is_insert_text_operation()) {
 		code_complete_timer_line = text_editor->get_caret_line();
 		code_complete_timer->start();
 	}
@@ -1485,12 +1485,13 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		// Check first if there's any uncommented lines in selection.
 		bool is_commented = true;
 		for (int line = from; line <= to; line++) {
-			if (!text_editor->get_line(line).begins_with(delimiter)) {
+			// `+ delimiter.length()` here because comment delimiter is not actually `in comment` so we check first character after it
+			int delimiter_idx = text_editor->is_in_comment(line, text_editor->get_first_non_whitespace_column(line) + delimiter.length());
+			if (delimiter_idx == -1 || text_editor->get_delimiter_start_key(delimiter_idx) != delimiter) {
 				is_commented = false;
 				break;
 			}
 		}
-
 		// Caret positions need to be saved since they could be moved at the eol.
 		Vector<int> caret_cols;
 		Vector<int> selection_to_cols;
@@ -1511,10 +1512,10 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 				continue;
 			}
 			if (is_commented) {
-				text_editor->set_line(line, line_text.substr(delimiter.length(), line_text.length()));
-				continue;
+				text_editor->set_line(line, line_text.replace_first(delimiter, ""));
+			} else {
+				text_editor->set_line(line, line_text.insert(text_editor->get_first_non_whitespace_column(line), delimiter));
 			}
-			text_editor->set_line(line, delimiter + line_text);
 		}
 
 		// Readjust carets and selections.
@@ -1736,6 +1737,7 @@ void CodeTextEditor::_apply_settings_change() {
 
 	text_editor->set_code_hint_draw_below(EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
+	code_complete_enabled = EDITOR_GET("text_editor/completion/code_complete_enabled");
 	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
 	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
 }
@@ -2010,6 +2012,7 @@ CodeTextEditor::CodeTextEditor() {
 	idle->set_one_shot(true);
 	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
 
+	code_complete_enabled = EDITOR_GET("text_editor/completion/code_complete_enabled");
 	code_complete_timer = memnew(Timer);
 	add_child(code_complete_timer);
 	code_complete_timer->set_one_shot(true);

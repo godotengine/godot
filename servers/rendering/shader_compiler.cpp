@@ -178,7 +178,7 @@ static String _mkid(const String &p_id) {
 }
 
 static String f2sp0(float p_float) {
-	String num = rtoss(p_float);
+	String num = rtos(p_float);
 	if (!num.contains(".") && !num.contains("e")) {
 		num += ".0";
 	}
@@ -283,7 +283,21 @@ String ShaderCompiler::_get_sampler_name(ShaderLanguage::TextureFilter p_filter,
 		ERR_FAIL_COND_V(actions.default_repeat == ShaderLanguage::REPEAT_DEFAULT, String());
 		p_repeat = actions.default_repeat;
 	}
-	return actions.sampler_array_name + "[" + itos(p_filter + (p_repeat == ShaderLanguage::REPEAT_ENABLE ? ShaderLanguage::FILTER_DEFAULT : 0)) + "]";
+	constexpr const char *name_mapping[] = {
+		"SAMPLER_NEAREST_CLAMP",
+		"SAMPLER_LINEAR_CLAMP",
+		"SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP",
+		"SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP",
+		"SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_CLAMP",
+		"SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP",
+		"SAMPLER_NEAREST_REPEAT",
+		"SAMPLER_LINEAR_REPEAT",
+		"SAMPLER_NEAREST_WITH_MIPMAPS_REPEAT",
+		"SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT",
+		"SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT",
+		"SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT"
+	};
+	return String(name_mapping[p_filter + (p_repeat == ShaderLanguage::REPEAT_ENABLE ? ShaderLanguage::FILTER_DEFAULT : 0)]);
 }
 
 void ShaderCompiler::_dump_function_deps(const SL::ShaderNode *p_node, const StringName &p_for_func, const HashMap<StringName, String> &p_func_code, String &r_to_add, HashSet<StringName> &added) {
@@ -909,7 +923,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[vnode->name];
 					if (u.texture_order >= 0) {
-						StringName name = vnode->name;
+						StringName name;
 						if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
 							name = "color_buffer";
 							if (u.filter >= ShaderLanguage::FILTER_NEAREST_MIPMAP) {

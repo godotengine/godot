@@ -128,13 +128,14 @@
 # Donovan Cartier <donovan.cartier0@gmail.com>, 2023.
 # Rémi Verschelde <remi@godotengine.org>, 2023.
 # Nifou <nifou@mailfence.com>, 2023.
+# Antonia Carrier <carrier.antonia@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-06-11 23:11+0000\n"
-"Last-Translator: Nifou <nifou@mailfence.com>\n"
+"PO-Revision-Date: 2023-06-26 09:54+0000\n"
+"Last-Translator: Antonia Carrier <carrier.antonia@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -142,7 +143,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Unset"
 msgstr "Non défini"
@@ -290,6 +291,9 @@ msgstr "Bouton de joystick %d"
 
 msgid "Pressure:"
 msgstr "Pression :"
+
+msgid "canceled"
+msgstr "annulé"
 
 msgid "touched"
 msgstr "Touché"
@@ -666,22 +670,22 @@ msgid "Animation Change %s"
 msgstr "Changement d'animation %s"
 
 msgid "Animation Change Keyframe Value"
-msgstr "Changer la valeur de la trame-clé d’animation"
+msgstr "Changer la valeur de l'image clé d’animation"
 
 msgid "Animation Change Call"
 msgstr "Changer l’appel d'animation"
 
 msgid "Animation Multi Change Transition"
-msgstr "Changer les multiples transitions d’animation"
+msgstr "Changer plusieurs transitions d’animation"
 
 msgid "Animation Multi Change %s"
-msgstr "Changer les multiples animations %s"
+msgstr "Changer plusieurs animations %s"
 
 msgid "Animation Multi Change Keyframe Value"
-msgstr "Changer la valeur des trames clé d’animation"
+msgstr "Changer la valeur de plusieurs images clés d’animation"
 
 msgid "Animation Multi Change Call"
-msgstr "Changer les multiples appels d'animation"
+msgstr "Changer plusieurs appels d'en animation"
 
 msgid "Change Animation Length"
 msgstr "Modifier la durée de l’animation"
@@ -1176,6 +1180,61 @@ msgstr "Ratio d'échelle :"
 msgid "Select Transition and Easing"
 msgstr "Sélectionner transition et fondu"
 
+msgctxt "Transition Type"
+msgid "Linear"
+msgstr "Linéaire"
+
+msgctxt "Transition Type"
+msgid "Sine"
+msgstr "Sinus"
+
+msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Quintique"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Quartique"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "Quadratique"
+
+msgctxt "Transition Type"
+msgid "Elastic"
+msgstr "Élastique"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Rebondissement"
+
+msgctxt "Transition Type"
+msgid "Back"
+msgstr "Recul"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "Ressort"
+
+msgctxt "Ease Type"
+msgid "In"
+msgstr "Entrant"
+
+msgctxt "Ease Type"
+msgid "Out"
+msgstr "Sortant"
+
+msgctxt "Ease Type"
+msgid "InOut"
+msgstr "EntrantSortant"
+
+msgctxt "Ease Type"
+msgid "OutIn"
+msgstr "SortantEntrant"
+
+msgid "Transition Type:"
+msgstr "Type de transition :"
+
 msgid "Animation Baker"
 msgstr "Précalcul de l'animation"
 
@@ -1213,8 +1272,8 @@ msgstr[1] "%d correspondances trouvées"
 
 msgid "%d of %d match"
 msgid_plural "%d of %d matches"
-msgstr[0] "%d de %d correspondance trouvée"
-msgstr[1] "%d de %d correspondances trouvées"
+msgstr[0] "%d de %d correspondance"
+msgstr[1] "%d de %d correspondances"
 
 msgid "Match Case"
 msgstr "Sensible à la casse"
@@ -3412,7 +3471,7 @@ msgid "Dock Position"
 msgstr "Position du dock"
 
 msgid "Make Floating"
-msgstr "Faire un Flottant"
+msgstr "Rendre flottant"
 
 msgid "Add a new scene."
 msgstr "Ajouter une nouvelle scène."
@@ -3977,7 +4036,7 @@ msgid "Left Stick Left, Joystick 0 Left"
 msgstr "Stick gauche direction gauche, Joystick 0 direction gauche"
 
 msgid "Left Stick Right, Joystick 0 Right"
-msgstr "Stick droit direction gauche, Joystick 0 direction droite"
+msgstr "Stick gauche direction droite, Joystick 0 direction droite"
 
 msgid "Left Stick Up, Joystick 0 Up"
 msgstr "Stick gauche direction haut, Joystick 0 direction haut"
@@ -4032,6 +4091,12 @@ msgstr "Joystick 4 direction haut"
 
 msgid "Joystick 4 Down"
 msgstr "Joystick 4 direction bas"
+
+msgid "or"
+msgstr "ou"
+
+msgid "Unicode"
+msgstr "Unicode"
 
 msgid "Joypad Axis %d %s (%s)"
 msgstr "Joypad axe %d %s (%s)"
@@ -5133,9 +5198,6 @@ msgstr "Nom de nœud invalide, les caractères suivants ne sont pas autorisés :
 
 msgid "Another node already uses this unique name in the scene."
 msgstr "Un autre Nœud utilise ce nom unique dans la scène."
-
-msgid "Rename Node"
-msgstr "Renommer le nœud"
 
 msgid "Scene Tree (Nodes):"
 msgstr "Arbre de scène (nœuds) :"
@@ -7443,6 +7505,15 @@ msgid_plural "Run %d Instances"
 msgstr[0] "Exécuter une instance %d"
 msgstr[1] "Exécuter des instances %d"
 
+msgid "Size: %s"
+msgstr "Taille : %s"
+
+msgid "Type: %s"
+msgstr "Type : %s"
+
+msgid "Dimensions: %d × %d"
+msgstr "Dimensions : %d × %d"
+
 msgid "Overrides (%d)"
 msgstr "Redéfinitions (%d)"
 
@@ -7729,14 +7800,14 @@ msgstr "Créer une forme convexe unique"
 
 msgid "Can't create multiple convex collision shapes for the scene root."
 msgstr ""
-"Impossible de créer des formes de collision convexes multiples pour la "
-"racine de la scène."
+"Impossible de créer de multiples formes de collision convexes pour la racine "
+"de la scène."
 
 msgid "Couldn't create any collision shapes."
 msgstr "Impossible de créer des formes de collision."
 
 msgid "Create Multiple Convex Shapes"
-msgstr "Créer des formes convexes multiples"
+msgstr "Créer plusieurs formes convexes"
 
 msgid "Create Navigation Mesh"
 msgstr "Créer un maillage de navigation"
@@ -7771,8 +7842,7 @@ msgstr ""
 
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr ""
-"Le dépliage UV a échoué, le maillage n'est peut-être pas multiple "
-"(« manifold ») ?"
+"Le dépliage UV a échoué, le maillage n'est peut-être pas (« manifold ») ?"
 
 msgid "Unwrap UV2"
 msgstr "Déplier les UV2"
@@ -8111,9 +8181,6 @@ msgstr "Taille : %s (%.1fMP)\n"
 
 msgid "Objects: %d\n"
 msgstr "Objets : %d\n"
-
-msgid "Primitive Indices: %d\n"
-msgstr "Indices de primitives : %d\n"
 
 msgid "Draw Calls: %d"
 msgstr "Appels de dessin : %d"
@@ -9282,6 +9349,9 @@ msgstr "Aller au point d'arrêt suivant"
 msgid "Go to Previous Breakpoint"
 msgstr "Aller au point d'arrêt précédent"
 
+msgid "Shader Editor"
+msgstr "Éditeur de shader"
+
 msgid "New Shader Include"
 msgstr "Nouveau fichier shader include"
 
@@ -9302,9 +9372,6 @@ msgstr "Ouvrir fichier dans l'Inspecteur"
 
 msgid "Close File"
 msgstr "Fermer le fichier"
-
-msgid "Shader Editor"
-msgstr "Éditeur de shader"
 
 msgid "No valid shader stages found."
 msgstr "Aucune étape valide de shader trouvée."
@@ -10178,13 +10245,6 @@ msgstr "Effaceur"
 
 msgid "Tiles"
 msgstr "Tuiles"
-
-msgid ""
-"This TileMap's TileSet has no source configured. Edit the TileSet resource "
-"to add one."
-msgstr ""
-"La TileSet de cette TileMap n'a pas de source configurée. Modifier la "
-"ressource TileSet pour en ajouter une."
 
 msgid "Drag and drop or paste a TileMap selection here to store a pattern."
 msgstr ""
@@ -12034,45 +12094,6 @@ msgstr "Calculer le NavMesh"
 msgid "Clear the navigation mesh."
 msgstr "Effacer le maillage de navigation."
 
-msgid "Setting up Configuration..."
-msgstr "Initialisation de la configuration..."
-
-msgid "Calculating grid size..."
-msgstr "Calcul de la taille de la grille..."
-
-msgid "Creating heightfield..."
-msgstr "Création du champ de hauteur…"
-
-msgid "Marking walkable triangles..."
-msgstr "Marquage des triangles parcourables..."
-
-msgid "Constructing compact heightfield..."
-msgstr "Construction d'un champ de hauteur compact..."
-
-msgid "Eroding walkable area..."
-msgstr "Réduction de la zone parcourable..."
-
-msgid "Partitioning..."
-msgstr "Partitionnement..."
-
-msgid "Creating contours..."
-msgstr "Création des contours..."
-
-msgid "Creating polymesh..."
-msgstr "Création d'un maillage de contour…"
-
-msgid "Converting to native navigation mesh..."
-msgstr "Conversion en maillage de navigation natif…"
-
-msgid "Navigation Mesh Generator Setup:"
-msgstr "Paramétrage du générateur de navigation dans la grille :"
-
-msgid "Parsing Geometry..."
-msgstr "Analyse de la géométrie..."
-
-msgid "Done!"
-msgstr "C'est fait !"
-
 msgid "Error loading %s: %s."
 msgstr "Erreur de chargement %s : %s."
 
@@ -12757,12 +12778,6 @@ msgid "Invalid polygon. At least 2 points are needed in 'Segments' build mode."
 msgstr ""
 "Polygone non valide. Il doit y avoir au moins 2 points en mode de "
 "construction 'Segments'."
-
-msgid ""
-"The One Way Collision property will be ignored when the parent is an Area2D."
-msgstr ""
-"La propriété Collision à sens unique est ignorée lorsque le parent est un "
-"Area2D."
 
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "

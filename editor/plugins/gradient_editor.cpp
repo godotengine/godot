@@ -34,6 +34,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/resources/gradient_texture.h"
 
 void GradientEditor::set_gradient(const Ref<Gradient> &p_gradient) {
 	gradient = p_gradient;
