@@ -36,6 +36,7 @@ void GLTFDocumentExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_supported_extensions);
 	GDVIRTUAL_BIND(_parse_node_extensions, "state", "gltf_node", "extensions");
 	GDVIRTUAL_BIND(_parse_image_data, "state", "image_data", "mime_type", "ret_image");
+	GDVIRTUAL_BIND(_get_image_file_extension);
 	GDVIRTUAL_BIND(_parse_texture_json, "state", "texture_json", "ret_gltf_texture");
 	GDVIRTUAL_BIND(_generate_scene_node, "state", "gltf_node", "scene_parent");
 	GDVIRTUAL_BIND(_import_post_parse, "state");
@@ -76,6 +77,12 @@ Error GLTFDocumentExtension::parse_image_data(Ref<GLTFState> p_state, const Pack
 	Error err = OK;
 	GDVIRTUAL_CALL(_parse_image_data, p_state, p_image_data, p_mime_type, r_image, err);
 	return err;
+}
+
+String GLTFDocumentExtension::get_image_file_extension() {
+	String ret;
+	GDVIRTUAL_CALL(_get_image_file_extension, ret);
+	return ret;
 }
 
 Error GLTFDocumentExtension::parse_texture_json(Ref<GLTFState> p_state, const Dictionary &p_texture_json, Ref<GLTFTexture> r_gltf_texture) {
