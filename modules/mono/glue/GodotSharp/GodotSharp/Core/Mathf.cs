@@ -108,7 +108,7 @@ namespace Godot
         /// correctly wrapping around <see cref="Tau"/>.
         /// </summary>
         /// <param name ="from">The start angle.</param>
-        /// <param name ="to">the destination angle.</param>
+        /// <param name ="to">The destination angle.</param>
         /// <returns>The difference between the two angles.</returns>
         public static float AngleDifference(float from, float to)
         {
@@ -121,7 +121,7 @@ namespace Godot
         /// correctly wrapping around <see cref="Tau"/>.
         /// </summary>
         /// <param name ="from">The start angle.</param>
-        /// <param name ="to">the destination angle.</param>
+        /// <param name ="to">The destination angle.</param>
         /// <returns>The difference between the two angles.</returns>
         public static double AngleDifference(double from, double to)
         {
@@ -1225,9 +1225,9 @@ namespace Godot
         /// Use a negative <paramref name="delta"/> value to move toward the opposite angle.
         /// </summary>
         /// <param name="from">The start Angle.</param>
-        /// <param name="to">The Angle to move towards.</param>
+        /// <param name="to">The angle to move towards.</param>
         /// <param name="delta">The amount to move by.</param>
-        /// <returns>The Angle after moving.</returns>
+        /// <returns>The angle after moving.</returns>
         public static float MoveTowardAngle(float from, float to, float delta)
         {
             float difference = AngleDifference(from, to);
@@ -1241,9 +1241,9 @@ namespace Godot
         /// Use a negative <paramref name="delta"/> value to move toward the opposite angle.
         /// </summary>
         /// <param name="from">The start Angle.</param>
-        /// <param name="to">The Angle to move towards.</param>
+        /// <param name="to">The angle to move towards.</param>
         /// <param name="delta">The amount to move by.</param>
-        /// <returns>The Angle after moving.</returns>
+        /// <returns>The angle after moving.</returns>
         public static double MoveTowardAngle(double from, double to, double delta)
         {
             double difference = AngleDifference(from, to);
