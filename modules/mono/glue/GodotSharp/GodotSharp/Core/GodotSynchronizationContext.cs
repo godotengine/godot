@@ -5,10 +5,18 @@ using System.Threading.Tasks;
 
 namespace Godot
 {
+    /// <summary>
+    /// Provides a synctronization context for the Godot task scheduler
+    /// </summary>
     public sealed class GodotSynchronizationContext : SynchronizationContext, IDisposable
     {
         private readonly BlockingCollection<(SendOrPostCallback Callback, object State)> _queue = new();
 
+        /// <summary>
+        /// Dispatches a synchronous message to the Godot synchronization context.
+        /// </summary>
+        /// <param name="d">The <see cref="SendOrPostCallback"/> delegate to call.</param>
+        /// <param name="state">The object passed to the delegate.</param>
         public override void Send(SendOrPostCallback d, object state)
         {
             // Shortcut if we're already on this context
@@ -36,6 +44,11 @@ namespace Godot
             source.Task.Wait();
         }
 
+        /// <summary>
+        /// Dispatches an asynchronous message to the Godot synchronization context.
+        /// </summary>
+        /// <param name="d">The <see cref="SendOrPostCallback"/> delegate to call.</param>
+        /// <param name="state">The object passed to the delegate.</param>
         public override void Post(SendOrPostCallback d, object state)
         {
             _queue.Add((d, state));
@@ -52,6 +65,9 @@ namespace Godot
             }
         }
 
+        /// <summary>
+        /// Disposes of this <see cref="GodotSynchronizationContext"/>.
+        /// </summary>
         public void Dispose()
         {
             _queue.Dispose();

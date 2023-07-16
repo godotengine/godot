@@ -16,6 +16,9 @@ namespace Godot
 
         private WeakReference<IDisposable> _weakReferenceToSelf;
 
+        /// <summary>
+        /// Deconstructs this <see cref="StringName"/>.
+        /// </summary>
         ~StringName()
         {
             Dispose(false);
@@ -30,6 +33,9 @@ namespace Godot
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Disposes implementation of this <see cref="StringName"/>.
+        /// </summary>
         public void Dispose(bool disposing)
         {
             // Always dispose `NativeValue` even if disposing is true
@@ -104,6 +110,13 @@ namespace Godot
         /// <returns>If the <see cref="StringName"/> is empty.</returns>
         public bool IsEmpty => NativeValue.DangerousSelfRef.IsEmpty;
 
+        /// <summary>
+        /// Evaluates if the <see cref="StringName"/> instances are exactly equal.
+        /// </summary>
+        /// <param name="left">The left <see cref="StringName"/>.</param>
+        /// <param name="right">The right <see cref="StringName"/>.</param>
+        /// <returns><see langword="true"/> if these <see cref="StringName"/> are
+        /// exactly equal; otherwise, <see langword="false"/>.</returns>
         public static bool operator ==(StringName left, StringName right)
         {
             if (left is null)
@@ -111,11 +124,24 @@ namespace Godot
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Evaluates if the <see cref="StringName"/> instances are not equal.
+        /// </summary>
+        /// <param name="left">The left <see cref="StringName"/>.</param>
+        /// <param name="right">The right <see cref="StringName"/>.</param>
+        /// <returns><see langword="true"/> if these <see cref="StringName"/> are
+        /// not equal; otherwise, <see langword="false"/>.</returns>
         public static bool operator !=(StringName left, StringName right)
         {
             return !(left == right);
         }
 
+        /// <summary>
+        /// Evaluates if the <see cref="StringName"/> instances are exactly equal.
+        /// </summary>
+        /// <param name="other">The <see cref="StringName"/> to compare with.</param>
+        /// <returns><see langword="true"/> if these <see cref="StringName"/> are
+        /// exactly equal; otherwise, <see langword="false"/>.</returns>
         public bool Equals(StringName other)
         {
             if (other is null)
@@ -123,6 +149,14 @@ namespace Godot
             return NativeValue.DangerousSelfRef == other.NativeValue.DangerousSelfRef;
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="StringName"/> is exactly equal to the
+        /// given <see cref="godot_string_name"/>
+        /// </summary>
+        /// <param name="left">The left <see cref="StringName"/>.</param>
+        /// <param name="right">The right <see cref="godot_string_name"/>.</param>
+        /// <returns><see langword="true"/> if this <see cref="StringName"/>and the
+        /// <see cref="godot_string_name"/> are equal; otherwise, <see langword="false"/>.</returns>
         public static bool operator ==(StringName left, in godot_string_name right)
         {
             if (left is null)
@@ -130,31 +164,73 @@ namespace Godot
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="StringName"/> is not equal to the
+        /// given <see cref="godot_string_name"/>
+        /// </summary>
+        /// <param name="left">The left <see cref="StringName"/>.</param>
+        /// <param name="right">The right <see cref="godot_string_name"/>.</param>
+        /// <returns><see langword="true"/> if this <see cref="StringName"/>and the
+        /// <see cref="godot_string_name"/> are equal; otherwise, <see langword="false"/>.</returns>
         public static bool operator !=(StringName left, in godot_string_name right)
         {
             return !(left == right);
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="godot_string_name"/> is exactly equal to the
+        /// given <see cref="StringName"/>
+        /// </summary>
+        /// <param name="left">The left <see cref="godot_string_name"/>.</param>
+        /// <param name="right">The right <see cref="StringName"/>.</param>
+        /// <returns><see langword="true"/> if this <see cref="godot_string_name"/>and the
+        /// <see cref="StringName"/> are equal; otherwise, <see langword="false"/>.</returns>
         public static bool operator ==(in godot_string_name left, StringName right)
         {
             return right == left;
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="godot_string_name"/> is not equal to the
+        /// given <see cref="StringName"/>
+        /// </summary>
+        /// <param name="left">The left <see cref="godot_string_name"/>.</param>
+        /// <param name="right">The right <see cref="StringName"/>.</param>
+        /// <returns><see langword="true"/> if this <see cref="godot_string_name"/>and the
+        /// <see cref="StringName"/> are equal; otherwise, <see langword="false"/>.</returns>
         public static bool operator !=(in godot_string_name left, StringName right)
         {
             return !(right == left);
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="StringName"/> is exactly equal to the
+        /// given <see cref="godot_string_name"/>
+        /// </summary>
+        /// <param name="other">The <see cref="godot_string_name"/> to compare with.</param>
+        /// <returns><see langword="true"/> if this <see cref="StringName"/>and the
+        /// <see cref="godot_string_name"/> are equal; otherwise, <see langword="false"/>.</returns>
         public bool Equals(in godot_string_name other)
         {
             return NativeValue.DangerousSelfRef == other;
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="StringName"/> is exactly equal to the
+        /// given object (<paramref name="obj"/>).
+        /// </summary>
+        /// <param name="obj">The object to compare with.</param>
+        /// <returns><see langword="true"/> if this <see cref="StringName"/>and
+        /// the object are equal; otherwise, <see langword="false"/>.</returns>
         public override bool Equals(object obj)
         {
             return ReferenceEquals(this, obj) || (obj is StringName other && Equals(other));
         }
 
+        /// <summary>
+        /// Serves as the hash function for <see cref="StringName"/>.
+        /// </summary>
+        /// <returns>A hash code for this <see cref="StringName"/>.</returns>
         public override int GetHashCode()
         {
             return NativeValue.GetHashCode();

@@ -68,6 +68,11 @@ namespace Godot.Collections
                 this[i] = array[i];
         }
 
+        /// <summary>
+        /// Constructs a new <see cref="Array"/> from the given <see cref="StringName"/> span.
+        /// </summary>
+        /// <param name="array">The StringNames to put in the new array.</param>
+        /// <returns>A new Godot Array.</returns>
         public Array(Span<StringName> array) : this()
         {
             if (array == null)
@@ -84,6 +89,11 @@ namespace Godot.Collections
                 this[i] = array[i];
         }
 
+        /// <summary>
+        /// Constructs a new <see cref="Array"/> from the given <see cref="NodePath"/> span.
+        /// </summary>
+        /// <param name="array">The NodePaths to put in the new array.</param>
+        /// <returns>A new Godot Array.</returns>
         public Array(Span<NodePath> array) : this()
         {
             if (array == null)
@@ -100,6 +110,11 @@ namespace Godot.Collections
                 this[i] = array[i];
         }
 
+        /// <summary>
+        /// Constructs a new <see cref="Array"/> from the given <see cref="Rid"/> span.
+        /// </summary>
+        /// <param name="array">The Rids to put in the new array.</param>
+        /// <returns>A new Godot Array.</returns>
         public Array(Span<Rid> array) : this()
         {
             if (array == null)
@@ -120,6 +135,11 @@ namespace Godot.Collections
         // from derived types (e.g.: Node[]). Implicit conversion from Derived[] to Base[] are
         // fine as long as the array is not mutated. However, Span does this type checking at
         // instantiation, so it's not possible to use it even when not mutating anything.
+        /// <summary>
+        /// Constructs a new <see cref="Array"/> from the given <see cref="GodotObject"/> span.
+        /// </summary>
+        /// <param name="array">The GodotObjects to put in the new array.</param>
+        /// <returns>A new Godot Array.</returns>
         // ReSharper disable once RedundantNameQualifier
         public Array(ReadOnlySpan<GodotObject> array) : this()
         {
@@ -149,6 +169,9 @@ namespace Godot.Collections
         internal static Array CreateTakingOwnershipOfDisposableValue(godot_array nativeValueToOwn)
             => new Array(nativeValueToOwn);
 
+        /// <summary>
+        /// Deconstructs this <see cref="Array"/>.
+        /// </summary>
         ~Array()
         {
             Dispose(false);
@@ -163,6 +186,9 @@ namespace Godot.Collections
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Disposes implementation of this <see cref="Array"/>.
+        /// </summary>
         public void Dispose(bool disposing)
         {
             // Always dispose `NativeValue` even if disposing is true
@@ -1773,9 +1799,19 @@ namespace Godot.Collections
         /// <returns>A string representation of this array.</returns>
         public override string ToString() => _underlyingArray.ToString();
 
+        /// <summary>
+        /// Converts this <see cref="Array{T}"/> to a <see cref="Variant"/>.
+        /// </summary>
+        /// <param name="from">The <see cref="Array{T}"/> to convert.</param>
+        /// <returns>A <see cref="Variant"/> representation of this <see cref="Array{T}"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Variant(Array<T> from) => Variant.CreateFrom(from);
 
+        /// <summary>
+        /// Converts this <see cref="Variant"/> to an <see cref="Array{T}"/>.
+        /// </summary>
+        /// <param name="from">The <see cref="Variant"/> to convert.</param>
+        /// <returns>An <see cref="Array{T}"/> representation of this <see cref="Variant"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator Array<T>(Variant from) => from.AsGodotArray<T>();
 

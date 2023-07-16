@@ -256,6 +256,10 @@ namespace Godot
             return (X * b.X) + (Y * b.Y) + (Z * b.Z) + (W * b.W);
         }
 
+        /// <summary>
+        /// Returns the exponential of this quaternion.
+        /// </summary>
+        /// <returns>The exponential.</returns>
         public readonly Quaternion Exp()
         {
             Vector3 v = new Vector3(X, Y, Z);
@@ -268,11 +272,19 @@ namespace Godot
             return new Quaternion(v, theta);
         }
 
+        /// <summary>
+        /// Returns the angle of this quaternion.
+        /// </summary>
+        /// <returns>The angle.</returns>
         public readonly real_t GetAngle()
         {
             return 2 * Mathf.Acos(W);
         }
 
+        /// <summary>
+        /// Returns the axis of this quaternion.
+        /// </summary>
+        /// <returns>The axis.</returns>
         public readonly Vector3 GetAxis()
         {
             if (Mathf.Abs(W) > 1 - Mathf.Epsilon)
@@ -337,6 +349,10 @@ namespace Godot
             return Mathf.Abs(LengthSquared() - 1) <= Mathf.Epsilon;
         }
 
+        /// <summary>
+        /// Returns the logarithm of this quaternion.
+        /// </summary>
+        /// <returns>The logarithm.</returns>
         public readonly Quaternion Log()
         {
             Vector3 v = GetAxis() * GetAngle();
@@ -552,6 +568,12 @@ namespace Godot
             }
         }
 
+        /// <summary>
+        /// Constructs a <see cref="Quaternion"/> which rotates from
+        /// <paramref name="arcFrom"/> to <paramref name="arcTo"/>.
+        /// </summary>
+        /// <param name="arcFrom">The arc to rotate from.</param>
+        /// <param name="arcTo">The arc to rotate to.</param>
         public Quaternion(Vector3 arcFrom, Vector3 arcTo)
         {
             Vector3 c = arcFrom.Cross(arcTo);

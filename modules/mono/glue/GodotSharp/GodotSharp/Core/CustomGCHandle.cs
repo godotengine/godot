@@ -23,6 +23,12 @@ public static class CustomGCHandle
     // Having the assembly load context as key won't prevent it from unloading.
     private static ConditionalWeakTable<AssemblyLoadContext, object?> _alcsBeingUnloaded = new();
 
+    /// <summary>
+    /// Determines if the provided <see cref="AssemblyLoadContext"/> is being unloaded.
+    /// </summary>
+    /// <param name="alc">The context to check.</param>
+    /// <returns><see langword="true"/> if the context is currently being unloaded;
+    /// otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.NoInlining)]
     public static bool IsAlcBeingUnloaded(AssemblyLoadContext alc) => _alcsBeingUnloaded.TryGetValue(alc, out _);
 
@@ -43,10 +49,22 @@ public static class CustomGCHandle
         }
     }
 
+    /// <summary>
+    /// Initializes a strong <see cref="GCHandle"/> using the provided <paramref name="value"/>
+    /// </summary>
+    /// <param name="value">The value to assign a strong handle.</param>
+    /// <returns>A strong handle for the provided value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static GCHandle AllocStrong(object value)
         => AllocStrong(value, value.GetType());
 
+    /// <summary>
+    /// Initializes a strong <see cref="GCHandle"/> using the provided <paramref name="value"/>
+    /// with the given <paramref name="valueType"/>
+    /// </summary>
+    /// <param name="value">The value to assign a strong handle.</param>
+    /// <param name="valueType">The type of the object.</param>
+    /// <returns>A strong handle for the provided value and type.</returns>
     public static GCHandle AllocStrong(object value, Type valueType)
     {
         if (AlcReloadCfg.IsAlcReloadingEnabled)
@@ -75,9 +93,18 @@ public static class CustomGCHandle
         return GCHandle.Alloc(value, GCHandleType.Normal);
     }
 
+    /// <summary>
+    /// Initializes a weak <see cref="GCHandle"/> using the provided <paramref name="value"/>
+    /// </summary>
+    /// <param name="value">The value to assign a weak handle.</param>
+    /// <returns>A weak handle for the provided value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static GCHandle AllocWeak(object value) => GCHandle.Alloc(value, GCHandleType.Weak);
 
+    /// <summary>
+    /// Releases a <see cref="GCHandle"/>.
+    /// </summary>
+    /// <param name="handle">The <see cref="GCHandle"/> to release.</param>
     public static void Free(GCHandle handle)
     {
         if (AlcReloadCfg.IsAlcReloadingEnabled)

@@ -26,7 +26,7 @@ partial class AnimationNode
 
 partial class CodeEdit
 {
-    /// <inheritdoc cref="AddCodeCompletionOption(CodeCompletionKind, string, string, Nullable{Color}, Resource, Nullable{Variant})"/>
+    /// <inheritdoc cref="AddCodeCompletionOption(CodeCompletionKind, string, string, Nullable{Color}, Resource, Nullable{Variant}, int)"/>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public void AddCodeCompletionOption(CodeCompletionKind type, string displayText, string insertText, Nullable<Color> textColor, Resource icon, Nullable<Variant> value)
     {

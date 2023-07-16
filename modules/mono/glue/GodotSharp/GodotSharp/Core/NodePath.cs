@@ -45,6 +45,9 @@ namespace Godot
 
         private WeakReference<IDisposable> _weakReferenceToSelf;
 
+        /// <summary>
+        /// Deconstructs this <see cref="NodePath"/>.
+        /// </summary>
         ~NodePath()
         {
             Dispose(false);
@@ -59,6 +62,9 @@ namespace Godot
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Disposes implementation of this <see cref="NodePath"/>.
+        /// </summary>
         public void Dispose(bool disposing)
         {
             // Always dispose `NativeValue` even if disposing is true
@@ -289,6 +295,13 @@ namespace Godot
         /// <returns>If the <see cref="NodePath"/> is empty.</returns>
         public bool IsEmpty => NativeValue.DangerousSelfRef.IsEmpty;
 
+        /// <summary>
+        /// Evaluates if the <see cref="NodePath"/> instances are exactly equal.
+        /// </summary>
+        /// <param name="left">The left <see cref="NodePath"/>.</param>
+        /// <param name="right">The right <see cref="NodePath"/>.</param>
+        /// <returns><see langword="true"/> if these <see cref="NodePath"/> are
+        /// exactly equal; otherwise, <see langword="false"/>.</returns>
         public static bool operator ==(NodePath left, NodePath right)
         {
             if (left is null)
@@ -296,11 +309,24 @@ namespace Godot
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Evaluates if the <see cref="NodePath"/> instances are not equal.
+        /// </summary>
+        /// <param name="left">The left <see cref="NodePath"/>.</param>
+        /// <param name="right">The right <see cref="NodePath"/>.</param>
+        /// <returns><see langword="true"/> if these <see cref="NodePath"/> are
+        /// not equal; otherwise, <see langword="false"/>.</returns>
         public static bool operator !=(NodePath left, NodePath right)
         {
             return !(left == right);
         }
 
+        /// <summary>
+        /// Evaluates if the <see cref="NodePath"/> instances are exactly equal.
+        /// </summary>
+        /// <param name="other">The <see cref="NodePath"/> to compare with.</param>
+        /// <returns><see langword="true"/> if these <see cref="NodePath"/> are
+        /// exactly equal; otherwise, <see langword="false"/>.</returns>
         public bool Equals(NodePath other)
         {
             if (other is null)
@@ -310,11 +336,22 @@ namespace Godot
             return NativeFuncs.godotsharp_node_path_equals(self, otherNative).ToBool();
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="NodePath"/> is exactly equal to the
+        /// given object (<paramref name="obj"/>).
+        /// </summary>
+        /// <param name="obj">The object to compare with.</param>
+        /// <returns><see langword="true"/> if this <see cref="NodePath"/>and
+        /// the object are equal; otherwise, <see langword="false"/>.</returns>
         public override bool Equals(object obj)
         {
             return ReferenceEquals(this, obj) || (obj is NodePath other && Equals(other));
         }
 
+        /// <summary>
+        /// Serves as the hash function for <see cref="NodePath"/>.
+        /// </summary>
+        /// <returns>A hash code for this <see cref="NodePath"/>.</returns>
         public override int GetHashCode()
         {
             var self = (godot_node_path)NativeValue;

@@ -5,6 +5,10 @@ namespace Godot.NativeInterop
     // Our source generators will add trampolines methods that access variant arguments.
     // This struct makes that possible without having to enable `AllowUnsafeBlocks` in game projects.
 
+    /// <summary>
+    /// Enables trampoline methods that access variant arguments without having
+    /// to mark sections of code as "unsafe"
+    /// </summary>
     public unsafe ref struct NativeVariantPtrArgs
     {
         private godot_variant** _args;
@@ -25,6 +29,9 @@ namespace Godot.NativeInterop
             get => _argc;
         }
 
+        /// <summary>
+        /// Access variant pointers using their index.
+        /// </summary>
         public ref godot_variant this[int index]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

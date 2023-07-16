@@ -15,6 +15,9 @@ using Godot.NativeInterop;
 namespace Godot.Bridge
 {
     // TODO: Make class internal once we replace LookupScriptsInAssembly (the only public member) with source generators
+    /// <summary>
+    /// A bridge for script management; will eventually be made internal.
+    /// </summary>
     public static partial class ScriptManagerBridge
     {
         private static ConcurrentDictionary<AssemblyLoadContext, ConcurrentDictionary<Type, byte>>
@@ -56,6 +59,10 @@ namespace Godot.Bridge
             typesInAlc.TryAdd(type, 0);
         }
 
+        /// <summary>
+        /// Keeps track of a given <see cref="AssemblyLoadContext"/> to easily handle unloading.
+        /// </summary>
+        /// <param name="alc">The <see cref="AssemblyLoadContext"/> to keep track of.</param>
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static void TrackAlcForUnloading(AssemblyLoadContext alc)
         {
@@ -284,6 +291,10 @@ namespace Godot.Bridge
         }
 
         // Called from GodotPlugins
+        /// <summary>
+        /// Looks up scripts from the provided <see cref="Assembly"/>.
+        /// </summary>
+        /// <param name="assembly">The <see cref="Assembly"/> to parse.</param>
         // ReSharper disable once UnusedMember.Local
         public static void LookupScriptsInAssembly(Assembly assembly)
         {

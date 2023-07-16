@@ -6,15 +6,29 @@ using System.Runtime.InteropServices;
 
 namespace Godot.NativeInterop
 {
+    /// <summary>
+    /// Provides a resolver for handling dll imports from Godot.
+    /// </summary>
     public class GodotDllImportResolver
     {
         private IntPtr _internalHandle;
 
+        /// <summary>
+        /// Constructs a new <see cref="GodotDllImportResolver"/> using the provided handle.
+        /// </summary>
+        /// <param name="internalHandle">The pointer of the handle to resolve.</param>
         public GodotDllImportResolver(IntPtr internalHandle)
         {
             _internalHandle = internalHandle;
         }
 
+        /// <summary>
+        /// Called when the dll import process is resolved.
+        /// </summary>
+        /// <param name="libraryName">The library name for this dll.</param>
+        /// <param name="assembly">The assembly context of this dll.</param>
+        /// <param name="searchPath">The path to search.</param>
+        /// <returns>The internal handle of the resolved dll.</returns>
         public IntPtr OnResolveDllImport(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
         {
             if (libraryName == "__Internal")

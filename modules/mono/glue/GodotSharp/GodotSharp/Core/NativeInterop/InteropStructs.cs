@@ -8,14 +8,27 @@ namespace Godot.NativeInterop
     // NOTES:
     // ref structs cannot implement interfaces, but they still work in `using` directives if they declare Dispose()
 
+    /// <summary>
+    /// Collection of extensions for the Godot representation of a <see langword="bool"/>.
+    /// </summary>
     public static class GodotBoolExtensions
     {
+        /// <summary>
+        /// Handles conversion of a <see langword="bool"/> to a <see cref="godot_bool"/>.
+        /// </summary>
+        /// <param name="bool">The <see langword="bool"/> to convert.</param>
+        /// <returns>The newly converted <see cref="godot_bool"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe godot_bool ToGodotBool(this bool @bool)
         {
             return *(godot_bool*)&@bool;
         }
 
+        /// <summary>
+        /// Handles conversion of a <see cref="godot_bool"/> to a <see langword="bool"/>.
+        /// </summary>
+        /// <param name="godotBool">The <see cref="godot_bool"/> to convert.</param>
+        /// <returns>The newly converted <see langword="bool"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool ToBool(this godot_bool godotBool)
         {
@@ -24,13 +37,25 @@ namespace Godot.NativeInterop
     }
 
     // Apparently a struct with a byte is not blittable? It crashes when calling a UnmanagedCallersOnly function ptr.
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see langword="bool"/>.
+    /// </summary>
     // ReSharper disable once InconsistentNaming
     public enum godot_bool : byte
     {
+        /// <summary>
+        /// <see langword="true"/>.
+        /// </summary>
         True = 1,
+        /// <summary>
+        /// <see langword="false"/>.
+        /// </summary>
         False = 0
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see langword="ref"/>.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_ref
@@ -41,6 +66,9 @@ namespace Godot.NativeInterop
 
         private IntPtr _reference;
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_ref"/>.
+        /// </summary>
         public void Dispose()
         {
             if (_reference == IntPtr.Zero)
@@ -49,12 +77,18 @@ namespace Godot.NativeInterop
             _reference = IntPtr.Zero;
         }
 
+        /// <summary>
+        /// The pointer for this <see cref="godot_ref"/>.
+        /// </summary>
         public readonly IntPtr Reference
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _reference;
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="godot_ref"/> is null.
+        /// </summary>
         public readonly bool IsNull
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -62,17 +96,41 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent for the type of error that will be called.
+    /// </summary>
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public enum godot_variant_call_error_error
     {
+        /// <summary>
+        /// No error.
+        /// </summary>
         GODOT_CALL_ERROR_CALL_OK = 0,
+        /// <summary>
+        /// Method passed was invalid.
+        /// </summary>
         GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD,
+        /// <summary>
+        /// Argument passed was invalid.
+        /// </summary>
         GODOT_CALL_ERROR_CALL_ERROR_INVALID_ARGUMENT,
+        /// <summary>
+        /// Too many arguments were passed.
+        /// </summary>
         GODOT_CALL_ERROR_CALL_ERROR_TOO_MANY_ARGUMENTS,
+        /// <summary>
+        /// Too few arguments were passed.
+        /// </summary>
         GODOT_CALL_ERROR_CALL_ERROR_TOO_FEW_ARGUMENTS,
+        /// <summary>
+        /// The instance was null.
+        /// </summary>
         GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL,
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent for calling an error.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_variant_call_error
@@ -85,18 +143,27 @@ namespace Godot.NativeInterop
         private int argument;
         private int expected;
 
+        /// <summary>
+        /// The error state of this call.
+        /// </summary>
         public godot_variant_call_error_error Error
         {
             readonly get => error;
             set => error = value;
         }
 
+        /// <summary>
+        /// The argument for this call.
+        /// </summary>
         public int Argument
         {
             readonly get => argument;
             set => argument = value;
         }
 
+        /// <summary>
+        /// The expected type for this call.
+        /// </summary>
         public Godot.Variant.Type Expected
         {
             readonly get => (Godot.Variant.Type)expected;
@@ -104,6 +171,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see cref="Variant"/>.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_variant
@@ -176,6 +246,9 @@ namespace Godot.NativeInterop
             }
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Variant.Type"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public Variant.Type Type
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -184,6 +257,9 @@ namespace Godot.NativeInterop
             set => _typeField = (int)value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="godot_bool"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public godot_bool Bool
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -192,6 +268,9 @@ namespace Godot.NativeInterop
             set => _data._bool = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see langword="long"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public long Int
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -200,6 +279,9 @@ namespace Godot.NativeInterop
             set => _data._int = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see langword="double"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public double Float
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -208,36 +290,54 @@ namespace Godot.NativeInterop
             set => _data._float = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Transform2D"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public readonly unsafe Transform2D* Transform2D
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _data._transform2d;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Aabb"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public readonly unsafe Aabb* Aabb
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _data._aabb;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Basis"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public readonly unsafe Basis* Basis
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _data._basis;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Transform3D"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public readonly unsafe Transform3D* Transform3D
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _data._transform3d;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Projection"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public readonly unsafe Projection* Projection
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _data._projection;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="godot_string_name"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public godot_string_name StringName
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -246,6 +346,9 @@ namespace Godot.NativeInterop
             set => _data._m_string_name = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="godot_string"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public godot_string String
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -254,6 +357,9 @@ namespace Godot.NativeInterop
             set => _data._m_string = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Vector4"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public Vector4 Vector4
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -262,6 +368,9 @@ namespace Godot.NativeInterop
             set => _data._m_vector4 = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Vector4I"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public Vector4I Vector4I
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -270,6 +379,9 @@ namespace Godot.NativeInterop
             set => _data._m_vector4i = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Vector3"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public Vector3 Vector3
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -278,6 +390,9 @@ namespace Godot.NativeInterop
             set => _data._m_vector3 = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Vector3I"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public Vector3I Vector3I
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -286,6 +401,9 @@ namespace Godot.NativeInterop
             set => _data._m_vector3i = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Vector2"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public Vector2 Vector2
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -294,6 +412,9 @@ namespace Godot.NativeInterop
             set => _data._m_vector2 = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Vector2I"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public Vector2I Vector2I
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -302,6 +423,9 @@ namespace Godot.NativeInterop
             set => _data._m_vector2i = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Rect2"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public Rect2 Rect2
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -310,6 +434,9 @@ namespace Godot.NativeInterop
             set => _data._m_rect2 = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Rect2I"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public Rect2I Rect2I
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -318,6 +445,9 @@ namespace Godot.NativeInterop
             set => _data._m_rect2i = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Plane"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public Plane Plane
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -326,6 +456,9 @@ namespace Godot.NativeInterop
             set => _data._m_plane = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Quaternion"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public Quaternion Quaternion
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -334,6 +467,9 @@ namespace Godot.NativeInterop
             set => _data._m_quaternion = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Color"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public Color Color
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -342,6 +478,9 @@ namespace Godot.NativeInterop
             set => _data._m_color = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="godot_node_path"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public godot_node_path NodePath
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -350,6 +489,9 @@ namespace Godot.NativeInterop
             set => _data._m_node_path = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="Godot.Rid"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public Rid Rid
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -358,6 +500,9 @@ namespace Godot.NativeInterop
             set => _data._m_rid = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="godot_callable"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public godot_callable Callable
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -366,6 +511,9 @@ namespace Godot.NativeInterop
             set => _data._m_callable = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="godot_signal"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public godot_signal Signal
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -374,6 +522,9 @@ namespace Godot.NativeInterop
             set => _data._m_signal = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="godot_dictionary"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public godot_dictionary Dictionary
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -382,6 +533,9 @@ namespace Godot.NativeInterop
             set => _data._m_dictionary = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="godot_array"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public godot_array Array
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -390,12 +544,18 @@ namespace Godot.NativeInterop
             set => _data._m_array = value;
         }
 
+        /// <summary>
+        /// Represents the internal <see cref="IntPtr"/> of this <see cref="godot_variant"/>.
+        /// </summary>
         public readonly IntPtr Object
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _data._m_obj_data.obj;
         }
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_variant"/>.
+        /// </summary>
         public void Dispose()
         {
             switch (Type)
@@ -445,6 +605,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see langword="string"/>.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_string
@@ -455,6 +618,9 @@ namespace Godot.NativeInterop
 
         private IntPtr _ptr;
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_string"/>.
+        /// </summary>
         public void Dispose()
         {
             if (_ptr == IntPtr.Zero)
@@ -463,6 +629,9 @@ namespace Godot.NativeInterop
             _ptr = IntPtr.Zero;
         }
 
+        /// <summary>
+        /// Evaluates the buffer of this <see cref="godot_string"/>.
+        /// </summary>
         public readonly IntPtr Buffer
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -470,6 +639,9 @@ namespace Godot.NativeInterop
         }
 
         // Size including the null termination character
+        /// <summary>
+        /// Evaluates the size of this <see cref="godot_string"/>, including the null ternimation character.
+        /// </summary>
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -477,6 +649,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see cref="StringName"/>.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_string_name
@@ -487,6 +662,9 @@ namespace Godot.NativeInterop
 
         private IntPtr _data;
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_string_name"/>.
+        /// </summary>
         public void Dispose()
         {
             if (_data == IntPtr.Zero)
@@ -495,12 +673,18 @@ namespace Godot.NativeInterop
             _data = IntPtr.Zero;
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="godot_string_name"/> has been allocated.
+        /// </summary>
         public readonly bool IsAllocated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _data != IntPtr.Zero;
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="godot_string_name"/> is empty.
+        /// </summary>
         public readonly bool IsEmpty
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -508,26 +692,57 @@ namespace Godot.NativeInterop
             get => _data == IntPtr.Zero;
         }
 
+        /// <summary>
+        /// Evaluates if the <see cref="godot_string_name"/> instances are exactly equal.
+        /// </summary>
+        /// <param name="left">The left <see cref="godot_string_name"/>.</param>
+        /// <param name="right">The right <see cref="godot_string_name"/>.</param>
+        /// <returns><see langword="true"/> if these <see cref="godot_string_name"/> are
+        /// exactly equal; otherwise, <see langword="false"/>.</returns>
         public static bool operator ==(godot_string_name left, godot_string_name right)
         {
             return left._data == right._data;
         }
 
+        /// <summary>
+        /// Evaluates if the <see cref="godot_string_name"/> instances are not equal.
+        /// </summary>
+        /// <param name="left">The left <see cref="godot_string_name"/>.</param>
+        /// <param name="right">The right <see cref="godot_string_name"/>.</param>
+        /// <returns><see langword="true"/> if these <see cref="godot_string_name"/> are
+        /// not equal; otherwise, <see langword="false"/>.</returns>
         public static bool operator !=(godot_string_name left, godot_string_name right)
         {
             return !(left == right);
         }
 
+        /// <summary>
+        /// Evaluates if the <see cref="godot_string_name"/> instances are exactly equal.
+        /// </summary>
+        /// <param name="other">The <see cref="godot_string_name"/> to compare with.</param>
+        /// <returns><see langword="true"/> if these <see cref="godot_string_name"/> are
+        /// exactly equal; otherwise, <see langword="false"/>.</returns>
         public bool Equals(godot_string_name other)
         {
             return _data == other._data;
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="godot_string_name"/> is exactly equal to the
+        /// given object (<paramref name="obj"/>).
+        /// </summary>
+        /// <param name="obj">The object to compare with.</param>
+        /// <returns><see langword="true"/> if this <see cref="godot_string_name"/>and
+        /// the object are equal; otherwise, <see langword="false"/>.</returns>
         public override bool Equals(object obj)
         {
             return obj is StringName s && s.Equals(this);
         }
 
+        /// <summary>
+        /// Serves as the hash function for <see cref="godot_string_name"/>.
+        /// </summary>
+        /// <returns>A hash code for this <see cref="godot_string_name"/>.</returns>
         public override int GetHashCode()
         {
             return _data.GetHashCode();
@@ -550,6 +765,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see cref="NodePath"/>.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_node_path
@@ -560,6 +778,9 @@ namespace Godot.NativeInterop
 
         private IntPtr _data;
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_node_path"/>.
+        /// </summary>
         public void Dispose()
         {
             if (_data == IntPtr.Zero)
@@ -568,12 +789,18 @@ namespace Godot.NativeInterop
             _data = IntPtr.Zero;
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="godot_node_path"/> has been allocated.
+        /// </summary>
         public readonly bool IsAllocated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _data != IntPtr.Zero;
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="godot_node_path"/> is empty.
+        /// </summary>
         public readonly bool IsEmpty
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -598,6 +825,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see cref="Signal"/>.
+    /// </summary>
     [StructLayout(LayoutKind.Explicit)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_signal
@@ -614,24 +844,39 @@ namespace Godot.NativeInterop
 
         [FieldOffset(8)] private ulong _objectId;
 
+        /// <summary>
+        /// Constructs a new <see cref="godot_signal"/> with the given <paramref name="name"/>
+        /// and owner <paramref name="objectId"/>.
+        /// </summary>
+        /// <param name="name">The name of this signal.</param>
+        /// <param name="objectId">The objectId of this signal's owner.</param>
         public godot_signal(godot_string_name name, ulong objectId) : this()
         {
             _name = name;
             _objectId = objectId;
         }
 
+        /// <summary>
+        /// Retrieves the name of this <see cref="godot_signal"/>.
+        /// </summary>
         public godot_string_name Name
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _name;
         }
 
+        /// <summary>
+        /// Retrieves the ObjectId belonging to the owner of this <see cref="godot_signal"/>.
+        /// </summary>
         public ulong ObjectId
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _objectId;
         }
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_signal"/>.
+        /// </summary>
         public void Dispose()
         {
             if (!_name.IsAllocated)
@@ -641,6 +886,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see cref="Callable"/>.
+    /// </summary>
     [StructLayout(LayoutKind.Explicit)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_callable
@@ -659,12 +907,21 @@ namespace Godot.NativeInterop
         [FieldOffset(8)] private ulong _objectId;
         [FieldOffset(8)] private IntPtr _custom;
 
+        /// <summary>
+        /// Constructs a new <see cref="godot_signal"/> with the given <paramref name="method"/>
+        /// and owner <paramref name="objectId"/>.
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="objectId"></param>
         public godot_callable(godot_string_name method, ulong objectId) : this()
         {
             _method = method;
             _objectId = objectId;
         }
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_callable"/>.
+        /// </summary>
         public void Dispose()
         {
             // _custom needs freeing as well
@@ -679,6 +936,9 @@ namespace Godot.NativeInterop
     // A correctly constructed value needs to call the native default constructor to allocate `_p`.
     // Don't pass a C# default constructed `godot_array` to native code, unless it's going to
     // be re-assigned a new value (the copy constructor checks if `_p` is null so that's fine).
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of an <see cref="Collections.Array"/>.
+    /// </summary>
     [StructLayout(LayoutKind.Explicit)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_array
@@ -728,30 +988,46 @@ namespace Godot.NativeInterop
             }
         }
 
+        /// <summary>
+        /// Evaluates the <see cref="godot_variant"/> elements within
+        /// this <see cref="godot_array"/>.
+        /// </summary>
         public readonly unsafe godot_variant* Elements
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _p->_arrayVector._ptr;
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="godot_array"/> has been allocated.
+        /// </summary>
         public readonly unsafe bool IsAllocated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _p != null;
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="godot_array"/> is empty.
+        /// </summary>
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _p != null ? _p->Size : 0;
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="godot_array"/> is in a read-only state.
+        /// </summary>
         public readonly unsafe bool IsReadOnly
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _p != null && _p->IsReadOnly;
         }
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_array"/>.
+        /// </summary>
         public unsafe void Dispose()
         {
             if (_p == null)
@@ -781,6 +1057,9 @@ namespace Godot.NativeInterop
     // A correctly constructed value needs to call the native default constructor to allocate `_p`.
     // Don't pass a C# default constructed `godot_dictionary` to native code, unless it's going to
     // be re-assigned a new value (the copy constructor checks if `_p` is null so that's fine).
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see cref="Collections.Dictionary"/>.
+    /// </summary>
     [StructLayout(LayoutKind.Explicit)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_dictionary
@@ -809,18 +1088,27 @@ namespace Godot.NativeInterop
             }
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="godot_dictionary"/> has been allocated.
+        /// </summary>
         public readonly unsafe bool IsAllocated
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _p != null;
         }
 
+        /// <summary>
+        /// Evaluates if this <see cref="godot_dictionary"/> is in a read-only state.
+        /// </summary>
         public readonly unsafe bool IsReadOnly
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _p != null && _p->IsReadOnly;
         }
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_dictionary"/>.
+        /// </summary>
         public unsafe void Dispose()
         {
             if (_p == null)
@@ -846,6 +1134,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see langword="byte"/>[].
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_byte_array
@@ -857,6 +1148,9 @@ namespace Godot.NativeInterop
         private IntPtr _writeProxy;
         private unsafe byte* _ptr;
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_packed_byte_array"/>.
+        /// </summary>
         public unsafe void Dispose()
         {
             if (_ptr == null)
@@ -865,12 +1159,18 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
+        /// <summary>
+        /// Evaluates the buffer of this <see cref="godot_packed_byte_array"/>.
+        /// </summary>
         public readonly unsafe byte* Buffer
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _ptr;
         }
 
+        /// <summary>
+        /// Evaluates the size of this <see cref="godot_packed_byte_array"/>.
+        /// </summary>
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -878,6 +1178,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of an <see langword="int"/>[].
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_int32_array
@@ -889,6 +1192,9 @@ namespace Godot.NativeInterop
         private IntPtr _writeProxy;
         private unsafe int* _ptr;
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_packed_int32_array"/>.
+        /// </summary>
         public unsafe void Dispose()
         {
             if (_ptr == null)
@@ -897,12 +1203,18 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
+        /// <summary>
+        /// Evaluates the buffer of this <see cref="godot_packed_int32_array"/>.
+        /// </summary>
         public readonly unsafe int* Buffer
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _ptr;
         }
 
+        /// <summary>
+        /// Evaluates the size of this <see cref="godot_packed_int32_array"/>.
+        /// </summary>
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -910,6 +1222,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see langword="long"/>[].
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_int64_array
@@ -921,6 +1236,9 @@ namespace Godot.NativeInterop
         private IntPtr _writeProxy;
         private unsafe long* _ptr;
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_packed_int64_array"/>.
+        /// </summary>
         public unsafe void Dispose()
         {
             if (_ptr == null)
@@ -929,12 +1247,18 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
+        /// <summary>
+        /// Evaluates the buffer of this <see cref="godot_packed_int64_array"/>.
+        /// </summary>
         public readonly unsafe long* Buffer
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _ptr;
         }
 
+        /// <summary>
+        /// Evaluates the size of this <see cref="godot_packed_int64_array"/>.
+        /// </summary>
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -942,6 +1266,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see langword="float"/>[].
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_float32_array
@@ -953,6 +1280,9 @@ namespace Godot.NativeInterop
         private IntPtr _writeProxy;
         private unsafe float* _ptr;
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_packed_float32_array"/>.
+        /// </summary>
         public unsafe void Dispose()
         {
             if (_ptr == null)
@@ -961,12 +1291,18 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
+        /// <summary>
+        /// Evaluates the buffer of this <see cref="godot_packed_float32_array"/>.
+        /// </summary>
         public readonly unsafe float* Buffer
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _ptr;
         }
 
+        /// <summary>
+        /// Evaluates the size of this <see cref="godot_packed_float32_array"/>.
+        /// </summary>
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -974,6 +1310,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see langword="double"/>[].
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_float64_array
@@ -985,6 +1324,9 @@ namespace Godot.NativeInterop
         private IntPtr _writeProxy;
         private unsafe double* _ptr;
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_packed_float64_array"/>.
+        /// </summary>
         public unsafe void Dispose()
         {
             if (_ptr == null)
@@ -993,12 +1335,18 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
+        /// <summary>
+        /// Evaluates the buffer of this <see cref="godot_packed_float64_array"/>.
+        /// </summary>
         public readonly unsafe double* Buffer
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _ptr;
         }
 
+        /// <summary>
+        /// Evaluates the size of this <see cref="godot_packed_float64_array"/>.
+        /// </summary>
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1006,6 +1354,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see langword="string"/>[].
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_string_array
@@ -1017,6 +1368,9 @@ namespace Godot.NativeInterop
         private IntPtr _writeProxy;
         private unsafe godot_string* _ptr;
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_packed_string_array"/>.
+        /// </summary>
         public unsafe void Dispose()
         {
             if (_ptr == null)
@@ -1025,12 +1379,18 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
+        /// <summary>
+        /// Evaluates the buffer of this <see cref="godot_packed_string_array"/>.
+        /// </summary>
         public readonly unsafe godot_string* Buffer
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _ptr;
         }
 
+        /// <summary>
+        /// Evaluates the size of this <see cref="godot_packed_string_array"/>.
+        /// </summary>
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1038,6 +1398,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see cref="Vector2"/>[].
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_vector2_array
@@ -1049,6 +1412,9 @@ namespace Godot.NativeInterop
         private IntPtr _writeProxy;
         private unsafe Vector2* _ptr;
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_packed_vector2_array"/>.
+        /// </summary>
         public unsafe void Dispose()
         {
             if (_ptr == null)
@@ -1057,12 +1423,18 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
+        /// <summary>
+        /// Evaluates the buffer of this <see cref="godot_packed_vector2_array"/>.
+        /// </summary>
         public readonly unsafe Vector2* Buffer
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _ptr;
         }
 
+        /// <summary>
+        /// Evaluates the size of this <see cref="godot_packed_vector2_array"/>.
+        /// </summary>
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1070,6 +1442,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see cref="Vector3"/>[].
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_vector3_array
@@ -1081,6 +1456,9 @@ namespace Godot.NativeInterop
         private IntPtr _writeProxy;
         private unsafe Vector3* _ptr;
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_packed_vector3_array"/>.
+        /// </summary>
         public unsafe void Dispose()
         {
             if (_ptr == null)
@@ -1089,12 +1467,18 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
+        /// <summary>
+        /// Evaluates the buffer of this <see cref="godot_packed_vector3_array"/>.
+        /// </summary>
         public readonly unsafe Vector3* Buffer
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _ptr;
         }
 
+        /// <summary>
+        /// Evaluates the size of this <see cref="godot_packed_vector3_array"/>.
+        /// </summary>
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1102,6 +1486,9 @@ namespace Godot.NativeInterop
         }
     }
 
+    /// <summary>
+    /// Represents the <see cref="NativeInterop"/> equivalent of a <see cref="Color"/>[].
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_packed_color_array
@@ -1113,6 +1500,9 @@ namespace Godot.NativeInterop
         private IntPtr _writeProxy;
         private unsafe Color* _ptr;
 
+        /// <summary>
+        /// Disposes of this <see cref="godot_packed_color_array"/>.
+        /// </summary>
         public unsafe void Dispose()
         {
             if (_ptr == null)
@@ -1121,12 +1511,18 @@ namespace Godot.NativeInterop
             _ptr = null;
         }
 
+        /// <summary>
+        /// Evaluates the buffer of this <see cref="godot_packed_color_array"/>.
+        /// </summary>
         public readonly unsafe Color* Buffer
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _ptr;
         }
 
+        /// <summary>
+        /// Evaluates the size of this <see cref="godot_packed_color_array"/>.
+        /// </summary>
         public readonly unsafe int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

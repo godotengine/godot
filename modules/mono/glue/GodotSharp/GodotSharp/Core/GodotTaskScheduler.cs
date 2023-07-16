@@ -31,6 +31,10 @@ namespace Godot
             SynchronizationContext.SetSynchronizationContext(Context);
         }
 
+        /// <summary>
+        /// Enqueues a new Task.
+        /// </summary>
+        /// <param name="task">The task to queue up.</param>
         protected sealed override void QueueTask(Task task)
         {
             lock (_tasks)
@@ -39,6 +43,14 @@ namespace Godot
             }
         }
 
+        /// <summary>
+        /// Tries to execute a new task.
+        /// </summary>
+        /// <param name="task">The task to execute.</param>
+        /// <param name="taskWasPreviouslyQueued">Whether or not the task
+        /// was previously queued.</param>
+        /// <returns><see langword="true"/> if the task was successfully
+        /// executed; otherwise, <see langword="false"/>.</returns>
         protected sealed override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
         {
             if (SynchronizationContext.Current != Context)
@@ -50,6 +62,12 @@ namespace Godot
             return TryExecuteTask(task);
         }
 
+        /// <summary>
+        /// Tries to dequeue a task.
+        /// </summary>
+        /// <param name="task">The task to remove.</param>
+        /// <returns><see langword="true"/> if the task was successfully
+        /// dequeued; otherwise, <see langword="false"/>.</returns>
         protected sealed override bool TryDequeue(Task task)
         {
             lock (_tasks)
@@ -58,6 +76,10 @@ namespace Godot
             }
         }
 
+        /// <summary>
+        /// Get the currently scheduled tasks.
+        /// </summary>
+        /// <returns>The scheduled tasks.</returns>
         protected sealed override IEnumerable<Task> GetScheduledTasks()
         {
             lock (_tasks)
@@ -109,6 +131,9 @@ namespace Godot
             }
         }
 
+        /// <summary>
+        /// Disposes of this <see cref="GodotTaskScheduler"/>.
+        /// </summary>
         public void Dispose()
         {
             Context.Dispose();

@@ -42,6 +42,9 @@ namespace Godot.Collections
         internal static Dictionary CreateTakingOwnershipOfDisposableValue(godot_dictionary nativeValueToOwn)
             => new Dictionary(nativeValueToOwn);
 
+        /// <summary>
+        /// Deconstructs this <see cref="Dictionary"/>.
+        /// </summary>
         ~Dictionary()
         {
             Dispose(false);
@@ -56,6 +59,9 @@ namespace Godot.Collections
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Disposes implementation of this <see cref="Dictionary"/>.
+        /// </summary>
         public void Dispose(bool disposing)
         {
             // Always dispose `NativeValue` even if disposing is true
@@ -881,9 +887,19 @@ namespace Godot.Collections
         /// <returns>A string representation of this dictionary.</returns>
         public override string ToString() => _underlyingDict.ToString();
 
+        /// <summary>
+        /// Converts this <see cref="Dictionary{TKey, TValue}"/> to a <see cref="Variant"/>.
+        /// </summary>
+        /// <param name="from">The <see cref="Dictionary{TKey, TValue}"/> to convert.</param>
+        /// <returns>A <see cref="Variant"/> representation of this <see cref="Dictionary{TKey, TValue}"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Variant(Dictionary<TKey, TValue> from) => Variant.CreateFrom(from);
 
+        /// <summary>
+        /// Converts this <see cref="Variant"/> to a <see cref="Dictionary{TKey, TValue}"/>.
+        /// </summary>
+        /// <param name="from">The <see cref="Variant"/> to convert.</param>
+        /// <returns>A <see cref="Dictionary{TKey, TValue}"/> representation of this <see cref="Variant"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator Dictionary<TKey, TValue>(Variant from) =>
             from.AsGodotDictionary<TKey, TValue>();

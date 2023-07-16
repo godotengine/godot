@@ -30,6 +30,10 @@ namespace Godot
             _signalName = name;
         }
 
+        /// <summary>
+        /// Retrieves this Signal's awaiter.
+        /// </summary>
+        /// <returns>This signal's awaiter.</returns>
         public IAwaiter<Variant[]> GetAwaiter()
         {
             return new SignalAwaiter(_owner, _signalName, _owner);

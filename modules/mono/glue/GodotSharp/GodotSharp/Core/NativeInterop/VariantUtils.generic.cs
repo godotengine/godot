@@ -32,6 +32,11 @@ public partial class VariantUtils
         }
     }
 
+    /// <summary>
+    /// Converts a <typeparamref name="T"/> to a <see cref="godot_variant"/>.
+    /// </summary>
+    /// <param name="from">The <typeparamref name="T"/> to convert.</param>
+    /// <returns>A <see cref="godot_variant"/> representation of this <typeparamref name="T"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     [SuppressMessage("ReSharper", "RedundantNameQualifier")]
     public static godot_variant CreateFrom<[MustBeVariant] T>(in T from)
@@ -223,6 +228,11 @@ public partial class VariantUtils
         return GenericConversion<T>.ToVariant(from);
     }
 
+    /// <summary>
+    /// Converts a <see cref="godot_variant"/> to a <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="variant">The <see cref="godot_variant"/> to convert.</param>
+    /// <returns>A <typeparamref name="T"/> representation of this <see cref="godot_variant"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     [SuppressMessage("ReSharper", "RedundantNameQualifier")]
     public static T ConvertTo<[MustBeVariant] T>(in godot_variant variant)

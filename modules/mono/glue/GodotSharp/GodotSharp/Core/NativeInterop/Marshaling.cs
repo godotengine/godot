@@ -12,6 +12,9 @@ using Array = System.Array;
 
 namespace Godot.NativeInterop
 {
+    /// <summary>
+    /// A collection of methods for allocating unmanaged memory to and from Godot ref structs.
+    /// </summary>
     public static class Marshaling
     {
         internal static Variant.Type ConvertManagedTypeToVariantType(Type type, out bool r_nil_is_variant)
@@ -196,6 +199,11 @@ namespace Godot.NativeInterop
 
         // String
 
+        /// <summary>
+        /// Converts a <see langword="string"/> to a <see cref="godot_string"/>.
+        /// </summary>
+        /// <param name="p_mono_string">The <see langword="string"/> to convert.</param>
+        /// <returns>A <see cref="godot_string"/> representation of this <see langword="string"/>.</returns>
         public static unsafe godot_string ConvertStringToNative(string? p_mono_string)
         {
             if (p_mono_string == null)
@@ -208,6 +216,11 @@ namespace Godot.NativeInterop
             }
         }
 
+        /// <summary>
+        /// Converts a <see cref="godot_string"/> to a <see langword="string"/>.
+        /// </summary>
+        /// <param name="p_string">The <see cref="godot_string"/> to convert.</param>
+        /// <returns>A <see langword="string"/> representation of this <see cref="godot_string"/>.</returns>
         public static unsafe string ConvertStringToManaged(in godot_string p_string)
         {
             if (p_string.Buffer == IntPtr.Zero)
@@ -225,6 +238,11 @@ namespace Godot.NativeInterop
 
         // Callable
 
+        /// <summary>
+        /// Converts a <see cref="Callable"/> to a <see cref="godot_callable"/>.
+        /// </summary>
+        /// <param name="p_managed_callable">The <see cref="Callable"/> to convert.</param>
+        /// <returns>A <see cref="godot_callable"/> representation of this <see cref="Callable"/>.</returns>
         public static godot_callable ConvertCallableToNative(in Callable p_managed_callable)
         {
             if (p_managed_callable.Delegate != null)
@@ -263,6 +281,11 @@ namespace Godot.NativeInterop
             }
         }
 
+        /// <summary>
+        /// Converts a <see cref="godot_callable"/> to a <see cref="Callable"/>.
+        /// </summary>
+        /// <param name="p_callable">The <see cref="godot_callable"/> to convert.</param>
+        /// <returns>A <see cref="Callable"/> representation of this <see cref="godot_callable"/>.</returns>
         public static Callable ConvertCallableToManaged(in godot_callable p_callable)
         {
             if (NativeFuncs.godotsharp_callable_get_data_for_marshalling(p_callable,
@@ -290,6 +313,11 @@ namespace Godot.NativeInterop
 
         // Signal
 
+        /// <summary>
+        /// Converts a <see cref="Signal"/> to a <see cref="godot_signal"/>.
+        /// </summary>
+        /// <param name="p_managed_signal">The <see cref="Signal"/> to convert.</param>
+        /// <returns>A <see cref="godot_signal"/> representation of this <see cref="Signal"/>.</returns>
         public static godot_signal ConvertSignalToNative(in Signal p_managed_signal)
         {
             ulong ownerId = p_managed_signal.Owner.GetInstanceId();
@@ -308,6 +336,11 @@ namespace Godot.NativeInterop
             return new godot_signal(name, ownerId);
         }
 
+        /// <summary>
+        /// Converts a <see cref="godot_signal"/> to a <see cref="Signal"/>.
+        /// </summary>
+        /// <param name="p_signal">The <see cref="godot_signal"/> to convert.</param>
+        /// <returns>A <see cref="Signal"/> representation of this <see cref="godot_signal"/>.</returns>
         public static Signal ConvertSignalToManaged(in godot_signal p_signal)
         {
             var owner = GodotObject.InstanceFromId(p_signal.ObjectId);
@@ -377,6 +410,11 @@ namespace Godot.NativeInterop
 
         // PackedByteArray
 
+        /// <summary>
+        /// Converts a <see cref="godot_packed_byte_array"/> to a <see langword="byte"/>[].
+        /// </summary>
+        /// <param name="p_array">The <see cref="godot_packed_byte_array"/> to convert.</param>
+        /// <returns>A <see langword="byte"/>[] representation of this <see cref="godot_packed_byte_array"/>.</returns>
         public static unsafe byte[] ConvertNativePackedByteArrayToSystemArray(in godot_packed_byte_array p_array)
         {
             byte* buffer = p_array.Buffer;
@@ -389,6 +427,11 @@ namespace Godot.NativeInterop
             return array;
         }
 
+        /// <summary>
+        /// Converts a <see langword="byte"/> span to a <see cref="godot_packed_byte_array"/>.
+        /// </summary>
+        /// <param name="p_array">The <see langword="byte"/> span to convert.</param>
+        /// <returns>A <see cref="godot_packed_byte_array"/> representation of this <see langword="byte"/> span.</returns>
         public static unsafe godot_packed_byte_array ConvertSystemArrayToNativePackedByteArray(Span<byte> p_array)
         {
             if (p_array.IsEmpty)
@@ -399,6 +442,11 @@ namespace Godot.NativeInterop
 
         // PackedInt32Array
 
+        /// <summary>
+        /// Converts a <see cref="godot_packed_int32_array"/> to an <see langword="int"/>[].
+        /// </summary>
+        /// <param name="p_array">The <see cref="godot_packed_int32_array"/> to convert.</param>
+        /// <returns>An <see langword="int"/>[] representation of this <see cref="godot_packed_int32_array"/>.</returns>
         public static unsafe int[] ConvertNativePackedInt32ArrayToSystemArray(godot_packed_int32_array p_array)
         {
             int* buffer = p_array.Buffer;
@@ -412,6 +460,11 @@ namespace Godot.NativeInterop
             return array;
         }
 
+        /// <summary>
+        /// Converts an <see langword="int"/> span to a <see cref="godot_packed_int32_array"/>.
+        /// </summary>
+        /// <param name="p_array">The <see langword="int"/> span to convert.</param>
+        /// <returns>A <see cref="godot_packed_int32_array"/> representation of this <see langword="int"/> span.</returns>
         public static unsafe godot_packed_int32_array ConvertSystemArrayToNativePackedInt32Array(Span<int> p_array)
         {
             if (p_array.IsEmpty)
@@ -422,6 +475,11 @@ namespace Godot.NativeInterop
 
         // PackedInt64Array
 
+        /// <summary>
+        /// Converts a <see cref="godot_packed_int64_array"/> to a <see langword="long"/>[].
+        /// </summary>
+        /// <param name="p_array">The <see cref="godot_packed_int64_array"/> to convert.</param>
+        /// <returns>A <see langword="long"/>[] representation of this <see cref="godot_packed_int64_array"/>.</returns>
         public static unsafe long[] ConvertNativePackedInt64ArrayToSystemArray(godot_packed_int64_array p_array)
         {
             long* buffer = p_array.Buffer;
@@ -435,6 +493,11 @@ namespace Godot.NativeInterop
             return array;
         }
 
+        /// <summary>
+        /// Converts a <see langword="long"/> span to a <see cref="godot_packed_int64_array"/>.
+        /// </summary>
+        /// <param name="p_array">The <see langword="long"/> span to convert.</param>
+        /// <returns>A <see cref="godot_packed_int64_array"/> representation of this <see langword="long"/> span.</returns>
         public static unsafe godot_packed_int64_array ConvertSystemArrayToNativePackedInt64Array(Span<long> p_array)
         {
             if (p_array.IsEmpty)
@@ -445,6 +508,11 @@ namespace Godot.NativeInterop
 
         // PackedFloat32Array
 
+        /// <summary>
+        /// Converts a <see cref="godot_packed_float32_array"/> to a <see langword="float"/>[].
+        /// </summary>
+        /// <param name="p_array">The <see cref="godot_packed_float32_array"/> to convert.</param>
+        /// <returns>A <see langword="float"/>[] representation of this <see cref="godot_packed_float32_array"/>.</returns>
         public static unsafe float[] ConvertNativePackedFloat32ArrayToSystemArray(godot_packed_float32_array p_array)
         {
             float* buffer = p_array.Buffer;
@@ -458,6 +526,11 @@ namespace Godot.NativeInterop
             return array;
         }
 
+        /// <summary>
+        /// Converts a <see langword="float"/> span to a <see cref="godot_packed_float32_array"/>.
+        /// </summary>
+        /// <param name="p_array">The <see langword="float"/> span to convert.</param>
+        /// <returns>A <see cref="godot_packed_float32_array"/> representation of this <see langword="float"/> span.</returns>
         public static unsafe godot_packed_float32_array ConvertSystemArrayToNativePackedFloat32Array(
             Span<float> p_array)
         {
@@ -469,6 +542,11 @@ namespace Godot.NativeInterop
 
         // PackedFloat64Array
 
+        /// <summary>
+        /// Converts a <see cref="godot_packed_float64_array"/> to a <see langword="double"/>[].
+        /// </summary>
+        /// <param name="p_array">The <see cref="godot_packed_float64_array"/> to convert.</param>
+        /// <returns>A <see langword="double"/>[] representation of this <see cref="godot_packed_float64_array"/>.</returns>
         public static unsafe double[] ConvertNativePackedFloat64ArrayToSystemArray(godot_packed_float64_array p_array)
         {
             double* buffer = p_array.Buffer;
@@ -482,6 +560,11 @@ namespace Godot.NativeInterop
             return array;
         }
 
+        /// <summary>
+        /// Converts a <see langword="double"/> span to a <see cref="godot_packed_float64_array"/>.
+        /// </summary>
+        /// <param name="p_array">The <see langword="double"/> span to convert.</param>
+        /// <returns>A <see cref="godot_packed_float64_array"/> representation of this <see langword="double"/> span.</returns>
         public static unsafe godot_packed_float64_array ConvertSystemArrayToNativePackedFloat64Array(
             Span<double> p_array)
         {
@@ -493,6 +576,11 @@ namespace Godot.NativeInterop
 
         // PackedStringArray
 
+        /// <summary>
+        /// Converts a <see cref="godot_packed_string_array"/> to a <see langword="string"/>[].
+        /// </summary>
+        /// <param name="p_array">The <see cref="godot_packed_string_array"/> to convert.</param>
+        /// <returns>A <see langword="string"/>[] representation of this <see cref="godot_packed_string_array"/>.</returns>
         public static unsafe string[] ConvertNativePackedStringArrayToSystemArray(godot_packed_string_array p_array)
         {
             godot_string* buffer = p_array.Buffer;
@@ -505,6 +593,11 @@ namespace Godot.NativeInterop
             return array;
         }
 
+        /// <summary>
+        /// Converts a <see langword="string"/> span to a <see cref="godot_packed_string_array"/>.
+        /// </summary>
+        /// <param name="p_array">The <see langword="string"/> span to convert.</param>
+        /// <returns>A <see cref="godot_packed_string_array"/> representation of this <see langword="string"/> span.</returns>
         public static godot_packed_string_array ConvertSystemArrayToNativePackedStringArray(Span<string> p_array)
         {
             godot_packed_string_array dest = new godot_packed_string_array();
@@ -526,6 +619,11 @@ namespace Godot.NativeInterop
 
         // PackedVector2Array
 
+        /// <summary>
+        /// Converts a <see cref="godot_packed_vector2_array"/> to a <see cref="Vector2"/>[].
+        /// </summary>
+        /// <param name="p_array">The <see cref="godot_packed_vector2_array"/> to convert.</param>
+        /// <returns>A <see cref="Vector2"/>[] representation of this <see cref="godot_packed_vector2_array"/>.</returns>
         public static unsafe Vector2[] ConvertNativePackedVector2ArrayToSystemArray(godot_packed_vector2_array p_array)
         {
             Vector2* buffer = p_array.Buffer;
@@ -539,6 +637,11 @@ namespace Godot.NativeInterop
             return array;
         }
 
+        /// <summary>
+        /// Converts a <see cref="Vector2"/> span to a <see cref="godot_packed_vector2_array"/>.
+        /// </summary>
+        /// <param name="p_array">The <see cref="Vector2"/> span to convert.</param>
+        /// <returns>A <see cref="godot_packed_vector2_array"/> representation of this <see cref="Vector2"/> span.</returns>
         public static unsafe godot_packed_vector2_array ConvertSystemArrayToNativePackedVector2Array(
             Span<Vector2> p_array)
         {
@@ -550,6 +653,11 @@ namespace Godot.NativeInterop
 
         // PackedVector3Array
 
+        /// <summary>
+        /// Converts a <see cref="godot_packed_vector3_array"/> to a <see cref="Vector3"/>[].
+        /// </summary>
+        /// <param name="p_array">The <see cref="godot_packed_vector3_array"/> to convert.</param>
+        /// <returns>A <see cref="Vector3"/>[] representation of this <see cref="godot_packed_vector3_array"/>.</returns>
         public static unsafe Vector3[] ConvertNativePackedVector3ArrayToSystemArray(godot_packed_vector3_array p_array)
         {
             Vector3* buffer = p_array.Buffer;
@@ -563,6 +671,11 @@ namespace Godot.NativeInterop
             return array;
         }
 
+        /// <summary>
+        /// Converts a <see cref="Vector3"/> span to a <see cref="godot_packed_vector3_array"/>.
+        /// </summary>
+        /// <param name="p_array">The <see cref="Vector3"/> span to convert.</param>
+        /// <returns>A <see cref="godot_packed_vector3_array"/> representation of this <see cref="Vector3"/> span.</returns>
         public static unsafe godot_packed_vector3_array ConvertSystemArrayToNativePackedVector3Array(
             Span<Vector3> p_array)
         {
@@ -574,6 +687,11 @@ namespace Godot.NativeInterop
 
         // PackedColorArray
 
+        /// <summary>
+        /// Converts a <see cref="godot_packed_color_array"/> to a <see cref="Color"/>[].
+        /// </summary>
+        /// <param name="p_array">The <see cref="godot_packed_color_array"/> to convert.</param>
+        /// <returns>A <see cref="Color"/>[] representation of this <see cref="godot_packed_color_array"/>.</returns>
         public static unsafe Color[] ConvertNativePackedColorArrayToSystemArray(godot_packed_color_array p_array)
         {
             Color* buffer = p_array.Buffer;
@@ -587,6 +705,11 @@ namespace Godot.NativeInterop
             return array;
         }
 
+        /// <summary>
+        /// Converts a <see cref="Color"/> span to a <see cref="godot_packed_color_array"/>.
+        /// </summary>
+        /// <param name="p_array">The <see cref="Color"/> span to convert.</param>
+        /// <returns>A <see cref="godot_packed_color_array"/> representation of this <see cref="Color"/> span.</returns>
         public static unsafe godot_packed_color_array ConvertSystemArrayToNativePackedColorArray(Span<Color> p_array)
         {
             if (p_array.IsEmpty)

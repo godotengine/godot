@@ -5,6 +5,9 @@ namespace Godot
     /// </summary>
     public interface IAwaitable
     {
+        /// <summary>
+        /// Gets a reference to the <see cref="IAwaiter"/>.
+        /// </summary>
         IAwaiter GetAwaiter();
     }
 
@@ -14,6 +17,9 @@ namespace Godot
     /// <typeparam name="TResult">A reference to the result to be passed out.</typeparam>
     public interface IAwaitable<out TResult>
     {
+        /// <summary>
+        /// Gets a reference to the <see cref="IAwaiter{TResult}"/>.
+        /// </summary>
         IAwaiter<TResult> GetAwaiter();
     }
 }

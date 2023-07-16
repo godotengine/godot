@@ -75,6 +75,9 @@ namespace Godot
             return instance.NativePtr;
         }
 
+        /// <summary>
+        /// Deconstructs this <see cref="GodotObject"/>.
+        /// </summary>
         ~GodotObject()
         {
             Dispose(false);
@@ -190,12 +193,24 @@ namespace Godot
             return null;
         }
 
+        /// <summary>
+        /// Sets the Godot class <paramref name="name"/> to the provided <paramref name="value"/>.
+        /// </summary>
+        /// <param name="name">The name of the Godot class to target.</param>
+        /// <param name="value">The value to set.</param>
+        /// <returns><see langword="true"/> if the value was set successfully; otherwise, <see langword="false"/>.</returns>
         // ReSharper disable once VirtualMemberNeverOverridden.Global
         protected internal virtual bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
         {
             return false;
         }
 
+        /// <summary>
+        /// Gets a <paramref name="value"/> from the Godot class the Godot class <paramref name="name"/>.
+        /// </summary>
+        /// <param name="name">The name of the Godot class to target.</param>
+        /// <param name="value">The retrieved value.</param>
+        /// <returns><see langword="true"/> if a value was retrieved successfully; otherwise, <see langword="false"/>.</returns>
         // ReSharper disable once VirtualMemberNeverOverridden.Global
         protected internal virtual bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
         {
@@ -203,12 +218,18 @@ namespace Godot
             return false;
         }
 
+        /// <summary>
+        /// Raises callbacks from the provided <paramref name="signal"/>.
+        /// </summary>
+        /// <param name="signal">The signal to trigger the callbacks.</param>
+        /// <param name="args">Array of <see cref="godot_variant"/> arguments.</param>
         // ReSharper disable once VirtualMemberNeverOverridden.Global
         protected internal virtual void RaiseGodotClassSignalCallbacks(in godot_string_name signal,
             NativeVariantPtrArgs args)
         {
         }
 
+        /// <exception cref="NativeMethodBindNotFoundException"/>
         internal static IntPtr ClassDB_get_method(StringName type, StringName method)
         {
             var typeSelf = (godot_string_name)type.NativeValue;
@@ -221,6 +242,7 @@ namespace Godot
             return methodBind;
         }
 
+        /// <exception cref="NativeConstructorNotFoundException"/>
         internal static unsafe delegate* unmanaged<IntPtr> ClassDB_get_constructor(StringName type)
         {
             // for some reason the '??' operator doesn't support 'delegate*'
@@ -233,11 +255,17 @@ namespace Godot
             return nativeConstructor;
         }
 
+        /// <summary>
+        /// Save data with the provided <paramref name="info"/>.
+        /// </summary>
         protected internal virtual void SaveGodotObjectData(GodotSerializationInfo info)
         {
         }
 
         // TODO: Should this be a constructor overload?
+        /// <summary>
+        /// Restore data with the provided <paramref name="info"/>.
+        /// </summary>
         protected internal virtual void RestoreGodotObjectData(GodotSerializationInfo info)
         {
         }

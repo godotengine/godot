@@ -157,7 +157,7 @@ namespace Godot
         /// <list type="number">
         ///    <item>
         ///        <term>delegateObj</term>
-        ///        <description>The given <paramref name="delegate"/>, upcast to <see cref="object"/>.</description>
+        ///        <description>The given <paramref name="delegate"/>, upcast to <see langword="object"/>.</description>
         ///    </item>
         ///    <item>
         ///        <term>args</term>

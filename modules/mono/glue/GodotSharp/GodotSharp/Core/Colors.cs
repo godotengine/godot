@@ -158,153 +158,297 @@ namespace Godot
             { "YELLOWGREEN", new Color(0x9ACD32FF) },
         };
 
-#pragma warning disable CS1591 // Disable warning: "Missing XML comment for publicly visible type or member"
+        /// <value><c>(0.94, 0.97, 1, 1)</c></value>
         public static Color AliceBlue { get { return namedColors["ALICEBLUE"]; } }
+        /// <value><c>(0.98, 0.92, 0.84, 1)</c></value>
         public static Color AntiqueWhite { get { return namedColors["ANTIQUEWHITE"]; } }
+        /// <value><c>(0, 1, 1, 1)</c></value>
         public static Color Aqua { get { return namedColors["AQUA"]; } }
+        /// <value><c>(0.5, 1, 0.83, 1)</c></value>
         public static Color Aquamarine { get { return namedColors["AQUAMARINE"]; } }
+        /// <value><c>(0.94, 1, 1, 1)</c></value>
         public static Color Azure { get { return namedColors["AZURE"]; } }
+        /// <value><c>(0.96, 0.96, 0.86, 1)</c></value>
         public static Color Beige { get { return namedColors["BEIGE"]; } }
+        /// <value><c>(1, 0.89, 0.77, 1)</c></value>
         public static Color Bisque { get { return namedColors["BISQUE"]; } }
+        /// <value><c>(0, 0, 0, 1)</c></value>
         public static Color Black { get { return namedColors["BLACK"]; } }
+        /// <value><c>(1, 0.92, 0.8, 1)</c></value>
         public static Color BlanchedAlmond { get { return namedColors["BLANCHEDALMOND"]; } }
+        /// <value><c>(0, 0, 1, 1)</c></value>
         public static Color Blue { get { return namedColors["BLUE"]; } }
+        /// <value><c>(0.54, 0.17, 0.89, 1)</c></value>
         public static Color BlueViolet { get { return namedColors["BLUEVIOLET"]; } }
+        /// <value><c>(0.65, 0.16, 0.16, 1)</c></value>
         public static Color Brown { get { return namedColors["BROWN"]; } }
+        /// <value><c>(0.87, 0.72, 0.53, 1)</c></value>
         public static Color Burlywood { get { return namedColors["BURLYWOOD"]; } }
+        /// <value><c>(0.37, 0.62, 0.63, 1)</c></value>
         public static Color CadetBlue { get { return namedColors["CADETBLUE"]; } }
+        /// <value><c>(0.5, 1, 0, 1)</c></value>
         public static Color Chartreuse { get { return namedColors["CHARTREUSE"]; } }
+        /// <value><c>(0.82, 0.41, 0.12, 1)</c></value>
         public static Color Chocolate { get { return namedColors["CHOCOLATE"]; } }
+        /// <value><c>(1, 0.5, 0.31, 1)</c></value>
         public static Color Coral { get { return namedColors["CORAL"]; } }
+        /// <value><c>(0.39, 0.58, 0.93, 1)</c></value>
         public static Color CornflowerBlue { get { return namedColors["CORNFLOWERBLUE"]; } }
+        /// <value><c>(1, 0.97, 0.86, 1)</c></value>
         public static Color Cornsilk { get { return namedColors["CORNSILK"]; } }
+        /// <value><c>(0.86, 0.08, 0.24, 1)</c></value>
         public static Color Crimson { get { return namedColors["CRIMSON"]; } }
+        /// <value><c>(0, 1, 1, 1)</c></value>
         public static Color Cyan { get { return namedColors["CYAN"]; } }
+        /// <value><c>(0, 0, 0.55, 1)</c></value>
         public static Color DarkBlue { get { return namedColors["DARKBLUE"]; } }
+        /// <value><c>(0, 0.55, 0.55, 1)</c></value>
         public static Color DarkCyan { get { return namedColors["DARKCYAN"]; } }
+        /// <value><c>(0.72, 0.53, 0.04, 1)</c></value>
         public static Color DarkGoldenrod { get { return namedColors["DARKGOLDENROD"]; } }
+        /// <value><c>(0.66, 0.66, 0.66, 1)</c></value>
         public static Color DarkGray { get { return namedColors["DARKGRAY"]; } }
+        /// <value><c>(0, 0.39, 0, 1)</c></value>
         public static Color DarkGreen { get { return namedColors["DARKGREEN"]; } }
+        /// <value><c>(0.74, 0.72, 0.42, 1)</c></value>
         public static Color DarkKhaki { get { return namedColors["DARKKHAKI"]; } }
+        /// <value><c>(0.55, 0, 0.55, 1)</c></value>
         public static Color DarkMagenta { get { return namedColors["DARKMAGENTA"]; } }
+        /// <value><c>(0.33, 0.42, 0.18, 1)</c></value>
         public static Color DarkOliveGreen { get { return namedColors["DARKOLIVEGREEN"]; } }
+        /// <value><c>(1, 0.55, 0, 1)</c></value>
         public static Color DarkOrange { get { return namedColors["DARKORANGE"]; } }
+        /// <value><c>(0.6, 0.2, 0.8, 1)</c></value>
         public static Color DarkOrchid { get { return namedColors["DARKORCHID"]; } }
+        /// <value><c>(0.55, 0, 0, 1)</c></value>
         public static Color DarkRed { get { return namedColors["DARKRED"]; } }
+        /// <value><c>(0.91, 0.59, 0.48, 1)</c></value>
         public static Color DarkSalmon { get { return namedColors["DARKSALMON"]; } }
+        /// <value><c>(0.56, 0.74, 0.56, 1)</c></value>
         public static Color DarkSeaGreen { get { return namedColors["DARKSEAGREEN"]; } }
+        /// <value><c>(0.28, 0.24, 0.55, 1)</c></value>
         public static Color DarkSlateBlue { get { return namedColors["DARKSLATEBLUE"]; } }
+        /// <value><c>(0.18, 0.31, 0.31, 1)</c></value>
         public static Color DarkSlateGray { get { return namedColors["DARKSLATEGRAY"]; } }
+        /// <value><c>(0, 0.81, 0.82, 1)</c></value>
         public static Color DarkTurquoise { get { return namedColors["DARKTURQUOISE"]; } }
+        /// <value><c>(0.58, 0, 0.83, 1)</c></value>
         public static Color DarkViolet { get { return namedColors["DARKVIOLET"]; } }
+        /// <value><c>(1, 0.08, 0.58, 1)</c></value>
         public static Color DeepPink { get { return namedColors["DEEPPINK"]; } }
+        /// <value><c>(0, 0.75, 1, 1)</c></value>
         public static Color DeepSkyBlue { get { return namedColors["DEEPSKYBLUE"]; } }
+        /// <value><c>(0.41, 0.41, 0.41, 1)</c></value>
         public static Color DimGray { get { return namedColors["DIMGRAY"]; } }
+        /// <value><c>(0.12, 0.56, 1, 1)</c></value>
         public static Color DodgerBlue { get { return namedColors["DODGERBLUE"]; } }
+        /// <value><c>(0.7, 0.13, 0.13, 1)</c></value>
         public static Color Firebrick { get { return namedColors["FIREBRICK"]; } }
+        /// <value><c>(1, 0.98, 0.94, 1)</c></value>
         public static Color FloralWhite { get { return namedColors["FLORALWHITE"]; } }
+        /// <value><c>(0.13, 0.55, 0.13, 1)</c></value>
         public static Color ForestGreen { get { return namedColors["FORESTGREEN"]; } }
+        /// <value><c>(1, 0, 1, 1)</c></value>
         public static Color Fuchsia { get { return namedColors["FUCHSIA"]; } }
+        /// <value><c>(0.86, 0.86, 0.86, 1)</c></value>
         public static Color Gainsboro { get { return namedColors["GAINSBORO"]; } }
+        /// <value><c>(0.97, 0.97, 1, 1)</c></value>
         public static Color GhostWhite { get { return namedColors["GHOSTWHITE"]; } }
+        /// <value><c>(1, 0.84, 0, 1)</c></value>
         public static Color Gold { get { return namedColors["GOLD"]; } }
+        /// <value><c>(0.85, 0.65, 0.13, 1)</c></value>
         public static Color Goldenrod { get { return namedColors["GOLDENROD"]; } }
+        /// <value><c>(0.75, 0.75, 0.75, 1)</c></value>
         public static Color Gray { get { return namedColors["GRAY"]; } }
+        /// <value><c>(0, 1, 0, 1)</c></value>
         public static Color Green { get { return namedColors["GREEN"]; } }
+        /// <value><c>(0.68, 1, 0.18, 1)</c></value>
         public static Color GreenYellow { get { return namedColors["GREENYELLOW"]; } }
+        /// <value><c>(0.94, 1, 0.94, 1)</c></value>
         public static Color Honeydew { get { return namedColors["HONEYDEW"]; } }
+        /// <value><c>(1, 0.41, 0.71, 1)</c></value>
         public static Color HotPink { get { return namedColors["HOTPINK"]; } }
+        /// <value><c>(0.8, 0.36, 0.36, 1)</c></value>
         public static Color IndianRed { get { return namedColors["INDIANRED"]; } }
+        /// <value><c>(0.29, 0, 0.51, 1)</c></value>
         public static Color Indigo { get { return namedColors["INDIGO"]; } }
+        /// <value><c>(1, 1, 0.94, 1)</c></value>
         public static Color Ivory { get { return namedColors["IVORY"]; } }
+        /// <value><c>(0.94, 0.9, 0.55, 1)</c></value>
         public static Color Khaki { get { return namedColors["KHAKI"]; } }
+        /// <value><c>(0.9, 0.9, 0.98, 1)</c></value>
         public static Color Lavender { get { return namedColors["LAVENDER"]; } }
+        /// <value><c>(1, 0.94, 0.96, 1)</c></value>
         public static Color LavenderBlush { get { return namedColors["LAVENDERBLUSH"]; } }
+        /// <value><c>(0.49, 0.99, 0, 1)</c></value>
         public static Color LawnGreen { get { return namedColors["LAWNGREEN"]; } }
+        /// <value><c>(1, 0.98, 0.8, 1)</c></value>
         public static Color LemonChiffon { get { return namedColors["LEMONCHIFFON"]; } }
+        /// <value><c>(0.68, 0.85, 0.9, 1)</c></value>
         public static Color LightBlue { get { return namedColors["LIGHTBLUE"]; } }
+        /// <value><c>(0.94, 0.5, 0.5, 1)</c></value>
         public static Color LightCoral { get { return namedColors["LIGHTCORAL"]; } }
+        /// <value><c>(0.88, 1, 1, 1)</c></value>
         public static Color LightCyan { get { return namedColors["LIGHTCYAN"]; } }
+        /// <value><c>(0.98, 0.98, 0.82, 1)</c></value>
         public static Color LightGoldenrod { get { return namedColors["LIGHTGOLDENROD"]; } }
+        /// <value><c>(0.83, 0.83, 0.83, 1)</c></value>
         public static Color LightGray { get { return namedColors["LIGHTGRAY"]; } }
+        /// <value><c>(0.56, 0.93, 0.56, 1)</c></value>
         public static Color LightGreen { get { return namedColors["LIGHTGREEN"]; } }
+        /// <value><c>(1, 0.71, 0.76, 1)</c></value>
         public static Color LightPink { get { return namedColors["LIGHTPINK"]; } }
+        /// <value><c>(1, 0.63, 0.48, 1)</c></value>
         public static Color LightSalmon { get { return namedColors["LIGHTSALMON"]; } }
+        /// <value><c>(0.13, 0.7, 0.67, 1)</c></value>
         public static Color LightSeaGreen { get { return namedColors["LIGHTSEAGREEN"]; } }
+        /// <value><c>(0.53, 0.81, 0.98, 1)</c></value>
         public static Color LightSkyBlue { get { return namedColors["LIGHTSKYBLUE"]; } }
+        /// <value><c>(0.47, 0.53, 0.6, 1)</c></value>
         public static Color LightSlateGray { get { return namedColors["LIGHTSLATEGRAY"]; } }
+        /// <value><c>(0.69, 0.77, 0.87, 1)</c></value>
         public static Color LightSteelBlue { get { return namedColors["LIGHTSTEELBLUE"]; } }
+        /// <value><c>(1, 1, 0.88, 1)</c></value>
         public static Color LightYellow { get { return namedColors["LIGHTYELLOW"]; } }
+        /// <value><c>(0, 1, 0, 1)</c></value>
         public static Color Lime { get { return namedColors["LIME"]; } }
+        /// <value><c>(0.2, 0.8, 0.2, 1)</c></value>
         public static Color LimeGreen { get { return namedColors["LIMEGREEN"]; } }
+        /// <value><c>(0.98, 0.94, 0.9, 1)</c></value>
         public static Color Linen { get { return namedColors["LINEN"]; } }
+        /// <value><c>(1, 0, 1, 1)</c></value>
         public static Color Magenta { get { return namedColors["MAGENTA"]; } }
+        /// <value><c>(0.69, 0.19, 0.38, 1)</c></value>
         public static Color Maroon { get { return namedColors["MAROON"]; } }
+        /// <value><c>(0.4, 0.8, 0.67, 1)</c></value>
         public static Color MediumAquamarine { get { return namedColors["MEDIUMAQUAMARINE"]; } }
+        /// <value><c>(0, 0, 0.8, 1)</c></value>
         public static Color MediumBlue { get { return namedColors["MEDIUMBLUE"]; } }
+        /// <value><c>(0.73, 0.33, 0.83, 1)</c></value>
         public static Color MediumOrchid { get { return namedColors["MEDIUMORCHID"]; } }
+        /// <value><c>(0.58, 0.44, 0.86, 1)</c></value>
         public static Color MediumPurple { get { return namedColors["MEDIUMPURPLE"]; } }
+        /// <value><c>(0.24, 0.7, 0.44, 1)</c></value>
         public static Color MediumSeaGreen { get { return namedColors["MEDIUMSEAGREEN"]; } }
+        /// <value><c>(0.48, 0.41, 0.93, 1)</c></value>
         public static Color MediumSlateBlue { get { return namedColors["MEDIUMSLATEBLUE"]; } }
+        /// <value><c>(0, 0.98, 0.6, 1)</c></value>
         public static Color MediumSpringGreen { get { return namedColors["MEDIUMSPRINGGREEN"]; } }
+        /// <value><c>(0.28, 0.82, 0.8, 1)</c></value>
         public static Color MediumTurquoise { get { return namedColors["MEDIUMTURQUOISE"]; } }
+        /// <value><c>(0.78, 0.08, 0.52, 1)</c></value>
         public static Color MediumVioletRed { get { return namedColors["MEDIUMVIOLETRED"]; } }
+        /// <value><c>(0.1, 0.1, 0.44, 1)</c></value>
         public static Color MidnightBlue { get { return namedColors["MIDNIGHTBLUE"]; } }
+        /// <value><c>(0.96, 1, 0.98, 1)</c></value>
         public static Color MintCream { get { return namedColors["MINTCREAM"]; } }
+        /// <value><c>(1, 0.89, 0.88, 1)</c></value>
         public static Color MistyRose { get { return namedColors["MISTYROSE"]; } }
+        /// <value><c>(1, 0.89, 0.71, 1)</c></value>
         public static Color Moccasin { get { return namedColors["MOCCASIN"]; } }
+        /// <value><c>(1, 0.87, 0.68, 1)</c></value>
         public static Color NavajoWhite { get { return namedColors["NAVAJOWHITE"]; } }
+        /// <value><c>(0, 0, 0.5, 1)</c></value>
         public static Color NavyBlue { get { return namedColors["NAVYBLUE"]; } }
+        /// <value><c>(0.99, 0.96, 0.9, 1)</c></value>
         public static Color OldLace { get { return namedColors["OLDLACE"]; } }
+        /// <value><c>(0.5, 0.5, 0, 1)</c></value>
         public static Color Olive { get { return namedColors["OLIVE"]; } }
+        /// <value><c>(0.42, 0.56, 0.14, 1)</c></value>
         public static Color OliveDrab { get { return namedColors["OLIVEDRAB"]; } }
+        /// <value><c>(1, 0.65, 0, 1)</c></value>
         public static Color Orange { get { return namedColors["ORANGE"]; } }
+        /// <value><c>(1, 0.27, 0, 1)</c></value>
         public static Color OrangeRed { get { return namedColors["ORANGERED"]; } }
+        /// <value><c>(0.85, 0.44, 0.84, 1)</c></value>
         public static Color Orchid { get { return namedColors["ORCHID"]; } }
+        /// <value><c>(0.93, 0.91, 0.67, 1)</c></value>
         public static Color PaleGoldenrod { get { return namedColors["PALEGOLDENROD"]; } }
+        /// <value><c>(0.6, 0.98, 0.6, 1)</c></value>
         public static Color PaleGreen { get { return namedColors["PALEGREEN"]; } }
+        /// <value><c>(0.69, 0.93, 0.93, 1)</c></value>
         public static Color PaleTurquoise { get { return namedColors["PALETURQUOISE"]; } }
+        /// <value><c>(0.86, 0.44, 0.58, 1)</c></value>
         public static Color PaleVioletRed { get { return namedColors["PALEVIOLETRED"]; } }
+        /// <value><c>(1, 0.94, 0.84, 1)</c></value>
         public static Color PapayaWhip { get { return namedColors["PAPAYAWHIP"]; } }
+        /// <value><c>(1, 0.85, 0.73, 1)</c></value>
         public static Color PeachPuff { get { return namedColors["PEACHPUFF"]; } }
+        /// <value><c>(0.8, 0.52, 0.25, 1)</c></value>
         public static Color Peru { get { return namedColors["PERU"]; } }
+        /// <value><c>(1, 0.75, 0.8, 1)</c></value>
         public static Color Pink { get { return namedColors["PINK"]; } }
+        /// <value><c>(0.87, 0.63, 0.87, 1)</c></value>
         public static Color Plum { get { return namedColors["PLUM"]; } }
+        /// <value><c>(0.69, 0.88, 0.9, 1)</c></value>
         public static Color PowderBlue { get { return namedColors["POWDERBLUE"]; } }
+        /// <value><c>(0.63, 0.13, 0.94, 1)</c></value>
         public static Color Purple { get { return namedColors["PURPLE"]; } }
+        /// <value><c>(0.4, 0.2, 0.6, 1)</c></value>
         public static Color RebeccaPurple { get { return namedColors["REBECCAPURPLE"]; } }
+        /// <value><c>(1, 0, 0, 1)</c></value>
         public static Color Red { get { return namedColors["RED"]; } }
+        /// <value><c>(0.74, 0.56, 0.56, 1)</c></value>
         public static Color RosyBrown { get { return namedColors["ROSYBROWN"]; } }
+        /// <value><c>(0.25, 0.41, 0.88, 1)</c></value>
         public static Color RoyalBlue { get { return namedColors["ROYALBLUE"]; } }
+        /// <value><c>(0.55, 0.27, 0.07, 1)</c></value>
         public static Color SaddleBrown { get { return namedColors["SADDLEBROWN"]; } }
+        /// <value><c>(0.98, 0.5, 0.45, 1)</c></value>
         public static Color Salmon { get { return namedColors["SALMON"]; } }
+        /// <value><c>(0.96, 0.64, 0.38, 1)</c></value>
         public static Color SandyBrown { get { return namedColors["SANDYBROWN"]; } }
+        /// <value><c>(0.18, 0.55, 0.34, 1)</c></value>
         public static Color SeaGreen { get { return namedColors["SEAGREEN"]; } }
+        /// <value><c>(1, 0.96, 0.93, 1)</c></value>
         public static Color Seashell { get { return namedColors["SEASHELL"]; } }
+        /// <value><c>(0.63, 0.32, 0.18, 1)</c></value>
         public static Color Sienna { get { return namedColors["SIENNA"]; } }
+        /// <value><c>(0.75, 0.75, 0.75, 1)</c></value>
         public static Color Silver { get { return namedColors["SILVER"]; } }
+        /// <value><c>(0.53, 0.81, 0.92, 1)</c></value>
         public static Color SkyBlue { get { return namedColors["SKYBLUE"]; } }
+        /// <value><c>(0.42, 0.35, 0.8, 1)</c></value>
         public static Color SlateBlue { get { return namedColors["SLATEBLUE"]; } }
+        /// <value><c>(0.44, 0.5, 0.56, 1)</c></value>
         public static Color SlateGray { get { return namedColors["SLATEGRAY"]; } }
+        /// <value><c>(1, 0.98, 0.98, 1)</c></value>
         public static Color Snow { get { return namedColors["SNOW"]; } }
+        /// <value><c>(0, 1, 0.5, 1)</c></value>
         public static Color SpringGreen { get { return namedColors["SPRINGGREEN"]; } }
+        /// <value><c>(0.27, 0.51, 0.71, 1)</c></value>
         public static Color SteelBlue { get { return namedColors["STEELBLUE"]; } }
+        /// <value><c>(0.82, 0.71, 0.55, 1)</c></value>
         public static Color Tan { get { return namedColors["TAN"]; } }
+        /// <value><c>(0, 0.5, 0.5, 1)</c></value>
         public static Color Teal { get { return namedColors["TEAL"]; } }
+        /// <value><c>(0.85, 0.75, 0.85, 1)</c></value>
         public static Color Thistle { get { return namedColors["THISTLE"]; } }
+        /// <value><c>(1, 0.39, 0.28, 1)</c></value>
         public static Color Tomato { get { return namedColors["TOMATO"]; } }
+        /// <value><c>(1, 1, 1, 0)</c></value>
         public static Color Transparent { get { return namedColors["TRANSPARENT"]; } }
+        /// <value><c>(0.25, 0.88, 0.82, 1)</c></value>
         public static Color Turquoise { get { return namedColors["TURQUOISE"]; } }
+        /// <value><c>(0.93, 0.51, 0.93, 1)</c></value>
         public static Color Violet { get { return namedColors["VIOLET"]; } }
+        /// <value><c>(0.5, 0.5, 0.5, 1)</c></value>
         public static Color WebGray { get { return namedColors["WEBGRAY"]; } }
+        /// <value><c>(0, 0.5, 0, 1)</c></value>
         public static Color WebGreen { get { return namedColors["WEBGREEN"]; } }
+        /// <value><c>(0.5, 0, 0, 1)</c></value>
         public static Color WebMaroon { get { return namedColors["WEBMAROON"]; } }
+        /// <value><c>(0.5, 0, 0.5, 1)</c></value>
         public static Color WebPurple { get { return namedColors["WEBPURPLE"]; } }
+        /// <value><c>(0.96, 0.87, 0.7, 1)</c></value>
         public static Color Wheat { get { return namedColors["WHEAT"]; } }
+        /// <value><c>(1, 1, 1, 1)</c></value>
         public static Color White { get { return namedColors["WHITE"]; } }
+        /// <value><c>(0.96, 0.96, 0.96, 1)</c></value>
         public static Color WhiteSmoke { get { return namedColors["WHITESMOKE"]; } }
+        /// <value><c>(1, 1, 0, 1)</c></value>
         public static Color Yellow { get { return namedColors["YELLOW"]; } }
+        /// <value><c>(0.6, 0.8, 0.2, 1)</c></value>
         public static Color YellowGreen { get { return namedColors["YELLOWGREEN"]; } }
-#pragma warning restore CS1591
     }
 }

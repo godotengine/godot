@@ -4,6 +4,11 @@ namespace Godot.NativeInterop
 {
     public static partial class NativeFuncs
     {
+        /// <summary>
+        /// Natively initializes a <see cref="godot_variant"/> as a new <see cref="godot_variant"/>.
+        /// </summary>
+        /// <param name="src">The <see cref="godot_variant"/> to initialize from.</param>
+        /// <returns>The initialized <see cref="godot_variant"/>.</returns>
         public static godot_variant godotsharp_variant_new_copy(in godot_variant src)
         {
             switch (src.Type)
@@ -46,6 +51,11 @@ namespace Godot.NativeInterop
             return ret;
         }
 
+        /// <summary>
+        /// Natively initializes a <see cref="godot_string_name"/> as a new <see cref="godot_string_name"/>.
+        /// </summary>
+        /// <param name="src">The <see cref="godot_string_name"/> pointer to initialize from.</param>
+        /// <returns>The initialized <see cref="godot_string_name"/>.</returns>
         public static godot_string_name godotsharp_string_name_new_copy(in godot_string_name src)
         {
             if (src.IsEmpty)
@@ -54,6 +64,11 @@ namespace Godot.NativeInterop
             return ret;
         }
 
+        /// <summary>
+        /// Natively initializes a <see cref="godot_node_path"/> as a new <see cref="godot_node_path"/>.
+        /// </summary>
+        /// <param name="src">The <see cref="godot_node_path"/> pointer to initialize from.</param>
+        /// <returns>The initialized <see cref="godot_node_path"/>.</returns>
         public static godot_node_path godotsharp_node_path_new_copy(in godot_node_path src)
         {
             if (src.IsEmpty)
@@ -62,30 +77,53 @@ namespace Godot.NativeInterop
             return ret;
         }
 
+        /// <summary>
+        /// Natively initializes a new <see cref="godot_array"/>.
+        /// </summary>
+        /// <returns>The initialized <see cref="godot_array"/>.</returns>
         public static godot_array godotsharp_array_new()
         {
             godotsharp_array_new(out godot_array ret);
             return ret;
         }
 
+        /// <summary>
+        /// Natively initializes a <see cref="godot_array"/> as a new <see cref="godot_array"/>.
+        /// </summary>
+        /// <param name="src">The <see cref="godot_array"/> pointer to initialize from.</param>
+        /// <returns>The initialized <see cref="godot_array"/>.</returns>
         public static godot_array godotsharp_array_new_copy(in godot_array src)
         {
             godotsharp_array_new_copy(out godot_array ret, src);
             return ret;
         }
 
+        /// <summary>
+        /// Natively initializes a new <see cref="godot_dictionary"/>.
+        /// </summary>
+        /// <returns>The initialized <see cref="godot_dictionary"/>.</returns>
         public static godot_dictionary godotsharp_dictionary_new()
         {
             godotsharp_dictionary_new(out godot_dictionary ret);
             return ret;
         }
 
+        /// <summary>
+        /// Natively initializes a <see cref="godot_dictionary"/> as a new <see cref="godot_dictionary"/>.
+        /// </summary>
+        /// <param name="src">The <see cref="godot_dictionary"/> pointer to initialize from.</param>
+        /// <returns>The initialized <see cref="godot_dictionary"/>.</returns>
         public static godot_dictionary godotsharp_dictionary_new_copy(in godot_dictionary src)
         {
             godotsharp_dictionary_new_copy(out godot_dictionary ret, src);
             return ret;
         }
 
+        /// <summary>
+        /// Natively initializes a <see cref="godot_string"/> as a new <see cref="godot_string_name"/>.
+        /// </summary>
+        /// <param name="name">The <see cref="godot_string"/> to initialize from.</param>
+        /// <returns>The initialized <see cref="godot_string_name"/>.</returns>
         public static godot_string_name godotsharp_string_name_new_from_string(string name)
         {
             using godot_string src = Marshaling.ConvertStringToNative(name);
@@ -93,6 +131,11 @@ namespace Godot.NativeInterop
             return ret;
         }
 
+        /// <summary>
+        /// Natively initializes a <see cref="godot_string"/> as a new <see cref="godot_node_path"/>.
+        /// </summary>
+        /// <param name="name">The <see cref="godot_string"/> to initialize from.</param>
+        /// <returns>The initialized <see cref="godot_node_path"/>.</returns>
         public static godot_node_path godotsharp_node_path_new_from_string(string name)
         {
             using godot_string src = Marshaling.ConvertStringToNative(name);

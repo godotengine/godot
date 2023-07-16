@@ -16,6 +16,10 @@ namespace Godot
         /// </summary>
         public string Name { get; }
 
+        /// <summary>
+        /// Specify the original engine class name.
+        /// </summary>
+        /// <param name="name">Original engine class name.</param>
         public GodotClassNameAttribute(string name)
         {
             Name = name;
