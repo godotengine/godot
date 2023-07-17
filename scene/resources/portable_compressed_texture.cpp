@@ -116,17 +116,20 @@ Vector<uint8_t> PortableCompressedTexture2D::_get_data() const {
 	return compressed_buffer;
 }
 
+static void set_portable_texture_header(const Image *p_image, PortableCompressedTexture2D::CompressionMode p_compression_mode, Vector<uint8_t> *p_buffer) {
+	encode_uint32(p_compression_mode, p_buffer->ptrw());
+	encode_uint32(p_image->get_format(), p_buffer->ptrw() + 4);
+	encode_uint32(p_image->get_mipmap_count() + 1, p_buffer->ptrw() + 8);
+	encode_uint32(p_image->get_width(), p_buffer->ptrw() + 12);
+	encode_uint32(p_image->get_height(), p_buffer->ptrw() + 16);
+}
+
 void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, CompressionMode p_compression_mode, bool p_normal_map, float p_lossy_quality) {
 	ERR_FAIL_COND(p_image.is_null() || p_image->is_empty());
 
 	Vector<uint8_t> buffer;
-
 	buffer.resize(20);
-	encode_uint32(p_compression_mode, buffer.ptrw());
-	encode_uint32(p_image->get_format(), buffer.ptrw() + 4);
-	encode_uint32(p_image->get_mipmap_count() + 1, buffer.ptrw() + 8);
-	encode_uint32(p_image->get_width(), buffer.ptrw() + 12);
-	encode_uint32(p_image->get_height(), buffer.ptrw() + 16);
+	set_portable_texture_header(p_image.ptr(), p_compression_mode, &buffer);
 
 	switch (p_compression_mode) {
 		case COMPRESSION_MODE_LOSSLESS:
@@ -167,6 +170,8 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 				default: {
 				};
 			}
+			// Overwrite with the new image header.
+			set_portable_texture_header(copy.ptr(), p_compression_mode, &buffer);
 
 			buffer.append_array(copy->get_data());
 
