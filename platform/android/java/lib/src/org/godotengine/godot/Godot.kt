@@ -907,6 +907,19 @@ class Godot(private val context: Context) : SensorEventListener {
 		return PermissionsUtil.getGrantedPermissions(getActivity())
 	}
 
+	/**
+	 * Get the list of gdextension modules to register.
+	 */
+	@Keep
+	private fun getGDExtensionConfigFiles(): Array<String> {
+		val configFiles = mutableSetOf<String>()
+		for (plugin in pluginRegistry.allPlugins) {
+			configFiles.addAll(plugin.pluginGDExtensionLibrariesPaths)
+		}
+
+		return configFiles.toTypedArray()
+	}
+
 	@Keep
 	private fun getCACertificates(): String {
 		return GodotNetUtils.getCACertificates()
