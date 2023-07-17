@@ -35,14 +35,15 @@
 Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() const {
 	HashSet<DrawEdge, DrawEdge> edges;
 
-	int index_count = faces.size();
+	int index_count = indices.size();
 	ERR_FAIL_COND_V((index_count % 3) != 0, Vector<Vector3>());
 
-	const Vector3 *r = faces.ptr();
+	const Vector3 *vertices_r = vertices.ptr();
+	const int *indices_r = indices.ptr();
 
 	for (int i = 0; i < index_count; i += 3) {
 		for (int j = 0; j < 3; j++) {
-			DrawEdge de(r[i + j], r[i + ((j + 1) % 3)]);
+			DrawEdge de(vertices_r[indices_r[i + j]], vertices_r[indices_r[i + ((j + 1) % 3)]]);
 			edges.insert(de);
 		}
 	}
@@ -60,7 +61,7 @@ Vector<Vector3> ConcavePolygonShape3D::get_debug_mesh_lines() const {
 }
 
 real_t ConcavePolygonShape3D::get_enclosing_radius() const {
-	Vector<Vector3> data = get_faces();
+	Vector<Vector3> data = get_vertices();
 	const Vector3 *read = data.ptr();
 	real_t r = 0.0;
 	for (int i(0); i < data.size(); i++) {
@@ -71,7 +72,8 @@ real_t ConcavePolygonShape3D::get_enclosing_radius() const {
 
 void ConcavePolygonShape3D::_update_shape() {
 	Dictionary d;
-	d["faces"] = faces;
+	d["vertices"] = vertices;
+	d["indices"] = indices;
 	d["backface_collision"] = backface_collision;
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 
@@ -79,22 +81,53 @@ void ConcavePolygonShape3D::_update_shape() {
 }
 
 void ConcavePolygonShape3D::set_faces(const Vector<Vector3> &p_faces) {
-	faces = p_faces;
+	vertices = p_faces;
+	indices.resize(vertices.size());
+	int *indices_w = indices.ptrw();
+	for (int i = 0; i < vertices.size(); i++) {
+		indices_w[i] = i;
+	}
 	_update_shape();
 	notify_change_to_owners();
 }
 
 Vector<Vector3> ConcavePolygonShape3D::get_faces() const {
+	const Vector3 *vertices_r = vertices.ptr();
+	const int *indices_r = indices.ptr();
+	Vector<Vector3> faces;
+	faces.resize(indices.size());
+	Vector3 *faces_w = faces.ptrw();
+	for (int i = 0; i < indices.size(); i++) {
+		faces_w[i] = vertices_r[indices_r[i]];
+	}
 	return faces;
+}
+
+void ConcavePolygonShape3D::set_vertices(const Vector<Vector3> &p_vertices) {
+	vertices = p_vertices;
+	indices.clear(); // Invalidate indices to avoid catastophe.
+	_update_shape();
+	notify_change_to_owners();
+}
+
+Vector<Vector3> ConcavePolygonShape3D::get_vertices() const {
+	return vertices;
+}
+
+void ConcavePolygonShape3D::set_indices(const Vector<int> &p_indices) {
+	indices = p_indices;
+	_update_shape();
+	notify_change_to_owners();
+}
+
+Vector<int> ConcavePolygonShape3D::get_indices() const {
+	return indices;
 }
 
 void ConcavePolygonShape3D::set_backface_collision_enabled(bool p_enabled) {
 	backface_collision = p_enabled;
-
-	if (!faces.is_empty()) {
-		_update_shape();
-		notify_change_to_owners();
-	}
+	_update_shape();
+	notify_change_to_owners();
 }
 
 bool ConcavePolygonShape3D::is_backface_collision_enabled() const {
@@ -102,13 +135,23 @@ bool ConcavePolygonShape3D::is_backface_collision_enabled() const {
 }
 
 void ConcavePolygonShape3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_vertices", "vertices"), &ConcavePolygonShape3D::set_vertices);
+	ClassDB::bind_method(D_METHOD("get_vertices"), &ConcavePolygonShape3D::get_vertices);
+
+	ClassDB::bind_method(D_METHOD("set_indices", "indices"), &ConcavePolygonShape3D::set_indices);
+	ClassDB::bind_method(D_METHOD("get_indices"), &ConcavePolygonShape3D::get_indices);
+
 	ClassDB::bind_method(D_METHOD("set_faces", "faces"), &ConcavePolygonShape3D::set_faces);
 	ClassDB::bind_method(D_METHOD("get_faces"), &ConcavePolygonShape3D::get_faces);
 
 	ClassDB::bind_method(D_METHOD("set_backface_collision_enabled", "enabled"), &ConcavePolygonShape3D::set_backface_collision_enabled);
 	ClassDB::bind_method(D_METHOD("is_backface_collision_enabled"), &ConcavePolygonShape3D::is_backface_collision_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_faces", "get_faces");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_indices", "get_indices");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL), "set_faces", "get_faces"); // FIXME: The "data" property is kept here only for the purpose of backward compatibility.
+#endif // DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "backface_collision"), "set_backface_collision_enabled", "is_backface_collision_enabled");
 }
 

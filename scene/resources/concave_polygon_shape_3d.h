@@ -36,7 +36,8 @@
 class ConcavePolygonShape3D : public Shape3D {
 	GDCLASS(ConcavePolygonShape3D, Shape3D);
 
-	Vector<Vector3> faces;
+	Vector<Vector3> vertices;
+	Vector<int> indices;
 	bool backface_collision = false;
 
 	struct DrawEdge {
@@ -65,6 +66,12 @@ protected:
 	virtual void _update_shape() override;
 
 public:
+	void set_vertices(const Vector<Vector3> &p_vertices);
+	Vector<Vector3> get_vertices() const;
+
+	void set_indices(const Vector<int> &p_indices);
+	Vector<int> get_indices() const;
+
 	void set_faces(const Vector<Vector3> &p_faces);
 	Vector<Vector3> get_faces() const;
 

@@ -1022,23 +1022,34 @@ Ref<ConvexPolygonShape3D> ImporterMesh::create_convex_shape(bool p_clean, bool p
 }
 
 Ref<ConcavePolygonShape3D> ImporterMesh::create_trimesh_shape() const {
-	Vector<Face3> faces = get_faces();
-	if (faces.size() == 0) {
-		return Ref<ConcavePolygonShape3D>();
-	}
-
-	Vector<Vector3> face_points;
-	face_points.resize(faces.size() * 3);
-
-	for (int i = 0; i < face_points.size(); i += 3) {
-		Face3 f = faces.get(i / 3);
-		face_points.set(i, f.vertex[0]);
-		face_points.set(i + 1, f.vertex[1]);
-		face_points.set(i + 2, f.vertex[2]);
+	Vector<Vector3> vertices;
+	Vector<int> indices;
+	int index_offset = 0;
+	for (int i = 0; i < surfaces.size(); i++) {
+		if (surfaces[i].primitive == Mesh::PRIMITIVE_TRIANGLES) {
+			Vector<Vector3> surface_vertices = surfaces[i].arrays[Mesh::ARRAY_VERTEX];
+			vertices.append_array(surface_vertices);
+			Vector<int> surface_indices = surfaces[i].arrays[Mesh::ARRAY_INDEX];
+			if (surface_indices.size()) {
+				for (int j = 0; j < surface_indices.size(); j += 3) {
+					indices.push_back(index_offset + surface_indices[j + 0]);
+					indices.push_back(index_offset + surface_indices[j + 1]);
+					indices.push_back(index_offset + surface_indices[j + 2]);
+				}
+			} else {
+				for (int j = 0; j < vertices.size(); j += 3) {
+					indices.push_back(index_offset + j + 0);
+					indices.push_back(index_offset + j + 1);
+					indices.push_back(index_offset + j + 2);
+				}
+			}
+			index_offset += surface_vertices.size();
+		}
 	}
 
 	Ref<ConcavePolygonShape3D> shape = memnew(ConcavePolygonShape3D);
-	shape->set_faces(face_points);
+	shape->set_vertices(vertices);
+	shape->set_indices(indices);
 	return shape;
 }
 
