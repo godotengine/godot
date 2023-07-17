@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [4.1.2] - TBD
+
+### Added
+
+### Changed
+
+### Fixed
+
+
 ## [4.1.1] - 2023-07-17
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-4-1-1) for details.
@@ -3038,6 +3047,7 @@ See the [release announcement](https://godotengine.org/article/godot-3-3-has-arr
   - Only WebAssembly is supported now, since all browsers supporting WebGL 2.0 also support WebAssembly.
 
 
+[4.1.2]: https://github.com/godotengine/godot/compare/4.1.1-stable...4.1.2-stable
 [4.1.1]: https://github.com/godotengine/godot/compare/4.1-stable...4.1.1-stable
 [4.1]: https://github.com/godotengine/godot/compare/4.0-stable...4.1-stable
 [4.0]: https://github.com/godotengine/godot/compare/3.2-stable...4.0-stable
