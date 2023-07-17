@@ -67,14 +67,14 @@ void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files) {
 		if (p_files.size() > 0) {
 			String f = p_files[0];
 			if (mode == FILE_MODE_OPEN_FILES) {
-				emit_signal("files_selected", p_files);
+				emit_signal(SNAME("files_selected"), p_files);
 			} else {
 				if (mode == FILE_MODE_SAVE_FILE) {
-					emit_signal("file_selected", f);
+					emit_signal(SNAME("file_selected"), f);
 				} else if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
-					emit_signal("file_selected", f);
+					emit_signal(SNAME("file_selected"), f);
 				} else if (mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_DIR) {
-					emit_signal("dir_selected", f);
+					emit_signal(SNAME("dir_selected"), f);
 				}
 			}
 			file->set_text(f);
@@ -82,7 +82,7 @@ void FileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_files) {
 		}
 	} else {
 		file->set_text("");
-		emit_signal("cancelled");
+		emit_signal(SNAME("canceled"));
 	}
 }
 
