@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [4.1.1] - TBD
+## [4.1.1] - 2023-07-17
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-4-1-1) for details.
 
