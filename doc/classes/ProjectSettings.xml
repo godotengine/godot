@@ -2371,7 +2371,7 @@
 			[b]Note:[/b] This property is only read when the project starts. To set debanding at run-time, set [member Viewport.use_debanding] on the root [Viewport] instead.
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_taa" type="bool" setter="" getter="" default="false">
-			Enables Temporal Anti-Aliasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion. Enabling TAA can make the image blurrier, which is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]). Consider also enabling [member rendering/shading/base_material_3d/dithering_use_jitter] when TAA is enabled.
+			Enables Temporal Anti-Aliasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion. Enabling TAA can make the image blurrier, which is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]). If TAA is enabled when the project starts, the dithering pattern for the [constant BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER] and [constant BaseMaterial3D.DISTANCE_FADE_OBJECT_DITHER] distance fade modes is jittered every frame to improve quality.
 			[b]Note:[/b] The implementation is not complete yet. Some visual instances such as particles and skinned meshes may show ghosting artifacts in motion.
 			[b]Note:[/b] TAA is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
@@ -2814,13 +2814,6 @@
 		<member name="rendering/shader_compiler/shader_cache/strip_debug.release" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="rendering/shader_compiler/shader_cache/use_zstd_compression" type="bool" setter="" getter="" default="true">
-		</member>
-		<member name="rendering/shading/base_material_3d/dithering_use_jitter" type="int" setter="" getter="" default="0">
-			If set to [b]Auto[/b], jitters the [BaseMaterial3D]'s [constant BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER] and [constant BaseMaterial3D.DISTANCE_FADE_OBJECT_DITHER] transparency modes' pattern every frame if [member rendering/anti_aliasing/quality/use_taa] is [code]true[/code]. This improves dithering quality significantly by making the noisy pattern mostly invisible.
-			If set to [b]Always[/b], jitters the [BaseMaterial3D]'s dithered transparency modes' pattern every frame even if TAA is disabled. This improves [i]perceptual[/i] dither quality by letting the display's response time smooth out the different patterns together. The effect works best on high refresh rate monitors (&gt; 80 Hz) and at high framerates (&gt; 80 FPS). When TAA is disabled, given its reliance on monitor response times not being instant, the effect is not visible on screenshots. At lower framerates, dither jittering can still be useful to prevent the dither pattern from "following" the camera as it moves and rotates.
-			Enabling dither jittering doesn't have any performance cost.
-			[b]Note:[/b] The dither jittering pattern is only updated every time a frame is rendered. Since the editor only redraws when needed by default, the dither will not change in the editor unless the camera moves or rotates. This also applies when [member application/run/low_processor_mode] is [code]true[/code]. To preview dither jittering in the editor, enable [b]Update Continuously[/b] in the Editor Settings (then disable it once you don't need to preview the jittering anymore).
-			[b]Note:[/b] This property is only read when the project starts (including the status of [b]Auto[/b] with regards to TAA being enabled or not). There is currently no way to change this setting at run-time.
 		</member>
 		<member name="rendering/shading/overrides/force_lambert_over_burley" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses faster but lower-quality Lambert material lighting model instead of Burley.

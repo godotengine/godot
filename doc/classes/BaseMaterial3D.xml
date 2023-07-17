@@ -772,10 +772,10 @@
 			Smoothly fades the object out based on each pixel's distance from the camera using the alpha channel.
 		</constant>
 		<constant name="DISTANCE_FADE_PIXEL_DITHER" value="2" enum="DistanceFadeMode">
-			Smoothly fades the object out based on each pixel's distance from the camera using a dithering approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware, this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA].
+			Smoothly fades the object out based on each pixel's distance from the camera using a dithering approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware, this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA]. If [member ProjectSettings.rendering/anti_aliasing/quality/use_taa] is [code]true[/code] when the project starts, the dithering pattern is jittered every frame to improve quality.
 		</constant>
 		<constant name="DISTANCE_FADE_OBJECT_DITHER" value="3" enum="DistanceFadeMode">
-			Smoothly fades the object out based on the object's distance from the camera using a dithering approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware, this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA] and [constant DISTANCE_FADE_PIXEL_DITHER].
+			Smoothly fades the object out based on the object's distance from the camera using a dithering approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware, this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA] and [constant DISTANCE_FADE_PIXEL_DITHER]. If [member ProjectSettings.rendering/anti_aliasing/quality/use_taa] is [code]true[/code] when the project starts, the dithering pattern is jittered every frame to improve quality.
 		</constant>
 	</constants>
 </class>

@@ -35,6 +35,7 @@
 #include "core/error/error_macros.h"
 #include "core/version.h"
 #include "scene/main/scene_tree.h"
+#include "scene/main/viewport.h"
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 	for (Ref<Material> pass_child = p_pass; pass_child != nullptr; pass_child = pass_child->get_next_pass()) {
@@ -1669,8 +1670,17 @@ void fragment() {)";
 		// Use interleaved gradient noise, which is fast but still looks good.
 		const vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
 		float fade = clamp(smoothstep(distance_fade_min, distance_fade_max, fade_distance), 0.0, 1.0);
+)";
+
+			if (GLOBAL_GET("rendering/anti_aliasing/quality/use_taa") || int(GLOBAL_GET("rendering/scaling_3d/mode")) == Viewport::SCALING_3D_MODE_FSR2) {
+				code += "		float jitter = fract(sin(dot(vec2(TIME), vec2(12.9898, 78.233))) * 43758.5453);";
+			} else {
+				code += "		float jitter = 0.0;";
+			}
+
+			code += R"(
 		// Use a hard cap to prevent a few stray pixels from remaining when past the fade-out distance.
-		if (fade < 0.001 || fade < fract(magic.z * fract(dot(FRAGCOORD.xy, magic.xy)))) {
+		if (fade < 0.001 || fade < fract(magic.z * fract(dot(FRAGCOORD.xy + vec2(jitter), magic.xy)))) {
 			discard;
 		}
 	}
