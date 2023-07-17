@@ -255,7 +255,7 @@ struct Texture {
 		GLenum pmin = GL_NEAREST; // param min
 		GLenum pmag = GL_NEAREST; // param mag
 		GLint max_lod = 1000;
-		bool use_anisotropy = false;
+		float anisotropy = 1.0f;
 		switch (state_filter) {
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
 				pmin = GL_NEAREST;
@@ -268,7 +268,7 @@ struct Texture {
 				max_lod = 0;
 			} break;
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: {
-				use_anisotropy = true;
+				anisotropy = config->anisotropic_level;
 			};
 				[[fallthrough]];
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: {
@@ -283,7 +283,7 @@ struct Texture {
 				}
 			} break;
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
-				use_anisotropy = true;
+				anisotropy = config->anisotropic_level;
 			};
 				[[fallthrough]];
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
@@ -304,8 +304,8 @@ struct Texture {
 		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, pmag);
 		glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, max_lod);
-		if (config->support_anisotropic_filter && use_anisotropy) {
-			glTexParameterf(target, _GL_TEXTURE_MAX_ANISOTROPY_EXT, config->anisotropic_level);
+		if (config->support_anisotropic_filter) {
+			glTexParameterf(target, _GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
 		}
 	}
 	void gl_set_repeat(RS::CanvasItemTextureRepeat p_repeat) {
