@@ -48,6 +48,8 @@ class NavAgent;
 class NavObstacle;
 
 class NavMap : public NavRid {
+	RWLock map_rwlock;
+
 	/// Map Up
 	Vector3 up = Vector3(0, 1, 0);
 
