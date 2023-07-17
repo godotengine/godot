@@ -1954,7 +1954,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 
 						// Erase previous selection.
 						if (selection.active) {
-							if (_is_click_inside_selection()) {
+							if (drag_and_drop_selection_enabled && _is_click_inside_selection()) {
 								selection.drag_attempt = true;
 								selection.click_item = nullptr;
 							} else {
@@ -5317,6 +5317,14 @@ bool RichTextLabel::is_deselect_on_focus_loss_enabled() const {
 	return deselect_on_focus_loss_enabled;
 }
 
+void RichTextLabel::set_drag_and_drop_selection_enabled(const bool p_enabled) {
+	drag_and_drop_selection_enabled = p_enabled;
+}
+
+bool RichTextLabel::is_drag_and_drop_selection_enabled() const {
+	return drag_and_drop_selection_enabled;
+}
+
 int RichTextLabel::get_selection_from() const {
 	if (!selection.active || !selection.enabled) {
 		return -1;
@@ -5647,6 +5655,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_deselect_on_focus_loss_enabled", "enable"), &RichTextLabel::set_deselect_on_focus_loss_enabled);
 	ClassDB::bind_method(D_METHOD("is_deselect_on_focus_loss_enabled"), &RichTextLabel::is_deselect_on_focus_loss_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_drag_and_drop_selection_enabled", "enable"), &RichTextLabel::set_drag_and_drop_selection_enabled);
+	ClassDB::bind_method(D_METHOD("is_drag_and_drop_selection_enabled"), &RichTextLabel::is_drag_and_drop_selection_enabled);
+
 	ClassDB::bind_method(D_METHOD("get_selection_from"), &RichTextLabel::get_selection_from);
 	ClassDB::bind_method(D_METHOD("get_selection_to"), &RichTextLabel::get_selection_to);
 
@@ -5736,6 +5747,7 @@ void RichTextLabel::_bind_methods() {
 	ADD_GROUP("Text Selection", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selection_enabled"), "set_selection_enabled", "is_selection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_on_focus_loss_enabled"), "set_deselect_on_focus_loss_enabled", "is_deselect_on_focus_loss_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_and_drop_selection_enabled"), "set_drag_and_drop_selection_enabled", "is_drag_and_drop_selection_enabled");
 
 	ADD_GROUP("Displayed Text", "");
 	// Note: "visible_characters" and "visible_ratio" should be set after "text" to be correctly applied.
