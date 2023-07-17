@@ -27,6 +27,9 @@
 		<member name="application/export_method_release" type="int" setter="" getter="">
 			Application distribution target (release export).
 		</member>
+		<member name="application/export_project_only" type="bool" setter="" getter="">
+			If [code]true[/code], exports iOS project files without building an XCArchive or [code].ipa[/code] file. If [code]false[/code], exports iOS project files and builds an XCArchive and [code].ipa[/code] file at the same time. When combining Godot with Fastlane or other build pipelines, you may want to set this to [code]true[/code].
+		</member>
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
 		</member>

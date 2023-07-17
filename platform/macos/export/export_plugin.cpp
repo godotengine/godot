@@ -1361,7 +1361,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	String src_pkg_name;
 
-	EditorProgress ep("export", "Exporting for macOS", 3, true);
+	EditorProgress ep("export", TTR("Exporting for macOS"), 3, true);
 
 	if (p_debug) {
 		src_pkg_name = p_preset->get("custom_template/debug");
