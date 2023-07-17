@@ -2111,7 +2111,6 @@ Error Main::setup2() {
 
 	register_server_types();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
-	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager || cmdline_tool) {
@@ -2316,6 +2315,7 @@ Error Main::setup2() {
 	xr_server = memnew(XRServer);
 
 	register_core_singletons();
+	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 
 	MAIN_PRINT("Main: Setup Logo");
 
