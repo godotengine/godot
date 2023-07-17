@@ -1208,8 +1208,11 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 		if (i < list_max) {
 			HBoxContainer *hb = memnew(HBoxContainer);
 			TextureRect *tf = memnew(TextureRect);
+			int icon_size = get_theme_constant(SNAME("class_icon_size"), SNAME("Editor"));
+			tf->set_custom_minimum_size(Size2(icon_size, icon_size));
+			tf->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+			tf->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 			tf->set_texture(icons[i]);
-			tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 			hb->add_child(tf);
 			Label *label = memnew(Label(selected_nodes[i]->get_name()));
 			hb->add_child(label);

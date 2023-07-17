@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [4.1.1] - TBD
+## [4.1.1] - 2023-07-17
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-4-1-1) for details.
 
@@ -81,6 +81,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 #### Animation
 
 - Fix infinite loop state check in `AnimationStateMachine` ([GH-79141](https://github.com/godotengine/godot/pull/79141)).
+- Fix `tween_property` on `Basis` to properly update its value ([GH-79426](https://github.com/godotengine/godot/pull/79426)).
 
 #### Buildsystem
 
@@ -103,6 +104,8 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Fix dropping files from `res://` to `res://` ([GH-78914](https://github.com/godotengine/godot/pull/78914)).
 - Do not change a node unique name to the same name ([GH-78925](https://github.com/godotengine/godot/pull/78925)).
 - Collapse bottom panel if there is no active tab ([GH-79078](https://github.com/godotengine/godot/pull/79078)).
+- Fix `ui_cancel` action not closing `FindReplaceBar` ([GH-79079](https://github.com/godotengine/godot/pull/79079)).
+- Emit `history_changed` on merged UndoRedo actions ([GH-79484](https://github.com/godotengine/godot/pull/79484)).
 
 #### Export
 
@@ -319,6 +322,7 @@ See the [release announcement](https://godotengine.org/article/godot-4-1-is-here
 
 #### Core
 
+- The strings returned by `ResourceLoader::get_dependencies()` now include paths in addition to UIDs ([GH-73131](https://github.com/godotengine/godot/pull/73131)).
 - Optimize Node children management ([GH-75627](https://github.com/godotengine/godot/pull/75627)).
 - Deprecate `NOTIFICATION_MOVED_IN_PARENT` for `NOTIFICATION_CHILD_ORDER_CHANGED` ([GH-75701](https://github.com/godotengine/godot/pull/75701)).
 - Optimize `Node::add_child` validation ([GH-75760](https://github.com/godotengine/godot/pull/75760)).
