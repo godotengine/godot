@@ -713,7 +713,7 @@ String TranslationServer::get_tool_locale() {
 	{
 #endif
 		// Look for best matching loaded translation.
-		String best_locale = "en";
+		String best_locale = get_locale();
 		int best_score = 0;
 
 		for (const Ref<Translation> &E : translations) {
