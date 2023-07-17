@@ -1471,6 +1471,10 @@ Ref<Shortcut> EditorSettings::get_shortcut(const String &p_name) const {
 		}
 	}
 
+	if (p_name == "ui_undo" || p_name == "ui_redo") {
+		sc->repeatable = true;
+	}
+
 	if (sc.is_valid()) {
 		// Add the shortcut to the list.
 		shortcuts[p_name] = sc;

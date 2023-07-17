@@ -1843,6 +1843,9 @@ bool PopupMenu::activate_item_by_event(const Ref<InputEvent> &p_event, bool p_fo
 		}
 
 		if (items[i].shortcut.is_valid() && items[i].shortcut->matches_event(p_event) && (items[i].shortcut_is_global || !p_for_global_only)) {
+			if (p_event->is_echo() && !items[i].shortcut->repeatable) {
+				return false;
+			}
 			activate_item(i);
 			return true;
 		}
