@@ -261,30 +261,32 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 	EditorExportPlatformAndroid *ea = static_cast<EditorExportPlatformAndroid *>(ud);
 
 	while (!ea->quit_request.is_set()) {
-		// Check for plugins updates
+#ifndef DISABLE_DEPRECATED
+		// Check for android plugins updates
 		{
 			// Nothing to do if we already know the plugins have changed.
-			if (!ea->plugins_changed.is_set()) {
+			if (!ea->android_plugins_changed.is_set()) {
 				Vector<PluginConfigAndroid> loaded_plugins = get_plugins();
 
-				MutexLock lock(ea->plugins_lock);
+				MutexLock lock(ea->android_plugins_lock);
 
-				if (ea->plugins.size() != loaded_plugins.size()) {
-					ea->plugins_changed.set();
+				if (ea->android_plugins.size() != loaded_plugins.size()) {
+					ea->android_plugins_changed.set();
 				} else {
-					for (int i = 0; i < ea->plugins.size(); i++) {
-						if (ea->plugins[i].name != loaded_plugins[i].name) {
-							ea->plugins_changed.set();
+					for (int i = 0; i < ea->android_plugins.size(); i++) {
+						if (ea->android_plugins[i].name != loaded_plugins[i].name) {
+							ea->android_plugins_changed.set();
 							break;
 						}
 					}
 				}
 
-				if (ea->plugins_changed.is_set()) {
-					ea->plugins = loaded_plugins;
+				if (ea->android_plugins_changed.is_set()) {
+					ea->android_plugins = loaded_plugins;
 				}
 			}
 		}
+#endif // DISABLE_DEPRECATED
 
 		// Check for devices updates
 		String adb = get_adb_path();
@@ -628,6 +630,7 @@ Vector<EditorExportPlatformAndroid::ABI> EditorExportPlatformAndroid::get_abis()
 	return abis;
 }
 
+#ifndef DISABLE_DEPRECATED
 /// List the gdap files in the directory specified by the p_path parameter.
 Vector<String> EditorExportPlatformAndroid::list_gdap_files(const String &p_path) {
 	Vector<String> dir_files;
@@ -694,6 +697,7 @@ Vector<PluginConfigAndroid> EditorExportPlatformAndroid::get_enabled_plugins(con
 
 	return enabled_plugins;
 }
+#endif // DISABLE_DEPRECATED
 
 Error EditorExportPlatformAndroid::store_in_apk(APKExportData *ed, const String &p_path, const Vector<uint8_t> &p_data, int compression_method) {
 	zip_fileinfo zipfi = get_zip_fileinfo();
@@ -828,16 +832,6 @@ void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset>
 			r_permissions.push_back("android.permission.INTERNET");
 		}
 	}
-
-	int xr_mode_index = p_preset->get("xr_features/xr_mode");
-	if (xr_mode_index == XR_MODE_OPENXR) {
-		int hand_tracking_index = p_preset->get("xr_features/hand_tracking"); // 0: none, 1: optional, 2: required
-		if (hand_tracking_index > XR_HAND_TRACKING_NONE) {
-			if (r_permissions.find("com.oculus.permission.HAND_TRACKING") == -1) {
-				r_permissions.push_back("com.oculus.permission.HAND_TRACKING");
-			}
-		}
-	}
 }
 
 void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, bool p_debug) {
@@ -861,8 +855,23 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 		}
 	}
 
-	manifest_text += _get_xr_features_tag(p_preset, _uses_vulkan());
-	manifest_text += _get_application_tag(p_preset, _has_read_write_storage_permission(perms));
+	if (_uses_vulkan()) {
+		manifest_text += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vulkan.level\" android:required=\"false\" android:version=\"1\" />\n";
+		manifest_text += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vulkan.version\" android:required=\"true\" android:version=\"0x400003\" />\n";
+	}
+
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	for (int i = 0; i < export_plugins.size(); i++) {
+		if (export_plugins[i]->supports_platform(Ref<EditorExportPlatform>(this))) {
+			const String contents = export_plugins[i]->get_android_manifest_element_contents(Ref<EditorExportPlatform>(this), p_debug);
+			if (!contents.is_empty()) {
+				manifest_text += contents;
+				manifest_text += "\n";
+			}
+		}
+	}
+
+	manifest_text += _get_application_tag(Ref<EditorExportPlatform>(this), p_preset, _has_read_write_storage_permission(perms), p_debug);
 	manifest_text += "</manifest>\n";
 	String manifest_path = vformat("res://android/build/src/%s/AndroidManifest.xml", (p_debug ? "debug" : "release"));
 
@@ -1721,7 +1730,7 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			}
 		} else if (p_name == "gradle_build/use_gradle_build") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
-			String enabled_plugins_names = PluginConfigAndroid::get_plugins_names(get_enabled_plugins(Ref<EditorExportPreset>(p_preset)));
+			String enabled_plugins_names = _get_plugins_names(Ref<EditorExportPreset>(p_preset));
 			if (!enabled_plugins_names.is_empty() && !gradle_build_enabled) {
 				return TTR("\"Use Gradle Build\" must be enabled to use the plugins.");
 			}
@@ -1730,22 +1739,6 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			int xr_mode_index = p_preset->get("xr_features/xr_mode");
 			if (xr_mode_index == XR_MODE_OPENXR && !gradle_build_enabled) {
 				return TTR("OpenXR requires \"Use Gradle Build\" to be enabled");
-			}
-		} else if (p_name == "xr_features/hand_tracking") {
-			int xr_mode_index = p_preset->get("xr_features/xr_mode");
-			int hand_tracking = p_preset->get("xr_features/hand_tracking");
-			if (xr_mode_index != XR_MODE_OPENXR) {
-				if (hand_tracking > XR_HAND_TRACKING_NONE) {
-					return TTR("\"Hand Tracking\" is only valid when \"XR Mode\" is \"OpenXR\".");
-				}
-			}
-		} else if (p_name == "xr_features/passthrough") {
-			int xr_mode_index = p_preset->get("xr_features/xr_mode");
-			int passthrough_mode = p_preset->get("xr_features/passthrough");
-			if (xr_mode_index != XR_MODE_OPENXR) {
-				if (passthrough_mode > XR_PASSTHROUGH_NONE) {
-					return TTR("\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\".");
-				}
 			}
 		} else if (p_name == "gradle_build/export_format") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
@@ -1808,12 +1801,14 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", VULKAN_MIN_SDK_VERSION)), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/target_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_TARGET_SDK_VERSION)), "", false, true));
 
+#ifndef DISABLE_DEPRECATED
 	Vector<PluginConfigAndroid> plugins_configs = get_plugins();
 	for (int i = 0; i < plugins_configs.size(); i++) {
 		print_verbose("Found Android plugin " + plugins_configs[i].name);
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("plugins"), plugins_configs[i].name)), false));
 	}
-	plugins_changed.clear();
+	android_plugins_changed.clear();
+#endif // DISABLE_DEPRECATED
 
 	// Android supports multiple architectures in an app bundle, so
 	// we expose each option as a checkbox in the export dialog.
@@ -1852,9 +1847,6 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/opengl_debug"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,OpenXR"), XR_MODE_REGULAR, false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking", PROPERTY_HINT_ENUM, "None,Optional,Required"), XR_HAND_TRACKING_NONE, false, true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking_frequency", PROPERTY_HINT_ENUM, "Low,High"), XR_HAND_TRACKING_FREQUENCY_LOW));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/passthrough", PROPERTY_HINT_ENUM, "None,Optional,Required"), XR_PASSTHROUGH_NONE, false, true));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/immersive_mode"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_small"), true));
@@ -1892,12 +1884,14 @@ Ref<Texture2D> EditorExportPlatformAndroid::get_logo() const {
 }
 
 bool EditorExportPlatformAndroid::should_update_export_options() {
-	bool export_options_changed = plugins_changed.is_set();
-	if (export_options_changed) {
+#ifndef DISABLE_DEPRECATED
+	if (android_plugins_changed.is_set()) {
 		// don't clear unless we're reporting true, to avoid race
-		plugins_changed.clear();
+		android_plugins_changed.clear();
+		return true;
 	}
-	return export_options_changed;
+#endif // DISABLE_DEPRECATED
+	return false;
 }
 
 bool EditorExportPlatformAndroid::poll_export() {
@@ -2697,6 +2691,64 @@ String EditorExportPlatformAndroid::join_abis(const Vector<EditorExportPlatformA
 	return ret;
 }
 
+String EditorExportPlatformAndroid::_get_plugins_names(const Ref<EditorExportPreset> &p_preset) const {
+	Vector<String> names;
+
+#ifndef DISABLE_DEPRECATED
+	PluginConfigAndroid::get_plugins_names(get_enabled_plugins(p_preset), names);
+#endif // DISABLE_DEPRECATED
+
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	for (int i = 0; i < export_plugins.size(); i++) {
+		if (export_plugins[i]->supports_platform(Ref<EditorExportPlatform>(this))) {
+			names.push_back(export_plugins[i]->get_name());
+		}
+	}
+
+	String plugins_names = String("|").join(names);
+	return plugins_names;
+}
+
+String EditorExportPlatformAndroid::_resolve_export_plugin_android_library_path(const String &p_android_library_path) const {
+	String absolute_path;
+	if (!p_android_library_path.is_empty()) {
+		if (p_android_library_path.is_absolute_path()) {
+			absolute_path = ProjectSettings::get_singleton()->globalize_path(p_android_library_path);
+		} else {
+			const String export_plugin_absolute_path = String("res://addons/").path_join(p_android_library_path);
+			absolute_path = ProjectSettings::get_singleton()->globalize_path(export_plugin_absolute_path);
+		}
+	}
+	return absolute_path;
+}
+
+bool EditorExportPlatformAndroid::_is_clean_build_required(const Ref<EditorExportPreset> &p_preset) {
+	bool first_build = last_gradle_build_time == 0;
+	bool have_plugins_changed = false;
+
+	String plugin_names = _get_plugins_names(p_preset);
+
+	if (!first_build) {
+		have_plugins_changed = plugin_names != last_plugin_names;
+#ifndef DISABLE_DEPRECATED
+		if (!have_plugins_changed) {
+			Vector<PluginConfigAndroid> enabled_plugins = get_enabled_plugins(p_preset);
+			for (int i = 0; i < enabled_plugins.size(); i++) {
+				if (enabled_plugins.get(i).last_updated > last_gradle_build_time) {
+					have_plugins_changed = true;
+					break;
+				}
+			}
+		}
+#endif // DISABLE_DEPRECATED
+	}
+
+	last_gradle_build_time = OS::get_singleton()->get_unix_time();
+	last_plugin_names = plugin_names;
+
+	return have_plugins_changed || first_build;
+}
+
 Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	int export_format = int(p_preset->get("gradle_build/export_format"));
 	bool should_sign = p_preset->get("package/signed");
@@ -2854,11 +2906,40 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String sign_flag = should_sign ? "true" : "false";
 		String zipalign_flag = "true";
 
+		Vector<String> android_libraries;
+		Vector<String> android_dependencies;
+		Vector<String> android_dependencies_maven_repos;
+
+#ifndef DISABLE_DEPRECATED
 		Vector<PluginConfigAndroid> enabled_plugins = get_enabled_plugins(p_preset);
-		String local_plugins_binaries = PluginConfigAndroid::get_plugins_binaries(PluginConfigAndroid::BINARY_TYPE_LOCAL, enabled_plugins);
-		String remote_plugins_binaries = PluginConfigAndroid::get_plugins_binaries(PluginConfigAndroid::BINARY_TYPE_REMOTE, enabled_plugins);
-		String custom_maven_repos = PluginConfigAndroid::get_plugins_custom_maven_repos(enabled_plugins);
-		bool clean_build_required = is_clean_build_required(enabled_plugins);
+		PluginConfigAndroid::get_plugins_binaries(PluginConfigAndroid::BINARY_TYPE_LOCAL, enabled_plugins, android_libraries);
+		PluginConfigAndroid::get_plugins_binaries(PluginConfigAndroid::BINARY_TYPE_REMOTE, enabled_plugins, android_dependencies);
+		PluginConfigAndroid::get_plugins_custom_maven_repos(enabled_plugins, android_dependencies_maven_repos);
+#endif // DISABLE_DEPRECATED
+
+		Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+		for (int i = 0; i < export_plugins.size(); i++) {
+			if (export_plugins[i]->supports_platform(Ref<EditorExportPlatform>(this))) {
+				PackedStringArray export_plugin_android_libraries = export_plugins[i]->get_android_libraries(Ref<EditorExportPlatform>(this), p_debug);
+				for (int k = 0; k < export_plugin_android_libraries.size(); k++) {
+					const String resolved_android_library_path = _resolve_export_plugin_android_library_path(export_plugin_android_libraries[k]);
+					if (!resolved_android_library_path.is_empty()) {
+						android_libraries.push_back(resolved_android_library_path);
+					}
+				}
+
+				PackedStringArray export_plugin_android_dependencies = export_plugins[i]->get_android_dependencies(Ref<EditorExportPlatform>(this), p_debug);
+				android_dependencies.append_array(export_plugin_android_dependencies);
+
+				PackedStringArray export_plugin_android_dependencies_maven_repos = export_plugins[i]->get_android_dependencies_maven_repos(Ref<EditorExportPlatform>(this), p_debug);
+				android_dependencies_maven_repos.append_array(export_plugin_android_dependencies_maven_repos);
+			}
+		}
+
+		bool clean_build_required = _is_clean_build_required(p_preset);
+		String combined_android_libraries = String("|").join(android_libraries);
+		String combined_android_dependencies = String("|").join(android_dependencies);
+		String combined_android_dependencies_maven_repos = String("|").join(android_dependencies_maven_repos);
 
 		List<String> cmdline;
 		if (clean_build_required) {
@@ -2882,9 +2963,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		cmdline.push_back("-Pexport_version_min_sdk=" + min_sdk_version); // argument to specify the min sdk.
 		cmdline.push_back("-Pexport_version_target_sdk=" + target_sdk_version); // argument to specify the target sdk.
 		cmdline.push_back("-Pexport_enabled_abis=" + enabled_abi_string); // argument to specify enabled ABIs.
-		cmdline.push_back("-Pplugins_local_binaries=" + local_plugins_binaries); // argument to specify the list of plugins local dependencies.
-		cmdline.push_back("-Pplugins_remote_binaries=" + remote_plugins_binaries); // argument to specify the list of plugins remote dependencies.
-		cmdline.push_back("-Pplugins_maven_repos=" + custom_maven_repos); // argument to specify the list of custom maven repos for the plugins dependencies.
+		cmdline.push_back("-Pplugins_local_binaries=" + combined_android_libraries); // argument to specify the list of android libraries provided by plugins.
+		cmdline.push_back("-Pplugins_remote_binaries=" + combined_android_dependencies); // argument to specify the list of android dependencies provided by plugins.
+		cmdline.push_back("-Pplugins_maven_repos=" + combined_android_dependencies_maven_repos); // argument to specify the list of maven repos for android dependencies provided by plugins.
 		cmdline.push_back("-Pperform_zipalign=" + zipalign_flag); // argument to specify whether the build should be zipaligned.
 		cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
 		cmdline.push_back("-Pgodot_editor_version=" + String(VERSION_FULL_CONFIG));
@@ -3310,7 +3391,9 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 #endif
 
 		devices_changed.set();
-		plugins_changed.set();
+#ifndef DISABLE_DEPRECATED
+		android_plugins_changed.set();
+#endif // DISABLE_DEPRECATED
 #ifndef ANDROID_ENABLED
 		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 #endif

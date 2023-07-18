@@ -3363,6 +3363,11 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 		return;
 	}
 
+	String plugin_version;
+	if (cf->has_section_key("plugin", "version")) {
+		plugin_version = cf->get_value("plugin", "version");
+	}
+
 	if (!cf->has_section_key("plugin", "script")) {
 		show_warning(vformat(TTR("Unable to find script field for addon plugin at: '%s'."), addon_path));
 		return;
@@ -3408,6 +3413,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 	EditorPlugin *ep = memnew(EditorPlugin);
 	ep->set_script(scr);
+	ep->set_plugin_version(plugin_version);
 	addon_name_to_plugin[addon_path] = ep;
 	add_editor_plugin(ep, p_config_changed);
 

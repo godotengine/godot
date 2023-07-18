@@ -57,7 +57,26 @@ void EditorExportPreset::_bind_methods() {
 }
 
 String EditorExportPreset::_get_property_warning(const StringName &p_name) const {
-	return platform->get_export_option_warning(this, p_name);
+	String warning = platform->get_export_option_warning(this, p_name);
+	if (!warning.is_empty()) {
+		warning += "\n";
+	}
+
+	// Get property warning from editor export plugins.
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	for (int i = 0; i < export_plugins.size(); i++) {
+		if (!export_plugins[i]->supports_platform(platform)) {
+			continue;
+		}
+
+		export_plugins.write[i]->set_export_preset(Ref<EditorExportPreset>(this));
+		String plugin_warning = export_plugins[i]->_get_export_option_warning(platform, p_name);
+		if (!plugin_warning.is_empty()) {
+			warning += plugin_warning + "\n";
+		}
+	}
+
+	return warning;
 }
 
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
