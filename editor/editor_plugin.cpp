@@ -341,7 +341,12 @@ void EditorPlugin::clear() {
 	GDVIRTUAL_CALL(_clear);
 }
 
-// if editor references external resources/scenes, save them
+String EditorPlugin::get_unsaved_status(const String &p_for_scene) const {
+	String ret;
+	GDVIRTUAL_CALL(_get_unsaved_status, p_for_scene, ret);
+	return ret;
+}
+
 void EditorPlugin::save_external_data() {
 	GDVIRTUAL_CALL(_save_external_data);
 }
@@ -594,6 +599,7 @@ void EditorPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_state);
 	GDVIRTUAL_BIND(_set_state, "state");
 	GDVIRTUAL_BIND(_clear);
+	GDVIRTUAL_BIND(_get_unsaved_status, "for_scene");
 	GDVIRTUAL_BIND(_save_external_data);
 	GDVIRTUAL_BIND(_apply_changes);
 	GDVIRTUAL_BIND(_get_breakpoints);
