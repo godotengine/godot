@@ -621,7 +621,7 @@ void EditorPropertyClassName::update_property() {
 }
 
 void EditorPropertyClassName::_property_selected() {
-	dialog->popup_create(true);
+	dialog->popup_create(true, true, get_edited_property_value(), get_edited_property());
 }
 
 void EditorPropertyClassName::_dialog_created() {
@@ -772,7 +772,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 		const int flag_index = flags.size(); // Index of the next element (added by the code below).
 
 		// Value for a flag can be explicitly overridden.
-		Vector<String> text_split = p_options[i].split(":");
+		Vector<String> text_split = option.split(":");
 		if (text_split.size() != 1) {
 			current_val = text_split[1].to_int();
 		} else {
@@ -782,7 +782,7 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 
 		// Create a CheckBox for the current flag.
 		CheckBox *cb = memnew(CheckBox);
-		cb->set_text(option);
+		cb->set_text(text_split[0]);
 		cb->set_clip_text(true);
 		cb->connect("pressed", callable_mp(this, &EditorPropertyFlags::_flag_toggled).bind(flag_index));
 		add_focusable(cb);
@@ -3622,7 +3622,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_TYPE_STRING) {
 				EditorPropertyClassName *editor = memnew(EditorPropertyClassName);
-				editor->setup("Object", p_hint_text);
+				editor->setup(p_hint_text, p_hint_text);
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_LOCALE_ID) {
 				EditorPropertyLocale *editor = memnew(EditorPropertyLocale);

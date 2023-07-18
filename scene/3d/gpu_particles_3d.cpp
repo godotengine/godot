@@ -31,19 +31,37 @@
 #include "gpu_particles_3d.h"
 
 #include "scene/resources/particle_process_material.h"
+#include "scene/scene_string_names.h"
 
 AABB GPUParticles3D::get_aabb() const {
 	return AABB();
 }
 
 void GPUParticles3D::set_emitting(bool p_emitting) {
-	RS::get_singleton()->particles_set_emitting(particles, p_emitting);
+	// Do not return even if `p_emitting == emitting` because `emitting` is just an approximation.
 
 	if (p_emitting && one_shot) {
+		if (!active && !emitting) {
+			// Last cycle ended.
+			active = true;
+			time = 0;
+			signal_cancled = false;
+			emission_time = lifetime;
+			active_time = lifetime * (2 - explosiveness_ratio);
+		} else {
+			signal_cancled = true;
+		}
 		set_process_internal(true);
 	} else if (!p_emitting) {
-		set_process_internal(false);
+		if (one_shot) {
+			set_process_internal(true);
+		} else {
+			set_process_internal(false);
+		}
 	}
+
+	emitting = p_emitting;
+	RS::get_singleton()->particles_set_emitting(particles, p_emitting);
 }
 
 void GPUParticles3D::set_amount(int p_amount) {
@@ -122,7 +140,7 @@ void GPUParticles3D::set_collision_base_size(real_t p_size) {
 }
 
 bool GPUParticles3D::is_emitting() const {
-	return RS::get_singleton()->particles_get_emitting(particles);
+	return emitting;
 }
 
 int GPUParticles3D::get_amount() const {
@@ -181,7 +199,7 @@ void GPUParticles3D::set_trail_enabled(bool p_enabled) {
 }
 
 void GPUParticles3D::set_trail_lifetime(double p_seconds) {
-	ERR_FAIL_COND(p_seconds < 0.001);
+	ERR_FAIL_COND(p_seconds < 0.01);
 	trail_lifetime = p_seconds;
 	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_lifetime);
 }
@@ -216,13 +234,13 @@ void GPUParticles3D::set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh) {
 	ERR_FAIL_INDEX(p_pass, draw_passes.size());
 
 	if (Engine::get_singleton()->is_editor_hint() && draw_passes.write[p_pass].is_valid()) {
-		draw_passes.write[p_pass]->disconnect("changed", callable_mp((Node *)this, &Node::update_configuration_warnings));
+		draw_passes.write[p_pass]->disconnect_changed(callable_mp((Node *)this, &Node::update_configuration_warnings));
 	}
 
 	draw_passes.write[p_pass] = p_mesh;
 
 	if (Engine::get_singleton()->is_editor_hint() && draw_passes.write[p_pass].is_valid()) {
-		draw_passes.write[p_pass]->connect("changed", callable_mp((Node *)this, &Node::update_configuration_warnings), CONNECT_DEFERRED);
+		draw_passes.write[p_pass]->connect_changed(callable_mp((Node *)this, &Node::update_configuration_warnings), CONNECT_DEFERRED);
 	}
 
 	RID mesh_rid;
@@ -363,12 +381,26 @@ PackedStringArray GPUParticles3D::get_configuration_warnings() const {
 		}
 	}
 
+	if (sub_emitter != NodePath() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("Particle sub-emitters are only available when using the Forward+ or Mobile rendering backends."));
+	}
+
 	return warnings;
 }
 
 void GPUParticles3D::restart() {
 	RenderingServer::get_singleton()->particles_restart(particles);
 	RenderingServer::get_singleton()->particles_set_emitting(particles, true);
+
+	emitting = true;
+	active = true;
+	signal_cancled = false;
+	time = 0;
+	emission_time = lifetime * (1 - explosiveness_ratio);
+	active_time = lifetime * (2 - explosiveness_ratio);
+	if (one_shot) {
+		set_process_internal(true);
+	}
 }
 
 AABB GPUParticles3D::capture_aabb() const {
@@ -409,6 +441,7 @@ void GPUParticles3D::set_sub_emitter(const NodePath &p_path) {
 	if (is_inside_tree() && sub_emitter != NodePath()) {
 		_attach_sub_emitter();
 	}
+	update_configuration_warnings();
 }
 
 NodePath GPUParticles3D::get_sub_emitter() const {
@@ -417,21 +450,26 @@ NodePath GPUParticles3D::get_sub_emitter() const {
 
 void GPUParticles3D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_PAUSED:
-		case NOTIFICATION_UNPAUSED: {
-			if (can_process()) {
-				RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
-			} else {
-				RS::get_singleton()->particles_set_speed_scale(particles, 0);
-			}
-		} break;
-
 		// Use internal process when emitting and one_shot is on so that when
 		// the shot ends the editor can properly update.
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (one_shot && !is_emitting()) {
-				notify_property_list_changed();
-				set_process_internal(false);
+			if (one_shot) {
+				time += get_process_delta_time();
+				if (time > emission_time) {
+					emitting = false;
+					if (!active) {
+						set_process_internal(false);
+					}
+				}
+				if (time > active_time) {
+					if (active && !signal_cancled) {
+						emit_signal(SceneStringNames::get_singleton()->finished);
+					}
+					active = false;
+					if (!emitting) {
+						set_process_internal(false);
+					}
+				}
 			}
 		} break;
 
@@ -448,6 +486,17 @@ void GPUParticles3D::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			RS::get_singleton()->particles_set_subemitter(particles, RID());
+		} break;
+
+		case NOTIFICATION_PAUSED:
+		case NOTIFICATION_UNPAUSED: {
+			if (is_inside_tree()) {
+				if (can_process()) {
+					RS::get_singleton()->particles_set_speed_scale(particles, speed_scale);
+				} else {
+					RS::get_singleton()->particles_set_speed_scale(particles, 0);
+				}
+			}
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -563,6 +612,8 @@ void GPUParticles3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_transform_align", "align"), &GPUParticles3D::set_transform_align);
 	ClassDB::bind_method(D_METHOD("get_transform_align"), &GPUParticles3D::get_transform_align);
+
+	ADD_SIGNAL(MethodInfo("finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY_DEFAULT("emitting", true); // Workaround for doctool in headless mode, as dummy rasterizer always returns false.

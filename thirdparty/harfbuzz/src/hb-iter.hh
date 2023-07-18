@@ -63,6 +63,7 @@ struct hb_iter_t
   static constexpr bool is_iterator = true;
   static constexpr bool is_random_access_iterator = false;
   static constexpr bool is_sorted_iterator = false;
+  static constexpr bool has_fast_len = false; // Should be checked in combination with is_random_access_iterator.
 
   private:
   /* https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern */
@@ -393,7 +394,7 @@ struct hb_map_iter_t :
 
   private:
   Iter it;
-  hb_reference_wrapper<Proj> f;
+  mutable hb_reference_wrapper<Proj> f;
 };
 
 template <typename Proj, hb_function_sortedness_t Sorted>
@@ -456,8 +457,8 @@ struct hb_filter_iter_t :
 
   private:
   Iter it;
-  hb_reference_wrapper<Pred> p;
-  hb_reference_wrapper<Proj> f;
+  mutable hb_reference_wrapper<Pred> p;
+  mutable hb_reference_wrapper<Proj> f;
 };
 template <typename Pred, typename Proj>
 struct hb_filter_iter_factory_t
@@ -841,7 +842,7 @@ struct
   template <typename Iterable,
 	    hb_requires (hb_is_iterable (Iterable))>
   auto operator () (Iterable&& it, unsigned count) const HB_AUTO_RETURN
-  ( hb_zip (hb_range (count), it) | hb_map (hb_second) )
+  ( hb_zip (hb_range (count), it) | hb_map_retains_sorting (hb_second) )
 
   /* Specialization arrays. */
 

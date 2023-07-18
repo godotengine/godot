@@ -385,7 +385,7 @@ void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 	// This can be a slow operation, and `notify_property_list_changed()` (which is called by `_shader_changed()`)
 	// does nothing in non-editor builds anyway. See GH-34741 for details.
 	if (shader.is_valid() && Engine::get_singleton()->is_editor_hint()) {
-		shader->disconnect("changed", callable_mp(this, &ShaderMaterial::_shader_changed));
+		shader->disconnect_changed(callable_mp(this, &ShaderMaterial::_shader_changed));
 	}
 
 	shader = p_shader;
@@ -395,7 +395,7 @@ void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
 		rid = shader->get_rid();
 
 		if (Engine::get_singleton()->is_editor_hint()) {
-			shader->connect("changed", callable_mp(this, &ShaderMaterial::_shader_changed));
+			shader->connect_changed(callable_mp(this, &ShaderMaterial::_shader_changed));
 		}
 	}
 
@@ -1139,7 +1139,7 @@ void BaseMaterial3D::_update_shader() {
 
 	if (!RenderingServer::get_singleton()->is_low_end() && features[FEATURE_HEIGHT_MAPPING] && !flags[FLAG_UV1_USE_TRIPLANAR]) { //heightmap not supported with triplanar
 		code += "	{\n";
-		code += "		vec3 view_dir = normalize(normalize(-VERTEX)*mat3(TANGENT*heightmap_flip.x,-BINORMAL*heightmap_flip.y,NORMAL));\n"; // binormal is negative due to mikktspace, flip 'unflips' it ;-)
+		code += "		vec3 view_dir = normalize(normalize(-VERTEX + EYE_OFFSET) * mat3(TANGENT * heightmap_flip.x, -BINORMAL * heightmap_flip.y, NORMAL));\n"; // binormal is negative due to mikktspace, flip 'unflips' it ;-)
 
 		if (deep_parallax) {
 			code += "		float num_layers = mix(float(heightmap_max_layers),float(heightmap_min_layers), abs(dot(vec3(0.0, 0.0, 1.0), view_dir)));\n";

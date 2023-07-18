@@ -193,25 +193,25 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	if (p_surface.vertex_data.size()) {
 		glGenBuffers(1, &s->vertex_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, s->vertex_buffer);
-		glBufferData(GL_ARRAY_BUFFER, p_surface.vertex_data.size(), p_surface.vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->vertex_buffer, p_surface.vertex_data.size(), p_surface.vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh vertex buffer");
 		s->vertex_buffer_size = p_surface.vertex_data.size();
 	}
 
 	if (p_surface.attribute_data.size()) {
 		glGenBuffers(1, &s->attribute_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, s->attribute_buffer);
-		glBufferData(GL_ARRAY_BUFFER, p_surface.attribute_data.size(), p_surface.attribute_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->attribute_buffer, p_surface.attribute_data.size(), p_surface.attribute_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh attribute buffer");
 		s->attribute_buffer_size = p_surface.attribute_data.size();
 	}
+
 	if (p_surface.skin_data.size()) {
 		glGenBuffers(1, &s->skin_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, s->skin_buffer);
-		glBufferData(GL_ARRAY_BUFFER, p_surface.skin_data.size(), p_surface.skin_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->skin_buffer, p_surface.skin_data.size(), p_surface.skin_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh skin buffer");
 		s->skin_buffer_size = p_surface.skin_data.size();
 	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	s->vertex_count = p_surface.vertex_count;
 
@@ -223,7 +223,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		bool is_index_16 = p_surface.vertex_count <= 65536 && p_surface.vertex_count > 0;
 		glGenBuffers(1, &s->index_buffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->index_buffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, p_surface.index_data.size(), p_surface.index_data.ptr(), GL_STATIC_DRAW);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ELEMENT_ARRAY_BUFFER, s->index_buffer, p_surface.index_data.size(), p_surface.index_data.ptr(), GL_STATIC_DRAW, "Mesh index buffer");
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //unbind
 		s->index_count = p_surface.index_count;
 		s->index_buffer_size = p_surface.index_data.size();
@@ -235,7 +235,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			for (int i = 0; i < p_surface.lods.size(); i++) {
 				glGenBuffers(1, &s->lods[i].index_buffer);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->lods[i].index_buffer);
-				glBufferData(GL_ELEMENT_ARRAY_BUFFER, p_surface.lods[i].index_data.size(), p_surface.lods[i].index_data.ptr(), GL_STATIC_DRAW);
+				GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ELEMENT_ARRAY_BUFFER, s->lods[i].index_buffer, p_surface.lods[i].index_data.size(), p_surface.lods[i].index_data.ptr(), GL_STATIC_DRAW, "Mesh index buffer LOD[" + itos(i) + "]");
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //unbind
 				s->lods[i].edge_length = p_surface.lods[i].edge_length;
 				s->lods[i].index_count = p_surface.lods[i].index_data.size() / (is_index_16 ? 2 : 4);
@@ -282,7 +282,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 				glBindVertexArray(s->blend_shapes[i].vertex_array);
 				glGenBuffers(1, &s->blend_shapes[i].vertex_buffer);
 				glBindBuffer(GL_ARRAY_BUFFER, s->blend_shapes[i].vertex_buffer);
-				glBufferData(GL_ARRAY_BUFFER, size, p_surface.blend_shape_data.ptr() + i * size, (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+				GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->blend_shapes[i].vertex_buffer, size, p_surface.blend_shape_data.ptr() + i * size, (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh blend shape buffer");
 
 				if ((p_surface.format & (1 << RS::ARRAY_VERTEX))) {
 					glEnableVertexAttribArray(RS::ARRAY_VERTEX + 3);
@@ -633,11 +633,17 @@ void MeshStorage::mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) {
 void MeshStorage::mesh_clear(RID p_mesh) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_COND(!mesh);
+
+	// Clear instance data before mesh data.
+	for (MeshInstance *mi : mesh->instances) {
+		_mesh_instance_clear(mi);
+	}
+
 	for (uint32_t i = 0; i < mesh->surface_count; i++) {
 		Mesh::Surface &s = *mesh->surfaces[i];
 
 		if (s.vertex_buffer != 0) {
-			glDeleteBuffers(1, &s.vertex_buffer);
+			GLES3::Utilities::get_singleton()->buffer_free_data(s.vertex_buffer);
 			s.vertex_buffer = 0;
 		}
 
@@ -649,17 +655,17 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 		}
 
 		if (s.attribute_buffer != 0) {
-			glDeleteBuffers(1, &s.attribute_buffer);
+			GLES3::Utilities::get_singleton()->buffer_free_data(s.attribute_buffer);
 			s.attribute_buffer = 0;
 		}
 
 		if (s.skin_buffer != 0) {
-			glDeleteBuffers(1, &s.skin_buffer);
+			GLES3::Utilities::get_singleton()->buffer_free_data(s.skin_buffer);
 			s.skin_buffer = 0;
 		}
 
 		if (s.index_buffer != 0) {
-			glDeleteBuffers(1, &s.index_buffer);
+			GLES3::Utilities::get_singleton()->buffer_free_data(s.index_buffer);
 			s.index_buffer = 0;
 		}
 
@@ -670,7 +676,7 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 		if (s.lod_count) {
 			for (uint32_t j = 0; j < s.lod_count; j++) {
 				if (s.lods[j].index_buffer != 0) {
-					glDeleteBuffers(1, &s.lods[j].index_buffer);
+					GLES3::Utilities::get_singleton()->buffer_free_data(s.lods[j].index_buffer);
 					s.lods[j].index_buffer = 0;
 				}
 			}
@@ -680,7 +686,7 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 		if (mesh->blend_shape_count) {
 			for (uint32_t j = 0; j < mesh->blend_shape_count; j++) {
 				if (s.blend_shapes[j].vertex_buffer != 0) {
-					glDeleteBuffers(1, &s.blend_shapes[j].vertex_buffer);
+					GLES3::Utilities::get_singleton()->buffer_free_data(s.blend_shapes[j].vertex_buffer);
 					s.blend_shapes[j].vertex_buffer = 0;
 				}
 				if (s.blend_shapes[j].vertex_array != 0) {
@@ -704,10 +710,6 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 	mesh->surfaces = nullptr;
 	mesh->surface_count = 0;
 	mesh->material_cache.clear();
-	//clear instance data
-	for (MeshInstance *mi : mesh->instances) {
-		_mesh_instance_clear(mi);
-	}
 	mesh->has_bone_weights = false;
 	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 
@@ -916,13 +918,14 @@ void MeshStorage::_mesh_instance_clear(MeshInstance *mi) {
 		}
 
 		if (mi->surfaces[i].vertex_buffers[0] != 0) {
-			glDeleteBuffers(2, mi->surfaces[i].vertex_buffers);
+			GLES3::Utilities::get_singleton()->buffer_free_data(mi->surfaces[i].vertex_buffers[0]);
+			GLES3::Utilities::get_singleton()->buffer_free_data(mi->surfaces[i].vertex_buffers[1]);
 			mi->surfaces[i].vertex_buffers[0] = 0;
 			mi->surfaces[i].vertex_buffers[1] = 0;
 		}
 
 		if (mi->surfaces[i].vertex_buffer != 0) {
-			glDeleteBuffers(1, &mi->surfaces[i].vertex_buffer);
+			GLES3::Utilities::get_singleton()->buffer_free_data(mi->surfaces[i].vertex_buffer);
 			mi->surfaces[i].vertex_buffer = 0;
 		}
 	}
@@ -963,13 +966,13 @@ void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint3
 		// Buffer to be used for rendering. Final output of skeleton and blend shapes.
 		glGenBuffers(1, &s.vertex_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, s.vertex_buffer);
-		glBufferData(GL_ARRAY_BUFFER, s.vertex_stride_cache * mesh->surfaces[p_surface]->vertex_count, nullptr, GL_DYNAMIC_DRAW);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s.vertex_buffer, s.vertex_stride_cache * mesh->surfaces[p_surface]->vertex_count, nullptr, GL_DYNAMIC_DRAW, "MeshInstance vertex buffer");
 		if (mesh->blend_shape_count > 0) {
 			// Ping-Pong buffers for processing blendshapes.
 			glGenBuffers(2, s.vertex_buffers);
 			for (uint32_t i = 0; i < 2; i++) {
 				glBindBuffer(GL_ARRAY_BUFFER, s.vertex_buffers[i]);
-				glBufferData(GL_ARRAY_BUFFER, s.vertex_stride_cache * mesh->surfaces[p_surface]->vertex_count, nullptr, GL_DYNAMIC_DRAW);
+				GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s.vertex_buffers[i], s.vertex_stride_cache * mesh->surfaces[p_surface]->vertex_count, nullptr, GL_DYNAMIC_DRAW, "MeshInstance process buffer[" + itos(i) + "]");
 			}
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
@@ -1271,7 +1274,7 @@ void MeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::
 	}
 
 	if (multimesh->buffer) {
-		glDeleteBuffers(1, &multimesh->buffer);
+		GLES3::Utilities::get_singleton()->buffer_free_data(multimesh->buffer);
 		multimesh->buffer = 0;
 	}
 
@@ -1298,7 +1301,7 @@ void MeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::
 	if (multimesh->instances) {
 		glGenBuffers(1, &multimesh->buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
-		glBufferData(GL_ARRAY_BUFFER, multimesh->instances * multimesh->stride_cache * sizeof(float), nullptr, GL_STATIC_DRAW);
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, multimesh->buffer, multimesh->instances * multimesh->stride_cache * sizeof(float), nullptr, GL_STATIC_DRAW, "MultiMesh buffer");
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
@@ -1958,7 +1961,7 @@ void MeshStorage::skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_
 	}
 
 	if (skeleton->transforms_texture != 0) {
-		glDeleteTextures(1, &skeleton->transforms_texture);
+		GLES3::Utilities::get_singleton()->texture_free_data(skeleton->transforms_texture);
 		skeleton->transforms_texture = 0;
 		skeleton->data.clear();
 	}
@@ -1973,6 +1976,7 @@ void MeshStorage::skeleton_allocate_data(RID p_skeleton, int p_bones, bool p_2d_
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glBindTexture(GL_TEXTURE_2D, 0);
+		GLES3::Utilities::get_singleton()->texture_allocated_data(skeleton->transforms_texture, skeleton->data.size() * sizeof(float), "Skeleton transforms texture");
 
 		memset(skeleton->data.ptrw(), 0, skeleton->data.size() * sizeof(float));
 

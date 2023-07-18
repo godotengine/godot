@@ -658,7 +658,7 @@ private:
 
 	Vector3 get_gd_normal(Face *p_face);
 
-	bool shift_face(Face *p_face, real_t p_amount, LocalVector<Vertex *> p_stack);
+	bool shift_face(Face *p_face, real_t p_amount, LocalVector<Vertex *> &p_stack);
 
 public:
 	~ConvexHullInternal() {
@@ -1775,7 +1775,7 @@ real_t ConvexHullInternal::shrink(real_t p_amount, real_t p_clamp_amount) {
 	return p_amount;
 }
 
-bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<Vertex *> p_stack) {
+bool ConvexHullInternal::shift_face(Face *p_face, real_t p_amount, LocalVector<Vertex *> &p_stack) {
 	Vector3 orig_shift = get_gd_normal(p_face) * -p_amount;
 	if (scaling[0] != 0) {
 		orig_shift[0] /= scaling[0];

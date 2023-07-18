@@ -51,6 +51,8 @@ class NavigationPolygon : public Resource {
 	// Navigation mesh
 	Ref<NavigationMesh> navigation_mesh;
 
+	real_t cell_size = 1.0f; // Must match ProjectSettings default 2D cell_size.
+
 protected:
 	static void _bind_methods();
 
@@ -86,6 +88,9 @@ public:
 	void clear_polygons();
 
 	Ref<NavigationMesh> get_navigation_mesh();
+
+	void set_cell_size(real_t p_cell_size);
+	real_t get_cell_size() const;
 
 	NavigationPolygon() {}
 	~NavigationPolygon() {}

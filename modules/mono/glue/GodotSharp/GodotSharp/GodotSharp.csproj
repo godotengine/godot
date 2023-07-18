@@ -20,7 +20,7 @@
     <Authors>Godot Engine contributors</Authors>
 
     <PackageId>GodotSharp</PackageId>
-    <Version>4.1.0</Version>
+    <Version>4.2.0</Version>
     <PackageVersion>$(PackageVersion_GodotSharp)</PackageVersion>
     <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/glue/GodotSharp/GodotSharp</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
@@ -134,6 +134,10 @@
     <Compile Include="Core\Vector4I.cs" />
     <Compile Include="GlobalUsings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <!-- Compat Sources -->
+  <ItemGroup>
+    <Compile Include="Compat.cs" />
   </ItemGroup>
   <!--
   We import a props file with auto-generated includes. This works well with Rider.

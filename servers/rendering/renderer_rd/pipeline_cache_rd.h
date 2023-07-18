@@ -76,6 +76,8 @@ public:
 #endif
 
 		spin_lock.lock();
+		p_wireframe |= rasterization_state.wireframe;
+
 		RID result;
 		for (uint32_t i = 0; i < version_count; i++) {
 			if (versions[i].vertex_id == p_vertex_format_id && versions[i].framebuffer_id == p_framebuffer_format_id && versions[i].wireframe == p_wireframe && versions[i].render_pass == p_render_pass && versions[i].bool_specializations == p_bool_specializations) {

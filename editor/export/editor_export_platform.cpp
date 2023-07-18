@@ -45,6 +45,7 @@
 #include "editor/export/editor_export.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_export_plugin.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/packed_scene.h"
 
 static int _get_pad(int p_alignment, int p_n) {
@@ -329,9 +330,10 @@ Ref<EditorExportPreset> EditorExportPlatform::create_preset() {
 	}
 
 	for (const ExportOption &E : options) {
-		preset->properties.push_back(E.option);
-		preset->values[E.option.name] = E.default_value;
-		preset->update_visibility[E.option.name] = E.update_visibility;
+		StringName option_name = E.option.name;
+		preset->properties[option_name] = E.option;
+		preset->values[option_name] = E.default_value;
+		preset->update_visibility[option_name] = E.update_visibility;
 	}
 
 	return preset;
@@ -988,7 +990,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 	struct SortByName {
 		bool operator()(const Ref<EditorExportPlugin> &left, const Ref<EditorExportPlugin> &right) const {
-			return left->_get_name() < right->_get_name();
+			return left->get_name() < right->get_name();
 		}
 	};
 
@@ -1031,14 +1033,14 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		if (export_plugins.write[i]->_begin_customize_resources(Ref<EditorExportPlatform>(this), features_psa)) {
 			customize_resources_plugins.push_back(export_plugins[i]);
 
-			custom_resources_hash = hash_murmur3_one_64(export_plugins[i]->_get_name().hash64(), custom_resources_hash);
+			custom_resources_hash = hash_murmur3_one_64(export_plugins[i]->get_name().hash64(), custom_resources_hash);
 			uint64_t hash = export_plugins[i]->_get_customization_configuration_hash();
 			custom_resources_hash = hash_murmur3_one_64(hash, custom_resources_hash);
 		}
 		if (export_plugins.write[i]->_begin_customize_scenes(Ref<EditorExportPlatform>(this), features_psa)) {
 			customize_scenes_plugins.push_back(export_plugins[i]);
 
-			custom_resources_hash = hash_murmur3_one_64(export_plugins[i]->_get_name().hash64(), custom_resources_hash);
+			custom_resources_hash = hash_murmur3_one_64(export_plugins[i]->get_name().hash64(), custom_resources_hash);
 			uint64_t hash = export_plugins[i]->_get_customization_configuration_hash();
 			custom_scene_hash = hash_murmur3_one_64(hash, custom_scene_hash);
 		}
@@ -1788,14 +1790,33 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 	}
 }
 
-bool EditorExportPlatform::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatform::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	bool valid = true;
+
 #ifndef ANDROID_ENABLED
 	String templates_error;
-	valid = valid && has_valid_export_configuration(p_preset, templates_error, r_missing_templates);
+	valid = valid && has_valid_export_configuration(p_preset, templates_error, r_missing_templates, p_debug);
 
 	if (!templates_error.is_empty()) {
 		r_error += templates_error;
+	}
+
+	String export_plugins_warning;
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	for (int i = 0; i < export_plugins.size(); i++) {
+		Ref<EditorExportPlatform> export_platform = Ref<EditorExportPlatform>(this);
+		if (!export_plugins[i]->supports_platform(export_platform)) {
+			continue;
+		}
+
+		String plugin_warning = export_plugins.write[i]->_has_valid_export_configuration(export_platform, p_preset);
+		if (!plugin_warning.is_empty()) {
+			export_plugins_warning += plugin_warning;
+		}
+	}
+
+	if (!export_plugins_warning.is_empty()) {
+		r_error += export_plugins_warning;
 	}
 #endif
 

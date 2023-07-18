@@ -30,8 +30,8 @@
 
 #include "export_plugin.h"
 
-#include "../logo_svg.gen.h"
-#include "../run_icon_svg.gen.h"
+#include "logo_svg.gen.h"
+#include "run_icon_svg.gen.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/image_loader.h"
@@ -674,9 +674,9 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	return OK;
 }
 
-bool EditorExportPlatformWindows::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformWindows::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err = "";
-	bool valid = EditorExportPlatformPC::has_valid_export_configuration(p_preset, err, r_missing_templates);
+	bool valid = EditorExportPlatformPC::has_valid_export_configuration(p_preset, err, r_missing_templates, p_debug);
 
 	String rcedit_path = EDITOR_GET("export/windows/rcedit");
 	if (p_preset->get("application/modify_resources") && rcedit_path.is_empty()) {
@@ -1011,11 +1011,10 @@ EditorExportPlatformWindows::EditorExportPlatformWindows() {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG img_loader;
-		img_loader.create_image_from_string(img, _windows_logo_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _windows_logo_svg, EDSCALE, upsample, false);
 		set_logo(ImageTexture::create_from_image(img));
 
-		img_loader.create_image_from_string(img, _windows_run_icon_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _windows_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
 #endif
 

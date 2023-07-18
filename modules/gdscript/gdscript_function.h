@@ -31,6 +31,8 @@
 #ifndef GDSCRIPT_FUNCTION_H
 #define GDSCRIPT_FUNCTION_H
 
+#include "gdscript_utility_functions.h"
+
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
 #include "core/os/thread.h"
@@ -38,7 +40,6 @@
 #include "core/templates/pair.h"
 #include "core/templates/self_list.h"
 #include "core/variant/variant.h"
-#include "gdscript_utility_functions.h"
 
 class GDScriptInstance;
 class GDScript;
@@ -148,6 +149,7 @@ public:
 
 	operator PropertyInfo() const {
 		PropertyInfo info;
+		info.usage = PROPERTY_USAGE_NONE;
 		if (has_type) {
 			switch (kind) {
 				case UNINITIALIZED:
@@ -237,6 +239,8 @@ public:
 		OPCODE_GET_NAMED_VALIDATED,
 		OPCODE_SET_MEMBER,
 		OPCODE_GET_MEMBER,
+		OPCODE_SET_STATIC_VARIABLE, // Only for GDScript.
+		OPCODE_GET_STATIC_VARIABLE, // Only for GDScript.
 		OPCODE_ASSIGN,
 		OPCODE_ASSIGN_TRUE,
 		OPCODE_ASSIGN_FALSE,
@@ -409,14 +413,14 @@ public:
 		ADDR_TYPE_STACK = 0,
 		ADDR_TYPE_CONSTANT = 1,
 		ADDR_TYPE_MEMBER = 2,
-		ADDR_TYPE_STATIC_VAR = 3,
-		ADDR_TYPE_MAX = 4,
+		ADDR_TYPE_MAX = 3,
 	};
 
 	enum FixedAddresses {
 		ADDR_STACK_SELF = 0,
 		ADDR_STACK_CLASS = 1,
 		ADDR_STACK_NIL = 2,
+		FIXED_ADDRESSES_MAX = 3,
 		ADDR_SELF = ADDR_STACK_SELF | (ADDR_TYPE_STACK << ADDR_BITS),
 		ADDR_CLASS = ADDR_STACK_CLASS | (ADDR_TYPE_STACK << ADDR_BITS),
 		ADDR_NIL = ADDR_STACK_NIL | (ADDR_TYPE_STACK << ADDR_BITS),

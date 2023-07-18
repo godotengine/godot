@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationPathQueryResult2D" inherits="RefCounted" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationPathQueryResult2D" inherits="RefCounted" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Represents the result of a 2D pathfinding query.
 	</brief_description>

@@ -767,7 +767,7 @@ void VisualShader::add_node(Type p_type, const Ref<VisualShaderNode> &p_node, co
 		input->shader_type = p_type;
 	}
 
-	n.node->connect("changed", callable_mp(this, &VisualShader::_queue_update));
+	n.node->connect_changed(callable_mp(this, &VisualShader::_queue_update));
 
 	Ref<VisualShaderNodeCustom> custom = n.node;
 	if (custom.is_valid()) {
@@ -834,7 +834,7 @@ void VisualShader::remove_node(Type p_type, int p_id) {
 	Graph *g = &graph[p_type];
 	ERR_FAIL_COND(!g->nodes.has(p_id));
 
-	g->nodes[p_id].node->disconnect("changed", callable_mp(this, &VisualShader::_queue_update));
+	g->nodes[p_id].node->disconnect_changed(callable_mp(this, &VisualShader::_queue_update));
 
 	g->nodes.erase(p_id);
 
@@ -907,7 +907,7 @@ void VisualShader::replace_node(Type p_type, int p_id, const StringName &p_new_c
 		}
 	}
 
-	vsn->connect("changed", callable_mp(this, &VisualShader::_queue_update));
+	vsn->connect_changed(callable_mp(this, &VisualShader::_queue_update));
 	g->nodes[p_id].node = Ref<VisualShaderNode>(vsn);
 
 	_queue_update();
@@ -3645,6 +3645,8 @@ const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "Alpha AA Edge", "ALPHA_ANTIALIASING_EDGE" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "Alpha UV", "ALPHA_TEXTURE_COORDINATE" },
 
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "Depth", "DEPTH" },
+
 	////////////////////////////////////////////////////////////////////////
 	// Node3D, Light.
 	////////////////////////////////////////////////////////////////////////
@@ -3768,7 +3770,7 @@ bool VisualShaderNodeOutput::is_port_separator(int p_index) const {
 	}
 	if (shader_mode == Shader::MODE_SPATIAL && shader_type == VisualShader::TYPE_FRAGMENT) {
 		String port_name = get_input_port_name(p_index);
-		return bool(port_name == "AO" || port_name == "Normal" || port_name == "Rim" || port_name == "Clearcoat" || port_name == "Anisotropy" || port_name == "Subsurf Scatter" || port_name == "Alpha Scissor Threshold");
+		return bool(port_name == "AO" || port_name == "Normal" || port_name == "Rim" || port_name == "Clearcoat" || port_name == "Anisotropy" || port_name == "Subsurf Scatter" || port_name == "Alpha Scissor Threshold" || port_name == "Depth");
 	}
 	return false;
 }
@@ -4854,7 +4856,7 @@ VisualShaderNodeVarying::VisualShaderNodeVarying() {
 ////////////// Varying Setter
 
 String VisualShaderNodeVaryingSetter::get_caption() const {
-	return vformat("VaryingSetter");
+	return "VaryingSetter";
 }
 
 int VisualShaderNodeVaryingSetter::get_input_port_count() const {
@@ -4896,7 +4898,7 @@ VisualShaderNodeVaryingSetter::VisualShaderNodeVaryingSetter() {
 ////////////// Varying Getter
 
 String VisualShaderNodeVaryingGetter::get_caption() const {
-	return vformat("VaryingGetter");
+	return "VaryingGetter";
 }
 
 int VisualShaderNodeVaryingGetter::get_input_port_count() const {

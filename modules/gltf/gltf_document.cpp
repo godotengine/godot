@@ -49,6 +49,8 @@
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
+#include "scene/resources/image_texture.h"
+#include "scene/resources/portable_compressed_texture.h"
 #include "scene/resources/skin.h"
 #include "scene/resources/surface_tool.h"
 
@@ -3769,6 +3771,12 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			extensions["KHR_materials_unlit"] = mat_unlit;
 			p_state->add_used_extension("KHR_materials_unlit");
 		}
+		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION) && !Math::is_equal_approx(base_material->get_emission_energy_multiplier(), 1.0f)) {
+			Dictionary mat_emissive_strength;
+			mat_emissive_strength["emissiveStrength"] = base_material->get_emission_energy_multiplier();
+			extensions["KHR_materials_emissive_strength"] = mat_emissive_strength;
+			p_state->add_used_extension("KHR_materials_emissive_strength");
+		}
 		d["extensions"] = extensions;
 
 		materials.push_back(d);
@@ -3789,28 +3797,35 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 
 	const Array &materials = p_state->json["materials"];
 	for (GLTFMaterialIndex i = 0; i < materials.size(); i++) {
-		const Dictionary &d = materials[i];
+		const Dictionary &material_dict = materials[i];
 
 		Ref<StandardMaterial3D> material;
 		material.instantiate();
-		if (d.has("name") && !String(d["name"]).is_empty()) {
-			material->set_name(d["name"]);
+		if (material_dict.has("name") && !String(material_dict["name"]).is_empty()) {
+			material->set_name(material_dict["name"]);
 		} else {
 			material->set_name(vformat("material_%s", itos(i)));
 		}
 		material->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		Dictionary pbr_spec_gloss_extensions;
-		if (d.has("extensions")) {
-			pbr_spec_gloss_extensions = d["extensions"];
+		Dictionary material_extensions;
+		if (material_dict.has("extensions")) {
+			material_extensions = material_dict["extensions"];
 		}
 
-		if (pbr_spec_gloss_extensions.has("KHR_materials_unlit")) {
+		if (material_extensions.has("KHR_materials_unlit")) {
 			material->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
 		}
 
-		if (pbr_spec_gloss_extensions.has("KHR_materials_pbrSpecularGlossiness")) {
+		if (material_extensions.has("KHR_materials_emissive_strength")) {
+			Dictionary emissive_strength = material_extensions["KHR_materials_emissive_strength"];
+			if (emissive_strength.has("emissiveStrength")) {
+				material->set_emission_energy_multiplier(emissive_strength["emissiveStrength"]);
+			}
+		}
+
+		if (material_extensions.has("KHR_materials_pbrSpecularGlossiness")) {
 			WARN_PRINT("Material uses a specular and glossiness workflow. Textures will be converted to roughness and metallic workflow, which may not be 100% accurate.");
-			Dictionary sgm = pbr_spec_gloss_extensions["KHR_materials_pbrSpecularGlossiness"];
+			Dictionary sgm = material_extensions["KHR_materials_pbrSpecularGlossiness"];
 
 			Ref<GLTFSpecGloss> spec_gloss;
 			spec_gloss.instantiate();
@@ -3858,8 +3873,8 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			}
 			spec_gloss_to_rough_metal(spec_gloss, material);
 
-		} else if (d.has("pbrMetallicRoughness")) {
-			const Dictionary &mr = d["pbrMetallicRoughness"];
+		} else if (material_dict.has("pbrMetallicRoughness")) {
+			const Dictionary &mr = material_dict["pbrMetallicRoughness"];
 			if (mr.has("baseColorFactor")) {
 				const Array &arr = mr["baseColorFactor"];
 				ERR_FAIL_COND_V(arr.size() != 4, ERR_PARSE_ERROR);
@@ -3911,8 +3926,8 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			}
 		}
 
-		if (d.has("normalTexture")) {
-			const Dictionary &bct = d["normalTexture"];
+		if (material_dict.has("normalTexture")) {
+			const Dictionary &bct = material_dict["normalTexture"];
 			if (bct.has("index")) {
 				material->set_texture(BaseMaterial3D::TEXTURE_NORMAL, _get_texture(p_state, bct["index"], TEXTURE_TYPE_NORMAL));
 				material->set_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING, true);
@@ -3921,8 +3936,8 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 				material->set_normal_scale(bct["scale"]);
 			}
 		}
-		if (d.has("occlusionTexture")) {
-			const Dictionary &bct = d["occlusionTexture"];
+		if (material_dict.has("occlusionTexture")) {
+			const Dictionary &bct = material_dict["occlusionTexture"];
 			if (bct.has("index")) {
 				material->set_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
 				material->set_ao_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_RED);
@@ -3930,8 +3945,8 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			}
 		}
 
-		if (d.has("emissiveFactor")) {
-			const Array &arr = d["emissiveFactor"];
+		if (material_dict.has("emissiveFactor")) {
+			const Array &arr = material_dict["emissiveFactor"];
 			ERR_FAIL_COND_V(arr.size() != 3, ERR_PARSE_ERROR);
 			const Color c = Color(arr[0], arr[1], arr[2]).linear_to_srgb();
 			material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
@@ -3939,8 +3954,8 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			material->set_emission(c);
 		}
 
-		if (d.has("emissiveTexture")) {
-			const Dictionary &bct = d["emissiveTexture"];
+		if (material_dict.has("emissiveTexture")) {
+			const Dictionary &bct = material_dict["emissiveTexture"];
 			if (bct.has("index")) {
 				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
 				material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
@@ -3948,20 +3963,20 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			}
 		}
 
-		if (d.has("doubleSided")) {
-			const bool ds = d["doubleSided"];
+		if (material_dict.has("doubleSided")) {
+			const bool ds = material_dict["doubleSided"];
 			if (ds) {
 				material->set_cull_mode(BaseMaterial3D::CULL_DISABLED);
 			}
 		}
-		if (d.has("alphaMode")) {
-			const String &am = d["alphaMode"];
+		if (material_dict.has("alphaMode")) {
+			const String &am = material_dict["alphaMode"];
 			if (am == "BLEND") {
 				material->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
 			} else if (am == "MASK") {
 				material->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA_SCISSOR);
-				if (d.has("alphaCutoff")) {
-					material->set_alpha_scissor_threshold(d["alphaCutoff"]);
+				if (material_dict.has("alphaCutoff")) {
+					material->set_alpha_scissor_threshold(material_dict["alphaCutoff"]);
 				} else {
 					material->set_alpha_scissor_threshold(0.5f);
 				}
@@ -6308,29 +6323,21 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> p_state) {
 		node->rotation = mi_xform.basis.get_rotation_quaternion();
 		node->position = mi_xform.origin;
 
-		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(mi->get_node(mi->get_skeleton_path()));
-		if (!skeleton) {
+		Node *skel_node = mi->get_node_or_null(mi->get_skeleton_path());
+		Skeleton3D *godot_skeleton = Object::cast_to<Skeleton3D>(skel_node);
+		if (!godot_skeleton || godot_skeleton->get_bone_count() == 0) {
 			continue;
 		}
-		if (!skeleton->get_bone_count()) {
-			continue;
-		}
+		// At this point in the code, we know we have a Skeleton3D with at least one bone.
 		Ref<Skin> skin = mi->get_skin();
 		Ref<GLTFSkin> gltf_skin;
 		gltf_skin.instantiate();
 		Array json_joints;
-
-		NodePath skeleton_path = mi->get_skeleton_path();
-		Node *skel_node = mi->get_node_or_null(skeleton_path);
-		Skeleton3D *godot_skeleton = nullptr;
-		if (skel_node != nullptr) {
-			godot_skeleton = cast_to<Skeleton3D>(skel_node);
-		}
-		if (godot_skeleton != nullptr && p_state->skeleton3d_to_gltf_skeleton.has(godot_skeleton->get_instance_id())) {
+		if (p_state->skeleton3d_to_gltf_skeleton.has(godot_skeleton->get_instance_id())) {
 			// This is a skinned mesh. If the mesh has no ARRAY_WEIGHTS or ARRAY_BONES, it will be invisible.
 			const GLTFSkeletonIndex skeleton_gltf_i = p_state->skeleton3d_to_gltf_skeleton[godot_skeleton->get_instance_id()];
 			Ref<GLTFSkeleton> gltf_skeleton = p_state->skeletons[skeleton_gltf_i];
-			int bone_cnt = skeleton->get_bone_count();
+			int bone_cnt = godot_skeleton->get_bone_count();
 			ERR_FAIL_COND(bone_cnt != gltf_skeleton->joints.size());
 
 			ObjectID gltf_skin_key;
@@ -6348,7 +6355,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> p_state) {
 			} else {
 				if (skin.is_null()) {
 					// Note that gltf_skin_key should remain null, so these can share a reference.
-					skin = skeleton->create_skin_from_rest_transforms();
+					skin = godot_skeleton->create_skin_from_rest_transforms();
 				}
 				gltf_skin.instantiate();
 				gltf_skin->godot_skin = skin;
@@ -6358,7 +6365,7 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> p_state) {
 				//gltf_state->godot_to_gltf_node[skel_node]
 				HashMap<StringName, int> bone_name_to_idx;
 				for (int bone_i = 0; bone_i < bone_cnt; bone_i++) {
-					bone_name_to_idx[skeleton->get_bone_name(bone_i)] = bone_i;
+					bone_name_to_idx[godot_skeleton->get_bone_name(bone_i)] = bone_i;
 				}
 				for (int bind_i = 0, cnt = skin->get_bind_count(); bind_i < cnt; bind_i++) {
 					int bone_i = skin->get_bind_bone(bind_i);
@@ -6369,13 +6376,13 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> p_state) {
 					}
 					ERR_CONTINUE(bone_i < 0 || bone_i >= bone_cnt);
 					if (bind_name == StringName()) {
-						bind_name = skeleton->get_bone_name(bone_i);
+						bind_name = godot_skeleton->get_bone_name(bone_i);
 					}
 					GLTFNodeIndex skeleton_bone_i = gltf_skeleton->joints[bone_i];
 					gltf_skin->joints_original.push_back(skeleton_bone_i);
 					gltf_skin->joints.push_back(skeleton_bone_i);
 					gltf_skin->inverse_binds.push_back(bind_pose);
-					if (skeleton->get_bone_parent(bone_i) == -1) {
+					if (godot_skeleton->get_bone_parent(bone_i) == -1) {
 						gltf_skin->roots.push_back(skeleton_bone_i);
 					}
 					gltf_skin->joint_i_to_bone_i[bind_i] = bone_i;
@@ -7469,6 +7476,7 @@ Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> p_state) {
 	supported_extensions.insert("KHR_materials_pbrSpecularGlossiness");
 	supported_extensions.insert("KHR_texture_transform");
 	supported_extensions.insert("KHR_materials_unlit");
+	supported_extensions.insert("KHR_materials_emissive_strength");
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
 		Vector<String> ext_supported_extensions = ext->get_supported_extensions();

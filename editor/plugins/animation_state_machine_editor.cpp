@@ -50,6 +50,7 @@
 #include "scene/gui/tree.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#include "scene/resources/style_box_flat.h"
 #include "scene/scene_string_names.h"
 
 bool AnimationNodeStateMachineEditor::can_edit(const Ref<AnimationNode> &p_node) {

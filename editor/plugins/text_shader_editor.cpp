@@ -122,7 +122,7 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader, const Stri
 		return;
 	}
 	if (shader.is_valid()) {
-		shader->disconnect(SNAME("changed"), callable_mp(this, &ShaderTextEditor::_shader_changed));
+		shader->disconnect_changed(callable_mp(this, &ShaderTextEditor::_shader_changed));
 	}
 	shader = p_shader;
 	shader_inc = Ref<ShaderInclude>();
@@ -130,7 +130,7 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader, const Stri
 	set_edited_code(p_code);
 
 	if (shader.is_valid()) {
-		shader->connect(SNAME("changed"), callable_mp(this, &ShaderTextEditor::_shader_changed));
+		shader->connect_changed(callable_mp(this, &ShaderTextEditor::_shader_changed));
 	}
 }
 
@@ -152,7 +152,7 @@ void ShaderTextEditor::set_edited_shader_include(const Ref<ShaderInclude> &p_sha
 		return;
 	}
 	if (shader_inc.is_valid()) {
-		shader_inc->disconnect(SNAME("changed"), callable_mp(this, &ShaderTextEditor::_shader_changed));
+		shader_inc->disconnect_changed(callable_mp(this, &ShaderTextEditor::_shader_changed));
 	}
 	shader_inc = p_shader_inc;
 	shader = Ref<Shader>();
@@ -160,7 +160,7 @@ void ShaderTextEditor::set_edited_shader_include(const Ref<ShaderInclude> &p_sha
 	set_edited_code(p_code);
 
 	if (shader_inc.is_valid()) {
-		shader_inc->connect(SNAME("changed"), callable_mp(this, &ShaderTextEditor::_shader_changed));
+		shader_inc->connect_changed(callable_mp(this, &ShaderTextEditor::_shader_changed));
 	}
 }
 
@@ -238,7 +238,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	ShaderPreprocessor::get_keyword_list(&pp_keywords, false);
 
 	for (const String &E : pp_keywords) {
-		syntax_highlighter->add_keyword_color(E, keyword_color);
+		syntax_highlighter->add_keyword_color(E, control_flow_keyword_color);
 	}
 
 	// Colorize built-ins like `COLOR` differently to make them easier
@@ -646,13 +646,13 @@ void TextShaderEditor::_menu_option(int p_option) {
 			shader_editor->move_lines_down();
 		} break;
 		case EDIT_INDENT: {
-			if (shader.is_null()) {
+			if (shader.is_null() && shader_inc.is_null()) {
 				return;
 			}
 			shader_editor->get_text_editor()->indent_lines();
 		} break;
 		case EDIT_UNINDENT: {
-			if (shader.is_null()) {
+			if (shader.is_null() && shader_inc.is_null()) {
 				return;
 			}
 			shader_editor->get_text_editor()->unindent_lines();
@@ -668,12 +668,10 @@ void TextShaderEditor::_menu_option(int p_option) {
 			shader_editor->get_text_editor()->set_line_wrapping_mode(wrap == TextEdit::LINE_WRAPPING_BOUNDARY ? TextEdit::LINE_WRAPPING_NONE : TextEdit::LINE_WRAPPING_BOUNDARY);
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
-			if (shader.is_null()) {
+			if (shader.is_null() && shader_inc.is_null()) {
 				return;
 			}
-
 			shader_editor->toggle_inline_comment("//");
-
 		} break;
 		case EDIT_COMPLETE: {
 			shader_editor->get_text_editor()->request_code_completion();

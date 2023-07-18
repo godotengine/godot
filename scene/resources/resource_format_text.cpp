@@ -851,25 +851,33 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 
 		String path = next_tag.fields["path"];
 		String type = next_tag.fields["type"];
+		String fallback_path;
 
 		bool using_uid = false;
 		if (next_tag.fields.has("uid")) {
-			//if uid exists, return uid in text format, not the path
+			// If uid exists, return uid in text format, not the path.
 			String uidt = next_tag.fields["uid"];
 			ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uidt);
 			if (uid != ResourceUID::INVALID_ID) {
+				fallback_path = path; // Used by Dependency Editor, in case uid path fails.
 				path = ResourceUID::get_singleton()->id_to_text(uid);
 				using_uid = true;
 			}
 		}
 
 		if (!using_uid && !path.contains("://") && path.is_relative_path()) {
-			// path is relative to file being loaded, so convert to a resource path
+			// Path is relative to file being loaded, so convert to a resource path.
 			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().path_join(path));
 		}
 
 		if (p_add_types) {
 			path += "::" + type;
+		}
+		if (!fallback_path.is_empty()) {
+			if (!p_add_types) {
+				path += "::"; // Ensure that path comes third, even if there is no type.
+			}
+			path += "::" + fallback_path;
 		}
 
 		p_dependencies->push_back(path);
@@ -1820,6 +1828,10 @@ String ResourceFormatSaverTextInstance::_write_resources(void *ud, const Ref<Res
 }
 
 String ResourceFormatSaverTextInstance::_write_resource(const Ref<Resource> &res) {
+	if (res->get_meta(SNAME("_skip_save_"), false)) {
+		return "null";
+	}
+
 	if (external_resources.has(res)) {
 		return "ExtResource(\"" + external_resources[res] + "\")";
 	} else {
@@ -1844,7 +1856,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 		case Variant::OBJECT: {
 			Ref<Resource> res = p_variant;
 
-			if (res.is_null() || external_resources.has(res)) {
+			if (res.is_null() || external_resources.has(res) || res->get_meta(SNAME("_skip_save_"), false)) {
 				return;
 			}
 
@@ -1864,6 +1876,8 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 			if (resource_set.has(res)) {
 				return;
 			}
+
+			resource_set.insert(res);
 
 			List<PropertyInfo> property_list;
 
@@ -1896,8 +1910,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 				I = I->next();
 			}
 
-			resource_set.insert(res); //saved after, so the children it needs are available when loaded
-			saved_resources.push_back(res);
+			saved_resources.push_back(res); // Saved after, so the children it needs are available when loaded
 
 		} break;
 		case Variant::ARRAY: {

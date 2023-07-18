@@ -562,12 +562,21 @@ void DisplayServerIOS::window_move_to_foreground(WindowID p_window) {
 	// Probably not supported for iOS
 }
 
+bool DisplayServerIOS::window_is_focused(WindowID p_window) const {
+	return true;
+}
+
 float DisplayServerIOS::screen_get_max_scale() const {
 	return screen_get_scale(SCREEN_OF_MAIN_WINDOW);
 }
 
 void DisplayServerIOS::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
 	screen_orientation = p_orientation;
+	if (@available(iOS 16.0, *)) {
+		[AppDelegate.viewController setNeedsUpdateOfSupportedInterfaceOrientations];
+	} else {
+		[UIViewController attemptRotationToDeviceOrientation];
+	}
 }
 
 DisplayServer::ScreenOrientation DisplayServerIOS::screen_get_orientation(int p_screen) const {

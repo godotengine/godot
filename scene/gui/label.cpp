@@ -31,7 +31,6 @@
 #include "label.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 
@@ -784,11 +783,11 @@ void Label::_invalidate() {
 void Label::set_label_settings(const Ref<LabelSettings> &p_settings) {
 	if (settings != p_settings) {
 		if (settings.is_valid()) {
-			settings->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Label::_invalidate));
+			settings->disconnect_changed(callable_mp(this, &Label::_invalidate));
 		}
 		settings = p_settings;
 		if (settings.is_valid()) {
-			settings->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Label::_invalidate), CONNECT_REFERENCE_COUNTED);
+			settings->connect_changed(callable_mp(this, &Label::_invalidate), CONNECT_REFERENCE_COUNTED);
 		}
 		_invalidate();
 	}

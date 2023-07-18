@@ -6,6 +6,40 @@ should instead be used to justify these changes and describe how users should wo
 
 ========================================================================================================================
 
+GH-78517
+--------
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_check_item/arguments/2': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_check_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_check_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_check_item/arguments/4': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_item/arguments/4': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_radio_check_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_icon_radio_check_item/arguments/4': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_item/arguments/2': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_multistate_item/arguments/4': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_multistate_item/arguments/5': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_radio_check_item/arguments/2': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/DisplayServer/methods/global_menu_add_radio_check_item/arguments/3': default_value changed value in new API, from "" to "Callable()".
+Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/joint_make_damped_spring/arguments/4': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/joint_make_groove/arguments/4': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/joint_make_groove/arguments/5': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/joint_make_pin/arguments/3': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_mesh/arguments/4': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_multimesh/arguments/2': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_polygon/arguments/4': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_triangle_array/arguments/7': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/instances_cull_aabb/arguments/1': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/instances_cull_convex/arguments/1': default_value changed value in new API, from "" to "RID()".
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/instances_cull_ray/arguments/2': default_value changed value in new API, from "" to "RID()".
+
+The previous argument was a serialization bug, there's no actual API change.
+
+GH-78237
+--------
+Validate extension JSON: Error: Field 'classes/WebRTCPeerConnectionExtension/methods/_create_data_channel/return_value': type changed value in new API, from "Object" to "WebRTCDataChannel".
+
 GH-77757
 --------
 Validate extension JSON: Error: Field 'classes/Viewport/methods/gui_get_focus_owner': is_const changed value in new API, from false to true.
@@ -85,11 +119,9 @@ Validate extension JSON: API was removed: classes/NavigationAgent3D/methods/set_
 Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/agent_height_offset
 Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/ignore_y
 Validate extension JSON: API was removed: classes/NavigationAgent3D/properties/time_horizon
-Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/get_rid
 Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/is_radius_estimated
 Validate extension JSON: API was removed: classes/NavigationObstacle2D/methods/set_estimate_radius
 Validate extension JSON: API was removed: classes/NavigationObstacle2D/properties/estimate_radius
-Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/get_rid
 Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/is_radius_estimated
 Validate extension JSON: API was removed: classes/NavigationObstacle3D/methods/set_estimate_radius
 Validate extension JSON: API was removed: classes/NavigationObstacle3D/properties/estimate_radius
@@ -316,3 +348,13 @@ Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState2D/methods
 Validate extension JSON: Error: Field 'classes/PhysicsDirectSpaceState3D/methods/collide_shape/return_value': type changed value in new API, from "typedarray::PackedVector3Array" to "typedarray::Vector3".
 
 The previous type declaration was simply wrong and the method did actually already return objects of the new type.
+
+
+GH-76688
+--------
+Validate extension JSON: Error: Field 'classes/EditorUndoRedoManager/methods/create_action/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/UndoRedo/methods/create_action/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Hash changed for 'classes/EditorUndoRedoManager/methods/create_action', from E07DA3CD to D543BA91. This means that the function has changed and no compatibility function was provided.
+Validate extension JSON: Error: Hash changed for 'classes/UndoRedo/methods/create_action', from 0AEC1BFC to E87757EB. This means that the function has changed and no compatibility function was provided.
+
+Added a optional parameters with default values. No adjustments should be necessary.

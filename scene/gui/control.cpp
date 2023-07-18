@@ -271,21 +271,21 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		if (name.begins_with("theme_override_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.theme_icon_override.has(dname)) {
-				data.theme_icon_override[dname]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+				data.theme_icon_override[dname]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 			}
 			data.theme_icon_override.erase(dname);
 			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.theme_style_override.has(dname)) {
-				data.theme_style_override[dname]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+				data.theme_style_override[dname]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 			}
 			data.theme_style_override.erase(dname);
 			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.theme_font_override.has(dname)) {
-				data.theme_font_override[dname]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+				data.theme_font_override[dname]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 			}
 			data.theme_font_override.erase(dname);
 			_notify_theme_override_changed();
@@ -1579,12 +1579,28 @@ Vector2 Control::get_pivot_offset() const {
 
 void Control::_update_minimum_size() {
 	if (!is_inside_tree()) {
+		data.updating_last_minimum_size = false;
 		return;
 	}
 
-	Control *invalidate = this;
+	Size2 minsize = get_combined_minimum_size();
+	data.updating_last_minimum_size = false;
+
+	if (minsize != data.last_minimum_size) {
+		data.last_minimum_size = minsize;
+		_size_changed();
+		emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
+	}
+}
+
+void Control::update_minimum_size() {
+	ERR_MAIN_THREAD_GUARD;
+	if (!is_inside_tree() || data.block_minimum_size_adjust) {
+		return;
+	}
 
 	// Invalidate cache upwards.
+	Control *invalidate = this;
 	while (invalidate && invalidate->data.minimum_size_valid) {
 		invalidate->data.minimum_size_valid = false;
 		if (invalidate->is_set_as_top_level()) {
@@ -1604,28 +1620,12 @@ void Control::_update_minimum_size() {
 		return;
 	}
 
-	Size2 minsize = get_combined_minimum_size();
-	data.updating_last_minimum_size = false;
-	if (minsize != data.last_minimum_size) {
-		data.last_minimum_size = minsize;
-		_size_changed();
-		emit_signal(SceneStringNames::get_singleton()->minimum_size_changed);
-	}
-}
-
-void Control::update_minimum_size() {
-	ERR_MAIN_THREAD_GUARD;
-	if (!is_inside_tree() || data.block_minimum_size_adjust) {
-		return;
-	}
-
 	if (data.updating_last_minimum_size) {
 		return;
 	}
-
 	data.updating_last_minimum_size = true;
 
-	MessageQueue::get_singleton()->push_call(this, "_update_minimum_size");
+	MessageQueue::get_singleton()->push_callable(callable_mp(this, &Control::_update_minimum_size));
 }
 
 void Control::set_block_minimum_size_adjust(bool p_block) {
@@ -1665,17 +1665,8 @@ void Control::_update_minimum_size_cache() {
 	minsize.x = MAX(minsize.x, data.custom_minimum_size.x);
 	minsize.y = MAX(minsize.y, data.custom_minimum_size.y);
 
-	bool size_changed = false;
-	if (data.minimum_size_cache != minsize) {
-		size_changed = true;
-	}
-
 	data.minimum_size_cache = minsize;
 	data.minimum_size_valid = true;
-
-	if (size_changed) {
-		update_minimum_size();
-	}
 }
 
 Size2 Control::get_combined_minimum_size() const {
@@ -2063,14 +2054,10 @@ Control *Control::find_next_valid_focus() const {
 		// If the focus property is manually overwritten, attempt to use it.
 
 		if (!data.focus_next.is_empty()) {
-			Node *n = get_node(data.focus_next);
-			Control *c;
-			if (n) {
-				c = Object::cast_to<Control>(n);
-				ERR_FAIL_COND_V_MSG(!c, nullptr, "Next focus node is not a control: " + n->get_name() + ".");
-			} else {
-				return nullptr;
-			}
+			Node *n = get_node_or_null(data.focus_next);
+			ERR_FAIL_NULL_V_MSG(n, nullptr, "Next focus node path is invalid: '" + data.focus_next + "'.");
+			Control *c = Object::cast_to<Control>(n);
+			ERR_FAIL_NULL_V_MSG(c, nullptr, "Next focus node is not a control: '" + n->get_name() + "'.");
 			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE) {
 				return c;
 			}
@@ -2154,14 +2141,10 @@ Control *Control::find_prev_valid_focus() const {
 		// If the focus property is manually overwritten, attempt to use it.
 
 		if (!data.focus_prev.is_empty()) {
-			Node *n = get_node(data.focus_prev);
-			Control *c;
-			if (n) {
-				c = Object::cast_to<Control>(n);
-				ERR_FAIL_COND_V_MSG(!c, nullptr, "Previous focus node is not a control: " + n->get_name() + ".");
-			} else {
-				return nullptr;
-			}
+			Node *n = get_node_or_null(data.focus_prev);
+			ERR_FAIL_NULL_V_MSG(n, nullptr, "Previous focus node path is invalid: '" + data.focus_prev + "'.");
+			Control *c = Object::cast_to<Control>(n);
+			ERR_FAIL_NULL_V_MSG(c, nullptr, "Previous focus node is not a control: '" + n->get_name() + "'.");
 			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE) {
 				return c;
 			}
@@ -2250,14 +2233,10 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		return nullptr;
 	}
 	if (!data.focus_neighbor[p_side].is_empty()) {
-		Control *c = nullptr;
-		Node *n = get_node(data.focus_neighbor[p_side]);
-		if (n) {
-			c = Object::cast_to<Control>(n);
-			ERR_FAIL_COND_V_MSG(!c, nullptr, "Neighbor focus node is not a control: " + n->get_name() + ".");
-		} else {
-			return nullptr;
-		}
+		Node *n = get_node_or_null(data.focus_neighbor[p_side]);
+		ERR_FAIL_NULL_V_MSG(n, nullptr, "Neighbor focus node path is invalid: '" + data.focus_neighbor[p_side] + "'.");
+		Control *c = Object::cast_to<Control>(n);
+		ERR_FAIL_NULL_V_MSG(c, nullptr, "Neighbor focus node is not a control: '" + n->get_name() + "'.");
 		bool valid = true;
 		if (!c->is_visible()) {
 			valid = false;
@@ -2489,13 +2468,13 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 	}
 
 	if (data.theme.is_valid()) {
-		data.theme->disconnect("changed", callable_mp(this, &Control::_theme_changed));
+		data.theme->disconnect_changed(callable_mp(this, &Control::_theme_changed));
 	}
 
 	data.theme = p_theme;
 	if (data.theme.is_valid()) {
 		data.theme_owner->propagate_theme_changed(this, this, is_inside_tree(), true);
-		data.theme->connect("changed", callable_mp(this, &Control::_theme_changed), CONNECT_DEFERRED);
+		data.theme->connect_changed(callable_mp(this, &Control::_theme_changed), CONNECT_DEFERRED);
 		return;
 	}
 
@@ -2790,11 +2769,11 @@ void Control::add_theme_icon_override(const StringName &p_name, const Ref<Textur
 	ERR_FAIL_COND(!p_icon.is_valid());
 
 	if (data.theme_icon_override.has(p_name)) {
-		data.theme_icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+		data.theme_icon_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.theme_icon_override[p_name] = p_icon;
-	data.theme_icon_override[p_name]->connect("changed", callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	data.theme_icon_override[p_name]->connect_changed(callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_override_changed();
 }
 
@@ -2803,11 +2782,11 @@ void Control::add_theme_style_override(const StringName &p_name, const Ref<Style
 	ERR_FAIL_COND(!p_style.is_valid());
 
 	if (data.theme_style_override.has(p_name)) {
-		data.theme_style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+		data.theme_style_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.theme_style_override[p_name] = p_style;
-	data.theme_style_override[p_name]->connect("changed", callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	data.theme_style_override[p_name]->connect_changed(callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_override_changed();
 }
 
@@ -2816,11 +2795,11 @@ void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> 
 	ERR_FAIL_COND(!p_font.is_valid());
 
 	if (data.theme_font_override.has(p_name)) {
-		data.theme_font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+		data.theme_font_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.theme_font_override[p_name] = p_font;
-	data.theme_font_override[p_name]->connect("changed", callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	data.theme_font_override[p_name]->connect_changed(callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_override_changed();
 }
 
@@ -2845,7 +2824,7 @@ void Control::add_theme_constant_override(const StringName &p_name, int p_consta
 void Control::remove_theme_icon_override(const StringName &p_name) {
 	ERR_MAIN_THREAD_GUARD;
 	if (data.theme_icon_override.has(p_name)) {
-		data.theme_icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+		data.theme_icon_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.theme_icon_override.erase(p_name);
@@ -2855,7 +2834,7 @@ void Control::remove_theme_icon_override(const StringName &p_name) {
 void Control::remove_theme_style_override(const StringName &p_name) {
 	ERR_MAIN_THREAD_GUARD;
 	if (data.theme_style_override.has(p_name)) {
-		data.theme_style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+		data.theme_style_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.theme_style_override.erase(p_name);
@@ -2865,7 +2844,7 @@ void Control::remove_theme_style_override(const StringName &p_name) {
 void Control::remove_theme_font_override(const StringName &p_name) {
 	ERR_MAIN_THREAD_GUARD;
 	if (data.theme_font_override.has(p_name)) {
-		data.theme_font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+		data.theme_font_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.theme_font_override.erase(p_name);
@@ -3140,6 +3119,7 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_POST_ENTER_TREE: {
 			data.is_rtl_dirty = true;
+			update_minimum_size();
 			_size_changed();
 		} break;
 
@@ -3255,10 +3235,13 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			emit_signal(SceneStringNames::get_singleton()->theme_changed);
+
 			_invalidate_theme_cache();
 			_update_theme_item_cache();
-			update_minimum_size();
 			queue_redraw();
+
+			update_minimum_size();
+			_size_changed();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -3267,7 +3250,8 @@ void Control::_notification(int p_notification) {
 					get_viewport()->_gui_hide_control(this);
 				}
 			} else {
-				_update_minimum_size();
+				update_minimum_size();
+				_size_changed();
 			}
 		} break;
 
@@ -3275,8 +3259,12 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			if (is_inside_tree()) {
 				data.is_rtl_dirty = true;
+
 				_invalidate_theme_cache();
 				_update_theme_item_cache();
+				queue_redraw();
+
+				update_minimum_size();
 				_size_changed();
 			}
 		} break;
@@ -3284,8 +3272,6 @@ void Control::_notification(int p_notification) {
 }
 
 void Control::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_minimum_size"), &Control::_update_minimum_size);
-
 	ClassDB::bind_method(D_METHOD("accept_event"), &Control::accept_event);
 	ClassDB::bind_method(D_METHOD("get_minimum_size"), &Control::get_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_combined_minimum_size"), &Control::get_combined_minimum_size);
@@ -3644,13 +3630,13 @@ Control::~Control() {
 
 	// Resources need to be disconnected.
 	for (KeyValue<StringName, Ref<Texture2D>> &E : data.theme_icon_override) {
-		E.value->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+		E.value->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 	for (KeyValue<StringName, Ref<StyleBox>> &E : data.theme_style_override) {
-		E.value->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+		E.value->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 	for (KeyValue<StringName, Ref<Font>> &E : data.theme_font_override) {
-		E.value->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+		E.value->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	// Then override maps can be simply cleared.

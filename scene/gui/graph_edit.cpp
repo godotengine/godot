@@ -36,6 +36,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/view_panner.h"
+#include "scene/resources/style_box_flat.h"
 
 constexpr int MINIMAP_OFFSET = 12;
 constexpr int MINIMAP_PADDING = 5;
@@ -822,6 +823,7 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &mpos
 
 	Rect2 control_rect = p_control->get_rect();
 	control_rect.position *= zoom;
+	control_rect.size *= zoom;
 	control_rect.position += p_offset;
 
 	if (!control_rect.has_point(mpos) || p_control->get_mouse_filter() == MOUSE_FILTER_IGNORE) {
@@ -886,8 +888,8 @@ bool GraphEdit::is_in_port_hotzone(const Vector2 &p_pos, const Vector2 &p_mouse_
 		if (!child) {
 			continue;
 		}
-		Rect2 child_rect = child->get_rect();
 
+		Rect2 child_rect = child->get_rect();
 		if (child_rect.has_point(p_mouse_pos * zoom)) {
 			for (int j = 0; j < child->get_child_count(); j++) {
 				Control *subchild = Object::cast_to<Control>(child->get_child(j));
@@ -989,7 +991,7 @@ void GraphEdit::_top_layer_draw() {
 	_update_scroll();
 
 	if (connecting) {
-		Node *fromn = get_node(NodePath(connecting_from));
+		Node *fromn = get_node_or_null(NodePath(connecting_from));
 		ERR_FAIL_NULL(fromn);
 		GraphNode *from = Object::cast_to<GraphNode>(fromn);
 		ERR_FAIL_NULL(from);

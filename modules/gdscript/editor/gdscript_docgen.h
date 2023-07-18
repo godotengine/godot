@@ -32,6 +32,7 @@
 #define GDSCRIPT_DOCGEN_H
 
 #include "../gdscript_parser.h"
+
 #include "core/doc_data.h"
 
 class GDScriptDocGen {

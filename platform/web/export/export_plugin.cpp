@@ -30,15 +30,16 @@
 
 #include "export_plugin.h"
 
-#include "../logo_svg.gen.h"
-#include "../run_icon_svg.gen.h"
+#include "logo_svg.gen.h"
+#include "run_icon_svg.gen.h"
 
 #include "core/config/project_settings.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
+#include "scene/resources/image_texture.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
+#include "modules/modules_enabled.gen.h" // For mono and svg.
 #ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
 #endif
@@ -358,10 +359,18 @@ Ref<Texture2D> EditorExportPlatformWeb::get_logo() const {
 	return logo;
 }
 
-bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
 	bool valid = false;
 	bool extensions = (bool)p_preset->get("variant/extensions_support");
+
+#ifdef MODULE_MONO_ENABLED
+	err += TTR("Exporting to Web is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Web with C#/Mono instead.") + "\n";
+	err += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
+	// Don't check for additional errors, as this particular error cannot be resolved.
+	r_error = err;
+	return false;
+#endif
 
 	// Look for export templates (first official, and if defined custom templates).
 	bool dvalid = exists_export_template(_get_template_name(extensions, true), &err);
@@ -666,11 +675,10 @@ EditorExportPlatformWeb::EditorExportPlatformWeb() {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG img_loader;
-		img_loader.create_image_from_string(img, _web_logo_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _web_logo_svg, EDSCALE, upsample, false);
 		logo = ImageTexture::create_from_image(img);
 
-		img_loader.create_image_from_string(img, _web_run_icon_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _web_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
 #endif
 

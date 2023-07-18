@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="String" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="String" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A built-in type for strings.
 	</brief_description>
@@ -290,7 +290,7 @@
 			<param index="0" name="delimiter" type="String" />
 			<param index="1" name="slice" type="int" />
 			<description>
-				Splits the string using a [param delimiter] and returns the substring at index [param slice]. Returns an empty string if the [param slice] does not exist.
+				Splits the string using a [param delimiter] and returns the substring at index [param slice]. Returns the original string if [param delimiter] does not occur in the string. Returns an empty string if the [param slice] does not exist.
 				This is faster than [method split], if you only need one substring.
 				[b]Example:[/b]
 				[codeblock]
@@ -920,11 +920,11 @@
 			<description>
 				Converts the string representing a decimal number into a [float]. This method stops on the first non-number character, except the first decimal point ([code].[/code]) and the exponent letter ([code]e[/code]). See also [method is_valid_float].
 				[codeblock]
-				var a = "12.35".to_float() # a is 12.35
-				var b = "1.2.3".to_float() # b is 1.2
-				var c = "12xy3".to_float() # c is 12.0
-				var d = "1e3".to_float()   # d is 1000.0
-				var e = "Hello!".to_int()  # e is 0.0
+				var a = "12.35".to_float()  # a is 12.35
+				var b = "1.2.3".to_float()  # b is 1.2
+				var c = "12xy3".to_float()  # c is 12.0
+				var d = "1e3".to_float()    # d is 1000.0
+				var e = "Hello!".to_float() # e is 0.0
 				[/codeblock]
 			</description>
 		</method>
@@ -1054,7 +1054,7 @@
 		<method name="validate_node_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns a copy of the string with all characters that are not allowed in [member Node.name] removed ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code] [code]%[/code]).
+				Returns a copy of the string with all characters that are not allowed in [member Node.name] ([code].[/code] [code]:[/code] [code]@[/code] [code]/[/code] [code]"[/code] [code]%[/code]) replaced with underscores.
 			</description>
 		</method>
 		<method name="xml_escape" qualifiers="const">

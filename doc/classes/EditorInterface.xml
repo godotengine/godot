@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInterface" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorInterface" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Godot editor's interface.
 	</brief_description>
@@ -177,6 +177,12 @@
 			<param index="1" name="preview_size" type="int" />
 			<description>
 				Returns mesh previews rendered at the given size as an [Array] of [Texture2D]s.
+			</description>
+		</method>
+		<method name="mark_scene_as_unsaved">
+			<return type="void" />
+			<description>
+				Marks the current scene tab as unsaved.
 			</description>
 		</method>
 		<method name="open_scene_from_path">

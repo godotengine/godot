@@ -31,8 +31,9 @@
 #ifndef REPLICATION_EDITOR_H
 #define REPLICATION_EDITOR_H
 
+#include "../scene_replication_config.h"
+
 #include "editor/editor_plugin.h"
-#include "modules/multiplayer/scene_replication_config.h"
 #include "scene/gui/box_container.h"
 
 class ConfirmationDialog;

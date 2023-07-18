@@ -669,11 +669,8 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 		f->store_line(VERSION_FULL_CONFIG);
 	}
 
-	// Create the android plugins directory.
-	Error err = da->make_dir_recursive("android/plugins");
-	ERR_FAIL_COND_V(err != OK, err);
-
-	err = da->make_dir_recursive("android/build");
+	// Create the android build directory.
+	Error err = da->make_dir_recursive("android/build");
 	ERR_FAIL_COND_V(err != OK, err);
 	{
 		// Add an empty .gdignore file to avoid scan.

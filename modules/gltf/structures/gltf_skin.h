@@ -32,6 +32,7 @@
 #define GLTF_SKIN_H
 
 #include "../gltf_defines.h"
+
 #include "core/io/resource.h"
 
 template <typename T>

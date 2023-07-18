@@ -30,10 +30,11 @@
 
 #include "export_plugin.h"
 
-#include "../logo_svg.gen.h"
+#include "logo_svg.gen.h"
 
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/resources/image_texture.h"
 
 #include "modules/modules_enabled.gen.h" // For svg and regex.
 #ifdef MODULE_SVG_ENABLED
@@ -128,12 +129,12 @@ void EditorExportPlatformUWP::get_export_options(List<ExportOption> *r_options) 
 	}
 }
 
-bool EditorExportPlatformUWP::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatformUWP::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 #ifndef DEV_ENABLED
 	// We don't provide export templates for the UWP platform currently as it
-	// has not been ported for Godot 4.0. This is skipped in DEV_ENABLED so that
+	// has not been ported for Godot 4. This is skipped in DEV_ENABLED so that
 	// contributors can still test the pipeline if/when we can build it again.
-	r_error = "The UWP platform is currently not supported in Godot 4.0.\n";
+	r_error = "The UWP platform is currently not supported in Godot 4.\n";
 	return false;
 #endif
 
@@ -180,9 +181,9 @@ bool EditorExportPlatformUWP::has_valid_export_configuration(const Ref<EditorExp
 bool EditorExportPlatformUWP::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
 #ifndef DEV_ENABLED
 	// We don't provide export templates for the UWP platform currently as it
-	// has not been ported for Godot 4.0. This is skipped in DEV_ENABLED so that
+	// has not been ported for Godot 4. This is skipped in DEV_ENABLED so that
 	// contributors can still test the pipeline if/when we can build it again.
-	r_error = "The UWP platform is currently not supported in Godot 4.0.\n";
+	r_error = "The UWP platform is currently not supported in Godot 4.\n";
 	return false;
 #endif
 
@@ -265,7 +266,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 
 	String src_appx;
 
-	EditorProgress ep("export", "Exporting for UWP", 7, true);
+	EditorProgress ep("export", TTR("Exporting for UWP"), 7, true);
 
 	if (p_debug) {
 		src_appx = p_preset->get("custom_template/debug");
@@ -515,8 +516,7 @@ EditorExportPlatformUWP::EditorExportPlatformUWP() {
 	Ref<Image> img = memnew(Image);
 	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-	ImageLoaderSVG img_loader;
-	img_loader.create_image_from_string(img, _uwp_logo_svg, EDSCALE, upsample, false);
+	ImageLoaderSVG::create_image_from_string(img, _uwp_logo_svg, EDSCALE, upsample, false);
 
 	logo = ImageTexture::create_from_image(img);
 #endif

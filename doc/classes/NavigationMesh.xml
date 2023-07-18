@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationMesh" inherits="Resource" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationMesh" inherits="Resource" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A navigation mesh that defines traversable areas and obstacles.
 	</brief_description>
@@ -91,10 +91,10 @@
 			[b]Note:[/b] While baking, this value will be rounded up to the nearest multiple of [member cell_size].
 		</member>
 		<member name="cell_height" type="float" setter="set_cell_height" getter="get_cell_height" default="0.25">
-			The Y axis cell size to use for fields.
+			The cell height used to rasterize the navigation mesh vertices on the Y axis. Must match with the cell height on the navigation map.
 		</member>
 		<member name="cell_size" type="float" setter="set_cell_size" getter="get_cell_size" default="0.25">
-			The XZ plane cell size to use for fields.
+			The cell size used to rasterize the navigation mesh vertices on the XZ plane. Must match with the cell size on the navigation map.
 		</member>
 		<member name="detail_sample_distance" type="float" setter="set_detail_sample_distance" getter="get_detail_sample_distance" default="6.0">
 			The sampling distance to use when generating the detail mesh, in cell unit.
@@ -103,7 +103,7 @@
 			The maximum distance the detail mesh surface should deviate from heightfield, in cell unit.
 		</member>
 		<member name="edge_max_error" type="float" setter="set_edge_max_error" getter="get_edge_max_error" default="1.3">
-			The maximum distance a simplfied contour's border edges should deviate the original raw contour.
+			The maximum distance a simplified contour's border edges should deviate the original raw contour.
 		</member>
 		<member name="edge_max_length" type="float" setter="set_edge_max_length" getter="get_edge_max_length" default="12.0">
 			The maximum allowed length for contour edges along the border of the mesh.

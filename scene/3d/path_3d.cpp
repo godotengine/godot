@@ -144,13 +144,13 @@ void Path3D::_curve_changed() {
 
 void Path3D::set_curve(const Ref<Curve3D> &p_curve) {
 	if (curve.is_valid()) {
-		curve->disconnect("changed", callable_mp(this, &Path3D::_curve_changed));
+		curve->disconnect_changed(callable_mp(this, &Path3D::_curve_changed));
 	}
 
 	curve = p_curve;
 
 	if (curve.is_valid()) {
-		curve->connect("changed", callable_mp(this, &Path3D::_curve_changed));
+		curve->connect_changed(callable_mp(this, &Path3D::_curve_changed));
 	}
 	_curve_changed();
 }
@@ -361,6 +361,8 @@ void PathFollow3D::set_progress(real_t p_progress) {
 				if (!Math::is_zero_approx(p_progress) && Math::is_zero_approx(progress)) {
 					progress = path_length;
 				}
+			} else {
+				progress = CLAMP(progress, 0, path_length);
 			}
 		}
 

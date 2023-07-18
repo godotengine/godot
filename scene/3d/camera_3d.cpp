@@ -31,7 +31,6 @@
 #include "camera_3d.h"
 
 #include "collision_object_3d.h"
-#include "core/core_string_names.h"
 #include "core/math/projection.h"
 #include "scene/main/viewport.h"
 
@@ -170,6 +169,30 @@ Transform3D Camera3D::get_camera_transform() const {
 	return tr;
 }
 
+Projection Camera3D::_get_camera_projection(real_t p_near) const {
+	Size2 viewport_size = get_viewport()->get_visible_rect().size;
+	Projection cm;
+
+	switch (mode) {
+		case PROJECTION_PERSPECTIVE: {
+			cm.set_perspective(fov, viewport_size.aspect(), p_near, far, keep_aspect == KEEP_WIDTH);
+		} break;
+		case PROJECTION_ORTHOGONAL: {
+			cm.set_orthogonal(size, viewport_size.aspect(), p_near, far, keep_aspect == KEEP_WIDTH);
+		} break;
+		case PROJECTION_FRUSTUM: {
+			cm.set_frustum(size, viewport_size.aspect(), frustum_offset, p_near, far);
+		} break;
+	}
+
+	return cm;
+}
+
+Projection Camera3D::get_camera_projection() const {
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Projection(), "Camera is not inside the scene tree.");
+	return _get_camera_projection(near);
+}
+
 void Camera3D::set_perspective(real_t p_fovy_degrees, real_t p_z_near, real_t p_z_far) {
 	if (!force_change && fov == p_fovy_degrees && p_z_near == near && p_z_far == far && mode == PROJECTION_PERSPECTIVE) {
 		return;
@@ -286,8 +309,7 @@ Vector3 Camera3D::project_local_ray_normal(const Point2 &p_pos) const {
 	if (mode == PROJECTION_ORTHOGONAL) {
 		ray = Vector3(0, 0, -1);
 	} else {
-		Projection cm;
-		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
+		Projection cm = _get_camera_projection(near);
 		Vector2 screen_he = cm.get_viewport_half_extents();
 		ray = Vector3(((cpos.x / viewport_size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (cpos.y / viewport_size.height)) * 2.0 - 1.0) * screen_he.y, -near).normalized();
 	}
@@ -302,9 +324,7 @@ Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
 	ERR_FAIL_COND_V(viewport_size.y == 0, Vector3());
 
-	if (mode == PROJECTION_PERSPECTIVE) {
-		return get_camera_transform().origin;
-	} else {
+	if (mode == PROJECTION_ORTHOGONAL) {
 		Vector2 pos = cpos / viewport_size;
 		real_t vsize, hsize;
 		if (keep_aspect == KEEP_WIDTH) {
@@ -321,6 +341,8 @@ Vector3 Camera3D::project_ray_origin(const Point2 &p_pos) const {
 		ray.z = -near;
 		ray = get_camera_transform().xform(ray);
 		return ray;
+	} else {
+		return get_camera_transform().origin;
 	};
 };
 
@@ -333,15 +355,7 @@ bool Camera3D::is_position_behind(const Vector3 &p_pos) const {
 Vector<Vector3> Camera3D::get_near_plane_points() const {
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector<Vector3>(), "Camera is not inside scene.");
 
-	Size2 viewport_size = get_viewport()->get_visible_rect().size;
-
-	Projection cm;
-
-	if (mode == PROJECTION_ORTHOGONAL) {
-		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
-	} else {
-		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
-	}
+	Projection cm = _get_camera_projection(near);
 
 	Vector3 endpoints[8];
 	cm.get_endpoints(Transform3D(), endpoints);
@@ -361,13 +375,7 @@ Point2 Camera3D::unproject_position(const Vector3 &p_pos) const {
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	Projection cm;
-
-	if (mode == PROJECTION_ORTHOGONAL) {
-		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
-	} else {
-		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
-	}
+	Projection cm = _get_camera_projection(near);
 
 	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
 
@@ -389,13 +397,7 @@ Vector3 Camera3D::project_position(const Point2 &p_point, real_t p_z_depth) cons
 	}
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
-	Projection cm;
-
-	if (mode == PROJECTION_ORTHOGONAL) {
-		cm.set_orthogonal(size, viewport_size.aspect(), p_z_depth, far, keep_aspect == KEEP_WIDTH);
-	} else {
-		cm.set_perspective(fov, viewport_size.aspect(), p_z_depth, far, keep_aspect == KEEP_WIDTH);
-	}
+	Projection cm = _get_camera_projection(p_z_depth);
 
 	Vector2 vp_he = cm.get_viewport_half_extents();
 
@@ -427,7 +429,7 @@ void Camera3D::set_attributes(const Ref<CameraAttributes> &p_attributes) {
 	if (attributes.is_valid()) {
 		CameraAttributesPhysical *physical_attributes = Object::cast_to<CameraAttributesPhysical>(attributes.ptr());
 		if (physical_attributes) {
-			attributes->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Camera3D::_attributes_changed));
+			attributes->disconnect_changed(callable_mp(this, &Camera3D::_attributes_changed));
 		}
 	}
 
@@ -436,7 +438,7 @@ void Camera3D::set_attributes(const Ref<CameraAttributes> &p_attributes) {
 	if (attributes.is_valid()) {
 		CameraAttributesPhysical *physical_attributes = Object::cast_to<CameraAttributesPhysical>(attributes.ptr());
 		if (physical_attributes) {
-			attributes->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Camera3D::_attributes_changed));
+			attributes->connect_changed(callable_mp(this, &Camera3D::_attributes_changed));
 			_attributes_changed();
 		}
 
@@ -508,6 +510,7 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current", "enabled"), &Camera3D::set_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &Camera3D::is_current);
 	ClassDB::bind_method(D_METHOD("get_camera_transform"), &Camera3D::get_camera_transform);
+	ClassDB::bind_method(D_METHOD("get_camera_projection"), &Camera3D::get_camera_projection);
 	ClassDB::bind_method(D_METHOD("get_fov"), &Camera3D::get_fov);
 	ClassDB::bind_method(D_METHOD("get_frustum_offset"), &Camera3D::get_frustum_offset);
 	ClassDB::bind_method(D_METHOD("get_size"), &Camera3D::get_size);
@@ -653,13 +656,7 @@ bool Camera3D::get_cull_mask_value(int p_layer_number) const {
 Vector<Plane> Camera3D::get_frustum() const {
 	ERR_FAIL_COND_V(!is_inside_world(), Vector<Plane>());
 
-	Size2 viewport_size = get_viewport()->get_visible_rect().size;
-	Projection cm;
-	if (mode == PROJECTION_PERSPECTIVE) {
-		cm.set_perspective(fov, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
-	} else {
-		cm.set_orthogonal(size, viewport_size.aspect(), near, far, keep_aspect == KEEP_WIDTH);
-	}
+	Projection cm = _get_camera_projection(near);
 
 	return cm.get_projection_planes(get_camera_transform());
 }

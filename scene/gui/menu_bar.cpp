@@ -131,7 +131,6 @@ void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 		screen_pos.x += screen_size.x - pm->get_size().width;
 	}
 	pm->set_position(screen_pos);
-	pm->set_parent_rect(Rect2(Point2(screen_pos - pm->get_position()), Size2(screen_size.x, screen_pos.y)));
 	pm->popup();
 
 	if (p_focus_item) {
@@ -209,10 +208,10 @@ void MenuBar::_update_submenu(const String &p_menu_name, PopupMenu *p_child) {
 		if (p_child->is_item_separator(i)) {
 			DisplayServer::get_singleton()->global_menu_add_separator(p_menu_name);
 		} else if (!p_child->get_item_submenu(i).is_empty()) {
-			Node *n = p_child->get_node(p_child->get_item_submenu(i));
-			ERR_FAIL_COND_MSG(!n, "Item subnode does not exist: " + p_child->get_item_submenu(i) + ".");
+			Node *n = p_child->get_node_or_null(p_child->get_item_submenu(i));
+			ERR_FAIL_NULL_MSG(n, "Item subnode does not exist: '" + p_child->get_item_submenu(i) + "'.");
 			PopupMenu *pm = Object::cast_to<PopupMenu>(n);
-			ERR_FAIL_COND_MSG(!pm, "Item subnode is not a PopupMenu: " + p_child->get_item_submenu(i) + ".");
+			ERR_FAIL_NULL_MSG(pm, "Item subnode is not a PopupMenu: '" + p_child->get_item_submenu(i) + "'.");
 
 			DisplayServer::get_singleton()->global_menu_add_submenu_item(p_menu_name, atr(p_child->get_item_text(i)), p_menu_name + "/" + itos(i));
 			_update_submenu(p_menu_name + "/" + itos(i), pm);
@@ -454,7 +453,7 @@ void MenuBar::_draw_menu_item(int p_index) {
 	}
 
 	Color color;
-	Ref<StyleBox> style = theme_cache.normal;
+	Ref<StyleBox> style;
 	Rect2 item_rect = _get_menu_item_rect(p_index);
 
 	if (menu_cache[p_index].disabled) {

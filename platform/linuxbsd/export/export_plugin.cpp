@@ -30,8 +30,8 @@
 
 #include "export_plugin.h"
 
-#include "../logo_svg.gen.h"
-#include "../run_icon_svg.gen.h"
+#include "logo_svg.gen.h"
+#include "run_icon_svg.gen.h"
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
@@ -95,15 +95,15 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 		return err;
 	}
 
-	// Save console script.
+	// Save console wrapper.
 	if (err == OK) {
-		int con_scr = p_preset->get("debug/export_console_script");
+		int con_scr = p_preset->get("debug/export_console_wrapper");
 		if ((con_scr == 1 && p_debug) || (con_scr == 2)) {
 			String scr_path = path.get_basename() + ".sh";
 			err = _export_debug_script(p_preset, pkg_name, path.get_file(), scr_path);
 			FileAccess::set_unix_permissions(scr_path, 0755);
 			if (err != OK) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Script Export"), TTR("Could not create console script."));
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Debug Console Export"), TTR("Could not create console wrapper."));
 			}
 		}
 	}
@@ -521,11 +521,10 @@ EditorExportPlatformLinuxBSD::EditorExportPlatformLinuxBSD() {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG img_loader;
-		img_loader.create_image_from_string(img, _linuxbsd_logo_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _linuxbsd_logo_svg, EDSCALE, upsample, false);
 		set_logo(ImageTexture::create_from_image(img));
 
-		img_loader.create_image_from_string(img, _linuxbsd_run_icon_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _linuxbsd_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
 #endif
 

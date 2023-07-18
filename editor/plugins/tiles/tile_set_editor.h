@@ -39,6 +39,8 @@
 #include "tile_set_atlas_source_editor.h"
 #include "tile_set_scenes_collection_source_editor.h"
 
+class EditorFileDialog;
+
 class TileSetEditor : public VBoxContainer {
 	GDCLASS(TileSetEditor, VBoxContainer);
 
@@ -72,12 +74,14 @@ private:
 	MenuButton *sources_advanced_menu_button = nullptr;
 	ItemList *sources_list = nullptr;
 	Ref<Texture2D> missing_texture_texture;
+	void _texture_file_selected(const String &p_path);
 	void _source_selected(int p_source_index);
 	void _source_delete_pressed();
 	void _source_add_id_pressed(int p_id_pressed);
 	void _sources_advanced_menu_id_pressed(int p_id_pressed);
 	void _set_source_sort(int p_sort);
 
+	EditorFileDialog *texture_file_dialog = nullptr;
 	AtlasMergingDialog *atlas_merging_dialog = nullptr;
 	TileProxiesManagerDialog *tile_proxies_manager_dialog = nullptr;
 

@@ -40,7 +40,7 @@
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "main/main.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/atlas_texture.h"
 
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -2626,6 +2626,15 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 	XFlush(x11_display);
 }
 
+bool DisplayServerX11::window_is_focused(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	const WindowData &wd = windows[p_window];
+
+	return wd.focused;
+}
+
 bool DisplayServerX11::window_can_draw(WindowID p_window) const {
 	//this seems to be all that is provided by X11
 	return window_get_mode(p_window) != WINDOW_MODE_MINIMIZED;
@@ -2847,11 +2856,11 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 			cursors[p_shape] = XcursorImageLoadCursor(x11_display, cursor_img[p_shape]);
 		}
 
+		cursors_cache.erase(p_shape);
+
 		CursorShape c = current_cursor;
 		current_cursor = CURSOR_MAX;
 		cursor_set_shape(c);
-
-		cursors_cache.erase(p_shape);
 	}
 }
 
@@ -2971,6 +2980,30 @@ Key DisplayServerX11::keyboard_get_keycode_from_physical(Key p_keycode) const {
 	return (Key)(key | modifiers);
 }
 
+Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
+	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
+	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
+	unsigned int xkeycode = KeyMappingX11::get_xlibcode(keycode_no_mod);
+	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, keyboard_get_current_layout(), 0);
+	if (is_ascii_lower_case(xkeysym)) {
+		xkeysym -= ('a' - 'A');
+	}
+
+	Key key = KeyMappingX11::get_keycode(xkeysym);
+#ifdef XKB_ENABLED
+	if (xkb_loaded_v08p) {
+		String keysym = String::chr(xkb_keysym_to_utf32(xkb_keysym_to_upper(xkeysym)));
+		key = fix_key_label(keysym[0], KeyMappingX11::get_keycode(xkeysym));
+	}
+#endif
+
+	// If not found, fallback to QWERTY.
+	// This should match the behavior of the event pump
+	if (key == Key::NONE) {
+		return p_keycode;
+	}
+	return (Key)(key | modifiers);
+}
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {
 	Atom actual_type = None;
 	int actual_format = 0;
@@ -4871,6 +4904,8 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 	Atom net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
 
 	if (p_icon.is_valid()) {
+		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
+
 		Ref<Image> img = p_icon->duplicate();
 		img->convert(Image::FORMAT_RGBA8);
 
@@ -5440,7 +5475,9 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 #else
 #ifdef XKB_ENABLED
-	xkb_loaded = true;
+	bool xkb_loaded = true;
+	xkb_loaded_v05p = true;
+	xkb_loaded_v08p = true;
 #endif
 #endif
 
@@ -5467,6 +5504,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	r_error = OK;
 
+#ifdef SOWRAP_ENABLED
 	{
 		if (!XcursorImageCreate || !XcursorImageLoadCursor || !XcursorImageDestroy || !XcursorGetDefaultSize || !XcursorGetTheme || !XcursorLibraryLoadImage) {
 			// There's no API to check version, check if functions are available instead.
@@ -5475,6 +5513,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			return;
 		}
 	}
+#endif
 
 	for (int i = 0; i < CURSOR_MAX; i++) {
 		cursors[i] = None;

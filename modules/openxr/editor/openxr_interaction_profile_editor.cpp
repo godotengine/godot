@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "openxr_interaction_profile_editor.h"
+
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"

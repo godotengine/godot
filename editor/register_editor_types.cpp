@@ -50,7 +50,19 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/import/editor_import_plugin.h"
+#include "editor/import/resource_importer_bitmask.h"
+#include "editor/import/resource_importer_bmfont.h"
+#include "editor/import/resource_importer_csv_translation.h"
+#include "editor/import/resource_importer_dynamic_font.h"
+#include "editor/import/resource_importer_image.h"
+#include "editor/import/resource_importer_imagefont.h"
+#include "editor/import/resource_importer_layered_texture.h"
+#include "editor/import/resource_importer_obj.h"
 #include "editor/import/resource_importer_scene.h"
+#include "editor/import/resource_importer_shader_file.h"
+#include "editor/import/resource_importer_texture.h"
+#include "editor/import/resource_importer_texture_atlas.h"
+#include "editor/import/resource_importer_wav.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/plugins/audio_stream_editor_plugin.h"
 #include "editor/plugins/audio_stream_randomizer_editor_plugin.h"
@@ -167,6 +179,21 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorCommandPalette);
 	GDREGISTER_CLASS(EditorDebuggerPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorDebuggerSession);
+
+	// Required to document import options in the class reference.
+	GDREGISTER_CLASS(ResourceImporterBitMap);
+	GDREGISTER_CLASS(ResourceImporterBMFont);
+	GDREGISTER_CLASS(ResourceImporterCSVTranslation);
+	GDREGISTER_CLASS(ResourceImporterDynamicFont);
+	GDREGISTER_CLASS(ResourceImporterImage);
+	GDREGISTER_CLASS(ResourceImporterImageFont);
+	GDREGISTER_CLASS(ResourceImporterLayeredTexture);
+	GDREGISTER_CLASS(ResourceImporterOBJ);
+	GDREGISTER_CLASS(ResourceImporterScene);
+	GDREGISTER_CLASS(ResourceImporterShaderFile);
+	GDREGISTER_CLASS(ResourceImporterTexture);
+	GDREGISTER_CLASS(ResourceImporterTextureAtlas);
+	GDREGISTER_CLASS(ResourceImporterWAV);
 
 	// This list is alphabetized, and plugins that depend on Node2D are in their own section below.
 	EditorPlugins::add_by_type<AnimationTreeEditorPlugin>();

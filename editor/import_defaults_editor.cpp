@@ -157,6 +157,9 @@ void ImportDefaultsEditor::_update_importer() {
 
 	settings->notify_property_list_changed();
 
+	// Set the importer class to fetch the correct class in the XML class reference.
+	// This allows tooltips to display when hovering properties.
+	inspector->set_object_class(importer->get_class_name());
 	inspector->edit(settings);
 }
 
@@ -210,9 +213,14 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 	reset_defaults->connect("pressed", callable_mp(this, &ImportDefaultsEditor::_reset));
 	hb->add_child(reset_defaults);
 	add_child(hb);
+
 	inspector = memnew(EditorInspector);
 	add_child(inspector);
 	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
+	// Make it possible to display tooltips stored in the XML class reference.
+	// The object name is set when the importer changes in `_update_importer()`.
+	inspector->set_use_doc_hints(true);
+
 	CenterContainer *cc = memnew(CenterContainer);
 	save_defaults = memnew(Button);
 	save_defaults->set_text(TTR("Save"));

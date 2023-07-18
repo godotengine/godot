@@ -453,6 +453,10 @@ void DisplayServerAndroid::window_move_to_foreground(DisplayServer::WindowID p_w
 	// Not supported on Android.
 }
 
+bool DisplayServerAndroid::window_is_focused(WindowID p_window) const {
+	return true;
+}
+
 bool DisplayServerAndroid::window_can_draw(DisplayServer::WindowID p_window) const {
 	return true;
 }

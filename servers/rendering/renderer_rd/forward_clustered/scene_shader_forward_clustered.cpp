@@ -724,11 +724,10 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
 		actions.render_mode_defines["debug_shadow_splits"] = "#define DEBUG_DRAW_PSSM_SPLITS\n";
 
-		actions.sampler_array_name = "material_samplers";
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = RenderForwardClustered::MATERIAL_UNIFORM_SET;
 		actions.base_uniform_string = "material.";
-		actions.base_varying_index = 11;
+		actions.base_varying_index = 12;
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterImageFont" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="character_margin" type="Rect2i" setter="" getter="" default="Rect2i(0, 0, 0, 0)">
+		</member>
+		<member name="character_ranges" type="PackedStringArray" setter="" getter="" default="PackedStringArray()">
+		</member>
+		<member name="columns" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="compress" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="fallbacks" type="Array" setter="" getter="" default="[]">
+		</member>
+		<member name="image_margin" type="Rect2i" setter="" getter="" default="Rect2i(0, 0, 0, 0)">
+		</member>
+		<member name="rows" type="int" setter="" getter="" default="1">
+		</member>
+	</members>
+</class>

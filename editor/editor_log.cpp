@@ -338,14 +338,17 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	} else {
 		log->add_text(p_message.text);
 	}
-
-	// Need to use pop() to exit out of the RichTextLabels current "push" stack.
-	// We only "push" in the above switch when message type != STD and RICH, so only pop when that is the case.
-	if (p_message.type != MSG_TYPE_STD && p_message.type != MSG_TYPE_STD_RICH) {
-		log->pop();
-	}
-
+	log->pop_all(); // Pop all unclosed tags.
 	log->add_newline();
+
+	if (p_replace_previous) {
+		// Force sync last line update (skip if number of unprocessed log messages is too large to avoid editor lag).
+		if (log->get_pending_paragraphs() < 100) {
+			while (!log->is_ready()) {
+				::OS::get_singleton()->delay_usec(1);
+			}
+		}
+	}
 }
 
 void EditorLog::_set_filter_active(bool p_active, MessageType p_message_type) {

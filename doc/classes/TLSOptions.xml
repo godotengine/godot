@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TLSOptions" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TLSOptions" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		TLS configuration for clients and servers.
 	</brief_description>
@@ -29,15 +29,15 @@
 			<description>
 				Creates a TLS client configuration which validates certificates and their common names (fully qualified domain names).
 				You can specify a custom [param trusted_chain] of certification authorities (the default CA list will be used if [code]null[/code]), and optionally provide a [param common_name_override] if you expect the certificate to have a common name other then the server FQDN.
-				Note: On the Web plafrom, TLS verification is always enforced against the CA list of the web browser. This is considered a security feature.
+				[b]Note:[/b] On the Web platform, TLS verification is always enforced against the CA list of the web browser. This is considered a security feature.
 			</description>
 		</method>
 		<method name="client_unsafe" qualifiers="static">
 			<return type="TLSOptions" />
 			<param index="0" name="trusted_chain" type="X509Certificate" default="null" />
 			<description>
-				Creates an [b]unsafe[/b] TLS client configuration where certificate validation is optional. You can optionally provide a valid [param trusted_chain], but the common name of the certififcates will never be checked. Using this configuration for purposes other than testing [b]is not recommended[/b].
-				Note: On the Web plafrom, TLS verification is always enforced against the CA list of the web browser. This is considered a security feature.
+				Creates an [b]unsafe[/b] TLS client configuration where certificate validation is optional. You can optionally provide a valid [param trusted_chain], but the common name of the certificates will never be checked. Using this configuration for purposes other than testing [b]is not recommended[/b].
+				[b]Note:[/b] On the Web platform, TLS verification is always enforced against the CA list of the web browser. This is considered a security feature.
 			</description>
 		</method>
 		<method name="server" qualifiers="static">
@@ -46,7 +46,7 @@
 			<param index="1" name="certificate" type="X509Certificate" />
 			<description>
 				Creates a TLS server configuration using the provided [param key] and [param certificate].
-				Note: The [param certificate] should include the full certificate chain up to the signing CA (certificates file can be concatenated using a general purpose text editor).
+				[b]Note:[/b] The [param certificate] should include the full certificate chain up to the signing CA (certificates file can be concatenated using a general purpose text editor).
 			</description>
 		</method>
 	</methods>

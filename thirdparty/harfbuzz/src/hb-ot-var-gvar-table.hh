@@ -50,13 +50,14 @@ struct contour_point_t
 	  y  = x * matrix[1] + y * matrix[3];
     x  = x_;
   }
+  HB_ALWAYS_INLINE
   void translate (const contour_point_t &p) { x += p.x; y += p.y; }
 
 
-  float x = 0.f;
-  float y = 0.f;
-  uint8_t flag = 0;
-  bool is_end_point = false;
+  float x;
+  float y;
+  uint8_t flag;
+  bool is_end_point;
 };
 
 struct contour_point_vector_t : hb_vector_t<contour_point_t>
@@ -110,20 +111,20 @@ struct gvar
     unsigned int num_glyphs = c->plan->num_output_glyphs ();
     out->glyphCountX = hb_min (0xFFFFu, num_glyphs);
 
+    auto it = hb_iter (c->plan->new_to_old_gid_list);
+    if (it->first == 0 && !(c->plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE))
+      it++;
     unsigned int subset_data_size = 0;
-    for (hb_codepoint_t gid = (c->plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE) ? 0 : 1;
-         gid < num_glyphs;
-         gid++)
+    for (auto &_ : it)
     {
-      hb_codepoint_t old_gid;
-      if (!c->plan->old_gid_for_new_gid (gid, &old_gid)) continue;
+      hb_codepoint_t old_gid = _.second;
       subset_data_size += get_glyph_var_data_bytes (c->source_blob, glyph_count, old_gid).length;
     }
 
     bool long_offset = subset_data_size & ~0xFFFFu;
     out->flags = long_offset ? 1 : 0;
 
-    HBUINT8 *subset_offsets = c->serializer->allocate_size<HBUINT8> ((long_offset ? 4 : 2) * (num_glyphs + 1));
+    HBUINT8 *subset_offsets = c->serializer->allocate_size<HBUINT8> ((long_offset ? 4 : 2) * (num_glyphs + 1), false);
     if (!subset_offsets) return_trace (false);
 
     /* shared tuples */
@@ -138,36 +139,61 @@ struct gvar
       hb_memcpy (tuples, this+sharedTuples, shared_tuple_size);
     }
 
-    char *subset_data = c->serializer->allocate_size<char> (subset_data_size);
+    char *subset_data = c->serializer->allocate_size<char> (subset_data_size, false);
     if (!subset_data) return_trace (false);
     out->dataZ = subset_data - (char *) out;
 
-    unsigned int glyph_offset = 0;
-    for (hb_codepoint_t gid = (c->plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE) ? 0 : 1;
-         gid < num_glyphs;
-         gid++)
+
+    if (long_offset)
     {
-      hb_codepoint_t old_gid;
-      hb_bytes_t var_data_bytes = c->plan->old_gid_for_new_gid (gid, &old_gid)
-				? get_glyph_var_data_bytes (c->source_blob,
+      ((HBUINT32 *) subset_offsets)[0] = 0;
+      subset_offsets += 4;
+    }
+    else
+    {
+      ((HBUINT16 *) subset_offsets)[0] = 0;
+      subset_offsets += 2;
+    }
+    unsigned int glyph_offset = 0;
+
+    hb_codepoint_t last = 0;
+    it = hb_iter (c->plan->new_to_old_gid_list);
+    if (it->first == 0 && !(c->plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE))
+      it++;
+    for (auto &_ : it)
+    {
+      hb_codepoint_t gid = _.first;
+      hb_codepoint_t old_gid = _.second;
+
+      if (long_offset)
+	for (; last < gid; last++)
+	  ((HBUINT32 *) subset_offsets)[last] = glyph_offset;
+      else
+	for (; last < gid; last++)
+	  ((HBUINT16 *) subset_offsets)[last] = glyph_offset / 2;
+
+      hb_bytes_t var_data_bytes = get_glyph_var_data_bytes (c->source_blob,
 							    glyph_count,
-							    old_gid)
-				: hb_bytes_t ();
+							    old_gid);
+
+      hb_memcpy (subset_data, var_data_bytes.arrayZ, var_data_bytes.length);
+      subset_data += var_data_bytes.length;
+      glyph_offset += var_data_bytes.length;
 
       if (long_offset)
 	((HBUINT32 *) subset_offsets)[gid] = glyph_offset;
       else
 	((HBUINT16 *) subset_offsets)[gid] = glyph_offset / 2;
 
-      if (var_data_bytes.length > 0)
-	hb_memcpy (subset_data, var_data_bytes.arrayZ, var_data_bytes.length);
-      subset_data += var_data_bytes.length;
-      glyph_offset += var_data_bytes.length;
+      last++; // Skip over gid
     }
+
     if (long_offset)
-      ((HBUINT32 *) subset_offsets)[num_glyphs] = glyph_offset;
+      for (; last < num_glyphs; last++)
+	((HBUINT32 *) subset_offsets)[last] = glyph_offset;
     else
-      ((HBUINT16 *) subset_offsets)[num_glyphs] = glyph_offset / 2;
+      for (; last < num_glyphs; last++)
+	((HBUINT16 *) subset_offsets)[last] = glyph_offset / 2;
 
     return_trace (true);
   }
@@ -216,21 +242,24 @@ struct gvar
       for (unsigned i = 0; i < count; i++)
       {
 	hb_array_t<const F2DOT14> tuple = shared_tuples.sub_array (axis_count * i, axis_count);
-	int idx = -1;
+	int idx1 = -1, idx2 = -1;
 	for (unsigned j = 0; j < axis_count; j++)
 	{
 	  const F2DOT14 &peak = tuple.arrayZ[j];
 	  if (peak.to_int () != 0)
 	  {
-	    if (idx != -1)
+	    if (idx1 == -1)
+	      idx1 = j;
+	    else if (idx2 == -1)
+	      idx2 = j;
+	    else
 	    {
-	      idx = -1;
+	      idx1 = idx2 = -1;
 	      break;
 	    }
-	    idx = j;
 	  }
 	}
-	shared_tuple_active_idx.arrayZ[i] = idx;
+	shared_tuple_active_idx.arrayZ[i] = {idx1, idx2};
       }
     }
     ~accelerator_t () { table.destroy (); }
@@ -266,10 +295,9 @@ struct gvar
     public:
     bool apply_deltas_to_points (hb_codepoint_t glyph,
 				 hb_array_t<int> coords,
-				 const hb_array_t<contour_point_t> points) const
+				 const hb_array_t<contour_point_t> points,
+				 bool phantom_only = false) const
     {
-      if (!coords) return true;
-
       if (unlikely (glyph >= glyphCount)) return true;
 
       hb_bytes_t var_data_bytes = table->get_glyph_var_data_bytes (table.get_blob (), glyphCount, glyph);
@@ -297,6 +325,7 @@ struct gvar
       hb_vector_t<unsigned int> private_indices;
       hb_vector_t<int> x_deltas;
       hb_vector_t<int> y_deltas;
+      unsigned count = points.length;
       bool flush = false;
       do
       {
@@ -310,9 +339,10 @@ struct gvar
 
 	if (!deltas)
 	{
-	  if (unlikely (!deltas_vec.resize (points.length, false))) return false;
+	  if (unlikely (!deltas_vec.resize (count, false))) return false;
 	  deltas = deltas_vec.as_array ();
-	  hb_memset (deltas.arrayZ, 0, deltas.get_size ()); // Faster than vector resize
+	  hb_memset (deltas.arrayZ + (phantom_only ? count - 4 : 0), 0,
+		     (phantom_only ? 4 : count) * sizeof (deltas[0]));
 	}
 
 	const HBUINT8 *end = p + length;
@@ -332,7 +362,7 @@ struct gvar
 
 	if (!apply_to_all)
 	{
-	  if (!orig_points)
+	  if (!orig_points && !phantom_only)
 	  {
 	    orig_points_vec.extend (points);
 	    if (unlikely (orig_points_vec.in_error ())) return false;
@@ -341,13 +371,13 @@ struct gvar
 
 	  if (flush)
 	  {
-	    unsigned count = points.length;
-	    for (unsigned int i = 0; i < count; i++)
+	    for (unsigned int i = phantom_only ? count - 4 : 0; i < count; i++)
 	      points.arrayZ[i].translate (deltas.arrayZ[i]);
 	    flush = false;
 
 	  }
-	  hb_memset (deltas.arrayZ, 0, deltas.get_size ());
+	  hb_memset (deltas.arrayZ + (phantom_only ? count - 4 : 0), 0,
+		     (phantom_only ? 4 : count) * sizeof (deltas[0]));
 	}
 
 	if (HB_OPTIMIZE_SIZE_VAL)
@@ -362,6 +392,7 @@ struct gvar
 	      pt_index = indices[i];
 	      if (unlikely (pt_index >= deltas.length)) continue;
 	    }
+	    if (phantom_only && pt_index < count - 4) continue;
 	    auto &delta = deltas.arrayZ[pt_index];
 	    delta.flag = 1;	/* this point is referenced, i.e., explicit deltas specified */
 	    delta.x += x_deltas.arrayZ[i] * scalar;
@@ -374,7 +405,7 @@ struct gvar
 	  if (scalar != 1.0f)
 	  {
 	    if (apply_to_all)
-	      for (unsigned int i = 0; i < num_deltas; i++)
+	      for (unsigned int i = phantom_only ? count - 4 : 0; i < count; i++)
 	      {
 		unsigned int pt_index = i;
 		auto &delta = deltas.arrayZ[pt_index];
@@ -386,6 +417,7 @@ struct gvar
 	      {
 		unsigned int pt_index = indices[i];
 		if (unlikely (pt_index >= deltas.length)) continue;
+		if (phantom_only && pt_index < count - 4) continue;
 		auto &delta = deltas.arrayZ[pt_index];
 		delta.flag = 1;	/* this point is referenced, i.e., explicit deltas specified */
 		delta.x += x_deltas.arrayZ[i] * scalar;
@@ -395,7 +427,7 @@ struct gvar
 	  else
 	  {
 	    if (apply_to_all)
-	      for (unsigned int i = 0; i < num_deltas; i++)
+	      for (unsigned int i = phantom_only ? count - 4 : 0; i < count; i++)
 	      {
 		unsigned int pt_index = i;
 		auto &delta = deltas.arrayZ[pt_index];
@@ -407,6 +439,7 @@ struct gvar
 	      {
 		unsigned int pt_index = indices[i];
 		if (unlikely (pt_index >= deltas.length)) continue;
+		if (phantom_only && pt_index < count - 4) continue;
 		auto &delta = deltas.arrayZ[pt_index];
 		delta.flag = 1;	/* this point is referenced, i.e., explicit deltas specified */
 		delta.x += x_deltas.arrayZ[i];
@@ -416,11 +449,10 @@ struct gvar
 	}
 
 	/* infer deltas for unreferenced points */
-	if (!apply_to_all)
+	if (!apply_to_all && !phantom_only)
 	{
 	  if (!end_points)
 	  {
-	    unsigned count = points.length;
 	    for (unsigned i = 0; i < count; ++i)
 	      if (points.arrayZ[i].is_end_point)
 		end_points.push (i);
@@ -482,8 +514,7 @@ struct gvar
 
       if (flush)
       {
-        unsigned count = points.length;
-	for (unsigned int i = 0; i < count; i++)
+	for (unsigned int i = phantom_only ? count - 4 : 0; i < count; i++)
 	  points.arrayZ[i].translate (deltas.arrayZ[i]);
       }
 
@@ -495,7 +526,7 @@ struct gvar
     private:
     hb_blob_ptr_t<gvar> table;
     unsigned glyphCount;
-    hb_vector_t<signed> shared_tuple_active_idx;
+    hb_vector_t<hb_pair_t<int, int>> shared_tuple_active_idx;
   };
 
   protected:

@@ -34,11 +34,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/resources/gradient_texture.h"
 
 void GradientEditor::set_gradient(const Ref<Gradient> &p_gradient) {
 	gradient = p_gradient;
 	connect("ramp_changed", callable_mp(this, &GradientEditor::_ramp_changed));
-	gradient->connect("changed", callable_mp(this, &GradientEditor::_gradient_changed));
+	gradient->connect_changed(callable_mp(this, &GradientEditor::_gradient_changed));
 	set_points(gradient->get_points());
 	set_interpolation_mode(gradient->get_interpolation_mode());
 	set_interpolation_color_space(gradient->get_interpolation_color_space());

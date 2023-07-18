@@ -393,11 +393,14 @@ public:
 	/*****************/
 
 	enum BarrierMask {
-		BARRIER_MASK_RASTER = 1,
-		BARRIER_MASK_COMPUTE = 2,
-		BARRIER_MASK_TRANSFER = 4,
+		BARRIER_MASK_VERTEX = 1,
+		BARRIER_MASK_FRAGMENT = 2,
+		BARRIER_MASK_COMPUTE = 4,
+		BARRIER_MASK_TRANSFER = 8,
+
+		BARRIER_MASK_RASTER = BARRIER_MASK_VERTEX | BARRIER_MASK_FRAGMENT, // 3,
 		BARRIER_MASK_ALL_BARRIERS = BARRIER_MASK_RASTER | BARRIER_MASK_COMPUTE | BARRIER_MASK_TRANSFER, // 7
-		BARRIER_MASK_NO_BARRIER = 8,
+		BARRIER_MASK_NO_BARRIER = 16,
 	};
 
 	/*****************/
@@ -539,7 +542,7 @@ public:
 	virtual bool texture_is_shared(RID p_texture) = 0;
 	virtual bool texture_is_valid(RID p_texture) = 0;
 	virtual Size2i texture_size(RID p_texture) = 0;
-	virtual uint64_t texture_native_handle(RID p_texture) = 0;
+	virtual uint64_t texture_get_native_handle(RID p_texture) = 0;
 
 	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;
 	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS) = 0;

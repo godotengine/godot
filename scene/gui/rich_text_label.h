@@ -32,8 +32,8 @@
 #define RICH_TEXT_LABEL_H
 
 #include "core/object/worker_thread_pool.h"
-#include "rich_text_effect.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/rich_text_effect.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/resources/text_paragraph.h"
 
@@ -70,12 +70,14 @@ public:
 		ITEM_WAVE,
 		ITEM_TORNADO,
 		ITEM_RAINBOW,
+		ITEM_PULSE,
 		ITEM_BGCOLOR,
 		ITEM_FGCOLOR,
 		ITEM_META,
 		ITEM_HINT,
 		ITEM_DROPCAP,
-		ITEM_CUSTOMFX
+		ITEM_CUSTOMFX,
+		ITEM_CONTEXT
 	};
 
 	enum MenuItems {
@@ -343,6 +345,14 @@ private:
 		ItemRainbow() { type = ITEM_RAINBOW; }
 	};
 
+	struct ItemPulse : public ItemFX {
+		Color color = Color(1.0, 1.0, 1.0, 0.25);
+		float frequency = 1.0f;
+		float ease = -2.0f;
+
+		ItemPulse() { type = ITEM_PULSE; }
+	};
+
 	struct ItemBGColor : public Item {
 		Color color;
 		ItemBGColor() { type = ITEM_BGCOLOR; }
@@ -368,6 +378,10 @@ private:
 			char_fx_transform.unref();
 			custom_effect.unref();
 		}
+	};
+
+	struct ItemContext : public Item {
+		ItemContext() { type = ITEM_CONTEXT; }
 	};
 
 	ItemFrame *main = nullptr;
@@ -421,6 +435,7 @@ private:
 	void _stop_thread();
 	bool _validate_line_caches();
 	void _process_line_caches();
+	_FORCE_INLINE_ float _update_scroll_exceeds(float p_total_height, float p_ctrl_height, float p_width, int p_idx, float p_old_scroll, float p_text_rect_height);
 
 	void _add_item(Item *p_item, bool p_enter = false, bool p_ensure_newline = false);
 	void _remove_item(Item *p_item, const int p_line, const int p_subitem_line);
@@ -610,9 +625,11 @@ public:
 	void push_wave(float p_frequency, float p_amplitude, bool p_connected);
 	void push_tornado(float p_frequency, float p_radius, bool p_connected);
 	void push_rainbow(float p_saturation, float p_value, float p_frequency);
+	void push_pulse(const Color &p_color, float p_frequency, float p_ease);
 	void push_bgcolor(const Color &p_color);
 	void push_fgcolor(const Color &p_color);
 	void push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionary p_environment);
+	void push_context();
 	void set_table_column_expand(int p_column, bool p_expand, int p_ratio = 1);
 	void set_cell_row_background_color(const Color &p_odd_row_bg, const Color &p_even_row_bg);
 	void set_cell_border_color(const Color &p_color);
@@ -621,6 +638,8 @@ public:
 	int get_current_table_column() const;
 	void push_cell();
 	void pop();
+	void pop_context();
+	void pop_all();
 
 	void clear();
 
@@ -684,6 +703,7 @@ public:
 	bool is_deselect_on_focus_loss_enabled() const;
 	void deselect();
 
+	int get_pending_paragraphs() const;
 	bool is_ready() const;
 	bool is_updating() const;
 

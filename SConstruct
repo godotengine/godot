@@ -56,7 +56,7 @@ import methods
 import glsl_builders
 import gles3_builders
 import scu_builders
-from platform_methods import architectures, architecture_aliases
+from platform_methods import architectures, architecture_aliases, generate_export_icons
 
 if ARGUMENTS.get("target", "editor") == "editor":
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
@@ -68,9 +68,6 @@ platform_list = []  # list of platforms
 platform_opts = {}  # options for each platform
 platform_flags = {}  # flags for each platform
 platform_doc_class_path = {}
-
-active_platforms = []
-active_platform_ids = []
 platform_exporters = []
 platform_apis = []
 
@@ -93,13 +90,13 @@ for x in sorted(glob.glob("platform/*")):
     except Exception:
         pass
 
+    platform_name = x[9:]
+
     if os.path.exists(x + "/export/export.cpp"):
-        platform_exporters.append(x[9:])
+        platform_exporters.append(platform_name)
+        generate_export_icons(x, platform_name)
     if os.path.exists(x + "/api/api.cpp"):
-        platform_apis.append(x[9:])
-    if detect.is_active():
-        active_platforms.append(detect.get_name())
-        active_platform_ids.append(x)
+        platform_apis.append(platform_name)
     if detect.can_build():
         x = x.replace("platform/", "")  # rest of world
         x = x.replace("platform\\", "")  # win32
@@ -108,8 +105,6 @@ for x in sorted(glob.glob("platform/*")):
         platform_flags[x] = detect.get_flags()
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
-
-methods.save_active_platforms(active_platforms, active_platform_ids)
 
 custom_tools = ["default"]
 
@@ -227,6 +222,7 @@ opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise e
 opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 
 # Thirdparty libraries
+opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
 opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundles", True))
 opts.Add(BoolVariable("builtin_embree", "Use the built-in Embree library", True))
 opts.Add(BoolVariable("builtin_enet", "Use the built-in ENet library", True))
@@ -244,6 +240,7 @@ opts.Add(BoolVariable("builtin_libwebp", "Use the built-in libwebp library", Tru
 opts.Add(BoolVariable("builtin_wslay", "Use the built-in wslay library", True))
 opts.Add(BoolVariable("builtin_mbedtls", "Use the built-in mbedTLS library", True))
 opts.Add(BoolVariable("builtin_miniupnpc", "Use the built-in miniupnpc library", True))
+opts.Add(BoolVariable("builtin_openxr", "Use the built-in OpenXR library", True))
 opts.Add(BoolVariable("builtin_pcre2", "Use the built-in PCRE2 library", True))
 opts.Add(BoolVariable("builtin_pcre2_with_jit", "Use JIT compiler for the built-in PCRE2 library", True))
 opts.Add(BoolVariable("builtin_recastnavigation", "Use the built-in Recast navigation library", True))
@@ -301,21 +298,21 @@ else:
 if selected_platform in ["macos", "osx"]:
     if selected_platform == "osx":
         # Deprecated alias kept for compatibility.
-        print('Platform "osx" has been renamed to "macos" in Godot 4.0. Building for platform "macos".')
+        print('Platform "osx" has been renamed to "macos" in Godot 4. Building for platform "macos".')
     # Alias for convenience.
     selected_platform = "macos"
 
 if selected_platform in ["ios", "iphone"]:
     if selected_platform == "iphone":
         # Deprecated alias kept for compatibility.
-        print('Platform "iphone" has been renamed to "ios" in Godot 4.0. Building for platform "ios".')
+        print('Platform "iphone" has been renamed to "ios" in Godot 4. Building for platform "ios".')
     # Alias for convenience.
     selected_platform = "ios"
 
 if selected_platform in ["linux", "bsd", "x11"]:
     if selected_platform == "x11":
         # Deprecated alias kept for compatibility.
-        print('Platform "x11" has been renamed to "linuxbsd" in Godot 4.0. Building for platform "linuxbsd".')
+        print('Platform "x11" has been renamed to "linuxbsd" in Godot 4. Building for platform "linuxbsd".')
     # Alias for convenience.
     selected_platform = "linuxbsd"
 
@@ -572,9 +569,12 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=["/Zi", "/FS"])
             env.Append(LINKFLAGS=["/DEBUG:FULL"])
 
-        if env["optimize"] == "speed" or env["optimize"] == "speed_trace":
+        if env["optimize"] == "speed":
             env.Append(CCFLAGS=["/O2"])
             env.Append(LINKFLAGS=["/OPT:REF"])
+        elif env["optimize"] == "speed_trace":
+            env.Append(CCFLAGS=["/O2"])
+            env.Append(LINKFLAGS=["/OPT:REF", "/OPT:NOICF"])
         elif env["optimize"] == "size":
             env.Append(CCFLAGS=["/O1"])
             env.Append(LINKFLAGS=["/OPT:REF"])

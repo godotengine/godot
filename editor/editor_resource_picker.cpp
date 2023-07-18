@@ -41,6 +41,10 @@
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
+#include "scene/gui/button.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/resources/gradient_texture.h"
+#include "scene/resources/image_texture.h"
 
 void EditorResourcePicker::_update_resource() {
 	String resource_path;
@@ -218,7 +222,7 @@ void EditorResourcePicker::_update_menu_items() {
 			edited_resource->get_property_list(&property_list);
 			bool has_subresources = false;
 			for (PropertyInfo &p : property_list) {
-				if ((p.type == Variant::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script")) {
+				if ((p.type == Variant::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script") && ((Object *)edited_resource->get(p.name) != nullptr)) {
 					has_subresources = true;
 					break;
 				}
@@ -350,7 +354,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			}
 
 			Ref<Resource> unique_resource = edited_resource->duplicate();
-			ERR_FAIL_COND(unique_resource.is_null());
+			ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
 
 			edited_resource = unique_resource;
 			emit_signal(SNAME("resource_changed"), edited_resource);
@@ -362,12 +366,30 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				return;
 			}
 
-			Ref<Resource> unique_resource = edited_resource->duplicate(true);
-			ERR_FAIL_COND(unique_resource.is_null());
+			if (!duplicate_resources_dialog) {
+				duplicate_resources_dialog = memnew(ConfirmationDialog);
+				add_child(duplicate_resources_dialog);
+				duplicate_resources_dialog->set_title(TTR("Make Unique (Recursive)"));
+				duplicate_resources_dialog->connect("confirmed", callable_mp(this, &EditorResourcePicker::_duplicate_selected_resources));
 
-			edited_resource = unique_resource;
-			emit_signal(SNAME("resource_changed"), edited_resource);
-			_update_resource();
+				VBoxContainer *vb = memnew(VBoxContainer);
+				duplicate_resources_dialog->add_child(vb);
+
+				Label *label = memnew(Label(TTR("Select resources to make unique:")));
+				vb->add_child(label);
+
+				duplicate_resources_tree = memnew(Tree);
+				vb->add_child(duplicate_resources_tree);
+				duplicate_resources_tree->set_columns(2);
+				duplicate_resources_tree->set_v_size_flags(SIZE_EXPAND_FILL);
+			}
+
+			duplicate_resources_tree->clear();
+			TreeItem *root = duplicate_resources_tree->create_item();
+			_gather_resources_to_duplicate(edited_resource, root);
+
+			duplicate_resources_dialog->reset_size();
+			duplicate_resources_dialog->popup_centered(Vector2(500, 400) * EDSCALE);
 		} break;
 
 		case OBJ_MENU_SAVE: {
@@ -808,6 +830,11 @@ void EditorResourcePicker::_notification(int p_what) {
 	}
 }
 
+void EditorResourcePicker::set_assign_button_min_size(const Size2i &p_size) {
+	assign_button_min_size = p_size;
+	assign_button->set_custom_minimum_size(assign_button_min_size);
+}
+
 void EditorResourcePicker::set_base_type(const String &p_base_type) {
 	base_type = p_base_type;
 
@@ -918,6 +945,89 @@ void EditorResourcePicker::_ensure_resource_menu() {
 	add_child(edit_menu);
 	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
 	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed).bind(false));
+}
+
+void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_resource, TreeItem *p_item, const String &p_property_name) const {
+	p_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+
+	String res_name = p_resource->get_name();
+	if (res_name.is_empty() && !p_resource->is_built_in()) {
+		res_name = p_resource->get_path().get_file();
+	}
+
+	if (res_name.is_empty()) {
+		p_item->set_text(0, p_resource->get_class());
+	} else {
+		p_item->set_text(0, vformat("%s (%s)", p_resource->get_class(), res_name));
+	}
+
+	p_item->set_icon(0, EditorNode::get_singleton()->get_object_icon(p_resource.ptr()));
+	p_item->set_editable(0, true);
+
+	Array meta;
+	meta.append(p_resource);
+	p_item->set_metadata(0, meta);
+
+	if (!p_property_name.is_empty()) {
+		p_item->set_text(1, p_property_name);
+	}
+
+	static Vector<String> unique_exceptions = { "Image", "Shader", "Mesh", "FontFile" };
+	if (!unique_exceptions.has(p_resource->get_class())) {
+		// Automatically select resource, unless it's something that shouldn't be duplicated.
+		p_item->set_checked(0, true);
+	}
+
+	List<PropertyInfo> plist;
+	p_resource->get_property_list(&plist);
+
+	for (const PropertyInfo &E : plist) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE) || E.type != Variant::OBJECT || E.hint != PROPERTY_HINT_RESOURCE_TYPE) {
+			continue;
+		}
+
+		Ref<Resource> res = p_resource->get(E.name);
+		if (res.is_null()) {
+			continue;
+		}
+
+		TreeItem *child = p_item->create_child();
+		_gather_resources_to_duplicate(res, child, E.name);
+
+		meta = child->get_metadata(0);
+		// Remember property name.
+		meta.append(E.name);
+
+		if ((E.usage & PROPERTY_USAGE_NEVER_DUPLICATE)) {
+			// The resource can't be duplicated, but make it appear on the list anyway.
+			child->set_checked(0, false);
+			child->set_editable(0, false);
+		}
+	}
+}
+
+void EditorResourcePicker::_duplicate_selected_resources() {
+	for (TreeItem *item = duplicate_resources_tree->get_root(); item; item = item->get_next_in_tree()) {
+		if (!item->is_checked(0)) {
+			continue;
+		}
+
+		Array meta = item->get_metadata(0);
+		Ref<Resource> res = meta[0];
+		Ref<Resource> unique_resource = res->duplicate();
+		ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
+		meta[0] = unique_resource;
+
+		if (meta.size() == 1) { // Root.
+			edited_resource = unique_resource;
+			emit_signal(SNAME("resource_changed"), edited_resource);
+			_update_resource();
+		} else {
+			Array parent_meta = item->get_parent()->get_metadata(0);
+			Ref<Resource> parent = parent_meta[0];
+			parent->set(meta[1], unique_resource);
+		}
+	}
 }
 
 EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {

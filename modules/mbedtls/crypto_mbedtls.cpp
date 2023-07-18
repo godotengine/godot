@@ -30,24 +30,24 @@
 
 #include "crypto_mbedtls.h"
 
-#include "core/io/file_access.h"
-
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/compression.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
-#define PEM_BEGIN_CRT "-----BEGIN CERTIFICATE-----\n"
-#define PEM_END_CRT "-----END CERTIFICATE-----\n"
-#define PEM_MIN_SIZE 54
 
 #include <mbedtls/debug.h>
 #include <mbedtls/md.h>
 #include <mbedtls/pem.h>
+
+#define PEM_BEGIN_CRT "-----BEGIN CERTIFICATE-----\n"
+#define PEM_END_CRT "-----END CERTIFICATE-----\n"
+#define PEM_MIN_SIZE 54
 
 CryptoKey *CryptoKeyMbedTLS::create() {
 	return memnew(CryptoKeyMbedTLS);
@@ -139,11 +139,11 @@ X509Certificate *X509CertificateMbedTLS::create() {
 }
 
 Error X509CertificateMbedTLS::load(String p_path) {
-	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is in use");
+	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is already in use.");
 
 	PackedByteArray out;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot open X509CertificateMbedTLS file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, vformat("Cannot open X509CertificateMbedTLS file '%s'.", p_path));
 
 	uint64_t flen = f->get_length();
 	out.resize(flen + 1);
@@ -151,22 +151,28 @@ Error X509CertificateMbedTLS::load(String p_path) {
 	out.write[flen] = 0; // string terminator
 
 	int ret = mbedtls_x509_crt_parse(&cert, out.ptr(), out.size());
-	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing some certificates: " + itos(ret));
+	ERR_FAIL_COND_V_MSG(ret < 0, FAILED, vformat("Error parsing X509 certificates from file '%s': %d.", p_path, ret));
+	if (ret > 0) { // Some certs parsed fine, don't error.
+		print_verbose(vformat("MbedTLS: Some X509 certificates could not be parsed from file '%s' (%d certificates skipped).", p_path, ret));
+	}
 
 	return OK;
 }
 
 Error X509CertificateMbedTLS::load_from_memory(const uint8_t *p_buffer, int p_len) {
-	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is in use");
+	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is already in use.");
 
 	int ret = mbedtls_x509_crt_parse(&cert, p_buffer, p_len);
-	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing certificates: " + itos(ret));
+	ERR_FAIL_COND_V_MSG(ret < 0, FAILED, vformat("Error parsing X509 certificates: %d.", ret));
+	if (ret > 0) { // Some certs parsed fine, don't error.
+		print_verbose(vformat("MbedTLS: Some X509 certificates could not be parsed (%d certificates skipped).", ret));
+	}
 	return OK;
 }
 
 Error X509CertificateMbedTLS::save(String p_path) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot save X509CertificateMbedTLS file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, vformat("Cannot save X509CertificateMbedTLS file '%s'.", p_path));
 
 	mbedtls_x509_crt *crt = &cert;
 	while (crt) {
@@ -203,11 +209,14 @@ String X509CertificateMbedTLS::save_to_string() {
 }
 
 Error X509CertificateMbedTLS::load_from_string(const String &p_string_key) {
-	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is in use");
+	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is already in use.");
 	CharString cs = p_string_key.utf8();
 
 	int ret = mbedtls_x509_crt_parse(&cert, (const unsigned char *)cs.get_data(), cs.size());
-	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing some certificates: " + itos(ret));
+	ERR_FAIL_COND_V_MSG(ret < 0, FAILED, vformat("Error parsing X509 certificates: %d.", ret));
+	if (ret > 0) { // Some certs parsed fine, don't error.
+		print_verbose(vformat("MbedTLS: Some X509 certificates could not be parsed (%d certificates skipped).", ret));
+	}
 
 	return OK;
 }

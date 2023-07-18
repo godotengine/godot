@@ -402,9 +402,9 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				const Vector3 *src = array.ptr();
 				for (int i = 0; i < p_vertex_array_len; i++) {
 					Vector2 res = src[i].octahedron_encode();
-					int16_t vector[2] = {
-						(int16_t)CLAMP(res.x * 65535, 0, 65535),
-						(int16_t)CLAMP(res.y * 65535, 0, 65535),
+					uint16_t vector[2] = {
+						(uint16_t)CLAMP(res.x * 65535, 0, 65535),
+						(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 					};
 
 					memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);
@@ -422,9 +422,9 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 					for (int i = 0; i < p_vertex_array_len; i++) {
 						const Vector3 src(src_ptr[i * 4 + 0], src_ptr[i * 4 + 1], src_ptr[i * 4 + 2]);
 						Vector2 res = src.octahedron_tangent_encode(src_ptr[i * 4 + 3]);
-						int16_t vector[2] = {
-							(int16_t)CLAMP(res.x * 65535, 0, 65535),
-							(int16_t)CLAMP(res.y * 65535, 0, 65535),
+						uint16_t vector[2] = {
+							(uint16_t)CLAMP(res.x * 65535, 0, 65535),
+							(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 						};
 
 						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);
@@ -437,9 +437,9 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 					for (int i = 0; i < p_vertex_array_len; i++) {
 						const Vector3 src(src_ptr[i * 4 + 0], src_ptr[i * 4 + 1], src_ptr[i * 4 + 2]);
 						Vector2 res = src.octahedron_tangent_encode(src_ptr[i * 4 + 3]);
-						int16_t vector[2] = {
-							(int16_t)CLAMP(res.x * 65535, 0, 65535),
-							(int16_t)CLAMP(res.y * 65535, 0, 65535),
+						uint16_t vector[2] = {
+							(uint16_t)CLAMP(res.x * 65535, 0, 65535),
+							(uint16_t)CLAMP(res.y * 65535, 0, 65535),
 						};
 
 						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);
@@ -1933,6 +1933,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_OPACITY);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_BLUR);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_TRANSMITTANCE_BIAS);
+	BIND_ENUM_CONSTANT(LIGHT_PARAM_INTENSITY);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(LIGHT_BAKE_DISABLED);
@@ -2870,7 +2871,10 @@ TypedArray<StringName> RenderingServer::_global_shader_parameter_get_list() cons
 }
 
 void RenderingServer::init() {
-	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_s3tc_bptc", true);
+	// These are overrides, even if they are false Godot will still
+	// import the texture formats that the host platform needs.
+	// See `const bool can_s3tc_bptc` in the resource importer.
+	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_s3tc_bptc", false);
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc2_astc", false);
 
 	GLOBAL_DEF("rendering/textures/lossless_compression/force_png", false);

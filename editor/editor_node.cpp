@@ -60,7 +60,9 @@
 #include "scene/gui/tab_container.h"
 #include "scene/main/window.h"
 #include "scene/property_utils.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/portable_compressed_texture.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
@@ -983,7 +985,7 @@ void EditorNode::_fs_changed() {
 				} else { // Normal project export.
 					String config_error;
 					bool missing_templates;
-					if (!platform->can_export(export_preset, config_error, missing_templates)) {
+					if (!platform->can_export(export_preset, config_error, missing_templates, export_defer.debug)) {
 						ERR_PRINT(vformat("Cannot export project with preset \"%s\" due to configuration errors:\n%s", preset_name, config_error));
 						err = missing_templates ? ERR_FILE_NOT_FOUND : ERR_UNCONFIGURED;
 					} else {
@@ -1411,7 +1413,7 @@ void EditorNode::_dialog_display_load_error(String p_file, Error p_error) {
 				show_accept(vformat(TTR("Scene file '%s' appears to be invalid/corrupt."), p_file.get_file()), TTR("OK"));
 			} break;
 			case ERR_FILE_NOT_FOUND: {
-				show_accept(vformat(TTR("Missing file '%s' or one its dependencies."), p_file.get_file()), TTR("OK"));
+				show_accept(vformat(TTR("Missing file '%s' or one of its dependencies."), p_file.get_file()), TTR("OK"));
 			} break;
 			default: {
 				show_accept(vformat(TTR("Error while loading file '%s'."), p_file.get_file()), TTR("OK"));
@@ -2027,6 +2029,9 @@ void EditorNode::_dialog_action(String p_file) {
 			if (err) {
 				show_accept(TTR("Error saving MeshLibrary!"), TTR("OK"));
 				return;
+			} else if (ResourceCache::has(p_file)) {
+				// Make sure MeshLibrary is updated in the editor.
+				ResourceLoader::load(p_file)->reload_from_file();
 			}
 
 		} break;
@@ -2772,6 +2777,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_QUIT:
 		case RUN_PROJECT_MANAGER:
 		case RELOAD_CURRENT_PROJECT: {
+			if (p_confirmed && plugin_to_save) {
+				plugin_to_save->save_external_data();
+				p_confirmed = false;
+			}
+
 			if (!p_confirmed) {
 				bool save_each = EDITOR_GET("interface/editor/save_each_scene_on_quit");
 				if (_next_unsaved_scene(!save_each) == -1) {
@@ -2785,6 +2795,28 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						}
 						save_confirmation->reset_size();
 						save_confirmation->popup_centered();
+						break;
+					}
+
+					plugin_to_save = nullptr;
+					for (int i = 0; i < editor_data.get_editor_plugin_count(); i++) {
+						const String unsaved_status = editor_data.get_editor_plugin(i)->get_unsaved_status();
+						if (!unsaved_status.is_empty()) {
+							if (p_option == RELOAD_CURRENT_PROJECT) {
+								save_confirmation->set_ok_button_text(TTR("Save & Reload"));
+								save_confirmation->set_text(unsaved_status);
+							} else {
+								save_confirmation->set_ok_button_text(TTR("Save & Quit"));
+								save_confirmation->set_text(unsaved_status);
+							}
+							save_confirmation->reset_size();
+							save_confirmation->popup_centered();
+							plugin_to_save = editor_data.get_editor_plugin(i);
+							break;
+						}
+					}
+
+					if (plugin_to_save) {
 						break;
 					}
 
@@ -3026,13 +3058,21 @@ int EditorNode::_next_unsaved_scene(bool p_valid_filename, int p_start) {
 		if (!editor_data.get_edited_scene_root(i)) {
 			continue;
 		}
+
+		String scene_filename = editor_data.get_edited_scene_root(i)->get_scene_file_path();
+		if (p_valid_filename && scene_filename.is_empty()) {
+			continue;
+		}
+
 		bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_scene_history_id(i));
 		if (unsaved) {
-			String scene_filename = editor_data.get_edited_scene_root(i)->get_scene_file_path();
-			if (p_valid_filename && scene_filename.is_empty()) {
-				continue;
-			}
 			return i;
+		} else {
+			for (int j = 0; j < editor_data.get_editor_plugin_count(); j++) {
+				if (!editor_data.get_editor_plugin(j)->get_unsaved_status(scene_filename).is_empty()) {
+					return i;
+				}
+			}
 		}
 	}
 	return -1;
@@ -3187,7 +3227,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		if (icon.is_valid()) {
 			tb->set_icon(icon);
 			// Make sure the control is updated if the icon is reimported.
-			icon->connect("changed", callable_mp((Control *)tb, &Control::update_minimum_size));
+			icon->connect_changed(callable_mp((Control *)tb, &Control::update_minimum_size));
 		} else if (singleton->gui_base->has_theme_icon(p_editor->get_name(), SNAME("EditorIcons"))) {
 			tb->set_icon(singleton->gui_base->get_theme_icon(p_editor->get_name(), SNAME("EditorIcons")));
 		}
@@ -3323,6 +3363,11 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 		return;
 	}
 
+	String plugin_version;
+	if (cf->has_section_key("plugin", "version")) {
+		plugin_version = cf->get_value("plugin", "version");
+	}
+
 	if (!cf->has_section_key("plugin", "script")) {
 		show_warning(vformat(TTR("Unable to find script field for addon plugin at: '%s'."), addon_path));
 		return;
@@ -3368,6 +3413,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 	EditorPlugin *ep = memnew(EditorPlugin);
 	ep->set_script(scr);
+	ep->set_plugin_version(plugin_version);
 	addon_name_to_plugin[addon_path] = ep;
 	add_editor_plugin(ep, p_config_changed);
 
@@ -3405,6 +3451,7 @@ void EditorNode::_remove_edited_scene(bool p_change_tab) {
 
 void EditorNode::_remove_scene(int index, bool p_change_tab) {
 	// Clear icon cache in case some scripts are no longer needed.
+	// FIXME: Perfectly the cache should never be cleared and only updated on per-script basis, when an icon changes.
 	editor_data.clear_script_icon_cache();
 
 	if (editor_data.get_edited_scene() == index) {
@@ -3417,10 +3464,12 @@ void EditorNode::_remove_scene(int index, bool p_change_tab) {
 }
 
 void EditorNode::set_edited_scene(Node *p_scene) {
-	if (get_editor_data().get_edited_scene_root()) {
-		if (get_editor_data().get_edited_scene_root()->get_parent() == scene_root) {
-			scene_root->remove_child(get_editor_data().get_edited_scene_root());
+	Node *old_edited_scene_root = get_editor_data().get_edited_scene_root();
+	if (old_edited_scene_root) {
+		if (old_edited_scene_root->get_parent() == scene_root) {
+			scene_root->remove_child(old_edited_scene_root);
 		}
+		old_edited_scene_root->disconnect(SNAME("replacing_by"), callable_mp(this, &EditorNode::set_edited_scene));
 	}
 	get_editor_data().set_edited_scene_root(p_scene);
 
@@ -3436,6 +3485,7 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 		if (p_scene->get_parent() != scene_root) {
 			scene_root->add_child(p_scene, true);
 		}
+		p_scene->connect(SNAME("replacing_by"), callable_mp(this, &EditorNode::set_edited_scene));
 	}
 }
 
@@ -4103,6 +4153,13 @@ void EditorNode::add_io_error(const String &p_error) {
 	EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
 }
 
+void EditorNode::add_io_warning(const String &p_warning) {
+	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
+	singleton->load_errors->add_image(singleton->gui_base->get_theme_icon(SNAME("Warning"), SNAME("EditorIcons")));
+	singleton->load_errors->add_text(p_warning + "\n");
+	EditorInterface::get_singleton()->popup_dialog_centered_ratio(singleton->load_error_dialog, 0.5);
+}
+
 bool EditorNode::_find_scene_in_use(Node *p_node, const String &p_path) const {
 	if (p_node->get_scene_file_path() == p_path) {
 		return true;
@@ -4229,23 +4286,6 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 		Ref<Texture2D> script_icon = ed.get_script_icon(p_script);
 		if (script_icon.is_valid()) {
 			return script_icon;
-		}
-
-		// No custom icon was found in the inheritance chain, so check the base
-		// class of the script instead.
-		String base_type;
-		p_script->get_language()->get_global_class_name(p_script->get_path(), &base_type);
-
-		// Check if the base type is an extension-defined type.
-		Ref<Texture2D> ext_icon = ed.extension_class_get_icon(base_type);
-		if (ext_icon.is_valid()) {
-			return ext_icon;
-		}
-
-		// Look for the base type in the editor theme.
-		// This is only relevant for built-in classes.
-		if (gui_base && gui_base->has_theme_icon(base_type, "EditorIcons")) {
-			return gui_base->get_theme_icon(base_type, "EditorIcons");
 		}
 	}
 
@@ -4410,17 +4450,18 @@ String EditorNode::_get_system_info() const {
 	const int processor_count = OS::get_singleton()->get_processor_count();
 
 	// Prettify
-	if (driver_name == "vulkan") {
-		driver_name = "Vulkan";
-	} else if (driver_name == "opengl3") {
-		driver_name = "GLES3";
-	}
 	if (rendering_method == "forward_plus") {
 		rendering_method = "Forward+";
 	} else if (rendering_method == "mobile") {
 		rendering_method = "Mobile";
 	} else if (rendering_method == "gl_compatibility") {
 		rendering_method = "Compatibility";
+		driver_name = GLOBAL_GET("rendering/gl_compatibility/driver");
+	}
+	if (driver_name == "vulkan") {
+		driver_name = "Vulkan";
+	} else if (driver_name == "opengl3") {
+		driver_name = "GLES3";
 	}
 
 	// Join info.
@@ -4926,7 +4967,10 @@ void EditorNode::_save_open_scenes_to_config(Ref<ConfigFile> p_layout) {
 	p_layout->set_value(EDITOR_NODE_CONFIG_SECTION, "open_scenes", scenes);
 
 	String currently_edited_scene_path = editor_data.get_scene_path(editor_data.get_edited_scene());
-	p_layout->set_value(EDITOR_NODE_CONFIG_SECTION, "current_scene", currently_edited_scene_path);
+	// Don't save a bad path to the config.
+	if (!currently_edited_scene_path.is_empty()) {
+		p_layout->set_value(EDITOR_NODE_CONFIG_SECTION, "current_scene", currently_edited_scene_path);
+	}
 }
 
 void EditorNode::save_editor_layout_delayed() {
@@ -5247,6 +5291,8 @@ void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_
 	}
 	if (selected_bottom_panel_item_idx != -1) {
 		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item", selected_bottom_panel_item_idx);
+	} else {
+		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item", Variant());
 	}
 
 	// Debugger tab.
@@ -5265,21 +5311,34 @@ void EditorNode::_save_central_editor_layout_to_config(Ref<ConfigFile> p_config_
 	}
 	if (selected_main_editor_idx != -1) {
 		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_main_editor_idx", selected_main_editor_idx);
+	} else {
+		p_config_file->set_value(EDITOR_NODE_CONFIG_SECTION, "selected_main_editor_idx", Variant());
 	}
 }
 
 void EditorNode::_load_central_editor_layout_from_config(Ref<ConfigFile> p_config_file) {
 	// Bottom panel.
 
-	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "center_split_offset")) {
-		int center_split_offset = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "center_split_offset");
-		center_split->set_split_offset(center_split_offset);
-	}
-
+	bool has_active_tab = false;
 	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item")) {
 		int selected_bottom_panel_item_idx = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "selected_bottom_panel_item");
 		if (selected_bottom_panel_item_idx >= 0 && selected_bottom_panel_item_idx < bottom_panel_items.size()) {
-			_bottom_panel_switch(true, selected_bottom_panel_item_idx);
+			// Make sure we don't try to open contextual editors which are not enabled in the current context.
+			if (bottom_panel_items[selected_bottom_panel_item_idx].button->is_visible()) {
+				_bottom_panel_switch(true, selected_bottom_panel_item_idx);
+				has_active_tab = true;
+			}
+		}
+	}
+
+	if (p_config_file->has_section_key(EDITOR_NODE_CONFIG_SECTION, "center_split_offset")) {
+		int center_split_offset = p_config_file->get_value(EDITOR_NODE_CONFIG_SECTION, "center_split_offset");
+		center_split->set_split_offset(center_split_offset);
+
+		// If there is no active tab we need to collapse the panel.
+		if (!has_active_tab) {
+			bottom_panel_items[0].control->show(); // _bottom_panel_switch() can collapse only visible tabs.
+			_bottom_panel_switch(false, 0);
 		}
 	}
 
@@ -5530,19 +5589,36 @@ void EditorNode::_scene_tab_closed(int p_tab, int p_option) {
 		return;
 	}
 
-	bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_scene_history_id(p_tab));
-	if (unsaved) {
+	String scene_filename = scene->get_scene_file_path();
+	String unsaved_message;
+
+	if (EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_scene_history_id(p_tab))) {
+		if (scene_filename.is_empty()) {
+			unsaved_message = TTR("This scene was never saved.");
+		} else {
+			unsaved_message = vformat(TTR("Scene \"%s\" has unsaved changes."), scene_filename);
+		}
+	} else {
+		// Check if any plugin has unsaved changes in that scene.
+		for (int i = 0; i < editor_data.get_editor_plugin_count(); i++) {
+			unsaved_message = editor_data.get_editor_plugin(i)->get_unsaved_status(scene_filename);
+			if (!unsaved_message.is_empty()) {
+				break;
+			}
+		}
+	}
+
+	if (!unsaved_message.is_empty()) {
 		if (get_current_tab() != p_tab) {
 			set_current_scene(p_tab);
 		}
 
-		String scene_filename = scene->get_scene_file_path();
 		if (current_menu_option == RELOAD_CURRENT_PROJECT) {
 			save_confirmation->set_ok_button_text(TTR("Save & Reload"));
-			save_confirmation->set_text(vformat(TTR("Save changes to '%s' before reloading?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
+			save_confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before reloading?"));
 		} else {
 			save_confirmation->set_ok_button_text(TTR("Save & Close"));
-			save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
+			save_confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before closing?"));
 		}
 		save_confirmation->reset_size();
 		save_confirmation->popup_centered();
@@ -6804,6 +6880,11 @@ EditorNode::EditorNode() {
 	ResourceLoader::set_abort_on_missing_resources(false);
 	ResourceLoader::set_error_notify_func(&EditorNode::add_io_error);
 	ResourceLoader::set_dependency_error_notify_func(&EditorNode::_dependency_error_report);
+
+	SceneState::set_instantiation_warning_notify_func([](const String &p_warning) {
+		add_io_warning(p_warning);
+		callable_mp(EditorInterface::get_singleton(), &EditorInterface::mark_scene_as_unsaved).call_deferred();
+	});
 
 	{
 		// Register importers at the beginning, so dialogs are created with the right extensions.

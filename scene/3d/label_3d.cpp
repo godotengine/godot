@@ -30,7 +30,6 @@
 
 #include "label_3d.h"
 
-#include "core/core_string_names.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
 #include "scene/scene_string_names.h"
@@ -125,10 +124,6 @@ void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_texture_filter"), &Label3D::get_texture_filter);
 
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &Label3D::generate_triangle_mesh);
-
-	ClassDB::bind_method(D_METHOD("_queue_update"), &Label3D::_queue_update);
-	ClassDB::bind_method(D_METHOD("_font_changed"), &Label3D::_font_changed);
-	ClassDB::bind_method(D_METHOD("_im_update"), &Label3D::_im_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
@@ -239,7 +234,7 @@ void Label3D::_queue_update() {
 	}
 
 	pending_update = true;
-	call_deferred(SceneStringNames::get_singleton()->_im_update);
+	callable_mp(this, &Label3D::_im_update).call_deferred();
 }
 
 AABB Label3D::get_aabb() const {
@@ -766,12 +761,12 @@ void Label3D::_font_changed() {
 void Label3D::set_font(const Ref<Font> &p_font) {
 	if (font_override != p_font) {
 		if (font_override.is_valid()) {
-			font_override->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_font_changed"));
+			font_override->disconnect_changed(callable_mp(this, &Label3D::_font_changed));
 		}
 		font_override = p_font;
 		dirty_font = true;
 		if (font_override.is_valid()) {
-			font_override->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_font_changed"));
+			font_override->connect_changed(callable_mp(this, &Label3D::_font_changed));
 		}
 		_queue_update();
 	}
@@ -783,7 +778,7 @@ Ref<Font> Label3D::get_font() const {
 
 Ref<Font> Label3D::_get_font_or_default() const {
 	if (theme_font.is_valid()) {
-		theme_font->disconnect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+		theme_font->disconnect_changed(callable_mp(const_cast<Label3D *>(this), &Label3D::_font_changed));
 		theme_font.unref();
 	}
 
@@ -801,7 +796,7 @@ Ref<Font> Label3D::_get_font_or_default() const {
 				Ref<Font> f = ThemeDB::get_singleton()->get_project_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
 				if (f.is_valid()) {
 					theme_font = f;
-					theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+					theme_font->connect_changed(callable_mp(const_cast<Label3D *>(this), &Label3D::_font_changed));
 				}
 				return f;
 			}
@@ -818,7 +813,7 @@ Ref<Font> Label3D::_get_font_or_default() const {
 				Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
 				if (f.is_valid()) {
 					theme_font = f;
-					theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+					theme_font->connect_changed(callable_mp(const_cast<Label3D *>(this), &Label3D::_font_changed));
 				}
 				return f;
 			}
@@ -829,7 +824,7 @@ Ref<Font> Label3D::_get_font_or_default() const {
 	Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
 	if (f.is_valid()) {
 		theme_font = f;
-		theme_font->connect(CoreStringNames::get_singleton()->changed, Callable(const_cast<Label3D *>(this), "_font_changed"));
+		theme_font->connect_changed(callable_mp(const_cast<Label3D *>(this), &Label3D::_font_changed));
 	}
 	return f;
 }

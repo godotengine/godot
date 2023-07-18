@@ -28,13 +28,19 @@ FT_BEGIN_HEADER
 
   typedef struct  GX_ItemVarDataRec_
   {
-    FT_UInt            itemCount;       /* number of delta sets per item    */
-    FT_UInt            regionIdxCount;  /* number of region indices         */
-    FT_UInt*           regionIndices;   /* array of `regionCount' indices;  */
-                                        /* these index `varRegionList'      */
-    FT_ItemVarDelta*   deltaSet;        /* array of `itemCount' deltas      */
-                                        /* use `innerIndex' for this array  */
-
+    FT_UInt            itemCount;      /* Number of delta sets per item.   */
+    FT_UInt            regionIdxCount; /* Number of region indices.        */
+    FT_UInt*           regionIndices;  /* Array of `regionCount` indices;  */
+                                       /* these index `varRegionList`.     */
+    FT_Byte*           deltaSet;       /* Array of `itemCount` deltas;     */
+                                       /* use `innerIndex` for this array. */
+    FT_UShort          wordDeltaCount; /* Number of the first 32-bit ints  */
+                                       /* or 16-bit ints of `deltaSet`     */
+                                       /* depending on `longWords`.        */
+    FT_Bool            longWords;      /* If true, `deltaSet` is a 32-bit  */
+                                       /* array followed by a 16-bit       */
+                                       /* array, otherwise a 16-bit array  */
+                                       /* followed by an 8-bit array.      */
   } GX_ItemVarDataRec, *GX_ItemVarData;
 
 

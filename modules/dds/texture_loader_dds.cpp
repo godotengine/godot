@@ -31,6 +31,7 @@
 #include "texture_loader_dds.h"
 
 #include "core/io/file_access.h"
+#include "scene/resources/image_texture.h"
 
 #define PF_FOURCC(s) ((uint32_t)(((s)[3] << 24U) | ((s)[2] << 16U) | ((s)[1] << 8U) | ((s)[0])))
 

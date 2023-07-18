@@ -37,7 +37,7 @@ namespace Godot.SourceGenerators
             while (symbol != null)
             {
                 if (symbol.ContainingAssembly?.Name == assemblyName &&
-                    symbol.ToString() == typeFullName)
+                    symbol.FullQualifiedNameOmitGlobal() == typeFullName)
                 {
                     return true;
                 }
@@ -81,7 +81,7 @@ namespace Godot.SourceGenerators
             return godotClassName ?? nativeType.Name;
         }
 
-        private static bool IsGodotScriptClass(
+        private static bool TryGetGodotScriptClass(
             this ClassDeclarationSyntax cds, Compilation compilation,
             out INamedTypeSymbol? symbol
         )
@@ -108,7 +108,7 @@ namespace Godot.SourceGenerators
         {
             foreach (var cds in source)
             {
-                if (cds.IsGodotScriptClass(compilation, out var symbol))
+                if (cds.TryGetGodotScriptClass(compilation, out var symbol))
                     yield return (cds, symbol!);
             }
         }
@@ -230,22 +230,22 @@ namespace Godot.SourceGenerators
                 .Replace(">", ")");
 
         public static bool IsGodotExportAttribute(this INamedTypeSymbol symbol)
-            => symbol.ToString() == GodotClasses.ExportAttr;
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.ExportAttr;
 
         public static bool IsGodotSignalAttribute(this INamedTypeSymbol symbol)
-            => symbol.ToString() == GodotClasses.SignalAttr;
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.SignalAttr;
 
         public static bool IsGodotMustBeVariantAttribute(this INamedTypeSymbol symbol)
-            => symbol.ToString() == GodotClasses.MustBeVariantAttr;
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.MustBeVariantAttr;
 
         public static bool IsGodotClassNameAttribute(this INamedTypeSymbol symbol)
-            => symbol.ToString() == GodotClasses.GodotClassNameAttr;
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.GodotClassNameAttr;
 
         public static bool IsGodotGlobalClassAttribute(this INamedTypeSymbol symbol)
-            => symbol.ToString() == GodotClasses.GlobalClassAttr;
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.GlobalClassAttr;
 
         public static bool IsSystemFlagsAttribute(this INamedTypeSymbol symbol)
-            => symbol.ToString() == GodotClasses.SystemFlagsAttr;
+            => symbol.FullQualifiedNameOmitGlobal() == GodotClasses.SystemFlagsAttr;
 
         public static GodotMethodData? HasGodotCompatibleSignature(
             this IMethodSymbol method,

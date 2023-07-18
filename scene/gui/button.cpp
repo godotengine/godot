@@ -30,7 +30,6 @@
 
 #include "button.h"
 
-#include "core/core_string_names.h"
 #include "core/string/translation.h"
 #include "servers/rendering_server.h"
 
@@ -327,17 +326,18 @@ void Button::_notification(int p_what) {
 			if (align_rtl_checked == HORIZONTAL_ALIGNMENT_CENTER && icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_CENTER) {
 				icon_ofs.x = 0.0;
 			}
+
 			int text_clip = size.width - style->get_minimum_size().width - icon_ofs.width;
-			text_buf->set_width((clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? text_clip : -1);
-
-			int text_width = MAX(1, (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
-
 			if (_internal_margin[SIDE_LEFT] > 0) {
 				text_clip -= _internal_margin[SIDE_LEFT] + theme_cache.h_separation;
 			}
 			if (_internal_margin[SIDE_RIGHT] > 0) {
 				text_clip -= _internal_margin[SIDE_RIGHT] + theme_cache.h_separation;
 			}
+
+			text_buf->set_width((clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? text_clip : -1);
+
+			int text_width = MAX(1, (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
 
 			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - text_buf->get_size() - Point2(_internal_margin[SIDE_RIGHT] - _internal_margin[SIDE_LEFT], 0)) / 2.0;
 
@@ -539,13 +539,13 @@ void Button::set_icon(const Ref<Texture2D> &p_icon) {
 	}
 
 	if (icon.is_valid()) {
-		icon->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Button::_texture_changed));
+		icon->disconnect_changed(callable_mp(this, &Button::_texture_changed));
 	}
 
 	icon = p_icon;
 
 	if (icon.is_valid()) {
-		icon->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Button::_texture_changed));
+		icon->connect_changed(callable_mp(this, &Button::_texture_changed));
 	}
 
 	queue_redraw();

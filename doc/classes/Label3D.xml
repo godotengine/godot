@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Label3D" inherits="GeometryInstance3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Label3D" inherits="GeometryInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node for displaying plain text in 3D space.
 	</brief_description>
@@ -71,7 +71,7 @@
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="1">
 			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
 		</member>
-		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" default="163">
+		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
 			Line fill alignment rules. For more info see [enum TextServer.JustificationFlag].
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">

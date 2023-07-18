@@ -30,9 +30,6 @@
 
 #include "register_types.h"
 
-#include "core/config/engine.h"
-#include "servers/navigation_server_3d.h"
-
 #include "godot_navigation_server.h"
 
 #ifndef _3D_DISABLED
@@ -42,6 +39,9 @@
 #ifdef TOOLS_ENABLED
 #include "editor/navigation_mesh_editor_plugin.h"
 #endif
+
+#include "core/config/engine.h"
+#include "servers/navigation_server_3d.h"
 
 #ifndef _3D_DISABLED
 NavigationMeshGenerator *_nav_mesh_generator = nullptr;

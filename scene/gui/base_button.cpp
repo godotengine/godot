@@ -366,11 +366,9 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (toggle_mode) {
 			status.pressed = !status.pressed;
 
-			if (status.pressed) {
-				_unpress_group();
-				if (button_group.is_valid()) {
-					button_group->emit_signal(SNAME("pressed"), this);
-				}
+			_unpress_group();
+			if (button_group.is_valid()) {
+				button_group->emit_signal(SNAME("pressed"), this);
 			}
 
 			_toggled(status.pressed);

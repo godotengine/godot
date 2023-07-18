@@ -36,6 +36,9 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "scene/gui/color_mode.h"
+#include "scene/resources/image_texture.h"
+#include "scene/resources/style_box_flat.h"
+#include "scene/resources/style_box_texture.h"
 #include "servers/display_server.h"
 #include "thirdparty/misc/ok_color.h"
 #include "thirdparty/misc/ok_color_shader.h"
@@ -375,6 +378,7 @@ void ColorPicker::_value_changed(double) {
 	}
 
 	color = modes[current_mode]->get_color();
+	modes[current_mode]->_value_changed();
 
 	if (current_mode == MODE_HSV || current_mode == MODE_OKHSL) {
 		h = sliders[0]->get_value() / 360.0;

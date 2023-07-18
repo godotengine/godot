@@ -46,6 +46,7 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/resources/style_box_flat.h"
 
 class ColorMode;
 class ColorModeRGB;
@@ -294,7 +295,6 @@ public:
 #ifdef TOOLS_ENABLED
 	void set_editor_settings(Object *p_editor_settings);
 #endif
-
 	HSlider *get_slider(int idx);
 	Vector<float> get_active_slider_values();
 

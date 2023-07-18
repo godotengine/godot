@@ -93,7 +93,6 @@ public:
 	StringName sort_children;
 
 	StringName finished;
-	StringName emission_finished;
 	StringName animation_finished;
 	StringName animation_changed;
 	StringName animation_started;
@@ -179,8 +178,6 @@ public:
 	StringName area_exited;
 
 	StringName _get_minimum_size;
-
-	StringName _im_update;
 
 	StringName baked_light_changed;
 	StringName _baked_light_changed;

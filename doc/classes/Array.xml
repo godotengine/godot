@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Array" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Array" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A built-in data structure that holds a sequence of elements.
 	</brief_description>
@@ -536,6 +536,7 @@
 				Removes an element from the array by index. If the index does not exist in the array, nothing happens. To remove an element by searching for its value, use [method erase] instead.
 				[b]Note:[/b] This method acts in-place and doesn't return a value.
 				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
+				[b]Note:[/b] [param position] cannot be negative. To remove an element relative to the end of the array, use [code]arr.remove_at(arr.size() - (i + 1))[/code]. To remove the last element from the array without returning the value, use [code]arr.resize(arr.size() - 1)[/code].
 			</description>
 		</method>
 		<method name="resize">
@@ -583,6 +584,7 @@
 				If either [param begin] or [param end] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
 				If specified, [param step] is the relative index between source elements. It can be negative, then [param begin] must be higher than [param end]. For example, [code][0, 1, 2, 3, 4, 5].slice(5, 1, -2)[/code] returns [code][5, 3][/code].
 				If [param deep] is true, each element will be copied by value rather than by reference.
+				[b]Note:[/b] To include the first element when [param step] is negative, use [code]arr.slice(begin, -arr.size() - 1, step)[/code] (i.e. [code][0, 1, 2].slice(1, -4, -1)[/code] returns [code][1, 0][/code]).
 			</description>
 		</method>
 		<method name="sort">

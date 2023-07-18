@@ -497,19 +497,16 @@ Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p
 	Vector2i separation = tile_set_atlas_source->get_separation();
 	Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
 
-	// Compute index in atlas
+	// Compute index in atlas.
 	Vector2 pos = p_pos - margins;
 	Vector2i ret = (pos / (texture_region_size + separation)).floor();
 
-	// Return invalid value (without clamp).
-	Rect2i rect = Rect2(Vector2i(), tile_set_atlas_source->get_atlas_grid_size());
-	if (!p_clamp && !rect.has_point(ret)) {
-		return TileSetSource::INVALID_ATLAS_COORDS;
-	}
-
 	// Clamp.
-	ret.x = CLAMP(ret.x, 0, rect.size.x - 1);
-	ret.y = CLAMP(ret.y, 0, rect.size.y - 1);
+	if (p_clamp) {
+		Vector2i size = tile_set_atlas_source->get_atlas_grid_size();
+		ret.x = CLAMP(ret.x, 0, size.x - 1);
+		ret.y = CLAMP(ret.y, 0, size.y - 1);
+	}
 
 	return ret;
 }

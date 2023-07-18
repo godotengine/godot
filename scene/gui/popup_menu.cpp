@@ -185,10 +185,10 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 }
 
 void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
-	Node *n = get_node(items[p_over].submenu);
-	ERR_FAIL_COND_MSG(!n, "Item subnode does not exist: " + items[p_over].submenu + ".");
+	Node *n = get_node_or_null(items[p_over].submenu);
+	ERR_FAIL_NULL_MSG(n, "Item subnode does not exist: '" + items[p_over].submenu + "'.");
 	Popup *submenu_popup = Object::cast_to<Popup>(n);
-	ERR_FAIL_COND_MSG(!submenu_popup, "Item subnode is not a Popup: " + items[p_over].submenu + ".");
+	ERR_FAIL_NULL_MSG(submenu_popup, "Item subnode is not a Popup: '" + items[p_over].submenu + "'.");
 	if (submenu_popup->is_visible()) {
 		return; // Already visible.
 	}
@@ -244,7 +244,12 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	Rect2 safe_area = this_rect;
 	safe_area.position.y += items[p_over]._ofs_cache + scroll_offset + theme_cache.panel_style->get_offset().height - theme_cache.v_separation / 2;
 	safe_area.size.y = items[p_over]._height_cache + theme_cache.v_separation;
-	DisplayServer::get_singleton()->window_set_popup_safe_rect(submenu_popup->get_window_id(), safe_area);
+	Viewport *vp = submenu_popup->get_embedder();
+	if (vp) {
+		vp->subwindow_set_popup_safe_rect(submenu_popup, safe_area);
+	} else {
+		DisplayServer::get_singleton()->window_set_popup_safe_rect(submenu_popup->get_window_id(), safe_area);
+	}
 
 	// Make the position of the parent popup relative to submenu popup.
 	this_rect.position = this_rect.position - submenu_pum->get_position();
@@ -273,7 +278,7 @@ void PopupMenu::_parent_focused() {
 			window_parent = Object::cast_to<Window>(window_parent->get_parent()->get_viewport());
 		}
 
-		Rect2 safe_area = DisplayServer::get_singleton()->window_get_popup_safe_rect(get_window_id());
+		Rect2 safe_area = get_embedder()->subwindow_get_popup_safe_rect(this);
 		Point2 pos = DisplayServer::get_singleton()->mouse_get_position() - mouse_pos_adjusted;
 		if (safe_area == Rect2i() || !safe_area.has_point(pos)) {
 			Popup::_parent_focused();
@@ -1471,6 +1476,11 @@ String PopupMenu::get_item_text(int p_idx) const {
 	return items[p_idx].text;
 }
 
+String PopupMenu::get_item_xl_text(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), "");
+	return items[p_idx].xl_text;
+}
+
 Control::TextDirection PopupMenu::get_item_text_direction(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Control::TEXT_DIRECTION_INHERITED);
 	return items[p_idx].text_direction;
@@ -1958,7 +1968,7 @@ void PopupMenu::clear() {
 void PopupMenu::_ref_shortcut(Ref<Shortcut> p_sc) {
 	if (!shortcut_refcount.has(p_sc)) {
 		shortcut_refcount[p_sc] = 1;
-		p_sc->connect("changed", callable_mp(this, &PopupMenu::_shortcut_changed));
+		p_sc->connect_changed(callable_mp(this, &PopupMenu::_shortcut_changed));
 	} else {
 		shortcut_refcount[p_sc] += 1;
 	}
@@ -1968,7 +1978,7 @@ void PopupMenu::_unref_shortcut(Ref<Shortcut> p_sc) {
 	ERR_FAIL_COND(!shortcut_refcount.has(p_sc));
 	shortcut_refcount[p_sc]--;
 	if (shortcut_refcount[p_sc] == 0) {
-		p_sc->disconnect("changed", callable_mp(this, &PopupMenu::_shortcut_changed));
+		p_sc->disconnect_changed(callable_mp(this, &PopupMenu::_shortcut_changed));
 		shortcut_refcount.erase(p_sc);
 	}
 }
@@ -2031,10 +2041,6 @@ String PopupMenu::get_tooltip(const Point2 &p_pos) const {
 		return "";
 	}
 	return items[over].tooltip;
-}
-
-void PopupMenu::set_parent_rect(const Rect2 &p_rect) {
-	parent_rect = p_rect;
 }
 
 void PopupMenu::add_autohide_area(const Rect2 &p_area) {
@@ -2302,7 +2308,7 @@ void PopupMenu::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("menu_changed"));
 }
 
-void PopupMenu::popup(const Rect2 &p_bounds) {
+void PopupMenu::popup(const Rect2i &p_bounds) {
 	moved = Vector2();
 	popup_time_msec = OS::get_singleton()->get_ticks_msec();
 	Popup::popup(p_bounds);

@@ -54,21 +54,21 @@ bool Window::_set(const StringName &p_name, const Variant &p_value) {
 		if (name.begins_with("theme_override_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (theme_icon_override.has(dname)) {
-				theme_icon_override[dname]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+				theme_icon_override[dname]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 			}
 			theme_icon_override.erase(dname);
 			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			if (theme_style_override.has(dname)) {
-				theme_style_override[dname]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+				theme_style_override[dname]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 			}
 			theme_style_override.erase(dname);
 			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			if (theme_font_override.has(dname)) {
-				theme_font_override[dname]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+				theme_font_override[dname]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 			}
 			theme_font_override.erase(dname);
 			_notify_theme_override_changed();
@@ -616,6 +616,8 @@ void Window::_update_from_window() {
 void Window::_clear_window() {
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
 
+	bool had_focus = has_focus();
+
 	DisplayServer::get_singleton()->window_set_rect_changed_callback(Callable(), window_id);
 	DisplayServer::get_singleton()->window_set_window_event_callback(Callable(), window_id);
 	DisplayServer::get_singleton()->window_set_input_event_callback(Callable(), window_id);
@@ -638,7 +640,7 @@ void Window::_clear_window() {
 	window_id = DisplayServer::INVALID_WINDOW_ID;
 
 	// If closing window was focused and has a parent, return focus.
-	if (focused && transient_parent) {
+	if (had_focus && transient_parent) {
 		transient_parent->grab_focus();
 	}
 
@@ -1185,6 +1187,7 @@ void Window::_notification(int p_what) {
 					{
 						position = DisplayServer::get_singleton()->window_get_position(window_id);
 						size = DisplayServer::get_singleton()->window_get_size(window_id);
+						focused = DisplayServer::get_singleton()->window_is_focused(window_id);
 					}
 					_update_window_size(); // Inform DisplayServer of minimum and maximum size.
 					_update_viewport_size(); // Then feed back to the viewport.
@@ -1762,6 +1765,9 @@ void Window::grab_focus() {
 
 bool Window::has_focus() const {
 	ERR_READ_THREAD_GUARD_V(false);
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		return DisplayServer::get_singleton()->window_is_focused(window_id);
+	}
 	return focused;
 }
 
@@ -1817,13 +1823,13 @@ void Window::set_theme(const Ref<Theme> &p_theme) {
 	}
 
 	if (theme.is_valid()) {
-		theme->disconnect("changed", callable_mp(this, &Window::_theme_changed));
+		theme->disconnect_changed(callable_mp(this, &Window::_theme_changed));
 	}
 
 	theme = p_theme;
 	if (theme.is_valid()) {
 		theme_owner->propagate_theme_changed(this, this, is_inside_tree(), true);
-		theme->connect("changed", callable_mp(this, &Window::_theme_changed), CONNECT_DEFERRED);
+		theme->connect_changed(callable_mp(this, &Window::_theme_changed), CONNECT_DEFERRED);
 		return;
 	}
 
@@ -2159,11 +2165,11 @@ void Window::add_theme_icon_override(const StringName &p_name, const Ref<Texture
 	ERR_FAIL_COND(!p_icon.is_valid());
 
 	if (theme_icon_override.has(p_name)) {
-		theme_icon_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		theme_icon_override[p_name]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 
 	theme_icon_override[p_name] = p_icon;
-	theme_icon_override[p_name]->connect("changed", callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	theme_icon_override[p_name]->connect_changed(callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_override_changed();
 }
 
@@ -2172,11 +2178,11 @@ void Window::add_theme_style_override(const StringName &p_name, const Ref<StyleB
 	ERR_FAIL_COND(!p_style.is_valid());
 
 	if (theme_style_override.has(p_name)) {
-		theme_style_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		theme_style_override[p_name]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 
 	theme_style_override[p_name] = p_style;
-	theme_style_override[p_name]->connect("changed", callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	theme_style_override[p_name]->connect_changed(callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_override_changed();
 }
 
@@ -2185,11 +2191,11 @@ void Window::add_theme_font_override(const StringName &p_name, const Ref<Font> &
 	ERR_FAIL_COND(!p_font.is_valid());
 
 	if (theme_font_override.has(p_name)) {
-		theme_font_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		theme_font_override[p_name]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 
 	theme_font_override[p_name] = p_font;
-	theme_font_override[p_name]->connect("changed", callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	theme_font_override[p_name]->connect_changed(callable_mp(this, &Window::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
 	_notify_theme_override_changed();
 }
 
@@ -2214,7 +2220,7 @@ void Window::add_theme_constant_override(const StringName &p_name, int p_constan
 void Window::remove_theme_icon_override(const StringName &p_name) {
 	ERR_MAIN_THREAD_GUARD;
 	if (theme_icon_override.has(p_name)) {
-		theme_icon_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		theme_icon_override[p_name]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 
 	theme_icon_override.erase(p_name);
@@ -2224,7 +2230,7 @@ void Window::remove_theme_icon_override(const StringName &p_name) {
 void Window::remove_theme_style_override(const StringName &p_name) {
 	ERR_MAIN_THREAD_GUARD;
 	if (theme_style_override.has(p_name)) {
-		theme_style_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		theme_style_override[p_name]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 
 	theme_style_override.erase(p_name);
@@ -2234,7 +2240,7 @@ void Window::remove_theme_style_override(const StringName &p_name) {
 void Window::remove_theme_font_override(const StringName &p_name) {
 	ERR_MAIN_THREAD_GUARD;
 	if (theme_font_override.has(p_name)) {
-		theme_font_override[p_name]->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		theme_font_override[p_name]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 
 	theme_font_override.erase(p_name);
@@ -2646,13 +2652,15 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_exclusive_centered_ratio", "from_node", "ratio"), &Window::popup_exclusive_centered_ratio, DEFVAL(0.8));
 	ClassDB::bind_method(D_METHOD("popup_exclusive_centered_clamped", "from_node", "minsize", "fallback_ratio"), &Window::popup_exclusive_centered_clamped, DEFVAL(Size2i()), DEFVAL(0.75));
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "initial_position", PROPERTY_HINT_ENUM, "Absolute,Center of Primary Screen,Center of Other Screen,Center of Screen With Mouse Pointer,Center of Screen With Keyboard Focus"), "set_initial_position", "get_initial_position");
+	// Keep the enum values in sync with the `Mode` enum.
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen,Exclusive Fullscreen"), "set_mode", "get_mode");
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
+
+	// Keep the enum values in sync with the `WindowInitialPosition` enum.
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "initial_position", PROPERTY_HINT_ENUM, "Absolute,Center of Primary Screen,Center of Main Window Screen,Center of Other Screen,Center of Screen With Mouse Pointer,Center of Screen With Keyboard Focus"), "set_initial_position", "get_initial_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen"), "set_mode", "get_mode");
-
-	// Keep the enum values in sync with the `DisplayServer::SCREEN_` enum.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), "set_current_screen", "get_current_screen");
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "mouse_passthrough_polygon"), "set_mouse_passthrough_polygon", "get_mouse_passthrough_polygon");
@@ -2760,13 +2768,13 @@ Window::~Window() {
 
 	// Resources need to be disconnected.
 	for (KeyValue<StringName, Ref<Texture2D>> &E : theme_icon_override) {
-		E.value->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		E.value->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 	for (KeyValue<StringName, Ref<StyleBox>> &E : theme_style_override) {
-		E.value->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		E.value->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 	for (KeyValue<StringName, Ref<Font>> &E : theme_font_override) {
-		E.value->disconnect("changed", callable_mp(this, &Window::_notify_theme_override_changed));
+		E.value->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
 	}
 
 	// Then override maps can be simply cleared.

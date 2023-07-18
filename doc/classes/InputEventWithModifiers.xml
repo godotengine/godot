@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventWithModifiers" inherits="InputEventFromWindow" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="InputEventWithModifiers" inherits="InputEventFromWindow" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract base class for input events affected by modifier keys like [kbd]Shift[/kbd] and [kbd]Alt[/kbd].
 	</brief_description>
@@ -11,7 +11,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_modifiers_mask" qualifiers="const">
-			<return type="int" enum="KeyModifierMask" />
+			<return type="int" enum="KeyModifierMask" is_bitfield="true" />
 			<description>
 				Returns the keycode combination of modifier keys.
 			</description>

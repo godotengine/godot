@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectStereoEnhance" inherits="AudioEffect" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AudioEffectStereoEnhance" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		An audio effect that can be used to adjust the intensity of stereo panning.
 	</brief_description>

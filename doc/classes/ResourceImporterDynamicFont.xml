@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterDynamicFont" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="allow_system_fallback" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="antialiasing" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="compress" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="fallbacks" type="Array" setter="" getter="" default="[]">
+		</member>
+		<member name="force_autohinter" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="generate_mipmaps" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="hinting" type="int" setter="" getter="" default="1">
+		</member>
+		<member name="language_support" type="Dictionary" setter="" getter="" default="{}">
+		</member>
+		<member name="msdf_pixel_range" type="int" setter="" getter="" default="8">
+		</member>
+		<member name="msdf_size" type="int" setter="" getter="" default="48">
+		</member>
+		<member name="multichannel_signed_distance_field" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="opentype_features" type="Dictionary" setter="" getter="" default="{}">
+		</member>
+		<member name="oversampling" type="float" setter="" getter="" default="0.0">
+		</member>
+		<member name="preload" type="Array" setter="" getter="" default="[]">
+		</member>
+		<member name="script_support" type="Dictionary" setter="" getter="" default="{}">
+		</member>
+		<member name="subpixel_positioning" type="int" setter="" getter="" default="1">
+		</member>
+	</members>
+</class>

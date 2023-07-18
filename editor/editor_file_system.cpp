@@ -262,7 +262,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 				} else {
 					Vector<String> split = l.split("::");
-					ERR_CONTINUE(split.size() != 9);
+					ERR_CONTINUE(split.size() < 9);
 					String name = split[0];
 					String file;
 
@@ -544,7 +544,7 @@ bool EditorFileSystem::_scan_import_support(Vector<String> reimports) {
 	}
 
 	for (int i = 0; i < reimports.size(); i++) {
-		HashMap<String, int>::Iterator E = import_support_test.find(reimports[i].get_extension());
+		HashMap<String, int>::Iterator E = import_support_test.find(reimports[i].get_extension().to_lower());
 		if (E) {
 			import_support_tested.write[E->value] = true;
 		}
@@ -1635,6 +1635,7 @@ void EditorFileSystem::_queue_update_script_class(const String &p_path) {
 }
 
 void EditorFileSystem::update_file(const String &p_file) {
+	ERR_FAIL_COND(p_file.is_empty());
 	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
 
@@ -2330,6 +2331,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	ResourceUID::get_singleton()->update_cache(); // After reimporting, update the cache.
 
 	_save_filesystem_cache();
+	_update_pending_script_classes();
 	importing = false;
 	if (!is_scanning()) {
 		emit_signal(SNAME("filesystem_changed"));

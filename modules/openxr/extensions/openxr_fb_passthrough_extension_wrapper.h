@@ -33,7 +33,6 @@
 
 #include "../openxr_api.h"
 #include "../util.h"
-
 #include "openxr_composition_layer_provider.h"
 #include "openxr_extension_wrapper.h"
 
@@ -212,27 +211,12 @@ private:
 
 	Viewport *get_main_viewport();
 
-	bool is_composition_passthrough_layer_ready();
-
 	static OpenXRFbPassthroughExtensionWrapper *singleton;
 
 	bool fb_passthrough_ext = false; // required for any passthrough functionality
 	bool fb_triangle_mesh_ext = false; // only use for projected passthrough
 
-	XrPassthroughCreateInfoFB passthrough_create_info = {
-		XR_TYPE_PASSTHROUGH_CREATE_INFO_FB,
-		nullptr,
-		0,
-	};
 	XrPassthroughFB passthrough_handle = XR_NULL_HANDLE;
-
-	XrPassthroughLayerCreateInfoFB passthrough_layer_config = {
-		XR_TYPE_PASSTHROUGH_LAYER_CREATE_INFO_FB,
-		nullptr,
-		passthrough_handle,
-		XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB,
-		XR_PASSTHROUGH_LAYER_PURPOSE_RECONSTRUCTION_FB,
-	};
 	XrPassthroughLayerFB passthrough_layer = XR_NULL_HANDLE;
 
 	XrCompositionLayerPassthroughFB composition_passthrough_layer = {

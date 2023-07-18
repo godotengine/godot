@@ -220,7 +220,7 @@ reset_buffer (hb_buffer_t *buffer,
   assert (buffer->ensure (text.length));
   buffer->have_positions = false;
   buffer->len = text.length;
-  memcpy (buffer->info, text.arrayZ, text.length * sizeof (buffer->info[0]));
+  hb_memcpy (buffer->info, text.arrayZ, text.length * sizeof (buffer->info[0]));
   hb_buffer_set_content_type (buffer, HB_BUFFER_CONTENT_TYPE_UNICODE);
 }
 

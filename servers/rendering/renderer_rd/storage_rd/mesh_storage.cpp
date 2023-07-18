@@ -727,6 +727,12 @@ void MeshStorage::mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) {
 void MeshStorage::mesh_clear(RID p_mesh) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_COND(!mesh);
+
+	// Clear instance data before mesh data.
+	for (MeshInstance *mi : mesh->instances) {
+		_mesh_instance_clear(mi);
+	}
+
 	for (uint32_t i = 0; i < mesh->surface_count; i++) {
 		Mesh::Surface &s = *mesh->surfaces[i];
 		if (s.vertex_buffer.is_valid()) {
@@ -766,10 +772,6 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 	mesh->surfaces = nullptr;
 	mesh->surface_count = 0;
 	mesh->material_cache.clear();
-	//clear instance data
-	for (MeshInstance *mi : mesh->instances) {
-		_mesh_instance_clear(mi);
-	}
 	mesh->has_bone_weights = false;
 	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 
@@ -860,6 +862,7 @@ void MeshStorage::_mesh_instance_clear(MeshInstance *mi) {
 
 	if (mi->blend_weights_buffer.is_valid()) {
 		RD::get_singleton()->free(mi->blend_weights_buffer);
+		mi->blend_weights_buffer = RID();
 	}
 	mi->blend_weights.clear();
 	mi->weights_dirty = false;

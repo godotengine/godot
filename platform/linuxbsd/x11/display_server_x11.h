@@ -477,6 +477,7 @@ public:
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override;
 
@@ -501,6 +502,7 @@ public:
 	virtual String keyboard_get_layout_language(int p_index) const override;
 	virtual String keyboard_get_layout_name(int p_index) const override;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
+	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
 
 	virtual void process_events() override;
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationPlayer" inherits="Node" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationPlayer" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node used for animation playback.
 	</brief_description>
@@ -319,10 +319,10 @@
 	</signals>
 	<constants>
 		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback">
-			Process animation during the physics process. This is especially useful when animating physics bodies.
+			Process animation during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]). This is especially useful when animating physics bodies.
 		</constant>
 		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessCallback">
-			Process animation during the idle process.
+			Process animation during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
 		</constant>
 		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessCallback">
 			Do not process animation. Use [method advance] to process the animation manually.

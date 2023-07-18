@@ -496,8 +496,6 @@ public:
 
 	virtual bool can_create_resources_async() const override;
 
-	RID texture_create();
-
 	virtual RID texture_allocate() override;
 	virtual void texture_free(RID p_rid) override;
 
@@ -542,16 +540,12 @@ public:
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override;
 
 	void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_layer = 0);
-	void texture_set_data_partial(RID p_texture, const Ref<Image> &p_image, int src_x, int src_y, int src_w, int src_h, int dst_x, int dst_y, int p_dst_mip, int p_layer = 0);
-	//Ref<Image> texture_get_data(RID p_texture, int p_layer = 0) const;
-	void texture_set_sampler(RID p_texture, RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat);
 	Image::Format texture_get_format(RID p_texture) const;
 	uint32_t texture_get_texid(RID p_texture) const;
 	uint32_t texture_get_width(RID p_texture) const;
 	uint32_t texture_get_height(RID p_texture) const;
 	uint32_t texture_get_depth(RID p_texture) const;
 	void texture_bind(RID p_texture, uint32_t p_texture_no);
-	RID texture_create_radiance_cubemap(RID p_source, int p_resolution = -1) const;
 
 	/* TEXTURE ATLAS API */
 

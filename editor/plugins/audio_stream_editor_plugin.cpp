@@ -30,7 +30,6 @@
 
 #include "audio_stream_editor_plugin.h"
 
-#include "core/core_string_names.h"
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -195,7 +194,7 @@ void AudioStreamEditor::_seek_to(real_t p_x) {
 
 void AudioStreamEditor::set_stream(const Ref<AudioStream> &p_stream) {
 	if (stream.is_valid()) {
-		stream->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &AudioStreamEditor::_stream_changed));
+		stream->disconnect_changed(callable_mp(this, &AudioStreamEditor::_stream_changed));
 	}
 
 	stream = p_stream;
@@ -203,7 +202,7 @@ void AudioStreamEditor::set_stream(const Ref<AudioStream> &p_stream) {
 		hide();
 		return;
 	}
-	stream->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &AudioStreamEditor::_stream_changed));
+	stream->connect_changed(callable_mp(this, &AudioStreamEditor::_stream_changed));
 
 	_player->set_stream(stream);
 	_current = 0;

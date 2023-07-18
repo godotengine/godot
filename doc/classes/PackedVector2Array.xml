@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PackedVector2Array" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="PackedVector2Array" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A packed array of [Vector2]s.
 	</brief_description>
@@ -28,6 +28,10 @@
 			<param index="0" name="from" type="Array" />
 			<description>
 				Constructs a new [PackedVector2Array]. Optionally, you can pass in a generic [Array] that will be converted.
+				[b]Note:[/b] When initializing a [PackedVector2Array] with elements, it must be initialized with an [Array] of [Vector2] values:
+				[codeblock]
+				var array = PackedVector2Array([Vector2(12, 34), Vector2(56, 78)])
+				[/codeblock]
 			</description>
 		</constructor>
 	</constructors>

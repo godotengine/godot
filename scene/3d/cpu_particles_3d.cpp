@@ -33,7 +33,11 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/curve_texture.h"
+#include "scene/resources/gradient_texture.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/particle_process_material.h"
+#include "scene/scene_string_names.h"
 
 AABB CPUParticles3D::get_aabb() const {
 	return AABB();
@@ -46,6 +50,7 @@ void CPUParticles3D::set_emitting(bool p_emitting) {
 
 	emitting = p_emitting;
 	if (emitting) {
+		active = true;
 		set_process_internal(true);
 
 		// first update before rendering to avoid one frame delay after emitting starts
@@ -220,7 +225,6 @@ PackedStringArray CPUParticles3D::get_configuration_warnings() const {
 
 void CPUParticles3D::restart() {
 	time = 0;
-	inactive_time = 0;
 	frame_remainder = 0;
 	cycle = 0;
 	emitting = false;
@@ -575,21 +579,15 @@ void CPUParticles3D::_update_internal() {
 	}
 
 	double delta = get_process_delta_time();
-	if (emitting) {
-		inactive_time = 0;
-	} else {
-		inactive_time += delta;
-		if (inactive_time > lifetime * 1.2) {
-			set_process_internal(false);
-			_set_redraw(false);
+	if (!active && !emitting) {
+		set_process_internal(false);
+		_set_redraw(false);
 
-			//reset variables
-			time = 0;
-			inactive_time = 0;
-			frame_remainder = 0;
-			cycle = 0;
-			return;
-		}
+		//reset variables
+		time = 0;
+		frame_remainder = 0;
+		cycle = 0;
+		return;
 	}
 	_set_redraw(true);
 
@@ -670,6 +668,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 
 	double system_phase = time / lifetime;
 
+	bool should_be_active = false;
 	for (int i = 0; i < pcount; i++) {
 		Particle &p = parray[i];
 
@@ -1136,6 +1135,12 @@ void CPUParticles3D::_particles_process(double p_delta) {
 		}
 
 		p.transform.origin += p.velocity * local_delta;
+
+		should_be_active = true;
+	}
+	if (!Math::is_equal_approx(time, 0.0) && active && !should_be_active) {
+		active = false;
+		emit_signal(SceneStringNames::get_singleton()->finished);
 	}
 }
 
@@ -1542,6 +1547,8 @@ void CPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale_curve_z", "scale_curve"), &CPUParticles3D::set_scale_curve_z);
 
 	ClassDB::bind_method(D_METHOD("convert_from_particles", "particles"), &CPUParticles3D::convert_from_particles);
+
+	ADD_SIGNAL(MethodInfo("finished"));
 
 	ADD_GROUP("Emission Shape", "emission_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_shape", PROPERTY_HINT_ENUM, "Point,Sphere,Sphere Surface,Box,Points,Directed Points,Ring", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_emission_shape", "get_emission_shape");

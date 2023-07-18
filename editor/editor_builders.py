@@ -14,7 +14,6 @@ from platform_methods import subprocess_main
 
 
 def make_doc_header(target, source, env):
-
     dst = target[0]
     g = open(dst, "w", encoding="utf-8")
     buf = ""
@@ -51,7 +50,6 @@ def make_doc_header(target, source, env):
 
 
 def make_fonts_header(target, source, env):
-
     dst = target[0]
 
     g = open(dst, "w", encoding="utf-8")
@@ -80,7 +78,6 @@ def make_fonts_header(target, source, env):
 
 
 def make_translations_header(target, source, env, category):
-
     dst = target[0]
 
     g = open(dst, "w", encoding="utf-8")

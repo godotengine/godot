@@ -493,6 +493,13 @@ struct hb_buffer_t
 
   HB_NODISCARD HB_INTERNAL bool enlarge (unsigned int size);
 
+  HB_NODISCARD bool resize (unsigned length)
+  {
+    assert (!have_output);
+    if (unlikely (!ensure (length))) return false;
+    len = length;
+    return true;
+  }
   HB_NODISCARD bool ensure (unsigned int size)
   { return likely (!size || size < allocated) ? true : enlarge (size); }
 

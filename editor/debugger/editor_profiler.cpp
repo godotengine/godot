@@ -33,6 +33,7 @@
 #include "core/os/os.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/resources/image_texture.h"
 
 void EditorProfiler::_make_metric_ptrs(Metric &m) {
 	for (int i = 0; i < m.categories.size(); i++) {
@@ -683,8 +684,6 @@ EditorProfiler::EditorProfiler() {
 
 	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 10000);
 	frame_metrics.resize(metric_size);
-
-	EDITOR_DEF("debugger/profiler_frame_max_functions", 64);
 
 	frame_delay = memnew(Timer);
 	frame_delay->set_wait_time(0.1);

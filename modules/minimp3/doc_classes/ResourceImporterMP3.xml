@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterMP3" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="bar_beats" type="int" setter="" getter="" default="4">
+		</member>
+		<member name="beat_count" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="bpm" type="float" setter="" getter="" default="0">
+		</member>
+		<member name="loop" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the audio will play again from the specified [member loop_offset] once it is done playing. Useful for ambient sounds and background music.
+		</member>
+		<member name="loop_offset" type="float" setter="" getter="" default="0">
+		</member>
+	</members>
+</class>

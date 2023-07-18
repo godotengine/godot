@@ -157,7 +157,7 @@ Error MultiplayerSynchronizer::get_state(const List<NodePath> &p_properties, Obj
 		bool valid = false;
 		const Object *obj = _get_prop_target(p_obj, prop);
 		ERR_FAIL_COND_V(!obj, FAILED);
-		r_variant.write[i] = obj->get(prop.get_concatenated_subnames(), &valid);
+		r_variant.write[i] = obj->get_indexed(prop.get_subnames(), &valid);
 		r_variant_ptrs.write[i] = &r_variant[i];
 		ERR_FAIL_COND_V_MSG(!valid, ERR_INVALID_DATA, vformat("Property '%s' not found.", prop));
 		i++;
@@ -171,7 +171,7 @@ Error MultiplayerSynchronizer::set_state(const List<NodePath> &p_properties, Obj
 	for (const NodePath &prop : p_properties) {
 		Object *obj = _get_prop_target(p_obj, prop);
 		ERR_FAIL_COND_V(!obj, FAILED);
-		obj->set(prop.get_concatenated_subnames(), p_state[i]);
+		obj->set_indexed(prop.get_subnames(), p_state[i]);
 		i += 1;
 	}
 	return OK;
@@ -433,11 +433,10 @@ List<NodePath> MultiplayerSynchronizer::get_delta_properties(uint64_t p_indexes)
 	const List<NodePath> watch_props = replication_config->get_watch_properties();
 	int idx = 0;
 	for (const NodePath &prop : watch_props) {
-		if ((p_indexes & (1ULL << idx)) == 0) {
+		if ((p_indexes & (1ULL << idx++)) == 0) {
 			continue;
 		}
 		out.push_back(prop);
-		idx++;
 	}
 	return out;
 }

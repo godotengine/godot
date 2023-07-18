@@ -74,7 +74,7 @@
 
   <!-- Godot DefineConstants. -->
   <PropertyGroup>
-    <!-- Define constant to identify Godot builds. -->
+    <!-- Define constants to identify Godot builds. -->
     <GodotDefineConstants>GODOT</GodotDefineConstants>
 
     <!--
@@ -90,7 +90,7 @@
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'ios' ">GODOT_IPHONE;GODOT_IOS;GODOT_MOBILE</GodotPlatformConstants>
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'web' ">GODOT_JAVASCRIPT;GODOT_HTML5;GODOT_WASM;GODOT_WEB</GodotPlatformConstants>
 
-    <GodotDefineConstants>$(GodotDefineConstants);$(GodotPlatformConstants)</GodotDefineConstants>
+    <GodotDefineConstants>$(GodotDefineConstants);$(GodotPlatformConstants);$(GodotVersionConstants)</GodotDefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>

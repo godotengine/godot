@@ -846,13 +846,14 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		_update_selected_editor_menu();
 	}
 
-	_update_history_arrows();
-
-	_update_script_names();
-	_update_members_overview_visibility();
-	_update_help_overview_visibility();
-	_save_layout();
-	_update_find_replace_bar();
+	if (script_close_queue.is_empty()) {
+		_update_history_arrows();
+		_update_script_names();
+		_update_members_overview_visibility();
+		_update_help_overview_visibility();
+		_save_layout();
+		_update_find_replace_bar();
+	}
 }
 
 void ScriptEditor::_close_current_tab(bool p_save) {
@@ -2434,6 +2435,18 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	return true;
 }
 
+PackedStringArray ScriptEditor::get_unsaved_scripts() const {
+	PackedStringArray unsaved_list;
+
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (se && se->is_unsaved()) {
+			unsaved_list.append(se->get_name());
+		}
+	}
+	return unsaved_list;
+}
+
 void ScriptEditor::save_current_script() {
 	ScriptEditorBase *current = _get_current_editor();
 	if (!current || _test_script_times_on_disk()) {
@@ -3911,8 +3924,8 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	_update_recent_scripts();
 
 	file_menu->get_popup()->add_separator();
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KeyModifierMask::ALT | KeyModifierMask::CMD_OR_CTRL | Key::S), FILE_SAVE);
-	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As...")), FILE_SAVE_AS);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KeyModifierMask::CMD_OR_CTRL | Key::S), FILE_SAVE);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::S), FILE_SAVE_AS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_all", TTR("Save All"), KeyModifierMask::SHIFT | KeyModifierMask::ALT | Key::S), FILE_SAVE_ALL);
 	ED_SHORTCUT_OVERRIDE("script_editor/save_all", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::S);
 	file_menu->get_popup()->add_separator();
@@ -3999,16 +4012,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	menu_hb->add_child(help_search);
 	help_search->set_tooltip_text(TTR("Search the reference documentation."));
 
-	if (p_wrapper->is_window_available()) {
-		make_floating = memnew(ScreenSelect);
-		make_floating->set_flat(true);
-		make_floating->set_tooltip_text(TTR("Make the script editor floating."));
-		make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
-
-		menu_hb->add_child(make_floating);
-		p_wrapper->connect("window_visibility_changed", callable_mp(this, &ScriptEditor::_window_changed));
-	}
-
 	menu_hb->add_child(memnew(VSeparator));
 
 	script_back = memnew(Button);
@@ -4024,6 +4027,18 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	menu_hb->add_child(script_forward);
 	script_forward->set_disabled(true);
 	script_forward->set_tooltip_text(TTR("Go to next edited document."));
+
+	if (p_wrapper->is_window_available()) {
+		menu_hb->add_child(memnew(VSeparator));
+
+		make_floating = memnew(ScreenSelect);
+		make_floating->set_flat(true);
+		make_floating->set_tooltip_text(TTR("Make the script editor floating."));
+		make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
+
+		menu_hb->add_child(make_floating);
+		p_wrapper->connect("window_visibility_changed", callable_mp(this, &ScriptEditor::_window_changed));
+	}
 
 	tab_container->connect("tab_changed", callable_mp(this, &ScriptEditor::_tab_changed));
 
@@ -4204,6 +4219,49 @@ void ScriptEditorPlugin::selected_notify() {
 	_focus_another_editor();
 }
 
+String ScriptEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
+	const PackedStringArray unsaved_scripts = script_editor->get_unsaved_scripts();
+	if (unsaved_scripts.is_empty()) {
+		return String();
+	}
+
+	PackedStringArray message;
+	if (!p_for_scene.is_empty()) {
+		PackedStringArray unsaved_built_in_scripts;
+
+		const String scene_file = p_for_scene.get_file();
+		for (const String &E : unsaved_scripts) {
+			if (!E.is_resource_file() && E.contains(scene_file)) {
+				unsaved_built_in_scripts.append(E);
+			}
+		}
+
+		if (unsaved_built_in_scripts.is_empty()) {
+			return String();
+		} else {
+			message.resize(unsaved_built_in_scripts.size() + 1);
+			message.write[0] = TTR("There are unsaved changes in the following built-in script(s):");
+
+			int i = 1;
+			for (const String &E : unsaved_built_in_scripts) {
+				message.write[i] = E.trim_suffix("(*)");
+				i++;
+			}
+			return String("\n").join(message);
+		}
+	}
+
+	message.resize(unsaved_scripts.size() + 1);
+	message.write[0] = TTR("Save changes to the following script(s) before quitting?");
+
+	int i = 1;
+	for (const String &E : unsaved_scripts) {
+		message.write[i] = E.trim_suffix("(*)");
+		i++;
+	}
+	return String("\n").join(message);
+}
+
 void ScriptEditorPlugin::save_external_data() {
 	script_editor->save_all_scripts();
 }
@@ -4257,7 +4315,7 @@ void ScriptEditorPlugin::edited_scene_changed() {
 
 ScriptEditorPlugin::ScriptEditorPlugin() {
 	window_wrapper = memnew(WindowWrapper);
-	window_wrapper->set_window_title(TTR("Script Editor - Godot Engine"));
+	window_wrapper->set_window_title(vformat(TTR("%s - Godot Engine"), TTR("Script Editor")));
 	window_wrapper->set_margins_enabled(true);
 
 	script_editor = memnew(ScriptEditor(window_wrapper));

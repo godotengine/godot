@@ -511,6 +511,8 @@ public:
 	virtual bool is_dark_mode() const override;
 	virtual Color get_accent_color() const override;
 
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
+
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
 
@@ -594,6 +596,7 @@ public:
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual bool window_is_focused(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override;
 
@@ -622,6 +625,7 @@ public:
 	virtual String keyboard_get_layout_language(int p_index) const override;
 	virtual String keyboard_get_layout_name(int p_index) const override;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
+	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
 
 	virtual int tablet_get_driver_count() const override;
 	virtual String tablet_get_driver_name(int p_driver) const override;

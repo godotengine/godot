@@ -110,7 +110,7 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 	}
 
 	for (Node3D *&E : data.children) {
-		if (E->data.top_level_active) {
+		if (E->data.top_level) {
 			continue; //don't propagate to a top_level
 		}
 		E->_propagate_transform_changed(p_origin);
@@ -153,7 +153,6 @@ void Node3D::_notification(int p_what) {
 					data.local_transform = data.parent->get_global_transform() * get_transform();
 					_replace_dirty_mask(DIRTY_EULER_ROTATION_AND_SCALE); // As local transform was updated, rot/scale should be dirty.
 				}
-				data.top_level_active = true;
 			}
 
 			_set_dirty_bits(DIRTY_GLOBAL_TRANSFORM); // Global is always dirty upon entering a scene.
@@ -173,7 +172,6 @@ void Node3D::_notification(int p_what) {
 			}
 			data.parent = nullptr;
 			data.C = nullptr;
-			data.top_level_active = false;
 			_update_visibility_parent(true);
 		} break;
 
@@ -305,7 +303,7 @@ Quaternion Node3D::get_quaternion() const {
 
 void Node3D::set_global_transform(const Transform3D &p_transform) {
 	ERR_THREAD_GUARD;
-	Transform3D xform = (data.parent && !data.top_level_active)
+	Transform3D xform = (data.parent && !data.top_level)
 			? data.parent->get_global_transform().affine_inverse() * p_transform
 			: p_transform;
 
@@ -337,7 +335,7 @@ Transform3D Node3D::get_global_transform() const {
 		}
 
 		Transform3D new_global;
-		if (data.parent && !data.top_level_active) {
+		if (data.parent && !data.top_level) {
 			new_global = data.parent->get_global_transform() * data.local_transform;
 		} else {
 			new_global = data.local_transform;
@@ -727,12 +725,8 @@ void Node3D::set_as_top_level(bool p_enabled) {
 		} else if (data.parent) {
 			set_transform(data.parent->get_global_transform().affine_inverse() * get_global_transform());
 		}
-
-		data.top_level = p_enabled;
-		data.top_level_active = p_enabled;
-	} else {
-		data.top_level = p_enabled;
 	}
+	data.top_level = p_enabled;
 }
 
 bool Node3D::is_set_as_top_level() const {

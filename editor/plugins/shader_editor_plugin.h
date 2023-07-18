@@ -115,6 +115,7 @@ public:
 	virtual void set_window_layout(Ref<ConfigFile> p_layout) override;
 	virtual void get_window_layout(Ref<ConfigFile> p_layout) override;
 
+	virtual String get_unsaved_status(const String &p_for_scene) const override;
 	virtual void save_external_data() override;
 	virtual void apply_changes() override;
 

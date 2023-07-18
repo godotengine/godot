@@ -3827,10 +3827,10 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	text_edit->adjust_viewport_to_caret();
 	MessageQueue::get_singleton()->flush();
 
-	CHECK(text_edit->get_first_visible_line() == (visible_lines / 2) + 4);
-	CHECK(text_edit->get_v_scroll() == (visible_lines + (visible_lines / 2)) - 1);
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines) + 3);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 1);
+	CHECK(text_edit->get_first_visible_line() == (visible_lines / 2) + 6);
+	CHECK(text_edit->get_v_scroll() == (visible_lines + (visible_lines / 2)) + 1);
+	CHECK(text_edit->get_last_full_visible_line() == (visible_lines) + 5);
+	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 1);
 
 	text_edit->center_viewport_to_caret();

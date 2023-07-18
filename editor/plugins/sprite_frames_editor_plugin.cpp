@@ -46,6 +46,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
+#include "scene/resources/atlas_texture.h"
 
 static void _draw_shadowed_line(Control *p_control, const Point2 &p_from, const Size2 &p_size, const Size2 &p_shadow_offset, Color p_color, Color p_shadow_color) {
 	p_control->draw_line(p_from, p_from + p_size, p_color);

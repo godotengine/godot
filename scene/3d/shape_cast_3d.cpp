@@ -30,7 +30,6 @@
 
 #include "shape_cast_3d.h"
 
-#include "core/core_string_names.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
@@ -93,7 +92,9 @@ void ShapeCast3D::_notification(int p_what) {
 }
 
 void ShapeCast3D::_bind_methods() {
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &ShapeCast3D::resource_changed);
+#endif
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &ShapeCast3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &ShapeCast3D::is_enabled);
@@ -312,12 +313,10 @@ real_t ShapeCast3D::get_closest_collision_unsafe_fraction() const {
 	return collision_unsafe_fraction;
 }
 
+#ifndef DISABLE_DEPRECATED
 void ShapeCast3D::resource_changed(Ref<Resource> p_res) {
-	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint()) {
-		_update_debug_shape();
-	}
-	update_gizmos();
 }
+#endif
 
 void ShapeCast3D::_shape_changed() {
 	update_gizmos();
@@ -332,13 +331,11 @@ void ShapeCast3D::set_shape(const Ref<Shape3D> &p_shape) {
 		return;
 	}
 	if (shape.is_valid()) {
-		shape->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShapeCast3D::_shape_changed));
-		shape->unregister_owner(this);
+		shape->disconnect_changed(callable_mp(this, &ShapeCast3D::_shape_changed));
 	}
 	shape = p_shape;
 	if (shape.is_valid()) {
-		shape->register_owner(this);
-		shape->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShapeCast3D::_shape_changed));
+		shape->connect_changed(callable_mp(this, &ShapeCast3D::_shape_changed));
 		shape_rid = shape->get_rid();
 	}
 
@@ -632,10 +629,4 @@ void ShapeCast3D::_clear_debug_shape() {
 	}
 
 	debug_shape = nullptr;
-}
-
-ShapeCast3D::~ShapeCast3D() {
-	if (!shape.is_null()) {
-		shape->unregister_owner(this);
-	}
 }

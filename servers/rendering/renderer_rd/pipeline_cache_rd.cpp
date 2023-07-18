@@ -36,7 +36,7 @@ RID PipelineCacheRD::_generate_version(RD::VertexFormatID p_vertex_format_id, RD
 	RD::PipelineMultisampleState multisample_state_version = multisample_state;
 	multisample_state_version.sample_count = RD::get_singleton()->framebuffer_format_get_texture_samples(p_framebuffer_format_id, p_render_pass);
 
-	bool wireframe = p_wireframe || rasterization_state.wireframe;
+	bool wireframe = p_wireframe;
 
 	RD::PipelineRasterizationState raster_state_version = rasterization_state;
 	raster_state_version.wireframe = wireframe;

@@ -45,6 +45,7 @@
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform.h"
 #include "main/splash.gen.h"
+#include "scene/resources/image_texture.h"
 
 #include <string.h>
 #include <sys/stat.h>
@@ -58,15 +59,30 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	GDCLASS(EditorExportPlatformIOS, EditorExportPlatform);
 
 	Ref<ImageTexture> logo;
+	Ref<ImageTexture> run_icon;
 
 	// Plugins
 	mutable SafeFlag plugins_changed;
-#ifndef ANDROID_ENABLED
-	Thread check_for_changes_thread;
-	SafeFlag quit_request;
-#endif
+	SafeFlag devices_changed;
+
+	struct Device {
+		String id;
+		String name;
+		bool simulator = false;
+		bool wifi = false;
+	};
+
+	Vector<Device> devices;
+	Mutex device_lock;
+
 	Mutex plugins_lock;
 	mutable Vector<PluginConfigIOS> plugins;
+#ifdef MACOS_ENABLED
+	Thread check_for_changes_thread;
+	SafeFlag quit_request;
+
+	static void _check_for_changes_poll_thread(void *ud);
+#endif
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
 	static Error _walk_dir_recursive(Ref<DirAccess> &p_da, FileHandler p_handler, void *p_userdata);
@@ -122,64 +138,9 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Error _export_additional_assets(const String &p_out_dir, const Vector<SharedObject> &p_libraries, Vector<IOSExportAsset> &r_exported_assets);
 	Error _export_ios_plugins(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &dest_dir, Vector<IOSExportAsset> &r_exported_assets, bool p_debug);
 
-	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const {
-		String pname = p_package;
+	Error _export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags, bool p_simulator, bool p_skip_ipa);
 
-		if (pname.length() == 0) {
-			if (r_error) {
-				*r_error = TTR("Identifier is missing.");
-			}
-			return false;
-		}
-
-		for (int i = 0; i < pname.length(); i++) {
-			char32_t c = pname[i];
-			if (!(is_ascii_alphanumeric_char(c) || c == '-' || c == '.')) {
-				if (r_error) {
-					*r_error = vformat(TTR("The character '%s' is not allowed in Identifier."), String::chr(c));
-				}
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-#ifndef ANDROID_ENABLED
-	static void _check_for_changes_poll_thread(void *ud) {
-		EditorExportPlatformIOS *ea = static_cast<EditorExportPlatformIOS *>(ud);
-
-		while (!ea->quit_request.is_set()) {
-			// Nothing to do if we already know the plugins have changed.
-			if (!ea->plugins_changed.is_set()) {
-				MutexLock lock(ea->plugins_lock);
-
-				Vector<PluginConfigIOS> loaded_plugins = get_plugins();
-
-				if (ea->plugins.size() != loaded_plugins.size()) {
-					ea->plugins_changed.set();
-				} else {
-					for (int i = 0; i < ea->plugins.size(); i++) {
-						if (ea->plugins[i].name != loaded_plugins[i].name || ea->plugins[i].last_updated != loaded_plugins[i].last_updated) {
-							ea->plugins_changed.set();
-							break;
-						}
-					}
-				}
-			}
-
-			uint64_t wait = 3000000;
-			uint64_t time = OS::get_singleton()->get_ticks_usec();
-			while (OS::get_singleton()->get_ticks_usec() - time < wait) {
-				OS::get_singleton()->delay_usec(300000);
-
-				if (ea->quit_request.is_set()) {
-					break;
-				}
-			}
-		}
-	}
-#endif
+	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
 
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
@@ -191,6 +152,23 @@ public:
 	virtual String get_name() const override { return "iOS"; }
 	virtual String get_os_name() const override { return "iOS"; }
 	virtual Ref<Texture2D> get_logo() const override { return logo; }
+	virtual Ref<Texture2D> get_run_icon() const override { return run_icon; }
+
+	virtual int get_options_count() const override;
+	virtual String get_options_tooltip() const override;
+	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
+	virtual String get_option_label(int p_index) const override;
+	virtual String get_option_tooltip(int p_index) const override;
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) override;
+
+	virtual bool poll_export() override {
+		bool dc = devices_changed.is_set();
+		if (dc) {
+			// don't clear unless we're reporting true, to avoid race
+			devices_changed.clear();
+		}
+		return dc;
+	}
 
 	virtual bool should_update_export_options() override {
 		bool export_options_changed = plugins_changed.is_set();
@@ -208,7 +186,7 @@ public:
 	}
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 
-	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
 
 	virtual void get_platform_features(List<String> *r_features) const override {

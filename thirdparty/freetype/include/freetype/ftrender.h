@@ -158,7 +158,7 @@ FT_BEGIN_HEADER
     FT_Renderer_GetCBoxFunc    get_glyph_cbox;
     FT_Renderer_SetModeFunc    set_mode;
 
-    FT_Raster_Funcs*           raster_class;
+    const FT_Raster_Funcs*     raster_class;
 
   } FT_Renderer_Class;
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ProjectSettings" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ProjectSettings" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Stores globally-accessible variables.
 	</brief_description>
@@ -818,6 +818,9 @@
 		<member name="dotnet/project/assembly_name" type="String" setter="" getter="" default="&quot;&quot;">
 			Name of the .NET assembly. This name is used as the name of the [code].csproj[/code] and [code].sln[/code] files. By default, it's set to the name of the project ([member application/config/name]) allowing to change it in the future without affecting the .NET assembly.
 		</member>
+		<member name="dotnet/project/assembly_reload_attempts" type="int" setter="" getter="" default="3">
+			Number of times to attempt assembly reloading after rebuilding .NET assembies. Effectively also the timeout in seconds to wait for unloading of script assemblies to finish.
+		</member>
 		<member name="dotnet/project/solution_directory" type="String" setter="" getter="" default="&quot;&quot;">
 			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.
 			Changing this value allows setting up a multi-project scenario where there are multiple [code].csproj[/code]. Keep in mind that the Godot project is considered one of the C# projects in the workspace and it's root directory should contain the [code]project.godot[/code] and [code].csproj[/code] next to each other.
@@ -1264,6 +1267,11 @@
 			If [code]false[/code], such events will be flushed only once per process frame, between iterations of the engine.
 			Enabling this can greatly improve the responsiveness to input, specially in devices that need to run multiple physics frames per visible (process) frame, because they can't run at the target frame rate.
 			[b]Note:[/b] Currently implemented only on Android.
+		</member>
+		<member name="input_devices/compatibility/legacy_just_pressed_behavior" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], [method Input.is_action_just_pressed] and [method Input.is_action_just_released] will only return [code]true[/code] if the action is still in the respective state, i.e. an action that is pressed [i]and[/i] released on the same frame will be missed.
+			If [code]false[/code], no input will be lost.
+			[b]Note:[/b] You should in nearly all cases prefer the [code]false[/code] setting. The legacy behavior is to enable supporting old projects that rely on the old logic, without changes to script.
 		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
@@ -1935,17 +1943,20 @@
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="" default="60">
 			This is used by servers when used in multi-threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
 		</member>
-		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="1">
+		<member name="navigation/2d/default_cell_size" type="float" setter="" getter="" default="1.0">
 			Default cell size for 2D navigation maps. See [method NavigationServer2D.map_set_cell_size].
 		</member>
-		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="1">
+		<member name="navigation/2d/default_edge_connection_margin" type="float" setter="" getter="" default="1.0">
 			Default edge connection margin for 2D navigation maps. See [method NavigationServer2D.map_set_edge_connection_margin].
 		</member>
-		<member name="navigation/2d/default_link_connection_radius" type="int" setter="" getter="" default="4">
+		<member name="navigation/2d/default_link_connection_radius" type="float" setter="" getter="" default="4.0">
 			Default link connection radius for 2D navigation maps. See [method NavigationServer2D.map_set_link_connection_radius].
 		</member>
 		<member name="navigation/2d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 2D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World2D default navigation maps.
+		</member>
+		<member name="navigation/3d/default_cell_height" type="float" setter="" getter="" default="0.25">
+			Default cell height for 3D navigation maps. See [method NavigationServer3D.map_set_cell_height].
 		</member>
 		<member name="navigation/3d/default_cell_size" type="float" setter="" getter="" default="0.25">
 			Default cell size for 3D navigation maps. See [method NavigationServer3D.map_set_cell_size].
@@ -2221,7 +2232,8 @@
 			[b]Note:[/b] Depth prepass is only supported when using the Forward+ or Compatibility rendering method. When using the Mobile rendering method, there is no depth prepass performed.
 		</member>
 		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1">
-			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
+			The thread model to use for rendering. Rendering on a thread may improve performance, but synchronizing to the main thread can cause a bit more jitter.
+			[b]Note:[/b] The [b]Multi-Threaded[/b] option is experimental, and has several known bugs which can lead to crashing, especially when using particles or resizing the window. Not recommended for use in production at this stage.
 		</member>
 		<member name="rendering/environment/defaults/default_clear_color" type="Color" setter="" getter="" default="Color(0.3, 0.3, 0.3, 1)">
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method RenderingServer.set_default_clear_color].
@@ -2318,6 +2330,10 @@
 		</member>
 		<member name="rendering/gl_compatibility/item_buffer_size" type="int" setter="" getter="" default="16384">
 			Maximum number of canvas items commands that can be drawn in a single viewport update. If more render commands are issued they will be ignored. Decreasing this limit may improve performance on bandwidth limited devices. Increase this limit if you find that not all objects are being drawn in a frame.
+		</member>
+		<member name="rendering/gl_compatibility/nvidia_disable_threaded_optimization" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], disables the threaded optimization feature from the NVIDIA drivers, which are known to cause stuttering in most OpenGL applications.
+			[b]Note:[/b] This setting only works on Windows, as threaded optimization is disabled by default on other platforms.
 		</member>
 		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
@@ -2608,10 +2624,12 @@
 		</member>
 		<member name="rendering/textures/vram_compression/import_etc2_astc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm for lower quality textures and normal maps and Adaptable Scalable Texture Compression algorithm for high quality textures (in 4x4 block size).
+			[b]Note:[/b] This setting is an override. The texture importer will always import the format the host platform needs, even if this is set to [code]false[/code].
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
-		<member name="rendering/textures/vram_compression/import_s3tc_bptc" type="bool" setter="" getter="" default="true">
+		<member name="rendering/textures/vram_compression/import_s3tc_bptc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm (DXT1-5) for lower quality textures and the BPTC algorithm (BC6H and BC7) for high quality textures. This algorithm is only supported on PC desktop platforms and consoles.
+			[b]Note:[/b] This setting is an override. The texture importer will always import the format the host platform needs, even if this is set to [code]false[/code].
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
 		<member name="rendering/textures/webp_compression/compression_method" type="int" setter="" getter="" default="2">

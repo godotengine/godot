@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RichTextLabel" inherits="Control" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RichTextLabel" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A control for displaying text that can contain different font styles, images, and basic formatting.
 	</brief_description>
@@ -48,7 +48,8 @@
 		<method name="clear">
 			<return type="void" />
 			<description>
-				Clears the tag stack and sets [member text] to an empty string.
+				Clears the tag stack.
+				[b]Note:[/b] This method will not modify [member text], but setting [member text] to an empty string also clears the stack.
 			</description>
 		</method>
 		<method name="deselect">
@@ -265,6 +266,18 @@
 				Terminates the current tag. Use after [code]push_*[/code] methods to close BBCodes manually. Does not need to follow [code]add_*[/code] methods.
 			</description>
 		</method>
+		<method name="pop_all">
+			<return type="void" />
+			<description>
+				Terminates all tags opened by [code]push_*[/code] methods.
+			</description>
+		</method>
+		<method name="pop_context">
+			<return type="void" />
+			<description>
+				Terminates tags opened after the last [method push_context] call (including context marker), or all tags if there's no context marker on the stack.
+			</description>
+		</method>
 		<method name="push_bgcolor">
 			<return type="void" />
 			<param index="0" name="bgcolor" type="Color" />
@@ -295,6 +308,12 @@
 			<param index="0" name="color" type="Color" />
 			<description>
 				Adds a [code][color][/code] tag to the tag stack.
+			</description>
+		</method>
+		<method name="push_context">
+			<return type="void" />
+			<description>
+				Adds a context marker to the tag stack. See [method pop_context].
 			</description>
 		</method>
 		<method name="push_customfx">
@@ -328,9 +347,10 @@
 		<method name="push_font">
 			<return type="void" />
 			<param index="0" name="font" type="Font" />
-			<param index="1" name="font_size" type="int" />
+			<param index="1" name="font_size" type="int" default="0" />
 			<description>
 				Adds a [code][font][/code] tag to the tag stack. Overrides default fonts for its duration.
+				Passing [code]0[/code] to [param font_size] will use the existing default font size.
 			</description>
 		</method>
 		<method name="push_font_size">
@@ -409,7 +429,7 @@
 			<param index="1" name="base_direction" type="int" enum="Control.TextDirection" default="0" />
 			<param index="2" name="language" type="String" default="&quot;&quot;" />
 			<param index="3" name="st_parser" type="int" enum="TextServer.StructuredTextParser" default="0" />
-			<param index="4" name="justification_flags" type="int" enum="TextServer.JustificationFlag" default="163" />
+			<param index="4" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="163" />
 			<param index="5" name="tab_stops" type="PackedFloat32Array" default="PackedFloat32Array()" />
 			<description>
 				Adds a [code][p][/code] tag to the tag stack.
@@ -505,7 +525,7 @@
 			<return type="void" />
 			<param index="0" name="column" type="int" />
 			<param index="1" name="expand" type="bool" />
-			<param index="2" name="ratio" type="int" />
+			<param index="2" name="ratio" type="int" default="1" />
 			<description>
 				Edits the selected column's expansion options. If [param expand] is [code]true[/code], the column expands in proportion to its expansion ratio versus the other columns' ratios.
 				For example, 2 columns with ratios 3 and 4 plus 70 pixels in available width would expand 30 and 40 pixels, respectively.

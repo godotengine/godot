@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorPlugin" inherits="Node" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorPlugin" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Used by the editor to extend its functionality.
 	</brief_description>
@@ -280,6 +280,34 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="_get_unsaved_status" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="for_scene" type="String" />
+			<description>
+				Override this method to provide a custom message that lists unsaved changes. The editor will call this method when exiting or when closing a scene, and display the returned string in a confirmation dialog. Return empty string if the plugin has no unsaved changes.
+				When closing a scene, [param for_scene] is the path to the scene being closed. You can use it to handle built-in resources in that scene.
+				If the user confirms saving, [method _save_external_data] will be called, before closing the editor.
+				[codeblock]
+				func _get_unsaved_status(for_scene):
+				    if not unsaved:
+				        return ""
+
+				    if for_scene.is_empty():
+				        return "Save changes in MyCustomPlugin before closing?"
+				    else:
+				        return "Scene %s has changes from MyCustomPlugin. Save before closing?" % for_scene.get_file()
+
+				func _save_external_data():
+				    unsaved = false
+				[/codeblock]
+				If the plugin has no scene-specific changes, you can ignore the calls when closing scenes:
+				[codeblock]
+				func _get_unsaved_status(for_scene):
+				    if not for_scene.is_empty():
+				        return ""
+				[/codeblock]
+			</description>
+		</method>
 		<method name="_get_window_layout" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="configuration" type="ConfigFile" />
@@ -539,6 +567,12 @@
 			<return type="PopupMenu" />
 			<description>
 				Returns the [PopupMenu] under [b]Scene &gt; Export As...[/b].
+			</description>
+		</method>
+		<method name="get_plugin_version" qualifiers="const">
+			<return type="String" />
+			<description>
+				Provide the version of the plugin declared in the [code]plugin.cfg[/code] config file.
 			</description>
 		</method>
 		<method name="get_script_create_dialog">

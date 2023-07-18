@@ -31,14 +31,14 @@
 #ifndef CSHARP_SCRIPT_H
 #define CSHARP_SCRIPT_H
 
+#include "mono_gc_handle.h"
+#include "mono_gd/gd_mono.h"
+
 #include "core/doc_data.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
 #include "core/templates/self_list.h"
-
-#include "mono_gc_handle.h"
-#include "mono_gd/gd_mono.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_plugin.h"
@@ -347,7 +347,6 @@ class CSharpLanguage : public ScriptLanguage {
 	String _debug_error;
 
 	friend class GDMono;
-	void _on_scripts_domain_about_to_unload();
 
 #ifdef TOOLS_ENABLED
 	EditorPlugin *godotsharp_editor = nullptr;

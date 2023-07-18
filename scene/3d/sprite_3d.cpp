@@ -30,6 +30,7 @@
 
 #include "sprite_3d.h"
 
+#include "scene/resources/atlas_texture.h"
 #include "scene/scene_string_names.h"
 
 Color SpriteBase3D::_get_color_accum() {
@@ -372,7 +373,7 @@ void SpriteBase3D::_queue_redraw() {
 	update_gizmos();
 
 	pending_update = true;
-	call_deferred(SceneStringNames::get_singleton()->_im_update);
+	callable_mp(this, &SpriteBase3D::_im_update).call_deferred();
 }
 
 AABB SpriteBase3D::get_aabb() const {
@@ -577,8 +578,6 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_rect"), &SpriteBase3D::get_item_rect);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &SpriteBase3D::generate_triangle_mesh);
 
-	ClassDB::bind_method(D_METHOD("_im_update"), &SpriteBase3D::_im_update);
-
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
@@ -647,11 +646,11 @@ SpriteBase3D::SpriteBase3D() {
 
 	// Create basic mesh and store format information.
 	for (int i = 0; i < 4; i++) {
-		mesh_normals.write[i] = Vector3(0.0, 0.0, 0.0);
-		mesh_tangents.write[i * 4 + 0] = 0.0;
+		mesh_normals.write[i] = Vector3(0.0, 0.0, 1.0);
+		mesh_tangents.write[i * 4 + 0] = 1.0;
 		mesh_tangents.write[i * 4 + 1] = 0.0;
 		mesh_tangents.write[i * 4 + 2] = 0.0;
-		mesh_tangents.write[i * 4 + 3] = 0.0;
+		mesh_tangents.write[i * 4 + 3] = 1.0;
 		mesh_colors.write[i] = Color(1.0, 1.0, 1.0, 1.0);
 		mesh_uvs.write[i] = Vector2(0.0, 0.0);
 		mesh_vertices.write[i] = Vector3(0.0, 0.0, 0.0);

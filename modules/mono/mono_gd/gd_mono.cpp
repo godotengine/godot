@@ -30,25 +30,24 @@
 
 #include "gd_mono.h"
 
+#include "../csharp_script.h"
+#include "../glue/runtime_interop.h"
+#include "../godotsharp_dirs.h"
+#include "../thirdparty/coreclr_delegates.h"
+#include "../thirdparty/hostfxr.h"
+#include "../utils/path_utils.h"
+#include "gd_mono_cache.h"
+
+#ifdef TOOLS_ENABLED
+#include "../editor/hostfxr_resolver.h"
+#endif
+
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
-
-#include "../csharp_script.h"
-#include "../glue/runtime_interop.h"
-#include "../godotsharp_dirs.h"
-#include "../utils/path_utils.h"
-#include "gd_mono_cache.h"
-
-#include "../thirdparty/coreclr_delegates.h"
-#include "../thirdparty/hostfxr.h"
-
-#ifdef TOOLS_ENABLED
-#include "../editor/hostfxr_resolver.h"
-#endif
 
 #ifdef UNIX_ENABLED
 #include <dlfcn.h>
@@ -293,20 +292,10 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 	return godot_plugins_initialize;
 }
 #else
-static String get_assembly_name() {
-	String assembly_name = GLOBAL_GET("dotnet/project/assembly_name");
-
-	if (assembly_name.is_empty()) {
-		assembly_name = ProjectSettings::get_singleton()->get_safe_project_name();
-	}
-
-	return assembly_name;
-}
-
 godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
-	String assembly_name = get_assembly_name();
+	String assembly_name = path::get_csharp_project_name();
 
 	HostFxrCharString assembly_path = str_to_hostfxr(GodotSharpDirs::get_api_assemblies_dir()
 															 .path_join(assembly_name + ".dll"));
@@ -331,7 +320,7 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 }
 
 godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle) {
-	String assembly_name = get_assembly_name();
+	String assembly_name = path::get_csharp_project_name();
 
 #if defined(WINDOWS_ENABLED)
 	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dll");
@@ -476,11 +465,7 @@ void GDMono::_init_godot_api_hashes() {
 
 #ifdef TOOLS_ENABLED
 bool GDMono::_load_project_assembly() {
-	String assembly_name = GLOBAL_GET("dotnet/project/assembly_name");
-
-	if (assembly_name.is_empty()) {
-		assembly_name = ProjectSettings::get_singleton()->get_safe_project_name();
-	}
+	String assembly_name = path::get_csharp_project_name();
 
 	String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
 								   .path_join(assembly_name + ".dll");
@@ -503,15 +488,31 @@ bool GDMono::_load_project_assembly() {
 #endif
 
 #ifdef GD_MONO_HOT_RELOAD
+void GDMono::reload_failure() {
+	if (++project_load_failure_count >= (int)GLOBAL_GET("dotnet/project/assembly_reload_attempts")) {
+		// After reloading a project has failed n times in a row, update the path and modification time
+		// to stop any further attempts at loading this assembly, which probably is never going to work anyways.
+		project_load_failure_count = 0;
+
+		ERR_PRINT_ED(".NET: Giving up on assembly reloading. Please restart the editor if unloading was failing.");
+
+		String assembly_name = path::get_csharp_project_name();
+		String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir().path_join(assembly_name + ".dll");
+		assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
+		project_assembly_path = assembly_path.simplify_path();
+		project_assembly_modified_time = FileAccess::get_modified_time(assembly_path);
+	}
+}
+
 Error GDMono::reload_project_assemblies() {
 	ERR_FAIL_COND_V(!runtime_initialized, ERR_BUG);
 
 	finalizing_scripts_domain = true;
 
-	CSharpLanguage::get_singleton()->_on_scripts_domain_about_to_unload();
-
 	if (!get_plugin_callbacks().UnloadProjectPluginCallback()) {
-		ERR_FAIL_V_MSG(Error::FAILED, ".NET: Failed to unload assemblies.");
+		ERR_PRINT_ED(".NET: Failed to unload assemblies. Please check https://github.com/godotengine/godot/issues/78513 for more information.");
+		reload_failure();
+		return FAILED;
 	}
 
 	finalizing_scripts_domain = false;
@@ -519,8 +520,14 @@ Error GDMono::reload_project_assemblies() {
 	// Load the project's main assembly. Here, during hot-reloading, we do
 	// consider failing to load the project's main assembly to be an error.
 	if (!_load_project_assembly()) {
-		print_error(".NET: Failed to load project assembly.");
+		ERR_PRINT_ED(".NET: Failed to load project assembly.");
+		reload_failure();
 		return ERR_CANT_OPEN;
+	}
+
+	if (project_load_failure_count > 0) {
+		project_load_failure_count = 0;
+		ERR_PRINT_ED(".NET: Assembly reloading succeeded after failures.");
 	}
 
 	return OK;

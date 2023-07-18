@@ -31,7 +31,6 @@
 #include "curve_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
@@ -45,6 +44,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
+#include "scene/resources/image_texture.h"
 
 CurveEdit::CurveEdit() {
 	set_focus_mode(FOCUS_ALL);
@@ -61,14 +61,14 @@ void CurveEdit::set_curve(Ref<Curve> p_curve) {
 	}
 
 	if (curve.is_valid()) {
-		curve->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveEdit::_curve_changed));
+		curve->disconnect_changed(callable_mp(this, &CurveEdit::_curve_changed));
 		curve->disconnect(Curve::SIGNAL_RANGE_CHANGED, callable_mp(this, &CurveEdit::_curve_changed));
 	}
 
 	curve = p_curve;
 
 	if (curve.is_valid()) {
-		curve->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveEdit::_curve_changed));
+		curve->connect_changed(callable_mp(this, &CurveEdit::_curve_changed));
 		curve->connect(Curve::SIGNAL_RANGE_CHANGED, callable_mp(this, &CurveEdit::_curve_changed));
 	}
 
@@ -978,9 +978,11 @@ void CurveEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_READY: {
 			Ref<Curve> curve = curve_editor_rect->get_curve();
-			// Set snapping settings based on the curve's meta.
-			snap_button->set_pressed(curve->get_meta("_snap_enabled", false));
-			snap_count_edit->set_value(curve->get_meta("_snap_count", DEFAULT_SNAP));
+			if (curve.is_valid()) {
+				// Set snapping settings based on the curve's meta.
+				snap_button->set_pressed(curve->get_meta("_snap_enabled", false));
+				snap_count_edit->set_value(curve->get_meta("_snap_count", DEFAULT_SNAP));
+			}
 		} break;
 	}
 }

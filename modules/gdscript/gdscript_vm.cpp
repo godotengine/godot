@@ -28,28 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "gdscript.h"
 #include "gdscript_function.h"
+#include "gdscript_lambda_callable.h"
 
 #include "core/core_string_names.h"
 #include "core/os/os.h"
-#include "gdscript.h"
-#include "gdscript_lambda_callable.h"
 
 #ifdef DEBUG_ENABLED
-static String _get_script_name(const Ref<Script> p_script) {
-	Ref<GDScript> gdscript = p_script;
-	if (gdscript.is_valid()) {
-		return gdscript->get_script_class_name();
-	} else if (p_script->get_name().is_empty()) {
-		return p_script->get_path().get_file();
-	} else {
-		return p_script->get_name();
-	}
-}
-
 static String _get_element_type(Variant::Type builtin_type, const StringName &native_type, const Ref<Script> &script_type) {
 	if (script_type.is_valid() && script_type->is_valid()) {
-		return _get_script_name(script_type);
+		return GDScript::debug_get_script_name(script_type);
 	} else if (native_type != StringName()) {
 		return native_type.operator String();
 	} else {
@@ -75,7 +64,7 @@ static String _get_var_type(const Variant *p_var) {
 			} else {
 				basestr = bobj->get_class();
 				if (bobj->get_script_instance()) {
-					basestr += " (" + _get_script_name(bobj->get_script_instance()->get_script()) + ")";
+					basestr += " (" + GDScript::debug_get_script_name(bobj->get_script_instance()->get_script()) + ")";
 				}
 			}
 		}
@@ -217,6 +206,8 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_GET_NAMED_VALIDATED,                \
 		&&OPCODE_SET_MEMBER,                         \
 		&&OPCODE_GET_MEMBER,                         \
+		&&OPCODE_SET_STATIC_VARIABLE,                \
+		&&OPCODE_GET_STATIC_VARIABLE,                \
 		&&OPCODE_ASSIGN,                             \
 		&&OPCODE_ASSIGN_TRUE,                        \
 		&&OPCODE_ASSIGN_FALSE,                       \
@@ -666,7 +657,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	Variant *m_v = instruction_args[m_idx]
 
 #ifdef DEBUG_ENABLED
-
 	uint64_t function_start_time = 0;
 	uint64_t function_call_time = 0;
 
@@ -679,11 +669,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	bool exit_ok = false;
 	bool awaited = false;
 #endif
+
 #ifdef DEBUG_ENABLED
-	int variant_address_limits[ADDR_TYPE_MAX] = { _stack_size, _constant_count, p_instance ? p_instance->members.size() : 0, script->static_variables.size() };
+	int variant_address_limits[ADDR_TYPE_MAX] = { _stack_size, _constant_count, p_instance ? p_instance->members.size() : 0 };
 #endif
 
-	Variant *variant_addresses[ADDR_TYPE_MAX] = { stack, _constants_ptr, p_instance ? p_instance->members.ptrw() : nullptr, script->static_variables.ptrw() };
+	Variant *variant_addresses[ADDR_TYPE_MAX] = { stack, _constants_ptr, p_instance ? p_instance->members.ptrw() : nullptr };
 
 #ifdef DEBUG_ENABLED
 	OPCODE_WHILE(ip < _code_size) {
@@ -1168,6 +1159,42 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 #endif
 				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_SET_STATIC_VARIABLE) {
+				CHECK_SPACE(4);
+
+				GET_VARIANT_PTR(value, 0);
+
+				GET_VARIANT_PTR(_class, 1);
+				GDScript *gdscript = Object::cast_to<GDScript>(_class->operator Object *());
+				GD_ERR_BREAK(!gdscript);
+
+				int index = _code_ptr[ip + 3];
+				GD_ERR_BREAK(index < 0 || index >= gdscript->static_variables.size());
+
+				gdscript->static_variables.write[index] = *value;
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_GET_STATIC_VARIABLE) {
+				CHECK_SPACE(4);
+
+				GET_VARIANT_PTR(target, 0);
+
+				GET_VARIANT_PTR(_class, 1);
+				GDScript *gdscript = Object::cast_to<GDScript>(_class->operator Object *());
+				GD_ERR_BREAK(!gdscript);
+
+				int index = _code_ptr[ip + 3];
+				GD_ERR_BREAK(index < 0 || index >= gdscript->static_variables.size());
+
+				*target = gdscript->static_variables[index];
+
+				ip += 4;
 			}
 			DISPATCH_OPCODE;
 
@@ -2646,7 +2673,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (r->get_type() != Variant::OBJECT && r->get_type() != Variant::NIL) {
 #ifdef DEBUG_ENABLED
 					err_text = vformat(R"(Trying to return value of type "%s" from a function which the return type is "%s".)",
-							Variant::get_type_name(r->get_type()), _get_script_name(Ref<Script>(base_type)));
+							Variant::get_type_name(r->get_type()), GDScript::debug_get_script_name(Ref<Script>(base_type)));
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
 				}
@@ -2668,7 +2695,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					if (!ret_inst) {
 #ifdef DEBUG_ENABLED
 						err_text = vformat(R"(Trying to return value of type "%s" from a function which the return type is "%s".)",
-								ret_obj->get_class_name(), _get_script_name(Ref<GDScript>(base_type)));
+								ret_obj->get_class_name(), GDScript::debug_get_script_name(Ref<GDScript>(base_type)));
 #endif // DEBUG_ENABLED
 						OPCODE_BREAK;
 					}
@@ -2687,7 +2714,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					if (!valid) {
 #ifdef DEBUG_ENABLED
 						err_text = vformat(R"(Trying to return value of type "%s" from a function which the return type is "%s".)",
-								_get_script_name(ret_obj->get_script_instance()->get_script()), _get_script_name(Ref<GDScript>(base_type)));
+								GDScript::debug_get_script_name(ret_obj->get_script_instance()->get_script()), GDScript::debug_get_script_name(Ref<GDScript>(base_type)));
 #endif // DEBUG_ENABLED
 						OPCODE_BREAK;
 					}
@@ -3620,7 +3647,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 
 		// Free stack, except reserved addresses.
-		for (int i = 3; i < _stack_size; i++) {
+		for (int i = FIXED_ADDRESSES_MAX; i < _stack_size; i++) {
 			stack[i].~Variant();
 		}
 #ifdef DEBUG_ENABLED
@@ -3628,7 +3655,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 
 	// Always free reserved addresses, since they are never copied.
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < FIXED_ADDRESSES_MAX; i++) {
 		stack[i].~Variant();
 	}
 

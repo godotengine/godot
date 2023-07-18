@@ -44,6 +44,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/export/editor_export_platform.h"
+#include "scene/resources/compressed_texture.h"
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
@@ -434,7 +435,7 @@ public:
 
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
 
-	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
 
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
