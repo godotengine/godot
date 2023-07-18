@@ -848,7 +848,7 @@ Ref<AnimationNode> AnimationNodeBlendTree::get_node(const StringName &p_name) co
 }
 
 StringName AnimationNodeBlendTree::get_node_name(const Ref<AnimationNode> &p_node) const {
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
+	for (NodeMap::Element *E = nodes.front(); E; E = E->next()) {
 		if (E->get().node == p_node) {
 			return E->key();
 		}
@@ -870,11 +870,9 @@ Vector2 AnimationNodeBlendTree::get_node_position(const StringName &p_node) cons
 void AnimationNodeBlendTree::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	Vector<StringName> ns;
 
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
+	for (NodeMap::Element *E = nodes.front(); E; E = E->next()) {
 		ns.push_back(E->key());
 	}
-
-	ns.sort_custom<StringName::AlphCompare>();
 
 	for (int i = 0; i < ns.size(); i++) {
 		ChildNode cn;
@@ -904,7 +902,7 @@ void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 	nodes.erase(p_name);
 
 	//erase connections to name
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
+	for (NodeMap::Element *E = nodes.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().connections.size(); i++) {
 			if (E->get().connections[i] == p_name) {
 				E->get().connections.write[i] = StringName();
@@ -928,7 +926,7 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 	nodes.erase(p_name);
 
 	//rename connections
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
+	for (NodeMap::Element *E = nodes.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().connections.size(); i++) {
 			if (E->get().connections[i] == p_name) {
 				E->get().connections.write[i] = p_new_name;
@@ -950,7 +948,7 @@ void AnimationNodeBlendTree::connect_node(const StringName &p_input_node, int p_
 	Ref<AnimationNode> input = nodes[p_input_node].node;
 	ERR_FAIL_INDEX(p_input_index, nodes[p_input_node].connections.size());
 
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
+	for (NodeMap::Element *E = nodes.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().connections.size(); i++) {
 			StringName output = E->get().connections[i];
 			ERR_FAIL_COND(output == p_output_node);
@@ -994,7 +992,7 @@ AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node
 		return CONNECTION_ERROR_CONNECTION_EXISTS;
 	}
 
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
+	for (NodeMap::Element *E = nodes.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().connections.size(); i++) {
 			StringName output = E->get().connections[i];
 			if (output == p_output_node) {
@@ -1006,7 +1004,7 @@ AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node
 }
 
 void AnimationNodeBlendTree::get_node_connections(List<NodeConnection> *r_connections) const {
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
+	for (NodeMap::Element *E = nodes.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().connections.size(); i++) {
 			StringName output = E->get().connections[i];
 			if (output != StringName()) {
@@ -1030,7 +1028,7 @@ float AnimationNodeBlendTree::process(float p_time, bool p_seek) {
 }
 
 void AnimationNodeBlendTree::get_node_list(List<StringName> *r_list) {
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
+	for (NodeMap::Element *E = nodes.front(); E; E = E->next()) {
 		r_list->push_back(E->key());
 	}
 }
@@ -1121,10 +1119,9 @@ bool AnimationNodeBlendTree::_get(const StringName &p_name, Variant &r_ret) cons
 }
 void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<StringName> names;
-	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
+	for (NodeMap::Element *E = nodes.front(); E; E = E->next()) {
 		names.push_back(E->key());
 	}
-	names.sort_custom<StringName::AlphCompare>();
 
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 		String name = E->get();

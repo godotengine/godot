@@ -339,7 +339,8 @@ class AnimationNodeBlendTree : public AnimationRootNode {
 		Vector<StringName> connections;
 	};
 
-	Map<StringName, Node> nodes;
+	typedef Map<StringName, Node, StringName::AlphCompare> NodeMap;
+	NodeMap nodes;
 
 	Vector2 graph_offset;
 
