@@ -2059,7 +2059,7 @@ static Control *_next_control(Control *p_from) {
 	ERR_FAIL_INDEX_V(next, parent->get_child_count(), nullptr);
 	for (int i = (next + 1); i < parent->get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(parent->get_child(i));
-		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level() || c->get_focus_layer() != p_from->get_focus_layer()) {
+		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
 			continue;
 		}
 
@@ -2093,7 +2093,7 @@ Control *Control::find_next_valid_focus() const {
 
 		for (int i = 0; i < from->get_child_count(); i++) {
 			Control *c = Object::cast_to<Control>(from->get_child(i));
-			if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level() || c->get_focus_layer() != get_focus_layer()) {
+			if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level() || (c->get_focus_mode() == FOCUS_ALL && c->get_focus_layer() != get_focus_layer())) {
 				continue;
 			}
 
@@ -2137,11 +2137,21 @@ Control *Control::find_next_valid_focus() const {
 	return nullptr;
 }
 
-static Control *_prev_control(Control *p_from) {
+static Control *_prev_focusable_control(Control *p_from, int p_focus_layer) {
 	Control *child = nullptr;
 	for (int i = p_from->get_child_count() - 1; i >= 0; i--) {
 		Control *c = Object::cast_to<Control>(p_from->get_child(i));
-		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level() || c->get_focus_layer() != p_from->get_focus_layer()) {
+		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
+			continue;
+		}
+
+		// If the control isn't focusable or isn't the correct layer, then let's check under it before we rule it out.
+		if (c->get_focus_mode() != Control::FocusMode::FOCUS_ALL || c->get_focus_layer() != p_focus_layer) {
+			// _prev_focusable_control will return p_from if it didn't find anything. So in this case, it's only a valid result if it's NOT c.
+			Control *nested_control = _prev_focusable_control(c, p_focus_layer);
+			if (nested_control != c) {
+				return nested_control;
+			}
 			continue;
 		}
 
@@ -2154,7 +2164,7 @@ static Control *_prev_control(Control *p_from) {
 	}
 
 	// No prev in parent, try the same in parent.
-	return _prev_control(child);
+	return _prev_focusable_control(child, p_focus_layer);
 }
 
 Control *Control::find_prev_valid_focus() const {
@@ -2181,7 +2191,7 @@ Control *Control::find_prev_valid_focus() const {
 		if (from->is_set_as_top_level() || !Object::cast_to<Control>(from->get_parent())) {
 			// Find last of the children.
 
-			prev_child = _prev_control(from);
+			prev_child = _prev_focusable_control(from, get_focus_layer());
 
 		} else {
 			for (int i = (from->get_index() - 1); i >= 0; i--) {
@@ -2198,7 +2208,7 @@ Control *Control::find_prev_valid_focus() const {
 			if (!prev_child) {
 				prev_child = Object::cast_to<Control>(from->get_parent());
 			} else {
-				prev_child = _prev_control(prev_child);
+				prev_child = _prev_focusable_control(prev_child, get_focus_layer());
 			}
 		}
 
