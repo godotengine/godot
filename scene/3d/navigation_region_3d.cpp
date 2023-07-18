@@ -261,11 +261,19 @@ void _bake_navigation_mesh(void *p_user_data) {
 		Ref<NavigationMeshSourceGeometryData3D> source_geometry_data = args->source_geometry_data;
 
 		NavigationServer3D::get_singleton()->bake_from_source_geometry_data(nav_mesh, source_geometry_data);
-		args->nav_region->call_deferred(SNAME("_bake_finished"), nav_mesh);
+		if (!Thread::is_main_thread()) {
+			args->nav_region->call_deferred(SNAME("_bake_finished"), nav_mesh);
+		} else {
+			args->nav_region->_bake_finished(nav_mesh);
+		}
 		memdelete(args);
 	} else {
 		ERR_PRINT("Can't bake the navigation mesh if the `NavigationMesh` resource doesn't exist");
-		args->nav_region->call_deferred(SNAME("_bake_finished"), Ref<NavigationMesh>());
+		if (!Thread::is_main_thread()) {
+			args->nav_region->call_deferred(SNAME("_bake_finished"), Ref<NavigationMesh>());
+		} else {
+			args->nav_region->_bake_finished(Ref<NavigationMesh>());
+		}
 		memdelete(args);
 	}
 }
