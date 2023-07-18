@@ -731,7 +731,7 @@ bool TabContainer::is_all_tabs_in_front() const {
 
 void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 	Control *child = get_tab_control(p_tab);
-	ERR_FAIL_COND(!child);
+	ERR_FAIL_NULL(child);
 
 	if (tab_bar->get_tab_title(p_tab) == p_title) {
 		return;
@@ -789,7 +789,7 @@ bool TabContainer::is_tab_disabled(int p_tab) const {
 
 void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 	Control *child = get_tab_control(p_tab);
-	ERR_FAIL_COND(!child);
+	ERR_FAIL_NULL(child);
 
 	if (tab_bar->is_tab_hidden(p_tab) == p_hidden) {
 		return;

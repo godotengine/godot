@@ -68,7 +68,7 @@ public:
 		Ref<Animation> animation;
 		double time = 0.0;
 		double delta = 0.0;
-		const Vector<real_t> *track_blends = nullptr;
+		Vector<real_t> track_blends;
 		real_t blend = 0.0;
 		bool seeked = false;
 		bool is_external_seeking = false;
@@ -193,6 +193,8 @@ class AnimationNodeEndState : public AnimationRootNode {
 
 class AnimationTree : public Node {
 	GDCLASS(AnimationTree, Node);
+
+	void _call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred);
 
 public:
 	enum AnimationProcessCallback {

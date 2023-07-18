@@ -66,6 +66,11 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 	private final ScaleGestureDetector scaleGestureDetector;
 	private final GodotGestureHandler godotGestureHandler;
 
+	/**
+	 * Used to decide whether mouse capture can be enabled.
+	 */
+	private int lastSeenToolType = MotionEvent.TOOL_TYPE_UNKNOWN;
+
 	public GodotInputHandler(GodotRenderView godotView) {
 		final Context context = godotView.getView().getContext();
 		mRenderView = godotView;
@@ -105,6 +110,10 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 		return (source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK || (source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD || (source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD;
 	}
 
+	public boolean canCapturePointer() {
+		return lastSeenToolType == MotionEvent.TOOL_TYPE_MOUSE;
+	}
+
 	public void onPointerCaptureChange(boolean hasCapture) {
 		godotGestureHandler.onPointerCaptureChange(hasCapture);
 	}
@@ -132,7 +141,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 			final int physical_keycode = event.getKeyCode();
 			final int unicode = event.getUnicodeChar();
 			final int key_label = event.getDisplayLabel();
-			GodotLib.key(physical_keycode, unicode, key_label, false);
+			GodotLib.key(physical_keycode, unicode, key_label, false, event.getRepeatCount() > 0);
 		};
 
 		return true;
@@ -167,13 +176,15 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 			final int physical_keycode = event.getKeyCode();
 			final int unicode = event.getUnicodeChar();
 			final int key_label = event.getDisplayLabel();
-			GodotLib.key(physical_keycode, unicode, key_label, true);
+			GodotLib.key(physical_keycode, unicode, key_label, true, event.getRepeatCount() > 0);
 		}
 
 		return true;
 	}
 
 	public boolean onTouchEvent(final MotionEvent event) {
+		lastSeenToolType = event.getToolType(0);
+
 		this.scaleGestureDetector.onTouchEvent(event);
 		if (this.gestureDetector.onTouchEvent(event)) {
 			// The gesture detector has handled the event.
@@ -198,6 +209,8 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 	}
 
 	public boolean onGenericMotionEvent(MotionEvent event) {
+		lastSeenToolType = event.getToolType(0);
+
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && gestureDetector.onGenericMotionEvent(event)) {
 			// The gesture detector has handled the event.
 			return true;
@@ -471,15 +484,27 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 	}
 
 	static boolean handleMouseEvent(int eventAction, int buttonsMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative) {
+		// Fix the buttonsMask
+		switch (eventAction) {
+			case MotionEvent.ACTION_CANCEL:
+			case MotionEvent.ACTION_UP:
+				// Zero-up the button state
+				buttonsMask = 0;
+				break;
+			case MotionEvent.ACTION_DOWN:
+			case MotionEvent.ACTION_MOVE:
+				if (buttonsMask == 0) {
+					buttonsMask = MotionEvent.BUTTON_PRIMARY;
+				}
+				break;
+		}
+
 		// We don't handle ACTION_BUTTON_PRESS and ACTION_BUTTON_RELEASE events as they typically
 		// follow ACTION_DOWN and ACTION_UP events. As such, handling them would result in duplicate
 		// stream of events to the engine.
 		switch (eventAction) {
 			case MotionEvent.ACTION_CANCEL:
 			case MotionEvent.ACTION_UP:
-				// Zero-up the button state
-				buttonsMask = 0;
-				// FALL THROUGH
 			case MotionEvent.ACTION_DOWN:
 			case MotionEvent.ACTION_HOVER_ENTER:
 			case MotionEvent.ACTION_HOVER_EXIT:

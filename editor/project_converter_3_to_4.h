@@ -72,6 +72,7 @@ class ProjectConverter3To4 {
 	uint64_t maximum_line_length;
 
 	void fix_tool_declaration(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
+	void fix_pause_mode(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
 
 	void rename_colors(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
 	Vector<String> check_for_rename_colors(Vector<String> &lines, const RegExContainer &reg_container);
@@ -90,11 +91,14 @@ class ProjectConverter3To4 {
 	void rename_csharp_attributes(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
 	Vector<String> check_for_rename_csharp_attributes(Vector<String> &lines, const RegExContainer &reg_container);
 
-	void rename_gdscript_keywords(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
-	Vector<String> check_for_rename_gdscript_keywords(Vector<String> &lines, const RegExContainer &reg_container);
+	void rename_gdscript_keywords(Vector<SourceLine> &r_source_lines, const RegExContainer &p_reg_container, bool p_builtin);
+	Vector<String> check_for_rename_gdscript_keywords(Vector<String> &r_lines, const RegExContainer &p_reg_container, bool p_builtin);
 
 	void rename_input_map_scancode(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
 	Vector<String> check_for_rename_input_map_scancode(Vector<String> &lines, const RegExContainer &reg_container);
+
+	void rename_joypad_buttons_and_axes(Vector<SourceLine> &source_lines, const RegExContainer &reg_container);
+	Vector<String> check_for_rename_joypad_buttons_and_axes(Vector<String> &lines, const RegExContainer &reg_container);
 
 	void custom_rename(Vector<SourceLine> &source_lines, String from, String to);
 	Vector<String> check_for_custom_rename(Vector<String> &lines, String from, String to);
@@ -109,6 +113,7 @@ class ProjectConverter3To4 {
 	String connect_arguments(const Vector<String> &line, int from, int to = -1) const;
 	String get_starting_space(const String &line) const;
 	String get_object_of_execution(const String &line) const;
+	bool contains_function_call(String &line, String function) const;
 
 	String line_formatter(int current_line, String from, String to, String line);
 	String simple_line_formatter(int current_line, String old_line, String line);

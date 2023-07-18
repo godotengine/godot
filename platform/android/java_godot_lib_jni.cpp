@@ -30,36 +30,35 @@
 
 #include "java_godot_lib_jni.h"
 
-#include "java_godot_io_wrapper.h"
-#include "java_godot_wrapper.h"
-
-#include "android/asset_manager_jni.h"
 #include "android_input_handler.h"
 #include "api/java_class_wrapper.h"
 #include "api/jni_singleton.h"
-#include "core/config/engine.h"
-#include "core/config/project_settings.h"
-#include "core/input/input.h"
 #include "dir_access_jandroid.h"
 #include "display_server_android.h"
 #include "file_access_android.h"
 #include "file_access_filesystem_jandroid.h"
+#include "java_godot_io_wrapper.h"
+#include "java_godot_wrapper.h"
 #include "jni_utils.h"
-#include "main/main.h"
 #include "net_socket_android.h"
 #include "os_android.h"
 #include "string_android.h"
 #include "thread_jandroid.h"
 #include "tts_android.h"
 
-#include <android/input.h>
-#include <unistd.h>
-
-#include <android/native_window_jni.h>
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/input/input.h"
+#include "main/main.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
+
+#include <android/asset_manager_jni.h>
+#include <android/input.h>
+#include <android/native_window_jni.h>
+#include <unistd.h>
 
 static JavaClassWrapper *java_class_wrapper = nullptr;
 static OS_Android *os_android = nullptr;
@@ -116,7 +115,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHei
 	}
 }
 
-JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject p_activity, jobject p_godot_instance, jobject p_asset_manager, jobject p_godot_io, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jboolean p_use_apk_expansion, jobject p_godot_tts) {
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject p_activity, jobject p_godot_instance, jobject p_asset_manager, jobject p_godot_io, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jboolean p_use_apk_expansion) {
 	JavaVM *jvm;
 	env->GetJavaVM(&jvm);
 
@@ -133,18 +132,17 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv
 	DirAccessJAndroid::setup(p_directory_access_handler);
 	FileAccessFilesystemJAndroid::setup(p_file_access_handler);
 	NetSocketAndroid::setup(p_net_utils);
-	TTS_Android::setup(p_godot_tts);
 
 	os_android = new OS_Android(godot_java, godot_io_java, p_use_apk_expansion);
 
-	return godot_java->on_video_init(env);
+	return true;
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env, jclass clazz) {
 	_terminate(env, false);
 }
 
-JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jclass clazz, jobjectArray p_cmdline) {
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jclass clazz, jobjectArray p_cmdline, jobject p_godot_tts) {
 	setup_android_thread();
 
 	const char **cmdline = nullptr;
@@ -184,6 +182,8 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env
 	if (err != OK) {
 		return false;
 	}
+
+	TTS_Android::setup(p_godot_tts);
 
 	java_class_wrapper = memnew(JavaClassWrapper(godot_java->get_activity()));
 	GDREGISTER_CLASS(JNISingleton);
@@ -385,11 +385,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(
 }
 
 // Called on the UI thread
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jclass clazz, jint p_physical_keycode, jint p_unicode, jint p_key_label, jboolean p_pressed) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jclass clazz, jint p_physical_keycode, jint p_unicode, jint p_key_label, jboolean p_pressed, jboolean p_echo) {
 	if (step.get() <= 0) {
 		return;
 	}
-	input_handler->process_key_event(p_physical_keycode, p_unicode, p_key_label, p_pressed);
+	input_handler->process_key_event(p_physical_keycode, p_unicode, p_key_label, p_pressed, p_echo);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_accelerometer(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jfloat z) {

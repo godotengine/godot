@@ -30,8 +30,9 @@
 
 #include "gdscript_byte_codegen.h"
 
-#include "core/debugger/engine_debugger.h"
 #include "gdscript.h"
+
+#include "core/debugger/engine_debugger.h"
 
 uint32_t GDScriptByteCodeGenerator::add_parameter(const StringName &p_name, bool p_is_optional, const GDScriptDataType &p_type) {
 #ifdef TOOLS_ENABLED
@@ -850,6 +851,20 @@ void GDScriptByteCodeGenerator::write_get_member(const Address &p_target, const 
 	append_opcode(GDScriptFunction::OPCODE_GET_MEMBER);
 	append(p_target);
 	append(p_name);
+}
+
+void GDScriptByteCodeGenerator::write_set_static_variable(const Address &p_value, const Address &p_class, int p_index) {
+	append_opcode(GDScriptFunction::OPCODE_SET_STATIC_VARIABLE);
+	append(p_value);
+	append(p_class);
+	append(p_index);
+}
+
+void GDScriptByteCodeGenerator::write_get_static_variable(const Address &p_target, const Address &p_class, int p_index) {
+	append_opcode(GDScriptFunction::OPCODE_GET_STATIC_VARIABLE);
+	append(p_target);
+	append(p_class);
+	append(p_index);
 }
 
 void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_target, const Address &p_source) {

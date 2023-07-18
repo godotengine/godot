@@ -30,11 +30,12 @@
 
 #include "lightmapper_rd.h"
 
-#include "core/config/project_settings.h"
-#include "core/math/geometry_2d.h"
 #include "lm_blendseams.glsl.gen.h"
 #include "lm_compute.glsl.gen.h"
 #include "lm_raster.glsl.gen.h"
+
+#include "core/config/project_settings.h"
+#include "core/math/geometry_2d.h"
 #include "servers/rendering/rendering_device_binds.h"
 
 //uncomment this if you want to see textures from all the process saved

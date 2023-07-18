@@ -5,22 +5,13 @@ Import("env_modules")
 
 env_openxr = env_modules.Clone()
 
-#################################################
-# Add in our Khronos OpenXR loader
+# Thirdparty source files
 
 thirdparty_obj = []
-thirdparty_dir = "#thirdparty/openxr"
 
-env_openxr.Prepend(
-    CPPPATH=[
-        thirdparty_dir,
-        thirdparty_dir + "/include",
-        thirdparty_dir + "/src",
-        thirdparty_dir + "/src/common",
-        thirdparty_dir + "/src/external/jsoncpp/include",
-    ]
-)
+# Khronos OpenXR loader
 
+# Needs even for build against shared library, at least the defines used in public headers.
 if env["platform"] == "android":
     # may need to set OPENXR_ANDROID_VERSION_SUFFIX
     env_openxr.AppendUnique(CPPDEFINES=["XR_OS_ANDROID", "XR_USE_PLATFORM_ANDROID"])
@@ -41,43 +32,57 @@ elif env["platform"] == "windows":
 # may need to check and set:
 # - XR_USE_TIMESPEC
 
-env_thirdparty = env_openxr.Clone()
-env_thirdparty.disable_warnings()
-env_thirdparty.AppendUnique(CPPDEFINES=["DISABLE_STD_FILESYSTEM"])
+if env["builtin_openxr"]:
+    thirdparty_dir = "#thirdparty/openxr"
 
-if "-fno-exceptions" in env_thirdparty["CXXFLAGS"]:
-    env_thirdparty["CXXFLAGS"].remove("-fno-exceptions")
-env_thirdparty.Append(CPPPATH=[thirdparty_dir + "/src/loader"])
+    env_openxr.Prepend(
+        CPPPATH=[
+            thirdparty_dir,
+            thirdparty_dir + "/include",
+            thirdparty_dir + "/src",
+            thirdparty_dir + "/src/common",
+            thirdparty_dir + "/src/external/jsoncpp/include",
+        ]
+    )
 
-# add in external jsoncpp dependency
-env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/external/jsoncpp/src/lib_json/json_reader.cpp")
-env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/external/jsoncpp/src/lib_json/json_value.cpp")
-env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/external/jsoncpp/src/lib_json/json_writer.cpp")
+    env_thirdparty = env_openxr.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.AppendUnique(CPPDEFINES=["DISABLE_STD_FILESYSTEM"])
 
-# add in load
-if env["platform"] != "android":
-    # On Android the openxr_loader is provided by separate plugins for each device
-    # Build the engine using object files
-    khrloader_obj = []
-    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/xr_generated_dispatch_table.c")
+    if "-fno-exceptions" in env_thirdparty["CXXFLAGS"]:
+        env_thirdparty["CXXFLAGS"].remove("-fno-exceptions")
+    env_thirdparty.Append(CPPPATH=[thirdparty_dir + "/src/loader"])
 
-    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/common/filesystem_utils.cpp")
-    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/common/object_info.cpp")
+    # add in external jsoncpp dependency
+    thirdparty_jsoncpp_dir = thirdparty_dir + "/src/external/jsoncpp/src/lib_json/"
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_jsoncpp_dir + "json_reader.cpp")
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_jsoncpp_dir + "json_value.cpp")
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_jsoncpp_dir + "json_writer.cpp")
 
-    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/api_layer_interface.cpp")
-    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_core.cpp")
-    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_instance.cpp")
-    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_logger_recorders.cpp")
-    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_logger.cpp")
-    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/manifest_file.cpp")
-    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/runtime_interface.cpp")
-    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/xr_generated_loader.cpp")
-    env.modules_sources += khrloader_obj
+    # add in load
+    if env["platform"] != "android":
+        # On Android the openxr_loader is provided by separate plugins for each device
+        # Build the engine using object files
+        khrloader_obj = []
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/xr_generated_dispatch_table.c")
 
-env.modules_sources += thirdparty_obj
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/common/filesystem_utils.cpp")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/common/object_info.cpp")
 
-#################################################
-# And include our module source
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/api_layer_interface.cpp")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_core.cpp")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_instance.cpp")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_logger_recorders.cpp")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_logger.cpp")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/manifest_file.cpp")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/runtime_interface.cpp")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/xr_generated_loader.cpp")
+        env.modules_sources += khrloader_obj
+
+    env.modules_sources += thirdparty_obj
+
+
+# Godot source files
 
 module_obj = []
 

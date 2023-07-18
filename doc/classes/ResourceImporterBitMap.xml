@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterBitMap" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="create_from" type="int" setter="" getter="" default="0">
+		</member>
+		<member name="threshold" type="float" setter="" getter="" default="0.5">
+		</member>
+	</members>
+</class>

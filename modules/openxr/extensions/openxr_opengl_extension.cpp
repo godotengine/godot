@@ -28,10 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "openxr_opengl_extension.h"
+
 #ifdef GLES3_ENABLED
 
-#include "../extensions/openxr_opengl_extension.h"
 #include "../openxr_util.h"
+
 #include "drivers/gles3/effects/copy_effects.h"
 #include "drivers/gles3/storage/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"
@@ -276,8 +278,8 @@ bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 }
 
 bool OpenXROpenGLExtension::create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) {
-	XrMatrix4x4f matrix;
-	XrMatrix4x4f_CreateProjectionFov(&matrix, GRAPHICS_OPENGL, p_fov, (float)p_z_near, (float)p_z_far);
+	OpenXRUtil::XrMatrix4x4f matrix;
+	OpenXRUtil::XrMatrix4x4f_CreateProjectionFov(&matrix, OpenXRUtil::GRAPHICS_OPENGL, p_fov, (float)p_z_near, (float)p_z_far);
 
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {

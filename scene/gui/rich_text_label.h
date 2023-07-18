@@ -32,8 +32,8 @@
 #define RICH_TEXT_LABEL_H
 
 #include "core/object/worker_thread_pool.h"
-#include "rich_text_effect.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/rich_text_effect.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/resources/text_paragraph.h"
 
@@ -70,12 +70,14 @@ public:
 		ITEM_WAVE,
 		ITEM_TORNADO,
 		ITEM_RAINBOW,
+		ITEM_PULSE,
 		ITEM_BGCOLOR,
 		ITEM_FGCOLOR,
 		ITEM_META,
 		ITEM_HINT,
 		ITEM_DROPCAP,
-		ITEM_CUSTOMFX
+		ITEM_CUSTOMFX,
+		ITEM_CONTEXT
 	};
 
 	enum MenuItems {
@@ -240,6 +242,8 @@ private:
 		String language;
 		Control::TextDirection direction = Control::TEXT_DIRECTION_AUTO;
 		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
+		BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
+		PackedFloat32Array tab_stops;
 		ItemParagraph() { type = ITEM_PARAGRAPH; }
 	};
 
@@ -341,6 +345,14 @@ private:
 		ItemRainbow() { type = ITEM_RAINBOW; }
 	};
 
+	struct ItemPulse : public ItemFX {
+		Color color = Color(1.0, 1.0, 1.0, 0.25);
+		float frequency = 1.0f;
+		float ease = -2.0f;
+
+		ItemPulse() { type = ITEM_PULSE; }
+	};
+
 	struct ItemBGColor : public Item {
 		Color color;
 		ItemBGColor() { type = ITEM_BGCOLOR; }
@@ -366,6 +378,10 @@ private:
 			char_fx_transform.unref();
 			custom_effect.unref();
 		}
+	};
+
+	struct ItemContext : public Item {
+		ItemContext() { type = ITEM_CONTEXT; }
 	};
 
 	ItemFrame *main = nullptr;
@@ -405,6 +421,7 @@ private:
 	bool use_selected_font_color = false;
 
 	HorizontalAlignment default_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	BitField<TextServer::JustificationFlag> default_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
 
 	ItemMeta *meta_hovering = nullptr;
 	Variant current_meta;
@@ -418,6 +435,7 @@ private:
 	void _stop_thread();
 	bool _validate_line_caches();
 	void _process_line_caches();
+	_FORCE_INLINE_ float _update_scroll_exceeds(float p_total_height, float p_ctrl_height, float p_width, int p_idx, float p_old_scroll, float p_text_rect_height);
 
 	void _add_item(Item *p_item, bool p_enter = false, bool p_ensure_newline = false);
 	void _remove_item(Item *p_item, const int p_line, const int p_subitem_line);
@@ -491,7 +509,9 @@ private:
 	ItemDropcap *_find_dc_item(Item *p_item);
 	int _find_list(Item *p_item, Vector<int> &r_index, Vector<ItemList *> &r_list);
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size);
+	PackedFloat32Array _find_tab_stops(Item *p_item);
 	HorizontalAlignment _find_alignment(Item *p_item);
+	BitField<TextServer::JustificationFlag> _find_jst_flags(Item *p_item);
 	TextServer::Direction _find_direction(Item *p_item);
 	TextServer::StructuredTextParser _find_stt(Item *p_item);
 	String _find_language(Item *p_item);
@@ -505,6 +525,7 @@ private:
 	Color _find_fgcolor(Item *p_item);
 	bool _find_layout_subitem(Item *from, Item *to);
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
+	void _normalize_subtags(Vector<String> &subtags);
 
 	void _update_fx(ItemFrame *p_frame, double p_delta_time);
 	void _scroll_changed(double);
@@ -593,7 +614,7 @@ public:
 	void push_outline_color(const Color &p_color);
 	void push_underline();
 	void push_strikethrough();
-	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT);
+	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE, const PackedFloat32Array &p_tab_stops = PackedFloat32Array());
 	void push_indent(int p_level);
 	void push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet = String::utf8("•"));
 	void push_meta(const Variant &p_meta);
@@ -604,9 +625,11 @@ public:
 	void push_wave(float p_frequency, float p_amplitude, bool p_connected);
 	void push_tornado(float p_frequency, float p_radius, bool p_connected);
 	void push_rainbow(float p_saturation, float p_value, float p_frequency);
+	void push_pulse(const Color &p_color, float p_frequency, float p_ease);
 	void push_bgcolor(const Color &p_color);
 	void push_fgcolor(const Color &p_color);
 	void push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionary p_environment);
+	void push_context();
 	void set_table_column_expand(int p_column, bool p_expand, int p_ratio = 1);
 	void set_cell_row_background_color(const Color &p_odd_row_bg, const Color &p_even_row_bg);
 	void set_cell_border_color(const Color &p_color);
@@ -615,6 +638,8 @@ public:
 	int get_current_table_column() const;
 	void push_cell();
 	void pop();
+	void pop_context();
+	void pop_all();
 
 	void clear();
 
@@ -678,6 +703,7 @@ public:
 	bool is_deselect_on_focus_loss_enabled() const;
 	void deselect();
 
+	int get_pending_paragraphs() const;
 	bool is_ready() const;
 	bool is_updating() const;
 

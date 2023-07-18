@@ -31,6 +31,8 @@
 #ifndef TEST_THEME_H
 #define TEST_THEME_H
 
+#include "scene/resources/image_texture.h"
+#include "scene/resources/style_box_flat.h"
 #include "scene/resources/theme.h"
 #include "tests/test_tools.h"
 

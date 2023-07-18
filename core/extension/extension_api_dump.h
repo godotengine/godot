@@ -39,6 +39,7 @@ class GDExtensionAPIDump {
 public:
 	static Dictionary generate_extension_api();
 	static void generate_extension_json_file(const String &p_path);
+	static Error validate_extension_json_file(const String &p_path);
 };
 #endif
 

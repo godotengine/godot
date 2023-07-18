@@ -383,12 +383,6 @@ for file in input_file_list:
     tree = ET.parse(file)
     doc = tree.getroot()
 
-    if "version" not in doc.attrib:
-        print('Version missing from "doc"')
-        sys.exit(255)
-
-    version = doc.attrib["version"]
-
     if doc.attrib["name"] in class_names:
         continue
     class_names.append(doc.attrib["name"])

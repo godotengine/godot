@@ -121,14 +121,6 @@ private:
 			const uint32_t *masks;
 		};
 
-		struct TransformThreadData {
-			uint32_t thread_count;
-			uint32_t vertex_count;
-			Transform3D xform;
-			const Vector3 *read;
-			Vector3 *write = nullptr;
-		};
-
 		Thread *commit_thread = nullptr;
 		bool commit_done = true;
 		bool dirty = false;
@@ -144,8 +136,6 @@ private:
 
 		void _update_dirty_instance_thread(int p_idx, RID *p_instances);
 		void _update_dirty_instance(int p_idx, RID *p_instances);
-		void _transform_vertices_thread(uint32_t p_thread, TransformThreadData *p_data);
-		void _transform_vertices_range(const Vector3 *p_read, Vector3 *p_write, const Transform3D &p_xform, int p_from, int p_to);
 		static void _commit_scene(void *p_ud);
 		bool update();
 

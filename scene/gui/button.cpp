@@ -46,6 +46,9 @@ void Button::_set_internal_margin(Side p_side, float p_value) {
 	_internal_margin[p_side] = p_value;
 }
 
+void Button::_queue_update_size_cache() {
+}
+
 void Button::_update_theme_item_cache() {
 	BaseButton::_update_theme_item_cache();
 
@@ -323,17 +326,18 @@ void Button::_notification(int p_what) {
 			if (align_rtl_checked == HORIZONTAL_ALIGNMENT_CENTER && icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_CENTER) {
 				icon_ofs.x = 0.0;
 			}
+
 			int text_clip = size.width - style->get_minimum_size().width - icon_ofs.width;
-			text_buf->set_width((clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? text_clip : -1);
-
-			int text_width = MAX(1, (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
-
 			if (_internal_margin[SIDE_LEFT] > 0) {
 				text_clip -= _internal_margin[SIDE_LEFT] + theme_cache.h_separation;
 			}
 			if (_internal_margin[SIDE_RIGHT] > 0) {
 				text_clip -= _internal_margin[SIDE_RIGHT] + theme_cache.h_separation;
 			}
+
+			text_buf->set_width((clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? text_clip : -1);
+
+			int text_width = MAX(1, (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
 
 			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - text_buf->get_size() - Point2(_internal_margin[SIDE_RIGHT] - _internal_margin[SIDE_LEFT], 0)) / 2.0;
 
@@ -530,8 +534,26 @@ String Button::get_language() const {
 }
 
 void Button::set_icon(const Ref<Texture2D> &p_icon) {
-	if (icon != p_icon) {
-		icon = p_icon;
+	if (icon == p_icon) {
+		return;
+	}
+
+	if (icon.is_valid()) {
+		icon->disconnect_changed(callable_mp(this, &Button::_texture_changed));
+	}
+
+	icon = p_icon;
+
+	if (icon.is_valid()) {
+		icon->connect_changed(callable_mp(this, &Button::_texture_changed));
+	}
+
+	queue_redraw();
+	update_minimum_size();
+}
+
+void Button::_texture_changed() {
+	if (icon.is_valid()) {
 		queue_redraw();
 		update_minimum_size();
 	}
@@ -544,6 +566,7 @@ Ref<Texture2D> Button::get_icon() const {
 void Button::set_expand_icon(bool p_enabled) {
 	if (expand_icon != p_enabled) {
 		expand_icon = p_enabled;
+		_queue_update_size_cache();
 		queue_redraw();
 		update_minimum_size();
 	}

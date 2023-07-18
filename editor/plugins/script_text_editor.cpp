@@ -548,6 +548,7 @@ void ScriptTextEditor::_update_warnings() {
 
 		warnings_panel->push_cell();
 		warnings_panel->add_text(w.message);
+		warnings_panel->add_newline();
 		warnings_panel->pop(); // Cell.
 	}
 	warnings_panel->pop(); // Table.
@@ -569,6 +570,7 @@ void ScriptTextEditor::_update_errors() {
 
 		errors_panel->push_cell();
 		errors_panel->add_text(err.message);
+		errors_panel->add_newline();
 		errors_panel->pop(); // Cell.
 	}
 	errors_panel->pop(); // Table
@@ -752,8 +754,6 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	}
 	String hint;
 	Error err = script->get_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
-
-	r_options->sort_custom_inplace<CodeCompletionOptionCompare>();
 
 	if (err == OK) {
 		code_editor->get_text_editor()->set_code_hint(hint);
@@ -1726,9 +1726,17 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 				String variable_name = String(node->get_name()).to_snake_case().validate_identifier();
 				if (use_type) {
-					text_to_drop += vformat("@onready var %s: %s = %s%s\n", variable_name, node->get_class_name(), is_unique ? "%" : "$", path);
+					StringName class_name = node->get_class_name();
+					Ref<Script> node_script = node->get_script();
+					if (node_script.is_valid()) {
+						StringName global_node_script_name = node_script->get_global_name();
+						if (global_node_script_name != StringName()) {
+							class_name = global_node_script_name;
+						}
+					}
+					text_to_drop += vformat("@onready var %s: %s = %c%s\n", variable_name, class_name, is_unique ? '%' : '$', path);
 				} else {
-					text_to_drop += vformat("@onready var %s = %s%s\n", variable_name, is_unique ? "%" : "$", path);
+					text_to_drop += vformat("@onready var %s = %c%s\n", variable_name, is_unique ? '%' : '$', path);
 				}
 			}
 		} else {

@@ -48,14 +48,14 @@ void GLTFPhysicsBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_linear_velocity", "linear_velocity"), &GLTFPhysicsBody::set_linear_velocity);
 	ClassDB::bind_method(D_METHOD("get_angular_velocity"), &GLTFPhysicsBody::get_angular_velocity);
 	ClassDB::bind_method(D_METHOD("set_angular_velocity", "angular_velocity"), &GLTFPhysicsBody::set_angular_velocity);
-	ClassDB::bind_method(D_METHOD("get_inertia"), &GLTFPhysicsBody::get_inertia);
-	ClassDB::bind_method(D_METHOD("set_inertia", "inertia"), &GLTFPhysicsBody::set_inertia);
+	ClassDB::bind_method(D_METHOD("get_inertia_tensor"), &GLTFPhysicsBody::get_inertia_tensor);
+	ClassDB::bind_method(D_METHOD("set_inertia_tensor", "inertia_tensor"), &GLTFPhysicsBody::set_inertia_tensor);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "body_type"), "set_body_type", "get_body_type");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass"), "set_mass", "get_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "inertia"), "set_inertia", "get_inertia");
+	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "inertia_tensor"), "set_inertia_tensor", "get_inertia_tensor");
 }
 
 String GLTFPhysicsBody::get_body_type() const {
@@ -90,12 +90,12 @@ void GLTFPhysicsBody::set_angular_velocity(Vector3 p_angular_velocity) {
 	angular_velocity = p_angular_velocity;
 }
 
-Vector3 GLTFPhysicsBody::get_inertia() const {
-	return inertia;
+Basis GLTFPhysicsBody::get_inertia_tensor() const {
+	return inertia_tensor;
 }
 
-void GLTFPhysicsBody::set_inertia(Vector3 p_inertia) {
-	inertia = p_inertia;
+void GLTFPhysicsBody::set_inertia_tensor(Basis p_inertia_tensor) {
+	inertia_tensor = p_inertia_tensor;
 }
 
 Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_node(const CollisionObject3D *p_body_node) {
@@ -111,7 +111,11 @@ Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_node(const CollisionObject3D *p_body_
 		physics_body->mass = body->get_mass();
 		physics_body->linear_velocity = body->get_linear_velocity();
 		physics_body->angular_velocity = body->get_angular_velocity();
-		physics_body->inertia = body->get_inertia();
+		Vector3 inertia_diagonal = body->get_inertia();
+		physics_body->inertia_tensor = Basis(inertia_diagonal.x, 0, 0, 0, inertia_diagonal.y, 0, 0, 0, inertia_diagonal.z);
+		if (body->get_center_of_mass() != Vector3()) {
+			WARN_PRINT("GLTFPhysicsBody: This rigid body has a center of mass offset from the origin, which will be ignored when exporting to GLTF.");
+		}
 		if (cast_to<VehicleBody3D>(p_body_node)) {
 			physics_body->body_type = "vehicle";
 		} else {
@@ -139,7 +143,8 @@ CollisionObject3D *GLTFPhysicsBody::to_node() const {
 		body->set_mass(mass);
 		body->set_linear_velocity(linear_velocity);
 		body->set_angular_velocity(angular_velocity);
-		body->set_inertia(inertia);
+		body->set_inertia(inertia_tensor.get_main_diagonal());
+		body->set_center_of_mass_mode(RigidBody3D::CENTER_OF_MASS_MODE_CUSTOM);
 		return body;
 	}
 	if (body_type == "rigid") {
@@ -147,7 +152,8 @@ CollisionObject3D *GLTFPhysicsBody::to_node() const {
 		body->set_mass(mass);
 		body->set_linear_velocity(linear_velocity);
 		body->set_angular_velocity(angular_velocity);
-		body->set_inertia(inertia);
+		body->set_inertia(inertia_tensor.get_main_diagonal());
+		body->set_center_of_mass_mode(RigidBody3D::CENTER_OF_MASS_MODE_CUSTOM);
 		return body;
 	}
 	if (body_type == "static") {
@@ -191,7 +197,7 @@ Ref<GLTFPhysicsBody> GLTFPhysicsBody::from_dictionary(const Dictionary p_diction
 		const Array &arr = p_dictionary["inertiaTensor"];
 		if (arr.size() == 9) {
 			// Only use the diagonal elements of the inertia tensor matrix (principal axes).
-			physics_body->set_inertia(Vector3(arr[0], arr[4], arr[8]));
+			physics_body->set_inertia_tensor(Basis(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], arr[6], arr[7], arr[8]));
 		} else {
 			ERR_PRINT("Error parsing GLTF physics body: The inertia tensor must be a 3x3 matrix (9 number array).");
 		}
@@ -224,13 +230,19 @@ Dictionary GLTFPhysicsBody::to_dictionary() const {
 		velocity_array[2] = angular_velocity.z;
 		d["angularVelocity"] = velocity_array;
 	}
-	if (inertia != Vector3()) {
+	if (inertia_tensor != Basis(0, 0, 0, 0, 0, 0, 0, 0, 0)) {
 		Array inertia_array;
 		inertia_array.resize(9);
 		inertia_array.fill(0.0);
-		inertia_array[0] = inertia.x;
-		inertia_array[4] = inertia.y;
-		inertia_array[8] = inertia.z;
+		inertia_array[0] = inertia_tensor[0][0];
+		inertia_array[1] = inertia_tensor[0][1];
+		inertia_array[2] = inertia_tensor[0][2];
+		inertia_array[3] = inertia_tensor[1][0];
+		inertia_array[4] = inertia_tensor[1][1];
+		inertia_array[5] = inertia_tensor[1][2];
+		inertia_array[6] = inertia_tensor[2][0];
+		inertia_array[7] = inertia_tensor[2][1];
+		inertia_array[8] = inertia_tensor[2][2];
 		d["inertiaTensor"] = inertia_array;
 	}
 	return d;

@@ -37,6 +37,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/sky.h"
 
 void LightmapGIData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance) {

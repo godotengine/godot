@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OccluderInstance3D" inherits="Node3D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="OccluderInstance3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides occlusion culling for 3D nodes, which improves performance in closed areas.
 	</brief_description>
@@ -36,7 +36,7 @@
 		</member>
 		<member name="bake_simplification_distance" type="float" setter="set_bake_simplification_distance" getter="get_bake_simplification_distance" default="0.1">
 			The simplification distance to use for simplifying the generated occluder polygon (in 3D units). Higher values result in a less detailed occluder mesh, which improves performance but reduces culling accuracy.
-			The occluder geometry is rendered on the CPU, so it is important to keep its geometry as simple as possible. Since the buffer is rendered at a low resolution, less detailed occluder meshes generally still work well. The default value is fairly aggressive, so you may have to decrase it if you run into false negatives (objects being occluded even though they are visible by the camera). A value of [code]0.01[/code] will act conservatively, and will keep geometry [i]perceptually[/i] unaffected in the occlusion culling buffer. Depending on the scene, a value of [code]0.01[/code] may still simplify the mesh noticeably compared to disabling simplification entirely.
+			The occluder geometry is rendered on the CPU, so it is important to keep its geometry as simple as possible. Since the buffer is rendered at a low resolution, less detailed occluder meshes generally still work well. The default value is fairly aggressive, so you may have to decrease it if you run into false negatives (objects being occluded even though they are visible by the camera). A value of [code]0.01[/code] will act conservatively, and will keep geometry [i]perceptually[/i] unaffected in the occlusion culling buffer. Depending on the scene, a value of [code]0.01[/code] may still simplify the mesh noticeably compared to disabling simplification entirely.
 			Setting this to [code]0.0[/code] disables simplification entirely, but vertices in the exact same position will still be merged. The mesh will also be re-indexed to reduce both the number of vertices and indices.
 			[b]Note:[/b] This uses the [url=https://meshoptimizer.org/]meshoptimizer[/url] library under the hood, similar to LOD generation.
 		</member>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GLTFSkeleton" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="GLTFSkeleton" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -21,6 +21,7 @@
 		<method name="get_godot_bone_node">
 			<return type="Dictionary" />
 			<description>
+				Returns a [Dictionary] that maps skeleton bone indices to the indices of GLTF nodes. This property is unused during import, and only set during export. In a GLTF file, a bone is a node, so Godot converts skeleton bones to GLTF nodes.
 			</description>
 		</method>
 		<method name="get_godot_skeleton">
@@ -37,6 +38,7 @@
 			<return type="void" />
 			<param index="0" name="godot_bone_node" type="Dictionary" />
 			<description>
+				Sets a [Dictionary] that maps skeleton bone indices to the indices of GLTF nodes. This property is unused during import, and only set during export. In a GLTF file, a bone is a node, so Godot converts skeleton bones to GLTF nodes.
 			</description>
 		</method>
 		<method name="set_unique_names">

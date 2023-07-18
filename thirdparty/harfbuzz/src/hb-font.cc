@@ -59,6 +59,11 @@
  *
  * HarfBuzz provides a built-in set of lightweight default
  * functions for each method in #hb_font_funcs_t.
+ *
+ * The default font functions are implemented in terms of the
+ * #hb_font_funcs_t methods of the parent font object.  This allows
+ * client programs to override only the methods they need to, and
+ * otherwise inherit the parent font's implementation, if any.
  **/
 
 
@@ -1384,10 +1389,11 @@ hb_font_get_glyph_from_name (hb_font_t      *font,
   return font->get_glyph_from_name (name, len, glyph);
 }
 
+#ifndef HB_DISABLE_DEPRECATED
 /**
  * hb_font_get_glyph_shape:
  * @font: #hb_font_t to work upon
- * @glyph: : The glyph ID
+ * @glyph: The glyph ID
  * @dfuncs: #hb_draw_funcs_t to draw to
  * @draw_data: User data to pass to draw callbacks
  *
@@ -1405,11 +1411,12 @@ hb_font_get_glyph_shape (hb_font_t *font,
 {
   hb_font_draw_glyph (font, glyph, dfuncs, draw_data);
 }
+#endif
 
 /**
  * hb_font_draw_glyph:
  * @font: #hb_font_t to work upon
- * @glyph: : The glyph ID
+ * @glyph: The glyph ID
  * @dfuncs: #hb_draw_funcs_t to draw to
  * @draw_data: User data to pass to draw callbacks
  *
@@ -2643,7 +2650,6 @@ hb_font_set_variations (hb_font_t            *font,
       if (axes[axis_index].axisTag == tag)
 	design_coords[axis_index] = v;
   }
-  font->face->table.avar->map_coords (normalized, coords_length);
 
   hb_ot_var_normalize_coords (font->face, coords_length, design_coords, normalized);
   _hb_font_adopt_var_coords (font, normalized, design_coords, coords_length);
@@ -2714,8 +2720,6 @@ hb_font_set_variation (hb_font_t *font,
   for (unsigned axis_index = 0; axis_index < coords_length; axis_index++)
     if (axes[axis_index].axisTag == tag)
       design_coords[axis_index] = value;
-
-  font->face->table.avar->map_coords (normalized, coords_length);
 
   hb_ot_var_normalize_coords (font->face, coords_length, design_coords, normalized);
   _hb_font_adopt_var_coords (font, normalized, design_coords, coords_length);
@@ -3053,6 +3057,7 @@ hb_font_funcs_set_glyph_func (hb_font_funcs_t          *ffuncs,
 #endif
 
 
+#ifndef HB_DISABLE_DEPRECATED
 void
 hb_font_funcs_set_glyph_shape_func (hb_font_funcs_t               *ffuncs,
                                    hb_font_get_glyph_shape_func_t  func,
@@ -3061,3 +3066,4 @@ hb_font_funcs_set_glyph_shape_func (hb_font_funcs_t               *ffuncs,
 {
   hb_font_funcs_set_draw_glyph_func (ffuncs, func, user_data, destroy);
 }
+#endif

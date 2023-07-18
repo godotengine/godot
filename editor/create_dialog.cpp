@@ -291,12 +291,13 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 			p_type_category == TypeCategory::OTHER_TYPE;
 	bool is_virtual = ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type);
 
+	r_item->set_meta(SNAME("__instantiable"), can_instantiate && !is_virtual);
+
 	if (can_instantiate && !is_virtual) {
 		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
 	} else {
 		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, "NodeDisabled"));
 		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
-		r_item->set_selectable(0, false);
 	}
 
 	bool is_deprecated = EditorHelp::get_doc_data()->class_list[p_type].is_deprecated;
@@ -369,7 +370,8 @@ float CreateDialog::_score_type(const String &p_type, const String &p_search) co
 
 	// Look through at most 5 recent items
 	bool in_recent = false;
-	for (int i = 0; i < MIN(5, recent->get_item_count()); i++) {
+	constexpr int RECENT_COMPLETION_SIZE = 5;
+	for (int i = 0; i < MIN(RECENT_COMPLETION_SIZE - 1, recent->get_item_count()); i++) {
 		if (recent->get_item_text(i) == p_type) {
 			in_recent = true;
 			break;
@@ -395,12 +397,18 @@ void CreateDialog::_confirmed() {
 		return;
 	}
 
+	TreeItem *selected = search_options->get_selected();
+	if (!selected->get_meta("__instantiable", true)) {
+		return;
+	}
+
 	{
 		Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("create_recent." + base_type), FileAccess::WRITE);
 		if (f.is_valid()) {
 			f->store_line(selected_item);
 
-			for (int i = 0; i < MIN(32, recent->get_item_count()); i++) {
+			constexpr int RECENT_HISTORY_SIZE = 15;
+			for (int i = 0; i < MIN(RECENT_HISTORY_SIZE - 1, recent->get_item_count()); i++) {
 				if (recent->get_item_text(i) != selected_item) {
 					f->store_line(recent->get_item_text(i));
 				}
@@ -421,13 +429,20 @@ void CreateDialog::_text_changed(const String &p_newtext) {
 
 void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
-	if (k.is_valid()) {
+	if (k.is_valid() && k->is_pressed()) {
 		switch (k->get_keycode()) {
 			case Key::UP:
 			case Key::DOWN:
 			case Key::PAGEUP:
 			case Key::PAGEDOWN: {
 				search_options->gui_input(k);
+				search_box->accept_event();
+			} break;
+			case Key::SPACE: {
+				TreeItem *ti = search_options->get_selected();
+				if (ti) {
+					ti->set_collapsed(!ti->is_collapsed());
+				}
 				search_box->accept_event();
 			} break;
 			default:

@@ -30,9 +30,10 @@
 
 #include "file_access_filesystem_jandroid.h"
 
+#include "thread_jandroid.h"
+
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
-#include "thread_jandroid.h"
 
 #include <unistd.h>
 

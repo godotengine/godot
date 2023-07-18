@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.ComponentModel;
 
 namespace Godot
 {
@@ -610,6 +611,60 @@ namespace Godot
             b.Row1 = Row1.Lerp(to.Row1, weight);
             b.Row2 = Row2.Lerp(to.Row2, weight);
             return b;
+        }
+
+        /// <summary>
+        /// Creates a <see cref="Basis"/> with a rotation such that the forward
+        /// axis (-Z) points towards the <paramref name="target"/> position.
+        /// The up axis (+Y) points as close to the <paramref name="up"/> vector
+        /// as possible while staying perpendicular to the forward axis.
+        /// The resulting Basis is orthonormalized.
+        /// The <paramref name="target"/> and <paramref name="up"/> vectors
+        /// cannot be zero, and cannot be parallel to each other.
+        /// </summary>
+        /// <param name="target">The position to look at.</param>
+        /// <param name="up">The relative up direction.</param>
+        /// <param name="useModelFront">
+        /// If true, then the model is oriented in reverse,
+        /// towards the model front axis (+Z, Vector3.ModelFront),
+        /// which is more useful for orienting 3D models.
+        /// </param>
+        /// <returns>The resulting basis matrix.</returns>
+        public static Basis LookingAt(Vector3 target, Vector3? up = null, bool useModelFront = false)
+        {
+            up ??= Vector3.Up;
+#if DEBUG
+            if (target.IsZeroApprox())
+            {
+                throw new ArgumentException("The vector can't be zero.", nameof(target));
+            }
+            if (up.Value.IsZeroApprox())
+            {
+                throw new ArgumentException("The vector can't be zero.", nameof(up));
+            }
+#endif
+            Vector3 column2 = target.Normalized();
+            if (!useModelFront)
+            {
+                column2 = -column2;
+            }
+            Vector3 column0 = up.Value.Cross(column2);
+#if DEBUG
+            if (column0.IsZeroApprox())
+            {
+                throw new ArgumentException("The target vector and up vector can't be parallel to each other.");
+            }
+#endif
+            column0.Normalize();
+            Vector3 column1 = column2.Cross(column0);
+            return new Basis(column0, column1, column2);
+        }
+
+        /// <inheritdoc cref="LookingAt(Vector3, Nullable{Vector3}, bool)"/>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static Basis LookingAt(Vector3 target, Vector3 up)
+        {
+            return LookingAt(target, up, false);
         }
 
         /// <summary>

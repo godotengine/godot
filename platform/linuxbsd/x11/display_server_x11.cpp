@@ -32,14 +32,15 @@
 
 #ifdef X11_ENABLED
 
+#include "x11/detect_prime_x11.h"
+#include "x11/key_mapping_x11.h"
+
 #include "core/config/project_settings.h"
 #include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
-#include "detect_prime_x11.h"
-#include "key_mapping_x11.h"
 #include "main/main.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/atlas_texture.h"
 
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -58,15 +59,15 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#undef CursorShape
+#include <X11/XKBlib.h>
+
 // ICCCM
 #define WM_NormalState 1L // window normal state
 #define WM_IconicState 3L // window minimized
 // EWMH
 #define _NET_WM_STATE_REMOVE 0L // remove/unset property
 #define _NET_WM_STATE_ADD 1L // add/set property
-
-#undef CursorShape
-#include <X11/XKBlib.h>
 
 // 2.2 is the first release with multitouch
 #define XINPUT_CLIENT_VERSION_MAJOR 2
@@ -303,37 +304,37 @@ void DisplayServerX11::_flush_mouse_motion() {
 #ifdef SPEECHD_ENABLED
 
 bool DisplayServerX11::tts_is_speaking() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->is_speaking();
 }
 
 bool DisplayServerX11::tts_is_paused() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->is_paused();
 }
 
 TypedArray<Dictionary> DisplayServerX11::tts_get_voices() const {
-	ERR_FAIL_COND_V(!tts, TypedArray<Dictionary>());
+	ERR_FAIL_COND_V_MSG(!tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->get_voices();
 }
 
 void DisplayServerX11::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
 }
 
 void DisplayServerX11::tts_pause() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->pause();
 }
 
 void DisplayServerX11::tts_resume() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->resume();
 }
 
 void DisplayServerX11::tts_stop() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->stop();
 }
 
@@ -855,12 +856,30 @@ Size2i DisplayServerX11::screen_get_size(int p_screen) const {
 	return _screen_get_rect(p_screen).size;
 }
 
+// A Handler to avoid crashing on non-fatal X errors by default.
+//
+// The original X11 error formatter `_XPrintDefaultError` is defined here:
+// https://gitlab.freedesktop.org/xorg/lib/libx11/-/blob/e45ca7b41dcd3ace7681d6897505f85d374640f2/src/XlibInt.c#L1322
+// It is not exposed through the API, accesses X11 internals,
+// and is much more complex, so this is a less complete simplified error X11 printer.
+int default_window_error_handler(Display *display, XErrorEvent *error) {
+	static char message[1024];
+	XGetErrorText(display, error->error_code, message, sizeof(message));
+
+	ERR_PRINT(vformat("Unhandled XServer error: %s"
+					  "\n   Major opcode of failed request: %d"
+					  "\n   Serial number of failed request: %d"
+					  "\n   Current serial number in output stream: %d",
+			String::utf8(message), (uint64_t)error->request_code, (uint64_t)error->minor_code, (uint64_t)error->serial));
+	return 0;
+}
+
 bool g_bad_window = false;
 int bad_window_error_handler(Display *display, XErrorEvent *error) {
 	if (error->error_code == BadWindow) {
 		g_bad_window = true;
 	} else {
-		ERR_PRINT("Unhandled XServer error code: " + itos(error->error_code));
+		return default_window_error_handler(display, error);
 	}
 	return 0;
 }
@@ -1204,6 +1223,105 @@ Color DisplayServerX11::screen_get_pixel(const Point2i &p_position) const {
 	}
 
 	return Color();
+}
+
+Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
+
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
+	}
+
+	ERR_FAIL_COND_V(p_screen < 0, Ref<Image>());
+
+	XImage *image = nullptr;
+
+	int event_base, error_base;
+	if (XineramaQueryExtension(x11_display, &event_base, &error_base)) {
+		int xin_count;
+		XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &xin_count);
+		if (p_screen < xin_count) {
+			int x_count = XScreenCount(x11_display);
+			for (int i = 0; i < x_count; i++) {
+				Window root = XRootWindow(x11_display, i);
+				XWindowAttributes root_attrs;
+				XGetWindowAttributes(x11_display, root, &root_attrs);
+				if ((xsi[p_screen].x_org >= root_attrs.x) && (xsi[p_screen].x_org <= root_attrs.x + root_attrs.width) && (xsi[p_screen].y_org >= root_attrs.y) && (xsi[p_screen].y_org <= root_attrs.y + root_attrs.height)) {
+					image = XGetImage(x11_display, root, xsi[p_screen].x_org, xsi[p_screen].y_org, xsi[p_screen].width, xsi[p_screen].height, AllPlanes, ZPixmap);
+					break;
+				}
+			}
+		} else {
+			ERR_FAIL_V_MSG(Ref<Image>(), "Invalid screen index: " + itos(p_screen) + "(count: " + itos(xin_count) + ").");
+		}
+	} else {
+		int x_count = XScreenCount(x11_display);
+		if (p_screen < x_count) {
+			Window root = XRootWindow(x11_display, p_screen);
+
+			XWindowAttributes root_attrs;
+			XGetWindowAttributes(x11_display, root, &root_attrs);
+
+			image = XGetImage(x11_display, root, root_attrs.x, root_attrs.y, root_attrs.width, root_attrs.height, AllPlanes, ZPixmap);
+		} else {
+			ERR_FAIL_V_MSG(Ref<Image>(), "Invalid screen index: " + itos(p_screen) + "(count: " + itos(x_count) + ").");
+		}
+	}
+
+	Ref<Image> img;
+	if (image) {
+		int width = image->width;
+		int height = image->height;
+
+		Vector<uint8_t> img_data;
+		img_data.resize(height * width * 4);
+
+		uint8_t *sr = (uint8_t *)image->data;
+		uint8_t *wr = (uint8_t *)img_data.ptrw();
+
+		if (image->bits_per_pixel == 24 && image->red_mask == 0xff0000 && image->green_mask == 0x00ff00 && image->blue_mask == 0x0000ff) {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					wr[(y * width + x) * 4 + 0] = sr[(y * width + x) * 3 + 2];
+					wr[(y * width + x) * 4 + 1] = sr[(y * width + x) * 3 + 1];
+					wr[(y * width + x) * 4 + 2] = sr[(y * width + x) * 3 + 0];
+					wr[(y * width + x) * 4 + 3] = 255;
+				}
+			}
+		} else if (image->bits_per_pixel == 24 && image->red_mask == 0x0000ff && image->green_mask == 0x00ff00 && image->blue_mask == 0xff0000) {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					wr[(y * width + x) * 4 + 0] = sr[(y * width + x) * 3 + 2];
+					wr[(y * width + x) * 4 + 1] = sr[(y * width + x) * 3 + 1];
+					wr[(y * width + x) * 4 + 2] = sr[(y * width + x) * 3 + 0];
+					wr[(y * width + x) * 4 + 3] = 255;
+				}
+			}
+		} else if (image->bits_per_pixel == 32 && image->red_mask == 0xff0000 && image->green_mask == 0x00ff00 && image->blue_mask == 0x0000ff) {
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					wr[(y * width + x) * 4 + 0] = sr[(y * width + x) * 4 + 2];
+					wr[(y * width + x) * 4 + 1] = sr[(y * width + x) * 4 + 1];
+					wr[(y * width + x) * 4 + 2] = sr[(y * width + x) * 4 + 0];
+					wr[(y * width + x) * 4 + 3] = 255;
+				}
+			}
+		} else {
+			XFree(image);
+			ERR_FAIL_V_MSG(Ref<Image>(), vformat("XImage with RGB mask %x %x %x and depth %d is not supported.", (uint64_t)image->red_mask, (uint64_t)image->green_mask, (uint64_t)image->blue_mask, (int64_t)image->bits_per_pixel));
+		}
+		img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+		XFree(image);
+	}
+
+	return img;
 }
 
 float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
@@ -2508,6 +2626,15 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 	XFlush(x11_display);
 }
 
+bool DisplayServerX11::window_is_focused(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	const WindowData &wd = windows[p_window];
+
+	return wd.focused;
+}
+
 bool DisplayServerX11::window_can_draw(WindowID p_window) const {
 	//this seems to be all that is provided by X11
 	return window_get_mode(p_window) != WINDOW_MODE_MINIMIZED;
@@ -2729,11 +2856,11 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 			cursors[p_shape] = XcursorImageLoadCursor(x11_display, cursor_img[p_shape]);
 		}
 
+		cursors_cache.erase(p_shape);
+
 		CursorShape c = current_cursor;
 		current_cursor = CURSOR_MAX;
 		cursor_set_shape(c);
-
-		cursors_cache.erase(p_shape);
 	}
 }
 
@@ -2853,6 +2980,30 @@ Key DisplayServerX11::keyboard_get_keycode_from_physical(Key p_keycode) const {
 	return (Key)(key | modifiers);
 }
 
+Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
+	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
+	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
+	unsigned int xkeycode = KeyMappingX11::get_xlibcode(keycode_no_mod);
+	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, keyboard_get_current_layout(), 0);
+	if (is_ascii_lower_case(xkeysym)) {
+		xkeysym -= ('a' - 'A');
+	}
+
+	Key key = KeyMappingX11::get_keycode(xkeysym);
+#ifdef XKB_ENABLED
+	if (xkb_loaded_v08p) {
+		String keysym = String::chr(xkb_keysym_to_utf32(xkb_keysym_to_upper(xkeysym)));
+		key = fix_key_label(keysym[0], KeyMappingX11::get_keycode(xkeysym));
+	}
+#endif
+
+	// If not found, fallback to QWERTY.
+	// This should match the behavior of the event pump
+	if (key == Key::NONE) {
+		return p_keycode;
+	}
+	return (Key)(key | modifiers);
+}
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {
 	Atom actual_type = None;
 	int actual_format = 0;
@@ -4753,6 +4904,8 @@ void DisplayServerX11::set_icon(const Ref<Image> &p_icon) {
 	Atom net_wm_icon = XInternAtom(x11_display, "_NET_WM_ICON", False);
 
 	if (p_icon.is_valid()) {
+		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
+
 		Ref<Image> img = p_icon->duplicate();
 		img->convert(Image::FORMAT_RGBA8);
 
@@ -5322,7 +5475,9 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 #else
 #ifdef XKB_ENABLED
-	xkb_loaded = true;
+	bool xkb_loaded = true;
+	xkb_loaded_v05p = true;
+	xkb_loaded_v08p = true;
 #endif
 #endif
 
@@ -5349,6 +5504,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	r_error = OK;
 
+#ifdef SOWRAP_ENABLED
 	{
 		if (!XcursorImageCreate || !XcursorImageLoadCursor || !XcursorImageDestroy || !XcursorGetDefaultSize || !XcursorGetTheme || !XcursorLibraryLoadImage) {
 			// There's no API to check version, check if functions are available instead.
@@ -5357,6 +5513,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			return;
 		}
 	}
+#endif
 
 	for (int i = 0; i < CURSOR_MAX; i++) {
 		cursors[i] = None;
@@ -5553,7 +5710,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 #ifdef SPEECHD_ENABLED
 	// Init TTS
-	tts = memnew(TTS_Linux);
+	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
+	if (tts_enabled) {
+		tts = memnew(TTS_Linux);
+	}
 #endif
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -5828,6 +5988,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	portal_desktop = memnew(FreeDesktopPortalDesktop);
 #endif
+	XSetErrorHandler(&default_window_error_handler);
 
 	r_error = OK;
 }
@@ -5927,7 +6088,9 @@ DisplayServerX11::~DisplayServerX11() {
 	}
 
 #ifdef SPEECHD_ENABLED
-	memdelete(tts);
+	if (tts) {
+		memdelete(tts);
+	}
 #endif
 
 #ifdef DBUS_ENABLED

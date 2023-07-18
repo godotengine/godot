@@ -30,10 +30,11 @@
 
 #include "export.h"
 
+#include "export_plugin.h"
+
 #include "core/os/os.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
-#include "export_plugin.h"
 
 void register_android_exporter_types() {
 	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformAndroid);

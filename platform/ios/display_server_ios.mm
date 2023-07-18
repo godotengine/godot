@@ -28,19 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "display_server_ios.h"
+#import "display_server_ios.h"
 
 #import "app_delegate.h"
-#include "core/config/project_settings.h"
-#include "core/io/file_access_pack.h"
 #import "device_metrics.h"
 #import "godot_view.h"
-#include "ios.h"
+#import "ios.h"
 #import "key_mapping_ios.h"
 #import "keyboard_input_view.h"
-#include "os_ios.h"
-#include "tts_ios.h"
+#import "os_ios.h"
+#import "tts_ios.h"
 #import "view_controller.h"
+
+#include "core/config/project_settings.h"
+#include "core/io/file_access_pack.h"
 
 #import <sys/utsname.h>
 
@@ -56,7 +57,10 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 	rendering_driver = p_rendering_driver;
 
 	// Init TTS
-	tts = [[TTS_IOS alloc] init];
+	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
+	if (tts_enabled) {
+		tts = [[TTS_IOS alloc] init];
+	}
 
 #if defined(VULKAN_ENABLED)
 	context_vulkan = nullptr;
@@ -316,37 +320,37 @@ String DisplayServerIOS::get_name() const {
 }
 
 bool DisplayServerIOS::tts_is_speaking() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts isSpeaking];
 }
 
 bool DisplayServerIOS::tts_is_paused() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts isPaused];
 }
 
 TypedArray<Dictionary> DisplayServerIOS::tts_get_voices() const {
-	ERR_FAIL_COND_V(!tts, TypedArray<Dictionary>());
+	ERR_FAIL_COND_V_MSG(!tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return [tts getVoices];
 }
 
 void DisplayServerIOS::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
 }
 
 void DisplayServerIOS::tts_pause() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts pauseSpeaking];
 }
 
 void DisplayServerIOS::tts_resume() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts resumeSpeaking];
 }
 
 void DisplayServerIOS::tts_stop() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	[tts stopSpeaking];
 }
 
@@ -558,12 +562,21 @@ void DisplayServerIOS::window_move_to_foreground(WindowID p_window) {
 	// Probably not supported for iOS
 }
 
+bool DisplayServerIOS::window_is_focused(WindowID p_window) const {
+	return true;
+}
+
 float DisplayServerIOS::screen_get_max_scale() const {
 	return screen_get_scale(SCREEN_OF_MAIN_WINDOW);
 }
 
 void DisplayServerIOS::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
 	screen_orientation = p_orientation;
+	if (@available(iOS 16.0, *)) {
+		[AppDelegate.viewController setNeedsUpdateOfSupportedInterfaceOrientations];
+	} else {
+		[UIViewController attemptRotationToDeviceOrientation];
+	}
 }
 
 DisplayServer::ScreenOrientation DisplayServerIOS::screen_get_orientation(int p_screen) const {

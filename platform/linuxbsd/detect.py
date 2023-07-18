@@ -10,10 +10,6 @@ if TYPE_CHECKING:
     from SCons import Environment
 
 
-def is_active():
-    return True
-
-
 def get_name():
     return "LinuxBSD"
 
@@ -239,10 +235,14 @@ def configure(env: "Environment"):
         env.ParseConfig("pkg-config libenet --cflags --libs")
 
     if not env["builtin_squish"]:
-        env.ParseConfig("pkg-config libsquish --cflags --libs")
+        # libsquish doesn't reliably install its .pc file, so some distros lack it.
+        env.Append(LIBS=["libsquish"])
 
     if not env["builtin_zstd"]:
         env.ParseConfig("pkg-config libzstd --cflags --libs")
+
+    if env["brotli"] and not env["builtin_brotli"]:
+        env.ParseConfig("pkg-config libbrotlicommon libbrotlidec --cflags --libs")
 
     # Sound and video libraries
     # Keep the order as it triggers chained dependencies (ogg needed by others, etc.)
@@ -290,6 +290,9 @@ def configure(env: "Environment"):
     if not env["builtin_embree"] and env["arch"] in ["x86_64", "arm64"]:
         # No pkgconfig file so far, hardcode expected lib name.
         env.Append(LIBS=["embree3"])
+
+    if not env["builtin_openxr"]:
+        env.ParseConfig("pkg-config openxr --cflags --libs")
 
     if env["fontconfig"]:
         if not env["use_sowrap"]:

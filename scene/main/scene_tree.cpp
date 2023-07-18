@@ -50,6 +50,7 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/font.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
@@ -443,10 +444,9 @@ void SceneTree::set_group(const StringName &p_group, const String &p_name, const
 }
 
 void SceneTree::initialize() {
-	ERR_FAIL_COND(!root);
-	initialized = true;
-	root->_set_tree(this);
+	ERR_FAIL_NULL(root);
 	MainLoop::initialize();
+	root->_set_tree(this);
 }
 
 bool SceneTree::physics_process(double p_time) {
@@ -456,7 +456,9 @@ bool SceneTree::physics_process(double p_time) {
 
 	flush_transform_notifications();
 
-	MainLoop::physics_process(p_time);
+	if (MainLoop::physics_process(p_time)) {
+		_quit = true;
+	}
 	physics_process_time = p_time;
 
 	emit_signal(SNAME("physics_frame"));
@@ -484,7 +486,9 @@ bool SceneTree::physics_process(double p_time) {
 bool SceneTree::process(double p_time) {
 	root_lock++;
 
-	MainLoop::process(p_time);
+	if (MainLoop::process(p_time)) {
+		_quit = true;
+	}
 
 	process_time = p_time;
 
@@ -614,20 +618,18 @@ void SceneTree::finalize() {
 
 	_flush_ugc();
 
-	initialized = false;
-
-	MainLoop::finalize();
-
 	if (root) {
 		root->_set_tree(nullptr);
 		root->_propagate_after_exit_tree();
 		memdelete(root); //delete root
 		root = nullptr;
+
+		// In case deletion of some objects was queued when destructing the `root`.
+		// E.g. if `queue_free()` was called for some node outside the tree when handling NOTIFICATION_PREDELETE for some node in the tree.
+		_flush_delete_queue();
 	}
 
-	// In case deletion of some objects was queued when destructing the `root`.
-	// E.g. if `queue_free()` was called for some node outside the tree when handling NOTIFICATION_PREDELETE for some node in the tree.
-	_flush_delete_queue();
+	MainLoop::finalize();
 
 	// Cleanup timers.
 	for (Ref<SceneTreeTimer> &timer : timers) {
@@ -736,14 +738,6 @@ void SceneTree::set_debug_navigation_hint(bool p_enabled) {
 
 bool SceneTree::is_debugging_navigation_hint() const {
 	return debug_navigation_hint;
-}
-
-void SceneTree::set_debug_avoidance_hint(bool p_enabled) {
-	debug_avoidance_hint = p_enabled;
-}
-
-bool SceneTree::is_debugging_avoidance_hint() const {
-	return debug_avoidance_hint;
 }
 #endif
 
@@ -905,11 +899,16 @@ void SceneTree::_process_group(ProcessGroup *p_group, bool p_physics) {
 		return;
 	}
 
-	bool &node_order_dirty = p_physics ? p_group->physics_node_order_dirty : p_group->node_order_dirty;
-
-	if (node_order_dirty) {
-		nodes.sort_custom<Node::ComparatorWithPhysicsPriority>();
-		node_order_dirty = false;
+	if (p_physics) {
+		if (p_group->physics_node_order_dirty) {
+			nodes.sort_custom<Node::ComparatorWithPhysicsPriority>();
+			p_group->physics_node_order_dirty = false;
+		}
+	} else {
+		if (p_group->node_order_dirty) {
+			nodes.sort_custom<Node::ComparatorWithPriority>();
+			p_group->node_order_dirty = false;
+		}
 	}
 
 	// Make a copy, so if nodes are added/removed from process, this does not break
@@ -931,18 +930,18 @@ void SceneTree::_process_group(ProcessGroup *p_group, bool p_physics) {
 		}
 
 		if (p_physics) {
-			if (n->is_physics_processing()) {
-				n->notification(Node::NOTIFICATION_PHYSICS_PROCESS);
-			}
 			if (n->is_physics_processing_internal()) {
 				n->notification(Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 			}
-		} else {
-			if (n->is_processing()) {
-				n->notification(Node::NOTIFICATION_PROCESS);
+			if (n->is_physics_processing()) {
+				n->notification(Node::NOTIFICATION_PHYSICS_PROCESS);
 			}
+		} else {
 			if (n->is_processing_internal()) {
 				n->notification(Node::NOTIFICATION_INTERNAL_PROCESS);
+			}
+			if (n->is_processing()) {
+				n->notification(Node::NOTIFICATION_PROCESS);
 			}
 		}
 	}
@@ -1051,13 +1050,13 @@ void SceneTree::_process(bool p_physics) {
 		if (p_physics) {
 			if (!pg->physics_nodes.is_empty()) {
 				process_valid = true;
-			} else if (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES_PHYSICS) && pg->call_queue.has_messages()) {
+			} else if ((pg == &default_process_group || (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES_PHYSICS))) && pg->call_queue.has_messages()) {
 				process_valid = true;
 			}
 		} else {
 			if (!pg->nodes.is_empty()) {
 				process_valid = true;
-			} else if (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES) && pg->call_queue.has_messages()) {
+			} else if ((pg == &default_process_group || (pg->owner != nullptr && pg->owner->data.process_thread_messages.has_flag(Node::FLAG_PROCESS_THREAD_MESSAGES))) && pg->call_queue.has_messages()) {
 				process_valid = true;
 			}
 		}
@@ -1090,7 +1089,7 @@ bool SceneTree::ProcessGroupSort::operator()(const ProcessGroup *p_left, const P
 void SceneTree::_remove_process_group(Node *p_node) {
 	_THREAD_SAFE_METHOD_
 	ProcessGroup *pg = (ProcessGroup *)p_node->data.process_group;
-	ERR_FAIL_COND(!pg);
+	ERR_FAIL_NULL(pg);
 	ERR_FAIL_COND(pg->removed);
 	pg->removed = true;
 	pg->owner = nullptr;
@@ -1100,7 +1099,7 @@ void SceneTree::_remove_process_group(Node *p_node) {
 
 void SceneTree::_add_process_group(Node *p_node) {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND(!p_node);
+	ERR_FAIL_NULL(p_node);
 
 	ProcessGroup *pg = memnew(ProcessGroup);
 
@@ -1395,7 +1394,8 @@ void SceneTree::_change_scene(Node *p_to) {
 	if (p_to) {
 		current_scene = p_to;
 		root->add_child(p_to);
-		root->update_mouse_cursor_shape();
+		// Update display for cursor instantly.
+		root->update_mouse_cursor_state();
 	}
 }
 
@@ -1413,7 +1413,7 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	ERR_FAIL_COND_V_MSG(p_scene.is_null(), ERR_INVALID_PARAMETER, "Can't change to a null scene. Use unload_current_scene() if you wish to unload it.");
 
 	Node *new_scene = p_scene->instantiate();
-	ERR_FAIL_COND_V(!new_scene, ERR_CANT_CREATE);
+	ERR_FAIL_NULL_V(new_scene, ERR_CANT_CREATE);
 
 	call_deferred(SNAME("_change_scene"), new_scene);
 	return OK;
@@ -1421,7 +1421,7 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 
 Error SceneTree::reload_current_scene() {
 	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), ERR_INVALID_PARAMETER, "Reloading scene can only be done from the main thread.");
-	ERR_FAIL_COND_V(!current_scene, ERR_UNCONFIGURED);
+	ERR_FAIL_NULL_V(current_scene, ERR_UNCONFIGURED);
 	String fname = current_scene->get_scene_file_path();
 	return change_scene_to_file(fname);
 }

@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-#include "stddef.h"
+#include <stddef.h>
 
 enum WebXRInputEvent {
 	WEBXR_INPUT_EVENT_SELECTSTART,

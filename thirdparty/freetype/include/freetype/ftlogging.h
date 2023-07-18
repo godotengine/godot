@@ -4,7 +4,7 @@
  *
  *   Additional debugging APIs.
  *
- * Copyright (C) 2020-2022 by
+ * Copyright (C) 2020-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -62,7 +62,7 @@ FT_BEGIN_HEADER
    *   component.
    *
    *   ```
-   *   FT_Trace_Set_Level( "any:7 memory:0 );
+   *   FT_Trace_Set_Level( "any:7 memory:0" );
    *   ```
    *
    * @note:

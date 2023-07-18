@@ -62,6 +62,7 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/style_box_texture.h"
 
 // Min and Max are power of two in order to play nicely with successive increment.
 // That way, we can naturally reach a 100% zoom from boundaries.
@@ -527,7 +528,8 @@ Object *CanvasItemEditor::_get_editor_data(Object *p_what) {
 }
 
 void CanvasItemEditor::_keying_changed() {
-	if (AnimationPlayerEditor::get_singleton()->get_track_editor()->is_visible_in_tree()) {
+	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
+	if (te && te->is_visible_in_tree() && te->get_current_animation().is_valid()) {
 		animation_hb->show();
 	} else {
 		animation_hb->hide();
@@ -1289,7 +1291,13 @@ void CanvasItemEditor::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref
 	if (mb.is_valid()) {
 		// Special behvior for scroll events, as the zoom_by_increment method can smartly end up on powers of two.
 		int increment = p_zoom_factor > 1.0 ? 1 : -1;
-		zoom_widget->set_zoom_by_increments(increment, mb->is_alt_pressed());
+		bool by_integer = mb->is_alt_pressed();
+
+		if (EDITOR_GET("editors/2d/use_integer_zoom_by_default")) {
+			by_integer = !by_integer;
+		}
+
+		zoom_widget->set_zoom_by_increments(increment, by_integer);
 	} else {
 		zoom_widget->set_zoom(zoom_widget->get_zoom() * p_zoom_factor);
 	}
@@ -2415,7 +2423,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (k.is_valid() && k->is_pressed() && k->get_keycode() == Key::ESCAPE && drag_type == DRAG_NONE && tool == TOOL_SELECT) {
+	if (k.is_valid() && k->is_action_pressed(SNAME("ui_cancel"), false, true) && drag_type == DRAG_NONE && tool == TOOL_SELECT) {
 		// Unselect everything
 		editor_selection->clear();
 		viewport->queue_redraw();
@@ -3818,7 +3826,9 @@ void CanvasItemEditor::set_current_tool(Tool p_tool) {
 }
 
 void CanvasItemEditor::_update_editor_settings() {
+	button_center_view->set_icon(get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons")));
 	select_button->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
+	select_sb->set_texture(get_theme_icon(SNAME("EditorRect2D"), SNAME("EditorIcons")));
 	list_select_button->set_icon(get_theme_icon(SNAME("ListSelect"), SNAME("EditorIcons")));
 	move_button->set_icon(get_theme_icon(SNAME("ToolMove"), SNAME("EditorIcons")));
 	scale_button->set_icon(get_theme_icon(SNAME("ToolScale"), SNAME("EditorIcons")));
@@ -3946,12 +3956,12 @@ void CanvasItemEditor::_notification(int p_what) {
 			select_sb->set_content_margin_all(4);
 
 			AnimationPlayerEditor::get_singleton()->get_track_editor()->connect("visibility_changed", callable_mp(this, &CanvasItemEditor::_keying_changed));
+			AnimationPlayerEditor::get_singleton()->connect("animation_selected", callable_mp(this, &CanvasItemEditor::_keying_changed).unbind(1));
 			_keying_changed();
 			_update_editor_settings();
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			select_sb->set_texture(get_theme_icon(SNAME("EditorRect2D"), SNAME("EditorIcons")));
 			_update_editor_settings();
 		} break;
 
@@ -4009,27 +4019,14 @@ void CanvasItemEditor::_update_scrollbars() {
 	canvas_item_rect.size += screen_rect * 2;
 	canvas_item_rect.position -= screen_rect;
 
-	// Constraints the view offset and updates the scrollbars.
-	Size2 size = viewport->get_size();
-	Point2 begin = canvas_item_rect.position;
-	Point2 end = canvas_item_rect.position + canvas_item_rect.size - local_rect.size / zoom;
-	bool constrain_editor_view = bool(EDITOR_GET("editors/2d/constrain_editor_view"));
+	// Updates the scrollbars.
+	const Size2 size = viewport->get_size();
+	const Point2 begin = canvas_item_rect.position;
+	const Point2 end = canvas_item_rect.position + canvas_item_rect.size - local_rect.size / zoom;
 
 	if (canvas_item_rect.size.height <= (local_rect.size.y / zoom)) {
-		real_t centered = -(size.y / 2) / zoom + screen_rect.y / 2;
-		if (constrain_editor_view && ABS(centered - previous_update_view_offset.y) < ABS(centered - view_offset.y)) {
-			view_offset.y = previous_update_view_offset.y;
-		}
-
 		v_scroll->hide();
 	} else {
-		if (constrain_editor_view && view_offset.y > end.y && view_offset.y > previous_update_view_offset.y) {
-			view_offset.y = MAX(end.y, previous_update_view_offset.y);
-		}
-		if (constrain_editor_view && view_offset.y < begin.y && view_offset.y < previous_update_view_offset.y) {
-			view_offset.y = MIN(begin.y, previous_update_view_offset.y);
-		}
-
 		v_scroll->show();
 		v_scroll->set_min(MIN(view_offset.y, begin.y));
 		v_scroll->set_max(MAX(view_offset.y, end.y) + screen_rect.y);
@@ -4037,20 +4034,8 @@ void CanvasItemEditor::_update_scrollbars() {
 	}
 
 	if (canvas_item_rect.size.width <= (local_rect.size.x / zoom)) {
-		real_t centered = -(size.x / 2) / zoom + screen_rect.x / 2;
-		if (constrain_editor_view && ABS(centered - previous_update_view_offset.x) < ABS(centered - view_offset.x)) {
-			view_offset.x = previous_update_view_offset.x;
-		}
-
 		h_scroll->hide();
 	} else {
-		if (constrain_editor_view && view_offset.x > end.x && view_offset.x > previous_update_view_offset.x) {
-			view_offset.x = MAX(end.x, previous_update_view_offset.x);
-		}
-		if (constrain_editor_view && view_offset.x < begin.x && view_offset.x < previous_update_view_offset.x) {
-			view_offset.x = MIN(begin.x, previous_update_view_offset.x);
-		}
-
 		h_scroll->show();
 		h_scroll->set_min(MIN(view_offset.x, begin.x));
 		h_scroll->set_max(MAX(view_offset.x, end.x) + screen_rect.x);
@@ -4159,6 +4144,8 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
+	ERR_FAIL_COND_MSG(!te->get_current_animation().is_valid(), "Cannot insert animation key. No animation selected.");
+
 	te->make_insert_queue();
 	for (const KeyValue<Node *, Object *> &E : selection) {
 		CanvasItem *ci = Object::cast_to<CanvasItem>(E.key);
@@ -4587,11 +4574,18 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case SKELETON_MAKE_BONES: {
 			HashMap<Node *, Object *> &selection = editor_selection->get_selection();
-			Node *editor_root = EditorNode::get_singleton()->get_edited_scene()->get_tree()->get_edited_scene_root();
+			Node *editor_root = get_tree()->get_edited_scene_root();
+
+			if (!editor_root || selection.is_empty()) {
+				return;
+			}
 
 			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
 			for (const KeyValue<Node *, Object *> &E : selection) {
 				Node2D *n2d = Object::cast_to<Node2D>(E.key);
+				if (!n2d) {
+					continue;
+				}
 
 				Bone2D *new_bone = memnew(Bone2D);
 				String new_bone_name = n2d->get_name();
@@ -5045,8 +5039,17 @@ CanvasItemEditor::CanvasItemEditor() {
 	ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_1600_percent", TTR("Zoom to 1600%"),
 			{ int32_t(Key::KEY_5), int32_t(Key::KP_5) });
 
+	HBoxContainer *controls_hb = memnew(HBoxContainer);
+	controls_vb->add_child(controls_hb);
+
+	button_center_view = memnew(Button);
+	controls_hb->add_child(button_center_view);
+	button_center_view->set_flat(true);
+	button_center_view->set_tooltip_text(TTR("Center View"));
+	button_center_view->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback).bind(VIEW_CENTER_TO_SELECTION));
+
 	zoom_widget = memnew(EditorZoomWidget);
-	controls_vb->add_child(zoom_widget);
+	controls_hb->add_child(zoom_widget);
 	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
 	zoom_widget->set_shortcut_context(this);
 	zoom_widget->connect("zoom_changed", callable_mp(this, &CanvasItemEditor::_update_zoom));

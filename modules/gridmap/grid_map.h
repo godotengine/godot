@@ -203,7 +203,9 @@ class GridMap : public Node3D {
 	void _queue_octants_dirty();
 	void _update_octants_callback();
 
+#ifndef DISABLE_DEPRECATED
 	void resource_changed(const Ref<Resource> &p_res);
+#endif
 
 	void _clear_internal();
 

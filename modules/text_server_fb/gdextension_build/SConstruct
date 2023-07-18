@@ -222,7 +222,6 @@ if env["freetype_enabled"]:
         "compress.c",
         "crc32.c",
         "deflate.c",
-        "infback.c",
         "inffast.c",
         "inflate.c",
         "inftrees.c",

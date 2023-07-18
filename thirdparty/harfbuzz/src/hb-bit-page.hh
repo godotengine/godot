@@ -104,10 +104,7 @@ struct hb_bit_page_t
   }
   uint32_t hash () const
   {
-    return
-    + hb_iter (v)
-    | hb_reduce ([] (uint32_t h, const elt_t &_) { return h * 31 + hb_hash (_); }, (uint32_t) 0u)
-    ;
+    return hb_bytes_t ((const char *) &v, sizeof (v)).hash ();
   }
 
   void add (hb_codepoint_t g) { elt (g) |= mask (g); }

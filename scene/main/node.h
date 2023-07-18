@@ -42,8 +42,28 @@ class SceneState;
 class Tween;
 class PropertyTweener;
 
+SAFE_FLAG_TYPE_PUN_GUARANTEES
+SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
+
 class Node : public Object {
 	GDCLASS(Node, Object);
+
+protected:
+	// During group processing, these are thread-safe.
+	// Outside group processing, these avoid the cost of sync by working as plain primitive types.
+	union MTFlag {
+		SafeFlag mt;
+		bool st;
+		MTFlag() :
+				mt{} {}
+	};
+	template <class T>
+	union MTNumeric {
+		SafeNumeric<T> mt;
+		T st;
+		MTNumeric() :
+				mt{} {}
+	};
 
 public:
 	enum ProcessMode {
@@ -363,6 +383,7 @@ public:
 	/* NODE/TREE */
 
 	StringName get_name() const;
+	String get_description() const;
 	void set_name(const String &p_name);
 
 	void add_child(Node *p_child, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
@@ -385,6 +406,7 @@ public:
 	Node *find_parent(const String &p_pattern) const;
 
 	Window *get_window() const;
+	Window *get_last_exclusive_window() const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
 		ERR_FAIL_COND_V(!data.tree, nullptr);
@@ -520,14 +542,27 @@ public:
 	}
 	_FORCE_INLINE_ bool is_accessible_from_caller_thread() const {
 		if (current_process_thread_group == nullptr) {
-			// Not thread processing. Only accessible if node is outside the scene tree,
-			// or if accessing from the main thread.
-			return !data.inside_tree || Thread::is_main_thread();
+			// No thread processing.
+			// Only accessible if node is outside the scene tree
+			// or access will happen from a node-safe thread.
+			return !data.inside_tree || is_current_thread_safe_for_nodes();
 		} else {
-			// Thread processing
+			// Thread processing.
 			return current_process_thread_group == data.process_thread_group_owner;
 		}
 	}
+
+	_FORCE_INLINE_ bool is_readable_from_caller_thread() const {
+		if (current_process_thread_group == nullptr) {
+			// No thread processing.
+			return is_current_thread_safe_for_nodes();
+		} else {
+			// Thread processing.
+			return true;
+		}
+	}
+
+	_FORCE_INLINE_ static bool is_group_processing() { return current_process_thread_group; }
 
 	void set_process_thread_messages(BitField<ProcessThreadMessages> p_flags);
 	BitField<ProcessThreadMessages> get_process_thread_messages() const;
@@ -647,11 +682,39 @@ public:
 	void set_thread_safe(const StringName &p_property, const Variant &p_value);
 	void notify_thread_safe(int p_notification);
 
+	// These inherited functions need proper multithread locking when overridden in Node.
+#ifdef DEBUG_ENABLED
+
+	virtual void set_script(const Variant &p_script) override;
+	virtual Variant get_script() const override;
+
+	virtual bool has_meta(const StringName &p_name) const override;
+	virtual void set_meta(const StringName &p_name, const Variant &p_value) override;
+	virtual void remove_meta(const StringName &p_name) override;
+	virtual Variant get_meta(const StringName &p_name, const Variant &p_default = Variant()) const override;
+	virtual void get_meta_list(List<StringName> *p_list) const override;
+
+	virtual Error emit_signalp(const StringName &p_name, const Variant **p_args, int p_argcount) override;
+	virtual bool has_signal(const StringName &p_name) const override;
+	virtual void get_signal_list(List<MethodInfo> *p_signals) const override;
+	virtual void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const override;
+	virtual void get_all_signal_connections(List<Connection> *p_connections) const override;
+	virtual int get_persistent_signal_connection_count() const override;
+	virtual void get_signals_connected_to_this(List<Connection> *p_connections) const override;
+
+	virtual Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0) override;
+	virtual void disconnect(const StringName &p_signal, const Callable &p_callable) override;
+	virtual bool is_connected(const StringName &p_signal, const Callable &p_callable) const override;
+#endif
 	Node();
 	~Node();
 };
 
 VARIANT_ENUM_CAST(Node::DuplicateFlags);
+VARIANT_ENUM_CAST(Node::ProcessMode);
+VARIANT_ENUM_CAST(Node::ProcessThreadGroup);
+VARIANT_BITFIELD_CAST(Node::ProcessThreadMessages);
+VARIANT_ENUM_CAST(Node::InternalMode);
 
 typedef HashSet<Node *, Node::Comparator> NodeSet;
 
@@ -674,15 +737,19 @@ Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args)
 }
 
 #ifdef DEBUG_ENABLED
-#define ERR_THREAD_GUARD ERR_FAIL_COND_MSG(!is_accessible_from_caller_thread(), "Caller thread can't call this function in this node. Use call_deferred() or call_thread_group() instead.");
-#define ERR_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_accessible_from_caller_thread(), (m_ret), "Caller thread can't call this function in this node. Use call_deferred() or call_thread_group() instead.")
-#define ERR_MAIN_THREAD_GUARD ERR_FAIL_COND_MSG(is_inside_tree() && !Thread::is_main_thread(), "This function in this node can only be accessed from the main thread. Use call_deferred() instead.");
-#define ERR_MAIN_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(is_inside_tree() && !Thread::is_main_thread(), (m_ret), "This function in this node can only be accessed from the main thread. Use call_deferred() instead.")
+#define ERR_THREAD_GUARD ERR_FAIL_COND_MSG(!is_accessible_from_caller_thread(), vformat("Caller thread can't call this function in this node (%s). Use call_deferred() or call_thread_group() instead.", get_description()));
+#define ERR_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_accessible_from_caller_thread(), (m_ret), vformat("Caller thread can't call this function in this node (%s). Use call_deferred() or call_thread_group() instead.", get_description()));
+#define ERR_MAIN_THREAD_GUARD ERR_FAIL_COND_MSG(is_inside_tree() && !is_current_thread_safe_for_nodes(), vformat("This function in this node (%s) can only be accessed from the main thread. Use call_deferred() instead.", get_description()));
+#define ERR_MAIN_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(is_inside_tree() && !is_current_thread_safe_for_nodes(), (m_ret), vformat("This function in this node (%s) can only be accessed from the main thread. Use call_deferred() instead.", get_description()));
+#define ERR_READ_THREAD_GUARD ERR_FAIL_COND_MSG(!is_readable_from_caller_thread(), vformat("This function in this node (%s) can only be accessed from either the main thread or a thread group. Use call_deferred() instead.", get_description()));
+#define ERR_READ_THREAD_GUARD_V(m_ret) ERR_FAIL_COND_V_MSG(!is_readable_from_caller_thread(), (m_ret), vformat("This function in this node (%s) can only be accessed from either the main thread or a thread group. Use call_deferred() instead.", get_description()));
 #else
 #define ERR_THREAD_GUARD
 #define ERR_THREAD_GUARD_V(m_ret)
 #define ERR_MAIN_THREAD_GUARD
 #define ERR_MAIN_THREAD_GUARD_V(m_ret)
+#define ERR_READ_THREAD_GUARD
+#define ERR_READ_THREAD_GUARD_V(m_ret)
 #endif
 
 // Add these macro to your class's 'get_configuration_warnings' function to have warnings show up in the scene tree inspector.

@@ -32,6 +32,7 @@
 #define GLTF_ACCESSOR_H
 
 #include "../gltf_defines.h"
+
 #include "core/io/resource.h"
 
 struct GLTFAccessor : public Resource {

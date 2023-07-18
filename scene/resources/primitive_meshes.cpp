@@ -31,11 +31,9 @@
 #include "primitive_meshes.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 #include "servers/rendering_server.h"
-#include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/polypartition.h"
 
 #define PADDING_REF_SIZE 1024.0
@@ -2195,11 +2193,11 @@ void TubeTrailMesh::set_curve(const Ref<Curve> &p_curve) {
 		return;
 	}
 	if (curve.is_valid()) {
-		curve->disconnect("changed", callable_mp(this, &TubeTrailMesh::_curve_changed));
+		curve->disconnect_changed(callable_mp(this, &TubeTrailMesh::_curve_changed));
 	}
 	curve = p_curve;
 	if (curve.is_valid()) {
-		curve->connect("changed", callable_mp(this, &TubeTrailMesh::_curve_changed));
+		curve->connect_changed(callable_mp(this, &TubeTrailMesh::_curve_changed));
 	}
 	_request_update();
 }
@@ -2534,11 +2532,11 @@ void RibbonTrailMesh::set_curve(const Ref<Curve> &p_curve) {
 		return;
 	}
 	if (curve.is_valid()) {
-		curve->disconnect("changed", callable_mp(this, &RibbonTrailMesh::_curve_changed));
+		curve->disconnect_changed(callable_mp(this, &RibbonTrailMesh::_curve_changed));
 	}
 	curve = p_curve;
 	if (curve.is_valid()) {
-		curve->connect("changed", callable_mp(this, &RibbonTrailMesh::_curve_changed));
+		curve->connect_changed(callable_mp(this, &RibbonTrailMesh::_curve_changed));
 	}
 	_request_update();
 }
@@ -2967,8 +2965,24 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		}
 
 		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			for (int i = 0; i < lines_rid.size() - 1; i++) {
-				TS->shaped_text_fit_to_width(lines_rid[i], (width > 0) ? width : max_line_w, TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA);
+			int jst_to_line = lines_rid.size();
+			if (lines_rid.size() == 1 && jst_flags.has_flag(TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE)) {
+				jst_to_line = lines_rid.size();
+			} else {
+				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE)) {
+					jst_to_line = lines_rid.size() - 1;
+				}
+				if (jst_flags.has_flag(TextServer::JUSTIFICATION_SKIP_LAST_LINE_WITH_VISIBLE_CHARS)) {
+					for (int i = lines_rid.size() - 1; i >= 0; i--) {
+						if (TS->shaped_text_has_visible_chars(lines_rid[i])) {
+							jst_to_line = i;
+							break;
+						}
+					}
+				}
+			}
+			for (int i = 0; i < jst_to_line; i++) {
+				TS->shaped_text_fit_to_width(lines_rid[i], (width > 0) ? width : max_line_w, jst_flags);
 			}
 		}
 		dirty_lines = false;
@@ -3293,6 +3307,9 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &TextMesh::set_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &TextMesh::get_autowrap_mode);
 
+	ClassDB::bind_method(D_METHOD("set_justification_flags", "justification_flags"), &TextMesh::set_justification_flags);
+	ClassDB::bind_method(D_METHOD("get_justification_flags"), &TextMesh::get_justification_flags);
+
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &TextMesh::set_depth);
 	ClassDB::bind_method(D_METHOD("get_depth"), &TextMesh::get_depth);
 
@@ -3335,6 +3352,7 @@ void TextMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Justify Only After Last Tab:8,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
 
 	ADD_GROUP("Mesh", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
@@ -3427,13 +3445,13 @@ void TextMesh::_font_changed() {
 void TextMesh::set_font(const Ref<Font> &p_font) {
 	if (font_override != p_font) {
 		if (font_override.is_valid()) {
-			font_override->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_font_changed"));
+			font_override->disconnect_changed(Callable(this, "_font_changed"));
 		}
 		font_override = p_font;
 		dirty_font = true;
 		dirty_cache = true;
 		if (font_override.is_valid()) {
-			font_override->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_font_changed"));
+			font_override->connect_changed(Callable(this, "_font_changed"));
 		}
 		_request_update();
 	}
@@ -3510,6 +3528,18 @@ void TextMesh::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 
 TextServer::AutowrapMode TextMesh::get_autowrap_mode() const {
 	return autowrap_mode;
+}
+
+void TextMesh::set_justification_flags(BitField<TextServer::JustificationFlag> p_flags) {
+	if (jst_flags != p_flags) {
+		jst_flags = p_flags;
+		dirty_lines = true;
+		_request_update();
+	}
+}
+
+BitField<TextServer::JustificationFlag> TextMesh::get_justification_flags() const {
+	return jst_flags;
 }
 
 void TextMesh::set_depth(real_t p_depth) {

@@ -50,7 +50,19 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/import/editor_import_plugin.h"
+#include "editor/import/resource_importer_bitmask.h"
+#include "editor/import/resource_importer_bmfont.h"
+#include "editor/import/resource_importer_csv_translation.h"
+#include "editor/import/resource_importer_dynamic_font.h"
+#include "editor/import/resource_importer_image.h"
+#include "editor/import/resource_importer_imagefont.h"
+#include "editor/import/resource_importer_layered_texture.h"
+#include "editor/import/resource_importer_obj.h"
 #include "editor/import/resource_importer_scene.h"
+#include "editor/import/resource_importer_shader_file.h"
+#include "editor/import/resource_importer_texture.h"
+#include "editor/import/resource_importer_texture_atlas.h"
+#include "editor/import/resource_importer_wav.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/plugins/audio_stream_editor_plugin.h"
 #include "editor/plugins/audio_stream_randomizer_editor_plugin.h"
@@ -65,6 +77,7 @@
 #include "editor/plugins/cpu_particles_3d_editor_plugin.h"
 #include "editor/plugins/curve_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
+#include "editor/plugins/editor_resource_tooltip_plugins.h"
 #include "editor/plugins/font_config_plugin.h"
 #include "editor/plugins/gpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/gpu_particles_3d_editor_plugin.h"
@@ -115,6 +128,8 @@
 #include "editor/register_exporters.h"
 
 void register_editor_types() {
+	OS::get_singleton()->benchmark_begin_measure("register_editor_types");
+
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
 
@@ -130,6 +145,7 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorResourcePreview);
 	GDREGISTER_CLASS(EditorResourcePreviewGenerator);
+	GDREGISTER_CLASS(EditorResourceTooltipPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorFileSystem);
 	GDREGISTER_CLASS(EditorFileSystemDirectory);
 	GDREGISTER_CLASS(EditorVCSInterface);
@@ -163,6 +179,21 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorCommandPalette);
 	GDREGISTER_CLASS(EditorDebuggerPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorDebuggerSession);
+
+	// Required to document import options in the class reference.
+	GDREGISTER_CLASS(ResourceImporterBitMap);
+	GDREGISTER_CLASS(ResourceImporterBMFont);
+	GDREGISTER_CLASS(ResourceImporterCSVTranslation);
+	GDREGISTER_CLASS(ResourceImporterDynamicFont);
+	GDREGISTER_CLASS(ResourceImporterImage);
+	GDREGISTER_CLASS(ResourceImporterImageFont);
+	GDREGISTER_CLASS(ResourceImporterLayeredTexture);
+	GDREGISTER_CLASS(ResourceImporterOBJ);
+	GDREGISTER_CLASS(ResourceImporterScene);
+	GDREGISTER_CLASS(ResourceImporterShaderFile);
+	GDREGISTER_CLASS(ResourceImporterTexture);
+	GDREGISTER_CLASS(ResourceImporterTextureAtlas);
+	GDREGISTER_CLASS(ResourceImporterWAV);
 
 	// This list is alphabetized, and plugins that depend on Node2D are in their own section below.
 	EditorPlugins::add_by_type<AnimationTreeEditorPlugin>();
@@ -243,13 +274,19 @@ void register_editor_types() {
 	GLOBAL_DEF("editor/version_control/autoload_on_startup", false);
 
 	EditorInterface::create();
+
+	OS::get_singleton()->benchmark_end_measure("register_editor_types");
 }
 
 void unregister_editor_types() {
+	OS::get_singleton()->benchmark_begin_measure("unregister_editor_types");
+
 	EditorNode::cleanup();
 	EditorInterface::free();
 
 	if (EditorPaths::get_singleton()) {
 		EditorPaths::free();
 	}
+
+	OS::get_singleton()->benchmark_end_measure("unregister_editor_types");
 }

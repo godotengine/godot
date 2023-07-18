@@ -4,7 +4,6 @@
  * Copyright © 2005  Werner Lemberg
  * Copyright © 2013-2015  Alexei Podtelezhnikov
  *
- *
  *  This is part of HarfBuzz, a text shaping library.
  *
  * Permission is hereby granted, without written agreement and without

@@ -50,6 +50,7 @@ public:
 		String name;
 		String type;
 		String enumeration;
+		bool is_bitfield = false;
 		String default_value;
 		bool operator<(const ArgumentDoc &p_arg) const {
 			if (name == p_arg.name) {
@@ -70,6 +71,9 @@ public:
 
 			if (p_dict.has("enumeration")) {
 				doc.enumeration = p_dict["enumeration"];
+				if (p_dict.has("is_bitfield")) {
+					doc.is_bitfield = p_dict["is_bitfield"];
+				}
 			}
 
 			if (p_dict.has("default_value")) {
@@ -91,6 +95,7 @@ public:
 
 			if (!p_doc.enumeration.is_empty()) {
 				dict["enumeration"] = p_doc.enumeration;
+				dict["is_bitfield"] = p_doc.is_bitfield;
 			}
 
 			if (!p_doc.default_value.is_empty()) {
@@ -105,6 +110,7 @@ public:
 		String name;
 		String return_type;
 		String return_enum;
+		bool return_is_bitfield = false;
 		String qualifiers;
 		String description;
 		bool is_deprecated = false;
@@ -152,6 +158,9 @@ public:
 
 			if (p_dict.has("return_enum")) {
 				doc.return_enum = p_dict["return_enum"];
+				if (p_dict.has("return_is_bitfield")) {
+					doc.return_is_bitfield = p_dict["return_is_bitfield"];
+				}
 			}
 
 			if (p_dict.has("qualifiers")) {
@@ -201,6 +210,7 @@ public:
 
 			if (!p_doc.return_enum.is_empty()) {
 				dict["return_enum"] = p_doc.return_enum;
+				dict["return_is_bitfield"] = p_doc.return_is_bitfield;
 			}
 
 			if (!p_doc.qualifiers.is_empty()) {
@@ -264,10 +274,9 @@ public:
 
 			if (p_dict.has("enumeration")) {
 				doc.enumeration = p_dict["enumeration"];
-			}
-
-			if (p_dict.has("is_bitfield")) {
-				doc.is_bitfield = p_dict["is_bitfield"];
+				if (p_dict.has("is_bitfield")) {
+					doc.is_bitfield = p_dict["is_bitfield"];
+				}
 			}
 
 			if (p_dict.has("description")) {
@@ -299,9 +308,8 @@ public:
 
 			if (!p_doc.enumeration.is_empty()) {
 				dict["enumeration"] = p_doc.enumeration;
+				dict["is_bitfield"] = p_doc.is_bitfield;
 			}
-
-			dict["is_bitfield"] = p_doc.is_bitfield;
 
 			if (!p_doc.description.is_empty()) {
 				dict["description"] = p_doc.description;
@@ -319,6 +327,7 @@ public:
 		String name;
 		String type;
 		String enumeration;
+		bool is_bitfield = false;
 		String description;
 		String setter, getter;
 		String default_value;
@@ -342,6 +351,9 @@ public:
 
 			if (p_dict.has("enumeration")) {
 				doc.enumeration = p_dict["enumeration"];
+				if (p_dict.has("is_bitfield")) {
+					doc.is_bitfield = p_dict["is_bitfield"];
+				}
 			}
 
 			if (p_dict.has("description")) {
@@ -391,6 +403,7 @@ public:
 
 			if (!p_doc.enumeration.is_empty()) {
 				dict["enumeration"] = p_doc.enumeration;
+				dict["is_bitfield"] = p_doc.is_bitfield;
 			}
 
 			if (!p_doc.description.is_empty()) {

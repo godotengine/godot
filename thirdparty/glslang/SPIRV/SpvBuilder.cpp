@@ -71,9 +71,9 @@ Builder::Builder(unsigned int spvVersion, unsigned int magicNumber, SpvBuildLogg
     addressModel(AddressingModelLogical),
     memoryModel(MemoryModelGLSL450),
     builderNumber(magicNumber),
-    buildPoint(0),
+    buildPoint(nullptr),
     uniqueId(0),
-    entryPointFunction(0),
+    entryPointFunction(nullptr),
     generatingOpCodeForSpecConst(false),
     logger(buildLogger)
 {
@@ -144,6 +144,7 @@ void Builder::addLine(Id fileName, int lineNum, int column)
 
 void Builder::addDebugScopeAndLine(Id fileName, int lineNum, int column)
 {
+    assert(!currentDebugScopeId.empty());
     if (currentDebugScopeId.top() != lastDebugScopeId) {
         spv::Id resultId = getUniqueId();
         Instruction* scopeInst = new Instruction(resultId, makeVoidType(), OpExtInst);
@@ -650,8 +651,12 @@ Id Builder::makeDebugFunctionType(Id returnType, const std::vector<Id>& paramTyp
     type->addIdOperand(makeUintConstant(NonSemanticShaderDebugInfo100FlagIsPublic));
     type->addIdOperand(debugId[returnType]);
     for (auto const paramType : paramTypes) {
-        assert(isPointerType(paramType) || isArrayType(paramType));
-        type->addIdOperand(debugId[getContainedTypeId(paramType)]);
+        if (isPointerType(paramType) || isArrayType(paramType)) {
+            type->addIdOperand(debugId[getContainedTypeId(paramType)]);
+        }
+        else {
+            type->addIdOperand(debugId[paramType]);
+        }
     }
     constantsTypesGlobals.push_back(std::unique_ptr<Instruction>(type));
     module.mapInstruction(type);
@@ -1067,6 +1072,12 @@ Id Builder::makeDebugCompilationUnit() {
     constantsTypesGlobals.push_back(std::unique_ptr<Instruction>(sourceInst));
     module.mapInstruction(sourceInst);
     nonSemanticShaderCompilationUnitId = resultId;
+
+    // We can reasonably assume that makeDebugCompilationUnit will be called before any of
+    // debug-scope stack. Function scopes and lexical scopes will occur afterward.
+    assert(currentDebugScopeId.empty());
+    currentDebugScopeId.push(nonSemanticShaderCompilationUnitId);
+
     return resultId;
 }
 
@@ -1096,6 +1107,8 @@ Id Builder::createDebugGlobalVariable(Id const type, char const*const name, Id c
 Id Builder::createDebugLocalVariable(Id type, char const*const name, size_t const argNumber)
 {
     assert(name != nullptr);
+    assert(!currentDebugScopeId.empty());
+
     Instruction* inst = new Instruction(getUniqueId(), makeVoidType(), OpExtInst);
     inst->addIdOperand(nonSemanticShaderDebugInfo);
     inst->addImmediateOperand(NonSemanticShaderDebugInfo100DebugLocalVariable);
@@ -1172,6 +1185,21 @@ Id Builder::makeRayQueryType()
         module.mapInstruction(type);
     } else {
         type = groupedTypes[OpTypeRayQueryKHR].back();
+    }
+
+    return type->getResultId();
+}
+
+Id Builder::makeHitObjectNVType()
+{
+    Instruction *type;
+    if (groupedTypes[OpTypeHitObjectNV].size() == 0) {
+        type = new Instruction(getUniqueId(), NoType, OpTypeHitObjectNV);
+        groupedTypes[OpTypeHitObjectNV].push_back(type);
+        constantsTypesGlobals.push_back(std::unique_ptr<Instruction>(type));
+        module.mapInstruction(type);
+    } else {
+        type = groupedTypes[OpTypeHitObjectNV].back();
     }
 
     return type->getResultId();
@@ -1675,7 +1703,7 @@ Id Builder::importNonSemanticShaderDebugInfoInstructions()
 
 Id Builder::findCompositeConstant(Op typeClass, Id typeId, const std::vector<Id>& comps)
 {
-    Instruction* constant = 0;
+    Instruction* constant = nullptr;
     bool found = false;
     for (int i = 0; i < (int)groupedConstants[typeClass].size(); ++i) {
         constant = groupedConstants[typeClass][i];
@@ -1702,7 +1730,7 @@ Id Builder::findCompositeConstant(Op typeClass, Id typeId, const std::vector<Id>
 
 Id Builder::findStructConstant(Id typeId, const std::vector<Id>& comps)
 {
-    Instruction* constant = 0;
+    Instruction* constant = nullptr;
     bool found = false;
     for (int i = 0; i < (int)groupedStructConstants[typeId].size(); ++i) {
         constant = groupedStructConstants[typeId][i];
@@ -2047,11 +2075,16 @@ Function* Builder::makeFunctionEntry(Decoration precision, Id returnType, const 
         assert(paramTypes.size() == paramNames.size());
         for(size_t p = 0; p < paramTypes.size(); ++p)
         {
-            auto const& paramType = paramTypes[p];
-            assert(isPointerType(paramType) || isArrayType(paramType));
-            assert(debugId[getContainedTypeId(paramType)] != 0);
+            auto getParamTypeId = [this](Id const& typeId) {
+                if (isPointerType(typeId) || isArrayType(typeId)) {
+                    return getContainedTypeId(typeId);
+                }
+                else {
+                    return typeId;
+                }
+            };
             auto const& paramName = paramNames[p];
-            auto const debugLocalVariableId = createDebugLocalVariable(debugId[getContainedTypeId(paramType)], paramName, p+1);
+            auto const debugLocalVariableId = createDebugLocalVariable(debugId[getParamTypeId(paramTypes[p])], paramName, p+1);
             debugId[firstParamId + p] = debugLocalVariableId;
 
             makeDebugDeclare(debugLocalVariableId, firstParamId + p);
@@ -2095,6 +2128,8 @@ Id Builder::makeDebugFunction(Function* function, Id nameId, Id funcTypeId) {
 }
 
 Id Builder::makeDebugLexicalBlock(uint32_t line) {
+    assert(!currentDebugScopeId.empty());
+
     Id lexId = getUniqueId();
     auto lex = new Instruction(lexId, makeVoidType(), OpExtInst);
     lex->addIdOperand(nonSemanticShaderDebugInfo);
@@ -2734,52 +2769,49 @@ Id Builder::createBuiltinCall(Id resultType, Id builtins, int entryPoint, const 
 Id Builder::createTextureCall(Decoration precision, Id resultType, bool sparse, bool fetch, bool proj, bool gather,
     bool noImplicitLod, const TextureParameters& parameters, ImageOperandsMask signExtensionMask)
 {
-    static const int maxTextureArgs = 10;
-    Id texArgs[maxTextureArgs] = {};
+    std::vector<Id> texArgs;
 
     //
     // Set up the fixed arguments
     //
-    int numArgs = 0;
     bool explicitLod = false;
-    texArgs[numArgs++] = parameters.sampler;
-    texArgs[numArgs++] = parameters.coords;
+    texArgs.push_back(parameters.sampler);
+    texArgs.push_back(parameters.coords);
     if (parameters.Dref != NoResult)
-        texArgs[numArgs++] = parameters.Dref;
+        texArgs.push_back(parameters.Dref);
     if (parameters.component != NoResult)
-        texArgs[numArgs++] = parameters.component;
+        texArgs.push_back(parameters.component);
 
 #ifndef GLSLANG_WEB
     if (parameters.granularity != NoResult)
-        texArgs[numArgs++] = parameters.granularity;
+        texArgs.push_back(parameters.granularity);
     if (parameters.coarse != NoResult)
-        texArgs[numArgs++] = parameters.coarse;
+        texArgs.push_back(parameters.coarse);
 #endif
 
     //
     // Set up the optional arguments
     //
-    int optArgNum = numArgs;    // track which operand, if it exists, is the mask of optional arguments
-    ++numArgs;                  // speculatively make room for the mask operand
+    size_t optArgNum = texArgs.size(); // the position of the mask for the optional arguments, if any.
     ImageOperandsMask mask = ImageOperandsMaskNone; // the mask operand
     if (parameters.bias) {
         mask = (ImageOperandsMask)(mask | ImageOperandsBiasMask);
-        texArgs[numArgs++] = parameters.bias;
+        texArgs.push_back(parameters.bias);
     }
     if (parameters.lod) {
         mask = (ImageOperandsMask)(mask | ImageOperandsLodMask);
-        texArgs[numArgs++] = parameters.lod;
+        texArgs.push_back(parameters.lod);
         explicitLod = true;
     } else if (parameters.gradX) {
         mask = (ImageOperandsMask)(mask | ImageOperandsGradMask);
-        texArgs[numArgs++] = parameters.gradX;
-        texArgs[numArgs++] = parameters.gradY;
+        texArgs.push_back(parameters.gradX);
+        texArgs.push_back(parameters.gradY);
         explicitLod = true;
     } else if (noImplicitLod && ! fetch && ! gather) {
         // have to explicitly use lod of 0 if not allowed to have them be implicit, and
         // we would otherwise be about to issue an implicit instruction
         mask = (ImageOperandsMask)(mask | ImageOperandsLodMask);
-        texArgs[numArgs++] = makeFloatConstant(0.0);
+        texArgs.push_back(makeFloatConstant(0.0));
         explicitLod = true;
     }
     if (parameters.offset) {
@@ -2789,24 +2821,24 @@ Id Builder::createTextureCall(Decoration precision, Id resultType, bool sparse, 
             addCapability(CapabilityImageGatherExtended);
             mask = (ImageOperandsMask)(mask | ImageOperandsOffsetMask);
         }
-        texArgs[numArgs++] = parameters.offset;
+        texArgs.push_back(parameters.offset);
     }
     if (parameters.offsets) {
         addCapability(CapabilityImageGatherExtended);
         mask = (ImageOperandsMask)(mask | ImageOperandsConstOffsetsMask);
-        texArgs[numArgs++] = parameters.offsets;
+        texArgs.push_back(parameters.offsets);
     }
 #ifndef GLSLANG_WEB
     if (parameters.sample) {
         mask = (ImageOperandsMask)(mask | ImageOperandsSampleMask);
-        texArgs[numArgs++] = parameters.sample;
+        texArgs.push_back(parameters.sample);
     }
     if (parameters.lodClamp) {
         // capability if this bit is used
         addCapability(CapabilityMinLod);
 
         mask = (ImageOperandsMask)(mask | ImageOperandsMinLodMask);
-        texArgs[numArgs++] = parameters.lodClamp;
+        texArgs.push_back(parameters.lodClamp);
     }
     if (parameters.nonprivate) {
         mask = mask | ImageOperandsNonPrivateTexelKHRMask;
@@ -2816,10 +2848,9 @@ Id Builder::createTextureCall(Decoration precision, Id resultType, bool sparse, 
     }
 #endif
     mask = mask | signExtensionMask;
-    if (mask == ImageOperandsMaskNone)
-        --numArgs;  // undo speculative reservation for the mask argument
-    else
-        texArgs[optArgNum] = mask;
+    // insert the operand for the mask, if any bits were set.
+    if (mask != ImageOperandsMaskNone)
+        texArgs.insert(texArgs.begin() + optArgNum, mask);
 
     //
     // Set up the instruction
@@ -2923,11 +2954,11 @@ Id Builder::createTextureCall(Decoration precision, Id resultType, bool sparse, 
 
     // Build the SPIR-V instruction
     Instruction* textureInst = new Instruction(getUniqueId(), resultType, opCode);
-    for (int op = 0; op < optArgNum; ++op)
+    for (size_t op = 0; op < optArgNum; ++op)
         textureInst->addIdOperand(texArgs[op]);
-    if (optArgNum < numArgs)
+    if (optArgNum < texArgs.size())
         textureInst->addImmediateOperand(texArgs[optArgNum]);
-    for (int op = optArgNum + 1; op < numArgs; ++op)
+    for (size_t op = optArgNum + 1; op < texArgs.size(); ++op)
         textureInst->addIdOperand(texArgs[op]);
     setPrecision(textureInst->getResultId(), precision);
     buildPoint->addInstruction(std::unique_ptr<Instruction>(textureInst));
@@ -3332,7 +3363,7 @@ Builder::If::If(Id cond, unsigned int ctrl, Builder& gb) :
     builder(gb),
     condition(cond),
     control(ctrl),
-    elseBlock(0)
+    elseBlock(nullptr)
 {
     function = &builder.getBuildPoint()->getParent();
 

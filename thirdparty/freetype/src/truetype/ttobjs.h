@@ -4,7 +4,7 @@
  *
  *   Objects manager (specification).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -391,8 +391,10 @@ FT_BEGIN_HEADER
 #endif /* TT_USE_BYTECODE_INTERPRETER */
 
   FT_LOCAL( FT_Error )
-  tt_size_reset( TT_Size  size,
-                 FT_Bool  only_height );
+  tt_size_reset_height( FT_Size  size );
+
+  FT_LOCAL( FT_Error )
+  tt_size_reset( TT_Size  size );
 
 
   /**************************************************************************

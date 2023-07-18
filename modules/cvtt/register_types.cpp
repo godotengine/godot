@@ -49,4 +49,4 @@ void uninitialize_cvtt_module(ModuleInitializationLevel p_level) {
 	}
 }
 
-#endif
+#endif // TOOLS_ENABLED

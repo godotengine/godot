@@ -485,6 +485,24 @@ EditorPlugin *EditorData::get_editor_plugin(int p_idx) {
 	return editor_plugins[p_idx];
 }
 
+void EditorData::add_extension_editor_plugin(const StringName &p_class_name, EditorPlugin *p_plugin) {
+	ERR_FAIL_COND(extension_editor_plugins.has(p_class_name));
+	extension_editor_plugins.insert(p_class_name, p_plugin);
+}
+
+void EditorData::remove_extension_editor_plugin(const StringName &p_class_name) {
+	extension_editor_plugins.erase(p_class_name);
+}
+
+bool EditorData::has_extension_editor_plugin(const StringName &p_class_name) {
+	return extension_editor_plugins.has(p_class_name);
+}
+
+EditorPlugin *EditorData::get_extension_editor_plugin(const StringName &p_class_name) {
+	EditorPlugin **plugin = extension_editor_plugins.getptr(p_class_name);
+	return plugin == nullptr ? nullptr : *plugin;
+}
+
 void EditorData::add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_COND_MSG(p_script.is_null(), "It's not a reference to a valid Script object.");
 	CustomType ct;
@@ -1095,7 +1113,9 @@ Ref<Texture2D> EditorData::_load_script_icon(const String &p_path) const {
 
 Ref<Texture2D> EditorData::get_script_icon(const Ref<Script> &p_script) {
 	// Take from the local cache, if available.
-	if (_script_icon_cache.has(p_script) && _script_icon_cache[p_script].is_valid()) {
+	if (_script_icon_cache.has(p_script)) {
+		// Can be an empty value if we can't resolve any icon for this script.
+		// An empty value is still cached to avoid unnecessary attempts at resolving it again.
 		return _script_icon_cache[p_script];
 	}
 
@@ -1120,6 +1140,27 @@ Ref<Texture2D> EditorData::get_script_icon(const Ref<Script> &p_script) {
 
 		// Move to the base class.
 		base_scr = base_scr->get_base_script();
+	}
+
+	// No custom icon was found in the inheritance chain, so check the base
+	// class of the script instead.
+	String base_type;
+	p_script->get_language()->get_global_class_name(p_script->get_path(), &base_type);
+
+	// Check if the base type is an extension-defined type.
+	Ref<Texture2D> ext_icon = extension_class_get_icon(base_type);
+	if (ext_icon.is_valid()) {
+		_script_icon_cache[p_script] = ext_icon;
+		return ext_icon;
+	}
+
+	// Look for the base type in the editor theme.
+	// This is only relevant for built-in classes.
+	const Control *gui_base = EditorNode::get_singleton()->get_gui_base();
+	if (gui_base && gui_base->has_theme_icon(base_type, SNAME("EditorIcons"))) {
+		Ref<Texture2D> theme_icon = gui_base->get_theme_icon(base_type, SNAME("EditorIcons"));
+		_script_icon_cache[p_script] = theme_icon;
+		return theme_icon;
 	}
 
 	// If no icon found, cache it as null.

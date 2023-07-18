@@ -39,12 +39,13 @@ class AcceptDialog;
 class CanvasItemEditorViewport;
 class ConfirmationDialog;
 class EditorData;
-class EditorZoomWidget;
 class EditorSelection;
+class EditorZoomWidget;
 class HScrollBar;
 class HSplitContainer;
 class MenuButton;
 class PanelContainer;
+class StyleBoxTexture;
 class ViewPanner;
 class VScrollBar;
 class VSplitContainer;
@@ -479,6 +480,7 @@ private:
 			const Node *p_current);
 
 	VBoxContainer *controls_vb = nullptr;
+	Button *button_center_view = nullptr;
 	EditorZoomWidget *zoom_widget = nullptr;
 	void _update_zoom(real_t p_zoom);
 	void _shortcut_zoom_set(real_t p_zoom);

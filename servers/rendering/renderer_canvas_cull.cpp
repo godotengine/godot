@@ -36,8 +36,6 @@
 #include "rendering_server_globals.h"
 #include "servers/rendering/storage/texture_storage.h"
 
-static const int z_range = RS::CANVAS_ITEM_Z_MAX - RS::CANVAS_ITEM_Z_MIN + 1;
-
 void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RendererCanvasRender::Light *p_lights, RendererCanvasRender::Light *p_directional_lights, RenderingServer::CanvasItemTextureFilter p_default_filter, RenderingServer::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, uint32_t canvas_cull_mask) {
 	RENDER_TIMESTAMP("Cull CanvasItem Tree");
 
@@ -76,7 +74,7 @@ void RendererCanvasCull::_render_canvas_item_tree(RID p_to_render_target, Canvas
 	}
 }
 
-void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, Transform2D p_transform, RendererCanvasCull::Item *p_material_owner, RendererCanvasCull::Item **r_items, int &r_index, int p_z) {
+void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, Transform2D p_transform, RendererCanvasCull::Item *p_material_owner, const Color &p_modulate, RendererCanvasCull::Item **r_items, int &r_index, int p_z) {
 	int child_item_count = p_canvas_item->child_items.size();
 	RendererCanvasCull::Item **child_items = p_canvas_item->child_items.ptrw();
 	for (int i = 0; i < child_item_count; i++) {
@@ -87,6 +85,7 @@ void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, Transform2
 				child_items[i]->ysort_xform = p_transform;
 				child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform.columns[2]);
 				child_items[i]->material_owner = child_items[i]->use_parent_material ? p_material_owner : nullptr;
+				child_items[i]->ysort_modulate = p_modulate;
 				child_items[i]->ysort_index = r_index;
 				child_items[i]->ysort_parent_abs_z_index = p_z;
 
@@ -101,7 +100,7 @@ void _collect_ysort_children(RendererCanvasCull::Item *p_canvas_item, Transform2
 			r_index++;
 
 			if (child_items[i]->sort_y) {
-				_collect_ysort_children(child_items[i], p_transform * child_items[i]->xform, child_items[i]->use_parent_material ? p_material_owner : child_items[i], r_items, r_index, abs_z);
+				_collect_ysort_children(child_items[i], p_transform * child_items[i]->xform, child_items[i]->use_parent_material ? p_material_owner : child_items[i], p_modulate * child_items[i]->modulate, r_items, r_index, abs_z);
 			}
 		}
 	}
@@ -301,7 +300,7 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		if (allow_y_sort) {
 			if (ci->ysort_children_count == -1) {
 				ci->ysort_children_count = 0;
-				_collect_ysort_children(ci, Transform2D(), p_material_owner, nullptr, ci->ysort_children_count, p_z);
+				_collect_ysort_children(ci, Transform2D(), p_material_owner, Color(1, 1, 1, 1), nullptr, ci->ysort_children_count, p_z);
 			}
 
 			child_item_count = ci->ysort_children_count + 1;
@@ -310,14 +309,15 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			ci->ysort_parent_abs_z_index = parent_z;
 			child_items[0] = ci;
 			int i = 1;
-			_collect_ysort_children(ci, Transform2D(), p_material_owner, child_items, i, p_z);
+			_collect_ysort_children(ci, Transform2D(), p_material_owner, Color(1, 1, 1, 1), child_items, i, p_z);
 			ci->ysort_xform = ci->xform.affine_inverse();
+			ci->ysort_modulate = Color(1, 1, 1, 1);
 
 			SortArray<Item *, ItemPtrSort> sorter;
 			sorter.sort(child_items, child_item_count);
 
 			for (i = 0; i < child_item_count; i++) {
-				_cull_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate, child_items[i]->ysort_parent_abs_z_index, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, false, canvas_cull_mask);
+				_cull_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, child_items[i]->ysort_parent_abs_z_index, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, false, canvas_cull_mask);
 			}
 		} else {
 			RendererCanvasRender::Item *canvas_group_from = nullptr;
@@ -880,8 +880,9 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 	PackedColorArray colors;
 	PackedVector2Array points;
 
-	colors.resize(polyline_point_count);
-	points.resize(polyline_point_count);
+	// Additional 2+2 vertices to antialias begin+end of the middle triangle strip.
+	colors.resize(polyline_point_count + ((p_antialiased && !loop) ? 4 : 0));
+	points.resize(polyline_point_count + ((p_antialiased && !loop) ? 4 : 0));
 
 	Vector2 *points_ptr = points.ptrw();
 	Color *colors_ptr = colors.ptrw();
@@ -897,96 +898,30 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 		}
 		Color color2 = Color(1, 1, 1, 0);
 
-		PackedColorArray colors_begin;
-		PackedVector2Array points_begin;
-
-		colors_begin.resize(4);
-		points_begin.resize(4);
-
-		PackedColorArray colors_begin_left_corner;
-		PackedVector2Array points_begin_left_corner;
-
-		colors_begin_left_corner.resize(4);
-		points_begin_left_corner.resize(4);
-
-		PackedColorArray colors_begin_right_corner;
-		PackedVector2Array points_begin_right_corner;
-
-		colors_begin_right_corner.resize(4);
-		points_begin_right_corner.resize(4);
-
-		PackedColorArray colors_end;
-		PackedVector2Array points_end;
-
-		colors_end.resize(4);
-		points_end.resize(4);
-
-		PackedColorArray colors_end_left_corner;
-		PackedVector2Array points_end_left_corner;
-
-		colors_end_left_corner.resize(4);
-		points_end_left_corner.resize(4);
-
-		PackedColorArray colors_end_right_corner;
-		PackedVector2Array points_end_right_corner;
-
-		colors_end_right_corner.resize(4);
-		points_end_right_corner.resize(4);
-
-		PackedColorArray colors_left;
-		PackedVector2Array points_left;
-
-		colors_left.resize(polyline_point_count);
-		points_left.resize(polyline_point_count);
-
-		PackedColorArray colors_right;
-		PackedVector2Array points_right;
-
-		colors_right.resize(polyline_point_count);
-		points_right.resize(polyline_point_count);
-
-		Item::CommandPolygon *pline_begin = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_begin);
-
-		Item::CommandPolygon *pline_begin_left_corner = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_begin_left_corner);
-
-		Item::CommandPolygon *pline_begin_right_corner = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_begin_right_corner);
-
-		Item::CommandPolygon *pline_end = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_end);
-
-		Item::CommandPolygon *pline_end_left_corner = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_end_left_corner);
-
-		Item::CommandPolygon *pline_end_right_corner = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_end_right_corner);
-
 		Item::CommandPolygon *pline_left = canvas_item->alloc_command<Item::CommandPolygon>();
 		ERR_FAIL_COND(!pline_left);
 
 		Item::CommandPolygon *pline_right = canvas_item->alloc_command<Item::CommandPolygon>();
 		ERR_FAIL_COND(!pline_right);
 
-		// Makes nine triangle strips for drawing the antialiased line.
+		PackedColorArray colors_left;
+		PackedVector2Array points_left;
 
-		Vector2 *points_begin_ptr = points_begin.ptrw();
-		Vector2 *points_begin_left_corner_ptr = points_begin_left_corner.ptrw();
-		Vector2 *points_begin_right_corner_ptr = points_begin_right_corner.ptrw();
-		Vector2 *points_end_ptr = points_end.ptrw();
-		Vector2 *points_end_left_corner_ptr = points_end_left_corner.ptrw();
-		Vector2 *points_end_right_corner_ptr = points_end_right_corner.ptrw();
-		Vector2 *points_left_ptr = points_left.ptrw();
-		Vector2 *points_right_ptr = points_right.ptrw();
+		PackedColorArray colors_right;
+		PackedVector2Array points_right;
 
-		Color *colors_begin_ptr = colors_begin.ptrw();
-		Color *colors_begin_left_corner_ptr = colors_begin_left_corner.ptrw();
-		Color *colors_begin_right_corner_ptr = colors_begin_right_corner.ptrw();
-		Color *colors_end_ptr = colors_end.ptrw();
-		Color *colors_end_left_corner_ptr = colors_end_left_corner.ptrw();
-		Color *colors_end_right_corner_ptr = colors_end_right_corner.ptrw();
+		// 2+2 additional vertices for begin+end corners.
+		// 1 additional vertex to swap the orientation of the triangles within the end corner's quad.
+		colors_left.resize(polyline_point_count + (loop ? 0 : 5));
+		points_left.resize(polyline_point_count + (loop ? 0 : 5));
+
+		colors_right.resize(polyline_point_count + (loop ? 0 : 5));
+		points_right.resize(polyline_point_count + (loop ? 0 : 5));
+
 		Color *colors_left_ptr = colors_left.ptrw();
+		Vector2 *points_left_ptr = points_left.ptrw();
+
+		Vector2 *points_right_ptr = points_right.ptrw();
 		Color *colors_right_ptr = colors_right.ptrw();
 
 		Vector2 prev_segment_dir;
@@ -1014,117 +949,85 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 			Vector2 border = base_edge_offset * border_size;
 			Vector2 pos = p_points[i];
 
-			points_ptr[i * 2 + 0] = pos + edge_offset;
-			points_ptr[i * 2 + 1] = pos - edge_offset;
+			int j = i * 2 + (loop ? 0 : 2);
 
-			points_left_ptr[i * 2 + 0] = pos + edge_offset + border;
-			points_left_ptr[i * 2 + 1] = pos + edge_offset;
+			points_ptr[j + 0] = pos + edge_offset;
+			points_ptr[j + 1] = pos - edge_offset;
 
-			points_right_ptr[i * 2 + 0] = pos - edge_offset;
-			points_right_ptr[i * 2 + 1] = pos - edge_offset - border;
+			points_left_ptr[j + 0] = pos + edge_offset;
+			points_left_ptr[j + 1] = pos + edge_offset + border;
+
+			points_right_ptr[j + 0] = pos - edge_offset;
+			points_right_ptr[j + 1] = pos - edge_offset - border;
 
 			if (i < p_colors.size()) {
 				color = p_colors[i];
 				color2 = Color(color.r, color.g, color.b, 0);
 			}
 
-			colors_ptr[i * 2 + 0] = color;
-			colors_ptr[i * 2 + 1] = color;
+			colors_ptr[j + 0] = color;
+			colors_ptr[j + 1] = color;
 
-			colors_left_ptr[i * 2 + 0] = color2;
-			colors_left_ptr[i * 2 + 1] = color;
+			colors_left_ptr[j + 0] = color;
+			colors_left_ptr[j + 1] = color2;
 
-			colors_right_ptr[i * 2 + 0] = color;
-			colors_right_ptr[i * 2 + 1] = color2;
+			colors_right_ptr[j + 0] = color;
+			colors_right_ptr[j + 1] = color2;
 
-			if (is_first_point) {
-				Vector2 begin_border = loop ? Vector2() : -segment_dir * border_size;
+			if (is_first_point && !loop) {
+				Vector2 begin_border = -segment_dir * border_size;
 
-				points_begin_ptr[0] = pos + edge_offset + begin_border;
-				points_begin_ptr[1] = pos - edge_offset + begin_border;
-				points_begin_ptr[2] = pos + edge_offset;
-				points_begin_ptr[3] = pos - edge_offset;
+				points_ptr[0] = pos + edge_offset + begin_border;
+				points_ptr[1] = pos - edge_offset + begin_border;
 
-				colors_begin_ptr[0] = color2;
-				colors_begin_ptr[1] = color2;
-				colors_begin_ptr[2] = color;
-				colors_begin_ptr[3] = color;
+				colors_ptr[0] = color2;
+				colors_ptr[1] = color2;
 
-				points_begin_left_corner_ptr[0] = pos - edge_offset - border;
-				points_begin_left_corner_ptr[1] = pos - edge_offset + begin_border - border;
-				points_begin_left_corner_ptr[2] = pos - edge_offset;
-				points_begin_left_corner_ptr[3] = pos - edge_offset + begin_border;
+				points_left_ptr[0] = pos + edge_offset + begin_border;
+				points_left_ptr[1] = pos + edge_offset + begin_border + border;
 
-				colors_begin_left_corner_ptr[0] = color2;
-				colors_begin_left_corner_ptr[1] = color2;
-				colors_begin_left_corner_ptr[2] = color;
-				colors_begin_left_corner_ptr[3] = color2;
+				colors_left_ptr[0] = color2;
+				colors_left_ptr[1] = color2;
 
-				points_begin_right_corner_ptr[0] = pos + edge_offset + begin_border;
-				points_begin_right_corner_ptr[1] = pos + edge_offset + begin_border + border;
-				points_begin_right_corner_ptr[2] = pos + edge_offset;
-				points_begin_right_corner_ptr[3] = pos + edge_offset + border;
+				points_right_ptr[0] = pos - edge_offset + begin_border;
+				points_right_ptr[1] = pos - edge_offset + begin_border - border;
 
-				colors_begin_right_corner_ptr[0] = color2;
-				colors_begin_right_corner_ptr[1] = color2;
-				colors_begin_right_corner_ptr[2] = color;
-				colors_begin_right_corner_ptr[3] = color2;
+				colors_right_ptr[0] = color2;
+				colors_right_ptr[1] = color2;
 			}
 
-			if (is_last_point) {
-				Vector2 end_border = loop ? Vector2() : prev_segment_dir * border_size;
+			if (is_last_point && !loop) {
+				Vector2 end_border = prev_segment_dir * border_size;
+				int end_index = polyline_point_count + 2;
 
-				points_end_ptr[0] = pos + edge_offset + end_border;
-				points_end_ptr[1] = pos - edge_offset + end_border;
-				points_end_ptr[2] = pos + edge_offset;
-				points_end_ptr[3] = pos - edge_offset;
+				points_ptr[end_index + 0] = pos + edge_offset + end_border;
+				points_ptr[end_index + 1] = pos - edge_offset + end_border;
 
-				colors_end_ptr[0] = color2;
-				colors_end_ptr[1] = color2;
-				colors_end_ptr[2] = color;
-				colors_end_ptr[3] = color;
+				colors_ptr[end_index + 0] = color2;
+				colors_ptr[end_index + 1] = color2;
 
-				points_end_left_corner_ptr[0] = pos - edge_offset - border;
-				points_end_left_corner_ptr[1] = pos - edge_offset + end_border - border;
-				points_end_left_corner_ptr[2] = pos - edge_offset;
-				points_end_left_corner_ptr[3] = pos - edge_offset + end_border;
+				// Swap orientation of the triangles within both end corner quads so the visual seams
+				// between triangles goes from the edge corner. Done by going back to the edge corner
+				// (1 additional vertex / zero-area triangle per left/right corner).
+				points_left_ptr[end_index + 0] = pos + edge_offset;
+				points_left_ptr[end_index + 1] = pos + edge_offset + end_border + border;
+				points_left_ptr[end_index + 2] = pos + edge_offset + end_border;
 
-				colors_end_left_corner_ptr[0] = color2;
-				colors_end_left_corner_ptr[1] = color2;
-				colors_end_left_corner_ptr[2] = color;
-				colors_end_left_corner_ptr[3] = color2;
+				colors_left_ptr[end_index + 0] = color;
+				colors_left_ptr[end_index + 1] = color2;
+				colors_left_ptr[end_index + 2] = color2;
 
-				points_end_right_corner_ptr[0] = pos + edge_offset + end_border;
-				points_end_right_corner_ptr[1] = pos + edge_offset + end_border + border;
-				points_end_right_corner_ptr[2] = pos + edge_offset;
-				points_end_right_corner_ptr[3] = pos + edge_offset + border;
+				points_right_ptr[end_index + 0] = pos - edge_offset;
+				points_right_ptr[end_index + 1] = pos - edge_offset + end_border - border;
+				points_right_ptr[end_index + 2] = pos - edge_offset + end_border;
 
-				colors_end_right_corner_ptr[0] = color2;
-				colors_end_right_corner_ptr[1] = color2;
-				colors_end_right_corner_ptr[2] = color;
-				colors_end_right_corner_ptr[3] = color2;
+				colors_right_ptr[end_index + 0] = color;
+				colors_right_ptr[end_index + 1] = color2;
+				colors_right_ptr[end_index + 2] = color2;
 			}
 
 			prev_segment_dir = segment_dir;
 		}
-
-		pline_begin->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
-		pline_begin->polygon.create(indices, points_begin, colors_begin);
-
-		pline_begin_left_corner->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
-		pline_begin_left_corner->polygon.create(indices, points_begin_left_corner, colors_begin_left_corner);
-
-		pline_begin_right_corner->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
-		pline_begin_right_corner->polygon.create(indices, points_begin_right_corner, colors_begin_right_corner);
-
-		pline_end->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
-		pline_end->polygon.create(indices, points_end, colors_end);
-
-		pline_end_left_corner->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
-		pline_end_left_corner->polygon.create(indices, points_end_left_corner, colors_end_left_corner);
-
-		pline_end_right_corner->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
-		pline_end_right_corner->polygon.create(indices, points_end_right_corner, colors_end_right_corner);
 
 		pline_left->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
 		pline_left->polygon.create(indices, points_left, colors_left);

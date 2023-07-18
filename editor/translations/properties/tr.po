@@ -69,7 +69,7 @@
 # Amigos Sus <amigossus66@gmail.com>, 2022.
 # Ferhat Geçdoğan <ferhatgectao@gmail.com>, 2022.
 # Recep GUCLUER <rgucluer@gmail.com>, 2022.
-# Emir Tunahan Alim <emrtnhalim@gmail.com>, 2022.
+# Emir Tunahan Alim <emrtnhalim@gmail.com>, 2022, 2023.
 # inci <incialien@gmail.com>, 2022.
 # Ramazan Aslan <legendraslan@gmail.com>, 2022.
 # paledega <paledega@yandex.ru>, 2022.
@@ -90,13 +90,15 @@
 # alpdenthedev <ekrem_ekrem_45@hotmail.com>, 2022.
 # Muhammed Said Gülberk <msgulberk@gmail.com>, 2022.
 # Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>, 2023.
+# Black <ebubekir23atalay@gmail.com>, 2023.
+# Mertcan YILDIRIM <mertcanyildirim463@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-05 13:41+0000\n"
-"Last-Translator: Yılmaz Durmaz <yilmaz_durmaz@hotmail.com>\n"
+"PO-Revision-Date: 2023-06-27 20:10+0000\n"
+"Last-Translator: Mertcan YILDIRIM <mertcanyildirim463@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
 "Language: tr\n"
@@ -104,7 +106,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18.1\n"
 
 msgid "Application"
 msgstr "Uygulama"
@@ -223,6 +225,9 @@ msgstr "Varsayılan Veriyolu Düzeni"
 msgid "General"
 msgstr "Genel"
 
+msgid "Text to Speech"
+msgstr "Metin Okuma"
+
 msgid "2D Panning Strength"
 msgstr "2D Kaydırma Keskinliği"
 
@@ -234,6 +239,9 @@ msgstr "Düzenleyici"
 
 msgid "Script"
 msgstr "Betik"
+
+msgid "Search in File Extensions"
+msgstr "Dosya Uzantılarında Ara"
 
 msgid "Subwindows"
 msgstr "Altpencereler"
@@ -268,11 +276,17 @@ msgstr "Hata Ayıklama"
 msgid "Settings"
 msgstr "Ayarlar"
 
+msgid "Profiler"
+msgstr "Profil Çıkarıcı"
+
 msgid "Compression"
 msgstr "Sıkıştırma"
 
 msgid "Formats"
 msgstr "Biçimler"
+
+msgid "Zstd"
+msgstr "Zstd"
 
 msgid "Long Distance Matching"
 msgstr "Uzun Mesafe Eşleşmesi"
@@ -282,6 +296,12 @@ msgstr "Sıkıştırma Seviyesi"
 
 msgid "Window Log Size"
 msgstr "Pencere Günlüğü Boyutu"
+
+msgid "Zlib"
+msgstr "Zlib"
+
+msgid "Gzip"
+msgstr "Gzip"
 
 msgid "Crash Handler"
 msgstr "Çökme İşleyicisi"
@@ -319,6 +339,9 @@ msgstr "GUI"
 msgid "Timers"
 msgstr "Zamanlayıcılar"
 
+msgid "Incremental Search Max Interval Msec"
+msgstr "Artışlı Arama En Büyük Aralık Msn"
+
 msgid "Common"
 msgstr "Yaygın"
 
@@ -334,8 +357,17 @@ msgstr "Dinamik Yazıtipleri"
 msgid "Use Oversampling"
 msgstr "Sıkörnekleme Kullan"
 
+msgid "Rendering Device"
+msgstr "Oluşturma Cihazı"
+
+msgid "Max Size (MB)"
+msgstr "Maksimum Boyut (MB)"
+
 msgid "Vulkan"
 msgstr "Vulkan"
+
+msgid "Max Descriptors per Pool"
+msgstr "Havuz Başına Maksimum Tanımlayıcı"
 
 msgid "Low Processor Usage Mode"
 msgstr "İşlemci Dostu Mod"
@@ -363,6 +395,9 @@ msgstr "Aygıt"
 
 msgid "Pressed"
 msgstr "Basılmış"
+
+msgid "Keycode"
+msgstr "Anahtar kod"
 
 msgid "Unicode"
 msgstr "Evrensel Kod"
@@ -412,6 +447,9 @@ msgstr "Eksen Değeri"
 msgid "Index"
 msgstr "İşaret, Gösterge, Sıra"
 
+msgid "Double Tap"
+msgstr "Çift Dokunma"
+
 msgid "Action"
 msgstr "Eylem"
 
@@ -438,12 +476,6 @@ msgstr "Denetleyici Değeri"
 
 msgid "Big Endian"
 msgstr "Big Endian"
-
-msgid "Network"
-msgstr "Ağ"
-
-msgid "Page Size"
-msgstr "Sayfa Boyutu"
 
 msgid "Blocking Mode Enabled"
 msgstr "Engelleme Modu Etkinleştirildi"
@@ -478,6 +510,9 @@ msgstr "Veri Dizisi"
 msgid "Max Pending Connections"
 msgstr "Bekletilebilecek Maks. Bağlantı Sayısı"
 
+msgid "Region"
+msgstr "Bölge"
+
 msgid "Offset"
 msgstr "Kaydırma"
 
@@ -486,6 +521,15 @@ msgstr "Tohum"
 
 msgid "State"
 msgstr "Durum"
+
+msgid "Network"
+msgstr "Ağ"
+
+msgid "Use System Threads for Low Priority Tasks"
+msgstr "Düşük Öncelikli Görevler için Sistem İş Parçacıklarını Kullan"
+
+msgid "Low Priority Thread Ratio"
+msgstr "Düşük Öncelikli İş Parçacığı Oranı"
 
 msgid "Locale"
 msgstr "Yerel"
@@ -544,29 +588,20 @@ msgstr "Yumuşatma"
 msgid "Remote Port"
 msgstr "Uzak Port"
 
-msgid "Debugger"
-msgstr "Hata Ayıklayıcı"
+msgid "FileSystem"
+msgstr "DosyaSistemi"
 
-msgid "Profiler Frame Max Functions"
-msgstr "Profil Oluşturucu Çerçeve Maksimum Fonksiyon Sayısı"
+msgid "File Server"
+msgstr "Dosya Sunucusu"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Password"
+msgstr "Şifre"
 
 msgid "Default Feature Profile"
 msgstr "Varsayılan Özellik Profili"
-
-msgid "Access"
-msgstr "Erişim"
-
-msgid "Display Mode"
-msgstr "Görüntüleme Modu"
-
-msgid "Filters"
-msgstr "Filtreler"
-
-msgid "Show Hidden Files"
-msgstr "Gizli Dosyaları Göster"
-
-msgid "Disable Overwrite Warning"
-msgstr "Üzerine Yazma Uyarısını Devre Dışı Bırak"
 
 msgid "Text Editor"
 msgstr "Metin Editörü"
@@ -591,6 +626,9 @@ msgstr "Denetlendi"
 
 msgid "Keying"
 msgstr "Anahtarlama"
+
+msgid "Distraction Free Mode"
+msgstr "Dikkat Dağıtmayan Kip"
 
 msgid "Interface"
 msgstr "Arayüz"
@@ -631,9 +669,6 @@ msgstr "Yatay Vector tipleri düzenleme"
 msgid "Default Color Picker Mode"
 msgstr "Varsayılan Renk Seçme Modu"
 
-msgid "Distraction Free Mode"
-msgstr "Dikkat Dağıtmayan Kip"
-
 msgid "Base Type"
 msgstr "Temel Tür"
 
@@ -648,6 +683,9 @@ msgstr "Editör Dili"
 
 msgid "Display Scale"
 msgstr "Ölçeği Görüntüle"
+
+msgid "Use Embedded Menu"
+msgstr "Gömülü Menüyü Kullan"
 
 msgid "Custom Display Scale"
 msgstr "Özel Ekran Ölçeği"
@@ -715,8 +753,8 @@ msgstr "Özel Tema"
 msgid "Show Script Button"
 msgstr "Senaryo Düğmesini Göster"
 
-msgid "FileSystem"
-msgstr "DosyaSistemi"
+msgid "Enable"
+msgstr "Etkin"
 
 msgid "Directories"
 msgstr "Klasörler"
@@ -735,6 +773,12 @@ msgstr "Binary Kaynakları Sıkıştır"
 
 msgid "File Dialog"
 msgstr "Dosya Diyaloğu"
+
+msgid "Show Hidden Files"
+msgstr "Gizli Dosyaları Göster"
+
+msgid "Display Mode"
+msgstr "Görüntüleme Modu"
 
 msgid "Thumbnail Size"
 msgstr "Küçük Resim Boyutu"
@@ -795,9 +839,6 @@ msgstr "Satır Numaralarının Başına Sıfır Ekle"
 
 msgid "Highlight Type Safe Lines"
 msgstr "Tip Güvenliğine Tabi Satırları Vurgula"
-
-msgid "Show Bookmark Gutter"
-msgstr "Yer İmi Boşluğunu Göster"
 
 msgid "Show Info Gutter"
 msgstr "Bilgi Boşluğunu Göster"
@@ -1048,9 +1089,6 @@ msgstr "Kemik Kontur Boyutu"
 msgid "Viewport Border Color"
 msgstr "Çerçeve Sınır Rengi"
 
-msgid "Constrain Editor View"
-msgstr "Düzenleyici Görünümünü Kısıtla"
-
 msgid "Simple Panning"
 msgstr "Basit Kaydırma"
 
@@ -1093,17 +1131,20 @@ msgstr "Yazı Tipi Boyutu"
 msgid "Remote Host"
 msgstr "Uzak Ana Bilgisayar"
 
+msgid "Debugger"
+msgstr "Hata Ayıklayıcı"
+
 msgid "Profiler Frame History Size"
 msgstr "Profil Oluşturucu Çerçeve Geçmişi Boyutu"
+
+msgid "Profiler Frame Max Functions"
+msgstr "Profil Oluşturucu Çerçeve Maksimum Fonksiyon Sayısı"
 
 msgid "HTTP Proxy"
 msgstr "HTTP Proxy"
 
 msgid "Host"
 msgstr "Ana Bilgisayar"
-
-msgid "Port"
-msgstr "Port"
 
 msgid "Project Manager"
 msgstr "Proje Yöneticisi"
@@ -1219,12 +1260,6 @@ msgstr "Arama Sonuç Rengi"
 msgid "Search Result Border Color"
 msgstr "Arama Sonuç Sınır Rengi"
 
-msgid "Flat"
-msgstr "Düz"
-
-msgid "Hide Slider"
-msgstr "Kaydırıcıyı Gizle"
-
 msgid "Custom Template"
 msgstr "Özel Şablon"
 
@@ -1258,14 +1293,26 @@ msgstr "Dışa Aktar"
 msgid "Export Path"
 msgstr "Dışa aktarım Yolu"
 
-msgid "File Server"
-msgstr "Dosya Sunucusu"
+msgid "Access"
+msgstr "Erişim"
 
-msgid "Password"
-msgstr "Şifre"
+msgid "Filters"
+msgstr "Filtreler"
+
+msgid "Disable Overwrite Warning"
+msgstr "Üzerine Yazma Uyarısını Devre Dışı Bırak"
+
+msgid "Flat"
+msgstr "Düz"
+
+msgid "Hide Slider"
+msgstr "Kaydırıcıyı Gizle"
 
 msgid "Multichannel Signed Distance Field"
 msgstr "Çokkanallı İşaretli Uzaklık Alanı"
+
+msgid "Hinting"
+msgstr "İpucu"
 
 msgid "Oversampling"
 msgstr "Sıkörnekleme"
@@ -1287,9 +1334,6 @@ msgstr "Çevreyi Kullan"
 
 msgid "Make Unique"
 msgstr "Benzersiz Yap"
-
-msgid "Enable"
-msgstr "Etkin"
 
 msgid "Filter"
 msgstr "Filtre"
@@ -1357,6 +1401,9 @@ msgstr "En İyileştirici"
 msgid "Max Angular Error"
 msgstr "Maksimum Açısal Hata"
 
+msgid "Page Size"
+msgstr "Sayfa Boyutu"
+
 msgid "Nodes"
 msgstr "Düğümler"
 
@@ -1383,6 +1430,9 @@ msgstr "İsimlendirilmiş Kaplamaları Kullan"
 
 msgid "FPS"
 msgstr "FPS"
+
+msgid "Process"
+msgstr "İşlem"
 
 msgid "Normal Map Invert Y"
 msgstr "Normal Haritası Y Eksenini Ters Çevir"
@@ -1432,11 +1482,11 @@ msgstr "Hata"
 msgid "Camera"
 msgstr "Kamera"
 
-msgid "Particles"
-msgstr "Parçacıklar"
-
 msgid "Decal"
 msgstr "Decal"
+
+msgid "Particles"
+msgstr "Parçacıklar"
 
 msgid "External"
 msgstr "Harici"
@@ -1449,9 +1499,6 @@ msgstr "Çalıştırma Bayrakları"
 
 msgid "Skeleton"
 msgstr "İskelet"
-
-msgid "Warnings"
-msgstr "Uyarılar"
 
 msgid "ID"
 msgstr "ID"
@@ -1534,11 +1581,17 @@ msgstr "Yol U Mesafesi"
 msgid "GDScript"
 msgstr "GDScript"
 
+msgid "Warnings"
+msgstr "Uyarılar"
+
 msgid "Language Server"
 msgstr "Dil Sunucusu"
 
 msgid "Specular Factor"
 msgstr "Yansıtıcı Etkeni"
+
+msgid "Linear Velocity"
+msgstr "Çizgisel hız"
 
 msgid "Buffers"
 msgstr "Arabellek"
@@ -1551,6 +1604,9 @@ msgstr "Sahne Adı"
 
 msgid "Animations"
 msgstr "Animasyonlar"
+
+msgid "FBX"
+msgstr "FBX"
 
 msgid "Count"
 msgstr "Sayma"
@@ -1750,9 +1806,6 @@ msgstr "Güncelle"
 msgid "Editor Settings"
 msgstr "Düzenleyici Ayarları"
 
-msgid "Region"
-msgstr "Bölge"
-
 msgid "Bitmask"
 msgstr "Bitmaskesi"
 
@@ -1813,9 +1866,6 @@ msgstr "Pişir"
 msgid "Angular Limit Lower"
 msgstr "Açısal Limit Alt"
 
-msgid "Linear Velocity"
-msgstr "Çizgisel hız"
-
 msgid "Ambient"
 msgstr "Çevresel"
 
@@ -1842,6 +1892,9 @@ msgstr "Seyahat"
 
 msgid "End"
 msgstr "Bitiş"
+
+msgid "Pose"
+msgstr "Duruş"
 
 msgid "World Scale"
 msgstr "Dünya Ölçeği"
@@ -2059,9 +2112,6 @@ msgstr "Özellikler"
 msgid "Extra Spacing"
 msgstr "Ekstra Boşluk"
 
-msgid "Interpolation Mode"
-msgstr "Ara Değerleme Kipi"
-
 msgid "Shader"
 msgstr "Gölgelendirici"
 
@@ -2158,6 +2208,9 @@ msgstr "Uçak"
 msgid "Custom"
 msgstr "Özel"
 
+msgid "Pan"
+msgstr "Kaydır"
+
 msgid "Sidechain"
 msgstr "Sidechain"
 
@@ -2166,6 +2219,9 @@ msgstr "Vuruş 1"
 
 msgid "Tap 2"
 msgstr "Vuruş 2"
+
+msgid "Drive"
+msgstr "Sürücü"
 
 msgid "Soft Clip dB"
 msgstr "Yumuşak Kesme dB"

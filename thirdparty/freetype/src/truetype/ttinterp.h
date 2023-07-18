@@ -4,7 +4,7 @@
  *
  *   TrueType bytecode interpreter (specification).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -193,7 +193,6 @@ FT_BEGIN_HEADER
     FT_Long*           cvt;       /* ! */
     FT_ULong           glyfCvtSize;
     FT_Long*           glyfCvt;   /* cvt working copy for glyph */
-    FT_Long*           origCvt;
 
     FT_UInt            glyphSize; /* ! glyph instructions buffer size */
     FT_Byte*           glyphIns;  /* ! glyph instructions buffer      */
@@ -224,7 +223,6 @@ FT_BEGIN_HEADER
     FT_Long*           storage;      /* ! storage area            */
     FT_UShort          glyfStoreSize;
     FT_Long*           glyfStorage;  /* storage working copy for glyph */
-    FT_Long*           origStorage;
 
     FT_F26Dot6         period;     /* values used for the */
     FT_F26Dot6         phase;      /* `SuperRounding'     */
@@ -462,14 +460,6 @@ FT_BEGIN_HEADER
   FT_LOCAL( void )
   TT_Clear_CodeRange( TT_ExecContext  exec,
                       FT_Int          range );
-
-
-  FT_LOCAL( FT_Error )
-  Update_Max( FT_Memory  memory,
-              FT_ULong*  size,
-              FT_ULong   multiplier,
-              void*      _pbuff,
-              FT_ULong   new_max );
 #endif /* TT_USE_BYTECODE_INTERPRETER */
 
 
@@ -538,7 +528,7 @@ FT_BEGIN_HEADER
    *   invoked by the TrueType debugger.
    */
   FT_EXPORT( FT_Error )
-  TT_RunIns( TT_ExecContext  exec );
+  TT_RunIns( void*  exec );
 
 
 FT_END_HEADER

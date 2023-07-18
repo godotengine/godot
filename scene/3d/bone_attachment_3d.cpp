@@ -112,11 +112,11 @@ void BoneAttachment3D::_update_external_skeleton_cache() {
 	external_skeleton_node_cache = ObjectID();
 	if (has_node(external_skeleton_node)) {
 		Node *node = get_node(external_skeleton_node);
-		ERR_FAIL_COND_MSG(!node, "Cannot update external skeleton cache: Node cannot be found!");
+		ERR_FAIL_NULL_MSG(node, "Cannot update external skeleton cache: Node cannot be found!");
 
 		// Make sure it's a skeleton3D
 		Skeleton3D *sk = Object::cast_to<Skeleton3D>(node);
-		ERR_FAIL_COND_MSG(!sk, "Cannot update external skeleton cache: Skeleton3D Nodepath does not point to a Skeleton3D node!");
+		ERR_FAIL_NULL_MSG(sk, "Cannot update external skeleton cache: Skeleton3D Nodepath does not point to a Skeleton3D node!");
 
 		external_skeleton_node_cache = node->get_instance_id();
 	} else {
@@ -126,11 +126,11 @@ void BoneAttachment3D::_update_external_skeleton_cache() {
 				parent_attachment->_update_external_skeleton_cache();
 				if (parent_attachment->has_node(parent_attachment->external_skeleton_node)) {
 					Node *node = parent_attachment->get_node(parent_attachment->external_skeleton_node);
-					ERR_FAIL_COND_MSG(!node, "Cannot update external skeleton cache: Parent's Skeleton3D node cannot be found!");
+					ERR_FAIL_NULL_MSG(node, "Cannot update external skeleton cache: Parent's Skeleton3D node cannot be found!");
 
 					// Make sure it's a skeleton3D
 					Skeleton3D *sk = Object::cast_to<Skeleton3D>(node);
-					ERR_FAIL_COND_MSG(!sk, "Cannot update external skeleton cache: Parent Skeleton3D Nodepath does not point to a Skeleton3D node!");
+					ERR_FAIL_NULL_MSG(sk, "Cannot update external skeleton cache: Parent Skeleton3D Nodepath does not point to a Skeleton3D node!");
 
 					external_skeleton_node_cache = node->get_instance_id();
 					external_skeleton_node = get_path_to(node);
@@ -190,7 +190,7 @@ void BoneAttachment3D::_transform_changed() {
 	if (override_pose) {
 		Skeleton3D *sk = _get_skeleton3d();
 
-		ERR_FAIL_COND_MSG(!sk, "Cannot override pose: Skeleton not found!");
+		ERR_FAIL_NULL_MSG(sk, "Cannot override pose: Skeleton not found!");
 		ERR_FAIL_INDEX_MSG(bone_idx, sk->get_bone_count(), "Cannot override pose: Bone index is out of range!");
 
 		Transform3D our_trans = get_transform();

@@ -30,7 +30,23 @@
 
 #include "csharp_script.h"
 
-#include <stdint.h>
+#include "godotsharp_dirs.h"
+#include "managed_callable.h"
+#include "mono_gd/gd_mono_cache.h"
+#include "signal_awaiter_utils.h"
+#include "utils/macros.h"
+#include "utils/naming_utils.h"
+#include "utils/path_utils.h"
+#include "utils/string_utils.h"
+
+#ifdef DEBUG_METHODS_ENABLED
+#include "class_db_api_json.h"
+#endif
+
+#ifdef TOOLS_ENABLED
+#include "editor/editor_internal_calls.h"
+#include "editor/script_templates/templates.gen.h"
+#endif
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
@@ -39,31 +55,24 @@
 #include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
+#include "servers/text_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
-#include "editor/editor_internal_calls.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
-#include "editor/script_templates/templates.gen.h"
 #endif
 
-#ifdef DEBUG_METHODS_ENABLED
-#include "class_db_api_json.h"
-#endif
-
-#include "godotsharp_dirs.h"
-#include "managed_callable.h"
-#include "mono_gd/gd_mono_cache.h"
-#include "servers/text_server.h"
-#include "signal_awaiter_utils.h"
-#include "utils/macros.h"
-#include "utils/naming_utils.h"
-#include "utils/string_utils.h"
+#include <stdint.h>
 
 #define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->get_string_names().m_var)
+
+// Types that will be skipped over (in favor of their base types) when setting up instance bindings.
+// This must be a superset of `ignored_types` in bindings_generator.cpp.
+const Vector<String> ignored_types = { "PhysicsServer2DExtension", "PhysicsServer3DExtension" };
 
 #ifdef TOOLS_ENABLED
 static bool _create_project_solution_if_needed() {
@@ -93,6 +102,12 @@ String CSharpLanguage::get_extension() const {
 }
 
 void CSharpLanguage::init() {
+#ifdef TOOLS_ENABLED
+	if (OS::get_singleton()->get_cmdline_args().find("--generate-mono-glue")) {
+		print_verbose(".NET: Skipping runtime initialization because glue generation is enabled.");
+		return;
+	}
+#endif
 #ifdef DEBUG_METHODS_ENABLED
 	if (OS::get_singleton()->get_cmdline_args().find("--class-db-json")) {
 		class_db_api_to_json("user://class_db_api.json", ClassDB::API_CORE);
@@ -105,6 +120,7 @@ void CSharpLanguage::init() {
 	GLOBAL_DEF("dotnet/project/assembly_name", "");
 #ifdef TOOLS_ENABLED
 	GLOBAL_DEF("dotnet/project/solution_directory", "");
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "dotnet/project/assembly_reload_attempts", PROPERTY_HINT_RANGE, "1,16,1,or_greater"), 3);
 #endif
 
 	gdmono = memnew(GDMono);
@@ -529,6 +545,48 @@ String CSharpLanguage::_get_indentation() const {
 	return "\t";
 }
 
+bool CSharpLanguage::handles_global_class_type(const String &p_type) const {
+	return p_type == get_type();
+}
+
+String CSharpLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+	Ref<CSharpScript> scr = ResourceLoader::load(p_path, get_type());
+	if (!scr.is_valid() || !scr->valid || !scr->global_class) {
+		// Invalid script or the script is not a global class.
+		return String();
+	}
+
+	String name = scr->class_name;
+	if (unlikely(name.is_empty())) {
+		return String();
+	}
+
+	if (r_icon_path) {
+		if (scr->icon_path.is_empty() || scr->icon_path.is_absolute_path()) {
+			*r_icon_path = scr->icon_path.simplify_path();
+		} else if (scr->icon_path.is_relative_path()) {
+			*r_icon_path = p_path.get_base_dir().path_join(scr->icon_path).simplify_path();
+		}
+	}
+	if (r_base_type) {
+		bool found_global_base_script = false;
+		const CSharpScript *top = scr->base_script.ptr();
+		while (top != nullptr) {
+			if (top->global_class) {
+				*r_base_type = top->class_name;
+				found_global_base_script = true;
+				break;
+			}
+
+			top = top->base_script.ptr();
+		}
+		if (!found_global_base_script) {
+			*r_base_type = scr->get_instance_base_type();
+		}
+	}
+	return name;
+}
+
 String CSharpLanguage::debug_get_error() const {
 	return _debug_error;
 }
@@ -687,11 +745,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 			return false; // Already up to date
 		}
 	} else {
-		String assembly_name = GLOBAL_GET("dotnet/project/assembly_name");
-
-		if (assembly_name.is_empty()) {
-			assembly_name = ProjectSettings::get_singleton()->get_safe_project_name();
-		}
+		String assembly_name = path::get_csharp_project_name();
 
 		assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
 								.path_join(assembly_name + ".dll");
@@ -717,10 +771,6 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		return;
 	}
 
-	// TODO:
-	//  Currently, this reloads all scripts, including those whose class is not part of the
-	//  assembly load context being unloaded. As such, we unnecessarily reload GodotTools.
-
 	print_verbose(".NET: Reloading assemblies...");
 
 	// There is no soft reloading with Mono. It's always hard reloading.
@@ -731,8 +781,20 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		MutexLock lock(script_instances_mutex);
 
 		for (SelfList<CSharpScript> *elem = script_list.first(); elem; elem = elem->next()) {
-			// Cast to CSharpScript to avoid being erased by accident
-			scripts.push_back(Ref<CSharpScript>(elem->self()));
+			// Do not reload scripts with only non-collectible instances to avoid disrupting event subscriptions and such.
+			bool is_reloadable = elem->self()->instances.size() == 0;
+			for (Object *obj : elem->self()->instances) {
+				ERR_CONTINUE(!obj->get_script_instance());
+				CSharpInstance *csi = static_cast<CSharpInstance *>(obj->get_script_instance());
+				if (GDMonoCache::managed_callbacks.GCHandleBridge_GCHandleIsTargetCollectible(csi->get_gchandle_intptr())) {
+					is_reloadable = true;
+					break;
+				}
+			}
+			if (is_reloadable) {
+				// Cast to CSharpScript to avoid being erased by accident.
+				scripts.push_back(Ref<CSharpScript>(elem->self()));
+			}
 		}
 	}
 
@@ -746,6 +808,10 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			ManagedCallable *managed_callable = elem->self();
 
 			ERR_CONTINUE(managed_callable->delegate_handle.value == nullptr);
+
+			if (!GDMonoCache::managed_callbacks.GCHandleBridge_GCHandleIsTargetCollectible(managed_callable->delegate_handle)) {
+				continue;
+			}
 
 			Array serialized_data;
 
@@ -852,6 +918,15 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 		scr->was_tool_before_reload = scr->tool;
 		scr->_clear();
+	}
+
+	// Release the delegates that were serialized earlier.
+	{
+		MutexLock lock(ManagedCallable::instances_mutex);
+
+		for (KeyValue<ManagedCallable *, Array> &kv : ManagedCallable::instances_pending_reload) {
+			kv.key->release_delegate_handle();
+		}
 	}
 
 	// Do domain reload
@@ -1105,19 +1180,6 @@ bool CSharpLanguage::debug_break(const String &p_error, bool p_allow_continue) {
 	}
 }
 
-void CSharpLanguage::_on_scripts_domain_about_to_unload() {
-#ifdef GD_MONO_HOT_RELOAD
-	{
-		MutexLock lock(ManagedCallable::instances_mutex);
-
-		for (SelfList<ManagedCallable> *elem = ManagedCallable::instances.first(); elem; elem = elem->next()) {
-			ManagedCallable *managed_callable = elem->self();
-			managed_callable->release_delegate_handle();
-		}
-	}
-#endif
-}
-
 #ifdef TOOLS_ENABLED
 void CSharpLanguage::_editor_init_callback() {
 	// Load GodotTools and initialize GodotSharpEditor
@@ -1196,11 +1258,16 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 
 	StringName type_name = p_object->get_class_name();
 
-	// ¯\_(ツ)_/¯
 	const ClassDB::ClassInfo *classinfo = ClassDB::classes.getptr(type_name);
-	while (classinfo && !classinfo->exposed) {
+
+	// This skipping of GDExtension classes, as well as whatever classes are in this list of ignored types, is a
+	// workaround to allow GDExtension classes to be used from C# so long as they're only used through base classes that
+	// are registered from the engine. This will likely need to be removed whenever proper support for GDExtension
+	// classes is added to C#. See #75955 for more details.
+	while (classinfo && (!classinfo->exposed || classinfo->gdextension || ignored_types.has(classinfo->name))) {
 		classinfo = classinfo->inherits_ptr;
 	}
+
 	ERR_FAIL_NULL_V(classinfo, false);
 	type_name = classinfo->name;
 
@@ -1527,7 +1594,10 @@ CSharpInstance *CSharpInstance::create_for_managed_type(Object *p_owner, CSharpS
 		instance->_reference_owner_unsafe();
 	}
 
-	p_script->instances.insert(p_owner);
+	{
+		MutexLock lock(CSharpLanguage::get_singleton()->get_script_instances_mutex());
+		p_script->instances.insert(p_owner);
+	}
 
 	return instance;
 }
@@ -2197,11 +2267,21 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 	update_script_class_info(p_script);
 
 	p_script->_update_exports();
+
+#if TOOLS_ENABLED
+	// If the EditorFileSystem singleton is available, update the file;
+	// otherwise, the file will be updated when the singleton becomes available.
+	EditorFileSystem *efs = EditorFileSystem::get_singleton();
+	if (efs && !p_script->get_path().is_empty()) {
+		efs->update_file(p_script->get_path());
+	}
+#endif
 }
 
 // Extract information about the script using the mono class.
 void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	bool tool = false;
+	bool global_class = false;
 
 	// TODO: Use GDExtension godot_dictionary
 	Array methods_array;
@@ -2211,11 +2291,17 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	Dictionary signals_dict;
 	signals_dict.~Dictionary();
 
+	String class_name;
+	String icon_path;
 	Ref<CSharpScript> base_script;
 	GDMonoCache::managed_callbacks.ScriptManagerBridge_UpdateScriptClassInfo(
-			p_script.ptr(), &tool, &methods_array, &rpc_functions_dict, &signals_dict, &base_script);
+			p_script.ptr(), &class_name, &tool, &global_class, &icon_path,
+			&methods_array, &rpc_functions_dict, &signals_dict, &base_script);
 
+	p_script->class_name = class_name;
 	p_script->tool = tool;
+	p_script->global_class = global_class;
+	p_script->icon_path = icon_path;
 
 	p_script->rpc_config.clear();
 	p_script->rpc_config = rpc_functions_dict;
@@ -2243,6 +2329,9 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 			Variant::Type param_type = (Variant::Type)(int)param["type"];
 			PropertyInfo arg_info = PropertyInfo(param_type, (String)param["name"]);
 			arg_info.usage = (uint32_t)param["usage"];
+			if (param.has("class_name")) {
+				arg_info.class_name = (StringName)param["class_name"];
+			}
 			mi.arguments.push_back(arg_info);
 		}
 
@@ -2273,6 +2362,9 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 			Variant::Type param_type = (Variant::Type)(int)param["type"];
 			PropertyInfo arg_info = PropertyInfo(param_type, (String)param["name"]);
 			arg_info.usage = (uint32_t)param["usage"];
+			if (param.has("class_name")) {
+				arg_info.class_name = (StringName)param["class_name"];
+			}
 			mi.arguments.push_back(arg_info);
 		}
 
@@ -2513,6 +2605,15 @@ Error CSharpScript::reload(bool p_keep_state) {
 		update_script_class_info(this);
 
 		_update_exports();
+
+#if TOOLS_ENABLED
+		// If the EditorFileSystem singleton is available, update the file;
+		// otherwise, the file will be updated when the singleton becomes available.
+		EditorFileSystem *efs = EditorFileSystem::get_singleton();
+		if (efs) {
+			efs->update_file(script_path);
+		}
+#endif
 	}
 
 	return OK;
@@ -2599,11 +2700,11 @@ bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {
 }
 
 Ref<Script> CSharpScript::get_base_script() const {
-	return base_script;
+	return base_script.is_valid() && !base_script->get_path().is_empty() ? base_script : nullptr;
 }
 
 StringName CSharpScript::get_global_name() const {
-	return StringName();
+	return global_class ? StringName(class_name) : StringName();
 }
 
 void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {

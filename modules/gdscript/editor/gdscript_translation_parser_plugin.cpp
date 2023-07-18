@@ -30,8 +30,9 @@
 
 #include "gdscript_translation_parser_plugin.h"
 
+#include "../gdscript.h"
+
 #include "core/io/resource_loader.h"
-#include "modules/gdscript/gdscript.h"
 
 void GDScriptEditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
 	GDScriptLanguage::get_singleton()->get_recognized_extensions(r_extensions);
@@ -309,6 +310,14 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(GDScriptParser::C
 			for (int i = 0; i < array_node->elements.size(); i++) {
 				_extract_fd_literals(array_node->elements[i]);
 			}
+		}
+	}
+
+	if (p_call->callee && p_call->callee->type == GDScriptParser::Node::SUBSCRIPT) {
+		GDScriptParser::SubscriptNode *subscript_node = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
+		if (subscript_node->base && subscript_node->base->type == GDScriptParser::Node::CALL) {
+			GDScriptParser::CallNode *call_node = static_cast<GDScriptParser::CallNode *>(subscript_node->base);
+			_extract_from_call(call_node);
 		}
 	}
 }

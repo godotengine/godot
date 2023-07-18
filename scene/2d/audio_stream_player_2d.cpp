@@ -157,7 +157,6 @@ void AudioStreamPlayer2D::_update_panning() {
 	Vector2 global_pos = get_global_position();
 
 	HashSet<Viewport *> viewports = world_2d->get_viewports();
-	viewports.insert(get_viewport()); // TODO: This is a mediocre workaround for #50958. Remove when that bug is fixed!
 
 	volume_vector.resize(4);
 	volume_vector.write[0] = AudioFrame(0, 0);
@@ -176,23 +175,24 @@ void AudioStreamPlayer2D::_update_panning() {
 
 		//screen in global is used for attenuation
 		AudioListener2D *listener = vp->get_audio_listener_2d();
+		Transform2D full_canvas_transform = vp->get_global_canvas_transform() * vp->get_canvas_transform();
 		if (listener) {
 			listener_in_global = listener->get_global_position();
-			relative_to_listener = global_pos - listener_in_global;
+			relative_to_listener = (global_pos - listener_in_global).rotated(-listener->get_global_rotation());
+			relative_to_listener *= full_canvas_transform.get_scale(); // Default listener scales with canvas size, do the same here.
 		} else {
-			Transform2D to_listener = vp->get_global_canvas_transform() * vp->get_canvas_transform();
-			listener_in_global = to_listener.affine_inverse().xform(screen_size * 0.5);
-			relative_to_listener = to_listener.xform(global_pos) - screen_size * 0.5;
+			listener_in_global = full_canvas_transform.affine_inverse().xform(screen_size * 0.5);
+			relative_to_listener = full_canvas_transform.xform(global_pos) - screen_size * 0.5;
 		}
 
 		float dist = global_pos.distance_to(listener_in_global); // Distance to listener, or screen if none.
 
 		if (dist > max_distance) {
-			continue; //can't hear this sound in this viewport
+			continue; // Can't hear this sound in this viewport.
 		}
 
 		float multiplier = Math::pow(1.0f - dist / max_distance, attenuation);
-		multiplier *= Math::db_to_linear(volume_db); //also apply player volume!
+		multiplier *= Math::db_to_linear(volume_db); // Also apply player volume!
 
 		float pan = relative_to_listener.x / screen_size.x;
 		// Don't let the panning effect extend (too far) beyond the screen.
@@ -206,7 +206,9 @@ void AudioStreamPlayer2D::_update_panning() {
 		float l = 1.0 - pan;
 		float r = pan;
 
-		volume_vector.write[0] = AudioFrame(l, r) * multiplier;
+		const AudioFrame &prev_sample = volume_vector[0];
+		AudioFrame new_sample = AudioFrame(l, r) * multiplier;
+		volume_vector.write[0] = AudioFrame(MAX(prev_sample[0], new_sample[0]), MAX(prev_sample[1], new_sample[1]));
 	}
 
 	for (const Ref<AudioStreamPlayback> &playback : stream_playbacks) {

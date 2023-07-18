@@ -141,6 +141,9 @@ public:
 	void set_low_processor_usage_mode_sleep_usec(int p_usec);
 	int get_low_processor_usage_mode_sleep_usec() const;
 
+	void set_delta_smoothing(bool p_enabled);
+	bool is_delta_smoothing_enabled() const;
+
 	void alert(const String &p_alert, const String &p_title = "ALERT!");
 	void crash(const String &p_message);
 
@@ -231,10 +234,12 @@ public:
 	Thread::ID get_main_thread_id() const;
 
 	bool has_feature(const String &p_feature) const;
+	bool is_sandboxed() const;
 
 	bool request_permission(const String &p_name);
 	bool request_permissions();
 	Vector<String> get_granted_permissions() const;
+	void revoke_granted_permissions();
 
 	static OS *get_singleton() { return singleton; }
 
@@ -405,6 +410,8 @@ public:
 	bool is_started() const;
 	bool is_alive() const;
 	Variant wait_to_finish();
+
+	static void set_thread_safety_checks_enabled(bool p_enabled);
 };
 
 namespace special {
@@ -424,26 +431,26 @@ public:
 	bool can_instantiate(const StringName &p_class) const;
 	Variant instantiate(const StringName &p_class) const;
 
-	bool has_signal(StringName p_class, StringName p_signal) const;
-	Dictionary get_signal(StringName p_class, StringName p_signal) const;
-	TypedArray<Dictionary> get_signal_list(StringName p_class, bool p_no_inheritance = false) const;
+	bool class_has_signal(StringName p_class, StringName p_signal) const;
+	Dictionary class_get_signal(StringName p_class, StringName p_signal) const;
+	TypedArray<Dictionary> class_get_signal_list(StringName p_class, bool p_no_inheritance = false) const;
 
-	TypedArray<Dictionary> get_property_list(StringName p_class, bool p_no_inheritance = false) const;
-	Variant get_property(Object *p_object, const StringName &p_property) const;
-	Error set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
+	TypedArray<Dictionary> class_get_property_list(StringName p_class, bool p_no_inheritance = false) const;
+	Variant class_get_property(Object *p_object, const StringName &p_property) const;
+	Error class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
-	bool has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false) const;
+	bool class_has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false) const;
 
-	TypedArray<Dictionary> get_method_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> class_get_method_list(StringName p_class, bool p_no_inheritance = false) const;
 
-	PackedStringArray get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
-	bool has_integer_constant(const StringName &p_class, const StringName &p_name) const;
-	int64_t get_integer_constant(const StringName &p_class, const StringName &p_name) const;
+	PackedStringArray class_get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	bool class_has_integer_constant(const StringName &p_class, const StringName &p_name) const;
+	int64_t class_get_integer_constant(const StringName &p_class, const StringName &p_name) const;
 
-	bool has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
-	PackedStringArray get_enum_list(const StringName &p_class, bool p_no_inheritance = false) const;
-	PackedStringArray get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
-	StringName get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
+	bool class_has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
+	PackedStringArray class_get_enum_list(const StringName &p_class, bool p_no_inheritance = false) const;
+	PackedStringArray class_get_enum_constants(const StringName &p_class, const StringName &p_enum, bool p_no_inheritance = false) const;
+	StringName class_get_integer_constant_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false) const;
 
 	bool is_class_enabled(StringName p_class) const;
 

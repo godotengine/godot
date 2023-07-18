@@ -44,6 +44,7 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/image_texture.h"
 
 class OptionButton;
 class EditorFileDialog;
@@ -126,6 +127,9 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	LineEdit *anim_search_box = nullptr;
 	Tree *animations = nullptr;
+
+	Label *missing_anim_label = nullptr;
+	VBoxContainer *anim_frames_vb = nullptr;
 
 	EditorFileDialog *file = nullptr;
 

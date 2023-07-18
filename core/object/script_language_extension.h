@@ -651,7 +651,7 @@ public:
 
 #ifdef TOOLS_ENABLED
 			Ref<Script> script = get_script();
-			if (script->is_valid() && pcount > 0) {
+			if (script.is_valid() && pcount > 0) {
 				p_list->push_back(script->get_class_category());
 			}
 #endif // TOOLS_ENABLED

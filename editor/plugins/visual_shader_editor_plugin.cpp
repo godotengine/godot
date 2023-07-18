@@ -31,12 +31,12 @@
 #include "visual_shader_editor_plugin.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
+#include "editor/editor_properties_vector.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -56,6 +56,9 @@
 #include "scene/gui/tree.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
+#include "scene/resources/curve_texture.h"
+#include "scene/resources/image_texture.h"
+#include "scene/resources/style_box_flat.h"
 #include "scene/resources/visual_shader_nodes.h"
 #include "scene/resources/visual_shader_particle_nodes.h"
 #include "servers/display_server.h"
@@ -238,7 +241,7 @@ void VisualShaderGraphPlugin::update_curve(int p_node_id) {
 		if (tex->get_texture().is_valid()) {
 			links[p_node_id].curve_editors[0]->set_curve(tex->get_texture()->get_curve());
 		}
-		tex->emit_signal(CoreStringNames::get_singleton()->changed);
+		tex->emit_changed();
 	}
 }
 
@@ -252,7 +255,7 @@ void VisualShaderGraphPlugin::update_curve_xyz(int p_node_id) {
 			links[p_node_id].curve_editors[1]->set_curve(tex->get_texture()->get_curve_y());
 			links[p_node_id].curve_editors[2]->set_curve(tex->get_texture()->get_curve_z());
 		}
-		tex->emit_signal(CoreStringNames::get_singleton()->changed);
+		tex->emit_changed();
 	}
 }
 
@@ -361,8 +364,7 @@ bool VisualShaderGraphPlugin::is_node_has_parameter_instances_relatively(VisualS
 		}
 	}
 
-	LocalVector<int> prev_connected_nodes;
-	visual_shader->get_prev_connected_nodes(p_type, p_node, prev_connected_nodes);
+	const LocalVector<int> &prev_connected_nodes = visual_shader->get_prev_connected_nodes(p_type, p_node);
 
 	for (const int &E : prev_connected_nodes) {
 		result = is_node_has_parameter_instances_relatively(p_type, E);
@@ -560,9 +562,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	if (curve.is_valid()) {
 		custom_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-		Callable ce = callable_mp(graph_plugin, &VisualShaderGraphPlugin::update_curve);
-		if (curve->get_texture().is_valid() && !curve->get_texture()->is_connected("changed", ce)) {
-			curve->get_texture()->connect("changed", ce.bind(p_id));
+		if (curve->get_texture().is_valid()) {
+			curve->get_texture()->connect_changed(callable_mp(graph_plugin, &VisualShaderGraphPlugin::update_curve).bind(p_id));
 		}
 
 		CurveEditor *curve_editor = memnew(CurveEditor);
@@ -578,9 +579,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	if (curve_xyz.is_valid()) {
 		custom_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-		Callable ce = callable_mp(graph_plugin, &VisualShaderGraphPlugin::update_curve_xyz);
-		if (curve_xyz->get_texture().is_valid() && !curve_xyz->get_texture()->is_connected("changed", ce)) {
-			curve_xyz->get_texture()->connect("changed", ce.bind(p_id));
+		if (curve_xyz->get_texture().is_valid()) {
+			curve_xyz->get_texture()->connect_changed(callable_mp(graph_plugin, &VisualShaderGraphPlugin::update_curve_xyz).bind(p_id));
 		}
 
 		CurveEditor *curve_editor_x = memnew(CurveEditor);
@@ -1159,20 +1159,14 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		visual_shader = Ref<VisualShader>(p_visual_shader);
 		graph_plugin->register_shader(visual_shader.ptr());
 
-		Callable ce = callable_mp(this, &VisualShaderEditor::_update_preview);
-		if (!visual_shader->is_connected("changed", ce)) {
-			visual_shader->connect("changed", ce);
-		}
+		visual_shader->connect_changed(callable_mp(this, &VisualShaderEditor::_update_preview));
 		visual_shader->set_graph_offset(graph->get_scroll_ofs() / EDSCALE);
 		_set_mode(visual_shader->get_mode());
 
 		_update_nodes();
 	} else {
 		if (visual_shader.is_valid()) {
-			Callable ce = callable_mp(this, &VisualShaderEditor::_update_preview);
-			if (visual_shader->is_connected("changed", ce)) {
-				visual_shader->disconnect("changed", ce);
-			}
+			visual_shader->disconnect_changed(callable_mp(this, &VisualShaderEditor::_update_preview));
 		}
 		visual_shader.unref();
 	}
@@ -1845,31 +1839,31 @@ void VisualShaderEditor::_update_options_menu() {
 		}
 		switch (options[i].return_type) {
 			case VisualShaderNode::PORT_TYPE_SCALAR:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("float"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("float"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_SCALAR_INT:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("int"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("int"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_SCALAR_UINT:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("uint"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("uint"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_VECTOR_2D:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_VECTOR_3D:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_VECTOR_4D:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_BOOLEAN:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("bool"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_TRANSFORM:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")));
 				break;
 			case VisualShaderNode::PORT_TYPE_SAMPLER:
-				item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")));
+				item->set_icon(0, get_theme_icon(SNAME("ImageTexture"), SNAME("EditorIcons")));
 				break;
 			default:
 				break;
@@ -4051,6 +4045,10 @@ void VisualShaderEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 
 void VisualShaderEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			_update_options_menu();
+		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
@@ -4077,8 +4075,8 @@ void VisualShaderEditor::_notification(int p_what) {
 
 			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 			graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
-			[[fallthrough]];
-		}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			highend_label->set_modulate(get_theme_color(SNAME("highend_color"), SNAME("Editor")));
 
@@ -4130,7 +4128,7 @@ void VisualShaderEditor::_notification(int p_what) {
 				error_label->add_theme_color_override("font_color", error_color);
 			}
 
-			tools->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
+			tools->set_icon(get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 
 			if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree()) {
 				_update_graph();
@@ -4977,7 +4975,7 @@ void VisualShaderEditor::_preview_size_changed() {
 	preview_vbox->set_custom_minimum_size(preview_window->get_size());
 }
 
-static ShaderLanguage::DataType _get_global_shader_uniform_type(const StringName &p_variable) {
+static ShaderLanguage::DataType _visual_shader_editor_get_global_shader_uniform_type(const StringName &p_variable) {
 	RS::GlobalShaderParameterType gvt = RS::get_singleton()->global_shader_parameter_get_type(p_variable);
 	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
@@ -4996,7 +4994,7 @@ void VisualShaderEditor::_update_preview() {
 	info.functions = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(visual_shader->get_mode()));
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(visual_shader->get_mode()));
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
-	info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
+	info.global_shader_uniform_type_func = _visual_shader_editor_get_global_shader_uniform_type;
 
 	ShaderLanguage sl;
 
@@ -5033,8 +5031,7 @@ void VisualShaderEditor::_update_next_previews(int p_node_id) {
 }
 
 void VisualShaderEditor::_get_next_nodes_recursively(VisualShader::Type p_type, int p_node_id, LocalVector<int> &r_nodes) const {
-	LocalVector<int> next_connections;
-	visual_shader->get_next_connected_nodes(p_type, p_node_id, next_connections);
+	const LocalVector<int> &next_connections = visual_shader->get_next_connected_nodes(p_type, p_node_id);
 
 	for (int node_id : next_connections) {
 		r_nodes.push_back(node_id);
@@ -6130,8 +6127,6 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	/////////////////////////////////////////////////////////////////////
 
-	_update_options_menu();
-
 	Ref<VisualShaderNodePluginDefault> default_plugin;
 	default_plugin.instantiate();
 	default_plugin->set_editor(this);
@@ -6446,7 +6441,7 @@ public:
 			properties[i]->update_property();
 			properties[i]->set_name_split_ratio(0);
 		}
-		node->connect("changed", callable_mp(this, &VisualShaderNodePluginDefaultEditor::_node_changed));
+		node->connect_changed(callable_mp(this, &VisualShaderNodePluginDefaultEditor::_node_changed));
 	}
 
 	static void _bind_methods() {
@@ -6618,7 +6613,7 @@ void EditorPropertyVisualShaderMode::_option_selected(int p_which) {
 }
 
 void EditorPropertyVisualShaderMode::update_property() {
-	int which = get_edited_object()->get(get_edited_property());
+	int which = get_edited_property_value();
 	options->select(which);
 }
 
@@ -6712,7 +6707,7 @@ void VisualShaderNodePortPreview::_shader_changed() {
 
 void VisualShaderNodePortPreview::setup(const Ref<VisualShader> &p_shader, VisualShader::Type p_type, int p_node, int p_port, bool p_is_valid) {
 	shader = p_shader;
-	shader->connect("changed", callable_mp(this, &VisualShaderNodePortPreview::_shader_changed), CONNECT_DEFERRED);
+	shader->connect_changed(callable_mp(this, &VisualShaderNodePortPreview::_shader_changed), CONNECT_DEFERRED);
 	type = p_type;
 	port = p_port;
 	node = p_node;

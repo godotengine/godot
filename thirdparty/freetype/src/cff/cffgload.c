@@ -4,7 +4,7 @@
  *
  *   OpenType Glyph Loader (body).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -356,18 +356,16 @@
 
 #ifdef FT_CONFIG_OPTION_SVG
     /* check for OT-SVG */
-    if ( ( load_flags & FT_LOAD_COLOR )     &&
-         ( (TT_Face)glyph->root.face )->svg )
+    if ( ( load_flags & FT_LOAD_NO_SVG ) == 0 &&
+         ( load_flags & FT_LOAD_COLOR )       &&
+         face->svg                            )
     {
       /*
        * We load the SVG document and try to grab the advances from the
        * table.  For the bearings we rely on the presetting hook to do that.
        */
 
-      FT_Short      dummy;
-      FT_UShort     advanceX;
-      FT_UShort     advanceY;
-      SFNT_Service  sfnt;
+      SFNT_Service  sfnt = (SFNT_Service)face->sfnt;
 
 
       if ( size && (size->root.metrics.x_ppem < 1 ||
@@ -379,10 +377,17 @@
 
       FT_TRACE3(( "Trying to load SVG glyph\n" ));
 
-      sfnt  = (SFNT_Service)((TT_Face)glyph->root.face)->sfnt;
       error = sfnt->load_svg_doc( (FT_GlyphSlot)glyph, glyph_index );
       if ( !error )
       {
+        FT_Fixed  x_scale = size->root.metrics.x_scale;
+        FT_Fixed  y_scale = size->root.metrics.y_scale;
+
+        FT_Short   dummy;
+        FT_UShort  advanceX;
+        FT_UShort  advanceY;
+
+
         FT_TRACE3(( "Successfully loaded SVG glyph\n" ));
 
         glyph->root.format = FT_GLYPH_FORMAT_SVG;
@@ -404,17 +409,11 @@
                            &dummy,
                            &advanceY );
 
-        advanceX =
-          (FT_UShort)FT_MulDiv( advanceX,
-                                glyph->root.face->size->metrics.x_ppem,
-                                glyph->root.face->units_per_EM );
-        advanceY =
-          (FT_UShort)FT_MulDiv( advanceY,
-                                glyph->root.face->size->metrics.y_ppem,
-                                glyph->root.face->units_per_EM );
+        glyph->root.linearHoriAdvance = advanceX;
+        glyph->root.linearVertAdvance = advanceY;
 
-        glyph->root.metrics.horiAdvance = advanceX << 6;
-        glyph->root.metrics.vertAdvance = advanceY << 6;
+        glyph->root.metrics.horiAdvance = FT_MulFix( advanceX, x_scale );
+        glyph->root.metrics.vertAdvance = FT_MulFix( advanceY, y_scale );
 
         return error;
       }
@@ -491,13 +490,14 @@
       decoder.builder.no_recurse =
         FT_BOOL( load_flags & FT_LOAD_NO_RECURSE );
 
-      /* now load the unscaled outline */
-      error = cff_get_glyph_data( face, glyph_index,
-                                  &charstring, &charstring_len );
+      /* this function also checks for a valid subfont index */
+      error = decoder_funcs->prepare( &decoder, size, glyph_index );
       if ( error )
         goto Glyph_Build_Finished;
 
-      error = decoder_funcs->prepare( &decoder, size, glyph_index );
+      /* now load the unscaled outline */
+      error = cff_get_glyph_data( face, glyph_index,
+                                  &charstring, &charstring_len );
       if ( error )
         goto Glyph_Build_Finished;
 

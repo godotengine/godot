@@ -66,7 +66,7 @@ public:
 
 	private:
 		Ref<TileSet> tile_set;
-		TileSetAtlasSource *tile_set_atlas_source = nullptr;
+		Ref<TileSetAtlasSource> tile_set_atlas_source;
 		int source_id = TileSet::INVALID_SOURCE;
 
 	protected:
@@ -79,8 +79,8 @@ public:
 		void set_id(int p_id);
 		int get_id() const;
 
-		void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id);
-		TileSetAtlasSource *get_edited() { return tile_set_atlas_source; };
+		void edit(Ref<TileSet> p_tile_set, Ref<TileSetAtlasSource> p_tile_set_atlas_source, int p_source_id);
+		Ref<TileSetAtlasSource> get_edited() { return tile_set_atlas_source; };
 	};
 
 	// -- Proxy object for a tile, needed by the inspector --
@@ -90,7 +90,7 @@ public:
 	private:
 		TileSetAtlasSourceEditor *tiles_set_atlas_source_editor = nullptr;
 
-		TileSetAtlasSource *tile_set_atlas_source = nullptr;
+		Ref<TileSetAtlasSource> tile_set_atlas_source;
 		RBSet<TileSelection> tiles = RBSet<TileSelection>();
 
 	protected:
@@ -101,11 +101,11 @@ public:
 		static void _bind_methods();
 
 	public:
-		TileSetAtlasSource *get_edited_tile_set_atlas_source() const { return tile_set_atlas_source; };
+		Ref<TileSetAtlasSource> get_edited_tile_set_atlas_source() const { return tile_set_atlas_source; };
 		RBSet<TileSelection> get_edited_tiles() const { return tiles; };
 
 		// Update the proxyed object.
-		void edit(TileSetAtlasSource *p_tile_set_atlas_source, RBSet<TileSelection> p_tiles = RBSet<TileSelection>());
+		void edit(Ref<TileSetAtlasSource> p_tile_set_atlas_source, RBSet<TileSelection> p_tiles = RBSet<TileSelection>());
 
 		AtlasTileProxyObject(TileSetAtlasSourceEditor *p_tiles_set_atlas_source_editor) {
 			tiles_set_atlas_source_editor = p_tiles_set_atlas_source_editor;
@@ -257,9 +257,6 @@ private:
 	void _update_atlas_view();
 	void _update_toolbar();
 
-	// -- input events --
-	void _unhandled_key_input(const Ref<InputEvent> &p_event);
-
 	// -- Misc --
 	void _auto_create_tiles();
 	void _auto_remove_tiles();
@@ -274,6 +271,9 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	// -- input events --
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_source, int p_source_id);

@@ -30,7 +30,6 @@
 
 #include "physics_body_3d.h"
 
-#include "core/core_string_names.h"
 #include "scene/scene_string_names.h"
 
 void PhysicsBody3D::_bind_methods() {
@@ -80,14 +79,14 @@ TypedArray<PhysicsBody3D> PhysicsBody3D::get_collision_exceptions() {
 void PhysicsBody3D::add_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
-	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two nodes that inherit from CollisionObject3D (such as Area3D or PhysicsBody3D).");
+	ERR_FAIL_NULL_MSG(collision_object, "Collision exception only works between two nodes that inherit from CollisionObject3D (such as Area3D or PhysicsBody3D).");
 	PhysicsServer3D::get_singleton()->body_add_collision_exception(get_rid(), collision_object->get_rid());
 }
 
 void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
-	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two nodes that inherit from CollisionObject3D (such as Area3D or PhysicsBody3D).");
+	ERR_FAIL_NULL_MSG(collision_object, "Collision exception only works between two nodes that inherit from CollisionObject3D (such as Area3D or PhysicsBody3D).");
 	PhysicsServer3D::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
 }
 
@@ -214,15 +213,13 @@ real_t PhysicsBody3D::get_inverse_mass() const {
 
 void StaticBody3D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody3D::_reload_physics_characteristics))) {
-			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody3D::_reload_physics_characteristics));
-		}
+		physics_material_override->disconnect_changed(callable_mp(this, &StaticBody3D::_reload_physics_characteristics));
 	}
 
 	physics_material_override = p_physics_material_override;
 
 	if (physics_material_override.is_valid()) {
-		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody3D::_reload_physics_characteristics));
+		physics_material_override->connect_changed(callable_mp(this, &StaticBody3D::_reload_physics_characteristics));
 	}
 	_reload_physics_characteristics();
 }
@@ -379,9 +376,8 @@ AnimatableBody3D::AnimatableBody3D() :
 void RigidBody3D::_body_enter_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
-	ERR_FAIL_COND(!node);
-
-	ERR_FAIL_COND(!contact_monitor);
+	ERR_FAIL_NULL(node);
+	ERR_FAIL_NULL(contact_monitor);
 	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(E->value.in_tree);
@@ -402,8 +398,8 @@ void RigidBody3D::_body_enter_tree(ObjectID p_id) {
 void RigidBody3D::_body_exit_tree(ObjectID p_id) {
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = Object::cast_to<Node>(obj);
-	ERR_FAIL_COND(!node);
-	ERR_FAIL_COND(!contact_monitor);
+	ERR_FAIL_NULL(node);
+	ERR_FAIL_NULL(contact_monitor);
 	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	ERR_FAIL_COND(!E->value.in_tree);
@@ -427,7 +423,7 @@ void RigidBody3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instan
 	Object *obj = ObjectDB::get_instance(objid);
 	Node *node = Object::cast_to<Node>(obj);
 
-	ERR_FAIL_COND(!contact_monitor);
+	ERR_FAIL_NULL(contact_monitor);
 	HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(objid);
 
 	ERR_FAIL_COND(!body_in && !E);
@@ -727,15 +723,13 @@ const Vector3 &RigidBody3D::get_center_of_mass() const {
 
 void RigidBody3D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody3D::_reload_physics_characteristics))) {
-			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody3D::_reload_physics_characteristics));
-		}
+		physics_material_override->disconnect_changed(callable_mp(this, &RigidBody3D::_reload_physics_characteristics));
 	}
 
 	physics_material_override = p_physics_material_override;
 
 	if (physics_material_override.is_valid()) {
-		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody3D::_reload_physics_characteristics));
+		physics_material_override->connect_changed(callable_mp(this, &RigidBody3D::_reload_physics_characteristics));
 	}
 	_reload_physics_characteristics();
 }
@@ -962,7 +956,7 @@ bool RigidBody3D::is_contact_monitor_enabled() const {
 }
 
 TypedArray<Node3D> RigidBody3D::get_colliding_bodies() const {
-	ERR_FAIL_COND_V(!contact_monitor, TypedArray<Node3D>());
+	ERR_FAIL_NULL_V(contact_monitor, TypedArray<Node3D>());
 
 	TypedArray<Node3D> ret;
 	ret.resize(contact_monitor->body_map.size());
@@ -1781,7 +1775,7 @@ const Vector3 &CharacterBody3D::get_last_motion() const {
 }
 
 Vector3 CharacterBody3D::get_position_delta() const {
-	return get_transform().origin - previous_position;
+	return get_global_transform().origin - previous_position;
 }
 
 const Vector3 &CharacterBody3D::get_real_velocity() const {

@@ -30,21 +30,21 @@
 
 #include "display_server_windows.h"
 
-#include "core/io/marshalls.h"
-#include "core/math/geometry_2d.h"
-#include "main/main.h"
 #include "os_windows.h"
-#include "scene/resources/texture.h"
+
+#include "core/io/marshalls.h"
+#include "main/main.h"
+#include "scene/resources/atlas_texture.h"
+
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
 
 #include <avrt.h>
 #include <dwmapi.h>
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
-#endif
-
-#if defined(GLES3_ENABLED)
-#include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
 #if defined(__GNUC__)
@@ -179,37 +179,37 @@ void DisplayServerWindows::_register_raw_input_devices(WindowID p_target_window)
 }
 
 bool DisplayServerWindows::tts_is_speaking() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->is_speaking();
 }
 
 bool DisplayServerWindows::tts_is_paused() const {
-	ERR_FAIL_COND_V(!tts, false);
+	ERR_FAIL_COND_V_MSG(!tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->is_paused();
 }
 
 TypedArray<Dictionary> DisplayServerWindows::tts_get_voices() const {
-	ERR_FAIL_COND_V(!tts, TypedArray<Dictionary>());
+	ERR_FAIL_COND_V_MSG(!tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	return tts->get_voices();
 }
 
 void DisplayServerWindows::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
 }
 
 void DisplayServerWindows::tts_pause() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->pause();
 }
 
 void DisplayServerWindows::tts_resume() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->resume();
 }
 
 void DisplayServerWindows::tts_stop() {
-	ERR_FAIL_COND(!tts);
+	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->stop();
 }
 
@@ -614,13 +614,85 @@ Color DisplayServerWindows::screen_get_pixel(const Point2i &p_position) const {
 		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p);
 	}
 	HDC dc = GetDC(0);
-	COLORREF col = GetPixel(dc, p.x, p.y);
-	if (col != CLR_INVALID) {
-		return Color(float(col & 0x000000FF) / 256.0, float((col & 0x0000FF00) >> 8) / 256.0, float((col & 0x00FF0000) >> 16) / 256.0, 1.0);
+	if (dc) {
+		COLORREF col = GetPixel(dc, p.x, p.y);
+		if (col != CLR_INVALID) {
+			ReleaseDC(NULL, dc);
+			return Color(float(col & 0x000000FF) / 256.0, float((col & 0x0000FF00) >> 8) / 256.0, float((col & 0x00FF0000) >> 16) / 256.0, 1.0);
+		}
+		ReleaseDC(NULL, dc);
 	}
-	ReleaseDC(NULL, dc);
 
 	return Color();
+}
+
+Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
+
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
+	}
+
+	Point2i pos = screen_get_position(p_screen) + _get_screens_origin();
+	Size2i size = screen_get_size(p_screen);
+
+	POINT p1;
+	p1.x = pos.x;
+	p1.y = pos.y;
+
+	POINT p2;
+	p2.x = pos.x + size.x;
+	p2.y = pos.y + size.y;
+	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p1);
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p2);
+	}
+
+	Ref<Image> img;
+	HDC dc = GetDC(0);
+	if (dc) {
+		HDC hdc = CreateCompatibleDC(dc);
+		int width = p2.x - p1.x;
+		int height = p2.y - p1.y;
+		if (hdc) {
+			HBITMAP hbm = CreateCompatibleBitmap(dc, width, height);
+			if (hbm) {
+				SelectObject(hdc, hbm);
+				BitBlt(hdc, 0, 0, width, height, dc, p1.x, p1.y, SRCCOPY);
+
+				BITMAPINFO bmp_info = {};
+				bmp_info.bmiHeader.biSize = sizeof(bmp_info.bmiHeader);
+				bmp_info.bmiHeader.biWidth = width;
+				bmp_info.bmiHeader.biHeight = -height;
+				bmp_info.bmiHeader.biPlanes = 1;
+				bmp_info.bmiHeader.biBitCount = 32;
+				bmp_info.bmiHeader.biCompression = BI_RGB;
+
+				Vector<uint8_t> img_data;
+				img_data.resize(width * height * 4);
+				GetDIBits(hdc, hbm, 0, height, img_data.ptrw(), &bmp_info, DIB_RGB_COLORS);
+
+				uint8_t *wr = (uint8_t *)img_data.ptrw();
+				for (int i = 0; i < width * height; i++) {
+					SWAP(wr[i * 4 + 0], wr[i * 4 + 2]);
+				}
+				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+
+				DeleteObject(hbm);
+			}
+			DeleteDC(hdc);
+		}
+		ReleaseDC(NULL, dc);
+	}
+
+	return img;
 }
 
 float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
@@ -763,9 +835,12 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 		SetFocus(wd.hWnd); // Set keyboard focus.
 	} else if (wd.minimized) {
 		ShowWindow(wd.hWnd, SW_SHOWMINIMIZED);
-	} else if (wd.no_focus || wd.is_popup) {
+	} else if (wd.no_focus) {
 		// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
 		ShowWindow(wd.hWnd, SW_SHOWNA);
+	} else if (wd.is_popup) {
+		ShowWindow(wd.hWnd, SW_SHOWNA);
+		SetFocus(wd.hWnd); // Set keyboard focus.
 	} else {
 		ShowWindow(wd.hWnd, SW_SHOW);
 		SetForegroundWindow(wd.hWnd); // Slightly higher priority.
@@ -1253,7 +1328,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 				r_style = WS_OVERLAPPEDWINDOW;
 			}
 		} else {
-			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
+			r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 		}
 	}
 
@@ -1309,6 +1384,8 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		wd.multiwindow_fs = false;
 		wd.maximized = wd.was_maximized;
 
+		_update_window_style(p_window, false);
+
 		if (wd.pre_fs_valid) {
 			rect = wd.pre_fs_rect;
 		} else {
@@ -1318,8 +1395,6 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 			rect.bottom = wd.height;
 			wd.pre_fs_valid = true;
 		}
-
-		_update_window_style(p_window, false);
 
 		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
 
@@ -1523,7 +1598,7 @@ void DisplayServerWindows::window_request_attention(WindowID p_window) {
 	FLASHWINFO info;
 	info.cbSize = sizeof(FLASHWINFO);
 	info.hwnd = wd.hWnd;
-	info.dwFlags = FLASHW_TRAY;
+	info.dwFlags = FLASHW_ALL;
 	info.dwTimeout = 0;
 	info.uCount = 2;
 	FlashWindowEx(&info);
@@ -1538,6 +1613,15 @@ void DisplayServerWindows::window_move_to_foreground(WindowID p_window) {
 	if (!wd.no_focus && !wd.is_popup) {
 		SetForegroundWindow(wd.hWnd);
 	}
+}
+
+bool DisplayServerWindows::window_is_focused(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+	const WindowData &wd = windows[p_window];
+
+	return wd.window_focused;
 }
 
 bool DisplayServerWindows::window_can_draw(WindowID p_window) const {
@@ -1823,11 +1907,11 @@ void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor
 		}
 		cursors[p_shape] = nullptr;
 
+		cursors_cache.erase(p_shape);
+
 		CursorShape c = cursor_shape;
 		cursor_shape = CURSOR_MAX;
 		cursor_set_shape(c);
-
-		cursors_cache.erase(p_shape);
 	}
 }
 
@@ -1924,6 +2008,38 @@ Key DisplayServerWindows::keyboard_get_keycode_from_physical(Key p_keycode) cons
 	}
 
 	return (Key)(KeyMappingWindows::get_keysym(vk) | modifiers);
+}
+
+Key DisplayServerWindows::keyboard_get_label_from_physical(Key p_keycode) const {
+	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
+	Key keycode_no_mod = (Key)(p_keycode & KeyModifierMask::CODE_MASK);
+
+	if (keycode_no_mod == Key::PRINT ||
+			keycode_no_mod == Key::KP_ADD ||
+			keycode_no_mod == Key::KP_5 ||
+			(keycode_no_mod >= Key::KEY_0 && keycode_no_mod <= Key::KEY_9)) {
+		return p_keycode;
+	}
+
+	unsigned int scancode = KeyMappingWindows::get_scancode(keycode_no_mod);
+	if (scancode == 0) {
+		return p_keycode;
+	}
+
+	Key keycode = KeyMappingWindows::get_keysym(MapVirtualKey(scancode, MAPVK_VSC_TO_VK));
+
+	HKL current_layout = GetKeyboardLayout(0);
+	static BYTE keyboard_state[256];
+	memset(keyboard_state, 0, 256);
+	wchar_t chars[256] = {};
+	UINT extended_code = MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX);
+	if (ToUnicodeEx(extended_code, scancode, keyboard_state, chars, 255, 4, current_layout) > 0) {
+		String keysym = String::utf16((char16_t *)chars, 255);
+		if (!keysym.is_empty()) {
+			return fix_key_label(keysym[0], keycode) | modifiers;
+		}
+	}
+	return p_keycode;
 }
 
 String _get_full_layout_name_from_registry(HKL p_layout) {
@@ -2110,55 +2226,65 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND(!p_icon.is_valid());
-	if (icon != p_icon) {
-		icon = p_icon->duplicate();
-		if (icon->get_format() != Image::FORMAT_RGBA8) {
-			icon->convert(Image::FORMAT_RGBA8);
+	if (p_icon.is_valid()) {
+		ERR_FAIL_COND(p_icon->get_width() <= 0 || p_icon->get_height() <= 0);
+
+		Ref<Image> img = p_icon;
+		if (img != icon) {
+			img = img->duplicate();
+			img->convert(Image::FORMAT_RGBA8);
 		}
-	}
-	int w = icon->get_width();
-	int h = icon->get_height();
 
-	// Create temporary bitmap buffer.
-	int icon_len = 40 + h * w * 4;
-	Vector<BYTE> v;
-	v.resize(icon_len);
-	BYTE *icon_bmp = v.ptrw();
+		int w = img->get_width();
+		int h = img->get_height();
 
-	encode_uint32(40, &icon_bmp[0]);
-	encode_uint32(w, &icon_bmp[4]);
-	encode_uint32(h * 2, &icon_bmp[8]);
-	encode_uint16(1, &icon_bmp[12]);
-	encode_uint16(32, &icon_bmp[14]);
-	encode_uint32(BI_RGB, &icon_bmp[16]);
-	encode_uint32(w * h * 4, &icon_bmp[20]);
-	encode_uint32(0, &icon_bmp[24]);
-	encode_uint32(0, &icon_bmp[28]);
-	encode_uint32(0, &icon_bmp[32]);
-	encode_uint32(0, &icon_bmp[36]);
+		// Create temporary bitmap buffer.
+		int icon_len = 40 + h * w * 4;
+		Vector<BYTE> v;
+		v.resize(icon_len);
+		BYTE *icon_bmp = v.ptrw();
 
-	uint8_t *wr = &icon_bmp[40];
-	const uint8_t *r = icon->get_data().ptr();
+		encode_uint32(40, &icon_bmp[0]);
+		encode_uint32(w, &icon_bmp[4]);
+		encode_uint32(h * 2, &icon_bmp[8]);
+		encode_uint16(1, &icon_bmp[12]);
+		encode_uint16(32, &icon_bmp[14]);
+		encode_uint32(BI_RGB, &icon_bmp[16]);
+		encode_uint32(w * h * 4, &icon_bmp[20]);
+		encode_uint32(0, &icon_bmp[24]);
+		encode_uint32(0, &icon_bmp[28]);
+		encode_uint32(0, &icon_bmp[32]);
+		encode_uint32(0, &icon_bmp[36]);
 
-	for (int i = 0; i < h; i++) {
-		for (int j = 0; j < w; j++) {
-			const uint8_t *rpx = &r[((h - i - 1) * w + j) * 4];
-			uint8_t *wpx = &wr[(i * w + j) * 4];
-			wpx[0] = rpx[2];
-			wpx[1] = rpx[1];
-			wpx[2] = rpx[0];
-			wpx[3] = rpx[3];
+		uint8_t *wr = &icon_bmp[40];
+		const uint8_t *r = img->get_data().ptr();
+
+		for (int i = 0; i < h; i++) {
+			for (int j = 0; j < w; j++) {
+				const uint8_t *rpx = &r[((h - i - 1) * w + j) * 4];
+				uint8_t *wpx = &wr[(i * w + j) * 4];
+				wpx[0] = rpx[2];
+				wpx[1] = rpx[1];
+				wpx[2] = rpx[0];
+				wpx[3] = rpx[3];
+			}
 		}
+
+		HICON hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
+		ERR_FAIL_COND(!hicon);
+
+		icon = img;
+
+		// Set the icon for the window.
+		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
+
+		// Set the icon in the task manager (should we do this?).
+		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
+	} else {
+		icon = Ref<Image>();
+		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, NULL);
+		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, NULL);
 	}
-
-	HICON hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
-
-	// Set the icon for the window.
-	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
-
-	// Set the icon in the task manager (should we do this?).
-	SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
 }
 
 void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
@@ -3249,7 +3375,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						SetCapture(hWnd);
 					}
 				} else {
-					if (--pressrc <= 0) {
+					if (--pressrc <= 0 || last_button_state.is_empty()) {
 						if (mouse_mode != MOUSE_MODE_CAPTURED) {
 							ReleaseCapture();
 						}
@@ -3842,7 +3968,9 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	WindowRect.top += offset.y;
 	WindowRect.bottom += offset.y;
 
-	AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
+	if (p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
+	}
 
 	WindowID id = window_id_counter;
 	{
@@ -4080,7 +4208,10 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	rendering_driver = p_rendering_driver;
 
 	// Init TTS
-	tts = memnew(TTS_Windows);
+	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
+	if (tts_enabled) {
+		tts = memnew(TTS_Windows);
+	}
 
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));

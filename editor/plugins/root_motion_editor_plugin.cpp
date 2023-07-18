@@ -169,7 +169,7 @@ void EditorPropertyRootMotion::_node_clear() {
 }
 
 void EditorPropertyRootMotion::update_property() {
-	NodePath p = get_edited_object()->get(get_edited_property());
+	NodePath p = get_edited_property_value();
 	assign->set_tooltip_text(p);
 	if (p == NodePath()) {
 		assign->set_icon(Ref<Texture2D>());

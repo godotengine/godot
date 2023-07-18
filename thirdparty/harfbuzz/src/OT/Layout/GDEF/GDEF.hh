@@ -32,6 +32,7 @@
 #include "../../../hb-ot-layout-common.hh"
 
 #include "../../../hb-font.hh"
+#include "../../../hb-cache.hh"
 
 
 namespace OT {
@@ -48,8 +49,6 @@ struct AttachPoint : Array16Of<HBUINT16>
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out)) return_trace (false);
-
     return_trace (out->serialize (c->serializer, + iter ()));
   }
 };
@@ -201,7 +200,6 @@ struct CaretValueFormat3
   {
     TRACE_SUBSET (this);
     auto *out = c->serializer->start_embed (*this);
-    if (unlikely (!out)) return_trace (false);
     if (!c->serializer->embed (caretValueFormat)) return_trace (false);
     if (!c->serializer->embed (coordinate)) return_trace (false);
 
@@ -861,7 +859,30 @@ struct GDEF
     }
     ~accelerator_t () { table.destroy (); }
 
+    unsigned int get_glyph_props (hb_codepoint_t glyph) const
+    {
+      unsigned v;
+
+#ifndef HB_NO_GDEF_CACHE
+      if (glyph_props_cache.get (glyph, &v))
+        return v;
+#endif
+
+      v = table->get_glyph_props (glyph);
+
+#ifndef HB_NO_GDEF_CACHE
+      if (likely (table.get_blob ())) // Don't try setting if we are the null instance!
+	glyph_props_cache.set (glyph, v);
+#endif
+
+      return v;
+
+    }
+
     hb_blob_ptr_t<GDEF> table;
+#ifndef HB_NO_GDEF_CACHE
+    mutable hb_cache_t<21, 3, 8> glyph_props_cache;
+#endif
   };
 
   void collect_variation_indices (hb_collect_variation_indices_context_t *c) const

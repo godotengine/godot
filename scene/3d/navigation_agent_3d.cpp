@@ -220,7 +220,7 @@ void NavigationAgent3D::_notification(int p_what) {
 			set_agent_parent(get_parent());
 			set_physics_process_internal(true);
 
-			if (avoidance_enabled) {
+			if (agent_parent && avoidance_enabled) {
 				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
 			}
 
@@ -261,31 +261,25 @@ void NavigationAgent3D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PAUSED: {
-			if (agent_parent && !agent_parent->can_process()) {
-				map_before_pause = NavigationServer3D::get_singleton()->agent_get_map(get_rid());
-				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), RID());
-			} else if (agent_parent && agent_parent->can_process() && !(map_before_pause == RID())) {
-				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), map_before_pause);
-				map_before_pause = RID();
+			if (agent_parent) {
+				NavigationServer3D::get_singleton()->agent_set_paused(get_rid(), !agent_parent->can_process());
 			}
 		} break;
 
 		case NOTIFICATION_UNPAUSED: {
-			if (agent_parent && !agent_parent->can_process()) {
-				map_before_pause = NavigationServer3D::get_singleton()->agent_get_map(get_rid());
-				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), RID());
-			} else if (agent_parent && agent_parent->can_process() && !(map_before_pause == RID())) {
-				NavigationServer3D::get_singleton()->agent_set_map(get_rid(), map_before_pause);
-				map_before_pause = RID();
+			if (agent_parent) {
+				NavigationServer3D::get_singleton()->agent_set_paused(get_rid(), !agent_parent->can_process());
 			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (agent_parent && avoidance_enabled) {
+				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
+			}
 			if (agent_parent && target_position_submitted) {
 				if (velocity_submitted) {
 					velocity_submitted = false;
 					if (avoidance_enabled) {
-						NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
 						if (!use_3d_avoidance) {
 							stored_y_velocity = velocity.y;
 							velocity.y = 0.0;
@@ -809,6 +803,11 @@ void NavigationAgent3D::update_navigation() {
 				navigation_path_index -= 1;
 				navigation_finished = true;
 				target_position_submitted = false;
+				if (avoidance_enabled) {
+					NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
+					NavigationServer3D::get_singleton()->agent_set_velocity(agent, Vector3(0.0, 0.0, 0.0));
+					NavigationServer3D::get_singleton()->agent_set_velocity_forced(agent, Vector3(0.0, 0.0, 0.0));
+				}
 				emit_signal(SNAME("navigation_finished"));
 				break;
 			}

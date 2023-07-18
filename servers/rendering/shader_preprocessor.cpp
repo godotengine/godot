@@ -680,7 +680,7 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 	}
 
 	if (!ResourceLoader::exists(path)) {
-		set_error(RTR("Shader include file does not exist: ") + path, line);
+		set_error(RTR("Shader include file does not exist:") + " " + path, line);
 		return;
 	}
 
@@ -700,7 +700,7 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 	if (!included.is_empty()) {
 		uint64_t code_hash = included.hash64();
 		if (state->cyclic_include_hashes.find(code_hash)) {
-			set_error(RTR("Cyclic include found."), line);
+			set_error(RTR("Cyclic include found") + ": " + path, line);
 			return;
 		}
 	}
@@ -733,7 +733,7 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 
 	FilePosition fp;
 	fp.file = state->current_filename;
-	fp.line = line;
+	fp.line = line + 1;
 	state->include_positions.push_back(fp);
 
 	String result;
@@ -1157,6 +1157,7 @@ void ShaderPreprocessor::set_error(const String &p_error, int p_line) {
 	if (state->error.is_empty()) {
 		state->error = p_error;
 		FilePosition fp;
+		fp.file = state->current_filename;
 		fp.line = p_line + 1;
 		state->include_positions.push_back(fp);
 	}

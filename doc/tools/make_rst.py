@@ -27,7 +27,7 @@ MARKUP_ALLOWED_SUBSEQUENT = " -.,:;!?\\/'\")]}>"
 # Used to translate section headings and other hardcoded strings when required with
 # the --lang argument. The BASE_STRINGS list should be synced with what we actually
 # write in this script (check `translate()` uses), and also hardcoded in
-# `doc/translations/extract.py` to include them in the source POT file.
+# `scripts/extract_classes.py` (godotengine/godot-editor-l10n repo) to include them in the source POT file.
 BASE_STRINGS = [
     "All classes",
     "Globals",
@@ -65,6 +65,16 @@ BASE_STRINGS = [
     "This method is used to construct a type.",
     "This method doesn't need an instance to be called, so it can be called directly using the class name.",
     "This method describes a valid operator to use with this type as left-hand operand.",
+    "This value is an integer composed as a bitmask of the following flags.",
+    "There is currently no description for this class. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this signal. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this annotation. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this constructor. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this method. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this operator. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There is currently no description for this theme property. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!",
+    "There are notable differences when using this API with C#. See :ref:`doc_c_sharp_differences` for more information.",
 ]
 strings_l10n: Dict[str, str] = {}
 
@@ -90,6 +100,36 @@ EDITOR_CLASSES: List[str] = [
     "ScriptCreateDialog",
     "ScriptEditor",
     "ScriptEditorBase",
+]
+# Sync with the types mentioned in https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_differences.html
+CLASSES_WITH_CSHARP_DIFFERENCES: List[str] = [
+    "@GlobalScope",
+    "String",
+    "NodePath",
+    "Signal",
+    "Callable",
+    "RID",
+    "Basis",
+    "Transform2D",
+    "Transform3D",
+    "Rect2",
+    "Rect2i",
+    "AABB",
+    "Quaternion",
+    "Projection",
+    "Color",
+    "Array",
+    "Dictionary",
+    "PackedByteArray",
+    "PackedColorArray",
+    "PackedFloat32Array",
+    "PackedFloat64Array",
+    "PackedInt32Array",
+    "PackedInt64Array",
+    "PackedStringArray",
+    "PackedVector2Array",
+    "PackedVector3Array",
+    "Variant",
 ]
 
 
@@ -362,13 +402,14 @@ class State:
 
 
 class TypeName:
-    def __init__(self, type_name: str, enum: Optional[str] = None) -> None:
+    def __init__(self, type_name: str, enum: Optional[str] = None, is_bitfield: bool = False) -> None:
         self.type_name = type_name
         self.enum = enum
+        self.is_bitfield = is_bitfield
 
     def to_rst(self, state: State) -> str:
         if self.enum is not None:
-            return make_enum(self.enum, state)
+            return make_enum(self.enum, self.is_bitfield, state)
         elif self.type_name == "void":
             return "void"
         else:
@@ -376,7 +417,7 @@ class TypeName:
 
     @classmethod
     def from_element(cls, element: ET.Element) -> "TypeName":
-        return cls(element.attrib["type"], element.get("enum"))
+        return cls(element.attrib["type"], element.get("enum"), element.get("is_bitfield") == "true")
 
 
 class DefinitionBase:
@@ -604,10 +645,6 @@ def main() -> None:
             print_error(f"{cur_file}: Parse error while reading the file: {e}", state)
             continue
         doc = tree.getroot()
-
-        if "version" not in doc.attrib:
-            print_error(f'{cur_file}: "version" attribute missing from "doc".', state)
-            continue
 
         name = doc.attrib["name"]
         if name in classes:
@@ -840,6 +877,15 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         f.write(
             translate(
                 "There is currently no description for this class. Please help us by :ref:`contributing one <doc_updating_the_class_reference>`!"
+            )
+            + "\n\n"
+        )
+
+    if class_def.name in CLASSES_WITH_CSHARP_DIFFERENCES:
+        f.write(".. note::\n\n\t")
+        f.write(
+            translate(
+                "There are notable differences when using this API with C#. See :ref:`doc_c_sharp_differences` for more information."
             )
             + "\n\n"
         )
@@ -1280,7 +1326,7 @@ def make_type(klass: str, state: State) -> str:
     return klass
 
 
-def make_enum(t: str, state: State) -> str:
+def make_enum(t: str, is_bitfield: bool, state: State) -> str:
     p = t.find(".")
     if p >= 0:
         c = t[0:p]
@@ -1296,7 +1342,12 @@ def make_enum(t: str, state: State) -> str:
             c = "@GlobalScope"
 
     if c in state.classes and e in state.classes[c].enums:
-        return f":ref:`{e}<enum_{c}_{e}>`"
+        if is_bitfield:
+            if not state.classes[c].enums[e].is_bitfield:
+                print_error(f'{state.current_class}.xml: Enum "{t}" is not bitfield.', state)
+            return f"|bitfield|\<:ref:`{e}<enum_{c}_{e}>`\>"
+        else:
+            return f":ref:`{e}<enum_{c}_{e}>`"
 
     # Don't fail for `Vector3.Axis`, as this enum is a special case which is expected not to be resolved.
     if f"{c}.{e}" != "Vector3.Axis":
@@ -1412,6 +1463,7 @@ def make_footer() -> str:
         "This method doesn't need an instance to be called, so it can be called directly using the class name."
     )
     operator_msg = translate("This method describes a valid operator to use with this type as left-hand operand.")
+    bitfield_msg = translate("This value is an integer composed as a bitmask of the following flags.")
 
     return (
         f".. |virtual| replace:: :abbr:`virtual ({virtual_msg})`\n"
@@ -1420,6 +1472,7 @@ def make_footer() -> str:
         f".. |constructor| replace:: :abbr:`constructor ({constructor_msg})`\n"
         f".. |static| replace:: :abbr:`static ({static_msg})`\n"
         f".. |operator| replace:: :abbr:`operator ({operator_msg})`\n"
+        f".. |bitfield| replace:: :abbr:`BitField ({bitfield_msg})`\n"
     )
 
 
@@ -1457,7 +1510,6 @@ def make_link(url: str, title: str) -> str:
 
 
 def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_dir: str) -> None:
-
     if dry_run:
         f = open(os.devnull, "w", encoding="utf-8")
     else:
@@ -1834,7 +1886,7 @@ def format_text_block(
                         escape_post = True
 
                     elif cmd.startswith("enum"):
-                        tag_text = make_enum(link_target, state)
+                        tag_text = make_enum(link_target, False, state)
                         escape_pre = True
                         escape_post = True
 

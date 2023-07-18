@@ -33,6 +33,7 @@
 #include "core/os/os.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/resources/image_texture.h"
 
 void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 	++last_metric;
@@ -114,7 +115,7 @@ String EditorVisualProfiler::_get_time_as_text(float p_time) {
 	int dmode = display_mode->get_selected();
 
 	if (dmode == DISPLAY_FRAME_TIME) {
-		return TS->format_number(rtos(p_time)) + " " + RTR("ms");
+		return TS->format_number(String::num(p_time, 2)) + " " + RTR("ms");
 	} else if (dmode == DISPLAY_FRAME_PERCENT) {
 		return TS->format_number(String::num(p_time * 100 / graph_limit, 2)) + " " + TS->percent_sign();
 	}
@@ -790,11 +791,11 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	variables->set_column_title(1, TTR("CPU"));
 	variables->set_column_expand(1, false);
 	variables->set_column_clip_content(1, true);
-	variables->set_column_custom_minimum_width(1, 60 * EDSCALE);
+	variables->set_column_custom_minimum_width(1, 75 * EDSCALE);
 	variables->set_column_title(2, TTR("GPU"));
 	variables->set_column_expand(2, false);
 	variables->set_column_clip_content(2, true);
-	variables->set_column_custom_minimum_width(2, 60 * EDSCALE);
+	variables->set_column_custom_minimum_width(2, 75 * EDSCALE);
 	variables->connect("cell_selected", callable_mp(this, &EditorVisualProfiler::_item_selected));
 
 	graph = memnew(TextureRect);

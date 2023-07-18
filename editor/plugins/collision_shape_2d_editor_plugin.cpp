@@ -155,7 +155,8 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 				Ref<WorldBoundaryShape2D> world_boundary = node->get_shape();
 
 				if (idx == 0) {
-					world_boundary->set_distance(p_point.length());
+					Vector2 normal = world_boundary->get_normal();
+					world_boundary->set_distance(p_point.dot(normal) / normal.length_squared());
 				} else {
 					world_boundary->set_normal(p_point.normalized());
 				}

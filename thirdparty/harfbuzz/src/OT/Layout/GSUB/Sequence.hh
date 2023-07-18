@@ -53,7 +53,7 @@ struct Sequence
       if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
       {
 	c->buffer->message (c->font,
-			    "replaced glyph at %u (multiple subtitution)",
+			    "replaced glyph at %u (multiple substitution)",
 			    c->buffer->idx - 1u);
       }
 

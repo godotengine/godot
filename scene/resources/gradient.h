@@ -33,6 +33,8 @@
 
 #include "core/io/resource.h"
 
+#include "thirdparty/misc/ok_color.h"
+
 class Gradient : public Resource {
 	GDCLASS(Gradient, Resource);
 	OBJ_SAVE_TYPE(Gradient);
@@ -42,6 +44,12 @@ public:
 		GRADIENT_INTERPOLATE_LINEAR,
 		GRADIENT_INTERPOLATE_CONSTANT,
 		GRADIENT_INTERPOLATE_CUBIC,
+	};
+
+	enum ColorSpace {
+		GRADIENT_COLOR_SPACE_SRGB,
+		GRADIENT_COLOR_SPACE_LINEAR_SRGB,
+		GRADIENT_COLOR_SPACE_OKLAB,
 	};
 
 	struct Point {
@@ -56,6 +64,7 @@ private:
 	Vector<Point> points;
 	bool is_sorted = true;
 	InterpolationMode interpolation_mode = GRADIENT_INTERPOLATE_LINEAR;
+	ColorSpace interpolation_color_space = GRADIENT_COLOR_SPACE_SRGB;
 
 	_FORCE_INLINE_ void _update_sorting() {
 		if (!is_sorted) {
@@ -64,8 +73,55 @@ private:
 		}
 	}
 
+	_FORCE_INLINE_ Color transform_color_space(const Color p_color) const {
+		switch (interpolation_color_space) {
+			case GRADIENT_COLOR_SPACE_SRGB:
+			default:
+				return p_color;
+
+			case GRADIENT_COLOR_SPACE_LINEAR_SRGB:
+				return p_color.srgb_to_linear();
+
+			case GRADIENT_COLOR_SPACE_OKLAB:
+				Color linear_color = p_color.srgb_to_linear();
+				ok_color::RGB rgb{};
+				rgb.r = linear_color.r;
+				rgb.g = linear_color.g;
+				rgb.b = linear_color.b;
+
+				ok_color ok_color;
+				ok_color::Lab lab_color = ok_color.linear_srgb_to_oklab(rgb);
+
+				// Constructs an RGB color using the Lab values directly. This allows reusing the interpolation code.
+				return { lab_color.L, lab_color.a, lab_color.b, linear_color.a };
+		}
+	}
+
+	_FORCE_INLINE_ Color inv_transform_color_space(const Color p_color) const {
+		switch (interpolation_color_space) {
+			case GRADIENT_COLOR_SPACE_SRGB:
+			default:
+				return p_color;
+
+			case GRADIENT_COLOR_SPACE_LINEAR_SRGB:
+				return p_color.linear_to_srgb();
+
+			case GRADIENT_COLOR_SPACE_OKLAB:
+				ok_color::Lab lab{};
+				lab.L = p_color.r;
+				lab.a = p_color.g;
+				lab.b = p_color.b;
+
+				ok_color new_ok_color;
+				ok_color::RGB ok_rgb = new_ok_color.oklab_to_linear_srgb(lab);
+				Color linear{ ok_rgb.r, ok_rgb.g, ok_rgb.b, p_color.a };
+				return linear.linear_to_srgb();
+		}
+	}
+
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	Gradient();
@@ -91,6 +147,9 @@ public:
 
 	void set_interpolation_mode(InterpolationMode p_interp_mode);
 	InterpolationMode get_interpolation_mode();
+
+	void set_interpolation_color_space(Gradient::ColorSpace p_color_space);
+	ColorSpace get_interpolation_color_space();
 
 	_FORCE_INLINE_ Color get_color_at_offset(float p_offset) {
 		if (points.is_empty()) {
@@ -134,16 +193,22 @@ public:
 		if (first < 0) {
 			return points[0].color;
 		}
-		const Point &pointFirst = points[first];
-		const Point &pointSecond = points[second];
+		const Point &point1 = points[first];
+		const Point &point2 = points[second];
+		float weight = (p_offset - point1.offset) / (point2.offset - point1.offset);
 
 		switch (interpolation_mode) {
-			case GRADIENT_INTERPOLATE_LINEAR: {
-				return pointFirst.color.lerp(pointSecond.color, (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset));
-			} break;
 			case GRADIENT_INTERPOLATE_CONSTANT: {
-				return pointFirst.color;
-			} break;
+				return point1.color;
+			}
+			case GRADIENT_INTERPOLATE_LINEAR:
+			default: { // Fallback to linear interpolation.
+				Color color1 = transform_color_space(point1.color);
+				Color color2 = transform_color_space(point2.color);
+
+				Color interpolated = color1.lerp(color2, weight);
+				return inv_transform_color_space(interpolated);
+			}
 			case GRADIENT_INTERPOLATE_CUBIC: {
 				int p0 = first - 1;
 				int p3 = second + 1;
@@ -153,20 +218,21 @@ public:
 				if (p0 < 0) {
 					p0 = first;
 				}
-				const Point &pointP0 = points[p0];
-				const Point &pointP3 = points[p3];
+				const Point &point0 = points[p0];
+				const Point &point3 = points[p3];
 
-				float x = (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset);
-				float r = Math::cubic_interpolate(pointFirst.color.r, pointSecond.color.r, pointP0.color.r, pointP3.color.r, x);
-				float g = Math::cubic_interpolate(pointFirst.color.g, pointSecond.color.g, pointP0.color.g, pointP3.color.g, x);
-				float b = Math::cubic_interpolate(pointFirst.color.b, pointSecond.color.b, pointP0.color.b, pointP3.color.b, x);
-				float a = Math::cubic_interpolate(pointFirst.color.a, pointSecond.color.a, pointP0.color.a, pointP3.color.a, x);
+				Color color0 = transform_color_space(point0.color);
+				Color color1 = transform_color_space(point1.color);
+				Color color2 = transform_color_space(point2.color);
+				Color color3 = transform_color_space(point3.color);
 
-				return Color(r, g, b, a);
-			} break;
-			default: {
-				// Fallback to linear interpolation.
-				return pointFirst.color.lerp(pointSecond.color, (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset));
+				Color interpolated;
+				interpolated[0] = Math::cubic_interpolate(color1[0], color2[0], color0[0], color3[0], weight);
+				interpolated[1] = Math::cubic_interpolate(color1[1], color2[1], color0[1], color3[1], weight);
+				interpolated[2] = Math::cubic_interpolate(color1[2], color2[2], color0[2], color3[2], weight);
+				interpolated[3] = Math::cubic_interpolate(color1[3], color2[3], color0[3], color3[3], weight);
+
+				return inv_transform_color_space(interpolated);
 			}
 		}
 	}
@@ -175,5 +241,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(Gradient::InterpolationMode);
+VARIANT_ENUM_CAST(Gradient::ColorSpace);
 
 #endif // GRADIENT_H

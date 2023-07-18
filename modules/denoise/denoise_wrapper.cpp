@@ -29,7 +29,9 @@
 /**************************************************************************/
 
 #include "denoise_wrapper.h"
-#include "thirdparty/oidn/include/OpenImageDenoise/oidn.h"
+
+#include <OpenImageDenoise/oidn.h>
+
 #include <stdio.h>
 
 void *oidn_denoiser_init() {

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceImporterOBJ" inherits="ResourceImporter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="generate_tangents" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="offset_mesh" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
+		</member>
+		<member name="optimize_mesh" type="bool" setter="" getter="" default="true">
+		</member>
+		<member name="scale_mesh" type="Vector3" setter="" getter="" default="Vector3(1, 1, 1)">
+		</member>
+	</members>
+</class>

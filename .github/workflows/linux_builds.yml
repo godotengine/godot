@@ -4,7 +4,7 @@ on:
 
 # Global Settings
 env:
-  # Only used for the cache key. Increment version to force clean build.
+  # Used for the cache key, and godot-cpp checkout. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
   DOTNET_NOLOGO: true
@@ -32,13 +32,14 @@ jobs:
             build-mono: true
             proj-conv: true
             artifact: true
+            compat: true
 
-          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
+          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
             cache-name: linux-editor-double-sanitizers
             target: editor
             tests: true
             # Debug symbols disabled as they're huge on this build and we hit the 14 GB limit for runners.
-            sconsflags: dev_build=yes debug_symbols=no precision=double use_asan=yes use_ubsan=yes linker=gold
+            sconsflags: dev_build=yes scu_build=yes debug_symbols=no precision=double use_asan=yes use_ubsan=yes linker=gold
             proj-test: true
             # Can be turned off for PRs that intentionally break compat with godot-cpp,
             # until both the upstream PR and the matching godot-cpp changes are merged.
@@ -182,6 +183,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: godotengine/godot-cpp
+          ref: ${{ env.GODOT_BASE_BRANCH }}
           submodules: 'recursive'
           path: 'godot-cpp'
 
@@ -200,6 +202,11 @@ jobs:
           cd godot-cpp/test
           scons target=template_debug dev_build=yes
           cd ../..
+
+      - name: Check for GDExtension compatibility
+        if: ${{ matrix.compat }}
+        run: |
+          ./misc/scripts/validate_extension_api.sh "${{ matrix.bin }}" || true # don't fail the CI for now
 
       - name: Prepare artifact
         if: ${{ matrix.artifact }}

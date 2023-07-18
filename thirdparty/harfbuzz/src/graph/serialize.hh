@@ -116,10 +116,10 @@ will_overflow (graph_t& graph,
   for (int parent_idx = vertices.length - 1; parent_idx >= 0; parent_idx--)
   {
     // Don't need to check virtual links for overflow
-    for (const auto& link : vertices[parent_idx].obj.real_links)
+    for (const auto& link : vertices.arrayZ[parent_idx].obj.real_links)
     {
       int64_t offset = compute_offset (graph, parent_idx, link);
-      if (is_valid_offset (offset, link))
+      if (likely (is_valid_offset (offset, link)))
         continue;
 
       if (!overflows) return true;
@@ -226,6 +226,9 @@ inline hb_blob_t* serialize (const graph_t& graph)
 {
   hb_vector_t<char> buffer;
   size_t size = graph.total_size_in_bytes ();
+
+  if (!size) return hb_blob_get_empty ();
+
   if (!buffer.alloc (size)) {
     DEBUG_MSG (SUBSET_REPACK, nullptr, "Unable to allocate output buffer.");
     return nullptr;

@@ -344,6 +344,8 @@ public:
 
 	void sampler_rd_configure_custom(float mipmap_bias);
 
+	Vector<RD::Uniform> get_default_sampler_uniforms(int first_index);
+
 	// void sampler_rd_set_default(float p_mipmap_bias);
 
 	/* Buffers */

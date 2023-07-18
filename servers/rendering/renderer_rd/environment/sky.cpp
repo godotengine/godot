@@ -236,16 +236,16 @@ void SkyRD::_render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineC
 
 	// Update uniform sets.
 	{
-		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, sky_scene_state.uniform_set, 0);
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, sky_scene_state.uniform_set, SKY_SET_UNIFORMS);
 		if (p_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(p_uniform_set)) { // Material may not have a uniform set.
-			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_uniform_set, 1);
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_uniform_set, SKY_SET_MATERIAL);
 		}
-		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_texture_set, 2);
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_texture_set, SKY_SET_TEXTURES);
 		// Fog uniform set can be invalidated before drawing, so validate at draw time
 		if (sky_scene_state.fog_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky_scene_state.fog_uniform_set)) {
-			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, sky_scene_state.fog_uniform_set, 3);
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, sky_scene_state.fog_uniform_set, SKY_SET_FOG);
 		} else {
-			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, sky_scene_state.default_fog_uniform_set, 3);
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, sky_scene_state.default_fog_uniform_set, SKY_SET_FOG);
 		}
 	}
 
@@ -738,6 +738,7 @@ void SkyRD::init() {
 		sky_scene_state.directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);
 
 		String defines = "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(sky_scene_state.max_directional_lights) + "\n";
+		defines += "\n#define SAMPLERS_BINDING_FIRST_INDEX " + itos(SAMPLERS_BINDING_FIRST_INDEX) + "\n";
 
 		// Initialize sky
 		Vector<String> sky_modes;
@@ -806,13 +807,12 @@ void SkyRD::init() {
 		actions.renames["AT_CUBEMAP_PASS"] = "AT_CUBEMAP_PASS";
 		actions.renames["AT_HALF_RES_PASS"] = "AT_HALF_RES_PASS";
 		actions.renames["AT_QUARTER_RES_PASS"] = "AT_QUARTER_RES_PASS";
-		actions.custom_samplers["RADIANCE"] = "material_samplers[3]";
+		actions.custom_samplers["RADIANCE"] = "SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP";
 		actions.usage_defines["HALF_RES_COLOR"] = "\n#define USES_HALF_RES_COLOR\n";
 		actions.usage_defines["QUARTER_RES_COLOR"] = "\n#define USES_QUARTER_RES_COLOR\n";
 		actions.render_mode_defines["disable_fog"] = "#define DISABLE_FOG\n";
 		actions.render_mode_defines["use_debanding"] = "#define USE_DEBANDING\n";
 
-		actions.sampler_array_name = "material_samplers";
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = 1;
 		actions.base_uniform_string = "material.";
@@ -853,28 +853,6 @@ void sky() {
 		Vector<RD::Uniform> uniforms;
 
 		{
-			Vector<RID> ids;
-			ids.resize(12);
-			RID *ids_ptr = ids.ptrw();
-			ids_ptr[0] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[1] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[2] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[3] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[4] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[5] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[6] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[7] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[8] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[9] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[10] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[11] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-
-			RD::Uniform u(RD::UNIFORM_TYPE_SAMPLER, 0, ids);
-
-			uniforms.push_back(u);
-		}
-
-		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 1;
@@ -897,6 +875,8 @@ void sky() {
 			u.append_id(sky_scene_state.directional_light_buffer);
 			uniforms.push_back(u);
 		}
+
+		uniforms.append_array(material_storage->get_default_sampler_uniforms(SAMPLERS_BINDING_FIRST_INDEX));
 
 		sky_scene_state.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_UNIFORMS);
 	}
@@ -1014,7 +994,7 @@ SkyRD::~SkyRD() {
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 }
 
-void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, uint32_t p_view_count, const Projection *p_view_projections, const Vector3 *p_view_eye_offsets, const Transform3D &p_cam_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
+void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, uint32_t p_view_count, const Projection *p_view_projections, const Vector3 *p_view_eye_offsets, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(p_env.is_null());
@@ -1212,11 +1192,19 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 
 	sky_scene_state.view_count = p_view_count;
 	sky_scene_state.cam_transform = p_cam_transform;
-	sky_scene_state.cam_projection = p_view_projections[0]; // We only use this when rendering a single view
+	sky_scene_state.cam_projection = p_cam_projection; // We only use this when rendering a single view
 
 	// Our info in our UBO is only used if we're rendering stereo
 	for (uint32_t i = 0; i < p_view_count; i++) {
-		RendererRD::MaterialStorage::store_camera(p_view_projections[i].inverse(), sky_scene_state.ubo.view_inv_projections[i]);
+		Projection view_inv_projection = p_view_projections[i].inverse();
+		if (p_view_count > 1) {
+			RendererRD::MaterialStorage::store_camera(p_cam_projection * view_inv_projection, sky_scene_state.ubo.combined_reprojection[i]);
+		} else {
+			Projection ident;
+			RendererRD::MaterialStorage::store_camera(ident, sky_scene_state.ubo.combined_reprojection[i]);
+		}
+
+		RendererRD::MaterialStorage::store_camera(view_inv_projection, sky_scene_state.ubo.view_inv_projections[i]);
 		sky_scene_state.ubo.view_eye_offsets[i][0] = p_view_eye_offsets[i].x;
 		sky_scene_state.ubo.view_eye_offsets[i][1] = p_view_eye_offsets[i].y;
 		sky_scene_state.ubo.view_eye_offsets[i][2] = p_view_eye_offsets[i].z;

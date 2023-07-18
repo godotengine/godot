@@ -45,6 +45,7 @@
 #include "editor/export/editor_export.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_export_plugin.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/packed_scene.h"
 
 static int _get_pad(int p_alignment, int p_n) {
@@ -329,9 +330,10 @@ Ref<EditorExportPreset> EditorExportPlatform::create_preset() {
 	}
 
 	for (const ExportOption &E : options) {
-		preset->properties.push_back(E.option);
-		preset->values[E.option.name] = E.default_value;
-		preset->update_visibility[E.option.name] = E.update_visibility;
+		StringName option_name = E.option.name;
+		preset->properties[option_name] = E.option;
+		preset->values[option_name] = E.default_value;
+		preset->update_visibility[option_name] = E.update_visibility;
 	}
 
 	return preset;
@@ -1788,11 +1790,12 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 	}
 }
 
-bool EditorExportPlatform::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+bool EditorExportPlatform::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	bool valid = true;
+
 #ifndef ANDROID_ENABLED
 	String templates_error;
-	valid = valid && has_valid_export_configuration(p_preset, templates_error, r_missing_templates);
+	valid = valid && has_valid_export_configuration(p_preset, templates_error, r_missing_templates, p_debug);
 
 	if (!templates_error.is_empty()) {
 		r_error += templates_error;

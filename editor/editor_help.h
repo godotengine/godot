@@ -158,7 +158,7 @@ class EditorHelp : public VBoxContainer {
 	bool scroll_locked = false;
 
 	//void _button_pressed(int p_idx);
-	void _add_type(const String &p_type, const String &p_enum = String());
+	void _add_type(const String &p_type, const String &p_enum = String(), bool p_is_bitfield = false);
 	void _add_type_icon(const String &p_type, int p_size = 0, const String &p_fallback = "");
 	void _add_method(const DocData::MethodDoc &p_method, bool p_overview = true);
 

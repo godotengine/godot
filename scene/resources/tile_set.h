@@ -39,6 +39,7 @@
 #include "scene/main/canvas_item.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/navigation_polygon.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/physics_material.h"
@@ -46,7 +47,6 @@
 
 #ifndef DISABLE_DEPRECATED
 #include "scene/resources/shader.h"
-#include "scene/resources/texture.h"
 #endif
 
 class TileMap;
@@ -420,6 +420,7 @@ public:
 	int add_source(Ref<TileSetSource> p_tile_set_source, int p_source_id_override = -1);
 	void set_source_id(int p_source_id, int p_new_id);
 	void remove_source(int p_source_id);
+	void remove_source_ptr(TileSetSource *p_tile_set_source); // Not exposed
 	bool has_source(int p_source_id) const;
 	Ref<TileSetSource> get_source(int p_source_id) const;
 
@@ -555,6 +556,7 @@ public:
 
 	// Not exposed.
 	virtual void set_tile_set(const TileSet *p_tile_set);
+	TileSet *get_tile_set() const;
 	virtual void notify_tile_data_properties_should_change(){};
 	virtual void add_occlusion_layer(int p_index){};
 	virtual void move_occlusion_layer(int p_from_index, int p_to_pos){};
@@ -590,6 +592,13 @@ public:
 class TileSetAtlasSource : public TileSetSource {
 	GDCLASS(TileSetAtlasSource, TileSetSource);
 
+public:
+	enum TileAnimationMode {
+		TILE_ANIMATION_MODE_DEFAULT,
+		TILE_ANIMATION_MODE_RANDOM_START_TIMES,
+		TILE_ANIMATION_MODE_MAX,
+	};
+
 private:
 	struct TileAlternativesData {
 		Vector2i size_in_atlas = Vector2i(1, 1);
@@ -599,6 +608,7 @@ private:
 		int animation_columns = 0;
 		Vector2i animation_separation;
 		real_t animation_speed = 1.0;
+		TileSetAtlasSource::TileAnimationMode animation_mode = TILE_ANIMATION_MODE_DEFAULT;
 		LocalVector<real_t> animation_frames_durations;
 
 		// Alternatives
@@ -699,6 +709,8 @@ public:
 	Vector2i get_tile_animation_separation(const Vector2i p_atlas_coords) const;
 	void set_tile_animation_speed(const Vector2i p_atlas_coords, real_t p_speed);
 	real_t get_tile_animation_speed(const Vector2i p_atlas_coords) const;
+	void set_tile_animation_mode(const Vector2i p_atlas_coords, const TileSetAtlasSource::TileAnimationMode p_mode);
+	TileSetAtlasSource::TileAnimationMode get_tile_animation_mode(const Vector2i p_atlas_coords) const;
 	void set_tile_animation_frames_count(const Vector2i p_atlas_coords, int p_frames_count);
 	int get_tile_animation_frames_count(const Vector2i p_atlas_coords) const;
 	void set_tile_animation_frame_duration(const Vector2i p_atlas_coords, int p_frame_index, real_t p_duration);
@@ -929,5 +941,7 @@ VARIANT_ENUM_CAST(TileSet::TerrainMode);
 VARIANT_ENUM_CAST(TileSet::TileShape);
 VARIANT_ENUM_CAST(TileSet::TileLayout);
 VARIANT_ENUM_CAST(TileSet::TileOffsetAxis);
+
+VARIANT_ENUM_CAST(TileSetAtlasSource::TileAnimationMode);
 
 #endif // TILE_SET_H

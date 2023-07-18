@@ -5,7 +5,7 @@
  *   Support for the FT_Outline type used to store glyph shapes of
  *   most scalable font formats (specification).
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -118,7 +118,7 @@ FT_BEGIN_HEADER
    *   attachement.
    *
    *   Similarly, the function returns success for an empty outline also
-   *   (doing nothing, this is, not calling any emitter); if necessary, you
+   *   (doing nothing, that is, not calling any emitter); if necessary, you
    *   should filter this out, too.
    */
   FT_EXPORT( FT_Error )

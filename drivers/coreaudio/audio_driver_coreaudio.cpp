@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef COREAUDIO_ENABLED
-
 #include "audio_driver_coreaudio.h"
+
+#ifdef COREAUDIO_ENABLED
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"

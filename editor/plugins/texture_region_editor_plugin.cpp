@@ -30,7 +30,6 @@
 
 #include "texture_region_editor_plugin.h"
 
-#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
@@ -42,7 +41,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/view_panner.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/atlas_texture.h"
 
 void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 	Vector2 line = (to - from).normalized() * 10;
@@ -433,7 +432,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					} else if (obj_styleBox.is_valid()) {
 						undo_redo->add_do_method(obj_styleBox.ptr(), "set_texture_margin", side[edited_margin], obj_styleBox->get_texture_margin(side[edited_margin]));
 						undo_redo->add_undo_method(obj_styleBox.ptr(), "set_texture_margin", side[edited_margin], prev_margin);
-						obj_styleBox->emit_signal(CoreStringNames::get_singleton()->changed);
+						obj_styleBox->emit_changed();
 					}
 					edited_margin = -1;
 				} else {
@@ -913,10 +912,10 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		node_ninepatch->disconnect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (obj_styleBox.is_valid()) {
-		obj_styleBox->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+		obj_styleBox->disconnect_changed(callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 	if (atlas_tex.is_valid()) {
-		atlas_tex->disconnect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+		atlas_tex->disconnect_changed(callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
 
 	node_sprite_2d = nullptr;
@@ -941,7 +940,7 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		}
 
 		if (is_resource) {
-			p_obj->connect("changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
+			Object::cast_to<Resource>(p_obj)->connect_changed(callable_mp(this, &TextureRegionEditor::_texture_changed));
 		} else {
 			p_obj->connect("texture_changed", callable_mp(this, &TextureRegionEditor::_texture_changed));
 		}

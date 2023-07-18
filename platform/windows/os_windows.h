@@ -31,14 +31,15 @@
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 
+#include "crash_handler_windows.h"
+#include "key_mapping_windows.h"
+
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/os.h"
-#include "crash_handler_windows.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
-#include "key_mapping_windows.h"
 #include "servers/audio_server.h"
 
 #ifdef XAUDIO2_ENABLED
@@ -46,8 +47,9 @@
 #endif
 
 #if defined(VULKAN_ENABLED)
+#include "vulkan_context_win.h"
+
 #include "drivers/vulkan/rendering_device_vulkan.h"
-#include "platform/windows/vulkan_context_win.h"
 #endif
 
 #include <io.h>

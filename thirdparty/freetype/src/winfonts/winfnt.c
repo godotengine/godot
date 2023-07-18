@@ -4,7 +4,7 @@
  *
  *   FreeType font driver for Windows FNT/FON files
  *
- * Copyright (C) 1996-2022 by
+ * Copyright (C) 1996-2023 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  * Copyright 2003 Huw D M Davies for Codeweavers
  * Copyright 2007 Dmitry Timoshkov for Codeweavers
@@ -624,31 +624,34 @@
 
 
   static FT_Error
-  fnt_cmap_init( FNT_CMap    cmap,
+  fnt_cmap_init( FT_CMap     cmap,     /* FNT_CMap */
                  FT_Pointer  pointer )
   {
-    FNT_Face  face = (FNT_Face)FT_CMAP_FACE( cmap );
-    FNT_Font  font = face->font;
+    FNT_CMap  fntcmap = (FNT_CMap)cmap;
+    FNT_Face  face    = (FNT_Face)FT_CMAP_FACE( cmap );
+    FNT_Font  font    = face->font;
 
     FT_UNUSED( pointer );
 
 
-    cmap->first = (FT_UInt32)  font->header.first_char;
-    cmap->count = (FT_UInt32)( font->header.last_char - cmap->first + 1 );
+    fntcmap->first = (FT_UInt32)font->header.first_char;
+    fntcmap->count = (FT_UInt32)( font->header.last_char -
+                                  fntcmap->first + 1 );
 
     return 0;
   }
 
 
   static FT_UInt
-  fnt_cmap_char_index( FNT_CMap   cmap,
+  fnt_cmap_char_index( FT_CMap    cmap,       /* FNT_CMap */
                        FT_UInt32  char_code )
   {
-    FT_UInt  gindex = 0;
+    FNT_CMap  fntcmap = (FNT_CMap)cmap;
+    FT_UInt   gindex  = 0;
 
 
-    char_code -= cmap->first;
-    if ( char_code < cmap->count )
+    char_code -= fntcmap->first;
+    if ( char_code < fntcmap->count )
       /* we artificially increase the glyph index; */
       /* FNT_Load_Glyph reverts to the right one   */
       gindex = (FT_UInt)( char_code + 1 );
@@ -656,26 +659,27 @@
   }
 
 
-  static FT_UInt32
-  fnt_cmap_char_next( FNT_CMap    cmap,
+  static FT_UInt
+  fnt_cmap_char_next( FT_CMap     cmap,        /* FNT_CMap */
                       FT_UInt32  *pchar_code )
   {
-    FT_UInt    gindex = 0;
-    FT_UInt32  result = 0;
+    FNT_CMap   fntcmap   = (FNT_CMap)cmap;
+    FT_UInt    gindex    = 0;
+    FT_UInt32  result    = 0;
     FT_UInt32  char_code = *pchar_code + 1;
 
 
-    if ( char_code <= cmap->first )
+    if ( char_code <= fntcmap->first )
     {
-      result = cmap->first;
+      result = fntcmap->first;
       gindex = 1;
     }
     else
     {
-      char_code -= cmap->first;
-      if ( char_code < cmap->count )
+      char_code -= fntcmap->first;
+      if ( char_code < fntcmap->count )
       {
-        result = cmap->first + char_code;
+        result = fntcmap->first + char_code;
         gindex = (FT_UInt)( char_code + 1 );
       }
     }
