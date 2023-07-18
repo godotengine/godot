@@ -64,6 +64,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scene_name", "scene_name"), &GLTFState::set_scene_name);
 	ClassDB::bind_method(D_METHOD("get_base_path"), &GLTFState::get_base_path);
 	ClassDB::bind_method(D_METHOD("set_base_path", "base_path"), &GLTFState::set_base_path);
+	ClassDB::bind_method(D_METHOD("get_filename"), &GLTFState::get_filename);
+	ClassDB::bind_method(D_METHOD("set_filename", "filename"), &GLTFState::set_filename);
 	ClassDB::bind_method(D_METHOD("get_root_nodes"), &GLTFState::get_root_nodes);
 	ClassDB::bind_method(D_METHOD("set_root_nodes", "root_nodes"), &GLTFState::set_root_nodes);
 	ClassDB::bind_method(D_METHOD("get_textures"), &GLTFState::get_textures);
@@ -109,6 +111,7 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "materials", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_materials", "get_materials"); // Vector<Ref<Material>
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scene_name"), "set_scene_name", "get_scene_name"); // String
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_path"), "set_base_path", "get_base_path"); // String
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "filename"), "set_filename", "get_filename"); // String
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "root_nodes"), "set_root_nodes", "get_root_nodes"); // Vector<int>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_textures", "get_textures"); // Vector<Ref<GLTFTexture>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "texture_samplers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_texture_samplers", "get_texture_samplers"); //Vector<Ref<GLTFTextureSampler>>
@@ -164,11 +167,11 @@ void GLTFState::set_minor_version(int p_minor_version) {
 	minor_version = p_minor_version;
 }
 
-String GLTFState::get_copyright() {
+String GLTFState::get_copyright() const {
 	return copyright;
 }
 
-void GLTFState::set_copyright(String p_copyright) {
+void GLTFState::set_copyright(const String &p_copyright) {
 	copyright = p_copyright;
 }
 
@@ -379,6 +382,14 @@ String GLTFState::get_base_path() {
 
 void GLTFState::set_base_path(String p_base_path) {
 	base_path = p_base_path;
+}
+
+String GLTFState::get_filename() const {
+	return filename;
+}
+
+void GLTFState::set_filename(const String &p_filename) {
+	filename = p_filename;
 }
 
 Variant GLTFState::get_additional_data(const StringName &p_extension_name) {
