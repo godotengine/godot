@@ -253,7 +253,7 @@ void TileMapLayer::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::
 					}
 
 					// Drawing the tile in the canvas item.
-					tile_map_node->draw_tile(ci, E_cell.key - tile_position, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, -1, tile_map_node->get_self_modulate(), tile_data, random_animation_offset);
+					tile_map_node->draw_tile(ci, E_cell.key - tile_position + texture_offset, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, -1, tile_map_node->get_self_modulate(), tile_data, random_animation_offset);
 
 					// --- Occluders ---
 					for (int i = 0; i < tile_set->get_occlusion_layers_count(); i++) {
@@ -2230,6 +2230,20 @@ int TileMapLayer::get_y_sort_origin() const {
 	return y_sort_origin;
 }
 
+void TileMapLayer::set_texture_offset(Vector2i p_texture_offset) {
+	if (texture_offset == p_texture_offset) {
+		return;
+	}
+	texture_offset = p_texture_offset;
+	clear_internals();
+	recreate_internals();
+	tile_map_node->emit_signal(CoreStringNames::get_singleton()->changed);
+}
+
+Vector2i TileMapLayer::get_texture_offset() const {
+	return texture_offset;
+}
+
 void TileMapLayer::set_z_index(int p_z_index) {
 	if (z_index == p_z_index) {
 		return;
@@ -3096,6 +3110,14 @@ int TileMap::get_layer_y_sort_origin(int p_layer) const {
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, 0, get_y_sort_origin);
 }
 
+void TileMap::set_layer_texture_offset(int p_layer, Vector2i p_texture_offset) {
+	TILEMAP_CALL_FOR_LAYER(p_layer, set_texture_offset, p_texture_offset);
+}
+
+Vector2i TileMap::get_layer_texture_offset(int p_layer) const {
+	TILEMAP_CALL_FOR_LAYER_V(p_layer, Vector2i(), get_texture_offset);
+}
+
 void TileMap::set_layer_z_index(int p_layer, int p_z_index) {
 	TILEMAP_CALL_FOR_LAYER(p_layer, set_z_index, p_z_index);
 }
@@ -3391,6 +3413,9 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (components[1] == "y_sort_origin") {
 			set_layer_y_sort_origin(index, p_value);
 			return true;
+		} else if (components[1] == "texture_offset") {
+			set_layer_texture_offset(index, p_value);
+			return true;
 		} else if (components[1] == "z_index") {
 			set_layer_z_index(index, p_value);
 			return true;
@@ -3431,6 +3456,9 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (components[1] == "y_sort_origin") {
 			r_ret = get_layer_y_sort_origin(index);
 			return true;
+		} else if (components[1] == "texture_offset") {
+			r_ret = get_layer_texture_offset(index);
+			return true;
 		} else if (components[1] == "z_index") {
 			r_ret = get_layer_z_index(index);
 			return true;
@@ -3453,6 +3481,7 @@ void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::COLOR, vformat("layer_%d/modulate", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("layer_%d/y_sort_enabled", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/y_sort_origin", i), PROPERTY_HINT_NONE, "suffix:px"));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2I, vformat("layer_%d/texture_offset", i), PROPERTY_HINT_NONE, "suffix:px"));
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("layer_%d/z_index", i), PROPERTY_HINT_NONE));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("layer_%d/tile_data", i), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
@@ -4303,6 +4332,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_layer_y_sort_enabled", "layer"), &TileMap::is_layer_y_sort_enabled);
 	ClassDB::bind_method(D_METHOD("set_layer_y_sort_origin", "layer", "y_sort_origin"), &TileMap::set_layer_y_sort_origin);
 	ClassDB::bind_method(D_METHOD("get_layer_y_sort_origin", "layer"), &TileMap::get_layer_y_sort_origin);
+	ClassDB::bind_method(D_METHOD("set_layer_texture_offset", "layer", "texture_offset"), &TileMap::set_layer_texture_offset);
+	ClassDB::bind_method(D_METHOD("get_layer_texture_offset", "layer"), &TileMap::get_layer_texture_offset);
 	ClassDB::bind_method(D_METHOD("set_layer_z_index", "layer", "z_index"), &TileMap::set_layer_z_index);
 	ClassDB::bind_method(D_METHOD("get_layer_z_index", "layer"), &TileMap::get_layer_z_index);
 	ClassDB::bind_method(D_METHOD("set_layer_navigation_map", "layer", "map"), &TileMap::set_layer_navigation_map);
