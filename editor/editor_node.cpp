@@ -4409,17 +4409,18 @@ String EditorNode::_get_system_info() const {
 	const int processor_count = OS::get_singleton()->get_processor_count();
 
 	// Prettify
-	if (driver_name == "vulkan") {
-		driver_name = "Vulkan";
-	} else if (driver_name == "opengl3") {
-		driver_name = "GLES3";
-	}
 	if (rendering_method == "forward_plus") {
 		rendering_method = "Forward+";
 	} else if (rendering_method == "mobile") {
 		rendering_method = "Mobile";
 	} else if (rendering_method == "gl_compatibility") {
 		rendering_method = "Compatibility";
+		driver_name = GLOBAL_GET("rendering/gl_compatibility/driver");
+	}
+	if (driver_name == "vulkan") {
+		driver_name = "Vulkan";
+	} else if (driver_name == "opengl3") {
+		driver_name = "GLES3";
 	}
 
 	// Join info.
