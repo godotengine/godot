@@ -109,7 +109,7 @@
 				Displays OS native dialog for selecting files or directories in the file system.
 				Callbacks have the following arguments: [code]bool status, PackedStringArray selected_paths[/code].
 				[b]Note:[/b] This method is implemented if the display server has the [code]FEATURE_NATIVE_DIALOG[/code] feature.
-				[b]Note:[/b] This method is implemented on macOS.
+				[b]Note:[/b] This method is implemented on Windows and macOS.
 				[b]Note:[/b] On macOS, native file dialogs have no title.
 				[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
 			</description>

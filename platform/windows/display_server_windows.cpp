@@ -32,6 +32,7 @@
 
 #include "os_windows.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
 #include "main/main.h"
 #include "scene/resources/atlas_texture.h"
@@ -42,6 +43,9 @@
 
 #include <avrt.h>
 #include <dwmapi.h>
+#include <shlwapi.h>
+#include <shobjidl.h>
+#include <shobjidl_core.h>
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
@@ -87,6 +91,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_HIDPI:
 		case FEATURE_ICON:
 		case FEATURE_NATIVE_ICON:
+		case FEATURE_NATIVE_DIALOG:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_TEXT_TO_SPEECH:
@@ -211,6 +216,129 @@ void DisplayServerWindows::tts_resume() {
 void DisplayServerWindows::tts_stop() {
 	ERR_FAIL_COND_MSG(!tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
 	tts->stop();
+}
+
+Error DisplayServerWindows::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	_THREAD_SAFE_METHOD_
+
+	Vector<Char16String> filter_names;
+	Vector<Char16String> filter_exts;
+	for (const String &E : p_filters) {
+		Vector<String> tokens = E.split(";");
+		if (tokens.size() == 2) {
+			filter_exts.push_back(tokens[0].strip_edges().utf16());
+			filter_names.push_back(tokens[1].strip_edges().utf16());
+		} else if (tokens.size() == 1) {
+			filter_exts.push_back(tokens[0].strip_edges().utf16());
+			filter_names.push_back(tokens[0].strip_edges().utf16());
+		}
+	}
+
+	Vector<COMDLG_FILTERSPEC> filters;
+	for (int i = 0; i < filter_names.size(); i++) {
+		filters.push_back({ (LPCWSTR)filter_names[i].ptr(), (LPCWSTR)filter_exts[i].ptr() });
+	}
+
+	HRESULT hr = S_OK;
+	IFileDialog *pfd = nullptr;
+	if (p_mode == FILE_DIALOG_MODE_SAVE_FILE) {
+		hr = CoCreateInstance(CLSID_FileSaveDialog, nullptr, CLSCTX_INPROC_SERVER, IID_IFileSaveDialog, (void **)&pfd);
+	} else {
+		hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_IFileOpenDialog, (void **)&pfd);
+	}
+	if (SUCCEEDED(hr)) {
+		DWORD flags;
+		pfd->GetOptions(&flags);
+		if (p_mode == FILE_DIALOG_MODE_OPEN_FILES) {
+			flags |= FOS_ALLOWMULTISELECT;
+		}
+		if (p_mode == FILE_DIALOG_MODE_OPEN_DIR) {
+			flags |= FOS_PICKFOLDERS;
+		}
+		if (p_show_hidden) {
+			flags |= FOS_FORCESHOWHIDDEN;
+		}
+		pfd->SetOptions(flags | FOS_FORCEFILESYSTEM);
+		pfd->SetTitle((LPCWSTR)p_title.utf16().ptr());
+
+		String dir = ProjectSettings::get_singleton()->globalize_path(p_current_directory);
+		if (dir == ".") {
+			dir = OS::get_singleton()->get_executable_path().get_base_dir();
+		}
+		dir = dir.replace("/", "\\");
+
+		IShellItem *shellitem = nullptr;
+		hr = SHCreateItemFromParsingName((LPCWSTR)dir.utf16().ptr(), nullptr, IID_IShellItem, (void **)&shellitem);
+		if (SUCCEEDED(hr)) {
+			pfd->SetDefaultFolder(shellitem);
+			pfd->SetFolder(shellitem);
+		}
+
+		pfd->SetFileName((LPCWSTR)p_filename.utf16().ptr());
+		pfd->SetFileTypes(filters.size(), filters.ptr());
+		pfd->SetFileTypeIndex(0);
+
+		hr = pfd->Show(nullptr);
+		if (SUCCEEDED(hr)) {
+			Vector<String> file_names;
+
+			if (p_mode == FILE_DIALOG_MODE_OPEN_FILES) {
+				IShellItemArray *results;
+				hr = static_cast<IFileOpenDialog *>(pfd)->GetResults(&results);
+				if (SUCCEEDED(hr)) {
+					DWORD count = 0;
+					results->GetCount(&count);
+					for (DWORD i = 0; i < count; i++) {
+						IShellItem *result;
+						results->GetItemAt(i, &result);
+
+						PWSTR file_path = nullptr;
+						hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
+						if (SUCCEEDED(hr)) {
+							file_names.push_back(String::utf16((const char16_t *)file_path));
+							CoTaskMemFree(file_path);
+						}
+						result->Release();
+					}
+					results->Release();
+				}
+			} else {
+				IShellItem *result;
+				hr = pfd->GetResult(&result);
+				if (SUCCEEDED(hr)) {
+					PWSTR file_path = nullptr;
+					hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
+					if (SUCCEEDED(hr)) {
+						file_names.push_back(String::utf16((const char16_t *)file_path));
+						CoTaskMemFree(file_path);
+					}
+					result->Release();
+				}
+			}
+			if (!p_callback.is_null()) {
+				Variant v_status = true;
+				Variant v_files = file_names;
+				Variant *v_args[2] = { &v_status, &v_files };
+				Variant ret;
+				Callable::CallError ce;
+				p_callback.callp((const Variant **)&v_args, 2, ret, ce);
+			}
+		} else {
+			if (!p_callback.is_null()) {
+				Variant v_status = false;
+				Variant v_files = Vector<String>();
+				Variant *v_args[2] = { &v_status, &v_files };
+				Variant ret;
+				Callable::CallError ce;
+				p_callback.callp((const Variant **)&v_args, 2, ret, ce);
+			}
+		}
+		pfd->Release();
+
+		return OK;
+	} else {
+		return ERR_CANT_OPEN;
+	}
 }
 
 void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
