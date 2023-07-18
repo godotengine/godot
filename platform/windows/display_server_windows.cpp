@@ -45,7 +45,6 @@
 #include <dwmapi.h>
 #include <shlwapi.h>
 #include <shobjidl.h>
-#include <shobjidl_core.h>
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
