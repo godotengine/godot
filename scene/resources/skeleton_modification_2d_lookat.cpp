@@ -185,7 +185,7 @@ void SkeletonModification2DLookAt::_setup_modification(SkeletonModificationStack
 }
 
 void SkeletonModification2DLookAt::_draw_editor_gizmo() {
-	if (!enabled || !is_setup) {
+	if (!enabled || !is_setup || bone_idx < 0) {
 		return;
 	}
 

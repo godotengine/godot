@@ -250,7 +250,7 @@ void SkeletonModification2DCCDIK::_draw_editor_gizmo() {
 	}
 
 	for (int i = 0; i < ccdik_data_chain.size(); i++) {
-		if (!ccdik_data_chain[i].editor_draw_gizmo) {
+		if (!ccdik_data_chain[i].editor_draw_gizmo || ccdik_data_chain[i].bone_idx < 0) {
 			continue;
 		}
 
