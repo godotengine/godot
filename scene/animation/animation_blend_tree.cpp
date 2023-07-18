@@ -1178,8 +1178,6 @@ void AnimationNodeBlendTree::get_child_nodes(List<ChildNode> *r_child_nodes) {
 		ns.push_back(E.key);
 	}
 
-	ns.sort_custom<StringName::AlphCompare>();
-
 	for (int i = 0; i < ns.size(); i++) {
 		ChildNode cn;
 		cn.name = ns[i];
@@ -1435,7 +1433,6 @@ void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) cons
 	for (const KeyValue<StringName, Node> &E : nodes) {
 		names.push_back(E.key);
 	}
-	names.sort_custom<StringName::AlphCompare>();
 
 	for (const StringName &E : names) {
 		String prop_name = E;
