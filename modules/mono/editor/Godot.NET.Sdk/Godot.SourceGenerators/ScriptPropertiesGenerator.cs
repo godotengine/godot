@@ -620,7 +620,7 @@ namespace Godot.SourceGenerators
 
                 bool isPresetHint = false;
 
-                if (elementVariantType == VariantType.String)
+                if (elementVariantType == VariantType.String || elementVariantType == VariantType.StringName)
                     isPresetHint = GetStringArrayEnumHint(elementVariantType, exportAttr, out hintString);
 
                 if (!isPresetHint)
