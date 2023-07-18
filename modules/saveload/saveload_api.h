@@ -36,6 +36,8 @@
 class SaveloadAPI : public RefCounted {
 	GDCLASS(SaveloadAPI, RefCounted);
 
+	static SaveloadAPI *singleton;
+
 private:
 	static StringName default_interface;
 
@@ -43,6 +45,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	static SaveloadAPI *get_singleton();
 	static Ref<SaveloadAPI> create_default_interface();
 	static void set_default_interface(const StringName &p_interface);
 	static StringName get_default_interface();
@@ -61,7 +64,7 @@ public:
 	virtual Error save(const String &p_path, const Variant &p_configuration_data = Variant()) = 0;
 	virtual Error load(const String &p_path, const Variant &p_configuration_data = Variant()) = 0;
 
-	SaveloadAPI() {}
+	SaveloadAPI() { singleton = this; }
 	virtual ~SaveloadAPI() {}
 };
 

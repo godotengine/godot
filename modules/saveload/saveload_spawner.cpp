@@ -30,7 +30,7 @@
 
 #include "saveload_spawner.h"
 #include "scene_saveload.h"
-#include "scene/main/saveload_api.h"
+#include "saveload_api.h"
 
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
@@ -104,7 +104,7 @@ SaveloadSpawner::SpawnerState::SpawnerState(const TypedArray<Dictionary> &p_arra
 	tracked_paths.clear();
 	spawn_infos.clear();
 	spawn_infos.reserve(p_array.size());
-	for (uint32_t i = 0; i < p_array.size(); ++i) {
+	for (int i = 0; i < p_array.size(); ++i) {
 		spawn_infos.push_back(SpawnInfo(p_array[i]));
 		tracked_paths.insert(spawn_infos[i].path, i);
 	}
@@ -291,7 +291,7 @@ void SaveloadSpawner::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
 			_update_spawn_parent();
-			get_saveload()->track(this);
+			SaveloadAPI::get_singleton()->track(this);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -303,7 +303,7 @@ void SaveloadSpawner::_notification(int p_what) {
 				Node *node = get_node_or_null(path);
 				ERR_CONTINUE_MSG(!node, vformat("could not find node at path %s", path));
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &SaveloadSpawner::_node_exit));
-				get_saveload()->untrack(this);
+				SaveloadAPI::get_singleton()->untrack(this);
 			}
 			spawner_state.clear();
 		} break;
@@ -342,7 +342,7 @@ void SaveloadSpawner::_track(Node *p_node, int p_scene_index, const Variant &p_s
 		SpawnInfo spawn_info = SpawnInfo(node_path, p_scene_index, p_spawn_args);
 		spawner_state.push_back(spawn_info);
 		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &SaveloadSpawner::_node_exit).bind(p_node->get_instance_id()), CONNECT_ONE_SHOT);
-		get_saveload()->track(this); //TODO: Is this redundant?
+		SaveloadAPI::get_singleton()->track(this);
 	}
 }
 

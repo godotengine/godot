@@ -37,12 +37,13 @@
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 
+//TODO: not sure how much of this is necessary
 void SaveloadEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("open_request", PropertyInfo(Variant::STRING, "path")));
 }
 
 bool SaveloadEditorDebugger::has_capture(const String &p_capture) const {
-	return p_capture == "multiplayer";
+	return p_capture == "saveload";
 }
 
 void SaveloadEditorDebugger::_open_request(const String &p_path) {
@@ -68,7 +69,7 @@ bool SaveloadEditorDebugger::capture(const String &p_message, const Array &p_dat
 		Array missing = profiler->pop_missing_node_data();
 		if (missing.size()) {
 			// Asks for the object information.
-			get_session(p_session)->send_message("multiplayer:cache", missing);
+			get_session(p_session)->send_message("saveload:cache", missing);
 		}
 		return true;
 	} else if (p_message == "saveload:cache") {

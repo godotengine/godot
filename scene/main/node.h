@@ -656,8 +656,6 @@ public:
 
 	Ref<MultiplayerAPI> get_multiplayer() const;
 
-	Ref<SaveloadAPI> get_saveload() const;
-
 	void call_deferred_thread_groupp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error = false);
 	template <typename... VarArgs>
 	void call_deferred_thread_group(const StringName &p_method, VarArgs... p_args) {

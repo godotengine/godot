@@ -30,6 +30,7 @@
 
 #include "register_types.h"
 
+#include "saveload_api.h"
 #include "saveload_spawner.h"
 #include "saveload_synchronizer.h"
 #include "scene_saveload.h"
@@ -41,7 +42,14 @@
 #include "editor/saveload_editor_plugin.h"
 #endif
 
+static SaveloadAPI *saveload_api = NULL;
+
 void initialize_saveload_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		saveload_api = memnew(SceneSaveload);
+		GDREGISTER_ABSTRACT_CLASS(SaveloadAPI);
+		Engine::get_singleton()->add_singleton(Engine::Singleton("SaveloadAPI", SaveloadAPI::get_singleton()));
+	}
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		GDREGISTER_CLASS(SceneSaveloadConfig);
 		GDREGISTER_CLASS(SaveloadSpawner);
@@ -58,5 +66,9 @@ void initialize_saveload_module(ModuleInitializationLevel p_level) {
 }
 
 void uninitialize_saveload_module(ModuleInitializationLevel p_level) {
+	if (saveload_api) {
+		//saveload_server->finish();
+		memdelete(saveload_api);
+	}
 	SaveloadDebugger::deinitialize();
 }

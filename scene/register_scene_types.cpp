@@ -134,7 +134,6 @@
 #include "scene/main/instance_placeholder.h"
 #include "scene/main/missing_node.h"
 #include "scene/main/multiplayer_api.h"
-#include "scene/main/saveload_api.h"
 #include "scene/main/resource_preloader.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
@@ -327,8 +326,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(MultiplayerPeerExtension);
 	GDREGISTER_ABSTRACT_CLASS(MultiplayerAPI);
 	GDREGISTER_CLASS(MultiplayerAPIExtension);
-
-	GDREGISTER_ABSTRACT_CLASS(SaveloadAPI);
 
 	GDREGISTER_CLASS(HTTPRequest);
 	GDREGISTER_CLASS(Timer);

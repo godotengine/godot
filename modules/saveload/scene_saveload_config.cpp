@@ -30,11 +30,10 @@
 
 #include "scene_saveload_config.h"
 
-#include "scene/main/saveload_api.h"
+#include "saveload_api.h"
 #include "scene/main/node.h"
 
 bool SceneSaveloadConfig::_set(const StringName &p_name, const Variant &p_value) {
-	print_line(vformat("SceneSaveloadConfig::_set p_name = %s, p_value = %s", p_name, p_value));
 	String prop_name = p_name;
 
 	if (prop_name.begins_with("properties/")) {

@@ -31,7 +31,7 @@
 #ifndef SCENE_SAVELOAD_H
 #define SCENE_SAVELOAD_H
 
-#include "scene/main/saveload_api.h"
+#include "saveload_api.h"
 
 #include "scene_saveload_interface.h"
 

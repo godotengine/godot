@@ -47,7 +47,6 @@
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/control.h"
 #include "scene/main/multiplayer_api.h"
-#include "scene/main/saveload_api.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/font.h"
@@ -1535,39 +1534,6 @@ bool SceneTree::is_multiplayer_poll_enabled() const {
 	return multiplayer_poll;
 }
 
-Ref<SaveloadAPI> SceneTree::get_saveload() const {
-	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), Ref<SaveloadAPI>(), "Saveload can only be manipulated from the main thread.");
-	Ref<SaveloadAPI> out = saveload;
-	//TODO: figure out how to handle custom saveloads
-	// for (const KeyValue<NodePath, Ref<SaveloadAPI>> &E : custom_saveloads) {
-	// 	const Vector<StringName> snames = E.key.get_names();
-	// 	const Vector<StringName> tnames = p_for_path.get_names();
-	// 	if (tnames.size() < snames.size()) {
-	// 		continue;
-	// 	}
-	// 	const StringName *sptr = snames.ptr();
-	// 	const StringName *nptr = tnames.ptr();
-	// 	bool valid = true;
-	// 	for (int i = 0; i < snames.size(); i++) {
-	// 		if (sptr[i] != nptr[i]) {
-	// 			valid = false;
-	// 			break;
-	// 		}
-	// 	}
-	// 	if (valid) {
-	// 		out = E.value;
-	// 		break;
-	// 	}
-	// }
-	return out;
-}
-
-void SceneTree::set_saveload(Ref<SaveloadAPI> p_saveload) {
-	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Saveload can only be manipulated from the main thread.");
-	ERR_FAIL_COND_MSG(!p_saveload.is_valid(), "Saveload is invalid");
-	saveload = p_saveload;
-}
-
 void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root"), &SceneTree::get_root);
 	ClassDB::bind_method(D_METHOD("has_group", "name"), &SceneTree::has_group);
@@ -1639,9 +1605,6 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_multiplayer", "for_path"), &SceneTree::get_multiplayer, DEFVAL(NodePath()));
 	ClassDB::bind_method(D_METHOD("set_multiplayer_poll_enabled", "enabled"), &SceneTree::set_multiplayer_poll_enabled);
 	ClassDB::bind_method(D_METHOD("is_multiplayer_poll_enabled"), &SceneTree::is_multiplayer_poll_enabled);
-
-	ClassDB::bind_method(D_METHOD("set_saveload", "saveload"), &SceneTree::set_saveload);
-	ClassDB::bind_method(D_METHOD("get_saveload"), &SceneTree::get_saveload);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_accept_quit"), "set_auto_accept_quit", "is_auto_accept_quit");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "quit_on_go_back"), "set_quit_on_go_back", "is_quit_on_go_back");
@@ -1757,8 +1720,6 @@ SceneTree::SceneTree() {
 
 	// Initialize network state.
 	set_multiplayer(MultiplayerAPI::create_default_interface());
-
-	set_saveload(SaveloadAPI::create_default_interface());
 
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;

@@ -38,7 +38,7 @@
 class SceneSaveloadConfig : public Resource {
 	GDCLASS(SceneSaveloadConfig, Resource);
 	OBJ_SAVE_TYPE(SceneSaveloadConfig);
-	RES_BASE_EXTENSION("svld");
+	RES_BASE_EXTENSION("svldcfg");
 
 private:
 	struct SaveloadProperty {

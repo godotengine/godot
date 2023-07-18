@@ -40,6 +40,11 @@
 #endif
 
 StringName SaveloadAPI::default_interface;
+SaveloadAPI *SaveloadAPI::singleton = NULL;
+
+SaveloadAPI *SaveloadAPI::get_singleton() {
+	return singleton;
+}
 
 void SaveloadAPI::set_default_interface(const StringName &p_interface) {
 	ERR_FAIL_COND_MSG(!ClassDB::is_parent_class(p_interface, SaveloadAPI::get_class_static()), vformat("Can't make %s the default saveload interface since it does not extend SaveloadAPI.", p_interface));

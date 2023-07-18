@@ -31,7 +31,7 @@
 #include "saveload_synchronizer.h"
 
 #include "core/config/engine.h"
-#include "scene/main/saveload_api.h"
+#include "saveload_api.h"
 
 Dictionary SaveloadSynchronizer::SyncherState::to_dict() const {
 	Dictionary dict;
@@ -67,7 +67,7 @@ void SaveloadSynchronizer::_stop() {
 	root_node_cache = ObjectID();
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
-		get_saveload()->untrack(this);
+		SaveloadAPI::get_singleton()->untrack(this);
 	}
 }
 
@@ -81,7 +81,7 @@ void SaveloadSynchronizer::_start() {
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
 		root_node_cache = node->get_instance_id();
-		get_saveload()->track(this);
+		SaveloadAPI::get_singleton()->track(this);
 		_update_process();
 	}
 }
@@ -123,7 +123,7 @@ Error SaveloadSynchronizer::get_state(const List<NodePath> &p_properties, Object
 		bool valid = false;
 		const Object *obj = _get_prop_target(p_obj, prop);
 		ERR_FAIL_COND_V(!obj, FAILED);
-		r_variant.write[i] = obj->get(prop.get_concatenated_subnames(), &valid);
+		r_variant.write[i] = obj->get_indexed(prop.get_subnames(), &valid);
 		r_variant_ptrs.write[i] = &r_variant[i];
 		ERR_FAIL_COND_V_MSG(!valid, ERR_INVALID_DATA, vformat("Property '%s' not found.", prop));
 		i++;
@@ -174,14 +174,12 @@ void SaveloadSynchronizer::_notification(int p_what) {
 	}
 #endif
 	if (root_path.is_empty()) {
-		print_line(vformat("SaveloadSynchronizer::_notification what = %s: root_path of %s is empty", p_what, get_path()));
 		return;
 	}
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_start();
-			print_line(vformat("SaveloadSynchronizer::_notification what = %s = enter_tree: %s called _start", p_what, get_path()));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
