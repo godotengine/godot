@@ -62,14 +62,14 @@ void CurveEdit::set_curve(Ref<Curve> p_curve) {
 
 	if (curve.is_valid()) {
 		curve->disconnect_changed(callable_mp(this, &CurveEdit::_curve_changed));
-		curve->disconnect_changed(callable_mp(this, &CurveEdit::_curve_changed));
+		curve->disconnect(Curve::SIGNAL_RANGE_CHANGED, callable_mp(this, &CurveEdit::_curve_changed));
 	}
 
 	curve = p_curve;
 
 	if (curve.is_valid()) {
 		curve->connect_changed(callable_mp(this, &CurveEdit::_curve_changed));
-		curve->connect_changed(callable_mp(this, &CurveEdit::_curve_changed));
+		curve->connect(Curve::SIGNAL_RANGE_CHANGED, callable_mp(this, &CurveEdit::_curve_changed));
 	}
 
 	// Note: if you edit a curve, then set another, and try to undo,
