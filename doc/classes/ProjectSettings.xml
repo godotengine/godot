@@ -1943,13 +1943,13 @@
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="" default="60">
 			This is used by servers when used in multi-threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
 		</member>
-		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="1">
+		<member name="navigation/2d/default_cell_size" type="float" setter="" getter="" default="1.0">
 			Default cell size for 2D navigation maps. See [method NavigationServer2D.map_set_cell_size].
 		</member>
-		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="1">
+		<member name="navigation/2d/default_edge_connection_margin" type="float" setter="" getter="" default="1.0">
 			Default edge connection margin for 2D navigation maps. See [method NavigationServer2D.map_set_edge_connection_margin].
 		</member>
-		<member name="navigation/2d/default_link_connection_radius" type="int" setter="" getter="" default="4">
+		<member name="navigation/2d/default_link_connection_radius" type="float" setter="" getter="" default="4.0">
 			Default link connection radius for 2D navigation maps. See [method NavigationServer2D.map_set_link_connection_radius].
 		</member>
 		<member name="navigation/2d/use_edge_connections" type="bool" setter="" getter="" default="true">
