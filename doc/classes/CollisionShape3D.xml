@@ -20,11 +20,11 @@
 				Sets the collision shape's shape to the addition of all its convexed [MeshInstance3D] siblings geometry.
 			</description>
 		</method>
-		<method name="resource_changed">
+		<method name="resource_changed" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="resource" type="Resource" />
 			<description>
-				If this method exists within a script it will be called whenever the shape resource has been modified.
+				[i]Obsoleted.[/i] Use [signal Resource.changed] instead.
 			</description>
 		</method>
 	</methods>

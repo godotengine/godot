@@ -30,7 +30,6 @@
 
 #include "gpu_particles_2d.h"
 
-#include "core/core_string_names.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/particle_process_material.h"
 #include "scene/scene_string_names.h"
@@ -357,13 +356,13 @@ Rect2 GPUParticles2D::capture_rect() const {
 
 void GPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
 	if (texture.is_valid()) {
-		texture->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GPUParticles2D::_texture_changed));
+		texture->disconnect_changed(callable_mp(this, &GPUParticles2D::_texture_changed));
 	}
 
 	texture = p_texture;
 
 	if (texture.is_valid()) {
-		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GPUParticles2D::_texture_changed));
+		texture->connect_changed(callable_mp(this, &GPUParticles2D::_texture_changed));
 	}
 	_update_collision_size();
 	queue_redraw();

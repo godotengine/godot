@@ -88,11 +88,11 @@ void TileDataEditor::_bind_methods() {
 
 void TileDataEditor::set_tile_set(Ref<TileSet> p_tile_set) {
 	if (tile_set.is_valid()) {
-		tile_set->disconnect("changed", callable_mp(this, &TileDataEditor::_tile_set_changed_plan_update));
+		tile_set->disconnect_changed(callable_mp(this, &TileDataEditor::_tile_set_changed_plan_update));
 	}
 	tile_set = p_tile_set;
 	if (tile_set.is_valid()) {
-		tile_set->connect("changed", callable_mp(this, &TileDataEditor::_tile_set_changed_plan_update));
+		tile_set->connect_changed(callable_mp(this, &TileDataEditor::_tile_set_changed_plan_update));
 	}
 	_tile_set_changed_plan_update();
 }

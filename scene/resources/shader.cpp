@@ -63,7 +63,7 @@ void Shader::set_include_path(const String &p_path) {
 
 void Shader::set_code(const String &p_code) {
 	for (const Ref<ShaderInclude> &E : include_dependencies) {
-		E->disconnect(SNAME("changed"), callable_mp(this, &Shader::_dependency_changed));
+		E->disconnect_changed(callable_mp(this, &Shader::_dependency_changed));
 	}
 
 	code = p_code;
@@ -102,7 +102,7 @@ void Shader::set_code(const String &p_code) {
 	}
 
 	for (const Ref<ShaderInclude> &E : include_dependencies) {
-		E->connect(SNAME("changed"), callable_mp(this, &Shader::_dependency_changed));
+		E->connect_changed(callable_mp(this, &Shader::_dependency_changed));
 	}
 
 	RenderingServer::get_singleton()->shader_set_code(shader, pp_code);

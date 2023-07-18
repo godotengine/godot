@@ -395,7 +395,7 @@ void AudioStreamImportSettings::_seek_to(real_t p_x) {
 
 void AudioStreamImportSettings::edit(const String &p_path, const String &p_importer, const Ref<AudioStream> &p_stream) {
 	if (!stream.is_null()) {
-		stream->disconnect("changed", callable_mp(this, &AudioStreamImportSettings::_audio_changed));
+		stream->disconnect_changed(callable_mp(this, &AudioStreamImportSettings::_audio_changed));
 	}
 
 	importer = p_importer;
@@ -408,7 +408,7 @@ void AudioStreamImportSettings::edit(const String &p_path, const String &p_impor
 	_duration_label->set_text(text);
 
 	if (!stream.is_null()) {
-		stream->connect("changed", callable_mp(this, &AudioStreamImportSettings::_audio_changed));
+		stream->connect_changed(callable_mp(this, &AudioStreamImportSettings::_audio_changed));
 		_preview->queue_redraw();
 		_indicator->queue_redraw();
 		color_rect->queue_redraw();

@@ -30,7 +30,6 @@
 
 #include "navigation_region_3d.h"
 
-#include "core/core_string_names.h"
 #include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 #include "servers/navigation_server_3d.h"
 
@@ -193,13 +192,13 @@ void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_naviga
 	}
 
 	if (navigation_mesh.is_valid()) {
-		navigation_mesh->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NavigationRegion3D::_navigation_mesh_changed));
+		navigation_mesh->disconnect_changed(callable_mp(this, &NavigationRegion3D::_navigation_mesh_changed));
 	}
 
 	navigation_mesh = p_navigation_mesh;
 
 	if (navigation_mesh.is_valid()) {
-		navigation_mesh->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NavigationRegion3D::_navigation_mesh_changed));
+		navigation_mesh->connect_changed(callable_mp(this, &NavigationRegion3D::_navigation_mesh_changed));
 	}
 
 	NavigationServer3D::get_singleton()->region_set_navigation_mesh(region, p_navigation_mesh);
@@ -462,7 +461,7 @@ NavigationRegion3D::~NavigationRegion3D() {
 	}
 
 	if (navigation_mesh.is_valid()) {
-		navigation_mesh->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NavigationRegion3D::_navigation_mesh_changed));
+		navigation_mesh->disconnect_changed(callable_mp(this, &NavigationRegion3D::_navigation_mesh_changed));
 	}
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
 	NavigationServer3D::get_singleton()->free(region);
