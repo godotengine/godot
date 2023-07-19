@@ -24,6 +24,65 @@ partial class AnimationNode
     }
 }
 
+partial class CanvasItem
+{
+    /// <inheritdoc cref="DrawArc(Vector2, float, float, float, int, Nullable{Color}, float, bool)"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void DrawArc(Vector2 center, float radius, float startAngle, float endAngle, int pointCount, Color color, float width, bool antialiased)
+    {
+        DrawArc(center, radius, startAngle, endAngle, pointCount, new Nullable<Color>(color), width, antialiased);
+    }
+
+    /// <inheritdoc cref="DrawCircle(Vector2, float, Nullable{Color})"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void DrawCircle(Vector2 position, float radius, Color color)
+    {
+        DrawCircle(position, radius, new Nullable<Color>(color));
+    }
+
+    /// <inheritdoc cref="DrawColoredPolygon(Vector2[], Nullable{Color}, Vector2[], Texture2D)"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void DrawColoredPolygon(Vector2[] points, Color color, Vector2[] uvs, Texture2D texture)
+    {
+        DrawColoredPolygon(points, new Nullable<Color>(color), uvs, texture);
+    }
+
+    /// <inheritdoc cref="DrawDashedLine(Vector2, Vector2, Nullable{Color}, float, float, bool)"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void DrawDashedLine(Vector2 from, Vector2 to, Color color, float width, float dash, bool aligned)
+    {
+        DrawDashedLine(from, to, new Nullable<Color>(color), width, dash, aligned);
+    }
+
+    /// <inheritdoc cref="DrawLine(Vector2, Vector2, Nullable{Color}, float, bool)"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void DrawLine(Vector2 from, Vector2 to, Color color, float width, bool antialiased)
+    {
+        DrawLine(from, to, new Nullable<Color>(color), width, antialiased);
+    }
+
+    /// <inheritdoc cref="DrawMultiline(Vector2[], Nullable{Color}, float)"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void DrawMultiline(Vector2[] points, Color color, float width)
+    {
+        DrawMultiline(points, new Nullable<Color>(color), width);
+    }
+
+    /// <inheritdoc cref="DrawPolyline(Vector2[], Nullable{Color}, float, bool)"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void DrawPolyline(Vector2[] points, Color color, float width, bool antialiased)
+    {
+        DrawPolyline(points, new Nullable<Color>(color), width, antialiased);
+    }
+
+    /// <inheritdoc cref="DrawRect(Rect2, Nullable{Color}, bool, float)"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void DrawRect(Rect2 rect, Color color, bool filled, float width)
+    {
+        DrawRect(rect, new Nullable<Color>(color), filled, width);
+    }
+}
+
 partial class CodeEdit
 {
     /// <inheritdoc cref="AddCodeCompletionOption(CodeCompletionKind, string, string, Nullable{Color}, Resource, Nullable{Variant})"/>
@@ -78,6 +137,30 @@ partial class RenderingDevice
     public long DrawListBegin(Rid framebuffer, InitialAction initialColorAction, FinalAction finalColorAction, InitialAction initialDepthAction, FinalAction finalDepthAction, Color[] clearColorValues, float clearDepth, uint clearStencil, Nullable<Rect2> region, Godot.Collections.Array storageTextures)
     {
         return DrawListBegin(framebuffer, initialColorAction, finalColorAction, initialDepthAction, finalDepthAction, clearColorValues, clearDepth, clearStencil, region, new Godot.Collections.Array<Rid>(storageTextures));
+    }
+}
+
+partial class RenderingServer
+{
+    /// <inheritdoc cref="CanvasItemAddCircle(Rid, Vector2, float, Nullable{Color})"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static void CanvasItemAddCircle(Rid item, Vector2 pos, float radius, Color color)
+    {
+        CanvasItemAddCircle(item, pos, radius, new Nullable<Color>(color));
+    }
+
+    /// <inheritdoc cref="CanvasItemAddLine(Rid, Vector2, Vector2, Nullable{Color}, float, bool)"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static void CanvasItemAddLine(Rid item, Vector2 from, Vector2 to, Color color, float width, bool antialiased)
+    {
+        CanvasItemAddLine(item, from, to, new Nullable<Color>(color), width, antialiased);
+    }
+
+    /// <inheritdoc cref="CanvasItemAddRect(Rid, Rect2, Nullable{Color})"/>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static void CanvasItemAddRect(Rid item, Rect2 rect, Color color)
+    {
+        CanvasItemAddRect(item, rect, new Nullable<Color>(color));
     }
 }
 
