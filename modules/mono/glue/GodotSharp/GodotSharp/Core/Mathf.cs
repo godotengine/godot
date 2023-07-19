@@ -106,8 +106,8 @@ namespace Godot
         /// <summary>
         /// Returns the difference between the two angles,
         /// in range of -<see cref="Pi"/>, <see cref="Pi"/>.
-        /// When <param name ="from"> and <param name ="to"> are opposite,
-        /// returns -<see cref="Pi"/> if <param name ="from"> is smaller than <param name ="to">,
+        /// When <param name ="from"/> and <param name ="to"/> are opposite,
+        /// returns -<see cref="Pi"/> if <param name ="from/"> is smaller than <param name ="to"/>,
         /// or <see cref="Pi"/> otherwise.
         /// </summary>
         /// <param name ="from">The start angle.</param>
@@ -122,8 +122,8 @@ namespace Godot
         /// <summary>
         /// Returns the difference between the two angles,
         /// in range of -<see cref="Pi"/>, <see cref="Pi"/>.
-        /// When <param name ="from"> and <param name ="to"> are opposite,
-        /// returns -<see cref="Pi"/> if <param name ="from"> is smaller than <param name ="to">,
+        /// When <param name ="from"/> and <param name ="to"/> are opposite,
+        /// returns -<see cref="Pi"/> if <param name ="from/"> is smaller than <param name ="to"/>,
         /// or <see cref="Pi"/> otherwise.
         /// </summary>
         /// <param name ="from">The start angle.</param>
