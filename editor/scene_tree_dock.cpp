@@ -1385,6 +1385,11 @@ void SceneTreeDock::_notification(int p_what) {
 			button_tree_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 
 			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			// Also remember to update the theme icon in filter menu, if menu was ever opened
+			int filter_menu_search_icon_idx = filter->get_menu()->get_item_idx_from_text(TTR("Filters"));
+			if (filter_menu_search_icon_idx != -1) {
+				filter->get_menu()->set_item_icon(filter_menu_search_icon_idx, get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			}
 
 			// These buttons are created on READY, because reasons...
 			if (button_2d) {
