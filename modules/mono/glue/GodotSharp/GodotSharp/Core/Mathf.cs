@@ -105,7 +105,11 @@ namespace Godot
 
         /// <summary>
         /// Returns the difference between the two angles,
-        /// correctly wrapping around <see cref="Tau"/>.
+        /// in range of -<see cref="Pi"/>, <see cref="Pi"/>.
+        /// When <param name ="from"> and <param name ="to"> are opposite,
+        /// returns -<see cref="Pi"/>.
+        /// If <param name ="from"> is smaller than <param name ="to">,
+        /// or <see cref="Pi"/> otherwise.
         /// </summary>
         /// <param name ="from">The start angle.</param>
         /// <param name ="to">The destination angle.</param>
@@ -118,7 +122,11 @@ namespace Godot
 
         /// <summary>
         /// Returns the difference between the two angles,
-        /// correctly wrapping around <see cref="Tau"/>.
+        /// in range of -<see cref="Pi"/>, <see cref="Pi"/>.
+        /// When <param name ="from"> and <param name ="to"> are opposite,
+        /// returns -<see cref="Pi"/>.
+        /// If <param name ="from"> is smaller than <param name ="to">,
+        /// or <see cref="Pi"/> otherwise.
         /// </summary>
         /// <param name ="from">The start angle.</param>
         /// <param name ="to">The destination angle.</param>
@@ -1232,7 +1240,7 @@ namespace Godot
         {
             float difference = AngleDifference(from, to);
             float absDifference = Math.Abs(difference);
-            return from + Math.Clamp(delta, absDifference - MathF.PI, absDifference) * Math.Sign(difference);
+            return from + Math.Clamp(delta, absDifference - MathF., absDifference) * Math.Sign(difference);
         }
 
         /// <summary>
@@ -1248,7 +1256,7 @@ namespace Godot
         {
             double difference = AngleDifference(from, to);
             double absDifference = Math.Abs(difference);
-            return from + Math.Clamp(delta, absDifference - Math.PI, absDifference) * Math.Sign(difference);
+            return from + Math.Clamp(delta, absDifference - Math., absDifference) * Math.Sign(difference);
         }
 
         /// <summary>
