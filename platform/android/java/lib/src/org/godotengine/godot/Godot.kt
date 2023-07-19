@@ -88,16 +88,16 @@ class Godot(private val context: Context) : SensorEventListener {
 	private val mSensorManager: SensorManager by lazy {
 		requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
 	}
-	private val mAccelerometer: Sensor by lazy {
+	private val mAccelerometer: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 	}
-	private val mGravity: Sensor by lazy {
+	private val mGravity: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)
 	}
-	private val mMagnetometer: Sensor by lazy {
+	private val mMagnetometer: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
 	}
-	private val mGyroscope: Sensor by lazy {
+	private val mGyroscope: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 	}
 	private val mClipboard: ClipboardManager by lazy {
@@ -492,10 +492,18 @@ class Godot(private val context: Context) : SensorEventListener {
 		}
 
 		renderView!!.onActivityResumed()
-		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME)
-		mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME)
-		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME)
-		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME)
+		if (mAccelerometer != null) {
+			mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME)
+		}
+		if (mGravity != null) {
+			mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME)
+		}
+		if (mMagnetometer != null) {
+			mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME)
+		}
+		if (mGyroscope != null) {
+			mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME)
+		}
 		if (useImmersive) {
 			val window = requireActivity().window
 			window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
