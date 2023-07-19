@@ -45,6 +45,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/control.h"
+#include "scene/gui/debug_overlay.h"
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/node.h"
 #include "scene/main/viewport.h"
@@ -1886,6 +1887,37 @@ bool SceneTree::is_multiplayer_poll_enabled() const {
 	return multiplayer_poll;
 }
 
+void SceneTree::set_debug_overlay_display_mode(DebugOverlayDisplayMode p_mode) {
+	if (p_mode != DEBUG_OVERLAY_DISPLAY_MODE_HIDDEN) {
+		if (debug_overlay == nullptr) {
+			debug_overlay = memnew(DebugOverlay);
+			// Begin name with an underscore to avoid conflict with project nodes.
+			debug_overlay->set_name("_DebugOverlay");
+			debug_overlay->set_display_mode(p_mode);
+			get_root()->add_child(debug_overlay, false, Node::INTERNAL_MODE_BACK);
+		} else {
+			debug_overlay->set_display_mode(p_mode);
+		}
+	} else {
+		if (debug_overlay != nullptr) {
+			// Free when closing to avoid reserving memory during the project's run duration.
+			debug_overlay->queue_free();
+			debug_overlay = nullptr;
+		} else {
+			ERR_PRINT("Couldn't find debug menu to hide.");
+		}
+	}
+}
+
+SceneTree::DebugOverlayDisplayMode SceneTree::get_debug_overlay_display_mode() const {
+	if (debug_overlay) {
+		return debug_overlay->get_display_mode();
+	}
+
+	// Debug menu isn't created yet. Therefore, it's hidden.
+	return DEBUG_OVERLAY_DISPLAY_MODE_HIDDEN;
+}
+
 void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root"), &SceneTree::get_root);
 	ClassDB::bind_method(D_METHOD("has_group", "name"), &SceneTree::has_group);
@@ -1964,6 +1996,9 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_multiplayer_poll_enabled", "enabled"), &SceneTree::set_multiplayer_poll_enabled);
 	ClassDB::bind_method(D_METHOD("is_multiplayer_poll_enabled"), &SceneTree::is_multiplayer_poll_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_debug_overlay_display_mode", "mode"), &SceneTree::set_debug_overlay_display_mode);
+	ClassDB::bind_method(D_METHOD("get_debug_overlay_display_mode"), &SceneTree::get_debug_overlay_display_mode);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_accept_quit"), "set_auto_accept_quit", "is_auto_accept_quit");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "quit_on_go_back"), "set_quit_on_go_back", "is_quit_on_go_back");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_collisions_hint"), "set_debug_collisions_hint", "is_debugging_collisions_hint");
@@ -1975,6 +2010,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, Node::get_class_static(), PROPERTY_USAGE_NONE), "", "get_root");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multiplayer_poll"), "set_multiplayer_poll_enabled", "is_multiplayer_poll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_interpolation"), "set_physics_interpolation_enabled", "is_physics_interpolation_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_overlay_display_mode", PROPERTY_HINT_ENUM, "Hidden,Compact,Detailed"), "set_debug_overlay_display_mode", "get_debug_overlay_display_mode");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 	ADD_SIGNAL(MethodInfo("scene_changed"));
@@ -1991,6 +2027,11 @@ void SceneTree::_bind_methods() {
 	BIND_ENUM_CONSTANT(GROUP_CALL_REVERSE);
 	BIND_ENUM_CONSTANT(GROUP_CALL_DEFERRED);
 	BIND_ENUM_CONSTANT(GROUP_CALL_UNIQUE);
+
+	BIND_ENUM_CONSTANT(DEBUG_OVERLAY_DISPLAY_MODE_HIDDEN);
+	BIND_ENUM_CONSTANT(DEBUG_OVERLAY_DISPLAY_MODE_COMPACT);
+	BIND_ENUM_CONSTANT(DEBUG_OVERLAY_DISPLAY_MODE_DETAILED);
+	BIND_ENUM_CONSTANT(DEBUG_OVERLAY_DISPLAY_MODE_MAX);
 }
 
 SceneTree *SceneTree::singleton = nullptr;

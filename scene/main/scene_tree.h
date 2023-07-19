@@ -41,6 +41,7 @@
 #include <cstdlib>
 
 class ArrayMesh;
+class DebugOverlay;
 class InputEvent;
 class Material;
 class MultiplayerAPI;
@@ -204,6 +205,9 @@ private:
 	ObjectID prev_scene_id;
 	ObjectID pending_new_scene_id;
 
+	// Initialized lazily and destroyed eagerly to decrease RAM usage, since it contains a lot of text.
+	DebugOverlay *debug_overlay = nullptr;
+
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
 	Color debug_paths_color;
@@ -298,6 +302,13 @@ public:
 		GROUP_CALL_REVERSE = 1,
 		GROUP_CALL_DEFERRED = 2,
 		GROUP_CALL_UNIQUE = 4,
+	};
+
+	enum DebugOverlayDisplayMode {
+		DEBUG_OVERLAY_DISPLAY_MODE_HIDDEN,
+		DEBUG_OVERLAY_DISPLAY_MODE_COMPACT,
+		DEBUG_OVERLAY_DISPLAY_MODE_DETAILED,
+		DEBUG_OVERLAY_DISPLAY_MODE_MAX,
 	};
 
 	RequiredResult<Window> get_root() const;
@@ -451,6 +462,9 @@ public:
 	void set_multiplayer_poll_enabled(bool p_enabled);
 	bool is_multiplayer_poll_enabled() const;
 
+	void set_debug_overlay_display_mode(DebugOverlayDisplayMode p_mode);
+	DebugOverlayDisplayMode get_debug_overlay_display_mode() const;
+
 	static void add_idle_callback(IdleCallback p_callback);
 
 	void set_disable_node_threading(bool p_disable);
@@ -475,3 +489,4 @@ public:
 };
 
 VARIANT_ENUM_CAST(SceneTree::GroupCallFlags);
+VARIANT_ENUM_CAST(SceneTree::DebugOverlayDisplayMode);

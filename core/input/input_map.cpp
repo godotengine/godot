@@ -431,6 +431,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
 	{ "ui_filedialog_focus_path",                      TTRC("Focus Path") },
 	{ "ui_swap_input_direction",                       TTRC("Swap Input Direction") },
 	{ "ui_unicode_start",                              TTRC("Start Unicode Character Input") },
+	{ "ui_cycle_debug_overlay_display_mode",           TTRC("Cycle Debug Overlay Display Mode") },
 	{ "ui_colorpicker_delete_preset",                  TTRC("ColorPicker: Delete Preset") },
 	{ "ui_accessibility_drag_and_drop",                TTRC("Accessibility: Keyboard Drag and Drop") },
 	{ "",                                              ""}
@@ -879,6 +880,11 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventJoypadButton::create_reference(JoyButton::X));
 	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE));
 	default_builtin_cache.insert("ui_colorpicker_delete_preset", inputs);
+
+	// ///// UI Misc Shortcuts /////
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::F3));
+	default_builtin_cache.insert("ui_cycle_debug_overlay_display_mode", inputs);
 
 	return default_builtin_cache;
 }
