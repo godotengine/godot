@@ -819,7 +819,7 @@
 			Name of the .NET assembly. This name is used as the name of the [code].csproj[/code] and [code].sln[/code] files. By default, it's set to the name of the project ([member application/config/name]) allowing to change it in the future without affecting the .NET assembly.
 		</member>
 		<member name="dotnet/project/assembly_reload_attempts" type="int" setter="" getter="" default="3">
-			Number of times to attempt assembly reloading after rebuilding .NET assembies. Effectively also the timeout in seconds to wait for unloading of script assemblies to finish.
+			Number of times to attempt assembly reloading after rebuilding .NET assemblies. Effectively also the timeout in seconds to wait for unloading of script assemblies to finish.
 		</member>
 		<member name="dotnet/project/solution_directory" type="String" setter="" getter="" default="&quot;&quot;">
 			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.

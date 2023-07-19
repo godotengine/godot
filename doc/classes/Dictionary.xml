@@ -261,7 +261,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Dictionaries with the same entries but in a different order will not have the same hash.
-				[b]Note:[/b] Dictionaries with equal hash values are [i]not[/i] guaranteed to be the same, because of hash collisions. On the countrary, dictionaries with different hash values are guaranteed to be different.
+				[b]Note:[/b] Dictionaries with equal hash values are [i]not[/i] guaranteed to be the same, because of hash collisions. On the contrary, dictionaries with different hash values are guaranteed to be different.
 			</description>
 		</method>
 		<method name="is_empty" qualifiers="const">

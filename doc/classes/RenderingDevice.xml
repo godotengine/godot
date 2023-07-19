@@ -214,7 +214,7 @@
 			<param index="0" name="screen" type="int" default="0" />
 			<param index="1" name="clear_color" type="Color" default="Color(0, 0, 0, 1)" />
 			<description>
-				High-level variant of [method draw_list_begin], with the parameters automtaically being adjusted for drawing onto the window specified by the [param screen] ID.
+				High-level variant of [method draw_list_begin], with the parameters automatically being adjusted for drawing onto the window specified by the [param screen] ID.
 				[b]Note:[/b] Cannot be used with local RenderingDevices, as these don't have a screen. If called on a local RenderingDevice, [method draw_list_begin_for_screen] returns [constant INVALID_ID].
 			</description>
 		</method>
