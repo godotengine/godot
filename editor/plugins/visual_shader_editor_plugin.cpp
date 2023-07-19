@@ -440,6 +440,10 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		custom_node->_set_initialized(true);
 	}
 
+	if (!p_just_update) {
+		vsnode->connect("node_ports_removed", callable_mp(editor, &VisualShaderEditor::_node_ports_removed).bind(p_id));
+	}
+
 	// Create graph node.
 	GraphNode *node = memnew(GraphNode);
 	graph->add_child(node);
@@ -2659,6 +2663,27 @@ void VisualShaderEditor::_port_edited(const StringName &p_property, const Varian
 	undo_redo->add_do_method(graph_plugin.ptr(), "set_input_port_default_value", type, editing_node, editing_port, p_value);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "set_input_port_default_value", type, editing_node, editing_port, vsn->get_input_port_default_value(editing_port));
 	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_node_ports_removed(int p_id) {
+	VisualShader::Type shader_type = visual_shader->get_shader_type();
+	Ref<VisualShaderNode> node = visual_shader->get_node(shader_type, p_id);
+	if (!node.is_valid())
+		return;
+	const int inputs = node->get_input_port_count(),
+			  outputs = node->get_output_port_count();
+	List<VisualShader::Connection> conns;
+	visual_shader->get_node_connections(shader_type, &conns);
+	for (const VisualShader::Connection &c : conns) {
+		if (unlikely(c.from_node == p_id && c.from_port >= outputs)) {
+			graph_plugin->disconnect_nodes(shader_type, c.from_node, c.from_port, c.to_node, c.to_port);
+			visual_shader->disconnect_nodes(shader_type, c.from_node, c.from_port, c.to_node, c.to_port);
+
+		} else if (unlikely(c.to_node == p_id && c.to_port >= inputs)) {
+			graph_plugin->disconnect_nodes(shader_type, c.from_node, c.from_port, c.to_node, c.to_port);
+			visual_shader->disconnect_nodes(shader_type, c.from_node, c.from_port, c.to_node, c.to_port);
+		}
+	}
 }
 
 void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, int p_port) {

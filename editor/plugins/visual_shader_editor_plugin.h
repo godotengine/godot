@@ -387,6 +387,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _edit_port_default_input(Object *p_button, int p_node, int p_port);
 	void _port_edited(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 
+	void _node_ports_removed(int p_id);
+
 	int to_node = -1;
 	int to_slot = -1;
 	int from_node = -1;

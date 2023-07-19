@@ -406,6 +406,8 @@ void VisualShaderNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_default_input_values", "get_default_input_values");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "expanded_output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_output_ports_expanded", "_get_output_ports_expanded");
 
+	ADD_SIGNAL(MethodInfo("node_ports_removed"));
+
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR);
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR_INT);
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR_UINT);
