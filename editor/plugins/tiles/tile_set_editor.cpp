@@ -57,35 +57,9 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 
 	if (p_from == sources_list) {
 		// Handle dropping a texture in the list of atlas resources.
-		int source_id = TileSet::INVALID_SOURCE;
-		int added = 0;
 		Dictionary d = p_data;
 		Vector<String> files = d["files"];
-		for (int i = 0; i < files.size(); i++) {
-			Ref<Texture2D> resource = ResourceLoader::load(files[i]);
-			if (resource.is_valid()) {
-				// Retrieve the id for the next created source.
-				source_id = tile_set->get_next_source_id();
-
-				// Actually create the new source.
-				Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
-				atlas_source->set_texture(resource);
-				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-				undo_redo->create_action(TTR("Add a new atlas source"));
-				undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
-				undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
-				undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
-				undo_redo->commit_action();
-				added += 1;
-			}
-		}
-
-		if (added == 1) {
-			tile_set_atlas_source_editor->init_source();
-		}
-
-		// Update the selected source (thus triggering an update).
-		_update_sources_list(source_id);
+		_load_texture_files(files);
 	}
 }
 
@@ -124,6 +98,43 @@ bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		}
 	}
 	return false;
+}
+
+void TileSetEditor::_load_texture_files(const Vector<String> &p_paths) {
+	int source_id = TileSet::INVALID_SOURCE;
+	Vector<Ref<TileSetAtlasSource>> atlases;
+
+	for (const String &p_path : p_paths) {
+		Ref<Texture2D> texture = ResourceLoader::load(p_path);
+
+		if (texture.is_null()) {
+			EditorNode::get_singleton()->show_warning(TTR("Invalid texture selected."));
+			continue;
+		}
+
+		// Retrieve the id for the next created source.
+		source_id = tile_set->get_next_source_id();
+
+		// Actually create the new source.
+		Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
+		atlas_source->set_texture(texture);
+
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Add a new atlas source"));
+		undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
+		undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
+		undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
+		undo_redo->commit_action();
+
+		atlases.append(atlas_source);
+	}
+
+	if (!atlases.is_empty()) {
+		tile_set_atlas_source_editor->init_new_atlases(atlases);
+	}
+
+	// Update the selected source (thus triggering an update).
+	_update_sources_list(source_id);
 }
 
 void TileSetEditor::_update_sources_list(int force_selected_id) {
@@ -226,30 +237,6 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 	TilesEditorUtils::get_singleton()->set_sources_lists_current(sources_list->get_current());
 }
 
-void TileSetEditor::_texture_file_selected(const String &p_path) {
-	Ref<Texture2D> texture = ResourceLoader::load(p_path);
-	if (texture.is_null()) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid texture selected."));
-		return;
-	}
-
-	int source_id = tile_set->get_next_source_id();
-
-	Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
-	atlas_source->set_texture(texture);
-
-	// Add a new source.
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Add atlas source"));
-	undo_redo->add_do_method(*tile_set, "add_source", atlas_source, source_id);
-	undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
-	undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
-	undo_redo->commit_action();
-
-	_update_sources_list(source_id);
-	tile_set_atlas_source_editor->init_source();
-}
-
 void TileSetEditor::_source_selected(int p_source_index) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
@@ -308,8 +295,8 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 			if (!texture_file_dialog) {
 				texture_file_dialog = memnew(EditorFileDialog);
 				add_child(texture_file_dialog);
-				texture_file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-				texture_file_dialog->connect("file_selected", callable_mp(this, &TileSetEditor::_texture_file_selected));
+				texture_file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
+				texture_file_dialog->connect("files_selected", callable_mp(this, &TileSetEditor::_load_texture_files));
 
 				List<String> extensions;
 				ResourceLoader::get_recognized_extensions_for_type("Texture2D", &extensions);
