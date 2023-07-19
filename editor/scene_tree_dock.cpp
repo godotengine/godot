@@ -3031,7 +3031,9 @@ void SceneTreeDock::_update_tree_menu() {
 }
 
 void SceneTreeDock::_update_filter_menu() {
-	_append_filter_options_to(filter->get_menu());
+	if (filter->get_menu()->get_item_idx_from_text(TTR("Filters")) == -1) {
+		_append_filter_options_to(filter->get_menu());
+	}
 }
 
 void SceneTreeDock::_filter_changed(const String &p_filter) {
