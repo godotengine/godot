@@ -3091,18 +3091,20 @@ void TileMap::_build_runtime_update_tile_data(SelfList<TileMapQuadrant>::List &r
 						continue;
 					}
 
-					TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-					if (atlas_source) {
-						bool ret = false;
-						if (GDVIRTUAL_CALL(_use_tile_data_runtime_update, q.layer, E_cell.value, ret) && ret) {
+					bool ret = false;
+					if (GDVIRTUAL_CALL(_use_tile_data_runtime_update, q.layer, E_cell.value, ret) && ret) {
+						TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+						if (atlas_source) {
 							TileData *tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 
-							// Create the runtime TileData.
 							TileData *tile_data_runtime_use = tile_data->duplicate();
 							tile_data_runtime_use->set_allow_transform(true);
 							q.runtime_tile_data_cache[E_cell.value] = tile_data_runtime_use;
 
 							GDVIRTUAL_CALL(_tile_data_runtime_update, q.layer, E_cell.value, tile_data_runtime_use);
+						} else {
+							// We don't have runtime data for this tile. Make sure it's cleared out.
+							q.runtime_tile_data_cache.erase(E_cell.value);
 						}
 					}
 				}
