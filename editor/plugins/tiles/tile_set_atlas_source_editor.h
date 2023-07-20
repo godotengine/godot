@@ -261,6 +261,7 @@ private:
 	void _auto_create_tiles();
 	void _auto_remove_tiles();
 	AcceptDialog *confirm_auto_create_tiles = nullptr;
+	AcceptDialog *confirm_auto_create_pending_tiles = nullptr;
 
 	void _tile_set_changed();
 	void _tile_proxy_object_changed(String p_what);
@@ -278,7 +279,11 @@ protected:
 public:
 	void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_source, int p_source_id);
 	void init_source();
+	void init_source_pending();
 	void auto_create_tiles();
+	void auto_create_pending_tiles();
+
+	TypedArray<int> pendingSourceIds;
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 

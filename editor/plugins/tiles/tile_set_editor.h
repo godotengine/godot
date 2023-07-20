@@ -105,6 +105,8 @@ public:
 
 	void edit(Ref<TileSet> p_tile_set);
 
+	void update_sources_list(int force_selected_id = -1);
+
 	TileSetEditor();
 };
 

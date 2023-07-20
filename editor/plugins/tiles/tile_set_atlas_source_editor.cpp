@@ -2253,8 +2253,20 @@ void TileSetAtlasSourceEditor::init_source() {
 	confirm_auto_create_tiles->popup_centered();
 }
 
+void TileSetAtlasSourceEditor::init_source_pending() {
+	confirm_auto_create_pending_tiles->popup_centered();
+}
+
 void TileSetAtlasSourceEditor::auto_create_tiles() {
 	_auto_create_tiles();
+}
+
+void TileSetAtlasSourceEditor::auto_create_pending_tiles() {
+	for (int i = 0; i < pendingSourceIds.size(); i++) {
+		TileSetEditor::get_singleton()->update_sources_list(pendingSourceIds[i]);
+		_auto_create_tiles();
+	}
+	pendingSourceIds.clear();
 }
 
 void TileSetAtlasSourceEditor::_auto_create_tiles() {
@@ -2640,6 +2652,14 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	confirm_auto_create_tiles->add_cancel_button()->set_text(TTR("No"));
 	confirm_auto_create_tiles->connect("confirmed", callable_mp(this, &TileSetAtlasSourceEditor::_auto_create_tiles));
 	add_child(confirm_auto_create_tiles);
+
+	confirm_auto_create_pending_tiles = memnew(AcceptDialog);
+	confirm_auto_create_pending_tiles->set_title(TTR("Auto Create Tiles in Non-Transparent Texture Regions?"));
+	confirm_auto_create_pending_tiles->set_text(TTR("The atlas's texture was modified.\nWould you like to automatically create tiles in the atlas?"));
+	confirm_auto_create_pending_tiles->set_ok_button_text(TTR("Yes"));
+	confirm_auto_create_pending_tiles->add_cancel_button()->set_text(TTR("No"));
+	confirm_auto_create_pending_tiles->connect("confirmed", callable_mp(this, &TileSetAtlasSourceEditor::auto_create_pending_tiles));
+	add_child(confirm_auto_create_pending_tiles);
 
 	// Inspector plugin.
 	Ref<EditorInspectorPluginTileData> tile_data_inspector_plugin;

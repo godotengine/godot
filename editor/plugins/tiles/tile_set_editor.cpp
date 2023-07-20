@@ -52,11 +52,12 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		return;
 	}
 
+	tile_set_atlas_source_editor->pendingSourceIds.clear();
+
 	if (p_from == sources_list) {
 		// Handle dropping a texture in the list of atlas resources.
 		int source_id = TileSet::INVALID_SOURCE;
 		int added = 0;
-		bool handled = false;
 		Dictionary d = p_data;
 		Vector<String> files = d["files"];
 		for (int i = 0; i < files.size(); i++) {
@@ -78,15 +79,17 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 
 				// If just one tile... set it up.
 				if (tile_set->get_tile_size() == resource->get_size()) {
-					handled = true;
+					added -= 1;
 					_update_sources_list(source_id);
 					tile_set_atlas_source_editor->auto_create_tiles();
+				} else {
+					tile_set_atlas_source_editor->pendingSourceIds.append(source_id);
 				}
 			}
 		}
 
-		if (added == 1 && !handled) {
-			tile_set_atlas_source_editor->init_source();
+		if (added > 0) {
+			tile_set_atlas_source_editor->init_source_pending();
 		}
 
 		// Update the selected source (thus triggering an update).
@@ -129,6 +132,10 @@ bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		}
 	}
 	return false;
+}
+
+void TileSetEditor::update_sources_list(int force_selected_id) {
+	_update_sources_list(force_selected_id);
 }
 
 void TileSetEditor::_update_sources_list(int force_selected_id) {
