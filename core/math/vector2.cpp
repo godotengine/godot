@@ -32,6 +32,7 @@
 
 #include "core/math/vector2i.h"
 #include "core/string/ustring.h"
+#include "thirdparty/oidn/mkl-dnn/src/common/math_utils.hpp"
 
 real_t Vector2::angle() const {
 	return Math::atan2(y, x);
@@ -129,6 +130,10 @@ Vector2 Vector2::project(const Vector2 &p_to) const {
 	return p_to * (dot(p_to) / p_to.length_squared());
 }
 
+Vector2 Vector2::aspect_ratio() const {
+	int divisor = mkldnn::impl::math::gcd(x, y);
+	return Vector2(x / divisor, y / divisor);
+}
 Vector2 Vector2::clamp(const Vector2 &p_min, const Vector2 &p_max) const {
 	return Vector2(
 			CLAMP(x, p_min.x, p_max.x),

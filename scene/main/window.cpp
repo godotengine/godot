@@ -39,6 +39,7 @@
 #include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
+#include "scene/2d/camera_2d.h"
 
 // Dynamic properties.
 
@@ -366,6 +367,14 @@ Point2i Window::get_position_with_decorations() const {
 	}
 	return position;
 }
+
+Size2i Window::get_size_with_camera_2d() const {
+	if (get_camera_2d()) {
+		return (Size2(get_size()) / get_camera_2d()->get_zoom()).round();
+	}
+	return get_size();
+}
+
 
 Size2i Window::get_size_with_decorations() const {
 	ERR_READ_THREAD_GUARD_V(Size2i());
@@ -2515,6 +2524,8 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reset_size"), &Window::reset_size);
 
 	ClassDB::bind_method(D_METHOD("get_position_with_decorations"), &Window::get_position_with_decorations);
+
+	ClassDB::bind_method(D_METHOD("get_size_with_camera_2d"), &Window::get_size_with_camera_2d);
 	ClassDB::bind_method(D_METHOD("get_size_with_decorations"), &Window::get_size_with_decorations);
 
 	ClassDB::bind_method(D_METHOD("set_max_size", "max_size"), &Window::set_max_size);

@@ -33,6 +33,7 @@
 #include "core/io/marshalls.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
+#include "scene/main/window.h"
 
 #ifdef DEBUG_ENABLED
 #include "servers/navigation_server_3d.h"
@@ -473,9 +474,8 @@ int TileMap::get_effective_quadrant_size(int p_layer) const {
 	// When using YSort, the quadrant size is reduced to 1 to have one CanvasItem per quadrant
 	if (is_y_sort_enabled() && layers[p_layer].y_sort_enabled) {
 		return 1;
-	} else {
-		return quadrant_size;
 	}
+	return quadrant_size;
 }
 
 void TileMap::set_selected_layer(int p_layer_id) {
@@ -540,6 +540,19 @@ void TileMap::set_tileset(const Ref<TileSet> &p_tileset) {
 	}
 
 	emit_signal(SNAME("changed"));
+}
+
+void TileMap::auto_resize_quadrants() {
+	if (tile_set.is_valid()) {
+		Vector2 real_size = get_tree()->get_root()->get_size_with_camera_2d();
+		Vector2 cell_size = get_tileset()->get_tile_size();
+		/* the first goal is to have at maximum a quadrant per screen, */
+		Vector2i tiles_per_screen = (real_size / cell_size).ceil();
+		/* Divides tiles in screen into subparts (the ratio of tiles per screen.) */ 
+		Vector2i tiles_ratio = tiles_per_screen.aspect_ratio();
+		/* sqrt so you get a squared aspect ratio from the total area. (as in w = h) */
+		set_quadrant_size(ceil(sqrt(tiles_ratio.area())));
+	}
 }
 
 void TileMap::set_quadrant_size(int p_size) {
@@ -4135,10 +4148,9 @@ PackedStringArray TileMap::get_configuration_warnings() const {
 void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tileset", "tileset"), &TileMap::set_tileset);
 	ClassDB::bind_method(D_METHOD("get_tileset"), &TileMap::get_tileset);
-
+	ClassDB::bind_method(D_METHOD("auto_resize_quadrants"), &TileMap::auto_resize_quadrants);
 	ClassDB::bind_method(D_METHOD("set_quadrant_size", "size"), &TileMap::set_quadrant_size);
 	ClassDB::bind_method(D_METHOD("get_quadrant_size"), &TileMap::get_quadrant_size);
-
 	ClassDB::bind_method(D_METHOD("get_layers_count"), &TileMap::get_layers_count);
 	ClassDB::bind_method(D_METHOD("add_layer", "to_position"), &TileMap::add_layer);
 	ClassDB::bind_method(D_METHOD("move_layer", "layer", "to_position"), &TileMap::move_layer);

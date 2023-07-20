@@ -32,6 +32,7 @@
 
 #include "core/math/vector2.h"
 #include "core/string/ustring.h"
+#include "thirdparty/oidn/mkl-dnn/src/common/math_utils.hpp"
 
 Vector2i Vector2i::clamp(const Vector2i &p_min, const Vector2i &p_max) const {
 	return Vector2i(
@@ -51,6 +52,11 @@ int64_t Vector2i::length_squared() const {
 
 double Vector2i::length() const {
 	return Math::sqrt((double)length_squared());
+}
+
+Vector2i Vector2i::aspect_ratio() const {
+	int divisor = mkldnn::impl::math::gcd(x, y);
+	return Vector2i(x / divisor, y / divisor);
 }
 
 Vector2i Vector2i::operator+(const Vector2i &p_v) const {

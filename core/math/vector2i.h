@@ -116,10 +116,12 @@ struct _NO_DISCARD_ Vector2i {
 	double length() const;
 
 	real_t aspect() const { return width / (real_t)height; }
+	Vector2i aspect_ratio() const;
 	Vector2i sign() const { return Vector2i(SIGN(x), SIGN(y)); }
 	Vector2i abs() const { return Vector2i(Math::abs(x), Math::abs(y)); }
 	Vector2i clamp(const Vector2i &p_min, const Vector2i &p_max) const;
 	Vector2i snapped(const Vector2i &p_step) const;
+	real_t area() const { return width * height; }
 
 	operator String() const;
 	operator Vector2() const;
