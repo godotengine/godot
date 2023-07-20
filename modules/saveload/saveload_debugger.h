@@ -39,7 +39,6 @@ class SaveloadSynchronizer;
 
 class SaveloadDebugger {
 public:
-
 	struct SyncInfo {
 		ObjectID synchronizer;
 		ObjectID config;

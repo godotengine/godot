@@ -78,7 +78,6 @@ public:
 	bool property_get_sync(const NodePath &p_path);
 	void property_set_sync(const NodePath &p_path, bool p_enabled);
 
-
 	const List<NodePath> &get_sync_properties() { return sync_props; }
 
 	SceneSaveloadConfig() {}

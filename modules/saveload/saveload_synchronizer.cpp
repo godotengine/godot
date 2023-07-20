@@ -207,5 +207,4 @@ NodePath SaveloadSynchronizer::get_root_path() const {
 }
 
 SaveloadSynchronizer::SaveloadSynchronizer() {
-
 }

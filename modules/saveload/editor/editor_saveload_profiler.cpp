@@ -82,7 +82,7 @@ void EditorSaveloadProfiler::_refresh() {
 		return;
 	}
 	dirty = false;
-//	refresh_rpc_data();
+	//	refresh_rpc_data();
 	refresh_saveload_data();
 }
 
@@ -182,12 +182,12 @@ void EditorSaveloadProfiler::_activate_pressed() {
 }
 
 void EditorSaveloadProfiler::_clear_pressed() {
-//	rpc_data.clear();
+	//	rpc_data.clear();
 	sync_data.clear();
 	node_data.clear();
 	missing_node_data.clear();
 	set_bandwidth(0, 0);
-//	refresh_rpc_data();
+	//	refresh_rpc_data();
 	refresh_saveload_data();
 }
 

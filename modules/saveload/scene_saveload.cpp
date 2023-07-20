@@ -94,5 +94,4 @@ SceneSaveload::SceneSaveload() {
 }
 
 SceneSaveload::~SceneSaveload() {
-
 }

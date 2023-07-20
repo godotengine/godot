@@ -29,8 +29,8 @@
 /**************************************************************************/
 
 #include "saveload_spawner.h"
-#include "scene_saveload.h"
 #include "saveload_api.h"
+#include "scene_saveload.h"
 
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
@@ -265,11 +265,11 @@ void SaveloadSpawner::_bind_methods() {
 }
 
 void SaveloadSpawner::_update_spawn_parent() {
-//#ifdef TOOLS_ENABLED
-//	if (Engine::get_singleton()->is_editor_hint()) {
-//		return;
-//	}
-//#endif
+	//#ifdef TOOLS_ENABLED
+	//	if (Engine::get_singleton()->is_editor_hint()) {
+	//		return;
+	//	}
+	//#endif
 	if (spawn_parent_id.is_valid()) {
 		Node *spawn_parent = Object::cast_to<Node>(ObjectDB::get_instance(spawn_parent_id));
 		if (spawn_parent && spawn_parent->is_connected("child_entered_tree", callable_mp(this, &SaveloadSpawner::_node_added))) {
@@ -455,7 +455,6 @@ Node *SaveloadSpawner::instantiate_custom(const Variant &p_data) {
 	ERR_FAIL_COND_V_MSG(ret.get_type() != Variant::OBJECT, nullptr, "The spawn function must return a Node.");
 	return Object::cast_to<Node>(ret.operator Object *());
 }
-
 
 /***********************************
  * SaveloadSpawner Definitions End *

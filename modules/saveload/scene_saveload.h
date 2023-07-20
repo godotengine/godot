@@ -50,8 +50,8 @@ public:
 	TypedArray<SaveloadSpawner> get_spawners() const;
 	TypedArray<SaveloadSynchronizer> get_synchers() const;
 
-	virtual Error track (Object *p_object) override;
-	virtual Error untrack (Object *p_object) override;
+	virtual Error track(Object *p_object) override;
+	virtual Error untrack(Object *p_object) override;
 
 	virtual Variant serialize(const Variant &p_configuration_data = Variant()) override;
 	virtual Error deserialize(const Variant &p_serialized_state, const Variant &p_configuration_data = Variant()) override;

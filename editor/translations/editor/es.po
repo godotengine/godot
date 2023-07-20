@@ -13920,16 +13920,11 @@ msgstr ""
 msgid "Add from path"
 msgstr "Añadir desde ruta"
 
-<<<<<<< HEAD
-msgid "Please select a SaveloadSynchronizer first."
-msgstr "Por favor, selecciona primero un SaveloadSynchronizer."
-=======
 msgid "Watch"
 msgstr "Ver"
 
 msgid "Please select a MultiplayerSynchronizer first."
 msgstr "Por favor, selecciona primero un MultiplayerSynchronizer."
->>>>>>> 0c2144da908a8223e188d27ed1d31d8248056c78
 
 msgid "Set spawn property"
 msgstr "Establecer propiedad de spawn"
@@ -13948,10 +13943,10 @@ msgstr "Eliminar Propiedad"
 
 msgid ""
 "A valid NodePath must be set in the \"Spawn Path\" property in order for "
-"SaveloadSpawner to be able to spawn Nodes."
+"MultiplayerSpawner to be able to spawn Nodes."
 msgstr ""
 "Se debe establecer una ruta de nodo válida en la propiedad \"Spawn Path\" "
-"para que SaveloadSpawner pueda generar nodos."
+"para que MultiplayerSpawner pueda generar nodos."
 
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""

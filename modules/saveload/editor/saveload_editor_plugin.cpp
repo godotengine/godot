@@ -54,11 +54,11 @@ bool SaveloadEditorDebugger::capture(const String &p_message, const Array &p_dat
 	ERR_FAIL_COND_V(!profilers.has(p_session), false);
 	EditorSaveloadProfiler *profiler = profilers[p_session];
 	if (p_message == "saveload:rpc") {
-//		SaveloadDebugger::RPCFrame frame;
-//		frame.deserialize(p_data);
-//		for (int i = 0; i < frame.infos.size(); i++) {
-//			profiler->add_rpc_frame_data(frame.infos[i]);
-//		}
+		//		SaveloadDebugger::RPCFrame frame;
+		//		frame.deserialize(p_data);
+		//		for (int i = 0; i < frame.infos.size(); i++) {
+		//			profiler->add_rpc_frame_data(frame.infos[i]);
+		//		}
 		return true;
 	} else if (p_message == "saveload:syncs") {
 		SaveloadDebugger::SaveloadFrame frame;
@@ -94,7 +94,7 @@ void SaveloadEditorDebugger::_profiler_activate(bool p_enable, int p_session_id)
 	Ref<EditorDebuggerSession> session = get_session(p_session_id);
 	ERR_FAIL_COND(session.is_null());
 	session->toggle_profiler("saveload:bandwidth", p_enable);
-//	session->toggle_profiler("saveload:rpc", p_enable);
+	//	session->toggle_profiler("saveload:rpc", p_enable);
 	session->toggle_profiler("saveload:saveload", p_enable);
 }
 

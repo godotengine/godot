@@ -5,14 +5,14 @@
 	</brief_description>
 	<description>
 		This class can be used to augment or replace the default [MultiplayerAPI] implementation via script or extensions.
-		The following example augment the default implementation ([SceneSaveload]) by logging every RPC being made, and every object being configured for replication.
+		The following example augment the default implementation ([SceneMultiplayer]) by logging every RPC being made, and every object being configured for replication.
 		[codeblocks]
 		[gdscript]
 		extends MultiplayerAPIExtension
 		class_name LogMultiplayer
 
-		# We want to augment the default SceneSaveload.
-		var base_multiplayer = SceneSaveload.new()
+		# We want to augment the default SceneMultiplayer.
+		var base_multiplayer = SceneMultiplayer.new()
 
 		func _init():
 		    # Just passthourgh base signals (copied to var to avoid cyclic reference)
@@ -32,21 +32,21 @@
 
 		# Log configuration add. E.g. root path (nullptr, NodePath), replication (Node, Spawner|Synchronizer), custom.
 		func _object_configuration_add(object, config: Variant) -&gt; int: # Error
-		    if config is SaveloadSynchronizer:
+		    if config is MultiplayerSynchronizer:
 		        print("Adding synchronization configuration for %s. Synchronizer: %s" % [object, config])
-		    elif config is SaveloadSpawner:
+		    elif config is MultiplayerSpawner:
 		        print("Adding node %s to the spawn list. Spawner: %s" % [object, config])
 		    return base_multiplayer.object_configuration_add(object, config)
 
 		# Log configuration remove. E.g. root path (nullptr, NodePath), replication (Node, Spawner|Synchronizer), custom.
 		func _object_configuration_remove(object, config: Variant) -&gt; int: # Error
-		    if config is SaveloadSynchronizer:
+		    if config is MultiplayerSynchronizer:
 		        print("Removing synchronization configuration for %s. Synchronizer: %s" % [object, config])
-		    elif config is SaveloadSpawner:
+		    elif config is MultiplayerSpawner:
 		        print("Removing node %s from the spawn list. Spawner: %s" % [object, config])
 		    return base_multiplayer.object_configuration_remove(object, config)
 
-		# These can be optional, but in our case we want to augment SceneSaveload, so forward everything.
+		# These can be optional, but in our case we want to augment SceneMultiplayer, so forward everything.
 		func _set_multiplayer_peer(p_peer: MultiplayerPeer):
 		    base_multiplayer.multiplayer_peer = p_peer
 

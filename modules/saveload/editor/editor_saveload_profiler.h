@@ -57,7 +57,7 @@ public:
 	};
 
 private:
-//	using RPCNodeInfo = SaveloadDebugger::RPCNodeInfo;
+	//	using RPCNodeInfo = SaveloadDebugger::RPCNodeInfo;
 	using SyncInfo = SaveloadDebugger::SyncInfo;
 
 	bool dirty = false;
@@ -69,7 +69,7 @@ private:
 	LineEdit *outgoing_bandwidth_text = nullptr;
 	Tree *saveload_display = nullptr;
 
-//	HashMap<ObjectID, RPCNodeInfo> rpc_data;
+	//	HashMap<ObjectID, RPCNodeInfo> rpc_data;
 	HashMap<ObjectID, SyncInfo> sync_data;
 	HashMap<ObjectID, NodeInfo> node_data;
 	HashSet<ObjectID> missing_node_data;
@@ -102,12 +102,12 @@ protected:
 	static void _bind_methods();
 
 public:
-//	void refresh_rpc_data();
+	//	void refresh_rpc_data();
 	void refresh_saveload_data();
 
 	Array pop_missing_node_data();
 	void add_node_data(const NodeInfo &p_info);
-//	void add_rpc_frame_data(const RPCNodeInfo &p_frame);
+	//	void add_rpc_frame_data(const RPCNodeInfo &p_frame);
 	void add_sync_frame_data(const SyncInfo &p_frame);
 	void set_bandwidth(int p_incoming, int p_outgoing);
 	bool is_profiling();

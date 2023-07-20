@@ -13436,11 +13436,11 @@ msgstr ""
 "请使用上面的按钮添加属性或\n"
 "将属性从检查器中拖放到这里。"
 
-msgid "Please select a SaveloadSynchronizer first."
-msgstr "请先选择一个 SaveloadSynchronizer。"
+msgid "Please select a MultiplayerSynchronizer first."
+msgstr "请先选择一个 MultiplayerSynchronizer。"
 
-msgid "The SaveloadSynchronizer needs a root path."
-msgstr "该 SaveloadSynchronizer 需要根路径。"
+msgid "The MultiplayerSynchronizer needs a root path."
+msgstr "该 MultiplayerSynchronizer 需要根路径。"
 
 msgid ""
 "Each MultiplayerSynchronizer can have no more than 64 watched properties."
@@ -13473,9 +13473,9 @@ msgstr ""
 
 msgid ""
 "A valid NodePath must be set in the \"Root Path\" property in order for "
-"SaveloadSynchronizer to be able to synchronize properties."
+"MultiplayerSynchronizer to be able to synchronize properties."
 msgstr ""
-"要让 SaveloadSynchronizer 能够同步属性，必须在“Root Path”属性中设置有效的 "
+"要让 MultiplayerSynchronizer 能够同步属性，必须在“Root Path”属性中设置有效的 "
 "NodePath。"
 
 msgid "A NavigationMesh resource must be set or created for this node to work."
