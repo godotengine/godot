@@ -858,6 +858,27 @@ InputDefault::InputDefault() {
 			parse_mapping(entries[i]);
 		}
 	}
+
+	String env_ignore_devices = OS::get_singleton()->get_environment("SDL_GAMECONTROLLER_IGNORE_DEVICES");
+	if (!env_ignore_devices.empty()) {
+		Vector<String> entries = env_ignore_devices.split(",");
+		for (int i = 0; i < entries.size(); i++) {
+			Vector<String> vid_pid = entries[i].split("/");
+
+			if (vid_pid.size() < 2) {
+				continue;
+			}
+
+			print_verbose(vformat("Device Ignored -- Vendor: %s Product: %s", vid_pid[0], vid_pid[1]));
+			const uint16_t vid_unswapped = vid_pid[0].hex_to_int();
+			const uint16_t pid_unswapped = vid_pid[1].hex_to_int();
+			const uint16_t vid = BSWAP16(vid_unswapped);
+			const uint16_t pid = BSWAP16(pid_unswapped);
+
+			uint32_t full_id = (((uint32_t)vid) << 16) | ((uint16_t)pid);
+			ignored_device_ids.insert(full_id);
+		}
+	}
 }
 
 void InputDefault::joy_button(int p_device, int p_button, bool p_pressed) {
@@ -1348,6 +1369,11 @@ bool InputDefault::is_joy_known(int p_device) {
 
 String InputDefault::get_joy_guid(int p_device) const {
 	return OS::get_singleton()->get_joy_guid(p_device);
+}
+
+bool InputDefault::should_ignore_device(int p_vendor_id, int p_product_id) const {
+	uint32_t full_id = (((uint32_t)p_vendor_id) << 16) | ((uint16_t)p_product_id);
+	return ignored_device_ids.has(full_id);
 }
 
 //platforms that use the remapping system can override and call to these ones
