@@ -72,6 +72,7 @@ void PluginConfigDialog::_on_confirmed() {
 	String script_path = path.path_join(script_name);
 
 	Ref<ConfigFile> cf = memnew(ConfigFile);
+	cf->load(path.path_join("plugin.cfg"));
 	cf->set_value("plugin", "name", name_edit->get_text());
 	cf->set_value("plugin", "description", desc_edit->get_text());
 	cf->set_value("plugin", "author", author_edit->get_text());
