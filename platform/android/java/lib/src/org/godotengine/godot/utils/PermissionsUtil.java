@@ -42,10 +42,12 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This class includes utility functions for Android permissions related operations.
@@ -58,6 +60,7 @@ public final class PermissionsUtil {
 	static final int REQUEST_CAMERA_PERMISSION = 2;
 	static final int REQUEST_VIBRATE_PERMISSION = 3;
 	public static final int REQUEST_ALL_PERMISSION_REQ_CODE = 1001;
+	public static final int REQUEST_SINGLE_PERMISSION_REQ_CODE = 1002;
 	public static final int REQUEST_MANAGE_EXTERNAL_STORAGE_REQ_CODE = 2002;
 
 	private PermissionsUtil() {
@@ -65,31 +68,57 @@ public final class PermissionsUtil {
 
 	/**
 	 * Request a dangerous permission. name must be specified in <a href="https://github.com/aosp-mirror/platform_frameworks_base/blob/master/core/res/AndroidManifest.xml">this</a>
-	 * @param name the name of the requested permission.
+	 * @param permissionName the name of the requested permission.
 	 * @param activity the caller activity for this method.
 	 * @return true/false. "true" if permission was granted otherwise returns "false".
 	 */
-	public static boolean requestPermission(String name, Activity activity) {
+	public static boolean requestPermission(String permissionName, Activity activity) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			// Not necessary, asked on install already
 			return true;
 		}
 
-		if (name.equals("RECORD_AUDIO") && ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-			activity.requestPermissions(new String[] { Manifest.permission.RECORD_AUDIO }, REQUEST_RECORD_AUDIO_PERMISSION);
-			return false;
-		}
+		switch (permissionName) {
+			case "RECORD_AUDIO":
+			case Manifest.permission.RECORD_AUDIO:
+				if (ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+					activity.requestPermissions(new String[] { Manifest.permission.RECORD_AUDIO }, REQUEST_RECORD_AUDIO_PERMISSION);
+					return false;
+				}
+				return true;
 
-		if (name.equals("CAMERA") && ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-			activity.requestPermissions(new String[] { Manifest.permission.CAMERA }, REQUEST_CAMERA_PERMISSION);
-			return false;
-		}
+			case "CAMERA":
+			case Manifest.permission.CAMERA:
+				if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+					activity.requestPermissions(new String[] { Manifest.permission.CAMERA }, REQUEST_CAMERA_PERMISSION);
+					return false;
+				}
+				return true;
 
-		if (name.equals("VIBRATE") && ContextCompat.checkSelfPermission(activity, Manifest.permission.VIBRATE) != PackageManager.PERMISSION_GRANTED) {
-			activity.requestPermissions(new String[] { Manifest.permission.VIBRATE }, REQUEST_VIBRATE_PERMISSION);
-			return false;
+			case "VIBRATE":
+			case Manifest.permission.VIBRATE:
+				if (ContextCompat.checkSelfPermission(activity, Manifest.permission.VIBRATE) != PackageManager.PERMISSION_GRANTED) {
+					activity.requestPermissions(new String[] { Manifest.permission.VIBRATE }, REQUEST_VIBRATE_PERMISSION);
+					return false;
+				}
+				return true;
+
+			default:
+				// Check if the given permission is a dangerous permission
+				try {
+					PermissionInfo permissionInfo = getPermissionInfo(activity, permissionName);
+					int protectionLevel = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? permissionInfo.getProtection() : permissionInfo.protectionLevel;
+					if (protectionLevel == PermissionInfo.PROTECTION_DANGEROUS && ContextCompat.checkSelfPermission(activity, permissionName) != PackageManager.PERMISSION_GRANTED) {
+						activity.requestPermissions(new String[] { permissionName }, REQUEST_SINGLE_PERMISSION_REQ_CODE);
+						return false;
+					}
+				} catch (PackageManager.NameNotFoundException e) {
+					// Unknown permission - return false as it can't be granted.
+					Log.w(TAG, "Unable to identify permission " + permissionName, e);
+					return false;
+				}
+				return true;
 		}
-		return true;
 	}
 
 	/**
@@ -98,6 +127,16 @@ public final class PermissionsUtil {
 	 * @return true/false. "true" if all permissions were granted otherwise returns "false".
 	 */
 	public static boolean requestManifestPermissions(Activity activity) {
+		return requestManifestPermissions(activity, null);
+	}
+
+	/**
+	 * Request dangerous permissions which are defined in the Android manifest file from the user.
+	 * @param activity the caller activity for this method.
+	 * @param excludes Set of permissions to exclude from the request
+	 * @return true/false. "true" if all permissions were granted otherwise returns "false".
+	 */
+	public static boolean requestManifestPermissions(Activity activity, @Nullable Set<String> excludes) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			return true;
 		}
@@ -115,6 +154,9 @@ public final class PermissionsUtil {
 
 		List<String> requestedPermissions = new ArrayList<>();
 		for (String manifestPermission : manifestPermissions) {
+			if (excludes != null && excludes.contains(manifestPermission)) {
+				continue;
+			}
 			try {
 				if (manifestPermission.equals(Manifest.permission.MANAGE_EXTERNAL_STORAGE)) {
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
