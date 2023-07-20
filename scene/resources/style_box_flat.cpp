@@ -300,8 +300,9 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 
 				const real_t x = radius * (real_t)cos((corner_index + detail / (double)adapted_corner_detail) * (Math_TAU / 4.0) + Math_PI) + corner_point.x;
 				const real_t y = radius * (real_t)sin((corner_index + detail / (double)adapted_corner_detail) * (Math_TAU / 4.0) + Math_PI) + corner_point.y;
-				const float x_skew = -skew.x * (y - ring_rect.get_center().y);
-				const float y_skew = -skew.y * (x - ring_rect.get_center().x);
+				// Transform with the center point of style_rect as the coordinate origin.
+				const float x_skew = -skew.x * (y - style_rect.get_center().y);
+				const float y_skew = -skew.y * (x - style_rect.get_center().x);
 				verts.push_back(Vector2(x + x_skew, y + y_skew));
 				colors.push_back(color);
 			}
@@ -525,9 +526,10 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 			draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
 					outer_rect_aa_colored, ((blend_on) ? infill_rect : inner_rect_aa_colored), border_color_inner, border_color, corner_detail, skew);
 			if (!blend_on) {
+				bool has_bg_area = border_width[SIDE_LEFT] + border_width[SIDE_RIGHT] < p_rect.size.width && border_width[SIDE_TOP] + border_width[SIDE_BOTTOM] < p_rect.size.height;
 				// Add antialiasing on the ring inner border
 				draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
-						inner_rect_aa_colored, inner_rect_aa_transparent, border_color_blend, border_color, corner_detail, skew);
+						inner_rect_aa_colored, inner_rect_aa_transparent, has_bg_area ? border_color_blend : border_color, border_color, corner_detail, skew);
 			}
 			// Add antialiasing on the ring outer border
 			draw_rounded_rectangle(verts, indices, colors, border_style_rect, adapted_corner,
