@@ -2948,7 +2948,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 			post_effects->post_copy(fbo_rt, target_size, color,
 					depth_buffer, ssao_enabled, ssao_quality, ssao_strength, ssao_radius,
 					internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity,
-					srgb_white, 0, false, bcs_spec_constants);
+					srgb_white, 0, false, bcs_spec_constants, p_render_data->render_buffers->scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_NEAREST);
 
 			// Copy depth buffer
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo_int);
@@ -3022,7 +3022,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 				post_effects->post_copy(fbos[2], target_size, source_color,
 						read_depth, ssao_enabled, ssao_quality, ssao_strength, ssao_radius,
 						internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity,
-						srgb_white, v, true, bcs_spec_constants);
+						srgb_white, v, true, bcs_spec_constants, p_render_data->render_buffers->scaling_3d_mode != RS::VIEWPORT_SCALING_3D_MODE_NEAREST);
 			}
 
 			// Copy depth
