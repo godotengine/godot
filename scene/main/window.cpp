@@ -1628,6 +1628,9 @@ void Window::popup(const Rect2i &p_screen_rect) {
 		}
 	}
 
+	set_transient(true);
+	set_visible(true);
+
 	// Update window size to calculate the actual window size based on contents minimum size and minimum size.
 	_update_window_size();
 
@@ -1650,9 +1653,6 @@ void Window::popup(const Rect2i &p_screen_rect) {
 			break;
 		}
 	}
-
-	set_transient(true);
-	set_visible(true);
 
 	Rect2i parent_rect;
 	if (is_embedded()) {
