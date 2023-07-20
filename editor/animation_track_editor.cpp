@@ -2695,7 +2695,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 					AnimationPlayer *ap = ape->get_player();
 					if (ap) {
 						NodePath npath = animation->track_get_path(track);
-						Node *nd = ap->get_node(ap->get_root())->get_node(NodePath(npath.get_concatenated_names()));
+						Node *nd = ap->get_node(ap->get_root_node())->get_node(NodePath(npath.get_concatenated_names()));
 						StringName prop = npath.get_concatenated_subnames();
 						PropertyInfo prop_info;
 						ClassDB::get_property_info(nd->get_class(), prop, &prop_info);
@@ -4000,13 +4000,15 @@ Ref<Animation> AnimationTrackEditor::_create_and_get_reset_animation() {
 		return player->get_animation(SceneStringNames::get_singleton()->RESET);
 	} else {
 		Ref<AnimationLibrary> al;
-		if (!player->has_animation_library("")) {
-			al.instantiate();
-			player->add_animation_library("", al);
-		} else {
-			al = player->get_animation_library("");
+		AnimationMixer *mixer = AnimationPlayerEditor::get_singleton()->fetch_mixer_for_library();
+		if (mixer) {
+			if (!mixer->has_animation_library("")) {
+				al.instantiate();
+				mixer->add_animation_library("", al);
+			} else {
+				al = mixer->get_animation_library("");
+			}
 		}
-
 		Ref<Animation> reset_anim;
 		reset_anim.instantiate();
 		reset_anim->set_length(ANIM_MIN_LENGTH);
@@ -4291,6 +4293,14 @@ AnimationTrackEditor::TrackIndices AnimationTrackEditor::_confirm_insert(InsertD
 
 void AnimationTrackEditor::show_select_node_warning(bool p_show) {
 	info_message->set_visible(p_show);
+}
+
+void AnimationTrackEditor::show_dummy_player_warning(bool p_show) {
+	dummy_player_warning->set_visible(p_show);
+}
+
+void AnimationTrackEditor::show_inactive_player_warning(bool p_show) {
+	inactive_player_warning->set_visible(p_show);
 }
 
 bool AnimationTrackEditor::is_key_selected(int p_track, int p_key) const {
@@ -4626,6 +4636,8 @@ void AnimationTrackEditor::_notification(int p_what) {
 			view_group->set_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
 			selected_filter->set_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
 			imported_anim_warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+			dummy_player_warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+			inactive_player_warning->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			main_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 			edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), get_editor_theme_icon(SNAME("Reload")));
 		} break;
@@ -6303,8 +6315,17 @@ float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
 void AnimationTrackEditor::_show_imported_anim_warning() {
 	// It looks terrible on a single line but the TTR extractor doesn't support line breaks yet.
 	EditorNode::get_singleton()->show_warning(
-			TTR("This animation belongs to an imported scene, so changes to imported tracks will not be saved.\n\nTo modify this animation, navigate to the scene's Advanced Import settings and select the animation.\nSome options, including looping, are available here. To add custom tracks, enable \"Save To File\" and\n\"Keep Custom Tracks\"."),
-			TTR("Warning: Editing imported animation"));
+			TTR("This animation belongs to an imported scene, so changes to imported tracks will not be saved.\n\nTo modify this animation, navigate to the scene's Advanced Import settings and select the animation.\nSome options, including looping, are available here. To add custom tracks, enable \"Save To File\" and\n\"Keep Custom Tracks\"."));
+}
+
+void AnimationTrackEditor::_show_dummy_player_warning() {
+	EditorNode::get_singleton()->show_warning(
+			TTR("Some AnimationPlayerEditor's options are disabled since this is the dummy AnimationPlayer for preview.\n\nThe dummy player is forced active, non-deterministic and doesn't have the root motion track. Furthermore, the original node is inactive temporary."));
+}
+
+void AnimationTrackEditor::_show_inactive_player_warning() {
+	EditorNode::get_singleton()->show_warning(
+			TTR("AnimationPlayer is inactive. The playback will not be processed."));
 }
 
 void AnimationTrackEditor::_select_all_tracks_for_copy() {
@@ -6488,6 +6509,20 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	imported_anim_warning->set_tooltip_text(TTR("Warning: Editing imported animation"));
 	imported_anim_warning->connect("pressed", callable_mp(this, &AnimationTrackEditor::_show_imported_anim_warning));
 	bottom_hb->add_child(imported_anim_warning);
+
+	dummy_player_warning = memnew(Button);
+	dummy_player_warning->hide();
+	dummy_player_warning->set_text(TTR("Dummy Player"));
+	dummy_player_warning->set_tooltip_text(TTR("Warning: Editing dummy AnimationPlayer"));
+	dummy_player_warning->connect("pressed", callable_mp(this, &AnimationTrackEditor::_show_dummy_player_warning));
+	bottom_hb->add_child(dummy_player_warning);
+
+	inactive_player_warning = memnew(Button);
+	inactive_player_warning->hide();
+	inactive_player_warning->set_text(TTR("Inactive Player"));
+	inactive_player_warning->set_tooltip_text(TTR("Warning: AnimationPlayer is inactive"));
+	inactive_player_warning->connect("pressed", callable_mp(this, &AnimationTrackEditor::_show_inactive_player_warning));
+	bottom_hb->add_child(inactive_player_warning);
 
 	bottom_hb->add_spacer();
 
