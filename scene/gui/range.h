@@ -48,6 +48,7 @@ class Range : public Control {
 		HashSet<Range *> owners;
 		void emit_value_changed();
 		void emit_changed(const char *p_what = "");
+		void redraw_owners();
 	};
 
 	Shared *shared = nullptr;
@@ -59,6 +60,7 @@ class Range : public Control {
 
 	void _value_changed_notify();
 	void _changed_notify(const char *p_what = "");
+	void _set_value_no_signal(double p_val);
 
 protected:
 	virtual void _value_changed(double p_value);

@@ -1952,8 +1952,13 @@ bool PopupMenu::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = get_item_icon(item_index);
 			return true;
 		} else if (property == "checkable") {
-			r_ret = this->items[item_index].checkable_type;
-			return true;
+			if (item_index >= 0 && item_index < items.size()) {
+				r_ret = items[item_index].checkable_type;
+				return true;
+			} else {
+				r_ret = Item::CHECKABLE_TYPE_NONE;
+				ERR_FAIL_V(true);
+			}
 		} else if (property == "checked") {
 			r_ret = is_item_checked(item_index);
 			return true;
