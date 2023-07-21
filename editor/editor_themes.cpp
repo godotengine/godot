@@ -1558,10 +1558,46 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("outline_size", "TextEdit", 0);
 	theme->set_constant("caret_width", "TextEdit", 1);
 
+	// Split containers
+
+	theme->set_constant("grabber_hidden", "SplitContainer", 1);
+	theme->set_constant("grabber_hidden", "HSplitContainer", 1);
+	theme->set_constant("grabber_hidden", "VSplitContainer", 1);
+	theme->set_constant("grabber_hidden_hover", "SplitContainer", 0);
+	theme->set_constant("grabber_hidden_hover", "HSplitContainer", 0);
+	theme->set_constant("grabber_hidden_hover", "VSplitContainer", 0);
+	theme->set_constant("grabber_hidden_pressed", "SplitContainer", 1);
+	theme->set_constant("grabber_hidden_pressed", "HSplitContainer", 1);
+	theme->set_constant("grabber_hidden_pressed", "VSplitContainer", 1);
 	theme->set_icon("h_grabber", "SplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
 	theme->set_icon("v_grabber", "SplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
 	theme->set_icon("grabber", "VSplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
 	theme->set_icon("grabber", "HSplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
+	theme->set_icon("h_grabber_hover", "SplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
+	theme->set_icon("v_grabber_hover", "SplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
+	theme->set_icon("grabber_hover", "VSplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
+	theme->set_icon("grabber_hover", "HSplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
+	theme->set_icon("h_grabber_pressed", "SplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
+	theme->set_icon("v_grabber_pressed", "SplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
+	theme->set_icon("grabber_pressed", "VSplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
+	theme->set_icon("grabber_pressed", "HSplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
+
+	Ref<StyleBoxFlat> style_splitter_bar = make_flat_stylebox(Color(0, 0, 0, 0), 0, 0, 0, 0, 0);
+	Ref<StyleBoxFlat> style_splitter_bar_hover = make_flat_stylebox(highlight_color * Color(1, 1, 1, 0.2), 0, 0, 0, 0, 0);
+	Ref<StyleBoxFlat> style_splitter_bar_pressed = make_flat_stylebox(accent_color, 0, 0, 0, 0, 0);
+
+	theme->set_stylebox("h_bar", "SplitContainer", style_splitter_bar);
+	theme->set_stylebox("v_bar", "SplitContainer", style_splitter_bar);
+	theme->set_stylebox("bar", "HSplitContainer", style_splitter_bar);
+	theme->set_stylebox("bar", "VSplitContainer", style_splitter_bar);
+	theme->set_stylebox("h_bar_hover", "SplitContainer", style_splitter_bar_hover);
+	theme->set_stylebox("v_bar_hover", "SplitContainer", style_splitter_bar_hover);
+	theme->set_stylebox("bar_hover", "HSplitContainer", style_splitter_bar_hover);
+	theme->set_stylebox("bar_hover", "VSplitContainer", style_splitter_bar_hover);
+	theme->set_stylebox("h_bar_pressed", "SplitContainer", style_splitter_bar_pressed);
+	theme->set_stylebox("v_bar_pressed", "SplitContainer", style_splitter_bar_pressed);
+	theme->set_stylebox("bar_pressed", "HSplitContainer", style_splitter_bar_pressed);
+	theme->set_stylebox("bar_pressed", "VSplitContainer", style_splitter_bar_pressed);
 
 	theme->set_constant("separation", "SplitContainer", default_margin_size * 2 * EDSCALE);
 	theme->set_constant("separation", "HSplitContainer", default_margin_size * 2 * EDSCALE);
@@ -1570,6 +1606,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("minimum_grab_thickness", "SplitContainer", 6 * EDSCALE);
 	theme->set_constant("minimum_grab_thickness", "HSplitContainer", 6 * EDSCALE);
 	theme->set_constant("minimum_grab_thickness", "VSplitContainer", 6 * EDSCALE);
+
+	theme->set_constant("bar_thickness", "SplitContainer", 2 * EDSCALE);
+	theme->set_constant("bar_thickness", "HSplitContainer", 2 * EDSCALE);
+	theme->set_constant("bar_thickness", "VSplitContainer", 2 * EDSCALE);
 
 	// Containers
 	theme->set_constant("separation", "BoxContainer", default_margin_size * EDSCALE);

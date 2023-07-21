@@ -1080,10 +1080,39 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Containers
 
+	// Split containers
 	theme->set_icon("h_grabber", "SplitContainer", icons["hsplitter"]);
 	theme->set_icon("v_grabber", "SplitContainer", icons["vsplitter"]);
 	theme->set_icon("grabber", "VSplitContainer", icons["vsplitter"]);
 	theme->set_icon("grabber", "HSplitContainer", icons["hsplitter"]);
+	theme->set_icon("h_grabber_hover", "SplitContainer", icons["hsplitter"]);
+	theme->set_icon("v_grabber_hover", "SplitContainer", icons["vsplitter"]);
+	theme->set_icon("grabber_hover", "VSplitContainer", icons["vsplitter"]);
+	theme->set_icon("grabber_hover", "HSplitContainer", icons["hsplitter"]);
+	theme->set_icon("h_grabber_pressed", "SplitContainer", icons["hsplitter"]);
+	theme->set_icon("v_grabber_pressed", "SplitContainer", icons["vsplitter"]);
+	theme->set_icon("grabber_pressed", "VSplitContainer", icons["vsplitter"]);
+	theme->set_icon("grabber_pressed", "HSplitContainer", icons["hsplitter"]);
+
+	Ref<StyleBoxFlat> style_splitter_bar = make_flat_stylebox(Color(0, 0, 0, 0.1), 0, 0, 0, 0, 0);
+	Ref<StyleBoxFlat> style_splitter_bar_hover = make_flat_stylebox(style_hover_color, 0, 0, 0, 0, 0);
+	Ref<StyleBoxFlat> style_splitter_bar_pressed = make_flat_stylebox(style_focus_color, 0, 0, 0, 0, 0);
+
+	theme->set_stylebox("h_bar", "SplitContainer", style_splitter_bar);
+	theme->set_stylebox("v_bar", "SplitContainer", style_splitter_bar);
+	theme->set_stylebox("bar", "HSplitContainer", style_splitter_bar);
+	theme->set_stylebox("bar", "VSplitContainer", style_splitter_bar);
+	theme->set_stylebox("h_bar_hover", "SplitContainer", style_splitter_bar_hover);
+	theme->set_stylebox("v_bar_hover", "SplitContainer", style_splitter_bar_hover);
+	theme->set_stylebox("bar_hover", "HSplitContainer", style_splitter_bar_hover);
+	theme->set_stylebox("bar_hover", "VSplitContainer", style_splitter_bar_hover);
+	theme->set_stylebox("h_bar_pressed", "SplitContainer", style_splitter_bar_pressed);
+	theme->set_stylebox("v_bar_pressed", "SplitContainer", style_splitter_bar_pressed);
+	theme->set_stylebox("bar_pressed", "HSplitContainer", style_splitter_bar_pressed);
+	theme->set_stylebox("bar_pressed", "VSplitContainer", style_splitter_bar_pressed);
+	theme->set_constant("bar_thickness", "SplitContainer", -1);
+	theme->set_constant("bar_thickness", "HSplitContainer", -1);
+	theme->set_constant("bar_thickness", "VSplitContainer", -1);
 
 	theme->set_constant("separation", "BoxContainer", 4 * scale);
 	theme->set_constant("separation", "HBoxContainer", 4 * scale);
@@ -1100,9 +1129,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("minimum_grab_thickness", "SplitContainer", 6 * scale);
 	theme->set_constant("minimum_grab_thickness", "HSplitContainer", 6 * scale);
 	theme->set_constant("minimum_grab_thickness", "VSplitContainer", 6 * scale);
-	theme->set_constant("autohide", "SplitContainer", 1);
-	theme->set_constant("autohide", "HSplitContainer", 1);
-	theme->set_constant("autohide", "VSplitContainer", 1);
+	theme->set_constant("grabber_hidden", "SplitContainer", 1);
+	theme->set_constant("grabber_hidden", "HSplitContainer", 1);
+	theme->set_constant("grabber_hidden", "VSplitContainer", 1);
+	theme->set_constant("grabber_hidden_hover", "SplitContainer", 0);
+	theme->set_constant("grabber_hidden_hover", "HSplitContainer", 0);
+	theme->set_constant("grabber_hidden_hover", "VSplitContainer", 0);
+	theme->set_constant("grabber_hidden_pressed", "SplitContainer", 0);
+	theme->set_constant("grabber_hidden_pressed", "HSplitContainer", 0);
+	theme->set_constant("grabber_hidden_pressed", "VSplitContainer", 0);
 	theme->set_constant("h_separation", "FlowContainer", 4 * scale);
 	theme->set_constant("v_separation", "FlowContainer", 4 * scale);
 	theme->set_constant("h_separation", "HFlowContainer", 4 * scale);

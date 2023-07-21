@@ -10,17 +10,41 @@
 		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
 	<theme_items>
-		<theme_item name="autohide" data_type="constant" type="int" default="1">
-			Boolean value. If 1 ([code]true[/code]), the grabber will hide automatically when it isn't under the cursor. If 0 ([code]false[/code]), it's always visible.
+		<theme_item name="bar_thickness" data_type="constant" type="int" default="-1">
+			Splitting line thickness. Set to -1 to automatically fill the separation. If thickness is greater than separation, the splitting line overflows on both sides.
+		</theme_item>
+		<theme_item name="grabber_hidden" data_type="constant" type="int" default="1">
+			If set to a value different than [code]0[/code], hide the grabber icon when not hovered or pressed.
+		</theme_item>
+		<theme_item name="grabber_hidden_hover" data_type="constant" type="int" default="0">
+			If set to a value different than [code]0[/code], hide the grabber icon when hovered.
+		</theme_item>
+		<theme_item name="grabber_hidden_pressed" data_type="constant" type="int" default="0">
+			If set to a value different than [code]0[/code], hide the grabber icon when pressed / dragged.
 		</theme_item>
 		<theme_item name="minimum_grab_thickness" data_type="constant" type="int" default="6">
-			The minimum thickness of the area users can click on to grab the splitting line. If [theme_item separation] or [theme_item grabber]'s thickness are too small, this ensure that the splitting line can still be dragged.
+			The minimum thickness of the area users can click on to grab the splitting line. If [theme_item separation] is small, this ensure that the splitting line can still be dragged.
 		</theme_item>
 		<theme_item name="separation" data_type="constant" type="int" default="12">
 			The space between sides of the container.
 		</theme_item>
 		<theme_item name="grabber" data_type="icon" type="Texture2D">
 			The icon used for the grabber drawn in the middle area.
+		</theme_item>
+		<theme_item name="grabber_hover" data_type="icon" type="Texture2D">
+			The icon used for the grabber drawn in the middle area, when the bar is hovered.
+		</theme_item>
+		<theme_item name="grabber_pressed" data_type="icon" type="Texture2D">
+			The icon used for the grabber drawn in the middle area, when the bar is pressed / being dragged.
+		</theme_item>
+		<theme_item name="bar" data_type="style" type="StyleBox">
+			The [StyleBox] used for the splitting line graphic.
+		</theme_item>
+		<theme_item name="bar_hover" data_type="style" type="StyleBox">
+			The [StyleBox] used for the splitting line graphic, when the bar is hovered.
+		</theme_item>
+		<theme_item name="bar_pressed" data_type="style" type="StyleBox">
+			The [StyleBox] used for the splitting line graphic, when the bar is pressed / being dragged.
 		</theme_item>
 	</theme_items>
 </class>

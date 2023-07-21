@@ -73,15 +73,38 @@ private:
 	struct ThemeCache {
 		int separation = 0;
 		int minimum_grab_thickness = 0;
-		int autohide = 0;
+		int bar_thickness = 0;
+		int grabber_hidden = 0;
+		int grabber_hidden_hover = 0;
+		int grabber_hidden_pressed = 0;
 		Ref<Texture2D> grabber_icon;
 		Ref<Texture2D> grabber_icon_h;
 		Ref<Texture2D> grabber_icon_v;
+		Ref<Texture2D> grabber_hover_icon;
+		Ref<Texture2D> grabber_hover_icon_h;
+		Ref<Texture2D> grabber_hover_icon_v;
+		Ref<Texture2D> grabber_pressed_icon;
+		Ref<Texture2D> grabber_pressed_icon_h;
+		Ref<Texture2D> grabber_pressed_icon_v;
+		Ref<StyleBox> bar_style;
+		Ref<StyleBox> bar_style_h;
+		Ref<StyleBox> bar_style_v;
+		Ref<StyleBox> bar_hover_style;
+		Ref<StyleBox> bar_hover_style_h;
+		Ref<StyleBox> bar_hover_style_v;
+		Ref<StyleBox> bar_pressed_style;
+		Ref<StyleBox> bar_pressed_style_h;
+		Ref<StyleBox> bar_pressed_style_v;
 	} theme_cache;
 
 	Control *_getch(int p_idx) const;
 
 	Ref<Texture2D> _get_grabber_icon() const;
+	Ref<Texture2D> _get_grabber_icon_hover() const;
+	Ref<Texture2D> _get_grabber_icon_pressed() const;
+	Ref<StyleBox> _get_bar_stylebox() const;
+	Ref<StyleBox> _get_bar_stylebox_hover() const;
+	Ref<StyleBox> _get_bar_stylebox_pressed() const;
 	void _compute_middle_sep(bool p_clamp);
 	void _resort();
 
