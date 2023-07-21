@@ -1146,7 +1146,7 @@
 			A factor applied to the movement across the slider axis once the limits get surpassed. The lower, the slower the movement.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION" value="3" enum="SliderJointParam">
-			The amount of restitution once the limits are surpassed. The lower, the more velocityenergy gets lost.
+			The amount of restitution once the limits are surpassed. The lower, the more velocity-energy gets lost.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_DAMPING" value="4" enum="SliderJointParam">
 			The amount of damping once the slider limits are surpassed.
