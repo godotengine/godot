@@ -4419,6 +4419,9 @@ String EditorNode::_get_system_info() const {
 		godot_version += " " + hash;
 	}
 
+#ifdef LINUXBSD_ENABLED
+	const String display_server = OS::get_singleton()->get_environment("XDG_SESSION_TYPE").capitalize().replace(" ", ""); // `replace` is necessary, because `capitalize` introduces a whitespace between "x" and "11".
+#endif // LINUXBSD_ENABLED
 	String driver_name = GLOBAL_GET("rendering/rendering_device/driver");
 	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method");
 
@@ -4472,6 +4475,11 @@ String EditorNode::_get_system_info() const {
 	} else {
 		info.push_back(distribution_name);
 	}
+#ifdef LINUXBSD_ENABLED
+	if (!display_server.is_empty()) {
+		info.push_back(display_server);
+	}
+#endif // LINUXBSD_ENABLED
 	info.push_back(vformat("%s (%s)", driver_name, rendering_method));
 
 	String graphics;
