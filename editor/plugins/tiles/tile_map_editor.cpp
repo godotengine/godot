@@ -766,9 +766,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 				for (int y = rect.position.y; y < rect.get_end().y; y++) {
 					Vector2i coords = Vector2i(x, y);
 					if (tile_map->get_cell_source_id(tile_map_layer, coords) != TileSet::INVALID_SOURCE) {
-						Transform2D tile_xform;
-						tile_xform.set_origin(tile_map->map_to_local(coords));
-						tile_xform.set_scale(tile_shape_size);
+						Transform2D tile_xform(0, tile_shape_size, 0, tile_map->map_to_local(coords));
 						tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(1.0, 1.0, 1.0), false);
 					}
 				}
@@ -784,6 +782,8 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 					if (tile_map->get_cell_source_id(tile_map_layer, coords) != TileSet::INVALID_SOURCE) {
 						to_draw.insert(coords);
 					}
+					Transform2D tile_xform(0, tile_shape_size, 0, tile_map->map_to_local(coords));
+					tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(1.0, 1.0, 1.0, 0.2), true);
 				}
 			}
 			tile_map->draw_cells_outline(p_overlay, to_draw, Color(1.0, 1.0, 1.0), xform);
