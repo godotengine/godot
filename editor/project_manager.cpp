@@ -1474,6 +1474,7 @@ void ProjectList::_create_project_item_control(int p_index) {
 
 	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input).bind(hb));
 	hb->connect("favorite_pressed", callable_mp(this, &ProjectList::_favorite_pressed).bind(hb));
+	hb->connect("focus_entered", callable_mp(this, &ProjectList::_focus_entered).bind(hb));
 
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	hb->connect("explore_pressed", callable_mp(this, &ProjectList::_show_project).bind(item.path));
@@ -1895,6 +1896,11 @@ void ProjectList::_favorite_pressed(Node *p_hb) {
 	update_dock_menu();
 }
 
+void ProjectList::_focus_entered(Node *p_hb) {
+	ProjectListItemControl *control = Object::cast_to<ProjectListItemControl>(p_hb);
+	control->release_focus();
+}
+
 void ProjectList::_show_project(const String &p_path) {
 	OS::get_singleton()->shell_show_in_file_manager(p_path, true);
 }
@@ -1931,7 +1937,7 @@ void ProjectManager::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			background_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("Background"), SNAME("EditorStyles")));
 			loading_label->add_theme_font_override("font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
-			search_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("search_panel"), SNAME("ProjectManager")));
+			project_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("search_panel"), SNAME("ProjectManager")));
 
 			// Top bar.
 			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
@@ -1977,10 +1983,10 @@ void ProjectManager::_notification(int p_what) {
 				real_t size = get_size().x / EDSCALE;
 				// Adjust names of tabs to fit the new size.
 				if (size < 650) {
-					local_projects_hb->set_name(TTR("Local"));
+					local_projects_vb->set_name(TTR("Local"));
 					asset_library->set_name(TTR("Asset Library"));
 				} else {
-					local_projects_hb->set_name(TTR("Local Projects"));
+					local_projects_vb->set_name(TTR("Local Projects"));
 					asset_library->set_name(TTR("Asset Library Projects"));
 				}
 			}
@@ -1991,13 +1997,10 @@ void ProjectManager::_notification(int p_what) {
 			filter_option->select(default_sorting);
 			_project_list->set_order_option(default_sorting);
 
-#ifndef ANDROID_ENABLED
 			if (_project_list->get_project_count() >= 1) {
-				// Focus on the search box immediately to allow the user
-				// to search without having to reach for their mouse
-				search_box->grab_focus();
+				_project_list->select_first_visible_project();
+				this->_update_project_buttons();
 			}
-#endif
 
 			// Suggest browsing asset library to get templates/demos.
 			if (asset_library && open_templates && _project_list->get_project_count() == 0) {
@@ -2132,12 +2135,18 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 					_project_list->select_project(index - 1);
 					_project_list->ensure_project_visible(index - 1);
 					_update_project_buttons();
+				} else {
+					this->create_btn->grab_focus();
 				}
 
-				break;
-			}
+			} break;
 			case Key::DOWN: {
 				if (k->is_shift_pressed()) {
+					break;
+				}
+
+				if (this->search_box->has_focus()) {
+					this->search_box->release_focus();
 					break;
 				}
 
@@ -2154,6 +2163,29 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 					this->search_box->grab_focus();
 				} else {
 					keycode_handled = false;
+				}
+			} break;
+			case Key::ESCAPE: {
+				if (this->search_box->has_focus()) {
+					this->search_box->release_focus();
+				}
+			} break;
+			case Key::LEFT: {
+				if (_project_list->get_project_count() > 0) {
+					if (_project_list->get_selected_projects().size() > 0) {
+						_project_list->select_project(_project_list->get_single_selected_index());
+					} else {
+						_project_list->select_first_visible_project();
+					}
+				}
+			} break;
+			case Key::RIGHT: {
+				if (_project_list->get_project_count() > 0) {
+					if (_project_list->get_selected_projects().size() > 0) {
+						this->open_btn->grab_focus();
+					} else {
+						this->create_btn->grab_focus();
+					}
 				}
 			} break;
 			default: {
@@ -2697,7 +2729,6 @@ void ProjectManager::_on_tab_changed(int p_tab) {
 	if (p_tab == 0) { // Projects
 		// Automatically grab focus when the user moves from the Templates tab
 		// back to the Projects tab.
-		search_box->grab_focus();
 	}
 
 	// The Templates tab's search field is focused on display in the asset
@@ -2845,19 +2876,37 @@ ProjectManager::ProjectManager() {
 	tabs->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	tabs->connect("tab_changed", callable_mp(this, &ProjectManager::_on_tab_changed));
 
-	local_projects_hb = memnew(HBoxContainer);
-	local_projects_hb->set_name(TTR("Local Projects"));
-	tabs->add_child(local_projects_hb);
+	local_projects_vb = memnew(VBoxContainer);
+	local_projects_vb->set_name(TTR("Local Projects"));
+	tabs->add_child(local_projects_vb);
+
+	HBoxContainer *head_hb = memnew(HBoxContainer);
+	local_projects_vb->add_child(head_hb);
+
+	HBoxContainer *body_hb = memnew(HBoxContainer);
+	body_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	local_projects_vb->add_child(body_hb);
 
 	{
-		// Projects + search bar
-		VBoxContainer *search_tree_vb = memnew(VBoxContainer);
-		local_projects_hb->add_child(search_tree_vb);
-		search_tree_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		create_btn = memnew(Button);
+		create_btn->set_text(TTR("New"));
+		create_btn->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD_OR_CTRL | Key::N));
+		create_btn->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
+		head_hb->add_child(create_btn);
 
-		HBoxContainer *hb = memnew(HBoxContainer);
-		hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		search_tree_vb->add_child(hb);
+		import_btn = memnew(Button);
+		import_btn->set_text(TTR("Import"));
+		import_btn->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KeyModifierMask::CMD_OR_CTRL | Key::I));
+		import_btn->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
+		head_hb->add_child(import_btn);
+
+		scan_btn = memnew(Button);
+		scan_btn->set_text(TTR("Scan"));
+		scan_btn->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD_OR_CTRL | Key::S));
+		scan_btn->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
+		head_hb->add_child(scan_btn);
+
+		head_hb->add_child(memnew(HSeparator));
 
 		search_box = memnew(LineEdit);
 		search_box->set_placeholder(TTR("Filter Projects"));
@@ -2865,23 +2914,23 @@ ProjectManager::ProjectManager() {
 		search_box->set_clear_button_enabled(true);
 		search_box->connect("text_changed", callable_mp(this, &ProjectManager::_on_search_term_changed));
 		search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		hb->add_child(search_box);
+		head_hb->add_child(search_box);
 
 		loading_label = memnew(Label(TTR("Loading, please wait...")));
 		loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		hb->add_child(loading_label);
+		head_hb->add_child(loading_label);
 		// The loading label is shown later.
 		loading_label->hide();
 
 		Label *sort_label = memnew(Label);
 		sort_label->set_text(TTR("Sort:"));
-		hb->add_child(sort_label);
+		head_hb->add_child(sort_label);
 
 		filter_option = memnew(OptionButton);
 		filter_option->set_clip_text(true);
 		filter_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		filter_option->connect("item_selected", callable_mp(this, &ProjectManager::_on_order_option_changed));
-		hb->add_child(filter_option);
+		head_hb->add_child(filter_option);
 
 		Vector<String> sort_filter_titles;
 		sort_filter_titles.push_back(TTR("Last Edited"));
@@ -2893,42 +2942,29 @@ ProjectManager::ProjectManager() {
 			filter_option->add_item(sort_filter_titles[i]);
 		}
 
-		search_panel = memnew(PanelContainer);
-		search_panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		search_tree_vb->add_child(search_panel);
+		about_btn = memnew(Button);
+		about_btn->set_text(TTR("About"));
+		about_btn->connect("pressed", callable_mp(this, &ProjectManager::_show_about));
+		head_hb->add_child(about_btn);
+	}
+
+	{
+		// Projects
+		project_panel = memnew(PanelContainer);
+		project_panel->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		project_panel->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		body_hb->add_child(project_panel);
 
 		_project_list = memnew(ProjectList);
 		_project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
 		_project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_ask));
 		_project_list->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-		search_panel->add_child(_project_list);
-	}
+		project_panel->add_child(_project_list);
 
-	{
 		// Project tab side bar
 		VBoxContainer *tree_vb = memnew(VBoxContainer);
 		tree_vb->set_custom_minimum_size(Size2(120, 120));
-		local_projects_hb->add_child(tree_vb);
-
-		create_btn = memnew(Button);
-		create_btn->set_text(TTR("New Project"));
-		create_btn->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD_OR_CTRL | Key::N));
-		create_btn->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
-		tree_vb->add_child(create_btn);
-
-		import_btn = memnew(Button);
-		import_btn->set_text(TTR("Import"));
-		import_btn->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KeyModifierMask::CMD_OR_CTRL | Key::I));
-		import_btn->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
-		tree_vb->add_child(import_btn);
-
-		scan_btn = memnew(Button);
-		scan_btn->set_text(TTR("Scan"));
-		scan_btn->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD_OR_CTRL | Key::S));
-		scan_btn->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
-		tree_vb->add_child(scan_btn);
-
-		tree_vb->add_child(memnew(HSeparator));
+		body_hb->add_child(tree_vb);
 
 		open_btn = memnew(Button);
 		open_btn->set_text(TTR("Edit"));
@@ -2963,13 +2999,6 @@ ProjectManager::ProjectManager() {
 		erase_missing_btn->set_text(TTR("Remove Missing"));
 		erase_missing_btn->connect("pressed", callable_mp(this, &ProjectManager::_erase_missing_projects));
 		tree_vb->add_child(erase_missing_btn);
-
-		tree_vb->add_spacer();
-
-		about_btn = memnew(Button);
-		about_btn->set_text(TTR("About"));
-		about_btn->connect("pressed", callable_mp(this, &ProjectManager::_show_about));
-		tree_vb->add_child(about_btn);
 	}
 
 	{

@@ -265,6 +265,7 @@ private:
 	void _panel_input(const Ref<InputEvent> &p_ev, Node *p_hb);
 	void _favorite_pressed(Node *p_hb);
 	void _show_project(const String &p_path);
+	void _focus_entered(Node *p_hb);
 
 	void _clear_project_selection();
 	void _toggle_project(int p_index);
@@ -336,7 +337,7 @@ class ProjectManager : public Control {
 	LineEdit *search_box = nullptr;
 	Label *loading_label = nullptr;
 	OptionButton *filter_option = nullptr;
-	PanelContainer *search_panel = nullptr;
+	PanelContainer *project_panel = nullptr;
 
 	Button *create_btn = nullptr;
 	Button *import_btn = nullptr;
@@ -349,7 +350,7 @@ class ProjectManager : public Control {
 	Button *erase_missing_btn = nullptr;
 	Button *about_btn = nullptr;
 
-	HBoxContainer *local_projects_hb = nullptr;
+	VBoxContainer *local_projects_vb = nullptr;
 	EditorAssetLibrary *asset_library = nullptr;
 
 	Ref<StyleBox> tag_stylebox;
