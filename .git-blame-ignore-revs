@@ -15,3 +15,6 @@
 
 # Style: clang-format: Disable AllowShortIfStatementsOnASingleLine
 e956e80c1fa1cc8aefcb1533e5acf5cf3c8ffdd9
+
+# C#: GodotSharp namespace style sync
+13d89bd9509e22bc3503c49c744fd5fad47d100d
