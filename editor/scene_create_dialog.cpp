@@ -130,10 +130,25 @@ void SceneCreateDialog::update_dialog() {
 
 	root_name = root_name_edit->get_text().strip_edges();
 	if (root_name.is_empty()) {
-		root_name = scene_name.get_file().get_basename();
+		root_name = scene_name_edit->get_text().strip_edges();
+
+		if (root_name.is_empty()) {
+			root_name_edit->set_placeholder(TTR("Leave empty to derive from scene name"));
+		} else {
+			// Respect the desired root node casing from ProjectSettings and ensure it's a valid node name.
+			String adjusted_root_name = Node::adjust_name_casing(root_name);
+			root_name = adjusted_root_name.validate_node_name();
+
+			bool has_invalid_characters = root_name != adjusted_root_name;
+			if (has_invalid_characters) {
+				update_error(node_error_label, MSG_WARNING, TTR("Invalid root node name characters have been replaced."));
+			}
+
+			root_name_edit->set_placeholder(root_name);
+		}
 	}
 
-	if (root_name.is_empty() || root_name.validate_node_name().size() != root_name.size()) {
+	if (root_name.is_empty() || root_name.validate_node_name() != root_name) {
 		update_error(node_error_label, MSG_ERROR, TTR("Invalid root node name."));
 		is_valid = false;
 	}
@@ -149,6 +164,9 @@ void SceneCreateDialog::update_error(Label *p_label, MsgType p_type, const Strin
 			break;
 		case MSG_ERROR:
 			p_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			break;
+		case MSG_WARNING:
+			p_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 			break;
 	}
 }
@@ -285,7 +303,7 @@ SceneCreateDialog::SceneCreateDialog() {
 
 		root_name_edit = memnew(LineEdit);
 		gc->add_child(root_name_edit);
-		root_name_edit->set_placeholder(TTR("Leave empty to use scene name"));
+		root_name_edit->set_tooltip_text(TTR("When empty, the root node name is derived from the scene name based on the \"editor/naming/node_name_casing\" project setting."));
 		root_name_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		root_name_edit->connect("text_changed", callable_mp(this, &SceneCreateDialog::update_dialog).unbind(1));
 		root_name_edit->connect("text_submitted", callable_mp(this, &SceneCreateDialog::accept_create).unbind(1));

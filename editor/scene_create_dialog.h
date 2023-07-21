@@ -48,6 +48,7 @@ class SceneCreateDialog : public ConfirmationDialog {
 	enum MsgType {
 		MSG_OK,
 		MSG_ERROR,
+		MSG_WARNING,
 	};
 
 	const StringName type_meta = StringName("type");
