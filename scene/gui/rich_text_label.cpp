@@ -5812,10 +5812,12 @@ int RichTextLabel::get_character_line(int p_char) {
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
 		MutexLock lock(main->lines[i].text_buf->get_mutex());
-		if (main->lines[i].char_offset < p_char && p_char <= main->lines[i].char_offset + main->lines[i].char_count) {
+		int char_offset = main->lines[i].char_offset;
+		int char_count = main->lines[i].char_count;
+		if (char_offset <= p_char && p_char < char_offset + char_count) {
 			for (int j = 0; j < main->lines[i].text_buf->get_line_count(); j++) {
 				Vector2i range = main->lines[i].text_buf->get_line_range(j);
-				if (main->lines[i].char_offset + range.x < p_char && p_char <= main->lines[i].char_offset + range.y) {
+				if (char_offset + range.x <= p_char && p_char <= char_offset + range.y) {
 					return line_count;
 				}
 				line_count++;
@@ -5830,13 +5832,11 @@ int RichTextLabel::get_character_line(int p_char) {
 int RichTextLabel::get_character_paragraph(int p_char) {
 	_validate_line_caches();
 
-	int para_count = 0;
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
-		if (main->lines[i].char_offset < p_char && p_char <= main->lines[i].char_offset + main->lines[i].char_count) {
-			return para_count;
-		} else {
-			para_count++;
+		int char_offset = main->lines[i].char_offset;
+		if (char_offset <= p_char && p_char < char_offset + main->lines[i].char_count) {
+			return i;
 		}
 	}
 	return -1;
