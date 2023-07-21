@@ -5116,6 +5116,8 @@ void TileData::remove_terrain(int p_terrain_set, int p_index) {
 	if (terrain_set == p_terrain_set) {
 		if (terrain == p_index) {
 			terrain = -1;
+		} else if (terrain > p_index) {
+			terrain -= 1;
 		}
 
 		for (int i = 0; i < 16; i++) {
