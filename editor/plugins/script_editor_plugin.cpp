@@ -4263,7 +4263,9 @@ String ScriptEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
 }
 
 void ScriptEditorPlugin::save_external_data() {
-	script_editor->save_all_scripts();
+	if (!EditorNode::get_singleton()->is_exiting()) {
+		script_editor->save_all_scripts();
+	}
 }
 
 void ScriptEditorPlugin::apply_changes() {
