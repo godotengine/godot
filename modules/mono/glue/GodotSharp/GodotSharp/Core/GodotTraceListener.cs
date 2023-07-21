@@ -1,33 +1,32 @@
 using System.Diagnostics;
 
-namespace Godot
+namespace Godot;
+
+internal class GodotTraceListener : TraceListener
 {
-    internal class GodotTraceListener : TraceListener
+    public override void Write(string message)
     {
-        public override void Write(string message)
+        GD.PrintRaw(message);
+    }
+
+    public override void WriteLine(string message)
+    {
+        GD.Print(message);
+    }
+
+    public override void Fail(string message, string detailMessage)
+    {
+        GD.PrintErr("Assertion failed: ", message);
+        GD.PrintErr("  Details: ", detailMessage);
+
+        try
         {
-            GD.PrintRaw(message);
+            string stackTrace = new StackTrace(true).ToString();
+            GD.PrintErr(stackTrace);
         }
-
-        public override void WriteLine(string message)
+        catch
         {
-            GD.Print(message);
-        }
-
-        public override void Fail(string message, string detailMessage)
-        {
-            GD.PrintErr("Assertion failed: ", message);
-            GD.PrintErr("  Details: ", detailMessage);
-
-            try
-            {
-                string stackTrace = new StackTrace(true).ToString();
-                GD.PrintErr(stackTrace);
-            }
-            catch
-            {
-                // ignored
-            }
+            // ignored
         }
     }
 }

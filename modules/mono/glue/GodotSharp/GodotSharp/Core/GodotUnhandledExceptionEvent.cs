@@ -2,32 +2,31 @@ using System;
 using System.Runtime.InteropServices;
 using Godot.NativeInterop;
 
-namespace Godot
+namespace Godot;
+
+public static partial class GD
 {
-    public static partial class GD
+    [UnmanagedCallersOnly]
+    internal static void OnCoreApiAssemblyLoaded(godot_bool isDebug)
     {
-        [UnmanagedCallersOnly]
-        internal static void OnCoreApiAssemblyLoaded(godot_bool isDebug)
+        try
         {
-            try
-            {
-                Dispatcher.InitializeDefaultGodotTaskScheduler();
+            Dispatcher.InitializeDefaultGodotTaskScheduler();
 
-                if (isDebug.ToBool())
+            if (isDebug.ToBool())
+            {
+                DebuggingUtils.InstallTraceListener();
+
+                AppDomain.CurrentDomain.UnhandledException += (_, e) =>
                 {
-                    DebuggingUtils.InstallTraceListener();
-
-                    AppDomain.CurrentDomain.UnhandledException += (_, e) =>
-                    {
-                        // Exception.ToString() includes the inner exception
-                        ExceptionUtils.LogUnhandledException((Exception)e.ExceptionObject);
-                    };
-                }
+                    // Exception.ToString() includes the inner exception
+                    ExceptionUtils.LogUnhandledException((Exception)e.ExceptionObject);
+                };
             }
-            catch (Exception e)
-            {
-                ExceptionUtils.LogException(e);
-            }
+        }
+        catch (Exception e)
+        {
+            ExceptionUtils.LogException(e);
         }
     }
 }
