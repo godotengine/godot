@@ -157,6 +157,32 @@ Error CryptoCore::SHA256Context::finish(unsigned char r_hash[32]) {
 	return ret ? FAILED : OK;
 }
 
+// SHA512
+CryptoCore::SHA512Context::SHA512Context() {
+	ctx = memalloc(sizeof(mbedtls_sha512_context));
+	mbedtls_sha512_init((mbedtls_sha512_context *)ctx);
+}
+
+CryptoCore::SHA512Context::~SHA512Context() {
+	mbedtls_sha512_free((mbedtls_sha512_context *)ctx);
+	memfree((mbedtls_sha512_context *)ctx);
+}
+
+Error CryptoCore::SHA512Context::start() {
+	int ret = mbedtls_sha512_starts_ret((mbedtls_sha512_context *)ctx, 0);
+	return ret ? FAILED : OK;
+}
+
+Error CryptoCore::SHA512Context::update(const uint8_t *p_src, size_t p_len) {
+	int ret = mbedtls_sha512_update_ret((mbedtls_sha512_context *)ctx, p_src, p_len);
+	return ret ? FAILED : OK;
+}
+
+Error CryptoCore::SHA512Context::finish(unsigned char r_hash[32]) {
+	int ret = mbedtls_sha512_finish_ret((mbedtls_sha512_context *)ctx, r_hash);
+	return ret ? FAILED : OK;
+}
+
 // AES256
 CryptoCore::AESContext::AESContext() {
 	ctx = memalloc(sizeof(mbedtls_aes_context));
@@ -244,5 +270,10 @@ Error CryptoCore::sha1(const uint8_t *p_src, int p_src_len, unsigned char r_hash
 
 Error CryptoCore::sha256(const uint8_t *p_src, int p_src_len, unsigned char r_hash[32]) {
 	int ret = mbedtls_sha256_ret(p_src, p_src_len, r_hash, 0);
+	return ret ? FAILED : OK;
+}
+
+Error CryptoCore::sha512(const uint8_t *p_src, int p_src_len, unsigned char r_hash[64]) {
+	int ret = mbedtls_sha512_ret(p_src, p_src_len, r_hash, 0);
 	return ret ? FAILED : OK;
 }

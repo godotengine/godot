@@ -89,6 +89,19 @@ public:
 		Error finish(unsigned char r_hash[32]);
 	};
 
+	class SHA512Context {
+	private:
+		void *ctx = nullptr;
+
+	public:
+		SHA512Context();
+		~SHA512Context();
+
+		Error start();
+		Error update(const uint8_t *p_src, size_t p_len);
+		Error finish(unsigned char r_hash[64]);
+	};
+
 	class AESContext {
 	private:
 		void *ctx = nullptr;
@@ -114,6 +127,7 @@ public:
 	static Error md5(const uint8_t *p_src, int p_src_len, unsigned char r_hash[16]);
 	static Error sha1(const uint8_t *p_src, int p_src_len, unsigned char r_hash[20]);
 	static Error sha256(const uint8_t *p_src, int p_src_len, unsigned char r_hash[32]);
+	static Error sha512(const uint8_t *p_src, int p_src_len, unsigned char r_hash[64]);
 };
 
 #endif // CRYPTO_CORE_H
