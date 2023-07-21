@@ -74,7 +74,7 @@ private:
 	AttenuationModel attenuation_model = ATTENUATION_INVERSE_DISTANCE;
 	float volume_db = 0.0;
 	float unit_size = 10.0;
-	float max_db = 3.0;
+	float max_db = 0.0;
 	float pitch_scale = 1.0;
 	// Internally used to take doppler tracking into account.
 	float actual_pitch_scale = 1.0;
@@ -105,7 +105,7 @@ private:
 	float emission_angle = 45.0;
 	float emission_angle_filter_attenuation_db = -12.0;
 	float attenuation_filter_cutoff_hz = 5000.0;
-	float attenuation_filter_db = -24.0;
+	float attenuation_filter_db = -12.0;
 
 	float linear_attenuation = 0;
 
