@@ -435,7 +435,7 @@
 			<return type="void" />
 			<param index="0" name="force" type="bool" />
 			<description>
-				Submits all completion options added with [method add_code_completion_option]. Will try to force the autoccomplete menu to popup, if [param force] is [code]true[/code].
+				Submits all completion options added with [method add_code_completion_option]. Will try to force the autocomplete menu to popup, if [param force] is [code]true[/code].
 				[b]Note:[/b] This will replace all current candidates.
 			</description>
 		</method>

@@ -346,7 +346,7 @@
 			<param index="0" name="byte_offset" type="int" />
 			<param index="1" name="allow_objects" type="bool" default="false" />
 			<description>
-				Returns [code]true[/code] if a valid [Variant] value can be decoded at the [param byte_offset]. Returns [code]false[/code] othewrise or when the value is [Object]-derived and [param allow_objects] is [code]false[/code].
+				Returns [code]true[/code] if a valid [Variant] value can be decoded at the [param byte_offset]. Returns [code]false[/code] otherwise or when the value is [Object]-derived and [param allow_objects] is [code]false[/code].
 			</description>
 		</method>
 		<method name="hex_encode" qualifiers="const">
