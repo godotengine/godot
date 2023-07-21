@@ -168,6 +168,7 @@ public:
 	virtual void set_blend_shape_name(int p_index, const StringName &p_name);
 	virtual AABB get_aabb() const;
 
+	bool is_surface_quads(int p_surface) const;
 	Vector<Face3> get_faces() const;
 	Vector<Face3> get_surface_faces(int p_surface) const;
 	Ref<TriangleMesh> generate_triangle_mesh() const;

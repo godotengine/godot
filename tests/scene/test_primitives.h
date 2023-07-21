@@ -32,6 +32,7 @@
 #define TEST_PRIMITIVES_H
 
 #include "scene/resources/primitive_meshes.h"
+#include "scene/resources/surface_tool.h"
 
 #include "tests/test_macros.h"
 
@@ -843,6 +844,244 @@ TEST_CASE("[SceneTree][Primitive][Text] Text Primitive") {
 		CHECK(text->get_font() == font);
 		CHECK(text2->get_font() == font);
 	}
+}
+
+TEST_CASE("[SceneTree][Primitive][Quads] Test that quad-based primitives are formatted correctly") {
+	for (int i = 0; i < 8; i++) {
+		Ref<BoxMesh> mesh = memnew(BoxMesh);
+		mesh->set_subdivide_width(i & 1);
+		mesh->set_subdivide_height(i & 2);
+		mesh->set_subdivide_depth(i & 4);
+		CHECK(mesh->is_surface_quads(0));
+	}
+
+	for (int i = 0; i < 4; i++) {
+		Ref<PlaneMesh> mesh = memnew(PlaneMesh);
+		mesh->set_subdivide_width(i & 1);
+		mesh->set_subdivide_depth(i & 2);
+		CHECK(mesh->is_surface_quads(0));
+	}
+
+	{
+		Ref<TorusMesh> mesh = memnew(TorusMesh);
+		CHECK(mesh->is_surface_quads(0));
+		mesh->set_flip_faces(true);
+		CHECK(mesh->is_surface_quads(0));
+	}
+	{
+		Ref<RibbonTrailMesh> mesh = memnew(RibbonTrailMesh);
+		CHECK(mesh->is_surface_quads(0));
+		mesh->set_flip_faces(true);
+		CHECK(mesh->is_surface_quads(0));
+	}
+
+	{
+		Ref<PrismMesh> mesh = memnew(PrismMesh);
+		CHECK_FALSE(mesh->is_surface_quads(0));
+	}
+
+	// The triangles in these meshes are actually implemented as degenerate quads for simplicity.
+	{
+		Ref<CapsuleMesh> mesh = memnew(CapsuleMesh);
+		CHECK(mesh->is_surface_quads(0));
+	}
+	{
+		Ref<SphereMesh> mesh = memnew(SphereMesh);
+		CHECK(mesh->is_surface_quads(0));
+	}
+
+	// Fully quads when uncapped.
+	{
+		Ref<CylinderMesh> mesh = memnew(CylinderMesh);
+		mesh->set_radial_segments(11);
+		CHECK_FALSE(mesh->is_surface_quads(0));
+		mesh->set_cap_top(false);
+		mesh->set_cap_bottom(false);
+		CHECK(mesh->is_surface_quads(0));
+	}
+	{
+		Ref<TubeTrailMesh> mesh = memnew(TubeTrailMesh);
+		mesh->set_radial_steps(11);
+		CHECK_FALSE(mesh->is_surface_quads(0));
+		mesh->set_cap_top(false);
+		mesh->set_cap_bottom(false);
+		CHECK(mesh->is_surface_quads(0));
+	}
+
+	// All nine ways that vertices in triangle pairs can be ordered.
+	Vector<int> indices = {
+		111, 222, 333, 444, 111, 333,
+		111, 222, 333, 111, 333, 444,
+		111, 222, 333, 333, 444, 111,
+
+		222, 333, 111, 444, 111, 333,
+		222, 333, 111, 111, 333, 444,
+		222, 333, 111, 333, 444, 111,
+
+		333, 111, 222, 444, 111, 333,
+		333, 111, 222, 111, 333, 444,
+		333, 111, 222, 333, 444, 111
+	};
+	// The canonical order that the above index array should be sorted into.
+	Vector<int> indices_quads_expect = {
+		111, 222, 333, 444, 111, 333,
+		111, 222, 333, 444, 111, 333,
+		111, 222, 333, 444, 111, 333,
+		111, 222, 333, 444, 111, 333,
+		111, 222, 333, 444, 111, 333,
+		111, 222, 333, 444, 111, 333,
+		111, 222, 333, 444, 111, 333,
+		111, 222, 333, 444, 111, 333,
+		111, 222, 333, 444, 111, 333
+	};
+
+	CHECK_FALSE(indices == indices_quads_expect);
+
+	CHECK_FALSE(SurfaceTool::is_indices_quads(indices.ptr(), indices.size()));
+	SurfaceTool::set_indices_quads(indices.ptrw(), indices.size());
+	CHECK(SurfaceTool::is_indices_quads(indices.ptr(), indices.size()));
+
+	CHECK(indices == indices_quads_expect);
+}
+
+static void dump_quads_as_obj(String p_path, const Array &p_array) {
+	IF_DEV_VAR("DUMP_TEST_MESHES", {
+		const Vector<int> &src_indices = p_array[Mesh::ARRAY_INDEX];
+		const Vector<Vector3> &src_vertices = p_array[Mesh::ARRAY_VERTEX];
+
+		Ref<FileAccess> file = FileAccess::open(DEV_VAR_VALUE + p_path, FileAccess::WRITE);
+		REQUIRE(!file.is_null());
+
+		for (const Vector3 &v : src_vertices) {
+			file->store_line(vformat("v %.6f %.6f %.6f", v.x, v.y, v.z));
+		}
+		for (int i = 0; i < src_indices.size(); i += 6) {
+			file->store_line(vformat("f %d %d %d %d",
+					src_indices[i + 3] + 1,
+					src_indices[i + 2] + 1,
+					src_indices[i + 1] + 1,
+					src_indices[i + 0] + 1));
+		}
+	});
+}
+
+TEST_CASE("[SceneTree][SubD] Test that subdivision behaves intuitively") {
+	SUBCASE("[SceneTree][SubD] Check that bevels don't bulge out when subdivided.") {
+		for (int i = 0; i < 4; i++) {
+			const int b = (1 << i) - 1;
+
+			float sum_f = 0.0f;
+			bool manifold = false;
+			Array data;
+			Dictionary lods;
+			data.resize(RS::ARRAY_MAX);
+			BoxMesh::create_mesh_array(data, Vector3(2, 2, 2), b, b, b);
+
+			SurfaceTool::quads_to_bezier_patch(data, &manifold);
+
+			CHECK(manifold);
+			Vector<Vector3> vertices = data[RS::ARRAY_VERTEX];
+			CHECK(vertices.size() > 0);
+			for (const Vector3 &v : vertices) {
+				sum_f += v.x + v.y + v.z;
+			}
+			// Symmetry test. Epsilon may need adjusting.
+			CHECK(Math::abs(sum_f) < 0.0002f);
+			sum_f = 0.0f;
+
+			dump_quads_as_obj(vformat("box-cage-%03d.obj", i), data);
+
+			SurfaceTool::tessellate_bezier_patch(data, lods, 10000);
+
+			vertices = data[RS::ARRAY_VERTEX];
+			CHECK(vertices.size() > 0);
+			Vector3 min_v(999, 999, 999);
+			Vector3 max_v(-999, -999, -999);
+
+			for (const Vector3 &v : vertices) {
+				min_v = v.min(min_v);
+				max_v = v.max(max_v);
+
+				sum_f += v.x + v.y + v.z;
+			}
+
+			if (i == 0) {
+				CHECK(MIN(MIN(min_v.x, min_v.y), min_v.z) > -0.99);
+				CHECK(MAX(MAX(max_v.x, max_v.y), max_v.z) < 0.99);
+			} else {
+				CHECK(min_v.distance_squared_to(Vector3(-1, -1, -1)) < 0.000001f);
+				CHECK(max_v.distance_squared_to(Vector3(1, 1, 1)) < 0.000001f);
+			}
+
+			// Symmetry test. Epsilon may need adjusting.
+			CHECK(Math::abs(sum_f) < 0.001f);
+
+			dump_quads_as_obj(vformat("box-%03d.obj", i), data);
+		}
+	}
+
+	SUBCASE("[SceneTree][SubD] Check that regular polygons are subdivided into a perfect circle.") {
+		for (int i = 3; i <= 16; i++) {
+			float sum_f = 0.0f;
+			bool manifold = false;
+			Array data;
+			Dictionary lods;
+			data.resize(RS::ARRAY_MAX);
+			CylinderMesh::create_mesh_array(data, 1.0f, 1.0f, 64.0f, i, i, false, false, false, false);
+
+			SurfaceTool::quads_to_bezier_patch(data, &manifold);
+
+			CHECK_FALSE(manifold);
+			Vector<Vector3> vertices = data[RS::ARRAY_VERTEX];
+			CHECK(vertices.size() > 0);
+			for (const Vector3 &v : vertices) {
+				sum_f += v.x + (v.y / 64.0f) + v.z;
+			}
+			// Symmetry test. Epsilon may need adjusting.
+			CHECK(Math::abs(sum_f) < 0.002f);
+			sum_f = 0.0f;
+
+			dump_quads_as_obj(vformat("cylinder-cage-%03d.obj", i), data);
+
+			SurfaceTool::tessellate_bezier_patch(data, lods, 10000);
+
+			vertices = data[RS::ARRAY_VERTEX];
+			CHECK(vertices.size() > 0);
+			float min_r = 999;
+			float max_r = -999;
+			float max_h = 0;
+
+			for (Vector3 v : vertices) {
+				max_h = MAX(max_h, Math::abs(v.y));
+				v.y = 0;
+				min_r = MIN(min_r, v.length());
+				max_r = MAX(max_r, v.length());
+
+				sum_f += v.x + v.y + v.z;
+			}
+
+			CHECK(max_h == 32.0f);
+			CHECK(min_r > 0.3f);
+
+			// Main circle test.
+			if (i <= 4) {
+				CHECK(Math::abs(max_r - min_r) < 0.001f);
+			} else if (i <= 6) {
+				CHECK(Math::abs(max_r - min_r) < 0.0001f);
+			} else if (i <= 12) {
+				CHECK(Math::abs(max_r - min_r) < 0.00001f);
+			} else {
+				CHECK(Math::abs(max_r - min_r) < 0.000001f);
+			}
+
+			// Symmetry test. Epsilon may need adjusting.
+			CHECK(Math::abs(sum_f) < 0.005f);
+
+			dump_quads_as_obj(vformat("cylinder-%03d.obj", i), data);
+		}
+	}
+
+	// TODO: Check donuts.
 }
 
 } // namespace TestPrimitives

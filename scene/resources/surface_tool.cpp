@@ -787,6 +787,575 @@ void SurfaceTool::deindex() {
 	index_array.clear();
 }
 
+bool SurfaceTool::is_indices_quads(const int *p_indices, int p_index_count) {
+	if (p_index_count % 6) {
+		return false;
+	}
+
+	bool ret = true;
+	for (int i = 0; i < p_index_count; i += 6) {
+		ret &= p_indices[i + 0] == p_indices[i + 4];
+		ret &= p_indices[i + 2] == p_indices[i + 5];
+	}
+	return ret;
+}
+void SurfaceTool::set_indices_quads(int *p_indices, int p_index_count) {
+	if (p_index_count % 6) {
+		return;
+	}
+
+	for (int i = 0; i < p_index_count; i += 6) {
+		bool fixed = false;
+		for (int rot = 0; rot < 9; rot++) {
+			fixed =
+					(p_indices[i + 0] == p_indices[i + 4]) &
+					(p_indices[i + 2] == p_indices[i + 5]);
+			if (fixed) {
+				break;
+			}
+
+			int tmp = 0;
+
+			// Rotate second triangle.
+			tmp = p_indices[i + 3];
+			p_indices[i + 3] = p_indices[i + 4];
+			p_indices[i + 4] = p_indices[i + 5];
+			p_indices[i + 5] = tmp;
+
+			if (rot % 3) {
+				continue;
+			}
+
+			// Rotate first triangle.
+			tmp = p_indices[i + 0];
+			p_indices[i + 0] = p_indices[i + 1];
+			p_indices[i + 1] = p_indices[i + 2];
+			p_indices[i + 2] = tmp;
+		}
+
+		// We failed to find a quad, so just return early.
+		if (!fixed) {
+			return;
+		}
+	}
+}
+
+// Control points are chosen such that regular polygons get subdivided into circles.
+// Note that bezier curves cannot represent circles exactly,
+// but we can get very close even with a minimum number of points.
+// See https://stackoverflow.com/questions/1734745
+static inline float calculate_bezier_thirdpoint_weights(const Vector3 &p_v, const Vector3 &p_midpoint, const Vector3 &p_normal) {
+	// The only value we need to extract from the parameters.
+	float dot = (p_midpoint - p_v).normalized().dot(-p_normal);
+
+	dot = CLAMP(dot, 0.01f, 0.99f);
+	const float angle = Math::acos(dot);
+
+	float weight = 4.0f / 3.0f;
+	weight *= Math::tan((Math_PI * 0.25f) - (angle * 0.5f));
+	weight /= Math::sin(angle);
+
+	weight = weight / (dot * (weight * dot + 1.0f));
+
+	return CLAMP(weight, 0.0f, 1.0f);
+}
+
+// The bezier patch algorithms are hardcoded against Vector3 for simplicity,
+// so we use these functions to convert between Vector3 and the original attribute format.
+static Array convert_attributes_to_vec3(const Array &p_array) {
+	Array ret;
+	ret.resize(Mesh::ARRAY_MAX);
+
+	for (int attr_i = 0; attr_i < Mesh::ARRAY_MAX; attr_i++) {
+		Vector<Vector3> dst_arr;
+
+		switch (p_array[attr_i].get_type()) {
+			// TODO: Float (vertex weights), Color (vertex colors).
+			// TODO: Pass-through int (bones).
+			case Variant::PACKED_VECTOR2_ARRAY: {
+				const Vector<Vector2> src_arr = p_array[attr_i];
+				dst_arr.resize(src_arr.size());
+				Vector3 *dst_ptr = dst_arr.ptrw();
+				for (int i = 0; i < src_arr.size(); i++) {
+					dst_ptr[i] = Vector3(src_arr[i].x, src_arr[i].y, 0.0f);
+				}
+			} break;
+			case Variant::PACKED_VECTOR3_ARRAY: {
+				dst_arr = p_array[attr_i];
+			} break;
+			default: {
+				// Leave unsupported formats empty.
+			}
+		}
+
+		ret[attr_i] = dst_arr;
+	}
+
+	return ret;
+}
+static void restore_attributes_from_vec3(const Array &p_src, Array &r_dst) {
+	for (int attr_i = 0; attr_i < Mesh::ARRAY_MAX; attr_i++) {
+		if (attr_i == Mesh::ARRAY_INDEX) {
+			r_dst[attr_i] = p_src[attr_i];
+			continue;
+		}
+
+		const Vector<Vector3> src_arr = p_src[attr_i];
+
+		if (!src_arr.size()) {
+			r_dst[attr_i] = Variant(); // Force Variant::NIL type.
+			continue;
+		}
+
+		switch (r_dst[attr_i].get_type()) {
+			// TODO: Float (vertex weights), Color (vertex colors).
+			// TODO: Pass-through int (bones).
+			case Variant::PACKED_VECTOR2_ARRAY: {
+				Vector<Vector2> dst_arr;
+				dst_arr.resize(src_arr.size());
+				Vector2 *dst_ptr = dst_arr.ptrw();
+				for (int i = 0; i < src_arr.size(); i++) {
+					dst_ptr[i] = Vector2(src_arr[i].x, src_arr[i].y);
+				}
+				r_dst[attr_i] = dst_arr;
+			} break;
+			case Variant::PACKED_VECTOR3_ARRAY: {
+				r_dst[attr_i] = src_arr;
+			} break;
+			default: {
+				r_dst[attr_i] = Variant();
+			} break;
+		}
+	}
+}
+
+static Vector<Vector3> quads_to_bezier_patch_attribute(
+		const Vector<int> &p_src_indices,
+		const Vector<Vector3> &p_src_pos,
+		const Vector<Vector3> &p_src_attr,
+		bool *r_is_manifold = nullptr) {
+	Vector<Vector3> dst_attr;
+	if (p_src_attr.size() == 0) {
+		return dst_attr;
+	}
+
+	ERR_FAIL_COND_V(p_src_pos.size() != p_src_attr.size(), dst_attr);
+
+	bool is_manifold = true;
+
+	struct UniqueVertex {
+		Vector3 attr;
+		Vector3 normal;
+		int sum = 0;
+		bool is_manifold = true;
+		bool is_sharp_corner = true;
+	};
+	LocalVector<UniqueVertex> unique_vertices_backing_buffer;
+	LocalVector<UniqueVertex *> unique_vertices;
+	unique_vertices.resize(p_src_indices.size());
+	memset(unique_vertices.ptr(), 0, sizeof(unique_vertices[0]) * unique_vertices.size());
+
+	// Link indices to unique vertices.
+	{
+		HashMap<Pair<Vector3, Vector3>, UniqueVertex *, PairHash<Vector3, Vector3>> vertex_hashmap;
+		vertex_hashmap.reserve(p_src_pos.size());
+		for (int i = 0; i < p_src_pos.size(); i++) {
+			vertex_hashmap[{ p_src_pos[i], p_src_attr[i] }] = nullptr;
+		}
+
+		unique_vertices_backing_buffer.resize(vertex_hashmap.size());
+		UniqueVertex *unique_vertices_backing_buffer_ptr = unique_vertices_backing_buffer.ptr();
+		for (KeyValue<Pair<Vector3, Vector3>, UniqueVertex *> &kv : vertex_hashmap) {
+			kv.value = unique_vertices_backing_buffer_ptr++;
+		}
+		DEV_ASSERT(unique_vertices_backing_buffer_ptr == unique_vertices_backing_buffer.ptr() + unique_vertices_backing_buffer.size());
+
+		for (int i = 0; i < p_src_indices.size(); i += 6) {
+			for (int j = 0; j < 4; j++) {
+				int attr_idx = p_src_indices[i + j];
+				unique_vertices[i + j] = vertex_hashmap[{
+						p_src_pos[attr_idx],
+						p_src_attr[attr_idx],
+				}];
+			}
+		}
+	}
+
+	// Since edges don't have a canonical order for their points, we have to store every edge twice.
+	// Once for A-B, once for B-A.
+	struct UniqueHalfEdge {
+		// Each edge has four control points, so between the two endpoints are
+		// two "thirdpoints" as opposed to one midpoint.
+		Vector3 thirdpoint;
+		int sum = 0;
+	};
+	LocalVector<UniqueHalfEdge> unique_halfedges_backing_buffer;
+	LocalVector<Pair<UniqueHalfEdge *, UniqueHalfEdge *>> unique_edges;
+	unique_edges.resize(p_src_indices.size());
+	memset((void *)unique_edges.ptr(), 0, sizeof(unique_edges[0]) * unique_edges.size());
+
+	// Link indices to unique halfedges.
+	{
+		HashMap<Pair<UniqueVertex *, UniqueVertex *>, UniqueHalfEdge *, PairHash<UniqueVertex *, UniqueVertex *>> halfedge_hashmap;
+		halfedge_hashmap.reserve((p_src_indices.size() / 6) * 4);
+		for (int i = 0; i < p_src_indices.size(); i += 6) {
+			for (int j = 0; j < 4; j++) {
+				halfedge_hashmap[{ unique_vertices[i + j], unique_vertices[i + ((j + 3) % 4)] }] = nullptr;
+				halfedge_hashmap[{ unique_vertices[i + j], unique_vertices[i + ((j + 1) % 4)] }] = nullptr;
+			}
+		}
+
+		unique_halfedges_backing_buffer.resize(halfedge_hashmap.size());
+		UniqueHalfEdge *unique_halfedges_backing_buffer_ptr = unique_halfedges_backing_buffer.ptr();
+		for (KeyValue<Pair<UniqueVertex *, UniqueVertex *>, UniqueHalfEdge *> &kv : halfedge_hashmap) {
+			kv.value = unique_halfedges_backing_buffer_ptr++;
+		}
+		DEV_ASSERT(unique_halfedges_backing_buffer_ptr == unique_halfedges_backing_buffer.ptr() + unique_halfedges_backing_buffer.size());
+
+		for (int i = 0; i < p_src_indices.size(); i += 6) {
+			for (int j = 0; j < 4; j++) {
+				unique_edges[i + j] = {
+					halfedge_hashmap[{ unique_vertices[i + j], unique_vertices[i + ((j + 3) % 4)] }],
+					halfedge_hashmap[{ unique_vertices[i + j], unique_vertices[i + ((j + 1) % 4)] }],
+				};
+			}
+		}
+	}
+
+	// We now have connectivity information that we can use
+	// to transfer information across connected vertices and edges.
+
+	// Mark non-manifold edges and vertices.
+	for (int i = 0; i < p_src_indices.size(); i += 6) {
+		for (int j = 0; j < 4; j++) {
+			UniqueHalfEdge &prev_he = *unique_edges[i + j].first;
+			UniqueHalfEdge &next_he = *unique_edges[i + j].second;
+			prev_he.sum++;
+			next_he.sum++;
+		}
+	}
+	for (int i = 0; i < p_src_indices.size(); i += 6) {
+		for (int j = 0; j < 4; j++) {
+			UniqueVertex &v = *unique_vertices[i + j];
+			const UniqueHalfEdge &prev_he = *unique_edges[i + j].first;
+			const UniqueHalfEdge &next_he = *unique_edges[i + j].second;
+			v.is_manifold &= prev_he.sum == 2;
+			v.is_manifold &= next_he.sum == 2;
+			is_manifold &= v.is_manifold;
+		}
+	}
+
+#define CACHE_FACE_VERTS(m_idx)                       \
+	{                                                 \
+		p_src_attr[p_src_indices[m_idx + 0]],         \
+				p_src_attr[p_src_indices[m_idx + 1]], \
+				p_src_attr[p_src_indices[m_idx + 2]], \
+				p_src_attr[p_src_indices[m_idx + 3]]  \
+	} // clang-format, why...
+
+	// Calculate normals to help place control points.
+	for (int i = 0; i < p_src_indices.size(); i += 6) {
+		const Vector3 face_vertices[4] = CACHE_FACE_VERTS(i);
+
+		for (int j = 0; j < 4; j++) {
+			UniqueVertex &v = *unique_vertices[i + j];
+			const UniqueHalfEdge &prev_he = *unique_edges[i + j].first;
+			const UniqueHalfEdge &next_he = *unique_edges[i + j].second;
+
+			const Vector3 vert = face_vertices[j];
+			const Vector3 pnorm = vert - face_vertices[(j + 3) % 4];
+			const Vector3 nnorm = vert - face_vertices[(j + 1) % 4];
+
+			// For now, just apply sharpness to axis-aligned corners. This is primarily meant for UVs
+			// since grid arrangements are a common enough use case, but this will also affect planes.
+			// While this is reasonably robust, note that no heuristic can perfectly understand human intent,
+			// and pushing for integration of bezier patches into DCC tools should be preferred over
+			// making the logic here more complicated.
+			v.is_sharp_corner &= ((pnorm.x == 0) + (pnorm.y == 0) + (pnorm.z == 0)) == 2;
+			v.is_sharp_corner &= ((nnorm.x == 0) + (nnorm.y == 0) + (nnorm.z == 0)) == 2;
+			v.is_sharp_corner &= !v.is_manifold;
+
+			v.normal += pnorm.normalized() * (v.is_manifold | (prev_he.sum != 2));
+			v.normal += nnorm.normalized() * (v.is_manifold | (next_he.sum != 2));
+		}
+	}
+	for (UniqueVertex &v : unique_vertices_backing_buffer) {
+		if ((v.normal.length_squared() < 0.0001f) | v.is_sharp_corner) {
+			v.normal.zero();
+		} else {
+			v.normal.normalize();
+		}
+	}
+
+	LocalVector<Vector3> corner_thirdpoints;
+	corner_thirdpoints.resize(p_src_indices.size());
+
+	// Now that we have normals, we can decide on control points for the bezier patches.
+	for (int i = 0; i < p_src_indices.size(); i += 6) {
+		const Vector3 face_vertices[4] = CACHE_FACE_VERTS(i);
+		const Vector3 face_center = (face_vertices[0] + face_vertices[1] + face_vertices[2] + face_vertices[3]) * 0.25f;
+
+		for (int j = 0; j < 4; j++) {
+			UniqueVertex &v = *unique_vertices[i + j];
+			UniqueHalfEdge &prev_he = *unique_edges[i + j].first;
+			UniqueHalfEdge &next_he = *unique_edges[i + j].second;
+
+			const Vector3 vert = face_vertices[j];
+			const Vector3 prev_midpoint = (vert + face_vertices[(j + 3) % 4]) * 0.5f;
+			const Vector3 next_midpoint = (vert + face_vertices[(j + 1) % 4]) * 0.5f;
+
+			const float prev_weight = calculate_bezier_thirdpoint_weights(vert, prev_midpoint, v.normal);
+			const float next_weight = calculate_bezier_thirdpoint_weights(vert, next_midpoint, v.normal);
+
+			// 2D lerp.
+			const Vector3 corner_thirdpoint =
+					((1.0f - prev_weight) * (1.0f - next_weight) * vert) +
+					((0.0f + prev_weight) * (1.0f - next_weight) * prev_midpoint) +
+					((1.0f - prev_weight) * (0.0f + next_weight) * next_midpoint) +
+					((0.0f + prev_weight) * (0.0f + next_weight) * face_center);
+
+			corner_thirdpoints[i + j] = corner_thirdpoint;
+
+			const Vector3 prev_thirdpoint = vert.lerp(prev_midpoint, prev_weight);
+			const Vector3 next_thirdpoint = vert.lerp(next_midpoint, next_weight);
+
+			if (v.is_sharp_corner) {
+				v.attr += vert;
+				v.sum++;
+			} else {
+				if (v.is_manifold) {
+					// Average points from surrounding faces.
+					v.attr += corner_thirdpoint;
+					v.sum++;
+				} else {
+					// Only average surrounding edges if they're also non-manifold.
+					v.attr += prev_thirdpoint * (prev_he.sum != 2);
+					v.attr += next_thirdpoint * (next_he.sum != 2);
+					v.sum += (prev_he.sum != 2);
+					v.sum += (next_he.sum != 2);
+				}
+			}
+
+			prev_he.thirdpoint += ((prev_he.sum == 2) & !v.is_sharp_corner) ? corner_thirdpoint : prev_thirdpoint;
+			next_he.thirdpoint += ((next_he.sum == 2) & !v.is_sharp_corner) ? corner_thirdpoint : next_thirdpoint;
+		}
+	}
+	for (UniqueVertex &v : unique_vertices_backing_buffer) {
+		v.attr /= v.sum;
+		v.sum = 1;
+	}
+	for (UniqueHalfEdge &he : unique_halfedges_backing_buffer) {
+		he.thirdpoint /= he.sum;
+		he.sum = 1;
+	}
+#undef CACHE_FACE_VERTS
+
+	dst_attr.resize((p_src_indices.size() / 6) * 16);
+	Vector3 *patch_attr = dst_attr.ptrw();
+
+	for (int i = 0; i < p_src_indices.size(); i += 6) {
+		patch_attr[0] = unique_vertices[i + 0]->attr;
+		patch_attr[3] = unique_vertices[i + 1]->attr;
+		patch_attr[15] = unique_vertices[i + 2]->attr;
+		patch_attr[12] = unique_vertices[i + 3]->attr;
+
+		patch_attr[4] = unique_edges[i + 0].first->thirdpoint;
+		patch_attr[1] = unique_edges[i + 0].second->thirdpoint;
+		patch_attr[2] = unique_edges[i + 1].first->thirdpoint;
+		patch_attr[7] = unique_edges[i + 1].second->thirdpoint;
+		patch_attr[11] = unique_edges[i + 2].first->thirdpoint;
+		patch_attr[14] = unique_edges[i + 2].second->thirdpoint;
+		patch_attr[13] = unique_edges[i + 3].first->thirdpoint;
+		patch_attr[8] = unique_edges[i + 3].second->thirdpoint;
+
+		patch_attr[5] = corner_thirdpoints[i + 0];
+		patch_attr[6] = corner_thirdpoints[i + 1];
+		patch_attr[10] = corner_thirdpoints[i + 2];
+		patch_attr[9] = corner_thirdpoints[i + 3];
+
+		patch_attr += 16;
+	}
+
+	DEV_ASSERT(patch_attr == dst_attr.ptrw() + dst_attr.size());
+
+	if (r_is_manifold) {
+		*r_is_manifold = is_manifold;
+	}
+
+	return dst_attr;
+}
+
+void SurfaceTool::quads_to_bezier_patch(Array &r_array, bool *r_is_manifold) {
+	const Vector<int> &src_indices = r_array[Mesh::ARRAY_INDEX];
+	const Vector<Vector3> &src_vertices = r_array[Mesh::ARRAY_VERTEX];
+
+	ERR_FAIL_COND(src_indices.size() == 0);
+	ERR_FAIL_COND(!is_indices_quads(src_indices.ptr(), src_indices.size()));
+
+	Array dst_array = convert_attributes_to_vec3(r_array);
+
+	dst_array[Mesh::ARRAY_VERTEX] = quads_to_bezier_patch_attribute(src_indices, src_vertices, src_vertices, r_is_manifold);
+
+	for (int attr_i = 0; attr_i < Mesh::ARRAY_MAX; attr_i++) {
+		if (attr_i == Mesh::ARRAY_VERTEX) {
+			continue;
+		}
+		if (!dst_array[attr_i]) {
+			continue;
+		}
+
+		dst_array[attr_i] = quads_to_bezier_patch_attribute(src_indices, src_vertices, dst_array[attr_i]);
+	}
+
+	Vector<int> dst_indices;
+	dst_indices.resize((src_indices.size() / 6) * 54);
+	int *patch_indices = dst_indices.ptrw();
+
+	for (int i = 0; i < src_indices.size(); i += 6) {
+		const int offset = (i / 6) * 16;
+
+		for (int by = 0; by < 3; by++) {
+			for (int bx = 0; bx < 3; bx++) {
+				patch_indices[0] = offset + ((by + 0) * 4) + (bx + 0);
+				patch_indices[1] = offset + ((by + 0) * 4) + (bx + 1);
+				patch_indices[2] = offset + ((by + 1) * 4) + (bx + 1);
+				patch_indices[3] = offset + ((by + 1) * 4) + (bx + 0);
+
+				patch_indices[4] = patch_indices[0];
+				patch_indices[5] = patch_indices[2];
+
+				patch_indices += 6;
+			}
+		}
+	}
+
+	DEV_ASSERT(patch_indices == dst_indices.ptrw() + dst_indices.size());
+
+	dst_array[Mesh::ARRAY_INDEX] = dst_indices;
+
+	restore_attributes_from_vec3(dst_array, r_array);
+}
+
+static Vector<Vector3> interpolate_bezier_patch_attribute(const Vector<Vector3> &p_src_attribute, int patches, int highest_lod) {
+	Vector<Vector3> r_dst_attribute;
+	if (p_src_attribute.size() == 0) {
+		return r_dst_attribute;
+	}
+
+	ERR_FAIL_COND_V(p_src_attribute.size() != (patches * 16), r_dst_attribute);
+
+	for (int lod = 0; lod <= highest_lod; lod++) {
+		const int n = 1 << lod;
+
+		int offset = r_dst_attribute.size();
+		r_dst_attribute.resize(offset + (patches * (n + 1) * (n + 1)));
+		Vector3 *verts = r_dst_attribute.ptrw() + offset;
+
+		for (int p = 0; p < p_src_attribute.size(); p += 16) {
+			for (int b_vi = 0; b_vi <= n; b_vi++) {
+				const float b_vf = float(b_vi) / n;
+				const Vector3 row_curve[4] = {
+					p_src_attribute[p + 0].bezier_interpolate(p_src_attribute[p + 4], p_src_attribute[p + 8], p_src_attribute[p + 12], b_vf),
+					p_src_attribute[p + 1].bezier_interpolate(p_src_attribute[p + 5], p_src_attribute[p + 9], p_src_attribute[p + 13], b_vf),
+					p_src_attribute[p + 2].bezier_interpolate(p_src_attribute[p + 6], p_src_attribute[p + 10], p_src_attribute[p + 14], b_vf),
+					p_src_attribute[p + 3].bezier_interpolate(p_src_attribute[p + 7], p_src_attribute[p + 11], p_src_attribute[p + 15], b_vf),
+				};
+
+				for (int b_ui = 0; b_ui <= n; b_ui++) {
+					const float b_uf = float(b_ui) / n;
+					const Vector3 v = row_curve[0].bezier_interpolate(
+							row_curve[1],
+							row_curve[2],
+							row_curve[3],
+							b_uf);
+					*verts++ = v;
+				}
+			}
+		}
+		DEV_ASSERT(verts == r_dst_attribute.ptrw() + r_dst_attribute.size());
+	}
+	return r_dst_attribute;
+}
+
+void SurfaceTool::tessellate_bezier_patch(Array &r_array, Dictionary &r_lods, int p_target_quad_count) {
+	const Vector<Vector3> &src_vertices = r_array[Mesh::ARRAY_VERTEX];
+
+	ERR_FAIL_COND(src_vertices.size() % 16);
+
+	float avg_len = 0.0f;
+	{
+		// Calculate the edge lengths used for deciding LOD transitions.
+		// For simplicity, we just use the average diagonal length of every bezier patch
+		// for the lowest LOD, and halve it for every successive tessellation level.
+		int sum = 0;
+		for (int i = 0; i < src_vertices.size(); i += 16) {
+			avg_len += src_vertices[i + 0].distance_squared_to(src_vertices[i + 15]);
+			avg_len += src_vertices[i + 3].distance_squared_to(src_vertices[i + 12]);
+			sum += 2;
+		}
+		avg_len = Math::sqrt(avg_len / sum);
+	}
+
+	const int patches = src_vertices.size() / 16;
+	const int highest_lod = Math::log2(float(p_target_quad_count) / patches) / 2;
+
+	Array dst_array = convert_attributes_to_vec3(r_array);
+
+	for (int attr_i = 0; attr_i < Mesh::ARRAY_MAX; attr_i++) {
+		if (!dst_array[attr_i]) {
+			continue;
+		}
+
+		// TODO: if (attr_i == Mesh::ARRAY_BONES) duplicate_quad_bones_four_times();
+
+		dst_array[attr_i] = interpolate_bezier_patch_attribute(dst_array[attr_i], patches, highest_lod);
+	}
+
+	int offset = 0;
+	for (int lod = 0; lod <= highest_lod; lod++) {
+		const int n = 1 << lod;
+
+		Vector<int> dst_indices;
+		dst_indices.resize(patches * n * n * 6);
+		int *idxs = dst_indices.ptrw();
+		for (int p = 0; p < patches; p++) {
+			for (int yy = 0; yy < n; yy++) {
+				for (int xx = 0; xx < n; xx++) {
+					const int voffset = (p * (n + 1) * (n + 1)) + offset;
+					*idxs++ = (n + 1) * (yy + 0) + (xx + 0) + voffset;
+					*idxs++ = (n + 1) * (yy + 0) + (xx + 1) + voffset;
+					*idxs++ = (n + 1) * (yy + 1) + (xx + 1) + voffset;
+					*idxs++ = (n + 1) * (yy + 1) + (xx + 0) + voffset;
+
+					*idxs++ = (n + 1) * (yy + 0) + (xx + 0) + voffset;
+					*idxs++ = (n + 1) * (yy + 1) + (xx + 1) + voffset;
+				}
+			}
+		}
+
+		offset += patches * (n + 1) * (n + 1);
+		DEV_ASSERT(idxs == dst_indices.ptrw() + dst_indices.size());
+
+		if (lod == highest_lod) {
+			dst_array[Mesh::ARRAY_INDEX] = dst_indices;
+		} else {
+			r_lods[avg_len / n] = dst_indices;
+		}
+	}
+
+	restore_attributes_from_vec3(dst_array, r_array);
+
+	IF_DEV_VAR("CHECK_SUBD", {
+		print_line("==== Tessellation results:");
+		print_line("Patches: " + itos(patches));
+		print_line("LODs: " + itos(highest_lod));
+		print_line("Final quads: " + itos(patches << (highest_lod * 2)));
+		print_line("Target quads: " + itos(p_target_quad_count));
+		print_line(vformat("Edge length: %.3f", avg_len));
+		print_line("====");
+	});
+}
+
 void SurfaceTool::_create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint32_t &lformat) {
 	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::_create_list() must be a valid object of type Mesh");
 

@@ -31,6 +31,7 @@
 #include "primitive_meshes.h"
 
 #include "core/config/project_settings.h"
+#include "scene/resources/surface_tool.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 #include "servers/rendering_server.h"
@@ -91,9 +92,11 @@ void PrimitiveMesh::_update() const {
 				}
 			}
 			arr[RS::ARRAY_NORMAL] = normals;
-			arr[RS::ARRAY_INDEX] = indices;
 		}
 	}
+
+	SurfaceTool::set_indices_quads(indices.ptrw(), indices.size());
+	arr[RS::ARRAY_INDEX] = indices;
 
 	if (add_uv2) {
 		// _create_mesh_array should populate our UV2, this is a fallback in case it doesn't.
@@ -528,6 +531,8 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 		thisrow = point;
 	}
 
+	SurfaceTool::set_indices_quads(indices.ptrw(), indices.size());
+
 	p_arr[RS::ARRAY_VERTEX] = points;
 	p_arr[RS::ARRAY_NORMAL] = normals;
 	p_arr[RS::ARRAY_TANGENT] = tangents;
@@ -862,6 +867,8 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 		thisrow = point;
 	}
 
+	SurfaceTool::set_indices_quads(indices.ptrw(), indices.size());
+
 	p_arr[RS::ARRAY_VERTEX] = points;
 	p_arr[RS::ARRAY_NORMAL] = normals;
 	p_arr[RS::ARRAY_TANGENT] = tangents;
@@ -1007,7 +1014,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 		y = (height * 0.5) - y;
 
 		for (i = 0; i <= radial_segments; i++) {
-			u = i;
+			u = i % radial_segments; // Ensure that the first and last vertices don't get pushed apart by rounding errors.
 			u /= radial_segments;
 
 			x = sin(u * Math_TAU);
@@ -1127,6 +1134,8 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			}
 		}
 	}
+
+	SurfaceTool::set_indices_quads(indices.ptrw(), indices.size());
 
 	p_arr[RS::ARRAY_VERTEX] = points;
 	p_arr[RS::ARRAY_NORMAL] = normals;
@@ -1853,6 +1862,8 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 		prevrow = thisrow;
 		thisrow = point;
 	}
+
+	SurfaceTool::set_indices_quads(indices.ptrw(), indices.size());
 
 	p_arr[RS::ARRAY_VERTEX] = points;
 	p_arr[RS::ARRAY_NORMAL] = normals;

@@ -332,4 +332,18 @@ public:
 	virtual ~OS();
 };
 
+// Convenience macro, use this instead of #if 0.
+#ifdef DEV_ENABLED
+#define IF_DEV_VAR(m_var, m_code)                            \
+	{                                                        \
+		static const String DEV_VAR_VALUE =                  \
+				OS::get_singleton()->get_environment(m_var); \
+		if (!DEV_VAR_VALUE.is_empty()) {                     \
+			m_code                                           \
+		}                                                    \
+	}
+#else
+#define IF_DEV_VAR(m_var, m_code)
+#endif
+
 #endif // OS_H

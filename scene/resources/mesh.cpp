@@ -281,6 +281,21 @@ AABB Mesh::get_aabb() const {
 	return ret;
 }
 
+bool Mesh::is_surface_quads(int p_surface) const {
+	if (surface_get_primitive_type(p_surface) != PRIMITIVE_TRIANGLES) {
+		return false;
+	}
+
+	if (!(surface_get_format(p_surface) & ARRAY_FORMAT_INDEX)) {
+		return false;
+	}
+
+	int num_indices = surface_get_array_index_len(p_surface);
+	Vector<int> indices_vector = surface_get_arrays(p_surface)[ARRAY_INDEX];
+
+	return SurfaceTool::is_indices_quads(indices_vector.ptr(), num_indices);
+}
+
 Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 	if (triangle_mesh.is_valid()) {
 		return triangle_mesh;

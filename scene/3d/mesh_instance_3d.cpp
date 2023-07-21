@@ -336,6 +336,19 @@ void MeshInstance3D::_notification(int p_what) {
 			}
 		} break;
 	}
+
+	IF_DEV_VAR("CHECK_QUADS", {
+		if (p_what == NOTIFICATION_READY) {
+			print_line(vformat("'%s':", get_name()));
+			if (!mesh.is_null()) {
+				for (int i = 0; i < mesh->get_surface_count(); i++) {
+					print_line(vformat("\tFound %s surface with %d indices",
+							mesh->is_surface_quads(i) ? "QUADS" : "TRIANGLES",
+							mesh->surface_get_array_index_len(i)));
+				}
+			}
+		}
+	});
 }
 
 int MeshInstance3D::get_surface_override_material_count() const {

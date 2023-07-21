@@ -2774,6 +2774,8 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					for (int k = 0; k < is; k += 3) {
 						SWAP(w[k + 1], w[k + 2]);
 					}
+
+					SurfaceTool::set_indices_quads(w, is);
 				}
 				array[Mesh::ARRAY_INDEX] = indices;
 
@@ -2791,6 +2793,8 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 						w[k + 1] = k + 2;
 						w[k + 2] = k + 1;
 					}
+
+					SurfaceTool::set_indices_quads(w, vs);
 				}
 				array[Mesh::ARRAY_INDEX] = indices;
 			}
@@ -2970,8 +2974,26 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				ERR_FAIL_NULL_V(mat, ERR_FILE_CORRUPT);
 				mat_name = mat->get_name();
 			}
+
+			Dictionary lods;
+
+			// TODO: Replace this with a proper interface.
+			if (mesh_name.contains("-experimental-subd")) {
+				Vector<int> indices = array[Mesh::ARRAY_INDEX];
+				if (primitive == Mesh::PRIMITIVE_TRIANGLES && SurfaceTool::is_indices_quads(indices.ptr(), indices.size())) {
+					SurfaceTool::quads_to_bezier_patch(array);
+
+					if (mesh_name.contains("-cage")) {
+						print_line("Viewing cage mesh: " + mesh_name);
+					} else {
+						print_line("Subdividing: " + mesh_name);
+						SurfaceTool::tessellate_bezier_patch(array, lods, 100000);
+					}
+				}
+			}
+
 			import_mesh->add_surface(primitive, array, morphs,
-					Dictionary(), mat, mat_name, flags);
+					lods, mat, mat_name, flags);
 		}
 
 		Vector<float> blend_weights;

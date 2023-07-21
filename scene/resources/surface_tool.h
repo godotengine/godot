@@ -218,6 +218,25 @@ public:
 
 	LocalVector<Vertex> &get_vertex_array() { return vertex_array; }
 
+	// Helper functions to detect/assign quad meshes. In the context of Godot,
+	// "quad meshes" are indexed triangle meshes where every two triangles are
+	// part of the same quad, with a specific ordering for the six indices
+	// to allow for easy processing.
+	static bool is_indices_quads(const int *p_indices, int p_index_count);
+	static void set_indices_quads(int *p_indices, int p_index_count);
+
+	// Convert input quads into a list of 4x4 bezier patches.
+	// The returned mesh includes indices in PRIMITIVE_TRIANGLES format
+	// so that the bezier cage can easily be visualized.
+	// To obtain bezier patch info, ignore the contents of Mesh::ARRAY_INDEX
+	// and process attributes in groups of 16.
+	static void quads_to_bezier_patch(Array &r_array, bool *r_is_manifold = nullptr);
+
+	// Interpolate bezier patch and return a mesh with LODs.
+	// Bezier patches are simple to implement and can be processed independently,
+	// making them a great candidate for porting to a tessellation or mesh shader.
+	static void tessellate_bezier_patch(Array &r_array, Dictionary &r_lods, int p_target_quad_count);
+
 	void create_from_triangle_arrays(const Array &p_arrays);
 	static void create_vertex_array_from_triangle_arrays(const Array &p_arrays, LocalVector<Vertex> &ret, uint32_t *r_format = nullptr);
 	Array commit_to_arrays();
