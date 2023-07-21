@@ -230,8 +230,8 @@ public:
 	String get_cache_dir() const;
 
 	Error set_thread_name(const String &p_name);
-	Thread::ID get_thread_caller_id() const;
-	Thread::ID get_main_thread_id() const;
+	::Thread::ID get_thread_caller_id() const;
+	::Thread::ID get_main_thread_id() const;
 
 	bool has_feature(const String &p_feature) const;
 	bool is_sandboxed() const;
