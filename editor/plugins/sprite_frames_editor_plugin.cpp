@@ -949,13 +949,16 @@ void SpriteFramesEditor::_animation_name_edited() {
 	String name = new_name;
 	int counter = 0;
 	while (frames->has_animation(name)) {
+		if (name == String(edited_anim)) {
+			edited->set_text(0, name); // The name didn't change, just updated the column text to name.
+			return;
+		}
 		counter++;
 		name = new_name + "_" + itos(counter);
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Rename Animation"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
-	_rename_node_animation(undo_redo, false, edited_anim, "", "");
 	undo_redo->add_do_method(frames.ptr(), "rename_animation", edited_anim, name);
 	undo_redo->add_undo_method(frames.ptr(), "rename_animation", name, edited_anim);
 	_rename_node_animation(undo_redo, false, edited_anim, name, name);
