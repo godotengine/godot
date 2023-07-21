@@ -190,6 +190,14 @@ void main() {
 		color.rgb = normalize(color.rgb * 2.0 - 1.0) * 0.5 + 0.5;
 	}
 
+#ifdef MODE_OCCLUSION_CULLING_BUFFER
+	// Modify result to make the background partially visible,
+	// which helps with 3D navigation.
+	// This relies on the additive blend state from the `CopyEffects()` constructor.
+	color.a = (1.0 - color.r) * 0.5;
+	color.rgb = vec3(1.0, 0.0, 0.0);
+#endif // MODE_OCCLUSION_CULLING_BUFFER
+
 	frag_color = color / params.luminance_multiplier;
 #endif // MODE_SET_COLOR
 }
