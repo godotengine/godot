@@ -4,7 +4,7 @@
 		A server interface for low-level 3D navigation access.
 	</brief_description>
 	<description>
-		NavigationServer2D is the server that handles navigation maps, regions and agents. It does not handle A* navigation from [AStar3D].
+		NavigationServer3D is the server that handles navigation maps, regions and agents. It does not handle A* navigation from [AStar3D].
 		Maps are made up of regions, which are made of navigation meshes. Together, they define the navigable areas in the 3D world.
 		[b]Note:[/b] Most [NavigationServer3D] changes take effect after the next physics frame and not immediately. This includes all changes made to maps, regions or agents by navigation-related nodes in the scene tree or made through scripts.
 		For two regions to be connected to each other, they must share a similar edge. An edge is considered connected to another if both of its two vertices are at a distance less than [code]edge_connection_margin[/code] to the respective other edge's vertex.
