@@ -1012,60 +1012,7 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 
 	SkyShaderData *shader_data = nullptr;
 
-	if (sky) {
-		sky_material = sky_get_material(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
-
-		if (sky_material.is_valid()) {
-			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
-			if (!material || !material->shader_data->valid) {
-				material = nullptr;
-			}
-		}
-
-		if (!material) {
-			sky_material = sky_shader.default_material;
-			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
-		}
-
-		ERR_FAIL_COND(!material);
-
-		shader_data = material->shader_data;
-
-		ERR_FAIL_COND(!shader_data);
-
-		material->set_as_used();
-
-		// Save our screen size, our buffers will already have been cleared
-		sky->screen_size.x = p_screen_size.x < 4 ? 4 : p_screen_size.x;
-		sky->screen_size.y = p_screen_size.y < 4 ? 4 : p_screen_size.y;
-
-		// Trigger updating radiance buffers
-		if (sky->radiance.is_null()) {
-			invalidate_sky(sky);
-			update_dirty_skys();
-		}
-
-		if (shader_data->uses_time && p_scene_render->time - sky->prev_time > 0.00001) {
-			sky->prev_time = p_scene_render->time;
-			sky->reflection.dirty = true;
-			RenderingServerDefault::redraw_request();
-		}
-
-		if (material != sky->prev_material) {
-			sky->prev_material = material;
-			sky->reflection.dirty = true;
-		}
-
-		if (material->uniform_set_updated) {
-			material->uniform_set_updated = false;
-			sky->reflection.dirty = true;
-		}
-
-		if (!p_cam_transform.origin.is_equal_approx(sky->prev_position) && shader_data->uses_position) {
-			sky->prev_position = p_cam_transform.origin;
-			sky->reflection.dirty = true;
-		}
-
+	if (sky ||render_fog){
 		sky_scene_state.ubo.directional_light_count = 0;
 		if (shader_data->uses_light) {
 			// Run through the list of lights in the scene and pick out the Directional Lights.
@@ -1163,6 +1110,62 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 				sky->reflection.dirty = true;
 			}
 		}
+	}
+	if (sky) {
+		sky_material = sky_get_material(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
+
+		if (sky_material.is_valid()) {
+			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
+			if (!material || !material->shader_data->valid) {
+				material = nullptr;
+			}
+		}
+
+		if (!material) {
+			sky_material = sky_shader.default_material;
+			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
+		}
+
+		ERR_FAIL_COND(!material);
+
+		shader_data = material->shader_data;
+
+		ERR_FAIL_COND(!shader_data);
+
+		material->set_as_used();
+
+		// Save our screen size, our buffers will already have been cleared
+		sky->screen_size.x = p_screen_size.x < 4 ? 4 : p_screen_size.x;
+		sky->screen_size.y = p_screen_size.y < 4 ? 4 : p_screen_size.y;
+
+		// Trigger updating radiance buffers
+		if (sky->radiance.is_null()) {
+			invalidate_sky(sky);
+			update_dirty_skys();
+		}
+
+		if (shader_data->uses_time && p_scene_render->time - sky->prev_time > 0.00001) {
+			sky->prev_time = p_scene_render->time;
+			sky->reflection.dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
+		if (material != sky->prev_material) {
+			sky->prev_material = material;
+			sky->reflection.dirty = true;
+		}
+
+		if (material->uniform_set_updated) {
+			material->uniform_set_updated = false;
+			sky->reflection.dirty = true;
+		}
+
+		if (!p_cam_transform.origin.is_equal_approx(sky->prev_position) && shader_data->uses_position) {
+			sky->prev_position = p_cam_transform.origin;
+			sky->reflection.dirty = true;
+		}
+
+		
 	}
 
 	//setup fog variables
