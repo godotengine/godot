@@ -4,7 +4,7 @@
 		A server interface for low-level 3D physics access.
 	</brief_description>
 	<description>
-		PhysicsServer2D is the server responsible for all 2D physics. It can directly create and manipulate all physics objects:
+		PhysicsServer3D is the server responsible for all 3D physics. It can directly create and manipulate all physics objects:
 		- A [i]space[/i] is a self-contained world for a physics simulation. It contains bodies, areas, and joints. Its state can be queried for collision and intersection information, and several parameters of the simulation can be modified.
 		- A [i]shape[/i] is a geometric shape such as a sphere, a box, a cylinder, or a polygon. It can be used for collision detection by adding it to a body/area, possibly with an extra transformation relative to the body/area's origin. Bodies/areas can have multiple (transformed) shapes added to them, and a single shape can be added to bodies/areas multiple times with different local transformations.
 		- A [i]body[/i] is a physical object which can be in static, kinematic, or rigid mode. Its state (such as position and velocity) can be queried and updated. A force integration callback can be set to customize the body's physics.
