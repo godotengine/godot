@@ -1056,10 +1056,12 @@ void SpriteFramesEditor::_rename_node_animation(EditorUndoRedoManager *undo_redo
 		for (Node *E : nodes) {
 			String current_name = E->call("get_animation");
 			if (current_name == p_filter) {
+				undo_redo->force_fixed_history(); // Fixes corner-case when editing SpriteFrames stored as separate file.
 				undo_redo->add_undo_method(E, "set_animation", p_new_animation);
 			}
 			String autoplay_name = E->call("get_autoplay");
 			if (autoplay_name == p_filter) {
+				undo_redo->force_fixed_history();
 				undo_redo->add_undo_method(E, "set_autoplay", p_new_autoplay);
 			}
 		}
@@ -1067,10 +1069,12 @@ void SpriteFramesEditor::_rename_node_animation(EditorUndoRedoManager *undo_redo
 		for (Node *E : nodes) {
 			String current_name = E->call("get_animation");
 			if (current_name == p_filter) {
+				undo_redo->force_fixed_history();
 				undo_redo->add_do_method(E, "set_animation", p_new_animation);
 			}
 			String autoplay_name = E->call("get_autoplay");
 			if (autoplay_name == p_filter) {
+				undo_redo->force_fixed_history();
 				undo_redo->add_do_method(E, "set_autoplay", p_new_autoplay);
 			}
 		}
