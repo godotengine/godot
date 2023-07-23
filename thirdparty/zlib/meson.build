@@ -7,7 +7,6 @@ if get_option('builtin_zlib')
         'compress.c',
         'crc32.c',
         'deflate.c',
-        'infback.c',
         'inffast.c',
         'inflate.c',
         'inftrees.c',

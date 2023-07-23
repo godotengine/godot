@@ -11,4 +11,5 @@ SOURCES += files(
   'variant_op.cpp',
   'variant_parser.cpp',
   'variant_setget.cpp',
+  'variant_utility.cpp',
 )

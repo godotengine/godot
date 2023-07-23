@@ -4,10 +4,10 @@ subdir('forward_clustered')
 subdir('forward_mobile')
 
 # NOTE: do not use files() here
-_rd_shaders = run_command(GLOB, '*.glsl', check: true).stdout().split('\n')
+rd_shaders = run_command(GLOB, '*.glsl', check: true).stdout().split('\n')
 
-foreach glsl_file : _rd_shaders
-    _rd_target = custom_target(
+foreach glsl_file : rd_shaders
+    rd_target = custom_target(
         'rd_target_' + glsl_file,
         output: '@PLAINNAME@.gen.h',
         input: files(glsl_file),
@@ -16,5 +16,5 @@ foreach glsl_file : _rd_shaders
         build_by_default: true
     )
 
-    SOURCES += [_rd_target]
+    SOURCES += [rd_target]
 endforeach
