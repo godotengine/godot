@@ -1134,7 +1134,7 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 
 		material->set_as_used();
 
-		// Save our screen size, our buffers will already have been cleared
+		// Save our screen size, our buffers will already have been cleared.
 		sky->screen_size.x = p_screen_size.x < 4 ? 4 : p_screen_size.x;
 		sky->screen_size.y = p_screen_size.y < 4 ? 4 : p_screen_size.y;
 
