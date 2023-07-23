@@ -1164,8 +1164,6 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 			sky->prev_position = p_cam_transform.origin;
 			sky->reflection.dirty = true;
 		}
-
-		
 	}
 
 	//setup fog variables
