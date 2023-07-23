@@ -5883,14 +5883,18 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	if (!gltf_node_name.is_empty()) {
 		current_node->set_name(gltf_node_name);
 	}
-	// Add the node we generated and set the owner to the scene root.
-	p_scene_parent->add_child(current_node, true);
-	if (current_node != p_scene_root) {
+	// Note: p_scene_parent and p_scene_root must either both be null or both be valid.
+	if (p_scene_root == nullptr) {
+		// If the root node argument is null, this is the root node.
+		p_scene_root = current_node;
+	} else {
+		// Add the node we generated and set the owner to the scene root.
+		p_scene_parent->add_child(current_node, true);
 		Array args;
 		args.append(p_scene_root);
 		current_node->propagate_call(StringName("set_owner"), args);
+		current_node->set_transform(gltf_node->xform);
 	}
-	current_node->set_transform(gltf_node->xform);
 
 	p_state->scene_nodes.insert(p_node_index, current_node);
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
@@ -7219,13 +7223,20 @@ void GLTFDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("write_to_filesystem", "state", "path"),
 			&GLTFDocument::write_to_filesystem);
 
+	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_SINGLE_ROOT);
+	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_KEEP_ROOT);
+	BIND_ENUM_CONSTANT(ROOT_NODE_MODE_MULTI_ROOT);
+
 	ClassDB::bind_method(D_METHOD("set_image_format", "image_format"), &GLTFDocument::set_image_format);
 	ClassDB::bind_method(D_METHOD("get_image_format"), &GLTFDocument::get_image_format);
 	ClassDB::bind_method(D_METHOD("set_lossy_quality", "lossy_quality"), &GLTFDocument::set_lossy_quality);
 	ClassDB::bind_method(D_METHOD("get_lossy_quality"), &GLTFDocument::get_lossy_quality);
+	ClassDB::bind_method(D_METHOD("set_root_node_mode", "root_node_mode"), &GLTFDocument::set_root_node_mode);
+	ClassDB::bind_method(D_METHOD("get_root_node_mode"), &GLTFDocument::get_root_node_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "image_format"), "set_image_format", "get_image_format");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lossy_quality"), "set_lossy_quality", "get_lossy_quality");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "root_node_mode"), "set_root_node_mode", "get_root_node_mode");
 
 	ClassDB::bind_static_method("GLTFDocument", D_METHOD("register_gltf_document_extension", "extension", "first_priority"),
 			&GLTFDocument::register_gltf_document_extension, DEFVAL(false));
@@ -7336,9 +7347,15 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_
 }
 
 Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
-	Node *single_root = memnew(Node3D);
-	for (int32_t root_i = 0; root_i < p_state->root_nodes.size(); root_i++) {
-		_generate_scene_node(p_state, p_state->root_nodes[root_i], single_root, single_root);
+	Node *single_root;
+	if (p_state->extensions_used.has("GODOT_single_root")) {
+		_generate_scene_node(p_state, 0, nullptr, nullptr);
+		single_root = p_state->scene_nodes[0];
+	} else {
+		single_root = memnew(Node3D);
+		for (int32_t root_i = 0; root_i < p_state->root_nodes.size(); root_i++) {
+			_generate_scene_node(p_state, p_state->root_nodes[root_i], single_root, single_root);
+		}
 	}
 	// Assign the scene name and single root name to each other
 	// if one is missing, or do nothing if both are already set.
@@ -7406,6 +7423,19 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 		}
 	}
 	// Add the root node(s) and their descendants to the state.
+	if (_root_node_mode == RootNodeMode::ROOT_NODE_MODE_MULTI_ROOT) {
+		const int child_count = p_node->get_child_count();
+		if (child_count > 0) {
+			for (int i = 0; i < child_count; i++) {
+				_convert_scene_node(p_state, p_node->get_child(i), -1, -1);
+			}
+			p_state->scene_name = p_node->get_name();
+			return OK;
+		}
+	}
+	if (_root_node_mode == RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT) {
+		p_state->extensions_used.append("GODOT_single_root");
+	}
 	_convert_scene_node(p_state, p_node, -1, -1);
 	return OK;
 }
@@ -7597,4 +7627,12 @@ Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> p_state) {
 		}
 	}
 	return ret;
+}
+
+void GLTFDocument::set_root_node_mode(GLTFDocument::RootNodeMode p_root_node_mode) {
+	_root_node_mode = p_root_node_mode;
+}
+
+GLTFDocument::RootNodeMode GLTFDocument::get_root_node_mode() const {
+	return _root_node_mode;
 }
