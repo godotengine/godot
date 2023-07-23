@@ -1138,7 +1138,7 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 		sky->screen_size.x = p_screen_size.x < 4 ? 4 : p_screen_size.x;
 		sky->screen_size.y = p_screen_size.y < 4 ? 4 : p_screen_size.y;
 
-		// Trigger updating radiance buffers
+		// Trigger updating radiance buffers.
 		if (sky->radiance.is_null()) {
 			invalidate_sky(sky);
 			update_dirty_skys();
