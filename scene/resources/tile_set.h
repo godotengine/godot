@@ -637,10 +637,11 @@ private:
 	void _clear_tiles_outside_texture();
 
 	bool use_texture_padding = true;
-	Ref<ImageTexture> padded_texture;
+	Ref<Texture2D> padded_texture;
 	bool padded_texture_needs_update = false;
 	void _queue_update_padded_texture();
 	void _update_padded_texture();
+	Ref<Image> _create_padded_image(const Ref<Image> &p_src);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);

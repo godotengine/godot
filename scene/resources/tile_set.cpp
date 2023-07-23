@@ -4728,25 +4728,84 @@ void TileSetAtlasSource::_update_padded_texture() {
 		return;
 	}
 	padded_texture_needs_update = false;
-	padded_texture = Ref<ImageTexture>();
 
-	if (!texture.is_valid()) {
+	if (texture.is_null()) {
+		padded_texture = Ref<Texture2D>();
 		return;
 	}
 
 	if (!use_texture_padding) {
+		padded_texture = Ref<Texture2D>();
 		return;
 	}
-
-	Size2 size = get_atlas_grid_size() * (texture_region_size + Vector2i(2, 2));
 
 	Ref<Image> src = texture->get_image();
-
-	if (!src.is_valid()) {
+	if (src.is_null()) {
+		padded_texture = Ref<Texture2D>();
 		return;
 	}
 
-	Ref<Image> image = Image::create_empty(size.x, size.y, false, src->get_format());
+	Ref<Image> padded_src = _create_padded_image(src);
+
+	Ref<CanvasTexture> canvas_texture = texture;
+	if (canvas_texture.is_valid()) {
+		Ref<CanvasTexture> padded_canvas_texture = padded_texture;
+		if (padded_canvas_texture.is_null()) {
+			padded_canvas_texture.instantiate();
+			padded_texture = padded_canvas_texture;
+		}
+
+		Ref<ImageTexture> padded_diffuse_texture = padded_canvas_texture->get_diffuse_texture();
+		if (padded_diffuse_texture.is_null()) {
+			padded_diffuse_texture.instantiate();
+			padded_canvas_texture->set_diffuse_texture(padded_diffuse_texture);
+		}
+		padded_diffuse_texture->set_image(padded_src);
+
+		Ref<Texture2D> normal_texture = canvas_texture->get_normal_texture();
+		if (normal_texture.is_valid()) {
+			Ref<Image> normal = normal_texture->get_image();
+			if (normal.is_valid()) {
+				Ref<Image> padded_normal = _create_padded_image(normal);
+				Ref<ImageTexture> padded_normal_texture = padded_canvas_texture->get_normal_texture();
+				if (padded_normal_texture.is_null()) {
+					padded_normal_texture.instantiate();
+					padded_canvas_texture->set_normal_texture(padded_normal_texture);
+				}
+				padded_normal_texture->set_image(padded_normal);
+			}
+		}
+
+		Ref<Texture2D> specular_texture = canvas_texture->get_specular_texture();
+		if (specular_texture.is_valid()) {
+			Ref<Image> specular = specular_texture->get_image();
+			if (specular.is_valid()) {
+				Ref<Image> padded_specular = _create_padded_image(specular);
+				Ref<ImageTexture> padded_specular_texture = padded_canvas_texture->get_specular_texture();
+				if (padded_specular_texture.is_null()) {
+					padded_specular_texture.instantiate();
+					padded_canvas_texture->set_specular_texture(padded_specular_texture);
+				}
+				padded_specular_texture->set_image(padded_specular);
+			}
+		}
+	} else {
+		Ref<ImageTexture> padded_src_texture = padded_texture;
+		if (padded_src_texture.is_null()) {
+			padded_src_texture.instantiate();
+			padded_texture = padded_src_texture;
+		}
+		padded_src_texture->set_image(padded_src);
+	}
+
+	emit_changed();
+}
+
+Ref<Image> TileSetAtlasSource::_create_padded_image(const Ref<Image> &p_src) {
+	DEV_ASSERT(p_src.is_valid());
+
+	Size2 size = get_atlas_grid_size() * (texture_region_size + Vector2i(2, 2));
+	Ref<Image> image = Image::create_empty(size.x, size.y, false, p_src->get_format());
 
 	for (KeyValue<Vector2i, TileAlternativesData> kv : tiles) {
 		for (int frame = 0; frame < (int)kv.value.animation_frames_durations.size(); frame++) {
@@ -4762,25 +4821,21 @@ void TileSetAtlasSource::_update_padded_texture() {
 			Vector2i frame_coords = kv.key + (kv.value.size_in_atlas + kv.value.animation_separation) * ((kv.value.animation_columns > 0) ? Vector2i(frame % kv.value.animation_columns, frame / kv.value.animation_columns) : Vector2i(frame, 0));
 			Vector2i base_pos = frame_coords * (texture_region_size + Vector2i(2, 2)) + Vector2i(1, 1);
 
-			image->blit_rect(*src, src_rect, base_pos);
+			image->blit_rect(p_src, src_rect, base_pos);
 
-			image->blit_rect(*src, top_src_rect, base_pos + Vector2i(0, -1));
-			image->blit_rect(*src, bottom_src_rect, base_pos + Vector2i(0, src_rect.size.y));
-			image->blit_rect(*src, left_src_rect, base_pos + Vector2i(-1, 0));
-			image->blit_rect(*src, right_src_rect, base_pos + Vector2i(src_rect.size.x, 0));
+			image->blit_rect(p_src, top_src_rect, base_pos + Vector2i(0, -1));
+			image->blit_rect(p_src, bottom_src_rect, base_pos + Vector2i(0, src_rect.size.y));
+			image->blit_rect(p_src, left_src_rect, base_pos + Vector2i(-1, 0));
+			image->blit_rect(p_src, right_src_rect, base_pos + Vector2i(src_rect.size.x, 0));
 
-			image->set_pixelv(base_pos + Vector2i(-1, -1), src->get_pixelv(src_rect.position));
-			image->set_pixelv(base_pos + Vector2i(src_rect.size.x, -1), src->get_pixelv(src_rect.position + Vector2i(src_rect.size.x - 1, 0)));
-			image->set_pixelv(base_pos + Vector2i(-1, src_rect.size.y), src->get_pixelv(src_rect.position + Vector2i(0, src_rect.size.y - 1)));
-			image->set_pixelv(base_pos + Vector2i(src_rect.size.x, src_rect.size.y), src->get_pixelv(src_rect.position + Vector2i(src_rect.size.x - 1, src_rect.size.y - 1)));
+			image->set_pixelv(base_pos + Vector2i(-1, -1), p_src->get_pixelv(src_rect.position));
+			image->set_pixelv(base_pos + Vector2i(src_rect.size.x, -1), p_src->get_pixelv(src_rect.position + Vector2i(src_rect.size.x - 1, 0)));
+			image->set_pixelv(base_pos + Vector2i(-1, src_rect.size.y), p_src->get_pixelv(src_rect.position + Vector2i(0, src_rect.size.y - 1)));
+			image->set_pixelv(base_pos + Vector2i(src_rect.size.x, src_rect.size.y), p_src->get_pixelv(src_rect.position + Vector2i(src_rect.size.x - 1, src_rect.size.y - 1)));
 		}
 	}
 
-	if (!padded_texture.is_valid()) {
-		padded_texture.instantiate();
-	}
-	padded_texture->set_image(image);
-	emit_changed();
+	return image;
 }
 
 /////////////////////////////// TileSetScenesCollectionSource //////////////////////////////////////
