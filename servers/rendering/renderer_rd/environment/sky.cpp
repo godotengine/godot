@@ -1021,25 +1021,27 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 				material = nullptr;
 			}
 		}
+	}
 
-		if (!material) {
-			sky_material = sky_shader.default_material;
-			material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
-		}
+	if (!material) {
+		sky_material = sky_shader.default_material;
+		material = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
+	}
 
-		ERR_FAIL_COND(!material);
+	ERR_FAIL_COND(!material);
 
-		shader_data = material->shader_data;
+	shader_data = material->shader_data;
 
-		ERR_FAIL_COND(!shader_data);
+	ERR_FAIL_COND(!shader_data);
 
-		material->set_as_used();
+	material->set_as_used();
 
-		// Save our screen size, our buffers will already have been cleared
+	if (sky) {
+		// Save our screen size; our buffers will already have been cleared.
 		sky->screen_size.x = p_screen_size.x < 4 ? 4 : p_screen_size.x;
 		sky->screen_size.y = p_screen_size.y < 4 ? 4 : p_screen_size.y;
 
-		// Trigger updating radiance buffers
+		// Trigger updating radiance buffers.
 		if (sky->radiance.is_null()) {
 			invalidate_sky(sky);
 			update_dirty_skys();
@@ -1065,107 +1067,109 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 			sky->prev_position = p_cam_transform.origin;
 			sky->reflection.dirty = true;
 		}
+	}
 
-		sky_scene_state.ubo.directional_light_count = 0;
-		if (shader_data->uses_light) {
-			// Run through the list of lights in the scene and pick out the Directional Lights.
-			// This can't be done in RenderSceneRenderRD::_setup lights because that needs to be called
-			// after the depth prepass, but this runs before the depth prepass
-			for (int i = 0; i < (int)p_lights.size(); i++) {
-				if (!light_storage->owns_light_instance(p_lights[i])) {
-					continue;
+	sky_scene_state.ubo.directional_light_count = 0;
+	if (shader_data->uses_light) {
+		// Run through the list of lights in the scene and pick out the Directional Lights.
+		// This can't be done in RenderSceneRenderRD::_setup lights because that needs to be called
+		// after the depth prepass, but this runs before the depth prepass.
+		for (int i = 0; i < (int)p_lights.size(); i++) {
+			if (!light_storage->owns_light_instance(p_lights[i])) {
+				continue;
+			}
+			RID base = light_storage->light_instance_get_base_light(p_lights[i]);
+
+			ERR_CONTINUE(base.is_null());
+
+			RS::LightType type = light_storage->light_get_type(base);
+			if (type == RS::LIGHT_DIRECTIONAL && light_storage->light_directional_get_sky_mode(base) != RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY) {
+				SkyDirectionalLightData &sky_light_data = sky_scene_state.directional_lights[sky_scene_state.ubo.directional_light_count];
+				Transform3D light_transform = light_storage->light_instance_get_base_transform(p_lights[i]);
+				Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
+
+				sky_light_data.direction[0] = world_direction.x;
+				sky_light_data.direction[1] = world_direction.y;
+				sky_light_data.direction[2] = world_direction.z;
+
+				float sign = light_storage->light_is_negative(base) ? -1 : 1;
+				sky_light_data.energy = sign * light_storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY);
+
+				if (p_scene_render->is_using_physical_light_units()) {
+					sky_light_data.energy *= light_storage->light_get_param(base, RS::LIGHT_PARAM_INTENSITY);
 				}
-				RID base = light_storage->light_instance_get_base_light(p_lights[i]);
 
-				ERR_CONTINUE(base.is_null());
+				if (p_camera_attributes.is_valid()) {
+					sky_light_data.energy *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_camera_attributes);
+				}
 
-				RS::LightType type = light_storage->light_get_type(base);
-				if (type == RS::LIGHT_DIRECTIONAL && light_storage->light_directional_get_sky_mode(base) != RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY) {
-					SkyDirectionalLightData &sky_light_data = sky_scene_state.directional_lights[sky_scene_state.ubo.directional_light_count];
-					Transform3D light_transform = light_storage->light_instance_get_base_transform(p_lights[i]);
-					Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
+				Color linear_col = light_storage->light_get_color(base).srgb_to_linear();
+				sky_light_data.color[0] = linear_col.r;
+				sky_light_data.color[1] = linear_col.g;
+				sky_light_data.color[2] = linear_col.b;
 
-					sky_light_data.direction[0] = world_direction.x;
-					sky_light_data.direction[1] = world_direction.y;
-					sky_light_data.direction[2] = world_direction.z;
+				sky_light_data.enabled = true;
 
-					float sign = light_storage->light_is_negative(base) ? -1 : 1;
-					sky_light_data.energy = sign * light_storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY);
-
-					if (p_scene_render->is_using_physical_light_units()) {
-						sky_light_data.energy *= light_storage->light_get_param(base, RS::LIGHT_PARAM_INTENSITY);
-					}
-
-					if (p_camera_attributes.is_valid()) {
-						sky_light_data.energy *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_camera_attributes);
-					}
-
-					Color linear_col = light_storage->light_get_color(base).srgb_to_linear();
-					sky_light_data.color[0] = linear_col.r;
-					sky_light_data.color[1] = linear_col.g;
-					sky_light_data.color[2] = linear_col.b;
-
-					sky_light_data.enabled = true;
-
-					float angular_diameter = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
-					if (angular_diameter > 0.0) {
-						// I know tan(0) is 0, but let's not risk it with numerical precision.
-						// technically this will keep expanding until reaching the sun, but all we care
-						// is expand until we reach the radius of the near plane (there can't be more occluders than that)
-						angular_diameter = Math::tan(Math::deg_to_rad(angular_diameter));
-					} else {
-						angular_diameter = 0.0;
-					}
-					sky_light_data.size = angular_diameter;
-					sky_scene_state.ubo.directional_light_count++;
-					if (sky_scene_state.ubo.directional_light_count >= sky_scene_state.max_directional_lights) {
-						break;
-					}
+				float angular_diameter = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
+				if (angular_diameter > 0.0) {
+					// I know tan(0) is 0, but let's not risk it with numerical precision.
+					// Technically this will keep expanding until reaching the sun, but all we care about
+					// is expanding until we reach the radius of the near plane. There can't be more occluders than that.
+					angular_diameter = Math::tan(Math::deg_to_rad(angular_diameter));
+				} else {
+					angular_diameter = 0.0;
+				}
+				sky_light_data.size = angular_diameter;
+				sky_scene_state.ubo.directional_light_count++;
+				if (sky_scene_state.ubo.directional_light_count >= sky_scene_state.max_directional_lights) {
+					break;
 				}
 			}
-			// Check whether the directional_light_buffer changes
-			bool light_data_dirty = false;
+		}
+		// Check whether the directional_light_buffer changes.
+		bool light_data_dirty = false;
 
-			// Light buffer is dirty if we have fewer or more lights
-			// If we have fewer lights, make sure that old lights are disabled
-			if (sky_scene_state.ubo.directional_light_count != sky_scene_state.last_frame_directional_light_count) {
-				light_data_dirty = true;
-				for (uint32_t i = sky_scene_state.ubo.directional_light_count; i < sky_scene_state.max_directional_lights; i++) {
-					sky_scene_state.directional_lights[i].enabled = false;
-					sky_scene_state.last_frame_directional_lights[i].enabled = false;
+		// Light buffer is dirty if we have fewer or more lights.
+		// If we have fewer lights, make sure that old lights are disabled.
+		if (sky_scene_state.ubo.directional_light_count != sky_scene_state.last_frame_directional_light_count) {
+			light_data_dirty = true;
+			for (uint32_t i = sky_scene_state.ubo.directional_light_count; i < sky_scene_state.max_directional_lights; i++) {
+				sky_scene_state.directional_lights[i].enabled = false;
+				sky_scene_state.last_frame_directional_lights[i].enabled = false;
+			}
+		}
+
+		if (!light_data_dirty) {
+			for (uint32_t i = 0; i < sky_scene_state.ubo.directional_light_count; i++) {
+				if (sky_scene_state.directional_lights[i].direction[0] != sky_scene_state.last_frame_directional_lights[i].direction[0] ||
+						sky_scene_state.directional_lights[i].direction[1] != sky_scene_state.last_frame_directional_lights[i].direction[1] ||
+						sky_scene_state.directional_lights[i].direction[2] != sky_scene_state.last_frame_directional_lights[i].direction[2] ||
+						sky_scene_state.directional_lights[i].energy != sky_scene_state.last_frame_directional_lights[i].energy ||
+						sky_scene_state.directional_lights[i].color[0] != sky_scene_state.last_frame_directional_lights[i].color[0] ||
+						sky_scene_state.directional_lights[i].color[1] != sky_scene_state.last_frame_directional_lights[i].color[1] ||
+						sky_scene_state.directional_lights[i].color[2] != sky_scene_state.last_frame_directional_lights[i].color[2] ||
+						sky_scene_state.directional_lights[i].enabled != sky_scene_state.last_frame_directional_lights[i].enabled ||
+						sky_scene_state.directional_lights[i].size != sky_scene_state.last_frame_directional_lights[i].size) {
+					light_data_dirty = true;
+					break;
 				}
 			}
+		}
 
-			if (!light_data_dirty) {
-				for (uint32_t i = 0; i < sky_scene_state.ubo.directional_light_count; i++) {
-					if (sky_scene_state.directional_lights[i].direction[0] != sky_scene_state.last_frame_directional_lights[i].direction[0] ||
-							sky_scene_state.directional_lights[i].direction[1] != sky_scene_state.last_frame_directional_lights[i].direction[1] ||
-							sky_scene_state.directional_lights[i].direction[2] != sky_scene_state.last_frame_directional_lights[i].direction[2] ||
-							sky_scene_state.directional_lights[i].energy != sky_scene_state.last_frame_directional_lights[i].energy ||
-							sky_scene_state.directional_lights[i].color[0] != sky_scene_state.last_frame_directional_lights[i].color[0] ||
-							sky_scene_state.directional_lights[i].color[1] != sky_scene_state.last_frame_directional_lights[i].color[1] ||
-							sky_scene_state.directional_lights[i].color[2] != sky_scene_state.last_frame_directional_lights[i].color[2] ||
-							sky_scene_state.directional_lights[i].enabled != sky_scene_state.last_frame_directional_lights[i].enabled ||
-							sky_scene_state.directional_lights[i].size != sky_scene_state.last_frame_directional_lights[i].size) {
-						light_data_dirty = true;
-						break;
-					}
-				}
-			}
+		if (light_data_dirty) {
+			RD::get_singleton()->buffer_update(sky_scene_state.directional_light_buffer, 0, sizeof(SkyDirectionalLightData) * sky_scene_state.max_directional_lights, sky_scene_state.directional_lights);
 
-			if (light_data_dirty) {
-				RD::get_singleton()->buffer_update(sky_scene_state.directional_light_buffer, 0, sizeof(SkyDirectionalLightData) * sky_scene_state.max_directional_lights, sky_scene_state.directional_lights);
-
-				SkyDirectionalLightData *temp = sky_scene_state.last_frame_directional_lights;
-				sky_scene_state.last_frame_directional_lights = sky_scene_state.directional_lights;
-				sky_scene_state.directional_lights = temp;
-				sky_scene_state.last_frame_directional_light_count = sky_scene_state.ubo.directional_light_count;
+			SkyDirectionalLightData *temp = sky_scene_state.last_frame_directional_lights;
+			sky_scene_state.last_frame_directional_lights = sky_scene_state.directional_lights;
+			sky_scene_state.directional_lights = temp;
+			sky_scene_state.last_frame_directional_light_count = sky_scene_state.ubo.directional_light_count;
+			if (sky) {
 				sky->reflection.dirty = true;
 			}
 		}
 	}
 
-	//setup fog variables
+	// Setup fog variables.
 	sky_scene_state.ubo.volumetric_fog_enabled = false;
 	if (p_render_buffers.is_valid()) {
 		if (p_render_buffers->has_custom_data(RB_SCOPE_FOG)) {
@@ -1179,7 +1183,7 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 				sky_scene_state.ubo.volumetric_fog_inv_length = 1.0;
 			}
 
-			float fog_detail_spread = fog->spread; //reverse lookup
+			float fog_detail_spread = fog->spread; // Reverse lookup.
 			if (fog_detail_spread > 0.0) {
 				sky_scene_state.ubo.volumetric_fog_detail_spread = 1.0 / fog_detail_spread;
 			} else {
@@ -1192,9 +1196,9 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 
 	sky_scene_state.view_count = p_view_count;
 	sky_scene_state.cam_transform = p_cam_transform;
-	sky_scene_state.cam_projection = p_cam_projection; // We only use this when rendering a single view
+	sky_scene_state.cam_projection = p_cam_projection; // We only use this when rendering a single view.
 
-	// Our info in our UBO is only used if we're rendering stereo
+	// Our info in our UBO is only used if we're rendering stereo.
 	for (uint32_t i = 0; i < p_view_count; i++) {
 		Projection view_inv_projection = p_view_projections[i].inverse();
 		if (p_view_count > 1) {
@@ -1211,7 +1215,7 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 		sky_scene_state.ubo.view_eye_offsets[i][3] = 0.0;
 	}
 
-	sky_scene_state.ubo.z_far = p_view_projections[0].get_z_far(); // Should be the same for all projection
+	sky_scene_state.ubo.z_far = p_view_projections[0].get_z_far(); // Should be the same for all projection.
 	sky_scene_state.ubo.fog_enabled = RendererSceneRenderRD::get_singleton()->environment_get_fog_enabled(p_env);
 	sky_scene_state.ubo.fog_density = RendererSceneRenderRD::get_singleton()->environment_get_fog_density(p_env);
 	sky_scene_state.ubo.fog_aerial_perspective = RendererSceneRenderRD::get_singleton()->environment_get_fog_aerial_perspective(p_env);
