@@ -1463,7 +1463,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 		r_style_ex |= WS_EX_TOPMOST | WS_EX_NOACTIVATE;
 	}
 
-	if (!p_borderless && !p_no_activate_focus) {
+	if (!p_fullscreen && !p_borderless && !p_no_activate_focus) {
 		r_style |= WS_VISIBLE;
 	}
 
@@ -1504,7 +1504,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if (wd.fullscreen && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+	if (wd.fullscreen && (p_mode != WINDOW_MODE_FULLSCREEN) && (p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) && (p_mode != WINDOW_MODE_MINIMIZED)) {
 		RECT rect;
 
 		wd.fullscreen = false;
