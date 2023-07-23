@@ -39,29 +39,29 @@
 #include "core/os/os.h"
 #endif
 
-StringName SaveloadAPI::default_interface;
+//StringName SaveloadAPI::default_interface;
 SaveloadAPI *SaveloadAPI::singleton = NULL;
 
 SaveloadAPI *SaveloadAPI::get_singleton() {
 	return singleton;
 }
 
-void SaveloadAPI::set_default_interface(const StringName &p_interface) {
-	ERR_FAIL_COND_MSG(!ClassDB::is_parent_class(p_interface, SaveloadAPI::get_class_static()), vformat("Can't make %s the default saveload interface since it does not extend SaveloadAPI.", p_interface));
-	default_interface = StringName(p_interface, true);
-}
+//void SaveloadAPI::set_default_interface(const StringName &p_interface) {
+//	ERR_FAIL_COND_MSG(!ClassDB::is_parent_class(p_interface, SaveloadAPI::get_class_static()), vformat("Can't make %s the default saveload interface since it does not extend SaveloadAPI.", p_interface));
+//	default_interface = StringName(p_interface, true);
+//}
 
-StringName SaveloadAPI::get_default_interface() {
-	return default_interface;
-}
+//StringName SaveloadAPI::get_default_interface() {
+//	return default_interface;
+//}
 
-Ref<SaveloadAPI> SaveloadAPI::create_default_interface() {
-	if (true) {
-		//	if (default_interface != StringName()) {
-		return Ref<SaveloadAPI>(Object::cast_to<SaveloadAPI>(ClassDB::instantiate(default_interface)));
-	}
-	//	return Ref<SaveloadAPI>(memnew(SaveloadAPIExtension));
-}
+//Ref<SaveloadAPI> SaveloadAPI::create_default_interface() {
+//	if (true) {
+//		//	if (default_interface != StringName()) {
+//		return Ref<SaveloadAPI>(Object::cast_to<SaveloadAPI>(ClassDB::instantiate(default_interface)));
+//	}
+//	//	return Ref<SaveloadAPI>(memnew(SaveloadAPIExtension));
+//}
 
 // The variant is compressed and encoded; The first byte contains all the meta
 // information and the format is:
@@ -295,9 +295,9 @@ void SaveloadAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save", "path", "configuration_data"), &SaveloadAPI::save, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("load", "path", "configuration_data"), &SaveloadAPI::load, DEFVAL(Variant()));
 
-	ClassDB::bind_static_method("SaveloadAPI", D_METHOD("set_default_interface", "interface_name"), &SaveloadAPI::set_default_interface);
-	ClassDB::bind_static_method("SaveloadAPI", D_METHOD("get_default_interface"), &SaveloadAPI::get_default_interface);
-	ClassDB::bind_static_method("SaveloadAPI", D_METHOD("create_default_interface"), &SaveloadAPI::create_default_interface);
+	//	ClassDB::bind_static_method("SaveloadAPI", D_METHOD("set_default_interface", "interface_name"), &SaveloadAPI::set_default_interface);
+	//	ClassDB::bind_static_method("SaveloadAPI", D_METHOD("get_default_interface"), &SaveloadAPI::get_default_interface);
+	//	ClassDB::bind_static_method("SaveloadAPI", D_METHOD("create_default_interface"), &SaveloadAPI::create_default_interface);
 }
 
 /// SaveloadAPIExtension

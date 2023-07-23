@@ -55,7 +55,7 @@ void initialize_saveload_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(SaveloadSpawner);
 		GDREGISTER_CLASS(SaveloadSynchronizer);
 		GDREGISTER_CLASS(SceneSaveload);
-		SaveloadAPI::set_default_interface("SceneSaveload");
+		//SaveloadAPI::set_default_interface("SceneSaveload");
 		SaveloadDebugger::initialize();
 	}
 #ifdef TOOLS_ENABLED

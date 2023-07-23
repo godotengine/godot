@@ -33,8 +33,8 @@
 
 #include "core/object/ref_counted.h"
 
-class SaveloadAPI : public RefCounted {
-	GDCLASS(SaveloadAPI, RefCounted);
+class SaveloadAPI : public Object {
+	GDCLASS(SaveloadAPI, Object);
 
 	static SaveloadAPI *singleton;
 
@@ -46,9 +46,9 @@ protected:
 
 public:
 	static SaveloadAPI *get_singleton();
-	static Ref<SaveloadAPI> create_default_interface();
-	static void set_default_interface(const StringName &p_interface);
-	static StringName get_default_interface();
+	//	static Ref<SaveloadAPI> create_default_interface();
+	//	static void set_default_interface(const StringName &p_interface);
+	//	static StringName get_default_interface();
 
 	static Error encode_and_compress_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_allow_object_decoding);
 	static Error decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len, bool p_allow_object_decoding);
