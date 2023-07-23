@@ -66,9 +66,10 @@ void initialize_saveload_module(ModuleInitializationLevel p_level) {
 }
 
 void uninitialize_saveload_module(ModuleInitializationLevel p_level) {
-	if (saveload_api) {
-		//saveload_server->finish();
-		memdelete(saveload_api);
-	}
 	SaveloadDebugger::deinitialize();
+	if (saveload_api) {
+		Engine::get_singleton()->remove_singleton("SaveloadAPI");
+		memdelete(saveload_api);
+		saveload_api = NULL;
+	}
 }

@@ -65,7 +65,7 @@ public:
 	virtual Error load(const String &p_path, const Variant &p_configuration_data = Variant()) = 0;
 
 	SaveloadAPI() { singleton = this; }
-	virtual ~SaveloadAPI() {}
+	virtual ~SaveloadAPI() { singleton = nullptr; }
 };
 
 //class SaveloadAPIExtension : public SaveloadAPI {
