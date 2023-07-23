@@ -946,6 +946,11 @@ void Viewport::_process_picking() {
 			}
 		}
 #endif // _3D_DISABLED
+
+		if (!local_input_handled) {
+			ERR_FAIL_COND(!is_inside_tree());
+			get_tree()->_call_input_pause(unhandled_picking_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_PICKING_INPUT, ev, this);
+		}
 	}
 }
 
@@ -4942,6 +4947,7 @@ Viewport::Viewport() {
 	unhandled_input_group = "_vp_unhandled_input" + id;
 	shortcut_input_group = "_vp_shortcut_input" + id;
 	unhandled_key_input_group = "_vp_unhandled_key_input" + id;
+	unhandled_picking_input_group = "_vp_unhandled_picking_input" + id;
 
 	// Window tooltip.
 	gui.tooltip_delay = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 0.5);
