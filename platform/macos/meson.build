@@ -30,7 +30,7 @@ SOURCES += [macos_logo, macos_run_icon]
 if PLATFORM == 'macos'
     MAIN_SOURCES += files('godot_main_macos.mm')
 
-    _macos_srcs = files('joypad_macos.cpp',
+    macos_srcs = files('joypad_macos.cpp',
                       #'context_gl_macos.mm',
                       'crash_handler_macos.mm',
                       'dir_access_macos.mm',
@@ -52,7 +52,7 @@ if PLATFORM == 'macos'
                       )
     CPP_ARGS += ['-mmacosx-version-min=10.12', '-DUNIX_ENABLED', '-DVULKAN_ENABLED', '-DMACOS_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED']
     OBJCPP_ARGS += ['-mmacosx-version-min=10.12', '-DUNIX_ENABLED', '-DVULKAN_ENABLED', '-DMACOS_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED', '-DCOREMIDI_ENABLED', '-fobjc-arc']
-    SOURCES += _macos_srcs
+    SOURCES += macos_srcs
     DEPENDENCIES += dependency('appleframeworks', modules: ['AppKit',
                                                             'IOKit',
                                                             'CoreAudio',

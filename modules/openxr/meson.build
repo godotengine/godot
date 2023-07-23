@@ -6,6 +6,7 @@ openxr_srcs += files(
      'extensions/openxr_composition_layer_depth_extension.cpp',
      'extensions/openxr_fb_display_refresh_rate_extension.cpp',
      'extensions/openxr_fb_passthrough_extension_wrapper.cpp',
+     'extensions/openxr_extension_wrapper_extension.cpp',
      'extensions/openxr_hand_tracking_extension.cpp',
      'extensions/openxr_htc_controller_extension.cpp',
      'extensions/openxr_htc_vive_tracker_extension.cpp',

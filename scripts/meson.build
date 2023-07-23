@@ -14,15 +14,11 @@ SCRIPT_REGISTER_PLATFORM_APIS = find_program('register_platform_apis.py')
 # TODO use methods.update_version
 SCRIPT_VERSION = find_program('version.py')
 
-SCRIPT_GLSL_BUILDERS = find_program(MESON_SOURCE_ROOT / 'glsl_builders.py').full_path()
-SCRIPT_DEFAULT_THEME_BUILDERS = find_program(
-    MESON_SOURCE_ROOT / 'scene' / 'resources' / 'default_theme' / 'default_theme_builders.py'
-).full_path()
-SCRIPT_INPUT_BUILDERS = find_program(MESON_SOURCE_ROOT / 'core' / 'input' / 'input_builders.py').full_path()
-SCRIPT_EDITOR_BUILDERS = find_program(MESON_SOURCE_ROOT / 'editor' / 'editor_builders.py').full_path()
-SCRIPT_EDITOR_ICON_BUILDERS = find_program(
-    MESON_SOURCE_ROOT / 'editor' / 'icons' / 'editor_icons_builders.py'
-).full_path()
-SCRIPT_CORE_BUILDERS = find_program(MESON_SOURCE_ROOT / 'core' / 'core_builders.py').full_path()
-SCRIPT_MAIN_BUILDERS = find_program(MESON_SOURCE_ROOT / 'main' / 'main_builders.py').full_path()
+SCRIPT_GLSL_BUILDERS = find_program('../glsl_builders.py')
+SCRIPT_DEFAULT_THEME_BUILDERS = find_program('../scene/theme/default_theme_builders.py')
+SCRIPT_INPUT_BUILDERS = find_program('../core/input/input_builders.py')
+SCRIPT_EDITOR_BUILDERS = find_program('../editor/editor_builders.py')
+SCRIPT_EDITOR_ICON_BUILDERS = find_program('../editor/icons/editor_icons_builders.py')
+SCRIPT_CORE_BUILDERS = find_program('../core/core_builders.py')
+SCRIPT_MAIN_BUILDERS = find_program('../main/main_builders.py')
 SCRIPT_COMPAT = find_program('scons_compat.py')
