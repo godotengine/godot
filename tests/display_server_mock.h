@@ -111,6 +111,7 @@ public:
 			Ref<InputEventMouseMotion> mm = p_event;
 			if (mm.is_valid()) {
 				mm->set_relative(mm->get_position() - mouse_position);
+				mm->set_velocity(mm->get_relative()); // To keep velocity from being zero when moved.
 				event = mm;
 			}
 			_set_mouse_position(me->get_position());
