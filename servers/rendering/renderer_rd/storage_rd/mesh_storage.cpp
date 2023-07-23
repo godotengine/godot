@@ -1660,6 +1660,9 @@ void MeshStorage::_multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, b
 
 void MeshStorage::_multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances) {
 	ERR_FAIL_COND(multimesh->mesh.is_null());
+	if (multimesh->custom_aabb != AABB()) {
+		return;
+	}
 	AABB aabb;
 	AABB mesh_aabb = mesh_get_aabb(multimesh->mesh);
 	for (int i = 0; i < p_instances; i++) {
@@ -1960,8 +1963,10 @@ void MeshStorage::multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_b
 		//if we have a mesh set, we need to re-generate the AABB from the new data
 		const float *data = p_buffer.ptr();
 
-		_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
-		multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
+		if (multimesh->custom_aabb != AABB()) {
+			_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
+			multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
+		}
 	}
 }
 
@@ -2015,9 +2020,26 @@ int MeshStorage::multimesh_get_visible_instances(RID p_multimesh) const {
 	return multimesh->visible_instances;
 }
 
+void MeshStorage::multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) {
+	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_NULL(multimesh);
+	multimesh->custom_aabb = p_aabb;
+	multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
+}
+
+AABB MeshStorage::multimesh_get_custom_aabb(RID p_multimesh) const {
+	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
+	ERR_FAIL_NULL_V(multimesh, AABB());
+	return multimesh->custom_aabb;
+}
+
 AABB MeshStorage::multimesh_get_aabb(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);
 	ERR_FAIL_NULL_V(multimesh, AABB());
+	if (multimesh->custom_aabb != AABB()) {
+		return multimesh->custom_aabb;
+	}
+
 	if (multimesh->aabb_dirty) {
 		const_cast<MeshStorage *>(this)->_update_dirty_multimeshes();
 	}
@@ -2064,9 +2086,11 @@ void MeshStorage::_update_dirty_multimeshes() {
 
 			if (multimesh->aabb_dirty) {
 				//aabb is dirty..
-				_multimesh_re_create_aabb(multimesh, data, visible_instances);
 				multimesh->aabb_dirty = false;
-				multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
+				if (multimesh->custom_aabb != AABB()) {
+					_multimesh_re_create_aabb(multimesh, data, visible_instances);
+					multimesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
+				}
 			}
 		}
 

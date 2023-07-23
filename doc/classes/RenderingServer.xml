@@ -2332,6 +2332,13 @@
 				[b]Note:[/b] If the buffer is in the engine's internal cache, it will have to be fetched from GPU memory and possibly decompressed. This means [method multimesh_get_buffer] is potentially a slow operation and should be avoided whenever possible.
 			</description>
 		</method>
+		<method name="multimesh_get_custom_aabb" qualifiers="const">
+			<return type="AABB" />
+			<param index="0" name="multimesh" type="RID" />
+			<description>
+				Returns the custom AABB defined for this MultiMesh resource.
+			</description>
+		</method>
 		<method name="multimesh_get_instance_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="multimesh" type="RID" />
@@ -2440,6 +2447,14 @@
 				  - Position + Custom data: 16 floats (12 floats for Transform3D, 4 floats of custom data)
 				  - Position + Vertex color + Custom data: 20 floats (12 floats for Transform3D, 4 floats for Color, 4 floats of custom data)
 				[/codeblock]
+			</description>
+		</method>
+		<method name="multimesh_set_custom_aabb">
+			<return type="void" />
+			<param index="0" name="multimesh" type="RID" />
+			<param index="1" name="aabb" type="AABB" />
+			<description>
+				Sets the custom AABB for this MultiMesh resource.
 			</description>
 		</method>
 		<method name="multimesh_set_mesh">

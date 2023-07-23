@@ -104,6 +104,9 @@ public:
 	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) = 0;
 	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) = 0;
 
+	virtual void multimesh_set_custom_aabb(RID p_multimesh, const AABB &p_aabb) = 0;
+	virtual AABB multimesh_get_custom_aabb(RID p_multimesh) const = 0;
+
 	virtual RID multimesh_get_mesh(RID p_multimesh) const = 0;
 
 	virtual Transform3D multimesh_instance_get_transform(RID p_multimesh, int p_index) const = 0;
