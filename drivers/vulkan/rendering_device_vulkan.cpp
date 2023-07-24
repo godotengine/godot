@@ -7766,6 +7766,8 @@ void RenderingDeviceVulkan::draw_list_end(BitField<BarrierMask> p_post_barrier) 
 /***********************/
 
 RenderingDevice::ComputeListID RenderingDeviceVulkan::compute_list_begin(bool p_allow_draw_overlap) {
+	_THREAD_SAFE_METHOD_
+
 	ERR_FAIL_COND_V_MSG(!p_allow_draw_overlap && draw_list != nullptr, INVALID_ID, "Only one draw list can be active at the same time.");
 	ERR_FAIL_COND_V_MSG(compute_list != nullptr, INVALID_ID, "Only one draw/compute list can be active at the same time.");
 
