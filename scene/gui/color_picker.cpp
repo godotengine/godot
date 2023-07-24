@@ -559,7 +559,7 @@ void ColorPicker::_html_submitted(const String &p_html) {
 	}
 
 	const Color previous_color = color;
-	color = Color::from_string(p_html, previous_color);
+	color = Color::from_string(p_html.strip_edges(), previous_color);
 
 	if (!is_editing_alpha()) {
 		color.a = previous_color.a;
