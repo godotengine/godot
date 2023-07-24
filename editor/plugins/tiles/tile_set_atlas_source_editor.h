@@ -112,6 +112,15 @@ public:
 		}
 	};
 
+	class TileAtlasControl : public Control {
+		TileSetAtlasSourceEditor *editor = nullptr;
+
+	public:
+		virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
+		TileAtlasControl(TileSetAtlasSourceEditor *p_editor) { editor = p_editor; }
+	};
+	friend class TileAtlasControl;
+
 private:
 	bool read_only = false;
 
@@ -278,8 +287,6 @@ protected:
 public:
 	void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_source, int p_source_id);
 	void init_source();
-
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	TileSetAtlasSourceEditor();
 	~TileSetAtlasSourceEditor();
