@@ -202,6 +202,8 @@ public:
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
 
+	void clear();
+
 #ifdef DEBUG_ENABLED
 	Ref<ArrayMesh> get_debug_mesh();
 #endif // DEBUG_ENABLED
