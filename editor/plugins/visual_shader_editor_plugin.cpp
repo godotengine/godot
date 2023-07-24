@@ -1154,7 +1154,7 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		graph_plugin->register_shader(visual_shader.ptr());
 
 		visual_shader->connect_changed(callable_mp(this, &VisualShaderEditor::_update_preview));
-		visual_shader->set_graph_offset(graph->get_scroll_ofs() / EDSCALE);
+		visual_shader->set_graph_offset(graph->get_scroll_offset() / EDSCALE);
 		_set_mode(visual_shader->get_mode());
 
 		_update_nodes();
@@ -2019,7 +2019,7 @@ void VisualShaderEditor::_update_graph() {
 		return;
 	}
 
-	graph->set_scroll_ofs(visual_shader->get_graph_offset() * EDSCALE);
+	graph->set_scroll_offset(visual_shader->get_graph_offset() * EDSCALE);
 
 	VisualShader::Type type = get_current_shader_type();
 
@@ -3090,7 +3090,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 	bool is_curve_xyz = (Object::cast_to<VisualShaderNodeCurveXYZTexture>(vsnode.ptr()) != nullptr);
 	bool is_parameter = (Object::cast_to<VisualShaderNodeParameter>(vsnode.ptr()) != nullptr);
 
-	Point2 position = graph->get_scroll_ofs();
+	Point2 position = graph->get_scroll_offset();
 
 	if (saved_node_pos_dirty) {
 		position += saved_node_pos;
@@ -4387,7 +4387,7 @@ void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 
 		mpos = graph->get_local_mouse_position();
 	}
 
-	_dup_paste_nodes(type, copy_items_buffer, copy_connections_buffer, graph->get_scroll_ofs() / scale + mpos / scale - selection_center, false);
+	_dup_paste_nodes(type, copy_items_buffer, copy_connections_buffer, graph->get_scroll_offset() / scale + mpos / scale - selection_center, false);
 }
 
 void VisualShaderEditor::_mode_selected(int p_id) {
@@ -5090,7 +5090,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	FileSystemDock::get_singleton()->connect("resource_removed", callable_mp(this, &VisualShaderEditor::_resource_removed));
 
 	graph = memnew(GraphEdit);
-	graph->get_zoom_hbox()->set_h_size_flags(SIZE_EXPAND_FILL);
+	graph->get_menu_hbox()->set_h_size_flags(SIZE_EXPAND_FILL);
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 	graph->set_show_zoom_label(true);
@@ -5183,8 +5183,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SAMPLER, VisualShaderNode::PORT_TYPE_SAMPLER);
 
 	VSeparator *vs = memnew(VSeparator);
-	graph->get_zoom_hbox()->add_child(vs);
-	graph->get_zoom_hbox()->move_child(vs, 0);
+	graph->get_menu_hbox()->add_child(vs);
+	graph->get_menu_hbox()->move_child(vs, 0);
 
 	custom_mode_box = memnew(CheckBox);
 	custom_mode_box->set_text(TTR("Custom"));
@@ -5218,28 +5218,28 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	edit_type = edit_type_standard;
 
-	graph->get_zoom_hbox()->add_child(custom_mode_box);
-	graph->get_zoom_hbox()->move_child(custom_mode_box, 0);
-	graph->get_zoom_hbox()->add_child(edit_type_standard);
-	graph->get_zoom_hbox()->move_child(edit_type_standard, 0);
-	graph->get_zoom_hbox()->add_child(edit_type_particles);
-	graph->get_zoom_hbox()->move_child(edit_type_particles, 0);
-	graph->get_zoom_hbox()->add_child(edit_type_sky);
-	graph->get_zoom_hbox()->move_child(edit_type_sky, 0);
-	graph->get_zoom_hbox()->add_child(edit_type_fog);
-	graph->get_zoom_hbox()->move_child(edit_type_fog, 0);
+	graph->get_menu_hbox()->add_child(custom_mode_box);
+	graph->get_menu_hbox()->move_child(custom_mode_box, 0);
+	graph->get_menu_hbox()->add_child(edit_type_standard);
+	graph->get_menu_hbox()->move_child(edit_type_standard, 0);
+	graph->get_menu_hbox()->add_child(edit_type_particles);
+	graph->get_menu_hbox()->move_child(edit_type_particles, 0);
+	graph->get_menu_hbox()->add_child(edit_type_sky);
+	graph->get_menu_hbox()->move_child(edit_type_sky, 0);
+	graph->get_menu_hbox()->add_child(edit_type_fog);
+	graph->get_menu_hbox()->move_child(edit_type_fog, 0);
 
 	add_node = memnew(Button);
 	add_node->set_flat(true);
 	add_node->set_text(TTR("Add Node..."));
-	graph->get_zoom_hbox()->add_child(add_node);
-	graph->get_zoom_hbox()->move_child(add_node, 0);
+	graph->get_menu_hbox()->add_child(add_node);
+	graph->get_menu_hbox()->move_child(add_node, 0);
 	add_node->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_members_dialog).bind(false, VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PORT_TYPE_MAX));
 
 	varying_button = memnew(MenuButton);
 	varying_button->set_text(TTR("Manage Varyings"));
 	varying_button->set_switch_on_hover(true);
-	graph->get_zoom_hbox()->add_child(varying_button);
+	graph->get_menu_hbox()->add_child(varying_button);
 
 	PopupMenu *varying_menu = varying_button->get_popup();
 	varying_menu->add_item(TTR("Add Varying"), int(VaryingMenuOptions::ADD));
@@ -5250,7 +5250,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_shader->set_flat(true);
 	preview_shader->set_toggle_mode(true);
 	preview_shader->set_tooltip_text(TTR("Show generated shader code."));
-	graph->get_zoom_hbox()->add_child(preview_shader);
+	graph->get_menu_hbox()->add_child(preview_shader);
 	preview_shader->connect("pressed", callable_mp(this, &VisualShaderEditor::_show_preview_text));
 
 	///////////////////////////////////////

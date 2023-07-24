@@ -157,7 +157,7 @@
 				Returns an Array containing the list of connections. A connection consists in a structure of the form [code]{ from_port: 0, from: "GraphNode name 0", to_port: 1, to: "GraphNode name 1" }[/code].
 			</description>
 		</method>
-		<method name="get_zoom_hbox">
+		<method name="get_menu_hbox">
 			<return type="HBoxContainer" />
 			<description>
 				Gets the [HBoxContainer] that contains the zooming and grid snap controls in the top left of the graph. You can use this method to reposition the toolbar or to add your own custom controls to it.
@@ -255,16 +255,19 @@
 		<member name="right_disconnects" type="bool" setter="set_right_disconnects" getter="is_right_disconnects_enabled" default="false">
 			If [code]true[/code], enables disconnection of existing connections in the GraphEdit by dragging the right end.
 		</member>
-		<member name="scroll_offset" type="Vector2" setter="set_scroll_ofs" getter="get_scroll_ofs" default="Vector2(0, 0)">
+		<member name="scroll_offset" type="Vector2" setter="set_scroll_offset" getter="get_scroll_offset" default="Vector2(0, 0)">
 			The scroll offset.
+		</member>
+		<member name="show_grid" type="bool" setter="set_show_grid" getter="is_showing_grid" default="true">
+			If [code]true[/code], the grid is visible.
 		</member>
 		<member name="show_zoom_label" type="bool" setter="set_show_zoom_label" getter="is_showing_zoom_label" default="false">
 			If [code]true[/code], makes a label with the current zoom level visible. The zoom value is displayed in percents.
 		</member>
-		<member name="snap_distance" type="int" setter="set_snap" getter="get_snap" default="20">
-			The snapping distance in pixels.
+		<member name="snapping_distance" type="int" setter="set_snapping_distance" getter="get_snapping_distance" default="20">
+			The snapping distance in pixels, also determines the grid line distance.
 		</member>
-		<member name="use_snap" type="bool" setter="set_use_snap" getter="is_using_snap" default="true">
+		<member name="snapping_enabled" type="bool" setter="set_snapping_enabled" getter="is_snapping_enabled" default="true">
 			If [code]true[/code], enables snapping.
 		</member>
 		<member name="zoom" type="float" setter="set_zoom" getter="get_zoom" default="1.0">
@@ -412,23 +415,28 @@
 		<theme_item name="port_hotzone_outer_extent" data_type="constant" type="int" default="26">
 			The horizontal range within which a port can be grabbed (outer side).
 		</theme_item>
+		<theme_item name="grid_toggle" data_type="icon" type="Texture2D">
+			The icon for the grid toggle button.
+		</theme_item>
 		<theme_item name="layout" data_type="icon" type="Texture2D">
+			The icon for the layout button for auto-arranging the graph.
 		</theme_item>
-		<theme_item name="minimap" data_type="icon" type="Texture2D">
+		<theme_item name="minimap_toggle" data_type="icon" type="Texture2D">
+			The icon for the minimap toggle button.
 		</theme_item>
-		<theme_item name="minus" data_type="icon" type="Texture2D">
-			The icon for the zoom out button.
+		<theme_item name="snapping_toggle" data_type="icon" type="Texture2D">
+			The icon for the snapping toggle button.
 		</theme_item>
-		<theme_item name="more" data_type="icon" type="Texture2D">
+		<theme_item name="zoom_in" data_type="icon" type="Texture2D">
 			The icon for the zoom in button.
 		</theme_item>
-		<theme_item name="reset" data_type="icon" type="Texture2D">
+		<theme_item name="zoom_out" data_type="icon" type="Texture2D">
+			The icon for the zoom out button.
+		</theme_item>
+		<theme_item name="zoom_reset" data_type="icon" type="Texture2D">
 			The icon for the zoom reset button.
 		</theme_item>
-		<theme_item name="snap" data_type="icon" type="Texture2D">
-			The icon for the snap toggle button.
-		</theme_item>
-		<theme_item name="bg" data_type="style" type="StyleBox">
+		<theme_item name="panel" data_type="style" type="StyleBox">
 			The background drawn under the grid.
 		</theme_item>
 	</theme_items>

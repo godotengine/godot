@@ -1110,13 +1110,16 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("panel", "PanelContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 
-	theme->set_icon("minus", "GraphEdit", icons["zoom_less"]);
-	theme->set_icon("reset", "GraphEdit", icons["zoom_reset"]);
-	theme->set_icon("more", "GraphEdit", icons["zoom_more"]);
-	theme->set_icon("snap", "GraphEdit", icons["grid_snap"]);
-	theme->set_icon("minimap", "GraphEdit", icons["grid_minimap"]);
+	theme->set_icon("zoom_out", "GraphEdit", icons["zoom_less"]);
+	theme->set_icon("zoom_in", "GraphEdit", icons["zoom_more"]);
+	theme->set_icon("zoom_reset", "GraphEdit", icons["zoom_reset"]);
+	theme->set_icon("grid_toggle", "GraphEdit", icons["grid_toggle"]);
+	theme->set_icon("minimap_toggle", "GraphEdit", icons["grid_minimap"]);
+	theme->set_icon("snapping_toggle", "GraphEdit", icons["grid_snap"]);
 	theme->set_icon("layout", "GraphEdit", icons["grid_layout"]);
-	theme->set_stylebox("bg", "GraphEdit", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
+
+	theme->set_stylebox("panel", "GraphEdit", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
+
 	theme->set_color("grid_minor", "GraphEdit", Color(1, 1, 1, 0.05));
 	theme->set_color("grid_major", "GraphEdit", Color(1, 1, 1, 0.2));
 	theme->set_color("selection_fill", "GraphEdit", Color(1, 1, 1, 0.3));
@@ -1128,7 +1131,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("port_hotzone_inner_extent", "GraphEdit", 22 * scale);
 	theme->set_constant("port_hotzone_outer_extent", "GraphEdit", 26 * scale);
 
-	theme->set_stylebox("bg", "GraphEditMinimap", make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));
+	theme->set_stylebox("panel", "GraphEditMinimap", make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));
 	Ref<StyleBoxFlat> style_minimap_camera = make_flat_stylebox(Color(0.65, 0.65, 0.65, 0.2), 0, 0, 0, 0, 0);
 	style_minimap_camera->set_border_color(Color(0.65, 0.65, 0.65, 0.45));
 	style_minimap_camera->set_border_width_all(1);
