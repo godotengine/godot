@@ -1212,29 +1212,28 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 		bool searching = anim_search_box->get_text().size();
 		String searched_string = searching ? anim_search_box->get_text().to_lower() : String();
 
+		TreeItem *selected = nullptr;
 		for (const StringName &E : anim_names) {
 			String name = E;
-
 			if (searching && name.to_lower().find(searched_string) < 0) {
 				continue;
 			}
-
 			TreeItem *it = animations->create_item(anim_root);
-
 			it->set_metadata(0, name);
-
 			it->set_text(0, name);
 			it->set_editable(0, true);
-
 			if (animated_sprite) {
 				if (name == String(animated_sprite->call("get_autoplay"))) {
 					it->set_icon(0, autoplay_icon);
 				}
 			}
-
 			if (E == edited_anim) {
 				it->select(0);
+				selected = it;
 			}
+		}
+		if (selected) {
+			animations->scroll_to_item(selected);
 		}
 	}
 
