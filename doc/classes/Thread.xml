@@ -8,9 +8,11 @@
 		[b]Note:[/b] Breakpoints won't break on code if it's running in a thread. This is a current limitation of the GDScript debugger.
 		[b]Warning:[/b]
 		To ensure proper cleanup without crashes or deadlocks, when a [Thread]'s reference count reaches zero and it is therefore destroyed, the following conditions must be met:
-		- It must not have any [Mutex] objects locked.
-		- It must not be waiting on any [Semaphore] objects.
-		- [method wait_to_finish] should have been called on it.
+		[ul]
+		It must not have any [Mutex] objects locked.
+		It must not be waiting on any [Semaphore] objects.
+		[method wait_to_finish] should have been called on it.
+		[/ul]
 	</description>
 	<tutorials>
 		<link title="Using multiple threads">$DOCS_URL/tutorials/performance/using_multiple_threads.html</link>

@@ -35,9 +35,11 @@
 			<param index="0" name="info" type="Dictionary" />
 			<description>
 				Adds a custom property info to a property. The dictionary must contain:
-				- [code]name[/code]: [String] (the name of the property)
-				- [code]type[/code]: [int] (see [enum Variant.Type])
-				- optionally [code]hint[/code]: [int] (see [enum PropertyHint]) and [code]hint_string[/code]: [String]
+				[ul]
+				[code]name[/code]: [String] (the name of the property)
+				[code]type[/code]: [int] (see [enum Variant.Type])
+				optionally [code]hint[/code]: [int] (see [enum PropertyHint]) and [code]hint_string[/code]: [String]
+				[/ul]
 				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
@@ -278,9 +280,11 @@
 		</member>
 		<member name="editors/3d/freelook/freelook_navigation_scheme" type="int" setter="" getter="">
 			The navigation scheme to use when freelook is enabled in the 3D editor. Some of the navigation schemes below may be more convenient when designing specific levels in the 3D editor.
-			- [b]Default:[/b] The "Freelook Forward", "Freelook Backward", "Freelook Up" and "Freelook Down" keys will move relative to the camera, taking its pitch angle into account for the movement.
-			- [b]Partially Axis-Locked:[/b] The "Freelook Forward" and "Freelook Backward" keys will move relative to the camera, taking its pitch angle into account for the movement. The "Freelook Up" and "Freelook Down" keys will move in an "absolute" manner, [i]not[/i] taking the camera's pitch angle into account for the movement.
-			- [b]Fully Axis-Locked:[/b] The "Freelook Forward", "Freelook Backward", "Freelook Up" and "Freelook Down" keys will move in an "absolute" manner, [i]not[/i] taking the camera's pitch angle into account for the movement.
+			[ul]
+			[b]Default:[/b] The "Freelook Forward", "Freelook Backward", "Freelook Up" and "Freelook Down" keys will move relative to the camera, taking its pitch angle into account for the movement.
+			[b]Partially Axis-Locked:[/b] The "Freelook Forward" and "Freelook Backward" keys will move relative to the camera, taking its pitch angle into account for the movement. The "Freelook Up" and "Freelook Down" keys will move in an "absolute" manner, [i]not[/i] taking the camera's pitch angle into account for the movement.
+			[b]Fully Axis-Locked:[/b] The "Freelook Forward", "Freelook Backward", "Freelook Up" and "Freelook Down" keys will move in an "absolute" manner, [i]not[/i] taking the camera's pitch angle into account for the movement.
+			[/ul]
 			See also [member editors/3d/navigation/navigation_scheme].
 		</member>
 		<member name="editors/3d/freelook/freelook_sensitivity" type="float" setter="" getter="">
@@ -326,9 +330,11 @@
 		</member>
 		<member name="editors/3d/navigation/navigation_scheme" type="int" setter="" getter="">
 			The navigation scheme to use in the 3D editor. Changing this setting will affect the mouse buttons that must be held down to perform certain operations in the 3D editor viewport.
-			- [b]Godot[/b] Middle mouse button to orbit, [kbd]Shift + Middle mouse button[/kbd] to pan. [kbd]Mouse wheel[/kbd] to zoom.
-			- [b]Maya:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Middle mouse button[/kbd] to pan, [kbd]Shift + Middle mouse button[/kbd] to pan 10 times faster. [kbd]Mouse wheel[/kbd] to zoom.
-			- [b]Modo:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Alt + Shift + Left mouse button[/kbd] to pan. [kbd]Ctrl + Alt + Left mouse button[/kbd] to zoom.
+			[ul]
+			[b]Godot[/b] Middle mouse button to orbit, [kbd]Shift + Middle mouse button[/kbd] to pan. [kbd]Mouse wheel[/kbd] to zoom.
+			[b]Maya:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Middle mouse button[/kbd] to pan, [kbd]Shift + Middle mouse button[/kbd] to pan 10 times faster. [kbd]Mouse wheel[/kbd] to zoom.
+			[b]Modo:[/b] [kbd]Alt + Left mouse button[/kbd] to orbit. [kbd]Alt + Shift + Left mouse button[/kbd] to pan. [kbd]Ctrl + Alt + Left mouse button[/kbd] to zoom.
+			[/ul]
 			See also [member editors/3d/freelook/freelook_navigation_scheme].
 			[b]Note:[/b] On certain window managers on Linux, the [kbd]Alt[/kbd] key will be intercepted by the window manager when clicking a mouse button at the same time. This means Godot will not see the modifier key as being pressed.
 		</member>
@@ -469,8 +475,10 @@
 		</member>
 		<member name="filesystem/file_dialog/display_mode" type="int" setter="" getter="">
 			The display mode to use in the editor's file dialogs.
-			- [b]Thumbnails[/b] takes more space, but displays dynamic resource thumbnails, making resources easier to preview without having to open them.
-			- [b]List[/b] is more compact but doesn't display dynamic resource thumbnails. Instead, it displays static icons based on the file extension.
+			[ul]
+			[b]Thumbnails[/b] takes more space, but displays dynamic resource thumbnails, making resources easier to preview without having to open them.
+			[b]List[/b] is more compact but doesn't display dynamic resource thumbnails. Instead, it displays static icons based on the file extension.
+			[/ul]
 		</member>
 		<member name="filesystem/file_dialog/show_hidden_files" type="bool" setter="" getter="">
 			If [code]true[/code], display hidden files in the editor's file dialogs. Files that have names starting with [code].[/code] are considered hidden (e.g. [code].hidden_file[/code]).
@@ -487,9 +495,11 @@
 		</member>
 		<member name="interface/editor/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
 			How to position the Cancel and OK buttons in the editor's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting. This is useful if you use Godot both on Windows and macOS/Linux and your Godot muscle memory is stronger than your OS specific one.
-			- [b]Auto[/b] follows the platform convention: Cancel first on macOS and Linux, OK first on Windows.
-			- [b]Cancel First[/b] forces the ordering Cancel/OK.
-			- [b]OK First[/b] forces the ordering OK/Cancel.
+			[ul]
+			[b]Auto[/b] follows the platform convention: Cancel first on macOS and Linux, OK first on Windows.
+			[b]Cancel First[/b] forces the ordering Cancel/OK.
+			[b]OK First[/b] forces the ordering OK/Cancel.
+			[/ul]
 		</member>
 		<member name="interface/editor/automatically_open_screenshots" type="bool" setter="" getter="">
 			If [code]true[/code], automatically opens screenshots with the default program associated to [code].png[/code] files after a screenshot is taken using the [b]Editor &gt; Take Screenshot[/b] action.
@@ -541,9 +551,11 @@
 		</member>
 		<member name="interface/editor/font_hinting" type="int" setter="" getter="">
 			The font hinting mode to use for the editor fonts. FreeType supports the following font hinting modes:
-			- [b]None:[/b] Don't use font hinting when rasterizing the font. This results in a smooth font, but it can look blurry.
-			- [b]Light:[/b] Use hinting on the X axis only. This is a compromise between font sharpness and smoothness.
-			- [b]Normal:[/b] Use hinting on both X and Y axes. This results in a sharp font, but it doesn't look very smooth.
+			[ul]
+			[b]None:[/b] Don't use font hinting when rasterizing the font. This results in a smooth font, but it can look blurry.
+			[b]Light:[/b] Use hinting on the X axis only. This is a compromise between font sharpness and smoothness.
+			[b]Normal:[/b] Use hinting on both X and Y axes. This results in a sharp font, but it doesn't look very smooth.
+			[/ul]
 			If set to [b]Auto[/b], the font hinting mode will be set to match the current operating system in use. This means the [b]Light[/b] hinting mode will be used on Windows and Linux, and the [b]None[/b] hinting mode will be used on macOS.
 		</member>
 		<member name="interface/editor/font_subpixel_positioning" type="int" setter="" getter="">
@@ -645,9 +657,11 @@
 		</member>
 		<member name="interface/theme/icon_and_font_color" type="int" setter="" getter="">
 			The icon and font color scheme to use in the editor.
-			- [b]Auto[/b] determines the color scheme to use automatically based on [member interface/theme/base_color].
-			- [b]Dark[/b] makes fonts and icons light (suitable for dark themes).
-			- [b]Light[/b] makes fonts and icons dark (suitable for light themes). Icon colors are automatically converted by the editor following [url=https://github.com/godotengine/godot/blob/master/editor/editor_themes.cpp#L135]this set of rules[/url].
+			[ul]
+			[b]Auto[/b] determines the color scheme to use automatically based on [member interface/theme/base_color].
+			[b]Dark[/b] makes fonts and icons light (suitable for dark themes).
+			[b]Light[/b] makes fonts and icons dark (suitable for light themes). Icon colors are automatically converted by the editor following [url=https://github.com/godotengine/godot/blob/master/editor/editor_themes.cpp#L135]this set of rules[/url].
+			[/ul]
 		</member>
 		<member name="interface/theme/icon_saturation" type="float" setter="" getter="">
 			The saturation to use for editor icons. Higher values result in more vibrant colors.

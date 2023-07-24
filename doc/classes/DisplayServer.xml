@@ -1039,9 +1039,11 @@
 			<description>
 				Returns an [Array] of voice information dictionaries.
 				Each [Dictionary] contains two [String] entries:
-				- [code]name[/code] is voice name.
-				- [code]id[/code] is voice identifier.
-				- [code]language[/code] is language code in [code]lang_Variant[/code] format. [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. And [code]Variant[/code] part is an engine dependent string describing country, region or/and dialect.
+				[ul]
+				[code]name[/code] is voice name.
+				[code]id[/code] is voice identifier.
+				[code]language[/code] is language code in [code]lang_Variant[/code] format. [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. And [code]Variant[/code] part is an engine dependent string describing country, region or/and dialect.
+				[/ul]
 				Note that Godot depends on system libraries for text-to-speech functionality. These libraries are installed by default on Windows and macOS, but not on all Linux distributions. If they are not present, this method will return an empty list. This applies to both Godot users on Linux, as well as end-users on Linux running Godot games that use text-to-speech.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 				[b]Note:[/b] [member ProjectSettings.audio/general/text_to_speech] should be [code]true[/code] to use text-to-speech.
@@ -1094,8 +1096,10 @@
 			<param index="1" name="callable" type="Callable" />
 			<description>
 				Adds a callback, which is called when the utterance has started, finished, canceled or reached a text boundary.
-				- [constant TTS_UTTERANCE_STARTED], [constant TTS_UTTERANCE_ENDED], and [constant TTS_UTTERANCE_CANCELED] callable's method should take one [int] parameter, the utterance ID.
-				- [constant TTS_UTTERANCE_BOUNDARY] callable's method should take two [int] parameters, the index of the character and the utterance ID.
+				[ul]
+				[constant TTS_UTTERANCE_STARTED], [constant TTS_UTTERANCE_ENDED], and [constant TTS_UTTERANCE_CANCELED] callable's method should take one [int] parameter, the utterance ID.
+				[constant TTS_UTTERANCE_BOUNDARY] callable's method should take two [int] parameters, the index of the character and the utterance ID.
+				[/ul]
 				[b]Note:[/b] The granularity of the boundary callbacks is engine dependent.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
 				[b]Note:[/b] [member ProjectSettings.audio/general/text_to_speech] should be [code]true[/code] to use text-to-speech.
@@ -1112,11 +1116,13 @@
 			<param index="6" name="interrupt" type="bool" default="false" />
 			<description>
 				Adds an utterance to the queue. If [param interrupt] is [code]true[/code], the queue is cleared first.
-				- [param voice] identifier is one of the [code]"id"[/code] values returned by [method tts_get_voices] or one of the values returned by [method tts_get_voices_for_language].
-				- [param volume] ranges from [code]0[/code] (lowest) to [code]100[/code] (highest).
-				- [param pitch] ranges from [code]0.0[/code] (lowest) to [code]2.0[/code] (highest), [code]1.0[/code] is default pitch for the current voice.
-				- [param rate] ranges from [code]0.1[/code] (lowest) to [code]10.0[/code] (highest), [code]1.0[/code] is a normal speaking rate. Other values act as a percentage relative.
-				- [param utterance_id] is passed as a parameter to the callback functions.
+				[ul]
+				[param voice] identifier is one of the [code]"id"[/code] values returned by [method tts_get_voices] or one of the values returned by [method tts_get_voices_for_language].
+				[param volume] ranges from [code]0[/code] (lowest) to [code]100[/code] (highest).
+				[param pitch] ranges from [code]0.0[/code] (lowest) to [code]2.0[/code] (highest), [code]1.0[/code] is default pitch for the current voice.
+				[param rate] ranges from [code]0.1[/code] (lowest) to [code]10.0[/code] (highest), [code]1.0[/code] is a normal speaking rate. Other values act as a percentage relative.
+				[param utterance_id] is passed as a parameter to the callback functions.
+				[/ul]
 				[b]Note:[/b] On Windows and Linux (X11), utterance [param text] can use SSML markup. SSML support is engine and voice dependent. If the engine does not support SSML, you should strip out all XML markup before calling [method tts_speak].
 				[b]Note:[/b] The granularity of pitch, rate, and volume is engine and voice dependent. Values may be truncated.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11), macOS, and Windows.
@@ -1858,29 +1864,37 @@
 		</constant>
 		<constant name="DISPLAY_HANDLE" value="0" enum="HandleType">
 			Display handle:
-			- Linux (X11): [code]X11::Display*[/code] for the display.
-			- Android: [code]EGLDisplay[/code] for the display.
+			[ul]
+			[b]Linux (X11):[/b] [code]X11::Display*[/code] for the display.
+			[b]Android:[/b] [code]EGLDisplay[/code] for the display.
+			[/ul]
 		</constant>
 		<constant name="WINDOW_HANDLE" value="1" enum="HandleType">
 			Window handle:
-			- Windows: [code]HWND[/code] for the window.
-			- Linux (X11): [code]X11::Window*[/code] for the window.
-			- macOS: [code]NSWindow*[/code] for the window.
-			- iOS: [code]UIViewController*[/code] for the view controller.
-			- Android: [code]jObject[/code] for the activity.
+			[ul]
+			[b]Windows:[/b] [code]HWND[/code] for the window.
+			[b]Linux (X11):[/b] [code]X11::Window*[/code] for the window.
+			[b]macOS:[/b] [code]NSWindow*[/code] for the window.
+			[b]iOS:[/b] [code]UIViewController*[/code] for the view controller.
+			[b]Android:[/b] [code]jObject[/code] for the activity.
+			[/ul]
 		</constant>
 		<constant name="WINDOW_VIEW" value="2" enum="HandleType">
 			Window view:
-			- Windows: [code]HDC[/code] for the window (only with the GL Compatibility renderer).
-			- macOS: [code]NSView*[/code] for the window main view.
-			- iOS: [code]UIView*[/code] for the window main view.
+			[ul]
+			[b]Windows:[/b] [code]HDC[/code] for the window (only with the GL Compatibility renderer).
+			[b]macOS:[/b] [code]NSView*[/code] for the window main view.
+			[b]iOS:[/b] [code]UIView*[/code] for the window main view.
+			[/ul]
 		</constant>
 		<constant name="OPENGL_CONTEXT" value="3" enum="HandleType">
 			OpenGL context (only with the GL Compatibility renderer):
-			- Windows: [code]HGLRC[/code] for the window.
-			- Linux: [code]GLXContext*[/code] for the window.
-			- macOS: [code]NSOpenGLContext*[/code] for the window.
-			- Android: [code]EGLContext[/code] for the window.
+			[ul]
+			[b]Windows:[/b] [code]HGLRC[/code] for the window.
+			[b]Linux:[/b] [code]GLXContext*[/code] for the window.
+			[b]macOS:[/b] [code]NSOpenGLContext*[/code] for the window.
+			[b]Android:[/b] [code]EGLContext[/code] for the window.
+			[/ul]
 		</constant>
 		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">
 			Utterance has begun to be spoken.

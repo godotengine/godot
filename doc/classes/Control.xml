@@ -142,11 +142,13 @@
 				[/csharp]
 				[/codeblocks]
 				The event won't trigger if:
-				* clicking outside the control (see [method _has_point]);
-				* control has [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
-				* control is obstructed by another [Control] on top of it, which doesn't have [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
-				* control's parent has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
-				* it happens outside the parent's rectangle and the parent has either [member clip_contents] enabled.
+				[ul]
+				clicking outside the control (see [method _has_point]);
+				control has [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
+				control is obstructed by another [Control] on top of it, which doesn't have [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
+				control's parent has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
+				it happens outside the parent's rectangle and the parent has either [member clip_contents] enabled.
+				[/ul]
 				[b]Note:[/b] Event position is relative to the control origin.
 			</description>
 		</method>
@@ -1153,10 +1155,12 @@
 		</constant>
 		<constant name="NOTIFICATION_THEME_CHANGED" value="45">
 			Sent when the node needs to refresh its theme items. This happens in one of the following cases:
-			- The [member theme] property is changed on this node or any of its ancestors.
-			- The [member theme_type_variation] property is changed on this node.
-			- One of the node's theme property overrides is changed.
-			- The node enters the scene tree.
+			[ul]
+			The [member theme] property is changed on this node or any of its ancestors.
+			The [member theme_type_variation] property is changed on this node.
+			One of the node's theme property overrides is changed.
+			The node enters the scene tree.
+			[/ul]
 			[b]Note:[/b] As an optimization, this notification won't be sent from changes that occur while this node is outside of the scene tree. Instead, all of the theme item updates can be applied at once when the node enters the scene tree.
 		</constant>
 		<constant name="NOTIFICATION_SCROLL_BEGIN" value="47">

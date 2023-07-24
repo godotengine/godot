@@ -17,11 +17,11 @@
 			<description>
 				Returns the absolute path to the user's cache folder. This folder should be used for temporary data that can be removed safely whenever the editor is closed (such as generated resource thumbnails).
 				[b]Default paths per platform:[/b]
-				[codeblock]
-				- Windows: %LOCALAPPDATA%\Godot\
-				- macOS: ~/Library/Caches/Godot/
-				- Linux: ~/.cache/godot/
-				[/codeblock]
+				[ul]
+				Windows: [code]%LOCALAPPDATA%\Godot\[/code]
+				macOS: [code]~/Library/Caches/Godot/[/code]
+				Linux: [code]~/.cache/godot/[/code]
+				[/ul]
 			</description>
 		</method>
 		<method name="get_config_dir" qualifiers="const">
@@ -29,11 +29,11 @@
 			<description>
 				Returns the absolute path to the user's configuration folder. This folder should be used for [i]persistent[/i] user configuration files.
 				[b]Default paths per platform:[/b]
-				[codeblock]
-				- Windows: %APPDATA%\Godot\                    (same as `get_data_dir()`)
-				- macOS: ~/Library/Application Support/Godot/  (same as `get_data_dir()`)
-				- Linux: ~/.config/godot/
-				[/codeblock]
+				[ul]
+				Windows: [code]%APPDATA%\Godot\[/code] (same as `get_data_dir()`)
+				macOS: [code]~/Library/Application Support/Godot/[/code] (same as `get_data_dir()`)
+				Linux: [code]~/.config/godot/[/code]
+				[/ul]
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
@@ -41,11 +41,11 @@
 			<description>
 				Returns the absolute path to the user's data folder. This folder should be used for [i]persistent[/i] user data files such as installed export templates.
 				[b]Default paths per platform:[/b]
-				[codeblock]
-				- Windows: %APPDATA%\Godot\                    (same as `get_config_dir()`)
-				- macOS: ~/Library/Application Support/Godot/  (same as `get_config_dir()`)
-				- Linux: ~/.local/share/godot/
-				[/codeblock]
+				[ul]
+				Windows: [code]%APPDATA%\Godot\[/code] (same as `get_config_dir()`)
+				macOS: [code]~/Library/Application Support/Godot/[/code] (same as `get_config_dir()`)
+				Linux: [code]~/.local/share/godot/[/code]
+				[/ul]
 			</description>
 		</method>
 		<method name="get_project_settings_dir" qualifiers="const">
