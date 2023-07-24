@@ -374,11 +374,8 @@ void GraphEdit::_update_scroll() {
 void GraphEdit::_graph_node_raised(Node *p_gn) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
 	ERR_FAIL_NULL(gn);
-	if (gn->is_comment()) {
-		move_child(gn, 0);
-	} else {
-		gn->move_to_front();
-	}
+
+	gn->move_to_front();
 }
 
 void GraphEdit::_graph_node_selected(Node *p_gn) {
@@ -546,44 +543,6 @@ void GraphEdit::_notification(int p_what) {
 			top_layer->queue_redraw();
 			minimap->queue_redraw();
 		} break;
-	}
-}
-
-void GraphEdit::_update_comment_enclosed_nodes_list(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes) {
-	Rect2 comment_node_rect = p_node->get_rect();
-
-	Vector<GraphNode *> enclosed_nodes;
-	for (int i = 0; i < get_child_count(); i++) {
-		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-		if (!gn || gn->is_selected()) {
-			continue;
-		}
-
-		Rect2 node_rect = gn->get_rect();
-
-		bool included = comment_node_rect.encloses(node_rect);
-		if (included) {
-			enclosed_nodes.push_back(gn);
-		}
-	}
-
-	p_comment_enclosed_nodes.insert(p_node->get_name(), enclosed_nodes);
-}
-
-void GraphEdit::_set_drag_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, bool p_drag) {
-	for (int i = 0; i < p_comment_enclosed_nodes[p_node->get_name()].size(); i++) {
-		p_comment_enclosed_nodes[p_node->get_name()][i]->set_drag(p_drag);
-	}
-}
-
-void GraphEdit::_set_position_of_comment_enclosed_nodes(GraphNode *p_node, HashMap<StringName, Vector<GraphNode *>> &p_comment_enclosed_nodes, Vector2 p_drag_accum) {
-	for (int i = 0; i < p_comment_enclosed_nodes[p_node->get_name()].size(); i++) {
-		Vector2 pos = (p_comment_enclosed_nodes[p_node->get_name()][i]->get_drag_from() * zoom + drag_accum) / zoom;
-		if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-			const int snap = get_snap();
-			pos = pos.snapped(Vector2(snap, snap));
-		}
-		p_comment_enclosed_nodes[p_node->get_name()][i]->set_position_offset(pos);
 	}
 }
 
@@ -1040,33 +999,10 @@ void GraphEdit::_minimap_draw() {
 	Vector2 graph_offset = minimap->_get_graph_offset();
 	Vector2 minimap_offset = minimap->minimap_offset;
 
-	// Draw comment graph nodes.
-	for (int i = get_child_count() - 1; i >= 0; i--) {
-		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-		if (!gn || !gn->is_comment()) {
-			continue;
-		}
-
-		Vector2 node_position = minimap->_convert_from_graph_position(gn->get_position_offset() * zoom - graph_offset) + minimap_offset;
-		Vector2 node_size = minimap->_convert_from_graph_position(gn->get_size() * zoom);
-		Rect2 node_rect = Rect2(node_position, node_size);
-
-		Ref<StyleBoxFlat> sb_minimap = minimap->get_theme_stylebox(SNAME("node"))->duplicate();
-
-		// Override default values with colors provided by the GraphNode's stylebox, if possible.
-		Ref<StyleBoxFlat> sbf = gn->get_theme_stylebox(gn->is_selected() ? "comment_focus" : "comment");
-		if (sbf.is_valid()) {
-			Color node_color = sbf->get_bg_color();
-			sb_minimap->set_bg_color(node_color);
-		}
-
-		minimap->draw_style_box(sb_minimap, node_rect);
-	}
-
 	// Draw regular graph nodes.
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-		if (!gn || gn->is_comment()) {
+		if (!gn) {
 			continue;
 		}
 
@@ -1165,9 +1101,6 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				}
 
 				gn->set_position_offset(pos);
-				if (gn->is_comment()) {
-					_set_position_of_comment_enclosed_nodes(gn, comment_enclosed_nodes, drag_accum);
-				}
 			}
 		}
 	}
@@ -1241,9 +1174,6 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
 					if (gn && gn->is_selected()) {
 						gn->set_drag(false);
-						if (gn->is_comment()) {
-							_set_drag_comment_enclosed_nodes(gn, comment_enclosed_nodes, false);
-						}
 					}
 				}
 			}
@@ -1310,10 +1240,6 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					}
 					if (o_gn->is_selected()) {
 						o_gn->set_drag(true);
-						if (o_gn->is_comment()) {
-							_update_comment_enclosed_nodes_list(o_gn, comment_enclosed_nodes);
-							_set_drag_comment_enclosed_nodes(o_gn, comment_enclosed_nodes, true);
-						}
 					}
 				}
 

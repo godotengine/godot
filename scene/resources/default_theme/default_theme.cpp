@@ -716,8 +716,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("frame", "GraphNode", graphnode_normal);
 	theme->set_stylebox("selected_frame", "GraphNode", graphnode_selected);
-	theme->set_stylebox("comment", "GraphNode", graphnode_comment_normal);
-	theme->set_stylebox("comment_focus", "GraphNode", graphnode_comment_selected);
 	theme->set_stylebox("breakpoint", "GraphNode", graphnode_breakpoint);
 	theme->set_stylebox("position", "GraphNode", graphnode_position);
 	theme->set_stylebox("slot", "GraphNode", graphnode_slot);

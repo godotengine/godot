@@ -236,9 +236,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="comment" type="bool" setter="set_comment" getter="is_comment" default="false">
-			If [code]true[/code], the GraphNode is a comment node.
-		</member>
 		<member name="draggable" type="bool" setter="set_draggable" getter="is_draggable" default="true">
 			If [code]true[/code], the user can drag the GraphNode.
 		</member>
@@ -372,12 +369,6 @@
 		</theme_item>
 		<theme_item name="breakpoint" data_type="style" type="StyleBox">
 			The background used when [member overlay] is set to [constant OVERLAY_BREAKPOINT].
-		</theme_item>
-		<theme_item name="comment" data_type="style" type="StyleBox">
-			The [StyleBox] used when [member comment] is enabled.
-		</theme_item>
-		<theme_item name="comment_focus" data_type="style" type="StyleBox">
-			The [StyleBox] used when [member comment] is enabled and the [GraphNode] is focused.
 		</theme_item>
 		<theme_item name="frame" data_type="style" type="StyleBox">
 			The default background for [GraphNode].

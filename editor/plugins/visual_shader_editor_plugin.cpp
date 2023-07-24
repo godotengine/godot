@@ -428,7 +428,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	Ref<VisualShaderNodeGroupBase> group_node = Object::cast_to<VisualShaderNodeGroupBase>(vsnode.ptr());
 	bool is_group = !group_node.is_null();
 
-	bool is_comment = false;
+	Ref<VisualShaderNodeComment> comment_node = Object::cast_to<VisualShaderNodeComment>(vsnode.ptr());
+	bool is_comment = comment_node.is_valid();
 
 	Ref<VisualShaderNodeExpression> expression_node = Object::cast_to<VisualShaderNodeExpression>(group_node.ptr());
 	bool is_expression = !expression_node.is_null();
@@ -467,6 +468,10 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		expression = expression_node->get_expression();
 	}
 
+	if (is_comment) {
+		node->set_visible(false);
+	}
+
 	node->set_position_offset(visual_shader->get_node_position(p_type, p_id));
 	node->set_title(vsnode->get_caption());
 	node->set_name(itos(p_id));
@@ -490,17 +495,6 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	}
 
 	if (is_resizable) {
-		Ref<VisualShaderNodeComment> comment_node = Object::cast_to<VisualShaderNodeComment>(vsnode.ptr());
-		if (comment_node.is_valid()) {
-			is_comment = true;
-			node->set_comment(true);
-
-			Label *comment_label = memnew(Label);
-			node->add_child(comment_label);
-			comment_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			comment_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-			comment_label->set_text(comment_node->get_description());
-		}
 		editor->call_deferred(SNAME("_set_node_size"), (int)p_type, p_id, size);
 	}
 
@@ -6127,7 +6121,6 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// SPECIAL
 
-	add_options.push_back(AddOption("Comment", "Special", "VisualShaderNodeComment", TTR("A rectangular area with a description string for better graph organization.")));
 	add_options.push_back(AddOption("Expression", "Special", "VisualShaderNodeExpression", TTR("Custom Godot Shader Language expression, with custom amount of input and output ports. This is a direct injection of code into the vertex/fragment/light function, do not use it to write the function declarations inside.")));
 	add_options.push_back(AddOption("GlobalExpression", "Special", "VisualShaderNodeGlobalExpression", TTR("Custom Godot Shader Language expression, which is placed on top of the resulted shader. You can place various function definitions inside and call it later in the Expressions. You can also declare varyings, parameters and constants.")));
 	add_options.push_back(AddOption("ParameterRef", "Special", "VisualShaderNodeParameterRef", TTR("A reference to an existing parameter.")));
