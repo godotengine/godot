@@ -68,6 +68,9 @@ public:
 #endif
 	static bool start();
 
+#ifdef CUSTOM_ITERATOR
+	static bool custom_iteration(float p_process_delta, float p_physics_delta, struct MainFrameTime *p_frame_time, float p_time_scale);
+#endif
 	static bool iteration();
 	static void force_redraw();
 
