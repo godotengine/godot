@@ -2252,6 +2252,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	breakpoints_menu->set_name("Breakpoints");
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
+	line_number_gutter = 0;
+	connection_gutter = 0;
 
 	SET_DRAG_FORWARDING_GCD(code_editor->get_text_editor(), ScriptTextEditor);
 }
