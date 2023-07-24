@@ -143,13 +143,25 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 #endif
 	if (err) {
 		if (r_errors) {
-			for (const GDScriptParser::ParserError &E : parser.get_errors()) {
-				const GDScriptParser::ParserError &pe = E;
+			for (const GDScriptParser::ParserError &pe : parser.get_errors()) {
 				ScriptLanguage::ScriptError e;
+				e.path = p_path;
 				e.line = pe.line;
 				e.column = pe.column;
 				e.message = pe.message;
 				r_errors->push_back(e);
+			}
+
+			for (KeyValue<String, Ref<GDScriptParserRef>> E : analyzer.get_depended_parsers()) {
+				GDScriptParser *depended_parser = E.value->get_parser();
+				for (const GDScriptParser::ParserError &pe : depended_parser->get_errors()) {
+					ScriptLanguage::ScriptError e;
+					e.path = E.key;
+					e.line = pe.line;
+					e.column = pe.column;
+					e.message = pe.message;
+					r_errors->push_back(e);
+				}
 			}
 		}
 		return false;

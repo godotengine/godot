@@ -282,6 +282,22 @@ void ScriptTextEditor::_error_clicked(Variant p_line) {
 	if (p_line.get_type() == Variant::INT) {
 		code_editor->get_text_editor()->remove_secondary_carets();
 		code_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
+	} else if (p_line.get_type() == Variant::DICTIONARY) {
+		Dictionary meta = p_line.operator Dictionary();
+		const String path = meta["path"].operator String();
+		const int line = meta["line"].operator int64_t();
+		const int column = meta["column"].operator int64_t();
+		if (path.is_empty()) {
+			code_editor->get_text_editor()->remove_secondary_carets();
+			code_editor->get_text_editor()->set_caret_line(line);
+		} else {
+			Ref<Resource> scr = ResourceLoader::load(path);
+			if (!scr.is_valid()) {
+				EditorNode::get_singleton()->show_warning(TTR("Could not load file at:") + "\n\n" + path, TTR("Error!"));
+			} else {
+				ScriptEditor::get_singleton()->edit(scr, line, column);
+			}
+		}
 	}
 }
 
@@ -458,9 +474,17 @@ void ScriptTextEditor::_validate_script() {
 
 	warnings.clear();
 	errors.clear();
+	depended_errors.clear();
 	safe_lines.clear();
 
 	if (!script->get_language()->validate(text, script->get_path(), &fnc, &errors, &warnings, &safe_lines)) {
+		for (List<ScriptLanguage::ScriptError>::Element *E = errors.front(); E; E = E->next()) {
+			if (E->get().path.is_empty() || E->get().path != script->get_path()) {
+				depended_errors[E->get().path].push_back(E->get());
+				E->erase();
+			}
+		}
+
 		// TRANSLATORS: Script error pointing to a line and column number.
 		String error_text = vformat(TTR("Error at (%d, %d):"), errors[0].line, errors[0].column) + " " + errors[0].message;
 		code_editor->set_error(error_text);
@@ -560,6 +584,10 @@ void ScriptTextEditor::_update_errors() {
 	errors_panel->clear();
 	errors_panel->push_table(2);
 	for (const ScriptLanguage::ScriptError &err : errors) {
+		Dictionary click_meta;
+		click_meta["line"] = err.line;
+		click_meta["column"] = err.column;
+
 		errors_panel->push_cell();
 		errors_panel->push_meta(err.line - 1);
 		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), SNAME("Editor")));
@@ -574,6 +602,41 @@ void ScriptTextEditor::_update_errors() {
 		errors_panel->pop(); // Cell.
 	}
 	errors_panel->pop(); // Table
+
+	for (const KeyValue<String, List<ScriptLanguage::ScriptError>> &KV : depended_errors) {
+		Dictionary click_meta;
+		click_meta["path"] = KV.key;
+		click_meta["line"] = 1;
+
+		errors_panel->add_newline();
+		errors_panel->add_newline();
+		errors_panel->push_meta(click_meta);
+		errors_panel->add_text(vformat(R"(%s:)", KV.key));
+		errors_panel->pop(); // Meta goto.
+		errors_panel->add_newline();
+
+		errors_panel->push_indent(1);
+		errors_panel->push_table(2);
+		String filename = KV.key.get_file();
+		for (const ScriptLanguage::ScriptError &err : KV.value) {
+			click_meta["line"] = err.line;
+			click_meta["column"] = err.column;
+
+			errors_panel->push_cell();
+			errors_panel->push_meta(click_meta);
+			errors_panel->push_color(errors_panel->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+			errors_panel->add_text(TTR("Line") + " " + itos(err.line) + ":");
+			errors_panel->pop(); // Color.
+			errors_panel->pop(); // Meta goto.
+			errors_panel->pop(); // Cell.
+
+			errors_panel->push_cell();
+			errors_panel->add_text(err.message);
+			errors_panel->pop(); // Cell.
+		}
+		errors_panel->pop(); // Table
+		errors_panel->pop(); // Indent.
+	}
 
 	CodeEdit *te = code_editor->get_text_editor();
 	bool highlight_safe = EDITOR_GET("text_editor/appearance/gutters/highlight_type_safe_lines");
