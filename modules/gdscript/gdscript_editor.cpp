@@ -1435,11 +1435,11 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 			} break;
 			case GDScriptParser::Node::SELF: {
 				if (p_context.current_class) {
-					r_type.type.kind = GDScriptParser::DataType::CLASS;
-					r_type.type.type_source = GDScriptParser::DataType::INFERRED;
-					r_type.type.is_constant = true;
-					r_type.type.class_type = p_context.current_class;
-					r_type.value = p_context.base;
+					if (p_context.type != GDScriptParser::COMPLETION_SUPER_METHOD) {
+						r_type.type = p_context.current_class->get_datatype();
+					} else {
+						r_type.type = p_context.current_class->base_type;
+					}
 					found = true;
 				}
 			} break;

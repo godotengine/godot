@@ -248,10 +248,18 @@
 				Returns the full text with char [code]0xFFFF[/code] at the caret location.
 			</description>
 		</method>
-		<method name="get_text_for_symbol_lookup">
+		<method name="get_text_for_symbol_lookup" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the full text with char [code]0xFFFF[/code] at the cursor location.
+			</description>
+		</method>
+		<method name="get_text_with_cursor_char" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="column" type="int" />
+			<description>
+				Returns the full text with char [code]0xFFFF[/code] at the specified location.
 			</description>
 		</method>
 		<method name="has_auto_brace_completion_close_key" qualifiers="const">

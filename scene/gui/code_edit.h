@@ -455,7 +455,8 @@ public:
 	void set_symbol_lookup_on_click_enabled(bool p_enabled);
 	bool is_symbol_lookup_on_click_enabled() const;
 
-	String get_text_for_symbol_lookup();
+	String get_text_for_symbol_lookup() const;
+	String get_text_with_cursor_char(int p_line, int p_column) const;
 
 	void set_symbol_lookup_word_as_valid(bool p_valid);
 

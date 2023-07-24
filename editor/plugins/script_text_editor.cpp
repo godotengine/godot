@@ -811,6 +811,8 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	}
 
 	ScriptLanguage::LookupResult result;
+	String code_text = code_editor->get_text_editor()->get_text_with_cursor_char(p_row, p_column);
+	Error lc_error = script->get_language()->lookup_code(code_text, p_symbol, script->get_path(), base, result);
 	if (ScriptServer::is_global_class(p_symbol)) {
 		EditorNode::get_singleton()->load_resource(ScriptServer::get_global_class_path(p_symbol));
 	} else if (p_symbol.is_resource_file()) {
@@ -823,7 +825,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 			EditorNode::get_singleton()->load_resource(p_symbol);
 		}
 
-	} else if (script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_symbol_lookup(), p_symbol, script->get_path(), base, result) == OK) {
+	} else if (lc_error == OK) {
 		_goto_line(p_row);
 
 		switch (result.type) {
@@ -944,7 +946,10 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 	}
 
 	ScriptLanguage::LookupResult result;
-	if (ScriptServer::is_global_class(p_symbol) || p_symbol.is_resource_file() || script->get_language()->lookup_code(code_editor->get_text_editor()->get_text_for_symbol_lookup(), p_symbol, script->get_path(), base, result) == OK || (ProjectSettings::get_singleton()->has_autoload(p_symbol) && ProjectSettings::get_singleton()->get_autoload(p_symbol).is_singleton)) {
+	String lc_text = code_editor->get_text_editor()->get_text_for_symbol_lookup();
+	Error lc_error = script->get_language()->lookup_code(lc_text, p_symbol, script->get_path(), base, result);
+	bool is_singleton = ProjectSettings::get_singleton()->has_autoload(p_symbol) && ProjectSettings::get_singleton()->get_autoload(p_symbol).is_singleton;
+	if (ScriptServer::is_global_class(p_symbol) || p_symbol.is_resource_file() || lc_error == OK || is_singleton) {
 		text_edit->set_symbol_lookup_word_as_valid(true);
 	} else if (p_symbol.is_relative_path()) {
 		String path = _get_absolute_path(p_symbol);
@@ -1849,7 +1854,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		bool open_docs = false;
 		bool goto_definition = false;
 
-		if (word_at_pos.is_resource_file()) {
+		if (ScriptServer::is_global_class(word_at_pos) || word_at_pos.is_resource_file()) {
 			open_docs = true;
 		} else {
 			Node *base = get_tree()->get_edited_scene_root();
