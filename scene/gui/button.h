@@ -46,10 +46,12 @@ private:
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
 	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
 
 	Ref<Texture2D> icon;
 	bool expand_icon = false;
 	bool clip_text = false;
+	Size2 icon_size = Vector2(-1.0, -1.0);
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_CENTER;
 	HorizontalAlignment horizontal_icon_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	VerticalAlignment vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER;
@@ -113,6 +115,9 @@ public:
 	void set_text(const String &p_text);
 	String get_text() const;
 
+	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode() const;
+
 	void set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior);
 	TextServer::OverrunBehavior get_text_overrun_behavior() const;
 
@@ -127,6 +132,9 @@ public:
 
 	void set_expand_icon(bool p_enabled);
 	bool is_expand_icon() const;
+
+	void set_icon_size(const Size2 &p_icon_size);
+	Size2 get_icon_size() const;
 
 	void set_flat(bool p_enabled);
 	bool is_flat() const;

@@ -50,6 +50,22 @@ void Button::_set_internal_margin(Side p_side, float p_value) {
 void Button::_queue_update_size_cache() {
 }
 
+void Button::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
+	ERR_FAIL_COND(p_mode < TextServer::AUTOWRAP_OFF || p_mode > TextServer::AUTOWRAP_WORD_SMART);
+
+	if (autowrap_mode != p_mode) {
+		autowrap_mode = p_mode;
+		_shape();
+
+		queue_redraw();
+		update_minimum_size();
+	}
+}
+
+TextServer::AutowrapMode Button::get_autowrap_mode() const {
+
+	return autowrap_mode;
+}
 void Button::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
@@ -217,7 +233,7 @@ void Button::_notification(int p_what) {
 				int valign = size.height - style->get_minimum_size().y;
 
 				int voffset = 0;
-				Size2 icon_size = _icon->get_size();
+				Size2 computed_icon_size = _icon->get_size();
 
 				// Fix vertical size.
 				if (vertical_icon_alignment != VERTICAL_ALIGNMENT_CENTER) {
@@ -259,23 +275,31 @@ void Button::_notification(int p_what) {
 						icon_height = _icon->get_height() * icon_width / _icon->get_width();
 					}
 
-					icon_size = Size2(icon_width, icon_height);
+					computed_icon_size = Size2(icon_width, icon_height);
 				}
-				icon_size = _fit_icon_size(icon_size);
+				if (icon_size.x > 0.0) {
+					computed_icon_size.x = icon_size.x;
+				}
+
+				if (icon_size.y > 0.0) {
+					computed_icon_size.y = icon_size.y;
+				}
+
+				computed_icon_size = _fit_icon_size(computed_icon_size);
 
 				if (vertical_icon_alignment == VERTICAL_ALIGNMENT_TOP) {
-					voffset = -(valign - icon_size.y) / 2;
+					voffset = -(valign - computed_icon_size.y) / 2;
 				}
 				if (vertical_icon_alignment == VERTICAL_ALIGNMENT_BOTTOM) {
-					voffset = (valign - icon_size.y) / 2 + text_buf->get_size().y;
+					voffset = (valign - computed_icon_size.y) / 2 + text_buf->get_size().y;
 				}
 
 				if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_LEFT) {
-					icon_region = Rect2(style_offset + Point2(icon_ofs_region, voffset + Math::floor((valign - icon_size.y) * 0.5)), icon_size);
+					icon_region = Rect2(style_offset + Point2(icon_ofs_region, voffset + Math::floor((valign - computed_icon_size.y) * 0.5)), computed_icon_size);
 				} else if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_CENTER) {
-					icon_region = Rect2(style_offset + Point2(icon_ofs_region + Math::floor((size.x - icon_size.x) * 0.5), voffset + Math::floor((valign - icon_size.y) * 0.5)), icon_size);
+					icon_region = Rect2(style_offset + Point2(icon_ofs_region + Math::floor((size.x - computed_icon_size.x) * 0.5), voffset + Math::floor((valign - computed_icon_size.y) * 0.5)), computed_icon_size);
 				} else {
-					icon_region = Rect2(style_offset + Point2(icon_ofs_region + size.x - icon_size.x, voffset + Math::floor((valign - icon_size.y) * 0.5)), icon_size);
+					icon_region = Rect2(style_offset + Point2(icon_ofs_region + size.x - computed_icon_size.x, voffset + Math::floor((valign - computed_icon_size.y) * 0.5)), computed_icon_size);
 				}
 
 				if (icon_region.size.width > 0) {
@@ -297,9 +321,9 @@ void Button::_notification(int p_what) {
 				text_clip -= _internal_margin[SIDE_RIGHT] + theme_cache.h_separation;
 			}
 
-			text_buf->set_width(is_clipped ? text_clip : -1);
+			text_buf->set_width((is_clipped || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? text_clip : -1);
 
-			int text_width = MAX(1, is_clipped ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
+			int text_width = MAX(1, (is_clipped || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? MIN(text_clip, text_buf->get_size().x) : text_buf->get_size().x);
 
 			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - text_buf->get_size() - Point2(_internal_margin[SIDE_RIGHT] - _internal_margin[SIDE_LEFT], 0)) / 2.0;
 
@@ -359,14 +383,14 @@ void Button::_notification(int p_what) {
 
 Size2 Button::_fit_icon_size(const Size2 &p_size) const {
 	int max_width = theme_cache.icon_max_width;
-	Size2 icon_size = p_size;
+	Size2 computed_icon_size = p_size;
 
-	if (max_width > 0 && icon_size.width > max_width) {
-		icon_size.height = icon_size.height * max_width / icon_size.width;
-		icon_size.width = max_width;
+	if (max_width > 0 && computed_icon_size.width > max_width) {
+		computed_icon_size.height = computed_icon_size.height * max_width / computed_icon_size.width;
+		computed_icon_size.width = max_width;
 	}
 
-	return icon_size;
+	return computed_icon_size;
 }
 
 Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Texture2D> p_icon) const {
@@ -379,25 +403,34 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 	}
 
 	Size2 minsize = paragraph->get_size();
+	if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
+		minsize.width = 0;
+		minsize.height = (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) ? 1 : minsize.height;
+
+	} else {
 	if (clip_text || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
 		minsize.width = 0;
 	}
+	}
 
 	if (!expand_icon && p_icon.is_valid()) {
-		Size2 icon_size = _fit_icon_size(p_icon->get_size());
+		Size2 computed_icon_size = _fit_icon_size(p_icon->get_size());
+
+		computed_icon_size.x = (icon_size.x > 0.0) ? icon_size.x : computed_icon_size.x;
+		computed_icon_size.y = (icon_size.y > 0.0) ? icon_size.y : computed_icon_size.y;
 		if (vertical_icon_alignment == VERTICAL_ALIGNMENT_CENTER) {
-			minsize.height = MAX(minsize.height, icon_size.height);
+			minsize.height = MAX(minsize.height, computed_icon_size.height);
 		} else {
-			minsize.height += icon_size.height;
+			minsize.height += computed_icon_size.height;
 		}
 
 		if (horizontal_icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
-			minsize.width += icon_size.width;
+			minsize.width += computed_icon_size.width;
 			if (!xl_text.is_empty() || !p_text.is_empty()) {
 				minsize.width += MAX(0, theme_cache.h_separation);
 			}
 		} else {
-			minsize.width = MAX(minsize.width, icon_size.width);
+			minsize.width = MAX(minsize.width, computed_icon_size.width);
 		}
 	}
 
@@ -437,8 +470,25 @@ void Button::_shape(Ref<TextParagraph> p_paragraph, String p_text) {
 	} else {
 		p_paragraph->set_direction((TextServer::Direction)text_direction);
 	}
+
+	BitField<TextServer::LineBreakFlag> break_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_EDGE_SPACES;
+	switch (autowrap_mode) {
+		case TextServer::AUTOWRAP_OFF:
+			break;
+		case TextServer::AUTOWRAP_ARBITRARY:
+			break_flags.set_flag(TextServer::BREAK_GRAPHEME_BOUND);
+			break;
+		case TextServer::AUTOWRAP_WORD:
+			break_flags.set_flag(TextServer::BREAK_WORD_BOUND);
+			break;
+		case TextServer::AUTOWRAP_WORD_SMART:
+			break_flags.set_flag(TextServer::BREAK_WORD_BOUND);
+			break_flags.set_flag(TextServer::BREAK_ADAPTIVE);
+			break;
+	}
 	p_paragraph->add_string(p_text, font, font_size, language);
 	p_paragraph->set_text_overrun_behavior(overrun_behavior);
+	p_paragraph->set_break_flags(break_flags);
 }
 
 void Button::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
@@ -536,6 +586,19 @@ bool Button::is_expand_icon() const {
 	return expand_icon;
 }
 
+void Button::set_icon_size(const Size2 &p_icon_size) {
+
+	if (icon_size != p_icon_size) {
+		icon_size = p_icon_size;
+
+		queue_redraw();
+		update_minimum_size();
+	}
+}
+
+Size2 Button::get_icon_size() const {
+	return icon_size;
+}
 void Button::set_flat(bool p_enabled) {
 	if (flat != p_enabled) {
 		flat = p_enabled;
@@ -595,6 +658,8 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text"), &Button::get_text);
 	ClassDB::bind_method(D_METHOD("set_text_overrun_behavior", "overrun_behavior"), &Button::set_text_overrun_behavior);
 	ClassDB::bind_method(D_METHOD("get_text_overrun_behavior"), &Button::get_text_overrun_behavior);
+	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &Button::set_autowrap_mode);
+	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &Button::get_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &Button::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &Button::get_text_direction);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &Button::set_language);
@@ -613,6 +678,8 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vertical_icon_alignment"), &Button::get_vertical_icon_alignment);
 	ClassDB::bind_method(D_METHOD("set_expand_icon", "enabled"), &Button::set_expand_icon);
 	ClassDB::bind_method(D_METHOD("is_expand_icon"), &Button::is_expand_icon);
+	ClassDB::bind_method(D_METHOD("set_icon_size", "size"), &Button::set_icon_size);
+	ClassDB::bind_method(D_METHOD("get_icon_size"), &Button::get_icon_size);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_button_icon", "get_button_icon");
@@ -621,52 +688,18 @@ void Button::_bind_methods() {
 	ADD_GROUP("Text Behavior", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_alignment", "get_text_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
 
 	ADD_GROUP("Icon Behavior", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_icon_alignment", "get_icon_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_icon_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_icon_alignment", "get_vertical_icon_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_icon"), "set_expand_icon", "is_expand_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "icon_size"), "set_icon_size", "get_icon_size");
 
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
-
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, normal);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, normal_mirrored);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, pressed);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, pressed_mirrored);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, hover);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, hover_mirrored);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, hover_pressed);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, hover_pressed_mirrored);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, disabled);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, disabled_mirrored);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Button, focus);
-
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_focus_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_pressed_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_hover_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_hover_pressed_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_disabled_color);
-
-	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT, Button, font);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_FONT_SIZE, Button, font_size);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, outline_size);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, font_outline_color);
-
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, icon_normal_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, icon_focus_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, icon_pressed_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, icon_hover_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, icon_hover_pressed_color);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Button, icon_disabled_color);
-
-	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Button, icon);
-
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, h_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Button, icon_max_width);
 }
 
 Button::Button(const String &p_text) {
