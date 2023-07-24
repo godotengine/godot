@@ -409,6 +409,7 @@ GPUParticles3DEditor::GPUParticles3DEditor() {
 	particles_editor_hb = memnew(HBoxContainer);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
 	options = memnew(MenuButton);
+	options->set_flat(true);
 	options->set_switch_on_hover(true);
 	particles_editor_hb->add_child(options);
 	particles_editor_hb->hide();

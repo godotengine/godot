@@ -5238,6 +5238,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	varying_button = memnew(MenuButton);
 	varying_button->set_text(TTR("Manage Varyings"));
+	varying_button->set_flat(true);
 	varying_button->set_switch_on_hover(true);
 	graph->get_zoom_hbox()->add_child(varying_button);
 
@@ -5320,6 +5321,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	tools = memnew(MenuButton);
 	filter_hb->add_child(tools);
 	tools->set_tooltip_text(TTR("Options"));
+	tools->set_flat(true);
 	tools->get_popup()->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_tools_menu_option));
 	tools->get_popup()->add_item(TTR("Expand All"), EXPAND_ALL);
 	tools->get_popup()->add_item(TTR("Collapse All"), COLLAPSE_ALL);

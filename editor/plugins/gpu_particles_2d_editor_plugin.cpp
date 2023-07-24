@@ -370,6 +370,7 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	toolbar->add_child(memnew(VSeparator));
 
 	menu = memnew(MenuButton);
+	menu->set_flat(true);
 	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
 	menu->get_popup()->add_item(TTR("Generate Visibility Rect"), MENU_GENERATE_VISIBILITY_RECT);
 	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);

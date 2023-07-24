@@ -613,6 +613,7 @@ TextEditor::TextEditor() {
 	search_menu->set_shortcut_context(this);
 	edit_hb->add_child(search_menu);
 	search_menu->set_text(TTR("Search"));
+	search_menu->set_flat(true);
 	search_menu->set_switch_on_hover(true);
 	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
 
@@ -628,6 +629,7 @@ TextEditor::TextEditor() {
 	edit_menu->set_shortcut_context(this);
 	edit_hb->add_child(edit_menu);
 	edit_menu->set_text(TTR("Edit"));
+	edit_menu->set_flat(true);
 	edit_menu->set_switch_on_hover(true);
 	edit_menu->connect("about_to_popup", callable_mp(this, &TextEditor::_prepare_edit_menu));
 	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
@@ -685,6 +687,7 @@ TextEditor::TextEditor() {
 	goto_menu->set_shortcut_context(this);
 	edit_hb->add_child(goto_menu);
 	goto_menu->set_text(TTR("Go To"));
+	goto_menu->set_flat(true);
 	goto_menu->set_switch_on_hover(true);
 	goto_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
 

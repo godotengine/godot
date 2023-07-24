@@ -7683,6 +7683,7 @@ EditorNode::EditorNode() {
 	layout_dialog->connect("name_confirmed", callable_mp(this, &EditorNode::_dialog_action));
 
 	update_spinner = memnew(MenuButton);
+	update_spinner->set_flat(true);
 	right_menu_hb->add_child(update_spinner);
 	update_spinner->set_icon(gui_base->get_theme_icon(SNAME("Progress1"), SNAME("EditorIcons")));
 	update_spinner->get_popup()->connect("id_pressed", callable_mp(this, &EditorNode::_menu_option));

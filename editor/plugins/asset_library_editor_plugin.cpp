@@ -1515,6 +1515,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	support = memnew(MenuButton);
 	search_hb2->add_child(support);
+	support->set_flat(true);
 	support->set_text(TTR("Support"));
 	support->get_popup()->set_hide_on_checkable_item_selection(false);
 	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_OFFICIAL]), SUPPORT_OFFICIAL);

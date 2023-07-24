@@ -665,6 +665,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	PopupMenu *menu;
 
 	handle_menu = memnew(MenuButton);
+	handle_menu->set_flat(true);
 	handle_menu->set_text(TTR("Options"));
 	handle_menu->hide();
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(handle_menu);

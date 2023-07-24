@@ -517,6 +517,7 @@ void MeshInstance3DEditor::_bind_methods() {
 
 MeshInstance3DEditor::MeshInstance3DEditor() {
 	options = memnew(MenuButton);
+	options->set_flat(true);
 	options->set_switch_on_hover(true);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 

@@ -1760,6 +1760,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	play_position->connect("draw", callable_mp(this, &AnimationTimelineEdit::_play_position_draw));
 
 	add_track = memnew(MenuButton);
+	add_track->set_flat(true);
 	add_track->set_position(Vector2(0, 0));
 	add_child(add_track);
 	add_track->set_text(TTR("Add Track"));

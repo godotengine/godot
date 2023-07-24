@@ -245,7 +245,6 @@ void MenuButton::set_disable_shortcuts(bool p_disabled) {
 
 MenuButton::MenuButton(const String &p_text) :
 		Button(p_text) {
-	set_flat(true);
 	set_toggle_mode(true);
 	set_disable_shortcuts(false);
 	set_process_shortcut_input(true);

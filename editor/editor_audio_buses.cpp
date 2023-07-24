@@ -949,6 +949,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	bus_options->set_h_size_flags(SIZE_SHRINK_END);
 	bus_options->set_anchor(SIDE_RIGHT, 0.0);
 	bus_options->set_tooltip_text(TTR("Bus Options"));
+	bus_options->set_flat(true);
 	hbc->add_child(bus_options);
 
 	bus_popup = bus_options->get_popup();

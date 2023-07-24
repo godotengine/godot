@@ -8296,6 +8296,7 @@ Node3DEditor::Node3DEditor() {
 	PopupMenu *p;
 
 	transform_menu = memnew(MenuButton);
+	transform_menu->set_flat(true);
 	transform_menu->set_text(TTR("Transform"));
 	transform_menu->set_switch_on_hover(true);
 	transform_menu->set_shortcut_context(this);
@@ -8313,6 +8314,7 @@ Node3DEditor::Node3DEditor() {
 	view_menu = memnew(MenuButton);
 	// TRANSLATORS: Noun, name of the 2D/3D View menus.
 	view_menu->set_text(TTR("View"));
+	view_menu->set_flat(true);
 	view_menu->set_switch_on_hover(true);
 	view_menu->set_shortcut_context(this);
 	main_menu_hbox->add_child(view_menu);

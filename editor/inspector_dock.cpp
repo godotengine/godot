@@ -651,9 +651,11 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_save_button->get_popup()->add_item(TTR("Save As..."), RESOURCE_SAVE_AS);
 	resource_save_button->get_popup()->connect("id_pressed", callable_mp(this, &InspectorDock::_menu_option));
 	resource_save_button->set_focus_mode(Control::FOCUS_NONE);
+	resource_save_button->set_flat(true);
 	resource_save_button->set_disabled(true);
 
 	resource_extra_button = memnew(MenuButton);
+	resource_extra_button->set_flat(true);
 	resource_extra_button->set_tooltip_text(TTR("Extra resource options."));
 	general_options_hb->add_child(resource_extra_button);
 	resource_extra_button->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_resource_extra_popup));
@@ -683,6 +685,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	forward_button->connect("pressed", callable_mp(this, &InspectorDock::_edit_forward));
 
 	history_menu = memnew(MenuButton);
+	history_menu->set_flat(true);
 	history_menu->set_tooltip_text(TTR("History of recently edited objects."));
 	general_options_hb->add_child(history_menu);
 	history_menu->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_history));
@@ -717,6 +720,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	property_tools_hb->add_child(search);
 
 	object_menu = memnew(MenuButton);
+	object_menu->set_flat(true);
 	object_menu->set_shortcut_context(this);
 	property_tools_hb->add_child(object_menu);
 	object_menu->set_tooltip_text(TTR("Manage object properties."));

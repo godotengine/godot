@@ -580,6 +580,7 @@ Path2DEditor::Path2DEditor() {
 	PopupMenu *menu;
 
 	handle_menu = memnew(MenuButton);
+	handle_menu->set_flat(true);
 	handle_menu->set_text(TTR("Options"));
 	base_hb->add_child(handle_menu);
 

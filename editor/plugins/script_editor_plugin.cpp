@@ -3907,6 +3907,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	file_menu = memnew(MenuButton);
 	file_menu->set_text(TTR("File"));
+	file_menu->set_flat(true);
 	file_menu->set_switch_on_hover(true);
 	file_menu->set_shortcut_context(this);
 	menu_hb->add_child(file_menu);
@@ -3968,12 +3969,14 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 
 	script_search_menu = memnew(MenuButton);
 	script_search_menu->set_text(TTR("Search"));
+	script_search_menu->set_flat(true);
 	script_search_menu->set_switch_on_hover(true);
 	script_search_menu->set_shortcut_context(this);
 	script_search_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
 	menu_hb->add_child(script_search_menu);
 
 	MenuButton *debug_menu_btn = memnew(MenuButton);
+	debug_menu_btn->set_flat(true);
 	menu_hb->add_child(debug_menu_btn);
 	debug_menu_btn->hide(); // Handled by EditorDebuggerNode below.
 

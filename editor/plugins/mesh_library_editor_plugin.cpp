@@ -272,6 +272,7 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	file->connect("file_selected", callable_mp(this, &MeshLibraryEditor::_import_scene_cbk));
 
 	menu = memnew(MenuButton);
+	menu->set_flat(true);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(menu);
 	menu->set_position(Point2(1, 1));
 	menu->set_text(TTR("MeshLibrary"));

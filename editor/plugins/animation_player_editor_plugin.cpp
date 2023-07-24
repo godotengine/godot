@@ -1773,6 +1773,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	hb->add_child(onion_toggle);
 
 	onion_skinning = memnew(MenuButton);
+	onion_skinning->set_flat(true);
 	onion_skinning->set_tooltip_text(TTR("Onion Skinning Options"));
 	onion_skinning->get_popup()->add_separator(TTR("Directions"));
 	// TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.

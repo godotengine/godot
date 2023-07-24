@@ -1358,6 +1358,7 @@ Polygon2DEditor::Polygon2DEditor() {
 
 	uv_menu = memnew(MenuButton);
 	uv_mode_hb->add_child(uv_menu);
+	uv_menu->set_flat(true);
 	uv_menu->set_text(TTR("Edit"));
 	uv_menu->get_popup()->add_item(TTR("Copy Polygon to UV"), UVEDIT_POLYGON_TO_UV);
 	uv_menu->get_popup()->add_item(TTR("Copy UV to Polygon"), UVEDIT_UV_TO_POLYGON);

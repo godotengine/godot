@@ -717,6 +717,7 @@ void Skeleton3DEditor::create_editors() {
 	skeleton_options = memnew(MenuButton);
 	ne->add_control_to_menu_panel(skeleton_options);
 
+	skeleton_options->set_flat(true);
 	skeleton_options->set_text(TTR("Skeleton3D"));
 
 	// Skeleton options.

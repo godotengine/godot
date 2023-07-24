@@ -528,6 +528,7 @@ Sprite2DEditor::Sprite2DEditor() {
 
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
+	options->set_flat(true);
 	options->set_text(TTR("Sprite2D"));
 
 	options->get_popup()->add_item(TTR("Convert to MeshInstance2D"), MENU_OPTION_CONVERT_TO_MESH_2D);

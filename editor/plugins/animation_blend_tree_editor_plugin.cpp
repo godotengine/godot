@@ -229,6 +229,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			MenuButton *mb = memnew(MenuButton);
 			mb->set_text(anim->get_animation());
 			mb->set_icon(get_theme_icon(SNAME("Animation"), SNAME("EditorIcons")));
+			mb->set_flat(true);
 			mb->set_disabled(read_only);
 			Array options;
 
@@ -1096,6 +1097,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->get_zoom_hbox()->move_child(vs, 0);
 
 	add_node = memnew(MenuButton);
+	add_node->set_flat(true);
 	graph->get_zoom_hbox()->add_child(add_node);
 	add_node->set_text(TTR("Add Node..."));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
