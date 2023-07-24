@@ -144,6 +144,7 @@ public:
 	Error analyze();
 
 	Variant make_variable_default_value(GDScriptParser::VariableNode *p_variable);
+	const HashMap<String, Ref<GDScriptParserRef>> &get_depended_parsers();
 
 	GDScriptAnalyzer(GDScriptParser *p_parser);
 };
