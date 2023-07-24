@@ -617,6 +617,8 @@ void TileMapLayer::_navigation_update() {
 			uses_world_navigation_map = true;
 		} else {
 			RID new_layer_map = NavigationServer2D::get_singleton()->map_create();
+			// Set the default NavigationPolygon cell_size on the new map as a mismatch causes an error.
+			NavigationServer2D::get_singleton()->map_set_cell_size(new_layer_map, 1.0);
 			NavigationServer2D::get_singleton()->map_set_active(new_layer_map, true);
 			navigation_map = new_layer_map;
 			uses_world_navigation_map = false;
