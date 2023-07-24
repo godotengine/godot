@@ -1739,7 +1739,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	// We invert luminance_multiplier for sky so that we can combine it with exposure value.
 	float sky_energy_multiplier = 1.0 / _render_buffers_get_luminance_multiplier();
 
-	Color clear_color;
+	Color clear_color = p_default_bg_color;
 	bool keep_color = false;
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
