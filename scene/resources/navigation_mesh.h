@@ -43,19 +43,6 @@ class NavigationMesh : public Resource {
 	Vector<Polygon> polygons;
 	Ref<ArrayMesh> debug_mesh;
 
-	struct _EdgeKey {
-		Vector3 from;
-		Vector3 to;
-
-		static uint32_t hash(const _EdgeKey &p_key) {
-			return HashMapHasherDefault::hash(p_key.from) ^ HashMapHasherDefault::hash(p_key.to);
-		}
-
-		bool operator==(const _EdgeKey &p_with) const {
-			return HashMapComparatorDefault<Vector3>::compare(from, p_with.from) && HashMapComparatorDefault<Vector3>::compare(to, p_with.to);
-		}
-	};
-
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
