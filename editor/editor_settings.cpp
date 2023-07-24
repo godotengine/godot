@@ -680,13 +680,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/2d/grid_color", Color(1.0, 1.0, 1.0, 0.07));
 	_initial_set("editors/2d/guides_color", Color(0.6, 0.0, 0.8));
 	_initial_set("editors/2d/smart_snapping_line_color", Color(0.9, 0.1, 0.1));
-	_initial_set("editors/2d/bone_width", 5);
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/bone_width", 5.0, "0.01,20,0.01,or_greater")
 	_initial_set("editors/2d/bone_color1", Color(1.0, 1.0, 1.0, 0.7));
 	_initial_set("editors/2d/bone_color2", Color(0.6, 0.6, 0.6, 0.7));
 	_initial_set("editors/2d/bone_selected_color", Color(0.9, 0.45, 0.45, 0.7));
 	_initial_set("editors/2d/bone_ik_color", Color(0.9, 0.9, 0.45, 0.7));
 	_initial_set("editors/2d/bone_outline_color", Color(0.35, 0.35, 0.35, 0.5));
-	_initial_set("editors/2d/bone_outline_size", 2);
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/2d/bone_outline_size", 2.0, "0.01,8,0.01,or_greater")
 	_initial_set("editors/2d/viewport_border_color", Color(0.4, 0.4, 1.0, 0.4));
 	_initial_set("editors/2d/use_integer_zoom_by_default", false);
 
