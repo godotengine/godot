@@ -730,6 +730,8 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editors["probability"] = tile_data_probability_editor;
 	}
 
+	Color disabled_color = get_theme_color("disabled_font_color", "Editor");
+
 	// --- Physics ---
 	ADD_TILE_DATA_EDITOR_GROUP(TTR("Physics"));
 	for (int i = 0; i < tile_set->get_physics_layers_count(); i++) {
@@ -748,6 +750,16 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editors.erase(vformat("physics_layer_%d", i));
 	}
 
+	if (tile_set->get_physics_layers_count() == 0) {
+		item = tile_data_editors_tree->create_item(group);
+		item->set_icon(0, get_theme_icon("Info", "EditorIcons"));
+		item->set_icon_modulate(0, disabled_color);
+		item->set_text(0, TTR("No physics layers"));
+		item->set_tooltip_text(0, TTR("Create and customize physics layers in the inspector of the TileSet resource."));
+		item->set_selectable(0, false);
+		item->set_custom_color(0, disabled_color);
+	}
+
 	// --- Navigation ---
 	ADD_TILE_DATA_EDITOR_GROUP(TTR("Navigation"));
 	for (int i = 0; i < tile_set->get_navigation_layers_count(); i++) {
@@ -764,6 +776,16 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	for (int i = tile_set->get_navigation_layers_count(); tile_data_editors.has(vformat("navigation_layer_%d", i)); i++) {
 		tile_data_editors[vformat("navigation_layer_%d", i)]->queue_free();
 		tile_data_editors.erase(vformat("navigation_layer_%d", i));
+	}
+
+	if (tile_set->get_navigation_layers_count() == 0) {
+		item = tile_data_editors_tree->create_item(group);
+		item->set_icon(0, get_theme_icon("Info", "EditorIcons"));
+		item->set_icon_modulate(0, disabled_color);
+		item->set_text(0, TTR("No navigation layers"));
+		item->set_tooltip_text(0, TTR("Create and customize navigation layers in the inspector of the TileSet resource."));
+		item->set_selectable(0, false);
+		item->set_custom_color(0, disabled_color);
 	}
 
 	// --- Custom Data ---
@@ -797,6 +819,16 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	for (int i = tile_set->get_custom_data_layers_count(); tile_data_editors.has(vformat("custom_data_%d", i)); i++) {
 		tile_data_editors[vformat("custom_data_%d", i)]->queue_free();
 		tile_data_editors.erase(vformat("custom_data_%d", i));
+	}
+
+	if (tile_set->get_custom_data_layers_count() == 0) {
+		item = tile_data_editors_tree->create_item(group);
+		item->set_icon(0, get_theme_icon("Info", "EditorIcons"));
+		item->set_icon_modulate(0, disabled_color);
+		item->set_text(0, TTR("No custom data layers"));
+		item->set_tooltip_text(0, TTR("Create and customize custom data layers in the inspector of the TileSet resource."));
+		item->set_selectable(0, false);
+		item->set_custom_color(0, disabled_color);
 	}
 
 #undef ADD_TILE_DATA_EDITOR_GROUP
