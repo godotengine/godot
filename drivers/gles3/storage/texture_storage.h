@@ -252,10 +252,10 @@ struct Texture {
 		}
 		Config *config = Config::get_singleton();
 		state_filter = p_filter;
-		GLenum pmin = GL_NEAREST; // param min
-		GLenum pmag = GL_NEAREST; // param mag
-		GLint max_lod = 1000;
-		float anisotropy = 1.0f;
+		GLenum pmin = GL_NEAREST;
+		GLenum pmag = GL_NEAREST;
+		GLint max_lod = 0;
+		GLfloat anisotropy = 1.0f;
 		switch (state_filter) {
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
 				pmin = GL_NEAREST;
@@ -278,8 +278,10 @@ struct Texture {
 					max_lod = 0;
 				} else if (config->use_nearest_mip_filter) {
 					pmin = GL_NEAREST_MIPMAP_NEAREST;
+					max_lod = 1000;
 				} else {
 					pmin = GL_NEAREST_MIPMAP_LINEAR;
+					max_lod = 1000;
 				}
 			} break;
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
@@ -293,11 +295,14 @@ struct Texture {
 					max_lod = 0;
 				} else if (config->use_nearest_mip_filter) {
 					pmin = GL_LINEAR_MIPMAP_NEAREST;
+					max_lod = 1000;
 				} else {
 					pmin = GL_LINEAR_MIPMAP_LINEAR;
+					max_lod = 1000;
 				}
 			} break;
 			default: {
+				return;
 			} break;
 		}
 		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, pmin);
@@ -313,8 +318,11 @@ struct Texture {
 			return;
 		}
 		state_repeat = p_repeat;
-		GLenum prep = GL_CLAMP_TO_EDGE; // parameter repeat
+		GLenum prep = GL_CLAMP_TO_EDGE;
 		switch (state_repeat) {
+			case RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
+				prep = GL_CLAMP_TO_EDGE;
+			} break;
 			case RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
 				prep = GL_REPEAT;
 			} break;
@@ -322,6 +330,7 @@ struct Texture {
 				prep = GL_MIRRORED_REPEAT;
 			} break;
 			default: {
+				return;
 			} break;
 		}
 		glTexParameteri(target, GL_TEXTURE_WRAP_T, prep);
@@ -330,8 +339,8 @@ struct Texture {
 	}
 
 private:
-	RS::CanvasItemTextureFilter state_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
-	RS::CanvasItemTextureRepeat state_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+	RS::CanvasItemTextureFilter state_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_MAX;
+	RS::CanvasItemTextureRepeat state_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX;
 };
 
 struct RenderTarget {
