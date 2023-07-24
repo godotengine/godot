@@ -2273,9 +2273,12 @@ void TileMapLayer::force_update() {
 }
 
 void TileMapLayer::fix_invalid_tiles() {
+	Ref<TileSet> tileset = tile_map_node->get_tileset();
+	ERR_FAIL_COND_MSG(tileset.is_null(), "Cannot call fix_invalid_tiles() on a TileMap without a valid TileSet.");
+
 	RBSet<Vector2i> coords;
 	for (const KeyValue<Vector2i, TileMapCell> &E : tile_map) {
-		TileSetSource *source = *(tile_map_node->get_tileset())->get_source(E.value.source_id);
+		TileSetSource *source = *tileset->get_source(E.value.source_id);
 		if (!source || !source->has_tile(E.value.get_atlas_coords()) || !source->has_alternative_tile(E.value.get_atlas_coords(), E.value.alternative_tile)) {
 			coords.insert(E.key);
 		}
