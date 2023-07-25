@@ -1955,7 +1955,8 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 }
 
-static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control *p_owner_node, const String &p_class = "") {
+// TODO: Should probably move this to a shared utility file/class so it can be accessed by both 'editor_help.cpp' and 'symbol_tooltip.cpp'
+void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control *p_owner_node, const String &p_class = "") {
 	DocTools *doc = EditorHelp::get_doc_data();
 	String base_path;
 

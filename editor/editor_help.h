@@ -251,4 +251,6 @@ public:
 	EditorHelpBit();
 };
 
+void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control *p_owner_node);
+
 #endif // EDITOR_HELP_H

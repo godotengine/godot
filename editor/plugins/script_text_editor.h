@@ -34,6 +34,7 @@
 #include "script_editor_plugin.h"
 
 #include "editor/code_editor.h"
+#include "editor/symbol_tooltip.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
@@ -155,6 +156,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 	};
 
 	void _enable_code_editor();
+
+	SymbolTooltip *symbol_tooltip = nullptr;
 
 protected:
 	void _update_breakpoint_list();

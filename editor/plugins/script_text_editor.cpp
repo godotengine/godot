@@ -1859,6 +1859,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	Ref<InputEventMouseButton> mb = ev;
+	Ref<InputEventMouseMotion> mm = ev;
 	Ref<InputEventKey> k = ev;
 	Point2 local_pos;
 	bool create_menu = false;
@@ -1867,6 +1868,8 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 		local_pos = mb->get_global_position() - tx->get_global_position();
 		create_menu = true;
+	} else if (mm.is_valid()) {
+		symbol_tooltip->update_symbol_tooltip(mm->get_position());
 	} else if (k.is_valid() && k->is_action("ui_menu", true)) {
 		tx->adjust_viewport_to_caret(0);
 		local_pos = tx->get_caret_draw_pos(0);
@@ -2322,6 +2325,9 @@ ScriptTextEditor::ScriptTextEditor() {
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 
 	SET_DRAG_FORWARDING_GCD(code_editor->get_text_editor(), ScriptTextEditor);
+
+	symbol_tooltip = memnew(SymbolTooltip(code_editor));
+	add_child(symbol_tooltip);
 }
 
 ScriptTextEditor::~ScriptTextEditor() {
