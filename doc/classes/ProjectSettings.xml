@@ -416,6 +416,10 @@
 		<member name="audio/buses/default_bus_layout" type="String" setter="" getter="" default="&quot;res://default_bus_layout.tres&quot;">
 			Default [AudioBusLayout] resource file to use in the project, unless overridden by the scene.
 		</member>
+		<member name="audio/buses/gui_theme_bus" type="String" setter="" getter="" default="&quot;Master&quot;">
+			The name of the audio bus to play GUI theme audio in (case-sensitive). All sounds played using [method SceneTree.play_theme_sound] will go through the bus specified in [member audio/buses/gui_theme_bus]. This can be used to put UI sounds in a dedicated audio bus, which allows for adjusting UI volume independently from other sounds in the project.
+			If the specified audio bus doesn't exist, audio will play on the [code]Master[/code] bus instead.
+		</member>
 		<member name="audio/driver/driver" type="String" setter="" getter="">
 			Specifies the audio driver to use. This setting is platform-dependent as each platform supports different audio drivers. If left empty, the default audio driver will be used.
 			The [code]Dummy[/code] audio driver disables all audio playback and recording, which is useful for non-game applications as it reduces CPU usage. It also prevents the engine from appearing as an application playing audio in the OS' audio mixer.

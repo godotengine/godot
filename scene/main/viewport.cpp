@@ -1933,7 +1933,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							// Grabbing unhovered focus can cause issues when mouse is dragged
 							// with another button held down.
 							if (gui.mouse_over_hierarchy.has(control)) {
-								// Hide the focus when it comes from a click.
+								// Don't play a sound when the focus comes from a click.
+								// Also, hide the focus when it comes from a click.
 								control->grab_focus(true);
 							}
 							break;
@@ -2372,6 +2373,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 
 			if (next) {
+				if (is_inside_tree()) {
+					get_tree()->play_theme_sound(next->get_theme_audio(SNAME("focus_sound")));
+				}
+
 				next->grab_focus();
 				set_input_as_handled();
 			} else if (show_focus && gui.hide_focus && gui.key_focus) {

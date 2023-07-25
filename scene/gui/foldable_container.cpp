@@ -234,6 +234,9 @@ void FoldableContainer::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (p_event->is_action_pressed(SNAME("ui_accept"), false, true)) {
 		set_folded(!folded);
+		if (is_inside_tree()) {
+			get_tree()->play_theme_sound(!folded ? theme_cache.expanded_sound : theme_cache.folded_sound);
+		}
 		emit_signal(SNAME("folding_changed"), folded);
 		accept_event();
 		return;
@@ -244,6 +247,9 @@ void FoldableContainer::gui_input(const Ref<InputEvent> &p_event) {
 		Rect2 title_rect = Rect2(0, (title_position == POSITION_TOP) ? 0 : get_size().height - title_minimum_size.height, get_size().width, title_minimum_size.height);
 		if (b->get_button_index() == MouseButton::LEFT && b->is_pressed() && title_rect.has_point(b->get_position())) {
 			set_folded(!folded);
+			if (is_inside_tree()) {
+				get_tree()->play_theme_sound(!folded ? theme_cache.expanded_sound : theme_cache.folded_sound);
+			}
 			emit_signal(SNAME("folding_changed"), folded);
 			accept_event();
 		}
@@ -583,6 +589,9 @@ void FoldableContainer::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FoldableContainer, folded_arrow_mirrored);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FoldableContainer, h_separation);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, FoldableContainer, expanded_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, FoldableContainer, folded_sound);
 }
 
 FoldableContainer::FoldableContainer(const String &p_text) {

@@ -218,6 +218,8 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 			type = Theme::DATA_TYPE_ICON;
 		} else if (pf == "add_theme_stylebox_override" || pf == "has_theme_stylebox" || pf == "has_theme_stylebox_override" || pf == "get_theme_stylebox" || pf == "remove_theme_stylebox_override") {
 			type = Theme::DATA_TYPE_STYLEBOX;
+		} else if (pf == "add_theme_sound_override" || pf == "has_theme_audio" || pf == "has_theme_sound_override" || pf == "get_theme_audio" || pf == "remove_theme_sound_override") {
+			type = Theme::DATA_TYPE_SOUND;
 		}
 
 		if (type != Theme::DATA_TYPE_MAX) {
@@ -337,6 +339,13 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 			String dname = name.get_slicec('/', 1);
 			data.theme_constant_override.erase(dname);
 			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_sounds/")) {
+			String dname = name.get_slicec('/', 1);
+			if (data.theme_sound_override.has(dname)) {
+				data.theme_sound_override[dname]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
+			}
+			data.theme_sound_override.erase(dname);
+			_notify_theme_override_changed();
 		} else {
 			return false;
 		}
@@ -359,6 +368,9 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (name.begins_with("theme_override_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_constant_override(dname, p_value);
+		} else if (name.begins_with("theme_override_sounds/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_sound_override(dname, p_value);
 		} else {
 			return false;
 		}
@@ -393,6 +405,9 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 	} else if (sname.begins_with("theme_override_constants/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.theme_constant_override.has(name) ? Variant(data.theme_constant_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_sounds/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = data.theme_sound_override.has(name) ? Variant(data.theme_sound_override[name]) : Variant();
 	} else {
 		return false;
 	}
@@ -451,6 +466,13 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 					usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 				}
 				p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_styles") + String("/") + E.item_name, PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", usage));
+			} break;
+
+			case Theme::DATA_TYPE_SOUND: {
+				if (data.theme_sound_override.has(E.item_name)) {
+					usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+				}
+				p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_sounds") + String("/") + E.item_name, PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", usage));
 			} break;
 
 			default: {
@@ -2932,6 +2954,7 @@ void Control::_invalidate_theme_cache() {
 	data.theme_font_size_cache.clear();
 	data.theme_color_cache.clear();
 	data.theme_constant_cache.clear();
+	data.theme_audio_cache.clear();
 }
 
 void Control::_update_theme_item_cache() {
@@ -3157,6 +3180,30 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_th
 	return constant;
 }
 
+Ref<AudioStream> Control::get_theme_audio(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(Ref<AudioStream>());
+	if (!data.initialized) {
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
+	}
+
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+		const Ref<AudioStream> *audio = data.theme_sound_override.getptr(p_name);
+		if (audio) {
+			return *audio;
+		}
+	}
+
+	if (data.theme_audio_cache.has(p_theme_type) && data.theme_audio_cache[p_theme_type].has(p_name)) {
+		return data.theme_audio_cache[p_theme_type][p_name];
+	}
+
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
+	Ref<AudioStream> audio = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_SOUND, p_name, theme_types);
+	data.theme_audio_cache[p_theme_type][p_name] = audio;
+	return audio;
+}
+
 Variant Control::get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type) const {
 	switch (p_data_type) {
 		case Theme::DATA_TYPE_COLOR:
@@ -3171,6 +3218,8 @@ Variant Control::get_theme_item(Theme::DataType p_data_type, const StringName &p
 			return get_theme_icon(p_name, p_theme_type);
 		case Theme::DATA_TYPE_STYLEBOX:
 			return get_theme_stylebox(p_name, p_theme_type);
+		case Theme::DATA_TYPE_SOUND:
+			return get_theme_audio(p_name, p_theme_type);
 		case Theme::DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -3208,6 +3257,11 @@ Variant Control::get_used_theme_item(const String &p_full_name, const StringName
 		String name = p_full_name.substr(strlen("theme_override_constants/"));
 		if (has_theme_constant(name)) {
 			return get_theme_constant(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_sounds/")) {
+		String name = p_full_name.substr(strlen("theme_override_sounds/"));
+		if (has_theme_audio(name)) {
+			return get_theme_audio(name);
 		}
 	} else {
 		ERR_FAIL_V_MSG(Variant(), vformat("The property %s is not a theme item.", p_full_name));
@@ -3324,6 +3378,23 @@ bool Control::has_theme_constant(const StringName &p_name, const StringName &p_t
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 }
 
+bool Control::has_theme_audio(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	if (!data.initialized) {
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
+	}
+
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+		if (has_theme_sound_override(p_name)) {
+			return true;
+		}
+	}
+
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
+	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_SOUND, p_name, theme_types);
+}
+
 /// Local property overrides.
 
 void Control::add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
@@ -3383,6 +3454,19 @@ void Control::add_theme_constant_override(const StringName &p_name, int p_consta
 	_notify_theme_override_changed();
 }
 
+void Control::add_theme_sound_override(const StringName &p_name, const Ref<AudioStream> &p_audio) {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_COND(!p_audio.is_valid());
+
+	if (data.theme_sound_override.has(p_name)) {
+		data.theme_sound_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
+	}
+
+	data.theme_sound_override[p_name] = p_audio;
+	data.theme_sound_override[p_name]->connect_changed(callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	_notify_theme_override_changed();
+}
+
 void Control::remove_theme_icon_override(const StringName &p_name) {
 	ERR_MAIN_THREAD_GUARD;
 	if (data.theme_icon_override.has(p_name)) {
@@ -3431,6 +3515,12 @@ void Control::remove_theme_constant_override(const StringName &p_name) {
 	_notify_theme_override_changed();
 }
 
+void Control::remove_theme_sound_override(const StringName &p_name) {
+	ERR_MAIN_THREAD_GUARD;
+	data.theme_sound_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
 bool Control::has_theme_icon_override(const StringName &p_name) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	const Ref<Texture2D> *tex = data.theme_icon_override.getptr(p_name);
@@ -3465,6 +3555,12 @@ bool Control::has_theme_constant_override(const StringName &p_name) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	const int *constant = data.theme_constant_override.getptr(p_name);
 	return constant != nullptr;
+}
+
+bool Control::has_theme_sound_override(const StringName &p_name) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	const Ref<AudioStream> *audio = data.theme_sound_override.getptr(p_name);
+	return audio != nullptr;
 }
 
 /// Default theme properties.
@@ -4068,6 +4164,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_theme_font_size_override", "name", "font_size"), &Control::add_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("add_theme_color_override", "name", "color"), &Control::add_theme_color_override);
 	ClassDB::bind_method(D_METHOD("add_theme_constant_override", "name", "constant"), &Control::add_theme_constant_override);
+	ClassDB::bind_method(D_METHOD("add_theme_sound_override", "name", "audio"), &Control::add_theme_sound_override);
 
 	ClassDB::bind_method(D_METHOD("remove_theme_icon_override", "name"), &Control::remove_theme_icon_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_stylebox_override", "name"), &Control::remove_theme_style_override);
@@ -4075,6 +4172,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_theme_font_size_override", "name"), &Control::remove_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_color_override", "name"), &Control::remove_theme_color_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_constant_override", "name"), &Control::remove_theme_constant_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_sound_override", "name"), &Control::remove_theme_sound_override);
 
 	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Control::get_theme_icon, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Control::get_theme_stylebox, DEFVAL(StringName()));
@@ -4082,6 +4180,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Control::get_theme_font_size, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "theme_type"), &Control::get_theme_color, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Control::get_theme_constant, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_audio", "name", "theme_type"), &Control::get_theme_audio, DEFVAL(StringName()));
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon_override", "name"), &Control::has_theme_icon_override);
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox_override", "name"), &Control::has_theme_stylebox_override);
@@ -4089,6 +4188,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_theme_font_size_override", "name"), &Control::has_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("has_theme_color_override", "name"), &Control::has_theme_color_override);
 	ClassDB::bind_method(D_METHOD("has_theme_constant_override", "name"), &Control::has_theme_constant_override);
+	ClassDB::bind_method(D_METHOD("has_theme_sound_override", "name"), &Control::has_theme_sound_override);
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Control::has_theme_icon, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Control::has_theme_stylebox, DEFVAL(StringName()));
@@ -4096,6 +4196,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "theme_type"), &Control::has_theme_font_size, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "theme_type"), &Control::has_theme_color, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "theme_type"), &Control::has_theme_constant, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_audio", "name", "theme_type"), &Control::has_theme_audio, DEFVAL(StringName()));
 
 	ClassDB::bind_method(D_METHOD("get_theme_default_base_scale"), &Control::get_theme_default_base_scale);
 	ClassDB::bind_method(D_METHOD("get_theme_default_font"), &Control::get_theme_default_font);
@@ -4456,4 +4557,5 @@ Control::~Control() {
 	data.theme_font_size_override.clear();
 	data.theme_color_override.clear();
 	data.theme_constant_override.clear();
+	data.theme_sound_override.clear();
 }

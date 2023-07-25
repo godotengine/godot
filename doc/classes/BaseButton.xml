@@ -129,4 +129,15 @@
 			Require a press and a subsequent release before considering the button clicked.
 		</constant>
 	</constants>
+	<theme_items>
+		<theme_item name="hover_sound" data_type="sound" type="AudioStream">
+			Played when the button is hovered with the mouse.
+		</theme_item>
+		<theme_item name="pressed_disabled_sound" data_type="sound" type="AudioStream">
+			Played when the button is pressed with any input method, but has [member disabled] set to [code]true[/code].
+		</theme_item>
+		<theme_item name="pressed_sound" data_type="sound" type="AudioStream">
+			Played when the button is pressed with any input method.
+		</theme_item>
+	</theme_items>
 </class>

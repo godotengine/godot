@@ -315,6 +315,15 @@
 				See also [method get_theme_icon].
 			</description>
 		</method>
+		<method name="add_theme_sound_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="audio" type="AudioStream" />
+			<description>
+				Creates a local override for a theme audio with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_sound_override].
+				See also [method get_theme_audio].
+			</description>
+		</method>
 		<method name="add_theme_stylebox_override">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
@@ -502,6 +511,15 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="get_theme_audio" qualifiers="const">
+			<return type="AudioStream" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns an audio from the first matching [Theme] in the tree if that [Theme] has an audio item with the specified [param name] and [param theme_type].
+				See [method get_theme_color] for details.
+			</description>
+		</method>
 		<method name="get_theme_color" qualifiers="const">
 			<return type="Color" />
 			<param index="0" name="name" type="StringName" />
@@ -639,6 +657,15 @@
 				If [param ignore_hidden_focus] is [code]true[/code], controls that have their focus hidden will always return [code]false[/code]. Hidden focus happens automatically when controls gain focus via mouse input, or manually using [method grab_focus] with [code]hide_focus[/code] set to [code]true[/code].
 			</description>
 		</method>
+		<method name="has_theme_audio" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has an audio item with the specified [param name] and [param theme_type].
+				See [method get_theme_color] for details.
+			</description>
+		</method>
 		<method name="has_theme_color" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
@@ -724,6 +751,14 @@
 				See [method add_theme_icon_override].
 			</description>
 		</method>
+		<method name="has_theme_sound_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme audio with the specified [param name] in this [Control] node.
+				See [method add_theme_sound_override].
+			</description>
+		</method>
 		<method name="has_theme_stylebox" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
@@ -793,6 +828,13 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Removes a local override for a theme icon with the specified [param name] previously added by [method add_theme_icon_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="remove_theme_sound_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme audio with the specified [param name] previously added by [method add_theme_sound_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_stylebox_override">

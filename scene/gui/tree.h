@@ -663,6 +663,9 @@ private:
 		int scrollbar_margin_left = -1;
 		int scrollbar_h_separation = 0;
 		int scrollbar_v_separation = 0;
+
+		Ref<AudioStream> item_hovered_sound;
+		Ref<AudioStream> item_selected_sound;
 	} theme_cache;
 
 	struct Cache {

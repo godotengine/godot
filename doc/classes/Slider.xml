@@ -76,6 +76,15 @@
 		<theme_item name="tick" data_type="icon" type="Texture2D">
 			The texture for the ticks, visible when [member Slider.tick_count] is greater than 0.
 		</theme_item>
+		<theme_item name="drag_ended_sound" data_type="sound" type="AudioStream">
+			Played when mouse or touch drag is ended.
+		</theme_item>
+		<theme_item name="drag_started_sound" data_type="sound" type="AudioStream">
+			Played when mouse or touch drag has begun.
+		</theme_item>
+		<theme_item name="value_changed_sound" data_type="sound" type="AudioStream">
+			Played when the value is changed through keyboard or gamepad input.
+		</theme_item>
 		<theme_item name="grabber_area" data_type="style" type="StyleBox">
 			The background of the area to the left or bottom of the grabber.
 		</theme_item>

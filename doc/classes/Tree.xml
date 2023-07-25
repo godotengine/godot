@@ -673,6 +673,12 @@
 		<theme_item name="updown" data_type="icon" type="Texture2D">
 			The updown arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
 		</theme_item>
+		<theme_item name="item_hovered_sound" data_type="sound" type="AudioStream">
+			Played when an item is hovered.
+		</theme_item>
+		<theme_item name="item_selected_sound" data_type="sound" type="AudioStream">
+			Played when an item is selected.
+		</theme_item>
 		<theme_item name="button_hover" data_type="style" type="StyleBox">
 			[StyleBox] used when a button in the tree is hovered.
 		</theme_item>

@@ -437,6 +437,15 @@
 		<theme_item name="increment_highlight" data_type="icon" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
+		<theme_item name="hover_sound" data_type="sound" type="AudioStream">
+			Played when a tab is hovered with the mouse.
+		</theme_item>
+		<theme_item name="pressed_disabled_sound" data_type="sound" type="AudioStream">
+			Played when the tab close button is pressed while the tab is disabled, or when pressing the previous/next tab navigation buttons when already at the beginning/end of the list.
+		</theme_item>
+		<theme_item name="pressed_sound" data_type="sound" type="AudioStream">
+			Played when the tab close or previous/next tab navigation buttons are pressed.
+		</theme_item>
 		<theme_item name="button_highlight" data_type="style" type="StyleBox">
 			Background of the tab and close buttons when they're being hovered with the cursor.
 		</theme_item>

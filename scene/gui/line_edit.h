@@ -217,6 +217,10 @@ private:
 		Color clear_button_color;
 		Color clear_button_color_pressed;
 
+		Ref<AudioStream> text_submitted_sound;
+		Ref<AudioStream> text_changed_sound;
+		Ref<AudioStream> text_change_rejected_sound;
+
 		float base_scale = 1.0;
 	} theme_cache;
 

@@ -61,6 +61,16 @@
 				If you want to reliably access the new scene, await the [signal scene_changed] signal.
 			</description>
 		</method>
+		<method name="create_audio_stream_player">
+			<return type="AudioStreamPlayer" />
+			<param index="0" name="stream" type="AudioStream" />
+			<param index="1" name="bus" type="StringName" default="&amp;&quot;Master&quot;" />
+			<param index="2" name="volume_db" type="float" default="0.0" />
+			<description>
+				Plays the specified [param stream] on [param bus] with volume offset by [param volume_db] and returns the associated [AudioStreamPlayer] instance, which is automatically freed once the audio is done playing. Audio is played in a non-positional manner. Unlike when using [AudioStreamPlayer] within another node, the audio will not stop if the node that called [method create_audio_stream_player] is freed or if the scene is changed using [method change_scene_to_file] or [method change_scene_to_packed].
+				To play UI sounds in custom [Control]s, use [method play_theme_sound] instead.
+			</description>
+		</method>
 		<method name="create_timer">
 			<return type="SceneTreeTimer" />
 			<param index="0" name="time_sec" type="float" />
@@ -180,6 +190,14 @@
 			<param index="2" name="notification" type="int" />
 			<description>
 				Calls [method Object.notification] with the given [param notification] to all nodes inside this tree added to the [param group]. Use [param call_flags] to customize this method's behavior (see [enum GroupCallFlags]).
+			</description>
+		</method>
+		<method name="play_theme_sound">
+			<return type="AudioStreamPlayer" />
+			<param index="0" name="stream" type="AudioStream" />
+			<description>
+				Plays the specified [param stream] and returns the [AudioStreamPlayer] instance, which is automatically freed once the audio is done playing. [method play_theme_sound] is intended to be used by custom [Control]s to play sounds on user interaction based on theme items. The bus used for theme audio can be configured using [member ProjectSettings.audio/buses/gui_theme_bus].
+				To play generic audio in a non-positional manner without having to create an [AudioStreamPlayer] node, use [method create_audio_stream_player] instead.
 			</description>
 		</method>
 		<method name="queue_delete">

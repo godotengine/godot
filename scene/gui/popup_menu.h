@@ -213,6 +213,10 @@ class PopupMenu : public Popup {
 		Color font_separator_color;
 		int font_separator_outline_size = 0;
 		Color font_separator_outline_color;
+
+		Ref<AudioStream> item_hovered_sound;
+		Ref<AudioStream> item_activated_sound;
+		Ref<AudioStream> item_activated_disabled_sound;
 	} theme_cache;
 
 	void _draw_items();
