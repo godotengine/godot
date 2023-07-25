@@ -789,6 +789,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool upwards = false;
 	String debug_uri = "";
 	bool skip_breakpoints = false;
+	bool ignore_error_breaks = false;
 	String main_pack;
 	bool quiet_stdout = false;
 	int rtm = -1;
@@ -1426,6 +1427,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->disable_crash_handler();
 		} else if (I->get() == "--skip-breakpoints") {
 			skip_breakpoints = true;
+		} else if (I->get() == "--ignore-error-breaks") {
+			ignore_error_breaks = true;
 		} else if (I->get() == "--xr-mode") {
 			if (I->next()) {
 				String xr_mode = I->next()->get().to_lower();
@@ -1540,7 +1543,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_errors_per_second", PROPERTY_HINT_RANGE, "0, 200, 1, or_greater"), 400);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_warnings_per_second", PROPERTY_HINT_RANGE, "0, 200, 1, or_greater"), 400);
 
-	EngineDebugger::initialize(debug_uri, skip_breakpoints, breakpoints, []() {
+	EngineDebugger::initialize(debug_uri, skip_breakpoints, ignore_error_breaks, breakpoints, []() {
 		if (editor_pid) {
 			DisplayServer::get_singleton()->enable_for_stealing_focus(editor_pid);
 		}

@@ -363,23 +363,32 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	}
 
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
+	bool can_break = !(p_is_error_breakpoint && script_debugger->is_ignoring_error_breaks());
 	const String error_str = script_lang ? script_lang->debug_get_error() : "";
-	Array msg;
-	msg.push_back(p_can_continue);
-	msg.push_back(error_str);
-	ERR_FAIL_COND(!script_lang);
-	msg.push_back(script_lang->debug_get_stack_level_count() > 0);
-	if (allow_focus_steal_fn) {
-		allow_focus_steal_fn();
+
+	if (can_break) {
+		Array msg;
+		msg.push_back(p_can_continue);
+		msg.push_back(error_str);
+		ERR_FAIL_COND(!script_lang);
+		msg.push_back(script_lang->debug_get_stack_level_count() > 0);
+		if (allow_focus_steal_fn) {
+			allow_focus_steal_fn();
+		}
+		send_message("debug_enter", msg);
+	} else {
+		Array msg;
+		msg.push_back(error_str);
+		send_message("error_message", msg);
+		return;
 	}
-	send_message("debug_enter", msg);
 
 	Input::MouseMode mouse_mode = Input::get_singleton()->get_mouse_mode();
-	if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
+	if (can_break && mouse_mode != Input::MOUSE_MODE_VISIBLE) {
 		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 	}
 
-	while (is_peer_connected()) {
+	while (can_break && is_peer_connected()) {
 		flush_output();
 		peer->poll();
 
@@ -470,6 +479,9 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else if (command == "set_skip_breakpoints") {
 				ERR_FAIL_COND(data.size() < 1);
 				script_debugger->set_skip_breakpoints(data[0]);
+			} else if (command == "set_ignore_error_breaks") {
+				ERR_FAIL_COND(data.size() < 1);
+				script_debugger->set_ignore_error_breaks(data[0]);
 			} else {
 				bool captured = false;
 				ERR_CONTINUE(_try_capture(command, data, captured) != OK);
@@ -483,9 +495,11 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		}
 	}
 
-	send_message("debug_exit", Array());
+	if (can_break) {
+		send_message("debug_exit", Array());
+	}
 
-	if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
+	if (can_break && mouse_mode != Input::MOUSE_MODE_VISIBLE) {
 		Input::get_singleton()->set_mouse_mode(mouse_mode);
 	}
 }
@@ -547,6 +561,9 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 	} else if (p_cmd == "set_skip_breakpoints") {
 		ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
 		script_debugger->set_skip_breakpoints(p_data[0]);
+	} else if (p_cmd == "set_ignore_error_breaks") {
+		ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
+		script_debugger->set_ignore_error_breaks(p_data[0]);
 	} else if (p_cmd == "break") {
 		script_debugger->debug(script_debugger->get_break_language());
 	} else {
