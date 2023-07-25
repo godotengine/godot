@@ -195,6 +195,19 @@ Ref<StyleBox> ThemeDB::get_fallback_stylebox() {
 	return fallback_stylebox;
 }
 
+void ThemeDB::set_fallback_audio(const Ref<AudioStream> &p_audio) {
+	if (fallback_audio == p_audio) {
+		return;
+	}
+
+	fallback_audio = p_audio;
+	emit_signal(SNAME("fallback_changed"));
+}
+
+Ref<AudioStream> ThemeDB::get_fallback_audio() {
+	return fallback_audio;
+}
+
 void ThemeDB::get_native_type_dependencies(const StringName &p_base_type, Vector<StringName> &r_result) {
 	if (p_base_type == StringName()) {
 		return;
@@ -425,6 +438,8 @@ void ThemeDB::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallback_icon"), &ThemeDB::get_fallback_icon);
 	ClassDB::bind_method(D_METHOD("set_fallback_stylebox", "stylebox"), &ThemeDB::set_fallback_stylebox);
 	ClassDB::bind_method(D_METHOD("get_fallback_stylebox"), &ThemeDB::get_fallback_stylebox);
+	ClassDB::bind_method(D_METHOD("set_fallback_audio", "audio"), &ThemeDB::set_fallback_audio);
+	ClassDB::bind_method(D_METHOD("get_fallback_audio"), &ThemeDB::get_fallback_audio);
 
 	ADD_GROUP("Fallback values", "fallback_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fallback_base_scale", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_fallback_base_scale", "get_fallback_base_scale");
@@ -432,6 +447,7 @@ void ThemeDB::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fallback_font_size", PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"), "set_fallback_font_size", "get_fallback_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_NONE), "set_fallback_icon", "get_fallback_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_stylebox", PROPERTY_HINT_RESOURCE_TYPE, "StyleBox", PROPERTY_USAGE_NONE), "set_fallback_stylebox", "get_fallback_stylebox");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_audio", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_NONE), "set_fallback_audio", "get_fallback_audio");
 
 	ADD_SIGNAL(MethodInfo("fallback_changed"));
 }
@@ -464,6 +480,7 @@ ThemeDB::~ThemeDB() {
 	fallback_font.unref();
 	fallback_icon.unref();
 	fallback_stylebox.unref();
+	fallback_audio.unref();
 
 	singleton = nullptr;
 }

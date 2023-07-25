@@ -2921,6 +2921,9 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 				c.selected = true;
 				selected_item = p_selected;
 				if (!emitted_row) {
+					if (is_inside_tree()) {
+						get_tree()->play_theme_audio(theme_cache.item_selected_sound);
+					}
 					emit_signal(SceneStringName(item_selected));
 					emitted_row = true;
 				}
@@ -2941,6 +2944,10 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 					selected_item = p_selected;
 					selected_col = i;
 					selected_button = -1;
+
+					if (is_inside_tree()) {
+						get_tree()->play_theme_audio(theme_cache.item_selected_sound);
+					}
 
 					emit_signal(SNAME("cell_selected"));
 					if (select_mode == SELECT_MULTI) {
@@ -6727,6 +6734,8 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, title_button_pressed);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, title_button_hover);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, title_button_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_AUDIOSTREAM, Tree, item_selected_sound);
 
 	ADD_CLASS_DEPENDENCY("HScrollBar");
 	ADD_CLASS_DEPENDENCY("HSlider");

@@ -25,6 +25,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="fallback_audio" type="AudioStream" setter="set_fallback_audio" getter="get_fallback_audio">
+			The fallback audio of every [Control] node and [Theme] resource. Used when no other value is available to the control.
+		</member>
 		<member name="fallback_base_scale" type="float" setter="set_fallback_base_scale" getter="get_fallback_base_scale" default="1.0">
 			The fallback base scale factor of every [Control] node and [Theme] resource. Used when no other value is available to the control.
 			See also [member Theme.default_base_scale].

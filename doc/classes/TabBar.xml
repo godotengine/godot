@@ -370,6 +370,15 @@
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="hover_sound" data_type="audio" type="AudioStream">
+			Played when a tab is hovered with the mouse.
+		</theme_item>
+		<theme_item name="pressed_disabled_sound" data_type="audio" type="AudioStream">
+			Played when the tab close button is pressed while the tab is disabled, or when pressing the previous/next tab navigation buttons when already at the beginning/end of the list.
+		</theme_item>
+		<theme_item name="pressed_sound" data_type="audio" type="AudioStream">
+			Played when the tab close or previous/next tab navigation buttons are pressed.
+		</theme_item>
 		<theme_item name="drop_mark_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			Modulation color for the [theme_item drop_mark] icon.
 		</theme_item>

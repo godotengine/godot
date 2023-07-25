@@ -677,7 +677,13 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				if (items[over].separator || items[over].disabled) {
+				if (items[over].separator) {
+					return;
+				}
+
+				get_tree()->play_theme_audio(items[over].disabled ? theme_cache.item_activated_disabled_sound : theme_cache.item_activated_sound);
+
+				if (items[over].disabled) {
 					return;
 				}
 
@@ -3151,6 +3157,9 @@ void PopupMenu::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_separator_color);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, PopupMenu, font_separator_outline_size, "separator_outline_size");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_separator_outline_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_AUDIOSTREAM, PopupMenu, item_activated_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_AUDIOSTREAM, PopupMenu, item_activated_disabled_sound);
 
 	Item defaults(true);
 

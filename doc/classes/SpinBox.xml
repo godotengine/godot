@@ -25,7 +25,7 @@
 		[/codeblocks]
 		See [Range] class for more options over the [SpinBox].
 		[b]Note:[/b] With the [SpinBox]'s context menu disabled, you can right-click the bottom half of the spinbox to set the value to its minimum, while right-clicking the top half sets the value to its maximum.
-		[b]Note:[/b] [SpinBox] relies on an underlying [LineEdit] node. To theme a [SpinBox]'s background, add theme items for [LineEdit] and customize them. The [LineEdit] has the [code]SpinBoxInnerLineEdit[/code] theme variation, so that you can give it a distinct appearance from regular [LineEdit]s.
+		[b]Note:[/b] [SpinBox] relies on an underlying [LineEdit] node. To theme a [SpinBox]'s background and audio feedback on its text field, add theme items for [LineEdit] and customize them. The [LineEdit] has the [code]SpinBoxInnerLineEdit[/code] theme variation, so that you can give it a distinct appearance from regular [LineEdit]s.
 		[b]Note:[/b] If you want to implement drag and drop for the underlying [LineEdit], you can use [method Control.set_drag_forwarding] on the node returned by [method get_line_edit].
 	</description>
 	<tutorials>
@@ -73,6 +73,12 @@
 		</member>
 	</members>
 	<theme_items>
+		<theme_item name="pressed_disabled_sound" data_type="audio" type="AudioStream">
+			Played when the up or down button is pressed while the [SpinBox] is disabled due to [member editable] being [code]false[/code].
+		</theme_item>
+		<theme_item name="pressed_sound" data_type="audio" type="AudioStream">
+			Played when the up or down button is pressed.
+		</theme_item>
 		<theme_item name="down_disabled_icon_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Down button icon modulation color, when the button is disabled.
 		</theme_item>
