@@ -313,7 +313,7 @@ void WindowWrapper::set_margins_enabled(bool p_enabled) {
 }
 
 WindowWrapper::WindowWrapper() {
-	if (SceneTree::get_singleton()->get_root()->is_embedding_subwindows() || !EDITOR_GET("interface/multi_window/enable")) {
+	if (SceneTree::get_singleton()->get_root()->is_embedding_subwindows() || EDITOR_GET("interface/editor/single_window_mode") || !EDITOR_GET("interface/multi_window/enable")) {
 		return;
 	}
 
