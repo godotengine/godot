@@ -66,6 +66,6 @@ public:
 	SymbolTooltip(CodeTextEditor* code_editor);
 };
 
-//static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script);
+static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script);
 
 #endif //GODOT_SYMBOL_TOOLTIP_H

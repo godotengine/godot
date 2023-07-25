@@ -158,8 +158,9 @@ void SymbolTooltip::_update_header_label(const String &header_content) {
 
 void SymbolTooltip::_update_body_label(const String &body_content) {
 	// Set the tooltip's body text
+	body_label->clear();
 	_add_text_to_rt(body_content, body_label, this);
-	body_label->set_text(body_content);
+	//body_label->set_text(body_content);
 }
 
 String SymbolTooltip::_get_doc_of_word(const String &symbol_word) {
@@ -266,7 +267,6 @@ int SymbolTooltip::_get_column_pos_of_word(const String &p_key, const String &p_
 }
 
 // Copied from script_text_editor.cpp
-/*
 static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script) {
 	if (p_current->get_owner() != p_base && p_base != p_current) {
 		return nullptr;
@@ -283,4 +283,4 @@ static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Scri
 	}
 
 	return nullptr;
-}*/
+}
