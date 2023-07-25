@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(GODOT_ROOT_DIR ../../../..)
-set(GODEX_ROOT_DIR ../../../../../godex)
+set(GODEX_ROOT_DIR ../../../../custom_modules/godex)
 
 # Get sources
 file(GLOB_RECURSE SOURCES ${GODOT_ROOT_DIR}/*.c**)
