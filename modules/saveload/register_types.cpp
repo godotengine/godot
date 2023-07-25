@@ -42,13 +42,12 @@
 #include "editor/saveload_editor_plugin.h"
 #endif
 
-static SceneSaveload *saveload_api = NULL;
+static SaveloadAPI *saveload_api = NULL;
 
 void initialize_saveload_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
 		saveload_api = memnew(SceneSaveload);
 		GDREGISTER_ABSTRACT_CLASS(SaveloadAPI);
-		GDREGISTER_ABSTRACT_CLASS(SceneSaveload);
 		Engine::get_singleton()->add_singleton(Engine::Singleton("SaveloadAPI", saveload_api));
 	}
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
