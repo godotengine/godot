@@ -3994,11 +3994,12 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 }
 
 void RendererSceneCull::update_dirty_instances() {
-	RSG::utilities->update_dirty_resources();
-
 	while (_instance_update_list.first()) {
 		_update_dirty_instance(_instance_update_list.first()->self());
 	}
+
+	// Update dirty resources after dirty instances as instance updates may affect resources.
+	RSG::utilities->update_dirty_resources();
 }
 
 void RendererSceneCull::update() {
