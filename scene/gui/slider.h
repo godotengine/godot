@@ -79,6 +79,12 @@ private:
 		int grabber_max_size = 0;
 		int tick_offset = 0;
 		int tick_max_size = 0;
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> drag_started_sound;
+		Ref<AudioStream> drag_ended_sound;
+		Ref<AudioStream> value_changed_sound;
+		Ref<AudioStream> value_change_rejected_sound;
 	} theme_cache;
 
 protected:
