@@ -60,10 +60,6 @@ void BaseButton::_unpress_group() {
 void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (status.disabled) { // no interaction with disabled button
-		return;
-	}
-
 	if (p_event->get_device() == InputEvent::DEVICE_ID_EMULATION) {
 		return;
 	}
@@ -170,6 +166,9 @@ void BaseButton::_notification(int p_what) {
 
 		case NOTIFICATION_MOUSE_ENTER: {
 			status.hovering = true;
+			if (!status.disabled) {
+				play_theme_sound(theme_cache.hover_sound);
+			}
 			queue_accessibility_update();
 			queue_redraw();
 		} break;
@@ -225,12 +224,23 @@ void BaseButton::_notification(int p_what) {
 }
 
 void BaseButton::_pressed() {
+	if (status.disabled) {
+		play_theme_sound(theme_cache.pressed_disabled_sound);
+		return;
+	}
+
+	play_theme_sound(theme_cache.pressed_sound);
+
 	GDVIRTUAL_CALL(_pressed);
 	pressed();
 	emit_signal(SceneStringName(pressed));
 }
 
 void BaseButton::_toggled(bool p_pressed) {
+	if (status.disabled) {
+		return;
+	}
+
 	GDVIRTUAL_CALL(_toggled, p_pressed);
 	toggled(p_pressed);
 	emit_signal(SceneStringName(toggled), p_pressed);
@@ -260,10 +270,12 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 					status.pressing_inside = false;
 					status.touch_index = -1; // Action completed, release matching touch so later taps aren't dropped if a modal consumes the release.
 				}
-				status.pressed = !status.pressed;
-				_unpress_group();
-				if (button_group.is_valid()) {
-					button_group->emit_signal(SceneStringName(pressed), this);
+				if (!status.disabled) {
+					status.pressed = !status.pressed;
+					_unpress_group();
+					if (button_group.is_valid()) {
+						button_group->emit_signal(SceneStringName(pressed), this);
+					}
 				}
 				_toggled(status.pressed);
 				_pressed();
@@ -484,7 +496,7 @@ void BaseButton::_shortcut_feedback_timeout() {
 void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!is_disabled() && p_event->is_pressed() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->matches_event(p_event)) {
+	if (p_event->is_pressed() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->matches_event(p_event)) {
 		if (toggle_mode) {
 			status.pressed = !status.pressed;
 
@@ -647,6 +659,11 @@ void BaseButton::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(ACTION_MODE_BUTTON_PRESS);
 	BIND_ENUM_CONSTANT(ACTION_MODE_BUTTON_RELEASE);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, BaseButton, focus_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, BaseButton, hover_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, BaseButton, pressed_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, BaseButton, pressed_disabled_sound);
 
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/timers/button_shortcut_feedback_highlight_time", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), 0.2);
 }
