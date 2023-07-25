@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SceneSaveload" inherits="SaveloadAPI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_spawners" qualifiers="const">
+			<return type="SaveloadSpawner[]" />
+			<description>
+			</description>
+		</method>
+		<method name="get_synchers" qualifiers="const">
+			<return type="SaveloadSynchronizer[]" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>
