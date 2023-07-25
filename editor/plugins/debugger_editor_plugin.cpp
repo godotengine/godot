@@ -54,8 +54,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 
 	EditorDebuggerNode *debugger = memnew(EditorDebuggerNode);
 	Button *db = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Debugger"), debugger);
-	// Add separation for the warning/error icon that is displayed later.
-	db->add_theme_constant_override("h_separation", 6 * EDSCALE);
+	db->set_theme_type_variation("BottomPanelButton");
 	debugger->set_tool_button(db);
 
 	// Main editor debug menu.
