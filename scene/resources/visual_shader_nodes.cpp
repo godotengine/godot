@@ -1727,6 +1727,135 @@ VisualShaderNodeLinearSceneDepth::VisualShaderNodeLinearSceneDepth() {
 	simple_decl = false;
 }
 
+////////////// World Position from Depth
+
+String VisualShaderNodeWorldPositionFromDepth::get_caption() const {
+	return "WorldPositionFromDepth";
+}
+
+int VisualShaderNodeWorldPositionFromDepth::get_input_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeWorldPositionFromDepth::PortType VisualShaderNodeWorldPositionFromDepth::get_input_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR_2D;
+}
+
+String VisualShaderNodeWorldPositionFromDepth::get_input_port_name(int p_port) const {
+	return "screen uv";
+}
+
+bool VisualShaderNodeWorldPositionFromDepth::is_input_port_default(int p_port, Shader::Mode p_mode) const {
+	if (p_port == 0) {
+		return true;
+	}
+	return false;
+}
+
+int VisualShaderNodeWorldPositionFromDepth::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeWorldPositionFromDepth::PortType VisualShaderNodeWorldPositionFromDepth::get_output_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR_3D;
+}
+
+String VisualShaderNodeWorldPositionFromDepth::get_output_port_name(int p_port) const {
+	return "world position";
+}
+
+bool VisualShaderNodeWorldPositionFromDepth::has_output_port_preview(int p_port) const {
+	return false;
+}
+
+String VisualShaderNodeWorldPositionFromDepth::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	return "uniform sampler2D " + make_unique_id(p_type, p_id, "depth_tex") + " : hint_depth_texture, repeat_disable, filter_nearest;\n";
+}
+
+String VisualShaderNodeWorldPositionFromDepth::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	String code;
+	String uv = p_input_vars[0].is_empty() ? "SCREEN_UV" : p_input_vars[0];
+	code += "	{\n";
+
+	code += "		float __log_depth = textureLod(" + make_unique_id(p_type, p_id, "depth_tex") + ", " + uv + ", 0.0).x;\n";
+	if (!RenderingServer::get_singleton()->is_low_end()) {
+		code += "	vec4 __depth_view = INV_PROJECTION_MATRIX * vec4(" + uv + " * 2.0 - 1.0, __log_depth, 1.0);\n";
+	} else {
+		code += "	vec4 __depth_view = INV_PROJECTION_MATRIX * vec4(vec3(" + uv + ", __log_depth) * 2.0 - 1.0, 1.0);\n";
+	}
+	code += "		__depth_view.xyz /= __depth_view.w;\n";
+	code += vformat("		%s = (INV_VIEW_MATRIX * __depth_view).xyz;\n", p_output_vars[0]);
+
+	code += "	}\n";
+	return code;
+}
+
+VisualShaderNodeWorldPositionFromDepth::VisualShaderNodeWorldPositionFromDepth() {
+	simple_decl = false;
+}
+
+////////////// Unpack Normals in World Space
+
+String VisualShaderNodeScreenNormalWorldSpace::get_caption() const {
+	return "ScreenNormalWorldSpace";
+}
+
+int VisualShaderNodeScreenNormalWorldSpace::get_input_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeScreenNormalWorldSpace::PortType VisualShaderNodeScreenNormalWorldSpace::get_input_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR_2D;
+}
+
+String VisualShaderNodeScreenNormalWorldSpace::get_input_port_name(int p_port) const {
+	return "screen uv";
+}
+
+bool VisualShaderNodeScreenNormalWorldSpace::is_input_port_default(int p_port, Shader::Mode p_mode) const {
+	if (p_port == 0) {
+		return true;
+	}
+	return false;
+}
+
+int VisualShaderNodeScreenNormalWorldSpace::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeScreenNormalWorldSpace::PortType VisualShaderNodeScreenNormalWorldSpace::get_output_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR_3D;
+}
+
+String VisualShaderNodeScreenNormalWorldSpace::get_output_port_name(int p_port) const {
+	return "screen normal";
+}
+
+bool VisualShaderNodeScreenNormalWorldSpace::has_output_port_preview(int p_port) const {
+	return false;
+}
+
+String VisualShaderNodeScreenNormalWorldSpace::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	return "uniform sampler2D " + make_unique_id(p_type, p_id, "normal_rough_tex") + " : hint_normal_roughness_texture, repeat_disable, filter_nearest;\n";
+}
+
+String VisualShaderNodeScreenNormalWorldSpace::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	String code;
+	String uv = p_input_vars[0].is_empty() ? "SCREEN_UV" : p_input_vars[0];
+	code += "	{\n";
+
+	code += "		vec3 __normals = textureLod(" + make_unique_id(p_type, p_id, "normal_rough_tex") + ", " + uv + ", 0.0).xyz;\n";
+	code += "		__normals = __normals * 2.0 - 1.0;\n";
+	code += vformat("		%s = mat3(INV_VIEW_MATRIX) * __normals;\n", p_output_vars[0]);
+
+	code += "	}\n";
+	return code;
+}
+
+VisualShaderNodeScreenNormalWorldSpace::VisualShaderNodeScreenNormalWorldSpace() {
+	simple_decl = false;
+}
+
 ////////////// Float Op
 
 String VisualShaderNodeFloatOp::get_caption() const {
@@ -7968,6 +8097,103 @@ VisualShaderNodeRemap::VisualShaderNodeRemap() {
 	set_input_port_default_value(2, 1.0);
 	set_input_port_default_value(3, 0.0);
 	set_input_port_default_value(4, 1.0);
+
+	simple_decl = false;
+}
+
+////////////// RotationByAxis
+
+String VisualShaderNodeRotationByAxis::get_caption() const {
+	return "RotationByAxis";
+}
+
+int VisualShaderNodeRotationByAxis::get_input_port_count() const {
+	return 3;
+}
+
+VisualShaderNodeRotationByAxis::PortType VisualShaderNodeRotationByAxis::get_input_port_type(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return PORT_TYPE_VECTOR_3D;
+		case 1:
+			return PORT_TYPE_SCALAR;
+		case 2:
+			return PORT_TYPE_VECTOR_3D;
+		default:
+			break;
+	}
+
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeRotationByAxis::get_input_port_name(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return "input";
+		case 1:
+			return "angle";
+		case 2:
+			return "axis";
+		default:
+			break;
+	}
+
+	return "";
+}
+
+int VisualShaderNodeRotationByAxis::get_output_port_count() const {
+	return 2;
+}
+
+VisualShaderNodeRotationByAxis::PortType VisualShaderNodeRotationByAxis::get_output_port_type(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return PORT_TYPE_VECTOR_3D;
+		case 1:
+			return PORT_TYPE_TRANSFORM;
+		default:
+			break;
+	}
+
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeRotationByAxis::get_output_port_name(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return "output";
+		case 1:
+			return "rotationMat";
+		default:
+			break;
+	}
+
+	return "";
+}
+
+bool VisualShaderNodeRotationByAxis::has_output_port_preview(int p_port) const {
+	return false;
+}
+
+String VisualShaderNodeRotationByAxis::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	String code;
+	code += "	{\n";
+	code += vformat("		float __angle = %s;\n", p_input_vars[1]);
+	code += vformat("		vec3 __axis = normalize(%s);\n", p_input_vars[2]);
+	code += vformat("		mat3 __rot_matrix = mat3(\n");
+	code += vformat("			vec3( cos(__angle)+__axis.x*__axis.x*(1.0 - cos(__angle)), __axis.x*__axis.y*(1.0-cos(__angle))-__axis.z*sin(__angle), __axis.x*__axis.z*(1.0-cos(__angle))+__axis.y*sin(__angle) ),\n");
+	code += vformat("			vec3( __axis.y*__axis.x*(1.0-cos(__angle))+__axis.z*sin(__angle), cos(__angle)+__axis.y*__axis.y*(1.0-cos(__angle)), __axis.y*__axis.z*(1.0-cos(__angle))-__axis.x*sin(__angle) ),\n");
+	code += vformat("			vec3( __axis.z*__axis.x*(1.0-cos(__angle))-__axis.y*sin(__angle), __axis.z*__axis.y*(1.0-cos(__angle))+__axis.x*sin(__angle), cos(__angle)+__axis.z*__axis.z*(1.0-cos(__angle)) )\n");
+	code += vformat("		);\n");
+	code += vformat("		%s = %s * __rot_matrix;\n", p_output_vars[0], p_input_vars[0]);
+	code += vformat("		%s = mat4(__rot_matrix);\n", p_output_vars[1]);
+	code += "	}\n";
+	return code;
+}
+
+VisualShaderNodeRotationByAxis::VisualShaderNodeRotationByAxis() {
+	set_input_port_default_value(1, 0.0);
+	set_input_port_default_value(2, Vector3(0.0, 0.0, 0.0));
 
 	simple_decl = false;
 }

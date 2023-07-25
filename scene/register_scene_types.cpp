@@ -675,6 +675,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeTexture3DParameter);
 	GDREGISTER_CLASS(VisualShaderNodeCubemapParameter);
 	GDREGISTER_CLASS(VisualShaderNodeLinearSceneDepth);
+	GDREGISTER_CLASS(VisualShaderNodeWorldPositionFromDepth);
+	GDREGISTER_CLASS(VisualShaderNodeScreenNormalWorldSpace);
 	GDREGISTER_CLASS(VisualShaderNodeIf);
 	GDREGISTER_CLASS(VisualShaderNodeSwitch);
 	GDREGISTER_CLASS(VisualShaderNodeFresnel);
@@ -688,6 +690,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeProximityFade);
 	GDREGISTER_CLASS(VisualShaderNodeRandomRange);
 	GDREGISTER_CLASS(VisualShaderNodeRemap);
+	GDREGISTER_CLASS(VisualShaderNodeRotationByAxis);
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeVarying);
 	GDREGISTER_CLASS(VisualShaderNodeVaryingSetter);
 	GDREGISTER_CLASS(VisualShaderNodeVaryingGetter);

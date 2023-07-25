@@ -5875,6 +5875,10 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("CurveXYZTexture", "Textures/Functions", "VisualShaderNodeCurveXYZTexture", TTR("Perform the three components curve texture lookup."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("LinearSceneDepth", "Textures/Functions", "VisualShaderNodeLinearSceneDepth", TTR("Returns the depth value obtained from the depth prepass in a linear space."), {}, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	texture2d_node_option_idx = add_options.size();
+	add_options.push_back(AddOption("WorldPositionFromDepth", "Textures/Functions", "VisualShaderNodeWorldPositionFromDepth", TTR("Reconstructs the World Position of the Node from the depth texture."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
+	texture2d_node_option_idx = add_options.size();
+	add_options.push_back(AddOption("ScreenNormalWorldSpace", "Textures/Functions", "VisualShaderNodeScreenNormalWorldSpace", TTR("Unpacks the Screen Normal Texture in World Space"), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
+	texture2d_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("Texture2D", "Textures/Functions", "VisualShaderNodeTexture", TTR("Perform the 2D texture lookup."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
 	texture2d_array_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("Texture2DArray", "Textures/Functions", "VisualShaderNodeTexture2DArray", TTR("Perform the 2D-array texture lookup."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
@@ -5919,6 +5923,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("ProximityFade", "Utility", "VisualShaderNodeProximityFade", TTR("The proximity fade effect fades out each pixel based on its distance to another object."), {}, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("RandomRange", "Utility", "VisualShaderNodeRandomRange", TTR("Returns a random value between the minimum and maximum input values."), {}, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("Remap", "Utility", "VisualShaderNodeRemap", TTR("Remaps a given input from the input range to the output range."), {}, VisualShaderNode::PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption("RotationByAxis", "Utility", "VisualShaderNodeRotationByAxis", TTR("Rotates an input vector by a given angle."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("RotationByAxis", "Utility", "VisualShaderNodeRotationByAxis", TTR("Rotates an input vector by a given angle."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_VERTEX, Shader::MODE_SPATIAL));
 
 	// VECTOR
 
