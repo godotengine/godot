@@ -608,18 +608,20 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 				material = nullptr;
 			}
 		}
+	}
 
-		if (!material) {
-			sky_material = sky_globals.default_material;
-			material = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
-		}
+	if (!material) {
+		sky_material = sky_globals.default_material;
+		material = static_cast<GLES3::SkyMaterialData *>(material_storage->material_get_data(sky_material, RS::SHADER_SKY));
+	}
 
-		ERR_FAIL_COND(!material);
+	ERR_FAIL_COND(!material);
 
-		shader_data = material->shader_data;
+	shader_data = material->shader_data;
 
-		ERR_FAIL_COND(!shader_data);
+	ERR_FAIL_COND(!shader_data);
 
+	if (sky) {
 		if (shader_data->uses_time && time - sky->prev_time > 0.00001) {
 			sky->prev_time = time;
 			sky->reflection_dirty = true;
@@ -640,111 +642,113 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 			sky->prev_position = p_transform.origin;
 			sky->reflection_dirty = true;
 		}
+	}
 
-		glBindBufferBase(GL_UNIFORM_BUFFER, SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION, sky_globals.directional_light_buffer);
-		if (shader_data->uses_light) {
-			sky_globals.directional_light_count = 0;
-			for (int i = 0; i < (int)p_lights.size(); i++) {
-				GLES3::LightInstance *li = GLES3::LightStorage::get_singleton()->get_light_instance(p_lights[i]);
-				if (!li) {
-					continue;
+	glBindBufferBase(GL_UNIFORM_BUFFER, SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION, sky_globals.directional_light_buffer);
+	if (shader_data->uses_light) {
+		sky_globals.directional_light_count = 0;
+		for (int i = 0; i < (int)p_lights.size(); i++) {
+			GLES3::LightInstance *li = GLES3::LightStorage::get_singleton()->get_light_instance(p_lights[i]);
+			if (!li) {
+				continue;
+			}
+			RID base = li->light;
+
+			ERR_CONTINUE(base.is_null());
+
+			RS::LightType type = light_storage->light_get_type(base);
+			if (type == RS::LIGHT_DIRECTIONAL && light_storage->light_directional_get_sky_mode(base) != RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY) {
+				DirectionalLightData &sky_light_data = sky_globals.directional_lights[sky_globals.directional_light_count];
+				Transform3D light_transform = li->transform;
+				Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
+
+				sky_light_data.direction[0] = world_direction.x;
+				sky_light_data.direction[1] = world_direction.y;
+				sky_light_data.direction[2] = world_direction.z;
+
+				float sign = light_storage->light_is_negative(base) ? -1 : 1;
+				sky_light_data.energy = sign * light_storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY);
+
+				if (is_using_physical_light_units()) {
+					sky_light_data.energy *= light_storage->light_get_param(base, RS::LIGHT_PARAM_INTENSITY);
 				}
-				RID base = li->light;
 
-				ERR_CONTINUE(base.is_null());
+				if (p_render_data->camera_attributes.is_valid()) {
+					sky_light_data.energy *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+				}
 
-				RS::LightType type = light_storage->light_get_type(base);
-				if (type == RS::LIGHT_DIRECTIONAL && light_storage->light_directional_get_sky_mode(base) != RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY) {
-					DirectionalLightData &sky_light_data = sky_globals.directional_lights[sky_globals.directional_light_count];
-					Transform3D light_transform = li->transform;
-					Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
+				Color linear_col = light_storage->light_get_color(base);
+				sky_light_data.color[0] = linear_col.r;
+				sky_light_data.color[1] = linear_col.g;
+				sky_light_data.color[2] = linear_col.b;
 
-					sky_light_data.direction[0] = world_direction.x;
-					sky_light_data.direction[1] = world_direction.y;
-					sky_light_data.direction[2] = world_direction.z;
+				sky_light_data.enabled = true;
 
-					float sign = light_storage->light_is_negative(base) ? -1 : 1;
-					sky_light_data.energy = sign * light_storage->light_get_param(base, RS::LIGHT_PARAM_ENERGY);
-
-					if (is_using_physical_light_units()) {
-						sky_light_data.energy *= light_storage->light_get_param(base, RS::LIGHT_PARAM_INTENSITY);
-					}
-
-					if (p_render_data->camera_attributes.is_valid()) {
-						sky_light_data.energy *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
-					}
-
-					Color linear_col = light_storage->light_get_color(base);
-					sky_light_data.color[0] = linear_col.r;
-					sky_light_data.color[1] = linear_col.g;
-					sky_light_data.color[2] = linear_col.b;
-
-					sky_light_data.enabled = true;
-
-					float angular_diameter = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
-					if (angular_diameter > 0.0) {
-						angular_diameter = Math::tan(Math::deg_to_rad(angular_diameter));
-					} else {
-						angular_diameter = 0.0;
-					}
-					sky_light_data.size = angular_diameter;
-					sky_globals.directional_light_count++;
-					if (sky_globals.directional_light_count >= sky_globals.max_directional_lights) {
-						break;
-					}
+				float angular_diameter = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
+				if (angular_diameter > 0.0) {
+					angular_diameter = Math::tan(Math::deg_to_rad(angular_diameter));
+				} else {
+					angular_diameter = 0.0;
+				}
+				sky_light_data.size = angular_diameter;
+				sky_globals.directional_light_count++;
+				if (sky_globals.directional_light_count >= sky_globals.max_directional_lights) {
+					break;
 				}
 			}
-			// Check whether the directional_light_buffer changes
-			bool light_data_dirty = false;
+		}
+		// Check whether the directional_light_buffer changes
+		bool light_data_dirty = false;
 
-			// Light buffer is dirty if we have fewer or more lights
-			// If we have fewer lights, make sure that old lights are disabled
-			if (sky_globals.directional_light_count != sky_globals.last_frame_directional_light_count) {
-				light_data_dirty = true;
-				for (uint32_t i = sky_globals.directional_light_count; i < sky_globals.max_directional_lights; i++) {
-					sky_globals.directional_lights[i].enabled = false;
-					sky_globals.last_frame_directional_lights[i].enabled = false;
+		// Light buffer is dirty if we have fewer or more lights
+		// If we have fewer lights, make sure that old lights are disabled
+		if (sky_globals.directional_light_count != sky_globals.last_frame_directional_light_count) {
+			light_data_dirty = true;
+			for (uint32_t i = sky_globals.directional_light_count; i < sky_globals.max_directional_lights; i++) {
+				sky_globals.directional_lights[i].enabled = false;
+				sky_globals.last_frame_directional_lights[i].enabled = false;
+			}
+		}
+
+		if (!light_data_dirty) {
+			for (uint32_t i = 0; i < sky_globals.directional_light_count; i++) {
+				if (sky_globals.directional_lights[i].direction[0] != sky_globals.last_frame_directional_lights[i].direction[0] ||
+						sky_globals.directional_lights[i].direction[1] != sky_globals.last_frame_directional_lights[i].direction[1] ||
+						sky_globals.directional_lights[i].direction[2] != sky_globals.last_frame_directional_lights[i].direction[2] ||
+						sky_globals.directional_lights[i].energy != sky_globals.last_frame_directional_lights[i].energy ||
+						sky_globals.directional_lights[i].color[0] != sky_globals.last_frame_directional_lights[i].color[0] ||
+						sky_globals.directional_lights[i].color[1] != sky_globals.last_frame_directional_lights[i].color[1] ||
+						sky_globals.directional_lights[i].color[2] != sky_globals.last_frame_directional_lights[i].color[2] ||
+						sky_globals.directional_lights[i].enabled != sky_globals.last_frame_directional_lights[i].enabled ||
+						sky_globals.directional_lights[i].size != sky_globals.last_frame_directional_lights[i].size) {
+					light_data_dirty = true;
+					break;
 				}
 			}
+		}
 
-			if (!light_data_dirty) {
-				for (uint32_t i = 0; i < sky_globals.directional_light_count; i++) {
-					if (sky_globals.directional_lights[i].direction[0] != sky_globals.last_frame_directional_lights[i].direction[0] ||
-							sky_globals.directional_lights[i].direction[1] != sky_globals.last_frame_directional_lights[i].direction[1] ||
-							sky_globals.directional_lights[i].direction[2] != sky_globals.last_frame_directional_lights[i].direction[2] ||
-							sky_globals.directional_lights[i].energy != sky_globals.last_frame_directional_lights[i].energy ||
-							sky_globals.directional_lights[i].color[0] != sky_globals.last_frame_directional_lights[i].color[0] ||
-							sky_globals.directional_lights[i].color[1] != sky_globals.last_frame_directional_lights[i].color[1] ||
-							sky_globals.directional_lights[i].color[2] != sky_globals.last_frame_directional_lights[i].color[2] ||
-							sky_globals.directional_lights[i].enabled != sky_globals.last_frame_directional_lights[i].enabled ||
-							sky_globals.directional_lights[i].size != sky_globals.last_frame_directional_lights[i].size) {
-						light_data_dirty = true;
-						break;
-					}
-				}
-			}
+		if (light_data_dirty) {
+			glBufferData(GL_UNIFORM_BUFFER, sizeof(DirectionalLightData) * sky_globals.max_directional_lights, sky_globals.directional_lights, GL_STREAM_DRAW);
+			glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-			if (light_data_dirty) {
-				glBufferData(GL_UNIFORM_BUFFER, sizeof(DirectionalLightData) * sky_globals.max_directional_lights, sky_globals.directional_lights, GL_STREAM_DRAW);
-				glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-				DirectionalLightData *temp = sky_globals.last_frame_directional_lights;
-				sky_globals.last_frame_directional_lights = sky_globals.directional_lights;
-				sky_globals.directional_lights = temp;
-				sky_globals.last_frame_directional_light_count = sky_globals.directional_light_count;
+			DirectionalLightData *temp = sky_globals.last_frame_directional_lights;
+			sky_globals.last_frame_directional_lights = sky_globals.directional_lights;
+			sky_globals.directional_lights = temp;
+			sky_globals.last_frame_directional_light_count = sky_globals.directional_light_count;
+			if (sky) {
 				sky->reflection_dirty = true;
 			}
 		}
+	}
 
-		if (p_render_data->view_count > 1) {
-			glBindBufferBase(GL_UNIFORM_BUFFER, SKY_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);
-			glBindBuffer(GL_UNIFORM_BUFFER, 0);
-		}
+	if (p_render_data->view_count > 1) {
+		glBindBufferBase(GL_UNIFORM_BUFFER, SKY_MULTIVIEW_UNIFORM_LOCATION, scene_state.multiview_buffer);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
 
-		if (!sky->radiance) {
-			_invalidate_sky(sky);
-			_update_dirty_skys();
-		}
+	if (sky && !sky->radiance) {
+		_invalidate_sky(sky);
+		_update_dirty_skys();
 	}
 }
 
