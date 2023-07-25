@@ -47,9 +47,10 @@ class TextureButton;
 
 class EditorPropertyNil : public EditorProperty {
 	GDCLASS(EditorPropertyNil, EditorProperty);
-	LineEdit *text = nullptr;
+	Label *prop_label = nullptr;
 
 public:
+	void setup(const String &p_hint_string);
 	virtual void update_property() override;
 	EditorPropertyNil();
 };

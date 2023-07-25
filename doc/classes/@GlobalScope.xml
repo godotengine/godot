@@ -2788,7 +2788,8 @@
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="25" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ENCODING_ERROR" value="25" enum="PropertyHint">
+			Hint that the property could not be encoded correctly to transfer for the debugger (for instance, because it was too big for the buffer). The [code]hint_string[/code] provides more information.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="26" enum="PropertyHint">
 		</constant>
