@@ -41,66 +41,66 @@ struct PtrToArg {};
 #define MAKE_PTRARG(m_type)                                            \
 	template <>                                                        \
 	struct PtrToArg<m_type> {                                          \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {      \
-			return *reinterpret_cast<const m_type *>(p_ptr);           \
-		}                                                              \
 		typedef m_type EncodeT;                                        \
+		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {      \
+			return *reinterpret_cast<const EncodeT *>(p_ptr);          \
+		}                                                              \
 		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) { \
-			*((m_type *)p_ptr) = p_val;                                \
+			*((EncodeT *)p_ptr) = p_val;                               \
 		}                                                              \
 	};                                                                 \
 	template <>                                                        \
 	struct PtrToArg<const m_type &> {                                  \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {      \
-			return *reinterpret_cast<const m_type *>(p_ptr);           \
-		}                                                              \
 		typedef m_type EncodeT;                                        \
+		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {      \
+			return *reinterpret_cast<const EncodeT *>(p_ptr);          \
+		}                                                              \
 		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) { \
-			*((m_type *)p_ptr) = p_val;                                \
+			*((EncodeT *)p_ptr) = p_val;                               \
 		}                                                              \
 	}
 
-#define MAKE_PTRARGCONV(m_type, m_conv)                                           \
-	template <>                                                                   \
-	struct PtrToArg<m_type> {                                                     \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {                 \
-			return static_cast<m_type>(*reinterpret_cast<const m_conv *>(p_ptr)); \
-		}                                                                         \
-		typedef m_conv EncodeT;                                                   \
-		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {            \
-			*((m_conv *)p_ptr) = static_cast<m_conv>(p_val);                      \
-		}                                                                         \
-	};                                                                            \
-	template <>                                                                   \
-	struct PtrToArg<const m_type &> {                                             \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {                 \
-			return static_cast<m_type>(*reinterpret_cast<const m_conv *>(p_ptr)); \
-		}                                                                         \
-		typedef m_conv EncodeT;                                                   \
-		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {            \
-			*((m_conv *)p_ptr) = static_cast<m_conv>(p_val);                      \
-		}                                                                         \
+#define MAKE_PTRARGCONV(m_type, m_conv)                                            \
+	template <>                                                                    \
+	struct PtrToArg<m_type> {                                                      \
+		typedef m_conv EncodeT;                                                    \
+		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {                  \
+			return static_cast<m_type>(*reinterpret_cast<const EncodeT *>(p_ptr)); \
+		}                                                                          \
+		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {             \
+			*((EncodeT *)p_ptr) = static_cast<m_conv>(p_val);                      \
+		}                                                                          \
+	};                                                                             \
+	template <>                                                                    \
+	struct PtrToArg<const m_type &> {                                              \
+		typedef m_conv EncodeT;                                                    \
+		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {                  \
+			return static_cast<m_type>(*reinterpret_cast<const EncodeT *>(p_ptr)); \
+		}                                                                          \
+		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {             \
+			*((EncodeT *)p_ptr) = static_cast<m_conv>(p_val);                      \
+		}                                                                          \
 	}
 
 #define MAKE_PTRARG_BY_REFERENCE(m_type)                                      \
 	template <>                                                               \
 	struct PtrToArg<m_type> {                                                 \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
-			return *reinterpret_cast<const m_type *>(p_ptr);                  \
-		}                                                                     \
 		typedef m_type EncodeT;                                               \
+		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
+			return *reinterpret_cast<const EncodeT *>(p_ptr);                 \
+		}                                                                     \
 		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) { \
-			*((m_type *)p_ptr) = p_val;                                       \
+			*((EncodeT *)p_ptr) = p_val;                                      \
 		}                                                                     \
 	};                                                                        \
 	template <>                                                               \
 	struct PtrToArg<const m_type &> {                                         \
-		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
-			return *reinterpret_cast<const m_type *>(p_ptr);                  \
-		}                                                                     \
 		typedef m_type EncodeT;                                               \
+		_FORCE_INLINE_ static m_type convert(const void *p_ptr) {             \
+			return *reinterpret_cast<const EncodeT *>(p_ptr);                 \
+		}                                                                     \
 		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) { \
-			*((m_type *)p_ptr) = p_val;                                       \
+			*((EncodeT *)p_ptr) = p_val;                                      \
 		}                                                                     \
 	}
 
@@ -158,13 +158,14 @@ MAKE_PTRARG_BY_REFERENCE(Variant);
 
 template <class T>
 struct PtrToArg<T *> {
+	static_assert(std::is_base_of_v<Object, T>);
+	typedef Object *EncodeT;
 	_FORCE_INLINE_ static T *convert(const void *p_ptr) {
 		if (p_ptr == nullptr) {
 			return nullptr;
 		}
 		return const_cast<T *>(*reinterpret_cast<T *const *>(p_ptr));
 	}
-	typedef Object *EncodeT;
 	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {
 		*((T **)p_ptr) = p_var;
 	}
@@ -172,13 +173,14 @@ struct PtrToArg<T *> {
 
 template <class T>
 struct PtrToArg<const T *> {
+	static_assert(std::is_base_of_v<Object, T>);
+	typedef const Object *EncodeT;
 	_FORCE_INLINE_ static const T *convert(const void *p_ptr) {
 		if (p_ptr == nullptr) {
 			return nullptr;
 		}
 		return *reinterpret_cast<T *const *>(p_ptr);
 	}
-	typedef const Object *EncodeT;
 	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {
 		*((T **)p_ptr) = p_var;
 	}
@@ -188,12 +190,12 @@ struct PtrToArg<const T *> {
 
 template <>
 struct PtrToArg<ObjectID> {
-	_FORCE_INLINE_ static const ObjectID convert(const void *p_ptr) {
-		return ObjectID(*reinterpret_cast<const uint64_t *>(p_ptr));
-	}
 	typedef uint64_t EncodeT;
+	_FORCE_INLINE_ static const ObjectID convert(const void *p_ptr) {
+		return ObjectID(*reinterpret_cast<const EncodeT *>(p_ptr));
+	}
 	_FORCE_INLINE_ static void encode(const ObjectID &p_val, void *p_ptr) {
-		*((uint64_t *)p_ptr) = p_val;
+		*((EncodeT *)p_ptr) = p_val;
 	}
 };
 

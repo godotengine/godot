@@ -942,7 +942,7 @@ static GDExtensionVariantPtr gdextension_dictionary_operator_index_const(GDExten
 
 /* OBJECT API */
 
-static void gdextension_object_method_bind_call(GDExtensionMethodBindPtr p_method_bind, GDExtensionObjectPtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_arg_count, GDExtensionUninitializedVariantPtr r_return, GDExtensionCallError *r_error) {
+static void gdextension_object_method_bind_call(GDExtensionConstMethodBindPtr p_method_bind, GDExtensionObjectPtr p_instance, const GDExtensionConstVariantPtr *p_args, GDExtensionInt p_arg_count, GDExtensionUninitializedVariantPtr r_return, GDExtensionCallError *r_error) {
 	const MethodBind *mb = reinterpret_cast<const MethodBind *>(p_method_bind);
 	Object *o = (Object *)p_instance;
 	const Variant **args = (const Variant **)p_args;
@@ -957,7 +957,7 @@ static void gdextension_object_method_bind_call(GDExtensionMethodBindPtr p_metho
 	}
 }
 
-static void gdextension_object_method_bind_ptrcall(GDExtensionMethodBindPtr p_method_bind, GDExtensionObjectPtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr p_ret) {
+static void gdextension_object_method_bind_ptrcall(GDExtensionConstMethodBindPtr p_method_bind, GDExtensionObjectPtr p_instance, const GDExtensionConstTypePtr *p_args, GDExtensionTypePtr p_ret) {
 	const MethodBind *mb = reinterpret_cast<const MethodBind *>(p_method_bind);
 	Object *o = (Object *)p_instance;
 	mb->ptrcall(o, (const void **)p_args, p_ret);
@@ -1043,7 +1043,7 @@ static GDExtensionScriptInstancePtr gdextension_script_instance_create(const GDE
 	return reinterpret_cast<GDExtensionScriptInstancePtr>(script_instance_extension);
 }
 
-static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionConstStringNamePtr p_classname, GDExtensionConstStringNamePtr p_methodname, GDExtensionInt p_hash) {
+static GDExtensionConstMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionConstStringNamePtr p_classname, GDExtensionConstStringNamePtr p_methodname, GDExtensionInt p_hash) {
 	const StringName classname = *reinterpret_cast<const StringName *>(p_classname);
 	const StringName methodname = *reinterpret_cast<const StringName *>(p_methodname);
 	bool exists = false;
@@ -1057,7 +1057,7 @@ static GDExtensionMethodBindPtr gdextension_classdb_get_method_bind(GDExtensionC
 		ERR_PRINT("Hash mismatch for method '" + classname + "." + methodname + "'.");
 		return nullptr;
 	}
-	return (GDExtensionMethodBindPtr)mb;
+	return (GDExtensionConstMethodBindPtr)mb;
 }
 
 static GDExtensionObjectPtr gdextension_classdb_construct_object(GDExtensionConstStringNamePtr p_classname) {

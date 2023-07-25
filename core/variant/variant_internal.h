@@ -1534,14 +1534,14 @@ struct VariantTypeAdjust<Object *> {
 
 template <class T>
 struct VariantTypeConstructor {
-	_FORCE_INLINE_ static void variant_from_type(void *r_variant, void *p_value) {
+	_FORCE_INLINE_ static void variant_from_type(GDExtensionUninitializedVariantPtr r_variant, GDExtensionConstTypePtr p_value) {
 		// r_variant is provided by caller as uninitialized memory
-		memnew_placement(r_variant, Variant(*((T *)p_value)));
+		memnew_placement(r_variant, Variant(*reinterpret_cast<const T *>(p_value)));
 	}
 
-	_FORCE_INLINE_ static void type_from_variant(void *r_value, void *p_variant) {
+	_FORCE_INLINE_ static void type_from_variant(GDExtensionUninitializedTypePtr r_value, GDExtensionConstVariantPtr p_variant) {
 		// r_value is provided by caller as uninitialized memory
-		memnew_placement(r_value, T(*reinterpret_cast<Variant *>(p_variant)));
+		memnew_placement(r_value, T(*reinterpret_cast<const Variant *>(p_variant)));
 	}
 };
 
