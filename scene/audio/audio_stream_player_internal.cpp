@@ -99,7 +99,7 @@ void AudioStreamPlayerInternal::ensure_playback_limit() {
 void AudioStreamPlayerInternal::notification(int p_what) {
 	switch (p_what) {
 		case Node::NOTIFICATION_ENTER_TREE: {
-			if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
+			if (autoplay && !node->is_part_of_edited_scene()) {
 				play_callable.call(0.0);
 			}
 			set_stream_paused(!node->can_process());

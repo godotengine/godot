@@ -37,6 +37,7 @@
 
 class Font;
 class Node;
+class AudioStream;
 class StyleBox;
 class Texture2D;
 class ThemeContext;
@@ -85,6 +86,7 @@ class ThemeDB : public Object {
 	int fallback_font_size = 16;
 	Ref<Texture2D> fallback_icon;
 	Ref<StyleBox> fallback_stylebox;
+	Ref<AudioStream> fallback_sound;
 
 	// Global theme contexts used to scope global Theme resources.
 
@@ -154,6 +156,9 @@ public:
 
 	void set_fallback_stylebox(const Ref<StyleBox> &p_stylebox);
 	Ref<StyleBox> get_fallback_stylebox();
+
+	void set_fallback_sound(const Ref<AudioStream> &p_audio);
+	Ref<AudioStream> get_fallback_sound();
 
 	void get_native_type_dependencies(const StringName &p_base_type, Vector<StringName> &r_result);
 
