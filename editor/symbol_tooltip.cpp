@@ -91,24 +91,24 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position) {
 
 	//ScriptTextEditor *script_editor = text_editor.script //EditorNode::get_script_text_editor();
 
-	Node *base = get_tree()->get_edited_scene_root();
-	Ref<Script> script = base->get_script();
+	/*Node *base = get_tree()->get_edited_scene_root();
+	Ref<Script> script = base->get_script();*/
 	/*if (base) {
 		base = _find_node_for_script(base, base, script);
 	}*/
 
 	// https://github.com/godotengine/godot/pull/63908/files#diff-fa2cafb4b2d8b59e5baeba0b861f7f2f6bf6c213d6387254fee5a7682478e588R1564-R1573
-	ScriptLanguage::LookupResult result;
+	//ScriptLanguage::LookupResult result;
 	/*if (ScriptServer::is_global_class(symbol_word)) {
 		header_content = "class " + symbol_word; //ScriptLanguage::SymbolHint::SYMBOL_CLASS;
 		body_content = "In " + ScriptServer::get_global_class_path(symbol_word);
 		// https://github.com/godotengine/godot/pull/63908/files#diff-fa2cafb4b2d8b59e5baeba0b861f7f2f6bf6c213d6387254fee5a7682478e588R1564-R1573
 	}*/
 
-	if (script != NULL && script->get_language()->lookup_code(text_editor->get_text_for_symbol_lookup(), symbol_word, script->get_path(), base, result) != OK) {
+	/*if (script != NULL && script->get_language()->lookup_code(text_editor->get_text_for_symbol_lookup(), symbol_word, script->get_path(), base, result) != OK) {
 		//_hide_symbol_hint();
 		print_line(vformat("Result for %s:\n%s", symbol_word, ""));
-	}
+	}*/
 
 	// Get the documentation of the word under the mouse cursor
 	// TODO: Account for the context of the word (e.g. class, method, etc.)
@@ -120,14 +120,24 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position) {
 	Vector2 line_col = text_editor->get_line_column_at_pos(mouse_position);
 	int row = line_col.y;
 	int col = line_col.x;
-	String line = text_editor->get_line(row);
-	int symbol_col = _get_column_pos_of_word(symbol_word, line, text_editor->SEARCH_MATCH_CASE | text_editor->SEARCH_WHOLE_WORDS, 0);
-	if(symbol_col >= 0) {
-		Vector2 _symbol_position = text_editor->get_pos_at_line_column(row, symbol_col);
-		if(symbol_position != _symbol_position) {
-			symbol_position = _symbol_position;
-			Vector2 tooltip_position = Vector2(mouse_position.x, symbol_position.y);
-			set_position(tooltip_position);
+	int num_lines = text_editor->get_line_count();
+	if (row >= 0 && row < num_lines) {
+		String line = text_editor->get_line(row);
+		int symbol_col = _get_column_pos_of_word(symbol_word, line, text_editor->SEARCH_MATCH_CASE | text_editor->SEARCH_WHOLE_WORDS, 0);
+		if(symbol_col >= 0) {
+			// Calculate the symbol end column
+			int symbol_end = symbol_col + symbol_word.length();
+			if (col > symbol_end) {
+				// Mouse is to the right of the last symbol character
+				hide();
+				return;
+			}
+			Vector2 _symbol_position = text_editor->get_pos_at_line_column(row, symbol_col);
+			if(symbol_position != _symbol_position) {
+				symbol_position = _symbol_position;
+				Vector2 tooltip_position = Vector2(mouse_position.x, symbol_position.y);
+				set_position(tooltip_position);
+			}
 		}
 	}
 
