@@ -328,6 +328,7 @@ void RemoteDebugger::_send_stack_vars(List<String> &p_names, List<Variant> &p_va
 		stvar.name = E->get();
 		stvar.value = F->get();
 		stvar.type = p_type;
+		// TODO: Plumb through PropertyHints.
 		send_message("stack_frame_var", stvar.serialize());
 		E = E->next();
 		F = F->next();

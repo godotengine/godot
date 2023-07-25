@@ -68,31 +68,41 @@ Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) {
 	arr.push_back(name);
 	arr.push_back(type);
 
+	PropertyHint h = hint;
+	String hs = hint_string;
+
 	Variant var = value;
 	if (value.get_type() == Variant::OBJECT && value.get_validated_object() == nullptr) {
+		h = PROPERTY_HINT_ENCODING_ERROR;
+		hs = "<invalid object>";
 		var = Variant();
 	}
 
 	int len = 0;
-	Error err = encode_variant(var, nullptr, len, true);
+	Error err = encode_variant(var, nullptr, len);
 	if (err != OK) {
 		ERR_PRINT("Failed to encode variant.");
 	}
 
 	if (len > max_size) {
-		arr.push_back(Variant());
-	} else {
-		arr.push_back(var);
+		h = PROPERTY_HINT_ENCODING_ERROR;
+		hs = "<too big>";
+		var = Variant();
 	}
+	arr.push_back(h);
+	arr.push_back(hs);
+	arr.push_back(var);
 	return arr;
 }
 
 bool DebuggerMarshalls::ScriptStackVariable::deserialize(const Array &p_arr) {
-	CHECK_SIZE(p_arr, 3, "ScriptStackVariable");
+	CHECK_SIZE(p_arr, 5, "ScriptStackVariable");
 	name = p_arr[0];
 	type = p_arr[1];
-	value = p_arr[2];
-	CHECK_END(p_arr, 3, "ScriptStackVariable");
+	hint = PropertyHint(int(p_arr[2]));
+	hint_string = p_arr[3];
+	value = p_arr[4];
+	CHECK_END(p_arr, 5, "ScriptStackVariable");
 	return true;
 }
 

@@ -38,6 +38,8 @@ struct DebuggerMarshalls {
 		String name;
 		Variant value;
 		int type = -1;
+		PropertyHint hint;
+		String hint_string;
 
 		Array serialize(int max_size = 1 << 20); // 1 MiB default.
 		bool deserialize(const Array &p_arr);
