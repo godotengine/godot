@@ -380,7 +380,8 @@ void ProjectDialog::_text_changed(const String &p_text) {
 	_test_path();
 
 	if (p_text.strip_edges().is_empty()) {
-		_set_message(TTR("It would be a good idea to name your project."), MESSAGE_ERROR);
+		// Reuse existing translation for "Unnamed Project" to ensure consistency.
+		_set_message(vformat(TTR("Project name is empty (it will appear as \"%s\")."), TTR("Unnamed Project")), MESSAGE_WARNING);
 	}
 }
 
