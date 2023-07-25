@@ -562,6 +562,15 @@
 		<theme_item name="scroll_hint" data_type="icon" type="Texture2D">
 			The indicator that will be shown when the content can still be scrolled. See [member scroll_hint_mode].
 		</theme_item>
+		<theme_item name="item_hovered_sound" data_type="sound" type="AudioStream">
+			Played when an item is hovered. Disabled items do not play a hover sound.
+		</theme_item>
+		<theme_item name="item_selected_disabled_sound" data_type="sound" type="AudioStream">
+			Played when a disabled item is attempted to be selected.
+		</theme_item>
+		<theme_item name="item_selected_sound" data_type="sound" type="AudioStream">
+			Played when an item is selected.
+		</theme_item>
 		<theme_item name="cursor" data_type="style" type="StyleBox">
 			[StyleBox] used for the cursor, when the [ItemList] is being focused.
 		</theme_item>

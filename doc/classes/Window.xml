@@ -61,6 +61,15 @@
 				See also [method get_theme_icon].
 			</description>
 		</method>
+		<method name="add_theme_sound_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="audio" type="AudioStream" />
+			<description>
+				Creates a local override for a theme audio with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_sound_override].
+				See also [method get_theme_sound].
+			</description>
+		</method>
 		<method name="add_theme_stylebox_override">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
@@ -167,6 +176,15 @@
 				[b]Note:[/b] If [member visible] is [code]false[/code], this method returns the same value as [member size].
 			</description>
 		</method>
+		<method name="get_theme_sound" qualifiers="const">
+			<return type="AudioStream" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns a sound from the first matching [Theme] in the tree if that [Theme] has a sound item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_sound] for details.
+			</description>
+		</method>
 		<method name="get_theme_color" qualifiers="const">
 			<return type="Color" />
 			<param index="0" name="name" type="StringName" />
@@ -182,28 +200,28 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a constant from the first matching [Theme] in the tree if that [Theme] has a constant item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for more details.
+				See [method Control.get_theme_constant] for more details.
 			</description>
 		</method>
 		<method name="get_theme_default_base_scale" qualifiers="const">
 			<return type="float" />
 			<description>
 				Returns the default base scale value from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_base_scale] value.
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_default_base_scale] for details.
 			</description>
 		</method>
 		<method name="get_theme_default_font" qualifiers="const">
 			<return type="Font" />
 			<description>
 				Returns the default font from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_font] value.
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_default_font] for details.
 			</description>
 		</method>
 		<method name="get_theme_default_font_size" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the default font size value from the first matching [Theme] in the tree if that [Theme] has a valid [member Theme.default_font_size] value.
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_default_font_size] for details.
 			</description>
 		</method>
 		<method name="get_theme_font" qualifiers="const">
@@ -212,7 +230,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a [Font] from the first matching [Theme] in the tree if that [Theme] has a font item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_font] for details.
 			</description>
 		</method>
 		<method name="get_theme_font_size" qualifiers="const">
@@ -221,7 +239,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a font size from the first matching [Theme] in the tree if that [Theme] has a font size item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_font_size] for details.
 			</description>
 		</method>
 		<method name="get_theme_icon" qualifiers="const">
@@ -230,7 +248,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns an icon from the first matching [Theme] in the tree if that [Theme] has an icon item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_icon] for details.
 			</description>
 		</method>
 		<method name="get_theme_stylebox" qualifiers="const">
@@ -239,7 +257,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a [StyleBox] from the first matching [Theme] in the tree if that [Theme] has a stylebox item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_stylebox] for details.
 			</description>
 		</method>
 		<method name="get_window_id" qualifiers="const">
@@ -258,6 +276,15 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the window is focused.
+			</description>
+		</method>
+		<method name="has_theme_sound" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has an audio item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_sound] for details.
 			</description>
 		</method>
 		<method name="has_theme_color" qualifiers="const">
@@ -283,7 +310,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a constant item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_constant] for details.
 			</description>
 		</method>
 		<method name="has_theme_constant_override" qualifiers="const">
@@ -300,7 +327,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_font] for details.
 			</description>
 		</method>
 		<method name="has_theme_font_override" qualifiers="const">
@@ -317,7 +344,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font size item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_font_size] for details.
 			</description>
 		</method>
 		<method name="has_theme_font_size_override" qualifiers="const">
@@ -334,7 +361,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has an icon item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_icon] for details.
 			</description>
 		</method>
 		<method name="has_theme_icon_override" qualifiers="const">
@@ -345,13 +372,21 @@
 				See [method add_theme_icon_override].
 			</description>
 		</method>
+		<method name="has_theme_sound_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme audio with the specified [param name] in this [Control] node.
+				See [method add_theme_sound_override].
+			</description>
+		</method>
 		<method name="has_theme_stylebox" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a stylebox item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_stylebox] for details.
 			</description>
 		</method>
 		<method name="has_theme_stylebox_override" qualifiers="const">
@@ -525,6 +560,13 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Removes a local override for a theme icon with the specified [param name] previously added by [method add_theme_icon_override] or via the Inspector dock.
+			</description>
+		</method>
+		<method name="remove_theme_sound_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme audio with the specified [param name] previously added by [method add_theme_sound_override] or via the Inspector dock.
 			</description>
 		</method>
 		<method name="remove_theme_stylebox_override">

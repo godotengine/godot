@@ -648,6 +648,8 @@ private:
 #ifndef DISABLE_DEPRECATED
 		Color background_color = Color(1, 1, 1);
 #endif // DISABLE_DEPRECATED
+
+		Ref<AudioStream> text_changed_sound;
 	} theme_cache;
 
 	bool window_has_focus = true;

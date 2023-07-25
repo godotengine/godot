@@ -204,6 +204,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (rb_pressing && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			if (rb_hover != -1) {
+				play_theme_sound(theme_cache.pressed_sound);
 				emit_signal(SNAME("tab_button_pressed"), rb_hover);
 			}
 
@@ -213,6 +214,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (cb_pressing && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 			if (cb_hover != -1) {
+				play_theme_sound(theme_cache.pressed_sound);
 				emit_signal(SNAME("tab_close_pressed"), cb_hover);
 			}
 
@@ -235,15 +237,21 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 					if (pos.x < theme_cache.decrement_icon->get_width()) {
 						if (missing_right) {
 							offset++;
+							play_theme_sound(theme_cache.pressed_sound);
 							_update_cache();
 							queue_redraw();
+						} else {
+							play_theme_sound(theme_cache.pressed_disabled_sound);
 						}
 						return;
 					} else if (pos.x < theme_cache.increment_icon->get_width() + theme_cache.decrement_icon->get_width()) {
 						if (offset > 0) {
 							offset--;
+							play_theme_sound(theme_cache.pressed_sound);
 							_update_cache();
 							queue_redraw();
+						} else {
+							play_theme_sound(theme_cache.pressed_disabled_sound);
 						}
 						return;
 					}
@@ -252,15 +260,21 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 					if (pos.x > limit + theme_cache.decrement_icon->get_width()) {
 						if (missing_right) {
 							offset++;
+							play_theme_sound(theme_cache.pressed_sound);
 							_update_cache();
 							queue_redraw();
+						} else {
+							play_theme_sound(theme_cache.pressed_disabled_sound);
 						}
 						return;
 					} else if (pos.x > limit) {
 						if (offset > 0) {
 							offset--;
+							play_theme_sound(theme_cache.pressed_sound);
 							_update_cache();
 							queue_redraw();
+						} else {
+							play_theme_sound(theme_cache.pressed_disabled_sound);
 						}
 						return;
 					}
@@ -280,6 +294,10 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 						rb_pressing = true;
 						_update_hover();
 						queue_redraw();
+
+						if (current != found) {
+							play_theme_sound(theme_cache.pressed_sound);
+						}
 					}
 					return;
 				}
@@ -290,19 +308,30 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 						cb_pressing = true;
 						_update_hover();
 						queue_redraw();
+
+						if (current != found) {
+							play_theme_sound(theme_cache.pressed_sound);
+						}
 					}
 					return;
 				}
 
 				// Selecting a tab.
-				if (selecting && !tabs[found].disabled) {
-					if (deselect_enabled && get_current_tab() == found) {
-						set_current_tab(-1);
-					} else {
-						set_current_tab(found);
+				if (selecting) {
+					// Handle audio feedback separately, so that we can play the "disabled" sound when needed.
+					if (current != found) {
+						play_theme_sound(tabs[found].disabled ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
 					}
 
-					emit_signal(SNAME("tab_clicked"), found);
+					if (!tabs[found].disabled) {
+						if (deselect_enabled && get_current_tab() == found) {
+							set_current_tab(-1);
+						} else {
+							set_current_tab(found);
+						}
+
+						emit_signal(SNAME("tab_clicked"), found);
+					}
 				}
 
 				// Right mouse button clicked on a tab.
@@ -1176,6 +1205,9 @@ void TabBar::_update_hover() {
 		hover = hover_now;
 
 		if (hover != -1) {
+			if (hover != current && !is_tab_disabled(hover)) {
+				play_theme_sound(theme_cache.hover_sound);
+			}
 			emit_signal(SNAME("tab_hovered"), hover);
 		}
 
@@ -2185,6 +2217,10 @@ void TabBar::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, TabBar, close_icon, "close");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, button_pressed_style, "button_pressed");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, button_hl_style, "button_highlight");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabBar, hover_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabBar, pressed_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabBar, pressed_disabled_sound);
 
 	Tab defaults(true);
 
