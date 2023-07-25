@@ -1775,6 +1775,7 @@ Error VulkanContext::_clean_up_swap_chain(Window *window) {
 	fpDestroySwapchainKHR(device, window->swapchain, nullptr);
 	window->swapchain = VK_NULL_HANDLE;
 	vkDestroyRenderPass(device, window->render_pass, nullptr);
+	window->render_pass = VK_NULL_HANDLE;
 	if (window->swapchain_image_resources) {
 		for (uint32_t i = 0; i < swapchainImageCount; i++) {
 			vkDestroyImageView(device, window->swapchain_image_resources[i].view, nullptr);
@@ -1783,6 +1784,7 @@ Error VulkanContext::_clean_up_swap_chain(Window *window) {
 
 		free(window->swapchain_image_resources);
 		window->swapchain_image_resources = nullptr;
+		swapchainImageCount = 0;
 	}
 	if (separate_present_queue) {
 		vkDestroyCommandPool(device, window->present_cmd_pool, nullptr);
