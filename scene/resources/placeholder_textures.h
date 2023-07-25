@@ -36,7 +36,7 @@
 class PlaceholderTexture2D : public Texture2D {
 	GDCLASS(PlaceholderTexture2D, Texture2D)
 
-	RID rid;
+	mutable RID rid;
 	Size2 size = Size2(1, 1);
 
 protected:
@@ -59,7 +59,7 @@ public:
 class PlaceholderTexture3D : public Texture3D {
 	GDCLASS(PlaceholderTexture3D, Texture3D)
 
-	RID rid;
+	mutable RID rid;
 	Vector3i size = Vector3i(1, 1, 1);
 
 protected:
@@ -74,6 +74,7 @@ public:
 	virtual int get_depth() const override;
 	virtual bool has_mipmaps() const override;
 	virtual Vector<Ref<Image>> get_data() const override;
+	virtual RID get_rid() const override;
 
 	PlaceholderTexture3D();
 	~PlaceholderTexture3D();
@@ -82,7 +83,7 @@ public:
 class PlaceholderTextureLayered : public TextureLayered {
 	GDCLASS(PlaceholderTextureLayered, TextureLayered)
 
-	RID rid;
+	mutable RID rid;
 	Size2i size = Size2i(1, 1);
 	int layers = 1;
 	LayeredType layered_type = LAYERED_TYPE_2D_ARRAY;
@@ -101,6 +102,7 @@ public:
 	virtual int get_layers() const override;
 	virtual bool has_mipmaps() const override;
 	virtual Ref<Image> get_layer_data(int p_layer) const override;
+	virtual RID get_rid() const override;
 
 	PlaceholderTextureLayered(LayeredType p_type);
 	~PlaceholderTextureLayered();
