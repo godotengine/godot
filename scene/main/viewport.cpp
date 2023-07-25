@@ -41,6 +41,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "core/object/class_db.h"
 #include "core/templates/pair.h"
 #include "core/templates/sort_array.h"
+#include "scene/audio/audio_stream_player.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup.h"
@@ -1989,7 +1990,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							// Grabbing unhovered focus can cause issues when mouse is dragged
 							// with another button held down.
 							if (gui.mouse_over_hierarchy.has(control->get_instance_id())) {
-								// Hide the focus when it comes from a click.
+								// Don't play a sound when the focus comes from a click.
+								// Also, hide the focus when it comes from a click.
 								control->grab_focus(true);
 							}
 							break;
@@ -2428,6 +2430,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 
 			if (next) {
+				play_theme_sound(next->get_theme_sound(SNAME("focus_sound")));
 				next->grab_focus();
 				set_input_as_handled();
 			} else if (show_focus && gui.hide_focus && gui.key_focus) {
@@ -2594,6 +2597,15 @@ void Viewport::_gui_remove_control(Control *p_control) {
 	if (gui.tooltip_control == p_control) {
 		gui.tooltip_control = nullptr;
 	}
+}
+
+void Viewport::play_theme_sound(const Ref<AudioStream> &p_stream) {
+	ERR_MAIN_THREAD_GUARD;
+	if (!get_tree() || p_stream.is_null()) {
+		return;
+	}
+
+	get_tree()->play_theme_sound(p_stream);
 }
 
 void Viewport::canvas_item_top_level_changed() {

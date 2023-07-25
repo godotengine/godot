@@ -43,6 +43,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "scene/animation/tween.h"
+#include "scene/audio/audio_stream_player.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/control.h"
 #include "scene/main/multiplayer_api.h"
@@ -1804,6 +1805,16 @@ TypedArray<Tween> SceneTree::get_processed_tweens() {
 	return ret;
 }
 
+void SceneTree::play_theme_sound(const Ref<AudioStream> &p_stream) {
+	AudioStreamPlayer *audio_stream_player = memnew(AudioStreamPlayer);
+	audio_stream_player->set_name(SNAME("_theme_sound"));
+	audio_stream_player->set_bus(gui_theme_bus);
+	audio_stream_player->set_stream(p_stream);
+	audio_stream_player->set_autoplay(true);
+	audio_stream_player->connect(SceneStringName(finished), callable_mp((Node *)audio_stream_player, &Node::queue_free));
+	get_root()->add_child(audio_stream_player);
+}
+
 Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
 	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), Ref<MultiplayerAPI>(), "Multiplayer can only be manipulated from the main thread.");
 	if (p_for_path.is_empty()) {
@@ -2052,6 +2063,7 @@ SceneTree::SceneTree() {
 	debug_paths_width = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/shapes/paths/geometry_width", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), 2.0);
 	collision_debug_contacts = GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/shapes/collision/max_contacts_displayed", PROPERTY_HINT_RANGE, "0,20000,1"), 10000);
 	accessibility_upd_per_sec = GLOBAL_GET(SNAME("accessibility/general/updates_per_second"));
+	gui_theme_bus = GLOBAL_GET("audio/buses/gui_theme_bus");
 
 	GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
 

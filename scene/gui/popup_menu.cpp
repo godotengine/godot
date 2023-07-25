@@ -533,6 +533,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 				if (!items[i].separator && !items[i].disabled && items[i].visible) {
 					prev_mouse_over = mouse_over;
 					mouse_over = i;
+					play_theme_sound(theme_cache.focus_sound);
 					emit_signal(SNAME("id_focused"), items[i].id);
 					scroll_to_item(i);
 					queue_accessibility_update();
@@ -549,6 +550,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 					if (!items[i].separator && !items[i].disabled && items[i].visible) {
 						prev_mouse_over = mouse_over;
 						mouse_over = i;
+						play_theme_sound(theme_cache.focus_sound);
 						emit_signal(SNAME("id_focused"), items[i].id);
 						scroll_to_item(i);
 						queue_accessibility_update();
@@ -576,6 +578,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 				if (!items[i].separator && !items[i].disabled && items[i].visible) {
 					prev_mouse_over = mouse_over;
 					mouse_over = i;
+					play_theme_sound(theme_cache.focus_sound);
 					emit_signal(SNAME("id_focused"), items[i].id);
 					scroll_to_item(i);
 					queue_accessibility_update();
@@ -592,6 +595,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 					if (!items[i].separator && !items[i].disabled && items[i].visible) {
 						prev_mouse_over = mouse_over;
 						mouse_over = i;
+						play_theme_sound(theme_cache.focus_sound);
 						emit_signal(SNAME("id_focused"), items[i].id);
 						scroll_to_item(i);
 						queue_accessibility_update();
@@ -629,8 +633,10 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		} else if (p_event->is_action("ui_accept", true) && p_event->is_pressed()) {
 			if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
 				if (items[mouse_over].submenu && submenu_over != mouse_over) {
+					play_theme_sound(items[mouse_over].disabled ? theme_cache.item_activated_disabled_sound : theme_cache.item_activated_sound);
 					_activate_submenu(mouse_over, true);
 				} else {
+					play_theme_sound(items[mouse_over].disabled ? theme_cache.item_activated_disabled_sound : theme_cache.item_activated_sound);
 					activate_item(mouse_over);
 				}
 				set_input_as_handled();
@@ -718,7 +724,13 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				if (items[over].separator || items[over].disabled) {
+				if (items[over].separator) {
+					return;
+				}
+
+				play_theme_sound(items[over].disabled ? theme_cache.item_activated_disabled_sound : theme_cache.item_activated_sound);
+
+				if (items[over].disabled) {
 					return;
 				}
 
@@ -808,6 +820,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 			if (items[i].text.findn(search_string) == 0) {
 				prev_mouse_over = mouse_over;
 				mouse_over = i;
+				play_theme_sound(theme_cache.focus_sound);
 				emit_signal(SNAME("id_focused"), items[i].id);
 				scroll_to_item(i);
 				queue_accessibility_update();
@@ -863,6 +876,9 @@ void PopupMenu::_mouse_over_update(const Point2 &p_over) {
 
 	if (over_index != mouse_over) {
 		mouse_over = over_index;
+		if (!items[over_index].disabled) {
+			play_theme_sound(theme_cache.item_hovered_sound);
+		}
 		queue_accessibility_update();
 		control->queue_redraw();
 	}
@@ -1507,6 +1523,7 @@ void PopupMenu::_notification(int p_what) {
 						for (int i = search_from; i < items.size(); i++) {
 							if (!items[i].separator && !items[i].disabled && items[i].visible) {
 								mouse_over = i;
+								play_theme_sound(theme_cache.focus_sound);
 								emit_signal(SNAME("id_focused"), items[i].id);
 								scroll_to_item(i);
 								control->queue_redraw();
@@ -1520,6 +1537,7 @@ void PopupMenu::_notification(int p_what) {
 							for (int i = 0; i < search_from; i++) {
 								if (!items[i].separator && !items[i].disabled) {
 									mouse_over = i;
+									play_theme_sound(theme_cache.focus_sound);
 									emit_signal(SNAME("id_focused"), items[i].id);
 									scroll_to_item(i);
 									control->queue_redraw();
@@ -1540,6 +1558,7 @@ void PopupMenu::_notification(int p_what) {
 						for (int i = search_from; i >= 0; i--) {
 							if (!items[i].separator && !items[i].disabled) {
 								mouse_over = i;
+								play_theme_sound(theme_cache.focus_sound);
 								emit_signal(SNAME("id_focused"), items[i].id);
 								scroll_to_item(i);
 								control->queue_redraw();
@@ -1553,6 +1572,7 @@ void PopupMenu::_notification(int p_what) {
 							for (int i = items.size() - 1; i >= search_from; i--) {
 								if (!items[i].separator && !items[i].disabled) {
 									mouse_over = i;
+									play_theme_sound(theme_cache.focus_sound);
 									emit_signal(SNAME("id_focused"), items[i].id);
 									scroll_to_item(i);
 									control->queue_redraw();
@@ -3479,6 +3499,11 @@ void PopupMenu::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_separator_color);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, PopupMenu, font_separator_outline_size, "separator_outline_size");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, PopupMenu, font_separator_outline_color);
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_SOUND, PopupMenu, focus_sound, "focus", "Control");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, PopupMenu, item_hovered_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, PopupMenu, item_activated_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, PopupMenu, item_activated_disabled_sound);
 
 	Item defaults(true);
 

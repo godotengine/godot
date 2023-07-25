@@ -649,6 +649,11 @@ private:
 #ifndef DISABLE_DEPRECATED
 		Color background_color = Color(1, 1, 1);
 #endif // DISABLE_DEPRECATED
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> caret_moved_sound;
+		Ref<AudioStream> text_changed_sound;
+		Ref<AudioStream> text_change_rejected_sound;
 	} theme_cache;
 
 	bool window_has_focus = true;

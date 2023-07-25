@@ -47,6 +47,7 @@
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
+#include "servers/audio/audio_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/config/engine.h"
@@ -513,6 +514,23 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 			PropertyInfo pi = custom_prop_info[base.name];
 			pi.name = base.name;
 			pi.usage = base.flags;
+
+#ifdef TOOLS_ENABLED
+			// Display list of audio buses in the project settings, similar to the `bus` property in AudioStreamPlayer.
+			if (Engine::get_singleton()->is_editor_hint() && pi.name == "audio/buses/gui_theme_bus") {
+				String options;
+				for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+					if (i > 0) {
+						options += ",";
+					}
+					String name = AudioServer::get_singleton()->get_bus_name(i);
+					options += name;
+				}
+
+				pi.hint_string = options;
+			}
+#endif
+
 			p_list->push_back(pi);
 #ifdef TOOLS_ENABLED
 		} else if (base.name.begins_with(EDITOR_SETTING_OVERRIDE_PREFIX)) {
@@ -1751,6 +1769,7 @@ ProjectSettings::ProjectSettings() {
 #endif
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres"), "res://default_bus_layout.tres");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "audio/buses/gui_theme_bus", PROPERTY_HINT_ENUM, ""), "Master");
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/default_playback_type", PROPERTY_HINT_ENUM, "Stream,Sample"), 0);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/general/default_playback_type.web", PROPERTY_HINT_ENUM, "Stream,Sample"), 1);
 	GLOBAL_DEF_RST("audio/general/text_to_speech", false);
