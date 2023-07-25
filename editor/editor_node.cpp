@@ -8186,6 +8186,9 @@ EditorNode::~EditorNode() {
 	memdelete(progress_hb);
 
 	EditorSettings::destroy();
+
+	GDExtensionEditorPlugins::editor_node_add_plugin = nullptr;
+	GDExtensionEditorPlugins::editor_node_remove_plugin = nullptr;
 }
 
 /*
