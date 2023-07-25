@@ -192,6 +192,7 @@ NavigationServer3D::NavigationServer3D() {
 
 	GLOBAL_DEF_BASIC("navigation/3d/default_cell_size", 0.25);
 	GLOBAL_DEF_BASIC("navigation/3d/default_cell_height", 0.25);
+	GLOBAL_DEF("navigation/3d/default_up", Vector3(0, 1, 0));
 	GLOBAL_DEF("navigation/3d/use_edge_connections", true);
 	GLOBAL_DEF_BASIC("navigation/3d/default_edge_connection_margin", 0.25);
 	GLOBAL_DEF_BASIC("navigation/3d/default_link_connection_radius", 1.0);
