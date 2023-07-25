@@ -1772,6 +1772,15 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 
 	bool is_constant = p_assignable->type == GDScriptParser::Node::CONSTANT;
 
+#ifdef DEBUG_ENABLED
+	if (p_assignable->identifier != nullptr && p_assignable->identifier->suite != nullptr && p_assignable->identifier->suite->parent_block != nullptr) {
+		if (p_assignable->identifier->suite->parent_block->has_local(p_assignable->identifier->name)) {
+			const GDScriptParser::SuiteNode::Local &local = p_assignable->identifier->suite->parent_block->get_local(p_assignable->identifier->name);
+			parser->push_warning(p_assignable->identifier, GDScriptWarning::CONFUSABLE_LOCAL_DECLARATION, local.get_name(), p_assignable->identifier->name);
+		}
+	}
+#endif
+
 	GDScriptParser::DataType specified_type;
 	bool has_specified_type = p_assignable->datatype_specifier != nullptr;
 	if (has_specified_type) {
@@ -3518,12 +3527,14 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				case GDScriptParser::ClassNode::Member::FUNCTION: {
 					if (is_base && (!base.is_meta_type || member.function->is_static)) {
 						p_identifier->set_datatype(make_callable_type(member.function->info));
+						p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_FUNCTION;
 						return;
 					}
 				} break;
 
 				case GDScriptParser::ClassNode::Member::CLASS: {
 					reduce_identifier_from_base_set_class(p_identifier, member.get_datatype());
+					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CLASS;
 					return;
 				}
 
@@ -3662,8 +3673,16 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			found_source = true;
 		} break;
 		case GDScriptParser::IdentifierNode::UNDEFINED_SOURCE:
+		case GDScriptParser::IdentifierNode::MEMBER_FUNCTION:
+		case GDScriptParser::IdentifierNode::MEMBER_CLASS:
 			break;
 	}
+
+#ifdef DEBUG_ENABLED
+	if (!found_source && p_identifier->suite != nullptr && p_identifier->suite->has_local(p_identifier->name)) {
+		parser->push_warning(p_identifier, GDScriptWarning::CONFUSABLE_LOCAL_USAGE, p_identifier->name);
+	}
+#endif
 
 	// Not a local, so check members.
 	if (!found_source) {

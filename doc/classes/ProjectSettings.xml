@@ -430,6 +430,12 @@
 		<member name="debug/gdscript/warnings/confusable_identifier" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier contains characters that can be confused with something else, like when mixing different alphabets.
 		</member>
+		<member name="debug/gdscript/warnings/confusable_local_declaration" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier declared in the nested block has the same name as an identifier declared below in the parent block.
+		</member>
+		<member name="debug/gdscript/warnings/confusable_local_usage" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier that will be shadowed below in the block is used.
+		</member>
 		<member name="debug/gdscript/warnings/constant_used_as_function" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a constant is used as a function.
 		</member>
