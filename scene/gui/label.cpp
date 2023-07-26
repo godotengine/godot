@@ -303,6 +303,9 @@ void Label::_update_visible() {
 			break;
 		}
 	}
+	if (minsize.height > 0) {
+		minsize.height -= line_spacing;
+	}
 }
 
 inline void draw_glyph(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Vector2 &p_ofs) {
