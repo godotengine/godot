@@ -3657,7 +3657,12 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	unsigned int nchildren;
 	if (XQueryTree(x11_display, wd.x11_window, &root, &parent, &children, &nchildren) && wd.parent != parent) {
 		wd.parent = parent;
-		window_set_position(wd.position, window_id);
+		int x = 0, y = 0;
+		Window child;
+		XTranslateCoordinates(x11_display, wd.x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
+		if (x != wd.position.x || y != wd.position.y) {
+			window_set_position(wd.position, window_id);
+		}
 	}
 	XFree(children);
 
