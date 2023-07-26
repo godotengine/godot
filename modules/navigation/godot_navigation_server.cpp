@@ -816,8 +816,8 @@ COMMAND_2(agent_set_avoidance_priority, RID, p_agent, real_t, p_priority) {
 }
 
 RID GodotNavigationServer::obstacle_create() {
-	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
-	MutexLock lock(mut_this->operations_mutex);
+	MutexLock lock(operations_mutex);
+
 	RID rid = obstacle_owner.make_rid();
 	NavObstacle *obstacle = obstacle_owner.get_or_null(rid);
 	obstacle->set_self(rid);
