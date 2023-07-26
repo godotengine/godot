@@ -1356,7 +1356,12 @@ Vector2 Viewport::get_mouse_position() const {
 		// In this case get_screen_transform is not applicable, because it is ambiguous.
 		return gui.last_mouse_pos;
 	} else if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_MOUSE)) {
-		return get_screen_transform_internal(true).affine_inverse().xform(DisplayServer::get_singleton()->mouse_get_position());
+		Transform2D xform = get_screen_transform_internal(true);
+		if (xform.determinant() == 0) {
+			// Screen transform can be non-invertible when the Window is minimized.
+			return Vector2();
+		}
+		return xform.affine_inverse().xform(DisplayServer::get_singleton()->mouse_get_position());
 	} else {
 		// Fallback to Input for getting mouse position in case of emulated mouse.
 		return get_screen_transform_internal().affine_inverse().xform(Input::get_singleton()->get_mouse_position());
