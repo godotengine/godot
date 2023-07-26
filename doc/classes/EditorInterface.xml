@@ -270,10 +270,16 @@
 				Restarts the editor. This closes the editor and then opens the same project. If [param save] is [code]true[/code], the project will be saved before restarting.
 			</description>
 		</method>
+		<method name="save_all_scenes">
+			<return type="void" />
+			<description>
+				Saves all opened scenes in the editor.
+			</description>
+		</method>
 		<method name="save_scene">
 			<return type="int" enum="Error" />
 			<description>
-				Saves the scene. Returns either [constant OK] or [constant ERR_CANT_CREATE].
+				Saves the currently active scene. Returns either [constant OK] or [constant ERR_CANT_CREATE].
 			</description>
 		</method>
 		<method name="save_scene_as">
@@ -281,7 +287,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="with_preview" type="bool" default="true" />
 			<description>
-				Saves the scene as a file at [param path].
+				Saves the currently active scene as a file at [param path].
 			</description>
 		</method>
 		<method name="select_file">
