@@ -2138,7 +2138,7 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 		Ref<TileSetAtlasSource> atlas_source = atlas_source_proxy->get_edited();
 		ERR_FAIL_COND(!atlas_source.is_valid());
 
-		UndoRedo *internal_undo_redo = undo_redo_man->get_history_for_object(atlas_source.ptr()).undo_redo;
+		UndoRedo *internal_undo_redo = undo_redo_man->get_history_for_object(atlas_source_proxy).undo_redo;
 		internal_undo_redo->start_force_keep_in_merge_ends();
 
 		PackedVector2Array arr;
@@ -2162,7 +2162,7 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 				String prefix = vformat("%d:%d/", coords.x, coords.y);
 				for (PropertyInfo pi : properties) {
 					if (pi.name.begins_with(prefix)) {
-						ADD_UNDO(atlas_source.ptr(), pi.name);
+						ADD_UNDO(atlas_source_proxy, pi.name);
 					}
 				}
 			}
