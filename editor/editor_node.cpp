@@ -4280,7 +4280,7 @@ void EditorNode::_pick_main_scene_custom_action(const String &p_custom_action_na
 	}
 }
 
-Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback) {
+Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback, bool p_fallback_script_to_theme) {
 	ERR_FAIL_COND_V_MSG(p_class.is_empty(), nullptr, "Class name cannot be empty.");
 	EditorData &ed = EditorNode::get_editor_data();
 
@@ -4289,6 +4289,16 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 		Ref<Texture2D> script_icon = ed.get_script_icon(p_script);
 		if (script_icon.is_valid()) {
 			return script_icon;
+		}
+
+		if (p_fallback_script_to_theme) {
+			// Look for the base type in the editor theme.
+			// This is only relevant for built-in classes.
+			String base_type;
+			p_script->get_language()->get_global_class_name(p_script->get_path(), &base_type);
+			if (gui_base && gui_base->has_theme_icon(base_type, SNAME("EditorIcons"))) {
+				return gui_base->get_theme_icon(base_type, SNAME("EditorIcons"));
+			}
 		}
 	}
 
@@ -4342,7 +4352,7 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		scr = EditorNode::get_editor_data().script_class_load_script(p_class);
 	}
 
-	return _get_class_or_script_icon(p_class, scr, p_fallback);
+	return _get_class_or_script_icon(p_class, scr, p_fallback, true);
 }
 
 bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringName &p_class) {
