@@ -35,6 +35,10 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 
+#ifdef DEBUG_ENABLED
+#include "core/config/engine.h"
+#endif
+
 #ifdef DEV_ENABLED
 // Includes sanity checks to ensure that a queue set as a thread singleton override
 // is only ever called from the thread it was set for.
@@ -316,25 +320,34 @@ Error CallQueue::flush() {
 		Object *target = message->callable.get_object();
 
 		UNLOCK_MUTEX;
-
-		switch (message->type & FLAG_MASK) {
-			case TYPE_CALL: {
-				if (target || (message->type & FLAG_NULL_IS_OK)) {
-					Variant *args = (Variant *)(message + 1);
-					_call_function(message->callable, args, message->args, message->type & FLAG_SHOW_ERROR);
-				}
-			} break;
-			case TYPE_NOTIFICATION: {
-				if (target) {
-					target->notification(message->notification);
-				}
-			} break;
-			case TYPE_SET: {
-				if (target) {
-					Variant *arg = (Variant *)(message + 1);
-					target->set(message->callable.get_method(), *arg);
-				}
-			} break;
+#ifdef DEBUG_ENABLED
+		if (!message->callable.is_valid()) {
+			// The editor would cause many of these.
+			if (!Engine::get_singleton()->is_editor_hint()) {
+				ERR_PRINT("Trying to execute a deferred call/notification/set on a previously freed instance. Consider using queue_free() instead of free().");
+			}
+		} else
+#endif
+		{
+			switch (message->type & FLAG_MASK) {
+				case TYPE_CALL: {
+					if (target || (message->type & FLAG_NULL_IS_OK)) {
+						Variant *args = (Variant *)(message + 1);
+						_call_function(message->callable, args, message->args, message->type & FLAG_SHOW_ERROR);
+					}
+				} break;
+				case TYPE_NOTIFICATION: {
+					if (target) {
+						target->notification(message->notification);
+					}
+				} break;
+				case TYPE_SET: {
+					if (target) {
+						Variant *arg = (Variant *)(message + 1);
+						target->set(message->callable.get_method(), *arg);
+					}
+				} break;
+			}
 		}
 
 		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION) {
