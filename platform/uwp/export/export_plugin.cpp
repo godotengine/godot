@@ -136,7 +136,7 @@ bool EditorExportPlatformUWP::has_valid_export_configuration(const Ref<EditorExp
 	// contributors can still test the pipeline if/when we can build it again.
 	r_error = "The UWP platform is currently not supported in Godot 4.\n";
 	return false;
-#endif
+#else
 
 	String err;
 	bool valid = false;
@@ -176,6 +176,7 @@ bool EditorExportPlatformUWP::has_valid_export_configuration(const Ref<EditorExp
 	}
 
 	return valid;
+#endif // DEV_ENABLED
 }
 
 bool EditorExportPlatformUWP::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
@@ -185,7 +186,7 @@ bool EditorExportPlatformUWP::has_valid_project_configuration(const Ref<EditorEx
 	// contributors can still test the pipeline if/when we can build it again.
 	r_error = "The UWP platform is currently not supported in Godot 4.\n";
 	return false;
-#endif
+#else
 
 	String err;
 	bool valid = true;
@@ -259,6 +260,7 @@ bool EditorExportPlatformUWP::has_valid_project_configuration(const Ref<EditorEx
 
 	r_error = err;
 	return valid;
+#endif // DEV_ENABLED
 }
 
 Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
