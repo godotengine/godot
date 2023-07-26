@@ -82,33 +82,6 @@ const Vector<String> classes_with_csharp_differences = {
 // Might this be a problem?
 DocTools *EditorHelp::doc = nullptr;
 
-class DocCache : public Resource {
-	GDCLASS(DocCache, Resource);
-	RES_BASE_EXTENSION("doc_cache");
-
-	String version_hash;
-	Array classes;
-
-protected:
-	static void _bind_methods() {
-		ClassDB::bind_method(D_METHOD("set_version_hash", "version_hash"), &DocCache::set_version_hash);
-		ClassDB::bind_method(D_METHOD("get_version_hash"), &DocCache::get_version_hash);
-
-		ClassDB::bind_method(D_METHOD("set_classes", "classes"), &DocCache::set_classes);
-		ClassDB::bind_method(D_METHOD("get_classes"), &DocCache::get_classes);
-
-		ADD_PROPERTY(PropertyInfo(Variant::STRING, "version_hash"), "set_version_hash", "get_version_hash");
-		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "classes"), "set_classes", "get_classes");
-	}
-
-public:
-	String get_version_hash() const { return version_hash; }
-	void set_version_hash(const String &p_version_hash) { version_hash = p_version_hash; }
-
-	Array get_classes() const { return classes; }
-	void set_classes(const Array &p_classes) { classes = p_classes; }
-};
-
 static bool _attempt_doc_load(const String &p_class) {
 	// Docgen always happens in the outer-most class: it also generates docs for inner classes.
 	String outer_class = p_class.get_slice(".", 0);
@@ -2320,21 +2293,23 @@ void EditorHelp::_wait_for_thread() {
 }
 
 String EditorHelp::get_cache_full_path() {
-	return EditorPaths::get_singleton()->get_cache_dir().path_join("editor.doc_cache");
+	return EditorPaths::get_singleton()->get_cache_dir().path_join("editor_doc_cache.res");
 }
 
 static bool first_attempt = true;
 
 static String _compute_doc_version_hash() {
-	return vformat("%d/%d/%s", ClassDB::get_api_hash(ClassDB::API_CORE), ClassDB::get_api_hash(ClassDB::API_EDITOR), _doc_data_hash);
+	uint32_t version_hash = Engine::get_singleton()->get_version_info().hash();
+	return vformat("%d/%d/%d/%s", version_hash, ClassDB::get_api_hash(ClassDB::API_CORE), ClassDB::get_api_hash(ClassDB::API_EDITOR), _doc_data_hash);
 }
 
 void EditorHelp::_load_doc_thread(void *p_udata) {
 	DEV_ASSERT(first_attempt);
-	Ref<DocCache> cache_res = ResourceLoader::load(get_cache_full_path());
-	if (cache_res.is_valid() && cache_res->get_version_hash() == _compute_doc_version_hash()) {
-		for (int i = 0; i < cache_res->get_classes().size(); i++) {
-			doc->add_doc(DocData::ClassDoc::from_dict(cache_res->get_classes()[i]));
+	Ref<Resource> cache_res = ResourceLoader::load(get_cache_full_path());
+	if (cache_res.is_valid() && cache_res->get_meta("version_hash", "") == _compute_doc_version_hash()) {
+		Array classes = cache_res->get_meta("classes", Array());
+		for (int i = 0; i < classes.size(); i++) {
+			doc->add_doc(DocData::ClassDoc::from_dict(classes[i]));
 		}
 	} else {
 		// We have to go back to the main thread to start from scratch.
@@ -2348,14 +2323,14 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 	compdoc.load_compressed(_doc_data_compressed, _doc_data_compressed_size, _doc_data_uncompressed_size);
 	doc->merge_from(compdoc); // Ensure all is up to date.
 
-	Ref<DocCache> cache_res;
+	Ref<Resource> cache_res;
 	cache_res.instantiate();
-	cache_res->set_version_hash(_compute_doc_version_hash());
+	cache_res->set_meta("version_hash", _compute_doc_version_hash());
 	Array classes;
 	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
 		classes.push_back(DocData::ClassDoc::to_dict(E.value));
 	}
-	cache_res->set_classes(classes);
+	cache_res->set_meta("classes", classes);
 	Error err = ResourceSaver::save(cache_res, get_cache_full_path(), ResourceSaver::FLAG_COMPRESS);
 	if (err) {
 		ERR_PRINT("Cannot save editor help cache (" + get_cache_full_path() + ").");
@@ -2365,9 +2340,6 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 static bool doc_gen_use_threads = true;
 
 void EditorHelp::generate_doc(bool p_use_cache) {
-	// Temporarily disable use of cache for pre-RC stabilization.
-	p_use_cache = false;
-
 	OS::get_singleton()->benchmark_begin_measure("EditorHelp::generate_doc");
 	if (doc_gen_use_threads) {
 		// In case not the first attempt.
