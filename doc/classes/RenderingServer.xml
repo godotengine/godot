@@ -3281,6 +3281,13 @@
 				[b]Note:[/b] The [param texture] must have the same width, height, depth and format as the current texture data. Otherwise, an error will be printed and the original texture won't be modified. If you need to use different width, height, depth or format, use [method texture_replace] instead.
 			</description>
 		</method>
+		<method name="texture_get_format" qualifiers="const">
+			<return type="int" enum="Image.Format" />
+			<param index="0" name="texture" type="RID" />
+			<description>
+				Returns the [enum Image.Format] for the texture.
+			</description>
+		</method>
 		<method name="texture_get_native_handle" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="texture" type="RID" />
@@ -3317,6 +3324,14 @@
 			<param index="1" name="proxy_to" type="RID" />
 			<description>
 				[i]Deprecated.[/i] ProxyTexture was removed in Godot 4, so this method cannot be used anymore.
+			</description>
+		</method>
+		<method name="texture_rd_create">
+			<return type="RID" />
+			<param index="0" name="rd_texture" type="RID" />
+			<param index="1" name="layer_type" type="int" enum="RenderingServer.TextureLayeredType" default="0" />
+			<description>
+				Creates a new texture object based on a texture created directly on the [RenderingDevice]. If the texture contains layers, [param layer_type] is used to define the layer type.
 			</description>
 		</method>
 		<method name="texture_replace">

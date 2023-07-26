@@ -2893,6 +2893,29 @@ bool RenderingDeviceVulkan::texture_is_valid(RID p_texture) {
 	return texture_owner.owns(p_texture);
 }
 
+RD::TextureFormat RenderingDeviceVulkan::texture_get_format(RID p_texture) {
+	_THREAD_SAFE_METHOD_
+
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_V(!tex, TextureFormat());
+
+	TextureFormat tf;
+
+	tf.format = tex->format;
+	tf.width = tex->width;
+	tf.height = tex->height;
+	tf.depth = tex->depth;
+	tf.array_layers = tex->layers;
+	tf.mipmaps = tex->mipmaps;
+	tf.texture_type = tex->type;
+	tf.samples = tex->samples;
+	tf.usage_bits = tex->usage_flags;
+	tf.shareable_formats = tex->allowed_shared_formats;
+	tf.is_resolve_buffer = tex->is_resolve_buffer;
+
+	return tf;
+}
+
 Size2i RenderingDeviceVulkan::texture_size(RID p_texture) {
 	_THREAD_SAFE_METHOD_
 

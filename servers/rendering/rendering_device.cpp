@@ -114,6 +114,14 @@ RID RenderingDevice::_texture_create_shared_from_slice(const Ref<RDTextureView> 
 	return texture_create_shared_from_slice(p_view->base, p_with_texture, p_layer, p_mipmap, p_mipmaps, p_slice_type);
 }
 
+Ref<RDTextureFormat> RenderingDevice::_texture_get_format(RID p_rd_texture) {
+	Ref<RDTextureFormat> rtf;
+	rtf.instantiate();
+	rtf->base = texture_get_format(p_rd_texture);
+
+	return rtf;
+}
+
 RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments, uint32_t p_view_count) {
 	Vector<AttachmentFormat> attachments;
 	attachments.resize(p_attachments.size());
@@ -720,6 +728,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_clear", "texture", "color", "base_mipmap", "mipmap_count", "base_layer", "layer_count", "post_barrier"), &RenderingDevice::texture_clear, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
 	ClassDB::bind_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture", "post_barrier"), &RenderingDevice::texture_resolve_multisample, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
 
+	ClassDB::bind_method(D_METHOD("texture_get_format", "texture"), &RenderingDevice::_texture_get_format);
 	ClassDB::bind_method(D_METHOD("texture_get_native_handle", "texture"), &RenderingDevice::texture_get_native_handle);
 
 	ClassDB::bind_method(D_METHOD("framebuffer_format_create", "attachments", "view_count"), &RenderingDevice::_framebuffer_format_create, DEFVAL(1));

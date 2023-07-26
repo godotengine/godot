@@ -1082,6 +1082,7 @@ public:
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, BitField<RenderingDevice::TextureUsageBits> p_usage) const;
 	virtual bool texture_is_shared(RID p_texture);
 	virtual bool texture_is_valid(RID p_texture);
+	virtual TextureFormat texture_get_format(RID p_texture);
 	virtual Size2i texture_size(RID p_texture);
 	virtual uint64_t texture_get_native_handle(RID p_texture);
 

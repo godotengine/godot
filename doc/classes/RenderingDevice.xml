@@ -752,6 +752,13 @@
 				[b]Note:[/b] [param texture] requires the [constant TEXTURE_USAGE_CAN_COPY_FROM_BIT] to be retrieved. Otherwise, an error is printed and a empty [PackedByteArray] is returned.
 			</description>
 		</method>
+		<method name="texture_get_format">
+			<return type="RDTextureFormat" />
+			<param index="0" name="texture" type="RID" />
+			<description>
+				Returns the data format used to create this texture.
+			</description>
+		</method>
 		<method name="texture_get_native_handle">
 			<return type="int" />
 			<param index="0" name="texture" type="RID" />
