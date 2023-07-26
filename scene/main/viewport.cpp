@@ -688,17 +688,26 @@ void Viewport::_process_picking() {
 
 	PhysicsDirectSpaceState2D *ss2d = PhysicsServer2D::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
 
-	bool has_mouse_event = false;
-	for (const Ref<InputEvent> &e : physics_picking_events) {
-		Ref<InputEventMouse> m = e;
-		if (m.is_valid()) {
-			has_mouse_event = true;
-			break;
+	SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
+	bool parent_ignore_mouse = (parent_svc && parent_svc->get_mouse_filter() == Control::MOUSE_FILTER_IGNORE);
+	bool create_passive_hover_event = true;
+	if (gui.mouse_over || parent_ignore_mouse) {
+		// When the mouse is over a Control node, passive hovering would cause input events for Colliders, that are behind Control nodes.
+		// When parent SubViewportContainer ignores mouse, that setting should be respected.
+		create_passive_hover_event = false;
+	} else {
+		for (const Ref<InputEvent> &e : physics_picking_events) {
+			Ref<InputEventMouse> m = e;
+			if (m.is_valid()) {
+				// A mouse event exists, so passive hovering isn't necessary.
+				create_passive_hover_event = false;
+				break;
+			}
 		}
 	}
 
-	if (!has_mouse_event) {
-		// If no mouse event exists, create a motion one. This is necessary because objects or camera may have moved.
+	if (create_passive_hover_event) {
+		// Create a mouse motion event. This is necessary because objects or camera may have moved.
 		// While this extra event is sent, it is checked if both camera and last object and last ID did not move.
 		// If nothing changed, the event is discarded to avoid flooding with unnecessary motion events every frame.
 		Ref<InputEventMouseMotion> mm;
