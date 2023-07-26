@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeWorldPositionFromDepth" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A visual shader node that calculates the position of the pixel in world space using the depth texture.
+	</brief_description>
+	<description>
+		The WorldPositionFromDepth node reconstructs the depth position of the pixel in world space. This can be used to obtain world space UVs for projection mapping like Caustics.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>
