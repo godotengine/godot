@@ -149,7 +149,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 	sources_list->clear();
 
 	// Update the atlas sources.
-	List<int> source_ids = TilesEditorPlugin::get_singleton()->get_sorted_sources(tile_set);
+	List<int> source_ids = TilesEditorUtils::get_singleton()->get_sorted_sources(tile_set);
 	for (const int &source_id : source_ids) {
 		TileSetSource *source = *tile_set->get_source(source_id);
 
@@ -221,7 +221,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 	_source_selected(sources_list->get_current());
 
 	// Synchronize the lists.
-	TilesEditorPlugin::get_singleton()->set_sources_lists_current(sources_list->get_current());
+	TilesEditorUtils::get_singleton()->set_sources_lists_current(sources_list->get_current());
 }
 
 void TileSetEditor::_texture_file_selected(const String &p_path) {
@@ -352,8 +352,8 @@ void TileSetEditor::_sources_advanced_menu_id_pressed(int p_id_pressed) {
 }
 
 void TileSetEditor::_set_source_sort(int p_sort) {
-	TilesEditorPlugin::get_singleton()->set_sorting_option(p_sort);
-	for (int i = 0; i != TilesEditorPlugin::SOURCE_SORT_MAX; i++) {
+	TilesEditorUtils::get_singleton()->set_sorting_option(p_sort);
+	for (int i = 0; i != TilesEditorUtils::SOURCE_SORT_MAX; i++) {
 		source_sort_button->get_popup()->set_item_checked(i, (i == (int)p_sort));
 	}
 
@@ -450,7 +450,7 @@ void TileSetEditor::_update_patterns_list() {
 		int id = patterns_item_list->add_item("");
 		patterns_item_list->set_item_metadata(id, tile_set->get_pattern(i));
 		patterns_item_list->set_item_tooltip(id, vformat(TTR("Index: %d"), i));
-		TilesEditorPlugin::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(i), callable_mp(this, &TileSetEditor::_pattern_preview_done));
+		TilesEditorUtils::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(i), callable_mp(this, &TileSetEditor::_pattern_preview_done));
 	}
 
 	// Update the label visibility.
@@ -854,19 +854,19 @@ TileSetEditor::TileSetEditor() {
 
 	PopupMenu *p = source_sort_button->get_popup();
 	p->connect("id_pressed", callable_mp(this, &TileSetEditor::_set_source_sort));
-	p->add_radio_check_item(TTR("Sort by ID (Ascending)"), TilesEditorPlugin::SOURCE_SORT_ID);
-	p->add_radio_check_item(TTR("Sort by ID (Descending)"), TilesEditorPlugin::SOURCE_SORT_ID_REVERSE);
-	p->add_radio_check_item(TTR("Sort by Name (Ascending)"), TilesEditorPlugin::SOURCE_SORT_NAME);
-	p->add_radio_check_item(TTR("Sort by Name (Descending)"), TilesEditorPlugin::SOURCE_SORT_NAME_REVERSE);
-	p->set_item_checked(TilesEditorPlugin::SOURCE_SORT_ID, true);
+	p->add_radio_check_item(TTR("Sort by ID (Ascending)"), TilesEditorUtils::SOURCE_SORT_ID);
+	p->add_radio_check_item(TTR("Sort by ID (Descending)"), TilesEditorUtils::SOURCE_SORT_ID_REVERSE);
+	p->add_radio_check_item(TTR("Sort by Name (Ascending)"), TilesEditorUtils::SOURCE_SORT_NAME);
+	p->add_radio_check_item(TTR("Sort by Name (Descending)"), TilesEditorUtils::SOURCE_SORT_NAME_REVERSE);
+	p->set_item_checked(TilesEditorUtils::SOURCE_SORT_ID, true);
 
 	sources_list = memnew(ItemList);
 	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	sources_list->connect("item_selected", callable_mp(this, &TileSetEditor::_source_selected));
-	sources_list->connect("item_selected", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::set_sources_lists_current));
-	sources_list->connect("visibility_changed", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::synchronize_sources_list).bind(sources_list, source_sort_button));
+	sources_list->connect("item_selected", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
+	sources_list->connect("visibility_changed", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::synchronize_sources_list).bind(sources_list, source_sort_button));
 	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileSetEditor::_update_sources_list).bind(-1));
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);

@@ -109,8 +109,8 @@ void TileMapEditorTilesPlugin::_update_toolbar() {
 	}
 }
 
-Vector<TileMapEditorPlugin::TabData> TileMapEditorTilesPlugin::get_tabs() const {
-	Vector<TileMapEditorPlugin::TabData> tabs;
+Vector<TileMapSubEditorPlugin::TabData> TileMapEditorTilesPlugin::get_tabs() const {
+	Vector<TileMapSubEditorPlugin::TabData> tabs;
 	tabs.push_back({ toolbar, tiles_bottom_panel });
 	tabs.push_back({ toolbar, patterns_bottom_panel });
 	return tabs;
@@ -147,7 +147,7 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 		old_source = -1;
 	}
 
-	List<int> source_ids = TilesEditorPlugin::get_singleton()->get_sorted_sources(tile_set);
+	List<int> source_ids = TilesEditorUtils::get_singleton()->get_sorted_sources(tile_set);
 	for (const int &source_id : source_ids) {
 		TileSetSource *source = *tile_set->get_source(source_id);
 
@@ -209,7 +209,7 @@ void TileMapEditorTilesPlugin::_update_tile_set_sources_list() {
 	}
 
 	// Synchronize the lists.
-	TilesEditorPlugin::get_singleton()->set_sources_lists_current(sources_list->get_current());
+	TilesEditorUtils::get_singleton()->set_sources_lists_current(sources_list->get_current());
 }
 
 void TileMapEditorTilesPlugin::_update_source_display() {
@@ -322,7 +322,7 @@ void TileMapEditorTilesPlugin::_update_patterns_list() {
 		int id = patterns_item_list->add_item("");
 		patterns_item_list->set_item_metadata(id, tile_set->get_pattern(i));
 		patterns_item_list->set_item_tooltip(id, vformat(TTR("Index: %d"), i));
-		TilesEditorPlugin::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(i), callable_mp(this, &TileMapEditorTilesPlugin::_pattern_preview_done));
+		TilesEditorUtils::get_singleton()->queue_pattern_preview(tile_set, tile_set->get_pattern(i), callable_mp(this, &TileMapEditorTilesPlugin::_pattern_preview_done));
 	}
 
 	// Update the label visibility.
@@ -354,7 +354,7 @@ void TileMapEditorTilesPlugin::_update_atlas_view() {
 	ERR_FAIL_COND(!atlas_source);
 
 	tile_atlas_view->set_atlas_source(*tile_map->get_tileset(), atlas_source, source_id);
-	TilesEditorPlugin::get_singleton()->synchronize_atlas_view(tile_atlas_view);
+	TilesEditorUtils::get_singleton()->synchronize_atlas_view(tile_atlas_view);
 	tile_atlas_control->queue_redraw();
 }
 
@@ -1386,7 +1386,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 				for (int i = 0; i < sources_list->get_item_count(); i++) {
 					if (int(sources_list->get_item_metadata(i)) == picked_source) {
 						sources_list->set_current(i);
-						TilesEditorPlugin::get_singleton()->set_sources_lists_current(i);
+						TilesEditorUtils::get_singleton()->set_sources_lists_current(i);
 						break;
 					}
 				}
@@ -1720,7 +1720,7 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 				if (frame > 0) {
 					color.a *= 0.3;
 				}
-				TilesEditorPlugin::draw_selection_rect(tile_atlas_control, atlas->get_tile_texture_region(E.get_atlas_coords(), frame), color);
+				TilesEditorUtils::draw_selection_rect(tile_atlas_control, atlas->get_tile_texture_region(E.get_atlas_coords(), frame), color);
 			}
 		}
 	}
@@ -1729,7 +1729,7 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 	if (hovered_tile.get_atlas_coords() != TileSetSource::INVALID_ATLAS_COORDS && hovered_tile.alternative_tile == 0 && !tile_set_dragging_selection) {
 		for (int frame = 0; frame < atlas->get_tile_animation_frames_count(hovered_tile.get_atlas_coords()); frame++) {
 			Color color = Color(1.0, 0.8, 0.0, frame == 0 ? 0.6 : 0.3);
-			TilesEditorPlugin::draw_selection_rect(tile_atlas_control, atlas->get_tile_texture_region(hovered_tile.get_atlas_coords(), frame), color);
+			TilesEditorUtils::draw_selection_rect(tile_atlas_control, atlas->get_tile_texture_region(hovered_tile.get_atlas_coords(), frame), color);
 		}
 	}
 
@@ -1751,7 +1751,7 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
 			}
 		}
 		for (const Vector2i &E : to_draw) {
-			TilesEditorPlugin::draw_selection_rect(tile_atlas_control, atlas->get_tile_texture_region(E));
+			TilesEditorUtils::draw_selection_rect(tile_atlas_control, atlas->get_tile_texture_region(E));
 		}
 	}
 }
@@ -1900,7 +1900,7 @@ void TileMapEditorTilesPlugin::_tile_alternatives_control_draw() {
 		if (E.source_id == source_id && E.get_atlas_coords() != TileSetSource::INVALID_ATLAS_COORDS && E.alternative_tile > 0) {
 			Rect2i rect = tile_atlas_view->get_alternative_tile_rect(E.get_atlas_coords(), E.alternative_tile);
 			if (rect != Rect2i()) {
-				TilesEditorPlugin::draw_selection_rect(alternative_tiles_control, rect);
+				TilesEditorUtils::draw_selection_rect(alternative_tiles_control, rect);
 			}
 		}
 	}
@@ -1909,7 +1909,7 @@ void TileMapEditorTilesPlugin::_tile_alternatives_control_draw() {
 	if (hovered_tile.get_atlas_coords() != TileSetSource::INVALID_ATLAS_COORDS && hovered_tile.alternative_tile > 0) {
 		Rect2i rect = tile_atlas_view->get_alternative_tile_rect(hovered_tile.get_atlas_coords(), hovered_tile.alternative_tile);
 		if (rect != Rect2i()) {
-			TilesEditorPlugin::draw_selection_rect(alternative_tiles_control, rect, Color(1.0, 0.8, 0.0, 0.5));
+			TilesEditorUtils::draw_selection_rect(alternative_tiles_control, rect, Color(1.0, 0.8, 0.0, 0.5));
 		}
 	}
 }
@@ -2031,10 +2031,10 @@ void TileMapEditorTilesPlugin::edit(ObjectID p_tile_map_id, int p_tile_map_layer
 }
 
 void TileMapEditorTilesPlugin::_set_source_sort(int p_sort) {
-	for (int i = 0; i != TilesEditorPlugin::SOURCE_SORT_MAX; i++) {
+	for (int i = 0; i != TilesEditorUtils::SOURCE_SORT_MAX; i++) {
 		source_sort_button->get_popup()->set_item_checked(i, (i == (int)p_sort));
 	}
-	TilesEditorPlugin::get_singleton()->set_sorting_option(p_sort);
+	TilesEditorUtils::get_singleton()->set_sorting_option(p_sort);
 	_update_tile_set_sources_list();
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_source_sort", p_sort);
 }
@@ -2217,11 +2217,11 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	PopupMenu *p = source_sort_button->get_popup();
 	p->connect("id_pressed", callable_mp(this, &TileMapEditorTilesPlugin::_set_source_sort));
-	p->add_radio_check_item(TTR("Sort by ID (Ascending)"), TilesEditorPlugin::SOURCE_SORT_ID);
-	p->add_radio_check_item(TTR("Sort by ID (Descending)"), TilesEditorPlugin::SOURCE_SORT_ID_REVERSE);
-	p->add_radio_check_item(TTR("Sort by Name (Ascending)"), TilesEditorPlugin::SOURCE_SORT_NAME);
-	p->add_radio_check_item(TTR("Sort by Name (Descending)"), TilesEditorPlugin::SOURCE_SORT_NAME_REVERSE);
-	p->set_item_checked(TilesEditorPlugin::SOURCE_SORT_ID, true);
+	p->add_radio_check_item(TTR("Sort by ID (Ascending)"), TilesEditorUtils::SOURCE_SORT_ID);
+	p->add_radio_check_item(TTR("Sort by ID (Descending)"), TilesEditorUtils::SOURCE_SORT_ID_REVERSE);
+	p->add_radio_check_item(TTR("Sort by Name (Ascending)"), TilesEditorUtils::SOURCE_SORT_NAME);
+	p->add_radio_check_item(TTR("Sort by Name (Descending)"), TilesEditorUtils::SOURCE_SORT_NAME_REVERSE);
+	p->set_item_checked(TilesEditorUtils::SOURCE_SORT_ID, true);
 	sources_bottom_actions->add_child(source_sort_button);
 
 	sources_list = memnew(ItemList);
@@ -2233,8 +2233,8 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	sources_list->connect("item_selected", callable_mp(this, &TileMapEditorTilesPlugin::_update_fix_selected_and_hovered).unbind(1));
 	sources_list->connect("item_selected", callable_mp(this, &TileMapEditorTilesPlugin::_update_source_display).unbind(1));
-	sources_list->connect("item_selected", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::set_sources_lists_current));
-	sources_list->connect("visibility_changed", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::synchronize_sources_list).bind(sources_list, source_sort_button));
+	sources_list->connect("item_selected", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
+	sources_list->connect("visibility_changed", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::synchronize_sources_list).bind(sources_list, source_sort_button));
 	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileMapEditorTilesPlugin::_update_tile_set_sources_list));
 	split_container_left_side->add_child(sources_list);
@@ -2246,7 +2246,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	tile_atlas_view->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tile_atlas_view->set_texture_grid_visible(false);
 	tile_atlas_view->set_tile_shape_grid_visible(false);
-	tile_atlas_view->connect("transform_changed", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::set_atlas_view_transform));
+	tile_atlas_view->connect("transform_changed", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_atlas_view_transform));
 	atlas_sources_split_container->add_child(tile_atlas_view);
 
 	tile_atlas_control = memnew(Control);
@@ -2353,8 +2353,8 @@ void TileMapEditorTerrainsPlugin::_update_toolbar() {
 	}
 }
 
-Vector<TileMapEditorPlugin::TabData> TileMapEditorTerrainsPlugin::get_tabs() const {
-	Vector<TileMapEditorPlugin::TabData> tabs;
+Vector<TileMapSubEditorPlugin::TabData> TileMapEditorTerrainsPlugin::get_tabs() const {
+	Vector<TileMapSubEditorPlugin::TabData> tabs;
 	tabs.push_back({ toolbar, main_vbox_container });
 	return tabs;
 }
@@ -3549,7 +3549,7 @@ void TileMapEditor::_update_bottom_panel() {
 
 	// Update the visibility of controls.
 	missing_tileset_label->set_visible(!tile_set.is_valid());
-	for (TileMapEditorPlugin::TabData &tab_data : tabs_data) {
+	for (TileMapSubEditorPlugin::TabData &tab_data : tabs_data) {
 		tab_data.panel->hide();
 	}
 	if (tile_set.is_valid()) {
@@ -3639,14 +3639,14 @@ void TileMapEditor::_tab_changed(int p_tab_id) {
 	tabs_plugins[tabs_bar->get_current_tab()]->edit(tile_map_id, tile_map_layer);
 
 	// Update toolbar.
-	for (TileMapEditorPlugin::TabData &tab_data : tabs_data) {
+	for (TileMapSubEditorPlugin::TabData &tab_data : tabs_data) {
 		tab_data.toolbar->hide();
 	}
 	tabs_data[p_tab_id].toolbar->show();
 
 	// Update visible panel.
 	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
-	for (TileMapEditorPlugin::TabData &tab_data : tabs_data) {
+	for (TileMapSubEditorPlugin::TabData &tab_data : tabs_data) {
 		tab_data.panel->hide();
 	}
 	if (tile_map && tile_map->get_tileset().is_valid()) {
@@ -4006,7 +4006,7 @@ TileMapEditor::TileMapEditor() {
 	tabs_bar = memnew(TabBar);
 	tabs_bar->set_clip_tabs(false);
 	for (int plugin_index = 0; plugin_index < tile_map_editor_plugins.size(); plugin_index++) {
-		Vector<TileMapEditorPlugin::TabData> tabs_vector = tile_map_editor_plugins[plugin_index]->get_tabs();
+		Vector<TileMapSubEditorPlugin::TabData> tabs_vector = tile_map_editor_plugins[plugin_index]->get_tabs();
 		for (int tab_index = 0; tab_index < tabs_vector.size(); tab_index++) {
 			tabs_bar->add_tab(tabs_vector[tab_index].panel->get_name());
 			tabs_data.push_back(tabs_vector[tab_index]);
@@ -4024,7 +4024,7 @@ TileMapEditor::TileMapEditor() {
 	tile_map_toolbar->add_child(tabs_bar);
 
 	// Tabs toolbars.
-	for (TileMapEditorPlugin::TabData &tab_data : tabs_data) {
+	for (TileMapSubEditorPlugin::TabData &tab_data : tabs_data) {
 		tab_data.toolbar->hide();
 		if (!tab_data.toolbar->get_parent()) {
 			tile_map_toolbar->add_child(tab_data.toolbar);

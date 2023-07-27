@@ -1014,7 +1014,7 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 	tile_atlas_view->queue_redraw();
 
 	// Synchronize atlas view.
-	TilesEditorPlugin::get_singleton()->synchronize_atlas_view(tile_atlas_view);
+	TilesEditorUtils::get_singleton()->synchronize_atlas_view(tile_atlas_view);
 }
 
 void TileSetAtlasSourceEditor::_update_toolbar() {
@@ -1724,7 +1724,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 				for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(selected.tile); frame++) {
 					Color color = Color(0.0, 1.0, 0.0, frame == 0 ? 1.0 : 0.3);
 					Rect2 region = tile_set_atlas_source->get_tile_texture_region(selected.tile, frame);
-					TilesEditorPlugin::draw_selection_rect(tile_atlas_control, region, color);
+					TilesEditorUtils::draw_selection_rect(tile_atlas_control, region, color);
 				}
 			}
 		}
@@ -1766,7 +1766,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 		// Draw the tiles to be removed.
 		for (const Vector2i &E : drag_modified_tiles) {
 			for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(E); frame++) {
-				TilesEditorPlugin::draw_selection_rect(tile_atlas_control, tile_set_atlas_source->get_tile_texture_region(E, frame), Color(0.0, 0.0, 0.0));
+				TilesEditorUtils::draw_selection_rect(tile_atlas_control, tile_set_atlas_source->get_tile_texture_region(E, frame), Color(0.0, 0.0, 0.0));
 			}
 		}
 	} else if (drag_type == DRAG_TYPE_RECT_SELECT || drag_type == DRAG_TYPE_REMOVE_TILES_USING_RECT) {
@@ -1793,7 +1793,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 
 		for (const Vector2i &E : to_paint) {
 			Vector2i coords = E;
-			TilesEditorPlugin::draw_selection_rect(tile_atlas_control, tile_set_atlas_source->get_tile_texture_region(coords), color);
+			TilesEditorUtils::draw_selection_rect(tile_atlas_control, tile_set_atlas_source->get_tile_texture_region(coords), color);
 		}
 	} else if (drag_type == DRAG_TYPE_CREATE_TILES_USING_RECT) {
 		// Draw tiles to be created.
@@ -1810,7 +1810,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 				Vector2i coords = Vector2i(x, y);
 				if (tile_set_atlas_source->get_tile_at_coords(coords) == TileSetSource::INVALID_ATLAS_COORDS) {
 					Vector2i origin = margins + (coords * (tile_size + separation));
-					TilesEditorPlugin::draw_selection_rect(tile_atlas_control, Rect2i(origin, tile_size));
+					TilesEditorUtils::draw_selection_rect(tile_atlas_control, Rect2i(origin, tile_size));
 				}
 			}
 		}
@@ -1827,7 +1827,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 		Vector2i separation = tile_set_atlas_source->get_separation();
 		Vector2i tile_size = tile_set_atlas_source->get_texture_region_size();
 		Vector2i origin = margins + (area.position * (tile_size + separation));
-		TilesEditorPlugin::draw_selection_rect(tile_atlas_control, Rect2i(origin, area.size * tile_size));
+		TilesEditorUtils::draw_selection_rect(tile_atlas_control, Rect2i(origin, area.size * tile_size));
 	} else {
 		Vector2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 		if (hovered_base_tile_coords.x >= 0 && hovered_base_tile_coords.y >= 0 && hovered_base_tile_coords.x < grid_size.x && hovered_base_tile_coords.y < grid_size.y) {
@@ -1836,7 +1836,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 				// Draw existing hovered tile.
 				for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(hovered_tile); frame++) {
 					Color color = Color(1.0, 0.8, 0.0, frame == 0 ? 0.6 : 0.3);
-					TilesEditorPlugin::draw_selection_rect(tile_atlas_control, tile_set_atlas_source->get_tile_texture_region(hovered_tile, frame), color);
+					TilesEditorUtils::draw_selection_rect(tile_atlas_control, tile_set_atlas_source->get_tile_texture_region(hovered_tile, frame), color);
 				}
 			} else {
 				// Draw empty tile, only in add/remove tiles mode.
@@ -1845,7 +1845,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_draw() {
 					Vector2i separation = tile_set_atlas_source->get_separation();
 					Vector2i tile_size = tile_set_atlas_source->get_texture_region_size();
 					Vector2i origin = margins + (hovered_base_tile_coords * (tile_size + separation));
-					TilesEditorPlugin::draw_selection_rect(tile_atlas_control, Rect2i(origin, tile_size));
+					TilesEditorUtils::draw_selection_rect(tile_atlas_control, Rect2i(origin, tile_size));
 				}
 			}
 		}
@@ -2004,7 +2004,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
 		if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 			Rect2i rect = tile_atlas_view->get_alternative_tile_rect(coords, hovered_alternative_tile_coords.z);
 			if (rect != Rect2i()) {
-				TilesEditorPlugin::draw_selection_rect(alternative_tiles_control, rect, Color(1.0, 0.8, 0.0, 0.5));
+				TilesEditorUtils::draw_selection_rect(alternative_tiles_control, rect, Color(1.0, 0.8, 0.0, 0.5));
 			}
 		}
 
@@ -2014,7 +2014,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_draw() {
 			if (selected.alternative >= 1) {
 				Rect2i rect = tile_atlas_view->get_alternative_tile_rect(selected.tile, selected.alternative);
 				if (rect != Rect2i()) {
-					TilesEditorPlugin::draw_selection_rect(alternative_tiles_control, rect);
+					TilesEditorUtils::draw_selection_rect(alternative_tiles_control, rect);
 				}
 			}
 		}
@@ -2580,7 +2580,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_view->set_h_size_flags(SIZE_EXPAND_FILL);
 	tile_atlas_view->set_v_size_flags(SIZE_EXPAND_FILL);
 	tile_atlas_view->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
-	tile_atlas_view->connect("transform_changed", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::set_atlas_view_transform));
+	tile_atlas_view->connect("transform_changed", callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_atlas_view_transform));
 	tile_atlas_view->connect("transform_changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_atlas_view_transform_changed).unbind(2));
 	right_panel->add_child(tile_atlas_view);
 
