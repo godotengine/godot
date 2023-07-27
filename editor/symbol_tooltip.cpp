@@ -31,13 +31,13 @@
 #include "symbol_tooltip.h"
 #include "editor/plugins/script_text_editor.h"
 #include "editor_help.h"
-#include "editor_node.h"
 
 SymbolTooltip::SymbolTooltip(CodeTextEditor* code_editor) : code_editor(code_editor) { //(CodeTextEditor* code_editor) : code_editor(code_editor) {
 	// Initialize the tooltip components
 
 	// Set the tooltip's theme (PanelContainer's theme)
 	//set_theme(EditorNode::get_singleton()->get_gui_base()->get_theme());
+
 	hide();
 	set_theme(_create_panel_theme());
 
@@ -63,102 +63,91 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor* code_editor) : code_editor(code_edi
 	body_label->set_theme(_create_body_label_theme());
 	layout_container->add_child(body_label);
 
+	tooltip_delay = memnew(Timer);
+	tooltip_delay->set_one_shot(true);
+	tooltip_delay->set_wait_time(0.5);
+	add_child(tooltip_delay);
+
+	tooltip_delay->connect("timeout", callable_mp(this, &SymbolTooltip::_on_tooltip_delay_timeout));
 
 	// Connect the tooltip's update function to the mouse motion signal
 	// connect("mouse_motion", callable_mp(this, &SymbolTooltip::_update_symbol_tooltip));
 }
 
+SymbolTooltip::~SymbolTooltip() {
+	memdelete(tooltip_delay);
+}
+
+void SymbolTooltip::_on_tooltip_delay_timeout() {
+	move_to_front(); // Bring the tooltip to the front
+	show();
+}
+
 void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position) {
-	// Get the word under the mouse cursor
 	CodeEdit *text_editor = code_editor->get_text_editor();
-	String _symbol_word = text_editor->get_word_at_pos(mouse_position);
-	if (!_symbol_word.is_empty()) {
-		symbol_word = _symbol_word;
-		header_content = symbol_word;
+	String symbol_word = _get_symbol_word(text_editor, mouse_position);
+	if (symbol_word.is_empty()) {
+		tooltip_delay->stop();
+		hide();
+		return;
 	}
 
-	// Get the symbol type of the word under the mouse cursor
-	//String symbol_type = text_editor->get_symbol_type_at_pos(mouse_position);
-	//String symbol_info = text_editor->get_symbol_info_at_pos(mouse_position);
-	// symbol_info is a string containing the symbol's type, name, and documentation
-
-	// Retrieve the EditorInterface singleton
-	//EditorInterface *editor_interface = EditorInterface::get_singleton();
-
-	// Retrieve the currently active ScriptTextEditor
-	//ScriptTextEditor *script_editor = editor_interface->get_editor_viewport()->get_script_text_editor();
-	//ScriptLanguage *language;
-
-	//ScriptTextEditor *script_editor = text_editor.script //EditorNode::get_script_text_editor();
-
-	/*Node *base = get_tree()->get_edited_scene_root();
-	Ref<Script> script = base->get_script();*/
-	/*if (base) {
-		base = _find_node_for_script(base, base, script);
-	}*/
-
-	// https://github.com/godotengine/godot/pull/63908/files#diff-fa2cafb4b2d8b59e5baeba0b861f7f2f6bf6c213d6387254fee5a7682478e588R1564-R1573
-	//ScriptLanguage::LookupResult result;
-	/*if (ScriptServer::is_global_class(symbol_word)) {
-		header_content = "class " + symbol_word; //ScriptLanguage::SymbolHint::SYMBOL_CLASS;
-		body_content = "In " + ScriptServer::get_global_class_path(symbol_word);
-		// https://github.com/godotengine/godot/pull/63908/files#diff-fa2cafb4b2d8b59e5baeba0b861f7f2f6bf6c213d6387254fee5a7682478e588R1564-R1573
-	}*/
-
-	/*if (script != NULL && script->get_language()->lookup_code(text_editor->get_text_for_symbol_lookup(), symbol_word, script->get_path(), base, result) != OK) {
-		//_hide_symbol_hint();
-		print_line(vformat("Result for %s:\n%s", symbol_word, ""));
-	}*/
+	_update_tooltip_size();
 
 	// Get the documentation of the word under the mouse cursor
-	// TODO: Account for the context of the word (e.g. class, method, etc.)
-	//		and the context of the current line and surrounding lines.
 	String documentation = _get_doc_of_word(symbol_word);
-	body_content = documentation;
+	_update_tooltip_content(symbol_word, documentation);
 
-	// Calculate and set the tooltip's position
+	Rect2 tooltip_rect = Rect2(get_position(), get_size());
+	bool mouse_over_tooltip = tooltip_rect.has_point(mouse_position);
+	if (!mouse_over_tooltip) {
+		Vector2 tooltip_position = _calculate_tooltip_position(symbol_word, mouse_position);
+		if (tooltip_position == Vector2(-1, -1)) { // If invalid position
+			tooltip_delay->stop();
+			hide();
+			return;
+		} else {
+			set_position(tooltip_position);
+		}
+	}
+
+	// Start the timer to show the tooltip after a delay
+	//tooltip_delay->start();
+	_on_tooltip_delay_timeout();
+}
+
+String SymbolTooltip::_get_symbol_word(CodeEdit *text_editor, const Vector2 &mouse_position) {
+	// Get the word under the mouse cursor
+	return text_editor->get_word_at_pos(mouse_position);
+}
+
+Vector2 SymbolTooltip::_calculate_tooltip_position(const String &symbol_word, const Vector2 &mouse_position) {
+	CodeEdit *text_editor = code_editor->get_text_editor();
 	Vector2 line_col = text_editor->get_line_column_at_pos(mouse_position);
 	int row = line_col.y;
 	int col = line_col.x;
 	int num_lines = text_editor->get_line_count();
 	if (row >= 0 && row < num_lines) {
 		String line = text_editor->get_line(row);
-		int symbol_col = _get_column_pos_of_word(symbol_word, line, text_editor->SEARCH_MATCH_CASE | text_editor->SEARCH_WHOLE_WORDS, 0);
-		if(symbol_col >= 0) {
-			// Calculate the symbol end column
-			int symbol_end = symbol_col + symbol_word.length();
-			if (col > symbol_end) {
-				// Mouse is to the right of the last symbol character
-				hide();
-				return;
-			}
-			Vector2 _symbol_position = text_editor->get_pos_at_line_column(row, symbol_col);
-			if(symbol_position != _symbol_position) {
-				symbol_position = _symbol_position;
-				Vector2 tooltip_position = Vector2(mouse_position.x, symbol_position.y);
-				set_position(tooltip_position);
-			}
+		uint32_t search_flags = text_editor->SEARCH_MATCH_CASE | text_editor->SEARCH_WHOLE_WORDS;
+		int symbol_col = _get_column_pos_of_word(symbol_word, line, search_flags, 0) + 1;
+		if (symbol_col >= 0 && col >= symbol_col && col <= symbol_col + symbol_word.length()) {
+			Vector2 symbol_position = text_editor->get_pos_at_line_column(row, symbol_col);
+			return Vector2(symbol_position.x, symbol_position.y + 5); // Adjust the position to be below the symbol
 		}
 	}
+	return Vector2(-1,-1); // indicates an invalid position
+}
 
+void SymbolTooltip::_update_tooltip_size() {
 	// Calculate and set the tooltip's size
-	Vector2 size = Vector2(600, 300);
-	set_size(size);
+	set_size(Vector2(600, 300));
+}
 
+void SymbolTooltip::_update_tooltip_content(const String &header_content, const String &body_content) {
 	// Update the tooltip's header and body
-	_update_header_label(header_content); //symbol_word);
-	_update_body_label(body_content); //documentation);
-
-	// Bring the tooltip to the front
-	move_to_front();
-
-	Rect2 tooltip_rect = Rect2(get_position(), get_size());
-	bool mouse_over_tooltip = tooltip_rect.has_point(mouse_position);
-	if (!symbol_word.is_empty() || mouse_over_tooltip) {
-		show();
-	} else {
-		hide();
-	}
+	_update_header_label(header_content);
+	_update_body_label(body_content);
 }
 
 void SymbolTooltip::_update_header_label(const String &header_content) {

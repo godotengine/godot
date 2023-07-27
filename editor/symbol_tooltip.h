@@ -45,6 +45,7 @@ class SymbolTooltip : public PanelContainer {
 	VBoxContainer *layout_container = nullptr;
 	RichTextLabel *header_label = nullptr;
 	RichTextLabel *body_label = nullptr;
+	Timer *tooltip_delay;
 
 	String _get_doc_of_word(const String &symbol_word);
 	void _update_header_label(const String &symbol_word);
@@ -54,16 +55,15 @@ class SymbolTooltip : public PanelContainer {
 	Ref<Theme> _create_body_label_theme();
 	int _get_column_pos_of_word(const String &p_key, const String &p_search, uint32_t p_search_flags, int p_from_column) const;
 
-	String symbol_word;
-	String header_content;
-	String body_content;
-	Vector2 symbol_position;
-	//Vector2 tooltip_position;
 public:
+	void _on_tooltip_delay_timeout();
 	void update_symbol_tooltip(const Vector2 &mouse_position);
-	void show_tooltip();
-	void hide_tooltip();
+	String _get_symbol_word(CodeEdit *text_editor, const Vector2 &mouse_position);
+	Vector2 _calculate_tooltip_position(const String &symbol_word, const Vector2 &mouse_position);
+	void _update_tooltip_size();
+	void _update_tooltip_content(const String &header_content, const String &body_content);
 	SymbolTooltip(CodeTextEditor* code_editor);
+	~SymbolTooltip();
 };
 
 static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script);
