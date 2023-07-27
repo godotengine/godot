@@ -1453,6 +1453,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 
 	// Bottom panel.
+	theme->set_type_variation("BottomPanelButton", "Button");
+	// Add separation for the warning/error icon.
+	theme->set_constant("h_separation", "BottomPanelButton", 6 * EDSCALE);
 	Ref<StyleBoxFlat> style_bottom_panel = style_content_panel->duplicate();
 	style_bottom_panel->set_corner_radius_all(corner_radius * EDSCALE);
 	theme->set_stylebox("BottomPanel", "EditorStyles", style_bottom_panel);

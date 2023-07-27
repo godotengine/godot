@@ -7838,6 +7838,7 @@ EditorNode::EditorNode() {
 
 	log = memnew(EditorLog);
 	Button *output_button = add_bottom_panel_item(TTR("Output"), log);
+	output_button->set_theme_type_variation("BottomPanelButton");
 	log->set_tool_button(output_button);
 
 	center_split->connect("resized", callable_mp(this, &EditorNode::_vp_resized));
