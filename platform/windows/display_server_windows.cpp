@@ -34,6 +34,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 #include "scene/resources/atlas_texture.h"
 
@@ -466,6 +467,68 @@ String DisplayServerWindows::clipboard_get() const {
 	CloseClipboard();
 
 	return ret;
+}
+
+Ref<Image> DisplayServerWindows::clipboard_get_image() const {
+	Ref<Image> image;
+	if (!windows.has(last_focused_window)) {
+		return image; // No focused window?
+	}
+	if (!OpenClipboard(windows[last_focused_window].hWnd)) {
+		ERR_FAIL_V_MSG(image, "Unable to open clipboard.");
+	}
+	UINT png_format = RegisterClipboardFormatA("PNG");
+	if (png_format && IsClipboardFormatAvailable(png_format)) {
+		HANDLE png_handle = GetClipboardData(png_format);
+		if (png_handle) {
+			size_t png_size = GlobalSize(png_handle);
+			uint8_t *png_data = (uint8_t *)GlobalLock(png_handle);
+			image.instantiate();
+
+			PNGDriverCommon::png_to_image(png_data, png_size, false, image);
+
+			GlobalUnlock(png_handle);
+		}
+	} else if (IsClipboardFormatAvailable(CF_DIB)) {
+		HGLOBAL mem = GetClipboardData(CF_DIB);
+		if (mem != NULL) {
+			BITMAPINFO *ptr = static_cast<BITMAPINFO *>(GlobalLock(mem));
+
+			if (ptr != NULL) {
+				BITMAPINFOHEADER *info = &ptr->bmiHeader;
+				PackedByteArray pba;
+
+				for (LONG y = info->biHeight - 1; y > -1; y--) {
+					for (LONG x = 0; x < info->biWidth; x++) {
+						tagRGBQUAD *rgbquad = ptr->bmiColors + (info->biWidth * y) + x;
+						pba.append(rgbquad->rgbRed);
+						pba.append(rgbquad->rgbGreen);
+						pba.append(rgbquad->rgbBlue);
+						pba.append(rgbquad->rgbReserved);
+					}
+				}
+				image.instantiate();
+				image->create_from_data(info->biWidth, info->biHeight, false, Image::Format::FORMAT_RGBA8, pba);
+
+				GlobalUnlock(mem);
+			}
+		}
+	}
+
+	CloseClipboard();
+
+	return image;
+}
+
+bool DisplayServerWindows::clipboard_has() const {
+	return (IsClipboardFormatAvailable(CF_TEXT) ||
+			IsClipboardFormatAvailable(CF_UNICODETEXT) ||
+			IsClipboardFormatAvailable(CF_OEMTEXT));
+}
+
+bool DisplayServerWindows::clipboard_has_image() const {
+	UINT png_format = RegisterClipboardFormatA("PNG");
+	return ((png_format && IsClipboardFormatAvailable(png_format)) || IsClipboardFormatAvailable(CF_DIB));
 }
 
 typedef struct {
