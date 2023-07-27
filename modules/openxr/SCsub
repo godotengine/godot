@@ -114,6 +114,8 @@ env_openxr.add_source_files(module_obj, "extensions/openxr_fb_display_refresh_ra
 env_openxr.add_source_files(module_obj, "extensions/openxr_pico_controller_extension.cpp")
 env_openxr.add_source_files(module_obj, "extensions/openxr_wmr_controller_extension.cpp")
 env_openxr.add_source_files(module_obj, "extensions/openxr_ml2_controller_extension.cpp")
+env_openxr.add_source_files(module_obj, "extensions/openxr_extension_wrapper_extension.cpp")
+env_openxr.add_source_files(module_obj, "extensions/openxr_api_extension.cpp")
 
 env.modules_sources += module_obj
 
