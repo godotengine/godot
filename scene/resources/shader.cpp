@@ -63,21 +63,7 @@ void Shader::set_include_path(const String &p_path) {
 
 void Shader::set_code(const String &p_code) {
 	for (const Ref<ShaderInclude> &E : include_dependencies) {
-		E->disconnect(SNAME("changed"), callable_mp(this, &Shader::_dependency_changed));
-	}
-
-	String type = ShaderLanguage::get_shader_type(p_code);
-
-	if (type == "canvas_item") {
-		mode = MODE_CANVAS_ITEM;
-	} else if (type == "particles") {
-		mode = MODE_PARTICLES;
-	} else if (type == "sky") {
-		mode = MODE_SKY;
-	} else if (type == "fog") {
-		mode = MODE_FOG;
-	} else {
-		mode = MODE_SPATIAL;
+		E->disconnect_changed(callable_mp(this, &Shader::_dependency_changed));
 	}
 
 	code = p_code;
@@ -100,8 +86,23 @@ void Shader::set_code(const String &p_code) {
 		}
 	}
 
+	// Try to get the shader type from the final, fully preprocessed shader code.
+	String type = ShaderLanguage::get_shader_type(pp_code);
+
+	if (type == "canvas_item") {
+		mode = MODE_CANVAS_ITEM;
+	} else if (type == "particles") {
+		mode = MODE_PARTICLES;
+	} else if (type == "sky") {
+		mode = MODE_SKY;
+	} else if (type == "fog") {
+		mode = MODE_FOG;
+	} else {
+		mode = MODE_SPATIAL;
+	}
+
 	for (const Ref<ShaderInclude> &E : include_dependencies) {
-		E->connect(SNAME("changed"), callable_mp(this, &Shader::_dependency_changed));
+		E->connect_changed(callable_mp(this, &Shader::_dependency_changed));
 	}
 
 	RenderingServer::get_singleton()->shader_set_code(shader, pp_code);

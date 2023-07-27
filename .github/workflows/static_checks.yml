@@ -86,6 +86,7 @@ jobs:
 
       - name: Documentation checks
         run: |
+          doc/tools/doc_status.py doc/classes modules/*/doc_classes platform/*/doc_classes
           doc/tools/make_rst.py --dry-run --color doc/classes modules platform
 
       - name: Style checks via clang-format (clang_format.sh)

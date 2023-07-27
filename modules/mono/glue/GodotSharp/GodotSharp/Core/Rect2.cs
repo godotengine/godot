@@ -102,7 +102,7 @@ namespace Godot
 
         /// <summary>
         /// Returns <see langword="true"/> if this <see cref="Rect2"/> is finite, by calling
-        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// <see cref="Mathf.IsFinite(real_t)"/> on each component.
         /// </summary>
         /// <returns>Whether this vector is finite or not.</returns>
         public bool IsFinite()

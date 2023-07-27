@@ -819,7 +819,7 @@
 			Name of the .NET assembly. This name is used as the name of the [code].csproj[/code] and [code].sln[/code] files. By default, it's set to the name of the project ([member application/config/name]) allowing to change it in the future without affecting the .NET assembly.
 		</member>
 		<member name="dotnet/project/assembly_reload_attempts" type="int" setter="" getter="" default="3">
-			Number of times to attempt assembly reloading after rebuilding .NET assembies. Effectively also the timeout in seconds to wait for unloading of script assemblies to finish.
+			Number of times to attempt assembly reloading after rebuilding .NET assemblies. Effectively also the timeout in seconds to wait for unloading of script assemblies to finish.
 		</member>
 		<member name="dotnet/project/solution_directory" type="String" setter="" getter="" default="&quot;&quot;">
 			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.
@@ -1943,13 +1943,13 @@
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="" default="60">
 			This is used by servers when used in multi-threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
 		</member>
-		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="1">
+		<member name="navigation/2d/default_cell_size" type="float" setter="" getter="" default="1.0">
 			Default cell size for 2D navigation maps. See [method NavigationServer2D.map_set_cell_size].
 		</member>
-		<member name="navigation/2d/default_edge_connection_margin" type="int" setter="" getter="" default="1">
+		<member name="navigation/2d/default_edge_connection_margin" type="float" setter="" getter="" default="1.0">
 			Default edge connection margin for 2D navigation maps. See [method NavigationServer2D.map_set_edge_connection_margin].
 		</member>
-		<member name="navigation/2d/default_link_connection_radius" type="int" setter="" getter="" default="4">
+		<member name="navigation/2d/default_link_connection_radius" type="float" setter="" getter="" default="4.0">
 			Default link connection radius for 2D navigation maps. See [method NavigationServer2D.map_set_link_connection_radius].
 		</member>
 		<member name="navigation/2d/use_edge_connections" type="bool" setter="" getter="" default="true">
@@ -1966,6 +1966,9 @@
 		</member>
 		<member name="navigation/3d/default_link_connection_radius" type="float" setter="" getter="" default="1.0">
 			Default link connection radius for 3D navigation maps. See [method NavigationServer3D.map_set_link_connection_radius].
+		</member>
+		<member name="navigation/3d/default_up" type="Vector3" setter="" getter="" default="Vector3(0, 1, 0)">
+			Default up orientation for 3D navigation maps. See [method NavigationServer3D.map_set_up].
 		</member>
 		<member name="navigation/3d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 3D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World3D default navigation maps.

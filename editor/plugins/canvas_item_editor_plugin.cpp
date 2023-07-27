@@ -62,6 +62,7 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/style_box_texture.h"
 
 // Min and Max are power of two in order to play nicely with successive increment.
 // That way, we can naturally reach a 100% zoom from boundaries.
@@ -1290,7 +1291,13 @@ void CanvasItemEditor::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref
 	if (mb.is_valid()) {
 		// Special behvior for scroll events, as the zoom_by_increment method can smartly end up on powers of two.
 		int increment = p_zoom_factor > 1.0 ? 1 : -1;
-		zoom_widget->set_zoom_by_increments(increment, mb->is_alt_pressed());
+		bool by_integer = mb->is_alt_pressed();
+
+		if (EDITOR_GET("editors/2d/use_integer_zoom_by_default")) {
+			by_integer = !by_integer;
+		}
+
+		zoom_widget->set_zoom_by_increments(increment, by_integer);
 	} else {
 		zoom_widget->set_zoom(zoom_widget->get_zoom() * p_zoom_factor);
 	}

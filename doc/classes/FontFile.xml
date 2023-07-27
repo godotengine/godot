@@ -134,7 +134,7 @@
 			<return type="int" />
 			<param index="0" name="cache_index" type="int" />
 			<description>
-				Recturns an active face index in the TrueType / OpenType collection.
+				Returns an active face index in the TrueType / OpenType collection.
 			</description>
 		</method>
 		<method name="get_glyph_advance" qualifiers="const">

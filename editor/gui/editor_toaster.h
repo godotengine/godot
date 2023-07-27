@@ -37,6 +37,7 @@
 
 class Button;
 class PanelContainer;
+class StyleBoxFlat;
 
 class EditorToaster : public HBoxContainer {
 	GDCLASS(EditorToaster, HBoxContainer);

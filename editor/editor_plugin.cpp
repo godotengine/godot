@@ -51,6 +51,7 @@
 #include "editor/scene_tree_dock.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/resources/image_texture.h"
 #include "servers/rendering_server.h"
 
 void EditorPlugin::add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {
@@ -306,6 +307,14 @@ const Ref<Texture2D> EditorPlugin::get_icon() const {
 	return icon;
 }
 
+String EditorPlugin::get_plugin_version() const {
+	return plugin_version;
+}
+
+void EditorPlugin::set_plugin_version(const String &p_version) {
+	plugin_version = p_version;
+}
+
 bool EditorPlugin::has_main_screen() const {
 	bool success = false;
 	GDVIRTUAL_CALL(_has_main_screen, success);
@@ -340,7 +349,12 @@ void EditorPlugin::clear() {
 	GDVIRTUAL_CALL(_clear);
 }
 
-// if editor references external resources/scenes, save them
+String EditorPlugin::get_unsaved_status(const String &p_for_scene) const {
+	String ret;
+	GDVIRTUAL_CALL(_get_unsaved_status, p_for_scene, ret);
+	return ret;
+}
+
 void EditorPlugin::save_external_data() {
 	GDVIRTUAL_CALL(_save_external_data);
 }
@@ -577,6 +591,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_script_create_dialog"), &EditorPlugin::get_script_create_dialog);
 	ClassDB::bind_method(D_METHOD("add_debugger_plugin", "script"), &EditorPlugin::add_debugger_plugin);
 	ClassDB::bind_method(D_METHOD("remove_debugger_plugin", "script"), &EditorPlugin::remove_debugger_plugin);
+	ClassDB::bind_method(D_METHOD("get_plugin_version"), &EditorPlugin::get_plugin_version);
 
 	GDVIRTUAL_BIND(_forward_canvas_gui_input, "event");
 	GDVIRTUAL_BIND(_forward_canvas_draw_over_viewport, "viewport_control");
@@ -593,6 +608,7 @@ void EditorPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_state);
 	GDVIRTUAL_BIND(_set_state, "state");
 	GDVIRTUAL_BIND(_clear);
+	GDVIRTUAL_BIND(_get_unsaved_status, "for_scene");
 	GDVIRTUAL_BIND(_save_external_data);
 	GDVIRTUAL_BIND(_apply_changes);
 	GDVIRTUAL_BIND(_get_breakpoints);

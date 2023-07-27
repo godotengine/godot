@@ -35,6 +35,7 @@
 #include "os_web.h"
 
 #include "core/config/project_settings.h"
+#include "scene/resources/atlas_texture.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef GLES3_ENABLED

@@ -36,6 +36,9 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "scene/gui/color_mode.h"
+#include "scene/resources/image_texture.h"
+#include "scene/resources/style_box_flat.h"
+#include "scene/resources/style_box_texture.h"
 #include "servers/display_server.h"
 #include "thirdparty/misc/ok_color.h"
 #include "thirdparty/misc/ok_color_shader.h"
@@ -556,7 +559,7 @@ void ColorPicker::_html_submitted(const String &p_html) {
 	}
 
 	const Color previous_color = color;
-	color = Color::from_string(p_html, previous_color);
+	color = Color::from_string(p_html.strip_edges(), previous_color);
 
 	if (!is_editing_alpha()) {
 		color.a = previous_color.a;

@@ -42,6 +42,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/project_settings_editor.h"
 #include "scene/gui/menu_button.h"
+#include "scene/resources/image_texture.h"
 
 static inline void setup_http_request(HTTPRequest *request) {
 	request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));

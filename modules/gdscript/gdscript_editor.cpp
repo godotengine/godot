@@ -143,13 +143,25 @@ bool GDScriptLanguage::validate(const String &p_script, const String &p_path, Li
 #endif
 	if (err) {
 		if (r_errors) {
-			for (const GDScriptParser::ParserError &E : parser.get_errors()) {
-				const GDScriptParser::ParserError &pe = E;
+			for (const GDScriptParser::ParserError &pe : parser.get_errors()) {
 				ScriptLanguage::ScriptError e;
+				e.path = p_path;
 				e.line = pe.line;
 				e.column = pe.column;
 				e.message = pe.message;
 				r_errors->push_back(e);
+			}
+
+			for (KeyValue<String, Ref<GDScriptParserRef>> E : analyzer.get_depended_parsers()) {
+				GDScriptParser *depended_parser = E.value->get_parser();
+				for (const GDScriptParser::ParserError &pe : depended_parser->get_errors()) {
+					ScriptLanguage::ScriptError e;
+					e.path = E.key;
+					e.line = pe.line;
+					e.column = pe.column;
+					e.message = pe.message;
+					r_errors->push_back(e);
+				}
 			}
 		}
 		return false;
@@ -221,6 +233,10 @@ Script *GDScriptLanguage::create_script() const {
 
 /* DEBUGGER FUNCTIONS */
 
+thread_local int GDScriptLanguage::_debug_parse_err_line = -1;
+thread_local String GDScriptLanguage::_debug_parse_err_file;
+thread_local String GDScriptLanguage::_debug_error;
+
 bool GDScriptLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
 	// break because of parse error
 
@@ -229,6 +245,9 @@ bool GDScriptLanguage::debug_break_parse(const String &p_file, int p_line, const
 		_debug_parse_err_file = p_file;
 		_debug_error = p_error;
 		EngineDebugger::get_script_debugger()->debug(this, false, true);
+		// Because this is thread local, clear the memory afterwards.
+		_debug_parse_err_file = String();
+		_debug_error = String();
 		return true;
 	} else {
 		return false;
@@ -236,12 +255,15 @@ bool GDScriptLanguage::debug_break_parse(const String &p_file, int p_line, const
 }
 
 bool GDScriptLanguage::debug_break(const String &p_error, bool p_allow_continue) {
-	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
+	if (EngineDebugger::is_active()) {
 		_debug_parse_err_line = -1;
 		_debug_parse_err_file = "";
 		_debug_error = p_error;
 		bool is_error_breakpoint = p_error != "Breakpoint";
 		EngineDebugger::get_script_debugger()->debug(this, p_allow_continue, is_error_breakpoint);
+		// Because this is thread local, clear the memory afterwards.
+		_debug_parse_err_file = String();
+		_debug_error = String();
 		return true;
 	} else {
 		return false;
@@ -257,7 +279,7 @@ int GDScriptLanguage::debug_get_stack_level_count() const {
 		return 1;
 	}
 
-	return _debug_call_stack_pos;
+	return _call_stack.stack_pos;
 }
 
 int GDScriptLanguage::debug_get_stack_level_line(int p_level) const {
@@ -265,11 +287,11 @@ int GDScriptLanguage::debug_get_stack_level_line(int p_level) const {
 		return _debug_parse_err_line;
 	}
 
-	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, -1);
+	ERR_FAIL_INDEX_V(p_level, _call_stack.stack_pos, -1);
 
-	int l = _debug_call_stack_pos - p_level - 1;
+	int l = _call_stack.stack_pos - p_level - 1;
 
-	return *(_call_stack[l].line);
+	return *(_call_stack.levels[l].line);
 }
 
 String GDScriptLanguage::debug_get_stack_level_function(int p_level) const {
@@ -277,9 +299,9 @@ String GDScriptLanguage::debug_get_stack_level_function(int p_level) const {
 		return "";
 	}
 
-	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, "");
-	int l = _debug_call_stack_pos - p_level - 1;
-	return _call_stack[l].function->get_name();
+	ERR_FAIL_INDEX_V(p_level, _call_stack.stack_pos, "");
+	int l = _call_stack.stack_pos - p_level - 1;
+	return _call_stack.levels[l].function->get_name();
 }
 
 String GDScriptLanguage::debug_get_stack_level_source(int p_level) const {
@@ -287,9 +309,9 @@ String GDScriptLanguage::debug_get_stack_level_source(int p_level) const {
 		return _debug_parse_err_file;
 	}
 
-	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, "");
-	int l = _debug_call_stack_pos - p_level - 1;
-	return _call_stack[l].function->get_source();
+	ERR_FAIL_INDEX_V(p_level, _call_stack.stack_pos, "");
+	int l = _call_stack.stack_pos - p_level - 1;
+	return _call_stack.levels[l].function->get_source();
 }
 
 void GDScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
@@ -297,17 +319,17 @@ void GDScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p
 		return;
 	}
 
-	ERR_FAIL_INDEX(p_level, _debug_call_stack_pos);
-	int l = _debug_call_stack_pos - p_level - 1;
+	ERR_FAIL_INDEX(p_level, _call_stack.stack_pos);
+	int l = _call_stack.stack_pos - p_level - 1;
 
-	GDScriptFunction *f = _call_stack[l].function;
+	GDScriptFunction *f = _call_stack.levels[l].function;
 
 	List<Pair<StringName, int>> locals;
 
-	f->debug_get_stack_member_state(*_call_stack[l].line, &locals);
+	f->debug_get_stack_member_state(*_call_stack.levels[l].line, &locals);
 	for (const Pair<StringName, int> &E : locals) {
 		p_locals->push_back(E.first);
-		p_values->push_back(_call_stack[l].stack[E.second]);
+		p_values->push_back(_call_stack.levels[l].stack[E.second]);
 	}
 }
 
@@ -316,10 +338,10 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 		return;
 	}
 
-	ERR_FAIL_INDEX(p_level, _debug_call_stack_pos);
-	int l = _debug_call_stack_pos - p_level - 1;
+	ERR_FAIL_INDEX(p_level, _call_stack.stack_pos);
+	int l = _call_stack.stack_pos - p_level - 1;
 
-	GDScriptInstance *instance = _call_stack[l].instance;
+	GDScriptInstance *instance = _call_stack.levels[l].instance;
 
 	if (!instance) {
 		return;
@@ -341,10 +363,10 @@ ScriptInstance *GDScriptLanguage::debug_get_stack_level_instance(int p_level) {
 		return nullptr;
 	}
 
-	ERR_FAIL_INDEX_V(p_level, _debug_call_stack_pos, nullptr);
+	ERR_FAIL_INDEX_V(p_level, _call_stack.stack_pos, nullptr);
 
-	int l = _debug_call_stack_pos - p_level - 1;
-	ScriptInstance *instance = _call_stack[l].instance;
+	int l = _call_stack.stack_pos - p_level - 1;
+	ScriptInstance *instance = _call_stack.levels[l].instance;
 
 	return instance;
 }
@@ -1435,11 +1457,11 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 			} break;
 			case GDScriptParser::Node::SELF: {
 				if (p_context.current_class) {
-					r_type.type.kind = GDScriptParser::DataType::CLASS;
-					r_type.type.type_source = GDScriptParser::DataType::INFERRED;
-					r_type.type.is_constant = true;
-					r_type.type.class_type = p_context.current_class;
-					r_type.value = p_context.base;
+					if (p_context.type != GDScriptParser::COMPLETION_SUPER_METHOD) {
+						r_type.type = p_context.current_class->get_datatype();
+					} else {
+						r_type.type = p_context.current_class->base_type;
+					}
 					found = true;
 				}
 			} break;

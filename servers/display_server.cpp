@@ -362,8 +362,16 @@ String DisplayServer::clipboard_get() const {
 	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
 }
 
+Ref<Image> DisplayServer::clipboard_get_image() const {
+	ERR_FAIL_V_MSG(Ref<Image>(), "Clipboard is not supported by this display server.");
+}
+
 bool DisplayServer::clipboard_has() const {
 	return !clipboard_get().is_empty();
+}
+
+bool DisplayServer::clipboard_has_image() const {
+	return clipboard_get_image().is_valid();
 }
 
 void DisplayServer::clipboard_set_primary(const String &p_text) {
@@ -493,6 +501,11 @@ Error DisplayServer::dialog_show(String p_title, String p_description, Vector<St
 }
 
 Error DisplayServer::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
+	WARN_PRINT("Native dialogs not supported by this display server.");
+	return OK;
+}
+
+Error DisplayServer::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
 	return OK;
 }
@@ -644,7 +657,9 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clipboard_set", "clipboard"), &DisplayServer::clipboard_set);
 	ClassDB::bind_method(D_METHOD("clipboard_get"), &DisplayServer::clipboard_get);
+	ClassDB::bind_method(D_METHOD("clipboard_get_image"), &DisplayServer::clipboard_get_image);
 	ClassDB::bind_method(D_METHOD("clipboard_has"), &DisplayServer::clipboard_has);
+	ClassDB::bind_method(D_METHOD("clipboard_has_image"), &DisplayServer::clipboard_has_image);
 	ClassDB::bind_method(D_METHOD("clipboard_set_primary", "clipboard_primary"), &DisplayServer::clipboard_set_primary);
 	ClassDB::bind_method(D_METHOD("clipboard_get_primary"), &DisplayServer::clipboard_get_primary);
 
@@ -755,6 +770,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("dialog_show", "title", "description", "buttons", "callback"), &DisplayServer::dialog_show);
 	ClassDB::bind_method(D_METHOD("dialog_input_text", "title", "description", "existing_text", "callback"), &DisplayServer::dialog_input_text);
 
+	ClassDB::bind_method(D_METHOD("file_dialog_show", "title", "current_directory", "filename", "show_hidden", "mode", "filters", "callback"), &DisplayServer::file_dialog_show);
+
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_count"), &DisplayServer::keyboard_get_layout_count);
 	ClassDB::bind_method(D_METHOD("keyboard_get_current_layout"), &DisplayServer::keyboard_get_current_layout);
 	ClassDB::bind_method(D_METHOD("keyboard_set_current_layout", "index"), &DisplayServer::keyboard_set_current_layout);
@@ -845,6 +862,12 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CURSOR_HSPLIT);
 	BIND_ENUM_CONSTANT(CURSOR_HELP);
 	BIND_ENUM_CONSTANT(CURSOR_MAX);
+
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_OPEN_FILE);
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_OPEN_FILES);
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_OPEN_DIR);
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_OPEN_ANY);
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_SAVE_FILE);
 
 	BIND_ENUM_CONSTANT(WINDOW_MODE_WINDOWED);
 	BIND_ENUM_CONSTANT(WINDOW_MODE_MINIMIZED);

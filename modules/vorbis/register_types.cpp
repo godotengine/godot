@@ -31,7 +31,10 @@
 #include "register_types.h"
 
 #include "audio_stream_ogg_vorbis.h"
+
+#ifdef TOOLS_ENABLED
 #include "resource_importer_ogg_vorbis.h"
+#endif
 
 void initialize_vorbis_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {

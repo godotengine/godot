@@ -30,6 +30,7 @@
 
 #include "sprite_3d.h"
 
+#include "scene/resources/atlas_texture.h"
 #include "scene/scene_string_names.h"
 
 Color SpriteBase3D::_get_color_accum() {
@@ -372,7 +373,7 @@ void SpriteBase3D::_queue_redraw() {
 	update_gizmos();
 
 	pending_update = true;
-	call_deferred(SceneStringNames::get_singleton()->_im_update);
+	callable_mp(this, &SpriteBase3D::_im_update).call_deferred();
 }
 
 AABB SpriteBase3D::get_aabb() const {
@@ -576,8 +577,6 @@ void SpriteBase3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_item_rect"), &SpriteBase3D::get_item_rect);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &SpriteBase3D::generate_triangle_mesh);
-
-	ClassDB::bind_method(D_METHOD("_im_update"), &SpriteBase3D::_im_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");

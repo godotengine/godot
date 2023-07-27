@@ -41,6 +41,7 @@ class SubViewportContainer : public Container {
 	void _notify_viewports(int p_notification);
 	bool _is_propagated_in_gui_input(const Ref<InputEvent> &p_event);
 	void _send_event_to_viewports(const Ref<InputEvent> &p_event);
+	void _propagate_nonpositional_event(const Ref<InputEvent> &p_event);
 
 protected:
 	void _notification(int p_what);
@@ -54,6 +55,7 @@ public:
 	bool is_stretch_enabled() const;
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
+	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void set_stretch_shrink(int p_shrink);
 	int get_stretch_shrink() const;

@@ -82,11 +82,11 @@ void TouchScreenButton::set_shape(const Ref<Shape2D> &p_shape) {
 		return;
 	}
 	if (shape.is_valid()) {
-		shape->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		shape->disconnect_changed(callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
 	shape = p_shape;
 	if (shape.is_valid()) {
-		shape->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		shape->connect_changed(callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
 	queue_redraw();
 }

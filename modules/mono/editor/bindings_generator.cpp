@@ -1616,7 +1616,16 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// Generate InvokeGodotClassMethod
 
-		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
+		output << MEMBER_BEGIN "/// <summary>\n"
+			   << INDENT1 "/// Invokes the method with the given name, using the given arguments.\n"
+			   << INDENT1 "/// This method is used by Godot to invoke methods from the engine side.\n"
+			   << INDENT1 "/// Do not call or override this method.\n"
+			   << INDENT1 "/// </summary>\n"
+			   << INDENT1 "/// <param name=\"method\">Name of the method to invoke.</param>\n"
+			   << INDENT1 "/// <param name=\"args\">Arguments to use with the invoked method.</param>\n"
+			   << INDENT1 "/// <param name=\"ret\">Value returned by the invoked method.</param>\n";
+
+		output << INDENT1 "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_INVOKE_GODOT_CLASS_METHOD "(in godot_string_name method, "
 			   << "NativeVariantPtrArgs args, out godot_variant ret)\n"
 			   << INDENT1 "{\n";
@@ -1696,6 +1705,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// Generate HasGodotClassMethod
 
+		output << MEMBER_BEGIN "/// <summary>\n"
+			   << INDENT1 "/// Check if the type contains a method with the given name.\n"
+			   << INDENT1 "/// This method is used by Godot to check if a method exists before invoking it.\n"
+			   << INDENT1 "/// Do not call or override this method.\n"
+			   << INDENT1 "/// </summary>\n"
+			   << INDENT1 "/// <param name=\"method\">Name of the method to check for.</param>\n";
+
 		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_METHOD "(in godot_string_name method)\n"
 			   << INDENT1 "{\n";
@@ -1728,6 +1744,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		// Generate HasGodotClassSignal
 
+		output << MEMBER_BEGIN "/// <summary>\n"
+			   << INDENT1 "/// Check if the type contains a signal with the given name.\n"
+			   << INDENT1 "/// This method is used by Godot to check if a signal exists before raising it.\n"
+			   << INDENT1 "/// Do not call or override this method.\n"
+			   << INDENT1 "/// </summary>\n"
+			   << INDENT1 "/// <param name=\"method\">Name of the method to check for.</param>\n";
+
 		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
 			   << " bool " CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(in godot_string_name signal)\n"
 			   << INDENT1 "{\n";
@@ -1758,39 +1781,57 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	//Generate StringName for all class members
 	bool is_inherit = !itype.is_singleton && obj_types.has(itype.base_name);
 	//PropertyName
+	output << MEMBER_BEGIN "/// <summary>\n"
+		   << INDENT1 "/// Cached StringNames for the properties and fields contained in this class, for fast lookup.\n"
+		   << INDENT1 "/// </summary>\n";
 	if (is_inherit) {
-		output << MEMBER_BEGIN "public new class PropertyName : " << obj_types[itype.base_name].proxy_name << ".PropertyName";
+		output << INDENT1 "public new class PropertyName : " << obj_types[itype.base_name].proxy_name << ".PropertyName";
 	} else {
-		output << MEMBER_BEGIN "public class PropertyName";
+		output << INDENT1 "public class PropertyName";
 	}
 	output << "\n"
 		   << INDENT1 "{\n";
 	for (const PropertyInterface &iprop : itype.properties) {
-		output << INDENT2 "public static readonly StringName " << iprop.proxy_name << " = \"" << iprop.cname << "\";\n";
+		output << INDENT2 "/// <summary>\n"
+			   << INDENT2 "/// Cached name for the '" << iprop.cname << "' property.\n"
+			   << INDENT2 "/// </summary>\n"
+			   << INDENT2 "public static readonly StringName " << iprop.proxy_name << " = \"" << iprop.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
 	//MethodName
+	output << MEMBER_BEGIN "/// <summary>\n"
+		   << INDENT1 "/// Cached StringNames for the methods contained in this class, for fast lookup.\n"
+		   << INDENT1 "/// </summary>\n";
 	if (is_inherit) {
-		output << MEMBER_BEGIN "public new class MethodName : " << obj_types[itype.base_name].proxy_name << ".MethodName";
+		output << INDENT1 "public new class MethodName : " << obj_types[itype.base_name].proxy_name << ".MethodName";
 	} else {
-		output << MEMBER_BEGIN "public class MethodName";
+		output << INDENT1 "public class MethodName";
 	}
 	output << "\n"
 		   << INDENT1 "{\n";
 	for (const MethodInterface &imethod : itype.methods) {
-		output << INDENT2 "public static readonly StringName " << imethod.proxy_name << " = \"" << imethod.cname << "\";\n";
+		output << INDENT2 "/// <summary>\n"
+			   << INDENT2 "/// Cached name for the '" << imethod.cname << "' method.\n"
+			   << INDENT2 "/// </summary>\n"
+			   << INDENT2 "public static readonly StringName " << imethod.proxy_name << " = \"" << imethod.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
 	//SignalName
+	output << MEMBER_BEGIN "/// <summary>\n"
+		   << INDENT1 "/// Cached StringNames for the signals contained in this class, for fast lookup.\n"
+		   << INDENT1 "/// </summary>\n";
 	if (is_inherit) {
-		output << MEMBER_BEGIN "public new class SignalName : " << obj_types[itype.base_name].proxy_name << ".SignalName";
+		output << INDENT1 "public new class SignalName : " << obj_types[itype.base_name].proxy_name << ".SignalName";
 	} else {
-		output << MEMBER_BEGIN "public class SignalName";
+		output << INDENT1 "public class SignalName";
 	}
 	output << "\n"
 		   << INDENT1 "{\n";
 	for (const SignalInterface &isignal : itype.signals_) {
-		output << INDENT2 "public static readonly StringName " << isignal.proxy_name << " = \"" << isignal.cname << "\";\n";
+		output << INDENT2 "/// <summary>\n"
+			   << INDENT2 "/// Cached name for the '" << isignal.cname << "' signal.\n"
+			   << INDENT2 "/// </summary>\n"
+			   << INDENT2 "public static readonly StringName " << isignal.proxy_name << " = \"" << isignal.cname << "\";\n";
 	}
 	output << INDENT1 "}\n";
 

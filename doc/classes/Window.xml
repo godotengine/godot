@@ -903,5 +903,8 @@
 			The background style used when the [Window] is embedded. Note that this is drawn only under the window's content, excluding the title. For proper borders and title bar style, you can use [code]expand_margin_*[/code] properties of [StyleBoxFlat].
 			[b]Note:[/b] The content background will not be visible unless [member transparent] is enabled.
 		</theme_item>
+		<theme_item name="embedded_unfocused_border" data_type="style" type="StyleBox">
+			The background style used when the [Window] is embedded and unfocused.
+		</theme_item>
 	</theme_items>
 </class>

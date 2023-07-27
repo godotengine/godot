@@ -83,7 +83,7 @@ using namespace godot;
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
-#include "scene/resources/texture.h"
+#include "scene/resources/image_texture.h"
 #include "servers/text/text_server_extension.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.

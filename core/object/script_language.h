@@ -263,6 +263,7 @@ public:
 	};
 
 	struct ScriptError {
+		String path;
 		int line = -1;
 		int column = -1;
 		String message;

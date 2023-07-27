@@ -39,6 +39,7 @@
 #include "editor/editor_node.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_settings.h"
+#include "scene/resources/compressed_texture.h"
 #include "scene/resources/texture.h"
 
 String ResourceImporterLayeredTexture::get_importer_name() const {

@@ -3151,7 +3151,7 @@ void ThemeTypeEditor::_stylebox_item_changed(Ref<StyleBox> p_value, String p_ite
 void ThemeTypeEditor::_change_pinned_stylebox() {
 	if (leading_stylebox.pinned) {
 		if (leading_stylebox.stylebox.is_valid()) {
-			leading_stylebox.stylebox->disconnect("changed", callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
+			leading_stylebox.stylebox->disconnect_changed(callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
 		}
 
 		Ref<StyleBox> new_stylebox = edited_theme->get_stylebox(leading_stylebox.item_name, edited_type);
@@ -3159,10 +3159,10 @@ void ThemeTypeEditor::_change_pinned_stylebox() {
 		leading_stylebox.ref_stylebox = (new_stylebox.is_valid() ? new_stylebox->duplicate() : Ref<Resource>());
 
 		if (leading_stylebox.stylebox.is_valid()) {
-			new_stylebox->connect("changed", callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
+			new_stylebox->connect_changed(callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
 		}
 	} else if (leading_stylebox.stylebox.is_valid()) {
-		leading_stylebox.stylebox->disconnect("changed", callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
+		leading_stylebox.stylebox->disconnect_changed(callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
 	}
 }
 
@@ -3187,7 +3187,7 @@ void ThemeTypeEditor::_on_pin_leader_button_pressed(Control *p_editor, String p_
 
 void ThemeTypeEditor::_pin_leading_stylebox(String p_item_name, Ref<StyleBox> p_stylebox) {
 	if (leading_stylebox.stylebox.is_valid()) {
-		leading_stylebox.stylebox->disconnect("changed", callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
+		leading_stylebox.stylebox->disconnect_changed(callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
 	}
 
 	LeadingStylebox leader;
@@ -3198,7 +3198,7 @@ void ThemeTypeEditor::_pin_leading_stylebox(String p_item_name, Ref<StyleBox> p_
 
 	leading_stylebox = leader;
 	if (p_stylebox.is_valid()) {
-		p_stylebox->connect("changed", callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
+		p_stylebox->connect_changed(callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
 	}
 
 	_update_type_items();
@@ -3214,7 +3214,7 @@ void ThemeTypeEditor::_on_unpin_leader_button_pressed() {
 
 void ThemeTypeEditor::_unpin_leading_stylebox() {
 	if (leading_stylebox.stylebox.is_valid()) {
-		leading_stylebox.stylebox->disconnect("changed", callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
+		leading_stylebox.stylebox->disconnect_changed(callable_mp(this, &ThemeTypeEditor::_update_stylebox_from_leading));
 	}
 
 	LeadingStylebox leader;
@@ -3337,12 +3337,12 @@ void ThemeTypeEditor::_bind_methods() {
 
 void ThemeTypeEditor::set_edited_theme(const Ref<Theme> &p_theme) {
 	if (edited_theme.is_valid()) {
-		edited_theme->disconnect("changed", callable_mp(this, &ThemeTypeEditor::_update_type_list_debounced));
+		edited_theme->disconnect_changed(callable_mp(this, &ThemeTypeEditor::_update_type_list_debounced));
 	}
 
 	edited_theme = p_theme;
 	if (edited_theme.is_valid()) {
-		edited_theme->connect("changed", callable_mp(this, &ThemeTypeEditor::_update_type_list_debounced));
+		edited_theme->connect_changed(callable_mp(this, &ThemeTypeEditor::_update_type_list_debounced));
 		_update_type_list();
 	}
 

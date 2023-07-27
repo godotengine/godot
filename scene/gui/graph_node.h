@@ -124,8 +124,6 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
-	bool has_point(const Point2 &p_point) const override;
-
 	void set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left = Ref<Texture2D>(), const Ref<Texture2D> &p_custom_right = Ref<Texture2D>(), bool p_draw_stylebox = true);
 	void clear_slot(int p_idx);
 	void clear_all_slots();
@@ -188,9 +186,6 @@ public:
 
 	void set_overlay(Overlay p_overlay);
 	Overlay get_overlay() const;
-
-	void set_comment(bool p_enable);
-	bool is_comment() const;
 
 	void set_resizable(bool p_enable);
 	bool is_resizable() const;

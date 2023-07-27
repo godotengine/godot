@@ -32,6 +32,7 @@
 
 #include "editor/editor_scale.h"
 #include "scene/gui/button.h"
+#include "scene/resources/style_box_texture.h"
 
 bool StyleBoxPreview::grid_preview_enabled = true;
 
@@ -42,11 +43,11 @@ void StyleBoxPreview::_grid_preview_toggled(bool p_active) {
 
 void StyleBoxPreview::edit(const Ref<StyleBox> &p_stylebox) {
 	if (stylebox.is_valid()) {
-		stylebox->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		stylebox->disconnect_changed(callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
 	stylebox = p_stylebox;
 	if (stylebox.is_valid()) {
-		stylebox->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		stylebox->connect_changed(callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
 	Ref<StyleBoxTexture> sbt = stylebox;
 	grid_preview->set_visible(sbt.is_valid());

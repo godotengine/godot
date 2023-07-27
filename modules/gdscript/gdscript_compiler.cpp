@@ -2579,9 +2579,9 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				}
 			} else if (!base->is_valid()) {
 				Error err = OK;
-				Ref<GDScript> base_root = GDScriptCache::get_full_script(base->path, err, p_script->path);
+				Ref<GDScript> base_root = GDScriptCache::get_shallow_script(base->path, err, p_script->path);
 				if (err) {
-					_set_error(vformat(R"(Could not compile base class "%s" from "%s": %s)", base->fully_qualified_name, base->path, error_names[err]), nullptr);
+					_set_error(vformat(R"(Could not parse base class "%s" from "%s": %s)", base->fully_qualified_name, base->path, error_names[err]), nullptr);
 					return err;
 				}
 				if (base_root.is_valid()) {
@@ -2591,7 +2591,12 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 					_set_error(vformat(R"(Could not find class "%s" in "%s".)", base->fully_qualified_name, base->path), nullptr);
 					return ERR_COMPILATION_FAILED;
 				}
-				ERR_FAIL_COND_V(!base->is_valid() && !base->reloading, ERR_BUG);
+
+				err = _populate_class_members(base.ptr(), p_class->base_type.class_type, p_keep_state);
+				if (err) {
+					_set_error(vformat(R"(Could not populate class members of base class "%s" in "%s".)", base->fully_qualified_name, base->path), nullptr);
+					return err;
+				}
 			}
 
 			p_script->base = base;
@@ -2968,7 +2973,7 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 		GDScriptCache::add_static_script(p_script);
 	}
 
-	return GDScriptCache::finish_compiling(main_script->get_path());
+	return GDScriptCache::finish_compiling(main_script->path);
 }
 
 String GDScriptCompiler::get_error() const {

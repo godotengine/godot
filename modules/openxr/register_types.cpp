@@ -36,6 +36,9 @@
 #include "action_map/openxr_interaction_profile.h"
 #include "action_map/openxr_interaction_profile_meta_data.h"
 #include "openxr_interface.h"
+
+#include "extensions/openxr_extension_wrapper_extension.h"
+
 #include "scene/openxr_hand.h"
 
 #include "extensions/openxr_composition_layer_depth_extension.h"
@@ -87,6 +90,11 @@ static void _editor_init() {
 #endif
 
 void initialize_openxr_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
+		GDREGISTER_CLASS(OpenXRExtensionWrapperExtension);
+		GDREGISTER_CLASS(OpenXRAPIExtension);
+	}
+
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
 		if (OpenXRAPI::openxr_is_enabled(false)) {
 			// Always register our extension wrappers even if we don't initialize OpenXR.

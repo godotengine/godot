@@ -953,12 +953,12 @@ void CSGMesh3D::set_mesh(const Ref<Mesh> &p_mesh) {
 		return;
 	}
 	if (mesh.is_valid()) {
-		mesh->disconnect("changed", callable_mp(this, &CSGMesh3D::_mesh_changed));
+		mesh->disconnect_changed(callable_mp(this, &CSGMesh3D::_mesh_changed));
 	}
 	mesh = p_mesh;
 
 	if (mesh.is_valid()) {
-		mesh->connect("changed", callable_mp(this, &CSGMesh3D::_mesh_changed));
+		mesh->connect_changed(callable_mp(this, &CSGMesh3D::_mesh_changed));
 	}
 
 	_mesh_changed();

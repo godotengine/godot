@@ -31,6 +31,7 @@
 #include "editor_export_platform_pc.h"
 
 #include "core/config/project_settings.h"
+#include "scene/resources/image_texture.h"
 
 void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	if (p_preset->get("texture_format/bptc")) {

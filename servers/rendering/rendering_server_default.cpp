@@ -258,20 +258,8 @@ uint64_t RenderingServerDefault::get_rendering_info(RenderingInfo p_info) {
 	return RSG::utilities->get_rendering_info(p_info);
 }
 
-String RenderingServerDefault::get_video_adapter_name() const {
-	return RSG::utilities->get_video_adapter_name();
-}
-
-String RenderingServerDefault::get_video_adapter_vendor() const {
-	return RSG::utilities->get_video_adapter_vendor();
-}
-
 RenderingDevice::DeviceType RenderingServerDefault::get_video_adapter_type() const {
 	return RSG::utilities->get_video_adapter_type();
-}
-
-String RenderingServerDefault::get_video_adapter_api_version() const {
-	return RSG::utilities->get_video_adapter_api_version();
 }
 
 void RenderingServerDefault::set_frame_profiling_enabled(bool p_enable) {

@@ -149,6 +149,8 @@ namespace Godot.SourceGenerators
                 godotSignalDelegates.Add(new(signalName, signalDelegateSymbol, invokeMethodData.Value));
             }
 
+            source.Append("    /// <inheritdoc/>\n");
+            source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
             source.Append(
                 "    protected override void SaveGodotObjectData(global::Godot.Bridge.GodotSerializationInfo info)\n    {\n");
             source.Append("        base.SaveGodotObjectData(info);\n");
@@ -196,6 +198,8 @@ namespace Godot.SourceGenerators
 
             source.Append("    }\n");
 
+            source.Append("    /// <inheritdoc/>\n");
+            source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n");
             source.Append(
                 "    protected override void RestoreGodotObjectData(global::Godot.Bridge.GodotSerializationInfo info)\n    {\n");
             source.Append("        base.RestoreGodotObjectData(info);\n");

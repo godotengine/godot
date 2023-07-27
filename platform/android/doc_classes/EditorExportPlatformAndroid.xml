@@ -104,6 +104,12 @@
 		<member name="package/retain_data_on_uninstall" type="bool" setter="" getter="">
 			If [code]true[/code], when the user uninstalls an app, a prompt to keep the app's data will be shown.
 		</member>
+		<member name="package/show_as_launcher_app" type="bool" setter="" getter="">
+			If [code]true[/code], the user will be able to set this app as the system launcher in Android preferences.
+		</member>
+		<member name="package/show_in_android_tv" type="bool" setter="" getter="">
+			If [code]true[/code], this app will show in Android TV launcher UI.
+		</member>
 		<member name="package/signed" type="bool" setter="" getter="">
 			If [code]true[/code], package signing is enabled.
 		</member>
@@ -577,12 +583,6 @@
 		</member>
 		<member name="version/name" type="String" setter="" getter="">
 			Application version visible to the user.
-		</member>
-		<member name="xr_features/hand_tracking" type="int" setter="" getter="">
-		</member>
-		<member name="xr_features/hand_tracking_frequency" type="int" setter="" getter="">
-		</member>
-		<member name="xr_features/passthrough" type="int" setter="" getter="">
 		</member>
 		<member name="xr_features/xr_mode" type="int" setter="" getter="">
 		</member>

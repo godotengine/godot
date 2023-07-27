@@ -36,6 +36,7 @@
 
 class Button;
 class EditorSpinSlider;
+class GradientTexture2D;
 
 class GradientTexture2DEdit : public Control {
 	GDCLASS(GradientTexture2DEdit, Control);

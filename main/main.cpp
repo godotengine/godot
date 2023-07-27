@@ -2710,6 +2710,9 @@ bool Main::start() {
 	}
 
 	uint64_t minimum_time_msec = GLOBAL_DEF(PropertyInfo(Variant::INT, "application/boot_splash/minimum_display_time", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:ms"), 0);
+	if (Engine::get_singleton()->is_editor_hint()) {
+		minimum_time_msec = 0;
+	}
 
 #ifdef TOOLS_ENABLED
 #ifdef MODULE_GDSCRIPT_ENABLED

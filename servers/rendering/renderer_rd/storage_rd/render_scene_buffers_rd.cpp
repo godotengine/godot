@@ -44,15 +44,28 @@ RenderSceneBuffersRD::~RenderSceneBuffersRD() {
 
 void RenderSceneBuffersRD::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_texture", "context", "name"), &RenderSceneBuffersRD::has_texture);
-	// FIXME we can't pass RD::DataFormat, RD::TextureSamples and RD::TextureView in ClassDB, need to solve views differently...
-	// ClassDB::bind_method(D_METHOD("create_texture", "context", "name", "data_format", "usage_bits", "texture_samples", "size", "layers", "mipmaps", "unique"), &RenderSceneBuffersRD::create_texture);
-	// ClassDB::bind_method(D_METHOD("create_texture_from_format", "context", "name", "format", "view", "unique"), &RenderSceneBuffersRD::create_texture_from_format);
-	// ClassDB::bind_method(D_METHOD("create_texture_view", "context", "name", "view_name", "view"), &RenderSceneBuffersRD::has_texture);
+	ClassDB::bind_method(D_METHOD("create_texture", "context", "name", "data_format", "usage_bits", "texture_samples", "size", "layers", "mipmaps", "unique"), &RenderSceneBuffersRD::create_texture);
+	ClassDB::bind_method(D_METHOD("create_texture_from_format", "context", "name", "format", "view", "unique"), &RenderSceneBuffersRD::_create_texture_from_format);
+	ClassDB::bind_method(D_METHOD("create_texture_view", "context", "name", "view_name", "view"), &RenderSceneBuffersRD::_create_texture_view);
 	ClassDB::bind_method(D_METHOD("get_texture", "context", "name"), &RenderSceneBuffersRD::get_texture);
-	// ClassDB::bind_method(D_METHOD("get_texture_format", "context", "name"), &RenderSceneBuffersRD::get_texture_format);
+	ClassDB::bind_method(D_METHOD("get_texture_format", "context", "name"), &RenderSceneBuffersRD::_get_texture_format);
 	ClassDB::bind_method(D_METHOD("get_texture_slice", "context", "name", "layer", "mipmap", "layers", "mipmaps"), &RenderSceneBuffersRD::get_texture_slice);
 	ClassDB::bind_method(D_METHOD("get_texture_slice_size", "context", "name", "mipmap"), &RenderSceneBuffersRD::get_texture_slice_size);
 	ClassDB::bind_method(D_METHOD("clear_context", "context"), &RenderSceneBuffersRD::clear_context);
+
+	// Access to some core buffers so users don't need to know their names.
+	ClassDB::bind_method(D_METHOD("get_color_texture"), &RenderSceneBuffersRD::_get_color_texture);
+	ClassDB::bind_method(D_METHOD("get_color_layer", "layer"), &RenderSceneBuffersRD::_get_color_layer);
+	ClassDB::bind_method(D_METHOD("get_depth_texture"), &RenderSceneBuffersRD::_get_depth_texture);
+	ClassDB::bind_method(D_METHOD("get_depth_layer", "layer"), &RenderSceneBuffersRD::_get_depth_layer);
+	ClassDB::bind_method(D_METHOD("get_velocity_texture"), &RenderSceneBuffersRD::_get_velocity_texture);
+	ClassDB::bind_method(D_METHOD("get_velocity_layer", "layer"), &RenderSceneBuffersRD::_get_velocity_layer);
+
+	// Expose a few properties we're likely to use externally
+	ClassDB::bind_method(D_METHOD("get_render_target"), &RenderSceneBuffersRD::get_render_target);
+	ClassDB::bind_method(D_METHOD("get_view_count"), &RenderSceneBuffersRD::get_view_count);
+	ClassDB::bind_method(D_METHOD("get_internal_size"), &RenderSceneBuffersRD::get_internal_size);
+	ClassDB::bind_method(D_METHOD("get_use_taa"), &RenderSceneBuffersRD::get_use_taa);
 }
 
 void RenderSceneBuffersRD::update_sizes(NamedTexture &p_named_texture) {
@@ -90,41 +103,43 @@ void RenderSceneBuffersRD::cleanup() {
 	named_textures.clear();
 }
 
-void RenderSceneBuffersRD::configure(RID p_render_target, const Size2i p_internal_size, const Size2i p_target_size, RS::ViewportScaling3DMode p_scaling_3d_mode, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa_3d, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) {
+void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_config) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
-	ERR_FAIL_COND_MSG(p_view_count == 0, "Must have at least 1 view");
+	render_target = p_config->get_render_target();
+	target_size = p_config->get_target_size();
+	internal_size = p_config->get_internal_size();
+	view_count = p_config->get_view_count();
 
-	target_size = p_target_size;
-	internal_size = p_internal_size;
-	scaling_3d_mode = p_scaling_3d_mode;
+	scaling_3d_mode = p_config->get_scaling_3d_mode();
+	msaa_3d = p_config->get_msaa_3d();
+	screen_space_aa = p_config->get_screen_space_aa();
 
-	if (p_use_taa) {
+	fsr_sharpness = p_config->get_fsr_sharpness();
+	texture_mipmap_bias = p_config->get_texture_mipmap_bias();
+	use_taa = p_config->get_use_taa();
+	use_debanding = p_config->get_use_debanding();
+
+	ERR_FAIL_COND_MSG(view_count == 0, "Must have at least 1 view");
+
+	if (use_taa) {
 		// Use negative mipmap LOD bias when TAA is enabled to compensate for loss of sharpness.
 		// This restores sharpness in still images to be roughly at the same level as without TAA,
 		// but moving scenes will still be blurrier.
-		p_texture_mipmap_bias -= 0.5;
+		texture_mipmap_bias -= 0.5;
 	}
 
-	if (p_screen_space_aa == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
+	if (screen_space_aa == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
 		// Use negative mipmap LOD bias when FXAA is enabled to compensate for loss of sharpness.
 		// If both TAA and FXAA are enabled, combine their negative LOD biases together.
-		p_texture_mipmap_bias -= 0.25;
+		texture_mipmap_bias -= 0.25;
 	}
 
-	material_storage->sampler_rd_configure_custom(p_texture_mipmap_bias);
+	material_storage->sampler_rd_configure_custom(texture_mipmap_bias);
 
 	// need to check if we really need to do this here..
 	RendererSceneRenderRD::get_singleton()->update_uniform_sets();
-
-	render_target = p_render_target;
-	fsr_sharpness = p_fsr_sharpness;
-	msaa_3d = p_msaa_3d;
-	screen_space_aa = p_screen_space_aa;
-	use_taa = p_use_taa;
-	use_debanding = p_use_debanding;
-	view_count = p_view_count;
 
 	// cleanout any old buffers we had.
 	cleanup();
@@ -161,9 +176,33 @@ void RenderSceneBuffersRD::configure(RID p_render_target, const Size2i p_interna
 		create_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH, format, usage_bits);
 	}
 
+	// Create our MSAA buffers
+	if (msaa_3d == RS::VIEWPORT_MSAA_DISABLED) {
+		texture_samples = RD::TEXTURE_SAMPLES_1;
+	} else {
+		RD::DataFormat format = base_data_format;
+		uint32_t usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+
+		const RD::TextureSamples ts[RS::VIEWPORT_MSAA_MAX] = {
+			RD::TEXTURE_SAMPLES_1,
+			RD::TEXTURE_SAMPLES_2,
+			RD::TEXTURE_SAMPLES_4,
+			RD::TEXTURE_SAMPLES_8,
+		};
+
+		texture_samples = ts[msaa_3d];
+
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR_MSAA, format, usage_bits, texture_samples);
+
+		usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+		format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, usage_bits) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
+
+		create_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA, format, usage_bits, texture_samples);
+	}
+
 	// VRS (note, our vrs object will only be set if VRS is supported)
 	RID vrs_texture;
-	RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(p_render_target);
+	RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(render_target);
 	if (vrs && vrs_mode != RS::VIEWPORT_VRS_DISABLED) {
 		uint32_t usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 		vrs_texture = create_texture(RB_SCOPE_VRS, RB_TEXTURE, RD::DATA_FORMAT_R8_UINT, usage_bits, RD::TEXTURE_SAMPLES_1, vrs->get_vrs_texture_size(internal_size));
@@ -244,6 +283,17 @@ RID RenderSceneBuffersRD::create_texture(const StringName &p_context, const Stri
 	return create_texture_from_format(p_context, p_texture_name, tf, RD::TextureView(), p_unique);
 }
 
+RID RenderSceneBuffersRD::_create_texture_from_format(const StringName &p_context, const StringName &p_texture_name, const Ref<RDTextureFormat> &p_texture_format, const Ref<RDTextureView> &p_view, bool p_unique) {
+	ERR_FAIL_COND_V(p_texture_format.is_null(), RID());
+
+	RD::TextureView texture_view;
+	if (p_view.is_valid()) { // only use when supplied, else default.
+		texture_view = p_view->base;
+	}
+
+	return create_texture_from_format(p_context, p_texture_name, p_texture_format->base, texture_view, p_unique);
+}
+
 RID RenderSceneBuffersRD::create_texture_from_format(const StringName &p_context, const StringName &p_texture_name, const RD::TextureFormat &p_texture_format, RD::TextureView p_view, bool p_unique) {
 	// TODO p_unique, if p_unique is true, this is a texture that can be shared. This will be implemented later as an optimization.
 
@@ -270,6 +320,15 @@ RID RenderSceneBuffersRD::create_texture_from_format(const StringName &p_context
 	// The rest is lazy created..
 
 	return named_texture.texture;
+}
+
+RID RenderSceneBuffersRD::_create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName p_view_name, const Ref<RDTextureView> p_view) {
+	RD::TextureView texture_view;
+	if (p_view.is_valid()) { // only use when supplied, else default.
+		texture_view = p_view->base;
+	}
+
+	return create_texture_view(p_context, p_texture_name, p_view_name, texture_view);
 }
 
 RID RenderSceneBuffersRD::create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName p_view_name, RD::TextureView p_view) {
@@ -308,6 +367,15 @@ RID RenderSceneBuffersRD::get_texture(const StringName &p_context, const StringN
 	ERR_FAIL_COND_V(!named_textures.has(key), RID());
 
 	return named_textures[key].texture;
+}
+
+Ref<RDTextureFormat> RenderSceneBuffersRD::_get_texture_format(const StringName &p_context, const StringName &p_texture_name) const {
+	Ref<RDTextureFormat> tf;
+	tf.instantiate();
+
+	tf->base = get_texture_format(p_context, p_texture_name);
+
+	return tf;
 }
 
 const RD::TextureFormat RenderSceneBuffersRD::get_texture_format(const StringName &p_context, const StringName &p_texture_name) const {
@@ -534,15 +602,6 @@ void RenderSceneBuffersRD::ensure_velocity() {
 		if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED) {
 			uint32_t msaa_usage_bits = usage_bits | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 			usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-
-			const RD::TextureSamples ts[RS::VIEWPORT_MSAA_MAX] = {
-				RD::TEXTURE_SAMPLES_1,
-				RD::TEXTURE_SAMPLES_2,
-				RD::TEXTURE_SAMPLES_4,
-				RD::TEXTURE_SAMPLES_8,
-			};
-
-			RD::TextureSamples texture_samples = ts[msaa_3d];
 
 			create_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY_MSAA, RD::DATA_FORMAT_R16G16_SFLOAT, msaa_usage_bits, texture_samples);
 		}

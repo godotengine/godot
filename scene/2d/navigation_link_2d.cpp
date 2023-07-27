@@ -182,15 +182,7 @@ void NavigationLink2D::set_enabled(bool p_enabled) {
 
 	enabled = p_enabled;
 
-	if (!is_inside_tree()) {
-		return;
-	}
-
-	if (!enabled) {
-		NavigationServer2D::get_singleton()->link_set_map(link, RID());
-	} else {
-		NavigationServer2D::get_singleton()->link_set_map(link, get_world_2d()->get_navigation_map());
-	}
+	NavigationServer3D::get_singleton()->link_set_enabled(link, enabled);
 
 #ifdef DEBUG_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_enabled()) {

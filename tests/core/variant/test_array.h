@@ -304,13 +304,31 @@ TEST_CASE("[Array] slice()") {
 	CHECK(slice8[1] == Variant(3));
 	CHECK(slice8[2] == Variant(1));
 
-	ERR_PRINT_OFF;
-	Array slice9 = array.slice(4, 1);
-	CHECK(slice9.size() == 0);
+	Array slice9 = array.slice(10, 0, -2);
+	CHECK(slice9.size() == 3);
+	CHECK(slice9[0] == Variant(5));
+	CHECK(slice9[1] == Variant(3));
+	CHECK(slice9[2] == Variant(1));
 
-	Array slice10 = array.slice(3, -4);
-	CHECK(slice10.size() == 0);
+	Array slice10 = array.slice(2, -10, -1);
+	CHECK(slice10.size() == 3);
+	CHECK(slice10[0] == Variant(2));
+	CHECK(slice10[1] == Variant(1));
+	CHECK(slice10[2] == Variant(0));
+
+	ERR_PRINT_OFF;
+	Array slice11 = array.slice(4, 1);
+	CHECK(slice11.size() == 0);
+
+	Array slice12 = array.slice(3, -4);
+	CHECK(slice12.size() == 0);
 	ERR_PRINT_ON;
+
+	Array slice13 = Array().slice(1);
+	CHECK(slice13.size() == 0);
+
+	Array slice14 = array.slice(6);
+	CHECK(slice14.size() == 0);
 }
 
 TEST_CASE("[Array] Duplicate array") {

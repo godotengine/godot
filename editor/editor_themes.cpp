@@ -36,6 +36,10 @@
 #include "editor/editor_icons.gen.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/resources/image_texture.h"
+#include "scene/resources/style_box_flat.h"
+#include "scene/resources/style_box_line.h"
+#include "scene/resources/style_box_texture.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
 #ifdef MODULE_SVG_ENABLED
@@ -1449,6 +1453,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 
 	// Bottom panel.
+	theme->set_type_variation("BottomPanelButton", "Button");
+	// Add separation for the warning/error icon.
+	theme->set_constant("h_separation", "BottomPanelButton", 6 * EDSCALE);
 	Ref<StyleBoxFlat> style_bottom_panel = style_content_panel->duplicate();
 	style_bottom_panel->set_corner_radius_all(corner_radius * EDSCALE);
 	theme->set_stylebox("BottomPanel", "EditorStyles", style_bottom_panel);
@@ -1605,6 +1612,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_window->set_border_width(SIDE_TOP, 24 * EDSCALE);
 	style_window->set_expand_margin(SIDE_TOP, 24 * EDSCALE);
 	theme->set_stylebox("embedded_border", "Window", style_window);
+	theme->set_stylebox("embedded_unfocused_border", "Window", style_window);
 
 	theme->set_color("title_color", "Window", font_color);
 	theme->set_icon("close", "Window", theme->get_icon(SNAME("GuiClose"), SNAME("EditorIcons")));
@@ -1788,7 +1796,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("outline_size", "ProgressBar", 0);
 
 	// GraphEdit
-	theme->set_stylebox("bg", "GraphEdit", style_tree_bg);
+	theme->set_stylebox("panel", "GraphEdit", style_tree_bg);
 	if (dark_theme) {
 		theme->set_color("grid_major", "GraphEdit", Color(1.0, 1.0, 1.0, 0.15));
 		theme->set_color("grid_minor", "GraphEdit", Color(1.0, 1.0, 1.0, 0.07));
@@ -1799,18 +1807,20 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("selection_fill", "GraphEdit", theme->get_color(SNAME("box_selection_fill_color"), SNAME("Editor")));
 	theme->set_color("selection_stroke", "GraphEdit", theme->get_color(SNAME("box_selection_stroke_color"), SNAME("Editor")));
 	theme->set_color("activity", "GraphEdit", accent_color);
-	theme->set_icon("minus", "GraphEdit", theme->get_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
-	theme->set_icon("more", "GraphEdit", theme->get_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
-	theme->set_icon("reset", "GraphEdit", theme->get_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
-	theme->set_icon("snap", "GraphEdit", theme->get_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
-	theme->set_icon("minimap", "GraphEdit", theme->get_icon(SNAME("GridMinimap"), SNAME("EditorIcons")));
+
+	theme->set_icon("zoom_out", "GraphEdit", theme->get_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
+	theme->set_icon("zoom_in", "GraphEdit", theme->get_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
+	theme->set_icon("zoom_reset", "GraphEdit", theme->get_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
+	theme->set_icon("grid_toggle", "GraphEdit", theme->get_icon(SNAME("GridToggle"), SNAME("EditorIcons")));
+	theme->set_icon("minimap_toggle", "GraphEdit", theme->get_icon(SNAME("GridMinimap"), SNAME("EditorIcons")));
+	theme->set_icon("snapping_toggle", "GraphEdit", theme->get_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
 	theme->set_icon("layout", "GraphEdit", theme->get_icon(SNAME("GridLayout"), SNAME("EditorIcons")));
 
 	// GraphEditMinimap
 	Ref<StyleBoxFlat> style_minimap_bg = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);
 	style_minimap_bg->set_border_color(dark_color_3);
 	style_minimap_bg->set_border_width_all(1);
-	theme->set_stylebox("bg", "GraphEditMinimap", style_minimap_bg);
+	theme->set_stylebox("panel", "GraphEditMinimap", style_minimap_bg);
 
 	Ref<StyleBoxFlat> style_minimap_camera;
 	Ref<StyleBoxFlat> style_minimap_node;
@@ -1890,8 +1900,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_stylebox("frame", "GraphNode", graphsb);
 	theme->set_stylebox("selected_frame", "GraphNode", graphsbselected);
-	theme->set_stylebox("comment", "GraphNode", graphsbcomment);
-	theme->set_stylebox("comment_focus", "GraphNode", graphsbcommentselected);
 	theme->set_stylebox("breakpoint", "GraphNode", graphsbbreakpoint);
 	theme->set_stylebox("position", "GraphNode", graphsbposition);
 	theme->set_stylebox("slot", "GraphNode", graphsbslot);

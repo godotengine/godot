@@ -33,6 +33,7 @@
 #include "core/os/os.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/resources/image_texture.h"
 
 void EditorProfiler::_make_metric_ptrs(Metric &m) {
 	for (int i = 0; i < m.categories.size(); i++) {

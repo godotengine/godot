@@ -4,7 +4,7 @@
 		A server interface for low-level 3D navigation access.
 	</brief_description>
 	<description>
-		NavigationServer2D is the server that handles navigation maps, regions and agents. It does not handle A* navigation from [AStar3D].
+		NavigationServer3D is the server that handles navigation maps, regions and agents. It does not handle A* navigation from [AStar3D].
 		Maps are made up of regions, which are made of navigation meshes. Together, they define the navigable areas in the 3D world.
 		[b]Note:[/b] Most [NavigationServer3D] changes take effect after the next physics frame and not immediately. This includes all changes made to maps, regions or agents by navigation-related nodes in the scene tree or made through scripts.
 		For two regions to be connected to each other, they must share a similar edge. An edge is considered connected to another if both of its two vertices are at a distance less than [code]edge_connection_margin[/code] to the respective other edge's vertex.
@@ -248,6 +248,13 @@
 				Create a new link between two positions on a map.
 			</description>
 		</method>
+		<method name="link_get_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Returns [code]true[/code] if the specified [param link] is enabled.
+			</description>
+		</method>
 		<method name="link_get_end_position" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="link" type="RID" />
@@ -310,6 +317,14 @@
 			<param index="1" name="bidirectional" type="bool" />
 			<description>
 				Sets whether this [param link] can be travelled in both directions.
+			</description>
+		</method>
+		<method name="link_set_enabled">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code] the specified [param link] will contribute to its current navigation map.
 			</description>
 		</method>
 		<method name="link_set_end_position">
@@ -734,6 +749,13 @@
 				Returns how many connections this [param region] has with other regions in the map.
 			</description>
 		</method>
+		<method name="region_get_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns [code]true[/code] if the specified [param region] is enabled.
+			</description>
+		</method>
 		<method name="region_get_enter_cost" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="region" type="RID" />
@@ -784,6 +806,14 @@
 				Returns [code]true[/code] if the provided [param point] in world space is currently owned by the provided navigation [param region]. Owned in this context means that one of the region's navigation mesh polygon faces has a possible position at the closest distance to this point compared to all other navigation meshes from other navigation regions that are also registered on the navigation map of the provided region.
 				If multiple navigation meshes have positions at equal distance the navigation region whose polygons are processed first wins the ownership. Polygons are processed in the same order that navigation regions were registered on the NavigationServer.
 				[b]Note:[/b] If navigation meshes from different navigation regions overlap (which should be avoided in general) the result might not be what is expected.
+			</description>
+		</method>
+		<method name="region_set_enabled">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code] the specified [param region] will contribute to its current navigation map.
 			</description>
 		</method>
 		<method name="region_set_enter_cost">

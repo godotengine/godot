@@ -679,13 +679,13 @@
 		<constant name="FORMAT_DXT5_RA_AS_RG" value="34" enum="Format">
 		</constant>
 		<constant name="FORMAT_ASTC_4x4" value="35" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texutre Compression[/url]. This implements the 4x4 (high quality) mode.
+			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 4x4 (high quality) mode.
 		</constant>
 		<constant name="FORMAT_ASTC_4x4_HDR" value="36" enum="Format">
 			Same format as [constant FORMAT_ASTC_4x4], but with the hint to let the GPU know it is used for HDR.
 		</constant>
 		<constant name="FORMAT_ASTC_8x8" value="37" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texutre Compression[/url]. This implements the 8x8 (low quality) mode.
+			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 8x8 (low quality) mode.
 		</constant>
 		<constant name="FORMAT_ASTC_8x8_HDR" value="38" enum="Format">
 			Same format as [constant FORMAT_ASTC_8x8], but with the hint to let the GPU know it is used for HDR.

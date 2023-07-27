@@ -119,11 +119,11 @@
 				Removes a collision exception so the shape does report collisions with the specified [RID].
 			</description>
 		</method>
-		<method name="resource_changed">
+		<method name="resource_changed" is_deprecated="true">
 			<return type="void" />
 			<param index="0" name="resource" type="Resource" />
 			<description>
-				This method is used internally to update the debug gizmo in the editor. Any code placed in this function will be called whenever the [member shape] resource is modified.
+				[i]Obsoleted.[/i] Use [signal Resource.changed] instead.
 			</description>
 		</method>
 		<method name="set_collision_mask_value">

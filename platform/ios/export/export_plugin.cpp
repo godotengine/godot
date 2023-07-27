@@ -182,6 +182,8 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/launch_screens_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "application/export_project_only"), false));
+
 	Vector<PluginConfigIOS> found_plugins = get_plugins();
 	for (int i = 0; i < found_plugins.size(); i++) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("plugins"), found_plugins[i].name)), false));
@@ -1489,7 +1491,9 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 	String dest_dir = p_path.get_base_dir() + "/";
 	String binary_name = p_path.get_file().get_basename();
 
-	EditorProgress ep("export", "Exporting for iOS", 5, true);
+	bool export_project_only = p_preset->get("application/export_project_only");
+
+	EditorProgress ep("export", export_project_only ? TTR("Exporting for iOS (Project Files Only)") : TTR("Exporting for iOS"), export_project_only ? 2 : 5, true);
 
 	String team_id = p_preset->get("application/app_store_team_id");
 	ERR_FAIL_COND_V_MSG(team_id.length() == 0, ERR_CANT_OPEN, "App Store Team ID not specified - cannot configure the project.");
@@ -1851,6 +1855,10 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 		}
 	}
 
+	if (export_project_only) {
+		return OK;
+	}
+
 	if (ep.step("Making .xcarchive", 3)) {
 		return ERR_SKIP;
 	}
@@ -1917,16 +1925,15 @@ Error EditorExportPlatformIOS::_export_project_helper(const Ref<EditorExportPres
 }
 
 bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
+#ifdef MODULE_MONO_ENABLED
+	// Don't check for additional errors, as this particular error cannot be resolved.
+	r_error += TTR("Exporting to iOS is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target iOS with C#/Mono instead.") + "\n";
+	r_error += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
+	return false;
+#else
+
 	String err;
 	bool valid = false;
-
-#ifdef MODULE_MONO_ENABLED
-	err += TTR("Exporting to iOS is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target iOS with C#/Mono instead.") + "\n";
-	err += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
-	// Don't check for additional errors, as this particular error cannot be resolved.
-	r_error = err;
-	return false;
-#endif
 
 	// Look for export templates (first official, and if defined custom templates).
 
@@ -1954,6 +1961,7 @@ bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExp
 	}
 
 	return valid;
+#endif // !MODULE_MONO_ENABLED
 }
 
 bool EditorExportPlatformIOS::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {

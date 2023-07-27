@@ -59,6 +59,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
+#include "scene/resources/image_texture.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"

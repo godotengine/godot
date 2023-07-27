@@ -43,19 +43,6 @@ class NavigationMesh : public Resource {
 	Vector<Polygon> polygons;
 	Ref<ArrayMesh> debug_mesh;
 
-	struct _EdgeKey {
-		Vector3 from;
-		Vector3 to;
-
-		static uint32_t hash(const _EdgeKey &p_key) {
-			return HashMapHasherDefault::hash(p_key.from) ^ HashMapHasherDefault::hash(p_key.to);
-		}
-
-		bool operator==(const _EdgeKey &p_with) const {
-			return HashMapComparatorDefault<Vector3>::compare(from, p_with.from) && HashMapComparatorDefault<Vector3>::compare(to, p_with.to);
-		}
-	};
-
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
@@ -99,7 +86,7 @@ protected:
 	float agent_max_slope = 45.0f;
 	float region_min_size = 2.0f;
 	float region_merge_size = 20.0f;
-	float edge_max_length = 12.0f;
+	float edge_max_length = 0.0f;
 	float edge_max_error = 1.3f;
 	float vertices_per_polygon = 6.0f;
 	float detail_sample_distance = 6.0f;
@@ -201,6 +188,8 @@ public:
 	int get_polygon_count() const;
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
+
+	void clear();
 
 #ifdef DEBUG_ENABLED
 	Ref<ArrayMesh> get_debug_mesh();

@@ -40,6 +40,7 @@ struct EditorProgress;
 #include "editor_export_shared_object.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/main/node.h"
+#include "scene/resources/image_texture.h"
 
 class EditorExportPlugin;
 
