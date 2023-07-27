@@ -53,7 +53,9 @@
 
 class RDTextureFormat : public RefCounted {
 	GDCLASS(RDTextureFormat, RefCounted)
+
 	friend class RenderingDevice;
+	friend class RenderSceneBuffersRD;
 
 	RD::TextureFormat base;
 
@@ -91,6 +93,7 @@ class RDTextureView : public RefCounted {
 	GDCLASS(RDTextureView, RefCounted)
 
 	friend class RenderingDevice;
+	friend class RenderSceneBuffersRD;
 
 	RD::TextureView base;
 
