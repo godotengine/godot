@@ -116,7 +116,6 @@ private:
 		FILE_REMOVE,
 		FILE_DUPLICATE,
 		FILE_REIMPORT,
-		FILE_INFO,
 		FILE_NEW,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_OPEN_EXTERNAL,
@@ -129,6 +128,7 @@ private:
 		FILE_NEW_FOLDER,
 		FILE_NEW_SCRIPT,
 		FILE_NEW_SCENE,
+		FILE_PASTE_IMAGE,
 	};
 
 	enum Overwrite {
@@ -210,6 +210,7 @@ private:
 	Vector<FileOrFolder> to_move;
 	String to_move_path;
 	bool to_move_or_copy = false;
+	bool is_creating_image = false;
 
 	Vector<String> history;
 	int history_pos;
@@ -275,6 +276,7 @@ private:
 	void _make_scene_confirm();
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm();
+	void _create_image(const String &p_path);
 	void _overwrite_dialog_action(bool p_overwrite);
 	Vector<String> _check_existing();
 	void _move_dialog_confirm(const String &p_path);
