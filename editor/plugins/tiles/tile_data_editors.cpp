@@ -685,6 +685,14 @@ void GenericTilePolygonEditor::_store_snap_options() {
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_snap_subdiv", snap_subdivision->get_value());
 }
 
+void GenericTilePolygonEditor::_toggle_expand(bool p_expand) {
+	if (p_expand) {
+		TileSetEditor::get_singleton()->add_expanded_editor(this);
+	} else {
+		TileSetEditor::get_singleton()->remove_expanded_editor();
+	}
+}
+
 void GenericTilePolygonEditor::set_use_undo_redo(bool p_use_undo_redo) {
 	use_undo_redo = p_use_undo_redo;
 }
@@ -793,8 +801,13 @@ void GenericTilePolygonEditor::set_multiple_polygon_mode(bool p_multiple_polygon
 
 void GenericTilePolygonEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
+			if (!get_meta("reparented", false)) {
+				button_expand->set_pressed_no_signal(false);
+			}
+		} break;
 		case NOTIFICATION_THEME_CHANGED: {
+			button_expand->set_icon(get_theme_icon(SNAME("DistractionFree"), SNAME("EditorIcons")));
 			button_create->set_icon(get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
 			button_edit->set_icon(get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
 			button_delete->set_icon(get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
@@ -830,6 +843,16 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	add_child(toolbar);
 
 	tools_button_group.instantiate();
+
+	button_expand = memnew(Button);
+	button_expand->set_flat(true);
+	button_expand->set_toggle_mode(true);
+	button_expand->set_pressed(false);
+	button_expand->set_tooltip_text(TTR("Expand editor"));
+	button_expand->connect("toggled", callable_mp(this, &GenericTilePolygonEditor::_toggle_expand));
+	toolbar->add_child(button_expand);
+
+	toolbar->add_child(memnew(VSeparator));
 
 	button_create = memnew(Button);
 	button_create->set_flat(true);
@@ -885,7 +908,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	snap_subdivision->set_max(99);
 
 	Control *root = memnew(Control);
-	root->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	root->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	root->set_custom_minimum_size(Size2(0, 200 * EDSCALE));
 	root->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	add_child(root);
