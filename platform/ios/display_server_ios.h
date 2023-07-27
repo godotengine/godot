@@ -215,11 +215,8 @@ public:
 	void virtual_keyboard_set_height(int height);
 	virtual int virtual_keyboard_get_height() const override;
 
-	virtual void set_clipboard_string(const String &p_text) override;
-	virtual String get_clipboard_string() const override;
-	virtual bool has_clipboard_string() const override;
-	virtual Ref<Image> get_clipboard_image() const override;
-	virtual bool has_clipboard_image() const override;
+	virtual void clipboard_set(const String &p_text) override;
+	virtual String clipboard_get() const override;
 
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;

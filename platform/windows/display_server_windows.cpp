@@ -32,10 +32,11 @@
 
 #include "os_windows.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "drivers/png/png_driver_common.h"
 #include "main/main.h"
-#include "scene/resources/texture.h"
-#include <drivers/png/png_driver_common.h>
+#include "scene/resources/atlas_texture.h"
 
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -43,6 +44,8 @@
 
 #include <avrt.h>
 #include <dwmapi.h>
+#include <shlwapi.h>
+#include <shobjidl.h>
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
@@ -88,6 +91,7 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_HIDPI:
 		case FEATURE_ICON:
 		case FEATURE_NATIVE_ICON:
+		case FEATURE_NATIVE_DIALOG:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_TEXT_TO_SPEECH:
@@ -214,6 +218,129 @@ void DisplayServerWindows::tts_stop() {
 	tts->stop();
 }
 
+Error DisplayServerWindows::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	_THREAD_SAFE_METHOD_
+
+	Vector<Char16String> filter_names;
+	Vector<Char16String> filter_exts;
+	for (const String &E : p_filters) {
+		Vector<String> tokens = E.split(";");
+		if (tokens.size() == 2) {
+			filter_exts.push_back(tokens[0].strip_edges().utf16());
+			filter_names.push_back(tokens[1].strip_edges().utf16());
+		} else if (tokens.size() == 1) {
+			filter_exts.push_back(tokens[0].strip_edges().utf16());
+			filter_names.push_back(tokens[0].strip_edges().utf16());
+		}
+	}
+
+	Vector<COMDLG_FILTERSPEC> filters;
+	for (int i = 0; i < filter_names.size(); i++) {
+		filters.push_back({ (LPCWSTR)filter_names[i].ptr(), (LPCWSTR)filter_exts[i].ptr() });
+	}
+
+	HRESULT hr = S_OK;
+	IFileDialog *pfd = nullptr;
+	if (p_mode == FILE_DIALOG_MODE_SAVE_FILE) {
+		hr = CoCreateInstance(CLSID_FileSaveDialog, nullptr, CLSCTX_INPROC_SERVER, IID_IFileSaveDialog, (void **)&pfd);
+	} else {
+		hr = CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_IFileOpenDialog, (void **)&pfd);
+	}
+	if (SUCCEEDED(hr)) {
+		DWORD flags;
+		pfd->GetOptions(&flags);
+		if (p_mode == FILE_DIALOG_MODE_OPEN_FILES) {
+			flags |= FOS_ALLOWMULTISELECT;
+		}
+		if (p_mode == FILE_DIALOG_MODE_OPEN_DIR) {
+			flags |= FOS_PICKFOLDERS;
+		}
+		if (p_show_hidden) {
+			flags |= FOS_FORCESHOWHIDDEN;
+		}
+		pfd->SetOptions(flags | FOS_FORCEFILESYSTEM);
+		pfd->SetTitle((LPCWSTR)p_title.utf16().ptr());
+
+		String dir = ProjectSettings::get_singleton()->globalize_path(p_current_directory);
+		if (dir == ".") {
+			dir = OS::get_singleton()->get_executable_path().get_base_dir();
+		}
+		dir = dir.replace("/", "\\");
+
+		IShellItem *shellitem = nullptr;
+		hr = SHCreateItemFromParsingName((LPCWSTR)dir.utf16().ptr(), nullptr, IID_IShellItem, (void **)&shellitem);
+		if (SUCCEEDED(hr)) {
+			pfd->SetDefaultFolder(shellitem);
+			pfd->SetFolder(shellitem);
+		}
+
+		pfd->SetFileName((LPCWSTR)p_filename.utf16().ptr());
+		pfd->SetFileTypes(filters.size(), filters.ptr());
+		pfd->SetFileTypeIndex(0);
+
+		hr = pfd->Show(nullptr);
+		if (SUCCEEDED(hr)) {
+			Vector<String> file_names;
+
+			if (p_mode == FILE_DIALOG_MODE_OPEN_FILES) {
+				IShellItemArray *results;
+				hr = static_cast<IFileOpenDialog *>(pfd)->GetResults(&results);
+				if (SUCCEEDED(hr)) {
+					DWORD count = 0;
+					results->GetCount(&count);
+					for (DWORD i = 0; i < count; i++) {
+						IShellItem *result;
+						results->GetItemAt(i, &result);
+
+						PWSTR file_path = nullptr;
+						hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
+						if (SUCCEEDED(hr)) {
+							file_names.push_back(String::utf16((const char16_t *)file_path));
+							CoTaskMemFree(file_path);
+						}
+						result->Release();
+					}
+					results->Release();
+				}
+			} else {
+				IShellItem *result;
+				hr = pfd->GetResult(&result);
+				if (SUCCEEDED(hr)) {
+					PWSTR file_path = nullptr;
+					hr = result->GetDisplayName(SIGDN_FILESYSPATH, &file_path);
+					if (SUCCEEDED(hr)) {
+						file_names.push_back(String::utf16((const char16_t *)file_path));
+						CoTaskMemFree(file_path);
+					}
+					result->Release();
+				}
+			}
+			if (!p_callback.is_null()) {
+				Variant v_status = true;
+				Variant v_files = file_names;
+				Variant *v_args[2] = { &v_status, &v_files };
+				Variant ret;
+				Callable::CallError ce;
+				p_callback.callp((const Variant **)&v_args, 2, ret, ce);
+			}
+		} else {
+			if (!p_callback.is_null()) {
+				Variant v_status = false;
+				Variant v_files = Vector<String>();
+				Variant *v_args[2] = { &v_status, &v_files };
+				Variant ret;
+				Callable::CallError ce;
+				p_callback.callp((const Variant **)&v_args, 2, ret, ce);
+			}
+		}
+		pfd->Release();
+
+		return OK;
+	} else {
+		return ERR_CANT_OPEN;
+	}
+}
+
 void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
 	_THREAD_SAFE_METHOD_
 
@@ -262,7 +389,8 @@ Point2i DisplayServerWindows::mouse_get_position() const {
 BitField<MouseButtonMask> DisplayServerWindows::mouse_get_button_state() const {
 	return last_button_state;
 }
-void DisplayServerWindows::set_clipboard_string(const String &p_text) {
+
+void DisplayServerWindows::clipboard_set(const String &p_text) {
 	_THREAD_SAFE_METHOD_
 
 	if (!windows.has(MAIN_WINDOW_ID)) {
@@ -303,7 +431,7 @@ void DisplayServerWindows::set_clipboard_string(const String &p_text) {
 	CloseClipboard();
 }
 
-String DisplayServerWindows::get_clipboard_string() const {
+String DisplayServerWindows::clipboard_get() const {
 	_THREAD_SAFE_METHOD_
 
 	if (!windows.has(MAIN_WINDOW_ID)) {
@@ -340,59 +468,8 @@ String DisplayServerWindows::get_clipboard_string() const {
 
 	return ret;
 }
-bool DisplayServerWindows::has_clipboard_string() const {
-	return !get_clipboard_string().is_empty();
-}
-void DisplayServerWindows::set_clipboard_image(const Ref<Image> &p_image) {
-	if (!OpenClipboard(windows[MAIN_WINDOW_ID].hWnd)) {
-		ERR_FAIL_MSG("Unable to open clipboard.");
-	}
-	EmptyClipboard();
-	UINT png_format = RegisterClipboardFormatA("PNG");
-	if (png_format) {
-		PackedByteArray pba = p_image->save_png_to_buffer();
-		HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE, pba.size() * sizeof(BYTE));
-		ERR_FAIL_COND_MSG(mem == nullptr, "Unable to allocate memory for clipboard contents.");
-		PBYTE ptr = (PBYTE)GlobalLock(mem);
-		memcpy(ptr, pba.ptr(), pba.size());
-		GlobalUnlock(mem);
-		SetClipboardData(png_format, mem);
-	}
-	if (IsClipboardFormatAvailable(CF_DIBV5)) {
-		int width = p_image->get_width();
-		int height = p_image->get_height();
-		DWORD size_pixels = width * height * 4;
-		//Pixel data is 12 bytes after the header.
-		HGLOBAL hMem = GlobalAlloc(GHND, sizeof(BITMAPV5HEADER) + 12 + size_pixels);
-		if (hMem) {
-			BITMAPV5HEADER *mem = (BITMAPV5HEADER *)GlobalLock(hMem);
-			if (mem) {
-				mem->bV5Size = sizeof(BITMAPV5HEADER);
-				mem->bV5Width = width;
-				mem->bV5Height = height;
-				mem->bV5Planes = 1;
-				mem->bV5BitCount = 32;
-				mem->bV5SizeImage = size_pixels;
-				mem->bV5Compression = BI_RGB;
-				mem->bV5RedMask = 0x000000ff;
-				mem->bV5GreenMask = 0x0000ff00;
-				mem->bV5BlueMask = 0x00ff0000;
-				mem->bV5AlphaMask = 0xff000000;
-				mem->bV5CSType = LCS_sRGB;
-				mem->bV5Intent = LCS_GM_IMAGES;
-				mem->bV5ClrUsed = 0;
-				PackedByteArray rgba = p_image->get_data();
-				memcpy((char *)mem + sizeof(BITMAPV5HEADER) + 12, rgba.ptr(), size_pixels);
-				GlobalUnlock(hMem);
-				SetClipboardData(CF_DIBV5, hMem);
-			}
-		}
-	}
-	CloseClipboard();
-}
 
-
-Ref<Image> DisplayServerWindows::get_clipboard_image() const {
+Ref<Image> DisplayServerWindows::clipboard_get_image() const {
 	Ref<Image> image;
 	if (!windows.has(last_focused_window)) {
 		return image; // No focused window?
@@ -407,126 +484,53 @@ Ref<Image> DisplayServerWindows::get_clipboard_image() const {
 			size_t png_size = GlobalSize(png_handle);
 			uint8_t *png_data = (uint8_t *)GlobalLock(png_handle);
 			image.instantiate();
+
 			PNGDriverCommon::png_to_image(png_data, png_size, false, image);
+
 			GlobalUnlock(png_handle);
 		}
-	}
-	if (image.is_null() && IsClipboardFormatAvailable(CF_DIBV5)) {
-		HANDLE hGlobal = GetClipboardData(CF_DIBV5);
-		if (hGlobal != NULL) {
-			BITMAPV5HEADER *bitmapV5Header = (BITMAPV5HEADER *)GlobalLock(hGlobal);
-			if (bitmapV5Header != NULL) {
-				int offset = bitmapV5Header->bV5Size + bitmapV5Header->bV5ClrUsed * sizeof(RGBQUAD);
-				if (bitmapV5Header->bV5Compression == BI_BITFIELDS) {
-					offset += 12;
-				}
-				BYTE *buffer = (BYTE *)bitmapV5Header + offset;
-				int bitcount = bitmapV5Header->bV5BitCount;
-				int width = bitmapV5Header->bV5Width;
-				int height = bitmapV5Header->bV5Height;
-				bool flip = false;
-				//If one of those bottom-up images, flip it at the end.
-				if (height < 0) {
-					height = abs(height);
-					flip = true;
-				}
-				DWORD colorMasks[4];
-				colorMasks[0] = bitmapV5Header->bV5RedMask ? bitmapV5Header->bV5RedMask : 0xff;
-				colorMasks[1] = bitmapV5Header->bV5GreenMask ? bitmapV5Header->bV5GreenMask : 0xff00;
-				colorMasks[2] = bitmapV5Header->bV5BlueMask ? bitmapV5Header->bV5BlueMask : 0xff0000;
-				colorMasks[3] = bitmapV5Header->bV5AlphaMask ? bitmapV5Header->bV5AlphaMask : 0xff000000;
-				DWORD colorShifts[4];
-				for (int i = 0; i < 4; i++) {
-					_BitScanForward(&colorShifts[i], colorMasks[i]);
-				}
-				UCHAR *source = (UCHAR *)buffer;
-				PackedByteArray pba;
-				pba.resize(width * height * 4);
-				if (bitmapV5Header->bV5Compression == BI_BITFIELDS && bitcount == 32) {
-					for (int h = 0; h < height; h++) {
-						for (int w = 0; w < width; w++, source += 4) {
-						DWORD *pix = (DWORD *)source;
-						pba.write[(h * width * 4) + (w * 4)] = uint8_t((*pix & colorMasks[0]) >> colorShifts[0]);
-						pba.write[(h * width * 4) + (w * 4) + 1] = uint8_t((*pix & colorMasks[1]) >> colorShifts[1]);
-						pba.write[(h * width * 4) + (w * 4) + 2] = uint8_t((*pix & colorMasks[2]) >> colorShifts[2]);
-						pba.write[(h * width * 4) + (w * 4) + 3] = uint8_t((*pix & colorMasks[3]) >> colorShifts[3]);
-						}
-					}
-				}
-				else if (bitmapV5Header->bV5Compression == BI_RGB && bitcount == 32) {
-					for (int h = 0; h < height; h++) {
-						for (int w = 0; w < width; w++, source += 4) {
-						RGBQUAD *quad = (RGBQUAD *)source;
-						pba.write[(h * width * 4) + (w * 4)] = uint8_t(quad->rgbRed);
-						pba.write[(h * width * 4) + (w * 4) + 1] = uint8_t(quad->rgbGreen);
-						pba.write[(h * width * 4) + (w * 4) + 2] = uint8_t(quad->rgbBlue);
-						pba.write[(h * width * 4) + (w * 4) + 3] = (bitmapV5Header->bV5AlphaMask) ? uint8_t(quad->rgbReserved) : 255;
-						}
-					}
-				}
-				else if (bitmapV5Header->bV5Compression == BI_RGB && bitcount == 24) {
-					int bytes_per_row = ((((width * bitcount) + 31) & ~31) >> 3);
-					int slack = bytes_per_row - (width * 3);
-					for (int h = 0; h < height; h++, source += slack) {
-						for (int w = 0; w < width; w++, source += 3) {
-						RGBTRIPLE *triple = (RGBTRIPLE *)source;
-						pba.write[(h * width * 4) + (w * 4)] = uint8_t(triple->rgbtRed);
-						pba.write[(h * width * 4) + (w * 4) + 1] = uint8_t(triple->rgbtGreen);
-						pba.write[(h * width * 4) + (w * 4) + 2] = uint8_t(triple->rgbtBlue);
-						pba.write[(h * width * 4) + (w * 4) + 3] = 255;
-						}
-					}
-				}
-				GlobalUnlock(hGlobal);
-				image.instantiate();
-				image->initialize_data(width, height, false, Image::Format::FORMAT_RGBA8, pba);
-				if (flip) {
-					image->flip_y();
-				}
-				GlobalUnlock(hGlobal);
-			}
-		}
-	}
-	if (image.is_null() && IsClipboardFormatAvailable(CF_DIB)) {
+	} else if (IsClipboardFormatAvailable(CF_DIB)) {
 		HGLOBAL mem = GetClipboardData(CF_DIB);
 		if (mem != NULL) {
 			BITMAPINFO *ptr = static_cast<BITMAPINFO *>(GlobalLock(mem));
+
 			if (ptr != NULL) {
 				BITMAPINFOHEADER *info = &ptr->bmiHeader;
 				PackedByteArray pba;
-				int width = info->biWidth;
-				int height = info->biHeight;
-				bool flip = false;
-				if (height < 0) {
-					height = abs(height);
-					flip = true;
-				}
-				pba.resize(height * width * 4);
-				for (LONG y =  height - 1; y > -1 ; y--) {
-					for (LONG x = 0; x < width; x++) {
-						tagRGBQUAD *rgbquad = ptr->bmiColors + (width * y) + x;
-						pba.write[(y * width * 4) + (x * 4)] = rgbquad->rgbRed;
-						pba.write[(y * width * 4) + (x * 4) + 1] = rgbquad->rgbGreen;
-						pba.write[(y * width * 4) + (x * 4) + 2] = rgbquad->rgbBlue;
-						//DIBs usually don't have alpha?
-						pba.write[(y * width * 4) + (x * 4) + 3] = info->biBitCount == 32 ? rgbquad->rgbReserved : 255;
+
+				for (LONG y = info->biHeight - 1; y > -1; y--) {
+					for (LONG x = 0; x < info->biWidth; x++) {
+						tagRGBQUAD *rgbquad = ptr->bmiColors + (info->biWidth * y) + x;
+						pba.append(rgbquad->rgbRed);
+						pba.append(rgbquad->rgbGreen);
+						pba.append(rgbquad->rgbBlue);
+						pba.append(rgbquad->rgbReserved);
 					}
 				}
 				image.instantiate();
-				image->initialize_data(info->biWidth, info->biHeight, false, Image::Format::FORMAT_RGBA8, pba);
-				if (flip) {
-					image->flip_y();
-				}
+				image->create_from_data(info->biWidth, info->biHeight, false, Image::Format::FORMAT_RGBA8, pba);
+
 				GlobalUnlock(mem);
 			}
 		}
 	}
+
 	CloseClipboard();
+
 	return image;
 }
-bool DisplayServerWindows::has_clipboard_image() const {
-	return get_clipboard_image().is_valid();
+
+bool DisplayServerWindows::clipboard_has() const {
+	return (IsClipboardFormatAvailable(CF_TEXT) ||
+			IsClipboardFormatAvailable(CF_UNICODETEXT) ||
+			IsClipboardFormatAvailable(CF_OEMTEXT));
 }
+
+bool DisplayServerWindows::clipboard_has_image() const {
+	UINT png_format = RegisterClipboardFormatA("PNG");
+	return ((png_format && IsClipboardFormatAvailable(png_format)) || IsClipboardFormatAvailable(CF_DIB));
+}
+
 typedef struct {
 	int count;
 	int screen;
@@ -804,7 +808,7 @@ Color DisplayServerWindows::screen_get_pixel(const Point2i &p_position) const {
 		COLORREF col = GetPixel(dc, p.x, p.y);
 		if (col != CLR_INVALID) {
 			ReleaseDC(NULL, dc);
-			return Color(float(col & 0x000000FF) / 256.0, float((col & 0x0000FF00) >> 8) / 256.0, float((col & 0x00FF0000) >> 16) / 256.0, 1.0);
+			return Color(float(col & 0x000000FF) / 255.0f, float((col & 0x0000FF00) >> 8) / 255.0f, float((col & 0x00FF0000) >> 16) / 255.0f, 1.0f);
 		}
 		ReleaseDC(NULL, dc);
 	}
@@ -2196,6 +2200,38 @@ Key DisplayServerWindows::keyboard_get_keycode_from_physical(Key p_keycode) cons
 	return (Key)(KeyMappingWindows::get_keysym(vk) | modifiers);
 }
 
+Key DisplayServerWindows::keyboard_get_label_from_physical(Key p_keycode) const {
+	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
+	Key keycode_no_mod = (Key)(p_keycode & KeyModifierMask::CODE_MASK);
+
+	if (keycode_no_mod == Key::PRINT ||
+			keycode_no_mod == Key::KP_ADD ||
+			keycode_no_mod == Key::KP_5 ||
+			(keycode_no_mod >= Key::KEY_0 && keycode_no_mod <= Key::KEY_9)) {
+		return p_keycode;
+	}
+
+	unsigned int scancode = KeyMappingWindows::get_scancode(keycode_no_mod);
+	if (scancode == 0) {
+		return p_keycode;
+	}
+
+	Key keycode = KeyMappingWindows::get_keysym(MapVirtualKey(scancode, MAPVK_VSC_TO_VK));
+
+	HKL current_layout = GetKeyboardLayout(0);
+	static BYTE keyboard_state[256];
+	memset(keyboard_state, 0, 256);
+	wchar_t chars[256] = {};
+	UINT extended_code = MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX);
+	if (ToUnicodeEx(extended_code, scancode, keyboard_state, chars, 255, 4, current_layout) > 0) {
+		String keysym = String::utf16((char16_t *)chars, 255);
+		if (!keysym.is_empty()) {
+			return fix_key_label(keysym[0], keycode) | modifiers;
+		}
+	}
+	return p_keycode;
+}
+
 String _get_full_layout_name_from_registry(HKL p_layout) {
 	String id = "SYSTEM\\CurrentControlSet\\Control\\Keyboard Layouts\\" + String::num_int64((int64_t)p_layout, 16, false).lpad(8, "0");
 	String ret;
@@ -2436,8 +2472,8 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
 	} else {
 		icon = Ref<Image>();
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, NULL);
-		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, NULL);
+		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_SMALL, 0);
+		SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_SETICON, ICON_BIG, 0);
 	}
 }
 
