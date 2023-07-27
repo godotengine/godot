@@ -967,6 +967,8 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 
 	if (tile_set.is_null()) {
 		return;
+	} else {
+		tile_create_help->set_visible(tools_button_group->get_pressed_button() == tool_setup_atlas_source_button);
 	}
 
 	Vector2i pos;
@@ -2581,6 +2583,18 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_view->connect("transform_changed", callable_mp(TilesEditorPlugin::get_singleton(), &TilesEditorPlugin::set_atlas_view_transform));
 	tile_atlas_view->connect("transform_changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_atlas_view_transform_changed).unbind(2));
 	right_panel->add_child(tile_atlas_view);
+
+	tile_create_help = memnew(HBoxContainer);
+	tile_atlas_view->add_child(tile_create_help);
+	tile_create_help->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	tile_create_help->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_LEFT, Control::PRESET_MODE_MINSIZE, 30 * EDSCALE);
+	tile_create_help->add_theme_constant_override("separation", 30 * EDSCALE);
+
+	Label *help_label = memnew(Label(TTR("Hold Ctrl to create multiple tiles.")));
+	tile_create_help->add_child(help_label);
+
+	help_label = memnew(Label(TTR("Hold Shift to create big tiles.")));
+	tile_create_help->add_child(help_label);
 
 	base_tile_popup_menu = memnew(PopupMenu);
 	base_tile_popup_menu->add_shortcut(ED_SHORTCUT("tiles_editor/delete", TTR("Delete"), Key::KEY_DELETE), TILE_DELETE);
