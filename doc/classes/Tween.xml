@@ -366,7 +366,7 @@
 				[/gdscript]
 				[csharp]
 				Tween tween = CreateTween();
-				tween.TweenMethod(Callable.From(() =&gt; LookAt(Vector3.Up)), new Vector3(-1.0f, 0.0f, -1.0f), new Vector3(1.0f, 0.0f, -1.0f), 1.0f); // The LookAt() method takes up vector as second argument.
+				tween.TweenMethod(Callable.From((Vector3 target) =&gt; LookAt(target, Vector3.Up)), new Vector3(-1.0f, 0.0f, -1.0f), new Vector3(1.0f, 0.0f, -1.0f), 1.0f); // Use lambdas to bind additional arguments for the call.
 				[/csharp]
 				[/codeblocks]
 				[b]Example:[/b] Setting the text of a [Label], using an intermediate method and after a delay:
