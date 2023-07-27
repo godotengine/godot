@@ -3510,7 +3510,12 @@ void Viewport::subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_r
 
 Rect2i Viewport::subwindow_get_popup_safe_rect(Window *p_window) const {
 	int index = _sub_window_find(p_window);
-	ERR_FAIL_COND_V(index == -1, Rect2i());
+	// FIXME: Re-enable ERR_FAIL_COND after rewriting embedded window popup closing.
+	// Currently it is expected, that index == -1 can happen.
+	if (index == -1) {
+		return Rect2i();
+	}
+	// ERR_FAIL_COND_V(index == -1, Rect2i());
 
 	return gui.sub_windows[index].parent_safe_rect;
 }
