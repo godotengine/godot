@@ -355,11 +355,11 @@ BitField<MouseButtonMask> DisplayServer::mouse_get_button_state() const {
 }
 
 void DisplayServer::clipboard_set(const String &p_text) {
-	set_clipboard_string(p_text);
+	WARN_PRINT("Clipboard is not supported by this display server.");
 }
 
 String DisplayServer::clipboard_get() const {
-	return get_clipboard_string();
+	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
 }
 
 Ref<Image> DisplayServer::clipboard_get_image() const {
@@ -367,7 +367,7 @@ Ref<Image> DisplayServer::clipboard_get_image() const {
 }
 
 bool DisplayServer::clipboard_has() const {
-	return has_clipboard_string();
+	return !clipboard_get().is_empty();
 }
 
 bool DisplayServer::clipboard_has_image() const {
@@ -375,43 +375,11 @@ bool DisplayServer::clipboard_has_image() const {
 }
 
 void DisplayServer::clipboard_set_primary(const String &p_text) {
-	set_clipboard_primary(p_text);
-}
-
-String DisplayServer::clipboard_get_primary() const {
-	return get_clipboard_primary();
-}
-
-void DisplayServer::set_clipboard_string(const String &p_text) {
-	WARN_PRINT("Clipboard is not supported by this display server.");
-}
-
-String DisplayServer::get_clipboard_string() const {
-	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
-}
-
-bool DisplayServer::has_clipboard_string() const {
-	return !get_clipboard_string().is_empty();
-}
-
-void DisplayServer::set_clipboard_primary(const String &p_text) {
 	WARN_PRINT("Primary clipboard is not supported by this display server.");
 }
 
-String DisplayServer::get_clipboard_primary() const {
+String DisplayServer::clipboard_get_primary() const {
 	ERR_FAIL_V_MSG(String(), "Primary clipboard is not supported by this display server.");
-}
-
-void DisplayServer::set_clipboard_image(const Ref<Image> &p_image) {
-	WARN_PRINT("Clipboard is not supported by this display server.");
-}
-
-Ref<Image> DisplayServer::get_clipboard_image() const {
-	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
-}
-
-bool DisplayServer::has_clipboard_image() const {
-	return get_clipboard_image().is_valid();
 }
 
 void DisplayServer::screen_set_orientation(ScreenOrientation p_orientation, int p_screen) {
