@@ -880,7 +880,7 @@ void ScriptEditor::_copy_script_path() {
 	ScriptEditorBase *se = _get_current_editor();
 	if (se) {
 		Ref<Resource> scr = se->get_edited_resource();
-		DisplayServer::get_singleton()->set_clipboard_string(scr->get_path());
+		DisplayServer::get_singleton()->clipboard_set(scr->get_path());
 	}
 }
 

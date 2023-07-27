@@ -1166,7 +1166,7 @@ void EditorNode::_titlebar_resized() {
 }
 
 void EditorNode::_version_button_pressed() {
-	DisplayServer::get_singleton()->set_clipboard_string(version_btn->get_meta(META_TEXT_TO_COPY));
+	DisplayServer::get_singleton()->clipboard_set(version_btn->get_meta(META_TEXT_TO_COPY));
 }
 
 void EditorNode::_update_undo_redo_allowed() {
@@ -2935,7 +2935,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case HELP_COPY_SYSTEM_INFO: {
 			String info = _get_system_info();
-			DisplayServer::get_singleton()->set_clipboard_string(info);
+			DisplayServer::get_singleton()->clipboard_set(info);
 		} break;
 		case HELP_SUGGEST_A_FEATURE: {
 			OS::get_singleton()->shell_open("https://github.com/godotengine/godot-proposals#readme");
@@ -4615,7 +4615,7 @@ void EditorNode::show_warning(const String &p_text, const String &p_title) {
 }
 
 void EditorNode::_copy_warning(const String &p_str) {
-	DisplayServer::get_singleton()->set_clipboard_string(warning->get_text());
+	DisplayServer::get_singleton()->clipboard_set(warning->get_text());
 }
 
 void EditorNode::_dock_floating_close_request(WindowWrapper *p_wrapper) {
