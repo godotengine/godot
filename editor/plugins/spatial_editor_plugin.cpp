@@ -7270,7 +7270,7 @@ void SpatialEditorPlugin::edit(Object *p_object) {
 }
 
 bool SpatialEditorPlugin::handles(Object *p_object) const {
-	if (p_object->is_class("Spatial")) {
+	if (p_object->is_class("Spatial") || p_object->is_class("Resource")) {
 		return true;
 	} else {
 		// This ensures that gizmos are cleared when selecting a non-Spatial node.
