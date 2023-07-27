@@ -113,17 +113,17 @@ TEST_CASE("[WorkerThreadPool] Parallel foreach") {
 		LocalVector<int> c;
 		c.resize(count_max);
 
-		for_range(0, count_max, true, String(), [&](int i) {
+		WorkerThreadPool::parallel_for(0, count_max, true, String(), [&](int i) {
 			c[i] = 1;
 		});
 		c.sort();
 		CHECK(c[0] == 1);
 		CHECK(c[0] == c[count_max - 1]);
 
-		for_range(0, midpoint, false, String(), [&](int i) {
+		WorkerThreadPool::parallel_for(0, midpoint, false, String(), [&](int i) {
 			c[i]++;
 		});
-		for_range(midpoint, count_max, true, String(), [&](int i) {
+		WorkerThreadPool::parallel_for(midpoint, count_max, true, String(), [&](int i) {
 			c[i]++;
 		});
 		c.sort();

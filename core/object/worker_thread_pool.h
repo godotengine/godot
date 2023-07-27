@@ -187,6 +187,30 @@ public:
 		ud->userdata = p_userdata;
 		return _add_group_task(Callable(), nullptr, nullptr, ud, p_elements, p_tasks, p_high_priority, p_description);
 	}
+
+	// Syntactic sugar for add_template_group_task().
+	// Despite the seeming simplicity, the decision to use this over a plain loop
+	// should be carefully considered, since this won't benefit most cases.
+	template <typename F>
+	static void parallel_for(int p_begin, int p_end, bool p_parallel, String p_name, F p_function) {
+		if (!p_parallel) {
+			for (int i = p_begin; i < p_end; i++) {
+				p_function(i);
+			}
+			return;
+		}
+
+		auto wrapper = [&](int p_index, void *) {
+			p_function(p_index + p_begin);
+		};
+
+		WorkerThreadPool::GroupID gid = singleton->add_template_group_task(
+				&wrapper, &decltype(wrapper)::operator(), nullptr,
+				p_end - p_begin, -1,
+				true, p_name);
+		singleton->wait_for_group_task_completion(gid);
+	}
+
 	GroupID add_native_group_task(void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements, int p_tasks = -1, bool p_high_priority = false, const String &p_description = String());
 	GroupID add_group_task(const Callable &p_action, int p_elements, int p_tasks = -1, bool p_high_priority = false, const String &p_description = String());
 	uint32_t get_group_processed_element_count(GroupID p_group) const;
@@ -201,26 +225,5 @@ public:
 	WorkerThreadPool();
 	~WorkerThreadPool();
 };
-
-template <typename F>
-static _FORCE_INLINE_ void for_range(int i_begin, int i_end, bool parallel, String name, F f) {
-	if (!parallel) {
-		for (int i = i_begin; i < i_end; i++) {
-			f(i);
-		}
-		return;
-	}
-
-	auto wrapper = [&](int i, void *unused) {
-		f(i + i_begin);
-	};
-
-	WorkerThreadPool *wtp = WorkerThreadPool::get_singleton();
-	WorkerThreadPool::GroupID gid = wtp->add_template_group_task(
-			&wrapper, &decltype(wrapper)::operator(), nullptr,
-			i_end - i_begin, -1,
-			true, name);
-	wtp->wait_for_group_task_completion(gid);
-}
 
 #endif // WORKER_THREAD_POOL_H
