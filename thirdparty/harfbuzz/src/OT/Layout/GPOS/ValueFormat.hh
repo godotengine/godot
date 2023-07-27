@@ -118,21 +118,25 @@ struct ValueFormat : HBUINT16
     auto *cache = c->var_store_cache;
 
     /* pixel -> fractional pixel */
-    if (format & xPlaDevice) {
-      if (use_x_device) glyph_pos.x_offset  += (base + get_device (values, &ret)).get_x_delta (font, store, cache);
+    if (format & xPlaDevice)
+    {
+      if (use_x_device) glyph_pos.x_offset  += get_device (values, &ret, base, c->sanitizer).get_x_delta (font, store, cache);
       values++;
     }
-    if (format & yPlaDevice) {
-      if (use_y_device) glyph_pos.y_offset  += (base + get_device (values, &ret)).get_y_delta (font, store, cache);
+    if (format & yPlaDevice)
+    {
+      if (use_y_device) glyph_pos.y_offset  += get_device (values, &ret, base, c->sanitizer).get_y_delta (font, store, cache);
       values++;
     }
-    if (format & xAdvDevice) {
-      if (horizontal && use_x_device) glyph_pos.x_advance += (base + get_device (values, &ret)).get_x_delta (font, store, cache);
+    if (format & xAdvDevice)
+    {
+      if (horizontal && use_x_device) glyph_pos.x_advance += get_device (values, &ret, base, c->sanitizer).get_x_delta (font, store, cache);
       values++;
     }
-    if (format & yAdvDevice) {
+    if (format & yAdvDevice)
+    {
       /* y_advance values grow downward but font-space grows upward, hence negation */
-      if (!horizontal && use_y_device) glyph_pos.y_advance -= (base + get_device (values, &ret)).get_y_delta (font, store, cache);
+      if (!horizontal && use_y_device) glyph_pos.y_advance -= get_device (values, &ret, base, c->sanitizer).get_y_delta (font, store, cache);
       values++;
     }
     return ret;
@@ -173,6 +177,9 @@ struct ValueFormat : HBUINT16
     if (format & yPlacement) y_placement = copy_value (c, new_format, yPlacement, *values++);
     if (format & xAdvance)   x_adv = copy_value (c, new_format, xAdvance, *values++);
     if (format & yAdvance)   y_adv = copy_value (c, new_format, yAdvance, *values++);
+
+    if (!has_device ())
+      return;
 
     if (format & xPlaDevice)
     {
@@ -233,14 +240,12 @@ struct ValueFormat : HBUINT16
 
     if (format & ValueFormat::xAdvDevice)
     {
-
       (base + get_device (&(values[i]))).collect_variation_indices (c);
       i++;
     }
 
     if (format & ValueFormat::yAdvDevice)
     {
-
       (base + get_device (&(values[i]))).collect_variation_indices (c);
       i++;
     }
@@ -277,10 +282,22 @@ struct ValueFormat : HBUINT16
   {
     return *static_cast<Offset16To<Device> *> (value);
   }
-  static inline const Offset16To<Device>& get_device (const Value* value, bool *worked=nullptr)
+  static inline const Offset16To<Device>& get_device (const Value* value)
+  {
+    return *static_cast<const Offset16To<Device> *> (value);
+  }
+  static inline const Device& get_device (const Value* value,
+					  bool *worked,
+					  const void *base,
+					  hb_sanitize_context_t &c)
   {
     if (worked) *worked |= bool (*value);
-    return *static_cast<const Offset16To<Device> *> (value);
+    auto &offset = *static_cast<const Offset16To<Device> *> (value);
+
+    if (unlikely (!offset.sanitize (&c, base)))
+      return Null(Device);
+
+    return base + offset;
   }
 
   void add_delta_to_value (HBINT16 *value,
@@ -340,25 +357,26 @@ struct ValueFormat : HBUINT16
   bool sanitize_value (hb_sanitize_context_t *c, const void *base, const Value *values) const
   {
     TRACE_SANITIZE (this);
-    return_trace (c->check_range (values, get_size ()) && (!has_device () || sanitize_value_devices (c, base, values)));
+
+    if (unlikely (!c->check_range (values, get_size ()))) return_trace (false);
+
+    if (c->lazy_some_gpos)
+      return_trace (true);
+
+    return_trace (!has_device () || sanitize_value_devices (c, base, values));
   }
 
   bool sanitize_values (hb_sanitize_context_t *c, const void *base, const Value *values, unsigned int count) const
   {
     TRACE_SANITIZE (this);
-    unsigned int len = get_len ();
+    unsigned size = get_size ();
 
-    if (!c->check_range (values, count, get_size ())) return_trace (false);
+    if (!c->check_range (values, count, size)) return_trace (false);
 
-    if (!has_device ()) return_trace (true);
+    if (c->lazy_some_gpos)
+      return_trace (true);
 
-    for (unsigned int i = 0; i < count; i++) {
-      if (!sanitize_value_devices (c, base, values))
-        return_trace (false);
-      values += len;
-    }
-
-    return_trace (true);
+    return_trace (sanitize_values_stride_unsafe (c, base, values, count, size));
   }
 
   /* Just sanitize referenced Device tables.  Doesn't check the values themselves. */

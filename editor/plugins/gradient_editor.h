@@ -35,6 +35,8 @@
 #include "scene/gui/popup.h"
 #include "scene/resources/gradient.h"
 
+class GradientTexture1D;
+
 class GradientEditor : public Control {
 	GDCLASS(GradientEditor, Control);
 

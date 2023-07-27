@@ -46,6 +46,7 @@
 #include "core/os/keyboard.h"
 #include "main/main.h"
 #include "scene/resources/texture.h"
+#include "drivers/png/png_driver_common.h"
 
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -2068,7 +2069,7 @@ BitField<MouseButtonMask> DisplayServerMacOS::mouse_get_button_state() const {
 	return last_button_state;
 }
 
-void DisplayServerMacOS::clipboard_set(const String &p_text) {
+void DisplayServerMacOS::set_clipboard_string(const String &p_text) {
 	_THREAD_SAFE_METHOD_
 
 	NSString *copiedString = [NSString stringWithUTF8String:p_text.utf8().get_data()];
@@ -2079,7 +2080,7 @@ void DisplayServerMacOS::clipboard_set(const String &p_text) {
 	[pasteboard writeObjects:copiedStringArray];
 }
 
-String DisplayServerMacOS::clipboard_get() const {
+String DisplayServerMacOS::get_clipboard_string() const {
 	_THREAD_SAFE_METHOD_
 
 	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
@@ -2098,6 +2099,38 @@ String DisplayServerMacOS::clipboard_get() const {
 	String ret;
 	ret.parse_utf8([string UTF8String]);
 	return ret;
+}
+bool has_clipboard_string() const {
+	return !get_clipboard_string().is_empty();
+}
+Ref<Image> DisplayServerMacOS::get_clipboard_image() const {
+	Ref<Image> image;
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
+	if (!result) {
+		return image;
+	}
+	NSData *data = [pasteboard dataForType:result];
+	if (!data) {
+		return image;
+	}
+	NSBitmapImageRep *bitmap = [NSBitmapImageRep imageRepWithData:data];
+	NSData *pngData = [bitmap representationUsingType:NSPNGFileType properties:@{}];
+	image.instantiate();
+	PNGDriverCommon::png_to_image((const uint8_t *)pngData.bytes, pngData.length, false, image);
+	return image;
+}
+bool DisplayServerMacOS::has_clipboard_image() const {
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
+	return result;
+}
+void set_clipboard_image(const Ref<Image> &p_image) {
+	NSImage *image = _convert_to_nsimg(p_image);
+	NSArray *array = [NSArray arrayWithObject: image];
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	[pasteboard clearContents];
+	[pasteboard writeObjects:array];
 }
 
 int DisplayServerMacOS::get_screen_count() const {

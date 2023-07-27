@@ -45,6 +45,7 @@
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform.h"
 #include "main/splash.gen.h"
+#include "scene/resources/image_texture.h"
 
 #include <string.h>
 #include <sys/stat.h>

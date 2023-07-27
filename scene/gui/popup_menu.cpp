@@ -1968,7 +1968,7 @@ void PopupMenu::clear() {
 void PopupMenu::_ref_shortcut(Ref<Shortcut> p_sc) {
 	if (!shortcut_refcount.has(p_sc)) {
 		shortcut_refcount[p_sc] = 1;
-		p_sc->connect("changed", callable_mp(this, &PopupMenu::_shortcut_changed));
+		p_sc->connect_changed(callable_mp(this, &PopupMenu::_shortcut_changed));
 	} else {
 		shortcut_refcount[p_sc] += 1;
 	}
@@ -1978,7 +1978,7 @@ void PopupMenu::_unref_shortcut(Ref<Shortcut> p_sc) {
 	ERR_FAIL_COND(!shortcut_refcount.has(p_sc));
 	shortcut_refcount[p_sc]--;
 	if (shortcut_refcount[p_sc] == 0) {
-		p_sc->disconnect("changed", callable_mp(this, &PopupMenu::_shortcut_changed));
+		p_sc->disconnect_changed(callable_mp(this, &PopupMenu::_shortcut_changed));
 		shortcut_refcount.erase(p_sc);
 	}
 }
@@ -2308,7 +2308,7 @@ void PopupMenu::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("menu_changed"));
 }
 
-void PopupMenu::popup(const Rect2 &p_bounds) {
+void PopupMenu::popup(const Rect2i &p_bounds) {
 	moved = Vector2();
 	popup_time_msec = OS::get_singleton()->get_ticks_msec();
 	Popup::popup(p_bounds);

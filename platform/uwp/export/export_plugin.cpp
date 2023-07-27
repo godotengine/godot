@@ -34,6 +34,7 @@
 
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/resources/image_texture.h"
 
 #include "modules/modules_enabled.gen.h" // For svg and regex.
 #ifdef MODULE_SVG_ENABLED
@@ -135,7 +136,7 @@ bool EditorExportPlatformUWP::has_valid_export_configuration(const Ref<EditorExp
 	// contributors can still test the pipeline if/when we can build it again.
 	r_error = "The UWP platform is currently not supported in Godot 4.\n";
 	return false;
-#endif
+#else
 
 	String err;
 	bool valid = false;
@@ -175,6 +176,7 @@ bool EditorExportPlatformUWP::has_valid_export_configuration(const Ref<EditorExp
 	}
 
 	return valid;
+#endif // DEV_ENABLED
 }
 
 bool EditorExportPlatformUWP::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
@@ -184,7 +186,7 @@ bool EditorExportPlatformUWP::has_valid_project_configuration(const Ref<EditorEx
 	// contributors can still test the pipeline if/when we can build it again.
 	r_error = "The UWP platform is currently not supported in Godot 4.\n";
 	return false;
-#endif
+#else
 
 	String err;
 	bool valid = true;
@@ -258,6 +260,7 @@ bool EditorExportPlatformUWP::has_valid_project_configuration(const Ref<EditorEx
 
 	r_error = err;
 	return valid;
+#endif // DEV_ENABLED
 }
 
 Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
@@ -265,7 +268,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 
 	String src_appx;
 
-	EditorProgress ep("export", "Exporting for UWP", 7, true);
+	EditorProgress ep("export", TTR("Exporting for UWP"), 7, true);
 
 	if (p_debug) {
 		src_appx = p_preset->get("custom_template/debug");

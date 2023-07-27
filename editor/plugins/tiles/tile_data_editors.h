@@ -36,10 +36,11 @@
 #include "editor/editor_properties.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/panel_container.h"
 
+class Label;
 class MenuButton;
 class SpinBox;
-class Label;
 class EditorUndoRedoManager;
 
 class TileDataEditor : public VBoxContainer {
@@ -117,6 +118,7 @@ private:
 
 	HBoxContainer *toolbar = nullptr;
 	Ref<ButtonGroup> tools_button_group;
+	Button *button_expand = nullptr;
 	Button *button_create = nullptr;
 	Button *button_edit = nullptr;
 	Button *button_delete = nullptr;
@@ -165,6 +167,7 @@ private:
 	void _base_control_gui_input(Ref<InputEvent> p_event);
 	void _set_snap_option(int p_index);
 	void _store_snap_options();
+	void _toggle_expand(bool p_expand);
 
 	void _snap_to_tile_shape(Point2 &r_point, float &r_current_snapped_dist, float p_snap_dist);
 	void _snap_point(Point2 &r_point);

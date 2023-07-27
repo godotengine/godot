@@ -31,7 +31,6 @@
 #include "camera_3d.h"
 
 #include "collision_object_3d.h"
-#include "core/core_string_names.h"
 #include "core/math/projection.h"
 #include "scene/main/viewport.h"
 
@@ -430,7 +429,7 @@ void Camera3D::set_attributes(const Ref<CameraAttributes> &p_attributes) {
 	if (attributes.is_valid()) {
 		CameraAttributesPhysical *physical_attributes = Object::cast_to<CameraAttributesPhysical>(attributes.ptr());
 		if (physical_attributes) {
-			attributes->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Camera3D::_attributes_changed));
+			attributes->disconnect_changed(callable_mp(this, &Camera3D::_attributes_changed));
 		}
 	}
 
@@ -439,7 +438,7 @@ void Camera3D::set_attributes(const Ref<CameraAttributes> &p_attributes) {
 	if (attributes.is_valid()) {
 		CameraAttributesPhysical *physical_attributes = Object::cast_to<CameraAttributesPhysical>(attributes.ptr());
 		if (physical_attributes) {
-			attributes->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Camera3D::_attributes_changed));
+			attributes->connect_changed(callable_mp(this, &Camera3D::_attributes_changed));
 			_attributes_changed();
 		}
 

@@ -505,6 +505,10 @@ bool OS::has_feature(const String &p_feature) {
 	return false;
 }
 
+bool OS::is_sandboxed() const {
+	return false;
+}
+
 void OS::set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments) {
 	restart_on_exit = p_restart;
 	restart_commandline = p_restart_arguments;

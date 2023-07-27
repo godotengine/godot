@@ -30,7 +30,6 @@
 
 #include "sprite_2d.h"
 
-#include "core/core_string_names.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 
@@ -137,13 +136,13 @@ void Sprite2D::set_texture(const Ref<Texture2D> &p_texture) {
 	}
 
 	if (texture.is_valid()) {
-		texture->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Sprite2D::_texture_changed));
+		texture->disconnect_changed(callable_mp(this, &Sprite2D::_texture_changed));
 	}
 
 	texture = p_texture;
 
 	if (texture.is_valid()) {
-		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Sprite2D::_texture_changed));
+		texture->connect_changed(callable_mp(this, &Sprite2D::_texture_changed));
 	}
 
 	queue_redraw();

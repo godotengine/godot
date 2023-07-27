@@ -30,7 +30,6 @@
 
 #include "physics_body_3d.h"
 
-#include "core/core_string_names.h"
 #include "scene/scene_string_names.h"
 
 void PhysicsBody3D::_bind_methods() {
@@ -214,15 +213,13 @@ real_t PhysicsBody3D::get_inverse_mass() const {
 
 void StaticBody3D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody3D::_reload_physics_characteristics))) {
-			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody3D::_reload_physics_characteristics));
-		}
+		physics_material_override->disconnect_changed(callable_mp(this, &StaticBody3D::_reload_physics_characteristics));
 	}
 
 	physics_material_override = p_physics_material_override;
 
 	if (physics_material_override.is_valid()) {
-		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &StaticBody3D::_reload_physics_characteristics));
+		physics_material_override->connect_changed(callable_mp(this, &StaticBody3D::_reload_physics_characteristics));
 	}
 	_reload_physics_characteristics();
 }
@@ -726,15 +723,13 @@ const Vector3 &RigidBody3D::get_center_of_mass() const {
 
 void RigidBody3D::set_physics_material_override(const Ref<PhysicsMaterial> &p_physics_material_override) {
 	if (physics_material_override.is_valid()) {
-		if (physics_material_override->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody3D::_reload_physics_characteristics))) {
-			physics_material_override->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody3D::_reload_physics_characteristics));
-		}
+		physics_material_override->disconnect_changed(callable_mp(this, &RigidBody3D::_reload_physics_characteristics));
 	}
 
 	physics_material_override = p_physics_material_override;
 
 	if (physics_material_override.is_valid()) {
-		physics_material_override->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &RigidBody3D::_reload_physics_characteristics));
+		physics_material_override->connect_changed(callable_mp(this, &RigidBody3D::_reload_physics_characteristics));
 	}
 	_reload_physics_characteristics();
 }

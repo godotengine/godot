@@ -278,57 +278,6 @@
   /**************************************************************************
    *
    * @Function:
-   *   Update_Max
-   *
-   * @Description:
-   *   Checks the size of a buffer and reallocates it if necessary.
-   *
-   * @Input:
-   *   memory ::
-   *     A handle to the parent memory object.
-   *
-   *   multiplier ::
-   *     The size in bytes of each element in the buffer.
-   *
-   *   new_max ::
-   *     The new capacity (size) of the buffer.
-   *
-   * @InOut:
-   *   size ::
-   *     The address of the buffer's current size expressed
-   *     in elements.
-   *
-   *   buff ::
-   *     The address of the buffer base pointer.
-   *
-   * @Return:
-   *   FreeType error code.  0 means success.
-   */
-  FT_LOCAL_DEF( FT_Error )
-  Update_Max( FT_Memory  memory,
-              FT_ULong*  size,
-              FT_ULong   multiplier,
-              void*      _pbuff,
-              FT_ULong   new_max )
-  {
-    FT_Error  error;
-    void**    pbuff = (void**)_pbuff;
-
-
-    if ( *size < new_max )
-    {
-      if ( FT_QREALLOC( *pbuff, *size * multiplier, new_max * multiplier ) )
-        return error;
-      *size = new_max;
-    }
-
-    return FT_Err_Ok;
-  }
-
-
-  /**************************************************************************
-   *
-   * @Function:
    *   TT_Load_Context
    *
    * @Description:
@@ -359,9 +308,9 @@
                    TT_Size         size )
   {
     FT_Int          i;
-    FT_ULong        tmp;
     TT_MaxProfile*  maxp;
     FT_Error        error;
+    FT_Memory       memory = exec->memory;
 
 
     exec->face = face;
@@ -406,25 +355,15 @@
 
     /* XXX: We reserve a little more elements on the stack to deal safely */
     /*      with broken fonts like arialbs, courbs, timesbs, etc.         */
-    tmp = (FT_ULong)exec->stackSize;
-    error = Update_Max( exec->memory,
-                        &tmp,
-                        sizeof ( FT_F26Dot6 ),
-                        (void*)&exec->stack,
-                        maxp->maxStackElements + 32 );
-    exec->stackSize = (FT_Long)tmp;
-    if ( error )
+    if ( FT_QRENEW_ARRAY( exec->stack,
+                          exec->stackSize,
+                          maxp->maxStackElements + 32 ) )
       return error;
+    exec->stackSize = maxp->maxStackElements + 32;
 
-    tmp = (FT_ULong)exec->glyphSize;
-    error = Update_Max( exec->memory,
-                        &tmp,
-                        sizeof ( FT_Byte ),
-                        (void*)&exec->glyphIns,
-                        maxp->maxSizeOfInstructions );
-    exec->glyphSize = (FT_UInt)tmp;
-    if ( error )
-      return error;
+    /* free previous glyph code range */
+    FT_FREE( exec->glyphIns );
+    exec->glyphSize = 0;
 
     exec->pts.n_points   = 0;
     exec->pts.n_contours = 0;
@@ -1530,14 +1469,16 @@
     if ( exc->iniRange == tt_coderange_glyph &&
          exc->cvt != exc->glyfCvt            )
     {
-      exc->error = Update_Max( exc->memory,
-                               &exc->glyfCvtSize,
-                               sizeof ( FT_Long ),
-                               (void*)&exc->glyfCvt,
-                               exc->cvtSize );
-      if ( exc->error )
+      FT_Memory  memory = exc->memory;
+      FT_Error   error;
+
+
+      FT_MEM_QRENEW_ARRAY( exc->glyfCvt, exc->glyfCvtSize, exc->cvtSize );
+      exc->error = error;
+      if ( error )
         return;
 
+      exc->glyfCvtSize = exc->cvtSize;
       FT_ARRAY_COPY( exc->glyfCvt, exc->cvt, exc->glyfCvtSize );
       exc->cvt = exc->glyfCvt;
     }
@@ -3117,18 +3058,18 @@
       if ( exc->iniRange == tt_coderange_glyph &&
            exc->storage != exc->glyfStorage    )
       {
-        FT_ULong  tmp = (FT_ULong)exc->glyfStoreSize;
+        FT_Memory  memory = exc->memory;
+        FT_Error   error;
 
 
-        exc->error = Update_Max( exc->memory,
-                                 &tmp,
-                                 sizeof ( FT_Long ),
-                                 (void*)&exc->glyfStorage,
-                                 exc->storeSize );
-        exc->glyfStoreSize = (FT_UShort)tmp;
-        if ( exc->error )
+        FT_MEM_QRENEW_ARRAY( exc->glyfStorage,
+                             exc->glyfStoreSize,
+                             exc->storeSize );
+        exc->error  = error;
+        if ( error )
           return;
 
+        exc->glyfStoreSize = exc->storeSize;
         FT_ARRAY_COPY( exc->glyfStorage, exc->storage, exc->glyfStoreSize );
         exc->storage = exc->glyfStorage;
       }
@@ -3606,7 +3547,8 @@
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
     /* arguments to opcodes are skipped by `SKIP_Code' */
-    FT_Byte    opcode_pattern[9][12] = {
+    FT_Byte    opcode_pattern[9][12] =
+               {
                  /* #0 inline delta function 1 */
                  {
                    0x4B, /* PPEM    */
@@ -7380,14 +7322,6 @@
    * GETINFO[]:    GET INFOrmation
    * Opcode range: 0x88
    * Stack:        uint32 --> uint32
-   *
-   * XXX: UNDOCUMENTED: Selector bits higher than 9 are currently (May
-   *      2015) not documented in the OpenType specification.
-   *
-   *      Selector bit 11 is incorrectly described as bit 8, while the
-   *      real meaning of bit 8 (vertical LCD subpixels) stays
-   *      undocumented.  The same mistake can be found in Greg Hitchcock's
-   *      whitepaper.
    */
   static void
   Ins_GETINFO( TT_ExecContext  exc,
@@ -7446,8 +7380,6 @@
      * VARIATION GLYPH
      * Selector Bit:  3
      * Return Bit(s): 10
-     *
-     * XXX: UNDOCUMENTED!
      */
     if ( (args[0] & 8 ) != 0 && exc->face->blend )
       K |= 1 << 10;
@@ -7739,20 +7671,23 @@
   /* documentation is in ttinterp.h */
 
   FT_EXPORT_DEF( FT_Error )
-  TT_RunIns( TT_ExecContext  exc )
+  TT_RunIns( void*  exec )
   {
+    TT_ExecContext  exc = (TT_ExecContext)exec;
+
     FT_ULong   ins_counter = 0;  /* executed instructions counter */
     FT_ULong   num_twilight_points;
     FT_UShort  i;
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
-    FT_Byte    opcode_pattern[1][2] = {
-                  /* #8 TypeMan Talk Align */
-                  {
-                    0x06, /* SPVTL   */
-                    0x7D, /* RDTG    */
-                  },
-                };
+    FT_Byte    opcode_pattern[1][2] =
+               {
+                 /* #8 TypeMan Talk Align */
+                 {
+                   0x06, /* SPVTL   */
+                   0x7D, /* RDTG    */
+                 },
+               };
     FT_UShort  opcode_patterns   = 1;
     FT_UShort  opcode_pointer[1] = { 0 };
     FT_UShort  opcode_size[1]    = { 1 };
@@ -7906,7 +7841,7 @@
         /* a variable number of arguments             */
 
         /* it is the job of the application to `activate' GX handling, */
-        /* this is, calling any of the GX API functions on the current */
+        /* that is, calling any of the GX API functions on the current */
         /* font to select a variation instance                         */
         if ( exc->face->blend )
           exc->new_top = exc->args + exc->face->blend->num_axis;
@@ -8466,7 +8401,7 @@
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
         case 0x91:
           /* it is the job of the application to `activate' GX handling, */
-          /* this is, calling any of the GX API functions on the current */
+          /* that is, calling any of the GX API functions on the current */
           /* font to select a variation instance                         */
           if ( exc->face->blend )
             Ins_GETVARIATION( exc, args );
@@ -8604,7 +8539,7 @@
 #else /* !TT_USE_BYTECODE_INTERPRETER */
 
   /* ANSI C doesn't like empty source files */
-  typedef int  _tt_interp_dummy;
+  typedef int  tt_interp_dummy_;
 
 #endif /* !TT_USE_BYTECODE_INTERPRETER */
 

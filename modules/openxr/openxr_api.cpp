@@ -30,6 +30,7 @@
 
 #include "openxr_api.h"
 
+#include "extensions/openxr_extension_wrapper_extension.h"
 #include "openxr_interface.h"
 #include "openxr_util.h"
 
@@ -47,7 +48,7 @@
 #ifdef VULKAN_ENABLED
 #define XR_USE_GRAPHICS_API_VULKAN
 #endif
-#ifdef GLES3_ENABLED
+#if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 #ifdef ANDROID_ENABLED
 #define XR_USE_GRAPHICS_API_OPENGL_ES
 #include <EGL/egl.h>
@@ -72,7 +73,7 @@
 #include "extensions/openxr_vulkan_extension.h"
 #endif
 
-#ifdef GLES3_ENABLED
+#if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 #include "extensions/openxr_opengl_extension.h"
 #endif
 
@@ -1306,7 +1307,7 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 		ERR_FAIL_V(false);
 #endif
 	} else if (p_rendering_driver == "opengl3") {
-#ifdef GLES3_ENABLED
+#if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 		graphics_extension = memnew(OpenXROpenGLExtension);
 		register_extension_wrapper(graphics_extension);
 #else

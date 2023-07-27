@@ -56,7 +56,7 @@ void SeparationRayShape3D::_update_shape() {
 void SeparationRayShape3D::set_length(float p_length) {
 	length = p_length;
 	_update_shape();
-	notify_change_to_owners();
+	emit_changed();
 }
 
 float SeparationRayShape3D::get_length() const {
@@ -66,7 +66,7 @@ float SeparationRayShape3D::get_length() const {
 void SeparationRayShape3D::set_slide_on_slope(bool p_active) {
 	slide_on_slope = p_active;
 	_update_shape();
-	notify_change_to_owners();
+	emit_changed();
 }
 
 bool SeparationRayShape3D::get_slide_on_slope() const {
@@ -88,5 +88,5 @@ SeparationRayShape3D::SeparationRayShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_SEPARATION_RAY)) {
 	/* Code copied from setters to prevent the use of uninitialized variables */
 	_update_shape();
-	notify_change_to_owners();
+	emit_changed();
 }

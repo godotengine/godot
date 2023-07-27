@@ -204,7 +204,7 @@ void EditorLog::_copy_request() {
 	}
 
 	if (!text.is_empty()) {
-		DisplayServer::get_singleton()->clipboard_set(text);
+		DisplayServer::get_singleton()->set_clipboard_string(text);
 	}
 }
 
@@ -338,13 +338,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 	} else {
 		log->add_text(p_message.text);
 	}
-
-	// Need to use pop() to exit out of the RichTextLabels current "push" stack.
-	// We only "push" in the above switch when message type != STD and RICH, so only pop when that is the case.
-	if (p_message.type != MSG_TYPE_STD && p_message.type != MSG_TYPE_STD_RICH) {
-		log->pop();
-	}
-
+	log->pop_all(); // Pop all unclosed tags.
 	log->add_newline();
 
 	if (p_replace_previous) {

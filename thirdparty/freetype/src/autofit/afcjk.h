@@ -103,22 +103,22 @@ FT_BEGIN_HEADER
 
 #ifdef AF_CONFIG_OPTION_CJK
   FT_LOCAL( FT_Error )
-  af_cjk_metrics_init( AF_CJKMetrics  metrics,
-                       FT_Face        face );
+  af_cjk_metrics_init( AF_StyleMetrics  metrics,
+                       FT_Face          face );
 
   FT_LOCAL( void )
-  af_cjk_metrics_scale( AF_CJKMetrics  metrics,
-                        AF_Scaler      scaler );
+  af_cjk_metrics_scale( AF_StyleMetrics  metrics,
+                        AF_Scaler        scaler );
 
   FT_LOCAL( FT_Error )
-  af_cjk_hints_init( AF_GlyphHints  hints,
-                     AF_CJKMetrics  metrics );
+  af_cjk_hints_init( AF_GlyphHints    hints,
+                     AF_StyleMetrics  metrics );
 
   FT_LOCAL( FT_Error )
-  af_cjk_hints_apply( FT_UInt        glyph_index,
-                      AF_GlyphHints  hints,
-                      FT_Outline*    outline,
-                      AF_CJKMetrics  metrics );
+  af_cjk_hints_apply( FT_UInt          glyph_index,
+                      AF_GlyphHints    hints,
+                      FT_Outline*      outline,
+                      AF_StyleMetrics  metrics );
 
   /* shared; called from afindic.c */
   FT_LOCAL( void )

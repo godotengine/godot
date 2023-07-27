@@ -96,6 +96,9 @@
 		<member name="codesign/entitlements/app_sandbox/files_pictures" type="int" setter="" getter="">
 			Allows read or write access to the user's "Pictures" folder. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_assets_pictures_read-write]com.apple.security.files.pictures.read-write[/url].
 		</member>
+		<member name="codesign/entitlements/app_sandbox/files_user_selected" type="int" setter="" getter="">
+			Allows read or write access to the locations the user has selected using a native file dialog. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_files_user-selected_read-write]com.apple.security.files.user-selected.read-write[/url].
+		</member>
 		<member name="codesign/entitlements/app_sandbox/helper_executables" type="Array" setter="" getter="">
 			List of helper executables to embedded to the app bundle. Sandboxed app are limited to execute only these executable. See [url=https://developer.apple.com/documentation/xcode/embedding-a-helper-tool-in-a-sandboxed-app]Embedding a command-line tool in a sandboxed app[/url].
 		</member>

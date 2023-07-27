@@ -370,7 +370,8 @@ float CreateDialog::_score_type(const String &p_type, const String &p_search) co
 
 	// Look through at most 5 recent items
 	bool in_recent = false;
-	for (int i = 0; i < MIN(5, recent->get_item_count()); i++) {
+	constexpr int RECENT_COMPLETION_SIZE = 5;
+	for (int i = 0; i < MIN(RECENT_COMPLETION_SIZE - 1, recent->get_item_count()); i++) {
 		if (recent->get_item_text(i) == p_type) {
 			in_recent = true;
 			break;
@@ -406,7 +407,8 @@ void CreateDialog::_confirmed() {
 		if (f.is_valid()) {
 			f->store_line(selected_item);
 
-			for (int i = 0; i < MIN(32, recent->get_item_count()); i++) {
+			constexpr int RECENT_HISTORY_SIZE = 15;
+			for (int i = 0; i < MIN(RECENT_HISTORY_SIZE - 1, recent->get_item_count()); i++) {
 				if (recent->get_item_text(i) != selected_item) {
 					f->store_line(recent->get_item_text(i));
 				}

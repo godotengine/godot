@@ -32,8 +32,8 @@
 #define RICH_TEXT_LABEL_H
 
 #include "core/object/worker_thread_pool.h"
-#include "rich_text_effect.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/rich_text_effect.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/resources/text_paragraph.h"
 
@@ -76,7 +76,8 @@ public:
 		ITEM_META,
 		ITEM_HINT,
 		ITEM_DROPCAP,
-		ITEM_CUSTOMFX
+		ITEM_CUSTOMFX,
+		ITEM_CONTEXT
 	};
 
 	enum MenuItems {
@@ -379,6 +380,10 @@ private:
 		}
 	};
 
+	struct ItemContext : public Item {
+		ItemContext() { type = ITEM_CONTEXT; }
+	};
+
 	ItemFrame *main = nullptr;
 	Item *current = nullptr;
 	ItemFrame *current_frame = nullptr;
@@ -624,6 +629,7 @@ public:
 	void push_bgcolor(const Color &p_color);
 	void push_fgcolor(const Color &p_color);
 	void push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionary p_environment);
+	void push_context();
 	void set_table_column_expand(int p_column, bool p_expand, int p_ratio = 1);
 	void set_cell_row_background_color(const Color &p_odd_row_bg, const Color &p_even_row_bg);
 	void set_cell_border_color(const Color &p_color);
@@ -632,6 +638,8 @@ public:
 	int get_current_table_column() const;
 	void push_cell();
 	void pop();
+	void pop_context();
+	void pop_all();
 
 	void clear();
 

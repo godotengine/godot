@@ -28,6 +28,11 @@ elif env["platform"] == "linuxbsd":
     env_openxr.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
 elif env["platform"] == "windows":
     env_openxr.AppendUnique(CPPDEFINES=["XR_OS_WINDOWS", "NOMINMAX", "XR_USE_PLATFORM_WIN32"])
+elif env["platform"] == "macos":
+    env_openxr.AppendUnique(CPPDEFINES=["XR_OS_APPLE"])
+
+    # There does not seem to be a XR_USE_PLATFORM_XYZ for Apple
+
 
 # may need to check and set:
 # - XR_USE_TIMESPEC
@@ -95,7 +100,7 @@ if env["platform"] == "android":
     env_openxr.add_source_files(module_obj, "extensions/openxr_android_extension.cpp")
 if env["vulkan"]:
     env_openxr.add_source_files(module_obj, "extensions/openxr_vulkan_extension.cpp")
-if env["opengl3"]:
+if env["opengl3"] and env["platform"] != "macos":
     env_openxr.add_source_files(module_obj, "extensions/openxr_opengl_extension.cpp")
 
 env_openxr.add_source_files(module_obj, "extensions/openxr_palm_pose_extension.cpp")
@@ -109,6 +114,8 @@ env_openxr.add_source_files(module_obj, "extensions/openxr_fb_display_refresh_ra
 env_openxr.add_source_files(module_obj, "extensions/openxr_pico_controller_extension.cpp")
 env_openxr.add_source_files(module_obj, "extensions/openxr_wmr_controller_extension.cpp")
 env_openxr.add_source_files(module_obj, "extensions/openxr_ml2_controller_extension.cpp")
+env_openxr.add_source_files(module_obj, "extensions/openxr_extension_wrapper_extension.cpp")
+env_openxr.add_source_files(module_obj, "extensions/openxr_api_extension.cpp")
 
 env.modules_sources += module_obj
 

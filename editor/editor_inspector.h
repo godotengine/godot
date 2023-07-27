@@ -44,6 +44,7 @@ class OptionButton;
 class PanelContainer;
 class PopupMenu;
 class SpinBox;
+class StyleBoxFlat;
 class TextureRect;
 
 class EditorPropertyRevert {

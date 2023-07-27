@@ -324,8 +324,12 @@ public:
 	void mouse_set_button_state(BitField<MouseButtonMask> p_state);
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
-	virtual void clipboard_set(const String &p_text) override;
-	virtual String clipboard_get() const override;
+	virtual void set_clipboard_string(const String &p_text) override;
+	virtual String get_clipboard_string() const override;
+	virtual bool has_clipboard_string() const override;
+	virtual void set_clipboard_image(const Ref<Image> &p_image) override;
+	virtual Ref<Image> get_clipboard_image() const override;
+	virtual bool has_clipboard_image() const override;
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;

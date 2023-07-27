@@ -38,6 +38,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/separator.h"
+#include "scene/resources/gradient_texture.h"
 
 Point2 GradientTexture2DEdit::_get_handle_pos(const Handle p_handle) {
 	// Get the handle's mouse position in pixels relative to offset.
@@ -132,7 +133,7 @@ void GradientTexture2DEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 void GradientTexture2DEdit::set_texture(Ref<GradientTexture2D> &p_texture) {
 	texture = p_texture;
-	texture->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+	texture->connect_changed(callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 }
 
 void GradientTexture2DEdit::set_snap_enabled(bool p_snap_enabled) {

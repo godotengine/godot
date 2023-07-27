@@ -31,7 +31,6 @@
 #include "curve_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "core/core_string_names.h"
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
@@ -45,6 +44,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
+#include "scene/resources/image_texture.h"
 
 CurveEdit::CurveEdit() {
 	set_focus_mode(FOCUS_ALL);
@@ -61,14 +61,14 @@ void CurveEdit::set_curve(Ref<Curve> p_curve) {
 	}
 
 	if (curve.is_valid()) {
-		curve->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveEdit::_curve_changed));
+		curve->disconnect_changed(callable_mp(this, &CurveEdit::_curve_changed));
 		curve->disconnect(Curve::SIGNAL_RANGE_CHANGED, callable_mp(this, &CurveEdit::_curve_changed));
 	}
 
 	curve = p_curve;
 
 	if (curve.is_valid()) {
-		curve->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CurveEdit::_curve_changed));
+		curve->connect_changed(callable_mp(this, &CurveEdit::_curve_changed));
 		curve->connect(Curve::SIGNAL_RANGE_CHANGED, callable_mp(this, &CurveEdit::_curve_changed));
 	}
 
@@ -184,7 +184,9 @@ void CurveEdit::gui_input(const Ref<InputEvent> &p_event) {
 					toggle_linear(selected_index, selected_tangent_index);
 				} else {
 					int point_to_remove = get_point_at(mpos);
-					if (point_to_remove != -1) {
+					if (point_to_remove == -1) {
+						set_selected_index(-1); // Nothing on the place of the click, just deselect the point.
+					} else {
 						if (grabbing == GRAB_ADD) {
 							curve->remove_point(point_to_remove); // Point is temporary, so remove directly from curve.
 							set_selected_index(-1);

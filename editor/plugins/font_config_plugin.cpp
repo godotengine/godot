@@ -1020,6 +1020,7 @@ EditorPropertyFontNamesArray::EditorPropertyFontNamesArray() {
 
 	if (OS::get_singleton()) {
 		Vector<String> fonts = OS::get_singleton()->get_system_fonts();
+		fonts.sort();
 		for (int i = 0; i < fonts.size(); i++) {
 			menu->add_item(fonts[i], i + 6);
 		}

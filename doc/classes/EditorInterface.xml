@@ -54,6 +54,14 @@
 				Returns the current directory being viewed in the [FileSystemDock]. If a file is selected, its base directory will be returned using [method String.get_base_dir] instead.
 			</description>
 		</method>
+		<method name="get_current_feature_profile" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the currently activated feature profile. If the default profile is currently active, an empty string is returned instead.
+				In order to get a reference to the [EditorFeatureProfile], you must load the feature profile using [method EditorFeatureProfile.load_from_file].
+				[b]Note:[/b] Feature profiles created via the user interface are loaded from the [code]feature_profiles[/code] directory, as a file with the [code].profile[/code] extension. The editor configuration folder can be found by using [method EditorPaths.get_config_dir].
+			</description>
+		</method>
 		<method name="get_current_path" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -262,10 +270,16 @@
 				Restarts the editor. This closes the editor and then opens the same project. If [param save] is [code]true[/code], the project will be saved before restarting.
 			</description>
 		</method>
+		<method name="save_all_scenes">
+			<return type="void" />
+			<description>
+				Saves all opened scenes in the editor.
+			</description>
+		</method>
 		<method name="save_scene">
 			<return type="int" enum="Error" />
 			<description>
-				Saves the scene. Returns either [constant OK] or [constant ERR_CANT_CREATE].
+				Saves the currently active scene. Returns either [constant OK] or [constant ERR_CANT_CREATE].
 			</description>
 		</method>
 		<method name="save_scene_as">
@@ -273,7 +287,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="with_preview" type="bool" default="true" />
 			<description>
-				Saves the scene as a file at [param path].
+				Saves the currently active scene as a file at [param path].
 			</description>
 		</method>
 		<method name="select_file">
@@ -281,6 +295,15 @@
 			<param index="0" name="file" type="String" />
 			<description>
 				Selects the file, with the path provided by [param file], in the FileSystem dock.
+			</description>
+		</method>
+		<method name="set_current_feature_profile">
+			<return type="void" />
+			<param index="0" name="profile_name" type="String" />
+			<description>
+				Selects and activates the specified feature profile with the given [param profile_name]. Set [param profile_name] to an empty string to reset to the default feature profile.
+				A feature profile can be created programmatically using the [EditorFeatureProfile] class.
+				[b]Note:[/b] The feature profile that gets activated must be located in the [code]feature_profiles[/code] directory, as a file with the [code].profile[/code] extension. If a profile could not be found, an error occurs. The editor configuration folder can be found by using [method EditorPaths.get_config_dir].
 			</description>
 		</method>
 		<method name="set_main_screen_editor">

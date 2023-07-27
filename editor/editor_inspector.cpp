@@ -45,6 +45,7 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/style_box_flat.h"
 
 bool EditorInspector::_property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
 	if (p_property_path.findn(p_filter) != -1) {
@@ -956,7 +957,7 @@ void EditorProperty::menu_option(int p_option) {
 			emit_changed(property, InspectorDock::get_inspector_singleton()->get_property_clipboard());
 		} break;
 		case MENU_COPY_PROPERTY_PATH: {
-			DisplayServer::get_singleton()->clipboard_set(property_path);
+			DisplayServer::get_singleton()->set_clipboard_string(property_path);
 		} break;
 		case MENU_PIN_VALUE: {
 			emit_signal(SNAME("property_pinned"), property, !pinned);

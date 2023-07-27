@@ -287,6 +287,27 @@ void ShaderEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
 	p_layout->set_value("ShaderEditor", "selected_shader", selected_shader);
 }
 
+String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
+	if (!p_for_scene.is_empty()) {
+		// TODO: handle built-in shaders.
+		return String();
+	}
+
+	// TODO: This should also include visual shaders and shader includes, but save_external_data() doesn't seem to save them...
+	PackedStringArray unsaved_shaders;
+	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
+		if (edited_shaders[i].shader_editor) {
+			if (edited_shaders[i].shader_editor->is_unsaved()) {
+				if (unsaved_shaders.is_empty()) {
+					unsaved_shaders.append(TTR("Save changes to the following shaders(s) before quitting?"));
+				}
+				unsaved_shaders.append(edited_shaders[i].shader_editor->get_name());
+			}
+		}
+	}
+	return String("\n").join(unsaved_shaders);
+}
+
 void ShaderEditorPlugin::save_external_data() {
 	for (EditedShader &edited_shader : edited_shaders) {
 		if (edited_shader.shader_editor) {

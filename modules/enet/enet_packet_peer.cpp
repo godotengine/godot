@@ -76,7 +76,7 @@ void ENetPacketPeer::throttle_configure(int p_interval, int p_acceleration, int 
 
 void ENetPacketPeer::set_timeout(int p_timeout, int p_timeout_min, int p_timeout_max) {
 	ERR_FAIL_COND_MSG(peer == nullptr, "Peer not connected");
-	ERR_FAIL_COND_MSG(p_timeout > p_timeout_min || p_timeout_min > p_timeout_max, "Timeout limit must be less than minimum timeout, which itself must be less then maximum timeout");
+	ERR_FAIL_COND_MSG(p_timeout > p_timeout_min || p_timeout_min > p_timeout_max, "Timeout limit must be less than minimum timeout, which itself must be less than maximum timeout");
 	enet_peer_timeout(peer, p_timeout, p_timeout_min, p_timeout_max);
 }
 

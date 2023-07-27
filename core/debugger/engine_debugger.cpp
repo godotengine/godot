@@ -111,14 +111,6 @@ Error EngineDebugger::capture_parse(const StringName &p_name, const String &p_ms
 	return cap.capture(cap.data, p_msg, p_args, r_captured);
 }
 
-void EngineDebugger::line_poll() {
-	// The purpose of this is just processing events every now and then when the script might get too busy otherwise bugs like infinite loops can't be caught
-	if (poll_every % 2048 == 0) {
-		poll_events(false);
-	}
-	poll_every++;
-}
-
 void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks, uint64_t p_physics_ticks, double p_physics_frame_time) {
 	frame_time = USEC_TO_SEC(p_frame_ticks);
 	process_time = USEC_TO_SEC(p_process_ticks);

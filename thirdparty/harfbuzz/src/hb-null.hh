@@ -49,6 +49,15 @@ using hb_has_min_size = _hb_has_min_size<T, void>;
 #define hb_has_min_size(T) hb_has_min_size<T>::value
 
 template <typename T, typename>
+struct _hb_has_max_size : hb_false_type {};
+template <typename T>
+struct _hb_has_max_size<T, hb_void_t<decltype (T::max_size)>>
+	: hb_true_type {};
+template <typename T>
+using hb_has_max_size = _hb_has_max_size<T, void>;
+#define hb_has_max_size(T) hb_has_max_size<T>::value
+
+template <typename T, typename>
 struct _hb_has_null_size : hb_false_type {};
 template <typename T>
 struct _hb_has_null_size<T, hb_void_t<decltype (T::null_size)>>
@@ -176,7 +185,7 @@ template <typename Type>
 static inline Type& Crap () {
   static_assert (hb_null_size (Type) <= HB_NULL_POOL_SIZE, "Increase HB_NULL_POOL_SIZE.");
   Type *obj = reinterpret_cast<Type *> (_hb_CrapPool);
-  memcpy (obj, &Null (Type), sizeof (*obj));
+  memcpy (obj, std::addressof (Null (Type)), sizeof (*obj));
   return *obj;
 }
 template <typename QType>
@@ -211,11 +220,11 @@ struct hb_nonnull_ptr_t
   T * operator = (T *v_)   { return v = v_; }
   T * operator -> () const { return get (); }
   T & operator * () const  { return *get (); }
-  T ** operator & () const { return &v; }
+  T ** operator & () const { return std::addressof (v); }
   /* Only auto-cast to const types. */
   template <typename C> operator const C * () const { return get (); }
   operator const char * () const { return (const char *) get (); }
-  T * get () const { return v ? v : const_cast<T *> (&Null (T)); }
+  T * get () const { return v ? v : const_cast<T *> (std::addressof (Null (T))); }
   T * get_raw () const { return v; }
 
   private:

@@ -206,6 +206,7 @@
 			<return type="void" />
 			<description>
 				Pauses the tweening. The animation can be resumed by using [method play].
+				[b]Note:[/b] If a Tween is paused and not bound to any node, it will exist indefinitely until manually started or invalidated. If you lose a reference to such Tween, you can retrieve it using [method SceneTree.get_processed_tweens].
 			</description>
 		</method>
 		<method name="play">
@@ -273,6 +274,7 @@
 			<return type="void" />
 			<description>
 				Stops the tweening and resets the [Tween] to its initial state. This will not remove any appended [Tweener]s.
+				[b]Note:[/b] If a Tween is stopped and not bound to any node, it will exist indefinitely until manually started or invalidated. If you lose a reference to such Tween, you can retrieve it using [method SceneTree.get_processed_tweens].
 			</description>
 		</method>
 		<method name="tween_callback">

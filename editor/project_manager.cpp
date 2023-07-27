@@ -59,6 +59,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/window.h"
+#include "scene/resources/image_texture.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
@@ -2726,7 +2727,7 @@ void ProjectManager::_open_asset_library() {
 }
 
 void ProjectManager::_version_button_pressed() {
-	DisplayServer::get_singleton()->clipboard_set(version_btn->get_text());
+	DisplayServer::get_singleton()->set_clipboard_string(version_btn->get_text());
 }
 
 LineEdit *ProjectManager::get_search_box() {

@@ -355,23 +355,63 @@ BitField<MouseButtonMask> DisplayServer::mouse_get_button_state() const {
 }
 
 void DisplayServer::clipboard_set(const String &p_text) {
-	WARN_PRINT("Clipboard is not supported by this display server.");
+	set_clipboard_string(p_text);
 }
 
 String DisplayServer::clipboard_get() const {
-	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
+	return get_clipboard_string();
+}
+
+Ref<Image> DisplayServer::clipboard_get_image() const {
+	ERR_FAIL_V_MSG(Ref<Image>(), "Clipboard is not supported by this display server.");
 }
 
 bool DisplayServer::clipboard_has() const {
-	return !clipboard_get().is_empty();
+	return has_clipboard_string();
+}
+
+bool DisplayServer::clipboard_has_image() const {
+	return clipboard_get_image().is_valid();
 }
 
 void DisplayServer::clipboard_set_primary(const String &p_text) {
-	WARN_PRINT("Primary clipboard is not supported by this display server.");
+	set_clipboard_primary(p_text);
 }
 
 String DisplayServer::clipboard_get_primary() const {
+	return get_clipboard_primary();
+}
+
+void DisplayServer::set_clipboard_string(const String &p_text) {
+	WARN_PRINT("Clipboard is not supported by this display server.");
+}
+
+String DisplayServer::get_clipboard_string() const {
+	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
+}
+
+bool DisplayServer::has_clipboard_string() const {
+	return !get_clipboard_string().is_empty();
+}
+
+void DisplayServer::set_clipboard_primary(const String &p_text) {
+	WARN_PRINT("Primary clipboard is not supported by this display server.");
+}
+
+String DisplayServer::get_clipboard_primary() const {
 	ERR_FAIL_V_MSG(String(), "Primary clipboard is not supported by this display server.");
+}
+
+void DisplayServer::set_clipboard_image(const Ref<Image> &p_image) {
+	WARN_PRINT("Clipboard is not supported by this display server.");
+}
+
+Ref<Image> DisplayServer::get_clipboard_image() const {
+	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
+}
+
+bool DisplayServer::has_clipboard_image() const {
+	return get_clipboard_image().is_valid();
 }
 
 void DisplayServer::screen_set_orientation(ScreenOrientation p_orientation, int p_screen) {
@@ -497,6 +537,11 @@ Error DisplayServer::dialog_input_text(String p_title, String p_description, Str
 	return OK;
 }
 
+Error DisplayServer::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	WARN_PRINT("Native dialogs not supported by this display server.");
+	return OK;
+}
+
 int DisplayServer::keyboard_get_layout_count() const {
 	return 0;
 }
@@ -517,6 +562,10 @@ String DisplayServer::keyboard_get_layout_name(int p_index) const {
 }
 
 Key DisplayServer::keyboard_get_keycode_from_physical(Key p_keycode) const {
+	ERR_FAIL_V_MSG(p_keycode, "Not supported by this display server.");
+}
+
+Key DisplayServer::keyboard_get_label_from_physical(Key p_keycode) const {
 	ERR_FAIL_V_MSG(p_keycode, "Not supported by this display server.");
 }
 
@@ -640,9 +689,19 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clipboard_set", "clipboard"), &DisplayServer::clipboard_set);
 	ClassDB::bind_method(D_METHOD("clipboard_get"), &DisplayServer::clipboard_get);
+	ClassDB::bind_method(D_METHOD("clipboard_get_image"), &DisplayServer::clipboard_get_image);
 	ClassDB::bind_method(D_METHOD("clipboard_has"), &DisplayServer::clipboard_has);
+	ClassDB::bind_method(D_METHOD("clipboard_has_image"), &DisplayServer::clipboard_has_image);
 	ClassDB::bind_method(D_METHOD("clipboard_set_primary", "clipboard_primary"), &DisplayServer::clipboard_set_primary);
 	ClassDB::bind_method(D_METHOD("clipboard_get_primary"), &DisplayServer::clipboard_get_primary);
+	ClassDB::bind_method(D_METHOD("set_clipboard_string", "clipboard"), &DisplayServer::set_clipboard_string);
+	ClassDB::bind_method(D_METHOD("get_clipboard_string"), &DisplayServer::get_clipboard_string);
+	ClassDB::bind_method(D_METHOD("has_clipboard_string"), &DisplayServer::has_clipboard_string);
+	ClassDB::bind_method(D_METHOD("set_clipboard_primary", "clipboard_primary"), &DisplayServer::set_clipboard_primary);
+	ClassDB::bind_method(D_METHOD("get_clipboard_primary"), &DisplayServer::get_clipboard_primary);
+	ClassDB::bind_method(D_METHOD("set_clipboard_image", "clipboard"), &DisplayServer::set_clipboard_image);
+	ClassDB::bind_method(D_METHOD("get_clipboard_image"), &DisplayServer::get_clipboard_image);
+	ClassDB::bind_method(D_METHOD("has_clipboard_image"), &DisplayServer::has_clipboard_image);
 
 	ClassDB::bind_method(D_METHOD("get_display_cutouts"), &DisplayServer::get_display_cutouts);
 	ClassDB::bind_method(D_METHOD("get_display_safe_area"), &DisplayServer::get_display_safe_area);
@@ -751,12 +810,15 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("dialog_show", "title", "description", "buttons", "callback"), &DisplayServer::dialog_show);
 	ClassDB::bind_method(D_METHOD("dialog_input_text", "title", "description", "existing_text", "callback"), &DisplayServer::dialog_input_text);
 
+	ClassDB::bind_method(D_METHOD("file_dialog_show", "title", "current_directory", "filename", "show_hidden", "mode", "filters", "callback"), &DisplayServer::file_dialog_show);
+
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_count"), &DisplayServer::keyboard_get_layout_count);
 	ClassDB::bind_method(D_METHOD("keyboard_get_current_layout"), &DisplayServer::keyboard_get_current_layout);
 	ClassDB::bind_method(D_METHOD("keyboard_set_current_layout", "index"), &DisplayServer::keyboard_set_current_layout);
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_language", "index"), &DisplayServer::keyboard_get_layout_language);
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_name", "index"), &DisplayServer::keyboard_get_layout_name);
 	ClassDB::bind_method(D_METHOD("keyboard_get_keycode_from_physical", "keycode"), &DisplayServer::keyboard_get_keycode_from_physical);
+	ClassDB::bind_method(D_METHOD("keyboard_get_label_from_physical", "keycode"), &DisplayServer::keyboard_get_label_from_physical);
 
 	ClassDB::bind_method(D_METHOD("process_events"), &DisplayServer::process_events);
 	ClassDB::bind_method(D_METHOD("force_process_and_drop_events"), &DisplayServer::force_process_and_drop_events);
@@ -840,6 +902,12 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CURSOR_HSPLIT);
 	BIND_ENUM_CONSTANT(CURSOR_HELP);
 	BIND_ENUM_CONSTANT(CURSOR_MAX);
+
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_OPEN_FILE);
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_OPEN_FILES);
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_OPEN_DIR);
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_OPEN_ANY);
+	BIND_ENUM_CONSTANT(FILE_DIALOG_MODE_SAVE_FILE);
 
 	BIND_ENUM_CONSTANT(WINDOW_MODE_WINDOWED);
 	BIND_ENUM_CONSTANT(WINDOW_MODE_MINIMIZED);

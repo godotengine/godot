@@ -312,7 +312,7 @@ public:
 	void set_allow_search(bool p_allow);
 	bool get_allow_search() const;
 
-	virtual void popup(const Rect2 &p_bounds = Rect2());
+	virtual void popup(const Rect2i &p_bounds = Rect2i()) override;
 
 	void take_mouse_focus();
 

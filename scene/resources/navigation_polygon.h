@@ -92,6 +92,8 @@ public:
 	void set_cell_size(real_t p_cell_size);
 	real_t get_cell_size() const;
 
+	void clear();
+
 	NavigationPolygon() {}
 	~NavigationPolygon() {}
 };

@@ -115,7 +115,7 @@ commits.
 ## enet
 
 - Upstream: http://enet.bespin.org
-- Version: 1.3.17 (e0e7045b7e056b454b5093cb34df49dc4cee0bee, 2020)
+- Version: git (ea4607a90dbfbcf4da2669ea998585253d8e70b1, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -178,7 +178,7 @@ Files extracted from upstream source:
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.13.0 (de8b92dd7ec634e9e2b25ef534c54a3537555c11, 2023)
+- Version: 2.13.1 (e4586d960f339cf75e2e0b34aee30a0ed8353c0d, 2023)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -250,7 +250,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 7.3.0 (4584bcdc326564829d3cee3572386c90e4fd1974, 2023)
+- Version: 8.0.0 (b4305532a7746422e0b615eee6304119c1092fd8, 2023)
 - License: MIT
 
 Files extracted from upstream source:
@@ -258,13 +258,13 @@ Files extracted from upstream source:
 - `AUTHORS`, `COPYING`, `THANKS`
 - from the `src` folder, recursively
   - all the `*.c`, `*.cc`, `*.h`, `*.hh` files
-  - _except_ `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`
+  - _except_ `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`
 
 
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 73.1 (5861e1fd52f1d7673eee38bc3c965aa18b336062, 2023)
+- Version: 73.2 (680f521746a3bd6a86f25f25ee50a62d88b489cf, 2023)
 - License: Unicode
 
 Files extracted from upstream source:
@@ -280,10 +280,11 @@ Files generated from upstream source:
   https://github.com/unicode-org/icu/blob/master/docs/userguide/icu_data/buildtool.md
   for instructions).
 
-- Step 1: Build ICU with default options - `./runConfigureICU {PLATFORM} && make`.
-- Step 2: Reconfigure ICU with custom data config - `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`.
-- Step 3: Delete `data/out` folder and rebuild data - `cd data && rm -rf ./out && make`.
-- Step 4: Copy `source/data/out/icudt73l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt73l.dat`.
+- Step 1: Download and extract both `icu4c-{version}-src.tgz` and `icu4c-{version}-data.zip` (replace `data` subfolder from the main source archive).
+- Step 2: Build ICU with default options - `./runConfigureICU {PLATFORM} && make`.
+- Step 3: Reconfigure ICU with custom data config - `ICU_DATA_FILTER_FILE={GODOT_SOURCE}/thirdparty/icu4c/godot_data.json ./runConfigureICU {PLATFORM} --with-data-packaging=common`.
+- Step 4: Delete `data/out` folder and rebuild data - `cd data && rm -rf ./out && make`.
+- Step 5: Copy `source/data/out/icudt73l.dat` to the `{GODOT_SOURCE}/thirdparty/icu4c/icudt73l.dat`.
 
 
 ## jpeg-compressor

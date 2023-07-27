@@ -1139,7 +1139,6 @@ void Node::_set_name_nocheck(const StringName &p_name) {
 
 void Node::set_name(const String &p_name) {
 	ERR_FAIL_COND_MSG(data.inside_tree && !Thread::is_main_thread(), "Changing the name to nodes inside the SceneTree is only allowed from the main thread. Use `set_name.call_deferred(new_name)`.");
-	ERR_FAIL_COND_MSG(data.parent && data.parent->data.blocked > 0, "Parent node is busy setting up children, `set_name(new_name)` failed. Consider using `set_name.call_deferred(new_name)` instead.");
 	String name = p_name.validate_node_name();
 
 	ERR_FAIL_COND(name.is_empty());
@@ -1151,9 +1150,9 @@ void Node::set_name(const String &p_name) {
 	data.name = name;
 
 	if (data.parent) {
-		data.parent->data.children.erase(old_name);
 		data.parent->_validate_child_name(this, true);
-		data.parent->data.children.insert(data.name, this);
+		bool success = data.parent->data.children.replace_key(old_name, data.name);
+		ERR_FAIL_COND_MSG(!success, "Renaming child in hashtable failed, this is a bug.");
 	}
 
 	if (data.unique_name_in_owner && data.owner) {

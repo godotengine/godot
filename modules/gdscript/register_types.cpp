@@ -98,7 +98,7 @@ public:
 		return;
 	}
 
-	virtual String _get_name() const override { return "GDScript"; }
+	virtual String get_name() const override { return "GDScript"; }
 };
 
 static void _editor_init() {

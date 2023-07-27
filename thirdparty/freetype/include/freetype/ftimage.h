@@ -19,7 +19,7 @@
   /**************************************************************************
    *
    * Note: A 'raster' is simply a scan-line converter, used to render
-   *       FT_Outlines into FT_Bitmaps.
+   *       `FT_Outline`s into `FT_Bitmap`s.
    *
    */
 
@@ -256,6 +256,12 @@ FT_BEGIN_HEADER
    *   palette ::
    *     A typeless pointer to the bitmap palette; this field is intended for
    *     paletted pixel modes.  Not used currently.
+   *
+   * @note:
+   *   `width` and `rows` refer to the *physical* size of the bitmap, not the
+   *   *logical* one.  For example, if @FT_Pixel_Mode is set to
+   *   `FT_PIXEL_MODE_LCD`, the logical width is a just a third of the
+   *   physical one.
    */
   typedef struct  FT_Bitmap_
   {
@@ -856,7 +862,7 @@ FT_BEGIN_HEADER
    *   @FT_SpanFunc that takes the y~coordinate of the span as a parameter.
    *
    *   The anti-aliased rasterizer produces coverage values from 0 to 255,
-   *   this is, from completely transparent to completely opaque.
+   *   that is, from completely transparent to completely opaque.
    */
   typedef struct  FT_Span_
   {

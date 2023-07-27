@@ -1553,7 +1553,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			}
 			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, visible_name, p_function->parameters[i]->identifier->name);
 		}
-		is_shadowing(p_function->parameters[i]->identifier, "function parameter");
+		is_shadowing(p_function->parameters[i]->identifier, "function parameter", true);
 #endif // DEBUG_ENABLED
 #ifdef TOOLS_ENABLED
 		if (p_function->parameters[i]->initializer) {
@@ -1874,9 +1874,8 @@ void GDScriptAnalyzer::resolve_variable(GDScriptParser::VariableNode *p_variable
 		} else if (p_variable->assignments == 0) {
 			parser->push_warning(p_variable, GDScriptWarning::UNASSIGNED_VARIABLE, p_variable->identifier->name);
 		}
-
-		is_shadowing(p_variable->identifier, kind);
 	}
+	is_shadowing(p_variable->identifier, kind, p_is_local);
 #endif
 }
 
@@ -1889,9 +1888,8 @@ void GDScriptAnalyzer::resolve_constant(GDScriptParser::ConstantNode *p_constant
 		if (p_constant->usages == 0) {
 			parser->push_warning(p_constant, GDScriptWarning::UNUSED_LOCAL_CONSTANT, p_constant->identifier->name);
 		}
-
-		is_shadowing(p_constant->identifier, kind);
 	}
+	is_shadowing(p_constant->identifier, kind, p_is_local);
 #endif
 }
 
@@ -2052,7 +2050,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 	p_for->set_datatype(p_for->loop->get_datatype());
 #ifdef DEBUG_ENABLED
 	if (p_for->variable) {
-		is_shadowing(p_for->variable, R"("for" iterator variable)");
+		is_shadowing(p_for->variable, R"("for" iterator variable)", true);
 	}
 #endif
 }
@@ -2148,7 +2146,7 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 			}
 			p_match_pattern->bind->set_datatype(result);
 #ifdef DEBUG_ENABLED
-			is_shadowing(p_match_pattern->bind, "pattern bind");
+			is_shadowing(p_match_pattern->bind, "pattern bind", true);
 			if (p_match_pattern->bind->usages == 0 && !String(p_match_pattern->bind->name).begins_with("_")) {
 				parser->push_warning(p_match_pattern->bind, GDScriptWarning::UNUSED_VARIABLE, p_match_pattern->bind->name);
 			}
@@ -4517,6 +4515,10 @@ Variant GDScriptAnalyzer::make_variable_default_value(GDScriptParser::VariableNo
 	return result;
 }
 
+const HashMap<String, Ref<GDScriptParserRef>> &GDScriptAnalyzer::get_depended_parsers() {
+	return depended_parsers;
+}
+
 GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_value, const GDScriptParser::Node *p_source) {
 	GDScriptParser::DataType result;
 	result.is_constant = true;
@@ -4890,8 +4892,8 @@ void GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 }
 
 #ifdef DEBUG_ENABLED
-void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context) {
-	const StringName &name = p_local->name;
+void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier, const String &p_context, const bool p_in_local_scope) {
+	const StringName &name = p_identifier->name;
 	GDScriptParser::DataType base = parser->current_class->get_datatype();
 	GDScriptParser::ClassNode *base_class = base.class_type;
 
@@ -4901,29 +4903,30 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_local, con
 
 		for (MethodInfo &info : gdscript_funcs) {
 			if (info.name == name) {
-				parser->push_warning(p_local, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in function");
+				parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in function");
 				return;
 			}
 		}
-
 		if (Variant::has_utility_function(name)) {
-			parser->push_warning(p_local, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in function");
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in function");
 			return;
 		} else if (ClassDB::class_exists(name)) {
-			parser->push_warning(p_local, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "global class");
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "global class");
 			return;
 		} else if (GDScriptParser::get_builtin_type(name) != Variant::VARIANT_MAX) {
-			parser->push_warning(p_local, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in type");
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in type");
 			return;
 		}
 	}
 
-	while (base_class != nullptr) {
-		if (base_class->has_member(name)) {
-			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE, p_context, p_local->name, base_class->get_member(name).get_type_name(), itos(base_class->get_member(name).get_line()));
-			return;
+	if (p_in_local_scope) {
+		while (base_class != nullptr) {
+			if (base_class->has_member(name)) {
+				parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE, p_context, p_identifier->name, base_class->get_member(name).get_type_name(), itos(base_class->get_member(name).get_line()));
+				return;
+			}
+			base_class = base_class->base_type.class_type;
 		}
-		base_class = base_class->base_type.class_type;
 	}
 
 	StringName parent = base.native_type;
@@ -4931,19 +4934,19 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_local, con
 		ERR_FAIL_COND_MSG(!class_exists(parent), "Non-existent native base class.");
 
 		if (ClassDB::has_method(parent, name, true)) {
-			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_local->name, "method", parent);
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "method", parent);
 			return;
 		} else if (ClassDB::has_signal(parent, name, true)) {
-			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_local->name, "signal", parent);
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "signal", parent);
 			return;
 		} else if (ClassDB::has_property(parent, name, true)) {
-			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_local->name, "property", parent);
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "property", parent);
 			return;
 		} else if (ClassDB::has_integer_constant(parent, name, true)) {
-			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_local->name, "constant", parent);
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "constant", parent);
 			return;
 		} else if (ClassDB::has_enum(parent, name, true)) {
-			parser->push_warning(p_local, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_local->name, "enum", parent);
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "enum", parent);
 			return;
 		}
 		parent = ClassDB::get_parent_class(parent);

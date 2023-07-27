@@ -804,6 +804,9 @@ void NavMap::sync() {
 		// Resize the polygon count.
 		int count = 0;
 		for (const NavRegion *region : regions) {
+			if (!region->get_enabled()) {
+				continue;
+			}
 			count += region->get_polygons().size();
 		}
 		polygons.resize(count);
@@ -811,6 +814,9 @@ void NavMap::sync() {
 		// Copy all region polygons in the map.
 		count = 0;
 		for (const NavRegion *region : regions) {
+			if (!region->get_enabled()) {
+				continue;
+			}
 			const LocalVector<gd::Polygon> &polygons_source = region->get_polygons();
 			for (uint32_t n = 0; n < polygons_source.size(); n++) {
 				polygons[count + n] = polygons_source[n];

@@ -223,6 +223,7 @@ void RayCast3D::_update_raycast_state() {
 	ray_params.collide_with_bodies = collide_with_bodies;
 	ray_params.collide_with_areas = collide_with_areas;
 	ray_params.hit_from_inside = hit_from_inside;
+	ray_params.hit_back_faces = hit_back_faces;
 
 	PhysicsDirectSpaceState3D::RayResult rr;
 	if (dss->intersect_ray(ray_params, rr)) {
@@ -297,6 +298,14 @@ bool RayCast3D::is_hit_from_inside_enabled() const {
 	return hit_from_inside;
 }
 
+void RayCast3D::set_hit_back_faces(bool p_enabled) {
+	hit_back_faces = p_enabled;
+}
+
+bool RayCast3D::is_hit_back_faces_enabled() const {
+	return hit_back_faces;
+}
+
 void RayCast3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &RayCast3D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &RayCast3D::is_enabled);
@@ -339,6 +348,9 @@ void RayCast3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hit_from_inside", "enable"), &RayCast3D::set_hit_from_inside);
 	ClassDB::bind_method(D_METHOD("is_hit_from_inside_enabled"), &RayCast3D::is_hit_from_inside_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_hit_back_faces", "enable"), &RayCast3D::set_hit_back_faces);
+	ClassDB::bind_method(D_METHOD("is_hit_back_faces_enabled"), &RayCast3D::is_hit_back_faces_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_debug_shape_custom_color", "debug_shape_custom_color"), &RayCast3D::set_debug_shape_custom_color);
 	ClassDB::bind_method(D_METHOD("get_debug_shape_custom_color"), &RayCast3D::get_debug_shape_custom_color);
 
@@ -350,6 +362,7 @@ void RayCast3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "target_position", PROPERTY_HINT_NONE, "suffix:m"), "set_target_position", "get_target_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hit_from_inside"), "set_hit_from_inside", "is_hit_from_inside_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hit_back_faces"), "set_hit_back_faces", "is_hit_back_faces_enabled");
 
 	ADD_GROUP("Collide With", "collide_with");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_areas", "is_collide_with_areas_enabled");

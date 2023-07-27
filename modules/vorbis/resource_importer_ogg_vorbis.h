@@ -42,16 +42,17 @@ class ResourceImporterOggVorbis : public ResourceImporter {
 		OGG_SYNC_BUFFER_SIZE = 8192,
 	};
 
-private:
-	// virtual int get_samples_in_packet(Vector<uint8_t> p_packet) = 0;
-
-	static Ref<AudioStreamOggVorbis> import_ogg_vorbis(const String &p_path);
+protected:
+	static void _bind_methods();
 
 public:
 #ifdef TOOLS_ENABLED
 	virtual bool has_advanced_options() const override;
 	virtual void show_advanced_options(const String &p_path) override;
 #endif
+
+	static Ref<AudioStreamOggVorbis> load_from_file(const String &p_path);
+	static Ref<AudioStreamOggVorbis> load_from_buffer(const Vector<uint8_t> &file_data);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;

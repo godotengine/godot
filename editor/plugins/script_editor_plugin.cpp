@@ -880,7 +880,7 @@ void ScriptEditor::_copy_script_path() {
 	ScriptEditorBase *se = _get_current_editor();
 	if (se) {
 		Ref<Resource> scr = se->get_edited_resource();
-		DisplayServer::get_singleton()->clipboard_set(scr->get_path());
+		DisplayServer::get_singleton()->set_clipboard_string(scr->get_path());
 	}
 }
 
@@ -2433,6 +2433,18 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	notify_script_changed(p_resource);
 	return true;
+}
+
+PackedStringArray ScriptEditor::get_unsaved_scripts() const {
+	PackedStringArray unsaved_list;
+
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (se && se->is_unsaved()) {
+			unsaved_list.append(se->get_name());
+		}
+	}
+	return unsaved_list;
 }
 
 void ScriptEditor::save_current_script() {
@@ -4207,8 +4219,53 @@ void ScriptEditorPlugin::selected_notify() {
 	_focus_another_editor();
 }
 
+String ScriptEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
+	const PackedStringArray unsaved_scripts = script_editor->get_unsaved_scripts();
+	if (unsaved_scripts.is_empty()) {
+		return String();
+	}
+
+	PackedStringArray message;
+	if (!p_for_scene.is_empty()) {
+		PackedStringArray unsaved_built_in_scripts;
+
+		const String scene_file = p_for_scene.get_file();
+		for (const String &E : unsaved_scripts) {
+			if (!E.is_resource_file() && E.contains(scene_file)) {
+				unsaved_built_in_scripts.append(E);
+			}
+		}
+
+		if (unsaved_built_in_scripts.is_empty()) {
+			return String();
+		} else {
+			message.resize(unsaved_built_in_scripts.size() + 1);
+			message.write[0] = TTR("There are unsaved changes in the following built-in script(s):");
+
+			int i = 1;
+			for (const String &E : unsaved_built_in_scripts) {
+				message.write[i] = E.trim_suffix("(*)");
+				i++;
+			}
+			return String("\n").join(message);
+		}
+	}
+
+	message.resize(unsaved_scripts.size() + 1);
+	message.write[0] = TTR("Save changes to the following script(s) before quitting?");
+
+	int i = 1;
+	for (const String &E : unsaved_scripts) {
+		message.write[i] = E.trim_suffix("(*)");
+		i++;
+	}
+	return String("\n").join(message);
+}
+
 void ScriptEditorPlugin::save_external_data() {
-	script_editor->save_all_scripts();
+	if (!EditorNode::get_singleton()->is_exiting()) {
+		script_editor->save_all_scripts();
+	}
 }
 
 void ScriptEditorPlugin::apply_changes() {

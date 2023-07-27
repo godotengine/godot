@@ -50,6 +50,7 @@
 #include "scene/gui/tree.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
+#include "scene/resources/style_box_flat.h"
 #include "scene/scene_string_names.h"
 
 bool AnimationNodeStateMachineEditor::can_edit(const Ref<AnimationNode> &p_node) {
@@ -1507,6 +1508,10 @@ void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 	int base = 1;
 	String name = base_name;
 	while (state_machine->has_node(name)) {
+		if (name == prev_name) {
+			name_edit_popup->hide(); // The old name wins, the name doesn't change, just hide the popup.
+			return;
+		}
 		base++;
 		name = base_name + " " + itos(base);
 	}

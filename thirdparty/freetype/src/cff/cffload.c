@@ -400,7 +400,7 @@
 
   /* Allocate a table containing pointers to an index's elements. */
   /* The `pool' argument makes this function convert the index    */
-  /* entries to C-style strings (this is, null-terminated).       */
+  /* entries to C-style strings (that is, null-terminated).       */
   static FT_Error
   cff_index_get_pointers( CFF_Index   idx,
                           FT_Byte***  table,
@@ -1589,16 +1589,17 @@
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
 
   FT_LOCAL_DEF( FT_Error )
-  cff_get_var_blend( CFF_Face     face,
+  cff_get_var_blend( FT_Face      face,             /* CFF_Face */
                      FT_UInt     *num_coords,
                      FT_Fixed*   *coords,
                      FT_Fixed*   *normalizedcoords,
                      FT_MM_Var*  *mm_var )
   {
-    FT_Service_MultiMasters  mm = (FT_Service_MultiMasters)face->mm;
+    CFF_Face                 cffface = (CFF_Face)face;
+    FT_Service_MultiMasters  mm      = (FT_Service_MultiMasters)cffface->mm;
 
 
-    return mm->get_var_blend( FT_FACE( face ),
+    return mm->get_var_blend( face,
                               num_coords,
                               coords,
                               normalizedcoords,
@@ -1607,13 +1608,14 @@
 
 
   FT_LOCAL_DEF( void )
-  cff_done_blend( CFF_Face  face )
+  cff_done_blend( FT_Face  face )    /* CFF_Face */
   {
-    FT_Service_MultiMasters  mm = (FT_Service_MultiMasters)face->mm;
+    CFF_Face                 cffface = (CFF_Face)face;
+    FT_Service_MultiMasters  mm      = (FT_Service_MultiMasters)cffface->mm;
 
 
-    if (mm)
-      mm->done_blend( FT_FACE( face ) );
+    if ( mm )
+      mm->done_blend( face );
   }
 
 #endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
@@ -1650,13 +1652,6 @@
       goto Exit;
     }
 
-    /* Zero out the code to gid/sid mappings. */
-    for ( j = 0; j < 256; j++ )
-    {
-      encoding->sids [j] = 0;
-      encoding->codes[j] = 0;
-    }
-
     /* Note: The encoding table in a CFF font is indexed by glyph index;  */
     /* the first encoded glyph index is 1.  Hence, we read the character  */
     /* code (`glyph_code') at index j and make the assignment:            */
@@ -1671,6 +1666,10 @@
 
     if ( offset > 1 )
     {
+      /* Zero out the code to gid/sid mappings. */
+      FT_ARRAY_ZERO( encoding->sids,  256 );
+      FT_ARRAY_ZERO( encoding->codes, 256 );
+
       encoding->offset = base_offset + offset;
 
       /* we need to parse the table to determine its size */
@@ -2012,7 +2011,7 @@
     /*       Top and Font DICTs are not allowed to have blend operators. */
     error = cff_parser_init( &parser,
                              code,
-                             &subfont->font_dict,
+                             top,
                              font->library,
                              stackSize,
                              0,

@@ -35,6 +35,7 @@
 #include "core/io/marshalls.h"
 #include "main/main.h"
 #include "scene/resources/texture.h"
+#include <drivers/png/png_driver_common.h>
 
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -261,8 +262,7 @@ Point2i DisplayServerWindows::mouse_get_position() const {
 BitField<MouseButtonMask> DisplayServerWindows::mouse_get_button_state() const {
 	return last_button_state;
 }
-
-void DisplayServerWindows::clipboard_set(const String &p_text) {
+void DisplayServerWindows::set_clipboard_string(const String &p_text) {
 	_THREAD_SAFE_METHOD_
 
 	if (!windows.has(MAIN_WINDOW_ID)) {
@@ -303,7 +303,7 @@ void DisplayServerWindows::clipboard_set(const String &p_text) {
 	CloseClipboard();
 }
 
-String DisplayServerWindows::clipboard_get() const {
+String DisplayServerWindows::get_clipboard_string() const {
 	_THREAD_SAFE_METHOD_
 
 	if (!windows.has(MAIN_WINDOW_ID)) {
@@ -340,7 +340,193 @@ String DisplayServerWindows::clipboard_get() const {
 
 	return ret;
 }
+bool DisplayServerWindows::has_clipboard_string() const {
+	return !get_clipboard_string().is_empty();
+}
+void DisplayServerWindows::set_clipboard_image(const Ref<Image> &p_image) {
+	if (!OpenClipboard(windows[MAIN_WINDOW_ID].hWnd)) {
+		ERR_FAIL_MSG("Unable to open clipboard.");
+	}
+	EmptyClipboard();
+	UINT png_format = RegisterClipboardFormatA("PNG");
+	if (png_format) {
+		PackedByteArray pba = p_image->save_png_to_buffer();
+		HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE, pba.size() * sizeof(BYTE));
+		ERR_FAIL_COND_MSG(mem == nullptr, "Unable to allocate memory for clipboard contents.");
+		PBYTE ptr = (PBYTE)GlobalLock(mem);
+		memcpy(ptr, pba.ptr(), pba.size());
+		GlobalUnlock(mem);
+		SetClipboardData(png_format, mem);
+	}
+	if (IsClipboardFormatAvailable(CF_DIBV5)) {
+		int width = p_image->get_width();
+		int height = p_image->get_height();
+		DWORD size_pixels = width * height * 4;
+		//Pixel data is 12 bytes after the header.
+		HGLOBAL hMem = GlobalAlloc(GHND, sizeof(BITMAPV5HEADER) + 12 + size_pixels);
+		if (hMem) {
+			BITMAPV5HEADER *mem = (BITMAPV5HEADER *)GlobalLock(hMem);
+			if (mem) {
+				mem->bV5Size = sizeof(BITMAPV5HEADER);
+				mem->bV5Width = width;
+				mem->bV5Height = height;
+				mem->bV5Planes = 1;
+				mem->bV5BitCount = 32;
+				mem->bV5SizeImage = size_pixels;
+				mem->bV5Compression = BI_RGB;
+				mem->bV5RedMask = 0x000000ff;
+				mem->bV5GreenMask = 0x0000ff00;
+				mem->bV5BlueMask = 0x00ff0000;
+				mem->bV5AlphaMask = 0xff000000;
+				mem->bV5CSType = LCS_sRGB;
+				mem->bV5Intent = LCS_GM_IMAGES;
+				mem->bV5ClrUsed = 0;
+				PackedByteArray rgba = p_image->get_data();
+				memcpy((char *)mem + sizeof(BITMAPV5HEADER) + 12, rgba.ptr(), size_pixels);
+				GlobalUnlock(hMem);
+				SetClipboardData(CF_DIBV5, hMem);
+			}
+		}
+	}
+	CloseClipboard();
+}
 
+
+Ref<Image> DisplayServerWindows::get_clipboard_image() const {
+	Ref<Image> image;
+	if (!windows.has(last_focused_window)) {
+		return image; // No focused window?
+	}
+	if (!OpenClipboard(windows[last_focused_window].hWnd)) {
+		ERR_FAIL_V_MSG(image, "Unable to open clipboard.");
+	}
+	UINT png_format = RegisterClipboardFormatA("PNG");
+	if (png_format && IsClipboardFormatAvailable(png_format)) {
+		HANDLE png_handle = GetClipboardData(png_format);
+		if (png_handle) {
+			size_t png_size = GlobalSize(png_handle);
+			uint8_t *png_data = (uint8_t *)GlobalLock(png_handle);
+			image.instantiate();
+			PNGDriverCommon::png_to_image(png_data, png_size, false, image);
+			GlobalUnlock(png_handle);
+		}
+	}
+	if (image.is_null() && IsClipboardFormatAvailable(CF_DIBV5)) {
+		HANDLE hGlobal = GetClipboardData(CF_DIBV5);
+		if (hGlobal != NULL) {
+			BITMAPV5HEADER *bitmapV5Header = (BITMAPV5HEADER *)GlobalLock(hGlobal);
+			if (bitmapV5Header != NULL) {
+				int offset = bitmapV5Header->bV5Size + bitmapV5Header->bV5ClrUsed * sizeof(RGBQUAD);
+				if (bitmapV5Header->bV5Compression == BI_BITFIELDS) {
+					offset += 12;
+				}
+				BYTE *buffer = (BYTE *)bitmapV5Header + offset;
+				int bitcount = bitmapV5Header->bV5BitCount;
+				int width = bitmapV5Header->bV5Width;
+				int height = bitmapV5Header->bV5Height;
+				bool flip = false;
+				//If one of those bottom-up images, flip it at the end.
+				if (height < 0) {
+					height = abs(height);
+					flip = true;
+				}
+				DWORD colorMasks[4];
+				colorMasks[0] = bitmapV5Header->bV5RedMask ? bitmapV5Header->bV5RedMask : 0xff;
+				colorMasks[1] = bitmapV5Header->bV5GreenMask ? bitmapV5Header->bV5GreenMask : 0xff00;
+				colorMasks[2] = bitmapV5Header->bV5BlueMask ? bitmapV5Header->bV5BlueMask : 0xff0000;
+				colorMasks[3] = bitmapV5Header->bV5AlphaMask ? bitmapV5Header->bV5AlphaMask : 0xff000000;
+				DWORD colorShifts[4];
+				for (int i = 0; i < 4; i++) {
+					_BitScanForward(&colorShifts[i], colorMasks[i]);
+				}
+				UCHAR *source = (UCHAR *)buffer;
+				PackedByteArray pba;
+				pba.resize(width * height * 4);
+				if (bitmapV5Header->bV5Compression == BI_BITFIELDS && bitcount == 32) {
+					for (int h = 0; h < height; h++) {
+						for (int w = 0; w < width; w++, source += 4) {
+						DWORD *pix = (DWORD *)source;
+						pba.write[(h * width * 4) + (w * 4)] = uint8_t((*pix & colorMasks[0]) >> colorShifts[0]);
+						pba.write[(h * width * 4) + (w * 4) + 1] = uint8_t((*pix & colorMasks[1]) >> colorShifts[1]);
+						pba.write[(h * width * 4) + (w * 4) + 2] = uint8_t((*pix & colorMasks[2]) >> colorShifts[2]);
+						pba.write[(h * width * 4) + (w * 4) + 3] = uint8_t((*pix & colorMasks[3]) >> colorShifts[3]);
+						}
+					}
+				}
+				else if (bitmapV5Header->bV5Compression == BI_RGB && bitcount == 32) {
+					for (int h = 0; h < height; h++) {
+						for (int w = 0; w < width; w++, source += 4) {
+						RGBQUAD *quad = (RGBQUAD *)source;
+						pba.write[(h * width * 4) + (w * 4)] = uint8_t(quad->rgbRed);
+						pba.write[(h * width * 4) + (w * 4) + 1] = uint8_t(quad->rgbGreen);
+						pba.write[(h * width * 4) + (w * 4) + 2] = uint8_t(quad->rgbBlue);
+						pba.write[(h * width * 4) + (w * 4) + 3] = (bitmapV5Header->bV5AlphaMask) ? uint8_t(quad->rgbReserved) : 255;
+						}
+					}
+				}
+				else if (bitmapV5Header->bV5Compression == BI_RGB && bitcount == 24) {
+					int bytes_per_row = ((((width * bitcount) + 31) & ~31) >> 3);
+					int slack = bytes_per_row - (width * 3);
+					for (int h = 0; h < height; h++, source += slack) {
+						for (int w = 0; w < width; w++, source += 3) {
+						RGBTRIPLE *triple = (RGBTRIPLE *)source;
+						pba.write[(h * width * 4) + (w * 4)] = uint8_t(triple->rgbtRed);
+						pba.write[(h * width * 4) + (w * 4) + 1] = uint8_t(triple->rgbtGreen);
+						pba.write[(h * width * 4) + (w * 4) + 2] = uint8_t(triple->rgbtBlue);
+						pba.write[(h * width * 4) + (w * 4) + 3] = 255;
+						}
+					}
+				}
+				GlobalUnlock(hGlobal);
+				image.instantiate();
+				image->initialize_data(width, height, false, Image::Format::FORMAT_RGBA8, pba);
+				if (flip) {
+					image->flip_y();
+				}
+				GlobalUnlock(hGlobal);
+			}
+		}
+	}
+	if (image.is_null() && IsClipboardFormatAvailable(CF_DIB)) {
+		HGLOBAL mem = GetClipboardData(CF_DIB);
+		if (mem != NULL) {
+			BITMAPINFO *ptr = static_cast<BITMAPINFO *>(GlobalLock(mem));
+			if (ptr != NULL) {
+				BITMAPINFOHEADER *info = &ptr->bmiHeader;
+				PackedByteArray pba;
+				int width = info->biWidth;
+				int height = info->biHeight;
+				bool flip = false;
+				if (height < 0) {
+					height = abs(height);
+					flip = true;
+				}
+				pba.resize(height * width * 4);
+				for (LONG y =  height - 1; y > -1 ; y--) {
+					for (LONG x = 0; x < width; x++) {
+						tagRGBQUAD *rgbquad = ptr->bmiColors + (width * y) + x;
+						pba.write[(y * width * 4) + (x * 4)] = rgbquad->rgbRed;
+						pba.write[(y * width * 4) + (x * 4) + 1] = rgbquad->rgbGreen;
+						pba.write[(y * width * 4) + (x * 4) + 2] = rgbquad->rgbBlue;
+						//DIBs usually don't have alpha?
+						pba.write[(y * width * 4) + (x * 4) + 3] = info->biBitCount == 32 ? rgbquad->rgbReserved : 255;
+					}
+				}
+				image.instantiate();
+				image->initialize_data(info->biWidth, info->biHeight, false, Image::Format::FORMAT_RGBA8, pba);
+				if (flip) {
+					image->flip_y();
+				}
+				GlobalUnlock(mem);
+			}
+		}
+	}
+	CloseClipboard();
+	return image;
+}
+bool DisplayServerWindows::has_clipboard_image() const {
+	return get_clipboard_image().is_valid();
+}
 typedef struct {
 	int count;
 	int screen;

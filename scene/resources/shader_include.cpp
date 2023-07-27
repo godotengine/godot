@@ -40,7 +40,7 @@ void ShaderInclude::set_code(const String &p_code) {
 	code = p_code;
 
 	for (const Ref<ShaderInclude> &E : dependencies) {
-		E->disconnect(SNAME("changed"), callable_mp(this, &ShaderInclude::_dependency_changed));
+		E->disconnect_changed(callable_mp(this, &ShaderInclude::_dependency_changed));
 	}
 
 	{
@@ -60,7 +60,7 @@ void ShaderInclude::set_code(const String &p_code) {
 	}
 
 	for (const Ref<ShaderInclude> &E : dependencies) {
-		E->connect(SNAME("changed"), callable_mp(this, &ShaderInclude::_dependency_changed));
+		E->connect_changed(callable_mp(this, &ShaderInclude::_dependency_changed));
 	}
 
 	emit_changed();

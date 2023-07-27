@@ -340,6 +340,20 @@ RID GodotNavigationServer::region_create() {
 	return rid;
 }
 
+COMMAND_2(region_set_enabled, RID, p_region, bool, p_enabled) {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND(region == nullptr);
+
+	region->set_enabled(p_enabled);
+}
+
+bool GodotNavigationServer::region_get_enabled(RID p_region) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND_V(region == nullptr, false);
+
+	return region->get_enabled();
+}
+
 COMMAND_2(region_set_use_edge_connections, RID, p_region, bool, p_enabled) {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_COND(region == nullptr);
@@ -510,6 +524,20 @@ RID GodotNavigationServer::link_get_map(const RID p_link) const {
 		return link->get_map()->get_self();
 	}
 	return RID();
+}
+
+COMMAND_2(link_set_enabled, RID, p_link, bool, p_enabled) {
+	NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND(link == nullptr);
+
+	link->set_enabled(p_enabled);
+}
+
+bool GodotNavigationServer::link_get_enabled(RID p_link) const {
+	const NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND_V(link == nullptr, false);
+
+	return link->get_enabled();
 }
 
 COMMAND_2(link_set_bidirectional, RID, p_link, bool, p_bidirectional) {
@@ -788,8 +816,8 @@ COMMAND_2(agent_set_avoidance_priority, RID, p_agent, real_t, p_priority) {
 }
 
 RID GodotNavigationServer::obstacle_create() {
-	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
-	MutexLock lock(mut_this->operations_mutex);
+	MutexLock lock(operations_mutex);
+
 	RID rid = obstacle_owner.make_rid();
 	NavObstacle *obstacle = obstacle_owner.get_or_null(rid);
 	obstacle->set_self(rid);

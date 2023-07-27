@@ -100,7 +100,6 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 	private:
 		RenderSceneBuffersRD *render_buffers = nullptr;
-		RD::TextureSamples texture_samples = RD::TEXTURE_SAMPLES_1;
 
 	public:
 		ClusterBuilderRD *cluster_builder = nullptr;
@@ -121,12 +120,6 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		};
 
 		RID render_sdfgi_uniform_set;
-
-		RID get_color_msaa() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_COLOR_MSAA); }
-		RID get_color_msaa(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_COLOR_MSAA, p_layer, 0); }
-
-		RID get_depth_msaa() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DEPTH_MSAA); }
-		RID get_depth_msaa(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DEPTH_MSAA, p_layer, 0); }
 
 		void ensure_specular();
 		bool has_specular() const { return render_buffers->has_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_SPECULAR); }
@@ -620,7 +613,7 @@ protected:
 	/* Rendering */
 
 	virtual void _render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) override;
-	virtual void _render_buffers_debug_draw(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer) override;
+	virtual void _render_buffers_debug_draw(const RenderDataRD *p_render_data) override;
 
 	virtual void _render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) override;
 	virtual void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;

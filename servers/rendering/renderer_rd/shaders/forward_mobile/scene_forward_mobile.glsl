@@ -817,11 +817,15 @@ void main() {
 	alpha = compute_alpha_antialiasing_edge(alpha, alpha_texture_coordinate, alpha_antialiasing_edge);
 #endif // ALPHA_ANTIALIASING_EDGE_USED
 
+#ifdef MODE_RENDER_DEPTH
 #ifdef USE_OPAQUE_PREPASS
+#ifndef ALPHA_SCISSOR_USED
 	if (alpha < scene_data.opaque_prepass_threshold) {
 		discard;
 	}
+#endif // !ALPHA_SCISSOR_USED
 #endif // USE_OPAQUE_PREPASS
+#endif // MODE_RENDER_DEPTH
 
 #endif // !USE_SHADOW_TO_OPACITY
 
@@ -1685,8 +1689,8 @@ void main() {
 	if (alpha < alpha_scissor) {
 		discard;
 	}
-#endif // ALPHA_SCISSOR_USED
-
+#else
+#ifdef MODE_RENDER_DEPTH
 #ifdef USE_OPAQUE_PREPASS
 
 	if (alpha < scene_data.opaque_prepass_threshold) {
@@ -1694,6 +1698,8 @@ void main() {
 	}
 
 #endif // USE_OPAQUE_PREPASS
+#endif // MODE_RENDER_DEPTH
+#endif // !ALPHA_SCISSOR_USED
 
 #endif // USE_SHADOW_TO_OPACITY
 

@@ -135,6 +135,9 @@ public:
 
 	virtual RID region_create() override;
 
+	COMMAND_2(region_set_enabled, RID, p_region, bool, p_enabled);
+	virtual bool region_get_enabled(RID p_region) const override;
+
 	COMMAND_2(region_set_use_edge_connections, RID, p_region, bool, p_enabled);
 	virtual bool region_get_use_edge_connections(RID p_region) const override;
 
@@ -164,6 +167,8 @@ public:
 	virtual RID link_create() override;
 	COMMAND_2(link_set_map, RID, p_link, RID, p_map);
 	virtual RID link_get_map(RID p_link) const override;
+	COMMAND_2(link_set_enabled, RID, p_link, bool, p_enabled);
+	virtual bool link_get_enabled(RID p_link) const override;
 	COMMAND_2(link_set_bidirectional, RID, p_link, bool, p_bidirectional);
 	virtual bool link_is_bidirectional(RID p_link) const override;
 	COMMAND_2(link_set_navigation_layers, RID, p_link, uint32_t, p_navigation_layers);

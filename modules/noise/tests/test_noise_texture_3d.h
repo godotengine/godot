@@ -194,7 +194,7 @@ TEST_CASE("[NoiseTexture3D][SceneTree] Generating a basic noise texture with mip
 	noise_texture->set_depth(16);
 
 	Ref<NoiseTexture3DTester> tester = memnew(NoiseTexture3DTester(noise_texture.ptr()));
-	noise_texture->connect("changed", callable_mp(tester.ptr(), &NoiseTexture3DTester::check_mip_and_color_ramp));
+	noise_texture->connect_changed(callable_mp(tester.ptr(), &NoiseTexture3DTester::check_mip_and_color_ramp));
 	MessageQueue::get_singleton()->flush();
 }
 
@@ -213,7 +213,7 @@ TEST_CASE("[NoiseTexture3D][SceneTree] Generating a seamless noise texture") {
 
 	SUBCASE("Grayscale(L8) 16x16x16, with seamless blend skirt of 0.05") {
 		noise_texture->set_seamless_blend_skirt(0.05);
-		noise_texture->connect("changed", callable_mp(tester.ptr(), &NoiseTexture3DTester::check_seamless_texture_grayscale));
+		noise_texture->connect_changed(callable_mp(tester.ptr(), &NoiseTexture3DTester::check_seamless_texture_grayscale));
 		MessageQueue::get_singleton()->flush();
 	}
 
@@ -225,7 +225,7 @@ TEST_CASE("[NoiseTexture3D][SceneTree] Generating a seamless noise texture") {
 		gradient->set_points(points);
 		noise_texture->set_color_ramp(gradient);
 		noise_texture->set_seamless_blend_skirt(1.0);
-		noise_texture->connect("changed", callable_mp(tester.ptr(), &NoiseTexture3DTester::check_seamless_texture_rgba));
+		noise_texture->connect_changed(callable_mp(tester.ptr(), &NoiseTexture3DTester::check_seamless_texture_rgba));
 		MessageQueue::get_singleton()->flush();
 	}
 }

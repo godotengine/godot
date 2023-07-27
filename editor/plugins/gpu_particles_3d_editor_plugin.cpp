@@ -38,6 +38,7 @@
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/menu_button.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/particle_process_material.h"
 
 bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3> &normals) {
