@@ -182,8 +182,6 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_parameter_symbol(const lsp::Do
 }
 
 const lsp::DocumentSymbol *GDScriptWorkspace::get_local_symbol_at(const ExtendGDScriptParser *p_parser, const String &p_symbol_identifier, const lsp::Position p_position) {
-	const lsp::DocumentSymbol *class_symbol = &p_parser->get_symbols();
-
 	// go down and pick closest `DocumentSymbol` with `p_symbol_identifier`
 
 	const lsp::DocumentSymbol *current = &p_parser->get_symbols();
