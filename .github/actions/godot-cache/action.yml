@@ -20,3 +20,14 @@ runs:
           ${{inputs.cache-name}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}-${{github.sha}}
           ${{inputs.cache-name}}-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
           ${{inputs.cache-name}}-${{env.GODOT_BASE_BRANCH}}
+
+    - name: 
+      uses: pyTooling/Actions/with-post-step@v0.4.6
+      if: runner.os != 'Windows'
+      with:
+        main: |
+          # Now, after downloading the cache set the last access time of all files in the cache to a date far in the past
+          find "${{inputs.scons-cache}}" -exec touch {} -at 0001010000 \;
+        post: |
+          # And just before uploading the new cache, delete all files that were not accessed in the last day, ie during this build
+          find "${{inputs.scons-cache}}" -atime +1 -delete
