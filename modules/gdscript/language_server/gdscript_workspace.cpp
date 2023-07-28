@@ -182,7 +182,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_parameter_symbol(const lsp::Do
 }
 
 const lsp::DocumentSymbol *GDScriptWorkspace::get_local_symbol_at(const ExtendGDScriptParser *p_parser, const String &p_symbol_identifier, const lsp::Position p_position) {
-	// go down and pick closest `DocumentSymbol` with `p_symbol_identifier`
+	// Go down and pick closest `DocumentSymbol` with `p_symbol_identifier`.
 
 	const lsp::DocumentSymbol *current = &p_parser->get_symbols();
 	const lsp::DocumentSymbol *best_match = nullptr;
@@ -437,17 +437,17 @@ Error GDScriptWorkspace::parse_script(const String &p_path, const String &p_cont
 }
 
 bool is_valid_rename_target(const lsp::DocumentSymbol *p_symbol) {
-	// must be valid symbol
+	// Must be valid symbol.
 	if (!p_symbol) {
 		return false;
 	}
 
-	// cannot rename builtin
+	// Cannot rename builtin.
 	if (!p_symbol->native_class.is_empty()) {
 		return false;
 	}
 
-	// source must be available
+	// Source must be available.
 	if (p_symbol->script_path.is_empty()) {
 		return false;
 	}
@@ -526,10 +526,10 @@ Vector<lsp::Location> GDScriptWorkspace::find_usages_in_file(const lsp::Document
 
 Vector<lsp::Location> GDScriptWorkspace::find_all_usages(const lsp::DocumentSymbol &p_symbol) {
 	if (p_symbol.local) {
-		// only search in current document
+		// Only search in current document.
 		return find_usages_in_file(p_symbol, p_symbol.script_path);
 	} else {
-		// search in all documents
+		// Search in all documents.
 		List<String> paths;
 		list_script_files("res://", paths);
 

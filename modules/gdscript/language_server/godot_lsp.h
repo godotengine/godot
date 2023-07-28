@@ -1181,9 +1181,9 @@ struct DocumentSymbol {
 	bool deprecated = false;
 
 	/**
-	 * if `true`: Symbol is local to script and cannot be accessed somewhere else.
+	 * If `true`: Symbol is local to script and cannot be accessed somewhere else.
 	 *
-	 * For example: local variable inside a `func`
+	 * For example: local variable inside a `func`.
 	 */
 	bool local = false;
 

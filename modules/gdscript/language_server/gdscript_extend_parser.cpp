@@ -47,11 +47,11 @@ int get_indent_size() {
 lsp::Position GodotPosition::to_lsp(const Vector<String> &p_lines) const {
 	lsp::Position res;
 
-	// special case: `line = 0` -> root class (range covers everything)
+	// Special case: `line = 0` -> root class (range covers everything).
 	if (this->line <= 0) {
 		return res;
 	}
-	// special case: `line = p_lines.size() + 1` -> root class (range covers everything)
+	// Special case: `line = p_lines.size() + 1` -> root class (range covers everything).
 	if (this->line >= p_lines.size() + 1) {
 		res.line = p_lines.size();
 		return res;
@@ -85,7 +85,7 @@ lsp::Position GodotPosition::to_lsp(const Vector<String> &p_lines) const {
 GodotPosition GodotPosition::from_lsp(const lsp::Position p_pos, const Vector<String> &p_lines) {
 	GodotPosition res(p_pos.line + 1, p_pos.character + 1);
 
-	// line outside of actual text is valid (-> pos/cursor at end of text)
+	// Line outside of actual text is valid (-> pos/cursor at end of text).
 	if (res.line > p_lines.size()) {
 		return res;
 	}
@@ -172,7 +172,7 @@ void ExtendGDScriptParser::update_symbols() {
 			const lsp::DocumentSymbol &symbol = class_symbol.children[i];
 			members.insert(symbol.name, &symbol);
 
-			// cache level one inner classes
+			// Cache level one inner classes.
 			if (symbol.kind == lsp::SymbolKind::Class) {
 				ClassMembers inner_class;
 				for (int j = 0; j < symbol.children.size(); j++) {
@@ -289,7 +289,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					GDScriptParser::LambdaNode *lambda_node = (GDScriptParser::LambdaNode *)m.variable->initializer;
 					lsp::DocumentSymbol lambda;
 					parse_function_symbol(lambda_node->function, lambda);
-					// merge lambda into current variable
+					// Merge lambda into current variable.
 					symbol.children.append_array(lambda.children);
 				}
 
@@ -574,8 +574,8 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 						GDScriptParser::LambdaNode *lambda_node = (GDScriptParser::LambdaNode *)local.variable->initializer;
 						lsp::DocumentSymbol lambda;
 						parse_function_symbol(lambda_node->function, lambda);
-						// merge lambda into current variable
-						// -> only interested in new variables, not lambda itself
+						// Merge lambda into current variable.
+						// -> Only interested in new variables, not lambda itself.
 						symbol.children.append_array(lambda.children);
 					}
 					break;
@@ -588,7 +588,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 					symbol.range = range_of_node(local.bind);
 					symbol.selectionRange = range_of_node(local.bind);
 				default:
-					// fallback
+					// Fallback
 					symbol.range.start = GodotPosition(local.start_line, local.start_column).to_lsp(get_lines());
 					symbol.range.end = GodotPosition(local.end_line, local.end_column).to_lsp(get_lines());
 					symbol.selectionRange = symbol.range;
@@ -623,7 +623,7 @@ String ExtendGDScriptParser::get_text_for_completion(const lsp::Position &p_curs
 	for (int i = 0; i < len; i++) {
 		if (i == p_cursor.line) {
 			longthing += lines[i].substr(0, p_cursor.character);
-			longthing += String::chr(0xFFFF); //not unicode, represents the cursor
+			longthing += String::chr(0xFFFF); //Not unicode, represents the cursor.
 			longthing += lines[i].substr(p_cursor.character, lines[i].size());
 		} else {
 			longthing += lines[i];
@@ -658,9 +658,9 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 			}
 
 			longthing += first_part;
-			longthing += String::chr(0xFFFF); //not unicode, represents the cursor
+			longthing += String::chr(0xFFFF); //Not unicode, represents the cursor.
 			if (p_func_required) {
-				longthing += "("; // tell the parser this is a function call
+				longthing += "("; // Tell the parser this is a function call.
 			}
 			longthing += last_part;
 		} else {
@@ -683,7 +683,7 @@ String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &
 	}
 	ERR_FAIL_INDEX_V(p_position.character, line.size(), "");
 
-	// `p_position` cursor is BETWEEN chars, not ON chars
+	// `p_position` cursor is BETWEEN chars, not ON chars.
 	// ->
 	// ```gdscript
 	// var member| := some_func|(some_variable|)
@@ -694,15 +694,15 @@ String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &
 	//           |
 	//           | cursor on `member`, pos on ` ` (space)
 	// ```
-	// -> move position to previous character if:
-	//    * position not on valid identifier char
-	//    * prev position is valid identifier char
+	// -> Move position to previous character if:
+	//    * Position not on valid identifier char.
+	//    * Prev position is valid identifier char.
 	lsp::Position pos = p_position;
 	if (
-			pos.character >= line.length() // cursor at end of line
-			|| (!is_ascii_identifier_char(line[pos.character]) // not on valid identifier char
-					   && (pos.character > 0 // not line start -> there is a prev char
-								  && is_ascii_identifier_char(line[pos.character - 1]) // prev is valid identifier char
+			pos.character >= line.length() // Cursor at end of line.
+			|| (!is_ascii_identifier_char(line[pos.character]) // Not on valid identifier char.
+					   && (pos.character > 0 // Not line start -> there is a prev char.
+								  && is_ascii_identifier_char(line[pos.character - 1]) // Prev is valid identifier char.
 								  ))) {
 		pos.character--;
 	}

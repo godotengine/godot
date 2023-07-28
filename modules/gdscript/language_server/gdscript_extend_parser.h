@@ -54,12 +54,12 @@
 typedef HashMap<String, const lsp::DocumentSymbol *> ClassMembers;
 
 /**
- * Represents a Position as used by GDScript Parser. Used for conversion to and from `lsp::Position`
+ * Represents a Position as used by GDScript Parser. Used for conversion to and from `lsp::Position`.
  *
  * Difference to `lsp::Position`:
- * * line & char/column: 1-based
+ * * Line & Char/column: 1-based
  * 		* LSP: both 0-based
- * * tabs are expanded to columns using tab size (`text_editor/behavior/indent/size`)
+ * * Tabs are expanded to columns using tab size (`text_editor/behavior/indent/size`).
  *   	* LSP: tab is single char
  *
  * Example:
@@ -156,8 +156,8 @@ public:
 	 *
 	 * Necessary when multiple symbols at same line for example with `func`:
 	 * `func handle_arg(arg: int):`
-	 * -> without `p_symbol_name`: returns `handle_arg`. Even if parameter (`arg`) is wanted.
-	 *    with `p_symbol_name`: symbol name MUST match `p_symbol_name`: returns `arg`
+	 * -> Without `p_symbol_name`: returns `handle_arg`. Even if parameter (`arg`) is wanted.
+	 *    With `p_symbol_name`: symbol name MUST match `p_symbol_name`: returns `arg`.
 	 */
 	const lsp::DocumentSymbol *get_symbol_defined_at_line(int p_line, const String &p_symbol_name = "") const;
 	const lsp::DocumentSymbol *get_member_symbol(const String &p_name, const String &p_subclass = "") const;

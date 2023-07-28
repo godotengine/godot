@@ -83,7 +83,7 @@ GDScriptLanguageProtocol *initialize(const String &p_root) {
 
 	Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
 	workspace->root = absolute_root;
-	//                                                           on windows: `C:/...` -> `C%3A/...`
+	//                                                           On windows: `C:/...` -> `C%3A/...`
 	workspace->root_uri = "file:///" + absolute_root.lstrip("/").replace_first(":", "%3A");
 
 	return proto;
@@ -140,7 +140,7 @@ struct InlineTestData {
 			return false;
 		}
 
-		// find first line without leading comment above current line
+		// Find first line without leading comment above current line.
 		int target_line = p_line_number;
 		while (target_line >= 0) {
 			String dedented = p_lines[target_line].lstrip("\t");
@@ -159,7 +159,7 @@ struct InlineTestData {
 		REQUIRE(i >= 0);
 		r_data.range.start.character = i;
 		if (!match->get_string("left").is_empty()) {
-			// include `#` (comment char) in range
+			// Include `#` (comment char) in range.
 			r_data.range.start.character--;
 		}
 		r_data.range.end.character = i + marker.length();
@@ -179,7 +179,7 @@ Vector<InlineTestData> read_tests(const String &p_path) {
 	String source = FileAccess::get_file_as_string(p_path, &err);
 	REQUIRE_MESSAGE(err == OK, vformat("Cannot read '%s'", p_path));
 
-	// format:
+	// Format:
 	// ```gdscript
 	// var foo = bar + baz
 	// #   | |   | |   ^^^ name -> ref
@@ -194,17 +194,17 @@ Vector<InlineTestData> read_tests(const String &p_path) {
 	//     #     ^^^^^ -> ref
 	// ```
 	//
-	// * `^`: range marker
-	// * `name`: unique name. Can contain any characters except whitespace chars
-	// * `ref`: reference to unique name
+	// * `^`: Range marker.
+	// * `name`: Unique name. Can contain any characters except whitespace chars.
+	// * `ref`: Reference to unique name.
 	//
 	// Notes:
-	// * If range should include first content-char (which is occupied by `#`): use `<` for next marker
-	//   -> range expands 1 to left (-> includes `#`)
-	//   * Note: means: range cannot be single char directly marked by `#`, but must be at least two chars (marked with `#<`)
-	// * comment must start at same ident as line its marked (-> because of tab alignment...)
-	// * use spaces to align after `#`! -> for correct alignment
-	// * between `#` and `^` can be spaces or `|` (to better visualize what's marked below)
+	// * If range should include first content-char (which is occupied by `#`): use `<` for next marker.
+	//   -> Range expands 1 to left (-> includes `#`).
+	//   * Note: Means: Range cannot be single char directly marked by `#`, but must be at least two chars (marked with `#<`).
+	// * Comment must start at same ident as line its marked (-> because of tab alignment...).
+	// * Use spaces to align after `#`! -> for correct alignment
+	// * Between `#` and `^` can be spaces or `|` (to better visualize what's marked below).
 	PackedStringArray lines = source.split("\n");
 
 	PackedStringArray names;
@@ -213,7 +213,7 @@ Vector<InlineTestData> read_tests(const String &p_path) {
 		InlineTestData d;
 		if (InlineTestData::try_parse(lines, i, d)) {
 			if (!d.name.is_empty()) {
-				// safety check: names must be unique
+				// Safety check: names must be unique.
 				if (names.find(d.name) != -1) {
 					FAIL(vformat("Duplicated name '%s' in '%s'. Names must be unique!", d.name, p_path));
 				}
@@ -306,12 +306,12 @@ void testPositionRoundtrip(lsp::Position p_lsp, GodotPosition p_gd, const Packed
 	CHECK_EQ(p_lsp, actual_lsp);
 }
 
-// Note
+// Note:
 // * Cursor is BETWEEN chars
 //	 * `va|r` -> cursor between `a`&`r`
 //   * `var`
 //        ^
-//      -> character on `r` -> cursor between `a`&`r`s for tests:
+//      -> Character on `r` -> cursor between `a`&`r`s for tests:
 // * Line & Char:
 //   * LSP: both 0-based
 //   * Godot: both 1-based
@@ -338,7 +338,7 @@ func f():
 		}
 
 		SUBCASE("with tabs") {
-			// on `v` in `value` in `var value := ...`
+			// On `v` in `value` in `var value := ...`.
 			lsp::Position lsp = lspPos(5, 6);
 			GodotPosition gd(6, 13);
 			testPositionRoundtrip(lsp, gd, lines);
