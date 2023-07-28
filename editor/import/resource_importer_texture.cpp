@@ -790,12 +790,16 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) co
 ResourceImporterTexture *ResourceImporterTexture::singleton = nullptr;
 
 ResourceImporterTexture::ResourceImporterTexture() {
-	singleton = this;
+	if (!singleton) {
+		singleton = this;
+	}
 	CompressedTexture2D::request_3d_callback = _texture_reimport_3d;
 	CompressedTexture2D::request_roughness_callback = _texture_reimport_roughness;
 	CompressedTexture2D::request_normal_callback = _texture_reimport_normal;
 }
 
 ResourceImporterTexture::~ResourceImporterTexture() {
-	singleton = nullptr;
+	if (singleton == this) {
+		singleton = nullptr;
+	}
 }
