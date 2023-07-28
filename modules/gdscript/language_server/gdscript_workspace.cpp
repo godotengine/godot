@@ -46,7 +46,6 @@
 void GDScriptWorkspace::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_new_signal"), &GDScriptWorkspace::apply_new_signal);
 	ClassDB::bind_method(D_METHOD("didDeleteFiles"), &GDScriptWorkspace::did_delete_files);
-	ClassDB::bind_method(D_METHOD("symbol"), &GDScriptWorkspace::symbol);
 	ClassDB::bind_method(D_METHOD("parse_script", "path", "content"), &GDScriptWorkspace::parse_script);
 	ClassDB::bind_method(D_METHOD("parse_local_script", "path"), &GDScriptWorkspace::parse_local_script);
 	ClassDB::bind_method(D_METHOD("get_file_path", "uri"), &GDScriptWorkspace::get_file_path);
@@ -273,25 +272,6 @@ ExtendGDScriptParser *GDScriptWorkspace::get_parse_result(const String &p_path) 
 		return S->value;
 	}
 	return nullptr;
-}
-
-Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
-	String query = p_params["query"];
-	Array arr;
-	if (!query.is_empty()) {
-		for (const KeyValue<String, ExtendGDScriptParser *> &E : scripts) {
-			Vector<lsp::DocumentedSymbolInformation> script_symbols;
-			E.value->get_symbols().symbol_tree_as_list(E.key, script_symbols);
-			for (int i = 0; i < script_symbols.size(); ++i) {
-				if (query.is_subsequence_ofn(script_symbols[i].name)) {
-					lsp::DocumentedSymbolInformation symbol = script_symbols[i];
-					symbol.location.uri = get_file_uri(symbol.location.uri);
-					arr.push_back(symbol.to_json());
-				}
-			}
-		}
-	}
-	return arr;
 }
 
 Error GDScriptWorkspace::initialize() {

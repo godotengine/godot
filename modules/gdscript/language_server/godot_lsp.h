@@ -1113,70 +1113,6 @@ static const int TypeParameter = 26;
 }; // namespace SymbolKind
 
 /**
- * Represents information about programming constructs like variables, classes,
- * interfaces etc.
- */
-struct SymbolInformation {
-	/**
-	 * The name of this symbol.
-	 */
-	String name;
-
-	/**
-	 * The kind of this symbol.
-	 */
-	int kind = SymbolKind::File;
-
-	/**
-	 * Indicates if this symbol is deprecated.
-	 */
-	bool deprecated = false;
-
-	/**
-	 * The location of this symbol. The location's range is used by a tool
-	 * to reveal the location in the editor. If the symbol is selected in the
-	 * tool the range's start information is used to position the cursor. So
-	 * the range usually spans more then the actual symbol's name and does
-	 * normally include things like visibility modifiers.
-	 *
-	 * The range doesn't have to denote a node range in the sense of a abstract
-	 * syntax tree. It can therefore not be used to re-construct a hierarchy of
-	 * the symbols.
-	 */
-	Location location;
-
-	/**
-	 * The name of the symbol containing this symbol. This information is for
-	 * user interface purposes (e.g. to render a qualifier in the user interface
-	 * if necessary). It can't be used to re-infer a hierarchy for the document
-	 * symbols.
-	 */
-	String containerName;
-
-	_FORCE_INLINE_ Dictionary to_json() const {
-		Dictionary dict;
-		dict["name"] = name;
-		dict["kind"] = kind;
-		dict["deprecated"] = deprecated;
-		dict["location"] = location.to_json();
-		dict["containerName"] = containerName;
-		return dict;
-	}
-};
-
-struct DocumentedSymbolInformation : public SymbolInformation {
-	/**
-	 * A human-readable string with additional information
-	 */
-	String detail;
-
-	/**
-	 * A human-readable string that represents a doc-comment.
-	 */
-	String documentation;
-};
-
-/**
  * Represents programming constructs like variables, classes, interfaces etc. that appear in a document. Document symbols can be
  * hierarchical and they have two ranges: one that encloses its definition and one that points to its most interesting range,
  * e.g. the range of an identifier.
@@ -1253,26 +1189,6 @@ struct DocumentSymbol {
 		}
 		dict["children"] = arr;
 		return dict;
-	}
-
-	void symbol_tree_as_list(const String &p_uri, Vector<DocumentedSymbolInformation> &r_list, const String &p_container = "", bool p_join_name = false) const {
-		DocumentedSymbolInformation si;
-		if (p_join_name && !p_container.is_empty()) {
-			si.name = p_container + ">" + name;
-		} else {
-			si.name = name;
-		}
-		si.kind = kind;
-		si.containerName = p_container;
-		si.deprecated = deprecated;
-		si.location.uri = p_uri;
-		si.location.range = range;
-		si.detail = detail;
-		si.documentation = documentation;
-		r_list.push_back(si);
-		for (int i = 0; i < children.size(); i++) {
-			children[i].symbol_tree_as_list(p_uri, r_list, si.name, p_join_name);
-		}
 	}
 
 	_FORCE_INLINE_ MarkupContent render() const {

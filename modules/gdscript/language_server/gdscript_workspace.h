@@ -74,9 +74,6 @@ public:
 	HashMap<StringName, ClassMembers> native_members;
 
 public:
-	Array symbol(const Dictionary &p_params);
-
-public:
 	Error initialize();
 
 	Error parse_script(const String &p_path, const String &p_content);
