@@ -1683,7 +1683,7 @@ struct ServerCapabilities {
 	/**
 	 * The server provides find references support.
 	 */
-	bool referencesProvider = false;
+	bool referencesProvider = true;
 
 	/**
 	 * The server provides document highlight support.

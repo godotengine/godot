@@ -50,6 +50,7 @@ void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("completion"), &GDScriptTextDocument::completion);
 	ClassDB::bind_method(D_METHOD("resolve"), &GDScriptTextDocument::resolve);
 	ClassDB::bind_method(D_METHOD("rename"), &GDScriptTextDocument::rename);
+	ClassDB::bind_method(D_METHOD("references"), &GDScriptTextDocument::references);
 	ClassDB::bind_method(D_METHOD("foldingRange"), &GDScriptTextDocument::foldingRange);
 	ClassDB::bind_method(D_METHOD("codeLens"), &GDScriptTextDocument::codeLens);
 	ClassDB::bind_method(D_METHOD("documentLink"), &GDScriptTextDocument::documentLink);
@@ -248,6 +249,21 @@ Dictionary GDScriptTextDocument::rename(const Dictionary &p_params) {
 	String new_name = p_params["newName"];
 
 	return GDScriptLanguageProtocol::get_singleton()->get_workspace()->rename(params, new_name);
+}
+
+Array GDScriptTextDocument::references(const Dictionary &p_params) {
+	Array res;
+
+	lsp::TextDocumentPositionParams params;
+	params.load(p_params);
+	//TODO: handle include decl.
+
+	const lsp::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params);
+	if(symbol) {
+		//TODO: implement
+	}
+
+	return res;
 }
 
 Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
