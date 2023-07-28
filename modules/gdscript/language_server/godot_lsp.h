@@ -1182,12 +1182,14 @@ struct DocumentSymbol {
 			dict["documentation"] = documentation;
 			dict["native_class"] = native_class;
 		}
-		Array arr;
-		arr.resize(children.size());
-		for (int i = 0; i < children.size(); i++) {
-			arr[i] = children[i].to_json(with_doc);
+		if (!children.is_empty()) {
+			Array arr;
+			arr.resize(children.size());
+			for (int i = 0; i < children.size(); i++) {
+				arr[i] = children[i].to_json(with_doc);
+			}
+			dict["children"] = arr;
 		}
-		dict["children"] = arr;
 		return dict;
 	}
 
