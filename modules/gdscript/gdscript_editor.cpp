@@ -1459,8 +1459,13 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 	if (p_expression->is_constant) {
 		// Already has a value, so just use that.
 		r_type = _type_from_variant(p_expression->reduced_value);
-		if (p_expression->get_datatype().kind == GDScriptParser::DataType::ENUM) {
-			r_type.type = p_expression->get_datatype();
+		switch (p_expression->get_datatype().kind) {
+			case GDScriptParser::DataType::ENUM:
+			case GDScriptParser::DataType::CLASS:
+				r_type.type = p_expression->get_datatype();
+				break;
+			default:
+				break;
 		}
 		found = true;
 	} else {
