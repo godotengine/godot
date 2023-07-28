@@ -494,7 +494,7 @@ Array GDScriptTextDocument::find_symbols(const lsp::TextDocumentPositionParams &
 	if (symbol) {
 		lsp::Location location;
 		location.uri = symbol->uri;
-		location.range = symbol->range;
+		location.range = symbol->selectionRange;
 		const String &path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(symbol->uri);
 		if (file_checker->file_exists(path)) {
 			arr.push_back(location.to_json());
@@ -508,7 +508,7 @@ Array GDScriptTextDocument::find_symbols(const lsp::TextDocumentPositionParams &
 				if (!s->uri.is_empty()) {
 					lsp::Location location;
 					location.uri = s->uri;
-					location.range = s->range;
+					location.range = s->selectionRange;
 					arr.push_back(location.to_json());
 					r_list.push_back(s);
 				}
