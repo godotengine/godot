@@ -61,6 +61,7 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 	void _assess_expression(GDScriptParser::ExpressionNode *p_expression);
 	void _assess_assignment(GDScriptParser::AssignmentNode *p_assignment);
 	void _extract_from_call(GDScriptParser::CallNode *p_call);
+	void _extract_bin_literals(GDScriptParser::BinaryOpNode *p_binary, String *r_result);
 	void _extract_fd_literals(GDScriptParser::ExpressionNode *p_expression);
 
 public:

@@ -221,9 +221,19 @@ void GDScriptEditorTranslationParserPlugin::_assess_assignment(GDScriptParser::A
 		assignee_name = static_cast<GDScriptParser::SubscriptNode *>(p_assignment->assignee)->attribute->name;
 	}
 
-	if (assignment_patterns.has(assignee_name) && p_assignment->assigned_value->type == GDScriptParser::Node::LITERAL) {
-		// If the assignment is towards one of the extract patterns (text, tooltip_text etc.), and the value is a string literal, we collect the string.
-		ids->push_back(static_cast<GDScriptParser::LiteralNode *>(p_assignment->assigned_value)->value);
+	if (assignment_patterns.has(assignee_name)) {
+		if (p_assignment->assigned_value->type == GDScriptParser::Node::LITERAL) {
+			// If the assignment is towards one of the extract patterns (text, tooltip_text etc.), and the value is a string literal, we collect the string.
+			ids->push_back(static_cast<GDScriptParser::LiteralNode *>(p_assignment->assigned_value)->value);
+		} else if (p_assignment->assigned_value->type == GDScriptParser::Node::BINARY_OPERATOR) {
+			String result;
+			GDScriptParser::BinaryOpNode *binary = static_cast<GDScriptParser::BinaryOpNode *>(p_assignment->assigned_value);
+			_extract_bin_literals(binary, &result);
+
+			if (!result.is_empty()) {
+				ids->push_back(result);
+			}
+		}
 	} else if (assignee_name == fd_filters && p_assignment->assigned_value->type == GDScriptParser::Node::CALL) {
 		// FileDialog.filters accepts assignment in the form of PackedStringArray. For example,
 		// get_node("FileDialog").filters = PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]).
@@ -259,6 +269,15 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(GDScriptParser::C
 		for (int i = 0; i < p_call->arguments.size(); i++) {
 			if (p_call->arguments[i]->type == GDScriptParser::Node::LITERAL) {
 				id_ctx_plural.write[i] = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[i])->value;
+			} else if (p_call->arguments[i]->type == GDScriptParser::Node::BINARY_OPERATOR) {
+				String result;
+				GDScriptParser::BinaryOpNode *binary = static_cast<GDScriptParser::BinaryOpNode *>(p_call->arguments[i]);
+				_extract_bin_literals(binary, &result);
+
+				extract_id_ctx_plural = !result.is_empty();
+				if (extract_id_ctx_plural) {
+					id_ctx_plural.write[i] = result;
+				}
 			} else {
 				// Avoid adding something like tr("Flying dragon", var_context_level_1). We want to extract both id and context together.
 				extract_id_ctx_plural = false;
@@ -280,6 +299,15 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(GDScriptParser::C
 
 			if (p_call->arguments[indices[i]]->type == GDScriptParser::Node::LITERAL) {
 				id_ctx_plural.write[i] = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[indices[i]])->value;
+			} else if (p_call->arguments[i]->type == GDScriptParser::Node::BINARY_OPERATOR) {
+				String result;
+				GDScriptParser::BinaryOpNode *binary = static_cast<GDScriptParser::BinaryOpNode *>(p_call->arguments[i]);
+				_extract_bin_literals(binary, &result);
+
+				extract_id_ctx_plural = !result.is_empty();
+				if (extract_id_ctx_plural) {
+					id_ctx_plural.write[i] = result;
+				}
 			} else {
 				extract_id_ctx_plural = false;
 			}
@@ -291,15 +319,30 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(GDScriptParser::C
 		// Extracting argument with only string literals. In other words, not extracting something like set_text("hello " + some_var).
 		if (p_call->arguments[0]->type == GDScriptParser::Node::LITERAL) {
 			ids->push_back(static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[0])->value);
+		} else if (p_call->arguments[0]->type == GDScriptParser::Node::BINARY_OPERATOR) {
+			String result;
+			GDScriptParser::BinaryOpNode *binary = static_cast<GDScriptParser::BinaryOpNode *>(p_call->arguments[0]);
+			_extract_bin_literals(binary, &result);
+
+			if (!result.is_empty()) {
+				ids->push_back(static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[0])->value);
+			}
 		}
 	} else if (second_arg_patterns.has(function_name)) {
 		if (p_call->arguments[1]->type == GDScriptParser::Node::LITERAL) {
 			ids->push_back(static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[1])->value);
+		} else if (p_call->arguments[1]->type == GDScriptParser::Node::BINARY_OPERATOR) {
+			String result;
+			GDScriptParser::BinaryOpNode *binary = static_cast<GDScriptParser::BinaryOpNode *>(p_call->arguments[1]);
+			_extract_bin_literals(binary, &result);
+
+			if (!result.is_empty()) {
+				ids->push_back(static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[1])->value);
+			}
 		}
 	} else if (function_name == fd_add_filter) {
 		// Extract the 'JPE Images' in this example - get_node("FileDialog").add_filter("*.jpg; JPE Images").
 		_extract_fd_literals(p_call->arguments[0]);
-
 	} else if (function_name == fd_set_filter && p_call->arguments[0]->type == GDScriptParser::Node::CALL) {
 		// FileDialog.set_filters() accepts assignment in the form of PackedStringArray. For example,
 		// get_node("FileDialog").set_filters( PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"])).
@@ -318,6 +361,31 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(GDScriptParser::C
 		if (subscript_node->base && subscript_node->base->type == GDScriptParser::Node::CALL) {
 			GDScriptParser::CallNode *call_node = static_cast<GDScriptParser::CallNode *>(subscript_node->base);
 			_extract_from_call(call_node);
+		}
+	}
+}
+
+void GDScriptEditorTranslationParserPlugin::_extract_bin_literals(GDScriptParser::BinaryOpNode *p_binary, String *r_result) {
+	bool is_valid = true;
+
+	if (p_binary->left_operand->type == GDScriptParser::Node::LITERAL) {
+		GDScriptParser::LiteralNode *left_op = static_cast<GDScriptParser::LiteralNode *>(p_binary->left_operand);
+		*r_result += static_cast<String>(left_op->value);
+	} else if (p_binary->left_operand->type == GDScriptParser::Node::BINARY_OPERATOR) {
+		_extract_bin_literals(static_cast<GDScriptParser::BinaryOpNode *>(p_binary->left_operand), r_result);
+	} else {
+		is_valid = false;
+		r_result->clear();
+	}
+
+	if (is_valid) {
+		if (p_binary->right_operand->type == GDScriptParser::Node::LITERAL) {
+			GDScriptParser::LiteralNode *right_op = static_cast<GDScriptParser::LiteralNode *>(p_binary->right_operand);
+			*r_result += static_cast<String>(right_op->value);
+		} else if (p_binary->right_operand->type == GDScriptParser::Node::BINARY_OPERATOR) {
+			_extract_bin_literals(static_cast<GDScriptParser::BinaryOpNode *>(p_binary->right_operand), r_result);
+		} else {
+			r_result->clear();
 		}
 	}
 }
