@@ -198,10 +198,19 @@ Vector<InlineTestData> read_tests(const String &p_path) {
 	// * between `#` and `^` can be spaces or `|` (to better visualize what's marked below)
 	PackedStringArray lines = source.split("\n");
 
+	PackedStringArray names;
 	Vector<InlineTestData> data;
 	for (int i = 0; i < lines.size(); i++) {
 		InlineTestData d;
 		if (InlineTestData::try_parse(lines, i, d)) {
+			if (!d.name.is_empty()) {
+				// safety check: names must be unique
+				if (names.find(d.name) != -1) {
+					FAIL(vformat("Duplicated name '%s' in '%s'. Names must be unique!", d.name, p_path));
+				}
+				names.append(d.name);
+			}
+
 			data.append(d);
 		}
 	}
