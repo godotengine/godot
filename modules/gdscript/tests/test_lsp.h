@@ -43,19 +43,20 @@
 #include "core/os/os.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
+#include "regex/regex.h"
 
 #include "thirdparty/doctest/doctest.h"
 
 template <>
 struct doctest::StringMaker<lsp::Position> {
 	static doctest::String convert(const lsp::Position &p_val) {
-		return vformat("(%d,%d)", p_val.line, p_val.character).utf8().get_data();
+		return p_val.to_string().utf8().get_data();
 	}
 };
 template <>
 struct doctest::StringMaker<lsp::Range> {
 	static doctest::String convert(const lsp::Range &p_val) {
-		return vformat("[(%d,%d):(%d,%d)]", p_val.start.line, p_val.start.character, p_val.end.line, p_val.end.character).utf8().get_data();
+		return p_val.to_string().utf8().get_data();
 	}
 };
 
@@ -71,9 +72,9 @@ GDScriptLanguageProtocol *initialize(const String &root) {
 	String absolute_root = dir->get_current_dir();
 	init_language(absolute_root);
 
-	auto proto = memnew(GDScriptLanguageProtocol);
+	GDScriptLanguageProtocol *proto = memnew(GDScriptLanguageProtocol);
 
-	auto workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
+	Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
 	//TODO: adjust? escape `:` but not `/`
 	workspace->root = absolute_root;
 	workspace->root_uri = "file:///" + absolute_root.lstrip("/");
@@ -101,133 +102,183 @@ lsp::TextDocumentPositionParams posIn(const lsp::DocumentUri &uri, const lsp::Po
 	return params;
 }
 
-// Notes for code examples:
-// * Tab: →
-// * cursor is BETWEEN chars.
-//     Markers:
-//     * `|`: inline, marks cursor position: `va|r` -> cursor between `a`&`r`
-//     * `^`: below, marks character position -> cursor before:
-//            `var`
-//               ^
-//            -> character on `r` -> cursor between `a`&`r`
-//     * Note: both marker examples: `character = 2`
-// * Line & Char: both 0-based (LSP)
+const lsp::DocumentSymbol *test_resolve_symbol_at(const String &p_uri, const lsp::Position p_pos, const String &p_expected_uri, const String &p_expected_name, const lsp::Range &p_expected_range) {
+	Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
+
+	lsp::TextDocumentPositionParams params = posIn(p_uri, p_pos);
+	const lsp::DocumentSymbol *symbol = workspace->resolve_symbol(params);
+	REQUIRE(symbol);
+
+	CHECK_EQ(symbol->uri, p_expected_uri);
+	CHECK_EQ(symbol->name, p_expected_name);
+	CHECK_EQ(symbol->range, p_expected_range);
+
+	return symbol;
+}
+
+struct InlineTestData {
+	lsp::Range range;
+	String text;
+	String name;
+	String ref;
+
+	static bool try_parse(const Vector<String> &p_lines, const int p_line_number, InlineTestData &r_data) {
+		String line = p_lines[p_line_number];
+
+		RegEx regex = RegEx("^\\t*#[ |]*(?<range>(?<left><)?\\^+)(\\s+(?<name>(?!->)\\S+))?(\\s+->\\s+(?<ref>\\S+))?");
+		Ref<RegExMatch> match = regex.search(line);
+		if (match.is_null()) {
+			return false;
+		}
+
+		// find first line without leading comment above current line
+		int target_line = p_line_number;
+		while (target_line >= 0) {
+			String dedented = p_lines[target_line].lstrip("\t");
+			if (!dedented.begins_with("#")) {
+				break;
+			}
+			target_line--;
+		}
+		if (target_line < 0) {
+			return false;
+		}
+		r_data.range.start.line = r_data.range.end.line = target_line;
+
+		String marker = match->get_string("range");
+		int i = line.find(marker);
+		REQUIRE(i >= 0);
+		r_data.range.start.character = i;
+		if (!match->get_string("left").is_empty()) {
+			// include `#` (comment char) in range
+			r_data.range.start.character--;
+		}
+		r_data.range.end.character = i + marker.length();
+
+		String target = p_lines[target_line];
+		r_data.text = target.substr(r_data.range.start.character, r_data.range.end.character - r_data.range.start.character);
+
+		r_data.name = match->get_string("name");
+		r_data.ref = match->get_string("ref");
+
+		return true;
+	}
+};
+
+Vector<InlineTestData> read_tests(const String &p_path) {
+	Error err;
+	String source = FileAccess::get_file_as_string(p_path, &err);
+	REQUIRE_MESSAGE(err == OK, vformat("Cannot read '%s'", p_path));
+
+	// format:
+	// ```gdscript
+	// var foo = bar + baz
+	// #   | |   | |   ^^^ name -> ref
+	// #   | |   ^^^ -> ref
+	// #   ^^^ name
+	//
+	// func my_func():
+	// #    ^^^^^^^ name
+	//     var value = foo + 42
+	//     #   ^^^^^ name
+	//     print(value)
+	//     #     ^^^^^ -> ref
+	// ```
+	//
+	// * `^`: range marker
+	// * `name`: unique name. Can contain any characters except whitespace chars
+	// * `ref`: reference to unique name
+	//
+	// Notes:
+	// * If range should include first content-char (which is occupied by `#`): use `<` for next marker
+	//   -> range expands 1 to left (-> includes `#`)
+	//   * Note: means: range cannot be single char directly marked by `#`, but must be at least two chars (marked with `#<`)
+	// * comment must start at same ident as line its marked (-> because of tab alignment...)
+	// * use spaces to align after `#`! -> for correct alignment
+	// * between `#` and `^` can be spaces or `|` (to better visualize what's marked below)
+	PackedStringArray lines = source.split("\n");
+
+	Vector<InlineTestData> data;
+	for (int i = 0; i < lines.size(); i++) {
+		InlineTestData d;
+		if (InlineTestData::try_parse(lines, i, d)) {
+			data.append(d);
+		}
+	}
+
+	return data;
+}
+
+void test_resolve_symbol(const String &p_uri, const InlineTestData &p_test_data, const Vector<InlineTestData> &p_all_data) {
+	if (p_test_data.ref.is_empty()) {
+		return;
+	}
+
+	SUBCASE(vformat("Can resolve symbol '%s' at %s to '%s'", p_test_data.text, p_test_data.range.to_string(), p_test_data.ref).utf8().get_data()) {
+		const InlineTestData *target = nullptr;
+		for (int i = 0; i < p_all_data.size(); i++) {
+			if (p_all_data[i].name == p_test_data.ref) {
+				target = &p_all_data[i];
+				break;
+			}
+		}
+		REQUIRE_MESSAGE(target, vformat("No target for ref '%s'", p_test_data.ref));
+
+		Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
+		lsp::Position pos = p_test_data.range.start;
+		// position cursor inside identifier
+		pos.character = (p_test_data.range.end.character + p_test_data.range.start.character) / 2;
+
+		test_resolve_symbol_at(p_uri, pos, p_uri, target->text, target->range);
+	}
+}
+Vector<InlineTestData> filter_ref_towards(const Vector<InlineTestData> &p_data, const String &p_name) {
+	Vector<InlineTestData> res;
+
+	for (const InlineTestData &d : p_data) {
+		if (d.ref == p_name) {
+			res.append(d);
+		}
+	}
+
+	return res;
+}
+void test_resolve_symbols(const String &p_uri, const Vector<InlineTestData> &p_test_data, const Vector<InlineTestData> &p_all_data) {
+	for (const InlineTestData &d : p_test_data) {
+		test_resolve_symbol(p_uri, d, p_all_data);
+	}
+}
+
+// Note
+// * Cursor is BETWEEN chars
+//	 * `va|r` -> cursor between `a`&`r`
+//   * `var`
+//        ^
+//      -> character on `r` -> cursor between `a`&`r`s for tests:
+// * Line & Char:
+//   * LSP: both 0-based
 //   * Godot: both 1-based
 TEST_SUITE("[Modules][GDScript][LSP]") {
 	TEST_CASE("[workspace][resolve_symbol]") {
-		auto proto = initialize(root);
+		GDScriptLanguageProtocol *proto = initialize(root);
 		REQUIRE(proto);
-		auto workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
+		Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
 
-		SUBCASE("[local][parameter]") {
-			String uri = workspace->get_file_uri("res://local_variables.gd");
-			// `arg` in `func return_arg(arg: int):`
-			String expected_name = "arg";
-			lsp::Range expected_range = range(pos(12, 16), pos(12, 19));
-
-			SUBCASE("can resolve parameter at declaration") {
-				// `func return_arg(a|rg: int) -> int:`
-				lsp::Position p = pos(12, 17);
-				lsp::TextDocumentPositionParams params = posIn(uri, p);
-				const lsp::DocumentSymbol *symbol = workspace->resolve_symbol(params);
-				REQUIRE(symbol);
-
-				CHECK_EQ(symbol->uri, uri);
-				CHECK_EQ(symbol->name, expected_name);
-				// with `: int`:
-				// auto expected_range = range(pos(12, 16), pos(12, 24));
-				CHECK_EQ(symbol->range, expected_range);
+		{
+			String path = "res://local_variables.gd";
+			String uri = workspace->get_file_uri(path);
+			Vector<InlineTestData> all_test_data = read_tests(path);
+			SUBCASE("[public][variable]") {
+				Vector<InlineTestData> test_data = filter_ref_towards(all_test_data, "member");
+				test_resolve_symbols(uri, test_data, all_test_data);
 			}
-			SUBCASE("can resolve parameter at usage") {
-				// `→a|rg += 2`
-				lsp::Position p = pos(13, 2);
-				lsp::TextDocumentPositionParams params = posIn(uri, p);
-				const lsp::DocumentSymbol *symbol = workspace->resolve_symbol(params);
-				REQUIRE(symbol);
-
-				CHECK_EQ(symbol->uri, uri);
-				CHECK_EQ(symbol->name, expected_name);
-				CHECK_EQ(symbol->range, expected_range);
+			SUBCASE("[local][variable]") {
+				Vector<InlineTestData> test_data = filter_ref_towards(all_test_data, "test");
+				test_resolve_symbols(uri, test_data, all_test_data);
 			}
-		}
-
-		SUBCASE("[public][variable]") {
-			String uri = workspace->get_file_uri("res://local_variables.gd");
-			String expected_name = "member";
-			lsp::Range expected_range = range(pos(3, 4), pos(3, 10));
-
-			SUBCASE("can resolve variable at declaration") {
-				// `var m|ember := 2`
-				lsp::Position p = pos(3, 5);
-				lsp::TextDocumentPositionParams params = posIn(uri, p);
-				const lsp::DocumentSymbol *symbol = workspace->resolve_symbol(params);
-				REQUIRE(symbol);
-
-				CHECK_EQ(symbol->uri, uri);
-				CHECK_EQ(symbol->name, expected_name);
-				CHECK_EQ(symbol->range, expected_range);
-			}
-			SUBCASE("can resolve variable at usage (get)") {
-				// `→var test := memb|er + 42`
-				lsp::Position p = pos(6, 17);
-				lsp::TextDocumentPositionParams params = posIn(uri, p);
-				const lsp::DocumentSymbol *symbol = workspace->resolve_symbol(params);
-				REQUIRE(symbol);
-
-				CHECK_EQ(symbol->uri, uri);
-				CHECK_EQ(symbol->name, expected_name);
-				CHECK_EQ(symbol->range, expected_range);
-			}
-			SUBCASE("can resolve variable at usage (set)") {
-				// `→me|mber += 5`
-				lsp::Position p = pos(8, 3);
-				lsp::TextDocumentPositionParams params = posIn(uri, p);
-				const lsp::DocumentSymbol *symbol = workspace->resolve_symbol(params);
-				REQUIRE(symbol);
-
-				CHECK_EQ(symbol->uri, uri);
-				CHECK_EQ(symbol->name, expected_name);
-				CHECK_EQ(symbol->range, expected_range);
-			}
-		}
-
-		SUBCASE("[local][variable]") {
-			String uri = workspace->get_file_uri("res://local_variables.gd");
-			String expected_name = "test";
-			lsp::Range expected_range = range(pos(6, 5), pos(6, 9));
-
-			SUBCASE("can resolve variable at declaration") {
-				// `→var t|est := ...`
-				lsp::Position p = pos(6, 6);
-				lsp::TextDocumentPositionParams params = posIn(uri, p);
-				const lsp::DocumentSymbol *symbol = workspace->resolve_symbol(params);
-				REQUIRE(symbol);
-
-				CHECK_EQ(symbol->uri, uri);
-				CHECK_EQ(symbol->name, expected_name);
-				CHECK_EQ(symbol->range, expected_range);
-			}
-			SUBCASE("can resolve variable at usage (set)") {
-				// `→tes|t = return_arg(test)`
-				lsp::Position p = pos(9, 4);
-				lsp::TextDocumentPositionParams params = posIn(uri, p);
-				const lsp::DocumentSymbol *symbol = workspace->resolve_symbol(params);
-				REQUIRE(symbol);
-
-				CHECK_EQ(symbol->uri, uri);
-				CHECK_EQ(symbol->name, expected_name);
-				CHECK_EQ(symbol->range, expected_range);
-			}
-			SUBCASE("can resolve variable at usage (get)") {
-				// `→test = return_arg(t|est)`
-				lsp::Position p = pos(9, 20);
-				lsp::TextDocumentPositionParams params = posIn(uri, p);
-				const lsp::DocumentSymbol *symbol = workspace->resolve_symbol(params);
-				REQUIRE(symbol);
-
-				CHECK_EQ(symbol->uri, uri);
-				CHECK_EQ(symbol->name, expected_name);
-				CHECK_EQ(symbol->range, expected_range);
+			SUBCASE("[local][parameter]") {
+				Vector<InlineTestData> test_data = filter_ref_towards(all_test_data, "arg");
+				test_resolve_symbols(uri, test_data, all_test_data);
 			}
 		}
 

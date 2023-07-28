@@ -87,6 +87,10 @@ struct Position {
 		return line == p_other.line && character == p_other.character;
 	}
 
+	String to_string() const {
+		return vformat("(%d,%d)", line, character);
+	}
+
 	_FORCE_INLINE_ void load(const Dictionary &p_params) {
 		line = p_params["line"];
 		character = p_params["character"];
@@ -118,6 +122,10 @@ struct Range {
 
 	bool operator==(const Range &p_other) const {
 		return start == p_other.start && end == p_other.end;
+	}
+
+	String to_string() const {
+		return vformat("[%s:%s]", start.to_string(), end.to_string());
 	}
 
 	_FORCE_INLINE_ void load(const Dictionary &p_params) {
