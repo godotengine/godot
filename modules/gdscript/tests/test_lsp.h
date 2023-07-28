@@ -323,6 +323,14 @@ TEST_SUITE("[Modules][GDScript][LSP]") {
 			test_resolve_symbols(uri, all_test_data, all_test_data);
 		}
 
+		SUBCASE("Can get correct ranges for lambda") {
+			String path = "res://lambdas.gd";
+			assert_no_errors_in(path);
+			String uri = workspace->get_file_uri(path);
+			Vector<InlineTestData> all_test_data = read_tests(path);
+			test_resolve_symbols(uri, all_test_data, all_test_data);
+		}
+
 		memdelete(proto);
 	}
 }

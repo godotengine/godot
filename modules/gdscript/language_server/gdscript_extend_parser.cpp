@@ -280,6 +280,14 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.uri = uri;
 				symbol.script_path = path;
 
+				if (m.variable->initializer && m.variable->initializer->type == GDScriptParser::Node::LAMBDA) {
+					GDScriptParser::LambdaNode *lambda_node = (GDScriptParser::LambdaNode *)m.variable->initializer;
+					lsp::DocumentSymbol lambda;
+					parse_function_symbol(lambda_node->function, lambda);
+					// merge lambda into current variable
+					symbol.children.append_array(lambda.children);
+				}
+
 				if (m.variable->getter) {
 					lsp::DocumentSymbol get_symbol;
 					parse_function_symbol(m.variable->getter, get_symbol);
@@ -432,9 +440,9 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol &r_symbol) {
 	const String uri = get_uri();
 
-	//TODO: merge with parent when lambda? (-> variable)
 	bool is_lambda = p_func->source_lambda != nullptr;
 
+	//Note: lambda can be named -- but it gets merged with parent variable -> name doesn't matter
 	r_symbol.name = is_lambda ? "λ" : p_func->identifier->name;
 	r_symbol.kind = (is_lambda || p_func->is_static) ? lsp::SymbolKind::Function : lsp::SymbolKind::Method;
 	r_symbol.detail = "func";
@@ -547,7 +555,9 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 						GDScriptParser::LambdaNode *lambda_node = (GDScriptParser::LambdaNode *)local.variable->initializer;
 						lsp::DocumentSymbol lambda;
 						parse_function_symbol(lambda_node->function, lambda);
-						symbol.children.push_back(lambda);
+						// merge lambda into current variable
+						// -> only interested in new variables, not lambda itself
+						symbol.children.append_array(lambda.children);
 					}
 					break;
 				case SuiteNode::Local::PARAMETER:
