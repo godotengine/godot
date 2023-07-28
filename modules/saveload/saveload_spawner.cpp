@@ -298,9 +298,9 @@ void SaveloadSpawner::_notification(int p_what) {
 				Node *node = get_node_or_null(path);
 				ERR_CONTINUE_MSG(!node, vformat("could not find node at path %s", path));
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &SaveloadSpawner::_node_exit));
-				SaveloadAPI::get_singleton()->untrack(this);
 			}
 			spawner_state.clear();
+			SaveloadAPI::get_singleton()->untrack(this);
 		} break;
 	}
 }
