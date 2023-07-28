@@ -282,6 +282,13 @@ TEST_SUITE("[Modules][GDScript][LSP]") {
 			}
 		}
 
+		SUBCASE("Can get correct ranges for indented variables") {
+			String path = "res://indentation.gd";
+			String uri = workspace->get_file_uri(path);
+			Vector<InlineTestData> all_test_data = read_tests(path);
+			test_resolve_symbols(uri, all_test_data, all_test_data);
+		}
+
 		memdelete(proto);
 	}
 }
