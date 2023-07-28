@@ -435,6 +435,14 @@ func f():
 			test_resolve_symbols(uri, all_test_data, all_test_data);
 		}
 
+		SUBCASE("Can get correct ranges for shadowing & shadowed variables") {
+			String path = "res://shadowing_initializer.gd";
+			assert_no_errors_in(path);
+			String uri = workspace->get_file_uri(path);
+			Vector<InlineTestData> all_test_data = read_tests(path);
+			test_resolve_symbols(uri, all_test_data, all_test_data);
+		}
+
 		memdelete(proto);
 	}
 }

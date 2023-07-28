@@ -724,10 +724,9 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 						symbol = get_native_symbol(ret.class_name, member);
 					}
 				} else {
-					symbol = parser->get_member_symbol(symbol_identifier);
-
+					symbol = get_local_symbol_at(parser, symbol_identifier, p_doc_pos.position);
 					if (!symbol) {
-						symbol = get_local_symbol_at(parser, symbol_identifier, p_doc_pos.position);
+						symbol = parser->get_member_symbol(symbol_identifier);
 					}
 				}
 			}
