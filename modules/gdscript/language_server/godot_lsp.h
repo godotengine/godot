@@ -1150,6 +1150,13 @@ struct DocumentSymbol {
 	bool deprecated = false;
 
 	/**
+	 * if `true`: Symbol is local to script and cannot be accessed somewhere else.
+	 * 
+	 * For example: local variable inside a `func`
+	*/
+	bool local = false;
+
+	/**
 	 * The range enclosing this symbol not including leading/trailing whitespace but everything else
 	 * like comments. This information is typically used to determine if the clients cursor is
 	 * inside the symbol to reveal in the symbol in the UI.

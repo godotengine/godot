@@ -340,6 +340,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 		symbol.range.start.character = LINE_NUMBER_TO_INDEX(parameter->start_column);
 		symbol.range.end.line = LINE_NUMBER_TO_INDEX(parameter->end_line);
 		symbol.range.end.character = LINE_NUMBER_TO_INDEX(parameter->end_column);
+		symbol.local = true;
 		symbol.uri = uri;
 		symbol.script_path = path;
 		r_symbol.children.push_back(symbol);
@@ -409,6 +410,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 				symbol.range.start.character = LINE_NUMBER_TO_INDEX(variable_node->start_column);
 				symbol.range.end.line = LINE_NUMBER_TO_INDEX(variable_node->end_line);
 				symbol.range.end.character = LINE_NUMBER_TO_INDEX(variable_node->end_column);
+				symbol.local = true;
 				symbol.uri = uri;
 				symbol.script_path = path;
 				r_symbol.children.push_back(symbol);
@@ -430,6 +432,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 			symbol.range.start.character = LINE_NUMBER_TO_INDEX(local.start_column);
 			symbol.range.end.line = LINE_NUMBER_TO_INDEX(local.end_line);
 			symbol.range.end.character = LINE_NUMBER_TO_INDEX(local.end_column);
+			symbol.local = true;
 			symbol.uri = uri;
 			symbol.script_path = path;
 			symbol.detail = local.type == SuiteNode::Local::CONSTANT ? "const " : "var ";
