@@ -527,21 +527,20 @@ Vector<lsp::Location> GDScriptWorkspace::find_usages_in_file(const lsp::Document
 }
 
 Vector<lsp::Location> GDScriptWorkspace::find_all_usages(const lsp::DocumentSymbol &p_symbol) {
-	Vector<lsp::Location> usages;
-
 	if (p_symbol.local) {
 		// only search in current document
-		usages.append_array(find_usages_in_file(p_symbol, p_symbol.script_path));
+		return find_usages_in_file(p_symbol, p_symbol.script_path);
 	} else {
 		// search in all documents
 		List<String> paths;
 		list_script_files("res://", paths);
+
+		Vector<lsp::Location> usages;
 		for (List<String>::Element *PE = paths.front(); PE; PE = PE->next()) {
 			usages.append_array(find_usages_in_file(p_symbol, PE->get()));
 		}
+		return usages;
 	}
-
-	return usages;
 }
 
 Error GDScriptWorkspace::parse_local_script(const String &p_path) {
