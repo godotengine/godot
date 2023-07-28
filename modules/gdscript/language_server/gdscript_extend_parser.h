@@ -83,7 +83,7 @@ struct GodotPosition {
 	lsp::Position to_lsp(const Vector<String> &p_lines) const;
 	static GodotPosition from_lsp(const lsp::Position p_pos, const Vector<String> &p_lines);
 
-	bool operator==(const GodotPosition p_other) const {
+	bool operator==(const GodotPosition &p_other) const {
 		return line == p_other.line && column == p_other.column;
 	}
 
@@ -95,7 +95,7 @@ struct GodotRange {
 	GodotPosition start;
 	GodotPosition end;
 
-	GodotRange(GodotPosition p_start, GodotPosition p_end) :
+	GodotRange(GodotPosition &p_start, GodotPosition &p_end) :
 			start(p_start), end(p_end) {}
 
 	lsp::Range to_lsp(const Vector<String> &p_lines) const;

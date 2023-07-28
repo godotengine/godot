@@ -83,7 +83,7 @@ struct Position {
 	 */
 	int character = 0;
 
-	_FORCE_INLINE_ bool operator==(const Position p_other) const {
+	_FORCE_INLINE_ bool operator==(const Position &p_other) const {
 		return line == p_other.line && character == p_other.character;
 	}
 
@@ -124,7 +124,7 @@ struct Range {
 		return start == p_other.start && end == p_other.end;
 	}
 
-	bool contains(const Position p_pos) const {
+	bool contains(const Position &p_pos) const {
 		// inside line range
 		if (start.line <= p_pos.line && p_pos.line <= end.line) {
 			// if on start line: must come after start char
