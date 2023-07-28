@@ -83,7 +83,7 @@ struct Position {
 	 */
 	int character = 0;
 
-	bool operator == (const Position p_other) const {
+	bool operator==(const Position p_other) const {
 		return line == p_other.line && character == p_other.character;
 	}
 
@@ -116,7 +116,7 @@ struct Range {
 	 */
 	Position end;
 
-	bool operator == (const Range &p_other) const {
+	bool operator==(const Range &p_other) const {
 		return start == p_other.start && end == p_other.end;
 	}
 
@@ -1161,9 +1161,9 @@ struct DocumentSymbol {
 
 	/**
 	 * if `true`: Symbol is local to script and cannot be accessed somewhere else.
-	 * 
+	 *
 	 * For example: local variable inside a `func`
-	*/
+	 */
 	bool local = false;
 
 	/**

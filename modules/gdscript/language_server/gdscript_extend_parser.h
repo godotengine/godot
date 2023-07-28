@@ -90,9 +90,9 @@ public:
 	String get_identifier_under_position(const lsp::Position &p_position, lsp::Range &r_range) const;
 	String get_uri() const;
 
-  /**
+	/**
 	 * `p_symbol_name` gets ignored if empty. Otherwise symbol must match passed in named.
-   *
+	 *
 	 * Necessary when multiple symbols at same line for example with `func`:
 	 * `func handle_arg(arg: int):`
 	 * -> without `p_symbol_name`: returns `handle_arg`. Even if parameter (`arg`) is wanted.

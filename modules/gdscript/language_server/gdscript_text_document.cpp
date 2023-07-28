@@ -276,7 +276,7 @@ Array GDScriptTextDocument::references(const Dictionary &p_params) {
 	params.load(p_params);
 
 	const lsp::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params);
-	if(symbol) {
+	if (symbol) {
 		Vector<lsp::Location> usages = GDScriptLanguageProtocol::get_singleton()->get_workspace()->find_all_usages(*symbol);
 		res.resize(usages.size());
 		for (int i = 0; i < usages.size(); i++) {

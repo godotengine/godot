@@ -464,13 +464,13 @@ bool GDScriptWorkspace::can_rename(const lsp::TextDocumentPositionParams &p_doc_
 		return false;
 	}
 
-  // cannot rename builtin
-	if(!reference_symbol->native_class.is_empty()) {
+	// cannot rename builtin
+	if (!reference_symbol->native_class.is_empty()) {
 		return false;
 	}
 
 	// source must be available
-	if(reference_symbol->script_path.is_empty()) {
+	if (reference_symbol->script_path.is_empty()) {
 		return false;
 	}
 
