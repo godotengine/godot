@@ -454,7 +454,7 @@ struct RenameOptions {
 	/**
 	 * Renames should be checked and tested before being executed.
 	 */
-	bool prepareProvider = false;
+	bool prepareProvider = true;
 
 	Dictionary to_json() {
 		Dictionary dict;

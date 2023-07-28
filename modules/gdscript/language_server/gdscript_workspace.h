@@ -93,6 +93,7 @@ public:
 	Error resolve_signature(const lsp::TextDocumentPositionParams &p_doc_pos, lsp::SignatureHelp &r_signature);
 	void did_delete_files(const Dictionary &p_params);
 	Dictionary rename(const lsp::TextDocumentPositionParams &p_doc_pos, const String &new_name);
+	bool can_rename(const lsp::TextDocumentPositionParams &p_doc_pos);
 	Vector<lsp::Location> find_usages_in_file(const lsp::DocumentSymbol &p_symbol, const String &p_file_path);
 	Vector<lsp::Location> find_all_usages(const lsp::DocumentSymbol &p_symbol);
 
