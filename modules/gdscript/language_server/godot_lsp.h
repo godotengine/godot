@@ -382,8 +382,8 @@ struct Command {
 	}
 };
 
-// Use namespace instead of enumeration to follow the LSP specifications
-// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
+// Use namespace instead of enumeration to follow the LSP specifications.
+// `lsp::EnumName::EnumValue` is OK but `lsp::EnumValue` is not.
 
 namespace TextDocumentSyncKind {
 /**
@@ -833,12 +833,12 @@ static const String Markdown = "markdown";
  */
 struct MarkupContent {
 	/**
-	 * The type of the Markup
+	 * The type of the Markup.
 	 */
 	String kind;
 
 	/**
-	 * The content itself
+	 * The content itself.
 	 */
 	String value;
 
@@ -860,8 +860,8 @@ struct MarkupContent {
 };
 
 // Use namespace instead of enumeration to follow the LSP specifications
-// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
-// And here C++ compilers are unhappy with our enumeration name like Color, File, RefCounted etc.
+// `lsp::EnumName::EnumValue` is OK but `lsp::EnumValue` is not.
+// And here C++ compilers are unhappy with our enumeration name like `Color`, `File`, `RefCounted` etc.
 /**
  * The kind of a completion entry.
  */
@@ -893,7 +893,7 @@ static const int Operator = 24;
 static const int TypeParameter = 25;
 }; // namespace CompletionItemKind
 
-// Use namespace instead of enumeration to follow the LSP specifications
+// Use namespace instead of enumeration to follow the LSP specifications.
 /**
  * Defines whether the insert text in a completion item should be interpreted as
  * plain text or a snippet.
@@ -1109,8 +1109,8 @@ struct CompletionList {
 };
 
 // Use namespace instead of enumeration to follow the LSP specifications
-// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
-// And here C++ compilers are unhappy with our enumeration name like String, Array, Object etc
+// `lsp::EnumName::EnumValue` is OK but `lsp::EnumValue` is not
+// And here C++ compilers are unhappy with our enumeration name like `String`, `Array`, `Object` etc
 /**
  * A symbol kind.
  */
@@ -1161,12 +1161,12 @@ struct DocumentSymbol {
 	String detail;
 
 	/**
-	 * Documentation for this symbol
+	 * Documentation for this symbol.
 	 */
 	String documentation;
 
 	/**
-	 * Class name for the native symbols
+	 * Class name for the native symbols.
 	 */
 	String native_class;
 
