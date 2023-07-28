@@ -181,35 +181,36 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_parameter_symbol(const lsp::Do
 	return nullptr;
 }
 
-const lsp::DocumentSymbol *GDScriptWorkspace::get_local_symbol(const ExtendGDScriptParser *p_parser, const String &p_symbol_identifier) {
+const lsp::DocumentSymbol *GDScriptWorkspace::get_local_symbol_at(const ExtendGDScriptParser *p_parser, const String &p_symbol_identifier, const lsp::Position p_position) {
 	const lsp::DocumentSymbol *class_symbol = &p_parser->get_symbols();
 
-	for (int i = 0; i < class_symbol->children.size(); ++i) {
-		int kind = class_symbol->children[i].kind;
-		switch (kind) {
-			case lsp::SymbolKind::Function:
-			case lsp::SymbolKind::Method:
-			case lsp::SymbolKind::Class: {
-				const lsp::DocumentSymbol *function_symbol = &class_symbol->children[i];
+	// go down and pick closest `DocumentSymbol` with `p_symbol_identifier`
 
-				for (int l = 0; l < function_symbol->children.size(); ++l) {
-					const lsp::DocumentSymbol *local = &function_symbol->children[l];
-					if (!local->detail.is_empty() && local->name == p_symbol_identifier) {
-						return local;
-					}
-				}
-			} break;
+	const lsp::DocumentSymbol *current = &p_parser->get_symbols();
+	const lsp::DocumentSymbol *best_match = nullptr;
 
-			case lsp::SymbolKind::Variable: {
-				const lsp::DocumentSymbol *variable_symbol = &class_symbol->children[i];
-				if (variable_symbol->name == p_symbol_identifier) {
-					return variable_symbol;
-				}
-			} break;
+	while (current) {
+		if (current->name == p_symbol_identifier) {
+			if (current->selectionRange.contains(p_position)) {
+				// exact match: pos is ON symbol decl identifier
+				return current;
+			}
+
+			best_match = current;
+		}
+
+		const lsp::DocumentSymbol *parent = current;
+		current = nullptr;
+		for (const lsp::DocumentSymbol &child : parent->children) {
+			//TODO: use scope instead range: might be usage in initializer (-> ref outer)
+			if (child.range.contains(p_position)) {
+				current = &child;
+				break;
+			}
 		}
 	}
 
-	return nullptr;
+	return best_match;
 }
 
 void GDScriptWorkspace::reload_all_workspace_scripts() {
@@ -711,12 +712,6 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 											symbol = get_parameter_symbol(symbol, symbol_identifier);
 										}
 									} break;
-
-									case lsp::SymbolKind::Variable: {
-										if (symbol->local) {
-											symbol = get_local_symbol(parser, symbol_identifier);
-										}
-									} break;
 								}
 							}
 						}
@@ -732,7 +727,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 					symbol = parser->get_member_symbol(symbol_identifier);
 
 					if (!symbol) {
-						symbol = get_local_symbol(parser, symbol_identifier);
+						symbol = get_local_symbol_at(parser, symbol_identifier, p_doc_pos.position);
 					}
 				}
 			}

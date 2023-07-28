@@ -43,8 +43,8 @@
 #include "core/os/os.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
-#include "regex/regex.h"
 #include "gdscript/gdscript_analyzer.h"
+#include "regex/regex.h"
 
 #include "thirdparty/doctest/doctest.h"
 
@@ -309,6 +309,14 @@ TEST_SUITE("[Modules][GDScript][LSP]") {
 
 		SUBCASE("Can get correct ranges for indented variables") {
 			String path = "res://indentation.gd";
+			assert_no_errors_in(path);
+			String uri = workspace->get_file_uri(path);
+			Vector<InlineTestData> all_test_data = read_tests(path);
+			test_resolve_symbols(uri, all_test_data, all_test_data);
+		}
+
+		SUBCASE("Can get correct ranges for scopes") {
+			String path = "res://scopes.gd";
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);

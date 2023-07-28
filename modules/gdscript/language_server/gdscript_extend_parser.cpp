@@ -264,6 +264,21 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.uri = uri;
 				symbol.script_path = path;
 
+				if (m.variable->getter) {
+					lsp::DocumentSymbol get_symbol;
+					parse_function_symbol(m.variable->getter, get_symbol);
+					//TODO: adjust name?
+					get_symbol.local = true;
+					symbol.children.push_back(get_symbol);
+				}
+				if (m.variable->setter) {
+					lsp::DocumentSymbol set_symbol;
+					parse_function_symbol(m.variable->setter, set_symbol);
+					//TODO: adjust name?
+					set_symbol.local = true;
+					symbol.children.push_back(set_symbol);
+				}
+
 				r_symbol.children.push_back(symbol);
 			} break;
 			case ClassNode::Member::CONSTANT: {
@@ -342,6 +357,22 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				}
 				symbol.detail += ")";
 
+				for (GDScriptParser::ParameterNode *param : m.signal->parameters) {
+					lsp::DocumentSymbol param_symbol;
+					param_symbol.name = param->identifier->name;
+					param_symbol.kind = lsp::SymbolKind::Variable;
+					param_symbol.deprecated = false;
+					param_symbol.local = true;
+					param_symbol.range = range_of_node(param);
+					param_symbol.selectionRange = range_of_node(param->identifier);
+					param_symbol.uri = uri;
+					param_symbol.script_path = path;
+					param_symbol.detail = "var " + param_symbol.name;
+					if (param->get_datatype().is_hard_type()) {
+						param_symbol.detail += ": " + param->get_datatype().to_string();
+					}
+					symbol.children.push_back(param_symbol);
+				}
 				r_symbol.children.push_back(symbol);
 			} break;
 			case ClassNode::Member::ENUM: {
@@ -385,12 +416,24 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol &r_symbol) {
 	const String uri = get_uri();
 
-	r_symbol.name = p_func->identifier->name;
-	r_symbol.kind = p_func->is_static ? lsp::SymbolKind::Function : lsp::SymbolKind::Method;
-	r_symbol.detail = "func " + String(p_func->identifier->name) + "(";
+	//TODO: merge with parent when lambda? (-> variable)
+	bool is_lambda = p_func->source_lambda != nullptr;
+
+	r_symbol.name = is_lambda ? "λ" : p_func->identifier->name;
+	r_symbol.kind = (is_lambda || p_func->is_static) ? lsp::SymbolKind::Function : lsp::SymbolKind::Method;
+	r_symbol.detail = "func";
+	if (!is_lambda) {
+		r_symbol.detail += " " + String(p_func->identifier->name);
+	}
+	r_symbol.detail += "(";
 	r_symbol.deprecated = false;
 	r_symbol.range = range_of_node(p_func);
-	r_symbol.selectionRange = range_of_node(p_func->identifier);
+	if (is_lambda) {
+		//TODO: range of `func`?
+		r_symbol.selectionRange.start = r_symbol.selectionRange.end = r_symbol.range.start;
+	} else {
+		r_symbol.selectionRange = range_of_node(p_func->identifier);
+	}
 	r_symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(p_func->start_line));
 	r_symbol.uri = uri;
 	r_symbol.script_path = path;
@@ -442,8 +485,17 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 				node_stack.push_back(while_node->loop);
 			} break;
 
+			case GDScriptParser::TypeNode::MATCH: {
+				GDScriptParser::MatchNode *match_node = (GDScriptParser::MatchNode *)node;
+				for (GDScriptParser::MatchBranchNode *branch_node : match_node->branches) {
+					node_stack.push_back(branch_node);
+				}
+
+			} break;
+
 			case GDScriptParser::TypeNode::MATCH_BRANCH: {
 				GDScriptParser::MatchBranchNode *match_node = (GDScriptParser::MatchBranchNode *)node;
+				//TODO: patterns?
 				node_stack.push_back(match_node->block);
 			} break;
 
@@ -475,6 +527,12 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 				case SuiteNode::Local::VARIABLE:
 					symbol.range = range_of_node(local.variable);
 					symbol.selectionRange = range_of_node(local.variable->identifier);
+					if (local.variable->initializer && local.variable->initializer->type == GDScriptParser::Node::LAMBDA) {
+						GDScriptParser::LambdaNode *lambda_node = (GDScriptParser::LambdaNode *)local.variable->initializer;
+						lsp::DocumentSymbol lambda;
+						parse_function_symbol(lambda_node->function, lambda);
+						symbol.children.push_back(lambda);
+					}
 					break;
 				case SuiteNode::Local::PARAMETER:
 					symbol.range = range_of_node(local.parameter);

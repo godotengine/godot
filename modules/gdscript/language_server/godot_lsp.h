@@ -124,6 +124,19 @@ struct Range {
 		return start == p_other.start && end == p_other.end;
 	}
 
+	bool contains(const Position p_pos) const {
+		// inside line range
+		if (start.line <= p_pos.line && p_pos.line <= end.line) {
+			// if on start line: must come after start char
+			bool start_ok = p_pos.line == start.line ? start.character <= p_pos.character : true;
+			// if on end line: must come before end char
+			bool end_ok = p_pos.line == end.line ? p_pos.character <= end.character : true;
+			return start_ok && end_ok;
+		} else {
+			return false;
+		}
+	}
+
 	String to_string() const {
 		return vformat("[%s:%s]", start.to_string(), end.to_string());
 	}
