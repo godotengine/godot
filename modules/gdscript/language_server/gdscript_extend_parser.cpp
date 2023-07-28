@@ -350,23 +350,6 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 
 				r_symbol.children.push_back(symbol);
 			} break;
-			case ClassNode::Member::ENUM_VALUE: {
-				lsp::DocumentSymbol symbol;
-
-				symbol.name = m.enum_value.identifier->name;
-				symbol.kind = lsp::SymbolKind::EnumMember;
-				symbol.deprecated = false;
-				symbol.range.start = GodotPosition(m.enum_value.line, m.enum_value.leftmost_column).to_lsp(this->lines);
-				symbol.range.end = GodotPosition(m.enum_value.line, m.enum_value.rightmost_column).to_lsp(this->lines);
-				symbol.selectionRange = range_of_node(m.enum_value.identifier);
-				symbol.documentation = m.enum_value.doc_description;
-				symbol.uri = uri;
-				symbol.script_path = path;
-
-				symbol.detail = symbol.name + " = " + itos(m.enum_value.value);
-
-				r_symbol.children.push_back(symbol);
-			} break;
 			case ClassNode::Member::SIGNAL: {
 				lsp::DocumentSymbol symbol;
 				symbol.name = m.signal->identifier->name;
@@ -404,6 +387,23 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				}
 				r_symbol.children.push_back(symbol);
 			} break;
+			case ClassNode::Member::ENUM_VALUE: {
+				lsp::DocumentSymbol symbol;
+
+				symbol.name = m.enum_value.identifier->name;
+				symbol.kind = lsp::SymbolKind::EnumMember;
+				symbol.deprecated = false;
+				symbol.range.start = GodotPosition(m.enum_value.line, m.enum_value.leftmost_column).to_lsp(this->lines);
+				symbol.range.end = GodotPosition(m.enum_value.line, m.enum_value.rightmost_column).to_lsp(this->lines);
+				symbol.selectionRange = range_of_node(m.enum_value.identifier);
+				symbol.documentation = m.enum_value.doc_description;
+				symbol.uri = uri;
+				symbol.script_path = path;
+
+				symbol.detail = symbol.name + " = " + itos(m.enum_value.value);
+
+				r_symbol.children.push_back(symbol);
+			} break;
 			case ClassNode::Member::ENUM: {
 				lsp::DocumentSymbol symbol;
 				symbol.name = m.m_enum->identifier->name;
@@ -422,6 +422,25 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					symbol.detail += String(m.m_enum->values[j].identifier->name) + " = " + itos(m.m_enum->values[j].value);
 				}
 				symbol.detail += "}";
+
+				for (GDScriptParser::EnumNode::Value value : m.m_enum->values) {
+					lsp::DocumentSymbol child;
+
+					child.name = value.identifier->name;
+					child.kind = lsp::SymbolKind::EnumMember;
+					child.deprecated = false;
+					child.range.start = GodotPosition(value.line, value.leftmost_column).to_lsp(this->lines);
+					child.range.end = GodotPosition(value.line, value.rightmost_column).to_lsp(this->lines);
+					child.selectionRange = range_of_node(value.identifier);
+					child.documentation = value.doc_description;
+					child.uri = uri;
+					child.script_path = path;
+
+					child.detail = child.name + " = " + itos(value.value);
+
+					symbol.children.push_back(child);
+				}
+
 				r_symbol.children.push_back(symbol);
 			} break;
 			case ClassNode::Member::FUNCTION: {
