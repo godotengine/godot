@@ -438,11 +438,29 @@ Error GDScriptWorkspace::parse_script(const String &p_path, const String &p_cont
 	return err;
 }
 
+bool is_valid_rename_target(const lsp::DocumentSymbol *symbol) {
+	// must be valid symbol
+	if (!symbol) {
+		return false;
+	}
+
+	// cannot rename builtin
+	if (!symbol->native_class.is_empty()) {
+		return false;
+	}
+
+	// source must be available
+	if (symbol->script_path.is_empty()) {
+		return false;
+	}
+
+	return true;
+}
 Dictionary GDScriptWorkspace::rename(const lsp::TextDocumentPositionParams &p_doc_pos, const String &new_name) {
 	lsp::WorkspaceEdit edit;
 
 	const lsp::DocumentSymbol *reference_symbol = resolve_symbol(p_doc_pos);
-	if (reference_symbol) {
+	if (is_valid_rename_target(reference_symbol)) {
 		Vector<lsp::Location> usages = find_all_usages(*reference_symbol);
 		for (int i = 0; i < usages.size(); ++i) {
 			lsp::Location loc = usages[i];
@@ -456,27 +474,13 @@ Dictionary GDScriptWorkspace::rename(const lsp::TextDocumentPositionParams &p_do
 
 bool GDScriptWorkspace::can_rename(const lsp::TextDocumentPositionParams &p_doc_pos, lsp::DocumentSymbol &r_symbol, lsp::Range &r_range) {
 	const lsp::DocumentSymbol *reference_symbol = resolve_symbol(p_doc_pos);
-
-	//ENHANCEMENT: add checks in `rename` too
-
-	// must be valid symbol
-	if (!reference_symbol) {
-		return false;
-	}
-
-	// cannot rename builtin
-	if (!reference_symbol->native_class.is_empty()) {
-		return false;
-	}
-
-	// source must be available
-	if (reference_symbol->script_path.is_empty()) {
+	if (!is_valid_rename_target(reference_symbol)) {
 		return false;
 	}
 
 	String path = get_file_path(p_doc_pos.textDocument.uri);
 	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
-		String _identifier = parser->get_identifier_under_position(p_doc_pos.position, r_range);
+		String _ = parser->get_identifier_under_position(p_doc_pos.position, r_range);
 		r_symbol = *reference_symbol;
 		return true;
 	}
