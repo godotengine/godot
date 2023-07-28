@@ -555,8 +555,32 @@ String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &
 	}
 	ERR_FAIL_INDEX_V(p_position.character, line.size(), "");
 
-	int start_pos = p_position.character;
-	for (int c = p_position.character; c >= 0; c--) {
+	// `p_position` cursor is BETWEEN chars, not ON chars
+	// ->
+	// ```gdscript
+	// var member| := some_func|(some_variable|)
+	//															          ^
+	//																			  | cursor on `some_variable, position on `)`
+	//                          ^
+	//												  | cursor on `some_func`, pos on `(`
+	//           ^
+	//           | cursor on `member`, pos on ` ` (space)
+	// ```
+	// -> move position to previous character if:
+	// 	  * position not on valid identifier char
+	//    * prev position is valid identifier char
+	lsp::Position pos = p_position;
+	if (
+			pos.character >= line.length() // cursor at end of line
+			|| (!is_ascii_identifier_char(line[pos.character]) // not on valid identifier char
+					   && (pos.character > 0 // not line start -> there is a prev char
+								  && is_ascii_identifier_char(line[pos.character - 1]) // prev is valid identifier char
+								  ))) {
+		pos.character--;
+	}
+
+	int start_pos = pos.character;
+	for (int c = pos.character; c >= 0; c--) {
 		start_pos = c;
 		char32_t ch = line[c];
 		bool valid_char = is_ascii_identifier_char(ch);
@@ -565,8 +589,8 @@ String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &
 		}
 	}
 
-	int end_pos = p_position.character;
-	for (int c = p_position.character; c < line.length(); c++) {
+	int end_pos = pos.character;
+	for (int c = pos.character; c < line.length(); c++) {
 		char32_t ch = line[c];
 		bool valid_char = is_ascii_identifier_char(ch);
 		if (!valid_char) {
@@ -574,8 +598,9 @@ String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &
 		}
 		end_pos = c;
 	}
+
 	if (start_pos < end_pos) {
-		r_range.start.line = r_range.end.line = p_position.line;
+		r_range.start.line = r_range.end.line = pos.line;
 		r_range.start.character = start_pos + 1;
 		r_range.end.character = end_pos + 1;
 		return line.substr(start_pos + 1, end_pos - start_pos);
