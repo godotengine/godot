@@ -293,14 +293,14 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					symbol.children.append_array(lambda.children);
 				}
 
-				if (m.variable->getter) {
+				if (m.variable->getter && m.variable->getter->type == GDScriptParser::Node::FUNCTION) {
 					lsp::DocumentSymbol get_symbol;
 					parse_function_symbol(m.variable->getter, get_symbol);
 					//TODO: adjust name?
 					get_symbol.local = true;
 					symbol.children.push_back(get_symbol);
 				}
-				if (m.variable->setter) {
+				if (m.variable->setter && m.variable->setter->type == GDScriptParser::Node::FUNCTION) {
 					lsp::DocumentSymbol set_symbol;
 					parse_function_symbol(m.variable->setter, set_symbol);
 					//TODO: adjust name?
@@ -464,23 +464,21 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol &r_symbol) {
 	const String uri = get_uri();
 
-	bool is_lambda = p_func->source_lambda != nullptr;
+	bool is_named = p_func->identifier != nullptr;
 
-	//Note: lambda can be named -- but it gets merged with parent variable -> name doesn't matter
-	r_symbol.name = is_lambda ? "λ" : p_func->identifier->name;
-	r_symbol.kind = (is_lambda || p_func->is_static) ? lsp::SymbolKind::Function : lsp::SymbolKind::Method;
+	r_symbol.name = is_named ? p_func->identifier->name : "";
+	r_symbol.kind = (p_func->is_static || p_func->source_lambda != nullptr) ? lsp::SymbolKind::Function : lsp::SymbolKind::Method;
 	r_symbol.detail = "func";
-	if (!is_lambda) {
+	if (is_named) {
 		r_symbol.detail += " " + String(p_func->identifier->name);
 	}
 	r_symbol.detail += "(";
 	r_symbol.deprecated = false;
 	r_symbol.range = range_of_node(p_func);
-	if (is_lambda) {
-		//TODO: range of `func`?
-		r_symbol.selectionRange.start = r_symbol.selectionRange.end = r_symbol.range.start;
-	} else {
+	if (is_named) {
 		r_symbol.selectionRange = range_of_node(p_func->identifier);
+	} else {
+		r_symbol.selectionRange.start = r_symbol.selectionRange.end = r_symbol.range.start;
 	}
 	r_symbol.documentation = p_func->doc_description;
 	r_symbol.uri = uri;
