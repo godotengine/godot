@@ -293,15 +293,15 @@ TEST_SUITE("[Modules][GDScript][LSP]") {
 			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
-			SUBCASE("[public][variable]") {
+			SUBCASE("Can get correct ranges for public variables") {
 				Vector<InlineTestData> test_data = filter_ref_towards(all_test_data, "member");
 				test_resolve_symbols(uri, test_data, all_test_data);
 			}
-			SUBCASE("[local][variable]") {
+			SUBCASE("Can get correct ranges for local variables") {
 				Vector<InlineTestData> test_data = filter_ref_towards(all_test_data, "test");
 				test_resolve_symbols(uri, test_data, all_test_data);
 			}
-			SUBCASE("[local][parameter]") {
+			SUBCASE("Can get correct ranges for local parameters") {
 				Vector<InlineTestData> test_data = filter_ref_towards(all_test_data, "arg");
 				test_resolve_symbols(uri, test_data, all_test_data);
 			}
