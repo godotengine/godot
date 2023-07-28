@@ -32,8 +32,85 @@
 
 #include "../gdscript.h"
 #include "../gdscript_analyzer.h"
+#include "editor/editor_settings.h"
 #include "gdscript_language_protocol.h"
 #include "gdscript_workspace.h"
+
+int get_indent_size() {
+	if (EditorSettings::get_singleton()) {
+		return EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");
+	} else {
+		return 4;
+	}
+}
+
+lsp::Position GodotPosition::to_lsp(const Vector<String> &p_lines) const {
+	lsp::Position res;
+
+	// special case: `line = 0` -> root class (range covers everything)
+	if (this->line == 0) {
+		return res;
+	}
+	// special case: `line = p_lines.size() + 1` -> root class (range covers everything)
+	if (this->line == p_lines.size() + 1) {
+		res.line = p_lines.size();
+		return res;
+	}
+
+	res.line = this->line - 1;
+	res.character = this->column - 1;
+
+	String pos_line = p_lines[res.line];
+	if (pos_line.contains("\t")) {
+		int tab_size = get_indent_size();
+
+		int in_col = 1;
+		int res_char = 0;
+
+		while (res_char < pos_line.size() && in_col < this->column) {
+			if (pos_line[res_char] == '\t') {
+				in_col += tab_size;
+				res_char++;
+			} else {
+				in_col++;
+				res_char++;
+			}
+		}
+
+		res.character = res_char;
+	}
+
+	return res;
+}
+GodotPosition GodotPosition::from_lsp(const lsp::Position p_pos, const Vector<String> &p_lines) {
+	GodotPosition res(p_pos.line + 1, p_pos.character + 1);
+
+	String line = p_lines[p_pos.line];
+	int tabs_before_char = 0;
+	for (int i = 0; i < p_pos.character; i++) {
+		if (line[i] == '\t') {
+			tabs_before_char++;
+		}
+	}
+
+	if (tabs_before_char > 0) {
+		int tab_size = get_indent_size();
+		res.column += tabs_before_char * (tab_size - 1);
+	}
+
+	return res;
+}
+lsp::Range GodotRange::to_lsp(const Vector<String> &p_lines) const {
+	lsp::Range res;
+	res.start = start.to_lsp(p_lines);
+	res.end = end.to_lsp(p_lines);
+	return res;
+}
+GodotRange GodotRange::from_lsp(const lsp::Range &p_range, const Vector<String> &p_lines) {
+	GodotPosition start = GodotPosition::from_lsp(p_range.start, p_lines);
+	GodotPosition end = GodotPosition::from_lsp(p_range.end, p_lines);
+	return GodotRange(start, end);
+}
 
 void ExtendGDScriptParser::update_diagnostics() {
 	diagnostics.clear();
@@ -126,10 +203,7 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 					String value = const_val;
 					lsp::DocumentLink link;
 					link.target = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(scr_path);
-					link.range.start.line = LINE_NUMBER_TO_INDEX(token.start_line);
-					link.range.end.line = LINE_NUMBER_TO_INDEX(token.end_line);
-					link.range.start.character = LINE_NUMBER_TO_INDEX(token.start_column);
-					link.range.end.character = LINE_NUMBER_TO_INDEX(token.end_column);
+					link.range = GodotRange(GodotPosition(token.start_line, token.start_column), GodotPosition(token.end_line, token.end_column)).to_lsp(this->lines);
 					document_links.push_back(link);
 				}
 			}
@@ -137,13 +211,10 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 	}
 }
 
-lsp::Range range_of_node(const GDScriptParser::Node *p_node) {
-	lsp::Range range;
-	range.start.line = LINE_NUMBER_TO_INDEX(p_node->start_line);
-	range.start.character = LINE_NUMBER_TO_INDEX(p_node->start_column);
-	range.end.line = LINE_NUMBER_TO_INDEX(p_node->end_line);
-	range.end.character = LINE_NUMBER_TO_INDEX(p_node->end_column);
-	return range;
+lsp::Range ExtendGDScriptParser::range_of_node(const GDScriptParser::Node *p_node) const {
+	GodotPosition start(p_node->start_line, p_node->start_column);
+	GodotPosition end(p_node->end_line, p_node->end_column);
+	return GodotRange(start, end).to_lsp(this->lines);
 }
 
 void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p_class, lsp::DocumentSymbol &r_symbol) {
@@ -241,10 +312,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.name = m.enum_value.identifier->name;
 				symbol.kind = lsp::SymbolKind::EnumMember;
 				symbol.deprecated = false;
-				symbol.range.start.line = LINE_NUMBER_TO_INDEX(m.enum_value.line);
-				symbol.range.start.character = LINE_NUMBER_TO_INDEX(m.enum_value.leftmost_column);
-				symbol.range.end.line = LINE_NUMBER_TO_INDEX(m.enum_value.line);
-				symbol.range.end.character = LINE_NUMBER_TO_INDEX(m.enum_value.rightmost_column);
+				symbol.range.start = GodotPosition(m.enum_value.line, m.enum_value.leftmost_column).to_lsp(this->lines);
+				symbol.range.end = GodotPosition(m.enum_value.line, m.enum_value.rightmost_column).to_lsp(this->lines);
 				symbol.selectionRange = range_of_node(m.enum_value.identifier);
 				symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(m.enum_value.line));
 				symbol.uri = uri;
@@ -417,10 +486,9 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 					symbol.selectionRange = range_of_node(local.bind);
 				default:
 					// fallback
-					symbol.range.start.line = LINE_NUMBER_TO_INDEX(local.start_line);
-					symbol.range.start.character = LINE_NUMBER_TO_INDEX(local.start_column);
-					symbol.range.end.line = LINE_NUMBER_TO_INDEX(local.end_line);
-					symbol.range.end.character = LINE_NUMBER_TO_INDEX(local.end_column);
+					symbol.range.start = GodotPosition(local.start_line, local.start_column).to_lsp(get_lines());
+					symbol.range.end = GodotPosition(local.end_line, local.end_column).to_lsp(get_lines());
+					symbol.selectionRange = symbol.range;
 					break;
 			}
 			symbol.local = true;

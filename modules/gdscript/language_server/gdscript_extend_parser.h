@@ -39,6 +39,9 @@
 #ifndef LINE_NUMBER_TO_INDEX
 #define LINE_NUMBER_TO_INDEX(p_line) ((p_line)-1)
 #endif
+#ifndef COLUMN_NUMBER_TO_INDEX
+#define COLUMN_NUMBER_TO_INDEX(p_column) ((p_column)-1)
+#endif
 
 #ifndef SYMBOL_SEPERATOR
 #define SYMBOL_SEPERATOR "::"
@@ -50,6 +53,50 @@
 
 typedef HashMap<String, const lsp::DocumentSymbol *> ClassMembers;
 
+/**
+ * Represents a Position as used by GDScript Parser. Use for conversion to and from `lsp::Position`
+ *
+ * Difference to `lsp::Position`:
+ * * line & char/column: 1-based
+ * 		* LSP: both 0-based
+ * * tabs are expanded to columns using tab size `text_editor/behavior/indent/size`
+ *   	* LSP: tab is single char
+ *
+ * Example:
+ * ```gdscript
+ * →→var my_value = 42
+ * 01230123 my_value = 42
+ * ```
+ * `_` is at:
+ * * Godot: `column=12`\
+ * 	* using `indent/size=4`
+ * 	* Note: counting starts at `1`!
+ * * LSP: `character=8`
+ * 	* Note: counting starts at `0`!
+ */
+struct GodotPosition {
+	int line;
+	int column;
+
+	GodotPosition(int line, int column) :
+			line(line), column(column) {}
+
+	//TODO: ? implement safety measures (when pos is outside of lines)?
+
+	lsp::Position to_lsp(const Vector<String> &p_lines) const;
+	static GodotPosition from_lsp(const lsp::Position p_pos, const Vector<String> &p_lines);
+};
+struct GodotRange {
+	GodotPosition start;
+	GodotPosition end;
+
+	GodotRange(GodotPosition start, GodotPosition end) :
+			start(start), end(end) {}
+
+	lsp::Range to_lsp(const Vector<String> &p_lines) const;
+	static GodotRange from_lsp(const lsp::Range &p_range, const Vector<String> &p_lines);
+};
+
 class ExtendGDScriptParser : public GDScriptParser {
 	String path;
 	Vector<String> lines;
@@ -59,6 +106,8 @@ class ExtendGDScriptParser : public GDScriptParser {
 	List<lsp::DocumentLink> document_links;
 	ClassMembers members;
 	HashMap<String, ClassMembers> inner_classes;
+
+	lsp::Range range_of_node(const GDScriptParser::Node *p_node) const;
 
 	void update_diagnostics();
 
