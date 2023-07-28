@@ -83,6 +83,10 @@ struct Position {
 	 */
 	int character = 0;
 
+	bool operator == (const Position p_other) const {
+		return line == p_other.line && character == p_other.character;
+	}
+
 	_FORCE_INLINE_ void load(const Dictionary &p_params) {
 		line = p_params["line"];
 		character = p_params["character"];
@@ -111,6 +115,10 @@ struct Range {
 	 * The range's end position.
 	 */
 	Position end;
+
+	bool operator == (const Range &p_other) const {
+		return start == p_other.start && end == p_other.end;
+	}
 
 	_FORCE_INLINE_ void load(const Dictionary &p_params) {
 		start.load(p_params["start"]);
