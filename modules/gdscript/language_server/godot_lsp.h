@@ -211,6 +211,16 @@ struct TextDocumentPositionParams {
 	}
 };
 
+struct ReferenceContext {
+	/**
+	 * Include the declaration of the current symbol.
+	 */
+	bool includeDeclaration;
+};
+struct ReferenceParams : TextDocumentPositionParams {
+	ReferenceContext context;
+};
+
 struct DocumentLinkParams {
 	/**
 	 * The document to provide document links for.

@@ -254,9 +254,8 @@ Dictionary GDScriptTextDocument::rename(const Dictionary &p_params) {
 Array GDScriptTextDocument::references(const Dictionary &p_params) {
 	Array res;
 
-	lsp::TextDocumentPositionParams params;
+	lsp::ReferenceParams params;
 	params.load(p_params);
-	//TODO: handle include decl.
 
 	const lsp::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params);
 	if(symbol) {
