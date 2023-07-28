@@ -547,7 +547,7 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 	return longthing;
 }
 
-String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &p_position, Vector2i &p_offset) const {
+String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &p_position, lsp::Range &r_range) const {
 	ERR_FAIL_INDEX_V(p_position.line, lines.size(), "");
 	String line = lines[p_position.line];
 	if (line.is_empty()) {
@@ -575,8 +575,9 @@ String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &
 		end_pos = c;
 	}
 	if (start_pos < end_pos) {
-		p_offset.x = start_pos - p_position.character;
-		p_offset.y = end_pos - p_position.character;
+		r_range.start.line = r_range.end.line = p_position.line;
+		r_range.start.character = start_pos + 1;
+		r_range.end.character = end_pos + 1;
 		return line.substr(start_pos + 1, end_pos - start_pos);
 	}
 

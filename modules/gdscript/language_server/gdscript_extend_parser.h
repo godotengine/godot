@@ -87,7 +87,7 @@ public:
 
 	String get_text_for_completion(const lsp::Position &p_cursor) const;
 	String get_text_for_lookup_symbol(const lsp::Position &p_cursor, const String &p_symbol = "", bool p_func_required = false) const;
-	String get_identifier_under_position(const lsp::Position &p_position, Vector2i &p_offset) const;
+	String get_identifier_under_position(const lsp::Position &p_position, lsp::Range &r_range) const;
 	String get_uri() const;
 
   /**

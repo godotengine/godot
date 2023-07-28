@@ -256,10 +256,13 @@ Variant GDScriptTextDocument::prepareRename(const Dictionary &p_params) {
 	lsp::TextDocumentPositionParams params;
 	params.load(p_params);
 
-	if (GDScriptLanguageProtocol::get_singleton()->get_workspace()->can_rename(params)) {
-		Dictionary ret;
-		ret["defaultBehavior"] = true;
-		return ret;
+	lsp::DocumentSymbol symbol;
+	lsp::Range range;
+	if (GDScriptLanguageProtocol::get_singleton()->get_workspace()->can_rename(params, symbol, range)) {
+		// Dictionary ret;
+		// ret["defaultBehavior"] = true;
+		// return ret;
+		return Variant(range.to_json());
 	}
 
 	// null -> rename not valid at current location

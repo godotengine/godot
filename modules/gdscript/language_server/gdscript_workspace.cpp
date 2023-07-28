@@ -454,8 +454,10 @@ Dictionary GDScriptWorkspace::rename(const lsp::TextDocumentPositionParams &p_do
 	return edit.to_json();
 }
 
-bool GDScriptWorkspace::can_rename(const lsp::TextDocumentPositionParams &p_doc_pos) {
+bool GDScriptWorkspace::can_rename(const lsp::TextDocumentPositionParams &p_doc_pos, lsp::DocumentSymbol &r_symbol, lsp::Range &r_range) {
 	const lsp::DocumentSymbol *reference_symbol = resolve_symbol(p_doc_pos);
+
+	//ENHANCEMENT: add checks in `rename` too
 
 	// must be valid symbol
 	if (!reference_symbol) {
@@ -472,7 +474,14 @@ bool GDScriptWorkspace::can_rename(const lsp::TextDocumentPositionParams &p_doc_
 		return false;
 	}
 
-	return true;
+	String path = get_file_path(p_doc_pos.textDocument.uri);
+	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
+		String _identifier = parser->get_identifier_under_position(p_doc_pos.position, r_range);
+		r_symbol = *reference_symbol;
+		return true;
+	}
+
+	return false;
 }
 
 Vector<lsp::Location> GDScriptWorkspace::find_usages_in_file(const lsp::DocumentSymbol &p_symbol, const String &p_file_path) {
@@ -666,9 +675,9 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 
 		lsp::Position pos = p_doc_pos.position;
 		if (symbol_identifier.is_empty()) {
-			Vector2i offset;
-			symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, offset);
-			pos.character += offset.y;
+			lsp::Range range;
+			symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, range);
+			pos.character = range.end.character;
 		}
 
 		if (!symbol_identifier.is_empty()) {
@@ -735,8 +744,8 @@ void GDScriptWorkspace::resolve_related_symbols(const lsp::TextDocumentPositionP
 	String path = get_file_path(p_doc_pos.textDocument.uri);
 	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
 		String symbol_identifier;
-		Vector2i offset;
-		symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, offset);
+		lsp::Range range;
+		symbol_identifier = parser->get_identifier_under_position(p_doc_pos.position, range);
 
 		for (const KeyValue<StringName, ClassMembers> &E : native_members) {
 			const ClassMembers &members = native_members.get(E.key);
