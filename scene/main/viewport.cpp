@@ -3192,10 +3192,11 @@ void Viewport::gui_release_focus(int p_focus_layer) {
 	ERR_MAIN_THREAD_GUARD;
 	HashMap<int, Control *>::Iterator F = gui.focused_controls.find(p_focus_layer);
 	if (F) {
-		F->value->notification(Control::NOTIFICATION_FOCUS_EXIT, true);
-		F->value->queue_redraw();
-
+		Control *c = F->value;
 		gui.focused_controls.erase(p_focus_layer);
+
+		c->notification(Control::NOTIFICATION_FOCUS_EXIT, true);
+		c->queue_redraw();
 	}
 }
 
