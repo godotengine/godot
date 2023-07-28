@@ -147,7 +147,7 @@ COMMAND_2(map_set_up, RID, p_map, Vector3, p_up) {
 
 Vector3 GodotNavigationServer::map_get_up(RID p_map) const {
 	const NavMap *map = map_owner.get_or_null(p_map);
-	ERR_FAIL_COND_V(map == nullptr, Vector3());
+	ERR_FAIL_COND_V(map == nullptr, Vector3(INFINITY, INFINITY, INFINITY));
 
 	return map->get_up();
 }
@@ -231,21 +231,21 @@ Vector<Vector3> GodotNavigationServer::map_get_path(RID p_map, Vector3 p_origin,
 
 Vector3 GodotNavigationServer::map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
 	const NavMap *map = map_owner.get_or_null(p_map);
-	ERR_FAIL_COND_V(map == nullptr, Vector3());
+	ERR_FAIL_COND_V(map == nullptr, Vector3(INFINITY, INFINITY, INFINITY));
 
 	return map->get_closest_point_to_segment(p_from, p_to, p_use_collision);
 }
 
 Vector3 GodotNavigationServer::map_get_closest_point(RID p_map, const Vector3 &p_point) const {
 	const NavMap *map = map_owner.get_or_null(p_map);
-	ERR_FAIL_COND_V(map == nullptr, Vector3());
+	ERR_FAIL_COND_V(map == nullptr, Vector3(INFINITY, INFINITY, INFINITY));
 
 	return map->get_closest_point(p_point);
 }
 
 Vector3 GodotNavigationServer::map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const {
 	const NavMap *map = map_owner.get_or_null(p_map);
-	ERR_FAIL_COND_V(map == nullptr, Vector3());
+	ERR_FAIL_COND_V(map == nullptr, Vector3(INFINITY, INFINITY, INFINITY));
 
 	return map->get_closest_point_normal(p_point);
 }
@@ -486,14 +486,14 @@ int GodotNavigationServer::region_get_connections_count(RID p_region) const {
 
 Vector3 GodotNavigationServer::region_get_connection_pathway_start(RID p_region, int p_connection_id) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
-	ERR_FAIL_COND_V(!region, Vector3());
+	ERR_FAIL_COND_V(!region, Vector3(INFINITY, INFINITY, INFINITY));
 
 	return region->get_connection_pathway_start(p_connection_id);
 }
 
 Vector3 GodotNavigationServer::region_get_connection_pathway_end(RID p_region, int p_connection_id) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
-	ERR_FAIL_COND_V(!region, Vector3());
+	ERR_FAIL_COND_V(!region, Vector3(INFINITY, INFINITY, INFINITY));
 
 	return region->get_connection_pathway_end(p_connection_id);
 }
@@ -577,7 +577,7 @@ COMMAND_2(link_set_start_position, RID, p_link, Vector3, p_position) {
 
 Vector3 GodotNavigationServer::link_get_start_position(RID p_link) const {
 	const NavLink *link = link_owner.get_or_null(p_link);
-	ERR_FAIL_COND_V(link == nullptr, Vector3());
+	ERR_FAIL_COND_V(link == nullptr, Vector3(INFINITY, INFINITY, INFINITY));
 
 	return link->get_start_position();
 }
@@ -591,7 +591,7 @@ COMMAND_2(link_set_end_position, RID, p_link, Vector3, p_position) {
 
 Vector3 GodotNavigationServer::link_get_end_position(RID p_link) const {
 	const NavLink *link = link_owner.get_or_null(p_link);
-	ERR_FAIL_COND_V(link == nullptr, Vector3());
+	ERR_FAIL_COND_V(link == nullptr, Vector3(INFINITY, INFINITY, INFINITY));
 
 	return link->get_end_position();
 }

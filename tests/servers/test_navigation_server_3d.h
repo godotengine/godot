@@ -123,11 +123,11 @@ TEST_SUITE("[Navigation]") {
 		CHECK_FALSE(map.is_valid());
 
 		SUBCASE("Queries against invalid map should return empty or invalid values") {
-			CHECK_EQ(navigation_server->map_get_closest_point(map, Vector3(7, 7, 7)), Vector3());
-			CHECK_EQ(navigation_server->map_get_closest_point_normal(map, Vector3(7, 7, 7)), Vector3());
+			CHECK_EQ(navigation_server->map_get_closest_point(map, Vector3(7, 7, 7)), Vector3(INFINITY, INFINITY, INFINITY));
+			CHECK_EQ(navigation_server->map_get_closest_point_normal(map, Vector3(7, 7, 7)), Vector3(INFINITY, INFINITY, INFINITY));
 			CHECK_FALSE(navigation_server->map_get_closest_point_owner(map, Vector3(7, 7, 7)).is_valid());
-			CHECK_EQ(navigation_server->map_get_closest_point_to_segment(map, Vector3(7, 7, 7), Vector3(8, 8, 8), true), Vector3());
-			CHECK_EQ(navigation_server->map_get_closest_point_to_segment(map, Vector3(7, 7, 7), Vector3(8, 8, 8), false), Vector3());
+			CHECK_EQ(navigation_server->map_get_closest_point_to_segment(map, Vector3(7, 7, 7), Vector3(8, 8, 8), true), Vector3(INFINITY, INFINITY, INFINITY));
+			CHECK_EQ(navigation_server->map_get_closest_point_to_segment(map, Vector3(7, 7, 7), Vector3(8, 8, 8), false), Vector3(INFINITY, INFINITY, INFINITY));
 			CHECK_EQ(navigation_server->map_get_path(map, Vector3(7, 7, 7), Vector3(8, 8, 8), true).size(), 0);
 			CHECK_EQ(navigation_server->map_get_path(map, Vector3(7, 7, 7), Vector3(8, 8, 8), false).size(), 0);
 
@@ -225,11 +225,11 @@ TEST_SUITE("[Navigation]") {
 			navigation_server->map_set_active(map, true);
 			navigation_server->process(0.0); // Give server some cycles to commit.
 
-			CHECK_EQ(navigation_server->map_get_closest_point(map, Vector3(7, 7, 7)), Vector3());
-			CHECK_EQ(navigation_server->map_get_closest_point_normal(map, Vector3(7, 7, 7)), Vector3());
+			CHECK_EQ(navigation_server->map_get_closest_point(map, Vector3(7, 7, 7)), Vector3(INFINITY, INFINITY, INFINITY));
+			CHECK_EQ(navigation_server->map_get_closest_point_normal(map, Vector3(7, 7, 7)), Vector3(INFINITY, INFINITY, INFINITY));
 			CHECK_FALSE(navigation_server->map_get_closest_point_owner(map, Vector3(7, 7, 7)).is_valid());
-			CHECK_EQ(navigation_server->map_get_closest_point_to_segment(map, Vector3(7, 7, 7), Vector3(8, 8, 8), true), Vector3());
-			CHECK_EQ(navigation_server->map_get_closest_point_to_segment(map, Vector3(7, 7, 7), Vector3(8, 8, 8), false), Vector3());
+			CHECK_EQ(navigation_server->map_get_closest_point_to_segment(map, Vector3(7, 7, 7), Vector3(8, 8, 8), true), Vector3(INFINITY, INFINITY, INFINITY));
+			CHECK_EQ(navigation_server->map_get_closest_point_to_segment(map, Vector3(7, 7, 7), Vector3(8, 8, 8), false), Vector3(INFINITY, INFINITY, INFINITY));
 			CHECK_EQ(navigation_server->map_get_path(map, Vector3(7, 7, 7), Vector3(8, 8, 8), true).size(), 0);
 			CHECK_EQ(navigation_server->map_get_path(map, Vector3(7, 7, 7), Vector3(8, 8, 8), false).size(), 0);
 
@@ -351,8 +351,8 @@ TEST_SUITE("[Navigation]") {
 
 		SUBCASE("Queries against empty region should return empty or invalid values") {
 			CHECK_EQ(navigation_server->region_get_connections_count(region), 0);
-			CHECK_EQ(navigation_server->region_get_connection_pathway_end(region, 55), Vector3());
-			CHECK_EQ(navigation_server->region_get_connection_pathway_start(region, 55), Vector3());
+			CHECK_EQ(navigation_server->region_get_connection_pathway_end(region, 55), Vector3(INFINITY, INFINITY, INFINITY));
+			CHECK_EQ(navigation_server->region_get_connection_pathway_start(region, 55), Vector3(INFINITY, INFINITY, INFINITY));
 		}
 
 		navigation_server->free(region);
@@ -543,10 +543,10 @@ TEST_SUITE("[Navigation]") {
 
 		SUBCASE("Simple queries should return non-default values") {
 			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
-			CHECK_NE(navigation_server->map_get_closest_point_normal(map, Vector3(0, 0, 0)), Vector3());
+			CHECK_NE(navigation_server->map_get_closest_point_normal(map, Vector3(0, 0, 0)), Vector3(INFINITY, INFINITY, INFINITY));
 			CHECK(navigation_server->map_get_closest_point_owner(map, Vector3(0, 0, 0)).is_valid());
 			// TODO: Test map_get_closest_point_to_segment() with p_use_collision=true as well.
-			CHECK_NE(navigation_server->map_get_closest_point_to_segment(map, Vector3(0, 0, 0), Vector3(1, 1, 1), false), Vector3());
+			CHECK_NE(navigation_server->map_get_closest_point_to_segment(map, Vector3(0, 0, 0), Vector3(1, 1, 1), false), Vector3(INFINITY, INFINITY, INFINITY));
 			CHECK_NE(navigation_server->map_get_path(map, Vector3(0, 0, 0), Vector3(10, 0, 10), true).size(), 0);
 			CHECK_NE(navigation_server->map_get_path(map, Vector3(0, 0, 0), Vector3(10, 0, 10), false).size(), 0);
 		}

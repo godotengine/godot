@@ -42,7 +42,7 @@ public:
 	void map_set_active(RID p_map, bool p_active) override {}
 	bool map_is_active(RID p_map) const override { return false; }
 	void map_set_up(RID p_map, Vector3 p_up) override {}
-	Vector3 map_get_up(RID p_map) const override { return Vector3(); }
+	Vector3 map_get_up(RID p_map) const override { return Vector3(INFINITY, INFINITY, INFINITY); }
 	void map_set_cell_size(RID p_map, real_t p_cell_size) override {}
 	real_t map_get_cell_size(RID p_map) const override { return 0; }
 	void map_set_cell_height(RID p_map, real_t p_cell_height) override {}
@@ -54,9 +54,9 @@ public:
 	void map_set_link_connection_radius(RID p_map, real_t p_connection_radius) override {}
 	real_t map_get_link_connection_radius(RID p_map) const override { return 0; }
 	Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers) const override { return Vector<Vector3>(); }
-	Vector3 map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const override { return Vector3(); }
-	Vector3 map_get_closest_point(RID p_map, const Vector3 &p_point) const override { return Vector3(); }
-	Vector3 map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const override { return Vector3(); }
+	Vector3 map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const override { return Vector3(INFINITY, INFINITY, INFINITY); }
+	Vector3 map_get_closest_point(RID p_map, const Vector3 &p_point) const override { return Vector3(INFINITY, INFINITY, INFINITY); }
+	Vector3 map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const override { return Vector3(INFINITY, INFINITY, INFINITY); }
 	RID map_get_closest_point_owner(RID p_map, const Vector3 &p_point) const override { return RID(); }
 	TypedArray<RID> map_get_links(RID p_map) const override { return TypedArray<RID>(); }
 	TypedArray<RID> map_get_regions(RID p_map) const override { return TypedArray<RID>(); }
@@ -85,8 +85,8 @@ public:
 	void region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) override {}
 #endif // DISABLE_DEPRECATED
 	int region_get_connections_count(RID p_region) const override { return 0; }
-	Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override { return Vector3(); }
-	Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override { return Vector3(); }
+	Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override { return Vector3(INFINITY, INFINITY, INFINITY); }
+	Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override { return Vector3(INFINITY, INFINITY, INFINITY); }
 	RID link_create() override { return RID(); }
 	void link_set_map(RID p_link, RID p_map) override {}
 	RID link_get_map(RID p_link) const override { return RID(); }
@@ -97,9 +97,9 @@ public:
 	void link_set_navigation_layers(RID p_link, uint32_t p_navigation_layers) override {}
 	uint32_t link_get_navigation_layers(RID p_link) const override { return 0; }
 	void link_set_start_position(RID p_link, Vector3 p_position) override {}
-	Vector3 link_get_start_position(RID p_link) const override { return Vector3(); }
+	Vector3 link_get_start_position(RID p_link) const override { return Vector3(INFINITY, INFINITY, INFINITY); }
 	void link_set_end_position(RID p_link, Vector3 p_position) override {}
-	Vector3 link_get_end_position(RID p_link) const override { return Vector3(); }
+	Vector3 link_get_end_position(RID p_link) const override { return Vector3(INFINITY, INFINITY, INFINITY); }
 	void link_set_enter_cost(RID p_link, real_t p_enter_cost) override {}
 	real_t link_get_enter_cost(RID p_link) const override { return 0; }
 	void link_set_travel_cost(RID p_link, real_t p_travel_cost) override {}
