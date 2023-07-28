@@ -587,6 +587,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 				case SuiteNode::Local::PATTERN_BIND:
 					symbol.range = range_of_node(local.bind);
 					symbol.selectionRange = range_of_node(local.bind);
+					break;
 				default:
 					// Fallback
 					symbol.range.start = GodotPosition(local.start_line, local.start_column).to_lsp(get_lines());
