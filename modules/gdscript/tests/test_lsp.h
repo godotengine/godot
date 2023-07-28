@@ -44,6 +44,7 @@
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "regex/regex.h"
+#include "gdscript/gdscript_analyzer.h"
 
 #include "thirdparty/doctest/doctest.h"
 
@@ -258,6 +259,20 @@ void test_resolve_symbols(const String &p_uri, const Vector<InlineTestData> &p_t
 	}
 }
 
+void assert_no_errors_in(const String &p_path) {
+	Error err;
+	String source = FileAccess::get_file_as_string(p_path, &err);
+	REQUIRE_MESSAGE(err == OK, vformat("Cannot read '%s'", p_path));
+
+	GDScriptParser parser;
+	err = parser.parse(source, p_path, true);
+	REQUIRE_MESSAGE(err == OK, vformat("Errors while parsing '%s'", p_path));
+
+	GDScriptAnalyzer analyzer(&parser);
+	err = analyzer.analyze();
+	REQUIRE_MESSAGE(err == OK, vformat("Errors while analyzing '%s'", p_path));
+}
+
 // Note
 // * Cursor is BETWEEN chars
 //	 * `va|r` -> cursor between `a`&`r`
@@ -275,6 +290,7 @@ TEST_SUITE("[Modules][GDScript][LSP]") {
 
 		{
 			String path = "res://local_variables.gd";
+			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
 			SUBCASE("[public][variable]") {
@@ -293,6 +309,7 @@ TEST_SUITE("[Modules][GDScript][LSP]") {
 
 		SUBCASE("Can get correct ranges for indented variables") {
 			String path = "res://indentation.gd";
+			assert_no_errors_in(path);
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
 			test_resolve_symbols(uri, all_test_data, all_test_data);
