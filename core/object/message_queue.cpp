@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
+#include "thirdparty/doctest/doctest.h"
 
 #ifdef DEBUG_ENABLED
 #include "core/config/engine.h"
@@ -322,8 +323,18 @@ Error CallQueue::flush() {
 		UNLOCK_MUTEX;
 #ifdef DEBUG_ENABLED
 		if (!message->callable.is_valid()) {
+			bool mute_error = false;
 			// The editor would cause many of these.
-			if (!Engine::get_singleton()->is_editor_hint()) {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				mute_error = true;
+			}
+#ifdef TESTS_ENABLED
+			// Tests generally create objects and don't have to care about their fate when the queue is eventually flushed.
+			if (!mute_error && doctest::is_running_in_test) {
+				mute_error = true;
+			}
+#endif
+			if (!mute_error) {
 				ERR_PRINT("Trying to execute a deferred call/notification/set on a previously freed instance. Consider using queue_free() instead of free().");
 			}
 		} else

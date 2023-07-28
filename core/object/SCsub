@@ -9,4 +9,7 @@ env.CommandNoCache(["gdvirtual.gen.inc"], "make_virtuals.py", run_in_subprocess(
 
 env_object = env.Clone()
 
+if env["tests"]:
+    env_object.Append(CPPDEFINES=["TESTS_ENABLED"])
+
 env_object.add_source_files(env.core_sources, "*.cpp")
