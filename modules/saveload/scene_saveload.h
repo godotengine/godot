@@ -81,8 +81,8 @@ public:
 	virtual Error save(const String &p_path, const Variant &p_configuration_data = Variant()) override;
 	virtual Error load(const String &p_path, const Variant &p_configuration_data = Variant()) override;
 
-	SceneSaveload() {};
-	~SceneSaveload() {};
+	SceneSaveload(){};
+	~SceneSaveload(){};
 };
 
 #endif // SCENE_SAVELOAD_H

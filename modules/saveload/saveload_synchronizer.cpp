@@ -113,8 +113,7 @@ SaveloadSynchronizer::SyncherState SaveloadSynchronizer::get_syncher_state() con
 		const Object *obj;
 		if (prop.get_name_count() == 0) {
 			obj = root_node;
-		}
-		else {
+		} else {
 			ERR_CONTINUE_MSG(!root_node->has_node(prop), vformat("Node '%s' not found.", prop));
 			obj = root_node->get_node(prop);
 		}

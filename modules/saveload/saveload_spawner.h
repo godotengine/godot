@@ -55,7 +55,7 @@ public:
 
 		SpawnInfo(NodePath p_path, int p_scene_index, Variant spawn_args);
 		SpawnInfo(const Dictionary &p_dict);
-		SpawnInfo() {};
+		SpawnInfo(){};
 	};
 
 	struct SpawnerState {
