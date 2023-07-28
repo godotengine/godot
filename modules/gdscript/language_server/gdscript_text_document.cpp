@@ -279,8 +279,18 @@ Array GDScriptTextDocument::references(const Dictionary &p_params) {
 	if (symbol) {
 		Vector<lsp::Location> usages = GDScriptLanguageProtocol::get_singleton()->get_workspace()->find_all_usages(*symbol);
 		res.resize(usages.size());
+		int decl_adjustment = 0;
 		for (int i = 0; i < usages.size(); i++) {
-			res[i] = usages[i].to_json();
+			lsp::Location usage = usages[i];
+			if (!params.context.includeDeclaration && usage.range == symbol->range) {
+				decl_adjustment++;
+				continue;
+			}
+			res[i - decl_adjustment] = usages[i].to_json();
+		}
+
+		if (decl_adjustment > 0) {
+			res.resize(res.size() - decl_adjustment);
 		}
 	}
 

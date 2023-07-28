@@ -522,7 +522,6 @@ Vector<lsp::Location> GDScriptWorkspace::find_usages_in_file(const lsp::Document
 	return usages;
 }
 
-//TODO: include/exclude decl? or filter later?
 Vector<lsp::Location> GDScriptWorkspace::find_all_usages(const lsp::DocumentSymbol &p_symbol) {
 	Vector<lsp::Location> usages;
 
