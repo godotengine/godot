@@ -71,7 +71,7 @@ class ExtendGDScriptParser : public GDScriptParser {
 	Dictionary dump_class_api(const GDScriptParser::ClassNode *p_class) const;
 
 	String parse_documentation(int p_line, bool p_docs_down = false);
-	const lsp::DocumentSymbol *search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol &p_parent) const;
+	const lsp::DocumentSymbol *search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol &p_parent, const String &p_symbol_name = "") const;
 
 	Array member_completions;
 
@@ -90,7 +90,15 @@ public:
 	String get_identifier_under_position(const lsp::Position &p_position, Vector2i &p_offset) const;
 	String get_uri() const;
 
-	const lsp::DocumentSymbol *get_symbol_defined_at_line(int p_line) const;
+  /**
+	 * `p_symbol_name` gets ignored if empty. Otherwise symbol must match passed in named.
+   *
+	 * Necessary when multiple symbols at same line for example with `func`:
+	 * `func handle_arg(arg: int):`
+	 * -> without `p_symbol_name`: returns `handle_arg`. Even if parameter (`arg`) is wanted.
+	 *    with `p_symbol_name`: symbol name MUST match `p_symbol_name`: returns `arg`
+	 */
+	const lsp::DocumentSymbol *get_symbol_defined_at_line(int p_line, const String &p_symbol_name = "") const;
 	const lsp::DocumentSymbol *get_member_symbol(const String &p_name, const String &p_subclass = "") const;
 	const List<lsp::DocumentLink> &get_document_links() const;
 

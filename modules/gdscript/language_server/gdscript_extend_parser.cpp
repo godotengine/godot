@@ -587,15 +587,15 @@ String ExtendGDScriptParser::get_uri() const {
 	return GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(path);
 }
 
-const lsp::DocumentSymbol *ExtendGDScriptParser::search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol &p_parent) const {
+const lsp::DocumentSymbol *ExtendGDScriptParser::search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol &p_parent, const String &p_symbol_name) const {
 	const lsp::DocumentSymbol *ret = nullptr;
 	if (p_line < p_parent.range.start.line) {
 		return ret;
-	} else if (p_parent.range.start.line == p_line) {
+	} else if (p_parent.range.start.line == p_line && (p_symbol_name.is_empty() || p_parent.name == p_symbol_name)) {
 		return &p_parent;
 	} else {
 		for (int i = 0; i < p_parent.children.size(); i++) {
-			ret = search_symbol_defined_at_line(p_line, p_parent.children[i]);
+			ret = search_symbol_defined_at_line(p_line, p_parent.children[i], p_symbol_name);
 			if (ret) {
 				break;
 			}
@@ -648,11 +648,11 @@ Error ExtendGDScriptParser::get_left_function_call(const lsp::Position &p_positi
 	return ERR_METHOD_NOT_FOUND;
 }
 
-const lsp::DocumentSymbol *ExtendGDScriptParser::get_symbol_defined_at_line(int p_line) const {
+const lsp::DocumentSymbol *ExtendGDScriptParser::get_symbol_defined_at_line(int p_line, const String &p_symbol_name) const {
 	if (p_line <= 0) {
 		return &class_symbol;
 	}
-	return search_symbol_defined_at_line(p_line, class_symbol);
+	return search_symbol_defined_at_line(p_line, class_symbol, p_symbol_name);
 }
 
 const lsp::DocumentSymbol *ExtendGDScriptParser::get_member_symbol(const String &p_name, const String &p_subclass) const {
