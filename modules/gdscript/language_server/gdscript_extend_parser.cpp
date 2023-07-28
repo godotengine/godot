@@ -48,16 +48,16 @@ lsp::Position GodotPosition::to_lsp(const Vector<String> &p_lines) const {
 	lsp::Position res;
 
 	// special case: `line = 0` -> root class (range covers everything)
-	if (this->line == 0) {
+	if (this->line <= 0) {
 		return res;
 	}
 	// special case: `line = p_lines.size() + 1` -> root class (range covers everything)
-	if (this->line == p_lines.size() + 1) {
+	if (this->line >= p_lines.size() + 1) {
 		res.line = p_lines.size();
 		return res;
 	}
-
 	res.line = this->line - 1;
+	// Note: character outside of `pos_line.length()-1` is valid!
 	res.character = this->column - 1;
 
 	String pos_line = p_lines[res.line];
@@ -85,9 +85,14 @@ lsp::Position GodotPosition::to_lsp(const Vector<String> &p_lines) const {
 GodotPosition GodotPosition::from_lsp(const lsp::Position p_pos, const Vector<String> &p_lines) {
 	GodotPosition res(p_pos.line + 1, p_pos.character + 1);
 
+	// line outside of actual text is valid (-> pos/cursor at end of text)
+	if (res.line > p_lines.size()) {
+		return res;
+	}
+
 	String line = p_lines[p_pos.line];
 	int tabs_before_char = 0;
-	for (int i = 0; i < p_pos.character; i++) {
+	for (int i = 0; i < p_pos.character && i < line.length(); i++) {
 		if (line[i] == '\t') {
 			tabs_before_char++;
 		}
