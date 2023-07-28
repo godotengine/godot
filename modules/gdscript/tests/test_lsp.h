@@ -33,6 +33,7 @@
 
 #include "tests/test_macros.h"
 
+#include "../gdscript_analyzer.h"
 #include "../language_server/gdscript_extend_parser.h"
 #include "../language_server/gdscript_language_protocol.h"
 #include "../language_server/gdscript_workspace.h"
@@ -43,8 +44,7 @@
 #include "core/os/os.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
-#include "gdscript/gdscript_analyzer.h"
-#include "regex/regex.h"
+#include "modules/regex/regex.h"
 
 #include "thirdparty/doctest/doctest.h"
 
