@@ -3361,7 +3361,9 @@ bool Main::iteration() {
 
 	uint64_t physics_process_ticks = 0;
 	uint64_t process_ticks = 0;
+#ifndef CUSTOM_PHYSICS_ITERATOR
 	uint64_t navigation_process_ticks = 0;
+#endif
 
 	frame += ticks_elapsed;
 
