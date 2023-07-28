@@ -439,43 +439,15 @@ Error GDScriptWorkspace::parse_script(const String &p_path, const String &p_cont
 }
 
 Dictionary GDScriptWorkspace::rename(const lsp::TextDocumentPositionParams &p_doc_pos, const String &new_name) {
-	Error err;
-	String path = get_file_path(p_doc_pos.textDocument.uri);
-
 	lsp::WorkspaceEdit edit;
-
-	List<String> paths;
-	list_script_files("res://", paths);
 
 	const lsp::DocumentSymbol *reference_symbol = resolve_symbol(p_doc_pos);
 	if (reference_symbol) {
-		String identifier = reference_symbol->name;
+		Vector<lsp::Location> usages = find_all_usages(*reference_symbol);
+		for (int i = 0; i < usages.size(); ++i) {
+			lsp::Location loc = usages[i];
 
-		for (List<String>::Element *PE = paths.front(); PE; PE = PE->next()) {
-			PackedStringArray content = FileAccess::get_file_as_string(PE->get(), &err).split("\n");
-			for (int i = 0; i < content.size(); ++i) {
-				String line = content[i];
-
-				int character = line.find(identifier);
-				while (character > -1) {
-					lsp::TextDocumentPositionParams params;
-
-					lsp::TextDocumentIdentifier text_doc;
-					text_doc.uri = get_file_uri(PE->get());
-
-					params.textDocument = text_doc;
-					params.position.line = i;
-					params.position.character = character;
-
-					const lsp::DocumentSymbol *other_symbol = resolve_symbol(params);
-
-					if (other_symbol == reference_symbol) {
-						edit.add_change(text_doc.uri, i, character, character + identifier.length(), new_name);
-					}
-
-					character = line.find(identifier, character + 1);
-				}
-			}
+			edit.add_change(loc.uri, loc.range.start.line, loc.range.start.character, loc.range.end.character, new_name);
 		}
 	}
 
