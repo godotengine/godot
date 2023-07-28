@@ -1209,11 +1209,15 @@ struct DocumentSymbol {
 		}
 		if (!children.is_empty()) {
 			Array arr;
-			arr.resize(children.size());
 			for (int i = 0; i < children.size(); i++) {
-				arr[i] = children[i].to_json(with_doc);
+				if (children[i].local) {
+					continue;
+				}
+				arr.push_back(children[i].to_json(with_doc));
 			}
-			dict["children"] = arr;
+			if (!children.is_empty()) {
+				dict["children"] = arr;
+			}
 		}
 		return dict;
 	}
