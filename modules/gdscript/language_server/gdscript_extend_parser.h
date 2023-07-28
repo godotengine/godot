@@ -95,7 +95,7 @@ struct GodotRange {
 	GodotPosition start;
 	GodotPosition end;
 
-	GodotRange(GodotPosition &p_start, GodotPosition &p_end) :
+	GodotRange(GodotPosition p_start, GodotPosition p_end) :
 			start(p_start), end(p_end) {}
 
 	lsp::Range to_lsp(const Vector<String> &p_lines) const;
