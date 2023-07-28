@@ -55,7 +55,7 @@ public:
 
 		SpawnInfo(NodePath p_path, int p_scene_index, Variant spawn_args);
 		SpawnInfo(const Dictionary &p_dict);
-		SpawnInfo() {};
+		SpawnInfo() {}
 	};
 
 	struct SpawnerState {
@@ -75,7 +75,7 @@ public:
 		TypedArray<Dictionary> to_array() const;
 
 		SpawnerState(const TypedArray<Dictionary> &p_array);
-		SpawnerState(){};
+		SpawnerState() {}
 	};
 
 private:

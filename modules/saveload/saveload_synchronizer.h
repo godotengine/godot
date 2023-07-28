@@ -76,7 +76,7 @@ public:
 	void set_root_path(const NodePath &p_path);
 	NodePath get_root_path() const;
 
-	SaveloadSynchronizer() {};
+	SaveloadSynchronizer() {}
 };
 
 #endif // SAVELOAD_SYNCHRONIZER_H
