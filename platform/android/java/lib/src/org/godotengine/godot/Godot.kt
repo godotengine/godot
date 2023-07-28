@@ -88,16 +88,16 @@ class Godot(private val context: Context) : SensorEventListener {
 	private val mSensorManager: SensorManager by lazy {
 		requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
 	}
-	private val mAccelerometer: Sensor by lazy {
+	private val mAccelerometer: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 	}
-	private val mGravity: Sensor by lazy {
+	private val mGravity: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)
 	}
-	private val mMagnetometer: Sensor by lazy {
+	private val mMagnetometer: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
 	}
-	private val mGyroscope: Sensor by lazy {
+	private val mGyroscope: Sensor? by lazy {
 		mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 	}
 	private val mClipboard: ClipboardManager by lazy {
