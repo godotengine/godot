@@ -114,11 +114,13 @@ const lsp::DocumentSymbol *test_resolve_symbol_at(const String &p_uri, const lsp
 
 	lsp::TextDocumentPositionParams params = posIn(p_uri, p_pos);
 	const lsp::DocumentSymbol *symbol = workspace->resolve_symbol(params);
-	REQUIRE(symbol);
+	CHECK(symbol);
 
-	CHECK_EQ(symbol->uri, p_expected_uri);
-	CHECK_EQ(symbol->name, p_expected_name);
-	CHECK_EQ(symbol->selectionRange, p_expected_range);
+	if (symbol) {
+		CHECK_EQ(symbol->uri, p_expected_uri);
+		CHECK_EQ(symbol->name, p_expected_name);
+		CHECK_EQ(symbol->selectionRange, p_expected_range);
+	}
 
 	return symbol;
 }
