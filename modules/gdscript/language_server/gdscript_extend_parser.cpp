@@ -137,6 +137,15 @@ void ExtendGDScriptParser::update_document_links(const String &p_code) {
 	}
 }
 
+lsp::Range range_of_node(const GDScriptParser::Node *p_node) {
+	lsp::Range range;
+	range.start.line = LINE_NUMBER_TO_INDEX(p_node->start_line);
+	range.start.character = LINE_NUMBER_TO_INDEX(p_node->start_column);
+	range.end.line = LINE_NUMBER_TO_INDEX(p_node->end_line);
+	range.end.character = LINE_NUMBER_TO_INDEX(p_node->end_column);
+	return range;
+}
+
 void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p_class, lsp::DocumentSymbol &r_symbol) {
 	const String uri = get_uri();
 
@@ -149,10 +158,11 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 	}
 	r_symbol.kind = lsp::SymbolKind::Class;
 	r_symbol.deprecated = false;
-	r_symbol.range.start.line = p_class->start_line;
-	r_symbol.range.start.character = p_class->start_column;
-	r_symbol.range.end.line = lines.size();
-	r_symbol.selectionRange.start.line = r_symbol.range.start.line;
+	r_symbol.range = range_of_node(p_class);
+	r_symbol.range.start.line = MAX(r_symbol.range.start.line, 0);
+	if (p_class->identifier) {
+		r_symbol.selectionRange = range_of_node(p_class->identifier);
+	}
 	r_symbol.detail = "class " + r_symbol.name;
 	bool is_root_class = &r_symbol == &class_symbol;
 	r_symbol.documentation = parse_documentation(is_root_class ? 0 : LINE_NUMBER_TO_INDEX(p_class->start_line), is_root_class);
@@ -166,11 +176,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.name = m.variable->identifier->name;
 				symbol.kind = m.variable->property == VariableNode::PROP_NONE ? lsp::SymbolKind::Variable : lsp::SymbolKind::Property;
 				symbol.deprecated = false;
-				symbol.range.start.line = LINE_NUMBER_TO_INDEX(m.variable->start_line);
-				symbol.range.start.character = LINE_NUMBER_TO_INDEX(m.variable->start_column);
-				symbol.range.end.line = LINE_NUMBER_TO_INDEX(m.variable->end_line);
-				symbol.range.end.character = LINE_NUMBER_TO_INDEX(m.variable->end_column);
-				symbol.selectionRange.start.line = symbol.range.start.line;
+				symbol.range = range_of_node(m.variable);
+				symbol.selectionRange = range_of_node(m.variable->identifier);
 				if (m.variable->exported) {
 					symbol.detail += "@export ";
 				}
@@ -194,11 +201,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.name = m.constant->identifier->name;
 				symbol.kind = lsp::SymbolKind::Constant;
 				symbol.deprecated = false;
-				symbol.range.start.line = LINE_NUMBER_TO_INDEX(m.constant->start_line);
-				symbol.range.start.character = LINE_NUMBER_TO_INDEX(m.constant->start_column);
-				symbol.range.end.line = LINE_NUMBER_TO_INDEX(m.constant->end_line);
-				symbol.range.end.character = LINE_NUMBER_TO_INDEX(m.constant->start_column);
-				symbol.selectionRange.start.line = LINE_NUMBER_TO_INDEX(m.constant->start_line);
+				symbol.range = range_of_node(m.constant);
+				symbol.selectionRange = range_of_node(m.constant->identifier);
 				symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(m.constant->start_line));
 				symbol.uri = uri;
 				symbol.script_path = path;
@@ -241,7 +245,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.range.start.character = LINE_NUMBER_TO_INDEX(m.enum_value.leftmost_column);
 				symbol.range.end.line = LINE_NUMBER_TO_INDEX(m.enum_value.line);
 				symbol.range.end.character = LINE_NUMBER_TO_INDEX(m.enum_value.rightmost_column);
-				symbol.selectionRange.start.line = LINE_NUMBER_TO_INDEX(m.enum_value.line);
+				symbol.selectionRange = range_of_node(m.enum_value.identifier);
 				symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(m.enum_value.line));
 				symbol.uri = uri;
 				symbol.script_path = path;
@@ -255,11 +259,8 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.name = m.signal->identifier->name;
 				symbol.kind = lsp::SymbolKind::Event;
 				symbol.deprecated = false;
-				symbol.range.start.line = LINE_NUMBER_TO_INDEX(m.signal->start_line);
-				symbol.range.start.character = LINE_NUMBER_TO_INDEX(m.signal->start_column);
-				symbol.range.end.line = LINE_NUMBER_TO_INDEX(m.signal->end_line);
-				symbol.range.end.character = LINE_NUMBER_TO_INDEX(m.signal->end_column);
-				symbol.selectionRange.start.line = symbol.range.start.line;
+				symbol.range = range_of_node(m.signal);
+				symbol.selectionRange = range_of_node(m.signal->identifier);
 				symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(m.signal->start_line));
 				symbol.uri = uri;
 				symbol.script_path = path;
@@ -276,12 +277,10 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 			} break;
 			case ClassNode::Member::ENUM: {
 				lsp::DocumentSymbol symbol;
+				symbol.name = m.m_enum->identifier->name;
 				symbol.kind = lsp::SymbolKind::Enum;
-				symbol.range.start.line = LINE_NUMBER_TO_INDEX(m.m_enum->start_line);
-				symbol.range.start.character = LINE_NUMBER_TO_INDEX(m.m_enum->start_column);
-				symbol.range.end.line = LINE_NUMBER_TO_INDEX(m.m_enum->end_line);
-				symbol.range.end.character = LINE_NUMBER_TO_INDEX(m.m_enum->end_column);
-				symbol.selectionRange.start.line = symbol.range.start.line;
+				symbol.range = range_of_node(m.m_enum);
+				symbol.selectionRange = range_of_node(m.m_enum->identifier);
 				symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(m.m_enum->start_line));
 				symbol.uri = uri;
 				symbol.script_path = path;
@@ -321,11 +320,8 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 	r_symbol.kind = p_func->is_static ? lsp::SymbolKind::Function : lsp::SymbolKind::Method;
 	r_symbol.detail = "func " + String(p_func->identifier->name) + "(";
 	r_symbol.deprecated = false;
-	r_symbol.range.start.line = LINE_NUMBER_TO_INDEX(p_func->start_line);
-	r_symbol.range.start.character = LINE_NUMBER_TO_INDEX(p_func->start_column);
-	r_symbol.range.end.line = LINE_NUMBER_TO_INDEX(p_func->start_line);
-	r_symbol.range.end.character = LINE_NUMBER_TO_INDEX(p_func->end_column);
-	r_symbol.selectionRange.start.line = r_symbol.range.start.line;
+	r_symbol.range = range_of_node(p_func);
+	r_symbol.selectionRange = range_of_node(p_func->identifier);
 	r_symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(p_func->start_line));
 	r_symbol.uri = uri;
 	r_symbol.script_path = path;
@@ -333,17 +329,6 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 	String parameters;
 	for (int i = 0; i < p_func->parameters.size(); i++) {
 		const ParameterNode *parameter = p_func->parameters[i];
-		lsp::DocumentSymbol symbol;
-		symbol.kind = lsp::SymbolKind::Variable;
-		symbol.name = parameter->identifier->name;
-		symbol.range.start.line = LINE_NUMBER_TO_INDEX(parameter->start_line);
-		symbol.range.start.character = LINE_NUMBER_TO_INDEX(parameter->start_column);
-		symbol.range.end.line = LINE_NUMBER_TO_INDEX(parameter->end_line);
-		symbol.range.end.character = LINE_NUMBER_TO_INDEX(parameter->end_column);
-		symbol.local = true;
-		symbol.uri = uri;
-		symbol.script_path = path;
-		r_symbol.children.push_back(symbol);
 		if (i > 0) {
 			parameters += ", ";
 		}
@@ -401,21 +386,6 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 				}
 			} break;
 
-			case GDScriptParser::TypeNode::VARIABLE: {
-				GDScriptParser::VariableNode *variable_node = (GDScriptParser::VariableNode *)(node);
-				lsp::DocumentSymbol symbol;
-				symbol.kind = lsp::SymbolKind::Variable;
-				symbol.name = variable_node->identifier->name;
-				symbol.range.start.line = LINE_NUMBER_TO_INDEX(variable_node->start_line);
-				symbol.range.start.character = LINE_NUMBER_TO_INDEX(variable_node->start_column);
-				symbol.range.end.line = LINE_NUMBER_TO_INDEX(variable_node->end_line);
-				symbol.range.end.character = LINE_NUMBER_TO_INDEX(variable_node->end_column);
-				symbol.local = true;
-				symbol.uri = uri;
-				symbol.script_path = path;
-				r_symbol.children.push_back(symbol);
-			} break;
-
 			default:
 				continue;
 		}
@@ -428,10 +398,31 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 			lsp::DocumentSymbol symbol;
 			symbol.name = local.name;
 			symbol.kind = local.type == SuiteNode::Local::CONSTANT ? lsp::SymbolKind::Constant : lsp::SymbolKind::Variable;
-			symbol.range.start.line = LINE_NUMBER_TO_INDEX(local.start_line);
-			symbol.range.start.character = LINE_NUMBER_TO_INDEX(local.start_column);
-			symbol.range.end.line = LINE_NUMBER_TO_INDEX(local.end_line);
-			symbol.range.end.character = LINE_NUMBER_TO_INDEX(local.end_column);
+			switch (local.type) {
+				case SuiteNode::Local::CONSTANT:
+					symbol.range = range_of_node(local.constant);
+					symbol.selectionRange = range_of_node(local.constant->identifier);
+					break;
+				case SuiteNode::Local::VARIABLE:
+					symbol.range = range_of_node(local.variable);
+					symbol.selectionRange = range_of_node(local.variable->identifier);
+					break;
+				case SuiteNode::Local::PARAMETER:
+					symbol.range = range_of_node(local.parameter);
+					symbol.selectionRange = range_of_node(local.parameter->identifier);
+					break;
+				case SuiteNode::Local::FOR_VARIABLE:
+				case SuiteNode::Local::PATTERN_BIND:
+					symbol.range = range_of_node(local.bind);
+					symbol.selectionRange = range_of_node(local.bind);
+				default:
+					// fallback
+					symbol.range.start.line = LINE_NUMBER_TO_INDEX(local.start_line);
+					symbol.range.start.character = LINE_NUMBER_TO_INDEX(local.start_column);
+					symbol.range.end.line = LINE_NUMBER_TO_INDEX(local.end_line);
+					symbol.range.end.character = LINE_NUMBER_TO_INDEX(local.end_column);
+					break;
+			}
 			symbol.local = true;
 			symbol.uri = uri;
 			symbol.script_path = path;

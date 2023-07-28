@@ -111,7 +111,7 @@ const lsp::DocumentSymbol *test_resolve_symbol_at(const String &p_uri, const lsp
 
 	CHECK_EQ(symbol->uri, p_expected_uri);
 	CHECK_EQ(symbol->name, p_expected_name);
-	CHECK_EQ(symbol->range, p_expected_range);
+	CHECK_EQ(symbol->selectionRange, p_expected_range);
 
 	return symbol;
 }
