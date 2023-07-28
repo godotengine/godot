@@ -473,7 +473,7 @@ private:
 	MethodBind **_methods_ptr = nullptr;
 	int _lambdas_count = 0;
 	GDScriptFunction **_lambdas_ptr = nullptr;
-	const int *_code_ptr = nullptr;
+	int *_code_ptr = nullptr;
 	int _code_size = 0;
 	int _argument_count = 0;
 	int _stack_size = 0;

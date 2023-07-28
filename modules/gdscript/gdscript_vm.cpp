@@ -685,7 +685,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 		OPCODE_SWITCH(_code_ptr[ip]) {
 			OPCODE(OPCODE_OPERATOR) {
-				CHECK_SPACE(5);
+				constexpr int _pointer_size = sizeof(Variant::ValidatedOperatorEvaluator) / sizeof(*_code_ptr);
+				CHECK_SPACE(7 + _pointer_size);
 
 				bool valid;
 				Variant::Operator op = (Variant::Operator)_code_ptr[ip + 4];
@@ -694,28 +695,71 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(a, 0);
 				GET_VARIANT_PTR(b, 1);
 				GET_VARIANT_PTR(dst, 2);
+				// Compute signatures (types of operands) so it can be optimized when matching.
+				uint32_t op_signature = _code_ptr[ip + 5];
+				uint32_t actual_signature = (a->get_type() << 8) | (b->get_type());
 
-#ifdef DEBUG_ENABLED
+				// Check if this is the first run. If so, store the current signature for the optimized path.
+				if (unlikely(op_signature == 0)) {
+					static Mutex initializer_mutex;
+					initializer_mutex.lock();
+					Variant::Type a_type = (Variant::Type)((actual_signature >> 8) & 0xFF);
+					Variant::Type b_type = (Variant::Type)(actual_signature & 0xFF);
 
-				Variant ret;
-				Variant::evaluate(op, *a, *b, ret, valid);
-#else
-				Variant::evaluate(op, *a, *b, *dst, valid);
-#endif
+					Variant::ValidatedOperatorEvaluator op_func = Variant::get_validated_operator_evaluator(op, a_type, b_type);
+
+					if (unlikely(!op_func)) {
 #ifdef DEBUG_ENABLED
-				if (!valid) {
-					if (ret.get_type() == Variant::STRING) {
-						//return a string when invalid with the error
-						err_text = ret;
-						err_text += " in operator '" + Variant::get_operator_name(op) + "'.";
-					} else {
 						err_text = "Invalid operands '" + Variant::get_type_name(a->get_type()) + "' and '" + Variant::get_type_name(b->get_type()) + "' in operator '" + Variant::get_operator_name(op) + "'.";
-					}
-					OPCODE_BREAK;
-				}
-				*dst = ret;
 #endif
-				ip += 5;
+						initializer_mutex.unlock();
+						OPCODE_BREAK;
+					} else {
+						Variant::Type ret_type = Variant::get_operator_return_type(op, a_type, b_type);
+						VariantInternal::initialize(dst, ret_type);
+						op_func(a, b, dst);
+
+						// Check again in case another thread already set it.
+						if (_code_ptr[ip + 5] == 0) {
+							_code_ptr[ip + 5] = actual_signature;
+							_code_ptr[ip + 6] = static_cast<int>(ret_type);
+							Variant::ValidatedOperatorEvaluator *tmp = reinterpret_cast<Variant::ValidatedOperatorEvaluator *>(&_code_ptr[ip + 7]);
+							*tmp = op_func;
+						}
+					}
+					initializer_mutex.unlock();
+				} else if (likely(op_signature == actual_signature)) {
+					// If the signature matches, we can use the optimized path.
+					Variant::Type ret_type = static_cast<Variant::Type>(_code_ptr[ip + 6]);
+					Variant::ValidatedOperatorEvaluator op_func = *reinterpret_cast<Variant::ValidatedOperatorEvaluator *>(&_code_ptr[ip + 7]);
+
+					// Make sure the return value has the correct type.
+					VariantInternal::initialize(dst, ret_type);
+					op_func(a, b, dst);
+				} else {
+					// If the signature doesn't match, we have to use the slow path.
+#ifdef DEBUG_ENABLED
+
+					Variant ret;
+					Variant::evaluate(op, *a, *b, ret, valid);
+#else
+					Variant::evaluate(op, *a, *b, *dst, valid);
+#endif
+#ifdef DEBUG_ENABLED
+					if (!valid) {
+						if (ret.get_type() == Variant::STRING) {
+							//return a string when invalid with the error
+							err_text = ret;
+							err_text += " in operator '" + Variant::get_operator_name(op) + "'.";
+						} else {
+							err_text = "Invalid operands '" + Variant::get_type_name(a->get_type()) + "' and '" + Variant::get_type_name(b->get_type()) + "' in operator '" + Variant::get_operator_name(op) + "'.";
+						}
+						OPCODE_BREAK;
+					}
+					*dst = ret;
+#endif
+				}
+				ip += 7 + _pointer_size;
 			}
 			DISPATCH_OPCODE;
 
