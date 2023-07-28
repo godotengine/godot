@@ -82,9 +82,9 @@ GDScriptLanguageProtocol *initialize(const String &root) {
 	GDScriptLanguageProtocol *proto = memnew(GDScriptLanguageProtocol);
 
 	Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
-	//TODO: adjust? escape `:` but not `/`
 	workspace->root = absolute_root;
-	workspace->root_uri = "file:///" + absolute_root.lstrip("/");
+	//                                                           on windows: `C:/...` -> `C%3A/...`
+	workspace->root_uri = "file:///" + absolute_root.lstrip("/").replace_first(":", "%3A");
 
 	return proto;
 }
