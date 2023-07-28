@@ -681,7 +681,9 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 									} break;
 
 									case lsp::SymbolKind::Variable: {
-										symbol = get_local_symbol(parser, symbol_identifier);
+										if (symbol->local) {
+											symbol = get_local_symbol(parser, symbol_identifier);
+										}
 									} break;
 								}
 							}
