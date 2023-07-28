@@ -190,7 +190,7 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_local_symbol_at(const ExtendGD
 	while (current) {
 		if (current->name == p_symbol_identifier) {
 			if (current->selectionRange.contains(p_position)) {
-				// exact match: pos is ON symbol decl identifier
+				// Exact match: pos is ON symbol decl identifier.
 				return current;
 			}
 
@@ -401,7 +401,7 @@ Error GDScriptWorkspace::initialize() {
 			native_members.insert(E.key, members);
 		}
 
-		// cache member completions
+		// Cache member completions.
 		for (const KeyValue<String, ExtendGDScriptParser *> &S : scripts) {
 			S.value->get_member_completions();
 		}

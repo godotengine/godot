@@ -265,7 +265,7 @@ Variant GDScriptTextDocument::prepareRename(const Dictionary &p_params) {
 		return Variant(range.to_json());
 	}
 
-	// null -> rename not valid at current location
+	// `null` -> rename not valid at current location.
 	return Variant();
 }
 

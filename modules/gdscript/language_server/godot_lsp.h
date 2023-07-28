@@ -125,11 +125,11 @@ struct Range {
 	}
 
 	bool contains(const Position &p_pos) const {
-		// inside line range
+		// Inside line range.
 		if (start.line <= p_pos.line && p_pos.line <= end.line) {
-			// if on start line: must come after start char
+			// If on start line: must come after start char.
 			bool start_ok = p_pos.line == start.line ? start.character <= p_pos.character : true;
-			// if on end line: must come before end char
+			// If on end line: must come before end char.
 			bool end_ok = p_pos.line == end.line ? p_pos.character <= end.character : true;
 			return start_ok && end_ok;
 		} else {
