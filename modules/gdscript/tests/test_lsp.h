@@ -236,10 +236,21 @@ void test_resolve_symbol(const String &p_uri, const InlineTestData &p_test_data,
 
 		Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
 		lsp::Position pos = p_test_data.range.start;
-		// position cursor inside identifier
-		pos.character = (p_test_data.range.end.character + p_test_data.range.start.character) / 2;
 
-		test_resolve_symbol_at(p_uri, pos, p_uri, target->text, target->range);
+		SUBCASE("start of identifier") {
+			pos.character = p_test_data.range.start.character;
+			test_resolve_symbol_at(p_uri, pos, p_uri, target->text, target->range);
+		}
+
+		SUBCASE("inside identifier") {
+			pos.character = (p_test_data.range.end.character + p_test_data.range.start.character) / 2;
+			test_resolve_symbol_at(p_uri, pos, p_uri, target->text, target->range);
+		}
+
+		SUBCASE("end of identifier") {
+			pos.character = p_test_data.range.end.character;
+			test_resolve_symbol_at(p_uri, pos, p_uri, target->text, target->range);
+		}
 	}
 }
 Vector<InlineTestData> filter_ref_towards(const Vector<InlineTestData> &p_data, const String &p_name) {

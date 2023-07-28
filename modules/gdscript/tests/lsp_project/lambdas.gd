@@ -46,7 +46,7 @@ var lambda_multiline = func(alpha: int, beta: int) -> int:
 		#<^ -> \multi:tmp
 	else:
 		tmp -= beta
-		# |    ^^^^^ -> \multi:beta
+		# |    ^^^^ -> \multi:beta
 		#<^ -> \multi:tmp
 	print(tmp)
 	#     ^^^ -> \multi:tmp
