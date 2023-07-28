@@ -200,7 +200,6 @@ const lsp::DocumentSymbol *GDScriptWorkspace::get_local_symbol_at(const ExtendGD
 		const lsp::DocumentSymbol *parent = current;
 		current = nullptr;
 		for (const lsp::DocumentSymbol &child : parent->children) {
-			//TODO: use scope instead range: might be usage in initializer (-> ref outer)
 			if (child.range.contains(p_position)) {
 				current = &child;
 				break;
@@ -437,19 +436,19 @@ Error GDScriptWorkspace::parse_script(const String &p_path, const String &p_cont
 	return err;
 }
 
-bool is_valid_rename_target(const lsp::DocumentSymbol *symbol) {
+bool is_valid_rename_target(const lsp::DocumentSymbol *p_symbol) {
 	// must be valid symbol
-	if (!symbol) {
+	if (!p_symbol) {
 		return false;
 	}
 
 	// cannot rename builtin
-	if (!symbol->native_class.is_empty()) {
+	if (!p_symbol->native_class.is_empty()) {
 		return false;
 	}
 
 	// source must be available
-	if (symbol->script_path.is_empty()) {
+	if (p_symbol->script_path.is_empty()) {
 		return false;
 	}
 
@@ -479,7 +478,7 @@ bool GDScriptWorkspace::can_rename(const lsp::TextDocumentPositionParams &p_doc_
 
 	String path = get_file_path(p_doc_pos.textDocument.uri);
 	if (const ExtendGDScriptParser *parser = get_parse_result(path)) {
-		String _ = parser->get_identifier_under_position(p_doc_pos.position, r_range);
+		parser->get_identifier_under_position(p_doc_pos.position, r_range);
 		r_symbol = *reference_symbol;
 		return true;
 	}

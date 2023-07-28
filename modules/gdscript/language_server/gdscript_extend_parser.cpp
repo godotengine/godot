@@ -687,15 +687,15 @@ String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &
 	// ->
 	// ```gdscript
 	// var member| := some_func|(some_variable|)
-	//															          ^
-	//																			  | cursor on `some_variable, position on `)`
-	//                          ^
-	//												  | cursor on `some_func`, pos on `(`
-	//           ^
+	//           ^             ^              ^
+	//           |             |              | cursor on `some_variable, position on `)`
+	//           |             |
+	//           |             | cursor on `some_func`, pos on `(`
+	//           |
 	//           | cursor on `member`, pos on ` ` (space)
 	// ```
 	// -> move position to previous character if:
-	// 	  * position not on valid identifier char
+	//    * position not on valid identifier char
 	//    * prev position is valid identifier char
 	lsp::Position pos = p_position;
 	if (

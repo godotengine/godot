@@ -72,9 +72,9 @@ namespace GDScriptTests {
 const String root = "modules/gdscript/tests/lsp_project/";
 
 // `memdelete` returned `GDScriptLanguageProtocol` after use!
-GDScriptLanguageProtocol *initialize(const String &root) {
+GDScriptLanguageProtocol *initialize(const String &p_root) {
 	Error err = OK;
-	Ref<DirAccess> dir(DirAccess::open(root, &err));
+	Ref<DirAccess> dir(DirAccess::open(p_root, &err));
 	REQUIRE_MESSAGE(err == OK, "Could not open specified root directory");
 	String absolute_root = dir->get_current_dir();
 	init_language(absolute_root);
@@ -89,23 +89,23 @@ GDScriptLanguageProtocol *initialize(const String &root) {
 	return proto;
 }
 
-lsp::Position pos(const int line, const int character) {
+lsp::Position pos(const int p_line, const int p_character) {
 	lsp::Position p;
-	p.line = line;
-	p.character = character;
+	p.line = p_line;
+	p.character = p_character;
 	return p;
 }
-lsp::Range range(const lsp::Position start, const lsp::Position end) {
+lsp::Range range(const lsp::Position p_start, const lsp::Position p_end) {
 	lsp::Range r;
-	r.start = start;
-	r.end = end;
+	r.start = p_start;
+	r.end = p_end;
 	return r;
 }
 
-lsp::TextDocumentPositionParams posIn(const lsp::DocumentUri &uri, const lsp::Position pos) {
+lsp::TextDocumentPositionParams posIn(const lsp::DocumentUri &p_uri, const lsp::Position p_pos) {
 	lsp::TextDocumentPositionParams params;
-	params.textDocument.uri = uri;
-	params.position = pos;
+	params.textDocument.uri = p_uri;
+	params.position = p_pos;
 	return params;
 }
 

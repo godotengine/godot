@@ -54,21 +54,20 @@
 typedef HashMap<String, const lsp::DocumentSymbol *> ClassMembers;
 
 /**
- * Represents a Position as used by GDScript Parser. Use for conversion to and from `lsp::Position`
+ * Represents a Position as used by GDScript Parser. Used for conversion to and from `lsp::Position`
  *
  * Difference to `lsp::Position`:
  * * line & char/column: 1-based
  * 		* LSP: both 0-based
- * * tabs are expanded to columns using tab size `text_editor/behavior/indent/size`
+ * * tabs are expanded to columns using tab size (`text_editor/behavior/indent/size`)
  *   	* LSP: tab is single char
  *
  * Example:
  * ```gdscript
  * →→var my_value = 42
- * 01230123 my_value = 42
  * ```
  * `_` is at:
- * * Godot: `column=12`\
+ * * Godot: `column=12`
  * 	* using `indent/size=4`
  * 	* Note: counting starts at `1`!
  * * LSP: `character=8`
