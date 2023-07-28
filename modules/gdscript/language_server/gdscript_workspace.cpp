@@ -482,6 +482,63 @@ Dictionary GDScriptWorkspace::rename(const lsp::TextDocumentPositionParams &p_do
 	return edit.to_json();
 }
 
+Vector<lsp::Location> GDScriptWorkspace::find_usages_in_file(const lsp::DocumentSymbol &p_symbol, const String &p_file_path) {
+	Vector<lsp::Location> usages;
+
+	String identifier = p_symbol.name;
+	Error err;
+	PackedStringArray content = FileAccess::get_file_as_string(p_file_path, &err).split("\n");
+	for (int i = 0; i < content.size(); ++i) {
+		String line = content[i];
+
+		int character = line.find(identifier);
+		while (character > -1) {
+			lsp::TextDocumentPositionParams params;
+
+			lsp::TextDocumentIdentifier text_doc;
+			text_doc.uri = get_file_uri(p_file_path);
+
+			params.textDocument = text_doc;
+			params.position.line = i;
+			params.position.character = character;
+
+			const lsp::DocumentSymbol *other_symbol = resolve_symbol(params);
+
+			if (other_symbol == &p_symbol) {
+				lsp::Location loc;
+				loc.uri = text_doc.uri;
+				loc.range.start = params.position;
+				loc.range.end.line = params.position.line;
+				loc.range.end.character = params.position.character + identifier.length();
+				usages.append(loc);
+			}
+
+			character = line.find(identifier, character + 1);
+		}
+	}
+
+	return usages;
+}
+
+//TODO: include/exclude decl? or filter later?
+Vector<lsp::Location> GDScriptWorkspace::find_all_usages(const lsp::DocumentSymbol &p_symbol) {
+	Vector<lsp::Location> usages;
+
+	if (p_symbol.local) {
+		// only search in current document
+		usages.append_array(find_usages_in_file(p_symbol, p_symbol.script_path));
+	} else {
+		// search in all documents
+		List<String> paths;
+		list_script_files("res://", paths);
+		for (List<String>::Element *PE = paths.front(); PE; PE = PE->next()) {
+			usages.append_array(find_usages_in_file(p_symbol, PE->get()));
+		}
+	}
+
+	return usages;
+}
+
 Error GDScriptWorkspace::parse_local_script(const String &p_path) {
 	Error err;
 	String content = FileAccess::get_file_as_string(p_path, &err);
