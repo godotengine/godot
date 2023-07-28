@@ -64,6 +64,12 @@ class Inner3 extends Inner2:
 	var whatever = "foo"
 	#   ^^^^^^^^ class3:whatever -> class3:whatever
 
+	func _init():
+	#    ^^^^^ class3:init
+	# Note: no self-ref check here: resolves to `Object._init`.
+	#       usages of `Inner3.new()` DO resolve to this `_init`
+		pass
+
 #TODO: ctor
 
 func _ready():
@@ -81,3 +87,10 @@ func _ready():
 	print(value1, value2)
 	#     |    |  ^^^^^^ -> func:class1:value2
 	#     ^^^^^^ -> func:class1:value1
+
+	var inner3 = Inner3.new()
+	#   |    |   |    | ^^^ -> class3:init
+	#   |    |   ^^^^^^ -> class3
+	#   ^^^^^^ func:class3 -> func:class3
+	print(inner3)
+	#     ^^^^^^ -> func:class3
