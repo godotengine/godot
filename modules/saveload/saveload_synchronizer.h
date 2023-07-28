@@ -35,8 +35,6 @@
 
 #include "scene_saveload_config.h"
 
-class SceneSaveloadInterface;
-
 class SaveloadSynchronizer : public Node {
 	GDCLASS(SaveloadSynchronizer, Node);
 
@@ -57,7 +55,6 @@ private:
 
 	ObjectID root_node_cache;
 
-	static Object *_get_prop_target(Object *p_obj, const NodePath &p_prop);
 	void _start();
 	void _stop();
 	void _update_process();
@@ -66,24 +63,20 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	static Error get_state(const List<NodePath> &p_properties, Object *p_obj, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs);
-	static Error set_state(const List<NodePath> &p_properties, Object *p_obj, const Vector<Variant> &p_state);
-
 public:
 	SyncherState get_syncher_state() const;
-	Error synchronize(const SyncherState &p_syncher_state);
-
-	Node *get_root_node() const;
+	Error set_syncher_state(const SyncherState &p_syncher_state);
 
 	PackedStringArray get_configuration_warnings() const override;
 
 	void set_saveload_config(Ref<SceneSaveloadConfig> p_config);
 	Ref<SceneSaveloadConfig> get_saveload_config() const;
 
+	Node *get_root_node() const;
 	void set_root_path(const NodePath &p_path);
 	NodePath get_root_path() const;
 
-	SaveloadSynchronizer();
+	SaveloadSynchronizer() {};
 };
 
 #endif // SAVELOAD_SYNCHRONIZER_H

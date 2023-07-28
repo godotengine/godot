@@ -67,11 +67,6 @@ SaveloadSpawner::SpawnInfo::SpawnInfo(const Dictionary &p_dict) {
  * SpawnState Definitions Start *
  ********************************/
 
-// void SaveloadSpawner::SpawnerState::push_back(const SaveloadSpawner::SpawnInfo &p_spawn_info) {
-// 	spawn_infos.push_back(p_spawn_info);
-// 	tracked_paths.insert(p_spawn_info.path, spawn_infos.size() -1);
-// }
-
 bool SaveloadSpawner::SpawnerState::has(const NodePath &p_path) const {
 	return tracked_paths.has(p_path);
 }

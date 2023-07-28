@@ -29,8 +29,6 @@
 /**************************************************************************/
 
 #include "saveload_synchronizer.h"
-
-#include "core/config/engine.h"
 #include "saveload_api.h"
 
 Dictionary SaveloadSynchronizer::SyncherState::to_dict() const {
@@ -47,15 +45,6 @@ SaveloadSynchronizer::SyncherState::SyncherState(const Dictionary &p_dict) {
 	for (const NodePath property_key : property_keys) {
 		property_map.insert(property_key, p_dict[property_key]);
 	}
-}
-
-Object *SaveloadSynchronizer::_get_prop_target(Object *p_obj, const NodePath &p_path) {
-	if (p_path.get_name_count() == 0) {
-		return p_obj;
-	}
-	Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_COND_V_MSG(!node || !node->has_node(p_path), nullptr, vformat("Node '%s' not found.", p_path));
-	return node->get_node(p_path);
 }
 
 void SaveloadSynchronizer::_stop() {
@@ -114,36 +103,30 @@ PackedStringArray SaveloadSynchronizer::get_configuration_warnings() const {
 	return warnings;
 }
 
-Error SaveloadSynchronizer::get_state(const List<NodePath> &p_properties, Object *p_obj, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs) {
-	ERR_FAIL_COND_V(!p_obj, ERR_INVALID_PARAMETER);
-	r_variant.resize(p_properties.size());
-	r_variant_ptrs.resize(r_variant.size());
-	int i = 0;
-	for (const NodePath &prop : p_properties) {
-		bool valid = false;
-		const Object *obj = _get_prop_target(p_obj, prop);
-		ERR_FAIL_COND_V(!obj, FAILED);
-		r_variant.write[i] = obj->get_indexed(prop.get_subnames(), &valid);
-		r_variant_ptrs.write[i] = &r_variant[i];
-		ERR_FAIL_COND_V_MSG(!valid, ERR_INVALID_DATA, vformat("Property '%s' not found.", prop));
-		i++;
-	}
-	return OK;
-}
-
 SaveloadSynchronizer::SyncherState SaveloadSynchronizer::get_syncher_state() const {
-	Vector<Variant> vars;
-	Vector<const Variant *> varp;
 	const List<NodePath> props = get_saveload_config()->get_sync_properties();
-	get_state(props, get_root_node(), vars, varp);
 	SyncherState sync_state;
-	for (int i = 0; i < vars.size(); ++i) {
-		sync_state.property_map.insert(props[i], vars[i]);
+	sync_state.property_map.reserve(props.size());
+	Node *root_node = get_root_node();
+	ERR_FAIL_COND_V_MSG(!root_node, sync_state, vformat("Could not find root node at %s.", get_root_path()));
+	for (const NodePath &prop : props) {
+		const Object *obj;
+		if (prop.get_name_count() == 0) {
+			obj = root_node;
+		}
+		else {
+			ERR_CONTINUE_MSG(!root_node->has_node(prop), vformat("Node '%s' not found.", prop));
+			obj = root_node->get_node(prop);
+		}
+		bool valid = false;
+		Variant value = obj->get_indexed(prop.get_subnames(), &valid);
+		ERR_CONTINUE_MSG(!valid, vformat("Property '%s' not found.", prop));
+		sync_state.property_map.insert(prop, value);
 	}
 	return sync_state;
 }
 
-Error SaveloadSynchronizer::synchronize(const SaveloadSynchronizer::SyncherState &p_syncher_state) {
+Error SaveloadSynchronizer::set_syncher_state(const SaveloadSynchronizer::SyncherState &p_syncher_state) {
 	for (const KeyValue<const NodePath, Variant> &property : p_syncher_state.property_map) {
 		const NodePath path = property.key;
 		const NodePath node_path = NodePath(path.get_concatenated_names());
@@ -204,7 +187,4 @@ void SaveloadSynchronizer::set_root_path(const NodePath &p_path) {
 
 NodePath SaveloadSynchronizer::get_root_path() const {
 	return root_path;
-}
-
-SaveloadSynchronizer::SaveloadSynchronizer() {
 }

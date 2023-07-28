@@ -32,19 +32,41 @@
 #define SCENE_SAVELOAD_H
 
 #include "saveload_api.h"
-
-#include "scene_saveload_interface.h"
+#include "saveload_spawner.h"
+#include "saveload_synchronizer.h"
 
 class SceneSaveload : public SaveloadAPI {
 	GDCLASS(SceneSaveload, SaveloadAPI);
 
 private:
-	bool allow_object_decoding = false;
-
-	Ref<SceneSaveloadInterface> saveloader;
+	template <class T>
+	static T *get_id_as(const ObjectID &p_id) {
+		return p_id.is_valid() ? Object::cast_to<T>(ObjectDB::get_instance(p_id)) : nullptr;
+	}
 
 protected:
 	static void _bind_methods();
+
+	struct SaveloadState {
+		HashMap<const NodePath, SaveloadSpawner::SpawnerState> spawner_states;
+		HashMap<const NodePath, SaveloadSynchronizer::SyncherState> syncher_states;
+
+		Dictionary to_dict() const;
+
+		SaveloadState() {}
+		SaveloadState(const Dictionary &saveload_dict);
+	};
+
+	HashSet<ObjectID> spawners;
+	HashSet<ObjectID> synchers;
+
+	void track_spawner(const SaveloadSpawner &p_spawner);
+	void untrack_spawner(const SaveloadSpawner &p_spawner);
+	void track_syncher(const SaveloadSynchronizer &p_syncher);
+	void untrack_syncher(const SaveloadSynchronizer &p_syncher);
+
+	SaveloadState get_saveload_state() const;
+	Error load_saveload_state(const SaveloadState &p_saveload_state);
 
 public:
 	TypedArray<SaveloadSpawner> get_spawners() const;
@@ -59,10 +81,8 @@ public:
 	virtual Error save(const String &p_path, const Variant &p_configuration_data = Variant()) override;
 	virtual Error load(const String &p_path, const Variant &p_configuration_data = Variant()) override;
 
-	Ref<SceneSaveloadInterface> get_saveloader() const { return saveloader; }
-
-	SceneSaveload();
-	~SceneSaveload();
+	SceneSaveload() {};
+	~SceneSaveload() {};
 };
 
 #endif // SCENE_SAVELOAD_H

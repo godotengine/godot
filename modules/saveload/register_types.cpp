@@ -34,9 +34,6 @@
 #include "saveload_spawner.h"
 #include "saveload_synchronizer.h"
 #include "scene_saveload.h"
-#include "scene_saveload_interface.h"
-
-#include "saveload_debugger.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/saveload_editor_plugin.h"
@@ -54,7 +51,6 @@ void initialize_saveload_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(SceneSaveloadConfig);
 		GDREGISTER_CLASS(SaveloadSpawner);
 		GDREGISTER_CLASS(SaveloadSynchronizer);
-		SaveloadDebugger::initialize();
 	}
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
@@ -64,7 +60,6 @@ void initialize_saveload_module(ModuleInitializationLevel p_level) {
 }
 
 void uninitialize_saveload_module(ModuleInitializationLevel p_level) {
-	SaveloadDebugger::deinitialize();
 	if (saveload_api) {
 		Engine::get_singleton()->remove_singleton("SaveloadAPI");
 		memdelete(saveload_api);

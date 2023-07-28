@@ -55,7 +55,7 @@ public:
 
 		SpawnInfo(NodePath p_path, int p_scene_index, Variant spawn_args);
 		SpawnInfo(const Dictionary &p_dict);
-		SpawnInfo(){};
+		SpawnInfo() {};
 	};
 
 	struct SpawnerState {
@@ -99,7 +99,6 @@ private:
 	void _track(Node *p_node, int p_scene_index, const Variant &p_spawn_args = Variant());
 	void _node_added(Node *p_node);
 	void _node_exit(ObjectID p_id);
-	void _spawn_notify(ObjectID p_id);
 
 	Vector<String> _get_spawnable_scenes() const;
 	void _set_spawnable_scenes(const Vector<String> &p_scenes);
