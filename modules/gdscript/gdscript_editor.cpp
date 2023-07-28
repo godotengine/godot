@@ -1449,6 +1449,8 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 			case GDScriptParser::DataType::CLASS:
 				r_type.type = p_expression->get_datatype();
 				break;
+			default:
+				break;
 		}
 		found = true;
 	} else {
