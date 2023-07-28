@@ -44,7 +44,7 @@
 			<param index="1" name="path" type="String" />
 			<description>
 				Customize a scene. If changes are made to it, return the same or a new scene. Otherwise, return [code]null[/code]. If a new scene is returned, it is up to you to dispose of the old one.
-				Implementing this method is required if [method _begin_customize_resources] returns [code]true[/code].
+				Implementing this method is required if [method _begin_customize_scenes] returns [code]true[/code].
 			</description>
 		</method>
 		<method name="_end_customize_resources" qualifiers="virtual">
