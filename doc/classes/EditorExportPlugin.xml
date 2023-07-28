@@ -149,7 +149,7 @@
 			<description>
 				Return a hash based on the configuration passed (for both scenes and resources). This helps keep separate caches for separate export configurations.
 				Implementing this method is required if [method _begin_customize_resources] returns [code]true[/code].
-				[b]Note:[/b] Keep in mind while working on an export script: [_begin_customize_resources] and [_begin_customize_scenes] will not be called when the [EditorExportPlugin] script is modified unless this hash changes too.
+				[b]Note:[/b] Keep in mind while working on an export script: [method _begin_customize_resources] and [method _begin_customize_scenes] will not be called when the [EditorExportPlugin] script is modified unless this hash changes too.
 			</description>
 		</method>
 		<method name="_get_export_features" qualifiers="virtual const">
