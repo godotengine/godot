@@ -4,7 +4,7 @@
 		A script that is executed when exporting the project.
 	</brief_description>
 	<description>
-		[EditorExportPlugin]s are automatically invoked whenever the user exports the project. They can be used to modify Scenes and Resources during project export based on what <link title="Feature Tags">$DOCS_URL/tutorials/export/feature_tags.html</link> are set. For each plugin, [method _export_begin] is called at the beginning of the export process and then [method _export_file] is called for each exported file.
+		[EditorExportPlugin]s are automatically invoked whenever the user exports the project. They can be used to modify Scenes and Resources during project export based on what [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature Tags[/url] are set. For each plugin, [method _export_begin] is called at the beginning of the export process and then [method _export_file] is called for each exported file.
 		Register a [EditorExportPlugin] by creating a new [EditorPlugin] and calling its [method EditorPlugin.add_export_plugin] method.
 	</description>
 	<tutorials>
