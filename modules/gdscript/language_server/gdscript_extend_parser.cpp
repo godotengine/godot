@@ -296,14 +296,12 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				if (m.variable->getter && m.variable->getter->type == GDScriptParser::Node::FUNCTION) {
 					lsp::DocumentSymbol get_symbol;
 					parse_function_symbol(m.variable->getter, get_symbol);
-					//TODO: adjust name?
 					get_symbol.local = true;
 					symbol.children.push_back(get_symbol);
 				}
 				if (m.variable->setter && m.variable->setter->type == GDScriptParser::Node::FUNCTION) {
 					lsp::DocumentSymbol set_symbol;
 					parse_function_symbol(m.variable->setter, set_symbol);
-					//TODO: adjust name?
 					set_symbol.local = true;
 					symbol.children.push_back(set_symbol);
 				}
@@ -541,7 +539,6 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 
 			case GDScriptParser::TypeNode::MATCH_BRANCH: {
 				GDScriptParser::MatchBranchNode *match_node = (GDScriptParser::MatchBranchNode *)node;
-				//TODO: patterns?
 				node_stack.push_back(match_node->block);
 			} break;
 
