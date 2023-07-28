@@ -70,7 +70,16 @@ class Inner3 extends Inner2:
 	#       usages of `Inner3.new()` DO resolve to this `_init`
 		pass
 
-#TODO: ctor
+	class NestedInInner3:
+	#     ^^^^^^^^^^^^^^ class3:nested1 -> class3:nested1
+		var some_value := 42
+		#   ^^^^^^^^^^ class3:nested1:some_value -> class3:nested1:some_value
+
+	class AnotherNestedInInner3 extends NestedInInner3:
+	#!    |                   |         ^^^^^^^^^^^^^^ -> class3:nested1
+	#     ^^^^^^^^^^^^^^^^^^^^^ class3:nested2 -> class3:nested2
+		var another_value := 13
+		#   ^^^^^^^^^^^^^ class3:nested2:another_value -> class3:nested2:another_value
 
 func _ready():
 	var inner1 = Inner1.new()
@@ -94,3 +103,30 @@ func _ready():
 	#   ^^^^^^ func:class3 -> func:class3
 	print(inner3)
 	#     ^^^^^^ -> func:class3
+
+	var nested1 = Inner3.NestedInInner3.new()
+	#   |     |   |    | ^^^^^^^^^^^^^^ -> class3:nested1
+	#   |     |   ^^^^^^ -> class3
+	#   ^^^^^^^ func:class3:nested1 -> func:class3:nested1
+	var value_nested1 = nested1.some_value
+	#   |           |   |     | ^^^^^^^^^^ -> class3:nested1:some_value
+	#   |           |   ^^^^^^^ -> func:class3:nested1
+	#   ^^^^^^^^^^^^^ func:class3:nested1:value
+	print(value_nested1)
+	#     ^^^^^^^^^^^^^ -> func:class3:nested1:value
+
+	var nested2 = Inner3.AnotherNestedInInner3.new()
+	#   |     |   |    | ^^^^^^^^^^^^^^^^^^^^^ -> class3:nested2
+	#   |     |   ^^^^^^ -> class3
+	#   ^^^^^^^ func:class3:nested2 -> func:class3:nested2
+	var value_nested2 = nested2.some_value
+	#   |           |   |     | ^^^^^^^^^^ -> class3:nested1:some_value
+	#   |           |   ^^^^^^^ -> func:class3:nested2
+	#   ^^^^^^^^^^^^^ func:class3:nested2:value
+	var another_value_nested2 = nested2.another_value
+	#   |                   |   |     | ^^^^^^^^^^^^^ -> class3:nested2:another_value
+	#   |                   |   ^^^^^^^ -> func:class3:nested2
+	#   ^^^^^^^^^^^^^^^^^^^^^ func:class3:nested2:another_value_nested
+	print(value_nested2, another_value_nested2)
+	#     |           |  ^^^^^^^^^^^^^^^^^^^^^ -> func:class3:nested2:another_value_nested
+	#     ^^^^^^^^^^^^^ -> func:class3:nested2:value
