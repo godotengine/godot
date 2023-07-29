@@ -365,6 +365,8 @@ class DisplayServerX11 : public DisplayServer {
 	static Bool _predicate_clipboard_incr(Display *display, XEvent *event, XPointer arg);
 	static Bool _predicate_clipboard_save_targets(Display *display, XEvent *event, XPointer arg);
 
+	bool is_xwayland = false;
+
 protected:
 	void _window_changed(XEvent *event);
 

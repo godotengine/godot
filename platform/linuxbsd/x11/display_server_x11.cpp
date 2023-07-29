@@ -3647,10 +3647,12 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		return;
 	}
 
-	// Query display server about a possible new window state.
-	wd.fullscreen = _window_fullscreen_check(window_id);
-	wd.maximized = _window_maximize_check(window_id, "_NET_WM_STATE") && !wd.fullscreen;
-	wd.minimized = _window_minimize_check(window_id) && !wd.fullscreen && !wd.maximized;
+	if (!is_xwayland) {
+		// Query display server about a possible new window state.
+		wd.fullscreen = _window_fullscreen_check(window_id);
+		wd.maximized = _window_maximize_check(window_id, "_NET_WM_STATE") && !wd.fullscreen;
+		wd.minimized = _window_minimize_check(window_id) && !wd.fullscreen && !wd.maximized;
+	}
 
 	// Readjusting the window position if the window is being reparented by the window manager for decoration
 	Window root, parent, *children;
@@ -5991,6 +5993,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	XSetErrorHandler(&default_window_error_handler);
 
 	r_error = OK;
+
+	if ((OS::get_singleton()->has_environment("XDG_SESSION_TYPE") && OS::get_singleton()->get_environment("XDG_SESSION_TYPE") == "wayland") || OS::get_singleton()->has_environment("WAYLAND_DISPLAY")) {
+		is_xwayland = true;
+	}
 }
 
 DisplayServerX11::~DisplayServerX11() {
