@@ -65,7 +65,7 @@ bool is_convex(const Vector<Vector2> &p_points) {
 
 void ConvexPolygonShape2D::_update_shape() {
 	Vector<Vector2> final_points = points;
-	if (Geometry2D::is_polygon_clockwise(final_points)) { //needs to be counter clockwise
+	if (!Geometry2D::is_polygon_clockwise(final_points)) { // Needs to be counter-clockwise.
 		final_points.reverse();
 	}
 #ifdef DEBUG_ENABLED

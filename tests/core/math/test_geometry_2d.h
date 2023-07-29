@@ -113,10 +113,10 @@ TEST_CASE("[Geometry2D] Polygon clockwise") {
 	p.push_back(Vector2(-5, -1));
 	p.push_back(Vector2(-1, 3));
 	p.push_back(Vector2(1, 5));
-	CHECK(Geometry2D::is_polygon_clockwise(p));
+	CHECK_FALSE(Geometry2D::is_polygon_clockwise(p));
 
 	p.reverse();
-	CHECK_FALSE(Geometry2D::is_polygon_clockwise(p));
+	CHECK(Geometry2D::is_polygon_clockwise(p));
 }
 
 TEST_CASE("[Geometry2D] Line intersection") {
@@ -467,7 +467,7 @@ TEST_CASE("[Geometry2D] Merge polygons") {
 		r = Geometry2D::merge_polygons(a, b);
 		REQUIRE_MESSAGE(r.size() == 2, "The merged polygons should result in 2 polygons.");
 
-		REQUIRE_MESSAGE(!Geometry2D::is_polygon_clockwise(r[0]), "The merged polygon (outline) should be counter-clockwise.");
+		REQUIRE_MESSAGE(Geometry2D::is_polygon_clockwise(r[0]), "The merged polygon (outline) should be clockwise.");
 		REQUIRE_MESSAGE(r[0].size() == 7, "The resulting merged polygon (outline) should have 7 vertices.");
 		CHECK(r[0][0].is_equal_approx(Point2(174.791077, 161.350967)));
 		CHECK(r[0][1].is_equal_approx(Point2(225, 180)));
@@ -477,7 +477,7 @@ TEST_CASE("[Geometry2D] Merge polygons") {
 		CHECK(r[0][5].is_equal_approx(Point2(81.911758, 126.852943)));
 		CHECK(r[0][6].is_equal_approx(Point2(160, 80)));
 
-		REQUIRE_MESSAGE(Geometry2D::is_polygon_clockwise(r[1]), "The resulting merged polygon (hole) should be clockwise.");
+		REQUIRE_MESSAGE(!Geometry2D::is_polygon_clockwise(r[1]), "The resulting merged polygon (hole) should be counter-clockwise.");
 		REQUIRE_MESSAGE(r[1].size() == 3, "The resulting merged polygon (hole) should have 3 vertices.");
 		CHECK(r[1][0].is_equal_approx(Point2(98.083069, 132.859421)));
 		CHECK(r[1][1].is_equal_approx(Point2(158.689453, 155.370377)));
@@ -529,13 +529,13 @@ TEST_CASE("[Geometry2D] Clip polygons") {
 		r = Geometry2D::clip_polygons(a, b);
 		REQUIRE_MESSAGE(r.size() == 2, "Polygon 'a' completely overlaps polygon 'b'. This should result in 2 clipped polygons.");
 		REQUIRE_MESSAGE(r[0].size() == 4, "The resulting clipped polygon should have 4 vertices.");
-		REQUIRE_MESSAGE(!Geometry2D::is_polygon_clockwise(r[0]), "The resulting clipped polygon (outline) should be counter-clockwise.");
+		REQUIRE_MESSAGE(Geometry2D::is_polygon_clockwise(r[0]), "The resulting clipped polygon (outline) should be clockwise.");
 		CHECK(r[0][0].is_equal_approx(a[0]));
 		CHECK(r[0][1].is_equal_approx(a[1]));
 		CHECK(r[0][2].is_equal_approx(a[2]));
 		CHECK(r[0][3].is_equal_approx(a[3]));
 		REQUIRE_MESSAGE(r[1].size() == 3, "The resulting clipped polygon should have 3 vertices.");
-		REQUIRE_MESSAGE(Geometry2D::is_polygon_clockwise(r[1]), "The resulting clipped polygon (hole) should be clockwise.");
+		REQUIRE_MESSAGE(!Geometry2D::is_polygon_clockwise(r[1]), "The resulting clipped polygon (hole) should be counter-clockwise.");
 		CHECK(r[1][0].is_equal_approx(b[1]));
 		CHECK(r[1][1].is_equal_approx(b[0]));
 		CHECK(r[1][2].is_equal_approx(b[2]));
@@ -575,13 +575,13 @@ TEST_CASE("[Geometry2D] Exclude polygons") {
 		r = Geometry2D::exclude_polygons(a, b);
 		REQUIRE_MESSAGE(r.size() == 2, "There should be 2 resulting excluded polygons (outline and hole).");
 		REQUIRE_MESSAGE(r[0].size() == 4, "The resulting excluded polygon should have 4 vertices.");
-		REQUIRE_MESSAGE(!Geometry2D::is_polygon_clockwise(r[0]), "The resulting excluded polygon (outline) should be counter-clockwise.");
+		REQUIRE_MESSAGE(Geometry2D::is_polygon_clockwise(r[0]), "The resulting excluded polygon (outline) should be clockwise.");
 		CHECK(r[0][0].is_equal_approx(a[0]));
 		CHECK(r[0][1].is_equal_approx(a[1]));
 		CHECK(r[0][2].is_equal_approx(a[2]));
 		CHECK(r[0][3].is_equal_approx(a[3]));
 		REQUIRE_MESSAGE(r[1].size() == 4, "The resulting excluded polygon should have 4 vertices.");
-		REQUIRE_MESSAGE(Geometry2D::is_polygon_clockwise(r[1]), "The resulting excluded polygon (hole) should be clockwise.");
+		REQUIRE_MESSAGE(!Geometry2D::is_polygon_clockwise(r[1]), "The resulting excluded polygon (hole) should be counter-clockwise.");
 		CHECK(r[1][0].is_equal_approx(Point2(40, 200)));
 		CHECK(r[1][1].is_equal_approx(Point2(150, 220)));
 		CHECK(r[1][2].is_equal_approx(Point2(140, 160)));

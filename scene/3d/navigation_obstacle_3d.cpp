@@ -465,7 +465,7 @@ void NavigationObstacle3D::_update_static_obstacle_debug() {
 		return;
 	}
 
-	bool obstacle_pushes_inward = Geometry2D::is_polygon_clockwise(polygon_2d_vertices);
+	bool obstacle_pushes_inward = !Geometry2D::is_polygon_clockwise(polygon_2d_vertices);
 
 	Vector<Vector3> face_vertex_array;
 	Vector<int> face_indices_array;

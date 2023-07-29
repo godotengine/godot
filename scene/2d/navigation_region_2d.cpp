@@ -445,7 +445,7 @@ void NavigationRegion2D::_update_avoidance_constrain() {
 			for (int i(0); i < outline_size; i++) {
 				new_obstacle_outline.push_back(_outline[outline_size - i - 1]);
 			}
-			ERR_FAIL_COND_MSG(Geometry2D::is_polygon_clockwise(_outline), "Outer most outline needs to be clockwise to push avoidance agent inside");
+			ERR_FAIL_COND_MSG(!Geometry2D::is_polygon_clockwise(_outline), "Outer most outline needs to be counter-clockwise to push avoidance agent inside");
 		} else {
 			for (int i(0); i < outline_size; i++) {
 				new_obstacle_outline.push_back(_outline[i]);

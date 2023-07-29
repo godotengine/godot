@@ -363,7 +363,7 @@ public:
 			sum += (v2.x - v1.x) * (v2.y + v1.y);
 		}
 
-		return sum > 0.0f;
+		return sum < 0.0f;
 	}
 
 	// Alternate implementation that should be faster.

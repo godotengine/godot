@@ -275,7 +275,7 @@ void NavigationObstacle2D::_update_fake_agent_radius_debug() {
 #ifdef DEBUG_ENABLED
 void NavigationObstacle2D::_update_static_obstacle_debug() {
 	if (get_vertices().size() > 2 && NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_static()) {
-		bool obstacle_pushes_inward = Geometry2D::is_polygon_clockwise(get_vertices());
+		bool obstacle_pushes_inward = !Geometry2D::is_polygon_clockwise(get_vertices());
 
 		Color debug_static_obstacle_face_color;
 
