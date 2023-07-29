@@ -84,6 +84,7 @@ Vector<uint8_t> _webp_packer(const Ref<Image> &p_image, float p_quality, bool p_
 	}
 	config.method = compression_method;
 	config.quality = p_quality;
+	config.use_sharp_yuv = 1;
 	pic.use_argb = 1;
 	pic.width = s.width;
 	pic.height = s.height;

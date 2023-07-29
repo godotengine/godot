@@ -346,6 +346,10 @@ void EditorInterface::mark_scene_as_unsaved() {
 	EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(EditorNode::get_editor_data().get_current_edited_scene_history_id());
 }
 
+void EditorInterface::save_all_scenes() {
+	EditorNode::get_singleton()->save_all_scenes();
+}
+
 // Scene playback.
 
 void EditorInterface::play_main_scene() {
@@ -446,6 +450,7 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("save_all_scenes"), &EditorInterface::save_all_scenes);
 
 	ClassDB::bind_method(D_METHOD("mark_scene_as_unsaved"), &EditorInterface::mark_scene_as_unsaved);
 

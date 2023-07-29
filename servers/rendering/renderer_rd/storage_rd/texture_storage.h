@@ -196,6 +196,27 @@ private:
 	Ref<Image> _validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format);
 	void _texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0, bool p_immediate = false);
 
+	struct TextureFromRDFormat {
+		Image::Format image_format;
+		RD::DataFormat rd_format;
+		RD::DataFormat rd_format_srgb;
+		RD::TextureSwizzle swizzle_r;
+		RD::TextureSwizzle swizzle_g;
+		RD::TextureSwizzle swizzle_b;
+		RD::TextureSwizzle swizzle_a;
+		TextureFromRDFormat() {
+			image_format = Image::FORMAT_MAX;
+			rd_format = RD::DATA_FORMAT_MAX;
+			rd_format_srgb = RD::DATA_FORMAT_MAX;
+			swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		}
+	};
+
+	void _texture_format_from_rd(RD::DataFormat p_rd_format, TextureFromRDFormat &r_format);
+
 	/* DECAL API */
 
 	struct DecalAtlas {
@@ -488,6 +509,8 @@ public:
 	virtual void texture_set_path(RID p_texture, const String &p_path) override;
 	virtual String texture_get_path(RID p_texture) const override;
 
+	virtual Image::Format texture_get_format(RID p_texture) const override;
+
 	virtual void texture_set_detect_3d_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override;
 	virtual void texture_set_detect_normal_callback(RID p_texture, RS::TextureDetectCallback p_callback, void *p_userdata) override;
 	virtual void texture_set_detect_roughness_callback(RID p_texture, RS::TextureDetectRoughnessCallback p_callback, void *p_userdata) override;
@@ -498,6 +521,7 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
+	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RS::TextureLayeredType p_layer_type = RS::TEXTURE_LAYERED_2D_ARRAY) override;
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override;
 

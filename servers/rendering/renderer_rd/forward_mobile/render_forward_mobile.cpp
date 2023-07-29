@@ -136,30 +136,6 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RenderSceneBu
 
 	render_buffers = p_render_buffers;
 	ERR_FAIL_NULL(render_buffers); // Huh? really?
-
-	RS::ViewportMSAA msaa_3d = render_buffers->get_msaa_3d();
-	if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED) {
-		// Create our MSAA textures...
-
-		RD::DataFormat format = render_buffers->get_base_data_format();
-		uint32_t usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
-
-		const RD::TextureSamples ts[RS::VIEWPORT_MSAA_MAX] = {
-			RD::TEXTURE_SAMPLES_1,
-			RD::TEXTURE_SAMPLES_2,
-			RD::TEXTURE_SAMPLES_4,
-			RD::TEXTURE_SAMPLES_8,
-		};
-
-		texture_samples = ts[msaa_3d];
-
-		render_buffers->create_texture(RB_SCOPE_MOBILE, RB_TEX_COLOR_MSAA, format, usage_bits, texture_samples);
-
-		usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
-		format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, usage_bits) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
-
-		render_buffers->create_texture(RB_SCOPE_MOBILE, RB_TEX_DEPTH_MSAA, format, usage_bits, texture_samples);
-	}
 }
 
 RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(FramebufferConfigType p_config_type) {
@@ -185,8 +161,8 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 
 	Vector<RID> textures;
 	int color_buffer_id = 0;
-	textures.push_back(use_msaa ? get_color_msaa() : render_buffers->get_internal_texture()); // 0 - color buffer
-	textures.push_back(use_msaa ? get_depth_msaa() : render_buffers->get_depth_texture()); // 1 - depth buffer
+	textures.push_back(use_msaa ? render_buffers->get_color_msaa() : render_buffers->get_internal_texture()); // 0 - color buffer
+	textures.push_back(use_msaa ? render_buffers->get_depth_msaa() : render_buffers->get_depth_texture()); // 1 - depth buffer
 	if (vrs_texture.is_valid()) {
 		textures.push_back(vrs_texture); // 2 - vrs texture
 	}

@@ -2225,17 +2225,16 @@ String EditorExportPlatformAndroid::get_apksigner_path(int p_target_sdk, bool p_
 }
 
 bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
+#ifdef MODULE_MONO_ENABLED
+	// Don't check for additional errors, as this particular error cannot be resolved.
+	r_error += TTR("Exporting to Android is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Android with C#/Mono instead.") + "\n";
+	r_error += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
+	return false;
+#else
+
 	String err;
 	bool valid = false;
 	const bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
-
-#ifdef MODULE_MONO_ENABLED
-	err += TTR("Exporting to Android is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Android with C#/Mono instead.") + "\n";
-	err += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
-	// Don't check for additional errors, as this particular error cannot be resolved.
-	r_error = err;
-	return false;
-#endif
 
 	// Look for export templates (first official, and if defined custom templates).
 
@@ -2366,6 +2365,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 	}
 
 	return valid;
+#endif // !MODULE_MONO_ENABLED
 }
 
 bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {

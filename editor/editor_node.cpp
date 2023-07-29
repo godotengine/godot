@@ -1984,6 +1984,9 @@ void EditorNode::_dialog_action(String p_file) {
 
 				if (scene_idx != -1) {
 					_discard_changes();
+				} else {
+					// Update the path of the edited scene to ensure later do/undo action history matches.
+					editor_data.set_scene_path(editor_data.get_edited_scene(), p_file);
 				}
 			}
 
@@ -4277,7 +4280,7 @@ void EditorNode::_pick_main_scene_custom_action(const String &p_custom_action_na
 	}
 }
 
-Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback) {
+Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback, bool p_fallback_script_to_theme) {
 	ERR_FAIL_COND_V_MSG(p_class.is_empty(), nullptr, "Class name cannot be empty.");
 	EditorData &ed = EditorNode::get_editor_data();
 
@@ -4286,6 +4289,16 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 		Ref<Texture2D> script_icon = ed.get_script_icon(p_script);
 		if (script_icon.is_valid()) {
 			return script_icon;
+		}
+
+		if (p_fallback_script_to_theme) {
+			// Look for the base type in the editor theme.
+			// This is only relevant for built-in classes.
+			String base_type;
+			p_script->get_language()->get_global_class_name(p_script->get_path(), &base_type);
+			if (gui_base && gui_base->has_theme_icon(base_type, SNAME("EditorIcons"))) {
+				return gui_base->get_theme_icon(base_type, SNAME("EditorIcons"));
+			}
 		}
 	}
 
@@ -4339,7 +4352,7 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		scr = EditorNode::get_editor_data().script_class_load_script(p_class);
 	}
 
-	return _get_class_or_script_icon(p_class, scr, p_fallback);
+	return _get_class_or_script_icon(p_class, scr, p_fallback, true);
 }
 
 bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringName &p_class) {
@@ -6809,7 +6822,8 @@ EditorNode::EditorNode() {
 	// No scripting by default if in editor.
 	ScriptServer::set_scripting_enabled(false);
 
-	EditorHelp::generate_doc(); // Before any editor classes are created.
+	EditorSettings::ensure_class_registered();
+	EditorHelp::generate_doc();
 	SceneState::set_disable_placeholders(true);
 	ResourceLoader::clear_translation_remaps(); // Using no remaps if in editor.
 	ResourceLoader::clear_path_remaps();
@@ -7196,7 +7210,7 @@ EditorNode::EditorNode() {
 	dock_select->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_vb->add_child(dock_select);
 
-	if (!SceneTree::get_singleton()->get_root()->is_embedding_subwindows() && EDITOR_GET("interface/multi_window/enable")) {
+	if (!SceneTree::get_singleton()->get_root()->is_embedding_subwindows() && !EDITOR_GET("interface/editor/single_window_mode") && EDITOR_GET("interface/multi_window/enable")) {
 		dock_float = memnew(Button);
 		dock_float->set_icon(theme->get_icon("MakeFloating", "EditorIcons"));
 		dock_float->set_text(TTR("Make Floating"));
@@ -7824,6 +7838,7 @@ EditorNode::EditorNode() {
 
 	log = memnew(EditorLog);
 	Button *output_button = add_bottom_panel_item(TTR("Output"), log);
+	output_button->set_theme_type_variation("BottomPanelButton");
 	log->set_tool_button(output_button);
 
 	center_split->connect("resized", callable_mp(this, &EditorNode::_vp_resized));
@@ -8186,6 +8201,9 @@ EditorNode::~EditorNode() {
 	memdelete(progress_hb);
 
 	EditorSettings::destroy();
+
+	GDExtensionEditorPlugins::editor_node_add_plugin = nullptr;
+	GDExtensionEditorPlugins::editor_node_remove_plugin = nullptr;
 }
 
 /*

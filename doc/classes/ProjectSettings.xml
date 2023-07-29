@@ -935,23 +935,26 @@
 			Path to a custom [Font] resource to use as default for all GUI elements of the project.
 		</member>
 		<member name="gui/theme/default_font_antialiasing" type="int" setter="" getter="" default="1">
-			Font anti-aliasing mode. See [member FontFile.antialiasing].
+			Font anti-aliasing mode for the default project font. See [member FontFile.antialiasing].
+			[b]Note:[/b] This setting does not affect custom [Font]s used within the project. Use the [b]Import[/b] dock for that instead (see [member ResourceImporterDynamicFont.antialiasing]).
 		</member>
 		<member name="gui/theme/default_font_generate_mipmaps" type="bool" setter="" getter="" default="false">
 			If set to [code]true[/code], the default font will have mipmaps generated. This prevents text from looking grainy when a [Control] is scaled down, or when a [Label3D] is viewed from a long distance (if [member Label3D.texture_filter] is set to a mode that displays mipmaps).
 			Enabling [member gui/theme/default_font_generate_mipmaps] increases font generation time and memory usage. Only enable this setting if you actually need it.
-			[b]Note:[/b] This setting does not affect custom [Font]s used within the project.
+			[b]Note:[/b] This setting does not affect custom [Font]s used within the project. Use the [b]Import[/b] dock for that instead (see [member ResourceImporterDynamicFont.generate_mipmaps]).
 		</member>
 		<member name="gui/theme/default_font_hinting" type="int" setter="" getter="" default="1">
-			Default font hinting mode. See [member FontFile.hinting].
+			Font hinting mode for the default project font. See [member FontFile.hinting].
+			[b]Note:[/b] This setting does not affect custom [Font]s used within the project. Use the [b]Import[/b] dock for that instead (see [member ResourceImporterDynamicFont.hinting]).
 		</member>
 		<member name="gui/theme/default_font_multichannel_signed_distance_field" type="bool" setter="" getter="" default="false">
 			If set to [code]true[/code], the default font will use multichannel signed distance field (MSDF) for crisp rendering at any size. Since this approach does not rely on rasterizing the font every time its size changes, this allows for resizing the font in real-time without any performance penalty. Text will also not look grainy for [Control]s that are scaled down (or for [Label3D]s viewed from a long distance).
 			MSDF font rendering can be combined with [member gui/theme/default_font_generate_mipmaps] to further improve font rendering quality when scaled down.
-			[b]Note:[/b] This setting does not affect custom [Font]s used within the project.
+			[b]Note:[/b] This setting does not affect custom [Font]s used within the project. Use the [b]Import[/b] dock for that instead (see [member ResourceImporterDynamicFont.multichannel_signed_distance_field]).
 		</member>
 		<member name="gui/theme/default_font_subpixel_positioning" type="int" setter="" getter="" default="1">
-			Default font glyph subpixel positioning mode. See [member FontFile.subpixel_positioning].
+			Font glyph subpixel positioning mode for the default project font. See [member FontFile.subpixel_positioning].
+			[b]Note:[/b] This setting does not affect custom [Font]s used within the project. Use the [b]Import[/b] dock for that instead (see [member ResourceImporterDynamicFont.subpixel_positioning]).
 		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
 			The default scale factor for [Control]s, when not overridden by a [Theme].
@@ -1966,6 +1969,9 @@
 		</member>
 		<member name="navigation/3d/default_link_connection_radius" type="float" setter="" getter="" default="1.0">
 			Default link connection radius for 3D navigation maps. See [method NavigationServer3D.map_set_link_connection_radius].
+		</member>
+		<member name="navigation/3d/default_up" type="Vector3" setter="" getter="" default="Vector3(0, 1, 0)">
+			Default up orientation for 3D navigation maps. See [method NavigationServer3D.map_set_up].
 		</member>
 		<member name="navigation/3d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 3D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World3D default navigation maps.

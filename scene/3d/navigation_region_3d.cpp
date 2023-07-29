@@ -40,15 +40,7 @@ void NavigationRegion3D::set_enabled(bool p_enabled) {
 
 	enabled = p_enabled;
 
-	if (!is_inside_tree()) {
-		return;
-	}
-
-	if (!enabled) {
-		_region_enter_navigation_map();
-	} else {
-		_region_exit_navigation_map();
-	}
+	NavigationServer3D::get_singleton()->region_set_enabled(region, enabled);
 
 #ifdef DEBUG_ENABLED
 	if (debug_instance.is_valid()) {

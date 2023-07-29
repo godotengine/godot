@@ -32,7 +32,6 @@
 #define TILE_SET_EDITOR_H
 
 #include "atlas_merging_dialog.h"
-#include "scene/gui/box_container.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/resources/tile_set.h"
 #include "tile_proxies_manager_dialog.h"
@@ -40,9 +39,11 @@
 #include "tile_set_scenes_collection_source_editor.h"
 
 class EditorFileDialog;
+class HBoxContainer;
+class SplitContainer;
 
-class TileSetEditor : public VBoxContainer {
-	GDCLASS(TileSetEditor, VBoxContainer);
+class TileSetEditor : public Control {
+	GDCLASS(TileSetEditor, Control);
 
 	static TileSetEditor *singleton;
 
@@ -95,6 +96,12 @@ private:
 	bool select_last_pattern = false;
 	void _update_patterns_list();
 
+	// Expanded editor.
+	PanelContainer *expanded_area = nullptr;
+	Control *expanded_editor = nullptr;
+	ObjectID expanded_editor_parent;
+	LocalVector<SplitContainer *> disable_on_expand;
+
 	void _tile_set_changed();
 	void _tab_changed(int p_tab_changed);
 
@@ -108,6 +115,10 @@ public:
 	_FORCE_INLINE_ static TileSetEditor *get_singleton() { return singleton; }
 
 	void edit(Ref<TileSet> p_tile_set);
+
+	void add_expanded_editor(Control *p_editor);
+	void remove_expanded_editor();
+	void register_split(SplitContainer *p_split);
 
 	TileSetEditor();
 };

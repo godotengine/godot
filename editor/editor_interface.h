@@ -133,6 +133,7 @@ public:
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 	void mark_scene_as_unsaved();
+	void save_all_scenes();
 
 	// Scene playback.
 

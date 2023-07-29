@@ -100,7 +100,6 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 
 	private:
 		RenderSceneBuffersRD *render_buffers = nullptr;
-		RD::TextureSamples texture_samples = RD::TEXTURE_SAMPLES_1;
 
 	public:
 		ClusterBuilderRD *cluster_builder = nullptr;
@@ -121,12 +120,6 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		};
 
 		RID render_sdfgi_uniform_set;
-
-		RID get_color_msaa() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_COLOR_MSAA); }
-		RID get_color_msaa(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_COLOR_MSAA, p_layer, 0); }
-
-		RID get_depth_msaa() const { return render_buffers->get_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DEPTH_MSAA); }
-		RID get_depth_msaa(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_DEPTH_MSAA, p_layer, 0); }
 
 		void ensure_specular();
 		bool has_specular() const { return render_buffers->has_texture(RB_SCOPE_FORWARD_CLUSTERED, RB_TEX_SPECULAR); }

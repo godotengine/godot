@@ -688,17 +688,26 @@ void Viewport::_process_picking() {
 
 	PhysicsDirectSpaceState2D *ss2d = PhysicsServer2D::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
 
-	bool has_mouse_event = false;
-	for (const Ref<InputEvent> &e : physics_picking_events) {
-		Ref<InputEventMouse> m = e;
-		if (m.is_valid()) {
-			has_mouse_event = true;
-			break;
+	SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
+	bool parent_ignore_mouse = (parent_svc && parent_svc->get_mouse_filter() == Control::MOUSE_FILTER_IGNORE);
+	bool create_passive_hover_event = true;
+	if (gui.mouse_over || parent_ignore_mouse) {
+		// When the mouse is over a Control node, passive hovering would cause input events for Colliders, that are behind Control nodes.
+		// When parent SubViewportContainer ignores mouse, that setting should be respected.
+		create_passive_hover_event = false;
+	} else {
+		for (const Ref<InputEvent> &e : physics_picking_events) {
+			Ref<InputEventMouse> m = e;
+			if (m.is_valid()) {
+				// A mouse event exists, so passive hovering isn't necessary.
+				create_passive_hover_event = false;
+				break;
+			}
 		}
 	}
 
-	if (!has_mouse_event) {
-		// If no mouse event exists, create a motion one. This is necessary because objects or camera may have moved.
+	if (create_passive_hover_event) {
+		// Create a mouse motion event. This is necessary because objects or camera may have moved.
 		// While this extra event is sent, it is checked if both camera and last object and last ID did not move.
 		// If nothing changed, the event is discarded to avoid flooding with unnecessary motion events every frame.
 		Ref<InputEventMouseMotion> mm;
@@ -1347,7 +1356,12 @@ Vector2 Viewport::get_mouse_position() const {
 		// In this case get_screen_transform is not applicable, because it is ambiguous.
 		return gui.last_mouse_pos;
 	} else if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_MOUSE)) {
-		return get_screen_transform_internal(true).affine_inverse().xform(DisplayServer::get_singleton()->mouse_get_position());
+		Transform2D xform = get_screen_transform_internal(true);
+		if (xform.determinant() == 0) {
+			// Screen transform can be non-invertible when the Window is minimized.
+			return Vector2();
+		}
+		return xform.affine_inverse().xform(DisplayServer::get_singleton()->mouse_get_position());
 	} else {
 		// Fallback to Input for getting mouse position in case of emulated mouse.
 		return get_screen_transform_internal().affine_inverse().xform(Input::get_singleton()->get_mouse_position());
@@ -2075,7 +2089,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE) && !Object::cast_to<SubViewportContainer>(over)) {
 			DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
 		}
 	}
@@ -3026,16 +3040,16 @@ void Viewport::_push_unhandled_input_internal(const Ref<InputEvent> &p_event) {
 		get_tree()->_call_input_pause(shortcut_input_group, SceneTree::CALL_INPUT_TYPE_SHORTCUT_INPUT, p_event, this);
 	}
 
-	// Unhandled Input.
-	if (!is_input_handled()) {
-		ERR_FAIL_COND(!is_inside_tree());
-		get_tree()->_call_input_pause(unhandled_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_INPUT, p_event, this);
-	}
-
 	// Unhandled key Input - Used for performance reasons - This is called a lot less than _unhandled_input since it ignores MouseMotion, and to handle Unicode input with Alt / Ctrl modifiers after handling shortcuts.
 	if (!is_input_handled() && (Object::cast_to<InputEventKey>(*p_event) != nullptr)) {
 		ERR_FAIL_COND(!is_inside_tree());
 		get_tree()->_call_input_pause(unhandled_key_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT, p_event, this);
+	}
+
+	// Unhandled Input.
+	if (!is_input_handled()) {
+		ERR_FAIL_COND(!is_inside_tree());
+		get_tree()->_call_input_pause(unhandled_input_group, SceneTree::CALL_INPUT_TYPE_UNHANDLED_INPUT, p_event, this);
 	}
 
 	if (physics_object_picking && !is_input_handled()) {
@@ -3496,7 +3510,12 @@ void Viewport::subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_r
 
 Rect2i Viewport::subwindow_get_popup_safe_rect(Window *p_window) const {
 	int index = _sub_window_find(p_window);
-	ERR_FAIL_COND_V(index == -1, Rect2i());
+	// FIXME: Re-enable ERR_FAIL_COND after rewriting embedded window popup closing.
+	// Currently it is expected, that index == -1 can happen.
+	if (index == -1) {
+		return Rect2i();
+	}
+	// ERR_FAIL_COND_V(index == -1, Rect2i());
 
 	return gui.sub_windows[index].parent_safe_rect;
 }

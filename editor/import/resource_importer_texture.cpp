@@ -797,4 +797,5 @@ ResourceImporterTexture::ResourceImporterTexture() {
 }
 
 ResourceImporterTexture::~ResourceImporterTexture() {
+	singleton = nullptr;
 }

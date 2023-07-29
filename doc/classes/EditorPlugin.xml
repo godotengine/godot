@@ -326,6 +326,7 @@
 			<param index="0" name="object" type="Object" />
 			<description>
 				Implement this function if your plugin edits a specific type of object (Resource or Node). If you return [code]true[/code], then you will get the functions [method _edit] and [method _make_visible] called when the editor requests them. If you have declared the methods [method _forward_canvas_gui_input] and [method _forward_3d_gui_input] these will be called too.
+				[b]Note:[/b] Each plugin should handle only one type of objects at a time. If a plugin handes more types of objects and they are edited at the same time, it will result in errors.
 			</description>
 		</method>
 		<method name="_has_main_screen" qualifiers="virtual const">

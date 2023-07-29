@@ -111,7 +111,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 
 	int chr_width = chr_cell_width - char_margin.position.x - char_margin.size.x;
 	int chr_height = chr_cell_height - char_margin.position.y - char_margin.size.y;
-	ERR_FAIL_COND_V_MSG(chr_width <= 0 || chr_height <= 0, ERR_FILE_CANT_READ, TTR("Character margin too bit."));
+	ERR_FAIL_COND_V_MSG(chr_width <= 0 || chr_height <= 0, ERR_FILE_CANT_READ, TTR("Character margin too big."));
 
 	Ref<FontFile> font;
 	font.instantiate();

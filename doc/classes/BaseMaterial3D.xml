@@ -269,7 +269,7 @@
 			Specifies the channel of the [member metallic_texture] in which the metallic information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
 		<member name="msdf_outline_size" type="float" setter="set_msdf_outline_size" getter="get_msdf_outline_size" default="0.0">
-			The width of the shape outine.
+			The width of the shape outline.
 		</member>
 		<member name="msdf_pixel_range" type="float" setter="set_msdf_pixel_range" getter="get_msdf_pixel_range" default="4.0">
 			The width of the range around the shape between the minimum and maximum representable signed distance.

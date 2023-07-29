@@ -86,7 +86,7 @@ protected:
 	float agent_max_slope = 45.0f;
 	float region_min_size = 2.0f;
 	float region_merge_size = 20.0f;
-	float edge_max_length = 12.0f;
+	float edge_max_length = 0.0f;
 	float edge_max_error = 1.3f;
 	float vertices_per_polygon = 6.0f;
 	float detail_sample_distance = 6.0f;

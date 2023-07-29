@@ -1526,6 +1526,25 @@ typedef void (*GDExtensionInterfaceStringOperatorPlusEqWcstr)(GDExtensionStringP
  */
 typedef void (*GDExtensionInterfaceStringOperatorPlusEqC32str)(GDExtensionStringPtr p_self, const char32_t *p_b);
 
+/**
+ * @name string_resize
+ * @since 4.2
+ *
+ * Resizes the underlying string data to the given number of characters.
+ *
+ * Space needs to be allocated for the null terminating character ('\0') which
+ * also must be added manually, in order for all string functions to work correctly.
+ *
+ * Warning: This is an error-prone operation - only use it if there's no other
+ * efficient way to accomplish your goal.
+ *
+ * @param p_self A pointer to the String.
+ * @param p_resize The new length for the String.
+ *
+ * @return Error code signifying if the operation successful.
+ */
+typedef GDExtensionInt (*GDExtensionInterfaceStringResize)(GDExtensionStringPtr p_self, GDExtensionInt p_resize);
+
 /* INTERFACE: XMLParser Utilities */
 
 /**
@@ -2210,6 +2229,23 @@ typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClassIntegerConstant)
  * @param p_getter A pointer to a StringName with the name of the getter method.
  */
 typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClassProperty)(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionPropertyInfo *p_info, GDExtensionConstStringNamePtr p_setter, GDExtensionConstStringNamePtr p_getter);
+
+/**
+ * @name classdb_register_extension_class_property_indexed
+ * @since 4.2
+ *
+ * Registers an indexed property on an extension class in the ClassDB.
+ *
+ * Provided struct can be safely freed once the function returns.
+ *
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_class_name A pointer to a StringName with the class name.
+ * @param p_info A pointer to a GDExtensionPropertyInfo struct.
+ * @param p_setter A pointer to a StringName with the name of the setter method.
+ * @param p_getter A pointer to a StringName with the name of the getter method.
+ * @param p_index The index to pass as the first argument to the getter and setter methods.
+ */
+typedef void (*GDExtensionInterfaceClassdbRegisterExtensionClassPropertyIndexed)(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, const GDExtensionPropertyInfo *p_info, GDExtensionConstStringNamePtr p_setter, GDExtensionConstStringNamePtr p_getter, GDExtensionInt p_index);
 
 /**
  * @name classdb_register_extension_class_property_group

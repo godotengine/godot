@@ -726,6 +726,11 @@ static void gdextension_string_operator_plus_eq_c32str(GDExtensionStringPtr p_se
 	*self += p_b;
 }
 
+static GDExtensionInt gdextension_string_resize(GDExtensionStringPtr p_self, GDExtensionInt p_length) {
+	String *self = (String *)p_self;
+	return (*self).resize(p_length);
+}
+
 static GDExtensionInt gdextension_xml_parser_open_buffer(GDExtensionObjectPtr p_instance, const uint8_t *p_buffer, size_t p_size) {
 	XMLParser *xml = (XMLParser *)p_instance;
 	return (GDExtensionInt)xml->_open_buffer(p_buffer, p_size);
@@ -1167,6 +1172,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_cstr);
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_wcstr);
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_c32str);
+	REGISTER_INTERFACE_FUNC(string_resize);
 	REGISTER_INTERFACE_FUNC(xml_parser_open_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_store_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_get_buffer);

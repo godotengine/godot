@@ -33,6 +33,7 @@
 
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
+#include "scene/gui/subviewport_container.h"
 #include "scene/main/window.h"
 
 #include "tests/test_macros.h"
@@ -713,6 +714,46 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 	memdelete(node_c);
 	memdelete(node_b);
 	memdelete(node_a);
+}
+
+TEST_CASE("[SceneTree][Viewport] Control mouse cursor shape") {
+	SUBCASE("[Viewport][CursorShape] Mouse cursor is not overridden by SubViewportContainer") {
+		SubViewportContainer *node_a = memnew(SubViewportContainer);
+		SubViewport *node_b = memnew(SubViewport);
+		Control *node_c = memnew(Control);
+
+		node_a->set_name("SubViewportContainer");
+		node_b->set_name("SubViewport");
+		node_c->set_name("Control");
+		node_a->set_position(Point2i(0, 0));
+		node_c->set_position(Point2i(0, 0));
+		node_a->set_size(Point2i(100, 100));
+		node_b->set_size(Point2i(100, 100));
+		node_c->set_size(Point2i(100, 100));
+		node_a->set_default_cursor_shape(Control::CURSOR_ARROW);
+		node_c->set_default_cursor_shape(Control::CURSOR_FORBIDDEN);
+		Window *root = SceneTree::get_singleton()->get_root();
+		DisplayServerMock *DS = (DisplayServerMock *)(DisplayServer::get_singleton());
+
+		// Scene tree:
+		// - root
+		//   - node_a (SubViewportContainer)
+		//     - node_b (SubViewport)
+		//       - node_c (Control)
+
+		root->add_child(node_a);
+		node_a->add_child(node_b);
+		node_b->add_child(node_c);
+
+		Point2i on_c = Point2i(5, 5);
+
+		SEND_GUI_MOUSE_MOTION_EVENT(on_c, MouseButtonMask::NONE, Key::NONE);
+		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_FORBIDDEN); // GH-74805
+
+		memdelete(node_c);
+		memdelete(node_b);
+		memdelete(node_a);
+	}
 }
 
 } // namespace TestViewport

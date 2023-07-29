@@ -211,6 +211,7 @@
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/texture_rd.h"
 #include "scene/resources/theme.h"
 #include "scene/resources/tile_set.h"
 #include "scene/resources/video_stream.h"
@@ -675,6 +676,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeTexture3DParameter);
 	GDREGISTER_CLASS(VisualShaderNodeCubemapParameter);
 	GDREGISTER_CLASS(VisualShaderNodeLinearSceneDepth);
+	GDREGISTER_CLASS(VisualShaderNodeWorldPositionFromDepth);
+	GDREGISTER_CLASS(VisualShaderNodeScreenNormalWorldSpace);
 	GDREGISTER_CLASS(VisualShaderNodeIf);
 	GDREGISTER_CLASS(VisualShaderNodeSwitch);
 	GDREGISTER_CLASS(VisualShaderNodeFresnel);
@@ -688,6 +691,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeProximityFade);
 	GDREGISTER_CLASS(VisualShaderNodeRandomRange);
 	GDREGISTER_CLASS(VisualShaderNodeRemap);
+	GDREGISTER_CLASS(VisualShaderNodeRotationByAxis);
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeVarying);
 	GDREGISTER_CLASS(VisualShaderNodeVaryingSetter);
 	GDREGISTER_CLASS(VisualShaderNodeVaryingGetter);
@@ -886,6 +890,14 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PlaceholderTexture2DArray);
 	GDREGISTER_CLASS(PlaceholderCubemap);
 	GDREGISTER_CLASS(PlaceholderCubemapArray);
+
+	// These classes are part of renderer_rd
+	GDREGISTER_CLASS(Texture2DRD);
+	GDREGISTER_ABSTRACT_CLASS(TextureLayeredRD);
+	GDREGISTER_CLASS(Texture2DArrayRD);
+	GDREGISTER_CLASS(TextureCubemapRD);
+	GDREGISTER_CLASS(TextureCubemapArrayRD);
+	GDREGISTER_CLASS(Texture3DRD);
 
 	GDREGISTER_CLASS(Animation);
 	GDREGISTER_CLASS(AnimationLibrary);

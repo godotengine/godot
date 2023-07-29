@@ -53,7 +53,7 @@
 		<method name="get_final_position">
 			<return type="Vector2" />
 			<description>
-				Returns the reachable final position of the current navigation path in global coordinates. This can change if the navigation path is altered in any way. Because of this, it would be best to check this each frame.
+				Returns the reachable final position of the current navigation path in global coordinates. This position can change if the agent needs to update the navigation path which makes the agent emit the [signal path_changed] signal.
 			</description>
 		</method>
 		<method name="get_navigation_layer_value" qualifiers="const">
@@ -84,13 +84,14 @@
 		<method name="is_navigation_finished">
 			<return type="bool" />
 			<description>
-				Returns true if the navigation path's final position has been reached.
+				Returns [code]true[/code] if the end of the currently loaded navigation path has been reached.
+				[b]Note:[/b] While true prefer to stop calling update functions like [method get_next_path_position]. This avoids jittering the standing agent due to calling repeated path updates.
 			</description>
 		</method>
 		<method name="is_target_reachable">
 			<return type="bool" />
 			<description>
-				Returns true if [member target_position] is reachable. The target position is set using [member target_position].
+				Returns [code]true[/code] if [method get_final_position] is within [member target_desired_distance] of the [member target_position].
 			</description>
 		</method>
 		<method name="is_target_reached" qualifiers="const">
@@ -229,17 +230,20 @@
 		</signal>
 		<signal name="navigation_finished">
 			<description>
-				Notifies when the final position is reached.
+				Emitted once per loaded path when the agent internal navigation path index reaches the last index of the loaded path array. The agent internal navigation path index can be received with [method get_current_navigation_path_index].
 			</description>
 		</signal>
 		<signal name="path_changed">
 			<description>
-				Notifies when the navigation path changes.
+				Emitted when the agent had to update the loaded path:
+				- because path was previously empty.
+				- because navigation map has changed.
+				- because agent pushed further away from the current path segment than the [member path_max_distance].
 			</description>
 		</signal>
 		<signal name="target_reached">
 			<description>
-				Notifies when the player-defined [member target_position] is reached.
+				Emitted once per loaded path when the agent's global position is the first time within [member target_desired_distance] to the [member target_position].
 			</description>
 		</signal>
 		<signal name="velocity_computed">

@@ -160,8 +160,8 @@
 				- [method Node._input]
 				- [method Control._gui_input] for [Control] nodes
 				- [method Node._shortcut_input]
-				- [method Node._unhandled_input]
 				- [method Node._unhandled_key_input]
+				- [method Node._unhandled_input]
 				If an earlier method marks the input as handled via [method set_input_as_handled], any later method in this list will not be called.
 				If none of the methods handle the event and [member physics_object_picking] is [code]true[/code], the event is used for physics object picking.
 			</description>
@@ -183,8 +183,8 @@
 				While this method serves a similar purpose as [method Input.parse_input_event], it does not remap the specified [param event] based on project settings like [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse].
 				Calling this method will propagate calls to child nodes for following methods in the given order:
 				- [method Node._shortcut_input]
-				- [method Node._unhandled_input]
 				- [method Node._unhandled_key_input]
+				- [method Node._unhandled_input]
 				If an earlier method marks the input as handled via [method set_input_as_handled], any later method in this list will not be called.
 				If none of the methods handle the event and [member physics_object_picking] is [code]true[/code], the event is used for physics object picking.
 				[b]Note:[/b] This method doesn't propagate input events to embedded [Window]s or [SubViewport]s.

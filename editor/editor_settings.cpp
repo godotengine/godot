@@ -709,7 +709,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Animation
 	_initial_set("editors/animation/autorename_animation_tracks", true);
-	_initial_set("editors/animation/confirm_insert_track", true);
 	_initial_set("editors/animation/default_create_bezier_tracks", false);
 	_initial_set("editors/animation/default_create_reset_tracks", true);
 	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
@@ -879,6 +878,13 @@ EditorSettings *EditorSettings::get_singleton() {
 	return singleton.ptr();
 }
 
+void EditorSettings::ensure_class_registered() {
+	ClassDB::APIType prev_api = ClassDB::get_current_api();
+	ClassDB::set_current_api(ClassDB::API_EDITOR);
+	GDREGISTER_CLASS(EditorSettings); // Otherwise it can't be unserialized.
+	ClassDB::set_current_api(prev_api);
+}
+
 void EditorSettings::create() {
 	// IMPORTANT: create() *must* create a valid EditorSettings singleton,
 	// as the rest of the engine code will assume it. As such, it should never
@@ -889,7 +895,7 @@ void EditorSettings::create() {
 		return;
 	}
 
-	GDREGISTER_CLASS(EditorSettings); // Otherwise it can't be unserialized.
+	ensure_class_registered();
 
 	String config_file_path;
 	Ref<ConfigFile> extra_config = memnew(ConfigFile);

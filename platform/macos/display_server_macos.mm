@@ -44,6 +44,7 @@
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
+#include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/image_texture.h"
@@ -2269,6 +2270,37 @@ String DisplayServerMacOS::clipboard_get() const {
 	String ret;
 	ret.parse_utf8([string UTF8String]);
 	return ret;
+}
+
+Ref<Image> DisplayServerMacOS::clipboard_get_image() const {
+	Ref<Image> image;
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
+	if (!result) {
+		return image;
+	}
+	NSData *data = [pasteboard dataForType:result];
+	if (!data) {
+		return image;
+	}
+	NSBitmapImageRep *bitmap = [NSBitmapImageRep imageRepWithData:data];
+	NSData *pngData = [bitmap representationUsingType:NSPNGFileType properties:@{}];
+	image.instantiate();
+	PNGDriverCommon::png_to_image((const uint8_t *)pngData.bytes, pngData.length, false, image);
+	return image;
+}
+
+bool DisplayServerMacOS::clipboard_has() const {
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSArray *classArray = [NSArray arrayWithObject:[NSString class]];
+	NSDictionary *options = [NSDictionary dictionary];
+	return [pasteboard canReadObjectForClasses:classArray options:options];
+}
+
+bool DisplayServerMacOS::clipboard_has_image() const {
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSString *result = [pasteboard availableTypeFromArray:[NSArray arrayWithObjects:NSPasteboardTypeTIFF, NSPasteboardTypePNG, nil]];
+	return result;
 }
 
 int DisplayServerMacOS::get_screen_count() const {

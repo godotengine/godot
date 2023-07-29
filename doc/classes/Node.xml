@@ -761,8 +761,8 @@
 			<param index="0" name="id" type="int" />
 			<param index="1" name="recursive" type="bool" default="true" />
 			<description>
-				Sets the node's multiplayer authority to the peer with the given peer ID. The multiplayer authority is the peer that has authority over the node on the network. Useful in conjunction with [method rpc_config] and the [MultiplayerAPI]. Inherited from the parent node by default, which ultimately defaults to peer ID 1 (the server). If [param recursive], the given peer is recursively set as the authority for all children of this node.
-				[b]Warning:[/b] This does [b]not[/b] automatically replicate the new authority to other peers. It is developer's responsibility to do so. You can propagate the information about the new authority using [member MultiplayerSpawner.spawn_function], an RPC, or using a [MultiplayerSynchronizer].
+				Sets the node's multiplayer authority to the peer with the given peer ID. The multiplayer authority is the peer that has authority over the node on the network. Useful in conjunction with [method rpc_config] and the [MultiplayerAPI]. Defaults to peer ID 1 (the server). If [param recursive], the given peer is recursively set as the authority for all children of this node.
+				[b]Warning:[/b] This does [b]not[/b] automatically replicate the new authority to other peers. It is developer's responsibility to do so. You can propagate the information about the new authority using [member MultiplayerSpawner.spawn_function], an RPC, or using a [MultiplayerSynchronizer]. Also, the parent's authority does [b]not[/b] propagate to newly added children.
 			</description>
 		</method>
 		<method name="set_physics_process">

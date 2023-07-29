@@ -159,6 +159,7 @@ private:
 
 	// -- Atlas view --
 	TileAtlasView *tile_atlas_view = nullptr;
+	HBoxContainer *tile_create_help = nullptr;
 
 	// Dragging
 	enum DragType {
@@ -270,6 +271,7 @@ private:
 	void _auto_create_tiles();
 	void _auto_remove_tiles();
 	AcceptDialog *confirm_auto_create_tiles = nullptr;
+	Vector2i _get_drag_offset_tile_coords(const Vector2i &p_offset) const;
 
 	void _tile_set_changed();
 	void _tile_proxy_object_changed(String p_what);

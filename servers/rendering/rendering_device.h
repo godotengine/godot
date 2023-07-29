@@ -541,6 +541,7 @@ public:
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, BitField<RenderingDevice::TextureUsageBits> p_usage) const = 0;
 	virtual bool texture_is_shared(RID p_texture) = 0;
 	virtual bool texture_is_valid(RID p_texture) = 0;
+	virtual TextureFormat texture_get_format(RID p_texture) = 0;
 	virtual Size2i texture_size(RID p_texture) = 0;
 	virtual uint64_t texture_get_native_handle(RID p_texture) = 0;
 
@@ -1316,6 +1317,7 @@ protected:
 	RID _texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data = Array());
 	RID _texture_create_shared(const Ref<RDTextureView> &p_view, RID p_with_texture);
 	RID _texture_create_shared_from_slice(const Ref<RDTextureView> &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
+	Ref<RDTextureFormat> _texture_get_format(RID p_rd_texture);
 
 	FramebufferFormatID _framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments, uint32_t p_view_count);
 	FramebufferFormatID _framebuffer_format_create_multipass(const TypedArray<RDAttachmentFormat> &p_attachments, const TypedArray<RDFramebufferPass> &p_passes, uint32_t p_view_count);

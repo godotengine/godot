@@ -117,6 +117,7 @@ public:
 
 	static EditorSettings *get_singleton();
 
+	static void ensure_class_registered();
 	static void create();
 	void setup_language();
 	void setup_network();

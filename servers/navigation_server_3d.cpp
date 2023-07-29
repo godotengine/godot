@@ -67,6 +67,8 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("query_path", "parameters", "result"), &NavigationServer3D::query_path);
 
 	ClassDB::bind_method(D_METHOD("region_create"), &NavigationServer3D::region_create);
+	ClassDB::bind_method(D_METHOD("region_set_enabled", "region", "enabled"), &NavigationServer3D::region_set_enabled);
+	ClassDB::bind_method(D_METHOD("region_get_enabled", "region"), &NavigationServer3D::region_get_enabled);
 	ClassDB::bind_method(D_METHOD("region_set_use_edge_connections", "region", "enabled"), &NavigationServer3D::region_set_use_edge_connections);
 	ClassDB::bind_method(D_METHOD("region_get_use_edge_connections", "region"), &NavigationServer3D::region_get_use_edge_connections);
 	ClassDB::bind_method(D_METHOD("region_set_enter_cost", "region", "enter_cost"), &NavigationServer3D::region_set_enter_cost);
@@ -92,6 +94,8 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("link_create"), &NavigationServer3D::link_create);
 	ClassDB::bind_method(D_METHOD("link_set_map", "link", "map"), &NavigationServer3D::link_set_map);
 	ClassDB::bind_method(D_METHOD("link_get_map", "link"), &NavigationServer3D::link_get_map);
+	ClassDB::bind_method(D_METHOD("link_set_enabled", "link", "enabled"), &NavigationServer3D::link_set_enabled);
+	ClassDB::bind_method(D_METHOD("link_get_enabled", "link"), &NavigationServer3D::link_get_enabled);
 	ClassDB::bind_method(D_METHOD("link_set_bidirectional", "link", "bidirectional"), &NavigationServer3D::link_set_bidirectional);
 	ClassDB::bind_method(D_METHOD("link_is_bidirectional", "link"), &NavigationServer3D::link_is_bidirectional);
 	ClassDB::bind_method(D_METHOD("link_set_navigation_layers", "link", "navigation_layers"), &NavigationServer3D::link_set_navigation_layers);
@@ -192,6 +196,7 @@ NavigationServer3D::NavigationServer3D() {
 
 	GLOBAL_DEF_BASIC("navigation/3d/default_cell_size", 0.25);
 	GLOBAL_DEF_BASIC("navigation/3d/default_cell_height", 0.25);
+	GLOBAL_DEF("navigation/3d/default_up", Vector3(0, 1, 0));
 	GLOBAL_DEF("navigation/3d/use_edge_connections", true);
 	GLOBAL_DEF_BASIC("navigation/3d/default_edge_connection_margin", 0.25);
 	GLOBAL_DEF_BASIC("navigation/3d/default_link_connection_radius", 1.0);

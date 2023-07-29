@@ -550,6 +550,10 @@ bool SceneTree::process(double p_time) {
 #endif // _3D_DISABLED
 #endif // TOOLS_ENABLED
 
+	if (unlikely(pending_new_scene)) {
+		_flush_scene_change();
+	}
+
 	return _quit;
 }
 
@@ -1376,27 +1380,16 @@ Node *SceneTree::get_current_scene() const {
 	return current_scene;
 }
 
-void SceneTree::_change_scene(Node *p_to) {
-	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Changing scene can only be done from the main thread.");
-	if (current_scene) {
-		memdelete(current_scene);
-		current_scene = nullptr;
+void SceneTree::_flush_scene_change() {
+	if (prev_scene) {
+		memdelete(prev_scene);
+		prev_scene = nullptr;
 	}
-
-	// If we're quitting, abort.
-	if (unlikely(_quit)) {
-		if (p_to) { // Prevent memory leak.
-			memdelete(p_to);
-		}
-		return;
-	}
-
-	if (p_to) {
-		current_scene = p_to;
-		root->add_child(p_to);
-		// Update display for cursor instantly.
-		root->update_mouse_cursor_state();
-	}
+	current_scene = pending_new_scene;
+	root->add_child(pending_new_scene);
+	pending_new_scene = nullptr;
+	// Update display for cursor instantly.
+	root->update_mouse_cursor_state();
 }
 
 Error SceneTree::change_scene_to_file(const String &p_path) {
@@ -1415,7 +1408,22 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	Node *new_scene = p_scene->instantiate();
 	ERR_FAIL_NULL_V(new_scene, ERR_CANT_CREATE);
 
-	call_deferred(SNAME("_change_scene"), new_scene);
+	// If called again while a change is pending.
+	if (pending_new_scene) {
+		queue_delete(pending_new_scene);
+		pending_new_scene = nullptr;
+	}
+
+	prev_scene = current_scene;
+
+	if (current_scene) {
+		// Let as many side effects as possible happen or be queued now,
+		// so they are run before the scene is actually deleted.
+		root->remove_child(current_scene);
+	}
+	DEV_ASSERT(!current_scene);
+
+	pending_new_scene = new_scene;
 	return OK;
 }
 
@@ -1592,8 +1600,6 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("reload_current_scene"), &SceneTree::reload_current_scene);
 	ClassDB::bind_method(D_METHOD("unload_current_scene"), &SceneTree::unload_current_scene);
-
-	ClassDB::bind_method(D_METHOD("_change_scene"), &SceneTree::_change_scene);
 
 	ClassDB::bind_method(D_METHOD("set_multiplayer", "multiplayer", "root_path"), &SceneTree::set_multiplayer, DEFVAL(NodePath()));
 	ClassDB::bind_method(D_METHOD("get_multiplayer", "for_path"), &SceneTree::get_multiplayer, DEFVAL(NodePath()));
@@ -1833,6 +1839,14 @@ SceneTree::SceneTree() {
 }
 
 SceneTree::~SceneTree() {
+	if (prev_scene) {
+		memdelete(prev_scene);
+		prev_scene = nullptr;
+	}
+	if (pending_new_scene) {
+		memdelete(pending_new_scene);
+		pending_new_scene = nullptr;
+	}
 	if (root) {
 		root->_set_tree(nullptr);
 		root->_propagate_after_exit_tree();

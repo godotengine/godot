@@ -293,11 +293,16 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 	texdata.resize(w * h * 2 * sizeof(float));
 
 	{
+		Vector2 offset;
+		if (emission_mask_centered->is_pressed()) {
+			offset = Vector2(-s.width * 0.5, -s.height * 0.5);
+		}
+
 		uint8_t *tw = texdata.ptrw();
 		float *twf = reinterpret_cast<float *>(tw);
 		for (int i = 0; i < vpc; i++) {
-			twf[i * 2 + 0] = valid_positions[i].x;
-			twf[i * 2 + 1] = valid_positions[i].y;
+			twf[i * 2 + 0] = valid_positions[i].x + offset.x;
+			twf[i * 2 + 1] = valid_positions[i].y + offset.y;
 		}
 	}
 
@@ -418,9 +423,14 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	emission_mask_mode->add_item(TTR("Solid Pixels"), EMISSION_MODE_SOLID);
 	emission_mask_mode->add_item(TTR("Border Pixels"), EMISSION_MODE_BORDER);
 	emission_mask_mode->add_item(TTR("Directed Border Pixels"), EMISSION_MODE_BORDER_DIRECTED);
+	VBoxContainer *optionsvb = memnew(VBoxContainer);
+	emvb->add_margin_child(TTR("Options"), optionsvb);
+	emission_mask_centered = memnew(CheckBox);
+	emission_mask_centered->set_text(TTR("Centered"));
+	optionsvb->add_child(emission_mask_centered);
 	emission_colors = memnew(CheckBox);
-	emission_colors->set_text(TTR("Capture from Pixel"));
-	emvb->add_margin_child(TTR("Emission Colors"), emission_colors);
+	emission_colors->set_text(TTR("Capture Colors from Pixel"));
+	optionsvb->add_child(emission_colors);
 
 	toolbar->add_child(emission_mask);
 
