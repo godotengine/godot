@@ -32,7 +32,7 @@
 #include "editor/plugins/script_text_editor.h"
 #include "editor_help.h"
 
-SymbolTooltip::SymbolTooltip(CodeTextEditor* code_editor) : code_editor(code_editor) { //(CodeTextEditor* code_editor) : code_editor(code_editor) {
+SymbolTooltip::SymbolTooltip(CodeTextEditor* code_editor) : code_editor(code_editor) {
 	// Initialize the tooltip components
 
 	// Set the tooltip's theme (PanelContainer's theme)
@@ -139,7 +139,7 @@ Vector2 SymbolTooltip::_calculate_tooltip_position(const String &symbol_word, co
 			return text_editor->get_screen_position() + symbol_position;
 		}
 	}
-	return Vector2(-1,-1); // indicates an invalid position
+	return Vector2(-1, -1); // indicates an invalid position
 }
 
 void SymbolTooltip::_update_tooltip_size() {
@@ -267,10 +267,10 @@ int SymbolTooltip::_get_word_pos_under_mouse(const String &symbol_word, const St
 
 	// If the word under the mouse matches the symbol word, return the start position.
 	if (word_under_mouse == symbol_word) {
-		return start + 1;  // Note: +1 is added to account for zero-based indexing.
+		return start + 1; // Note: +1 is added to account for zero-based indexing.
 	}
 
-	return -1;  // Return -1 if no match is found.
+	return -1; // Return -1 if no match is found.
 }
 
 // Copied from script_text_editor.cpp
