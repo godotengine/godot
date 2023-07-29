@@ -430,7 +430,6 @@ private:
 	Control *_gui_get_drag_preview();
 
 	void _gui_remove_focus_for_window(Node *p_window, int p_focus_layer);
-	bool _gui_has_active_focus_layer() const;
 	Control *_gui_get_active_focus_control() const;
 	void _gui_unfocus_control(Control *p_control);
 	void _gui_set_focus_control(Control *p_control);
@@ -598,7 +597,7 @@ public:
 	int gui_get_active_focus_layer() const;
 	void gui_set_active_focus_layer(int p_focus_layer);
 
-	void gui_release_focus(int p_focus_layer);
+	void gui_release_focus(int p_focus_layer = 0);
 	Control *gui_get_focus_owner(int p_focus_layer = 0) const;
 
 	PackedStringArray get_configuration_warnings() const override;

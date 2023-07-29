@@ -123,7 +123,7 @@
 		</method>
 		<method name="gui_get_focus_owner" qualifiers="const">
 			<return type="Control" />
-			<param index="0" name="focus_layer" type="int" />
+			<param index="0" name="focus_layer" type="int" default="0" />
 			<description>
 				Returns the focused [Control] within the provided focus layer in this viewport.
 				If no [Control] has the focus in the provided focus layer, returns [code]null[/code].
@@ -144,7 +144,7 @@
 		</method>
 		<method name="gui_release_focus">
 			<return type="void" />
-			<param index="0" name="focus_layer" type="int" />
+			<param index="0" name="focus_layer" type="int" default="0" />
 			<description>
 				Removes the focus from the currently focused [Control] within this viewport that is also using the provided focus layer.
 				If no [Control] has the focus in the provided focus layer, does nothing.

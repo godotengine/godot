@@ -1986,15 +1986,8 @@ Control::FocusMode Control::get_focus_mode() const {
 }
 
 void Control::set_focus_layer(int p_layer_id) {
-	// If this Control has focus, then lets find the next valid Control to focus before switching layers.
 	if (has_focus()) {
-		Control *next = find_next_valid_focus();
-
-		if (next && next != this) {
-			next->grab_focus(false);
-		} else {
-			release_focus();
-		}
+		release_focus();
 	}
 
 	data.focus_layer = p_layer_id;

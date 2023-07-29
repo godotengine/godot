@@ -2438,10 +2438,6 @@ void Viewport::_gui_remove_focus_for_window(Node *p_window, int p_focus_layer) {
 	}
 }
 
-bool Viewport::_gui_has_active_focus_layer() const {
-	return gui.focused_controls.has(gui_get_active_focus_layer());
-}
-
 bool Viewport::_gui_control_has_focus(const Control *p_control) const {
 	if (p_control && gui.focused_controls.has(p_control->get_focus_layer())) {
 		return gui.focused_controls.get(p_control->get_focus_layer()) == p_control;
@@ -4239,8 +4235,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("gui_get_active_focus_layer"), &Viewport::gui_get_active_focus_layer);
 	ClassDB::bind_method(D_METHOD("gui_set_active_focus_layer", "focus_layer"), &Viewport::gui_set_active_focus_layer);
 
-	ClassDB::bind_method(D_METHOD("gui_release_focus", "focus_layer"), &Viewport::gui_release_focus);
-	ClassDB::bind_method(D_METHOD("gui_get_focus_owner", "focus_layer"), &Viewport::gui_get_focus_owner);
+	ClassDB::bind_method(D_METHOD("gui_release_focus", "focus_layer"), &Viewport::gui_release_focus, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("gui_get_focus_owner", "focus_layer"), &Viewport::gui_get_focus_owner, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
