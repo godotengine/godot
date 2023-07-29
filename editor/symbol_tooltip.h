@@ -37,11 +37,12 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
 
-class SymbolTooltip : public PanelContainer {
-	GDCLASS(SymbolTooltip, PanelContainer);
+class SymbolTooltip : public PopupPanel {
+	GDCLASS(SymbolTooltip, PopupPanel);
 
 	//Ref<Script> script;
 	CodeTextEditor *code_editor = nullptr;
+	PanelContainer *panel_container = nullptr;
 	VBoxContainer *layout_container = nullptr;
 	RichTextLabel *header_label = nullptr;
 	RichTextLabel *body_label = nullptr;
@@ -50,6 +51,7 @@ class SymbolTooltip : public PanelContainer {
 	String _get_doc_of_word(const String &symbol_word);
 	void _update_header_label(const String &symbol_word);
 	void _update_body_label(const String &documentation);
+	Ref<Theme> _create_popup_panel_theme();
 	Ref<Theme> _create_panel_theme();
 	Ref<Theme> _create_header_label_theme();
 	Ref<Theme> _create_body_label_theme();

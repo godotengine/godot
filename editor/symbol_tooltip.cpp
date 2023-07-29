@@ -38,19 +38,25 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor* code_editor) : code_editor(code_edi
 	// Set the tooltip's theme (PanelContainer's theme)
 	//set_theme(EditorNode::get_singleton()->get_gui_base()->get_theme());
 
-	hide();
-	set_theme(_create_panel_theme());
+	set_transient(true);
+	set_flag(Window::FLAG_NO_FOCUS, true);
+	set_flag(Window::FLAG_POPUP, false);
+	set_flag(Window::FLAG_MOUSE_PASSTHROUGH, false);
+	set_theme(_create_popup_panel_theme());
+	panel_container = memnew(PanelContainer);
+	panel_container->set_theme(_create_panel_theme());
+	add_child(panel_container);
 
 	// Create VBoxContainer to hold the tooltip's header and body
 	layout_container = memnew(VBoxContainer);
-	add_child(layout_container);
+	panel_container->add_child(layout_container);
 
 	// Create RichTextLabel for the tooltip's header
 	header_label = memnew(RichTextLabel);
 	header_label->set_use_bbcode(true);
 	header_label->set_selection_enabled(true);
 	header_label->set_custom_minimum_size(Size2(0, 50));
-	header_label->set_focus_mode(FOCUS_ALL);
+	header_label->set_focus_mode(Control::FOCUS_ALL);
 	header_label->set_theme(_create_header_label_theme());
 	layout_container->add_child(header_label);
 
@@ -58,8 +64,8 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor* code_editor) : code_editor(code_edi
 	body_label = memnew(RichTextLabel);
 	body_label->set_use_bbcode(true);
 	body_label->set_selection_enabled(true);
-	body_label->set_focus_mode(FOCUS_ALL);
-	body_label->set_v_size_flags(SIZE_EXPAND_FILL);
+	body_label->set_focus_mode(Control::FOCUS_ALL);
+	body_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	body_label->set_theme(_create_body_label_theme());
 	layout_container->add_child(body_label);
 
@@ -79,7 +85,6 @@ SymbolTooltip::~SymbolTooltip() {
 }
 
 void SymbolTooltip::_on_tooltip_delay_timeout() {
-	move_to_front(); // Bring the tooltip to the front
 	show();
 }
 
@@ -96,7 +101,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position) {
 
 	// Get the documentation of the word under the mouse cursor
 	String documentation = _get_doc_of_word(symbol_word);
-	_update_tooltip_content(symbol_word, documentation);
+	_update_tooltip_content(symbol_word, documentation + documentation);
 
 	Rect2 tooltip_rect = Rect2(get_position(), get_size());
 	bool mouse_over_tooltip = tooltip_rect.has_point(mouse_position);
@@ -132,7 +137,8 @@ Vector2 SymbolTooltip::_calculate_tooltip_position(const String &symbol_word, co
 		int symbol_col = _get_word_pos_under_mouse(symbol_word, line, col);
 		if (symbol_col >= 0) {
 			Vector2 symbol_position = text_editor->get_pos_at_line_column(row, symbol_col);
-			return Vector2(symbol_position.x, symbol_position.y + 5); // Adjust the position to be below the symbol
+			Vector2 local_position = Vector2(symbol_position.x, symbol_position.y + 5); // Adjust the position to be below the symbol
+			return text_editor->get_screen_position() + local_position;
 		}
 	}
 	return Vector2(-1,-1); // indicates an invalid position
@@ -157,8 +163,7 @@ void SymbolTooltip::_update_header_label(const String &header_content) {
 void SymbolTooltip::_update_body_label(const String &body_content) {
 	// Set the tooltip's body text
 	body_label->clear();
-	_add_text_to_rt(body_content, body_label, this);
-	//body_label->set_text(body_content);
+	_add_text_to_rt(body_content, body_label, layout_container);
 }
 
 String SymbolTooltip::_get_doc_of_word(const String &symbol_word) {
@@ -191,6 +196,16 @@ String SymbolTooltip::_get_doc_of_word(const String &symbol_word) {
 		print_line(vformat("Documentation for %s:\n%s", symbol_word, documentation));
 	}*/
 	return documentation;
+}
+
+Ref<Theme> SymbolTooltip::_create_popup_panel_theme() {
+	Ref<Theme> theme = memnew(Theme);
+
+	Ref<StyleBoxFlat> style_box = memnew(StyleBoxFlat);
+	style_box->set_bg_color(Color(0, 0, 0, 0)); // Set the background color (RGBA)
+	theme->set_stylebox("panel", "PopupPanel", style_box);
+
+	return theme;
 }
 
 Ref<Theme> SymbolTooltip::_create_panel_theme() {
