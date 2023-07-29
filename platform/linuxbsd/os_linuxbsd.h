@@ -136,6 +136,8 @@ public:
 
 	virtual String get_system_ca_certificates() override;
 
+	virtual OS::CompositingWindowManager get_compositing_window_manager() const override;
+
 	OS_LinuxBSD();
 	~OS_LinuxBSD();
 };

@@ -230,6 +230,8 @@ public:
 
 	virtual String get_system_ca_certificates() override;
 
+	virtual OS::CompositingWindowManager get_compositing_window_manager() const override;
+
 	void set_main_window(HWND p_main_window) { main_window = p_main_window; }
 
 	HINSTANCE get_hinstance() { return hInstance; }

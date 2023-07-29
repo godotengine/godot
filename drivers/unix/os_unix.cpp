@@ -779,6 +779,10 @@ String OS_Unix::get_executable_path() const {
 #endif
 }
 
+OS::CompositingWindowManager OS_Unix::get_compositing_window_manager() const {
+	return OS::CompositingWindowManager::COMPOSITING_WINDOW_MANAGER_UNKNOWN;
+}
+
 void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
 	if (!should_log(true)) {
 		return;

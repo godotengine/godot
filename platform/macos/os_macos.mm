@@ -748,6 +748,10 @@ OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
 	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
 }
 
+OS::CompositingWindowManager OS_MacOS::get_compositing_window_manager() const {
+	return OS::CompositingWindowManager::COMPOSITING_WINDOW_MANAGER_QUARTZ_COMPOSITOR;
+}
+
 void OS_MacOS::run() {
 	if (!main_loop) {
 		return;

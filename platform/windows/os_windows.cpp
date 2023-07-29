@@ -1711,6 +1711,10 @@ String OS_Windows::get_system_ca_certificates() {
 	return certs;
 }
 
+OS::CompositingWindowManager OS_Windows::get_compositing_window_manager() const {
+	return OS::CompositingWindowManager::COMPOSITING_WINDOW_MANAGER_DESKTOP_WINDOW_MANAGER;
+}
+
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
 

@@ -328,6 +328,16 @@ public:
 
 	virtual PreferredTextureFormat get_preferred_texture_format() const;
 
+	enum CompositingWindowManager {
+		COMPOSITING_WINDOW_MANAGER_NONE,
+		COMPOSITING_WINDOW_MANAGER_UNKNOWN,
+		COMPOSITING_WINDOW_MANAGER_DESKTOP_WINDOW_MANAGER,
+		COMPOSITING_WINDOW_MANAGER_QUARTZ_COMPOSITOR,
+		COMPOSITING_WINDOW_MANAGER_X11,
+		COMPOSITING_WINDOW_MANAGER_WAYLAND
+	};
+	virtual CompositingWindowManager get_compositing_window_manager() const;
+
 	OS();
 	virtual ~OS();
 };

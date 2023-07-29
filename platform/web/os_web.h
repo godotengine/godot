@@ -107,6 +107,8 @@ public:
 
 	void resume_audio();
 
+	virtual OS::CompositingWindowManager get_compositing_window_manager() const override;
+
 	OS_Web();
 };
 

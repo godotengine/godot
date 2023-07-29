@@ -248,6 +248,10 @@ OS_Web *OS_Web::get_singleton() {
 void OS_Web::initialize_joypads() {
 }
 
+OS::CompositingWindowManager OS_Web::get_compositing_window_manager() const {
+	return OS::CompositingWindowManager::COMPOSITING_WINDOW_MANAGER_NONE;
+}
+
 OS_Web::OS_Web() {
 	char locale_ptr[16];
 	godot_js_config_locale_get(locale_ptr, 16);

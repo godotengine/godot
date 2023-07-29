@@ -1130,6 +1130,30 @@ String OS_LinuxBSD::get_system_ca_certificates() {
 	return f->get_as_text();
 }
 
+OS::CompositingWindowManager OS_LinuxBSD::get_compositing_window_manager() const {
+	if (OS::get_singleton()->has_environment("XDG_SESSION_TYPE")) {
+		if (OS::get_singleton()->get_environment("XDG_SESSION_TYPE") == "wayland") {
+			return OS::CompositingWindowManager::COMPOSITING_WINDOW_MANAGER_WAYLAND;
+		} else if (OS::get_singleton()->get_environment("XDG_SESSION_TYPE") == "x11") {
+			return OS::CompositingWindowManager::COMPOSITING_WINDOW_MANAGER_X11;
+		} else if (OS::get_singleton()->get_environment("XDG_SESSION_TYPE") == "tty") {
+			return OS::CompositingWindowManager::COMPOSITING_WINDOW_MANAGER_NONE;
+		} else {
+			return OS::COMPOSITING_WINDOW_MANAGER_UNKNOWN;
+		}
+	}
+
+	if (OS::get_singleton()->has_environment("WAYLAND_DISPLAY")) {
+		return OS::CompositingWindowManager::COMPOSITING_WINDOW_MANAGER_WAYLAND;
+	}
+
+	if (OS::get_singleton()->has_environment("DISPLAY")) {
+		return OS::CompositingWindowManager::COMPOSITING_WINDOW_MANAGER_X11;
+	}
+
+	return OS::CompositingWindowManager::COMPOSITING_WINDOW_MANAGER_NONE;
+}
+
 OS_LinuxBSD::OS_LinuxBSD() {
 	main_loop = nullptr;
 

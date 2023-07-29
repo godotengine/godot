@@ -92,6 +92,8 @@ public:
 
 	virtual String get_executable_path() const override;
 	virtual String get_user_data_dir() const override;
+
+	virtual OS::CompositingWindowManager get_compositing_window_manager() const override;
 };
 
 class UnixTerminalLogger : public StdLogger {

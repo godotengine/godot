@@ -649,6 +649,10 @@ void OS::benchmark_dump() {
 #endif
 }
 
+OS::CompositingWindowManager OS::get_compositing_window_manager() const {
+	return OS::CompositingWindowManager::COMPOSITING_WINDOW_MANAGER_UNKNOWN;
+}
+
 OS::OS() {
 	singleton = this;
 

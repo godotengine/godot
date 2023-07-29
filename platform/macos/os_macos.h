@@ -127,6 +127,8 @@ public:
 	virtual String get_system_ca_certificates() override;
 	virtual OS::PreferredTextureFormat get_preferred_texture_format() const override;
 
+	virtual OS::CompositingWindowManager get_compositing_window_manager() const override;
+
 	void run();
 
 	OS_MacOS();
