@@ -31,6 +31,8 @@
 #ifndef TEST_LSP_H
 #define TEST_LSP_H
 
+#ifdef TOOLS_ENABLED
+
 #include "tests/test_macros.h"
 
 #include "../language_server/gdscript_extend_parser.h"
@@ -467,5 +469,7 @@ func f():
 }
 
 } // namespace GDScriptTests
+
+#endif // TOOLS_ENABLED
 
 #endif // TEST_LSP_H
