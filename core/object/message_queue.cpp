@@ -324,7 +324,17 @@ Error CallQueue::flush() {
 		if (!message->callable.is_valid()) {
 			// The editor would cause many of these.
 			if (!Engine::get_singleton()->is_editor_hint()) {
-				ERR_PRINT("Trying to execute a deferred call/notification/set on a previously freed instance. Consider using queue_free() instead of free().");
+				switch (message->type & FLAG_MASK) {
+					case TYPE_CALL: {
+						ERR_PRINT("Trying to execute a deferred call (" + message->callable.get_method() + ") on a previously freed instance. Consider using queue_free() instead of free().");
+					} break;
+					case TYPE_NOTIFICATION: {
+						ERR_PRINT("Trying to execute a deferred notification (" + itos(message->notification) + ") on a previously freed instance. Consider using queue_free() instead of free().");
+					} break;
+					case TYPE_SET: {
+						ERR_PRINT("Trying to execute a deferred set (" + message->callable.get_method() + ") on a previously freed instance. Consider using queue_free() instead of free().");
+					} break;
+				}
 			}
 		} else
 #endif
