@@ -53,7 +53,7 @@ class SymbolTooltip : public PanelContainer {
 	Ref<Theme> _create_panel_theme();
 	Ref<Theme> _create_header_label_theme();
 	Ref<Theme> _create_body_label_theme();
-	int _get_column_pos_of_word(const String &p_key, const String &p_search, uint32_t p_search_flags, int p_from_column) const;
+	int _get_word_pos_under_mouse(const String &symbol_word, const String &p_search, int mouse_x) const;
 
 public:
 	void _on_tooltip_delay_timeout();

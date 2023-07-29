@@ -129,9 +129,8 @@ Vector2 SymbolTooltip::_calculate_tooltip_position(const String &symbol_word, co
 	int num_lines = text_editor->get_line_count();
 	if (row >= 0 && row < num_lines) {
 		String line = text_editor->get_line(row);
-		uint32_t search_flags = text_editor->SEARCH_MATCH_CASE | text_editor->SEARCH_WHOLE_WORDS;
-		int symbol_col = _get_column_pos_of_word(symbol_word, line, search_flags, 0) + 1;
-		if (symbol_col >= 0 && col >= symbol_col && col <= symbol_col + symbol_word.length()) {
+		int symbol_col = _get_word_pos_under_mouse(symbol_word, line, col);
+		if (symbol_col >= 0) {
 			Vector2 symbol_position = text_editor->get_pos_at_line_column(row, symbol_col);
 			return Vector2(symbol_position.x, symbol_position.y + 5); // Adjust the position to be below the symbol
 		}
@@ -232,37 +231,33 @@ Ref<Theme> SymbolTooltip::_create_body_label_theme() {
 	return theme;
 }
 
-// Copied from text_edit.cpp
-int SymbolTooltip::_get_column_pos_of_word(const String &p_key, const String &p_search, uint32_t p_search_flags, int p_from_column) const {
-	int col = -1;
+int SymbolTooltip::_get_word_pos_under_mouse(const String &symbol_word, const String &p_search, int mouse_x) const {
+	// Created this because _get_column_pos_of_word() only gets the column position of the first occurrence of the word in the line.
 
-	if (p_key.length() > 0 && p_search.length() > 0) {
-		if (p_from_column < 0 || p_from_column > p_search.length()) {
-			p_from_column = 0;
-		}
-
-		while (col == -1 && p_from_column <= p_search.length()) {
-			if (p_search_flags & CodeEdit::SEARCH_MATCH_CASE) {
-				col = p_search.find(p_key, p_from_column);
-			} else {
-				col = p_search.findn(p_key, p_from_column);
-			}
-
-			// Whole words only.
-			if (col != -1 && p_search_flags & CodeEdit::SEARCH_WHOLE_WORDS) {
-				p_from_column = col;
-
-				if (col > 0 && !is_symbol(p_search[col - 1])) {
-					col = -1;
-				} else if ((col + p_key.length()) < p_search.length() && !is_symbol(p_search[col + p_key.length()])) {
-					col = -1;
-				}
-			}
-
-			p_from_column += 1;
-		}
+	// Early exit if the symbol word is empty, the search string is empty, or the mouse is outside the string.
+	if (symbol_word.is_empty() || p_search.is_empty() || mouse_x < 0 || mouse_x >= p_search.length()) {
+		return -1;
 	}
-	return col;
+
+	int start = mouse_x;
+	int end = mouse_x;
+
+	// Extend the start and end until they reach the beginning or end of the word.
+	while (start > 0 && is_ascii_identifier_char(p_search[start - 1])) {
+		start--;
+	}
+	while (end < p_search.length() && is_ascii_identifier_char(p_search[end])) {
+		end++;
+	}
+
+	String word_under_mouse = p_search.substr(start, end - start);
+
+	// If the word under the mouse matches the symbol word, return the start position.
+	if (word_under_mouse == symbol_word) {
+		return start + 1;  // Note: +1 is added to account for zero-based indexing.
+	}
+
+	return -1;  // Return -1 if no match is found.
 }
 
 // Copied from script_text_editor.cpp
