@@ -71,7 +71,11 @@ namespace GDScriptTests {
 
 const String root = "modules/gdscript/tests/lsp_project/";
 
-// `memdelete` returned `GDScriptLanguageProtocol` after use!
+/*
+ * After use:
+ * * `memdelete` returned `GDScriptLanguageProtocol`.
+ * * Call `GDScriptTests::::finish_language`.
+ */
 GDScriptLanguageProtocol *initialize(const String &p_root) {
 	Error err = OK;
 	Ref<DirAccess> dir(DirAccess::open(p_root, &err));
@@ -454,6 +458,7 @@ func f():
 		}
 
 		memdelete(proto);
+		finish_language();
 	}
 }
 
