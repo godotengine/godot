@@ -31,6 +31,7 @@
 #include "resource_importer_scene.h"
 
 #include "core/error/error_macros.h"
+#include "core/io/dir_access.h"
 #include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
 #include "editor/editor_node.h"
@@ -2435,6 +2436,41 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		import_flags |= EditorSceneFormatImporter::IMPORT_FORCE_DISABLE_MESH_COMPRESSION;
 	}
 
+	Dictionary subresources = p_options["_subresources"];
+
+	Dictionary node_data;
+	if (subresources.has("nodes")) {
+		node_data = subresources["nodes"];
+	}
+
+	Dictionary material_data;
+	if (subresources.has("materials")) {
+		material_data = subresources["materials"];
+	}
+
+	Dictionary animation_data;
+	if (subresources.has("animations")) {
+		animation_data = subresources["animations"];
+	}
+
+	Dictionary mesh_data;
+	if (subresources.has("meshes")) {
+		mesh_data = subresources["meshes"];
+	}
+
+	// Check whether any of the meshes have invalid save paths
+	// and if they do, fail the import immediately.
+	Array mesh_keys = mesh_data.keys();
+	for (int i = 0; i < mesh_keys.size(); i++) {
+		const Dictionary &mesh_settings = mesh_data[mesh_keys[i]];
+
+		if (mesh_settings.has("save_to_file/enabled") && bool(mesh_settings["save_to_file/enabled"]) && mesh_settings.has("save_to_file/path")) {
+			const String &mesh_save_path = mesh_settings["save_to_file/path"];
+
+			ERR_FAIL_COND_V(!mesh_save_path.is_empty() && !DirAccess::exists(mesh_save_path.get_base_dir()), ERR_DOES_NOT_EXIST);
+		}
+	}
+
 	Error err = OK;
 	List<String> missing_deps; // for now, not much will be done with this
 	Node *scene = importer->import_scene(src_path, import_flags, p_options, &missing_deps, &err);
@@ -2458,22 +2494,6 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		} else {
 			scene_3d->scale(scale);
 		}
-	}
-	Dictionary subresources = p_options["_subresources"];
-
-	Dictionary node_data;
-	if (subresources.has("nodes")) {
-		node_data = subresources["nodes"];
-	}
-
-	Dictionary material_data;
-	if (subresources.has("materials")) {
-		material_data = subresources["materials"];
-	}
-
-	Dictionary animation_data;
-	if (subresources.has("animations")) {
-		animation_data = subresources["animations"];
 	}
 
 	HashSet<Ref<ImporterMesh>> scanned_meshes;
@@ -2554,10 +2574,6 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		}
 	}
 
-	Dictionary mesh_data;
-	if (subresources.has("meshes")) {
-		mesh_data = subresources["meshes"];
-	}
 	_generate_meshes(scene, mesh_data, gen_lods, create_shadow_meshes, LightBakeMode(light_bake_mode), lightmap_texel_size, src_lightmap_cache, mesh_lightmap_caches);
 
 	if (mesh_lightmap_caches.size()) {
