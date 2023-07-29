@@ -466,11 +466,11 @@
 				[codeblocks]
 				[gdscript]
 				var array: Array[int] = [1, 2, 3, 4]
-				print(array.pick_random())  # Prints either of the four numbers.
+				print(array.pick_random())  # Prints any of the four numbers.
 				[/gdscript]
 				[csharp]
 				var array = new Godot.Collections.Array { 1, 2, 3, 4 };
-				GD.Print(array.PickRandom()); // Prints either of the four numbers.
+				GD.Print(array.PickRandom()); // Prints any of the four numbers.
 				[/csharp]
 				[/codeblocks]
 			</description>
