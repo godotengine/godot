@@ -110,7 +110,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position) {
 
 	// Get the documentation of the word under the mouse cursor
 	String documentation = _get_doc_of_word(symbol_word);
-	_update_tooltip_content(symbol_word, documentation + documentation);
+	_update_tooltip_content(symbol_word, documentation);
 
 	Rect2 tooltip_rect = Rect2(get_position(), get_size());
 	bool mouse_over_tooltip = tooltip_rect.has_point(mouse_position);
