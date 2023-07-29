@@ -382,7 +382,7 @@ String ShaderRD::_version_get_sha1(Version *p_version) const {
 }
 
 static const char *shader_file_header = "GDSC";
-static const uint32_t cache_file_version = 2;
+static const uint32_t cache_file_version = 3;
 
 bool ShaderRD::_load_from_cache(Version *p_version) {
 	String sha1 = _version_get_sha1(p_version);
