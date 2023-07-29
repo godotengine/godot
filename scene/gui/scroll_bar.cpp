@@ -256,9 +256,9 @@ void ScrollBar::_notification(int p_what) {
 				grabber = theme_cache.grabber_style;
 			}
 
-			Point2 ofs;
+			Point2 ofs = (orientation == HORIZONTAL) ? Point2(bg->get_margin(SIDE_LEFT), 0) : Point2(0, bg->get_margin(SIDE_TOP));
 
-			decr->draw(ci, Point2());
+			decr->draw(ci, ofs);
 
 			if (orientation == HORIZONTAL) {
 				ofs.x += decr->get_width();
@@ -269,9 +269,9 @@ void ScrollBar::_notification(int p_what) {
 			Size2 area = get_size();
 
 			if (orientation == HORIZONTAL) {
-				area.width -= incr->get_width() + decr->get_width();
+				area.width -= incr->get_width() + decr->get_width() + bg->get_margin(SIDE_LEFT) + bg->get_margin(SIDE_RIGHT);
 			} else {
-				area.height -= incr->get_height() + decr->get_height();
+				area.height -= incr->get_height() + decr->get_height() + bg->get_margin(SIDE_TOP) + bg->get_margin(SIDE_BOTTOM);
 			}
 
 			bg->draw(ci, Rect2(ofs, area));
@@ -466,22 +466,6 @@ double ScrollBar::get_area_size() const {
 			return 0.0;
 		}
 	}
-}
-
-double ScrollBar::get_area_offset() const {
-	double ofs = 0.0;
-
-	if (orientation == VERTICAL) {
-		ofs += theme_cache.scroll_offset_style->get_margin(SIDE_TOP);
-		ofs += theme_cache.decrement_icon->get_height();
-	}
-
-	if (orientation == HORIZONTAL) {
-		ofs += theme_cache.scroll_offset_style->get_margin(SIDE_LEFT);
-		ofs += theme_cache.decrement_icon->get_width();
-	}
-
-	return ofs;
 }
 
 double ScrollBar::get_grabber_offset() const {
