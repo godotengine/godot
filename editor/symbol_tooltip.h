@@ -46,7 +46,8 @@ class SymbolTooltip : public PopupPanel {
 	VBoxContainer *layout_container = nullptr;
 	RichTextLabel *header_label = nullptr;
 	RichTextLabel *body_label = nullptr;
-	Timer *tooltip_delay;
+	Timer *tooltip_delay = nullptr;
+	String last_symbol_word;
 
 	String _get_doc_of_word(const String &symbol_word);
 	void _update_header_label(const String &symbol_word);

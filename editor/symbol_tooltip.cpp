@@ -93,8 +93,17 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position) {
 	String symbol_word = _get_symbol_word(text_editor, mouse_position);
 	if (symbol_word.is_empty()) {
 		tooltip_delay->stop();
+		last_symbol_word = "";
 		hide();
 		return;
+	}
+
+	if (symbol_word == last_symbol_word && is_visible()) {
+		return;
+	} else {
+		// Symbol has changed, reset the timer.
+		tooltip_delay->stop();
+		last_symbol_word = symbol_word;
 	}
 
 	_update_tooltip_size();
