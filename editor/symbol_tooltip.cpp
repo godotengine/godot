@@ -117,8 +117,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position) {
 	}
 
 	// Start the timer to show the tooltip after a delay
-	//tooltip_delay->start();
-	_on_tooltip_delay_timeout();
+	tooltip_delay->start();
 }
 
 String SymbolTooltip::_get_symbol_word(CodeEdit *text_editor, const Vector2 &mouse_position) {
@@ -137,8 +136,7 @@ Vector2 SymbolTooltip::_calculate_tooltip_position(const String &symbol_word, co
 		int symbol_col = _get_word_pos_under_mouse(symbol_word, line, col);
 		if (symbol_col >= 0) {
 			Vector2 symbol_position = text_editor->get_pos_at_line_column(row, symbol_col);
-			Vector2 local_position = Vector2(symbol_position.x, symbol_position.y + 5); // Adjust the position to be below the symbol
-			return text_editor->get_screen_position() + local_position;
+			return text_editor->get_screen_position() + symbol_position;
 		}
 	}
 	return Vector2(-1,-1); // indicates an invalid position
