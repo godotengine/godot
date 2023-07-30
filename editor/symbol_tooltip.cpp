@@ -33,7 +33,7 @@
 #include "editor_help.h"
 
 SymbolTooltip::SymbolTooltip(CodeTextEditor* code_editor) : code_editor(code_editor) {
-	// Initialize the tooltip components
+	// Initialize the tooltip components.
 
 	// Set the tooltip's theme (PanelContainer's theme)
 	//set_theme(EditorNode::get_singleton()->get_gui_base()->get_theme());
