@@ -50,7 +50,8 @@
 #include "scene/resources/tile_set.h"
 
 TilesEditorUtils *TilesEditorUtils::singleton = nullptr;
-TileMapEditorPlugin *local_singleton = nullptr;
+TileMapEditorPlugin *tile_map_plugin_singleton = nullptr;
+TileSetEditorPlugin *tile_set_plugin_singleton = nullptr;
 
 void TilesEditorUtils::_preview_frame_started() {
 	RS::get_singleton()->request_frame_drawn_callback(callable_mp(const_cast<TilesEditorUtils *>(this), &TilesEditorUtils::_pattern_preview_done));
@@ -283,6 +284,11 @@ bool TilesEditorUtils::SourceNameComparator::operator()(const int &p_a, const in
 	return NaturalNoCaseComparator()(name_a, name_b);
 }
 
+void TilesEditorUtils::display_tile_set_editor_panel() {
+	tile_map_plugin_singleton->hide_editor();
+	tile_set_plugin_singleton->make_visible(true);
+}
+
 void TilesEditorUtils::draw_selection_rect(CanvasItem *p_ci, const Rect2 &p_rect, const Color &p_color) {
 	real_t scale = p_ci->get_global_transform().get_scale().x * 0.5;
 	p_ci->draw_set_transform(p_rect.position, 0, Vector2(1, 1) / scale);
@@ -373,13 +379,19 @@ void TileMapEditorPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) 
 	editor->forward_canvas_draw_over_viewport(p_overlay);
 }
 
+void TileMapEditorPlugin::hide_editor() {
+	if (editor->is_visible_in_tree()) {
+		EditorNode::get_singleton()->hide_bottom_panel();
+	}
+}
+
 bool TileMapEditorPlugin::is_editor_visible() const {
 	return editor->is_visible_in_tree();
 }
 
 TileMapEditorPlugin::TileMapEditorPlugin() {
 	memnew(TilesEditorUtils);
-	local_singleton = this;
+	tile_map_plugin_singleton = this;
 
 	editor = memnew(TileMapEditor);
 	editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -392,7 +404,7 @@ TileMapEditorPlugin::TileMapEditorPlugin() {
 }
 
 TileMapEditorPlugin::~TileMapEditorPlugin() {
-	local_singleton = nullptr;
+	tile_map_plugin_singleton = nullptr;
 }
 
 void TileSetEditorPlugin::edit(Object *p_object) {
@@ -406,7 +418,7 @@ bool TileSetEditorPlugin::handles(Object *p_object) const {
 void TileSetEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
-		if (!local_singleton->is_editor_visible()) {
+		if (!tile_map_plugin_singleton->is_editor_visible()) {
 			EditorNode::get_singleton()->make_bottom_panel_item_visible(editor);
 		}
 	} else {
@@ -418,7 +430,8 @@ void TileSetEditorPlugin::make_visible(bool p_visible) {
 }
 
 TileSetEditorPlugin::TileSetEditorPlugin() {
-	DEV_ASSERT(local_singleton);
+	DEV_ASSERT(tile_map_plugin_singleton);
+	tile_set_plugin_singleton = this;
 
 	editor = memnew(TileSetEditor);
 	editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -428,4 +441,8 @@ TileSetEditorPlugin::TileSetEditorPlugin() {
 
 	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("TileSet"), editor);
 	button->hide();
+}
+
+TileSetEditorPlugin::~TileSetEditorPlugin() {
+	tile_set_plugin_singleton = nullptr;
 }
