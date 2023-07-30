@@ -208,7 +208,7 @@ String ProjectDialog::_test_path() {
 				}
 
 			} else {
-				_set_message(TTR("Please choose a \"project.godot\" or \".zip\" file."), MESSAGE_ERROR);
+				_set_message(TTR("Please choose a \"project.godot\", a directory with it, or a \".zip\" file."), MESSAGE_ERROR);
 				install_path_container->hide();
 				get_ok_button()->set_disabled(true);
 				return "";
@@ -283,6 +283,9 @@ void ProjectDialog::_path_text_changed(const String &p_path) {
 }
 
 void ProjectDialog::_file_selected(const String &p_path) {
+	// If not already shown.
+	show_dialog();
+
 	String p = p_path;
 	if (mode == MODE_IMPORT) {
 		if (p.ends_with("project.godot")) {
@@ -311,6 +314,9 @@ void ProjectDialog::_file_selected(const String &p_path) {
 }
 
 void ProjectDialog::_path_selected(const String &p_path) {
+	// If not already shown.
+	show_dialog();
+
 	String sp = p_path.simplify_path();
 	project_path->set_text(sp);
 	_path_text_changed(sp);
@@ -328,7 +334,7 @@ void ProjectDialog::_browse_path() {
 	fdialog->set_current_dir(project_path->get_text());
 
 	if (mode == MODE_IMPORT) {
-		fdialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+		fdialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_ANY);
 		fdialog->clear_filters();
 		fdialog->add_filter("project.godot", vformat("%s %s", VERSION_NAME, TTR("Project")));
 		fdialog->add_filter("*.zip", TTR("ZIP File"));
@@ -664,6 +670,14 @@ void ProjectDialog::set_mode(Mode p_mode) {
 
 void ProjectDialog::set_project_path(const String &p_path) {
 	project_path->set_text(p_path);
+}
+
+void ProjectDialog::ask_for_path_and_show() {
+	// Workaround: for the file selection dialog content to be rendered we need to show its parent dialog.
+	show_dialog();
+	_set_message("");
+
+	_browse_path();
 }
 
 void ProjectDialog::show_dialog() {
@@ -2448,7 +2462,7 @@ void ProjectManager::_new_project() {
 
 void ProjectManager::_import_project() {
 	npdialog->set_mode(ProjectDialog::MODE_IMPORT);
-	npdialog->show_dialog();
+	npdialog->ask_for_path_and_show();
 }
 
 void ProjectManager::_rename_project() {

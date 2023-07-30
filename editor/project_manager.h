@@ -131,6 +131,7 @@ public:
 	void set_mode(Mode p_mode);
 	void set_project_path(const String &p_path);
 
+	void ask_for_path_and_show();
 	void show_dialog();
 
 	ProjectDialog();
