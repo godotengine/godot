@@ -145,8 +145,7 @@ struct PtrToArg<TypedArray<T>> {
 template <class T>
 struct PtrToArg<const TypedArray<T> &> {
 	typedef Array EncodeT;
-	_FORCE_INLINE_ static TypedArray<T>
-	convert(const void *p_ptr) {
+	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
 		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
 	}
 };
