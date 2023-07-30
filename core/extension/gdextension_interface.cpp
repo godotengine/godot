@@ -877,6 +877,24 @@ static GDExtensionInt gdextension_string_resize(GDExtensionStringPtr p_self, GDE
 	return (*self).resize(p_length);
 }
 
+static void gdextension_string_name_new_with_latin1_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionBool p_is_static) {
+	memnew_placement(r_dest, StringName(p_contents, static_cast<bool>(p_is_static)));
+}
+
+static void gdextension_string_name_new_with_utf8_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents) {
+	String tmp;
+	tmp.parse_utf8(p_contents);
+
+	memnew_placement(r_dest, StringName(tmp));
+}
+
+static void gdextension_string_name_new_with_utf8_chars_and_len(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionInt p_size) {
+	String tmp;
+	tmp.parse_utf8(p_contents, p_size);
+
+	memnew_placement(r_dest, StringName(tmp));
+}
+
 static GDExtensionInt gdextension_xml_parser_open_buffer(GDExtensionObjectPtr p_instance, const uint8_t *p_buffer, size_t p_size) {
 	XMLParser *xml = (XMLParser *)p_instance;
 	return (GDExtensionInt)xml->_open_buffer(p_buffer, p_size);
@@ -1426,6 +1444,9 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_wcstr);
 	REGISTER_INTERFACE_FUNC(string_operator_plus_eq_c32str);
 	REGISTER_INTERFACE_FUNC(string_resize);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_latin1_chars);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_utf8_chars);
+	REGISTER_INTERFACE_FUNC(string_name_new_with_utf8_chars_and_len);
 	REGISTER_INTERFACE_FUNC(xml_parser_open_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_store_buffer);
 	REGISTER_INTERFACE_FUNC(file_access_get_buffer);
