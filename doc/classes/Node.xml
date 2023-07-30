@@ -248,7 +248,7 @@
 			<param index="2" name="recursive" type="bool" default="true" />
 			<param index="3" name="owned" type="bool" default="true" />
 			<description>
-				Finds descendants of this node whose name matches [param pattern] as in [method String.match], and/or type matches [param type] as in [method Object.is_class]. Internal children are also searched over (see [code]internal[/code] parameter in [method add_child]).
+				Finds descendants of this node whose name matches [param pattern] as in [method String.match], and/or type matches [param type] as in [method Object.is_class]. You can leave either [param pattern] or [param type] empty to use only the other one. Internal children are also searched over (see [code]internal[/code] parameter in [method add_child]).
 				[param pattern] does not match against the full path, just against individual node names. It is case-sensitive, with [code]"*"[/code] matching zero or more characters and [code]"?"[/code] matching any single character except [code]"."[/code]).
 				[param type] will check equality or inheritance, and is case-sensitive. [code]"Object"[/code] will match a node whose type is [code]"Node"[/code] but not the other way around.
 				If [param recursive] is [code]true[/code], all child nodes are included, even if deeply nested. Nodes are checked in tree order, so this node's first direct child is checked first, then its own direct children, etc., before moving to the second direct child, and so on. If [param recursive] is [code]false[/code], only this node's direct children are matched.
