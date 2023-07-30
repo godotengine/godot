@@ -1195,12 +1195,15 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 			VkQueueFamilyProperties *device_queue_props = (VkQueueFamilyProperties *)malloc(device_queue_family_count * sizeof(VkQueueFamilyProperties));
 			vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, device_queue_props);
 			for (uint32_t j = 0; j < device_queue_family_count; j++) {
-				VkBool32 supports;
-				vkGetPhysicalDeviceSurfaceSupportKHR(physical_devices[i], j, p_surface, &supports);
-				if (supports && ((device_queue_props[j].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)) {
-					present_supported = true;
-				} else {
-					continue;
+				if ((device_queue_props[j].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) {
+					VkBool32 supports;
+					err = vkGetPhysicalDeviceSurfaceSupportKHR(
+							physical_devices[i], j, p_surface, &supports);
+					if (err == VK_SUCCESS && supports) {
+						present_supported = true;
+					} else {
+						continue;
+					}
 				}
 			}
 			String name = props.deviceName;
@@ -1803,6 +1806,16 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	VkSurfaceCapabilitiesKHR surfCapabilities;
 	err = fpGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, window->surface, &surfCapabilities);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+
+	{
+		VkBool32 supports = VK_FALSE;
+		err = vkGetPhysicalDeviceSurfaceSupportKHR(
+				gpu, present_queue_family_index, window->surface, &supports);
+		ERR_FAIL_COND_V_MSG(err != VK_SUCCESS || supports == false, ERR_CANT_CREATE,
+				"Window's surface is not supported by device. Did the GPU go offline? Was the window "
+				"created on another monitor? Check previous errors & try launching with "
+				"--gpu-validation.");
+	}
 
 	uint32_t presentModeCount;
 	err = fpGetPhysicalDeviceSurfacePresentModesKHR(gpu, window->surface, &presentModeCount, nullptr);
