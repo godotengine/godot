@@ -320,7 +320,6 @@ void CanvasItem::_notification(int p_what) {
 				}
 			}
 
-			_set_global_invalid(true);
 			_enter_canvas();
 
 			RenderingServer::get_singleton()->canvas_item_set_visible(canvas_item, is_visible_in_tree()); // The visibility of the parent may change.
@@ -367,7 +366,11 @@ void CanvasItem::_notification(int p_what) {
 		case NOTIFICATION_WORLD_2D_CHANGED: {
 			_exit_canvas();
 			_enter_canvas();
-		}
+		} break;
+		case NOTIFICATION_PARENTED: {
+			// The node is not inside the tree during this notification.
+			_notify_transform();
+		} break;
 	}
 }
 
