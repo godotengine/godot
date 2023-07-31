@@ -140,7 +140,7 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorScript);
 	GDREGISTER_CLASS(EditorSelection);
 	GDREGISTER_CLASS(EditorFileDialog);
-	GDREGISTER_ABSTRACT_CLASS(EditorSettings);
+	GDREGISTER_CLASS(EditorSettings);
 	GDREGISTER_CLASS(EditorNode3DGizmo);
 	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorResourcePreview);
