@@ -33,8 +33,8 @@
 #include "editor/plugins/script_text_editor.h"
 #include "editor_help.h"
 
-SymbolTooltip::SymbolTooltip(CodeTextEditor* code_editor) :
-			code_editor(code_editor) {
+SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
+		code_editor(code_editor) {
 	// Initialize the tooltip components.
 
 	// Set the tooltip's theme (PanelContainer's theme)
