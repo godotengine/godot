@@ -1250,7 +1250,7 @@ public:
 	void initialize(VulkanContext *p_context, bool p_local_device = false);
 	void finalize();
 
-	virtual void swap_buffers(); // For main device.
+	virtual void swap_buffers(bool p_swap_buffers); // For main device.
 
 	virtual void submit(); // For local device.
 	virtual void sync(); // For local device.

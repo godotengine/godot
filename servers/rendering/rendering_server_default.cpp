@@ -69,6 +69,10 @@ void RenderingServerDefault::request_frame_drawn_callback(const Callable &p_call
 }
 
 void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
+	_draw_viewport(NULL, p_swap_buffers, frame_step);
+}
+
+void RenderingServerDefault::_draw_viewport(RID *p_viewport, bool p_swap_buffers, double frame_step) {
 	//needs to be done before changes is reset to 0, to not force the editor to redraw
 	RS::get_singleton()->emit_signal(SNAME("frame_pre_draw"));
 
@@ -88,7 +92,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	RSG::scene->render_probes();
 
-	RSG::viewport->draw_viewports();
+	RSG::viewport->draw_viewports(p_viewport);
 	RSG::canvas_render->update();
 
 	if (OS::get_singleton()->get_current_rendering_driver_name() != "opengl3") {
@@ -341,6 +345,10 @@ void RenderingServerDefault::_thread_draw(bool p_swap_buffers, double frame_step
 	_draw(p_swap_buffers, frame_step);
 }
 
+void RenderingServerDefault::_thread_draw_viewport(RID *p_viewport, bool p_swap_buffers, double frame_step) {
+	_draw_viewport(p_viewport, p_swap_buffers, frame_step);
+}
+
 void RenderingServerDefault::_thread_flush() {
 }
 
@@ -383,6 +391,14 @@ void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
 		command_queue.push(this, &RenderingServerDefault::_thread_draw, p_swap_buffers, frame_step);
 	} else {
 		_draw(p_swap_buffers, frame_step);
+	}
+}
+
+void RenderingServerDefault::draw_viewport(RID *p_viewport, bool p_swap_buffers, double frame_step) {
+	if (create_thread) {
+		command_queue.push(this, &RenderingServerDefault::_thread_draw_viewport, p_viewport, p_swap_buffers, frame_step);
+	} else {
+		_draw_viewport(p_viewport, p_swap_buffers, frame_step);
 	}
 }
 

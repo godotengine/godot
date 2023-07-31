@@ -2252,49 +2252,50 @@ Error VulkanContext::prepare_buffers() {
 	vkWaitForFences(device, 1, &fences[frame_index], VK_TRUE, UINT64_MAX);
 	vkResetFences(device, 1, &fences[frame_index]);
 
-	for (KeyValue<int, Window> &E : windows) {
-		Window *w = &E.value;
+	if (!buffers_prepared) {
+		for (KeyValue<int, Window> &E : windows) {
+			Window *w = &E.value;
 
-		w->semaphore_acquired = false;
+			w->semaphore_acquired = false;
 
-		if (w->swapchain == VK_NULL_HANDLE) {
-			continue;
+			if (w->swapchain == VK_NULL_HANDLE) {
+				continue;
+			}
+
+			do {
+				// Get the index of the next available swapchain image.
+				err =
+						fpAcquireNextImageKHR(device, w->swapchain, UINT64_MAX,
+								w->image_acquired_semaphores[frame_index], VK_NULL_HANDLE, &w->current_buffer);
+
+				if (err == VK_ERROR_OUT_OF_DATE_KHR) {
+					// Swapchain is out of date (e.g. the window was resized) and
+					// must be recreated.
+					print_verbose("Vulkan: Early out of date swapchain, recreating.");
+					// resize_notify();
+					_update_swap_chain(w);
+				} else if (err == VK_SUBOPTIMAL_KHR) {
+					// Swapchain is not as optimal as it could be, but the platform's
+					// presentation engine will still present the image correctly.
+					print_verbose("Vulkan: Early suboptimal swapchain, recreating.");
+					Error swap_chain_err = _update_swap_chain(w);
+					if (swap_chain_err == ERR_SKIP) {
+						break;
+					}
+				} else if (err != VK_SUCCESS) {
+					ERR_BREAK_MSG(err != VK_SUCCESS, "Vulkan: Did not create swapchain successfully. Error code: " + String(string_VkResult(err)));
+				} else {
+					w->semaphore_acquired = true;
+				}
+			} while (err != VK_SUCCESS);
 		}
 
-		do {
-			// Get the index of the next available swapchain image.
-			err =
-					fpAcquireNextImageKHR(device, w->swapchain, UINT64_MAX,
-							w->image_acquired_semaphores[frame_index], VK_NULL_HANDLE, &w->current_buffer);
-
-			if (err == VK_ERROR_OUT_OF_DATE_KHR) {
-				// Swapchain is out of date (e.g. the window was resized) and
-				// must be recreated.
-				print_verbose("Vulkan: Early out of date swapchain, recreating.");
-				// resize_notify();
-				_update_swap_chain(w);
-			} else if (err == VK_SUBOPTIMAL_KHR) {
-				// Swapchain is not as optimal as it could be, but the platform's
-				// presentation engine will still present the image correctly.
-				print_verbose("Vulkan: Early suboptimal swapchain, recreating.");
-				Error swap_chain_err = _update_swap_chain(w);
-				if (swap_chain_err == ERR_SKIP) {
-					break;
-				}
-			} else if (err != VK_SUCCESS) {
-				ERR_BREAK_MSG(err != VK_SUCCESS, "Vulkan: Did not create swapchain successfully. Error code: " + String(string_VkResult(err)));
-			} else {
-				w->semaphore_acquired = true;
-			}
-		} while (err != VK_SUCCESS);
+		buffers_prepared = true;
 	}
-
-	buffers_prepared = true;
-
 	return OK;
 }
 
-Error VulkanContext::swap_buffers() {
+Error VulkanContext::swap_buffers(bool p_swap_buffers) {
 	if (!queues_initialized) {
 		return OK;
 	}
@@ -2364,18 +2365,54 @@ Error VulkanContext::swap_buffers() {
 	command_buffer_queue.write[0] = nullptr;
 	command_buffer_count = 1;
 
-	if (separate_present_queue) {
-		// If we are using separate queues, change image ownership to the
-		// present queue before presenting, waiting for the draw complete
-		// semaphore and signaling the ownership released semaphore when finished.
-		VkFence nullFence = VK_NULL_HANDLE;
-		pipe_stage_flags[0] = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		submit_info.waitSemaphoreCount = 1;
-		submit_info.pWaitSemaphores = &draw_complete_semaphores[frame_index];
-		submit_info.commandBufferCount = 0;
+	if (p_swap_buffers) {
+		if (separate_present_queue) {
+			// If we are using separate queues, change image ownership to the
+			// present queue before presenting, waiting for the draw complete
+			// semaphore and signaling the ownership released semaphore when finished.
+			VkFence nullFence = VK_NULL_HANDLE;
+			pipe_stage_flags[0] = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			submit_info.waitSemaphoreCount = 1;
+			submit_info.pWaitSemaphores = &draw_complete_semaphores[frame_index];
+			submit_info.commandBufferCount = 0;
 
-		VkCommandBuffer *cmdbufptr = (VkCommandBuffer *)alloca(sizeof(VkCommandBuffer *) * windows.size());
-		submit_info.pCommandBuffers = cmdbufptr;
+			VkCommandBuffer *cmdbufptr = (VkCommandBuffer *)alloca(sizeof(VkCommandBuffer *) * windows.size());
+			submit_info.pCommandBuffers = cmdbufptr;
+
+			for (KeyValue<int, Window> &E : windows) {
+				Window *w = &E.value;
+
+				if (w->swapchain == VK_NULL_HANDLE) {
+					continue;
+				}
+				cmdbufptr[submit_info.commandBufferCount] = w->swapchain_image_resources[w->current_buffer].graphics_to_present_cmd;
+				submit_info.commandBufferCount++;
+			}
+
+			submit_info.signalSemaphoreCount = 1;
+			submit_info.pSignalSemaphores = &image_ownership_semaphores[frame_index];
+			err = vkQueueSubmit(present_queue, 1, &submit_info, nullFence);
+			ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Vulkan: Cannot submit present queue. Error code: " + String(string_VkResult(err)));
+		}
+
+		// If we are using separate queues, we have to wait for image ownership,
+		// otherwise wait for draw complete.
+		VkPresentInfoKHR present = {
+			/*sType*/ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+			/*pNext*/ nullptr,
+			/*waitSemaphoreCount*/ 1,
+			/*pWaitSemaphores*/ (separate_present_queue) ? &image_ownership_semaphores[frame_index] : &draw_complete_semaphores[frame_index],
+			/*swapchainCount*/ 0,
+			/*pSwapchain*/ nullptr,
+			/*pImageIndices*/ nullptr,
+			/*pResults*/ nullptr,
+		};
+
+		VkSwapchainKHR *pSwapchains = (VkSwapchainKHR *)alloca(sizeof(VkSwapchainKHR *) * windows.size());
+		uint32_t *pImageIndices = (uint32_t *)alloca(sizeof(uint32_t *) * windows.size());
+
+		present.pSwapchains = pSwapchains;
+		present.pImageIndices = pImageIndices;
 
 		for (KeyValue<int, Window> &E : windows) {
 			Window *w = &E.value;
@@ -2383,133 +2420,99 @@ Error VulkanContext::swap_buffers() {
 			if (w->swapchain == VK_NULL_HANDLE) {
 				continue;
 			}
-			cmdbufptr[submit_info.commandBufferCount] = w->swapchain_image_resources[w->current_buffer].graphics_to_present_cmd;
-			submit_info.commandBufferCount++;
+			pSwapchains[present.swapchainCount] = w->swapchain;
+			pImageIndices[present.swapchainCount] = w->current_buffer;
+			present.swapchainCount++;
 		}
-
-		submit_info.signalSemaphoreCount = 1;
-		submit_info.pSignalSemaphores = &image_ownership_semaphores[frame_index];
-		err = vkQueueSubmit(present_queue, 1, &submit_info, nullFence);
-		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Vulkan: Cannot submit present queue. Error code: " + String(string_VkResult(err)));
-	}
-
-	// If we are using separate queues, we have to wait for image ownership,
-	// otherwise wait for draw complete.
-	VkPresentInfoKHR present = {
-		/*sType*/ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-		/*pNext*/ nullptr,
-		/*waitSemaphoreCount*/ 1,
-		/*pWaitSemaphores*/ (separate_present_queue) ? &image_ownership_semaphores[frame_index] : &draw_complete_semaphores[frame_index],
-		/*swapchainCount*/ 0,
-		/*pSwapchain*/ nullptr,
-		/*pImageIndices*/ nullptr,
-		/*pResults*/ nullptr,
-	};
-
-	VkSwapchainKHR *pSwapchains = (VkSwapchainKHR *)alloca(sizeof(VkSwapchainKHR *) * windows.size());
-	uint32_t *pImageIndices = (uint32_t *)alloca(sizeof(uint32_t *) * windows.size());
-
-	present.pSwapchains = pSwapchains;
-	present.pImageIndices = pImageIndices;
-
-	for (KeyValue<int, Window> &E : windows) {
-		Window *w = &E.value;
-
-		if (w->swapchain == VK_NULL_HANDLE) {
-			continue;
-		}
-		pSwapchains[present.swapchainCount] = w->swapchain;
-		pImageIndices[present.swapchainCount] = w->current_buffer;
-		present.swapchainCount++;
-	}
 
 #if 0
-	if (is_device_extension_enabled(VK_KHR_incremental_present_enabled)) {
-		// If using VK_KHR_incremental_present, we provide a hint of the region
-		// that contains changed content relative to the previously-presented
-		// image.  The implementation can use this hint in order to save
-		// work/power (by only copying the region in the hint).  The
-		// implementation is free to ignore the hint though, and so we must
-		// ensure that the entire image has the correctly-drawn content.
-		uint32_t eighthOfWidth = width / 8;
-		uint32_t eighthOfHeight = height / 8;
-		VkRectLayerKHR rect = {
-			/*offset.x*/ eighthOfWidth,
-			/*offset.y*/ eighthOfHeight,
-			/*extent.width*/ eighthOfWidth * 6,
-			/*extent.height*/ eighthOfHeight * 6,
-			/*layer*/ 0,
-		};
-		VkPresentRegionKHR region = {
-			/*rectangleCount*/ 1,
-			/*pRectangles*/ &rect,
-		};
-		VkPresentRegionsKHR regions = {
-			/*sType*/ VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR,
-			/*pNext*/ present.pNext,
-			/*swapchainCount*/ present.swapchainCount,
-			/*pRegions*/ &region,
-		};
-		present.pNext = &regions;
-	}
+		if (is_device_extension_enabled(VK_KHR_incremental_present_enabled)) {
+			// If using VK_KHR_incremental_present, we provide a hint of the region
+			// that contains changed content relative to the previously-presented
+			// image.  The implementation can use this hint in order to save
+			// work/power (by only copying the region in the hint).  The
+			// implementation is free to ignore the hint though, and so we must
+			// ensure that the entire image has the correctly-drawn content.
+			uint32_t eighthOfWidth = width / 8;
+			uint32_t eighthOfHeight = height / 8;
+			VkRectLayerKHR rect = {
+				/*offset.x*/ eighthOfWidth,
+				/*offset.y*/ eighthOfHeight,
+				/*extent.width*/ eighthOfWidth * 6,
+				/*extent.height*/ eighthOfHeight * 6,
+				/*layer*/ 0,
+			};
+			VkPresentRegionKHR region = {
+				/*rectangleCount*/ 1,
+				/*pRectangles*/ &rect,
+			};
+			VkPresentRegionsKHR regions = {
+				/*sType*/ VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR,
+				/*pNext*/ present.pNext,
+				/*swapchainCount*/ present.swapchainCount,
+				/*pRegions*/ &region,
+			};
+			present.pNext = &regions;
+		}
 #endif
 
 #if 0
-	if (is_device_extension_enabled(VK_GOOGLE_DISPLAY_TIMING_EXTENSION_NAME)) {
-		VkPresentTimeGOOGLE ptime;
-		if (prev_desired_present_time == 0) {
-			// This must be the first present for this swapchain.
-			//
-			// We don't know where we are relative to the presentation engine's
-			// display's refresh cycle.  We also don't know how long rendering
-			// takes.  Let's make a grossly-simplified assumption that the
-			// desiredPresentTime should be half way between now and
-			// now+target_IPD.  We will adjust over time.
-			uint64_t curtime = getTimeInNanoseconds();
-			if (curtime == 0) {
-				// Since we didn't find out the current time, don't give a
-				// desiredPresentTime.
-				ptime.desiredPresentTime = 0;
-			} else {
-				ptime.desiredPresentTime = curtime + (target_IPD >> 1);
-			}
-		} else {
-			ptime.desiredPresentTime = (prev_desired_present_time + target_IPD);
-		}
-		ptime.presentID = next_present_id++;
-		prev_desired_present_time = ptime.desiredPresentTime;
-
-		VkPresentTimesInfoGOOGLE present_time = {
-			/*sType*/ VK_STRUCTURE_TYPE_PRESENT_TIMES_INFO_GOOGLE,
-			/*pNext*/ present.pNext,
-			/*swapchainCount*/ present.swapchainCount,
-			/*pTimes*/ &ptime,
-		};
 		if (is_device_extension_enabled(VK_GOOGLE_DISPLAY_TIMING_EXTENSION_NAME)) {
-			present.pNext = &present_time;
+			VkPresentTimeGOOGLE ptime;
+			if (prev_desired_present_time == 0) {
+				// This must be the first present for this swapchain.
+				//
+				// We don't know where we are relative to the presentation engine's
+				// display's refresh cycle.  We also don't know how long rendering
+				// takes.  Let's make a grossly-simplified assumption that the
+				// desiredPresentTime should be half way between now and
+				// now+target_IPD.  We will adjust over time.
+				uint64_t curtime = getTimeInNanoseconds();
+				if (curtime == 0) {
+					// Since we didn't find out the current time, don't give a
+					// desiredPresentTime.
+					ptime.desiredPresentTime = 0;
+				} else {
+					ptime.desiredPresentTime = curtime + (target_IPD >> 1);
+				}
+			} else {
+				ptime.desiredPresentTime = (prev_desired_present_time + target_IPD);
+			}
+			ptime.presentID = next_present_id++;
+			prev_desired_present_time = ptime.desiredPresentTime;
+
+			VkPresentTimesInfoGOOGLE present_time = {
+				/*sType*/ VK_STRUCTURE_TYPE_PRESENT_TIMES_INFO_GOOGLE,
+				/*pNext*/ present.pNext,
+				/*swapchainCount*/ present.swapchainCount,
+				/*pTimes*/ &ptime,
+			};
+			if (is_device_extension_enabled(VK_GOOGLE_DISPLAY_TIMING_EXTENSION_NAME)) {
+				present.pNext = &present_time;
+			}
 		}
-	}
 #endif
-	//	print_line("current buffer:  " + itos(current_buffer));
-	err = fpQueuePresentKHR(present_queue, &present);
+		//print_line("current buffer:  " + itos(current_buffer));
+		err = fpQueuePresentKHR(present_queue, &present);
 
-	frame_index += 1;
-	frame_index %= FRAME_LAG;
+		frame_index += 1;
+		frame_index %= FRAME_LAG;
 
-	if (err == VK_ERROR_OUT_OF_DATE_KHR) {
-		// Swapchain is out of date (e.g. the window was resized) and
-		// must be recreated.
-		print_verbose("Vulkan queue submit: Swapchain is out of date, recreating.");
-		resize_notify();
-	} else if (err == VK_SUBOPTIMAL_KHR) {
-		// Swapchain is not as optimal as it could be, but the platform's
-		// presentation engine will still present the image correctly.
-		print_verbose("Vulkan queue submit: Swapchain is suboptimal.");
-	} else {
-		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Error code: " + String(string_VkResult(err)));
+		if (err == VK_ERROR_OUT_OF_DATE_KHR) {
+			// Swapchain is out of date (e.g. the window was resized) and
+			// must be recreated.
+			print_verbose("Vulkan queue submit: Swapchain is out of date, recreating.");
+			resize_notify();
+		} else if (err == VK_SUBOPTIMAL_KHR) {
+			// Swapchain is not as optimal as it could be, but the platform's
+			// presentation engine will still present the image correctly.
+			print_verbose("Vulkan queue submit: Swapchain is suboptimal.");
+		} else {
+			ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Error code: " + String(string_VkResult(err)));
+		}
+
+		buffers_prepared = false;
 	}
-
-	buffers_prepared = false;
 	return OK;
 }
 

@@ -923,6 +923,10 @@ void Viewport::_process_picking() {
 	}
 }
 
+void Viewport::force_draw_viewport(bool p_swap_buffers, double frame_step) {
+	RS::get_singleton()->draw_viewport(&viewport, p_swap_buffers, frame_step);
+}
+
 RID Viewport::get_viewport_rid() const {
 	ERR_READ_THREAD_GUARD_V(RID());
 	return viewport;
@@ -4247,6 +4251,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mesh_lod_threshold"), &Viewport::get_mesh_lod_threshold);
 
 	ClassDB::bind_method(D_METHOD("_process_picking"), &Viewport::_process_picking);
+
+	ClassDB::bind_method(D_METHOD("force_draw", "swap_buffers", "frame_step"), &Viewport::force_draw_viewport, DEFVAL(false), DEFVAL(0.0));
 
 #ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_world_3d", "world_3d"), &Viewport::set_world_3d);

@@ -198,6 +198,8 @@ public:
 
 private:
 	Vector<Viewport *> _sort_active_viewports();
+	Vector<RendererViewport::Viewport *> _sort_active_viewports_of_viewport(RendererViewport::Viewport *viewport);
+	Vector<RendererViewport::Viewport *> _sort_active_viewports_of_viewports(List<RendererViewport::Viewport *> &nodes);
 	void _viewport_set_size(Viewport *p_viewport, int p_width, int p_height, uint32_t p_view_count);
 	void _configure_3d_render_buffers(Viewport *p_viewport);
 	void _draw_3d(Viewport *p_viewport);
@@ -292,7 +294,7 @@ public:
 	void handle_timestamp(String p_timestamp, uint64_t p_cpu_time, uint64_t p_gpu_time);
 
 	void set_default_clear_color(const Color &p_color);
-	void draw_viewports();
+	void draw_viewports(RID *p_viewport);
 
 	bool free(RID p_rid);
 

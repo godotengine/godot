@@ -1522,6 +1522,7 @@ public:
 	virtual void request_frame_drawn_callback(const Callable &p_callable) = 0;
 
 	virtual void draw(bool p_swap_buffers = true, double frame_step = 0.0) = 0;
+	virtual void draw_viewport(RID *p_viewport, bool p_swap_buffers = true, double frame_step = 0.0) = 0;
 	virtual void sync() = 0;
 	virtual bool has_changed() const = 0;
 	virtual void init();
