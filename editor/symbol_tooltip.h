@@ -33,6 +33,8 @@
 
 //#include "core/script_language.h"
 #include "code_editor.h"
+#include "modules/gdscript/gdscript_parser.h"
+#include "modules/gdscript/language_server/gdscript_extend_parser.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
@@ -40,7 +42,7 @@
 class SymbolTooltip : public PopupPanel {
 	GDCLASS(SymbolTooltip, PopupPanel);
 
-	//Ref<Script> script;
+	Ref<Script> script = nullptr;
 	CodeTextEditor *code_editor = nullptr;
 	PanelContainer *panel_container = nullptr;
 	VBoxContainer *layout_container = nullptr;
@@ -60,7 +62,7 @@ class SymbolTooltip : public PopupPanel {
 
 public:
 	void _on_tooltip_delay_timeout();
-	void update_symbol_tooltip(const Vector2 &mouse_position);
+	void update_symbol_tooltip(const Vector2 &mouse_position, Ref<Script> script);
 	String _get_symbol_word(CodeEdit *text_editor, const Vector2 &mouse_position);
 	Vector2 _calculate_tooltip_position(const String &symbol_word, const Vector2 &mouse_position);
 	void _update_tooltip_size();
@@ -70,5 +72,7 @@ public:
 };
 
 static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script);
+static const GDScriptParser::ClassNode *get_ast_tree(const Ref<Script> &p_script);
+static ExtendGDScriptParser *get_script_parser(const Ref<Script> &p_script);
 
-#endif // GODOT_SYMBOL_TOOLTIP_H
+#endif // SYMBOL_TOOLTIP_H

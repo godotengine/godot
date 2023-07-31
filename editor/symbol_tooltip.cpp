@@ -90,7 +90,7 @@ void SymbolTooltip::_on_tooltip_delay_timeout() {
 	show();
 }
 
-void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position) {
+void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Script> script) {
 	CodeEdit *text_editor = code_editor->get_text_editor();
 	String symbol_word = _get_symbol_word(text_editor, mouse_position);
 	if (symbol_word.is_empty()) {
@@ -107,6 +107,12 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position) {
 		tooltip_delay->stop();
 		last_symbol_word = symbol_word;
 	}
+
+	//const GDScriptParser::ClassNode *ast_tree = get_ast_tree(script);
+
+	ExtendGDScriptParser *parser = get_script_parser(script);
+	HashMap<String, const lsp::DocumentSymbol *> members = parser->get_members();
+	const lsp::DocumentSymbol *member_symbol = parser->get_member_symbol(symbol_word);
 
 	_update_tooltip_size();
 
@@ -301,4 +307,52 @@ static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Scri
 	}
 
 	return nullptr;
+}
+
+const GDScriptParser::ClassNode::Member *find_symbol(const GDScriptParser::ClassNode *node, const String &symbol_word) {
+	for (int i = 0; i < node->members.size(); ++i) {
+		const GDScriptParser::ClassNode::Member &member = node->members[i];
+
+		if (member.get_name() == symbol_word) {
+			// Found the symbol.
+			return &member;
+		}
+		else if (member.type == GDScriptParser::ClassNode::Member::CLASS) {
+			const GDScriptParser::ClassNode::Member *found_symbol = find_symbol(member.m_class, symbol_word);
+			if (found_symbol) {
+				return found_symbol;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+// Gets the head of the GDScriptParser AST tree.
+static const GDScriptParser::ClassNode *get_ast_tree(const Ref<Script> &p_script) {
+	// Create and initialize the parser.
+	GDScriptParser *parser = memnew(GDScriptParser);
+	Error err = parser->parse(p_script->get_source_code(), p_script->get_path(), false);
+
+	if (err != OK) {
+		ERR_PRINT("Failed to parse GDScript with GDScriptParser.");
+		return nullptr;
+	}
+
+	// Get the AST tree.
+	const GDScriptParser::ClassNode *ast_tree = parser->get_tree();
+	return ast_tree;
+}
+
+static ExtendGDScriptParser *get_script_parser(const Ref<Script> &p_script) {
+	// Create and initialize the parser.
+	ExtendGDScriptParser *parser = memnew(ExtendGDScriptParser);
+	Error err = parser->parse(p_script->get_source_code(), p_script->get_path());
+
+	if (err != OK) {
+		ERR_PRINT("Failed to parse GDScript with GDScriptParser.");
+		return nullptr;
+	}
+
+	return parser;
 }

@@ -1869,7 +1869,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		local_pos = mb->get_global_position() - tx->get_global_position();
 		create_menu = true;
 	} else if (mm.is_valid()) {
-		symbol_tooltip->update_symbol_tooltip(mm->get_position());
+		symbol_tooltip->update_symbol_tooltip(mm->get_position(), script);
 	} else if (k.is_valid() && k->is_action("ui_menu", true)) {
 		tx->adjust_viewport_to_caret(0);
 		local_pos = tx->get_caret_draw_pos(0);
