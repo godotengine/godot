@@ -2415,6 +2415,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"return",
 		"match",
 		"while",
+		"when",
 		// These keywords are not implemented currently, but reserved for (potential) future use.
 		// We highlight them as keywords to make errors easier to understand.
 		"trait",
@@ -2448,6 +2449,7 @@ bool GDScriptLanguage::is_control_flow_keyword(String p_keyword) const {
 			p_keyword == "match" ||
 			p_keyword == "pass" ||
 			p_keyword == "return" ||
+			p_keyword == "when" ||
 			p_keyword == "while";
 }
 
