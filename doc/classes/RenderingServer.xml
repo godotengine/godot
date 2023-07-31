@@ -27,6 +27,13 @@
 				Bakes the material data of the Mesh passed in the [param base] parameter with optional [param material_overrides] to a set of [Image]s of size [param image_size]. Returns an array of [Image]s containing material properties as specified in [enum BakeChannels].
 			</description>
 		</method>
+		<method name="call_on_render_thread">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				As the RenderingServer actual logic may run on an separate thread, accessing its internals from the main (or any other) thread will result in errors. To make it easier to run code that can safely access the rendering internals (such as [RenderingDevice] and similar RD classes), push a callable via this function so it will be executed on the render thread.
+			</description>
+		</method>
 		<method name="camera_attributes_create">
 			<return type="RID" />
 			<description>

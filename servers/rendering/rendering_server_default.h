@@ -97,6 +97,8 @@ class RenderingServerDefault : public RenderingServer {
 
 	void _free(RID p_rid);
 
+	void _call_on_render_thread(const Callable &p_callable);
+
 public:
 	//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
 	//#define DEBUG_CHANGES
@@ -990,6 +992,15 @@ public:
 	virtual bool has_changed() const override;
 	virtual void init() override;
 	virtual void finish() override;
+
+	virtual void call_on_render_thread(const Callable &p_callable) override {
+		if (Thread::get_caller_id() == server_thread) {
+			command_queue.flush_if_pending();
+			_call_on_render_thread(p_callable);
+		} else {
+			command_queue.push(this, &RenderingServerDefault::_call_on_render_thread, p_callable);
+		}
+	}
 
 	/* TESTING */
 
