@@ -136,6 +136,12 @@ String GDScriptWarning::get_message() const {
 		case CONFUSABLE_IDENTIFIER:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The identifier "%s" has misleading characters and might be confused with something else.)", symbols[0]);
+		case CONFUSABLE_LOCAL_DECLARATION:
+			CHECK_SYMBOLS(2);
+			return vformat(R"(The %s "%s" is declared below in the parent block.)", symbols[0], symbols[1]);
+		case CONFUSABLE_LOCAL_USAGE:
+			CHECK_SYMBOLS(1);
+			return vformat(R"(The identifier "%s" will be shadowed below in the block.)", symbols[0]);
 		case INFERENCE_ON_VARIANT:
 			CHECK_SYMBOLS(1);
 			return vformat("The %s type is being inferred from a Variant value, so it will be typed as Variant.", symbols[0]);
@@ -213,6 +219,8 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"DEPRECATED_KEYWORD",
 		"RENAMED_IN_GODOT_4_HINT",
 		"CONFUSABLE_IDENTIFIER",
+		"CONFUSABLE_LOCAL_DECLARATION",
+		"CONFUSABLE_LOCAL_USAGE",
 		"INFERENCE_ON_VARIANT",
 		"NATIVE_METHOD_OVERRIDE",
 		"GET_NODE_DEFAULT_WITHOUT_ONREADY",

@@ -1,0 +1,15 @@
+GDTEST_OK
+>> WARNING
+>> Line: 5
+>> CONFUSABLE_LOCAL_USAGE
+>> The identifier "a" will be shadowed below in the block.
+>> WARNING
+>> Line: 6
+>> SHADOWED_VARIABLE
+>> The local variable "a" is shadowing an already-declared variable at line 1.
+1
+2
+1
+2
+1
+2

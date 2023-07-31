@@ -859,19 +859,24 @@ public:
 
 	struct IdentifierNode : public ExpressionNode {
 		StringName name;
+#ifdef DEBUG_ENABLED
+		SuiteNode *suite = nullptr; // The block in which the identifier is used.
+#endif
 
 		enum Source {
 			UNDEFINED_SOURCE,
 			FUNCTION_PARAMETER,
-			LOCAL_CONSTANT,
 			LOCAL_VARIABLE,
+			LOCAL_CONSTANT,
 			LOCAL_ITERATOR, // `for` loop iterator.
 			LOCAL_BIND, // Pattern bind.
-			MEMBER_SIGNAL,
 			MEMBER_VARIABLE,
-			STATIC_VARIABLE,
 			MEMBER_CONSTANT,
+			MEMBER_FUNCTION,
+			MEMBER_SIGNAL,
+			MEMBER_CLASS,
 			INHERITED_VARIABLE,
+			STATIC_VARIABLE,
 		};
 		Source source = UNDEFINED_SOURCE;
 
