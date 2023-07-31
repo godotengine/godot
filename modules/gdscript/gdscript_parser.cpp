@@ -571,8 +571,8 @@ void GDScriptParser::parse_program() {
 			class_doc_line = MIN(class_doc_line, E.key);
 		}
 	}
-	if (has_comment(class_doc_line)) {
-		get_class_doc_comment(class_doc_line, head->doc_brief_description, head->doc_description, head->doc_tutorials, false);
+	if (has_comment(class_doc_line, true)) {
+		head->doc_data = parse_class_doc_comment(class_doc_line, false);
 	}
 #endif // TOOLS_ENABLED
 
@@ -771,12 +771,16 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)(b
 
 	// Check whether current line has a doc comment
 	if (has_comment(previous.start_line, true)) {
-		member->doc_description = get_doc_comment(previous.start_line, true);
+		if constexpr (std::is_same_v<T, ClassNode>) {
+			member->doc_data = parse_class_doc_comment(previous.start_line, true, true);
+		} else {
+			member->doc_data = parse_doc_comment(previous.start_line, true);
+		}
 	} else if (has_comment(doc_comment_line, true)) {
 		if constexpr (std::is_same_v<T, ClassNode>) {
-			get_class_doc_comment(doc_comment_line, member->doc_brief_description, member->doc_description, member->doc_tutorials, true);
+			member->doc_data = parse_class_doc_comment(doc_comment_line, true);
 		} else {
-			member->doc_description = get_doc_comment(doc_comment_line);
+			member->doc_data = parse_doc_comment(doc_comment_line);
 		}
 	}
 #endif // TOOLS_ENABLED
@@ -1314,24 +1318,33 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 #ifdef TOOLS_ENABLED
 	// Enum values documentation.
 	for (int i = 0; i < enum_node->values.size(); i++) {
+		int doc_comment_line = enum_node->values[i].line;
+		bool single_line = false;
+
+		if (has_comment(doc_comment_line, true)) {
+			single_line = true;
+		} else if (has_comment(doc_comment_line - 1, true)) {
+			doc_comment_line--;
+		} else {
+			continue;
+		}
+
 		if (i == enum_node->values.size() - 1) {
 			// If close bracket is same line as last value.
-			if (enum_node->values[i].line != previous.start_line && has_comment(enum_node->values[i].line)) {
-				if (named) {
-					enum_node->values.write[i].doc_description = get_doc_comment(enum_node->values[i].line, true);
-				} else {
-					current_class->set_enum_value_doc(enum_node->values[i].identifier->name, get_doc_comment(enum_node->values[i].line, true));
-				}
+			if (doc_comment_line == previous.start_line) {
+				break;
 			}
 		} else {
 			// If two values are same line.
-			if (enum_node->values[i].line != enum_node->values[i + 1].line && has_comment(enum_node->values[i].line)) {
-				if (named) {
-					enum_node->values.write[i].doc_description = get_doc_comment(enum_node->values[i].line, true);
-				} else {
-					current_class->set_enum_value_doc(enum_node->values[i].identifier->name, get_doc_comment(enum_node->values[i].line, true));
-				}
+			if (doc_comment_line == enum_node->values[i + 1].line) {
+				continue;
 			}
+		}
+
+		if (named) {
+			enum_node->values.write[i].doc_data = parse_doc_comment(doc_comment_line, single_line);
+		} else {
+			current_class->set_enum_value_doc_data(enum_node->values[i].identifier->name, parse_doc_comment(doc_comment_line, single_line));
 		}
 	}
 #endif // TOOLS_ENABLED
@@ -3411,18 +3424,19 @@ bool GDScriptParser::has_comment(int p_line, bool p_must_be_doc) {
 	return tokenizer.get_comments()[p_line].comment.begins_with("##");
 }
 
-String GDScriptParser::get_doc_comment(int p_line, bool p_single_line) {
+GDScriptParser::MemberDocData GDScriptParser::parse_doc_comment(int p_line, bool p_single_line) {
+	MemberDocData result;
+
 	const HashMap<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
-	ERR_FAIL_COND_V(!comments.has(p_line), String());
+	ERR_FAIL_COND_V(!comments.has(p_line), result);
 
 	if (p_single_line) {
 		if (comments[p_line].comment.begins_with("##")) {
-			return comments[p_line].comment.trim_prefix("##").strip_edges();
+			result.description = comments[p_line].comment.trim_prefix("##").strip_edges();
+			return result;
 		}
-		return "";
+		return result;
 	}
-
-	String doc;
 
 	int line = p_line;
 	DocLineState state = DOC_LINE_NORMAL;
@@ -3451,29 +3465,42 @@ String GDScriptParser::get_doc_comment(int p_line, bool p_single_line) {
 		}
 
 		String doc_line = comments[line].comment.trim_prefix("##");
-		doc += _process_doc_line(doc_line, doc, space_prefix, state);
 		line++;
+
+		if (state == DOC_LINE_NORMAL) {
+			String stripped_line = doc_line.strip_edges();
+			if (stripped_line.begins_with("@deprecated")) {
+				result.is_deprecated = true;
+				continue;
+			} else if (stripped_line.begins_with("@experimental")) {
+				result.is_experimental = true;
+				continue;
+			}
+		}
+
+		result.description += _process_doc_line(doc_line, result.description, space_prefix, state);
 	}
 
-	return doc;
+	return result;
 }
 
-void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &p_desc, Vector<Pair<String, String>> &p_tutorials, bool p_inner_class) {
+GDScriptParser::ClassDocData GDScriptParser::parse_class_doc_comment(int p_line, bool p_inner_class, bool p_single_line) {
+	ClassDocData result;
+
 	const HashMap<int, GDScriptTokenizer::CommentData> &comments = tokenizer.get_comments();
-	if (!comments.has(p_line)) {
-		return;
+	ERR_FAIL_COND_V(!comments.has(p_line), result);
+
+	if (p_single_line) {
+		if (comments[p_line].comment.begins_with("##")) {
+			result.brief = comments[p_line].comment.trim_prefix("##").strip_edges();
+			return result;
+		}
+		return result;
 	}
-	ERR_FAIL_COND(!p_brief.is_empty() || !p_desc.is_empty() || p_tutorials.size() != 0);
 
 	int line = p_line;
 	DocLineState state = DOC_LINE_NORMAL;
-	enum Mode {
-		BRIEF,
-		DESC,
-		TUTORIALS,
-		DONE,
-	};
-	Mode mode = BRIEF;
+	bool is_in_brief = true;
 
 	if (p_inner_class) {
 		while (comments.has(line - 1)) {
@@ -3500,18 +3527,21 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 			break;
 		}
 
-		String doc_line = comments[line++].comment.trim_prefix("##");
-		String title, link; // For tutorials.
+		String doc_line = comments[line].comment.trim_prefix("##");
+		line++;
 
 		if (state == DOC_LINE_NORMAL) {
-			// Set the read mode.
 			String stripped_line = doc_line.strip_edges();
-			if (stripped_line.is_empty()) {
-				if (mode == BRIEF && !p_brief.is_empty()) {
-					mode = DESC;
-				}
+
+			// A blank line separates the description from the brief.
+			if (is_in_brief && !result.brief.is_empty() && stripped_line.is_empty()) {
+				is_in_brief = false;
 				continue;
-			} else if (stripped_line.begins_with("@tutorial")) {
+			}
+
+			if (stripped_line.begins_with("@tutorial")) {
+				String title, link;
+
 				int begin_scan = String("@tutorial").length();
 				if (begin_scan >= stripped_line.length()) {
 					continue; // Invalid syntax.
@@ -3553,24 +3583,21 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 					link = stripped_line.substr(colon_pos).strip_edges();
 				}
 
-				mode = TUTORIALS;
-			} else if (mode == TUTORIALS) { // Tutorial docs are single line, we need a @tag after it.
-				mode = DONE;
+				result.tutorials.append(Pair<String, String>(title, link));
+				continue;
+			} else if (stripped_line.begins_with("@deprecated")) {
+				result.is_deprecated = true;
+				continue;
+			} else if (stripped_line.begins_with("@experimental")) {
+				result.is_experimental = true;
+				continue;
 			}
 		}
 
-		switch (mode) {
-			case BRIEF:
-				p_brief += _process_doc_line(doc_line, p_brief, space_prefix, state);
-				break;
-			case DESC:
-				p_desc += _process_doc_line(doc_line, p_desc, space_prefix, state);
-				break;
-			case TUTORIALS:
-				p_tutorials.append(Pair<String, String>(title, link));
-				break;
-			case DONE:
-				break;
+		if (is_in_brief) {
+			result.brief += _process_doc_line(doc_line, result.brief, space_prefix, state);
+		} else {
+			result.description += _process_doc_line(doc_line, result.description, space_prefix, state);
 		}
 	}
 
@@ -3578,11 +3605,11 @@ void GDScriptParser::get_class_doc_comment(int p_line, String &p_brief, String &
 		const ClassNode::Member &m = current_class->members[0];
 		int first_member_line = m.get_line();
 		if (first_member_line == line) {
-			p_brief = "";
-			p_desc = "";
-			p_tutorials.clear();
+			result = ClassDocData(); // Clear result.
 		}
 	}
+
+	return result;
 }
 #endif // TOOLS_ENABLED
 

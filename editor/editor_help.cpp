@@ -1059,6 +1059,7 @@ void EditorHelp::_update_doc() {
 			if (cd.properties[i].is_deprecated) {
 				DEPRECATED_DOC_TAG;
 			}
+
 			if (cd.properties[i].is_experimental) {
 				EXPERIMENTAL_DOC_TAG;
 			}
@@ -1303,6 +1304,7 @@ void EditorHelp::_update_doc() {
 			if (cd.signals[i].is_deprecated) {
 				DEPRECATED_DOC_TAG;
 			}
+
 			if (cd.signals[i].is_experimental) {
 				EXPERIMENTAL_DOC_TAG;
 			}
@@ -1363,6 +1365,7 @@ void EditorHelp::_update_doc() {
 				enum_line[E.key] = class_desc->get_paragraph_count() - 2;
 
 				_push_code_font();
+
 				class_desc->push_color(theme_cache.title_color);
 				if (E.value.size() && E.value[0].is_bitfield) {
 					class_desc->add_text("flags  ");
@@ -1379,21 +1382,32 @@ void EditorHelp::_update_doc() {
 				class_desc->push_color(theme_cache.headline_color);
 				class_desc->add_text(e);
 				class_desc->pop();
-				_pop_code_font();
 
 				class_desc->push_color(theme_cache.symbol_color);
 				class_desc->add_text(":");
 				class_desc->pop();
 
+				if (cd.enums.has(e)) {
+					if (cd.enums[e].is_deprecated) {
+						DEPRECATED_DOC_TAG;
+					}
+
+					if (cd.enums[e].is_experimental) {
+						EXPERIMENTAL_DOC_TAG;
+					}
+				}
+
+				_pop_code_font();
+
 				class_desc->add_newline();
 				class_desc->add_newline();
 
 				// Enum description.
-				if (e != "@unnamed_enums" && cd.enums.has(e) && !cd.enums[e].strip_edges().is_empty()) {
+				if (e != "@unnamed_enums" && cd.enums.has(e) && !cd.enums[e].description.strip_edges().is_empty()) {
 					class_desc->push_color(theme_cache.text_color);
 					_push_normal_font();
 					class_desc->push_indent(1);
-					_add_text(cd.enums[e]);
+					_add_text(cd.enums[e].description);
 					class_desc->pop();
 					_pop_normal_font();
 					class_desc->pop();
@@ -1417,6 +1431,7 @@ void EditorHelp::_update_doc() {
 					constant_line[enum_list[i].name] = class_desc->get_paragraph_count() - 2;
 
 					_push_code_font();
+
 					_add_bulletpoint();
 					class_desc->push_color(theme_cache.headline_color);
 					_add_text(enum_list[i].name);
@@ -1427,7 +1442,6 @@ void EditorHelp::_update_doc() {
 					class_desc->push_color(theme_cache.value_color);
 					_add_text(_fix_constant(enum_list[i].value));
 					class_desc->pop();
-					_pop_code_font();
 
 					if (enum_list[i].is_deprecated) {
 						DEPRECATED_DOC_TAG;
@@ -1436,6 +1450,8 @@ void EditorHelp::_update_doc() {
 					if (enum_list[i].is_experimental) {
 						EXPERIMENTAL_DOC_TAG;
 					}
+
+					_pop_code_font();
 
 					class_desc->add_newline();
 
@@ -1503,8 +1519,6 @@ void EditorHelp::_update_doc() {
 				_add_text(_fix_constant(constants[i].value));
 				class_desc->pop();
 
-				_pop_code_font();
-
 				if (constants[i].is_deprecated) {
 					DEPRECATED_DOC_TAG;
 				}
@@ -1512,6 +1526,8 @@ void EditorHelp::_update_doc() {
 				if (constants[i].is_experimental) {
 					EXPERIMENTAL_DOC_TAG;
 				}
+
+				_pop_code_font();
 
 				class_desc->add_newline();
 
@@ -1692,6 +1708,7 @@ void EditorHelp::_update_doc() {
 			if (cd.properties[i].is_deprecated) {
 				DEPRECATED_DOC_TAG;
 			}
+
 			if (cd.properties[i].is_experimental) {
 				EXPERIMENTAL_DOC_TAG;
 			}

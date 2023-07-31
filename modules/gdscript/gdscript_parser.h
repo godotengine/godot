@@ -257,6 +257,22 @@ public:
 		int line = 0, column = 0;
 	};
 
+#ifdef TOOLS_ENABLED
+	struct ClassDocData {
+		String brief;
+		String description;
+		Vector<Pair<String, String>> tutorials;
+		bool is_deprecated = false;
+		bool is_experimental = false;
+	};
+
+	struct MemberDocData {
+		String description;
+		bool is_deprecated = false;
+		bool is_experimental = false;
+	};
+#endif // TOOLS_ENABLED
+
 	struct Node {
 		enum Type {
 			NONE,
@@ -505,7 +521,7 @@ public:
 			int leftmost_column = 0;
 			int rightmost_column = 0;
 #ifdef TOOLS_ENABLED
-			String doc_description;
+			MemberDocData doc_data;
 #endif // TOOLS_ENABLED
 		};
 
@@ -513,7 +529,7 @@ public:
 		Vector<Value> values;
 		Variant dictionary;
 #ifdef TOOLS_ENABLED
-		String doc_description;
+		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
 
 		EnumNode() {
@@ -720,14 +736,12 @@ public:
 		DataType base_type;
 		String fqcn; // Fully-qualified class name. Identifies uniquely any class in the project.
 #ifdef TOOLS_ENABLED
-		String doc_description;
-		String doc_brief_description;
-		Vector<Pair<String, String>> doc_tutorials;
+		ClassDocData doc_data;
 
 		// EnumValue docs are parsed after itself, so we need a method to add/modify the doc property later.
-		void set_enum_value_doc(const StringName &p_name, const String &p_doc_description) {
+		void set_enum_value_doc_data(const StringName &p_name, const MemberDocData &p_doc_data) {
 			ERR_FAIL_INDEX(members_indices[p_name], members.size());
-			members.write[members_indices[p_name]].enum_value.doc_description = p_doc_description;
+			members.write[members_indices[p_name]].enum_value.doc_data = p_doc_data;
 		}
 #endif // TOOLS_ENABLED
 
@@ -766,7 +780,7 @@ public:
 
 	struct ConstantNode : public AssignableNode {
 #ifdef TOOLS_ENABLED
-		String doc_description;
+		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
 
 		ConstantNode() {
@@ -821,7 +835,7 @@ public:
 		LambdaNode *source_lambda = nullptr;
 #ifdef TOOLS_ENABLED
 		Vector<Variant> default_arg_values;
-		String doc_description;
+		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
 
 		bool resolved_signature = false;
@@ -1008,7 +1022,7 @@ public:
 		Vector<ParameterNode *> parameters;
 		HashMap<StringName, int> parameters_indices;
 #ifdef TOOLS_ENABLED
-		String doc_description;
+		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
 
 		SignalNode() {
@@ -1213,7 +1227,7 @@ public:
 		int assignments = 0;
 		bool is_static = false;
 #ifdef TOOLS_ENABLED
-		String doc_description;
+		MemberDocData doc_data;
 #endif // TOOLS_ENABLED
 
 		VariableNode() {
@@ -1488,12 +1502,12 @@ private:
 	ExpressionNode *parse_yield(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_invalid_token(ExpressionNode *p_previous_operand, bool p_can_assign);
 	TypeNode *parse_type(bool p_allow_void = false);
+
 #ifdef TOOLS_ENABLED
-	// Doc comments.
 	int class_doc_line = 0x7FFFFFFF;
 	bool has_comment(int p_line, bool p_must_be_doc = false);
-	String get_doc_comment(int p_line, bool p_single_line = false);
-	void get_class_doc_comment(int p_line, String &p_brief, String &p_desc, Vector<Pair<String, String>> &p_tutorials, bool p_inner_class);
+	MemberDocData parse_doc_comment(int p_line, bool p_single_line = false);
+	ClassDocData parse_class_doc_comment(int p_line, bool p_inner_class, bool p_single_line = false);
 #endif // TOOLS_ENABLED
 
 public:
