@@ -3620,7 +3620,9 @@ void EditorNode::set_current_scene(int p_idx) {
 	_update_title();
 	_update_scene_tabs();
 
-	call_deferred(SNAME("_set_main_scene_state"), state, get_edited_scene()); // Do after everything else is done setting up.
+	if (tabs_to_close.is_empty()) {
+		call_deferred(SNAME("_set_main_scene_state"), state, get_edited_scene()); // Do after everything else is done setting up.
+	}
 }
 
 void EditorNode::setup_color_picker(ColorPicker *p_picker) {
