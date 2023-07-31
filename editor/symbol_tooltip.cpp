@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "symbol_tooltip.h"
+#include "core/config/project_settings.h"
 #include "editor/plugins/script_text_editor.h"
 #include "editor_help.h"
 
@@ -69,9 +70,10 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor* code_editor) : code_editor(code_edi
 	body_label->set_theme(_create_body_label_theme());
 	layout_container->add_child(body_label);
 
+	float tooltip_delay_time = ProjectSettings::get_singleton()->get("gui/timers/tooltip_delay_sec");
 	tooltip_delay = memnew(Timer);
 	tooltip_delay->set_one_shot(true);
-	tooltip_delay->set_wait_time(0.5);
+	tooltip_delay->set_wait_time(tooltip_delay_time);
 	add_child(tooltip_delay);
 
 	tooltip_delay->connect("timeout", callable_mp(this, &SymbolTooltip::_on_tooltip_delay_timeout));
