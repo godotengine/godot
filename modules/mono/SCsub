@@ -23,8 +23,6 @@ env_mono.add_source_files(env.modules_sources, "mono_gd/support/*.cpp")
 if env["platform"] in ["macos", "ios"]:
     env_mono.add_source_files(env.modules_sources, "mono_gd/support/*.mm")
     env_mono.add_source_files(env.modules_sources, "mono_gd/support/*.m")
-elif env["platform"] == "android":
-    env_mono.add_source_files(env.modules_sources, "mono_gd/android_mono_config.gen.cpp")
 
 if env.editor_build:
     env_mono.add_source_files(env.modules_sources, "editor/*.cpp")
