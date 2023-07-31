@@ -1738,7 +1738,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	RenderDataGLES3 render_data;
 	{
 		render_data.render_buffers = rb;
-		render_data.transparent_bg = rb.is_valid() ? rb->is_transparent : false;
+		render_data.transparent_bg = rb.is_valid() ? rt->is_transparent : false;
 		// Our first camera is used by default
 		render_data.cam_transform = p_camera_data->main_transform;
 		render_data.inv_cam_transform = render_data.cam_transform.affine_inverse();
@@ -1984,6 +1984,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	}
 
 	if (!keep_color) {
+		clear_color.a = render_data.transparent_bg ? 0.0f : 1.0f;
 		glClearBufferfv(GL_COLOR, 0, clear_color.components);
 	}
 	RENDER_TIMESTAMP("Render Opaque Pass");

@@ -38,8 +38,6 @@ RenderSceneBuffersGLES3::~RenderSceneBuffersGLES3() {
 }
 
 void RenderSceneBuffersGLES3::configure(const RenderSceneBuffersConfiguration *p_config) {
-	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
-
 	//internal_size.x = p_config->get_internal_size().x; // ignore for now
 	//internal_size.y = p_config->get_internal_size().y;
 	width = p_config->get_target_size().x;
@@ -54,10 +52,6 @@ void RenderSceneBuffersGLES3::configure(const RenderSceneBuffersConfiguration *p
 	view_count = p_config->get_view_count();
 
 	free_render_buffer_data();
-
-	GLES3::RenderTarget *rt = texture_storage->get_render_target(render_target);
-
-	is_transparent = rt->is_transparent;
 }
 
 void RenderSceneBuffersGLES3::free_render_buffer_data() {
