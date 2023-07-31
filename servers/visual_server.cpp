@@ -2203,6 +2203,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_set_material", "item", "material"), &VisualServer::canvas_item_set_material);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_use_parent_material", "item", "enabled"), &VisualServer::canvas_item_set_use_parent_material);
 	ClassDB::bind_method(D_METHOD("debug_canvas_item_get_rect", "item"), &VisualServer::debug_canvas_item_get_rect);
+	ClassDB::bind_method(D_METHOD("debug_canvas_item_get_local_bound", "item"), &VisualServer::debug_canvas_item_get_local_bound);
 	ClassDB::bind_method(D_METHOD("canvas_light_create"), &VisualServer::canvas_light_create);
 	ClassDB::bind_method(D_METHOD("canvas_light_attach_to_canvas", "light", "canvas"), &VisualServer::canvas_light_attach_to_canvas);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_enabled", "light", "enabled"), &VisualServer::canvas_light_set_enabled);
