@@ -1060,14 +1060,15 @@ public:
 	virtual void canvas_item_attach_skeleton(RID p_item, RID p_skeleton) = 0;
 	virtual void canvas_item_set_skeleton_relative_xform(RID p_item, Transform2D p_relative_xform) = 0;
 
-	Rect2 debug_canvas_item_get_rect(RID p_item) {
 #ifdef TOOLS_ENABLED
-		return _debug_canvas_item_get_rect(p_item);
+	Rect2 debug_canvas_item_get_rect(RID p_item) { return _debug_canvas_item_get_rect(p_item); }
+	Rect2 debug_canvas_item_get_local_bound(RID p_item) { return _debug_canvas_item_get_local_bound(p_item); }
 #else
-		return Rect2();
+	Rect2 debug_canvas_item_get_rect(RID p_item) { return Rect2(); }
+	Rect2 debug_canvas_item_get_local_bound(RID p_item) { return Rect2(); }
 #endif
-	}
 	virtual Rect2 _debug_canvas_item_get_rect(RID p_item) = 0;
+	virtual Rect2 _debug_canvas_item_get_local_bound(RID p_item) = 0;
 
 	virtual void canvas_item_set_interpolated(RID p_item, bool p_interpolated) = 0;
 	virtual void canvas_item_reset_physics_interpolation(RID p_item) = 0;
