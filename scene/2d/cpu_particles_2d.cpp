@@ -1036,6 +1036,11 @@ void CPUParticles2D::_update_render_thread() {
 	if (OS::get_singleton()->is_update_pending(true)) {
 		update_mutex.lock();
 		VS::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
+
+		// Changing the multimesh changes the bounding rect, but with hierarchical
+		// culling we need to invalidate parent bounds through the tree so that they
+		// will be recalculated up to date, to prevent the particles being culled incorrectly.
+		VS::get_singleton()->canvas_item_invalidate_local_bound(get_canvas_item());
 		update_mutex.unlock();
 	}
 }

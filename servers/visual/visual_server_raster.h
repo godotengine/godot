@@ -695,6 +695,7 @@ public:
 	BIND3(canvas_item_set_custom_rect, RID, bool, const Rect2 &)
 	BIND2(canvas_item_set_modulate, RID, const Color &)
 	BIND2(canvas_item_set_self_modulate, RID, const Color &)
+	BIND1(canvas_item_invalidate_local_bound, RID)
 
 	BIND2(canvas_item_set_draw_behind_parent, RID, bool)
 

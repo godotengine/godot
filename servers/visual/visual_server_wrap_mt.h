@@ -596,6 +596,7 @@ public:
 	FUNC3(canvas_item_set_custom_rect, RID, bool, const Rect2 &)
 	FUNC2(canvas_item_set_modulate, RID, const Color &)
 	FUNC2(canvas_item_set_self_modulate, RID, const Color &)
+	FUNC1(canvas_item_invalidate_local_bound, RID)
 
 	FUNC2(canvas_item_set_draw_behind_parent, RID, bool)
 

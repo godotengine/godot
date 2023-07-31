@@ -325,6 +325,14 @@
 				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
 			</description>
 		</method>
+		<method name="canvas_item_invalidate_local_bound">
+			<return type="void" />
+			<argument index="0" name="item" type="RID" />
+			<description>
+				Invalidates the local bounds of the given [CanvasItem]. This will trigger bounds update through the tree.
+				[b]Note:[/b] For hierarchical culling to work correctly, in some cases local bounds must be explicitly invalidated. E.g. updates to some resources (such as [MultiMesh]) do not automatically update the local bounds of [CanvasItem]s which use these resources.
+			</description>
+		</method>
 		<method name="canvas_item_set_clip">
 			<return type="void" />
 			<argument index="0" name="item" type="RID" />

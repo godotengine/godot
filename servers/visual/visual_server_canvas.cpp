@@ -872,6 +872,12 @@ void VisualServerCanvas::canvas_item_set_self_modulate(RID p_item, const Color &
 	_make_bound_dirty(canvas_item);
 }
 
+void VisualServerCanvas::canvas_item_invalidate_local_bound(RID p_item) {
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+	_make_bound_dirty(canvas_item);
+}
+
 void VisualServerCanvas::canvas_item_set_draw_behind_parent(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
