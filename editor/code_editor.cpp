@@ -891,7 +891,7 @@ void CodeTextEditor::_line_col_changed() {
 	sb.append(itos(positional_column + 1).lpad(3));
 
 	sb.append(" | ");
-	sb.append(text_editor->is_indent_using_spaces() ? "Spaces" : "Tabs");
+	sb.append(text_editor->is_indent_using_spaces() ? TTR("Spaces", "Indentation") : TTR("Tabs", "Indentation"));
 
 	line_and_col_txt->set_text(sb.as_string());
 
