@@ -67,7 +67,7 @@ public:
 	Vector2 _calculate_tooltip_position(const String &symbol_word, const Vector2 &mouse_position);
 	void _update_tooltip_size();
 	void _update_tooltip_content(const String &header_content, const String &body_content);
-	SymbolTooltip(CodeTextEditor* code_editor);
+	SymbolTooltip(CodeTextEditor *code_editor);
 	~SymbolTooltip();
 };
 

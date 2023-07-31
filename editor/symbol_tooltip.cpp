@@ -33,7 +33,8 @@
 #include "editor/plugins/script_text_editor.h"
 #include "editor_help.h"
 
-SymbolTooltip::SymbolTooltip(CodeTextEditor* code_editor) : code_editor(code_editor) {
+SymbolTooltip::SymbolTooltip(CodeTextEditor* code_editor) :
+			code_editor(code_editor) {
 	// Initialize the tooltip components.
 
 	// Set the tooltip's theme (PanelContainer's theme)
@@ -108,11 +109,17 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 		last_symbol_word = symbol_word;
 	}
 
-	//const GDScriptParser::ClassNode *ast_tree = get_ast_tree(script);
-
 	ExtendGDScriptParser *parser = get_script_parser(script);
-	HashMap<String, const lsp::DocumentSymbol *> members = parser->get_members();
+	//HashMap<String, const lsp::DocumentSymbol *> members = parser->get_members();
 	const lsp::DocumentSymbol *member_symbol = parser->get_member_symbol(symbol_word);
+
+	if (member_symbol == nullptr) {
+		tooltip_delay->stop();
+		hide();
+		return;
+	}
+
+	//const GDScriptParser::ClassNode *ast_tree = get_ast_tree(script);
 
 	_update_tooltip_size();
 
@@ -316,8 +323,7 @@ const GDScriptParser::ClassNode::Member *find_symbol(const GDScriptParser::Class
 		if (member.get_name() == symbol_word) {
 			// Found the symbol.
 			return &member;
-		}
-		else if (member.type == GDScriptParser::ClassNode::Member::CLASS) {
+		} else if (member.type == GDScriptParser::ClassNode::Member::CLASS) {
 			const GDScriptParser::ClassNode::Member *found_symbol = find_symbol(member.m_class, symbol_word);
 			if (found_symbol) {
 				return found_symbol;
