@@ -152,11 +152,8 @@ private:
 
 protected:
 	_FORCE_INLINE_ void _notify_transform() {
-		if (!is_inside_tree()) {
-			return;
-		}
 		_notify_transform(this);
-		if (!block_transform_notify && notify_local_transform) {
+		if (is_inside_tree() && !block_transform_notify && notify_local_transform) {
 			notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
 		}
 	}
