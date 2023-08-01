@@ -348,7 +348,13 @@ void Viewport::_sub_window_update(Window *p_window) {
 		close_icon->draw(sw.canvas_item, r.position + Vector2(r.size.width - close_h_ofs, -close_v_ofs));
 	}
 
-	RS::get_singleton()->canvas_item_add_texture_rect(sw.canvas_item, r, sw.window->get_texture()->get_rid());
+	const Transform2D xform = sw.window->window_transform * sw.window->stretch_transform;
+	Rect2 vr = xform.xform(sw.window->get_visible_rect());
+	vr.position += p_window->get_position();
+	if (vr != r) {
+		RS::get_singleton()->canvas_item_add_rect(sw.canvas_item, r, Color());
+	}
+	RS::get_singleton()->canvas_item_add_texture_rect(sw.canvas_item, vr, sw.window->get_texture()->get_rid());
 }
 
 void Viewport::_sub_window_grab_focus(Window *p_window) {
