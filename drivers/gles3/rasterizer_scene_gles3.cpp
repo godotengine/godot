@@ -2171,7 +2171,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		if (scene_state.current_depth_draw != shader->depth_draw) {
 			switch (shader->depth_draw) {
 				case GLES3::SceneShaderData::DEPTH_DRAW_OPAQUE: {
-					glDepthMask(p_pass_mode == PASS_MODE_COLOR);
+					glDepthMask((p_pass_mode == PASS_MODE_COLOR && !GLES3::Config::get_singleton()->use_depth_prepass) ||
+							p_pass_mode == PASS_MODE_DEPTH ||
+							p_pass_mode == PASS_MODE_SHADOW);
 				} break;
 				case GLES3::SceneShaderData::DEPTH_DRAW_ALWAYS: {
 					glDepthMask(GL_TRUE);
