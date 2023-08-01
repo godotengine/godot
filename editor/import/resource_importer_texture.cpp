@@ -418,7 +418,7 @@ void ResourceImporterTexture::_save_editor_meta(const Dictionary &p_metadata, co
 
 Dictionary ResourceImporterTexture::_load_editor_meta(const String &p_path) const {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(f.is_null(), Dictionary(), "Missing required editor-specific import metadata for a texture; please, reimport.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), Dictionary(), vformat("Missing required editor-specific import metadata for a texture (please reimport it using the 'Import' tab): '%s'", p_path));
 
 	return f->get_var();
 }
