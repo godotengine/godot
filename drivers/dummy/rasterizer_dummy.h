@@ -455,6 +455,7 @@ public:
 	AABB _multimesh_get_aabb(RID p_multimesh) const { return AABB(); }
 
 	MMInterpolator *_multimesh_get_interpolator(RID p_multimesh) const { return nullptr; }
+	void multimesh_attach_canvas_item(RID p_multimesh, RID p_canvas_item, bool p_attach) {}
 
 	/* IMMEDIATE API */
 

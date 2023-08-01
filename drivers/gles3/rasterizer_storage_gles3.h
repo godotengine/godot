@@ -818,6 +818,7 @@ public:
 		bool dirty_data;
 
 		MMInterpolator interpolator;
+		LocalVector<RID> linked_canvas_items;
 
 		MultiMesh() :
 				size(0),
@@ -867,6 +868,7 @@ public:
 
 	virtual AABB _multimesh_get_aabb(RID p_multimesh) const;
 	virtual MMInterpolator *_multimesh_get_interpolator(RID p_multimesh) const;
+	virtual void multimesh_attach_canvas_item(RID p_multimesh, RID p_canvas_item, bool p_attach);
 
 	/* IMMEDIATE API */
 

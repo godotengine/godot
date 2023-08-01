@@ -4923,6 +4923,24 @@ RasterizerStorage::MMInterpolator *RasterizerStorageGLES3::_multimesh_get_interp
 	return &multimesh->interpolator;
 }
 
+void RasterizerStorageGLES3::multimesh_attach_canvas_item(RID p_multimesh, RID p_canvas_item, bool p_attach) {
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_NULL(multimesh);
+	ERR_FAIL_COND(!p_canvas_item.is_valid());
+
+	if (p_attach) {
+		int64_t found = multimesh->linked_canvas_items.find(p_canvas_item);
+		if (found == -1) {
+			multimesh->linked_canvas_items.push_back(p_canvas_item);
+		}
+	} else {
+		int64_t found = multimesh->linked_canvas_items.find(p_canvas_item);
+		if (found != -1) {
+			multimesh->linked_canvas_items.remove_unordered(found);
+		}
+	}
+}
+
 void RasterizerStorageGLES3::update_dirty_multimeshes() {
 	while (multimesh_update_list.first()) {
 		MultiMesh *multimesh = multimesh_update_list.first()->self();
@@ -5001,6 +5019,14 @@ void RasterizerStorageGLES3::update_dirty_multimeshes() {
 			}
 
 			multimesh->aabb = aabb;
+
+			// Inform any linked canvas items that bounds have changed
+			// (for hierarchical culling).
+			int num_linked = multimesh->linked_canvas_items.size();
+			for (int n = 0; n < num_linked; n++) {
+				const RID &rid = multimesh->linked_canvas_items[n];
+				VSG::canvas->_canvas_item_invalidate_local_bound(rid);
+			}
 		}
 		multimesh->dirty_aabb = false;
 		multimesh->dirty_data = false;
@@ -5348,7 +5374,7 @@ void RasterizerStorageGLES3::update_dirty_skeletons() {
 		int num_linked = skeleton->linked_canvas_items.size();
 		for (int n = 0; n < num_linked; n++) {
 			const RID &rid = skeleton->linked_canvas_items[n];
-			VSG::canvas->_canvas_item_skeleton_moved(rid);
+			VSG::canvas->_canvas_item_invalidate_local_bound(rid);
 		}
 
 		ele = ele->next();
@@ -7865,8 +7891,16 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 		// remove from interpolator
 		_interpolation_data.notify_free_multimesh(p_rid);
 
-		// delete the texture
 		MultiMesh *multimesh = multimesh_owner.get(p_rid);
+
+		// remove any references in linked canvas items
+		int num_linked = multimesh->linked_canvas_items.size();
+		for (int n = 0; n < num_linked; n++) {
+			const RID &rid = multimesh->linked_canvas_items[n];
+			VSG::canvas->_canvas_item_remove_references(rid, p_rid);
+		}
+
+		// delete the texture
 		multimesh->instance_remove_deps();
 
 		if (multimesh->mesh.is_valid()) {
