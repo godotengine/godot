@@ -1248,6 +1248,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								col->set_owner(p_node->get_owner());
 								col->set_transform(get_collision_shapes_transform(node_settings));
 								col->set_position(p_applied_root_scale * col->get_position());
+								const Ref<PhysicsMaterial> &pmo = node_settings["physics/physics_material_override"];
+								if (!pmo.is_null()) {
+									col->set_physics_material_override(pmo);
+								}
 								base = col;
 							} break;
 							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
@@ -1260,6 +1264,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								mi->set_transform(Transform3D());
 								rigid_body->add_child(mi, true);
 								mi->set_owner(rigid_body->get_owner());
+								const Ref<PhysicsMaterial> &pmo = node_settings["physics/physics_material_override"];
+								if (!pmo.is_null()) {
+									rigid_body->set_physics_material_override(pmo);
+								}
 								base = rigid_body;
 							} break;
 							case MESH_PHYSICS_STATIC_COLLIDER_ONLY: {
@@ -1271,6 +1279,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								p_node->set_owner(nullptr);
 								memdelete(p_node);
 								p_node = col;
+								const Ref<PhysicsMaterial> &pmo = node_settings["physics/physics_material_override"];
+								if (!pmo.is_null()) {
+									col->set_physics_material_override(pmo);
+								}
 								base = col;
 							} break;
 							case MESH_PHYSICS_AREA_ONLY: {
@@ -1286,6 +1298,9 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 
 							} break;
 						}
+
+						base->set_collision_layer(node_settings["physics/layer"]);
+						base->set_collision_mask(node_settings["physics/mask"]);
 
 						for (const Ref<Shape3D> &E : shapes) {
 							CollisionShape3D *cshape = memnew(CollisionShape3D);
@@ -1605,6 +1620,9 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "Static,Dynamic,Area"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex,Simple Convex,Trimesh,Box,Sphere,Cylinder,Capsule", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "physics/physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), Variant()));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), 1));
 
 			// Decomposition
 			Ref<MeshConvexDecompositionSettings> decomposition_default = Ref<MeshConvexDecompositionSettings>();
@@ -1703,9 +1721,7 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 					p_options.has("generate/physics") &&
 					p_options["generate/physics"].operator bool();
 
-			if (
-					p_option == "physics/body_type" ||
-					p_option == "physics/shape_type") {
+			if (p_option.find("physics/") >= 0) {
 				// Show if need to generate collisions.
 				return generate_physics;
 			}
