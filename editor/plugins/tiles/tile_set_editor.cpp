@@ -1002,10 +1002,15 @@ bool TileSourceInspectorPlugin::can_handle(Object *p_object) {
 
 bool TileSourceInspectorPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	if (p_path == "id") {
+		const Variant value = p_object->get("id");
+		if (value.get_type() == Variant::NIL) { // May happen if the object is not yet initialized.
+			return true;
+		}
+
 		HBoxContainer *hbox = memnew(HBoxContainer);
 		hbox->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 
-		id_label = memnew(Label(vformat(TTR("ID: %d"), p_object->get("id"))));
+		id_label = memnew(Label(vformat(TTR("ID: %d"), value)));
 		hbox->add_child(id_label);
 
 		Button *button = memnew(Button(TTR("Edit")));
