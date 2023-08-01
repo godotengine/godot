@@ -4858,7 +4858,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 	return ret;
 }
 
-RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary) {
+RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, RID p_placeholder) {
 	const uint8_t *binptr = p_shader_binary.ptr();
 	uint32_t binsize = p_shader_binary.size();
 
@@ -5184,12 +5184,21 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 
 		ERR_FAIL_V_MSG(RID(), error_text);
 	}
-
-	RID id = shader_owner.make_rid(shader);
+	RID id;
+	if (p_placeholder.is_null()) {
+		id = shader_owner.make_rid(shader);
+	} else {
+		shader_owner.initialize_rid(p_placeholder, shader);
+		id = p_placeholder;
+	}
 #ifdef DEV_ENABLED
 	set_resource_name(id, "RID:" + itos(id.get_id()));
 #endif
 	return id;
+}
+
+RID RenderingDeviceVulkan::shader_create_placeholder() {
+	return shader_owner.allocate_rid();
 }
 
 uint32_t RenderingDeviceVulkan::shader_get_vertex_input_attribute_mask(RID p_shader) {

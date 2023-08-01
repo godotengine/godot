@@ -619,6 +619,7 @@
 		<method name="shader_create_from_bytecode">
 			<return type="RID" />
 			<param index="0" name="binary_data" type="PackedByteArray" />
+			<param index="1" name="placeholder_rid" type="RID" default="RID()" />
 			<description>
 				Creates a new shader instance from a binary compiled shader. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method. See also [method shader_compile_binary_from_spirv] and [method shader_create_from_spirv].
@@ -631,6 +632,12 @@
 			<description>
 				Creates a new shader instance from SPIR-V intermediate code. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method. See also [method shader_compile_spirv_from_source] and [method shader_create_from_bytecode].
+			</description>
+		</method>
+		<method name="shader_create_placeholder">
+			<return type="RID" />
+			<description>
+				Create a placeholder RID by allocating an RID without initializing it for use in [method shader_create_from_bytecode]. This allows you to create an RID for a shader and pass it around, but defer compiling the shader to a later time.
 			</description>
 		</method>
 		<method name="shader_get_vertex_input_attribute_mask">
