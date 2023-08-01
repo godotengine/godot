@@ -2894,12 +2894,12 @@ HashMap<Vector2i, TileMapQuadrant> *TileMap::get_quadrant_map(int p_layer) {
 }
 
 Vector2i TileMap::get_coords_for_body_rid(RID p_physics_body) {
-	ERR_FAIL_COND_V_MSG(!bodies_coords.has(p_physics_body), Vector2i(), vformat("No tiles for the given body RID %d.", p_physics_body));
+	ERR_FAIL_COND_V_MSG(!bodies_coords.has(p_physics_body), Vector2i(), vformat("No tiles for the given body RID %d.", p_physics_body.get_id()));
 	return bodies_coords[p_physics_body];
 }
 
 int TileMap::get_layer_for_body_rid(RID p_physics_body) {
-	ERR_FAIL_COND_V_MSG(!bodies_layers.has(p_physics_body), int(), vformat("No tiles for the given body RID %d.", p_physics_body));
+	ERR_FAIL_COND_V_MSG(!bodies_layers.has(p_physics_body), int(), vformat("No tiles for the given body RID %d.", p_physics_body.get_id()));
 	return bodies_layers[p_physics_body];
 }
 
