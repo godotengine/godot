@@ -64,6 +64,12 @@ jobs:
               libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb wget unzip \
               libspeechd-dev speech-dispatcher
 
+      - name: Free disk space on runner
+        run: |
+          echo "Disk usage before:" && df -h
+          sudo rm -rf /usr/local/lib/android
+          echo "Disk usage after:" && df -h
+
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
         with:
