@@ -3017,6 +3017,7 @@ ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
 ScalableImageMemLoadFunc Image::_svg_scalable_mem_loader_func = nullptr;
+ImageMemLoadFunc Image::_dds_mem_loader_func = nullptr;
 
 void (*Image::_image_compress_bc_func)(Image *, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_bptc_func)(Image *, Image::UsedChannels) = nullptr;
@@ -3488,6 +3489,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_webp_from_buffer", "buffer"), &Image::load_webp_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_tga_from_buffer", "buffer"), &Image::load_tga_from_buffer);
 	ClassDB::bind_method(D_METHOD("load_bmp_from_buffer", "buffer"), &Image::load_bmp_from_buffer);
+	ClassDB::bind_method(D_METHOD("load_dds_from_buffer", "buffer"), &Image::load_dds_from_buffer);
 
 	ClassDB::bind_method(D_METHOD("load_svg_from_buffer", "buffer", "scale"), &Image::load_svg_from_buffer, DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("load_svg_from_string", "svg_str", "scale"), &Image::load_svg_from_string, DEFVAL(1.0));
@@ -3861,6 +3863,14 @@ Error Image::load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale) {
 
 Error Image::load_svg_from_string(const String &p_svg_str, float scale) {
 	return load_svg_from_buffer(p_svg_str.to_utf8_buffer(), scale);
+}
+
+Error Image::load_dds_from_buffer(const Vector<uint8_t> &p_array) {
+	ERR_FAIL_NULL_V_MSG(
+			_dds_mem_loader_func,
+			ERR_UNAVAILABLE,
+			"The DDS module isn't enabled. Recompile the Godot editor or export template binary with the `module_dds_enabled=yes` SCons option.");
+	return _load_from_buffer(p_array, _dds_mem_loader_func);
 }
 
 void Image::convert_rg_to_ra_rgba8() {

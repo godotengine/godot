@@ -312,6 +312,13 @@
 				[b]Note:[/b] Godot's BMP module doesn't support 16-bit per pixel images. Only 1-bit, 4-bit, 8-bit, 24-bit, and 32-bit per pixel images are supported.
 			</description>
 		</method>
+		<method name="load_dds_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Loads an image from the binary contents of a DDS file.
+			</description>
+		</method>
 		<method name="load_from_file" qualifiers="static">
 			<return type="Image" />
 			<param index="0" name="path" type="String" />
