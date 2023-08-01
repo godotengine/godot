@@ -484,10 +484,7 @@ struct _RigidBodyInOut {
 	int local_shape = 0;
 };
 
-void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
-	lock_callback();
-
-	set_ignore_transform_notification(true);
+void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
 	set_global_transform(p_state->get_transform());
 
 	linear_velocity = p_state->get_linear_velocity();
@@ -499,9 +496,17 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 		sleeping = p_state->is_sleeping();
 		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
 	}
+}
+
+void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
+	lock_callback();
+
+	set_ignore_transform_notification(true);
+	_sync_body_state(p_state);
 
 	GDVIRTUAL_CALL(_integrate_forces, p_state);
 
+	_sync_body_state(p_state);
 	set_ignore_transform_notification(false);
 	_on_transform_changed();
 
@@ -2915,24 +2920,27 @@ void PhysicalBone3D::_notification(int p_what) {
 	}
 }
 
+void PhysicalBone3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
+	set_global_transform(p_state->get_transform());
+	linear_velocity = p_state->get_linear_velocity();
+	angular_velocity = p_state->get_angular_velocity();
+}
+
 void PhysicalBone3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	if (!simulate_physics || !_internal_simulate_physics) {
 		return;
 	}
 
-	linear_velocity = p_state->get_linear_velocity();
-	angular_velocity = p_state->get_angular_velocity();
+	set_ignore_transform_notification(true);
+	_sync_body_state(p_state);
 
 	GDVIRTUAL_CALL(_integrate_forces, p_state);
 
-	/// Update bone transform.
-
-	Transform3D global_transform(p_state->get_transform());
-
-	set_ignore_transform_notification(true);
-	set_global_transform(global_transform);
+	_sync_body_state(p_state);
 	set_ignore_transform_notification(false);
 	_on_transform_changed();
+
+	Transform3D global_transform(p_state->get_transform());
 
 	// Update skeleton
 	if (parent_skeleton) {

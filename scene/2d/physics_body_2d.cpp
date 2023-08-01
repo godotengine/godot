@@ -429,10 +429,7 @@ struct _RigidBody2DInOut {
 	int local_shape = 0;
 };
 
-void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
-	lock_callback();
-
-	set_block_transform_notify(true); // don't want notify (would feedback loop)
+void RigidBody2D::_sync_body_state(PhysicsDirectBodyState2D *p_state) {
 	if (!freeze || freeze_mode != FREEZE_MODE_KINEMATIC) {
 		set_global_transform(p_state->get_transform());
 	}
@@ -444,9 +441,17 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 		sleeping = p_state->is_sleeping();
 		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
 	}
+}
+
+void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
+	lock_callback();
+
+	set_block_transform_notify(true); // don't want notify (would feedback loop)
+	_sync_body_state(p_state);
 
 	GDVIRTUAL_CALL(_integrate_forces, p_state);
 
+	_sync_body_state(p_state);
 	set_block_transform_notify(false); // want it back
 
 	if (contact_monitor) {
