@@ -133,7 +133,7 @@
 		<method name="get_use_taa" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [b]true[/b] if TAA is enabled.
+				Returns [code]true[/code] if TAA is enabled.
 			</description>
 		</method>
 		<method name="get_velocity_layer">
@@ -160,7 +160,7 @@
 			<param index="0" name="context" type="StringName" />
 			<param index="1" name="name" type="StringName" />
 			<description>
-				Returns [b]true[/b] if a cached texture exists for this name.
+				Returns [code]true[/code] if a cached texture exists for this name.
 			</description>
 		</method>
 	</methods>
