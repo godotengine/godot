@@ -538,7 +538,7 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if application is running in the sandbox.
-				[b]Note:[/b] This method is implemented on macOS.
+				[b]Note:[/b] This method is implemented on macOS and Linux.
 			</description>
 		</method>
 		<method name="is_stdout_verbose" qualifiers="const">
