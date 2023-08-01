@@ -85,6 +85,12 @@ jobs:
           sudo add-apt-repository ppa:kisak/kisak-mesa
           sudo apt-get install -qq mesa-vulkan-drivers
 
+      - name: Free disk space on runner
+        run: |
+          echo "Disk usage before:" && df -h
+          sudo rm -rf /usr/local/lib/android
+          echo "Disk usage after:" && df -h
+
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
         with:
