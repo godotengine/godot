@@ -1065,7 +1065,7 @@ void SceneImportSettings::_viewport_input(const Ref<InputEvent> &p_input) {
 void SceneImportSettings::_re_import() {
 	HashMap<StringName, Variant> main_settings;
 
-	main_settings = defaults;
+	main_settings = scene_import_settings_data->current;
 	main_settings.erase("_subresources");
 	Dictionary nodes;
 	Dictionary materials;
