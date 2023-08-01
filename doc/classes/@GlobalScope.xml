@@ -362,8 +362,8 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				The natural exponential function. It raises the mathematical constant [b]e[/b] to the power of [param x] and returns it.
-				[b]e[/b] has an approximate value of 2.71828, and can be obtained with [code]exp(1)[/code].
+				The natural exponential function. It raises the mathematical constant [i]e[/i] to the power of [param x] and returns it.
+				[i]e[/i] has an approximate value of 2.71828, and can be obtained with [code]exp(1)[/code].
 				For exponents to other bases use the method [method pow].
 				[codeblock]
 				var a = exp(2) # Approximately 7.39
