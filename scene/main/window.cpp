@@ -723,11 +723,16 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 
 void Window::update_mouse_cursor_state() {
 	ERR_MAIN_THREAD_GUARD;
-	// Update states based on mouse cursor position.
+	// Flag the mouse cursor state to be updated at the end of the frame based on mouse cursor position.
 	// This includes updated mouse_enter or mouse_exit signals or the current mouse cursor shape.
 	// These details are set in Viewport::_gui_input_event. To instantly
 	// see the changes in the viewport, we need to trigger a mouse motion event.
 	// This function should be called whenever scene tree changes affect the mouse cursor.
+
+	pending_mouse_cursor_state_update = true;
+}
+
+void Window::_update_mouse_cursor_state() {
 	Ref<InputEventMouseMotion> mm;
 	Vector2 pos = get_mouse_position();
 	Transform2D xform = get_global_canvas_transform().affine_inverse();
@@ -1282,6 +1287,14 @@ void Window::_notification(int p_what) {
 			}
 
 			RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
+		} break;
+
+		case NOTIFICATION_PROCESS: {
+			// TODO: remove this section and disable processing when update_mouse_cursor_state no longer creates InputEvents.
+			if (pending_mouse_cursor_state_update) {
+				_update_mouse_cursor_state();
+				pending_mouse_cursor_state_update = false;
+			}
 		} break;
 	}
 }
@@ -2759,6 +2772,7 @@ Window::Window() {
 		max_size_used = max_size; // Update max_size_used.
 	}
 
+	set_process(true);
 	theme_owner = memnew(ThemeOwner);
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 }

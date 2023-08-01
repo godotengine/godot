@@ -198,6 +198,8 @@ private:
 	virtual bool _can_consume_input_events() const override;
 
 	Ref<Shortcut> debugger_stop_shortcut;
+	bool pending_mouse_cursor_state_update = false;
+	void _update_mouse_cursor_state();
 
 protected:
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
