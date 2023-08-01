@@ -6,9 +6,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # First stage: Only static checks, fast and prevent expensive builds from running.
+
   static-checks:
     name: 📊 Static checks
     uses: ./.github/workflows/static_checks.yml
+
+  # Second stage: Run all the builds and some of the tests.
 
   android-build:
     name: 🤖 Android
@@ -39,3 +43,15 @@ jobs:
     name: 🌐 Web
     needs: static-checks
     uses: ./.github/workflows/web_builds.yml
+
+  # Third stage: Run auxiliary tests using build artifacts from previous jobs.
+
+  # Can be turned off for PRs that intentionally break compat with godot-cpp,
+  # until both the upstream PR and the matching godot-cpp changes are merged.
+  godot-cpp-test:
+    name: 🪲 Godot CPP
+    # This can be changed to depend on another platform, if we decide to use it for
+    # godot-cpp instead. Make sure to move the .github/actions/godot-api-dump step
+    # appropriately.
+    needs: linux-build
+    uses: ./.github/workflows/godot_cpp_test.yml
