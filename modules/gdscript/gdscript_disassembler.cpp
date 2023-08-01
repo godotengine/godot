@@ -113,6 +113,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 		switch (opcode) {
 			case OPCODE_OPERATOR: {
+				constexpr int _pointer_size = sizeof(Variant::ValidatedOperatorEvaluator) / sizeof(*_code_ptr);
 				int operation = _code_ptr[ip + 4];
 
 				text += "operator ";
@@ -125,7 +126,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " ";
 				text += DADDR(2);
 
-				incr += 5;
+				incr += 7 + _pointer_size;
 			} break;
 			case OPCODE_OPERATOR_VALIDATED: {
 				text += "validated operator ";
