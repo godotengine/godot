@@ -289,14 +289,12 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 
 	bool can_instantiate = (p_type_category == TypeCategory::CPP_TYPE && ClassDB::can_instantiate(p_type)) ||
 			p_type_category == TypeCategory::OTHER_TYPE;
-	bool is_virtual = ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type);
+	bool instantiable = can_instantiate && !(ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type));
 
-	r_item->set_meta(SNAME("__instantiable"), can_instantiate && !is_virtual);
+	r_item->set_meta(SNAME("__instantiable"), instantiable);
 
-	if (can_instantiate && !is_virtual) {
-		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
-	} else {
-		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, "NodeDisabled"));
+	r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type));
+	if (!instantiable) {
 		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 	}
 
@@ -714,7 +712,7 @@ void CreateDialog::_save_and_update_favorite_list() {
 
 				TreeItem *ti = favorites->create_item(root);
 				ti->set_text(0, l);
-				ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name, icon_fallback));
+				ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(name));
 			}
 		}
 	}
@@ -731,7 +729,7 @@ void CreateDialog::_load_favorites_and_history() {
 			String name = l.get_slicec(' ', 0);
 
 			if (EditorNode::get_editor_data().is_type_recognized(name) && !_is_class_disabled_by_feature_profile(name)) {
-				recent->add_item(l, EditorNode::get_singleton()->get_class_icon(name, icon_fallback));
+				recent->add_item(l, EditorNode::get_singleton()->get_class_icon(name));
 			}
 		}
 	}

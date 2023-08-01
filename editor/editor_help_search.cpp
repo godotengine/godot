@@ -593,16 +593,10 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray) {
-	Ref<Texture2D> icon = empty_icon;
-	if (ui_service->has_theme_icon(p_doc->name, SNAME("EditorIcons"))) {
-		icon = ui_service->get_theme_icon(p_doc->name, SNAME("EditorIcons"));
-	} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
-		icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
-	}
 	String tooltip = DTR(p_doc->brief_description.strip_edges());
 
 	TreeItem *item = results_tree->create_item(p_parent);
-	item->set_icon(0, icon);
+	item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_doc->name));
 	item->set_text(0, p_doc->name);
 	item->set_text(1, TTR("Class"));
 	item->set_tooltip_text(0, tooltip);
@@ -706,6 +700,5 @@ EditorHelpSearch::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, 
 		results_tree(p_results_tree),
 		term((p_search_flags & SEARCH_CASE_SENSITIVE) == 0 ? p_term.strip_edges().to_lower() : p_term.strip_edges()),
 		search_flags(p_search_flags),
-		empty_icon(ui_service->get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"))),
 		disabled_color(ui_service->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"))) {
 }
