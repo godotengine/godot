@@ -3276,7 +3276,7 @@ Vector2i TileMap::get_coords_for_body_rid(RID p_physics_body) {
 			return layer->get_coords_for_body_rid(p_physics_body);
 		}
 	}
-	ERR_FAIL_V_MSG(Vector2i(), vformat("No tiles for the given body RID %d.", p_physics_body));
+	ERR_FAIL_V_MSG(Vector2i(), vformat("No tiles for the given body RID %d.", p_physics_body.get_id()));
 }
 
 int TileMap::get_layer_for_body_rid(RID p_physics_body) {
@@ -3285,7 +3285,7 @@ int TileMap::get_layer_for_body_rid(RID p_physics_body) {
 			return i;
 		}
 	}
-	ERR_FAIL_V_MSG(-1, vformat("No tiles for the given body RID %d.", p_physics_body));
+	ERR_FAIL_V_MSG(-1, vformat("No tiles for the given body RID %d.", p_physics_body.get_id()));
 }
 
 void TileMap::fix_invalid_tiles() {
