@@ -2832,8 +2832,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 				fps_label->set_visible(show_fps);
 				RS::get_singleton()->viewport_set_measure_render_time(viewport->get_viewport_rid(), show_fps);
 				for (int i = 0; i < FRAME_TIME_HISTORY; i++) {
-					cpu_time_history[i] = 0;
-					gpu_time_history[i] = 0;
+					// Initialize to 120 FPS, so that the initial estimation until we get enough data is always reasonable.
+					cpu_time_history[i] = 8.333333;
+					gpu_time_history[i] = 8.333333;
 				}
 				cpu_time_history_index = 0;
 				gpu_time_history_index = 0;
