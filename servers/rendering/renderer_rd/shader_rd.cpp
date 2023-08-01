@@ -504,7 +504,6 @@ void ShaderRD::_compile_version(Version *p_version, int p_group) {
 
 	if (shader_cache_dir_valid) {
 		if (_load_from_cache(p_version, p_group)) {
-			print_line("loaded from cache!");
 			return;
 		}
 	}
