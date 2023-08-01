@@ -322,7 +322,7 @@ void EditorNode::_update_scene_tabs() {
 		scene_tabs->set_current_tab(editor_data.get_edited_scene());
 	}
 
-	const Size2 add_button_size = Size2(0, scene_tabs->get_size().y);
+	const Size2 add_button_size = Size2(scene_tab_add->get_size().x, scene_tabs->get_size().y);
 	if (scene_tabs->get_offset_buttons_visible()) {
 		// Move the add button to a fixed position.
 		if (scene_tab_add->get_parent() == scene_tabs) {
@@ -345,7 +345,7 @@ void EditorNode::_update_scene_tabs() {
 		Rect2 last_tab = scene_tabs->get_tab_rect(scene_tabs->get_tab_count() - 1);
 		int hsep = scene_tabs->get_theme_constant(SNAME("h_separation"));
 		if (scene_tabs->is_layout_rtl()) {
-			scene_tab_add->set_rect(Rect2(Point2(last_tab.position.x - scene_tab_add->get_size().x - hsep, last_tab.position.y), add_button_size));
+			scene_tab_add->set_rect(Rect2(Point2(last_tab.position.x - add_button_size.x - hsep, last_tab.position.y), add_button_size));
 		} else {
 			scene_tab_add->set_rect(Rect2(Point2(last_tab.position.x + last_tab.size.width + hsep, last_tab.position.y), add_button_size));
 		}
@@ -5680,11 +5680,17 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 			if (mb->get_button_index() == MouseButton::MIDDLE && mb->is_pressed()) {
 				_scene_tab_closed(scene_tabs->get_hovered_tab());
 			}
-		} else {
-			if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
+		} else if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
+			int tab_buttons = 0;
+			if (scene_tabs->get_offset_buttons_visible()) {
+				tab_buttons = theme->get_icon(SNAME("increment"), SNAME("TabBar"))->get_width() + theme->get_icon(SNAME("decrement"), SNAME("TabBar"))->get_width();
+			}
+
+			if ((gui_base->is_layout_rtl() && mb->get_position().x > tab_buttons) || (!gui_base->is_layout_rtl() && mb->get_position().x < scene_tabs->get_size().width - tab_buttons)) {
 				_menu_option_confirm(FILE_NEW_SCENE, true);
 			}
 		}
+
 		if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 			// Context menu.
 			scene_tabs_context_menu->clear();
