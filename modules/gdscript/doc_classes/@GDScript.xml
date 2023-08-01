@@ -533,6 +533,7 @@
 				[codeblock]
 				@export_node_path("Button", "TouchScreenButton") var some_button
 				[/codeblock]
+				[b]Note:[/b] The type must be a native class or a globally registered script (using the [code]class_name[/code] keyword) that inherits [Node].
 			</description>
 		</annotation>
 		<annotation name="@export_placeholder">

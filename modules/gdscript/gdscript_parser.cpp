@@ -3897,6 +3897,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 			}
 		}
 
+		// WARNING: Do not merge with the previous `if` because there `!=`, not `==`!
 		if (p_annotation->name == SNAME("@export_flags")) {
 			const int64_t max_flags = 32;
 			Vector<String> t = arg_string.split(":", true, 1);
@@ -3922,6 +3923,18 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": Starting from argument %d, the flag value must be specified explicitly.)", i + 1, max_flags + 1), p_annotation->arguments[i]);
 				return false;
 			}
+		} else if (p_annotation->name == SNAME("@export_node_path")) {
+			String native_class = arg_string;
+			if (ScriptServer::is_global_class(arg_string)) {
+				native_class = ScriptServer::get_global_class_native_base(arg_string);
+			}
+			if (!ClassDB::class_exists(native_class)) {
+				push_error(vformat(R"(Invalid argument %d of annotation "@export_node_path": The class "%s" was not found in the global scope.)", i + 1, arg_string), p_annotation->arguments[i]);
+				return false;
+			} else if (!ClassDB::is_parent_class(native_class, SNAME("Node"))) {
+				push_error(vformat(R"(Invalid argument %d of annotation "@export_node_path": The class "%s" does not inherit "Node".)", i + 1, arg_string), p_annotation->arguments[i]);
+				return false;
+			}
 		}
 
 		if (i > 0) {
@@ -3939,8 +3952,7 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 		if (export_type.builtin_type == Variant::INT) {
 			variable->export_info.type = Variant::INT;
 		}
-	}
-	if (p_annotation->name == SNAME("@export_multiline")) {
+	} else if (p_annotation->name == SNAME("@export_multiline")) {
 		if (export_type.builtin_type == Variant::ARRAY && export_type.has_container_element_type()) {
 			DataType inner_type = export_type.get_container_element_type();
 			if (inner_type.builtin_type != Variant::STRING) {
@@ -3968,6 +3980,8 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 		}
 	}
 
+	// WARNING: Do not merge with the previous `else if`! Otherwise `else` (default variable type check)
+	// will not work for the above annotations. `@export` and `@export_enum` validate the type separately.
 	if (p_annotation->name == SNAME("@export")) {
 		if (variable->datatype_specifier == nullptr && variable->initializer == nullptr) {
 			push_error(R"(Cannot use simple "@export" annotation with variable without type or initializer, since type can't be inferred.)", p_annotation);
