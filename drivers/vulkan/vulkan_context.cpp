@@ -2257,11 +2257,11 @@ Error VulkanContext::prepare_buffers() {
 
 		w->semaphore_acquired = false;
 
-		if (w->swapchain == VK_NULL_HANDLE) {
-			continue;
-		}
-
 		do {
+			if (w->swapchain == VK_NULL_HANDLE) {
+				break;
+			}
+
 			// Get the index of the next available swapchain image.
 			err =
 					fpAcquireNextImageKHR(device, w->swapchain, UINT64_MAX,
