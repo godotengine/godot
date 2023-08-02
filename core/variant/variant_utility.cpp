@@ -302,8 +302,72 @@ struct VariantUtilityFunctions {
 		return Math::is_inf(x);
 	}
 
-	static inline bool is_equal_approx(double x, double y) {
-		return Math::is_equal_approx(x, y);
+	static inline bool is_equal_approx(Variant x, Variant y, Callable::CallError &r_error) {
+		Variant::Type x_type = x.get_type();
+		Variant::Type y_type = x.get_type();
+
+		if (x_type == y_type) {
+			switch (x_type) {
+				case Variant::Type::INT: {
+					return Math::is_equal_approx(double(x), double(y));
+				}
+
+				case Variant::Type::FLOAT: {
+					return Math::is_equal_approx(float(x), float(y));
+				}
+
+				case Variant::Type::RECT2: {
+					return Rect2(x).is_equal_approx(y);
+				}
+
+				case Variant::Type::VECTOR2: {
+					return Vector2(x).is_equal_approx(y);
+				}
+
+				case Variant::Type::VECTOR3: {
+					return Vector3(x).is_equal_approx(y);
+				}
+
+				case Variant::Type::VECTOR4: {
+					return Vector4(x).is_equal_approx(y);
+				}
+
+				case Variant::Type::RECT2I:
+				case Variant::Type::VECTOR2I:
+				case Variant::Type::VECTOR3I:
+				case Variant::Type::VECTOR4I: {
+					return x == y;
+				}
+
+				default: {
+					// do nothing
+				}
+			}
+		}
+
+		if ((x_type == Variant::Type::INT && y_type == Variant::Type::FLOAT) || (x_type == Variant::Type::FLOAT && y_type == Variant::Type::INT)) {
+			return Math::is_equal_approx(float(x), float(y));
+		}
+
+		if ((x_type == Variant::Type::RECT2 && y_type == Variant::Type::RECT2I) || (x_type == Variant::Type::RECT2I && y_type == Variant::Type::RECT2)) {
+			return Rect2(x).is_equal_approx(y);
+		}
+
+		if ((x_type == Variant::Type::VECTOR2 && y_type == Variant::Type::VECTOR2I) || (x_type == Variant::Type::VECTOR2I && y_type == Variant::Type::VECTOR2)) {
+			return Vector2(x).is_equal_approx(y);
+		}
+
+		if ((x_type == Variant::Type::VECTOR3 && y_type == Variant::Type::VECTOR3I) || (x_type == Variant::Type::VECTOR3I && y_type == Variant::Type::VECTOR3)) {
+			return Vector3(x).is_equal_approx(y);
+		}
+
+		if ((x_type == Variant::Type::VECTOR4 && y_type == Variant::Type::VECTOR4I) || (x_type == Variant::Type::VECTOR4I && y_type == Variant::Type::VECTOR4)) {
+			return Vector4(x).is_equal_approx(y);
+		}
+
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 1;
+		return false;
 	}
 
 	static inline bool is_zero_approx(double x) {
@@ -1541,7 +1605,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(is_nan, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(is_inf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
-	FUNCBINDR(is_equal_approx, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDVR2(is_equal_approx, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(is_zero_approx, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(is_finite, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
