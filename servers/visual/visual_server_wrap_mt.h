@@ -624,6 +624,7 @@ public:
 	FUNC2(canvas_item_attach_skeleton, RID, RID)
 	FUNC2(canvas_item_set_skeleton_relative_xform, RID, Transform2D)
 	FUNC1R(Rect2, _debug_canvas_item_get_rect, RID)
+	FUNC1R(Rect2, _debug_canvas_item_get_local_bound, RID)
 
 	FUNC2(canvas_item_set_interpolated, RID, bool)
 	FUNC1(canvas_item_reset_physics_interpolation, RID)

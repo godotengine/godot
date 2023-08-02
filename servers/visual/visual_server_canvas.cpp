@@ -1470,6 +1470,12 @@ Rect2 VisualServerCanvas::_debug_canvas_item_get_rect(RID p_item) {
 	return canvas_item->get_rect();
 }
 
+Rect2 VisualServerCanvas::_debug_canvas_item_get_local_bound(RID p_item) {
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND_V(!canvas_item, Rect2());
+	return canvas_item->local_bound;
+}
+
 void VisualServerCanvas::canvas_item_set_skeleton_relative_xform(RID p_item, Transform2D p_relative_xform) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
