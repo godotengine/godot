@@ -5254,26 +5254,26 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> p_state) {
 	return OK;
 }
 
-void GLTFDocument::_assign_scene_names(Ref<GLTFState> p_state) {
+void GLTFDocument::_assign_node_names(Ref<GLTFState> p_state) {
 	for (int i = 0; i < p_state->nodes.size(); i++) {
-		Ref<GLTFNode> n = p_state->nodes[i];
+		Ref<GLTFNode> gltf_node = p_state->nodes[i];
 
 		// Any joints get unique names generated when the skeleton is made, unique to the skeleton
-		if (n->skeleton >= 0) {
+		if (gltf_node->skeleton >= 0) {
 			continue;
 		}
 
-		if (n->get_name().is_empty()) {
-			if (n->mesh >= 0) {
-				n->set_name(_gen_unique_name(p_state, "Mesh"));
-			} else if (n->camera >= 0) {
-				n->set_name(_gen_unique_name(p_state, "Camera3D"));
+		if (gltf_node->get_name().is_empty()) {
+			if (gltf_node->mesh >= 0) {
+				gltf_node->set_name(_gen_unique_name(p_state, "Mesh"));
+			} else if (gltf_node->camera >= 0) {
+				gltf_node->set_name(_gen_unique_name(p_state, "Camera3D"));
 			} else {
-				n->set_name(_gen_unique_name(p_state, "Node"));
+				gltf_node->set_name(_gen_unique_name(p_state, "Node"));
 			}
 		}
 
-		n->set_name(_gen_unique_name(p_state, n->get_name()));
+		gltf_node->set_name(_gen_unique_name(p_state, gltf_node->get_name()));
 	}
 }
 
@@ -5751,40 +5751,40 @@ void GLTFDocument::_convert_mesh_instance_to_gltf(MeshInstance3D *p_scene_parent
 	}
 }
 
-void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, Node *scene_parent, Node3D *scene_root, const GLTFNodeIndex node_index) {
-	Ref<GLTFNode> gltf_node = p_state->nodes[node_index];
+void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root) {
+	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
 
 	if (gltf_node->skeleton >= 0) {
-		_generate_skeleton_bone_node(p_state, scene_parent, scene_root, node_index);
+		_generate_skeleton_bone_node(p_state, p_node_index, p_scene_parent, p_scene_root);
 		return;
 	}
 
 	Node3D *current_node = nullptr;
 
 	// Is our parent a skeleton
-	Skeleton3D *active_skeleton = Object::cast_to<Skeleton3D>(scene_parent);
+	Skeleton3D *active_skeleton = Object::cast_to<Skeleton3D>(p_scene_parent);
 
 	const bool non_bone_parented_to_skeleton = active_skeleton;
 
 	// skinned meshes must not be placed in a bone attachment.
 	if (non_bone_parented_to_skeleton && gltf_node->skin < 0) {
 		// Bone Attachment - Parent Case
-		BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, node_index, gltf_node->parent);
+		BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, gltf_node->parent);
 
-		scene_parent->add_child(bone_attachment, true);
-		bone_attachment->set_owner(scene_root);
+		p_scene_parent->add_child(bone_attachment, true);
+		bone_attachment->set_owner(p_scene_root);
 
 		// There is no gltf_node that represent this, so just directly create a unique name
 		bone_attachment->set_name(gltf_node->get_name());
 
 		// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
 		// and attach it to the bone_attachment
-		scene_parent = bone_attachment;
+		p_scene_parent = bone_attachment;
 	}
 	// Check if any GLTFDocumentExtension classes want to generate a node for us.
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
-		current_node = ext->generate_scene_node(p_state, gltf_node, scene_parent);
+		current_node = ext->generate_scene_node(p_state, gltf_node, p_scene_parent);
 		if (current_node) {
 			break;
 		}
@@ -5792,38 +5792,38 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, Node *scene_pare
 	// If none of our GLTFDocumentExtension classes generated us a node, we generate one.
 	if (!current_node) {
 		if (gltf_node->skin >= 0 && gltf_node->mesh >= 0 && !gltf_node->children.is_empty()) {
-			current_node = _generate_spatial(p_state, node_index);
-			Node3D *mesh_inst = _generate_mesh_instance(p_state, node_index);
+			current_node = _generate_spatial(p_state, p_node_index);
+			Node3D *mesh_inst = _generate_mesh_instance(p_state, p_node_index);
 			mesh_inst->set_name(gltf_node->get_name());
 
 			current_node->add_child(mesh_inst, true);
 		} else if (gltf_node->mesh >= 0) {
-			current_node = _generate_mesh_instance(p_state, node_index);
+			current_node = _generate_mesh_instance(p_state, p_node_index);
 		} else if (gltf_node->camera >= 0) {
-			current_node = _generate_camera(p_state, node_index);
+			current_node = _generate_camera(p_state, p_node_index);
 		} else if (gltf_node->light >= 0) {
-			current_node = _generate_light(p_state, node_index);
+			current_node = _generate_light(p_state, p_node_index);
 		} else {
-			current_node = _generate_spatial(p_state, node_index);
+			current_node = _generate_spatial(p_state, p_node_index);
 		}
 	}
 	// Add the node we generated and set the owner to the scene root.
-	scene_parent->add_child(current_node, true);
-	if (current_node != scene_root) {
+	p_scene_parent->add_child(current_node, true);
+	if (current_node != p_scene_root) {
 		Array args;
-		args.append(scene_root);
+		args.append(p_scene_root);
 		current_node->propagate_call(StringName("set_owner"), args);
 	}
 	current_node->set_transform(gltf_node->xform);
 	current_node->set_name(gltf_node->get_name());
 
-	p_state->scene_nodes.insert(node_index, current_node);
+	p_state->scene_nodes.insert(p_node_index, current_node);
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
-		_generate_scene_node(p_state, current_node, scene_root, gltf_node->children[i]);
+		_generate_scene_node(p_state, gltf_node->children[i], current_node, p_scene_root);
 	}
 }
 
-void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, Node *p_scene_parent, Node3D *p_scene_root, const GLTFNodeIndex p_node_index) {
+void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root) {
 	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
 
 	Node3D *current_node = nullptr;
@@ -5907,7 +5907,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, Node *p_
 	p_state->scene_nodes.insert(p_node_index, current_node);
 
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
-		_generate_scene_node(p_state, active_skeleton, p_scene_root, gltf_node->children[i]);
+		_generate_scene_node(p_state, gltf_node->children[i], active_skeleton, p_scene_root);
 	}
 }
 
@@ -7431,11 +7431,11 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* ASSIGN SCENE NAMES */
-	_assign_scene_names(p_state);
+	_assign_node_names(p_state);
 
 	Node3D *root = memnew(Node3D);
 	for (int32_t root_i = 0; root_i < p_state->root_nodes.size(); root_i++) {
-		_generate_scene_node(p_state, root, root, p_state->root_nodes[root_i]);
+		_generate_scene_node(p_state, p_state->root_nodes[root_i], root, root);
 	}
 
 	return OK;
