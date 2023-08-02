@@ -468,6 +468,7 @@ private:
 
 	Selection selection;
 	bool deselect_on_focus_loss_enabled = true;
+	bool drag_and_drop_selection_enabled = true;
 
 	bool context_menu_enabled = false;
 	bool shortcut_keys_enabled = true;
@@ -699,8 +700,13 @@ public:
 	String get_selected_text() const;
 	void select_all();
 	void selection_copy();
+
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
+
+	void set_drag_and_drop_selection_enabled(const bool p_enabled);
+	bool is_drag_and_drop_selection_enabled() const;
+
 	void deselect();
 
 	int get_pending_paragraphs() const;
