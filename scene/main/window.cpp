@@ -618,12 +618,6 @@ void Window::_clear_window() {
 
 	bool had_focus = has_focus();
 
-	DisplayServer::get_singleton()->window_set_rect_changed_callback(Callable(), window_id);
-	DisplayServer::get_singleton()->window_set_window_event_callback(Callable(), window_id);
-	DisplayServer::get_singleton()->window_set_input_event_callback(Callable(), window_id);
-	DisplayServer::get_singleton()->window_set_input_text_callback(Callable(), window_id);
-	DisplayServer::get_singleton()->window_set_drop_files_callback(Callable(), window_id);
-
 	if (transient_parent && transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
 	}
