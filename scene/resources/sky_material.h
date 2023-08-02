@@ -114,13 +114,7 @@ public:
 };
 
 //////////////////////////////////////////////////////
-/**
- * PanoramaSkyCommonMaterial												 *
- *													 *											 *
- * PanoramaSkyCommonMaterial	is a base class for    *
- * PanoramaSkyMaterial and	     										 *
- * ComputePanoramaSkyMaterial. 					             *
-**/
+/* PanoramaSkyCommonMaterial */
 class PanoramaSkyCommonMaterial : public Material {
 	GDCLASS(PanoramaSkyCommonMaterial, Material);
 
@@ -132,8 +126,7 @@ protected:
 
 	static void _update_shader();
 
-	void on_params_change()
-	{
+	void on_params_change() {
 		notify_property_list_changed();
 		_update_shader();
 	}
@@ -158,35 +151,33 @@ class ComputePanoramaSkyMaterial : public PanoramaSkyCommonMaterial {
 	GDCLASS(ComputePanoramaSkyMaterial, PanoramaSkyCommonMaterial);
 
 public:
-  enum PanoramaScale {
-    DOUBLE_SIZE,
-    FULL_SIZE,
-    HALF_SIZE,
-    QUARTER_SIZE
-  };
+	enum PanoramaScale {
+		DOUBLE_SIZE,
+		FULL_SIZE,
+		HALF_SIZE,
+		QUARTER_SIZE
+	};
 
 private:
 	RID panorama;
-  PanoramaScale panorama_scale;
-  static Vector2i panorama_size;
+	PanoramaScale panorama_scale;
+	static Vector2i panorama_size;
 
 protected:
 	static void _bind_methods();
 
 public:
-
-	void set_panorama(const RID& p_panorama);
+	void set_panorama(const RID &p_panorama);
 	RID get_panorama() const;
 
-  PanoramaScale get_panorama_scale() const;
-  void set_panorama_scale(const PanoramaScale p_panorama_scale);
+	PanoramaScale get_panorama_scale() const;
+	void set_panorama_scale(const PanoramaScale p_panorama_scale);
 
-  Vector2i get_panorama_size() const;
+	Vector2i get_panorama_size() const;
 
 	ComputePanoramaSkyMaterial();
 	~ComputePanoramaSkyMaterial();
 };
-
 
 //////////////////////////////////////////////////////
 /* PanoramaSkyMaterial */

@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-
 #include "sky_material.h"
+#include "core/config/project_settings.h"
 #include "core/io/image.h"
+#include "core/version.h"
 #include "scene/resources/image_texture.h"
 #include "servers/rendering/rendering_device.h"
-#include "core/config/project_settings.h"
-#include "core/version.h"
 
 Mutex ProceduralSkyMaterial::shader_mutex;
 RID ProceduralSkyMaterial::shader_cache[2];
@@ -383,7 +382,7 @@ void PanoramaSkyCommonMaterial::set_filtering_enabled(bool p_enabled) {
 
 RID PanoramaSkyCommonMaterial::get_rid() const {
 	_update_shader();
-  // Don't compile shaders until first use, then compile both
+	// Don't compile shaders until first use, then compile both
 	if (!shader_set) {
 		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[1 - int(filter)]);
 		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(filter)]);
@@ -445,47 +444,50 @@ PanoramaSkyCommonMaterial::~PanoramaSkyCommonMaterial() {
 /////////////////////////////////////////
 /* ComputePanoramaSkyMaterial */
 
-void ComputePanoramaSkyMaterial::set_panorama(const RID& p_panorama) {
+void ComputePanoramaSkyMaterial::set_panorama(const RID &p_panorama) {
 	panorama = p_panorama;
-  if ( panorama.is_valid() )
-    RS::get_singleton()->material_set_param(_get_material(), "source_panorama", p_panorama);
+	if (panorama.is_valid())
+		RS::get_singleton()->material_set_param(_get_material(), "source_panorama", p_panorama);
 
 	on_params_change();
 }
 
 RID ComputePanoramaSkyMaterial::get_panorama() const {
-  return panorama;
+	return panorama;
 }
 
 ComputePanoramaSkyMaterial::PanoramaScale ComputePanoramaSkyMaterial::get_panorama_scale() const {
-  return panorama_scale;
+	return panorama_scale;
 }
 
 Vector2i ComputePanoramaSkyMaterial::get_panorama_size() const {
-  return panorama_size;
+	return panorama_size;
 }
 
-void ComputePanoramaSkyMaterial::set_panorama_scale(const ComputePanoramaSkyMaterial::PanoramaScale p_panorama_scale){
-  panorama_scale=p_panorama_scale;
-  switch(panorama_scale)
-  {
-    case ComputePanoramaSkyMaterial::DOUBLE_SIZE:
-      panorama_size.x=8192; panorama_size.y=4096;
-      break;
-    case ComputePanoramaSkyMaterial::FULL_SIZE:
-      panorama_size.x=4096; panorama_size.y=2048;
-      break;
-    case ComputePanoramaSkyMaterial::HALF_SIZE:
-      panorama_size.x=2048; panorama_size.y=1024;
-      break;
-    case ComputePanoramaSkyMaterial::QUARTER_SIZE:
-      panorama_size.x=1024; panorama_size.y=512;
-      break;
-    default:
-      const String msg("ComputePanoramaSkyMaterial::PanoramaScale out of bonds. Aborting.");
-      OS::get_singleton()->alert(msg);
-      ERR_FAIL_MSG(msg);
-  }
+void ComputePanoramaSkyMaterial::set_panorama_scale(const ComputePanoramaSkyMaterial::PanoramaScale p_panorama_scale) {
+	panorama_scale = p_panorama_scale;
+	switch (panorama_scale) {
+		case ComputePanoramaSkyMaterial::DOUBLE_SIZE:
+			panorama_size.x = 8192;
+			panorama_size.y = 4096;
+			break;
+		case ComputePanoramaSkyMaterial::FULL_SIZE:
+			panorama_size.x = 4096;
+			panorama_size.y = 2048;
+			break;
+		case ComputePanoramaSkyMaterial::HALF_SIZE:
+			panorama_size.x = 2048;
+			panorama_size.y = 1024;
+			break;
+		case ComputePanoramaSkyMaterial::QUARTER_SIZE:
+			panorama_size.x = 1024;
+			panorama_size.y = 512;
+			break;
+		default:
+			const String msg("ComputePanoramaSkyMaterial::PanoramaScale out of bonds. Aborting.");
+			OS::get_singleton()->alert(msg);
+			ERR_FAIL_MSG(msg);
+	}
 	on_params_change();
 }
 
@@ -500,19 +502,18 @@ void ComputePanoramaSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_filtering_enabled"), &ComputePanoramaSkyMaterial::is_filtering_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter"), "set_filtering_enabled", "is_filtering_enabled");
-  ADD_PROPERTY(PropertyInfo(Variant::INT, "panorama_scale", PROPERTY_HINT_ENUM, "Double(8192), Full(4096), Half(2048), Quarter(1024)"), "set_panorama_scale", "get_panorama_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "panorama_scale", PROPERTY_HINT_ENUM, "Double(8192), Full(4096), Half(2048), Quarter(1024)"), "set_panorama_scale", "get_panorama_scale");
 
-  BIND_ENUM_CONSTANT(DOUBLE_SIZE)
-  BIND_ENUM_CONSTANT(FULL_SIZE)
-  BIND_ENUM_CONSTANT(HALF_SIZE)
-  BIND_ENUM_CONSTANT(QUARTER_SIZE)
+	BIND_ENUM_CONSTANT(DOUBLE_SIZE)
+	BIND_ENUM_CONSTANT(FULL_SIZE)
+	BIND_ENUM_CONSTANT(HALF_SIZE)
+	BIND_ENUM_CONSTANT(QUARTER_SIZE)
 }
 
 Vector2i ComputePanoramaSkyMaterial::panorama_size;
 
-
 ComputePanoramaSkyMaterial::ComputePanoramaSkyMaterial() {
-  set_panorama_scale(ComputePanoramaSkyMaterial::PanoramaScale::FULL_SIZE);
+	set_panorama_scale(ComputePanoramaSkyMaterial::PanoramaScale::FULL_SIZE);
 }
 
 ComputePanoramaSkyMaterial::~ComputePanoramaSkyMaterial() {
@@ -522,7 +523,7 @@ ComputePanoramaSkyMaterial::~ComputePanoramaSkyMaterial() {
 /* PanoramaSkyMaterial */
 
 void PanoramaSkyMaterial::set_panorama(const Ref<Texture2D> &p_panorama) {
-  panorama = p_panorama;
+	panorama = p_panorama;
 	if (p_panorama.is_valid()) {
 		RS::get_singleton()->material_set_param(_get_material(), "source_panorama", p_panorama->get_rid());
 	} else {
@@ -532,7 +533,7 @@ void PanoramaSkyMaterial::set_panorama(const Ref<Texture2D> &p_panorama) {
 }
 
 Ref<Texture2D> PanoramaSkyMaterial::get_panorama() const {
-  return panorama;
+	return panorama;
 }
 
 void PanoramaSkyMaterial::_bind_methods() {
