@@ -1653,6 +1653,11 @@ void TextEdit::_notification(int p_what) {
 				line_drawing_cache[line] = cache_entry;
 			}
 
+			// Flush out any text in the drawer BEFORE
+			// drawing the completion box, as we want the completion
+			// box to overwrite the underlying text.
+			drawer.flush();
+
 			bool completion_below = false;
 			if (completion_active && is_cursor_visible && completion_options.size() > 0) {
 				// Completion panel
