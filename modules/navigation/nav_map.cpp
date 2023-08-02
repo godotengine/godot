@@ -1060,7 +1060,8 @@ void NavMap::sync() {
 		}
 
 		// Update the update ID.
-		map_update_id = (map_update_id + 1) % 9999999;
+		// Some code treats 0 as a failure case, so we avoid returning 0.
+		map_update_id = map_update_id % 9999999 + 1;
 	}
 
 	// Do we have modified obstacle positions?
