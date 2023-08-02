@@ -32,6 +32,7 @@
 #include "core/config/project_settings.h"
 #include "editor/plugins/script_text_editor.h"
 #include "editor_help.h"
+#include <queue>
 
 SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 		code_editor(code_editor) {
@@ -110,8 +111,8 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 	}
 
 	ExtendGDScriptParser *parser = get_script_parser(script);
-	//HashMap<String, const lsp::DocumentSymbol *> members = parser->get_members();
-	const lsp::DocumentSymbol *member_symbol = parser->get_member_symbol(symbol_word);
+	HashMap<String, const lsp::DocumentSymbol *> members = parser->get_members();
+	const lsp::DocumentSymbol *member_symbol = get_member_symbol(members, symbol_word);
 
 	if (member_symbol == nullptr) {
 		tooltip_delay->stop();
@@ -119,13 +120,16 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 		return;
 	}
 
-	//const GDScriptParser::ClassNode *ast_tree = get_ast_tree(script);
-
 	_update_tooltip_size();
 
 	// Get the documentation of the word under the mouse cursor
-	String documentation = _get_doc_of_word(symbol_word);
-	_update_tooltip_content(symbol_word, documentation);
+	String official_documentation = _get_doc_of_word(symbol_word);
+	String comment_documentation = member_symbol->documentation;
+
+	// TODO: Improve header content. Add the ability to see documentation comments or official documentation.
+	String header_content = member_symbol->detail.is_empty() ? symbol_word : member_symbol->detail;
+	String body_content = comment_documentation;
+	_update_tooltip_content(header_content, body_content);
 
 	Rect2 tooltip_rect = Rect2(get_position(), get_size());
 	bool mouse_over_tooltip = tooltip_rect.has_point(mouse_position);
@@ -335,7 +339,7 @@ const GDScriptParser::ClassNode::Member *find_symbol(const GDScriptParser::Class
 }
 
 // Gets the head of the GDScriptParser AST tree.
-static const GDScriptParser::ClassNode *get_ast_tree(const Ref<Script> &p_script) {
+/*static const GDScriptParser::ClassNode *get_ast_tree(const Ref<Script> &p_script) {
 	// Create and initialize the parser.
 	GDScriptParser *parser = memnew(GDScriptParser);
 	Error err = parser->parse(p_script->get_source_code(), p_script->get_path(), false);
@@ -348,7 +352,7 @@ static const GDScriptParser::ClassNode *get_ast_tree(const Ref<Script> &p_script
 	// Get the AST tree.
 	const GDScriptParser::ClassNode *ast_tree = parser->get_tree();
 	return ast_tree;
-}
+}*/
 
 static ExtendGDScriptParser *get_script_parser(const Ref<Script> &p_script) {
 	// Create and initialize the parser.
@@ -361,4 +365,37 @@ static ExtendGDScriptParser *get_script_parser(const Ref<Script> &p_script) {
 	}
 
 	return parser;
+}
+
+// TODO: Need to find the correct symbol instance instead of just the first match.
+const lsp::DocumentSymbol *get_member_symbol(
+		HashMap<String, const lsp::DocumentSymbol *> &members,
+		const String &symbol_word) {//,
+		//const Vector2 &symbol_position) {
+	// Use a queue to implement breadth-first search
+	std::queue<const lsp::DocumentSymbol*> queue;
+
+	// Add all members to the queue
+	for (const KeyValue<String, const lsp::DocumentSymbol *> &E : members) {
+		queue.push(E.value);
+	}
+
+	// While there are still elements in the queue
+	while (!queue.empty()) {
+		// Get the next symbol
+		const lsp::DocumentSymbol *symbol = queue.front();
+		queue.pop();
+
+		// If the name matches, return the symbol
+		if (symbol->name == symbol_word) { // && symbol->range.is_point_inside(symbol_position)) {
+			return symbol;
+		}
+
+		// Add the children to the queue for later processing
+		for (int i = 0; i < symbol->children.size(); ++i) {
+			queue.push(&symbol->children[i]);
+		}
+	}
+
+	return nullptr;  // If the symbol is not found, return nullptr
 }

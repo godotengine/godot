@@ -74,5 +74,6 @@ public:
 static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script);
 static const GDScriptParser::ClassNode *get_ast_tree(const Ref<Script> &p_script);
 static ExtendGDScriptParser *get_script_parser(const Ref<Script> &p_script);
+const lsp::DocumentSymbol *get_member_symbol(HashMap<String, const lsp::DocumentSymbol *> &members, const String &symbol_word);
 
 #endif // SYMBOL_TOOLTIP_H
