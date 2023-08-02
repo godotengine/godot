@@ -243,23 +243,18 @@ Error GLTFDocument::_serialize_gltf_extensions(Ref<GLTFState> p_state) const {
 }
 
 Error GLTFDocument::_serialize_scenes(Ref<GLTFState> p_state) {
+	ERR_FAIL_COND_V_MSG(p_state->root_nodes.size() == 0, ERR_INVALID_DATA, "GLTF export: The scene must have at least one root node.");
+	// Godot only supports one scene per glTF file.
 	Array scenes;
-	const int loaded_scene = 0;
-	p_state->json["scene"] = loaded_scene;
-
-	if (p_state->nodes.size()) {
-		Dictionary s;
-		if (!p_state->scene_name.is_empty()) {
-			s["name"] = p_state->scene_name;
-		}
-
-		Array nodes;
-		nodes.push_back(0);
-		s["nodes"] = nodes;
-		scenes.push_back(s);
-	}
+	Dictionary scene_dict;
+	scenes.append(scene_dict);
 	p_state->json["scenes"] = scenes;
-
+	p_state->json["scene"] = 0;
+	// Add nodes to the scene dict.
+	scene_dict["nodes"] = p_state->root_nodes;
+	if (!p_state->scene_name.is_empty()) {
+		scene_dict["name"] = p_state->scene_name;
+	}
 	return OK;
 }
 
@@ -5462,9 +5457,7 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 	GLTFNodeIndex gltf_root = p_gltf_root;
 	if (gltf_root == -1) {
 		gltf_root = current_node_i;
-		Array scenes;
-		scenes.push_back(gltf_root);
-		p_state->json["scene"] = scenes;
+		p_state->root_nodes.push_back(gltf_root);
 	}
 	_create_gltf_node(p_state, p_current, current_node_i, p_gltf_parent, gltf_root, gltf_node);
 	for (int node_i = 0; node_i < p_current->get_child_count(); node_i++) {
@@ -7287,42 +7280,44 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, boo
 	return root;
 }
 
-Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags) {
-	ERR_FAIL_COND_V(p_state.is_null(), FAILED);
-	p_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
-	p_state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
-
+Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> r_state, uint32_t p_flags) {
+	ERR_FAIL_COND_V(r_state.is_null(), FAILED);
+	r_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+	r_state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
+	if (!r_state->buffers.size()) {
+		r_state->buffers.push_back(Vector<uint8_t>());
+	}
+	// Perform export preflight for document extensions. Only extensions that
+	// return OK will be used for the rest of the export steps.
 	document_extensions.clear();
 	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
 		ERR_CONTINUE(ext.is_null());
-		Error err = ext->export_preflight(p_state, p_node);
+		Error err = ext->export_preflight(r_state, p_node);
 		if (err == OK) {
 			document_extensions.push_back(ext);
 		}
 	}
-	_convert_scene_node(p_state, p_node, -1, -1);
-	if (!p_state->buffers.size()) {
-		p_state->buffers.push_back(Vector<uint8_t>());
-	}
+	// Add the root node(s) and their descendants to the state.
+	_convert_scene_node(r_state, p_node, -1, -1);
 	return OK;
 }
 
-Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags) {
-	ERR_FAIL_COND_V(p_state.is_null(), FAILED);
+Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> r_state, uint32_t p_flags) {
+	ERR_FAIL_COND_V(r_state.is_null(), FAILED);
 	// TODO Add missing texture and missing .bin file paths to r_missing_deps 2021-09-10 fire
 	Error err = FAILED;
-	p_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
-	p_state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
+	r_state->use_named_skin_binds = p_flags & GLTF_IMPORT_USE_NAMED_SKIN_BINDS;
+	r_state->discard_meshes_and_materials = p_flags & GLTF_IMPORT_DISCARD_MESHES_AND_MATERIALS;
 
 	Ref<FileAccessMemory> file_access;
 	file_access.instantiate();
 	file_access->open_custom(p_bytes.ptr(), p_bytes.size());
-	p_state->base_path = p_base_path.get_base_dir();
-	err = _parse(p_state, p_state->base_path, file_access);
+	r_state->base_path = p_base_path.get_base_dir();
+	err = _parse(r_state, r_state->base_path, file_access);
 	ERR_FAIL_COND_V(err != OK, err);
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
-		err = ext->import_post_parse(p_state);
+		err = ext->import_post_parse(r_state);
 		ERR_FAIL_COND_V(err != OK, err);
 	}
 	return OK;
