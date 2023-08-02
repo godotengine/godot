@@ -1540,6 +1540,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
+#ifdef TOOLS_ENABLED
+	if (editor) {
+		Engine::get_singleton()->set_editor_hint(true);
+	}
+#endif
+
 	// Initialize user data dir.
 	OS::get_singleton()->ensure_user_data_dir();
 
@@ -1567,7 +1573,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 	if (editor) {
 		packed_data->set_disabled(true);
-		Engine::get_singleton()->set_editor_hint(true);
 		main_args.push_back("--editor");
 		if (!init_windowed) {
 			init_maximized = true;
