@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tile_map.compat.inc                                                   */
+/*  code_edit.compat.inc                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,12 +30,12 @@
 
 #ifndef DISABLE_DEPRECATED
 
-Rect2i TileMap::_get_used_rect_bind_compat_78328() {
-	return get_used_rect();
+String CodeEdit::_get_text_for_symbol_lookup_bind_compat_73196() {
+	return get_text_for_symbol_lookup();
 }
 
-void TileMap::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("get_used_rect"), &TileMap::_get_used_rect_bind_compat_78328);
+void CodeEdit::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("get_text_for_symbol_lookup"), &CodeEdit::_get_text_for_symbol_lookup_bind_compat_73196);
 }
 
 #endif

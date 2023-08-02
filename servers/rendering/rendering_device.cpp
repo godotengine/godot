@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "rendering_device.h"
+#include "rendering_device.compat.inc"
 
 #include "rendering_device_binds.h"
 
