@@ -756,6 +756,21 @@ TEST_CASE("[SceneTree][Viewport] Control mouse cursor shape") {
 	}
 }
 
+TEST_CASE("[SceneTree][Viewport] Embedded Windows") {
+	Window *root = SceneTree::get_singleton()->get_root();
+	Window *w = memnew(Window);
+
+	SUBCASE("[Viewport] Safe-rect of embedded Window") {
+		root->add_child(w);
+		root->subwindow_set_popup_safe_rect(w, Rect2i(10, 10, 10, 10));
+		CHECK_EQ(root->subwindow_get_popup_safe_rect(w), Rect2i(10, 10, 10, 10));
+		root->remove_child(w);
+		CHECK_EQ(root->subwindow_get_popup_safe_rect(w), Rect2i());
+	}
+
+	memdelete(w);
+}
+
 } // namespace TestViewport
 
 #endif // TEST_VIEWPORT_H

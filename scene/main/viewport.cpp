@@ -3637,8 +3637,7 @@ void Viewport::subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_r
 	int index = _sub_window_find(p_window);
 	ERR_FAIL_COND(index == -1);
 
-	SubWindow sw = gui.sub_windows[index];
-	sw.parent_safe_rect = p_rect;
+	gui.sub_windows.write[index].parent_safe_rect = p_rect;
 }
 
 Rect2i Viewport::subwindow_get_popup_safe_rect(Window *p_window) const {
