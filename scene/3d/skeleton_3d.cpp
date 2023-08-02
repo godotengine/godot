@@ -922,18 +922,18 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 
 			if (b.parent >= 0) {
 				b.pose_global = bonesptr[b.parent].pose_global * pose;
-				b.pose_global_no_override = bonesptr[b.parent].pose_global_no_override * pose;
+				b.pose_global_no_override = b.pose_global;
 			} else {
 				b.pose_global = pose;
-				b.pose_global_no_override = pose;
+				b.pose_global_no_override = b.pose_global;
 			}
 		} else {
 			if (b.parent >= 0) {
 				b.pose_global = bonesptr[b.parent].pose_global * b.rest;
-				b.pose_global_no_override = bonesptr[b.parent].pose_global_no_override * b.rest;
+				b.pose_global_no_override = b.pose_global;
 			} else {
 				b.pose_global = b.rest;
-				b.pose_global_no_override = b.rest;
+				b.pose_global_no_override = b.pose_global;
 			}
 		}
 		if (rest_dirty) {
