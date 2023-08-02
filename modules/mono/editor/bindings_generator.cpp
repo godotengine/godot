@@ -2128,6 +2128,11 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		cs_in_expr_is_unsafe |= arg_type->cs_in_expr_is_unsafe;
 	}
 
+	// Collect caller name for MethodBind
+	if (p_imethod.is_vararg) {
+		icall_params += ", (godot_string_name)MethodName." + p_imethod.proxy_name + ".NativeValue";
+	}
+
 	// Generate method
 	{
 		if (!p_imethod.is_virtual && !p_imethod.requires_object_call) {
@@ -2501,6 +2506,11 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 		i++;
 	}
 
+	// Collect caller name for MethodBind
+	if (p_icall.is_vararg) {
+		c_func_sig << ", godot_string_name caller";
+	}
+
 	String icall_method = p_icall.name;
 
 	// Generate icall function
@@ -2566,7 +2576,12 @@ Error BindingsGenerator::_generate_cs_native_calls(const InternalCall &p_icall, 
 			r_output << C_CLASS_NATIVE_FUNCS ".godotsharp_method_bind_call("
 					 << CS_PARAM_METHODBIND ", " << (p_icall.is_static ? "IntPtr.Zero" : CS_PARAM_INSTANCE)
 					 << ", " << (p_icall.get_arguments_count() ? "(godot_variant**)" C_LOCAL_PTRCALL_ARGS : "null")
-					 << ", total_length, out _);\n";
+					 << ", total_length, out godot_variant_call_error vcall_error);\n";
+
+			r_output << base_indent << "ExceptionUtils.DebugCheckCallError(caller"
+					 << ", " << (p_icall.is_static ? "IntPtr.Zero" : CS_PARAM_INSTANCE)
+					 << ", " << (p_icall.get_arguments_count() ? "(godot_variant**)" C_LOCAL_PTRCALL_ARGS : "null")
+					 << ", total_length, vcall_error);\n";
 
 			if (!ret_void) {
 				if (return_type->cname != name_cache.type_Variant) {
