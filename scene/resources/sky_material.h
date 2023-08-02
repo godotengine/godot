@@ -155,7 +155,7 @@ public:
 //////////////////////////////////////////////////////
 /* ComputePanoramaSkyMaterial */
 class ComputePanoramaSkyMaterial : public PanoramaSkyCommonMaterial {
-	GDCLASS(ComputePanoramaSkyMaterial, Material);
+	GDCLASS(ComputePanoramaSkyMaterial, PanoramaSkyCommonMaterial);
 
 public:
   enum PanoramaScale {
@@ -192,7 +192,7 @@ public:
 /* PanoramaSkyMaterial */
 
 class PanoramaSkyMaterial : public PanoramaSkyCommonMaterial {
-	GDCLASS(PanoramaSkyMaterial, Material);
+	GDCLASS(PanoramaSkyMaterial, PanoramaSkyCommonMaterial);
 
 private:
 	Ref<Texture2D> panorama;
