@@ -1187,7 +1187,7 @@ void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 
 	if (windows[p_window].mpass || windows[p_window].mpath.size() == 0) {
-		SetWindowRgn(windows[p_window].hWnd, nullptr, TRUE);
+		SetWindowRgn(windows[p_window].hWnd, nullptr, FALSE);
 	} else {
 		POINT *points = (POINT *)memalloc(sizeof(POINT) * windows[p_window].mpath.size());
 		for (int i = 0; i < windows[p_window].mpath.size(); i++) {
@@ -1201,8 +1201,7 @@ void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
 		}
 
 		HRGN region = CreatePolygonRgn(points, windows[p_window].mpath.size(), ALTERNATE);
-		SetWindowRgn(windows[p_window].hWnd, region, TRUE);
-		DeleteObject(region);
+		SetWindowRgn(windows[p_window].hWnd, region, FALSE);
 		memfree(points);
 	}
 }
