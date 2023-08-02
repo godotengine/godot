@@ -299,9 +299,6 @@ void Label::_update_visible() {
 	int last_line = MIN(lines_rid.size(), lines_visible + lines_skipped);
 	for (int64_t i = lines_skipped; i < last_line; i++) {
 		minsize.height += TS->shaped_text_get_size(lines_rid[i]).y + line_spacing;
-		if (minsize.height > (get_size().height - style->get_minimum_size().height + line_spacing)) {
-			break;
-		}
 	}
 	if (minsize.height > 0) {
 		minsize.height -= line_spacing;
