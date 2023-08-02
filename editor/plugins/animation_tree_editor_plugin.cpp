@@ -241,7 +241,8 @@ bool AnimationTreeEditor::can_edit(const Ref<AnimationNode> &p_node) const {
 }
 
 Vector<String> AnimationTreeEditor::get_animation_list() {
-	if (!singleton->is_visible()) {
+	if (!singleton->tree || !singleton->is_visible()) {
+		// When tree is empty, singleton not in the main thread.
 		return Vector<String>();
 	}
 
