@@ -114,20 +114,88 @@ public:
 };
 
 //////////////////////////////////////////////////////
+/**
+ * PanoramaSkyCommonMaterial												 *
+ *													 *											 *
+ * PanoramaSkyCommonMaterial	is a base class for    *
+ * PanoramaSkyMaterial and	     										 *
+ * ComputePanoramaSkyMaterial. 					             *
+**/
+class PanoramaSkyCommonMaterial : public Material {
+	GDCLASS(PanoramaSkyCommonMaterial, Material);
+
+protected:
+	static Mutex shader_mutex;
+	static RID shader_cache[2];
+	mutable bool shader_set = false;
+	bool filter = true;
+
+	static void _update_shader();
+
+	void on_params_change()
+	{
+		notify_property_list_changed();
+		_update_shader();
+	}
+
+public:
+	void set_filtering_enabled(bool p_enabled);
+	bool is_filtering_enabled() const;
+
+	virtual Shader::Mode get_shader_mode() const override;
+	virtual RID get_shader_rid() const override;
+	virtual RID get_rid() const override;
+
+	static void cleanup_shader();
+
+	PanoramaSkyCommonMaterial();
+	~PanoramaSkyCommonMaterial();
+};
+
+//////////////////////////////////////////////////////
+/* ComputePanoramaSkyMaterial */
+class ComputePanoramaSkyMaterial : public PanoramaSkyCommonMaterial {
+	GDCLASS(ComputePanoramaSkyMaterial, Material);
+
+public:
+  enum PanoramaScale {
+    DOUBLE_SIZE,
+    FULL_SIZE,
+    HALF_SIZE,
+    QUARTER_SIZE
+  };
+
+private:
+	RID panorama;
+  PanoramaScale panorama_scale;
+  static Vector2i panorama_size;
+
+protected:
+	static void _bind_methods();
+
+public:
+
+	void set_panorama(const RID& p_panorama);
+	RID get_panorama() const;
+
+  PanoramaScale get_panorama_scale() const;
+  void set_panorama_scale(const PanoramaScale p_panorama_scale);
+
+  Vector2i get_panorama_size() const;
+
+	ComputePanoramaSkyMaterial();
+	~ComputePanoramaSkyMaterial();
+};
+
+
+//////////////////////////////////////////////////////
 /* PanoramaSkyMaterial */
 
-class PanoramaSkyMaterial : public Material {
+class PanoramaSkyMaterial : public PanoramaSkyCommonMaterial {
 	GDCLASS(PanoramaSkyMaterial, Material);
 
 private:
 	Ref<Texture2D> panorama;
-
-	static Mutex shader_mutex;
-	static RID shader_cache[2];
-	static void _update_shader();
-	mutable bool shader_set = false;
-
-	bool filter = true;
 
 protected:
 	static void _bind_methods();
@@ -136,24 +204,15 @@ public:
 	void set_panorama(const Ref<Texture2D> &p_panorama);
 	Ref<Texture2D> get_panorama() const;
 
-	void set_filtering_enabled(bool p_enabled);
-	bool is_filtering_enabled() const;
-
 	void set_energy_multiplier(float p_multiplier);
 	float get_energy_multiplier() const;
-
-	virtual Shader::Mode get_shader_mode() const override;
-	virtual RID get_shader_rid() const override;
-	virtual RID get_rid() const override;
-
-	static void cleanup_shader();
 
 	PanoramaSkyMaterial();
 	~PanoramaSkyMaterial();
 };
 
 //////////////////////////////////////////////////////
-/* PanoramaSkyMaterial */
+/* PhysicalSkyMaterial */
 
 class PhysicalSkyMaterial : public Material {
 	GDCLASS(PhysicalSkyMaterial, Material);
@@ -226,5 +285,7 @@ public:
 	PhysicalSkyMaterial();
 	~PhysicalSkyMaterial();
 };
+
+VARIANT_ENUM_CAST(ComputePanoramaSkyMaterial::PanoramaScale)
 
 #endif // SKY_MATERIAL_H

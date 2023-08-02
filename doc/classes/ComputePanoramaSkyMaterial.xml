@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ComputePanoramaSkyMaterial" inherits="Material" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+			A [Material] used with [Sky] to draw a background texture which is precomputed.
+	</brief_description>
+	<description>
+		This class is differs from [PanoramaSkyMaterial] in that it uses [RID] instead of [Texture2D] to set the panorama texture which resides on GPU.
+		One need to generate panorama using GLSL compute shader first, then use
+		[code]
+		# copy the panorama from image2D output of a compute shader to a texture2D which is owned by RenderingServer.
+		panorama_rid=RenderingServer.texture_rd_create(compute_panorama_rid)
+    # save old panorama_rid for further disposal
+    var old_panorama_rid=env.sky.sky_material.get_panorama()
+		# set the panorama to this sky material
+		WorldEnvironment.Environment.sky.sky_material.set_panorama(panorama_rid)
+
+    if old_panorama_rid:
+      rd.free_rid(old_panorama_rid) # rd is the result of RenderingServer.get_rendering_device()
+		[/code]
+
+		This class utilizes the mechanism first introduced in following PR:[https://github.com/godotengine/godot/pull/79288].
+		This [Material] can not be converted to shader as there is no sense to do so.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="filter" type="bool" setter="set_filtering_enabled" getter="is_filtering_enabled" default="true">
+			Inherited from [PanoramaSkyCommonMaterial].
+		</member>
+		<member name="panorama" type="RID" setter="set_panorama" getter="get_panorama">
+			A [RID] of a [Texture2D] owned by RenderingServer to be applied to the [PanoramaSkyMaterial].
+		</member>
+	</members>
+</class>

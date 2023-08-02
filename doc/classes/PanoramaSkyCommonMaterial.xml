@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PanoramaSkyCommonMaterial" inherits="Material" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A base class for a [Material] which is used with [Sky] to draw a background texture.
+	</brief_description>
+	<description>
+		This is a base class for [PanoramaSkyMaterial] and [ComputePanoramaSkyMaterial] which implements common functionality, though this class is not exported to the editor.
+		You should not use this class directly, but rather use one of its derived classes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="filter" type="bool" setter="set_filtering_enabled" getter="is_filtering_enabled" default="true">
+			A boolean value to determine if the background texture should be filtered or not.
+		</member>
+	</members>
+</class>

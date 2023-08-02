@@ -828,6 +828,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(StandardMaterial3D);
 	GDREGISTER_CLASS(ORMMaterial3D);
 	GDREGISTER_CLASS(ProceduralSkyMaterial);
+	GDREGISTER_CLASS(ComputePanoramaSkyMaterial);
 	GDREGISTER_CLASS(PanoramaSkyMaterial);
 	GDREGISTER_CLASS(PhysicalSkyMaterial);
 	SceneTree::add_idle_callback(BaseMaterial3D::flush_changes);
@@ -1215,6 +1216,7 @@ void unregister_scene_types() {
 #ifndef _3D_DISABLED
 	BaseMaterial3D::finish_shaders();
 	PhysicalSkyMaterial::cleanup_shader();
+	ComputePanoramaSkyMaterial::cleanup_shader();
 	PanoramaSkyMaterial::cleanup_shader();
 	ProceduralSkyMaterial::cleanup_shader();
 #endif // _3D_DISABLED

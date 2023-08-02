@@ -28,8 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "sky_material.h"
 
+#include "sky_material.h"
+#include "core/io/image.h"
+#include "scene/resources/image_texture.h"
+#include "servers/rendering/rendering_device.h"
 #include "core/config/project_settings.h"
 #include "core/version.h"
 
@@ -364,42 +367,23 @@ ProceduralSkyMaterial::~ProceduralSkyMaterial() {
 }
 
 /////////////////////////////////////////
-/* PanoramaSkyMaterial */
+/* PanoramaSkyCommonMaterial */
 
-void PanoramaSkyMaterial::set_panorama(const Ref<Texture2D> &p_panorama) {
-	panorama = p_panorama;
-	if (p_panorama.is_valid()) {
-		RS::get_singleton()->material_set_param(_get_material(), "source_panorama", p_panorama->get_rid());
-	} else {
-		RS::get_singleton()->material_set_param(_get_material(), "source_panorama", Variant());
-	}
-}
+Mutex PanoramaSkyCommonMaterial::shader_mutex;
+RID PanoramaSkyCommonMaterial::shader_cache[2];
 
-Ref<Texture2D> PanoramaSkyMaterial::get_panorama() const {
-	return panorama;
-}
-
-void PanoramaSkyMaterial::set_filtering_enabled(bool p_enabled) {
+void PanoramaSkyCommonMaterial::set_filtering_enabled(bool p_enabled) {
 	filter = p_enabled;
-	notify_property_list_changed();
-	_update_shader();
+	on_params_change();
 	// Only set if shader already compiled
 	if (shader_set) {
 		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(filter)]);
 	}
 }
 
-bool PanoramaSkyMaterial::is_filtering_enabled() const {
-	return filter;
-}
-
-Shader::Mode PanoramaSkyMaterial::get_shader_mode() const {
-	return Shader::MODE_SKY;
-}
-
-RID PanoramaSkyMaterial::get_rid() const {
+RID PanoramaSkyCommonMaterial::get_rid() const {
 	_update_shader();
-	// Don't compile shaders until first use, then compile both
+  // Don't compile shaders until first use, then compile both
 	if (!shader_set) {
 		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[1 - int(filter)]);
 		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(filter)]);
@@ -408,33 +392,20 @@ RID PanoramaSkyMaterial::get_rid() const {
 	return _get_material();
 }
 
-RID PanoramaSkyMaterial::get_shader_rid() const {
+bool PanoramaSkyCommonMaterial::is_filtering_enabled() const {
+	return filter;
+}
+
+Shader::Mode PanoramaSkyCommonMaterial::get_shader_mode() const {
+	return Shader::MODE_SKY;
+}
+
+RID PanoramaSkyCommonMaterial::get_shader_rid() const {
 	_update_shader();
 	return shader_cache[int(filter)];
 }
 
-void PanoramaSkyMaterial::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_panorama", "texture"), &PanoramaSkyMaterial::set_panorama);
-	ClassDB::bind_method(D_METHOD("get_panorama"), &PanoramaSkyMaterial::get_panorama);
-
-	ClassDB::bind_method(D_METHOD("set_filtering_enabled", "enabled"), &PanoramaSkyMaterial::set_filtering_enabled);
-	ClassDB::bind_method(D_METHOD("is_filtering_enabled"), &PanoramaSkyMaterial::is_filtering_enabled);
-
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "panorama", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_panorama", "get_panorama");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter"), "set_filtering_enabled", "is_filtering_enabled");
-}
-
-Mutex PanoramaSkyMaterial::shader_mutex;
-RID PanoramaSkyMaterial::shader_cache[2];
-
-void PanoramaSkyMaterial::cleanup_shader() {
-	if (shader_cache[0].is_valid()) {
-		RS::get_singleton()->free(shader_cache[0]);
-		RS::get_singleton()->free(shader_cache[1]);
-	}
-}
-
-void PanoramaSkyMaterial::_update_shader() {
+void PanoramaSkyCommonMaterial::_update_shader() {
 	shader_mutex.lock();
 	if (shader_cache[0].is_null()) {
 		for (int i = 0; i < 2; i++) {
@@ -442,7 +413,7 @@ void PanoramaSkyMaterial::_update_shader() {
 
 			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
-// NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s PanoramaSkyMaterial.
+// NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s PanoramaSkyCommonMaterial.
 
 shader_type sky;
 
@@ -457,6 +428,122 @@ void sky() {
 	}
 
 	shader_mutex.unlock();
+}
+
+void PanoramaSkyCommonMaterial::cleanup_shader() {
+	if (shader_cache[0].is_valid()) {
+		RS::get_singleton()->free(shader_cache[0]);
+		RS::get_singleton()->free(shader_cache[1]);
+	}
+}
+
+PanoramaSkyCommonMaterial::PanoramaSkyCommonMaterial() {
+}
+
+PanoramaSkyCommonMaterial::~PanoramaSkyCommonMaterial() {
+}
+/////////////////////////////////////////
+/* ComputePanoramaSkyMaterial */
+
+void ComputePanoramaSkyMaterial::set_panorama(const RID& p_panorama) {
+	panorama = p_panorama;
+  if ( panorama.is_valid() )
+    RS::get_singleton()->material_set_param(_get_material(), "source_panorama", p_panorama);
+
+	on_params_change();
+}
+
+RID ComputePanoramaSkyMaterial::get_panorama() const {
+  return panorama;
+}
+
+ComputePanoramaSkyMaterial::PanoramaScale ComputePanoramaSkyMaterial::get_panorama_scale() const {
+  return panorama_scale;
+}
+
+Vector2i ComputePanoramaSkyMaterial::get_panorama_size() const {
+  return panorama_size;
+}
+
+void ComputePanoramaSkyMaterial::set_panorama_scale(const ComputePanoramaSkyMaterial::PanoramaScale p_panorama_scale){
+  panorama_scale=p_panorama_scale;
+  switch(panorama_scale)
+  {
+    case ComputePanoramaSkyMaterial::DOUBLE_SIZE:
+      panorama_size.x=8192; panorama_size.y=4096;
+      break;
+    case ComputePanoramaSkyMaterial::FULL_SIZE:
+      panorama_size.x=4096; panorama_size.y=2048;
+      break;
+    case ComputePanoramaSkyMaterial::HALF_SIZE:
+      panorama_size.x=2048; panorama_size.y=1024;
+      break;
+    case ComputePanoramaSkyMaterial::QUARTER_SIZE:
+      panorama_size.x=1024; panorama_size.y=512;
+      break;
+    default:
+      const String msg("ComputePanoramaSkyMaterial::PanoramaScale out of bonds. Aborting.");
+      OS::get_singleton()->alert(msg);
+      ERR_FAIL_MSG(msg);
+  }
+	on_params_change();
+}
+
+void ComputePanoramaSkyMaterial::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_panorama", "RID"), &ComputePanoramaSkyMaterial::set_panorama);
+	ClassDB::bind_method(D_METHOD("get_panorama"), &ComputePanoramaSkyMaterial::get_panorama);
+	ClassDB::bind_method(D_METHOD("set_panorama_scale", "panorama_scale"), &ComputePanoramaSkyMaterial::set_panorama_scale);
+	ClassDB::bind_method(D_METHOD("get_panorama_scale"), &ComputePanoramaSkyMaterial::get_panorama_scale);
+	ClassDB::bind_method(D_METHOD("get_panorama_size"), &ComputePanoramaSkyMaterial::get_panorama_size);
+
+	ClassDB::bind_method(D_METHOD("set_filtering_enabled", "enabled"), &ComputePanoramaSkyMaterial::set_filtering_enabled);
+	ClassDB::bind_method(D_METHOD("is_filtering_enabled"), &ComputePanoramaSkyMaterial::is_filtering_enabled);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter"), "set_filtering_enabled", "is_filtering_enabled");
+  ADD_PROPERTY(PropertyInfo(Variant::INT, "panorama_scale", PROPERTY_HINT_ENUM, "Double(8192), Full(4096), Half(2048), Quarter(1024)"), "set_panorama_scale", "get_panorama_scale");
+
+  BIND_ENUM_CONSTANT(DOUBLE_SIZE)
+  BIND_ENUM_CONSTANT(FULL_SIZE)
+  BIND_ENUM_CONSTANT(HALF_SIZE)
+  BIND_ENUM_CONSTANT(QUARTER_SIZE)
+}
+
+Vector2i ComputePanoramaSkyMaterial::panorama_size;
+
+
+ComputePanoramaSkyMaterial::ComputePanoramaSkyMaterial() {
+  set_panorama_scale(ComputePanoramaSkyMaterial::PanoramaScale::FULL_SIZE);
+}
+
+ComputePanoramaSkyMaterial::~ComputePanoramaSkyMaterial() {
+}
+
+/////////////////////////////////////////
+/* PanoramaSkyMaterial */
+
+void PanoramaSkyMaterial::set_panorama(const Ref<Texture2D> &p_panorama) {
+  panorama = p_panorama;
+	if (p_panorama.is_valid()) {
+		RS::get_singleton()->material_set_param(_get_material(), "source_panorama", p_panorama->get_rid());
+	} else {
+		RS::get_singleton()->material_set_param(_get_material(), "source_panorama", Variant());
+	}
+	on_params_change();
+}
+
+Ref<Texture2D> PanoramaSkyMaterial::get_panorama() const {
+  return panorama;
+}
+
+void PanoramaSkyMaterial::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_panorama", "texture"), &PanoramaSkyMaterial::set_panorama);
+	ClassDB::bind_method(D_METHOD("get_panorama"), &PanoramaSkyMaterial::get_panorama);
+
+	ClassDB::bind_method(D_METHOD("set_filtering_enabled", "enabled"), &PanoramaSkyMaterial::set_filtering_enabled);
+	ClassDB::bind_method(D_METHOD("is_filtering_enabled"), &PanoramaSkyMaterial::is_filtering_enabled);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "panorama", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_panorama", "get_panorama");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter"), "set_filtering_enabled", "is_filtering_enabled");
 }
 
 PanoramaSkyMaterial::PanoramaSkyMaterial() {
