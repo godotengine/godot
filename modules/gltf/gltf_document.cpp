@@ -207,7 +207,7 @@ Error GLTFDocument::_serialize(Ref<GLTFState> p_state, const String &p_path) {
 	}
 
 	/* STEP SERIALIZE VERSION */
-	err = _serialize_version(p_state);
+	err = _serialize_asset_header(p_state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
@@ -6999,20 +6999,8 @@ Error GLTFDocument::_parse(Ref<GLTFState> p_state, String p_path, Ref<FileAccess
 		p_state->json = json.get_data();
 	}
 
-	if (!p_state->json.has("asset")) {
-		return ERR_PARSE_ERROR;
-	}
-
-	Dictionary asset = p_state->json["asset"];
-
-	if (!asset.has("version")) {
-		return ERR_PARSE_ERROR;
-	}
-
-	String version = asset["version"];
-
-	p_state->major_version = version.get_slice(".", 0).to_int();
-	p_state->minor_version = version.get_slice(".", 1).to_int();
+	err = _parse_asset_header(p_state);
+	ERR_FAIL_COND_V(err != OK, err);
 
 	document_extensions.clear();
 	for (Ref<GLTFDocumentExtension> ext : all_document_extensions) {
@@ -7069,13 +7057,15 @@ Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_
 	return _serialize_texture_transform_uv(Vector2(offset.x, offset.y), Vector2(scale.x, scale.y));
 }
 
-Error GLTFDocument::_serialize_version(Ref<GLTFState> p_state) {
+Error GLTFDocument::_serialize_asset_header(Ref<GLTFState> p_state) {
 	const String version = "2.0";
 	p_state->major_version = version.get_slice(".", 0).to_int();
 	p_state->minor_version = version.get_slice(".", 1).to_int();
 	Dictionary asset;
 	asset["version"] = version;
-
+	if (!p_state->copyright.is_empty()) {
+		asset["copyright"] = p_state->copyright;
+	}
 	String hash = String(VERSION_HASH);
 	asset["generator"] = String(VERSION_FULL_NAME) + String("@") + (hash.is_empty() ? String("unknown") : hash);
 	p_state->json["asset"] = asset;
@@ -7334,6 +7324,23 @@ Error GLTFDocument::append_from_buffer(PackedByteArray p_bytes, String p_base_pa
 		ERR_CONTINUE(ext.is_null());
 		err = ext->import_post_parse(p_state);
 		ERR_FAIL_COND_V(err != OK, err);
+	}
+	return OK;
+}
+
+Error GLTFDocument::_parse_asset_header(Ref<GLTFState> p_state) {
+	if (!p_state->json.has("asset")) {
+		return ERR_PARSE_ERROR;
+	}
+	Dictionary asset = p_state->json["asset"];
+	if (!asset.has("version")) {
+		return ERR_PARSE_ERROR;
+	}
+	String version = asset["version"];
+	p_state->major_version = version.get_slice(".", 0).to_int();
+	p_state->minor_version = version.get_slice(".", 1).to_int();
+	if (asset.has("copyright")) {
+		p_state->copyright = asset["copyright"];
 	}
 	return OK;
 }

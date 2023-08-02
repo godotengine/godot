@@ -52,6 +52,7 @@ class GLTFState : public Resource {
 	Dictionary json;
 	int major_version = 0;
 	int minor_version = 0;
+	String copyright;
 	Vector<uint8_t> glb_data;
 
 	bool use_named_skin_binds = false;
@@ -124,6 +125,9 @@ public:
 
 	int get_minor_version();
 	void set_minor_version(int p_minor_version);
+
+	String get_copyright();
+	void set_copyright(String p_copyright);
 
 	Vector<uint8_t> get_glb_data();
 	void set_glb_data(Vector<uint8_t> p_glb_data);
