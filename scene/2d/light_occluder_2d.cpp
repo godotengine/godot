@@ -159,43 +159,52 @@ void LightOccluder2D::_poly_changed() {
 #endif
 }
 
+void LightOccluder2D::_physics_interpolated_changed() {
+	VisualServer::get_singleton()->canvas_light_occluder_set_interpolated(occluder, is_physics_interpolated());
+}
+
 void LightOccluder2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_CANVAS) {
-		VS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder, get_canvas());
-		VS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
-		VS::get_singleton()->canvas_light_occluder_set_enabled(occluder, is_visible_in_tree());
-	}
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		VS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
-	}
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		VS::get_singleton()->canvas_light_occluder_set_enabled(occluder, is_visible_in_tree());
-	}
+	switch (p_what) {
+		case NOTIFICATION_ENTER_CANVAS: {
+			VS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder, get_canvas());
+			VS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
+			VS::get_singleton()->canvas_light_occluder_set_enabled(occluder, is_visible_in_tree());
+		} break;
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			VS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform());
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			VS::get_singleton()->canvas_light_occluder_set_enabled(occluder, is_visible_in_tree());
+		} break;
+		case NOTIFICATION_DRAW: {
+			if (Engine::get_singleton()->is_editor_hint()) {
+				if (occluder_polygon.is_valid()) {
+					PoolVector<Vector2> poly = occluder_polygon->get_polygon();
 
-	if (p_what == NOTIFICATION_DRAW) {
-		if (Engine::get_singleton()->is_editor_hint()) {
-			if (occluder_polygon.is_valid()) {
-				PoolVector<Vector2> poly = occluder_polygon->get_polygon();
-
-				if (poly.size()) {
-					if (occluder_polygon->is_closed()) {
-						Vector<Color> color;
-						color.push_back(Color(0, 0, 0, 0.6));
-						draw_polygon(Variant(poly), color);
-					} else {
-						int ps = poly.size();
-						PoolVector<Vector2>::Read r = poly.read();
-						for (int i = 0; i < ps - 1; i++) {
-							draw_line(r[i], r[i + 1], Color(0, 0, 0, 0.6), 3);
+					if (poly.size()) {
+						if (occluder_polygon->is_closed()) {
+							Vector<Color> color;
+							color.push_back(Color(0, 0, 0, 0.6));
+							draw_polygon(Variant(poly), color);
+						} else {
+							int ps = poly.size();
+							PoolVector<Vector2>::Read r = poly.read();
+							for (int i = 0; i < ps - 1; i++) {
+								draw_line(r[i], r[i + 1], Color(0, 0, 0, 0.6), 3);
+							}
 						}
 					}
 				}
 			}
-		}
-	}
-
-	if (p_what == NOTIFICATION_EXIT_CANVAS) {
-		VS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder, RID());
+		} break;
+		case NOTIFICATION_EXIT_CANVAS: {
+			VS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder, RID());
+		} break;
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (is_visible_in_tree() && is_physics_interpolated()) {
+				VisualServer::get_singleton()->canvas_light_occluder_reset_physics_interpolation(occluder);
+			}
+		} break;
 	}
 }
 

@@ -297,22 +297,31 @@ Color Light2D::get_shadow_color() const {
 	return shadow_color;
 }
 
+void Light2D::_physics_interpolated_changed() {
+	VisualServer::get_singleton()->canvas_light_set_interpolated(canvas_light, is_physics_interpolated());
+}
+
 void Light2D::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		VS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, get_canvas());
-		_update_light_visibility();
-	}
-
-	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		VS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
-	}
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		_update_light_visibility();
-	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		VS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, RID());
-		_update_light_visibility();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			VS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, get_canvas());
+			_update_light_visibility();
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			VS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, RID());
+			_update_light_visibility();
+		} break;
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			VS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_update_light_visibility();
+		} break;
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			if (is_visible_in_tree() && is_physics_interpolated()) {
+				VisualServer::get_singleton()->canvas_light_reset_physics_interpolation(canvas_light);
+			}
+		} break;
 	}
 }
 

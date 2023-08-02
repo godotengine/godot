@@ -2198,6 +2198,9 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_set_z_index", "item", "z_index"), &VisualServer::canvas_item_set_z_index);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_z_as_relative_to_parent", "item", "enabled"), &VisualServer::canvas_item_set_z_as_relative_to_parent);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_copy_to_backbuffer", "item", "enabled", "rect"), &VisualServer::canvas_item_set_copy_to_backbuffer);
+	ClassDB::bind_method(D_METHOD("canvas_item_set_interpolated", "item", "interpolated"), &VisualServer::canvas_item_set_interpolated);
+	ClassDB::bind_method(D_METHOD("canvas_item_reset_physics_interpolation", "item"), &VisualServer::canvas_item_reset_physics_interpolation);
+	ClassDB::bind_method(D_METHOD("canvas_item_transform_physics_interpolation", "item", "xform"), &VisualServer::canvas_item_transform_physics_interpolation);
 	ClassDB::bind_method(D_METHOD("canvas_item_clear", "item"), &VisualServer::canvas_item_clear);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_draw_index", "item", "index"), &VisualServer::canvas_item_set_draw_index);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_material", "item", "material"), &VisualServer::canvas_item_set_material);
@@ -2224,6 +2227,9 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_filter", "light", "filter"), &VisualServer::canvas_light_set_shadow_filter);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_color", "light", "color"), &VisualServer::canvas_light_set_shadow_color);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_smooth", "light", "smooth"), &VisualServer::canvas_light_set_shadow_smooth);
+	ClassDB::bind_method(D_METHOD("canvas_light_set_interpolated", "light", "interpolated"), &VisualServer::canvas_light_set_interpolated);
+	ClassDB::bind_method(D_METHOD("canvas_light_reset_physics_interpolation", "light"), &VisualServer::canvas_light_reset_physics_interpolation);
+	ClassDB::bind_method(D_METHOD("canvas_light_transform_physics_interpolation", "light", "xform"), &VisualServer::canvas_light_transform_physics_interpolation);
 
 	ClassDB::bind_method(D_METHOD("canvas_light_occluder_create"), &VisualServer::canvas_light_occluder_create);
 	ClassDB::bind_method(D_METHOD("canvas_light_occluder_attach_to_canvas", "occluder", "canvas"), &VisualServer::canvas_light_occluder_attach_to_canvas);
@@ -2231,6 +2237,9 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_light_occluder_set_polygon", "occluder", "polygon"), &VisualServer::canvas_light_occluder_set_polygon);
 	ClassDB::bind_method(D_METHOD("canvas_light_occluder_set_transform", "occluder", "transform"), &VisualServer::canvas_light_occluder_set_transform);
 	ClassDB::bind_method(D_METHOD("canvas_light_occluder_set_light_mask", "occluder", "mask"), &VisualServer::canvas_light_occluder_set_light_mask);
+	ClassDB::bind_method(D_METHOD("canvas_light_occluder_set_interpolated", "occluder", "interpolated"), &VisualServer::canvas_light_occluder_set_interpolated);
+	ClassDB::bind_method(D_METHOD("canvas_light_occluder_reset_physics_interpolation", "occluder"), &VisualServer::canvas_light_occluder_reset_physics_interpolation);
+	ClassDB::bind_method(D_METHOD("canvas_light_occluder_transform_physics_interpolation", "occluder", "xform"), &VisualServer::canvas_light_occluder_transform_physics_interpolation);
 
 	ClassDB::bind_method(D_METHOD("canvas_occluder_polygon_create"), &VisualServer::canvas_occluder_polygon_create);
 	ClassDB::bind_method(D_METHOD("canvas_occluder_polygon_set_shape", "occluder_polygon", "shape", "closed"), &VisualServer::canvas_occluder_polygon_set_shape);

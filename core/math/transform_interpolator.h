@@ -46,7 +46,7 @@
 // several frames may occur between each physics tick, which will make it cheaper
 // than performing every frame.
 
-class Transform;
+struct Transform2D;
 
 class TransformInterpolator {
 public:
@@ -66,6 +66,7 @@ private:
 	static Quat _basis_to_quat_unchecked(const Basis &p_basis);
 	static bool _basis_is_orthogonal(const Basis &p_basis, real_t p_epsilon = 0.01f);
 	static bool _basis_is_orthogonal_any_scale(const Basis &p_basis);
+	static bool _sign(real_t p_val) { return p_val >= 0; }
 
 	static void interpolate_basis_linear(const Basis &p_prev, const Basis &p_curr, Basis &r_result, real_t p_fraction);
 	static void interpolate_basis_scaled_slerp(Basis p_prev, Basis p_curr, Basis &r_result, real_t p_fraction);
@@ -75,6 +76,7 @@ public:
 	// These will be slower.
 	static void interpolate_transform(const Transform &p_prev, const Transform &p_curr, Transform &r_result, real_t p_fraction);
 	static void interpolate_basis(const Basis &p_prev, const Basis &p_curr, Basis &r_result, real_t p_fraction);
+	static void interpolate_transform_2d(const Transform2D &p_prev, const Transform2D &p_curr, Transform2D &r_result, real_t p_fraction);
 
 	// Optimized function when you know ahead of time the method
 	static void interpolate_transform_via_method(const Transform &p_prev, const Transform &p_curr, Transform &r_result, real_t p_fraction, Method p_method);

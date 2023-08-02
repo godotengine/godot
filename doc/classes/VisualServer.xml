@@ -325,6 +325,14 @@
 				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
 			</description>
 		</method>
+		<method name="canvas_item_reset_physics_interpolation">
+			<return type="void" />
+			<argument index="0" name="item" type="RID" />
+			<description>
+				Prevents physics interpolation for the current physics tick.
+				This is useful when moving a canvas item to a new location, to give an instantaneous change rather than interpolation from the previous location.
+			</description>
+		</method>
 		<method name="canvas_item_set_clip">
 			<return type="void" />
 			<argument index="0" name="item" type="RID" />
@@ -373,6 +381,14 @@
 			<argument index="1" name="index" type="int" />
 			<description>
 				Sets the index for the [CanvasItem].
+			</description>
+		</method>
+		<method name="canvas_item_set_interpolated">
+			<return type="void" />
+			<argument index="0" name="item" type="RID" />
+			<argument index="1" name="interpolated" type="bool" />
+			<description>
+				Turns on and off physics interpolation for the canvas item.
 			</description>
 		</method>
 		<method name="canvas_item_set_light_mask">
@@ -463,6 +479,16 @@
 				Sets the [CanvasItem]'s Z index, i.e. its draw order (lower indexes are drawn first).
 			</description>
 		</method>
+		<method name="canvas_item_transform_physics_interpolation">
+			<return type="void" />
+			<argument index="0" name="item" type="RID" />
+			<argument index="1" name="xform" type="Transform2D" />
+			<description>
+				Transforms both the current and previous stored transform for a canvas item.
+				This allows transforming a canvas item without creating a "glitch" in the interpolation.
+				This is particularly useful for large worlds utilising a shifting origin.
+			</description>
+		</method>
 		<method name="canvas_light_attach_to_canvas">
 			<return type="void" />
 			<argument index="0" name="light" type="RID" />
@@ -493,12 +519,28 @@
 				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
 			</description>
 		</method>
+		<method name="canvas_light_occluder_reset_physics_interpolation">
+			<return type="void" />
+			<argument index="0" name="occluder" type="RID" />
+			<description>
+				Prevents physics interpolation for the current physics tick.
+				This is useful when moving an occluder to a new location, to give an instantaneous change rather than interpolation from the previous location.
+			</description>
+		</method>
 		<method name="canvas_light_occluder_set_enabled">
 			<return type="void" />
 			<argument index="0" name="occluder" type="RID" />
 			<argument index="1" name="enabled" type="bool" />
 			<description>
 				Enables or disables light occluder.
+			</description>
+		</method>
+		<method name="canvas_light_occluder_set_interpolated">
+			<return type="void" />
+			<argument index="0" name="occluder" type="RID" />
+			<argument index="1" name="interpolated" type="bool" />
+			<description>
+				Turns on and off physics interpolation for the occluder.
 			</description>
 		</method>
 		<method name="canvas_light_occluder_set_light_mask">
@@ -523,6 +565,24 @@
 			<argument index="1" name="transform" type="Transform2D" />
 			<description>
 				Sets a light occluder's [Transform2D].
+			</description>
+		</method>
+		<method name="canvas_light_occluder_transform_physics_interpolation">
+			<return type="void" />
+			<argument index="0" name="occluder" type="RID" />
+			<argument index="1" name="xform" type="Transform2D" />
+			<description>
+				Transforms both the current and previous stored transform for an occluder.
+				This allows transforming an occluder without creating a "glitch" in the interpolation.
+				This is particularly useful for large worlds utilising a shifting origin.
+			</description>
+		</method>
+		<method name="canvas_light_reset_physics_interpolation">
+			<return type="void" />
+			<argument index="0" name="light" type="RID" />
+			<description>
+				Prevents physics interpolation for the current physics tick.
+				This is useful when moving a light to a new location, to give an instantaneous change rather than interpolation from the previous location.
 			</description>
 		</method>
 		<method name="canvas_light_set_color">
@@ -555,6 +615,14 @@
 			<argument index="1" name="height" type="float" />
 			<description>
 				Sets a canvas light's height.
+			</description>
+		</method>
+		<method name="canvas_light_set_interpolated">
+			<return type="void" />
+			<argument index="0" name="light" type="RID" />
+			<argument index="1" name="interpolated" type="bool" />
+			<description>
+				Turns on and off physics interpolation for the light.
 			</description>
 		</method>
 		<method name="canvas_light_set_item_cull_mask">
@@ -677,6 +745,16 @@
 			<argument index="2" name="max_z" type="int" />
 			<description>
 				Sets the Z range of objects that will be affected by this light. Equivalent to [member Light2D.range_z_min] and [member Light2D.range_z_max].
+			</description>
+		</method>
+		<method name="canvas_light_transform_physics_interpolation">
+			<return type="void" />
+			<argument index="0" name="light" type="RID" />
+			<argument index="1" name="xform" type="Transform2D" />
+			<description>
+				Transforms both the current and previous stored transform for a light.
+				This allows transforming a light without creating a "glitch" in the interpolation.
+				This is particularly useful for large worlds utilising a shifting origin.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_create">

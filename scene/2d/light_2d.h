@@ -80,6 +80,7 @@ private:
 	void _update_light_visibility();
 
 	virtual void owner_changed_notify();
+	virtual void _physics_interpolated_changed();
 
 protected:
 	void _notification(int p_what);

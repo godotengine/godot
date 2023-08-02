@@ -1052,6 +1052,10 @@ public:
 	virtual void canvas_item_set_z_index(RID p_item, int p_z) = 0;
 	virtual void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable) = 0;
 	virtual void canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2 &p_rect) = 0;
+	virtual void canvas_item_clear(RID p_item) = 0;
+	virtual void canvas_item_set_draw_index(RID p_item, int p_index) = 0;
+	virtual void canvas_item_set_material(RID p_item, RID p_material) = 0;
+	virtual void canvas_item_set_use_parent_material(RID p_item, bool p_enable) = 0;
 
 	virtual void canvas_item_attach_skeleton(RID p_item, RID p_skeleton) = 0;
 	virtual void canvas_item_set_skeleton_relative_xform(RID p_item, Transform2D p_relative_xform) = 0;
@@ -1065,12 +1069,9 @@ public:
 	}
 	virtual Rect2 _debug_canvas_item_get_rect(RID p_item) = 0;
 
-	virtual void canvas_item_clear(RID p_item) = 0;
-	virtual void canvas_item_set_draw_index(RID p_item, int p_index) = 0;
-
-	virtual void canvas_item_set_material(RID p_item, RID p_material) = 0;
-
-	virtual void canvas_item_set_use_parent_material(RID p_item, bool p_enable) = 0;
+	virtual void canvas_item_set_interpolated(RID p_item, bool p_interpolated) = 0;
+	virtual void canvas_item_reset_physics_interpolation(RID p_item) = 0;
+	virtual void canvas_item_transform_physics_interpolation(RID p_item, Transform2D p_transform) = 0;
 
 	virtual RID canvas_light_create() = 0;
 	virtual void canvas_light_attach_to_canvas(RID p_light, RID p_canvas) = 0;
@@ -1086,6 +1087,10 @@ public:
 	virtual void canvas_light_set_layer_range(RID p_light, int p_min_layer, int p_max_layer) = 0;
 	virtual void canvas_light_set_item_cull_mask(RID p_light, int p_mask) = 0;
 	virtual void canvas_light_set_item_shadow_cull_mask(RID p_light, int p_mask) = 0;
+
+	virtual void canvas_light_set_interpolated(RID p_light, bool p_interpolated) = 0;
+	virtual void canvas_light_reset_physics_interpolation(RID p_light) = 0;
+	virtual void canvas_light_transform_physics_interpolation(RID p_light, Transform2D p_transform) = 0;
 
 	enum CanvasLightMode {
 		CANVAS_LIGHT_MODE_ADD,
@@ -1118,6 +1123,10 @@ public:
 	virtual void canvas_light_occluder_set_polygon(RID p_occluder, RID p_polygon) = 0;
 	virtual void canvas_light_occluder_set_transform(RID p_occluder, const Transform2D &p_xform) = 0;
 	virtual void canvas_light_occluder_set_light_mask(RID p_occluder, int p_mask) = 0;
+
+	virtual void canvas_light_occluder_set_interpolated(RID p_occluder, bool p_interpolated) = 0;
+	virtual void canvas_light_occluder_reset_physics_interpolation(RID p_occluder) = 0;
+	virtual void canvas_light_occluder_transform_physics_interpolation(RID p_occluder, Transform2D p_transform) = 0;
 
 	virtual RID canvas_occluder_polygon_create() = 0;
 	virtual void canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const PoolVector<Vector2> &p_shape, bool p_closed) = 0;

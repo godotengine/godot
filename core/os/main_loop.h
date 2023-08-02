@@ -67,6 +67,7 @@ public:
 	virtual void input_text(const String &p_text);
 
 	virtual void init();
+	virtual void iteration_prepare() {}
 	virtual bool iteration(float p_time);
 	virtual void iteration_end() {}
 	virtual bool idle(float p_time);

@@ -135,7 +135,14 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 					Vector2 offset = tsize / 2.0;
 					cl->rect_cache = Rect2(-offset + cl->texture_offset, tsize);
-					cl->xform_cache = xf * cl->xform;
+
+					if (!VSG::canvas->_interpolation_data.interpolation_enabled || !cl->interpolated) {
+						cl->xform_cache = xf * cl->xform_curr;
+					} else {
+						real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+						TransformInterpolator::interpolate_transform_2d(cl->xform_prev, cl->xform_curr, cl->xform_cache, f);
+						cl->xform_cache = xf * cl->xform_cache;
+					}
 
 					if (clip_rect.intersects_transformed(cl->xform_cache, cl->rect_cache)) {
 						cl->filter_next_ptr = lights;
@@ -180,13 +187,22 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 				Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E->get(), clip_rect.size);
 
 				for (Set<RasterizerCanvas::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
-					if (!F->get()->enabled) {
+					RasterizerCanvas::LightOccluderInstance *occluder = F->get();
+					if (!occluder->enabled) {
 						continue;
 					}
-					F->get()->xform_cache = xf * F->get()->xform;
-					if (shadow_rect.intersects_transformed(F->get()->xform_cache, F->get()->aabb_cache)) {
-						F->get()->next = occluders;
-						occluders = F->get();
+
+					if (!VSG::canvas->_interpolation_data.interpolation_enabled || !occluder->interpolated) {
+						occluder->xform_cache = xf * occluder->xform_curr;
+					} else {
+						real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
+						TransformInterpolator::interpolate_transform_2d(occluder->xform_prev, occluder->xform_curr, occluder->xform_cache, f);
+						occluder->xform_cache = xf * occluder->xform_cache;
+					}
+
+					if (shadow_rect.intersects_transformed(occluder->xform_cache, occluder->aabb_cache)) {
+						occluder->next = occluders;
+						occluders = occluder;
 					}
 				}
 			}

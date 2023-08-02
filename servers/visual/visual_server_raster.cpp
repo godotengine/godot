@@ -136,6 +136,20 @@ void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 void VisualServerRaster::sync() {
 }
 
+void VisualServerRaster::set_physics_interpolation_enabled(bool p_enabled) {
+	VSG::scene->set_physics_interpolation_enabled(p_enabled);
+	VSG::canvas->set_physics_interpolation_enabled(p_enabled);
+}
+
+void VisualServerRaster::tick() {
+	VSG::scene->tick();
+	VSG::canvas->tick();
+}
+
+void VisualServerRaster::pre_draw(bool p_will_draw) {
+	VSG::scene->pre_draw(p_will_draw);
+}
+
 bool VisualServerRaster::has_changed(ChangedPriority p_priority) const {
 	switch (p_priority) {
 		default: {

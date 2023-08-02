@@ -2324,6 +2324,12 @@ bool Main::iteration() {
 
 		PhysicsServer::get_singleton()->flush_queries();
 
+		// Prepare the fixed timestep interpolated nodes
+		// BEFORE they are updated by the physics 2D,
+		// otherwise the current and previous transforms
+		// may be the same, and no interpolation takes place.
+		OS::get_singleton()->get_main_loop()->iteration_prepare();
+
 		Physics2DServer::get_singleton()->sync();
 		Physics2DServer::get_singleton()->flush_queries();
 

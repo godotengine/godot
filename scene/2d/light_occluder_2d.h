@@ -86,6 +86,7 @@ class LightOccluder2D : public Node2D {
 	Ref<OccluderPolygon2D> occluder_polygon;
 
 	void _poly_changed();
+	virtual void _physics_interpolated_changed();
 
 protected:
 	void _notification(int p_what);
