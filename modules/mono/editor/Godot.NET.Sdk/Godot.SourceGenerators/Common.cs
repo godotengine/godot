@@ -388,7 +388,7 @@ namespace Godot.SourceGenerators
         public static readonly DiagnosticDescriptor GlobalClassMustDeriveFromGodotObjectRule =
             new DiagnosticDescriptor(id: "GD0401",
                 title: "The class must derive from GodotObject or a derived class",
-                messageFormat: "The class '{0}' must derive from GodotObject or a derived class.",
+                messageFormat: "The class '{0}' must derive from GodotObject or a derived class",
                 category: "Usage",
                 DiagnosticSeverity.Error,
                 isEnabledByDefault: true,
@@ -435,6 +435,36 @@ namespace Godot.SourceGenerators
 
             context.ReportDiagnostic(Diagnostic.Create(
                 new DiagnosticDescriptor(id: "GD0402",
+                    title: message,
+                    messageFormat: message,
+                    category: "Usage",
+                    DiagnosticSeverity.Error,
+                    isEnabledByDefault: true,
+                    description),
+                classSyntax.GetLocation(),
+                classSyntax.SyntaxTree.FilePath));
+        }
+
+        public static readonly DiagnosticDescriptor GlobalClassMustNotBeAbstractRule =
+            new DiagnosticDescriptor(id: "GD0403",
+                title: "The class must not be declared abstract",
+                messageFormat: "The class '{0}' must not be declared abstract",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "The class must be a non-abstract type. Remove the abstract modifier or the '[GlobalClass]' attribute.");
+
+        public static void ReportGlobalClassMustNotBeAbstract(
+            SyntaxNodeAnalysisContext context,
+            SyntaxNode classSyntax,
+            ISymbol typeSymbol)
+        {
+            string message = $"The class '{typeSymbol.ToDisplayString()}' must not be declared abstract";
+
+            string description = $"{message}. Remove the abstract modifier or the '[GlobalClass]' attribute.";
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                new DiagnosticDescriptor(id: "GD0403",
                     title: message,
                     messageFormat: message,
                     category: "Usage",

@@ -14,7 +14,8 @@ namespace Godot.SourceGenerators
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
             => ImmutableArray.Create(
                 Common.GlobalClassMustDeriveFromGodotObjectRule,
-                Common.GlobalClassMustNotBeGenericRule);
+                Common.GlobalClassMustNotBeGenericRule,
+                Common.GlobalClassMustNotBeAbstractRule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -34,6 +35,9 @@ namespace Godot.SourceGenerators
 
             if (typeSymbol.IsGenericType)
                 Common.ReportGlobalClassMustNotBeGeneric(context, typeClassDecl, typeSymbol);
+
+            if (typeSymbol.IsAbstract)
+                Common.ReportGlobalClassMustNotBeAbstract(context, typeClassDecl, typeSymbol);
 
             if (!typeSymbol.InheritsFrom("GodotSharp", GodotClasses.GodotObject))
                 Common.ReportGlobalClassMustDeriveFromGodotObject(context, typeClassDecl, typeSymbol);
