@@ -210,6 +210,7 @@ public:
 	StringName _window_input;
 	StringName _window_unhandled_input;
 	StringName window_input;
+	StringName _get_contents_minimum_size;
 
 	StringName theme_changed;
 	StringName shader_overrides_group;
