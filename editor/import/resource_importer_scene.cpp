@@ -1869,8 +1869,8 @@ bool ResourceImporterScene::get_internal_option_update_view_required(InternalImp
 }
 
 void ResourceImporterScene::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), "Node3D"));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_name"), "Scene Root"));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), ""));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_name"), ""));
 
 	List<String> script_extentions;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &script_extentions);
@@ -2438,32 +2438,36 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	_post_fix_animations(scene, scene, node_data, animation_data, fps);
 
 	String root_type = p_options["nodes/root_type"];
-	root_type = root_type.split(" ")[0]; // full root_type is "ClassName (filename.gd)" for a script global class.
-
-	Ref<Script> root_script = nullptr;
-	if (ScriptServer::is_global_class(root_type)) {
-		root_script = ResourceLoader::load(ScriptServer::get_global_class_path(root_type));
-		root_type = ScriptServer::get_global_class_base(root_type);
-	}
-
-	if (root_type != "Node3D") {
-		Node *base_node = Object::cast_to<Node>(ClassDB::instantiate(root_type));
-
-		if (base_node) {
-			scene->replace_by(base_node);
-			scene->set_owner(nullptr);
-			memdelete(scene);
-			scene = base_node;
+	if (!root_type.is_empty()) {
+		root_type = root_type.split(" ")[0]; // Full root_type is "ClassName (filename.gd)" for a script global class.
+		Ref<Script> root_script = nullptr;
+		if (ScriptServer::is_global_class(root_type)) {
+			root_script = ResourceLoader::load(ScriptServer::get_global_class_path(root_type));
+			root_type = ScriptServer::get_global_class_base(root_type);
+		}
+		if (scene->get_class_name() != root_type) {
+			// If the user specified a Godot node type that does not match
+			// what the scene import gave us, replace the root node.
+			Node *base_node = Object::cast_to<Node>(ClassDB::instantiate(root_type));
+			if (base_node) {
+				scene->replace_by(base_node);
+				scene->set_owner(nullptr);
+				memdelete(scene);
+				scene = base_node;
+			}
+		}
+		if (root_script.is_valid()) {
+			scene->set_script(Variant(root_script));
 		}
 	}
 
-	if (root_script.is_valid()) {
-		scene->set_script(Variant(root_script));
-	}
-
-	if (p_options["nodes/root_name"] != "Scene Root") {
-		scene->set_name(p_options["nodes/root_name"]);
-	} else {
+	String root_name = p_options["nodes/root_name"];
+	if (!root_name.is_empty() && root_name != "Scene Root") {
+		// TODO: Remove `&& root_name != "Scene Root"` for Godot 5.0.
+		// For backwards compatibility with existing .import files,
+		// treat "Scene Root" as having no root name override.
+		scene->set_name(root_name);
+	} else if (String(scene->get_name()).is_empty()) {
 		scene->set_name(p_save_path.get_file().get_basename());
 	}
 
