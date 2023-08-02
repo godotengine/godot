@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [4.0.4] - TBD
+## [4.0.4] - 2023-08-02
 
 See the [release announcement](https://godotengine.org/article/maintenance-release-godot-4-0-4) for details.
 
@@ -113,7 +113,6 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Fix type check in AnimationTrackKeyEdit for methods ([GH-74948](https://github.com/godotengine/godot/pull/74948)).
 - Fix `AnimatedSprite3D` autoplay warning ([GH-77028](https://github.com/godotengine/godot/pull/77028)).
 - Adjust BoneAttachment3D children/meshes during rest fixer ([GH-77123](https://github.com/godotengine/godot/pull/77123)).
-- Fix `get_bone_pose_global_no_override()` returning incorrect values ([GH-77194](https://github.com/godotengine/godot/pull/77194)).
 - Fix for SkeletonIK3D interpolation and bone roll ([GH-77469](https://github.com/godotengine/godot/pull/77469)).
 - Fix AnimationPlayer cumulative `speed_scale` ([GH-77500](https://github.com/godotengine/godot/pull/77500)).
 - Fix adding bones with the same name after calling `Skeleton3D.clear_bones()` ([GH-77874](https://github.com/godotengine/godot/pull/77874)).
