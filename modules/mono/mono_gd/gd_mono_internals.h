@@ -47,6 +47,8 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged);
 void unhandled_exception(MonoException *p_exc);
 
 void gd_unhandled_exception_event(MonoException *p_exc);
+
+void check_call_error(const String &p_method, const Variant *p_instance, const Variant **p_args, int p_arg_count, const Variant::CallError &p_error);
 } // namespace GDMonoInternals
 
 #endif // GD_MONO_INTERNALS_H
