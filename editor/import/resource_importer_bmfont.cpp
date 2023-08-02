@@ -60,7 +60,7 @@ bool ResourceImporterBMFont::get_option_visibility(const String &p_path, const S
 }
 
 void ResourceImporterBMFont::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-	r_options->push_back(ImportOption(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), Array()));
+	r_options->push_back(ImportOption(PropertyInfo::make_typed_array("fallbacks", "Font"), Array()));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress"), true));
 }

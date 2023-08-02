@@ -309,7 +309,7 @@ void OptimizedTranslation::_get_property_list(List<PropertyInfo> *p_list) const 
 	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "hash_table"));
 	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "bucket_table"));
 	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "strings"));
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "load_from", PROPERTY_HINT_RESOURCE_TYPE, "Translation", PROPERTY_USAGE_EDITOR));
+	p_list->push_back(PropertyInfo::make_object("load_from", "Translation", "", PROPERTY_USAGE_EDITOR));
 }
 
 void OptimizedTranslation::_bind_methods() {

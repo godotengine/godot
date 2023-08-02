@@ -110,13 +110,13 @@ void ProgressBar::_notification(int p_what) {
 	}
 }
 
-void ProgressBar::set_fill_mode(int p_fill) {
+void ProgressBar::set_fill_mode(FillMode p_fill) {
 	ERR_FAIL_INDEX(p_fill, FILL_MODE_MAX);
-	mode = (FillMode)p_fill;
+	mode = p_fill;
 	queue_redraw();
 }
 
-int ProgressBar::get_fill_mode() {
+ProgressBar::FillMode ProgressBar::get_fill_mode() {
 	return mode;
 }
 
@@ -139,7 +139,7 @@ void ProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_show_percentage", "visible"), &ProgressBar::set_show_percentage);
 	ClassDB::bind_method(D_METHOD("is_percentage_shown"), &ProgressBar::is_percentage_shown);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Begin to End,End to Begin,Top to Bottom,Bottom to Top"), "set_fill_mode", "get_fill_mode");
+	ADD_PROPERTY(PropertyInfo::make_enum("fill_mode", "ProgressBar.FillMode", "Begin to End,End to Begin,Top to Bottom,Bottom to Top"), "set_fill_mode", "get_fill_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_percentage"), "set_show_percentage", "is_percentage_shown");
 
 	BIND_ENUM_CONSTANT(FILL_BEGIN_TO_END);

@@ -9,24 +9,24 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" enum="VisualShaderNodeParticleEmit.EmitFlags" default="31">
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" enum="VisualShaderNodeParticleEmit.EmitFlags" is_bitfield="true" default="31">
 			Flags used to override the properties defined in the sub-emitter's process material.
 		</member>
 	</members>
 	<constants>
-		<constant name="EMIT_FLAG_POSITION" value="1" enum="EmitFlags">
+		<constant name="EMIT_FLAG_POSITION" value="1" enum="EmitFlags" is_bitfield="true">
 			If enabled, the particle starts with the position defined by this node.
 		</constant>
-		<constant name="EMIT_FLAG_ROT_SCALE" value="2" enum="EmitFlags">
+		<constant name="EMIT_FLAG_ROT_SCALE" value="2" enum="EmitFlags" is_bitfield="true">
 			If enabled, the particle starts with the rotation and scale defined by this node.
 		</constant>
-		<constant name="EMIT_FLAG_VELOCITY" value="4" enum="EmitFlags">
+		<constant name="EMIT_FLAG_VELOCITY" value="4" enum="EmitFlags" is_bitfield="true">
 			If enabled,the particle starts with the velocity defined by this node.
 		</constant>
-		<constant name="EMIT_FLAG_COLOR" value="8" enum="EmitFlags">
+		<constant name="EMIT_FLAG_COLOR" value="8" enum="EmitFlags" is_bitfield="true">
 			If enabled, the particle starts with the color defined by this node.
 		</constant>
-		<constant name="EMIT_FLAG_CUSTOM" value="16" enum="EmitFlags">
+		<constant name="EMIT_FLAG_CUSTOM" value="16" enum="EmitFlags" is_bitfield="true">
 			If enabled, the particle starts with the [code]CUSTOM[/code] data defined by this node.
 		</constant>
 	</constants>

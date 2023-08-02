@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="fill_mode" type="int" setter="set_fill_mode" getter="get_fill_mode" default="0">
+		<member name="fill_mode" type="int" setter="set_fill_mode" getter="get_fill_mode" enum="ProgressBar.FillMode" default="0">
 			The fill direction. See [enum FillMode] for possible values.
 		</member>
 		<member name="show_percentage" type="bool" setter="set_show_percentage" getter="is_percentage_shown" default="true">

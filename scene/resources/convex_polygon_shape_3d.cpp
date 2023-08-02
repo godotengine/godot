@@ -82,7 +82,7 @@ void ConvexPolygonShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_points", "points"), &ConvexPolygonShape3D::set_points);
 	ClassDB::bind_method(D_METHOD("get_points"), &ConvexPolygonShape3D::get_points);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "points"), "set_points", "get_points");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "points"), "set_points", "get_points");
 }
 
 ConvexPolygonShape3D::ConvexPolygonShape3D() :

@@ -172,7 +172,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "scripts", PROPERTY_HINT_RESOURCE_TYPE, "Script"));
+	p_list->push_back(PropertyInfo::make_object("scripts", "Script"));
 }
 
 String MultiNodeEdit::_get_editor_name() const {

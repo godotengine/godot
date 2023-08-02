@@ -62,13 +62,14 @@ public:
 		FILL_MODE_MAX
 	};
 
-	void set_fill_mode(int p_fill);
-	int get_fill_mode();
+	void set_fill_mode(FillMode p_fill);
+	FillMode get_fill_mode();
 
 	void set_show_percentage(bool p_visible);
 	bool is_percentage_shown() const;
 
 	Size2 get_minimum_size() const override;
+
 	ProgressBar();
 
 private:

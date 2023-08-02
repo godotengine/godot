@@ -2135,11 +2135,11 @@ void PopupMenu::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < items.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("item_%d/text", i)));
 
-		PropertyInfo pi = PropertyInfo(Variant::OBJECT, vformat("item_%d/icon", i), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D");
+		PropertyInfo pi = PropertyInfo::make_object(vformat("item_%d/icon", i), "Texture2D");
 		pi.usage &= ~(get_item_icon(i).is_null() ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
-		pi = PropertyInfo(Variant::INT, vformat("item_%d/checkable", i), PROPERTY_HINT_ENUM, "No,As checkbox,As radio button");
+		pi = PropertyInfo::make_enum(vformat("item_%d/checkable", i), "", "No,As checkbox,As radio button");
 		pi.usage &= ~(!is_item_checkable(i) ? PROPERTY_USAGE_STORAGE : 0);
 		p_list->push_back(pi);
 
@@ -2259,7 +2259,7 @@ void PopupMenu::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "submenu_popup_delay", PROPERTY_HINT_NONE, "suffix:s"), "set_submenu_popup_delay", "get_submenu_popup_delay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
 
-	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
+	ADD_PROPERTY(PropertyInfo::make_array_count("item_count", "Items", "item_"), "set_item_count", "get_item_count");
 
 	ADD_SIGNAL(MethodInfo("id_pressed", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(Variant::INT, "id")));

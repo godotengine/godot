@@ -223,11 +223,11 @@ XRCamera3D::~XRCamera3D() {
 void XRNode3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tracker", "tracker_name"), &XRNode3D::set_tracker);
 	ClassDB::bind_method(D_METHOD("get_tracker"), &XRNode3D::get_tracker);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tracker", PROPERTY_HINT_ENUM_SUGGESTION), "set_tracker", "get_tracker");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "tracker", PROPERTY_HINT_ENUM_SUGGESTION), "set_tracker", "get_tracker");
 
 	ClassDB::bind_method(D_METHOD("set_pose_name", "pose"), &XRNode3D::set_pose_name);
 	ClassDB::bind_method(D_METHOD("get_pose_name"), &XRNode3D::get_pose_name);
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "pose", PROPERTY_HINT_ENUM_SUGGESTION), "set_pose_name", "get_pose_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "pose", PROPERTY_HINT_ENUM_SUGGESTION), "set_pose_name", "get_pose_name");
 
 	ClassDB::bind_method(D_METHOD("get_is_active"), &XRNode3D::get_is_active);
 	ClassDB::bind_method(D_METHOD("get_has_tracking_data"), &XRNode3D::get_has_tracking_data);

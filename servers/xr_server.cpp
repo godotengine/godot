@@ -59,7 +59,7 @@ void XRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_hmd_transform"), &XRServer::get_hmd_transform);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "world_scale"), "set_world_scale", "get_world_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "world_origin"), "set_world_origin", "get_world_origin");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "world_origin"), "set_world_origin", "get_world_origin");
 
 	ClassDB::bind_method(D_METHOD("add_interface", "interface"), &XRServer::add_interface);
 	ClassDB::bind_method(D_METHOD("get_interface_count"), &XRServer::get_interface_count);
@@ -76,7 +76,7 @@ void XRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_primary_interface"), &XRServer::get_primary_interface);
 	ClassDB::bind_method(D_METHOD("set_primary_interface", "interface"), &XRServer::set_primary_interface);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "primary_interface"), "set_primary_interface", "get_primary_interface");
+	ADD_PROPERTY(PropertyInfo::make_object("primary_interface", "XRInterface"), "set_primary_interface", "get_primary_interface");
 
 	BIND_ENUM_CONSTANT(TRACKER_HEAD);
 	BIND_ENUM_CONSTANT(TRACKER_CONTROLLER);
