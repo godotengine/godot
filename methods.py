@@ -3,7 +3,7 @@ import sys
 import re
 import glob
 import subprocess
-from collections import OrderedDict
+from collections import OrderedDict, deque
 from collections.abc import Mapping
 from typing import Iterator
 from pathlib import Path
@@ -1174,10 +1174,43 @@ def show_progress(env):
 
 def dump(env):
     # Dumps latest build information for debugging purposes and external tools.
+    from SCons.Action import ListAction, CommandAction, FunctionAction
+    from SCons.Defaults import Variable_Method_Caller
+    from SCons.Environment import BuilderDict
+    from SCons.Node import NodeList
+    from SCons.Node.FS import File, Dir, Entry
+    from SCons.Scanner import ScannerBase
+    from SCons.Util import CLVar
     from json import dump
+    from pprint import saferepr
+
+    def try_split(obj, separator):
+        return obj if separator not in obj else obj.split(separator)
 
     def non_serializable(obj):
-        return "<<non-serializable: %s>>" % (type(obj).__qualname__)
+        typ = type(obj)
+        if typ == CLVar or typ == BuilderDict:
+            return obj.data
+        if typ == ListAction:
+            return obj.list
+        if typ == CommandAction:
+            return obj.cmd_list
+        if typ == FunctionAction:
+            return saferepr(obj).replace("object", obj.function_name())
+        if typ == Variable_Method_Caller:
+            return {obj.variable: obj.method}
+        if typ == ScannerBase:
+            return obj.name
+        if typ == deque:
+            return [o for o in obj]
+        if typ == NodeList:
+            return [o._get_str() for o in obj.data]
+        if typ == File or typ == Dir or typ == Entry:
+            return obj._get_str()
+        if typ == os._Environ:
+            return {obj.decodekey(k): try_split(obj.decodevalue(v), ";") for k, v in obj._data.items()}
 
-    with open(".scons_env.json", "w") as f:
-        dump(env.Dictionary(), f, indent=4, default=non_serializable)
+        return saferepr(obj)
+
+    with open(".scons_env.json", "w", encoding="utf-8") as f:
+        dump(env.Dictionary(), f, indent=4, ensure_ascii=False, default=non_serializable)
