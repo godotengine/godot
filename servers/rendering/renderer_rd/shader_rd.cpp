@@ -161,7 +161,7 @@ void ShaderRD::_clear_version(Version *p_version) {
 	// Clear versions if they exist.
 	if (p_version->variants) {
 		for (int i = 0; i < variant_defines.size(); i++) {
-			if (variants_enabled[i] && group_enabled[variant_defines[i].group]) {
+			if (p_version->variants[i].is_valid()) {
 				RD::get_singleton()->free(p_version->variants[i]);
 			}
 		}
