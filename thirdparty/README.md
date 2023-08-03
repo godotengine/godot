@@ -92,6 +92,17 @@ Files extracted from upstream source:
 - `LICENSE.txt`
 
 
+## dr_flac
+
+- Upstream: https://github.com/mackron/dr_libs.git
+- Version: v0.12.41 (e07e2b8264da5fa1331a0ca3d30a3606084c311f, 2023)
+- License: Public Domain or MIT-0
+
+Files extracted from upstream source:
+
+- `dr_flac.h`
+
+
 ## embree
 
 - Upstream: https://github.com/embree/embree
