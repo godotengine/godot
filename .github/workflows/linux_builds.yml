@@ -165,7 +165,7 @@ jobs:
       - name: Check for GDExtension compatibility
         if: ${{ matrix.api-compat }}
         run: |
-          ./misc/scripts/validate_extension_api.sh "${{ matrix.bin }}" || true # don't fail the CI for now
+          ./misc/scripts/validate_extension_api.sh "${{ matrix.bin }}"
 
       # Download and run the test project
       - name: Test Godot project
