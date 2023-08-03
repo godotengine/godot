@@ -307,6 +307,15 @@
 				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
+		<method name="find_custom" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="func" type="Callable" />
+			<param index="1" name="from" type="int" default="0" />
+			<description>
+				Searches the array for the first value that causes [param func] to return true, or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+				[param func] is a callable that should accept an array element as an argument, and return a boolean.
+			</description>
+		</method>
 		<method name="front" qualifiers="const">
 			<return type="Variant" />
 			<description>
@@ -558,6 +567,15 @@
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
+			</description>
+		</method>
+		<method name="rfind_custom" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="func" type="Callable" />
+			<param index="1" name="from" type="int" default="-1" />
+			<description>
+				Searches the array for the last value that causes [param func] to return true by searching in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
+				[param func] is a callable that should accept an array element as an argument, and return a boolean.
 			</description>
 		</method>
 		<method name="shuffle">
