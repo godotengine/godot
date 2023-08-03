@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "variant.h"
+#include "variant_utility.h"
 
 #include "core/core_string_names.h"
 #include "core/io/marshalls.h"
@@ -40,795 +40,772 @@
 #include "core/variant/binder_common.h"
 #include "core/variant/variant_parser.h"
 
-struct VariantUtilityFunctions {
-	// Math
+// Math
+double VariantUtilityFunctions::sin(double arg) {
+	return Math::sin(arg);
+}
 
-	static inline double sin(double arg) {
-		return Math::sin(arg);
-	}
+double VariantUtilityFunctions::cos(double arg) {
+	return Math::cos(arg);
+}
 
-	static inline double cos(double arg) {
-		return Math::cos(arg);
-	}
+double VariantUtilityFunctions::tan(double arg) {
+	return Math::tan(arg);
+}
 
-	static inline double tan(double arg) {
-		return Math::tan(arg);
-	}
+double VariantUtilityFunctions::sinh(double arg) {
+	return Math::sinh(arg);
+}
 
-	static inline double sinh(double arg) {
-		return Math::sinh(arg);
-	}
+double VariantUtilityFunctions::cosh(double arg) {
+	return Math::cosh(arg);
+}
 
-	static inline double cosh(double arg) {
-		return Math::cosh(arg);
-	}
+double VariantUtilityFunctions::tanh(double arg) {
+	return Math::tanh(arg);
+}
 
-	static inline double tanh(double arg) {
-		return Math::tanh(arg);
-	}
+double VariantUtilityFunctions::asin(double arg) {
+	return Math::asin(arg);
+}
 
-	static inline double asin(double arg) {
-		return Math::asin(arg);
-	}
+double VariantUtilityFunctions::acos(double arg) {
+	return Math::acos(arg);
+}
 
-	static inline double acos(double arg) {
-		return Math::acos(arg);
-	}
+double VariantUtilityFunctions::atan(double arg) {
+	return Math::atan(arg);
+}
 
-	static inline double atan(double arg) {
-		return Math::atan(arg);
-	}
+double VariantUtilityFunctions::atan2(double y, double x) {
+	return Math::atan2(y, x);
+}
 
-	static inline double atan2(double y, double x) {
-		return Math::atan2(y, x);
-	}
+double VariantUtilityFunctions::sqrt(double x) {
+	return Math::sqrt(x);
+}
 
-	static inline double sqrt(double x) {
-		return Math::sqrt(x);
-	}
+double VariantUtilityFunctions::fmod(double b, double r) {
+	return Math::fmod(b, r);
+}
 
-	static inline double fmod(double b, double r) {
-		return Math::fmod(b, r);
-	}
+double VariantUtilityFunctions::fposmod(double b, double r) {
+	return Math::fposmod(b, r);
+}
 
-	static inline double fposmod(double b, double r) {
-		return Math::fposmod(b, r);
-	}
+int64_t VariantUtilityFunctions::posmod(int64_t b, int64_t r) {
+	return Math::posmod(b, r);
+}
 
-	static inline int64_t posmod(int64_t b, int64_t r) {
-		return Math::posmod(b, r);
-	}
-
-	static inline Variant floor(Variant x, Callable::CallError &r_error) {
-		r_error.error = Callable::CallError::CALL_OK;
-		switch (x.get_type()) {
-			case Variant::INT: {
-				return VariantInternalAccessor<int64_t>::get(&x);
-			} break;
-			case Variant::FLOAT: {
-				return Math::floor(VariantInternalAccessor<double>::get(&x));
-			} break;
-			case Variant::VECTOR2: {
-				return VariantInternalAccessor<Vector2>::get(&x).floor();
-			} break;
-			case Variant::VECTOR3: {
-				return VariantInternalAccessor<Vector3>::get(&x).floor();
-			} break;
-			case Variant::VECTOR4: {
-				return VariantInternalAccessor<Vector4>::get(&x).floor();
-			} break;
-			default: {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-				return Variant();
-			}
-		}
-	}
-
-	static inline double floorf(double x) {
-		return Math::floor(x);
-	}
-
-	static inline int64_t floori(double x) {
-		return int64_t(Math::floor(x));
-	}
-
-	static inline Variant ceil(Variant x, Callable::CallError &r_error) {
-		r_error.error = Callable::CallError::CALL_OK;
-		switch (x.get_type()) {
-			case Variant::INT: {
-				return VariantInternalAccessor<int64_t>::get(&x);
-			} break;
-			case Variant::FLOAT: {
-				return Math::ceil(VariantInternalAccessor<double>::get(&x));
-			} break;
-			case Variant::VECTOR2: {
-				return VariantInternalAccessor<Vector2>::get(&x).ceil();
-			} break;
-			case Variant::VECTOR3: {
-				return VariantInternalAccessor<Vector3>::get(&x).ceil();
-			} break;
-			case Variant::VECTOR4: {
-				return VariantInternalAccessor<Vector4>::get(&x).ceil();
-			} break;
-			default: {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-				return Variant();
-			}
-		}
-	}
-
-	static inline double ceilf(double x) {
-		return Math::ceil(x);
-	}
-
-	static inline int64_t ceili(double x) {
-		return int64_t(Math::ceil(x));
-	}
-
-	static inline Variant round(Variant x, Callable::CallError &r_error) {
-		r_error.error = Callable::CallError::CALL_OK;
-		switch (x.get_type()) {
-			case Variant::INT: {
-				return VariantInternalAccessor<int64_t>::get(&x);
-			} break;
-			case Variant::FLOAT: {
-				return Math::round(VariantInternalAccessor<double>::get(&x));
-			} break;
-			case Variant::VECTOR2: {
-				return VariantInternalAccessor<Vector2>::get(&x).round();
-			} break;
-			case Variant::VECTOR3: {
-				return VariantInternalAccessor<Vector3>::get(&x).round();
-			} break;
-			case Variant::VECTOR4: {
-				return VariantInternalAccessor<Vector4>::get(&x).round();
-			} break;
-			default: {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-				return Variant();
-			}
-		}
-	}
-
-	static inline double roundf(double x) {
-		return Math::round(x);
-	}
-
-	static inline int64_t roundi(double x) {
-		return int64_t(Math::round(x));
-	}
-
-	static inline Variant abs(const Variant &x, Callable::CallError &r_error) {
-		r_error.error = Callable::CallError::CALL_OK;
-		switch (x.get_type()) {
-			case Variant::INT: {
-				return ABS(VariantInternalAccessor<int64_t>::get(&x));
-			} break;
-			case Variant::FLOAT: {
-				return Math::absd(VariantInternalAccessor<double>::get(&x));
-			} break;
-			case Variant::VECTOR2: {
-				return VariantInternalAccessor<Vector2>::get(&x).abs();
-			} break;
-			case Variant::VECTOR2I: {
-				return VariantInternalAccessor<Vector2i>::get(&x).abs();
-			} break;
-			case Variant::VECTOR3: {
-				return VariantInternalAccessor<Vector3>::get(&x).abs();
-			} break;
-			case Variant::VECTOR3I: {
-				return VariantInternalAccessor<Vector3i>::get(&x).abs();
-			} break;
-			case Variant::VECTOR4: {
-				return VariantInternalAccessor<Vector4>::get(&x).abs();
-			} break;
-			case Variant::VECTOR4I: {
-				return VariantInternalAccessor<Vector4i>::get(&x).abs();
-			} break;
-			default: {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-				return Variant();
-			}
-		}
-	}
-
-	static inline double absf(double x) {
-		return Math::absd(x);
-	}
-
-	static inline int64_t absi(int64_t x) {
-		return ABS(x);
-	}
-
-	static inline Variant sign(const Variant &x, Callable::CallError &r_error) {
-		r_error.error = Callable::CallError::CALL_OK;
-		switch (x.get_type()) {
-			case Variant::INT: {
-				return SIGN(VariantInternalAccessor<int64_t>::get(&x));
-			} break;
-			case Variant::FLOAT: {
-				return SIGN(VariantInternalAccessor<double>::get(&x));
-			} break;
-			case Variant::VECTOR2: {
-				return VariantInternalAccessor<Vector2>::get(&x).sign();
-			} break;
-			case Variant::VECTOR2I: {
-				return VariantInternalAccessor<Vector2i>::get(&x).sign();
-			} break;
-			case Variant::VECTOR3: {
-				return VariantInternalAccessor<Vector3>::get(&x).sign();
-			} break;
-			case Variant::VECTOR3I: {
-				return VariantInternalAccessor<Vector3i>::get(&x).sign();
-			} break;
-			case Variant::VECTOR4: {
-				return VariantInternalAccessor<Vector4>::get(&x).sign();
-			} break;
-			case Variant::VECTOR4I: {
-				return VariantInternalAccessor<Vector4i>::get(&x).sign();
-			} break;
-			default: {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-				return Variant();
-			}
-		}
-	}
-
-	static inline double signf(double x) {
-		return SIGN(x);
-	}
-
-	static inline int64_t signi(int64_t x) {
-		return SIGN(x);
-	}
-
-	static inline double pow(double x, double y) {
-		return Math::pow(x, y);
-	}
-
-	static inline double log(double x) {
-		return Math::log(x);
-	}
-
-	static inline double exp(double x) {
-		return Math::exp(x);
-	}
-
-	static inline bool is_nan(double x) {
-		return Math::is_nan(x);
-	}
-
-	static inline bool is_inf(double x) {
-		return Math::is_inf(x);
-	}
-
-	static inline bool is_equal_approx(double x, double y) {
-		return Math::is_equal_approx(x, y);
-	}
-
-	static inline bool is_zero_approx(double x) {
-		return Math::is_zero_approx(x);
-	}
-
-	static inline bool is_finite(double x) {
-		return Math::is_finite(x);
-	}
-
-	static inline double ease(float x, float curve) {
-		return Math::ease(x, curve);
-	}
-
-	static inline int step_decimals(float step) {
-		return Math::step_decimals(step);
-	}
-
-	static inline Variant snapped(const Variant &x, const Variant &step, Callable::CallError &r_error) {
-		r_error.error = Callable::CallError::CALL_OK;
-		if (x.get_type() != step.get_type() && !((x.get_type() == Variant::INT && step.get_type() == Variant::FLOAT) || (x.get_type() == Variant::FLOAT && step.get_type() == Variant::INT))) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = 1;
+Variant VariantUtilityFunctions::floor(Variant x, Callable::CallError &r_error) {
+	r_error.error = Callable::CallError::CALL_OK;
+	switch (x.get_type()) {
+		case Variant::INT: {
+			return VariantInternalAccessor<int64_t>::get(&x);
+		} break;
+		case Variant::FLOAT: {
+			return Math::floor(VariantInternalAccessor<double>::get(&x));
+		} break;
+		case Variant::VECTOR2: {
+			return VariantInternalAccessor<Vector2>::get(&x).floor();
+		} break;
+		case Variant::VECTOR3: {
+			return VariantInternalAccessor<Vector3>::get(&x).floor();
+		} break;
+		case Variant::VECTOR4: {
+			return VariantInternalAccessor<Vector4>::get(&x).floor();
+		} break;
+		default: {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			return Variant();
 		}
-
-		switch (step.get_type()) {
-			case Variant::INT: {
-				return snappedi(x, VariantInternalAccessor<int64_t>::get(&step));
-			} break;
-			case Variant::FLOAT: {
-				return snappedf(x, VariantInternalAccessor<double>::get(&step));
-			} break;
-			case Variant::VECTOR2: {
-				return VariantInternalAccessor<Vector2>::get(&x).snapped(VariantInternalAccessor<Vector2>::get(&step));
-			} break;
-			case Variant::VECTOR2I: {
-				return VariantInternalAccessor<Vector2i>::get(&x).snapped(VariantInternalAccessor<Vector2i>::get(&step));
-			} break;
-			case Variant::VECTOR3: {
-				return VariantInternalAccessor<Vector3>::get(&x).snapped(VariantInternalAccessor<Vector3>::get(&step));
-			} break;
-			case Variant::VECTOR3I: {
-				return VariantInternalAccessor<Vector3i>::get(&x).snapped(VariantInternalAccessor<Vector3i>::get(&step));
-			} break;
-			case Variant::VECTOR4: {
-				return VariantInternalAccessor<Vector4>::get(&x).snapped(VariantInternalAccessor<Vector4>::get(&step));
-			} break;
-			case Variant::VECTOR4I: {
-				return VariantInternalAccessor<Vector4i>::get(&x).snapped(VariantInternalAccessor<Vector4i>::get(&step));
-			} break;
-			default: {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-				return Variant();
-			}
-		}
 	}
+}
 
-	static inline double snappedf(double x, double step) {
-		return Math::snapped(x, step);
-	}
+double VariantUtilityFunctions::floorf(double x) {
+	return Math::floor(x);
+}
 
-	static inline int64_t snappedi(double x, int64_t step) {
-		return Math::snapped(x, step);
-	}
+int64_t VariantUtilityFunctions::floori(double x) {
+	return int64_t(Math::floor(x));
+}
 
-	static inline Variant lerp(const Variant &from, const Variant &to, double weight, Callable::CallError &r_error) {
-		r_error.error = Callable::CallError::CALL_OK;
-		if (from.get_type() != to.get_type()) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.expected = from.get_type();
-			r_error.argument = 1;
+Variant VariantUtilityFunctions::ceil(Variant x, Callable::CallError &r_error) {
+	r_error.error = Callable::CallError::CALL_OK;
+	switch (x.get_type()) {
+		case Variant::INT: {
+			return VariantInternalAccessor<int64_t>::get(&x);
+		} break;
+		case Variant::FLOAT: {
+			return Math::ceil(VariantInternalAccessor<double>::get(&x));
+		} break;
+		case Variant::VECTOR2: {
+			return VariantInternalAccessor<Vector2>::get(&x).ceil();
+		} break;
+		case Variant::VECTOR3: {
+			return VariantInternalAccessor<Vector3>::get(&x).ceil();
+		} break;
+		case Variant::VECTOR4: {
+			return VariantInternalAccessor<Vector4>::get(&x).ceil();
+		} break;
+		default: {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			return Variant();
 		}
-
-		switch (from.get_type()) {
-			case Variant::INT: {
-				return lerpf(VariantInternalAccessor<int64_t>::get(&from), to, weight);
-			} break;
-			case Variant::FLOAT: {
-				return lerpf(VariantInternalAccessor<double>::get(&from), to, weight);
-			} break;
-			case Variant::VECTOR2: {
-				return VariantInternalAccessor<Vector2>::get(&from).lerp(VariantInternalAccessor<Vector2>::get(&to), weight);
-			} break;
-			case Variant::VECTOR3: {
-				return VariantInternalAccessor<Vector3>::get(&from).lerp(VariantInternalAccessor<Vector3>::get(&to), weight);
-			} break;
-			case Variant::VECTOR4: {
-				return VariantInternalAccessor<Vector4>::get(&from).lerp(VariantInternalAccessor<Vector4>::get(&to), weight);
-			} break;
-			case Variant::QUATERNION: {
-				return VariantInternalAccessor<Quaternion>::get(&from).slerp(VariantInternalAccessor<Quaternion>::get(&to), weight);
-			} break;
-			case Variant::BASIS: {
-				return VariantInternalAccessor<Basis>::get(&from).slerp(VariantInternalAccessor<Basis>::get(&to), weight);
-			} break;
-			case Variant::COLOR: {
-				return VariantInternalAccessor<Color>::get(&from).lerp(VariantInternalAccessor<Color>::get(&to), weight);
-			} break;
-			default: {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-				return Variant();
-			}
-		}
 	}
+}
 
-	static inline double lerpf(double from, double to, double weight) {
-		return Math::lerp(from, to, weight);
-	}
+double VariantUtilityFunctions::ceilf(double x) {
+	return Math::ceil(x);
+}
 
-	static inline double cubic_interpolate(double from, double to, double pre, double post, double weight) {
-		return Math::cubic_interpolate(from, to, pre, post, weight);
-	}
+int64_t VariantUtilityFunctions::ceili(double x) {
+	return int64_t(Math::ceil(x));
+}
 
-	static inline double cubic_interpolate_angle(double from, double to, double pre, double post, double weight) {
-		return Math::cubic_interpolate_angle(from, to, pre, post, weight);
-	}
-
-	static inline double cubic_interpolate_in_time(double from, double to, double pre, double post, double weight,
-			double to_t, double pre_t, double post_t) {
-		return Math::cubic_interpolate_in_time(from, to, pre, post, weight, to_t, pre_t, post_t);
-	}
-
-	static inline double cubic_interpolate_angle_in_time(double from, double to, double pre, double post, double weight,
-			double to_t, double pre_t, double post_t) {
-		return Math::cubic_interpolate_angle_in_time(from, to, pre, post, weight, to_t, pre_t, post_t);
-	}
-
-	static inline double bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
-		return Math::bezier_interpolate(p_start, p_control_1, p_control_2, p_end, p_t);
-	}
-
-	static inline double bezier_derivative(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
-		return Math::bezier_derivative(p_start, p_control_1, p_control_2, p_end, p_t);
-	}
-
-	static inline double lerp_angle(double from, double to, double weight) {
-		return Math::lerp_angle(from, to, weight);
-	}
-
-	static inline double inverse_lerp(double from, double to, double weight) {
-		return Math::inverse_lerp(from, to, weight);
-	}
-
-	static inline double remap(double value, double istart, double istop, double ostart, double ostop) {
-		return Math::remap(value, istart, istop, ostart, ostop);
-	}
-
-	static inline double smoothstep(double from, double to, double val) {
-		return Math::smoothstep(from, to, val);
-	}
-
-	static inline double move_toward(double from, double to, double delta) {
-		return Math::move_toward(from, to, delta);
-	}
-
-	static inline double deg_to_rad(double angle_deg) {
-		return Math::deg_to_rad(angle_deg);
-	}
-
-	static inline double rad_to_deg(double angle_rad) {
-		return Math::rad_to_deg(angle_rad);
-	}
-
-	static inline double linear_to_db(double linear) {
-		return Math::linear_to_db(linear);
-	}
-
-	static inline double db_to_linear(double db) {
-		return Math::db_to_linear(db);
-	}
-
-	static inline Variant wrap(const Variant &p_x, const Variant &p_min, const Variant &p_max, Callable::CallError &r_error) {
-		Variant::Type x_type = p_x.get_type();
-		if (x_type != Variant::INT && x_type != Variant::FLOAT) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = 0;
-			r_error.expected = x_type;
+Variant VariantUtilityFunctions::round(Variant x, Callable::CallError &r_error) {
+	r_error.error = Callable::CallError::CALL_OK;
+	switch (x.get_type()) {
+		case Variant::INT: {
+			return VariantInternalAccessor<int64_t>::get(&x);
+		} break;
+		case Variant::FLOAT: {
+			return Math::round(VariantInternalAccessor<double>::get(&x));
+		} break;
+		case Variant::VECTOR2: {
+			return VariantInternalAccessor<Vector2>::get(&x).round();
+		} break;
+		case Variant::VECTOR3: {
+			return VariantInternalAccessor<Vector3>::get(&x).round();
+		} break;
+		case Variant::VECTOR4: {
+			return VariantInternalAccessor<Vector4>::get(&x).round();
+		} break;
+		default: {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			return Variant();
 		}
+	}
+}
 
-		Variant::Type min_type = p_min.get_type();
-		if (min_type != Variant::INT && min_type != Variant::FLOAT) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = 1;
-			r_error.expected = x_type;
+double VariantUtilityFunctions::roundf(double x) {
+	return Math::round(x);
+}
+
+int64_t VariantUtilityFunctions::roundi(double x) {
+	return int64_t(Math::round(x));
+}
+
+Variant VariantUtilityFunctions::abs(const Variant &x, Callable::CallError &r_error) {
+	r_error.error = Callable::CallError::CALL_OK;
+	switch (x.get_type()) {
+		case Variant::INT: {
+			return ABS(VariantInternalAccessor<int64_t>::get(&x));
+		} break;
+		case Variant::FLOAT: {
+			return Math::absd(VariantInternalAccessor<double>::get(&x));
+		} break;
+		case Variant::VECTOR2: {
+			return VariantInternalAccessor<Vector2>::get(&x).abs();
+		} break;
+		case Variant::VECTOR2I: {
+			return VariantInternalAccessor<Vector2i>::get(&x).abs();
+		} break;
+		case Variant::VECTOR3: {
+			return VariantInternalAccessor<Vector3>::get(&x).abs();
+		} break;
+		case Variant::VECTOR3I: {
+			return VariantInternalAccessor<Vector3i>::get(&x).abs();
+		} break;
+		case Variant::VECTOR4: {
+			return VariantInternalAccessor<Vector4>::get(&x).abs();
+		} break;
+		case Variant::VECTOR4I: {
+			return VariantInternalAccessor<Vector4i>::get(&x).abs();
+		} break;
+		default: {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			return Variant();
 		}
+	}
+}
 
-		Variant::Type max_type = p_max.get_type();
-		if (max_type != Variant::INT && max_type != Variant::FLOAT) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = 2;
-			r_error.expected = x_type;
+double VariantUtilityFunctions::absf(double x) {
+	return Math::absd(x);
+}
+
+int64_t VariantUtilityFunctions::absi(int64_t x) {
+	return ABS(x);
+}
+
+Variant VariantUtilityFunctions::sign(const Variant &x, Callable::CallError &r_error) {
+	r_error.error = Callable::CallError::CALL_OK;
+	switch (x.get_type()) {
+		case Variant::INT: {
+			return SIGN(VariantInternalAccessor<int64_t>::get(&x));
+		} break;
+		case Variant::FLOAT: {
+			return SIGN(VariantInternalAccessor<double>::get(&x));
+		} break;
+		case Variant::VECTOR2: {
+			return VariantInternalAccessor<Vector2>::get(&x).sign();
+		} break;
+		case Variant::VECTOR2I: {
+			return VariantInternalAccessor<Vector2i>::get(&x).sign();
+		} break;
+		case Variant::VECTOR3: {
+			return VariantInternalAccessor<Vector3>::get(&x).sign();
+		} break;
+		case Variant::VECTOR3I: {
+			return VariantInternalAccessor<Vector3i>::get(&x).sign();
+		} break;
+		case Variant::VECTOR4: {
+			return VariantInternalAccessor<Vector4>::get(&x).sign();
+		} break;
+		case Variant::VECTOR4I: {
+			return VariantInternalAccessor<Vector4i>::get(&x).sign();
+		} break;
+		default: {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			return Variant();
 		}
+	}
+}
 
-		Variant value;
+double VariantUtilityFunctions::signf(double x) {
+	return SIGN(x);
+}
 
-		switch (x_type) {
-			case Variant::INT: {
-				if (x_type != min_type || x_type != max_type) {
-					value = wrapf((double)p_x, (double)p_min, (double)p_max);
-				} else {
-					value = wrapi((int)p_x, (int)p_min, (int)p_max);
-				}
-			} break;
-			case Variant::FLOAT: {
+int64_t VariantUtilityFunctions::signi(int64_t x) {
+	return SIGN(x);
+}
+
+double VariantUtilityFunctions::pow(double x, double y) {
+	return Math::pow(x, y);
+}
+
+double VariantUtilityFunctions::log(double x) {
+	return Math::log(x);
+}
+
+double VariantUtilityFunctions::exp(double x) {
+	return Math::exp(x);
+}
+
+bool VariantUtilityFunctions::is_nan(double x) {
+	return Math::is_nan(x);
+}
+
+bool VariantUtilityFunctions::is_inf(double x) {
+	return Math::is_inf(x);
+}
+
+bool VariantUtilityFunctions::is_equal_approx(double x, double y) {
+	return Math::is_equal_approx(x, y);
+}
+
+bool VariantUtilityFunctions::is_zero_approx(double x) {
+	return Math::is_zero_approx(x);
+}
+
+bool VariantUtilityFunctions::is_finite(double x) {
+	return Math::is_finite(x);
+}
+
+double VariantUtilityFunctions::ease(float x, float curve) {
+	return Math::ease(x, curve);
+}
+
+int VariantUtilityFunctions::step_decimals(float step) {
+	return Math::step_decimals(step);
+}
+
+Variant VariantUtilityFunctions::snapped(const Variant &x, const Variant &step, Callable::CallError &r_error) {
+	r_error.error = Callable::CallError::CALL_OK;
+	if (x.get_type() != step.get_type() && !((x.get_type() == Variant::INT && step.get_type() == Variant::FLOAT) || (x.get_type() == Variant::FLOAT && step.get_type() == Variant::INT))) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 1;
+		return Variant();
+	}
+
+	switch (step.get_type()) {
+		case Variant::INT: {
+			return snappedi(x, VariantInternalAccessor<int64_t>::get(&step));
+		} break;
+		case Variant::FLOAT: {
+			return snappedf(x, VariantInternalAccessor<double>::get(&step));
+		} break;
+		case Variant::VECTOR2: {
+			return VariantInternalAccessor<Vector2>::get(&x).snapped(VariantInternalAccessor<Vector2>::get(&step));
+		} break;
+		case Variant::VECTOR2I: {
+			return VariantInternalAccessor<Vector2i>::get(&x).snapped(VariantInternalAccessor<Vector2i>::get(&step));
+		} break;
+		case Variant::VECTOR3: {
+			return VariantInternalAccessor<Vector3>::get(&x).snapped(VariantInternalAccessor<Vector3>::get(&step));
+		} break;
+		case Variant::VECTOR3I: {
+			return VariantInternalAccessor<Vector3i>::get(&x).snapped(VariantInternalAccessor<Vector3i>::get(&step));
+		} break;
+		case Variant::VECTOR4: {
+			return VariantInternalAccessor<Vector4>::get(&x).snapped(VariantInternalAccessor<Vector4>::get(&step));
+		} break;
+		case Variant::VECTOR4I: {
+			return VariantInternalAccessor<Vector4i>::get(&x).snapped(VariantInternalAccessor<Vector4i>::get(&step));
+		} break;
+		default: {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			return Variant();
+		}
+	}
+}
+
+double VariantUtilityFunctions::snappedf(double x, double step) {
+	return Math::snapped(x, step);
+}
+
+int64_t VariantUtilityFunctions::snappedi(double x, int64_t step) {
+	return Math::snapped(x, step);
+}
+
+Variant VariantUtilityFunctions::lerp(const Variant &from, const Variant &to, double weight, Callable::CallError &r_error) {
+	r_error.error = Callable::CallError::CALL_OK;
+	if (from.get_type() != to.get_type()) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.expected = from.get_type();
+		r_error.argument = 1;
+		return Variant();
+	}
+
+	switch (from.get_type()) {
+		case Variant::INT: {
+			return lerpf(VariantInternalAccessor<int64_t>::get(&from), to, weight);
+		} break;
+		case Variant::FLOAT: {
+			return lerpf(VariantInternalAccessor<double>::get(&from), to, weight);
+		} break;
+		case Variant::VECTOR2: {
+			return VariantInternalAccessor<Vector2>::get(&from).lerp(VariantInternalAccessor<Vector2>::get(&to), weight);
+		} break;
+		case Variant::VECTOR3: {
+			return VariantInternalAccessor<Vector3>::get(&from).lerp(VariantInternalAccessor<Vector3>::get(&to), weight);
+		} break;
+		case Variant::VECTOR4: {
+			return VariantInternalAccessor<Vector4>::get(&from).lerp(VariantInternalAccessor<Vector4>::get(&to), weight);
+		} break;
+		case Variant::QUATERNION: {
+			return VariantInternalAccessor<Quaternion>::get(&from).slerp(VariantInternalAccessor<Quaternion>::get(&to), weight);
+		} break;
+		case Variant::BASIS: {
+			return VariantInternalAccessor<Basis>::get(&from).slerp(VariantInternalAccessor<Basis>::get(&to), weight);
+		} break;
+		case Variant::COLOR: {
+			return VariantInternalAccessor<Color>::get(&from).lerp(VariantInternalAccessor<Color>::get(&to), weight);
+		} break;
+		default: {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
+			return Variant();
+		}
+	}
+}
+
+double VariantUtilityFunctions::lerpf(double from, double to, double weight) {
+	return Math::lerp(from, to, weight);
+}
+
+double VariantUtilityFunctions::cubic_interpolate(double from, double to, double pre, double post, double weight) {
+	return Math::cubic_interpolate(from, to, pre, post, weight);
+}
+
+double VariantUtilityFunctions::cubic_interpolate_angle(double from, double to, double pre, double post, double weight) {
+	return Math::cubic_interpolate_angle(from, to, pre, post, weight);
+}
+
+double VariantUtilityFunctions::cubic_interpolate_in_time(double from, double to, double pre, double post, double weight,
+		double to_t, double pre_t, double post_t) {
+	return Math::cubic_interpolate_in_time(from, to, pre, post, weight, to_t, pre_t, post_t);
+}
+
+double VariantUtilityFunctions::cubic_interpolate_angle_in_time(double from, double to, double pre, double post, double weight,
+		double to_t, double pre_t, double post_t) {
+	return Math::cubic_interpolate_angle_in_time(from, to, pre, post, weight, to_t, pre_t, post_t);
+}
+
+double VariantUtilityFunctions::bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
+	return Math::bezier_interpolate(p_start, p_control_1, p_control_2, p_end, p_t);
+}
+
+double VariantUtilityFunctions::bezier_derivative(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
+	return Math::bezier_derivative(p_start, p_control_1, p_control_2, p_end, p_t);
+}
+
+double VariantUtilityFunctions::lerp_angle(double from, double to, double weight) {
+	return Math::lerp_angle(from, to, weight);
+}
+
+double VariantUtilityFunctions::inverse_lerp(double from, double to, double weight) {
+	return Math::inverse_lerp(from, to, weight);
+}
+
+double VariantUtilityFunctions::remap(double value, double istart, double istop, double ostart, double ostop) {
+	return Math::remap(value, istart, istop, ostart, ostop);
+}
+
+double VariantUtilityFunctions::smoothstep(double from, double to, double val) {
+	return Math::smoothstep(from, to, val);
+}
+
+double VariantUtilityFunctions::move_toward(double from, double to, double delta) {
+	return Math::move_toward(from, to, delta);
+}
+
+double VariantUtilityFunctions::deg_to_rad(double angle_deg) {
+	return Math::deg_to_rad(angle_deg);
+}
+
+double VariantUtilityFunctions::rad_to_deg(double angle_rad) {
+	return Math::rad_to_deg(angle_rad);
+}
+
+double VariantUtilityFunctions::linear_to_db(double linear) {
+	return Math::linear_to_db(linear);
+}
+
+double VariantUtilityFunctions::db_to_linear(double db) {
+	return Math::db_to_linear(db);
+}
+
+Variant VariantUtilityFunctions::wrap(const Variant &p_x, const Variant &p_min, const Variant &p_max, Callable::CallError &r_error) {
+	Variant::Type x_type = p_x.get_type();
+	if (x_type != Variant::INT && x_type != Variant::FLOAT) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 0;
+		r_error.expected = x_type;
+		return Variant();
+	}
+
+	Variant::Type min_type = p_min.get_type();
+	if (min_type != Variant::INT && min_type != Variant::FLOAT) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 1;
+		r_error.expected = x_type;
+		return Variant();
+	}
+
+	Variant::Type max_type = p_max.get_type();
+	if (max_type != Variant::INT && max_type != Variant::FLOAT) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 2;
+		r_error.expected = x_type;
+		return Variant();
+	}
+
+	Variant value;
+
+	switch (x_type) {
+		case Variant::INT: {
+			if (x_type != min_type || x_type != max_type) {
 				value = wrapf((double)p_x, (double)p_min, (double)p_max);
-			} break;
-			default:
-				break;
-		}
-
-		r_error.error = Callable::CallError::CALL_OK;
-		return value;
-	}
-
-	static inline int64_t wrapi(int64_t value, int64_t min, int64_t max) {
-		return Math::wrapi(value, min, max);
-	}
-
-	static inline double wrapf(double value, double min, double max) {
-		return Math::wrapf(value, min, max);
-	}
-
-	static inline double pingpong(double value, double length) {
-		return Math::pingpong(value, length);
-	}
-
-	static inline Variant max(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-		if (p_argcount < 2) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.expected = 2;
-			return Variant();
-		}
-		Variant base = *p_args[0];
-		Variant ret;
-
-		for (int i = 0; i < p_argcount; i++) {
-			Variant::Type arg_type = p_args[i]->get_type();
-			if (arg_type != Variant::INT && arg_type != Variant::FLOAT) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.expected = Variant::FLOAT;
-				r_error.argument = i;
-				return Variant();
-			}
-			if (i == 0) {
-				continue;
-			}
-			bool valid;
-			Variant::evaluate(Variant::OP_LESS, base, *p_args[i], ret, valid);
-			if (!valid) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.expected = base.get_type();
-				r_error.argument = i;
-				return Variant();
-			}
-			if (ret.booleanize()) {
-				base = *p_args[i];
-			}
-		}
-		r_error.error = Callable::CallError::CALL_OK;
-		return base;
-	}
-
-	static inline double maxf(double x, double y) {
-		return MAX(x, y);
-	}
-
-	static inline int64_t maxi(int64_t x, int64_t y) {
-		return MAX(x, y);
-	}
-
-	static inline Variant min(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-		if (p_argcount < 2) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.expected = 2;
-			return Variant();
-		}
-		Variant base = *p_args[0];
-		Variant ret;
-
-		for (int i = 0; i < p_argcount; i++) {
-			Variant::Type arg_type = p_args[i]->get_type();
-			if (arg_type != Variant::INT && arg_type != Variant::FLOAT) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.expected = Variant::FLOAT;
-				r_error.argument = i;
-				return Variant();
-			}
-			if (i == 0) {
-				continue;
-			}
-			bool valid;
-			Variant::evaluate(Variant::OP_GREATER, base, *p_args[i], ret, valid);
-			if (!valid) {
-				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-				r_error.expected = base.get_type();
-				r_error.argument = i;
-				return Variant();
-			}
-			if (ret.booleanize()) {
-				base = *p_args[i];
-			}
-		}
-		r_error.error = Callable::CallError::CALL_OK;
-		return base;
-	}
-
-	static inline double minf(double x, double y) {
-		return MIN(x, y);
-	}
-
-	static inline int64_t mini(int64_t x, int64_t y) {
-		return MIN(x, y);
-	}
-
-	static inline Variant clamp(const Variant &x, const Variant &min, const Variant &max, Callable::CallError &r_error) {
-		Variant value = x;
-
-		Variant ret;
-
-		bool valid;
-		Variant::evaluate(Variant::OP_LESS, value, min, ret, valid);
-		if (!valid) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.expected = value.get_type();
-			r_error.argument = 1;
-			return Variant();
-		}
-		if (ret.booleanize()) {
-			value = min;
-		}
-		Variant::evaluate(Variant::OP_GREATER, value, max, ret, valid);
-		if (!valid) {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.expected = value.get_type();
-			r_error.argument = 2;
-			return Variant();
-		}
-		if (ret.booleanize()) {
-			value = max;
-		}
-
-		r_error.error = Callable::CallError::CALL_OK;
-
-		return value;
-	}
-
-	static inline double clampf(double x, double min, double max) {
-		return CLAMP(x, min, max);
-	}
-
-	static inline int64_t clampi(int64_t x, int64_t min, int64_t max) {
-		return CLAMP(x, min, max);
-	}
-
-	static inline int64_t nearest_po2(int64_t x) {
-		return nearest_power_of_2_templated(uint64_t(x));
-	}
-
-	// Random
-
-	static inline void randomize() {
-		Math::randomize();
-	}
-
-	static inline int64_t randi() {
-		return Math::rand();
-	}
-
-	static inline double randf() {
-		return Math::randf();
-	}
-
-	static inline double randfn(double mean, double deviation) {
-		return Math::randfn(mean, deviation);
-	}
-
-	static inline int64_t randi_range(int64_t from, int64_t to) {
-		return Math::random((int32_t)from, (int32_t)to);
-	}
-
-	static inline double randf_range(double from, double to) {
-		return Math::random(from, to);
-	}
-
-	static inline void seed(int64_t s) {
-		return Math::seed(s);
-	}
-
-	static inline PackedInt64Array rand_from_seed(int64_t seed) {
-		uint64_t s = seed;
-		PackedInt64Array arr;
-		arr.resize(2);
-		arr.write[0] = Math::rand_from_seed(&s);
-		arr.write[1] = s;
-		return arr;
-	}
-
-	// Utility
-
-	static inline Variant weakref(const Variant &obj, Callable::CallError &r_error) {
-		if (obj.get_type() == Variant::OBJECT) {
-			r_error.error = Callable::CallError::CALL_OK;
-			if (obj.is_ref_counted()) {
-				Ref<WeakRef> wref = memnew(WeakRef);
-				Ref<RefCounted> r = obj;
-				if (r.is_valid()) {
-					wref->set_ref(r);
-				}
-				return wref;
 			} else {
-				Ref<WeakRef> wref = memnew(WeakRef);
-				Object *o = obj.get_validated_object();
-				if (o) {
-					wref->set_obj(o);
-				}
-				return wref;
+				value = wrapi((int)p_x, (int)p_min, (int)p_max);
 			}
-		} else if (obj.get_type() == Variant::NIL) {
-			r_error.error = Callable::CallError::CALL_OK;
+		} break;
+		case Variant::FLOAT: {
+			value = wrapf((double)p_x, (double)p_min, (double)p_max);
+		} break;
+		default:
+			break;
+	}
+
+	r_error.error = Callable::CallError::CALL_OK;
+	return value;
+}
+
+int64_t VariantUtilityFunctions::wrapi(int64_t value, int64_t min, int64_t max) {
+	return Math::wrapi(value, min, max);
+}
+
+double VariantUtilityFunctions::wrapf(double value, double min, double max) {
+	return Math::wrapf(value, min, max);
+}
+
+double VariantUtilityFunctions::pingpong(double value, double length) {
+	return Math::pingpong(value, length);
+}
+
+Variant VariantUtilityFunctions::max(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	if (p_argcount < 2) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.expected = 2;
+		return Variant();
+	}
+	Variant base = *p_args[0];
+	Variant ret;
+
+	for (int i = 0; i < p_argcount; i++) {
+		Variant::Type arg_type = p_args[i]->get_type();
+		if (arg_type != Variant::INT && arg_type != Variant::FLOAT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = Variant::FLOAT;
+			r_error.argument = i;
+			return Variant();
+		}
+		if (i == 0) {
+			continue;
+		}
+		bool valid;
+		Variant::evaluate(Variant::OP_LESS, base, *p_args[i], ret, valid);
+		if (!valid) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = base.get_type();
+			r_error.argument = i;
+			return Variant();
+		}
+		if (ret.booleanize()) {
+			base = *p_args[i];
+		}
+	}
+	r_error.error = Callable::CallError::CALL_OK;
+	return base;
+}
+
+double VariantUtilityFunctions::maxf(double x, double y) {
+	return MAX(x, y);
+}
+
+int64_t VariantUtilityFunctions::maxi(int64_t x, int64_t y) {
+	return MAX(x, y);
+}
+
+Variant VariantUtilityFunctions::min(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	if (p_argcount < 2) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.expected = 2;
+		return Variant();
+	}
+	Variant base = *p_args[0];
+	Variant ret;
+
+	for (int i = 0; i < p_argcount; i++) {
+		Variant::Type arg_type = p_args[i]->get_type();
+		if (arg_type != Variant::INT && arg_type != Variant::FLOAT) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = Variant::FLOAT;
+			r_error.argument = i;
+			return Variant();
+		}
+		if (i == 0) {
+			continue;
+		}
+		bool valid;
+		Variant::evaluate(Variant::OP_GREATER, base, *p_args[i], ret, valid);
+		if (!valid) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.expected = base.get_type();
+			r_error.argument = i;
+			return Variant();
+		}
+		if (ret.booleanize()) {
+			base = *p_args[i];
+		}
+	}
+	r_error.error = Callable::CallError::CALL_OK;
+	return base;
+}
+
+double VariantUtilityFunctions::minf(double x, double y) {
+	return MIN(x, y);
+}
+
+int64_t VariantUtilityFunctions::mini(int64_t x, int64_t y) {
+	return MIN(x, y);
+}
+
+Variant VariantUtilityFunctions::clamp(const Variant &x, const Variant &min, const Variant &max, Callable::CallError &r_error) {
+	Variant value = x;
+
+	Variant ret;
+
+	bool valid;
+	Variant::evaluate(Variant::OP_LESS, value, min, ret, valid);
+	if (!valid) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.expected = value.get_type();
+		r_error.argument = 1;
+		return Variant();
+	}
+	if (ret.booleanize()) {
+		value = min;
+	}
+	Variant::evaluate(Variant::OP_GREATER, value, max, ret, valid);
+	if (!valid) {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.expected = value.get_type();
+		r_error.argument = 2;
+		return Variant();
+	}
+	if (ret.booleanize()) {
+		value = max;
+	}
+
+	r_error.error = Callable::CallError::CALL_OK;
+
+	return value;
+}
+
+double VariantUtilityFunctions::clampf(double x, double min, double max) {
+	return CLAMP(x, min, max);
+}
+
+int64_t VariantUtilityFunctions::clampi(int64_t x, int64_t min, int64_t max) {
+	return CLAMP(x, min, max);
+}
+
+int64_t VariantUtilityFunctions::nearest_po2(int64_t x) {
+	return nearest_power_of_2_templated(uint64_t(x));
+}
+
+// Random
+
+void VariantUtilityFunctions::randomize() {
+	Math::randomize();
+}
+
+int64_t VariantUtilityFunctions::randi() {
+	return Math::rand();
+}
+
+double VariantUtilityFunctions::randf() {
+	return Math::randf();
+}
+
+double VariantUtilityFunctions::randfn(double mean, double deviation) {
+	return Math::randfn(mean, deviation);
+}
+
+int64_t VariantUtilityFunctions::randi_range(int64_t from, int64_t to) {
+	return Math::random((int32_t)from, (int32_t)to);
+}
+
+double VariantUtilityFunctions::randf_range(double from, double to) {
+	return Math::random(from, to);
+}
+
+void VariantUtilityFunctions::seed(int64_t s) {
+	return Math::seed(s);
+}
+
+PackedInt64Array VariantUtilityFunctions::rand_from_seed(int64_t seed) {
+	uint64_t s = seed;
+	PackedInt64Array arr;
+	arr.resize(2);
+	arr.write[0] = Math::rand_from_seed(&s);
+	arr.write[1] = s;
+	return arr;
+}
+
+// Utility
+
+Variant VariantUtilityFunctions::weakref(const Variant &obj, Callable::CallError &r_error) {
+	if (obj.get_type() == Variant::OBJECT) {
+		r_error.error = Callable::CallError::CALL_OK;
+		if (obj.is_ref_counted()) {
 			Ref<WeakRef> wref = memnew(WeakRef);
+			Ref<RefCounted> r = obj;
+			if (r.is_valid()) {
+				wref->set_ref(r);
+			}
 			return wref;
 		} else {
-			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-			r_error.argument = 0;
-			r_error.expected = Variant::OBJECT;
-			return Variant();
-		}
-	}
-
-	static inline int64_t _typeof(const Variant &obj) {
-		return obj.get_type();
-	}
-
-	static inline String str(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
-			return String();
-		}
-		String s;
-		for (int i = 0; i < p_arg_count; i++) {
-			String os = p_args[i]->operator String();
-
-			if (i == 0) {
-				s = os;
-			} else {
-				s += os;
+			Ref<WeakRef> wref = memnew(WeakRef);
+			Object *o = obj.get_validated_object();
+			if (o) {
+				wref->set_obj(o);
 			}
+			return wref;
 		}
-
+	} else if (obj.get_type() == Variant::NIL) {
 		r_error.error = Callable::CallError::CALL_OK;
-
-		return s;
+		Ref<WeakRef> wref = memnew(WeakRef);
+		return wref;
+	} else {
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 0;
+		r_error.expected = Variant::OBJECT;
+		return Variant();
 	}
+}
 
-	static inline String error_string(Error error) {
-		if (error < 0 || error >= ERR_MAX) {
-			return String("(invalid error code)");
+int64_t VariantUtilityFunctions::_typeof(const Variant &obj) {
+	return obj.get_type();
+}
+
+String VariantUtilityFunctions::str(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	if (p_arg_count < 1) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument = 1;
+		return String();
+	}
+	String s;
+	for (int i = 0; i < p_arg_count; i++) {
+		String os = p_args[i]->operator String();
+
+		if (i == 0) {
+			s = os;
+		} else {
+			s += os;
 		}
-
-		return String(error_names[error]);
 	}
 
-	static inline void print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String s;
-		for (int i = 0; i < p_arg_count; i++) {
-			String os = p_args[i]->operator String();
+	r_error.error = Callable::CallError::CALL_OK;
 
-			if (i == 0) {
-				s = os;
-			} else {
-				s += os;
-			}
+	return s;
+}
+
+String VariantUtilityFunctions::error_string(Error error) {
+	if (error < 0 || error >= ERR_MAX) {
+		return String("(invalid error code)");
+	}
+
+	return String(error_names[error]);
+}
+
+void VariantUtilityFunctions::print(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	String s;
+	for (int i = 0; i < p_arg_count; i++) {
+		String os = p_args[i]->operator String();
+
+		if (i == 0) {
+			s = os;
+		} else {
+			s += os;
 		}
-
-		print_line(s);
-		r_error.error = Callable::CallError::CALL_OK;
 	}
 
-	static inline void print_rich(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String s;
-		for (int i = 0; i < p_arg_count; i++) {
-			String os = p_args[i]->operator String();
+	print_line(s);
+	r_error.error = Callable::CallError::CALL_OK;
+}
 
-			if (i == 0) {
-				s = os;
-			} else {
-				s += os;
-			}
+void VariantUtilityFunctions::print_rich(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	String s;
+	for (int i = 0; i < p_arg_count; i++) {
+		String os = p_args[i]->operator String();
+
+		if (i == 0) {
+			s = os;
+		} else {
+			s += os;
 		}
-
-		print_line_rich(s);
-		r_error.error = Callable::CallError::CALL_OK;
 	}
+
+	print_line_rich(s);
+	r_error.error = Callable::CallError::CALL_OK;
+}
 
 #undef print_verbose
 
-	static inline void print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (OS::get_singleton()->is_stdout_verbose()) {
-			String s;
-			for (int i = 0; i < p_arg_count; i++) {
-				String os = p_args[i]->operator String();
-
-				if (i == 0) {
-					s = os;
-				} else {
-					s += os;
-				}
-			}
-
-			// No need to use `print_verbose()` as this call already only happens
-			// when verbose mode is enabled. This avoids performing string argument concatenation
-			// when not needed.
-			print_line(s);
-		}
-
-		r_error.error = Callable::CallError::CALL_OK;
-	}
-
-	static inline void printerr(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+void VariantUtilityFunctions::print_verbose(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	if (OS::get_singleton()->is_stdout_verbose()) {
 		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			String os = p_args[i]->operator String();
@@ -840,207 +817,227 @@ struct VariantUtilityFunctions {
 			}
 		}
 
-		print_error(s);
-		r_error.error = Callable::CallError::CALL_OK;
-	}
-
-	static inline void printt(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String s;
-		for (int i = 0; i < p_arg_count; i++) {
-			if (i) {
-				s += "\t";
-			}
-			s += p_args[i]->operator String();
-		}
-
+		// No need to use `print_verbose()` as this call already only happens
+		// when verbose mode is enabled. This avoids performing string argument concatenation
+		// when not needed.
 		print_line(s);
-		r_error.error = Callable::CallError::CALL_OK;
 	}
 
-	static inline void prints(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String s;
-		for (int i = 0; i < p_arg_count; i++) {
-			if (i) {
-				s += " ";
-			}
-			s += p_args[i]->operator String();
+	r_error.error = Callable::CallError::CALL_OK;
+}
+
+void VariantUtilityFunctions::printerr(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	String s;
+	for (int i = 0; i < p_arg_count; i++) {
+		String os = p_args[i]->operator String();
+
+		if (i == 0) {
+			s = os;
+		} else {
+			s += os;
 		}
-
-		print_line(s);
-		r_error.error = Callable::CallError::CALL_OK;
 	}
 
-	static inline void printraw(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		String s;
-		for (int i = 0; i < p_arg_count; i++) {
-			String os = p_args[i]->operator String();
+	print_error(s);
+	r_error.error = Callable::CallError::CALL_OK;
+}
 
-			if (i == 0) {
-				s = os;
-			} else {
-				s += os;
-			}
+void VariantUtilityFunctions::printt(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	String s;
+	for (int i = 0; i < p_arg_count; i++) {
+		if (i) {
+			s += "\t";
 		}
-
-		OS::get_singleton()->print("%s", s.utf8().get_data());
-		r_error.error = Callable::CallError::CALL_OK;
+		s += p_args[i]->operator String();
 	}
 
-	static inline void push_error(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
+	print_line(s);
+	r_error.error = Callable::CallError::CALL_OK;
+}
+
+void VariantUtilityFunctions::prints(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	String s;
+	for (int i = 0; i < p_arg_count; i++) {
+		if (i) {
+			s += " ";
 		}
-		String s;
-		for (int i = 0; i < p_arg_count; i++) {
-			String os = p_args[i]->operator String();
+		s += p_args[i]->operator String();
+	}
 
-			if (i == 0) {
-				s = os;
-			} else {
-				s += os;
-			}
+	print_line(s);
+	r_error.error = Callable::CallError::CALL_OK;
+}
+
+void VariantUtilityFunctions::printraw(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	String s;
+	for (int i = 0; i < p_arg_count; i++) {
+		String os = p_args[i]->operator String();
+
+		if (i == 0) {
+			s = os;
+		} else {
+			s += os;
 		}
-
-		ERR_PRINT(s);
-		r_error.error = Callable::CallError::CALL_OK;
 	}
 
-	static inline void push_warning(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
+	OS::get_singleton()->print("%s", s.utf8().get_data());
+	r_error.error = Callable::CallError::CALL_OK;
+}
+
+void VariantUtilityFunctions::push_error(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	if (p_arg_count < 1) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument = 1;
+	}
+	String s;
+	for (int i = 0; i < p_arg_count; i++) {
+		String os = p_args[i]->operator String();
+
+		if (i == 0) {
+			s = os;
+		} else {
+			s += os;
 		}
-		String s;
-		for (int i = 0; i < p_arg_count; i++) {
-			String os = p_args[i]->operator String();
+	}
 
-			if (i == 0) {
-				s = os;
-			} else {
-				s += os;
-			}
+	ERR_PRINT(s);
+	r_error.error = Callable::CallError::CALL_OK;
+}
+
+void VariantUtilityFunctions::push_warning(const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	if (p_arg_count < 1) {
+		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument = 1;
+	}
+	String s;
+	for (int i = 0; i < p_arg_count; i++) {
+		String os = p_args[i]->operator String();
+
+		if (i == 0) {
+			s = os;
+		} else {
+			s += os;
 		}
-
-		WARN_PRINT(s);
-		r_error.error = Callable::CallError::CALL_OK;
 	}
 
-	static inline String var_to_str(const Variant &p_var) {
-		String vars;
-		VariantWriter::write_to_string(p_var, vars);
-		return vars;
+	WARN_PRINT(s);
+	r_error.error = Callable::CallError::CALL_OK;
+}
+
+String VariantUtilityFunctions::var_to_str(const Variant &p_var) {
+	String vars;
+	VariantWriter::write_to_string(p_var, vars);
+	return vars;
+}
+
+Variant VariantUtilityFunctions::str_to_var(const String &p_var) {
+	VariantParser::StreamString ss;
+	ss.s = p_var;
+
+	String errs;
+	int line;
+	Variant ret;
+	(void)VariantParser::parse(&ss, ret, errs, line);
+
+	return ret;
+}
+
+PackedByteArray VariantUtilityFunctions::var_to_bytes(const Variant &p_var) {
+	int len;
+	Error err = encode_variant(p_var, nullptr, len, false);
+	if (err != OK) {
+		return PackedByteArray();
 	}
 
-	static inline Variant str_to_var(const String &p_var) {
-		VariantParser::StreamString ss;
-		ss.s = p_var;
-
-		String errs;
-		int line;
-		Variant ret;
-		(void)VariantParser::parse(&ss, ret, errs, line);
-
-		return ret;
-	}
-
-	static inline PackedByteArray var_to_bytes(const Variant &p_var) {
-		int len;
-		Error err = encode_variant(p_var, nullptr, len, false);
+	PackedByteArray barr;
+	barr.resize(len);
+	{
+		uint8_t *w = barr.ptrw();
+		err = encode_variant(p_var, w, len, false);
 		if (err != OK) {
 			return PackedByteArray();
 		}
-
-		PackedByteArray barr;
-		barr.resize(len);
-		{
-			uint8_t *w = barr.ptrw();
-			err = encode_variant(p_var, w, len, false);
-			if (err != OK) {
-				return PackedByteArray();
-			}
-		}
-
-		return barr;
 	}
 
-	static inline PackedByteArray var_to_bytes_with_objects(const Variant &p_var) {
-		int len;
-		Error err = encode_variant(p_var, nullptr, len, true);
+	return barr;
+}
+
+PackedByteArray VariantUtilityFunctions::var_to_bytes_with_objects(const Variant &p_var) {
+	int len;
+	Error err = encode_variant(p_var, nullptr, len, true);
+	if (err != OK) {
+		return PackedByteArray();
+	}
+
+	PackedByteArray barr;
+	barr.resize(len);
+	{
+		uint8_t *w = barr.ptrw();
+		err = encode_variant(p_var, w, len, true);
 		if (err != OK) {
 			return PackedByteArray();
 		}
+	}
 
-		PackedByteArray barr;
-		barr.resize(len);
-		{
-			uint8_t *w = barr.ptrw();
-			err = encode_variant(p_var, w, len, true);
-			if (err != OK) {
-				return PackedByteArray();
-			}
+	return barr;
+}
+
+Variant VariantUtilityFunctions::bytes_to_var(const PackedByteArray &p_arr) {
+	Variant ret;
+	{
+		const uint8_t *r = p_arr.ptr();
+		Error err = decode_variant(ret, r, p_arr.size(), nullptr, false);
+		if (err != OK) {
+			return Variant();
 		}
-
-		return barr;
 	}
+	return ret;
+}
 
-	static inline Variant bytes_to_var(const PackedByteArray &p_arr) {
-		Variant ret;
-		{
-			const uint8_t *r = p_arr.ptr();
-			Error err = decode_variant(ret, r, p_arr.size(), nullptr, false);
-			if (err != OK) {
-				return Variant();
-			}
+Variant VariantUtilityFunctions::bytes_to_var_with_objects(const PackedByteArray &p_arr) {
+	Variant ret;
+	{
+		const uint8_t *r = p_arr.ptr();
+		Error err = decode_variant(ret, r, p_arr.size(), nullptr, true);
+		if (err != OK) {
+			return Variant();
 		}
-		return ret;
 	}
+	return ret;
+}
 
-	static inline Variant bytes_to_var_with_objects(const PackedByteArray &p_arr) {
-		Variant ret;
-		{
-			const uint8_t *r = p_arr.ptr();
-			Error err = decode_variant(ret, r, p_arr.size(), nullptr, true);
-			if (err != OK) {
-				return Variant();
-			}
-		}
-		return ret;
-	}
+int64_t VariantUtilityFunctions::hash(const Variant &p_arr) {
+	return p_arr.hash();
+}
 
-	static inline int64_t hash(const Variant &p_arr) {
-		return p_arr.hash();
-	}
+Object *VariantUtilityFunctions::instance_from_id(int64_t p_id) {
+	ObjectID id = ObjectID((uint64_t)p_id);
+	Object *ret = ObjectDB::get_instance(id);
+	return ret;
+}
 
-	static inline Object *instance_from_id(int64_t p_id) {
-		ObjectID id = ObjectID((uint64_t)p_id);
-		Object *ret = ObjectDB::get_instance(id);
-		return ret;
-	}
+bool VariantUtilityFunctions::is_instance_id_valid(int64_t p_id) {
+	return ObjectDB::get_instance(ObjectID((uint64_t)p_id)) != nullptr;
+}
 
-	static inline bool is_instance_id_valid(int64_t p_id) {
-		return ObjectDB::get_instance(ObjectID((uint64_t)p_id)) != nullptr;
+bool VariantUtilityFunctions::is_instance_valid(const Variant &p_instance) {
+	if (p_instance.get_type() != Variant::OBJECT) {
+		return false;
 	}
+	return p_instance.get_validated_object() != nullptr;
+}
 
-	static inline bool is_instance_valid(const Variant &p_instance) {
-		if (p_instance.get_type() != Variant::OBJECT) {
-			return false;
-		}
-		return p_instance.get_validated_object() != nullptr;
-	}
+uint64_t VariantUtilityFunctions::rid_allocate_id() {
+	return RID_AllocBase::_gen_id();
+}
 
-	static inline uint64_t rid_allocate_id() {
-		return RID_AllocBase::_gen_id();
-	}
+RID VariantUtilityFunctions::rid_from_int64(uint64_t p_base) {
+	return RID::from_uint64(p_base);
+}
 
-	static inline RID rid_from_int64(uint64_t p_base) {
-		return RID::from_uint64(p_base);
-	}
-
-	static inline bool is_same(const Variant &p_a, const Variant &p_b) {
-		return p_a.identity_compare(p_b);
-	}
-};
+bool VariantUtilityFunctions::is_same(const Variant &p_a, const Variant &p_b) {
+	return p_a.identity_compare(p_b);
+}
 
 #ifdef DEBUG_METHODS_ENABLED
 #define VCALLR *ret = p_func(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...)
