@@ -353,6 +353,36 @@ int Array::find(const Variant &p_value, int p_from) const {
 	return ret;
 }
 
+int Array::first_custom(const Callable& p_callable, int p_from = 0) const {
+	if (_p->array.size() == 0) {
+		return -1;
+	}
+
+	if (p_from < 0 || size() == 0) {
+		return -1;
+	}
+
+	const Variant* argptrs[1];
+
+	for (int i = p_from; i < size(); i++) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+
+		p_callable.callp(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(-1, "Error calling method from 'first_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+		// Return as soon as possible
+		if (result.operator bool()) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 int Array::rfind(const Variant &p_value, int p_from) const {
 	if (_p->array.size() == 0) {
 		return -1;
@@ -378,6 +408,41 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 	return -1;
 }
 
+int Array::last_custom(const Callable& p_callable, int p_from = -1) const {
+	if (_p->array.size() == 0) {
+		return -1;
+	}
+
+	if (p_from < 0) {
+		// Relative offset from the end
+		p_from = _p->array.size() + p_from;
+	}
+	if (p_from < 0 || p_from >= _p->array.size()) {
+		// Limit to array boundaries
+		p_from = _p->array.size() - 1;
+	}
+
+	const Variant* argptrs[1];
+
+	for (int i = p_from; i >= 0; i--) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+
+		p_callable.callp(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(-1, "Error calling method from 'last_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+		// Return as soon as possible
+		if (result.operator bool()) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 int Array::count(const Variant &p_value) const {
 	Variant value = p_value;
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "count"), 0);
@@ -393,6 +458,29 @@ int Array::count(const Variant &p_value) const {
 	}
 
 	return amount;
+}
+
+int Array::count_custom(const Callable& p_callable) const {
+	int count = 0;
+	const Variant* argptrs[1];
+
+	for (int i = 0; i < size(); i++) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+
+		p_callable.callp(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(-1, "Error calling method from 'count_custom': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+		// Increase count if passes
+		if (result.operator bool()) {
+			count++;
+		}
+	}
+
+	return count;
 }
 
 bool Array::has(const Variant &p_value) const {
@@ -454,17 +542,21 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const {
 
 	const int s = size();
 
-	int begin = CLAMP(p_begin, -s, s);
+	if (s == 0 || (p_begin < -s && p_step < 0) || (p_begin >= s && p_step > 0)) {
+		return result;
+	}
+
+	int begin = CLAMP(p_begin, -s, s - 1);
 	if (begin < 0) {
 		begin += s;
 	}
-	int end = CLAMP(p_end, -s, s);
+	int end = CLAMP(p_end, -s - 1, s);
 	if (end < 0) {
 		end += s;
 	}
 
-	ERR_FAIL_COND_V_MSG(p_step > 0 && begin > end, result, "Slice is positive, but bounds is decreasing.");
-	ERR_FAIL_COND_V_MSG(p_step < 0 && begin < end, result, "Slice is negative, but bounds is increasing.");
+	ERR_FAIL_COND_V_MSG(p_step > 0 && begin > end, result, "Slice step is positive, but bounds are decreasing.");
+	ERR_FAIL_COND_V_MSG(p_step < 0 && begin < end, result, "Slice step is negative, but bounds are increasing.");
 
 	int result_size = (end - begin) / p_step + (((end - begin) % p_step != 0) ? 1 : 0);
 	result.resize(result_size);
