@@ -1775,6 +1775,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							seg->handles_intersect_ray(camera, _edit.mouse_pos, b->is_shift_pressed(), gizmo_handle, gizmo_secondary);
 							if (gizmo_handle != -1) {
 								_edit.gizmo = seg;
+								seg->begin_handle_action(gizmo_handle, gizmo_secondary);
 								_edit.gizmo_handle = gizmo_handle;
 								_edit.gizmo_handle_secondary = gizmo_secondary;
 								_edit.gizmo_initial_value = seg->get_handle_value(gizmo_handle, gizmo_secondary);
@@ -2152,7 +2153,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		}
 
 		if (_edit.mode == TRANSFORM_NONE) {
-			if (_edit.gizmo.is_valid()) {
+			if (_edit.gizmo.is_valid() && (k->get_keycode() == Key::ESCAPE || k->get_keycode() == Key::BACKSPACE)) {
 				// Restore.
 				_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, true);
 				_edit.gizmo = Ref<EditorNode3DGizmo>();
