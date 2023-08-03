@@ -245,6 +245,8 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 				// MEMBERS.
 				case GDScriptParser::IdentifierNode::MEMBER_VARIABLE:
+				case GDScriptParser::IdentifierNode::MEMBER_FUNCTION:
+				case GDScriptParser::IdentifierNode::MEMBER_SIGNAL:
 				case GDScriptParser::IdentifierNode::INHERITED_VARIABLE: {
 					// Try class members.
 					if (_is_class_member_property(codegen, identifier)) {
@@ -271,45 +273,44 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 							}
 						}
 					}
-				} break;
-				case GDScriptParser::IdentifierNode::MEMBER_FUNCTION:
-				case GDScriptParser::IdentifierNode::MEMBER_SIGNAL: {
+
 					// Try methods and signals (can be Callable and Signal).
+					{
+						// Search upwards through parent classes:
+						const GDScriptParser::ClassNode *base_class = codegen.class_node;
+						while (base_class != nullptr) {
+							if (base_class->has_member(identifier)) {
+								const GDScriptParser::ClassNode::Member &member = base_class->get_member(identifier);
+								if (member.type == GDScriptParser::ClassNode::Member::FUNCTION || member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
+									// Get like it was a property.
+									GDScriptCodeGenerator::Address temp = codegen.add_temporary(); // TODO: Get type here.
+									GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);
 
-					// Search upwards through parent classes:
-					const GDScriptParser::ClassNode *base_class = codegen.class_node;
-					while (base_class != nullptr) {
-						if (base_class->has_member(identifier)) {
-							const GDScriptParser::ClassNode::Member &member = base_class->get_member(identifier);
-							if (member.type == GDScriptParser::ClassNode::Member::FUNCTION || member.type == GDScriptParser::ClassNode::Member::SIGNAL) {
-								// Get like it was a property.
-								GDScriptCodeGenerator::Address temp = codegen.add_temporary(); // TODO: Get type here.
-								GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);
-
-								gen->write_get_named(temp, identifier, self);
-								return temp;
+									gen->write_get_named(temp, identifier, self);
+									return temp;
+								}
 							}
+							base_class = base_class->base_type.class_type;
 						}
-						base_class = base_class->base_type.class_type;
-					}
 
-					// Try in native base.
-					GDScript *scr = codegen.script;
-					GDScriptNativeClass *nc = nullptr;
-					while (scr) {
-						if (scr->native.is_valid()) {
-							nc = scr->native.ptr();
+						// Try in native base.
+						GDScript *scr = codegen.script;
+						GDScriptNativeClass *nc = nullptr;
+						while (scr) {
+							if (scr->native.is_valid()) {
+								nc = scr->native.ptr();
+							}
+							scr = scr->_base;
 						}
-						scr = scr->_base;
-					}
 
-					if (nc && (ClassDB::has_signal(nc->get_name(), identifier) || ClassDB::has_method(nc->get_name(), identifier))) {
-						// Get like it was a property.
-						GDScriptCodeGenerator::Address temp = codegen.add_temporary(); // TODO: Get type here.
-						GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);
+						if (nc && (ClassDB::has_signal(nc->get_name(), identifier) || ClassDB::has_method(nc->get_name(), identifier))) {
+							// Get like it was a property.
+							GDScriptCodeGenerator::Address temp = codegen.add_temporary(); // TODO: Get type here.
+							GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);
 
-						gen->write_get_named(temp, identifier, self);
-						return temp;
+							gen->write_get_named(temp, identifier, self);
+							return temp;
+						}
 					}
 				} break;
 				case GDScriptParser::IdentifierNode::MEMBER_CONSTANT:
@@ -319,6 +320,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 					while (owner) {
 						GDScript *scr = owner;
 						GDScriptNativeClass *nc = nullptr;
+
 						while (scr) {
 							if (scr->constants.has(identifier)) {
 								return codegen.add_constant(scr->constants[identifier]); // TODO: Get type here.
