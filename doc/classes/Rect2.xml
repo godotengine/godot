@@ -83,7 +83,7 @@
 			<return type="Rect2" />
 			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns a copy of this rectangle expanded to include the given [param to] point, if necessary.
+				Returns a copy of this rectangle expanded to align the edges with the given [param to] point, if necessary.
 				[codeblocks]
 				[gdscript]
 				var rect = Rect2(0, 0, 5, 2)
