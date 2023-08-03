@@ -5043,17 +5043,24 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 
 	_THREAD_SAFE_METHOD_
 
-	Shader shader;
+	RID id;
+	if (p_placeholder.is_null()) {
+		id = shader_owner.make_rid();
+	} else {
+		id = p_placeholder;
+	}
 
-	shader.vertex_input_mask = vertex_input_mask;
-	shader.fragment_output_mask = fragment_output_mask;
-	shader.push_constant = push_constant;
-	shader.is_compute = is_compute;
-	shader.compute_local_size[0] = compute_local_size[0];
-	shader.compute_local_size[1] = compute_local_size[1];
-	shader.compute_local_size[2] = compute_local_size[2];
-	shader.specialization_constants = specialization_constants;
-	shader.name = name;
+	Shader *shader = shader_owner.get_or_null(id);
+
+	shader->vertex_input_mask = vertex_input_mask;
+	shader->fragment_output_mask = fragment_output_mask;
+	shader->push_constant = push_constant;
+	shader->is_compute = is_compute;
+	shader->compute_local_size[0] = compute_local_size[0];
+	shader->compute_local_size[1] = compute_local_size[1];
+	shader->compute_local_size[2] = compute_local_size[2];
+	shader->specialization_constants = specialization_constants;
+	shader->name = name;
 
 	String error_text;
 
@@ -5085,7 +5092,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 		shader_stage.pName = "main";
 		shader_stage.pSpecializationInfo = nullptr;
 
-		shader.pipeline_stages.push_back(shader_stage);
+		shader->pipeline_stages.push_back(shader_stage);
 	}
 	// Proceed to create descriptor sets.
 
@@ -5128,8 +5135,8 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 				}
 			}
 
-			shader.sets.push_back(set);
-			shader.set_formats.push_back(format);
+			shader->sets.push_back(set);
+			shader->set_formats.push_back(format);
 		}
 	}
 
@@ -5139,13 +5146,13 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 		pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipeline_layout_create_info.pNext = nullptr;
 		pipeline_layout_create_info.flags = 0;
-		pipeline_layout_create_info.setLayoutCount = shader.sets.size();
+		pipeline_layout_create_info.setLayoutCount = shader->sets.size();
 
 		Vector<VkDescriptorSetLayout> layouts;
-		layouts.resize(shader.sets.size());
+		layouts.resize(shader->sets.size());
 
 		for (int i = 0; i < layouts.size(); i++) {
-			layouts.write[i] = shader.sets[i].descriptor_set_layout;
+			layouts.write[i] = shader->sets[i].descriptor_set_layout;
 		}
 
 		pipeline_layout_create_info.pSetLayouts = layouts.ptr();
@@ -5164,7 +5171,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 			pipeline_layout_create_info.pPushConstantRanges = nullptr;
 		}
 
-		VkResult err = vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &shader.pipeline_layout);
+		VkResult err = vkCreatePipelineLayout(device, &pipeline_layout_create_info, nullptr, &shader->pipeline_layout);
 
 		if (err) {
 			error_text = "Error (" + itos(err) + ") creating pipeline layout.";
@@ -5174,23 +5181,19 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 
 	if (!success) {
 		// Clean up if failed.
-		for (int i = 0; i < shader.pipeline_stages.size(); i++) {
-			vkDestroyShaderModule(device, shader.pipeline_stages[i].module, nullptr);
+		for (int i = 0; i < shader->pipeline_stages.size(); i++) {
+			vkDestroyShaderModule(device, shader->pipeline_stages[i].module, nullptr);
 		}
 
-		for (int i = 0; i < shader.sets.size(); i++) {
-			vkDestroyDescriptorSetLayout(device, shader.sets[i].descriptor_set_layout, nullptr);
+		for (int i = 0; i < shader->sets.size(); i++) {
+			vkDestroyDescriptorSetLayout(device, shader->sets[i].descriptor_set_layout, nullptr);
 		}
+
+		shader_owner.free(id);
 
 		ERR_FAIL_V_MSG(RID(), error_text);
 	}
-	RID id;
-	if (p_placeholder.is_null()) {
-		id = shader_owner.make_rid(shader);
-	} else {
-		shader_owner.initialize_rid(p_placeholder, shader);
-		id = p_placeholder;
-	}
+
 #ifdef DEV_ENABLED
 	set_resource_name(id, "RID:" + itos(id.get_id()));
 #endif
@@ -5198,7 +5201,8 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 }
 
 RID RenderingDeviceVulkan::shader_create_placeholder() {
-	return shader_owner.allocate_rid();
+	Shader shader;
+	return shader_owner.make_rid(shader);
 }
 
 uint32_t RenderingDeviceVulkan::shader_get_vertex_input_attribute_mask(RID p_shader) {
