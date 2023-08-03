@@ -30,8 +30,6 @@
 
 #include "gltf_document_extension_texture_webp.h"
 
-#include "scene/3d/area_3d.h"
-
 // Import process.
 Error GLTFDocumentExtensionTextureWebP::import_preflight(Ref<GLTFState> p_state, Vector<String> p_extensions) {
 	if (!p_extensions.has("EXT_texture_webp")) {

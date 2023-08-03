@@ -293,9 +293,9 @@ private:
 	static float get_max_component(const Color &p_color);
 
 public:
-	Error append_from_file(String p_path, Ref<GLTFState> r_state, uint32_t p_flags = 0, String p_base_path = String());
-	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> r_state, uint32_t p_flags = 0);
-	Error append_from_scene(Node *p_node, Ref<GLTFState> r_state, uint32_t p_flags = 0);
+	Error append_from_file(String p_path, Ref<GLTFState> p_state, uint32_t p_flags = 0, String p_base_path = String());
+	Error append_from_buffer(PackedByteArray p_bytes, String p_base_path, Ref<GLTFState> p_state, uint32_t p_flags = 0);
+	Error append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags = 0);
 
 public:
 	Node *generate_scene(Ref<GLTFState> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true);
