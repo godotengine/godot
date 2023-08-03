@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  uniform_set_cache_rd.cpp                                              */
+/*  render_data_rd.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,54 +28,69 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "uniform_set_cache_rd.h"
+#ifndef RENDER_DATA_RD_H
+#define RENDER_DATA_RD_H
 
-UniformSetCacheRD *UniformSetCacheRD::singleton = nullptr;
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_data_rd.h"
+#include "servers/rendering/storage/render_data.h"
 
-void UniformSetCacheRD::_bind_methods() {
-	ClassDB::bind_static_method("UniformSetCacheRD", D_METHOD("get_cache", "shader", "set", "uniforms"), &UniformSetCacheRD::get_cache_array);
-}
+class RenderDataRD : public RenderData {
+	GDCLASS(RenderDataRD, RenderData);
 
-RID UniformSetCacheRD::get_cache_array(RID p_shader, uint32_t p_set, TypedArray<RDUniform> p_uniforms) {
-	Vector<RD::Uniform> uniforms;
+protected:
+	static void _bind_methods();
 
-	for (int i = 0; i < p_uniforms.size(); i++) {
-		Ref<RDUniform> uniform = p_uniforms[i];
-		if (uniform.is_valid()) {
-			uniforms.push_back(uniform->base);
-		}
-	}
+public:
+	// Access methods to expose data externally
+	virtual Ref<RenderSceneBuffers> get_render_scene_buffers() const override;
+	virtual RenderSceneData *get_render_scene_data() const override;
 
-	return UniformSetCacheRD::get_singleton()->get_cache_vec(p_shader, p_set, uniforms);
-}
+	virtual RID get_environment() const override;
+	virtual RID get_camera_attributes() const override;
 
-void UniformSetCacheRD::_invalidate(Cache *p_cache) {
-	if (p_cache->prev) {
-		p_cache->prev->next = p_cache->next;
-	} else {
-		// At beginning of table
-		uint32_t table_idx = p_cache->hash % HASH_TABLE_SIZE;
-		hash_table[table_idx] = p_cache->next;
-	}
+	// Members are publicly accessible within the render engine.
+	Ref<RenderSceneBuffersRD> render_buffers;
+	RenderSceneDataRD *scene_data;
 
-	if (p_cache->next) {
-		p_cache->next->prev = p_cache->prev;
-	}
+	const PagedArray<RenderGeometryInstance *> *instances = nullptr;
+	const PagedArray<RID> *lights = nullptr;
+	const PagedArray<RID> *reflection_probes = nullptr;
+	const PagedArray<RID> *voxel_gi_instances = nullptr;
+	const PagedArray<RID> *decals = nullptr;
+	const PagedArray<RID> *lightmaps = nullptr;
+	const PagedArray<RID> *fog_volumes = nullptr;
+	RID environment;
+	RID camera_attributes;
+	RID shadow_atlas;
+	RID occluder_debug_tex;
+	RID reflection_atlas;
+	RID reflection_probe;
+	int reflection_probe_pass = 0;
 
-	cache_allocator.free(p_cache);
-	cache_instances_used--;
-}
-void UniformSetCacheRD::_uniform_set_invalidation_callback(void *p_userdata) {
-	singleton->_invalidate(reinterpret_cast<Cache *>(p_userdata));
-}
+	RID cluster_buffer;
+	uint32_t cluster_size = 0;
+	uint32_t cluster_max_elements = 0;
 
-UniformSetCacheRD::UniformSetCacheRD() {
-	ERR_FAIL_COND(singleton != nullptr);
-	singleton = this;
-}
+	uint32_t directional_light_count = 0;
+	bool directional_light_soft_shadows = false;
 
-UniformSetCacheRD::~UniformSetCacheRD() {
-	if (cache_instances_used > 0) {
-		ERR_PRINT("At exit: " + itos(cache_instances_used) + " uniform set cache instance(s) still in use.");
-	}
-}
+	RenderingMethod::RenderInfo *render_info = nullptr;
+
+	/* Shadow data */
+	const RendererSceneRender::RenderShadowData *render_shadows = nullptr;
+	int render_shadow_count = 0;
+
+	LocalVector<int> cube_shadows;
+	LocalVector<int> shadows;
+	LocalVector<int> directional_shadows;
+
+	/* GI info */
+	const RendererSceneRender::RenderSDFGIData *render_sdfgi_regions = nullptr;
+	int render_sdfgi_region_count = 0;
+	const RendererSceneRender::RenderSDFGIUpdateData *sdfgi_update_data = nullptr;
+
+	uint32_t voxel_gi_count = 0;
+};
+
+#endif // RENDER_DATA_RD_H

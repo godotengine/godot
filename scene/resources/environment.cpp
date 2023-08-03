@@ -1031,6 +1031,38 @@ void Environment::_update_adjustment() {
 			color_correction);
 }
 
+// Rendering effects
+void Environment::set_rendering_effects(TypedArray<RenderingEffect> p_rendering_effects) {
+	Array effect_rids;
+	effects.clear();
+
+	for (int i = 0; i < p_rendering_effects.size(); i++) {
+		// Cast to proper ref, if our object isn't a RenderingEffect resource this will be an empty Ref.
+		Ref<RenderingEffect> rendering_effect = p_rendering_effects[i];
+
+		// We add the effect even if this is an empty Ref, this allows the UI to add new entries.
+		effects.push_back(rendering_effect);
+
+		// But we only add a rid for valid Refs
+		if (rendering_effect.is_valid()) {
+			RID rid = rendering_effect->get_rid();
+			effect_rids.push_back(rid);
+		}
+	}
+
+	RenderingServer::get_singleton()->environment_set_rendering_effects(environment, effect_rids);
+}
+
+TypedArray<RenderingEffect> Environment::get_rendering_effects() const {
+	TypedArray<RenderingEffect> arr;
+
+	for (uint32_t i = 0; i < effects.size(); i++) {
+		arr.push_back(effects[i]);
+	}
+
+	return arr;
+}
+
 // Private methods, constructor and destructor
 
 void Environment::_validate_property(PropertyInfo &p_property) const {
@@ -1473,6 +1505,13 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_contrast", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_contrast", "get_adjustment_contrast");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "adjustment_saturation", PROPERTY_HINT_RANGE, "0.01,8,0.01"), "set_adjustment_saturation", "get_adjustment_saturation");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "adjustment_color_correction", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D,Texture3D"), "set_adjustment_color_correction", "get_adjustment_color_correction");
+
+	// Rendering effects
+	ClassDB::bind_method(D_METHOD("set_rendering_effects", "rendering_effects"), &Environment::set_rendering_effects);
+	ClassDB::bind_method(D_METHOD("get_rendering_effects"), &Environment::get_rendering_effects);
+
+	ADD_GROUP("Rendering", "rendering_");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "rendering_effects", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("RenderingEffect")), "set_rendering_effects", "get_rendering_effects");
 
 	// Constants
 

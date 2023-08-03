@@ -36,6 +36,19 @@
 
 class RendererEnvironmentStorage {
 private:
+	static RendererEnvironmentStorage *singleton;
+
+	// Rendering effect
+	struct RenderingEffect {
+		RS::RenderingEffectCallbackType callback_type;
+		Callable callback;
+
+		BitField<RS::RenderingEffectFlags> flags;
+	};
+
+	mutable RID_Owner<RenderingEffect, true> rendering_effects_owner;
+
+	// Environment
 	struct Environment {
 		// Note, we capture and store all environment parameters received from Godot here.
 		// Not all renderers support all effects and should just ignore the bits they don't support.
@@ -144,11 +157,36 @@ private:
 		float adjustments_saturation = 1.0f;
 		bool use_1d_color_correction = false;
 		RID color_correction;
+
+		// Rendering effects
+		Vector<RID> rendering_effects;
 	};
 
 	mutable RID_Owner<Environment, true> environment_owner;
 
 public:
+	static RendererEnvironmentStorage *get_singleton() { return singleton; }
+
+	RendererEnvironmentStorage();
+	virtual ~RendererEnvironmentStorage();
+
+	// Rendering effect
+	RID rendering_effect_allocate();
+	void rendering_effect_initialize(RID p_rid);
+	void rendering_effect_free(RID p_rid);
+
+	bool is_rendering_effect(RID p_effect) const {
+		return rendering_effects_owner.owns(p_effect);
+	}
+
+	void rendering_effect_set_callback(RID p_effect, RS::RenderingEffectCallbackType p_callback_type, Callable p_callback);
+	RS::RenderingEffectCallbackType rendering_effect_get_callback_type(RID p_effect) const;
+	Callable rendering_effect_get_callback(RID p_effect) const;
+
+	void rendering_effect_set_flag(RID p_effect, RS::RenderingEffectFlags p_flag, bool p_set);
+	bool rendering_effect_get_flag(RID p_effect, RS::RenderingEffectFlags p_flag) const;
+
+	// Environment
 	RID environment_allocate();
 	void environment_initialize(RID p_rid);
 	void environment_free(RID p_rid);
@@ -283,6 +321,11 @@ public:
 	float environment_get_adjustments_saturation(RID p_env) const;
 	bool environment_get_use_1d_color_correction(RID p_env) const;
 	RID environment_get_color_correction(RID p_env) const;
+
+	// Rendering effects
+	void environment_set_rendering_effects(RID p_env, const Vector<RID> &p_effects);
+	Vector<RID> environment_get_rendering_effects(RID p_env) const;
+	RID environment_get_rendering_effect(RID p_env, RS::RenderingEffectCallbackType p_callback_type) const;
 };
 
 #endif // ENVIRONMENT_STORAGE_H

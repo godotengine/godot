@@ -30,6 +30,76 @@
 
 #include "environment_storage.h"
 
+// Storage
+
+RendererEnvironmentStorage *RendererEnvironmentStorage::singleton = nullptr;
+
+RendererEnvironmentStorage::RendererEnvironmentStorage() {
+	singleton = this;
+}
+
+RendererEnvironmentStorage::~RendererEnvironmentStorage() {
+	singleton = nullptr;
+}
+
+// Rendering effect
+
+RID RendererEnvironmentStorage::rendering_effect_allocate() {
+	return rendering_effects_owner.allocate_rid();
+}
+
+void RendererEnvironmentStorage::rendering_effect_initialize(RID p_rid) {
+	rendering_effects_owner.initialize_rid(p_rid, RenderingEffect());
+}
+
+void RendererEnvironmentStorage::rendering_effect_free(RID p_rid) {
+	// TODO remove this RID from any environment that uses it.
+
+	rendering_effects_owner.free(p_rid);
+}
+
+void RendererEnvironmentStorage::rendering_effect_set_callback(RID p_effect, RS::RenderingEffectCallbackType p_callback_type, Callable p_callback) {
+	RenderingEffect *effect = rendering_effects_owner.get_or_null(p_effect);
+	ERR_FAIL_COND(!effect);
+
+	effect->callback_type = p_callback_type;
+	effect->callback = p_callback;
+}
+
+RS::RenderingEffectCallbackType RendererEnvironmentStorage::rendering_effect_get_callback_type(RID p_effect) const {
+	RenderingEffect *effect = rendering_effects_owner.get_or_null(p_effect);
+	ERR_FAIL_COND_V(!effect, RS::RENDERING_EFFECT_CALLBACK_TYPE_MAX);
+
+	return effect->callback_type;
+}
+
+Callable RendererEnvironmentStorage::rendering_effect_get_callback(RID p_effect) const {
+	RenderingEffect *effect = rendering_effects_owner.get_or_null(p_effect);
+	ERR_FAIL_COND_V(!effect, Callable());
+
+	return effect->callback;
+}
+
+void RendererEnvironmentStorage::rendering_effect_set_flag(RID p_effect, RS::RenderingEffectFlags p_flag, bool p_set) {
+	RenderingEffect *effect = rendering_effects_owner.get_or_null(p_effect);
+	ERR_FAIL_COND(!effect);
+
+	if (p_set) {
+		effect->flags.set_flag(p_flag);
+	} else {
+		effect->flags.clear_flag(p_flag);
+	}
+}
+
+bool RendererEnvironmentStorage::rendering_effect_get_flag(RID p_effect, RS::RenderingEffectFlags p_flag) const {
+	RenderingEffect *effect = rendering_effects_owner.get_or_null(p_effect);
+	ERR_FAIL_COND_V(!effect, false);
+
+	return effect->flags.has_flag(p_flag);
+}
+
+// Environment
+
 RID RendererEnvironmentStorage::environment_allocate() {
 	return environment_owner.allocate_rid();
 }
@@ -776,4 +846,39 @@ RID RendererEnvironmentStorage::environment_get_color_correction(RID p_env) cons
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, RID());
 	return env->color_correction;
+}
+
+// rendering effects
+
+void RendererEnvironmentStorage::environment_set_rendering_effects(RID p_env, const Vector<RID> &p_effects) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->rendering_effects.clear();
+	for (const RID &effect : p_effects) {
+		if (is_rendering_effect(effect)) {
+			env->rendering_effects.push_back(effect);
+		}
+	}
+}
+
+Vector<RID> RendererEnvironmentStorage::environment_get_rendering_effects(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_COND_V(!env, Vector<RID>());
+
+	return env->rendering_effects;
+}
+
+RID RendererEnvironmentStorage::environment_get_rendering_effect(RID p_env, RS::RenderingEffectCallbackType p_callback_type) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_COND_V(!env, RID());
+
+	// Returns only the first rendering effect of this type
+	for (RID rid : env->rendering_effects) {
+		if (rendering_effect_get_callback_type(rid) == p_callback_type) {
+			return rid;
+		}
+	}
+
+	return RID();
 }

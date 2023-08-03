@@ -249,6 +249,61 @@ Ref<RenderSceneBuffers> RendererSceneRenderRD::render_buffers_create() {
 	return rb;
 }
 
+bool RendererSceneRenderRD::_render_effects_has_flag(const RenderDataRD *p_render_data, RS::RenderingEffectFlags p_flag, RS::RenderingEffectCallbackType p_callback_type) {
+	RendererEnvironmentStorage *env_storage = RendererEnvironmentStorage::get_singleton();
+
+	if (p_render_data->environment.is_null()) {
+		return false;
+	}
+
+	if (p_render_data->reflection_probe.is_valid()) {
+		return false;
+	}
+
+	ERR_FAIL_COND_V(!env_storage->is_environment(p_render_data->environment), false);
+	Vector<RID> re_rids = env_storage->environment_get_rendering_effects(p_render_data->environment);
+
+	for (RID rid : re_rids) {
+		RS::RenderingEffectCallbackType callback_type = env_storage->rendering_effect_get_callback_type(rid);
+		if (p_callback_type == RS::RENDERING_EFFECT_CALLBACK_TYPE_ANY || callback_type == p_callback_type) {
+			if (env_storage->rendering_effect_get_flag(rid, p_flag)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+void RendererSceneRenderRD::_process_render_effects(RS::RenderingEffectCallbackType p_callback_type, const RenderDataRD *p_render_data) {
+	RendererEnvironmentStorage *env_storage = RendererEnvironmentStorage::get_singleton();
+
+	if (p_render_data->environment.is_null()) {
+		return;
+	}
+
+	if (p_render_data->reflection_probe.is_valid()) {
+		return;
+	}
+
+	ERR_FAIL_COND(!env_storage->is_environment(p_render_data->environment));
+
+	Vector<RID> re_rids = env_storage->environment_get_rendering_effects(p_render_data->environment);
+
+	for (RID rid : re_rids) {
+		RS::RenderingEffectCallbackType callback_type = env_storage->rendering_effect_get_callback_type(rid);
+		if (callback_type == p_callback_type) {
+			Array arr;
+			Callable callback = env_storage->rendering_effect_get_callback(rid);
+
+			arr.push_back(p_callback_type);
+			arr.push_back(p_render_data);
+
+			callback.callv(arr);
+		}
+	}
+}
+
 void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderDataRD *p_render_data) {
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	ERR_FAIL_COND(rb.is_null());
@@ -1092,6 +1147,8 @@ void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider,
 bool RendererSceneRenderRD::free(RID p_rid) {
 	if (is_environment(p_rid)) {
 		environment_free(p_rid);
+	} else if (is_rendering_effect(p_rid)) {
+		rendering_effect_free(p_rid);
 	} else if (RSG::camera_attributes->owns_camera_attributes(p_rid)) {
 		RSG::camera_attributes->camera_attributes_free(p_rid);
 	} else if (gi.voxel_gi_instance_owns(p_rid)) {

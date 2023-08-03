@@ -32,6 +32,7 @@
 #define ENVIRONMENT_H
 
 #include "core/io/resource.h"
+#include "scene/resources/rendering_effect.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
 
@@ -207,6 +208,9 @@ private:
 	bool use_1d_color_correction = true;
 	Ref<Texture> adjustment_color_correction;
 	void _update_adjustment();
+
+	// Rendering effects
+	LocalVector<Ref<RenderingEffect>> effects;
 
 protected:
 	static void _bind_methods();
@@ -418,6 +422,10 @@ public:
 	float get_adjustment_saturation() const;
 	void set_adjustment_color_correction(Ref<Texture> p_color_correction);
 	Ref<Texture> get_adjustment_color_correction() const;
+
+	// Rendering effects
+	void set_rendering_effects(TypedArray<RenderingEffect> p_rendering_effects);
+	TypedArray<RenderingEffect> get_rendering_effects() const;
 
 	Environment();
 	~Environment();

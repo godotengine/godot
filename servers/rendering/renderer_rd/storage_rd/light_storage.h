@@ -43,7 +43,7 @@
 #include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
-struct RenderDataRD;
+class RenderDataRD;
 
 namespace RendererRD {
 

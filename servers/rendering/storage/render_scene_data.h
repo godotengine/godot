@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  uniform_set_cache_rd.cpp                                              */
+/*  render_scene_data.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,54 +28,55 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "uniform_set_cache_rd.h"
+#ifndef RENDER_SCENE_DATA_H
+#define RENDER_SCENE_DATA_H
 
-UniformSetCacheRD *UniformSetCacheRD::singleton = nullptr;
+#include "core/object/class_db.h"
+#include "core/object/gdvirtual.gen.inc"
+#include "core/object/object.h"
+#include "core/object/script_language.h"
 
-void UniformSetCacheRD::_bind_methods() {
-	ClassDB::bind_static_method("UniformSetCacheRD", D_METHOD("get_cache", "shader", "set", "uniforms"), &UniformSetCacheRD::get_cache_array);
-}
+class RenderSceneData : public Object {
+	GDCLASS(RenderSceneData, Object);
 
-RID UniformSetCacheRD::get_cache_array(RID p_shader, uint32_t p_set, TypedArray<RDUniform> p_uniforms) {
-	Vector<RD::Uniform> uniforms;
+protected:
+	static void _bind_methods();
 
-	for (int i = 0; i < p_uniforms.size(); i++) {
-		Ref<RDUniform> uniform = p_uniforms[i];
-		if (uniform.is_valid()) {
-			uniforms.push_back(uniform->base);
-		}
-	}
+public:
+	virtual Transform3D get_cam_transform() const = 0;
+	virtual Projection get_cam_projection() const = 0;
 
-	return UniformSetCacheRD::get_singleton()->get_cache_vec(p_shader, p_set, uniforms);
-}
+	virtual uint32_t get_view_count() const = 0;
+	virtual Vector3 get_view_eye_offset(uint32_t p_view) const = 0;
+	virtual Projection get_view_projection(uint32_t p_view) const = 0;
 
-void UniformSetCacheRD::_invalidate(Cache *p_cache) {
-	if (p_cache->prev) {
-		p_cache->prev->next = p_cache->next;
-	} else {
-		// At beginning of table
-		uint32_t table_idx = p_cache->hash % HASH_TABLE_SIZE;
-		hash_table[table_idx] = p_cache->next;
-	}
+	virtual RID get_uniform_buffer() const = 0;
+};
 
-	if (p_cache->next) {
-		p_cache->next->prev = p_cache->prev;
-	}
+class RenderSceneDataExtension : public RenderSceneData {
+	GDCLASS(RenderSceneDataExtension, RenderSceneData);
 
-	cache_allocator.free(p_cache);
-	cache_instances_used--;
-}
-void UniformSetCacheRD::_uniform_set_invalidation_callback(void *p_userdata) {
-	singleton->_invalidate(reinterpret_cast<Cache *>(p_userdata));
-}
+protected:
+	static void _bind_methods();
 
-UniformSetCacheRD::UniformSetCacheRD() {
-	ERR_FAIL_COND(singleton != nullptr);
-	singleton = this;
-}
+public:
+	virtual Transform3D get_cam_transform() const override;
+	virtual Projection get_cam_projection() const override;
 
-UniformSetCacheRD::~UniformSetCacheRD() {
-	if (cache_instances_used > 0) {
-		ERR_PRINT("At exit: " + itos(cache_instances_used) + " uniform set cache instance(s) still in use.");
-	}
-}
+	virtual uint32_t get_view_count() const override;
+	virtual Vector3 get_view_eye_offset(uint32_t p_view) const override;
+	virtual Projection get_view_projection(uint32_t p_view) const override;
+
+	virtual RID get_uniform_buffer() const override;
+
+	GDVIRTUAL0RC(Transform3D, _get_cam_transform)
+	GDVIRTUAL0RC(Projection, _get_cam_projection)
+
+	GDVIRTUAL0RC(uint32_t, _get_view_count)
+	GDVIRTUAL1RC(Vector3, _get_view_eye_offset, uint32_t)
+	GDVIRTUAL1RC(Projection, _get_view_projection, uint32_t)
+
+	GDVIRTUAL0RC(RID, _get_uniform_buffer)
+};
+
+#endif // RENDER_SCENE_DATA_H

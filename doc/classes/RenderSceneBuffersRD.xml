@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RenderSceneBuffersRD" inherits="RenderSceneBuffers" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Abstract render scene buffer implementation for the RenderingDevice based renderers.
+		Render scene buffer implementation for the RenderingDevice based renderers.
 	</brief_description>
 	<description>
 		This object manages all 3D rendering buffers for the rendering device based renderers. An instance of this object is created for every viewport that has 3D rendering enabled.
 		All buffers are organized in [b]contexts[/b]. The default context is called [b]render_buffers[/b] and can contain amongst others the color buffer, depth buffer, velocity buffers, VRS density map and MSAA variants of these buffers.
 		Buffers are only guaranteed to exist during rendering of the viewport.
-		[b]Note:[/b] this is an internal rendering server object only exposed for GDExtension plugins.
+		[b]Note:[/b] this is an internal rendering server object, do not instantiate this from script.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -85,6 +85,12 @@
 			<return type="Vector2i" />
 			<description>
 				Returns the internal size of the render buffer (size before upscaling) with which textures are created by default.
+			</description>
+		</method>
+		<method name="get_msaa_3d" qualifiers="const">
+			<return type="int" enum="RenderingServer.ViewportMSAA" />
+			<description>
+				Returns the applied 3D MSAA mode for this viewport.
 			</description>
 		</method>
 		<method name="get_render_target" qualifiers="const">

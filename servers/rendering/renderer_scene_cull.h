@@ -1116,6 +1116,18 @@ public:
 	PASS2(sky_set_material, RID, RID)
 	PASS4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
 
+	// Rendering effect
+
+	PASS0R(RID, rendering_effect_allocate)
+	PASS1(rendering_effect_initialize, RID)
+
+	PASS1RC(bool, is_rendering_effect, RID)
+
+	PASS3(rendering_effect_set_callback, RID, RS::RenderingEffectCallbackType, Callable)
+	PASS3(rendering_effect_set_flag, RID, RS::RenderingEffectFlags, bool)
+
+	// Environment
+
 	PASS0R(RID, environment_allocate)
 	PASS1(environment_initialize, RID)
 
@@ -1267,6 +1279,8 @@ public:
 	PASS1RC(float, environment_get_adjustments_saturation, RID)
 	PASS1RC(bool, environment_get_use_1d_color_correction, RID)
 	PASS1RC(RID, environment_get_color_correction, RID)
+
+	PASS2(environment_set_rendering_effects, RID, const TypedArray<RID> &)
 
 	PASS3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
 

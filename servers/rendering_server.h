@@ -1006,6 +1006,27 @@ public:
 	virtual void sky_set_material(RID p_sky, RID p_material) = 0;
 	virtual Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) = 0;
 
+	/* RENDERING EFFECTS API */
+
+	enum RenderingEffectFlags {
+		RENDERING_EFFECT_FLAG_ACCESS_RESOLVED_COLOR = 1,
+		RENDERING_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH = 2,
+		RENDERING_EFFECT_FLAG_NEEDS_MOTION_VECTORS = 4,
+	};
+
+	enum RenderingEffectCallbackType {
+		RENDERING_EFFECT_CALLBACK_TYPE_PRE_OPAQUE,
+		RENDERING_EFFECT_CALLBACK_TYPE_POST_OPAQUE,
+		RENDERING_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT,
+		RENDERING_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT,
+		RENDERING_EFFECT_CALLBACK_TYPE_MAX,
+		RENDERING_EFFECT_CALLBACK_TYPE_ANY = -1,
+	};
+
+	virtual RID rendering_effect_create() = 0;
+	virtual void rendering_effect_set_callback(RID p_effect, RenderingEffectCallbackType p_callback_type, Callable p_callback) = 0;
+	virtual void rendering_effect_set_flag(RID p_effect, RenderingEffectFlags p_flag, bool p_set) = 0;
+
 	/* ENVIRONMENT API */
 
 	virtual RID environment_create() = 0;
@@ -1148,6 +1169,8 @@ public:
 	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect) = 0;
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) = 0;
 	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) = 0;
+
+	virtual void environment_set_rendering_effects(RID p_env, const TypedArray<RID> &p_effects) = 0;
 
 	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) = 0;
 
@@ -1666,6 +1689,8 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportSDFOversize);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFScale);
 VARIANT_ENUM_CAST(RenderingServer::ViewportVRSMode);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
+VARIANT_ENUM_CAST(RenderingServer::RenderingEffectCallbackType);
+VARIANT_ENUM_CAST(RenderingServer::RenderingEffectFlags);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentBG);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentAmbientSource);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentReflectionSource);
