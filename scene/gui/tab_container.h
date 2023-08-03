@@ -111,6 +111,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	TabBar *get_tab_bar() const;
+
 	int get_tab_idx_at_point(const Point2 &p_point) const;
 	int get_tab_idx_from_control(Control *p_child) const;
 
