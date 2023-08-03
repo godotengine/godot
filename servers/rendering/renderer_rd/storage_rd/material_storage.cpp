@@ -751,7 +751,7 @@ MaterialStorage::MaterialData::~MaterialData() {
 	}
 }
 
-void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Variant> &p_parameters, const HashMap<StringName, HashMap<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color) {
+void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Variant> &p_parameters, const HashMap<StringName, HashMap<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color, bool p_3d_material) {
 	TextureStorage *texture_storage = TextureStorage::get_singleton();
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
@@ -917,7 +917,7 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 				if (tex) {
 					rd_texture = (srgb && tex->rd_texture_srgb.is_valid()) ? tex->rd_texture_srgb : tex->rd_texture;
 #ifdef TOOLS_ENABLED
-					if (tex->detect_3d_callback && p_use_linear_color) {
+					if (tex->detect_3d_callback && p_3d_material) {
 						tex->detect_3d_callback(tex->detect_3d_callback_ud);
 					}
 					if (tex->detect_normal_callback && (p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL || p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL)) {
@@ -986,7 +986,7 @@ void MaterialStorage::MaterialData::free_parameters_uniform_set(RID p_uniform_se
 	}
 }
 
-bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, bool p_use_linear_color, uint32_t p_barrier) {
+bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, bool p_use_linear_color, bool p_3d_material, uint32_t p_barrier) {
 	if ((uint32_t)ubo_data.size() != p_ubo_size) {
 		p_uniform_dirty = true;
 		if (uniform_buffer.is_valid()) {
@@ -1033,7 +1033,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 	}
 
 	if (p_textures_dirty && tex_uniform_count) {
-		update_textures(p_parameters, p_default_texture_params, p_texture_uniforms, texture_cache.ptrw(), p_use_linear_color);
+		update_textures(p_parameters, p_default_texture_params, p_texture_uniforms, texture_cache.ptrw(), p_use_linear_color, p_3d_material);
 	}
 
 	if (p_ubo_size == 0 && (p_texture_uniforms.size() == 0)) {

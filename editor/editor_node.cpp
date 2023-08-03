@@ -496,6 +496,9 @@ void EditorNode::_update_from_settings() {
 	Viewport::MSAA msaa = Viewport::MSAA(int(GLOBAL_GET("rendering/anti_aliasing/quality/msaa_2d")));
 	scene_root->set_msaa_2d(msaa);
 
+	bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
+	scene_root->set_use_hdr_2d(use_hdr_2d);
+
 	float mesh_lod_threshold = GLOBAL_GET("rendering/mesh_lod/lod_change/threshold_pixels");
 	scene_root->set_mesh_lod_threshold(mesh_lod_threshold);
 
