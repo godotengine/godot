@@ -47,6 +47,7 @@ public:
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers) = 0;
 	virtual void camera_set_environment(RID p_camera, RID p_env) = 0;
 	virtual void camera_set_camera_attributes(RID p_camera, RID p_attributes) = 0;
+	virtual void camera_set_compositor(RID p_camera, RID p_compositor) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
 	virtual bool is_camera(RID p_camera) const = 0;
 
@@ -60,6 +61,7 @@ public:
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment) = 0;
 	virtual void scenario_set_camera_attributes(RID p_scenario, RID p_attributes) = 0;
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment) = 0;
+	virtual void scenario_set_compositor(RID p_scenario, RID p_compositor) = 0;
 	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_reflection_size, int p_reflection_count) = 0;
 	virtual bool is_scenario(RID p_scenario) const = 0;
 	virtual RID scenario_get_environment(RID p_scenario) = 0;
@@ -116,6 +118,27 @@ public:
 	virtual void sky_set_mode(RID p_sky, RS::SkyMode p_samples) = 0;
 	virtual void sky_set_material(RID p_sky, RID p_material) = 0;
 	virtual Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) = 0;
+
+	/* COMPOSITOR EFFECT API */
+
+	virtual RID compositor_effect_allocate() = 0;
+	virtual void compositor_effect_initialize(RID p_rid) = 0;
+
+	virtual bool is_compositor_effect(RID p_compositor) const = 0;
+
+	virtual void compositor_effect_set_enabled(RID p_compositor, bool p_enabled) = 0;
+
+	virtual void compositor_effect_set_callback(RID p_compositor, RS::CompositorEffectCallbackType p_callback_type, const Callable &p_callback) = 0;
+	virtual void compositor_effect_set_flag(RID p_compositor, RS::CompositorEffectFlags p_flag, bool p_set) = 0;
+
+	/* COMPOSITOR API */
+
+	virtual RID compositor_allocate() = 0;
+	virtual void compositor_initialize(RID p_rid) = 0;
+
+	virtual bool is_compositor(RID p_compositor) const = 0;
+
+	virtual void compositor_set_compositor_effects(RID p_env, const TypedArray<RID> &p_effects) = 0;
 
 	/* ENVIRONMENT API */
 

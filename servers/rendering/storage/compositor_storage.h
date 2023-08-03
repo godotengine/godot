@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  world_3d.h                                                            */
+/*  compositor_storage.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,66 +28,71 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WORLD_3D_H
-#define WORLD_3D_H
+#ifndef COMPOSITOR_STORAGE_H
+#define COMPOSITOR_STORAGE_H
 
-#include "core/io/resource.h"
-#include "scene/resources/compositor.h"
-#include "scene/resources/environment.h"
-#include "servers/physics_server_3d.h"
+#include "core/templates/rid_owner.h"
 #include "servers/rendering_server.h"
 
-class CameraAttributes;
-class Camera3D;
-class VisibleOnScreenNotifier3D;
-struct SpatialIndexer;
-
-class World3D : public Resource {
-	GDCLASS(World3D, Resource);
-
+class RendererCompositorStorage {
 private:
-	RID scenario;
-	mutable RID space;
-	mutable RID navigation_map;
+	static RendererCompositorStorage *singleton;
 
-	Ref<Environment> environment;
-	Ref<Environment> fallback_environment;
-	Ref<CameraAttributes> camera_attributes;
-	Ref<Compositor> compositor;
+	// Compositor effect
+	struct CompositorEffect {
+		bool is_enabled = true;
+		RS::CompositorEffectCallbackType callback_type;
+		Callable callback;
 
-	HashSet<Camera3D *> cameras;
+		BitField<RS::CompositorEffectFlags> flags;
+	};
 
-protected:
-	static void _bind_methods();
+	mutable RID_Owner<CompositorEffect, true> compositor_effects_owner;
 
-	friend class Camera3D;
+	// Compositor
+	struct Compositor {
+		// Compositor effects
+		Vector<RID> compositor_effects;
+	};
 
-	void _register_camera(Camera3D *p_camera);
-	void _remove_camera(Camera3D *p_camera);
+	mutable RID_Owner<Compositor, true> compositor_owner;
 
 public:
-	RID get_space() const;
-	RID get_navigation_map() const;
-	RID get_scenario() const;
+	static RendererCompositorStorage *get_singleton() { return singleton; }
 
-	void set_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_environment() const;
+	RendererCompositorStorage();
+	virtual ~RendererCompositorStorage();
 
-	void set_fallback_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_fallback_environment() const;
+	// Compositor effect
+	RID compositor_effect_allocate();
+	void compositor_effect_initialize(RID p_rid);
+	void compositor_effect_free(RID p_rid);
 
-	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
-	Ref<CameraAttributes> get_camera_attributes() const;
+	bool is_compositor_effect(RID p_effect) const {
+		return compositor_effects_owner.owns(p_effect);
+	}
 
-	void set_compositor(const Ref<Compositor> &p_compositor);
-	Ref<Compositor> get_compositor() const;
+	void compositor_effect_set_enabled(RID p_effect, bool p_enabled);
+	bool compositor_effect_get_enabled(RID p_effect) const;
 
-	_FORCE_INLINE_ const HashSet<Camera3D *> &get_cameras() const { return cameras; }
+	void compositor_effect_set_callback(RID p_effect, RS::CompositorEffectCallbackType p_callback_type, const Callable &p_callback);
+	RS::CompositorEffectCallbackType compositor_effect_get_callback_type(RID p_effect) const;
+	Callable compositor_effect_get_callback(RID p_effect) const;
 
-	PhysicsDirectSpaceState3D *get_direct_space_state();
+	void compositor_effect_set_flag(RID p_effect, RS::CompositorEffectFlags p_flag, bool p_set);
+	bool compositor_effect_get_flag(RID p_effect, RS::CompositorEffectFlags p_flag) const;
 
-	World3D();
-	~World3D();
+	// Compositor
+	RID compositor_allocate();
+	void compositor_initialize(RID p_rid);
+	void compositor_free(RID p_rid);
+
+	bool is_compositor(RID p_compositor) const {
+		return compositor_owner.owns(p_compositor);
+	}
+
+	void compositor_set_compositor_effects(RID p_compositor, const Vector<RID> &p_effects);
+	Vector<RID> compositor_get_compositor_effects(RID p_compositor, RS::CompositorEffectCallbackType p_callback_type = RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY, bool p_enabled_only = true) const;
 };
 
-#endif // WORLD_3D_H
+#endif // COMPOSITOR_STORAGE_H

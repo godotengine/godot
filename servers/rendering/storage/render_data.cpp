@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  world_3d.h                                                            */
+/*  render_data.cpp                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,66 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WORLD_3D_H
-#define WORLD_3D_H
+#include "render_data.h"
 
-#include "core/io/resource.h"
-#include "scene/resources/compositor.h"
-#include "scene/resources/environment.h"
-#include "servers/physics_server_3d.h"
-#include "servers/rendering_server.h"
+void RenderData::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_render_scene_buffers"), &RenderData::get_render_scene_buffers);
+	ClassDB::bind_method(D_METHOD("get_render_scene_data"), &RenderData::get_render_scene_data);
+	ClassDB::bind_method(D_METHOD("get_environment"), &RenderData::get_environment);
+	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &RenderData::get_camera_attributes);
+}
 
-class CameraAttributes;
-class Camera3D;
-class VisibleOnScreenNotifier3D;
-struct SpatialIndexer;
+void RenderDataExtension::_bind_methods() {
+	GDVIRTUAL_BIND(_get_render_scene_buffers);
+	GDVIRTUAL_BIND(_get_render_scene_data)
+	GDVIRTUAL_BIND(_get_environment)
+	GDVIRTUAL_BIND(_get_camera_attributes)
+}
 
-class World3D : public Resource {
-	GDCLASS(World3D, Resource);
+Ref<RenderSceneBuffers> RenderDataExtension::get_render_scene_buffers() const {
+	Ref<RenderSceneBuffers> ret;
+	GDVIRTUAL_CALL(_get_render_scene_buffers, ret);
+	return ret;
+}
 
-private:
-	RID scenario;
-	mutable RID space;
-	mutable RID navigation_map;
+RenderSceneData *RenderDataExtension::get_render_scene_data() const {
+	RenderSceneData *ret = nullptr;
+	GDVIRTUAL_CALL(_get_render_scene_data, ret);
+	return ret;
+}
 
-	Ref<Environment> environment;
-	Ref<Environment> fallback_environment;
-	Ref<CameraAttributes> camera_attributes;
-	Ref<Compositor> compositor;
+RID RenderDataExtension::get_environment() const {
+	RID ret;
+	GDVIRTUAL_CALL(_get_environment, ret);
+	return ret;
+}
 
-	HashSet<Camera3D *> cameras;
-
-protected:
-	static void _bind_methods();
-
-	friend class Camera3D;
-
-	void _register_camera(Camera3D *p_camera);
-	void _remove_camera(Camera3D *p_camera);
-
-public:
-	RID get_space() const;
-	RID get_navigation_map() const;
-	RID get_scenario() const;
-
-	void set_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_environment() const;
-
-	void set_fallback_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_fallback_environment() const;
-
-	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
-	Ref<CameraAttributes> get_camera_attributes() const;
-
-	void set_compositor(const Ref<Compositor> &p_compositor);
-	Ref<Compositor> get_compositor() const;
-
-	_FORCE_INLINE_ const HashSet<Camera3D *> &get_cameras() const { return cameras; }
-
-	PhysicsDirectSpaceState3D *get_direct_space_state();
-
-	World3D();
-	~World3D();
-};
-
-#endif // WORLD_3D_H
+RID RenderDataExtension::get_camera_attributes() const {
+	RID ret;
+	GDVIRTUAL_CALL(_get_camera_attributes, ret);
+	return ret;
+}

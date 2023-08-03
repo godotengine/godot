@@ -34,11 +34,14 @@
 #include "render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/storage/render_scene_data.h"
 
 // This is a container for data related to rendering a single frame of a viewport where we load this data into a UBO
 // that can be used by the main scene shader but also by various effects.
 
-class RenderSceneDataRD {
+class RenderSceneDataRD : public RenderSceneData {
+	GDCLASS(RenderSceneDataRD, RenderSceneData);
+
 public:
 	bool calculate_motion_vectors = false;
 
@@ -79,11 +82,20 @@ public:
 	float time;
 	float time_step;
 
+	virtual Transform3D get_cam_transform() const override;
+	virtual Projection get_cam_projection() const override;
+
+	virtual uint32_t get_view_count() const override;
+	virtual Vector3 get_view_eye_offset(uint32_t p_view) const override;
+	virtual Projection get_view_projection(uint32_t p_view) const override;
+
 	RID create_uniform_buffer();
 	void update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p_debug_mode, RID p_env, RID p_reflection_probe_instance, RID p_camera_attributes, bool p_flip_y, bool p_pancake_shadows, const Size2i &p_screen_size, const Color &p_default_bg_color, float p_luminance_multiplier, bool p_opaque_render_buffers, bool p_apply_alpha_multiplier);
-	RID get_uniform_buffer();
+	virtual RID get_uniform_buffer() const override;
 
 private:
+	static void _bind_methods();
+
 	RID uniform_buffer; // loaded into this uniform buffer (supplied externally)
 
 	// This struct is loaded into Set 1 - Binding 0, populated at start of rendering a frame, must match with shader code

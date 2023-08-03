@@ -153,6 +153,7 @@
 #include "scene/resources/capsule_shape_2d.h"
 #include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/circle_shape_2d.h"
+#include "scene/resources/compositor.h"
 #include "scene/resources/compressed_texture.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
@@ -340,6 +341,8 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(Viewport);
 	GDREGISTER_CLASS(SubViewport);
 	GDREGISTER_CLASS(ViewportTexture);
+
+	GDREGISTER_VIRTUAL_CLASS(CompositorEffect);
 
 	GDREGISTER_ABSTRACT_CLASS(MultiplayerPeer);
 	GDREGISTER_CLASS(MultiplayerPeerExtension);
@@ -865,6 +868,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(PhysicsMaterial);
 	GDREGISTER_CLASS(World3D);
+	GDREGISTER_CLASS(Compositor);
 	GDREGISTER_CLASS(Environment);
 	GDREGISTER_VIRTUAL_CLASS(CameraAttributes);
 	GDREGISTER_CLASS(CameraAttributesPhysical);

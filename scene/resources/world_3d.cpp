@@ -132,6 +132,19 @@ Ref<CameraAttributes> World3D::get_camera_attributes() const {
 	return camera_attributes;
 }
 
+void World3D::set_compositor(const Ref<Compositor> &p_compositor) {
+	compositor = p_compositor;
+	if (compositor.is_valid()) {
+		RS::get_singleton()->scenario_set_compositor(scenario, compositor->get_rid());
+	} else {
+		RS::get_singleton()->scenario_set_compositor(scenario, RID());
+	}
+}
+
+Ref<Compositor> World3D::get_compositor() const {
+	return compositor;
+}
+
 PhysicsDirectSpaceState3D *World3D::get_direct_space_state() {
 	return PhysicsServer3D::get_singleton()->space_get_direct_state(get_space());
 }

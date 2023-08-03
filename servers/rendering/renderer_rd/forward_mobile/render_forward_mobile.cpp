@@ -669,6 +669,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	// check if we need motion vectors
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS) {
 		p_render_data->scene_data->calculate_motion_vectors = true;
+	} else if (_compositor_effects_has_flag(p_render_data, RS::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS)) {
+		p_render_data->scene_data->calculate_motion_vectors = true;
 	} else if (render target has velocity override) { // TODO
 		p_render_data->scene_data->calculate_motion_vectors = true;
 	} else {
@@ -693,6 +695,34 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	bool merge_transparent_pass = true; // If true: we can do our transparent pass in the same pass as our opaque pass.
 	bool using_subpass_post_process = true; // If true: we can do our post processing in a subpass
 	RendererRD::MaterialStorage::Samplers samplers;
+
+	RS::ViewportMSAA msaa = rb->get_msaa_3d();
+	bool use_msaa = msaa != RS::VIEWPORT_MSAA_DISABLED;
+
+	bool ce_has_post_opaque = _has_compositor_effect(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_OPAQUE, p_render_data);
+	bool ce_has_pre_transparent = _has_compositor_effect(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT, p_render_data);
+	bool ce_has_post_transparent = _has_compositor_effect(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT, p_render_data);
+
+	if (ce_has_post_opaque) {
+		// As we're doing opaque and sky in subpasses we don't support this *yet*
+		WARN_PRINT_ONCE("Post opaque rendering effect callback is not supported in the mobile renderer");
+	}
+
+	// Using RenderingEffects limits our ability to do subpasses..
+	if (ce_has_pre_transparent) {
+		merge_transparent_pass = false;
+		using_subpass_post_process = false;
+	}
+	if (ce_has_post_transparent) {
+		using_subpass_post_process = false;
+	}
+
+	if (use_msaa && _compositor_effects_has_flag(p_render_data, RS::COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH, RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY)) {
+		// We'll be able to do this when we finish PR #78598
+		WARN_PRINT_ONCE("Depth buffer resolve for rendering effect callback is not supported in the mobile renderer");
+	}
+
+	// We don't need to check resolve color flag, it will be resolved for transparent passes regardless.
 
 	bool using_shadows = true;
 
@@ -881,6 +911,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		clear_color = p_default_bg_color;
 	}
 
+	// We don't have access to any rendered buffers but we may be able to effect mesh data...
+	_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_OPAQUE, p_render_data);
+
 	_pre_opaque_render(p_render_data);
 
 	uint32_t spec_constant_base_flags = 0;
@@ -942,7 +975,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			c.push_back(cc); // Our render buffer.
 			if (rb_data.is_valid()) {
-				if (p_render_data->render_buffers->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED) {
+				if (use_msaa) {
 					c.push_back(clear_color.srgb_to_linear() * inverse_luminance_multiplier); // Our resolve buffer.
 				}
 				if (using_subpass_post_process) {
@@ -983,6 +1016,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			sky.draw_sky(draw_list, rb, p_render_data->environment, framebuffer, time, sky_energy_multiplier);
 
 			RD::get_singleton()->draw_command_end_label(); // Draw Sky
+		}
+
+		// rendering effects
+		if (ce_has_pre_transparent) {
+			_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_TRANSPARENT, p_render_data);
 		}
 
 		if (merge_transparent_pass) {
@@ -1054,6 +1092,10 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	if (rb_data.is_valid() && !using_subpass_post_process) {
 		RD::get_singleton()->draw_command_begin_label("Post process pass");
+
+		if (ce_has_post_transparent) {
+			_process_compositor_effects(RS::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT, p_render_data);
+		}
 
 		// If we need extra effects we do this in its own pass
 		RENDER_TIMESTAMP("Tonemap");

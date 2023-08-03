@@ -35,6 +35,7 @@
 #include "core/templates/paged_array.h"
 #include "servers/rendering/renderer_geometry_instance.h"
 #include "servers/rendering/rendering_method.h"
+#include "servers/rendering/storage/compositor_storage.h"
 #include "servers/rendering/storage/environment_storage.h"
 #include "storage/render_scene_buffers.h"
 #include "storage/utilities.h"
@@ -42,6 +43,7 @@
 class RendererSceneRender {
 private:
 	RendererEnvironmentStorage environment_storage;
+	RendererCompositorStorage compositor_storage;
 
 public:
 	enum {
@@ -72,6 +74,27 @@ public:
 	virtual void sky_set_mode(RID p_sky, RS::SkyMode p_samples) = 0;
 	virtual void sky_set_material(RID p_sky, RID p_material) = 0;
 	virtual Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) = 0;
+
+	/* COMPOSITOR EFFECT API */
+
+	RID compositor_effect_allocate();
+	void compositor_effect_initialize(RID p_rid);
+	void compositor_effect_free(RID p_rid);
+
+	bool is_compositor_effect(RID p_compositor) const;
+	void compositor_effect_set_enabled(RID p_compositor, bool p_enabled);
+	void compositor_effect_set_callback(RID p_compositor, RS::CompositorEffectCallbackType p_callback_type, const Callable &p_callback);
+	void compositor_effect_set_flag(RID p_compositor, RS::CompositorEffectFlags p_flag, bool p_set);
+
+	/* COMPOSITOR API */
+
+	RID compositor_allocate();
+	void compositor_initialize(RID p_rid);
+	void compositor_free(RID p_rid);
+
+	bool is_compositor(RID p_compositor) const;
+
+	void compositor_set_compositor_effects(RID p_compositor, const TypedArray<RID> &p_effects);
 
 	/* ENVIRONMENT API */
 
@@ -289,7 +312,7 @@ public:
 		void set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_vaspect);
 	};
 
-	virtual void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) = 0;
+	virtual void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RenderingMethod::RenderInfo *r_render_info = nullptr) = 0;
 
 	virtual void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
 	virtual void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) = 0;

@@ -34,6 +34,33 @@
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
 
+void RenderSceneDataRD::_bind_methods() {
+}
+
+Transform3D RenderSceneDataRD::get_cam_transform() const {
+	return cam_transform;
+}
+
+Projection RenderSceneDataRD::get_cam_projection() const {
+	return cam_projection;
+}
+
+uint32_t RenderSceneDataRD::get_view_count() const {
+	return view_count;
+}
+
+Vector3 RenderSceneDataRD::get_view_eye_offset(uint32_t p_view) const {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_view, view_count, Vector3());
+
+	return view_eye_offset[p_view];
+}
+
+Projection RenderSceneDataRD::get_view_projection(uint32_t p_view) const {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_view, view_count, Projection());
+
+	return view_projection[p_view];
+}
+
 RID RenderSceneDataRD::create_uniform_buffer() {
 	return RD::get_singleton()->uniform_buffer_create(sizeof(UBODATA));
 }
@@ -262,6 +289,6 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 	RD::get_singleton()->buffer_update(uniform_buffer, 0, sizeof(UBODATA), &ubo);
 }
 
-RID RenderSceneDataRD::get_uniform_buffer() {
+RID RenderSceneDataRD::get_uniform_buffer() const {
 	return uniform_buffer;
 }

@@ -36,6 +36,9 @@
 
 class RendererEnvironmentStorage {
 private:
+	static RendererEnvironmentStorage *singleton;
+
+	// Environment
 	struct Environment {
 		// Note, we capture and store all environment parameters received from Godot here.
 		// Not all renderers support all effects and should just ignore the bits they don't support.
@@ -155,6 +158,12 @@ private:
 	mutable RID_Owner<Environment, true> environment_owner;
 
 public:
+	static RendererEnvironmentStorage *get_singleton() { return singleton; }
+
+	RendererEnvironmentStorage();
+	virtual ~RendererEnvironmentStorage();
+
+	// Environment
 	RID environment_allocate();
 	void environment_initialize(RID p_rid);
 	void environment_free(RID p_rid);

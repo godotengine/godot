@@ -80,6 +80,7 @@ public:
 		bool vaspect;
 		RID env;
 		RID attributes;
+		RID compositor;
 
 		Transform3D transform;
 
@@ -107,6 +108,7 @@ public:
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers);
 	virtual void camera_set_environment(RID p_camera, RID p_env);
 	virtual void camera_set_camera_attributes(RID p_camera, RID p_attributes);
+	virtual void camera_set_compositor(RID p_camera, RID p_compositor);
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable);
 	virtual bool is_camera(RID p_camera) const;
 
@@ -324,6 +326,7 @@ public:
 		RID environment;
 		RID fallback_environment;
 		RID camera_attributes;
+		RID compositor;
 		RID reflection_probe_shadow_atlas;
 		RID reflection_atlas;
 		uint64_t used_viewport_visibility_bits;
@@ -359,6 +362,7 @@ public:
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
 	virtual void scenario_set_camera_attributes(RID p_scenario, RID p_attributes);
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment);
+	virtual void scenario_set_compositor(RID p_scenario, RID p_compositor);
 	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_reflection_size, int p_reflection_count);
 	virtual bool is_scenario(RID p_scenario) const;
 	virtual RID scenario_get_environment(RID p_scenario);
@@ -1065,6 +1069,7 @@ public:
 	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
+	RID _render_get_compositor(RID p_camera, RID p_scenario);
 
 	struct Cull {
 		struct Shadow {
@@ -1134,7 +1139,7 @@ public:
 	_FORCE_INLINE_ bool _visibility_parent_check(const CullData &p_cull_data, const InstanceData &p_instance_data);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
+	void _render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, RID p_compositor, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows = true, RenderInfo *r_render_info = nullptr);
 	void render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
 	void render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderingMethod::RenderInfo *r_render_info = nullptr);
@@ -1166,6 +1171,28 @@ public:
 	PASS2(sky_set_mode, RID, RS::SkyMode)
 	PASS2(sky_set_material, RID, RID)
 	PASS4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
+
+	// Compositor effect
+
+	PASS0R(RID, compositor_effect_allocate)
+	PASS1(compositor_effect_initialize, RID)
+
+	PASS1RC(bool, is_compositor_effect, RID)
+
+	PASS2(compositor_effect_set_enabled, RID, bool)
+	PASS3(compositor_effect_set_callback, RID, RS::CompositorEffectCallbackType, const Callable &)
+	PASS3(compositor_effect_set_flag, RID, RS::CompositorEffectFlags, bool)
+
+	// Compositor
+
+	PASS0R(RID, compositor_allocate)
+	PASS1(compositor_initialize, RID)
+
+	PASS1RC(bool, is_compositor, RID)
+
+	PASS2(compositor_set_compositor_effects, RID, const TypedArray<RID> &)
+
+	// Environment
 
 	PASS0R(RID, environment_allocate)
 	PASS1(environment_initialize, RID)

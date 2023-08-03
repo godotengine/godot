@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  world_3d.h                                                            */
+/*  render_data_rd.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,66 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WORLD_3D_H
-#define WORLD_3D_H
+#include "render_data_rd.h"
 
-#include "core/io/resource.h"
-#include "scene/resources/compositor.h"
-#include "scene/resources/environment.h"
-#include "servers/physics_server_3d.h"
-#include "servers/rendering_server.h"
+void RenderDataRD::_bind_methods() {
+}
 
-class CameraAttributes;
-class Camera3D;
-class VisibleOnScreenNotifier3D;
-struct SpatialIndexer;
+Ref<RenderSceneBuffers> RenderDataRD::get_render_scene_buffers() const {
+	return render_buffers;
+}
 
-class World3D : public Resource {
-	GDCLASS(World3D, Resource);
+RenderSceneData *RenderDataRD::get_render_scene_data() const {
+	return scene_data;
+}
 
-private:
-	RID scenario;
-	mutable RID space;
-	mutable RID navigation_map;
+RID RenderDataRD::get_environment() const {
+	return environment;
+}
 
-	Ref<Environment> environment;
-	Ref<Environment> fallback_environment;
-	Ref<CameraAttributes> camera_attributes;
-	Ref<Compositor> compositor;
-
-	HashSet<Camera3D *> cameras;
-
-protected:
-	static void _bind_methods();
-
-	friend class Camera3D;
-
-	void _register_camera(Camera3D *p_camera);
-	void _remove_camera(Camera3D *p_camera);
-
-public:
-	RID get_space() const;
-	RID get_navigation_map() const;
-	RID get_scenario() const;
-
-	void set_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_environment() const;
-
-	void set_fallback_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_fallback_environment() const;
-
-	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
-	Ref<CameraAttributes> get_camera_attributes() const;
-
-	void set_compositor(const Ref<Compositor> &p_compositor);
-	Ref<Compositor> get_compositor() const;
-
-	_FORCE_INLINE_ const HashSet<Camera3D *> &get_cameras() const { return cameras; }
-
-	PhysicsDirectSpaceState3D *get_direct_space_state();
-
-	World3D();
-	~World3D();
-};
-
-#endif // WORLD_3D_H
+RID RenderDataRD::get_camera_attributes() const {
+	return camera_attributes;
+}
