@@ -1748,7 +1748,9 @@ Rect2i Window::fit_rect_in_parent(Rect2i p_rect, const Rect2i &p_parent_rect) co
 
 Size2 Window::get_contents_minimum_size() const {
 	ERR_READ_THREAD_GUARD_V(Size2());
-	return _get_contents_minimum_size();
+	Vector2 ms = _get_contents_minimum_size();
+	GDVIRTUAL_CALL(_get_contents_minimum_size, ms);
+	return ms;
 }
 
 Size2 Window::get_clamped_minimum_size() const {
@@ -2760,6 +2762,8 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN);
 	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS);
 	BIND_ENUM_CONSTANT(WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS);
+
+	GDVIRTUAL_BIND(_get_contents_minimum_size);
 }
 
 Window::Window() {

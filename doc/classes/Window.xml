@@ -10,6 +10,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_contents_minimum_size" qualifiers="virtual const">
+			<return type="Vector2" />
+			<description>
+				Virtual method to be implemented by the user. Overrides the value returned by [method get_contents_minimum_size].
+			</description>
+		</method>
 		<method name="add_theme_color_override">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
@@ -92,6 +98,7 @@
 			<return type="Vector2" />
 			<description>
 				Returns the combined minimum size from the child [Control] nodes of the window. Use [method child_controls_changed] to update it when children nodes have changed.
+				The value returned by this method can be overridden with [method _get_contents_minimum_size].
 			</description>
 		</method>
 		<method name="get_flag" qualifiers="const">
