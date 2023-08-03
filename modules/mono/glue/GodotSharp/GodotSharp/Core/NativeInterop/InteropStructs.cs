@@ -1134,4 +1134,13 @@ namespace Godot.NativeInterop
             get => _ptr != null ? *((int*)_ptr - 1) : 0;
         }
     }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public enum godot_error_handler_type
+    {
+        ERR_HANDLER_ERROR = 0,
+        ERR_HANDLER_WARNING,
+        ERR_HANDLER_SCRIPT,
+        ERR_HANDLER_SHADER,
+    }
 }

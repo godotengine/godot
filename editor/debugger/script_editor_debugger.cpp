@@ -569,8 +569,11 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		error->set_custom_color(1, color);
 
 		String error_title;
-		if (oe.callstack.size() > 0) {
-			// If available, use the script's stack in the error title.
+		if (!oe.source_func.is_empty() && source_is_project_file) {
+			// If source function is inside the project file.
+			error_title += oe.source_func + ": ";
+		} else if (oe.callstack.size() > 0) {
+			// Otherwise, if available, use the script's stack in the error title.
 			error_title = _format_frame_text(&oe.callstack[0]) + ": ";
 		} else if (!oe.source_func.is_empty()) {
 			// Otherwise try to use the C++ source function.
@@ -645,7 +648,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			if (i == 0) {
 				stack_trace->set_text(0, "<" + TTR("Stack Trace") + ">");
 				stack_trace->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
-				error->set_metadata(0, meta);
+				if (!source_is_project_file) {
+					// Only override metadata if the source is not inside the project.
+					error->set_metadata(0, meta);
+				}
 				tooltip += TTR("Stack Trace:") + "\n";
 			}
 
