@@ -75,6 +75,7 @@ public:
 		Key physical_keycode = Key::NONE;
 		Key key_label = Key::NONE;
 		uint32_t unicode = 0;
+		KeyLocation location = KeyLocation::UNSPECIFIED;
 	};
 
 	struct WindowData {

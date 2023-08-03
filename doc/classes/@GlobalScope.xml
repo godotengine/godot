@@ -2374,6 +2374,16 @@
 		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824" enum="KeyModifierMask" is_bitfield="true">
 			Group Switch key mask.
 		</constant>
+		<constant name="KEY_LOCATION_UNSPECIFIED" value="0" enum="KeyLocation">
+			Used for keys which only appear once, or when a comparison doesn't need to differentiate the [code]LEFT[/code] and [code]RIGHT[/code] versions.
+			For example, when using [method InputEvent.is_match], an event which has [constant KEY_LOCATION_UNSPECIFIED] will match any [enum KeyLocation] on the passed event.
+		</constant>
+		<constant name="KEY_LOCATION_LEFT" value="1" enum="KeyLocation">
+			A key which is to the left of its twin.
+		</constant>
+		<constant name="KEY_LOCATION_RIGHT" value="2" enum="KeyLocation">
+			A key which is to the right of its twin.
+		</constant>
 		<constant name="MOUSE_BUTTON_NONE" value="0" enum="MouseButton">
 			Enum value which doesn't correspond to any mouse button. This is used to initialize [enum MouseButton] properties with a generic state.
 		</constant>
