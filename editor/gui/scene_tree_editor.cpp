@@ -964,26 +964,55 @@ void SceneTreeEditor::_rename_node(Node *p_node, const String &p_name) {
 	String new_name = p_name.validate_node_name();
 
 	if (new_name != p_name) {
-		error->set_text(TTR("Invalid node name, the following characters are not allowed:") + "\n" + String::get_invalid_node_name_characters());
-		error->popup_centered();
-
-		if (new_name.is_empty()) {
-			item->set_text(0, p_node->get_name());
-			return;
+		String text = TTR("Invalid node name, the following characters are not allowed:") + "\n" + String::get_invalid_node_name_characters();
+		if (error->is_visible()) {
+			if (!error->get_meta("invalid_character", false)) {
+				error->set_text(error->get_text() + "\n\n" + text);
+				error->set_meta("invalid_character", true);
+			}
+		} else {
+			error->set_text(text);
+			error->set_meta("invalid_character", true);
+			error->set_meta("same_unique_name", false);
+			error->popup_centered();
 		}
+	}
 
-		item->set_text(0, new_name);
+	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace, which would make it more difficult to get the node via `get_node()`.
+	new_name = new_name.strip_edges();
+	if (new_name.is_empty()) {
+		// If name is empty, fallback to class name.
+		if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+			new_name = Node::adjust_name_casing(p_node->get_class());
+		} else {
+			new_name = p_node->get_class();
+		}
 	}
 
 	if (new_name == p_node->get_name()) {
 		if (item->get_text(0).is_empty()) {
 			item->set_text(0, new_name);
 		}
-
 		return;
 	}
-	// Trim leading/trailing whitespace to prevent node names from containing accidental whitespace, which would make it more difficult to get the node via `get_node()`.
-	new_name = new_name.strip_edges();
+
+	// We previously made sure name is not the same as current name so that it won't complain about already used unique name when not changing name.
+	if (p_node->is_unique_name_in_owner() && get_tree()->get_edited_scene_root()->get_node_or_null("%" + new_name)) {
+		String text = TTR("Another node already uses this unique name in the scene.");
+		if (error->is_visible()) {
+			if (!error->get_meta("same_unique_name", false)) {
+				error->set_text(error->get_text() + "\n\n" + text);
+				error->set_meta("same_unique_name", true);
+			}
+		} else {
+			error->set_text(text);
+			error->set_meta("same_unique_name", true);
+			error->set_meta("invalid_character", false);
+			error->popup_centered();
+		}
+		item->set_text(0, p_node->get_name());
+		return;
+	}
 
 	if (!is_scene_tree_dock) {
 		p_node->set_name(new_name);
@@ -999,7 +1028,7 @@ void SceneTreeEditor::_rename_node(Node *p_node, const String &p_name) {
 		undo_redo->add_undo_method(item, "set_metadata", 0, p_node->get_path());
 		undo_redo->add_undo_method(item, "set_text", 0, p_node->get_name());
 
-		p_node->set_name(p_name);
+		p_node->set_name(new_name);
 		undo_redo->add_do_method(p_node, "set_name", new_name);
 		undo_redo->add_do_method(item, "set_metadata", 0, p_node->get_path());
 		undo_redo->add_do_method(item, "set_text", 0, new_name);
@@ -1017,28 +1046,6 @@ void SceneTreeEditor::_renamed() {
 	ERR_FAIL_COND(!n);
 
 	String new_name = which->get_text(0);
-	if (new_name.strip_edges().is_empty()) {
-		// If name is empty, fallback to class name.
-		if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
-			new_name = Node::adjust_name_casing(n->get_class());
-		} else {
-			new_name = n->get_class();
-		}
-	}
-
-	if (n->is_unique_name_in_owner()) {
-		Node *existing = get_tree()->get_edited_scene_root()->get_node_or_null("%" + new_name);
-		if (existing == n) {
-			which->set_text(0, n->get_name());
-			return;
-		}
-		if (existing != nullptr) {
-			error->set_text(TTR("Another node already uses this unique name in the scene."));
-			error->popup_centered();
-			which->set_text(0, n->get_name());
-			return;
-		}
-	}
 
 	_rename_node(n, new_name);
 }
