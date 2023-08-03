@@ -115,6 +115,12 @@ Error GLTFDocument::_serialize(Ref<GLTFState> p_state, const String &p_path) {
 		p_state->buffers.push_back(Vector<uint8_t>());
 	}
 
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		Error err = ext->export_preserialize(p_state);
+		ERR_CONTINUE(err != OK);
+	}
+
 	/* STEP CONVERT MESH INSTANCES */
 	_convert_mesh_instances(p_state);
 

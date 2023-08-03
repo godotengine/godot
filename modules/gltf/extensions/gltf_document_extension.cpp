@@ -45,6 +45,7 @@ void GLTFDocumentExtension::_bind_methods() {
 	// Export process.
 	GDVIRTUAL_BIND(_export_preflight, "state", "root");
 	GDVIRTUAL_BIND(_convert_scene_node, "state", "gltf_node", "scene_node");
+	GDVIRTUAL_BIND(_export_preserialize, "state");
 	GDVIRTUAL_BIND(_export_node, "state", "gltf_node", "json", "node");
 	GDVIRTUAL_BIND(_export_post, "state");
 }
@@ -139,6 +140,13 @@ void GLTFDocumentExtension::convert_scene_node(Ref<GLTFState> p_state, Ref<GLTFN
 	ERR_FAIL_NULL(p_gltf_node);
 	ERR_FAIL_NULL(p_scene_node);
 	GDVIRTUAL_CALL(_convert_scene_node, p_state, p_gltf_node, p_scene_node);
+}
+
+Error GLTFDocumentExtension::export_preserialize(Ref<GLTFState> p_state) {
+	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
+	Error err = OK;
+	GDVIRTUAL_CALL(_export_preserialize, p_state, err);
+	return err;
 }
 
 Error GLTFDocumentExtension::export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_dict, Node *p_node) {
