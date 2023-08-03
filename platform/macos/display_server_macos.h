@@ -201,6 +201,14 @@ private:
 
 	HashMap<WindowID, WindowData> windows;
 
+	struct IndicatorData {
+		id view;
+		id item;
+	};
+
+	IndicatorID indicator_id_counter = 0;
+	HashMap<IndicatorID, IndicatorData> indicators;
+
 	IOPMAssertionID screen_keep_on_assertion = kIOPMNullAssertionID;
 
 	struct MenuCall {
@@ -485,6 +493,12 @@ public:
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
+
+	virtual IndicatorID create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) override;
+	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) override;
+	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) override;
+	virtual void delete_status_indicator(IndicatorID p_id) override;
 
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();

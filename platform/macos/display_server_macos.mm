@@ -35,6 +35,7 @@
 #include "godot_menu_delegate.h"
 #include "godot_menu_item.h"
 #include "godot_open_save_delegate.h"
+#include "godot_status_item.h"
 #include "godot_window.h"
 #include "godot_window_delegate.h"
 #include "key_mapping_macos.h"
@@ -838,6 +839,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_EXTEND_TO_TITLE:
 		case FEATURE_SCREEN_CAPTURE:
+		case FEATURE_STATUS_INDICATOR:
 			return true;
 		default: {
 		}
@@ -4296,6 +4298,124 @@ void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
 	}
 }
 
+DisplayServer::IndicatorID DisplayServerMacOS::create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) {
+	NSImage *nsimg = nullptr;
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+		Ref<Image> img = p_icon->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
+
+		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
+				initWithBitmapDataPlanes:nullptr
+							  pixelsWide:img->get_width()
+							  pixelsHigh:img->get_height()
+						   bitsPerSample:8
+						 samplesPerPixel:4
+								hasAlpha:YES
+								isPlanar:NO
+						  colorSpaceName:NSDeviceRGBColorSpace
+							 bytesPerRow:img->get_width() * 4
+							bitsPerPixel:32];
+		if (imgrep) {
+			uint8_t *pixels = [imgrep bitmapData];
+
+			int len = img->get_width() * img->get_height();
+			const uint8_t *r = img->get_data().ptr();
+
+			/* Premultiply the alpha channel */
+			for (int i = 0; i < len; i++) {
+				uint8_t alpha = r[i * 4 + 3];
+				pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
+				pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
+				pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
+				pixels[i * 4 + 3] = alpha;
+			}
+
+			nsimg = [[NSImage alloc] initWithSize:NSMakeSize(img->get_width(), img->get_height())];
+			if (nsimg) {
+				[nsimg addRepresentation:imgrep];
+			}
+		}
+	}
+
+	IndicatorData idat;
+
+	idat.item = [[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength];
+	idat.view = [[GodotStatusItemView alloc] init];
+
+	[idat.view setToolTip:[NSString stringWithUTF8String:p_tooltip.utf8().get_data()]];
+	[idat.view setImage:nsimg];
+	[idat.view setCallback:p_callback];
+	[idat.item setView:idat.view];
+
+	IndicatorID iid = indicator_id_counter++;
+	indicators[iid] = idat;
+
+	return iid;
+}
+
+void DisplayServerMacOS::status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	NSImage *nsimg = nullptr;
+	if (p_icon.is_valid() && p_icon->get_width() > 0 && p_icon->get_height() > 0) {
+		Ref<Image> img = p_icon->duplicate();
+		img->convert(Image::FORMAT_RGBA8);
+
+		NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc]
+				initWithBitmapDataPlanes:nullptr
+							  pixelsWide:img->get_width()
+							  pixelsHigh:img->get_height()
+						   bitsPerSample:8
+						 samplesPerPixel:4
+								hasAlpha:YES
+								isPlanar:NO
+						  colorSpaceName:NSDeviceRGBColorSpace
+							 bytesPerRow:img->get_width() * 4
+							bitsPerPixel:32];
+		if (imgrep) {
+			uint8_t *pixels = [imgrep bitmapData];
+
+			int len = img->get_width() * img->get_height();
+			const uint8_t *r = img->get_data().ptr();
+
+			/* Premultiply the alpha channel */
+			for (int i = 0; i < len; i++) {
+				uint8_t alpha = r[i * 4 + 3];
+				pixels[i * 4 + 0] = (uint8_t)(((uint16_t)r[i * 4 + 0] * alpha) / 255);
+				pixels[i * 4 + 1] = (uint8_t)(((uint16_t)r[i * 4 + 1] * alpha) / 255);
+				pixels[i * 4 + 2] = (uint8_t)(((uint16_t)r[i * 4 + 2] * alpha) / 255);
+				pixels[i * 4 + 3] = alpha;
+			}
+
+			nsimg = [[NSImage alloc] initWithSize:NSMakeSize(img->get_width(), img->get_height())];
+			if (nsimg) {
+				[nsimg addRepresentation:imgrep];
+			}
+		}
+	}
+
+	[indicators[p_id].view setImage:nsimg];
+}
+
+void DisplayServerMacOS::status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	[indicators[p_id].view setToolTip:[NSString stringWithUTF8String:p_tooltip.utf8().get_data()]];
+}
+
+void DisplayServerMacOS::status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	[indicators[p_id].view setCallback:p_callback];
+}
+
+void DisplayServerMacOS::delete_status_indicator(IndicatorID p_id) {
+	ERR_FAIL_COND(!indicators.has(p_id));
+
+	[[NSStatusBar systemStatusBar] removeStatusItem:indicators[p_id].item];
+	indicators.erase(p_id);
+}
+
 DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
 	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
 	if (r_error != OK) {
@@ -4698,6 +4818,11 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 	if (screen_keep_on_assertion) {
 		IOPMAssertionRelease(screen_keep_on_assertion);
 		screen_keep_on_assertion = kIOPMNullAssertionID;
+	}
+
+	// Destroy all status indicators.
+	for (HashMap<IndicatorID, IndicatorData>::Iterator E = indicators.begin(); E;) {
+		[[NSStatusBar systemStatusBar] removeStatusItem:E->value.item];
 	}
 
 	// Destroy all windows.

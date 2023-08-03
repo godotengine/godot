@@ -125,6 +125,7 @@ public:
 		FEATURE_TEXT_TO_SPEECH,
 		FEATURE_EXTEND_TO_TITLE,
 		FEATURE_SCREEN_CAPTURE,
+		FEATURE_STATUS_INDICATOR,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -332,10 +333,12 @@ public:
 	virtual bool screen_is_kept_on() const;
 	enum {
 		MAIN_WINDOW_ID = 0,
-		INVALID_WINDOW_ID = -1
+		INVALID_WINDOW_ID = -1,
+		INVALID_INDICATOR_ID = -1
 	};
 
 	typedef int WindowID;
+	typedef int IndicatorID;
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const = 0;
 
@@ -539,6 +542,12 @@ public:
 
 	virtual void set_native_icon(const String &p_filename);
 	virtual void set_icon(const Ref<Image> &p_icon);
+
+	virtual IndicatorID create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback);
+	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon);
+	virtual void status_indicator_set_tooltip(IndicatorID p_id, const String &p_tooltip);
+	virtual void status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback);
+	virtual void delete_status_indicator(IndicatorID p_id);
 
 	enum Context {
 		CONTEXT_EDITOR,
