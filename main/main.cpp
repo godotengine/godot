@@ -857,6 +857,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->next()->get());
 			}
 		}
+		// If gpu is specified, both editor and debug instances started from editor will inherit.
+		if (I->get() == "--gpu-index") {
+			if (I->next()) {
+				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
+				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->next()->get());
+				forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(I->get());
+				forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(I->next()->get());
+			}
+		}
 #endif
 
 		if (adding_user_args) {
