@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  tile_map.compat.inc                                                   */
+/*  rendering_device.compat.inc                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,12 +30,12 @@
 
 #ifndef DISABLE_DEPRECATED
 
-Rect2i TileMap::_get_used_rect_bind_compat_78328() {
-	return get_used_rect();
+RID RenderingDevice::_shader_create_from_bytecode_bind_compat_79606(const Vector<uint8_t> &p_shader_binary) {
+	return shader_create_from_bytecode(p_shader_binary, RID());
 }
 
-void TileMap::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("get_used_rect"), &TileMap::_get_used_rect_bind_compat_78328);
+void RenderingDevice::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("shader_create_from_bytecode", "binary_data"), &RenderingDevice::_shader_create_from_bytecode_bind_compat_79606);
 }
 
 #endif

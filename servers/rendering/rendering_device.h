@@ -141,6 +141,11 @@ private:
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	RID _shader_create_from_bytecode_bind_compat_79606(const Vector<uint8_t> &p_shader_binary);
+	static void _bind_compatibility_methods();
+#endif
+
 	Capabilities device_capabilities;
 
 public:

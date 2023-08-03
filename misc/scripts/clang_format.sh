@@ -21,7 +21,7 @@ fi
 
 # Fix copyright headers, but not all files get them.
 for f in $files; do
-    if [[ "$f" == *"inc" ]]; then
+    if [[ "$f" == *"inc" && "$f" != *"compat.inc" ]]; then
         continue
     elif [[ "$f" == *"glsl" ]]; then
         continue
