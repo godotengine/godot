@@ -2695,6 +2695,11 @@ Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const Str
 	Error err;
 	Ref<GDScript> scr = GDScriptCache::get_full_script(p_path, err, "", p_cache_mode == CACHE_MODE_IGNORE);
 
+	if (err && scr.is_valid()) {
+		// If !scr.is_valid(), the error was likely from scr->load_source_code(), which already generates an error.
+		ERR_PRINT_ED(vformat(R"(Failed to load script "%s" with error "%s".)", p_path, error_names[err]));
+	}
+
 	if (r_error) {
 		// Don't fail loading because of parsing error.
 		*r_error = scr.is_valid() ? OK : err;
