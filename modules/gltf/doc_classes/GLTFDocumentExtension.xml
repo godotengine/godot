@@ -59,6 +59,12 @@
 				Runs when generating a Godot scene node from a GLTFNode. The returned node will be added to the scene tree. Multiple nodes can be generated in this step if they are added as a child of the returned node.
 			</description>
 		</method>
+		<method name="_get_image_file_extension" qualifiers="virtual">
+			<return type="String" />
+			<description>
+				Returns the file extension to use for saving image data into, for example, [code]".png"[/code]. If defined, when this extension is used to handle images, and the images are saved to a separate file, the image bytes will be copied to a file with this extension. If this is set, there should be a [ResourceImporter] class able to import the file. If not defined or empty, Godot will save the image into a PNG file.
+			</description>
+		</method>
 		<method name="_get_supported_extensions" qualifiers="virtual">
 			<return type="PackedStringArray" />
 			<description>

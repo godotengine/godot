@@ -3064,7 +3064,7 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state, const String &p_pa
 	return OK;
 }
 
-Ref<Image> GLTFDocument::_parse_image_bytes_into_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_mime_type, int p_index) {
+Ref<Image> GLTFDocument::_parse_image_bytes_into_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_mime_type, int p_index, String &r_file_extension) {
 	Ref<Image> r_image;
 	r_image.instantiate();
 	// Check if any GLTFDocumentExtensions want to import this data as an image.
@@ -3073,6 +3073,7 @@ Ref<Image> GLTFDocument::_parse_image_bytes_into_image(Ref<GLTFState> p_state, c
 		Error err = ext->parse_image_data(p_state, p_bytes, p_mime_type, r_image);
 		ERR_CONTINUE_MSG(err != OK, "GLTF: Encountered error " + itos(err) + " when parsing image " + itos(p_index) + " in file " + p_state->filename + ". Continuing.");
 		if (!r_image->is_empty()) {
+			r_file_extension = ext->get_image_file_extension();
 			return r_image;
 		}
 	}
@@ -3080,8 +3081,10 @@ Ref<Image> GLTFDocument::_parse_image_bytes_into_image(Ref<GLTFState> p_state, c
 	// First we honor the mime types if they were defined.
 	if (p_mime_type == "image/png") { // Load buffer as PNG.
 		r_image->load_png_from_buffer(p_bytes);
+		r_file_extension = ".png";
 	} else if (p_mime_type == "image/jpeg") { // Loader buffer as JPEG.
 		r_image->load_jpg_from_buffer(p_bytes);
+		r_file_extension = ".jpg";
 	}
 	// If we didn't pass the above tests, we attempt loading as PNG and then JPEG directly.
 	// This covers URIs with base64-encoded data with application/* type but
@@ -3102,7 +3105,7 @@ Ref<Image> GLTFDocument::_parse_image_bytes_into_image(Ref<GLTFState> p_state, c
 	return r_image;
 }
 
-void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const String &p_mime_type, int p_index, Ref<Image> p_image) {
+void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_file_extension, int p_index, Ref<Image> p_image) {
 	GLTFState::GLTFHandleBinary handling = GLTFState::GLTFHandleBinary(p_state->handle_binary_image);
 	if (p_image->is_empty() || handling == GLTFState::GLTFHandleBinary::HANDLE_BINARY_DISCARD_TEXTURES) {
 		p_state->images.push_back(Ref<Texture2D>());
@@ -3119,11 +3122,11 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const String 
 			p_state->images.push_back(Ref<Texture2D>());
 			p_state->source_images.push_back(Ref<Image>());
 		} else {
-			Error err = OK;
 			bool must_import = true;
 			Vector<uint8_t> img_data = p_image->get_data();
 			Dictionary generator_parameters;
-			String file_path = p_state->get_base_path() + "/" + p_state->filename.get_basename() + "_" + p_image->get_name() + ".png";
+			String file_path = p_state->get_base_path() + "/" + p_state->filename.get_basename() + "_" + p_image->get_name();
+			file_path += p_file_extension.is_empty() ? ".png" : p_file_extension;
 			if (FileAccess::exists(file_path + ".import")) {
 				Ref<ConfigFile> config;
 				config.instantiate();
@@ -3144,8 +3147,18 @@ void GLTFDocument::_parse_image_save_image(Ref<GLTFState> p_state, const String 
 				}
 			}
 			if (must_import) {
-				err = p_image->save_png(file_path);
-				ERR_FAIL_COND(err != OK);
+				Error err = OK;
+				if (p_file_extension.is_empty()) {
+					// If a file extension was not specified, save the image data to a PNG file.
+					err = p_image->save_png(file_path);
+					ERR_FAIL_COND(err != OK);
+				} else {
+					// If a file extension was specified, save the original bytes to a file with that extension.
+					Ref<FileAccess> file = FileAccess::open(file_path, FileAccess::WRITE, &err);
+					ERR_FAIL_COND(err != OK);
+					file->store_buffer(p_bytes);
+					file->close();
+				}
 				// ResourceLoader::import will crash if not is_editor_hint(), so this case is protected above and will fall through to uncompressed.
 				HashMap<StringName, Variant> custom_options;
 				custom_options[SNAME("mipmaps/generate")] = true;
@@ -3295,9 +3308,10 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 			continue;
 		}
 		// Parse the image data from bytes into an Image resource and save if needed.
-		Ref<Image> img = _parse_image_bytes_into_image(p_state, data, mime_type, i);
+		String file_extension;
+		Ref<Image> img = _parse_image_bytes_into_image(p_state, data, mime_type, i, file_extension);
 		img->set_name(image_name);
-		_parse_image_save_image(p_state, mime_type, i, img);
+		_parse_image_save_image(p_state, data, file_extension, i, img);
 	}
 
 	print_verbose("glTF: Total images: " + itos(p_state->images.size()));

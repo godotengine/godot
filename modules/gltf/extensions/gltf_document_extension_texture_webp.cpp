@@ -51,6 +51,10 @@ Error GLTFDocumentExtensionTextureWebP::parse_image_data(Ref<GLTFState> p_state,
 	return OK;
 }
 
+String GLTFDocumentExtensionTextureWebP::get_image_file_extension() {
+	return ".webp";
+}
+
 Error GLTFDocumentExtensionTextureWebP::parse_texture_json(Ref<GLTFState> p_state, const Dictionary &p_texture_json, Ref<GLTFTexture> r_gltf_texture) {
 	if (!p_texture_json.has("extensions")) {
 		return OK;
