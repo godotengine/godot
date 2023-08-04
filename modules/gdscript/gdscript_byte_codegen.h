@@ -143,7 +143,6 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	// Lists since these can be nested.
 	List<int> if_jmp_addrs;
 	List<int> for_jmp_addrs;
-	List<Address> for_iterator_variables;
 	List<Address> for_counter_variables;
 	List<Address> for_container_variables;
 	List<int> while_jmp_addrs;
@@ -536,8 +535,8 @@ public:
 	virtual void write_jump_if_shared(const Address &p_value) override;
 	virtual void write_end_jump_if_shared() override;
 	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) override;
-	virtual void write_for_assignment(const Address &p_variable, const Address &p_list) override;
-	virtual void write_for() override;
+	virtual void write_for_assignment(const Address &p_list) override;
+	virtual void write_for(const Address &p_variable, bool p_use_conversion) override;
 	virtual void write_endfor() override;
 	virtual void start_while_condition() override;
 	virtual void write_while(const Address &p_condition) override;
