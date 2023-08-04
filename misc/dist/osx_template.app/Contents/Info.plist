@@ -10,8 +10,6 @@
 	<string>$name</string>
 	<key>CFBundleDisplayName</key>
 	<string>$name</string>
-	<key>CFBundleGetInfoString</key>
-	<string>$info</string>
 	<key>CFBundleIconFile</key>
 	<string>icon.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -26,6 +24,20 @@
 	<string>$signature</string>
 	<key>CFBundleVersion</key>
 	<string>$version</string>
+	<key>DTPlatformBuild</key>
+	<string>$platfbuild</string>
+	<key>DTPlatformName</key>
+	<string>macosx</string>
+	<key>DTPlatformVersion</key>
+	<string>$sdkver</string>
+	<key>DTSDKBuild</key>
+	<string>$sdkbuild</string>
+	<key>DTSDKName</key>
+	<string>$sdkname</string>
+	<key>DTXcode</key>
+	<string>$xcodever</string>
+	<key>DTXcodeBuild</key>
+	<string>$xcodebuild</string>
 $usage_descriptions
 	<key>NSHumanReadableCopyright</key>
 	<string>$copyright</string>
@@ -38,11 +50,11 @@ $usage_descriptions
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.$app_category</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.12</string>
+	<string>$min_version</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
 	<dict>
 		<key>x86_64</key>
-		<string>10.12</string>
+		<string>$min_version</string>
 	</dict>
 	<key>NSHighResolutionCapable</key>
 $highres
