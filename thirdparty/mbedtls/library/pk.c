@@ -646,6 +646,7 @@ int mbedtls_pk_wrap_as_opaque(mbedtls_pk_context *pk,
     psa_key_type_t key_type;
     size_t bits;
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    psa_status_t status;
 
     /* export the private key material in the format PSA wants */
     if (mbedtls_pk_get_type(pk) != MBEDTLS_PK_ECKEY) {
@@ -668,7 +669,9 @@ int mbedtls_pk_wrap_as_opaque(mbedtls_pk_context *pk,
     psa_set_key_algorithm(&attributes, PSA_ALG_ECDSA(hash_alg));
 
     /* import private key into PSA */
-    if (PSA_SUCCESS != psa_import_key(&attributes, d, d_len, key)) {
+    status = psa_import_key(&attributes, d, d_len, key);
+    mbedtls_platform_zeroize(d, sizeof(d));
+    if (status != PSA_SUCCESS) {
         return MBEDTLS_ERR_PK_HW_ACCEL_FAILED;
     }
 
