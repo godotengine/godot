@@ -265,6 +265,7 @@ private:
 	void _panel_input(const Ref<InputEvent> &p_ev, Node *p_hb);
 	void _favorite_pressed(Node *p_hb);
 	void _show_project(const String &p_path);
+	void _focus_entered(Node *p_hb);
 
 	void _clear_project_selection();
 	void _toggle_project(int p_index);

@@ -1474,6 +1474,7 @@ void ProjectList::_create_project_item_control(int p_index) {
 
 	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input).bind(hb));
 	hb->connect("favorite_pressed", callable_mp(this, &ProjectList::_favorite_pressed).bind(hb));
+	hb->connect("focus_entered", callable_mp(this, &ProjectList::_focus_entered).bind(hb));
 
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	hb->connect("explore_pressed", callable_mp(this, &ProjectList::_show_project).bind(item.path));
@@ -1895,6 +1896,10 @@ void ProjectList::_favorite_pressed(Node *p_hb) {
 	update_dock_menu();
 }
 
+void ProjectList::_focus_entered(Node *p_hb) {
+	ProjectListItemControl *control = Object::cast_to<ProjectListItemControl>(p_hb);
+	control->release_focus();
+}
 void ProjectList::_show_project(const String &p_path) {
 	OS::get_singleton()->shell_show_in_file_manager(p_path, true);
 }
@@ -1991,13 +1996,8 @@ void ProjectManager::_notification(int p_what) {
 			filter_option->select(default_sorting);
 			_project_list->set_order_option(default_sorting);
 
-#ifndef ANDROID_ENABLED
-			if (_project_list->get_project_count() >= 1) {
-				// Focus on the search box immediately to allow the user
-				// to search without having to reach for their mouse
-				search_box->grab_focus();
-			}
-#endif
+			_project_list->select_first_visible_project();
+			this->_update_project_buttons();
 
 			// Suggest browsing asset library to get templates/demos.
 			if (asset_library && open_templates && _project_list->get_project_count() == 0) {
@@ -2132,12 +2132,17 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 					_project_list->select_project(index - 1);
 					_project_list->ensure_project_visible(index - 1);
 					_update_project_buttons();
+				} else {
+					this->create_btn->grab_focus();
 				}
-
-				break;
-			}
+			} break;
 			case Key::DOWN: {
 				if (k->is_shift_pressed()) {
+					break;
+				}
+
+				if (this->search_box->has_focus()) {
+					this->search_box->release_focus();
 					break;
 				}
 
@@ -2154,6 +2159,29 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 					this->search_box->grab_focus();
 				} else {
 					keycode_handled = false;
+				}
+			} break;
+			case Key::ESCAPE: {
+				if (this->search_box->has_focus()) {
+					this->search_box->release_focus();
+				}
+			} break;
+			case Key::LEFT: {
+				if (_project_list->get_project_count() > 0) {
+					if (_project_list->get_selected_projects().size() > 0) {
+						_project_list->select_project(_project_list->get_single_selected_index());
+					} else {
+						_project_list->select_first_visible_project();
+					}
+				}
+			} break;
+			case Key::RIGHT: {
+				if (_project_list->get_project_count() > 0) {
+					if (_project_list->get_selected_projects().size() > 0) {
+						this->open_btn->grab_focus();
+					} else {
+						this->create_btn->grab_focus();
+					}
 				}
 			} break;
 			default: {
