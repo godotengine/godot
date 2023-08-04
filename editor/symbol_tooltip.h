@@ -46,7 +46,7 @@ class SymbolTooltip : public PopupPanel {
 	CodeTextEditor *code_editor = nullptr;
 	PanelContainer *panel_container = nullptr;
 	VBoxContainer *layout_container = nullptr;
-	RichTextLabel *header_label = nullptr;
+	TextEdit *header_label = nullptr;
 	RichTextLabel *body_label = nullptr;
 	Timer *tooltip_delay = nullptr;
 	String last_symbol_word;

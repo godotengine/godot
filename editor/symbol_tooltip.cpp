@@ -32,6 +32,7 @@
 #include "core/config/project_settings.h"
 #include "editor/plugins/script_text_editor.h"
 #include "editor_help.h"
+#include "modules/gdscript/editor/gdscript_highlighter.h"
 #include <queue>
 
 SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
@@ -55,9 +56,15 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 	panel_container->add_child(layout_container);
 
 	// Create RichTextLabel for the tooltip's header
-	header_label = memnew(RichTextLabel);
-	header_label->set_use_bbcode(true);
-	header_label->set_selection_enabled(true);
+	header_label = memnew(TextEdit);
+	//header_label->set_readonly(true);
+	header_label->set_context_menu_enabled(false);
+	header_label->set_h_scroll(false);
+	header_label->set_v_scroll(false);
+	Ref<GDScriptSyntaxHighlighter> highlighter;
+	highlighter.instantiate();
+	header_label->set_syntax_highlighter(highlighter);
+	//header_label->set_selection_enabled(true);
 	header_label->set_custom_minimum_size(Size2(0, 50));
 	header_label->set_focus_mode(Control::FOCUS_ALL);
 	header_label->set_theme(_create_header_label_theme());
@@ -256,7 +263,14 @@ Ref<Theme> SymbolTooltip::_create_header_label_theme() {
 	style_box->set_border_color(Color(0.8, 0.81, 0.82, 0.27)); // Set the border color (RGBA)
 	style_box->set_border_width(SIDE_BOTTOM, 1);
 	style_box->set_content_margin_individual(15, 10, 15, 10);
-	theme->set_stylebox("normal", "RichTextLabel", style_box);
+
+	// Set the style boxes for the TextEdit
+	theme->set_stylebox("normal", "TextEdit", style_box);
+	theme->set_stylebox("focus", "TextEdit", style_box);
+	theme->set_stylebox("hover", "TextEdit", style_box);
+
+	// Set the color for the text
+	theme->set_color("font_color", "TextEdit", Color(1, 1, 1)); // Set the font color
 
 	return theme;
 }
