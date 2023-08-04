@@ -1,7 +1,7 @@
 
 /* pngget.c - retrieval of values from info struct
  *
- * Copyright (c) 2018 Cosmin Truta
+ * Copyright (c) 2018-2023 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -21,7 +21,18 @@ png_get_valid(png_const_structrp png_ptr, png_const_inforp info_ptr,
     png_uint_32 flag)
 {
    if (png_ptr != NULL && info_ptr != NULL)
+   {
+#ifdef PNG_READ_tRNS_SUPPORTED
+      /* png_handle_PLTE() may have canceled a valid tRNS chunk but left the
+       * 'valid' flag for the detection of duplicate chunks. Do not report a
+       * valid tRNS chunk in this case.
+       */
+      if (flag == PNG_INFO_tRNS && png_ptr->num_trans == 0)
+         return(0);
+#endif
+
       return(info_ptr->valid & flag);
+   }
 
    return(0);
 }

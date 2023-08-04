@@ -1,7 +1,7 @@
 
 /* pngwrite.c - general routines to write a PNG file
  *
- * Copyright (c) 2018-2022 Cosmin Truta
+ * Copyright (c) 2018-2023 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -239,7 +239,10 @@ png_write_info(png_structrp png_ptr, png_const_inforp info_ptr)
 
 #ifdef PNG_WRITE_eXIf_SUPPORTED
    if ((info_ptr->valid & PNG_INFO_eXIf) != 0)
+   {
       png_write_eXIf(png_ptr, info_ptr->exif, info_ptr->num_exif);
+      png_ptr->mode |= PNG_WROTE_eXIf;
+   }
 #endif
 
 #ifdef PNG_WRITE_hIST_SUPPORTED
@@ -439,8 +442,9 @@ png_write_end(png_structrp png_ptr, png_inforp info_ptr)
 #endif
 
 #ifdef PNG_WRITE_eXIf_SUPPORTED
-   if ((info_ptr->valid & PNG_INFO_eXIf) != 0)
-      png_write_eXIf(png_ptr, info_ptr->exif, info_ptr->num_exif);
+      if ((info_ptr->valid & PNG_INFO_eXIf) != 0 &&
+          (png_ptr->mode & PNG_WROTE_eXIf) == 0)
+         png_write_eXIf(png_ptr, info_ptr->exif, info_ptr->num_exif);
 #endif
 
 #ifdef PNG_WRITE_UNKNOWN_CHUNKS_SUPPORTED
