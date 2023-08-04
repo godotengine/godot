@@ -579,10 +579,10 @@
 			If [code]true[/code], allows the application to participate in the backup and restore infrastructure.
 		</member>
 		<member name="version/code" type="int" setter="" getter="">
-			Machine-readable application version.
+			Machine-readable application version. This must be incremented for every new release pushed to the Play Store.
 		</member>
 		<member name="version/name" type="String" setter="" getter="">
-			Application version visible to the user.
+			Application version visible to the user. Falls back to [member ProjectSettings.application/config/version] if left empty.
 		</member>
 		<member name="xr_features/xr_mode" type="int" setter="" getter="">
 		</member>
