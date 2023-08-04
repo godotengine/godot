@@ -1375,7 +1375,7 @@
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
 			<description>
-				Tries to free an object in the RenderingServer. To avoid memory leaks, this should be called after using an object as memory management does not occur automatically when using RendeeringServer directly.
+				Tries to free an object in the RenderingServer. To avoid memory leaks, this should be called after using an object as memory management does not occur automatically when using RenderingServer directly.
 			</description>
 		</method>
 		<method name="get_default_clear_color">
