@@ -453,7 +453,7 @@ void mbedtls_asn1_sequence_free(mbedtls_asn1_sequence *seq);
  *                       on a successful invocation.
  * \param end            The end of the ASN.1 SEQUENCE container.
  * \param tag_must_mask  A mask to be applied to the ASN.1 tags found within
- *                       the SEQUENCE before comparing to \p tag_must_value.
+ *                       the SEQUENCE before comparing to \p tag_must_val.
  * \param tag_must_val   The required value of each ASN.1 tag found in the
  *                       SEQUENCE, after masking with \p tag_must_mask.
  *                       Mismatching tags lead to an error.
@@ -462,7 +462,7 @@ void mbedtls_asn1_sequence_free(mbedtls_asn1_sequence *seq);
  *                       while a value of \c 0xFF for \p tag_must_mask means
  *                       that \p tag_must_val is the only allowed tag.
  * \param tag_may_mask   A mask to be applied to the ASN.1 tags found within
- *                       the SEQUENCE before comparing to \p tag_may_value.
+ *                       the SEQUENCE before comparing to \p tag_may_val.
  * \param tag_may_val    The desired value of each ASN.1 tag found in the
  *                       SEQUENCE, after masking with \p tag_may_mask.
  *                       Mismatching tags will be silently ignored.

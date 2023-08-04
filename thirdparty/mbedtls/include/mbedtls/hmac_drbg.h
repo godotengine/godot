@@ -186,8 +186,8 @@ void mbedtls_hmac_drbg_init(mbedtls_hmac_drbg_context *ctx);
  * \param len           The length of the personalization string.
  *                      This must be at most #MBEDTLS_HMAC_DRBG_MAX_INPUT
  *                      and also at most
- *                      #MBEDTLS_HMAC_DRBG_MAX_SEED_INPUT - \p entropy_len * 3 / 2
- *                      where \p entropy_len is the entropy length
+ *                      #MBEDTLS_HMAC_DRBG_MAX_SEED_INPUT - \c entropy_len * 3 / 2
+ *                      where \c entropy_len is the entropy length
  *                      described above.
  *
  * \return              \c 0 if successful.
@@ -316,8 +316,8 @@ int mbedtls_hmac_drbg_update_ret(mbedtls_hmac_drbg_context *ctx,
  * \param len           The length of the additional data.
  *                      This must be at most #MBEDTLS_HMAC_DRBG_MAX_INPUT
  *                      and also at most
- *                      #MBEDTLS_HMAC_DRBG_MAX_SEED_INPUT - \p entropy_len
- *                      where \p entropy_len is the entropy length
+ *                      #MBEDTLS_HMAC_DRBG_MAX_SEED_INPUT - \c entropy_len
+ *                      where \c entropy_len is the entropy length
  *                      (see mbedtls_hmac_drbg_set_entropy_len()).
  *
  * \return              \c 0 if successful.
