@@ -110,7 +110,7 @@ static Ref<ImporterMesh> _mesh_to_importer_mesh(Ref<Mesh> p_mesh) {
 	return importer_mesh;
 }
 
-Error GLTFDocument::_serialize(Ref<GLTFState> p_state, const String &p_path) {
+Error GLTFDocument::_serialize(Ref<GLTFState> p_state) {
 	if (!p_state->buffers.size()) {
 		p_state->buffers.push_back(Vector<uint8_t>());
 	}
@@ -167,7 +167,7 @@ Error GLTFDocument::_serialize(Ref<GLTFState> p_state, const String &p_path) {
 	}
 
 	/* STEP SERIALIZE IMAGES */
-	err = _serialize_images(p_state, p_path);
+	err = _serialize_images(p_state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
@@ -3001,7 +3001,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 	return OK;
 }
 
-Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state, const String &p_path) {
+Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 	Array images;
 	for (int i = 0; i < p_state->images.size(); i++) {
 		Dictionary image_dict;
@@ -3011,7 +3011,22 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state, const String &p_pa
 		Ref<Image> image = p_state->images[i]->get_image();
 		ERR_CONTINUE(image.is_null());
 
-		if (p_path.to_lower().ends_with("glb") || p_path.is_empty()) {
+		if (p_state->filename.to_lower().ends_with("gltf")) {
+			String img_name = p_state->images[i]->get_name();
+			if (img_name.is_empty()) {
+				img_name = itos(i);
+			}
+			img_name = _gen_unique_name(p_state, img_name);
+			img_name = img_name.pad_zeros(3) + ".png";
+			String relative_texture_dir = "textures";
+			String full_texture_dir = p_state->base_path.path_join(relative_texture_dir);
+			Ref<DirAccess> da = DirAccess::open(p_state->base_path);
+			if (!da->dir_exists(full_texture_dir)) {
+				da->make_dir(full_texture_dir);
+			}
+			image->save_png(full_texture_dir.path_join(img_name));
+			image_dict["uri"] = relative_texture_dir.path_join(img_name).uri_encode();
+		} else {
 			GLTFBufferViewIndex bvi;
 
 			Ref<GLTFBufferView> bv;
@@ -3039,23 +3054,6 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state, const String &p_pa
 			bvi = p_state->buffer_views.size() - 1;
 			image_dict["bufferView"] = bvi;
 			image_dict["mimeType"] = "image/png";
-		} else {
-			ERR_FAIL_COND_V(p_path.is_empty(), ERR_INVALID_PARAMETER);
-			String img_name = p_state->images[i]->get_name();
-			if (img_name.is_empty()) {
-				img_name = itos(i);
-			}
-			img_name = _gen_unique_name(p_state, img_name);
-			img_name = img_name.pad_zeros(3) + ".png";
-			String relative_texture_dir = "textures";
-			String parent_path = p_path.get_base_dir();
-			String full_texture_dir = parent_path + "/" + relative_texture_dir;
-			Ref<DirAccess> da = DirAccess::open(parent_path);
-			if (!da->dir_exists(full_texture_dir)) {
-				da->make_dir(full_texture_dir);
-			}
-			image->save_png(full_texture_dir.path_join(img_name));
-			image_dict["uri"] = relative_texture_dir.path_join(img_name).uri_encode();
 		}
 		images.push_back(image_dict);
 	}
@@ -7241,7 +7239,10 @@ PackedByteArray GLTFDocument::_serialize_glb_buffer(Ref<GLTFState> p_state, Erro
 
 PackedByteArray GLTFDocument::generate_buffer(Ref<GLTFState> p_state) {
 	ERR_FAIL_NULL_V(p_state, PackedByteArray());
-	Error err = _serialize(p_state, "");
+	// For buffers, set the state filename to an empty string, but
+	// don't touch the base path, in case the user set it manually.
+	p_state->filename = "";
+	Error err = _serialize(p_state);
 	ERR_FAIL_COND_V(err != OK, PackedByteArray());
 	PackedByteArray bytes = _serialize_glb_buffer(p_state, &err);
 	return bytes;
@@ -7249,7 +7250,9 @@ PackedByteArray GLTFDocument::generate_buffer(Ref<GLTFState> p_state) {
 
 Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) {
 	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
-	Error err = _serialize(p_state, p_path);
+	p_state->base_path = p_path.get_base_dir();
+	p_state->filename = p_path.get_file();
+	Error err = _serialize(p_state);
 	if (err != OK) {
 		return err;
 	}
