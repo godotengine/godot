@@ -269,7 +269,7 @@
 	</methods>
 	<members>
 		<member name="basis" type="Basis" setter="set_basis" getter="get_basis">
-			Direct access to the 3x3 basis of the [Transform3D] property.
+			Direct access to the 3x3 basis of the [member transform] property.
 		</member>
 		<member name="global_position" type="Vector3" setter="set_global_position" getter="get_global_position">
 			Global position of this node. This is equivalent to [code]global_transform.origin[/code].
