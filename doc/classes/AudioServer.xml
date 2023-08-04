@@ -132,7 +132,7 @@
 		<method name="get_output_latency" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the audio driver's output latency.
+				Returns the audio driver's output latency. This can be expensive, it is not recommended to call this every frame.
 			</description>
 		</method>
 		<method name="get_speaker_mode" qualifiers="const">
