@@ -1786,7 +1786,7 @@
 		<constant name="STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT" value="1" enum="StorageBufferUsage" is_bitfield="true">
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
-			Sampler uniform. TODO: Difference between sampler and texture uniform
+			Sampler uniform.
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER_WITH_TEXTURE" value="1" enum="UniformType">
 			Sampler uniform with a texture.
@@ -1795,16 +1795,16 @@
 			Texture uniform.
 		</constant>
 		<constant name="UNIFORM_TYPE_IMAGE" value="3" enum="UniformType">
-			Image uniform. TODO: Difference between texture and image uniform
+			Image uniform.
 		</constant>
 		<constant name="UNIFORM_TYPE_TEXTURE_BUFFER" value="4" enum="UniformType">
-			Texture buffer uniform. TODO: Difference between texture and texture buffe uniformr
+			Texture buffer uniform.
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER_WITH_TEXTURE_BUFFER" value="5" enum="UniformType">
-			Sampler uniform with a texture buffer. TODO: Difference between texture and texture buffer uniform
+			Sampler uniform with a texture buffer.
 		</constant>
 		<constant name="UNIFORM_TYPE_IMAGE_BUFFER" value="6" enum="UniformType">
-			Image buffer uniform. TODO: Difference between texture and image uniforms
+			Image buffer uniform.
 		</constant>
 		<constant name="UNIFORM_TYPE_UNIFORM_BUFFER" value="7" enum="UniformType">
 			Uniform buffer uniform.

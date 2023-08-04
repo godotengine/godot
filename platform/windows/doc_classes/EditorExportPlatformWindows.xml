@@ -25,7 +25,7 @@
 			Version number of the file. Required. See [url=https://learn.microsoft.com/en-us/windows/win32/menurc/stringfileinfo-block]StringFileInfo[/url].
 		</member>
 		<member name="application/icon" type="String" setter="" getter="">
-			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/windows_native_icon], and  then to [member ProjectSettings.application/config/icon].
+			Application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/windows_native_icon], and then to [member ProjectSettings.application/config/icon].
 		</member>
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
