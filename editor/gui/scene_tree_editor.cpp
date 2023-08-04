@@ -41,6 +41,7 @@
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
@@ -1493,8 +1494,51 @@ void SceneTreeDialog::popup_scenetree_dialog() {
 	popup_centered_clamped(Size2(350, 700) * EDSCALE);
 }
 
+void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
+	if (p_valid.is_empty()) {
+		return;
+	}
+
+	tree->set_valid_types(p_valid);
+
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	content->add_child(hbox);
+	content->move_child(hbox, 0);
+
+	{
+		Label *label = memnew(Label);
+		hbox->add_child(label);
+		label->set_text(TTR("Allowed:"));
+	}
+
+	HFlowContainer *hflow = memnew(HFlowContainer);
+	hbox->add_child(hflow);
+	hflow->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+	for (const StringName &type : p_valid) {
+		HBoxContainer *hb = memnew(HBoxContainer);
+		hflow->add_child(hb);
+
+		TextureRect *trect = memnew(TextureRect);
+		hb->add_child(trect);
+		trect->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+		trect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+		trect->set_meta("type", type);
+		valid_type_icons.push_back(trect);
+
+		Label *label = memnew(Label);
+		hb->add_child(label);
+		label->set_text(type);
+		label->set_auto_translate(false);
+	}
+}
+
 void SceneTreeDialog::_update_theme() {
 	filter->set_right_icon(tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	for (TextureRect *trect : valid_type_icons) {
+		trect->set_custom_minimum_size(Vector2(get_theme_constant(SNAME("class_icon_size"), SNAME("Editor")), 0));
+		trect->set_texture(EditorNode::get_singleton()->get_class_icon(trect->get_meta("type")));
+	}
 }
 
 void SceneTreeDialog::_notification(int p_what) {
@@ -1551,8 +1595,8 @@ void SceneTreeDialog::_bind_methods() {
 
 SceneTreeDialog::SceneTreeDialog() {
 	set_title(TTR("Select a Node"));
-	VBoxContainer *vbc = memnew(VBoxContainer);
-	add_child(vbc);
+	content = memnew(VBoxContainer);
+	add_child(content);
 
 	filter = memnew(LineEdit);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1560,12 +1604,12 @@ SceneTreeDialog::SceneTreeDialog() {
 	filter->set_clear_button_enabled(true);
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect("text_changed", callable_mp(this, &SceneTreeDialog::_filter_changed));
-	vbc->add_child(filter);
+	content->add_child(filter);
 
 	tree = memnew(SceneTreeEditor(false, false, true));
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &SceneTreeDialog::_select));
-	vbc->add_child(tree);
+	content->add_child(tree);
 
 	// Disable the OK button when no node is selected.
 	get_ok_button()->set_disabled(!tree->get_selected());

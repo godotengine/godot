@@ -2797,7 +2797,7 @@ void EditorPropertyNodePath::_node_assign() {
 	if (!scene_tree) {
 		scene_tree = memnew(SceneTreeDialog);
 		scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
-		scene_tree->get_scene_tree()->set_valid_types(valid_types);
+		scene_tree->set_valid_types(valid_types);
 		add_child(scene_tree);
 		scene_tree->connect("selected", callable_mp(this, &EditorPropertyNodePath::_node_selected));
 	}
@@ -3145,7 +3145,7 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 
 			Vector<StringName> valid_types;
 			valid_types.push_back("Viewport");
-			scene_tree->get_scene_tree()->set_valid_types(valid_types);
+			scene_tree->set_valid_types(valid_types);
 			scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
 
 			add_child(scene_tree);
