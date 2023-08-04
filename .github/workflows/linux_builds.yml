@@ -9,6 +9,7 @@ env:
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
+  TSAN_OPTIONS: suppressions=misc/error_suppressions/tsan.txt
 
 concurrency:
   group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-linux
@@ -55,6 +56,16 @@ jobs:
             bin: "./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san"
             build-mono: false
             tests: true
+            # Skip 2GiB artifact speeding up action.
+            artifact: false
+
+          - name: Editor with ThreadSanitizer (target=editor, tests=yes, dev_build=yes, use_tsan=yes, use_llvm=yes, linker=lld)
+            cache-name: linux-editor-thread-sanitizer
+            target: editor
+            tests: true
+            sconsflags: dev_build=yes use_tsan=yes use_llvm=yes linker=lld
+            bin: "./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san"
+            build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
