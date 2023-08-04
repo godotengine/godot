@@ -31,7 +31,6 @@
 #ifndef SYMBOL_TOOLTIP_H
 #define SYMBOL_TOOLTIP_H
 
-//#include "core/script_language.h"
 #include "code_editor.h"
 #include "modules/gdscript/gdscript_parser.h"
 #include "modules/gdscript/language_server/gdscript_extend_parser.h"

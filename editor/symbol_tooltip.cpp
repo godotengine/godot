@@ -51,11 +51,11 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 	panel_container->set_theme(_create_panel_theme());
 	add_child(panel_container);
 
-	// Create VBoxContainer to hold the tooltip's header and body
+	// Create VBoxContainer to hold the tooltip's header and body.
 	layout_container = memnew(VBoxContainer);
 	panel_container->add_child(layout_container);
 
-	// Create RichTextLabel for the tooltip's header
+	// Create RichTextLabel for the tooltip's header.
 	header_label = memnew(TextEdit);
 	//header_label->set_readonly(true);
 	header_label->set_context_menu_enabled(false);
@@ -70,7 +70,7 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 	header_label->set_theme(_create_header_label_theme());
 	layout_container->add_child(header_label);
 
-	// Create RichTextLabel for the tooltip's body
+	// Create RichTextLabel for the tooltip's body.
 	body_label = memnew(RichTextLabel);
 	body_label->set_use_bbcode(true);
 	body_label->set_selection_enabled(true);
@@ -87,7 +87,7 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 
 	tooltip_delay->connect("timeout", callable_mp(this, &SymbolTooltip::_on_tooltip_delay_timeout));
 
-	// Connect the tooltip's update function to the mouse motion signal
+	// Connect the tooltip's update function to the mouse motion signal.
 	// connect("mouse_motion", callable_mp(this, &SymbolTooltip::_update_symbol_tooltip));
 }
 
@@ -129,7 +129,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 
 	_update_tooltip_size();
 
-	// Get the documentation of the word under the mouse cursor
+	// Get the documentation of the word under the mouse cursor.
 	String official_documentation = _get_doc_of_word(symbol_word);
 	String comment_documentation = member_symbol->documentation;
 
@@ -147,16 +147,18 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 			hide();
 			return;
 		} else {
+			//Vector2 symbol_position = tooltip_position - text_editor->get_screen_position();
+			//Vector2 temp_line_col = text_editor->get_line_column_at_pos(symbol_position);
 			set_position(tooltip_position);
 		}
 	}
 
-	// Start the timer to show the tooltip after a delay
+	// Start the timer to show the tooltip after a delay.
 	tooltip_delay->start();
 }
 
 String SymbolTooltip::_get_symbol_word(CodeEdit *text_editor, const Vector2 &mouse_position) {
-	// Get the word under the mouse cursor
+	// Get the word under the mouse cursor.
 	return text_editor->get_word_at_pos(mouse_position);
 }
 
@@ -174,27 +176,28 @@ Vector2 SymbolTooltip::_calculate_tooltip_position(const String &symbol_word, co
 			return text_editor->get_screen_position() + symbol_position;
 		}
 	}
-	return Vector2(-1, -1); // indicates an invalid position
+	return Vector2(-1, -1); // Indicates an invalid position.
 }
 
 void SymbolTooltip::_update_tooltip_size() {
-	// Calculate and set the tooltip's size
+	// Calculate and set the tooltip's size.
 	set_size(Vector2(600, 300));
 }
 
 void SymbolTooltip::_update_tooltip_content(const String &header_content, const String &body_content) {
-	// Update the tooltip's header and body
+	// Update the tooltip's header and body.
 	_update_header_label(header_content);
 	_update_body_label(body_content);
 }
 
 void SymbolTooltip::_update_header_label(const String &header_content) {
-	// Set the tooltip's header text
+	// Set the tooltip's header text.
+	//Ref<SyntaxHighlighter> highlighter = code_editor->get_text_editor()->get_syntax_highlighter();
 	header_label->set_text(header_content);
 }
 
 void SymbolTooltip::_update_body_label(const String &body_content) {
-	// Set the tooltip's body text
+	// Set the tooltip's body text.
 	body_label->clear();
 	_add_text_to_rt(body_content, body_label, layout_container);
 }
@@ -235,20 +238,20 @@ Ref<Theme> SymbolTooltip::_create_popup_panel_theme() {
 	Ref<Theme> theme = memnew(Theme);
 
 	Ref<StyleBoxFlat> style_box = memnew(StyleBoxFlat);
-	style_box->set_bg_color(Color(0, 0, 0, 0)); // Set the background color (RGBA)
+	style_box->set_bg_color(Color(0, 0, 0, 0)); // Set the background color (RGBA).
 	theme->set_stylebox("panel", "PopupPanel", style_box);
 
 	return theme;
 }
 
 Ref<Theme> SymbolTooltip::_create_panel_theme() {
-	Ref<Theme> theme = memnew(Theme); // TODO: Get the global theme instead (e.g. dark mode, light mode)
+	Ref<Theme> theme = memnew(Theme); // TODO: Get the global theme instead (e.g. dark mode, light mode).
 
 	Ref<StyleBoxFlat> style_box = memnew(StyleBoxFlat);
-	style_box->set_bg_color(Color().html("#363d4a")); // Set the background color (RGBA)
-	style_box->set_border_color(Color(0.8, 0.81, 0.82, 0.47)); // Set the border color (RGBA)
-	style_box->set_border_width_all(1); // Set the border width
-	style_box->set_corner_radius_all(4); // Set the border radius for curved corners
+	style_box->set_bg_color(Color().html("#363d4a")); // Set the background color (RGBA).
+	style_box->set_border_color(Color(0.8, 0.81, 0.82, 0.47)); // Set the border color (RGBA).
+	style_box->set_border_width_all(1); // Set the border width.
+	style_box->set_corner_radius_all(4); // Set the border radius for curved corners.
 	//style_box->set_content_margin_all(20);
 	theme->set_stylebox("panel", "PanelContainer", style_box);
 
@@ -256,11 +259,11 @@ Ref<Theme> SymbolTooltip::_create_panel_theme() {
 }
 
 Ref<Theme> SymbolTooltip::_create_header_label_theme() {
-	Ref<Theme> theme = memnew(Theme); // TODO: Get the global theme instead (e.g. dark mode, light mode)
+	Ref<Theme> theme = memnew(Theme); // TODO: Get the global theme instead (e.g. dark mode, light mode).
 
 	Ref<StyleBoxFlat> style_box = memnew(StyleBoxFlat);
 	style_box->set_draw_center(false);
-	style_box->set_border_color(Color(0.8, 0.81, 0.82, 0.27)); // Set the border color (RGBA)
+	style_box->set_border_color(Color(0.8, 0.81, 0.82, 0.27)); // Set the border color (RGBA).
 	style_box->set_border_width(SIDE_BOTTOM, 1);
 	style_box->set_content_margin_individual(15, 10, 15, 10);
 
@@ -269,14 +272,14 @@ Ref<Theme> SymbolTooltip::_create_header_label_theme() {
 	theme->set_stylebox("focus", "TextEdit", style_box);
 	theme->set_stylebox("hover", "TextEdit", style_box);
 
-	// Set the color for the text
-	theme->set_color("font_color", "TextEdit", Color(1, 1, 1)); // Set the font color
+	// Set the font color.
+	theme->set_color("font_color", "TextEdit", Color(1, 1, 1));
 
 	return theme;
 }
 
 Ref<Theme> SymbolTooltip::_create_body_label_theme() {
-	Ref<Theme> theme = memnew(Theme); // TODO: Get the global theme instead (e.g. dark mode, light mode)
+	Ref<Theme> theme = memnew(Theme); // TODO: Get the global theme instead (e.g. dark mode, light mode).
 
 	Ref<StyleBoxFlat> style_box = memnew(StyleBoxFlat);
 	style_box->set_draw_center(false);
@@ -386,30 +389,30 @@ const lsp::DocumentSymbol *get_member_symbol(
 		HashMap<String, const lsp::DocumentSymbol *> &members,
 		const String &symbol_word) {//,
 		//const Vector2 &symbol_position) {
-	// Use a queue to implement breadth-first search
+	// Use a queue to implement breadth-first search.
 	std::queue<const lsp::DocumentSymbol*> queue;
 
-	// Add all members to the queue
+	// Add all members to the queue.
 	for (const KeyValue<String, const lsp::DocumentSymbol *> &E : members) {
 		queue.push(E.value);
 	}
 
-	// While there are still elements in the queue
+	// While there are still elements in the queue.
 	while (!queue.empty()) {
-		// Get the next symbol
+		// Get the next symbol.
 		const lsp::DocumentSymbol *symbol = queue.front();
 		queue.pop();
 
-		// If the name matches, return the symbol
+		// If the name matches, return the symbol.
 		if (symbol->name == symbol_word) { // && symbol->range.is_point_inside(symbol_position)) {
 			return symbol;
 		}
 
-		// Add the children to the queue for later processing
+		// Add the children to the queue for later processing.
 		for (int i = 0; i < symbol->children.size(); ++i) {
 			queue.push(&symbol->children[i]);
 		}
 	}
 
-	return nullptr;  // If the symbol is not found, return nullptr
+	return nullptr;  // If the symbol is not found, return nullptr.
 }
