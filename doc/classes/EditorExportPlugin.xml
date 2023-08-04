@@ -4,8 +4,8 @@
 		A script that is executed when exporting the project.
 	</brief_description>
 	<description>
-		[EditorExportPlugin]s are automatically invoked whenever the user exports the project. Their most common use is to determine what files are being included in the exported project. For each plugin, [method _export_begin] is called at the beginning of the export process and then [method _export_file] is called for each exported file.
-		To use [EditorExportPlugin], register it using the [method EditorPlugin.add_export_plugin] method first.
+		[EditorExportPlugin]s are automatically invoked whenever the user exports the project. They can be used to modify Scenes and Resources during project export based on what [url=$DOCS_URL/tutorials/export/feature_tags.html]Feature Tags[/url] are set. For each plugin, [method _export_begin] is called at the beginning of the export process and then [method _export_file] is called for each exported file.
+		Register a [EditorExportPlugin] by creating a new [EditorPlugin] and calling its [method EditorPlugin.add_export_plugin] method.
 	</description>
 	<tutorials>
 		<link title="Export Android plugins">$DOCS_URL/tutorials/platform/android/android_plugin.html</link>
@@ -45,6 +45,7 @@
 			<description>
 				Customize a scene. If changes are made to it, return the same or a new scene. Otherwise, return [code]null[/code]. If a new scene is returned, it is up to you to dispose of the old one.
 				Implementing this method is required if [method _begin_customize_resources] returns [code]true[/code].
+				[b]Note:[/b] If you want to change a variable in your scene, use the [code]@export[/code] annotation when declaring it.
 			</description>
 		</method>
 		<method name="_end_customize_resources" qualifiers="virtual">
@@ -148,6 +149,7 @@
 			<description>
 				Return a hash based on the configuration passed (for both scenes and resources). This helps keep separate caches for separate export configurations.
 				Implementing this method is required if [method _begin_customize_resources] returns [code]true[/code].
+				[b]Note:[/b] Keep in mind while working on an export script: [method _customize_resource] and [method _customize_scene] will not be called when the [EditorExportPlugin] script is modified unless this hash changes too.
 			</description>
 		</method>
 		<method name="_get_export_features" qualifiers="virtual const">
