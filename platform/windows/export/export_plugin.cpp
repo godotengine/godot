@@ -425,7 +425,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		}
 	}
 
-	String file_verion = p_preset->get("application/file_version");
+	String file_version = p_preset->get("application/file_version");
 	String product_version = p_preset->get("application/product_version");
 	String company_name = p_preset->get("application/company_name");
 	String product_name = p_preset->get("application/product_name");
@@ -440,37 +440,61 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		args.push_back("--set-icon");
 		args.push_back(tmp_icon_path);
 	}
-	if (!file_verion.is_empty()) {
-		args.push_back("--set-file-version");
-		args.push_back(file_verion);
+	args.push_back("--set-file-version");
+	if (file_version.is_empty()) {
+		args.push_back("1.0.0.0");
+	} else {
+		args.push_back(file_version);
 	}
-	if (!product_version.is_empty()) {
-		args.push_back("--set-product-version");
+	args.push_back("--set-product-version");
+	if (product_version.is_empty()) {
+		args.push_back("1.0.0.0");
+	} else {
 		args.push_back(product_version);
 	}
-	if (!company_name.is_empty()) {
-		args.push_back("--set-version-string");
-		args.push_back("CompanyName");
-		args.push_back(company_name);
-	}
-	if (!product_name.is_empty()) {
-		args.push_back("--set-version-string");
-		args.push_back("ProductName");
+	args.push_back("--set-version-string");
+	args.push_back("ProductName");
+	if (product_name.is_empty()) {
+		String app_name = GLOBAL_GET("application/config/name");
+		if (app_name.is_empty()) {
+			args.push_back("Unnamed");
+		} else {
+			args.push_back(app_name);
+		}
+	} else {
 		args.push_back(product_name);
 	}
-	if (!file_description.is_empty()) {
-		args.push_back("--set-version-string");
-		args.push_back("FileDescription");
+	args.push_back("--set-version-string");
+	args.push_back("FileDescription");
+	if (file_description.is_empty()) {
+		String app_name = GLOBAL_GET("application/config/name");
+		if (app_name.is_empty()) {
+			args.push_back("Unnamed");
+		} else {
+			args.push_back(app_name);
+		}
+	} else {
 		args.push_back(file_description);
 	}
-	if (!copyright.is_empty()) {
-		args.push_back("--set-version-string");
-		args.push_back("LegalCopyright");
+	args.push_back("--set-version-string");
+	args.push_back("CompanyName");
+	if (company_name.is_empty()) {
+		args.push_back(" ");
+	} else {
+		args.push_back(company_name);
+	}
+	args.push_back("--set-version-string");
+	args.push_back("LegalCopyright");
+	if (copyright.is_empty()) {
+		args.push_back(" ");
+	} else {
 		args.push_back(copyright);
 	}
-	if (!trademarks.is_empty()) {
-		args.push_back("--set-version-string");
-		args.push_back("LegalTrademarks");
+	args.push_back("--set-version-string");
+	args.push_back("LegalTrademarks");
+	if (trademarks.is_empty()) {
+		args.push_back(" ");
+	} else {
 		args.push_back(trademarks);
 	}
 
