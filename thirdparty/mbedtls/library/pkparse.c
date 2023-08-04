@@ -1235,6 +1235,8 @@ int mbedtls_pk_parse_key(mbedtls_pk_context *pk,
     mbedtls_pem_context pem;
 #endif
 
+    (void) pk_info;
+
     PK_VALIDATE_RET(pk != NULL);
     if (keylen == 0) {
         return MBEDTLS_ERR_PK_KEY_INVALID_FORMAT;
