@@ -11,6 +11,13 @@
 		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
 	</tutorials>
 	<methods>
+		<method name="add_button">
+			<return type="void" />
+			<param index="0" name="button" type="Control" />
+			<description>
+				Add a [Button] to the tabs header.
+			</description>
+		</method>
 		<method name="get_current_tab_control" qualifiers="const">
 			<return type="Control" />
 			<description>
@@ -97,6 +104,13 @@
 			<param index="0" name="tab_idx" type="int" />
 			<description>
 				Returns [code]true[/code] if the tab at index [param tab_idx] is hidden.
+			</description>
+		</method>
+		<method name="remove_button">
+			<return type="void" />
+			<param index="0" name="button" type="Control" />
+			<description>
+				Remove a [Button] from the tabs header.
 			</description>
 		</method>
 		<method name="set_popup">
@@ -243,6 +257,9 @@
 		</theme_item>
 		<theme_item name="font_unselected_color" data_type="color" type="Color" default="Color(0.7, 0.7, 0.7, 1)">
 			Font color of the other, unselected tabs.
+		</theme_item>
+		<theme_item name="buttons_separation" data_type="constant" type="int" default="4">
+			The size of the space between each of the buttons in the [TabBar].
 		</theme_item>
 		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
 			The maximum allowed width of the tab's icon. This limit is applied on top of the default size of the icon, but before the value set with [method TabBar.set_tab_icon_max_width]. The height is adjusted according to the icon's ratio.

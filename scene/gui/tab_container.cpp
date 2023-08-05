@@ -31,6 +31,7 @@
 #include "tab_container.h"
 
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/theme/theme_db.h"
@@ -175,6 +176,17 @@ void TabContainer::_notification(int p_what) {
 					theme_cache.menu_icon->draw(get_canvas_item(), Point2(x, (header_height - theme_cache.menu_icon->get_height()) / 2));
 				}
 			}
+
+			if (buttons_container->get_child_count() > 0) {
+				buttons_container->reset_size();
+				int x = is_layout_rtl() ? 0 : get_size().width - buttons_container->get_size().x;
+				int y = (header_height - buttons_container->get_size().y) / 2;
+				if (get_popup()) {
+					int menu_width = theme_cache.menu_icon->get_width() + theme_cache.buttons_separation;
+					x += is_layout_rtl() ? menu_width : -menu_width;
+				}
+				buttons_container->set_position(Point2(x, y));
+			}
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -215,6 +227,8 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_constant_override(SNAME("h_separation"), theme_cache.icon_separation);
 	tab_bar->add_theme_constant_override(SNAME("icon_max_width"), theme_cache.icon_max_width);
 	tab_bar->add_theme_constant_override(SNAME("outline_size"), theme_cache.outline_size);
+
+	buttons_container->add_theme_constant_override(SNAME("separation"), theme_cache.buttons_separation);
 
 	_update_margins();
 	if (get_tab_count() > 0) {
@@ -259,10 +273,20 @@ void TabContainer::_update_margins() {
 
 	// Directly check for validity, to avoid errors when quitting.
 	bool has_popup = popup_obj_id.is_valid();
+	bool has_buttons = buttons_container->get_child_count() > 0;
+
+	int buttons_offset = has_popup ? menu_width : 0;
+	if (has_buttons) {
+		buttons_container->reset_size();
+		buttons_offset += buttons_container->get_size().x + theme_cache.buttons_separation;
+		if (has_popup) {
+			buttons_offset += theme_cache.buttons_separation;
+		}
+	}
 
 	if (get_tab_count() == 0) {
 		tab_bar->set_offset(SIDE_LEFT, 0);
-		tab_bar->set_offset(SIDE_RIGHT, has_popup ? -menu_width : 0);
+		tab_bar->set_offset(SIDE_RIGHT, -buttons_offset);
 
 		return;
 	}
@@ -270,19 +294,19 @@ void TabContainer::_update_margins() {
 	switch (get_tab_alignment()) {
 		case TabBar::ALIGNMENT_LEFT: {
 			tab_bar->set_offset(SIDE_LEFT, theme_cache.side_margin);
-			tab_bar->set_offset(SIDE_RIGHT, has_popup ? -menu_width : 0);
+			tab_bar->set_offset(SIDE_RIGHT, -buttons_offset);
 		} break;
 
 		case TabBar::ALIGNMENT_CENTER: {
 			tab_bar->set_offset(SIDE_LEFT, 0);
-			tab_bar->set_offset(SIDE_RIGHT, has_popup ? -menu_width : 0);
+			tab_bar->set_offset(SIDE_RIGHT, -buttons_offset);
 		} break;
 
 		case TabBar::ALIGNMENT_RIGHT: {
 			tab_bar->set_offset(SIDE_LEFT, 0);
 
-			if (has_popup) {
-				tab_bar->set_offset(SIDE_RIGHT, -menu_width);
+			if (has_popup || has_buttons) {
+				tab_bar->set_offset(SIDE_RIGHT, -buttons_offset);
 				return;
 			}
 
@@ -292,7 +316,7 @@ void TabContainer::_update_margins() {
 
 			// Calculate if all the tabs would still fit if the margin was present.
 			if (get_clip_tabs() && (tab_bar->get_offset_buttons_visible() || (get_tab_count() > 1 && (total_tabs_width + theme_cache.side_margin) > get_size().width))) {
-				tab_bar->set_offset(SIDE_RIGHT, has_popup ? -menu_width : 0);
+				tab_bar->set_offset(SIDE_RIGHT, -buttons_offset);
 			} else {
 				tab_bar->set_offset(SIDE_RIGHT, -theme_cache.side_margin);
 			}
@@ -314,7 +338,7 @@ Vector<Control *> TabContainer::_get_tab_controls() const {
 	Vector<Control *> controls;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *control = Object::cast_to<Control>(get_child(i));
-		if (!control || control->is_set_as_top_level() || control == tab_bar || children_removing.has(control)) {
+		if (!control || control->is_set_as_top_level() || control == tab_bar || control == buttons_container || children_removing.has(control)) {
 			continue;
 		}
 
@@ -500,10 +524,18 @@ void TabContainer::_refresh_tab_names() {
 	}
 }
 
+void TabContainer::_on_buttons_container_child_order_changed() {
+	queue_redraw();
+	_update_margins();
+	if (!get_clip_tabs()) {
+		update_minimum_size();
+	}
+}
+
 void TabContainer::add_child_notify(Node *p_child) {
 	Container::add_child_notify(p_child);
 
-	if (p_child == tab_bar) {
+	if (p_child == tab_bar || p_child == buttons_container) {
 		return;
 	}
 
@@ -531,7 +563,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 void TabContainer::move_child_notify(Node *p_child) {
 	Container::move_child_notify(p_child);
 
-	if (p_child == tab_bar) {
+	if (p_child == tab_bar || p_child == buttons_container) {
 		return;
 	}
 
@@ -555,7 +587,7 @@ void TabContainer::move_child_notify(Node *p_child) {
 void TabContainer::remove_child_notify(Node *p_child) {
 	Container::remove_child_notify(p_child);
 
-	if (p_child == tab_bar) {
+	if (p_child == tab_bar || p_child == buttons_container) {
 		return;
 	}
 
@@ -804,6 +836,10 @@ Size2 TabContainer::get_minimum_size() const {
 				ms.x += theme_cache.menu_icon->get_width();
 			}
 
+			if (buttons_container->get_child_count() > 0) {
+				ms.x += buttons_container->get_size().x;
+			}
+
 			if (theme_cache.side_margin > 0 && get_tab_alignment() != TabBar::ALIGNMENT_CENTER &&
 					(get_tab_alignment() != TabBar::ALIGNMENT_RIGHT || !get_popup())) {
 				ms.x += theme_cache.side_margin;
@@ -867,6 +903,30 @@ Popup *TabContainer::get_popup() const {
 	}
 
 	return nullptr;
+}
+
+void TabContainer::add_button(Control *p_button) {
+	buttons_container->add_child(p_button, false);
+
+	queue_redraw();
+	_update_margins();
+	if (!get_clip_tabs()) {
+		update_minimum_size();
+	}
+}
+
+void TabContainer::remove_button(Control *p_button) {
+	if (p_button && p_button->get_parent() != buttons_container) {
+		return;
+	}
+
+	buttons_container->remove_child(p_button);
+
+	queue_redraw();
+	_update_margins();
+	if (!get_clip_tabs()) {
+		update_minimum_size();
+	}
 }
 
 void TabContainer::set_drag_to_rearrange_enabled(bool p_enabled) {
@@ -937,6 +997,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_idx_from_control", "control"), &TabContainer::get_tab_idx_from_control);
 	ClassDB::bind_method(D_METHOD("set_popup", "popup"), &TabContainer::set_popup);
 	ClassDB::bind_method(D_METHOD("get_popup"), &TabContainer::get_popup);
+	ClassDB::bind_method(D_METHOD("add_button", "button"), &TabContainer::add_button);
+	ClassDB::bind_method(D_METHOD("remove_button", "button"), &TabContainer::remove_button);
 	ClassDB::bind_method(D_METHOD("set_drag_to_rearrange_enabled", "enabled"), &TabContainer::set_drag_to_rearrange_enabled);
 	ClassDB::bind_method(D_METHOD("get_drag_to_rearrange_enabled"), &TabContainer::get_drag_to_rearrange_enabled);
 	ClassDB::bind_method(D_METHOD("set_tabs_rearrange_group", "group_id"), &TabContainer::set_tabs_rearrange_group);
@@ -962,6 +1024,7 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, side_margin);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, buttons_separation);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tabbar_style, "tabbar_background");
@@ -1006,6 +1069,10 @@ TabContainer::TabContainer() {
 	tab_bar->connect("tab_hovered", callable_mp(this, &TabContainer::_on_tab_hovered));
 	tab_bar->connect("tab_selected", callable_mp(this, &TabContainer::_on_tab_selected));
 	tab_bar->connect("tab_button_pressed", callable_mp(this, &TabContainer::_on_tab_button_pressed));
+
+	buttons_container = memnew(HBoxContainer);
+	add_child(buttons_container, false, INTERNAL_MODE_BACK);
+	buttons_container->connect("child_order_changed", callable_mp(this, &TabContainer::_on_buttons_container_child_order_changed));
 
 	connect("mouse_exited", callable_mp(this, &TabContainer::_on_mouse_exited));
 }
