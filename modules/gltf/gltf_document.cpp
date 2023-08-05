@@ -3400,10 +3400,11 @@ Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFText
 	const GLTFImageIndex image = p_state->textures[p_texture]->get_src_image();
 	ERR_FAIL_INDEX_V(image, p_state->images.size(), Ref<Texture2D>());
 	if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_BASISU) {
+		ERR_FAIL_INDEX_V(image, p_state->source_images.size(), Ref<Texture2D>());
 		Ref<PortableCompressedTexture2D> portable_texture;
 		portable_texture.instantiate();
 		portable_texture->set_keep_compressed_buffer(true);
-		Ref<Image> new_img = p_state->source_images[p_texture]->duplicate();
+		Ref<Image> new_img = p_state->source_images[image]->duplicate();
 		ERR_FAIL_COND_V(new_img.is_null(), Ref<Texture2D>());
 		new_img->generate_mipmaps();
 		if (p_texture_types) {
