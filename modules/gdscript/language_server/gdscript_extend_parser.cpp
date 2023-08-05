@@ -366,10 +366,13 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 		}
 	}
 	r_symbol.detail += parameters + ")";
+	r_symbol.reduced_detail = r_symbol.detail;
 	if (p_func->get_datatype().is_hard_type()) {
 		r_symbol.detail += " -> " + p_func->get_datatype().to_string();
+
+		String return_type = r_symbol.name == "_init" ? "void" : p_func->get_datatype().to_string();
+		r_symbol.reduced_detail += " -> " + return_type;
 	}
-	r_symbol.reduced_detail = r_symbol.detail;
 
 	List<GDScriptParser::SuiteNode *> function_nodes;
 
