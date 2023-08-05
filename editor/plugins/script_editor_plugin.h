@@ -274,6 +274,7 @@ class ScriptEditor : public PanelContainer {
 	Button *help_search = nullptr;
 	Button *site_search = nullptr;
 	Button *make_floating = nullptr;
+	bool floating_activated;
 	EditorHelpSearch *help_search_dialog = nullptr;
 
 	ItemList *script_list = nullptr;
@@ -499,6 +500,7 @@ public:
 
 	bool toggle_scripts_panel();
 	bool is_scripts_panel_toggled();
+	bool is_floating() const;
 	void apply_scripts() const;
 	void reload_scripts(bool p_refresh_only = false);
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);

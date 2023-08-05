@@ -2556,6 +2556,10 @@ void ScriptEditor::save_all_scripts() {
 	_update_script_names();
 }
 
+bool ScriptEditor::is_floating() const {
+	return floating_activated;
+}
+
 void ScriptEditor::apply_scripts() const {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
@@ -3747,6 +3751,7 @@ void ScriptEditor::_on_find_in_files_modified_files(PackedStringArray paths) {
 
 void ScriptEditor::_window_changed(bool p_visible) {
 	make_floating->set_visible(!p_visible);
+	floating_activated = p_visible;
 }
 
 void ScriptEditor::_filter_scripts_text_changed(const String &p_newtext) {
@@ -4037,6 +4042,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 		make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
 
 		menu_hb->add_child(make_floating);
+		floating_activated = false;
 		p_wrapper->connect("window_visibility_changed", callable_mp(this, &ScriptEditor::_window_changed));
 	}
 
