@@ -341,6 +341,8 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	if (load_task.resource.is_valid()) {
 		if (load_task.cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 			load_task.resource->set_path(load_task.local_path);
+		} else if (!load_task.local_path.is_resource_file()) {
+			load_task.resource->set_path_cache(load_task.local_path);
 		}
 
 		if (load_task.xl_remapped) {

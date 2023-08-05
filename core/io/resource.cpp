@@ -90,6 +90,10 @@ String Resource::get_path() const {
 	return path_cache;
 }
 
+void Resource::set_path_cache(const String &p_path) {
+	path_cache = p_path;
+}
+
 String Resource::generate_scene_unique_id() {
 	// Generate a unique enough hash, but still user-readable.
 	// If it's not unique it does not matter because the saver will try again.
