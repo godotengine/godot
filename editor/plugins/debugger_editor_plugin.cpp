@@ -54,7 +54,6 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 
 	EditorDebuggerNode *debugger = memnew(EditorDebuggerNode);
 	Button *db = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Debugger"), debugger);
-	db->set_theme_type_variation("BottomPanelButton");
 	debugger->set_tool_button(db);
 
 	// Main editor debug menu.

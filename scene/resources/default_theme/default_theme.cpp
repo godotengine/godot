@@ -183,7 +183,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("icon_focus_color", "Button", Color(1, 1, 1, 1));
 	theme->set_color("icon_disabled_color", "Button", Color(1, 1, 1, 0.4));
 
-	theme->set_constant("h_separation", "Button", Math::round(2 * scale));
+	theme->set_constant("h_separation", "Button", Math::round(4 * scale));
 	theme->set_constant("icon_max_width", "Button", 0);
 
 	// MenuBar
@@ -259,7 +259,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_disabled_color", "OptionButton", control_font_disabled_color);
 	theme->set_color("font_outline_color", "OptionButton", Color(1, 1, 1));
 
-	theme->set_constant("h_separation", "OptionButton", Math::round(2 * scale));
+	theme->set_constant("h_separation", "OptionButton", Math::round(4 * scale));
 	theme->set_constant("arrow_margin", "OptionButton", Math::round(4 * scale));
 	theme->set_constant("outline_size", "OptionButton", 0);
 	theme->set_constant("modulate_arrow", "OptionButton", false);
@@ -282,7 +282,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_disabled_color", "MenuButton", Color(1, 1, 1, 0.3));
 	theme->set_color("font_outline_color", "MenuButton", Color(1, 1, 1));
 
-	theme->set_constant("h_separation", "MenuButton", Math::round(3 * scale));
+	theme->set_constant("h_separation", "MenuButton", Math::round(4 * scale));
 	theme->set_constant("outline_size", "MenuButton", 0);
 
 	// CheckBox
@@ -788,7 +788,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("children_hl_line_width", "Tree", 1);
 	theme->set_constant("parent_hl_line_margin", "Tree", 0);
 	theme->set_constant("draw_guides", "Tree", 1);
-	theme->set_constant("scroll_border", "Tree", 4);
+	theme->set_constant("scroll_border", "Tree", Math::round(4 * scale));
 	theme->set_constant("scroll_speed", "Tree", 12);
 	theme->set_constant("outline_size", "Tree", 0);
 	theme->set_constant("icon_max_width", "Tree", 0);
@@ -803,9 +803,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("panel", "ItemList", make_flat_stylebox(style_normal_color));
 	theme->set_stylebox("focus", "ItemList", focus);
-	theme->set_constant("h_separation", "ItemList", 4);
-	theme->set_constant("v_separation", "ItemList", 2);
-	theme->set_constant("icon_margin", "ItemList", 4);
+	theme->set_constant("h_separation", "ItemList", Math::round(4 * scale));
+	theme->set_constant("v_separation", "ItemList", Math::round(2 * scale));
+	theme->set_constant("icon_margin", "ItemList", Math::round(4 * scale));
 	theme->set_constant("line_separation", "ItemList", Math::round(2 * scale));
 
 	theme->set_font("font", "ItemList", Ref<Font>());
@@ -1005,7 +1005,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_disabled_color", "ColorPickerButton", Color(0.9, 0.9, 0.9, 0.3));
 	theme->set_color("font_outline_color", "ColorPickerButton", Color(1, 1, 1));
 
-	theme->set_constant("h_separation", "ColorPickerButton", Math::round(2 * scale));
+	theme->set_constant("h_separation", "ColorPickerButton", Math::round(4 * scale));
 	theme->set_constant("outline_size", "ColorPickerButton", 0);
 
 	// ColorPresetButton
