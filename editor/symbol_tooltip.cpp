@@ -404,7 +404,7 @@ const lsp::DocumentSymbol *get_member_symbol(
 		queue.pop();
 
 		// If the name matches, return the symbol.
-		if (symbol->name == symbol_word) { // && symbol->range.is_point_inside(symbol_position)) {
+		if (symbol->name == symbol_word && !symbol->detail.is_empty()) { // && symbol->range.is_point_inside(symbol_position)) {
 			return symbol;
 		}
 
