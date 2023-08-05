@@ -135,7 +135,7 @@ void SymbolTooltip::update_symbol_tooltip(const Vector2 &mouse_position, Ref<Scr
 
 	// TODO: Improve header content. Add the ability to see documentation comments or official documentation.
 	String header_content = member_symbol->detail.is_empty() ? symbol_word : member_symbol->detail;
-	String body_content = comment_documentation;
+	String body_content = comment_documentation.replace("\n ", " ");
 	_update_tooltip_content(header_content, body_content);
 
 	Rect2 tooltip_rect = Rect2(get_position(), get_size());
