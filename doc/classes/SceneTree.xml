@@ -225,7 +225,8 @@
 			For mobile platforms, see [member quit_on_go_back].
 		</member>
 		<member name="current_scene" type="Node" setter="set_current_scene" getter="get_current_scene">
-			The current scene.
+			Returns the root node of the currently running scene, regardless of its structure.
+			[b]Warning:[/b] Setting this directly might not work as expected, and will [i]not[/i] add or remove any nodes from the tree, consider using [method change_scene_to_file] or [method change_scene_to_packed] instead.
 		</member>
 		<member name="debug_collisions_hint" type="bool" setter="set_debug_collisions_hint" getter="is_debugging_collisions_hint" default="false">
 			If [code]true[/code], collision shapes will be visible when running the game from the editor for debugging purposes.
