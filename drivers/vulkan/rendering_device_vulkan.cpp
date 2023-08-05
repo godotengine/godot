@@ -4812,11 +4812,14 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 		offset += sizeof(uint32_t);
 		memcpy(binptr + offset, &binary_data, sizeof(RenderingDeviceVulkanShaderBinaryData));
 		offset += sizeof(RenderingDeviceVulkanShaderBinaryData);
-		memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
-		offset += binary_data.shader_name_len;
 
-		if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
-			offset += 4 - (binary_data.shader_name_len % 4);
+		if (binary_data.shader_name_len > 0) {
+			memcpy(binptr + offset, shader_name_utf.ptr(), binary_data.shader_name_len);
+			offset += binary_data.shader_name_len;
+
+			if ((binary_data.shader_name_len % 4) != 0) { // Alignment rules are really strange.
+				offset += 4 - (binary_data.shader_name_len % 4);
+			}
 		}
 
 		for (int i = 0; i < uniform_info.size(); i++) {
