@@ -59,8 +59,8 @@ SymbolTooltip::SymbolTooltip(CodeTextEditor *code_editor) :
 	header_label = memnew(TextEdit);
 	//header_label->set_readonly(true);
 	header_label->set_context_menu_enabled(false);
-	header_label->set_h_scroll(false);
-	header_label->set_v_scroll(false);
+	header_label->set_h_scroll_visibility(false);
+	header_label->set_v_scroll_visibility(false);
 	Ref<GDScriptSyntaxHighlighter> highlighter;
 	highlighter.instantiate();
 	header_label->set_syntax_highlighter(highlighter);
