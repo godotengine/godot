@@ -131,6 +131,7 @@ public:
 		StringName name;
 		bool disabled = false;
 		bool exposed = false;
+		bool reloadable = false;
 		bool is_virtual = false;
 		Object *(*creation_func)() = nullptr;
 
@@ -228,7 +229,7 @@ public:
 	}
 
 	static void register_extension_class(ObjectGDExtension *p_extension);
-	static void unregister_extension_class(const StringName &p_class);
+	static void unregister_extension_class(const StringName &p_class, bool p_free_method_binds = true);
 
 	template <class T>
 	static Object *_create_ptr_func() {
@@ -426,6 +427,7 @@ public:
 	static bool is_class_enabled(const StringName &p_class);
 
 	static bool is_class_exposed(const StringName &p_class);
+	static bool is_class_reloadable(const StringName &p_class);
 
 	static void add_resource_base_extension(const StringName &p_extension, const StringName &p_class);
 	static void get_resource_base_extensions(List<String> *p_extensions);

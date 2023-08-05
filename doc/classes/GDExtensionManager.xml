@@ -43,6 +43,13 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="extensions_reloaded">
+			<description>
+				Emitted after the editor has automatically reloaded any extensions.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="LOAD_STATUS_OK" value="0" enum="LoadStatus">
 		</constant>
