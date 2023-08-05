@@ -349,6 +349,15 @@ private:
 		Variant gizmo_initial_value;
 		bool original_local;
 		bool instant;
+
+		// Numeric blender-style transforms (e.g. 'g5x').
+		// numeric_input tracks the current input value, e.g. 1.23.
+		// numeric_negate indicates whether '-' has been pressed to negate the value
+		// while numeric_next_decimal is 0, numbers are input before the decimal point
+		// after pressing '.', numeric next decimal changes to -1, and decrements after each press.
+		double numeric_input = 0.0;
+		bool numeric_negate = false;
+		int numeric_next_decimal = 0;
 	} _edit;
 
 	struct Cursor {
@@ -445,7 +454,9 @@ private:
 
 	void begin_transform(TransformMode p_mode, bool instant);
 	void commit_transform();
+	void apply_transform(Vector3 p_motion, double p_snap);
 	void update_transform(bool p_shift);
+	void update_transform_numeric();
 	void finish_transform();
 
 	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical = false);
