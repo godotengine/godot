@@ -1186,6 +1186,11 @@ struct DocumentSymbol {
 	String detail;
 
 	/**
+	 * More detail for this symbol - without values, e.g the signature of a function.
+	 */
+	String reduced_detail;
+
+	/**
 	 * Documentation for this symbol
 	 */
 	String documentation;

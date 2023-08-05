@@ -154,6 +154,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 	r_symbol.range.end.line = lines.size();
 	r_symbol.selectionRange.start.line = r_symbol.range.start.line;
 	r_symbol.detail = "class " + r_symbol.name;
+	r_symbol.reduced_detail = r_symbol.detail;
 	bool is_root_class = &r_symbol == &class_symbol;
 	r_symbol.documentation = parse_documentation(is_root_class ? 0 : LINE_NUMBER_TO_INDEX(p_class->start_line), is_root_class);
 
@@ -178,6 +179,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				if (m.get_datatype().is_hard_type()) {
 					symbol.detail += ": " + m.get_datatype().to_string();
 				}
+				symbol.reduced_detail = symbol.detail;
 				if (m.variable->initializer != nullptr && m.variable->initializer->is_constant) {
 					symbol.detail += " = " + m.variable->initializer->reduced_value.to_json_string();
 				}
@@ -207,6 +209,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				if (m.constant->get_datatype().is_hard_type()) {
 					symbol.detail += ": " + m.constant->get_datatype().to_string();
 				}
+				symbol.reduced_detail = symbol.detail;
 
 				const Variant &default_value = m.constant->initializer->reduced_value;
 				String value_text;
@@ -247,6 +250,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 				symbol.script_path = path;
 
 				symbol.detail = symbol.name + " = " + itos(m.enum_value.value);
+				symbol.reduced_detail = symbol.detail;
 
 				r_symbol.children.push_back(symbol);
 			} break;
@@ -271,6 +275,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					symbol.detail += m.signal->parameters[j]->identifier->name;
 				}
 				symbol.detail += ")";
+				symbol.reduced_detail = symbol.detail;
 
 				r_symbol.children.push_back(symbol);
 			} break;
@@ -294,6 +299,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 					symbol.detail += String(m.m_enum->values[j].identifier->name) + " = " + itos(m.m_enum->values[j].value);
 				}
 				symbol.detail += "}";
+				symbol.reduced_detail = "enum " + String(m.m_enum->identifier->name);
 				r_symbol.children.push_back(symbol);
 			} break;
 			case ClassNode::Member::FUNCTION: {
@@ -358,6 +364,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 	if (p_func->get_datatype().is_hard_type()) {
 		r_symbol.detail += " -> " + p_func->get_datatype().to_string();
 	}
+	r_symbol.reduced_detail = r_symbol.detail;
 
 	List<GDScriptParser::SuiteNode *> function_nodes;
 
@@ -437,6 +444,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 			if (local.get_datatype().is_hard_type()) {
 				symbol.detail += ": " + local.get_datatype().to_string();
 			}
+			symbol.reduced_detail = symbol.detail;
 			symbol.documentation = parse_documentation(LINE_NUMBER_TO_INDEX(local.start_line));
 			r_symbol.children.push_back(symbol);
 		}
