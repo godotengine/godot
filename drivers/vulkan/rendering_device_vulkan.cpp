@@ -9343,6 +9343,9 @@ uint64_t RenderingDeviceVulkan::get_driver_resource(DriverResource p_resource, R
 
 			return uint64_t(render_pipeline->pipeline);
 		} break;
+		case DRIVER_RESOURCE_VULKAN_INSTANCE_PROC_ADDR_FN: {
+			return uint64_t(vkGetInstanceProcAddr);
+		} break;
 		default: {
 			// Not supported for this driver.
 			return 0;
